@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import io
 import os
 
 import pytest
 
-from PIL import Image, SunImagePlugin
+from PIL import Image, SunImagePlugin, _binary
 
 from .helper import assert_image_equal_tofile, assert_image_similar, hopper
 
@@ -31,6 +32,44 @@ def test_sanity() -> None:
 def test_im1() -> None:
     with Image.open("Tests/images/sunraster.im1") as im:
         assert_image_equal_tofile(im, "Tests/images/sunraster.im1.png")
+
+
+def _sun_header(
+    depth: int = 0, file_type: int = 0, palette_length: int = 0
+) -> io.BytesIO:
+    return io.BytesIO(
+        _binary.o32be(0x59A66A95)
+        + b"\x00" * 8
+        + _binary.o32be(depth)
+        + b"\x00" * 4
+        + _binary.o32be(file_type)
+        + b"\x00" * 4
+        + _binary.o32be(palette_length)
+    )
+
+
+def test_unsupported_mode_bit_depth() -> None:
+    with pytest.raises(SyntaxError, match="Unsupported Mode/Bit Depth"):
+        with SunImagePlugin.SunImageFile(_sun_header()):
+            pass
+
+
+def test_unsupported_color_palette_length() -> None:
+    with pytest.raises(SyntaxError, match="Unsupported Color Palette Length"):
+        with SunImagePlugin.SunImageFile(_sun_header(depth=1, palette_length=1025)):
+            pass
+
+
+def test_unsupported_palette_type() -> None:
+    with pytest.raises(SyntaxError, match="Unsupported Palette Type"):
+        with SunImagePlugin.SunImageFile(_sun_header(depth=1, palette_length=1)):
+            pass
+
+
+def test_unsupported_file_type() -> None:
+    with pytest.raises(SyntaxError, match="Unsupported Sun Raster file type"):
+        with SunImagePlugin.SunImageFile(_sun_header(depth=1, file_type=6)):
+            pass
 
 
 @pytest.mark.skipif(
