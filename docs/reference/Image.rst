@@ -371,7 +371,7 @@ Protocols
 
 .. autoclass:: SupportsArrayInterface
     :show-inheritance:
-.. autoclass:: SupportsArrowInterface
+.. autoclass:: SupportsArrowArrayInterface
     :show-inheritance:
 .. autoclass:: SupportsGetData
     :show-inheritance:

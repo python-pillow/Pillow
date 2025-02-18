@@ -1,3 +1,5 @@
+.. _arrow-support:
+
 =============
 Arrow Support
 =============
