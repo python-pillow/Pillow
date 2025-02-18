@@ -3305,6 +3305,42 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
 
 
 def fromarrow(obj: SupportsArrowArrayInterface, mode, size) -> Image:
+    """Creates an image with zero copy shared memory from an object exporting
+    the arrow_c_array interface protocol::
+
+      from PIL import Image
+      import pyarrow as pa
+      arr = pa.array([0]*(5*5*4), type=pa.uint8())
+      im = Image.fromarrow(arr, 'RGBA', (5, 5))
+
+    If the data representation of the ``obj`` is not compatible with
+    Pillow internal storage, a ValueError is raised.
+
+    Pillow images can also be converted to arrow objects::
+
+      from PIL import Image
+      import pyarrow as pa
+      im = Image.open('hopper.jpg')
+      arr = pa.array(im)
+
+    As with array support, when converting Pillow images to arrays,
+    only pixel values are transferred. This means that P and PA mode
+    image will lose their palette.
+
+    :param obj: Object with an arrow_c_array interface
+    :param mode: Image mode.
+    :param size: Image size. This must match the storage of the arrow object.
+    :returns: An Image Object
+
+    Note that according to the arrow spec, both the producer and the
+    consumer should consider the exported array to be immutable, as
+    unsynchronized updates will potentially cause inconsistent data.
+
+    See: :ref:`arrow-support` for more detailed information
+
+    .. versionadded:: 11.2
+
+    """
     if not hasattr(obj, "__arrow_c_array__"):
         msg = "arrow_c_array interface not found"
         raise ValueError(msg)

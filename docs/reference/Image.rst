@@ -79,6 +79,7 @@ Constructing images
 
 .. autofunction:: new
 .. autofunction:: fromarray
+.. autofunction:: fromarrow
 .. autofunction:: frombytes
 .. autofunction:: frombuffer
 
@@ -369,6 +370,8 @@ Protocols
 ---------
 
 .. autoclass:: SupportsArrayInterface
+    :show-inheritance:
+.. autoclass:: SupportsArrowInterface
     :show-inheritance:
 .. autoclass:: SupportsGetData
     :show-inheritance:
