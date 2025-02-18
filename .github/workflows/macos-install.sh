@@ -26,7 +26,9 @@ python3 -m pip install -U pytest-cov
 python3 -m pip install -U pytest-timeout
 python3 -m pip install pyroma
 python3 -m pip install numpy
-python3 -m pip install pyarrow
+# optional test dependency, only install if there's a binary package.
+# fails on beta 3.14 and pypy3.10
+python3 -m pip install --only-binary=:all: pyarrow || true
 
 # extra test images
 pushd depends && ./install_extra_test_images.sh && popd
