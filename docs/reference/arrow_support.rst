@@ -12,9 +12,9 @@ The goal with Arrow is to provide native zero-copy interop with any
 arrow provider or consumer in the Python ecosystem.
 
 .. warning:: Zero-copy does not mean zero allocation -- The internal
-memory layout of Pillow images contains an allocation for row
-pointers, so there is a non-zero, but significantly smaller than a
-full copy memory cost to reading an arrow image.
+  memory layout of Pillow images contains an allocation for row
+  pointers, so there is a non-zero, but significantly smaller than a
+  full copy memory cost to reading an arrow image.
 
 
 Data Formats
