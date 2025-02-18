@@ -3211,8 +3211,8 @@ class SupportsArrowArrayInterface(Protocol):
     """
 
     def __arrow_c_array__(
-        self, requested_schema: 'PyCapsule' = None
-    ) -> tuple['PyCapsule', 'PyCapsule']:
+        self, requested_schema: PyCapsule = None
+    ) -> tuple[PyCapsule, PyCapsule]:
         raise NotImplementedError()
 
 
