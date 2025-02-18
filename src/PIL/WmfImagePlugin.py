@@ -69,9 +69,7 @@ if hasattr(Image.core, "drawwmf"):
 
 
 def _accept(prefix: bytes) -> bool:
-    return (
-        prefix[:6] == b"\xd7\xcd\xc6\x9a\x00\x00" or prefix[:4] == b"\x01\x00\x00\x00"
-    )
+    return prefix.startswith((b"\xd7\xcd\xc6\x9a\x00\x00", b"\x01\x00\x00\x00"))
 
 
 ##
@@ -89,7 +87,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
         assert self.fp is not None
         s = self.fp.read(80)
 
-        if s[:6] == b"\xd7\xcd\xc6\x9a\x00\x00":
+        if s.startswith(b"\xd7\xcd\xc6\x9a\x00\x00"):
             # placeable windows metafile
 
             # get units per inch
@@ -118,7 +116,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
                 msg = "Unsupported WMF file format"
                 raise SyntaxError(msg)
 
-        elif s[:4] == b"\x01\x00\x00\x00" and s[40:44] == b" EMF":
+        elif s.startswith(b"\x01\x00\x00\x00") and s[40:44] == b" EMF":
             # enhanced metafile
 
             # get bounding box

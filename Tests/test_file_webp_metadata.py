@@ -42,7 +42,7 @@ def test_read_exif_metadata() -> None:
 def test_read_exif_metadata_without_prefix() -> None:
     with Image.open("Tests/images/flower2.webp") as im:
         # Assert prefix is not present
-        assert im.info["exif"][:6] != b"Exif\x00\x00"
+        assert not im.info["exif"].startswith(b"Exif\x00\x00")
 
         exif = im.getexif()
         assert exif[305] == "Adobe Photoshop CS6 (Macintosh)"

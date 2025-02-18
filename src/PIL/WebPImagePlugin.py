@@ -21,7 +21,7 @@ _VP8_MODES_BY_IDENTIFIER = {
 
 
 def _accept(prefix: bytes) -> bool | str:
-    is_riff_file_format = prefix[:4] == b"RIFF"
+    is_riff_file_format = prefix.startswith(b"RIFF")
     is_webp_file = prefix[8:12] == b"WEBP"
     is_valid_vp8_mode = prefix[12:16] in _VP8_MODES_BY_IDENTIFIER
 

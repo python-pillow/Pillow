@@ -78,8 +78,8 @@ def test_app(test_file: str) -> None:
         assert isinstance(im, MpoImagePlugin.MpoImageFile)
         assert im.applist[0][0] == "APP1"
         assert im.applist[1][0] == "APP2"
-        assert (
-            im.applist[1][1][:16] == b"MPF\x00MM\x00*\x00\x00\x00\x08\x00\x03\xb0\x00"
+        assert im.applist[1][1].startswith(
+            b"MPF\x00MM\x00*\x00\x00\x00\x08\x00\x03\xb0\x00"
         )
         assert len(im.applist) == 2
 

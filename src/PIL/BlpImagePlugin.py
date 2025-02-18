@@ -246,7 +246,7 @@ class BLPFormatError(NotImplementedError):
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] in (b"BLP1", b"BLP2")
+    return prefix.startswith((b"BLP1", b"BLP2"))
 
 
 class BlpImageFile(ImageFile.ImageFile):

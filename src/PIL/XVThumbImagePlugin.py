@@ -34,7 +34,7 @@ for r in range(8):
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:6] == _MAGIC
+    return prefix.startswith(_MAGIC)
 
 
 ##

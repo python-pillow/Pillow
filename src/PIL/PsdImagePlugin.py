@@ -48,7 +48,7 @@ MODES = {
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"8BPS"
+    return prefix.startswith(b"8BPS")
 
 
 ##

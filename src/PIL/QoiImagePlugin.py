@@ -14,7 +14,7 @@ from ._binary import i32be as i32
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"qoif"
+    return prefix.startswith(b"qoif")
 
 
 class QoiImageFile(ImageFile.ImageFile):

@@ -565,7 +565,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"DDS "
+    return prefix.startswith(b"DDS ")
 
 
 Image.register_open(DdsImageFile.format, DdsImageFile, _accept)

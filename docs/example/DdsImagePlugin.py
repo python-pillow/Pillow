@@ -286,7 +286,7 @@ Image.register_decoder("DXT5", DXT5Decoder)
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"DDS "
+    return prefix.startswith(b"DDS ")
 
 
 Image.register_open(DdsImageFile.format, DdsImageFile, _accept)

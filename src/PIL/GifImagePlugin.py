@@ -68,7 +68,7 @@ LOADING_STRATEGY = LoadingStrategy.RGB_AFTER_FIRST
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:6] in [b"GIF87a", b"GIF89a"]
+    return prefix.startswith((b"GIF87a", b"GIF89a"))
 
 
 ##
@@ -262,7 +262,7 @@ class GifImageFile(ImageFile.ImageFile):
                     # application extension
                     #
                     info["extension"] = block, self.fp.tell()
-                    if block[:11] == b"NETSCAPE2.0":
+                    if block.startswith(b"NETSCAPE2.0"):
                         block = self.data()
                         if block and len(block) >= 3 and block[0] == 1:
                             self.info["loop"] = i16(block, 1)
