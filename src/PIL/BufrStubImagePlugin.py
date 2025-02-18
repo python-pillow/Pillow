@@ -33,7 +33,7 @@ def register_handler(handler: ImageFile.StubHandler | None) -> None:
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"BUFR" or prefix[:4] == b"ZCZC"
+    return prefix.startswith((b"BUFR", b"ZCZC"))
 
 
 class BufrStubImageFile(ImageFile.StubImageFile):

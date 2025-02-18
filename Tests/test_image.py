@@ -74,12 +74,12 @@ class TestImage:
 
     def test_sanity(self) -> None:
         im = Image.new("L", (100, 100))
-        assert repr(im)[:45] == "<PIL.Image.Image image mode=L size=100x100 at"
+        assert repr(im).startswith("<PIL.Image.Image image mode=L size=100x100 at")
         assert im.mode == "L"
         assert im.size == (100, 100)
 
         im = Image.new("RGB", (100, 100))
-        assert repr(im)[:45] == "<PIL.Image.Image image mode=RGB size=100x100 "
+        assert repr(im).startswith("<PIL.Image.Image image mode=RGB size=100x100 ")
         assert im.mode == "RGB"
         assert im.size == (100, 100)
 

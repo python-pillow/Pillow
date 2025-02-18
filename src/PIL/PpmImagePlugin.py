@@ -47,7 +47,7 @@ MODES = {
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[0:1] == b"P" and prefix[1] in b"0123456fy"
+    return prefix.startswith(b"P") and prefix[1] in b"0123456fy"
 
 
 ##
