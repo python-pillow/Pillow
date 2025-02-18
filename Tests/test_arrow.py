@@ -1,14 +1,10 @@
 from __future__ import annotations
 
-from typing import Any  # undone
-
 import pytest
 
 from PIL import Image
 
 from .helper import (
-    assert_deep_equal,
-    assert_image_equal,
     hopper,
 )
 
@@ -41,7 +37,6 @@ def test_invalid_array_size():
     assert img.size != (10, 10)
     with pytest.raises(ValueError):
         Image.fromarrow(img, "RGB", (10, 10))
-
 
 
 def test_release_schema():
