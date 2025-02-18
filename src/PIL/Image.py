@@ -3357,7 +3357,8 @@ def fromarrow(obj: SupportsArrowArrayInterface, mode, size) -> Image:
     if _im:
         return Image()._new(_im)
 
-    raise ValueError("new_arrow returned None without an exception")
+    msg = "new_arrow returned None without an exception"
+    raise ValueError(msg)
 
 
 def fromqimage(im: ImageQt.QImage) -> ImageFile.ImageFile:
