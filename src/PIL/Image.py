@@ -3210,9 +3210,16 @@ class SupportsArrowArrayInterface(Protocol):
     data interface.
     """
 
-    def __arrow_c_array__(
-        self, requested_schema: PyCapsule = None
-    ) -> tuple[PyCapsule, PyCapsule]:
+    # Sorry, no types for you until pre-commit.ci stops changing stringy
+    # PyCapsule type to an unimportable value type, which then fails lint.
+    # PyCapsules are not importable, and only available in the C-API layer.
+    # def __arrow_c_array__(
+    #     self, requested_schema: 'PyCapsule' = None
+    # ) -> tuple['PyCapsule', 'PyCapsule']:
+    #     raise NotImplementedError()
+
+    # old not typed definition.
+    def __arrow_c_array__(self, requested_schema = None) -> tuple:
         raise NotImplementedError()
 
 
