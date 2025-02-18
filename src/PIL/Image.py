@@ -3219,7 +3219,7 @@ class SupportsArrowArrayInterface(Protocol):
     #     raise NotImplementedError()
 
     # old not typed definition.
-    def __arrow_c_array__(self, requested_schema = None) -> tuple:
+    def __arrow_c_array__(self, requested_schema = None):
         raise NotImplementedError()
 
 
