@@ -584,6 +584,14 @@ class Image:
     def mode(self) -> str:
         return self._mode
 
+    @property
+    def readonly(self) -> int:
+        return (self._im and self._im.readonly) or self._readonly
+
+    @readonly.setter
+    def readonly(self, readonly: int) -> None:
+        self._readonly = readonly
+
     def _new(self, im: core.ImagingCore) -> Image:
         new = Image()
         new.im = im
@@ -732,6 +740,16 @@ class Image:
             new["data"] = self.tobytes()
         new["shape"], new["typestr"] = _conv_type_shape(self)
         return new
+
+    def __arrow_c_schema__(self) -> object:
+        self.load()
+        return self.im.__arrow_c_schema__()
+
+    def __arrow_c_array__(
+        self, requested_schema: object | None = None
+    ) -> tuple[object, object]:
+        self.load()
+        return (self.im.__arrow_c_schema__(), self.im.__arrow_c_array__())
 
     def __getstate__(self) -> list[Any]:
         im_data = self.tobytes()  # load image first
@@ -3186,6 +3204,18 @@ class SupportsArrayInterface(Protocol):
         raise NotImplementedError()
 
 
+class SupportsArrowArrayInterface(Protocol):
+    """
+    An object that has an ``__arrow_c_array__`` method corresponding to the arrow c
+    data interface.
+    """
+
+    def __arrow_c_array__(
+        self, requested_schema: PyCapsule = None
+    ) -> tuple[PyCapsule, PyCapsule]:
+        raise NotImplementedError()
+
+
 def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     """
     Creates an image memory from an object exporting the array interface
@@ -3272,6 +3302,19 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
             raise ValueError(msg)
 
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
+
+
+def fromarrow(obj: SupportsArrowArrayInterface, mode, size) -> Image:
+    if not hasattr(obj, "__arrow_c_array__"):
+        msg = "arrow_c_array interface not found"
+        raise ValueError(msg)
+
+    (schema_capsule, array_capsule) = obj.__arrow_c_array__()
+    _im = core.new_arrow(mode, size, schema_capsule, array_capsule)
+    if _im:
+        return Image()._new(_im)
+
+    return None
 
 
 def fromqimage(im: ImageQt.QImage) -> ImageFile.ImageFile:
