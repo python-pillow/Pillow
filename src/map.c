@@ -126,6 +126,7 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
         return NULL;
     }
 
+    im->readonly = view.readonly;
     /* setup file pointers */
     if (ystep > 0) {
         for (y = 0; y < ysize; y++) {

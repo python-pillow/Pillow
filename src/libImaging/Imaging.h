@@ -86,6 +86,7 @@ struct ImagingMemoryInstance {
     int bands;                      /* Number of bands (1, 2, 3, or 4) */
     int xsize;                      /* Image dimension. */
     int ysize;
+    int readonly;
 
     /* Colour palette (for "P" images only) */
     ImagingPalette palette;
