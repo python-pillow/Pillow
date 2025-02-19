@@ -30,11 +30,13 @@ def test_sanity() -> None:
 
 def test_n_frames() -> None:
     with Image.open(TEST_FILE) as im:
+        assert isinstance(im, MicImagePlugin.MicImageFile)
         assert im.n_frames == 1
 
 
 def test_is_animated() -> None:
     with Image.open(TEST_FILE) as im:
+        assert isinstance(im, MicImagePlugin.MicImageFile)
         assert not im.is_animated
 
 
@@ -55,10 +57,11 @@ def test_seek() -> None:
 
 def test_close() -> None:
     with Image.open(TEST_FILE) as im:
-        pass
+        assert isinstance(im, MicImagePlugin.MicImageFile)
     assert im.ole.fp.closed
 
     im = Image.open(TEST_FILE)
+    assert isinstance(im, MicImagePlugin.MicImageFile)
     im.close()
     assert im.ole.fp.closed
 

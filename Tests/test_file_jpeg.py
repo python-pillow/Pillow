@@ -91,6 +91,7 @@ class TestFileJpeg:
     def test_app(self) -> None:
         # Test APP/COM reader (@PIL135)
         with Image.open(TEST_FILE) as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             assert im.applist[0] == ("APP0", b"JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00")
             assert im.applist[1] == (
                 "COM",
@@ -316,6 +317,8 @@ class TestFileJpeg:
 
     def test_exif_typeerror(self) -> None:
         with Image.open("Tests/images/exif_typeerror.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+
             # Should not raise a TypeError
             im._getexif()
 
@@ -500,6 +503,7 @@ class TestFileJpeg:
 
     def test_mp(self) -> None:
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             assert im._getmp() is None
 
     def test_quality_keep(self, tmp_path: Path) -> None:
@@ -558,12 +562,14 @@ class TestFileJpeg:
             with Image.open(test_file) as im:
                 im.save(b, "JPEG", qtables=[[n] * 64] * n)
             with Image.open(b) as im:
+                assert isinstance(im, JpegImagePlugin.JpegImageFile)
                 assert len(im.quantization) == n
                 reloaded = self.roundtrip(im, qtables="keep")
                 assert im.quantization == reloaded.quantization
                 assert max(reloaded.quantization[0]) <= 255
 
         with Image.open("Tests/images/hopper.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             qtables = im.quantization
             reloaded = self.roundtrip(im, qtables=qtables, subsampling=0)
             assert im.quantization == reloaded.quantization
@@ -663,6 +669,7 @@ class TestFileJpeg:
 
     def test_load_16bit_qtables(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             assert len(im.quantization) == 2
             assert len(im.quantization[0]) == 64
             assert max(im.quantization[0]) > 255
@@ -705,6 +712,7 @@ class TestFileJpeg:
     @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
     def test_load_djpeg(self) -> None:
         with Image.open(TEST_FILE) as img:
+            assert isinstance(img, JpegImagePlugin.JpegImageFile)
             img.load_djpeg()
             assert_image_similar_tofile(img, TEST_FILE, 5)
 
@@ -909,6 +917,7 @@ class TestFileJpeg:
 
     def test_photoshop_malformed_and_multiple(self) -> None:
         with Image.open("Tests/images/app13-multiple.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             assert "photoshop" in im.info
             assert 24 == len(im.info["photoshop"])
             apps_13_lengths = [len(v) for k, v in im.applist if k == "APP13"]
@@ -1084,6 +1093,7 @@ class TestFileJpeg:
 
     def test_deprecation(self) -> None:
         with Image.open(TEST_FILE) as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             with pytest.warns(DeprecationWarning):
                 assert im.huffman_ac == {}
             with pytest.warns(DeprecationWarning):
