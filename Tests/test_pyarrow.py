@@ -25,7 +25,9 @@ def _test_img_equals_pyarray(img: Image.Image, arr: Any, mask) -> None:
         for y in range(0, img.size[1], int(img.size[1] / 10)):
             if mask:
                 for ix, elt in enumerate(mask):
-                    assert px[x, y][ix] == arr[y * img.width + x].as_py()[elt]
+                    pixel = px[x, y]
+                    assert isinstance(pixel, tuple)
+                    assert pixel[ix] == arr[y * img.width + x].as_py()[elt]
             else:
                 assert_deep_equal(px[x, y], arr[y * img.width + x].as_py())
 
