@@ -31,6 +31,7 @@ import re
 from typing import IO, Any
 
 from . import Image, ImageFile, ImagePalette
+from ._util import DeferredError
 
 # --------------------------------------------------------------------
 # Standard tags
@@ -290,6 +291,8 @@ class ImImageFile(ImageFile.ImageFile):
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
 
         self.frame = frame
 
