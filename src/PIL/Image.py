@@ -514,7 +514,7 @@ class ImagePointTransform:
 
 
 def _getscaleoffset(
-    expr: Callable[[ImagePointTransform], ImagePointTransform | float]
+    expr: Callable[[ImagePointTransform], ImagePointTransform | float],
 ) -> tuple[float, float]:
     a = expr(ImagePointTransform(1, 0))
     return (a.scale, a.offset) if isinstance(a, ImagePointTransform) else (0, a)
@@ -2996,15 +2996,6 @@ class ImageTransformHandler:
 # --------------------------------------------------------------------
 # Factories
 
-#
-# Debugging
-
-
-def _wedge() -> Image:
-    """Create grayscale wedge (for debugging only)"""
-
-    return Image()._new(core.wedge("L"))
-
 
 def _check_size(size: Any) -> None:
     """
@@ -3884,7 +3875,7 @@ class Exif(_ExifBase):
             return self._fixup_dict(dict(info))
 
     def _get_head(self) -> bytes:
-        version = b"\x2B" if self.bigtiff else b"\x2A"
+        version = b"\x2b" if self.bigtiff else b"\x2a"
         if self.endian == "<":
             head = b"II" + version + b"\x00" + o32le(8)
         else:
@@ -4007,7 +3998,7 @@ class Exif(_ExifBase):
                 if tag == ExifTags.IFD.MakerNote:
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
-                    if tag_data[:8] == b"FUJIFILM":
+                    if tag_data.startswith(b"FUJIFILM"):
                         ifd_offset = i32le(tag_data, 8)
                         ifd_data = tag_data[ifd_offset:]
 

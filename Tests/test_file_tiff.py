@@ -63,12 +63,12 @@ class TestFileTiff:
 
     @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
     def test_unclosed_file(self) -> None:
-        def open() -> None:
+        def open_test_image() -> None:
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
 
         with pytest.warns(ResourceWarning):
-            open()
+            open_test_image()
 
     def test_closed_file(self) -> None:
         with warnings.catch_warnings():
@@ -746,7 +746,7 @@ class TestFileTiff:
             assert reread.n_frames == 3
 
     def test_fixoffsets(self) -> None:
-        b = BytesIO(b"II\x2A\x00\x00\x00\x00\x00")
+        b = BytesIO(b"II\x2a\x00\x00\x00\x00\x00")
         with TiffImagePlugin.AppendingTiffWriter(b) as a:
             b.seek(0)
             a.fixOffsets(1, isShort=True)
@@ -759,14 +759,14 @@ class TestFileTiff:
             with pytest.raises(RuntimeError):
                 a.fixOffsets(1)
 
-        b = BytesIO(b"II\x2A\x00\x00\x00\x00\x00")
+        b = BytesIO(b"II\x2a\x00\x00\x00\x00\x00")
         with TiffImagePlugin.AppendingTiffWriter(b) as a:
             a.offsetOfNewPage = 2**16
 
             b.seek(0)
             a.fixOffsets(1, isShort=True)
 
-        b = BytesIO(b"II\x2B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+        b = BytesIO(b"II\x2b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
         with TiffImagePlugin.AppendingTiffWriter(b) as a:
             a.offsetOfNewPage = 2**32
 
@@ -777,18 +777,20 @@ class TestFileTiff:
             a.fixOffsets(1, isLong=True)
 
     def test_appending_tiff_writer_writelong(self) -> None:
-        data = b"II\x2A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        data = b"II\x2a\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
         b = BytesIO(data)
         with TiffImagePlugin.AppendingTiffWriter(b) as a:
+            a.seek(-4, os.SEEK_CUR)
             a.writeLong(2**32 - 1)
-            assert b.getvalue() == data + b"\xff\xff\xff\xff"
+            assert b.getvalue() == data[:-4] + b"\xff\xff\xff\xff"
 
     def test_appending_tiff_writer_rewritelastshorttolong(self) -> None:
-        data = b"II\x2A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        data = b"II\x2a\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
         b = BytesIO(data)
         with TiffImagePlugin.AppendingTiffWriter(b) as a:
+            a.seek(-2, os.SEEK_CUR)
             a.rewriteLastShortToLong(2**32 - 1)
-            assert b.getvalue() == data[:-2] + b"\xff\xff\xff\xff"
+            assert b.getvalue() == data[:-4] + b"\xff\xff\xff\xff"
 
     def test_saving_icc_profile(self, tmp_path: Path) -> None:
         # Tests saving TIFF with icc_profile set.
@@ -939,11 +941,10 @@ class TestFileTiff:
 
     @pytest.mark.timeout(6)
     @pytest.mark.filterwarnings("ignore:Truncated File Read")
-    def test_timeout(self) -> None:
+    def test_timeout(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/timeout-6646305047838720") as im:
-            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
             im.load()
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
     @pytest.mark.parametrize(
         "test_file",

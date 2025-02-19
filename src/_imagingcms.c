@@ -666,8 +666,7 @@ cms_get_display_profile_win32(PyObject *self, PyObject *args) {
         return PyUnicode_FromStringAndSize(filename, filename_size - 1);
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 #endif
 
@@ -684,20 +683,17 @@ _profile_read_mlu(CmsProfileObject *self, cmsTagSignature info) {
     wchar_t *buf;
 
     if (!cmsIsTag(self->profile, info)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     mlu = cmsReadTag(self->profile, info);
     if (!mlu) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     len = cmsMLUgetWide(mlu, lc, cc, NULL, 0);
     if (len == 0) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     buf = malloc(len);
@@ -735,14 +731,12 @@ _profile_read_signature(CmsProfileObject *self, cmsTagSignature info) {
     unsigned int *sig;
 
     if (!cmsIsTag(self->profile, info)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     sig = (unsigned int *)cmsReadTag(self->profile, info);
     if (!sig) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     return _profile_read_int_as_string(*sig);
@@ -792,14 +786,12 @@ _profile_read_ciexyz(CmsProfileObject *self, cmsTagSignature info, int multi) {
     cmsCIEXYZ *XYZ;
 
     if (!cmsIsTag(self->profile, info)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     XYZ = (cmsCIEXYZ *)cmsReadTag(self->profile, info);
     if (!XYZ) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
     if (multi) {
         return _xyz3_py(XYZ);
@@ -813,14 +805,12 @@ _profile_read_ciexyy_triple(CmsProfileObject *self, cmsTagSignature info) {
     cmsCIExyYTRIPLE *triple;
 
     if (!cmsIsTag(self->profile, info)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     triple = (cmsCIExyYTRIPLE *)cmsReadTag(self->profile, info);
     if (!triple) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     /* Note: lcms does all the heavy lifting and error checking (nr of
@@ -847,21 +837,18 @@ _profile_read_named_color_list(CmsProfileObject *self, cmsTagSignature info) {
     PyObject *result;
 
     if (!cmsIsTag(self->profile, info)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     ncl = (cmsNAMEDCOLORLIST *)cmsReadTag(self->profile, info);
     if (ncl == NULL) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     n = cmsNamedColorCount(ncl);
     result = PyList_New(n);
     if (!result) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     for (i = 0; i < n; i++) {
@@ -870,8 +857,7 @@ _profile_read_named_color_list(CmsProfileObject *self, cmsTagSignature info) {
         str = PyUnicode_FromString(name);
         if (str == NULL) {
             Py_DECREF(result);
-            Py_INCREF(Py_None);
-            return Py_None;
+            Py_RETURN_NONE;
         }
         PyList_SET_ITEM(result, i, str);
     }
@@ -938,8 +924,7 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
 
     result = PyDict_New();
     if (result == NULL) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     n = cmsGetSupportedIntents(INTENTS, intent_ids, intent_descs);
@@ -969,8 +954,7 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
             Py_XDECREF(id);
             Py_XDECREF(entry);
             Py_XDECREF(result);
-            Py_INCREF(Py_None);
-            return Py_None;
+            Py_RETURN_NONE;
         }
         PyDict_SetItem(result, id, entry);
         Py_DECREF(id);
@@ -1054,8 +1038,7 @@ cms_profile_getattr_creation_date(CmsProfileObject *self, void *closure) {
 
     result = cmsGetHeaderCreationDateTime(self->profile, &ct);
     if (!result) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     return PyDateTime_FromDateAndTime(
@@ -1153,8 +1136,7 @@ cms_profile_getattr_saturation_rendering_intent_gamut(
 static PyObject *
 cms_profile_getattr_red_colorant(CmsProfileObject *self, void *closure) {
     if (!cmsIsMatrixShaper(self->profile)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
     return _profile_read_ciexyz(self, cmsSigRedColorantTag, 0);
 }
@@ -1162,8 +1144,7 @@ cms_profile_getattr_red_colorant(CmsProfileObject *self, void *closure) {
 static PyObject *
 cms_profile_getattr_green_colorant(CmsProfileObject *self, void *closure) {
     if (!cmsIsMatrixShaper(self->profile)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
     return _profile_read_ciexyz(self, cmsSigGreenColorantTag, 0);
 }
@@ -1171,8 +1152,7 @@ cms_profile_getattr_green_colorant(CmsProfileObject *self, void *closure) {
 static PyObject *
 cms_profile_getattr_blue_colorant(CmsProfileObject *self, void *closure) {
     if (!cmsIsMatrixShaper(self->profile)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
     return _profile_read_ciexyz(self, cmsSigBlueColorantTag, 0);
 }
@@ -1188,21 +1168,18 @@ cms_profile_getattr_media_white_point_temperature(
     cmsBool result;
 
     if (!cmsIsTag(self->profile, info)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     XYZ = (cmsCIEXYZ *)cmsReadTag(self->profile, info);
     if (XYZ == NULL || XYZ->X == 0) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     cmsXYZ2xyY(&xyY, XYZ);
     result = cmsTempFromWhitePoint(&tempK, &xyY);
     if (!result) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
     return PyFloat_FromDouble(tempK);
 }
@@ -1241,8 +1218,7 @@ cms_profile_getattr_red_primary(CmsProfileObject *self, void *closure) {
         result = _calculate_rgb_primaries(self, &primaries);
     }
     if (!result) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     return _xyz_py(&primaries.Red);
@@ -1257,8 +1233,7 @@ cms_profile_getattr_green_primary(CmsProfileObject *self, void *closure) {
         result = _calculate_rgb_primaries(self, &primaries);
     }
     if (!result) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     return _xyz_py(&primaries.Green);
@@ -1273,8 +1248,7 @@ cms_profile_getattr_blue_primary(CmsProfileObject *self, void *closure) {
         result = _calculate_rgb_primaries(self, &primaries);
     }
     if (!result) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     return _xyz_py(&primaries.Blue);
@@ -1333,14 +1307,12 @@ cms_profile_getattr_icc_measurement_condition(CmsProfileObject *self, void *clos
     const char *geo;
 
     if (!cmsIsTag(self->profile, info)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     mc = (cmsICCMeasurementConditions *)cmsReadTag(self->profile, info);
     if (!mc) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     if (mc->Geometry == 1) {
@@ -1374,14 +1346,12 @@ cms_profile_getattr_icc_viewing_condition(CmsProfileObject *self, void *closure)
     cmsTagSignature info = cmsSigViewingConditionsTag;
 
     if (!cmsIsTag(self->profile, info)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     vc = (cmsICCViewingConditions *)cmsReadTag(self->profile, info);
     if (!vc) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     return Py_BuildValue(
@@ -1452,36 +1422,11 @@ static struct PyGetSetDef cms_profile_getsetters[] = {
 };
 
 static PyTypeObject CmsProfile_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "PIL.ImageCms.core.CmsProfile", /*tp_name*/
-    sizeof(CmsProfileObject),                                      /*tp_basicsize*/
-    0,                                                             /*tp_itemsize*/
-    /* methods */
-    (destructor)cms_profile_dealloc, /*tp_dealloc*/
-    0,                               /*tp_vectorcall_offset*/
-    0,                               /*tp_getattr*/
-    0,                               /*tp_setattr*/
-    0,                               /*tp_as_async*/
-    0,                               /*tp_repr*/
-    0,                               /*tp_as_number*/
-    0,                               /*tp_as_sequence*/
-    0,                               /*tp_as_mapping*/
-    0,                               /*tp_hash*/
-    0,                               /*tp_call*/
-    0,                               /*tp_str*/
-    0,                               /*tp_getattro*/
-    0,                               /*tp_setattro*/
-    0,                               /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,              /*tp_flags*/
-    0,                               /*tp_doc*/
-    0,                               /*tp_traverse*/
-    0,                               /*tp_clear*/
-    0,                               /*tp_richcompare*/
-    0,                               /*tp_weaklistoffset*/
-    0,                               /*tp_iter*/
-    0,                               /*tp_iternext*/
-    cms_profile_methods,             /*tp_methods*/
-    0,                               /*tp_members*/
-    cms_profile_getsetters,          /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "PIL.ImageCms.core.CmsProfile",
+    .tp_basicsize = sizeof(CmsProfileObject),
+    .tp_dealloc = (destructor)cms_profile_dealloc,
+    .tp_methods = cms_profile_methods,
+    .tp_getset = cms_profile_getsetters,
 };
 
 static struct PyMethodDef cms_transform_methods[] = {
@@ -1489,36 +1434,10 @@ static struct PyMethodDef cms_transform_methods[] = {
 };
 
 static PyTypeObject CmsTransform_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "PIL.ImageCms.core.CmsTransform", /*tp_name*/
-    sizeof(CmsTransformObject),                                      /*tp_basicsize*/
-    0,                                                               /*tp_itemsize*/
-    /* methods */
-    (destructor)cms_transform_dealloc, /*tp_dealloc*/
-    0,                                 /*tp_vectorcall_offset*/
-    0,                                 /*tp_getattr*/
-    0,                                 /*tp_setattr*/
-    0,                                 /*tp_as_async*/
-    0,                                 /*tp_repr*/
-    0,                                 /*tp_as_number*/
-    0,                                 /*tp_as_sequence*/
-    0,                                 /*tp_as_mapping*/
-    0,                                 /*tp_hash*/
-    0,                                 /*tp_call*/
-    0,                                 /*tp_str*/
-    0,                                 /*tp_getattro*/
-    0,                                 /*tp_setattro*/
-    0,                                 /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,                /*tp_flags*/
-    0,                                 /*tp_doc*/
-    0,                                 /*tp_traverse*/
-    0,                                 /*tp_clear*/
-    0,                                 /*tp_richcompare*/
-    0,                                 /*tp_weaklistoffset*/
-    0,                                 /*tp_iter*/
-    0,                                 /*tp_iternext*/
-    cms_transform_methods,             /*tp_methods*/
-    0,                                 /*tp_members*/
-    0,                                 /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "PIL.ImageCms.core.CmsTransform",
+    .tp_basicsize = sizeof(CmsTransformObject),
+    .tp_dealloc = (destructor)cms_transform_dealloc,
+    .tp_methods = cms_transform_methods,
 };
 
 static int
@@ -1562,10 +1481,9 @@ PyInit__imagingcms(void) {
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_imagingcms",    /* m_name */
-        NULL,             /* m_doc */
-        -1,               /* m_size */
-        pyCMSdll_methods, /* m_methods */
+        .m_name = "_imagingcms",
+        .m_size = -1,
+        .m_methods = pyCMSdll_methods,
     };
 
     m = PyModule_Create(&module_def);

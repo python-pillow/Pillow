@@ -222,9 +222,7 @@ def test_l_macro_rounding(convert_mode: str) -> None:
         im.palette.getcolor((0, 1, 2))
 
         converted_im = im.convert(convert_mode)
-        px = converted_im.load()
-        assert px is not None
-        converted_color = px[0, 0]
+        converted_color = converted_im.getpixel((0, 0))
         if convert_mode == "LA":
             assert isinstance(converted_color, tuple)
             converted_color = converted_color[0]
@@ -236,6 +234,7 @@ def test_gif_with_rgba_palette_to_p() -> None:
     with Image.open("Tests/images/hopper.gif") as im:
         im.info["transparency"] = 255
         im.load()
+        assert im.palette is not None
         assert im.palette.mode == "RGB"
         im_p = im.convert("P")
 

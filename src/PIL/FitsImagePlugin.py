@@ -17,7 +17,7 @@ from . import Image, ImageFile
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:6] == b"SIMPLE"
+    return prefix.startswith(b"SIMPLE")
 
 
 class FitsImageFile(ImageFile.ImageFile):

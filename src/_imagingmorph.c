@@ -252,10 +252,10 @@ PyInit__imagingmorph(void) {
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_imagingmorph",                       /* m_name */
-        "A module for doing image morphology", /* m_doc */
-        -1,                                    /* m_size */
-        functions,                             /* m_methods */
+        .m_name = "_imagingmorph",
+        .m_doc = "A module for doing image morphology",
+        .m_size = -1,
+        .m_methods = functions,
     };
 
     m = PyModule_Create(&module_def);

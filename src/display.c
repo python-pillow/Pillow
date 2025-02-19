@@ -85,8 +85,7 @@ _expose(ImagingDisplayObject *display, PyObject *args) {
 
     ImagingExposeDIB(display->dib, hdc);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -112,8 +111,7 @@ _draw(ImagingDisplayObject *display, PyObject *args) {
 
     ImagingDrawDIB(display->dib, hdc, dst, src);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 extern Imaging
@@ -143,8 +141,7 @@ _paste(ImagingDisplayObject *display, PyObject *args) {
 
     ImagingPasteDIB(display->dib, im, xy);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -190,8 +187,7 @@ _releasedc(ImagingDisplayObject *display, PyObject *args) {
 
     ReleaseDC(window, dc);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -211,8 +207,7 @@ _frombytes(ImagingDisplayObject *display, PyObject *args) {
     memcpy(display->dib->bits, buffer.buf, buffer.len);
 
     PyBuffer_Release(&buffer);
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -253,36 +248,11 @@ static struct PyGetSetDef getsetters[] = {
 };
 
 static PyTypeObject ImagingDisplayType = {
-    PyVarObject_HEAD_INIT(NULL, 0) "ImagingDisplay", /*tp_name*/
-    sizeof(ImagingDisplayObject),                    /*tp_basicsize*/
-    0,                                               /*tp_itemsize*/
-    /* methods */
-    (destructor)_delete, /*tp_dealloc*/
-    0,                   /*tp_vectorcall_offset*/
-    0,                   /*tp_getattr*/
-    0,                   /*tp_setattr*/
-    0,                   /*tp_as_async*/
-    0,                   /*tp_repr*/
-    0,                   /*tp_as_number*/
-    0,                   /*tp_as_sequence*/
-    0,                   /*tp_as_mapping*/
-    0,                   /*tp_hash*/
-    0,                   /*tp_call*/
-    0,                   /*tp_str*/
-    0,                   /*tp_getattro*/
-    0,                   /*tp_setattro*/
-    0,                   /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,  /*tp_flags*/
-    0,                   /*tp_doc*/
-    0,                   /*tp_traverse*/
-    0,                   /*tp_clear*/
-    0,                   /*tp_richcompare*/
-    0,                   /*tp_weaklistoffset*/
-    0,                   /*tp_iter*/
-    0,                   /*tp_iternext*/
-    methods,             /*tp_methods*/
-    0,                   /*tp_members*/
-    getsetters,          /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingDisplay",
+    .tp_basicsize = sizeof(ImagingDisplayObject),
+    .tp_dealloc = (destructor)_delete,
+    .tp_methods = methods,
+    .tp_getset = getsetters,
 };
 
 PyObject *
@@ -707,8 +677,7 @@ PyImaging_EventLoopWin32(PyObject *self, PyObject *args) {
     }
     Py_END_ALLOW_THREADS;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 /* -------------------------------------------------------------------- */

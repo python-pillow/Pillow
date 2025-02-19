@@ -740,7 +740,7 @@ class PngStream(ChunkStream):
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:8] == _MAGIC
+    return prefix.startswith(_MAGIC)
 
 
 ##
@@ -1382,7 +1382,7 @@ def _save(
         b"\0",  # 12: interlace flag
     )
 
-    chunks = [b"cHRM", b"gAMA", b"sBIT", b"sRGB", b"tIME"]
+    chunks = [b"cHRM", b"cICP", b"gAMA", b"sBIT", b"sRGB", b"tIME"]
 
     icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
     if icc:
@@ -1433,7 +1433,7 @@ def _save(
                 chunk(fp, b"tRNS", transparency[:alpha_bytes])
             else:
                 transparency = max(0, min(255, transparency))
-                alpha = b"\xFF" * transparency + b"\0"
+                alpha = b"\xff" * transparency + b"\0"
                 chunk(fp, b"tRNS", alpha[:alpha_bytes])
         elif im.mode in ("1", "L", "I", "I;16"):
             transparency = max(0, min(65535, transparency))
