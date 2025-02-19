@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from packaging.version import parse as parse_version
 
-from PIL import Image, features
+from PIL import GifImagePlugin, Image, WebPImagePlugin, features
 
 from .helper import (
     assert_image_equal,
@@ -22,10 +22,12 @@ def test_n_frames() -> None:
     """Ensure that WebP format sets n_frames and is_animated attributes correctly."""
 
     with Image.open("Tests/images/hopper.webp") as im:
+        assert isinstance(im, WebPImagePlugin.WebPImageFile)
         assert im.n_frames == 1
         assert not im.is_animated
 
     with Image.open("Tests/images/iss634.webp") as im:
+        assert isinstance(im, WebPImagePlugin.WebPImageFile)
         assert im.n_frames == 42
         assert im.is_animated
 
@@ -37,11 +39,13 @@ def test_write_animation_L(tmp_path: Path) -> None:
     """
 
     with Image.open("Tests/images/iss634.gif") as orig:
+        assert isinstance(orig, GifImagePlugin.GifImageFile)
         assert orig.n_frames > 1
 
         temp_file = str(tmp_path / "temp.webp")
         orig.save(temp_file, save_all=True)
         with Image.open(temp_file) as im:
+            assert isinstance(im, WebPImagePlugin.WebPImageFile)
             assert im.n_frames == orig.n_frames
 
             # Compare first and last frames to the original animated GIF
@@ -69,6 +73,7 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
 
     def check(temp_file: str) -> None:
         with Image.open(temp_file) as im:
+            assert isinstance(im, WebPImagePlugin.WebPImageFile)
             assert im.n_frames == 2
 
             # Compare first frame to original
@@ -127,6 +132,7 @@ def test_timestamp_and_duration(tmp_path: Path) -> None:
             )
 
     with Image.open(temp_file) as im:
+        assert isinstance(im, WebPImagePlugin.WebPImageFile)
         assert im.n_frames == 5
         assert im.is_animated
 
@@ -170,6 +176,7 @@ def test_seeking(tmp_path: Path) -> None:
             )
 
     with Image.open(temp_file) as im:
+        assert isinstance(im, WebPImagePlugin.WebPImageFile)
         assert im.n_frames == 5
         assert im.is_animated
 

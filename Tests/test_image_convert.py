@@ -76,8 +76,8 @@ def test_8bit() -> None:
 
 
 def test_16bit() -> None:
-    with Image.open("Tests/images/16bit.cropped.tif") as im:
-        _test_float_conversion(im)
+    with Image.open("Tests/images/16bit.cropped.tif") as img:
+        _test_float_conversion(img)
 
     for color in (65535, 65536):
         im = Image.new("I", (1, 1), color)

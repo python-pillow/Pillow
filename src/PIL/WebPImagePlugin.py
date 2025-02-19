@@ -43,6 +43,7 @@ class WebPImageFile(ImageFile.ImageFile):
     def _open(self) -> None:
         # Use the newer AnimDecoder API to parse the (possibly) animated file,
         # and access muxed chunks like ICC/EXIF/XMP.
+        assert self.fp is not None
         self._decoder = _webp.WebPAnimDecoder(self.fp.read())
 
         # Get info from decoder
