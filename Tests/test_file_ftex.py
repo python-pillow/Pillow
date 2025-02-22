@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import io
+import struct
+
 import pytest
 
 from PIL import FtexImagePlugin, Image
@@ -23,3 +26,15 @@ def test_invalid_file() -> None:
 
     with pytest.raises(SyntaxError):
         FtexImagePlugin.FtexImageFile(invalid_file)
+
+
+def test_invalid_texture() -> None:
+    with open("Tests/images/ftex_dxt1.ftc", "rb") as fp:
+        data = fp.read()
+
+    # Change texture compression format
+    data = data[:24] + struct.pack("<i", 2) + data[28:]
+
+    with pytest.raises(ValueError, match="Invalid texture compression format: 2"):
+        with Image.open(io.BytesIO(data)):
+            pass
