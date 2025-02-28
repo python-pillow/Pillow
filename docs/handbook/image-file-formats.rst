@@ -1162,9 +1162,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
 **append_images**
     A list of images to append as additional frames. Each of the
-    images in the list can be single or multiframe images. Note however, that for
-    correct results, all the appended images should have the same
-    ``encoderinfo`` and ``encoderconfig`` properties.
+    images in the list can be single or multiframe images.
 
     .. versionadded:: 4.2.0
 
