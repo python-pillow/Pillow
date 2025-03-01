@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import io
+
 import pytest
 
 from PIL import BdfFontFile, FontFile
@@ -8,11 +10,18 @@ filename = "Tests/images/courB08.bdf"
 
 
 def test_sanity() -> None:
-    with open(filename, "rb") as test_file:
-        font = BdfFontFile.BdfFontFile(test_file)
+    with open(filename, "rb") as fp:
+        font = BdfFontFile.BdfFontFile(fp)
 
     assert isinstance(font, FontFile.FontFile)
     assert len([_f for _f in font.glyph if _f]) == 190
+
+
+def test_valueerror() -> None:
+    with open(filename, "rb") as fp:
+        data = fp.read()
+        data = data[:2650] + b"\x00\x00" + data[2652:]
+        BdfFontFile.BdfFontFile(io.BytesIO(data))
 
 
 def test_invalid_file() -> None:
