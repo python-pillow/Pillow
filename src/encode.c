@@ -333,14 +333,19 @@ static PyTypeObject ImagingEncoderType = {
 /* -------------------------------------------------------------------- */
 
 int
-get_packer(ImagingEncoderObject *encoder, const char *mode, const char *rawmode) {
+get_packer(ImagingEncoderObject *encoder, const ModeID mode, const RawModeID rawmode) {
     int bits;
     ImagingShuffler pack;
 
     pack = ImagingFindPacker(mode, rawmode, &bits);
     if (!pack) {
         Py_DECREF(encoder);
-        PyErr_Format(PyExc_ValueError, "No packer found from %s to %s", mode, rawmode);
+        PyErr_Format(
+            PyExc_ValueError,
+            "No packer found from %s to %s",
+            getModeData(mode)->name,
+            getRawModeData(rawmode)->name
+        );
         return -1;
     }
 
@@ -376,11 +381,13 @@ PyObject *
 PyImaging_GifEncoderNew(PyObject *self, PyObject *args) {
     ImagingEncoderObject *encoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name;
+    char *rawmode_name;
     Py_ssize_t bits = 8;
     Py_ssize_t interlace = 0;
-    if (!PyArg_ParseTuple(args, "ss|nn", &mode, &rawmode, &bits, &interlace)) {
+    if (!PyArg_ParseTuple(
+            args, "ss|nn", &mode_name, &rawmode_name, &bits, &interlace
+        )) {
         return NULL;
     }
 
@@ -388,6 +395,9 @@ PyImaging_GifEncoderNew(PyObject *self, PyObject *args) {
     if (encoder == NULL) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
 
     if (get_packer(encoder, mode, rawmode) < 0) {
         return NULL;
@@ -409,11 +419,11 @@ PyObject *
 PyImaging_PcxEncoderNew(PyObject *self, PyObject *args) {
     ImagingEncoderObject *encoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name;
+    char *rawmode_name;
     Py_ssize_t bits = 8;
 
-    if (!PyArg_ParseTuple(args, "ss|n", &mode, &rawmode, &bits)) {
+    if (!PyArg_ParseTuple(args, "ss|n", &mode_name, &rawmode_name, &bits)) {
         return NULL;
     }
 
@@ -421,6 +431,9 @@ PyImaging_PcxEncoderNew(PyObject *self, PyObject *args) {
     if (encoder == NULL) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
 
     if (get_packer(encoder, mode, rawmode) < 0) {
         return NULL;
@@ -439,12 +452,12 @@ PyObject *
 PyImaging_RawEncoderNew(PyObject *self, PyObject *args) {
     ImagingEncoderObject *encoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name;
+    char *rawmode_name;
     Py_ssize_t stride = 0;
     Py_ssize_t ystep = 1;
 
-    if (!PyArg_ParseTuple(args, "ss|nn", &mode, &rawmode, &stride, &ystep)) {
+    if (!PyArg_ParseTuple(args, "ss|nn", &mode_name, &rawmode_name, &stride, &ystep)) {
         return NULL;
     }
 
@@ -452,6 +465,9 @@ PyImaging_RawEncoderNew(PyObject *self, PyObject *args) {
     if (encoder == NULL) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
 
     if (get_packer(encoder, mode, rawmode) < 0) {
         return NULL;
@@ -473,11 +489,11 @@ PyObject *
 PyImaging_TgaRleEncoderNew(PyObject *self, PyObject *args) {
     ImagingEncoderObject *encoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name;
+    char *rawmode_name;
     Py_ssize_t ystep = 1;
 
-    if (!PyArg_ParseTuple(args, "ss|n", &mode, &rawmode, &ystep)) {
+    if (!PyArg_ParseTuple(args, "ss|n", &mode_name, &rawmode_name, &ystep)) {
         return NULL;
     }
 
@@ -485,6 +501,9 @@ PyImaging_TgaRleEncoderNew(PyObject *self, PyObject *args) {
     if (encoder == NULL) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
 
     if (get_packer(encoder, mode, rawmode) < 0) {
         return NULL;
@@ -510,7 +529,7 @@ PyImaging_XbmEncoderNew(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (get_packer(encoder, "1", "1;R") < 0) {
+    if (get_packer(encoder, IMAGING_MODE_1, IMAGING_RAWMODE_1_R) < 0) {
         return NULL;
     }
 
@@ -531,8 +550,8 @@ PyObject *
 PyImaging_ZipEncoderNew(PyObject *self, PyObject *args) {
     ImagingEncoderObject *encoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name;
+    char *rawmode_name;
     Py_ssize_t optimize = 0;
     Py_ssize_t compress_level = -1;
     Py_ssize_t compress_type = -1;
@@ -541,8 +560,8 @@ PyImaging_ZipEncoderNew(PyObject *self, PyObject *args) {
     if (!PyArg_ParseTuple(
             args,
             "ss|nnny#",
-            &mode,
-            &rawmode,
+            &mode_name,
+            &rawmode_name,
             &optimize,
             &compress_level,
             &compress_type,
@@ -571,6 +590,9 @@ PyImaging_ZipEncoderNew(PyObject *self, PyObject *args) {
         return NULL;
     }
 
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
+
     if (get_packer(encoder, mode, rawmode) < 0) {
         free(dictionary);
         return NULL;
@@ -579,7 +601,7 @@ PyImaging_ZipEncoderNew(PyObject *self, PyObject *args) {
     encoder->encode = ImagingZipEncode;
     encoder->cleanup = ImagingZipEncodeCleanup;
 
-    if (rawmode[0] == 'P') {
+    if (rawmode == IMAGING_RAWMODE_P || rawmode == IMAGING_RAWMODE_PA) {
         /* disable filtering */
         ((ZIPSTATE *)encoder->state.context)->mode = ZIP_PNG_PALETTE;
     }
@@ -608,8 +630,8 @@ PyObject *
 PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     ImagingEncoderObject *encoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name;
+    char *rawmode_name;
     char *compname;
     char *filename;
     Py_ssize_t fp;
@@ -629,7 +651,15 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     PyObject *item;
 
     if (!PyArg_ParseTuple(
-            args, "sssnsOO", &mode, &rawmode, &compname, &fp, &filename, &tags, &types
+            args,
+            "sssnsOO",
+            &mode_name,
+            &rawmode_name,
+            &compname,
+            &fp,
+            &filename,
+            &tags,
+            &types
         )) {
         return NULL;
     }
@@ -666,6 +696,9 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     if (encoder == NULL) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
 
     if (get_packer(encoder, mode, rawmode) < 0) {
         return NULL;
@@ -1048,8 +1081,8 @@ PyObject *
 PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     ImagingEncoderObject *encoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name;
+    char *rawmode_name;
     Py_ssize_t quality = 0;
     Py_ssize_t progressive = 0;
     Py_ssize_t smooth = 0;
@@ -1073,8 +1106,8 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     if (!PyArg_ParseTuple(
             args,
             "ss|nnnnpn(nn)nnnOz#y#y#",
-            &mode,
-            &rawmode,
+            &mode_name,
+            &rawmode_name,
             &quality,
             &progressive,
             &smooth,
@@ -1102,11 +1135,14 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
         return NULL;
     }
 
+    const ModeID mode = findModeID(mode_name);
+    RawModeID rawmode = findRawModeID(rawmode_name);
+
     // libjpeg-turbo supports different output formats.
     // We are choosing Pillow's native format (3 color bytes + 1 padding)
     // to avoid extra conversion in Pack.c.
-    if (ImagingJpegUseJCSExtensions() && strcmp(rawmode, "RGB") == 0) {
-        rawmode = "RGBX";
+    if (ImagingJpegUseJCSExtensions() && rawmode == IMAGING_RAWMODE_RGB) {
+        rawmode = IMAGING_RAWMODE_RGBX;
     }
 
     if (get_packer(encoder, mode, rawmode) < 0) {
@@ -1164,7 +1200,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     encoder->encode = ImagingJpegEncode;
 
     JPEGENCODERSTATE *jpeg_encoder_state = (JPEGENCODERSTATE *)encoder->state.context;
-    strncpy(jpeg_encoder_state->rawmode, rawmode, 8);
+    jpeg_encoder_state->rawmode = rawmode;
     jpeg_encoder_state->keep_rgb = keep_rgb;
     jpeg_encoder_state->quality = quality;
     jpeg_encoder_state->qtables = qarrays;
