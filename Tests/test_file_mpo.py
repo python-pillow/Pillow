@@ -29,11 +29,16 @@ def roundtrip(im: Image.Image, **options: Any) -> ImageFile.ImageFile:
 
 @pytest.mark.parametrize("test_file", test_files)
 def test_sanity(test_file: str) -> None:
-    with Image.open(test_file) as im:
+    def check(im: ImageFile.ImageFile) -> None:
         im.load()
         assert im.mode == "RGB"
         assert im.size == (640, 480)
         assert im.format == "MPO"
+
+    with Image.open(test_file) as im:
+        check(im)
+    with MpoImagePlugin.MpoImageFile(test_file) as im:
+        check(im)
 
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")

@@ -449,7 +449,6 @@ def test_shape1() -> None:
     x3, y3 = 95, 5
 
     # Act
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.move(x0, y0)
     s.curve(x1, y1, x2, y2, x3, y3)
@@ -471,7 +470,6 @@ def test_shape2() -> None:
     x3, y3 = 5, 95
 
     # Act
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.move(x0, y0)
     s.curve(x1, y1, x2, y2, x3, y3)
@@ -490,7 +488,6 @@ def test_transform() -> None:
     draw = ImageDraw.Draw(im)
 
     # Act
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.line(0, 0)
     s.transform((0, 0, 0, 0, 0, 0))
@@ -1527,7 +1524,6 @@ def test_same_color_outline(bbox: Coords) -> None:
     x2, y2 = 95, 50
     x3, y3 = 95, 5
 
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.move(x0, y0)
     s.curve(x1, y1, x2, y2, x3, y3)
