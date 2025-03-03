@@ -33,10 +33,6 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://github.com/python-pillow/Pillow/actions/workflows/test-cygwin.yml
    :alt: GitHub Actions build status (Test Cygwin)
 
-.. image:: https://img.shields.io/appveyor/build/python-pillow/Pillow/main.svg?label=Windows%20build
-   :target: https://ci.appveyor.com/project/python-pillow/Pillow
-   :alt: AppVeyor CI build status (Windows)
-
 .. image:: https://github.com/python-pillow/Pillow/workflows/Wheels/badge.svg
    :target: https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml
    :alt: GitHub Actions build status (Wheels)
@@ -54,7 +50,7 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :alt: Tidelift
 
 .. image:: https://oss-fuzz-build-logs.storage.googleapis.com/badges/pillow.svg
-   :target: https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:pillow
+   :target: https://issues.oss-fuzz.com/issues?q=title:pillow
    :alt: Fuzzing Status
 
 .. image:: https://img.shields.io/pypi/v/pillow.svg

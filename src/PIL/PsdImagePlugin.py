@@ -47,7 +47,7 @@ MODES = {
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"8BPS"
+    return prefix.startswith(b"8BPS")
 
 
 ##
@@ -169,15 +169,11 @@ class PsdImageFile(ImageFile.ImageFile):
             return
 
         # seek to given layer (1..max)
-        try:
-            _, mode, _, tile = self.layers[layer - 1]
-            self._mode = mode
-            self.tile = tile
-            self.frame = layer
-            self.fp = self._fp
-        except IndexError as e:
-            msg = "no such layer"
-            raise EOFError(msg) from e
+        _, mode, _, tile = self.layers[layer - 1]
+        self._mode = mode
+        self.tile = tile
+        self.frame = layer
+        self.fp = self._fp
 
     def tell(self) -> int:
         # return layer number (0=image, 1..max=layers)
@@ -277,8 +273,8 @@ def _layerinfo(
 
 def _maketile(
     file: IO[bytes], mode: str, bbox: tuple[int, int, int, int], channels: int
-) -> list[ImageFile._Tile] | None:
-    tiles = None
+) -> list[ImageFile._Tile]:
+    tiles = []
     read = file.read
 
     compression = i16(read(2))
@@ -291,7 +287,6 @@ def _maketile(
     if compression == 0:
         #
         # raw compression
-        tiles = []
         for channel in range(channels):
             layer = mode[channel]
             if mode == "CMYK":
@@ -303,7 +298,6 @@ def _maketile(
         #
         # packbits compression
         i = 0
-        tiles = []
         bytecount = read(channels * ysize * 2)
         offset = file.tell()
         for channel in range(channels):

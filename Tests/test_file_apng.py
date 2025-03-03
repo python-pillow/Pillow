@@ -258,8 +258,8 @@ def test_apng_mode() -> None:
         assert im.mode == "P"
         im.seek(im.n_frames - 1)
         im = im.convert("RGBA")
-        assert im.getpixel((0, 0)) == (255, 0, 0, 0)
-        assert im.getpixel((64, 32)) == (255, 0, 0, 0)
+        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
+        assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
     with Image.open("Tests/images/apng/mode_palette_1bit_alpha.png") as im:
         assert im.mode == "P"
@@ -307,13 +307,8 @@ def test_apng_syntax_errors() -> None:
             im.load()
 
     # we can handle this case gracefully
-    exception = None
     with Image.open("Tests/images/apng/syntax_num_frames_low.png") as im:
-        try:
-            im.seek(im.n_frames - 1)
-        except Exception as e:
-            exception = e
-        assert exception is None
+        im.seek(im.n_frames - 1)
 
     with pytest.raises(OSError):
         with Image.open("Tests/images/apng/syntax_num_frames_high.png") as im:
@@ -405,13 +400,8 @@ def test_apng_save_split_fdat(tmp_path: Path) -> None:
             append_images=frames,
         )
     with Image.open(test_file) as im:
-        exception = None
-        try:
-            im.seek(im.n_frames - 1)
-            im.load()
-        except Exception as e:
-            exception = e
-        assert exception is None
+        im.seek(im.n_frames - 1)
+        im.load()
 
 
 def test_apng_save_duration_loop(tmp_path: Path) -> None:

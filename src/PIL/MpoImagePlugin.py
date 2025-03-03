@@ -26,6 +26,7 @@ from typing import IO, Any, cast
 
 from . import (
     Image,
+    ImageFile,
     ImageSequence,
     JpegImagePlugin,
     TiffImagePlugin,
@@ -50,7 +51,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             if not offsets:
                 # APP2 marker
                 im_frame.encoderinfo["extra"] = (
-                    b"\xFF\xE2" + struct.pack(">H", 6 + 82) + b"MPF\0" + b" " * 82
+                    b"\xff\xe2" + struct.pack(">H", 6 + 82) + b"MPF\0" + b" " * 82
                 )
                 exif = im_frame.encoderinfo.get("exif")
                 if isinstance(exif, Image.Exif):
@@ -83,7 +84,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     ifd[0xB002] = mpentries
 
     fp.seek(mpf_offset)
-    fp.write(b"II\x2A\x00" + o32le(8) + ifd.tobytes(8))
+    fp.write(b"II\x2a\x00" + o32le(8) + ifd.tobytes(8))
     fp.seek(0, os.SEEK_END)
 
 
@@ -145,7 +146,9 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         if self.info.get("exif") != original_exif:
             self._reload_exif()
 
-        self.tile = [("jpeg", (0, 0) + self.size, self.offset, self.tile[0][-1])]
+        self.tile = [
+            ImageFile._Tile("jpeg", (0, 0) + self.size, self.offset, self.tile[0][-1])
+        ]
         self.__frame = frame
 
     def tell(self) -> int:

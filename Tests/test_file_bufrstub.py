@@ -83,4 +83,4 @@ def test_handler(tmp_path: Path) -> None:
         im.save(temp_file)
         assert handler.saved
 
-    BufrStubImagePlugin._handler = None
+    BufrStubImagePlugin.register_handler(None)

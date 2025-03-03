@@ -218,7 +218,9 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
             break;
     }
 
+    MUTEX_LOCK(&ImagingDefaultArena.mutex);
     ImagingDefaultArena.stats_new_count += 1;
+    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
 
     return im;
 }
@@ -267,7 +269,10 @@ struct ImagingMemoryArena ImagingDefaultArena = {
     0,
     0,
     0,
-    0  // Stats
+    0,  // Stats
+#ifdef Py_GIL_DISABLED
+    {0},
+#endif
 };
 
 int
@@ -364,18 +369,19 @@ ImagingDestroyArray(Imaging im) {
     int y = 0;
 
     if (im->blocks) {
+        MUTEX_LOCK(&ImagingDefaultArena.mutex);
         while (im->blocks[y].ptr) {
             memory_return_block(&ImagingDefaultArena, im->blocks[y]);
             y += 1;
         }
+        MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
         free(im->blocks);
     }
 }
 
 Imaging
-ImagingAllocateArray(Imaging im, int dirty, int block_size) {
+ImagingAllocateArray(Imaging im, ImagingMemoryArena arena, int dirty, int block_size) {
     int y, line_in_block, current_block;
-    ImagingMemoryArena arena = &ImagingDefaultArena;
     ImagingMemoryBlock block = {NULL, 0};
     int aligned_linesize, lines_per_block, blocks_count;
     char *aligned_ptr = NULL;
@@ -498,14 +504,22 @@ ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
         return NULL;
     }
 
-    if (ImagingAllocateArray(im, dirty, ImagingDefaultArena.block_size)) {
+    MUTEX_LOCK(&ImagingDefaultArena.mutex);
+    Imaging tmp = ImagingAllocateArray(
+        im, &ImagingDefaultArena, dirty, ImagingDefaultArena.block_size
+    );
+    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    if (tmp) {
         return im;
     }
 
     ImagingError_Clear();
 
     // Try to allocate the image once more with smallest possible block size
-    if (ImagingAllocateArray(im, dirty, IMAGING_PAGE_SIZE)) {
+    MUTEX_LOCK(&ImagingDefaultArena.mutex);
+    tmp = ImagingAllocateArray(im, &ImagingDefaultArena, dirty, IMAGING_PAGE_SIZE);
+    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    if (tmp) {
         return im;
     }
 

@@ -60,8 +60,8 @@ typedef struct ImagingHistogramInstance *ImagingHistogram;
 typedef struct ImagingOutlineInstance *ImagingOutline;
 typedef struct ImagingPaletteInstance *ImagingPalette;
 
-/* handle magics (used with PyCObject). */
-#define IMAGING_MAGIC "PIL Imaging"
+/* handle magics (used with PyCapsule). */
+#define IMAGING_MAGIC "Pillow Imaging"
 
 /* pixel types */
 #define IMAGING_TYPE_UINT8 0
@@ -161,6 +161,9 @@ typedef struct ImagingMemoryArena {
     int stats_reallocated_blocks; /* Number of blocks which were actually reallocated
                                      after retrieving */
     int stats_freed_blocks;       /* Number of freed blocks */
+#ifdef Py_GIL_DISABLED
+    PyMutex mutex;
+#endif
 } *ImagingMemoryArena;
 
 /* Objects */
@@ -606,10 +609,6 @@ ImagingLibTiffDecode(
 extern int
 ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
 #endif
-#ifdef HAVE_LIBMPEG
-extern int
-ImagingMpegDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
-#endif
 extern int
 ImagingMspDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
 extern int
@@ -709,6 +708,15 @@ _imaging_tell_pyFd(PyObject *fd);
 
 #include "ImagingUtils.h"
 extern UINT8 *clip8_lookups;
+
+/* Mutex lock/unlock helpers */
+#ifdef Py_GIL_DISABLED
+#define MUTEX_LOCK(m) PyMutex_Lock(m)
+#define MUTEX_UNLOCK(m) PyMutex_Unlock(m)
+#else
+#define MUTEX_LOCK(m)
+#define MUTEX_UNLOCK(m)
+#endif
 
 #if defined(__cplusplus)
 }

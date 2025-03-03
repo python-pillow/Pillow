@@ -54,7 +54,7 @@ class BitStream:
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"\x00\x00\x01\xb3"
+    return prefix.startswith(b"\x00\x00\x01\xb3")
 
 
 ##

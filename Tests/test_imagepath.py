@@ -79,7 +79,7 @@ def test_path_constructors(
     ),
 )
 def test_invalid_path_constructors(
-    coords: tuple[str, str] | Sequence[Sequence[int]]
+    coords: tuple[str, str] | Sequence[Sequence[int]],
 ) -> None:
     # Act
     with pytest.raises(ValueError) as e:
@@ -202,6 +202,17 @@ def test_overflow_segfault() -> None:
         # and segfaults
         for i in range(200000):
             x[i] = b"0" * 16
+
+
+def test_compact_within_map() -> None:
+    p = ImagePath.Path([0, 1])
+
+    def map_func(x: float, y: float) -> tuple[float, float]:
+        p.compact()
+        return 0, 0
+
+    with pytest.raises(ValueError):
+        p.map(map_func)
 
 
 class Evil:

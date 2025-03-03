@@ -32,7 +32,6 @@
 from __future__ import annotations
 
 import math
-import numbers
 import struct
 from collections.abc import Sequence
 from types import ModuleType
@@ -43,11 +42,7 @@ from ._deprecate import deprecate
 from ._typing import Coords
 
 # experimental access to the outline API
-Outline: Callable[[], Image.core._Outline] | None
-try:
-    Outline = Image.core.outline
-except AttributeError:
-    Outline = None
+Outline: Callable[[], Image.core._Outline] = Image.core.outline
 
 if TYPE_CHECKING:
     from . import ImageDraw2, ImageFont
@@ -160,13 +155,13 @@ class ImageDraw:
             if ink is not None:
                 if isinstance(ink, str):
                     ink = ImageColor.getcolor(ink, self.mode)
-                if self.palette and not isinstance(ink, numbers.Number):
+                if self.palette and isinstance(ink, tuple):
                     ink = self.palette.getcolor(ink, self._image)
                 result_ink = self.draw.draw_ink(ink)
             if fill is not None:
                 if isinstance(fill, str):
                     fill = ImageColor.getcolor(fill, self.mode)
-                if self.palette and not isinstance(fill, numbers.Number):
+                if self.palette and isinstance(fill, tuple):
                     fill = self.palette.getcolor(fill, self._image)
                 result_fill = self.draw.draw_ink(fill)
         return result_ink, result_fill
@@ -505,7 +500,7 @@ class ImageDraw:
 
             if full_x:
                 self.draw.draw_rectangle((x0, y0 + r + 1, x1, y1 - r - 1), fill_ink, 1)
-            else:
+            elif x1 - r - 1 > x0 + r + 1:
                 self.draw.draw_rectangle((x0 + r + 1, y0, x1 - r - 1, y1), fill_ink, 1)
             if not full_x and not full_y:
                 left = [x0, y0, x0 + r, y1]
@@ -557,21 +552,6 @@ class ImageDraw:
         split_character = "\n" if isinstance(text, str) else b"\n"
 
         return split_character in text
-
-    def _multiline_split(self, text: AnyStr) -> list[AnyStr]:
-        return text.split("\n" if isinstance(text, str) else b"\n")
-
-    def _multiline_spacing(
-        self,
-        font: ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont,
-        spacing: float,
-        stroke_width: float,
-    ) -> float:
-        return (
-            self.textbbox((0, 0), "A", font, stroke_width=stroke_width)[3]
-            + stroke_width
-            + spacing
-        )
 
     def text(
         self,
@@ -644,6 +624,7 @@ class ImageDraw:
                     features=features,
                     language=language,
                     stroke_width=stroke_width,
+                    stroke_filled=True,
                     anchor=anchor,
                     ink=ink,
                     start=start,
@@ -693,10 +674,124 @@ class ImageDraw:
                 draw_text(stroke_ink, stroke_width)
 
                 # Draw normal text
-                draw_text(ink, 0)
+                if ink != stroke_ink:
+                    draw_text(ink)
             else:
                 # Only draw normal text
                 draw_text(ink)
+
+    def _prepare_multiline_text(
+        self,
+        xy: tuple[float, float],
+        text: AnyStr,
+        font: (
+            ImageFont.ImageFont
+            | ImageFont.FreeTypeFont
+            | ImageFont.TransposedFont
+            | None
+        ),
+        anchor: str | None,
+        spacing: float,
+        align: str,
+        direction: str | None,
+        features: list[str] | None,
+        language: str | None,
+        stroke_width: float,
+        embedded_color: bool,
+        font_size: float | None,
+    ) -> tuple[
+        ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont,
+        str,
+        list[tuple[tuple[float, float], AnyStr]],
+    ]:
+        if direction == "ttb":
+            msg = "ttb direction is unsupported for multiline text"
+            raise ValueError(msg)
+
+        if anchor is None:
+            anchor = "la"
+        elif len(anchor) != 2:
+            msg = "anchor must be a 2 character string"
+            raise ValueError(msg)
+        elif anchor[1] in "tb":
+            msg = "anchor not supported for multiline text"
+            raise ValueError(msg)
+
+        if font is None:
+            font = self._getfont(font_size)
+
+        widths = []
+        max_width: float = 0
+        lines = text.split("\n" if isinstance(text, str) else b"\n")
+        line_spacing = (
+            self.textbbox((0, 0), "A", font, stroke_width=stroke_width)[3]
+            + stroke_width
+            + spacing
+        )
+
+        for line in lines:
+            line_width = self.textlength(
+                line,
+                font,
+                direction=direction,
+                features=features,
+                language=language,
+                embedded_color=embedded_color,
+            )
+            widths.append(line_width)
+            max_width = max(max_width, line_width)
+
+        top = xy[1]
+        if anchor[1] == "m":
+            top -= (len(lines) - 1) * line_spacing / 2.0
+        elif anchor[1] == "d":
+            top -= (len(lines) - 1) * line_spacing
+
+        parts = []
+        for idx, line in enumerate(lines):
+            left = xy[0]
+            width_difference = max_width - widths[idx]
+
+            # first align left by anchor
+            if anchor[0] == "m":
+                left -= width_difference / 2.0
+            elif anchor[0] == "r":
+                left -= width_difference
+
+            # then align by align parameter
+            if align in ("left", "justify"):
+                pass
+            elif align == "center":
+                left += width_difference / 2.0
+            elif align == "right":
+                left += width_difference
+            else:
+                msg = 'align must be "left", "center", "right" or "justify"'
+                raise ValueError(msg)
+
+            if align == "justify" and width_difference != 0:
+                words = line.split(" " if isinstance(text, str) else b" ")
+                word_widths = [
+                    self.textlength(
+                        word,
+                        font,
+                        direction=direction,
+                        features=features,
+                        language=language,
+                        embedded_color=embedded_color,
+                    )
+                    for word in words
+                ]
+                width_difference = max_width - sum(word_widths)
+                for i, word in enumerate(words):
+                    parts.append(((left, top), word))
+                    left += word_widths[i] + width_difference / (len(words) - 1)
+            else:
+                parts.append(((left, top), line))
+
+            top += line_spacing
+
+        return font, anchor, parts
 
     def multiline_text(
         self,
@@ -721,62 +816,24 @@ class ImageDraw:
         *,
         font_size: float | None = None,
     ) -> None:
-        if direction == "ttb":
-            msg = "ttb direction is unsupported for multiline text"
-            raise ValueError(msg)
+        font, anchor, lines = self._prepare_multiline_text(
+            xy,
+            text,
+            font,
+            anchor,
+            spacing,
+            align,
+            direction,
+            features,
+            language,
+            stroke_width,
+            embedded_color,
+            font_size,
+        )
 
-        if anchor is None:
-            anchor = "la"
-        elif len(anchor) != 2:
-            msg = "anchor must be a 2 character string"
-            raise ValueError(msg)
-        elif anchor[1] in "tb":
-            msg = "anchor not supported for multiline text"
-            raise ValueError(msg)
-
-        if font is None:
-            font = self._getfont(font_size)
-
-        widths = []
-        max_width: float = 0
-        lines = self._multiline_split(text)
-        line_spacing = self._multiline_spacing(font, spacing, stroke_width)
-        for line in lines:
-            line_width = self.textlength(
-                line, font, direction=direction, features=features, language=language
-            )
-            widths.append(line_width)
-            max_width = max(max_width, line_width)
-
-        top = xy[1]
-        if anchor[1] == "m":
-            top -= (len(lines) - 1) * line_spacing / 2.0
-        elif anchor[1] == "d":
-            top -= (len(lines) - 1) * line_spacing
-
-        for idx, line in enumerate(lines):
-            left = xy[0]
-            width_difference = max_width - widths[idx]
-
-            # first align left by anchor
-            if anchor[0] == "m":
-                left -= width_difference / 2.0
-            elif anchor[0] == "r":
-                left -= width_difference
-
-            # then align by align parameter
-            if align == "left":
-                pass
-            elif align == "center":
-                left += width_difference / 2.0
-            elif align == "right":
-                left += width_difference
-            else:
-                msg = 'align must be "left", "center" or "right"'
-                raise ValueError(msg)
-
+        for xy, line in lines:
             self.text(
-                (left, top),
+                xy,
                 line,
                 fill,
                 font,
@@ -788,7 +845,6 @@ class ImageDraw:
                 stroke_fill=stroke_fill,
                 embedded_color=embedded_color,
             )
-            top += line_spacing
 
     def textlength(
         self,
@@ -890,69 +946,26 @@ class ImageDraw:
         *,
         font_size: float | None = None,
     ) -> tuple[float, float, float, float]:
-        if direction == "ttb":
-            msg = "ttb direction is unsupported for multiline text"
-            raise ValueError(msg)
-
-        if anchor is None:
-            anchor = "la"
-        elif len(anchor) != 2:
-            msg = "anchor must be a 2 character string"
-            raise ValueError(msg)
-        elif anchor[1] in "tb":
-            msg = "anchor not supported for multiline text"
-            raise ValueError(msg)
-
-        if font is None:
-            font = self._getfont(font_size)
-
-        widths = []
-        max_width: float = 0
-        lines = self._multiline_split(text)
-        line_spacing = self._multiline_spacing(font, spacing, stroke_width)
-        for line in lines:
-            line_width = self.textlength(
-                line,
-                font,
-                direction=direction,
-                features=features,
-                language=language,
-                embedded_color=embedded_color,
-            )
-            widths.append(line_width)
-            max_width = max(max_width, line_width)
-
-        top = xy[1]
-        if anchor[1] == "m":
-            top -= (len(lines) - 1) * line_spacing / 2.0
-        elif anchor[1] == "d":
-            top -= (len(lines) - 1) * line_spacing
+        font, anchor, lines = self._prepare_multiline_text(
+            xy,
+            text,
+            font,
+            anchor,
+            spacing,
+            align,
+            direction,
+            features,
+            language,
+            stroke_width,
+            embedded_color,
+            font_size,
+        )
 
         bbox: tuple[float, float, float, float] | None = None
 
-        for idx, line in enumerate(lines):
-            left = xy[0]
-            width_difference = max_width - widths[idx]
-
-            # first align left by anchor
-            if anchor[0] == "m":
-                left -= width_difference / 2.0
-            elif anchor[0] == "r":
-                left -= width_difference
-
-            # then align by align parameter
-            if align == "left":
-                pass
-            elif align == "center":
-                left += width_difference / 2.0
-            elif align == "right":
-                left += width_difference
-            else:
-                msg = 'align must be "left", "center" or "right"'
-                raise ValueError(msg)
-
+        for xy, line in lines:
             bbox_line = self.textbbox(
-                (left, top),
+                xy,
                 line,
                 font,
                 anchor,
@@ -971,8 +984,6 @@ class ImageDraw:
                     max(bbox[2], bbox_line[2]),
                     max(bbox[3], bbox_line[3]),
                 )
-
-            top += line_spacing
 
         if bbox is None:
             return xy[0], xy[1], xy[0], xy[1]

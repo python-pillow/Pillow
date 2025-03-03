@@ -49,7 +49,7 @@ def test_sanity() -> None:
         (b"P5 3 1 257 \x00\x00\x00\x80\x01\x01", "I", (0, 32640, 65535)),
         # P6 with maxval < 255
         (
-            b"P6 3 1 17 \x00\x01\x02\x08\x09\x0A\x0F\x10\x11",
+            b"P6 3 1 17 \x00\x01\x02\x08\x09\x0a\x0f\x10\x11",
             "RGB",
             (
                 (0, 15, 30),
@@ -60,7 +60,7 @@ def test_sanity() -> None:
         # P6 with maxval > 255
         (
             b"P6 3 1 257 \x00\x00\x00\x01\x00\x02"
-            b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xFF\xFF",
+            b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xff\xff",
             "RGB",
             (
                 (0, 1, 2),
@@ -79,6 +79,7 @@ def test_arbitrary_maxval(
         assert im.mode == mode
 
         px = im.load()
+        assert px is not None
         assert tuple(px[x, 0] for x in range(3)) == pixels
 
 
@@ -95,7 +96,9 @@ def test_16bit_pgm_write(tmp_path: Path) -> None:
     with Image.open("Tests/images/16_bit_binary.pgm") as im:
         filename = str(tmp_path / "temp.pgm")
         im.save(filename, "PPM")
+        assert_image_equal_tofile(im, filename)
 
+        im.convert("I;16").save(filename, "PPM")
         assert_image_equal_tofile(im, filename)
 
 
@@ -365,21 +368,17 @@ def test_mimetypes(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("buffer", (True, False))
-def test_save_stdout(buffer: bool) -> None:
-    old_stdout = sys.stdout
+def test_save_stdout(buffer: bool, monkeypatch: pytest.MonkeyPatch) -> None:
 
     class MyStdOut:
         buffer = BytesIO()
 
     mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
 
-    sys.stdout = mystdout
+    monkeypatch.setattr(sys, "stdout", mystdout)
 
     with Image.open(TEST_FILE) as im:
         im.save(sys.stdout, "PPM")
-
-    # Reset stdout
-    sys.stdout = old_stdout
 
     if isinstance(mystdout, MyStdOut):
         mystdout = mystdout.buffer

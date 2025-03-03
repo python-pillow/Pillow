@@ -278,8 +278,7 @@ _setimage(ImagingEncoderObject *encoder, PyObject *args) {
     Py_XDECREF(encoder->lock);
     encoder->lock = op;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -296,8 +295,7 @@ _setfd(ImagingEncoderObject *encoder, PyObject *args) {
     Py_XINCREF(fd);
     state->fd = fd;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -325,36 +323,11 @@ static struct PyGetSetDef getseters[] = {
 };
 
 static PyTypeObject ImagingEncoderType = {
-    PyVarObject_HEAD_INIT(NULL, 0) "ImagingEncoder", /*tp_name*/
-    sizeof(ImagingEncoderObject),                    /*tp_basicsize*/
-    0,                                               /*tp_itemsize*/
-    /* methods */
-    (destructor)_dealloc, /*tp_dealloc*/
-    0,                    /*tp_vectorcall_offset*/
-    0,                    /*tp_getattr*/
-    0,                    /*tp_setattr*/
-    0,                    /*tp_as_async*/
-    0,                    /*tp_repr*/
-    0,                    /*tp_as_number*/
-    0,                    /*tp_as_sequence*/
-    0,                    /*tp_as_mapping*/
-    0,                    /*tp_hash*/
-    0,                    /*tp_call*/
-    0,                    /*tp_str*/
-    0,                    /*tp_getattro*/
-    0,                    /*tp_setattro*/
-    0,                    /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,   /*tp_flags*/
-    0,                    /*tp_doc*/
-    0,                    /*tp_traverse*/
-    0,                    /*tp_clear*/
-    0,                    /*tp_richcompare*/
-    0,                    /*tp_weaklistoffset*/
-    0,                    /*tp_iter*/
-    0,                    /*tp_iternext*/
-    methods,              /*tp_methods*/
-    0,                    /*tp_members*/
-    getseters,            /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingEncoder",
+    .tp_basicsize = sizeof(ImagingEncoderObject),
+    .tp_dealloc = (destructor)_dealloc,
+    .tp_methods = methods,
+    .tp_getset = getseters,
 };
 
 /* -------------------------------------------------------------------- */
@@ -736,7 +709,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             }
             if (tag_type) {
                 int type_int = PyLong_AsLong(tag_type);
-                if (type_int >= TIFF_BYTE && type_int <= TIFF_DOUBLE) {
+                if (type_int >= TIFF_BYTE && type_int <= TIFF_LONG8) {
                     type = (TIFFDataType)type_int;
                 }
             }
@@ -929,7 +902,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 );
             } else if (type == TIFF_LONG) {
                 status = ImagingLibTiffSetField(
-                    &encoder->state, (ttag_t)key_int, PyLong_AsLongLong(value)
+                    &encoder->state, (ttag_t)key_int, (UINT32)PyLong_AsLong(value)
                 );
             } else if (type == TIFF_SSHORT) {
                 status = ImagingLibTiffSetField(
@@ -958,6 +931,10 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             } else if (type == TIFF_RATIONAL) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (FLOAT64)PyFloat_AsDouble(value)
+                );
+            } else if (type == TIFF_LONG8) {
+                status = ImagingLibTiffSetField(
+                    &encoder->state, (ttag_t)key_int, (uint64_t)PyLong_AsLongLong(value)
                 );
             } else {
                 TRACE(
@@ -1096,7 +1073,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|nnnnppnnnnnnOz#y#y#",
+            "ss|nnnnppn(nn)nnnOz#y#y#",
             &mode,
             &rawmode,
             &quality,
@@ -1254,7 +1231,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     PyObject *quality_layers = NULL;
     Py_ssize_t num_resolutions = 0;
     PyObject *cblk_size = NULL, *precinct_size = NULL;
-    PyObject *irreversible = NULL;
+    int irreversible = 0;
     char *progression = "LRCP";
     OPJ_PROG_ORDER prog_order;
     char *cinema_mode = "no";
@@ -1268,7 +1245,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|OOOsOnOOOssbbnz#p",
+            "ss|OOOsOnOOpssbbnz#p",
             &mode,
             &format,
             &offset,
@@ -1403,7 +1380,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
         precinct_size, &context->precinct_width, &context->precinct_height
     );
 
-    context->irreversible = PyObject_IsTrue(irreversible);
+    context->irreversible = irreversible;
     context->progression = prog_order;
     context->cinema_mode = cine_mode;
     context->mct = mct;
@@ -1414,10 +1391,3 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
 }
 
 #endif
-
-/*
- * Local Variables:
- * c-basic-offset: 4
- * End:
- *
- */

@@ -461,6 +461,83 @@ ImagingResampleVertical_8bpc(
 }
 
 void
+ImagingResampleHorizontal_16bpc(
+    Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *kk
+) {
+    ImagingSectionCookie cookie;
+    double ss;
+    int xx, yy, x, xmin, xmax, ss_int;
+    double *k;
+
+    int bigendian = 0;
+    if (strcmp(imIn->mode, "I;16N") == 0
+#ifdef WORDS_BIGENDIAN
+        || strcmp(imIn->mode, "I;16B") == 0
+#endif
+    ) {
+        bigendian = 1;
+    }
+
+    ImagingSectionEnter(&cookie);
+    for (yy = 0; yy < imOut->ysize; yy++) {
+        for (xx = 0; xx < imOut->xsize; xx++) {
+            xmin = bounds[xx * 2 + 0];
+            xmax = bounds[xx * 2 + 1];
+            k = &kk[xx * ksize];
+            ss = 0.0;
+            for (x = 0; x < xmax; x++) {
+                ss += (imIn->image8[yy + offset][(x + xmin) * 2 + (bigendian ? 1 : 0)] +
+                       (imIn->image8[yy + offset][(x + xmin) * 2 + (bigendian ? 0 : 1)]
+                        << 8)) *
+                      k[x];
+            }
+            ss_int = ROUND_UP(ss);
+            imOut->image8[yy][xx * 2 + (bigendian ? 1 : 0)] = CLIP8(ss_int % 256);
+            imOut->image8[yy][xx * 2 + (bigendian ? 0 : 1)] = CLIP8(ss_int >> 8);
+        }
+    }
+    ImagingSectionLeave(&cookie);
+}
+
+void
+ImagingResampleVertical_16bpc(
+    Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *kk
+) {
+    ImagingSectionCookie cookie;
+    double ss;
+    int xx, yy, y, ymin, ymax, ss_int;
+    double *k;
+
+    int bigendian = 0;
+    if (strcmp(imIn->mode, "I;16N") == 0
+#ifdef WORDS_BIGENDIAN
+        || strcmp(imIn->mode, "I;16B") == 0
+#endif
+    ) {
+        bigendian = 1;
+    }
+
+    ImagingSectionEnter(&cookie);
+    for (yy = 0; yy < imOut->ysize; yy++) {
+        ymin = bounds[yy * 2 + 0];
+        ymax = bounds[yy * 2 + 1];
+        k = &kk[yy * ksize];
+        for (xx = 0; xx < imOut->xsize; xx++) {
+            ss = 0.0;
+            for (y = 0; y < ymax; y++) {
+                ss += (imIn->image8[y + ymin][xx * 2 + (bigendian ? 1 : 0)] +
+                       (imIn->image8[y + ymin][xx * 2 + (bigendian ? 0 : 1)] << 8)) *
+                      k[y];
+            }
+            ss_int = ROUND_UP(ss);
+            imOut->image8[yy][xx * 2 + (bigendian ? 1 : 0)] = CLIP8(ss_int % 256);
+            imOut->image8[yy][xx * 2 + (bigendian ? 0 : 1)] = CLIP8(ss_int >> 8);
+        }
+    }
+    ImagingSectionLeave(&cookie);
+}
+
+void
 ImagingResampleHorizontal_32bpc(
     Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *kk
 ) {
@@ -574,7 +651,12 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]) {
     }
 
     if (imIn->type == IMAGING_TYPE_SPECIAL) {
-        return (Imaging)ImagingError_ModeError();
+        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+            ResampleHorizontal = ImagingResampleHorizontal_16bpc;
+            ResampleVertical = ImagingResampleVertical_16bpc;
+        } else {
+            return (Imaging)ImagingError_ModeError();
+        }
     } else if (imIn->image8) {
         ResampleHorizontal = ImagingResampleHorizontal_8bpc;
         ResampleVertical = ImagingResampleVertical_8bpc;

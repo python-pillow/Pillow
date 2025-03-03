@@ -31,29 +31,38 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.10", "pypy3.9", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["pypy3.11", "pypy3.10", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        architecture: ["x64"]
+        os: ["windows-latest"]
+        include:
+            # Test the oldest Python on 32-bit
+            - { python-version: "3.9", architecture: "x86", os: "windows-2019" }
 
     timeout-minutes: 30
 
-    name: Python ${{ matrix.python-version }}
+    name: Python ${{ matrix.python-version }} (${{ matrix.architecture }})
 
     steps:
     - name: Checkout Pillow
       uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: Checkout cached dependencies
       uses: actions/checkout@v4
       with:
+        persist-credentials: false
         repository: python-pillow/pillow-depends
         path: winbuild\depends
 
     - name: Checkout extra test images
       uses: actions/checkout@v4
       with:
+        persist-credentials: false
         repository: python-pillow/test-images
         path: Tests\test-images
 
@@ -63,22 +72,21 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
+        architecture: ${{ matrix.architecture }}
         cache: pip
         cache-dependency-path: ".github/workflows/test-windows.yml"
 
     - name: Print build system information
       run: python3 .github/workflows/system-info.py
 
-    - name: Install Python dependencies
-      run: >
-        python3 -m pip install
-        coverage>=7.4.2
-        defusedxml
-        olefile
-        pyroma
-        pytest
-        pytest-cov
-        pytest-timeout
+    - name: Upgrade pip
+      run: |
+        python3 -m pip install --upgrade pip
+
+    - name: Install CPython dependencies
+      if: "!contains(matrix.python-version, 'pypy') && matrix.architecture != 'x86'"
+      run: |
+        python3 -m pip install PyQt6
 
     - name: Install dependencies
       id: install
@@ -86,8 +94,8 @@ jobs:
         choco install nasm --no-progress
         echo "C:\Program Files\NASM" >> $env:GITHUB_PATH
 
-        choco install ghostscript --version=10.3.1 --no-progress
-        echo "C:\Program Files\gs\gs10.00.0\bin" >> $env:GITHUB_PATH
+        choco install ghostscript --version=10.4.0 --no-progress
+        echo "C:\Program Files\gs\gs10.04.0\bin" >> $env:GITHUB_PATH
 
         # Install extra test images
         xcopy /S /Y Tests\test-images\* Tests\images
@@ -178,7 +186,7 @@ jobs:
     - name: Build Pillow
       run: |
         $FLAGS="-C raqm=vendor -C fribidi=vendor"
-        cmd /c "winbuild\build\build_env.cmd && $env:pythonLocation\python.exe -m pip install -v $FLAGS ."
+        cmd /c "winbuild\build\build_env.cmd && $env:pythonLocation\python.exe -m pip install -v $FLAGS .[tests]"
         & $env:pythonLocation\python.exe selftest.py --installed
       shell: pwsh
 
@@ -190,8 +198,8 @@ jobs:
 
     - name: Test Pillow
       run: |
-        path %GITHUB_WORKSPACE%\\winbuild\\build\\bin;%PATH%
-        python.exe -m pytest -vx -W always --cov PIL --cov Tests --cov-report term --cov-report xml Tests
+        path %GITHUB_WORKSPACE%\winbuild\build\bin;%PATH%
+        .ci\test.cmd
       shell: cmd
 
     - name: Prepare to upload errors
@@ -213,9 +221,9 @@ jobs:
       shell: pwsh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
-        file: ./coverage.xml
+        files: ./coverage.xml
         flags: GHA_Windows
         name: ${{ runner.os }} Python ${{ matrix.python-version }}
         token: ${{ secrets.CODECOV_ORG_TOKEN }}

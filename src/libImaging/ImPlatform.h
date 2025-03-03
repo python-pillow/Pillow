@@ -7,6 +7,7 @@
  * Copyright (c) Fredrik Lundh 1995-2003.
  */
 
+#define PY_SSIZE_T_CLEAN
 #include "Python.h"
 
 /* Check that we have an ANSI compliant compiler */
@@ -43,8 +44,6 @@
    defines their own types with the same names, so we need to be able to undef
    ours before including the JPEG code. */
 
-#if __STDC_VERSION__ >= 199901L /* C99+ */
-
 #include <stdint.h>
 
 #define INT8 int8_t
@@ -53,34 +52,6 @@
 #define UINT16 uint16_t
 #define INT32 int32_t
 #define UINT32 uint32_t
-
-#else /* < C99 */
-
-#define INT8 signed char
-
-#if SIZEOF_SHORT == 2
-#define INT16 short
-#elif SIZEOF_INT == 2
-#define INT16 int
-#else
-#error Cannot find required 16-bit integer type
-#endif
-
-#if SIZEOF_SHORT == 4
-#define INT32 short
-#elif SIZEOF_INT == 4
-#define INT32 int
-#elif SIZEOF_LONG == 4
-#define INT32 long
-#else
-#error Cannot find required 32-bit integer type
-#endif
-
-#define UINT8 unsigned char
-#define UINT16 unsigned INT16
-#define UINT32 unsigned INT32
-
-#endif /* < C99 */
 
 #endif /* not WIN */
 

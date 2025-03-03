@@ -640,7 +640,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
     opj_dparameters_t params;
     OPJ_COLOR_SPACE color_space;
     j2k_unpacker_t unpack = NULL;
-    size_t buffer_size = 0, tile_bytes = 0;
+    size_t tile_bytes = 0;
     unsigned n, tile_height, tile_width;
     int subsampling;
     int total_component_width = 0;
@@ -698,8 +698,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
     }
 
     /* Check that this image is something we can handle */
-    if (image->numcomps < 1 || image->numcomps > 4 ||
-        image->color_space == OPJ_CLRSPC_UNKNOWN) {
+    if (image->numcomps < 1 || image->numcomps > 4) {
         state->errcode = IMAGING_CODEC_BROKEN;
         state->state = J2K_STATE_FAILED;
         goto quick_exit;
@@ -744,7 +743,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
     /* Find the correct unpacker */
     color_space = image->color_space;
 
-    if (color_space == OPJ_CLRSPC_UNSPECIFIED) {
+    if (color_space == OPJ_CLRSPC_UNKNOWN || color_space == OPJ_CLRSPC_UNSPECIFIED) {
         switch (image->numcomps) {
             case 1:
             case 2:
@@ -871,7 +870,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
             tile_info.data_size = tile_bytes;
         }
 
-        if (buffer_size < tile_info.data_size) {
+        if (tile_info.data_size > 0) {
             /* malloc check ok, overflow and tile size sanity check above */
             UINT8 *new = realloc(state->buffer, tile_info.data_size);
             if (!new) {
@@ -884,7 +883,6 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
                to valgrind errors. */
             memset(new, 0, tile_info.data_size);
             state->buffer = new;
-            buffer_size = tile_info.data_size;
         }
 
         if (!opj_decode_tile_data(
@@ -980,10 +978,3 @@ ImagingJpeg2KVersion(void) {
 }
 
 #endif /* HAVE_OPENJPEG */
-
-/*
- * Local Variables:
- * c-basic-offset: 4
- * End:
- *
- */

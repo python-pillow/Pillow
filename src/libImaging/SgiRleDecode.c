@@ -183,7 +183,7 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t 
        each with 4 bytes per element of tablen
        Check here before we allocate any memory
     */
-    if (c->bufsize < 8 * c->tablen) {
+    if (c->bufsize < 8 * (int64_t)c->tablen) {
         state->errcode = IMAGING_CODEC_OVERRUN;
         return -1;
     }
@@ -195,6 +195,7 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t 
     }
     _imaging_seek_pyFd(state->fd, SGI_HEADER_SIZE, SEEK_SET);
     if (_imaging_read_pyFd(state->fd, (char *)ptr, c->bufsize) != c->bufsize) {
+        free(ptr);
         state->errcode = IMAGING_CODEC_UNKNOWN;
         return -1;
     }

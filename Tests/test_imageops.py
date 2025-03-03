@@ -165,14 +165,10 @@ def test_pad() -> None:
 def test_pad_round() -> None:
     im = Image.new("1", (1, 1), 1)
     new_im = ImageOps.pad(im, (4, 1))
-    px = new_im.load()
-    assert px is not None
-    assert px[2, 0] == 1
+    assert new_im.getpixel((2, 0)) == 1
 
     new_im = ImageOps.pad(im, (1, 4))
-    px = new_im.load()
-    assert px is not None
-    assert px[0, 2] == 1
+    assert new_im.getpixel((0, 2)) == 1
 
 
 @pytest.mark.parametrize("mode", ("P", "PA"))
@@ -390,7 +386,7 @@ def test_colorize_3color_offset() -> None:
 
 def test_exif_transpose() -> None:
     exts = [".jpg"]
-    if features.check("webp") and features.check("webp_anim"):
+    if features.check("webp"):
         exts.append(".webp")
     for ext in exts:
         with Image.open("Tests/images/hopper" + ext) as base_im:
@@ -405,7 +401,6 @@ def test_exif_transpose() -> None:
                     else:
                         original_exif = im.info["exif"]
                     transposed_im = ImageOps.exif_transpose(im)
-                    assert transposed_im is not None
                     assert_image_similar(base_im, transposed_im, 17)
                     if orientation_im is base_im:
                         assert "exif" not in im.info
@@ -417,7 +412,6 @@ def test_exif_transpose() -> None:
 
                     # Repeat the operation to test that it does not keep transposing
                     transposed_im2 = ImageOps.exif_transpose(transposed_im)
-                    assert transposed_im2 is not None
                     assert_image_equal(transposed_im2, transposed_im)
 
             check(base_im)
@@ -433,7 +427,6 @@ def test_exif_transpose() -> None:
             assert im.getexif()[0x0112] == 3
 
             transposed_im = ImageOps.exif_transpose(im)
-            assert transposed_im is not None
             assert 0x0112 not in transposed_im.getexif()
 
             transposed_im._reload_exif()
@@ -446,15 +439,22 @@ def test_exif_transpose() -> None:
         assert im.getexif()[0x0112] == 3
 
         transposed_im = ImageOps.exif_transpose(im)
-        assert transposed_im is not None
         assert 0x0112 not in transposed_im.getexif()
 
     # Orientation set directly on Image.Exif
     im = hopper()
     im.getexif()[0x0112] = 3
     transposed_im = ImageOps.exif_transpose(im)
-    assert transposed_im is not None
     assert 0x0112 not in transposed_im.getexif()
+
+
+def test_exif_transpose_with_xmp_tuple() -> None:
+    with Image.open("Tests/images/xmp_tags_orientation.png") as im:
+        assert im.getexif()[0x0112] == 3
+
+        im.info["xmp"] = (b"test",)
+        transposed_im = ImageOps.exif_transpose(im)
+        assert 0x0112 not in transposed_im.getexif()
 
 
 def test_exif_transpose_xml_without_xmp() -> None:
@@ -464,7 +464,6 @@ def test_exif_transpose_xml_without_xmp() -> None:
 
         del im.info["xmp"]
         transposed_im = ImageOps.exif_transpose(im)
-        assert transposed_im is not None
         assert 0x0112 not in transposed_im.getexif()
 
 

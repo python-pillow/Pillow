@@ -55,14 +55,14 @@ class ImtImageFile(ImageFile.ImageFile):
             if not s:
                 break
 
-            if s == b"\x0C":
+            if s == b"\x0c":
                 # image data begins
                 self.tile = [
-                    (
+                    ImageFile._Tile(
                         "raw",
                         (0, 0) + self.size,
                         self.fp.tell() - len(buffer),
-                        (self.mode, 0, 1),
+                        self.mode,
                     )
                 ]
 

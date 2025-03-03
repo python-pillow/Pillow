@@ -25,6 +25,7 @@ import sys
 from typing import IO
 
 from . import Image, ImageFile, PngImagePlugin, features
+from ._deprecate import deprecate
 
 enable_jpeg2k = features.check_codec("jpg_2000")
 if enable_jpeg2k:
@@ -116,14 +117,14 @@ def read_png_or_jpeg2000(
     sig = fobj.read(12)
 
     im: Image.Image
-    if sig[:8] == b"\x89PNG\x0d\x0a\x1a\x0a":
+    if sig.startswith(b"\x89PNG\x0d\x0a\x1a\x0a"):
         fobj.seek(start)
         im = PngImagePlugin.PngImageFile(fobj)
         Image._decompression_bomb_check(im.size)
         return {"RGBA": im}
     elif (
-        sig[:4] == b"\xff\x4f\xff\x51"
-        or sig[:4] == b"\x0d\x0a\x87\x0a"
+        sig.startswith(b"\xff\x4f\xff\x51")
+        or sig.startswith(b"\x0d\x0a\x87\x0a")
         or sig == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a"
     ):
         if not enable_jpeg2k:
@@ -275,40 +276,40 @@ class IcnsImageFile(ImageFile.ImageFile):
             self.best_size[1] * self.best_size[2],
         )
 
-    @property
-    def size(self):
+    @property  # type: ignore[override]
+    def size(self) -> tuple[int, int] | tuple[int, int, int]:
         return self._size
 
     @size.setter
-    def size(self, value) -> None:
-        info_size = value
-        if info_size not in self.info["sizes"] and len(info_size) == 2:
-            info_size = (info_size[0], info_size[1], 1)
-        if (
-            info_size not in self.info["sizes"]
-            and len(info_size) == 3
-            and info_size[2] == 1
-        ):
-            simple_sizes = [
-                (size[0] * size[2], size[1] * size[2]) for size in self.info["sizes"]
-            ]
-            if value in simple_sizes:
-                info_size = self.info["sizes"][simple_sizes.index(value)]
-        if info_size not in self.info["sizes"]:
-            msg = "This is not one of the allowed sizes of this image"
-            raise ValueError(msg)
-        self._size = value
+    def size(self, value: tuple[int, int] | tuple[int, int, int]) -> None:
+        if len(value) == 3:
+            deprecate("Setting size to (width, height, scale)", 12, "load(scale)")
+            if value in self.info["sizes"]:
+                self._size = value  # type: ignore[assignment]
+                return
+        else:
+            # Check that a matching size exists,
+            # or that there is a scale that would create a size that matches
+            for size in self.info["sizes"]:
+                simple_size = size[0] * size[2], size[1] * size[2]
+                scale = simple_size[0] // value[0]
+                if simple_size[1] / value[1] == scale:
+                    self._size = value
+                    return
+        msg = "This is not one of the allowed sizes of this image"
+        raise ValueError(msg)
 
-    def load(self) -> Image.core.PixelAccess | None:
-        if len(self.size) == 3:
-            self.best_size = self.size
-            self.size = (
-                self.best_size[0] * self.best_size[2],
-                self.best_size[1] * self.best_size[2],
-            )
+    def load(self, scale: int | None = None) -> Image.core.PixelAccess | None:
+        if scale is not None or len(self.size) == 3:
+            if scale is None and len(self.size) == 3:
+                scale = self.size[2]
+            assert scale is not None
+            width, height = self.size[:2]
+            self.size = width * scale, height * scale
+            self.best_size = width, height, scale
 
         px = Image.Image.load(self)
-        if self.im is not None and self.im.size == self.size:
+        if self._im is not None and self.im.size == self.size:
             # Already loaded
             return px
         self.load_prepare()
@@ -386,7 +387,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == MAGIC
+    return prefix.startswith(MAGIC)
 
 
 Image.register_open(IcnsImageFile.format, IcnsImageFile, _accept)

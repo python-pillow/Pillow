@@ -188,7 +188,7 @@ create_sorted_color_palette(const ColorCube cube) {
         buckets,
         cube->size,
         sizeof(struct _ColorBucket),
-        (int (*)(void const *, void const *)) & compare_bucket_count
+        (int (*)(void const *, void const *))&compare_bucket_count
     );
 
     return buckets;
