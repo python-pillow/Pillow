@@ -22,7 +22,7 @@ import PIL
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = "8.1"
+needs_sphinx = "8.2"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -121,7 +121,7 @@ nitpicky = True
 # generating warnings in “nitpicky mode”. Note that type should include the domain name
 # if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
-nitpick_ignore = [("py:class", "_io.BytesIO"), ("py:class", "_CmsProfileCompatible")]
+nitpick_ignore = [("py:class", "_CmsProfileCompatible")]
 
 
 # -- Options for HTML output ----------------------------------------------

@@ -43,7 +43,7 @@ dynamic = [
 optional-dependencies.docs = [
   "furo",
   "olefile",
-  "sphinx>=8.1",
+  "sphinx>=8.2",
   "sphinx-copybutton",
   "sphinx-inline-tabs",
   "sphinxext-opengraph",
@@ -104,7 +104,6 @@ test-extras = "tests"
 
 [tool.cibuildwheel.macos.environment]
 PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
-DYLD_LIBRARY_PATH = "$(pwd)/build/deps/darwin/lib"
 
 [tool.black]
 exclude = "wheels/multibuild"

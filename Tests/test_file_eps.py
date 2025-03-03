@@ -95,10 +95,14 @@ def test_sanity(filename: str, size: tuple[int, int], scale: int) -> None:
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_load() -> None:
     with Image.open(FILE1) as im:
-        assert im.load()[0, 0] == (255, 255, 255)
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == (255, 255, 255)
 
         # Test again now that it has already been loaded once
-        assert im.load()[0, 0] == (255, 255, 255)
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == (255, 255, 255)
 
 
 def test_binary() -> None:

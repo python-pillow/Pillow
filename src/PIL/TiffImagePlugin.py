@@ -288,7 +288,7 @@ if not getattr(Image.core, "libtiff_support_custom_tags", True):
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] in PREFIXES
+    return prefix.startswith(tuple(PREFIXES))
 
 
 def _limit_rational(
@@ -404,7 +404,7 @@ class IFDRational(Rational):
     def __repr__(self) -> str:
         return str(float(self._val))
 
-    def __hash__(self) -> int:
+    def __hash__(self) -> int:  # type: ignore[override]
         return self._val.__hash__()
 
     def __eq__(self, other: object) -> bool:
@@ -1280,7 +1280,7 @@ class TiffImageFile(ImageFile.ImageFile):
         blocks = {}
         val = self.tag_v2.get(ExifTags.Base.ImageResources)
         if val:
-            while val[:4] == b"8BIM":
+            while val.startswith(b"8BIM"):
                 id = i16(val[4:6])
                 n = math.ceil((val[6] + 1) / 2) * 2
                 size = i32(val[6 + n : 10 + n])

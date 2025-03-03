@@ -234,6 +234,7 @@ def test_gif_with_rgba_palette_to_p() -> None:
     with Image.open("Tests/images/hopper.gif") as im:
         im.info["transparency"] = 255
         im.load()
+        assert im.palette is not None
         assert im.palette.mode == "RGB"
         im_p = im.convert("P")
 

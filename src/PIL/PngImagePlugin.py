@@ -740,7 +740,7 @@ class PngStream(ChunkStream):
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:8] == _MAGIC
+    return prefix.startswith(_MAGIC)
 
 
 ##

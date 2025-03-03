@@ -3769,102 +3769,26 @@ static PySequenceMethods image_as_sequence = {
 /* type description */
 
 static PyTypeObject Imaging_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "ImagingCore", /*tp_name*/
-    sizeof(ImagingObject),                        /*tp_basicsize*/
-    0,                                            /*tp_itemsize*/
-    /* methods */
-    (destructor)_dealloc, /*tp_dealloc*/
-    0,                    /*tp_vectorcall_offset*/
-    0,                    /*tp_getattr*/
-    0,                    /*tp_setattr*/
-    0,                    /*tp_as_async*/
-    0,                    /*tp_repr*/
-    0,                    /*tp_as_number*/
-    &image_as_sequence,   /*tp_as_sequence*/
-    0,                    /*tp_as_mapping*/
-    0,                    /*tp_hash*/
-    0,                    /*tp_call*/
-    0,                    /*tp_str*/
-    0,                    /*tp_getattro*/
-    0,                    /*tp_setattro*/
-    0,                    /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,   /*tp_flags*/
-    0,                    /*tp_doc*/
-    0,                    /*tp_traverse*/
-    0,                    /*tp_clear*/
-    0,                    /*tp_richcompare*/
-    0,                    /*tp_weaklistoffset*/
-    0,                    /*tp_iter*/
-    0,                    /*tp_iternext*/
-    methods,              /*tp_methods*/
-    0,                    /*tp_members*/
-    getsetters,           /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingCore",
+    .tp_basicsize = sizeof(ImagingObject),
+    .tp_dealloc = (destructor)_dealloc,
+    .tp_as_sequence = &image_as_sequence,
+    .tp_methods = methods,
+    .tp_getset = getsetters,
 };
 
 static PyTypeObject ImagingFont_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "ImagingFont", /*tp_name*/
-    sizeof(ImagingFontObject),                    /*tp_basicsize*/
-    0,                                            /*tp_itemsize*/
-    /* methods */
-    (destructor)_font_dealloc, /*tp_dealloc*/
-    0,                         /*tp_vectorcall_offset*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_as_async*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash*/
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
-    0,                         /*tp_doc*/
-    0,                         /*tp_traverse*/
-    0,                         /*tp_clear*/
-    0,                         /*tp_richcompare*/
-    0,                         /*tp_weaklistoffset*/
-    0,                         /*tp_iter*/
-    0,                         /*tp_iternext*/
-    _font_methods,             /*tp_methods*/
-    0,                         /*tp_members*/
-    0,                         /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingFont",
+    .tp_basicsize = sizeof(ImagingFontObject),
+    .tp_dealloc = (destructor)_font_dealloc,
+    .tp_methods = _font_methods,
 };
 
 static PyTypeObject ImagingDraw_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "ImagingDraw", /*tp_name*/
-    sizeof(ImagingDrawObject),                    /*tp_basicsize*/
-    0,                                            /*tp_itemsize*/
-    /* methods */
-    (destructor)_draw_dealloc, /*tp_dealloc*/
-    0,                         /*tp_vectorcall_offset*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_as_async*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash*/
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
-    0,                         /*tp_doc*/
-    0,                         /*tp_traverse*/
-    0,                         /*tp_clear*/
-    0,                         /*tp_richcompare*/
-    0,                         /*tp_weaklistoffset*/
-    0,                         /*tp_iter*/
-    0,                         /*tp_iternext*/
-    _draw_methods,             /*tp_methods*/
-    0,                         /*tp_members*/
-    0,                         /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingDraw",
+    .tp_basicsize = sizeof(ImagingDrawObject),
+    .tp_dealloc = (destructor)_draw_dealloc,
+    .tp_methods = _draw_methods,
 };
 
 static PyMappingMethods pixel_access_as_mapping = {
@@ -3876,20 +3800,10 @@ static PyMappingMethods pixel_access_as_mapping = {
 /* type description */
 
 static PyTypeObject PixelAccess_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "PixelAccess", /*tp_name*/
-    sizeof(PixelAccessObject),                    /*tp_basicsize*/
-    0,                                            /*tp_itemsize*/
-    /* methods */
-    (destructor)pixel_access_dealloc, /*tp_dealloc*/
-    0,                                /*tp_vectorcall_offset*/
-    0,                                /*tp_getattr*/
-    0,                                /*tp_setattr*/
-    0,                                /*tp_as_async*/
-    0,                                /*tp_repr*/
-    0,                                /*tp_as_number*/
-    0,                                /*tp_as_sequence*/
-    &pixel_access_as_mapping,         /*tp_as_mapping*/
-    0                                 /*tp_hash*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "PixelAccess",
+    .tp_basicsize = sizeof(PixelAccessObject),
+    .tp_dealloc = (destructor)pixel_access_dealloc,
+    .tp_as_mapping = &pixel_access_as_mapping,
 };
 
 /* -------------------------------------------------------------------- */
@@ -4256,7 +4170,6 @@ static PyMethodDef functions[] = {
     {"effect_noise", (PyCFunction)_effect_noise, METH_VARARGS},
     {"linear_gradient", (PyCFunction)_linear_gradient, METH_VARARGS},
     {"radial_gradient", (PyCFunction)_radial_gradient, METH_VARARGS},
-    {"wedge", (PyCFunction)_linear_gradient, METH_VARARGS}, /* Compatibility */
 
     /* Drawing support stuff */
     {"font", (PyCFunction)_font_new, METH_VARARGS},
