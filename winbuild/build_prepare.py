@@ -113,7 +113,7 @@ V = {
     "BROTLI": "1.1.0",
     "FREETYPE": "2.13.3",
     "FRIBIDI": "1.0.16",
-    "HARFBUZZ": "10.2.0",
+    "HARFBUZZ": "10.4.0",
     "JPEGTURBO": "3.1.0",
     "LCMS2": "2.17",
     "LIBIMAGEQUANT": "4.3.4",
