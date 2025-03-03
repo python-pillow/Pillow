@@ -42,11 +42,7 @@ from ._deprecate import deprecate
 from ._typing import Coords
 
 # experimental access to the outline API
-Outline: Callable[[], Image.core._Outline] | None
-try:
-    Outline = Image.core.outline
-except AttributeError:
-    Outline = None
+Outline: Callable[[], Image.core._Outline] = Image.core.outline
 
 if TYPE_CHECKING:
     from . import ImageDraw2, ImageFont
