@@ -34,7 +34,7 @@ class PcdImageFile(ImageFile.ImageFile):
         self.fp.seek(2048)
         s = self.fp.read(2048)
 
-        if s[:4] != b"PCD_":
+        if not s.startswith(b"PCD_"):
             msg = "not a PCD file"
             raise SyntaxError(msg)
 
@@ -47,7 +47,7 @@ class PcdImageFile(ImageFile.ImageFile):
 
         self._mode = "RGB"
         self._size = 768, 512  # FIXME: not correct for rotated images!
-        self.tile = [ImageFile._Tile("pcd", (0, 0) + self.size, 96 * 2048, None)]
+        self.tile = [ImageFile._Tile("pcd", (0, 0) + self.size, 96 * 2048)]
 
     def load_end(self) -> None:
         if self.tile_post_rotate:

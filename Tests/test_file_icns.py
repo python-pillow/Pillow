@@ -21,6 +21,8 @@ def test_sanity() -> None:
     with Image.open(TEST_FILE) as im:
         # Assert that there is no unclosed file warning
         with warnings.catch_warnings():
+            warnings.simplefilter("error")
+
             im.load()
 
         assert im.mode == "RGBA"
@@ -30,10 +32,14 @@ def test_sanity() -> None:
 
 def test_load() -> None:
     with Image.open(TEST_FILE) as im:
-        assert im.load()[0, 0] == (0, 0, 0, 0)
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == (0, 0, 0, 0)
 
         # Test again now that it has already been loaded once
-        assert im.load()[0, 0] == (0, 0, 0, 0)
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == (0, 0, 0, 0)
 
 
 def test_save(tmp_path: Path) -> None:

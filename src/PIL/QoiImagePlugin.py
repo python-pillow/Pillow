@@ -14,7 +14,7 @@ from ._binary import i32be as i32
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"qoif"
+    return prefix.startswith(b"qoif")
 
 
 class QoiImageFile(ImageFile.ImageFile):
@@ -32,7 +32,7 @@ class QoiImageFile(ImageFile.ImageFile):
         self._mode = "RGB" if channels == 3 else "RGBA"
 
         self.fp.seek(1, os.SEEK_CUR)  # colorspace
-        self.tile = [ImageFile._Tile("qoi", (0, 0) + self._size, self.fp.tell(), None)]
+        self.tile = [ImageFile._Tile("qoi", (0, 0) + self._size, self.fp.tell())]
 
 
 class QoiDecoder(ImageFile.PyDecoder):

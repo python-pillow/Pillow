@@ -331,11 +331,13 @@ def test_dxt5_colorblock_alpha_issue_4142() -> None:
 
     with Image.open("Tests/images/dxt5-colorblock-alpha-issue-4142.dds") as im:
         px = im.getpixel((0, 0))
+        assert isinstance(px, tuple)
         assert px[0] != 0
         assert px[1] != 0
         assert px[2] != 0
 
         px = im.getpixel((1, 0))
+        assert isinstance(px, tuple)
         assert px[0] != 0
         assert px[1] != 0
         assert px[2] != 0

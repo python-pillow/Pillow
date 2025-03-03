@@ -86,7 +86,7 @@ class PcxImageFile(ImageFile.ImageFile):
 
         elif bits == 1 and planes in (2, 4):
             mode = "P"
-            rawmode = "P;%dL" % planes
+            rawmode = f"P;{planes}L"
             self.palette = ImagePalette.raw("RGB", s[16:64])
 
         elif version == 5 and bits == 8 and planes == 1:
@@ -188,7 +188,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         + o16(dpi[0])
         + o16(dpi[1])
         + b"\0" * 24
-        + b"\xFF" * 24
+        + b"\xff" * 24
         + b"\0"
         + o8(planes)
         + o16(stride)

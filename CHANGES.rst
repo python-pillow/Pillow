@@ -2,8 +2,18 @@
 Changelog (Pillow)
 ==================
 
-11.0.0 (unreleased)
+11.1.0 and newer
+----------------
+
+See GitHub Releases:
+
+- https://github.com/python-pillow/Pillow/releases
+
+11.0.0 (2024-10-15)
 -------------------
+
+- Update licence to MIT-CMU #8460
+  [hugovk]
 
 - Conditionally define ImageCms type hint to avoid requiring core #8197
   [radarhere]

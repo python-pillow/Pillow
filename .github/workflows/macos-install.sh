@@ -8,17 +8,13 @@ fi
 brew install \
     freetype \
     ghostscript \
+    jpeg-turbo \
     libimagequant \
-    libjpeg \
+    libraqm \
     libtiff \
     little-cms2 \
     openjpeg \
     webp
-if [[ "$ImageOS" == "macos13" ]]; then
-    brew install --ignore-dependencies libraqm
-else
-    brew install libraqm
-fi
 export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig"
 
 python3 -m pip install coverage

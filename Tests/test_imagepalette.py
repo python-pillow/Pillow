@@ -17,6 +17,7 @@ def test_sanity() -> None:
 def test_reload() -> None:
     with Image.open("Tests/images/hopper.gif") as im:
         original = im.copy()
+        assert im.palette is not None
         im.palette.dirty = 1
         assert_image_equal(im.convert("RGB"), original.convert("RGB"))
 
@@ -189,7 +190,7 @@ def test_2bit_palette(tmp_path: Path) -> None:
 
     rgb = b"\x00" * 2 + b"\x01" * 2 + b"\x02" * 2
     img = Image.frombytes("P", (6, 1), rgb)
-    img.putpalette(b"\xFF\x00\x00\x00\xFF\x00\x00\x00\xFF")  # RGB
+    img.putpalette(b"\xff\x00\x00\x00\xff\x00\x00\x00\xff")  # RGB
     img.save(outfile, format="PNG")
 
     assert_image_equal_tofile(img, outfile)
