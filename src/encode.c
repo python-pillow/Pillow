@@ -1055,6 +1055,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     Py_ssize_t smooth = 0;
     Py_ssize_t optimize = 0;
     int keep_rgb = 0;
+    int no_default_app_segments = 0;
     Py_ssize_t streamtype = 0; /* 0=interchange, 1=tables only, 2=image only */
     Py_ssize_t xdpi = 0, ydpi = 0;
     Py_ssize_t subsampling = -1; /* -1=default, 0=none, 1=medium, 2=high */
@@ -1072,7 +1073,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|nnnnpn(nn)nnnOz#y#y#",
+            "ss|nnnnppn(nn)nnnOz#y#y#",
             &mode,
             &rawmode,
             &quality,
@@ -1080,6 +1081,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
             &smooth,
             &optimize,
             &keep_rgb,
+            &no_default_app_segments,
             &streamtype,
             &xdpi,
             &ydpi,
@@ -1166,6 +1168,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     JPEGENCODERSTATE *jpeg_encoder_state = (JPEGENCODERSTATE *)encoder->state.context;
     strncpy(jpeg_encoder_state->rawmode, rawmode, 8);
     jpeg_encoder_state->keep_rgb = keep_rgb;
+    jpeg_encoder_state->no_default_app_segments = no_default_app_segments;
     jpeg_encoder_state->quality = quality;
     jpeg_encoder_state->qtables = qarrays;
     jpeg_encoder_state->qtablesLen = qtablesLen;
