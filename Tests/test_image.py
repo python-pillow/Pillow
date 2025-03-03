@@ -74,12 +74,12 @@ class TestImage:
 
     def test_sanity(self) -> None:
         im = Image.new("L", (100, 100))
-        assert repr(im)[:45] == "<PIL.Image.Image image mode=L size=100x100 at"
+        assert repr(im).startswith("<PIL.Image.Image image mode=L size=100x100 at")
         assert im.mode == "L"
         assert im.size == (100, 100)
 
         im = Image.new("RGB", (100, 100))
-        assert repr(im)[:45] == "<PIL.Image.Image image mode=RGB size=100x100 "
+        assert repr(im).startswith("<PIL.Image.Image image mode=RGB size=100x100 ")
         assert im.mode == "RGB"
         assert im.size == (100, 100)
 
@@ -189,8 +189,6 @@ class TestImage:
                 if ext == ".jp2" and not features.check_codec("jpg_2000"):
                     pytest.skip("jpg_2000 not available")
                 temp_file = str(tmp_path / ("temp." + ext))
-                if os.path.exists(temp_file):
-                    os.remove(temp_file)
                 im.save(Path(temp_file))
 
     def test_fp_name(self, tmp_path: Path) -> None:
@@ -580,9 +578,7 @@ class TestImage:
     def test_one_item_tuple(self) -> None:
         for mode in ("I", "F", "L"):
             im = Image.new(mode, (100, 100), (5,))
-            px = im.load()
-            assert px is not None
-            assert px[0, 0] == 5
+            assert im.getpixel((0, 0)) == 5
 
     def test_linear_gradient_wrong_mode(self) -> None:
         # Arrange
@@ -662,12 +658,13 @@ class TestImage:
         im.putpalette(list(range(256)) * 4, "RGBA")
         im_remapped = im.remap_palette(list(range(256)))
         assert_image_equal(im, im_remapped)
+        assert im.palette is not None
         assert im.palette.palette == im_remapped.palette.palette
 
         # Test illegal image mode
         with hopper() as im:
             with pytest.raises(ValueError):
-                im.remap_palette(None)
+                im.remap_palette([])
 
     def test_remap_palette_transparency(self) -> None:
         im = Image.new("P", (1, 2), (0, 0, 0))
@@ -737,6 +734,8 @@ class TestImage:
         # Act/Assert
         with Image.open(test_file) as im:
             with warnings.catch_warnings():
+                warnings.simplefilter("error")
+
                 im.save(temp_file)
 
     def test_no_new_file_on_error(self, tmp_path: Path) -> None:
@@ -768,7 +767,7 @@ class TestImage:
         assert dict(exif)
 
         # Test that exif data is cleared after another load
-        exif.load(None)
+        exif.load(b"")
         assert not dict(exif)
 
         # Test loading just the EXIF header
@@ -790,6 +789,10 @@ class TestImage:
 
         ifd[36864] = b"0220"
         assert exif.get_ifd(0x8769) == {36864: b"0220"}
+
+        reloaded_exif = Image.Exif()
+        reloaded_exif.load(exif.tobytes())
+        assert reloaded_exif.get_ifd(0x8769) == {36864: b"0220"}
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
@@ -984,6 +987,11 @@ class TestImage:
                 assert im.getxmp() == {}
         else:
             assert im.getxmp() == {"xmpmeta": None}
+
+    def test_get_child_images(self) -> None:
+        im = Image.new("RGB", (1, 1))
+        with pytest.warns(DeprecationWarning):
+            assert im.get_child_images() == []
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size: tuple[int, int]) -> None:

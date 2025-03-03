@@ -15,6 +15,11 @@ if TYPE_CHECKING:
     except (ImportError, AttributeError):
         pass
 
+if sys.version_info >= (3, 13):
+    from types import CapsuleType
+else:
+    CapsuleType = object
+
 if sys.version_info >= (3, 12):
     from collections.abc import Buffer
 else:
@@ -39,10 +44,10 @@ _T_co = TypeVar("_T_co", covariant=True)
 
 
 class SupportsRead(Protocol[_T_co]):
-    def read(self, __length: int = ...) -> _T_co: ...
+    def read(self, length: int = ..., /) -> _T_co: ...
 
 
-StrOrBytesPath = Union[str, bytes, "os.PathLike[str]", "os.PathLike[bytes]"]
+StrOrBytesPath = Union[str, bytes, os.PathLike[str], os.PathLike[bytes]]
 
 
 __all__ = ["Buffer", "IntegralLike", "StrOrBytesPath", "SupportsRead", "TypeGuard"]

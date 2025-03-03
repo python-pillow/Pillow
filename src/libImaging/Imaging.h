@@ -60,8 +60,8 @@ typedef struct ImagingHistogramInstance *ImagingHistogram;
 typedef struct ImagingOutlineInstance *ImagingOutline;
 typedef struct ImagingPaletteInstance *ImagingPalette;
 
-/* handle magics (used with PyCObject). */
-#define IMAGING_MAGIC "PIL Imaging"
+/* handle magics (used with PyCapsule). */
+#define IMAGING_MAGIC "Pillow Imaging"
 
 /* pixel types */
 #define IMAGING_TYPE_UINT8 0
@@ -608,10 +608,6 @@ ImagingLibTiffDecode(
 );
 extern int
 ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
-#endif
-#ifdef HAVE_LIBMPEG
-extern int
-ImagingMpegDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
 #endif
 extern int
 ImagingMspDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);

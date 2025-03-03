@@ -89,8 +89,7 @@ _outline_move(OutlineObject *self, PyObject *args) {
 
     ImagingOutlineMove(self->outline, x0, y0);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -102,8 +101,7 @@ _outline_line(OutlineObject *self, PyObject *args) {
 
     ImagingOutlineLine(self->outline, x1, y1);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -115,8 +113,7 @@ _outline_curve(OutlineObject *self, PyObject *args) {
 
     ImagingOutlineCurve(self->outline, x1, y1, x2, y2, x3, y3);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -127,8 +124,7 @@ _outline_close(OutlineObject *self, PyObject *args) {
 
     ImagingOutlineClose(self->outline);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -140,8 +136,7 @@ _outline_transform(OutlineObject *self, PyObject *args) {
 
     ImagingOutlineTransform(self->outline, a);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static struct PyMethodDef _outline_methods[] = {
@@ -154,34 +149,8 @@ static struct PyMethodDef _outline_methods[] = {
 };
 
 static PyTypeObject OutlineType = {
-    PyVarObject_HEAD_INIT(NULL, 0) "Outline", /*tp_name*/
-    sizeof(OutlineObject),                    /*tp_basicsize*/
-    0,                                        /*tp_itemsize*/
-    /* methods */
-    (destructor)_outline_dealloc, /*tp_dealloc*/
-    0,                            /*tp_vectorcall_offset*/
-    0,                            /*tp_getattr*/
-    0,                            /*tp_setattr*/
-    0,                            /*tp_as_async*/
-    0,                            /*tp_repr*/
-    0,                            /*tp_as_number*/
-    0,                            /*tp_as_sequence*/
-    0,                            /*tp_as_mapping*/
-    0,                            /*tp_hash*/
-    0,                            /*tp_call*/
-    0,                            /*tp_str*/
-    0,                            /*tp_getattro*/
-    0,                            /*tp_setattro*/
-    0,                            /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,           /*tp_flags*/
-    0,                            /*tp_doc*/
-    0,                            /*tp_traverse*/
-    0,                            /*tp_clear*/
-    0,                            /*tp_richcompare*/
-    0,                            /*tp_weaklistoffset*/
-    0,                            /*tp_iter*/
-    0,                            /*tp_iternext*/
-    _outline_methods,             /*tp_methods*/
-    0,                            /*tp_members*/
-    0,                            /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "Outline",
+    .tp_basicsize = sizeof(OutlineObject),
+    .tp_dealloc = (destructor)_outline_dealloc,
+    .tp_methods = _outline_methods,
 };

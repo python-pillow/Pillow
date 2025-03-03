@@ -106,7 +106,7 @@ def _save(im: Image.Image, fp: BytesIO, filename: str):
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == _MAGIC
+    return prefix.startswith(_MAGIC)
 
 
 ##

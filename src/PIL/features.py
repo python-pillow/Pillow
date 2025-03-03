@@ -127,6 +127,8 @@ features: dict[str, tuple[str, str | bool, str | None]] = {
     "fribidi": ("PIL._imagingft", "HAVE_FRIBIDI", "fribidi_version"),
     "harfbuzz": ("PIL._imagingft", "HAVE_HARFBUZZ", "harfbuzz_version"),
     "libjpeg_turbo": ("PIL._imaging", "HAVE_LIBJPEGTURBO", "libjpeg_turbo_version"),
+    "mozjpeg": ("PIL._imaging", "HAVE_MOZJPEG", "libjpeg_turbo_version"),
+    "zlib_ng": ("PIL._imaging", "HAVE_ZLIBNG", "zlib_ng_version"),
     "libimagequant": ("PIL._imaging", "HAVE_LIBIMAGEQUANT", "imagequant_version"),
     "xcb": ("PIL._imaging", "HAVE_XCB", None),
 }
@@ -146,10 +148,11 @@ def check_feature(feature: str) -> bool | None:
 
     module, flag, ver = features[feature]
 
+    if isinstance(flag, bool):
+        deprecate(f'check_feature("{feature}")', 12)
     try:
         imported_module = __import__(module, fromlist=["PIL"])
         if isinstance(flag, bool):
-            deprecate(f'check_feature("{feature}")', 12)
             return flag
         return getattr(imported_module, flag)
     except ModuleNotFoundError:
@@ -298,7 +301,8 @@ def pilinfo(out: IO[str] | None = None, supported_formats: bool = True) -> None:
             if name == "jpg":
                 libjpeg_turbo_version = version_feature("libjpeg_turbo")
                 if libjpeg_turbo_version is not None:
-                    v = "libjpeg-turbo " + libjpeg_turbo_version
+                    v = "mozjpeg" if check_feature("mozjpeg") else "libjpeg-turbo"
+                    v += " " + libjpeg_turbo_version
             if v is None:
                 v = version(name)
             if v is not None:
@@ -307,7 +311,11 @@ def pilinfo(out: IO[str] | None = None, supported_formats: bool = True) -> None:
                     # this check is also in src/_imagingcms.c:setup_module()
                     version_static = tuple(int(x) for x in v.split(".")) < (2, 7)
                 t = "compiled for" if version_static else "loaded"
-                if name == "raqm":
+                if name == "zlib":
+                    zlib_ng_version = version_feature("zlib_ng")
+                    if zlib_ng_version is not None:
+                        v += ", compiled for zlib-ng " + zlib_ng_version
+                elif name == "raqm":
                     for f in ("fribidi", "harfbuzz"):
                         v2 = version_feature(f)
                         if v2 is not None:

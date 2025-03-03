@@ -50,7 +50,7 @@ BIT2MODE = {
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:2] == b"BM"
+    return prefix.startswith(b"BM")
 
 
 def _dib_accept(prefix: bytes) -> bool:

@@ -63,15 +63,17 @@ class TestFileTiff:
 
     @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
     def test_unclosed_file(self) -> None:
-        def open() -> None:
+        def open_test_image() -> None:
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
 
         with pytest.warns(ResourceWarning):
-            open()
+            open_test_image()
 
     def test_closed_file(self) -> None:
         with warnings.catch_warnings():
+            warnings.simplefilter("error")
+
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
             im.close()
@@ -88,6 +90,8 @@ class TestFileTiff:
 
     def test_context_manager(self) -> None:
         with warnings.catch_warnings():
+            warnings.simplefilter("error")
+
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 
@@ -108,12 +112,21 @@ class TestFileTiff:
             assert_image_equal_tofile(im, "Tests/images/hopper.tif")
 
         with Image.open("Tests/images/hopper_bigtiff.tif") as im:
-            # The data type of this file's StripOffsets tag is LONG8,
-            # which is not yet supported for offset data when saving multiple frames.
-            del im.tag_v2[273]
-
             outfile = str(tmp_path / "temp.tif")
             im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)
+
+    def test_bigtiff_save(self, tmp_path: Path) -> None:
+        outfile = str(tmp_path / "temp.tif")
+        im = hopper()
+        im.save(outfile, big_tiff=True)
+
+        with Image.open(outfile) as reloaded:
+            assert reloaded.tag_v2._bigtiff is True
+
+        im.save(outfile, save_all=True, append_images=[im], big_tiff=True)
+
+        with Image.open(outfile) as reloaded:
+            assert reloaded.tag_v2._bigtiff is True
 
     def test_seek_too_large(self) -> None:
         with pytest.raises(ValueError, match="Unable to seek to frame"):
@@ -732,6 +745,53 @@ class TestFileTiff:
         with Image.open(mp) as reread:
             assert reread.n_frames == 3
 
+    def test_fixoffsets(self) -> None:
+        b = BytesIO(b"II\x2a\x00\x00\x00\x00\x00")
+        with TiffImagePlugin.AppendingTiffWriter(b) as a:
+            b.seek(0)
+            a.fixOffsets(1, isShort=True)
+
+            b.seek(0)
+            a.fixOffsets(1, isLong=True)
+
+            # Neither short nor long
+            b.seek(0)
+            with pytest.raises(RuntimeError):
+                a.fixOffsets(1)
+
+        b = BytesIO(b"II\x2a\x00\x00\x00\x00\x00")
+        with TiffImagePlugin.AppendingTiffWriter(b) as a:
+            a.offsetOfNewPage = 2**16
+
+            b.seek(0)
+            a.fixOffsets(1, isShort=True)
+
+        b = BytesIO(b"II\x2b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+        with TiffImagePlugin.AppendingTiffWriter(b) as a:
+            a.offsetOfNewPage = 2**32
+
+            b.seek(0)
+            a.fixOffsets(1, isShort=True)
+
+            b.seek(0)
+            a.fixOffsets(1, isLong=True)
+
+    def test_appending_tiff_writer_writelong(self) -> None:
+        data = b"II\x2a\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b = BytesIO(data)
+        with TiffImagePlugin.AppendingTiffWriter(b) as a:
+            a.seek(-4, os.SEEK_CUR)
+            a.writeLong(2**32 - 1)
+            assert b.getvalue() == data[:-4] + b"\xff\xff\xff\xff"
+
+    def test_appending_tiff_writer_rewritelastshorttolong(self) -> None:
+        data = b"II\x2a\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b = BytesIO(data)
+        with TiffImagePlugin.AppendingTiffWriter(b) as a:
+            a.seek(-2, os.SEEK_CUR)
+            a.rewriteLastShortToLong(2**32 - 1)
+            assert b.getvalue() == data[:-4] + b"\xff\xff\xff\xff"
+
     def test_saving_icc_profile(self, tmp_path: Path) -> None:
         # Tests saving TIFF with icc_profile set.
         # At the time of writing this will only work for non-compressed tiffs
@@ -881,11 +941,10 @@ class TestFileTiff:
 
     @pytest.mark.timeout(6)
     @pytest.mark.filterwarnings("ignore:Truncated File Read")
-    def test_timeout(self) -> None:
+    def test_timeout(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/timeout-6646305047838720") as im:
-            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
             im.load()
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
     @pytest.mark.parametrize(
         "test_file",

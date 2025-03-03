@@ -24,7 +24,9 @@ def test_sanity() -> None:
 
 def test_load() -> None:
     with Image.open(TEST_ICO_FILE) as im:
-        assert im.load()[0, 0] == (1, 1, 9, 255)
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == (1, 1, 9, 255)
 
 
 def test_mask() -> None:
@@ -243,27 +245,23 @@ def test_draw_reloaded(tmp_path: Path) -> None:
         assert_image_equal_tofile(im, "Tests/images/hopper_draw.ico")
 
 
-def test_truncated_mask() -> None:
+def test_truncated_mask(monkeypatch: pytest.MonkeyPatch) -> None:
     # 1 bpp
     with open("Tests/images/hopper_mask.ico", "rb") as fp:
         data = fp.read()
 
-    ImageFile.LOAD_TRUNCATED_IMAGES = True
+    monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
     data = data[:-3]
 
-    try:
-        with Image.open(io.BytesIO(data)) as im:
-            with Image.open("Tests/images/hopper_mask.png") as expected:
-                assert im.mode == "1"
+    with Image.open(io.BytesIO(data)) as im:
+        assert im.mode == "1"
 
-        # 32 bpp
-        output = io.BytesIO()
-        expected = hopper("RGBA")
-        expected.save(output, "ico", bitmap_format="bmp")
+    # 32 bpp
+    output = io.BytesIO()
+    expected = hopper("RGBA")
+    expected.save(output, "ico", bitmap_format="bmp")
 
-        data = output.getvalue()[:-1]
+    data = output.getvalue()[:-1]
 
-        with Image.open(io.BytesIO(data)) as im:
-            assert im.mode == "RGB"
-    finally:
-        ImageFile.LOAD_TRUNCATED_IMAGES = False
+    with Image.open(io.BytesIO(data)) as im:
+        assert im.mode == "RGB"
