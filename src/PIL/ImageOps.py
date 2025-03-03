@@ -729,11 +729,15 @@ def exif_transpose(image: Image.Image, *, in_place: bool = False) -> Image.Image
                         r"<tiff:Orientation>([0-9])</tiff:Orientation>",
                     ):
                         value = exif_image.info[key]
-                        exif_image.info[key] = (
-                            re.sub(pattern, "", value)
-                            if isinstance(value, str)
-                            else re.sub(pattern.encode(), b"", value)
-                        )
+                        if isinstance(value, str):
+                            value = re.sub(pattern, "", value)
+                        elif isinstance(value, tuple):
+                            value = tuple(
+                                re.sub(pattern.encode(), b"", v) for v in value
+                            )
+                        else:
+                            value = re.sub(pattern.encode(), b"", value)
+                        exif_image.info[key] = value
         if not in_place:
             return transposed_image
     elif not in_place:
