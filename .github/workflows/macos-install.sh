@@ -14,7 +14,11 @@ brew install \
     libtiff \
     little-cms2 \
     openjpeg \
-    webp
+    webp \
+    aom \
+    dav1d \
+    rav1e \
+    svt-av1
 export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig"
 
 python3 -m pip install coverage
@@ -26,6 +30,9 @@ python3 -m pip install -U pytest-cov
 python3 -m pip install -U pytest-timeout
 python3 -m pip install pyroma
 python3 -m pip install numpy
+
+# libavif
+pushd depends && ./install_libavif.sh && popd
 
 # extra test images
 pushd depends && ./install_extra_test_images.sh && popd
