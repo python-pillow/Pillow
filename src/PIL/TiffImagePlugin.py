@@ -2295,9 +2295,7 @@ class AppendingTiffWriter(io.BytesIO):
 
 
 def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    encoderinfo = im.encoderinfo.copy()
-    encoderconfig = im.encoderconfig
-    append_images = list(encoderinfo.get("append_images", []))
+    append_images = list(im.encoderinfo.get("append_images", []))
     if not hasattr(im, "n_frames") and not append_images:
         return _save(im, fp, filename)
 
@@ -2305,12 +2303,11 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         with AppendingTiffWriter(fp) as tf:
             for ims in [im] + append_images:
-                ims.encoderinfo = encoderinfo
-                ims.encoderconfig = encoderconfig
-                if not hasattr(ims, "n_frames"):
-                    nfr = 1
-                else:
-                    nfr = ims.n_frames
+                if not hasattr(ims, "encoderinfo"):
+                    ims.encoderinfo = {}
+                if not hasattr(ims, "encoderconfig"):
+                    ims.encoderconfig = ()
+                nfr = getattr(ims, "n_frames", 1)
 
                 for idx in range(nfr):
                     ims.seek(idx)
