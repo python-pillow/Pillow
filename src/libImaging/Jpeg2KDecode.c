@@ -615,6 +615,7 @@ static const struct j2k_decode_unpacker j2k_unpackers[] = {
     {"RGBA", OPJ_CLRSPC_GRAY, 2, 0, j2ku_graya_la},
     {"RGBA", OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb},
     {"RGBA", OPJ_CLRSPC_SYCC, 3, 1, j2ku_sycc_rgb},
+    {"RGBA", OPJ_CLRSPC_GRAY, 4, 1, j2ku_srgba_rgba},
     {"RGBA", OPJ_CLRSPC_SRGB, 4, 1, j2ku_srgba_rgba},
     {"RGBA", OPJ_CLRSPC_SYCC, 4, 1, j2ku_sycca_rgba},
     {"CMYK", OPJ_CLRSPC_CMYK, 4, 1, j2ku_srgba_rgba},
