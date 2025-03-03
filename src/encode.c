@@ -323,36 +323,11 @@ static struct PyGetSetDef getseters[] = {
 };
 
 static PyTypeObject ImagingEncoderType = {
-    PyVarObject_HEAD_INIT(NULL, 0) "ImagingEncoder", /*tp_name*/
-    sizeof(ImagingEncoderObject),                    /*tp_basicsize*/
-    0,                                               /*tp_itemsize*/
-    /* methods */
-    (destructor)_dealloc, /*tp_dealloc*/
-    0,                    /*tp_vectorcall_offset*/
-    0,                    /*tp_getattr*/
-    0,                    /*tp_setattr*/
-    0,                    /*tp_as_async*/
-    0,                    /*tp_repr*/
-    0,                    /*tp_as_number*/
-    0,                    /*tp_as_sequence*/
-    0,                    /*tp_as_mapping*/
-    0,                    /*tp_hash*/
-    0,                    /*tp_call*/
-    0,                    /*tp_str*/
-    0,                    /*tp_getattro*/
-    0,                    /*tp_setattro*/
-    0,                    /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,   /*tp_flags*/
-    0,                    /*tp_doc*/
-    0,                    /*tp_traverse*/
-    0,                    /*tp_clear*/
-    0,                    /*tp_richcompare*/
-    0,                    /*tp_weaklistoffset*/
-    0,                    /*tp_iter*/
-    0,                    /*tp_iternext*/
-    methods,              /*tp_methods*/
-    0,                    /*tp_members*/
-    getseters,            /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingEncoder",
+    .tp_basicsize = sizeof(ImagingEncoderObject),
+    .tp_dealloc = (destructor)_dealloc,
+    .tp_methods = methods,
+    .tp_getset = getseters,
 };
 
 /* -------------------------------------------------------------------- */

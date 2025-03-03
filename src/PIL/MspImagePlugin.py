@@ -37,7 +37,7 @@ from ._binary import o16le as o16
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] in [b"DanM", b"LinS"]
+    return prefix.startswith((b"DanM", b"LinS"))
 
 
 ##
@@ -69,7 +69,7 @@ class MspImageFile(ImageFile.ImageFile):
         self._mode = "1"
         self._size = i16(s, 4), i16(s, 6)
 
-        if s[:4] == b"DanM":
+        if s.startswith(b"DanM"):
             self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 32, "1")]
         else:
             self.tile = [ImageFile._Tile("MSP", (0, 0) + self.size, 32)]
