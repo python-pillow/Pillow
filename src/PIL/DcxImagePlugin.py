@@ -44,6 +44,7 @@ class DcxImageFile(PcxImageFile):
 
     def _open(self) -> None:
         # Header
+        assert self.fp is not None
         s = self.fp.read(4)
         if not _accept(s):
             msg = "not a DCX file"
