@@ -454,7 +454,8 @@ The :py:meth:`~PIL.Image.open` method may set the following
     Raw EXIF data from the image.
 
 **comment**
-    A comment about the image.
+    A comment about the image, from the COM marker. This is separate from the
+    UserComment tag that may be stored in the EXIF data.
 
     .. versionadded:: 7.1.0
 
