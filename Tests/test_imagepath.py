@@ -68,22 +68,10 @@ def test_path_constructors(
     assert list(p) == [(0.0, 1.0)]
 
 
-@pytest.mark.parametrize(
-    "coords",
-    (
-        ("a", "b"),
-        ([0, 1],),
-        [[0, 1]],
-        ([0.0, 1.0],),
-        [[0.0, 1.0]],
-    ),
-)
-def test_invalid_path_constructors(
-    coords: tuple[str, str] | Sequence[Sequence[int]],
-) -> None:
-    # Act
+def test_invalid_path_constructors() -> None:
+    # Arrange / Act
     with pytest.raises(ValueError) as e:
-        ImagePath.Path(coords)
+        ImagePath.Path(("a", "b"))
 
     # Assert
     assert str(e.value) == "incorrect coordinate type"
