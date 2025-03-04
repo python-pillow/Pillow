@@ -109,6 +109,39 @@ path_dealloc(PyPathObject *path) {
 
 #define PyPath_Check(op) (Py_TYPE(op) == &PyPathType)
 
+static int
+assign_item_to_array(double *xy, Py_ssize_t j, PyObject *op) {
+    if (PyFloat_Check(op)) {
+        xy[j++] = PyFloat_AS_DOUBLE(op);
+    } else if (PyLong_Check(op)) {
+        xy[j++] = (float)PyLong_AS_LONG(op);
+    } else if (PyNumber_Check(op)) {
+        xy[j++] = PyFloat_AsDouble(op);
+    } else if (PyList_Check(op)) {
+        for (int k = 0; k < 2; k++) {
+            PyObject *op1 = PyList_GetItemRef(op, k);
+            if (op1 == NULL) {
+                return -1;
+            }
+            j = assign_item_to_array(xy, j, op1);
+            Py_DECREF(op1);
+            if (j == -1) {
+                return -1;
+            }
+        }
+    } else {
+        double x, y;
+        if (PyArg_ParseTuple(op, "dd", &x, &y)) {
+            xy[j++] = x;
+            xy[j++] = y;
+        } else {
+            PyErr_SetString(PyExc_ValueError, "incorrect coordinate type");
+            return -1;
+        }
+    }
+    return j;
+}
+
 Py_ssize_t
 PyPath_Flatten(PyObject *data, double **pxy) {
     Py_ssize_t i, j, n;
@@ -164,48 +197,32 @@ PyPath_Flatten(PyObject *data, double **pxy) {
         return -1;
     }
 
-#define assign_item_to_array(op, decref)                                \
-    if (PyFloat_Check(op)) {                                            \
-        xy[j++] = PyFloat_AS_DOUBLE(op);                                \
-    } else if (PyLong_Check(op)) {                                      \
-        xy[j++] = (float)PyLong_AS_LONG(op);                            \
-    } else if (PyNumber_Check(op)) {                                    \
-        xy[j++] = PyFloat_AsDouble(op);                                 \
-    } else if (PyArg_ParseTuple(op, "dd", &x, &y)) {                    \
-        xy[j++] = x;                                                    \
-        xy[j++] = y;                                                    \
-    } else {                                                            \
-        PyErr_SetString(PyExc_ValueError, "incorrect coordinate type"); \
-        if (decref) {                                                   \
-            Py_DECREF(op);                                              \
-        }                                                               \
-        free(xy);                                                       \
-        return -1;                                                      \
-    }                                                                   \
-    if (decref) {                                                       \
-        Py_DECREF(op);                                                  \
-    }
-
     /* Copy table to path array */
     if (PyList_Check(data)) {
         for (i = 0; i < n; i++) {
-            double x, y;
             PyObject *op = PyList_GetItemRef(data, i);
             if (op == NULL) {
                 free(xy);
                 return -1;
             }
-            assign_item_to_array(op, 1);
+            j = assign_item_to_array(xy, j, op);
+            Py_DECREF(op);
+            if (j == -1) {
+                free(xy);
+                return -1;
+            }
         }
     } else if (PyTuple_Check(data)) {
         for (i = 0; i < n; i++) {
-            double x, y;
             PyObject *op = PyTuple_GET_ITEM(data, i);
-            assign_item_to_array(op, 0);
+            j = assign_item_to_array(xy, j, op);
+            if (j == -1) {
+                free(xy);
+                return -1;
+            }
         }
     } else {
         for (i = 0; i < n; i++) {
-            double x, y;
             PyObject *op = PySequence_GetItem(data, i);
             if (!op) {
                 /* treat IndexError as end of sequence */
@@ -217,7 +234,12 @@ PyPath_Flatten(PyObject *data, double **pxy) {
                     return -1;
                 }
             }
-            assign_item_to_array(op, 1);
+            j = assign_item_to_array(xy, j, op);
+            Py_DECREF(op);
+            if (j == -1) {
+                free(xy);
+                return -1;
+            }
         }
     }
 
