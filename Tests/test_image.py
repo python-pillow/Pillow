@@ -601,8 +601,8 @@ class TestImage:
         assert im.mode == mode
         assert im.getpixel((0, 0)) == 0
         assert im.getpixel((255, 255)) == 255
-        with Image.open(target_file) as target:
-            target = target.convert(mode)
+        with Image.open(target_file) as img:
+            target = img.convert(mode)
         assert_image_equal(im, target)
 
     def test_radial_gradient_wrong_mode(self) -> None:
@@ -626,8 +626,8 @@ class TestImage:
         assert im.mode == mode
         assert im.getpixel((0, 0)) == 255
         assert im.getpixel((128, 128)) == 0
-        with Image.open(target_file) as target:
-            target = target.convert(mode)
+        with Image.open(target_file) as img:
+            target = img.convert(mode)
         assert_image_equal(im, target)
 
     def test_register_extensions(self) -> None:
@@ -648,8 +648,8 @@ class TestImage:
 
     def test_remap_palette(self) -> None:
         # Test identity transform
-        with Image.open("Tests/images/hopper.gif") as im:
-            assert_image_equal(im, im.remap_palette(list(range(256))))
+        with Image.open("Tests/images/hopper.gif") as img:
+            assert_image_equal(img, img.remap_palette(list(range(256))))
 
         # Test identity transform with an RGBA palette
         im = Image.new("P", (256, 1))
@@ -659,6 +659,7 @@ class TestImage:
         im_remapped = im.remap_palette(list(range(256)))
         assert_image_equal(im, im_remapped)
         assert im.palette is not None
+        assert im_remapped.palette is not None
         assert im.palette.palette == im_remapped.palette.palette
 
         # Test illegal image mode
