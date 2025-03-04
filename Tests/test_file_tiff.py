@@ -134,9 +134,8 @@ class TestFileTiff:
 
     def test_set_legacy_api(self) -> None:
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
-        with pytest.raises(Exception) as e:
+        with pytest.raises(Exception, match="Not allowing setting of legacy api"):
             ifd.legacy_api = False
-        assert str(e.value) == "Not allowing setting of legacy api"
 
     def test_xyres_tiff(self) -> None:
         filename = "Tests/images/pil168.tif"

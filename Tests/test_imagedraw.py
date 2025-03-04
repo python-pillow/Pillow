@@ -1626,7 +1626,7 @@ def test_compute_regular_polygon_vertices(
             0,
             ValueError,
             "bounding_circle should contain 2D coordinates "
-            "and a radius (e.g. (x, y, r) or ((x, y), r) )",
+            r"and a radius \(e.g. \(x, y, r\) or \(\(x, y\), r\) \)",
         ),
         (
             3,
@@ -1640,7 +1640,7 @@ def test_compute_regular_polygon_vertices(
             ((50, 50, 50), 25),
             0,
             ValueError,
-            "bounding_circle centre should contain 2D coordinates (e.g. (x, y))",
+            r"bounding_circle centre should contain 2D coordinates \(e.g. \(x, y\)\)",
         ),
         (
             3,
@@ -1665,9 +1665,8 @@ def test_compute_regular_polygon_vertices_input_error_handling(
     expected_error: type[Exception],
     error_message: str,
 ) -> None:
-    with pytest.raises(expected_error) as e:
+    with pytest.raises(expected_error, match=error_message):
         ImageDraw._compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)  # type: ignore[arg-type]
-    assert str(e.value) == error_message
 
 
 def test_continuous_horizontal_edges_polygon() -> None:

@@ -81,12 +81,8 @@ def test_path_constructors(
 def test_invalid_path_constructors(
     coords: tuple[str, str] | Sequence[Sequence[int]],
 ) -> None:
-    # Act
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match="incorrect coordinate type"):
         ImagePath.Path(coords)
-
-    # Assert
-    assert str(e.value) == "incorrect coordinate type"
 
 
 @pytest.mark.parametrize(
@@ -99,12 +95,8 @@ def test_invalid_path_constructors(
     ),
 )
 def test_path_odd_number_of_coordinates(coords: Sequence[int]) -> None:
-    # Act
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match="wrong number of coordinates"):
         ImagePath.Path(coords)
-
-    # Assert
-    assert str(e.value) == "wrong number of coordinates"
 
 
 @pytest.mark.parametrize(
