@@ -112,7 +112,7 @@ def test_make_linear_lut() -> None:
     assert isinstance(lut, list)
     assert len(lut) == 256
     # Check values
-    for i in range(0, len(lut)):
+    for i in range(len(lut)):
         assert lut[i] == i
 
 

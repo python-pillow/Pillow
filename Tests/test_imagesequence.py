@@ -32,7 +32,7 @@ def test_sanity(tmp_path: Path) -> None:
 def test_iterator() -> None:
     with Image.open("Tests/images/multipage.tiff") as im:
         i = ImageSequence.Iterator(im)
-        for index in range(0, im.n_frames):
+        for index in range(im.n_frames):
             assert i[index] == next(i)
         with pytest.raises(IndexError):
             i[index + 1]
