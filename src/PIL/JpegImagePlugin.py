@@ -576,7 +576,7 @@ def _getmp(self: JpegImageFile) -> dict[int, Any] | None:
     mpentries = []
     try:
         rawmpentries = mp[0xB002]
-        for entrynum in range(0, quant):
+        for entrynum in range(quant):
             unpackedentry = struct.unpack_from(
                 f"{endianness}LLLHH", rawmpentries, entrynum * 16
             )

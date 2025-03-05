@@ -996,7 +996,7 @@ class Image:
                 elif len(mode) == 3:
                     transparency = tuple(
                         convert_transparency(matrix[i * 4 : i * 4 + 4], transparency)
-                        for i in range(0, len(transparency))
+                        for i in range(len(transparency))
                     )
                 new_im.info["transparency"] = transparency
             return new_im
@@ -4002,7 +4002,7 @@ class Exif(_ExifBase):
                         ifd_data = tag_data[ifd_offset:]
 
                         makernote = {}
-                        for i in range(0, struct.unpack("<H", ifd_data[:2])[0]):
+                        for i in range(struct.unpack("<H", ifd_data[:2])[0]):
                             ifd_tag, typ, count, data = struct.unpack(
                                 "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
                             )
@@ -4037,7 +4037,7 @@ class Exif(_ExifBase):
                         self._ifds[tag] = dict(self._fixup_dict(makernote))
                     elif self.get(0x010F) == "Nintendo":
                         makernote = {}
-                        for i in range(0, struct.unpack(">H", tag_data[:2])[0]):
+                        for i in range(struct.unpack(">H", tag_data[:2])[0]):
                             ifd_tag, typ, count, data = struct.unpack(
                                 ">HHL4s", tag_data[i * 12 + 2 : (i + 1) * 12 + 2]
                             )

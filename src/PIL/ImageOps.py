@@ -213,14 +213,14 @@ def colorize(
     blue = []
 
     # Create the low-end values
-    for i in range(0, blackpoint):
+    for i in range(blackpoint):
         red.append(rgb_black[0])
         green.append(rgb_black[1])
         blue.append(rgb_black[2])
 
     # Create the mapping (2-color)
     if rgb_mid is None:
-        range_map = range(0, whitepoint - blackpoint)
+        range_map = range(whitepoint - blackpoint)
 
         for i in range_map:
             red.append(
@@ -235,8 +235,8 @@ def colorize(
 
     # Create the mapping (3-color)
     else:
-        range_map1 = range(0, midpoint - blackpoint)
-        range_map2 = range(0, whitepoint - midpoint)
+        range_map1 = range(midpoint - blackpoint)
+        range_map2 = range(whitepoint - midpoint)
 
         for i in range_map1:
             red.append(
@@ -256,7 +256,7 @@ def colorize(
             blue.append(rgb_mid[2] + i * (rgb_white[2] - rgb_mid[2]) // len(range_map2))
 
     # Create the high-end values
-    for i in range(0, 256 - whitepoint):
+    for i in range(256 - whitepoint):
         red.append(rgb_white[0])
         green.append(rgb_white[1])
         blue.append(rgb_white[2])

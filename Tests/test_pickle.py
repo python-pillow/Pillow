@@ -67,7 +67,7 @@ def helper_pickle_string(protocol: int, test_file: str, mode: str | None) -> Non
         ("Tests/images/itxt_chunks.png", None),
     ],
 )
-@pytest.mark.parametrize("protocol", range(0, pickle.HIGHEST_PROTOCOL + 1))
+@pytest.mark.parametrize("protocol", range(pickle.HIGHEST_PROTOCOL + 1))
 def test_pickle_image(
     tmp_path: Path, test_file: str, test_mode: str | None, protocol: int
 ) -> None:
@@ -94,7 +94,7 @@ def test_pickle_la_mode_with_palette(tmp_path: Path) -> None:
         im = img.convert("PA")
 
     # Act / Assert
-    for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
+    for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
         im._mode = "LA"
         with open(filename, "wb") as f:
             pickle.dump(im, f, protocol)
@@ -135,7 +135,7 @@ def helper_assert_pickled_font_images(
 
 
 @skip_unless_feature("freetype2")
-@pytest.mark.parametrize("protocol", list(range(0, pickle.HIGHEST_PROTOCOL + 1)))
+@pytest.mark.parametrize("protocol", list(range(pickle.HIGHEST_PROTOCOL + 1)))
 def test_pickle_font_string(protocol: int) -> None:
     # Arrange
     font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -149,7 +149,7 @@ def test_pickle_font_string(protocol: int) -> None:
 
 
 @skip_unless_feature("freetype2")
-@pytest.mark.parametrize("protocol", list(range(0, pickle.HIGHEST_PROTOCOL + 1)))
+@pytest.mark.parametrize("protocol", list(range(pickle.HIGHEST_PROTOCOL + 1)))
 def test_pickle_font_file(tmp_path: Path, protocol: int) -> None:
     # Arrange
     font = ImageFont.truetype(FONT_PATH, FONT_SIZE)

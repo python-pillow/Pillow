@@ -1045,8 +1045,8 @@ def create_base_image_draw(
     background2: tuple[int, int, int] = GRAY,
 ) -> tuple[Image.Image, ImageDraw.ImageDraw]:
     img = Image.new(mode, size, background1)
-    for x in range(0, size[0]):
-        for y in range(0, size[1]):
+    for x in range(size[0]):
+        for y in range(size[1]):
             if (x + y) % 2 == 0:
                 img.putpixel((x, y), background2)
     return img, ImageDraw.Draw(img)

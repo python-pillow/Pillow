@@ -1588,7 +1588,7 @@ class TiffImageFile(ImageFile.ImageFile):
             # byte order.
             elif rawmode == "I;16":
                 rawmode = "I;16N"
-            elif rawmode.endswith(";16B") or rawmode.endswith(";16L"):
+            elif rawmode.endswith((";16B", ";16L")):
                 rawmode = rawmode[:-1] + "N"
 
             # Offset in the tile tuple is 0, we go from 0,0 to

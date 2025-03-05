@@ -617,7 +617,7 @@ def test_save_dispose(tmp_path: Path) -> None:
         Image.new("L", (100, 100), "#111"),
         Image.new("L", (100, 100), "#222"),
     ]
-    for method in range(0, 4):
+    for method in range(4):
         im_list[0].save(out, save_all=True, append_images=im_list[1:], disposal=method)
         with Image.open(out) as img:
             assert isinstance(img, GifImagePlugin.GifImageFile)
