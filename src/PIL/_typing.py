@@ -37,7 +37,7 @@ else:
                 return bool
 
 
-Coords = Union[Sequence[float], Sequence[Sequence[float]]]
+Coords = Union[Sequence[float], Sequence[tuple[float, ...]]]
 
 
 _T_co = TypeVar("_T_co", covariant=True)

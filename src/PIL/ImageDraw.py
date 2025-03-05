@@ -244,12 +244,12 @@ class ImageDraw:
         if ink is not None:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
-                points: Sequence[Sequence[float]]
-                if isinstance(xy[0], (list, tuple)):
-                    points = cast(Sequence[Sequence[float]], xy)
+                points: Sequence[tuple[float, ...]]
+                if isinstance(xy[0], tuple):
+                    points = cast(Sequence[tuple[float, ...]], xy)
                 else:
                     points = [
-                        cast(Sequence[float], tuple(xy[i : i + 2]))
+                        tuple(cast(Sequence[float], xy)[i : i + 2])
                         for i in range(0, len(xy), 2)
                     ]
                 for i in range(1, len(points) - 1):
