@@ -51,7 +51,7 @@ Many of Pillow's features require external libraries:
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.16**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.17**.
 
 * **libwebp** provides the WebP format.
 
@@ -64,7 +64,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.3.3**
+  * Pillow has been tested with libimagequant **2.6-4.3.4**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.

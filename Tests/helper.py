@@ -9,7 +9,6 @@ import os
 import shutil
 import subprocess
 import sys
-import sysconfig
 import tempfile
 from collections.abc import Sequence
 from functools import lru_cache
@@ -140,16 +139,9 @@ def assert_image_similar_tofile(
     filename: str,
     epsilon: float,
     msg: str | None = None,
-    mode: str | None = None,
 ) -> None:
     with Image.open(filename) as img:
-        if mode:
-            img = img.convert(mode)
         assert_image_similar(a, img, epsilon, msg)
-
-
-def assert_all_same(items: Sequence[Any], msg: str | None = None) -> None:
-    assert items.count(items[0]) == len(items), msg
 
 
 def assert_not_all_same(items: Sequence[Any], msg: str | None = None) -> None:
@@ -327,16 +319,7 @@ def magick_command() -> list[str] | None:
     return None
 
 
-def on_appveyor() -> bool:
-    return "APPVEYOR" in os.environ
-
-
-def on_github_actions() -> bool:
-    return "GITHUB_ACTIONS" in os.environ
-
-
 def on_ci() -> bool:
-    # GitHub Actions and AppVeyor have "CI"
     return "CI" in os.environ
 
 
@@ -356,10 +339,6 @@ def is_win32() -> bool:
 
 def is_pypy() -> bool:
     return hasattr(sys, "pypy_translation_info")
-
-
-def is_mingw() -> bool:
-    return sysconfig.get_platform() == "mingw"
 
 
 class CachedProperty:

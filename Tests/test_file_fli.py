@@ -35,32 +35,29 @@ def test_sanity() -> None:
         assert im.is_animated
 
 
-def test_prefix_chunk() -> None:
-    ImageFile.LOAD_TRUNCATED_IMAGES = True
-    try:
-        with Image.open(animated_test_file_with_prefix_chunk) as im:
-            assert im.mode == "P"
-            assert im.size == (320, 200)
-            assert im.format == "FLI"
-            assert im.info["duration"] == 171
-            assert im.is_animated
+def test_prefix_chunk(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+    with Image.open(animated_test_file_with_prefix_chunk) as im:
+        assert im.mode == "P"
+        assert im.size == (320, 200)
+        assert im.format == "FLI"
+        assert im.info["duration"] == 171
+        assert im.is_animated
 
-            palette = im.getpalette()
-            assert palette[3:6] == [255, 255, 255]
-            assert palette[381:384] == [204, 204, 12]
-            assert palette[765:] == [252, 0, 0]
-    finally:
-        ImageFile.LOAD_TRUNCATED_IMAGES = False
+        palette = im.getpalette()
+        assert palette[3:6] == [255, 255, 255]
+        assert palette[381:384] == [204, 204, 12]
+        assert palette[765:] == [252, 0, 0]
 
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
 def test_unclosed_file() -> None:
-    def open() -> None:
+    def open_test_image() -> None:
         im = Image.open(static_test_file)
         im.load()
 
     with pytest.warns(ResourceWarning):
-        open()
+        open_test_image()
 
 
 def test_closed_file() -> None:

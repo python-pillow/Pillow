@@ -514,7 +514,7 @@ class ImagePointTransform:
 
 
 def _getscaleoffset(
-    expr: Callable[[ImagePointTransform], ImagePointTransform | float]
+    expr: Callable[[ImagePointTransform], ImagePointTransform | float],
 ) -> tuple[float, float]:
     a = expr(ImagePointTransform(1, 0))
     return (a.scale, a.offset) if isinstance(a, ImagePointTransform) else (0, a)
@@ -603,24 +603,16 @@ class Image:
     def __enter__(self):
         return self
 
-    def _close_fp(self):
-        if getattr(self, "_fp", False):
-            if self._fp != self.fp:
-                self._fp.close()
-            self._fp = DeferredError(ValueError("Operation on closed image"))
-        if self.fp:
-            self.fp.close()
-
     def __exit__(self, *args):
-        if hasattr(self, "fp"):
+        from . import ImageFile
+
+        if isinstance(self, ImageFile.ImageFile):
             if getattr(self, "_exclusive_fp", False):
                 self._close_fp()
             self.fp = None
 
     def close(self) -> None:
         """
-        Closes the file pointer, if possible.
-
         This operation will destroy the image core and release its memory.
         The image data will be unusable afterward.
 
@@ -629,13 +621,6 @@ class Image:
         :py:meth:`~PIL.Image.Image.load` method. See :ref:`file-handling` for
         more information.
         """
-        if hasattr(self, "fp"):
-            try:
-                self._close_fp()
-                self.fp = None
-            except Exception as msg:
-                logger.debug("Error closing: %s", msg)
-
         if getattr(self, "map", None):
             self.map: mmap.mmap | None = None
 
@@ -1016,7 +1001,7 @@ class Image:
                 elif len(mode) == 3:
                     transparency = tuple(
                         convert_transparency(matrix[i * 4 : i * 4 + 4], transparency)
-                        for i in range(0, len(transparency))
+                        for i in range(len(transparency))
                     )
                 new_im.info["transparency"] = transparency
             return new_im
@@ -1554,50 +1539,10 @@ class Image:
         self.getexif()
 
     def get_child_images(self) -> list[ImageFile.ImageFile]:
-        child_images = []
-        exif = self.getexif()
-        ifds = []
-        if ExifTags.Base.SubIFDs in exif:
-            subifd_offsets = exif[ExifTags.Base.SubIFDs]
-            if subifd_offsets:
-                if not isinstance(subifd_offsets, tuple):
-                    subifd_offsets = (subifd_offsets,)
-                for subifd_offset in subifd_offsets:
-                    ifds.append((exif._get_ifd_dict(subifd_offset), subifd_offset))
-        ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
-        if ifd1 and ifd1.get(ExifTags.Base.JpegIFOffset):
-            assert exif._info is not None
-            ifds.append((ifd1, exif._info.next))
+        from . import ImageFile
 
-        offset = None
-        for ifd, ifd_offset in ifds:
-            current_offset = self.fp.tell()
-            if offset is None:
-                offset = current_offset
-
-            fp = self.fp
-            if ifd is not None:
-                thumbnail_offset = ifd.get(ExifTags.Base.JpegIFOffset)
-                if thumbnail_offset is not None:
-                    thumbnail_offset += getattr(self, "_exif_offset", 0)
-                    self.fp.seek(thumbnail_offset)
-                    data = self.fp.read(ifd.get(ExifTags.Base.JpegIFByteCount))
-                    fp = io.BytesIO(data)
-
-            with open(fp) as im:
-                from . import TiffImagePlugin
-
-                if thumbnail_offset is None and isinstance(
-                    im, TiffImagePlugin.TiffImageFile
-                ):
-                    im._frame_pos = [ifd_offset]
-                    im._seek(0)
-                im.load()
-                child_images.append(im)
-
-        if offset is not None:
-            self.fp.seek(offset)
-        return child_images
+        deprecate("Image.Image.get_child_images", 13)
+        return ImageFile.ImageFile.get_child_images(self)  # type: ignore[arg-type]
 
     def getim(self) -> CapsuleType:
         """
@@ -2530,7 +2475,21 @@ class Image:
            format to use is determined from the filename extension.
            If a file object was used instead of a filename, this
            parameter should always be used.
-        :param params: Extra parameters to the image writer.
+        :param params: Extra parameters to the image writer. These can also be
+           set on the image itself through ``encoderinfo``. This is useful when
+           saving multiple images::
+
+             # Saving XMP data to a single image
+             from PIL import Image
+             red = Image.new("RGB", (1, 1), "#f00")
+             red.save("out.mpo", xmp=b"test")
+
+             # Saving XMP data to the second frame of an image
+             from PIL import Image
+             black = Image.new("RGB", (1, 1))
+             red = Image.new("RGB", (1, 1), "#f00")
+             red.encoderinfo = {"xmp": b"test"}
+             black.save("out.mpo", save_all=True, append_images=[red])
         :returns: None
         :exception ValueError: If the output format could not be determined
            from the file name.  Use the format option to solve this.
@@ -3041,7 +3000,7 @@ class Image:
 # Abstract handlers.
 
 
-class ImagePointHandler:
+class ImagePointHandler(abc.ABC):
     """
     Used as a mixin by point transforms
     (for use with :py:meth:`~PIL.Image.Image.point`)
@@ -3052,7 +3011,7 @@ class ImagePointHandler:
         pass
 
 
-class ImageTransformHandler:
+class ImageTransformHandler(abc.ABC):
     """
     Used as a mixin by geometry transforms
     (for use with :py:meth:`~PIL.Image.Image.transform`)
@@ -3070,15 +3029,6 @@ class ImageTransformHandler:
 
 # --------------------------------------------------------------------
 # Factories
-
-#
-# Debugging
-
-
-def _wedge() -> Image:
-    """Create grayscale wedge (for debugging only)"""
-
-    return Image()._new(core.wedge("L"))
 
 
 def _check_size(size: Any) -> None:
@@ -3959,7 +3909,7 @@ class Exif(_ExifBase):
             return self._fixup_dict(dict(info))
 
     def _get_head(self) -> bytes:
-        version = b"\x2B" if self.bigtiff else b"\x2A"
+        version = b"\x2b" if self.bigtiff else b"\x2a"
         if self.endian == "<":
             head = b"II" + version + b"\x00" + o32le(8)
         else:
@@ -4043,6 +3993,9 @@ class Exif(_ExifBase):
 
         head = self._get_head()
         ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
+        for tag, ifd_dict in self._ifds.items():
+            if tag not in self:
+                ifd[tag] = ifd_dict
         for tag, value in self.items():
             if tag in [
                 ExifTags.IFD.Exif,
@@ -4079,12 +4032,12 @@ class Exif(_ExifBase):
                 if tag == ExifTags.IFD.MakerNote:
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
-                    if tag_data[:8] == b"FUJIFILM":
+                    if tag_data.startswith(b"FUJIFILM"):
                         ifd_offset = i32le(tag_data, 8)
                         ifd_data = tag_data[ifd_offset:]
 
                         makernote = {}
-                        for i in range(0, struct.unpack("<H", ifd_data[:2])[0]):
+                        for i in range(struct.unpack("<H", ifd_data[:2])[0]):
                             ifd_tag, typ, count, data = struct.unpack(
                                 "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
                             )
@@ -4119,7 +4072,7 @@ class Exif(_ExifBase):
                         self._ifds[tag] = dict(self._fixup_dict(makernote))
                     elif self.get(0x010F) == "Nintendo":
                         makernote = {}
-                        for i in range(0, struct.unpack(">H", tag_data[:2])[0]):
+                        for i in range(struct.unpack(">H", tag_data[:2])[0]):
                             ifd_tag, typ, count, data = struct.unpack(
                                 ">HHL4s", tag_data[i * 12 + 2 : (i + 1) * 12 + 2]
                             )

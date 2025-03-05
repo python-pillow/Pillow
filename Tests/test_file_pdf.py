@@ -306,7 +306,7 @@ def test_pdf_append(tmp_path: Path) -> None:
         # append some info
         pdf.info.Title = "abc"
         pdf.info.Author = "def"
-        pdf.info.Subject = "ghi\uABCD"
+        pdf.info.Subject = "ghi\uabcd"
         pdf.info.Keywords = "qw)e\\r(ty"
         pdf.info.Creator = "hopper()"
         pdf.start_writing()
@@ -334,7 +334,7 @@ def test_pdf_append(tmp_path: Path) -> None:
         assert pdf.info.Title == "abc"
         assert pdf.info.Producer == "PdfParser"
         assert pdf.info.Keywords == "qw)e\\r(ty"
-        assert pdf.info.Subject == "ghi\uABCD"
+        assert pdf.info.Subject == "ghi\uabcd"
         assert b"CreationDate" in pdf.info
         assert b"ModDate" in pdf.info
         check_pdf_pages_consistency(pdf)

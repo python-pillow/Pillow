@@ -31,17 +31,20 @@ from __future__ import annotations
 import abc
 import io
 import itertools
+import logging
 import os
 import struct
 import sys
 from typing import IO, TYPE_CHECKING, Any, NamedTuple, cast
 
-from . import Image
+from . import ExifTags, Image
 from ._deprecate import deprecate
-from ._util import is_path
+from ._util import DeferredError, is_path
 
 if TYPE_CHECKING:
     from ._typing import StrOrBytesPath
+
+logger = logging.getLogger(__name__)
 
 MAXBLOCK = 65536
 
@@ -162,6 +165,85 @@ class ImageFile(Image.Image):
 
     def _open(self) -> None:
         pass
+
+    def _close_fp(self):
+        if getattr(self, "_fp", False):
+            if self._fp != self.fp:
+                self._fp.close()
+            self._fp = DeferredError(ValueError("Operation on closed image"))
+        if self.fp:
+            self.fp.close()
+
+    def close(self) -> None:
+        """
+        Closes the file pointer, if possible.
+
+        This operation will destroy the image core and release its memory.
+        The image data will be unusable afterward.
+
+        This function is required to close images that have multiple frames or
+        have not had their file read and closed by the
+        :py:meth:`~PIL.Image.Image.load` method. See :ref:`file-handling` for
+        more information.
+        """
+        try:
+            self._close_fp()
+            self.fp = None
+        except Exception as msg:
+            logger.debug("Error closing: %s", msg)
+
+        super().close()
+
+    def get_child_images(self) -> list[ImageFile]:
+        child_images = []
+        exif = self.getexif()
+        ifds = []
+        if ExifTags.Base.SubIFDs in exif:
+            subifd_offsets = exif[ExifTags.Base.SubIFDs]
+            if subifd_offsets:
+                if not isinstance(subifd_offsets, tuple):
+                    subifd_offsets = (subifd_offsets,)
+                for subifd_offset in subifd_offsets:
+                    ifds.append((exif._get_ifd_dict(subifd_offset), subifd_offset))
+        ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
+        if ifd1 and ifd1.get(ExifTags.Base.JpegIFOffset):
+            assert exif._info is not None
+            ifds.append((ifd1, exif._info.next))
+
+        offset = None
+        for ifd, ifd_offset in ifds:
+            assert self.fp is not None
+            current_offset = self.fp.tell()
+            if offset is None:
+                offset = current_offset
+
+            fp = self.fp
+            if ifd is not None:
+                thumbnail_offset = ifd.get(ExifTags.Base.JpegIFOffset)
+                if thumbnail_offset is not None:
+                    thumbnail_offset += getattr(self, "_exif_offset", 0)
+                    self.fp.seek(thumbnail_offset)
+
+                    length = ifd.get(ExifTags.Base.JpegIFByteCount)
+                    assert isinstance(length, int)
+                    data = self.fp.read(length)
+                    fp = io.BytesIO(data)
+
+            with Image.open(fp) as im:
+                from . import TiffImagePlugin
+
+                if thumbnail_offset is None and isinstance(
+                    im, TiffImagePlugin.TiffImageFile
+                ):
+                    im._frame_pos = [ifd_offset]
+                    im._seek(0)
+                im.load()
+                child_images.append(im)
+
+        if offset is not None:
+            assert self.fp is not None
+            self.fp.seek(offset)
+        return child_images
 
     def get_format_mimetype(self) -> str | None:
         if self.custom_mimetype:
@@ -356,7 +438,7 @@ class ImageFile(Image.Image):
         return self.tell() != frame
 
 
-class StubHandler:
+class StubHandler(abc.ABC):
     def open(self, im: StubImageFile) -> None:
         pass
 
@@ -365,7 +447,7 @@ class StubHandler:
         pass
 
 
-class StubImageFile(ImageFile):
+class StubImageFile(ImageFile, metaclass=abc.ABCMeta):
     """
     Base class for stub image loaders.
 
@@ -373,9 +455,9 @@ class StubImageFile(ImageFile):
     certain format, but relies on external code to load the file.
     """
 
+    @abc.abstractmethod
     def _open(self) -> None:
-        msg = "StubImageFile subclass must implement _open"
-        raise NotImplementedError(msg)
+        pass
 
     def load(self) -> Image.core.PixelAccess | None:
         loader = self._load()
@@ -389,10 +471,10 @@ class StubImageFile(ImageFile):
         self.__dict__ = image.__dict__
         return image.load()
 
+    @abc.abstractmethod
     def _load(self) -> StubHandler | None:
         """(Hook) Find actual image loader."""
-        msg = "StubImageFile subclass must implement _load"
-        raise NotImplementedError(msg)
+        pass
 
 
 class Parser:

@@ -49,7 +49,7 @@ def test_sanity() -> None:
         (b"P5 3 1 257 \x00\x00\x00\x80\x01\x01", "I", (0, 32640, 65535)),
         # P6 with maxval < 255
         (
-            b"P6 3 1 17 \x00\x01\x02\x08\x09\x0A\x0F\x10\x11",
+            b"P6 3 1 17 \x00\x01\x02\x08\x09\x0a\x0f\x10\x11",
             "RGB",
             (
                 (0, 15, 30),
@@ -60,7 +60,7 @@ def test_sanity() -> None:
         # P6 with maxval > 255
         (
             b"P6 3 1 257 \x00\x00\x00\x01\x00\x02"
-            b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xFF\xFF",
+            b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xff\xff",
             "RGB",
             (
                 (0, 1, 2),
@@ -79,6 +79,7 @@ def test_arbitrary_maxval(
         assert im.mode == mode
 
         px = im.load()
+        assert px is not None
         assert tuple(px[x, 0] for x in range(3)) == pixels
 
 
@@ -292,11 +293,9 @@ def test_header_token_too_long(tmp_path: Path) -> None:
     with open(path, "wb") as f:
         f.write(b"P6\n 01234567890")
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match="Token too long in file header: 01234567890"):
         with Image.open(path):
             pass
-
-    assert str(e.value) == "Token too long in file header: 01234567890"
 
 
 def test_truncated_file(tmp_path: Path) -> None:
@@ -305,11 +304,9 @@ def test_truncated_file(tmp_path: Path) -> None:
     with open(path, "wb") as f:
         f.write(b"P6")
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match="Reached EOF while reading header"):
         with Image.open(path):
             pass
-
-    assert str(e.value) == "Reached EOF while reading header"
 
     # Test EOF for PyDecoder
     fp = BytesIO(b"P5 3 1 4")
@@ -334,11 +331,11 @@ def test_invalid_maxval(maxval: bytes, tmp_path: Path) -> None:
     with open(path, "wb") as f:
         f.write(b"P6\n3 1 " + maxval)
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(
+        ValueError, match="maxval must be greater than 0 and less than 65536"
+    ):
         with Image.open(path):
             pass
-
-    assert str(e.value) == "maxval must be greater than 0 and less than 65536"
 
 
 def test_neg_ppm() -> None:
@@ -367,21 +364,17 @@ def test_mimetypes(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("buffer", (True, False))
-def test_save_stdout(buffer: bool) -> None:
-    old_stdout = sys.stdout
+def test_save_stdout(buffer: bool, monkeypatch: pytest.MonkeyPatch) -> None:
 
     class MyStdOut:
         buffer = BytesIO()
 
     mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
 
-    sys.stdout = mystdout
+    monkeypatch.setattr(sys, "stdout", mystdout)
 
     with Image.open(TEST_FILE) as im:
         im.save(sys.stdout, "PPM")
-
-    # Reset stdout
-    sys.stdout = old_stdout
 
     if isinstance(mystdout, MyStdOut):
         mystdout = mystdout.buffer

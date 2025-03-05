@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from ._typing import NumpyArray
 
 
-class Filter:
+class Filter(abc.ABC):
     @abc.abstractmethod
     def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         pass
@@ -598,8 +598,6 @@ class Color3DLUT(MultibandFilter):
             self.mode or image.mode,
             Image.Resampling.BILINEAR,
             self.channels,
-            self.size[0],
-            self.size[1],
-            self.size[2],
+            self.size,
             self.table,
         )
