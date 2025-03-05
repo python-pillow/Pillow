@@ -42,11 +42,7 @@ from ._deprecate import deprecate
 from ._typing import Coords
 
 # experimental access to the outline API
-Outline: Callable[[], Image.core._Outline] | None
-try:
-    Outline = Image.core.outline
-except AttributeError:
-    Outline = None
+Outline: Callable[[], Image.core._Outline] = Image.core.outline
 
 if TYPE_CHECKING:
     from . import ImageDraw2, ImageFont
@@ -1208,7 +1204,7 @@ def _compute_regular_polygon_vertices(
         degrees = 360 / n_sides
         # Start with the bottom left polygon vertex
         current_angle = (270 - 0.5 * degrees) + rotation
-        for _ in range(0, n_sides):
+        for _ in range(n_sides):
             angles.append(current_angle)
             current_angle += degrees
             if current_angle > 360:
@@ -1231,4 +1227,4 @@ def _color_diff(
     first = color1 if isinstance(color1, tuple) else (color1,)
     second = color2 if isinstance(color2, tuple) else (color2,)
 
-    return sum(abs(first[i] - second[i]) for i in range(0, len(second)))
+    return sum(abs(first[i] - second[i]) for i in range(len(second)))

@@ -39,6 +39,8 @@ BBOX = (((X0, Y0), (X1, Y1)), [(X0, Y0), (X1, Y1)], (X0, Y0, X1, Y1), [X0, Y0, X
 POINTS = (
     ((10, 10), (20, 40), (30, 30)),
     [(10, 10), (20, 40), (30, 30)],
+    ([10, 10], [20, 40], [30, 30]),
+    [[10, 10], [20, 40], [30, 30]],
     (10, 10, 20, 40, 30, 30),
     [10, 10, 20, 40, 30, 30],
 )
@@ -46,6 +48,8 @@ POINTS = (
 KITE_POINTS = (
     ((10, 50), (70, 10), (90, 50), (70, 90), (10, 50)),
     [(10, 50), (70, 10), (90, 50), (70, 90), (10, 50)],
+    ([10, 50], [70, 10], [90, 50], [70, 90], [10, 50]),
+    [[10, 50], [70, 10], [90, 50], [70, 90], [10, 50]],
 )
 
 
@@ -448,7 +452,6 @@ def test_shape1() -> None:
     x3, y3 = 95, 5
 
     # Act
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.move(x0, y0)
     s.curve(x1, y1, x2, y2, x3, y3)
@@ -470,7 +473,6 @@ def test_shape2() -> None:
     x3, y3 = 5, 95
 
     # Act
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.move(x0, y0)
     s.curve(x1, y1, x2, y2, x3, y3)
@@ -489,7 +491,6 @@ def test_transform() -> None:
     draw = ImageDraw.Draw(im)
 
     # Act
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.line(0, 0)
     s.transform((0, 0, 0, 0, 0, 0))
@@ -1047,8 +1048,8 @@ def create_base_image_draw(
     background2: tuple[int, int, int] = GRAY,
 ) -> tuple[Image.Image, ImageDraw.ImageDraw]:
     img = Image.new(mode, size, background1)
-    for x in range(0, size[0]):
-        for y in range(0, size[1]):
+    for x in range(size[0]):
+        for y in range(size[1]):
             if (x + y) % 2 == 0:
                 img.putpixel((x, y), background2)
     return img, ImageDraw.Draw(img)
@@ -1526,7 +1527,6 @@ def test_same_color_outline(bbox: Coords) -> None:
     x2, y2 = 95, 50
     x3, y3 = 95, 5
 
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.move(x0, y0)
     s.curve(x1, y1, x2, y2, x3, y3)
@@ -1630,7 +1630,7 @@ def test_compute_regular_polygon_vertices(
             0,
             ValueError,
             "bounding_circle should contain 2D coordinates "
-            "and a radius (e.g. (x, y, r) or ((x, y), r) )",
+            r"and a radius \(e.g. \(x, y, r\) or \(\(x, y\), r\) \)",
         ),
         (
             3,
@@ -1644,7 +1644,7 @@ def test_compute_regular_polygon_vertices(
             ((50, 50, 50), 25),
             0,
             ValueError,
-            "bounding_circle centre should contain 2D coordinates (e.g. (x, y))",
+            r"bounding_circle centre should contain 2D coordinates \(e.g. \(x, y\)\)",
         ),
         (
             3,
@@ -1669,9 +1669,8 @@ def test_compute_regular_polygon_vertices_input_error_handling(
     expected_error: type[Exception],
     error_message: str,
 ) -> None:
-    with pytest.raises(expected_error) as e:
+    with pytest.raises(expected_error, match=error_message):
         ImageDraw._compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)  # type: ignore[arg-type]
-    assert str(e.value) == error_message
 
 
 def test_continuous_horizontal_edges_polygon() -> None:

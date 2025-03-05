@@ -134,9 +134,8 @@ class TestFileTiff:
 
     def test_set_legacy_api(self) -> None:
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
-        with pytest.raises(Exception) as e:
+        with pytest.raises(Exception, match="Not allowing setting of legacy api"):
             ifd.legacy_api = False
-        assert str(e.value) == "Not allowing setting of legacy api"
 
     def test_xyres_tiff(self) -> None:
         filename = "Tests/images/pil168.tif"
@@ -659,6 +658,18 @@ class TestFileTiff:
 
         with Image.open(outfile) as im:
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            assert im.tag_v2[278] == 256
+
+        im = hopper()
+        im2 = Image.new("L", (128, 128))
+        im2.encoderinfo = {"tiffinfo": {278: 256}}
+        im.save(outfile, save_all=True, append_images=[im2])
+
+        with Image.open(outfile) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            assert im.tag_v2[278] == 128
+
+            im.seek(1)
             assert im.tag_v2[278] == 256
 
     def test_strip_raw(self) -> None:

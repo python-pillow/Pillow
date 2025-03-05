@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from ._typing import NumpyArray
 
 
-class Filter:
+class Filter(abc.ABC):
     @abc.abstractmethod
     def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         pass
