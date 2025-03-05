@@ -438,7 +438,7 @@ class ImageFile(Image.Image):
         return self.tell() != frame
 
 
-class StubHandler:
+class StubHandler(abc.ABC):
     def open(self, im: StubImageFile) -> None:
         pass
 
