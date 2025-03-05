@@ -2980,7 +2980,7 @@ class Image:
 # Abstract handlers.
 
 
-class ImagePointHandler:
+class ImagePointHandler(abc.ABC):
     """
     Used as a mixin by point transforms
     (for use with :py:meth:`~PIL.Image.Image.point`)
@@ -2991,7 +2991,7 @@ class ImagePointHandler:
         pass
 
 
-class ImageTransformHandler:
+class ImageTransformHandler(abc.ABC):
     """
     Used as a mixin by geometry transforms
     (for use with :py:meth:`~PIL.Image.Image.transform`)
