@@ -176,9 +176,8 @@ class TestImageFile:
                 b"0" * ImageFile.SAFEBLOCK
             )  # only SAFEBLOCK bytes, so that the header is truncated
         )
-        with pytest.raises(OSError) as e:
+        with pytest.raises(OSError, match="Truncated File Read"):
             BmpImagePlugin.BmpImageFile(b)
-        assert str(e.value) == "Truncated File Read"
 
     @skip_unless_feature("zlib")
     def test_truncated_with_errors(self) -> None:
