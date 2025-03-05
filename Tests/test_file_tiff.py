@@ -660,6 +660,18 @@ class TestFileTiff:
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.tag_v2[278] == 256
 
+        im = hopper()
+        im2 = Image.new("L", (128, 128))
+        im2.encoderinfo = {"tiffinfo": {278: 256}}
+        im.save(outfile, save_all=True, append_images=[im2])
+
+        with Image.open(outfile) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            assert im.tag_v2[278] == 128
+
+            im.seek(1)
+            assert im.tag_v2[278] == 256
+
     def test_strip_raw(self) -> None:
         infile = "Tests/images/tiff_strip_raw.tif"
         with Image.open(infile) as im:
