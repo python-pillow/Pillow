@@ -32,14 +32,13 @@ class GimpPaletteFile:
             raise SyntaxError(msg)
 
         palette: list[int] = []
-        for i in range(256):
+        for _ in range(256):
             s = fp.readline()
             if not s:
                 break
 
             # skip fields and comment lines
             if re.match(rb"\w+:|#", s):
-                palette.append(o8(i) * 3)
                 continue
             if len(s) > 100:
                 msg = "bad palette file"
