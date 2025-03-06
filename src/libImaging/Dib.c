@@ -25,20 +25,17 @@
 
 #include "ImDib.h"
 
-char *
+ModeID
 ImagingGetModeDIB(int size_out[2]) {
     /* Get device characteristics */
 
-    HDC dc;
-    char *mode;
+    const HDC dc = CreateCompatibleDC(NULL);
 
-    dc = CreateCompatibleDC(NULL);
-
-    mode = "P";
+    ModeID mode = IMAGING_MODE_P;
     if (!(GetDeviceCaps(dc, RASTERCAPS) & RC_PALETTE)) {
-        mode = "RGB";
+        mode = IMAGING_MODE_RGB;
         if (GetDeviceCaps(dc, BITSPIXEL) == 1) {
-            mode = "1";
+            mode = IMAGING_MODE_1;
         }
     }
 
@@ -53,7 +50,7 @@ ImagingGetModeDIB(int size_out[2]) {
 }
 
 ImagingDIB
-ImagingNewDIB(const char *mode, int xsize, int ysize) {
+ImagingNewDIB(const ModeID mode, int xsize, int ysize) {
     /* Create a Windows bitmap */
 
     ImagingDIB dib;
@@ -61,9 +58,11 @@ ImagingNewDIB(const char *mode, int xsize, int ysize) {
     int i;
 
     /* Check mode */
-    if (strcmp(mode, "1") != 0 && strcmp(mode, "L") != 0 && strcmp(mode, "RGB") != 0) {
+    if (mode != IMAGING_MODE_1 && mode != IMAGING_MODE_L && mode != IMAGING_MODE_RGB) {
         return (ImagingDIB)ImagingError_ModeError();
     }
+
+    const int pixelsize = mode == IMAGING_MODE_RGB ? 3 : 1;
 
     /* Create DIB context and info header */
     /* malloc check ok, small constant allocation */
@@ -83,7 +82,7 @@ ImagingNewDIB(const char *mode, int xsize, int ysize) {
     dib->info->bmiHeader.biWidth = xsize;
     dib->info->bmiHeader.biHeight = ysize;
     dib->info->bmiHeader.biPlanes = 1;
-    dib->info->bmiHeader.biBitCount = strlen(mode) * 8;
+    dib->info->bmiHeader.biBitCount = pixelsize * 8;
     dib->info->bmiHeader.biCompression = BI_RGB;
 
     /* Create DIB */
@@ -103,12 +102,12 @@ ImagingNewDIB(const char *mode, int xsize, int ysize) {
         return (ImagingDIB)ImagingError_MemoryError();
     }
 
-    strcpy(dib->mode, mode);
+    dib->mode = mode;
     dib->xsize = xsize;
     dib->ysize = ysize;
 
-    dib->pixelsize = strlen(mode);
-    dib->linesize = (xsize * dib->pixelsize + 3) & -4;
+    dib->pixelsize = pixelsize;
+    dib->linesize = (xsize * pixelsize + 3) & -4;
 
     if (dib->pixelsize == 1) {
         dib->pack = dib->unpack = (ImagingShuffler)memcpy;
@@ -132,7 +131,7 @@ ImagingNewDIB(const char *mode, int xsize, int ysize) {
     }
 
     /* Create an associated palette (for 8-bit displays only) */
-    if (strcmp(ImagingGetModeDIB(NULL), "P") == 0) {
+    if (ImagingGetModeDIB(NULL) == IMAGING_MODE_P) {
         char palbuf[sizeof(LOGPALETTE) + 256 * sizeof(PALETTEENTRY)];
         LPLOGPALETTE pal = (LPLOGPALETTE)palbuf;
         int i, r, g, b;
@@ -142,7 +141,7 @@ ImagingNewDIB(const char *mode, int xsize, int ysize) {
         pal->palNumEntries = 256;
         GetSystemPaletteEntries(dib->dc, 0, 256, pal->palPalEntry);
 
-        if (strcmp(mode, "L") == 0) {
+        if (mode == IMAGING_MODE_L) {
             /* Grayscale DIB.  Fill all 236 slots with a grayscale ramp
              * (this is usually overkill on Windows since VGA only offers
              * 6 bits grayscale resolution).  Ignore the slots already
@@ -156,8 +155,7 @@ ImagingNewDIB(const char *mode, int xsize, int ysize) {
             }
 
             dib->palette = CreatePalette(pal);
-
-        } else if (strcmp(mode, "RGB") == 0) {
+        } else if (mode == IMAGING_MODE_RGB) {
 #ifdef CUBE216
 
             /* Colour DIB.  Create a 6x6x6 colour cube (216 entries) and
