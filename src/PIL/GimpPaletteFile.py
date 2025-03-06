@@ -45,12 +45,12 @@ class GimpPaletteFile:
                 msg = "bad palette file"
                 raise SyntaxError(msg)
 
-            v = tuple(map(int, s.split(maxsplit=3)[:3]))
-            if len(v) != 3:
+            v = s.split(maxsplit=3)
+            if len(v) < 3:
                 msg = "bad palette entry"
                 raise ValueError(msg)
 
-            palette[i] = o8(v[0]) + o8(v[1]) + o8(v[2])
+            palette[i] = o8(int(v[0])) + o8(int(v[1])) + o8(int(v[2]))
 
         self.palette = b"".join(palette)
 
