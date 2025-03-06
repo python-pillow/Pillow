@@ -201,7 +201,7 @@ extern struct ImagingMemoryArena ImagingArenas[IMAGING_ARENAS_COUNT + 1];
  * statically-allocated. This is necessary to properly handle stats.
  */
 #define IMAGING_ARENAS_FOREACH(arena) \
-    for ((arena) = &ImagingArenas[0]; (arena)->alignment >= 0; ++(arena))
+    for ((arena) = &ImagingArenas[0]; (arena)->index >= 0; ++(arena))
 #else
 /* In this case we either have the GIL or do not have thread-local storage, in
  * which case we will only allocate a single arena.

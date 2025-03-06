@@ -282,7 +282,7 @@ struct ImagingMemoryArena ImagingArenas[IMAGING_ARENAS_COUNT + 1] = {
     {1, IMAGING_ARENA_BLOCK_SIZE, 0, 0, NULL, 0, 0, 0, 0, 0, 5, {0}},
     {1, IMAGING_ARENA_BLOCK_SIZE, 0, 0, NULL, 0, 0, 0, 0, 0, 6, {0}},
     {1, IMAGING_ARENA_BLOCK_SIZE, 0, 0, NULL, 0, 0, 0, 0, 0, 7, {0}},
-    {-1},
+    {1, IMAGING_ARENA_BLOCK_SIZE, 0, 0, NULL, 0, 0, 0, 0, 0, -1, {0}},
 };
 
 /* Get a pointer to the correct arena for this context. In this case where we
