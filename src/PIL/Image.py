@@ -2514,7 +2514,7 @@ class Image:
         # may mutate self!
         self._ensure_mutable()
 
-        save_all = params.pop("save_all", False)
+        save_all = params.pop("save_all", None)
         self.encoderinfo = {**getattr(self, "encoderinfo", {}), **params}
         self.encoderconfig: tuple[Any, ...] = ()
 
@@ -2534,7 +2534,11 @@ class Image:
 
         if format.upper() not in SAVE:
             init()
-        if save_all:
+        if save_all or (
+            save_all is None
+            and params.get("append_images")
+            and format.upper() in SAVE_ALL
+        ):
             save_handler = SAVE_ALL[format.upper()]
         else:
             save_handler = SAVE[format.upper()]
