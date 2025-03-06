@@ -18,8 +18,6 @@ from __future__ import annotations
 import re
 from typing import IO
 
-from ._binary import o8
-
 
 class GimpPaletteFile:
     """File handler for GIMP's palette format."""
@@ -49,9 +47,9 @@ class GimpPaletteFile:
                 msg = "bad palette entry"
                 raise ValueError(msg)
 
-            palette.append(o8(int(v[0])) + o8(int(v[1])) + o8(int(v[2])))
+            palette += (int(v[i]) for i in range(3))
 
-        self.palette = b"".join(palette)
+        self.palette = bytes(palette)
 
     def getpalette(self) -> tuple[bytes, str]:
         return self.palette, self.rawmode
