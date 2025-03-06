@@ -164,7 +164,7 @@ def test_reduce() -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         assert callable(im.reduce)
 
-        im.reduce = 2
+        im.reduce = 2  # type: ignore[method-assign, assignment]
         assert im.reduce == 2
 
         im.load()
@@ -228,12 +228,14 @@ def test_layers(card: ImageFile.ImageFile) -> None:
     out.seek(0)
 
     with Image.open(out) as im:
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
         im.layers = 1
         im.load()
         assert_image_similar(im, card, 13)
 
     out.seek(0)
     with Image.open(out) as im:
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
         im.layers = 3
         im.load()
         assert_image_similar(im, card, 0.4)

@@ -130,6 +130,8 @@ class ImageFile(Image.Image):
         self.decoderconfig: tuple[Any, ...] = ()
         self.decodermaxblock = MAXBLOCK
 
+        self.fp: IO[bytes] | None
+        self._fp: IO[bytes] | DeferredError
         if is_path(fp):
             # filename
             self.fp = open(fp, "rb")
@@ -166,13 +168,22 @@ class ImageFile(Image.Image):
     def _open(self) -> None:
         pass
 
-    def _close_fp(self):
-        if getattr(self, "_fp", False):
+    # Context manager support
+    def __enter__(self) -> ImageFile:
+        return self
+
+    def _close_fp(self) -> None:
+        if hasattr(self, "_fp") and not isinstance(self._fp, DeferredError):
             if self._fp != self.fp:
                 self._fp.close()
             self._fp = DeferredError(ValueError("Operation on closed image"))
         if self.fp:
             self.fp.close()
+
+    def __exit__(self, *args: object) -> None:
+        if getattr(self, "_exclusive_fp", False):
+            self._close_fp()
+        self.fp = None
 
     def close(self) -> None:
         """
@@ -261,7 +272,7 @@ class ImageFile(Image.Image):
 
         # raise exception if something's wrong.  must be called
         # directly after open, and closes file when finished.
-        if self._exclusive_fp:
+        if self._exclusive_fp and self.fp:
             self.fp.close()
         self.fp = None
 
@@ -281,6 +292,7 @@ class ImageFile(Image.Image):
         # As of pypy 2.1.0, memory mapping was failing here.
         use_mmap = use_mmap and not hasattr(sys, "pypy_version_info")
 
+        assert self.fp is not None
         readonly = 0
 
         # look for read/seek overrides
