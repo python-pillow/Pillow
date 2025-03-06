@@ -1,6 +1,14 @@
 Plugin reference
 ================
 
+:mod:`~PIL.AvifImagePlugin` Module
+----------------------------------
+
+.. automodule:: PIL.AvifImagePlugin
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`~PIL.BmpImagePlugin` Module
 ---------------------------------
 
