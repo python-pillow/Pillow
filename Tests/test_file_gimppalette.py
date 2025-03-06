@@ -32,3 +32,4 @@ def test_get_palette() -> None:
 
     # Assert
     assert mode == "RGB"
+    assert len(palette) / 3 == 11

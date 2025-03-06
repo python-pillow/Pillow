@@ -27,12 +27,11 @@ class GimpPaletteFile:
     rawmode = "RGB"
 
     def __init__(self, fp: IO[bytes]) -> None:
-        palette = [o8(i) * 3 for i in range(256)]
-
         if not fp.readline().startswith(b"GIMP Palette"):
             msg = "not a GIMP palette file"
             raise SyntaxError(msg)
 
+        palette: list[int] = []
         for i in range(256):
             s = fp.readline()
             if not s:
@@ -40,6 +39,7 @@ class GimpPaletteFile:
 
             # skip fields and comment lines
             if re.match(rb"\w+:|#", s):
+                palette.append(o8(i) * 3)
                 continue
             if len(s) > 100:
                 msg = "bad palette file"
@@ -50,7 +50,7 @@ class GimpPaletteFile:
                 msg = "bad palette entry"
                 raise ValueError(msg)
 
-            palette[i] = o8(int(v[0])) + o8(int(v[1])) + o8(int(v[2]))
+            palette.append(o8(int(v[0])) + o8(int(v[1])) + o8(int(v[2])))
 
         self.palette = b"".join(palette)
 
