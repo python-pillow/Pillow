@@ -410,6 +410,10 @@ def test_seek() -> None:
         except EOFError:
             assert frame_count == 5
 
+        img.seek(0)
+        with pytest.raises(ValueError, match="cannot seek to frame 2"):
+            img._seek(2)
+
 
 def test_seek_info() -> None:
     with Image.open("Tests/images/iss634.gif") as im:

@@ -160,6 +160,9 @@ def test_seek() -> None:
 
         assert_image_equal_tofile(im, "Tests/images/a_fli.png")
 
+        with pytest.raises(ValueError, match="cannot seek to frame 52"):
+            im._seek(52)
+
 
 @pytest.mark.parametrize(
     "test_file",
