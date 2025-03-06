@@ -276,7 +276,8 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n)
         }
     }
     if (yradius != 0) {
-        imTransposed = ImagingNewDirty(imIn->mode, imIn->ysize, imIn->xsize);
+        imTransposed =
+            ImagingNewDirty(imIn->mode, (ImagingNewParams){imIn->ysize, imIn->xsize});
         if (!imTransposed) {
             return NULL;
         }
