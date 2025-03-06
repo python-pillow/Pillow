@@ -45,7 +45,7 @@ class GimpPaletteFile:
                 msg = "bad palette file"
                 raise SyntaxError(msg)
 
-            v = tuple(map(int, s.split()[:3]))
+            v = tuple(map(int, s.split(maxsplit=3)[:3]))
             if len(v) != 3:
                 msg = "bad palette entry"
                 raise ValueError(msg)
