@@ -317,12 +317,12 @@ def test_grayscale_four_channels() -> None:
     with open("Tests/images/rgb_trns_ycbc.jp2", "rb") as fp:
         data = fp.read()
 
-        # Change color space to OPJ_CLRSPC_GRAY
-        data = data[:76] + b"\x11" + data[77:]
+    # Change color space to OPJ_CLRSPC_GRAY
+    data = data[:76] + b"\x11" + data[77:]
 
-        with Image.open(BytesIO(data)) as im:
-            im.load()
-            assert im.mode == "RGBA"
+    with Image.open(BytesIO(data)) as im:
+        im.load()
+        assert im.mode == "RGBA"
 
 
 @pytest.mark.skipif(
