@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import warnings
 
 import pytest
@@ -130,6 +131,15 @@ def test_eoferror() -> None:
 
         # Test that seeking to the last frame does not raise an error
         im.seek(n_frames - 1)
+
+
+def test_missing_frame_size() -> None:
+    with open(animated_test_file, "rb") as fp:
+        data = fp.read()
+    data = data[:6188]
+    with Image.open(io.BytesIO(data)) as im:
+        with pytest.raises(EOFError, match="missing frame size"):
+            im.seek(1)
 
 
 def test_seek_tell() -> None:
