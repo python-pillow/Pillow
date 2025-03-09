@@ -9,7 +9,12 @@ import pytest
 
 from PIL import DdsImagePlugin, Image
 
-from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar_tofile,
+    hopper,
+)
 
 TEST_FILE_DXT1 = "Tests/images/dxt1-rgb-4bbp-noalpha_MipMaps-1.dds"
 TEST_FILE_DXT3 = "Tests/images/dxt3-argb-8bbp-explicitalpha_MipMaps-1.dds"
@@ -389,5 +394,25 @@ def test_save(mode: str, test_file: str, tmp_path: Path) -> None:
         assert im.mode == mode
         im.save(out)
 
-        with Image.open(out) as reloaded:
-            assert_image_equal(im, reloaded)
+        assert_image_equal_tofile(im, out)
+
+
+def test_save_dxt1(tmp_path: Path) -> None:
+    out = str(tmp_path / "temp.dds")
+    with Image.open(TEST_FILE_DXT1) as im:
+        im.convert("RGB").save(out, pixel_format="DXT1")
+    assert_image_similar_tofile(im, out, 1.84)
+
+    im_alpha = im.copy()
+    im_alpha.putpixel((0, 0), (0, 0, 0, 0))
+    im_alpha.save(out, pixel_format="DXT1")
+    with Image.open(out) as reloaded:
+        assert reloaded.getpixel((0, 0)) == (0, 0, 0, 0)
+
+    im_l = im.convert("L")
+    im_l.save(out, pixel_format="DXT1")
+    assert_image_similar_tofile(im_l.convert("RGBA"), out, 9.25)
+
+    im_alpha.convert("LA").save(out, pixel_format="DXT1")
+    with Image.open(out) as reloaded:
+        assert reloaded.getpixel((0, 0)) == (0, 0, 0, 0)

@@ -351,6 +351,24 @@ get_packer(ImagingEncoderObject *encoder, const char *mode, const char *rawmode)
 }
 
 /* -------------------------------------------------------------------- */
+/* BCN                                                                  */
+/* -------------------------------------------------------------------- */
+
+PyObject *
+PyImaging_BcnEncoderNew(PyObject *self, PyObject *args) {
+    ImagingEncoderObject *encoder;
+
+    encoder = PyImaging_EncoderNew(0);
+    if (encoder == NULL) {
+        return NULL;
+    }
+
+    encoder->encode = ImagingBcnEncode;
+
+    return (PyObject *)encoder;
+}
+
+/* -------------------------------------------------------------------- */
 /* EPS                                                                  */
 /* -------------------------------------------------------------------- */
 
