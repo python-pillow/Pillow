@@ -20,8 +20,8 @@ def test_sanity() -> None:
 def test_zero_width_chars() -> None:
     with open(filename, "rb") as fp:
         data = fp.read()
-        data = data[:2650] + b"\x00\x00" + data[2652:]
-        BdfFontFile.BdfFontFile(io.BytesIO(data))
+    data = data[:2650] + b"\x00\x00" + data[2652:]
+    BdfFontFile.BdfFontFile(io.BytesIO(data))
 
 
 def test_invalid_file() -> None:

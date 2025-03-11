@@ -40,7 +40,7 @@ def test_sanity(tmp_path: Path) -> None:
 def test_bad_image_size() -> None:
     with open("Tests/images/pil184.pcx", "rb") as fp:
         data = fp.read()
-        data = data[:4] + b"\xff\xff" + data[6:]
+    data = data[:4] + b"\xff\xff" + data[6:]
 
     b = io.BytesIO(data)
     with pytest.raises(SyntaxError, match="bad PCX image size"):
@@ -51,7 +51,7 @@ def test_bad_image_size() -> None:
 def test_unknown_mode() -> None:
     with open("Tests/images/pil184.pcx", "rb") as fp:
         data = fp.read()
-        data = data[:3] + b"\xff" + data[4:]
+    data = data[:3] + b"\xff" + data[4:]
 
     b = io.BytesIO(data)
     with pytest.raises(OSError, match="unknown PCX mode"):
