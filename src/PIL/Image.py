@@ -2908,7 +2908,12 @@ class Image:
             Resampling.BILINEAR,
             Resampling.BICUBIC,
         ):
-            if resample in (Resampling.BOX, Resampling.HAMMING, Resampling.LANCZOS, Resampling.MKS2021):
+            if resample in (
+                Resampling.BOX,
+                Resampling.HAMMING,
+                Resampling.LANCZOS,
+                Resampling.MKS2021,
+            ):
                 unusable: dict[int, str] = {
                     Resampling.BOX: "Image.Resampling.BOX",
                     Resampling.HAMMING: "Image.Resampling.HAMMING",
