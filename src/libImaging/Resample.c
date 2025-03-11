@@ -79,11 +79,30 @@ lanczos_filter(double x) {
     return 0.0;
 }
 
+static inline double
+mks_2021_filter(double x) {
+    /* https://johncostella.com/magic/ */
+    if (x < 0.0)
+        x = -x;
+    if (x < 0.5)
+        return 577.0/576.0 - 239.0/144.0 * pow(x, 2.0);
+    if (x < 1.5)
+        return 35.0/36.0 * (x - 1.0) * (x - 239.0/140.0);
+    if (x < 2.5)
+        return 1.0/6.0 * (x - 2.0) * (65.0/24.0 - x);
+    if (x < 3.5)
+        return 1.0/36.0 * (x - 3.0) * (x - 15.0/4.0);
+    if (x < 4.5)
+        return -1.0/288.0 * pow(x - 9.0/2.0, 2.0);
+    return(0.0);
+}
+
 static struct filter BOX = {box_filter, 0.5};
 static struct filter BILINEAR = {bilinear_filter, 1.0};
 static struct filter HAMMING = {hamming_filter, 1.0};
 static struct filter BICUBIC = {bicubic_filter, 2.0};
 static struct filter LANCZOS = {lanczos_filter, 3.0};
+static struct filter MKS2021 = {mks_2021_filter, 4.5};
 
 /* 8 bits for result. Filter can have negative areas.
    In one cases the sum of the coefficients will be negative,
@@ -692,6 +711,9 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]) {
             break;
         case IMAGING_TRANSFORM_LANCZOS:
             filterp = &LANCZOS;
+            break;
+        case IMAGING_TRANSFORM_MKS2021:
+            filterp = &MKS2021;
             break;
         default:
             return (Imaging)ImagingError_ValueError("unsupported resampling filter");

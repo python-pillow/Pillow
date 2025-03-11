@@ -169,6 +169,7 @@ class Resampling(IntEnum):
     HAMMING = 5
     BICUBIC = 3
     LANCZOS = 1
+    MKS2021 = 6
 
 
 _filters_support = {
@@ -177,6 +178,7 @@ _filters_support = {
     Resampling.HAMMING: 1.0,
     Resampling.BICUBIC: 2.0,
     Resampling.LANCZOS: 3.0,
+    Resampling.MKS2021: 4.5,
 }
 
 
@@ -2242,6 +2244,7 @@ class Image:
             Resampling.LANCZOS,
             Resampling.BOX,
             Resampling.HAMMING,
+            Resampling.MKS2021,
         ):
             msg = f"Unknown resampling filter ({resample})."
 
@@ -2254,6 +2257,7 @@ class Image:
                     (Resampling.BICUBIC, "Image.Resampling.BICUBIC"),
                     (Resampling.BOX, "Image.Resampling.BOX"),
                     (Resampling.HAMMING, "Image.Resampling.HAMMING"),
+                    (Resampling.MKS2021, "Image.Resampling.MKS2021"),
                 )
             ]
             msg += f" Use {', '.join(filters[:-1])} or {filters[-1]}"
@@ -2904,11 +2908,12 @@ class Image:
             Resampling.BILINEAR,
             Resampling.BICUBIC,
         ):
-            if resample in (Resampling.BOX, Resampling.HAMMING, Resampling.LANCZOS):
+            if resample in (Resampling.BOX, Resampling.HAMMING, Resampling.LANCZOS, Resampling.MKS2021):
                 unusable: dict[int, str] = {
                     Resampling.BOX: "Image.Resampling.BOX",
                     Resampling.HAMMING: "Image.Resampling.HAMMING",
                     Resampling.LANCZOS: "Image.Resampling.LANCZOS",
+                    Resampling.MKS2021: "Image.Resampling.MKS2021",
                 }
                 msg = unusable[resample] + f" ({resample}) cannot be used."
             else:
