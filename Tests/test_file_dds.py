@@ -398,21 +398,48 @@ def test_save(mode: str, test_file: str, tmp_path: Path) -> None:
 
 
 def test_save_dxt1(tmp_path: Path) -> None:
+    # RGB
     out = str(tmp_path / "temp.dds")
     with Image.open(TEST_FILE_DXT1) as im:
         im.convert("RGB").save(out, pixel_format="DXT1")
     assert_image_similar_tofile(im, out, 1.84)
 
+    # RGBA
     im_alpha = im.copy()
     im_alpha.putpixel((0, 0), (0, 0, 0, 0))
     im_alpha.save(out, pixel_format="DXT1")
     with Image.open(out) as reloaded:
         assert reloaded.getpixel((0, 0)) == (0, 0, 0, 0)
 
+    # L
     im_l = im.convert("L")
     im_l.save(out, pixel_format="DXT1")
-    assert_image_similar_tofile(im_l.convert("RGBA"), out, 9.25)
+    assert_image_similar_tofile(im_l.convert("RGBA"), out, 6.07)
 
+    # LA
     im_alpha.convert("LA").save(out, pixel_format="DXT1")
     with Image.open(out) as reloaded:
         assert reloaded.getpixel((0, 0)) == (0, 0, 0, 0)
+
+
+def test_save_dxt5(tmp_path: Path) -> None:
+    # RGB
+    out = str(tmp_path / "temp.dds")
+    with Image.open(TEST_FILE_DXT1) as im:
+        im.convert("RGB").save(out, pixel_format="DXT5")
+    assert_image_similar_tofile(im, out, 1.84)
+
+    # RGBA
+    with Image.open(TEST_FILE_DXT5) as im_rgba:
+        im_rgba.save(out, pixel_format="DXT5")
+    assert_image_similar_tofile(im_rgba, out, 3.69)
+
+    # L
+    im_l = im.convert("L")
+    im_l.save(out, pixel_format="DXT5")
+    assert_image_similar_tofile(im_l.convert("RGBA"), out, 6.07)
+
+    # LA
+    im_la = im_rgba.convert("LA")
+    im_la.save(out, pixel_format="DXT5")
+    assert_image_similar_tofile(im_la.convert("RGBA"), out, 8.32)
