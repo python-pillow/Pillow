@@ -520,8 +520,16 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     flags = DDSD.CAPS | DDSD.HEIGHT | DDSD.WIDTH | DDSD.PIXELFORMAT
     bitcount = len(im.getbands()) * 8
-    raw = im.encoderinfo.get("pixel_format") != "DXT1"
-    if raw:
+    pixel_format = im.encoderinfo.get("pixel_format")
+    if pixel_format in ("DXT1", "DXT5"):
+        codec_name = "bcn"
+        flags |= DDSD.LINEARSIZE
+        pitch = (im.width + 3) * 4
+        args = pixel_format
+        rgba_mask = [0, 0, 0, 0]
+        pixel_flags = DDPF.FOURCC
+        fourcc = D3DFMT.DXT1 if pixel_format == "DXT1" else D3DFMT.DXT5
+    else:
         codec_name = "raw"
         flags |= DDSD.PITCH
         pitch = (im.width * bitcount + 7) // 8
@@ -529,14 +537,14 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         alpha = im.mode[-1] == "A"
         if im.mode[0] == "L":
             pixel_flags = DDPF.LUMINANCE
-            rawmode = im.mode
+            args = im.mode
             if alpha:
                 rgba_mask = [0x000000FF, 0x000000FF, 0x000000FF]
             else:
                 rgba_mask = [0xFF000000, 0xFF000000, 0xFF000000]
         else:
             pixel_flags = DDPF.RGB
-            rawmode = im.mode[::-1]
+            args = im.mode[::-1]
             rgba_mask = [0x00FF0000, 0x0000FF00, 0x000000FF]
 
             if alpha:
@@ -546,15 +554,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             pixel_flags |= DDPF.ALPHAPIXELS
         rgba_mask.append(0xFF000000 if alpha else 0)
 
-        fourcc = 0
-    else:
-        codec_name = "bcn"
-        flags |= DDSD.LINEARSIZE
-        pitch = (im.width + 3) * 4
-        rawmode = None
-        rgba_mask = [0, 0, 0, 0]
-        pixel_flags = DDPF.FOURCC
-        fourcc = D3DFMT.DXT1
+        fourcc = D3DFMT.UNKNOWN
     fp.write(
         o32(DDS_MAGIC)
         + struct.pack(
@@ -573,7 +573,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         + struct.pack("<4I", *rgba_mask)  # dwRGBABitMask
         + struct.pack("<5I", DDSCAPS.TEXTURE, 0, 0, 0, 0)
     )
-    ImageFile._save(im, fp, [ImageFile._Tile(codec_name, (0, 0) + im.size, 0, rawmode)])
+    ImageFile._save(im, fp, [ImageFile._Tile(codec_name, (0, 0) + im.size, 0, args)])
 
 
 def _accept(prefix: bytes) -> bool:
