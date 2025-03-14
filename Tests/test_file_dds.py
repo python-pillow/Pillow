@@ -12,6 +12,7 @@ from PIL import DdsImagePlugin, Image
 from .helper import (
     assert_image_equal,
     assert_image_equal_tofile,
+    assert_image_similar,
     assert_image_similar_tofile,
     hopper,
 )
@@ -112,6 +113,19 @@ def test_sanity_ati1_bc4u(image_path: str) -> None:
         assert im.size == (64, 64)
 
         assert_image_equal_tofile(im, TEST_FILE_ATI1.replace(".dds", ".png"))
+
+
+def test_dx10_bc3(tmp_path: Path) -> None:
+    out = str(tmp_path / "temp.dds")
+    with Image.open(TEST_FILE_DXT5) as im:
+        im.save(out, pixel_format="BC3")
+
+    with Image.open(out) as reloaded:
+        assert reloaded.format == "DDS"
+        assert reloaded.mode == "RGBA"
+        assert reloaded.size == (256, 256)
+
+        assert_image_similar(im, reloaded, 3.69)
 
 
 @pytest.mark.parametrize(

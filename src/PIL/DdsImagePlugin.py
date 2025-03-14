@@ -419,6 +419,10 @@ class DdsImageFile(ImageFile.ImageFile):
                     self._mode = "RGBA"
                     self.pixel_format = "BC1"
                     n = 1
+                elif dxgi_format in (DXGI_FORMAT.BC3_TYPELESS, DXGI_FORMAT.BC3_UNORM):
+                    self._mode = "RGBA"
+                    self.pixel_format = "BC3"
+                    n = 3
                 elif dxgi_format in (DXGI_FORMAT.BC4_TYPELESS, DXGI_FORMAT.BC4_UNORM):
                     self._mode = "L"
                     self.pixel_format = "BC4"
@@ -521,14 +525,18 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     flags = DDSD.CAPS | DDSD.HEIGHT | DDSD.WIDTH | DDSD.PIXELFORMAT
     bitcount = len(im.getbands()) * 8
     pixel_format = im.encoderinfo.get("pixel_format")
-    if pixel_format in ("DXT1", "DXT5"):
+    if pixel_format in ("DXT1", "BC3", "DXT5"):
         codec_name = "bcn"
         flags |= DDSD.LINEARSIZE
         pitch = (im.width + 3) * 4
         args = pixel_format
         rgba_mask = [0, 0, 0, 0]
         pixel_flags = DDPF.FOURCC
-        fourcc = D3DFMT.DXT1 if pixel_format == "DXT1" else D3DFMT.DXT5
+        fourcc = {"DXT1": D3DFMT.DXT1, "BC3": D3DFMT.DX10, "DXT5": D3DFMT.DXT5}[
+            pixel_format
+        ]
+        if fourcc == D3DFMT.DX10:
+            dxgi_format = DXGI_FORMAT.BC3_TYPELESS
     else:
         codec_name = "raw"
         flags |= DDSD.PITCH
@@ -573,6 +581,11 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         + struct.pack("<4I", *rgba_mask)  # dwRGBABitMask
         + struct.pack("<5I", DDSCAPS.TEXTURE, 0, 0, 0, 0)
     )
+    if fourcc == D3DFMT.DX10:
+        fp.write(
+            # dxgi_format, 2D resource, misc, array size, straight alpha
+            struct.pack("<5I", dxgi_format, 3, 0, 0, 1)
+        )
     ImageFile._save(im, fp, [ImageFile._Tile(codec_name, (0, 0) + im.size, 0, args)])
 
 
