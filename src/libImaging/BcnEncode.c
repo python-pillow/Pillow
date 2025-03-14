@@ -218,7 +218,7 @@ encode_bc3_alpha(Imaging im, ImagingCodecState state, UINT8 *dst) {
 int
 ImagingBcnEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
     char *pixel_format = ((BCNSTATE *)state->context)->pixel_format;
-    int n = strcmp(pixel_format, "DXT5") == 0 ? 3 : 1;
+    int n = strcmp(pixel_format, "DXT1") == 0 ? 1 : 3;
     int has_alpha_channel =
         strcmp(im->mode, "RGBA") == 0 || strcmp(im->mode, "LA") == 0;
 
