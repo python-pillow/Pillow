@@ -530,7 +530,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     bitcount = len(im.getbands()) * 8
     pixel_format = im.encoderinfo.get("pixel_format")
     args: tuple[int] | str
-    if pixel_format in ("DXT1", "BC2", "DXT3", "BC3", "DXT5"):
+    if pixel_format:
         codec_name = "bcn"
         flags |= DDSD.LINEARSIZE
         pitch = (im.width + 3) * 4
@@ -550,9 +550,18 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             if pixel_format == "BC2":
                 args = (2,)
                 dxgi_format = DXGI_FORMAT.BC2_TYPELESS
-            else:
+            elif pixel_format == "BC3":
                 args = (3,)
                 dxgi_format = DXGI_FORMAT.BC3_TYPELESS
+            elif pixel_format == "BC5":
+                args = (5,)
+                dxgi_format = DXGI_FORMAT.BC5_TYPELESS
+                if im.mode != "RGB":
+                    msg = "only RGB mode can be written as BC5"
+                    raise OSError(msg)
+            else:
+                msg = f"cannot write pixel format {pixel_format}"
+                raise OSError(msg)
     else:
         codec_name = "raw"
         flags |= DDSD.PITCH
