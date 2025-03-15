@@ -115,6 +115,19 @@ def test_sanity_ati1_bc4u(image_path: str) -> None:
         assert_image_equal_tofile(im, TEST_FILE_ATI1.replace(".dds", ".png"))
 
 
+def test_dx10_bc2(tmp_path: Path) -> None:
+    out = str(tmp_path / "temp.dds")
+    with Image.open(TEST_FILE_DXT3) as im:
+        im.save(out, pixel_format="BC2")
+
+    with Image.open(out) as reloaded:
+        assert reloaded.format == "DDS"
+        assert reloaded.mode == "RGBA"
+        assert reloaded.size == (256, 256)
+
+        assert_image_similar(im, reloaded, 3.81)
+
+
 def test_dx10_bc3(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.dds")
     with Image.open(TEST_FILE_DXT5) as im:
