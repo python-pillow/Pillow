@@ -360,19 +360,18 @@ PyImaging_BcnEncoderNew(PyObject *self, PyObject *args) {
     ImagingEncoderObject *encoder;
 
     char *mode;
-    char *pixel_format;
-    if (!PyArg_ParseTuple(args, "ss", &mode, &pixel_format)) {
+    int n;
+    if (!PyArg_ParseTuple(args, "si", &mode, &n)) {
         return NULL;
     }
 
-    encoder = PyImaging_EncoderNew(sizeof(BCNSTATE));
+    encoder = PyImaging_EncoderNew(0);
     if (encoder == NULL) {
         return NULL;
     }
 
     encoder->encode = ImagingBcnEncode;
-
-    ((BCNSTATE *)encoder->state.context)->pixel_format = pixel_format;
+    encoder->state.state = n;
 
     return (PyObject *)encoder;
 }

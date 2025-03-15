@@ -436,6 +436,29 @@ def test_save_dxt1(tmp_path: Path) -> None:
         assert reloaded.getpixel((0, 0)) == (0, 0, 0, 0)
 
 
+def test_save_dxt3(tmp_path: Path) -> None:
+    # RGB
+    out = str(tmp_path / "temp.dds")
+    with Image.open(TEST_FILE_DXT3) as im:
+        im_rgb = im.convert("RGB")
+    im_rgb.save(out, pixel_format="DXT3")
+    assert_image_similar_tofile(im_rgb.convert("RGBA"), out, 1.26)
+
+    # RGBA
+    im.save(out, pixel_format="DXT3")
+    assert_image_similar_tofile(im, out, 3.81)
+
+    # L
+    im_l = im.convert("L")
+    im_l.save(out, pixel_format="DXT3")
+    assert_image_similar_tofile(im_l.convert("RGBA"), out, 5.89)
+
+    # LA
+    im_la = im.convert("LA")
+    im_la.save(out, pixel_format="DXT3")
+    assert_image_similar_tofile(im_la.convert("RGBA"), out, 8.44)
+
+
 def test_save_dxt5(tmp_path: Path) -> None:
     # RGB
     out = str(tmp_path / "temp.dds")

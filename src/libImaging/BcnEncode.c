@@ -10,8 +10,6 @@
 
 #include "Imaging.h"
 
-#include "Bcn.h"
-
 typedef struct {
     UINT8 color[3];
 } rgb;
@@ -57,14 +55,18 @@ encode_bc1_color(Imaging im, ImagingCodecState state, UINT8 *dst, int separate_a
     int transparency = 0;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
+            current_rgba = &block[i + j * 4];
+
             int x = state->x + i * im->pixelsize;
             int y = state->y + j;
             if (x >= state->xsize * im->pixelsize || y >= state->ysize) {
                 // The 4x4 block extends past the edge of the image
+                for (k = 0; k < 3; k++) {
+                    current_rgba->color[k] = 0;
+                }
                 continue;
             }
 
-            current_rgba = &block[i + j * 4];
             for (k = 0; k < 3; k++) {
                 current_rgba->color[k] =
                     (UINT8)im->image[y][x + (im->pixelsize == 1 ? 0 : k)];
@@ -153,6 +155,36 @@ encode_bc1_color(Imaging im, ImagingCodecState state, UINT8 *dst, int separate_a
 }
 
 static void
+encode_bc2_block(Imaging im, ImagingCodecState state, UINT8 *dst) {
+    int i, j;
+    UINT8 block[16], current_alpha;
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            int x = state->x + i * im->pixelsize;
+            int y = state->y + j;
+            if (x >= state->xsize * im->pixelsize || y >= state->ysize) {
+                // The 4x4 block extends past the edge of the image
+                block[i + j * 4] = 0;
+                continue;
+            }
+
+            current_alpha = (UINT8)im->image[y][x + 3];
+            block[i + j * 4] = current_alpha;
+        }
+    }
+
+    for (i = 0; i < 4; i++) {
+        UINT16 l = 0;
+        for (j = 3; j > -1; j--) {
+            current_alpha = block[i * 4 + j];
+            l |= current_alpha << (j * 4);
+        }
+        *dst++ = l;
+        *dst++ = l >> 8;
+    }
+}
+
+static void
 encode_bc3_alpha(Imaging im, ImagingCodecState state, UINT8 *dst) {
     int i, j;
     UINT8 alpha_min = 0, alpha_max = 0;
@@ -166,6 +198,7 @@ encode_bc3_alpha(Imaging im, ImagingCodecState state, UINT8 *dst) {
             int y = state->y + j;
             if (x >= state->xsize * im->pixelsize || y >= state->ysize) {
                 // The 4x4 block extends past the edge of the image
+                block[i + j * 4] = 0;
                 continue;
             }
 
@@ -217,17 +250,20 @@ encode_bc3_alpha(Imaging im, ImagingCodecState state, UINT8 *dst) {
 
 int
 ImagingBcnEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
-    char *pixel_format = ((BCNSTATE *)state->context)->pixel_format;
-    int n = strcmp(pixel_format, "DXT1") == 0 ? 1 : 3;
+    int n = state->state;
     int has_alpha_channel =
         strcmp(im->mode, "RGBA") == 0 || strcmp(im->mode, "LA") == 0;
 
     UINT8 *dst = buf;
 
     for (;;) {
-        if (n == 3) {
+        if (n == 2 || n == 3) {
             if (has_alpha_channel) {
-                encode_bc3_alpha(im, state, dst);
+                if (n == 2) {
+                    encode_bc2_block(im, state, dst);
+                } else {
+                    encode_bc3_alpha(im, state, dst);
+                }
                 dst += 8;
             } else {
                 for (int i = 0; i < 8; i++) {
