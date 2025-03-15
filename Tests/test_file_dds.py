@@ -402,7 +402,7 @@ def test_not_implemented(test_file: str) -> None:
 def test_save_unsupported_mode(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.dds")
     im = hopper("HSV")
-    with pytest.raises(OSError):
+    with pytest.raises(OSError, match="cannot write mode HSV as DDS"):
         im.save(out)
 
 
@@ -422,6 +422,13 @@ def test_save(mode: str, test_file: str, tmp_path: Path) -> None:
         im.save(out)
 
         assert_image_equal_tofile(im, out)
+
+
+def test_save_unsupported_pixel_format(tmp_path: Path) -> None:
+    out = str(tmp_path / "temp.dds")
+    im = hopper()
+    with pytest.raises(OSError, match="cannot write pixel format UNKNOWN"):
+        im.save(out, pixel_format="UNKNOWN")
 
 
 def test_save_dxt1(tmp_path: Path) -> None:
@@ -493,3 +500,14 @@ def test_save_dxt5(tmp_path: Path) -> None:
     im_la = im_rgba.convert("LA")
     im_la.save(out, pixel_format="DXT5")
     assert_image_similar_tofile(im_la.convert("RGBA"), out, 8.32)
+
+
+def test_save_dx10_bc5(tmp_path: Path) -> None:
+    out = str(tmp_path / "temp.dds")
+    with Image.open(TEST_FILE_DX10_BC5_TYPELESS) as im:
+        im.save(out, pixel_format="BC5")
+    assert_image_similar_tofile(im, out, 9.56)
+
+    im = hopper("L")
+    with pytest.raises(OSError, match="only RGB mode can be written as BC5"):
+        im.save(out, pixel_format="BC5")

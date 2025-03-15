@@ -185,7 +185,7 @@ encode_bc2_block(Imaging im, ImagingCodecState state, UINT8 *dst) {
 }
 
 static void
-encode_bc3_alpha(Imaging im, ImagingCodecState state, UINT8 *dst) {
+encode_bc3_alpha(Imaging im, ImagingCodecState state, UINT8 *dst, int o) {
     int i, j;
     UINT8 alpha_min = 0, alpha_max = 0;
     UINT8 block[16], current_alpha;
@@ -202,7 +202,7 @@ encode_bc3_alpha(Imaging im, ImagingCodecState state, UINT8 *dst) {
                 continue;
             }
 
-            current_alpha = (UINT8)im->image[y][x + 3];
+            current_alpha = (UINT8)im->image[y][x + o];
             block[i + j * 4] = current_alpha;
 
             if (first || current_alpha < alpha_min) {
@@ -226,12 +226,13 @@ encode_bc3_alpha(Imaging im, ImagingCodecState state, UINT8 *dst) {
             if (!current_alpha) {
                 l |= 6 << (j * 3);
                 continue;
-            } else if (current_alpha == 255 || denom == 0) {
+            } else if (current_alpha == 255) {
                 l |= 7 << (j * 3);
                 continue;
             }
 
-            float distance = abs(current_alpha - alpha_min) / denom * 10;
+            float distance =
+                denom == 0 ? 0 : abs(current_alpha - alpha_min) / denom * 10;
             if (distance < 3) {
                 l |= 2 << (j * 3);  // 4/5 * alpha_min + 1/5 * alpha_max
             } else if (distance < 5) {
@@ -257,21 +258,28 @@ ImagingBcnEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
     UINT8 *dst = buf;
 
     for (;;) {
-        if (n == 2 || n == 3) {
-            if (has_alpha_channel) {
-                if (n == 2) {
-                    encode_bc2_block(im, state, dst);
+        if (n == 5) {
+            encode_bc3_alpha(im, state, dst, 0);
+            dst += 8;
+
+            encode_bc3_alpha(im, state, dst, 1);
+        } else {
+            if (n == 2 || n == 3) {
+                if (has_alpha_channel) {
+                    if (n == 2) {
+                        encode_bc2_block(im, state, dst);
+                    } else {
+                        encode_bc3_alpha(im, state, dst, 3);
+                    }
+                    dst += 8;
                 } else {
-                    encode_bc3_alpha(im, state, dst);
-                }
-                dst += 8;
-            } else {
-                for (int i = 0; i < 8; i++) {
-                    *dst++ = 0xff;
+                    for (int i = 0; i < 8; i++) {
+                        *dst++ = 0xff;
+                    }
                 }
             }
+            encode_bc1_color(im, state, dst, n == 1 && has_alpha_channel);
         }
-        encode_bc1_color(im, state, dst, n == 1 && has_alpha_channel);
         dst += 8;
 
         state->x += im->pixelsize * 4;
