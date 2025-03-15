@@ -419,6 +419,10 @@ class DdsImageFile(ImageFile.ImageFile):
                     self._mode = "RGBA"
                     self.pixel_format = "BC1"
                     n = 1
+                elif dxgi_format in (DXGI_FORMAT.BC2_TYPELESS, DXGI_FORMAT.BC2_UNORM):
+                    self._mode = "RGBA"
+                    self.pixel_format = "BC2"
+                    n = 2
                 elif dxgi_format in (DXGI_FORMAT.BC3_TYPELESS, DXGI_FORMAT.BC3_UNORM):
                     self._mode = "RGBA"
                     self.pixel_format = "BC3"
@@ -526,7 +530,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     bitcount = len(im.getbands()) * 8
     pixel_format = im.encoderinfo.get("pixel_format")
     args: tuple[int] | str
-    if pixel_format in ("DXT1", "DXT3", "BC3", "DXT5"):
+    if pixel_format in ("DXT1", "BC2", "DXT3", "BC3", "DXT5"):
         codec_name = "bcn"
         flags |= DDSD.LINEARSIZE
         pitch = (im.width + 3) * 4
@@ -538,10 +542,16 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         elif pixel_format == "DXT3":
             fourcc = D3DFMT.DXT3
             args = (2,)
-        else:
-            fourcc = D3DFMT.DXT5 if pixel_format == "DXT5" else D3DFMT.DX10
+        elif pixel_format == "DXT5":
+            fourcc = D3DFMT.DXT5
             args = (3,)
-            if fourcc == D3DFMT.DX10:
+        else:
+            fourcc = D3DFMT.DX10
+            if pixel_format == "BC2":
+                args = (2,)
+                dxgi_format = DXGI_FORMAT.BC2_TYPELESS
+            else:
+                args = (3,)
                 dxgi_format = DXGI_FORMAT.BC3_TYPELESS
     else:
         codec_name = "raw"
