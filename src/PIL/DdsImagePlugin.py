@@ -525,18 +525,24 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     flags = DDSD.CAPS | DDSD.HEIGHT | DDSD.WIDTH | DDSD.PIXELFORMAT
     bitcount = len(im.getbands()) * 8
     pixel_format = im.encoderinfo.get("pixel_format")
-    if pixel_format in ("DXT1", "BC3", "DXT5"):
+    args: tuple[int] | str
+    if pixel_format in ("DXT1", "DXT3", "BC3", "DXT5"):
         codec_name = "bcn"
         flags |= DDSD.LINEARSIZE
         pitch = (im.width + 3) * 4
-        args = pixel_format
         rgba_mask = [0, 0, 0, 0]
         pixel_flags = DDPF.FOURCC
-        fourcc = {"DXT1": D3DFMT.DXT1, "BC3": D3DFMT.DX10, "DXT5": D3DFMT.DXT5}[
-            pixel_format
-        ]
-        if fourcc == D3DFMT.DX10:
-            dxgi_format = DXGI_FORMAT.BC3_TYPELESS
+        if pixel_format == "DXT1":
+            fourcc = D3DFMT.DXT1
+            args = (1,)
+        elif pixel_format == "DXT3":
+            fourcc = D3DFMT.DXT3
+            args = (2,)
+        else:
+            fourcc = D3DFMT.DXT5 if pixel_format == "DXT5" else D3DFMT.DX10
+            args = (3,)
+            if fourcc == D3DFMT.DX10:
+                dxgi_format = DXGI_FORMAT.BC3_TYPELESS
     else:
         codec_name = "raw"
         flags |= DDSD.PITCH
