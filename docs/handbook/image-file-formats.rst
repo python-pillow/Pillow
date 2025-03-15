@@ -68,7 +68,7 @@ by DirectX.
 DXT1 and DXT5 pixel formats can be read, only in ``RGBA`` mode.
 
 .. versionadded:: 3.4.0
-   DXT3 images can be read in ``RGB`` mode and DX10 images can be read in
+   DXT3 images can be read in ``RGBA`` mode and DX10 images can be read in
    ``RGB`` and ``RGBA`` mode.
 
 .. versionadded:: 6.0.0
