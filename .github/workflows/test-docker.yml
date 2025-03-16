@@ -75,8 +75,9 @@ jobs:
 
     - name: Set up QEMU
       if: "matrix.qemu-arch"
-      run: |
-        docker run --rm --privileged aptman/qus -s -- -p ${{ matrix.qemu-arch }}
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: ${{ matrix.qemu-arch }}
 
     - name: Docker pull
       run: |
