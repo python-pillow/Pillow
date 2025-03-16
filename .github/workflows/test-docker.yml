@@ -35,6 +35,10 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         docker: [
+          # Run slower jobs first to give them a headstart and reduce waiting time
+          ubuntu-24.04-noble-ppc64le,
+          ubuntu-24.04-noble-s390x,
+          # Then run the remainder
           alpine,
           amazon-2-amd64,
           amazon-2023-amd64,
@@ -52,13 +56,9 @@ jobs:
         dockerTag: [main]
         include:
           - docker: "ubuntu-24.04-noble-ppc64le"
-            os: "ubuntu-22.04"
             qemu-arch: "ppc64le"
-            dockerTag: main
           - docker: "ubuntu-24.04-noble-s390x"
-            os: "ubuntu-22.04"
             qemu-arch: "s390x"
-            dockerTag: main
           - docker: "ubuntu-24.04-noble-arm64v8"
             os: "ubuntu-24.04-arm"
             dockerTag: main
