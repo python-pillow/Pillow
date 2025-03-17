@@ -410,6 +410,10 @@ def test_seek() -> None:
         except EOFError:
             assert frame_count == 5
 
+        img.seek(0)
+        with pytest.raises(ValueError, match="cannot seek to frame 2"):
+            img._seek(2)
+
 
 def test_seek_info() -> None:
     with Image.open("Tests/images/iss634.gif") as im:
@@ -601,7 +605,7 @@ def test_save_dispose(tmp_path: Path) -> None:
         Image.new("L", (100, 100), "#111"),
         Image.new("L", (100, 100), "#222"),
     ]
-    for method in range(0, 4):
+    for method in range(4):
         im_list[0].save(out, save_all=True, append_images=im_list[1:], disposal=method)
         with Image.open(out) as img:
             for _ in range(2):
