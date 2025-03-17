@@ -116,7 +116,7 @@ V = {
     "HARFBUZZ": "10.4.0",
     "JPEGTURBO": "3.1.0",
     "LCMS2": "2.17",
-    "LIBAVIF": "1.1.1",
+    "LIBAVIF": "1.2.1",
     "LIBIMAGEQUANT": "4.3.4",
     "LIBPNG": "1.6.47",
     "LIBWEBP": "1.5.0",

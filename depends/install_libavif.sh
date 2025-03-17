@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-version=1.1.1
+version=1.2.1
 
 ./download-and-extract.sh libavif-$version https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$version.tar.gz
 
