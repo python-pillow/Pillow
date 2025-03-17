@@ -454,7 +454,8 @@ The :py:meth:`~PIL.Image.open` method may set the following
     Raw EXIF data from the image.
 
 **comment**
-    A comment about the image.
+    A comment about the image, from the COM marker. This is separate from the
+    UserComment tag that may be stored in the EXIF data.
 
     .. versionadded:: 7.1.0
 
@@ -1162,9 +1163,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
 **append_images**
     A list of images to append as additional frames. Each of the
-    images in the list can be single or multiframe images. Note however, that for
-    correct results, all the appended images should have the same
-    ``encoderinfo`` and ``encoderconfig`` properties.
+    images in the list can be single or multiframe images.
 
     .. versionadded:: 4.2.0
 

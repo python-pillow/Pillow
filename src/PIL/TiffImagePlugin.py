@@ -288,7 +288,7 @@ if not getattr(Image.core, "libtiff_support_custom_tags", True):
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] in PREFIXES
+    return prefix.startswith(tuple(PREFIXES))
 
 
 def _limit_rational(
@@ -404,7 +404,7 @@ class IFDRational(Rational):
     def __repr__(self) -> str:
         return str(float(self._val))
 
-    def __hash__(self) -> int:
+    def __hash__(self) -> int:  # type: ignore[override]
         return self._val.__hash__()
 
     def __eq__(self, other: object) -> bool:
@@ -1280,7 +1280,7 @@ class TiffImageFile(ImageFile.ImageFile):
         blocks = {}
         val = self.tag_v2.get(ExifTags.Base.ImageResources)
         if val:
-            while val[:4] == b"8BIM":
+            while val.startswith(b"8BIM"):
                 id = i16(val[4:6])
                 n = math.ceil((val[6] + 1) / 2) * 2
                 size = i32(val[6 + n : 10 + n])
@@ -1584,7 +1584,7 @@ class TiffImageFile(ImageFile.ImageFile):
             # byte order.
             elif rawmode == "I;16":
                 rawmode = "I;16N"
-            elif rawmode.endswith(";16B") or rawmode.endswith(";16L"):
+            elif rawmode.endswith((";16B", ";16L")):
                 rawmode = rawmode[:-1] + "N"
 
             # Offset in the tile tuple is 0, we go from 0,0 to
@@ -2295,9 +2295,7 @@ class AppendingTiffWriter(io.BytesIO):
 
 
 def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    encoderinfo = im.encoderinfo.copy()
-    encoderconfig = im.encoderconfig
-    append_images = list(encoderinfo.get("append_images", []))
+    append_images = list(im.encoderinfo.get("append_images", []))
     if not hasattr(im, "n_frames") and not append_images:
         return _save(im, fp, filename)
 
@@ -2305,12 +2303,11 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         with AppendingTiffWriter(fp) as tf:
             for ims in [im] + append_images:
-                ims.encoderinfo = encoderinfo
-                ims.encoderconfig = encoderconfig
-                if not hasattr(ims, "n_frames"):
-                    nfr = 1
-                else:
-                    nfr = ims.n_frames
+                if not hasattr(ims, "encoderinfo"):
+                    ims.encoderinfo = {}
+                if not hasattr(ims, "encoderconfig"):
+                    ims.encoderconfig = ()
+                nfr = getattr(ims, "n_frames", 1)
 
                 for idx in range(nfr):
                     ims.seek(idx)

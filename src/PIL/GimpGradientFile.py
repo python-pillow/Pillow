@@ -116,7 +116,7 @@ class GimpGradientFile(GradientFile):
     """File handler for GIMP's gradient format."""
 
     def __init__(self, fp: IO[bytes]) -> None:
-        if fp.readline()[:13] != b"GIMP Gradient":
+        if not fp.readline().startswith(b"GIMP Gradient"):
             msg = "not a GIMP gradient file"
             raise SyntaxError(msg)
 

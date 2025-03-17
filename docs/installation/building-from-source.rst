@@ -44,14 +44,14 @@ Many of Pillow's features require external libraries:
 
 * **libtiff** provides compressed TIFF functionality
 
-  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.6.0**
+  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.7.0**
 
 * **libfreetype** provides type related services
 
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.16**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.17**.
 
 * **libwebp** provides the WebP format.
 

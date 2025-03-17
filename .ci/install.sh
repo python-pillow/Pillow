@@ -2,12 +2,12 @@
 
 aptget_update()
 {
-    if [ ! -z $1 ]; then
+    if [ -n "$1" ]; then
         echo ""
         echo "Retrying apt-get update..."
         echo ""
     fi
-    output=`sudo apt-get update 2>&1`
+    output=$(sudo apt-get update 2>&1)
     echo "$output"
     if [[ $output == *[WE]:\ * ]]; then
         return 1
@@ -20,7 +20,7 @@ fi
 set -e
 
 if [[ $(uname) != CYGWIN* ]]; then
-    sudo apt-get -qq install libfreetype6-dev liblcms2-dev python3-tk\
+    sudo apt-get -qq install libfreetype6-dev liblcms2-dev libtiff-dev python3-tk\
                              ghostscript libjpeg-turbo8-dev libopenjp2-7-dev\
                              cmake meson imagemagick libharfbuzz-dev libfribidi-dev\
                              sway wl-clipboard libopenblas-dev

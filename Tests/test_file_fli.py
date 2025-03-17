@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import warnings
 
 import pytest
@@ -52,12 +53,12 @@ def test_prefix_chunk(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
 def test_unclosed_file() -> None:
-    def open() -> None:
+    def open_test_image() -> None:
         im = Image.open(static_test_file)
         im.load()
 
     with pytest.warns(ResourceWarning):
-        open()
+        open_test_image()
 
 
 def test_closed_file() -> None:
@@ -132,6 +133,15 @@ def test_eoferror() -> None:
         im.seek(n_frames - 1)
 
 
+def test_missing_frame_size() -> None:
+    with open(animated_test_file, "rb") as fp:
+        data = fp.read()
+    data = data[:6188]
+    with Image.open(io.BytesIO(data)) as im:
+        with pytest.raises(EOFError, match="missing frame size"):
+            im.seek(1)
+
+
 def test_seek_tell() -> None:
     with Image.open(animated_test_file) as im:
         layer_number = im.tell()
@@ -159,6 +169,9 @@ def test_seek() -> None:
         im.seek(50)
 
         assert_image_equal_tofile(im, "Tests/images/a_fli.png")
+
+        with pytest.raises(ValueError, match="cannot seek to frame 52"):
+            im._seek(52)
 
 
 @pytest.mark.parametrize(

@@ -17,6 +17,7 @@ def test_sanity() -> None:
 def test_reload() -> None:
     with Image.open("Tests/images/hopper.gif") as im:
         original = im.copy()
+        assert im.palette is not None
         im.palette.dirty = 1
         assert_image_equal(im.convert("RGB"), original.convert("RGB"))
 
@@ -111,7 +112,7 @@ def test_make_linear_lut() -> None:
     assert isinstance(lut, list)
     assert len(lut) == 256
     # Check values
-    for i in range(0, len(lut)):
+    for i in range(len(lut)):
         assert lut[i] == i
 
 

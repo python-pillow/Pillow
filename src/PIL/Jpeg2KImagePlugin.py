@@ -352,9 +352,8 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
 
 
 def _accept(prefix: bytes) -> bool:
-    return (
-        prefix[:4] == b"\xff\x4f\xff\x51"
-        or prefix[:12] == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a"
+    return prefix.startswith(
+        (b"\xff\x4f\xff\x51", b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a")
     )
 
 

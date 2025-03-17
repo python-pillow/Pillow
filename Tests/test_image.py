@@ -65,21 +65,20 @@ class TestImage:
 
     @pytest.mark.parametrize("mode", ("", "bad", "very very long"))
     def test_image_modes_fail(self, mode: str) -> None:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match="unrecognized image mode"):
             Image.new(mode, (1, 1))
-        assert str(e.value) == "unrecognized image mode"
 
     def test_exception_inheritance(self) -> None:
         assert issubclass(UnidentifiedImageError, OSError)
 
     def test_sanity(self) -> None:
         im = Image.new("L", (100, 100))
-        assert repr(im)[:45] == "<PIL.Image.Image image mode=L size=100x100 at"
+        assert repr(im).startswith("<PIL.Image.Image image mode=L size=100x100 at")
         assert im.mode == "L"
         assert im.size == (100, 100)
 
         im = Image.new("RGB", (100, 100))
-        assert repr(im)[:45] == "<PIL.Image.Image image mode=RGB size=100x100 "
+        assert repr(im).startswith("<PIL.Image.Image image mode=RGB size=100x100 ")
         assert im.mode == "RGB"
         assert im.size == (100, 100)
 
@@ -658,6 +657,7 @@ class TestImage:
         im.putpalette(list(range(256)) * 4, "RGBA")
         im_remapped = im.remap_palette(list(range(256)))
         assert_image_equal(im, im_remapped)
+        assert im.palette is not None
         assert im.palette.palette == im_remapped.palette.palette
 
         # Test illegal image mode

@@ -67,7 +67,7 @@ LOADING_STRATEGY = LoadingStrategy.RGB_AFTER_FIRST
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:6] in [b"GIF87a", b"GIF89a"]
+    return prefix.startswith((b"GIF87a", b"GIF89a"))
 
 
 ##
@@ -257,7 +257,7 @@ class GifImageFile(ImageFile.ImageFile):
                     # application extension
                     #
                     info["extension"] = block, self.fp.tell()
-                    if block[:11] == b"NETSCAPE2.0":
+                    if block.startswith(b"NETSCAPE2.0"):
                         block = self.data()
                         if block and len(block) >= 3 and block[0] == 1:
                             self.info["loop"] = i16(block, 1)
@@ -689,16 +689,21 @@ def _write_multiple_frames(
                         im_frames[-1].encoderinfo["duration"] += encoderinfo["duration"]
                     continue
                 if im_frames[-1].encoderinfo.get("disposal") == 2:
-                    if background_im is None:
-                        color = im.encoderinfo.get(
-                            "transparency", im.info.get("transparency", (0, 0, 0))
-                        )
-                        background = _get_background(im_frame, color)
-                        background_im = Image.new("P", im_frame.size, background)
-                        first_palette = im_frames[0].im.palette
-                        assert first_palette is not None
-                        background_im.putpalette(first_palette, first_palette.mode)
-                    bbox = _getbbox(background_im, im_frame)[1]
+                    # To appear correctly in viewers using a convention,
+                    # only consider transparency, and not background color
+                    color = im.encoderinfo.get(
+                        "transparency", im.info.get("transparency")
+                    )
+                    if color is not None:
+                        if background_im is None:
+                            background = _get_background(im_frame, color)
+                            background_im = Image.new("P", im_frame.size, background)
+                            first_palette = im_frames[0].im.palette
+                            assert first_palette is not None
+                            background_im.putpalette(first_palette, first_palette.mode)
+                        bbox = _getbbox(background_im, im_frame)[1]
+                    else:
+                        bbox = (0, 0) + im_frame.size
                 elif encoderinfo.get("optimize") and im_frame.mode != "1":
                     if "transparency" not in encoderinfo:
                         assert im_frame.palette is not None
@@ -764,7 +769,8 @@ def _write_multiple_frames(
             if not palette:
                 frame_data.encoderinfo["include_color_table"] = True
 
-            im_frame = im_frame.crop(frame_data.bbox)
+            if frame_data.bbox != (0, 0) + im_frame.size:
+                im_frame = im_frame.crop(frame_data.bbox)
             offset = frame_data.bbox[:2]
         _write_frame_data(fp, im_frame, offset, frame_data.encoderinfo)
     return True
