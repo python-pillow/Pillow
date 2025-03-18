@@ -176,6 +176,7 @@ def test_seek_tell() -> None:
 
 def test_seek() -> None:
     with Image.open(animated_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
         im.seek(50)
 
         assert_image_equal_tofile(im, "Tests/images/a_fli.png")

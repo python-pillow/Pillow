@@ -407,6 +407,7 @@ def test_save_netpbm_l_mode(tmp_path: Path) -> None:
 
 def test_seek() -> None:
     with Image.open("Tests/images/dispose_none.gif") as img:
+        assert isinstance(img, GifImagePlugin.GifImageFile)
         frame_count = 0
         try:
             while True:
