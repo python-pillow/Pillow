@@ -35,8 +35,11 @@ def test_apng_basic() -> None:
         with pytest.raises(EOFError):
             im.seek(2)
 
-        # test rewind support
         im.seek(0)
+        with pytest.raises(ValueError, match="cannot seek to frame 2"):
+            im._seek(2)
+
+        # test rewind support
         assert im.getpixel((0, 0)) == (255, 0, 0, 255)
         assert im.getpixel((64, 32)) == (255, 0, 0, 255)
         im.seek(1)
