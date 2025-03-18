@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 from pathlib import Path
 
 import pytest
@@ -34,6 +35,28 @@ def test_sanity(tmp_path: Path) -> None:
     im = hopper("RGBA")
     with pytest.raises(ValueError):
         im.save(f)
+
+
+def test_bad_image_size() -> None:
+    with open("Tests/images/pil184.pcx", "rb") as fp:
+        data = fp.read()
+    data = data[:4] + b"\xff\xff" + data[6:]
+
+    b = io.BytesIO(data)
+    with pytest.raises(SyntaxError, match="bad PCX image size"):
+        with PcxImagePlugin.PcxImageFile(b):
+            pass
+
+
+def test_unknown_mode() -> None:
+    with open("Tests/images/pil184.pcx", "rb") as fp:
+        data = fp.read()
+    data = data[:3] + b"\xff" + data[4:]
+
+    b = io.BytesIO(data)
+    with pytest.raises(OSError, match="unknown PCX mode"):
+        with Image.open(b):
+            pass
 
 
 def test_invalid_file() -> None:

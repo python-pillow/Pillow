@@ -65,9 +65,8 @@ class TestImage:
 
     @pytest.mark.parametrize("mode", ("", "bad", "very very long"))
     def test_image_modes_fail(self, mode: str) -> None:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match="unrecognized image mode"):
             Image.new(mode, (1, 1))
-        assert str(e.value) == "unrecognized image mode"
 
     def test_exception_inheritance(self) -> None:
         assert issubclass(UnidentifiedImageError, OSError)
