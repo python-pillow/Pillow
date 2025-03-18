@@ -402,6 +402,7 @@ def test_save_netpbm_l_mode(tmp_path: Path) -> None:
 
 def test_seek() -> None:
     with Image.open("Tests/images/dispose_none.gif") as img:
+        assert isinstance(img, GifImagePlugin.GifImageFile)
         frame_count = 0
         try:
             while True:
@@ -446,10 +447,12 @@ def test_seek_rewind() -> None:
 def test_n_frames(path: str, n_frames: int) -> None:
     # Test is_animated before n_frames
     with Image.open(path) as im:
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         assert im.is_animated == (n_frames != 1)
 
     # Test is_animated after n_frames
     with Image.open(path) as im:
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         assert im.n_frames == n_frames
         assert im.is_animated == (n_frames != 1)
 
@@ -459,6 +462,7 @@ def test_no_change() -> None:
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
         im.seek(1)
         expected = im.copy()
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         assert im.n_frames == 5
         assert_image_equal(im, expected)
 
@@ -466,17 +470,20 @@ def test_no_change() -> None:
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
         im.seek(3)
         expected = im.copy()
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         assert im.is_animated
         assert_image_equal(im, expected)
 
     with Image.open("Tests/images/comment_after_only_frame.gif") as im:
         expected = Image.new("P", (1, 1))
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         assert not im.is_animated
         assert_image_equal(im, expected)
 
 
 def test_eoferror() -> None:
     with Image.open(TEST_GIF) as im:
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         n_frames = im.n_frames
 
         # Test seeking past the last frame
@@ -495,6 +502,7 @@ def test_first_frame_transparency() -> None:
 
 def test_dispose_none() -> None:
     with Image.open("Tests/images/dispose_none.gif") as img:
+        assert isinstance(img, GifImagePlugin.GifImageFile)
         try:
             while True:
                 img.seek(img.tell() + 1)
@@ -518,6 +526,7 @@ def test_dispose_none_load_end() -> None:
 
 def test_dispose_background() -> None:
     with Image.open("Tests/images/dispose_bgnd.gif") as img:
+        assert isinstance(img, GifImagePlugin.GifImageFile)
         try:
             while True:
                 img.seek(img.tell() + 1)
@@ -571,6 +580,7 @@ def test_transparent_dispose(
 
 def test_dispose_previous() -> None:
     with Image.open("Tests/images/dispose_prev.gif") as img:
+        assert isinstance(img, GifImagePlugin.GifImageFile)
         try:
             while True:
                 img.seek(img.tell() + 1)
@@ -608,6 +618,7 @@ def test_save_dispose(tmp_path: Path) -> None:
     for method in range(4):
         im_list[0].save(out, save_all=True, append_images=im_list[1:], disposal=method)
         with Image.open(out) as img:
+            assert isinstance(img, GifImagePlugin.GifImageFile)
             for _ in range(2):
                 img.seek(img.tell() + 1)
                 assert img.disposal_method == method
@@ -621,6 +632,7 @@ def test_save_dispose(tmp_path: Path) -> None:
     )
 
     with Image.open(out) as img:
+        assert isinstance(img, GifImagePlugin.GifImageFile)
         for i in range(2):
             img.seek(img.tell() + 1)
             assert img.disposal_method == i + 1
@@ -743,6 +755,7 @@ def test_dispose2_background_frame(tmp_path: Path) -> None:
     im_list[0].save(out, save_all=True, append_images=im_list[1:], disposal=2)
 
     with Image.open(out) as im:
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         assert im.n_frames == 3
 
 
@@ -924,6 +937,8 @@ def test_identical_frames(tmp_path: Path) -> None:
         out, save_all=True, append_images=im_list[1:], duration=duration_list
     )
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
+
         # Assert that the first three frames were combined
         assert reread.n_frames == 2
 
@@ -953,6 +968,8 @@ def test_identical_frames_to_single_frame(
 
     im_list[0].save(out, save_all=True, append_images=im_list[1:], duration=duration)
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
+
         # Assert that all frames were combined
         assert reread.n_frames == 1
 
@@ -1139,6 +1156,7 @@ def test_append_images(tmp_path: Path) -> None:
     im.copy().save(out, save_all=True, append_images=ims)
 
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.n_frames == 3
 
     # Tests appending using a generator
@@ -1148,6 +1166,7 @@ def test_append_images(tmp_path: Path) -> None:
     im.save(out, save_all=True, append_images=im_generator(ims))
 
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.n_frames == 3
 
     # Tests appending single and multiple frame images
@@ -1156,6 +1175,7 @@ def test_append_images(tmp_path: Path) -> None:
             im.save(out, save_all=True, append_images=[im2])
 
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.n_frames == 10
 
 
@@ -1256,6 +1276,7 @@ def test_bbox(tmp_path: Path) -> None:
     im.save(out, save_all=True, append_images=ims)
 
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.n_frames == 2
 
 
@@ -1268,6 +1289,7 @@ def test_bbox_alpha(tmp_path: Path) -> None:
     im.save(out, save_all=True, append_images=[im2])
 
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.n_frames == 2
 
 
@@ -1419,6 +1441,7 @@ def test_extents(
 ) -> None:
     monkeypatch.setattr(GifImagePlugin, "LOADING_STRATEGY", loading_strategy)
     with Image.open("Tests/images/" + test_file) as im:
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         assert im.size == (100, 100)
 
         # Check that n_frames does not change the size
@@ -1466,4 +1489,5 @@ def test_p_rgba(tmp_path: Path, params: dict[str, Any]) -> None:
     im1.save(out, save_all=True, append_images=[im2], **params)
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, GifImagePlugin.GifImageFile)
         assert reloaded.n_frames == 2
