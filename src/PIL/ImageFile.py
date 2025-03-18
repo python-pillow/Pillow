@@ -450,7 +450,7 @@ class ImageFile(Image.Image):
         return self.tell() != frame
 
 
-class StubHandler:
+class StubHandler(abc.ABC):
     def open(self, im: StubImageFile) -> None:
         pass
 
@@ -459,7 +459,7 @@ class StubHandler:
         pass
 
 
-class StubImageFile(ImageFile):
+class StubImageFile(ImageFile, metaclass=abc.ABCMeta):
     """
     Base class for stub image loaders.
 
@@ -467,9 +467,9 @@ class StubImageFile(ImageFile):
     certain format, but relies on external code to load the file.
     """
 
+    @abc.abstractmethod
     def _open(self) -> None:
-        msg = "StubImageFile subclass must implement _open"
-        raise NotImplementedError(msg)
+        pass
 
     def load(self) -> Image.core.PixelAccess | None:
         loader = self._load()
@@ -483,10 +483,10 @@ class StubImageFile(ImageFile):
         self.__dict__ = image.__dict__
         return image.load()
 
+    @abc.abstractmethod
     def _load(self) -> StubHandler | None:
         """(Hook) Find actual image loader."""
-        msg = "StubImageFile subclass must implement _load"
-        raise NotImplementedError(msg)
+        pass
 
 
 class Parser:

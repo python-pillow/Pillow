@@ -68,7 +68,7 @@ by DirectX.
 DXT1 and DXT5 pixel formats can be read, only in ``RGBA`` mode.
 
 .. versionadded:: 3.4.0
-   DXT3 images can be read in ``RGB`` mode and DX10 images can be read in
+   DXT3 images can be read in ``RGBA`` mode and DX10 images can be read in
    ``RGB`` and ``RGBA`` mode.
 
 .. versionadded:: 6.0.0
@@ -1163,9 +1163,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
 **append_images**
     A list of images to append as additional frames. Each of the
-    images in the list can be single or multiframe images. Note however, that for
-    correct results, all the appended images should have the same
-    ``encoderinfo`` and ``encoderconfig`` properties.
+    images in the list can be single or multiframe images.
 
     .. versionadded:: 4.2.0
 

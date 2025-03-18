@@ -1169,11 +1169,9 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_realloc_overflow(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
         with Image.open("Tests/images/tiff_overflow_rows_per_strip.tif") as im:
-            with pytest.raises(OSError) as e:
-                im.load()
-
             # Assert that the error code is IMAGING_CODEC_MEMORY
-            assert str(e.value) == "decoder error -9"
+            with pytest.raises(OSError, match="decoder error -9"):
+                im.load()
 
     @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", "jpeg"))
     def test_save_multistrip(self, compression: str, tmp_path: Path) -> None:

@@ -80,15 +80,12 @@ def test_lut(op: str) -> None:
 def test_no_operator_loaded() -> None:
     im = Image.new("L", (1, 1))
     mop = ImageMorph.MorphOp()
-    with pytest.raises(Exception) as e:
+    with pytest.raises(Exception, match="No operator loaded"):
         mop.apply(im)
-    assert str(e.value) == "No operator loaded"
-    with pytest.raises(Exception) as e:
+    with pytest.raises(Exception, match="No operator loaded"):
         mop.match(im)
-    assert str(e.value) == "No operator loaded"
-    with pytest.raises(Exception) as e:
+    with pytest.raises(Exception, match="No operator loaded"):
         mop.save_lut("")
-    assert str(e.value) == "No operator loaded"
 
 
 # Test the named patterns
@@ -238,15 +235,12 @@ def test_incorrect_mode() -> None:
     im = hopper("RGB")
     mop = ImageMorph.MorphOp(op_name="erosion8")
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match="Image mode must be L"):
         mop.apply(im)
-    assert str(e.value) == "Image mode must be L"
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match="Image mode must be L"):
         mop.match(im)
-    assert str(e.value) == "Image mode must be L"
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match="Image mode must be L"):
         mop.get_on_pixels(im)
-    assert str(e.value) == "Image mode must be L"
 
 
 def test_add_patterns() -> None:
@@ -279,9 +273,10 @@ def test_pattern_syntax_error() -> None:
     lb.add_patterns(new_patterns)
 
     # Act / Assert
-    with pytest.raises(Exception) as e:
+    with pytest.raises(
+        Exception, match='Syntax error in pattern "a pattern with a syntax error"'
+    ):
         lb.build_lut()
-    assert str(e.value) == 'Syntax error in pattern "a pattern with a syntax error"'
 
 
 def test_load_invalid_mrl() -> None:
@@ -290,9 +285,8 @@ def test_load_invalid_mrl() -> None:
     mop = ImageMorph.MorphOp()
 
     # Act / Assert
-    with pytest.raises(Exception) as e:
+    with pytest.raises(Exception, match="Wrong size operator file!"):
         mop.load_lut(invalid_mrl)
-    assert str(e.value) == "Wrong size operator file!"
 
 
 def test_roundtrip_mrl(tmp_path: Path) -> None:

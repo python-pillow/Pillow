@@ -293,11 +293,9 @@ def test_header_token_too_long(tmp_path: Path) -> None:
     with open(path, "wb") as f:
         f.write(b"P6\n 01234567890")
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match="Token too long in file header: 01234567890"):
         with Image.open(path):
             pass
-
-    assert str(e.value) == "Token too long in file header: 01234567890"
 
 
 def test_truncated_file(tmp_path: Path) -> None:
@@ -306,11 +304,9 @@ def test_truncated_file(tmp_path: Path) -> None:
     with open(path, "wb") as f:
         f.write(b"P6")
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match="Reached EOF while reading header"):
         with Image.open(path):
             pass
-
-    assert str(e.value) == "Reached EOF while reading header"
 
     # Test EOF for PyDecoder
     fp = BytesIO(b"P5 3 1 4")
@@ -335,11 +331,11 @@ def test_invalid_maxval(maxval: bytes, tmp_path: Path) -> None:
     with open(path, "wb") as f:
         f.write(b"P6\n3 1 " + maxval)
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(
+        ValueError, match="maxval must be greater than 0 and less than 65536"
+    ):
         with Image.open(path):
             pass
-
-    assert str(e.value) == "maxval must be greater than 0 and less than 65536"
 
 
 def test_neg_ppm() -> None:
