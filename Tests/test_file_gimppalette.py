@@ -42,7 +42,7 @@ def test_get_palette() -> None:
     palette, mode = palette_file.getpalette()
 
     # Assert
-    expected_palette = []
+    expected_palette: list[int] = []
     for color in (
         (0, 0, 0),
         (65, 38, 30),
