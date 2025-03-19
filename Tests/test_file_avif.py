@@ -121,7 +121,7 @@ class TestFileAvif:
         Does it have the bits we expect?
         """
 
-        temp_file = str(tmp_path / "temp.avif")
+        temp_file = tmp_path / "temp.avif"
 
         im = hopper()
         im.save(temp_file)
@@ -157,7 +157,7 @@ class TestFileAvif:
             _avif.AvifDecoder()
 
     def test_invalid_dimensions(self, tmp_path: Path) -> None:
-        test_file = str(tmp_path / "temp.avif")
+        test_file = tmp_path / "temp.avif"
         im = Image.new("RGB", (0, 0))
         with pytest.raises(ValueError):
             im.save(test_file)
@@ -181,7 +181,7 @@ class TestFileAvif:
         monkeypatch.setattr(AvifImagePlugin, "_avif", _mock_avif)
 
         im = Image.new("RGB", (150, 150))
-        test_file = str(tmp_path / "temp.avif")
+        test_file = tmp_path / "temp.avif"
         with pytest.raises(OSError):
             im.save(test_file)
 
@@ -209,11 +209,11 @@ class TestFileAvif:
             original_value = im.convert("RGB").getpixel((1, 1))
 
             # Save as AVIF
-            out_avif = str(tmp_path / "temp.avif")
+            out_avif = tmp_path / "temp.avif"
             im.save(out_avif, save_all=True)
 
         # Save as GIF
-        out_gif = str(tmp_path / "temp.gif")
+        out_gif = tmp_path / "temp.gif"
         with Image.open(out_avif) as im:
             im.save(out_gif)
 
@@ -223,7 +223,7 @@ class TestFileAvif:
         assert difference <= 3
 
     def test_save_single_frame(self, tmp_path: Path) -> None:
-        temp_file = str(tmp_path / "temp.avif")
+        temp_file = tmp_path / "temp.avif"
         with Image.open("Tests/images/chi.gif") as im:
             im.save(temp_file)
         with Image.open(temp_file) as im:
@@ -247,7 +247,7 @@ class TestFileAvif:
         im = Image.new("RGBA", (10, 10), (0, 0, 0, 0))
         assert im.getcolors() == [(100, (0, 0, 0, 0))]
 
-        test_file = str(tmp_path / "temp.avif")
+        test_file = tmp_path / "temp.avif"
         im.save(test_file)
 
         # check if saved image contains the same transparency
@@ -307,7 +307,7 @@ class TestFileAvif:
         exif[274] = orientation
         exif_data = exif.tobytes()
         with Image.open(TEST_AVIF_FILE) as im:
-            test_file = str(tmp_path / "temp.avif")
+            test_file = tmp_path / "temp.avif"
             im.save(test_file, exif=exif_data if use_bytes else exif)
 
         with Image.open(test_file) as reloaded:
@@ -321,7 +321,7 @@ class TestFileAvif:
         exif[272] = b"test"
         exif_data = exif.tobytes()
         with Image.open(TEST_AVIF_FILE) as im:
-            test_file = str(tmp_path / "temp.avif")
+            test_file = tmp_path / "temp.avif"
             im.save(test_file, exif=exif)
 
         with Image.open(test_file) as reloaded:
@@ -329,7 +329,7 @@ class TestFileAvif:
 
     def test_exif_invalid(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
-            test_file = str(tmp_path / "temp.avif")
+            test_file = tmp_path / "temp.avif"
             with pytest.raises(SyntaxError):
                 im.save(test_file, exif=b"invalid")
 
@@ -353,7 +353,7 @@ class TestFileAvif:
             exif = im.getexif()
             assert exif[274] == exif_orientation
 
-            test_file = str(tmp_path / "temp.avif")
+            test_file = tmp_path / "temp.avif"
             im.save(test_file, exif=exif)
         with Image.open(test_file) as reloaded:
             assert reloaded.getexif()[274] == exif_orientation
@@ -378,7 +378,7 @@ class TestFileAvif:
             ]
         )
         with Image.open(TEST_AVIF_FILE) as im:
-            test_file = str(tmp_path / "temp.avif")
+            test_file = tmp_path / "temp.avif"
             im.save(test_file, xmp=xmp_arg)
 
         with Image.open(test_file) as reloaded:
@@ -399,43 +399,43 @@ class TestFileAvif:
     @pytest.mark.parametrize("subsampling", ["4:4:4", "4:2:2", "4:2:0", "4:0:0"])
     def test_encoder_subsampling(self, tmp_path: Path, subsampling: str) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
-            test_file = str(tmp_path / "temp.avif")
+            test_file = tmp_path / "temp.avif"
             im.save(test_file, subsampling=subsampling)
 
     def test_encoder_subsampling_invalid(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
-            test_file = str(tmp_path / "temp.avif")
+            test_file = tmp_path / "temp.avif"
             with pytest.raises(ValueError):
                 im.save(test_file, subsampling="foo")
 
     @pytest.mark.parametrize("value", ["full", "limited"])
     def test_encoder_range(self, tmp_path: Path, value: str) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
-            test_file = str(tmp_path / "temp.avif")
+            test_file = tmp_path / "temp.avif"
             im.save(test_file, range=value)
 
     def test_encoder_range_invalid(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
-            test_file = str(tmp_path / "temp.avif")
+            test_file = tmp_path / "temp.avif"
             with pytest.raises(ValueError):
                 im.save(test_file, range="foo")
 
     @skip_unless_avif_encoder("aom")
     def test_encoder_codec_param(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
-            test_file = str(tmp_path / "temp.avif")
+            test_file = tmp_path / "temp.avif"
             im.save(test_file, codec="aom")
 
     def test_encoder_codec_invalid(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
-            test_file = str(tmp_path / "temp.avif")
+            test_file = tmp_path / "temp.avif"
             with pytest.raises(ValueError):
                 im.save(test_file, codec="foo")
 
     @skip_unless_avif_decoder("dav1d")
     def test_decoder_codec_cannot_encode(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
-            test_file = str(tmp_path / "temp.avif")
+            test_file = tmp_path / "temp.avif"
             with pytest.raises(ValueError):
                 im.save(test_file, codec="dav1d")
 
@@ -472,7 +472,7 @@ class TestFileAvif:
         self, tmp_path: Path, advanced: dict[str, str] | int
     ) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
-            test_file = str(tmp_path / "temp.avif")
+            test_file = tmp_path / "temp.avif"
             with pytest.raises(ValueError):
                 im.save(test_file, codec="aom", advanced=advanced)
 
@@ -517,7 +517,7 @@ class TestFileAvif:
 
     def test_encoder_quality_valueerror(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
-            test_file = str(tmp_path / "temp.avif")
+            test_file = tmp_path / "temp.avif"
             with pytest.raises(ValueError):
                 im.save(test_file, quality="invalid")
 
@@ -542,10 +542,10 @@ class TestFileAvif:
         draw.rectangle(xy=[(0, 0), (32, 32)], fill=255)
         draw.rectangle(xy=[(32, 32), (64, 64)], fill=255)
 
-        out_png = str(tmp_path / "temp.png")
+        out_png = tmp_path / "temp.png"
         im.save(out_png, transparency=0)
         with Image.open(out_png) as im_png:
-            out_avif = str(tmp_path / "temp.avif")
+            out_avif = tmp_path / "temp.avif"
             im_png.save(out_avif, quality=100)
 
             with Image.open(out_avif) as expected:
@@ -559,12 +559,12 @@ class TestFileAvif:
     @skip_unless_avif_encoder("aom")
     @pytest.mark.parametrize("speed", [-1, 1, 11])
     def test_aom_optimizations(self, tmp_path: Path, speed: int) -> None:
-        test_file = str(tmp_path / "temp.avif")
+        test_file = tmp_path / "temp.avif"
         hopper().save(test_file, codec="aom", speed=speed)
 
     @skip_unless_avif_encoder("svt")
     def test_svt_optimizations(self, tmp_path: Path) -> None:
-        test_file = str(tmp_path / "temp.avif")
+        test_file = tmp_path / "temp.avif"
         hopper().save(test_file, codec="svt", speed=1)
 
 
@@ -598,7 +598,7 @@ class TestAvifAnimation:
         with Image.open("Tests/images/avif/star.gif") as original:
             assert original.n_frames > 1
 
-            temp_file = str(tmp_path / "temp.avif")
+            temp_file = tmp_path / "temp.avif"
             original.save(temp_file, save_all=True)
             with Image.open(temp_file) as im:
                 assert im.n_frames == original.n_frames
@@ -618,7 +618,7 @@ class TestAvifAnimation:
         are visually similar to the originals.
         """
 
-        def check(temp_file: str) -> None:
+        def check(temp_file: Path) -> None:
             with Image.open(temp_file) as im:
                 assert im.n_frames == 4
 
@@ -632,7 +632,7 @@ class TestAvifAnimation:
         with self.star_frames() as frames:
             frame1 = frames[0]
             frame2 = frames[1]
-            temp_file1 = str(tmp_path / "temp.avif")
+            temp_file1 = tmp_path / "temp.avif"
             frames[0].copy().save(temp_file1, save_all=True, append_images=frames[1:])
             check(temp_file1)
 
@@ -642,7 +642,7 @@ class TestAvifAnimation:
             ) -> Generator[Image.Image, None, None]:
                 yield from ims
 
-            temp_file2 = str(tmp_path / "temp_generator.avif")
+            temp_file2 = tmp_path / "temp_generator.avif"
             frames[0].copy().save(
                 temp_file2,
                 save_all=True,
@@ -651,7 +651,7 @@ class TestAvifAnimation:
             check(temp_file2)
 
     def test_sequence_dimension_mismatch_check(self, tmp_path: Path) -> None:
-        temp_file = str(tmp_path / "temp.avif")
+        temp_file = tmp_path / "temp.avif"
         frame1 = Image.new("RGB", (100, 100))
         frame2 = Image.new("RGB", (150, 150))
         with pytest.raises(ValueError):
@@ -666,7 +666,7 @@ class TestAvifAnimation:
     def test_alpha_premultiplied(
         self, tmp_path: Path, alpha_premultiplied: bool
     ) -> None:
-        temp_file = str(tmp_path / "temp.avif")
+        temp_file = tmp_path / "temp.avif"
         color = (200, 200, 200, 1)
         im = Image.new("RGBA", (1, 1), color)
         im.save(temp_file, alpha_premultiplied=alpha_premultiplied)
@@ -682,7 +682,7 @@ class TestAvifAnimation:
         """
 
         durations = [1, 10, 20, 30, 40]
-        temp_file = str(tmp_path / "temp.avif")
+        temp_file = tmp_path / "temp.avif"
         with self.star_frames() as frames:
             frames[0].save(
                 temp_file,
@@ -711,7 +711,7 @@ class TestAvifAnimation:
         """
 
         duration = 33
-        temp_file = str(tmp_path / "temp.avif")
+        temp_file = tmp_path / "temp.avif"
         with self.star_frames() as frames:
             frames[0].save(
                 temp_file,
