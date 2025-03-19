@@ -1,5 +1,19 @@
 version: 2
 
+sphinx:
+  configuration: docs/conf.py
+
+formats: [pdf]
+
+build:
+  os: ubuntu-lts-latest
+  tools:
+    python: "3"
+  jobs:
+    post_checkout:
+    - git remote add upstream https://github.com/python-pillow/Pillow.git # For forks
+    - git fetch upstream --tags
+
 python:
   install:
     - method: pip

@@ -1,14 +1,16 @@
+from __future__ import annotations
+
 import array
 import math
 import struct
+from collections.abc import Sequence
 
 import pytest
 
 from PIL import Image, ImagePath
 
 
-def test_path():
-
+def test_path() -> None:
     p = ImagePath.Path(list(range(10)))
 
     # sequence interface
@@ -29,7 +31,7 @@ def test_path():
         (6.0, 7.0),
         (8.0, 9.0),
     ]
-    assert p.tolist(1) == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]
+    assert p.tolist(True) == [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]
 
     assert p.getbbox() == (0.0, 1.0, 8.0, 9.0)
 
@@ -39,52 +41,51 @@ def test_path():
     p.transform((1, 0, 1, 0, 1, 1))
     assert list(p) == [(1.0, 2.0), (5.0, 6.0), (9.0, 10.0)]
 
-    # alternative constructors
-    p = ImagePath.Path([0, 1])
-    assert list(p) == [(0.0, 1.0)]
-    p = ImagePath.Path([0.0, 1.0])
-    assert list(p) == [(0.0, 1.0)]
-    p = ImagePath.Path([0, 1])
-    assert list(p) == [(0.0, 1.0)]
-    p = ImagePath.Path([(0, 1)])
-    assert list(p) == [(0.0, 1.0)]
-    p = ImagePath.Path(p)
-    assert list(p) == [(0.0, 1.0)]
-    p = ImagePath.Path(p.tolist(0))
-    assert list(p) == [(0.0, 1.0)]
-    p = ImagePath.Path(p.tolist(1))
-    assert list(p) == [(0.0, 1.0)]
-    p = ImagePath.Path(array.array("f", [0, 1]))
+
+@pytest.mark.parametrize(
+    "coords",
+    (
+        (0, 1),
+        [0, 1],
+        (0.0, 1.0),
+        [0.0, 1.0],
+        ((0, 1),),
+        [(0, 1)],
+        ((0.0, 1.0),),
+        [(0.0, 1.0)],
+        array.array("f", [0, 1]),
+        array.array("f", [0, 1]).tobytes(),
+        ImagePath.Path((0, 1)),
+    ),
+)
+def test_path_constructors(
+    coords: Sequence[float] | array.array[float] | ImagePath.Path,
+) -> None:
+    # Arrange / Act
+    p = ImagePath.Path(coords)
+
+    # Assert
     assert list(p) == [(0.0, 1.0)]
 
-    arr = array.array("f", [0, 1])
-    if hasattr(arr, "tobytes"):
-        p = ImagePath.Path(arr.tobytes())
-    else:
-        p = ImagePath.Path(arr.tostring())
-    assert list(p) == [(0.0, 1.0)]
+
+def test_invalid_path_constructors() -> None:
+    # Arrange / Act
+    with pytest.raises(ValueError, match="incorrect coordinate type"):
+        ImagePath.Path(("a", "b"))
 
 
-def test_invalid_coords():
-    # Arrange
-    coords = ["a", "b"]
-
-    # Act / Assert
-    with pytest.raises(ValueError) as e:
+@pytest.mark.parametrize(
+    "coords",
+    (
+        (0,),
+        [0],
+        (0, 1, 2),
+        [0, 1, 2],
+    ),
+)
+def test_path_odd_number_of_coordinates(coords: Sequence[int]) -> None:
+    with pytest.raises(ValueError, match="wrong number of coordinates"):
         ImagePath.Path(coords)
-
-    assert str(e.value) == "incorrect coordinate type"
-
-
-def test_path_odd_number_of_coordinates():
-    # Arrange
-    coords = [0]
-
-    # Act / Assert
-    with pytest.raises(ValueError) as e:
-        ImagePath.Path(coords)
-
-    assert str(e.value) == "wrong number of coordinates"
 
 
 @pytest.mark.parametrize(
@@ -96,7 +97,9 @@ def test_path_odd_number_of_coordinates():
         (1, (0.0, 0.0, 0.0, 0.0)),
     ],
 )
-def test_getbbox(coords, expected):
+def test_getbbox(
+    coords: int | list[int], expected: tuple[float, float, float, float]
+) -> None:
     # Arrange
     p = ImagePath.Path(coords)
 
@@ -104,7 +107,7 @@ def test_getbbox(coords, expected):
     assert p.getbbox() == expected
 
 
-def test_getbbox_no_args():
+def test_getbbox_no_args() -> None:
     # Arrange
     p = ImagePath.Path([0, 1, 2, 3])
 
@@ -120,7 +123,7 @@ def test_getbbox_no_args():
         (list(range(6)), [(0.0, 3.0), (4.0, 9.0), (8.0, 15.0)]),
     ],
 )
-def test_map(coords, expected):
+def test_map(coords: int | list[int], expected: list[tuple[float, float]]) -> None:
     # Arrange
     p = ImagePath.Path(coords)
 
@@ -132,7 +135,7 @@ def test_map(coords, expected):
     assert list(p) == expected
 
 
-def test_transform():
+def test_transform() -> None:
     # Arrange
     p = ImagePath.Path([0, 1, 2, 3])
     theta = math.pi / 15
@@ -150,7 +153,7 @@ def test_transform():
     ]
 
 
-def test_transform_with_wrap():
+def test_transform_with_wrap() -> None:
     # Arrange
     p = ImagePath.Path([0, 1, 2, 3])
     theta = math.pi / 15
@@ -169,7 +172,7 @@ def test_transform_with_wrap():
     ]
 
 
-def test_overflow_segfault():
+def test_overflow_segfault() -> None:
     # Some Pythons fail getting the argument as an integer, and it falls
     # through to the sequence. Seeing this on 32-bit Windows.
     with pytest.raises((TypeError, MemoryError)):
@@ -182,13 +185,24 @@ def test_overflow_segfault():
             x[i] = b"0" * 16
 
 
+def test_compact_within_map() -> None:
+    p = ImagePath.Path([0, 1])
+
+    def map_func(x: float, y: float) -> tuple[float, float]:
+        p.compact()
+        return 0, 0
+
+    with pytest.raises(ValueError):
+        p.map(map_func)
+
+
 class Evil:
-    def __init__(self):
+    def __init__(self) -> None:
         self.corrupt = Image.core.path(0x4000000000000000)
 
-    def __getitem__(self, i):
+    def __getitem__(self, i: int) -> bytes:
         x = self.corrupt[i]
         return struct.pack("dd", x[0], x[1])
 
-    def __setitem__(self, i, x):
+    def __setitem__(self, i: int, x: bytes) -> None:
         self.corrupt[i] = struct.unpack("dd", x)

@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import pytest
 
 from PIL.GimpPaletteFile import GimpPaletteFile
 
 
-def test_sanity():
+def test_sanity() -> None:
     with open("Tests/images/test.gpl", "rb") as fp:
         GimpPaletteFile(fp)
 
@@ -20,7 +22,7 @@ def test_sanity():
             GimpPaletteFile(fp)
 
 
-def test_large_file_is_truncated():
+def test_large_file_is_truncated() -> None:
     original_max_file_size = GimpPaletteFile._max_file_size
     try:
         GimpPaletteFile._max_file_size = 100
@@ -31,7 +33,7 @@ def test_large_file_is_truncated():
         GimpPaletteFile._max_file_size = original_max_file_size
 
 
-def test_get_palette():
+def test_get_palette() -> None:
     # Arrange
     with open("Tests/images/custom_gimp_palette.gpl", "rb") as fp:
         palette_file = GimpPaletteFile(fp)
@@ -54,3 +56,4 @@ def test_get_palette():
         expected_palette += color
     assert palette == bytes(expected_palette)
     assert mode == "RGB"
+    assert len(palette) / 3 == 8

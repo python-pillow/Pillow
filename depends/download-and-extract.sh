@@ -5,8 +5,8 @@ archive=$1
 url=$2
 
 if [ ! -f $archive.tar.gz ]; then
-    wget -O $archive.tar.gz $url
+    wget --no-verbose -O $archive.tar.gz $url
 fi
 
-rm -r $archive
+rmdir $archive
 tar -xvzf $archive.tar.gz

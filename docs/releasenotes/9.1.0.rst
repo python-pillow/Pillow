@@ -1,49 +1,6 @@
 9.1.0
 -----
 
-API Changes
-===========
-
-Raise an error when performing a negative crop
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Performing a negative crop on an image previously just returned a ``(0, 0)`` image. Now
-it will raise a ``ValueError``, to help reduce confusion if a user has unintentionally
-provided the wrong arguments.
-
-Added specific error if path coordinate type is incorrect
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Rather than returning a ``SystemError``, passing the incorrect types of coordinates into
-a path will now raise a more specific ``ValueError``, with the message "incorrect
-coordinate type".
-
-Replace requirements.txt with extras
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Rather than installing all dependencies for docs and tests via ``requirements.txt``,
-``extras_require`` is used instead. This installs only those needed and at the same
-time as installing Pillow.
-
-For example:
-
-.. code-block:: bash
-
-    # Install with dependencies for tests:
-    python3 -m pip install .[tests]
-
-    # Or for building docs:
-    python3 -m pip install .[docs]
-
-    # Or for all:
-    python3 -m pip install .[docs,tests]
-
-On macOS, the last argument may need to be wrapped in quotes, e.g.
-``python3 -m pip install ".[tests]"``
-
-Therefore ``requirements.txt`` has been removed along with the ``make install-req``
-command for installing its contents.
-
 Deprecations
 ============
 
@@ -51,7 +8,12 @@ Constants
 ^^^^^^^^^
 
 A number of constants have been deprecated and will be removed in Pillow 10.0.0
-(2023-07-01). Instead, ``enum.IntEnum`` classes have been added.
+(2023-07-01). Instead, :py:class:`enum.IntEnum` classes have been added.
+
+.. note::
+
+    Some of these deprecations were restored in Pillow 9.4.0. See
+    :ref:`restored-image-constants`
 
 =====================================================  ============================================================
 Deprecated                                             Use instead
@@ -132,6 +94,49 @@ The stub image plugin ``FitsStubImagePlugin`` has been deprecated and will be re
 Pillow 10.0.0 (2023-07-01). FITS images can be read without a handler through
 :mod:`~PIL.FitsImagePlugin` instead.
 
+API Changes
+===========
+
+Raise an error when performing a negative crop
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Performing a negative crop on an image previously just returned a ``(0, 0)`` image. Now
+it will raise a :py:exc:`ValueError`, to help reduce confusion if a user has unintentionally
+provided the wrong arguments.
+
+Added specific error if path coordinate type is incorrect
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Rather than returning a :py:exc:`SystemError`, passing the incorrect types of coordinates into
+a path will now raise a more specific :py:exc:`ValueError`, with the message "incorrect
+coordinate type".
+
+Replace requirements.txt with extras
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Rather than installing all dependencies for docs and tests via ``requirements.txt``,
+``extras_require`` is used instead. This installs only those needed and at the same
+time as installing Pillow.
+
+For example:
+
+.. code-block:: bash
+
+    # Install with dependencies for tests:
+    python3 -m pip install .[tests]
+
+    # Or for building docs:
+    python3 -m pip install .[docs]
+
+    # Or for all:
+    python3 -m pip install .[docs,tests]
+
+On macOS, the last argument may need to be wrapped in quotes, e.g.
+``python3 -m pip install ".[tests]"``
+
+Therefore ``requirements.txt`` has been removed along with the ``make install-req``
+command for installing its contents.
+
 API Additions
 =============
 
@@ -177,17 +182,13 @@ GifImagePlugin loading strategy
 
 Pillow 9.0.0 introduced the conversion of subsequent GIF frames to ``RGB`` or ``RGBA``. This
 behaviour can now be changed so that the first ``P`` frame is converted to ``RGB`` as
-well.
-
-.. code-block:: python
+well. ::
 
     from PIL import GifImagePlugin
     GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_ALWAYS
 
 Or subsequent frames can be kept in ``P`` mode as long as there is only a single
-palette.
-
-.. code-block:: python
+palette. ::
 
     from PIL import GifImagePlugin
     GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY

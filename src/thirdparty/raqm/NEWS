@@ -1,3 +1,38 @@
+Overview of changes leading to 0.10.1
+Wednesday, April 12, 2023
+====================================
+
+Make combining marks always inherit the script of their base.
+
+Overview of changes leading to 0.10.0
+Wednesday, January 11, 2023
+====================================
+
+Fix font feature ranges.
+
+Fix resolved direction for all-neutral text.
+
+Implement letter and word spacing support.
+
+New API:
+    * raqm_set_text_utf16
+
+Overview of changes leading to 0.9.0
+Sunday, January 30, 2022
+====================================
+
+Raise the minimum versions of Raqm dependencies: no longer conditionally
+enabling any features based on specific dependency version.
+
+raqm_t objects can now be reused by calling raqm_clear_contents() before
+re-use, to potentially reduce the number memory allocations.
+
+Don't hardcode python3 in tests.
+
+New API:
+    * raqm_set_freetype_load_flags_range
+    * raqm_clear_contents
+
 Overview of changes leading to 0.8.0
 Monday, December 13, 2021
 ====================================

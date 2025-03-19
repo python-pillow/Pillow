@@ -37,8 +37,6 @@
 #include "Imaging.h"
 #include <string.h>
 
-int ImagingNewCount = 0;
-
 /* --------------------------------------------------------------------
  * Standard image object.
  */
@@ -82,18 +80,18 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->palette = ImagingPaletteNew("RGB");
 
     } else if (strcmp(mode, "L") == 0) {
-        /* 8-bit greyscale (luminance) images */
+        /* 8-bit grayscale (luminance) images */
         im->bands = im->pixelsize = 1;
         im->linesize = xsize;
 
     } else if (strcmp(mode, "LA") == 0) {
-        /* 8-bit greyscale (luminance) with alpha */
+        /* 8-bit grayscale (luminance) with alpha */
         im->bands = 2;
         im->pixelsize = 4; /* store in image32 memory */
         im->linesize = xsize * 4;
 
     } else if (strcmp(mode, "La") == 0) {
-        /* 8-bit greyscale (luminance) with premultiplied alpha */
+        /* 8-bit grayscale (luminance) with premultiplied alpha */
         im->bands = 2;
         im->pixelsize = 4; /* store in image32 memory */
         im->linesize = xsize * 4;
@@ -112,9 +110,8 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->linesize = xsize * 4;
         im->type = IMAGING_TYPE_INT32;
 
-    } else if (
-        strcmp(mode, "I;16") == 0 || strcmp(mode, "I;16L") == 0 ||
-        strcmp(mode, "I;16B") == 0 || strcmp(mode, "I;16N") == 0) {
+    } else if (strcmp(mode, "I;16") == 0 || strcmp(mode, "I;16L") == 0 ||
+               strcmp(mode, "I;16B") == 0 || strcmp(mode, "I;16N") == 0) {
         /* EXPERIMENTAL */
         /* 16-bit raw integer images */
         im->bands = 1;
@@ -131,7 +128,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
     } else if (strcmp(mode, "BGR;15") == 0) {
         /* EXPERIMENTAL */
         /* 15-bit reversed true colour */
-        im->bands = 1;
+        im->bands = 3;
         im->pixelsize = 2;
         im->linesize = (xsize * 2 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
@@ -139,7 +136,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
     } else if (strcmp(mode, "BGR;16") == 0) {
         /* EXPERIMENTAL */
         /* 16-bit reversed true colour */
-        im->bands = 1;
+        im->bands = 3;
         im->pixelsize = 2;
         im->linesize = (xsize * 2 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
@@ -147,17 +144,9 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
     } else if (strcmp(mode, "BGR;24") == 0) {
         /* EXPERIMENTAL */
         /* 24-bit reversed true colour */
-        im->bands = 1;
+        im->bands = 3;
         im->pixelsize = 3;
         im->linesize = (xsize * 3 + 3) & -4;
-        im->type = IMAGING_TYPE_SPECIAL;
-
-    } else if (strcmp(mode, "BGR;32") == 0) {
-        /* EXPERIMENTAL */
-        /* 32-bit reversed true colour */
-        im->bands = 1;
-        im->pixelsize = 4;
-        im->linesize = (xsize * 4 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
 
     } else if (strcmp(mode, "RGBX") == 0) {
@@ -229,7 +218,9 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
             break;
     }
 
+    MUTEX_LOCK(&ImagingDefaultArena.mutex);
     ImagingDefaultArena.stats_new_count += 1;
+    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
 
     return im;
 }
@@ -237,7 +228,8 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
 Imaging
 ImagingNewPrologue(const char *mode, int xsize, int ysize) {
     return ImagingNewPrologueSubtype(
-        mode, xsize, ysize, sizeof(struct ImagingMemoryInstance));
+        mode, xsize, ysize, sizeof(struct ImagingMemoryInstance)
+    );
 }
 
 void
@@ -277,7 +269,10 @@ struct ImagingMemoryArena ImagingDefaultArena = {
     0,
     0,
     0,
-    0  // Stats
+    0,  // Stats
+#ifdef Py_GIL_DISABLED
+    {0},
+#endif
 };
 
 int
@@ -374,18 +369,19 @@ ImagingDestroyArray(Imaging im) {
     int y = 0;
 
     if (im->blocks) {
+        MUTEX_LOCK(&ImagingDefaultArena.mutex);
         while (im->blocks[y].ptr) {
             memory_return_block(&ImagingDefaultArena, im->blocks[y]);
             y += 1;
         }
+        MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
         free(im->blocks);
     }
 }
 
 Imaging
-ImagingAllocateArray(Imaging im, int dirty, int block_size) {
+ImagingAllocateArray(Imaging im, ImagingMemoryArena arena, int dirty, int block_size) {
     int y, line_in_block, current_block;
-    ImagingMemoryArena arena = &ImagingDefaultArena;
     ImagingMemoryBlock block = {NULL, 0};
     int aligned_linesize, lines_per_block, blocks_count;
     char *aligned_ptr = NULL;
@@ -428,9 +424,8 @@ ImagingAllocateArray(Imaging im, int dirty, int block_size) {
             }
             im->blocks[current_block] = block;
             /* Bulletproof code from libc _int_memalign */
-            aligned_ptr = (char *)(
-                ((size_t) (block.ptr + arena->alignment - 1)) &
-                -((Py_ssize_t) arena->alignment));
+            aligned_ptr = (char *)(((size_t)(block.ptr + arena->alignment - 1)) &
+                                   -((Py_ssize_t)arena->alignment));
         }
 
         im->image[y] = aligned_ptr + aligned_linesize * line_in_block;
@@ -509,14 +504,22 @@ ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
         return NULL;
     }
 
-    if (ImagingAllocateArray(im, dirty, ImagingDefaultArena.block_size)) {
+    MUTEX_LOCK(&ImagingDefaultArena.mutex);
+    Imaging tmp = ImagingAllocateArray(
+        im, &ImagingDefaultArena, dirty, ImagingDefaultArena.block_size
+    );
+    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    if (tmp) {
         return im;
     }
 
     ImagingError_Clear();
 
     // Try to allocate the image once more with smallest possible block size
-    if (ImagingAllocateArray(im, dirty, IMAGING_PAGE_SIZE)) {
+    MUTEX_LOCK(&ImagingDefaultArena.mutex);
+    tmp = ImagingAllocateArray(im, &ImagingDefaultArena, dirty, IMAGING_PAGE_SIZE);
+    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    if (tmp) {
         return im;
     }
 

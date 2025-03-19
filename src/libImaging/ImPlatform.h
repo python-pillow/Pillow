@@ -7,6 +7,7 @@
  * Copyright (c) Fredrik Lundh 1995-2003.
  */
 
+#define PY_SSIZE_T_CLEAN
 #include "Python.h"
 
 /* Check that we have an ANSI compliant compiler */
@@ -25,7 +26,7 @@
 #endif
 #endif
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__) /* WIN */
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -37,40 +38,22 @@
 #undef WIN32
 #endif
 
-#else
+#else /* not WIN */
 /* For System that are not Windows, we'll need to define these. */
+/* We have to define them instead of using typedef because the JPEG lib also
+   defines their own types with the same names, so we need to be able to undef
+   ours before including the JPEG code. */
 
-#if SIZEOF_SHORT == 2
-#define INT16 short
-#elif SIZEOF_INT == 2
-#define INT16 int
-#else
-#define INT16 short /* most things works just fine anyway... */
-#endif
+#include <stdint.h>
 
-#if SIZEOF_SHORT == 4
-#define INT32 short
-#elif SIZEOF_INT == 4
-#define INT32 int
-#elif SIZEOF_LONG == 4
-#define INT32 long
-#else
-#error Cannot find required 32-bit integer type
-#endif
+#define INT8 int8_t
+#define UINT8 uint8_t
+#define INT16 int16_t
+#define UINT16 uint16_t
+#define INT32 int32_t
+#define UINT32 uint32_t
 
-#if SIZEOF_LONG == 8
-#define INT64 long
-#elif SIZEOF_LONG_LONG == 8
-#define INT64 long
-#endif
-
-#define INT8 signed char
-#define UINT8 unsigned char
-
-#define UINT16 unsigned INT16
-#define UINT32 unsigned INT32
-
-#endif
+#endif /* not WIN */
 
 /* assume IEEE; tweak if necessary (patches are welcome) */
 #define FLOAT16 UINT16

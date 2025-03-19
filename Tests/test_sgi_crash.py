@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 from PIL import Image
@@ -19,7 +21,7 @@ from PIL import Image
         "Tests/images/crash-db8bfa78b19721225425530c5946217720d7df4e.sgi",
     ],
 )
-def test_crashes(test_file):
+def test_crashes(test_file: str) -> None:
     with open(test_file, "rb") as f:
         with Image.open(f) as im:
             with pytest.raises(OSError):

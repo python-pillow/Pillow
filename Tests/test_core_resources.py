@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 
 import pytest
@@ -7,7 +9,7 @@ from PIL import Image
 from .helper import is_pypy
 
 
-def test_get_stats():
+def test_get_stats() -> None:
     # Create at least one image
     Image.new("RGB", (10, 10))
 
@@ -20,7 +22,7 @@ def test_get_stats():
     assert "blocks_cached" in stats
 
 
-def test_reset_stats():
+def test_reset_stats() -> None:
     Image.core.reset_stats()
 
     stats = Image.core.get_stats()
@@ -33,19 +35,19 @@ def test_reset_stats():
 
 
 class TestCoreMemory:
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         # Restore default values
         Image.core.set_alignment(1)
         Image.core.set_block_size(1024 * 1024)
         Image.core.set_blocks_max(0)
         Image.core.clear_cache()
 
-    def test_get_alignment(self):
+    def test_get_alignment(self) -> None:
         alignment = Image.core.get_alignment()
 
         assert alignment > 0
 
-    def test_set_alignment(self):
+    def test_set_alignment(self) -> None:
         for i in [1, 2, 4, 8, 16, 32]:
             Image.core.set_alignment(i)
             alignment = Image.core.get_alignment()
@@ -61,12 +63,12 @@ class TestCoreMemory:
         with pytest.raises(ValueError):
             Image.core.set_alignment(3)
 
-    def test_get_block_size(self):
+    def test_get_block_size(self) -> None:
         block_size = Image.core.get_block_size()
 
         assert block_size >= 4096
 
-    def test_set_block_size(self):
+    def test_set_block_size(self) -> None:
         for i in [4096, 2 * 4096, 3 * 4096]:
             Image.core.set_block_size(i)
             block_size = Image.core.get_block_size()
@@ -82,7 +84,7 @@ class TestCoreMemory:
         with pytest.raises(ValueError):
             Image.core.set_block_size(4000)
 
-    def test_set_block_size_stats(self):
+    def test_set_block_size_stats(self) -> None:
         Image.core.reset_stats()
         Image.core.set_blocks_max(0)
         Image.core.set_block_size(4096)
@@ -94,12 +96,12 @@ class TestCoreMemory:
         if not is_pypy():
             assert stats["freed_blocks"] >= 64
 
-    def test_get_blocks_max(self):
+    def test_get_blocks_max(self) -> None:
         blocks_max = Image.core.get_blocks_max()
 
         assert blocks_max >= 0
 
-    def test_set_blocks_max(self):
+    def test_set_blocks_max(self) -> None:
         for i in [0, 1, 10]:
             Image.core.set_blocks_max(i)
             blocks_max = Image.core.get_blocks_max()
@@ -115,7 +117,7 @@ class TestCoreMemory:
                 Image.core.set_blocks_max(2**29)
 
     @pytest.mark.skipif(is_pypy(), reason="Images not collected")
-    def test_set_blocks_max_stats(self):
+    def test_set_blocks_max_stats(self) -> None:
         Image.core.reset_stats()
         Image.core.set_blocks_max(128)
         Image.core.set_block_size(4096)
@@ -130,7 +132,7 @@ class TestCoreMemory:
         assert stats["blocks_cached"] == 64
 
     @pytest.mark.skipif(is_pypy(), reason="Images not collected")
-    def test_clear_cache_stats(self):
+    def test_clear_cache_stats(self) -> None:
         Image.core.reset_stats()
         Image.core.clear_cache()
         Image.core.set_blocks_max(128)
@@ -147,7 +149,7 @@ class TestCoreMemory:
         assert stats["freed_blocks"] >= 48
         assert stats["blocks_cached"] == 16
 
-    def test_large_images(self):
+    def test_large_images(self) -> None:
         Image.core.reset_stats()
         Image.core.set_blocks_max(0)
         Image.core.set_block_size(4096)
@@ -164,26 +166,27 @@ class TestCoreMemory:
 
 
 class TestEnvVars:
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         # Restore default values
         Image.core.set_alignment(1)
         Image.core.set_block_size(1024 * 1024)
         Image.core.set_blocks_max(0)
         Image.core.clear_cache()
 
-    def test_units(self):
+    def test_units(self) -> None:
         Image._apply_env_variables({"PILLOW_BLOCKS_MAX": "2K"})
         assert Image.core.get_blocks_max() == 2 * 1024
         Image._apply_env_variables({"PILLOW_BLOCK_SIZE": "2m"})
         assert Image.core.get_block_size() == 2 * 1024 * 1024
 
-    def test_warnings(self):
-        pytest.warns(
-            UserWarning, Image._apply_env_variables, {"PILLOW_ALIGNMENT": "15"}
-        )
-        pytest.warns(
-            UserWarning, Image._apply_env_variables, {"PILLOW_BLOCK_SIZE": "1024"}
-        )
-        pytest.warns(
-            UserWarning, Image._apply_env_variables, {"PILLOW_BLOCKS_MAX": "wat"}
-        )
+    @pytest.mark.parametrize(
+        "var",
+        (
+            {"PILLOW_ALIGNMENT": "15"},
+            {"PILLOW_BLOCK_SIZE": "1024"},
+            {"PILLOW_BLOCKS_MAX": "wat"},
+        ),
+    )
+    def test_warnings(self, var: dict[str, str]) -> None:
+        with pytest.warns(UserWarning):
+            Image._apply_env_variables(var)

@@ -2,12 +2,12 @@
 
 aptget_update()
 {
-    if [ ! -z $1 ]; then
+    if [ -n "$1" ]; then
         echo ""
         echo "Retrying apt-get update..."
         echo ""
     fi
-    output=`sudo apt-get update 2>&1`
+    output=$(sudo apt-get update 2>&1)
     echo "$output"
     if [[ $output == *[WE]:\ * ]]; then
         return 1
@@ -20,16 +20,17 @@ fi
 set -e
 
 if [[ $(uname) != CYGWIN* ]]; then
-    sudo apt-get -qq install libfreetype6-dev liblcms2-dev python3-tk\
-                             ghostscript libffi-dev libjpeg-turbo-progs libopenjp2-7-dev\
-                             cmake meson imagemagick libharfbuzz-dev libfribidi-dev
+    sudo apt-get -qq install libfreetype6-dev liblcms2-dev libtiff-dev python3-tk\
+                             ghostscript libjpeg-turbo8-dev libopenjp2-7-dev\
+                             cmake meson imagemagick libharfbuzz-dev libfribidi-dev\
+                             sway wl-clipboard libopenblas-dev
 fi
 
 python3 -m pip install --upgrade pip
 python3 -m pip install --upgrade wheel
-PYTHONOPTIMIZE=0 python3 -m pip install cffi
 python3 -m pip install coverage
 python3 -m pip install defusedxml
+python3 -m pip install ipython
 python3 -m pip install olefile
 python3 -m pip install -U pytest
 python3 -m pip install -U pytest-cov
@@ -41,8 +42,15 @@ if [[ $(uname) != CYGWIN* ]]; then
 
     # PyQt6 doesn't support PyPy3
     if [[ $GHA_PYTHON_VERSION == 3.* ]]; then
-        sudo apt-get -qq install libegl1 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxkbcommon-x11-0
-        python3 -m pip install pyqt6
+        sudo apt-get -qq install libegl1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxkbcommon-x11-0
+        # TODO Update condition when pyqt6 supports free-threading
+        if ! [[ "$PYTHON_GIL" == "0" ]]; then python3 -m pip install pyqt6 ; fi
+    fi
+
+    # Pyroma uses non-isolated build and fails with old setuptools
+    if [[ $GHA_PYTHON_VERSION == 3.9 ]]; then
+        # To match pyproject.toml
+        python3 -m pip install "setuptools>=67.8"
     fi
 
     # webp

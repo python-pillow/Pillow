@@ -13,12 +13,6 @@
 #include <tiff.h>
 #endif
 
-/* UNDONE -- what are we using from this? */
-/*#ifndef _UNISTD_H
-  # include <unistd.h>
-  # endif
-*/
-
 #ifndef min
 #define min(x, y) ((x > y) ? y : x)
 #define max(x, y) ((x < y) ? y : x)
@@ -36,7 +30,7 @@ typedef struct {
                    * Should be uint32 for libtiff 3.9.x
                    * uint64 for libtiff 4.0.x
                    */
-    TIFF *tiff; /* Used in write */
+    TIFF *tiff;   /* Used in write */
     toff_t eof;
     int flrealloc; /* may we realloc */
 } TIFFSTATE;
@@ -47,7 +41,8 @@ extern int
 ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp);
 extern int
 ImagingLibTiffMergeFieldInfo(
-    ImagingCodecState state, TIFFDataType field_type, int key, int is_var_length);
+    ImagingCodecState state, TIFFDataType field_type, int key, int is_var_length
+);
 extern int
 ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 

@@ -1,53 +1,54 @@
+from __future__ import annotations
+
 import colorsys
 import itertools
+from typing import Callable
 
 from PIL import Image
 
 from .helper import assert_image_similar, hopper
 
 
-def int_to_float(i):
+def int_to_float(i: int) -> float:
     return i / 255
 
 
-def str_to_float(i):
-    return ord(i) / 255
-
-
-def tuple_to_ints(tp):
+def tuple_to_ints(tp: tuple[float, float, float]) -> tuple[int, int, int]:
     x, y, z = tp
     return int(x * 255.0), int(y * 255.0), int(z * 255.0)
 
 
-def test_sanity():
+def test_sanity() -> None:
     Image.new("HSV", (100, 100))
 
 
-def wedge():
-    w = Image._wedge()
-    w90 = w.rotate(90)
+def linear_gradient() -> Image.Image:
+    im = Image.linear_gradient(mode="L")
+    im90 = im.rotate(90)
 
-    (px, h) = w.size
+    (px, h) = im.size
 
     r = Image.new("L", (px * 3, h))
     g = r.copy()
     b = r.copy()
 
-    r.paste(w, (0, 0))
-    r.paste(w90, (px, 0))
+    r.paste(im, (0, 0))
+    r.paste(im90, (px, 0))
 
-    g.paste(w90, (0, 0))
-    g.paste(w, (2 * px, 0))
+    g.paste(im90, (0, 0))
+    g.paste(im, (2 * px, 0))
 
-    b.paste(w, (px, 0))
-    b.paste(w90, (2 * px, 0))
+    b.paste(im, (px, 0))
+    b.paste(im90, (2 * px, 0))
 
-    img = Image.merge("RGB", (r, g, b))
-
-    return img
+    return Image.merge("RGB", (r, g, b))
 
 
-def to_xxx_colorsys(im, func, mode):
+def to_xxx_colorsys(
+    im: Image.Image,
+    func: Callable[[float, float, float], tuple[float, float, float]],
+    mode: str,
+) -> Image.Image:
     # convert the hard way using the library colorsys routines.
 
     (r, g, b) = im.split()
@@ -68,16 +69,16 @@ def to_xxx_colorsys(im, func, mode):
     return hsv
 
 
-def to_hsv_colorsys(im):
+def to_hsv_colorsys(im: Image.Image) -> Image.Image:
     return to_xxx_colorsys(im, colorsys.rgb_to_hsv, "HSV")
 
 
-def to_rgb_colorsys(im):
+def to_rgb_colorsys(im: Image.Image) -> Image.Image:
     return to_xxx_colorsys(im, colorsys.hsv_to_rgb, "RGB")
 
 
-def test_wedge():
-    src = wedge().resize((3 * 32, 32), Image.Resampling.BILINEAR)
+def test_linear_gradient() -> None:
+    src = linear_gradient().resize((3 * 32, 32), Image.Resampling.BILINEAR)
     im = src.convert("HSV")
     comparable = to_hsv_colorsys(src)
 
@@ -108,7 +109,7 @@ def test_wedge():
     )
 
 
-def test_convert():
+def test_convert() -> None:
     im = hopper("RGB").convert("HSV")
     comparable = to_hsv_colorsys(hopper("RGB"))
 
@@ -126,7 +127,7 @@ def test_convert():
     )
 
 
-def test_hsv_to_rgb():
+def test_hsv_to_rgb() -> None:
     comparable = to_hsv_colorsys(hopper("RGB"))
     converted = comparable.convert("RGB")
     comparable = to_rgb_colorsys(comparable)

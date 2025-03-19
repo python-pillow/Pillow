@@ -25,6 +25,39 @@ Internal Modules
     :undoc-members:
     :show-inheritance:
 
+:mod:`~PIL._typing` Module
+--------------------------
+
+.. module:: PIL._typing
+
+Provides a convenient way to import type hints that are not available
+on some Python versions.
+
+.. py:class:: Buffer
+
+    Typing alias.
+
+.. py:class:: IntegralLike
+
+    Typing alias.
+
+.. py:class:: NumpyArray
+
+    Typing alias.
+
+.. py:class:: StrOrBytesPath
+
+    Typing alias.
+
+.. py:class:: SupportsRead
+
+    An object that supports the read method.
+
+.. py:data:: TypeGuard
+    :value: typing.TypeGuard
+
+    See :py:obj:`typing.TypeGuard`.
+
 :mod:`~PIL._util` Module
 ------------------------
 
@@ -53,3 +86,7 @@ Internal Modules
 
 An internal interface module previously known as :mod:`~PIL._imaging`,
 implemented in :file:`_imaging.c`.
+
+.. py:class:: ImagingCore
+
+    A representation of the image data.

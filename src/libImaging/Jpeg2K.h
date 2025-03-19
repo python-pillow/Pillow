@@ -97,11 +97,10 @@ typedef struct {
     /* PRIVATE CONTEXT (set by decoder) */
     const char *error_msg;
 
-} JPEG2KENCODESTATE;
+    /* Custom comment */
+    char *comment;
 
-/*
- * Local Variables:
- * c-basic-offset: 4
- * End:
- *
- */
+    /* Include PLT marker segment */
+    int plt;
+
+} JPEG2KENCODESTATE;

@@ -31,6 +31,7 @@
  */
 
 #include "Imaging.h"
+#include "Convert.h"
 
 #define R 0
 #define G 1
@@ -103,7 +104,8 @@ static UINT8 BITFLIP[] = {
     3,  131, 67, 195, 35, 163, 99,  227, 19, 147, 83, 211, 51, 179, 115, 243,
     11, 139, 75, 203, 43, 171, 107, 235, 27, 155, 91, 219, 59, 187, 123, 251,
     7,  135, 71, 199, 39, 167, 103, 231, 23, 151, 87, 215, 55, 183, 119, 247,
-    15, 143, 79, 207, 47, 175, 111, 239, 31, 159, 95, 223, 63, 191, 127, 255};
+    15, 143, 79, 207, 47, 175, 111, 239, 31, 159, 95, 223, 63, 191, 127, 255
+};
 
 /* Unpack to "1" image */
 
@@ -718,6 +720,21 @@ ImagingUnpackBGRA15(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 void
+ImagingUnpackBGRA15Z(UINT8 *out, const UINT8 *in, int pixels) {
+    int i, pixel;
+    /* RGB, rearranged channels, 5/5/5/1 bits per pixel, inverted alpha */
+    for (i = 0; i < pixels; i++) {
+        pixel = in[0] + (in[1] << 8);
+        out[B] = (pixel & 31) * 255 / 31;
+        out[G] = ((pixel >> 5) & 31) * 255 / 31;
+        out[R] = ((pixel >> 10) & 31) * 255 / 31;
+        out[A] = ~((pixel >> 15) * 255);
+        out += 4;
+        in += 2;
+    }
+}
+
+void
 ImagingUnpackRGB16(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
     /* RGB, 5/6/5 bits per pixel */
@@ -790,6 +807,17 @@ ImagingUnpackBGRX(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
+ImagingUnpackBGXR(UINT8 *_out, const UINT8 *in, int pixels) {
+    int i;
+    for (i = 0; i < pixels; i++) {
+        UINT32 iv = MAKE_UINT32(in[3], in[1], in[0], 255);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4;
+        _out += 4;
+    }
+}
+
+static void
 ImagingUnpackXRGB(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
     /* RGB, leading pad */
@@ -818,7 +846,7 @@ ImagingUnpackXBGR(UINT8 *_out, const UINT8 *in, int pixels) {
 static void
 unpackRGBALA(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
-    /* greyscale with alpha */
+    /* grayscale with alpha */
     for (i = 0; i < pixels; i++) {
         UINT32 iv = MAKE_UINT32(in[0], in[0], in[0], in[1]);
         memcpy(_out, &iv, sizeof(iv));
@@ -830,7 +858,7 @@ unpackRGBALA(UINT8 *_out, const UINT8 *in, int pixels) {
 static void
 unpackRGBALA16B(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
-    /* 16-bit greyscale with alpha, big-endian */
+    /* 16-bit grayscale with alpha, big-endian */
     for (i = 0; i < pixels; i++) {
         UINT32 iv = MAKE_UINT32(in[0], in[0], in[0], in[2]);
         memcpy(_out, &iv, sizeof(iv));
@@ -855,7 +883,8 @@ unpackRGBa16L(UINT8 *_out, const UINT8 *in, int pixels) {
                 CLIP8(in[1] * 255 / a),
                 CLIP8(in[3] * 255 / a),
                 CLIP8(in[5] * 255 / a),
-                a);
+                a
+            );
         }
         memcpy(_out, &iv, sizeof(iv));
         in += 8;
@@ -879,7 +908,8 @@ unpackRGBa16B(UINT8 *_out, const UINT8 *in, int pixels) {
                 CLIP8(in[0] * 255 / a),
                 CLIP8(in[2] * 255 / a),
                 CLIP8(in[4] * 255 / a),
-                a);
+                a
+            );
         }
         memcpy(_out, &iv, sizeof(iv));
         in += 8;
@@ -903,7 +933,8 @@ unpackRGBa(UINT8 *_out, const UINT8 *in, int pixels) {
                 CLIP8(in[0] * 255 / a),
                 CLIP8(in[1] * 255 / a),
                 CLIP8(in[2] * 255 / a),
-                a);
+                a
+            );
         }
         memcpy(_out, &iv, sizeof(iv));
         in += 4;
@@ -927,7 +958,8 @@ unpackRGBaskip1(UINT8 *_out, const UINT8 *in, int pixels) {
                 CLIP8(in[0] * 255 / a),
                 CLIP8(in[1] * 255 / a),
                 CLIP8(in[2] * 255 / a),
-                a);
+                a
+            );
         }
         in += 5;
     }
@@ -949,7 +981,8 @@ unpackRGBaskip2(UINT8 *_out, const UINT8 *in, int pixels) {
                 CLIP8(in[0] * 255 / a),
                 CLIP8(in[1] * 255 / a),
                 CLIP8(in[2] * 255 / a),
-                a);
+                a
+            );
         }
         in += 6;
     }
@@ -971,7 +1004,8 @@ unpackBGRa(UINT8 *_out, const UINT8 *in, int pixels) {
                 CLIP8(in[2] * 255 / a),
                 CLIP8(in[1] * 255 / a),
                 CLIP8(in[0] * 255 / a),
-                a);
+                a
+            );
         }
         memcpy(_out, &iv, sizeof(iv));
         in += 4;
@@ -1002,7 +1036,8 @@ unpackRGBAL(UINT8 *_out, const UINT8 *in, int pixels) {
             in[i],
             in[i + pixels],
             in[i + pixels + pixels],
-            in[i + pixels + pixels + pixels]);
+            in[i + pixels + pixels + pixels]
+        );
         memcpy(_out, &iv, sizeof(iv));
     }
 }
@@ -1089,6 +1124,17 @@ unpackBGRA16B(UINT8 *_out, const UINT8 *in, int pixels) {
     }
 }
 
+static void
+unpackBGAR(UINT8 *_out, const UINT8 *in, int pixels) {
+    int i;
+    for (i = 0; i < pixels; i++) {
+        UINT32 iv = MAKE_UINT32(in[3], in[1], in[0], in[2]);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4;
+        _out += 4;
+    }
+}
+
 /* Unpack to "CMYK" image */
 
 static void
@@ -1107,7 +1153,7 @@ unpackCMYKI(UINT8 *_out, const UINT8 *in, int pixels) {
 /* There are two representations of LAB images for whatever precision:
    L: Uint (in PS, it's 0-100)
    A: Int (in ps, -128 .. 128, or elsewhere 0..255, with 128 as middle.
-           Channels in PS display a 0 value as middle grey,
+           Channels in PS display a 0 value as middle gray,
            LCMS appears to use 128 as the 0 value for these channels)
    B: Int (as above)
 
@@ -1149,6 +1195,16 @@ unpackI16N_I16(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 static void
+unpackI16B_I16(UINT8 *out, const UINT8 *in, int pixels) {
+    int i;
+    for (i = 0; i < pixels; i++) {
+        out[0] = in[1];
+        out[1] = in[0];
+        in += 2;
+        out += 2;
+    }
+}
+static void
 unpackI16R_I16(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     for (i = 0; i < pixels; i++) {
@@ -1161,7 +1217,7 @@ unpackI16R_I16(UINT8 *out, const UINT8 *in, int pixels) {
 
 static void
 unpackI12_I16(UINT8 *out, const UINT8 *in, int pixels) {
-    /*  Fillorder 1/MSB -> LittleEndian, for 12bit integer greyscale tiffs.
+    /*  Fillorder 1/MSB -> LittleEndian, for 12bit integer grayscale tiffs.
 
         According to the TIFF spec:
 
@@ -1226,6 +1282,12 @@ static void
 copy2(UINT8 *out, const UINT8 *in, int pixels) {
     /* I;16 */
     memcpy(out, in, pixels * 2);
+}
+
+static void
+copy3(UINT8 *out, const UINT8 *in, int pixels) {
+    /* BGR;24 */
+    memcpy(out, in, pixels * 3);
 }
 
 static void
@@ -1398,90 +1460,90 @@ band3I(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band016B(UINT8* out, const UINT8* in, int pixels)
-{
+band016B(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 0 only, big endian */
     for (i = 0; i < pixels; i++) {
         out[0] = in[0];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band116B(UINT8* out, const UINT8* in, int pixels)
-{
+band116B(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 1 only, big endian */
     for (i = 0; i < pixels; i++) {
         out[1] = in[0];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band216B(UINT8* out, const UINT8* in, int pixels)
-{
+band216B(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 2 only, big endian */
     for (i = 0; i < pixels; i++) {
         out[2] = in[0];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band316B(UINT8* out, const UINT8* in, int pixels)
-{
+band316B(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 3 only, big endian */
     for (i = 0; i < pixels; i++) {
         out[3] = in[0];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band016L(UINT8* out, const UINT8* in, int pixels)
-{
+band016L(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 0 only, little endian */
     for (i = 0; i < pixels; i++) {
         out[0] = in[1];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band116L(UINT8* out, const UINT8* in, int pixels)
-{
+band116L(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 1 only, little endian */
     for (i = 0; i < pixels; i++) {
         out[1] = in[1];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band216L(UINT8* out, const UINT8* in, int pixels)
-{
+band216L(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 2 only, little endian */
     for (i = 0; i < pixels; i++) {
         out[2] = in[1];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band316L(UINT8* out, const UINT8* in, int pixels)
-{
+band316L(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 3 only, little endian */
     for (i = 0; i < pixels; i++) {
         out[3] = in[1];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
@@ -1499,7 +1561,7 @@ static struct {
 
     /* flags: "I" inverted data; "R" reversed bit order; "B" big
        endian byte order (default is little endian); "L" line
-       interleave, "S" signed, "F" floating point */
+       interleave, "S" signed, "F" floating point, "Z" inverted alpha */
 
     /* exception: rawmodes "I" and "F" are always native endian byte order */
 
@@ -1510,7 +1572,7 @@ static struct {
     {"1", "1;IR", 1, unpack1IR},
     {"1", "1;8", 8, unpack18},
 
-    /* greyscale */
+    /* grayscale */
     {"L", "L;2", 2, unpackL2},
     {"L", "L;2I", 2, unpackL2I},
     {"L", "L;2R", 2, unpackL2R},
@@ -1527,11 +1589,11 @@ static struct {
     {"L", "L;16", 16, unpackL16},
     {"L", "L;16B", 16, unpackL16B},
 
-    /* greyscale w. alpha */
+    /* grayscale w. alpha */
     {"LA", "LA", 16, unpackLA},
     {"LA", "LA;L", 16, unpackLAL},
 
-    /* greyscale w. alpha premultiplied */
+    /* grayscale w. alpha premultiplied */
     {"La", "La", 16, unpackLA},
 
     /* palette */
@@ -1542,10 +1604,13 @@ static struct {
     {"P", "P;4L", 4, unpackP4L},
     {"P", "P", 8, copy1},
     {"P", "P;R", 8, unpackLR},
+    {"P", "L", 8, copy1},
+    {"P", "PX", 16, unpackL16B},
 
     /* palette w. alpha */
     {"PA", "PA", 16, unpackLA},
     {"PA", "PA;L", 16, unpackLAL},
+    {"PA", "LA", 16, unpackLA},
 
     /* true colour */
     {"RGB", "RGB", 24, ImagingUnpackRGB},
@@ -1558,13 +1623,18 @@ static struct {
     {"RGB", "BGR;15", 16, ImagingUnpackBGR15},
     {"RGB", "RGB;16", 16, ImagingUnpackRGB16},
     {"RGB", "BGR;16", 16, ImagingUnpackBGR16},
+    {"RGB", "RGBX;16L", 64, unpackRGBA16L},
+    {"RGB", "RGBX;16B", 64, unpackRGBA16B},
     {"RGB", "RGB;4B", 16, ImagingUnpackRGB4B},
     {"RGB", "BGR;5", 16, ImagingUnpackBGR15}, /* compat */
     {"RGB", "RGBX", 32, copy4},
     {"RGB", "RGBX;L", 32, unpackRGBAL},
+    {"RGB", "RGBXX", 40, copy4skip1},
+    {"RGB", "RGBXXX", 48, copy4skip2},
     {"RGB", "RGBA;L", 32, unpackRGBAL},
     {"RGB", "RGBA;15", 16, ImagingUnpackRGBA15},
     {"RGB", "BGRX", 32, ImagingUnpackBGRX},
+    {"RGB", "BGXR", 32, ImagingUnpackBGXR},
     {"RGB", "XRGB", 32, ImagingUnpackXRGB},
     {"RGB", "XBGR", 32, ImagingUnpackXBGR},
     {"RGB", "YCC;P", 24, ImagingUnpackYCC},
@@ -1577,6 +1647,11 @@ static struct {
     {"RGB", "R;16B", 16, band016B},
     {"RGB", "G;16B", 16, band116B},
     {"RGB", "B;16B", 16, band216B},
+    {"RGB", "CMYK", 32, cmyk2rgb},
+
+    {"BGR;15", "BGR;15", 16, copy2},
+    {"BGR;16", "BGR;16", 16, copy2},
+    {"BGR;24", "BGR;24", 24, copy3},
 
     /* true colour w. alpha */
     {"RGBA", "LA", 16, unpackRGBALA},
@@ -1589,17 +1664,20 @@ static struct {
     {"RGBA", "RGBaXX", 48, unpackRGBaskip2},
     {"RGBA", "RGBa;16L", 64, unpackRGBa16L},
     {"RGBA", "RGBa;16B", 64, unpackRGBa16B},
+    {"RGBA", "BGR", 24, ImagingUnpackBGR},
     {"RGBA", "BGRa", 32, unpackBGRa},
     {"RGBA", "RGBA;I", 32, unpackRGBAI},
     {"RGBA", "RGBA;L", 32, unpackRGBAL},
     {"RGBA", "RGBA;15", 16, ImagingUnpackRGBA15},
     {"RGBA", "BGRA;15", 16, ImagingUnpackBGRA15},
+    {"RGBA", "BGRA;15Z", 16, ImagingUnpackBGRA15Z},
     {"RGBA", "RGBA;4B", 16, ImagingUnpackRGBA4B},
     {"RGBA", "RGBA;16L", 64, unpackRGBA16L},
     {"RGBA", "RGBA;16B", 64, unpackRGBA16B},
     {"RGBA", "BGRA", 32, unpackBGRA},
     {"RGBA", "BGRA;16L", 64, unpackBGRA16L},
     {"RGBA", "BGRA;16B", 64, unpackBGRA16B},
+    {"RGBA", "BGAR", 32, unpackBGAR},
     {"RGBA", "ARGB", 32, unpackARGB},
     {"RGBA", "ABGR", 32, unpackABGR},
     {"RGBA", "YCCA;P", 32, ImagingUnpackYCCA},
@@ -1618,6 +1696,7 @@ static struct {
 
 #ifdef WORDS_BIGENDIAN
     {"RGB", "RGB;16N", 48, unpackRGB16B},
+    {"RGB", "RGBX;16N", 64, unpackRGBA16B},
     {"RGBA", "RGBa;16N", 64, unpackRGBa16B},
     {"RGBA", "RGBA;16N", 64, unpackRGBA16B},
     {"RGBX", "RGBX;16N", 64, unpackRGBA16B},
@@ -1631,13 +1710,13 @@ static struct {
     {"RGBA", "A;16N", 16, band316B},
 #else
     {"RGB", "RGB;16N", 48, unpackRGB16L},
+    {"RGB", "RGBX;16N", 64, unpackRGBA16L},
     {"RGBA", "RGBa;16N", 64, unpackRGBa16L},
     {"RGBA", "RGBA;16N", 64, unpackRGBA16L},
     {"RGBX", "RGBX;16N", 64, unpackRGBA16L},
     {"RGB", "R;16N", 16, band016L},
     {"RGB", "G;16N", 16, band116L},
     {"RGB", "B;16N", 16, band216L},
-
 
     {"RGBA", "R;16N", 16, band016L},
     {"RGBA", "G;16N", 16, band116L},
@@ -1762,7 +1841,9 @@ static struct {
     {"I;16", "I;16", 16, copy2},
     {"I;16B", "I;16B", 16, copy2},
     {"I;16L", "I;16L", 16, copy2},
+    {"I;16N", "I;16N", 16, copy2},
 
+    {"I;16", "I;16B", 16, unpackI16B_I16},
     {"I;16", "I;16N", 16, unpackI16N_I16},   // LibTiff native->image endian.
     {"I;16L", "I;16N", 16, unpackI16N_I16},  // LibTiff native->image endian.
     {"I;16B", "I;16N", 16, unpackI16N_I16B},

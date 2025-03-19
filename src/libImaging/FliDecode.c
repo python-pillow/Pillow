@@ -224,15 +224,16 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
                 break;
             case 16:
                 /* COPY chunk */
-                if (INT32_MAX / state->xsize < state->ysize) {
+                if (INT32_MAX < (uint64_t)state->xsize * state->ysize) {
                     /* Integer overflow, bail */
                     state->errcode = IMAGING_CODEC_OVERRUN;
                     return -1;
                 }
                 /* Note, have to check Data + size, not just ptr + size) */
                 if (data + (state->xsize * state->ysize) > ptr + bytes) {
-                    /* not enough data for frame */
-                    /* UNDONE Unclear that we're actually going to leave the buffer at the right place. */
+                    // not enough data for frame
+                    // UNDONE Unclear that we're actually going to leave the buffer at
+                    // the right place.
                     return ptr - buf; /* bytes consumed */
                 }
                 for (y = 0; y < state->ysize; y++) {
@@ -251,7 +252,7 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
                 return -1;
         }
         advance = I32(ptr);
-        if (advance == 0 ) {
+        if (advance == 0) {
             // If there's no advance, we're in an infinite loop
             state->errcode = IMAGING_CODEC_BROKEN;
             return -1;

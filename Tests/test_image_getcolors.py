@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 from .helper import hopper
 
 
-def test_getcolors():
-    def getcolors(mode, limit=None):
+def test_getcolors() -> None:
+    def getcolors(mode: str, limit: int | None = None) -> int | None:
         im = hopper(mode)
         if limit:
             colors = im.getcolors(limit)
@@ -37,7 +39,7 @@ def test_getcolors():
 # --------------------------------------------------------------------
 
 
-def test_pack():
+def test_pack() -> None:
     # Pack problems for small tables (@PIL209)
 
     im = hopper().quantize(3).convert("RGB")
@@ -52,17 +54,21 @@ def test_pack():
     assert A is None
 
     A = im.getcolors(maxcolors=3)
+    assert A is not None
     A.sort()
     assert A == expected
 
     A = im.getcolors(maxcolors=4)
+    assert A is not None
     A.sort()
     assert A == expected
 
     A = im.getcolors(maxcolors=8)
+    assert A is not None
     A.sort()
     assert A == expected
 
     A = im.getcolors(maxcolors=16)
+    assert A is not None
     A.sort()
     assert A == expected

@@ -17,9 +17,7 @@ Open, rotate, and display an image (using the default viewer)
 
 The following script loads an image, rotates it 45 degrees, and displays it
 using an external viewer (usually xv on Unix, and the Paint program on
-Windows).
-
-.. code-block:: python
+Windows). ::
 
     from PIL import Image
     with Image.open("hopper.jpg") as im:
@@ -29,9 +27,7 @@ Create thumbnails
 ^^^^^^^^^^^^^^^^^
 
 The following script creates nice thumbnails of all JPEG images in the
-current directory preserving aspect ratios with 128x128 max resolution.
-
-.. code-block:: python
+current directory preserving aspect ratios with 128x128 max resolution. ::
 
     from PIL import Image
     import glob, os
@@ -97,10 +93,14 @@ Generating images
 Registering plugins
 ^^^^^^^^^^^^^^^^^^^
 
+.. autofunction:: preinit
+.. autofunction:: init
+
 .. note::
 
-    These functions are for use by plugin authors. Application authors can
-    ignore them.
+    These functions are for use by plugin authors. They are called when a
+    plugin is loaded as part of :py:meth:`~preinit()` or :py:meth:`~init()`.
+    Application authors can ignore them.
 
 .. autofunction:: register_open
 .. autofunction:: register_mime
@@ -127,9 +127,7 @@ methods. Unless otherwise stated, all methods return a new instance of the
 .. automethod:: PIL.Image.Image.convert
 
 The following example converts an RGB image (linearly calibrated according to
-ITU-R 709, using the D65 luminant) to the CIE XYZ color space:
-
-.. code-block:: python
+ITU-R 709, using the D65 luminant) to the CIE XYZ color space::
 
     rgb2xyz = (
         0.412453, 0.357580, 0.180423, 0,
@@ -140,9 +138,7 @@ ITU-R 709, using the D65 luminant) to the CIE XYZ color space:
 .. automethod:: PIL.Image.Image.copy
 .. automethod:: PIL.Image.Image.crop
 
-This crops the input image with the provided coordinates:
-
-.. code-block:: python
+This crops the input image with the provided coordinates::
 
     from PIL import Image
 
@@ -162,9 +158,7 @@ This crops the input image with the provided coordinates:
 .. automethod:: PIL.Image.Image.entropy
 .. automethod:: PIL.Image.Image.filter
 
-This blurs the input image using a filter from the ``ImageFilter`` module:
-
-.. code-block:: python
+This blurs the input image using a filter from the ``ImageFilter`` module::
 
     from PIL import Image, ImageFilter
 
@@ -176,9 +170,7 @@ This blurs the input image using a filter from the ``ImageFilter`` module:
 .. automethod:: PIL.Image.Image.frombytes
 .. automethod:: PIL.Image.Image.getbands
 
-This helps to get the bands of the input image:
-
-.. code-block:: python
+This helps to get the bands of the input image::
 
     from PIL import Image
 
@@ -187,9 +179,7 @@ This helps to get the bands of the input image:
 
 .. automethod:: PIL.Image.Image.getbbox
 
-This helps to get the bounding box coordinates of the input image:
-
-.. code-block:: python
+This helps to get the bounding box coordinates of the input image::
 
     from PIL import Image
 
@@ -205,6 +195,7 @@ This helps to get the bounding box coordinates of the input image:
 .. automethod:: PIL.Image.Image.getpalette
 .. automethod:: PIL.Image.Image.getpixel
 .. automethod:: PIL.Image.Image.getprojection
+.. automethod:: PIL.Image.Image.getxmp
 .. automethod:: PIL.Image.Image.histogram
 .. automethod:: PIL.Image.Image.paste
 .. automethod:: PIL.Image.Image.point
@@ -217,9 +208,7 @@ This helps to get the bounding box coordinates of the input image:
 .. automethod:: PIL.Image.Image.remap_palette
 .. automethod:: PIL.Image.Image.resize
 
-This resizes the given image from ``(width, height)`` to ``(width/2, height/2)``:
-
-.. code-block:: python
+This resizes the given image from ``(width, height)`` to ``(width/2, height/2)``::
 
     from PIL import Image
 
@@ -231,9 +220,7 @@ This resizes the given image from ``(width, height)`` to ``(width/2, height/2)``
 
 .. automethod:: PIL.Image.Image.rotate
 
-This rotates the input image by ``theta`` degrees counter clockwise:
-
-.. code-block:: python
+This rotates the input image by ``theta`` degrees counter clockwise::
 
     from PIL import Image
 
@@ -256,9 +243,7 @@ This rotates the input image by ``theta`` degrees counter clockwise:
 .. automethod:: PIL.Image.Image.transpose
 
 This flips the input image by using the :data:`Transpose.FLIP_LEFT_RIGHT`
-method.
-
-.. code-block:: python
+method. ::
 
     from PIL import Image
 
@@ -367,6 +352,8 @@ Instances of the :py:class:`Image` class have the following attributes:
 
     .. seealso:: :attr:`~Image.is_animated`, :func:`~Image.seek` and :func:`~Image.tell`
 
+.. autoattribute:: PIL.Image.Image.has_transparency_data
+
 Classes
 -------
 
@@ -375,7 +362,16 @@ Classes
     :undoc-members:
     :show-inheritance:
 .. autoclass:: PIL.Image.ImagePointHandler
+.. autoclass:: PIL.Image.ImagePointTransform
 .. autoclass:: PIL.Image.ImageTransformHandler
+
+Protocols
+---------
+
+.. autoclass:: SupportsArrayInterface
+    :show-inheritance:
+.. autoclass:: SupportsGetData
+    :show-inheritance:
 
 Constants
 ---------
@@ -385,6 +381,11 @@ Constants
 
     Set to 89,478,485, approximately 0.25GB for a 24-bit (3 bpp) image.
     See :py:meth:`~PIL.Image.open` for more information about how this is used.
+
+.. data:: WARN_POSSIBLE_FORMATS
+
+    Set to false. If true, when an image cannot be identified, warnings will be raised
+    from formats that attempted to read the data.
 
 Transpose methods
 ^^^^^^^^^^^^^^^^^
@@ -431,18 +432,6 @@ See :ref:`concept-filters` for details.
     :members:
     :undoc-members:
 
-Some deprecated filters are also available under the following names:
-
-.. data:: NONE
-    :noindex:
-    :value: Resampling.NEAREST
-.. data:: LINEAR
-    :value: Resampling.BILINEAR
-.. data:: CUBIC
-    :value: Resampling.BICUBIC
-.. data:: ANTIALIAS
-    :value: Resampling.LANCZOS
-
 Dither modes
 ^^^^^^^^^^^^
 
@@ -470,7 +459,7 @@ Used to specify the dithering method to use for the
 Palettes
 ^^^^^^^^
 
-Used to specify the pallete to use for the :meth:`~Image.convert` method.
+Used to specify the palette to use for the :meth:`~Image.convert` method.
 
 .. autoclass:: Palette
     :members:

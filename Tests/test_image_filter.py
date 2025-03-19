@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 from PIL import Image, ImageFilter
@@ -23,30 +25,44 @@ from .helper import assert_image_equal, hopper
         ImageFilter.MinFilter,
         ImageFilter.ModeFilter,
         ImageFilter.GaussianBlur,
+        ImageFilter.GaussianBlur(0),
         ImageFilter.GaussianBlur(5),
+        ImageFilter.GaussianBlur((2, 5)),
+        ImageFilter.BoxBlur(0),
         ImageFilter.BoxBlur(5),
+        ImageFilter.BoxBlur((2, 5)),
         ImageFilter.UnsharpMask,
         ImageFilter.UnsharpMask(10),
     ),
 )
-@pytest.mark.parametrize("mode", ("L", "RGB", "CMYK"))
-def test_sanity(filter_to_apply, mode):
+@pytest.mark.parametrize(
+    "mode", ("L", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
+)
+def test_sanity(
+    filter_to_apply: ImageFilter.Filter | type[ImageFilter.Filter], mode: str
+) -> None:
     im = hopper(mode)
-    out = im.filter(filter_to_apply)
-    assert out.mode == im.mode
-    assert out.size == im.size
+    if mode[0] != "I" or (
+        callable(filter_to_apply)
+        and issubclass(filter_to_apply, ImageFilter.BuiltinFilter)
+    ):
+        out = im.filter(filter_to_apply)
+        assert out.mode == im.mode
+        assert out.size == im.size
 
 
-@pytest.mark.parametrize("mode", ("L", "RGB", "CMYK"))
-def test_sanity_error(mode):
+@pytest.mark.parametrize(
+    "mode", ("L", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
+)
+def test_sanity_error(mode: str) -> None:
+    im = hopper(mode)
     with pytest.raises(TypeError):
-        im = hopper(mode)
-        im.filter("hello")
+        im.filter("hello")  # type: ignore[arg-type]
 
 
 # crashes on small images
 @pytest.mark.parametrize("size", ((1, 1), (2, 2), (3, 3)))
-def test_crash(size):
+def test_crash(size: tuple[int, int]) -> None:
     im = Image.new("RGB", size)
     im.filter(ImageFilter.SMOOTH)
 
@@ -60,7 +76,10 @@ def test_crash(size):
         ("RGB", ((4, 0, 0), (0, 0, 0))),
     ),
 )
-def test_modefilter(mode, expected):
+def test_modefilter(
+    mode: str,
+    expected: tuple[int, int] | tuple[tuple[int, int, int], tuple[int, int, int]],
+) -> None:
     im = Image.new(mode, (3, 3), None)
     im.putdata(list(range(9)))
     # image is:
@@ -83,7 +102,13 @@ def test_modefilter(mode, expected):
         ("F", (0.0, 4.0, 8.0)),
     ),
 )
-def test_rankfilter(mode, expected):
+def test_rankfilter(
+    mode: str,
+    expected: (
+        tuple[float, float, float]
+        | tuple[tuple[int, int, int], tuple[int, int, int], tuple[int, int, int]]
+    ),
+) -> None:
     im = Image.new(mode, (3, 3), None)
     im.putdata(list(range(9)))
     # image is:
@@ -99,7 +124,7 @@ def test_rankfilter(mode, expected):
 @pytest.mark.parametrize(
     "filter", (ImageFilter.MinFilter, ImageFilter.MedianFilter, ImageFilter.MaxFilter)
 )
-def test_rankfilter_error(filter):
+def test_rankfilter_error(filter: ImageFilter.RankFilter) -> None:
     with pytest.raises(ValueError):
         im = Image.new("P", (3, 3), None)
         im.putdata(list(range(9)))
@@ -110,27 +135,29 @@ def test_rankfilter_error(filter):
         im.filter(filter).getpixel((1, 1))
 
 
-def test_rankfilter_properties():
+def test_rankfilter_properties() -> None:
     rankfilter = ImageFilter.RankFilter(1, 2)
 
     assert rankfilter.size == 1
     assert rankfilter.rank == 2
 
 
-def test_builtinfilter_p():
+def test_builtinfilter_p() -> None:
     builtin_filter = ImageFilter.BuiltinFilter()
 
     with pytest.raises(ValueError):
-        builtin_filter.filter(hopper("P"))
+        builtin_filter.filter(hopper("P").im)
 
 
-def test_kernel_not_enough_coefficients():
+def test_kernel_not_enough_coefficients() -> None:
     with pytest.raises(ValueError):
         ImageFilter.Kernel((3, 3), (0, 0))
 
 
-@pytest.mark.parametrize("mode", ("L", "LA", "RGB", "CMYK"))
-def test_consistency_3x3(mode):
+@pytest.mark.parametrize(
+    "mode", ("L", "LA", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
+)
+def test_consistency_3x3(mode: str) -> None:
     with Image.open("Tests/images/hopper.bmp") as source:
         with Image.open("Tests/images/hopper_emboss.bmp") as reference:
             kernel = ImageFilter.Kernel(
@@ -142,17 +169,13 @@ def test_consistency_3x3(mode):
                 # fmt: on
                 0.3,
             )
-            source = source.split() * 2
-            reference = reference.split() * 2
-
-            assert_image_equal(
-                Image.merge(mode, source[: len(mode)]).filter(kernel),
-                Image.merge(mode, reference[: len(mode)]),
-            )
+            assert_image_equal(source.filter(kernel), reference)
 
 
-@pytest.mark.parametrize("mode", ("L", "LA", "RGB", "CMYK"))
-def test_consistency_5x5(mode):
+@pytest.mark.parametrize(
+    "mode", ("L", "LA", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
+)
+def test_consistency_5x5(mode: str) -> None:
     with Image.open("Tests/images/hopper.bmp") as source:
         with Image.open("Tests/images/hopper_emboss_more.bmp") as reference:
             kernel = ImageFilter.Kernel(
@@ -166,10 +189,24 @@ def test_consistency_5x5(mode):
                 # fmt: on
                 0.3,
             )
-            source = source.split() * 2
-            reference = reference.split() * 2
+            assert_image_equal(source.filter(kernel), reference)
 
-            assert_image_equal(
-                Image.merge(mode, source[: len(mode)]).filter(kernel),
-                Image.merge(mode, reference[: len(mode)]),
-            )
+
+@pytest.mark.parametrize(
+    "radius",
+    (
+        -2,
+        (-2, -2),
+        (-2, 2),
+        (2, -2),
+    ),
+)
+def test_invalid_box_blur_filter(radius: int | tuple[int, int]) -> None:
+    with pytest.raises(ValueError):
+        ImageFilter.BoxBlur(radius)
+
+    im = hopper()
+    box_blur_filter = ImageFilter.BoxBlur(2)
+    box_blur_filter.radius = radius
+    with pytest.raises(ValueError):
+        im.filter(box_blur_filter)

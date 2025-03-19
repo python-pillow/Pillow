@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import io
 import os
 import warnings
+from pathlib import Path
 
 import pytest
 
@@ -12,13 +15,14 @@ from .helper import assert_image_equal, assert_image_similar_tofile, skip_unless
 TEST_FILE = "Tests/images/pillow.icns"
 
 
-def test_sanity():
+def test_sanity() -> None:
     # Loading this icon by default should result in the largest size
     # (512x512@2x) being loaded
     with Image.open(TEST_FILE) as im:
-
         # Assert that there is no unclosed file warning
         with warnings.catch_warnings():
+            warnings.simplefilter("error")
+
             im.load()
 
         assert im.mode == "RGBA"
@@ -26,15 +30,19 @@ def test_sanity():
         assert im.format == "ICNS"
 
 
-def test_load():
+def test_load() -> None:
     with Image.open(TEST_FILE) as im:
-        assert im.load()[0, 0] == (0, 0, 0, 0)
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == (0, 0, 0, 0)
 
         # Test again now that it has already been loaded once
-        assert im.load()[0, 0] == (0, 0, 0, 0)
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == (0, 0, 0, 0)
 
 
-def test_save(tmp_path):
+def test_save(tmp_path: Path) -> None:
     temp_file = str(tmp_path / "temp.icns")
 
     with Image.open(TEST_FILE) as im:
@@ -51,7 +59,7 @@ def test_save(tmp_path):
         assert _binary.i32be(fp.read(4)) == file_length
 
 
-def test_save_append_images(tmp_path):
+def test_save_append_images(tmp_path: Path) -> None:
     temp_file = str(tmp_path / "temp.icns")
     provided_im = Image.new("RGBA", (32, 32), (255, 0, 0, 128))
 
@@ -61,12 +69,12 @@ def test_save_append_images(tmp_path):
         assert_image_similar_tofile(im, temp_file, 1)
 
         with Image.open(temp_file) as reread:
-            reread.size = (16, 16, 2)
-            reread.load()
+            reread.size = (16, 16)
+            reread.load(2)
             assert_image_equal(reread, provided_im)
 
 
-def test_save_fp():
+def test_save_fp() -> None:
     fp = io.BytesIO()
 
     with Image.open(TEST_FILE) as im:
@@ -78,24 +86,31 @@ def test_save_fp():
         assert reread.format == "ICNS"
 
 
-def test_sizes():
+def test_sizes() -> None:
     # Check that we can load all of the sizes, and that the final pixel
     # dimensions are as expected
     with Image.open(TEST_FILE) as im:
         for w, h, r in im.info["sizes"]:
             wr = w * r
             hr = h * r
-            im.size = (w, h, r)
+            with pytest.warns(DeprecationWarning):
+                im.size = (w, h, r)
             im.load()
+            assert im.mode == "RGBA"
+            assert im.size == (wr, hr)
+
+            # Test using load() with scale
+            im.size = (w, h)
+            im.load(scale=r)
             assert im.mode == "RGBA"
             assert im.size == (wr, hr)
 
         # Check that we cannot load an incorrect size
         with pytest.raises(ValueError):
-            im.size = (1, 1)
+            im.size = (1, 2)
 
 
-def test_older_icon():
+def test_older_icon() -> None:
     # This icon was made with Icon Composer rather than iconutil; it still
     # uses PNG rather than JP2, however (since it was made on 10.9).
     with Image.open("Tests/images/pillow2.icns") as im:
@@ -103,14 +118,14 @@ def test_older_icon():
             wr = w * r
             hr = h * r
             with Image.open("Tests/images/pillow2.icns") as im2:
-                im2.size = (w, h, r)
-                im2.load()
+                im2.size = (w, h)
+                im2.load(r)
                 assert im2.mode == "RGBA"
                 assert im2.size == (wr, hr)
 
 
 @skip_unless_feature("jpg_2000")
-def test_jp2_icon():
+def test_jp2_icon() -> None:
     # This icon uses JPEG 2000 images instead of the PNG images.
     # The advantage of doing this is that OS X 10.5 supports JPEG 2000
     # but not PNG; some commercial software therefore does just this.
@@ -120,13 +135,13 @@ def test_jp2_icon():
             wr = w * r
             hr = h * r
             with Image.open("Tests/images/pillow3.icns") as im2:
-                im2.size = (w, h, r)
-                im2.load()
+                im2.size = (w, h)
+                im2.load(r)
                 assert im2.mode == "RGBA"
                 assert im2.size == (wr, hr)
 
 
-def test_getimage():
+def test_getimage() -> None:
     with open(TEST_FILE, "rb") as fp:
         icns_file = IcnsImagePlugin.IcnsFile(fp)
 
@@ -139,14 +154,14 @@ def test_getimage():
         assert im.size == (512, 512)
 
 
-def test_not_an_icns_file():
+def test_not_an_icns_file() -> None:
     with io.BytesIO(b"invalid\n") as fp:
         with pytest.raises(SyntaxError):
             IcnsImagePlugin.IcnsFile(fp)
 
 
 @skip_unless_feature("jpg_2000")
-def test_icns_decompression_bomb():
+def test_icns_decompression_bomb() -> None:
     with Image.open(
         "Tests/images/oom-8ed3316a4109213ca96fb8a256a0bfefdece1461.icns"
     ) as im:

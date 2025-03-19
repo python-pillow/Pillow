@@ -33,6 +33,14 @@ Plugin reference
     :undoc-members:
     :show-inheritance:
 
+:mod:`~PIL.DdsImagePlugin` Module
+---------------------------------
+
+.. automodule:: PIL.DdsImagePlugin
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`~PIL.EpsImagePlugin` Module
 ---------------------------------
 
@@ -173,6 +181,14 @@ Plugin reference
 ----------------------------------
 
 .. automodule:: PIL.MpegImagePlugin
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`~PIL.MpoImagePlugin` Module
+----------------------------------
+
+.. automodule:: PIL.MpoImagePlugin
     :members:
     :undoc-members:
     :show-inheritance:

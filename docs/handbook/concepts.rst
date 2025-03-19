@@ -31,7 +31,7 @@ INT32 and a 32-bit floating point pixel has the range of FLOAT32. The current re
 supports the following standard modes:
 
     * ``1`` (1-bit pixels, black and white, stored with one pixel per byte)
-    * ``L`` (8-bit pixels, black and white)
+    * ``L`` (8-bit pixels, grayscale)
     * ``P`` (8-bit pixels, mapped to any other mode using a color palette)
     * ``RGB`` (3x8-bit pixels, true color)
     * ``RGBA`` (4x8-bit pixels, true color with transparency mask)
@@ -59,10 +59,6 @@ Pillow also provides limited support for a few additional modes, including:
     * ``I;16L`` (16-bit little endian unsigned integer pixels)
     * ``I;16B`` (16-bit big endian unsigned integer pixels)
     * ``I;16N`` (16-bit native endian unsigned integer pixels)
-    * ``BGR;15`` (15-bit reversed true colour)
-    * ``BGR;16`` (16-bit reversed true colour)
-    * ``BGR;24`` (24-bit reversed true colour)
-    * ``BGR;32`` (32-bit reversed true colour)
 
 Premultiplied alpha is where the values for each other channel have been
 multiplied by the alpha. For example, an RGBA pixel of ``(10, 20, 30, 127)``
@@ -96,9 +92,8 @@ in the upper left corner. Note that the coordinates refer to the implied pixel
 corners; the centre of a pixel addressed as (0, 0) actually lies at (0.5, 0.5).
 
 Coordinates are usually passed to the library as 2-tuples (x, y). Rectangles
-are represented as 4-tuples, with the upper left corner given first. For
-example, a rectangle covering all of an 800x600 pixel image is written as (0,
-0, 800, 600).
+are represented as 4-tuples, (x1, y1, x2, y2), with the upper left corner given
+first.
 
 Palette
 -------
@@ -148,44 +143,50 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 
 .. py:currentmodule:: PIL.Image
 
-.. data:: NEAREST
+.. data:: Resampling.NEAREST
+    :noindex:
 
     Pick one nearest pixel from the input image. Ignore all other input pixels.
 
-.. data:: BOX
+.. data:: Resampling.BOX
+    :noindex:
 
     Each pixel of source image contributes to one pixel of the
     destination image with identical weights.
-    For upscaling is equivalent of :data:`NEAREST`.
+    For upscaling is equivalent of :data:`Resampling.NEAREST`.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
     and :py:meth:`~PIL.Image.Image.thumbnail` methods.
 
     .. versionadded:: 3.4.0
 
-.. data:: BILINEAR
+.. data:: Resampling.BILINEAR
+    :noindex:
 
     For resize calculate the output pixel value using linear interpolation
     on all pixels that may contribute to the output value.
     For other transformations linear interpolation over a 2x2 environment
     in the input image is used.
 
-.. data:: HAMMING
+.. data:: Resampling.HAMMING
+    :noindex:
 
-    Produces a sharper image than :data:`BILINEAR`, doesn't have dislocations
-    on local level like with :data:`BOX`.
+    Produces a sharper image than :data:`Resampling.BILINEAR`, doesn't have
+    dislocations on local level like with :data:`Resampling.BOX`.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
     and :py:meth:`~PIL.Image.Image.thumbnail` methods.
 
     .. versionadded:: 3.4.0
 
-.. data:: BICUBIC
+.. data:: Resampling.BICUBIC
+    :noindex:
 
     For resize calculate the output pixel value using cubic interpolation
     on all pixels that may contribute to the output value.
     For other transformations cubic interpolation over a 4x4 environment
     in the input image is used.
 
-.. data:: LANCZOS
+.. data:: Resampling.LANCZOS
+    :noindex:
 
     Calculate the output pixel value using a high-quality Lanczos filter (a
     truncated sinc) on all pixels that may contribute to the output value.
@@ -198,19 +199,19 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 Filters comparison table
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-+----------------+-------------+-----------+-------------+
-| Filter         | Downscaling | Upscaling | Performance |
-|                | quality     | quality   |             |
-+================+=============+===========+=============+
-|:data:`NEAREST` |             |           | ⭐⭐⭐⭐⭐  |
-+----------------+-------------+-----------+-------------+
-|:data:`BOX`     | ⭐          |           | ⭐⭐⭐⭐    |
-+----------------+-------------+-----------+-------------+
-|:data:`BILINEAR`| ⭐          | ⭐        | ⭐⭐⭐      |
-+----------------+-------------+-----------+-------------+
-|:data:`HAMMING` | ⭐⭐        |           | ⭐⭐⭐      |
-+----------------+-------------+-----------+-------------+
-|:data:`BICUBIC` | ⭐⭐⭐      | ⭐⭐⭐    | ⭐⭐        |
-+----------------+-------------+-----------+-------------+
-|:data:`LANCZOS` | ⭐⭐⭐⭐    | ⭐⭐⭐⭐  | ⭐          |
-+----------------+-------------+-----------+-------------+
++---------------------------+-------------+-----------+-------------+
+| Filter                    | Downscaling | Upscaling | Performance |
+|                           | quality     | quality   |             |
++===========================+=============+===========+=============+
+|:data:`Resampling.NEAREST` |             |           | ⭐⭐⭐⭐⭐  |
++---------------------------+-------------+-----------+-------------+
+|:data:`Resampling.BOX`     | ⭐          |           | ⭐⭐⭐⭐    |
++---------------------------+-------------+-----------+-------------+
+|:data:`Resampling.BILINEAR`| ⭐          | ⭐        | ⭐⭐⭐      |
++---------------------------+-------------+-----------+-------------+
+|:data:`Resampling.HAMMING` | ⭐⭐        |           | ⭐⭐⭐      |
++---------------------------+-------------+-----------+-------------+
+|:data:`Resampling.BICUBIC` | ⭐⭐⭐      | ⭐⭐⭐    | ⭐⭐        |
++---------------------------+-------------+-----------+-------------+
+|:data:`Resampling.LANCZOS` | ⭐⭐⭐⭐    | ⭐⭐⭐⭐  | ⭐          |
++---------------------------+-------------+-----------+-------------+

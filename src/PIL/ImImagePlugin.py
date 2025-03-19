@@ -24,10 +24,11 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
+from __future__ import annotations
 
 import os
 import re
+from typing import IO, Any
 
 from . import Image, ImageFile, ImagePalette
 
@@ -78,7 +79,7 @@ OPEN = {
     "LA image": ("LA", "LA;L"),
     "PA image": ("LA", "PA;L"),
     "RGBA image": ("RGBA", "RGBA;L"),
-    "RGBX image": ("RGBX", "RGBX;L"),
+    "RGBX image": ("RGB", "RGBX;L"),
     "CMYK image": ("CMYK", "CMYK;L"),
     "YCC image": ("YCbCr", "YCbCr;L"),
 }
@@ -93,8 +94,8 @@ for i in ["16", "16L", "16B"]:
 for i in ["32S"]:
     OPEN[f"L {i} image"] = ("I", f"I;{i}")
     OPEN[f"L*{i} image"] = ("I", f"I;{i}")
-for i in range(2, 33):
-    OPEN[f"L*{i} image"] = ("F", f"F;{i}")
+for j in range(2, 33):
+    OPEN[f"L*{j} image"] = ("F", f"F;{j}")
 
 
 # --------------------------------------------------------------------
@@ -103,7 +104,7 @@ for i in range(2, 33):
 split = re.compile(rb"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
 
 
-def number(s):
+def number(s: Any) -> float:
     try:
         return int(s)
     except ValueError:
@@ -115,13 +116,11 @@ def number(s):
 
 
 class ImImageFile(ImageFile.ImageFile):
-
     format = "IM"
     format_description = "IFUNC Image Memory"
     _close_exclusive_fp_after_loading = False
 
-    def _open(self):
-
+    def _open(self) -> None:
         # Quick rejection: if there's not an LF among the first
         # 100 bytes, this is (probably) not a text header.
 
@@ -140,14 +139,13 @@ class ImImageFile(ImageFile.ImageFile):
         self.rawmode = "L"
 
         while True:
-
             s = self.fp.read(1)
 
             # Some versions of IFUNC uses \n\r instead of \r\n...
             if s == b"\r":
                 continue
 
-            if not s or s == b"\0" or s == b"\x1A":
+            if not s or s == b"\0" or s == b"\x1a":
                 break
 
             # FIXME: this may read whole file if not a text file
@@ -157,9 +155,9 @@ class ImImageFile(ImageFile.ImageFile):
                 msg = "not an IM file"
                 raise SyntaxError(msg)
 
-            if s[-2:] == b"\r\n":
+            if s.endswith(b"\r\n"):
                 s = s[:-2]
-            elif s[-1:] == b"\n":
+            elif s.endswith(b"\n"):
                 s = s[:-1]
 
             try:
@@ -169,7 +167,6 @@ class ImImageFile(ImageFile.ImageFile):
                 raise SyntaxError(msg) from e
 
             if m:
-
                 k, v = m.group(1, 2)
 
                 # Don't know if this is the correct encoding,
@@ -200,8 +197,7 @@ class ImImageFile(ImageFile.ImageFile):
                     n += 1
 
             else:
-
-                msg = "Syntax error in IM header: " + s.decode("ascii", "replace")
+                msg = f"Syntax error in IM header: {s.decode('ascii', 'replace')}"
                 raise SyntaxError(msg)
 
         if not n:
@@ -210,10 +206,10 @@ class ImImageFile(ImageFile.ImageFile):
 
         # Basic attributes
         self._size = self.info[SIZE]
-        self.mode = self.info[MODE]
+        self._mode = self.info[MODE]
 
         # Skip forward to start of image data
-        while s and s[:1] != b"\x1A":
+        while s and not s.startswith(b"\x1a"):
             s = self.fp.read(1)
         if not s:
             msg = "File truncated"
@@ -236,9 +232,9 @@ class ImImageFile(ImageFile.ImageFile):
                         self.lut = list(palette[:256])
                 else:
                     if self.mode in ["L", "P"]:
-                        self.mode = self.rawmode = "P"
+                        self._mode = self.rawmode = "P"
                     elif self.mode in ["LA", "PA"]:
-                        self.mode = "PA"
+                        self._mode = "PA"
                         self.rawmode = "PA;L"
                     self.palette = ImagePalette.raw("RGB;L", palette)
             elif self.mode == "RGB":
@@ -251,14 +247,17 @@ class ImImageFile(ImageFile.ImageFile):
 
         self._fp = self.fp  # FIXME: hack
 
-        if self.rawmode[:2] == "F;":
-
+        if self.rawmode.startswith("F;"):
             # ifunc95 formats
             try:
                 # use bit decoder (if necessary)
                 bits = int(self.rawmode[2:])
                 if bits not in [8, 16, 32]:
-                    self.tile = [("bit", (0, 0) + self.size, offs, (bits, 8, 3, 0, -1))]
+                    self.tile = [
+                        ImageFile._Tile(
+                            "bit", (0, 0) + self.size, offs, (bits, 8, 3, 0, -1)
+                        )
+                    ]
                     return
             except ValueError:
                 pass
@@ -268,23 +267,27 @@ class ImImageFile(ImageFile.ImageFile):
             # ever stumbled upon such a file ;-)
             size = self.size[0] * self.size[1]
             self.tile = [
-                ("raw", (0, 0) + self.size, offs, ("G", 0, -1)),
-                ("raw", (0, 0) + self.size, offs + size, ("R", 0, -1)),
-                ("raw", (0, 0) + self.size, offs + 2 * size, ("B", 0, -1)),
+                ImageFile._Tile("raw", (0, 0) + self.size, offs, ("G", 0, -1)),
+                ImageFile._Tile("raw", (0, 0) + self.size, offs + size, ("R", 0, -1)),
+                ImageFile._Tile(
+                    "raw", (0, 0) + self.size, offs + 2 * size, ("B", 0, -1)
+                ),
             ]
         else:
             # LabEye/IFUNC files
-            self.tile = [("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))]
+            self.tile = [
+                ImageFile._Tile("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))
+            ]
 
     @property
-    def n_frames(self):
+    def n_frames(self) -> int:
         return self.info[FRAMES]
 
     @property
-    def is_animated(self):
+    def is_animated(self) -> bool:
         return self.info[FRAMES] > 1
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
 
@@ -300,9 +303,11 @@ class ImImageFile(ImageFile.ImageFile):
 
         self.fp = self._fp
 
-        self.tile = [("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))]
+        self.tile = [
+            ImageFile._Tile("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))
+        ]
 
-    def tell(self):
+    def tell(self) -> int:
         return self.frame
 
 
@@ -331,8 +336,7 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename):
-
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         image_type, rawmode = SAVE[im.mode]
     except KeyError as e:
@@ -347,11 +351,13 @@ def _save(im, fp, filename):
         # or: SyntaxError("not an IM file")
         # 8 characters are used for "Name: " and "\r\n"
         # Keep just the filename, ditch the potentially overlong path
+        if isinstance(filename, bytes):
+            filename = filename.decode("ascii")
         name, ext = os.path.splitext(os.path.basename(filename))
         name = "".join([name[: 92 - len(ext)], ext])
 
         fp.write(f"Name: {name}\r\n".encode("ascii"))
-    fp.write(("Image size (x*y): %d*%d\r\n" % im.size).encode("ascii"))
+    fp.write(f"Image size (x*y): {im.size[0]}*{im.size[1]}\r\n".encode("ascii"))
     fp.write(f"File size (no of images): {frames}\r\n".encode("ascii"))
     if im.mode in ["P", "PA"]:
         fp.write(b"Lut: 1\r\n")
@@ -364,7 +370,9 @@ def _save(im, fp, filename):
             palette += im_palette[colors * i : colors * (i + 1)]
             palette += b"\x00" * (256 - colors)
         fp.write(palette)  # 768 bytes
-    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, -1))])
+    ImageFile._save(
+        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, -1))]
+    )
 
 
 #

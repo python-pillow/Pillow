@@ -1,18 +1,19 @@
+from __future__ import annotations
+
 from io import BytesIO
 
 import pytest
 
-from PIL import FitsImagePlugin, FitsStubImagePlugin, Image
+from PIL import FitsImagePlugin, Image
 
-from .helper import assert_image_equal, hopper
+from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
 TEST_FILE = "Tests/images/hopper.fits"
 
 
-def test_open():
+def test_open() -> None:
     # Act
     with Image.open(TEST_FILE) as im:
-
         # Assert
         assert im.format == "FITS"
         assert im.size == (128, 128)
@@ -21,7 +22,12 @@ def test_open():
         assert_image_equal(im, hopper("L"))
 
 
-def test_invalid_file():
+def test_gzip1() -> None:
+    with Image.open("Tests/images/m13_gzip.fits") as im:
+        assert_image_equal_tofile(im, "Tests/images/m13.fits")
+
+
+def test_invalid_file() -> None:
     # Arrange
     invalid_file = "Tests/images/flower.jpg"
 
@@ -30,14 +36,14 @@ def test_invalid_file():
         FitsImagePlugin.FitsImageFile(invalid_file)
 
 
-def test_truncated_fits():
+def test_truncated_fits() -> None:
     # No END to headers
     image_data = b"SIMPLE  =                    T" + b" " * 50 + b"TRUNCATE"
     with pytest.raises(OSError):
         FitsImagePlugin.FitsImageFile(BytesIO(image_data))
 
 
-def test_naxis_zero():
+def test_naxis_zero() -> None:
     # This test image has been manually hexedited
     # to set the number of data axes to zero
     with pytest.raises(ValueError):
@@ -45,36 +51,7 @@ def test_naxis_zero():
             pass
 
 
-def test_stub_deprecated():
-    class Handler:
-        opened = False
-        loaded = False
-
-        def open(self, im):
-            self.opened = True
-
-        def load(self, im):
-            self.loaded = True
-            return Image.new("RGB", (1, 1))
-
-    handler = Handler()
-    with pytest.warns(DeprecationWarning):
-        FitsStubImagePlugin.register_handler(handler)
-
-    with Image.open(TEST_FILE) as im:
-        assert im.format == "FITS"
-        assert im.size == (128, 128)
-        assert im.mode == "L"
-
-        assert handler.opened
-        assert not handler.loaded
-
-        im.load()
-        assert handler.loaded
-
-    FitsStubImagePlugin._handler = None
-    Image.register_open(
-        FitsImagePlugin.FitsImageFile.format,
-        FitsImagePlugin.FitsImageFile,
-        FitsImagePlugin._accept,
-    )
+def test_comment() -> None:
+    image_data = b"SIMPLE  =                    T / comment string"
+    with pytest.raises(OSError):
+        FitsImagePlugin.FitsImageFile(BytesIO(image_data))

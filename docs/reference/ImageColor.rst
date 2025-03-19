@@ -59,7 +59,7 @@ Functions
 .. py:method:: getcolor(color, mode)
 
     Same as :py:func:`~PIL.ImageColor.getrgb`, but converts the RGB value to a
-    greyscale value if the mode is not color or a palette image. If the string
+    grayscale value if the mode is not color or a palette image. If the string
     cannot be parsed, this function raises a :py:exc:`ValueError` exception.
 
     .. versionadded:: 1.1.4

@@ -1,14 +1,18 @@
 name: Test Valgrind
 
-# like the docker tests, but running valgrind only on *.c/*.h changes.
+# like the Docker tests, but running valgrind only on *.c/*.h changes.
 
 on:
   push:
+    branches:
+      - "**"
     paths:
+      - ".github/workflows/test-valgrind.yml"
       - "**.c"
       - "**.h"
   pull_request:
     paths:
+      - ".github/workflows/test-valgrind.yml"
       - "**.c"
       - "**.h"
   workflow_dispatch:
@@ -16,7 +20,7 @@ on:
 permissions:
   contents: read
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
@@ -35,7 +39,9 @@ jobs:
     name: ${{ matrix.docker }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: Build system information
       run: python3 .github/workflows/system-info.py
@@ -46,7 +52,7 @@ jobs:
 
     - name: Build and Run Valgrind
       run: |
-        # The Pillow user in the docker container is UID 1000
-        sudo chown -R 1000 $GITHUB_WORKSPACE
-        docker run --name pillow_container  -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
+        # The Pillow user in the docker container is UID 1001
+        sudo chown -R 1001 $GITHUB_WORKSPACE
+        docker run --name pillow_container -e "PILLOW_VALGRIND_TEST=true" -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
         sudo chown -R runner $GITHUB_WORKSPACE

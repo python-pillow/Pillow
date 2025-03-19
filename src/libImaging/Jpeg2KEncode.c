@@ -89,7 +89,8 @@ j2k_seek(OPJ_OFF_T p_nb_bytes, void *p_user_data) {
 /* -------------------------------------------------------------------- */
 
 typedef void (*j2k_pack_tile_t)(
-    Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h);
+    Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h
+);
 
 static void
 j2k_pack_l(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h) {
@@ -157,7 +158,8 @@ j2k_pack_rgb(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsig
 
 static void
 j2k_pack_rgba(
-    Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h) {
+    Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h
+) {
     UINT8 *pr = buf;
     UINT8 *pg = pr + w * h;
     UINT8 *pb = pg + w * h;
@@ -205,8 +207,8 @@ j2k_set_cinema_params(Imaging im, int components, opj_cparameters_t *params) {
 
     if (params->cp_cinema == OPJ_CINEMA4K_24) {
         float max_rate =
-            ((float)(components * im->xsize * im->ysize * 8) /
-             (CINEMA_24_CS_LENGTH * 8));
+            ((float)(components * im->xsize * im->ysize * 8) / (CINEMA_24_CS_LENGTH * 8)
+            );
 
         params->POC[0].tile = 1;
         params->POC[0].resno0 = 0;
@@ -241,8 +243,8 @@ j2k_set_cinema_params(Imaging im, int components, opj_cparameters_t *params) {
         params->max_comp_size = COMP_24_CS_MAX_LENGTH;
     } else {
         float max_rate =
-            ((float)(components * im->xsize * im->ysize * 8) /
-             (CINEMA_48_CS_LENGTH * 8));
+            ((float)(components * im->xsize * im->ysize * 8) / (CINEMA_48_CS_LENGTH * 8)
+            );
 
         for (n = 0; n < params->tcp_numlayers; ++n) {
             rate = 0;
@@ -281,7 +283,6 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
     int ret = -1;
 
     unsigned prec = 8;
-    unsigned bpp = 8;
     unsigned _overflow_scale_factor;
 
     stream = opj_stream_create(BUFFER_SIZE, OPJ_FALSE);
@@ -313,7 +314,6 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         color_space = OPJ_CLRSPC_GRAY;
         pack = j2k_pack_i16;
         prec = 16;
-        bpp = 12;
     } else if (strcmp(im->mode, "LA") == 0) {
         components = 2;
         color_space = OPJ_CLRSPC_GRAY;
@@ -330,6 +330,13 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         components = 4;
         color_space = OPJ_CLRSPC_SRGB;
         pack = j2k_pack_rgba;
+#if ((OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR == 5 && OPJ_VERSION_BUILD >= 3) || \
+     (OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR > 5) || OPJ_VERSION_MAJOR > 2)
+    } else if (strcmp(im->mode, "CMYK") == 0) {
+        components = 4;
+        color_space = OPJ_CLRSPC_CMYK;
+        pack = j2k_pack_rgba;
+#endif
     } else {
         state->errcode = IMAGING_CODEC_BROKEN;
         state->state = J2K_STATE_FAILED;
@@ -342,7 +349,6 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         image_params[n].h = im->ysize;
         image_params[n].x0 = image_params[n].y0 = 0;
         image_params[n].prec = prec;
-        image_params[n].bpp = bpp;
         image_params[n].sgnd = context->sgnd == 0 ? 0 : 1;
     }
 
@@ -386,8 +392,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         float *pq;
 
         if (len > 0) {
-            if ((size_t)len >
-                sizeof(params.tcp_rates) / sizeof(params.tcp_rates[0])) {
+            if ((size_t)len > sizeof(params.tcp_rates) / sizeof(params.tcp_rates[0])) {
                 len = sizeof(params.tcp_rates) / sizeof(params.tcp_rates[0]);
             }
 
@@ -439,6 +444,10 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         params.tcp_mct = context->mct;
     }
 
+    if (context->comment) {
+        params.cp_comment = context->comment;
+    }
+
     params.prog_order = context->progression;
 
     params.cp_cinema = context->cinema_mode;
@@ -463,7 +472,8 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
     }
 
     if (!context->num_resolutions) {
-        while (tile_width < (1 << (params.numresolution - 1U)) || tile_height < (1 << (params.numresolution - 1U))) {
+        while (tile_width < (1U << (params.numresolution - 1U)) ||
+               tile_height < (1U << (params.numresolution - 1U))) {
             params.numresolution -= 1;
         }
     }
@@ -487,10 +497,24 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         goto quick_exit;
     }
 
+    if (strcmp(im->mode, "RGBA") == 0) {
+        image->comps[3].alpha = 1;
+    } else if (strcmp(im->mode, "LA") == 0) {
+        image->comps[1].alpha = 1;
+    }
+
     opj_set_error_handler(codec, j2k_error, context);
     opj_set_info_handler(codec, j2k_warn, context);
     opj_set_warning_handler(codec, j2k_warn, context);
     opj_setup_encoder(codec, &params, image);
+
+    /* Enabling PLT markers only supported in OpenJPEG 2.4.0 and up */
+#if ((OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR >= 4) || OPJ_VERSION_MAJOR > 2)
+    if (context->plt) {
+        const char *plt_option[2] = {"PLT=YES", NULL};
+        opj_encoder_set_extra_options(codec, plt_option);
+    }
+#endif
 
     /* Start encoding */
     if (!opj_start_compress(codec, image, stream)) {
@@ -624,16 +648,14 @@ ImagingJpeg2KEncodeCleanup(ImagingCodecState state) {
         free((void *)context->error_msg);
     }
 
+    if (context->comment) {
+        free((void *)context->comment);
+    }
+
     context->error_msg = NULL;
+    context->comment = NULL;
 
     return -1;
 }
 
 #endif /* HAVE_OPENJPEG */
-
-/*
- * Local Variables:
- * c-basic-offset: 4
- * End:
- *
- */

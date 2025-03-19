@@ -48,42 +48,56 @@
  * Global vars for Tcl / Tk functions.  We load these symbols from the tkinter
  * extension module or loaded Tcl / Tk libraries at run-time.
  */
-static int TK_LT_85 = 0;
 static Tcl_CreateCommand_t TCL_CREATE_COMMAND;
 static Tcl_AppendResult_t TCL_APPEND_RESULT;
 static Tk_FindPhoto_t TK_FIND_PHOTO;
 static Tk_PhotoGetImage_t TK_PHOTO_GET_IMAGE;
-static Tk_PhotoPutBlock_84_t TK_PHOTO_PUT_BLOCK_84;
-static Tk_PhotoSetSize_84_t TK_PHOTO_SET_SIZE_84;
-static Tk_PhotoPutBlock_85_t TK_PHOTO_PUT_BLOCK_85;
+static Tk_PhotoPutBlock_t TK_PHOTO_PUT_BLOCK;
 
 static Imaging
 ImagingFind(const char *name) {
-    Py_ssize_t id;
+    PyObject *capsule;
+    int direct_pointer = 0;
+    const char *expected = "capsule object \"" IMAGING_MAGIC "\" at 0x";
 
-    /* FIXME: use CObject instead? */
-#if defined(_WIN64)
-    id = _atoi64(name);
-#else
-    id = atol(name);
-#endif
-    if (!id) {
+    if (name[0] == '<') {
+        name++;
+    } else {
+        // Special case for PyPy, where the string representation of a Capsule
+        // refers directly to the pointer itself, not to the PyCapsule object.
+        direct_pointer = 1;
+    }
+
+    if (strncmp(name, expected, strlen(expected))) {
         return NULL;
     }
 
-    return (Imaging)id;
+    capsule = (PyObject *)strtoull(name + strlen(expected), NULL, 16);
+
+    if (direct_pointer) {
+        return (Imaging)capsule;
+    }
+
+    if (!PyCapsule_IsValid(capsule, IMAGING_MAGIC)) {
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", IMAGING_MAGIC);
+        return NULL;
+    }
+
+    return (Imaging)PyCapsule_GetPointer(capsule, IMAGING_MAGIC);
 }
 
 static int
 PyImagingPhotoPut(
-    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv) {
+    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv
+) {
     Imaging im;
     Tk_PhotoHandle photo;
     Tk_PhotoImageBlock block;
 
     if (argc != 3) {
         TCL_APPEND_RESULT(
-            interp, "usage: ", argv[0], " destPhoto srcImage", (char *)NULL);
+            interp, "usage: ", argv[0], " destPhoto srcImage", (char *)NULL
+        );
         return TCL_ERROR;
     }
 
@@ -130,33 +144,17 @@ PyImagingPhotoPut(
     block.pitch = im->linesize;
     block.pixelPtr = (unsigned char *)im->block;
 
-    if (TK_LT_85) { /* Tk 8.4 */
-        TK_PHOTO_PUT_BLOCK_84(
-            photo, &block, 0, 0, block.width, block.height, TK_PHOTO_COMPOSITE_SET);
-        if (strcmp(im->mode, "RGBA") == 0) {
-            /* Tk workaround: we need apply ToggleComplexAlphaIfNeeded */
-            /* (fixed in Tk 8.5a3) */
-            TK_PHOTO_SET_SIZE_84(photo, block.width, block.height);
-        }
-    } else {
-        /* Tk >=8.5 */
-        TK_PHOTO_PUT_BLOCK_85(
-            interp,
-            photo,
-            &block,
-            0,
-            0,
-            block.width,
-            block.height,
-            TK_PHOTO_COMPOSITE_SET);
-    }
+    TK_PHOTO_PUT_BLOCK(
+        interp, photo, &block, 0, 0, block.width, block.height, TK_PHOTO_COMPOSITE_SET
+    );
 
     return TCL_OK;
 }
 
 static int
 PyImagingPhotoGet(
-    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv) {
+    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv
+) {
     Imaging im;
     Tk_PhotoHandle photo;
     Tk_PhotoImageBlock block;
@@ -164,7 +162,8 @@ PyImagingPhotoGet(
 
     if (argc != 3) {
         TCL_APPEND_RESULT(
-            interp, "usage: ", argv[0], " srcPhoto destImage", (char *)NULL);
+            interp, "usage: ", argv[0], " srcPhoto destImage", (char *)NULL
+        );
         return TCL_ERROR;
     }
 
@@ -204,13 +203,15 @@ TkImaging_Init(Tcl_Interp *interp) {
         "PyImagingPhoto",
         PyImagingPhotoPut,
         (ClientData)0,
-        (Tcl_CmdDeleteProc *)NULL);
+        (Tcl_CmdDeleteProc *)NULL
+    );
     TCL_CREATE_COMMAND(
         interp,
         "PyImagingPhotoGet",
         PyImagingPhotoGet,
         (ClientData)0,
-        (Tcl_CmdDeleteProc *)NULL);
+        (Tcl_CmdDeleteProc *)NULL
+    );
 }
 
 /*
@@ -290,16 +291,7 @@ get_tk(HMODULE hMod) {
     if ((TK_FIND_PHOTO = (Tk_FindPhoto_t)_dfunc(hMod, "Tk_FindPhoto")) == NULL) {
         return -1;
     };
-    TK_LT_85 = GetProcAddress(hMod, "Tk_PhotoPutBlock_Panic") == NULL;
-    /* Tk_PhotoPutBlock_Panic defined as of 8.5.0 */
-    if (TK_LT_85) {
-        TK_PHOTO_PUT_BLOCK_84 = (Tk_PhotoPutBlock_84_t)func;
-        return ((TK_PHOTO_SET_SIZE_84 =
-                     (Tk_PhotoSetSize_84_t)_dfunc(hMod, "Tk_PhotoSetSize")) == NULL)
-                   ? -1
-                   : 1;
-    }
-    TK_PHOTO_PUT_BLOCK_85 = (Tk_PhotoPutBlock_85_t)func;
+    TK_PHOTO_PUT_BLOCK = (Tk_PhotoPutBlock_t)func;
     return 1;
 }
 
@@ -310,7 +302,7 @@ load_tkinter_funcs(void) {
      * Return 0 for success, non-zero for failure.
      */
 
-    HMODULE hMods[1024];
+    HMODULE *hMods = NULL;
     HANDLE hProcess;
     DWORD cbNeeded;
     unsigned int i;
@@ -327,33 +319,48 @@ load_tkinter_funcs(void) {
     /* Returns pseudo-handle that does not need to be closed */
     hProcess = GetCurrentProcess();
 
+    /* Allocate module handlers array */
+    if (!EnumProcessModules(hProcess, NULL, 0, &cbNeeded)) {
+#if defined(__CYGWIN__)
+        PyErr_SetString(PyExc_OSError, "Call to EnumProcessModules failed");
+#else
+        PyErr_SetFromWindowsErr(0);
+#endif
+        return 1;
+    }
+    if (!(hMods = (HMODULE *)malloc(cbNeeded))) {
+        PyErr_NoMemory();
+        return 1;
+    }
+
     /* Iterate through modules in this process looking for Tcl / Tk names */
-    if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded)) {
+    if (EnumProcessModules(hProcess, hMods, cbNeeded, &cbNeeded)) {
         for (i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
             if (!found_tcl) {
                 found_tcl = get_tcl(hMods[i]);
                 if (found_tcl == -1) {
-                    return 1;
+                    break;
                 }
             }
             if (!found_tk) {
                 found_tk = get_tk(hMods[i]);
                 if (found_tk == -1) {
-                    return 1;
+                    break;
                 }
             }
             if (found_tcl && found_tk) {
-                return 0;
+                break;
             }
         }
     }
 
+    free(hMods);
     if (found_tcl == 0) {
         PyErr_SetString(PyExc_RuntimeError, "Could not find Tcl routines");
-    } else {
+    } else if (found_tk == 0) {
         PyErr_SetString(PyExc_RuntimeError, "Could not find Tk routines");
     }
-    return 1;
+    return (int)((found_tcl != 1) || (found_tk != 1));
 }
 
 #else /* not Windows */
@@ -407,18 +414,10 @@ _func_loader(void *lib) {
     if ((TK_FIND_PHOTO = (Tk_FindPhoto_t)_dfunc(lib, "Tk_FindPhoto")) == NULL) {
         return 1;
     }
-    /* Tk_PhotoPutBlock_Panic defined as of 8.5.0 */
-    TK_LT_85 = (dlsym(lib, "Tk_PhotoPutBlock_Panic") == NULL);
-    if (TK_LT_85) {
-        return (
-            ((TK_PHOTO_PUT_BLOCK_84 =
-                  (Tk_PhotoPutBlock_84_t)_dfunc(lib, "Tk_PhotoPutBlock")) == NULL) ||
-            ((TK_PHOTO_SET_SIZE_84 =
-                  (Tk_PhotoSetSize_84_t)_dfunc(lib, "Tk_PhotoSetSize")) == NULL));
-    }
     return (
-        (TK_PHOTO_PUT_BLOCK_85 =
-             (Tk_PhotoPutBlock_85_t)_dfunc(lib, "Tk_PhotoPutBlock")) == NULL);
+        (TK_PHOTO_PUT_BLOCK = (Tk_PhotoPutBlock_t)_dfunc(lib, "Tk_PhotoPutBlock")) ==
+        NULL
+    );
 }
 
 int

@@ -13,7 +13,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
+from __future__ import annotations
 
 import re
 
@@ -24,8 +24,8 @@ from ._binary import o8
 xpm_head = re.compile(b'"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)')
 
 
-def _accept(prefix):
-    return prefix[:9] == b"/* XPM */"
+def _accept(prefix: bytes) -> bool:
+    return prefix.startswith(b"/* XPM */")
 
 
 ##
@@ -33,12 +33,10 @@ def _accept(prefix):
 
 
 class XpmImageFile(ImageFile.ImageFile):
-
     format = "XPM"
     format_description = "X11 Pixel Map"
 
-    def _open(self):
-
+    def _open(self) -> None:
         if not _accept(self.fp.read(9)):
             msg = "not an XPM file"
             raise SyntaxError(msg)
@@ -68,25 +66,22 @@ class XpmImageFile(ImageFile.ImageFile):
         palette = [b"\0\0\0"] * 256
 
         for _ in range(pal):
-
             s = self.fp.readline()
-            if s[-2:] == b"\r\n":
+            if s.endswith(b"\r\n"):
                 s = s[:-2]
-            elif s[-1:] in b"\r\n":
+            elif s.endswith((b"\r", b"\n")):
                 s = s[:-1]
 
             c = s[1]
             s = s[2:-2].split()
 
             for i in range(0, len(s), 2):
-
                 if s[i] == b"c":
-
                     # process colour key
                     rgb = s[i + 1]
                     if rgb == b"None":
                         self.info["transparency"] = c
-                    elif rgb[:1] == b"#":
+                    elif rgb.startswith(b"#"):
                         # FIXME: handle colour names (see ImagePalette.py)
                         rgb = int(rgb[1:], 16)
                         palette[c] = (
@@ -99,27 +94,22 @@ class XpmImageFile(ImageFile.ImageFile):
                     break
 
             else:
-
                 # missing colour key
                 msg = "cannot read this XPM file"
                 raise ValueError(msg)
 
-        self.mode = "P"
+        self._mode = "P"
         self.palette = ImagePalette.raw("RGB", b"".join(palette))
 
-        self.tile = [("raw", (0, 0) + self.size, self.fp.tell(), ("P", 0, 1))]
+        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, self.fp.tell(), "P")]
 
-    def load_read(self, bytes):
-
+    def load_read(self, read_bytes: int) -> bytes:
         #
         # load all image data in one chunk
 
         xsize, ysize = self.size
 
-        s = [None] * ysize
-
-        for i in range(ysize):
-            s[i] = self.fp.readline()[1 : xsize + 1].ljust(xsize)
+        s = [self.fp.readline()[1 : xsize + 1].ljust(xsize) for i in range(ysize)]
 
         return b"".join(s)
 

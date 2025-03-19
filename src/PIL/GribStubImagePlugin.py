@@ -8,13 +8,17 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
+
+import os
+from typing import IO
 
 from . import Image, ImageFile
 
 _handler = None
 
 
-def register_handler(handler):
+def register_handler(handler: ImageFile.StubHandler | None) -> None:
     """
     Install application-specific GRIB image handler.
 
@@ -28,38 +32,34 @@ def register_handler(handler):
 # Image adapter
 
 
-def _accept(prefix):
-    return prefix[:4] == b"GRIB" and prefix[7] == 1
+def _accept(prefix: bytes) -> bool:
+    return prefix.startswith(b"GRIB") and prefix[7] == 1
 
 
 class GribStubImageFile(ImageFile.StubImageFile):
-
     format = "GRIB"
     format_description = "GRIB"
 
-    def _open(self):
-
-        offset = self.fp.tell()
-
+    def _open(self) -> None:
         if not _accept(self.fp.read(8)):
             msg = "Not a GRIB file"
             raise SyntaxError(msg)
 
-        self.fp.seek(offset)
+        self.fp.seek(-8, os.SEEK_CUR)
 
         # make something up
-        self.mode = "F"
+        self._mode = "F"
         self._size = 1, 1
 
         loader = self._load()
         if loader:
             loader.open(self)
 
-    def _load(self):
+    def _load(self) -> ImageFile.StubHandler | None:
         return _handler
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if _handler is None or not hasattr(_handler, "save"):
         msg = "GRIB save handler not installed"
         raise OSError(msg)

@@ -41,13 +41,14 @@
 #define FLOOR(v) ((v) >= 0.0 ? (int)(v) : (int)floor(v))
 
 #define INK8(ink) (*(UINT8 *)ink)
+#define INK16(ink) (*(UINT16 *)ink)
 
 /*
  * Rounds around zero (up=away from zero, down=towards zero)
  * This guarantees that ROUND_UP|DOWN(f) == -ROUND_UP|DOWN(-f)
  */
 #define ROUND_UP(f) ((int)((f) >= 0.0 ? floor((f) + 0.5F) : -floor(fabs(f) + 0.5F)))
-#define ROUND_DOWN(f) ((int)((f) >= 0.0 ? ceil((f)-0.5F) : -ceil(fabs(f) - 0.5F)))
+#define ROUND_DOWN(f) ((int)((f) >= 0.0 ? ceil((f) - 0.5F) : -ceil(fabs(f) - 0.5F)))
 
 /* -------------------------------------------------------------------- */
 /* Primitives                                                           */
@@ -68,8 +69,13 @@ static inline void
 point8(Imaging im, int x, int y, int ink) {
     if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize) {
         if (strncmp(im->mode, "I;16", 4) == 0) {
-            im->image8[y][x * 2] = (UINT8)ink;
+#ifdef WORDS_BIGENDIAN
+            im->image8[y][x * 2] = (UINT8)(ink >> 8);
             im->image8[y][x * 2 + 1] = (UINT8)ink;
+#else
+            im->image8[y][x * 2] = (UINT8)ink;
+            im->image8[y][x * 2 + 1] = (UINT8)(ink >> 8);
+#endif
         } else {
             im->image8[y][x] = (UINT8)ink;
         }
@@ -85,25 +91,22 @@ point32(Imaging im, int x, int y, int ink) {
 
 static inline void
 point32rgba(Imaging im, int x, int y, int ink) {
-    unsigned int tmp1;
+    unsigned int tmp;
 
     if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize) {
         UINT8 *out = (UINT8 *)im->image[y] + x * 4;
         UINT8 *in = (UINT8 *)&ink;
-        out[0] = BLEND(in[3], out[0], in[0], tmp1);
-        out[1] = BLEND(in[3], out[1], in[1], tmp1);
-        out[2] = BLEND(in[3], out[2], in[2], tmp1);
+        out[0] = BLEND(in[3], out[0], in[0], tmp);
+        out[1] = BLEND(in[3], out[1], in[1], tmp);
+        out[2] = BLEND(in[3], out[2], in[2], tmp);
     }
 }
 
 static inline void
 hline8(Imaging im, int x0, int y0, int x1, int ink) {
-    int tmp, pixelwidth;
+    int pixelwidth;
 
     if (y0 >= 0 && y0 < im->ysize) {
-        if (x0 > x1) {
-            tmp = x0, x0 = x1, x1 = tmp;
-        }
         if (x0 < 0) {
             x0 = 0;
         } else if (x0 >= im->xsize) {
@@ -117,22 +120,17 @@ hline8(Imaging im, int x0, int y0, int x1, int ink) {
         if (x0 <= x1) {
             pixelwidth = strncmp(im->mode, "I;16", 4) == 0 ? 2 : 1;
             memset(
-                im->image8[y0] + x0 * pixelwidth,
-                (UINT8)ink,
-                (x1 - x0 + 1) * pixelwidth);
+                im->image8[y0] + x0 * pixelwidth, (UINT8)ink, (x1 - x0 + 1) * pixelwidth
+            );
         }
     }
 }
 
 static inline void
 hline32(Imaging im, int x0, int y0, int x1, int ink) {
-    int tmp;
     INT32 *p;
 
     if (y0 >= 0 && y0 < im->ysize) {
-        if (x0 > x1) {
-            tmp = x0, x0 = x1, x1 = tmp;
-        }
         if (x0 < 0) {
             x0 = 0;
         } else if (x0 >= im->xsize) {
@@ -152,13 +150,9 @@ hline32(Imaging im, int x0, int y0, int x1, int ink) {
 
 static inline void
 hline32rgba(Imaging im, int x0, int y0, int x1, int ink) {
-    int tmp;
-    unsigned int tmp1;
+    unsigned int tmp;
 
     if (y0 >= 0 && y0 < im->ysize) {
-        if (x0 > x1) {
-            tmp = x0, x0 = x1, x1 = tmp;
-        }
         if (x0 < 0) {
             x0 = 0;
         } else if (x0 >= im->xsize) {
@@ -173,9 +167,9 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink) {
             UINT8 *out = (UINT8 *)im->image[y0] + x0 * 4;
             UINT8 *in = (UINT8 *)&ink;
             while (x0 <= x1) {
-                out[0] = BLEND(in[3], out[0], in[0], tmp1);
-                out[1] = BLEND(in[3], out[1], in[1], tmp1);
-                out[2] = BLEND(in[3], out[2], in[2], tmp1);
+                out[0] = BLEND(in[3], out[0], in[0], tmp);
+                out[1] = BLEND(in[3], out[1], in[1], tmp);
+                out[2] = BLEND(in[3], out[2], in[2], tmp);
                 x0++;
                 out += 4;
             }
@@ -413,7 +407,8 @@ x_cmp(const void *x0, const void *x1) {
 
 static void
 draw_horizontal_lines(
-    Imaging im, int n, Edge *e, int ink, int *x_pos, int y, hline_handler hline) {
+    Imaging im, int n, Edge *e, int ink, int *x_pos, int y, hline_handler hline
+) {
     int i;
     for (i = 0; i < n; i++) {
         if (e[i].ymin == y && e[i].ymin == e[i].ymax) {
@@ -444,7 +439,9 @@ draw_horizontal_lines(
  * Filled polygon draw function using scan line algorithm.
  */
 static inline int
-polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler hline, int hasAlpha) {
+polygon_generic(
+    Imaging im, int n, Edge *e, int ink, int eofill, hline_handler hline, int hasAlpha
+) {
     Edge **edge_table;
     float *xx;
     int edge_count = 0;
@@ -504,7 +501,8 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
                     // Needed to draw consistent polygons
                     xx[j] = xx[j - 1];
                     j++;
-                } else if (current->dx != 0 && roundf(xx[j-1]) == xx[j-1]) {
+                } else if (current->dx != 0 && j % 2 == 1 &&
+                           roundf(xx[j - 1]) == xx[j - 1]) {
                     // Connect discontiguous corners
                     for (k = 0; k < i; k++) {
                         Edge *other_edge = edge_table[k];
@@ -513,25 +511,42 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
                             continue;
                         }
                         // Check if the two edges join to make a corner
-                        if (((ymin == current->ymin && ymin == other_edge->ymin) ||
-                             (ymin == current->ymax && ymin == other_edge->ymax)) &&
-                            xx[j-1] == (ymin - other_edge->y0) * other_edge->dx + other_edge->x0) {
+                        if (xx[j - 1] ==
+                            (ymin - other_edge->y0) * other_edge->dx + other_edge->x0) {
                             // Determine points from the edges on the next row
                             // Or if this is the last row, check the previous row
                             int offset = ymin == ymax ? -1 : 1;
-                            adjacent_line_x = (ymin + offset - current->y0) * current->dx + current->x0;
-                            adjacent_line_x_other_edge = (ymin + offset - other_edge->y0) * other_edge->dx + other_edge->x0;
+                            adjacent_line_x =
+                                (ymin + offset - current->y0) * current->dx +
+                                current->x0;
+                            adjacent_line_x_other_edge =
+                                (ymin + offset - other_edge->y0) * other_edge->dx +
+                                other_edge->x0;
                             if (ymin == current->ymax) {
                                 if (current->dx > 0) {
-                                    xx[k] = fmax(adjacent_line_x, adjacent_line_x_other_edge) + 1;
+                                    xx[k] =
+                                        fmax(
+                                            adjacent_line_x, adjacent_line_x_other_edge
+                                        ) +
+                                        1;
                                 } else {
-                                    xx[k] = fmin(adjacent_line_x, adjacent_line_x_other_edge) - 1;
+                                    xx[k] =
+                                        fmin(
+                                            adjacent_line_x, adjacent_line_x_other_edge
+                                        ) -
+                                        1;
                                 }
                             } else {
                                 if (current->dx > 0) {
-                                    xx[k] = fmin(adjacent_line_x, adjacent_line_x_other_edge);
+                                    xx[k] = fmin(
+                                        adjacent_line_x, adjacent_line_x_other_edge
+                                    );
                                 } else {
-                                    xx[k] = fmax(adjacent_line_x, adjacent_line_x_other_edge) + 1;
+                                    xx[k] =
+                                        fmax(
+                                            adjacent_line_x, adjacent_line_x_other_edge
+                                        ) +
+                                        1;
                                 }
                             }
                             break;
@@ -557,7 +572,8 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
 
                 int x_start = ROUND_UP(xx[i - 1]);
                 if (x_pos > x_start) {
-                    // Line would be partway through x_pos, so increase the starting point
+                    // Line would be partway through x_pos, so increase the starting
+                    // point
                     x_start = x_pos;
                     if (x_end < x_start) {
                         // Line would now end before it started
@@ -642,13 +658,17 @@ DRAW draw32rgba = {point32rgba, hline32rgba, line32rgba, polygon32rgba};
 /* Interface                                                            */
 /* -------------------------------------------------------------------- */
 
-#define DRAWINIT()                           \
-    if (im->image8) {                        \
-        draw = &draw8;                       \
-        ink = INK8(ink_);                    \
-    } else {                                 \
-        draw = (op) ? &draw32rgba : &draw32; \
-        memcpy(&ink, ink_, sizeof(ink));     \
+#define DRAWINIT()                               \
+    if (im->image8) {                            \
+        draw = &draw8;                           \
+        if (strncmp(im->mode, "I;16", 4) == 0) { \
+            ink = INK16(ink_);                   \
+        } else {                                 \
+            ink = INK8(ink_);                    \
+        }                                        \
+    } else {                                     \
+        draw = (op) ? &draw32rgba : &draw32;     \
+        memcpy(&ink, ink_, sizeof(ink));         \
     }
 
 int
@@ -677,7 +697,8 @@ ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void *ink_, in
 
 int
 ImagingDrawWideLine(
-    Imaging im, int x0, int y0, int x1, int y1, const void *ink_, int width, int op) {
+    Imaging im, int x0, int y0, int x1, int y1, const void *ink_, int width, int op
+) {
     DRAW *draw;
     INT32 ink;
     int dx, dy;
@@ -708,7 +729,8 @@ ImagingDrawWideLine(
             {x0 - dxmin, y0 + dymax},
             {x1 - dxmin, y1 + dymax},
             {x1 + dxmax, y1 - dymin},
-            {x0 + dxmax, y0 - dymin}};
+            {x0 + dxmax, y0 - dymin}
+        };
 
         add_edge(e + 0, vertices[0][0], vertices[0][1], vertices[1][0], vertices[1][1]);
         add_edge(e + 1, vertices[1][0], vertices[1][1], vertices[2][0], vertices[2][1]);
@@ -730,7 +752,8 @@ ImagingDrawRectangle(
     const void *ink_,
     int fill,
     int width,
-    int op) {
+    int op
+) {
     int i;
     int y;
     int tmp;
@@ -777,7 +800,9 @@ ImagingDrawRectangle(
 }
 
 int
-ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, int width, int op) {
+ImagingDrawPolygon(
+    Imaging im, int count, int *xy, const void *ink_, int fill, int width, int op
+) {
     int i, n, x0, y0, x1, y1;
     DRAW *draw;
     INT32 ink;
@@ -804,7 +829,7 @@ ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, i
             if (y0 == y1 && i != 0 && y0 == xy[i * 2 - 1]) {
                 // This is a horizontal line,
                 // that immediately follows another horizontal line
-                Edge *last_e = &e[n-1];
+                Edge *last_e = &e[n - 1];
                 if (x1 > x0 && x0 > xy[i * 2 - 2]) {
                     // They are both increasing in x
                     last_e->xmax = x1;
@@ -827,14 +852,27 @@ ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, i
         /* Outline */
         if (width == 1) {
             for (i = 0; i < count - 1; i++) {
-                draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink);
+                draw->line(
+                    im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink
+                );
             }
             draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink);
         } else {
             for (i = 0; i < count - 1; i++) {
-                ImagingDrawWideLine(im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink_, width, op);
+                ImagingDrawWideLine(
+                    im,
+                    xy[i * 2],
+                    xy[i * 2 + 1],
+                    xy[i * 2 + 2],
+                    xy[i * 2 + 3],
+                    ink_,
+                    width,
+                    op
+                );
             }
-            ImagingDrawWideLine(im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink_, width, op);
+            ImagingDrawWideLine(
+                im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink_, width, op
+            );
         }
     }
 
@@ -844,7 +882,8 @@ ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, i
 int
 ImagingDrawBitmap(Imaging im, int x0, int y0, Imaging bitmap, const void *ink, int op) {
     return ImagingFill2(
-        im, ink, bitmap, x0, y0, x0 + bitmap->xsize, y0 + bitmap->ysize);
+        im, ink, bitmap, x0, y0, x0 + bitmap->xsize, y0 + bitmap->ysize
+    );
 }
 
 /* -------------------------------------------------------------------- */
@@ -1053,7 +1092,8 @@ clip_tree_transpose(clip_node *root) {
 // segments, i.e. something like correct bracket sequences.
 int
 clip_tree_do_clip(
-    clip_node *root, int32_t x0, int32_t y, int32_t x1, event_list **ret) {
+    clip_node *root, int32_t x0, int32_t y, int32_t x1, event_list **ret
+) {
     if (root == NULL) {
         event_list *start = malloc(sizeof(event_list));
         if (!start) {
@@ -1190,7 +1230,8 @@ typedef struct {
 } clip_ellipse_state;
 
 typedef void (*clip_ellipse_init)(
-    clip_ellipse_state *, int32_t, int32_t, int32_t, float, float);
+    clip_ellipse_state *, int32_t, int32_t, int32_t, float, float
+);
 
 void
 debug_clip_tree(clip_node *root, int space) {
@@ -1302,7 +1343,8 @@ arc_init(clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, float
 // A chord line.
 void
 chord_line_init(
-    clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, float ar) {
+    clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, float ar
+) {
     ellipse_init(&s->st, a, b, a + b + 1);
 
     s->head = NULL;
@@ -1329,7 +1371,8 @@ chord_line_init(
 // Pie side.
 void
 pie_side_init(
-    clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, float _) {
+    clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, float _
+) {
     ellipse_init(&s->st, a, b, a + b + 1);
 
     s->head = NULL;
@@ -1445,7 +1488,8 @@ clip_ellipse_free(clip_ellipse_state *s) {
 
 int8_t
 clip_ellipse_next(
-    clip_ellipse_state *s, int32_t *ret_x0, int32_t *ret_y, int32_t *ret_x1) {
+    clip_ellipse_state *s, int32_t *ret_x0, int32_t *ret_y, int32_t *ret_x1
+) {
     int32_t x0, y, x1;
     while (s->head == NULL && ellipse_next(&s->st, &x0, &y, &x1) >= 0) {
         if (clip_tree_do_clip(s->root, x0, y, x1, &s->head) < 0) {
@@ -1479,7 +1523,8 @@ ellipseNew(
     const void *ink_,
     int fill,
     int width,
-    int op) {
+    int op
+) {
     DRAW *draw;
     INT32 ink;
     DRAWINIT();
@@ -1514,7 +1559,8 @@ clipEllipseNew(
     const void *ink_,
     int width,
     int op,
-    clip_ellipse_init init) {
+    clip_ellipse_init init
+) {
     DRAW *draw;
     INT32 ink;
     DRAWINIT();
@@ -1547,7 +1593,8 @@ arcNew(
     float end,
     const void *ink_,
     int width,
-    int op) {
+    int op
+) {
     return clipEllipseNew(im, x0, y0, x1, y1, start, end, ink_, width, op, arc_init);
 }
 
@@ -1562,7 +1609,8 @@ chordNew(
     float end,
     const void *ink_,
     int width,
-    int op) {
+    int op
+) {
     return clipEllipseNew(im, x0, y0, x1, y1, start, end, ink_, width, op, chord_init);
 }
 
@@ -1577,9 +1625,11 @@ chordLineNew(
     float end,
     const void *ink_,
     int width,
-    int op) {
+    int op
+) {
     return clipEllipseNew(
-        im, x0, y0, x1, y1, start, end, ink_, width, op, chord_line_init);
+        im, x0, y0, x1, y1, start, end, ink_, width, op, chord_line_init
+    );
 }
 
 static int
@@ -1593,7 +1643,8 @@ pieNew(
     float end,
     const void *ink_,
     int width,
-    int op) {
+    int op
+) {
     return clipEllipseNew(im, x0, y0, x1, y1, start, end, ink_, width, op, pie_init);
 }
 
@@ -1607,7 +1658,8 @@ pieSideNew(
     float start,
     const void *ink_,
     int width,
-    int op) {
+    int op
+) {
     return clipEllipseNew(im, x0, y0, x1, y1, start, 0, ink_, width, op, pie_side_init);
 }
 
@@ -1621,7 +1673,8 @@ ImagingDrawEllipse(
     const void *ink,
     int fill,
     int width,
-    int op) {
+    int op
+) {
     return ellipseNew(im, x0, y0, x1, y1, ink, fill, width, op);
 }
 
@@ -1636,7 +1689,8 @@ ImagingDrawArc(
     float end,
     const void *ink,
     int width,
-    int op) {
+    int op
+) {
     normalize_angles(&start, &end);
     if (start + 360 == end) {
         return ImagingDrawEllipse(im, x0, y0, x1, y1, ink, 0, width, op);
@@ -1659,7 +1713,8 @@ ImagingDrawChord(
     const void *ink,
     int fill,
     int width,
-    int op) {
+    int op
+) {
     normalize_angles(&start, &end);
     if (start + 360 == end) {
         return ImagingDrawEllipse(im, x0, y0, x1, y1, ink, fill, width, op);
@@ -1689,7 +1744,8 @@ ImagingDrawPieslice(
     const void *ink,
     int fill,
     int width,
-    int op) {
+    int op
+) {
     normalize_angles(&start, &end);
     if (start + 360 == end) {
         return ellipseNew(im, x0, y0, x1, y1, ink, fill, width, op);
@@ -1817,13 +1873,8 @@ ImagingOutlineLine(ImagingOutline outline, float x1, float y1) {
 
 int
 ImagingOutlineCurve(
-    ImagingOutline outline,
-    float x1,
-    float y1,
-    float x2,
-    float y2,
-    float x3,
-    float y3) {
+    ImagingOutline outline, float x1, float y1, float x2, float y2, float x3, float y3
+) {
     Edge *e;
     int i;
     float xo, yo;
@@ -1937,7 +1988,8 @@ ImagingOutlineTransform(ImagingOutline outline, double a[6]) {
 
 int
 ImagingDrawOutline(
-    Imaging im, ImagingOutline outline, const void *ink_, int fill, int op) {
+    Imaging im, ImagingOutline outline, const void *ink_, int fill, int op
+) {
     DRAW *draw;
     INT32 ink;
 

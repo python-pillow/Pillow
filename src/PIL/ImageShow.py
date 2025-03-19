@@ -11,20 +11,22 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
+
+import abc
 import os
 import shutil
 import subprocess
 import sys
 from shlex import quote
+from typing import Any
 
-from PIL import Image
-
-from ._deprecate import deprecate
+from . import Image
 
 _viewers = []
 
 
-def register(viewer, order=1):
+def register(viewer: type[Viewer] | Viewer, order: int = 1) -> None:
     """
     The :py:func:`register` function is used to register additional viewers::
 
@@ -38,18 +40,15 @@ def register(viewer, order=1):
         Zero or a negative integer to prepend this viewer to the list,
         a positive integer to append it.
     """
-    try:
-        if issubclass(viewer, Viewer):
-            viewer = viewer()
-    except TypeError:
-        pass  # raised if viewer wasn't a class
+    if isinstance(viewer, type) and issubclass(viewer, Viewer):
+        viewer = viewer()
     if order > 0:
         _viewers.append(viewer)
     else:
         _viewers.insert(0, viewer)
 
 
-def show(image, title=None, **options):
+def show(image: Image.Image, title: str | None = None, **options: Any) -> bool:
     r"""
     Display a given image.
 
@@ -69,7 +68,7 @@ class Viewer:
 
     # main api
 
-    def show(self, image, **options):
+    def show(self, image: Image.Image, **options: Any) -> int:
         """
         The main function for displaying an image.
         Converts the given image to the target format and displays it.
@@ -87,45 +86,37 @@ class Viewer:
 
     # hook methods
 
-    format = None
+    format: str | None = None
     """The format to convert the image into."""
-    options = {}
+    options: dict[str, Any] = {}
     """Additional options used to convert the image."""
 
-    def get_format(self, image):
+    def get_format(self, image: Image.Image) -> str | None:
         """Return format name, or ``None`` to save as PGM/PPM."""
         return self.format
 
-    def get_command(self, file, **options):
+    def get_command(self, file: str, **options: Any) -> str:
         """
         Returns the command used to display the file.
         Not implemented in the base class.
         """
-        raise NotImplementedError
+        msg = "unavailable in base viewer"
+        raise NotImplementedError(msg)
 
-    def save_image(self, image):
+    def save_image(self, image: Image.Image) -> str:
         """Save to temporary file and return filename."""
         return image._dump(format=self.get_format(image), **self.options)
 
-    def show_image(self, image, **options):
+    def show_image(self, image: Image.Image, **options: Any) -> int:
         """Display the given image."""
         return self.show_file(self.save_image(image), **options)
 
-    def show_file(self, path=None, **options):
+    def show_file(self, path: str, **options: Any) -> int:
         """
         Display given file.
-
-        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and will be removed in Pillow 10.0.0 (2023-07-01). ``path`` should be used
-        instead.
         """
-        if path is None:
-            if "file" in options:
-                deprecate("The 'file' argument", 10, "'path'")
-                path = options.pop("file")
-            else:
-                msg = "Missing required argument: 'path'"
-                raise TypeError(msg)
+        if not os.path.exists(path):
+            raise FileNotFoundError
         os.system(self.get_command(path, **options))  # nosec
         return 1
 
@@ -139,12 +130,25 @@ class WindowsViewer(Viewer):
     format = "PNG"
     options = {"compress_level": 1, "save_all": True}
 
-    def get_command(self, file, **options):
+    def get_command(self, file: str, **options: Any) -> str:
         return (
             f'start "Pillow" /WAIT "{file}" '
             "&& ping -n 4 127.0.0.1 >NUL "
             f'&& del /f "{file}"'
         )
+
+    def show_file(self, path: str, **options: Any) -> int:
+        """
+        Display given file.
+        """
+        if not os.path.exists(path):
+            raise FileNotFoundError
+        subprocess.Popen(
+            self.get_command(path, **options),
+            shell=True,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW"),
+        )  # nosec
+        return 1
 
 
 if sys.platform == "win32":
@@ -157,28 +161,19 @@ class MacViewer(Viewer):
     format = "PNG"
     options = {"compress_level": 1, "save_all": True}
 
-    def get_command(self, file, **options):
+    def get_command(self, file: str, **options: Any) -> str:
         # on darwin open returns immediately resulting in the temp
         # file removal while app is opening
         command = "open -a Preview.app"
         command = f"({command} {quote(file)}; sleep 20; rm -f {quote(file)})&"
         return command
 
-    def show_file(self, path=None, **options):
+    def show_file(self, path: str, **options: Any) -> int:
         """
         Display given file.
-
-        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and will be removed in Pillow 10.0.0 (2023-07-01). ``path`` should be used
-        instead.
         """
-        if path is None:
-            if "file" in options:
-                deprecate("The 'file' argument", 10, "'path'")
-                path = options.pop("file")
-            else:
-                msg = "Missing required argument: 'path'"
-                raise TypeError(msg)
+        if not os.path.exists(path):
+            raise FileNotFoundError
         subprocess.call(["open", "-a", "Preview.app", path])
         executable = sys.executable or shutil.which("python3")
         if executable:
@@ -197,13 +192,17 @@ if sys.platform == "darwin":
     register(MacViewer)
 
 
-class UnixViewer(Viewer):
+class UnixViewer(abc.ABC, Viewer):
     format = "PNG"
     options = {"compress_level": 1, "save_all": True}
 
-    def get_command(self, file, **options):
+    @abc.abstractmethod
+    def get_command_ex(self, file: str, **options: Any) -> tuple[str, str]:
+        pass
+
+    def get_command(self, file: str, **options: Any) -> str:
         command = self.get_command_ex(file, **options)[0]
-        return f"({command} {quote(file)}"
+        return f"{command} {quote(file)}"
 
 
 class XDGViewer(UnixViewer):
@@ -211,25 +210,16 @@ class XDGViewer(UnixViewer):
     The freedesktop.org ``xdg-open`` command.
     """
 
-    def get_command_ex(self, file, **options):
+    def get_command_ex(self, file: str, **options: Any) -> tuple[str, str]:
         command = executable = "xdg-open"
         return command, executable
 
-    def show_file(self, path=None, **options):
+    def show_file(self, path: str, **options: Any) -> int:
         """
         Display given file.
-
-        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and will be removed in Pillow 10.0.0 (2023-07-01). ``path`` should be used
-        instead.
         """
-        if path is None:
-            if "file" in options:
-                deprecate("The 'file' argument", 10, "'path'")
-                path = options.pop("file")
-            else:
-                msg = "Missing required argument: 'path'"
-                raise TypeError(msg)
+        if not os.path.exists(path):
+            raise FileNotFoundError
         subprocess.Popen(["xdg-open", path])
         return 1
 
@@ -240,26 +230,20 @@ class DisplayViewer(UnixViewer):
     This viewer supports the ``title`` parameter.
     """
 
-    def get_command_ex(self, file, title=None, **options):
+    def get_command_ex(
+        self, file: str, title: str | None = None, **options: Any
+    ) -> tuple[str, str]:
         command = executable = "display"
         if title:
             command += f" -title {quote(title)}"
         return command, executable
 
-    def show_file(self, path=None, **options):
+    def show_file(self, path: str, **options: Any) -> int:
         """
         Display given file.
-
-        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and ``path`` should be used instead.
         """
-        if path is None:
-            if "file" in options:
-                deprecate("The 'file' argument", 10, "'path'")
-                path = options.pop("file")
-            else:
-                msg = "Missing required argument: 'path'"
-                raise TypeError(msg)
+        if not os.path.exists(path):
+            raise FileNotFoundError
         args = ["display"]
         title = options.get("title")
         if title:
@@ -273,25 +257,17 @@ class DisplayViewer(UnixViewer):
 class GmDisplayViewer(UnixViewer):
     """The GraphicsMagick ``gm display`` command."""
 
-    def get_command_ex(self, file, **options):
+    def get_command_ex(self, file: str, **options: Any) -> tuple[str, str]:
         executable = "gm"
         command = "gm display"
         return command, executable
 
-    def show_file(self, path=None, **options):
+    def show_file(self, path: str, **options: Any) -> int:
         """
         Display given file.
-
-        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and ``path`` should be used instead.
         """
-        if path is None:
-            if "file" in options:
-                deprecate("The 'file' argument", 10, "'path'")
-                path = options.pop("file")
-            else:
-                msg = "Missing required argument: 'path'"
-                raise TypeError(msg)
+        if not os.path.exists(path):
+            raise FileNotFoundError
         subprocess.Popen(["gm", "display", path])
         return 1
 
@@ -299,25 +275,17 @@ class GmDisplayViewer(UnixViewer):
 class EogViewer(UnixViewer):
     """The GNOME Image Viewer ``eog`` command."""
 
-    def get_command_ex(self, file, **options):
+    def get_command_ex(self, file: str, **options: Any) -> tuple[str, str]:
         executable = "eog"
         command = "eog -n"
         return command, executable
 
-    def show_file(self, path=None, **options):
+    def show_file(self, path: str, **options: Any) -> int:
         """
         Display given file.
-
-        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and ``path`` should be used instead.
         """
-        if path is None:
-            if "file" in options:
-                deprecate("The 'file' argument", 10, "'path'")
-                path = options.pop("file")
-            else:
-                msg = "Missing required argument: 'path'"
-                raise TypeError(msg)
+        if not os.path.exists(path):
+            raise FileNotFoundError
         subprocess.Popen(["eog", "-n", path])
         return 1
 
@@ -328,7 +296,9 @@ class XVViewer(UnixViewer):
     This viewer supports the ``title`` parameter.
     """
 
-    def get_command_ex(self, file, title=None, **options):
+    def get_command_ex(
+        self, file: str, title: str | None = None, **options: Any
+    ) -> tuple[str, str]:
         # note: xv is pretty outdated.  most modern systems have
         # imagemagick's display command instead.
         command = executable = "xv"
@@ -336,20 +306,12 @@ class XVViewer(UnixViewer):
             command += f" -name {quote(title)}"
         return command, executable
 
-    def show_file(self, path=None, **options):
+    def show_file(self, path: str, **options: Any) -> int:
         """
         Display given file.
-
-        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and ``path`` should be used instead.
         """
-        if path is None:
-            if "file" in options:
-                deprecate("The 'file' argument", 10, "'path'")
-                path = options.pop("file")
-            else:
-                msg = "Missing required argument: 'path'"
-                raise TypeError(msg)
+        if not os.path.exists(path):
+            raise FileNotFoundError
         args = ["xv"]
         title = options.get("title")
         if title:
@@ -376,7 +338,7 @@ if sys.platform not in ("win32", "darwin"):  # unixoids
 class IPythonViewer(Viewer):
     """The viewer for IPython frontends."""
 
-    def show_image(self, image, **options):
+    def show_image(self, image: Image.Image, **options: Any) -> int:
         ipython_display(image)
         return 1
 
@@ -390,7 +352,6 @@ else:
 
 
 if __name__ == "__main__":
-
     if len(sys.argv) < 2:
         print("Syntax: python3 ImageShow.py imagefile [title]")
         sys.exit()

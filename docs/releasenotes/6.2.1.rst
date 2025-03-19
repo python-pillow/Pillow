@@ -18,8 +18,6 @@ Pillow 7.0.0 will be released on 2020-01-01 and will drop support for Python
 Other Changes
 =============
 
-
-
 Support added for Python 3.8
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

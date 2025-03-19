@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from io import BytesIO
 
 from PIL import Image
@@ -9,15 +11,14 @@ test_file = "Tests/images/hopper.webp"
 
 @skip_unless_feature("webp")
 class TestWebPLeaks(PillowLeakTestCase):
-
     mem_limit = 3 * 1024  # kb
     iterations = 100
 
-    def test_leak_load(self):
+    def test_leak_load(self) -> None:
         with open(test_file, "rb") as f:
             im_data = f.read()
 
-        def core():
+        def core() -> None:
             with Image.open(BytesIO(im_data)) as im:
                 im.load()
 

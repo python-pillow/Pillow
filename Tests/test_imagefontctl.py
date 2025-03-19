@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 from PIL import Image, ImageDraw, ImageFont
@@ -10,7 +12,7 @@ FONT_PATH = "Tests/fonts/DejaVuSans/DejaVuSans.ttf"
 pytestmark = skip_unless_feature("raqm")
 
 
-def test_english():
+def test_english() -> None:
     # smoke test, this should not fail
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
     im = Image.new(mode="RGB", size=(300, 100))
@@ -18,7 +20,7 @@ def test_english():
     draw.text((0, 0), "TEST", font=ttf, fill=500, direction="ltr")
 
 
-def test_complex_text():
+def test_complex_text() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -29,7 +31,7 @@ def test_complex_text():
     assert_image_similar_tofile(im, target, 0.5)
 
 
-def test_y_offset():
+def test_y_offset() -> None:
     ttf = ImageFont.truetype("Tests/fonts/NotoNastaliqUrdu-Regular.ttf", FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -40,7 +42,7 @@ def test_y_offset():
     assert_image_similar_tofile(im, target, 1.7)
 
 
-def test_complex_unicode_text():
+def test_complex_unicode_text() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -60,7 +62,7 @@ def test_complex_unicode_text():
     assert_image_similar_tofile(im, target, 2.33)
 
 
-def test_text_direction_rtl():
+def test_text_direction_rtl() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -71,7 +73,7 @@ def test_text_direction_rtl():
     assert_image_similar_tofile(im, target, 0.5)
 
 
-def test_text_direction_ltr():
+def test_text_direction_ltr() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -82,7 +84,7 @@ def test_text_direction_ltr():
     assert_image_similar_tofile(im, target, 0.5)
 
 
-def test_text_direction_rtl2():
+def test_text_direction_rtl2() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -93,7 +95,7 @@ def test_text_direction_rtl2():
     assert_image_similar_tofile(im, target, 0.5)
 
 
-def test_text_direction_ttb():
+def test_text_direction_ttb() -> None:
     ttf = ImageFont.truetype("Tests/fonts/NotoSansJP-Regular.otf", FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(100, 300))
@@ -108,7 +110,7 @@ def test_text_direction_ttb():
     assert_image_similar_tofile(im, target, 2.8)
 
 
-def test_text_direction_ttb_stroke():
+def test_text_direction_ttb_stroke() -> None:
     ttf = ImageFont.truetype("Tests/fonts/NotoSansJP-Regular.otf", 50)
 
     im = Image.new(mode="RGB", size=(100, 300))
@@ -131,7 +133,7 @@ def test_text_direction_ttb_stroke():
     assert_image_similar_tofile(im, target, 19.4)
 
 
-def test_ligature_features():
+def test_ligature_features() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -144,7 +146,7 @@ def test_ligature_features():
     assert liga_bbox == (0, 4, 13, 19)
 
 
-def test_kerning_features():
+def test_kerning_features() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -155,7 +157,7 @@ def test_kerning_features():
     assert_image_similar_tofile(im, target, 0.5)
 
 
-def test_arabictext_features():
+def test_arabictext_features() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -172,7 +174,7 @@ def test_arabictext_features():
     assert_image_similar_tofile(im, target, 0.5)
 
 
-def test_x_max_and_y_offset():
+def test_x_max_and_y_offset() -> None:
     ttf = ImageFont.truetype("Tests/fonts/ArefRuqaa-Regular.ttf", 40)
 
     im = Image.new(mode="RGB", size=(50, 100))
@@ -183,7 +185,7 @@ def test_x_max_and_y_offset():
     assert_image_similar_tofile(im, target, 0.5)
 
 
-def test_language():
+def test_language() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -206,7 +208,9 @@ def test_language():
     ),
     ids=("None", "ltr", "rtl2", "rtl", "ttb"),
 )
-def test_getlength(mode, text, direction, expected):
+def test_getlength(
+    mode: str, text: str, direction: str | None, expected: float
+) -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
     im = Image.new(mode, (1, 1), 0)
     d = ImageDraw.Draw(im)
@@ -225,10 +229,10 @@ def test_getlength(mode, text, direction, expected):
 @pytest.mark.parametrize("direction", ("ltr", "ttb"))
 @pytest.mark.parametrize(
     "text",
-    ("i" + ("\u030C" * 15) + "i", "i" + "\u032C" * 15 + "i", "\u035Cii", "i\u0305i"),
+    ("i" + ("\u030c" * 15) + "i", "i" + "\u032c" * 15 + "i", "\u035cii", "i\u0305i"),
     ids=("caron-above", "caron-below", "double-breve", "overline"),
 )
-def test_getlength_combine(mode, direction, text):
+def test_getlength_combine(mode: str, direction: str, text: str) -> None:
     if text == "i\u0305i" and direction == "ttb":
         pytest.skip("fails with this font")
 
@@ -248,7 +252,7 @@ def test_getlength_combine(mode, direction, text):
 
 
 @pytest.mark.parametrize("anchor", ("lt", "mm", "rb", "sm"))
-def test_anchor_ttb(anchor):
+def test_anchor_ttb(anchor: str) -> None:
     text = "f"
     path = f"Tests/images/test_anchor_ttb_{text}_{anchor}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 120)
@@ -268,27 +272,27 @@ def test_anchor_ttb(anchor):
 
 combine_tests = (
     # extends above (e.g. issue #4553)
-    ("caron", "a\u030C\u030C\u030C\u030C\u030Cb", None, None, 0.08),
-    ("caron_la", "a\u030C\u030C\u030C\u030C\u030Cb", "la", None, 0.08),
-    ("caron_lt", "a\u030C\u030C\u030C\u030C\u030Cb", "lt", None, 0.08),
-    ("caron_ls", "a\u030C\u030C\u030C\u030C\u030Cb", "ls", None, 0.08),
-    ("caron_ttb", "ca" + ("\u030C" * 15) + "b", None, "ttb", 0.3),
-    ("caron_ttb_lt", "ca" + ("\u030C" * 15) + "b", "lt", "ttb", 0.3),
+    ("caron", "a\u030c\u030c\u030c\u030c\u030cb", None, None, 0.08),
+    ("caron_la", "a\u030c\u030c\u030c\u030c\u030cb", "la", None, 0.08),
+    ("caron_lt", "a\u030c\u030c\u030c\u030c\u030cb", "lt", None, 0.08),
+    ("caron_ls", "a\u030c\u030c\u030c\u030c\u030cb", "ls", None, 0.08),
+    ("caron_ttb", "ca" + ("\u030c" * 15) + "b", None, "ttb", 0.3),
+    ("caron_ttb_lt", "ca" + ("\u030c" * 15) + "b", "lt", "ttb", 0.3),
     # extends below
-    ("caron_below", "a\u032C\u032C\u032C\u032C\u032Cb", None, None, 0.02),
-    ("caron_below_ld", "a\u032C\u032C\u032C\u032C\u032Cb", "ld", None, 0.02),
-    ("caron_below_lb", "a\u032C\u032C\u032C\u032C\u032Cb", "lb", None, 0.02),
-    ("caron_below_ls", "a\u032C\u032C\u032C\u032C\u032Cb", "ls", None, 0.02),
-    ("caron_below_ttb", "a" + ("\u032C" * 15) + "b", None, "ttb", 0.03),
-    ("caron_below_ttb_lb", "a" + ("\u032C" * 15) + "b", "lb", "ttb", 0.03),
+    ("caron_below", "a\u032c\u032c\u032c\u032c\u032cb", None, None, 0.02),
+    ("caron_below_ld", "a\u032c\u032c\u032c\u032c\u032cb", "ld", None, 0.02),
+    ("caron_below_lb", "a\u032c\u032c\u032c\u032c\u032cb", "lb", None, 0.02),
+    ("caron_below_ls", "a\u032c\u032c\u032c\u032c\u032cb", "ls", None, 0.02),
+    ("caron_below_ttb", "a" + ("\u032c" * 15) + "b", None, "ttb", 0.03),
+    ("caron_below_ttb_lb", "a" + ("\u032c" * 15) + "b", "lb", "ttb", 0.03),
     # extends to the right (e.g. issue #3745)
-    ("double_breve_below", "a\u035Ci", None, None, 0.02),
-    ("double_breve_below_ma", "a\u035Ci", "ma", None, 0.02),
-    ("double_breve_below_ra", "a\u035Ci", "ra", None, 0.02),
-    ("double_breve_below_ttb", "a\u035Cb", None, "ttb", 0.02),
-    ("double_breve_below_ttb_rt", "a\u035Cb", "rt", "ttb", 0.02),
-    ("double_breve_below_ttb_mt", "a\u035Cb", "mt", "ttb", 0.02),
-    ("double_breve_below_ttb_st", "a\u035Cb", "st", "ttb", 0.02),
+    ("double_breve_below", "a\u035ci", None, None, 0.02),
+    ("double_breve_below_ma", "a\u035ci", "ma", None, 0.02),
+    ("double_breve_below_ra", "a\u035ci", "ra", None, 0.02),
+    ("double_breve_below_ttb", "a\u035cb", None, "ttb", 0.02),
+    ("double_breve_below_ttb_rt", "a\u035cb", "rt", "ttb", 0.02),
+    ("double_breve_below_ttb_mt", "a\u035cb", "mt", "ttb", 0.02),
+    ("double_breve_below_ttb_st", "a\u035cb", "st", "ttb", 0.02),
     # extends to the left (fail=0.064)
     ("overline", "i\u0305", None, None, 0.02),
     ("overline_la", "i\u0305", "la", None, 0.02),
@@ -304,7 +308,9 @@ combine_tests = (
 @pytest.mark.parametrize(
     "name, text, anchor, dir, epsilon", combine_tests, ids=[r[0] for r in combine_tests]
 )
-def test_combine(name, text, dir, anchor, epsilon):
+def test_combine(
+    name: str, text: str, dir: str | None, anchor: str | None, epsilon: float
+) -> None:
     path = f"Tests/images/test_combine_{name}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 48)
 
@@ -335,12 +341,12 @@ def test_combine(name, text, dir, anchor, epsilon):
         ("rm", "right"),  # pass with getsize
     ),
 )
-def test_combine_multiline(anchor, align):
+def test_combine_multiline(anchor: str, align: str) -> None:
     # test that multiline text uses getlength, not getsize or getbbox
 
     path = f"Tests/images/test_combine_multiline_{anchor}_{align}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 48)
-    text = "i\u0305\u035C\ntext"  # i with overline and double breve, and a word
+    text = "i\u0305\u035c\ntext"  # i with overline and double breve, and a word
 
     im = Image.new("RGB", (400, 400), "white")
     d = ImageDraw.Draw(im)
@@ -353,44 +359,27 @@ def test_combine_multiline(anchor, align):
     assert_image_similar_tofile(im, path, 0.015)
 
 
-def test_anchor_invalid_ttb():
+def test_anchor_invalid_ttb() -> None:
     font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
     im = Image.new("RGB", (100, 100), "white")
     d = ImageDraw.Draw(im)
     d.font = font
 
     for anchor in ["", "l", "a", "lax", "xa", "la", "ls", "ld", "lx"]:
-        pytest.raises(
-            ValueError, lambda: font.getmask2("hello", anchor=anchor, direction="ttb")
-        )
-        pytest.raises(
-            ValueError, lambda: font.getbbox("hello", anchor=anchor, direction="ttb")
-        )
-        pytest.raises(
-            ValueError, lambda: d.text((0, 0), "hello", anchor=anchor, direction="ttb")
-        )
-        pytest.raises(
-            ValueError,
-            lambda: d.textbbox((0, 0), "hello", anchor=anchor, direction="ttb"),
-        )
-        pytest.raises(
-            ValueError,
-            lambda: d.multiline_text(
-                (0, 0), "foo\nbar", anchor=anchor, direction="ttb"
-            ),
-        )
-        pytest.raises(
-            ValueError,
-            lambda: d.multiline_textbbox(
-                (0, 0), "foo\nbar", anchor=anchor, direction="ttb"
-            ),
-        )
+        with pytest.raises(ValueError):
+            font.getmask2("hello", anchor=anchor, direction="ttb")
+        with pytest.raises(ValueError):
+            font.getbbox("hello", anchor=anchor, direction="ttb")
+        with pytest.raises(ValueError):
+            d.text((0, 0), "hello", anchor=anchor, direction="ttb")
+        with pytest.raises(ValueError):
+            d.textbbox((0, 0), "hello", anchor=anchor, direction="ttb")
+        with pytest.raises(ValueError):
+            d.multiline_text((0, 0), "foo\nbar", anchor=anchor, direction="ttb")
+        with pytest.raises(ValueError):
+            d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor, direction="ttb")
     # ttb multiline text does not support anchors at all
-    pytest.raises(
-        ValueError,
-        lambda: d.multiline_text((0, 0), "foo\nbar", anchor="mm", direction="ttb"),
-    )
-    pytest.raises(
-        ValueError,
-        lambda: d.multiline_textbbox((0, 0), "foo\nbar", anchor="mm", direction="ttb"),
-    )
+    with pytest.raises(ValueError):
+        d.multiline_text((0, 0), "foo\nbar", anchor="mm", direction="ttb")
+    with pytest.raises(ValueError):
+        d.multiline_textbbox((0, 0), "foo\nbar", anchor="mm", direction="ttb")

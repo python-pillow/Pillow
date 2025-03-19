@@ -6,21 +6,23 @@ on:
   workflow_dispatch:
 
 permissions:
-  issues: write
+  contents: read
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   stale:
     if: github.repository_owner == 'python-pillow'
+    permissions:
+      issues: write
 
     runs-on: ubuntu-latest
 
     steps:
     - name: "Check issues"
-      uses: actions/stale@v7
+      uses: actions/stale@v9
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         only-labels: "Awaiting OP Action"

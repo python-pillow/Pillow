@@ -11,7 +11,7 @@ filters, which can be be used with the :py:meth:`Image.filter()
 Example: Filter an image
 ------------------------
 
-.. code-block:: python
+::
 
     from PIL import ImageFilter
 
@@ -23,8 +23,7 @@ Example: Filter an image
 Filters
 -------
 
-The current version of the library provides the following set of predefined
-image enhancement filters:
+Pillow provides the following set of predefined image enhancement filters:
 
 * **BLUR**
 * **CONTOUR**

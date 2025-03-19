@@ -1,8 +1,0 @@
-﻿Python,3.8,3.7,3.6,3.5,3.4,3.3,3.2,2.7,2.6,2.5,2.4
-Pillow 6.2.1 - 6.2.2,Yes,Yes,Yes,Yes,,,,Yes,,,
-Pillow 6.0 - 6.2.0,,Yes,Yes,Yes,,,,Yes,,,
-Pillow 5.2 - 5.4,,Yes,Yes,Yes,Yes,,,Yes,,,
-Pillow 5.0 - 5.1,,,Yes,Yes,Yes,,,Yes,,,
-Pillow 4,,,Yes,Yes,Yes,Yes,,Yes,,,
-Pillow 2 - 3,,,,Yes,Yes,Yes,Yes,Yes,Yes,,
-Pillow < 2,,,,,,,,Yes,Yes,Yes,Yes

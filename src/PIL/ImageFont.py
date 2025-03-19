@@ -25,17 +25,32 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import annotations
+
 import base64
-import math
 import os
 import sys
 import warnings
 from enum import IntEnum
 from io import BytesIO
+from types import ModuleType
+from typing import IO, TYPE_CHECKING, Any, BinaryIO, TypedDict, cast
 
-from . import Image
-from ._deprecate import deprecate
-from ._util import is_directory, is_path
+from . import Image, features
+from ._typing import StrOrBytesPath
+from ._util import DeferredError, is_path
+
+if TYPE_CHECKING:
+    from . import ImageFile
+    from ._imaging import ImagingFont
+    from ._imagingft import Font
+
+
+class Axis(TypedDict):
+    minimum: int | None
+    default: int | None
+    maximum: int | None
+    name: bytes | None
 
 
 class Layout(IntEnum):
@@ -43,31 +58,20 @@ class Layout(IntEnum):
     RAQM = 1
 
 
-def __getattr__(name):
-    for enum, prefix in {Layout: "LAYOUT_"}.items():
-        if name.startswith(prefix):
-            name = name[len(prefix) :]
-            if name in enum.__members__:
-                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
-                return enum[name]
-    msg = f"module '{__name__}' has no attribute '{name}'"
-    raise AttributeError(msg)
+MAX_STRING_LENGTH = 1_000_000
 
 
-class _ImagingFtNotInstalled:
-    # module placeholder
-    def __getattr__(self, id):
-        msg = "The _imagingft C module is not installed"
-        raise ImportError(msg)
-
-
+core: ModuleType | DeferredError
 try:
     from . import _imagingft as core
-except ImportError:
-    core = _ImagingFtNotInstalled()
+except ImportError as ex:
+    core = DeferredError.new(ex)
 
 
-_UNSPECIFIED = object()
+def _string_length_check(text: str | bytes | bytearray) -> None:
+    if MAX_STRING_LENGTH is not None and len(text) > MAX_STRING_LENGTH:
+        msg = "too many characters in string"
+        raise ValueError(msg)
 
 
 # FIXME: add support for pilfont2 format (see FontFile.py)
@@ -89,15 +93,18 @@ _UNSPECIFIED = object()
 class ImageFont:
     """PIL font wrapper"""
 
-    def _load_pilfont(self, filename):
+    font: ImagingFont
 
+    def _load_pilfont(self, filename: str) -> None:
         with open(filename, "rb") as fp:
-            image = None
+            image: ImageFile.ImageFile | None = None
+            root = os.path.splitext(filename)[0]
+
             for ext in (".png", ".gif", ".pbm"):
                 if image:
                     image.close()
                 try:
-                    fullname = os.path.splitext(filename)[0] + ext
+                    fullname = root + ext
                     image = Image.open(fullname)
                 except Exception:
                     pass
@@ -107,7 +114,8 @@ class ImageFont:
             else:
                 if image:
                     image.close()
-                msg = "cannot find glyph data file"
+
+                msg = f"cannot find glyph data file {root}.{{gif|pbm|png}}"
                 raise OSError(msg)
 
             self.file = fullname
@@ -115,8 +123,7 @@ class ImageFont:
             self._load_pilfont_data(fp, image)
             image.close()
 
-    def _load_pilfont_data(self, file, image):
-
+    def _load_pilfont_data(self, file: IO[bytes], image: Image.Image) -> None:
         # read PILfont header
         if file.readline() != b"PILfont\n":
             msg = "Not a PILfont file"
@@ -141,24 +148,9 @@ class ImageFont:
 
         self.font = Image.core.font(image.im, data)
 
-    def getsize(self, text, *args, **kwargs):
-        """
-        .. deprecated:: 9.2.0
-
-        Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
-
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
-        Returns width and height (in pixels) of given text.
-
-        :param text: Text to measure.
-
-        :return: (width, height)
-        """
-        deprecate("getsize", 10, "getbbox or getlength")
-        return self.font.getsize(text)
-
-    def getmask(self, text, mode="", *args, **kwargs):
+    def getmask(
+        self, text: str | bytes, mode: str = "", *args: Any, **kwargs: Any
+    ) -> Image.core.ImagingCore:
         """
         Create a bitmap for the text.
 
@@ -176,32 +168,36 @@ class ImageFont:
         :return: An internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module.
         """
+        _string_length_check(text)
+        Image._decompression_bomb_check(self.font.getsize(text))
         return self.font.getmask(text, mode)
 
-    def getbbox(self, text, *args, **kwargs):
+    def getbbox(
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+    ) -> tuple[int, int, int, int]:
         """
         Returns bounding box (in pixels) of given text.
 
         .. versionadded:: 9.2.0
 
         :param text: Text to render.
-        :param mode: Used by some graphics drivers to indicate what mode the
-                     driver prefers; if empty, the renderer may return either
-                     mode. Note that the mode is always a string, to simplify
-                     C-level implementations.
 
         :return: ``(left, top, right, bottom)`` bounding box
         """
+        _string_length_check(text)
         width, height = self.font.getsize(text)
         return 0, 0, width, height
 
-    def getlength(self, text, *args, **kwargs):
+    def getlength(
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+    ) -> int:
         """
         Returns length (in pixels) of given text.
         This is the amount by which following text should be offset.
 
         .. versionadded:: 9.2.0
         """
+        _string_length_check(text)
         width, height = self.font.getsize(text)
         return width
 
@@ -214,13 +210,45 @@ class ImageFont:
 class FreeTypeFont:
     """FreeType font wrapper (requires _imagingft service)"""
 
-    def __init__(self, font=None, size=10, index=0, encoding="", layout_engine=None):
+    font: Font
+    font_bytes: bytes
+
+    def __init__(
+        self,
+        font: StrOrBytesPath | BinaryIO,
+        size: float = 10,
+        index: int = 0,
+        encoding: str = "",
+        layout_engine: Layout | None = None,
+    ) -> None:
         # FIXME: use service provider instead
+
+        if isinstance(core, DeferredError):
+            raise core.ex
+
+        if size <= 0:
+            msg = f"font size must be greater than 0, not {size}"
+            raise ValueError(msg)
 
         self.path = font
         self.size = size
         self.index = index
         self.encoding = encoding
+
+        try:
+            from packaging.version import parse as parse_version
+        except ImportError:
+            pass
+        else:
+            if freetype_version := features.version_module("freetype2"):
+                if parse_version(freetype_version) < parse_version("2.9.1"):
+                    warnings.warn(
+                        "Support for FreeType 2.9.0 is deprecated and will be removed "
+                        "in Pillow 12 (2025-10-15). Please upgrade to FreeType 2.9.1 "
+                        "or newer, preferably FreeType 2.10.4 which fixes "
+                        "CVE-2020-15999.",
+                        DeprecationWarning,
+                    )
 
         if layout_engine not in (Layout.BASIC, Layout.RAQM):
             layout_engine = Layout.BASIC
@@ -235,13 +263,14 @@ class FreeTypeFont:
 
         self.layout_engine = layout_engine
 
-        def load_from_bytes(f):
+        def load_from_bytes(f: IO[bytes]) -> None:
             self.font_bytes = f.read()
             self.font = core.getfont(
                 "", size, index, encoding, self.font_bytes, layout_engine
             )
 
         if is_path(font):
+            font = os.fspath(font)
             if sys.platform == "win32":
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
                 try:
@@ -256,27 +285,23 @@ class FreeTypeFont:
                 font, size, index, encoding, layout_engine=layout_engine
             )
         else:
-            load_from_bytes(font)
+            load_from_bytes(cast(IO[bytes], font))
 
-    def __getstate__(self):
+    def __getstate__(self) -> list[Any]:
         return [self.path, self.size, self.index, self.encoding, self.layout_engine]
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: list[Any]) -> None:
         path, size, index, encoding, layout_engine = state
-        self.__init__(path, size, index, encoding, layout_engine)
+        FreeTypeFont.__init__(self, path, size, index, encoding, layout_engine)
 
-    def _multiline_split(self, text):
-        split_character = "\n" if isinstance(text, str) else b"\n"
-        return text.split(split_character)
-
-    def getname(self):
+    def getname(self) -> tuple[str | None, str | None]:
         """
         :return: A tuple of the font family (e.g. Helvetica) and the font style
             (e.g. Bold)
         """
         return self.font.family, self.font.style
 
-    def getmetrics(self):
+    def getmetrics(self) -> tuple[int, int]:
         """
         :return: A tuple of the font ascent (the distance from the baseline to
             the highest outline point) and descent (the distance from the
@@ -284,7 +309,14 @@ class FreeTypeFont:
         """
         return self.font.ascent, self.font.descent
 
-    def getlength(self, text, mode="", direction=None, features=None, language=None):
+    def getlength(
+        self,
+        text: str | bytes,
+        mode: str = "",
+        direction: str | None = None,
+        features: list[str] | None = None,
+        language: str | None = None,
+    ) -> float:
         """
         Returns length (in pixels with 1/64 precision) of given text when rendered
         in font with provided direction, features, and language.
@@ -299,27 +331,21 @@ class FreeTypeFont:
         string due to kerning. If you need to adjust for kerning, include the following
         character and subtract its length.
 
-        For example, instead of
-
-        .. code-block:: python
+        For example, instead of ::
 
           hello = font.getlength("Hello")
           world = font.getlength("World")
           hello_world = hello + world  # not adjusted for kerning
           assert hello_world == font.getlength("HelloWorld")  # may fail
 
-        use
-
-        .. code-block:: python
+        use ::
 
           hello = font.getlength("HelloW") - font.getlength("W")  # adjusted for kerning
           world = font.getlength("World")
           hello_world = hello + world  # adjusted for kerning
           assert hello_world == font.getlength("HelloWorld")  # True
 
-        or disable kerning with (requires libraqm)
-
-        .. code-block:: python
+        or disable kerning with (requires libraqm) ::
 
           hello = draw.textlength("Hello", font, features=["-kern"])
           world = draw.textlength("World", font, features=["-kern"])
@@ -357,20 +383,21 @@ class FreeTypeFont:
                          <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
-        :return: Width for horizontal, height for vertical text.
+        :return: Either width for horizontal text, or height for vertical text.
         """
+        _string_length_check(text)
         return self.font.getlength(text, mode, direction, features, language) / 64
 
     def getbbox(
         self,
-        text,
-        mode="",
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-        anchor=None,
-    ):
+        text: str | bytes,
+        mode: str = "",
+        direction: str | None = None,
+        features: list[str] | None = None,
+        language: str | None = None,
+        stroke_width: float = 0,
+        anchor: str | None = None,
+    ) -> tuple[float, float, float, float]:
         """
         Returns bounding box (in pixels) of given text relative to given anchor
         when rendered in font with provided direction, features, and language.
@@ -413,11 +440,13 @@ class FreeTypeFont:
         :param stroke_width: The width of the text stroke.
 
         :param anchor:  The text anchor alignment. Determines the relative location of
-                        the anchor to the text. The default alignment is top left.
-                        See :ref:`text-anchors` for valid values.
+                        the anchor to the text. The default alignment is top left,
+                        specifically ``la`` for horizontal text and ``lt`` for
+                        vertical text. See :ref:`text-anchors` for details.
 
         :return: ``(left, top, right, bottom)`` bounding box
         """
+        _string_length_check(text)
         size, offset = self.font.getsize(
             text, mode, direction, features, language, anchor
         )
@@ -425,177 +454,18 @@ class FreeTypeFont:
         width, height = size[0] + 2 * stroke_width, size[1] + 2 * stroke_width
         return left, top, left + width, top + height
 
-    def getsize(
-        self,
-        text,
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-    ):
-        """
-        .. deprecated:: 9.2.0
-
-        Use :py:meth:`getlength()` to measure the offset of following text with
-        1/64 pixel precision.
-        Use :py:meth:`getbbox()` to get the exact bounding box based on an anchor.
-
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
-        Returns width and height (in pixels) of given text if rendered in font with
-        provided direction, features, and language.
-
-        .. note:: For historical reasons this function measures text height from
-            the ascender line instead of the top, see :ref:`text-anchors`.
-            If you wish to measure text height from the top, it is recommended
-            to use the bottom value of :meth:`getbbox` with ``anchor='lt'`` instead.
-
-        :param text: Text to measure.
-
-        :param direction: Direction of the text. It can be 'rtl' (right to
-                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
-                          Requires libraqm.
-
-                          .. versionadded:: 4.2.0
-
-        :param features: A list of OpenType font features to be used during text
-                         layout. This is usually used to turn on optional
-                         font features that are not enabled by default,
-                         for example 'dlig' or 'ss01', but can be also
-                         used to turn off default font features for
-                         example '-liga' to disable ligatures or '-kern'
-                         to disable kerning.  To get all supported
-                         features, see
-                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
-                         Requires libraqm.
-
-                         .. versionadded:: 4.2.0
-
-        :param language: Language of the text. Different languages may use
-                         different glyph shapes or ligatures. This parameter tells
-                         the font which language the text is in, and to apply the
-                         correct substitutions as appropriate, if available.
-                         It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`_
-                         Requires libraqm.
-
-                         .. versionadded:: 6.0.0
-
-        :param stroke_width: The width of the text stroke.
-
-                         .. versionadded:: 6.2.0
-
-        :return: (width, height)
-        """
-        deprecate("getsize", 10, "getbbox or getlength")
-        # vertical offset is added for historical reasons
-        # see https://github.com/python-pillow/Pillow/pull/4910#discussion_r486682929
-        size, offset = self.font.getsize(text, "L", direction, features, language)
-        return (
-            size[0] + stroke_width * 2,
-            size[1] + stroke_width * 2 + offset[1],
-        )
-
-    def getsize_multiline(
-        self,
-        text,
-        direction=None,
-        spacing=4,
-        features=None,
-        language=None,
-        stroke_width=0,
-    ):
-        """
-        .. deprecated:: 9.2.0
-
-        Use :py:meth:`.ImageDraw.multiline_textbbox` instead.
-
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
-        Returns width and height (in pixels) of given text if rendered in font
-        with provided direction, features, and language, while respecting
-        newline characters.
-
-        :param text: Text to measure.
-
-        :param direction: Direction of the text. It can be 'rtl' (right to
-                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
-                          Requires libraqm.
-
-        :param spacing: The vertical gap between lines, defaulting to 4 pixels.
-
-        :param features: A list of OpenType font features to be used during text
-                         layout. This is usually used to turn on optional
-                         font features that are not enabled by default,
-                         for example 'dlig' or 'ss01', but can be also
-                         used to turn off default font features for
-                         example '-liga' to disable ligatures or '-kern'
-                         to disable kerning.  To get all supported
-                         features, see
-                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
-                         Requires libraqm.
-
-        :param language: Language of the text. Different languages may use
-                         different glyph shapes or ligatures. This parameter tells
-                         the font which language the text is in, and to apply the
-                         correct substitutions as appropriate, if available.
-                         It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`_
-                         Requires libraqm.
-
-                         .. versionadded:: 6.0.0
-
-        :param stroke_width: The width of the text stroke.
-
-                         .. versionadded:: 6.2.0
-
-        :return: (width, height)
-        """
-        deprecate("getsize_multiline", 10, "ImageDraw.multiline_textbbox")
-        max_width = 0
-        lines = self._multiline_split(text)
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=DeprecationWarning)
-            line_spacing = self.getsize("A", stroke_width=stroke_width)[1] + spacing
-            for line in lines:
-                line_width, line_height = self.getsize(
-                    line, direction, features, language, stroke_width
-                )
-                max_width = max(max_width, line_width)
-
-        return max_width, len(lines) * line_spacing - spacing
-
-    def getoffset(self, text):
-        """
-        .. deprecated:: 9.2.0
-
-        Use :py:meth:`.getbbox` instead.
-
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
-        Returns the offset of given text. This is the gap between the
-        starting coordinate and the first marking. Note that this gap is
-        included in the result of :py:func:`~PIL.ImageFont.FreeTypeFont.getsize`.
-
-        :param text: Text to measure.
-
-        :return: A tuple of the x and y offset
-        """
-        deprecate("getoffset", 10, "getbbox")
-        return self.font.getsize(text)[1]
-
     def getmask(
         self,
-        text,
-        mode="",
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-        anchor=None,
-        ink=0,
-        start=None,
-    ):
+        text: str | bytes,
+        mode: str = "",
+        direction: str | None = None,
+        features: list[str] | None = None,
+        language: str | None = None,
+        stroke_width: float = 0,
+        anchor: str | None = None,
+        ink: int = 0,
+        start: tuple[float, float] | None = None,
+    ) -> Image.core.ImagingCore:
         """
         Create a bitmap for the text.
 
@@ -645,8 +515,9 @@ class FreeTypeFont:
                          .. versionadded:: 6.2.0
 
         :param anchor:  The text anchor alignment. Determines the relative location of
-                        the anchor to the text. The default alignment is top left.
-                        See :ref:`text-anchors` for valid values.
+                        the anchor to the text. The default alignment is top left,
+                        specifically ``la`` for horizontal text and ``lt`` for
+                        vertical text. See :ref:`text-anchors` for details.
 
                          .. versionadded:: 8.0.0
 
@@ -676,19 +547,18 @@ class FreeTypeFont:
 
     def getmask2(
         self,
-        text,
-        mode="",
-        fill=_UNSPECIFIED,
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-        anchor=None,
-        ink=0,
-        start=None,
-        *args,
-        **kwargs,
-    ):
+        text: str | bytes,
+        mode: str = "",
+        direction: str | None = None,
+        features: list[str] | None = None,
+        language: str | None = None,
+        stroke_width: float = 0,
+        anchor: str | None = None,
+        ink: int = 0,
+        start: tuple[float, float] | None = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> tuple[Image.core.ImagingCore, tuple[int, int]]:
         """
         Create a bitmap for the text.
 
@@ -703,12 +573,6 @@ class FreeTypeFont:
                      C-level implementations.
 
                      .. versionadded:: 1.1.5
-
-        :param fill: Optional fill function. By default, an internal Pillow function
-                     will be used.
-
-                     Deprecated. This parameter will be removed in Pillow 10
-                     (2023-07-01).
 
         :param direction: Direction of the text. It can be 'rtl' (right to
                           left), 'ltr' (left to right) or 'ttb' (top to bottom).
@@ -744,8 +608,9 @@ class FreeTypeFont:
                          .. versionadded:: 6.2.0
 
         :param anchor:  The text anchor alignment. Determines the relative location of
-                        the anchor to the text. The default alignment is top left.
-                        See :ref:`text-anchors` for valid values.
+                        the anchor to the text. The default alignment is top left,
+                        specifically ``la`` for horizontal text and ``lt`` for
+                        vertical text. See :ref:`text-anchors` for details.
 
                          .. versionadded:: 8.0.0
 
@@ -762,36 +627,37 @@ class FreeTypeFont:
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
         """
-        if fill is _UNSPECIFIED:
-            fill = Image.core.fill
-        else:
-            deprecate("fill", 10)
-        size, offset = self.font.getsize(
-            text, mode, direction, features, language, anchor
-        )
+        _string_length_check(text)
         if start is None:
             start = (0, 0)
-        size = tuple(math.ceil(size[i] + stroke_width * 2 + start[i]) for i in range(2))
-        offset = offset[0] - stroke_width, offset[1] - stroke_width
-        Image._decompression_bomb_check(size)
-        im = fill("RGBA" if mode == "RGBA" else "L", size, 0)
-        self.font.render(
+
+        def fill(width: int, height: int) -> Image.core.ImagingCore:
+            size = (width, height)
+            Image._decompression_bomb_check(size)
+            return Image.core.fill("RGBA" if mode == "RGBA" else "L", size)
+
+        return self.font.render(
             text,
-            im.id,
+            fill,
             mode,
             direction,
             features,
             language,
             stroke_width,
+            kwargs.get("stroke_filled", False),
+            anchor,
             ink,
-            start[0],
-            start[1],
+            start,
         )
-        return im, offset
 
     def font_variant(
-        self, font=None, size=None, index=None, encoding=None, layout_engine=None
-    ):
+        self,
+        font: StrOrBytesPath | BinaryIO | None = None,
+        size: float | None = None,
+        index: int | None = None,
+        encoding: str | None = None,
+        layout_engine: Layout | None = None,
+    ) -> FreeTypeFont:
         """
         Create a copy of this FreeTypeFont object,
         using any specified arguments to override the settings.
@@ -814,7 +680,7 @@ class FreeTypeFont:
             layout_engine=layout_engine or self.layout_engine,
         )
 
-    def get_variation_names(self):
+    def get_variation_names(self) -> list[bytes]:
         """
         :returns: A list of the named styles in a variation font.
         :exception OSError: If the font is not a variation font.
@@ -826,7 +692,7 @@ class FreeTypeFont:
             raise NotImplementedError(msg) from e
         return [name.replace(b"\x00", b"") for name in names]
 
-    def set_variation_by_name(self, name):
+    def set_variation_by_name(self, name: str | bytes) -> None:
         """
         :param name: The name of the style.
         :exception OSError: If the font is not a variation font.
@@ -845,7 +711,7 @@ class FreeTypeFont:
 
         self.font.setvarname(index)
 
-    def get_variation_axes(self):
+    def get_variation_axes(self) -> list[Axis]:
         """
         :returns: A list of the axes in a variation font.
         :exception OSError: If the font is not a variation font.
@@ -856,10 +722,11 @@ class FreeTypeFont:
             msg = "FreeType 2.9.1 or greater is required"
             raise NotImplementedError(msg) from e
         for axis in axes:
-            axis["name"] = axis["name"].replace(b"\x00", b"")
+            if axis["name"]:
+                axis["name"] = axis["name"].replace(b"\x00", b"")
         return axes
 
-    def set_variation_by_axes(self, axes):
+    def set_variation_by_axes(self, axes: list[float]) -> None:
         """
         :param axes: A list of values for each axis.
         :exception OSError: If the font is not a variation font.
@@ -874,7 +741,9 @@ class FreeTypeFont:
 class TransposedFont:
     """Wrapper for writing rotated or mirrored text"""
 
-    def __init__(self, font, orientation=None):
+    def __init__(
+        self, font: ImageFont | FreeTypeFont, orientation: Image.Transpose | None = None
+    ):
         """
         Wrapper that creates a transposed font from any existing font
         object.
@@ -888,29 +757,17 @@ class TransposedFont:
         self.font = font
         self.orientation = orientation  # any 'transpose' argument, or None
 
-    def getsize(self, text, *args, **kwargs):
-        """
-        .. deprecated:: 9.2.0
-
-        Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
-
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-        """
-        deprecate("getsize", 10, "getbbox or getlength")
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=DeprecationWarning)
-            w, h = self.font.getsize(text)
-        if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
-            return h, w
-        return w, h
-
-    def getmask(self, text, mode="", *args, **kwargs):
+    def getmask(
+        self, text: str | bytes, mode: str = "", *args: Any, **kwargs: Any
+    ) -> Image.core.ImagingCore:
         im = self.font.getmask(text, mode, *args, **kwargs)
         if self.orientation is not None:
             return im.transpose(self.orientation)
         return im
 
-    def getbbox(self, text, *args, **kwargs):
+    def getbbox(
+        self, text: str | bytes, *args: Any, **kwargs: Any
+    ) -> tuple[int, int, float, float]:
         # TransposedFont doesn't support getmask2, move top-left point to (0, 0)
         # this has no effect on ImageFont and simulates anchor="lt" for FreeTypeFont
         left, top, right, bottom = self.font.getbbox(text, *args, **kwargs)
@@ -920,17 +777,18 @@ class TransposedFont:
             return 0, 0, height, width
         return 0, 0, width, height
 
-    def getlength(self, text, *args, **kwargs):
+    def getlength(self, text: str | bytes, *args: Any, **kwargs: Any) -> float:
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             msg = "text length is undefined for text rotated by 90 or 270 degrees"
             raise ValueError(msg)
         return self.font.getlength(text, *args, **kwargs)
 
 
-def load(filename):
+def load(filename: str) -> ImageFont:
     """
-    Load a font file.  This function loads a font object from the given
-    bitmap font file, and returns the corresponding font object.
+    Load a font file. This function loads a font object from the given
+    bitmap font file, and returns the corresponding font object. For loading TrueType
+    or OpenType fonts instead, see :py:func:`~PIL.ImageFont.truetype`.
 
     :param filename: Name of font file.
     :return: A font object.
@@ -941,12 +799,19 @@ def load(filename):
     return f
 
 
-def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
+def truetype(
+    font: StrOrBytesPath | BinaryIO,
+    size: float = 10,
+    index: int = 0,
+    encoding: str = "",
+    layout_engine: Layout | None = None,
+) -> FreeTypeFont:
     """
     Load a TrueType or OpenType font from a file or file-like object,
-    and create a font object.
-    This function loads a font object from the given file or file-like
-    object, and creates a font object for a font of the given size.
+    and create a font object. This function loads a font object from the given
+    file or file-like object, and creates a font object for a font of the given
+    size. For loading bitmap fonts instead, see :py:func:`~PIL.ImageFont.load`
+    and :py:func:`~PIL.ImageFont.load_path`.
 
     Pillow uses FreeType to open font files. On Windows, be aware that FreeType
     will keep the file open as long as the FreeTypeFont object exists. Windows
@@ -959,10 +824,15 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
 
     :param font: A filename or file-like object containing a TrueType font.
                  If the file is not found in this filename, the loader may also
-                 search in other directories, such as the :file:`fonts/`
-                 directory on Windows or :file:`/Library/Fonts/`,
-                 :file:`/System/Library/Fonts/` and :file:`~/Library/Fonts/` on
-                 macOS.
+                 search in other directories, such as:
+
+                 * The :file:`fonts/` directory on Windows,
+                 * :file:`/Library/Fonts/`, :file:`/System/Library/Fonts/`
+                   and :file:`~/Library/Fonts/` on macOS.
+                 * :file:`~/.local/share/fonts`, :file:`/usr/local/share/fonts`,
+                   and :file:`/usr/share/fonts` on Linux; or those specified by
+                   the ``XDG_DATA_HOME`` and ``XDG_DATA_DIRS`` environment variables
+                   for user-installed and system-wide fonts, respectively.
 
     :param size: The requested size, in pixels.
     :param index: Which font face to load (default is first available face).
@@ -986,7 +856,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                      This specifies the character set to use. It does not alter the
                      encoding of any text provided in subsequent operations.
     :param layout_engine: Which layout engine to use, if available:
-                     :data:`.ImageFont.Layout.BASIC` or :data:`.ImageFont.Layout.RAQM`.
+                     :attr:`.ImageFont.Layout.BASIC` or :attr:`.ImageFont.Layout.RAQM`.
                      If it is available, Raqm layout will be used by default.
                      Otherwise, basic layout will be used.
 
@@ -999,9 +869,10 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                      .. versionadded:: 4.2.0
     :return: A font object.
     :exception OSError: If the file could not be read.
+    :exception ValueError: If the font size is not greater than zero.
     """
 
-    def freetype(font):
+    def freetype(font: StrOrBytesPath | BinaryIO) -> FreeTypeFont:
         return FreeTypeFont(font, size, index, encoding, layout_engine)
 
     try:
@@ -1020,12 +891,21 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
             if windir:
                 dirs.append(os.path.join(windir, "fonts"))
         elif sys.platform in ("linux", "linux2"):
-            lindirs = os.environ.get("XDG_DATA_DIRS", "")
-            if not lindirs:
-                # According to the freedesktop spec, XDG_DATA_DIRS should
-                # default to /usr/share
-                lindirs = "/usr/share"
-            dirs += [os.path.join(lindir, "fonts") for lindir in lindirs.split(":")]
+            data_home = os.environ.get("XDG_DATA_HOME")
+            if not data_home:
+                # The freedesktop spec defines the following default directory for
+                # when XDG_DATA_HOME is unset or empty. This user-level directory
+                # takes precedence over system-level directories.
+                data_home = os.path.expanduser("~/.local/share")
+            xdg_dirs = [data_home]
+
+            data_dirs = os.environ.get("XDG_DATA_DIRS")
+            if not data_dirs:
+                # Similarly, defaults are defined for the system-level directories
+                data_dirs = "/usr/local/share:/usr/share"
+            xdg_dirs += data_dirs.split(":")
+
+            dirs += [os.path.join(xdg_dir, "fonts") for xdg_dir in xdg_dirs]
         elif sys.platform == "darwin":
             dirs += [
                 "/Library/Fonts",
@@ -1051,7 +931,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
         raise
 
 
-def load_path(filename):
+def load_path(filename: str | bytes) -> ImageFont:
     """
     Load font file. Same as :py:func:`~PIL.ImageFont.load`, but searches for a
     bitmap font along the Python path.
@@ -1060,25 +940,21 @@ def load_path(filename):
     :return: A font object.
     :exception OSError: If the file could not be read.
     """
+    if not isinstance(filename, str):
+        filename = filename.decode("utf-8")
     for directory in sys.path:
-        if is_directory(directory):
-            if not isinstance(filename, str):
-                filename = filename.decode("utf-8")
-            try:
-                return load(os.path.join(directory, filename))
-            except OSError:
-                pass
-    msg = "cannot find font file"
+        try:
+            return load(os.path.join(directory, filename))
+        except OSError:
+            pass
+    msg = f'cannot find font file "{filename}" in sys.path'
+    if os.path.exists(filename):
+        msg += f', did you mean ImageFont.load("{filename}") instead?'
+
     raise OSError(msg)
 
 
-def load_default():
-    """Load a "better than nothing" default font.
-
-    .. versionadded:: 1.1.4
-
-    :return: A font object.
-    """
+def load_default_imagefont() -> ImageFont:
     f = ImageFont()
     f._load_pilfont_data(
         # courB08
@@ -1212,3 +1088,251 @@ w7IkEbzhVQAAAABJRU5ErkJggg==
         ),
     )
     return f
+
+
+def load_default(size: float | None = None) -> FreeTypeFont | ImageFont:
+    """If FreeType support is available, load a version of Aileron Regular,
+    https://dotcolon.net/font/aileron, with a more limited character set.
+
+    Otherwise, load a "better than nothing" font.
+
+    .. versionadded:: 1.1.4
+
+    :param size: The font size of Aileron Regular.
+
+        .. versionadded:: 10.1.0
+
+    :return: A font object.
+    """
+    if isinstance(core, ModuleType) or size is not None:
+        return truetype(
+            BytesIO(
+                base64.b64decode(
+                    b"""
+AAEAAAAPAIAAAwBwRkZUTYwDlUAAADFoAAAAHEdERUYAqADnAAAo8AAAACRHUE9ThhmITwAAKfgAA
+AduR1NVQnHxefoAACkUAAAA4k9TLzJovoHLAAABeAAAAGBjbWFw5lFQMQAAA6gAAAGqZ2FzcP//AA
+MAACjoAAAACGdseWYmRXoPAAAGQAAAHfhoZWFkE18ayQAAAPwAAAA2aGhlYQboArEAAAE0AAAAJGh
+tdHjjERZ8AAAB2AAAAdBsb2NhuOexrgAABVQAAADqbWF4cAC7AEYAAAFYAAAAIG5hbWUr+h5lAAAk
+OAAAA6Jwb3N0D3oPTQAAJ9wAAAEKAAEAAAABGhxJDqIhXw889QALA+gAAAAA0Bqf2QAAAADhCh2h/
+2r/LgOxAyAAAAAIAAIAAAAAAAAAAQAAA8r/GgAAA7j/av9qA7EAAQAAAAAAAAAAAAAAAAAAAHQAAQ
+AAAHQAQwAFAAAAAAACAAAAAQABAAAAQAAAAAAAAAADAfoBkAAFAAgCigJYAAAASwKKAlgAAAFeADI
+BPgAAAAAFAAAAAAAAAAAAAAcAAAAAAAAAAAAAAABVS1dOAEAAIPsCAwL/GgDIA8oA5iAAAJMAAAAA
+AhICsgAAACAAAwH0AAAAAAAAAU0AAADYAAAA8gA5AVMAVgJEAEYCRAA1AuQAKQKOAEAAsAArATsAZ
+AE7AB4CMABVAkQAUADc/+EBEgAgANwAJQEv//sCRAApAkQAggJEADwCRAAtAkQAIQJEADkCRAArAk
+QAMgJEACwCRAAxANwAJQDc/+ECRABnAkQAUAJEAEQB8wAjA1QANgJ/AB0CcwBkArsALwLFAGQCSwB
+kAjcAZALGAC8C2gBkAQgAZAIgADcCYQBkAj8AZANiAGQCzgBkAuEALwJWAGQC3QAvAmsAZAJJADQC
+ZAAiAqoAXgJuACADuAAaAnEAGQJFABMCTwAuATMAYgEv//sBJwAiAkQAUAH0ADIBLAApAhMAJAJjA
+EoCEQAeAmcAHgIlAB4BIgAVAmcAHgJRAEoA7gA+AOn/8wIKAEoA9wBGA1cASgJRAEoCSgAeAmMASg
+JnAB4BSgBKAcsAGAE5ABQCUABCAgIAAQMRAAEB4v/6AgEAAQHOABQBLwBAAPoAYAEvACECRABNA0Y
+AJAItAHgBKgAcAkQAUAEsAHQAygAgAi0AOQD3ADYA9wAWAaEANgGhABYCbAAlAYMAeAGDADkA6/9q
+AhsAFAIKABUB/QAVAAAAAwAAAAMAAAAcAAEAAAAAAKQAAwABAAAAHAAEAIgAAAAeABAAAwAOAH4Aq
+QCrALEAtAC3ALsgGSAdICYgOiBEISL7Av//AAAAIACpAKsAsAC0ALcAuyAYIBwgJiA5IEQhIvsB//
+//4/+5/7j/tP+y/7D/reBR4E/gR+A14CzfTwVxAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAEGAAABAAAAAAAAAAECAAAAAgAAAAAAAAAAAAAAAAAAAAEAAAMEBQYHCAkKCwwNDg8QERIT
+FBUWFxgZGhscHR4fICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj9AQUJDREVGR0hJSktMT
+U5PUFFSU1RVVldYWVpbXF1eX2BhAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGQAAA
+AAAAAAYnFmAAAAAABlAAAAAAAAAAAAAAAAAAAAAAAAAAAAY2htAAAAAAAAAABrbGlqAAAAAHAAbm9
+ycwBnAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAmACYAJgAmAD4AUgCCAMoBCgFO
+AVwBcgGIAaYBvAHKAdYB6AH2AgwCIAJKAogCpgLWAw4DIgNkA5wDugPUA+gD/AQQBEYEogS8BPoFJ
+gVSBWoFgAWwBcoF1gX6BhQGJAZMBmgGiga0BuIHGgdUB2YHkAeiB8AH3AfyCAoIHAgqCDoITghcCG
+oIogjSCPoJKglYCXwJwgnqCgIKKApACl4Klgq8CtwLDAs8C1YLjAuyC9oL7gwMDCYMSAxgDKAMrAz
+qDQoNTA1mDYQNoA2uDcAN2g3oDfYODA4iDkoOXA5sDnoOnA7EDvwAAAAFAAAAAAH0ArwAAwAGAAkA
+DAAPAAAxESERAxMhExcRASELARETAfT6qv6syKr+jgFUqsiqArz9RAGLAP/+1P8B/v3VAP8BLP4CA
+P8AAgA5//IAuQKyAAMACwAANyMDMwIyFhQGIiY0oE4MZk84JCQ4JLQB/v3AJDgkJDgAAgBWAeUBPA
+LfAAMABwAAEyMnMxcjJzOmRgpagkYKWgHl+vr6AAAAAAIARgAAAf4CsgAbAB8AAAEHMxUjByM3Iwc
+jNyM1MzcjNTM3MwczNzMHMxUrAQczAZgdZXEvOi9bLzovWmYdZXEvOi9bLzovWp9bHlsBn4w429vb
+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
+EQQ/BCQvEjQCFQZWFSEWQv40AcxCDiUblhP9uSEAAAAAAAAWAQ4AAQAAAAAAAAATACgAAQAAAAAAA
+QAHAEwAAQAAAAAAAgAHAGQAAQAAAAAAAwAaAKIAAQAAAAAABAAHAM0AAQAAAAAABQA8AU8AAQAAAA
+AABgAPAawAAQAAAAAACAALAdQAAQAAAAAACQALAfgAAQAAAAAACwAXAjQAAQAAAAAADAAXAnwAAwA
+BBAkAAAAmAAAAAwABBAkAAQAOADwAAwABBAkAAgAOAFQAAwABBAkAAwA0AGwAAwABBAkABAAOAL0A
+AwABBAkABQB4ANUAAwABBAkABgAeAYwAAwABBAkACAAWAbwAAwABBAkACQAWAeAAAwABBAkACwAuA
+gQAAwABBAkADAAuAkwATgBvACAAUgBpAGcAaAB0AHMAIABSAGUAcwBlAHIAdgBlAGQALgAATm8gUm
+lnaHRzIFJlc2VydmVkLgAAQQBpAGwAZQByAG8AbgAAQWlsZXJvbgAAUgBlAGcAdQBsAGEAcgAAUmV
+ndWxhcgAAMQAuADEAMAAyADsAVQBLAFcATgA7AEEAaQBsAGUAcgBvAG4ALQBSAGUAZwB1AGwAYQBy
+AAAxLjEwMjtVS1dOO0FpbGVyb24tUmVndWxhcgAAQQBpAGwAZQByAG8AbgAAQWlsZXJvbgAAVgBlA
+HIAcwBpAG8AbgAgADEALgAxADAAMgA7AFAAUwAgADAAMAAxAC4AMQAwADIAOwBoAG8AdABjAG8Abg
+B2ACAAMQAuADAALgA3ADAAOwBtAGEAawBlAG8AdABmAC4AbABpAGIAMgAuADUALgA1ADgAMwAyADk
+AAFZlcnNpb24gMS4xMDI7UFMgMDAxLjEwMjtob3Rjb252IDEuMC43MDttYWtlb3RmLmxpYjIuNS41
+ODMyOQAAQQBpAGwAZQByAG8AbgAtAFIAZQBnAHUAbABhAHIAAEFpbGVyb24tUmVndWxhcgAAUwBvA
+HIAYQAgAFMAYQBnAGEAbgBvAABTb3JhIFNhZ2FubwAAUwBvAHIAYQAgAFMAYQBnAGEAbgBvAABTb3
+JhIFNhZ2FubwAAaAB0AHQAcAA6AC8ALwB3AHcAdwAuAGQAbwB0AGMAbwBsAG8AbgAuAG4AZQB0AAB
+odHRwOi8vd3d3LmRvdGNvbG9uLm5ldAAAaAB0AHQAcAA6AC8ALwB3AHcAdwAuAGQAbwB0AGMAbwBs
+AG8AbgAuAG4AZQB0AABodHRwOi8vd3d3LmRvdGNvbG9uLm5ldAAAAAACAAAAAAAA/4MAMgAAAAAAA
+AAAAAAAAAAAAAAAAAAAAHQAAAABAAIAAwAEAAUABgAHAAgACQAKAAsADAANAA4ADwAQABEAEgATAB
+QAFQAWABcAGAAZABoAGwAcAB0AHgAfACAAIQAiACMAJAAlACYAJwAoACkAKgArACwALQAuAC8AMAA
+xADIAMwA0ADUANgA3ADgAOQA6ADsAPAA9AD4APwBAAEEAQgBDAEQARQBGAEcASABJAEoASwBMAE0A
+TgBPAFAAUQBSAFMAVABVAFYAVwBYAFkAWgBbAFwAXQBeAF8AYABhAIsAqQCDAJMAjQDDAKoAtgC3A
+LQAtQCrAL4AvwC8AIwAwADBAAAAAAAB//8AAgABAAAADAAAABwAAAACAAIAAwBxAAEAcgBzAAIABA
+AAAAIAAAABAAAACgBMAGYAAkRGTFQADmxhdG4AGgAEAAAAAP//AAEAAAAWAANDQVQgAB5NT0wgABZ
+ST00gABYAAP//AAEAAAAA//8AAgAAAAEAAmxpZ2EADmxvY2wAFAAAAAEAAQAAAAEAAAACAAYAEAAG
+AAAAAgASADQABAAAAAEATAADAAAAAgAQABYAAQAcAAAAAQABAE8AAQABAGcAAQABAE8AAwAAAAIAE
+AAWAAEAHAAAAAEAAQAvAAEAAQBnAAEAAQAvAAEAGgABAAgAAgAGAAwAcwACAE8AcgACAEwAAQABAE
+kAAAABAAAACgBGAGAAAkRGTFQADmxhdG4AHAAEAAAAAP//AAIAAAABABYAA0NBVCAAFk1PTCAAFlJ
+PTSAAFgAA//8AAgAAAAEAAmNwc3AADmtlcm4AFAAAAAEAAAAAAAEAAQACAAYADgABAAAAAQASAAIA
+AAACAB4ANgABAAoABQAFAAoAAgABACQAPQAAAAEAEgAEAAAAAQAMAAEAOP/nAAEAAQAkAAIGigAEA
+AAFJAXKABoAGQAA//gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAD/sv+4/+z/7v/MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAD/xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/9T/6AAAAAD/8QAA
+ABD/vQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/7gAAAAAAAAAAAAAAAAAA//MAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABIAAAAAAAAAAP/5AAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/gAAD/4AAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//L/9AAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAA/+gAAAAAAAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/zAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/mAAAAAAAAAAAAAAAAAAD
+/4gAA//AAAAAA//YAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/+AAAAAAAAP/OAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/zv/qAAAAAP/0AAAACAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/ZAAD/egAA/1kAAAAA/5D/rgAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAD/9AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAD/8AAA/7b/8P+wAAD/8P/E/98AAAAA/8P/+P/0//oAAAAAAAAAAAAA//gA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+AAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/w//C/9MAAP/SAAD/9wAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAD/yAAA/+kAAAAA//QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/9wAAAAD//QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAP/2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAP/cAAAAAAAAAAAAAAAA/7YAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAP/8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/6AAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAkAFAAEAAAAAQACwAAABcA
+BgAAAAAAAAAIAA4AAAAAAAsAEgAAAAAAAAATABkAAwANAAAAAQAJAAAAAAAAAAAAAAAAAAAAGAAAA
+AAABwAAAAAAAAAAAAAAFQAFAAAAAAAYABgAAAAUAAAACgAAAAwAAgAPABEAFgAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFAAEAEQBdAAYAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAcAAAAAAAAABwAAAAAACAAAAAAAAAAAAAcAAAAHAAAAEwAJ
+ABUADgAPAAAACwAQAAAAAAAAAAAAAAAAAAUAGAACAAIAAgAAAAIAGAAXAAAAGAAAABYAFgACABYAA
+gAWAAAAEQADAAoAFAAMAA0ABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASAAAAEgAGAAEAHgAkAC
+YAJwApACoALQAuAC8AMgAzADcAOAA5ADoAPAA9AEUASABOAE8AUgBTAFUAVwBZAFoAWwBcAF0AcwA
+AAAAAAQAAAADa3tfFAAAAANAan9kAAAAA4QodoQ==
+"""
+                )
+            ),
+            10 if size is None else size,
+            layout_engine=Layout.BASIC,
+        )
+    return load_default_imagefont()

@@ -1,14 +1,11 @@
 8.4.0
 -----
 
-API Changes
-===========
-
 Deprecations
-^^^^^^^^^^^^
+============
 
 ImagePalette size parameter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``size`` parameter will be removed in Pillow 10.0.0 (2023-07-01).
 
@@ -24,9 +21,7 @@ Added "transparency" argument for loading EPS images
 
 This new argument switches the Ghostscript device from "ppmraw" to "pngalpha",
 generating an RGBA image with a transparent background instead of an RGB image with a
-white background.
-
-.. code-block:: python
+white background. ::
 
     with Image.open("sample.eps") as im:
         im.load(transparency=True)

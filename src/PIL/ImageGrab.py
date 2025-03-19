@@ -14,7 +14,9 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
+import io
 import os
 import shutil
 import subprocess
@@ -24,7 +26,13 @@ import tempfile
 from . import Image
 
 
-def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=None):
+def grab(
+    bbox: tuple[int, int, int, int] | None = None,
+    include_layered_windows: bool = False,
+    all_screens: bool = False,
+    xdisplay: str | None = None,
+) -> Image.Image:
+    im: Image.Image
     if xdisplay is None:
         if sys.platform == "darwin":
             fh, filepath = tempfile.mkstemp(".png")
@@ -61,7 +69,19 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
                 left, top, right, bottom = bbox
                 im = im.crop((left - x0, top - y0, right - x0, bottom - y0))
             return im
-        elif shutil.which("gnome-screenshot"):
+    # Cast to Optional[str] needed for Windows and macOS.
+    display_name: str | None = xdisplay
+    try:
+        if not Image.core.HAVE_XCB:
+            msg = "Pillow was built without XCB support"
+            raise OSError(msg)
+        size, data = Image.core.grabscreen_x11(display_name)
+    except OSError:
+        if (
+            display_name is None
+            and sys.platform not in ("darwin", "win32")
+            and shutil.which("gnome-screenshot")
+        ):
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
             subprocess.call(["gnome-screenshot", "-f", filepath])
@@ -73,41 +93,28 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
                 im.close()
                 return im_cropped
             return im
-    # use xdisplay=None for default display on non-win32/macOS systems
-    if not Image.core.HAVE_XCB:
-        msg = "Pillow was built without XCB support"
-        raise OSError(msg)
-    size, data = Image.core.grabscreen_x11(xdisplay)
-    im = Image.frombytes("RGB", size, data, "raw", "BGRX", size[0] * 4, 1)
-    if bbox:
-        im = im.crop(bbox)
-    return im
-
-
-def grabclipboard():
-    if sys.platform == "darwin":
-        fh, filepath = tempfile.mkstemp(".jpg")
-        os.close(fh)
-        commands = [
-            'set theFile to (open for access POSIX file "'
-            + filepath
-            + '" with write permission)',
-            "try",
-            "    write (the clipboard as JPEG picture) to theFile",
-            "end try",
-            "close access theFile",
-        ]
-        script = ["osascript"]
-        for command in commands:
-            script += ["-e", command]
-        subprocess.call(script)
-
-        im = None
-        if os.stat(filepath).st_size != 0:
-            im = Image.open(filepath)
-            im.load()
-        os.unlink(filepath)
+        else:
+            raise
+    else:
+        im = Image.frombytes("RGB", size, data, "raw", "BGRX", size[0] * 4, 1)
+        if bbox:
+            im = im.crop(bbox)
         return im
+
+
+def grabclipboard() -> Image.Image | list[str] | None:
+    if sys.platform == "darwin":
+        p = subprocess.run(
+            ["osascript", "-e", "get the clipboard as «class PNGf»"],
+            capture_output=True,
+        )
+        if p.returncode != 0:
+            return None
+
+        import binascii
+
+        data = io.BytesIO(binascii.unhexlify(p.stdout[11:-3]))
+        return Image.open(data)
     elif sys.platform == "win32":
         fmt, data = Image.core.grabclipboard_win32()
         if fmt == "file":  # CF_HDROP
@@ -120,8 +127,6 @@ def grabclipboard():
                 files = data[o:].decode("mbcs").split("\0")
             return files[: files.index("")]
         if isinstance(data, bytes):
-            import io
-
             data = io.BytesIO(data)
             if fmt == "png":
                 from . import PngImagePlugin
@@ -133,17 +138,46 @@ def grabclipboard():
                 return BmpImagePlugin.DibImageFile(data)
         return None
     else:
-        if shutil.which("wl-paste"):
-            args = ["wl-paste"]
-        elif shutil.which("xclip"):
+        if os.getenv("WAYLAND_DISPLAY"):
+            session_type = "wayland"
+        elif os.getenv("DISPLAY"):
+            session_type = "x11"
+        else:  # Session type check failed
+            session_type = None
+
+        if shutil.which("wl-paste") and session_type in ("wayland", None):
+            args = ["wl-paste", "-t", "image"]
+        elif shutil.which("xclip") and session_type in ("x11", None):
             args = ["xclip", "-selection", "clipboard", "-t", "image/png", "-o"]
         else:
             msg = "wl-paste or xclip is required for ImageGrab.grabclipboard() on Linux"
             raise NotImplementedError(msg)
-        fh, filepath = tempfile.mkstemp()
-        subprocess.call(args, stdout=fh)
-        os.close(fh)
-        im = Image.open(filepath)
+
+        p = subprocess.run(args, capture_output=True)
+        if p.returncode != 0:
+            err = p.stderr
+            for silent_error in [
+                # wl-paste, when the clipboard is empty
+                b"Nothing is copied",
+                # Ubuntu/Debian wl-paste, when the clipboard is empty
+                b"No selection",
+                # Ubuntu/Debian wl-paste, when an image isn't available
+                b"No suitable type of content copied",
+                # wl-paste or Ubuntu/Debian xclip, when an image isn't available
+                b" not available",
+                # xclip, when an image isn't available
+                b"cannot convert ",
+                # xclip, when the clipboard isn't initialized
+                b"xclip: Error: There is no owner for the ",
+            ]:
+                if silent_error in err:
+                    return None
+            msg = f"{args[0]} error"
+            if err:
+                msg += f": {err.strip().decode()}"
+            raise ChildProcessError(msg)
+
+        data = io.BytesIO(p.stdout)
+        im = Image.open(data)
         im.load()
-        os.unlink(filepath)
         return im

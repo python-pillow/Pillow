@@ -2,7 +2,6 @@
 NotoNastaliqUrdu-Regular.ttf and NotoSansSymbols-Regular.ttf, from https://github.com/googlei18n/noto-fonts
 NotoSans-Regular.ttf, from https://www.google.com/get/noto/
 NotoSansJP-Thin.otf, from https://www.google.com/get/noto/help/cjk/
-NotoColorEmoji.ttf, from https://github.com/googlefonts/noto-emoji
 AdobeVFPrototype.ttf, from https://github.com/adobe-fonts/adobe-variable-font-prototype
 TINY5x3GX.ttf, from http://velvetyne.fr/fonts/tiny
 ArefRuqaa-Regular.ttf, from https://github.com/google/fonts/tree/master/ofl/arefruqaa
@@ -25,3 +24,5 @@ FreeMono.ttf is licensed under GPLv3.
 10x20-ISO8859-1.pcf, from https://packages.ubuntu.com/xenial/xfonts-base
 
 "Public domain font.  Share and enjoy."
+
+CBDTTestFont.ttf and EBDTTestFont.ttf from https://github.com/nulano/font-tests are public domain.

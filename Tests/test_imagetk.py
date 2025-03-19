@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 from PIL import Image
@@ -21,7 +23,7 @@ TK_MODES = ("1", "L", "P", "RGB", "RGBA")
 pytestmark = pytest.mark.skipif(not HAS_TK, reason="Tk not installed")
 
 
-def setup_module():
+def setup_module() -> None:
     try:
         # setup tk
         tk.Frame()
@@ -32,7 +34,7 @@ def setup_module():
         pytest.skip(f"TCL Error: {v}")
 
 
-def test_kw():
+def test_kw() -> None:
     TEST_JPG = "Tests/images/hopper.jpg"
     TEST_PNG = "Tests/images/hopper.png"
     with Image.open(TEST_JPG) as im1:
@@ -43,10 +45,12 @@ def test_kw():
 
             # Test "file"
             im = ImageTk._get_image_from_kw(kw)
+            assert im is not None
             assert_image_equal(im, im1)
 
             # Test "data"
             im = ImageTk._get_image_from_kw(kw)
+            assert im is not None
             assert_image_equal(im, im2)
 
     # Test no relevant entry
@@ -55,7 +59,7 @@ def test_kw():
 
 
 @pytest.mark.parametrize("mode", TK_MODES)
-def test_photoimage(mode):
+def test_photoimage(mode: str) -> None:
     # test as image:
     im = hopper(mode)
 
@@ -68,8 +72,13 @@ def test_photoimage(mode):
     reloaded = ImageTk.getimage(im_tk)
     assert_image_equal(reloaded, im.convert("RGBA"))
 
+    with pytest.raises(ValueError):
+        ImageTk.PhotoImage()
+    with pytest.raises(ValueError):
+        ImageTk.PhotoImage(mode)
 
-def test_photoimage_apply_transparency():
+
+def test_photoimage_apply_transparency() -> None:
     with Image.open("Tests/images/pil123p.png") as im:
         im_tk = ImageTk.PhotoImage(im)
         reloaded = ImageTk.getimage(im_tk)
@@ -77,7 +86,7 @@ def test_photoimage_apply_transparency():
 
 
 @pytest.mark.parametrize("mode", TK_MODES)
-def test_photoimage_blank(mode):
+def test_photoimage_blank(mode: str) -> None:
     # test a image using mode/size:
     im_tk = ImageTk.PhotoImage(mode, (100, 100))
 
@@ -89,14 +98,7 @@ def test_photoimage_blank(mode):
     assert_image_equal(reloaded.convert(mode), im)
 
 
-def test_box_deprecation():
-    im = hopper()
-    im_tk = ImageTk.PhotoImage(im)
-    with pytest.warns(DeprecationWarning):
-        im_tk.paste(im, (0, 0, 128, 128))
-
-
-def test_bitmapimage():
+def test_bitmapimage() -> None:
     im = hopper("1")
 
     # this should not crash
@@ -107,3 +109,6 @@ def test_bitmapimage():
 
     # reloaded = ImageTk.getimage(im_tk)
     # assert_image_equal(reloaded, im)
+
+    with pytest.raises(ValueError):
+        ImageTk.BitmapImage()

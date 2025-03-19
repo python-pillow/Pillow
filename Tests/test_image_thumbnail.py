@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 from PIL import Image
@@ -12,14 +14,14 @@ from .helper import (
 )
 
 
-def test_sanity():
+def test_sanity() -> None:
     im = hopper()
-    assert im.thumbnail((100, 100)) is None
+    im.thumbnail((100, 100))
 
     assert im.size == (100, 100)
 
 
-def test_aspect():
+def test_aspect() -> None:
     im = Image.new("L", (128, 128))
     im.thumbnail((100, 100))
     assert im.size == (100, 100)
@@ -65,19 +67,19 @@ def test_aspect():
     assert im.size == (75, 23)  # ratio is 3.260869565217
 
 
-def test_division_by_zero():
+def test_division_by_zero() -> None:
     im = Image.new("L", (200, 2))
     im.thumbnail((75, 75))
     assert im.size == (75, 1)
 
 
-def test_float():
+def test_float() -> None:
     im = Image.new("L", (128, 128))
     im.thumbnail((99.9, 99.9))
     assert im.size == (99, 99)
 
 
-def test_no_resize():
+def test_no_resize() -> None:
     # Check that draft() can resize the image to the destination size
     with Image.open("Tests/images/hopper.jpg") as im:
         im.draft(None, (64, 64))
@@ -90,39 +92,39 @@ def test_no_resize():
 
 
 @skip_unless_feature("libtiff")
-def test_load_first():
-    # load() may change the size of the image
-    # Test that thumbnail() is calling it before performing size calculations
+def test_transposed() -> None:
     with Image.open("Tests/images/g4_orientation_5.tif") as im:
+        assert im.size == (590, 88)
+
         im.thumbnail((64, 64))
         assert im.size == (64, 10)
 
-    # Test thumbnail(), without draft(),
-    # on an image that is large enough once load() has changed the size
     with Image.open("Tests/images/g4_orientation_5.tif") as im:
         im.thumbnail((590, 88), reducing_gap=None)
         assert im.size == (590, 88)
 
 
-def test_load_first_unless_jpeg():
+def test_load_first_unless_jpeg(monkeypatch: pytest.MonkeyPatch) -> None:
     # Test that thumbnail() still uses draft() for JPEG
     with Image.open("Tests/images/hopper.jpg") as im:
-        draft = im.draft
+        original_draft = im.draft
 
-        def im_draft(mode, size):
-            result = draft(mode, size)
+        def im_draft(
+            mode: str | None, size: tuple[int, int] | None
+        ) -> tuple[str, tuple[int, int, float, float]] | None:
+            result = original_draft(mode, size)
             assert result is not None
 
             return result
 
-        im.draft = im_draft
+        monkeypatch.setattr(im, "draft", im_draft)
 
         im.thumbnail((64, 64))
 
 
 # valgrind test is failing with memory allocated in libjpeg
 @pytest.mark.valgrind_known_error(reason="Known Failing")
-def test_DCT_scaling_edges():
+def test_DCT_scaling_edges() -> None:
     # Make an image with red borders and size (N * 8) + 1 to cross DCT grid
     im = Image.new("RGB", (257, 257), "red")
     im.paste(Image.new("RGB", (235, 235)), (11, 11))
@@ -136,7 +138,7 @@ def test_DCT_scaling_edges():
     assert_image_similar(thumb, ref, 1.5)
 
 
-def test_reducing_gap_values():
+def test_reducing_gap_values() -> None:
     im = hopper()
     im.thumbnail((18, 18), Image.Resampling.BICUBIC)
 
@@ -147,13 +149,13 @@ def test_reducing_gap_values():
 
     ref = hopper()
     ref.thumbnail((18, 18), Image.Resampling.BICUBIC, reducing_gap=None)
-    with pytest.raises(AssertionError):
+    with pytest.raises(pytest.fail.Exception):
         assert_image_equal(ref, im)
 
     assert_image_similar(ref, im, 3.5)
 
 
-def test_reducing_gap_for_DCT_scaling():
+def test_reducing_gap_for_DCT_scaling() -> None:
     with Image.open("Tests/images/hopper.jpg") as ref:
         # thumbnail should call draft with reducing_gap scale
         ref.draft(None, (18 * 3, 18 * 3))

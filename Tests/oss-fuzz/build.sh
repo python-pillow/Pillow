@@ -15,12 +15,12 @@
 #
 ################################################################################
 
-python3 setup.py build --build-base=/tmp/build install
+python3 -m pip install .
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer \
-      --add-binary /usr/local/lib/libjpeg.so.62.3.0:. \
+      --add-binary /usr/local/lib/libjpeg.so.62.4.0:. \
       --add-binary /usr/local/lib/libfreetype.so.6:. \
       --add-binary /usr/local/lib/liblcms2.so.2:. \
       --add-binary /usr/local/lib/libopenjp2.so.7:. \

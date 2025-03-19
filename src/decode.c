@@ -46,7 +46,8 @@
 
 typedef struct {
     PyObject_HEAD int (*decode)(
-        Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
+        Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes
+    );
     int (*cleanup)(ImagingCodecState state);
     struct ImagingCodecStateInstance state;
     Imaging im;
@@ -116,12 +117,11 @@ _dealloc(ImagingDecoderObject *decoder) {
 
 static PyObject *
 _decode(ImagingDecoderObject *decoder, PyObject *args) {
-    UINT8 *buffer;
-    Py_ssize_t bufsize;
+    Py_buffer buffer;
     int status;
     ImagingSectionCookie cookie;
 
-    if (!PyArg_ParseTuple(args, "y#", &buffer, &bufsize)) {
+    if (!PyArg_ParseTuple(args, "y*", &buffer)) {
         return NULL;
     }
 
@@ -129,12 +129,13 @@ _decode(ImagingDecoderObject *decoder, PyObject *args) {
         ImagingSectionEnter(&cookie);
     }
 
-    status = decoder->decode(decoder->im, &decoder->state, buffer, bufsize);
+    status = decoder->decode(decoder->im, &decoder->state, buffer.buf, buffer.len);
 
     if (!decoder->pulls_fd) {
         ImagingSectionLeave(&cookie);
     }
 
+    PyBuffer_Release(&buffer);
     return Py_BuildValue("ii", status, decoder->state.errcode);
 }
 
@@ -212,8 +213,7 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
     Py_XDECREF(decoder->lock);
     decoder->lock = op;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -230,8 +230,7 @@ _setfd(ImagingDecoderObject *decoder, PyObject *args) {
     Py_XINCREF(fd);
     state->fd = fd;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -257,36 +256,11 @@ static struct PyGetSetDef getseters[] = {
 };
 
 static PyTypeObject ImagingDecoderType = {
-    PyVarObject_HEAD_INIT(NULL, 0) "ImagingDecoder", /*tp_name*/
-    sizeof(ImagingDecoderObject),                    /*tp_size*/
-    0,                                               /*tp_itemsize*/
-    /* methods */
-    (destructor)_dealloc, /*tp_dealloc*/
-    0,                    /*tp_print*/
-    0,                    /*tp_getattr*/
-    0,                    /*tp_setattr*/
-    0,                    /*tp_compare*/
-    0,                    /*tp_repr*/
-    0,                    /*tp_as_number */
-    0,                    /*tp_as_sequence */
-    0,                    /*tp_as_mapping */
-    0,                    /*tp_hash*/
-    0,                    /*tp_call*/
-    0,                    /*tp_str*/
-    0,                    /*tp_getattro*/
-    0,                    /*tp_setattro*/
-    0,                    /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,   /*tp_flags*/
-    0,                    /*tp_doc*/
-    0,                    /*tp_traverse*/
-    0,                    /*tp_clear*/
-    0,                    /*tp_richcompare*/
-    0,                    /*tp_weaklistoffset*/
-    0,                    /*tp_iter*/
-    0,                    /*tp_iternext*/
-    methods,              /*tp_methods*/
-    0,                    /*tp_members*/
-    getseters,            /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingDecoder",
+    .tp_basicsize = sizeof(ImagingDecoderObject),
+    .tp_dealloc = (destructor)_dealloc,
+    .tp_methods = methods,
+    .tp_getset = getseters,
 };
 
 /* -------------------------------------------------------------------- */
@@ -889,7 +863,8 @@ PyImaging_Jpeg2KDecoderNew(PyObject *self, PyObject *args) {
     PY_LONG_LONG length = -1;
 
     if (!PyArg_ParseTuple(
-            args, "ss|iiiL", &mode, &format, &reduce, &layers, &fd, &length)) {
+            args, "ss|iiiL", &mode, &format, &reduce, &layers, &fd, &length
+        )) {
         return NULL;
     }
 

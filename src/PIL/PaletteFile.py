@@ -12,6 +12,9 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
+
+from typing import IO
 
 from ._binary import o8
 
@@ -21,17 +24,15 @@ class PaletteFile:
 
     rawmode = "RGB"
 
-    def __init__(self, fp):
-
-        self.palette = [(i, i, i) for i in range(256)]
+    def __init__(self, fp: IO[bytes]) -> None:
+        palette = [o8(i) * 3 for i in range(256)]
 
         while True:
-
             s = fp.readline()
 
             if not s:
                 break
-            if s[:1] == b"#":
+            if s.startswith(b"#"):
                 continue
             if len(s) > 100:
                 msg = "bad palette file"
@@ -45,10 +46,9 @@ class PaletteFile:
                 g = b = r
 
             if 0 <= i <= 255:
-                self.palette[i] = o8(r) + o8(g) + o8(b)
+                palette[i] = o8(r) + o8(g) + o8(b)
 
-        self.palette = b"".join(self.palette)
+        self.palette = b"".join(palette)
 
-    def getpalette(self):
-
+    def getpalette(self) -> tuple[bytes, str]:
         return self.palette, self.rawmode

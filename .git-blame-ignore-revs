@@ -1,0 +1,6 @@
+# Flake8
+8de95676e0fd89f2326b3953488ab66ff29cd2d0
+# Format with Black
+53a7e3500437a9fd5826bc04758f7116bd7e52dc
+# Format the C code with ClangFormat
+46b7e86bab79450ec0a2866c6c0c679afb659d17

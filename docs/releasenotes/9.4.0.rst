@@ -1,29 +1,24 @@
 9.4.0
 -----
 
-Backwards Incompatible Changes
-==============================
+Security
+========
 
-TODO
-^^^^
+Fix memory DOS in ImageFont
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+A corrupt or specially crafted TTF font could have font metrics that lead to
+unreasonably large sizes when rendering text in font. ``ImageFont.py`` did not
+check the image size before allocating memory for it. This dates to the PIL
+fork. Pillow 8.2.0 added a check for large sizes, but did not consider the
+case where one dimension is zero.
 
-Deprecations
-============
+Null pointer dereference crash in ImageFont
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
-^^^^
-
-TODO
-
-API Changes
-===========
-
-TODO
-^^^^
-
-TODO
+Pillow attempted to dereference a null pointer in ``ImageFont``, leading to a
+crash. An error is now raised instead. This has been present since
+Pillow 8.0.0.
 
 API Additions
 =============
@@ -93,14 +88,6 @@ When saving a JPEG image, a comment can now be written from
 
     im.save(out, comment="Test comment")
 
-Security
-========
-
-TODO
-^^^^
-
-TODO
-
 Other Changes
 =============
 
@@ -109,3 +96,40 @@ Added support for DDS L and LA images
 
 Support has been added to read and write L and LA DDS images in the uncompressed
 format, known as "luminance" textures.
+
+.. _restored-image-constants:
+
+Constants
+^^^^^^^^^
+
+In Pillow 9.1.0, the following constants were deprecated. That has been reversed and
+these constants will now remain available.
+
+- ``Image.NONE``
+- ``Image.NEAREST``
+- ``Image.ORDERED``
+- ``Image.RASTERIZE``
+- ``Image.FLOYDSTEINBERG``
+- ``Image.WEB``
+- ``Image.ADAPTIVE``
+- ``Image.AFFINE``
+- ``Image.EXTENT``
+- ``Image.PERSPECTIVE``
+- ``Image.QUAD``
+- ``Image.MESH``
+- ``Image.FLIP_LEFT_RIGHT``
+- ``Image.FLIP_TOP_BOTTOM``
+- ``Image.ROTATE_90``
+- ``Image.ROTATE_180``
+- ``Image.ROTATE_270``
+- ``Image.TRANSPOSE``
+- ``Image.TRANSVERSE``
+- ``Image.BOX``
+- ``Image.BILINEAR``
+- ``Image.HAMMING``
+- ``Image.BICUBIC``
+- ``Image.LANCZOS``
+- ``Image.MEDIANCUT``
+- ``Image.MAXCOVERAGE``
+- ``Image.FASTOCTREE``
+- ``Image.LIBIMAGEQUANT``

@@ -1,17 +1,22 @@
+from __future__ import annotations
+
 import io
 import os
 import os.path
 import tempfile
 import time
+from collections.abc import Generator
+from pathlib import Path
+from typing import Any
 
 import pytest
 
 from PIL import Image, PdfParser, features
 
-from .helper import hopper, mark_if_feature_version
+from .helper import hopper, mark_if_feature_version, skip_unless_feature
 
 
-def helper_save_as_pdf(tmp_path, mode, **kwargs):
+def helper_save_as_pdf(tmp_path: Path, mode: str, **kwargs: Any) -> str:
     # Arrange
     im = hopper(mode)
     outfile = str(tmp_path / ("temp_" + mode + ".pdf"))
@@ -38,11 +43,33 @@ def helper_save_as_pdf(tmp_path, mode, **kwargs):
 
 
 @pytest.mark.parametrize("mode", ("L", "P", "RGB", "CMYK"))
-def test_save(tmp_path, mode):
+def test_save(tmp_path: Path, mode: str) -> None:
     helper_save_as_pdf(tmp_path, mode)
 
 
-def test_monochrome(tmp_path):
+@skip_unless_feature("jpg_2000")
+@pytest.mark.parametrize("mode", ("LA", "RGBA"))
+def test_save_alpha(tmp_path: Path, mode: str) -> None:
+    helper_save_as_pdf(tmp_path, mode)
+
+
+def test_p_alpha(tmp_path: Path) -> None:
+    # Arrange
+    outfile = str(tmp_path / "temp.pdf")
+    with Image.open("Tests/images/pil123p.png") as im:
+        assert im.mode == "P"
+        assert isinstance(im.info["transparency"], bytes)
+
+        # Act
+        im.save(outfile)
+
+    # Assert
+    with open(outfile, "rb") as fp:
+        contents = fp.read()
+    assert b"\n/SMask " in contents
+
+
+def test_monochrome(tmp_path: Path) -> None:
     # Arrange
     mode = "1"
 
@@ -51,15 +78,15 @@ def test_monochrome(tmp_path):
     assert os.path.getsize(outfile) < (5000 if features.check("libtiff") else 15000)
 
 
-def test_unsupported_mode(tmp_path):
-    im = hopper("LA")
-    outfile = str(tmp_path / "temp_LA.pdf")
+def test_unsupported_mode(tmp_path: Path) -> None:
+    im = hopper("PA")
+    outfile = str(tmp_path / "temp_PA.pdf")
 
     with pytest.raises(ValueError):
         im.save(outfile)
 
 
-def test_resolution(tmp_path):
+def test_resolution(tmp_path: Path) -> None:
     im = hopper()
 
     outfile = str(tmp_path / "temp.pdf")
@@ -80,16 +107,43 @@ def test_resolution(tmp_path):
     assert size == (61.44, 61.44)
 
 
+@pytest.mark.parametrize(
+    "params",
+    (
+        {"dpi": (75, 150)},
+        {"dpi": (75, 150), "resolution": 200},
+    ),
+)
+def test_dpi(params: dict[str, int | tuple[int, int]], tmp_path: Path) -> None:
+    im = hopper()
+
+    outfile = str(tmp_path / "temp.pdf")
+    im.save(outfile, "PDF", **params)
+
+    with open(outfile, "rb") as fp:
+        contents = fp.read()
+
+    size = tuple(
+        float(d)
+        for d in contents.split(b"stream\nq ")[1].split(b" 0 0 cm")[0].split(b" 0 0 ")
+    )
+    assert size == (122.88, 61.44)
+
+    size = tuple(
+        float(d) for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
+    )
+    assert size == (122.88, 61.44)
+
+
 @mark_if_feature_version(
     pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
 )
-def test_save_all(tmp_path):
+def test_save_all(tmp_path: Path) -> None:
     # Single frame image
     helper_save_as_pdf(tmp_path, "RGB", save_all=True)
 
     # Multiframe image
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
-
         outfile = str(tmp_path / "temp.pdf")
         im.save(outfile, save_all=True)
 
@@ -104,7 +158,7 @@ def test_save_all(tmp_path):
         assert os.path.getsize(outfile) > 0
 
         # Test appending using a generator
-        def im_generator(ims):
+        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image, None, None]:
             yield from ims
 
         im.save(outfile, save_all=True, append_images=im_generator(ims))
@@ -120,10 +174,9 @@ def test_save_all(tmp_path):
     assert os.path.getsize(outfile) > 0
 
 
-def test_multiframe_normal_save(tmp_path):
+def test_multiframe_normal_save(tmp_path: Path) -> None:
     # Test saving a multiframe image without save_all
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
-
         outfile = str(tmp_path / "temp.pdf")
         im.save(outfile)
 
@@ -131,7 +184,7 @@ def test_multiframe_normal_save(tmp_path):
     assert os.path.getsize(outfile) > 0
 
 
-def test_pdf_open(tmp_path):
+def test_pdf_open(tmp_path: Path) -> None:
     # fail on a buffer full of null bytes
     with pytest.raises(PdfParser.PdfFormatError):
         PdfParser.PdfParser(buf=bytearray(65536))
@@ -168,14 +221,15 @@ def test_pdf_open(tmp_path):
             assert not hopper_pdf.should_close_file
 
 
-def test_pdf_append_fails_on_nonexistent_file():
+def test_pdf_append_fails_on_nonexistent_file() -> None:
     im = hopper("RGB")
     with tempfile.TemporaryDirectory() as temp_dir:
         with pytest.raises(OSError):
             im.save(os.path.join(temp_dir, "nonexistent.pdf"), append=True)
 
 
-def check_pdf_pages_consistency(pdf):
+def check_pdf_pages_consistency(pdf: PdfParser.PdfParser) -> None:
+    assert pdf.pages_ref is not None
     pages_info = pdf.read_indirect(pdf.pages_ref)
     assert b"Parent" not in pages_info
     assert b"Kids" in pages_info
@@ -193,7 +247,7 @@ def check_pdf_pages_consistency(pdf):
     assert kids_not_used == []
 
 
-def test_pdf_append(tmp_path):
+def test_pdf_append(tmp_path: Path) -> None:
     # make a PDF file
     pdf_filename = helper_save_as_pdf(tmp_path, "RGB", producer="PdfParser")
 
@@ -210,7 +264,7 @@ def test_pdf_append(tmp_path):
         # append some info
         pdf.info.Title = "abc"
         pdf.info.Author = "def"
-        pdf.info.Subject = "ghi\uABCD"
+        pdf.info.Subject = "ghi\uabcd"
         pdf.info.Keywords = "qw)e\\r(ty"
         pdf.info.Creator = "hopper()"
         pdf.start_writing()
@@ -238,13 +292,13 @@ def test_pdf_append(tmp_path):
         assert pdf.info.Title == "abc"
         assert pdf.info.Producer == "PdfParser"
         assert pdf.info.Keywords == "qw)e\\r(ty"
-        assert pdf.info.Subject == "ghi\uABCD"
+        assert pdf.info.Subject == "ghi\uabcd"
         assert b"CreationDate" in pdf.info
         assert b"ModDate" in pdf.info
         check_pdf_pages_consistency(pdf)
 
 
-def test_pdf_info(tmp_path):
+def test_pdf_info(tmp_path: Path) -> None:
     # make a PDF file
     pdf_filename = helper_save_as_pdf(
         tmp_path,
@@ -273,7 +327,7 @@ def test_pdf_info(tmp_path):
         check_pdf_pages_consistency(pdf)
 
 
-def test_pdf_append_to_bytesio():
+def test_pdf_append_to_bytesio() -> None:
     im = hopper("RGB")
     f = io.BytesIO()
     im.save(f, format="PDF")
@@ -286,8 +340,9 @@ def test_pdf_append_to_bytesio():
 
 
 @pytest.mark.timeout(1)
+@pytest.mark.skipif("PILLOW_VALGRIND_TEST" in os.environ, reason="Valgrind is slower")
 @pytest.mark.parametrize("newline", (b"\r", b"\n"))
-def test_redos(newline):
+def test_redos(newline: bytes) -> None:
     malicious = b" trailer<<>>" + newline * 3456
 
     # This particular exception isn't relevant here.

@@ -13,9 +13,11 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import re
 import warnings
+from typing import IO
 
 
 class GimpPaletteFile:
@@ -28,16 +30,15 @@ class GimpPaletteFile:
     _max_line_size = 100
     _max_file_size = 2**20  # 1MB
 
-    def __init__(self, fp):
-
-        if fp.readline()[:12] != b"GIMP Palette":
+    def __init__(self, fp: IO[bytes]) -> None:
+        if not fp.readline().startswith(b"GIMP Palette"):
             msg = "not a GIMP palette file"
             raise SyntaxError(msg)
 
         read = 0
 
-        self.palette = []
-        while len(self.palette) < 3 * self.max_colors:
+        palette: list[int] = []
+        while len(palette) < 3 * self.max_colors:
 
             s = fp.readline(self._max_file_size)
             if not s:
@@ -63,10 +64,9 @@ class GimpPaletteFile:
                 msg = "bad palette entry"
                 raise ValueError(msg)
 
-            self.palette += (int(v[0]), int(v[1]), int(v[2]))
+            palette += (int(v[i]) for i in range(3))
 
-        self.palette = bytes(self.palette)
+        self.palette = bytes(palette)
 
-    def getpalette(self):
-
+    def getpalette(self) -> tuple[bytes, str]:
         return self.palette, self.rawmode

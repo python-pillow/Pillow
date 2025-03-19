@@ -24,6 +24,11 @@ ImagingFill(Imaging im, const void *colour) {
     int x, y;
     ImagingSectionCookie cookie;
 
+    /* 0-width or 0-height image. No need to do anything */
+    if (!im->linesize || !im->ysize) {
+        return im;
+    }
+
     if (im->type == IMAGING_TYPE_SPECIAL) {
         /* use generic API */
         ImagingAccess access = ImagingAccessNew(im);
@@ -113,8 +118,8 @@ ImagingFillRadialGradient(const char *mode) {
 
     for (y = 0; y < 256; y++) {
         for (x = 0; x < 256; x++) {
-            d = (int)sqrt(
-                (double)((x - 128) * (x - 128) + (y - 128) * (y - 128)) * 2.0);
+            d = (int
+            )sqrt((double)((x - 128) * (x - 128) + (y - 128) * (y - 128)) * 2.0);
             if (d >= 255) {
                 d = 255;
             }

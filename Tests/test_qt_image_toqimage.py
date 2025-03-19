@@ -1,10 +1,10 @@
-import warnings
+from __future__ import annotations
+
+from pathlib import Path
 
 import pytest
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", category=DeprecationWarning)
-    from PIL import ImageQt
+from PIL import ImageQt
 
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
@@ -17,11 +17,11 @@ if ImageQt.qt_is_installed:
 
 
 @pytest.mark.parametrize("mode", ("RGB", "RGBA", "L", "P", "1"))
-def test_sanity(mode, tmp_path):
+def test_sanity(mode: str, tmp_path: Path) -> None:
     src = hopper(mode)
     data = ImageQt.toqimage(src)
 
-    assert isinstance(data, QImage)
+    assert isinstance(data, QImage)  # type: ignore[arg-type, misc]
     assert not data.isNull()
 
     # reload directly from the qimage
@@ -32,7 +32,7 @@ def test_sanity(mode, tmp_path):
         assert_image_equal(rt, src)
 
     if mode == "1":
-        # BW appears to not save correctly on QT5
+        # BW appears to not save correctly on Qt
         # kicks out errors on console:
         #     libpng warning: Invalid color type/bit depth combination
         #                     in IHDR

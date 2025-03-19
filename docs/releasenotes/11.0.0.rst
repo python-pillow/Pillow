@@ -1,0 +1,162 @@
+11.0.0
+------
+
+Backwards Incompatible Changes
+==============================
+
+Python 3.8
+^^^^^^^^^^
+
+Pillow has dropped support for Python 3.8,
+which reached end-of-life in October 2024.
+
+Python 3.12 on macOS <= 10.12
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The latest version of Python 3.12 only supports macOS versions 10.13 and later,
+and so Pillow has also updated the deployment target for its prebuilt Python 3.12
+wheels.
+
+PSFile
+^^^^^^
+
+The :py:class:`!PSFile` class was removed in Pillow 11 (2024-10-15).
+This class was only made as a helper to be used internally,
+so there is no replacement. If you need this functionality though,
+it is a very short class that can easily be recreated in your own code.
+
+PyAccess and Image.USE_CFFI_ACCESS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since Pillow's C API is now faster than PyAccess on PyPy, ``PyAccess`` has been
+removed. Pillow's C API will now be used on PyPy instead.
+
+``Image.USE_CFFI_ACCESS``, for switching from the C API to PyAccess, was
+similarly removed.
+
+TiffImagePlugin IFD_LEGACY_API
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An unused setting, ``TiffImagePlugin.IFD_LEGACY_API``, has been removed.
+
+WebP 0.4
+^^^^^^^^
+
+Support for WebP 0.4 and earlier has been removed; WebP 0.5 is the minimum supported.
+
+Deprecations
+============
+
+FreeType 2.9.0
+^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+Support for FreeType 2.9.0 is deprecated and will be removed in Pillow 12.0.0
+(2025-10-15), when FreeType 2.9.1 will be the minimum supported.
+
+We recommend upgrading to at least FreeType `2.10.4`_, which fixed a severe
+vulnerability introduced in FreeType 2.6 (:cve:`2020-15999`).
+
+.. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
+
+Get internal pointers to objects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+``Image.core.ImagingCore.id`` and ``Image.core.ImagingCore.unsafe_ptrs`` have been
+deprecated and will be removed in Pillow 12 (2025-10-15). They were used for obtaining
+raw pointers to ``ImagingCore`` internals. To interact with C code, you can use
+``Image.Image.getim()``, which returns a ``Capsule`` object.
+
+ICNS (width, height, scale) sizes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+Setting an ICNS image size to ``(width, height, scale)`` before loading has been
+deprecated. Instead, ``load(scale)`` can be used.
+
+Image isImageType()
+^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+``Image.isImageType(im)`` has been deprecated. Use ``isinstance(im, Image.Image)``
+instead.
+
+ImageMath.lambda_eval and ImageMath.unsafe_eval options parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+The ``options`` parameter in :py:meth:`~PIL.ImageMath.lambda_eval()` and
+:py:meth:`~PIL.ImageMath.unsafe_eval()` has been deprecated. One or more
+keyword arguments can be used instead.
+
+JpegImageFile.huffman_ac and JpegImageFile.huffman_dc
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+The ``huffman_ac`` and ``huffman_dc`` dictionaries on JPEG images were unused. They
+have been deprecated, and will be removed in Pillow 12 (2025-10-15).
+
+Specific WebP Feature Checks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+``features.check("transp_webp")``, ``features.check("webp_mux")`` and
+``features.check("webp_anim")`` are now deprecated. They will always return
+``True`` if the WebP module is installed, until they are removed in Pillow
+12.0.0 (2025-10-15).
+
+API Changes
+===========
+
+Default resampling filter for I;16* image modes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The default resampling filter for I;16, I;16L, I;16B and I;16N has been changed from
+``Image.NEAREST`` to ``Image.BICUBIC``, to match the majority of modes.
+
+API Additions
+=============
+
+Writing XMP bytes to JPEG and MPO
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+XMP data can now be saved to JPEG files using an ``xmp`` argument::
+
+    im.save("out.jpg", xmp=b"test")
+
+The data can also be set  through :py:attr:`~PIL.Image.Image.info`, for use when saving
+either JPEG or MPO images::
+
+    im.info["xmp"] = b"test"
+    im.save("out.jpg")
+
+Other Changes
+=============
+
+Python 3.13
+^^^^^^^^^^^
+
+Pillow 10.4.0 had wheels built against Python 3.13 beta, available as a preview to help
+others prepare for 3.13, and to ensure Pillow could be used immediately at the release
+of 3.13.0 final (2024-10-07, :pep:`719`).
+
+Pillow 11.0.0 now officially supports Python 3.13.
+
+Support has also been added for the experimental free-threaded mode of :pep:`703`.
+
+Python 3.13 only supports macOS versions 10.13 and later.
+
+C-level Flags
+^^^^^^^^^^^^^
+
+Some compiling flags like ``WITH_THREADING``, ``WITH_IMAGECHOPS``, and other
+``WITH_*`` were removed. These flags were not available through the build system,
+but they could be edited in the C source.
