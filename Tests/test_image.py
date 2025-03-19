@@ -187,14 +187,14 @@ class TestImage:
             for ext in (".jpg", ".jp2"):
                 if ext == ".jp2" and not features.check_codec("jpg_2000"):
                     pytest.skip("jpg_2000 not available")
-                temp_file = str(tmp_path / ("temp." + ext))
+                temp_file = tmp_path / ("temp." + ext)
                 im.save(Path(temp_file))
 
     def test_fp_name(self, tmp_path: Path) -> None:
-        temp_file = str(tmp_path / "temp.jpg")
+        temp_file = tmp_path / "temp.jpg"
 
         class FP(io.BytesIO):
-            name: str
+            name: Path
 
             if sys.version_info >= (3, 12):
                 from collections.abc import Buffer
@@ -225,7 +225,7 @@ class TestImage:
 
     def test_unknown_extension(self, tmp_path: Path) -> None:
         im = hopper()
-        temp_file = str(tmp_path / "temp.unknown")
+        temp_file = tmp_path / "temp.unknown"
         with pytest.raises(ValueError):
             im.save(temp_file)
 
@@ -245,7 +245,7 @@ class TestImage:
         reason="Test requires opening an mmaped file for writing",
     )
     def test_readonly_save(self, tmp_path: Path) -> None:
-        temp_file = str(tmp_path / "temp.bmp")
+        temp_file = tmp_path / "temp.bmp"
         shutil.copy("Tests/images/rgb32bf-rgba.bmp", temp_file)
 
         with Image.open(temp_file) as im:
@@ -728,7 +728,7 @@ class TestImage:
         # https://github.com/python-pillow/Pillow/issues/835
         # Arrange
         test_file = "Tests/images/hopper.png"
-        temp_file = str(tmp_path / "temp.jpg")
+        temp_file = tmp_path / "temp.jpg"
 
         # Act/Assert
         with Image.open(test_file) as im:
@@ -738,7 +738,7 @@ class TestImage:
                 im.save(temp_file)
 
     def test_no_new_file_on_error(self, tmp_path: Path) -> None:
-        temp_file = str(tmp_path / "temp.jpg")
+        temp_file = tmp_path / "temp.jpg"
 
         im = Image.new("RGB", (0, 0))
         with pytest.raises(ValueError):
@@ -805,7 +805,7 @@ class TestImage:
             assert exif[296] == 2
             assert exif[11] == "gThumb 3.0.1"
 
-            out = str(tmp_path / "temp.jpg")
+            out = tmp_path / "temp.jpg"
             exif[258] = 8
             del exif[274]
             del exif[282]
@@ -827,7 +827,7 @@ class TestImage:
             assert exif[274] == 1
             assert exif[305] == "Adobe Photoshop CC 2017 (Macintosh)"
 
-            out = str(tmp_path / "temp.jpg")
+            out = tmp_path / "temp.jpg"
             exif[258] = 8
             del exif[306]
             exif[274] = 455
@@ -846,7 +846,7 @@ class TestImage:
             exif = im.getexif()
             assert exif == {}
 
-            out = str(tmp_path / "temp.webp")
+            out = tmp_path / "temp.webp"
             exif[258] = 8
             exif[40963] = 455
             exif[305] = "Pillow test"
@@ -868,7 +868,7 @@ class TestImage:
             exif = im.getexif()
             assert exif == {274: 1}
 
-            out = str(tmp_path / "temp.png")
+            out = tmp_path / "temp.png"
             exif[258] = 8
             del exif[274]
             exif[40963] = 455
