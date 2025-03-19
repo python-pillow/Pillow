@@ -20,7 +20,7 @@ typedef struct {
 
 static PyTypeObject AvifDecoder_Type;
 
-#if AVIF_VERSION < 1000000
+#if AVIF_VERSION < 1000000  // 1.0.0
 static int
 normalize_quantize_value(int qvalue) {
     if (qvalue < AVIF_QUANTIZER_BEST_QUALITY) {
@@ -182,7 +182,7 @@ _encoder_codec_available(PyObject *self, PyObject *args) {
     return PyBool_FromLong(is_available);
 }
 
-#if AVIF_VERSION >= 80200
+#if AVIF_VERSION >= 80200  // 0.8.2
 static int
 _add_codec_specific_options(avifEncoder *encoder, PyObject *opts) {
     Py_ssize_t i, size;
@@ -318,7 +318,7 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
     image->height = height;
 
     image->depth = 8;
-#if AVIF_VERSION >= 90000
+#if AVIF_VERSION >= 90000  // 0.9.0
     image->alphaPremultiplied = alpha_premultiplied ? AVIF_TRUE : AVIF_FALSE;
 #endif
 
@@ -334,7 +334,7 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
                          _codec_available("aom", AVIF_CODEC_FLAG_CAN_ENCODE));
     encoder->maxThreads = is_aom_encode && max_threads > 64 ? 64 : max_threads;
 
-#if AVIF_VERSION >= 1000000
+#if AVIF_VERSION >= 1000000  // 1.0.0
     encoder->quality = quality;
 #else
     encoder->minQuantizer = normalize_quantize_value(64 - quality);
@@ -354,7 +354,7 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
     encoder->speed = speed;
     encoder->timescale = (uint64_t)1000;
 
-#if AVIF_VERSION >= 110000
+#if AVIF_VERSION >= 110000  // 0.11.0
     encoder->autoTiling = autotiling ? AVIF_TRUE : AVIF_FALSE;
     if (!autotiling) {
         encoder->tileRowsLog2 = normalize_tiles_log2(tile_rows_log2);
@@ -366,7 +366,7 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
 #endif
 
     if (advanced != Py_None) {
-#if AVIF_VERSION >= 80200
+#if AVIF_VERSION >= 80200  // 0.8.2
         if (_add_codec_specific_options(encoder, advanced)) {
             error = 1;
             goto end;
@@ -537,7 +537,7 @@ _encoder_add(AvifEncoderObject *self, PyObject *args) {
         frame->yuvRange = image->yuvRange;
         frame->yuvFormat = image->yuvFormat;
         frame->depth = image->depth;
-#if AVIF_VERSION >= 90000
+#if AVIF_VERSION >= 90000  // 0.9.0
         frame->alphaPremultiplied = image->alphaPremultiplied;
 #endif
     }
@@ -689,10 +689,10 @@ AvifDecoderNew(PyObject *self_, PyObject *args) {
         PyObject_Del(self);
         return NULL;
     }
-#if AVIF_VERSION >= 80400
+#if AVIF_VERSION >= 80400  // 0.8.4
     decoder->maxThreads = max_threads;
 #endif
-#if AVIF_VERSION >= 90200
+#if AVIF_VERSION >= 90200  // 0.9.2
     // Turn off libavif's 'clap' (clean aperture) property validation.
     decoder->strictFlags &= ~AVIF_STRICT_CLAP_VALID;
     // Allow the PixelInformationProperty ('pixi') to be missing in AV1 image
