@@ -27,15 +27,15 @@ Fully supported formats
 AVIF
 ^^^^
 
-Pillow reads and writes AVIF files, including AVIF sequence images. Currently,
-it is only possible to save 8-bit AVIF images, and all AVIF images are decoded
+Pillow reads and writes AVIF files, including AVIF sequence images.
+It is only possible to save 8-bit AVIF images, and all AVIF images are decoded
 as 8-bit RGB(A).
 
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **quality**
     Integer, 0-100, defaults to 75. 0 gives the smallest size and poorest
-    quality, 100 the largest and best quality.
+    quality, 100 the largest size and best quality.
 
 **subsampling**
     If present, sets the subsampling for the encoder. Defaults to ``4:2:0``.
@@ -47,14 +47,14 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     * ``4:4:4``
 
 **speed**
-    Quality/speed trade-off (0=slower-better, 10=fastest). Defaults to 6.
+    Quality/speed trade-off (0=slower/better, 10=fastest). Defaults to 6.
 
 **max_threads**
     Limit the number of active threads used. By default, there is no limit. If the aom
     codec is used, there is a maximum of 64.
 
 **range**
-    YUV range, either "full" or "limited". Defaults to "full"
+    YUV range, either "full" or "limited". Defaults to "full".
 
 **codec**
     AV1 codec to use for encoding. Specific values are "aom", "rav1e", and
@@ -315,7 +315,7 @@ following options are available::
 **append_images**
     A list of images to append as additional frames. Each of the
     images in the list can be single or multiframe images.
-    This is currently supported for AVIF, GIF, PDF, PNG, TIFF and WebP.
+    This is supported for AVIF, GIF, PDF, PNG, TIFF and WebP.
 
     It is also supported for ICO and ICNS. If images are passed in of relevant
     sizes, they will be used instead of scaling down the main image.
