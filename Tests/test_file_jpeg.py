@@ -764,7 +764,7 @@ class TestFileJpeg:
             img = Image.new(mode, (20, 20))
             img.save(out, "JPEG", convert_mode=True)
 
-        temp_file = str(tmp_path / "temp.jpg")
+        temp_file = tmp_path / "temp.jpg"
         with Image.open("Tests/images/pil123rgba.png") as img:
             img.save(temp_file, convert_mode=True, fill_color="red")
 

@@ -507,7 +507,7 @@ class TestImage:
     def test_no_supported_modes_method(self, tmp_path: Path) -> None:
         assert not hasattr(TiffImagePlugin, "_supported_modes")
 
-        temp_file = str(tmp_path / "temp.tiff")
+        temp_file = tmp_path / "temp.tiff"
 
         im = hopper()
         im.save(temp_file, convert_mode=True)
