@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import re
+from io import BytesIO
 from typing import IO
 
 
@@ -24,13 +25,18 @@ class GimpPaletteFile:
 
     rawmode = "RGB"
 
-    def __init__(self, fp: IO[bytes]) -> None:
+    def _read(self, fp: IO[bytes], limit: bool = True) -> None:
         if not fp.readline().startswith(b"GIMP Palette"):
             msg = "not a GIMP palette file"
             raise SyntaxError(msg)
 
         palette: list[int] = []
-        for _ in range(256 + 3):
+        i = 0
+        while True:
+            if limit and i == 256 + 3:
+                break
+
+            i += 1
             s = fp.readline()
             if not s:
                 break
@@ -38,7 +44,7 @@ class GimpPaletteFile:
             # skip fields and comment lines
             if re.match(rb"\w+:|#", s):
                 continue
-            if len(s) > 100:
+            if limit and len(s) > 100:
                 msg = "bad palette file"
                 raise SyntaxError(msg)
 
@@ -48,10 +54,19 @@ class GimpPaletteFile:
                 raise ValueError(msg)
 
             palette += (int(v[i]) for i in range(3))
-            if len(palette) == 768:
+            if limit and len(palette) == 768:
                 break
 
         self.palette = bytes(palette)
+
+    def __init__(self, fp: IO[bytes]) -> None:
+        self._read(fp)
+
+    @classmethod
+    def frombytes(cls, data: bytes) -> GimpPaletteFile:
+        self = cls.__new__(cls)
+        self._read(BytesIO(data), False)
+        return self
 
     def getpalette(self) -> tuple[bytes, str]:
         return self.palette, self.rawmode

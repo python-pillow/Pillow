@@ -16,11 +16,11 @@ def test_sanity() -> None:
             GimpPaletteFile(fp)
 
     with open("Tests/images/bad_palette_file.gpl", "rb") as fp:
-        with pytest.raises(SyntaxError):
+        with pytest.raises(SyntaxError, match="bad palette file"):
             GimpPaletteFile(fp)
 
     with open("Tests/images/bad_palette_entry.gpl", "rb") as fp:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="bad palette entry"):
             GimpPaletteFile(fp)
 
 
@@ -40,12 +40,26 @@ def test_get_palette(filename: str, size: int) -> None:
     assert len(palette) / 3 == size
 
 
-def test_palette_limit() -> None:
+def test_frombytes() -> None:
     with open("Tests/images/full_gimp_palette.gpl", "rb") as fp:
-        data = fp.read()
+        full_data = fp.read()
 
     # Test that __init__ only reads 256 entries
-    data = data.replace(b"#\n", b"") + b"  0   0   0     Index 256"
+    data = full_data.replace(b"#\n", b"") + b"  0   0   0     Index 256"
     b = BytesIO(data)
     palette = GimpPaletteFile(b)
+    assert len(palette.palette) / 3 == 256
+
+    # Test that frombytes() can read beyond that
+    palette = GimpPaletteFile.frombytes(data)
+    assert len(palette.palette) / 3 == 257
+
+    # Test that __init__ raises an error if a comment is too long
+    data = full_data[:-1] + b"a" * 100
+    b = BytesIO(data)
+    with pytest.raises(SyntaxError, match="bad palette file"):
+        palette = GimpPaletteFile(b)
+
+    # Test that frombytes() can read the data regardless
+    palette = GimpPaletteFile.frombytes(data)
     assert len(palette.palette) / 3 == 256
