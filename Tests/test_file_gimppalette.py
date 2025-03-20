@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from io import BytesIO
+
 import pytest
 
 from PIL.GimpPaletteFile import GimpPaletteFile
@@ -22,9 +24,12 @@ def test_sanity() -> None:
             GimpPaletteFile(fp)
 
 
-def test_get_palette() -> None:
+@pytest.mark.parametrize(
+    "filename, size", (("custom_gimp_palette.gpl", 8), ("full_gimp_palette.gpl", 256))
+)
+def test_get_palette(filename: str, size: int) -> None:
     # Arrange
-    with open("Tests/images/custom_gimp_palette.gpl", "rb") as fp:
+    with open("Tests/images/" + filename, "rb") as fp:
         palette_file = GimpPaletteFile(fp)
 
     # Act
@@ -32,4 +37,15 @@ def test_get_palette() -> None:
 
     # Assert
     assert mode == "RGB"
-    assert len(palette) / 3 == 8
+    assert len(palette) / 3 == size
+
+
+def test_palette_limit() -> None:
+    with open("Tests/images/full_gimp_palette.gpl", "rb") as fp:
+        data = fp.read()
+
+    # Test that __init__ only reads 256 entries
+    data = data.replace(b"#\n", b"") + b"  0   0   0     Index 256"
+    b = BytesIO(data)
+    palette = GimpPaletteFile(b)
+    assert len(palette.palette) / 3 == 256

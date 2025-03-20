@@ -30,7 +30,7 @@ class GimpPaletteFile:
             raise SyntaxError(msg)
 
         palette: list[int] = []
-        for _ in range(256):
+        for _ in range(256 + 3):
             s = fp.readline()
             if not s:
                 break
@@ -48,6 +48,8 @@ class GimpPaletteFile:
                 raise ValueError(msg)
 
             palette += (int(v[i]) for i in range(3))
+            if len(palette) == 768:
+                break
 
         self.palette = bytes(palette)
 
