@@ -41,10 +41,17 @@ def test_get_palette(filename: str, size: int) -> None:
 
 
 def test_frombytes() -> None:
-    with open("Tests/images/full_gimp_palette.gpl", "rb") as fp:
-        full_data = fp.read()
+    # Test that __init__ stops reading after 260 lines
+    with open("Tests/images/custom_gimp_palette.gpl", "rb") as fp:
+        custom_data = fp.read()
+    custom_data += b"#\n" * 300 + b"  0   0   0     Index 12"
+    b = BytesIO(custom_data)
+    palette = GimpPaletteFile(b)
+    assert len(palette.palette) / 3 == 8
 
     # Test that __init__ only reads 256 entries
+    with open("Tests/images/full_gimp_palette.gpl", "rb") as fp:
+        full_data = fp.read()
     data = full_data.replace(b"#\n", b"") + b"  0   0   0     Index 256"
     b = BytesIO(data)
     palette = GimpPaletteFile(b)
