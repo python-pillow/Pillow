@@ -56,7 +56,7 @@ def test_rt_metadata(tmp_path: Path) -> None:
 
     info[ImageDescription] = text_data
 
-    f = str(tmp_path / "temp.tif")
+    f = tmp_path / "temp.tif"
 
     img.save(f, tiffinfo=info)
 
@@ -133,7 +133,7 @@ def test_write_metadata(tmp_path: Path) -> None:
     with Image.open("Tests/images/hopper.tif") as img:
         assert isinstance(img, TiffImagePlugin.TiffImageFile)
 
-        f = str(tmp_path / "temp.tiff")
+        f = tmp_path / "temp.tiff"
         del img.tag[278]
         img.save(f, tiffinfo=img.tag)
 
@@ -169,7 +169,7 @@ def test_write_metadata(tmp_path: Path) -> None:
 
 
 def test_change_stripbytecounts_tag_type(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     with Image.open("Tests/images/hopper.tif") as im:
         assert isinstance(im, TiffImagePlugin.TiffImageFile)
         info = im.tag_v2
@@ -218,7 +218,7 @@ def test_no_duplicate_50741_tag() -> None:
 
 
 def test_iptc(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     with Image.open("Tests/images/hopper.Lab.tif") as im:
         im.save(out)
 
@@ -235,7 +235,7 @@ def test_writing_other_types_to_ascii(
     info[271] = value
 
     im = hopper()
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info)
 
     with Image.open(out) as reloaded:
@@ -253,7 +253,7 @@ def test_writing_other_types_to_bytes(value: int | IFDRational, tmp_path: Path) 
 
     info[700] = value
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info)
 
     with Image.open(out) as reloaded:
@@ -273,7 +273,7 @@ def test_writing_other_types_to_undefined(
 
     info[33723] = value
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info)
 
     with Image.open(out) as reloaded:
@@ -307,7 +307,7 @@ def test_empty_metadata() -> None:
 
 def test_iccprofile(tmp_path: Path) -> None:
     # https://github.com/python-pillow/Pillow/issues/1462
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     with Image.open("Tests/images/hopper.iccprofile.tif") as im:
         im.save(out)
 
@@ -329,13 +329,13 @@ def test_iccprofile_binary() -> None:
 
 def test_iccprofile_save_png(tmp_path: Path) -> None:
     with Image.open("Tests/images/hopper.iccprofile.tif") as im:
-        outfile = str(tmp_path / "temp.png")
+        outfile = tmp_path / "temp.png"
         im.save(outfile)
 
 
 def test_iccprofile_binary_save_png(tmp_path: Path) -> None:
     with Image.open("Tests/images/hopper.iccprofile_binary.tif") as im:
-        outfile = str(tmp_path / "temp.png")
+        outfile = tmp_path / "temp.png"
         im.save(outfile)
 
 
@@ -344,7 +344,7 @@ def test_exif_div_zero(tmp_path: Path) -> None:
     info = TiffImagePlugin.ImageFileDirectory_v2()
     info[41988] = TiffImagePlugin.IFDRational(0, 0)
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
@@ -364,7 +364,7 @@ def test_ifd_unsigned_rational(tmp_path: Path) -> None:
 
     info[41493] = TiffImagePlugin.IFDRational(numerator, 1)
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
@@ -377,7 +377,7 @@ def test_ifd_unsigned_rational(tmp_path: Path) -> None:
 
     info[41493] = TiffImagePlugin.IFDRational(numerator, 1)
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
@@ -396,7 +396,7 @@ def test_ifd_signed_rational(tmp_path: Path) -> None:
 
     info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
@@ -409,7 +409,7 @@ def test_ifd_signed_rational(tmp_path: Path) -> None:
 
     info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
@@ -423,7 +423,7 @@ def test_ifd_signed_rational(tmp_path: Path) -> None:
 
     info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
@@ -438,7 +438,7 @@ def test_ifd_signed_long(tmp_path: Path) -> None:
 
     info[37000] = -60000
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
@@ -466,7 +466,7 @@ def test_photoshop_info(tmp_path: Path) -> None:
         assert isinstance(im, TiffImagePlugin.TiffImageFile)
         assert len(im.tag_v2[34377]) == 70
         assert isinstance(im.tag_v2[34377], bytes)
-        out = str(tmp_path / "temp.tiff")
+        out = tmp_path / "temp.tiff"
         im.save(out)
     with Image.open(out) as reloaded:
         assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
@@ -501,7 +501,7 @@ def test_tag_group_data() -> None:
 
 
 def test_empty_subifd(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.jpg")
+    out = tmp_path / "temp.jpg"
 
     im = hopper()
     exif = im.getexif()

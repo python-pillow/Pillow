@@ -66,6 +66,14 @@ libjpeg library, and what version of MozJPEG is being used::
     features.check_feature("mozjpeg")  # True or False
     features.version_feature("mozjpeg")  # "4.1.1" for example, or None
 
+Saving compressed DDS images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Compressed DDS images can now be saved using a ``pixel_format`` argument. DXT1, DXT3,
+DXT5, BC2, BC3 and BC5 are supported::
+
+    im.save("out.dds", pixel_format="DXT1")
+
 Other Changes
 =============
 

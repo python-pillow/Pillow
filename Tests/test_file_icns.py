@@ -43,7 +43,7 @@ def test_load() -> None:
 
 
 def test_save(tmp_path: Path) -> None:
-    temp_file = str(tmp_path / "temp.icns")
+    temp_file = tmp_path / "temp.icns"
 
     with Image.open(TEST_FILE) as im:
         im.save(temp_file)
@@ -60,7 +60,7 @@ def test_save(tmp_path: Path) -> None:
 
 
 def test_save_append_images(tmp_path: Path) -> None:
-    temp_file = str(tmp_path / "temp.icns")
+    temp_file = tmp_path / "temp.icns"
     provided_im = Image.new("RGBA", (32, 32), (255, 0, 0, 128))
 
     with Image.open(TEST_FILE) as im:

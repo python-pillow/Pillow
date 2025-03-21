@@ -243,7 +243,7 @@ def test_transparency() -> None:
 def test_file_object(tmp_path: Path) -> None:
     # issue 479
     with Image.open(FILE1) as image1:
-        with open(str(tmp_path / "temp.eps"), "wb") as fh:
+        with open(tmp_path / "temp.eps", "wb") as fh:
             image1.save(fh, "EPS")
 
 
@@ -278,7 +278,7 @@ def test_1(filename: str) -> None:
 
 def test_image_mode_not_supported(tmp_path: Path) -> None:
     im = hopper("RGBA")
-    tmpfile = str(tmp_path / "temp.eps")
+    tmpfile = tmp_path / "temp.eps"
     with pytest.raises(ValueError):
         im.save(tmpfile)
 

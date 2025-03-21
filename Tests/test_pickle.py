@@ -19,7 +19,7 @@ def helper_pickle_file(
     # Arrange
     im: Image.Image
     with Image.open(test_file) as im:
-        filename = str(tmp_path / "temp.pkl")
+        filename = tmp_path / "temp.pkl"
         if mode:
             im = im.convert(mode)
 
@@ -89,7 +89,7 @@ def test_pickle_jpeg() -> None:
 
 def test_pickle_la_mode_with_palette(tmp_path: Path) -> None:
     # Arrange
-    filename = str(tmp_path / "temp.pkl")
+    filename = tmp_path / "temp.pkl"
     with Image.open("Tests/images/hopper.jpg") as img:
         im = img.convert("PA")
 
@@ -153,7 +153,7 @@ def test_pickle_font_string(protocol: int) -> None:
 def test_pickle_font_file(tmp_path: Path, protocol: int) -> None:
     # Arrange
     font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
-    filename = str(tmp_path / "temp.pkl")
+    filename = tmp_path / "temp.pkl"
 
     # Act: roundtrip
     with open(filename, "wb") as f:

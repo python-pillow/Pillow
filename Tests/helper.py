@@ -13,6 +13,7 @@ import tempfile
 from collections.abc import Sequence
 from functools import lru_cache
 from io import BytesIO
+from pathlib import Path
 from typing import Any, Callable
 
 import pytest
@@ -95,7 +96,10 @@ def assert_image_equal(a: Image.Image, b: Image.Image, msg: str | None = None) -
 
 
 def assert_image_equal_tofile(
-    a: Image.Image, filename: str, msg: str | None = None, mode: str | None = None
+    a: Image.Image,
+    filename: str | Path,
+    msg: str | None = None,
+    mode: str | None = None,
 ) -> None:
     img: Image.Image
     with Image.open(filename) as img:
@@ -137,7 +141,7 @@ def assert_image_similar(
 
 def assert_image_similar_tofile(
     a: Image.Image,
-    filename: str,
+    filename: str | Path,
     epsilon: float,
     msg: str | None = None,
 ) -> None:

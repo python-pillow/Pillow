@@ -13,7 +13,7 @@ RGB_MODE = "RGB"
 
 
 def test_write_lossless_rgb(tmp_path: Path) -> None:
-    temp_file = str(tmp_path / "temp.webp")
+    temp_file = tmp_path / "temp.webp"
 
     hopper(RGB_MODE).save(temp_file, lossless=True)
 

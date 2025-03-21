@@ -59,7 +59,7 @@ def test_register_handler(tmp_path: Path) -> None:
     WmfImagePlugin.register_handler(handler)
 
     im = hopper()
-    tmpfile = str(tmp_path / "temp.wmf")
+    tmpfile = tmp_path / "temp.wmf"
     im.save(tmpfile)
     assert handler.methodCalled
 
@@ -94,6 +94,6 @@ def test_load_set_dpi() -> None:
 def test_save(ext: str, tmp_path: Path) -> None:
     im = hopper()
 
-    tmpfile = str(tmp_path / ("temp" + ext))
+    tmpfile = tmp_path / ("temp" + ext)
     with pytest.raises(OSError):
         im.save(tmpfile)

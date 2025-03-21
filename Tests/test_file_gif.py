@@ -229,7 +229,7 @@ def test_optimize_if_palette_can_be_reduced_by_half() -> None:
 
 
 def test_full_palette_second_frame(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im = Image.new("P", (1, 256))
 
     full_palette_im = Image.new("P", (1, 256))
@@ -250,7 +250,7 @@ def test_full_palette_second_frame(tmp_path: Path) -> None:
 
 
 def test_roundtrip(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im = hopper()
     im.save(out)
     with Image.open(out) as reread:
@@ -259,7 +259,7 @@ def test_roundtrip(tmp_path: Path) -> None:
 
 def test_roundtrip2(tmp_path: Path) -> None:
     # see https://github.com/python-pillow/Pillow/issues/403
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     with Image.open(TEST_GIF) as im:
         im2 = im.copy()
         im2.save(out)
@@ -269,7 +269,7 @@ def test_roundtrip2(tmp_path: Path) -> None:
 
 def test_roundtrip_save_all(tmp_path: Path) -> None:
     # Single frame image
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im = hopper()
     im.save(out, save_all=True)
     with Image.open(out) as reread:
@@ -277,7 +277,7 @@ def test_roundtrip_save_all(tmp_path: Path) -> None:
 
     # Multiframe image
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
-        out = str(tmp_path / "temp.gif")
+        out = tmp_path / "temp.gif"
         im.save(out, save_all=True)
 
     with Image.open(out) as reread:
@@ -286,7 +286,7 @@ def test_roundtrip_save_all(tmp_path: Path) -> None:
 
 
 def test_roundtrip_save_all_1(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im = Image.new("1", (1, 1))
     im2 = Image.new("1", (1, 1), 1)
     im.save(out, save_all=True, append_images=[im2])
@@ -332,7 +332,7 @@ def test_headers_saving_for_animated_gifs(tmp_path: Path) -> None:
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
         info = im.info.copy()
 
-        out = str(tmp_path / "temp.gif")
+        out = tmp_path / "temp.gif"
         im.save(out, save_all=True)
     with Image.open(out) as reread:
         for header in important_headers:
@@ -348,7 +348,7 @@ def test_palette_handling(tmp_path: Path) -> None:
         im = im.resize((100, 100), Image.Resampling.LANCZOS)
         im2 = im.convert("P", palette=Image.Palette.ADAPTIVE, colors=256)
 
-        f = str(tmp_path / "temp.gif")
+        f = tmp_path / "temp.gif"
         im2.save(f, optimize=True)
 
     with Image.open(f) as reloaded:
@@ -359,7 +359,7 @@ def test_palette_434(tmp_path: Path) -> None:
     # see https://github.com/python-pillow/Pillow/issues/434
 
     def roundtrip(im: Image.Image, **kwargs: bool) -> Image.Image:
-        out = str(tmp_path / "temp.gif")
+        out = tmp_path / "temp.gif"
         im.copy().save(out, "GIF", **kwargs)
         reloaded = Image.open(out)
 
@@ -616,7 +616,7 @@ def test_previous_frame_loaded() -> None:
 
 
 def test_save_dispose(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im_list = [
         Image.new("L", (100, 100), "#000"),
         Image.new("L", (100, 100), "#111"),
@@ -646,7 +646,7 @@ def test_save_dispose(tmp_path: Path) -> None:
 
 
 def test_dispose2_palette(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     # Four colors: white, gray, black, red
     circles = [(255, 255, 255), (153, 153, 153), (0, 0, 0), (255, 0, 0)]
@@ -680,7 +680,7 @@ def test_dispose2_palette(tmp_path: Path) -> None:
 
 
 def test_dispose2_diff(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     # 4 frames: red/blue, red/red, blue/blue, red/blue
     circles = [
@@ -722,7 +722,7 @@ def test_dispose2_diff(tmp_path: Path) -> None:
 
 
 def test_dispose2_background(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     im_list = []
 
@@ -748,7 +748,7 @@ def test_dispose2_background(tmp_path: Path) -> None:
 
 
 def test_dispose2_background_frame(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     im_list = [Image.new("RGBA", (1, 20))]
 
@@ -767,7 +767,7 @@ def test_dispose2_background_frame(tmp_path: Path) -> None:
 
 
 def test_dispose2_previous_frame(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     im = Image.new("P", (100, 100))
     im.info["transparency"] = 0
@@ -786,7 +786,7 @@ def test_dispose2_previous_frame(tmp_path: Path) -> None:
 
 
 def test_dispose2_without_transparency(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     im = Image.new("P", (100, 100))
 
@@ -801,7 +801,7 @@ def test_dispose2_without_transparency(tmp_path: Path) -> None:
 
 
 def test_transparency_in_second_frame(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     with Image.open("Tests/images/different_transparency.gif") as im:
         assert im.info["transparency"] == 0
 
@@ -831,7 +831,7 @@ def test_no_transparency_in_second_frame() -> None:
 
 
 def test_remapped_transparency(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     im = Image.new("P", (1, 2))
     im2 = im.copy()
@@ -849,7 +849,7 @@ def test_remapped_transparency(tmp_path: Path) -> None:
 def test_duration(tmp_path: Path) -> None:
     duration = 1000
 
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im = Image.new("L", (100, 100), "#000")
 
     # Check that the argument has priority over the info settings
@@ -863,7 +863,7 @@ def test_duration(tmp_path: Path) -> None:
 def test_multiple_duration(tmp_path: Path) -> None:
     duration_list = [1000, 2000, 3000]
 
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im_list = [
         Image.new("L", (100, 100), "#000"),
         Image.new("L", (100, 100), "#111"),
@@ -898,7 +898,7 @@ def test_multiple_duration(tmp_path: Path) -> None:
 def test_roundtrip_info_duration(tmp_path: Path) -> None:
     duration_list = [100, 500, 500]
 
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     with Image.open("Tests/images/transparent_dispose.gif") as im:
         assert [
             frame.info["duration"] for frame in ImageSequence.Iterator(im)
@@ -913,7 +913,7 @@ def test_roundtrip_info_duration(tmp_path: Path) -> None:
 
 
 def test_roundtrip_info_duration_combined(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     with Image.open("Tests/images/duplicate_frame.gif") as im:
         assert [frame.info["duration"] for frame in ImageSequence.Iterator(im)] == [
             1000,
@@ -931,7 +931,7 @@ def test_roundtrip_info_duration_combined(tmp_path: Path) -> None:
 def test_identical_frames(tmp_path: Path) -> None:
     duration_list = [1000, 1500, 2000, 4000]
 
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im_list = [
         Image.new("L", (100, 100), "#000"),
         Image.new("L", (100, 100), "#000"),
@@ -966,7 +966,7 @@ def test_identical_frames(tmp_path: Path) -> None:
 def test_identical_frames_to_single_frame(
     duration: int | list[int], tmp_path: Path
 ) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im_list = [
         Image.new("L", (100, 100), "#000"),
         Image.new("L", (100, 100), "#000"),
@@ -985,7 +985,7 @@ def test_identical_frames_to_single_frame(
 
 
 def test_loop_none(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im = Image.new("L", (100, 100), "#000")
     im.save(out, loop=None)
     with Image.open(out) as reread:
@@ -995,7 +995,7 @@ def test_loop_none(tmp_path: Path) -> None:
 def test_number_of_loops(tmp_path: Path) -> None:
     number_of_loops = 2
 
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im = Image.new("L", (100, 100), "#000")
     im.save(out, loop=number_of_loops)
     with Image.open(out) as reread:
@@ -1011,7 +1011,7 @@ def test_number_of_loops(tmp_path: Path) -> None:
 
 
 def test_background(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im = Image.new("L", (100, 100), "#000")
     im.info["background"] = 1
     im.save(out)
@@ -1020,7 +1020,7 @@ def test_background(tmp_path: Path) -> None:
 
 
 def test_webp_background(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     # Test opaque WebP background
     if features.check("webp"):
@@ -1039,7 +1039,7 @@ def test_comment(tmp_path: Path) -> None:
     with Image.open(TEST_GIF) as im:
         assert im.info["comment"] == b"File written by Adobe Photoshop\xa8 4.0"
 
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im = Image.new("L", (100, 100), "#000")
     im.info["comment"] = b"Test comment text"
     im.save(out)
@@ -1056,7 +1056,7 @@ def test_comment(tmp_path: Path) -> None:
 
 
 def test_comment_over_255(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im = Image.new("L", (100, 100), "#000")
     comment = b"Test comment text"
     while len(comment) < 256:
@@ -1082,7 +1082,7 @@ def test_read_multiple_comment_blocks() -> None:
 
 
 def test_empty_string_comment(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     with Image.open("Tests/images/chi.gif") as im:
         assert "comment" in im.info
 
@@ -1116,7 +1116,7 @@ def test_retain_comment_in_subsequent_frames(tmp_path: Path) -> None:
         assert "comment" not in im.info
 
     # Test that a saved image keeps the comment
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     with Image.open("Tests/images/dispose_prev.gif") as im:
         im.save(out, save_all=True, comment="Test")
 
@@ -1126,7 +1126,7 @@ def test_retain_comment_in_subsequent_frames(tmp_path: Path) -> None:
 
 
 def test_version(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     def assert_version_after_save(im: Image.Image, version: bytes) -> None:
         im.save(out)
@@ -1156,7 +1156,7 @@ def test_version(tmp_path: Path) -> None:
 
 
 def test_append_images(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     # Test appending single frame images
     im = Image.new("RGB", (100, 100), "#f00")
@@ -1188,7 +1188,7 @@ def test_append_images(tmp_path: Path) -> None:
 
 
 def test_append_different_size_image(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     im = Image.new("RGB", (100, 100))
     bigger_im = Image.new("RGB", (200, 200), "#f00")
@@ -1215,7 +1215,7 @@ def test_transparent_optimize(tmp_path: Path) -> None:
     im.frombytes(data)
     im.putpalette(palette)
 
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im.save(out, transparency=im.getpixel((252, 0)))
 
     with Image.open(out) as reloaded:
@@ -1223,7 +1223,7 @@ def test_transparent_optimize(tmp_path: Path) -> None:
 
 
 def test_removed_transparency(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im = Image.new("RGB", (256, 1))
 
     for x in range(256):
@@ -1238,7 +1238,7 @@ def test_removed_transparency(tmp_path: Path) -> None:
 
 
 def test_rgb_transparency(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     # Single frame
     im = Image.new("RGB", (1, 1))
@@ -1260,7 +1260,7 @@ def test_rgb_transparency(tmp_path: Path) -> None:
 
 
 def test_rgba_transparency(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     im = hopper("P")
     im.save(out, save_all=True, append_images=[Image.new("RGBA", im.size)])
@@ -1270,14 +1270,14 @@ def test_rgba_transparency(tmp_path: Path) -> None:
         assert_image_equal(hopper("P").convert("RGB"), reloaded)
 
 
-def test_background_outside_palettte(tmp_path: Path) -> None:
+def test_background_outside_palettte() -> None:
     with Image.open("Tests/images/background_outside_palette.gif") as im:
         im.seek(1)
         assert im.info["background"] == 255
 
 
 def test_bbox(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     im = Image.new("RGB", (100, 100), "#fff")
     ims = [Image.new("RGB", (100, 100), "#000")]
@@ -1289,7 +1289,7 @@ def test_bbox(tmp_path: Path) -> None:
 
 
 def test_bbox_alpha(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     im = Image.new("RGBA", (1, 2), (255, 0, 0, 255))
     im.putpixel((0, 1), (255, 0, 0, 0))
@@ -1309,7 +1309,7 @@ def test_palette_save_L(tmp_path: Path) -> None:
     palette = im.getpalette()
     assert palette is not None
 
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im_l.save(out, palette=bytes(palette))
 
     with Image.open(out) as reloaded:
@@ -1320,7 +1320,7 @@ def test_palette_save_P(tmp_path: Path) -> None:
     im = Image.new("P", (1, 2))
     im.putpixel((0, 1), 1)
 
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im.save(out, palette=bytes((1, 2, 3, 4, 5, 6)))
 
     with Image.open(out) as reloaded:
@@ -1336,7 +1336,7 @@ def test_palette_save_duplicate_entries(tmp_path: Path) -> None:
 
     im.putpalette((0, 0, 0, 0, 0, 0))
 
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im.save(out, palette=[0, 0, 0, 0, 0, 0, 1, 1, 1])
 
     with Image.open(out) as reloaded:
@@ -1351,7 +1351,7 @@ def test_palette_save_all_P(tmp_path: Path) -> None:
         frame.putpalette(color)
         frames.append(frame)
 
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     frames[0].save(
         out, save_all=True, palette=[255, 0, 0, 0, 255, 0], append_images=frames[1:]
     )
@@ -1376,7 +1376,7 @@ def test_palette_save_ImagePalette(tmp_path: Path) -> None:
     im = hopper("P")
     palette = ImagePalette.ImagePalette("RGB", list(range(256))[::-1] * 3)
 
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im.save(out, palette=palette)
 
     with Image.open(out) as reloaded:
@@ -1389,7 +1389,7 @@ def test_save_I(tmp_path: Path) -> None:
 
     im = hopper("I")
 
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     im.save(out)
 
     with Image.open(out) as reloaded:
@@ -1476,7 +1476,7 @@ def test_missing_background() -> None:
 
 
 def test_saving_rgba(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
     with Image.open("Tests/images/transparent.png") as im:
         im.save(out)
 
@@ -1491,7 +1491,7 @@ def test_saving_rgba(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize("params", ({}, {"disposal": 2, "optimize": False}))
 def test_p_rgba(tmp_path: Path, params: dict[str, Any]) -> None:
-    out = str(tmp_path / "temp.gif")
+    out = tmp_path / "temp.gif"
 
     im1 = Image.new("P", (100, 100))
     d = ImageDraw.Draw(im1)
