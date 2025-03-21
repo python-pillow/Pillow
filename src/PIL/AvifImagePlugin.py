@@ -20,6 +20,14 @@ DECODE_CODEC_CHOICE = "auto"
 DEFAULT_MAX_THREADS = 0
 
 
+def get_codec_version(codec_name: str) -> str | None:
+    versions = _avif.codec_versions()
+    for version in versions.split(", "):
+        if version.split(" [")[0] == codec_name:
+            return version.split(":")[-1].split(" ")[0]
+    return None
+
+
 def _accept(prefix: bytes) -> bool | str:
     if prefix[4:8] != b"ftyp":
         return False

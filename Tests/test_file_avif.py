@@ -94,7 +94,20 @@ class TestFileAvif:
     def test_version(self) -> None:
         version = features.version_module("avif")
         assert version is not None
-        assert re.search(r"\d+\.\d+\.\d+$", version)
+        assert re.search(r"^\d+\.\d+\.\d+$", version)
+
+    def test_codec_version(self) -> None:
+        assert AvifImagePlugin.get_codec_version("unknown") is None
+
+        for codec_name in ("aom", "dav1d", "rav1e", "svt"):
+            codec_version = AvifImagePlugin.get_codec_version(codec_name)
+            if _avif.decoder_codec_available(
+                codec_name
+            ) or _avif.encoder_codec_available(codec_name):
+                assert codec_version is not None
+                assert re.search(r"^v?\d+\.\d+\.\d+(-([a-z\d])+)*$", codec_version)
+            else:
+                assert codec_version is None
 
     def test_read(self) -> None:
         """

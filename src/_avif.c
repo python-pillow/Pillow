@@ -182,6 +182,13 @@ _encoder_codec_available(PyObject *self, PyObject *args) {
     return PyBool_FromLong(is_available);
 }
 
+PyObject *
+_codec_versions(PyObject *self, PyObject *args) {
+    char buffer[256];
+    avifCodecVersions(buffer);
+    return PyUnicode_FromString(buffer);
+}
+
 #if AVIF_VERSION >= 80200  // 0.8.2
 static int
 _add_codec_specific_options(avifEncoder *encoder, PyObject *opts) {
@@ -910,6 +917,7 @@ static PyMethodDef avifMethods[] = {
     {"AvifEncoder", AvifEncoderNew, METH_VARARGS},
     {"decoder_codec_available", _decoder_codec_available, METH_VARARGS},
     {"encoder_codec_available", _encoder_codec_available, METH_VARARGS},
+    {"codec_versions", _codec_versions, METH_NOARGS},
     {NULL, NULL}
 };
 
