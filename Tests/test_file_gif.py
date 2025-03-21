@@ -1242,7 +1242,7 @@ def test_rgba_transparency(tmp_path: Path) -> None:
         assert_image_equal(hopper("P").convert("RGB"), reloaded)
 
 
-def test_background_outside_palettte(tmp_path: Path) -> None:
+def test_background_outside_palettte() -> None:
     with Image.open("Tests/images/background_outside_palette.gif") as im:
         im.seek(1)
         assert im.info["background"] == 255

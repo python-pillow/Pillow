@@ -65,7 +65,7 @@ def test_sanity(mode: str, tmp_path: Path) -> None:
                     roundtrip(original_im)
 
 
-def test_palette_depth_8(tmp_path: Path) -> None:
+def test_palette_depth_8() -> None:
     with pytest.raises(UnidentifiedImageError):
         Image.open("Tests/images/p_8.tga")
 
