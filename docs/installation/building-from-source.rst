@@ -91,8 +91,7 @@ Many of Pillow's features require external libraries:
 
 * **libavif** provides support for the AVIF format.
 
-  * Pillow requires libavif version **0.8.0** or greater, which is when
-    AVIF image sequence support was added.
+  * Pillow requires libavif version **1.0.0** or greater.
   * libavif is merely an API that wraps AVIF codecs. If you are compiling
     libavif from source, you will also need to install both an AVIF encoder
     and decoder, such as rav1e and dav1d, or libaom, which both encodes and
