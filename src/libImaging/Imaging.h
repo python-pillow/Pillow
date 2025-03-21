@@ -20,6 +20,8 @@ extern "C" {
 #define M_PI 3.1415926535897932384626433832795
 #endif
 
+#include "Arrow.h"
+
 /* -------------------------------------------------------------------- */
 
 /*
@@ -104,6 +106,21 @@ struct ImagingMemoryInstance {
 
     /* Virtual methods */
     void (*destroy)(Imaging im);
+
+    /* arrow */
+    int refcount;              /* Number of arrow arrays that have been allocated */
+    char band_names[4][3];     /* names of bands, max 2 char + null terminator */
+    char arrow_band_format[2]; /* single character + null terminator */
+
+    int read_only; /* flag for read-only. set for arrow borrowed arrays */
+    PyObject *arrow_array_capsule; /* upstream arrow array source */
+
+    int blocks_count;    /* Number of blocks that have been allocated */
+    int lines_per_block; /* Number of lines in a block have been allocated */
+
+#ifdef Py_GIL_DISABLED
+    PyMutex mutex;
+#endif
 };
 
 #define IMAGING_PIXEL_1(im, x, y) ((im)->image8[(y)][(x)])
@@ -161,6 +178,7 @@ typedef struct ImagingMemoryArena {
     int stats_reallocated_blocks; /* Number of blocks which were actually reallocated
                                      after retrieving */
     int stats_freed_blocks;       /* Number of freed blocks */
+    int use_block_allocator;      /* don't use arena, use block allocator */
 #ifdef Py_GIL_DISABLED
     PyMutex mutex;
 #endif
@@ -174,6 +192,8 @@ extern int
 ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max);
 extern void
 ImagingMemoryClearCache(ImagingMemoryArena arena, int new_size);
+extern void
+ImagingMemorySetBlockAllocator(ImagingMemoryArena arena, int use_block_allocator);
 
 extern Imaging
 ImagingNew(const char *mode, int xsize, int ysize);
@@ -186,6 +206,15 @@ ImagingDelete(Imaging im);
 
 extern Imaging
 ImagingNewBlock(const char *mode, int xsize, int ysize);
+
+extern Imaging
+ImagingNewArrow(
+    const char *mode,
+    int xsize,
+    int ysize,
+    PyObject *schema_capsule,
+    PyObject *array_capsule
+);
 
 extern Imaging
 ImagingNewPrologue(const char *mode, int xsize, int ysize);
@@ -700,6 +729,13 @@ _imaging_seek_pyFd(PyObject *fd, Py_ssize_t offset, int whence);
 extern Py_ssize_t
 _imaging_tell_pyFd(PyObject *fd);
 
+/* Arrow */
+
+extern int
+export_imaging_array(Imaging im, struct ArrowArray *array);
+extern int
+export_imaging_schema(Imaging im, struct ArrowSchema *schema);
+
 /* Errcodes */
 #define IMAGING_CODEC_END 1
 #define IMAGING_CODEC_OVERRUN -1
@@ -707,6 +743,8 @@ _imaging_tell_pyFd(PyObject *fd);
 #define IMAGING_CODEC_UNKNOWN -3
 #define IMAGING_CODEC_CONFIG -8
 #define IMAGING_CODEC_MEMORY -9
+#define IMAGING_ARROW_INCOMPATIBLE_MODE -10
+#define IMAGING_ARROW_MEMORY_LAYOUT -11
 
 #include "ImagingUtils.h"
 extern UINT8 *clip8_lookups;
