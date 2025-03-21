@@ -672,7 +672,7 @@ class TestFilePng:
         im.putpalette((1, 1, 1))
 
         out = tmp_path / "temp.png"
-        im.save(tmp_path / "temp.png")
+        im.save(out)
 
         with Image.open(out) as reloaded:
             assert len(reloaded.png.im_palette[1]) == 3
