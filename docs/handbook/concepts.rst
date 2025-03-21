@@ -30,7 +30,7 @@ image. Each pixel uses the full range of the bit depth. So a 1-bit pixel has a r
 INT32 and a 32-bit floating point pixel has the range of FLOAT32. The current release
 supports the following standard modes:
 
-    * ``1`` (1-bit pixels, black and white, stored with one pixel per byte)
+    * ``1`` (1-bit pixels, black and white)
     * ``L`` (8-bit pixels, grayscale)
     * ``P`` (8-bit pixels, mapped to any other mode using a color palette)
     * ``RGB`` (3x8-bit pixels, true color)
