@@ -9,7 +9,13 @@ from types import ModuleType
 
 import pytest
 
-from PIL import Image, ImageFile, TiffImagePlugin, UnidentifiedImageError
+from PIL import (
+    Image,
+    ImageFile,
+    JpegImagePlugin,
+    TiffImagePlugin,
+    UnidentifiedImageError,
+)
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
 from .helper import (
@@ -113,6 +119,7 @@ class TestFileTiff:
 
         with Image.open("Tests/images/hopper_bigtiff.tif") as im:
             outfile = tmp_path / "temp.tif"
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)
 
     def test_bigtiff_save(self, tmp_path: Path) -> None:
@@ -121,11 +128,13 @@ class TestFileTiff:
         im.save(outfile, big_tiff=True)
 
         with Image.open(outfile) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2._bigtiff is True
 
         im.save(outfile, save_all=True, append_images=[im], big_tiff=True)
 
         with Image.open(outfile) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2._bigtiff is True
 
     def test_seek_too_large(self) -> None:
@@ -140,6 +149,8 @@ class TestFileTiff:
     def test_xyres_tiff(self) -> None:
         filename = "Tests/images/pil168.tif"
         with Image.open(filename) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+
             # legacy api
             assert isinstance(im.tag[X_RESOLUTION][0], tuple)
             assert isinstance(im.tag[Y_RESOLUTION][0], tuple)
@@ -153,6 +164,8 @@ class TestFileTiff:
     def test_xyres_fallback_tiff(self) -> None:
         filename = "Tests/images/compression.tif"
         with Image.open(filename) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+
             # v2 api
             assert isinstance(im.tag_v2[X_RESOLUTION], TiffImagePlugin.IFDRational)
             assert isinstance(im.tag_v2[Y_RESOLUTION], TiffImagePlugin.IFDRational)
@@ -167,6 +180,8 @@ class TestFileTiff:
     def test_int_resolution(self) -> None:
         filename = "Tests/images/pil168.tif"
         with Image.open(filename) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+
             # Try to read a file where X,Y_RESOLUTION are ints
             im.tag_v2[X_RESOLUTION] = 71
             im.tag_v2[Y_RESOLUTION] = 71
@@ -181,6 +196,7 @@ class TestFileTiff:
         with Image.open(
             "Tests/images/hopper_float_dpi_" + str(resolution_unit) + ".tif"
         ) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.tag_v2.get(RESOLUTION_UNIT) == resolution_unit
             assert im.info["dpi"] == (dpi, dpi)
 
@@ -198,6 +214,7 @@ class TestFileTiff:
         with Image.open("Tests/images/10ct_32bit_128.tiff") as im:
             im.save(b, format="tiff", resolution=123.45)
         with Image.open(b) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.tag_v2[X_RESOLUTION] == 123.45
             assert im.tag_v2[Y_RESOLUTION] == 123.45
 
@@ -213,10 +230,12 @@ class TestFileTiff:
         TiffImagePlugin.PREFIXES.pop()
 
     def test_bad_exif(self) -> None:
-        with Image.open("Tests/images/hopper_bad_exif.jpg") as i:
+        with Image.open("Tests/images/hopper_bad_exif.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+
             # Should not raise struct.error.
             with pytest.warns(UserWarning):
-                i._getexif()
+                im._getexif()
 
     def test_save_rgba(self, tmp_path: Path) -> None:
         im = hopper("RGBA")
@@ -307,11 +326,13 @@ class TestFileTiff:
     )
     def test_n_frames(self, path: str, n_frames: int) -> None:
         with Image.open(path) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.n_frames == n_frames
             assert im.is_animated == (n_frames != 1)
 
     def test_eoferror(self) -> None:
         with Image.open("Tests/images/multipage-lastframe.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             n_frames = im.n_frames
 
             # Test seeking past the last frame
@@ -355,19 +376,24 @@ class TestFileTiff:
     def test_frame_order(self) -> None:
         # A frame can't progress to itself after reading
         with Image.open("Tests/images/multipage_single_frame_loop.tiff") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.n_frames == 1
 
         # A frame can't progress to a frame that has already been read
         with Image.open("Tests/images/multipage_multiple_frame_loop.tiff") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.n_frames == 2
 
         # Frames don't have to be in sequence
         with Image.open("Tests/images/multipage_out_of_order.tiff") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.n_frames == 3
 
     def test___str__(self) -> None:
         filename = "Tests/images/pil136.tiff"
         with Image.open(filename) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+
             # Act
             ret = str(im.ifd)
 
@@ -378,6 +404,8 @@ class TestFileTiff:
         # Arrange
         filename = "Tests/images/pil136.tiff"
         with Image.open(filename) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+
             # v2 interface
             v2_tags = {
                 256: 55,
@@ -417,6 +445,7 @@ class TestFileTiff:
     def test__delitem__(self) -> None:
         filename = "Tests/images/pil136.tiff"
         with Image.open(filename) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             len_before = len(dict(im.ifd))
             del im.ifd[256]
             len_after = len(dict(im.ifd))
@@ -449,6 +478,7 @@ class TestFileTiff:
 
     def test_ifd_tag_type(self) -> None:
         with Image.open("Tests/images/ifd_tag_type.tiff") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert 0x8825 in im.tag_v2
 
     def test_exif(self, tmp_path: Path) -> None:
@@ -537,6 +567,7 @@ class TestFileTiff:
         im = hopper(mode)
         im.save(filename, tiffinfo={262: 0})
         with Image.open(filename) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2[262] == 0
             assert_image_equal(im, reloaded)
 
@@ -615,6 +646,8 @@ class TestFileTiff:
         filename = tmp_path / "temp.tif"
         hopper("RGB").save(filename, "TIFF", **kwargs)
         with Image.open(filename) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+
             # legacy interface
             assert im.tag[X_RESOLUTION][0][0] == 72
             assert im.tag[Y_RESOLUTION][0][0] == 36
@@ -701,6 +734,7 @@ class TestFileTiff:
     def test_planar_configuration_save(self, tmp_path: Path) -> None:
         infile = "Tests/images/tiff_tiled_planar_raw.tif"
         with Image.open(infile) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im._planar_configuration == 2
 
             outfile = tmp_path / "temp.tif"
@@ -733,6 +767,7 @@ class TestFileTiff:
 
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.n_frames == 3
 
         # Test appending images
@@ -743,6 +778,7 @@ class TestFileTiff:
 
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as reread:
+            assert isinstance(reread, TiffImagePlugin.TiffImageFile)
             assert reread.n_frames == 3
 
         # Test appending using a generator
@@ -754,6 +790,7 @@ class TestFileTiff:
 
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as reread:
+            assert isinstance(reread, TiffImagePlugin.TiffImageFile)
             assert reread.n_frames == 3
 
     def test_fixoffsets(self) -> None:
@@ -864,6 +901,7 @@ class TestFileTiff:
 
     def test_get_photoshop_blocks(self) -> None:
         with Image.open("Tests/images/lab.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert list(im.get_photoshop_blocks().keys()) == [
                 1061,
                 1002,
