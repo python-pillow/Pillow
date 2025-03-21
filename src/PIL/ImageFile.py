@@ -281,6 +281,7 @@ class ImageFile(Image.Image):
         # As of pypy 2.1.0, memory mapping was failing here.
         use_mmap = use_mmap and not hasattr(sys, "pypy_version_info")
 
+        assert self.fp is not None
         readonly = 0
 
         # look for read/seek overrides
