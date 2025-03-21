@@ -23,7 +23,7 @@ def test_sanity() -> None:
 
 
 def test_name_limit(tmp_path: Path) -> None:
-    out = str(tmp_path / ("name_limit_test" * 7 + ".im"))
+    out = tmp_path / ("name_limit_test" * 7 + ".im")
     with Image.open(TEST_IM) as im:
         im.save(out)
     assert filecmp.cmp(out, "Tests/images/hopper_long_name.im")
@@ -87,7 +87,7 @@ def test_eoferror() -> None:
 
 @pytest.mark.parametrize("mode", ("RGB", "P", "PA"))
 def test_roundtrip(mode: str, tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.im")
+    out = tmp_path / "temp.im"
     im = hopper(mode)
     im.save(out)
     assert_image_equal_tofile(im, out)
@@ -98,7 +98,7 @@ def test_small_palette(tmp_path: Path) -> None:
     colors = [0, 1, 2]
     im.putpalette(colors)
 
-    out = str(tmp_path / "temp.im")
+    out = tmp_path / "temp.im"
     im.save(out)
 
     with Image.open(out) as reloaded:
@@ -106,7 +106,7 @@ def test_small_palette(tmp_path: Path) -> None:
 
 
 def test_save_unsupported_mode(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.im")
+    out = tmp_path / "temp.im"
     im = hopper("HSV")
     with pytest.raises(ValueError):
         im.save(out)

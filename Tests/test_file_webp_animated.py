@@ -39,7 +39,7 @@ def test_write_animation_L(tmp_path: Path) -> None:
     with Image.open("Tests/images/iss634.gif") as orig:
         assert orig.n_frames > 1
 
-        temp_file = str(tmp_path / "temp.webp")
+        temp_file = tmp_path / "temp.webp"
         orig.save(temp_file, save_all=True)
         with Image.open(temp_file) as im:
             assert im.n_frames == orig.n_frames
@@ -67,7 +67,7 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
     are visually similar to the originals.
     """
 
-    def check(temp_file: str) -> None:
+    def check(temp_file: Path) -> None:
         with Image.open(temp_file) as im:
             assert im.n_frames == 2
 
@@ -87,7 +87,7 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
 
     with Image.open("Tests/images/anim_frame1.webp") as frame1:
         with Image.open("Tests/images/anim_frame2.webp") as frame2:
-            temp_file1 = str(tmp_path / "temp.webp")
+            temp_file1 = tmp_path / "temp.webp"
             frame1.copy().save(
                 temp_file1, save_all=True, append_images=[frame2], lossless=True
             )
@@ -99,7 +99,7 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
             ) -> Generator[Image.Image, None, None]:
                 yield from ims
 
-            temp_file2 = str(tmp_path / "temp_generator.webp")
+            temp_file2 = tmp_path / "temp_generator.webp"
             frame1.copy().save(
                 temp_file2,
                 save_all=True,
@@ -116,7 +116,7 @@ def test_timestamp_and_duration(tmp_path: Path) -> None:
     """
 
     durations = [0, 10, 20, 30, 40]
-    temp_file = str(tmp_path / "temp.webp")
+    temp_file = tmp_path / "temp.webp"
     with Image.open("Tests/images/anim_frame1.webp") as frame1:
         with Image.open("Tests/images/anim_frame2.webp") as frame2:
             frame1.save(
@@ -141,7 +141,7 @@ def test_timestamp_and_duration(tmp_path: Path) -> None:
 
 
 def test_float_duration(tmp_path: Path) -> None:
-    temp_file = str(tmp_path / "temp.webp")
+    temp_file = tmp_path / "temp.webp"
     with Image.open("Tests/images/iss634.apng") as im:
         assert im.info["duration"] == 70.0
 
@@ -159,7 +159,7 @@ def test_seeking(tmp_path: Path) -> None:
     """
 
     dur = 33
-    temp_file = str(tmp_path / "temp.webp")
+    temp_file = tmp_path / "temp.webp"
     with Image.open("Tests/images/anim_frame1.webp") as frame1:
         with Image.open("Tests/images/anim_frame2.webp") as frame2:
             frame1.save(
@@ -196,10 +196,10 @@ def test_alpha_quality(tmp_path: Path) -> None:
     with Image.open("Tests/images/transparent.png") as im:
         first_frame = Image.new("L", im.size)
 
-        out = str(tmp_path / "temp.webp")
+        out = tmp_path / "temp.webp"
         first_frame.save(out, save_all=True, append_images=[im])
 
-        out_quality = str(tmp_path / "quality.webp")
+        out_quality = tmp_path / "quality.webp"
         first_frame.save(
             out_quality, save_all=True, append_images=[im], alpha_quality=50
         )

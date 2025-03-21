@@ -146,7 +146,7 @@ def test_write_animated_metadata(tmp_path: Path) -> None:
     exif_data = b"<exif_data>"
     xmp_data = b"<xmp_data>"
 
-    temp_file = str(tmp_path / "temp.webp")
+    temp_file = tmp_path / "temp.webp"
     with Image.open("Tests/images/anim_frame1.webp") as frame1:
         with Image.open("Tests/images/anim_frame2.webp") as frame2:
             frame1.save(

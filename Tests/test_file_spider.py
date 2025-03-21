@@ -51,7 +51,7 @@ def test_context_manager() -> None:
 
 def test_save(tmp_path: Path) -> None:
     # Arrange
-    temp = str(tmp_path / "temp.spider")
+    temp = tmp_path / "temp.spider"
     im = hopper()
 
     # Act
