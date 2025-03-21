@@ -175,6 +175,13 @@ class TestImage:
             with Image.open(io.StringIO()):  # type: ignore[arg-type]
                 pass
 
+    def test_string(self, tmp_path: Path) -> None:
+        out = str(tmp_path / "temp.png")
+        im = hopper()
+        im.save(out)
+        with Image.open(out) as reloaded:
+            assert_image_equal(im, reloaded)
+
     def test_pathlib(self, tmp_path: Path) -> None:
         with Image.open(Path("Tests/images/multipage-mmap.tiff")) as im:
             assert im.mode == "P"
