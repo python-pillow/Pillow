@@ -1,0 +1,260 @@
+GIMP Palette
+Name: fullpalette
+Columns: 4
+#
+  0   0   0     Index 0
+  1   1   1     Index 1
+  2   2   2     Index 2
+  3   3   3     Index 3
+  4   4   4     Index 4
+  5   5   5     Index 5
+  6   6   6     Index 6
+  7   7   7     Index 7
+  8   8   8     Index 8
+  9   9   9     Index 9
+ 10  10  10     Index 10
+ 11  11  11     Index 11
+ 12  12  12     Index 12
+ 13  13  13     Index 13
+ 14  14  14     Index 14
+ 15  15  15     Index 15
+ 16  16  16     Index 16
+ 17  17  17     Index 17
+ 18  18  18     Index 18
+ 19  19  19     Index 19
+ 20  20  20     Index 20
+ 21  21  21     Index 21
+ 22  22  22     Index 22
+ 23  23  23     Index 23
+ 24  24  24     Index 24
+ 25  25  25     Index 25
+ 26  26  26     Index 26
+ 27  27  27     Index 27
+ 28  28  28     Index 28
+ 29  29  29     Index 29
+ 30  30  30     Index 30
+ 31  31  31     Index 31
+ 32  32  32     Index 32
+ 33  33  33     Index 33
+ 34  34  34     Index 34
+ 35  35  35     Index 35
+ 36  36  36     Index 36
+ 37  37  37     Index 37
+ 38  38  38     Index 38
+ 39  39  39     Index 39
+ 40  40  40     Index 40
+ 41  41  41     Index 41
+ 42  42  42     Index 42
+ 43  43  43     Index 43
+ 44  44  44     Index 44
+ 45  45  45     Index 45
+ 46  46  46     Index 46
+ 47  47  47     Index 47
+ 48  48  48     Index 48
+ 49  49  49     Index 49
+ 50  50  50     Index 50
+ 51  51  51     Index 51
+ 52  52  52     Index 52
+ 53  53  53     Index 53
+ 54  54  54     Index 54
+ 55  55  55     Index 55
+ 56  56  56     Index 56
+ 57  57  57     Index 57
+ 58  58  58     Index 58
+ 59  59  59     Index 59
+ 60  60  60     Index 60
+ 61  61  61     Index 61
+ 62  62  62     Index 62
+ 63  63  63     Index 63
+ 64  64  64     Index 64
+ 65  65  65     Index 65
+ 66  66  66     Index 66
+ 67  67  67     Index 67
+ 68  68  68     Index 68
+ 69  69  69     Index 69
+ 70  70  70     Index 70
+ 71  71  71     Index 71
+ 72  72  72     Index 72
+ 73  73  73     Index 73
+ 74  74  74     Index 74
+ 75  75  75     Index 75
+ 76  76  76     Index 76
+ 77  77  77     Index 77
+ 78  78  78     Index 78
+ 79  79  79     Index 79
+ 80  80  80     Index 80
+ 81  81  81     Index 81
+ 82  82  82     Index 82
+ 83  83  83     Index 83
+ 84  84  84     Index 84
+ 85  85  85     Index 85
+ 86  86  86     Index 86
+ 87  87  87     Index 87
+ 88  88  88     Index 88
+ 89  89  89     Index 89
+ 90  90  90     Index 90
+ 91  91  91     Index 91
+ 92  92  92     Index 92
+ 93  93  93     Index 93
+ 94  94  94     Index 94
+ 95  95  95     Index 95
+ 96  96  96     Index 96
+ 97  97  97     Index 97
+ 98  98  98     Index 98
+ 99  99  99     Index 99
+100 100 100     Index 100
+101 101 101     Index 101
+102 102 102     Index 102
+103 103 103     Index 103
+104 104 104     Index 104
+105 105 105     Index 105
+106 106 106     Index 106
+107 107 107     Index 107
+108 108 108     Index 108
+109 109 109     Index 109
+110 110 110     Index 110
+111 111 111     Index 111
+112 112 112     Index 112
+113 113 113     Index 113
+114 114 114     Index 114
+115 115 115     Index 115
+116 116 116     Index 116
+117 117 117     Index 117
+118 118 118     Index 118
+119 119 119     Index 119
+120 120 120     Index 120
+121 121 121     Index 121
+122 122 122     Index 122
+123 123 123     Index 123
+124 124 124     Index 124
+125 125 125     Index 125
+126 126 126     Index 126
+127 127 127     Index 127
+128 128 128     Index 128
+129 129 129     Index 129
+130 130 130     Index 130
+131 131 131     Index 131
+132 132 132     Index 132
+133 133 133     Index 133
+134 134 134     Index 134
+135 135 135     Index 135
+136 136 136     Index 136
+137 137 137     Index 137
+138 138 138     Index 138
+139 139 139     Index 139
+140 140 140     Index 140
+141 141 141     Index 141
+142 142 142     Index 142
+143 143 143     Index 143
+144 144 144     Index 144
+145 145 145     Index 145
+146 146 146     Index 146
+147 147 147     Index 147
+148 148 148     Index 148
+149 149 149     Index 149
+150 150 150     Index 150
+151 151 151     Index 151
+152 152 152     Index 152
+153 153 153     Index 153
+154 154 154     Index 154
+155 155 155     Index 155
+156 156 156     Index 156
+157 157 157     Index 157
+158 158 158     Index 158
+159 159 159     Index 159
+160 160 160     Index 160
+161 161 161     Index 161
+162 162 162     Index 162
+163 163 163     Index 163
+164 164 164     Index 164
+165 165 165     Index 165
+166 166 166     Index 166
+167 167 167     Index 167
+168 168 168     Index 168
+169 169 169     Index 169
+170 170 170     Index 170
+171 171 171     Index 171
+172 172 172     Index 172
+173 173 173     Index 173
+174 174 174     Index 174
+175 175 175     Index 175
+176 176 176     Index 176
+177 177 177     Index 177
+178 178 178     Index 178
+179 179 179     Index 179
+180 180 180     Index 180
+181 181 181     Index 181
+182 182 182     Index 182
+183 183 183     Index 183
+184 184 184     Index 184
+185 185 185     Index 185
+186 186 186     Index 186
+187 187 187     Index 187
+188 188 188     Index 188
+189 189 189     Index 189
+190 190 190     Index 190
+191 191 191     Index 191
+192 192 192     Index 192
+193 193 193     Index 193
+194 194 194     Index 194
+195 195 195     Index 195
+196 196 196     Index 196
+197 197 197     Index 197
+198 198 198     Index 198
+199 199 199     Index 199
+200 200 200     Index 200
+201 201 201     Index 201
+202 202 202     Index 202
+203 203 203     Index 203
+204 204 204     Index 204
+205 205 205     Index 205
+206 206 206     Index 206
+207 207 207     Index 207
+208 208 208     Index 208
+209 209 209     Index 209
+210 210 210     Index 210
+211 211 211     Index 211
+212 212 212     Index 212
+213 213 213     Index 213
+214 214 214     Index 214
+215 215 215     Index 215
+216 216 216     Index 216
+217 217 217     Index 217
+218 218 218     Index 218
+219 219 219     Index 219
+220 220 220     Index 220
+221 221 221     Index 221
+222 222 222     Index 222
+223 223 223     Index 223
+224 224 224     Index 224
+225 225 225     Index 225
+226 226 226     Index 226
+227 227 227     Index 227
+228 228 228     Index 228
+229 229 229     Index 229
+230 230 230     Index 230
+231 231 231     Index 231
+232 232 232     Index 232
+233 233 233     Index 233
+234 234 234     Index 234
+235 235 235     Index 235
+236 236 236     Index 236
+237 237 237     Index 237
+238 238 238     Index 238
+239 239 239     Index 239
+240 240 240     Index 240
+241 241 241     Index 241
+242 242 242     Index 242
+243 243 243     Index 243
+244 244 244     Index 244
+245 245 245     Index 245
+246 246 246     Index 246
+247 247 247     Index 247
+248 248 248     Index 248
+249 249 249     Index 249
+250 250 250     Index 250
+251 251 251     Index 251
+252 252 252     Index 252
+253 253 253     Index 253
+254 254 254     Index 254
+255 255 255     Index 255
