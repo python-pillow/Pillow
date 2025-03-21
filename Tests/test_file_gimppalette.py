@@ -22,6 +22,13 @@ def test_sanity() -> None:
             GimpPaletteFile(fp)
 
 
+def test_large_file_is_truncated(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(GimpPaletteFile, "_max_file_size", 100)
+    with open("Tests/images/custom_gimp_palette.gpl", "rb") as fp:
+        with pytest.warns(UserWarning):
+            GimpPaletteFile(fp)
+
+
 def test_get_palette() -> None:
     # Arrange
     with open("Tests/images/custom_gimp_palette.gpl", "rb") as fp:
@@ -31,5 +38,18 @@ def test_get_palette() -> None:
     palette, mode = palette_file.getpalette()
 
     # Assert
+    expected_palette: list[int] = []
+    for color in (
+        (0, 0, 0),
+        (65, 38, 30),
+        (103, 62, 49),
+        (79, 73, 72),
+        (114, 101, 97),
+        (208, 127, 100),
+        (151, 144, 142),
+        (221, 207, 199),
+    ):
+        expected_palette += color
+    assert palette == bytes(expected_palette)
     assert mode == "RGB"
     assert len(palette) / 3 == 8
