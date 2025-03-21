@@ -505,9 +505,9 @@ def test_save_dxt5(tmp_path: Path) -> None:
 
 def test_save_dx10_bc5(tmp_path: Path) -> None:
     out = tmp_path / "temp.dds"
-    with Image.open(TEST_FILE_DX10_BC5_TYPELESS) as im:
-        im.save(out, pixel_format="BC5")
-    assert_image_similar_tofile(im, out, 9.56)
+    with Image.open(TEST_FILE_DX10_BC5_TYPELESS) as img:
+        img.save(out, pixel_format="BC5")
+    assert_image_similar_tofile(img, out, 9.56)
 
     im = hopper("L")
     with pytest.raises(OSError, match="only RGB mode can be written as BC5"):
