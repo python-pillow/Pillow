@@ -124,7 +124,7 @@ def test_render_equal(layout_engine: ImageFont.Layout) -> None:
 
 
 def test_non_ascii_path(tmp_path: Path, layout_engine: ImageFont.Layout) -> None:
-    tempfile = str(tmp_path / ("temp_" + chr(128) + ".ttf"))
+    tempfile = tmp_path / ("temp_" + chr(128) + ".ttf")
     try:
         shutil.copy(FONT_PATH, tempfile)
     except UnicodeEncodeError:

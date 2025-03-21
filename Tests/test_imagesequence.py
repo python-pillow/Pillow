@@ -10,7 +10,7 @@ from .helper import assert_image_equal, hopper, skip_unless_feature
 
 
 def test_sanity(tmp_path: Path) -> None:
-    test_file = str(tmp_path / "temp.im")
+    test_file = tmp_path / "temp.im"
 
     im = hopper("RGB")
     im.save(test_file)

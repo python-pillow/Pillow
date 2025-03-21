@@ -88,7 +88,7 @@ if is_win32():
     def test_pointer(tmp_path: Path) -> None:
         im = hopper()
         (width, height) = im.size
-        opath = str(tmp_path / "temp.png")
+        opath = tmp_path / "temp.png"
         imdib = ImageWin.Dib(im)
 
         hdr = BITMAPINFOHEADER()

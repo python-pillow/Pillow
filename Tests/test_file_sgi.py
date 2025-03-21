@@ -73,11 +73,11 @@ def test_invalid_file() -> None:
 
 def test_write(tmp_path: Path) -> None:
     def roundtrip(img: Image.Image) -> None:
-        out = str(tmp_path / "temp.sgi")
+        out = tmp_path / "temp.sgi"
         img.save(out, format="sgi")
         assert_image_equal_tofile(img, out)
 
-        out = str(tmp_path / "fp.sgi")
+        out = tmp_path / "fp.sgi"
         with open(out, "wb") as fp:
             img.save(fp)
             assert_image_equal_tofile(img, out)
@@ -95,7 +95,7 @@ def test_write16(tmp_path: Path) -> None:
     test_file = "Tests/images/hopper16.rgb"
 
     with Image.open(test_file) as im:
-        out = str(tmp_path / "temp.sgi")
+        out = tmp_path / "temp.sgi"
         im.save(out, format="sgi", bpc=2)
 
         assert_image_equal_tofile(im, out)
@@ -103,7 +103,7 @@ def test_write16(tmp_path: Path) -> None:
 
 def test_unsupported_mode(tmp_path: Path) -> None:
     im = hopper("LA")
-    out = str(tmp_path / "temp.sgi")
+    out = tmp_path / "temp.sgi"
 
     with pytest.raises(ValueError):
         im.save(out, format="sgi")
