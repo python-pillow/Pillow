@@ -43,6 +43,11 @@ def roundtrip(tmp_path: Path, mode: str) -> None:
 
     im.save(outfile)
     converted = open_with_magick(magick, tmp_path, outfile)
+    if mode == "P":
+        assert converted.mode == "P"
+
+        im = im.convert("RGB")
+        converted = converted.convert("RGB")
     assert_image_equal(converted, im)
 
 
@@ -55,7 +60,6 @@ def test_monochrome(tmp_path: Path) -> None:
     roundtrip(tmp_path, mode)
 
 
-@pytest.mark.xfail(reason="Palm P image is wrong")
 def test_p_mode(tmp_path: Path) -> None:
     # Arrange
     mode = "P"
