@@ -39,6 +39,7 @@ class TestShellInjection:
             shutil.copy(TEST_JPG, src_file)
 
             with Image.open(src_file) as im:
+                assert isinstance(im, JpegImagePlugin.JpegImageFile)
                 im.load_djpeg()
 
     @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
@@ -49,11 +50,13 @@ class TestShellInjection:
     @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
     def test_save_netpbm_filename_bmp_mode(self, tmp_path: Path) -> None:
         with Image.open(TEST_GIF) as im:
-            im = im.convert("RGB")
-            self.assert_save_filename_check(tmp_path, im, GifImagePlugin._save_netpbm)
+            im_rgb = im.convert("RGB")
+            self.assert_save_filename_check(
+                tmp_path, im_rgb, GifImagePlugin._save_netpbm
+            )
 
     @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
     def test_save_netpbm_filename_l_mode(self, tmp_path: Path) -> None:
         with Image.open(TEST_GIF) as im:
-            im = im.convert("L")
-            self.assert_save_filename_check(tmp_path, im, GifImagePlugin._save_netpbm)
+            im_l = im.convert("L")
+            self.assert_save_filename_check(tmp_path, im_l, GifImagePlugin._save_netpbm)
