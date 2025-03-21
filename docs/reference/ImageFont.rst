@@ -92,6 +92,11 @@ Constants
     raise a :py:exc:`ValueError` if the number of characters is over this limit. The
     check can be disabled by setting ``ImageFont.MAX_STRING_LENGTH = None``.
 
+.. class:: Anchor
+
+    Type hint literal with the possible anchor values. See :ref:`text-anchors` for
+    details.
+
 Dictionaries
 ------------
 
