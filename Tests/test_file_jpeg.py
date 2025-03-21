@@ -83,7 +83,7 @@ class TestFileJpeg:
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero(self, size: tuple[int, int], tmp_path: Path) -> None:
-        f = str(tmp_path / "temp.jpg")
+        f = tmp_path / "temp.jpg"
         im = Image.new("RGB", size)
         with pytest.raises(ValueError):
             im.save(f)
@@ -194,7 +194,7 @@ class TestFileJpeg:
             icc_profile = im1.info["icc_profile"]
             assert len(icc_profile) == 3144
             # Roundtrip via physical file.
-            f = str(tmp_path / "temp.jpg")
+            f = tmp_path / "temp.jpg"
             im1.save(f, icc_profile=icc_profile)
         with Image.open(f) as im2:
             assert im2.info.get("icc_profile") == icc_profile
@@ -238,7 +238,7 @@ class TestFileJpeg:
         # Sometimes the meta data on the icc_profile block is bigger than
         # Image.MAXBLOCK or the image size.
         with Image.open("Tests/images/icc_profile_big.jpg") as im:
-            f = str(tmp_path / "temp.jpg")
+            f = tmp_path / "temp.jpg"
             icc_profile = im.info["icc_profile"]
             # Should not raise OSError for image with icc larger than image size.
             im.save(
@@ -250,11 +250,11 @@ class TestFileJpeg:
             )
 
         with Image.open("Tests/images/flower2.jpg") as im:
-            f = str(tmp_path / "temp2.jpg")
+            f = tmp_path / "temp2.jpg"
             im.save(f, progressive=True, quality=94, icc_profile=b" " * 53955)
 
         with Image.open("Tests/images/flower2.jpg") as im:
-            f = str(tmp_path / "temp3.jpg")
+            f = tmp_path / "temp3.jpg"
             im.save(f, progressive=True, quality=94, exif=b" " * 43668)
 
     def test_optimize(self) -> None:
@@ -268,7 +268,7 @@ class TestFileJpeg:
 
     def test_optimize_large_buffer(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/148
-        f = str(tmp_path / "temp.jpg")
+        f = tmp_path / "temp.jpg"
         # this requires ~ 1.5x Image.MAXBLOCK
         im = Image.new("RGB", (4096, 4096), 0xFF3333)
         im.save(f, format="JPEG", optimize=True)
@@ -288,13 +288,13 @@ class TestFileJpeg:
         assert im1_bytes >= im3_bytes
 
     def test_progressive_large_buffer(self, tmp_path: Path) -> None:
-        f = str(tmp_path / "temp.jpg")
+        f = tmp_path / "temp.jpg"
         # this requires ~ 1.5x Image.MAXBLOCK
         im = Image.new("RGB", (4096, 4096), 0xFF3333)
         im.save(f, format="JPEG", progressive=True)
 
     def test_progressive_large_buffer_highest_quality(self, tmp_path: Path) -> None:
-        f = str(tmp_path / "temp.jpg")
+        f = tmp_path / "temp.jpg"
         im = self.gen_random_image((255, 255))
         # this requires more bytes than pixels in the image
         im.save(f, format="JPEG", progressive=True, quality=100)
@@ -307,7 +307,7 @@ class TestFileJpeg:
 
     def test_large_exif(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/148
-        f = str(tmp_path / "temp.jpg")
+        f = tmp_path / "temp.jpg"
         im = hopper()
         im.save(f, "JPEG", quality=90, exif=b"1" * 65533)
 
@@ -335,7 +335,7 @@ class TestFileJpeg:
             assert exif[gps_index] == expected_exif_gps
 
         # Writing
-        f = str(tmp_path / "temp.jpg")
+        f = tmp_path / "temp.jpg"
         exif = Image.Exif()
         exif[gps_index] = expected_exif_gps
         hopper().save(f, exif=exif)
@@ -505,15 +505,15 @@ class TestFileJpeg:
     def test_quality_keep(self, tmp_path: Path) -> None:
         # RGB
         with Image.open("Tests/images/hopper.jpg") as im:
-            f = str(tmp_path / "temp.jpg")
+            f = tmp_path / "temp.jpg"
             im.save(f, quality="keep")
         # Grayscale
         with Image.open("Tests/images/hopper_gray.jpg") as im:
-            f = str(tmp_path / "temp.jpg")
+            f = tmp_path / "temp.jpg"
             im.save(f, quality="keep")
         # CMYK
         with Image.open("Tests/images/pil_sample_cmyk.jpg") as im:
-            f = str(tmp_path / "temp.jpg")
+            f = tmp_path / "temp.jpg"
             im.save(f, quality="keep")
 
     def test_junk_jpeg_header(self) -> None:
@@ -726,7 +726,7 @@ class TestFileJpeg:
 
     def test_MAXBLOCK_scaling(self, tmp_path: Path) -> None:
         im = self.gen_random_image((512, 512))
-        f = str(tmp_path / "temp.jpeg")
+        f = tmp_path / "temp.jpeg"
         im.save(f, quality=100, optimize=True)
 
         with Image.open(f) as reloaded:
@@ -762,7 +762,7 @@ class TestFileJpeg:
 
     def test_save_tiff_with_dpi(self, tmp_path: Path) -> None:
         # Arrange
-        outfile = str(tmp_path / "temp.tif")
+        outfile = tmp_path / "temp.tif"
         with Image.open("Tests/images/hopper.tif") as im:
             # Act
             im.save(outfile, "JPEG", dpi=im.info["dpi"])
@@ -773,7 +773,7 @@ class TestFileJpeg:
                 assert im.info["dpi"] == reloaded.info["dpi"]
 
     def test_save_dpi_rounding(self, tmp_path: Path) -> None:
-        outfile = str(tmp_path / "temp.jpg")
+        outfile = tmp_path / "temp.jpg"
         with Image.open("Tests/images/hopper.jpg") as im:
             im.save(outfile, dpi=(72.2, 72.2))
 
@@ -859,7 +859,7 @@ class TestFileJpeg:
             exif = im.getexif()
             assert exif[282] == 180
 
-            out = str(tmp_path / "out.jpg")
+            out = tmp_path / "out.jpg"
             with warnings.catch_warnings():
                 warnings.simplefilter("error")
 
@@ -1005,7 +1005,7 @@ class TestFileJpeg:
                 assert im.getxmp() == {"xmpmeta": None}
 
     def test_save_xmp(self, tmp_path: Path) -> None:
-        f = str(tmp_path / "temp.jpg")
+        f = tmp_path / "temp.jpg"
         im = hopper()
         im.save(f, xmp=b"XMP test")
         with Image.open(f) as reloaded:
@@ -1094,7 +1094,7 @@ class TestFileJpeg:
 @skip_unless_feature("jpg")
 class TestFileCloseW32:
     def test_fd_leak(self, tmp_path: Path) -> None:
-        tmpfile = str(tmp_path / "temp.jpg")
+        tmpfile = tmp_path / "temp.jpg"
 
         with Image.open("Tests/images/hopper.jpg") as im:
             im.save(tmpfile)

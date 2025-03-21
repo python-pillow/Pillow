@@ -46,7 +46,7 @@ def test_invalid_file() -> None:
 
 
 def test_save(tmp_path: Path) -> None:
-    f = str(tmp_path / "temp.blp")
+    f = tmp_path / "temp.blp"
 
     for version in ("BLP1", "BLP2"):
         im = hopper("P")
@@ -56,7 +56,7 @@ def test_save(tmp_path: Path) -> None:
             assert_image_equal(im.convert("RGB"), reloaded)
 
         with Image.open("Tests/images/transparent.png") as im:
-            f = str(tmp_path / "temp.blp")
+            f = tmp_path / "temp.blp"
             im.convert("P").save(f, blp_version=version)
 
             with Image.open(f) as reloaded:

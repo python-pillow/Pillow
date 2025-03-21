@@ -240,7 +240,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     cur_idx = im.tell()
     try:
         for i, ims in enumerate([im] + append_images):
-            # Get # of frames in this image
+            # Get number of frames in this image
             nfr = getattr(ims, "n_frames", 1)
 
             for idx in range(nfr):

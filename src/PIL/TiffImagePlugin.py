@@ -1608,6 +1608,10 @@ class TiffImageFile(ImageFile.ImageFile):
                     raise ValueError(msg)
                 w = tilewidth
 
+            if w == xsize and h == ysize and self._planar_configuration != 2:
+                # Every tile covers the image. Only use the last offset
+                offsets = offsets[-1:]
+
             for offset in offsets:
                 if x + w > xsize:
                     stride = w * sum(bps_tuple) / 8  # bytes per line
@@ -1630,11 +1634,11 @@ class TiffImageFile(ImageFile.ImageFile):
                         args,
                     )
                 )
-                x = x + w
+                x += w
                 if x >= xsize:
                     x, y = 0, y + h
                     if y >= ysize:
-                        x = y = 0
+                        y = 0
                         layer += 1
         else:
             logger.debug("- unsupported data organization")
