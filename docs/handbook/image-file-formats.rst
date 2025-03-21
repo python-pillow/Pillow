@@ -148,7 +148,7 @@ by DirectX.
 DXT1 and DXT5 pixel formats can be read, only in ``RGBA`` mode.
 
 .. versionadded:: 3.4.0
-   DXT3 images can be read in ``RGB`` mode and DX10 images can be read in
+   DXT3 images can be read in ``RGBA`` mode and DX10 images can be read in
    ``RGB`` and ``RGBA`` mode.
 
 .. versionadded:: 6.0.0
@@ -171,6 +171,12 @@ DXT1 and DXT5 pixel formats can be read, only in ``RGBA`` mode.
 .. versionadded:: 10.1.0
    BC5U can be read in ``RGB`` mode, and 8-bit color indexed images can be read
    in ``P`` mode.
+
+
+.. versionadded:: 11.2.0
+   DXT1, DXT3, DXT5, BC2, BC3 and BC5 pixel formats can be saved::
+
+       im.save(out, pixel_format="DXT1")
 
 
 DIB
