@@ -73,7 +73,7 @@ def test_invalid_file() -> None:
 
 def test_save_wrong_mode(tmp_path: Path) -> None:
     im = hopper()
-    out = str(tmp_path / "temp.xbm")
+    out = tmp_path / "temp.xbm"
 
     with pytest.raises(OSError):
         im.save(out)
@@ -81,7 +81,7 @@ def test_save_wrong_mode(tmp_path: Path) -> None:
 
 def test_hotspot(tmp_path: Path) -> None:
     im = hopper("1")
-    out = str(tmp_path / "temp.xbm")
+    out = tmp_path / "temp.xbm"
 
     hotspot = (0, 7)
     im.save(out, hotspot=hotspot)

@@ -171,7 +171,7 @@ class TestImagingCoreResize:
         # platforms. So if a future Pillow change requires that the test file
         # be updated, that is okay.
         im = hopper().resize((64, 64))
-        temp_file = str(tmp_path / "temp.gif")
+        temp_file = tmp_path / "temp.gif"
         im.save(temp_file)
 
         with Image.open(temp_file) as reloaded:

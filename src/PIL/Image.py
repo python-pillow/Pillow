@@ -548,7 +548,6 @@ class Image:
 
     def __init__(self) -> None:
         # FIXME: take "new" parameters / other image?
-        # FIXME: turn mode and size into delegating properties?
         self._im: core.ImagingCore | DeferredError | None = None
         self._mode = ""
         self._size = (0, 0)
@@ -2511,13 +2510,6 @@ class Image:
             # only set the name for metadata purposes
             filename = os.fspath(fp.name)
 
-        # may mutate self!
-        self._ensure_mutable()
-
-        save_all = params.pop("save_all", None)
-        self.encoderinfo = {**getattr(self, "encoderinfo", {}), **params}
-        self.encoderconfig: tuple[Any, ...] = ()
-
         preinit()
 
         filename_ext = os.path.splitext(filename)[1].lower()
@@ -2531,6 +2523,13 @@ class Image:
             except KeyError as e:
                 msg = f"unknown file extension: {ext}"
                 raise ValueError(msg) from e
+
+        # may mutate self!
+        self._ensure_mutable()
+
+        save_all = params.pop("save_all", None)
+        self.encoderinfo = {**getattr(self, "encoderinfo", {}), **params}
+        self.encoderconfig: tuple[Any, ...] = ()
 
         if format.upper() not in SAVE:
             init()

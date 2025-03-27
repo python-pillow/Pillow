@@ -17,7 +17,7 @@ from .helper import (
 
 def test_sanity(tmp_path: Path) -> None:
     def roundtrip(im: Image.Image) -> None:
-        outfile = str(tmp_path / "temp.bmp")
+        outfile = tmp_path / "temp.bmp"
 
         im.save(outfile, "BMP")
 
@@ -66,7 +66,7 @@ def test_small_palette(tmp_path: Path) -> None:
     colors = [0, 0, 0, 125, 125, 125, 255, 255, 255]
     im.putpalette(colors)
 
-    out = str(tmp_path / "temp.bmp")
+    out = tmp_path / "temp.bmp"
     im.save(out)
 
     with Image.open(out) as reloaded:
@@ -74,7 +74,7 @@ def test_small_palette(tmp_path: Path) -> None:
 
 
 def test_save_too_large(tmp_path: Path) -> None:
-    outfile = str(tmp_path / "temp.bmp")
+    outfile = tmp_path / "temp.bmp"
     with Image.new("RGB", (1, 1)) as im:
         im._size = (37838, 37838)
         with pytest.raises(ValueError):
@@ -96,7 +96,7 @@ def test_dpi() -> None:
 def test_save_bmp_with_dpi(tmp_path: Path) -> None:
     # Test for #1301
     # Arrange
-    outfile = str(tmp_path / "temp.jpg")
+    outfile = tmp_path / "temp.jpg"
     with Image.open("Tests/images/hopper.bmp") as im:
         assert im.info["dpi"] == (95.98654816726399, 95.98654816726399)
 
@@ -112,7 +112,7 @@ def test_save_bmp_with_dpi(tmp_path: Path) -> None:
 
 
 def test_save_float_dpi(tmp_path: Path) -> None:
-    outfile = str(tmp_path / "temp.bmp")
+    outfile = tmp_path / "temp.bmp"
     with Image.open("Tests/images/hopper.bmp") as im:
         im.save(outfile, dpi=(72.21216100543306, 72.21216100543306))
         with Image.open(outfile) as reloaded:
@@ -152,7 +152,7 @@ def test_dib_header_size(header_size: int, path: str) -> None:
 
 
 def test_save_dib(tmp_path: Path) -> None:
-    outfile = str(tmp_path / "temp.dib")
+    outfile = tmp_path / "temp.dib"
 
     with Image.open("Tests/images/clipboard.dib") as im:
         im.save(outfile)

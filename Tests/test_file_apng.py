@@ -345,7 +345,7 @@ def test_apng_sequence_errors(test_file: str) -> None:
 
 def test_apng_save(tmp_path: Path) -> None:
     with Image.open("Tests/images/apng/single_frame.png") as im:
-        test_file = str(tmp_path / "temp.png")
+        test_file = tmp_path / "temp.png"
         im.save(test_file, save_all=True)
 
     with Image.open(test_file) as im:
@@ -375,7 +375,7 @@ def test_apng_save(tmp_path: Path) -> None:
 
 
 def test_apng_save_alpha(tmp_path: Path) -> None:
-    test_file = str(tmp_path / "temp.png")
+    test_file = tmp_path / "temp.png"
 
     im = Image.new("RGBA", (1, 1), (255, 0, 0, 255))
     im2 = Image.new("RGBA", (1, 1), (255, 0, 0, 127))
@@ -393,7 +393,7 @@ def test_apng_save_split_fdat(tmp_path: Path) -> None:
     # frames with image data spanning multiple fdAT chunks (in this case
     # both the default image and first animation frame will span multiple
     # data chunks)
-    test_file = str(tmp_path / "temp.png")
+    test_file = tmp_path / "temp.png"
     with Image.open("Tests/images/old-style-jpeg-compression.png") as im:
         frames = [im.copy(), Image.new("RGBA", im.size, (255, 0, 0, 255))]
         im.save(
@@ -408,7 +408,7 @@ def test_apng_save_split_fdat(tmp_path: Path) -> None:
 
 
 def test_apng_save_duration_loop(tmp_path: Path) -> None:
-    test_file = str(tmp_path / "temp.png")
+    test_file = tmp_path / "temp.png"
     with Image.open("Tests/images/apng/delay.png") as im:
         frames = []
         durations = []
@@ -471,7 +471,7 @@ def test_apng_save_duration_loop(tmp_path: Path) -> None:
 
 
 def test_apng_save_disposal(tmp_path: Path) -> None:
-    test_file = str(tmp_path / "temp.png")
+    test_file = tmp_path / "temp.png"
     size = (128, 64)
     red = Image.new("RGBA", size, (255, 0, 0, 255))
     green = Image.new("RGBA", size, (0, 255, 0, 255))
@@ -572,7 +572,7 @@ def test_apng_save_disposal(tmp_path: Path) -> None:
 
 
 def test_apng_save_disposal_previous(tmp_path: Path) -> None:
-    test_file = str(tmp_path / "temp.png")
+    test_file = tmp_path / "temp.png"
     size = (128, 64)
     blue = Image.new("RGBA", size, (0, 0, 255, 255))
     red = Image.new("RGBA", size, (255, 0, 0, 255))
@@ -594,7 +594,7 @@ def test_apng_save_disposal_previous(tmp_path: Path) -> None:
 
 
 def test_apng_save_blend(tmp_path: Path) -> None:
-    test_file = str(tmp_path / "temp.png")
+    test_file = tmp_path / "temp.png"
     size = (128, 64)
     red = Image.new("RGBA", size, (255, 0, 0, 255))
     green = Image.new("RGBA", size, (0, 255, 0, 255))
@@ -662,7 +662,7 @@ def test_apng_save_blend(tmp_path: Path) -> None:
 
 
 def test_apng_save_size(tmp_path: Path) -> None:
-    test_file = str(tmp_path / "temp.png")
+    test_file = tmp_path / "temp.png"
 
     im = Image.new("L", (100, 100))
     im.save(test_file, save_all=True, append_images=[Image.new("L", (200, 200))])
@@ -686,7 +686,7 @@ def test_seek_after_close() -> None:
 def test_different_modes_in_later_frames(
     mode: str, default_image: bool, duplicate: bool, tmp_path: Path
 ) -> None:
-    test_file = str(tmp_path / "temp.png")
+    test_file = tmp_path / "temp.png"
 
     im = Image.new("L", (1, 1))
     im.save(
@@ -700,7 +700,7 @@ def test_different_modes_in_later_frames(
 
 
 def test_different_durations(tmp_path: Path) -> None:
-    test_file = str(tmp_path / "temp.png")
+    test_file = tmp_path / "temp.png"
 
     with Image.open("Tests/images/apng/different_durations.png") as im:
         for _ in range(3):
