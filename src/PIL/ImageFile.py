@@ -34,7 +34,6 @@ import itertools
 import logging
 import os
 import struct
-import sys
 from typing import IO, TYPE_CHECKING, Any, NamedTuple, cast
 
 from . import ExifTags, Image
@@ -278,8 +277,6 @@ class ImageFile(Image.Image):
 
         self.map: mmap.mmap | None = None
         use_mmap = self.filename and len(self.tile) == 1
-        # As of pypy 2.1.0, memory mapping was failing here.
-        use_mmap = use_mmap and not hasattr(sys, "pypy_version_info")
 
         readonly = 0
 
