@@ -40,9 +40,7 @@ class TestImageGrab:
 
     @pytest.mark.skipif(Image.core.HAVE_XCB, reason="tests missing XCB")
     def test_grab_no_xcb(self) -> None:
-        if sys.platform not in ("win32", "darwin") and not shutil.which(
-            "gnome-screenshot"
-        ):
+        if sys.platform not in ("win32", "darwin") and not shutil.which("gnome-screenshot") and not shutil.which('spectacle'):
             with pytest.raises(OSError) as e:
                 ImageGrab.grab()
             assert str(e.value).startswith("Pillow was built without XCB support")
