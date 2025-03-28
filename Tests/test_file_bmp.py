@@ -15,25 +15,19 @@ from .helper import (
 )
 
 
-def test_sanity(tmp_path: Path) -> None:
-    def roundtrip(im: Image.Image) -> None:
-        outfile = tmp_path / "temp.bmp"
+@pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
+def test_sanity(mode: str, tmp_path: Path) -> None:
+    outfile = tmp_path / "temp.bmp"
 
-        im.save(outfile, "BMP")
+    im = hopper(mode)
+    im.save(outfile, "BMP")
 
-        with Image.open(outfile) as reloaded:
-            reloaded.load()
-            assert im.mode == reloaded.mode
-            assert im.size == reloaded.size
-            assert reloaded.format == "BMP"
-            assert reloaded.get_format_mimetype() == "image/bmp"
-
-    roundtrip(hopper())
-
-    roundtrip(hopper("1"))
-    roundtrip(hopper("L"))
-    roundtrip(hopper("P"))
-    roundtrip(hopper("RGB"))
+    with Image.open(outfile) as reloaded:
+        reloaded.load()
+        assert im.mode == reloaded.mode
+        assert im.size == reloaded.size
+        assert reloaded.format == "BMP"
+        assert reloaded.get_format_mimetype() == "image/bmp"
 
 
 def test_invalid_file() -> None:
