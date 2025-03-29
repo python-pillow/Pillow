@@ -8,7 +8,7 @@ import pytest
 
 from PIL import Image, ImageFile, WmfImagePlugin
 
-from .helper import assert_image_similar_tofile, hopper
+from .helper import assert_image_equal_tofile, assert_image_similar_tofile, hopper
 
 
 def test_load_raw() -> None:
@@ -42,6 +42,15 @@ def test_load_zero_inch() -> None:
     with pytest.raises(ValueError):
         with Image.open(b):
             pass
+
+
+def test_render() -> None:
+    with open("Tests/images/drawing.emf", "rb") as fp:
+        data = fp.read()
+    b = BytesIO(data[:808] + b"\x00" + data[809:])
+    with Image.open(b) as im:
+        if hasattr(Image.core, "drawwmf"):
+            assert_image_equal_tofile(im, "Tests/images/drawing.emf")
 
 
 def test_register_handler(tmp_path: Path) -> None:
@@ -87,6 +96,20 @@ def test_load_set_dpi() -> None:
             assert im.size == (164, 164)
 
             assert_image_similar_tofile(im, "Tests/images/drawing_wmf_ref_144.png", 2.1)
+
+    with Image.open("Tests/images/drawing.emf") as im:
+        assert im.size == (1625, 1625)
+
+        if not hasattr(Image.core, "drawwmf"):
+            return
+        im.load(im.info["dpi"])
+        assert im.size == (1625, 1625)
+
+    with Image.open("Tests/images/drawing.emf") as im:
+        im.load((72, 144))
+        assert im.size == (82, 164)
+
+        assert_image_equal_tofile(im, "Tests/images/drawing_emf_ref_72_144.png")
 
 
 @pytest.mark.parametrize("ext", (".wmf", ".emf"))

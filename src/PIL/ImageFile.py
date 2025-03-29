@@ -34,7 +34,6 @@ import itertools
 import logging
 import os
 import struct
-import sys
 from typing import IO, TYPE_CHECKING, Any, NamedTuple, cast
 
 from . import ExifTags, Image
@@ -167,7 +166,7 @@ class ImageFile(Image.Image):
         pass
 
     def _close_fp(self):
-        if getattr(self, "_fp", False):
+        if getattr(self, "_fp", False) and not isinstance(self._fp, DeferredError):
             if self._fp != self.fp:
                 self._fp.close()
             self._fp = DeferredError(ValueError("Operation on closed image"))
@@ -278,8 +277,6 @@ class ImageFile(Image.Image):
 
         self.map: mmap.mmap | None = None
         use_mmap = self.filename and len(self.tile) == 1
-        # As of pypy 2.1.0, memory mapping was failing here.
-        use_mmap = use_mmap and not hasattr(sys, "pypy_version_info")
 
         readonly = 0
 
@@ -345,7 +342,7 @@ class ImageFile(Image.Image):
                     self.tile, lambda tile: (tile[0], tile[1], tile[3])
                 )
             ]
-            for decoder_name, extents, offset, args in self.tile:
+            for i, (decoder_name, extents, offset, args) in enumerate(self.tile):
                 seek(offset)
                 decoder = Image._getdecoder(
                     self.mode, decoder_name, args, self.decoderconfig
@@ -358,8 +355,13 @@ class ImageFile(Image.Image):
                     else:
                         b = prefix
                         while True:
+                            read_bytes = self.decodermaxblock
+                            if i + 1 < len(self.tile):
+                                next_offset = self.tile[i + 1].offset
+                                if next_offset > offset:
+                                    read_bytes = next_offset - offset
                             try:
-                                s = read(self.decodermaxblock)
+                                s = read(read_bytes)
                             except (IndexError, struct.error) as e:
                                 # truncated png/gif
                                 if LOAD_TRUNCATED_IMAGES:

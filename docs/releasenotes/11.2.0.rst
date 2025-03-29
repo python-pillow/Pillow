@@ -4,21 +4,12 @@
 Security
 ========
 
-TODO
-^^^^
+Undefined shift when loading compressed DDS images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
-
-:cve:`YYYY-XXXXX`: TODO
-^^^^^^^^^^^^^^^^^^^^^^^
-
-TODO
-
-Backwards Incompatible Changes
-==============================
-
-TODO
-^^^^
+When loading some compressed DDS formats, an integer was bitshifted by 24 places to
+generate the 32 bits of the lookup table. This was undefined behaviour, and has been
+present since Pillow 3.4.0.
 
 Deprecations
 ============
@@ -36,10 +27,14 @@ an :py:class:`PIL.ImageFile.ImageFile` instance.
 API Changes
 ===========
 
-TODO
-^^^^
+``append_images`` no longer requires ``save_all``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Previously, ``save_all`` was required to in order to use ``append_images``. Now,
+``save_all`` will default to ``True`` if ``append_images`` is not empty and the format
+supports saving multiple frames::
+
+    im.save("out.gif", append_images=ims)
 
 API Additions
 =============
@@ -73,11 +68,3 @@ Compressed DDS images can now be saved using a ``pixel_format`` argument. DXT1, 
 DXT5, BC2, BC3 and BC5 are supported::
 
     im.save("out.dds", pixel_format="DXT1")
-
-Other Changes
-=============
-
-TODO
-^^^^
-
-TODO
