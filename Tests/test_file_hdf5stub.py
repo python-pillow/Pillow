@@ -43,7 +43,7 @@ def test_save() -> None:
     # Arrange
     with Image.open(TEST_FILE) as im:
         dummy_fp = BytesIO()
-        dummy_filename = "dummy.filename"
+        dummy_filename = "dummy.h5"
 
         # Act / Assert: stub cannot save without an implemented handler
         with pytest.raises(OSError):

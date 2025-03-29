@@ -1705,7 +1705,7 @@ def test_discontiguous_corners_polygon() -> None:
         BLACK,
     )
     expected = os.path.join(IMAGES_PATH, "discontiguous_corners_polygon.png")
-    assert_image_similar_tofile(img, expected, 1)
+    assert_image_equal_tofile(img, expected)
 
 
 def test_polygon2() -> None:

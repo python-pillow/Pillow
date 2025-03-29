@@ -180,6 +180,8 @@ class SpiderImageFile(ImageFile.ImageFile):
             raise EOFError(msg)
         if not self._seek_check(frame):
             return
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self.stkoffset = self.hdrlen + frame * (self.hdrlen + self.imgbytes)
 
         if isinstance(self._fp, DeferredError):

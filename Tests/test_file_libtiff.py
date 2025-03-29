@@ -1055,6 +1055,17 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/old-style-jpeg-compression.tif") as im:
             assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
 
+    def test_old_style_jpeg_orientation(self) -> None:
+        with open("Tests/images/old-style-jpeg-compression.tif", "rb") as fp:
+            data = fp.read()
+
+            # Set EXIF Orientation to 2
+            data = data[:102] + b"\x02" + data[103:]
+
+            with Image.open(io.BytesIO(data)) as im:
+                im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+            assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
+
     def test_open_missing_samplesperpixel(self) -> None:
         with Image.open(
             "Tests/images/old-style-jpeg-compression-no-samplesperpixel.tif"
