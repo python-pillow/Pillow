@@ -621,6 +621,8 @@ class Image:
         more information.
         """
         if getattr(self, "map", None):
+            if sys.platform == "win32" and hasattr(sys, "pypy_version_info"):
+                self.map.close()
             self.map: mmap.mmap | None = None
 
         # Instead of simply setting to None, we're setting up a
