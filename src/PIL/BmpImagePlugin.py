@@ -76,6 +76,7 @@ class BmpImageFile(ImageFile.ImageFile):
 
     def _bitmap(self, header: int = 0, offset: int = 0) -> None:
         """Read relevant info about the BMP"""
+        assert self.fp is not None
         read, seek = self.fp.read, self.fp.seek
         if header:
             seek(header)
@@ -311,6 +312,7 @@ class BmpImageFile(ImageFile.ImageFile):
     def _open(self) -> None:
         """Open file, check magic number and read header"""
         # read 14 bytes: magic number, filesize, reserved, header final offset
+        assert self.fp is not None
         head_data = self.fp.read(14)
         # choke if the file does not have the required magic bytes
         if not _accept(head_data):
