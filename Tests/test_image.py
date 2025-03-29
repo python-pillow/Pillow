@@ -258,6 +258,15 @@ class TestImage:
             assert im.readonly
             im.save(temp_file)
 
+    def test_save_without_changing_readonly(self, tmp_path: Path) -> None:
+        temp_file = tmp_path / "temp.bmp"
+
+        with Image.open("Tests/images/rgb32bf-rgba.bmp") as im:
+            assert im.readonly
+
+            im.save(temp_file)
+            assert im.readonly
+
     def test_dump(self, tmp_path: Path) -> None:
         im = Image.new("L", (10, 10))
         im._dump(str(tmp_path / "temp_L.ppm"))
