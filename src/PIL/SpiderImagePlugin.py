@@ -40,6 +40,7 @@ import sys
 from typing import IO, TYPE_CHECKING, Any, cast
 
 from . import Image, ImageFile
+from ._util import DeferredError
 
 
 def isInt(f: Any) -> int:
@@ -100,6 +101,7 @@ class SpiderImageFile(ImageFile.ImageFile):
 
     def _open(self) -> None:
         # check header
+        assert self.fp is not None
         n = 27 * 4  # read 27 float values
         f = self.fp.read(n)
 
@@ -179,6 +181,9 @@ class SpiderImageFile(ImageFile.ImageFile):
         if not self._seek_check(frame):
             return
         self.stkoffset = self.hdrlen + frame * (self.hdrlen + self.imgbytes)
+
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self.fp = self._fp
         self.fp.seek(self.stkoffset)
         self._open()
@@ -318,9 +323,9 @@ if __name__ == "__main__":
             outfile = sys.argv[2]
 
             # perform some image operation
-            im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+            transposed_im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
             print(
                 f"saving a flipped version of {os.path.basename(filename)} "
                 f"as {outfile} "
             )
-            im.save(outfile, SpiderImageFile.format)
+            transposed_im.save(outfile, SpiderImageFile.format)

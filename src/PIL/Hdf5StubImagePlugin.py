@@ -41,6 +41,7 @@ class HDF5StubImageFile(ImageFile.StubImageFile):
     format_description = "HDF5"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(8)):
             msg = "Not an HDF file"
             raise SyntaxError(msg)

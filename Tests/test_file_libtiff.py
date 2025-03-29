@@ -11,7 +11,15 @@ from typing import Any, NamedTuple
 
 import pytest
 
-from PIL import Image, ImageFilter, ImageOps, TiffImagePlugin, TiffTags, features
+from PIL import (
+    Image,
+    ImageFile,
+    ImageFilter,
+    ImageOps,
+    TiffImagePlugin,
+    TiffTags,
+    features,
+)
 from PIL.TiffImagePlugin import OSUBFILETYPE, SAMPLEFORMAT, STRIPOFFSETS, SUBIFD
 
 from .helper import (
@@ -27,7 +35,7 @@ from .helper import (
 
 @skip_unless_feature("libtiff")
 class LibTiffTestCase:
-    def _assert_noerr(self, tmp_path: Path, im: TiffImagePlugin.TiffImageFile) -> None:
+    def _assert_noerr(self, tmp_path: Path, im: ImageFile.ImageFile) -> None:
         """Helper tests that assert basic sanity about the g4 tiff reading"""
         # 1 bit
         assert im.mode == "1"
@@ -36,6 +44,7 @@ class LibTiffTestCase:
         im.load()
         im.getdata()
 
+        assert isinstance(im, TiffImagePlugin.TiffImageFile)
         assert im._compression == "group4"
 
         # can we write it back out, in a different form.
@@ -153,6 +162,7 @@ class TestFileLibTiff(LibTiffTestCase):
         """Test metadata writing through libtiff"""
         f = tmp_path / "temp.tiff"
         with Image.open("Tests/images/hopper_g4.tif") as img:
+            assert isinstance(img, TiffImagePlugin.TiffImageFile)
             img.save(f, tiffinfo=img.tag)
 
             if legacy_api:
@@ -170,6 +180,7 @@ class TestFileLibTiff(LibTiffTestCase):
         ]
 
         with Image.open(f) as loaded:
+            assert isinstance(loaded, TiffImagePlugin.TiffImageFile)
             if legacy_api:
                 reloaded = loaded.tag.named()
             else:
@@ -212,6 +223,7 @@ class TestFileLibTiff(LibTiffTestCase):
         # Exclude ones that have special meaning
         # that we're already testing them
         with Image.open("Tests/images/hopper_g4.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             for tag in im.tag_v2:
                 try:
                     del core_items[tag]
@@ -317,6 +329,7 @@ class TestFileLibTiff(LibTiffTestCase):
             im.save(out, tiffinfo=tiffinfo)
 
             with Image.open(out) as reloaded:
+                assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
                 for tag, value in tiffinfo.items():
                     reloaded_value = reloaded.tag_v2[tag]
                     if (
@@ -349,12 +362,14 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_osubfiletype(self, tmp_path: Path) -> None:
         outfile = tmp_path / "temp.tif"
         with Image.open("Tests/images/g4_orientation_6.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             im.tag_v2[OSUBFILETYPE] = 1
             im.save(outfile)
 
     def test_subifd(self, tmp_path: Path) -> None:
         outfile = tmp_path / "temp.tif"
         with Image.open("Tests/images/g4_orientation_6.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             im.tag_v2[SUBIFD] = 10000
 
             # Should not segfault
@@ -369,6 +384,7 @@ class TestFileLibTiff(LibTiffTestCase):
         hopper().save(out, tiffinfo={700: b"xmlpacket tag"})
 
         with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             if 700 in reloaded.tag_v2:
                 assert reloaded.tag_v2[700] == b"xmlpacket tag"
 
@@ -430,12 +446,14 @@ class TestFileLibTiff(LibTiffTestCase):
         """Tests String data in info directory"""
         test_file = "Tests/images/hopper_g4_500.tif"
         with Image.open(test_file) as orig:
-            out = tmp_path / "temp.tif"
+            assert isinstance(orig, TiffImagePlugin.TiffImageFile)
 
+            out = tmp_path / "temp.tif"
             orig.tag[269] = "temp.tif"
             orig.save(out)
 
         with Image.open(out) as reread:
+            assert isinstance(reread, TiffImagePlugin.TiffImageFile)
             assert "temp.tif" == reread.tag_v2[269]
             assert "temp.tif" == reread.tag[269][0]
 
@@ -458,8 +476,8 @@ class TestFileLibTiff(LibTiffTestCase):
         # test case from irc, how to do blur on b/w image
         # and save to compressed tif.
         out = tmp_path / "temp.tif"
-        with Image.open("Tests/images/pport_g4.tif") as im:
-            im = im.convert("L")
+        with Image.open("Tests/images/pport_g4.tif") as img:
+            im = img.convert("L")
 
         im = im.filter(ImageFilter.GaussianBlur(4))
         im.save(out, compression="tiff_adobe_deflate")
@@ -541,6 +559,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
         with Image.open(out) as reloaded:
             # colormap/palette tag
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert len(reloaded.tag_v2[320]) == 768
 
     @pytest.mark.parametrize("compression", ("tiff_ccitt", "group3", "group4"))
@@ -552,8 +571,9 @@ class TestFileLibTiff(LibTiffTestCase):
             im.save(out, compression=compression)
 
     def test_fp_leak(self) -> None:
-        im: Image.Image | None = Image.open("Tests/images/hopper_g4_500.tif")
+        im: ImageFile.ImageFile | None = Image.open("Tests/images/hopper_g4_500.tif")
         assert im is not None
+        assert im.fp is not None
         fn = im.fp.fileno()
 
         os.fstat(fn)
@@ -572,6 +592,7 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/multipage.tiff") as im:
             # file is a multipage tiff,  10x10 green, 10x10 red, 20x20 blue
 
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             im.seek(0)
             assert im.size == (10, 10)
             assert im.convert("RGB").getpixel((0, 0)) == (0, 128, 0)
@@ -591,6 +612,7 @@ class TestFileLibTiff(LibTiffTestCase):
         # issue #862
         monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
         with Image.open("Tests/images/multipage.tiff") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             frames = im.n_frames
             assert frames == 3
             for _ in range(frames):
@@ -610,6 +632,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test__next(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
         with Image.open("Tests/images/hopper.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert not im.tag.next
             im.load()
             assert not im.tag.next
@@ -690,21 +713,25 @@ class TestFileLibTiff(LibTiffTestCase):
         im.save(outfile, compression="jpeg")
 
         with Image.open(outfile) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2[530] == (1, 1)
             assert reloaded.tag_v2[532] == (0, 255, 128, 255, 128, 255)
 
     def test_exif_ifd(self) -> None:
         out = io.BytesIO()
         with Image.open("Tests/images/tiff_adobe_deflate.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.tag_v2[34665] == 125456
             im.save(out, "TIFF")
 
             with Image.open(out) as reloaded:
+                assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
                 assert 34665 not in reloaded.tag_v2
 
             im.save(out, "TIFF", tiffinfo={34665: 125456})
 
         with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             if Image.core.libtiff_support_custom_tags:
                 assert reloaded.tag_v2[34665] == 125456
 
@@ -786,6 +813,8 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_multipage_compression(self) -> None:
         with Image.open("Tests/images/compression.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+
             im.seek(0)
             assert im._compression == "tiff_ccitt"
             assert im.size == (10, 10)
@@ -1090,6 +1119,7 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
             for i in range(2, 9):
                 with Image.open("Tests/images/g4_orientation_" + str(i) + ".tif") as im:
+                    assert isinstance(im, TiffImagePlugin.TiffImageFile)
                     assert 274 in im.tag_v2
 
                     im.load()
@@ -1101,9 +1131,8 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
             for i in range(2, 9):
                 with Image.open("Tests/images/g4_orientation_" + str(i) + ".tif") as im:
-                    im = ImageOps.exif_transpose(im)
-
-                    assert_image_similar(base_im, im, 0.7)
+                    transposed_im = ImageOps.exif_transpose(im)
+                    assert_image_similar(base_im, transposed_im, 0.7)
 
     @pytest.mark.parametrize(
         "test_file",
