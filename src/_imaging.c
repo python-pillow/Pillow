@@ -240,14 +240,14 @@ ArrowError(int err) {
         return ImagingError_MemoryError();
     }
     if (err == IMAGING_ARROW_INCOMPATIBLE_MODE) {
-        return ImagingError_ValueError("Incompatible Pillow mode for Arrow Array");
+        return ImagingError_ValueError("Incompatible Pillow mode for Arrow array");
     }
     if (err == IMAGING_ARROW_MEMORY_LAYOUT) {
         return ImagingError_ValueError(
             "Image is in multiple array blocks, use imaging_new_block for zero copy"
         );
     }
-    return ImagingError_ValueError("Unknown Error");
+    return ImagingError_ValueError("Unknown error");
 }
 
 void
@@ -313,7 +313,7 @@ _new_arrow(PyObject *self, PyObject *args) {
         PyImagingNew(ImagingNewArrow(mode, xsize, ysize, schema_capsule, array_capsule)
         );
     if (!ret) {
-        return ImagingError_ValueError("Invalid arrow array mode or size mismatch");
+        return ImagingError_ValueError("Invalid Arrow array mode or size mismatch");
     }
     return ret;
 }

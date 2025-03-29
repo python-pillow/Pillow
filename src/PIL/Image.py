@@ -3210,16 +3210,9 @@ class SupportsArrowArrayInterface(Protocol):
     data interface.
     """
 
-    # Sorry, no types for you until pre-commit.ci stops changing stringy
-    # PyCapsule type to an unimportable value type, which then fails lint.
-    # PyCapsules are not importable, and only available in the C-API layer.
-    # def __arrow_c_array__(
-    #     self, requested_schema: 'PyCapsule' = None
-    # ) -> tuple['PyCapsule', 'PyCapsule']:
-    #     raise NotImplementedError()
-
-    # old not typed definition.
-    def __arrow_c_array__(self, requested_schema=None):
+    def __arrow_c_array__(
+        self, requested_schema: "PyCapsule" = None  # type: ignore[name-defined]  # noqa: F821, UP037
+    ) -> tuple["PyCapsule", "PyCapsule"]:  # type: ignore[name-defined]  # noqa: F821, UP037
         raise NotImplementedError()
 
 
@@ -3312,7 +3305,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
 
 
 def fromarrow(obj: SupportsArrowArrayInterface, mode, size) -> Image:
-    """Creates an image with zero copy shared memory from an object exporting
+    """Creates an image with zero-copy shared memory from an object exporting
     the arrow_c_array interface protocol::
 
       from PIL import Image
@@ -3323,7 +3316,7 @@ def fromarrow(obj: SupportsArrowArrayInterface, mode, size) -> Image:
     If the data representation of the ``obj`` is not compatible with
     Pillow internal storage, a ValueError is raised.
 
-    Pillow images can also be converted to arrow objects::
+    Pillow images can also be converted to Arrow objects::
 
       from PIL import Image
       import pyarrow as pa
@@ -3339,13 +3332,13 @@ def fromarrow(obj: SupportsArrowArrayInterface, mode, size) -> Image:
     :param size: Image size. This must match the storage of the arrow object.
     :returns: An Image Object
 
-    Note that according to the arrow spec, both the producer and the
+    Note that according to the Arrow spec, both the producer and the
     consumer should consider the exported array to be immutable, as
     unsynchronized updates will potentially cause inconsistent data.
 
     See: :ref:`arrow-support` for more detailed information
 
-    .. versionadded:: 11.2
+    .. versionadded:: 11.2.0
 
     """
     if not hasattr(obj, "__arrow_c_array__"):

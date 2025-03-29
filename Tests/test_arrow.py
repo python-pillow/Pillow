@@ -4,9 +4,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import (
-    hopper,
-)
+from .helper import hopper
 
 
 @pytest.mark.parametrize(
