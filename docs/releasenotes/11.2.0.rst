@@ -4,15 +4,12 @@
 Security
 ========
 
-TODO
-^^^^
+Undefined shift when loading compressed DDS images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
-
-:cve:`YYYY-XXXXX`: TODO
-^^^^^^^^^^^^^^^^^^^^^^^
-
-TODO
+When loading some compressed DDS formats, an integer was bitshifted by 24 places to
+generate the 32 bits of the lookup table. This was undefined behaviour, and has been
+present since Pillow 3.4.0.
 
 Deprecations
 ============
