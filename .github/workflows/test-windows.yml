@@ -40,6 +40,7 @@ jobs:
         os: ["windows-latest"]
         include:
             # Test the oldest Python on 32-bit
+            - { python-version: "3.9", architecture: "x86", os: "windows-2019" }
     timeout-minutes: 30
 
     name: Python ${{ matrix.python-version }} (${{ matrix.architecture }})
