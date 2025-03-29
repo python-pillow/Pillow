@@ -116,6 +116,7 @@ V = {
     "HARFBUZZ": "11.0.0",
     "JPEGTURBO": "3.1.0",
     "LCMS2": "2.17",
+    "LIBAVIF": "1.2.1",
     "LIBIMAGEQUANT": "4.3.4",
     "LIBPNG": "1.6.47",
     "LIBWEBP": "1.5.0",
@@ -377,6 +378,26 @@ DEPS: dict[str, dict[str, Any]] = {
             *cmds_cmake("fribidi", "-DARCH={architecture}"),
         ],
         "bins": [r"*.dll"],
+    },
+    "libavif": {
+        "url": f"https://github.com/AOMediaCodec/libavif/archive/v{V['LIBAVIF']}.zip",
+        "filename": f"libavif-{V['LIBAVIF']}.zip",
+        "license": "LICENSE",
+        "build": [
+            f"{sys.executable} -m pip install meson",
+            *cmds_cmake(
+                "avif_static",
+                "-DBUILD_SHARED_LIBS=OFF",
+                "-DAVIF_LIBSHARPYUV=LOCAL",
+                "-DAVIF_LIBYUV=LOCAL",
+                "-DAVIF_CODEC_AOM=LOCAL",
+                "-DAVIF_CODEC_DAV1D=LOCAL",
+                "-DAVIF_CODEC_RAV1E=LOCAL",
+                "-DAVIF_CODEC_SVT=LOCAL",
+            ),
+            cmd_xcopy("include", "{inc_dir}"),
+        ],
+        "libs": ["avif.lib"],
     },
 }
 
@@ -683,6 +704,11 @@ def main() -> None:
         action="store_true",
         help="skip LGPL-licensed optional dependency FriBiDi",
     )
+    parser.add_argument(
+        "--no-avif",
+        action="store_true",
+        help="skip optional dependency libavif",
+    )
     args = parser.parse_args()
 
     arch_prefs = ARCHITECTURES[args.architecture]
@@ -723,6 +749,8 @@ def main() -> None:
         disabled += ["libimagequant"]
     if args.no_fribidi:
         disabled += ["fribidi"]
+    if args.no_avif or args.architecture != "AMD64":
+        disabled += ["libavif"]
 
     prefs = {
         "architecture": args.architecture,
