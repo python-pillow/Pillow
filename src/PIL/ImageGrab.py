@@ -77,14 +77,16 @@ def grab(
             raise OSError(msg)
         size, data = Image.core.grabscreen_x11(display_name)
     except OSError:
-        if (
-            display_name is None
-            and sys.platform not in ("darwin", "win32")
-            and shutil.which("gnome-screenshot")
-        ):
+        if display_name is None and sys.platform not in ("darwin", "win32"):
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
-            subprocess.call(["gnome-screenshot", "-f", filepath])
+            if shutil.which("gnome-screenshot"):
+                subprocess.call(["gnome-screenshot", "-f", filepath])
+            elif shutil.which("spectacle"):
+                subprocess.call(["spectacle", "-n", "-b", "-f", "-o", filepath])
+            else:
+                os.unlink(filepath)
+                raise
             im = Image.open(filepath)
             im.load()
             os.unlink(filepath)
