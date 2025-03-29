@@ -39,6 +39,7 @@ class TestShellInjection:
             shutil.copy(TEST_JPG, src_file)
 
             with Image.open(src_file) as im:
+                assert isinstance(im, JpegImagePlugin.JpegImageFile)
                 im.load_djpeg()
 
     @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
