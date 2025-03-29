@@ -97,6 +97,20 @@ def test_load_set_dpi() -> None:
 
             assert_image_similar_tofile(im, "Tests/images/drawing_wmf_ref_144.png", 2.1)
 
+    with Image.open("Tests/images/drawing.emf") as im:
+        assert im.size == (1625, 1625)
+
+        if not hasattr(Image.core, "drawwmf"):
+            return
+        im.load(im.info["dpi"])
+        assert im.size == (1625, 1625)
+
+    with Image.open("Tests/images/drawing.emf") as im:
+        im.load((72, 144))
+        assert im.size == (82, 164)
+
+        assert_image_equal_tofile(im, "Tests/images/drawing_emf_ref_72_144.png")
+
 
 @pytest.mark.parametrize("ext", (".wmf", ".emf"))
 def test_save(ext: str, tmp_path: Path) -> None:
