@@ -40,7 +40,7 @@ import warnings
 import zlib
 from collections.abc import Callable
 from enum import IntEnum
-from typing import IO, TYPE_CHECKING, Any, NamedTuple, NoReturn, cast
+from typing import IO, Any, NamedTuple, NoReturn, cast
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i16be as i16
@@ -50,6 +50,7 @@ from ._binary import o16be as o16
 from ._binary import o32be as o32
 from ._util import DeferredError
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from . import _imaging
 
