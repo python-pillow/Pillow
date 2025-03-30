@@ -22,10 +22,9 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from typing import TYPE_CHECKING
-
 from . import Image
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from . import ImageWin
 
