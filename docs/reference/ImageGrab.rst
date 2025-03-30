@@ -9,7 +9,7 @@ or the clipboard to a PIL image memory.
 
 .. versionadded:: 1.1.3
 
-.. py:function:: grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=None)
+.. py:function:: grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=None, window=None)
 
     Take a snapshot of the screen. The pixels inside the bounding box are returned as
     an "RGBA" on macOS, or an "RGB" image otherwise. If the bounding box is omitted,
@@ -40,7 +40,7 @@ or the clipboard to a PIL image memory.
 
         .. versionadded:: 7.1.0
 
-    :param handle:
+    :param window:
         HWND, to capture a single window. Windows only.
 
         .. versionadded:: 11.2.0
