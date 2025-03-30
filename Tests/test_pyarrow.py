@@ -106,4 +106,5 @@ def test_lifetime2() -> None:
 
     img2 = img.copy()
     px = img2.load()
+    assert px # make mypy happy
     assert isinstance(px[0, 0], int)
