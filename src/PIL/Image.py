@@ -3325,7 +3325,7 @@ def fromarrow(obj: SupportsArrowArrayInterface, mode, size) -> Image:
 
     As with array support, when converting Pillow images to arrays,
     only pixel values are transferred. This means that P and PA mode
-    image will lose their palette.
+    images will lose their palette.
 
     :param obj: Object with an arrow_c_array interface
     :param mode: Image mode.

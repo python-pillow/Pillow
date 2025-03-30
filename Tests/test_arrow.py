@@ -11,7 +11,7 @@ from .helper import hopper
     "mode, dest_modes",
     (
         ("L", ["I", "F", "LA", "RGB", "RGBA", "RGBX", "CMYK", "YCbCr", "HSV"]),
-        ("I", ["L", "F"]),  # Technically I32 can work for any 4x8bit storage.
+        ("I", ["L", "F"]),  # Technically I;32 can work for any 4x8bit storage.
         ("F", ["I", "L", "LA", "RGB", "RGBA", "RGBX", "CMYK", "YCbCr", "HSV"]),
         ("LA", ["L", "F"]),
         ("RGB", ["L", "F"]),
@@ -29,7 +29,7 @@ def test_invalid_array_type(mode: str, dest_modes: list[str]) -> None:
             Image.fromarrow(img, dest_mode, img.size)
 
 
-def test_invalid_array_size():
+def test_invalid_array_size() -> None:
     img = hopper("RGB")
 
     assert img.size != (10, 10)
@@ -37,14 +37,14 @@ def test_invalid_array_size():
         Image.fromarrow(img, "RGB", (10, 10))
 
 
-def test_release_schema():
+def test_release_schema() -> None:
     # these should not error out, valgrind should be clean
     img = hopper("L")
     schema = img.__arrow_c_schema__()
     del schema
 
 
-def test_release_array():
+def test_release_array() -> None:
     # these should not error out, valgrind should be clean
     img = hopper("L")
     array, schema = img.__arrow_c_array__()
@@ -52,7 +52,7 @@ def test_release_array():
     del schema
 
 
-def test_readonly():
+def test_readonly() -> None:
     img = hopper("L")
     reloaded = Image.fromarrow(img, img.mode, img.size)
     assert reloaded.readonly == 1
@@ -60,7 +60,7 @@ def test_readonly():
     assert reloaded.readonly == 1
 
 
-def test_multiblock_l_image():
+def test_multiblock_l_image() -> None:
     block_size = Image.core.get_block_size()
 
     # check a 2 block image in single channel mode
@@ -71,7 +71,7 @@ def test_multiblock_l_image():
         (schema, arr) = img.__arrow_c_array__()
 
 
-def test_multiblock_rgba_image():
+def test_multiblock_rgba_image() -> None:
     block_size = Image.core.get_block_size()
 
     # check a 2 block image in 4 channel mode
@@ -82,7 +82,7 @@ def test_multiblock_rgba_image():
         (schema, arr) = img.__arrow_c_array__()
 
 
-def test_multiblock_l_schema():
+def test_multiblock_l_schema() -> None:
     block_size = Image.core.get_block_size()
 
     # check a 2 block image in single channel mode
@@ -93,7 +93,7 @@ def test_multiblock_l_schema():
         img.__arrow_c_schema__()
 
 
-def test_multiblock_rgba_schema():
+def test_multiblock_rgba_schema() -> None:
     block_size = Image.core.get_block_size()
 
     # check a 2 block image in 4 channel mode
@@ -104,7 +104,7 @@ def test_multiblock_rgba_schema():
         img.__arrow_c_schema__()
 
 
-def test_singleblock_l_image():
+def test_singleblock_l_image() -> None:
     Image.core.set_use_block_allocator(1)
 
     block_size = Image.core.get_block_size()
@@ -121,7 +121,7 @@ def test_singleblock_l_image():
     Image.core.set_use_block_allocator(0)
 
 
-def test_singleblock_rgba_image():
+def test_singleblock_rgba_image() -> None:
     Image.core.set_use_block_allocator(1)
     block_size = Image.core.get_block_size()
 
@@ -136,7 +136,7 @@ def test_singleblock_rgba_image():
     Image.core.set_use_block_allocator(0)
 
 
-def test_singleblock_l_schema():
+def test_singleblock_l_schema() -> None:
     Image.core.set_use_block_allocator(1)
     block_size = Image.core.get_block_size()
 
@@ -150,7 +150,7 @@ def test_singleblock_l_schema():
     Image.core.set_use_block_allocator(0)
 
 
-def test_singleblock_rgba_schema():
+def test_singleblock_rgba_schema() -> None:
     Image.core.set_use_block_allocator(1)
     block_size = Image.core.get_block_size()
 

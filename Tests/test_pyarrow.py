@@ -71,7 +71,7 @@ def test_to_array(mode: str, dtype: Any, mask: Any) -> None:
     assert_image_equal(img, reloaded)
 
 
-def test_lifetime():
+def test_lifetime() -> None:
     # valgrind shouldn't error out here.
     # arrays should be accessible after the image is deleted.
 
@@ -89,7 +89,7 @@ def test_lifetime():
     del arr_2
 
 
-def test_lifetime2():
+def test_lifetime2() -> None:
     # valgrind shouldn't error out here.
     # img should remain after the arrays are collected.
 

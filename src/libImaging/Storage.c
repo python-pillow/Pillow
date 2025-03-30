@@ -572,7 +572,7 @@ ImagingAllocateBlock(Imaging im) {
 
 static void
 ImagingDestroyArrow(Imaging im) {
-    // Rely on the internal python destructor for the array capsule.
+    // Rely on the internal Python destructor for the array capsule.
     if (im->arrow_array_capsule) {
         Py_DECREF(im->arrow_array_capsule);
         im->arrow_array_capsule = NULL;

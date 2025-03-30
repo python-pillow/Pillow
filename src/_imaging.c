@@ -291,7 +291,6 @@ ExportArrowArrayPyCapsule(ImagingObject *self) {
         return PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
     }
     free(array);
-    // raise error here
     return ArrowError(err);
 }
 

@@ -37,7 +37,7 @@ python3 -m pip install -U pytest-cov
 python3 -m pip install -U pytest-timeout
 python3 -m pip install pyroma
 # optional test dependency, only install if there's a binary package.
-# fails on beta 3.14 and pypy3.10
+# fails on beta 3.14 and PyPy
 python3 -m pip install --only-binary=:all: pyarrow || true
 
 if [[ $(uname) != CYGWIN* ]]; then
