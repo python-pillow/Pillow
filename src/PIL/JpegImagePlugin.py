@@ -42,7 +42,7 @@ import subprocess
 import sys
 import tempfile
 import warnings
-from typing import IO, TYPE_CHECKING, Any
+from typing import IO, Any
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -52,6 +52,7 @@ from ._binary import o16be as o16
 from ._deprecate import deprecate
 from .JpegPresets import presets
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from .MpoImagePlugin import MpoImageFile
 
@@ -77,7 +78,7 @@ def APP(self: JpegImageFile, marker: int) -> None:
     self.app[app] = s  # compatibility
     self.applist.append((app, s))
 
-    if marker == 0xFFE0 and s[:4] == b"JFIF":
+    if marker == 0xFFE0 and s.startswith(b"JFIF"):
         # extract JFIF information
         self.info["jfif"] = version = i16(s, 5)  # version
         self.info["jfif_version"] = divmod(version, 256)
@@ -95,19 +96,19 @@ def APP(self: JpegImageFile, marker: int) -> None:
                 self.info["dpi"] = tuple(d * 2.54 for d in jfif_density)
             self.info["jfif_unit"] = jfif_unit
             self.info["jfif_density"] = jfif_density
-    elif marker == 0xFFE1 and s[:6] == b"Exif\0\0":
+    elif marker == 0xFFE1 and s.startswith(b"Exif\0\0"):
         # extract EXIF information
         if "exif" in self.info:
             self.info["exif"] += s[6:]
         else:
             self.info["exif"] = s
             self._exif_offset = self.fp.tell() - n + 6
-    elif marker == 0xFFE1 and s[:29] == b"http://ns.adobe.com/xap/1.0/\x00":
+    elif marker == 0xFFE1 and s.startswith(b"http://ns.adobe.com/xap/1.0/\x00"):
         self.info["xmp"] = s.split(b"\x00", 1)[1]
-    elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
+    elif marker == 0xFFE2 and s.startswith(b"FPXR\0"):
         # extract FlashPix information (incomplete)
         self.info["flashpix"] = s  # FIXME: value will change
-    elif marker == 0xFFE2 and s[:12] == b"ICC_PROFILE\0":
+    elif marker == 0xFFE2 and s.startswith(b"ICC_PROFILE\0"):
         # Since an ICC profile can be larger than the maximum size of
         # a JPEG marker (64K), we need provisions to split it into
         # multiple markers. The format defined by the ICC specifies
@@ -120,7 +121,7 @@ def APP(self: JpegImageFile, marker: int) -> None:
         # reassemble the profile, rather than assuming that the APP2
         # markers appear in the correct sequence.
         self.icclist.append(s)
-    elif marker == 0xFFED and s[:14] == b"Photoshop 3.0\x00":
+    elif marker == 0xFFED and s.startswith(b"Photoshop 3.0\x00"):
         # parse the image resource block
         offset = 14
         photoshop = self.info.setdefault("photoshop", {})
@@ -153,7 +154,7 @@ def APP(self: JpegImageFile, marker: int) -> None:
             except struct.error:
                 break  # insufficient data
 
-    elif marker == 0xFFEE and s[:5] == b"Adobe":
+    elif marker == 0xFFEE and s.startswith(b"Adobe"):
         self.info["adobe"] = i16(s, 5)
         # extract Adobe custom properties
         try:
@@ -162,7 +163,7 @@ def APP(self: JpegImageFile, marker: int) -> None:
             pass
         else:
             self.info["adobe_transform"] = adobe_transform
-    elif marker == 0xFFE2 and s[:4] == b"MPF\0":
+    elif marker == 0xFFE2 and s.startswith(b"MPF\0"):
         # extract MPO information
         self.info["mp"] = s[4:]
         # offset is current location minus buffer size
@@ -325,7 +326,7 @@ MARKER = {
 
 def _accept(prefix: bytes) -> bool:
     # Magic number was taken from https://en.wikipedia.org/wiki/JPEG
-    return prefix[:3] == b"\xff\xd8\xff"
+    return prefix.startswith(b"\xff\xd8\xff")
 
 
 ##
@@ -547,7 +548,7 @@ def _getmp(self: JpegImageFile) -> dict[int, Any] | None:
         return None
     file_contents = io.BytesIO(data)
     head = file_contents.read(8)
-    endianness = ">" if head[:4] == b"\x4d\x4d\x00\x2a" else "<"
+    endianness = ">" if head.startswith(b"\x4d\x4d\x00\x2a") else "<"
     # process dictionary
     from . import TiffImagePlugin
 
@@ -569,7 +570,7 @@ def _getmp(self: JpegImageFile) -> dict[int, Any] | None:
     mpentries = []
     try:
         rawmpentries = mp[0xB002]
-        for entrynum in range(0, quant):
+        for entrynum in range(quant):
             unpackedentry = struct.unpack_from(
                 f"{endianness}LLLHH", rawmpentries, entrynum * 16
             )

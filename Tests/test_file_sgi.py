@@ -71,31 +71,33 @@ def test_invalid_file() -> None:
         SgiImagePlugin.SgiImageFile(invalid_file)
 
 
-def test_write(tmp_path: Path) -> None:
-    def roundtrip(img: Image.Image) -> None:
-        out = str(tmp_path / "temp.sgi")
-        img.save(out, format="sgi")
+def roundtrip(img: Image.Image, tmp_path: Path) -> None:
+    out = tmp_path / "temp.sgi"
+    img.save(out, format="sgi")
+    assert_image_equal_tofile(img, out)
+
+    out = tmp_path / "fp.sgi"
+    with open(out, "wb") as fp:
+        img.save(fp)
         assert_image_equal_tofile(img, out)
 
-        out = str(tmp_path / "fp.sgi")
-        with open(out, "wb") as fp:
-            img.save(fp)
-            assert_image_equal_tofile(img, out)
+        assert not fp.closed
 
-            assert not fp.closed
 
-    for mode in ("L", "RGB", "RGBA"):
-        roundtrip(hopper(mode))
+@pytest.mark.parametrize("mode", ("L", "RGB", "RGBA"))
+def test_write(mode: str, tmp_path: Path) -> None:
+    roundtrip(hopper(mode), tmp_path)
 
-    # Test 1 dimension for an L mode image
-    roundtrip(Image.new("L", (10, 1)))
+
+def test_write_L_mode_1_dimension(tmp_path: Path) -> None:
+    roundtrip(Image.new("L", (10, 1)), tmp_path)
 
 
 def test_write16(tmp_path: Path) -> None:
     test_file = "Tests/images/hopper16.rgb"
 
     with Image.open(test_file) as im:
-        out = str(tmp_path / "temp.sgi")
+        out = tmp_path / "temp.sgi"
         im.save(out, format="sgi", bpc=2)
 
         assert_image_equal_tofile(im, out)
@@ -103,7 +105,7 @@ def test_write16(tmp_path: Path) -> None:
 
 def test_unsupported_mode(tmp_path: Path) -> None:
     im = hopper("LA")
-    out = str(tmp_path / "temp.sgi")
+    out = tmp_path / "temp.sgi"
 
     with pytest.raises(ValueError):
         im.save(out, format="sgi")

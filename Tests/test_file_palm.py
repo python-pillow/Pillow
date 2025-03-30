@@ -14,7 +14,7 @@ from .helper import assert_image_equal, hopper, magick_command
 def helper_save_as_palm(tmp_path: Path, mode: str) -> None:
     # Arrange
     im = hopper(mode)
-    outfile = str(tmp_path / ("temp_" + mode + ".palm"))
+    outfile = tmp_path / ("temp_" + mode + ".palm")
 
     # Act
     im.save(outfile)
@@ -25,7 +25,7 @@ def helper_save_as_palm(tmp_path: Path, mode: str) -> None:
 
 
 def open_with_magick(magick: list[str], tmp_path: Path, f: str) -> Image.Image:
-    outfile = str(tmp_path / "temp.png")
+    outfile = tmp_path / "temp.png"
     rc = subprocess.call(
         magick + [f, outfile], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
     )
@@ -43,6 +43,11 @@ def roundtrip(tmp_path: Path, mode: str) -> None:
 
     im.save(outfile)
     converted = open_with_magick(magick, tmp_path, outfile)
+    if mode == "P":
+        assert converted.mode == "P"
+
+        im = im.convert("RGB")
+        converted = converted.convert("RGB")
     assert_image_equal(converted, im)
 
 
@@ -55,7 +60,6 @@ def test_monochrome(tmp_path: Path) -> None:
     roundtrip(tmp_path, mode)
 
 
-@pytest.mark.xfail(reason="Palm P image is wrong")
 def test_p_mode(tmp_path: Path) -> None:
     # Arrange
     mode = "P"

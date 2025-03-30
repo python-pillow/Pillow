@@ -246,7 +246,7 @@ class BLPFormatError(NotImplementedError):
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] in (b"BLP1", b"BLP2")
+    return prefix.startswith((b"BLP1", b"BLP2"))
 
 
 class BlpImageFile(ImageFile.ImageFile):
@@ -291,7 +291,7 @@ class BlpImageFile(ImageFile.ImageFile):
         self.tile = [ImageFile._Tile(decoder, (0, 0) + self.size, offset, args)]
 
 
-class _BLPBaseDecoder(ImageFile.PyDecoder):
+class _BLPBaseDecoder(abc.ABC, ImageFile.PyDecoder):
     _pulls_fd = True
 
     def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:

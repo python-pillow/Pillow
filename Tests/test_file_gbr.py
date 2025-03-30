@@ -16,7 +16,7 @@ def test_load() -> None:
     with Image.open("Tests/images/gbr.gbr") as im:
         px = im.load()
         assert px is not None
-        assert im.load()[0, 0] == (0, 0, 0, 0)
+        assert px[0, 0] == (0, 0, 0, 0)
 
         # Test again now that it has already been loaded once
         px = im.load()

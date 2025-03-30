@@ -28,10 +28,11 @@ from __future__ import annotations
 
 import tkinter
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any
 
 from . import Image, ImageFile
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from ._typing import CapsuleType
 
@@ -263,28 +264,3 @@ def getimage(photo: PhotoImage) -> Image.Image:
     _pyimagingtkcall("PyImagingPhotoGet", photo, im.getim())
 
     return im
-
-
-def _show(image: Image.Image, title: str | None) -> None:
-    """Helper for the Image.show method."""
-
-    class UI(tkinter.Label):
-        def __init__(self, master: tkinter.Toplevel, im: Image.Image) -> None:
-            self.image: BitmapImage | PhotoImage
-            if im.mode == "1":
-                self.image = BitmapImage(im, foreground="white", master=master)
-            else:
-                self.image = PhotoImage(im, master=master)
-            if TYPE_CHECKING:
-                image = cast(tkinter._Image, self.image)
-            else:
-                image = self.image
-            super().__init__(master, image=image, bg="black", bd=0)
-
-    if not getattr(tkinter, "_default_root"):
-        msg = "tkinter not initialized"
-        raise OSError(msg)
-    top = tkinter.Toplevel()
-    if title:
-        top.title(title)
-    UI(top, image).pack()

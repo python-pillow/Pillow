@@ -16,6 +16,6 @@
         }
     ],
     "schedule": [
-        "on the 3rd day of the month"
+        "* * 3 * *"
     ]
 }

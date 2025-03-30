@@ -27,6 +27,7 @@ from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import si16be as si16
 from ._binary import si32be as si32
+from ._util import DeferredError
 
 MODES = {
     # (photoshop mode, bits) -> (pil mode, required channels)
@@ -47,7 +48,7 @@ MODES = {
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"8BPS"
+    return prefix.startswith(b"8BPS")
 
 
 ##
@@ -148,6 +149,8 @@ class PsdImageFile(ImageFile.ImageFile):
     ) -> list[tuple[str, str, tuple[int, int, int, int], list[ImageFile._Tile]]]:
         layers = []
         if self._layers_position is not None:
+            if isinstance(self._fp, DeferredError):
+                raise self._fp.ex
             self._fp.seek(self._layers_position)
             _layer_data = io.BytesIO(ImageFile._safe_read(self._fp, self._layers_size))
             layers = _layerinfo(_layer_data, self._layers_size)
@@ -167,17 +170,15 @@ class PsdImageFile(ImageFile.ImageFile):
     def seek(self, layer: int) -> None:
         if not self._seek_check(layer):
             return
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
 
         # seek to given layer (1..max)
-        try:
-            _, mode, _, tile = self.layers[layer - 1]
-            self._mode = mode
-            self.tile = tile
-            self.frame = layer
-            self.fp = self._fp
-        except IndexError as e:
-            msg = "no such layer"
-            raise EOFError(msg) from e
+        _, mode, _, tile = self.layers[layer - 1]
+        self._mode = mode
+        self.tile = tile
+        self.frame = layer
+        self.fp = self._fp
 
     def tell(self) -> int:
         # return layer number (0=image, 1..max=layers)

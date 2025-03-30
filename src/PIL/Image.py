@@ -41,14 +41,7 @@ import warnings
 from collections.abc import Callable, Iterator, MutableMapping, Sequence
 from enum import IntEnum
 from types import ModuleType
-from typing import (
-    IO,
-    TYPE_CHECKING,
-    Any,
-    Literal,
-    Protocol,
-    cast,
-)
+from typing import IO, Any, Literal, Protocol, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -218,6 +211,7 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 # --------------------------------------------------------------------
 # Registries
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     import mmap
     from xml.etree.ElementTree import Element
@@ -548,7 +542,6 @@ class Image:
 
     def __init__(self) -> None:
         # FIXME: take "new" parameters / other image?
-        # FIXME: turn mode and size into delegating properties?
         self._im: core.ImagingCore | DeferredError | None = None
         self._mode = ""
         self._size = (0, 0)
@@ -622,6 +615,8 @@ class Image:
         more information.
         """
         if getattr(self, "map", None):
+            if sys.platform == "win32" and hasattr(sys, "pypy_version_info"):
+                self.map.close()
             self.map: mmap.mmap | None = None
 
         # Instead of simply setting to None, we're setting up a
@@ -1001,7 +996,7 @@ class Image:
                 elif len(mode) == 3:
                     transparency = tuple(
                         convert_transparency(matrix[i * 4 : i * 4 + 4], transparency)
-                        for i in range(0, len(transparency))
+                        for i in range(len(transparency))
                     )
                 new_im.info["transparency"] = transparency
             return new_im
@@ -2475,7 +2470,21 @@ class Image:
            format to use is determined from the filename extension.
            If a file object was used instead of a filename, this
            parameter should always be used.
-        :param params: Extra parameters to the image writer.
+        :param params: Extra parameters to the image writer. These can also be
+           set on the image itself through ``encoderinfo``. This is useful when
+           saving multiple images::
+
+             # Saving XMP data to a single image
+             from PIL import Image
+             red = Image.new("RGB", (1, 1), "#f00")
+             red.save("out.mpo", xmp=b"test")
+
+             # Saving XMP data to the second frame of an image
+             from PIL import Image
+             black = Image.new("RGB", (1, 1))
+             red = Image.new("RGB", (1, 1), "#f00")
+             red.encoderinfo = {"xmp": b"test"}
+             black.save("out.mpo", save_all=True, append_images=[red])
         :returns: None
         :exception ValueError: If the output format could not be determined
            from the file name.  Use the format option to solve this.
@@ -2497,9 +2506,6 @@ class Image:
             # only set the name for metadata purposes
             filename = os.fspath(fp.name)
 
-        # may mutate self!
-        self._ensure_mutable()
-
         preinit()
 
         filename_ext = os.path.splitext(filename)[1].lower()
@@ -2514,9 +2520,20 @@ class Image:
                 msg = f"unknown file extension: {ext}"
                 raise ValueError(msg) from e
 
+        # may mutate self!
+        self._ensure_mutable()
+
+        save_all = params.pop("save_all", None)
+        self.encoderinfo = {**getattr(self, "encoderinfo", {}), **params}
+        self.encoderconfig: tuple[Any, ...] = ()
+
         if format.upper() not in SAVE:
             init()
-        if params.pop("save_all", False):
+        if save_all or (
+            save_all is None
+            and params.get("append_images")
+            and format.upper() in SAVE_ALL
+        ):
             save_handler = SAVE_ALL[format.upper()]
         else:
             save_handler = SAVE[format.upper()]
@@ -2528,9 +2545,6 @@ class Image:
                 converted_im = self._convert_mode(modes, params)
                 if converted_im:
                     return converted_im.save(fp, format, **params)
-
-        self.encoderinfo = {**getattr(self, "encoderinfo", {}), **params}
-        self.encoderconfig: tuple[Any, ...] = ()
 
         created = False
         if open_fp:
@@ -3033,7 +3047,7 @@ class Image:
 # Abstract handlers.
 
 
-class ImagePointHandler:
+class ImagePointHandler(abc.ABC):
     """
     Used as a mixin by point transforms
     (for use with :py:meth:`~PIL.Image.Image.point`)
@@ -3044,7 +3058,7 @@ class ImagePointHandler:
         pass
 
 
-class ImageTransformHandler:
+class ImageTransformHandler(abc.ABC):
     """
     Used as a mixin by geometry transforms
     (for use with :py:meth:`~PIL.Image.Image.transform`)
@@ -4065,12 +4079,12 @@ class Exif(_ExifBase):
                 if tag == ExifTags.IFD.MakerNote:
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
-                    if tag_data[:8] == b"FUJIFILM":
+                    if tag_data.startswith(b"FUJIFILM"):
                         ifd_offset = i32le(tag_data, 8)
                         ifd_data = tag_data[ifd_offset:]
 
                         makernote = {}
-                        for i in range(0, struct.unpack("<H", ifd_data[:2])[0]):
+                        for i in range(struct.unpack("<H", ifd_data[:2])[0]):
                             ifd_tag, typ, count, data = struct.unpack(
                                 "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
                             )
@@ -4105,7 +4119,7 @@ class Exif(_ExifBase):
                         self._ifds[tag] = dict(self._fixup_dict(makernote))
                     elif self.get(0x010F) == "Nintendo":
                         makernote = {}
-                        for i in range(0, struct.unpack(">H", tag_data[:2])[0]):
+                        for i in range(struct.unpack(">H", tag_data[:2])[0]):
                             ifd_tag, typ, count, data = struct.unpack(
                                 ">HHL4s", tag_data[i * 12 + 2 : (i + 1) * 12 + 2]
                             )

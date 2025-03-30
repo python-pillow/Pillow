@@ -131,6 +131,26 @@ class TestImageFile:
 
         assert_image_equal(im1, im2)
 
+    def test_tile_size(self) -> None:
+        with open("Tests/images/hopper.tif", "rb") as im_fp:
+            data = im_fp.read()
+
+        reads = []
+
+        class FP(BytesIO):
+            def read(self, size: int | None = None) -> bytes:
+                reads.append(size)
+                return super().read(size)
+
+        fp = FP(data)
+        with Image.open(fp) as im:
+            assert len(im.tile) == 7
+
+            im.load()
+
+        # Despite multiple tiles, assert only one tile caused a read of maxblock size
+        assert reads.count(im.decodermaxblock) == 1
+
     def test_raise_oserror(self) -> None:
         with pytest.warns(DeprecationWarning):
             with pytest.raises(OSError):
@@ -176,9 +196,8 @@ class TestImageFile:
                 b"0" * ImageFile.SAFEBLOCK
             )  # only SAFEBLOCK bytes, so that the header is truncated
         )
-        with pytest.raises(OSError) as e:
+        with pytest.raises(OSError, match="Truncated File Read"):
             BmpImagePlugin.BmpImageFile(b)
-        assert str(e.value) == "Truncated File Read"
 
     @skip_unless_feature("zlib")
     def test_truncated_with_errors(self) -> None:

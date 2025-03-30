@@ -33,7 +33,7 @@ def register_handler(handler: ImageFile.StubHandler | None) -> None:
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:8] == b"\x89HDF\r\n\x1a\n"
+    return prefix.startswith(b"\x89HDF\r\n\x1a\n")
 
 
 class HDF5StubImageFile(ImageFile.StubImageFile):

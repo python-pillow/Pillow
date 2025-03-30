@@ -31,7 +31,7 @@ import os
 import subprocess
 from enum import IntEnum
 from functools import cached_property
-from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, Union
+from typing import IO, Any, Literal, NamedTuple, Union
 
 from . import (
     Image,
@@ -45,7 +45,9 @@ from . import (
 from ._binary import i16le as i16
 from ._binary import o8
 from ._binary import o16le as o16
+from ._util import DeferredError
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from . import _imaging
     from ._typing import Buffer
@@ -67,7 +69,7 @@ LOADING_STRATEGY = LoadingStrategy.RGB_AFTER_FIRST
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:6] in [b"GIF87a", b"GIF89a"]
+    return prefix.startswith((b"GIF87a", b"GIF89a"))
 
 
 ##
@@ -167,6 +169,8 @@ class GifImageFile(ImageFile.ImageFile):
                 raise EOFError(msg) from e
 
     def _seek(self, frame: int, update_image: bool = True) -> None:
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         if frame == 0:
             # rewind
             self.__offset = 0
@@ -257,7 +261,7 @@ class GifImageFile(ImageFile.ImageFile):
                     # application extension
                     #
                     info["extension"] = block, self.fp.tell()
-                    if block[:11] == b"NETSCAPE2.0":
+                    if block.startswith(b"NETSCAPE2.0"):
                         block = self.data()
                         if block and len(block) >= 3 and block[0] == 1:
                             self.info["loop"] = i16(block, 1)
