@@ -170,7 +170,9 @@ def Ghostscript(
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"%!PS" or (len(prefix) >= 4 and i32(prefix) == 0xC6D3D0C5)
+    return prefix.startswith(b"%!PS") or (
+        len(prefix) >= 4 and i32(prefix) == 0xC6D3D0C5
+    )
 
 
 ##
@@ -295,7 +297,7 @@ class EpsImageFile(ImageFile.ImageFile):
                     m = field.match(s)
                     if m:
                         k = m.group(1)
-                        if k[:8] == "PS-Adobe":
+                        if k.startswith("PS-Adobe"):
                             self.info["PS-Adobe"] = k[9:]
                         else:
                             self.info[k] = ""
@@ -454,7 +456,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes, eps: int = 1) -
     if hasattr(fp, "flush"):
         fp.flush()
 
-    ImageFile._save(im, fp, [ImageFile._Tile("eps", (0, 0) + im.size, 0, None)])
+    ImageFile._save(im, fp, [ImageFile._Tile("eps", (0, 0) + im.size)])
 
     fp.write(b"\n%%%%EndBinary\n")
     fp.write(b"grestore end\n")

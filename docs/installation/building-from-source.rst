@@ -44,27 +44,27 @@ Many of Pillow's features require external libraries:
 
 * **libtiff** provides compressed TIFF functionality
 
-  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.6.0**
+  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.7.0**
 
 * **libfreetype** provides type related services
 
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.16**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.17**.
 
 * **libwebp** provides the WebP format.
 
 * **openjpeg** provides JPEG 2000 functionality.
 
   * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1**,
-    **2.4.0**, **2.5.0** and **2.5.2**.
+    **2.4.0**, **2.5.0**, **2.5.2** and **2.5.3**.
   * Pillow does **not** support the earlier **1.5** series which ships
     with Debian Jessie.
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.3.3**
+  * Pillow has been tested with libimagequant **2.6-4.3.4**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -148,13 +148,7 @@ Many of Pillow's features require external libraries:
     The easiest way to install external libraries is via `Homebrew
     <https://brew.sh/>`_. After you install Homebrew, run::
 
-        brew install libjpeg libtiff little-cms2 openjpeg webp
-
-    To install libraqm on macOS use Homebrew to install its dependencies::
-
-        brew install freetype harfbuzz fribidi
-
-    Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
+        brew install libjpeg libraqm libtiff little-cms2 openjpeg webp
 
 .. tab:: Windows
 
@@ -194,11 +188,6 @@ Many of Pillow's features require external libraries:
             mingw-w64-x86_64-openjpeg2 \
             mingw-w64-x86_64-libimagequant \
             mingw-w64-x86_64-libraqm
-
-    https://www.msys2.org/docs/python/ states that setuptools >= 60 does not work with
-    MSYS2. To workaround this, before installing Pillow you must run::
-
-        export SETUPTOOLS_USE_DISTUTILS=stdlib
 
 .. tab:: FreeBSD
 

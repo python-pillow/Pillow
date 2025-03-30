@@ -43,7 +43,7 @@ dynamic = [
 optional-dependencies.docs = [
   "furo",
   "olefile",
-  "sphinx>=8.1",
+  "sphinx>=8.2",
   "sphinx-copybutton",
   "sphinx-inline-tabs",
   "sphinxext-opengraph",
@@ -56,7 +56,7 @@ optional-dependencies.mic = [
 ]
 optional-dependencies.tests = [
   "check-manifest",
-  "coverage",
+  "coverage>=7.4.2",
   "defusedxml",
   "markdown2",
   "olefile",
@@ -65,6 +65,7 @@ optional-dependencies.tests = [
   "pytest",
   "pytest-cov",
   "pytest-timeout",
+  "trove-classifiers>=2024.10.12",
 ]
 optional-dependencies.typing = [
   "typing-extensions; python_version<'3.10'",
@@ -72,10 +73,10 @@ optional-dependencies.typing = [
 optional-dependencies.xmp = [
   "defusedxml",
 ]
-urls.Changelog = "https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst"
+urls.Changelog = "https://github.com/python-pillow/Pillow/releases"
 urls.Documentation = "https://pillow.readthedocs.io"
 urls.Funding = "https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=pypi"
-urls.Homepage = "https://python-pillow.org"
+urls.Homepage = "https://python-pillow.github.io"
 urls.Mastodon = "https://fosstodon.org/@pillow"
 urls."Release notes" = "https://pillow.readthedocs.io/en/stable/releasenotes/index.html"
 urls.Source = "https://github.com/python-pillow/Pillow"
@@ -93,9 +94,16 @@ version = { attr = "PIL.__version__" }
 [tool.cibuildwheel]
 before-all = ".github/workflows/wheels-dependencies.sh"
 build-verbosity = 1
+
 config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable"
+# Disable platform guessing on macOS
+macos.config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable platform-guessing=disable"
+
 test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-extras = "tests"
+
+[tool.cibuildwheel.macos.environment]
+PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
 
 [tool.black]
 exclude = "wheels/multibuild"
@@ -113,6 +121,7 @@ lint.select = [
   "ISC",    # flake8-implicit-str-concat
   "LOG",    # flake8-logging
   "PGH",    # pygrep-hooks
+  "PIE",    # flake8-pie
   "PT",     # flake8-pytest-style
   "PYI",    # flake8-pyi
   "RUF100", # unused noqa (yesqa)
@@ -125,6 +134,7 @@ lint.ignore = [
   "E221",   # Multiple spaces before operator
   "E226",   # Missing whitespace around arithmetic operator
   "E241",   # Multiple spaces after ','
+  "PIE790", # flake8-pie: unnecessary-placeholder
   "PT001",  # pytest-fixture-incorrect-parentheses-style
   "PT007",  # pytest-parametrize-values-wrong-type
   "PT011",  # pytest-raises-too-broad

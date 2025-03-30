@@ -22,28 +22,26 @@ def test_sanity() -> None:
     Image.new("HSV", (100, 100))
 
 
-def wedge() -> Image.Image:
-    w = Image._wedge()
-    w90 = w.rotate(90)
+def linear_gradient() -> Image.Image:
+    im = Image.linear_gradient(mode="L")
+    im90 = im.rotate(90)
 
-    (px, h) = w.size
+    (px, h) = im.size
 
     r = Image.new("L", (px * 3, h))
     g = r.copy()
     b = r.copy()
 
-    r.paste(w, (0, 0))
-    r.paste(w90, (px, 0))
+    r.paste(im, (0, 0))
+    r.paste(im90, (px, 0))
 
-    g.paste(w90, (0, 0))
-    g.paste(w, (2 * px, 0))
+    g.paste(im90, (0, 0))
+    g.paste(im, (2 * px, 0))
 
-    b.paste(w, (px, 0))
-    b.paste(w90, (2 * px, 0))
+    b.paste(im, (px, 0))
+    b.paste(im90, (2 * px, 0))
 
-    img = Image.merge("RGB", (r, g, b))
-
-    return img
+    return Image.merge("RGB", (r, g, b))
 
 
 def to_xxx_colorsys(
@@ -79,8 +77,8 @@ def to_rgb_colorsys(im: Image.Image) -> Image.Image:
     return to_xxx_colorsys(im, colorsys.hsv_to_rgb, "RGB")
 
 
-def test_wedge() -> None:
-    src = wedge().resize((3 * 32, 32), Image.Resampling.BILINEAR)
+def test_linear_gradient() -> None:
+    src = linear_gradient().resize((3 * 32, 32), Image.Resampling.BILINEAR)
     im = src.convert("HSV")
     comparable = to_hsv_colorsys(src)
 

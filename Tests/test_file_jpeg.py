@@ -83,7 +83,7 @@ class TestFileJpeg:
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero(self, size: tuple[int, int], tmp_path: Path) -> None:
-        f = str(tmp_path / "temp.jpg")
+        f = tmp_path / "temp.jpg"
         im = Image.new("RGB", size)
         with pytest.raises(ValueError):
             im.save(f)
@@ -91,6 +91,7 @@ class TestFileJpeg:
     def test_app(self) -> None:
         # Test APP/COM reader (@PIL135)
         with Image.open(TEST_FILE) as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             assert im.applist[0] == ("APP0", b"JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00")
             assert im.applist[1] == (
                 "COM",
@@ -181,6 +182,10 @@ class TestFileJpeg:
         assert test(100, 200) == (100, 200)
         assert test(0) is None  # square pixels
 
+    def test_dpi_jfif_cm(self) -> None:
+        with Image.open("Tests/images/jfif_unit_cm.jpg") as im:
+            assert im.info["dpi"] == (2.54, 5.08)
+
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
@@ -190,7 +195,7 @@ class TestFileJpeg:
             icc_profile = im1.info["icc_profile"]
             assert len(icc_profile) == 3144
             # Roundtrip via physical file.
-            f = str(tmp_path / "temp.jpg")
+            f = tmp_path / "temp.jpg"
             im1.save(f, icc_profile=icc_profile)
         with Image.open(f) as im2:
             assert im2.info.get("icc_profile") == icc_profile
@@ -234,7 +239,7 @@ class TestFileJpeg:
         # Sometimes the meta data on the icc_profile block is bigger than
         # Image.MAXBLOCK or the image size.
         with Image.open("Tests/images/icc_profile_big.jpg") as im:
-            f = str(tmp_path / "temp.jpg")
+            f = tmp_path / "temp.jpg"
             icc_profile = im.info["icc_profile"]
             # Should not raise OSError for image with icc larger than image size.
             im.save(
@@ -246,11 +251,11 @@ class TestFileJpeg:
             )
 
         with Image.open("Tests/images/flower2.jpg") as im:
-            f = str(tmp_path / "temp2.jpg")
+            f = tmp_path / "temp2.jpg"
             im.save(f, progressive=True, quality=94, icc_profile=b" " * 53955)
 
         with Image.open("Tests/images/flower2.jpg") as im:
-            f = str(tmp_path / "temp3.jpg")
+            f = tmp_path / "temp3.jpg"
             im.save(f, progressive=True, quality=94, exif=b" " * 43668)
 
     def test_optimize(self) -> None:
@@ -264,7 +269,7 @@ class TestFileJpeg:
 
     def test_optimize_large_buffer(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/148
-        f = str(tmp_path / "temp.jpg")
+        f = tmp_path / "temp.jpg"
         # this requires ~ 1.5x Image.MAXBLOCK
         im = Image.new("RGB", (4096, 4096), 0xFF3333)
         im.save(f, format="JPEG", optimize=True)
@@ -277,17 +282,20 @@ class TestFileJpeg:
         assert not im2.info.get("progressive")
         assert im3.info.get("progressive")
 
-        assert_image_equal(im1, im3)
+        if features.check_feature("mozjpeg"):
+            assert_image_similar(im1, im3, 9.39)
+        else:
+            assert_image_equal(im1, im3)
         assert im1_bytes >= im3_bytes
 
     def test_progressive_large_buffer(self, tmp_path: Path) -> None:
-        f = str(tmp_path / "temp.jpg")
+        f = tmp_path / "temp.jpg"
         # this requires ~ 1.5x Image.MAXBLOCK
         im = Image.new("RGB", (4096, 4096), 0xFF3333)
         im.save(f, format="JPEG", progressive=True)
 
     def test_progressive_large_buffer_highest_quality(self, tmp_path: Path) -> None:
-        f = str(tmp_path / "temp.jpg")
+        f = tmp_path / "temp.jpg"
         im = self.gen_random_image((255, 255))
         # this requires more bytes than pixels in the image
         im.save(f, format="JPEG", progressive=True, quality=100)
@@ -300,7 +308,7 @@ class TestFileJpeg:
 
     def test_large_exif(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/148
-        f = str(tmp_path / "temp.jpg")
+        f = tmp_path / "temp.jpg"
         im = hopper()
         im.save(f, "JPEG", quality=90, exif=b"1" * 65533)
 
@@ -309,6 +317,8 @@ class TestFileJpeg:
 
     def test_exif_typeerror(self) -> None:
         with Image.open("Tests/images/exif_typeerror.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+
             # Should not raise a TypeError
             im._getexif()
 
@@ -328,7 +338,7 @@ class TestFileJpeg:
             assert exif[gps_index] == expected_exif_gps
 
         # Writing
-        f = str(tmp_path / "temp.jpg")
+        f = tmp_path / "temp.jpg"
         exif = Image.Exif()
         exif[gps_index] = expected_exif_gps
         hopper().save(f, exif=exif)
@@ -349,7 +359,6 @@ class TestFileJpeg:
             assert exif.get_ifd(0x8825) == {}
 
             transposed = ImageOps.exif_transpose(im)
-        assert transposed is not None
         exif = transposed.getexif()
         assert exif.get_ifd(0x8825) == {}
 
@@ -420,8 +429,12 @@ class TestFileJpeg:
 
         im2 = self.roundtrip(hopper(), progressive=1)
         im3 = self.roundtrip(hopper(), progression=1)  # compatibility
-        assert_image_equal(im1, im2)
-        assert_image_equal(im1, im3)
+        if features.check_feature("mozjpeg"):
+            assert_image_similar(im1, im2, 9.39)
+            assert_image_similar(im1, im3, 9.39)
+        else:
+            assert_image_equal(im1, im2)
+            assert_image_equal(im1, im3)
         assert im2.info.get("progressive")
         assert im2.info.get("progression")
         assert im3.info.get("progressive")
@@ -490,20 +503,21 @@ class TestFileJpeg:
 
     def test_mp(self) -> None:
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             assert im._getmp() is None
 
     def test_quality_keep(self, tmp_path: Path) -> None:
         # RGB
         with Image.open("Tests/images/hopper.jpg") as im:
-            f = str(tmp_path / "temp.jpg")
+            f = tmp_path / "temp.jpg"
             im.save(f, quality="keep")
         # Grayscale
         with Image.open("Tests/images/hopper_gray.jpg") as im:
-            f = str(tmp_path / "temp.jpg")
+            f = tmp_path / "temp.jpg"
             im.save(f, quality="keep")
         # CMYK
         with Image.open("Tests/images/pil_sample_cmyk.jpg") as im:
-            f = str(tmp_path / "temp.jpg")
+            f = tmp_path / "temp.jpg"
             im.save(f, quality="keep")
 
     def test_junk_jpeg_header(self) -> None:
@@ -520,12 +534,13 @@ class TestFileJpeg:
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
-    def test_truncated_jpeg_should_read_all_the_data(self) -> None:
+    def test_truncated_jpeg_should_read_all_the_data(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         filename = "Tests/images/truncated_jpeg.jpg"
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
         with Image.open(filename) as im:
             im.load()
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
             assert im.getbbox() is not None
 
     def test_truncated_jpeg_throws_oserror(self) -> None:
@@ -547,12 +562,14 @@ class TestFileJpeg:
             with Image.open(test_file) as im:
                 im.save(b, "JPEG", qtables=[[n] * 64] * n)
             with Image.open(b) as im:
+                assert isinstance(im, JpegImagePlugin.JpegImageFile)
                 assert len(im.quantization) == n
                 reloaded = self.roundtrip(im, qtables="keep")
                 assert im.quantization == reloaded.quantization
                 assert max(reloaded.quantization[0]) <= 255
 
         with Image.open("Tests/images/hopper.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             qtables = im.quantization
             reloaded = self.roundtrip(im, qtables=qtables, subsampling=0)
             assert im.quantization == reloaded.quantization
@@ -652,6 +669,7 @@ class TestFileJpeg:
 
     def test_load_16bit_qtables(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             assert len(im.quantization) == 2
             assert len(im.quantization[0]) == 64
             assert max(im.quantization[0]) > 255
@@ -694,6 +712,7 @@ class TestFileJpeg:
     @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
     def test_load_djpeg(self) -> None:
         with Image.open(TEST_FILE) as img:
+            assert isinstance(img, JpegImagePlugin.JpegImageFile)
             img.load_djpeg()
             assert_image_similar_tofile(img, TEST_FILE, 5)
 
@@ -715,7 +734,7 @@ class TestFileJpeg:
 
     def test_MAXBLOCK_scaling(self, tmp_path: Path) -> None:
         im = self.gen_random_image((512, 512))
-        f = str(tmp_path / "temp.jpeg")
+        f = tmp_path / "temp.jpeg"
         im.save(f, quality=100, optimize=True)
 
         with Image.open(f) as reloaded:
@@ -751,7 +770,7 @@ class TestFileJpeg:
 
     def test_save_tiff_with_dpi(self, tmp_path: Path) -> None:
         # Arrange
-        outfile = str(tmp_path / "temp.tif")
+        outfile = tmp_path / "temp.tif"
         with Image.open("Tests/images/hopper.tif") as im:
             # Act
             im.save(outfile, "JPEG", dpi=im.info["dpi"])
@@ -762,7 +781,7 @@ class TestFileJpeg:
                 assert im.info["dpi"] == reloaded.info["dpi"]
 
     def test_save_dpi_rounding(self, tmp_path: Path) -> None:
-        outfile = str(tmp_path / "temp.jpg")
+        outfile = tmp_path / "temp.jpg"
         with Image.open("Tests/images/hopper.jpg") as im:
             im.save(outfile, dpi=(72.2, 72.2))
 
@@ -848,7 +867,7 @@ class TestFileJpeg:
             exif = im.getexif()
             assert exif[282] == 180
 
-            out = str(tmp_path / "out.jpg")
+            out = tmp_path / "out.jpg"
             with warnings.catch_warnings():
                 warnings.simplefilter("error")
 
@@ -898,6 +917,7 @@ class TestFileJpeg:
 
     def test_photoshop_malformed_and_multiple(self) -> None:
         with Image.open("Tests/images/app13-multiple.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             assert "photoshop" in im.info
             assert 24 == len(im.info["photoshop"])
             apps_13_lengths = [len(v) for k, v in im.applist if k == "APP13"]
@@ -923,7 +943,7 @@ class TestFileJpeg:
 
     def test_jpeg_magic_number(self, monkeypatch: pytest.MonkeyPatch) -> None:
         size = 4097
-        buffer = BytesIO(b"\xFF" * size)  # Many xFF bytes
+        buffer = BytesIO(b"\xff" * size)  # Many xff bytes
         max_pos = 0
         orig_read = buffer.read
 
@@ -994,14 +1014,19 @@ class TestFileJpeg:
                 assert im.getxmp() == {"xmpmeta": None}
 
     def test_save_xmp(self, tmp_path: Path) -> None:
-        f = str(tmp_path / "temp.jpg")
+        f = tmp_path / "temp.jpg"
         im = hopper()
         im.save(f, xmp=b"XMP test")
         with Image.open(f) as reloaded:
             assert reloaded.info["xmp"] == b"XMP test"
 
-        im.info["xmp"] = b"1" * 65504
-        im.save(f)
+            # Check that XMP is not saved from image info
+            reloaded.save(f)
+
+        with Image.open(f) as reloaded:
+            assert "xmp" not in reloaded.info
+
+        im.save(f, xmp=b"1" * 65504)
         with Image.open(f) as reloaded:
             assert reloaded.info["xmp"] == b"1" * 65504
 
@@ -1009,7 +1034,7 @@ class TestFileJpeg:
             im.save(f, xmp=b"1" * 65505)
 
     @pytest.mark.timeout(timeout=1)
-    def test_eof(self) -> None:
+    def test_eof(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # Even though this decoder never says that it is finished
         # the image should still end when there is no new data
         class InfiniteMockPyDecoder(ImageFile.PyDecoder):
@@ -1022,11 +1047,10 @@ class TestFileJpeg:
 
         with Image.open(TEST_FILE) as im:
             im.tile = [
-                ("INFINITE", (0, 0, 128, 128), 0, ("RGB", 0, 1)),
+                ImageFile._Tile("INFINITE", (0, 0, 128, 128), 0, ("RGB", 0, 1)),
             ]
-            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
             im.load()
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
     def test_separate_tables(self) -> None:
         im = hopper()
@@ -1069,6 +1093,7 @@ class TestFileJpeg:
 
     def test_deprecation(self) -> None:
         with Image.open(TEST_FILE) as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             with pytest.warns(DeprecationWarning):
                 assert im.huffman_ac == {}
             with pytest.warns(DeprecationWarning):
@@ -1079,7 +1104,7 @@ class TestFileJpeg:
 @skip_unless_feature("jpg")
 class TestFileCloseW32:
     def test_fd_leak(self, tmp_path: Path) -> None:
-        tmpfile = str(tmp_path / "temp.jpg")
+        tmpfile = tmp_path / "temp.jpg"
 
         with Image.open("Tests/images/hopper.jpg") as im:
             im.save(tmpfile)

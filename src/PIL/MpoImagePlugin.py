@@ -32,6 +32,7 @@ from . import (
     TiffImagePlugin,
 )
 from ._binary import o32le
+from ._util import DeferredError
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
@@ -51,7 +52,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             if not offsets:
                 # APP2 marker
                 im_frame.encoderinfo["extra"] = (
-                    b"\xFF\xE2" + struct.pack(">H", 6 + 82) + b"MPF\0" + b" " * 82
+                    b"\xff\xe2" + struct.pack(">H", 6 + 82) + b"MPF\0" + b" " * 82
                 )
                 exif = im_frame.encoderinfo.get("exif")
                 if isinstance(exif, Image.Exif):
@@ -84,7 +85,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     ifd[0xB002] = mpentries
 
     fp.seek(mpf_offset)
-    fp.write(b"II\x2A\x00" + o32le(8) + ifd.tobytes(8))
+    fp.write(b"II\x2a\x00" + o32le(8) + ifd.tobytes(8))
     fp.seek(0, os.SEEK_END)
 
 
@@ -125,11 +126,15 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.readonly = 1
 
     def load_seek(self, pos: int) -> None:
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self._fp.seek(pos)
 
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self.fp = self._fp
         self.offset = self.__mpoffsets[frame]
 

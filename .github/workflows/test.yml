@@ -41,7 +41,10 @@ jobs:
           "ubuntu-latest",
         ]
         python-version: [
+          "pypy3.11",
           "pypy3.10",
+          "3.14",
+          "3.13t",
           "3.13",
           "3.12",
           "3.11",
@@ -52,14 +55,14 @@ jobs:
         - { python-version: "3.11", PYTHONOPTIMIZE: 1, REVERSE: "--reverse" }
         - { python-version: "3.10", PYTHONOPTIMIZE: 2 }
         # Free-threaded
-        - { os: "ubuntu-latest", python-version: "3.13-dev", disable-gil: true }
+        - { python-version: "3.13t", disable-gil: true }
         # M1 only available for 3.10+
         - { os: "macos-13", python-version: "3.9" }
         exclude:
         - { os: "macos-latest", python-version: "3.9" }
 
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} Python ${{ matrix.python-version }} ${{ matrix.disable-gil && 'free-threaded' || '' }}
+    name: ${{ matrix.os }} Python ${{ matrix.python-version }}
 
     steps:
     - uses: actions/checkout@v4
@@ -68,7 +71,6 @@ jobs:
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
-      if: "${{ !matrix.disable-gil }}"
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
@@ -76,13 +78,6 @@ jobs:
         cache-dependency-path: |
           ".ci/*.sh"
           "pyproject.toml"
-
-    - name: Set up Python ${{ matrix.python-version }} (free-threaded)
-      uses: deadsnakes/action@v3.2.0
-      if: "${{ matrix.disable-gil }}"
-      with:
-        python-version: ${{ matrix.python-version }}
-        nogil: ${{ matrix.disable-gil }}
 
     - name: Set PYTHON_GIL
       if: "${{ matrix.disable-gil }}"
@@ -116,7 +111,7 @@ jobs:
         GHA_PYTHON_VERSION: ${{ matrix.python-version }}
 
     - name: Register gcc problem matcher
-      if: "matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'"
+      if: "matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'"
       run: echo "::add-matcher::.github/problem-matchers/gcc.json"
 
     - name: Build
@@ -156,7 +151,7 @@ jobs:
         .ci/after_success.sh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         flags: ${{ matrix.os == 'ubuntu-latest' && 'GHA_Ubuntu' || 'GHA_macOS' }}
         name: ${{ matrix.os }} Python ${{ matrix.python-version }}

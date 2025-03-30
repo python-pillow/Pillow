@@ -567,6 +567,8 @@ typedef int (*ImagingCodec)(
 extern int
 ImagingBcnDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
 extern int
+ImagingBcnEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
+extern int
 ImagingBitDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
 extern int
 ImagingEpsEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
@@ -608,10 +610,6 @@ ImagingLibTiffDecode(
 );
 extern int
 ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
-#endif
-#ifdef HAVE_LIBMPEG
-extern int
-ImagingMpegDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
 #endif
 extern int
 ImagingMspDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);

@@ -534,7 +534,6 @@ You can create animated GIFs with Pillow, e.g.
     # Save the images as an animated GIF
     images[0].save(
         "animated_hopper.gif",
-        save_all=True,
         append_images=images[1:],
         duration=500,  # duration of each frame in milliseconds
         loop=0,  # loop forever
@@ -678,7 +677,7 @@ Reading from URL
 
     from PIL import Image
     from urllib.request import urlopen
-    url = "https://python-pillow.org/assets/images/pillow-logo.png"
+    url = "https://python-pillow.github.io/assets/images/pillow-logo.png"
     img = Image.open(urlopen(url))
 
 

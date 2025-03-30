@@ -299,6 +299,7 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
         return -1;
     }
 
+    img.orientation = ORIENTATION_TOPLEFT;
     img.req_orientation = ORIENTATION_TOPLEFT;
     img.col_offset = 0;
 

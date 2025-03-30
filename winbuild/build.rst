@@ -6,7 +6,7 @@ Building Pillow on Windows
           be sufficient.
 
 This page describes the steps necessary to build Pillow using the same
-scripts used on GitHub Actions and AppVeyor CIs.
+scripts used on GitHub Actions CI.
 
 Prerequisites
 -------------
@@ -112,7 +112,7 @@ directory.
 Example
 -------
 
-The following is a simplified version of the script used on AppVeyor::
+Here's an example script to build on Windows::
 
     set PYTHON=C:\Python39\bin
     cd /D C:\Pillow\winbuild
