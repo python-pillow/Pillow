@@ -43,7 +43,7 @@ def test_save() -> None:
     # Arrange
     with Image.open(TEST_FILE) as im:
         dummy_fp = BytesIO()
-        dummy_filename = "dummy.filename"
+        dummy_filename = "dummy.h5"
 
         # Act / Assert: stub cannot save without an implemented handler
         with pytest.raises(OSError):
@@ -84,8 +84,8 @@ def test_handler(tmp_path: Path) -> None:
         im.load()
         assert handler.is_loaded()
 
-        temp_file = str(tmp_path / "temp.h5")
+        temp_file = tmp_path / "temp.h5"
         im.save(temp_file)
         assert handler.saved
 
-    Hdf5StubImagePlugin._handler = None
+    Hdf5StubImagePlugin.register_handler(None)

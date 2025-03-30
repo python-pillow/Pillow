@@ -29,13 +29,13 @@ concurrency:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: ["ubuntu-latest"]
         docker: [
           # Run slower jobs first to give them a headstart and reduce waiting time
-          ubuntu-22.04-jammy-arm64v8,
           ubuntu-24.04-noble-ppc64le,
           ubuntu-24.04-noble-s390x,
           # Then run the remainder
@@ -44,6 +44,7 @@ jobs:
           amazon-2023-amd64,
           arch,
           centos-stream-9-amd64,
+          centos-stream-10-amd64,
           debian-12-bookworm-x86,
           debian-12-bookworm-amd64,
           fedora-40-amd64,
@@ -54,12 +55,13 @@ jobs:
         ]
         dockerTag: [main]
         include:
-          - docker: "ubuntu-22.04-jammy-arm64v8"
-            qemu-arch: "aarch64"
           - docker: "ubuntu-24.04-noble-ppc64le"
             qemu-arch: "ppc64le"
           - docker: "ubuntu-24.04-noble-s390x"
             qemu-arch: "s390x"
+          - docker: "ubuntu-24.04-noble-arm64v8"
+            os: "ubuntu-24.04-arm"
+            dockerTag: main
 
     name: ${{ matrix.docker }}
 
@@ -73,8 +75,9 @@ jobs:
 
     - name: Set up QEMU
       if: "matrix.qemu-arch"
-      run: |
-        docker run --rm --privileged aptman/qus -s -- -p ${{ matrix.qemu-arch }}
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: ${{ matrix.qemu-arch }}
 
     - name: Docker pull
       run: |
@@ -89,15 +92,15 @@ jobs:
 
     - name: After success
       run: |
-        PATH="$PATH:~/.local/bin"
         docker start pillow_container
+        sudo docker cp pillow_container:/Pillow /Pillow
+        sudo chown -R runner /Pillow
         pil_path=`docker exec pillow_container /vpy3/bin/python -c 'import os, PIL;print(os.path.realpath(os.path.dirname(PIL.__file__)))'`
         docker stop pillow_container
         sudo mkdir -p $pil_path
         sudo cp src/PIL/*.py $pil_path
+        cd /Pillow
         .ci/after_success.sh
-      env:
-        MATRIX_DOCKER: ${{ matrix.docker }}
 
     - name: Upload coverage
       uses: codecov/codecov-action@v5

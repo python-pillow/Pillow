@@ -26,12 +26,12 @@ def test_sanity() -> None:
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
 def test_unclosed_file() -> None:
-    def open() -> None:
+    def open_test_image() -> None:
         im = Image.open(TEST_FILE)
         im.load()
 
     with pytest.warns(ResourceWarning):
-        open()
+        open_test_image()
 
 
 def test_closed_file() -> None:
@@ -69,12 +69,14 @@ def test_tell() -> None:
 
 def test_n_frames() -> None:
     with Image.open(TEST_FILE) as im:
+        assert isinstance(im, DcxImagePlugin.DcxImageFile)
         assert im.n_frames == 1
         assert not im.is_animated
 
 
 def test_eoferror() -> None:
     with Image.open(TEST_FILE) as im:
+        assert isinstance(im, DcxImagePlugin.DcxImageFile)
         n_frames = im.n_frames
 
         # Test seeking past the last frame

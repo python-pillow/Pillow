@@ -68,6 +68,7 @@ _LIB_IMAGING = (
     "Reduce",
     "Bands",
     "BcnDecode",
+    "BcnEncode",
     "BitDecode",
     "Blend",
     "Chops",
@@ -344,7 +345,7 @@ class pil_build_ext(build_ext):
             for x in ("raqm", "fribidi")
         ]
         + [
-            ("disable-platform-guessing", None, "Disable platform guessing on Linux"),
+            ("disable-platform-guessing", None, "Disable platform guessing"),
             ("debug", None, "Debug logging"),
         ]
         + [("add-imaging-libs=", None, "Add libs to _imaging build")]

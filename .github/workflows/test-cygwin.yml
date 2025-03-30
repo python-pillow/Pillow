@@ -52,7 +52,7 @@ jobs:
           persist-credentials: false
 
       - name: Install Cygwin
-        uses: cygwin/cygwin-install-action@v4
+        uses: cygwin/cygwin-install-action@v5
         with:
           packages: >
             gcc-g++

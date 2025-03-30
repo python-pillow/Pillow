@@ -31,6 +31,7 @@ import re
 from typing import IO, Any
 
 from . import Image, ImageFile, ImagePalette
+from ._util import DeferredError
 
 # --------------------------------------------------------------------
 # Standard tags
@@ -145,7 +146,7 @@ class ImImageFile(ImageFile.ImageFile):
             if s == b"\r":
                 continue
 
-            if not s or s == b"\0" or s == b"\x1A":
+            if not s or s == b"\0" or s == b"\x1a":
                 break
 
             # FIXME: this may read whole file if not a text file
@@ -155,9 +156,9 @@ class ImImageFile(ImageFile.ImageFile):
                 msg = "not an IM file"
                 raise SyntaxError(msg)
 
-            if s[-2:] == b"\r\n":
+            if s.endswith(b"\r\n"):
                 s = s[:-2]
-            elif s[-1:] == b"\n":
+            elif s.endswith(b"\n"):
                 s = s[:-1]
 
             try:
@@ -209,7 +210,7 @@ class ImImageFile(ImageFile.ImageFile):
         self._mode = self.info[MODE]
 
         # Skip forward to start of image data
-        while s and s[:1] != b"\x1A":
+        while s and not s.startswith(b"\x1a"):
             s = self.fp.read(1)
         if not s:
             msg = "File truncated"
@@ -247,7 +248,7 @@ class ImImageFile(ImageFile.ImageFile):
 
         self._fp = self.fp  # FIXME: hack
 
-        if self.rawmode[:2] == "F;":
+        if self.rawmode.startswith("F;"):
             # ifunc95 formats
             try:
                 # use bit decoder (if necessary)
@@ -290,6 +291,8 @@ class ImImageFile(ImageFile.ImageFile):
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
 
         self.frame = frame
 

@@ -42,9 +42,6 @@ As of 2019, Pillow development is
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-docker.yml"><img
                 alt="GitHub Actions build status (Test Docker)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg"></a>
-            <a href="https://ci.appveyor.com/project/python-pillow/Pillow"><img
-                alt="AppVeyor CI build status (Windows)"
-                src="https://img.shields.io/appveyor/build/python-pillow/Pillow/main.svg?label=Windows%20build"></a>
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml"><img
                 alt="GitHub Actions build status (Wheels)"
                 src="https://github.com/python-pillow/Pillow/workflows/Wheels/badge.svg"></a>

@@ -124,7 +124,7 @@ def test_render_equal(layout_engine: ImageFont.Layout) -> None:
 
 
 def test_non_ascii_path(tmp_path: Path, layout_engine: ImageFont.Layout) -> None:
-    tempfile = str(tmp_path / ("temp_" + chr(128) + ".ttf"))
+    tempfile = tmp_path / ("temp_" + chr(128) + ".ttf")
     try:
         shutil.copy(FONT_PATH, tempfile)
     except UnicodeEncodeError:
@@ -254,7 +254,8 @@ def test_render_multiline_text(font: ImageFont.FreeTypeFont) -> None:
 
 
 @pytest.mark.parametrize(
-    "align, ext", (("left", ""), ("center", "_center"), ("right", "_right"))
+    "align, ext",
+    (("left", ""), ("center", "_center"), ("right", "_right"), ("justify", "_justify")),
 )
 def test_render_multiline_text_align(
     font: ImageFont.FreeTypeFont, align: str, ext: str
@@ -461,6 +462,20 @@ def test_free_type_font_get_mask(font: ImageFont.FreeTypeFont) -> None:
     assert mask.size == (108, 13)
 
 
+def test_stroke_mask() -> None:
+    # Arrange
+    text = "i"
+
+    # Act
+    font = ImageFont.truetype(FONT_PATH, 128)
+    mask = font.getmask(text, stroke_width=2)
+
+    # Assert
+    assert mask.getpixel((34, 5)) == 255
+    assert mask.getpixel((38, 5)) == 0
+    assert mask.getpixel((42, 5)) == 255
+
+
 def test_load_when_image_not_found() -> None:
     with tempfile.NamedTemporaryFile(delete=False) as tmp:
         pass
@@ -543,7 +558,7 @@ def test_render_empty(font: ImageFont.FreeTypeFont) -> None:
 
 def test_unicode_extended(layout_engine: ImageFont.Layout) -> None:
     # issue #3777
-    text = "A\u278A\U0001F12B"
+    text = "A\u278a\U0001f12b"
     target = "Tests/images/unicode_extended.png"
 
     ttf = ImageFont.truetype(
@@ -1012,7 +1027,7 @@ def test_sbix(layout_engine: ImageFont.Layout) -> None:
         im = Image.new("RGB", (400, 400), "white")
         d = ImageDraw.Draw(im)
 
-        d.text((50, 50), "\uE901", font=font, embedded_color=True)
+        d.text((50, 50), "\ue901", font=font, embedded_color=True)
 
         assert_image_similar_tofile(im, "Tests/images/chromacheck-sbix.png", 1)
     except OSError as e:  # pragma: no cover
@@ -1029,7 +1044,7 @@ def test_sbix_mask(layout_engine: ImageFont.Layout) -> None:
         im = Image.new("RGB", (400, 400), "white")
         d = ImageDraw.Draw(im)
 
-        d.text((50, 50), "\uE901", (100, 0, 0), font=font)
+        d.text((50, 50), "\ue901", (100, 0, 0), font=font)
 
         assert_image_similar_tofile(im, "Tests/images/chromacheck-sbix_mask.png", 1)
     except OSError as e:  # pragma: no cover

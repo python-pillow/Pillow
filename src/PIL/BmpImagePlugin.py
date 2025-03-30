@@ -48,9 +48,11 @@ BIT2MODE = {
     32: ("RGB", "BGRX"),
 }
 
+USE_RAW_ALPHA = False
+
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:2] == b"BM"
+    return prefix.startswith(b"BM")
 
 
 def _dib_accept(prefix: bytes) -> bool:
@@ -242,7 +244,9 @@ class BmpImageFile(ImageFile.ImageFile):
                 msg = "Unsupported BMP bitfields layout"
                 raise OSError(msg)
         elif file_info["compression"] == self.COMPRESSIONS["RAW"]:
-            if file_info["bits"] == 32 and header == 22:  # 32-bit .cur offset
+            if file_info["bits"] == 32 and (
+                header == 22 or USE_RAW_ALPHA  # 32-bit .cur offset
+            ):
                 raw_mode, self._mode = "BGRA", "RGBA"
         elif file_info["compression"] in (
             self.COMPRESSIONS["RLE8"],
