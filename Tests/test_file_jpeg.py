@@ -729,10 +729,10 @@ class TestFileJpeg:
 
     @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
     def test_load_djpeg(self) -> None:
-        with Image.open(TEST_FILE) as im:
-            assert isinstance(im, JpegImagePlugin.JpegImageFile)
-            im.load_djpeg()
-            assert_image_similar_tofile(im, TEST_FILE, 5)
+        with Image.open(TEST_FILE) as img:
+            assert isinstance(img, JpegImagePlugin.JpegImageFile)
+            img.load_djpeg()
+            assert_image_similar_tofile(img, TEST_FILE, 5)
 
     @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
     def test_save_cjpeg(self, tmp_path: Path) -> None:

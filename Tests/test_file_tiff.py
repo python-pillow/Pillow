@@ -121,6 +121,7 @@ class TestFileTiff:
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
 
             outfile = tmp_path / "temp.tif"
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)
 
     def test_bigtiff_save(self, tmp_path: Path) -> None:
@@ -393,6 +394,8 @@ class TestFileTiff:
     def test___str__(self) -> None:
         filename = "Tests/images/pil136.tiff"
         with Image.open(filename) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+
             # Act
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
             ret = str(im.ifd)

@@ -814,7 +814,6 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_multipage_compression(self) -> None:
         with Image.open("Tests/images/compression.tif") as im:
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
-
             im.seek(0)
             assert im._compression == "tiff_ccitt"
             assert im.size == (10, 10)

@@ -388,7 +388,6 @@ def test_apng_save(tmp_path: Path) -> None:
 
     with Image.open(test_file) as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
-
         im.load()
         assert not im.is_animated
         assert im.n_frames == 1
@@ -405,7 +404,6 @@ def test_apng_save(tmp_path: Path) -> None:
 
     with Image.open(test_file) as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
-
         im.load()
         assert im.is_animated
         assert im.n_frames == 2

@@ -32,7 +32,6 @@ def test_sanity(tmp_path: Path) -> None:
 def test_iterator() -> None:
     with Image.open("Tests/images/multipage.tiff") as im:
         assert isinstance(im, TiffImagePlugin.TiffImageFile)
-
         i = ImageSequence.Iterator(im)
         for index in range(im.n_frames):
             assert i[index] == next(i)
@@ -45,7 +44,6 @@ def test_iterator() -> None:
 def test_iterator_min_frame() -> None:
     with Image.open("Tests/images/hopper.psd") as im:
         assert isinstance(im, PsdImagePlugin.PsdImageFile)
-
         i = ImageSequence.Iterator(im)
         for index in range(1, im.n_frames):
             assert i[index] == next(i)

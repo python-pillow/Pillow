@@ -132,7 +132,6 @@ def test_write_metadata(tmp_path: Path) -> None:
     """Test metadata writing through the python code"""
     with Image.open("Tests/images/hopper.tif") as img:
         assert isinstance(img, TiffImagePlugin.TiffImageFile)
-
         f = tmp_path / "temp.tiff"
         del img.tag[278]
         img.save(f, tiffinfo=img.tag)
