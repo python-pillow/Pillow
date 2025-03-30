@@ -41,14 +41,7 @@ import warnings
 from collections.abc import Callable, Iterator, MutableMapping, Sequence
 from enum import IntEnum
 from types import ModuleType
-from typing import (
-    IO,
-    TYPE_CHECKING,
-    Any,
-    Literal,
-    Protocol,
-    cast,
-)
+from typing import IO, Any, Literal, Protocol, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -218,6 +211,7 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 # --------------------------------------------------------------------
 # Registries
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     import mmap
     from xml.etree.ElementTree import Element

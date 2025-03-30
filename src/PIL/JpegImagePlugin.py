@@ -42,7 +42,7 @@ import subprocess
 import sys
 import tempfile
 import warnings
-from typing import IO, TYPE_CHECKING, Any
+from typing import IO, Any
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -52,6 +52,7 @@ from ._binary import o16be as o16
 from ._deprecate import deprecate
 from .JpegPresets import presets
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from .MpoImagePlugin import MpoImageFile
 
