@@ -548,7 +548,6 @@ class Image:
 
     def __init__(self) -> None:
         # FIXME: take "new" parameters / other image?
-        # FIXME: turn mode and size into delegating properties?
         self._im: core.ImagingCore | DeferredError | None = None
         self._mode = ""
         self._size = (0, 0)
@@ -622,6 +621,8 @@ class Image:
         more information.
         """
         if getattr(self, "map", None):
+            if sys.platform == "win32" and hasattr(sys, "pypy_version_info"):
+                self.map.close()
             self.map: mmap.mmap | None = None
 
         # Instead of simply setting to None, we're setting up a
@@ -2511,13 +2512,6 @@ class Image:
             # only set the name for metadata purposes
             filename = os.fspath(fp.name)
 
-        # may mutate self!
-        self._ensure_mutable()
-
-        save_all = params.pop("save_all", False)
-        self.encoderinfo = {**getattr(self, "encoderinfo", {}), **params}
-        self.encoderconfig: tuple[Any, ...] = ()
-
         preinit()
 
         filename_ext = os.path.splitext(filename)[1].lower()
@@ -2532,9 +2526,20 @@ class Image:
                 msg = f"unknown file extension: {ext}"
                 raise ValueError(msg) from e
 
+        # may mutate self!
+        self._ensure_mutable()
+
+        save_all = params.pop("save_all", None)
+        self.encoderinfo = {**getattr(self, "encoderinfo", {}), **params}
+        self.encoderconfig: tuple[Any, ...] = ()
+
         if format.upper() not in SAVE:
             init()
-        if save_all:
+        if save_all or (
+            save_all is None
+            and params.get("append_images")
+            and format.upper() in SAVE_ALL
+        ):
             save_handler = SAVE_ALL[format.upper()]
         else:
             save_handler = SAVE[format.upper()]
