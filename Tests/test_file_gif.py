@@ -1171,6 +1171,7 @@ def test_append_images(tmp_path: Path) -> None:
     im.copy().save(out, append_images=ims)
 
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.n_frames == 3
 
     # Tests appending using a generator

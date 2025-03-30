@@ -1062,8 +1062,8 @@ class TestFileLibTiff(LibTiffTestCase):
             # Set EXIF Orientation to 2
             data = data[:102] + b"\x02" + data[103:]
 
-            with Image.open(io.BytesIO(data)) as im:
-                im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+            with Image.open(io.BytesIO(data)) as img:
+                im = img.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
             assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
 
     def test_open_missing_samplesperpixel(self) -> None:
