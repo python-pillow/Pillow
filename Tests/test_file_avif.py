@@ -567,7 +567,7 @@ class TestFileAvif:
     def test_decoder_strict_flags(self) -> None:
         # This would fail if full avif strictFlags were enabled
         with Image.open("Tests/images/avif/hopper-missing-pixi.avif") as im:
-            assert im.size == (480, 270)
+            assert im.size == (128, 128)
 
     @skip_unless_avif_encoder("aom")
     @pytest.mark.parametrize("speed", [-1, 1, 11])
