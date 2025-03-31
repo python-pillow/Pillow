@@ -68,3 +68,12 @@ Compressed DDS images can now be saved using a ``pixel_format`` argument. DXT1, 
 DXT5, BC2, BC3 and BC5 are supported::
 
     im.save("out.dds", pixel_format="DXT1")
+
+Other Changes
+=============
+
+Reading and writing AVIF images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow can now read and write AVIF images. If you are building Pillow from source, this
+will require libavif 1.0.0 or later.
