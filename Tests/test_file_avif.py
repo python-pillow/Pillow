@@ -566,7 +566,7 @@ class TestFileAvif:
 
     def test_decoder_strict_flags(self) -> None:
         # This would fail if full avif strictFlags were enabled
-        with Image.open("Tests/images/avif/chimera-missing-pixi.avif") as im:
+        with Image.open("Tests/images/avif/hopper-missing-pixi.avif") as im:
             assert im.size == (480, 270)
 
     @skip_unless_avif_encoder("aom")
@@ -672,7 +672,7 @@ class TestAvifAnimation:
 
     def test_heif_raises_unidentified_image_error(self) -> None:
         with pytest.raises(UnidentifiedImageError):
-            with Image.open("Tests/images/avif/rgba10.heif"):
+            with Image.open("Tests/images/avif/hopper.heif"):
                 pass
 
     @pytest.mark.parametrize("alpha_premultiplied", [False, True])
