@@ -118,7 +118,7 @@ def test_trns_p(tmp_path: Path) -> None:
     im = hopper("P")
     im.info["transparency"] = 0
 
-    f = str(tmp_path / "temp.png")
+    f = tmp_path / "temp.png"
 
     im_l = im.convert("L")
     assert im_l.info["transparency"] == 0
@@ -154,7 +154,7 @@ def test_trns_l(tmp_path: Path) -> None:
     im = hopper("L")
     im.info["transparency"] = 128
 
-    f = str(tmp_path / "temp.png")
+    f = tmp_path / "temp.png"
 
     im_la = im.convert("LA")
     assert "transparency" not in im_la.info
@@ -177,7 +177,7 @@ def test_trns_RGB(tmp_path: Path) -> None:
     im = hopper("RGB")
     im.info["transparency"] = im.getpixel((0, 0))
 
-    f = str(tmp_path / "temp.png")
+    f = tmp_path / "temp.png"
 
     im_l = im.convert("L")
     assert im_l.info["transparency"] == im_l.getpixel((0, 0))  # undone

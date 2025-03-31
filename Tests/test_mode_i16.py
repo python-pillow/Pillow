@@ -44,7 +44,7 @@ def test_basic(tmp_path: Path, mode: str) -> None:
     im_out = im_in.transform((w, h), Image.Transform.EXTENT, (0, 0, w, h))
     verify(im_out)  # transform
 
-    filename = str(tmp_path / "temp.im")
+    filename = tmp_path / "temp.im"
     im_in.save(filename)
 
     with Image.open(filename) as im_out:

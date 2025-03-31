@@ -28,7 +28,7 @@ pytestmark = pytest.mark.skipif(sys.maxsize <= 2**32, reason="requires 64-bit sy
 def _write_png(tmp_path: Path, xdim: int, ydim: int) -> None:
     dtype = np.uint8
     a = np.zeros((xdim, ydim), dtype=dtype)
-    f = str(tmp_path / "temp.png")
+    f = tmp_path / "temp.png"
     im = Image.fromarray(a, "L")
     im.save(f)
 

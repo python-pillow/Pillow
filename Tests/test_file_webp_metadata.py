@@ -6,7 +6,7 @@ from types import ModuleType
 
 import pytest
 
-from PIL import Image
+from PIL import Image, WebPImagePlugin
 
 from .helper import mark_if_feature_version, skip_unless_feature
 
@@ -110,6 +110,7 @@ def test_read_no_exif() -> None:
 
     test_buffer.seek(0)
     with Image.open(test_buffer) as webp_image:
+        assert isinstance(webp_image, WebPImagePlugin.WebPImageFile)
         assert not webp_image._getexif()
 
 
@@ -146,7 +147,7 @@ def test_write_animated_metadata(tmp_path: Path) -> None:
     exif_data = b"<exif_data>"
     xmp_data = b"<xmp_data>"
 
-    temp_file = str(tmp_path / "temp.webp")
+    temp_file = tmp_path / "temp.webp"
     with Image.open("Tests/images/anim_frame1.webp") as frame1:
         with Image.open("Tests/images/anim_frame2.webp") as frame2:
             frame1.save(

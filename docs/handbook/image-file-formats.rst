@@ -312,8 +312,9 @@ following options are available::
     im.save(out, save_all=True, append_images=[im1, im2, ...])
 
 **save_all**
-    If present and true, all frames of the image will be saved. If
-    not, then only the first frame of a multiframe image will be saved.
+    If present and true, or if ``append_images`` is not empty, all frames of
+    the image will be saved. Otherwise, only the first frame of a multiframe
+    image will be saved.
 
 **append_images**
     A list of images to append as additional frames. Each of the
@@ -800,8 +801,8 @@ Saving
 
 When calling :py:meth:`~PIL.Image.Image.save` to write an MPO file, by default
 only the first frame of a multiframe image will be saved. If the ``save_all``
-argument is present and true, then all frames will be saved, and the following
-option will also be available.
+argument is present and true, or if ``append_images`` is not empty, all frames
+will be saved.
 
 **append_images**
     A list of images to append as additional pictures. Each of the
@@ -1011,7 +1012,8 @@ Saving
 
 When calling :py:meth:`~PIL.Image.Image.save`, by default only a single frame PNG file
 will be saved. To save an APNG file (including a single frame APNG), the ``save_all``
-parameter must be set to ``True``. The following parameters can also be set:
+parameter should be set to ``True`` or ``append_images`` should not be empty. The
+following parameters can also be set:
 
 **default_image**
     Boolean value, specifying whether or not the base image is a default image.
@@ -1240,7 +1242,8 @@ Saving
 The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
 
 **save_all**
-    If true, Pillow will save all frames of the image to a multiframe tiff document.
+    If true, or if ``append_images`` is not empty, Pillow will save all frames of the
+    image to a multiframe tiff document.
 
     .. versionadded:: 3.4.0
 
@@ -1390,8 +1393,8 @@ Saving sequences
 
 When calling :py:meth:`~PIL.Image.Image.save` to write a WebP file, by default
 only the first frame of a multiframe image will be saved. If the ``save_all``
-argument is present and true, then all frames will be saved, and the following
-options will also be available.
+argument is present and true, or if ``append_images`` is not empty, all frames
+will be saved, and the following options will also be available.
 
 **append_images**
     A list of images to append as additional frames. Each of the
@@ -1693,15 +1696,14 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 **save_all**
     If a multiframe image is used, by default, only the first image will be saved.
     To save all frames, each frame to a separate page of the PDF, the ``save_all``
-    parameter must be present and set to ``True``.
+    parameter should be present and set to ``True`` or ``append_images`` should not be
+    empty.
 
     .. versionadded:: 3.0.0
 
 **append_images**
     A list of :py:class:`PIL.Image.Image` objects to append as additional pages. Each
-    of the images in the list can be single or multiframe images. The ``save_all``
-    parameter must be present and set to ``True`` in conjunction with
-    ``append_images``.
+    of the images in the list can be single or multiframe images.
 
     .. versionadded:: 4.2.0
 

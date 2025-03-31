@@ -50,7 +50,7 @@ import warnings
 from collections.abc import Iterator, MutableMapping
 from fractions import Fraction
 from numbers import Number, Rational
-from typing import IO, TYPE_CHECKING, Any, Callable, NoReturn, cast
+from typing import IO, Any, Callable, NoReturn, cast
 
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
@@ -58,9 +58,10 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._deprecate import deprecate
 from ._typing import StrOrBytesPath
-from ._util import is_path
+from ._util import DeferredError, is_path
 from .TiffTags import TYPES
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from ._typing import Buffer, IntegralLike
 
@@ -1222,6 +1223,8 @@ class TiffImageFile(ImageFile.ImageFile):
             self._im = None
 
     def _seek(self, frame: int) -> None:
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self.fp = self._fp
 
         while len(self._frame_pos) <= frame:

@@ -116,7 +116,7 @@ def test_sanity_ati1_bc4u(image_path: str) -> None:
 
 
 def test_dx10_bc2(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.dds")
+    out = tmp_path / "temp.dds"
     with Image.open(TEST_FILE_DXT3) as im:
         im.save(out, pixel_format="BC2")
 
@@ -129,7 +129,7 @@ def test_dx10_bc2(tmp_path: Path) -> None:
 
 
 def test_dx10_bc3(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.dds")
+    out = tmp_path / "temp.dds"
     with Image.open(TEST_FILE_DXT5) as im:
         im.save(out, pixel_format="BC3")
 
@@ -400,7 +400,7 @@ def test_not_implemented(test_file: str) -> None:
 
 
 def test_save_unsupported_mode(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.dds")
+    out = tmp_path / "temp.dds"
     im = hopper("HSV")
     with pytest.raises(OSError, match="cannot write mode HSV as DDS"):
         im.save(out)
@@ -416,7 +416,7 @@ def test_save_unsupported_mode(tmp_path: Path) -> None:
     ],
 )
 def test_save(mode: str, test_file: str, tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.dds")
+    out = tmp_path / "temp.dds"
     with Image.open(test_file) as im:
         assert im.mode == mode
         im.save(out)
@@ -425,7 +425,7 @@ def test_save(mode: str, test_file: str, tmp_path: Path) -> None:
 
 
 def test_save_unsupported_pixel_format(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.dds")
+    out = tmp_path / "temp.dds"
     im = hopper()
     with pytest.raises(OSError, match="cannot write pixel format UNKNOWN"):
         im.save(out, pixel_format="UNKNOWN")
@@ -433,7 +433,7 @@ def test_save_unsupported_pixel_format(tmp_path: Path) -> None:
 
 def test_save_dxt1(tmp_path: Path) -> None:
     # RGB
-    out = str(tmp_path / "temp.dds")
+    out = tmp_path / "temp.dds"
     with Image.open(TEST_FILE_DXT1) as im:
         im.convert("RGB").save(out, pixel_format="DXT1")
     assert_image_similar_tofile(im, out, 1.84)
@@ -458,7 +458,7 @@ def test_save_dxt1(tmp_path: Path) -> None:
 
 def test_save_dxt3(tmp_path: Path) -> None:
     # RGB
-    out = str(tmp_path / "temp.dds")
+    out = tmp_path / "temp.dds"
     with Image.open(TEST_FILE_DXT3) as im:
         im_rgb = im.convert("RGB")
     im_rgb.save(out, pixel_format="DXT3")
@@ -481,7 +481,7 @@ def test_save_dxt3(tmp_path: Path) -> None:
 
 def test_save_dxt5(tmp_path: Path) -> None:
     # RGB
-    out = str(tmp_path / "temp.dds")
+    out = tmp_path / "temp.dds"
     with Image.open(TEST_FILE_DXT1) as im:
         im.convert("RGB").save(out, pixel_format="DXT5")
     assert_image_similar_tofile(im, out, 1.84)
@@ -503,7 +503,7 @@ def test_save_dxt5(tmp_path: Path) -> None:
 
 
 def test_save_dx10_bc5(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.dds")
+    out = tmp_path / "temp.dds"
     with Image.open(TEST_FILE_DX10_BC5_TYPELESS) as im:
         im.save(out, pixel_format="BC5")
     assert_image_similar_tofile(im, out, 9.56)

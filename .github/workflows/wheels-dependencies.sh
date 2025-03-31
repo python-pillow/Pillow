@@ -38,13 +38,18 @@ ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.13.3
-HARFBUZZ_VERSION=10.4.0
+HARFBUZZ_VERSION=11.0.0
 LIBPNG_VERSION=1.6.47
 JPEGTURBO_VERSION=3.1.0
 OPENJPEG_VERSION=2.5.3
-XZ_VERSION=5.6.4
+if [[ $MB_ML_VER == 2014 ]]; then
+  XZ_VERSION=5.6.4
+else
+  XZ_VERSION=5.8.0
+fi
 TIFF_VERSION=4.7.0
 LCMS2_VERSION=2.17
+ZLIB_VERSION=1.3.1
 ZLIB_NG_VERSION=2.2.4
 LIBWEBP_VERSION=1.5.0
 BZIP2_VERSION=1.0.8
@@ -146,7 +151,11 @@ function build {
     if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
-    build_zlib_ng
+    if [[ -n "$IS_MACOS" ]] && [[ "$MACOSX_DEPLOYMENT_TARGET" == "10.10" || "$MACOSX_DEPLOYMENT_TARGET" == "10.13" ]]; then
+        build_new_zlib
+    else
+        build_zlib_ng
+    fi
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
