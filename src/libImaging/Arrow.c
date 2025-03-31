@@ -110,7 +110,7 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     if (retval != 0) {
         return retval;
     }
-    // if it's not 1 band, it's an int32 at the moment. 4 unint8 bands.
+    // if it's not 1 band, it's an int32 at the moment. 4 uint8 bands.
     schema->n_children = 1;
     schema->children = calloc(1, sizeof(struct ArrowSchema *));
     schema->children[0] = (struct ArrowSchema *)calloc(1, sizeof(struct ArrowSchema));
@@ -137,7 +137,7 @@ release_const_array(struct ArrowArray *array) {
         array->buffers = NULL;
     }
     if (array->children) {
-        // undone -- does arrow release all the children recursively.
+        // undone -- does arrow release all the children recursively?
         for (int i = 0; i < array->n_children; i++) {
             if (array->children[i]->release) {
                 array->children[i]->release(array->children[i]);
@@ -235,7 +235,7 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
     // assert(array->buffers != NULL);
     array->buffers[0] = NULL;  // no nulls, null bitmap can be omitted
 
-    // if it's not 1 band, it's an int32 at the moment. 4 unint8 bands.
+    // if it's not 1 band, it's an int32 at the moment. 4 uint8 bands.
     array->n_children = 1;
     array->children = calloc(1, sizeof(struct ArrowArray *));
     if (!array->children) {

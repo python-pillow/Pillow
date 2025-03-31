@@ -17,7 +17,9 @@ pyarrow = pytest.importorskip("pyarrow", reason="PyArrow not installed")
 TEST_IMAGE_SIZE = (10, 10)
 
 
-def _test_img_equals_pyarray(img: Image.Image, arr: Any, mask) -> None:
+def _test_img_equals_pyarray(
+    img: Image.Image, arr: Any, mask: list[int] | None
+) -> None:
     assert img.height * img.width == len(arr)
     px = img.load()
     assert px is not None
@@ -53,7 +55,7 @@ fl_uint8_4_type = pyarrow.field(
         ("HSV", fl_uint8_4_type, [0, 1, 2]),
     ),
 )
-def test_to_array(mode: str, dtype: Any, mask: Any) -> None:
+def test_to_array(mode: str, dtype: Any, mask: list[int] | None) -> None:
     img = hopper(mode)
 
     # Resize to non-square

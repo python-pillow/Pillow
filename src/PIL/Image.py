@@ -3330,7 +3330,7 @@ def fromarrow(obj: SupportsArrowArrayInterface, mode, size) -> Image:
     :param obj: Object with an arrow_c_array interface
     :param mode: Image mode.
     :param size: Image size. This must match the storage of the arrow object.
-    :returns: An Image Object
+    :returns: An Image object
 
     Note that according to the Arrow spec, both the producer and the
     consumer should consider the exported array to be immutable, as
