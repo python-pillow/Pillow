@@ -63,7 +63,7 @@ if [[ $(uname) != CYGWIN* ]]; then
     pushd depends && ./install_raqm.sh && popd
 
     # libavif
-    pushd depends && ./install_libavif.sh && popd
+    pushd depends && CMAKE_POLICY_VERSION_MINIMUM=3.5 ./install_libavif.sh && popd
 
     # extra test images
     pushd depends && ./install_extra_test_images.sh && popd
