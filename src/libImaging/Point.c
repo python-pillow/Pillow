@@ -152,7 +152,7 @@ ImagingPoint(Imaging imIn, const char *mode, const void *table) {
         goto mode_mismatch;
     }
 
-    imOut = ImagingNew(mode, imIn->xsize, imIn->ysize);
+    imOut = ImagingNew(mode, (ImagingNewParams){imIn->xsize, imIn->ysize});
     if (!imOut) {
         return NULL;
     }
@@ -214,7 +214,7 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
+    imOut = ImagingNew(imIn->mode, (ImagingNewParams){imIn->xsize, imIn->ysize});
     if (!imOut) {
         return NULL;
     }

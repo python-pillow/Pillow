@@ -1830,7 +1830,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     ImagingSectionLeave(&cookie);
 
     if (result > 0) {
-        imOut = ImagingNewDirty("P", im->xsize, im->ysize);
+        imOut = ImagingNewDirty("P", (ImagingNewParams){im->xsize, im->ysize});
         ImagingSectionEnter(&cookie);
 
         for (i = y = 0; y < im->ysize; y++) {

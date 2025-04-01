@@ -76,7 +76,7 @@ ImagingFillLinearGradient(const char *mode) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    im = ImagingNewDirty(mode, 256, 256);
+    im = ImagingNewDirty(mode, (ImagingNewParams){256, 256});
     if (!im) {
         return NULL;
     }
@@ -111,7 +111,7 @@ ImagingFillRadialGradient(const char *mode) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    im = ImagingNewDirty(mode, 256, 256);
+    im = ImagingNewDirty(mode, (ImagingNewParams){256, 256});
     if (!im) {
         return NULL;
     }

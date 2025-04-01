@@ -752,7 +752,9 @@ ImagingResampleInner(
             bounds_vert[i * 2] -= ybox_first;
         }
 
-        imTemp = ImagingNewDirty(imIn->mode, xsize, ybox_last - ybox_first);
+        imTemp = ImagingNewDirty(
+            imIn->mode, (ImagingNewParams){xsize, ybox_last - ybox_first}
+        );
         if (imTemp) {
             ResampleHorizontal(
                 imTemp, imIn, ybox_first, ksize_horiz, bounds_horiz, kk_horiz
@@ -774,7 +776,7 @@ ImagingResampleInner(
 
     /* vertical pass */
     if (need_vertical) {
-        imOut = ImagingNewDirty(imIn->mode, imIn->xsize, ysize);
+        imOut = ImagingNewDirty(imIn->mode, (ImagingNewParams){imIn->xsize, ysize});
         if (imOut) {
             /* imIn can be the original image or horizontally resampled one */
             ResampleVertical(imOut, imIn, 0, ksize_vert, bounds_vert, kk_vert);

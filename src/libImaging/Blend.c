@@ -41,7 +41,8 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
         return ImagingCopy(imIn2);
     }
 
-    imOut = ImagingNewDirty(imIn1->mode, imIn1->xsize, imIn1->ysize);
+    imOut =
+        ImagingNewDirty(imIn1->mode, (ImagingNewParams){imIn1->xsize, imIn1->ysize});
     if (!imOut) {
         return NULL;
     }
