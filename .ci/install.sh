@@ -23,7 +23,7 @@ if [[ $(uname) != CYGWIN* ]]; then
     sudo apt-get -qq install libfreetype6-dev liblcms2-dev libtiff-dev python3-tk\
                              ghostscript libjpeg-turbo8-dev libopenjp2-7-dev\
                              cmake meson imagemagick libharfbuzz-dev libfribidi-dev\
-                             sway wl-clipboard libopenblas-dev
+                             sway wl-clipboard libopenblas-dev nasm
 fi
 
 python3 -m pip install --upgrade pip
@@ -61,6 +61,9 @@ if [[ $(uname) != CYGWIN* ]]; then
 
     # raqm
     pushd depends && ./install_raqm.sh && popd
+
+    # libavif
+    pushd depends && CMAKE_POLICY_VERSION_MINIMUM=3.5 ./install_libavif.sh && popd
 
     # extra test images
     pushd depends && ./install_extra_test_images.sh && popd

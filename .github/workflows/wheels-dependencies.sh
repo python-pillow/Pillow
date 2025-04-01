@@ -25,7 +25,7 @@ else
     MB_ML_LIBC=${AUDITWHEEL_POLICY::9}
     MB_ML_VER=${AUDITWHEEL_POLICY:9}
 fi
-PLAT=$CIBW_ARCHS
+PLAT="${CIBW_ARCHS:-$AUDITWHEEL_ARCH}"
 
 # Define custom utilities
 source wheels/multibuild/common_utils.sh
@@ -51,6 +51,7 @@ LIBWEBP_VERSION=1.5.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0
+LIBAVIF_VERSION=1.2.1
 
 if [[ $MB_ML_VER == 2014 ]]; then
     function build_xz {
@@ -116,6 +117,45 @@ function build_harfbuzz {
     touch harfbuzz-stamp
 }
 
+function build_libavif {
+    if [ -e libavif-stamp ]; then return; fi
+
+    python3 -m pip install meson ninja
+
+    if [[ "$PLAT" == "x86_64" ]] || [ -n "$SANITIZER" ]; then
+        build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
+    fi
+
+    # For rav1e
+    curl https://sh.rustup.rs -sSf | sh -s -- -y
+    . "$HOME/.cargo/env"
+    if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
+        yum install -y perl
+        if [[ "$MB_ML_VER" == 2014 ]]; then
+            yum install -y perl-IPC-Cmd
+        fi
+    fi
+
+    local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
+    (cd $out_dir \
+        && CMAKE_POLICY_VERSION_MINIMUM=3.5 cmake \
+            -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX \
+            -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DAVIF_LIBSHARPYUV=LOCAL \
+            -DAVIF_LIBYUV=LOCAL \
+            -DAVIF_CODEC_AOM=LOCAL \
+            -DAVIF_CODEC_DAV1D=LOCAL \
+            -DAVIF_CODEC_RAV1E=LOCAL \
+            -DAVIF_CODEC_SVT=LOCAL \
+            -DENABLE_NASM=ON \
+            -DCMAKE_MODULE_PATH=/tmp/cmake/Modules \
+            . \
+        && make install)
+    touch libavif-stamp
+}
+
 function build {
     build_xz
     if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
@@ -150,6 +190,7 @@ function build {
         build_tiff
     fi
 
+    build_libavif
     build_libpng
     build_lcms2
     build_openjpeg
