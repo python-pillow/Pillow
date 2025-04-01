@@ -15,25 +15,19 @@ from .helper import (
 )
 
 
-def test_sanity(tmp_path: Path) -> None:
-    def roundtrip(im: Image.Image) -> None:
-        outfile = str(tmp_path / "temp.bmp")
+@pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
+def test_sanity(mode: str, tmp_path: Path) -> None:
+    outfile = tmp_path / "temp.bmp"
 
-        im.save(outfile, "BMP")
+    im = hopper(mode)
+    im.save(outfile, "BMP")
 
-        with Image.open(outfile) as reloaded:
-            reloaded.load()
-            assert im.mode == reloaded.mode
-            assert im.size == reloaded.size
-            assert reloaded.format == "BMP"
-            assert reloaded.get_format_mimetype() == "image/bmp"
-
-    roundtrip(hopper())
-
-    roundtrip(hopper("1"))
-    roundtrip(hopper("L"))
-    roundtrip(hopper("P"))
-    roundtrip(hopper("RGB"))
+    with Image.open(outfile) as reloaded:
+        reloaded.load()
+        assert im.mode == reloaded.mode
+        assert im.size == reloaded.size
+        assert reloaded.format == "BMP"
+        assert reloaded.get_format_mimetype() == "image/bmp"
 
 
 def test_invalid_file() -> None:
@@ -66,7 +60,7 @@ def test_small_palette(tmp_path: Path) -> None:
     colors = [0, 0, 0, 125, 125, 125, 255, 255, 255]
     im.putpalette(colors)
 
-    out = str(tmp_path / "temp.bmp")
+    out = tmp_path / "temp.bmp"
     im.save(out)
 
     with Image.open(out) as reloaded:
@@ -74,7 +68,7 @@ def test_small_palette(tmp_path: Path) -> None:
 
 
 def test_save_too_large(tmp_path: Path) -> None:
-    outfile = str(tmp_path / "temp.bmp")
+    outfile = tmp_path / "temp.bmp"
     with Image.new("RGB", (1, 1)) as im:
         im._size = (37838, 37838)
         with pytest.raises(ValueError):
@@ -96,7 +90,7 @@ def test_dpi() -> None:
 def test_save_bmp_with_dpi(tmp_path: Path) -> None:
     # Test for #1301
     # Arrange
-    outfile = str(tmp_path / "temp.jpg")
+    outfile = tmp_path / "temp.jpg"
     with Image.open("Tests/images/hopper.bmp") as im:
         assert im.info["dpi"] == (95.98654816726399, 95.98654816726399)
 
@@ -112,7 +106,7 @@ def test_save_bmp_with_dpi(tmp_path: Path) -> None:
 
 
 def test_save_float_dpi(tmp_path: Path) -> None:
-    outfile = str(tmp_path / "temp.bmp")
+    outfile = tmp_path / "temp.bmp"
     with Image.open("Tests/images/hopper.bmp") as im:
         im.save(outfile, dpi=(72.21216100543306, 72.21216100543306))
         with Image.open(outfile) as reloaded:
@@ -152,7 +146,7 @@ def test_dib_header_size(header_size: int, path: str) -> None:
 
 
 def test_save_dib(tmp_path: Path) -> None:
-    outfile = str(tmp_path / "temp.dib")
+    outfile = tmp_path / "temp.dib"
 
     with Image.open("Tests/images/clipboard.dib") as im:
         im.save(outfile)
@@ -230,3 +224,13 @@ def test_offset() -> None:
     # to exclude the palette size from the pixel data offset
     with Image.open("Tests/images/pal8_offset.bmp") as im:
         assert_image_equal_tofile(im, "Tests/images/bmp/g/pal8.bmp")
+
+
+def test_use_raw_alpha(monkeypatch: pytest.MonkeyPatch) -> None:
+    with Image.open("Tests/images/bmp/g/rgb32.bmp") as im:
+        assert im.info["compression"] == BmpImagePlugin.BmpImageFile.COMPRESSIONS["RAW"]
+        assert im.mode == "RGB"
+
+    monkeypatch.setattr(BmpImagePlugin, "USE_RAW_ALPHA", True)
+    with Image.open("Tests/images/bmp/g/rgb32.bmp") as im:
+        assert im.mode == "RGBA"

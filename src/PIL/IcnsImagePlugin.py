@@ -123,8 +123,7 @@ def read_png_or_jpeg2000(
         Image._decompression_bomb_check(im.size)
         return {"RGBA": im}
     elif (
-        sig.startswith(b"\xff\x4f\xff\x51")
-        or sig.startswith(b"\x0d\x0a\x87\x0a")
+        sig.startswith((b"\xff\x4f\xff\x51", b"\x0d\x0a\x87\x0a"))
         or sig == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a"
     ):
         if not enable_jpeg2k:

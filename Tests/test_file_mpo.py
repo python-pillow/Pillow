@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 
-from PIL import Image, ImageFile, MpoImagePlugin
+from PIL import Image, ImageFile, JpegImagePlugin, MpoImagePlugin
 
 from .helper import (
     assert_image_equal,
@@ -29,11 +29,16 @@ def roundtrip(im: Image.Image, **options: Any) -> ImageFile.ImageFile:
 
 @pytest.mark.parametrize("test_file", test_files)
 def test_sanity(test_file: str) -> None:
-    with Image.open(test_file) as im:
+    def check(im: ImageFile.ImageFile) -> None:
         im.load()
         assert im.mode == "RGB"
         assert im.size == (640, 480)
         assert im.format == "MPO"
+
+    with Image.open(test_file) as im:
+        check(im)
+    with MpoImagePlugin.MpoImageFile(test_file) as im:
+        check(im)
 
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
@@ -75,6 +80,7 @@ def test_context_manager() -> None:
 def test_app(test_file: str) -> None:
     # Test APP/COM reader (@PIL135)
     with Image.open(test_file) as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         assert im.applist[0][0] == "APP1"
         assert im.applist[1][0] == "APP2"
         assert im.applist[1][1].startswith(
@@ -215,12 +221,14 @@ def test_seek(test_file: str) -> None:
 
 def test_n_frames() -> None:
     with Image.open("Tests/images/sugarshack.mpo") as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         assert im.n_frames == 2
         assert im.is_animated
 
 
 def test_eoferror() -> None:
     with Image.open("Tests/images/sugarshack.mpo") as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         n_frames = im.n_frames
 
         # Test seeking past the last frame
@@ -234,6 +242,8 @@ def test_eoferror() -> None:
 
 def test_adopt_jpeg() -> None:
     with Image.open("Tests/images/hopper.jpg") as im:
+        assert isinstance(im, JpegImagePlugin.JpegImageFile)
+
         with pytest.raises(ValueError):
             MpoImagePlugin.MpoImageFile.adopt(im)
 

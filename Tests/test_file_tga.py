@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import os
-from glob import glob
-from itertools import product
 from pathlib import Path
 
 import pytest
@@ -15,16 +13,29 @@ _TGA_DIR = os.path.join("Tests", "images", "tga")
 _TGA_DIR_COMMON = os.path.join(_TGA_DIR, "common")
 
 
-_MODES = ("L", "LA", "P", "RGB", "RGBA")
 _ORIGINS = ("tl", "bl")
 
 _ORIGIN_TO_ORIENTATION = {"tl": 1, "bl": -1}
 
 
-@pytest.mark.parametrize("mode", _MODES)
-def test_sanity(mode: str, tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "size_mode",
+    (
+        ("1x1", "L"),
+        ("200x32", "L"),
+        ("200x32", "LA"),
+        ("200x32", "P"),
+        ("200x32", "RGB"),
+        ("200x32", "RGBA"),
+    ),
+)
+@pytest.mark.parametrize("origin", _ORIGINS)
+@pytest.mark.parametrize("rle", (True, False))
+def test_sanity(
+    size_mode: tuple[str, str], origin: str, rle: str, tmp_path: Path
+) -> None:
     def roundtrip(original_im: Image.Image) -> None:
-        out = str(tmp_path / "temp.tga")
+        out = tmp_path / "temp.tga"
 
         original_im.save(out, rle=rle)
         with Image.open(out) as saved_im:
@@ -36,36 +47,29 @@ def test_sanity(mode: str, tmp_path: Path) -> None:
 
             assert_image_equal(saved_im, original_im)
 
-    png_paths = glob(os.path.join(_TGA_DIR_COMMON, f"*x*_{mode.lower()}.png"))
+    size, mode = size_mode
+    png_path = os.path.join(_TGA_DIR_COMMON, size + "_" + mode.lower() + ".png")
+    with Image.open(png_path) as reference_im:
+        assert reference_im.mode == mode
 
-    for png_path in png_paths:
-        with Image.open(png_path) as reference_im:
-            assert reference_im.mode == mode
+        path_no_ext = os.path.splitext(png_path)[0]
+        tga_path = "{}_{}_{}.tga".format(path_no_ext, origin, "rle" if rle else "raw")
 
-            path_no_ext = os.path.splitext(png_path)[0]
-            for origin, rle in product(_ORIGINS, (True, False)):
-                tga_path = "{}_{}_{}.tga".format(
-                    path_no_ext, origin, "rle" if rle else "raw"
-                )
+        with Image.open(tga_path) as original_im:
+            assert original_im.format == "TGA"
+            assert original_im.get_format_mimetype() == "image/x-tga"
+            if rle:
+                assert original_im.info["compression"] == "tga_rle"
+            assert original_im.info["orientation"] == _ORIGIN_TO_ORIENTATION[origin]
+            if mode == "P":
+                assert original_im.getpalette() == reference_im.getpalette()
 
-                with Image.open(tga_path) as original_im:
-                    assert original_im.format == "TGA"
-                    assert original_im.get_format_mimetype() == "image/x-tga"
-                    if rle:
-                        assert original_im.info["compression"] == "tga_rle"
-                    assert (
-                        original_im.info["orientation"]
-                        == _ORIGIN_TO_ORIENTATION[origin]
-                    )
-                    if mode == "P":
-                        assert original_im.getpalette() == reference_im.getpalette()
+            assert_image_equal(original_im, reference_im)
 
-                    assert_image_equal(original_im, reference_im)
-
-                    roundtrip(original_im)
+            roundtrip(original_im)
 
 
-def test_palette_depth_8(tmp_path: Path) -> None:
+def test_palette_depth_8() -> None:
     with pytest.raises(UnidentifiedImageError):
         Image.open("Tests/images/p_8.tga")
 
@@ -76,7 +80,7 @@ def test_palette_depth_16(tmp_path: Path) -> None:
         assert im.palette.mode == "RGBA"
         assert_image_equal_tofile(im.convert("RGBA"), "Tests/images/p_16.png")
 
-        out = str(tmp_path / "temp.png")
+        out = tmp_path / "temp.png"
         im.save(out)
         with Image.open(out) as reloaded:
             assert_image_equal_tofile(reloaded.convert("RGBA"), "Tests/images/p_16.png")
@@ -122,7 +126,7 @@ def test_cross_scan_line() -> None:
 def test_save(tmp_path: Path) -> None:
     test_file = "Tests/images/tga_id_field.tga"
     with Image.open(test_file) as im:
-        out = str(tmp_path / "temp.tga")
+        out = tmp_path / "temp.tga"
 
         # Save
         im.save(out)
@@ -141,7 +145,7 @@ def test_small_palette(tmp_path: Path) -> None:
     colors = [0, 0, 0]
     im.putpalette(colors)
 
-    out = str(tmp_path / "temp.tga")
+    out = tmp_path / "temp.tga"
     im.save(out)
 
     with Image.open(out) as reloaded:
@@ -155,7 +159,7 @@ def test_missing_palette() -> None:
 
 def test_save_wrong_mode(tmp_path: Path) -> None:
     im = hopper("PA")
-    out = str(tmp_path / "temp.tga")
+    out = tmp_path / "temp.tga"
 
     with pytest.raises(OSError):
         im.save(out)
@@ -172,7 +176,7 @@ def test_save_mapdepth() -> None:
 def test_save_id_section(tmp_path: Path) -> None:
     test_file = "Tests/images/rgb32rle.tga"
     with Image.open(test_file) as im:
-        out = str(tmp_path / "temp.tga")
+        out = tmp_path / "temp.tga"
 
         # Check there is no id section
         im.save(out)
@@ -202,7 +206,7 @@ def test_save_id_section(tmp_path: Path) -> None:
 
 def test_save_orientation(tmp_path: Path) -> None:
     test_file = "Tests/images/rgb32rle.tga"
-    out = str(tmp_path / "temp.tga")
+    out = tmp_path / "temp.tga"
     with Image.open(test_file) as im:
         assert im.info["orientation"] == -1
 
@@ -229,7 +233,7 @@ def test_save_rle(tmp_path: Path) -> None:
     with Image.open(test_file) as im:
         assert im.info["compression"] == "tga_rle"
 
-        out = str(tmp_path / "temp.tga")
+        out = tmp_path / "temp.tga"
 
         # Save
         im.save(out)
@@ -266,7 +270,7 @@ def test_save_l_transparency(tmp_path: Path) -> None:
         assert im.mode == "LA"
         assert im.getchannel("A").getcolors()[0][0] == num_transparent
 
-        out = str(tmp_path / "temp.tga")
+        out = tmp_path / "temp.tga"
         im.save(out)
 
     with Image.open(out) as test_im:

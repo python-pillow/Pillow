@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import warnings
 
 import pytest
@@ -21,6 +22,8 @@ animated_test_file_with_prefix_chunk = "Tests/images/2422.flc"
 
 def test_sanity() -> None:
     with Image.open(static_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
+
         im.load()
         assert im.mode == "P"
         assert im.size == (128, 128)
@@ -28,6 +31,8 @@ def test_sanity() -> None:
         assert not im.is_animated
 
     with Image.open(animated_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
+
         assert im.mode == "P"
         assert im.size == (320, 200)
         assert im.format == "FLI"
@@ -111,16 +116,19 @@ def test_palette_chunk_second() -> None:
 
 def test_n_frames() -> None:
     with Image.open(static_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
         assert im.n_frames == 1
         assert not im.is_animated
 
     with Image.open(animated_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
         assert im.n_frames == 384
         assert im.is_animated
 
 
 def test_eoferror() -> None:
     with Image.open(animated_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
         n_frames = im.n_frames
 
         # Test seeking past the last frame
@@ -130,6 +138,15 @@ def test_eoferror() -> None:
 
         # Test that seeking to the last frame does not raise an error
         im.seek(n_frames - 1)
+
+
+def test_missing_frame_size() -> None:
+    with open(animated_test_file, "rb") as fp:
+        data = fp.read()
+    data = data[:6188]
+    with Image.open(io.BytesIO(data)) as im:
+        with pytest.raises(EOFError, match="missing frame size"):
+            im.seek(1)
 
 
 def test_seek_tell() -> None:
@@ -156,9 +173,13 @@ def test_seek_tell() -> None:
 
 def test_seek() -> None:
     with Image.open(animated_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
         im.seek(50)
 
         assert_image_equal_tofile(im, "Tests/images/a_fli.png")
+
+        with pytest.raises(ValueError, match="cannot seek to frame 52"):
+            im._seek(52)
 
 
 @pytest.mark.parametrize(

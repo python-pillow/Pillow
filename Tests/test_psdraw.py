@@ -35,7 +35,7 @@ def test_draw_postscript(tmp_path: Path) -> None:
     # https://pillow.readthedocs.io/en/latest/handbook/tutorial.html#drawing-postscript
 
     # Arrange
-    tempfile = str(tmp_path / "temp.ps")
+    tempfile = tmp_path / "temp.ps"
     with open(tempfile, "wb") as fp:
         # Act
         ps = PSDraw.PSDraw(fp)

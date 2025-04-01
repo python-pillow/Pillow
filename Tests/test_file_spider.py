@@ -51,7 +51,7 @@ def test_context_manager() -> None:
 
 def test_save(tmp_path: Path) -> None:
     # Arrange
-    temp = str(tmp_path / "temp.spider")
+    temp = tmp_path / "temp.spider"
     im = hopper()
 
     # Act
@@ -96,6 +96,7 @@ def test_tell() -> None:
 
 def test_n_frames() -> None:
     with Image.open(TEST_FILE) as im:
+        assert isinstance(im, SpiderImagePlugin.SpiderImageFile)
         assert im.n_frames == 1
         assert not im.is_animated
 

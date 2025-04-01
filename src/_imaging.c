@@ -4153,6 +4153,8 @@ PyImaging_ZipDecoderNew(PyObject *self, PyObject *args);
 
 /* Encoders (in encode.c) */
 extern PyObject *
+PyImaging_BcnEncoderNew(PyObject *self, PyObject *args);
+extern PyObject *
 PyImaging_EpsEncoderNew(PyObject *self, PyObject *args);
 extern PyObject *
 PyImaging_GifEncoderNew(PyObject *self, PyObject *args);
@@ -4222,6 +4224,7 @@ static PyMethodDef functions[] = {
 
     /* Codecs */
     {"bcn_decoder", (PyCFunction)PyImaging_BcnDecoderNew, METH_VARARGS},
+    {"bcn_encoder", (PyCFunction)PyImaging_BcnEncoderNew, METH_VARARGS},
     {"bit_decoder", (PyCFunction)PyImaging_BitDecoderNew, METH_VARARGS},
     {"eps_encoder", (PyCFunction)PyImaging_EpsEncoderNew, METH_VARARGS},
     {"fli_decoder", (PyCFunction)PyImaging_FliDecoderNew, METH_VARARGS},

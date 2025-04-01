@@ -99,7 +99,7 @@ def test_bytesio(card: ImageFile.ImageFile) -> None:
 def test_lossless(card: ImageFile.ImageFile, tmp_path: Path) -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         im.load()
-        outfile = str(tmp_path / "temp_test-card.png")
+        outfile = tmp_path / "temp_test-card.png"
         im.save(outfile)
     assert_image_similar(im, card, 1.0e-3)
 
@@ -213,7 +213,7 @@ def test_header_errors() -> None:
 
 
 def test_layers_type(card: ImageFile.ImageFile, tmp_path: Path) -> None:
-    outfile = str(tmp_path / "temp_layers.jp2")
+    outfile = tmp_path / "temp_layers.jp2"
     for quality_layers in [[100, 50, 10], (100, 50, 10), None]:
         card.save(outfile, quality_layers=quality_layers)
 
@@ -228,12 +228,14 @@ def test_layers(card: ImageFile.ImageFile) -> None:
     out.seek(0)
 
     with Image.open(out) as im:
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
         im.layers = 1
         im.load()
         assert_image_similar(im, card, 13)
 
     out.seek(0)
     with Image.open(out) as im:
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
         im.layers = 3
         im.load()
         assert_image_similar(im, card, 0.4)
@@ -289,7 +291,7 @@ def test_mct(card: ImageFile.ImageFile) -> None:
 
 
 def test_sgnd(tmp_path: Path) -> None:
-    outfile = str(tmp_path / "temp.jp2")
+    outfile = tmp_path / "temp.jp2"
 
     im = Image.new("L", (1, 1))
     im.save(outfile)
@@ -310,6 +312,18 @@ def test_rgba(ext: str) -> None:
         im.load()
 
         # Assert
+        assert im.mode == "RGBA"
+
+
+def test_grayscale_four_channels() -> None:
+    with open("Tests/images/rgb_trns_ycbc.jp2", "rb") as fp:
+        data = fp.read()
+
+    # Change color space to OPJ_CLRSPC_GRAY
+    data = data[:76] + b"\x11" + data[77:]
+
+    with Image.open(BytesIO(data)) as im:
+        im.load()
         assert im.mode == "RGBA"
 
 

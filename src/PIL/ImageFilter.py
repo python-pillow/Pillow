@@ -20,14 +20,15 @@ import abc
 import functools
 from collections.abc import Sequence
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Callable, cast
+from typing import Any, Callable, cast
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from . import _imaging
     from ._typing import NumpyArray
 
 
-class Filter:
+class Filter(abc.ABC):
     @abc.abstractmethod
     def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         pass

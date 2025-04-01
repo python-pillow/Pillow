@@ -286,6 +286,14 @@ can be easily displayed in a chromaticity diagram, for example).
 
         The value is in the format ``((X, Y, Z), (x, y, Y))``, if available.
 
+    .. py:attribute:: media_white_point
+        :type: tuple[tuple[float, float, float], tuple[float, float, float]] | None
+
+        This tag specifies the media white point and is used for
+        generating absolute colorimetry.
+
+        The value is in the format ``((X, Y, Z), (x, y, Y))``, if available.
+
     .. py:attribute:: media_white_point_temperature
         :type: float | None
 

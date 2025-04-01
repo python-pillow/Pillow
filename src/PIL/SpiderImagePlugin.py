@@ -37,9 +37,12 @@ from __future__ import annotations
 import os
 import struct
 import sys
-from typing import IO, TYPE_CHECKING, Any, cast
+from typing import IO, Any, cast
 
 from . import Image, ImageFile
+from ._util import DeferredError
+
+TYPE_CHECKING = False
 
 
 def isInt(f: Any) -> int:
@@ -178,6 +181,8 @@ class SpiderImageFile(ImageFile.ImageFile):
             raise EOFError(msg)
         if not self._seek_check(frame):
             return
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self.stkoffset = self.hdrlen + frame * (self.hdrlen + self.imgbytes)
         self.fp = self._fp
         self.fp.seek(self.stkoffset)

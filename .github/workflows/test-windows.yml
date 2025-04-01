@@ -41,7 +41,8 @@ jobs:
         include:
             # Test the oldest Python on 32-bit
             - { python-version: "3.9", architecture: "x86", os: "windows-2019" }
-    timeout-minutes: 30
+
+    timeout-minutes: 45
 
     name: Python ${{ matrix.python-version }} (${{ matrix.architecture }})
 
@@ -97,8 +98,8 @@ jobs:
         choco install nasm --no-progress
         echo "C:\Program Files\NASM" >> $env:GITHUB_PATH
 
-        choco install ghostscript --version=10.4.0 --no-progress
-        echo "C:\Program Files\gs\gs10.04.0\bin" >> $env:GITHUB_PATH
+        choco install ghostscript --version=10.5.0 --no-progress
+        echo "C:\Program Files\gs\gs10.05.0\bin" >> $env:GITHUB_PATH
 
         # Install extra test images
         xcopy /S /Y Tests\test-images\* Tests\images
@@ -147,6 +148,10 @@ jobs:
     - name: Build dependencies / libpng
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libpng.cmd"
+
+    - name: Build dependencies / libavif
+      if: steps.build-cache.outputs.cache-hit != 'true' && matrix.architecture == 'x64'
+      run: "& winbuild\\build\\build_dep_libavif.cmd"
 
     # for FreeType WOFF2 font support
     - name: Build dependencies / brotli

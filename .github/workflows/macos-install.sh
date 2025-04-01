@@ -6,6 +6,8 @@ if [[ "$ImageOS" == "macos13" ]]; then
     brew uninstall gradle maven
 fi
 brew install \
+    aom \
+    dav1d \
     freetype \
     ghostscript \
     jpeg-turbo \
@@ -14,6 +16,8 @@ brew install \
     libtiff \
     little-cms2 \
     openjpeg \
+    rav1e \
+    svt-av1 \
     webp
 export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig"
 
@@ -29,6 +33,9 @@ python3 -m pip install numpy
 # optional test dependency, only install if there's a binary package.
 # fails on beta 3.14 and PyPy
 python3 -m pip install --only-binary=:all: pyarrow || true
+
+# libavif
+pushd depends && ./install_libavif.sh && popd
 
 # extra test images
 pushd depends && ./install_extra_test_images.sh && popd
