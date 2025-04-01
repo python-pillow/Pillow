@@ -35,7 +35,7 @@ import math
 import struct
 from collections.abc import Sequence
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, AnyStr, Callable, Union, cast
+from typing import Any, AnyStr, Callable, Union, cast
 
 from . import Image, ImageColor
 from ._deprecate import deprecate
@@ -44,6 +44,7 @@ from ._typing import Coords
 # experimental access to the outline API
 Outline: Callable[[], Image.core._Outline] = Image.core.outline
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from . import ImageDraw2, ImageFont
 

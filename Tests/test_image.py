@@ -230,10 +230,10 @@ class TestImage:
                 assert_image_similar(im, reloaded, 20)
 
     def test_unknown_extension(self, tmp_path: Path) -> None:
-        im = hopper()
         temp_file = tmp_path / "temp.unknown"
-        with pytest.raises(ValueError):
-            im.save(temp_file)
+        with hopper() as im:
+            with pytest.raises(ValueError):
+                im.save(temp_file)
 
     def test_internals(self) -> None:
         im = Image.new("L", (100, 100))

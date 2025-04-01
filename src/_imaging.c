@@ -231,6 +231,93 @@ PyImaging_GetBuffer(PyObject *buffer, Py_buffer *view) {
 }
 
 /* -------------------------------------------------------------------- */
+/* Arrow HANDLING                                                       */
+/* -------------------------------------------------------------------- */
+
+PyObject *
+ArrowError(int err) {
+    if (err == IMAGING_CODEC_MEMORY) {
+        return ImagingError_MemoryError();
+    }
+    if (err == IMAGING_ARROW_INCOMPATIBLE_MODE) {
+        return ImagingError_ValueError("Incompatible Pillow mode for Arrow array");
+    }
+    if (err == IMAGING_ARROW_MEMORY_LAYOUT) {
+        return ImagingError_ValueError(
+            "Image is in multiple array blocks, use imaging_new_block for zero copy"
+        );
+    }
+    return ImagingError_ValueError("Unknown error");
+}
+
+void
+ReleaseArrowSchemaPyCapsule(PyObject *capsule) {
+    struct ArrowSchema *schema =
+        (struct ArrowSchema *)PyCapsule_GetPointer(capsule, "arrow_schema");
+    if (schema->release != NULL) {
+        schema->release(schema);
+    }
+    free(schema);
+}
+
+PyObject *
+ExportArrowSchemaPyCapsule(ImagingObject *self) {
+    struct ArrowSchema *schema =
+        (struct ArrowSchema *)calloc(1, sizeof(struct ArrowSchema));
+    int err = export_imaging_schema(self->image, schema);
+    if (err == 0) {
+        return PyCapsule_New(schema, "arrow_schema", ReleaseArrowSchemaPyCapsule);
+    }
+    free(schema);
+    return ArrowError(err);
+}
+
+void
+ReleaseArrowArrayPyCapsule(PyObject *capsule) {
+    struct ArrowArray *array =
+        (struct ArrowArray *)PyCapsule_GetPointer(capsule, "arrow_array");
+    if (array->release != NULL) {
+        array->release(array);
+    }
+    free(array);
+}
+
+PyObject *
+ExportArrowArrayPyCapsule(ImagingObject *self) {
+    struct ArrowArray *array =
+        (struct ArrowArray *)calloc(1, sizeof(struct ArrowArray));
+    int err = export_imaging_array(self->image, array);
+    if (err == 0) {
+        return PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
+    }
+    free(array);
+    return ArrowError(err);
+}
+
+static PyObject *
+_new_arrow(PyObject *self, PyObject *args) {
+    char *mode;
+    int xsize, ysize;
+    PyObject *schema_capsule, *array_capsule;
+    PyObject *ret;
+
+    if (!PyArg_ParseTuple(
+            args, "s(ii)OO", &mode, &xsize, &ysize, &schema_capsule, &array_capsule
+        )) {
+        return NULL;
+    }
+
+    // ImagingBorrowArrow is responsible for retaining the array_capsule
+    ret =
+        PyImagingNew(ImagingNewArrow(mode, xsize, ysize, schema_capsule, array_capsule)
+        );
+    if (!ret) {
+        return ImagingError_ValueError("Invalid Arrow array mode or size mismatch");
+    }
+    return ret;
+}
+
+/* -------------------------------------------------------------------- */
 /* EXCEPTION REROUTING                                                  */
 /* -------------------------------------------------------------------- */
 
@@ -3655,6 +3742,10 @@ static struct PyMethodDef methods[] = {
     /* Misc. */
     {"save_ppm", (PyCFunction)_save_ppm, METH_VARARGS},
 
+    /* arrow */
+    {"__arrow_c_schema__", (PyCFunction)ExportArrowSchemaPyCapsule, METH_VARARGS},
+    {"__arrow_c_array__", (PyCFunction)ExportArrowArrayPyCapsule, METH_VARARGS},
+
     {NULL, NULL} /* sentinel */
 };
 
@@ -3722,6 +3813,11 @@ _getattr_unsafe_ptrs(ImagingObject *self, void *closure) {
     );
 }
 
+static PyObject *
+_getattr_readonly(ImagingObject *self, void *closure) {
+    return PyLong_FromLong(self->image->read_only);
+}
+
 static struct PyGetSetDef getsetters[] = {
     {"mode", (getter)_getattr_mode},
     {"size", (getter)_getattr_size},
@@ -3729,6 +3825,7 @@ static struct PyGetSetDef getsetters[] = {
     {"id", (getter)_getattr_id},
     {"ptr", (getter)_getattr_ptr},
     {"unsafe_ptrs", (getter)_getattr_unsafe_ptrs},
+    {"readonly", (getter)_getattr_readonly},
     {NULL}
 };
 
@@ -3984,6 +4081,21 @@ _set_blocks_max(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
+_set_use_block_allocator(PyObject *self, PyObject *args) {
+    int use_block_allocator;
+    if (!PyArg_ParseTuple(args, "i:set_use_block_allocator", &use_block_allocator)) {
+        return NULL;
+    }
+    ImagingMemorySetBlockAllocator(&ImagingDefaultArena, use_block_allocator);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+_get_use_block_allocator(PyObject *self, PyObject *args) {
+    return PyLong_FromLong(ImagingDefaultArena.use_block_allocator);
+}
+
+static PyObject *
 _clear_cache(PyObject *self, PyObject *args) {
     int i = 0;
 
@@ -4104,6 +4216,7 @@ static PyMethodDef functions[] = {
     {"fill", (PyCFunction)_fill, METH_VARARGS},
     {"new", (PyCFunction)_new, METH_VARARGS},
     {"new_block", (PyCFunction)_new_block, METH_VARARGS},
+    {"new_arrow", (PyCFunction)_new_arrow, METH_VARARGS},
     {"merge", (PyCFunction)_merge, METH_VARARGS},
 
     /* Functions */
@@ -4190,9 +4303,11 @@ static PyMethodDef functions[] = {
     {"get_alignment", (PyCFunction)_get_alignment, METH_VARARGS},
     {"get_block_size", (PyCFunction)_get_block_size, METH_VARARGS},
     {"get_blocks_max", (PyCFunction)_get_blocks_max, METH_VARARGS},
+    {"get_use_block_allocator", (PyCFunction)_get_use_block_allocator, METH_VARARGS},
     {"set_alignment", (PyCFunction)_set_alignment, METH_VARARGS},
     {"set_block_size", (PyCFunction)_set_block_size, METH_VARARGS},
     {"set_blocks_max", (PyCFunction)_set_blocks_max, METH_VARARGS},
+    {"set_use_block_allocator", (PyCFunction)_set_use_block_allocator, METH_VARARGS},
     {"clear_cache", (PyCFunction)_clear_cache, METH_VARARGS},
 
     {NULL, NULL} /* sentinel */
