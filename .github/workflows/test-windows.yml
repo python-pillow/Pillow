@@ -88,6 +88,10 @@ jobs:
       run: |
         python3 -m pip install PyQt6
 
+    - name: Install PyArrow dependency
+      run: |
+        python3 -m pip install --only-binary=:all: pyarrow || true
+
     - name: Install dependencies
       id: install
       run: |
