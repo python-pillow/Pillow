@@ -2540,8 +2540,13 @@ class Image:
                 msg = f"unknown file extension: {ext}"
                 raise ValueError(msg) from e
 
+        from . import ImageFile
+
         # may mutate self!
-        self._ensure_mutable()
+        if isinstance(self, ImageFile.ImageFile) and filename == self.filename:
+            self._ensure_mutable()
+        else:
+            self.load()
 
         save_all = params.pop("save_all", None)
         self.encoderinfo = {**getattr(self, "encoderinfo", {}), **params}
