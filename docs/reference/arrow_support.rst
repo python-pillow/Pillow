@@ -64,7 +64,7 @@ Unsupported Features
 
 * Table/dataframe protocol. We support a single array.
 * Null markers, producing or consuming. Null values are inferred from
-  the mode. e.g. RGB images are stored in the first three bytes of
+  the mode, e.g. RGB images are stored in the first three bytes of
   each 32-bit pixel, and the last byte is an implied null.
 * Schema negotiation. There is an optional schema for the requested
   datatype in the Arrow source interface. We ignore that

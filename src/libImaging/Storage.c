@@ -586,7 +586,7 @@ ImagingBorrowArrow(
     int offset_width,
     PyObject *arrow_capsule
 ) {
-    // offset_width is the # of char* for a single offset from arrow
+    // offset_width is the number of char* for a single offset from arrow
     Py_ssize_t y, i;
 
     char *borrowed_buffer = NULL;
@@ -735,7 +735,6 @@ ImagingNewArrow(
             return im;
         }
     }
-    // linter: don't mess with the formatting here
     if (strcmp(schema->format, "+w:4") == 0  // 4 up array
         && im->pixelsize == 4                // storage as 32 bpc
         && schema->n_children > 0            // make sure schema is well formed.
