@@ -235,6 +235,7 @@ DEPS: dict[str, dict[str, Any]] = {
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
                 "-DWebP_LIBRARY=libwebp",
                 '-DCMAKE_C_FLAGS="-nologo -DLZMA_API_STATIC"',
+                "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
             )
         ],
         "headers": [r"libtiff\tiff*.h"],
@@ -394,6 +395,7 @@ DEPS: dict[str, dict[str, Any]] = {
                 "-DAVIF_CODEC_DAV1D=LOCAL",
                 "-DAVIF_CODEC_RAV1E=LOCAL",
                 "-DAVIF_CODEC_SVT=LOCAL",
+                "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
             ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
