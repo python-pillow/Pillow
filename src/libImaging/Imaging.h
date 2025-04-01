@@ -51,6 +51,20 @@ extern "C" {
  * extensions, see http://www.effbot.org/zone/pil-extending.htm
  */
 
+#ifdef Py_GIL_DISABLED
+#if defined(__cplusplus)
+#define IMAGING_TLS thread_local
+#elif defined(HAVE_THREAD_LOCAL)
+#define IMAGING_TLS thread_local
+#elif defined(HAVE__THREAD_LOCAL)
+#define IMAGING_TLS _Thread_local
+#elif defined(HAVE___THREAD)
+#define IMAGING_TLS __thread
+#elif defined(HAVE___DECLSPEC_THREAD_)
+#define IMAGING_TLS __declspec(thread)
+#endif
+#endif
+
 /* Handles */
 
 typedef struct ImagingMemoryInstance *Imaging;
@@ -104,6 +118,10 @@ struct ImagingMemoryInstance {
 
     /* Virtual methods */
     void (*destroy)(Imaging im);
+
+#ifdef IMAGING_TLS
+    int arenaindex; /* Index of the arena this image is associated with. */
+#endif
 };
 
 #define IMAGING_PIXEL_1(im, x, y) ((im)->image8[(y)][(x)])
@@ -161,6 +179,9 @@ typedef struct ImagingMemoryArena {
     int stats_reallocated_blocks; /* Number of blocks which were actually reallocated
                                      after retrieving */
     int stats_freed_blocks;       /* Number of freed blocks */
+#ifdef IMAGING_TLS
+    int index; /* Index of the arena in the global array. */
+#endif
 #ifdef Py_GIL_DISABLED
     PyMutex mutex;
 #endif
@@ -169,7 +190,35 @@ typedef struct ImagingMemoryArena {
 /* Objects */
 /* ------- */
 
+#ifdef IMAGING_TLS
+/* In this case we both do not have the GIL and have thread-local storage, so we
+ * will allocate a set of arenas and associated them with threads one at a time.
+ */
+#define IMAGING_ARENAS_COUNT 8
+extern struct ImagingMemoryArena ImagingArenas[IMAGING_ARENAS_COUNT + 1];
+
+/* Provide a macro that loops through each arena that has been
+ * statically-allocated. This is necessary to properly handle stats.
+ */
+#define IMAGING_ARENAS_FOREACH(arena) \
+    for ((arena) = &ImagingArenas[0]; (arena)->index >= 0; ++(arena))
+#else
+/* In this case we either have the GIL or do not have thread-local storage, in
+ * which case we will only allocate a single arena.
+ */
 extern struct ImagingMemoryArena ImagingDefaultArena;
+
+/* Provide a macro that loops through each arena that has been
+ * statically-allocated. In this case because there is only one, this is
+ * effectively a single block of code.
+ */
+#define IMAGING_ARENAS_FOREACH(arena) \
+    for ((arena) = &ImagingDefaultArena; (arena); (arena) = NULL)
+#endif
+
+ImagingMemoryArena
+ImagingGetArena(void);
+
 extern int
 ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max);
 extern void
