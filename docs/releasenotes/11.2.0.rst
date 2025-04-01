@@ -51,6 +51,15 @@ aligned using ``"justify"`` in :py:mod:`~PIL.ImageDraw`::
     draw.multiline_text((0, 0), "Multiline\ntext 1", align="justify")
     draw.multiline_textbbox((0, 0), "Multiline\ntext 2", align="justify")
 
+Specify window in ImageGrab on Windows
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When using :py:meth:`~PIL.ImageGrab.grab`, a specific window can be selected using the
+HWND::
+
+    from PIL import ImageGrab
+    ImageGrab.grab(window=hwnd)
+
 Check for MozJPEG
 ^^^^^^^^^^^^^^^^^
 
