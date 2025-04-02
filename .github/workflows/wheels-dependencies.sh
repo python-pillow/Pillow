@@ -149,8 +149,6 @@ function build_libavif {
             -DCONFIG_AV1_DECODER=0 \
             -DAVIF_CODEC_AOM_DECODE=OFF \
             -DAVIF_CODEC_DAV1D=LOCAL \
-            -DENABLE_NASM=ON \
-            -DCMAKE_MODULE_PATH=/tmp/cmake/Modules \
             . \
         && make install)
     touch libavif-stamp
