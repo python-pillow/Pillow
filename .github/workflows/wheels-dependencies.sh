@@ -134,7 +134,7 @@ function build_libavif {
 
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
     # CONFIG_AV1_DECODER=0 is a flag for libaom (included as a subproject of
-    # libavif) to disable the compilation and inclusion of aom's AVIF decoder.
+    # libavif) to disable the compilation and inclusion of aom's AV1 decoder.
     (cd $out_dir \
         && CMAKE_POLICY_VERSION_MINIMUM=3.5 cmake \
             -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX \
