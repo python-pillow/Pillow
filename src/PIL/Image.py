@@ -2543,7 +2543,9 @@ class Image:
         from . import ImageFile
 
         # may mutate self!
-        if isinstance(self, ImageFile.ImageFile) and filename == self.filename:
+        if isinstance(self, ImageFile.ImageFile) and os.path.abspath(
+            filename
+        ) == os.path.abspath(self.filename):
             self._ensure_mutable()
         else:
             self.load()
