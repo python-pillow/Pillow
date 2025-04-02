@@ -252,8 +252,12 @@ class ImageFile(Image.Image):
             return Image.MIME.get(self.format.upper())
         return None
 
+    def __getstate__(self) -> list[Any]:
+        return super().__getstate__() + [self.filename]
+
     def __setstate__(self, state: list[Any]) -> None:
         self.tile = []
+        self.filename = state[5]
         super().__setstate__(state)
 
     def verify(self) -> None:

@@ -403,8 +403,8 @@ class JpegImageFile(ImageFile.ImageFile):
         return super().__getstate__() + [self.layers, self.layer]
 
     def __setstate__(self, state: list[Any]) -> None:
+        self.layers, self.layer = state[6:]
         super().__setstate__(state)
-        self.layers, self.layer = state[5:]
 
     def load_read(self, read_bytes: int) -> bytes:
         """
