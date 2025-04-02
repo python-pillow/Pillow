@@ -80,11 +80,7 @@ function build_pkg_config {
 
 function build_zlib_ng {
     if [ -e zlib-stamp ]; then return; fi
-    fetch_unpack https://github.com/zlib-ng/zlib-ng/archive/$ZLIB_NG_VERSION.tar.gz zlib-ng-$ZLIB_NG_VERSION.tar.gz
-    (cd zlib-ng-$ZLIB_NG_VERSION \
-        && ./configure --prefix=$BUILD_PREFIX --zlib-compat \
-        && make -j4 \
-        && make install)
+    build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --zlib-compat
 
     if [ -n "$IS_MACOS" ]; then
         # Ensure that on macOS, the library name is an absolute path, not an
