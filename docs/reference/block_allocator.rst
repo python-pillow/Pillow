@@ -1,3 +1,6 @@
+
+.. _block_allocator:
+
 Block Allocator
 ===============
 

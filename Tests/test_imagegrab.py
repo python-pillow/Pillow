@@ -40,8 +40,10 @@ class TestImageGrab:
 
     @pytest.mark.skipif(Image.core.HAVE_XCB, reason="tests missing XCB")
     def test_grab_no_xcb(self) -> None:
-        if sys.platform not in ("win32", "darwin") and not shutil.which(
-            "gnome-screenshot"
+        if (
+            sys.platform not in ("win32", "darwin")
+            and not shutil.which("gnome-screenshot")
+            and not shutil.which("spectacle")
         ):
             with pytest.raises(OSError) as e:
                 ImageGrab.grab()
@@ -56,6 +58,13 @@ class TestImageGrab:
         with pytest.raises(OSError) as e:
             ImageGrab.grab(xdisplay="error.test:0.0")
         assert str(e.value).startswith("X connection failed")
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows only")
+    def test_grab_invalid_handle(self) -> None:
+        with pytest.raises(OSError, match="unable to get device context for handle"):
+            ImageGrab.grab(window=-1)
+        with pytest.raises(OSError, match="screen grab failed"):
+            ImageGrab.grab(window=0)
 
     def test_grabclipboard(self) -> None:
         if sys.platform == "darwin":

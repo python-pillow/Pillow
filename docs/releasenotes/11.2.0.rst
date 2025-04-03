@@ -51,6 +51,15 @@ aligned using ``"justify"`` in :py:mod:`~PIL.ImageDraw`::
     draw.multiline_text((0, 0), "Multiline\ntext 1", align="justify")
     draw.multiline_textbbox((0, 0), "Multiline\ntext 2", align="justify")
 
+Specify window in ImageGrab on Windows
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When using :py:meth:`~PIL.ImageGrab.grab`, a specific window can be selected using the
+HWND::
+
+    from PIL import ImageGrab
+    ImageGrab.grab(window=hwnd)
+
 Check for MozJPEG
 ^^^^^^^^^^^^^^^^^
 
@@ -68,3 +77,34 @@ Compressed DDS images can now be saved using a ``pixel_format`` argument. DXT1, 
 DXT5, BC2, BC3 and BC5 are supported::
 
     im.save("out.dds", pixel_format="DXT1")
+
+Other Changes
+=============
+
+Arrow support
+^^^^^^^^^^^^^
+
+`Arrow <https://arrow.apache.org/>`__ is an in-memory data exchange format that is the
+spiritual successor to the NumPy array interface. It provides for zero-copy access to
+columnar data, which in our case is ``Image`` data.
+
+To create an image with zero-copy shared memory from an object exporting the
+arrow_c_array interface protocol::
+
+    from PIL import Image
+    import pyarrow as pa
+    arr = pa.array([0]*(5*5*4), type=pa.uint8())
+    im = Image.fromarrow(arr, 'RGBA', (5, 5))
+
+Pillow images can also be converted to Arrow objects::
+
+    from PIL import Image
+    import pyarrow as pa
+    im = Image.open('hopper.jpg')
+    arr = pa.array(im)
+
+Reading and writing AVIF images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow can now read and write AVIF images. If you are building Pillow from source, this
+will require libavif 1.0.0 or later.

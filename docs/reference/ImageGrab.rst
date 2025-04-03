@@ -9,15 +9,16 @@ or the clipboard to a PIL image memory.
 
 .. versionadded:: 1.1.3
 
-.. py:function:: grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=None)
+.. py:function:: grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=None, window=None)
 
     Take a snapshot of the screen. The pixels inside the bounding box are returned as
     an "RGBA" on macOS, or an "RGB" image otherwise. If the bounding box is omitted,
     the entire screen is copied, and on macOS, it will be at 2x if on a Retina screen.
 
     On Linux, if ``xdisplay`` is ``None`` and the default X11 display does not return
-    a snapshot of the screen, ``gnome-screenshot`` will be used as fallback if it is
-    installed. To disable this behaviour, pass ``xdisplay=""`` instead.
+    a snapshot of the screen, ``gnome-screenshot`` or ``spectacle`` will be used as a
+    fallback if they are installed. To disable this behaviour, pass ``xdisplay=""``
+    instead.
 
     .. versionadded:: 1.1.3 (Windows), 3.0.0 (macOS), 7.1.0 (Linux)
 
@@ -39,6 +40,11 @@ or the clipboard to a PIL image memory.
         You can check X11 support using :py:func:`PIL.features.check_feature` with ``feature="xcb"``.
 
         .. versionadded:: 7.1.0
+
+    :param window:
+        HWND, to capture a single window. Windows only.
+
+        .. versionadded:: 11.2.0
     :return: An image
 
 .. py:function:: grabclipboard()

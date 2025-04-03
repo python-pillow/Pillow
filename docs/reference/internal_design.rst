@@ -9,3 +9,4 @@ Internal Reference
   block_allocator
   internal_modules
   c_extension_debugging
+  arrow_support

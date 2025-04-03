@@ -83,6 +83,7 @@ def test_pickle_jpeg() -> None:
         unpickled_image = pickle.loads(pickle.dumps(image))
 
     # Assert
+    assert unpickled_image.filename == "Tests/images/hopper.jpg"
     assert len(unpickled_image.layer) == 3
     assert unpickled_image.layers == 3
 
