@@ -122,9 +122,6 @@ function build_libavif {
         build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
     fi
 
-    # For rav1e
-    curl https://sh.rustup.rs -sSf | sh -s -- -y
-    . "$HOME/.cargo/env"
     if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
         yum install -y perl
         if [[ "$MB_ML_VER" == 2014 ]]; then
