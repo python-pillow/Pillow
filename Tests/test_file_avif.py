@@ -221,6 +221,7 @@ class TestFileAvif:
     def test_background_from_gif(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/chi.gif") as im:
             original_value = im.convert("RGB").getpixel((1, 1))
+            assert isinstance(original_value, tuple)
 
             # Save as AVIF
             out_avif = tmp_path / "temp.avif"
@@ -233,6 +234,7 @@ class TestFileAvif:
 
         with Image.open(out_gif) as reread:
             reread_value = reread.convert("RGB").getpixel((1, 1))
+        assert isinstance(reread_value, tuple)
         difference = sum([abs(original_value[i] - reread_value[i]) for i in range(3)])
         assert difference <= 3
 
