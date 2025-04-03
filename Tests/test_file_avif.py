@@ -309,7 +309,7 @@ class TestFileAvif:
         assert exif[274] == 3
 
     @pytest.mark.parametrize("use_bytes", [True, False])
-    @pytest.mark.parametrize("orientation", [1, 2])
+    @pytest.mark.parametrize("orientation", [1, 2, 3, 4, 5, 6, 7, 8])
     def test_exif_save(
         self,
         tmp_path: Path,
@@ -327,6 +327,7 @@ class TestFileAvif:
             if orientation == 1:
                 assert "exif" not in reloaded.info
             else:
+                assert reloaded.getexif()[274] == orientation
                 assert reloaded.info["exif"] == exif_data
 
     def test_exif_without_orientation(self, tmp_path: Path) -> None:
