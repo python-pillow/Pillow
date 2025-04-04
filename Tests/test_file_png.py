@@ -671,6 +671,9 @@ class TestFilePng:
         im.save(out, bits=4, save_all=save_all)
 
         with Image.open(out) as reloaded:
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+            assert reloaded.png is not None
+            assert reloaded.png.im_palette is not None
             assert len(reloaded.png.im_palette[1]) == 48
 
     def test_plte_length(self, tmp_path: Path) -> None:
@@ -681,6 +684,9 @@ class TestFilePng:
         im.save(out)
 
         with Image.open(out) as reloaded:
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+            assert reloaded.png is not None
+            assert reloaded.png.im_palette is not None
             assert len(reloaded.png.im_palette[1]) == 3
 
     def test_getxmp(self) -> None:
@@ -702,13 +708,17 @@ class TestFilePng:
     def test_exif(self) -> None:
         # With an EXIF chunk
         with Image.open("Tests/images/exif.png") as im:
-            exif = im._getexif()
-        assert exif[274] == 1
+            assert isinstance(im, PngImagePlugin.PngImageFile)
+            exif_data = im._getexif()
+        assert exif_data is not None
+        assert exif_data[274] == 1
 
         # With an ImageMagick zTXt chunk
         with Image.open("Tests/images/exif_imagemagick.png") as im:
-            exif = im._getexif()
-            assert exif[274] == 1
+            assert isinstance(im, PngImagePlugin.PngImageFile)
+            exif_data = im._getexif()
+            assert exif_data is not None
+            assert exif_data[274] == 1
 
             # Assert that info still can be extracted
             # when the image is no longer a PngImageFile instance
@@ -717,8 +727,10 @@ class TestFilePng:
 
         # With a tEXt chunk
         with Image.open("Tests/images/exif_text.png") as im:
-            exif = im._getexif()
-        assert exif[274] == 1
+            assert isinstance(im, PngImagePlugin.PngImageFile)
+            exif_data = im._getexif()
+        assert exif_data is not None
+        assert exif_data[274] == 1
 
         # With XMP tags
         with Image.open("Tests/images/xmp_tags_orientation.png") as im:
@@ -740,8 +752,10 @@ class TestFilePng:
             im.save(test_file, exif=im.getexif())
 
         with Image.open(test_file) as reloaded:
-            exif = reloaded._getexif()
-        assert exif[274] == 1
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+            exif_data = reloaded._getexif()
+        assert exif_data is not None
+        assert exif_data[274] == 1
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
