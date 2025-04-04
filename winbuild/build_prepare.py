@@ -122,7 +122,7 @@ V = {
     "LIBWEBP": "1.5.0",
     "OPENJPEG": "2.5.3",
     "TIFF": "4.7.0",
-    "XZ": "5.6.4",
+    "XZ": "5.6.4" if struct.calcsize("P") == 4 else "5.8.1",
     "ZLIBNG": "2.2.4",
 }
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
