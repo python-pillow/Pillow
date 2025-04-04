@@ -57,7 +57,10 @@ def cmd_nmake(
 
 
 def cmds_cmake(
-    target: str | tuple[str, ...] | list[str], *params: str, build_dir: str = "."
+    target: str | tuple[str, ...] | list[str],
+    *params: str,
+    build_dir: str = ".",
+    build_type: str = "Release",
 ) -> list[str]:
     if not isinstance(target, str):
         target = " ".join(target)
@@ -66,7 +69,7 @@ def cmds_cmake(
         " ".join(
             [
                 "{cmake}",
-                "-DCMAKE_BUILD_TYPE=Release",
+                f"-DCMAKE_BUILD_TYPE={build_type}",
                 "-DCMAKE_VERBOSE_MAKEFILE=ON",
                 "-DCMAKE_RULE_MESSAGES:BOOL=OFF",  # for NMake
                 "-DCMAKE_C_COMPILER=cl.exe",  # for Ninja
@@ -396,6 +399,8 @@ DEPS: dict[str, dict[str, Any]] = {
                 "-DAVIF_CODEC_AOM_DECODE=OFF",
                 "-DAVIF_CODEC_DAV1D=LOCAL",
                 "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+                "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON",
+                build_type="MinSizeRel",
             ),
             cmd_xcopy("include", "{inc_dir}"),
         ],

@@ -129,6 +129,12 @@ function build_libavif {
         fi
     fi
 
+    local build_type=MinSizeRel
+
+    if [[ -z "$IS_ALPINE" ]] && [[ "$MB_ML_VER" == 2014 ]]; then
+        build_type=Release
+    fi
+
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
     # CONFIG_AV1_DECODER=0 is a flag for libaom (included as a subproject of
     # libavif) to disable the compilation and inclusion of aom's AV1 decoder.
@@ -138,7 +144,6 @@ function build_libavif {
             -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib \
             -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib \
             -DCMAKE_MACOSX_RPATH=OFF \
-            -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=ON \
             -DAVIF_LIBSHARPYUV=LOCAL \
             -DAVIF_LIBYUV=LOCAL \
@@ -146,6 +151,8 @@ function build_libavif {
             -DCONFIG_AV1_DECODER=0 \
             -DAVIF_CODEC_AOM_DECODE=OFF \
             -DAVIF_CODEC_DAV1D=LOCAL \
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+            -DCMAKE_BUILD_TYPE=$build_type \
             . \
         && make install)
     touch libavif-stamp
