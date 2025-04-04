@@ -61,7 +61,6 @@ export_named_type(struct ArrowSchema *schema, char *format, char *name) {
     size_t name_len = strlen(name) + 1;
 
     formatp = calloc(format_len, 1);
-
     if (!formatp) {
         return IMAGING_CODEC_MEMORY;
     }
@@ -72,8 +71,8 @@ export_named_type(struct ArrowSchema *schema, char *format, char *name) {
         return IMAGING_CODEC_MEMORY;
     }
 
-    strncpy(formatp, format, format_len);
-    strncpy(namep, name, name_len);
+    strcpy(formatp, format);
+    strcpy(namep, name);
 
     *schema = (struct ArrowSchema){// Type description
                                    .format = formatp,
