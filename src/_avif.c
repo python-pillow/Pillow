@@ -142,21 +142,13 @@ _codec_available(const char *name, avifCodecFlags flags) {
 
 PyObject *
 _decoder_codec_available(PyObject *self, PyObject *args) {
-    char *codec_name;
-    if (!PyArg_ParseTuple(args, "s", &codec_name)) {
-        return NULL;
-    }
-    int is_available = _codec_available(codec_name, AVIF_CODEC_FLAG_CAN_DECODE);
+    int is_available = _codec_available("aom", AVIF_CODEC_FLAG_CAN_DECODE);
     return PyBool_FromLong(is_available);
 }
 
 PyObject *
 _encoder_codec_available(PyObject *self, PyObject *args) {
-    char *codec_name;
-    if (!PyArg_ParseTuple(args, "s", &codec_name)) {
-        return NULL;
-    }
-    int is_available = _codec_available(codec_name, AVIF_CODEC_FLAG_CAN_ENCODE);
+    int is_available = _codec_available("aom", AVIF_CODEC_FLAG_CAN_ENCODE);
     return PyBool_FromLong(is_available);
 }
 
@@ -229,7 +221,6 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
     int tile_rows_log2;
     int tile_cols_log2;
 
-    char *codec;
     char *range;
 
     PyObject *advanced;
@@ -237,14 +228,13 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "(II)siiissiippy*y*iy*O",
+            "(II)siiisiippy*y*iy*O",
             &width,
             &height,
             &subsampling,
             &quality,
             &speed,
             &max_threads,
-            &codec,
             &range,
             &tile_rows_log2,
             &tile_cols_log2,
@@ -310,18 +300,10 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
         goto end;
     }
 
-    int is_aom_encode = strcmp(codec, "aom") == 0 ||
-                        (strcmp(codec, "auto") == 0 &&
-                         _codec_available("aom", AVIF_CODEC_FLAG_CAN_ENCODE));
-    encoder->maxThreads = is_aom_encode && max_threads > 64 ? 64 : max_threads;
+    encoder->maxThreads = max_threads > 64 ? 64 : max_threads;
 
     encoder->quality = quality;
 
-    if (strcmp(codec, "auto") == 0) {
-        encoder->codecChoice = AVIF_CODEC_CHOICE_AUTO;
-    } else {
-        encoder->codecChoice = avifCodecChoiceFromName(codec);
-    }
     if (speed < AVIF_SPEED_SLOWEST) {
         speed = AVIF_SPEED_SLOWEST;
     } else if (speed > AVIF_SPEED_FASTEST) {
@@ -616,20 +598,12 @@ AvifDecoderNew(PyObject *self_, PyObject *args) {
     AvifDecoderObject *self = NULL;
     avifDecoder *decoder;
 
-    char *codec_str;
-    avifCodecChoice codec;
     int max_threads;
 
     avifResult result;
 
-    if (!PyArg_ParseTuple(args, "y*si", &buffer, &codec_str, &max_threads)) {
+    if (!PyArg_ParseTuple(args, "y*i", &buffer, &max_threads)) {
         return NULL;
-    }
-
-    if (strcmp(codec_str, "auto") == 0) {
-        codec = AVIF_CODEC_CHOICE_AUTO;
-    } else {
-        codec = avifCodecChoiceFromName(codec_str);
     }
 
     self = PyObject_New(AvifDecoderObject, &AvifDecoder_Type);
@@ -653,7 +627,6 @@ AvifDecoderNew(PyObject *self_, PyObject *args) {
     // items. libheif v1.11.0 and older does not add the 'pixi' item property to
     // AV1 image items.
     decoder->strictFlags &= ~AVIF_STRICT_PIXI_REQUIRED;
-    decoder->codecChoice = codec;
 
     result = avifDecoderSetIOMemory(decoder, buffer.buf, buffer.len);
     if (result != AVIF_RESULT_OK) {

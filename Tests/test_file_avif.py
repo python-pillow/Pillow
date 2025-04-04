@@ -51,20 +51,6 @@ def roundtrip(im: ImageFile.ImageFile, **options: Any) -> ImageFile.ImageFile:
     return Image.open(out)
 
 
-def skip_unless_avif_decoder(codec_name: str) -> pytest.MarkDecorator:
-    reason = f"{codec_name} decode not available"
-    return pytest.mark.skipif(
-        not HAVE_AVIF or not _avif.decoder_codec_available(codec_name), reason=reason
-    )
-
-
-def skip_unless_avif_encoder(codec_name: str) -> pytest.MarkDecorator:
-    reason = f"{codec_name} encode not available"
-    return pytest.mark.skipif(
-        not HAVE_AVIF or not _avif.encoder_codec_available(codec_name), reason=reason
-    )
-
-
 def is_docker_qemu() -> bool:
     try:
         init_proc_exe = os.readlink("/proc/1/exe")
@@ -99,15 +85,12 @@ class TestFileAvif:
     def test_codec_version(self) -> None:
         assert AvifImagePlugin.get_codec_version("unknown") is None
 
-        for codec_name in ("aom", "dav1d", "rav1e", "svt"):
-            codec_version = AvifImagePlugin.get_codec_version(codec_name)
-            if _avif.decoder_codec_available(
-                codec_name
-            ) or _avif.encoder_codec_available(codec_name):
-                assert codec_version is not None
-                assert re.search(r"^v?\d+\.\d+\.\d+(-([a-z\d])+)*$", codec_version)
-            else:
-                assert codec_version is None
+        codec_version = AvifImagePlugin.get_codec_version("aom")
+        if _avif.decoder_codec_available() or _avif.encoder_codec_available():
+            assert codec_version is not None
+            assert re.search(r"^v?\d+\.\d+\.\d+(-([a-z\d])+)*$", codec_version)
+        else:
+            assert codec_version is None
 
     def test_read(self) -> None:
         """
@@ -181,6 +164,10 @@ class TestFileAvif:
         """Save should raise an OSError if AvifEncoder.finish returns None"""
 
         class _mock_avif:
+            @classmethod
+            def encoder_codec_available(cls) -> bool:
+                return True
+
             class AvifEncoder:
                 def __init__(self, *args: Any) -> None:
                     pass
@@ -434,26 +421,6 @@ class TestFileAvif:
             with pytest.raises(ValueError):
                 im.save(test_file, range="foo")
 
-    @skip_unless_avif_encoder("aom")
-    def test_encoder_codec_param(self, tmp_path: Path) -> None:
-        with Image.open(TEST_AVIF_FILE) as im:
-            test_file = tmp_path / "temp.avif"
-            im.save(test_file, codec="aom")
-
-    def test_encoder_codec_invalid(self, tmp_path: Path) -> None:
-        with Image.open(TEST_AVIF_FILE) as im:
-            test_file = tmp_path / "temp.avif"
-            with pytest.raises(ValueError):
-                im.save(test_file, codec="foo")
-
-    @skip_unless_avif_decoder("dav1d")
-    def test_decoder_codec_cannot_encode(self, tmp_path: Path) -> None:
-        with Image.open(TEST_AVIF_FILE) as im:
-            test_file = tmp_path / "temp.avif"
-            with pytest.raises(ValueError):
-                im.save(test_file, codec="dav1d")
-
-    @skip_unless_avif_encoder("aom")
     @pytest.mark.parametrize(
         "advanced",
         [
@@ -470,17 +437,15 @@ class TestFileAvif:
     ) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
             ctrl_buf = BytesIO()
-            im.save(ctrl_buf, "AVIF", codec="aom")
+            im.save(ctrl_buf, "AVIF")
             test_buf = BytesIO()
             im.save(
                 test_buf,
                 "AVIF",
-                codec="aom",
                 advanced=advanced,
             )
             assert ctrl_buf.getvalue() != test_buf.getvalue()
 
-    @skip_unless_avif_encoder("aom")
     @pytest.mark.parametrize("advanced", [{"foo": "bar"}, {"foo": 1234}, 1234])
     def test_encoder_advanced_codec_options_invalid(
         self, tmp_path: Path, advanced: dict[str, str] | int
@@ -488,67 +453,13 @@ class TestFileAvif:
         with Image.open(TEST_AVIF_FILE) as im:
             test_file = tmp_path / "temp.avif"
             with pytest.raises(ValueError):
-                im.save(test_file, codec="aom", advanced=advanced)
-
-    @skip_unless_avif_decoder("aom")
-    def test_decoder_codec_param(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(AvifImagePlugin, "DECODE_CODEC_CHOICE", "aom")
-
-        with Image.open(TEST_AVIF_FILE) as im:
-            assert im.size == (128, 128)
-
-    @skip_unless_avif_encoder("rav1e")
-    def test_encoder_codec_cannot_decode(
-        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-    ) -> None:
-        monkeypatch.setattr(AvifImagePlugin, "DECODE_CODEC_CHOICE", "rav1e")
-
-        with pytest.raises(ValueError):
-            with Image.open(TEST_AVIF_FILE):
-                pass
-
-    def test_decoder_codec_invalid(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(AvifImagePlugin, "DECODE_CODEC_CHOICE", "foo")
-
-        with pytest.raises(ValueError):
-            with Image.open(TEST_AVIF_FILE):
-                pass
-
-    @skip_unless_avif_encoder("aom")
-    def test_encoder_codec_available(self) -> None:
-        assert _avif.encoder_codec_available("aom") is True
-
-    def test_encoder_codec_available_bad_params(self) -> None:
-        with pytest.raises(TypeError):
-            _avif.encoder_codec_available()
-
-    @skip_unless_avif_decoder("dav1d")
-    def test_encoder_codec_available_cannot_decode(self) -> None:
-        assert _avif.encoder_codec_available("dav1d") is False
-
-    def test_encoder_codec_available_invalid(self) -> None:
-        assert _avif.encoder_codec_available("foo") is False
+                im.save(test_file, advanced=advanced)
 
     def test_encoder_quality_valueerror(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
             test_file = tmp_path / "temp.avif"
             with pytest.raises(ValueError):
                 im.save(test_file, quality="invalid")
-
-    @skip_unless_avif_decoder("aom")
-    def test_decoder_codec_available(self) -> None:
-        assert _avif.decoder_codec_available("aom") is True
-
-    def test_decoder_codec_available_bad_params(self) -> None:
-        with pytest.raises(TypeError):
-            _avif.decoder_codec_available()
-
-    @skip_unless_avif_encoder("rav1e")
-    def test_decoder_codec_available_cannot_decode(self) -> None:
-        assert _avif.decoder_codec_available("rav1e") is False
-
-    def test_decoder_codec_available_invalid(self) -> None:
-        assert _avif.decoder_codec_available("foo") is False
 
     def test_p_mode_transparency(self, tmp_path: Path) -> None:
         im = Image.new("P", size=(64, 64))
@@ -570,16 +481,10 @@ class TestFileAvif:
         with Image.open("Tests/images/avif/hopper-missing-pixi.avif") as im:
             assert im.size == (128, 128)
 
-    @skip_unless_avif_encoder("aom")
     @pytest.mark.parametrize("speed", [-1, 1, 11])
     def test_aom_optimizations(self, tmp_path: Path, speed: int) -> None:
         test_file = tmp_path / "temp.avif"
-        hopper().save(test_file, codec="aom", speed=speed)
-
-    @skip_unless_avif_encoder("svt")
-    def test_svt_optimizations(self, tmp_path: Path) -> None:
-        test_file = tmp_path / "temp.avif"
-        hopper().save(test_file, codec="svt", speed=1)
+        hopper().save(test_file, speed=speed)
 
 
 @skip_unless_feature("avif")

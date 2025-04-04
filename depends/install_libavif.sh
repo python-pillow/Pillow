@@ -25,26 +25,6 @@ if $PKGCONFIG --exists aom; then
     HAS_DECODER=1
 fi
 
-if $PKGCONFIG --exists dav1d; then
-    LIBAVIF_CMAKE_FLAGS+=(-DAVIF_CODEC_DAV1D=SYSTEM)
-    HAS_DECODER=1
-fi
-
-if $PKGCONFIG --exists libgav1; then
-    LIBAVIF_CMAKE_FLAGS+=(-DAVIF_CODEC_LIBGAV1=SYSTEM)
-    HAS_DECODER=1
-fi
-
-if $PKGCONFIG --exists rav1e; then
-    LIBAVIF_CMAKE_FLAGS+=(-DAVIF_CODEC_RAV1E=SYSTEM)
-    HAS_ENCODER=1
-fi
-
-if $PKGCONFIG --exists SvtAv1Enc; then
-    LIBAVIF_CMAKE_FLAGS+=(-DAVIF_CODEC_SVT=SYSTEM)
-    HAS_ENCODER=1
-fi
-
 if [ "$HAS_ENCODER" != 1 ] || [ "$HAS_DECODER" != 1 ]; then
     LIBAVIF_CMAKE_FLAGS+=(-DAVIF_CODEC_AOM=LOCAL)
 fi
