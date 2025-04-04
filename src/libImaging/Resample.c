@@ -87,7 +87,7 @@ mks_2013_filter(double x) {
     if (x < 0.5)
         return 17.0 / 16.0 - 7.0 / 4.0 * pow(x, 2.0);
     if (x < 1.5)
-        return (1.0 - x) * (7.0/4.0 - x);
+        return (1.0 - x) * (7.0 / 4.0 - x);
     if (x < 2.5)
         return -1.0 / 8.0 * pow(x - 5.0 / 2.0, 2.0);
     return (0.0);
