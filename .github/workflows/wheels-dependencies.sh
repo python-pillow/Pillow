@@ -122,16 +122,6 @@ function build_libavif {
         build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
     fi
 
-    # For rav1e
-    curl https://sh.rustup.rs -sSf | sh -s -- -y
-    . "$HOME/.cargo/env"
-    if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
-        yum install -y perl
-        if [[ "$MB_ML_VER" == 2014 ]]; then
-            yum install -y perl-IPC-Cmd
-        fi
-    fi
-
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
     (cd $out_dir \
         && CMAKE_POLICY_VERSION_MINIMUM=3.5 cmake \
@@ -142,9 +132,6 @@ function build_libavif {
             -DAVIF_LIBSHARPYUV=LOCAL \
             -DAVIF_LIBYUV=LOCAL \
             -DAVIF_CODEC_AOM=LOCAL \
-            -DAVIF_CODEC_DAV1D=LOCAL \
-            -DAVIF_CODEC_RAV1E=LOCAL \
-            -DAVIF_CODEC_SVT=LOCAL \
             -DENABLE_NASM=ON \
             -DCMAKE_MODULE_PATH=/tmp/cmake/Modules \
             . \

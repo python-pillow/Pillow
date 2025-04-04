@@ -13,9 +13,6 @@ try:
 except ImportError:
     SUPPORTED = False
 
-# Decoder options as module globals, until there is a way to pass parameters
-# to Image.open (see https://github.com/python-pillow/Pillow/issues/569)
-DECODE_CODEC_CHOICE = "auto"
 # Decoding is only affected by this for libavif **0.8.4** or greater.
 DEFAULT_MAX_THREADS = 0
 
@@ -73,14 +70,11 @@ class AvifImageFile(ImageFile.ImageFile):
             msg = "image file could not be opened because AVIF support not installed"
             raise SyntaxError(msg)
 
-        if DECODE_CODEC_CHOICE != "auto" and not _avif.decoder_codec_available(
-            DECODE_CODEC_CHOICE
-        ):
-            msg = "Invalid opening codec"
+        if not _avif.decoder_codec_available():
+            msg = "Codec not available"
             raise ValueError(msg)
         self._decoder = _avif.AvifDecoder(
             self.fp.read(),
-            DECODE_CODEC_CHOICE,
             _get_default_max_threads(),
         )
 
@@ -165,9 +159,8 @@ def _save(
     subsampling = info.get("subsampling", "4:2:0")
     speed = info.get("speed", 6)
     max_threads = info.get("max_threads", _get_default_max_threads())
-    codec = info.get("codec", "auto")
-    if codec != "auto" and not _avif.encoder_codec_available(codec):
-        msg = "Invalid saving codec"
+    if not _avif.encoder_codec_available():
+        msg = "Codec not available"
         raise ValueError(msg)
     range_ = info.get("range", "full")
     tile_rows_log2 = info.get("tile_rows", 0)
@@ -218,7 +211,6 @@ def _save(
         quality,
         speed,
         max_threads,
-        codec,
         range_,
         tile_rows_log2,
         tile_cols_log2,

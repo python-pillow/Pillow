@@ -50,16 +50,10 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     Quality/speed trade-off (0=slower/better, 10=fastest). Defaults to 6.
 
 **max_threads**
-    Limit the number of active threads used. By default, there is no limit. If the aom
-    codec is used, there is a maximum of 64.
+    Limit the number of active threads used. There is a maximum of 64.
 
 **range**
     YUV range, either "full" or "limited". Defaults to "full".
-
-**codec**
-    AV1 codec to use for encoding. Specific values are "aom", "rav1e", and
-    "svt", presuming the chosen codec is available. Defaults to "auto", which
-    will choose the first available codec in the order of the preceding list.
 
 **tile_rows** / **tile_cols**
     For tile encoding, the (log 2) number of tile rows and columns to use.

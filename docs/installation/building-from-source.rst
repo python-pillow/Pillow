@@ -92,10 +92,9 @@ Many of Pillow's features require external libraries:
 * **libavif** provides support for the AVIF format.
 
   * Pillow requires libavif version **1.0.0** or greater.
-  * libavif is merely an API that wraps AVIF codecs. If you are compiling
-    libavif from source, you will also need to install both an AVIF encoder
-    and decoder, such as rav1e and dav1d, or libaom, which both encodes and
-    decodes AVIF images.
+  * libavif is merely an API that wraps AVIF codecs. If you are compiling libavif from
+    source, you will also need to install libaom, which both encodes and decodes AVIF
+    images.
 
 .. tab:: Linux
 
@@ -163,14 +162,6 @@ Many of Pillow's features require external libraries:
     <https://brew.sh/>`_. After you install Homebrew, run::
 
         brew install libavif libjpeg libraqm libtiff little-cms2 openjpeg webp
-
-    If you would like to use libavif with more codecs than just aom, then
-    instead of installing libavif through Homebrew directly, you can use
-    Homebrew to install libavif's build dependencies::
-
-        brew install aom dav1d rav1e svt-av1
-
-    Then see ``depends/install_libavif.sh`` to install libavif.
 
 .. tab:: Windows
 
