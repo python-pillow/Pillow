@@ -98,7 +98,7 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     }
 
     /* for now, single block images */
-    if (!(im->blocks_count == 0 || im->blocks_count == 1)) {
+    if (im->blocks_count > 1) {
         return IMAGING_ARROW_MEMORY_LAYOUT;
     }
 
@@ -157,7 +157,7 @@ export_single_channel_array(Imaging im, struct ArrowArray *array) {
     int length = im->xsize * im->ysize;
 
     /* for now, single block images */
-    if (!(im->blocks_count == 0 || im->blocks_count == 1)) {
+    if (im->blocks_count > 1) {
         return IMAGING_ARROW_MEMORY_LAYOUT;
     }
 
@@ -200,7 +200,7 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
     int length = im->xsize * im->ysize;
 
     /* for now, single block images */
-    if (!(im->blocks_count == 0 || im->blocks_count == 1)) {
+    if (im->blocks_count > 1) {
         return IMAGING_ARROW_MEMORY_LAYOUT;
     }
 
