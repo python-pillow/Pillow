@@ -40,8 +40,8 @@ def test_mode(mode: str) -> None:
 
 @pytest.mark.parametrize("angle", (0, 90, 180, 270))
 def test_angle(angle: int) -> None:
-    with Image.open("Tests/images/test-card.png") as im:
-        rotate(im, im.mode, angle)
+    with Image.open("Tests/images/test-card.png") as img:
+        rotate(img, img.mode, angle)
 
     im = hopper()
     assert_image_equal(im.rotate(angle), im.rotate(angle, expand=1))
@@ -74,6 +74,7 @@ def test_center_0() -> None:
     im = hopper()
     im = im.rotate(45, center=(0, 0), resample=Image.Resampling.BICUBIC)
 
+    target: Image.Image
     with Image.open("Tests/images/hopper_45.png") as target:
         target_origin = target.size[1] / 2
         target = target.crop((0, target_origin, 128, target_origin + 128))
@@ -85,6 +86,7 @@ def test_center_14() -> None:
     im = hopper()
     im = im.rotate(45, center=(14, 14), resample=Image.Resampling.BICUBIC)
 
+    target: Image.Image
     with Image.open("Tests/images/hopper_45.png") as target:
         target_origin = target.size[1] / 2 - 14
         target = target.crop((6, target_origin, 128 + 6, target_origin + 128))
@@ -94,6 +96,8 @@ def test_center_14() -> None:
 
 def test_translate() -> None:
     im = hopper()
+
+    target: Image.Image
     with Image.open("Tests/images/hopper_45.png") as target:
         target_origin = (target.size[1] / 2 - 64) - 5
         target = target.crop(

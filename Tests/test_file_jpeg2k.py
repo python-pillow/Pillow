@@ -164,7 +164,7 @@ def test_reduce() -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         assert callable(im.reduce)
 
-        im.reduce = 2
+        im.reduce = 2  # type: ignore[method-assign, assignment]
         assert im.reduce == 2
 
         im.load()
