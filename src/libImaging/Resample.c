@@ -80,6 +80,20 @@ lanczos_filter(double x) {
 }
 
 static inline double
+mks_2013_filter(double x) {
+    /* https://johncostella.com/magic/ */
+    if (x < 0.0)
+        x = -x;
+    if (x < 0.5)
+        return 17.0 / 16.0 - 7.0 / 4.0 * pow(x, 2.0);
+    if (x < 1.5)
+        return (1.0 - x) * (7.0/4.0 - x);
+    if (x < 2.5)
+        return -1.0 / 8.0 * pow(x - 5.0 / 2.0, 2.0);
+    return (0.0);
+}
+
+static inline double
 mks_2021_filter(double x) {
     /* https://johncostella.com/magic/ */
     if (x < 0.0)
@@ -102,6 +116,7 @@ static struct filter BILINEAR = {bilinear_filter, 1.0};
 static struct filter HAMMING = {hamming_filter, 1.0};
 static struct filter BICUBIC = {bicubic_filter, 2.0};
 static struct filter LANCZOS = {lanczos_filter, 3.0};
+static struct filter MKS2013 = {mks_2013_filter, 2.5};
 static struct filter MKS2021 = {mks_2021_filter, 4.5};
 
 /* 8 bits for result. Filter can have negative areas.
@@ -711,6 +726,9 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]) {
             break;
         case IMAGING_TRANSFORM_LANCZOS:
             filterp = &LANCZOS;
+            break;
+        case IMAGING_TRANSFORM_MKS2013:
+            filterp = &MKS2013;
             break;
         case IMAGING_TRANSFORM_MKS2021:
             filterp = &MKS2021;

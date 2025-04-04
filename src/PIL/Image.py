@@ -169,7 +169,8 @@ class Resampling(IntEnum):
     HAMMING = 5
     BICUBIC = 3
     LANCZOS = 1
-    MKS2021 = 6
+    MKS2013 = 6
+    MKS2021 = 7
 
 
 _filters_support = {
@@ -178,6 +179,7 @@ _filters_support = {
     Resampling.HAMMING: 1.0,
     Resampling.BICUBIC: 2.0,
     Resampling.LANCZOS: 3.0,
+    Resampling.MKS2013: 2.5,
     Resampling.MKS2021: 4.5,
 }
 
@@ -2209,7 +2211,8 @@ class Image:
         :param resample: An optional resampling filter.  This can be
            one of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
-           :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
+           :py:data:`Resampling.BICUBIC`, :py:data:`Resampling.LANCZOS`,
+           :py:data:`Resampling.MKS2013`, or :py:data:`Resampling.MKS2021`.
            If the image has mode "1" or "P", it is always set to
            :py:data:`Resampling.NEAREST`. If the image mode is "BGR;15",
            "BGR;16" or "BGR;24", then the default filter is
@@ -2244,6 +2247,7 @@ class Image:
             Resampling.LANCZOS,
             Resampling.BOX,
             Resampling.HAMMING,
+            Resampling.MKS2013,
             Resampling.MKS2021,
         ):
             msg = f"Unknown resampling filter ({resample})."
@@ -2257,6 +2261,7 @@ class Image:
                     (Resampling.BICUBIC, "Image.Resampling.BICUBIC"),
                     (Resampling.BOX, "Image.Resampling.BOX"),
                     (Resampling.HAMMING, "Image.Resampling.HAMMING"),
+                    (Resampling.MKS2013, "Image.Resampling.MKS2013"),
                     (Resampling.MKS2021, "Image.Resampling.MKS2021"),
                 )
             ]
@@ -2694,7 +2699,8 @@ class Image:
         :param resample: Optional resampling filter.  This can be one
            of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
-           :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
+           :py:data:`Resampling.BICUBIC`, :py:data:`Resampling.LANCZOS`,
+           :py:data:`Resampling.MKS2013`, or :py:data:`Resampling.MKS2021`.
            If omitted, it defaults to :py:data:`Resampling.BICUBIC`.
            (was :py:data:`Resampling.NEAREST` prior to version 2.5.0).
            See: :ref:`concept-filters`.
@@ -2912,12 +2918,14 @@ class Image:
                 Resampling.BOX,
                 Resampling.HAMMING,
                 Resampling.LANCZOS,
+                Resampling.MKS2013,
                 Resampling.MKS2021,
             ):
                 unusable: dict[int, str] = {
                     Resampling.BOX: "Image.Resampling.BOX",
                     Resampling.HAMMING: "Image.Resampling.HAMMING",
                     Resampling.LANCZOS: "Image.Resampling.LANCZOS",
+                    Resampling.MKS2013: "Image.Resampling.MKS2013",
                     Resampling.MKS2021: "Image.Resampling.MKS2021",
                 }
                 msg = unusable[resample] + f" ({resample}) cannot be used."

@@ -309,6 +309,8 @@ class TestCoreResampleAlphaCorrect:
         self.run_levels_case(case.resize((512, 32), Image.Resampling.HAMMING))
         self.run_levels_case(case.resize((512, 32), Image.Resampling.BICUBIC))
         self.run_levels_case(case.resize((512, 32), Image.Resampling.LANCZOS))
+        self.run_levels_case(case.resize((512, 32), Image.Resampling.MKS2013))
+        self.run_levels_case(case.resize((512, 32), Image.Resampling.MKS2021))
 
     @pytest.mark.xfail(reason="Current implementation isn't precise enough")
     def test_levels_la(self) -> None:
@@ -318,6 +320,8 @@ class TestCoreResampleAlphaCorrect:
         self.run_levels_case(case.resize((512, 32), Image.Resampling.HAMMING))
         self.run_levels_case(case.resize((512, 32), Image.Resampling.BICUBIC))
         self.run_levels_case(case.resize((512, 32), Image.Resampling.LANCZOS))
+        self.run_levels_case(case.resize((512, 32), Image.Resampling.MKS2013))
+        self.run_levels_case(case.resize((512, 32), Image.Resampling.MKS2021))
 
     def make_dirty_case(
         self, mode: str, clean_pixel: tuple[int, ...], dirty_pixel: tuple[int, ...]
@@ -360,6 +364,12 @@ class TestCoreResampleAlphaCorrect:
         self.run_dirty_case(
             case.resize((20, 20), Image.Resampling.LANCZOS), (255, 255, 0)
         )
+        self.run_dirty_case(
+            case.resize((20, 20), Image.Resampling.MKS2013), (255, 255, 0)
+        )
+        self.run_dirty_case(
+            case.resize((20, 20), Image.Resampling.MKS2021), (255, 255, 0)
+        )
 
     def test_dirty_pixels_la(self) -> None:
         case = self.make_dirty_case("LA", (255, 128), (0, 0))
@@ -368,6 +378,8 @@ class TestCoreResampleAlphaCorrect:
         self.run_dirty_case(case.resize((20, 20), Image.Resampling.HAMMING), (255,))
         self.run_dirty_case(case.resize((20, 20), Image.Resampling.BICUBIC), (255,))
         self.run_dirty_case(case.resize((20, 20), Image.Resampling.LANCZOS), (255,))
+        self.run_dirty_case(case.resize((20, 20), Image.Resampling.MKS2013), (255,))
+        self.run_dirty_case(case.resize((20, 20), Image.Resampling.MKS2021), (255,))
 
 
 class TestCoreResamplePasses:
@@ -453,6 +465,8 @@ class TestCoreResampleBox:
             Image.Resampling.HAMMING,
             Image.Resampling.BICUBIC,
             Image.Resampling.LANCZOS,
+            Image.Resampling.MKS2013,
+            Image.Resampling.MKS2021,
         ),
     )
     def test_wrong_arguments(self, resample: Image.Resampling) -> None:
