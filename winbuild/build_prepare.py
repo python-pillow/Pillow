@@ -349,8 +349,8 @@ DEPS: dict[str, dict[str, Any]] = {
         "libs": [r"..\target\release\imagequant_sys.lib"],
     },
     "harfbuzz": {
-        "url": f"https://github.com/harfbuzz/harfbuzz/archive/{V['HARFBUZZ']}.zip",
-        "filename": f"harfbuzz-{V['HARFBUZZ']}.zip",
+        "url": f"https://github.com/harfbuzz/harfbuzz/releases/download/{V['HARFBUZZ']}/FILENAME",
+        "filename": f"harfbuzz-{V['HARFBUZZ']}.tar.xz",
         "license": "COPYING",
         "build": [
             *cmds_cmake(
@@ -514,8 +514,8 @@ def extract_dep(url: str, filename: str, prefs: dict[str, str]) -> None:
                     msg = "Attempted Path Traversal in Zip File"
                     raise RuntimeError(msg)
             zf.extractall(sources_dir)
-    elif filename.endswith((".tar.gz", ".tgz")):
-        with tarfile.open(file, "r:gz") as tgz:
+    elif filename.endswith((".tar.gz", ".tar.xz")):
+        with tarfile.open(file, "r:xz" if filename.endswith(".xz") else "r:gz") as tgz:
             for member in tgz.getnames():
                 member_abspath = os.path.abspath(os.path.join(sources_dir, member))
                 member_prefix = os.path.commonpath([sources_dir_abs, member_abspath])
@@ -776,7 +776,7 @@ def main() -> None:
 
     for k, v in DEPS.items():
         if "dir" not in v:
-            v["dir"] = re.sub(r"\.(tar\.gz|zip)", "", v["filename"])
+            v["dir"] = re.sub(r"\.(tar\.gz|tar\.xz|zip)", "", v["filename"])
         prefs[f"dir_{k}"] = os.path.join(sources_dir, v["dir"])
 
     print()
