@@ -122,9 +122,6 @@ function build_libavif {
         build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
     fi
 
-    # For rav1e
-    curl https://sh.rustup.rs -sSf | sh -s -- -y
-    . "$HOME/.cargo/env"
     if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
         yum install -y perl
         if [[ "$MB_ML_VER" == 2014 ]]; then
@@ -132,21 +129,30 @@ function build_libavif {
         fi
     fi
 
+    local build_type=MinSizeRel
+
+    if [[ -z "$IS_ALPINE" ]] && [[ "$MB_ML_VER" == 2014 ]]; then
+        build_type=Release
+    fi
+
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
+    # CONFIG_AV1_DECODER=0 is a flag for libaom (included as a subproject of
+    # libavif) to disable the compilation and inclusion of aom's AV1 decoder.
     (cd $out_dir \
         && CMAKE_POLICY_VERSION_MINIMUM=3.5 cmake \
             -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX \
             -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_SHARED_LIBS=OFF \
+            -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib \
+            -DCMAKE_MACOSX_RPATH=OFF \
+            -DBUILD_SHARED_LIBS=ON \
             -DAVIF_LIBSHARPYUV=LOCAL \
             -DAVIF_LIBYUV=LOCAL \
             -DAVIF_CODEC_AOM=LOCAL \
+            -DCONFIG_AV1_DECODER=0 \
+            -DAVIF_CODEC_AOM_DECODE=OFF \
             -DAVIF_CODEC_DAV1D=LOCAL \
-            -DAVIF_CODEC_RAV1E=LOCAL \
-            -DAVIF_CODEC_SVT=LOCAL \
-            -DENABLE_NASM=ON \
-            -DCMAKE_MODULE_PATH=/tmp/cmake/Modules \
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+            -DCMAKE_BUILD_TYPE=$build_type \
             . \
         && make install)
     touch libavif-stamp
