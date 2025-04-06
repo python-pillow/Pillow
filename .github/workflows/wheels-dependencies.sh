@@ -122,13 +122,6 @@ function build_libavif {
         build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
     fi
 
-    if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
-        yum install -y perl
-        if [[ "$MB_ML_VER" == 2014 ]]; then
-            yum install -y perl-IPC-Cmd
-        fi
-    fi
-
     local build_type=MinSizeRel
 
     if [[ -z "$IS_ALPINE" ]] && [[ "$MB_ML_VER" == 2014 ]]; then
