@@ -122,7 +122,7 @@ V = {
     "LIBWEBP": "1.5.0",
     "OPENJPEG": "2.5.3",
     "TIFF": "4.7.0",
-    "XZ": "5.6.4" if struct.calcsize("P") == 4 else "5.8.1",
+    "XZ": "5.8.1",
     "ZLIBNG": "2.2.4",
 }
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
@@ -181,7 +181,11 @@ DEPS: dict[str, dict[str, Any]] = {
         "filename": f"xz-{V['XZ']}.tar.gz",
         "license": "COPYING",
         "build": [
-            *cmds_cmake("liblzma", "-DBUILD_SHARED_LIBS:BOOL=OFF"),
+            *cmds_cmake(
+                "liblzma",
+                "-DBUILD_SHARED_LIBS:BOOL=OFF"
+                + (" -DXZ_CLMUL_CRC:BOOL=OFF" if struct.calcsize("P") == 4 else ""),
+            ),
             cmd_mkdir(r"{inc_dir}\lzma"),
             cmd_copy(r"src\liblzma\api\lzma\*.h", r"{inc_dir}\lzma"),
         ],
