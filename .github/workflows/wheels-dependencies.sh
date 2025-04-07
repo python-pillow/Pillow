@@ -124,7 +124,7 @@ function build_libavif {
 
     local build_type=MinSizeRel
 
-    if [[ -z "$IS_ALPINE" ]] && [[ "$MB_ML_VER" == 2014 ]]; then
+    if [[ "$MB_ML_VER" == 2014 ]]; then
         build_type=Release
     fi
 
