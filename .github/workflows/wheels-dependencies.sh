@@ -125,11 +125,10 @@ function build_libavif {
     local build_type=MinSizeRel
     local lto=ON
 
-    if [[ "$MB_ML_VER" == 2014 ]]; then
-        build_type=Release
-    fi
     if [ -n "$IS_MACOS" ]; then
         lto=OFF
+    elif [[ "$MB_ML_VER" == 2014 ]]; then
+        build_type=Release
     fi
 
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
