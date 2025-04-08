@@ -123,9 +123,13 @@ function build_libavif {
     fi
 
     local build_type=MinSizeRel
+    local lto=ON
 
     if [[ "$MB_ML_VER" == 2014 ]]; then
         build_type=Release
+    fi
+    if [ -n "$IS_MACOS" ]; then
+        lto=OFF
     fi
 
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
@@ -143,6 +147,7 @@ function build_libavif {
             -DCONFIG_AV1_DECODER=0 \
             -DAVIF_CODEC_AOM_DECODE=OFF \
             -DAVIF_CODEC_DAV1D=LOCAL \
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=$lto \
             -DCMAKE_BUILD_TYPE=$build_type \
             . \
         && make install)
