@@ -134,6 +134,7 @@ function build_libavif {
             -DAVIF_CODEC_AOM=LOCAL \
             -DENABLE_NASM=ON \
             -DCMAKE_MODULE_PATH=/tmp/cmake/Modules \
+            -DCMAKE_BUILD_TYPE=MinSizeRel \
             . \
         && make install)
     touch libavif-stamp
