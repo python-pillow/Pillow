@@ -125,11 +125,11 @@ class XpmDecoder(ImageFile.PyDecoder):
         pixel_header = False
         while len(data) < dest_length:
             s = self.fd.readline()
+            if not s:
+                break
             if s.rstrip() == b"/* pixels */" and not pixel_header:
                 pixel_header = True
                 continue
-            if not s:
-                break
             s = b'"'.join(s.split(b'"')[1:-1])
             for i in range(0, len(s), bpp):
                 key = s[i : i + bpp]

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from io import BytesIO
+
 import pytest
 
 from PIL import Image, XpmImagePlugin
@@ -29,6 +31,14 @@ def test_rgb() -> None:
     with Image.open("Tests/images/hopper_rgb.xpm") as im:
         assert im.mode == "RGB"
         assert_image_similar(im, hopper(), 16)
+
+
+def test_not_enough_image_data() -> None:
+    with open(TEST_FILE, "rb") as fp:
+        data = fp.read().split(b"/* pixels */")[0]
+        with Image.open(BytesIO(data)) as im:
+            with pytest.raises(ValueError, match="not enough image data"):
+                im.load()
 
 
 def test_invalid_file() -> None:
