@@ -17,7 +17,12 @@ def test_sanity() -> None:
         assert im.format == "XPM"
 
         # large error due to quantization->44 colors.
-        assert_image_similar(im.convert("RGB"), hopper("RGB"), 23)
+        assert_image_similar(im.convert("RGB"), hopper(), 23)
+
+
+def test_read_bpp2() -> None:
+    with Image.open("Tests/images/hopper_bpp2.xpm") as im:
+        assert_image_similar(im.convert("RGB"), hopper(), 11)
 
 
 def test_invalid_file() -> None:

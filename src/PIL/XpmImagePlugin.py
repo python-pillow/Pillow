@@ -56,7 +56,7 @@ class XpmImageFile(ImageFile.ImageFile):
         palette_length = int(m.group(3))
         bpp = int(m.group(4))
 
-        if palette_length > 256 or bpp != 1:
+        if palette_length > 256:
             msg = "cannot read this XPM file"
             raise ValueError(msg)
 
@@ -68,8 +68,8 @@ class XpmImageFile(ImageFile.ImageFile):
         for _ in range(palette_length):
             s = self.fp.readline().rstrip()
 
-            c = s[1]
-            s = s[2:-2].split()
+            c = s[1 : bpp + 1]
+            s = s[bpp + 1 : -2].split()
 
             for i in range(0, len(s), 2):
                 if s[i] == b"c":
@@ -98,7 +98,9 @@ class XpmImageFile(ImageFile.ImageFile):
 
         palette_keys = tuple(palette.keys())
         self.tile = [
-            ImageFile._Tile("xpm", (0, 0) + self.size, self.fp.tell(), (palette_keys,))
+            ImageFile._Tile(
+                "xpm", (0, 0) + self.size, self.fp.tell(), (bpp, palette_keys)
+            )
         ]
 
     def load_read(self, read_bytes: int) -> bytes:
@@ -120,12 +122,13 @@ class XpmDecoder(ImageFile.PyDecoder):
         self.fd.readline()  # Read '/* pixels */'
 
         data = bytearray()
-        palette_keys = self.args[0]
+        bpp, palette_keys = self.args
         dest_length = self.state.xsize * self.state.ysize
         while len(data) < dest_length:
             s = self.fd.readline().rstrip()[1:]
             s = s[: -1 if s.endswith(b'"') else -2]
-            for key in s:
+            for i in range(0, len(s), bpp):
+                key = s[i : i + bpp]
                 data += o8(palette_keys.index(key))
         self.set_as_raw(bytes(data))
         return -1, 0
