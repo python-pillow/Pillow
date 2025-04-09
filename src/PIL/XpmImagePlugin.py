@@ -53,24 +53,20 @@ class XpmImageFile(ImageFile.ImageFile):
 
         self._size = int(m.group(1)), int(m.group(2))
 
-        pal = int(m.group(3))
+        palette_length = int(m.group(3))
         bpp = int(m.group(4))
 
-        if pal > 256 or bpp != 1:
+        if palette_length > 256 or bpp != 1:
             msg = "cannot read this XPM file"
             raise ValueError(msg)
 
         #
         # load palette description
 
-        palette = [b"\0\0\0"] * 256
+        palette = {}
 
-        for _ in range(pal):
-            s = self.fp.readline()
-            if s.endswith(b"\r\n"):
-                s = s[:-2]
-            elif s.endswith((b"\r", b"\n")):
-                s = s[:-1]
+        for _ in range(palette_length):
+            s = self.fp.readline().rstrip()
 
             c = s[1]
             s = s[2:-2].split()
@@ -82,7 +78,6 @@ class XpmImageFile(ImageFile.ImageFile):
                     if rgb == b"None":
                         self.info["transparency"] = c
                     elif rgb.startswith(b"#"):
-                        # FIXME: handle colour names (see ImagePalette.py)
                         rgb = int(rgb[1:], 16)
                         palette[c] = (
                             o8((rgb >> 16) & 255) + o8((rgb >> 8) & 255) + o8(rgb & 255)
@@ -99,9 +94,12 @@ class XpmImageFile(ImageFile.ImageFile):
                 raise ValueError(msg)
 
         self._mode = "P"
-        self.palette = ImagePalette.raw("RGB", b"".join(palette))
+        self.palette = ImagePalette.raw("RGB", b"".join(palette.values()))
 
-        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, self.fp.tell(), "P")]
+        palette_keys = tuple(palette.keys())
+        self.tile = [
+            ImageFile._Tile("xpm", (0, 0) + self.size, self.fp.tell(), (palette_keys,))
+        ]
 
     def load_read(self, read_bytes: int) -> bytes:
         #
@@ -114,11 +112,31 @@ class XpmImageFile(ImageFile.ImageFile):
         return b"".join(s)
 
 
+class XpmDecoder(ImageFile.PyDecoder):
+    _pulls_fd = True
+
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+        assert self.fd is not None
+        self.fd.readline()  # Read '/* pixels */'
+
+        data = bytearray()
+        palette_keys = self.args[0]
+        dest_length = self.state.xsize * self.state.ysize
+        while len(data) < dest_length:
+            s = self.fd.readline().rstrip()[1:]
+            s = s[: -1 if s.endswith(b'"') else -2]
+            for key in s:
+                data += o8(palette_keys.index(key))
+        self.set_as_raw(bytes(data))
+        return -1, 0
+
+
 #
 # Registry
 
 
 Image.register_open(XpmImageFile.format, XpmImageFile, _accept)
+Image.register_decoder("xpm", XpmDecoder)
 
 Image.register_extension(XpmImageFile.format, ".xpm")
 
