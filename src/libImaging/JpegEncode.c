@@ -173,7 +173,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             /* Use custom quantization tables */
             if (context->qtables) {
                 int i;
-                int quality = 100;
+                int quality = 50;
                 int last_q = 0;
                 if (context->quality != -1) {
                     quality = context->quality;
