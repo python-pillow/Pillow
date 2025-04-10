@@ -156,6 +156,7 @@ def test_reducing_gap_values() -> None:
 
 
 def test_reducing_gap_for_DCT_scaling() -> None:
+    ref: Image.Image
     with Image.open("Tests/images/hopper.jpg") as ref:
         # thumbnail should call draft with reducing_gap scale
         ref.draft(None, (18 * 3, 18 * 3))
