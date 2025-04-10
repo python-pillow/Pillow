@@ -396,6 +396,7 @@ DEPS: dict[str, dict[str, Any]] = {
                 "-DAVIF_LIBYUV=LOCAL",
                 "-DAVIF_CODEC_AOM=LOCAL",
                 "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+                "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON",
                 build_type="MinSizeRel",
             ),
             cmd_xcopy("include", "{inc_dir}"),
