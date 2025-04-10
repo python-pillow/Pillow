@@ -20,9 +20,15 @@ def test_sanity() -> None:
         assert_image_similar(im.convert("RGB"), hopper(), 23)
 
 
-def test_read_bpp2() -> None:
+def test_bpp2() -> None:
     with Image.open("Tests/images/hopper_bpp2.xpm") as im:
         assert_image_similar(im.convert("RGB"), hopper(), 11)
+
+
+def test_rgb() -> None:
+    with Image.open("Tests/images/hopper_rgb.xpm") as im:
+        assert im.mode == "RGB"
+        assert_image_similar(im, hopper(), 16)
 
 
 def test_invalid_file() -> None:

@@ -56,10 +56,6 @@ class XpmImageFile(ImageFile.ImageFile):
         palette_length = int(m.group(3))
         bpp = int(m.group(4))
 
-        if palette_length > 256:
-            msg = "cannot read this XPM file"
-            raise ValueError(msg)
-
         #
         # load palette description
 
@@ -93,15 +89,16 @@ class XpmImageFile(ImageFile.ImageFile):
                 msg = "cannot read this XPM file"
                 raise ValueError(msg)
 
-        self._mode = "P"
-        self.palette = ImagePalette.raw("RGB", b"".join(palette.values()))
+        args: tuple[int, dict[bytes, bytes] | tuple[bytes, ...]]
+        if palette_length > 256:
+            self._mode = "RGB"
+            args = (bpp, palette)
+        else:
+            self._mode = "P"
+            self.palette = ImagePalette.raw("RGB", b"".join(palette.values()))
+            args = (bpp, tuple(palette.keys()))
 
-        palette_keys = tuple(palette.keys())
-        self.tile = [
-            ImageFile._Tile(
-                "xpm", (0, 0) + self.size, self.fp.tell(), (bpp, palette_keys)
-            )
-        ]
+        self.tile = [ImageFile._Tile("xpm", (0, 0) + self.size, self.fp.tell(), args)]
 
     def load_read(self, read_bytes: int) -> bytes:
         #
@@ -119,17 +116,27 @@ class XpmDecoder(ImageFile.PyDecoder):
 
     def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
-        self.fd.readline()  # Read '/* pixels */'
 
         data = bytearray()
-        bpp, palette_keys = self.args
+        bpp, palette = self.args
         dest_length = self.state.xsize * self.state.ysize
+        if self.mode == "RGB":
+            dest_length *= 3
+        pixel_header = False
         while len(data) < dest_length:
-            s = self.fd.readline().rstrip()[1:]
-            s = s[: -1 if s.endswith(b'"') else -2]
+            s = self.fd.readline()
+            if s.rstrip() == b"/* pixels */" and not pixel_header:
+                pixel_header = True
+                continue
+            if not s:
+                break
+            s = b'"'.join(s.split(b'"')[1:-1])
             for i in range(0, len(s), bpp):
                 key = s[i : i + bpp]
-                data += o8(palette_keys.index(key))
+                if self.mode == "RGB":
+                    data += palette[key]
+                else:
+                    data += o8(palette.index(key))
         self.set_as_raw(bytes(data))
         return -1, 0
 
