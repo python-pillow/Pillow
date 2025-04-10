@@ -33,14 +33,22 @@ def test_rgb() -> None:
         assert_image_similar(im, hopper(), 16)
 
 
-def test_cannot_read() -> None:
+def test_truncated_header() -> None:
+    data = b"/* XPM */"
+    with pytest.raises(SyntaxError, match="broken XPM file"):
+        with XpmImagePlugin.XpmImageFile(BytesIO(data)):
+            pass
+
+
+def test_cannot_read_color() -> None:
     with open(TEST_FILE, "rb") as fp:
         data = fp.read().split(b"#")[0]
     with pytest.raises(ValueError, match="cannot read this XPM file"):
-        with Image.open(BytesIO(data)) as im:
+        with Image.open(BytesIO(data)):
             pass
+
     with pytest.raises(ValueError, match="cannot read this XPM file"):
-        with Image.open(BytesIO(data+b"invalid")) as im:
+        with Image.open(BytesIO(data + b"invalid")):
             pass
 
 
