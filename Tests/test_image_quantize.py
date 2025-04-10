@@ -70,6 +70,7 @@ def test_quantize_no_dither() -> None:
     converted = image.quantize(dither=Image.Dither.NONE, palette=palette)
     assert converted.mode == "P"
     assert converted.palette is not None
+    assert palette.palette is not None
     assert converted.palette.palette == palette.palette.palette
 
 
