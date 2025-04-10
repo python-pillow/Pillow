@@ -33,12 +33,23 @@ def test_rgb() -> None:
         assert_image_similar(im, hopper(), 16)
 
 
+def test_cannot_read() -> None:
+    with open(TEST_FILE, "rb") as fp:
+        data = fp.read().split(b"#")[0]
+    with pytest.raises(ValueError, match="cannot read this XPM file"):
+        with Image.open(BytesIO(data)) as im:
+            pass
+    with pytest.raises(ValueError, match="cannot read this XPM file"):
+        with Image.open(BytesIO(data+b"invalid")) as im:
+            pass
+
+
 def test_not_enough_image_data() -> None:
     with open(TEST_FILE, "rb") as fp:
         data = fp.read().split(b"/* pixels */")[0]
-        with Image.open(BytesIO(data)) as im:
-            with pytest.raises(ValueError, match="not enough image data"):
-                im.load()
+    with Image.open(BytesIO(data)) as im:
+        with pytest.raises(ValueError, match="not enough image data"):
+            im.load()
 
 
 def test_invalid_file() -> None:
