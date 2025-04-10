@@ -614,8 +614,12 @@ class TestFileJpeg:
                     None
                 )
             ]
-            
-            qtable_from_qtable_quality = self.roundtrip(im, qtables={0:standard_l_qtable,1:standard_chrominance_qtable}, quality=75).quantization
+
+            qtable_from_qtable_quality = self.roundtrip(
+                im,
+                qtables={0: standard_l_qtable, 1: standard_chrominance_qtable},
+                quality=75,
+            ).quantization
             qtable_from_quality = self.roundtrip(im, quality=75).quantization
             assert qtable_from_qtable_quality == qtable_from_quality
             # list of qtable lists
