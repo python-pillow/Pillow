@@ -42,7 +42,7 @@ HARFBUZZ_VERSION=11.0.0
 LIBPNG_VERSION=1.6.47
 JPEGTURBO_VERSION=3.1.0
 OPENJPEG_VERSION=2.5.3
-XZ_VERSION=5.8.0
+XZ_VERSION=5.8.1
 TIFF_VERSION=4.7.0
 LCMS2_VERSION=2.17
 ZLIB_VERSION=1.3.1
@@ -52,20 +52,6 @@ BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0
 LIBAVIF_VERSION=1.2.1
-
-if [[ $MB_ML_VER == 2014 ]]; then
-    function build_xz {
-        if [ -e xz-stamp ]; then return; fi
-        yum install -y gettext-devel
-        fetch_unpack https://tukaani.org/xz/xz-$XZ_VERSION.tar.gz
-        (cd xz-$XZ_VERSION \
-            && ./autogen.sh --no-po4a \
-            && ./configure --prefix=$BUILD_PREFIX \
-            && make -j4 \
-            && make install)
-        touch xz-stamp
-    }
-fi
 
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
