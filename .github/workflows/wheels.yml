@@ -160,11 +160,6 @@ jobs:
           & python.exe winbuild\build_prepare.py -v --no-imagequant --architecture=${{ matrix.cibw_arch }}
         shell: pwsh
 
-      - name: Update rust
-        if: matrix.cibw_arch == 'AMD64'
-        run: |
-          rustup update
-
       - name: Build wheels
         run: |
           setlocal EnableDelayedExpansion
