@@ -37,17 +37,18 @@ class XpmImageFile(ImageFile.ImageFile):
     format_description = "X11 Pixel Map"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(9)):
             msg = "not an XPM file"
             raise SyntaxError(msg)
 
         # skip forward to next string
         while True:
-            s = self.fp.readline()
-            if not s:
+            line = self.fp.readline()
+            if not line:
                 msg = "broken XPM file"
                 raise SyntaxError(msg)
-            m = xpm_head.match(s)
+            m = xpm_head.match(line)
             if m:
                 break
 
@@ -62,10 +63,10 @@ class XpmImageFile(ImageFile.ImageFile):
         palette = {}
 
         for _ in range(palette_length):
-            s = self.fp.readline().rstrip()
+            line = self.fp.readline().rstrip()
 
-            c = s[1 : bpp + 1]
-            s = s[bpp + 1 : -2].split()
+            c = line[1 : bpp + 1]
+            s = line[bpp + 1 : -2].split()
 
             for i in range(0, len(s), 2):
                 if s[i] == b"c":
@@ -74,9 +75,11 @@ class XpmImageFile(ImageFile.ImageFile):
                     if rgb == b"None":
                         self.info["transparency"] = c
                     elif rgb.startswith(b"#"):
-                        rgb = int(rgb[1:], 16)
+                        rgb_int = int(rgb[1:], 16)
                         palette[c] = (
-                            o8((rgb >> 16) & 255) + o8((rgb >> 8) & 255) + o8(rgb & 255)
+                            o8((rgb_int >> 16) & 255)
+                            + o8((rgb_int >> 8) & 255)
+                            + o8(rgb_int & 255)
                         )
                     else:
                         # unknown colour
@@ -106,6 +109,7 @@ class XpmImageFile(ImageFile.ImageFile):
 
         xsize, ysize = self.size
 
+        assert self.fp is not None
         s = [self.fp.readline()[1 : xsize + 1].ljust(xsize) for i in range(ysize)]
 
         return b"".join(s)
@@ -124,15 +128,15 @@ class XpmDecoder(ImageFile.PyDecoder):
             dest_length *= 3
         pixel_header = False
         while len(data) < dest_length:
-            s = self.fd.readline()
-            if not s:
+            line = self.fd.readline()
+            if not line:
                 break
-            if s.rstrip() == b"/* pixels */" and not pixel_header:
+            if line.rstrip() == b"/* pixels */" and not pixel_header:
                 pixel_header = True
                 continue
-            s = b'"'.join(s.split(b'"')[1:-1])
-            for i in range(0, len(s), bpp):
-                key = s[i : i + bpp]
+            line = b'"'.join(line.split(b'"')[1:-1])
+            for i in range(0, len(line), bpp):
+                key = line[i : i + bpp]
                 if self.mode == "RGB":
                     data += palette[key]
                 else:
