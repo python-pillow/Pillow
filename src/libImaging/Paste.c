@@ -44,8 +44,14 @@ paste(
 
     xsize *= pixelsize;
 
-    for (y = 0; y < ysize; y++) {
-        memcpy(imOut->image[y + dy] + dx, imIn->image[y + sy] + sx, xsize);
+    if (imOut == imIn && dy > sy) {
+        for (y = ysize - 1; y >= 0; y--) {
+            memcpy(imOut->image[y + dy] + dx, imIn->image[y + sy] + sx, xsize);
+        }
+    } else {
+        for (y = 0; y < ysize; y++) {
+            memcpy(imOut->image[y + dy] + dx, imIn->image[y + sy] + sx, xsize);
+        }
     }
 }
 
