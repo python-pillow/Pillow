@@ -124,6 +124,18 @@ class TestImagingPaste:
         im = im.crop((12, 23, im2.width + 12, im2.height + 23))
         assert_image_equal(im, im2)
 
+    @pytest.mark.parametrize("y", [10, -10])
+    def test_image_self(self, y: int) -> None:
+        im = self.gradient_RGB
+
+        im_self = im.copy()
+        im_self.paste(im_self, (0, y))
+
+        im_copy = im.copy()
+        im_copy.paste(im_copy.copy(), (0, y))
+
+        assert_image_equal(im_self, im_copy)
+
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
     def test_image_mask_1(self, mode: str) -> None:
         im = Image.new(mode, (200, 200), "white")
