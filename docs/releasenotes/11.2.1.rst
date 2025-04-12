@@ -1,0 +1,11 @@
+11.2.1
+------
+
+Reading and writing AVIF images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The release of Pillow 11.2.0 was halted prematurely, due to concern over the size of
+Pillow wheels containing libavif.
+
+Instead, Pillow 11.2.1's wheels do not contain libavif. If you wish to read and write
+AVIF images, you will need to build Pillow from source with libavif 1.0.0 or later.

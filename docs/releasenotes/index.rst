@@ -14,6 +14,7 @@ expected to be backported to earlier versions.
 .. toctree::
   :maxdepth: 2
 
+  11.2.1
   11.2.0
   11.1.0
   11.0.0

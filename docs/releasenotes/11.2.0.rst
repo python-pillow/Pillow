@@ -1,6 +1,12 @@
 11.2.0
 ------
 
+.. warning::
+
+    The release of Pillow 11.2.0 was halted prematurely, due to concern over the size
+    of Pillow wheels containing libavif. Instead, Pillow 11.2.1 has been released,
+    without libavif included in the wheels.
+
 Security
 ========
 
