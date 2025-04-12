@@ -1481,7 +1481,9 @@ def test_saving_rgba(tmp_path: Path) -> None:
 
     with Image.open(out) as reloaded:
         reloaded_rgba = reloaded.convert("RGBA")
-        value = reloaded_rgba.load()[0, 0]
+        px = reloaded_rgba.load()
+        assert px is not None
+        value = px[0, 0]
         assert isinstance(value, tuple)
         assert value[3] == 0
 
