@@ -540,7 +540,9 @@ def test_dispose_background_transparency() -> None:
         img.seek(2)
         px = img.load()
         assert px is not None
-        assert px[35, 30][3] == 0
+        value = px[35, 30]
+        assert isinstance(value, tuple)
+        assert value[3] == 0
 
 
 @pytest.mark.parametrize(
@@ -1479,7 +1481,9 @@ def test_saving_rgba(tmp_path: Path) -> None:
 
     with Image.open(out) as reloaded:
         reloaded_rgba = reloaded.convert("RGBA")
-        assert reloaded_rgba.load()[0, 0][3] == 0
+        value = reloaded_rgba.load()[0, 0]
+        assert isinstance(value, tuple)
+        assert value[3] == 0
 
 
 @pytest.mark.parametrize("params", ({}, {"disposal": 2, "optimize": False}))
