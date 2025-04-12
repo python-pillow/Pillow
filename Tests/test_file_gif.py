@@ -1422,7 +1422,9 @@ def test_getdata(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_lzw_bits() -> None:
     # see https://github.com/python-pillow/Pillow/issues/2811
     with Image.open("Tests/images/issue_2811.gif") as im:
-        assert im.tile[0][3][0] == 11  # LZW bits
+        args = im.tile[0][3]
+        assert isinstance(args, tuple)
+        assert args[0] == 11  # LZW bits
         # codec error prepatch
         im.load()
 
