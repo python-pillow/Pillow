@@ -186,7 +186,7 @@ ExifTags.IFD.Makernote
 Image.Image.get_child_images()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. deprecated:: 11.2.0
+.. deprecated:: 11.2.1
 
 ``Image.Image.get_child_images()`` has been deprecated. and will be removed in Pillow
 13 (2026-10-15). It will be moved to ``ImageFile.ImageFile.get_child_images()``. The

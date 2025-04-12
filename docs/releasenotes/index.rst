@@ -15,7 +15,6 @@ expected to be backported to earlier versions.
   :maxdepth: 2
 
   11.2.1
-  11.2.0
   11.1.0
   11.0.0
   10.4.0
