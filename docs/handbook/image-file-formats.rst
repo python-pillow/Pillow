@@ -170,7 +170,7 @@ DXT1 and DXT5 pixel formats can be read, only in ``RGBA`` mode.
    in ``P`` mode.
 
 
-.. versionadded:: 11.2.0
+.. versionadded:: 11.2.1
    DXT1, DXT3, DXT5, BC2, BC3 and BC5 pixel formats can be saved::
 
        im.save(out, pixel_format="DXT1")
