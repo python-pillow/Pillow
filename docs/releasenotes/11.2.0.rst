@@ -106,6 +106,5 @@ Pillow images can also be converted to Arrow objects::
 Reading and writing AVIF images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Pillow can now read and write AVIF images. However, due to concern over size, this
-functionality is not included in our prebuilt wheels. You will need to build Pillow
-from source with libavif 1.0.0 or later.
+Pillow can now read and write AVIF images. If you are building Pillow from source, this
+will require libavif 1.0.0 or later.
