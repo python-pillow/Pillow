@@ -71,7 +71,7 @@ These platforms have been reported to work at the versions mentioned.
 | Operating system                 | | Tested Python            | | Latest tested  | | Tested     |
 |                                  | | versions                 | | Pillow version | | processors |
 +==================================+============================+==================+==============+
-| macOS 15 Sequoia                 | 3.9, 3.10, 3.11, 3.12, 3.13| 11.1.0           |arm           |
+| macOS 15 Sequoia                 | 3.9, 3.10, 3.11, 3.12, 3.13| 11.2.1           |arm           |
 |                                  +----------------------------+------------------+              |
 |                                  | 3.8                        | 10.4.0           |              |
 +----------------------------------+----------------------------+------------------+--------------+
