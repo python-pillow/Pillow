@@ -1,7 +1,7 @@
 [build-system]
 build-backend = "backend"
 requires = [
-  "setuptools>=67.8",
+  "setuptools>=77",
 ]
 backend-path = [
   "_custom_build",
@@ -14,14 +14,14 @@ readme = "README.md"
 keywords = [
   "Imaging",
 ]
-license = { text = "MIT-CMU" }
+license = "MIT-CMU"
+license-files = [ "LICENSE" ]
 authors = [
   { name = "Jeffrey A. Clark", email = "aclark@aclark.net" },
 ]
 requires-python = ">=3.9"
 classifiers = [
   "Development Status :: 6 - Mature",
-  "License :: OSI Approved :: CMU License (MIT-CMU)",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",

@@ -59,7 +59,7 @@ irot_imir_to_exif_orientation(const avifImage *image) {
                 return axis ? 7   // 90 degrees anti-clockwise then swap left and right.
                             : 5;  // 90 degrees anti-clockwise then swap top and bottom.
             }
-            return 6;  // 90 degrees anti-clockwise.
+            return 8;  // 90 degrees anti-clockwise.
         }
         if (angle == 2) {
             if (imir) {
@@ -75,7 +75,7 @@ irot_imir_to_exif_orientation(const avifImage *image) {
                            ? 5   // 270 degrees anti-clockwise then swap left and right.
                            : 7;  // 270 degrees anti-clockwise then swap top and bottom.
             }
-            return 8;  // 270 degrees anti-clockwise.
+            return 6;  // 270 degrees anti-clockwise.
         }
     }
     if (imir) {
@@ -568,9 +568,7 @@ _encoder_add(AvifEncoderObject *self, PyObject *args) {
     }
 
 end:
-    if (&rgb) {
-        avifRGBImageFreePixels(&rgb);
-    }
+    avifRGBImageFreePixels(&rgb);
     if (!self->first_frame) {
         avifImageDestroy(frame);
     }

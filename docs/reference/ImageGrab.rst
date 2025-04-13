@@ -44,7 +44,7 @@ or the clipboard to a PIL image memory.
     :param window:
         HWND, to capture a single window. Windows only.
 
-        .. versionadded:: 11.2.0
+        .. versionadded:: 11.2.1
     :return: An image
 
 .. py:function:: grabclipboard()

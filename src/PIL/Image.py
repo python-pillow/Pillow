@@ -3326,7 +3326,9 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
 
 
-def fromarrow(obj: SupportsArrowArrayInterface, mode, size) -> Image:
+def fromarrow(
+    obj: SupportsArrowArrayInterface, mode: str, size: tuple[int, int]
+) -> Image:
     """Creates an image with zero-copy shared memory from an object exporting
     the arrow_c_array interface protocol::
 
@@ -3360,7 +3362,7 @@ def fromarrow(obj: SupportsArrowArrayInterface, mode, size) -> Image:
 
     See: :ref:`arrow-support` for more detailed information
 
-    .. versionadded:: 11.2.0
+    .. versionadded:: 11.2.1
 
     """
     if not hasattr(obj, "__arrow_c_array__"):

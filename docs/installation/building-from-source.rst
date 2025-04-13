@@ -284,14 +284,16 @@ Build Options
 * Config settings: ``-C zlib=disable``, ``-C jpeg=disable``,
   ``-C tiff=disable``, ``-C freetype=disable``, ``-C raqm=disable``,
   ``-C lcms=disable``, ``-C webp=disable``,
-  ``-C jpeg2000=disable``, ``-C imagequant=disable``, ``-C xcb=disable``.
+  ``-C jpeg2000=disable``, ``-C imagequant=disable``, ``-C xcb=disable``,
+  ``-C avif=disable``.
   Disable building the corresponding feature even if the development
   libraries are present on the building machine.
 
 * Config settings: ``-C zlib=enable``, ``-C jpeg=enable``,
   ``-C tiff=enable``, ``-C freetype=enable``, ``-C raqm=enable``,
   ``-C lcms=enable``, ``-C webp=enable``,
-  ``-C jpeg2000=enable``, ``-C imagequant=enable``, ``-C xcb=enable``.
+  ``-C jpeg2000=enable``, ``-C imagequant=enable``, ``-C xcb=enable``,
+  ``-C avif=enable``.
   Require that the corresponding feature is built. The build will raise
   an exception if the libraries are not found. Tcl and Tk must be used
   together.
