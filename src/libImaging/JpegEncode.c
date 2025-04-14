@@ -175,8 +175,10 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                 int i;
                 int quality = 50;
                 int last_q = 0;
+                boolean force_baseline = FALSE;
                 if (context->quality != -1) {
                     quality = context->quality;
+                    force_baseline = TRUE;
                 }
                 int scale_factor = jpeg_quality_scaling(quality);
                 for (i = 0; i < context->qtablesLen; i++) {
@@ -185,7 +187,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                         i,
                         &context->qtables[i * DCTSIZE2],
                         scale_factor,
-                        FALSE
+                        force_baseline
                     );
                     context->cinfo.comp_info[i].quant_tbl_no = i;
                     last_q = i;
@@ -194,7 +196,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     // jpeg_set_defaults created two qtables internally, but we only
                     // wanted one.
                     jpeg_add_quant_table(
-                        &context->cinfo, 1, &context->qtables[0], scale_factor, FALSE
+                        &context->cinfo, 1, &context->qtables[0], scale_factor, force_baseline
                     );
                 }
                 for (i = last_q; i < context->cinfo.num_components; i++) {
