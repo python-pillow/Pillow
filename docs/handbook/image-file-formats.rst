@@ -1664,6 +1664,11 @@ The :py:meth:`~PIL.Image.open` method sets the following
     Transparency color index. This key is omitted if the image is not
     transparent.
 
+XV Thumbnails
+^^^^^^^^^^^^^
+
+Pillow can read XV thumbnail files.
+
 Write-only formats
 ------------------
 
@@ -1768,11 +1773,6 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     file, this will default to the current time.
 
     .. versionadded:: 5.3.0
-
-XV Thumbnails
-^^^^^^^^^^^^^
-
-Pillow can read XV thumbnail files.
 
 Identify-only formats
 ---------------------
