@@ -196,7 +196,11 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     // jpeg_set_defaults created two qtables internally, but we only
                     // wanted one.
                     jpeg_add_quant_table(
-                        &context->cinfo, 1, &context->qtables[0], scale_factor, force_baseline
+                        &context->cinfo,
+                        1,
+                        &context->qtables[0],
+                        scale_factor,
+                        force_baseline
                     );
                 }
                 for (i = last_q; i < context->cinfo.num_components; i++) {
