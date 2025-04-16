@@ -81,7 +81,7 @@ class TestFileLibTiff(LibTiffTestCase):
         s = io.BytesIO()
         with open(test_file, "rb") as f:
             s.write(f.read())
-            s.seek(0)
+        s.seek(0)
         with Image.open(s) as im:
             assert im.size == (500, 500)
             self._assert_noerr(tmp_path, im)
@@ -1050,12 +1050,12 @@ class TestFileLibTiff(LibTiffTestCase):
         with open("Tests/images/old-style-jpeg-compression.tif", "rb") as fp:
             data = fp.read()
 
-            # Set EXIF Orientation to 2
-            data = data[:102] + b"\x02" + data[103:]
+        # Set EXIF Orientation to 2
+        data = data[:102] + b"\x02" + data[103:]
 
-            with Image.open(io.BytesIO(data)) as im:
-                im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
-            assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
+        with Image.open(io.BytesIO(data)) as im:
+            im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
 
     def test_open_missing_samplesperpixel(self) -> None:
         with Image.open(
