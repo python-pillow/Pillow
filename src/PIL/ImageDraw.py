@@ -772,24 +772,26 @@ class ImageDraw:
 
             if align == "justify" and width_difference != 0:
                 words = line.split(" " if isinstance(text, str) else b" ")
-                word_widths = [
-                    self.textlength(
-                        word,
-                        font,
-                        direction=direction,
-                        features=features,
-                        language=language,
-                        embedded_color=embedded_color,
-                    )
-                    for word in words
-                ]
-                width_difference = max_width - sum(word_widths)
-                for i, word in enumerate(words):
-                    parts.append(((left, top), word))
-                    left += word_widths[i] + width_difference / (len(words) - 1)
-            else:
-                parts.append(((left, top), line))
+                if len(words) > 1:
+                    word_widths = [
+                        self.textlength(
+                            word,
+                            font,
+                            direction=direction,
+                            features=features,
+                            language=language,
+                            embedded_color=embedded_color,
+                        )
+                        for word in words
+                    ]
+                    width_difference = max_width - sum(word_widths)
+                    for i, word in enumerate(words):
+                        parts.append(((left, top), word))
+                        left += word_widths[i] + width_difference / (len(words) - 1)
+                    top += line_spacing
+                    continue
 
+            parts.append(((left, top), line))
             top += line_spacing
 
         return font, anchor, parts

@@ -267,6 +267,18 @@ def test_render_multiline_text_align(
     assert_image_similar_tofile(im, f"Tests/images/multiline_text{ext}.png", 0.01)
 
 
+def test_render_multiline_text_align_justify_single_word(
+    font: ImageFont.FreeTypeFont,
+) -> None:
+    im = Image.new("RGB", (185, 65))
+    draw = ImageDraw.Draw(im)
+    draw.multiline_text(
+        (0, 0), "hey you\nyou are awesome\nthis", font=font, align="justify"
+    )
+
+    assert_image_equal_tofile(im, "Tests/images/multiline_text_justify_single_word.png")
+
+
 def test_unknown_align(font: ImageFont.FreeTypeFont) -> None:
     im = Image.new(mode="RGB", size=(300, 100))
     draw = ImageDraw.Draw(im)
