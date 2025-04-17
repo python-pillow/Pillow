@@ -267,19 +267,21 @@ def test_render_multiline_text_align(
     assert_image_similar_tofile(im, f"Tests/images/multiline_text{ext}.png", 0.01)
 
 
-def test_render_multiline_text_align_justify_last_line(
+def test_render_multiline_text_justify_anchor(
     font: ImageFont.FreeTypeFont,
 ) -> None:
-    im = Image.new("RGB", (280, 60))
+    im = Image.new("RGB", (280, 240))
     draw = ImageDraw.Draw(im)
-    draw.multiline_text(
-        (0, 0),
-        "hey you you are awesome\nthis\nlooks awkward",
-        font=font,
-        align="justify",
-    )
+    for xy, anchor in (((0, 0), "la"), ((140, 80), "ma"), ((280, 160), "ra")):
+        draw.multiline_text(
+            xy,
+            "hey you you are awesome\nthis looks awkward\nthis\nlooks awkward",
+            font=font,
+            anchor=anchor,
+            align="justify",
+        )
 
-    assert_image_equal_tofile(im, "Tests/images/multiline_text_justify_last_line.png")
+    assert_image_equal_tofile(im, "Tests/images/multiline_text_justify_anchor.png")
 
 
 def test_unknown_align(font: ImageFont.FreeTypeFont) -> None:
