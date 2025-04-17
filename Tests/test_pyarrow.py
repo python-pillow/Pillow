@@ -151,21 +151,9 @@ def test_lifetime2() -> None:
     assert isinstance(px[0, 0], int)
 
 
-UINT_ARR = (
-    fl_uint8_4_type,
-    [1,2,3,4],
-    1
-)
-UINT = (
-    pyarrow.uint8(),
-    3,
-    4
-)
-INT32 = (
-    pyarrow.uint32(),
-    0xabcdef45,
-    1
-)
+UINT_ARR = (fl_uint8_4_type, [1, 2, 3, 4], 1)
+UINT = (pyarrow.uint8(), 3, 4)
+INT32 = (pyarrow.uint32(), 0xABCDEF45, 1)
 
 
 @pytest.mark.parametrize(
