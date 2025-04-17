@@ -113,7 +113,7 @@ V = {
     "BROTLI": "1.1.0",
     "FREETYPE": "2.13.3",
     "FRIBIDI": "1.0.16",
-    "HARFBUZZ": "11.0.0",
+    "HARFBUZZ": "11.0.1",
     "JPEGTURBO": "3.1.0",
     "LCMS2": "2.17",
     "LIBAVIF": "1.2.1",
@@ -122,7 +122,7 @@ V = {
     "LIBWEBP": "1.5.0",
     "OPENJPEG": "2.5.3",
     "TIFF": "4.7.0",
-    "XZ": "5.6.4",
+    "XZ": "5.8.1",
     "ZLIBNG": "2.2.4",
 }
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
@@ -181,7 +181,11 @@ DEPS: dict[str, dict[str, Any]] = {
         "filename": f"xz-{V['XZ']}.tar.gz",
         "license": "COPYING",
         "build": [
-            *cmds_cmake("liblzma", "-DBUILD_SHARED_LIBS:BOOL=OFF"),
+            *cmds_cmake(
+                "liblzma",
+                "-DBUILD_SHARED_LIBS:BOOL=OFF"
+                + (" -DXZ_CLMUL_CRC:BOOL=OFF" if struct.calcsize("P") == 4 else ""),
+            ),
             cmd_mkdir(r"{inc_dir}\lzma"),
             cmd_copy(r"src\liblzma\api\lzma\*.h", r"{inc_dir}\lzma"),
         ],
@@ -349,8 +353,8 @@ DEPS: dict[str, dict[str, Any]] = {
         "libs": [r"..\target\release\imagequant_sys.lib"],
     },
     "harfbuzz": {
-        "url": f"https://github.com/harfbuzz/harfbuzz/archive/{V['HARFBUZZ']}.zip",
-        "filename": f"harfbuzz-{V['HARFBUZZ']}.zip",
+        "url": f"https://github.com/harfbuzz/harfbuzz/releases/download/{V['HARFBUZZ']}/FILENAME",
+        "filename": f"harfbuzz-{V['HARFBUZZ']}.tar.xz",
         "license": "COPYING",
         "build": [
             *cmds_cmake(
@@ -514,8 +518,8 @@ def extract_dep(url: str, filename: str, prefs: dict[str, str]) -> None:
                     msg = "Attempted Path Traversal in Zip File"
                     raise RuntimeError(msg)
             zf.extractall(sources_dir)
-    elif filename.endswith((".tar.gz", ".tgz")):
-        with tarfile.open(file, "r:gz") as tgz:
+    elif filename.endswith((".tar.gz", ".tar.xz")):
+        with tarfile.open(file, "r:xz" if filename.endswith(".xz") else "r:gz") as tgz:
             for member in tgz.getnames():
                 member_abspath = os.path.abspath(os.path.join(sources_dir, member))
                 member_prefix = os.path.commonpath([sources_dir_abs, member_abspath])
@@ -776,7 +780,7 @@ def main() -> None:
 
     for k, v in DEPS.items():
         if "dir" not in v:
-            v["dir"] = re.sub(r"\.(tar\.gz|zip)", "", v["filename"])
+            v["dir"] = re.sub(r"\.(tar\.gz|tar\.xz|zip)", "", v["filename"])
         prefs[f"dir_{k}"] = os.path.join(sources_dir, v["dir"])
 
     print()

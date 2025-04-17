@@ -457,8 +457,8 @@ def test_comment() -> None:
     # Test an image that is truncated partway through a codestream
     with open("Tests/images/comment.jp2", "rb") as fp:
         b = BytesIO(fp.read(130))
-        with Image.open(b) as im:
-            pass
+    with Image.open(b) as im:
+        pass
 
 
 def test_save_comment(card: ImageFile.ImageFile) -> None:

@@ -190,9 +190,9 @@ def test_rle8() -> None:
     # Signal end of bitmap before the image is finished
     with open("Tests/images/bmp/g/pal8rle.bmp", "rb") as fp:
         data = fp.read(1063) + b"\x01"
-        with Image.open(io.BytesIO(data)) as im:
-            with pytest.raises(ValueError):
-                im.load()
+    with Image.open(io.BytesIO(data)) as im:
+        with pytest.raises(ValueError):
+            im.load()
 
 
 def test_rle4() -> None:
@@ -214,9 +214,9 @@ def test_rle4() -> None:
 def test_rle8_eof(file_name: str, length: int) -> None:
     with open(file_name, "rb") as fp:
         data = fp.read(length)
-        with Image.open(io.BytesIO(data)) as im:
-            with pytest.raises(ValueError):
-                im.load()
+    with Image.open(io.BytesIO(data)) as im:
+        with pytest.raises(ValueError):
+            im.load()
 
 
 def test_offset() -> None:
