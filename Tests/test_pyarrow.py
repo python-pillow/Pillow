@@ -9,8 +9,8 @@ from PIL import Image
 from .helper import (
     assert_deep_equal,
     assert_image_equal,
-    is_big_endian,
     hopper,
+    is_big_endian,
 )
 
 pyarrow = pytest.importorskip("pyarrow", reason="PyArrow not installed")
@@ -37,7 +37,10 @@ def _test_img_equals_pyarray(
                     if elts_per_pixel == 1:
                         assert pixel[ix] == arr[y * img.width + x].as_py()[elt]
                     else:
-                        assert pixel[ix] == arr[(y * img.width + x) * elts_per_pixel + elt].as_py()
+                        assert (
+                            pixel[ix]
+                            == arr[(y * img.width + x) * elts_per_pixel + elt].as_py()
+                        )
             else:
                 assert_deep_equal(px[x, y], arr[y * img.width + x].as_py())
 
@@ -169,33 +172,27 @@ INT32 = (
     "mode, data_tp, mask",
     (
         ("L", (pyarrow.uint8(), 3, 1), None),
-        ("I", (pyarrow.int32(), 1<<24, 1), None),
+        ("I", (pyarrow.int32(), 1 << 24, 1), None),
         ("F", (pyarrow.float32(), 3.14159, 1), None),
         ("LA", UINT_ARR, [0, 3]),
         ("LA", UINT, [0, 3]),
         ("RGB", UINT_ARR, [0, 1, 2]),
         ("RGBA", UINT_ARR, None),
-        ("RGBA", UINT_ARR, None),
         ("CMYK", UINT_ARR, None),
-        ("YCbCr", UINT_ARR,  [0, 1, 2]),
-        ("HSV", UINT_ARR,  [0, 1, 2]),
+        ("YCbCr", UINT_ARR, [0, 1, 2]),
+        ("HSV", UINT_ARR, [0, 1, 2]),
         ("RGB", UINT, [0, 1, 2]),
         ("RGBA", UINT, None),
-        ("RGBA", UINT, None),
         ("CMYK", UINT, None),
-        ("YCbCr", UINT,  [0, 1, 2]),
-        ("HSV", UINT,  [0, 1, 2]),
+        ("YCbCr", UINT, [0, 1, 2]),
+        ("HSV", UINT, [0, 1, 2]),
     ),
 )
-def test_fromarray(mode: str,
-                   data_tp: tuple,
-                   mask:list[int] | None) -> None:
-    (dtype,
-     elt,
-     elts_per_pixel) = data_tp
+def test_fromarray(mode: str, data_tp: tuple, mask: list[int] | None) -> None:
+    (dtype, elt, elts_per_pixel) = data_tp
 
     ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
-    arr = pyarrow.array([elt]*(ct_pixels*elts_per_pixel), type=dtype)
+    arr = pyarrow.array([elt] * (ct_pixels * elts_per_pixel), type=dtype)
     img = Image.fromarrow(arr, mode, TEST_IMAGE_SIZE)
 
     _test_img_equals_pyarray(img, arr, mask, elts_per_pixel)
@@ -207,21 +204,16 @@ def test_fromarray(mode: str,
         ("LA", INT32, [0, 3]),
         ("RGB", INT32, [0, 1, 2]),
         ("RGBA", INT32, None),
-        ("RGBA", INT32, None),
         ("CMYK", INT32, None),
-        ("YCbCr", INT32,  [0, 1, 2]),
-        ("HSV", INT32,  [0, 1, 2]),
+        ("YCbCr", INT32, [0, 1, 2]),
+        ("HSV", INT32, [0, 1, 2]),
     ),
 )
-def test_from_int32array(mode: str,
-                         data_tp: tuple,
-                         mask:list[int] | None) -> None:
-    (dtype,
-     elt,
-     elts_per_pixel) = data_tp
+def test_from_int32array(mode: str, data_tp: tuple, mask: list[int] | None) -> None:
+    (dtype, elt, elts_per_pixel) = data_tp
 
     ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
-    arr = pyarrow.array([elt]*(ct_pixels*elts_per_pixel), type=dtype)
+    arr = pyarrow.array([elt] * (ct_pixels * elts_per_pixel), type=dtype)
     img = Image.fromarrow(arr, mode, TEST_IMAGE_SIZE)
 
     _test_img_equals_int32_pyarray(img, arr, mask, elts_per_pixel)
