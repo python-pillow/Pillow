@@ -770,7 +770,7 @@ class ImageDraw:
                 msg = 'align must be "left", "center", "right" or "justify"'
                 raise ValueError(msg)
 
-            if align == "justify" and width_difference != 0:
+            if align == "justify" and width_difference != 0 and idx != len(lines) - 1:
                 words = line.split(" " if isinstance(text, str) else b" ")
                 if len(words) > 1:
                     word_widths = [
