@@ -113,7 +113,7 @@ function build_libavif {
 
     if [ -n "$IS_MACOS" ]; then
         lto=OFF
-    elif [[ "$MB_ML_VER" == 2014 ]]; then
+    elif [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "x86_64" ]]; then
         build_type=Release
     fi
 
