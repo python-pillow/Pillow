@@ -120,6 +120,8 @@ function build_libavif {
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
     # CONFIG_AV1_DECODER=0 is a flag for libaom (included as a subproject of
     # libavif) to disable the compilation and inclusion of aom's AV1 decoder.
+    # CONFIG_AV1_HIGHBITDEPTH=0 is another flag for libaom that disables support
+    # for encoding high bit depth images.
     (cd $out_dir \
         && CMAKE_POLICY_VERSION_MINIMUM=3.5 cmake \
             -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX \
@@ -130,6 +132,7 @@ function build_libavif {
             -DAVIF_LIBYUV=LOCAL \
             -DAVIF_CODEC_AOM=LOCAL \
             -DCONFIG_AV1_DECODER=0 \
+            -DCONFIG_AV1_HIGHBITDEPTH=0 \
             -DAVIF_CODEC_AOM_DECODE=OFF \
             -DAVIF_CODEC_DAV1D=LOCAL \
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=$lto \
