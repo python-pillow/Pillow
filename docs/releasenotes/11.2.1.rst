@@ -1,5 +1,13 @@
-11.2.0
+11.2.1
 ------
+
+.. warning::
+
+   The release of Pillow *11.2.0* was halted prematurely, due to hitting PyPI's
+   project size limit and concern over the size of Pillow wheels containing libavif.
+   The PyPI limit has now been increased and Pillow *11.2.1* has been released
+   instead, without libavif included in the wheels.
+   To avoid confusion, the incomplete 11.2.0 release has been removed from PyPI.
 
 Security
 ========
@@ -17,7 +25,7 @@ Deprecations
 Image.Image.get_child_images()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. deprecated:: 11.2.0
+.. deprecated:: 11.2.1
 
 ``Image.Image.get_child_images()`` has been deprecated. and will be removed in Pillow
 13 (2026-10-15). It will be moved to ``ImageFile.ImageFile.get_child_images()``. The
@@ -106,5 +114,5 @@ Pillow images can also be converted to Arrow objects::
 Reading and writing AVIF images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Pillow can now read and write AVIF images. If you are building Pillow from source, this
-will require libavif 1.0.0 or later.
+Pillow can now read and write AVIF images when built from source with libavif 1.0.0
+or later.

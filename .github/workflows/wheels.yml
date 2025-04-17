@@ -121,14 +121,17 @@ jobs:
   windows:
     if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
     name: Windows ${{ matrix.cibw_arch }}
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - cibw_arch: x86
+            os: windows-latest
           - cibw_arch: AMD64
+            os: windows-latest
           - cibw_arch: ARM64
+            os: windows-11-arm
     steps:
       - uses: actions/checkout@v4
         with:
@@ -157,13 +160,8 @@ jobs:
           # Install extra test images
           xcopy /S /Y Tests\test-images\* Tests\images
 
-          & python.exe winbuild\build_prepare.py -v --no-imagequant --architecture=${{ matrix.cibw_arch }}
+          & python.exe winbuild\build_prepare.py -v --no-imagequant --no-avif --architecture=${{ matrix.cibw_arch }}
         shell: pwsh
-
-      - name: Update rust
-        if: matrix.cibw_arch == 'AMD64'
-        run: |
-          rustup update
 
       - name: Build wheels
         run: |

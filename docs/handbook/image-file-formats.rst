@@ -170,7 +170,7 @@ DXT1 and DXT5 pixel formats can be read, only in ``RGBA`` mode.
    in ``P`` mode.
 
 
-.. versionadded:: 11.2.0
+.. versionadded:: 11.2.1
    DXT1, DXT3, DXT5, BC2, BC3 and BC5 pixel formats can be saved::
 
        im.save(out, pixel_format="DXT1")
@@ -1671,6 +1671,11 @@ The :py:meth:`~PIL.Image.open` method sets the following
     Transparency color index. This key is omitted if the image is not
     transparent.
 
+XV Thumbnails
+^^^^^^^^^^^^^
+
+Pillow can read XV thumbnail files.
+
 Write-only formats
 ------------------
 
@@ -1775,11 +1780,6 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     file, this will default to the current time.
 
     .. versionadded:: 5.3.0
-
-XV Thumbnails
-^^^^^^^^^^^^^
-
-Pillow can read XV thumbnail files.
 
 Identify-only formats
 ---------------------
