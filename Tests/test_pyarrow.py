@@ -10,6 +10,7 @@ from .helper import (
     assert_deep_equal,
     assert_image_equal,
     hopper,
+    is_big_endian,
 )
 
 pyarrow = pytest.importorskip("pyarrow", reason="PyArrow not installed")
@@ -18,20 +19,58 @@ TEST_IMAGE_SIZE = (10, 10)
 
 
 def _test_img_equals_pyarray(
-    img: Image.Image, arr: Any, mask: list[int] | None
+    img: Image.Image, arr: Any, mask: list[int] | None, elts_per_pixel: int = 1
 ) -> None:
-    assert img.height * img.width == len(arr)
+    assert img.height * img.width * elts_per_pixel == len(arr)
     px = img.load()
     assert px is not None
+    if elts_per_pixel > 1 and mask is None:
+        # have to do element wise comparison when we're comparing
+        # flattened r,g,b,a to a pixel.
+        mask = list(range(elts_per_pixel))
     for x in range(0, img.size[0], int(img.size[0] / 10)):
         for y in range(0, img.size[1], int(img.size[1] / 10)):
             if mask:
+                pixel = px[x, y]
+                assert isinstance(pixel, tuple)
                 for ix, elt in enumerate(mask):
-                    pixel = px[x, y]
-                    assert isinstance(pixel, tuple)
-                    assert pixel[ix] == arr[y * img.width + x].as_py()[elt]
+                    if elts_per_pixel == 1:
+                        assert pixel[ix] == arr[y * img.width + x].as_py()[elt]
+                    else:
+                        assert (
+                            pixel[ix]
+                            == arr[(y * img.width + x) * elts_per_pixel + elt].as_py()
+                        )
             else:
                 assert_deep_equal(px[x, y], arr[y * img.width + x].as_py())
+
+
+def _test_img_equals_int32_pyarray(
+    img: Image.Image, arr: Any, mask: list[int] | None, elts_per_pixel: int = 1
+) -> None:
+    assert img.height * img.width * elts_per_pixel == len(arr)
+    px = img.load()
+    assert px is not None
+    if mask is None:
+        # have to do element wise comparison when we're comparing
+        # flattened rgba in an uint32 to a pixel.
+        mask = list(range(elts_per_pixel))
+    for x in range(0, img.size[0], int(img.size[0] / 10)):
+        for y in range(0, img.size[1], int(img.size[1] / 10)):
+            pixel = px[x, y]
+            assert isinstance(pixel, tuple)
+            arr_pixel_int = arr[y * img.width + x].as_py()
+            arr_pixel_tuple = (
+                arr_pixel_int % 256,
+                (arr_pixel_int // 256) % 256,
+                (arr_pixel_int // 256**2) % 256,
+                (arr_pixel_int // 256**3),
+            )
+            if is_big_endian():
+                arr_pixel_tuple = arr_pixel_tuple[::-1]
+
+            for ix, elt in enumerate(mask):
+                assert pixel[ix] == arr_pixel_tuple[elt]
 
 
 # really hard to get a non-nullable list type
@@ -110,3 +149,59 @@ def test_lifetime2() -> None:
     px = img2.load()
     assert px  # make mypy happy
     assert isinstance(px[0, 0], int)
+
+
+UINT_ARR = (fl_uint8_4_type, [1, 2, 3, 4], 1)
+UINT = (pyarrow.uint8(), 3, 4)
+INT32 = (pyarrow.uint32(), 0xABCDEF45, 1)
+
+
+@pytest.mark.parametrize(
+    "mode, data_tp, mask",
+    (
+        ("L", (pyarrow.uint8(), 3, 1), None),
+        ("I", (pyarrow.int32(), 1 << 24, 1), None),
+        ("F", (pyarrow.float32(), 3.14159, 1), None),
+        ("LA", UINT_ARR, [0, 3]),
+        ("LA", UINT, [0, 3]),
+        ("RGB", UINT_ARR, [0, 1, 2]),
+        ("RGBA", UINT_ARR, None),
+        ("CMYK", UINT_ARR, None),
+        ("YCbCr", UINT_ARR, [0, 1, 2]),
+        ("HSV", UINT_ARR, [0, 1, 2]),
+        ("RGB", UINT, [0, 1, 2]),
+        ("RGBA", UINT, None),
+        ("CMYK", UINT, None),
+        ("YCbCr", UINT, [0, 1, 2]),
+        ("HSV", UINT, [0, 1, 2]),
+    ),
+)
+def test_fromarray(mode: str, data_tp: tuple, mask: list[int] | None) -> None:
+    (dtype, elt, elts_per_pixel) = data_tp
+
+    ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
+    arr = pyarrow.array([elt] * (ct_pixels * elts_per_pixel), type=dtype)
+    img = Image.fromarrow(arr, mode, TEST_IMAGE_SIZE)
+
+    _test_img_equals_pyarray(img, arr, mask, elts_per_pixel)
+
+
+@pytest.mark.parametrize(
+    "mode, data_tp, mask",
+    (
+        ("LA", INT32, [0, 3]),
+        ("RGB", INT32, [0, 1, 2]),
+        ("RGBA", INT32, None),
+        ("CMYK", INT32, None),
+        ("YCbCr", INT32, [0, 1, 2]),
+        ("HSV", INT32, [0, 1, 2]),
+    ),
+)
+def test_from_int32array(mode: str, data_tp: tuple, mask: list[int] | None) -> None:
+    (dtype, elt, elts_per_pixel) = data_tp
+
+    ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
+    arr = pyarrow.array([elt] * (ct_pixels * elts_per_pixel), type=dtype)
+    img = Image.fromarrow(arr, mode, TEST_IMAGE_SIZE)
+
+    _test_img_equals_int32_pyarray(img, arr, mask, elts_per_pixel)
