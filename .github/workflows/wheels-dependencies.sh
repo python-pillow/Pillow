@@ -51,6 +51,7 @@ LIBWEBP_VERSION=1.5.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0
+LIBAVIF_VERSION=1.2.1
 
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
@@ -98,6 +99,49 @@ function build_harfbuzz {
     touch harfbuzz-stamp
 }
 
+function build_libavif {
+    if [ -e libavif-stamp ]; then return; fi
+
+    python3 -m pip install meson ninja
+
+    if [[ "$PLAT" == "x86_64" ]] || [ -n "$SANITIZER" ]; then
+        build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
+    fi
+
+    local build_type=MinSizeRel
+    local lto=ON
+
+    if [ -n "$IS_MACOS" ]; then
+        lto=OFF
+    elif [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "x86_64" ]]; then
+        build_type=Release
+    fi
+
+    local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
+    # CONFIG_AV1_DECODER=0 is a flag for libaom (included as a subproject of
+    # libavif) to disable the compilation and inclusion of aom's AV1 decoder.
+    # CONFIG_AV1_HIGHBITDEPTH=0 is another flag for libaom that disables support
+    # for encoding high bit depth images.
+    (cd $out_dir \
+        && CMAKE_POLICY_VERSION_MINIMUM=3.5 cmake \
+            -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX \
+            -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib \
+            -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib \
+            -DBUILD_SHARED_LIBS=ON \
+            -DAVIF_LIBSHARPYUV=LOCAL \
+            -DAVIF_LIBYUV=LOCAL \
+            -DAVIF_CODEC_AOM=LOCAL \
+            -DCONFIG_AV1_DECODER=0 \
+            -DCONFIG_AV1_HIGHBITDEPTH=0 \
+            -DAVIF_CODEC_AOM_DECODE=OFF \
+            -DAVIF_CODEC_DAV1D=LOCAL \
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=$lto \
+            -DCMAKE_BUILD_TYPE=$build_type \
+            . \
+        && make install)
+    touch libavif-stamp
+}
+
 function build {
     build_xz
     if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
@@ -132,6 +176,7 @@ function build {
         build_tiff
     fi
 
+    build_libavif
     build_libpng
     build_lcms2
     build_openjpeg
