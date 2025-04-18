@@ -800,7 +800,9 @@ class Image:
         e = _getencoder(self.mode, encoder_name, encoder_args)
         e.setimage(self.im)
 
-        bufsize = max(65536, self.size[0] * 4)  # see RawEncode.c
+        from . import ImageFile
+
+        bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
 
         output = []
         while True:
