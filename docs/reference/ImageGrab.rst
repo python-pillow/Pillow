@@ -16,7 +16,7 @@ or the clipboard to a PIL image memory.
     the entire screen is copied, and on macOS, it will be at 2x if on a Retina screen.
 
     On Linux, if ``xdisplay`` is ``None`` and the default X11 display does not return
-    a snapshot of the screen, ``gnome-screenshot`` or ``spectacle`` will be used as a
+    a snapshot of the screen, ``gnome-screenshot``, ``grim`` or ``spectacle`` will be used as a
     fallback if they are installed. To disable this behaviour, pass ``xdisplay=""``
     instead.
 

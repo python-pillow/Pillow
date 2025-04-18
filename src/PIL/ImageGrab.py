@@ -91,6 +91,8 @@ def grab(
                 args = ["gnome-screenshot", "-f"]
             elif shutil.which("spectacle"):
                 args = ["spectacle", "-n", "-b", "-f", "-o"]
+            elif shutil.which("grim"):
+                args = ["grim"]
             else:
                 raise
             fh, filepath = tempfile.mkstemp(".png")
