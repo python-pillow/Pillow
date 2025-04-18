@@ -20,6 +20,7 @@ help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html       to make standalone HTML files"
 	@echo "  htmlview   to open the index page built by the html target in your browser"
+	@echo "  htmllive   to rebuild and reload HTML files in your browser"
 	@echo "  serve      to start a local server for viewing docs"
 	@echo "  livehtml   to start a local server for viewing docs and auto-reload on change"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
@@ -200,6 +201,11 @@ doctest:
 .PHONY: htmlview
 htmlview: html
 	$(PYTHON) -c "import os, webbrowser; webbrowser.open('file://' + os.path.realpath('$(BUILDDIR)/html/index.html'))"
+
+.PHONY: htmllive
+htmllive: SPHINXBUILD = sphinx-autobuild
+htmllive: SPHINXOPTS = --open-browser --delay 0
+htmllive: html
 
 .PHONY: livehtml
 livehtml: html
