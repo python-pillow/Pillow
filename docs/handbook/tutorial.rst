@@ -122,7 +122,7 @@ This means that opening an image file is a fast operation, which is independent
 of the file size and compression type. Here’s a simple script to quickly
 identify a set of image files:
 
-Identify Image Files
+Identify image files
 ^^^^^^^^^^^^^^^^^^^^
 
 ::
@@ -399,7 +399,7 @@ Applying filters
 .. image:: enhanced_hopper.webp
     :align: center
 
-Point Operations
+Point operations
 ^^^^^^^^^^^^^^^^
 
 The :py:meth:`~PIL.Image.Image.point` method can be used to translate the pixel

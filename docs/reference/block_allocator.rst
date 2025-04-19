@@ -1,10 +1,10 @@
 
 .. _block_allocator:
 
-Block Allocator
+Block allocator
 ===============
 
-Previous Design
+Previous design
 ---------------
 
 Historically there have been two image allocators in Pillow:
@@ -16,7 +16,7 @@ large images and makes one allocation for each scan line of size
 between one allocation and potentially thousands of small allocations,
 leading to unpredictable performance penalties around the transition.
 
-New Design
+New design
 ----------
 
 ``ImagingAllocateArray`` now allocates space for images as a chain of
@@ -28,7 +28,7 @@ line. This is now the default for all internal allocations.
 specifically requesting a single segment of memory for sharing with
 other code.
 
-Memory Pools
+Memory pools
 ------------
 
 There is now a memory pool to contain a supply of recently freed

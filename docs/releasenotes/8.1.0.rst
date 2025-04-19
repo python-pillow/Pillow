@@ -64,7 +64,7 @@ Makefile
 
 The ``install-venv`` target has been deprecated.
 
-API Additions
+API additions
 =============
 
 Append images to ICO
@@ -77,7 +77,7 @@ With this release, a list of images can be provided to the ``append_images`` par
 when saving, to replace the scaled down versions. This is the same functionality that
 already exists for the ICNS format.
 
-Other Changes
+Other changes
 =============
 
 Makefile
