@@ -89,6 +89,8 @@ def grab(
         if display_name is None and sys.platform not in ("darwin", "win32"):
             if shutil.which("gnome-screenshot"):
                 args = ["gnome-screenshot", "-f"]
+            elif shutil.which("grim"):
+                args = ["grim"]
             elif shutil.which("spectacle"):
                 args = ["spectacle", "-n", "-b", "-f", "-o"]
             else:
