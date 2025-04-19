@@ -78,6 +78,8 @@ class AvifImageFile(ImageFile.ImageFile):
         ):
             msg = "Invalid opening codec"
             raise ValueError(msg)
+
+        assert self.fp is not None
         self._decoder = _avif.AvifDecoder(
             self.fp.read(),
             DECODE_CODEC_CHOICE,
