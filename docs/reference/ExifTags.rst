@@ -1,7 +1,7 @@
 .. py:module:: PIL.ExifTags
 .. py:currentmodule:: PIL.ExifTags
 
-:py:mod:`~PIL.ExifTags` Module
+:py:mod:`~PIL.ExifTags` module
 ==============================
 
 The :py:mod:`~PIL.ExifTags` module exposes several :py:class:`enum.IntEnum`

@@ -84,7 +84,7 @@ pixels.
 
 .. _coordinate-system:
 
-Coordinate System
+Coordinate system
 -----------------
 
 The Python Imaging Library uses a Cartesian pixel coordinate system, with (0,0)

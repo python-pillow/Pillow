@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageFont
 .. py:currentmodule:: PIL.ImageFont
 
-:py:mod:`~PIL.ImageFont` Module
+:py:mod:`~PIL.ImageFont` module
 ===============================
 
 The :py:mod:`~PIL.ImageFont` module defines a class with the same name. Instances of

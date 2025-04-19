@@ -8,7 +8,7 @@
 
 .. _basic-installation:
 
-Basic Installation
+Basic installation
 ==================
 
 .. note::

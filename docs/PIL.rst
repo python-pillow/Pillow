@@ -1,10 +1,10 @@
-PIL Package (autodoc of remaining modules)
+PIL package (autodoc of remaining modules)
 ==========================================
 
 Reference for modules whose documentation has not yet been ported or written
 can be found here.
 
-:mod:`PIL` Module
+:mod:`PIL` module
 -----------------
 
 .. py:module:: PIL
@@ -12,7 +12,7 @@ can be found here.
 .. autoexception:: UnidentifiedImageError
     :show-inheritance:
 
-:mod:`~PIL.BdfFontFile` Module
+:mod:`~PIL.BdfFontFile` module
 ------------------------------
 
 .. automodule:: PIL.BdfFontFile
@@ -20,7 +20,7 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL.ContainerIO` Module
+:mod:`~PIL.ContainerIO` module
 ------------------------------
 
 .. automodule:: PIL.ContainerIO
@@ -28,7 +28,7 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL.FontFile` Module
+:mod:`~PIL.FontFile` module
 ---------------------------
 
 .. automodule:: PIL.FontFile
@@ -36,7 +36,7 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL.GdImageFile` Module
+:mod:`~PIL.GdImageFile` module
 ------------------------------
 
 .. automodule:: PIL.GdImageFile
@@ -44,7 +44,7 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL.GimpGradientFile` Module
+:mod:`~PIL.GimpGradientFile` module
 -----------------------------------
 
 .. automodule:: PIL.GimpGradientFile
@@ -52,7 +52,7 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL.GimpPaletteFile` Module
+:mod:`~PIL.GimpPaletteFile` module
 ----------------------------------
 
 .. automodule:: PIL.GimpPaletteFile
@@ -60,7 +60,7 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL.ImageDraw2` Module
+:mod:`~PIL.ImageDraw2` module
 -----------------------------
 
 .. automodule:: PIL.ImageDraw2
@@ -69,7 +69,7 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL.ImageMode` Module
+:mod:`~PIL.ImageMode` module
 ----------------------------
 
 .. automodule:: PIL.ImageMode
@@ -77,7 +77,7 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL.PaletteFile` Module
+:mod:`~PIL.PaletteFile` module
 ------------------------------
 
 .. automodule:: PIL.PaletteFile
@@ -85,7 +85,7 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL.PcfFontFile` Module
+:mod:`~PIL.PcfFontFile` module
 ------------------------------
 
 .. automodule:: PIL.PcfFontFile
@@ -93,7 +93,7 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:class:`.PngImagePlugin.iTXt` Class
+:class:`.PngImagePlugin.iTXt` class
 -----------------------------------
 
 .. autoclass:: PIL.PngImagePlugin.iTXt
@@ -107,7 +107,7 @@ can be found here.
         :param lang: language code
         :param tkey: UTF-8 version of the key name
 
-:class:`.PngImagePlugin.PngInfo` Class
+:class:`.PngImagePlugin.PngInfo` class
 --------------------------------------
 
 .. autoclass:: PIL.PngImagePlugin.PngInfo
@@ -116,7 +116,7 @@ can be found here.
     :show-inheritance:
 
 
-:mod:`~PIL.TarIO` Module
+:mod:`~PIL.TarIO` module
 ------------------------
 
 .. automodule:: PIL.TarIO
@@ -124,7 +124,7 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL.WalImageFile` Module
+:mod:`~PIL.WalImageFile` module
 -------------------------------
 
 .. automodule:: PIL.WalImageFile

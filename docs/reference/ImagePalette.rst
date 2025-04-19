@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImagePalette
 .. py:currentmodule:: PIL.ImagePalette
 
-:py:mod:`~PIL.ImagePalette` Module
+:py:mod:`~PIL.ImagePalette` module
 ==================================
 
 The :py:mod:`~PIL.ImagePalette` module contains a class of the same name to

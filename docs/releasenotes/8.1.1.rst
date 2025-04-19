@@ -32,7 +32,7 @@ DOS attack.
 
 There is an out-of-bounds read in ``SgiRleDecode.c`` since Pillow 4.3.0.
 
-Other Changes
+Other changes
 =============
 
 A crash with the feature flags for libimagequant, libjpeg-turbo, WebP and XCB on

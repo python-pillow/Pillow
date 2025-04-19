@@ -1,7 +1,7 @@
 .. py:module:: PIL.features
 .. py:currentmodule:: PIL.features
 
-:py:mod:`~PIL.features` Module
+:py:mod:`~PIL.features` module
 ==============================
 
 The :py:mod:`PIL.features` module can be used to detect which Pillow features are available on your system.

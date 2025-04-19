@@ -4,7 +4,7 @@ Limits
 This page is documentation to the various fundamental size limits in
 the Pillow implementation.
 
-Internal Limits
+Internal limits
 ===============
 
 * Image sizes cannot be negative. These are checked both in
@@ -25,10 +25,10 @@ Internal Limits
   is smaller than 2GB, as calculated by ``y*stride`` (so 2Gpx for 'L'
   images, and .5Gpx for 'RGB'
 
-Format Size Limits
+Format size limits
 ==================
 
 * ICO: Max size is 256x256
 
-* Webp: 16383x16383 (underlying library size limit:
+* WebP: 16383x16383 (underlying library size limit:
   https://developers.google.com/speed/webp/docs/api)

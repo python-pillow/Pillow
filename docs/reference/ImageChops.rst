@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageChops
 .. py:currentmodule:: PIL.ImageChops
 
-:py:mod:`~PIL.ImageChops` ("Channel Operations") Module
+:py:mod:`~PIL.ImageChops` ("channel operations") module
 =======================================================
 
 The :py:mod:`~PIL.ImageChops` module contains a number of arithmetical image

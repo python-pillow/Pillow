@@ -1,7 +1,7 @@
 .. py:module:: PIL.PSDraw
 .. py:currentmodule:: PIL.PSDraw
 
-:py:mod:`~PIL.PSDraw` Module
+:py:mod:`~PIL.PSDraw` module
 ============================
 
 The :py:mod:`~PIL.PSDraw` module provides simple print support for PostScript

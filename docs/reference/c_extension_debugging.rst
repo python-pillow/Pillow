@@ -1,5 +1,5 @@
-C Extension debugging on Linux, with gbd/valgrind.
-==================================================
+C extension debugging on Linux, with GBD/Valgrind
+=================================================
 
 Install the tools
 -----------------
@@ -17,7 +17,7 @@ Then ``sudo apt-get install libtiff5-dbgsym``
 
 -  There's a bug with the ``python3-dbg`` package for at least Python 3.8 on
    Ubuntu 20.04, and you need to add a new link or two to make it autoload when
-   running python:
+   running Python:
 
 ::
 
@@ -49,7 +49,7 @@ Then ``sudo apt-get install libtiff5-dbgsym``
     source ~/vpy38-dbg/bin/activate
     cd ~/Pillow && make install
 
-Test Case
+Test case
 ---------
 
 Take your test image, and make a really simple harness.

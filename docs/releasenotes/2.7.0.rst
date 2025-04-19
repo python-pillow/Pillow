@@ -1,13 +1,13 @@
 2.7.0
 -----
 
-Sane Plugin
+Sane plugin
 ^^^^^^^^^^^
 
 The Sane plugin has now been split into its own repo:
 https://github.com/python-pillow/Sane .
 
-Png text chunk size limits
+PNG text chunk size limits
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To prevent potential denial of service attacks using compressed text
@@ -155,7 +155,7 @@ so the quality was worse compared to other Gaussian blur software.
 
 The new implementation does not have this drawback.
 
-TIFF Parameter Changes
+TIFF parameter changes
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Several kwarg parameters for saving TIFF images were previously

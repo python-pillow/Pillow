@@ -1,7 +1,7 @@
 10.1.0
 ------
 
-API Changes
+API changes
 ===========
 
 Setting image mode
@@ -35,7 +35,7 @@ to be specified, rather than a single number for both dimensions. ::
     ImageFilter.BoxBlur((2, 5))
     ImageFilter.GaussianBlur((2, 5))
 
-API Additions
+API additions
 =============
 
 EpsImagePlugin.gs_binary
@@ -84,7 +84,7 @@ font size for this new builtin font::
     draw.multiline_text((0, 0), "test", font_size=24)
     draw.multiline_textbbox((0, 0), "test", font_size=24)
 
-Other Changes
+Other changes
 =============
 
 Python 3.12

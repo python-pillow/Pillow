@@ -1,7 +1,7 @@
-Internal Modules
+Internal modules
 ================
 
-:mod:`~PIL._binary` Module
+:mod:`~PIL._binary` module
 --------------------------
 
 .. automodule:: PIL._binary
@@ -9,7 +9,7 @@ Internal Modules
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL._deprecate` Module
+:mod:`~PIL._deprecate` module
 -----------------------------
 
 .. automodule:: PIL._deprecate
@@ -17,7 +17,7 @@ Internal Modules
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL._tkinter_finder` Module
+:mod:`~PIL._tkinter_finder` module
 ----------------------------------
 
 .. automodule:: PIL._tkinter_finder
@@ -25,7 +25,7 @@ Internal Modules
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL._typing` Module
+:mod:`~PIL._typing` module
 --------------------------
 
 .. module:: PIL._typing
@@ -58,7 +58,7 @@ on some Python versions.
 
     See :py:obj:`typing.TypeGuard`.
 
-:mod:`~PIL._util` Module
+:mod:`~PIL._util` module
 ------------------------
 
 .. automodule:: PIL._util
@@ -66,7 +66,7 @@ on some Python versions.
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL._version` Module
+:mod:`~PIL._version` module
 ---------------------------
 
 .. module:: PIL._version
@@ -78,7 +78,7 @@ on some Python versions.
     This is the master version number for Pillow,
     all other uses reference this module.
 
-:mod:`PIL.Image.core` Module
+:mod:`PIL.Image.core` module
 ----------------------------
 
 .. module:: PIL._imaging

@@ -11,7 +11,7 @@ libimagequant. We cannot distribute binaries due to licensing
 differences.
 
 
-New Setup.py options
+New setup.py options
 ^^^^^^^^^^^^^^^^^^^^
 
 There are two new options to control the ``build_ext`` task in ``setup.py``:
@@ -43,7 +43,7 @@ This greatly improves both quality and performance in this case.
 Also, the bug with wrong image size calculation when rotating by 90 degrees
 was fixed.
 
-Image Metadata
+Image metadata
 ^^^^^^^^^^^^^^
 
 The return type for binary data in version 2 Exif and Tiff metadata

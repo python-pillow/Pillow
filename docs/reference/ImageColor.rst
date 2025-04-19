@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageColor
 .. py:currentmodule:: PIL.ImageColor
 
-:py:mod:`~PIL.ImageColor` Module
+:py:mod:`~PIL.ImageColor` module
 ================================
 
 The :py:mod:`~PIL.ImageColor` module contains color tables and converters from
@@ -11,7 +11,7 @@ others.
 
 .. _color-names:
 
-Color Names
+Color names
 -----------
 
 The ImageColor module supports the following string formats:

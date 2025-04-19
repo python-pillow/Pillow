@@ -1,6 +1,6 @@
 .. py:currentmodule:: PIL.JpegPresets
 
-:py:mod:`~PIL.JpegPresets` Module
+:py:mod:`~PIL.JpegPresets` module
 =================================
 
 .. automodule:: PIL.JpegPresets

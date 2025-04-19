@@ -1,4 +1,4 @@
-Internal Reference
+Internal reference
 ==================
 
 .. toctree::

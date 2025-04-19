@@ -14,7 +14,7 @@ TODO
 
 TODO
 
-Backwards Incompatible Changes
+Backwards incompatible changes
 ==============================
 
 TODO
@@ -28,7 +28,7 @@ TODO
 
 TODO
 
-API Changes
+API changes
 ===========
 
 TODO
@@ -36,7 +36,7 @@ TODO
 
 TODO
 
-API Additions
+API additions
 =============
 
 TODO
@@ -44,7 +44,7 @@ TODO
 
 TODO
 
-Other Changes
+Other changes
 =============
 
 TODO

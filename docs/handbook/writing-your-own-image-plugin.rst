@@ -1,6 +1,6 @@
 .. _image-plugins:
 
-Writing Your Own Image Plugin
+Writing your own image plugin
 =============================
 
 Pillow uses a plugin model which allows you to add your own
@@ -329,7 +329,7 @@ The fields are used as follows:
 
 .. _file-codecs:
 
-Writing Your Own File Codec in C
+Writing your own file codec in C
 ================================
 
 There are 3 stages in a file codec's lifetime:
@@ -414,7 +414,7 @@ memory and release any resources from external libraries.
 
 .. _file-codecs-py:
 
-Writing Your Own File Codec in Python
+Writing your own file codec in Python
 =====================================
 
 Python file decoders and encoders should derive from
