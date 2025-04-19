@@ -14,5 +14,5 @@ Here is a list of PyPI projects that offer additional plugins:
     * :pypi:`pillow-jpls`: Plugin for the JPEG-LS codec, based on the Charls JPEG-LS implemetation. Python bindings implemented using pybind11.
     * :pypi:`pillow-jxl-plugin`: Plugin for JPEG-XL, using Rust for bindings.
     * :pypi:`pillow-mbm`: Adds support for KSP's proprietary MBM texture format.
-    * :pypi:`pillow-svg`: Implements basic SVG read support. Currently supports basic paths, shapes, and text.
+    * :pypi:`pillow-svg`: Implements basic SVG read support. Supports basic paths, shapes, and text.
     * :pypi:`raw-pillow-opener`: Simple camera raw opener, based on the rawpy library.
