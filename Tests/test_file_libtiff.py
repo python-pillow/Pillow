@@ -11,7 +11,15 @@ from typing import Any, NamedTuple
 
 import pytest
 
-from PIL import Image, ImageFilter, ImageOps, TiffImagePlugin, TiffTags, features
+from PIL import (
+    Image,
+    ImageFile,
+    ImageFilter,
+    ImageOps,
+    TiffImagePlugin,
+    TiffTags,
+    features,
+)
 from PIL.TiffImagePlugin import OSUBFILETYPE, SAMPLEFORMAT, STRIPOFFSETS, SUBIFD
 
 from .helper import (
@@ -564,8 +572,9 @@ class TestFileLibTiff(LibTiffTestCase):
             im.save(out, compression=compression)
 
     def test_fp_leak(self) -> None:
-        im: Image.Image | None = Image.open("Tests/images/hopper_g4_500.tif")
+        im: ImageFile.ImageFile | None = Image.open("Tests/images/hopper_g4_500.tif")
         assert im is not None
+        assert im.fp is not None
         fn = im.fp.fileno()
 
         os.fstat(fn)
