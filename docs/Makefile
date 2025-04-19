@@ -202,7 +202,7 @@ htmlview: html
 	$(PYTHON) -c "import os, webbrowser; webbrowser.open('file://' + os.path.realpath('$(BUILDDIR)/html/index.html'))"
 
 .PHONY: htmllive
-htmllive: SPHINXBUILD = sphinx-autobuild
+htmllive: SPHINXBUILD = $(PYTHON) -m sphinx_autobuild
 htmllive: SPHINXOPTS = --open-browser --delay 0
 htmllive: html
 
