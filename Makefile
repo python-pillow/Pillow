@@ -47,7 +47,7 @@ help:
 	@echo "  docserve           run an HTTP server on the docs directory"
 	@echo "  html               make HTML docs"
 	@echo "  htmlview           open the index page built by the html target in your browser"
-	@echo "  htmllive           to rebuild and reload HTML files in your browser"
+	@echo "  htmllive           rebuild and reload HTML files in your browser"
 	@echo "  install            make and install"
 	@echo "  install-coverage   make and install with C coverage"
 	@echo "  lint               run the lint checks"
