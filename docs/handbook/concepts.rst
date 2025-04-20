@@ -30,35 +30,35 @@ image. Each pixel uses the full range of the bit depth. So a 1-bit pixel has a r
 INT32 and a 32-bit floating point pixel has the range of FLOAT32. The current release
 supports the following standard modes:
 
-    * ``1`` (1-bit pixels, black and white, stored with one pixel per byte)
-    * ``L`` (8-bit pixels, grayscale)
-    * ``P`` (8-bit pixels, mapped to any other mode using a color palette)
-    * ``RGB`` (3x8-bit pixels, true color)
-    * ``RGBA`` (4x8-bit pixels, true color with transparency mask)
-    * ``CMYK`` (4x8-bit pixels, color separation)
-    * ``YCbCr`` (3x8-bit pixels, color video format)
+* ``1`` (1-bit pixels, black and white, stored with one pixel per byte)
+* ``L`` (8-bit pixels, grayscale)
+* ``P`` (8-bit pixels, mapped to any other mode using a color palette)
+* ``RGB`` (3x8-bit pixels, true color)
+* ``RGBA`` (4x8-bit pixels, true color with transparency mask)
+* ``CMYK`` (4x8-bit pixels, color separation)
+* ``YCbCr`` (3x8-bit pixels, color video format)
 
-      * Note that this refers to the JPEG, and not the ITU-R BT.2020, standard
+  * Note that this refers to the JPEG, and not the ITU-R BT.2020, standard
 
-    * ``LAB`` (3x8-bit pixels, the L*a*b color space)
-    * ``HSV`` (3x8-bit pixels, Hue, Saturation, Value color space)
+* ``LAB`` (3x8-bit pixels, the L*a*b color space)
+* ``HSV`` (3x8-bit pixels, Hue, Saturation, Value color space)
 
-      * Hue's range of 0-255 is a scaled version of 0 degrees <= Hue < 360 degrees
+  * Hue's range of 0-255 is a scaled version of 0 degrees <= Hue < 360 degrees
 
-    * ``I`` (32-bit signed integer pixels)
-    * ``F`` (32-bit floating point pixels)
+* ``I`` (32-bit signed integer pixels)
+* ``F`` (32-bit floating point pixels)
 
 Pillow also provides limited support for a few additional modes, including:
 
-    * ``LA`` (L with alpha)
-    * ``PA`` (P with alpha)
-    * ``RGBX`` (true color with padding)
-    * ``RGBa`` (true color with premultiplied alpha)
-    * ``La`` (L with premultiplied alpha)
-    * ``I;16`` (16-bit unsigned integer pixels)
-    * ``I;16L`` (16-bit little endian unsigned integer pixels)
-    * ``I;16B`` (16-bit big endian unsigned integer pixels)
-    * ``I;16N`` (16-bit native endian unsigned integer pixels)
+* ``LA`` (L with alpha)
+* ``PA`` (P with alpha)
+* ``RGBX`` (true color with padding)
+* ``RGBa`` (true color with premultiplied alpha)
+* ``La`` (L with premultiplied alpha)
+* ``I;16`` (16-bit unsigned integer pixels)
+* ``I;16L`` (16-bit little endian unsigned integer pixels)
+* ``I;16B`` (16-bit big endian unsigned integer pixels)
+* ``I;16N`` (16-bit native endian unsigned integer pixels)
 
 Premultiplied alpha is where the values for each other channel have been
 multiplied by the alpha. For example, an RGBA pixel of ``(10, 20, 30, 127)``
