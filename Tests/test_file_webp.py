@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 import sys
 import warnings
@@ -129,18 +130,13 @@ class TestFileWebp:
         with pytest.raises(ValueError):
             _webp.WebPEncode(im.getim(), False, 0, 0, "", 4, 0, b"", "")
 
-    @skip_unless_feature("webp_anim")
     def test_save_all_progress(self) -> None:
         out = BytesIO()
         progress = []
 
-        def callback(state):
+        def callback(state) -> None:
             if state["image_filename"]:
-                state["image_filename"] = (
-                    state["image_filename"]
-                    .replace("\\", "/")
-                    .split("Tests/images/")[-1]
-                )
+                state["image_filename"] = os.path.basename(state["image_filename"])
             progress.append(state)
 
         Image.new("RGB", (1, 1)).save(out, "WEBP", save_all=True, progress=callback)

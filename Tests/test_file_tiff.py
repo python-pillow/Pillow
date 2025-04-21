@@ -797,13 +797,9 @@ class TestFileTiff:
         out = BytesIO()
         progress = []
 
-        def callback(state):
+        def callback(state) -> None:
             if state["image_filename"]:
-                state["image_filename"] = (
-                    state["image_filename"]
-                    .replace("\\", "/")
-                    .split("Tests/images/")[-1]
-                )
+                state["image_filename"] = os.path.basename(state["image_filename"])
             progress.append(state)
 
         Image.new("RGB", (1, 1)).save(out, "TIFF", save_all=True, progress=callback)

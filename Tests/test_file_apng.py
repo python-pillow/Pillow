@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from io import BytesIO
 from pathlib import Path
 
@@ -710,11 +711,9 @@ def test_save_all_progress() -> None:
     out = BytesIO()
     progress = []
 
-    def callback(state):
+    def callback(state) -> None:
         if state["image_filename"]:
-            state["image_filename"] = (
-                state["image_filename"].replace("\\", "/").split("Tests/images/")[-1]
-            )
+            state["image_filename"] = os.path.basename(state["image_filename"])
         progress.append(state)
 
     Image.new("RGB", (1, 1)).save(out, "PNG", save_all=True, progress=callback)
@@ -741,7 +740,7 @@ def test_save_all_progress() -> None:
         expected.append(
             {
                 "image_index": i,
-                "image_filename": "apng/single_frame.png",
+                "image_filename": "single_frame.png",
                 "completed_frames": i + 1,
                 "total_frames": 7,
             }
@@ -750,7 +749,7 @@ def test_save_all_progress() -> None:
         expected.append(
             {
                 "image_index": 2,
-                "image_filename": "apng/delay.png",
+                "image_filename": "delay.png",
                 "completed_frames": i + 3,
                 "total_frames": 7,
             }
