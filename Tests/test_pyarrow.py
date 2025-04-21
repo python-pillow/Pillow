@@ -153,10 +153,10 @@ def test_lifetime2() -> None:
 
 class DataShape(NamedTuple):
     dtype: Any
-    elt: Any  # Strictly speaking, this should be a pixel or pixel component,
-              # so list[uint8][4], float, int, uint32, uint8, etc.
-              # But more correctly, it should be exactly the dtype from the
-              # line above.
+    # Strictly speaking, elt should be a pixel or pixel component, so
+    # list[uint8][4], float, int, uint32, uint8, etc.  But more
+    # correctly, it should be exactly the dtype from the line above.
+    elt: Any
     elts_per_pixel: int
 
 
