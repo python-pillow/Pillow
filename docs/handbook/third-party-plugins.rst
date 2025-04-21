@@ -1,4 +1,4 @@
-Third Party Plugins
+Third-party plugins
 ===================
 
 Pillow uses a plugin model which allows users to add their own
