@@ -737,7 +737,7 @@ ImagingNewArrow(
             return im;
         }
     }
-    // Stored as [[r,g,b,a],....]
+    // Stored as [[r,g,b,a],...]
     if (strcmp(schema->format, "+w:4") == 0  // 4 up array
         && im->pixelsize == 4                // storage as 32 bpc
         && schema->n_children > 0            // make sure schema is well formed.
@@ -753,7 +753,7 @@ ImagingNewArrow(
             return im;
         }
     }
-    // Stored as [r,g,b,a,r,g,b,a....]
+    // Stored as [r,g,b,a,r,g,b,a,...]
     if (strcmp(schema->format, "C") == 0            // uint8
         && im->pixelsize == 4                       // storage as 32 bpc
         && schema->n_children == 0                  // make sure schema is well formed.
