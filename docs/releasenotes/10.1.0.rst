@@ -71,7 +71,7 @@ size and font_size arguments when using default font
 
 Pillow has had a "better than nothing" default font, which can only be drawn at
 one font size. Now, if FreeType support is available, a version of
-`Aileron Regular <https://dotcolon.net/font/aileron>`_ is loaded, which can be
+`Aileron Regular <https://dotcolon.net/fonts/aileron>`_ is loaded, which can be
 drawn at chosen font sizes.
 
 The following ``size`` and ``font_size`` arguments can now be used to specify a
