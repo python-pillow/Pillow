@@ -67,14 +67,6 @@ if "%1" == "singlehtml" (
 	goto end
 )
 
-if "%1" == "changes" (
-	%SPHINXBUILD% -b changes %ALLSPHINXOPTS% %BUILDDIR%/changes
-	if errorlevel 1 exit /b 1
-	echo.
-	echo.The overview file is in %BUILDDIR%/changes.
-	goto end
-)
-
 if "%1" == "linkcheck" (
 	%SPHINXBUILD% -b linkcheck %ALLSPHINXOPTS% %BUILDDIR%/linkcheck
 	if errorlevel 1 exit /b 1
