@@ -30,7 +30,7 @@ import os
 import subprocess
 from enum import IntEnum
 from functools import cached_property
-from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, Union
+from typing import IO, Any, Literal, NamedTuple, Union
 
 from . import (
     Image,
@@ -44,7 +44,9 @@ from . import (
 from ._binary import i16le as i16
 from ._binary import o8
 from ._binary import o16le as o16
+from ._util import DeferredError
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from . import _imaging
     from ._typing import Buffer
@@ -166,6 +168,8 @@ class GifImageFile(ImageFile.ImageFile):
                 raise EOFError(msg) from e
 
     def _seek(self, frame: int, update_image: bool = True) -> None:
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         if frame == 0:
             # rewind
             self.__offset = 0

@@ -72,4 +72,5 @@ def test_ifd_rational_save(
     im.save(out, dpi=(res, res), compression="raw")
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert float(IFDRational(301, 1)) == float(reloaded.tag_v2[282])

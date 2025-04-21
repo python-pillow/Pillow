@@ -1,3 +1,6 @@
+
+.. _block_allocator:
+
 Block Allocator
 ===============
 
@@ -34,14 +37,14 @@ fresh allocation. This caching of free blocks is currently disabled by
 default, but can be enabled and tweaked using three environment
 variables:
 
-  * ``PILLOW_ALIGNMENT``, in bytes. Specifies the alignment of memory
-    allocations. Valid values are powers of 2 between 1 and
-    128, inclusive. Defaults to 1.
+* ``PILLOW_ALIGNMENT``, in bytes. Specifies the alignment of memory
+  allocations. Valid values are powers of 2 between 1 and
+  128, inclusive. Defaults to 1.
 
-  * ``PILLOW_BLOCK_SIZE``, in bytes, K, or M.  Specifies the maximum
-    block size for ``ImagingAllocateArray``. Valid values are
-    integers, with an optional ``k`` or ``m`` suffix. Defaults to 16M.
+* ``PILLOW_BLOCK_SIZE``, in bytes, K, or M.  Specifies the maximum
+  block size for ``ImagingAllocateArray``. Valid values are
+  integers, with an optional ``k`` or ``m`` suffix. Defaults to 16M.
 
-  * ``PILLOW_BLOCKS_MAX`` Specifies the number of freed blocks to
-    retain to fill future memory requests. Any freed blocks over this
-    threshold will be returned to the OS immediately. Defaults to 0.
+* ``PILLOW_BLOCKS_MAX`` Specifies the number of freed blocks to
+  retain to fill future memory requests. Any freed blocks over this
+  threshold will be returned to the OS immediately. Defaults to 0.

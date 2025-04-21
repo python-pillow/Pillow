@@ -42,7 +42,7 @@ import subprocess
 import sys
 import tempfile
 import warnings
-from typing import IO, TYPE_CHECKING, Any
+from typing import IO, Any
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -52,6 +52,7 @@ from ._binary import o16be as o16
 from ._deprecate import deprecate
 from .JpegPresets import presets
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from .MpoImagePlugin import MpoImageFile
 
@@ -402,8 +403,8 @@ class JpegImageFile(ImageFile.ImageFile):
         return super().__getstate__() + [self.layers, self.layer]
 
     def __setstate__(self, state: list[Any]) -> None:
+        self.layers, self.layer = state[6:]
         super().__setstate__(state)
-        self.layers, self.layer = state[5:]
 
     def load_read(self, read_bytes: int) -> bytes:
         """

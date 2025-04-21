@@ -228,12 +228,14 @@ def test_layers(card: ImageFile.ImageFile) -> None:
     out.seek(0)
 
     with Image.open(out) as im:
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
         im.layers = 1
         im.load()
         assert_image_similar(im, card, 13)
 
     out.seek(0)
     with Image.open(out) as im:
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
         im.layers = 3
         im.load()
         assert_image_similar(im, card, 0.4)
@@ -455,8 +457,8 @@ def test_comment() -> None:
     # Test an image that is truncated partway through a codestream
     with open("Tests/images/comment.jp2", "rb") as fp:
         b = BytesIO(fp.read(130))
-        with Image.open(b) as im:
-            pass
+    with Image.open(b) as im:
+        pass
 
 
 def test_save_comment(card: ImageFile.ImageFile) -> None:

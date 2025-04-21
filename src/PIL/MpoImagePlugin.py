@@ -31,6 +31,7 @@ from . import (
     TiffImagePlugin,
 )
 from ._binary import o32le
+from ._util import DeferredError
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
@@ -135,11 +136,15 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.readonly = 1
 
     def load_seek(self, pos: int) -> None:
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self._fp.seek(pos)
 
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self.fp = self._fp
         self.offset = self.__mpoffsets[frame]
 

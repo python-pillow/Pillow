@@ -32,6 +32,7 @@ configuration: dict[str, list[str]] = {}
 
 
 PILLOW_VERSION = get_version()
+AVIF_ROOT = None
 FREETYPE_ROOT = None
 HARFBUZZ_ROOT = None
 FRIBIDI_ROOT = None
@@ -64,6 +65,7 @@ _IMAGING = ("decode", "encode", "map", "display", "outline", "path")
 _LIB_IMAGING = (
     "Access",
     "AlphaComposite",
+    "Arrow",
     "Resample",
     "Reduce",
     "Bands",
@@ -306,6 +308,7 @@ class pil_build_ext(build_ext):
             "jpeg2000",
             "imagequant",
             "xcb",
+            "avif",
         ]
 
         required = {"jpeg", "zlib"}
@@ -481,6 +484,7 @@ class pil_build_ext(build_ext):
         #
         # add configured kits
         for root_name, lib_name in {
+            "AVIF_ROOT": "avif",
             "JPEG_ROOT": "libjpeg",
             "JPEG2K_ROOT": "libopenjp2",
             "TIFF_ROOT": ("libtiff-5", "libtiff-4"),
@@ -846,6 +850,12 @@ class pil_build_ext(build_ext):
                 if _find_library_file(self, "xcb"):
                     feature.set("xcb", "xcb")
 
+        if feature.want("avif"):
+            _dbg("Looking for avif")
+            if _find_include_file(self, "avif/avif.h"):
+                if _find_library_file(self, "avif"):
+                    feature.set("avif", "avif")
+
         for f in feature:
             if not feature.get(f) and feature.require(f):
                 if f in ("jpeg", "zlib"):
@@ -934,6 +944,14 @@ class pil_build_ext(build_ext):
         else:
             self._remove_extension("PIL._webp")
 
+        if feature.get("avif"):
+            libs = [feature.get("avif")]
+            if sys.platform == "win32":
+                libs.extend(["ntdll", "userenv", "ws2_32", "bcrypt"])
+            self._update_extension("PIL._avif", libs)
+        else:
+            self._remove_extension("PIL._avif")
+
         tk_libs = ["psapi"] if sys.platform in ("win32", "cygwin") else []
         self._update_extension("PIL._imagingtk", tk_libs)
 
@@ -976,6 +994,7 @@ class pil_build_ext(build_ext):
             (feature.get("lcms"), "LITTLECMS2"),
             (feature.get("webp"), "WEBP"),
             (feature.get("xcb"), "XCB (X protocol)"),
+            (feature.get("avif"), "LIBAVIF"),
         ]
 
         all = 1
@@ -1018,6 +1037,7 @@ ext_modules = [
     Extension("PIL._imagingft", ["src/_imagingft.c"]),
     Extension("PIL._imagingcms", ["src/_imagingcms.c"]),
     Extension("PIL._webp", ["src/_webp.c"]),
+    Extension("PIL._avif", ["src/_avif.c"]),
     Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),
     Extension("PIL._imagingmath", ["src/_imagingmath.c"]),
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),

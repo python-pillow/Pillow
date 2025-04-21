@@ -534,7 +534,6 @@ You can create animated GIFs with Pillow, e.g.
     # Save the images as an animated GIF
     images[0].save(
         "animated_hopper.gif",
-        save_all=True,
         append_images=images[1:],
         duration=500,  # duration of each frame in milliseconds
         loop=0,  # loop forever
