@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any  # undone
+from typing import Any, NamedTuple
 
 import pytest
 
@@ -151,29 +151,37 @@ def test_lifetime2() -> None:
     assert isinstance(px[0, 0], int)
 
 
-UINT_ARR = (
-    fl_uint8_4_type,
-    [1,2,3,4],
-    1
+class DataShape(NamedTuple):
+    dtype: Any
+    elt: Any
+    elts_per_pixel: int
+
+
+UINT_ARR = DataShape(
+    dtype=fl_uint8_4_type,
+    elt=[1, 2, 3, 4],  # array of 4 uint 8 per pixel
+    elts_per_pixel=1,  # only one array per pixel
 )
-UINT = (
-    pyarrow.uint8(),
-    3,
-    4
+
+UINT = DataShape(
+    dtype=pyarrow.uint8(),
+    elt=3,  # one uint8,
+    elts_per_pixel=4,  # but repeated 4x per pixel
 )
-INT32 = (
-    pyarrow.uint32(),
-    0xabcdef45,
-    1
+
+UINT32 = DataShape(
+    dtype=pyarrow.uint32(),
+    elt=0xABCDEF45,  # one packed int, doesn't fit in a int32 > 0x80000000
+    elts_per_pixel=1,  # one per pixel
 )
 
 
 @pytest.mark.parametrize(
     "mode, data_tp, mask",
     (
-        ("L", (pyarrow.uint8(), 3, 1), None),
-        ("I", (pyarrow.int32(), 1 << 24, 1), None),
-        ("F", (pyarrow.float32(), 3.14159, 1), None),
+        ("L", DataShape(pyarrow.uint8(), 3, 1), None),
+        ("I", DataShape(pyarrow.int32(), 1 << 24, 1), None),
+        ("F", DataShape(pyarrow.float32(), 3.14159, 1), None),
         ("LA", UINT_ARR, [0, 3]),
         ("LA", UINT, [0, 3]),
         ("RGB", UINT_ARR, [0, 1, 2]),
@@ -188,7 +196,7 @@ INT32 = (
         ("HSV", UINT, [0, 1, 2]),
     ),
 )
-def test_fromarray(mode: str, data_tp: tuple, mask: list[int] | None) -> None:
+def test_fromarray(mode: str, data_tp: DataShape, mask: list[int] | None) -> None:
     (dtype, elt, elts_per_pixel) = data_tp
 
     ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
@@ -201,15 +209,15 @@ def test_fromarray(mode: str, data_tp: tuple, mask: list[int] | None) -> None:
 @pytest.mark.parametrize(
     "mode, data_tp, mask",
     (
-        ("LA", INT32, [0, 3]),
-        ("RGB", INT32, [0, 1, 2]),
-        ("RGBA", INT32, None),
-        ("CMYK", INT32, None),
-        ("YCbCr", INT32, [0, 1, 2]),
-        ("HSV", INT32, [0, 1, 2]),
+        ("LA", UINT32, [0, 3]),
+        ("RGB", UINT32, [0, 1, 2]),
+        ("RGBA", UINT32, None),
+        ("CMYK", UINT32, None),
+        ("YCbCr", UINT32, [0, 1, 2]),
+        ("HSV", UINT32, [0, 1, 2]),
     ),
 )
-def test_from_int32array(mode: str, data_tp: tuple, mask: list[int] | None) -> None:
+def test_from_int32array(mode: str, data_tp: DataShape, mask: list[int] | None) -> None:
     (dtype, elt, elts_per_pixel) = data_tp
 
     ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
