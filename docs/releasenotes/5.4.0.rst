@@ -1,7 +1,7 @@
 5.4.0
 -----
 
-API Changes
+API changes
 ===========
 
 APNG extension to PNG plugin
@@ -55,7 +55,7 @@ TIFF images can now be saved with custom integer, float and string TIFF tags::
     print(im2.tag_v2[37002])  # "custom tag value"
     print(im2.tag_v2[37004])  # b"custom tag value"
 
-Other Changes
+Other changes
 =============
 
 ImageOps.fit

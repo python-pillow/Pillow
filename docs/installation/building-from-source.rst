@@ -8,12 +8,12 @@
 
 .. _building-from-source:
 
-Building From Source
+Building from source
 ====================
 
 .. _external-libraries:
 
-External Libraries
+External libraries
 ------------------
 
 .. note::
@@ -271,7 +271,7 @@ After navigating to the Pillow directory, run::
 
 .. _compressed archive from PyPI: https://pypi.org/project/pillow/#files
 
-Build Options
+Build options
 ^^^^^^^^^^^^^
 
 * Config setting: ``-C parallel=n``. Can also be given
@@ -319,7 +319,7 @@ Sample usage::
 
 .. _old-versions:
 
-Old Versions
+Old versions
 ============
 
 You can download old distributions from the `release history at PyPI
