@@ -153,7 +153,10 @@ def test_lifetime2() -> None:
 
 class DataShape(NamedTuple):
     dtype: Any
-    elt: Any
+    elt: Any  # Strictly speaking, this should be a pixel or pixel component,
+              # so list[uint8][4], float, int, uint32, uint8, etc.
+              # But more correctly, it should be exactly the dtype from the
+              # line above.
     elts_per_pixel: int
 
 
@@ -172,6 +175,12 @@ UINT = DataShape(
 UINT32 = DataShape(
     dtype=pyarrow.uint32(),
     elt=0xABCDEF45,  # one packed int, doesn't fit in a int32 > 0x80000000
+    elts_per_pixel=1,  # one per pixel
+)
+
+INT32 = DataShape(
+    dtype=pyarrow.uint32(),
+    elt=0x12CDEF45,  # one packed int
     elts_per_pixel=1,  # one per pixel
 )
 
@@ -215,6 +224,12 @@ def test_fromarray(mode: str, data_tp: DataShape, mask: list[int] | None) -> Non
         ("CMYK", UINT32, None),
         ("YCbCr", UINT32, [0, 1, 2]),
         ("HSV", UINT32, [0, 1, 2]),
+        ("LA", INT32, [0, 3]),
+        ("RGB", INT32, [0, 1, 2]),
+        ("RGBA", INT32, None),
+        ("CMYK", INT32, None),
+        ("YCbCr", INT32, [0, 1, 2]),
+        ("HSV", INT32, [0, 1, 2]),
     ),
 )
 def test_from_int32array(mode: str, data_tp: DataShape, mask: list[int] | None) -> None:
