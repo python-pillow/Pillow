@@ -58,7 +58,7 @@ Plugin reference
     :show-inheritance:
 
 :mod:`~PIL.FitsImagePlugin` module
---------------------------------------
+----------------------------------
 
 .. automodule:: PIL.FitsImagePlugin
     :members:
@@ -194,7 +194,7 @@ Plugin reference
     :show-inheritance:
 
 :mod:`~PIL.MpoImagePlugin` module
-----------------------------------
+---------------------------------
 
 .. automodule:: PIL.MpoImagePlugin
     :members:

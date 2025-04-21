@@ -26,7 +26,7 @@ leading to an out-of-bounds write in ``TiffDecode.c``. This potentially affects 
 versions from 6.0.0 to 8.0.1, depending on the version of LibTIFF. This was reported through
 `Tidelift`_.
 
-:cve:`2020-35655`: SGI Decode buffer overrun
+:cve:`2020-35655`: SGI decode buffer overrun
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 4 byte read overflow in ``SgiRleDecode.c``, where the code was not correctly

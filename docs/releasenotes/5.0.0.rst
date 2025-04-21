@@ -65,7 +65,7 @@ A new named parameter, ``fillcolor``, has been added to
 the area outside the transformed area in the output image. This
 parameter takes the same color specifications as used in ``Image.new``.
 
-GIF Disposal
+GIF disposal
 ^^^^^^^^^^^^
 
 Multiframe GIF images now take an optional disposal parameter to
