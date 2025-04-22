@@ -1229,7 +1229,7 @@ numbers are returned as a tuple of ``(numerator, denominator)``.
 
     .. deprecated:: 3.0.0
 
-Reading Multi-frame TIFF Images
+Reading multi-frame TIFF images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The TIFF loader supports the :py:meth:`~PIL.Image.Image.seek` and
@@ -1671,7 +1671,7 @@ The :py:meth:`~PIL.Image.open` method sets the following
     Transparency color index. This key is omitted if the image is not
     transparent.
 
-XV Thumbnails
+XV thumbnails
 ^^^^^^^^^^^^^
 
 Pillow can read XV thumbnail files.
