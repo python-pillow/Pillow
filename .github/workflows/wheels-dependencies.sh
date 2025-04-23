@@ -111,10 +111,20 @@ function build_libavif {
     local build_type=MinSizeRel
     local lto=ON
 
+    local libavif_cmake_flags=()
+
     if [ -n "$IS_MACOS" ]; then
         lto=OFF
-    elif [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "x86_64" ]]; then
-        build_type=Release
+        libavif_cmake_flags+=(
+            -DCMAKE_C_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto " \
+            -DCMAKE_CXX_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto" \
+            -DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,-S,-x,-dead_strip_dylibs" \
+        )
+    else
+        if [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "x86_64" ]]; then
+            build_type=Release
+        fi
+        libavif_cmake_flags+=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
     fi
 
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
@@ -136,7 +146,10 @@ function build_libavif {
             -DAVIF_CODEC_AOM_DECODE=OFF \
             -DAVIF_CODEC_DAV1D=LOCAL \
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=$lto \
+            -DCMAKE_C_VISIBILITY_PRESET=hidden \
+            -DCMAKE_CXX_VISIBILITY_PRESET=hidden \
             -DCMAKE_BUILD_TYPE=$build_type \
+            "${libavif_cmake_flags[@]}" \
             . \
         && make install)
     touch libavif-stamp
