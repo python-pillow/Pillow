@@ -179,6 +179,7 @@ class IptcImageFile(ImageFile.ImageFile):
         with Image.open(o) as _im:
             _im.load()
             self.im = _im.im
+        self.tile = []
         return None
 
 
