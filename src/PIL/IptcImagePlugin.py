@@ -180,7 +180,7 @@ class IptcImageFile(ImageFile.ImageFile):
             _im.load()
             self.im = _im.im
         self.tile = []
-        return None
+        return Image.Image.load(self)
 
 
 Image.register_open(IptcImageFile.format, IptcImageFile)
