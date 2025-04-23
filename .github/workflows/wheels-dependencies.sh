@@ -105,7 +105,7 @@ function build_libavif {
     python3 -m pip install meson ninja
 
     if [[ "$PLAT" == "x86_64" ]] || [ -n "$SANITIZER" ]; then
-        build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
+        build_simple nasm 2.16.01 https://gstreamer.freedesktop.org/src/mirror/ tar.xz
     fi
 
     local build_type=MinSizeRel
