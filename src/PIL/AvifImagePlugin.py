@@ -54,13 +54,10 @@ def _accept(prefix: bytes) -> bool | str:
     return False
 
 
-def _get_default_max_threads() -> int:
-    if DEFAULT_MAX_THREADS:
-        return DEFAULT_MAX_THREADS
+def _get_max_threads() -> int:
     if hasattr(os, "sched_getaffinity"):
         return len(os.sched_getaffinity(0))
-    else:
-        return os.cpu_count() or 1
+    return os.cpu_count() or 1
 
 
 class AvifImageFile(ImageFile.ImageFile):
@@ -81,7 +78,7 @@ class AvifImageFile(ImageFile.ImageFile):
         self._decoder = _avif.AvifDecoder(
             self.fp.read(),
             DECODE_CODEC_CHOICE,
-            _get_default_max_threads(),
+            DEFAULT_MAX_THREADS or _get_max_threads(),
         )
 
         # Get info from decoder
@@ -164,7 +161,7 @@ def _save(
     duration = info.get("duration", 0)
     subsampling = info.get("subsampling", "4:2:0")
     speed = info.get("speed", 6)
-    max_threads = info.get("max_threads", _get_default_max_threads())
+    max_threads = info.get("max_threads", _get_max_threads())
     codec = info.get("codec", "auto")
     if codec != "auto" and not _avif.encoder_codec_available(codec):
         msg = "Invalid saving codec"
