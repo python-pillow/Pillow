@@ -61,6 +61,7 @@ Run ``build_prepare.py`` to configure the build::
       --no-imagequant       skip GPL-licensed optional dependency libimagequant
       --no-fribidi, --no-raqm
                             skip LGPL-licensed optional dependency FriBiDi
+      --no-avif             skip optional dependency libavif
 
     Arguments can also be supplied using the environment variables PILLOW_BUILD,
     PILLOW_DEPS, ARCHITECTURE. See winbuild\build.rst for more information.

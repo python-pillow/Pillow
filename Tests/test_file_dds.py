@@ -9,7 +9,13 @@ import pytest
 
 from PIL import DdsImagePlugin, Image
 
-from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar,
+    assert_image_similar_tofile,
+    hopper,
+)
 
 TEST_FILE_DXT1 = "Tests/images/dxt1-rgb-4bbp-noalpha_MipMaps-1.dds"
 TEST_FILE_DXT3 = "Tests/images/dxt3-argb-8bbp-explicitalpha_MipMaps-1.dds"
@@ -107,6 +113,32 @@ def test_sanity_ati1_bc4u(image_path: str) -> None:
         assert im.size == (64, 64)
 
         assert_image_equal_tofile(im, TEST_FILE_ATI1.replace(".dds", ".png"))
+
+
+def test_dx10_bc2(tmp_path: Path) -> None:
+    out = tmp_path / "temp.dds"
+    with Image.open(TEST_FILE_DXT3) as im:
+        im.save(out, pixel_format="BC2")
+
+    with Image.open(out) as reloaded:
+        assert reloaded.format == "DDS"
+        assert reloaded.mode == "RGBA"
+        assert reloaded.size == (256, 256)
+
+        assert_image_similar(im, reloaded, 3.81)
+
+
+def test_dx10_bc3(tmp_path: Path) -> None:
+    out = tmp_path / "temp.dds"
+    with Image.open(TEST_FILE_DXT5) as im:
+        im.save(out, pixel_format="BC3")
+
+    with Image.open(out) as reloaded:
+        assert reloaded.format == "DDS"
+        assert reloaded.mode == "RGBA"
+        assert reloaded.size == (256, 256)
+
+        assert_image_similar(im, reloaded, 3.69)
 
 
 @pytest.mark.parametrize(
@@ -368,9 +400,9 @@ def test_not_implemented(test_file: str) -> None:
 
 
 def test_save_unsupported_mode(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.dds")
+    out = tmp_path / "temp.dds"
     im = hopper("HSV")
-    with pytest.raises(OSError):
+    with pytest.raises(OSError, match="cannot write mode HSV as DDS"):
         im.save(out)
 
 
@@ -384,10 +416,98 @@ def test_save_unsupported_mode(tmp_path: Path) -> None:
     ],
 )
 def test_save(mode: str, test_file: str, tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.dds")
+    out = tmp_path / "temp.dds"
     with Image.open(test_file) as im:
         assert im.mode == mode
         im.save(out)
 
-        with Image.open(out) as reloaded:
-            assert_image_equal(im, reloaded)
+        assert_image_equal_tofile(im, out)
+
+
+def test_save_unsupported_pixel_format(tmp_path: Path) -> None:
+    out = tmp_path / "temp.dds"
+    im = hopper()
+    with pytest.raises(OSError, match="cannot write pixel format UNKNOWN"):
+        im.save(out, pixel_format="UNKNOWN")
+
+
+def test_save_dxt1(tmp_path: Path) -> None:
+    # RGB
+    out = tmp_path / "temp.dds"
+    with Image.open(TEST_FILE_DXT1) as im:
+        im.convert("RGB").save(out, pixel_format="DXT1")
+    assert_image_similar_tofile(im, out, 1.84)
+
+    # RGBA
+    im_alpha = im.copy()
+    im_alpha.putpixel((0, 0), (0, 0, 0, 0))
+    im_alpha.save(out, pixel_format="DXT1")
+    with Image.open(out) as reloaded:
+        assert reloaded.getpixel((0, 0)) == (0, 0, 0, 0)
+
+    # L
+    im_l = im.convert("L")
+    im_l.save(out, pixel_format="DXT1")
+    assert_image_similar_tofile(im_l.convert("RGBA"), out, 6.07)
+
+    # LA
+    im_alpha.convert("LA").save(out, pixel_format="DXT1")
+    with Image.open(out) as reloaded:
+        assert reloaded.getpixel((0, 0)) == (0, 0, 0, 0)
+
+
+def test_save_dxt3(tmp_path: Path) -> None:
+    # RGB
+    out = tmp_path / "temp.dds"
+    with Image.open(TEST_FILE_DXT3) as im:
+        im_rgb = im.convert("RGB")
+    im_rgb.save(out, pixel_format="DXT3")
+    assert_image_similar_tofile(im_rgb.convert("RGBA"), out, 1.26)
+
+    # RGBA
+    im.save(out, pixel_format="DXT3")
+    assert_image_similar_tofile(im, out, 3.81)
+
+    # L
+    im_l = im.convert("L")
+    im_l.save(out, pixel_format="DXT3")
+    assert_image_similar_tofile(im_l.convert("RGBA"), out, 5.89)
+
+    # LA
+    im_la = im.convert("LA")
+    im_la.save(out, pixel_format="DXT3")
+    assert_image_similar_tofile(im_la.convert("RGBA"), out, 8.44)
+
+
+def test_save_dxt5(tmp_path: Path) -> None:
+    # RGB
+    out = tmp_path / "temp.dds"
+    with Image.open(TEST_FILE_DXT1) as im:
+        im.convert("RGB").save(out, pixel_format="DXT5")
+    assert_image_similar_tofile(im, out, 1.84)
+
+    # RGBA
+    with Image.open(TEST_FILE_DXT5) as im_rgba:
+        im_rgba.save(out, pixel_format="DXT5")
+    assert_image_similar_tofile(im_rgba, out, 3.69)
+
+    # L
+    im_l = im.convert("L")
+    im_l.save(out, pixel_format="DXT5")
+    assert_image_similar_tofile(im_l.convert("RGBA"), out, 6.07)
+
+    # LA
+    im_la = im_rgba.convert("LA")
+    im_la.save(out, pixel_format="DXT5")
+    assert_image_similar_tofile(im_la.convert("RGBA"), out, 8.32)
+
+
+def test_save_dx10_bc5(tmp_path: Path) -> None:
+    out = tmp_path / "temp.dds"
+    with Image.open(TEST_FILE_DX10_BC5_TYPELESS) as im:
+        im.save(out, pixel_format="BC5")
+    assert_image_similar_tofile(im, out, 9.56)
+
+    im = hopper("L")
+    with pytest.raises(OSError, match="only RGB mode can be written as BC5"):
+        im.save(out, pixel_format="BC5")

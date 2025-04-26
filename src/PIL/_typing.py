@@ -3,8 +3,9 @@ from __future__ import annotations
 import os
 import sys
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar, Union
+from typing import Any, Protocol, TypeVar, Union
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from numbers import _IntegralLike as IntegralLike
 

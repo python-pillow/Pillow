@@ -30,6 +30,7 @@ def test_invalid_file() -> None:
 def test_load_read() -> None:
     # Arrange
     with Image.open(TEST_FILE) as im:
+        assert isinstance(im, XpmImagePlugin.XpmImageFile)
         dummy_bytes = 1
 
         # Act

@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.9
+    rev: v0.11.4
     hooks:
       - id: ruff
         args: [--exit-non-zero-on-fix]
@@ -24,7 +24,7 @@ repos:
         exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.gd$|\.opt$)
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v19.1.7
+    rev: v20.1.0
     hooks:
       - id: clang-format
         types: [c]
@@ -44,20 +44,21 @@ repos:
       - id: check-json
       - id: check-toml
       - id: check-yaml
+        args: [--allow-multiple-documents]
       - id: end-of-file-fixer
         exclude: ^Tests/images/
       - id: trailing-whitespace
         exclude: ^.github/.*TEMPLATE|^Tests/(fonts|images)/
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.31.2
+    rev: 0.32.1
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
       - id: check-renovate
 
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.4.1
+    rev: v1.5.2
     hooks:
       - id: zizmor
 
@@ -72,7 +73,7 @@ repos:
       - id: pyproject-fmt
 
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.23
+    rev: v0.24.1
     hooks:
       - id: validate-pyproject
         additional_dependencies: [trove-classifiers>=2024.10.12]

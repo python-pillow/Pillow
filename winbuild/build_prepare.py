@@ -113,15 +113,16 @@ V = {
     "BROTLI": "1.1.0",
     "FREETYPE": "2.13.3",
     "FRIBIDI": "1.0.16",
-    "HARFBUZZ": "10.4.0",
+    "HARFBUZZ": "11.1.0",
     "JPEGTURBO": "3.1.0",
     "LCMS2": "2.17",
+    "LIBAVIF": "1.2.1",
     "LIBIMAGEQUANT": "4.3.4",
     "LIBPNG": "1.6.47",
     "LIBWEBP": "1.5.0",
     "OPENJPEG": "2.5.3",
-    "TIFF": "4.6.0",
-    "XZ": "5.6.4",
+    "TIFF": "4.7.0",
+    "XZ": "5.8.1",
     "ZLIBNG": "2.2.4",
 }
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
@@ -180,7 +181,11 @@ DEPS: dict[str, dict[str, Any]] = {
         "filename": f"xz-{V['XZ']}.tar.gz",
         "license": "COPYING",
         "build": [
-            *cmds_cmake("liblzma", "-DBUILD_SHARED_LIBS:BOOL=OFF"),
+            *cmds_cmake(
+                "liblzma",
+                "-DBUILD_SHARED_LIBS:BOOL=OFF"
+                + (" -DXZ_CLMUL_CRC:BOOL=OFF" if struct.calcsize("P") == 4 else ""),
+            ),
             cmd_mkdir(r"{inc_dir}\lzma"),
             cmd_copy(r"src\liblzma\api\lzma\*.h", r"{inc_dir}\lzma"),
         ],
@@ -234,6 +239,7 @@ DEPS: dict[str, dict[str, Any]] = {
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
                 "-DWebP_LIBRARY=libwebp",
                 '-DCMAKE_C_FLAGS="-nologo -DLZMA_API_STATIC"',
+                "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
             )
         ],
         "headers": [r"libtiff\tiff*.h"],
@@ -347,8 +353,8 @@ DEPS: dict[str, dict[str, Any]] = {
         "libs": [r"..\target\release\imagequant_sys.lib"],
     },
     "harfbuzz": {
-        "url": f"https://github.com/harfbuzz/harfbuzz/archive/{V['HARFBUZZ']}.zip",
-        "filename": f"harfbuzz-{V['HARFBUZZ']}.zip",
+        "url": f"https://github.com/harfbuzz/harfbuzz/releases/download/{V['HARFBUZZ']}/FILENAME",
+        "filename": f"harfbuzz-{V['HARFBUZZ']}.tar.xz",
         "license": "COPYING",
         "build": [
             *cmds_cmake(
@@ -377,6 +383,27 @@ DEPS: dict[str, dict[str, Any]] = {
             *cmds_cmake("fribidi", "-DARCH={architecture}"),
         ],
         "bins": [r"*.dll"],
+    },
+    "libavif": {
+        "url": f"https://github.com/AOMediaCodec/libavif/archive/v{V['LIBAVIF']}.zip",
+        "filename": f"libavif-{V['LIBAVIF']}.zip",
+        "license": "LICENSE",
+        "build": [
+            f"{sys.executable} -m pip install meson",
+            *cmds_cmake(
+                "avif_static",
+                "-DBUILD_SHARED_LIBS=OFF",
+                "-DAVIF_LIBSHARPYUV=LOCAL",
+                "-DAVIF_LIBYUV=LOCAL",
+                "-DAVIF_CODEC_AOM=LOCAL",
+                "-DAVIF_CODEC_DAV1D=LOCAL",
+                "-DAVIF_CODEC_RAV1E=LOCAL",
+                "-DAVIF_CODEC_SVT=LOCAL",
+                "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+            ),
+            cmd_xcopy("include", "{inc_dir}"),
+        ],
+        "libs": ["avif.lib"],
     },
 }
 
@@ -491,8 +518,8 @@ def extract_dep(url: str, filename: str, prefs: dict[str, str]) -> None:
                     msg = "Attempted Path Traversal in Zip File"
                     raise RuntimeError(msg)
             zf.extractall(sources_dir)
-    elif filename.endswith((".tar.gz", ".tgz")):
-        with tarfile.open(file, "r:gz") as tgz:
+    elif filename.endswith((".tar.gz", ".tar.xz")):
+        with tarfile.open(file, "r:xz" if filename.endswith(".xz") else "r:gz") as tgz:
             for member in tgz.getnames():
                 member_abspath = os.path.abspath(os.path.join(sources_dir, member))
                 member_prefix = os.path.commonpath([sources_dir_abs, member_abspath])
@@ -683,6 +710,11 @@ def main() -> None:
         action="store_true",
         help="skip LGPL-licensed optional dependency FriBiDi",
     )
+    parser.add_argument(
+        "--no-avif",
+        action="store_true",
+        help="skip optional dependency libavif",
+    )
     args = parser.parse_args()
 
     arch_prefs = ARCHITECTURES[args.architecture]
@@ -723,6 +755,8 @@ def main() -> None:
         disabled += ["libimagequant"]
     if args.no_fribidi:
         disabled += ["fribidi"]
+    if args.no_avif or args.architecture != "AMD64":
+        disabled += ["libavif"]
 
     prefs = {
         "architecture": args.architecture,
@@ -746,7 +780,7 @@ def main() -> None:
 
     for k, v in DEPS.items():
         if "dir" not in v:
-            v["dir"] = re.sub(r"\.(tar\.gz|zip)", "", v["filename"])
+            v["dir"] = re.sub(r"\.(tar\.gz|tar\.xz|zip)", "", v["filename"])
         prefs[f"dir_{k}"] = os.path.join(sources_dir, v["dir"])
 
     print()
