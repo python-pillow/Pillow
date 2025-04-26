@@ -187,9 +187,6 @@ class CurFile(IcoImagePlugin.IcoFile):
 
         self.entry = sorted(self.entry, key=lambda x: x.square, reverse=True)
 
-    def sizes(self) -> list[tuple[int, int]]:
-        return [(h.width, h.height) for h in self.entry]
-
     def hotspots(self) -> list[tuple[int, int]]:
         return [(h.x_hotspot, h.y_hotspot) for h in self.entry]
 
