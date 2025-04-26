@@ -24,7 +24,7 @@ from .helper import assert_image_equal, assert_image_similar
         (2000, 2048),
     ],
 )
-def test_closest_power(size: int, expected_size: int):
+def test_closest_power(size: int, expected_size: int) -> None:
     assert _closest_power(size) == expected_size
 
 
@@ -42,7 +42,7 @@ def test_closest_power(size: int, expected_size: int):
         ((1024, 1), 11),
     ],
 )
-def test_get_mipmap_count(size: tuple[int, int], expected_count: int):
+def test_get_mipmap_count(size: tuple[int, int], expected_count: int) -> None:
     assert _get_mipmap_count(*size) == expected_count
 
 
@@ -64,7 +64,7 @@ def test_get_mipmap_count(size: tuple[int, int], expected_count: int):
 )
 def test_get_texture_size(
     pixel_format: VtfPF, size: tuple[int, int], expected_size: int
-):
+) -> None:
     assert _get_texture_size(pixel_format, *size) == expected_size
 
 
@@ -82,15 +82,17 @@ def test_get_texture_size(
         ("Tests/images/vtf_rgba8888.png", "Tests/images/vtf_rgba8888.vtf", "RGBA", 0),
     ],
 )
-def test_vtf_read(etalon_path: str, file_path: str, expected_mode: str, epsilon: float):
-    e = Image.open(etalon_path)
-    f = Image.open(file_path)
-    assert f.mode == expected_mode
-    e = e.convert(expected_mode)
-    if epsilon == 0:
-        assert_image_equal(e, f)
-    else:
-        assert_image_similar(e, f, epsilon)
+def test_vtf_read(
+    etalon_path: str, file_path: str, expected_mode: str, epsilon: float
+) -> None:
+    with Image.open(file_path) as f:
+        assert f.mode == expected_mode
+        with Image.open(etalon_path) as e:
+            converted_e = e.convert(expected_mode)
+        if epsilon == 0:
+            assert_image_equal(converted_e, f)
+        else:
+            assert_image_similar(converted_e, f, epsilon)
 
 
 @pytest.mark.parametrize(
@@ -109,7 +111,7 @@ def test_vtf_read(etalon_path: str, file_path: str, expected_mode: str, epsilon:
 )
 def test_vtf_save(
     pixel_format: VtfPF, file_path: str, expected_mode: str, epsilon: float, tmp_path
-):
+) -> None:
     f: Image.Image = Image.open(file_path)
     out = (tmp_path / "tmp.vtf").as_posix()
     f.save(out, pixel_format=pixel_format)

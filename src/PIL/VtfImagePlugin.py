@@ -14,9 +14,9 @@ from __future__ import annotations
 
 import struct
 from enum import IntEnum, IntFlag
-from io import BufferedIOBase, BytesIO
+from io import BytesIO
 from math import ceil, log
-from typing import NamedTuple
+from typing import IO, NamedTuple
 
 from . import Image, ImageFile
 
@@ -149,7 +149,7 @@ def _get_texture_size(pixel_format: VtfPF, width, height):
     raise VTFException(msg)
 
 
-def _get_mipmap_count(width: int, height: int):
+def _get_mipmap_count(width: int, height: int) -> int:
     mip_count = 1
     while True:
         mip_width = width >> mip_count
@@ -159,8 +159,9 @@ def _get_mipmap_count(width: int, height: int):
         mip_count += 1
 
 
-def _write_image(fp: BufferedIOBase, im: Image.Image, pixel_format: VtfPF):
+def _write_image(fp: IO[bytes], im: Image.Image, pixel_format: VtfPF) -> None:
     extents = (0, 0) + im.size
+    encoder_args: tuple[int, str] | tuple[str, int, int]
     if pixel_format == VtfPF.DXT1:
         encoder = "bcn"
         encoder_args = (1, "DXT1")
@@ -309,8 +310,7 @@ class VtfImageFile(ImageFile.ImageFile):
         self.tile = [tile]
 
 
-def _save(im, fp, filename):
-    im: Image.Image
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode not in ("RGB", "RGBA", "L", "LA"):
         msg = f"cannot write mode {im.mode} as VTF"
         raise OSError(msg)
@@ -406,7 +406,7 @@ def _save(im, fp, filename):
     _write_image(fp, im, pixel_format)
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     valid_header = prefix[:4] == b"VTF\x00"
     valid_version = struct.unpack_from("<2I", prefix, 4) >= (7, 0)
     return valid_header and valid_version
