@@ -40,7 +40,7 @@ import warnings
 import zlib
 from collections.abc import Callable
 from enum import IntEnum
-from typing import IO, TYPE_CHECKING, Any, NamedTuple, NoReturn, cast
+from typing import IO, Any, NamedTuple, NoReturn, cast
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i16be as i16
@@ -48,7 +48,9 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
+from ._util import DeferredError
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from . import _imaging
 
@@ -140,7 +142,7 @@ def _safe_zlib_decompress(s: bytes) -> bytes:
     dobj = zlib.decompressobj()
     plaintext = dobj.decompress(s, MAX_TEXT_CHUNK)
     if dobj.unconsumed_tail:
-        msg = "Decompressed Data Too Large"
+        msg = "Decompressed data too large for PngImagePlugin.MAX_TEXT_CHUNK"
         raise ValueError(msg)
     return plaintext
 
@@ -523,7 +525,7 @@ class PngStream(ChunkStream):
 
         assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
-        raw_vals = struct.unpack(">%dI" % (len(s) // 4), s)
+        raw_vals = struct.unpack(f">{len(s) // 4}I", s)
         self.im_info["chromaticity"] = tuple(elt / 100000.0 for elt in raw_vals)
         return s
 
@@ -740,7 +742,7 @@ class PngStream(ChunkStream):
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:8] == _MAGIC
+    return prefix.startswith(_MAGIC)
 
 
 ##
@@ -869,6 +871,8 @@ class PngImageFile(ImageFile.ImageFile):
 
     def _seek(self, frame: int, rewind: bool = False) -> None:
         assert self.png is not None
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
 
         self.dispose: _imaging.ImagingCore | None
         dispose_extent = None
@@ -1063,6 +1067,12 @@ class PngImageFile(ImageFile.ImageFile):
                         "RGBA", self.info["transparency"]
                     )
                 else:
+                    if self.im.mode == "P" and "transparency" in self.info:
+                        t = self.info["transparency"]
+                        if isinstance(t, bytes):
+                            updated.putpalettealphas(t)
+                        elif isinstance(t, int):
+                            updated.putpalettealpha(t)
                     mask = updated.convert("RGBA")
                 self._prev_im.paste(updated, self.dispose_extent, mask)
                 self.im = self._prev_im
@@ -1376,7 +1386,7 @@ def _save(
         b"\0",  # 12: interlace flag
     )
 
-    chunks = [b"cHRM", b"gAMA", b"sBIT", b"sRGB", b"tIME"]
+    chunks = [b"cHRM", b"cICP", b"gAMA", b"sBIT", b"sRGB", b"tIME"]
 
     icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
     if icc:
@@ -1427,7 +1437,7 @@ def _save(
                 chunk(fp, b"tRNS", transparency[:alpha_bytes])
             else:
                 transparency = max(0, min(255, transparency))
-                alpha = b"\xFF" * transparency + b"\0"
+                alpha = b"\xff" * transparency + b"\0"
                 chunk(fp, b"tRNS", alpha[:alpha_bytes])
         elif im.mode in ("1", "L", "I", "I;16"):
             transparency = max(0, min(65535, transparency))

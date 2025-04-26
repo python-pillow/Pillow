@@ -22,7 +22,7 @@ import PIL
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = "7.3"
+needs_sphinx = "8.2"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -55,7 +55,7 @@ master_doc = "index"
 project = "Pillow (PIL Fork)"
 copyright = (
     "1995-2011 Fredrik Lundh and contributors, "
-    "2010-2024 Jeffrey A. Clark and contributors."
+    "2010 Jeffrey A. Clark and contributors."
 )
 author = "Fredrik Lundh (PIL), Jeffrey A. Clark (Pillow)"
 
@@ -121,7 +121,7 @@ nitpicky = True
 # generating warnings in “nitpicky mode”. Note that type should include the domain name
 # if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
-nitpick_ignore = [("py:class", "_io.BytesIO")]
+nitpick_ignore = [("py:class", "_CmsProfileCompatible")]
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -229,97 +229,6 @@ html_js_files = [
 # implements a search results scorer. If empty, the default will be used.
 # html_search_scorer = 'scorer.js'
 
-# Output file base name for HTML help builder.
-htmlhelp_basename = "PillowPILForkdoc"
-
-# -- Options for LaTeX output ---------------------------------------------
-
-latex_elements: dict[str, str] = {
-    # The paper size ('letterpaper' or 'a4paper').
-    # 'papersize': 'letterpaper',
-    # The font size ('10pt', '11pt' or '12pt').
-    # 'pointsize': '10pt',
-    # Additional stuff for the LaTeX preamble.
-    # 'preamble': '',
-    # Latex figure (float) alignment
-    # 'figure_align': 'htbp',
-}
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title,
-#  author, documentclass [howto, manual, or own class]).
-latex_documents = [
-    (
-        master_doc,
-        "PillowPILFork.tex",
-        "Pillow (PIL Fork) Documentation",
-        "Jeffrey A. Clark",
-        "manual",
-    )
-]
-
-# The name of an image file (relative to this directory) to place at the top of
-# the title page.
-# latex_logo = None
-
-# For "manual" documents, if this is true, then toplevel headings are parts,
-# not chapters.
-# latex_use_parts = False
-
-# If true, show page references after internal links.
-# latex_show_pagerefs = False
-
-# If true, show URL addresses after external links.
-# latex_show_urls = False
-
-# Documents to append as an appendix to all manuals.
-# latex_appendices = []
-
-# If false, no module index is generated.
-# latex_domain_indices = True
-
-
-# -- Options for manual page output ---------------------------------------
-
-# One entry per manual page. List of tuples
-# (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, "pillowpilfork", "Pillow (PIL Fork) Documentation", [author], 1)
-]
-
-# If true, show URL addresses after external links.
-# man_show_urls = False
-
-
-# -- Options for Texinfo output -------------------------------------------
-
-# Grouping the document tree into Texinfo files. List of tuples
-# (source start file, target name, title, author,
-#  dir menu entry, description, category)
-texinfo_documents = [
-    (
-        master_doc,
-        "PillowPILFork",
-        "Pillow (PIL Fork) Documentation",
-        author,
-        "PillowPILFork",
-        "Pillow is the friendly PIL fork by Jeffrey A. Clark and contributors.",
-        "Miscellaneous",
-    )
-]
-
-# Documents to append as an appendix to all manuals.
-# texinfo_appendices = []
-
-# If false, no module index is generated.
-# texinfo_domain_indices = True
-
-# How to display URL addresses: 'footnote', 'no', or 'inline'.
-# texinfo_show_urls = 'footnote'
-
-# If true, do not generate a @detailmenu in the "Top" node's menu.
-# texinfo_no_detailmenu = False
-
 
 linkcheck_allowed_redirects = {
     r"https://www.bestpractices.dev/projects/6331": r"https://www.bestpractices.dev/en/.*",
@@ -338,8 +247,6 @@ linkcheck_allowed_redirects = {
 # https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 _repo = "https://github.com/python-pillow/Pillow/"
 extlinks = {
-    "cve": ("https://www.cve.org/CVERecord?id=CVE-%s", "CVE-%s"),
-    "cwe": ("https://cwe.mitre.org/data/definitions/%s.html", "CWE-%s"),
     "issue": (_repo + "issues/%s", "#%s"),
     "pr": (_repo + "pull/%s", "#%s"),
     "pypi": ("https://pypi.org/project/%s/", "%s"),

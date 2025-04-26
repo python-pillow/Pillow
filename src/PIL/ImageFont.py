@@ -34,12 +34,13 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any, BinaryIO, TypedDict, cast
+from typing import IO, Any, BinaryIO, TypedDict, cast
 
 from . import Image, features
 from ._typing import StrOrBytesPath
 from ._util import DeferredError, is_path
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from . import ImageFile
     from ._imaging import ImagingFont
@@ -98,11 +99,13 @@ class ImageFont:
     def _load_pilfont(self, filename: str) -> None:
         with open(filename, "rb") as fp:
             image: ImageFile.ImageFile | None = None
+            root = os.path.splitext(filename)[0]
+
             for ext in (".png", ".gif", ".pbm"):
                 if image:
                     image.close()
                 try:
-                    fullname = os.path.splitext(filename)[0] + ext
+                    fullname = root + ext
                     image = Image.open(fullname)
                 except Exception:
                     pass
@@ -112,7 +115,8 @@ class ImageFont:
             else:
                 if image:
                     image.close()
-                msg = "cannot find glyph data file"
+
+                msg = f"cannot find glyph data file {root}.{{gif|pbm|png}}"
                 raise OSError(msg)
 
             self.file = fullname
@@ -224,7 +228,7 @@ class FreeTypeFont:
             raise core.ex
 
         if size <= 0:
-            msg = "font size must be greater than 0"
+            msg = f"font size must be greater than 0, not {size}"
             raise ValueError(msg)
 
         self.path = font
@@ -267,7 +271,7 @@ class FreeTypeFont:
             )
 
         if is_path(font):
-            font = os.path.realpath(os.fspath(font))
+            font = os.fspath(font)
             if sys.platform == "win32":
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
                 try:
@@ -641,10 +645,10 @@ class FreeTypeFont:
             features,
             language,
             stroke_width,
+            kwargs.get("stroke_filled", False),
             anchor,
             ink,
-            start[0],
-            start[1],
+            start,
         )
 
     def font_variant(
@@ -783,8 +787,9 @@ class TransposedFont:
 
 def load(filename: str) -> ImageFont:
     """
-    Load a font file.  This function loads a font object from the given
-    bitmap font file, and returns the corresponding font object.
+    Load a font file. This function loads a font object from the given
+    bitmap font file, and returns the corresponding font object. For loading TrueType
+    or OpenType fonts instead, see :py:func:`~PIL.ImageFont.truetype`.
 
     :param filename: Name of font file.
     :return: A font object.
@@ -804,9 +809,10 @@ def truetype(
 ) -> FreeTypeFont:
     """
     Load a TrueType or OpenType font from a file or file-like object,
-    and create a font object.
-    This function loads a font object from the given file or file-like
-    object, and creates a font object for a font of the given size.
+    and create a font object. This function loads a font object from the given
+    file or file-like object, and creates a font object for a font of the given
+    size. For loading bitmap fonts instead, see :py:func:`~PIL.ImageFont.load`
+    and :py:func:`~PIL.ImageFont.load_path`.
 
     Pillow uses FreeType to open font files. On Windows, be aware that FreeType
     will keep the file open as long as the FreeTypeFont object exists. Windows
@@ -942,7 +948,10 @@ def load_path(filename: str | bytes) -> ImageFont:
             return load(os.path.join(directory, filename))
         except OSError:
             pass
-    msg = "cannot find font file"
+    msg = f'cannot find font file "{filename}" in sys.path'
+    if os.path.exists(filename):
+        msg += f', did you mean ImageFont.load("{filename}") instead?'
+
     raise OSError(msg)
 
 
@@ -1084,7 +1093,7 @@ w7IkEbzhVQAAAABJRU5ErkJggg==
 
 def load_default(size: float | None = None) -> FreeTypeFont | ImageFont:
     """If FreeType support is available, load a version of Aileron Regular,
-    https://dotcolon.net/font/aileron, with a more limited character set.
+    https://dotcolon.net/fonts/aileron, with a more limited character set.
 
     Otherwise, load a "better than nothing" font.
 

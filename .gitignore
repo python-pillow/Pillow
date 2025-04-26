@@ -19,6 +19,7 @@ lib64/
 parts/
 sdist/
 var/
+wheelhouse/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -89,6 +90,10 @@ Tests/images/jpeg2000
 Tests/images/msp
 Tests/images/picins
 Tests/images/sunraster
+
+# Test and dependency downloads
+pillow-depends-main.zip
+pillow-test-images.zip
 
 # pyinstaller
 *.spec

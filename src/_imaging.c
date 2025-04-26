@@ -76,6 +76,13 @@
 
 #ifdef HAVE_LIBJPEG
 #include "jconfig.h"
+#ifdef LIBJPEG_TURBO_VERSION
+#define JCONFIG_INCLUDED
+#ifdef __CYGWIN__
+#define _BASETSD_H
+#endif
+#include "jpeglib.h"
+#endif
 #endif
 
 #ifdef HAVE_LIBZ
@@ -221,6 +228,93 @@ int
 PyImaging_GetBuffer(PyObject *buffer, Py_buffer *view) {
     /* must call check_buffer first! */
     return PyObject_GetBuffer(buffer, view, PyBUF_SIMPLE);
+}
+
+/* -------------------------------------------------------------------- */
+/* Arrow HANDLING                                                       */
+/* -------------------------------------------------------------------- */
+
+PyObject *
+ArrowError(int err) {
+    if (err == IMAGING_CODEC_MEMORY) {
+        return ImagingError_MemoryError();
+    }
+    if (err == IMAGING_ARROW_INCOMPATIBLE_MODE) {
+        return ImagingError_ValueError("Incompatible Pillow mode for Arrow array");
+    }
+    if (err == IMAGING_ARROW_MEMORY_LAYOUT) {
+        return ImagingError_ValueError(
+            "Image is in multiple array blocks, use imaging_new_block for zero copy"
+        );
+    }
+    return ImagingError_ValueError("Unknown error");
+}
+
+void
+ReleaseArrowSchemaPyCapsule(PyObject *capsule) {
+    struct ArrowSchema *schema =
+        (struct ArrowSchema *)PyCapsule_GetPointer(capsule, "arrow_schema");
+    if (schema->release != NULL) {
+        schema->release(schema);
+    }
+    free(schema);
+}
+
+PyObject *
+ExportArrowSchemaPyCapsule(ImagingObject *self) {
+    struct ArrowSchema *schema =
+        (struct ArrowSchema *)calloc(1, sizeof(struct ArrowSchema));
+    int err = export_imaging_schema(self->image, schema);
+    if (err == 0) {
+        return PyCapsule_New(schema, "arrow_schema", ReleaseArrowSchemaPyCapsule);
+    }
+    free(schema);
+    return ArrowError(err);
+}
+
+void
+ReleaseArrowArrayPyCapsule(PyObject *capsule) {
+    struct ArrowArray *array =
+        (struct ArrowArray *)PyCapsule_GetPointer(capsule, "arrow_array");
+    if (array->release != NULL) {
+        array->release(array);
+    }
+    free(array);
+}
+
+PyObject *
+ExportArrowArrayPyCapsule(ImagingObject *self) {
+    struct ArrowArray *array =
+        (struct ArrowArray *)calloc(1, sizeof(struct ArrowArray));
+    int err = export_imaging_array(self->image, array);
+    if (err == 0) {
+        return PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
+    }
+    free(array);
+    return ArrowError(err);
+}
+
+static PyObject *
+_new_arrow(PyObject *self, PyObject *args) {
+    char *mode;
+    int xsize, ysize;
+    PyObject *schema_capsule, *array_capsule;
+    PyObject *ret;
+
+    if (!PyArg_ParseTuple(
+            args, "s(ii)OO", &mode, &xsize, &ysize, &schema_capsule, &array_capsule
+        )) {
+        return NULL;
+    }
+
+    // ImagingBorrowArrow is responsible for retaining the array_capsule
+    ret =
+        PyImagingNew(ImagingNewArrow(mode, xsize, ysize, schema_capsule, array_capsule)
+        );
+    if (!ret) {
+        return ImagingError_ValueError("Invalid Arrow array mode or size mismatch");
+    }
+    return ret;
 }
 
 /* -------------------------------------------------------------------- */
@@ -466,8 +560,7 @@ getpixel(Imaging im, ImagingAccess access, int x, int y) {
     }
 
     /* unknown type */
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static char *
@@ -860,7 +953,7 @@ _color_lut_3d(ImagingObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "siiiiiO:color_lut_3d",
+            "sii(iii)O:color_lut_3d",
             &mode,
             &filter,
             &table_channels,
@@ -958,8 +1051,7 @@ _convert2(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1008,10 +1100,6 @@ _convert_transparent(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _copy(ImagingObject *self, PyObject *args) {
-    if (!PyArg_ParseTuple(args, "")) {
-        return NULL;
-    }
-
     return PyImagingNew(ImagingCopy(self->image));
 }
 
@@ -1207,8 +1295,7 @@ _getpixel(ImagingObject *self, PyObject *args) {
     }
 
     if (self->access == NULL) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     return getpixel(self->image, self->access, x, y);
@@ -1410,8 +1497,7 @@ _paste(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1579,16 +1665,12 @@ _putdata(ImagingObject *self, PyObject *args) {
                 int bigendian = 0;
                 if (image->type == IMAGING_TYPE_SPECIAL) {
                     // I;16*
-                    if (strcmp(image->mode, "I;16N") == 0) {
+                    if (strcmp(image->mode, "I;16B") == 0
 #ifdef WORDS_BIGENDIAN
-                        bigendian = 1;
-#else
-                        bigendian = 0;
+                        || strcmp(image->mode, "I;16N") == 0
 #endif
-                    } else if (strcmp(image->mode, "I;16B") == 0) {
+                    ) {
                         bigendian = 1;
-                    } else {
-                        bigendian = 0;
                     }
                 }
                 for (i = x = y = 0; i < n; i++) {
@@ -1688,8 +1770,7 @@ _putdata(ImagingObject *self, PyObject *args) {
 
     Py_XDECREF(seq);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1749,8 +1830,7 @@ _putpalette(ImagingObject *self, PyObject *args) {
     self->image->palette->size = palettesize * 8 / bits;
     unpack(self->image->palette->palette, palette, self->image->palette->size);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1774,8 +1854,7 @@ _putpalettealpha(ImagingObject *self, PyObject *args) {
     strcpy(self->image->palette->mode, "RGBA");
     self->image->palette->palette[index * 4 + 3] = (UINT8)alpha;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1802,8 +1881,7 @@ _putpalettealphas(ImagingObject *self, PyObject *args) {
         self->image->palette->palette[i * 4 + 3] = (UINT8)values[i];
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1839,8 +1917,7 @@ _putpixel(ImagingObject *self, PyObject *args) {
         self->access->put_pixel(im, x, y, ink);
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -2007,8 +2084,7 @@ im_setmode(ImagingObject *self, PyObject *args) {
     }
     self->access = ImagingAccessNew(im);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -2071,8 +2147,7 @@ _transform(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -2199,8 +2274,7 @@ _getbbox(ImagingObject *self, PyObject *args) {
     }
 
     if (!ImagingGetBBox(self->image, bbox, alpha_only)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     return Py_BuildValue("iiii", bbox[0], bbox[1], bbox[2], bbox[3]);
@@ -2280,8 +2354,7 @@ _getextrema(ImagingObject *self) {
         }
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -2344,8 +2417,7 @@ _fillband(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -2360,8 +2432,7 @@ _putband(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -2947,8 +3018,7 @@ _draw_arc(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -2985,8 +3055,7 @@ _draw_bitmap(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -3042,8 +3111,7 @@ _draw_chord(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -3097,8 +3165,7 @@ _draw_ellipse(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -3161,8 +3228,7 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
 
     free(xy);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -3193,8 +3259,7 @@ _draw_points(ImagingDrawObject *self, PyObject *args) {
 
     free(xy);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 /* from outline.c */
@@ -3222,8 +3287,7 @@ _draw_outline(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -3279,8 +3343,7 @@ _draw_pieslice(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -3331,8 +3394,7 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
 
     free(ixy);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -3386,8 +3448,7 @@ _draw_rectangle(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static struct PyMethodDef _draw_methods[] = {
@@ -3592,8 +3653,7 @@ _save_ppm(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 /* -------------------------------------------------------------------- */
@@ -3674,16 +3734,17 @@ static struct PyMethodDef methods[] = {
     /* Unsharpmask extension */
     {"gaussian_blur", (PyCFunction)_gaussian_blur, METH_VARARGS},
     {"unsharp_mask", (PyCFunction)_unsharp_mask, METH_VARARGS},
-
     {"box_blur", (PyCFunction)_box_blur, METH_VARARGS},
 
     /* Special effects */
     {"effect_spread", (PyCFunction)_effect_spread, METH_VARARGS},
 
     /* Misc. */
-    {"new_block", (PyCFunction)_new_block, METH_VARARGS},
-
     {"save_ppm", (PyCFunction)_save_ppm, METH_VARARGS},
+
+    /* arrow */
+    {"__arrow_c_schema__", (PyCFunction)ExportArrowSchemaPyCapsule, METH_VARARGS},
+    {"__arrow_c_array__", (PyCFunction)ExportArrowArrayPyCapsule, METH_VARARGS},
 
     {NULL, NULL} /* sentinel */
 };
@@ -3707,16 +3768,40 @@ _getattr_bands(ImagingObject *self, void *closure) {
 
 static PyObject *
 _getattr_id(ImagingObject *self, void *closure) {
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "id property is deprecated and will be removed in Pillow 12 (2025-10-15)",
+            1
+        ) < 0) {
+        return NULL;
+    }
     return PyLong_FromSsize_t((Py_ssize_t)self->image);
+}
+
+static void
+_ptr_destructor(PyObject *capsule) {
+    PyObject *self = (PyObject *)PyCapsule_GetContext(capsule);
+    Py_DECREF(self);
 }
 
 static PyObject *
 _getattr_ptr(ImagingObject *self, void *closure) {
-    return PyCapsule_New(self->image, IMAGING_MAGIC, NULL);
+    PyObject *capsule = PyCapsule_New(self->image, IMAGING_MAGIC, _ptr_destructor);
+    Py_INCREF(self);
+    PyCapsule_SetContext(capsule, self);
+    return capsule;
 }
 
 static PyObject *
 _getattr_unsafe_ptrs(ImagingObject *self, void *closure) {
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "unsafe_ptrs property is deprecated and will be removed in Pillow 12 "
+            "(2025-10-15)",
+            1
+        ) < 0) {
+        return NULL;
+    }
     return Py_BuildValue(
         "(sn)(sn)(sn)",
         "image8",
@@ -3728,6 +3813,11 @@ _getattr_unsafe_ptrs(ImagingObject *self, void *closure) {
     );
 }
 
+static PyObject *
+_getattr_readonly(ImagingObject *self, void *closure) {
+    return PyLong_FromLong(self->image->read_only);
+}
+
 static struct PyGetSetDef getsetters[] = {
     {"mode", (getter)_getattr_mode},
     {"size", (getter)_getattr_size},
@@ -3735,6 +3825,7 @@ static struct PyGetSetDef getsetters[] = {
     {"id", (getter)_getattr_id},
     {"ptr", (getter)_getattr_ptr},
     {"unsafe_ptrs", (getter)_getattr_unsafe_ptrs},
+    {"readonly", (getter)_getattr_readonly},
     {NULL}
 };
 
@@ -3775,102 +3866,26 @@ static PySequenceMethods image_as_sequence = {
 /* type description */
 
 static PyTypeObject Imaging_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "ImagingCore", /*tp_name*/
-    sizeof(ImagingObject),                        /*tp_basicsize*/
-    0,                                            /*tp_itemsize*/
-    /* methods */
-    (destructor)_dealloc, /*tp_dealloc*/
-    0,                    /*tp_vectorcall_offset*/
-    0,                    /*tp_getattr*/
-    0,                    /*tp_setattr*/
-    0,                    /*tp_as_async*/
-    0,                    /*tp_repr*/
-    0,                    /*tp_as_number*/
-    &image_as_sequence,   /*tp_as_sequence*/
-    0,                    /*tp_as_mapping*/
-    0,                    /*tp_hash*/
-    0,                    /*tp_call*/
-    0,                    /*tp_str*/
-    0,                    /*tp_getattro*/
-    0,                    /*tp_setattro*/
-    0,                    /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,   /*tp_flags*/
-    0,                    /*tp_doc*/
-    0,                    /*tp_traverse*/
-    0,                    /*tp_clear*/
-    0,                    /*tp_richcompare*/
-    0,                    /*tp_weaklistoffset*/
-    0,                    /*tp_iter*/
-    0,                    /*tp_iternext*/
-    methods,              /*tp_methods*/
-    0,                    /*tp_members*/
-    getsetters,           /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingCore",
+    .tp_basicsize = sizeof(ImagingObject),
+    .tp_dealloc = (destructor)_dealloc,
+    .tp_as_sequence = &image_as_sequence,
+    .tp_methods = methods,
+    .tp_getset = getsetters,
 };
 
 static PyTypeObject ImagingFont_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "ImagingFont", /*tp_name*/
-    sizeof(ImagingFontObject),                    /*tp_basicsize*/
-    0,                                            /*tp_itemsize*/
-    /* methods */
-    (destructor)_font_dealloc, /*tp_dealloc*/
-    0,                         /*tp_vectorcall_offset*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_as_async*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash*/
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
-    0,                         /*tp_doc*/
-    0,                         /*tp_traverse*/
-    0,                         /*tp_clear*/
-    0,                         /*tp_richcompare*/
-    0,                         /*tp_weaklistoffset*/
-    0,                         /*tp_iter*/
-    0,                         /*tp_iternext*/
-    _font_methods,             /*tp_methods*/
-    0,                         /*tp_members*/
-    0,                         /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingFont",
+    .tp_basicsize = sizeof(ImagingFontObject),
+    .tp_dealloc = (destructor)_font_dealloc,
+    .tp_methods = _font_methods,
 };
 
 static PyTypeObject ImagingDraw_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "ImagingDraw", /*tp_name*/
-    sizeof(ImagingDrawObject),                    /*tp_basicsize*/
-    0,                                            /*tp_itemsize*/
-    /* methods */
-    (destructor)_draw_dealloc, /*tp_dealloc*/
-    0,                         /*tp_vectorcall_offset*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_as_async*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash*/
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
-    0,                         /*tp_doc*/
-    0,                         /*tp_traverse*/
-    0,                         /*tp_clear*/
-    0,                         /*tp_richcompare*/
-    0,                         /*tp_weaklistoffset*/
-    0,                         /*tp_iter*/
-    0,                         /*tp_iternext*/
-    _draw_methods,             /*tp_methods*/
-    0,                         /*tp_members*/
-    0,                         /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingDraw",
+    .tp_basicsize = sizeof(ImagingDrawObject),
+    .tp_dealloc = (destructor)_draw_dealloc,
+    .tp_methods = _draw_methods,
 };
 
 static PyMappingMethods pixel_access_as_mapping = {
@@ -3882,20 +3897,10 @@ static PyMappingMethods pixel_access_as_mapping = {
 /* type description */
 
 static PyTypeObject PixelAccess_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "PixelAccess", /*tp_name*/
-    sizeof(PixelAccessObject),                    /*tp_basicsize*/
-    0,                                            /*tp_itemsize*/
-    /* methods */
-    (destructor)pixel_access_dealloc, /*tp_dealloc*/
-    0,                                /*tp_vectorcall_offset*/
-    0,                                /*tp_getattr*/
-    0,                                /*tp_setattr*/
-    0,                                /*tp_as_async*/
-    0,                                /*tp_repr*/
-    0,                                /*tp_as_number*/
-    0,                                /*tp_as_sequence*/
-    &pixel_access_as_mapping,         /*tp_as_mapping*/
-    0                                 /*tp_hash*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "PixelAccess",
+    .tp_basicsize = sizeof(PixelAccessObject),
+    .tp_dealloc = (destructor)pixel_access_dealloc,
+    .tp_as_mapping = &pixel_access_as_mapping,
 };
 
 /* -------------------------------------------------------------------- */
@@ -3960,8 +3965,7 @@ _reset_stats(PyObject *self, PyObject *args) {
     arena->stats_freed_blocks = 0;
     MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -4021,8 +4025,7 @@ _set_alignment(PyObject *self, PyObject *args) {
     ImagingDefaultArena.alignment = alignment;
     MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -4046,8 +4049,7 @@ _set_block_size(PyObject *self, PyObject *args) {
     ImagingDefaultArena.block_size = block_size;
     MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -4075,8 +4077,22 @@ _set_blocks_max(PyObject *self, PyObject *args) {
         return ImagingError_MemoryError();
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+_set_use_block_allocator(PyObject *self, PyObject *args) {
+    int use_block_allocator;
+    if (!PyArg_ParseTuple(args, "i:set_use_block_allocator", &use_block_allocator)) {
+        return NULL;
+    }
+    ImagingMemorySetBlockAllocator(&ImagingDefaultArena, use_block_allocator);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+_get_use_block_allocator(PyObject *self, PyObject *args) {
+    return PyLong_FromLong(ImagingDefaultArena.use_block_allocator);
 }
 
 static PyObject *
@@ -4091,8 +4107,7 @@ _clear_cache(PyObject *self, PyObject *args) {
     ImagingMemoryClearCache(&ImagingDefaultArena, i);
     MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 /* -------------------------------------------------------------------- */
@@ -4137,6 +4152,8 @@ extern PyObject *
 PyImaging_ZipDecoderNew(PyObject *self, PyObject *args);
 
 /* Encoders (in encode.c) */
+extern PyObject *
+PyImaging_BcnEncoderNew(PyObject *self, PyObject *args);
 extern PyObject *
 PyImaging_EpsEncoderNew(PyObject *self, PyObject *args);
 extern PyObject *
@@ -4198,6 +4215,8 @@ static PyMethodDef functions[] = {
     {"blend", (PyCFunction)_blend, METH_VARARGS},
     {"fill", (PyCFunction)_fill, METH_VARARGS},
     {"new", (PyCFunction)_new, METH_VARARGS},
+    {"new_block", (PyCFunction)_new_block, METH_VARARGS},
+    {"new_arrow", (PyCFunction)_new_arrow, METH_VARARGS},
     {"merge", (PyCFunction)_merge, METH_VARARGS},
 
     /* Functions */
@@ -4205,6 +4224,7 @@ static PyMethodDef functions[] = {
 
     /* Codecs */
     {"bcn_decoder", (PyCFunction)PyImaging_BcnDecoderNew, METH_VARARGS},
+    {"bcn_encoder", (PyCFunction)PyImaging_BcnEncoderNew, METH_VARARGS},
     {"bit_decoder", (PyCFunction)PyImaging_BitDecoderNew, METH_VARARGS},
     {"eps_encoder", (PyCFunction)PyImaging_EpsEncoderNew, METH_VARARGS},
     {"fli_decoder", (PyCFunction)PyImaging_FliDecoderNew, METH_VARARGS},
@@ -4266,7 +4286,6 @@ static PyMethodDef functions[] = {
     {"effect_noise", (PyCFunction)_effect_noise, METH_VARARGS},
     {"linear_gradient", (PyCFunction)_linear_gradient, METH_VARARGS},
     {"radial_gradient", (PyCFunction)_radial_gradient, METH_VARARGS},
-    {"wedge", (PyCFunction)_linear_gradient, METH_VARARGS}, /* Compatibility */
 
     /* Drawing support stuff */
     {"font", (PyCFunction)_font_new, METH_VARARGS},
@@ -4284,9 +4303,11 @@ static PyMethodDef functions[] = {
     {"get_alignment", (PyCFunction)_get_alignment, METH_VARARGS},
     {"get_block_size", (PyCFunction)_get_block_size, METH_VARARGS},
     {"get_blocks_max", (PyCFunction)_get_blocks_max, METH_VARARGS},
+    {"get_use_block_allocator", (PyCFunction)_get_use_block_allocator, METH_VARARGS},
     {"set_alignment", (PyCFunction)_set_alignment, METH_VARARGS},
     {"set_block_size", (PyCFunction)_set_block_size, METH_VARARGS},
     {"set_blocks_max", (PyCFunction)_set_blocks_max, METH_VARARGS},
+    {"set_use_block_allocator", (PyCFunction)_set_use_block_allocator, METH_VARARGS},
     {"clear_cache", (PyCFunction)_clear_cache, METH_VARARGS},
 
     {NULL, NULL} /* sentinel */
@@ -4349,6 +4370,15 @@ setup_module(PyObject *m) {
     Py_INCREF(have_libjpegturbo);
     PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", have_libjpegturbo);
 
+    PyObject *have_mozjpeg;
+#ifdef JPEG_C_PARAM_SUPPORTED
+    have_mozjpeg = Py_True;
+#else
+    have_mozjpeg = Py_False;
+#endif
+    Py_INCREF(have_mozjpeg);
+    PyModule_AddObject(m, "HAVE_MOZJPEG", have_mozjpeg);
+
     PyObject *have_libimagequant;
 #ifdef HAVE_LIBIMAGEQUANT
     have_libimagequant = Py_True;
@@ -4378,6 +4408,20 @@ setup_module(PyObject *m) {
         Py_XDECREF(v);
     }
 #endif
+
+    PyObject *have_zlibng;
+#ifdef ZLIBNG_VERSION
+    have_zlibng = Py_True;
+    {
+        PyObject *v = PyUnicode_FromString(ZLIBNG_VERSION);
+        PyDict_SetItemString(d, "zlib_ng_version", v ? v : Py_None);
+        Py_XDECREF(v);
+    }
+#else
+    have_zlibng = Py_False;
+#endif
+    Py_INCREF(have_zlibng);
+    PyModule_AddObject(m, "HAVE_ZLIBNG", have_zlibng);
 
 #ifdef HAVE_LIBTIFF
     {
@@ -4422,10 +4466,9 @@ PyInit__imaging(void) {
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_imaging", /* m_name */
-        NULL,       /* m_doc */
-        -1,         /* m_size */
-        functions,  /* m_methods */
+        .m_name = "_imaging",
+        .m_size = -1,
+        .m_methods = functions,
     };
 
     m = PyModule_Create(&module_def);

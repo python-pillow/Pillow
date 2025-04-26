@@ -93,6 +93,19 @@ class TestImageFile:
             assert p.image is not None
             assert (48, 48) == p.image.size
 
+    @pytest.mark.filterwarnings("ignore:Corrupt EXIF data")
+    def test_incremental_tiff(self) -> None:
+        with ImageFile.Parser() as p:
+            with open("Tests/images/hopper.tif", "rb") as f:
+                p.feed(f.read(1024))
+
+                # Check that insufficient data was given in the first feed
+                assert not p.image
+
+                p.feed(f.read())
+            assert p.image is not None
+            assert (128, 128) == p.image.size
+
     @skip_unless_feature("webp")
     def test_incremental_webp(self) -> None:
         with ImageFile.Parser() as p:
@@ -117,6 +130,26 @@ class TestImageFile:
             ImageFile.SAFEBLOCK = SAFEBLOCK
 
         assert_image_equal(im1, im2)
+
+    def test_tile_size(self) -> None:
+        with open("Tests/images/hopper.tif", "rb") as im_fp:
+            data = im_fp.read()
+
+        reads = []
+
+        class FP(BytesIO):
+            def read(self, size: int | None = None) -> bytes:
+                reads.append(size)
+                return super().read(size)
+
+        fp = FP(data)
+        with Image.open(fp) as im:
+            assert len(im.tile) == 7
+
+            im.load()
+
+        # Despite multiple tiles, assert only one tile caused a read of maxblock size
+        assert reads.count(im.decodermaxblock) == 1
 
     def test_raise_oserror(self) -> None:
         with pytest.warns(DeprecationWarning):
@@ -163,9 +196,8 @@ class TestImageFile:
                 b"0" * ImageFile.SAFEBLOCK
             )  # only SAFEBLOCK bytes, so that the header is truncated
         )
-        with pytest.raises(OSError) as e:
+        with pytest.raises(OSError, match="Truncated File Read"):
             BmpImagePlugin.BmpImageFile(b)
-        assert str(e.value) == "Truncated File Read"
 
     @skip_unless_feature("zlib")
     def test_truncated_with_errors(self) -> None:
@@ -178,13 +210,10 @@ class TestImageFile:
                 im.load()
 
     @skip_unless_feature("zlib")
-    def test_truncated_without_errors(self) -> None:
+    def test_truncated_without_errors(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/truncated_image.png") as im:
-            ImageFile.LOAD_TRUNCATED_IMAGES = True
-            try:
-                im.load()
-            finally:
-                ImageFile.LOAD_TRUNCATED_IMAGES = False
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+            im.load()
 
     @skip_unless_feature("zlib")
     def test_broken_datastream_with_errors(self) -> None:
@@ -193,13 +222,12 @@ class TestImageFile:
                 im.load()
 
     @skip_unless_feature("zlib")
-    def test_broken_datastream_without_errors(self) -> None:
+    def test_broken_datastream_without_errors(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         with Image.open("Tests/images/broken_data_stream.png") as im:
-            ImageFile.LOAD_TRUNCATED_IMAGES = True
-            try:
-                im.load()
-            finally:
-                ImageFile.LOAD_TRUNCATED_IMAGES = False
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+            im.load()
 
 
 class MockPyDecoder(ImageFile.PyDecoder):

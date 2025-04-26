@@ -3,8 +3,9 @@ from __future__ import annotations
 import os
 import sys
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar, Union
+from typing import Any, Protocol, TypeVar, Union
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from numbers import _IntegralLike as IntegralLike
 
@@ -14,6 +15,11 @@ if TYPE_CHECKING:
         NumpyArray = npt.NDArray[Any]  # requires numpy>=1.21
     except (ImportError, AttributeError):
         pass
+
+if sys.version_info >= (3, 13):
+    from types import CapsuleType
+else:
+    CapsuleType = object
 
 if sys.version_info >= (3, 12):
     from collections.abc import Buffer
@@ -39,10 +45,10 @@ _T_co = TypeVar("_T_co", covariant=True)
 
 
 class SupportsRead(Protocol[_T_co]):
-    def read(self, __length: int = ...) -> _T_co: ...
+    def read(self, length: int = ..., /) -> _T_co: ...
 
 
-StrOrBytesPath = Union[str, bytes, "os.PathLike[str]", "os.PathLike[bytes]"]
+StrOrBytesPath = Union[str, bytes, os.PathLike[str], os.PathLike[bytes]]
 
 
 __all__ = ["Buffer", "IntegralLike", "StrOrBytesPath", "SupportsRead", "TypeGuard"]

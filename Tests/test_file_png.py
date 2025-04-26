@@ -68,7 +68,7 @@ def roundtrip(im: Image.Image, **options: Any) -> PngImagePlugin.PngImageFile:
 
 @skip_unless_feature("zlib")
 class TestFilePng:
-    def get_chunks(self, filename: str) -> list[bytes]:
+    def get_chunks(self, filename: Path) -> list[bytes]:
         chunks = []
         with open(filename, "rb") as fp:
             fp.read(8)
@@ -89,7 +89,7 @@ class TestFilePng:
         assert version is not None
         assert re.search(r"\d+(\.\d+){1,3}(\.zlib\-ng)?$", version)
 
-        test_file = str(tmp_path / "temp.png")
+        test_file = tmp_path / "temp.png"
 
         hopper("RGB").save(test_file)
 
@@ -250,7 +250,7 @@ class TestFilePng:
             # each palette entry
             assert len(im.info["transparency"]) == 256
 
-            test_file = str(tmp_path / "temp.png")
+            test_file = tmp_path / "temp.png"
             im.save(test_file)
 
         # check if saved image contains same transparency
@@ -271,7 +271,7 @@ class TestFilePng:
             assert im.info["transparency"] == 164
             assert im.getpixel((31, 31)) == 164
 
-            test_file = str(tmp_path / "temp.png")
+            test_file = tmp_path / "temp.png"
             im.save(test_file)
 
         # check if saved image contains same transparency
@@ -294,7 +294,7 @@ class TestFilePng:
         assert im.getcolors() == [(100, (0, 0, 0, 0))]
 
         im = im.convert("P")
-        test_file = str(tmp_path / "temp.png")
+        test_file = tmp_path / "temp.png"
         im.save(test_file)
 
         # check if saved image contains same transparency
@@ -315,7 +315,7 @@ class TestFilePng:
                 im_rgba = im.convert("RGBA")
             assert im_rgba.getchannel("A").getcolors()[0][0] == num_transparent
 
-            test_file = str(tmp_path / "temp.png")
+            test_file = tmp_path / "temp.png"
             im.save(test_file)
 
             with Image.open(test_file) as test_im:
@@ -329,7 +329,7 @@ class TestFilePng:
     def test_save_rgb_single_transparency(self, tmp_path: Path) -> None:
         in_file = "Tests/images/caption_6_33_22.png"
         with Image.open(in_file) as im:
-            test_file = str(tmp_path / "temp.png")
+            test_file = tmp_path / "temp.png"
             im.save(test_file)
 
     def test_load_verify(self) -> None:
@@ -338,6 +338,8 @@ class TestFilePng:
         with Image.open(TEST_PNG_FILE) as im:
             # Assert that there is no unclosed file warning
             with warnings.catch_warnings():
+                warnings.simplefilter("error")
+
                 im.verify()
 
         with Image.open(TEST_PNG_FILE) as im:
@@ -361,7 +363,7 @@ class TestFilePng:
                 with pytest.raises((OSError, SyntaxError)):
                     im.verify()
 
-    def test_verify_ignores_crc_error(self) -> None:
+    def test_verify_ignores_crc_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # check ignores crc errors in ancillary chunks
 
         chunk_data = chunk(b"tEXt", b"spam")
@@ -371,24 +373,20 @@ class TestFilePng:
         with pytest.raises(SyntaxError):
             PngImagePlugin.PngImageFile(BytesIO(image_data))
 
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
-        try:
-            im = load(image_data)
-            assert im is not None
-        finally:
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
+        monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+        im = load(image_data)
+        assert im is not None
 
-    def test_verify_not_ignores_crc_error_in_required_chunk(self) -> None:
+    def test_verify_not_ignores_crc_error_in_required_chunk(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         # check does not ignore crc errors in required chunks
 
         image_data = MAGIC + IHDR[:-1] + b"q" + TAIL
 
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
-        try:
-            with pytest.raises(SyntaxError):
-                PngImagePlugin.PngImageFile(BytesIO(image_data))
-        finally:
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
+        monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+        with pytest.raises(SyntaxError):
+            PngImagePlugin.PngImageFile(BytesIO(image_data))
 
     def test_roundtrip_dpi(self) -> None:
         # Check dpi roundtripping
@@ -490,7 +488,7 @@ class TestFilePng:
         im = hopper("P")
         im.info["transparency"] = 0
 
-        f = str(tmp_path / "temp.png")
+        f = tmp_path / "temp.png"
         im.save(f)
 
         with Image.open(f) as im2:
@@ -551,7 +549,7 @@ class TestFilePng:
 
     def test_chunk_order(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/icc_profile.png") as im:
-            test_file = str(tmp_path / "temp.png")
+            test_file = tmp_path / "temp.png"
             im.convert("P").save(test_file, dpi=(100, 100))
 
         chunks = self.get_chunks(test_file)
@@ -578,6 +576,7 @@ class TestFilePng:
 
     def test_read_private_chunks(self) -> None:
         with Image.open("Tests/images/exif.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
             assert im.private_chunks == [(b"orNT", b"\x01")]
 
     def test_roundtrip_private_chunk(self) -> None:
@@ -598,8 +597,9 @@ class TestFilePng:
             (b"prIV", b"VALUE3", True),
         ]
 
-    def test_textual_chunks_after_idat(self) -> None:
+    def test_textual_chunks_after_idat(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/hopper.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
             assert "comment" in im.text
             for k, v in {
                 "date:create": "2014-09-04T09:37:08+03:00",
@@ -609,21 +609,24 @@ class TestFilePng:
 
         # Raises a SyntaxError in load_end
         with Image.open("Tests/images/broken_data_stream.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
             with pytest.raises(OSError):
                 assert isinstance(im.text, dict)
 
-        # Raises a UnicodeDecodeError in load_end
-        with Image.open("Tests/images/truncated_image.png") as im:
-            # The file is truncated
-            with pytest.raises(OSError):
-                im.text()
-            ImageFile.LOAD_TRUNCATED_IMAGES = True
-            assert isinstance(im.text, dict)
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
-
         # Raises an EOFError in load_end
         with Image.open("Tests/images/hopper_idat_after_image_end.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
             assert im.text == {"TXT": "VALUE", "ZIP": "VALUE"}
+
+        # Raises a UnicodeDecodeError in load_end
+        with Image.open("Tests/images/truncated_image.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
+
+            # The file is truncated
+            with pytest.raises(OSError):
+                im.text
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+            assert isinstance(im.text, dict)
 
     def test_unknown_compression_method(self) -> None:
         with pytest.raises(SyntaxError, match="Unknown compression method"):
@@ -649,21 +652,22 @@ class TestFilePng:
     @pytest.mark.parametrize(
         "cid", (b"IHDR", b"sRGB", b"pHYs", b"acTL", b"fcTL", b"fdAT")
     )
-    def test_truncated_chunks(self, cid: bytes) -> None:
+    def test_truncated_chunks(
+        self, cid: bytes, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         fp = BytesIO()
         with PngImagePlugin.PngStream(fp) as png:
             with pytest.raises(ValueError):
                 png.call(cid, 0, 0)
 
-            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
             png.call(cid, 0, 0)
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
     @pytest.mark.parametrize("save_all", (True, False))
     def test_specify_bits(self, save_all: bool, tmp_path: Path) -> None:
         im = hopper("P")
 
-        out = str(tmp_path / "temp.png")
+        out = tmp_path / "temp.png"
         im.save(out, bits=4, save_all=save_all)
 
         with Image.open(out) as reloaded:
@@ -673,8 +677,8 @@ class TestFilePng:
         im = Image.new("P", (1, 1))
         im.putpalette((1, 1, 1))
 
-        out = str(tmp_path / "temp.png")
-        im.save(str(tmp_path / "temp.png"))
+        out = tmp_path / "temp.png"
+        im.save(out)
 
         with Image.open(out) as reloaded:
             assert len(reloaded.png.im_palette[1]) == 3
@@ -723,11 +727,12 @@ class TestFilePng:
 
     def test_exif_save(self, tmp_path: Path) -> None:
         # Test exif is not saved from info
-        test_file = str(tmp_path / "temp.png")
+        test_file = tmp_path / "temp.png"
         with Image.open("Tests/images/exif.png") as im:
             im.save(test_file)
 
         with Image.open(test_file) as reloaded:
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
             assert reloaded._getexif() is None
 
         # Test passing in exif
@@ -743,7 +748,7 @@ class TestFilePng:
     )
     def test_exif_from_jpg(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
-            test_file = str(tmp_path / "temp.png")
+            test_file = tmp_path / "temp.png"
             im.save(test_file, exif=im.getexif())
 
         with Image.open(test_file) as reloaded:
@@ -752,7 +757,7 @@ class TestFilePng:
 
     def test_exif_argument(self, tmp_path: Path) -> None:
         with Image.open(TEST_PNG_FILE) as im:
-            test_file = str(tmp_path / "temp.png")
+            test_file = tmp_path / "temp.png"
             im.save(test_file, exif=b"exifstring")
 
         with Image.open(test_file) as reloaded:
@@ -770,38 +775,31 @@ class TestFilePng:
                 im.seek(1)
 
     @pytest.mark.parametrize("buffer", (True, False))
-    def test_save_stdout(self, buffer: bool) -> None:
-        old_stdout = sys.stdout
+    def test_save_stdout(self, buffer: bool, monkeypatch: pytest.MonkeyPatch) -> None:
 
         class MyStdOut:
             buffer = BytesIO()
 
         mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
 
-        sys.stdout = mystdout
+        monkeypatch.setattr(sys, "stdout", mystdout)
 
         with Image.open(TEST_PNG_FILE) as im:
             im.save(sys.stdout, "PNG")
-
-        # Reset stdout
-        sys.stdout = old_stdout
 
         if isinstance(mystdout, MyStdOut):
             mystdout = mystdout.buffer
         with Image.open(mystdout) as reloaded:
             assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
 
-    def test_truncated_end_chunk(self) -> None:
+    def test_truncated_end_chunk(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/truncated_end_chunk.png") as im:
             with pytest.raises(OSError):
                 im.load()
 
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
-        try:
-            with Image.open("Tests/images/truncated_end_chunk.png") as im:
-                assert_image_equal_tofile(im, "Tests/images/hopper.png")
-        finally:
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
+        monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+        with Image.open("Tests/images/truncated_end_chunk.png") as im:
+            assert_image_equal_tofile(im, "Tests/images/hopper.png")
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")
@@ -810,11 +808,11 @@ class TestTruncatedPngPLeaks(PillowLeakTestCase):
     mem_limit = 2 * 1024  # max increase in K
     iterations = 100  # Leak is 56k/iteration, this will leak 5.6megs
 
-    def test_leak_load(self) -> None:
+    def test_leak_load(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with open("Tests/images/hopper.png", "rb") as f:
             DATA = BytesIO(f.read(16 * 1024))
 
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
         with Image.open(DATA) as im:
             im.load()
 
@@ -822,7 +820,4 @@ class TestTruncatedPngPLeaks(PillowLeakTestCase):
             with Image.open(DATA) as im:
                 im.load()
 
-        try:
-            self._test_leak(core)
-        finally:
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
+        self._test_leak(core)

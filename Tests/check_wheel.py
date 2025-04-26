@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import platform
 import sys
 
 from PIL import features
+
+from .helper import is_pypy
 
 
 def test_wheel_modules() -> None:
@@ -34,10 +37,13 @@ def test_wheel_features() -> None:
         "fribidi",
         "harfbuzz",
         "libjpeg_turbo",
+        "zlib_ng",
         "xcb",
     }
 
     if sys.platform == "win32":
         expected_features.remove("xcb")
+    elif sys.platform == "darwin" and not is_pypy() and platform.processor() != "arm":
+        expected_features.remove("zlib_ng")
 
     assert set(features.get_supported_features()) == expected_features

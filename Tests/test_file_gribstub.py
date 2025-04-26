@@ -43,7 +43,7 @@ def test_load() -> None:
 def test_save(tmp_path: Path) -> None:
     # Arrange
     im = hopper()
-    tmpfile = str(tmp_path / "temp.grib")
+    tmpfile = tmp_path / "temp.grib"
 
     # Act / Assert: stub cannot save without an implemented handler
     with pytest.raises(OSError):
@@ -79,8 +79,8 @@ def test_handler(tmp_path: Path) -> None:
         im.load()
         assert handler.is_loaded()
 
-        temp_file = str(tmp_path / "temp.grib")
+        temp_file = tmp_path / "temp.grib"
         im.save(temp_file)
         assert handler.saved
 
-    GribStubImagePlugin._handler = None
+    GribStubImagePlugin.register_handler(None)

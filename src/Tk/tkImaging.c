@@ -56,19 +56,34 @@ static Tk_PhotoPutBlock_t TK_PHOTO_PUT_BLOCK;
 
 static Imaging
 ImagingFind(const char *name) {
-    Py_ssize_t id;
+    PyObject *capsule;
+    int direct_pointer = 0;
+    const char *expected = "capsule object \"" IMAGING_MAGIC "\" at 0x";
 
-    /* FIXME: use CObject instead? */
-#if defined(_WIN64)
-    id = _atoi64(name);
-#else
-    id = atol(name);
-#endif
-    if (!id) {
+    if (name[0] == '<') {
+        name++;
+    } else {
+        // Special case for PyPy, where the string representation of a Capsule
+        // refers directly to the pointer itself, not to the PyCapsule object.
+        direct_pointer = 1;
+    }
+
+    if (strncmp(name, expected, strlen(expected))) {
         return NULL;
     }
 
-    return (Imaging)id;
+    capsule = (PyObject *)strtoull(name + strlen(expected), NULL, 16);
+
+    if (direct_pointer) {
+        return (Imaging)capsule;
+    }
+
+    if (!PyCapsule_IsValid(capsule, IMAGING_MAGIC)) {
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", IMAGING_MAGIC);
+        return NULL;
+    }
+
+    return (Imaging)PyCapsule_GetPointer(capsule, IMAGING_MAGIC);
 }
 
 static int

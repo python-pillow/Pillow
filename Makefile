@@ -17,13 +17,15 @@ coverage:
 .PHONY: doc
 .PHONY: html
 doc html:
-	python3 -c "import PIL" > /dev/null 2>&1 || python3 -m pip install .
 	$(MAKE) -C docs html
 
 .PHONY: htmlview
 htmlview:
-	python3 -c "import PIL" > /dev/null 2>&1 || python3 -m pip install .
 	$(MAKE) -C docs htmlview
+
+.PHONY: htmllive
+htmllive:
+	$(MAKE) -C docs htmllive
 
 .PHONY: doccheck
 doccheck:
@@ -45,6 +47,7 @@ help:
 	@echo "  docserve           run an HTTP server on the docs directory"
 	@echo "  html               make HTML docs"
 	@echo "  htmlview           open the index page built by the html target in your browser"
+	@echo "  htmllive           rebuild and reload HTML files in your browser"
 	@echo "  install            make and install"
 	@echo "  install-coverage   make and install with C coverage"
 	@echo "  lint               run the lint checks"
@@ -117,7 +120,7 @@ lint-fix:
 	python3 -c "import black" > /dev/null 2>&1 || python3 -m pip install black
 	python3 -m black .
 	python3 -c "import ruff" > /dev/null 2>&1 || python3 -m pip install ruff
-	python3 -m ruff --fix .
+	python3 -m ruff check --fix .
 
 .PHONY: mypy
 mypy:

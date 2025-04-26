@@ -615,6 +615,7 @@ static const struct j2k_decode_unpacker j2k_unpackers[] = {
     {"RGBA", OPJ_CLRSPC_GRAY, 2, 0, j2ku_graya_la},
     {"RGBA", OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb},
     {"RGBA", OPJ_CLRSPC_SYCC, 3, 1, j2ku_sycc_rgb},
+    {"RGBA", OPJ_CLRSPC_GRAY, 4, 1, j2ku_srgba_rgba},
     {"RGBA", OPJ_CLRSPC_SRGB, 4, 1, j2ku_srgba_rgba},
     {"RGBA", OPJ_CLRSPC_SYCC, 4, 1, j2ku_sycca_rgba},
     {"CMYK", OPJ_CLRSPC_CMYK, 4, 1, j2ku_srgba_rgba},
@@ -640,7 +641,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
     opj_dparameters_t params;
     OPJ_COLOR_SPACE color_space;
     j2k_unpacker_t unpack = NULL;
-    size_t buffer_size = 0, tile_bytes = 0;
+    size_t tile_bytes = 0;
     unsigned n, tile_height, tile_width;
     int subsampling;
     int total_component_width = 0;
@@ -870,7 +871,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
             tile_info.data_size = tile_bytes;
         }
 
-        if (buffer_size < tile_info.data_size) {
+        if (tile_info.data_size > 0) {
             /* malloc check ok, overflow and tile size sanity check above */
             UINT8 *new = realloc(state->buffer, tile_info.data_size);
             if (!new) {
@@ -883,7 +884,6 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
                to valgrind errors. */
             memset(new, 0, tile_info.data_size);
             state->buffer = new;
-            buffer_size = tile_info.data_size;
         }
 
         if (!opj_decode_tile_data(
@@ -979,10 +979,3 @@ ImagingJpeg2KVersion(void) {
 }
 
 #endif /* HAVE_OPENJPEG */
-
-/*
- * Local Variables:
- * c-basic-offset: 4
- * End:
- *
- */
