@@ -619,8 +619,10 @@ JpegXlDecoderVersion_str(void) {
 }
 
 static PyMethodDef jpegxlMethods[] = {
-    {"JpegXlDecoderVersion", JpegXlDecoderVersion_wrapper, METH_NOARGS, "JpegXlVersion"
-    },
+    {"JpegXlDecoderVersion",
+     JpegXlDecoderVersion_wrapper,
+     METH_NOARGS,
+     "JpegXlVersion"},
     {"PILJpegXlDecoder", _jxl_decoder_new, METH_VARARGS, "PILJpegXlDecoder"},
     {NULL, NULL}
 };
