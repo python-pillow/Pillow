@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import struct
 from io import BytesIO
+from typing import IO, Any
 
 from PIL import BmpImagePlugin, CurImagePlugin, Image, ImageFile
 from PIL._binary import i32le as i32
@@ -10,11 +11,11 @@ from PIL._binary import o16le as o16
 from PIL._binary import o32le as o32
 
 
-def _accept(s):
-    return s[:4] == b"RIFF"
+def _accept(prefix: bytes) -> bool:
+    return prefix[:4] == b"RIFF"
 
 
-def _save_frame(im: Image.Image, fp: BytesIO, filename: str, info: dict):
+def _save_frame(im: Image.Image, fp: BytesIO, info: dict[str, Any]) -> None:
     fp.write(b"\0\0\2\0")
     bmp = True
     s = info.get(
@@ -64,7 +65,9 @@ def _save_frame(im: Image.Image, fp: BytesIO, filename: str, info: dict):
             if bits != 32:
                 and_mask = Image.new("1", size)
                 ImageFile._save(
-                    and_mask, image_io, [("raw", (0, 0) + size, 0, ("1", 0, -1))]
+                    and_mask,
+                    image_io,
+                    [ImageFile._Tile("raw", (0, 0) + size, 0, ("1", 0, -1))],
                 )
             else:
                 frame.alpha = True
@@ -87,7 +90,7 @@ def _save_frame(im: Image.Image, fp: BytesIO, filename: str, info: dict):
         fp.seek(current)
 
 
-def _write_single_frame(im: Image.Image, fp: BytesIO, filename: str):
+def _write_single_frame(im: Image.Image, fp: IO[bytes]) -> None:
     fp.write(b"anih")
     anih = o32(36) + o32(36) + (o32(1) * 2) + (o32(0) * 4) + o32(60) + o32(1)
     fp.write(anih)
@@ -99,7 +102,7 @@ def _write_single_frame(im: Image.Image, fp: BytesIO, filename: str):
     fp.write(b"icon" + o32(0))
     icon_offset = fp.tell()
     with BytesIO(b"") as icon_fp:
-        _save_frame(im, icon_fp, filename, im.encoderinfo)
+        _save_frame(im, icon_fp, im.encoderinfo)
         icon_fp.seek(0)
         icon_data = icon_fp.read()
 
@@ -117,7 +120,7 @@ def _write_single_frame(im: Image.Image, fp: BytesIO, filename: str):
     fp.seek(fram_end)
 
 
-def _write_multiple_frames(im: Image.Image, fp: BytesIO, filename: str):
+def _write_multiple_frames(im: Image.Image, fp: IO[bytes]) -> None:
     anih_offset = fp.tell()
     fp.write(b"anih" + o32(36))
     fp.write(o32(0) * 9)
@@ -132,7 +135,7 @@ def _write_multiple_frames(im: Image.Image, fp: BytesIO, filename: str):
         fp.write(b"icon" + o32(0))
         icon_offset = fp.tell()
         with BytesIO(b"") as icon_fp:
-            _save_frame(frame, icon_fp, filename, im.encoderinfo)
+            _save_frame(frame, icon_fp, im.encoderinfo)
             icon_fp.seek(0)
             icon_data = icon_fp.read()
 
@@ -216,7 +219,7 @@ def _write_multiple_frames(im: Image.Image, fp: BytesIO, filename: str):
     fp.seek(fram_end)
 
 
-def _write_info(im: Image.Image, fp: BytesIO, filename: str):
+def _write_info(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.write(b"LIST" + o32(0))
     list_offset = fp.tell()
 
@@ -263,7 +266,7 @@ def _write_info(im: Image.Image, fp: BytesIO, filename: str):
     fp.seek(info_end)
 
 
-def _save(im: Image.Image, fp: BytesIO, filename: str):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.write(b"RIFF\x00\x00\x00\x00")
     riff_offset = fp.tell()
 
@@ -272,9 +275,9 @@ def _save(im: Image.Image, fp: BytesIO, filename: str):
 
     frames = im.encoderinfo.get("append_images", [])
     if frames:
-        _write_multiple_frames(im, fp, filename)
+        _write_multiple_frames(im, fp)
     else:
-        _write_single_frame(im, fp, filename)
+        _write_single_frame(im, fp)
     pass
 
     riff_end = fp.tell()
@@ -352,7 +355,8 @@ class AniFile:
         if self.rate is None:
             self.rate = [self.anih["iDispRate"] for i in range(self.anih["nFrames"])]
 
-    def frame(self, frame):
+    def frame(self, frame: int) -> CurImagePlugin.CurImageFile:
+        assert self.anih is not None
         if frame > self.anih["nFrames"]:
             msg = "Frame index out of animation bounds"
             raise EOFError(msg)
@@ -361,13 +365,12 @@ class AniFile:
         self.buf.seek(offset)
         data = self.buf.read(size)
 
-        im = CurImagePlugin.CurImageFile(BytesIO(data))
-        return im
+        return CurImagePlugin.CurImageFile(BytesIO(data))
 
-    def sizes(self):
+    def sizes(self) -> list[int]:
         return [data["size"] for data in self.image_data]
 
-    def hotspots(self):
+    def hotspots(self) -> None:
         pass
 
 
@@ -398,10 +401,12 @@ class AniImageFile(ImageFile.ImageFile):
     format = "ANI"
     format_description = "Windows Animated Cursor"
 
-    def _open(self):
+    def _open(self) -> None:
         self.ani = AniFile(self.fp)
         self.info["seq"] = self.ani.seq
         self.info["rate"] = self.ani.rate
+
+        assert self.ani.anih is not None
         self.info["frames"] = self.ani.anih["nFrames"]
 
         self.frame = 0
@@ -410,24 +415,24 @@ class AniImageFile(ImageFile.ImageFile):
         self.size = self.im.size
 
     @property
-    def size(self):
+    def size(self) -> tuple[int, int]:
         return self._size
 
     @size.setter
-    def size(self, value):
+    def size(self, value: tuple[int, int]) -> None:
         if value not in self.info["sizes"]:
             msg = "This is not one of the allowed sizes of this image"
             raise ValueError(msg)
         self._size = value
 
-    def load(self):
+    def load(self) -> None:
         im = self.ani.frame(self.frame)
         self.info["sizes"] = im.info["sizes"]
         self.info["hotspots"] = im.info["hotspots"]
         self.im = im.im
         self._mode = im.mode
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if frame > self.info["frames"] - 1 or frame < 0:
             msg = "Frame index out of animation bounds"
             raise EOFError(msg)
