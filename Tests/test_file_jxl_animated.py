@@ -59,7 +59,8 @@ def test_seeking() -> None:
                 assert im1.info["timestamp"] == im1.info["timestamp"]
             assert total_dur == 8000
 
-            assert im1.tell() == 0 and im2.tell() == 0
+            assert im1.tell() == 0
+            assert im2.tell() == 0
 
             im1.seek(0)
             im1.load()

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import struct
 from io import BytesIO
+from typing import Any
 
 from . import Image, ImageFile
 
@@ -81,7 +82,7 @@ class JpegXlImageFile(ImageFile.ImageFile):
         exif_start_offset = struct.unpack(">I", exif[:4])[0]
         return exif[exif_start_offset + 4 :]
 
-    def _getexif(self) -> dict[str, str] | None:
+    def _getexif(self) -> dict[int, Any] | None:
         if "exif" not in self.info:
             return None
         return self.getexif()._get_merged_dict()
