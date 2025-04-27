@@ -55,10 +55,6 @@ singlehtml: html
 .PHONY: linkcheck
 linkcheck: BUILDER = linkcheck
 linkcheck: html
-linkcheck:
-	@echo
-	@echo "Link check complete; look for any errors in the above output " \
-	      "or in $(BUILDDIR)/linkcheck/output.txt."
 
 .PHONY: htmlview
 htmlview: html
