@@ -1,15 +1,15 @@
-# Release Checklist
+# Release checklist
 
 See https://pillow.readthedocs.io/en/stable/releasenotes/versioning.html for
 information about how the version numbers line up with releases.
 
-## Main Release
+## Main release
 
 Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 
 * [ ] Create a new issue and select the "Release" template.
 
-## Point Release
+## Point release
 
 Released as needed for security, installation or critical bug fixes.
 
@@ -39,7 +39,7 @@ Released as needed for security, installation or critical bug fixes.
   git push
   ```
 
-## Embargoed Release
+## Embargoed release
 
 Released as needed privately to individual vendors for critical security-related bug fixes.
 
@@ -63,7 +63,7 @@ Released as needed privately to individual vendors for critical security-related
   git push origin 2.5.x
   ```
 
-## Publicize Release
+## Publicize release
 
 * [ ] Announce release availability via [Mastodon](https://fosstodon.org/@pillow) e.g. https://fosstodon.org/@pillow/110639450470725321
 
@@ -71,7 +71,7 @@ Released as needed privately to individual vendors for critical security-related
 
 * [ ] Make sure the [default version for Read the Docs](https://pillow.readthedocs.io/en/stable/) is up-to-date with the release changes
 
-## Docker Images
+## Docker images
 
 * [ ] Update Pillow in the Docker Images repository
   ```bash
