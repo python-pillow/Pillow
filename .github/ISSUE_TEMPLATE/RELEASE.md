@@ -9,7 +9,7 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 
 * [ ] Open a release ticket e.g. https://github.com/python-pillow/Pillow/issues/3154
 * [ ] Develop and prepare release in `main` branch.
-  * [ ] Add release notes for 11.2.1 https://github.com/python-pillow/Pillow/pull/8885
+  * [ ] Add release notes e.g. https://github.com/python-pillow/Pillow/pull/8885
 * [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions) to confirm passing tests in `main` branch.
 * [ ] Check that all the wheel builds pass the tests in the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml) jobs by manually triggering them.
 * [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/), update version identifier in `src/PIL/_version.py`
