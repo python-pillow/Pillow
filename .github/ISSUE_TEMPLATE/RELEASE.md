@@ -36,7 +36,7 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 
 * [ ] Make sure the [default version for Read the Docs](https://pillow.readthedocs.io/en/stable/) is up-to-date with the release changes
 
-## Docker Images
+## Docker images
 
 * [ ] Update Pillow in the Docker Images repository
   ```bash
