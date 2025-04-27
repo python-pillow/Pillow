@@ -28,7 +28,7 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
   git push --all
    ```
 
-## Publicize Release
+## Publicize release
 
 * [ ] Announce release availability via [Mastodon](https://fosstodon.org/@pillow) e.g. https://fosstodon.org/@pillow/110639450470725321
 
