@@ -1,6 +1,7 @@
 ---
-name: Release
-about: Schedule a release
+name: "Maintainers only: Release"
+about: For maintainers to schedule a quarterly release
+labels: Release
 ---
 
 ## Main Release
