@@ -4,7 +4,7 @@ about: For maintainers to schedule a quarterly release
 labels: Release
 ---
 
-## Main Release
+## Main release
 
 Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 
