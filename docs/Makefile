@@ -46,21 +46,16 @@ html:
 
 .PHONY: dirhtml
 dirhtml: BUILDER = dirhtml
-dirhtml:
-	$(MAKE) install-sphinx
-	$(SPHINXBUILD) $(ALLSPHINXOPTS)
+dirhtml: html
 
 .PHONY: singlehtml
 singlehtml: BUILDER = singlehtml
-singlehtml:
-	$(MAKE) install-sphinx
-	$(SPHINXBUILD) $(ALLSPHINXOPTS)
+singlehtml: html
 
 .PHONY: linkcheck
 linkcheck: BUILDER = linkcheck
+linkcheck: html
 linkcheck:
-	$(MAKE) install-sphinx
-	$(SPHINXBUILD) $(ALLSPHINXOPTS)
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in $(BUILDDIR)/linkcheck/output.txt."
