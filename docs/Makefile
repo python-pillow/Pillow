@@ -5,9 +5,10 @@
 PYTHON        = python3
 SPHINXBUILD   = $(PYTHON) -m sphinx.cmd.build
 SPHINXOPTS    = --fail-on-warning --keep-going
-PAPER         =
 BUILDDIR      = _build
 BUILDER       = html
+JOBS          = auto
+PAPER         =
 
 # Internal variables.
 PAPEROPT_a4     = --define latex_paper_size=a4
@@ -15,6 +16,7 @@ PAPEROPT_letter = --define latex_paper_size=letter
 
 ALLSPHINXOPTS   = --builder $(BUILDER) \
                   --doctree-dir $(BUILDDIR)/doctrees \
+                  --jobs $(JOBS) \
                   $(PAPEROPT_$(PAPER)) \
                   $(SPHINXOPTS) \
                   . $(BUILDDIR)/$(BUILDER)
@@ -58,7 +60,7 @@ singlehtml:
 linkcheck: BUILDER = linkcheck
 linkcheck:
 	$(MAKE) install-sphinx
-	$(SPHINXBUILD) $(ALLSPHINXOPTS) -j auto
+	$(SPHINXBUILD) $(ALLSPHINXOPTS)
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in $(BUILDDIR)/linkcheck/output.txt."
