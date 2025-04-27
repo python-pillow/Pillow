@@ -7,14 +7,17 @@ SPHINXOPTS    =
 SPHINXBUILD   = $(PYTHON) -m sphinx.cmd.build
 PAPER         =
 BUILDDIR      = _build
+BUILDER       = html
 
 # Internal variables.
 PAPEROPT_a4     = --define latex_paper_size=a4
 PAPEROPT_letter = --define latex_paper_size=letter
 
-ALLSPHINXOPTS   = --doctree-dir $(BUILDDIR)/doctrees \
+ALLSPHINXOPTS   = --builder $(BUILDER) \
+                  --doctree-dir $(BUILDDIR)/doctrees \
                   $(PAPEROPT_$(PAPER)) \
-                  $(SPHINXOPTS) .
+                  $(SPHINXOPTS) \
+                  . $(BUILDDIR)/$(BUILDER)
 
 .PHONY: help
 help:
@@ -37,28 +40,31 @@ install-sphinx:
 .PHONY: html
 html:
 	$(MAKE) install-sphinx
-	$(SPHINXBUILD) --builder html --fail-on-warning --keep-going $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	$(SPHINXBUILD) --fail-on-warning --keep-going $(ALLSPHINXOPTS)
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 .PHONY: dirhtml
+dirhtml: BUILDER = dirhtml
 dirhtml:
 	$(MAKE) install-sphinx
-	$(SPHINXBUILD) --builder dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
+	$(SPHINXBUILD) $(ALLSPHINXOPTS)
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/dirhtml."
 
 .PHONY: singlehtml
+singlehtml: BUILDER = singlehtml
 singlehtml:
 	$(MAKE) install-sphinx
-	$(SPHINXBUILD) --builder singlehtml $(ALLSPHINXOPTS) $(BUILDDIR)/singlehtml
+	$(SPHINXBUILD) $(ALLSPHINXOPTS)
 	@echo
 	@echo "Build finished. The HTML page is in $(BUILDDIR)/singlehtml."
 
 .PHONY: linkcheck
+linkcheck: BUILDER = linkcheck
 linkcheck:
 	$(MAKE) install-sphinx
-	$(SPHINXBUILD) --builder linkcheck $(ALLSPHINXOPTS) $(BUILDDIR)/linkcheck -j auto
+	$(SPHINXBUILD) $(ALLSPHINXOPTS) -j auto
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in $(BUILDDIR)/linkcheck/output.txt."
