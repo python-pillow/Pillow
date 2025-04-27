@@ -7,7 +7,7 @@ information about how the version numbers line up with releases.
 
 Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 
-* [ ] Create a new issue and select the "Release" template.
+* [ ] Create a new issue and select the "Maintainers only: Release" template.
 
 ## Point release
 
