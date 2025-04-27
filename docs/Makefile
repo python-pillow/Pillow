@@ -41,24 +41,18 @@ install-sphinx:
 html:
 	$(MAKE) install-sphinx
 	$(SPHINXBUILD) --fail-on-warning --keep-going $(ALLSPHINXOPTS)
-	@echo
-	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 .PHONY: dirhtml
 dirhtml: BUILDER = dirhtml
 dirhtml:
 	$(MAKE) install-sphinx
 	$(SPHINXBUILD) $(ALLSPHINXOPTS)
-	@echo
-	@echo "Build finished. The HTML pages are in $(BUILDDIR)/dirhtml."
 
 .PHONY: singlehtml
 singlehtml: BUILDER = singlehtml
 singlehtml:
 	$(MAKE) install-sphinx
 	$(SPHINXBUILD) $(ALLSPHINXOPTS)
-	@echo
-	@echo "Build finished. The HTML page is in $(BUILDDIR)/singlehtml."
 
 .PHONY: linkcheck
 linkcheck: BUILDER = linkcheck
