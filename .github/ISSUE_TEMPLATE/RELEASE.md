@@ -16,8 +16,8 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 * [ ] Run pre-release check via `make release-test` in a freshly cloned repo.
 * [ ] Create branch and tag for release e.g.:
   ```bash
-  git branch [[MAJOR.MINOR.PATCH]]
-  git tag [[MAJOR.MINOR.PATCH]]
+  git branch [[MAJOR.MINOR]].0
+  git tag [[MAJOR.MINOR]].0
   git push --tags
   ```
 * [ ] Check the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml) has passed, including the "Upload release to PyPI" job. This will have been triggered by the new tag.
