@@ -11,7 +11,10 @@ BUILDDIR      = _build
 # Internal variables.
 PAPEROPT_a4     = --define latex_paper_size=a4
 PAPEROPT_letter = --define latex_paper_size=letter
-ALLSPHINXOPTS   = --doctree-dir $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
+
+ALLSPHINXOPTS   = --doctree-dir $(BUILDDIR)/doctrees \
+                  $(PAPEROPT_$(PAPER)) \
+                  $(SPHINXOPTS) .
 
 .PHONY: help
 help:
