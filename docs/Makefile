@@ -3,8 +3,8 @@
 
 # You can set these variables from the command line.
 PYTHON        = python3
-SPHINXOPTS    =
 SPHINXBUILD   = $(PYTHON) -m sphinx.cmd.build
+SPHINXOPTS    = --fail-on-warning --keep-going
 PAPER         =
 BUILDDIR      = _build
 BUILDER       = html
@@ -40,7 +40,7 @@ install-sphinx:
 .PHONY: html
 html:
 	$(MAKE) install-sphinx
-	$(SPHINXBUILD) --fail-on-warning --keep-going $(ALLSPHINXOPTS)
+	$(SPHINXBUILD) $(ALLSPHINXOPTS)
 
 .PHONY: dirhtml
 dirhtml: BUILDER = dirhtml
