@@ -16,7 +16,7 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 * [ ] Run pre-release check via `make release-test` in a freshly cloned repo.
 * [ ] Create branch and tag for release e.g.:
   ```bash
-  git branch [[MAJOR.MINOR]].0
+  git branch [[MAJOR.MINOR]].x
   git tag [[MAJOR.MINOR]].0
   git push --tags
   ```
