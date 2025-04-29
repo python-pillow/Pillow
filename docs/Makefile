@@ -4,7 +4,7 @@
 # You can set these variables from the command line.
 PYTHON        = python3
 SPHINXBUILD   = $(PYTHON) -m sphinx.cmd.build
-SPHINXOPTS    = --fail-on-warning --keep-going
+SPHINXOPTS    = --fail-on-warning
 BUILDDIR      = _build
 BUILDER       = html
 JOBS          = auto
