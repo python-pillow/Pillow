@@ -1,7 +1,7 @@
 .. _arrow-support:
 
 =============
-Arrow Support
+Arrow support
 =============
 
 `Arrow <https://arrow.apache.org/>`__
@@ -18,7 +18,7 @@ with any Arrow provider or consumer in the Python ecosystem.
   full-copy memory cost to reading an Arrow image.
 
 
-Data Formats
+Data formats
 ============
 
 Pillow currently supports exporting Arrow images in all modes
@@ -43,7 +43,7 @@ interpreted using the mode-specific interpretation of the bytes.
 The image mode must match the Arrow band format when reading single
 channel images.
 
-Memory Allocator
+Memory allocator
 ================
 
 Pillow's default memory allocator, the :ref:`block_allocator`,
@@ -59,7 +59,7 @@ To enable the single block allocator::
 
 Note that this is a global setting, not a per-image setting.
 
-Unsupported Features
+Unsupported features
 ====================
 
 * Table/dataframe protocol. We support a single array.
@@ -71,7 +71,7 @@ Unsupported Features
   parameter.
 * Array metadata.
 
-Internal Details
+Internal details
 ================
 
 Python Arrow C interface:

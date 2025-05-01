@@ -1,7 +1,7 @@
 6.0.0
 -----
 
-Backwards Incompatible Changes
+Backwards incompatible changes
 ==============================
 
 Python 3.4 dropped
@@ -32,7 +32,7 @@ Removed deprecated VERSION
 ``VERSION`` (the old PIL version, always 1.1.7) has been removed. Use ``__version__``
 instead.
 
-API Changes
+API changes
 ===========
 
 Deprecations
@@ -137,7 +137,7 @@ loaded, ``Image.MIME["PPM"]`` will now return the generic "image/x-portable-anym
 The TGA, PCX and ICO formats also now have MIME types: "image/x-tga", "image/x-pcx" and
 "image/x-icon" respectively.
 
-API Additions
+API additions
 =============
 
 DIB file format
@@ -186,7 +186,7 @@ EXIF data can now be read from and saved to PNG images. However, unlike other im
 formats, EXIF data is not guaranteed to be present in :py:attr:`~PIL.Image.Image.info`
 until :py:meth:`~PIL.Image.Image.load` has been called.
 
-Other Changes
+Other changes
 =============
 
 Reading new DDS image format

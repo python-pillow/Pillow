@@ -1,4 +1,4 @@
-Release Notes
+Release notes
 =============
 
 Pillow is released quarterly on January 2nd, April 1st, July 1st and October 15th.
