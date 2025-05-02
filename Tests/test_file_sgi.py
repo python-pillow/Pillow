@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from io import BytesIO
 from pathlib import Path
 
 import pytest
@@ -71,6 +72,15 @@ def test_invalid_file() -> None:
         SgiImagePlugin.SgiImageFile(invalid_file)
 
 
+def test_unsupported_image_mode() -> None:
+    with open("Tests/images/hopper.rgb", "rb") as fp:
+        data = fp.read()
+    data = data[:3] + b"\x03" + data[4:]
+    with pytest.raises(ValueError, match="Unsupported SGI image mode"):
+        with Image.open(BytesIO(data)):
+            pass
+
+
 def roundtrip(img: Image.Image, tmp_path: Path) -> None:
     out = tmp_path / "temp.sgi"
     img.save(out, format="sgi")
@@ -109,3 +119,11 @@ def test_unsupported_mode(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError):
         im.save(out, format="sgi")
+
+
+def test_unsupported_number_of_bytes_per_pixel(tmp_path: Path) -> None:
+    im = hopper()
+    out = tmp_path / "temp.sgi"
+
+    with pytest.raises(ValueError, match="Unsupported number of bytes per pixel"):
+        im.save(out, bpc=3)
