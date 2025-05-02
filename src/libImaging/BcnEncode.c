@@ -258,6 +258,9 @@ ImagingBcnEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
     UINT8 *dst = buf;
 
     for (;;) {
+        if (dst + 8 >= bytes + buf) {
+            break;
+        }
         if (n == 5) {
             encode_bc3_alpha(im, state, dst, 0);
             dst += 8;

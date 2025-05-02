@@ -511,3 +511,18 @@ def test_save_dx10_bc5(tmp_path: Path) -> None:
     im = hopper("L")
     with pytest.raises(OSError, match="only RGB mode can be written as BC5"):
         im.save(out, pixel_format="BC5")
+
+@pytest.mark.parametrize(
+    "pixel_format, mode",
+    (
+        ('DXT1', 'RGBA'),
+        ('DXT3', 'RGBA'),
+        ('BC2', 'RGBA'),
+        ('BC3', 'RGBA'),
+        ('BC5', 'RGB'),
+    ),
+)
+def test_save_large_file(tmp_path: Path, pixel_format: str, mode: str) -> None:
+    with hopper(mode).resize((440,440)) as im:
+        # should not error in valgrind
+        im.save(tmp_path / 'img.dds', 'DDS', pixel_format=pixel_format)
