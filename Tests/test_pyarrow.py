@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Any  # undone
-
 import pytest
 
 from PIL import Image
@@ -12,26 +10,13 @@ from .helper import (
     hopper,
 )
 
-pyarrow = pytest.importorskip("pyarrow", reason="PyArrow not installed")
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    import pyarrow
+else:
+    pyarrow = pytest.importorskip("pyarrow", reason="PyArrow not installed")
 
 TEST_IMAGE_SIZE = (10, 10)
-
-
-def _test_img_equals_pyarray(
-    img: Image.Image, arr: Any, mask: list[int] | None
-) -> None:
-    assert img.height * img.width == len(arr)
-    px = img.load()
-    assert px is not None
-    for x in range(0, img.size[0], int(img.size[0] / 10)):
-        for y in range(0, img.size[1], int(img.size[1] / 10)):
-            if mask:
-                for ix, elt in enumerate(mask):
-                    pixel = px[x, y]
-                    assert isinstance(pixel, tuple)
-                    assert pixel[ix] == arr[y * img.width + x].as_py()[elt]
-            else:
-                assert_deep_equal(px[x, y], arr[y * img.width + x].as_py())
 
 
 # really hard to get a non-nullable list type
@@ -55,16 +40,28 @@ fl_uint8_4_type = pyarrow.field(
         ("HSV", fl_uint8_4_type, [0, 1, 2]),
     ),
 )
-def test_to_array(mode: str, dtype: Any, mask: list[int] | None) -> None:
+def test_to_array(mode: str, dtype: pyarrow.DataType, mask: list[int] | None) -> None:
     img = hopper(mode)
 
     # Resize to non-square
     img = img.crop((3, 0, 124, 127))
     assert img.size == (121, 127)
 
-    arr = pyarrow.array(img)
-    _test_img_equals_pyarray(img, arr, mask)
+    arr = pyarrow.array(img)  # type: ignore[call-overload]
     assert arr.type == dtype
+    assert img.height * img.width == len(arr)
+
+    px = img.load()
+    assert px is not None
+    for x in range(0, img.size[0], int(img.size[0] / 10)):
+        for y in range(0, img.size[1], int(img.size[1] / 10)):
+            if mask:
+                for ix, elt in enumerate(mask):
+                    pixel = px[x, y]
+                    assert isinstance(pixel, tuple)
+                    assert pixel[ix] == arr[y * img.width + x].as_py()[elt]
+            else:
+                assert_deep_equal(px[x, y], arr[y * img.width + x].as_py())
 
     reloaded = Image.fromarrow(arr, mode, img.size)
 
@@ -79,8 +76,8 @@ def test_lifetime() -> None:
 
     img = hopper("L")
 
-    arr_1 = pyarrow.array(img)
-    arr_2 = pyarrow.array(img)
+    arr_1 = pyarrow.array(img)  # type: ignore[call-overload]
+    arr_2 = pyarrow.array(img)  # type: ignore[call-overload]
 
     del img
 
@@ -97,8 +94,8 @@ def test_lifetime2() -> None:
 
     img = hopper("L")
 
-    arr_1 = pyarrow.array(img)
-    arr_2 = pyarrow.array(img)
+    arr_1 = pyarrow.array(img)  # type: ignore[call-overload]
+    arr_2 = pyarrow.array(img)  # type: ignore[call-overload]
 
     assert arr_1.sum().as_py() > 0
     del arr_1
