@@ -105,7 +105,6 @@ def test_vtf_read(
         (VtfPF.RGB888, "Tests/images/vtf_rgb888.png", "RGB", 0.0),
         (VtfPF.BGR888, "Tests/images/vtf_bgr888.png", "RGB", 0.0),
         (VtfPF.DXT1, "Tests/images/vtf_dxt1.png", "RGBA", 3.0),
-        (VtfPF.DXT1_ONEBITALPHA, "Tests/images/vtf_dxt1A.png", "RGBA", 8.0),
         (VtfPF.RGBA8888, "Tests/images/vtf_rgba8888.png", "RGBA", 0),
     ],
 )

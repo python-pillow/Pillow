@@ -166,9 +166,6 @@ def _write_image(fp: IO[bytes], im: Image.Image, pixel_format: VtfPF) -> None:
         encoder = "bcn"
         encoder_args = (1,)
         im = im.convert("RGBA")
-    elif pixel_format == VtfPF.DXT1_ONEBITALPHA:
-        encoder = "bcn"
-        encoder_args = (1, "DXT1A")
     elif pixel_format == VtfPF.DXT3:
         encoder = "bcn"
         encoder_args = (3,)
@@ -321,9 +318,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     flags = CompiledVtfFlags(0)
 
-    if pixel_format == VtfPF.DXT1_ONEBITALPHA:
-        flags |= CompiledVtfFlags.ONEBITALPHA
-    elif pixel_format in (
+    if pixel_format in (
         VtfPF.DXT3,
         VtfPF.DXT5,
         VtfPF.RGBA8888,
@@ -332,8 +327,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         VtfPF.IA88,
     ):
         flags |= CompiledVtfFlags.EIGHTBITALPHA
-    else:
-        pass
     im = im.resize((_closest_power(im.width), _closest_power(im.height)))
     width, height = im.size
 
