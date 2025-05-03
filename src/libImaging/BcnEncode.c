@@ -1,234 +1,298 @@
 /*
- * The Python Imaging Library.
- * $Id$
+ * The Python Imaging Library
  *
- * encoder for packed bitfields (ST3C/DXT)
+ * encoder for DXT1-compressed data
  *
- * history:
- * 22-08-11 Initial implementation
+ * Format documentation:
+ *   https://web.archive.org/web/20170802060935/http://oss.sgi.com/projects/ogl-sample/registry/EXT/texture_compression_s3tc.txt
  *
- * Copyright (c) REDxEYE 2022.
- *
- * See the README file for information on usage and redistribution.
  */
 
 #include "Imaging.h"
-#include "Bcn.h"
-#include "math.h"
-
-#define PACK_SHORT_565(r, g, b) \
-    ((((b) << 8) & 0xF800) | (((g) << 3) & 0x7E0) | ((r) >> 3))
-
-#define UNPACK_SHORT_565(source, r, g, b) \
-    (r) = GET_BITS((source), 0, 5);       \
-    (g) = GET_BITS((source), 5, 6);       \
-    (b) = GET_BITS((source), 11, 5);
-
-#define WRITE_SHORT(buf, value) \
-    *(buf++) = value & 0xFF;    \
-    *(buf++) = value >> 8;
-
-#define WRITE_INT(buf, value)        \
-    WRITE_SHORT(buf, value & 0xFFFF) \
-    WRITE_SHORT(buf, value >> 16)
-
-#define WRITE_BC1_BLOCK(buf, block) \
-    WRITE_SHORT(buf, block.c0)      \
-    WRITE_SHORT(buf, block.c1)      \
-    WRITE_INT(buf, block.lut)
-
-static inline UINT16
-rgb565_diff(UINT16 c0, UINT16 c1) {
-    UINT8 r0, g0, b0, r1, g1, b1;
-    UNPACK_SHORT_565(c0, r0, g0, b0)
-    UNPACK_SHORT_565(c1, r1, g1, b1)
-    return ((UINT16)abs(r0 - r1)) + abs(g0 - g1) + abs(b0 - b1);
-}
-
-static inline UINT16
-rgb565_lerp(UINT16 c0, UINT16 c1, UINT8 a_fac, UINT8 b_fac) {
-    UINT8 r0, g0, b0, r1, g1, b1;
-    UNPACK_SHORT_565(c0, r0, g0, b0)
-    UNPACK_SHORT_565(c1, r1, g1, b1)
-    return PACK_SHORT_565(
-        (r0 * a_fac + r1 * b_fac) / (a_fac + b_fac),
-        (g0 * a_fac + g1 * b_fac) / (a_fac + b_fac),
-        (b0 * a_fac + b1 * b_fac) / (a_fac + b_fac)
-    );
-}
 
 typedef struct {
-    UINT16 value;
-    UINT8 frequency;
-} Color;
+    UINT8 color[3];
+} rgb;
 
-static void
-selection_sort(Color arr[], UINT32 n) {
-    UINT32 min_idx, i, j;
+typedef struct {
+    UINT8 color[4];
+} rgba;
 
-    for (i = 0; i < n - 1; i++) {
-        min_idx = i;
-        for (j = i + 1; j < n; j++) {
-            if (arr[j].frequency < arr[min_idx].frequency) {
-                min_idx = j;
-            }
-        }
-        SWAP(Color, arr[min_idx], arr[i]);
-    }
+static rgb
+decode_565(UINT16 x) {
+    rgb item;
+    int r, g, b;
+    r = (x & 0xf800) >> 8;
+    r |= r >> 5;
+    item.color[0] = r;
+    g = (x & 0x7e0) >> 3;
+    g |= g >> 6;
+    item.color[1] = g;
+    b = (x & 0x1f) << 3;
+    b |= b >> 5;
+    item.color[2] = b;
+    return item;
+}
+
+static UINT16
+encode_565(rgba item) {
+    UINT8 r, g, b;
+    r = item.color[0] >> (8 - 5);
+    g = item.color[1] >> (8 - 6);
+    b = item.color[2] >> (8 - 5);
+    return (r << (5 + 6)) | (g << 5) | b;
 }
 
 static void
-pick_2_major_colors(
-    const UINT16 *unique_colors,
-    const UINT8 *color_freq,
-    UINT16 color_count,
-    UINT16 *color0,
-    UINT16 *color1
-) {
-    UINT32 i;
-    Color colors[16];
-    memset(colors, 0, sizeof(colors));
-    for (i = 0; i < color_count; ++i) {
-        colors[i].value = unique_colors[i];
-        colors[i].frequency = color_freq[i];
-    }
-    selection_sort(colors, color_count);
-    *color0 = colors[color_count - 1].value;
+encode_bc1_color(Imaging im, ImagingCodecState state, UINT8 *dst, int separate_alpha) {
+    int i, j, k;
+    UINT16 color_min = 0, color_max = 0;
+    rgb color_min_rgb, color_max_rgb;
+    rgba block[16], *current_rgba;
 
-    if (color_count == 1) {
-        *color1 = colors[color_count - 1].value;
-    } else {
-        *color1 = colors[color_count - 2].value;
-    }
-}
+    // Determine the min and max colors in this 4x4 block
+    int first = 1;
+    int transparency = 0;
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            current_rgba = &block[i + j * 4];
 
-static UINT8
-get_closest_color_index(const UINT16 *colors, UINT16 color) {
-    UINT16 color_error = 0xFFF8;
-    UINT16 lowest_id = 0;
-    UINT32 color_id;
-
-    for (color_id = 0; color_id < 4; color_id++) {
-        UINT8 error = rgb565_diff(colors[color_id], color);
-        if (error == 0) {
-            return color_id;
-        }
-        if (error <= color_error) {
-            color_error = error;
-            lowest_id = color_id;
-        }
-    }
-    return lowest_id;
-}
-
-int
-encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
-    UINT8 *dst = buf;
-    UINT8 alpha = 0;
-    INT32 block_index;
-    if (strcmp(((BCNSTATE *)state->context)->pixel_format, "DXT1A") == 0) {
-        alpha = 1;
-    }
-    INT32 block_count = (im->xsize * im->ysize) / 16;
-    if (block_count * sizeof(bc1_color) > bytes) {
-        state->errcode = IMAGING_CODEC_MEMORY;
-        return 0;
-    }
-
-    memset(buf, 0, block_count * sizeof(bc1_color));
-    for (block_index = 0; block_index < block_count; block_index++) {
-        state->x = (block_index % (im->xsize / 4));
-        state->y = (block_index / (im->xsize / 4));
-        UINT16 unique_count = 0;
-
-        UINT16 all_colors[16];
-        UINT16 unique_colors[16];
-        UINT8 color_frequency[16];
-        UINT8 opaque[16];
-        UINT8 local_alpha = 0;
-        memset(all_colors, 0, sizeof(all_colors));
-        memset(unique_colors, 0, sizeof(unique_colors));
-        memset(color_frequency, 0, sizeof(color_frequency));
-        memset(opaque, 0, sizeof(opaque));
-        UINT32 by, bx, x, y;
-        for (by = 0; by < 4; ++by) {
-            for (bx = 0; bx < 4; ++bx) {
-                x = (state->x * 4) + bx;
-                y = (state->y * 4) + by;
-                UINT8 r = im->image[y][x * im->pixelsize + 2];
-                UINT8 g = im->image[y][x * im->pixelsize + 1];
-                UINT8 b = im->image[y][x * im->pixelsize + 0];
-                UINT8 a = im->image[y][x * im->pixelsize + 3];
-                UINT16 color = PACK_SHORT_565(r, g, b);
-                opaque[bx + by * 4] = a >= 128;
-                local_alpha |= a <= 128;
-                all_colors[bx + by * 4] = color;
-
-                UINT8 new_color = 1;
-                UINT16 color_id = 1;
-                for (color_id = 0; color_id < unique_count; color_id++) {
-                    if (unique_colors[color_id] == color) {
-                        color_frequency[color_id]++;
-                        new_color = 0;
-                        break;
-                    }
+            int x = state->x + i * im->pixelsize;
+            int y = state->y + j;
+            if (x >= state->xsize * im->pixelsize || y >= state->ysize) {
+                // The 4x4 block extends past the edge of the image
+                for (k = 0; k < 3; k++) {
+                    current_rgba->color[k] = 0;
                 }
-                if (new_color) {
-                    unique_colors[unique_count] = color;
-                    color_frequency[unique_count]++;
-                    unique_count++;
+                continue;
+            }
+
+            for (k = 0; k < 3; k++) {
+                current_rgba->color[k] =
+                    (UINT8)im->image[y][x + (im->pixelsize == 1 ? 0 : k)];
+            }
+            if (separate_alpha) {
+                if ((UINT8)im->image[y][x + 3] == 0) {
+                    current_rgba->color[3] = 0;
+                    transparency = 1;
+                    continue;
+                } else {
+                    current_rgba->color[3] = 1;
                 }
             }
-        }
 
-        UINT16 c0 = 0, c1 = 0;
-        pick_2_major_colors(unique_colors, color_frequency, unique_count, &c0, &c1);
-        if (alpha && local_alpha) {
-            if (c0 > c1) {
-                SWAP(UINT16, c0, c1);
+            UINT16 color = encode_565(*current_rgba);
+            if (first || color < color_min) {
+                color_min = color;
             }
-        } else {
-            if (c0 < c1) {
-                SWAP(UINT16, c0, c1);
+            if (first || color > color_max) {
+                color_max = color;
             }
+            first = 0;
         }
+    }
 
-        UINT16 palette[4] = {c0, c1, 0, 0};
-        if (alpha && local_alpha) {
-            palette[2] = rgb565_lerp(c0, c1, 1, 1);
-            palette[3] = 0;
-        } else {
-            palette[2] = rgb565_lerp(c0, c1, 2, 1);
-            palette[3] = rgb565_lerp(c0, c1, 1, 2);
-        }
-        bc1_color block = {0};
-        block.c0 = c0;
-        block.c1 = c1;
-        UINT32 color_id;
-        for (color_id = 0; color_id < 16; ++color_id) {
-            UINT8 bc_color_id;
-            if ((alpha && local_alpha) && !opaque[color_id]) {
-                bc_color_id = 3;
+    if (transparency) {
+        *dst++ = color_min;
+        *dst++ = color_min >> 8;
+    }
+    *dst++ = color_max;
+    *dst++ = color_max >> 8;
+    if (!transparency) {
+        *dst++ = color_min;
+        *dst++ = color_min >> 8;
+    }
+
+    color_min_rgb = decode_565(color_min);
+    color_max_rgb = decode_565(color_max);
+    for (i = 0; i < 4; i++) {
+        UINT8 l = 0;
+        for (j = 3; j > -1; j--) {
+            current_rgba = &block[i * 4 + j];
+            if (transparency && !current_rgba->color[3]) {
+                l |= 3 << (j * 2);
+                continue;
+            }
+
+            float distance = 0;
+            int total = 0;
+            for (k = 0; k < 3; k++) {
+                float denom =
+                    (float)abs(color_max_rgb.color[k] - color_min_rgb.color[k]);
+                if (denom != 0) {
+                    distance +=
+                        abs(current_rgba->color[k] - color_min_rgb.color[k]) / denom;
+                    total += 1;
+                }
+            }
+            if (total == 0) {
+                continue;
+            }
+            if (transparency) {
+                distance *= 4 / total;
+                if (distance < 1) {
+                    // color_max
+                } else if (distance < 3) {
+                    l |= 2 << (j * 2);  // 1/2 * color_min + 1/2 * color_max
+                } else {
+                    l |= 1 << (j * 2);  // color_min
+                }
             } else {
-                bc_color_id = get_closest_color_index(palette, all_colors[color_id]);
+                distance *= 6 / total;
+                if (distance < 1) {
+                    l |= 1 << (j * 2);  // color_min
+                } else if (distance < 3) {
+                    l |= 3 << (j * 2);  // 1/3 * color_min + 2/3 * color_max
+                } else if (distance < 5) {
+                    l |= 2 << (j * 2);  // 2/3 * color_min + 1/3 * color_max
+                } else {
+                    // color_max
+                }
             }
-            SET_BITS(block.lut, color_id * 2, 2, bc_color_id);
         }
-        WRITE_BC1_BLOCK(dst, block)
+        *dst++ = l;
     }
-    state->errcode = IMAGING_CODEC_END;
-    return dst - buf;
+}
+
+static void
+encode_bc2_block(Imaging im, ImagingCodecState state, UINT8 *dst) {
+    int i, j;
+    UINT8 block[16], current_alpha;
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            int x = state->x + i * im->pixelsize;
+            int y = state->y + j;
+            if (x >= state->xsize * im->pixelsize || y >= state->ysize) {
+                // The 4x4 block extends past the edge of the image
+                block[i + j * 4] = 0;
+                continue;
+            }
+
+            current_alpha = (UINT8)im->image[y][x + 3];
+            block[i + j * 4] = current_alpha;
+        }
+    }
+
+    for (i = 0; i < 4; i++) {
+        UINT16 l = 0;
+        for (j = 3; j > -1; j--) {
+            current_alpha = block[i * 4 + j];
+            l |= current_alpha << (j * 4);
+        }
+        *dst++ = l;
+        *dst++ = l >> 8;
+    }
+}
+
+static void
+encode_bc3_alpha(Imaging im, ImagingCodecState state, UINT8 *dst, int o) {
+    int i, j;
+    UINT8 alpha_min = 0, alpha_max = 0;
+    UINT8 block[16], current_alpha;
+
+    // Determine the min and max colors in this 4x4 block
+    int first = 1;
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            int x = state->x + i * im->pixelsize;
+            int y = state->y + j;
+            if (x >= state->xsize * im->pixelsize || y >= state->ysize) {
+                // The 4x4 block extends past the edge of the image
+                block[i + j * 4] = 0;
+                continue;
+            }
+
+            current_alpha = (UINT8)im->image[y][x + o];
+            block[i + j * 4] = current_alpha;
+
+            if (first || current_alpha < alpha_min) {
+                alpha_min = current_alpha;
+            }
+            if (first || current_alpha > alpha_max) {
+                alpha_max = current_alpha;
+            }
+            first = 0;
+        }
+    }
+
+    *dst++ = alpha_min;
+    *dst++ = alpha_max;
+
+    float denom = (float)abs(alpha_max - alpha_min);
+    for (i = 0; i < 2; i++) {
+        UINT32 l = 0;
+        for (j = 7; j > -1; j--) {
+            current_alpha = block[i * 8 + j];
+            if (!current_alpha) {
+                l |= 6 << (j * 3);
+                continue;
+            } else if (current_alpha == 255) {
+                l |= 7 << (j * 3);
+                continue;
+            }
+
+            float distance =
+                denom == 0 ? 0 : abs(current_alpha - alpha_min) / denom * 10;
+            if (distance < 3) {
+                l |= 2 << (j * 3);  // 4/5 * alpha_min + 1/5 * alpha_max
+            } else if (distance < 5) {
+                l |= 3 << (j * 3);  // 3/5 * alpha_min + 2/5 * alpha_max
+            } else if (distance < 7) {
+                l |= 4 << (j * 3);  // 2/5 * alpha_min + 3/5 * alpha_max
+            } else {
+                l |= 5 << (j * 3);  // 1/5 * alpha_min + 4/5 * alpha_max
+            }
+        }
+        *dst++ = l;
+        *dst++ = l >> 8;
+        *dst++ = l >> 16;
+    }
 }
 
 int
 ImagingBcnEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
-    switch (state->state) {
-        case 1: {
-            return encode_bc1(im, state, buf, bytes);
+    int n = state->state;
+    int has_alpha_channel =
+        strcmp(im->mode, "RGBA") == 0 || strcmp(im->mode, "LA") == 0;
+
+    UINT8 *dst = buf;
+
+    for (;;) {
+        if (n == 5) {
+            encode_bc3_alpha(im, state, dst, 0);
+            dst += 8;
+
+            encode_bc3_alpha(im, state, dst, 1);
+        } else {
+            if (n == 2 || n == 3) {
+                if (has_alpha_channel) {
+                    if (n == 2) {
+                        encode_bc2_block(im, state, dst);
+                    } else {
+                        encode_bc3_alpha(im, state, dst, 3);
+                    }
+                    dst += 8;
+                } else {
+                    for (int i = 0; i < 8; i++) {
+                        *dst++ = 0xff;
+                    }
+                }
+            }
+            encode_bc1_color(im, state, dst, n == 1 && has_alpha_channel);
         }
-        default: {
-            state->errcode = IMAGING_CODEC_CONFIG;
-            return 0;
+        dst += 8;
+
+        state->x += im->pixelsize * 4;
+
+        if (state->x >= state->xsize * im->pixelsize) {
+            state->x = 0;
+            state->y += 4;
+            if (state->y >= state->ysize) {
+                state->errcode = IMAGING_CODEC_END;
+                break;
+            }
         }
     }
+
+    return dst - buf;
 }

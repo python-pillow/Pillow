@@ -42,16 +42,13 @@ As of 2019, Pillow development is
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-docker.yml"><img
                 alt="GitHub Actions build status (Test Docker)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg"></a>
-            <a href="https://ci.appveyor.com/project/python-pillow/Pillow"><img
-                alt="AppVeyor CI build status (Windows)"
-                src="https://img.shields.io/appveyor/build/python-pillow/Pillow/main.svg?label=Windows%20build"></a>
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml"><img
                 alt="GitHub Actions build status (Wheels)"
                 src="https://github.com/python-pillow/Pillow/workflows/Wheels/badge.svg"></a>
             <a href="https://app.codecov.io/gh/python-pillow/Pillow"><img
                 alt="Code coverage"
                 src="https://codecov.io/gh/python-pillow/Pillow/branch/main/graph/badge.svg"></a>
-            <a href="https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:pillow"><img
+            <a href="https://issues.oss-fuzz.com/issues?q=title:pillow"><img
                 alt="Fuzzing Status"
                 src="https://oss-fuzz-build-logs.storage.googleapis.com/badges/pillow.svg"></a>
         </td>
@@ -98,7 +95,7 @@ This library provides extensive file format support, an efficient internal repre
 
 The core image library is designed for fast access to data stored in a few basic pixel formats. It should provide a solid foundation for a general image processing tool.
 
-## More Information
+## More information
 
 - [Documentation](https://pillow.readthedocs.io/)
   - [Installation](https://pillow.readthedocs.io/en/latest/installation/basic-installation.html)
@@ -107,9 +104,9 @@ The core image library is designed for fast access to data stored in a few basic
   - [Issues](https://github.com/python-pillow/Pillow/issues)
   - [Pull requests](https://github.com/python-pillow/Pillow/pulls)
 - [Release notes](https://pillow.readthedocs.io/en/stable/releasenotes/index.html)
-- [Changelog](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst)
+- [Changelog](https://github.com/python-pillow/Pillow/releases)
   - [Pre-fork](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst#pre-fork)
 
-## Report a Vulnerability
+## Report a vulnerability
 
 To report a security vulnerability, please follow the procedure described in the [Tidelift security policy](https://tidelift.com/docs/security).

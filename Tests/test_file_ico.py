@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from PIL import IcoImagePlugin, Image, ImageDraw
+from PIL import IcoImagePlugin, Image, ImageDraw, ImageFile
 
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
@@ -24,7 +24,9 @@ def test_sanity() -> None:
 
 def test_load() -> None:
     with Image.open(TEST_ICO_FILE) as im:
-        assert im.load()[0, 0] == (1, 1, 9, 255)
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == (1, 1, 9, 255)
 
 
 def test_mask() -> None:
@@ -39,7 +41,7 @@ def test_black_and_white() -> None:
 
 
 def test_palette(tmp_path: Path) -> None:
-    temp_file = str(tmp_path / "temp.ico")
+    temp_file = tmp_path / "temp.ico"
 
     im = Image.new("P", (16, 16))
     im.save(temp_file)
@@ -75,6 +77,7 @@ def test_save_to_bytes() -> None:
     # The other one
     output.seek(0)
     with Image.open(output) as reloaded:
+        assert isinstance(reloaded, IcoImagePlugin.IcoImageFile)
         reloaded.size = (32, 32)
 
         assert im.mode == reloaded.mode
@@ -86,12 +89,13 @@ def test_save_to_bytes() -> None:
 
 
 def test_getpixel(tmp_path: Path) -> None:
-    temp_file = str(tmp_path / "temp.ico")
+    temp_file = tmp_path / "temp.ico"
 
     im = hopper()
     im.save(temp_file, "ico", sizes=[(32, 32), (64, 64)])
 
     with Image.open(temp_file) as reloaded:
+        assert isinstance(reloaded, IcoImagePlugin.IcoImageFile)
         reloaded.load()
         reloaded.size = (32, 32)
 
@@ -99,8 +103,8 @@ def test_getpixel(tmp_path: Path) -> None:
 
 
 def test_no_duplicates(tmp_path: Path) -> None:
-    temp_file = str(tmp_path / "temp.ico")
-    temp_file2 = str(tmp_path / "temp2.ico")
+    temp_file = tmp_path / "temp.ico"
+    temp_file2 = tmp_path / "temp2.ico"
 
     im = hopper()
     sizes = [(32, 32), (64, 64)]
@@ -113,8 +117,8 @@ def test_no_duplicates(tmp_path: Path) -> None:
 
 
 def test_different_bit_depths(tmp_path: Path) -> None:
-    temp_file = str(tmp_path / "temp.ico")
-    temp_file2 = str(tmp_path / "temp2.ico")
+    temp_file = tmp_path / "temp.ico"
+    temp_file2 = tmp_path / "temp2.ico"
 
     im = hopper()
     im.save(temp_file, "ico", bitmap_format="bmp", sizes=[(128, 128)])
@@ -130,8 +134,8 @@ def test_different_bit_depths(tmp_path: Path) -> None:
     assert os.path.getsize(temp_file) != os.path.getsize(temp_file2)
 
     # Test that only matching sizes of different bit depths are saved
-    temp_file3 = str(tmp_path / "temp3.ico")
-    temp_file4 = str(tmp_path / "temp4.ico")
+    temp_file3 = tmp_path / "temp3.ico"
+    temp_file4 = tmp_path / "temp4.ico"
 
     im.save(temp_file3, "ico", bitmap_format="bmp", sizes=[(128, 128)])
     im.save(
@@ -165,6 +169,7 @@ def test_save_to_bytes_bmp(mode: str) -> None:
     # The other one
     output.seek(0)
     with Image.open(output) as reloaded:
+        assert isinstance(reloaded, IcoImagePlugin.IcoImageFile)
         reloaded.size = (32, 32)
 
         assert "RGBA" == reloaded.mode
@@ -176,6 +181,7 @@ def test_save_to_bytes_bmp(mode: str) -> None:
 
 def test_incorrect_size() -> None:
     with Image.open(TEST_ICO_FILE) as im:
+        assert isinstance(im, IcoImagePlugin.IcoImageFile)
         with pytest.raises(ValueError):
             im.size = (1, 1)
 
@@ -184,7 +190,7 @@ def test_save_256x256(tmp_path: Path) -> None:
     """Issue #2264 https://github.com/python-pillow/Pillow/issues/2264"""
     # Arrange
     with Image.open("Tests/images/hopper_256x256.ico") as im:
-        outfile = str(tmp_path / "temp_saved_hopper_256x256.ico")
+        outfile = tmp_path / "temp_saved_hopper_256x256.ico"
 
         # Act
         im.save(outfile)
@@ -200,7 +206,7 @@ def test_only_save_relevant_sizes(tmp_path: Path) -> None:
     """
     # Arrange
     with Image.open("Tests/images/python.ico") as im:  # 16x16, 32x32, 48x48
-        outfile = str(tmp_path / "temp_saved_python.ico")
+        outfile = tmp_path / "temp_saved_python.ico"
         # Act
         im.save(outfile)
 
@@ -213,10 +219,11 @@ def test_save_append_images(tmp_path: Path) -> None:
     # append_images should be used for scaled down versions of the image
     im = hopper("RGBA")
     provided_im = Image.new("RGBA", (32, 32), (255, 0, 0))
-    outfile = str(tmp_path / "temp_saved_multi_icon.ico")
+    outfile = tmp_path / "temp_saved_multi_icon.ico"
     im.save(outfile, sizes=[(32, 32), (128, 128)], append_images=[provided_im])
 
     with Image.open(outfile) as reread:
+        assert isinstance(reread, IcoImagePlugin.IcoImageFile)
         assert_image_equal(reread, hopper("RGBA"))
 
         reread.size = (32, 32)
@@ -233,7 +240,7 @@ def test_unexpected_size() -> None:
 
 def test_draw_reloaded(tmp_path: Path) -> None:
     with Image.open(TEST_ICO_FILE) as im:
-        outfile = str(tmp_path / "temp_saved_hopper_draw.ico")
+        outfile = tmp_path / "temp_saved_hopper_draw.ico"
 
         draw = ImageDraw.Draw(im)
         draw.line((0, 0) + im.size, "#f00")
@@ -241,3 +248,25 @@ def test_draw_reloaded(tmp_path: Path) -> None:
 
     with Image.open(outfile) as im:
         assert_image_equal_tofile(im, "Tests/images/hopper_draw.ico")
+
+
+def test_truncated_mask(monkeypatch: pytest.MonkeyPatch) -> None:
+    # 1 bpp
+    with open("Tests/images/hopper_mask.ico", "rb") as fp:
+        data = fp.read()
+
+    monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+    data = data[:-3]
+
+    with Image.open(io.BytesIO(data)) as im:
+        assert im.mode == "1"
+
+    # 32 bpp
+    output = io.BytesIO()
+    expected = hopper("RGBA")
+    expected.save(output, "ico", bitmap_format="bmp")
+
+    data = output.getvalue()[:-1]
+
+    with Image.open(io.BytesIO(data)) as im:
+        assert im.mode == "RGB"

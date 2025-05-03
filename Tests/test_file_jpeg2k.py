@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import re
+from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
 from typing import Any
@@ -29,8 +30,16 @@ EXTRA_DIR = "Tests/images/jpeg2000"
 
 pytestmark = skip_unless_feature("jpg_2000")
 
-test_card = Image.open("Tests/images/test-card.png")
-test_card.load()
+
+@pytest.fixture
+def card() -> Generator[ImageFile.ImageFile, None, None]:
+    with Image.open("Tests/images/test-card.png") as im:
+        im.load()
+    try:
+        yield im
+    finally:
+        im.close()
+
 
 # OpenJPEG 2.0.0 outputs this debugging message sometimes; we should
 # ignore it---it doesn't represent a test failure.
@@ -54,6 +63,7 @@ def test_sanity() -> None:
 
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         px = im.load()
+        assert px is not None
         assert px[0, 0] == (0, 0, 0)
         assert im.mode == "RGB"
         assert im.size == (640, 480)
@@ -74,76 +84,76 @@ def test_invalid_file() -> None:
         Jpeg2KImagePlugin.Jpeg2KImageFile(invalid_file)
 
 
-def test_bytesio() -> None:
+def test_bytesio(card: ImageFile.ImageFile) -> None:
     with open("Tests/images/test-card-lossless.jp2", "rb") as f:
         data = BytesIO(f.read())
     with Image.open(data) as im:
         im.load()
-        assert_image_similar(im, test_card, 1.0e-3)
+        assert_image_similar(im, card, 1.0e-3)
 
 
 # These two test pre-written JPEG 2000 files that were not written with
 # PIL (they were made using Adobe Photoshop)
 
 
-def test_lossless(tmp_path: Path) -> None:
+def test_lossless(card: ImageFile.ImageFile, tmp_path: Path) -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         im.load()
-        outfile = str(tmp_path / "temp_test-card.png")
+        outfile = tmp_path / "temp_test-card.png"
         im.save(outfile)
-    assert_image_similar(im, test_card, 1.0e-3)
+    assert_image_similar(im, card, 1.0e-3)
 
 
-def test_lossy_tiled() -> None:
-    assert_image_similar_tofile(
-        test_card, "Tests/images/test-card-lossy-tiled.jp2", 2.0
-    )
+def test_lossy_tiled(card: ImageFile.ImageFile) -> None:
+    assert_image_similar_tofile(card, "Tests/images/test-card-lossy-tiled.jp2", 2.0)
 
 
-def test_lossless_rt() -> None:
-    im = roundtrip(test_card)
-    assert_image_equal(im, test_card)
+def test_lossless_rt(card: ImageFile.ImageFile) -> None:
+    im = roundtrip(card)
+    assert_image_equal(im, card)
 
 
-def test_lossy_rt() -> None:
-    im = roundtrip(test_card, quality_layers=[20])
-    assert_image_similar(im, test_card, 2.0)
+def test_lossy_rt(card: ImageFile.ImageFile) -> None:
+    im = roundtrip(card, quality_layers=[20])
+    assert_image_similar(im, card, 2.0)
 
 
-def test_tiled_rt() -> None:
-    im = roundtrip(test_card, tile_size=(128, 128))
-    assert_image_equal(im, test_card)
+def test_tiled_rt(card: ImageFile.ImageFile) -> None:
+    im = roundtrip(card, tile_size=(128, 128))
+    assert_image_equal(im, card)
 
 
-def test_tiled_offset_rt() -> None:
-    im = roundtrip(test_card, tile_size=(128, 128), tile_offset=(0, 0), offset=(32, 32))
-    assert_image_equal(im, test_card)
+def test_tiled_offset_rt(card: ImageFile.ImageFile) -> None:
+    im = roundtrip(card, tile_size=(128, 128), tile_offset=(0, 0), offset=(32, 32))
+    assert_image_equal(im, card)
 
 
-def test_tiled_offset_too_small() -> None:
+def test_tiled_offset_too_small(card: ImageFile.ImageFile) -> None:
     with pytest.raises(ValueError):
-        roundtrip(test_card, tile_size=(128, 128), tile_offset=(0, 0), offset=(128, 32))
+        roundtrip(card, tile_size=(128, 128), tile_offset=(0, 0), offset=(128, 32))
 
 
-def test_irreversible_rt() -> None:
-    im = roundtrip(test_card, irreversible=True, quality_layers=[20])
-    assert_image_similar(im, test_card, 2.0)
+def test_irreversible_rt(card: ImageFile.ImageFile) -> None:
+    im = roundtrip(card, irreversible=True, quality_layers=[20])
+    assert_image_similar(im, card, 2.0)
 
 
-def test_prog_qual_rt() -> None:
-    im = roundtrip(test_card, quality_layers=[60, 40, 20], progression="LRCP")
-    assert_image_similar(im, test_card, 2.0)
+def test_prog_qual_rt(card: ImageFile.ImageFile) -> None:
+    im = roundtrip(card, quality_layers=[60, 40, 20], progression="LRCP")
+    assert_image_similar(im, card, 2.0)
 
 
-def test_prog_res_rt() -> None:
-    im = roundtrip(test_card, num_resolutions=8, progression="RLCP")
-    assert_image_equal(im, test_card)
+def test_prog_res_rt(card: ImageFile.ImageFile) -> None:
+    im = roundtrip(card, num_resolutions=8, progression="RLCP")
+    assert_image_equal(im, card)
 
 
 @pytest.mark.parametrize("num_resolutions", range(2, 6))
-def test_default_num_resolutions(num_resolutions: int) -> None:
+def test_default_num_resolutions(
+    card: ImageFile.ImageFile, num_resolutions: int
+) -> None:
     d = 1 << (num_resolutions - 1)
-    im = test_card.resize((d - 1, d - 1))
+    im = card.resize((d - 1, d - 1))
     with pytest.raises(OSError):
         roundtrip(im, num_resolutions=num_resolutions)
     reloaded = roundtrip(im)
@@ -172,14 +182,20 @@ def test_load_dpi() -> None:
         assert "dpi" not in im.info
 
 
-def test_restricted_icc_profile() -> None:
-    ImageFile.LOAD_TRUNCATED_IMAGES = True
-    try:
-        # JPEG2000 image with a restricted ICC profile and a known colorspace
-        with Image.open("Tests/images/balloon_eciRGBv2_aware.jp2") as im:
-            assert im.mode == "RGB"
-    finally:
-        ImageFile.LOAD_TRUNCATED_IMAGES = False
+def test_restricted_icc_profile(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+    # JPEG2000 image with a restricted ICC profile and a known colorspace
+    with Image.open("Tests/images/balloon_eciRGBv2_aware.jp2") as im:
+        assert im.mode == "RGB"
+
+
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
+def test_unknown_colorspace() -> None:
+    with Image.open(f"{EXTRA_DIR}/file8.jp2") as im:
+        im.load()
+        assert im.mode == "L"
 
 
 def test_header_errors() -> None:
@@ -196,31 +212,33 @@ def test_header_errors() -> None:
             pass
 
 
-def test_layers_type(tmp_path: Path) -> None:
-    outfile = str(tmp_path / "temp_layers.jp2")
+def test_layers_type(card: ImageFile.ImageFile, tmp_path: Path) -> None:
+    outfile = tmp_path / "temp_layers.jp2"
     for quality_layers in [[100, 50, 10], (100, 50, 10), None]:
-        test_card.save(outfile, quality_layers=quality_layers)
+        card.save(outfile, quality_layers=quality_layers)
 
     for quality_layers_str in ["quality_layers", ("100", "50", "10")]:
         with pytest.raises(ValueError):
-            test_card.save(outfile, quality_layers=quality_layers_str)
+            card.save(outfile, quality_layers=quality_layers_str)
 
 
-def test_layers() -> None:
+def test_layers(card: ImageFile.ImageFile) -> None:
     out = BytesIO()
-    test_card.save(out, "JPEG2000", quality_layers=[100, 50, 10], progression="LRCP")
+    card.save(out, "JPEG2000", quality_layers=[100, 50, 10], progression="LRCP")
     out.seek(0)
 
     with Image.open(out) as im:
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
         im.layers = 1
         im.load()
-        assert_image_similar(im, test_card, 13)
+        assert_image_similar(im, card, 13)
 
     out.seek(0)
     with Image.open(out) as im:
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
         im.layers = 3
         im.load()
-        assert_image_similar(im, test_card, 0.4)
+        assert_image_similar(im, card, 0.4)
 
 
 @pytest.mark.parametrize(
@@ -233,27 +251,33 @@ def test_layers() -> None:
         ("foo.jp2", {"no_jp2": True}, 0, b"\xff\x4f"),
         ("foo.j2k", {"no_jp2": False}, 0, b"\xff\x4f"),
         ("foo.jp2", {"no_jp2": False}, 4, b"jP"),
-        ("foo.jp2", {"no_jp2": False}, 4, b"jP"),
+        (None, {"no_jp2": False}, 4, b"jP"),
     ),
 )
-def test_no_jp2(name: str, args: dict[str, bool], offset: int, data: bytes) -> None:
+def test_no_jp2(
+    card: ImageFile.ImageFile,
+    name: str,
+    args: dict[str, bool],
+    offset: int,
+    data: bytes,
+) -> None:
     out = BytesIO()
     if name:
         out.name = name
-    test_card.save(out, "JPEG2000", **args)
+    card.save(out, "JPEG2000", **args)
     out.seek(offset)
     assert out.read(2) == data
 
 
-def test_mct() -> None:
+def test_mct(card: ImageFile.ImageFile) -> None:
     # Three component
     for val in (0, 1):
         out = BytesIO()
-        test_card.save(out, "JPEG2000", mct=val, no_jp2=True)
+        card.save(out, "JPEG2000", mct=val, no_jp2=True)
 
         assert out.getvalue()[59] == val
         with Image.open(out) as im:
-            assert_image_similar(im, test_card, 1.0e-3)
+            assert_image_similar(im, card, 1.0e-3)
 
     # Single component should have MCT disabled
     for val in (0, 1):
@@ -267,7 +291,7 @@ def test_mct() -> None:
 
 
 def test_sgnd(tmp_path: Path) -> None:
-    outfile = str(tmp_path / "temp.jp2")
+    outfile = tmp_path / "temp.jp2"
 
     im = Image.new("L", (1, 1))
     im.save(outfile)
@@ -291,6 +315,18 @@ def test_rgba(ext: str) -> None:
         assert im.mode == "RGBA"
 
 
+def test_grayscale_four_channels() -> None:
+    with open("Tests/images/rgb_trns_ycbc.jp2", "rb") as fp:
+        data = fp.read()
+
+    # Change color space to OPJ_CLRSPC_GRAY
+    data = data[:76] + b"\x11" + data[77:]
+
+    with Image.open(BytesIO(data)) as im:
+        im.load()
+        assert im.mode == "RGBA"
+
+
 @pytest.mark.skipif(
     not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
 )
@@ -299,6 +335,18 @@ def test_cmyk() -> None:
     with Image.open(f"{EXTRA_DIR}/issue205.jp2") as im:
         assert im.mode == "CMYK"
         assert im.getpixel((0, 0)) == (185, 134, 0, 0)
+
+
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
+@skip_unless_feature_version("jpg_2000", "2.5.3")
+def test_cmyk_save() -> None:
+    with Image.open(f"{EXTRA_DIR}/issue205.jp2") as jp2:
+        assert jp2.mode == "CMYK"
+
+        im = roundtrip(jp2)
+        assert_image_equal(im, jp2)
 
 
 @pytest.mark.parametrize("ext", (".j2k", ".jp2"))
@@ -388,37 +436,47 @@ def test_subsampling_decode(name: str) -> None:
 def test_pclr() -> None:
     with Image.open(f"{EXTRA_DIR}/issue104_jpxstream.jp2") as im:
         assert im.mode == "P"
+        assert im.palette is not None
         assert len(im.palette.colors) == 256
         assert im.palette.colors[(255, 255, 255)] == 0
 
+    with Image.open(
+        f"{EXTRA_DIR}/147af3f1083de4393666b7d99b01b58b_signal_sigsegv_130c531_6155_5136.jp2"
+    ) as im:
+        assert im.mode == "P"
+        assert im.palette is not None
+        assert len(im.palette.colors) == 139
+        assert im.palette.colors[(0, 0, 0, 0)] == 0
+
 
 def test_comment() -> None:
-    with Image.open("Tests/images/comment.jp2") as im:
-        assert im.info["comment"] == b"Created by OpenJPEG version 2.5.0"
+    for path in ("Tests/images/9bit.j2k", "Tests/images/comment.jp2"):
+        with Image.open(path) as im:
+            assert im.info["comment"] == b"Created by OpenJPEG version 2.5.0"
 
     # Test an image that is truncated partway through a codestream
     with open("Tests/images/comment.jp2", "rb") as fp:
         b = BytesIO(fp.read(130))
-        with Image.open(b) as im:
-            pass
+    with Image.open(b) as im:
+        pass
 
 
-def test_save_comment() -> None:
+def test_save_comment(card: ImageFile.ImageFile) -> None:
     for comment in ("Created by Pillow", b"Created by Pillow"):
         out = BytesIO()
-        test_card.save(out, "JPEG2000", comment=comment)
+        card.save(out, "JPEG2000", comment=comment)
 
         with Image.open(out) as im:
             assert im.info["comment"] == b"Created by Pillow"
 
     out = BytesIO()
     long_comment = b" " * 65531
-    test_card.save(out, "JPEG2000", comment=long_comment)
+    card.save(out, "JPEG2000", comment=long_comment)
     with Image.open(out) as im:
         assert im.info["comment"] == long_comment
 
     with pytest.raises(ValueError):
-        test_card.save(out, "JPEG2000", comment=long_comment + b" ")
+        card.save(out, "JPEG2000", comment=long_comment + b" ")
 
 
 @pytest.mark.parametrize(
@@ -441,15 +499,14 @@ def test_crashes(test_file: str) -> None:
 
 
 @skip_unless_feature_version("jpg_2000", "2.4.0")
-def test_plt_marker() -> None:
+def test_plt_marker(card: ImageFile.ImageFile) -> None:
     # Search the start of the codesteam for PLT
     out = BytesIO()
-    test_card.save(out, "JPEG2000", no_jp2=True, plt=True)
+    card.save(out, "JPEG2000", no_jp2=True, plt=True)
     out.seek(0)
     while True:
         marker = out.read(2)
-        if not marker:
-            pytest.fail("End of stream without PLT")
+        assert marker, "End of stream without PLT"
 
         jp2_boxid = _binary.i16be(marker)
         if jp2_boxid == 0xFF4F:

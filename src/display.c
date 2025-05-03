@@ -85,8 +85,7 @@ _expose(ImagingDisplayObject *display, PyObject *args) {
 
     ImagingExposeDIB(display->dib, hdc);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -112,8 +111,7 @@ _draw(ImagingDisplayObject *display, PyObject *args) {
 
     ImagingDrawDIB(display->dib, hdc, dst, src);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 extern Imaging
@@ -143,8 +141,7 @@ _paste(ImagingDisplayObject *display, PyObject *args) {
 
     ImagingPasteDIB(display->dib, im, xy);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -190,8 +187,7 @@ _releasedc(ImagingDisplayObject *display, PyObject *args) {
 
     ReleaseDC(window, dc);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -211,8 +207,7 @@ _frombytes(ImagingDisplayObject *display, PyObject *args) {
     memcpy(display->dib->bits, buffer.buf, buffer.len);
 
     PyBuffer_Release(&buffer);
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -253,36 +248,11 @@ static struct PyGetSetDef getsetters[] = {
 };
 
 static PyTypeObject ImagingDisplayType = {
-    PyVarObject_HEAD_INIT(NULL, 0) "ImagingDisplay", /*tp_name*/
-    sizeof(ImagingDisplayObject),                    /*tp_basicsize*/
-    0,                                               /*tp_itemsize*/
-    /* methods */
-    (destructor)_delete, /*tp_dealloc*/
-    0,                   /*tp_vectorcall_offset*/
-    0,                   /*tp_getattr*/
-    0,                   /*tp_setattr*/
-    0,                   /*tp_as_async*/
-    0,                   /*tp_repr*/
-    0,                   /*tp_as_number*/
-    0,                   /*tp_as_sequence*/
-    0,                   /*tp_as_mapping*/
-    0,                   /*tp_hash*/
-    0,                   /*tp_call*/
-    0,                   /*tp_str*/
-    0,                   /*tp_getattro*/
-    0,                   /*tp_setattro*/
-    0,                   /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,  /*tp_flags*/
-    0,                   /*tp_doc*/
-    0,                   /*tp_traverse*/
-    0,                   /*tp_clear*/
-    0,                   /*tp_richcompare*/
-    0,                   /*tp_weaklistoffset*/
-    0,                   /*tp_iter*/
-    0,                   /*tp_iternext*/
-    methods,             /*tp_methods*/
-    0,                   /*tp_members*/
-    getsetters,          /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingDisplay",
+    .tp_basicsize = sizeof(ImagingDisplayObject),
+    .tp_dealloc = (destructor)_delete,
+    .tp_methods = methods,
+    .tp_getset = getsetters,
 };
 
 PyObject *
@@ -316,29 +286,42 @@ PyImaging_DisplayModeWin32(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 /* Windows screen grabber */
 
+typedef HANDLE(__stdcall *Func_GetWindowDpiAwarenessContext)(HANDLE);
 typedef HANDLE(__stdcall *Func_SetThreadDpiAwarenessContext)(HANDLE);
 
 PyObject *
 PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
-    int x = 0, y = 0, width, height;
-    int includeLayeredWindows = 0, all_screens = 0;
+    int x = 0, y = 0, width = -1, height;
+    int includeLayeredWindows = 0, screens = 0;
     HBITMAP bitmap;
     BITMAPCOREHEADER core;
     HDC screen, screen_copy;
+    HWND wnd;
     DWORD rop;
     PyObject *buffer;
-    HANDLE dpiAwareness;
+    HANDLE dpiAwareness = NULL;
     HMODULE user32;
+    Func_GetWindowDpiAwarenessContext GetWindowDpiAwarenessContext_function;
     Func_SetThreadDpiAwarenessContext SetThreadDpiAwarenessContext_function;
 
-    if (!PyArg_ParseTuple(args, "|ii", &includeLayeredWindows, &all_screens)) {
+    if (!PyArg_ParseTuple(
+            args, "|ii" F_HANDLE, &includeLayeredWindows, &screens, &wnd
+        )) {
         return NULL;
     }
 
     /* step 1: create a memory DC large enough to hold the
        entire screen */
 
-    screen = CreateDC("DISPLAY", NULL, NULL, NULL);
+    if (screens == -1) {
+        screen = GetDC(wnd);
+        if (screen == NULL) {
+            PyErr_SetString(PyExc_OSError, "unable to get device context for handle");
+            return NULL;
+        }
+    } else {
+        screen = CreateDC("DISPLAY", NULL, NULL, NULL);
+    }
     screen_copy = CreateCompatibleDC(screen);
 
     // added in Windows 10 (1607)
@@ -347,15 +330,28 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
     SetThreadDpiAwarenessContext_function = (Func_SetThreadDpiAwarenessContext
     )GetProcAddress(user32, "SetThreadDpiAwarenessContext");
     if (SetThreadDpiAwarenessContext_function != NULL) {
+        GetWindowDpiAwarenessContext_function = (Func_GetWindowDpiAwarenessContext
+        )GetProcAddress(user32, "GetWindowDpiAwarenessContext");
+        if (screens == -1 && GetWindowDpiAwarenessContext_function != NULL) {
+            dpiAwareness = GetWindowDpiAwarenessContext_function(wnd);
+        }
         // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = ((DPI_CONTEXT_HANDLE)-3)
-        dpiAwareness = SetThreadDpiAwarenessContext_function((HANDLE)-3);
+        dpiAwareness = SetThreadDpiAwarenessContext_function(
+            dpiAwareness == NULL ? (HANDLE)-3 : dpiAwareness
+        );
     }
 
-    if (all_screens) {
+    if (screens == 1) {
         x = GetSystemMetrics(SM_XVIRTUALSCREEN);
         y = GetSystemMetrics(SM_YVIRTUALSCREEN);
         width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    } else if (screens == -1) {
+        RECT rect;
+        if (GetClientRect(wnd, &rect)) {
+            width = rect.right;
+            height = rect.bottom;
+        }
     } else {
         width = GetDeviceCaps(screen, HORZRES);
         height = GetDeviceCaps(screen, VERTRES);
@@ -366,6 +362,10 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
     }
 
     FreeLibrary(user32);
+
+    if (width == -1) {
+        goto error;
+    }
 
     bitmap = CreateCompatibleBitmap(screen, width, height);
     if (!bitmap) {
@@ -412,7 +412,11 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
 
     DeleteObject(bitmap);
     DeleteDC(screen_copy);
-    DeleteDC(screen);
+    if (screens == -1) {
+        ReleaseDC(wnd, screen);
+    } else {
+        DeleteDC(screen);
+    }
 
     return Py_BuildValue("(ii)(ii)N", x, y, width, height, buffer);
 
@@ -420,7 +424,11 @@ error:
     PyErr_SetString(PyExc_OSError, "screen grab failed");
 
     DeleteDC(screen_copy);
-    DeleteDC(screen);
+    if (screens == -1) {
+        ReleaseDC(wnd, screen);
+    } else {
+        DeleteDC(screen);
+    }
 
     return NULL;
 }
@@ -690,31 +698,40 @@ PyImaging_CreateWindowWin32(PyObject *self, PyObject *args) {
     SetWindowLongPtr(wnd, 0, (LONG_PTR)callback);
     SetWindowLongPtr(wnd, sizeof(callback), (LONG_PTR)PyThreadState_Get());
 
-    Py_BEGIN_ALLOW_THREADS ShowWindow(wnd, SW_SHOWNORMAL);
+    Py_BEGIN_ALLOW_THREADS;
+    ShowWindow(wnd, SW_SHOWNORMAL);
     SetForegroundWindow(wnd); /* to make sure it's visible */
-    Py_END_ALLOW_THREADS
+    Py_END_ALLOW_THREADS;
 
-        return Py_BuildValue(F_HANDLE, wnd);
+    return Py_BuildValue(F_HANDLE, wnd);
 }
 
 PyObject *
 PyImaging_EventLoopWin32(PyObject *self, PyObject *args) {
     MSG msg;
 
-    Py_BEGIN_ALLOW_THREADS while (mainloop && GetMessage(&msg, NULL, 0, 0)) {
+    Py_BEGIN_ALLOW_THREADS;
+    while (mainloop && GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-    Py_END_ALLOW_THREADS
+    Py_END_ALLOW_THREADS;
 
-        Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 /* -------------------------------------------------------------------- */
 /* windows WMF renderer */
 
 #define GET32(p, o) ((DWORD *)(p + o))[0]
+
+static int CALLBACK
+enhMetaFileProc(
+    HDC hdc, HANDLETABLE *lpht, const ENHMETARECORD *lpmr, int nHandles, LPARAM data
+) {
+    PlayEnhMetaFileRecord(hdc, lpht, lpmr, nHandles);
+    return 1;
+}
 
 PyObject *
 PyImaging_DrawWmf(PyObject *self, PyObject *args) {
@@ -796,10 +813,7 @@ PyImaging_DrawWmf(PyObject *self, PyObject *args) {
     /* FIXME: make background transparent? configurable? */
     FillRect(dc, &rect, GetStockObject(WHITE_BRUSH));
 
-    if (!PlayEnhMetaFile(dc, meta, &rect)) {
-        PyErr_SetString(PyExc_OSError, "cannot render metafile");
-        goto error;
-    }
+    EnumEnhMetaFile(dc, meta, enhMetaFileProc, NULL, &rect);
 
     /* step 4: extract bits from bitmap */
 

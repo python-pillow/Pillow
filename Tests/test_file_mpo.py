@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 
-from PIL import Image, ImageFile, MpoImagePlugin
+from PIL import Image, ImageFile, JpegImagePlugin, MpoImagePlugin
 
 from .helper import (
     assert_image_equal,
@@ -29,25 +29,32 @@ def roundtrip(im: Image.Image, **options: Any) -> ImageFile.ImageFile:
 
 @pytest.mark.parametrize("test_file", test_files)
 def test_sanity(test_file: str) -> None:
-    with Image.open(test_file) as im:
+    def check(im: ImageFile.ImageFile) -> None:
         im.load()
         assert im.mode == "RGB"
         assert im.size == (640, 480)
         assert im.format == "MPO"
 
+    with Image.open(test_file) as im:
+        check(im)
+    with MpoImagePlugin.MpoImageFile(test_file) as im:
+        check(im)
+
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
 def test_unclosed_file() -> None:
-    def open() -> None:
+    def open_test_image() -> None:
         im = Image.open(test_files[0])
         im.load()
 
     with pytest.warns(ResourceWarning):
-        open()
+        open_test_image()
 
 
 def test_closed_file() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         im = Image.open(test_files[0])
         im.load()
         im.close()
@@ -63,6 +70,8 @@ def test_seek_after_close() -> None:
 
 def test_context_manager() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         with Image.open(test_files[0]) as im:
             im.load()
 
@@ -71,10 +80,11 @@ def test_context_manager() -> None:
 def test_app(test_file: str) -> None:
     # Test APP/COM reader (@PIL135)
     with Image.open(test_file) as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         assert im.applist[0][0] == "APP1"
         assert im.applist[1][0] == "APP2"
-        assert (
-            im.applist[1][1][:16] == b"MPF\x00MM\x00*\x00\x00\x00\x08\x00\x03\xb0\x00"
+        assert im.applist[1][1].startswith(
+            b"MPF\x00MM\x00*\x00\x00\x00\x08\x00\x03\xb0\x00"
         )
         assert len(im.applist) == 2
 
@@ -85,7 +95,9 @@ def test_exif(test_file: str) -> None:
         im_reloaded = roundtrip(im_original, save_all=True, exif=im_original.getexif())
 
     for im in (im_original, im_reloaded):
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         info = im._getexif()
+        assert info is not None
         assert info[272] == "Nintendo 3DS"
         assert info[296] == 2
         assert info[34665] == 188
@@ -209,12 +221,14 @@ def test_seek(test_file: str) -> None:
 
 def test_n_frames() -> None:
     with Image.open("Tests/images/sugarshack.mpo") as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         assert im.n_frames == 2
         assert im.is_animated
 
 
 def test_eoferror() -> None:
     with Image.open("Tests/images/sugarshack.mpo") as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         n_frames = im.n_frames
 
         # Test seeking past the last frame
@@ -228,6 +242,8 @@ def test_eoferror() -> None:
 
 def test_adopt_jpeg() -> None:
     with Image.open("Tests/images/hopper.jpg") as im:
+        assert isinstance(im, JpegImagePlugin.JpegImageFile)
+
         with pytest.raises(ValueError):
             MpoImagePlugin.MpoImageFile.adopt(im)
 
@@ -291,3 +307,15 @@ def test_save_all() -> None:
     # Test that a single frame image will not be saved as an MPO
     jpg = roundtrip(im, save_all=True)
     assert "mp" not in jpg.info
+
+
+def test_save_xmp() -> None:
+    im = Image.new("RGB", (1, 1))
+    im2 = Image.new("RGB", (1, 1), "#f00")
+    im2.encoderinfo = {"xmp": b"Second frame"}
+    im_reloaded = roundtrip(im, xmp=b"First frame", save_all=True, append_images=[im2])
+
+    assert im_reloaded.info["xmp"] == b"First frame"
+
+    im_reloaded.seek(1)
+    assert im_reloaded.info["xmp"] == b"Second frame"

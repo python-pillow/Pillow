@@ -2,8 +2,156 @@
 Changelog (Pillow)
 ==================
 
-11.0.0 (unreleased)
+11.1.0 and newer
+----------------
+
+See GitHub Releases:
+
+- https://github.com/python-pillow/Pillow/releases
+
+11.0.0 (2024-10-15)
 -------------------
+
+- Update licence to MIT-CMU #8460
+  [hugovk]
+
+- Conditionally define ImageCms type hint to avoid requiring core #8197
+  [radarhere]
+
+- Support writing LONG8 offsets in AppendingTiffWriter #8417
+  [radarhere]
+
+- Use ImageFile.MAXBLOCK when saving TIFF images #8461
+  [radarhere]
+
+- Do not close provided file handles with libtiff when saving #8458
+  [radarhere]
+
+- Support ImageFilter.BuiltinFilter for I;16* images #8438
+  [radarhere]
+
+- Use ImagingCore.ptr instead of ImagingCore.id #8341
+  [homm, radarhere, hugovk]
+
+- Updated EPS mode when opening images without transparency #8281
+  [Yay295, radarhere]
+
+- Use transparency when combining P frames from APNGs #8443
+  [radarhere]
+
+- Support all resampling filters when resizing I;16* images #8422
+  [radarhere]
+
+- Free memory on early return #8413
+  [radarhere]
+
+- Cast int before potentially exceeding INT_MAX #8402
+  [radarhere]
+
+- Check image value before use #8400
+  [radarhere]
+
+- Improved copying imagequant libraries #8420
+  [radarhere]
+
+- Use Capsule for WebP saving #8386
+  [homm, radarhere]
+
+- Fixed writing multiple StripOffsets to TIFF #8317
+  [Yay295, radarhere]
+
+- Fix dereference before checking for NULL in ImagingTransformAffine #8398
+  [PavlNekrasov]
+
+- Use transposed size after opening for TIFF images #8390
+  [radarhere, homm]
+
+- Improve ImageFont error messages #8338
+  [yngvem, radarhere, hugovk]
+
+- Mention MAX_TEXT_CHUNK limit in PNG error message #8391
+  [radarhere]
+
+- Cast Dib handle to int #8385
+  [radarhere]
+
+- Accept float stroke widths #8369
+  [radarhere]
+
+- Deprecate ICNS (width, height, scale) sizes in favour of load(scale) #8352
+  [radarhere]
+
+- Improved handling of RGBA palettes when saving GIF images #8366
+  [radarhere]
+
+- Deprecate isImageType #8364
+  [radarhere]
+
+- Support converting more modes to LAB by converting to RGBA first #8358
+  [radarhere]
+
+- Deprecate support for FreeType 2.9.0 #8356
+  [hugovk, radarhere]
+
+- Removed unused TiffImagePlugin IFD_LEGACY_API #8355
+  [radarhere]
+
+- Handle duplicate EXIF header #8350
+  [zakajd, radarhere]
+
+- Return early from BoxBlur if either width or height is zero #8347
+  [radarhere]
+
+- Check text is either string or bytes #8308
+  [radarhere]
+
+- Added writing XMP bytes to JPEG #8286
+  [radarhere]
+
+- Support JPEG2000 RGBA palettes #8256
+  [radarhere]
+
+- Expand C image to match GIF frame image size #8237
+  [radarhere]
+
+- Allow saving I;16 images as PPM #8231
+  [radarhere]
+
+- When IFD is missing, connect get_ifd() dictionary to Exif #8230
+  [radarhere]
+
+- Skip truncated ICO mask if LOAD_TRUNCATED_IMAGES is enabled #8180
+  [radarhere]
+
+- Treat unknown JPEG2000 colorspace as unspecified #8343
+  [radarhere]
+
+- Updated error message when saving WebP with invalid width or height #8322
+  [radarhere, hugovk]
+
+- Remove warning if NumPy failed to raise an error during conversion #8326
+  [radarhere]
+
+- If left and right sides meet in ImageDraw.rounded_rectangle(), do not draw rectangle to fill gap #8304
+  [radarhere]
+
+- Remove WebP support without anim, mux/demux, and with buggy alpha #8213
+  [homm, radarhere]
+
+- Add missing TIFF CMYK;16B reader #8298
+  [homm]
+
+- Remove all WITH_* flags from _imaging.c and other flags #8211
+  [homm]
+
+- Improve ImageDraw2 shape methods #8265
+  [radarhere]
+
+- Lock around usages of imaging memory arenas #8238
+  [lysnikolaou]
+
+- Deprecate JpegImageFile huffman_ac and huffman_dc #8274
+  [radarhere]
 
 - Deprecate ImageMath lambda_eval and unsafe_eval options argument #8242
   [radarhere]

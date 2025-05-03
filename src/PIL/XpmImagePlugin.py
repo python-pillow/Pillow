@@ -25,7 +25,7 @@ xpm_head = re.compile(b'"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)')
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:9] == b"/* XPM */"
+    return prefix.startswith(b"/* XPM */")
 
 
 ##
@@ -67,9 +67,9 @@ class XpmImageFile(ImageFile.ImageFile):
 
         for _ in range(pal):
             s = self.fp.readline()
-            if s[-2:] == b"\r\n":
+            if s.endswith(b"\r\n"):
                 s = s[:-2]
-            elif s[-1:] in b"\r\n":
+            elif s.endswith((b"\r", b"\n")):
                 s = s[:-1]
 
             c = s[1]
@@ -81,7 +81,7 @@ class XpmImageFile(ImageFile.ImageFile):
                     rgb = s[i + 1]
                     if rgb == b"None":
                         self.info["transparency"] = c
-                    elif rgb[:1] == b"#":
+                    elif rgb.startswith(b"#"):
                         # FIXME: handle colour names (see ImagePalette.py)
                         rgb = int(rgb[1:], 16)
                         palette[c] = (
@@ -101,7 +101,7 @@ class XpmImageFile(ImageFile.ImageFile):
         self._mode = "P"
         self.palette = ImagePalette.raw("RGB", b"".join(palette))
 
-        self.tile = [("raw", (0, 0) + self.size, self.fp.tell(), ("P", 0, 1))]
+        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, self.fp.tell(), "P")]
 
     def load_read(self, read_bytes: int) -> bytes:
         #

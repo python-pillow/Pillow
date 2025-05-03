@@ -38,8 +38,9 @@ import re
 import struct
 import warnings
 import zlib
+from collections.abc import Callable
 from enum import IntEnum
-from typing import IO, TYPE_CHECKING, Any, NamedTuple, NoReturn
+from typing import IO, Any, NamedTuple, NoReturn, cast
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i16be as i16
@@ -47,7 +48,9 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
+from ._util import DeferredError
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from . import _imaging
 
@@ -135,11 +138,11 @@ class Blend(IntEnum):
     """
 
 
-def _safe_zlib_decompress(s):
+def _safe_zlib_decompress(s: bytes) -> bytes:
     dobj = zlib.decompressobj()
     plaintext = dobj.decompress(s, MAX_TEXT_CHUNK)
     if dobj.unconsumed_tail:
-        msg = "Decompressed Data Too Large"
+        msg = "Decompressed data too large for PngImagePlugin.MAX_TEXT_CHUNK"
         raise ValueError(msg)
     return plaintext
 
@@ -257,7 +260,9 @@ class iTXt(str):
     tkey: str | bytes | None
 
     @staticmethod
-    def __new__(cls, text, lang=None, tkey=None):
+    def __new__(
+        cls, text: str, lang: str | None = None, tkey: str | None = None
+    ) -> iTXt:
         """
         :param cls: the class to use when creating the instance
         :param text: value for this key
@@ -367,21 +372,27 @@ class PngInfo:
 # PNG image stream (IHDR/IEND)
 
 
+class _RewindState(NamedTuple):
+    info: dict[str | tuple[int, int], Any]
+    tile: list[ImageFile._Tile]
+    seq_num: int | None
+
+
 class PngStream(ChunkStream):
-    def __init__(self, fp):
+    def __init__(self, fp: IO[bytes]) -> None:
         super().__init__(fp)
 
         # local copies of Image attributes
-        self.im_info = {}
-        self.im_text = {}
+        self.im_info: dict[str | tuple[int, int], Any] = {}
+        self.im_text: dict[str, str | iTXt] = {}
         self.im_size = (0, 0)
-        self.im_mode = None
-        self.im_tile = None
-        self.im_palette = None
-        self.im_custom_mimetype = None
-        self.im_n_frames = None
-        self._seq_num = None
-        self.rewind_state = None
+        self.im_mode = ""
+        self.im_tile: list[ImageFile._Tile] = []
+        self.im_palette: tuple[str, bytes] | None = None
+        self.im_custom_mimetype: str | None = None
+        self.im_n_frames: int | None = None
+        self._seq_num: int | None = None
+        self.rewind_state = _RewindState({}, [], None)
 
         self.text_memory = 0
 
@@ -395,16 +406,16 @@ class PngStream(ChunkStream):
             raise ValueError(msg)
 
     def save_rewind(self) -> None:
-        self.rewind_state = {
-            "info": self.im_info.copy(),
-            "tile": self.im_tile,
-            "seq_num": self._seq_num,
-        }
+        self.rewind_state = _RewindState(
+            self.im_info.copy(),
+            self.im_tile,
+            self._seq_num,
+        )
 
     def rewind(self) -> None:
-        self.im_info = self.rewind_state["info"].copy()
-        self.im_tile = self.rewind_state["tile"]
-        self._seq_num = self.rewind_state["seq_num"]
+        self.im_info = self.rewind_state.info.copy()
+        self.im_tile = self.rewind_state.tile
+        self._seq_num = self.rewind_state.seq_num
 
     def chunk_iCCP(self, pos: int, length: int) -> bytes:
         # ICC profile
@@ -458,11 +469,11 @@ class PngStream(ChunkStream):
     def chunk_IDAT(self, pos: int, length: int) -> NoReturn:
         # image data
         if "bbox" in self.im_info:
-            tile = [("zip", self.im_info["bbox"], pos, self.im_rawmode)]
+            tile = [ImageFile._Tile("zip", self.im_info["bbox"], pos, self.im_rawmode)]
         else:
             if self.im_n_frames is not None:
                 self.im_info["default_image"] = True
-            tile = [("zip", (0, 0) + self.im_size, pos, self.im_rawmode)]
+            tile = [ImageFile._Tile("zip", (0, 0) + self.im_size, pos, self.im_rawmode)]
         self.im_tile = tile
         self.im_idat = length
         msg = "image data found"
@@ -514,7 +525,7 @@ class PngStream(ChunkStream):
 
         assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
-        raw_vals = struct.unpack(">%dI" % (len(s) // 4), s)
+        raw_vals = struct.unpack(f">{len(s) // 4}I", s)
         self.im_info["chromaticity"] = tuple(elt / 100000.0 for elt in raw_vals)
         return s
 
@@ -731,7 +742,7 @@ class PngStream(ChunkStream):
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:8] == _MAGIC
+    return prefix.startswith(_MAGIC)
 
 
 ##
@@ -783,7 +794,7 @@ class PngImageFile(ImageFile.ImageFile):
         self._mode = self.png.im_mode
         self._size = self.png.im_size
         self.info = self.png.im_info
-        self._text = None
+        self._text: dict[str, str | iTXt] | None = None
         self.tile = self.png.im_tile
         self.custom_mimetype = self.png.im_custom_mimetype
         self.n_frames = self.png.im_n_frames or 1
@@ -810,7 +821,7 @@ class PngImageFile(ImageFile.ImageFile):
         self.is_animated = self.n_frames > 1
 
     @property
-    def text(self):
+    def text(self) -> dict[str, str | iTXt]:
         # experimental
         if self._text is None:
             # iTxt, tEXt and zTXt chunks may appear at the end of the file
@@ -822,6 +833,7 @@ class PngImageFile(ImageFile.ImageFile):
             self.load()
             if self.is_animated:
                 self.seek(frame)
+        assert self._text is not None
         return self._text
 
     def verify(self) -> None:
@@ -859,14 +871,17 @@ class PngImageFile(ImageFile.ImageFile):
 
     def _seek(self, frame: int, rewind: bool = False) -> None:
         assert self.png is not None
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
 
         self.dispose: _imaging.ImagingCore | None
+        dispose_extent = None
         if frame == 0:
             if rewind:
                 self._fp.seek(self.__rewind)
                 self.png.rewind()
                 self.__prepare_idat = self.__rewind_idat
-                self.im = None
+                self._im = None
                 self.info = self.png.im_info
                 self.tile = self.png.im_tile
                 self.fp = self._fp
@@ -875,7 +890,7 @@ class PngImageFile(ImageFile.ImageFile):
             self.default_image = self.info.get("default_image", False)
             self.dispose_op = self.info.get("disposal")
             self.blend_op = self.info.get("blend")
-            self.dispose_extent = self.info.get("bbox")
+            dispose_extent = self.info.get("bbox")
             self.__frame = 0
         else:
             if frame != self.__frame + 1:
@@ -933,11 +948,13 @@ class PngImageFile(ImageFile.ImageFile):
             self.tile = self.png.im_tile
             self.dispose_op = self.info.get("disposal")
             self.blend_op = self.info.get("blend")
-            self.dispose_extent = self.info.get("bbox")
+            dispose_extent = self.info.get("bbox")
 
             if not self.tile:
                 msg = "image not found in APNG frame"
                 raise EOFError(msg)
+        if dispose_extent:
+            self.dispose_extent: tuple[float, float, float, float] = dispose_extent
 
         # setup frame disposal (actual disposal done when needed in the next _seek())
         if self._prev_im is None and self.dispose_op == Disposal.OP_PREVIOUS:
@@ -1050,11 +1067,17 @@ class PngImageFile(ImageFile.ImageFile):
                         "RGBA", self.info["transparency"]
                     )
                 else:
+                    if self.im.mode == "P" and "transparency" in self.info:
+                        t = self.info["transparency"]
+                        if isinstance(t, bytes):
+                            updated.putpalettealphas(t)
+                        elif isinstance(t, int):
+                            updated.putpalettealpha(t)
                     mask = updated.convert("RGBA")
                 self._prev_im.paste(updated, self.dispose_extent, mask)
                 self.im = self._prev_im
 
-    def _getexif(self) -> dict[str, Any] | None:
+    def _getexif(self) -> dict[int, Any] | None:
         if "exif" not in self.info:
             self.load()
         if "exif" not in self.info and "Raw profile type exif" not in self.info:
@@ -1105,7 +1128,7 @@ def putchunk(fp: IO[bytes], cid: bytes, *data: bytes) -> None:
 class _idat:
     # wrap output from the encoder in IDAT chunks
 
-    def __init__(self, fp, chunk) -> None:
+    def __init__(self, fp: IO[bytes], chunk: Callable[..., None]) -> None:
         self.fp = fp
         self.chunk = chunk
 
@@ -1116,7 +1139,7 @@ class _idat:
 class _fdat:
     # wrap encoder output in fdAT chunks
 
-    def __init__(self, fp: IO[bytes], chunk, seq_num: int) -> None:
+    def __init__(self, fp: IO[bytes], chunk: Callable[..., None], seq_num: int) -> None:
         self.fp = fp
         self.chunk = chunk
         self.seq_num = seq_num
@@ -1135,7 +1158,7 @@ class _Frame(NamedTuple):
 def _write_multiple_frames(
     im: Image.Image,
     fp: IO[bytes],
-    chunk,
+    chunk: Callable[..., None],
     mode: str,
     rawmode: str,
     default_image: Image.Image | None,
@@ -1221,7 +1244,11 @@ def _write_multiple_frames(
     if default_image:
         if im.mode != mode:
             im = im.convert(mode)
-        ImageFile._save(im, _idat(fp, chunk), [("zip", (0, 0) + im.size, 0, rawmode)])
+        ImageFile._save(
+            im,
+            cast(IO[bytes], _idat(fp, chunk)),
+            [ImageFile._Tile("zip", (0, 0) + im.size, 0, rawmode)],
+        )
 
     seq_num = 0
     for frame, frame_data in enumerate(im_frames):
@@ -1256,15 +1283,15 @@ def _write_multiple_frames(
             # first frame must be in IDAT chunks for backwards compatibility
             ImageFile._save(
                 im_frame,
-                _idat(fp, chunk),
-                [("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                cast(IO[bytes], _idat(fp, chunk)),
+                [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
         else:
             fdat_chunks = _fdat(fp, chunk, seq_num)
             ImageFile._save(
                 im_frame,
-                fdat_chunks,
-                [("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                cast(IO[bytes], fdat_chunks),
+                [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
             seq_num = fdat_chunks.seq_num
     return None
@@ -1275,7 +1302,11 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 
 def _save(
-    im: Image.Image, fp, filename: str | bytes, chunk=putchunk, save_all: bool = False
+    im: Image.Image,
+    fp: IO[bytes],
+    filename: str | bytes,
+    chunk: Callable[..., None] = putchunk,
+    save_all: bool = False,
 ) -> None:
     # save an image to disk (called by the save method)
 
@@ -1355,7 +1386,7 @@ def _save(
         b"\0",  # 12: interlace flag
     )
 
-    chunks = [b"cHRM", b"gAMA", b"sBIT", b"sRGB", b"tIME"]
+    chunks = [b"cHRM", b"cICP", b"gAMA", b"sBIT", b"sRGB", b"tIME"]
 
     icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
     if icc:
@@ -1406,7 +1437,7 @@ def _save(
                 chunk(fp, b"tRNS", transparency[:alpha_bytes])
             else:
                 transparency = max(0, min(255, transparency))
-                alpha = b"\xFF" * transparency + b"\0"
+                alpha = b"\xff" * transparency + b"\0"
                 chunk(fp, b"tRNS", alpha[:alpha_bytes])
         elif im.mode in ("1", "L", "I", "I;16"):
             transparency = max(0, min(65535, transparency))
@@ -1459,7 +1490,9 @@ def _save(
         )
     if single_im:
         ImageFile._save(
-            single_im, _idat(fp, chunk), [("zip", (0, 0) + single_im.size, 0, rawmode)]
+            single_im,
+            cast(IO[bytes], _idat(fp, chunk)),
+            [ImageFile._Tile("zip", (0, 0) + single_im.size, 0, rawmode)],
         )
 
     if info:
@@ -1483,22 +1516,16 @@ def _save(
 
 def getchunks(im: Image.Image, **params: Any) -> list[tuple[bytes, bytes, bytes]]:
     """Return a list of PNG chunks representing this image."""
+    from io import BytesIO
 
-    class collector:
-        data = []
+    chunks = []
 
-        def write(self, data: bytes) -> None:
-            pass
-
-        def append(self, chunk: tuple[bytes, bytes, bytes]) -> None:
-            self.data.append(chunk)
-
-    def append(fp: collector, cid: bytes, *data: bytes) -> None:
+    def append(fp: IO[bytes], cid: bytes, *data: bytes) -> None:
         byte_data = b"".join(data)
         crc = o32(_crc32(byte_data, _crc32(cid)))
-        fp.append((cid, byte_data, crc))
+        chunks.append((cid, byte_data, crc))
 
-    fp = collector()
+    fp = BytesIO()
 
     try:
         im.encoderinfo = params
@@ -1506,7 +1533,7 @@ def getchunks(im: Image.Image, **params: Any) -> list[tuple[bytes, bytes, bytes]
     finally:
         del im.encoderinfo
 
-    return fp.data
+    return chunks
 
 
 # --------------------------------------------------------------------

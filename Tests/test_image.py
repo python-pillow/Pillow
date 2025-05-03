@@ -42,6 +42,12 @@ try:
 except ImportError:
     ElementTree = None
 
+PrettyPrinter: type | None
+try:
+    from IPython.lib.pretty import PrettyPrinter
+except ImportError:
+    PrettyPrinter = None
+
 
 # Deprecation helper
 def helper_image_new(mode: str, size: tuple[int, int]) -> Image.Image:
@@ -59,21 +65,20 @@ class TestImage:
 
     @pytest.mark.parametrize("mode", ("", "bad", "very very long"))
     def test_image_modes_fail(self, mode: str) -> None:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match="unrecognized image mode"):
             Image.new(mode, (1, 1))
-        assert str(e.value) == "unrecognized image mode"
 
     def test_exception_inheritance(self) -> None:
         assert issubclass(UnidentifiedImageError, OSError)
 
     def test_sanity(self) -> None:
         im = Image.new("L", (100, 100))
-        assert repr(im)[:45] == "<PIL.Image.Image image mode=L size=100x100 at"
+        assert repr(im).startswith("<PIL.Image.Image image mode=L size=100x100 at")
         assert im.mode == "L"
         assert im.size == (100, 100)
 
         im = Image.new("RGB", (100, 100))
-        assert repr(im)[:45] == "<PIL.Image.Image image mode=RGB size=100x100 "
+        assert repr(im).startswith("<PIL.Image.Image image mode=RGB size=100x100 ")
         assert im.mode == "RGB"
         assert im.size == (100, 100)
 
@@ -91,16 +96,15 @@ class TestImage:
         # with pytest.raises(MemoryError):
         #   Image.new("L", (1000000, 1000000))
 
+    @pytest.mark.skipif(PrettyPrinter is None, reason="IPython is not installed")
     def test_repr_pretty(self) -> None:
-        class Pretty:
-            def text(self, text: str) -> None:
-                self.pretty_output = text
-
         im = Image.new("L", (100, 100))
 
-        p = Pretty()
-        im._repr_pretty_(p, None)
-        assert p.pretty_output == "<PIL.Image.Image image mode=L size=100x100>"
+        output = io.StringIO()
+        assert PrettyPrinter is not None
+        p = PrettyPrinter(output)
+        im._repr_pretty_(p, False)
+        assert output.getvalue() == "<PIL.Image.Image image mode=L size=100x100>"
 
     def test_open_formats(self) -> None:
         PNGFILE = "Tests/images/hopper.png"
@@ -171,6 +175,13 @@ class TestImage:
             with Image.open(io.StringIO()):  # type: ignore[arg-type]
                 pass
 
+    def test_string(self, tmp_path: Path) -> None:
+        out = str(tmp_path / "temp.png")
+        im = hopper()
+        im.save(out)
+        with Image.open(out) as reloaded:
+            assert_image_equal(im, reloaded)
+
     def test_pathlib(self, tmp_path: Path) -> None:
         with Image.open(Path("Tests/images/multipage-mmap.tiff")) as im:
             assert im.mode == "P"
@@ -183,16 +194,13 @@ class TestImage:
             for ext in (".jpg", ".jp2"):
                 if ext == ".jp2" and not features.check_codec("jpg_2000"):
                     pytest.skip("jpg_2000 not available")
-                temp_file = str(tmp_path / ("temp." + ext))
-                if os.path.exists(temp_file):
-                    os.remove(temp_file)
-                im.save(Path(temp_file))
+                im.save(tmp_path / ("temp." + ext))
 
     def test_fp_name(self, tmp_path: Path) -> None:
-        temp_file = str(tmp_path / "temp.jpg")
+        temp_file = tmp_path / "temp.jpg"
 
         class FP(io.BytesIO):
-            name: str
+            name: Path
 
             if sys.version_info >= (3, 12):
                 from collections.abc import Buffer
@@ -222,10 +230,10 @@ class TestImage:
                 assert_image_similar(im, reloaded, 20)
 
     def test_unknown_extension(self, tmp_path: Path) -> None:
-        im = hopper()
-        temp_file = str(tmp_path / "temp.unknown")
-        with pytest.raises(ValueError):
-            im.save(temp_file)
+        temp_file = tmp_path / "temp.unknown"
+        with hopper() as im:
+            with pytest.raises(ValueError):
+                im.save(temp_file)
 
     def test_internals(self) -> None:
         im = Image.new("L", (100, 100))
@@ -243,12 +251,21 @@ class TestImage:
         reason="Test requires opening an mmaped file for writing",
     )
     def test_readonly_save(self, tmp_path: Path) -> None:
-        temp_file = str(tmp_path / "temp.bmp")
+        temp_file = tmp_path / "temp.bmp"
         shutil.copy("Tests/images/rgb32bf-rgba.bmp", temp_file)
 
         with Image.open(temp_file) as im:
             assert im.readonly
             im.save(temp_file)
+
+    def test_save_without_changing_readonly(self, tmp_path: Path) -> None:
+        temp_file = tmp_path / "temp.bmp"
+
+        with Image.open("Tests/images/rgb32bf-rgba.bmp") as im:
+            assert im.readonly
+
+            im.save(temp_file)
+            assert im.readonly
 
     def test_dump(self, tmp_path: Path) -> None:
         im = Image.new("L", (10, 10))
@@ -575,9 +592,7 @@ class TestImage:
     def test_one_item_tuple(self) -> None:
         for mode in ("I", "F", "L"):
             im = Image.new(mode, (100, 100), (5,))
-            px = im.load()
-            assert px is not None
-            assert px[0, 0] == 5
+            assert im.getpixel((0, 0)) == 5
 
     def test_linear_gradient_wrong_mode(self) -> None:
         # Arrange
@@ -657,12 +672,13 @@ class TestImage:
         im.putpalette(list(range(256)) * 4, "RGBA")
         im_remapped = im.remap_palette(list(range(256)))
         assert_image_equal(im, im_remapped)
+        assert im.palette is not None
         assert im.palette.palette == im_remapped.palette.palette
 
         # Test illegal image mode
         with hopper() as im:
             with pytest.raises(ValueError):
-                im.remap_palette(None)
+                im.remap_palette([])
 
     def test_remap_palette_transparency(self) -> None:
         im = Image.new("P", (1, 2), (0, 0, 0))
@@ -700,6 +716,7 @@ class TestImage:
             assert new_image.size == image.size
             assert new_image.info == base_image.info
             if palette_result is not None:
+                assert new_image.palette is not None
                 assert new_image.palette.tobytes() == palette_result.tobytes()
             else:
                 assert new_image.palette is None
@@ -726,15 +743,17 @@ class TestImage:
         # https://github.com/python-pillow/Pillow/issues/835
         # Arrange
         test_file = "Tests/images/hopper.png"
-        temp_file = str(tmp_path / "temp.jpg")
+        temp_file = tmp_path / "temp.jpg"
 
         # Act/Assert
         with Image.open(test_file) as im:
             with warnings.catch_warnings():
+                warnings.simplefilter("error")
+
                 im.save(temp_file)
 
     def test_no_new_file_on_error(self, tmp_path: Path) -> None:
-        temp_file = str(tmp_path / "temp.jpg")
+        temp_file = tmp_path / "temp.jpg"
 
         im = Image.new("RGB", (0, 0))
         with pytest.raises(ValueError):
@@ -762,12 +781,32 @@ class TestImage:
         assert dict(exif)
 
         # Test that exif data is cleared after another load
-        exif.load(None)
+        exif.load(b"")
         assert not dict(exif)
 
         # Test loading just the EXIF header
         exif.load(b"Exif\x00\x00")
         assert not dict(exif)
+
+    def test_duplicate_exif_header(self) -> None:
+        with Image.open("Tests/images/exif.png") as im:
+            im.load()
+            im.info["exif"] = b"Exif\x00\x00" + im.info["exif"]
+
+            exif = im.getexif()
+        assert exif[274] == 1
+
+    def test_empty_get_ifd(self) -> None:
+        exif = Image.Exif()
+        ifd = exif.get_ifd(0x8769)
+        assert ifd == {}
+
+        ifd[36864] = b"0220"
+        assert exif.get_ifd(0x8769) == {36864: b"0220"}
+
+        reloaded_exif = Image.Exif()
+        reloaded_exif.load(exif.tobytes())
+        assert reloaded_exif.get_ifd(0x8769) == {36864: b"0220"}
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
@@ -781,7 +820,7 @@ class TestImage:
             assert exif[296] == 2
             assert exif[11] == "gThumb 3.0.1"
 
-            out = str(tmp_path / "temp.jpg")
+            out = tmp_path / "temp.jpg"
             exif[258] = 8
             del exif[274]
             del exif[282]
@@ -803,7 +842,7 @@ class TestImage:
             assert exif[274] == 1
             assert exif[305] == "Adobe Photoshop CC 2017 (Macintosh)"
 
-            out = str(tmp_path / "temp.jpg")
+            out = tmp_path / "temp.jpg"
             exif[258] = 8
             del exif[306]
             exif[274] = 455
@@ -817,13 +856,12 @@ class TestImage:
             assert reloaded_exif[305] == "Pillow test"
 
     @skip_unless_feature("webp")
-    @skip_unless_feature("webp_anim")
     def test_exif_webp(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/hopper.webp") as im:
             exif = im.getexif()
             assert exif == {}
 
-            out = str(tmp_path / "temp.webp")
+            out = tmp_path / "temp.webp"
             exif[258] = 8
             exif[40963] = 455
             exif[305] = "Pillow test"
@@ -845,7 +883,7 @@ class TestImage:
             exif = im.getexif()
             assert exif == {274: 1}
 
-            out = str(tmp_path / "temp.png")
+            out = tmp_path / "temp.png"
             exif[258] = 8
             del exif[274]
             exif[40963] = 455
@@ -939,7 +977,15 @@ class TestImage:
 
     def test_empty_xmp(self) -> None:
         with Image.open("Tests/images/hopper.gif") as im:
-            assert im.getxmp() == {}
+            if ElementTree is None:
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
+                    xmp = im.getxmp()
+            else:
+                xmp = im.getxmp()
+            assert xmp == {}
 
     def test_getxmp_padded(self) -> None:
         im = Image.new("RGB", (1, 1))
@@ -955,6 +1001,11 @@ class TestImage:
                 assert im.getxmp() == {}
         else:
             assert im.getxmp() == {"xmpmeta": None}
+
+    def test_get_child_images(self) -> None:
+        im = Image.new("RGB", (1, 1))
+        with pytest.warns(DeprecationWarning):
+            assert im.get_child_images() == []
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size: tuple[int, int]) -> None:
@@ -990,12 +1041,14 @@ class TestImage:
         # P mode with RGBA palette
         im = Image.new("RGBA", (1, 1)).convert("P")
         assert im.mode == "P"
+        assert im.palette is not None
         assert im.palette.mode == "RGBA"
         assert im.has_transparency_data
 
     def test_apply_transparency(self) -> None:
         im = Image.new("P", (1, 1))
         im.putpalette((0, 0, 0, 1, 1, 1))
+        assert im.palette is not None
         assert im.palette.colors == {(0, 0, 0): 0, (1, 1, 1): 1}
 
         # Test that no transformation is applied without transparency
@@ -1013,13 +1066,16 @@ class TestImage:
         im.putpalette((0, 0, 0, 255, 1, 1, 1, 128), "RGBA")
         im.info["transparency"] = 0
         im.apply_transparency()
+        assert im.palette is not None
         assert im.palette.colors == {(0, 0, 0, 0): 0, (1, 1, 1, 128): 1}
 
         # Test that transparency bytes are applied
         with Image.open("Tests/images/pil123p.png") as im:
             assert isinstance(im.info["transparency"], bytes)
+            assert im.palette is not None
             assert im.palette.colors[(27, 35, 6)] == 24
             im.apply_transparency()
+            assert im.palette is not None
             assert im.palette.colors[(27, 35, 6, 214)] == 24
 
     def test_constants(self) -> None:
@@ -1052,22 +1108,17 @@ class TestImage:
         valgrind pytest -qq Tests/test_image.py::TestImage::test_overrun | grep decode.c
         """
         with Image.open(os.path.join("Tests/images", path)) as im:
-            try:
+            with pytest.raises(OSError) as e:
                 im.load()
-                pytest.fail()
-            except OSError as e:
-                buffer_overrun = str(e) == "buffer overrun when reading image file"
-                truncated = "image file is truncated" in str(e)
+        buffer_overrun = str(e.value) == "buffer overrun when reading image file"
+        truncated = "image file is truncated" in str(e.value)
 
-                assert buffer_overrun or truncated
+        assert buffer_overrun or truncated
 
     def test_fli_overrun2(self) -> None:
         with Image.open("Tests/images/fli_overrun2.bin") as im:
-            try:
+            with pytest.raises(OSError, match="buffer overrun when reading image file"):
                 im.seek(1)
-                pytest.fail()
-            except OSError as e:
-                assert str(e) == "buffer overrun when reading image file"
 
     def test_exit_fp(self) -> None:
         with Image.new("L", (1, 1)) as im:
@@ -1082,6 +1133,10 @@ class TestImage:
                 copy.close()
             assert len(caplog.records) == 0
             assert im.fp is None
+
+    def test_deprecation(self) -> None:
+        with pytest.warns(DeprecationWarning):
+            assert not Image.isImageType(None)
 
 
 class TestImageBytes:

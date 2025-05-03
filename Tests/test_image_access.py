@@ -230,7 +230,7 @@ class TestImagePutPixelError:
                 im.putpixel((0, 0), v)  # type: ignore[arg-type]
 
     @pytest.mark.parametrize(
-        ("mode", "band_numbers", "match"),
+        "mode, band_numbers, match",
         (
             ("L", (0, 2), "color must be int or single-element tuple"),
             ("LA", (0, 3), "color must be int, or tuple of one or two elements"),
@@ -271,12 +271,24 @@ class TestImagePutPixelError:
 
 
 class TestEmbeddable:
-    @pytest.mark.xfail(reason="failing test")
+    @pytest.mark.xfail(not (sys.version_info >= (3, 13)), reason="failing test")
     @pytest.mark.skipif(not is_win32(), reason="requires Windows")
     def test_embeddable(self) -> None:
         import ctypes
 
         from setuptools.command import build_ext
+
+        compiler = getattr(build_ext, "new_compiler")()
+        compiler.add_include_dir(sysconfig.get_config_var("INCLUDEPY"))
+
+        libdir = sysconfig.get_config_var("LIBDIR") or sysconfig.get_config_var(
+            "INCLUDEPY"
+        ).replace("include", "libs")
+        compiler.add_library_dir(libdir)
+        try:
+            compiler.initialize()
+        except Exception:
+            pytest.skip("Compiler could not be initialized")
 
         with open("embed_pil.c", "w", encoding="utf-8") as fh:
             home = sys.prefix.replace("\\", "\\\\")
@@ -305,13 +317,6 @@ int main(int argc, char* argv[])
         """
             )
 
-        compiler = getattr(build_ext, "new_compiler")()
-        compiler.add_include_dir(sysconfig.get_config_var("INCLUDEPY"))
-
-        libdir = sysconfig.get_config_var("LIBDIR") or sysconfig.get_config_var(
-            "INCLUDEPY"
-        ).replace("include", "libs")
-        compiler.add_library_dir(libdir)
         objects = compiler.compile(["embed_pil.c"])
         compiler.link_executable(objects, "embed_pil")
 

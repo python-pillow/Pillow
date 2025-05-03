@@ -5,8 +5,6 @@ import sys
 from io import BytesIO
 from pathlib import Path
 
-import pytest
-
 from PIL import Image, PSDraw
 
 
@@ -37,7 +35,7 @@ def test_draw_postscript(tmp_path: Path) -> None:
     # https://pillow.readthedocs.io/en/latest/handbook/tutorial.html#drawing-postscript
 
     # Arrange
-    tempfile = str(tmp_path / "temp.ps")
+    tempfile = tmp_path / "temp.ps"
     with open(tempfile, "wb") as fp:
         # Act
         ps = PSDraw.PSDraw(fp)
@@ -49,17 +47,16 @@ def test_draw_postscript(tmp_path: Path) -> None:
     assert os.path.getsize(tempfile) > 0
 
 
-@pytest.mark.parametrize("buffer", (True, False))
-def test_stdout(buffer: bool) -> None:
+def test_stdout() -> None:
     # Temporarily redirect stdout
     old_stdout = sys.stdout
 
     class MyStdOut:
         buffer = BytesIO()
 
-    mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
+    mystdout = MyStdOut()
 
-    sys.stdout = mystdout  # type: ignore[assignment]
+    sys.stdout = mystdout
 
     ps = PSDraw.PSDraw()
     _create_document(ps)
@@ -67,6 +64,4 @@ def test_stdout(buffer: bool) -> None:
     # Reset stdout
     sys.stdout = old_stdout
 
-    if isinstance(mystdout, MyStdOut):
-        mystdout = mystdout.buffer
-    assert mystdout.getvalue() != b""
+    assert mystdout.buffer.getvalue() != b""

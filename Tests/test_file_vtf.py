@@ -14,7 +14,7 @@ from .helper import assert_image_equal, assert_image_similar
 
 
 @pytest.mark.parametrize(
-    ("size", "expected_size"),
+    "size, expected_size",
     [
         (8, 8),
         (7, 8),
@@ -29,7 +29,7 @@ def test_closest_power(size: int, expected_size: int) -> None:
 
 
 @pytest.mark.parametrize(
-    ("size", "expected_count"),
+    "size, expected_count",
     [
         ((1, 1), 1),
         ((2, 2), 2),
@@ -47,7 +47,7 @@ def test_get_mipmap_count(size: tuple[int, int], expected_count: int) -> None:
 
 
 @pytest.mark.parametrize(
-    ("pixel_format", "size", "expected_size"),
+    "pixel_format, size, expected_size",
     [
         (VtfPF.DXT1, (16, 16), (16 * 16) // 2),
         (VtfPF.DXT1_ONEBITALPHA, (16, 16), (16 * 16) // 2),
@@ -69,7 +69,7 @@ def test_get_texture_size(
 
 
 @pytest.mark.parametrize(
-    ("etalon_path", "file_path", "expected_mode", "epsilon"),
+    "etalon_path, file_path, expected_mode, epsilon",
     [
         ("Tests/images/vtf_i8.png", "Tests/images/vtf_i8.vtf", "L", 0.0),
         ("Tests/images/vtf_a8.png", "Tests/images/vtf_a8.vtf", "RGBA", 0.0),
@@ -96,7 +96,7 @@ def test_vtf_read(
 
 
 @pytest.mark.parametrize(
-    ("pixel_format", "file_path", "expected_mode", "epsilon"),
+    "pixel_format, file_path, expected_mode, epsilon",
     [
         (VtfPF.I8, "Tests/images/vtf_i8.png", "L", 0.0),
         (VtfPF.A8, "Tests/images/vtf_a8.png", "RGBA", 0.0),

@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageFont
 .. py:currentmodule:: PIL.ImageFont
 
-:py:mod:`~PIL.ImageFont` Module
+:py:mod:`~PIL.ImageFont` module
 ===============================
 
 The :py:mod:`~PIL.ImageFont` module defines a class with the same name. Instances of
@@ -91,3 +91,11 @@ Constants
     Set to 1,000,000, to protect against potential DOS attacks. Pillow will
     raise a :py:exc:`ValueError` if the number of characters is over this limit. The
     check can be disabled by setting ``ImageFont.MAX_STRING_LENGTH = None``.
+
+Dictionaries
+------------
+
+.. autoclass:: Axis
+    :members:
+    :undoc-members:
+    :show-inheritance:

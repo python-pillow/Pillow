@@ -161,20 +161,20 @@ def _get_mipmap_count(width: int, height: int) -> int:
 
 def _write_image(fp: IO[bytes], im: Image.Image, pixel_format: VtfPF) -> None:
     extents = (0, 0) + im.size
-    encoder_args: tuple[int, str] | tuple[str, int, int]
+    encoder_args: tuple[int,] | tuple[str, int, int]
     if pixel_format == VtfPF.DXT1:
         encoder = "bcn"
-        encoder_args = (1, "DXT1")
+        encoder_args = (1,)
         im = im.convert("RGBA")
     elif pixel_format == VtfPF.DXT1_ONEBITALPHA:
         encoder = "bcn"
         encoder_args = (1, "DXT1A")
     elif pixel_format == VtfPF.DXT3:
         encoder = "bcn"
-        encoder_args = (3, "DXT3")
+        encoder_args = (3,)
     elif pixel_format == VtfPF.DXT5:
         encoder = "bcn"
-        encoder_args = (5, "DXT5")
+        encoder_args = (5,)
     elif pixel_format == VtfPF.RGB888:
         encoder = "raw"
         encoder_args = ("RGB", 0, 0)
@@ -202,7 +202,7 @@ def _write_image(fp: IO[bytes], im: Image.Image, pixel_format: VtfPF) -> None:
         msg = f"Unsupported pixel format: {pixel_format!r}"
         raise VTFException(msg)
 
-    tile = [(encoder, extents, fp.tell(), encoder_args)]
+    tile = [ImageFile._Tile(encoder, extents, fp.tell(), encoder_args)]
     ImageFile._save(im, fp, tile, _get_texture_size(pixel_format, *im.size))
 
 

@@ -1,6 +1,6 @@
 .. _image-plugins:
 
-Writing Your Own Image Plugin
+Writing your own image plugin
 =============================
 
 Pillow uses a plugin model which allows you to add your own
@@ -53,8 +53,8 @@ true color.
     from PIL import Image, ImageFile
 
 
-    def _accept(prefix):
-        return prefix[:4] == b"SPAM"
+    def _accept(prefix: bytes) -> bool:
+        return prefix.startswith(b"SPAM")
 
 
     class SpamImageFile(ImageFile.ImageFile):
@@ -62,7 +62,7 @@ true color.
         format = "SPAM"
         format_description = "Spam raster image"
 
-        def _open(self):
+        def _open(self) -> None:
 
             header = self.fp.read(128).split()
 
@@ -82,7 +82,7 @@ true color.
                 raise SyntaxError(msg)
 
             # data descriptor
-            self.tile = [("raw", (0, 0) + self.size, 128, (self.mode, 0, 1))]
+            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 128, (self.mode, 0, 1))]
 
 
     Image.register_open(SpamImageFile.format, SpamImageFile, _accept)
@@ -329,7 +329,7 @@ The fields are used as follows:
 
 .. _file-codecs:
 
-Writing Your Own File Codec in C
+Writing your own file codec in C
 ================================
 
 There are 3 stages in a file codec's lifetime:
@@ -414,7 +414,7 @@ memory and release any resources from external libraries.
 
 .. _file-codecs-py:
 
-Writing Your Own File Codec in Python
+Writing your own file codec in Python
 =====================================
 
 Python file decoders and encoders should derive from

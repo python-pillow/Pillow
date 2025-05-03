@@ -37,6 +37,9 @@ example, let’s display the image we just loaded::
 
     >>> im.show()
 
+.. image:: show_hopper.webp
+    :align: center
+
 .. note::
 
     The standard version of :py:meth:`~PIL.Image.Image.show` is not very
@@ -79,6 +82,9 @@ Convert files to JPEG
             except OSError:
                 print("cannot convert", infile)
 
+.. image:: ../../Tests/images/hopper.jpg
+    :align: center
+
 A second argument can be supplied to the :py:meth:`~PIL.Image.Image.save`
 method which explicitly specifies a file format. If you use a non-standard
 extension, you must always specify the format this way:
@@ -103,6 +109,9 @@ Create JPEG thumbnails
             except OSError:
                 print("cannot create thumbnail for", infile)
 
+.. image:: thumbnail_hopper.jpg
+    :align: center
+
 It is important to note that the library doesn’t decode or load the raster data
 unless it really has to. When you open a file, the file header is read to
 determine the file format and extract things like mode, size, and other
@@ -113,7 +122,7 @@ This means that opening an image file is a fast operation, which is independent
 of the file size and compression type. Here’s a simple script to quickly
 identify a set of image files:
 
-Identify Image Files
+Identify image files
 ^^^^^^^^^^^^^^^^^^^^
 
 ::
@@ -140,15 +149,18 @@ Copying a subrectangle from an image
 
 ::
 
-    box = (100, 100, 400, 400)
+    box = (0, 0, 64, 64)
     region = im.crop(box)
 
 The region is defined by a 4-tuple, where coordinates are (left, upper, right,
 lower). The Python Imaging Library uses a coordinate system with (0, 0) in the
 upper left corner. Also note that coordinates refer to positions between the
-pixels, so the region in the above example is exactly 300x300 pixels.
+pixels, so the region in the above example is exactly 64x64 pixels.
 
 The region could now be processed in a certain manner and pasted back.
+
+.. image:: cropped_hopper.webp
+    :align: center
 
 Processing a subrectangle, and pasting it back
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -164,6 +176,9 @@ modes of the original image and the region do not need to match. If they don’t
 the region is automatically converted before being pasted (see the section on
 :ref:`color-transforms` below for details).
 
+.. image:: pasted_hopper.webp
+    :align: center
+
 Here’s an additional example:
 
 Rolling an image
@@ -171,7 +186,7 @@ Rolling an image
 
 ::
 
-    def roll(im, delta):
+    def roll(im: Image.Image, delta: int) -> Image.Image:
         """Roll an image sideways."""
         xsize, ysize = im.size
 
@@ -186,6 +201,9 @@ Rolling an image
 
         return im
 
+.. image:: rolled_hopper.webp
+    :align: center
+
 Or if you would like to merge two images into a wider image:
 
 Merging images
@@ -193,7 +211,7 @@ Merging images
 
 ::
 
-    def merge(im1, im2):
+    def merge(im1: Image.Image, im2: Image.Image) -> Image.Image:
         w = im1.size[0] + im2.size[0]
         h = max(im1.size[1], im2.size[1])
         im = Image.new("RGBA", (w, h))
@@ -202,6 +220,9 @@ Merging images
         im.paste(im2, (im1.size[0], 0))
 
         return im
+
+.. image:: merged_hopper.webp
+    :align: center
 
 For more advanced tricks, the paste method can also take a transparency mask as
 an optional argument. In this mask, the value 255 indicates that the pasted
@@ -229,6 +250,9 @@ Note that for a single-band image, :py:meth:`~PIL.Image.Image.split` returns
 the image itself. To work with individual color bands, you may want to convert
 the image to “RGB” first.
 
+.. image:: rebanded_hopper.webp
+    :align: center
+
 Geometrical transforms
 ----------------------
 
@@ -245,6 +269,9 @@ Simple geometry transforms
     out = im.resize((128, 128))
     out = im.rotate(45) # degrees counter-clockwise
 
+.. image:: rotated_hopper_90.webp
+    :align: center
+
 To rotate the image in 90 degree steps, you can either use the
 :py:meth:`~PIL.Image.Image.rotate` method or the
 :py:meth:`~PIL.Image.Image.transpose` method. The latter can also be used to
@@ -256,10 +283,37 @@ Transposing an image
 ::
 
     out = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+
+.. image:: flip_left_right_hopper.webp
+    :align: center
+
+::
+
     out = im.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+
+.. image:: flip_top_bottom_hopper.webp
+    :align: center
+
+::
+
     out = im.transpose(Image.Transpose.ROTATE_90)
+
+.. image:: rotated_hopper_90.webp
+    :align: center
+
+::
+
     out = im.transpose(Image.Transpose.ROTATE_180)
+
+.. image:: rotated_hopper_180.webp
+    :align: center
+
+::
+
     out = im.transpose(Image.Transpose.ROTATE_270)
+
+.. image:: rotated_hopper_270.webp
+    :align: center
 
 ``transpose(ROTATE)`` operations can also be performed identically with
 :py:meth:`~PIL.Image.Image.rotate` operations, provided the ``expand`` flag is
@@ -278,7 +332,7 @@ choose to resize relative to a given size.
 
     from PIL import Image, ImageOps
     size = (100, 150)
-    with Image.open("Tests/images/hopper.webp") as im:
+    with Image.open("hopper.webp") as im:
         ImageOps.contain(im, size).save("imageops_contain.webp")
         ImageOps.cover(im, size).save("imageops_cover.webp")
         ImageOps.fit(im, size).save("imageops_fit.webp")
@@ -342,7 +396,10 @@ Applying filters
     from PIL import ImageFilter
     out = im.filter(ImageFilter.DETAIL)
 
-Point Operations
+.. image:: enhanced_hopper.webp
+    :align: center
+
+Point operations
 ^^^^^^^^^^^^^^^^
 
 The :py:meth:`~PIL.Image.Image.point` method can be used to translate the pixel
@@ -355,8 +412,11 @@ Applying point transforms
 
 ::
 
-    # multiply each pixel by 1.2
-    out = im.point(lambda i: i * 1.2)
+    # multiply each pixel by 20
+    out = im.point(lambda i: i * 20)
+
+.. image:: transformed_hopper.webp
+    :align: center
 
 Using the above technique, you can quickly apply any simple expression to an
 image. You can also combine the :py:meth:`~PIL.Image.Image.point` and
@@ -388,6 +448,9 @@ Note the syntax used to create the mask::
 
     imout = im.point(lambda i: expression and 255)
 
+.. image:: masked_hopper.webp
+    :align: center
+
 Python only evaluates the portion of a logical expression as is necessary to
 determine the outcome, and returns the last value examined as the result of the
 expression. So if the expression above is false (0), Python does not look at
@@ -411,6 +474,10 @@ Enhancing images
 
     enh = ImageEnhance.Contrast(im)
     enh.enhance(1.3).show("30% more contrast")
+
+
+.. image:: contrasted_hopper.jpg
+    :align: center
 
 Image sequences
 ---------------
@@ -444,10 +511,42 @@ Reading sequences
 As seen in this example, you’ll get an :py:exc:`EOFError` exception when the
 sequence ends.
 
+Writing sequences
+^^^^^^^^^^^^^^^^^
+
+You can create animated GIFs with Pillow, e.g.
+
+::
+
+    from PIL import Image
+
+    # List of image filenames
+    image_filenames = [
+        "hopper.jpg",
+        "rotated_hopper_270.jpg",
+        "rotated_hopper_180.jpg",
+        "rotated_hopper_90.jpg",
+    ]
+
+    # Open images and create a list
+    images = [Image.open(filename) for filename in image_filenames]
+
+    # Save the images as an animated GIF
+    images[0].save(
+        "animated_hopper.gif",
+        append_images=images[1:],
+        duration=500,  # duration of each frame in milliseconds
+        loop=0,  # loop forever
+    )
+
+
+.. image:: animated_hopper.gif
+    :align: center
+
 The following class lets you use the for-statement to loop over the sequence:
 
-Using the ImageSequence Iterator class
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Using the :py:class:`~PIL.ImageSequence.Iterator` class
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
@@ -467,25 +566,61 @@ Drawing PostScript
 
 ::
 
-    from PIL import Image
-    from PIL import PSDraw
+    from PIL import Image, PSDraw
+    import os
 
-    with Image.open("hopper.ppm") as im:
-        title = "hopper"
-        box = (1 * 72, 2 * 72, 7 * 72, 10 * 72)  # in points
+    # Define the PostScript file
+    ps_file = open("hopper.ps", "wb")
 
-        ps = PSDraw.PSDraw()  # default is sys.stdout or sys.stdout.buffer
-        ps.begin_document(title)
+    # Create a PSDraw object
+    ps = PSDraw.PSDraw(ps_file)
 
-        # draw the image (75 dpi)
-        ps.image(box, im, 75)
-        ps.rectangle(box)
+    # Start the document
+    ps.begin_document()
 
-        # draw title
-        ps.setfont("HelveticaNarrow-Bold", 36)
-        ps.text((3 * 72, 4 * 72), title)
+    # Set the text to be drawn
+    text = "Hopper"
 
-        ps.end_document()
+    # Define the PostScript font
+    font_name = "Helvetica-Narrow-Bold"
+    font_size = 36
+
+    # Calculate text size (approximation as PSDraw doesn't provide direct method)
+    # Assuming average character width as 0.6 of the font size
+    text_width = len(text) * font_size * 0.6
+    text_height = font_size
+
+    # Set the position (top-center)
+    page_width, page_height = 595, 842  # A4 size in points
+    text_x = (page_width - text_width) // 2
+    text_y = page_height - text_height - 50  # Distance from the top of the page
+
+    # Load the image
+    image_path = "hopper.ppm"  # Update this with your image path
+    with Image.open(image_path) as im:
+        # Resize the image if it's too large
+        im.thumbnail((page_width - 100, page_height // 2))
+
+        # Define the box where the image will be placed
+        img_x = (page_width - im.width) // 2
+        img_y = text_y + text_height - 200  # 200 points below the text
+
+        # Draw the image (75 dpi)
+        ps.image((img_x, img_y, img_x + im.width, img_y + im.height), im, 75)
+
+    # Draw the text
+    ps.setfont(font_name, font_size)
+    ps.text((text_x, text_y), text)
+
+    # End the document
+    ps.end_document()
+    ps_file.close()
+
+.. image:: hopper_ps.webp
+
+.. note::
+
+    PostScript converted to PDF for display purposes
 
 More on reading images
 ----------------------
@@ -542,7 +677,7 @@ Reading from URL
 
     from PIL import Image
     from urllib.request import urlopen
-    url = "https://python-pillow.org/assets/images/pillow-logo.png"
+    url = "https://python-pillow.github.io/assets/images/pillow-logo.png"
     img = Image.open(urlopen(url))
 
 
@@ -553,7 +688,7 @@ Reading from a tar archive
 
     from PIL import Image, TarIO
 
-    fp = TarIO.TarIO("Tests/images/hopper.tar", "hopper.jpg")
+    fp = TarIO.TarIO("hopper.tar", "hopper.jpg")
     im = Image.open(fp)
 
 
@@ -568,8 +703,7 @@ in the current directory can be saved as JPEGs at reduced quality.
     import glob
     from PIL import Image
 
-
-    def compress_image(source_path, dest_path):
+    def compress_image(source_path: str, dest_path: str) -> None:
         with Image.open(source_path) as img:
             if img.mode != "RGB":
                 img = img.convert("RGB")

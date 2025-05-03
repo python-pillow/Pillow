@@ -39,6 +39,8 @@ BBOX = (((X0, Y0), (X1, Y1)), [(X0, Y0), (X1, Y1)], (X0, Y0, X1, Y1), [X0, Y0, X
 POINTS = (
     ((10, 10), (20, 40), (30, 30)),
     [(10, 10), (20, 40), (30, 30)],
+    ([10, 10], [20, 40], [30, 30]),
+    [[10, 10], [20, 40], [30, 30]],
     (10, 10, 20, 40, 30, 30),
     [10, 10, 20, 40, 30, 30],
 )
@@ -46,6 +48,8 @@ POINTS = (
 KITE_POINTS = (
     ((10, 50), (70, 10), (90, 50), (70, 90), (10, 50)),
     [(10, 50), (70, 10), (90, 50), (70, 90), (10, 50)],
+    ([10, 50], [70, 10], [90, 50], [70, 90], [10, 50]),
+    [[10, 50], [70, 10], [90, 50], [70, 90], [10, 50]],
 )
 
 
@@ -448,7 +452,6 @@ def test_shape1() -> None:
     x3, y3 = 95, 5
 
     # Act
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.move(x0, y0)
     s.curve(x1, y1, x2, y2, x3, y3)
@@ -470,7 +473,6 @@ def test_shape2() -> None:
     x3, y3 = 5, 95
 
     # Act
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.move(x0, y0)
     s.curve(x1, y1, x2, y2, x3, y3)
@@ -489,7 +491,6 @@ def test_transform() -> None:
     draw = ImageDraw.Draw(im)
 
     # Act
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.line(0, 0)
     s.transform((0, 0, 0, 0, 0, 0))
@@ -812,7 +813,7 @@ def test_rounded_rectangle(
         tuple[int, int, int, int]
         | tuple[list[int]]
         | tuple[tuple[int, int], tuple[int, int]]
-    )
+    ),
 ) -> None:
     # Arrange
     im = Image.new("RGB", (200, 200))
@@ -854,6 +855,27 @@ def test_rounded_rectangle_corners(
     )
     assert_image_equal_tofile(
         im, "Tests/images/imagedraw_rounded_rectangle_corners_" + suffix + ".png"
+    )
+
+
+def test_rounded_rectangle_joined_x_different_corners() -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im, "RGBA")
+
+    # Act
+    draw.rounded_rectangle(
+        (20, 10, 80, 90),
+        30,
+        fill="red",
+        outline="green",
+        width=5,
+        corners=(True, False, False, False),
+    )
+
+    # Assert
+    assert_image_equal_tofile(
+        im, "Tests/images/imagedraw_rounded_rectangle_joined_x_different_corners.png"
     )
 
 
@@ -1026,8 +1048,8 @@ def create_base_image_draw(
     background2: tuple[int, int, int] = GRAY,
 ) -> tuple[Image.Image, ImageDraw.ImageDraw]:
     img = Image.new(mode, size, background1)
-    for x in range(0, size[0]):
-        for y in range(0, size[1]):
+    for x in range(size[0]):
+        for y in range(size[1]):
             if (x + y) % 2 == 0:
                 img.putpixel((x, y), background2)
     return img, ImageDraw.Draw(img)
@@ -1348,6 +1370,20 @@ def test_stroke() -> None:
 
 
 @skip_unless_feature("freetype2")
+def test_stroke_float() -> None:
+    # Arrange
+    im = Image.new("RGB", (120, 130))
+    draw = ImageDraw.Draw(im)
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
+
+    # Act
+    draw.text((12, 12), "A", "#f00", font, stroke_width=0.5)
+
+    # Assert
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_stroke_float.png", 3.1)
+
+
+@skip_unless_feature("freetype2")
 def test_stroke_descender() -> None:
     # Arrange
     im = Image.new("RGB", (120, 130))
@@ -1359,6 +1395,28 @@ def test_stroke_descender() -> None:
 
     # Assert
     assert_image_similar_tofile(im, "Tests/images/imagedraw_stroke_descender.png", 6.76)
+
+
+@skip_unless_feature("freetype2")
+def test_stroke_inside_gap() -> None:
+    # Arrange
+    im = Image.new("RGB", (120, 130))
+    draw = ImageDraw.Draw(im)
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
+
+    # Act
+    draw.text((12, 12), "i", "#f00", font, stroke_width=20)
+
+    # Assert
+    for y in range(im.height):
+        glyph = ""
+        for x in range(im.width):
+            if im.getpixel((x, y)) == (0, 0, 0):
+                if glyph == "started":
+                    glyph = "ended"
+            else:
+                assert glyph != "ended", "Gap inside stroked glyph"
+                glyph = "started"
 
 
 @skip_unless_feature("freetype2")
@@ -1469,7 +1527,6 @@ def test_same_color_outline(bbox: Coords) -> None:
     x2, y2 = 95, 50
     x3, y3 = 95, 5
 
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.move(x0, y0)
     s.curve(x1, y1, x2, y2, x3, y3)
@@ -1573,7 +1630,7 @@ def test_compute_regular_polygon_vertices(
             0,
             ValueError,
             "bounding_circle should contain 2D coordinates "
-            "and a radius (e.g. (x, y, r) or ((x, y), r) )",
+            r"and a radius \(e.g. \(x, y, r\) or \(\(x, y\), r\) \)",
         ),
         (
             3,
@@ -1587,7 +1644,7 @@ def test_compute_regular_polygon_vertices(
             ((50, 50, 50), 25),
             0,
             ValueError,
-            "bounding_circle centre should contain 2D coordinates (e.g. (x, y))",
+            r"bounding_circle centre should contain 2D coordinates \(e.g. \(x, y\)\)",
         ),
         (
             3,
@@ -1612,9 +1669,8 @@ def test_compute_regular_polygon_vertices_input_error_handling(
     expected_error: type[Exception],
     error_message: str,
 ) -> None:
-    with pytest.raises(expected_error) as e:
+    with pytest.raises(expected_error, match=error_message):
         ImageDraw._compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)  # type: ignore[arg-type]
-    assert str(e.value) == error_message
 
 
 def test_continuous_horizontal_edges_polygon() -> None:
@@ -1639,13 +1695,16 @@ def test_continuous_horizontal_edges_polygon() -> None:
 def test_discontiguous_corners_polygon() -> None:
     img, draw = create_base_image_draw((84, 68))
     draw.polygon(((1, 21), (34, 4), (71, 1), (38, 18)), BLACK)
+    draw.polygon(
+        ((82, 29), (82, 26), (82, 24), (67, 22), (52, 29), (52, 15), (67, 22)), BLACK
+    )
     draw.polygon(((71, 44), (38, 27), (1, 24)), BLACK)
     draw.polygon(
         ((38, 66), (5, 49), (77, 49), (47, 66), (82, 63), (82, 47), (1, 47), (1, 63)),
         BLACK,
     )
     expected = os.path.join(IMAGES_PATH, "discontiguous_corners_polygon.png")
-    assert_image_similar_tofile(img, expected, 1)
+    assert_image_equal_tofile(img, expected)
 
 
 def test_polygon2() -> None:

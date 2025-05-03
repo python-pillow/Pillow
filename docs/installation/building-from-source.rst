@@ -8,12 +8,12 @@
 
 .. _building-from-source:
 
-Building From Source
+Building from source
 ====================
 
 .. _external-libraries:
 
-External Libraries
+External libraries
 ------------------
 
 .. note::
@@ -44,31 +44,27 @@ Many of Pillow's features require external libraries:
 
 * **libtiff** provides compressed TIFF functionality
 
-  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.6.0**
+  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.7.0**
 
 * **libfreetype** provides type related services
 
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.16**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.17**.
 
 * **libwebp** provides the WebP format.
-
-  * Pillow has been tested with version **0.1.3**, which does not read
-    transparent WebP files. Versions **0.3.0** and above support
-    transparency.
 
 * **openjpeg** provides JPEG 2000 functionality.
 
   * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1**,
-    **2.4.0**, **2.5.0** and **2.5.2**.
+    **2.4.0**, **2.5.0**, **2.5.2** and **2.5.3**.
   * Pillow does **not** support the earlier **1.5** series which ships
     with Debian Jessie.
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.3.1**
+  * Pillow has been tested with libimagequant **2.6-4.3.4**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -92,6 +88,14 @@ Many of Pillow's features require external libraries:
   * Previous versions of Pillow (5.0.0 to 8.1.2) linked libraqm dynamically at runtime.
 
 * **libxcb** provides X11 screengrab support.
+
+* **libavif** provides support for the AVIF format.
+
+  * Pillow requires libavif version **1.0.0** or greater.
+  * libavif is merely an API that wraps AVIF codecs. If you are compiling
+    libavif from source, you will also need to install both an AVIF encoder
+    and decoder, such as rav1e and dav1d, or libaom, which both encodes and
+    decodes AVIF images.
 
 .. tab:: Linux
 
@@ -120,6 +124,12 @@ Many of Pillow's features require external libraries:
 
     To install libraqm, ``sudo apt-get install meson`` and then see
     ``depends/install_raqm.sh``.
+
+    Build prerequisites for libavif on Ubuntu are installed with::
+
+        sudo apt-get install cmake ninja-build nasm
+
+    Then see ``depends/install_libavif.sh`` to build and install libavif.
 
     Prerequisites are installed on recent **Red Hat**, **CentOS** or **Fedora** with::
 
@@ -152,13 +162,15 @@ Many of Pillow's features require external libraries:
     The easiest way to install external libraries is via `Homebrew
     <https://brew.sh/>`_. After you install Homebrew, run::
 
-        brew install libjpeg libtiff little-cms2 openjpeg webp
+        brew install libavif libjpeg libraqm libtiff little-cms2 openjpeg webp
 
-    To install libraqm on macOS use Homebrew to install its dependencies::
+    If you would like to use libavif with more codecs than just aom, then
+    instead of installing libavif through Homebrew directly, you can use
+    Homebrew to install libavif's build dependencies::
 
-        brew install freetype harfbuzz fribidi
+        brew install aom dav1d rav1e svt-av1
 
-    Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
+    Then see ``depends/install_libavif.sh`` to install libavif.
 
 .. tab:: Windows
 
@@ -197,12 +209,8 @@ Many of Pillow's features require external libraries:
             mingw-w64-x86_64-libwebp \
             mingw-w64-x86_64-openjpeg2 \
             mingw-w64-x86_64-libimagequant \
-            mingw-w64-x86_64-libraqm
-
-    https://www.msys2.org/docs/python/ states that setuptools >= 60 does not work with
-    MSYS2. To workaround this, before installing Pillow you must run::
-
-        export SETUPTOOLS_USE_DISTUTILS=stdlib
+            mingw-w64-x86_64-libraqm \
+            mingw-w64-x86_64-libavif
 
 .. tab:: FreeBSD
 
@@ -214,7 +222,7 @@ Many of Pillow's features require external libraries:
 
     Prerequisites are installed on **FreeBSD 10 or 11** with::
 
-        sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi libxcb
+        sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi libxcb libavif
 
     Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
 
@@ -263,7 +271,7 @@ After navigating to the Pillow directory, run::
 
 .. _compressed archive from PyPI: https://pypi.org/project/pillow/#files
 
-Build Options
+Build options
 ^^^^^^^^^^^^^
 
 * Config setting: ``-C parallel=n``. Can also be given
@@ -275,18 +283,20 @@ Build Options
 
 * Config settings: ``-C zlib=disable``, ``-C jpeg=disable``,
   ``-C tiff=disable``, ``-C freetype=disable``, ``-C raqm=disable``,
-  ``-C lcms=disable``, ``-C webp=disable``, ``-C webpmux=disable``,
-  ``-C jpeg2000=disable``, ``-C imagequant=disable``, ``-C xcb=disable``.
+  ``-C lcms=disable``, ``-C webp=disable``,
+  ``-C jpeg2000=disable``, ``-C imagequant=disable``, ``-C xcb=disable``,
+  ``-C avif=disable``.
   Disable building the corresponding feature even if the development
   libraries are present on the building machine.
 
 * Config settings: ``-C zlib=enable``, ``-C jpeg=enable``,
   ``-C tiff=enable``, ``-C freetype=enable``, ``-C raqm=enable``,
-  ``-C lcms=enable``, ``-C webp=enable``, ``-C webpmux=enable``,
-  ``-C jpeg2000=enable``, ``-C imagequant=enable``, ``-C xcb=enable``.
+  ``-C lcms=enable``, ``-C webp=enable``,
+  ``-C jpeg2000=enable``, ``-C imagequant=enable``, ``-C xcb=enable``,
+  ``-C avif=enable``.
   Require that the corresponding feature is built. The build will raise
-  an exception if the libraries are not found. Webpmux (WebP metadata)
-  relies on WebP support. Tcl and Tk also must be used together.
+  an exception if the libraries are not found. Tcl and Tk must be used
+  together.
 
 * Config settings: ``-C raqm=vendor``, ``-C fribidi=vendor``.
   These flags are used to compile a modified version of libraqm and
@@ -309,7 +319,7 @@ Sample usage::
 
 .. _old-versions:
 
-Old Versions
+Old versions
 ============
 
 You can download old distributions from the `release history at PyPI

@@ -1679,6 +1679,7 @@ static struct {
     {"RGBA", "RGBaXX", 48, unpackRGBaskip2},
     {"RGBA", "RGBa;16L", 64, unpackRGBa16L},
     {"RGBA", "RGBa;16B", 64, unpackRGBa16B},
+    {"RGBA", "BGR", 24, ImagingUnpackBGR},
     {"RGBA", "BGRa", 32, unpackBGRa},
     {"RGBA", "RGBA;I", 32, unpackRGBAI},
     {"RGBA", "RGBA;L", 32, unpackRGBAL},
@@ -1710,6 +1711,7 @@ static struct {
 
 #ifdef WORDS_BIGENDIAN
     {"RGB", "RGB;16N", 48, unpackRGB16B},
+    {"RGB", "RGBX;16N", 64, unpackRGBA16B},
     {"RGBA", "RGBa;16N", 64, unpackRGBa16B},
     {"RGBA", "RGBA;16N", 64, unpackRGBA16B},
     {"RGBX", "RGBX;16N", 64, unpackRGBA16B},
@@ -1723,6 +1725,7 @@ static struct {
     {"RGBA", "A;16N", 16, band316B},
 #else
     {"RGB", "RGB;16N", 48, unpackRGB16L},
+    {"RGB", "RGBX;16N", 64, unpackRGBA16L},
     {"RGBA", "RGBa;16N", 64, unpackRGBa16L},
     {"RGBA", "RGBA;16N", 64, unpackRGBA16L},
     {"RGBX", "RGBX;16N", 64, unpackRGBA16L},

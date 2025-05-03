@@ -28,7 +28,7 @@ from ._binary import i16le as i16
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"\200\350\000\000"
+    return prefix.startswith(b"\200\350\000\000")
 
 
 ##
@@ -61,7 +61,7 @@ class PixarImageFile(ImageFile.ImageFile):
         # FIXME: to be continued...
 
         # create tile descriptor (assuming "dumped")
-        self.tile = [("raw", (0, 0) + self.size, 1024, (self.mode, 0, 1))]
+        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 1024, self.mode)]
 
 
 #

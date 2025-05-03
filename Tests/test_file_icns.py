@@ -21,6 +21,8 @@ def test_sanity() -> None:
     with Image.open(TEST_FILE) as im:
         # Assert that there is no unclosed file warning
         with warnings.catch_warnings():
+            warnings.simplefilter("error")
+
             im.load()
 
         assert im.mode == "RGBA"
@@ -30,14 +32,18 @@ def test_sanity() -> None:
 
 def test_load() -> None:
     with Image.open(TEST_FILE) as im:
-        assert im.load()[0, 0] == (0, 0, 0, 0)
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == (0, 0, 0, 0)
 
         # Test again now that it has already been loaded once
-        assert im.load()[0, 0] == (0, 0, 0, 0)
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == (0, 0, 0, 0)
 
 
 def test_save(tmp_path: Path) -> None:
-    temp_file = str(tmp_path / "temp.icns")
+    temp_file = tmp_path / "temp.icns"
 
     with Image.open(TEST_FILE) as im:
         im.save(temp_file)
@@ -54,7 +60,7 @@ def test_save(tmp_path: Path) -> None:
 
 
 def test_save_append_images(tmp_path: Path) -> None:
-    temp_file = str(tmp_path / "temp.icns")
+    temp_file = tmp_path / "temp.icns"
     provided_im = Image.new("RGBA", (32, 32), (255, 0, 0, 128))
 
     with Image.open(TEST_FILE) as im:
@@ -63,8 +69,9 @@ def test_save_append_images(tmp_path: Path) -> None:
         assert_image_similar_tofile(im, temp_file, 1)
 
         with Image.open(temp_file) as reread:
-            reread.size = (16, 16, 2)
-            reread.load()
+            assert isinstance(reread, IcnsImagePlugin.IcnsImageFile)
+            reread.size = (16, 16)
+            reread.load(2)
             assert_image_equal(reread, provided_im)
 
 
@@ -84,17 +91,25 @@ def test_sizes() -> None:
     # Check that we can load all of the sizes, and that the final pixel
     # dimensions are as expected
     with Image.open(TEST_FILE) as im:
+        assert isinstance(im, IcnsImagePlugin.IcnsImageFile)
         for w, h, r in im.info["sizes"]:
             wr = w * r
             hr = h * r
-            im.size = (w, h, r)
+            with pytest.warns(DeprecationWarning):
+                im.size = (w, h, r)
             im.load()
+            assert im.mode == "RGBA"
+            assert im.size == (wr, hr)
+
+            # Test using load() with scale
+            im.size = (w, h)
+            im.load(scale=r)
             assert im.mode == "RGBA"
             assert im.size == (wr, hr)
 
         # Check that we cannot load an incorrect size
         with pytest.raises(ValueError):
-            im.size = (1, 1)
+            im.size = (1, 2)
 
 
 def test_older_icon() -> None:
@@ -105,8 +120,9 @@ def test_older_icon() -> None:
             wr = w * r
             hr = h * r
             with Image.open("Tests/images/pillow2.icns") as im2:
-                im2.size = (w, h, r)
-                im2.load()
+                assert isinstance(im2, IcnsImagePlugin.IcnsImageFile)
+                im2.size = (w, h)
+                im2.load(r)
                 assert im2.mode == "RGBA"
                 assert im2.size == (wr, hr)
 
@@ -122,8 +138,9 @@ def test_jp2_icon() -> None:
             wr = w * r
             hr = h * r
             with Image.open("Tests/images/pillow3.icns") as im2:
-                im2.size = (w, h, r)
-                im2.load()
+                assert isinstance(im2, IcnsImagePlugin.IcnsImageFile)
+                im2.size = (w, h)
+                im2.load(r)
                 assert im2.mode == "RGBA"
                 assert im2.size == (wr, hr)
 

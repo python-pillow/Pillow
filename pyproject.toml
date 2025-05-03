@@ -1,7 +1,7 @@
 [build-system]
 build-backend = "backend"
 requires = [
-  "setuptools>=67.8",
+  "setuptools>=77",
 ]
 backend-path = [
   "_custom_build",
@@ -14,14 +14,14 @@ readme = "README.md"
 keywords = [
   "Imaging",
 ]
-license = { text = "HPND" }
+license = "MIT-CMU"
+license-files = [ "LICENSE" ]
 authors = [
   { name = "Jeffrey A. Clark", email = "aclark@aclark.net" },
 ]
 requires-python = ">=3.9"
 classifiers = [
   "Development Status :: 6 - Mature",
-  "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -43,7 +43,8 @@ dynamic = [
 optional-dependencies.docs = [
   "furo",
   "olefile",
-  "sphinx>=7.3",
+  "sphinx>=8.2",
+  "sphinx-autobuild",
   "sphinx-copybutton",
   "sphinx-inline-tabs",
   "sphinxext-opengraph",
@@ -54,9 +55,13 @@ optional-dependencies.fpx = [
 optional-dependencies.mic = [
   "olefile",
 ]
+optional-dependencies.test-arrow = [
+  "pyarrow",
+]
+
 optional-dependencies.tests = [
   "check-manifest",
-  "coverage",
+  "coverage>=7.4.2",
   "defusedxml",
   "markdown2",
   "olefile",
@@ -65,17 +70,19 @@ optional-dependencies.tests = [
   "pytest",
   "pytest-cov",
   "pytest-timeout",
+  "trove-classifiers>=2024.10.12",
 ]
+
 optional-dependencies.typing = [
   "typing-extensions; python_version<'3.10'",
 ]
 optional-dependencies.xmp = [
   "defusedxml",
 ]
-urls.Changelog = "https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst"
+urls.Changelog = "https://github.com/python-pillow/Pillow/releases"
 urls.Documentation = "https://pillow.readthedocs.io"
 urls.Funding = "https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=pypi"
-urls.Homepage = "https://python-pillow.org"
+urls.Homepage = "https://python-pillow.github.io"
 urls.Mastodon = "https://fosstodon.org/@pillow"
 urls."Release notes" = "https://pillow.readthedocs.io/en/stable/releasenotes/index.html"
 urls.Source = "https://github.com/python-pillow/Pillow"
@@ -93,13 +100,24 @@ version = { attr = "PIL.__version__" }
 [tool.cibuildwheel]
 before-all = ".github/workflows/wheels-dependencies.sh"
 build-verbosity = 1
+
 config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable"
+# Disable platform guessing on macOS
+macos.config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable platform-guessing=disable"
+
 test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-extras = "tests"
 
-[tool.ruff]
-fix = true
+[tool.cibuildwheel.macos.environment]
+PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
 
+[tool.black]
+exclude = "wheels/multibuild"
+
+[tool.ruff]
+exclude = [ "wheels/multibuild" ]
+
+fix = true
 lint.select = [
   "C4",     # flake8-comprehensions
   "E",      # pycodestyle errors
@@ -109,6 +127,8 @@ lint.select = [
   "ISC",    # flake8-implicit-str-concat
   "LOG",    # flake8-logging
   "PGH",    # pygrep-hooks
+  "PIE",    # flake8-pie
+  "PT",     # flake8-pytest-style
   "PYI",    # flake8-pyi
   "RUF100", # unused noqa (yesqa)
   "UP",     # pyupgrade
@@ -120,6 +140,12 @@ lint.ignore = [
   "E221",   # Multiple spaces before operator
   "E226",   # Missing whitespace around arithmetic operator
   "E241",   # Multiple spaces after ','
+  "PIE790", # flake8-pie: unnecessary-placeholder
+  "PT001",  # pytest-fixture-incorrect-parentheses-style
+  "PT007",  # pytest-parametrize-values-wrong-type
+  "PT011",  # pytest-raises-too-broad
+  "PT012",  # pytest-raises-with-multiple-statements
+  "PT017",  # pytest-assert-in-except
   "PYI026", # flake8-pyi: typing.TypeAlias added in Python 3.10
   "PYI034", # flake8-pyi: typing.Self added in Python 3.11
 ]
@@ -129,6 +155,7 @@ lint.per-file-ignores."Tests/oss-fuzz/fuzz_font.py" = [
 lint.per-file-ignores."Tests/oss-fuzz/fuzz_pillow.py" = [
   "I002",
 ]
+lint.flake8-pytest-style.parametrize-names-type = "csv"
 lint.isort.known-first-party = [
   "PIL",
 ]
@@ -155,10 +182,3 @@ follow_imports = "silent"
 warn_redundant_casts = true
 warn_unreachable = true
 warn_unused_ignores = true
-exclude = [
-  '^Tests/oss-fuzz/fuzz_font.py$',
-  '^Tests/oss-fuzz/fuzz_pillow.py$',
-  '^Tests/test_qt_image_qapplication.py$',
-  '^Tests/test_font_pcf_charsets.py$',
-  '^Tests/test_font_pcf.py$',
-]

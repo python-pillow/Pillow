@@ -17,7 +17,7 @@ from . import Image, ImageFile
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:6] == b"SIMPLE"
+    return prefix.startswith(b"SIMPLE")
 
 
 class FitsImageFile(ImageFile.ImageFile):
@@ -67,7 +67,7 @@ class FitsImageFile(ImageFile.ImageFile):
             raise ValueError(msg)
 
         offset += self.fp.tell() - 80
-        self.tile = [(decoder_name, (0, 0) + self.size, offset, args)]
+        self.tile = [ImageFile._Tile(decoder_name, (0, 0) + self.size, offset, args)]
 
     def _get_size(
         self, headers: dict[bytes, bytes], prefix: bytes
@@ -126,7 +126,7 @@ class FitsImageFile(ImageFile.ImageFile):
 class FitsGzipDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes) -> tuple[int, int]:
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
         value = gzip.decompress(self.fd.read())
 

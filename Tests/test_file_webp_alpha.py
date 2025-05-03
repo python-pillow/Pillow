@@ -13,12 +13,7 @@ from .helper import (
     hopper,
 )
 
-_webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
-
-
-def setup_module() -> None:
-    if _webp.WebPDecoderBuggyAlpha():
-        pytest.skip("Buggy early version of WebP installed, not testing transparency")
+pytest.importorskip("PIL._webp", reason="WebP support not installed")
 
 
 def test_read_rgba() -> None:
@@ -47,7 +42,7 @@ def test_write_lossless_rgb(tmp_path: Path) -> None:
     Does it have the bits we expect?
     """
 
-    temp_file = str(tmp_path / "temp.webp")
+    temp_file = tmp_path / "temp.webp"
     # temp_file = "temp.webp"
 
     pil_image = hopper("RGBA")
@@ -76,13 +71,10 @@ def test_write_rgba(tmp_path: Path) -> None:
     Does it have the bits we expect?
     """
 
-    temp_file = str(tmp_path / "temp.webp")
+    temp_file = tmp_path / "temp.webp"
 
     pil_image = Image.new("RGBA", (10, 10), (255, 0, 0, 20))
     pil_image.save(temp_file)
-
-    if _webp.WebPDecoderBuggyAlpha():
-        return
 
     with Image.open(temp_file) as image:
         image.load()
@@ -93,12 +85,7 @@ def test_write_rgba(tmp_path: Path) -> None:
         image.load()
         image.getdata()
 
-        # Early versions of WebP are known to produce higher deviations:
-        # deal with it
-        if _webp.WebPDecoderVersion() <= 0x201:
-            assert_image_similar(image, pil_image, 3.0)
-        else:
-            assert_image_similar(image, pil_image, 1.0)
+        assert_image_similar(image, pil_image, 1.0)
 
 
 def test_keep_rgb_values_when_transparent(tmp_path: Path) -> None:
@@ -117,7 +104,7 @@ def test_keep_rgb_values_when_transparent(tmp_path: Path) -> None:
     half_transparent_image.putalpha(new_alpha)
 
     # save with transparent area preserved
-    temp_file = str(tmp_path / "temp.webp")
+    temp_file = tmp_path / "temp.webp"
     half_transparent_image.save(temp_file, exact=True, lossless=True)
 
     with Image.open(temp_file) as reloaded:
@@ -136,7 +123,7 @@ def test_write_unsupported_mode_PA(tmp_path: Path) -> None:
     should work, and be similar to the original file.
     """
 
-    temp_file = str(tmp_path / "temp.webp")
+    temp_file = tmp_path / "temp.webp"
     file_path = "Tests/images/transparent.gif"
     with Image.open(file_path) as im:
         im.save(temp_file)
@@ -155,10 +142,10 @@ def test_write_unsupported_mode_PA(tmp_path: Path) -> None:
 
 def test_alpha_quality(tmp_path: Path) -> None:
     with Image.open("Tests/images/transparent.png") as im:
-        out = str(tmp_path / "temp.webp")
+        out = tmp_path / "temp.webp"
         im.save(out)
 
-        out_quality = str(tmp_path / "quality.webp")
+        out_quality = tmp_path / "quality.webp"
         im.save(out_quality, alpha_quality=50)
         with Image.open(out) as reloaded:
             with Image.open(out_quality) as reloaded_quality:

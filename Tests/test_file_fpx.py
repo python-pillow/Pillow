@@ -22,10 +22,11 @@ def test_sanity() -> None:
 
 def test_close() -> None:
     with Image.open("Tests/images/input_bw_one_band.fpx") as im:
-        pass
+        assert isinstance(im, FpxImagePlugin.FpxImageFile)
     assert im.ole.fp.closed
 
     im = Image.open("Tests/images/input_bw_one_band.fpx")
+    assert isinstance(im, FpxImagePlugin.FpxImageFile)
     im.close()
     assert im.ole.fp.closed
 

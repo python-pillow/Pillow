@@ -116,9 +116,6 @@ _COMPRESSION_TYPES = {"none": 0xFF, "rle": 0x01, "scanline": 0x00}
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode == "P":
-        # we assume this is a color Palm image with the standard colormap,
-        # unless the "info" dict has a "custom-colormap" field
-
         rawmode = "P"
         bpp = 8
         version = 1
@@ -172,11 +169,11 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     compression_type = _COMPRESSION_TYPES["none"]
 
     flags = 0
-    if im.mode == "P" and "custom-colormap" in im.info:
-        flags = flags & _FLAGS["custom-colormap"]
-        colormapsize = 4 * 256 + 2
-        colormapmode = im.palette.mode
-        colormap = im.getdata().getpalette()
+    if im.mode == "P":
+        flags |= _FLAGS["custom-colormap"]
+        colormap = im.im.getpalette()
+        colors = len(colormap) // 3
+        colormapsize = 4 * colors + 2
     else:
         colormapsize = 0
 
@@ -195,25 +192,16 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     # now write colormap if necessary
 
-    if colormapsize > 0:
-        fp.write(o16b(256))
-        for i in range(256):
+    if colormapsize:
+        fp.write(o16b(colors))
+        for i in range(colors):
             fp.write(o8(i))
-            if colormapmode == "RGB":
-                fp.write(
-                    o8(colormap[3 * i])
-                    + o8(colormap[3 * i + 1])
-                    + o8(colormap[3 * i + 2])
-                )
-            elif colormapmode == "RGBA":
-                fp.write(
-                    o8(colormap[4 * i])
-                    + o8(colormap[4 * i + 1])
-                    + o8(colormap[4 * i + 2])
-                )
+            fp.write(colormap[3 * i : 3 * i + 3])
 
     # now convert data to raw form
-    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, rowbytes, 1))])
+    ImageFile._save(
+        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, rowbytes, 1))]
+    )
 
     if hasattr(fp, "flush"):
         fp.flush()

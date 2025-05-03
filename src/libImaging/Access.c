@@ -185,7 +185,7 @@ put_pixel_32(Imaging im, int x, int y, const void *color) {
 }
 
 void
-ImagingAccessInit() {
+ImagingAccessInit(void) {
 #define ADD(mode_, get_pixel_, put_pixel_)      \
     {                                           \
         ImagingAccess access = add_item(mode_); \

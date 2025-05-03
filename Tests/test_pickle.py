@@ -18,7 +18,7 @@ def helper_pickle_file(
 ) -> None:
     # Arrange
     with Image.open(test_file) as im:
-        filename = str(tmp_path / "temp.pkl")
+        filename = tmp_path / "temp.pkl"
         if mode:
             im = im.convert(mode)
 
@@ -46,7 +46,7 @@ def helper_pickle_string(protocol: int, test_file: str, mode: str | None) -> Non
 
 
 @pytest.mark.parametrize(
-    ("test_file", "test_mode"),
+    "test_file, test_mode",
     [
         ("Tests/images/hopper.jpg", None),
         ("Tests/images/hopper.jpg", "L"),
@@ -56,16 +56,16 @@ def helper_pickle_string(protocol: int, test_file: str, mode: str | None) -> Non
         ),
         ("Tests/images/hopper.tif", None),
         ("Tests/images/test-card.png", None),
-        ("Tests/images/zero_bb.png", None),
-        ("Tests/images/zero_bb_scale2.png", None),
-        ("Tests/images/non_zero_bb.png", None),
-        ("Tests/images/non_zero_bb_scale2.png", None),
+        ("Tests/images/eps/zero_bb.png", None),
+        ("Tests/images/eps/zero_bb_scale2.png", None),
+        ("Tests/images/eps/non_zero_bb.png", None),
+        ("Tests/images/eps/non_zero_bb_scale2.png", None),
         ("Tests/images/p_trns_single.png", None),
         ("Tests/images/pil123p.png", None),
         ("Tests/images/itxt_chunks.png", None),
     ],
 )
-@pytest.mark.parametrize("protocol", range(0, pickle.HIGHEST_PROTOCOL + 1))
+@pytest.mark.parametrize("protocol", range(pickle.HIGHEST_PROTOCOL + 1))
 def test_pickle_image(
     tmp_path: Path, test_file: str, test_mode: str | None, protocol: int
 ) -> None:
@@ -74,14 +74,26 @@ def test_pickle_image(
     helper_pickle_file(tmp_path, protocol, test_file, test_mode)
 
 
+def test_pickle_jpeg() -> None:
+    # Arrange
+    with Image.open("Tests/images/hopper.jpg") as image:
+        # Act: roundtrip
+        unpickled_image = pickle.loads(pickle.dumps(image))
+
+    # Assert
+    assert unpickled_image.filename == "Tests/images/hopper.jpg"
+    assert len(unpickled_image.layer) == 3
+    assert unpickled_image.layers == 3
+
+
 def test_pickle_la_mode_with_palette(tmp_path: Path) -> None:
     # Arrange
-    filename = str(tmp_path / "temp.pkl")
+    filename = tmp_path / "temp.pkl"
     with Image.open("Tests/images/hopper.jpg") as im:
         im = im.convert("PA")
 
     # Act / Assert
-    for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
+    for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
         im._mode = "LA"
         with open(filename, "wb") as f:
             pickle.dump(im, f, protocol)
@@ -122,7 +134,7 @@ def helper_assert_pickled_font_images(
 
 
 @skip_unless_feature("freetype2")
-@pytest.mark.parametrize("protocol", list(range(0, pickle.HIGHEST_PROTOCOL + 1)))
+@pytest.mark.parametrize("protocol", list(range(pickle.HIGHEST_PROTOCOL + 1)))
 def test_pickle_font_string(protocol: int) -> None:
     # Arrange
     font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
@@ -136,11 +148,11 @@ def test_pickle_font_string(protocol: int) -> None:
 
 
 @skip_unless_feature("freetype2")
-@pytest.mark.parametrize("protocol", list(range(0, pickle.HIGHEST_PROTOCOL + 1)))
+@pytest.mark.parametrize("protocol", list(range(pickle.HIGHEST_PROTOCOL + 1)))
 def test_pickle_font_file(tmp_path: Path, protocol: int) -> None:
     # Arrange
     font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
-    filename = str(tmp_path / "temp.pkl")
+    filename = tmp_path / "temp.pkl"
 
     # Act: roundtrip
     with open(filename, "wb") as f:
@@ -150,3 +162,13 @@ def test_pickle_font_file(tmp_path: Path, protocol: int) -> None:
 
     # Assert
     helper_assert_pickled_font_images(font, unpickled_font)
+
+
+def test_load_earlier_data() -> None:
+    im = pickle.loads(
+        b"\x80\x04\x95@\x00\x00\x00\x00\x00\x00\x00\x8c\x12PIL.PngImagePlugin"
+        b"\x94\x8c\x0cPngImageFile\x94\x93\x94)\x81\x94]\x94(}\x94\x8c\x01L\x94K\x01"
+        b"K\x01\x86\x94NC\x01\x00\x94eb."
+    )
+    assert im.mode == "L"
+    assert im.size == (1, 1)

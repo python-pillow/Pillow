@@ -19,7 +19,7 @@ except ImportError:
 class TestColorLut3DCoreAPI:
     def generate_identity_table(
         self, channels: int, size: int | tuple[int, int, int]
-    ) -> tuple[int, int, int, int, list[float]]:
+    ) -> tuple[int, tuple[int, int, int], list[float]]:
         if isinstance(size, tuple):
             size_1d, size_2d, size_3d = size
         else:
@@ -39,9 +39,7 @@ class TestColorLut3DCoreAPI:
         ]
         return (
             channels,
-            size_1d,
-            size_2d,
-            size_3d,
+            (size_1d, size_2d, size_3d),
             [item for sublist in table for item in sublist],
         )
 
@@ -89,107 +87,81 @@ class TestColorLut3DCoreAPI:
 
         with pytest.raises(ValueError, match=r"size1D \* size2D \* size3D"):
             im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, [0, 0, 0] * 7
+                "RGB", Image.Resampling.BILINEAR, 3, (2, 2, 2), [0, 0, 0] * 7
             )
 
         with pytest.raises(ValueError, match=r"size1D \* size2D \* size3D"):
             im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, [0, 0, 0] * 9
+                "RGB", Image.Resampling.BILINEAR, 3, (2, 2, 2), [0, 0, 0] * 9
             )
 
         with pytest.raises(TypeError):
             im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, [0, 0, "0"] * 8
+                "RGB", Image.Resampling.BILINEAR, 3, (2, 2, 2), [0, 0, "0"] * 8
             )
 
         with pytest.raises(TypeError):
-            im.im.color_lut_3d("RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, 16)
+            im.im.color_lut_3d("RGB", Image.Resampling.BILINEAR, 3, (2, 2, 2), 16)
 
-    def test_correct_args(self) -> None:
-        im = Image.new("RGB", (10, 10), 0)
-
-        im.im.color_lut_3d(
-            "RGB", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-        )
-
-        im.im.color_lut_3d(
-            "CMYK", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
-        )
-
-        im.im.color_lut_3d(
-            "RGB",
-            Image.Resampling.BILINEAR,
-            *self.generate_identity_table(3, (2, 3, 3)),
-        )
-
-        im.im.color_lut_3d(
-            "RGB",
-            Image.Resampling.BILINEAR,
-            *self.generate_identity_table(3, (65, 3, 3)),
-        )
-
-        im.im.color_lut_3d(
-            "RGB",
-            Image.Resampling.BILINEAR,
-            *self.generate_identity_table(3, (3, 65, 3)),
-        )
-
-        im.im.color_lut_3d(
-            "RGB",
-            Image.Resampling.BILINEAR,
-            *self.generate_identity_table(3, (3, 3, 65)),
-        )
-
-    def test_wrong_mode(self) -> None:
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("L", (10, 10), 0)
-            im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-            )
-
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("RGB", (10, 10), 0)
-            im.im.color_lut_3d(
-                "L", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-            )
-
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("L", (10, 10), 0)
-            im.im.color_lut_3d(
-                "L", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-            )
-
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("RGB", (10, 10), 0)
-            im.im.color_lut_3d(
-                "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-            )
-
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("RGB", (10, 10), 0)
-            im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
-            )
-
-    def test_correct_mode(self) -> None:
-        im = Image.new("RGBA", (10, 10), 0)
-        im.im.color_lut_3d(
-            "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-        )
-
-        im = Image.new("RGBA", (10, 10), 0)
-        im.im.color_lut_3d(
-            "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
-        )
-
+    @pytest.mark.parametrize(
+        "lut_mode, table_channels, table_size",
+        [
+            ("RGB", 3, 3),
+            ("CMYK", 4, 3),
+            ("RGB", 3, (2, 3, 3)),
+            ("RGB", 3, (65, 3, 3)),
+            ("RGB", 3, (3, 65, 3)),
+            ("RGB", 3, (2, 3, 65)),
+        ],
+    )
+    def test_correct_args(
+        self, lut_mode: str, table_channels: int, table_size: int | tuple[int, int, int]
+    ) -> None:
         im = Image.new("RGB", (10, 10), 0)
         im.im.color_lut_3d(
-            "HSV", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
+            lut_mode,
+            Image.Resampling.BILINEAR,
+            *self.generate_identity_table(table_channels, table_size),
         )
 
-        im = Image.new("RGB", (10, 10), 0)
+    @pytest.mark.parametrize(
+        "image_mode, lut_mode, table_channels, table_size",
+        [
+            ("L", "RGB", 3, 3),
+            ("RGB", "L", 3, 3),
+            ("L", "L", 3, 3),
+            ("RGB", "RGBA", 3, 3),
+            ("RGB", "RGB", 4, 3),
+        ],
+    )
+    def test_wrong_mode(
+        self, image_mode: str, lut_mode: str, table_channels: int, table_size: int
+    ) -> None:
+        with pytest.raises(ValueError, match="wrong mode"):
+            im = Image.new(image_mode, (10, 10), 0)
+            im.im.color_lut_3d(
+                lut_mode,
+                Image.Resampling.BILINEAR,
+                *self.generate_identity_table(table_channels, table_size),
+            )
+
+    @pytest.mark.parametrize(
+        "image_mode, lut_mode, table_channels, table_size",
+        [
+            ("RGBA", "RGBA", 3, 3),
+            ("RGBA", "RGBA", 4, 3),
+            ("RGB", "HSV", 3, 3),
+            ("RGB", "RGBA", 4, 3),
+        ],
+    )
+    def test_correct_mode(
+        self, image_mode: str, lut_mode: str, table_channels: int, table_size: int
+    ) -> None:
+        im = Image.new(image_mode, (10, 10), 0)
         im.im.color_lut_3d(
-            "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
+            lut_mode,
+            Image.Resampling.BILINEAR,
+            *self.generate_identity_table(table_channels, table_size),
         )
 
     def test_identities(self) -> None:
@@ -290,7 +262,7 @@ class TestColorLut3DCoreAPI:
         assert_image_equal(
             Image.merge('RGB', im.split()[::-1]),
             im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,
-                    3, 2, 2, 2, [
+                    3, (2, 2, 2), [
                         0, 0, 0,  0, 0, 1,
                         0, 1, 0,  0, 1, 1,
 
@@ -312,7 +284,7 @@ class TestColorLut3DCoreAPI:
 
         # fmt: off
         transformed = im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,
-                              3, 2, 2, 2,
+                              3, (2, 2, 2),
                               [
                                   -1, -1, -1,   2, -1, -1,
                                   -1,  2, -1,   2,  2, -1,
@@ -333,7 +305,7 @@ class TestColorLut3DCoreAPI:
 
         # fmt: off
         transformed = im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,
-                              3, 2, 2, 2,
+                              3, (2, 2, 2),
                               [
                                   -3, -3, -3,   5, -3, -3,
                                   -3,  5, -3,   5,  5, -3,
@@ -414,10 +386,12 @@ class TestColorLut3DFilter:
 
         table = numpy.ones((7 * 6 * 5, 3), dtype=numpy.float16)
         lut = ImageFilter.Color3DLUT((5, 6, 7), table)
+        assert isinstance(lut.table, numpy.ndarray)
         assert lut.table.shape == (table.size,)
 
         table = numpy.ones((7 * 6 * 5 * 3), dtype=numpy.float16)
         lut = ImageFilter.Color3DLUT((5, 6, 7), table)
+        assert isinstance(lut.table, numpy.ndarray)
         assert lut.table.shape == (table.size,)
 
         # Check application
