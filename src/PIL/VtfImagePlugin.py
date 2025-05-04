@@ -391,7 +391,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 
 def _accept(prefix: bytes) -> bool:
-    valid_header = prefix.startswith("VTF\x00")
+    valid_header = prefix.startswith(b"VTF\x00")
     valid_version = struct.unpack_from("<2I", prefix, 4) >= (7, 0)
     return valid_header and valid_version
 
