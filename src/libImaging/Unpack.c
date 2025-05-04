@@ -429,7 +429,7 @@ unpackLA(UINT8 *_out, const UINT8 *in, int pixels) {
 static void
 unpackRG(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
-    /* LA, pixel interleaved */
+    /* RG, pixel interleaved */
     for (i = 0; i < pixels; i++) {
         _out[R] = in[0];
         _out[G] = in[1];

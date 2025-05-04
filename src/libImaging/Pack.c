@@ -245,7 +245,7 @@ packLA(UINT8 *out, const UINT8 *in, int pixels) {
 static void
 packRG(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
-    /* LA, pixel interleaved */
+    /* RG, pixel interleaved */
     for (i = 0; i < pixels; i++) {
         out[0] = in[R];
         out[1] = in[G];
