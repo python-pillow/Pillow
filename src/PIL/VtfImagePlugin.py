@@ -160,46 +160,36 @@ def _get_mipmap_count(width: int, height: int) -> int:
 
 
 def _write_image(fp: IO[bytes], im: Image.Image, pixel_format: VtfPF) -> None:
-    extents = (0, 0) + im.size
     encoder_args: tuple[int,] | tuple[str, int, int]
     if pixel_format == VtfPF.DXT1:
-        encoder = "bcn"
         encoder_args = (1,)
         im = im.convert("RGBA")
     elif pixel_format == VtfPF.DXT3:
-        encoder = "bcn"
         encoder_args = (3,)
     elif pixel_format == VtfPF.DXT5:
-        encoder = "bcn"
         encoder_args = (5,)
     elif pixel_format == VtfPF.RGB888:
-        encoder = "raw"
         encoder_args = ("RGB", 0, 0)
     elif pixel_format == VtfPF.BGR888:
-        encoder = "raw"
         encoder_args = ("BGR", 0, 0)
     elif pixel_format == VtfPF.RGBA8888:
-        encoder = "raw"
         encoder_args = ("RGBA", 0, 0)
     elif pixel_format == VtfPF.A8:
-        encoder = "raw"
         encoder_args = ("A", 0, 0)
     elif pixel_format == VtfPF.I8:
-        encoder = "raw"
         encoder_args = ("L", 0, 0)
         im = im.convert("L")
     elif pixel_format == VtfPF.IA88:
-        encoder = "raw"
         encoder_args = ("LA", 0, 0)
         im = im.convert("LA")
     elif pixel_format == VtfPF.UV88:
-        encoder = "raw"
         encoder_args = ("RG", 0, 0)
     else:
         msg = f"Unsupported pixel format: {pixel_format!r}"
         raise VTFException(msg)
 
-    tile = [ImageFile._Tile(encoder, extents, fp.tell(), encoder_args)]
+    codec_name = "bcn" if pixel_format in BLOCK_COMPRESSED else "raw"
+    tile = [ImageFile._Tile(codec_name, (0, 0) + im.size, fp.tell(), encoder_args)]
     ImageFile._save(im, fp, tile, _get_texture_size(pixel_format, *im.size))
 
 
@@ -216,6 +206,7 @@ class VtfImageFile(ImageFile.ImageFile):
         if not _accept(self.fp.read(12)):
             msg = "not a VTF file"
             raise SyntaxError(msg)
+
         self.fp.seek(4)
         version = struct.unpack("<2I", self.fp.read(8))
         if version <= (7, 2):
@@ -245,9 +236,8 @@ class VtfImageFile(ImageFile.ImageFile):
         else:
             msg = f"Unsupported VTF version: {version}"
             raise VTFException(msg)
-        # flags = CompiledVtfFlags(header.flags)
+
         pixel_format = VtfPF(header.pixel_format)
-        low_format = VtfPF(header.low_pixel_format)
         if pixel_format in (
             VtfPF.DXT1_ONEBITALPHA,
             VtfPF.DXT1,
@@ -268,7 +258,35 @@ class VtfImageFile(ImageFile.ImageFile):
             msg = f"Unsupported VTF pixel format: {pixel_format}"
             raise VTFException(msg)
 
+        if pixel_format in (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA):
+            args = (1, "DXT1")
+        elif pixel_format == VtfPF.DXT3:
+            args = (2, "DXT3")
+        elif pixel_format == VtfPF.DXT5:
+            args = (3, "DXT5")
+        elif pixel_format == VtfPF.RGBA8888:
+            args = ("RGBA", 0, 1)
+        elif pixel_format == VtfPF.RGB888:
+            args = ("RGB", 0, 1)
+        elif pixel_format == VtfPF.BGR888:
+            args = ("BGR", 0, 1)
+        elif pixel_format == VtfPF.BGRA8888:
+            args = ("BGRA", 0, 1)
+        elif pixel_format == VtfPF.UV88:
+            args = ("RG", 0, 1)
+        elif pixel_format == VtfPF.I8:
+            args = ("L", 0, 1)
+        elif pixel_format == VtfPF.A8:
+            args = ("A", 0, 1)
+        elif pixel_format == VtfPF.IA88:
+            args = ("LA", 0, 1)
+        else:
+            msg = f"Unsupported VTF pixel format: {pixel_format}"
+            raise VTFException(msg)
+
         self._size = (header.width, header.height)
+
+        low_format = VtfPF(header.low_pixel_format)
 
         data_start = self.fp.tell()
         data_start += _get_texture_size(low_format, header.low_width, header.low_height)
@@ -279,32 +297,8 @@ class VtfImageFile(ImageFile.ImageFile):
 
             data_start += _get_texture_size(pixel_format, mip_width, mip_height)
 
-        if pixel_format in (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA):
-            tile = ("bcn", (0, 0) + self.size, data_start, (1, "DXT1"))
-        elif pixel_format == VtfPF.DXT3:
-            tile = ("bcn", (0, 0) + self.size, data_start, (2, "DXT3"))
-        elif pixel_format == VtfPF.DXT5:
-            tile = ("bcn", (0, 0) + self.size, data_start, (3, "DXT5"))
-        elif pixel_format == VtfPF.RGBA8888:
-            tile = ("raw", (0, 0) + self.size, data_start, ("RGBA", 0, 1))
-        elif pixel_format == VtfPF.RGB888:
-            tile = ("raw", (0, 0) + self.size, data_start, ("RGB", 0, 1))
-        elif pixel_format == VtfPF.BGR888:
-            tile = ("raw", (0, 0) + self.size, data_start, ("BGR", 0, 1))
-        elif pixel_format == VtfPF.BGRA8888:
-            tile = ("raw", (0, 0) + self.size, data_start, ("BGRA", 0, 1))
-        elif pixel_format == VtfPF.UV88:
-            tile = ("raw", (0, 0) + self.size, data_start, ("RG", 0, 1))
-        elif pixel_format == VtfPF.I8:
-            tile = ("raw", (0, 0) + self.size, data_start, ("L", 0, 1))
-        elif pixel_format == VtfPF.A8:
-            tile = ("raw", (0, 0) + self.size, data_start, ("A", 0, 1))
-        elif pixel_format == VtfPF.IA88:
-            tile = ("raw", (0, 0) + self.size, data_start, ("LA", 0, 1))
-        else:
-            msg = f"Unsupported VTF pixel format: {pixel_format}"
-            raise VTFException(msg)
-        self.tile = [tile]
+        codec_name = "bcn" if pixel_format in BLOCK_COMPRESSED else "raw"
+        self.tile = [ImageFile._Tile(codec_name, (0, 0) + self.size, data_start, args)]
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
