@@ -163,7 +163,6 @@ def _write_image(fp: IO[bytes], im: Image.Image, pixel_format: VtfPF) -> None:
     encoder_args: tuple[int,] | tuple[str, int, int]
     if pixel_format == VtfPF.DXT1:
         encoder_args = (1,)
-        im = im.convert("RGBA")
     elif pixel_format == VtfPF.DXT3:
         encoder_args = (3,)
     elif pixel_format == VtfPF.DXT5:
@@ -178,10 +177,8 @@ def _write_image(fp: IO[bytes], im: Image.Image, pixel_format: VtfPF) -> None:
         encoder_args = ("A", 0, 0)
     elif pixel_format == VtfPF.I8:
         encoder_args = ("L", 0, 0)
-        im = im.convert("L")
     elif pixel_format == VtfPF.IA88:
         encoder_args = ("LA", 0, 0)
-        im = im.convert("LA")
     elif pixel_format == VtfPF.UV88:
         encoder_args = ("RG", 0, 0)
     else:
