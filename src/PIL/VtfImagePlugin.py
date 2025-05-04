@@ -129,12 +129,12 @@ HEADER_V72 = "<I2HI2H4x3f4xfIbI2bH"
 HEADER_V73 = "<I2HI2H4x3f4xfIbI2bH3xI8x"
 
 
-def _get_texture_size(pixel_format: VtfPF, width, height):
+def _get_texture_size(pixel_format: VtfPF, width: int, height: int) -> int:
     if pixel_format in (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA):
         return width * height // 2
-    elif pixel_format in (VtfPF.DXT3, VtfPF.DXT5):
-        return width * height
     elif pixel_format in (
+        VtfPF.DXT3,
+        VtfPF.DXT5,
         VtfPF.A8,
         VtfPF.I8,
     ):
@@ -203,7 +203,7 @@ def _write_image(fp: IO[bytes], im: Image.Image, pixel_format: VtfPF) -> None:
     ImageFile._save(im, fp, tile, _get_texture_size(pixel_format, *im.size))
 
 
-def _closest_power(x):
+def _closest_power(x: int) -> int:
     possible_results = round(log(x, 2)), ceil(log(x, 2))
     return 2 ** min(possible_results, key=lambda z: abs(x - 2**z))
 
