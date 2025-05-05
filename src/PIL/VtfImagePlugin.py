@@ -72,9 +72,9 @@ class CompiledVtfFlags(IntFlag):
 
 
 class VtfPF(IntEnum):
-    NONE = -1
+    # NONE = -1
     RGBA8888 = 0
-    ABGR8888 = 1
+    # ABGR8888 = 1
     RGB888 = 2
     BGR888 = 3
     # RGB565 = 4
@@ -84,12 +84,12 @@ class VtfPF(IntEnum):
     A8 = 8
     # RGB888_BLUESCREEN = 9
     # BGR888_BLUESCREEN = 10
-    ARGB8888 = 11
+    # ARGB8888 = 11
     BGRA8888 = 12
     DXT1 = 13
     DXT3 = 14
     DXT5 = 15
-    BGRX8888 = 16
+    # BGRX8888 = 16
     # BGR565 = 17
     # BGRX5551 = 18
     # BGRA4444 = 19
