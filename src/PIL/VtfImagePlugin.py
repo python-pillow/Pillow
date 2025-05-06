@@ -123,9 +123,7 @@ class VTFHeader(NamedTuple):
 
 
 BLOCK_COMPRESSED = (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA, VtfPF.DXT3, VtfPF.DXT5)
-HEADER_V70 = "<I2HI2H4x3f4xfIbI2b"
-HEADER_V72 = "<I2HI2H4x3f4xfIbI2bH"
-HEADER_V73 = "<I2HI2H4x3f4xfIbI2bH3xI8x"
+HEADER_V70 = "2HI2H4x3f4xfIbI2b"
 
 
 def _get_texture_size(pixel_format: int, width: int, height: int) -> int:
@@ -203,7 +201,9 @@ class VtfImageFile(ImageFile.ImageFile):
             raise VTFException(msg)
 
         header = VTFHeader(
-            *struct.unpack(HEADER_V70, self.fp.read(struct.calcsize(HEADER_V70)))
+            *struct.unpack(
+                "<I" + HEADER_V70, self.fp.read(struct.calcsize("<I" + HEADER_V70))
+            )
         )
         self.fp.seek(header.header_size)
 
@@ -318,10 +318,10 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         flags,
         1,
         0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
+        1,
+        1,
+        1,
+        1,
         pixel_format,
         mipmap_count,
         VtfPF.DXT1,
@@ -331,33 +331,30 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         2,
     )
 
-    fp.write(b"VTF\x00" + struct.pack("<2I", *version))
-    if version < (7, 2):
-        size = struct.calcsize(HEADER_V70) + 12
-        header = header._replace(header_size=size + (16 - size % 16))
-        fp.write(struct.pack(HEADER_V70, *header[:15]))
-    elif version == (7, 2):
-        size = struct.calcsize(HEADER_V72) + 12
-        header = header._replace(header_size=size + (16 - size % 16))
-        fp.write(struct.pack(HEADER_V72, *header[:16]))
-    else:
-        size = struct.calcsize(HEADER_V73) + 12
-        header = header._replace(header_size=size + (16 - size % 16))
-        fp.write(struct.pack(HEADER_V73, *header))
+    header_bytes = struct.pack("<" + HEADER_V70, *header[1:15])
+    if version >= (7, 2):
+        header_bytes += struct.pack("<H", header.depth)
+    if version >= (7, 3):
+        header_bytes += struct.pack("<3xI8x", header.resource_count)
+    # Align header size to 16 bytes
+    if len(header_bytes) % 16:
+        header_bytes += b"\x00" * (16 - len(header_bytes) % 16)
+    header_length = 16 + len(header_bytes)
+    if version >= (7, 3):
+        header_length += 16  # Resource entries
+    fp.write(b"VTF\x00" + struct.pack("<2II", *version, header_length))
+    fp.write(header_bytes)
 
     if version > (7, 2):
-        fp.write(b"\x01\x00\x00\x00")
-        fp.write(struct.pack("<I", header.header_size))
-        fp.write(b"\x30\x00\x00\x00")
-        fp.write(
-            struct.pack(
-                "<I",
-                header.header_size
-                + _get_texture_size(VtfPF.DXT1, thumb.width, thumb.height),
-            )
-        )
-    else:
-        fp.write(b"\x00" * (16 - fp.tell() % 16))
+        # Resource entries
+        for tag, offset in {
+            b"\x01\x00\x00": header_length,  # Low-res
+            b"\x30\x00\x00": header_length
+            + _get_texture_size(VtfPF.DXT1, thumb.width, thumb.height),  # High-res
+        }.items():
+            fp.write(tag + b"\x00")  # Tag, flags
+            fp.write(struct.pack("<I", offset))
+
     _write_image(fp, thumb, VtfPF.DXT1)
 
     min_size = 4 if pixel_format in BLOCK_COMPRESSED else 1
