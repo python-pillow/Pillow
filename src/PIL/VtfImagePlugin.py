@@ -15,7 +15,7 @@ from __future__ import annotations
 import struct
 from enum import IntEnum, IntFlag
 from math import ceil, log
-from typing import IO, NamedTuple
+from typing import IO, NamedTuple, cast
 
 from . import Image, ImageFile
 
@@ -294,6 +294,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     flags = CompiledVtfFlags(0)
 
     if pixel_format in (
+        VtfPF.DXT1,
         VtfPF.DXT3,
         VtfPF.DXT5,
         VtfPF.RGBA8888,
@@ -360,9 +361,11 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     min_size = 4 if pixel_format in BLOCK_COMPRESSED else 1
 
     for mip_id in range(mipmap_count - 1, 0, -1):
-        mip_width = max(min_size, width >> mip_id)
-        mip_height = max(min_size, height >> mip_id)
-        mip = im.resize((mip_width, mip_height))
+        size = cast(
+            tuple[int, int],
+            tuple(max(min_size, dimension >> mip_id) for dimension in im.size),
+        )
+        mip = im.resize(size)
         _write_image(fp, mip, pixel_format)
     _write_image(fp, im, pixel_format)
 
