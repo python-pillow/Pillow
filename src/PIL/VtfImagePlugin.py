@@ -308,7 +308,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     mipmap_count = _get_mipmap_count(width, height) if generate_mips else 0
 
     thumb = im.convert("RGBA")
-    thumb.thumbnail((min(16, width), min(16, height)))
+    thumb.thumbnail((16, 16))
     thumb = thumb.resize((_closest_power(thumb.width), _closest_power(thumb.height)))
 
     header = VTFHeader(
