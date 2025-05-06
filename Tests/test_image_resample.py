@@ -166,6 +166,32 @@ class TestImagingCoreResampleAccuracy:
             self.check_case(channel, self.make_sample(data, (8, 8)))
 
     @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
+    def test_reduce_mks2013(self, mode: str) -> None:
+        case = self.make_case(mode, (16, 16), 0xE1)
+        case = case.resize((8, 8), Image.Resampling.MKS2013)
+        # fmt: off
+        data = ("e1 e1 e9 dc"
+                "e1 e1 e9 dc"
+                "e9 e9 f1 e3"
+                "dc dc e4 d8")
+        # fmt: on
+        for channel in case.split():
+            self.check_case(channel, self.make_sample(data, (8, 8)))
+
+    @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
+    def test_reduce_mks2021(self, mode: str) -> None:
+        case = self.make_case(mode, (16, 16), 0xE1)
+        case = case.resize((8, 8), Image.Resampling.MKS2021)
+        # fmt: off
+        data = ("e1 e1 e3 d7"
+                "e1 e1 e3 d7"
+                "e3 e3 e5 d9"
+                "d7 d7 d9 ce")
+        # fmt: on
+        for channel in case.split():
+            self.check_case(channel, self.make_sample(data, (8, 8)))
+
+    @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
     def test_enlarge_box(self, mode: str) -> None:
         case = self.make_case(mode, (2, 2), 0xE1)
         case = case.resize((4, 4), Image.Resampling.BOX)
@@ -222,6 +248,36 @@ class TestImagingCoreResampleAccuracy:
             "ed ec e6 fb ff bf"
             "f5 f4 ee ff ff c4"
             "b8 b7 b4 bf c4 a0"
+        )
+        for channel in case.split():
+            self.check_case(channel, self.make_sample(data, (12, 12)))
+
+    @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
+    def test_enlarge_mks2013(self, mode: str) -> None:
+        case = self.make_case(mode, (6, 6), 0xE1)
+        case = case.resize((12, 12), Image.Resampling.MKS2013)
+        data = (
+            "e1 e1 e2 ef fb be"
+            "e1 e1 e2 ef fb be"
+            "e2 e2 e3 f1 fd bf"
+            "ef ef f0 ff ff c7"
+            "fb fb fc ff ff cf"
+            "be be bf c7 cf a8"
+        )
+        for channel in case.split():
+            self.check_case(channel, self.make_sample(data, (12, 12)))
+
+    @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
+    def test_enlarge_mks2021(self, mode: str) -> None:
+        case = self.make_case(mode, (6, 6), 0xE1)
+        case = case.resize((12, 12), Image.Resampling.MKS2021)
+        data = (
+            "e3 e1 df e9 f5 bb"
+            "e1 df dd e7 f3 b9"
+            "df dd db e5 f1 b8"
+            "e9 e7 e5 ef fc be"
+            "f5 f3 f0 fc ff c5"
+            "bb ba b8 bf c6 a3"
         )
         for channel in case.split():
             self.check_case(channel, self.make_sample(data, (12, 12)))
