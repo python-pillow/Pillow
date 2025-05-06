@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image
@@ -71,54 +73,59 @@ def test_get_texture_size(
 @pytest.mark.parametrize(
     "etalon_path, file_path, expected_mode, epsilon",
     [
-        ("Tests/images/vtf_i8.png", "Tests/images/vtf_i8.vtf", "L", 0.0),
-        ("Tests/images/vtf_a8.png", "Tests/images/vtf_a8.vtf", "RGBA", 0.0),
-        ("Tests/images/vtf_ia88.png", "Tests/images/vtf_ia88.vtf", "LA", 0.0),
-        ("Tests/images/vtf_uv88.png", "Tests/images/vtf_uv88.vtf", "RGB", 0.0),
-        ("Tests/images/vtf_rgb888.png", "Tests/images/vtf_rgb888.vtf", "RGB", 0.0),
-        ("Tests/images/vtf_bgr888.png", "Tests/images/vtf_bgr888.vtf", "RGB", 0.0),
-        ("Tests/images/vtf_dxt1.png", "Tests/images/vtf_dxt1.vtf", "RGBA", 3.0),
-        ("Tests/images/vtf_dxt1A.png", "Tests/images/vtf_dxt1A.vtf", "RGBA", 8.0),
+        ("Tests/images/vtf_i8.png", "Tests/images/vtf_i8.vtf", "L", 0),
+        ("Tests/images/vtf_a8.png", "Tests/images/vtf_a8.vtf", "RGBA", 0),
+        ("Tests/images/vtf_ia88.png", "Tests/images/vtf_ia88.vtf", "LA", 0),
+        ("Tests/images/vtf_uv88.png", "Tests/images/vtf_uv88.vtf", "RGB", 0),
+        ("Tests/images/vtf_rgb888.png", "Tests/images/vtf_rgb888.vtf", "RGB", 0),
+        ("Tests/images/vtf_bgr888.png", "Tests/images/vtf_bgr888.vtf", "RGB", 0),
+        ("Tests/images/vtf_dxt1.png", "Tests/images/vtf_dxt1.vtf", "RGBA", 3),
+        ("Tests/images/vtf_dxt1A.png", "Tests/images/vtf_dxt1A.vtf", "RGBA", 8),
         ("Tests/images/vtf_rgba8888.png", "Tests/images/vtf_rgba8888.vtf", "RGBA", 0),
     ],
 )
 def test_vtf_read(
-    etalon_path: str, file_path: str, expected_mode: str, epsilon: float
+    etalon_path: str, file_path: str, expected_mode: str, epsilon: int
 ) -> None:
     with Image.open(file_path) as f:
         assert f.mode == expected_mode
         with Image.open(etalon_path) as e:
             converted_e = e.convert(expected_mode)
-        if epsilon == 0:
-            assert_image_equal(converted_e, f)
-        else:
+        if epsilon:
             assert_image_similar(converted_e, f, epsilon)
+        else:
+            assert_image_equal(converted_e, f)
 
 
 @pytest.mark.parametrize(
     "pixel_format, file_path, expected_mode, epsilon",
     [
-        (VtfPF.I8, "Tests/images/vtf_i8.png", "L", 0.0),
-        (VtfPF.A8, "Tests/images/vtf_a8.png", "RGBA", 0.0),
-        (VtfPF.IA88, "Tests/images/vtf_ia88.png", "LA", 0.0),
-        (VtfPF.UV88, "Tests/images/vtf_uv88.png", "RGB", 0.0),
-        (VtfPF.RGB888, "Tests/images/vtf_rgb888.png", "RGB", 0.0),
-        (VtfPF.BGR888, "Tests/images/vtf_bgr888.png", "RGB", 0.0),
-        (VtfPF.DXT1, "Tests/images/vtf_dxt1.png", "RGBA", 3.0),
+        (VtfPF.I8, "Tests/images/vtf_i8.png", "L", 0),
+        (VtfPF.A8, "Tests/images/vtf_a8.png", "RGBA", 0),
+        (VtfPF.IA88, "Tests/images/vtf_ia88.png", "LA", 0),
+        (VtfPF.UV88, "Tests/images/vtf_uv88.png", "RGB", 0),
+        (VtfPF.RGB888, "Tests/images/vtf_rgb888.png", "RGB", 0),
+        (VtfPF.BGR888, "Tests/images/vtf_bgr888.png", "RGB", 0),
+        (VtfPF.DXT1, "Tests/images/vtf_dxt1.png", "RGBA", 3),
         (VtfPF.RGBA8888, "Tests/images/vtf_rgba8888.png", "RGBA", 0),
     ],
 )
 def test_vtf_save(
-    pixel_format: VtfPF, file_path: str, expected_mode: str, epsilon: float, tmp_path
+    pixel_format: VtfPF,
+    file_path: str,
+    expected_mode: str,
+    epsilon: int,
+    tmp_path: Path,
 ) -> None:
-    f: Image.Image = Image.open(file_path)
-    out = (tmp_path / "tmp.vtf").as_posix()
-    f.save(out, pixel_format=pixel_format)
-    if pixel_format == VtfPF.DXT1:
-        f = f.convert("RGBA")
-    e = Image.open(out)
-    assert e.mode == expected_mode
-    if epsilon == 0:
-        assert_image_equal(e, f)
-    else:
-        assert_image_similar(e, f, epsilon)
+    im: Image.Image
+    with Image.open(file_path) as im:
+        out = tmp_path / "tmp.vtf"
+        im.save(out, pixel_format=pixel_format)
+        if pixel_format == VtfPF.DXT1:
+            im = im.convert("RGBA")
+        with Image.open(out) as expected:
+            assert expected.mode == expected_mode
+            if epsilon:
+                assert_image_similar(im, expected, epsilon)
+            else:
+                assert_image_equal(im, expected)

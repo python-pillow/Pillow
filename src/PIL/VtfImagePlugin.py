@@ -119,8 +119,8 @@ class VTFHeader(NamedTuple):
     low_pixel_format: int
     low_width: int
     low_height: int
-    depth: int
-    resource_count: int
+    depth: int = 0
+    resource_count: int = 0
 
 
 BLOCK_COMPRESSED = (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA, VtfPF.DXT3, VtfPF.DXT5)
@@ -129,7 +129,7 @@ HEADER_V72 = "<I2HI2H4x3f4xfIbI2bH"
 HEADER_V73 = "<I2HI2H4x3f4xfIbI2bH3xI8x"
 
 
-def _get_texture_size(pixel_format: VtfPF, width: int, height: int) -> int:
+def _get_texture_size(pixel_format: int, width: int, height: int) -> int:
     if pixel_format in (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA):
         return width * height // 2
     elif pixel_format in (
@@ -160,28 +160,21 @@ def _get_mipmap_count(width: int, height: int) -> int:
 
 
 def _write_image(fp: IO[bytes], im: Image.Image, pixel_format: VtfPF) -> None:
-    encoder_args: tuple[int,] | tuple[str, int, int]
-    if pixel_format == VtfPF.DXT1:
-        encoder_args = (1,)
-    elif pixel_format == VtfPF.DXT3:
-        encoder_args = (3,)
-    elif pixel_format == VtfPF.DXT5:
-        encoder_args = (5,)
-    elif pixel_format == VtfPF.RGB888:
-        encoder_args = ("RGB", 0, 0)
-    elif pixel_format == VtfPF.BGR888:
-        encoder_args = ("BGR", 0, 0)
-    elif pixel_format == VtfPF.RGBA8888:
-        encoder_args = ("RGBA", 0, 0)
-    elif pixel_format == VtfPF.A8:
-        encoder_args = ("A", 0, 0)
-    elif pixel_format == VtfPF.I8:
-        encoder_args = ("L", 0, 0)
-    elif pixel_format == VtfPF.IA88:
-        encoder_args = ("LA", 0, 0)
-    elif pixel_format == VtfPF.UV88:
-        encoder_args = ("RG", 0, 0)
-    else:
+    args: dict[VtfPF, tuple[int,] | str] = {
+        VtfPF.DXT1: (1,),
+        VtfPF.DXT3: (3,),
+        VtfPF.DXT5: (5,),
+        VtfPF.RGB888: "RGB",
+        VtfPF.BGR888: "BGR",
+        VtfPF.RGBA8888: "RGBA",
+        VtfPF.A8: "A",
+        VtfPF.I8: "L",
+        VtfPF.IA88: "LA",
+        VtfPF.UV88: "RG",
+    }
+    try:
+        encoder_args = args[pixel_format]
+    except KeyError:
         msg = f"Unsupported pixel format: {pixel_format!r}"
         raise VTFException(msg)
 
@@ -206,35 +199,16 @@ class VtfImageFile(ImageFile.ImageFile):
 
         self.fp.seek(4)
         version = struct.unpack("<2I", self.fp.read(8))
-        if version <= (7, 2):
-            header = VTFHeader(
-                *struct.unpack(HEADER_V70, self.fp.read(struct.calcsize(HEADER_V70))),
-                0,
-                0,
-                0,
-                0,
-                0,
-            )
-            self.fp.seek(header.header_size)
-        elif version < (7, 3):
-            header = VTFHeader(
-                *struct.unpack(HEADER_V72, self.fp.read(struct.calcsize(HEADER_V72))),
-                0,
-                0,
-                0,
-                0,
-            )
-            self.fp.seek(header.header_size)
-        elif version < (7, 5):
-            header = VTFHeader(
-                *struct.unpack(HEADER_V73, self.fp.read(struct.calcsize(HEADER_V73)))
-            )
-            self.fp.seek(header.header_size)
-        else:
+        if version > (7, 4):
             msg = f"Unsupported VTF version: {version}"
             raise VTFException(msg)
 
-        pixel_format = VtfPF(header.pixel_format)
+        header = VTFHeader(
+            *struct.unpack(HEADER_V70, self.fp.read(struct.calcsize(HEADER_V70)))
+        )
+        self.fp.seek(header.header_size)
+
+        pixel_format = header.pixel_format
         if pixel_format in (
             VtfPF.DXT1_ONEBITALPHA,
             VtfPF.DXT1,
@@ -255,38 +229,37 @@ class VtfImageFile(ImageFile.ImageFile):
             msg = f"Unsupported VTF pixel format: {pixel_format}"
             raise VTFException(msg)
 
-        if pixel_format in (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA):
-            args = (1, "DXT1")
-        elif pixel_format == VtfPF.DXT3:
-            args = (2, "DXT3")
-        elif pixel_format == VtfPF.DXT5:
-            args = (3, "DXT5")
-        elif pixel_format == VtfPF.RGBA8888:
-            args = ("RGBA", 0, 1)
-        elif pixel_format == VtfPF.RGB888:
-            args = ("RGB", 0, 1)
-        elif pixel_format == VtfPF.BGR888:
-            args = ("BGR", 0, 1)
-        elif pixel_format == VtfPF.BGRA8888:
-            args = ("BGRA", 0, 1)
-        elif pixel_format == VtfPF.UV88:
-            args = ("RG", 0, 1)
-        elif pixel_format == VtfPF.I8:
-            args = ("L", 0, 1)
-        elif pixel_format == VtfPF.A8:
-            args = ("A", 0, 1)
-        elif pixel_format == VtfPF.IA88:
-            args = ("LA", 0, 1)
+        if pixel_format in BLOCK_COMPRESSED:
+            codec_name = "bcn"
+            if pixel_format in (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA):
+                args = (1, "DXT1")
+            elif pixel_format == VtfPF.DXT3:
+                args = (2, "DXT3")
+            else:
+                args = (3, "DXT5")
         else:
-            msg = f"Unsupported VTF pixel format: {pixel_format}"
-            raise VTFException(msg)
+            codec_name = "raw"
+            try:
+                args = {
+                    VtfPF.RGBA8888: "RGBA",
+                    VtfPF.RGB888: "RGB",
+                    VtfPF.BGR888: "BGR",
+                    VtfPF.BGRA8888: "BGRA",
+                    VtfPF.UV88: "RG",
+                    VtfPF.I8: "L",
+                    VtfPF.A8: "A",
+                    VtfPF.IA88: "LA",
+                }[pixel_format]
+            except KeyError:
+                msg = f"Unsupported VTF pixel format: {pixel_format}"
+                raise VTFException(msg)
 
         self._size = (header.width, header.height)
 
-        low_format = VtfPF(header.low_pixel_format)
-
         data_start = self.fp.tell()
-        data_start += _get_texture_size(low_format, header.low_width, header.low_height)
+        data_start += _get_texture_size(
+            header.low_pixel_format, header.low_width, header.low_height
+        )
         min_res = 4 if pixel_format in BLOCK_COMPRESSED else 1
         for mip_id in range(header.mipmap_count - 1, 0, -1):
             mip_width = max(header.width >> mip_id, min_res)
@@ -294,7 +267,6 @@ class VtfImageFile(ImageFile.ImageFile):
 
             data_start += _get_texture_size(pixel_format, mip_width, mip_height)
 
-        codec_name = "bcn" if pixel_format in BLOCK_COMPRESSED else "raw"
         self.tile = [ImageFile._Tile(codec_name, (0, 0) + self.size, data_start, args)]
 
 
@@ -302,9 +274,22 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode not in ("RGB", "RGBA", "L", "LA"):
         msg = f"cannot write mode {im.mode} as VTF"
         raise OSError(msg)
+
     encoderinfo = im.encoderinfo
-    pixel_format = VtfPF(encoderinfo.get("pixel_format", VtfPF.RGBA8888))
     version = encoderinfo.get("version", (7, 4))
+    if version > (7, 4):
+        msg = f"Unsupported VTF version: {version}"
+        raise VTFException(msg)
+
+    pixel_format = (
+        encoderinfo.get("pixel_format")
+        or {
+            "RGB": VtfPF.RGB888,
+            "RGBA": VtfPF.RGBA8888,
+            "L": VtfPF.I8,
+            "LA": VtfPF.IA88,
+        }[im.mode]
+    )
     generate_mips = encoderinfo.get("generate_mips", True)
 
     flags = CompiledVtfFlags(0)
@@ -321,13 +306,11 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     im = im.resize((_closest_power(im.width), _closest_power(im.height)))
     width, height = im.size
 
-    mipmap_count = 0
-    if generate_mips:
-        mipmap_count = _get_mipmap_count(width, height)
+    mipmap_count = _get_mipmap_count(width, height) if generate_mips else 0
 
     thumb_buffer = BytesIO()
     thumb = im.convert("RGB")
-    thumb.thumbnail(((min(16, width)), (min(16, height))))
+    thumb.thumbnail((min(16, width), min(16, height)))
     thumb = thumb.resize((_closest_power(thumb.width), _closest_power(thumb.height)))
     _write_image(thumb_buffer, thumb, VtfPF.DXT1)
 
@@ -360,13 +343,10 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         size = struct.calcsize(HEADER_V72) + 12
         header = header._replace(header_size=size + (16 - size % 16))
         fp.write(struct.pack(HEADER_V72, *header[:16]))
-    elif version > (7, 2):
+    else:
         size = struct.calcsize(HEADER_V73) + 12
         header = header._replace(header_size=size + (16 - size % 16))
         fp.write(struct.pack(HEADER_V73, *header))
-    else:
-        msg = f"Unsupported version {version}"
-        raise VTFException(msg)
 
     if version > (7, 2):
         fp.write(b"\x01\x00\x00\x00")
@@ -377,10 +357,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         fp.write(b"\x00" * (16 - fp.tell() % 16))
     fp.write(thumb_buffer.getbuffer())
 
-    if pixel_format in BLOCK_COMPRESSED:
-        min_size = 4
-    else:
-        min_size = 1
+    min_size = 4 if pixel_format in BLOCK_COMPRESSED else 1
 
     for mip_id in range(mipmap_count - 1, 0, -1):
         mip_width = max(min_size, width >> mip_id)
