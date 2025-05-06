@@ -89,14 +89,13 @@ def test_get_texture_size(
     ],
 )
 def test_vtf_read(file_path: str, expected_mode: str, epsilon: int) -> None:
-    with Image.open(file_path) as f:
-        assert f.mode == expected_mode
-        with Image.open(file_path.replace(".vtf", ".png")) as e:
-            converted_e = e.convert(expected_mode)
-        if epsilon:
-            assert_image_similar(f, converted_e, epsilon)
-        else:
-            assert_image_equal(f, converted_e)
+    with Image.open(file_path) as im:
+        assert im.mode == expected_mode
+        with Image.open(file_path.replace(".vtf", ".png")) as expected:
+            if epsilon:
+                assert_image_similar(im, expected, epsilon)
+            else:
+                assert_image_equal(im, expected)
 
 
 def test_invalid_file() -> None:
@@ -146,14 +145,12 @@ def test_vtf_save(
     with Image.open(file_path) as im:
         out = tmp_path / "tmp.vtf"
         im.save(out, pixel_format=pixel_format, version=version)
-        if pixel_format == VtfPF.DXT1:
-            im = im.convert("RGBA")
-        with Image.open(out) as expected:
-            assert expected.mode == expected_mode
+        with Image.open(out) as reloaded:
+            assert reloaded.mode == expected_mode
             if epsilon:
-                assert_image_similar(im, expected, epsilon)
+                assert_image_similar(im, reloaded, epsilon)
             else:
-                assert_image_equal(im, expected)
+                assert_image_equal(im, reloaded)
 
 
 def test_vtf_save_unsupported_mode(tmp_path: Path) -> None:
