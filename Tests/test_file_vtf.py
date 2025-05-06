@@ -75,30 +75,28 @@ def test_get_texture_size(
 
 
 @pytest.mark.parametrize(
-    "etalon_path, file_path, expected_mode, epsilon",
+    "file_path, expected_mode, epsilon",
     [
-        ("Tests/images/vtf_i8.png", "Tests/images/vtf_i8.vtf", "L", 0),
-        ("Tests/images/vtf_a8.png", "Tests/images/vtf_a8.vtf", "RGBA", 0),
-        ("Tests/images/vtf_ia88.png", "Tests/images/vtf_ia88.vtf", "LA", 0),
-        ("Tests/images/vtf_uv88.png", "Tests/images/vtf_uv88.vtf", "RGB", 0),
-        ("Tests/images/vtf_rgb888.png", "Tests/images/vtf_rgb888.vtf", "RGB", 0),
-        ("Tests/images/vtf_bgr888.png", "Tests/images/vtf_bgr888.vtf", "RGB", 0),
-        ("Tests/images/vtf_dxt1.png", "Tests/images/vtf_dxt1.vtf", "RGBA", 3),
-        ("Tests/images/vtf_dxt1A.png", "Tests/images/vtf_dxt1A.vtf", "RGBA", 8),
-        ("Tests/images/vtf_rgba8888.png", "Tests/images/vtf_rgba8888.vtf", "RGBA", 0),
+        ("Tests/images/vtf_i8.vtf", "L", 0),
+        ("Tests/images/vtf_a8.vtf", "RGBA", 0),
+        ("Tests/images/vtf_ia88.vtf", "LA", 0),
+        ("Tests/images/vtf_uv88.vtf", "RGB", 0),
+        ("Tests/images/vtf_rgb888.vtf", "RGB", 0),
+        ("Tests/images/vtf_bgr888.vtf", "RGB", 0),
+        ("Tests/images/vtf_dxt1.vtf", "RGBA", 3),
+        ("Tests/images/vtf_dxt1A.vtf", "RGBA", 8),
+        ("Tests/images/vtf_rgba8888.vtf", "RGBA", 0),
     ],
 )
-def test_vtf_read(
-    etalon_path: str, file_path: str, expected_mode: str, epsilon: int
-) -> None:
+def test_vtf_read(file_path: str, expected_mode: str, epsilon: int) -> None:
     with Image.open(file_path) as f:
         assert f.mode == expected_mode
-        with Image.open(etalon_path) as e:
+        with Image.open(file_path.replace(".vtf", ".png")) as e:
             converted_e = e.convert(expected_mode)
         if epsilon:
-            assert_image_similar(converted_e, f, epsilon)
+            assert_image_similar(f, converted_e, epsilon)
         else:
-            assert_image_equal(converted_e, f)
+            assert_image_equal(f, converted_e)
 
 
 def test_invalid_file() -> None:
