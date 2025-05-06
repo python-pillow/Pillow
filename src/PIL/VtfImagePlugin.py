@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import struct
 from enum import IntEnum, IntFlag
-from io import BytesIO
 from math import ceil, log
 from typing import IO, NamedTuple
 
@@ -308,11 +307,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     mipmap_count = _get_mipmap_count(width, height) if generate_mips else 0
 
-    thumb_buffer = BytesIO()
     thumb = im.convert("RGB")
     thumb.thumbnail((min(16, width), min(16, height)))
     thumb = thumb.resize((_closest_power(thumb.width), _closest_power(thumb.height)))
-    _write_image(thumb_buffer, thumb, VtfPF.DXT1)
 
     header = VTFHeader(
         0,
@@ -352,10 +349,16 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         fp.write(b"\x01\x00\x00\x00")
         fp.write(struct.pack("<I", header.header_size))
         fp.write(b"\x30\x00\x00\x00")
-        fp.write(struct.pack("<I", header.header_size + len(thumb_buffer.getbuffer())))
+        fp.write(
+            struct.pack(
+                "<I",
+                header.header_size
+                + _get_texture_size(VtfPF.DXT1, thumb.width, thumb.height),
+            )
+        )
     else:
         fp.write(b"\x00" * (16 - fp.tell() % 16))
-    fp.write(thumb_buffer.getbuffer())
+    _write_image(fp, thumb, VtfPF.DXT1)
 
     min_size = 4 if pixel_format in BLOCK_COMPRESSED else 1
 

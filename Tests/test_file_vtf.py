@@ -110,17 +110,19 @@ def test_vtf_read(
         (VtfPF.RGBA8888, "Tests/images/vtf_rgba8888.png", "RGBA", 0),
     ],
 )
+@pytest.mark.parametrize("version", ((7, 1), (7, 2), (7, 3)))
 def test_vtf_save(
     pixel_format: VtfPF,
     file_path: str,
     expected_mode: str,
     epsilon: int,
+    version: tuple[int, int],
     tmp_path: Path,
 ) -> None:
     im: Image.Image
     with Image.open(file_path) as im:
         out = tmp_path / "tmp.vtf"
-        im.save(out, pixel_format=pixel_format)
+        im.save(out, pixel_format=pixel_format, version=version)
         if pixel_format == VtfPF.DXT1:
             im = im.convert("RGBA")
         with Image.open(out) as expected:
