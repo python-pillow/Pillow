@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import struct
+from io import BytesIO
 from pathlib import Path
 
 import pytest
 
 from PIL import Image
 from PIL.VtfImagePlugin import (
+    VTFException,
+    VtfImageFile,
     VtfPF,
     _closest_power,
     _get_mipmap_count,
@@ -45,7 +49,7 @@ def test_closest_power(size: int, expected_size: int) -> None:
     ],
 )
 def test_get_mipmap_count(size: tuple[int, int], expected_count: int) -> None:
-    assert _get_mipmap_count(*size) == expected_count
+    assert _get_mipmap_count(size) == expected_count
 
 
 @pytest.mark.parametrize(
@@ -67,7 +71,7 @@ def test_get_mipmap_count(size: tuple[int, int], expected_count: int) -> None:
 def test_get_texture_size(
     pixel_format: VtfPF, size: tuple[int, int], expected_size: int
 ) -> None:
-    assert _get_texture_size(pixel_format, *size) == expected_size
+    assert _get_texture_size(pixel_format, size) == expected_size
 
 
 @pytest.mark.parametrize(
@@ -95,6 +99,27 @@ def test_vtf_read(
             assert_image_similar(converted_e, f, epsilon)
         else:
             assert_image_equal(converted_e, f)
+
+
+def test_invalid_file() -> None:
+    invalid_file = "Tests/images/flower.jpg"
+
+    with pytest.raises(SyntaxError, match="not a VTF file"):
+        VtfImageFile(invalid_file)
+
+
+def test_vtf_read_unsupported_version() -> None:
+    b = BytesIO(b"VTF\x00" + struct.pack("<2I", 7, 5))
+    with pytest.raises(VTFException, match=r"Unsupported VTF version: \(7, 5\)"):
+        with Image.open(b):
+            pass
+
+
+def test_vtf_read_unsupported_pixel_format() -> None:
+    b = BytesIO(b"VTF\x00" + struct.pack("<2I40xI7x", 7, 2, 1))
+    with pytest.raises(VTFException, match="Unsupported VTF pixel format: 1"):
+        with Image.open(b):
+            pass
 
 
 @pytest.mark.parametrize(
@@ -131,3 +156,17 @@ def test_vtf_save(
                 assert_image_similar(im, expected, epsilon)
             else:
                 assert_image_equal(im, expected)
+
+
+def test_vtf_save_unsupported_mode(tmp_path: Path) -> None:
+    out = tmp_path / "temp.vtf"
+    im = Image.new("HSV", (1, 1))
+    with pytest.raises(OSError, match="cannot write mode HSV as VTF"):
+        im.save(out)
+
+
+def test_vtf_save_unsupported_version(tmp_path: Path) -> None:
+    out = tmp_path / "temp.vtf"
+    im = Image.new("L", (1, 1))
+    with pytest.raises(VTFException, match=r"Unsupported VTF version: \(7, 5\)"):
+        im.save(out, version=(7, 5))
