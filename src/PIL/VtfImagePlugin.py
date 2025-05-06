@@ -307,7 +307,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     mipmap_count = _get_mipmap_count(width, height) if generate_mips else 0
 
-    thumb = im.convert("RGB")
+    thumb = im.convert("RGBA")
     thumb.thumbnail((min(16, width), min(16, height)))
     thumb = thumb.resize((_closest_power(thumb.width), _closest_power(thumb.height)))
 
@@ -368,9 +368,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 
 def _accept(prefix: bytes) -> bool:
-    valid_header = prefix.startswith(b"VTF\x00")
-    valid_version = struct.unpack_from("<2I", prefix, 4) >= (7, 0)
-    return valid_header and valid_version
+    if not prefix.startswith(b"VTF\x00"):
+        return False
+    return struct.unpack_from("<2I", prefix, 4) >= (7, 0)
 
 
 Image.register_open(VtfImageFile.format, VtfImageFile, _accept)
