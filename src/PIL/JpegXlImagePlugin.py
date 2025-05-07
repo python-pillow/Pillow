@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import struct
 from io import BytesIO
-from typing import Any
 
 from . import Image, ImageFile
 
@@ -76,11 +75,6 @@ class JpegXlImageFile(ImageFile.ImageFile):
             self.info["xmp"] = xmp
 
         self._rewind()
-
-    def _getexif(self) -> dict[int, Any] | None:
-        if "exif" not in self.info:
-            return None
-        return self.getexif()._get_merged_dict()
 
     def _get_next(self) -> tuple[bytes, float, float, bool]:
 

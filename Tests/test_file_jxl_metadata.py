@@ -35,7 +35,7 @@ def test_read_exif_metadata() -> None:
         exif_data = image.info.get("exif", None)
         assert exif_data
 
-        exif = image._getexif()
+        exif = image.getexif()
 
         # Camera make
         assert exif[271] == "Canon"
@@ -123,4 +123,4 @@ def test_4_byte_exif(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_read_exif_metadata_empty() -> None:
     with Image.open("Tests/images/hopper.jxl") as image:
-        assert image._getexif() is None
+        assert image.getexif() == {}
