@@ -134,8 +134,7 @@ class JpegXlImageFile(ImageFile.ImageFile):
         # Set logical frame to requested position
         self.__logical_frame = frame
 
-    def load(self):
-
+    def load(self) -> Image.core.PixelAccess | None:
         if self.__loaded != self.__logical_frame:
             self._seek(self.__logical_frame)
 
@@ -150,7 +149,7 @@ class JpegXlImageFile(ImageFile.ImageFile):
             # this is horribly memory inefficient
             # you need probably 2*(raw image plane) bytes of memory
             self.fp = BytesIO(data)
-            self.tile = [("raw", (0, 0) + self.size, 0, self.rawmode)]
+            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.rawmode)]
 
         return super().load()
 
