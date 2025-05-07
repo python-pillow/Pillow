@@ -24,9 +24,8 @@ except ImportError:
 
 
 def _accept(prefix: bytes) -> bool:
-    is_jxl = (
-        prefix.startswith(b"\xff\x0a")
-        or prefix.startswith(b"\x00\x00\x00\x0c\x4a\x58\x4c\x20\x0d\x0a\x87\x0a")
+    is_jxl = prefix.startswith(b"\xff\x0a") or prefix.startswith(
+        b"\x00\x00\x00\x0c\x4a\x58\x4c\x20\x0d\x0a\x87\x0a"
     )
     if is_jxl and not SUPPORTED:
         msg = "image file could not be identified because JXL support not installed"
