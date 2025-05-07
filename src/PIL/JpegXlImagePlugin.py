@@ -60,7 +60,6 @@ class JpegXlImageFile(ImageFile.ImageFile):
         self.__timestamp = 0
 
         self._mode = mode
-        self.tile = []
 
         if icc := self._decoder.get_icc():
             self.info["icc_profile"] = icc

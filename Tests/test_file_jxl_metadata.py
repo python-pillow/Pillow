@@ -97,6 +97,7 @@ def test_getxmp() -> None:
                 == "Adobe XMP Core 5.3-c011 66.145661, 2012/02/06-14:56:27        "
             )
 
+
 def test_4_byte_exif(monkeypatch: pytest.MonkeyPatch) -> None:
     class _mock_jpegxl:
         class PILJpegXlDecoder:
