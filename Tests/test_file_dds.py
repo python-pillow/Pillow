@@ -525,6 +525,6 @@ def test_save_dx10_bc5(tmp_path: Path) -> None:
     ),
 )
 def test_save_large_file(tmp_path: Path, pixel_format: str, mode: str) -> None:
-    with hopper(mode).resize((440, 440)) as im:
-        # should not error in valgrind
-        im.save(tmp_path / "img.dds", "DDS", pixel_format=pixel_format)
+    im = hopper(mode).resize((440, 440))
+    # should not error in valgrind
+    im.save(tmp_path / "img.dds", pixel_format=pixel_format)
