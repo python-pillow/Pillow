@@ -29,8 +29,7 @@ except ImportError:
 
 
 def test_read_exif_metadata() -> None:
-    file_path = "Tests/images/flower.jxl"
-    with Image.open(file_path) as image:
+    with Image.open("Tests/images/flower.jxl") as image:
         assert image.format == "JPEG XL"
         exif_data = image.info.get("exif", None)
         assert exif_data
@@ -43,8 +42,8 @@ def test_read_exif_metadata() -> None:
         with Image.open("Tests/images/flower.jpg") as jpeg_image:
             expected_exif = jpeg_image.info["exif"]
 
-            # jpeg xl always returns exif without 'Exif\0\0' prefix
-            assert exif_data == expected_exif[6:]
+        # jpeg xl always returns exif without 'Exif\0\0' prefix
+        assert exif_data == expected_exif[6:]
 
 
 def test_read_exif_metadata_without_prefix() -> None:
@@ -53,21 +52,20 @@ def test_read_exif_metadata_without_prefix() -> None:
         assert im.info["exif"][:6] != b"Exif\x00\x00"
 
         exif = im.getexif()
-        assert exif[305] == "Adobe Photoshop CS6 (Macintosh)"
+    assert exif[305] == "Adobe Photoshop CS6 (Macintosh)"
 
 
 def test_read_icc_profile() -> None:
-    file_path = "Tests/images/flower2.jxl"
-    with Image.open(file_path) as image:
+    with Image.open("Tests/images/flower2.jxl") as image:
         assert image.format == "JPEG XL"
         assert image.info.get("icc_profile", None)
 
         icc = image.info["icc_profile"]
 
-        with Image.open("Tests/images/flower2.jxl") as jpeg_image:
-            expected_icc = jpeg_image.info["icc_profile"]
+    with Image.open("Tests/images/flower2.jxl") as jpeg_image:
+        expected_icc = jpeg_image.info["icc_profile"]
 
-            assert icc == expected_icc
+    assert icc == expected_icc
 
 
 def test_getxmp() -> None:
@@ -110,7 +108,7 @@ def test_4_byte_exif(monkeypatch: pytest.MonkeyPatch) -> None:
             def get_icc(self) -> None:
                 pass
 
-            def get_exif(self) -> None:
+            def get_exif(self) -> bytes:
                 return b"\0\0\0\0"
 
             def get_xmp(self) -> None:

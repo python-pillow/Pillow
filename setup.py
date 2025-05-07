@@ -753,7 +753,7 @@ class pil_build_ext(build_ext):
                 self, "jxl/decode.h"
             ):
                 if _find_library_file(self, "jxl"):
-                    feature.set("jpegxl", "jxl jxl_threads")
+                    feature.set("jpegxl", "jxl")
 
         if feature.want("imagequant"):
             _dbg("Looking for imagequant")
@@ -837,15 +837,6 @@ class pil_build_ext(build_ext):
                 elif _find_library_file(self, "lcms2_static"):
                     # alternate Windows name.
                     feature.set("lcms", "lcms2_static")
-
-        if feature.get("jpegxl"):
-            # jxl and jxl_threads are required
-            libs = feature.get("jpegxl").split()
-            defs = []
-
-            self._update_extension("PIL._jpegxl", libs, defs)
-        else:
-            self._remove_extension("PIL._jpegxl")
 
         if feature.want("webp"):
             _dbg("Looking for webp")
@@ -969,6 +960,14 @@ class pil_build_ext(build_ext):
             self._update_extension("PIL._avif", libs)
         else:
             self._remove_extension("PIL._avif")
+
+        jpegxl = feature.get("jpegxl")
+        if isinstance(jpegxl, str):
+            # jxl and jxl_threads are required
+            libs = [jpegxl, jpegxl + "_threads"]
+            self._update_extension("PIL._jpegxl", libs)
+        else:
+            self._remove_extension("PIL._jpegxl")
 
         tk_libs = ["psapi"] if sys.platform in ("win32", "cygwin") else []
         self._update_extension("PIL._imagingtk", tk_libs)
