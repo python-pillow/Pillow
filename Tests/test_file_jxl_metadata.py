@@ -8,9 +8,7 @@ from PIL import Image, JpegXlImagePlugin
 
 from .helper import skip_unless_feature
 
-pytestmark = [
-    skip_unless_feature("jpegxl"),
-]
+pytestmark = [skip_unless_feature("jpegxl")]
 
 ElementTree: ModuleType | None
 try:

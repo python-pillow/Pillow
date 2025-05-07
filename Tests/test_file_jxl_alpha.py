@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import pytest
-
 from PIL import Image
 
-from .helper import assert_image_similar_tofile
+from .helper import assert_image_similar_tofile, skip_unless_feature
 
-_jpegxl = pytest.importorskip("PIL._jpegxl", reason="JPEG XL support not installed")
+pytestmark = [skip_unless_feature("jpegxl")]
 
 
 def test_read_rgba() -> None:
@@ -16,14 +14,13 @@ def test_read_rgba() -> None:
     """
 
     # Generated with `cjxl transparent.png transparent.jxl -q 100 -e 8`
-    file_path = "Tests/images/transparent.jxl"
-    with Image.open(file_path) as image:
-        assert image.mode == "RGBA"
-        assert image.size == (200, 150)
-        assert image.format == "JPEG XL"
-        image.load()
-        image.getdata()
+    with Image.open("Tests/images/transparent.jxl") as im:
+        assert im.mode == "RGBA"
+        assert im.size == (200, 150)
+        assert im.format == "JPEG XL"
+        im.load()
+        im.getdata()
 
-        image.tobytes()
+        im.tobytes()
 
-        assert_image_similar_tofile(image, "Tests/images/transparent.png", 1.0)
+        assert_image_similar_tofile(im, "Tests/images/transparent.png", 1)

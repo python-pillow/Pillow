@@ -41,12 +41,18 @@ class JpegXlImageFile(ImageFile.ImageFile):
     def _open(self) -> None:
         self._decoder = _jpegxl.PILJpegXlDecoder(self.fp.read())
 
-        width, height, mode, has_anim, tps_num, tps_denom, n_loops, n_frames = (
-            self._decoder.get_info()
-        )
+        (
+            width,
+            height,
+            self._mode,
+            self.is_animated,
+            tps_num,
+            tps_denom,
+            n_loops,
+            n_frames,
+        ) = self._decoder.get_info()
         self._size = width, height
         self.info["loop"] = n_loops
-        self.is_animated = has_anim
 
         self._tps_dur_secs = 1
         self.n_frames: int | None = 1
@@ -58,8 +64,6 @@ class JpegXlImageFile(ImageFile.ImageFile):
 
         # TODO: handle libjxl time codes
         self.__timestamp = 0
-
-        self._mode = mode
 
         if icc := self._decoder.get_icc():
             self.info["icc_profile"] = icc
@@ -115,7 +119,6 @@ class JpegXlImageFile(ImageFile.ImageFile):
         return self.tell() != frame
 
     def _seek(self, frame: int) -> None:
-        # print("_seek: phy: {}, fr: {}".format(self.__physical_frame, frame))
         if frame == self.__physical_frame:
             return  # Nothing to do
         if frame < self.__physical_frame:
