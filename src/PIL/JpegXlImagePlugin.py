@@ -60,7 +60,6 @@ class JpegXlImageFile(ImageFile.ImageFile):
         self.__timestamp = 0
 
         self._mode = mode
-        self.rawmode = mode
         self.tile = []
 
         if icc := self._decoder.get_icc():
@@ -149,7 +148,7 @@ class JpegXlImageFile(ImageFile.ImageFile):
             # this is horribly memory inefficient
             # you need probably 2*(raw image plane) bytes of memory
             self.fp = BytesIO(data)
-            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.rawmode)]
+            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.mode)]
 
         return super().load()
 
