@@ -67,19 +67,15 @@ class JpegXlImageFile(ImageFile.ImageFile):
         if icc := self._decoder.get_icc():
             self.info["icc_profile"] = icc
         if exif := self._decoder.get_exif():
-            self.info["exif"] = self._fix_exif(exif)
+            # jpeg xl does some weird shenanigans when storing exif
+            # it omits first 6 bytes of tiff header but adds 4 byte offset instead
+            if len(exif) > 4:
+                exif_start_offset = struct.unpack(">I", exif[:4])[0]
+                self.info["exif"] = exif[exif_start_offset + 4 :]
         if xmp := self._decoder.get_xmp():
             self.info["xmp"] = xmp
 
         self._rewind()
-
-    def _fix_exif(self, exif: bytes) -> bytes | None:
-        # jpeg xl does some weird shenanigans when storing exif
-        # it omits first 6 bytes of tiff header but adds 4 byte offset instead
-        if len(exif) <= 4:
-            return None
-        exif_start_offset = struct.unpack(">I", exif[:4])[0]
-        return exif[exif_start_offset + 4 :]
 
     def _getexif(self) -> dict[int, Any] | None:
         if "exif" not in self.info:

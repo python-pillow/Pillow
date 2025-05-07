@@ -4,7 +4,7 @@ from types import ModuleType
 
 import pytest
 
-from PIL import Image
+from PIL import Image, JpegXlImagePlugin
 
 from .helper import skip_unless_feature
 
@@ -73,25 +73,52 @@ def test_read_icc_profile() -> None:
 def test_getxmp() -> None:
     with Image.open("Tests/images/flower.jxl") as im:
         assert "xmp" not in im.info
-        assert im.getxmp() == {}
+        if ElementTree is None:
+            with pytest.warns(
+                UserWarning,
+                match="XMP data cannot be read without defusedxml dependency",
+            ):
+                xmp = im.getxmp()
+        else:
+            xmp = im.getxmp()
+        assert xmp == {}
 
     with Image.open("Tests/images/flower2.jxl") as im:
-        if ElementTree:
-            assert (
-                im.getxmp()["xmpmeta"]["xmptk"]
-                == "Adobe XMP Core 5.3-c011 66.145661, 2012/02/06-14:56:27        "
-            )
-        else:
+        if ElementTree is None:
             with pytest.warns(
                 UserWarning,
                 match="XMP data cannot be read without defusedxml dependency",
             ):
                 assert im.getxmp() == {}
+        else:
+            assert "xmp" in im.info
+            assert (
+                im.getxmp()["xmpmeta"]["xmptk"]
+                == "Adobe XMP Core 5.3-c011 66.145661, 2012/02/06-14:56:27        "
+            )
 
+def test_4_byte_exif(monkeypatch: pytest.MonkeyPatch) -> None:
+    class _mock_jpegxl:
+        class PILJpegXlDecoder:
+            def __init__(self, b: bytes) -> None:
+                pass
 
-def test_fix_exif_fail() -> None:
-    with Image.open("Tests/images/flower2.jxl") as image:
-        assert image._fix_exif(b"\0\0\0\0") is None
+            def get_info(self) -> tuple[int, int, str, int, int, int, int, int]:
+                return (1, 1, "L", 0, 0, 0, 0, 0)
+
+            def get_icc(self) -> None:
+                pass
+
+            def get_exif(self) -> None:
+                return b"\0\0\0\0"
+
+            def get_xmp(self) -> None:
+                pass
+
+    monkeypatch.setattr(JpegXlImagePlugin, "_jpegxl", _mock_jpegxl)
+
+    with Image.open("Tests/images/hopper.jxl") as image:
+        assert "exif" not in image.info
 
 
 def test_read_exif_metadata_empty() -> None:
