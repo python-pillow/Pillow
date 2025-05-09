@@ -73,4 +73,4 @@ class TestFileJpegXl:
         """
 
         with pytest.raises(TypeError):
-            _jpegxl.PILJpegXlDecoder()
+            _jpegxl.JpegXlDecoder()

@@ -39,20 +39,17 @@ class JpegXlImageFile(ImageFile.ImageFile):
     __logical_frame = 0
 
     def _open(self) -> None:
-        self._decoder = _jpegxl.PILJpegXlDecoder(self.fp.read())
+        self._decoder = _jpegxl.JpegXlDecoder(self.fp.read())
 
         (
-            width,
-            height,
+            self._size,
             self._mode,
             self.is_animated,
             tps_num,
             tps_denom,
-            n_loops,
+            self.info["loop"],
             n_frames,
         ) = self._decoder.get_info()
-        self._size = width, height
-        self.info["loop"] = n_loops
 
         self._tps_dur_secs = 1
         self.n_frames: int | None = 1
@@ -107,16 +104,6 @@ class JpegXlImageFile(ImageFile.ImageFile):
         self.__physical_frame = 0
         self.__loaded = -1
         self.__timestamp = 0
-
-    def _seek_check(self, frame: int) -> bool:
-        # if image is not animated then only the 0th frame is available
-        if (not self.is_animated and frame != 0) or (
-            self.n_frames is not None and (frame >= self.n_frames or frame < 0)
-        ):
-            msg = "attempt to seek outside sequence"
-            raise EOFError(msg)
-
-        return self.tell() != frame
 
     def _seek(self, frame: int) -> None:
         if frame == self.__physical_frame:

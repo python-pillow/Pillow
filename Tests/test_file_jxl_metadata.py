@@ -93,12 +93,12 @@ def test_getxmp() -> None:
 
 def test_4_byte_exif(monkeypatch: pytest.MonkeyPatch) -> None:
     class _mock_jpegxl:
-        class PILJpegXlDecoder:
+        class JpegXlDecoder:
             def __init__(self, b: bytes) -> None:
                 pass
 
-            def get_info(self) -> tuple[int, int, str, int, int, int, int, int]:
-                return (1, 1, "L", 0, 0, 0, 0, 0)
+            def get_info(self) -> tuple[tuple[int, int], str, int, int, int, int, int]:
+                return ((1, 1), "L", 0, 0, 0, 0, 0)
 
             def get_icc(self) -> None:
                 pass
