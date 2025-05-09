@@ -37,34 +37,40 @@ char *
 _pil_jxl_get_mode(const JxlBasicInfo *bi) {
     // 16-bit single channel images are supported
     if (bi->bits_per_sample == 16 && bi->num_color_channels == 1 &&
-        bi->alpha_bits == 0 && !bi->alpha_premultiplied)
+        bi->alpha_bits == 0 && !bi->alpha_premultiplied) {
         return "I;16";
+    }
 
     // PIL doesn't support high bit depth images
     // it will throw an exception but that's for your own good
     // you wouldn't want to see distorted image
-    if (bi->bits_per_sample != 8)
+    if (bi->bits_per_sample != 8) {
         return "uns";
+    }
 
     // image has transparency
     if (bi->alpha_bits > 0) {
         if (bi->num_color_channels == 3) {
-            if (bi->alpha_premultiplied)
+            if (bi->alpha_premultiplied) {
                 return "RGBa";
+            }
             return "RGBA";
         }
         if (bi->num_color_channels == 1) {
-            if (bi->alpha_premultiplied)
+            if (bi->alpha_premultiplied) {
                 return "La";
+            }
             return "LA";
         }
     }
 
     // image has no transparency
-    if (bi->num_color_channels == 3)
+    if (bi->num_color_channels == 3) {
         return "RGB";
-    if (bi->num_color_channels == 1)
+    }
+    if (bi->num_color_channels == 1) {
         return "L";
+    }
 
     // could not recognize mode
     return NULL;
@@ -168,7 +174,6 @@ _jxl_decoder_count_frames(PyObject *self) {
 
     // count all JXL_DEC_NEED_IMAGE_OUT_BUFFER events
     while (decp->status != JXL_DEC_SUCCESS) {
-        // printf("fetch_frame_count status: %u\n", decp->status);
         decp->status = JxlDecoderProcessInput(decp->decoder);
 
         if (decp->status == JXL_DEC_NEED_IMAGE_OUT_BUFFER) {
@@ -226,8 +231,6 @@ _jxl_decoder_new(PyObject *self, PyObject *args) {
     memcpy(decp->jxl_data, _tmp_jxl_data, _tmp_jxl_data_len);
     decp->jxl_data_len = _tmp_jxl_data_len;
 
-    // printf("%zu\n", decp->jxl_data_len);
-
     size_t suggested_num_threads = JxlThreadParallelRunnerDefaultNumWorkerThreads();
     decp->runner = JxlThreadParallelRunnerCreate(NULL, suggested_num_threads);
     decp->decoder = JxlDecoderCreate(NULL);
@@ -254,7 +257,6 @@ _jxl_decoder_new(PyObject *self, PyObject *args) {
     // decode everything up to the first frame
     do {
         decp->status = JxlDecoderProcessInput(decp->decoder);
-        // printf("Status: %d\n", decp->status);
 
 decoder_loop_skip_process:
 
@@ -312,9 +314,6 @@ decoder_loop_skip_process:
             decp->status = JxlDecoderGetBoxType(decp->decoder, btype, JXL_TRUE);
             _PIL_JXL_CHECK("JxlDecoderGetBoxType");
 
-            // printf("found box type: %c%c%c%c\n", btype[0], btype[1], btype[2],
-            // btype[3]);
-
             bool is_box_exif, is_box_xmp;
             is_box_exif = !memcmp(btype, "Exif", 4);
             is_box_xmp = !memcmp(btype, "xml ", 4);
@@ -326,7 +325,6 @@ decoder_loop_skip_process:
             size_t cur_compr_box_size;
             decp->status = JxlDecoderGetBoxSizeRaw(decp->decoder, &cur_compr_box_size);
             _PIL_JXL_CHECK("JxlDecoderGetBoxSizeRaw");
-            // printf("Exif/xmp box size: %zu\n", cur_compr_box_size);
 
             uint8_t *final_jxl_buf = NULL;
             Py_ssize_t final_jxl_buf_len = 0;
@@ -350,8 +348,6 @@ decoder_loop_skip_process:
                 decp->status = JxlDecoderProcessInput(decp->decoder);
 
                 size_t remaining = JxlDecoderReleaseBoxBuffer(decp->decoder);
-                // printf("boxes status: %d, remaining: %zu\n", decp->status,
-                // remaining);
                 final_jxl_buf_len += (cur_compr_box_size - remaining);
             } while (decp->status == JXL_DEC_BOX_NEED_MORE_OUTPUT);
 
@@ -385,7 +381,6 @@ decoder_loop_skip_process:
     }
 
     return (PyObject *)decp;
-    // Py_RETURN_NONE;
 
     // on success we should never reach here
 
@@ -525,8 +520,9 @@ PyObject *
 _jxl_decoder_get_icc(PyObject *self) {
     PILJpegXlDecoderObject *decp = (PILJpegXlDecoderObject *)self;
 
-    if (!decp->jxl_icc)
+    if (!decp->jxl_icc) {
         Py_RETURN_NONE;
+    }
 
     return PyBytes_FromStringAndSize((const char *)decp->jxl_icc, decp->jxl_icc_len);
 }
@@ -535,8 +531,9 @@ PyObject *
 _jxl_decoder_get_exif(PyObject *self) {
     PILJpegXlDecoderObject *decp = (PILJpegXlDecoderObject *)self;
 
-    if (!decp->jxl_exif)
+    if (!decp->jxl_exif) {
         Py_RETURN_NONE;
+    }
 
     return PyBytes_FromStringAndSize((const char *)decp->jxl_exif, decp->jxl_exif_len);
 }
@@ -545,8 +542,9 @@ PyObject *
 _jxl_decoder_get_xmp(PyObject *self) {
     PILJpegXlDecoderObject *decp = (PILJpegXlDecoderObject *)self;
 
-    if (!decp->jxl_xmp)
+    if (!decp->jxl_xmp) {
         Py_RETURN_NONE;
+    }
 
     return PyBytes_FromStringAndSize((const char *)decp->jxl_xmp, decp->jxl_xmp_len);
 }
@@ -564,36 +562,10 @@ static struct PyMethodDef _jpegxl_decoder_methods[] = {
 
 // PILJpegXlDecoder type definition
 static PyTypeObject PILJpegXlDecoder_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "PILJpegXlDecoder", /*tp_name */
-    sizeof(PILJpegXlDecoderObject),                    /*tp_basicsize */
-    0,                                                 /*tp_itemsize */
-    /* methods */
-    (destructor)_jxl_decoder_dealloc, /*tp_dealloc*/
-    0,                                /*tp_vectorcall_offset*/
-    0,                                /*tp_getattr*/
-    0,                                /*tp_setattr*/
-    0,                                /*tp_as_async*/
-    0,                                /*tp_repr*/
-    0,                                /*tp_as_number*/
-    0,                                /*tp_as_sequence*/
-    0,                                /*tp_as_mapping*/
-    0,                                /*tp_hash*/
-    0,                                /*tp_call*/
-    0,                                /*tp_str*/
-    0,                                /*tp_getattro*/
-    0,                                /*tp_setattro*/
-    0,                                /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,               /*tp_flags*/
-    0,                                /*tp_doc*/
-    0,                                /*tp_traverse*/
-    0,                                /*tp_clear*/
-    0,                                /*tp_richcompare*/
-    0,                                /*tp_weaklistoffset*/
-    0,                                /*tp_iter*/
-    0,                                /*tp_iternext*/
-    _jpegxl_decoder_methods,          /*tp_methods*/
-    0,                                /*tp_members*/
-    0,                                /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "PILJpegXlDecoder",
+    .tp_basicsize = sizeof(PILJpegXlDecoderObject),
+    .tp_dealloc = (destructor)_jxl_decoder_dealloc,
+    .tp_methods = _jpegxl_decoder_methods,
 };
 
 // Return libjxl decoder version available as integer:
