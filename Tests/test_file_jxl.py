@@ -30,7 +30,6 @@ class TestUnsupportedJpegXl:
 @skip_unless_feature("jpegxl")
 class TestFileJpegXl:
     def test_version(self) -> None:
-        _jpegxl.JpegXlDecoderVersion()
         version = features.version_module("jpegxl")
         assert version is not None
         assert re.search(r"\d+\.\d+\.\d+$", version)

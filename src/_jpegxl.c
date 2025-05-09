@@ -568,13 +568,6 @@ static PyTypeObject PILJpegXlDecoder_Type = {
     .tp_methods = _jpegxl_decoder_methods,
 };
 
-// Return libjxl decoder version available as integer:
-// MAJ*1_000_000 + MIN*1_000 + PATCH
-PyObject *
-JpegXlDecoderVersion_wrapper() {
-    return Py_BuildValue("i", JxlDecoderVersion());
-}
-
 // Version as string
 const char *
 JpegXlDecoderVersion_str(void) {
@@ -591,10 +584,6 @@ JpegXlDecoderVersion_str(void) {
 }
 
 static PyMethodDef jpegxlMethods[] = {
-    {"JpegXlDecoderVersion",
-     JpegXlDecoderVersion_wrapper,
-     METH_NOARGS,
-     "JpegXlVersion"},
     {"PILJpegXlDecoder", _jxl_decoder_new, METH_VARARGS, "PILJpegXlDecoder"},
     {NULL, NULL}
 };
