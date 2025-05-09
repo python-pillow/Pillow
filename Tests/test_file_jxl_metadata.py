@@ -27,21 +27,20 @@ except ImportError:
 
 
 def test_read_exif_metadata() -> None:
-    with Image.open("Tests/images/flower.jxl") as image:
-        assert image.format == "JPEG XL"
-        exif_data = image.info.get("exif", None)
-        assert exif_data
+    with Image.open("Tests/images/flower.jxl") as im:
+        assert im.format == "JPEG XL"
+        exif_data = im.info["exif"]
 
-        exif = image.getexif()
+        exif = im.getexif()
 
         # Camera make
         assert exif[271] == "Canon"
 
-        with Image.open("Tests/images/flower.jpg") as jpeg_image:
-            expected_exif = jpeg_image.info["exif"]
+    with Image.open("Tests/images/flower.jpg") as im_jpeg:
+        expected_exif = im_jpeg.info["exif"]
 
-        # jpeg xl always returns exif without 'Exif\0\0' prefix
-        assert exif_data == expected_exif[6:]
+    # jpeg xl always returns exif without 'Exif\0\0' prefix
+    assert exif_data == expected_exif[6:]
 
 
 def test_read_exif_metadata_without_prefix() -> None:
@@ -50,18 +49,16 @@ def test_read_exif_metadata_without_prefix() -> None:
         assert im.info["exif"][:6] != b"Exif\x00\x00"
 
         exif = im.getexif()
-    assert exif[305] == "Adobe Photoshop CS6 (Macintosh)"
+        assert exif[305] == "Adobe Photoshop CS6 (Macintosh)"
 
 
 def test_read_icc_profile() -> None:
-    with Image.open("Tests/images/flower2.jxl") as image:
-        assert image.format == "JPEG XL"
-        assert image.info.get("icc_profile", None)
+    with Image.open("Tests/images/flower2.jxl") as im:
+        assert im.format == "JPEG XL"
+        icc = im.info["icc_profile"]
 
-        icc = image.info["icc_profile"]
-
-    with Image.open("Tests/images/flower2.jxl") as jpeg_image:
-        expected_icc = jpeg_image.info["icc_profile"]
+    with Image.open("Tests/images/flower2.jxl") as im_jpeg:
+        expected_icc = im_jpeg.info["icc_profile"]
 
     assert icc == expected_icc
 
@@ -114,10 +111,10 @@ def test_4_byte_exif(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(JpegXlImagePlugin, "_jpegxl", _mock_jpegxl)
 
-    with Image.open("Tests/images/hopper.jxl") as image:
-        assert "exif" not in image.info
+    with Image.open("Tests/images/hopper.jxl") as im:
+        assert "exif" not in im.info
 
 
 def test_read_exif_metadata_empty() -> None:
-    with Image.open("Tests/images/hopper.jxl") as image:
-        assert image.getexif() == {}
+    with Image.open("Tests/images/hopper.jxl") as im:
+        assert im.getexif() == {}

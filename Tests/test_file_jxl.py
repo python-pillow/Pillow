@@ -41,31 +41,31 @@ class TestFileJpegXl:
         Does it have the bits we expect?
         """
 
-        with Image.open("Tests/images/hopper.jxl") as image:
-            assert image.mode == "RGB"
-            assert image.size == (128, 128)
-            assert image.format == "JPEG XL"
-            image.load()
-            image.getdata()
+        with Image.open("Tests/images/hopper.jxl") as im:
+            assert im.mode == "RGB"
+            assert im.size == (128, 128)
+            assert im.format == "JPEG XL"
+            im.load()
+            im.getdata()
 
             # generated with:
             # djxl hopper.jxl hopper_jxl_bits.ppm
-            assert_image_similar_tofile(image, "Tests/images/hopper_jxl_bits.ppm", 1)
+            assert_image_similar_tofile(im, "Tests/images/hopper_jxl_bits.ppm", 1)
 
     def test_read_i16(self) -> None:
         """
         Can we read 16-bit Grayscale Jpeg XL image?
         """
 
-        with Image.open("Tests/images/jxl/16bit_subcutaneous.cropped.jxl") as image:
-            assert image.mode == "I;16"
-            assert image.size == (128, 64)
-            assert image.format == "JPEG XL"
-            image.load()
-            image.getdata()
+        with Image.open("Tests/images/jxl/16bit_subcutaneous.cropped.jxl") as im:
+            assert im.mode == "I;16"
+            assert im.size == (128, 64)
+            assert im.format == "JPEG XL"
+            im.load()
+            im.getdata()
 
             assert_image_similar_tofile(
-                image, "Tests/images/jxl/16bit_subcutaneous.cropped.png", 1
+                im, "Tests/images/jxl/16bit_subcutaneous.cropped.png", 1
             )
 
     def test_JpegXlDecode_with_invalid_args(self) -> None:

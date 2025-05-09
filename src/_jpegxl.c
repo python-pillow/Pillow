@@ -635,7 +635,6 @@ setup_module(PyObject *m) {
 
     // TODO(oloke) ready object types?
     PyObject *d = PyModule_GetDict(m);
-
     PyObject *v = PyUnicode_FromString(JpegXlDecoderVersion_str());
     PyDict_SetItemString(d, "libjxl_version", v ? v : Py_None);
     Py_XDECREF(v);
@@ -649,10 +648,9 @@ PyInit__jpegxl(void) {
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_jpegxl",     /* m_name */
-        NULL,          /* m_doc */
-        -1,            /* m_size */
-        jpegxlMethods, /* m_methods */
+        .m_name = "_jpegxl",
+        .m_size = -1,
+        .m_methods = jpegxlMethods,
     };
 
     m = PyModule_Create(&module_def);
