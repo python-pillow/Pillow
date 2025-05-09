@@ -12,7 +12,7 @@ from PIL._binary import o32le as o32
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"RIFF"
+    return prefix.startswith(b"RIFF")
 
 
 def _save_frame(im: Image.Image, fp: BytesIO, info: dict[str, Any]) -> None:
