@@ -100,6 +100,18 @@ def test_l_mode_after_rgb() -> None:
         assert im.mode == "RGB"
 
 
+def test_l_mode_transparency_after_rgb() -> None:
+    with Image.open("Tests/images/no_palette_with_transparency_after_rgb.gif") as im:
+        expected = im.convert("RGB")
+        d = ImageDraw.Draw(expected)
+        d.rectangle([(0, 0), (64, 128)], fill="#000")
+
+        im.seek(1)
+        assert im.mode == "RGB"
+
+        assert_image_equal(im, expected)
+
+
 def test_palette_not_needed_for_second_frame() -> None:
     with Image.open("Tests/images/palette_not_needed_for_second_frame.gif") as im:
         im.seek(1)
