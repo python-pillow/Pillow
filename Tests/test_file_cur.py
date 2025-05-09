@@ -18,7 +18,7 @@ def test_deerstalker() -> None:
         assert im.getpixel((16, 16)) == (84, 87, 86, 255)
 
 
-def test_posy_link():
+def test_posy_link() -> None:
     with Image.open("Tests/images/cur/posy_link.cur") as im:
         assert im.size == (128, 128)
         assert im.info["sizes"] == {(128, 128), (96, 96), (64, 64), (48, 48), (32, 32)}
@@ -34,7 +34,7 @@ def test_posy_link():
         assert im.getpixel((10, 10)) == (191, 191, 191, 255)
 
 
-def test_stopwtch():
+def test_stopwtch() -> None:
     with Image.open("Tests/images/cur/stopwtch.cur") as im:
         assert im.size == (32, 32)
         assert im.info["hotspots"] == [(16, 19)]
@@ -43,7 +43,7 @@ def test_stopwtch():
         assert im.getpixel((8, 16)) == (255, 0, 0, 255)
 
 
-def test_win98_arrow():
+def test_win98_arrow() -> None:
     with Image.open("Tests/images/cur/win98_arrow.cur") as im:
         assert im.size == (32, 32)
         assert im.info["hotspots"] == [(10, 10)]
@@ -68,7 +68,7 @@ def test_invalid_file() -> None:
             cur._open()
 
 
-def test_save_win98_arrow():
+def test_save_win98_arrow() -> None:
     with Image.open("Tests/images/cur/win98_arrow.png") as im:
         # save the data
         with BytesIO() as output:
@@ -80,20 +80,20 @@ def test_save_win98_arrow():
                 bitmap_format="bmp",
             )
 
-            with Image.open(output) as im2:
-                assert im.tobytes() == im2.tobytes()
+            with Image.open(output) as reloaded:
+                assert im.tobytes() == reloaded.tobytes()
 
         with BytesIO() as output:
             im.save(output, format="CUR")
 
             # check default save params
-            with Image.open(output) as im2:
-                assert im2.size == (32, 32)
-                assert im2.info["sizes"] == {(32, 32), (24, 24), (16, 16)}
-                assert im2.info["hotspots"] == [(0, 0), (0, 0), (0, 0)]
+            with Image.open(output) as reloaded:
+                assert reloaded.size == (32, 32)
+                assert reloaded.info["sizes"] == {(32, 32), (24, 24), (16, 16)}
+                assert reloaded.info["hotspots"] == [(0, 0), (0, 0), (0, 0)]
 
 
-def test_save_posy_link():
+def test_save_posy_link() -> None:
     sizes = [(128, 128), (96, 96), (64, 64), (48, 48), (32, 32)]
     hotspots = [(25, 7), (18, 5), (12, 3), (9, 2), (5, 1)]
 
@@ -110,18 +110,18 @@ def test_save_posy_link():
 
             # make sure saved output is readable
             # and sizes/hotspots are correct
-            with Image.open(output, formats=["CUR"]) as im2:
-                assert (128, 128) == im2.size
-                assert set(sizes) == im2.info["sizes"]
+            with Image.open(output, formats=["CUR"]) as reloaded:
+                assert (128, 128) == reloaded.size
+                assert set(sizes) == reloaded.info["sizes"]
 
         with BytesIO() as output:
             im.save(output, sizes=sizes[3:], hotspots=hotspots[3:], format="CUR")
 
             # make sure saved output is readable
             # and sizes/hotspots are correct
-            with Image.open(output, formats=["CUR"]) as im2:
-                assert (48, 48) == im2.size
-                assert set(sizes[3:]) == im2.info["sizes"]
+            with Image.open(output, formats=["CUR"]) as reloaded:
+                assert (48, 48) == reloaded.size
+                assert set(sizes[3:]) == reloaded.info["sizes"]
 
             # make sure error is thrown when size and hotspot len's
             # don't match

@@ -7,7 +7,7 @@ import pytest
 from PIL import Image
 
 
-def test_aero_busy():
+def test_aero_busy() -> None:
     with Image.open("Tests/images/ani/aero_busy.ani") as im:
         assert im.size == (64, 64)
         assert im.info["frames"] == 18
@@ -26,7 +26,7 @@ def test_aero_busy():
             im.seek(18)
 
 
-def test_posy_busy():
+def test_posy_busy() -> None:
     with Image.open("Tests/images/ani/posy_busy.ani") as im:
         assert im.size == (96, 96)
         assert im.info["frames"] == 77
@@ -42,7 +42,7 @@ def test_posy_busy():
             im.seek(77)
 
 
-def test_stopwtch():
+def test_stopwtch() -> None:
     with Image.open("Tests/images/ani/stopwtch.ani") as im:
         assert im.size == (32, 32)
         assert im.info["frames"] == 8
@@ -67,7 +67,7 @@ def test_stopwtch():
             im.seek(8)
 
 
-def test_save():
+def test_save() -> None:
     directory_path = "Tests/images/ani/"
     filenames = [
         "aero_busy_0.png",
