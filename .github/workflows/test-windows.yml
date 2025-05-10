@@ -84,7 +84,7 @@ jobs:
         python3 -m pip install --upgrade pip
 
     - name: Install CPython dependencies
-      if: "!contains(matrix.python-version, 'pypy') && matrix.architecture != 'x86'"
+      if: "!contains(matrix.python-version, 'pypy') && !contains(matrix.python-version, '3.14') && matrix.architecture != 'x86'"
       run: |
         python3 -m pip install PyQt6
 

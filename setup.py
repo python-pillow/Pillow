@@ -46,7 +46,7 @@ WEBP_ROOT = None
 ZLIB_ROOT = None
 FUZZING_BUILD = "LIB_FUZZING_ENGINE" in os.environ
 
-if sys.platform == "win32" and sys.version_info >= (3, 14):
+if sys.platform == "win32" and sys.version_info >= (3, 15):
     import atexit
 
     atexit.register(

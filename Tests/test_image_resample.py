@@ -462,7 +462,7 @@ class TestCoreResampleBox:
         im.resize((32, 32), resample, (20, 20, 20, 100))
         im.resize((32, 32), resample, (20, 20, 100, 20))
 
-        with pytest.raises(TypeError, match="must be sequence of length 4"):
+        with pytest.raises(TypeError, match="must be (sequence|tuple) of length 4"):
             im.resize((32, 32), resample, (im.width, im.height))  # type: ignore[arg-type]
 
         with pytest.raises(ValueError, match="can't be negative"):
