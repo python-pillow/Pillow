@@ -278,7 +278,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         _write_multiple_frames(im, fp)
     else:
         _write_single_frame(im, fp)
-    pass
 
     riff_end = fp.tell()
     fp.seek(riff_offset - 4)
@@ -289,28 +288,29 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 
 class AniFile:
-    def __init__(self, buf: BytesIO) -> None:
+    def __init__(self, fp: BytesIO) -> None:
+        if not _accept(fp.read(4)):
+            SyntaxError("Not an ANI file")
+
         self.image_data = []
 
-        self.buf = buf
+        self.buf = fp
         self.rate = None
         self.seq = None
         self.anih = None
 
-        riff, size, fformat = struct.unpack("<4sI4s", buf.read(12))
-        if riff != b"RIFF":
-            SyntaxError("Not an ANI file")
+        size, fformat = struct.unpack("<I4s", fp.read(8))
 
         self.riff = {"size": size, "fformat": fformat}
 
-        chunkOffset = buf.tell()
+        chunkOffset = fp.tell()
         while chunkOffset < self.riff["size"]:
-            buf.seek(chunkOffset)
-            chunk, size = struct.unpack("<4sI", buf.read(8))
+            fp.seek(chunkOffset)
+            chunk, size = struct.unpack("<4sI", fp.read(8))
             chunkOffset = chunkOffset + size + 8
 
             if chunk == b"anih":
-                s = buf.read(36)
+                s = fp.read(36)
                 self.anih = {
                     "size": i32(s),  # Data structure size (in bytes)
                     "nFrames": i32(s, 4),  # Number of frames
@@ -325,24 +325,24 @@ class AniFile:
                 }
 
             if chunk == b"seq ":
-                s = buf.read(size)
+                s = fp.read(size)
                 self.seq = [i32(s, i * 4) for i in range(size // 4)]
 
             if chunk == b"rate":
-                s = buf.read(size)
+                s = fp.read(size)
                 self.rate = [i32(s, i * 4) for i in range(size // 4)]
 
             if chunk == b"LIST":
-                listtype = struct.unpack("<4s", buf.read(4))[0]
+                listtype = struct.unpack("<4s", fp.read(4))[0]
                 if listtype != b"fram":
                     continue
 
                 listOffset = 0
                 while listOffset < size - 8:
-                    _, lSize = struct.unpack("<4sI", buf.read(8))
-                    self.image_data.append({"offset": buf.tell(), "size": lSize})
+                    _, lSize = struct.unpack("<4sI", fp.read(8))
+                    self.image_data.append({"offset": fp.tell(), "size": lSize})
 
-                    buf.read(lSize)
+                    fp.read(lSize)
                     listOffset = listOffset + lSize + 8
 
         if self.anih is None:
