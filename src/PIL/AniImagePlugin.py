@@ -407,7 +407,7 @@ class AniImageFile(ImageFile.ImageFile):
         self.info["rate"] = self.ani.rate
 
         assert self.ani.anih is not None
-        self.info["frames"] = self.ani.anih["nFrames"]
+        self.n_frames = self.ani.anih["nFrames"]
 
         self.frame = 0
         self.seek(0)
@@ -434,9 +434,8 @@ class AniImageFile(ImageFile.ImageFile):
         return Image.Image.load(self)
 
     def seek(self, frame: int) -> None:
-        if frame > self.info["frames"] - 1 or frame < 0:
-            msg = "Frame index out of animation bounds"
-            raise EOFError(msg)
+        if not self._seek_check(frame):
+            return
 
         self.frame = frame
 

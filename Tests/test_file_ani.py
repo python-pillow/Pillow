@@ -10,7 +10,7 @@ from PIL import Image
 def test_aero_busy() -> None:
     with Image.open("Tests/images/ani/aero_busy.ani") as im:
         assert im.size == (64, 64)
-        assert im.info["frames"] == 18
+        assert im.n_frames == 18
 
         with Image.open("Tests/images/ani/aero_busy_0.png") as png:
             assert png.tobytes() == im.tobytes()
@@ -29,7 +29,7 @@ def test_aero_busy() -> None:
 def test_posy_busy() -> None:
     with Image.open("Tests/images/ani/posy_busy.ani") as im:
         assert im.size == (96, 96)
-        assert im.info["frames"] == 77
+        assert im.n_frames == 77
 
         with Image.open("Tests/images/ani/posy_busy_0.png") as png:
             assert png.tobytes() == im.tobytes()
@@ -45,7 +45,7 @@ def test_posy_busy() -> None:
 def test_stopwtch() -> None:
     with Image.open("Tests/images/ani/stopwtch.ani") as im:
         assert im.size == (32, 32)
-        assert im.info["frames"] == 8
+        assert im.n_frames == 8
 
         assert im.info["seq"][0] == 0
         assert im.info["seq"][2] == 0
@@ -132,7 +132,7 @@ def test_save() -> None:
         )
 
         with Image.open(output, formats=["ANI"]) as im:
-            assert im.info["frames"] == 6
+            assert im.n_frames == 6
             assert im.info["seq"] == [0, 2, 4, 1, 3, 5, 0, 1, 0, 1]
             assert im.info["rate"] == [1, 2, 3, 1, 2, 3, 1, 2, 3, 4]
             assert im.size == (32, 32)
