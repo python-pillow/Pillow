@@ -23,6 +23,9 @@ def test_open() -> None:
         assert im.tile == [("iptc", (0, 0, 1, 1), 25, "raw")]
         assert_image_equal(im, expected)
 
+    with Image.open(f) as im:
+        assert im.load() is not None
+
 
 def test_getiptcinfo_jpg_none() -> None:
     # Arrange
