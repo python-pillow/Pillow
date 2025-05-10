@@ -410,11 +410,11 @@ _jxl_decoder_get_info(PyObject *self) {
     JpegXlDecoderObject *decp = (JpegXlDecoderObject *)self;
 
     return Py_BuildValue(
-        "(II)siIIII",
+        "(II)sOIIII",
         decp->basic_info.xsize,
         decp->basic_info.ysize,
         decp->mode,
-        decp->basic_info.have_animation,
+        decp->basic_info.have_animation ? Py_True : Py_False,
         decp->basic_info.animation.tps_numerator,
         decp->basic_info.animation.tps_denominator,
         decp->basic_info.animation.num_loops,
