@@ -410,7 +410,6 @@ class AniImageFile(ImageFile.ImageFile):
         self.info["frames"] = self.ani.anih["nFrames"]
 
         self.frame = 0
-        self._min_frame = 0
         self.seek(0)
         self.size = self.im.size
 
