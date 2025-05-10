@@ -69,8 +69,6 @@ def _save_frame(im: Image.Image, fp: BytesIO, info: dict[str, Any]) -> None:
                     image_io,
                     [ImageFile._Tile("raw", (0, 0) + size, 0, ("1", 0, -1))],
                 )
-            else:
-                frame.alpha = True
 
             frame.save(image_io, "dib")
         else:
