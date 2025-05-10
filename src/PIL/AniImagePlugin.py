@@ -411,6 +411,7 @@ class AniImageFile(ImageFile.ImageFile):
 
         self.frame = 0
         self.seek(0)
+        self.load()
         self.size = self.im.size
 
     @property
@@ -438,7 +439,6 @@ class AniImageFile(ImageFile.ImageFile):
             raise EOFError(msg)
 
         self.frame = frame
-        self.load()
 
 
 Image.register_open(AniImageFile.format, AniImageFile, _accept)
