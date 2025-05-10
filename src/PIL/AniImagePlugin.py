@@ -424,12 +424,13 @@ class AniImageFile(ImageFile.ImageFile):
             raise ValueError(msg)
         self._size = value
 
-    def load(self) -> None:
+    def load(self) -> Image.core.PixelAccess | None:
         im = self.ani.frame(self.frame)
         self.info["sizes"] = im.info["sizes"]
         self.info["hotspots"] = im.info["hotspots"]
         self.im = im.im
         self._mode = im.mode
+        return Image.Image.load(self)
 
     def seek(self, frame: int) -> None:
         if frame > self.info["frames"] - 1 or frame < 0:
