@@ -302,7 +302,7 @@ ImagingDelete(Imaging im) {
     MUTEX_LOCK(&im->mutex);
     im->refcount--;
 
-    if (im->refcount > 0) {
+    if (im->refcount > 1) {
         MUTEX_UNLOCK(&im->mutex);
         return;
     }
