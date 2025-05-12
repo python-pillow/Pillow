@@ -51,7 +51,7 @@ LIBWEBP_VERSION=1.5.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0
-LIBAVIF_VERSION=1.2.1
+LIBAVIF_VERSION=1.3.0
 
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
@@ -128,14 +128,10 @@ function build_libavif {
     fi
 
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
-    # CONFIG_AV1_DECODER=0 is a flag for libaom (included as a subproject of
-    # libavif) to disable the compilation and inclusion of aom's AV1 decoder.
-    # CONFIG_AV1_HIGHBITDEPTH=0 is another flag for libaom that disables support
-    # for encoding high bit depth images.
-    # CMAKE_POLICY_VERSION_MINIMUM=3.9 enables cmake policy CMP0069, which is
-    # required to allow INTERPROCEDURAL_OPTIMIZATION (-flto) WITH gcc
+    # CONFIG_AV1_HIGHBITDEPTH=0 is a flag for libaom (included as a subproject
+    # of libavif) that disables support for encoding high bit depth images.
     (cd $out_dir \
-        && CMAKE_POLICY_VERSION_MINIMUM=3.9 cmake \
+        && cmake \
             -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX \
             -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib \
             -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib \
@@ -143,7 +139,6 @@ function build_libavif {
             -DAVIF_LIBSHARPYUV=LOCAL \
             -DAVIF_LIBYUV=LOCAL \
             -DAVIF_CODEC_AOM=LOCAL \
-            -DCONFIG_AV1_DECODER=0 \
             -DCONFIG_AV1_HIGHBITDEPTH=0 \
             -DAVIF_CODEC_AOM_DECODE=OFF \
             -DAVIF_CODEC_DAV1D=LOCAL \
