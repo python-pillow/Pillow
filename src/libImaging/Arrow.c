@@ -37,6 +37,10 @@ ReleaseExportedSchema(struct ArrowSchema *array) {
             child->release = NULL;
         }
         // UNDONE -- should I be releasing the children?
+        free(array->children[i]);
+    }
+    if (array->children) {
+        free(array->children);
     }
 
     // Release dictionary
@@ -117,6 +121,7 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     retval = export_named_type(schema->children[0], im->arrow_band_format, "pixel");
     if (retval != 0) {
         free(schema->children[0]);
+        free(schema->children);
         schema->release(schema);
         return retval;
     }
