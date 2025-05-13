@@ -14,3 +14,23 @@
    fun:_TIFFReadEncodedTileAndAllocBuffer
    ...
 }
+
+{
+   <python_alloc_possible_leak>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:_PyMem_RawMalloc
+   fun:PyObject_Malloc
+   ...
+}
+
+{
+   <python_realloc_possible_leak>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:_PyMem_RawRealloc
+   fun:PyMem_Realloc
+   ...
+}
