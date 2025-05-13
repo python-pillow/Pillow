@@ -425,6 +425,7 @@ text_layout_fallback(
             "setting text direction, language or font features is not supported "
             "without libraqm"
         );
+        return 0;
     }
 
     if (PyUnicode_Check(string)) {
