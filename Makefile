@@ -101,7 +101,8 @@ valgrind:
 
 .PHONY: valgrind-leak
 valgrind-leak:
-	PYTHONMALLOC=malloc valgrind --suppressions=Tests/oss-fuzz/python.supp --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite \
+	PYTHONMALLOC=malloc valgrind --suppressions=Tests/oss-fuzz/python.supp \
+	    --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite \
             --log-file=/tmp/valgrind-output \
             python3 -m pytest -vv --valgrind --valgrind-log=/tmp/valgrind-output Tests/
 
