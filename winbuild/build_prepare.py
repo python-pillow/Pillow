@@ -402,7 +402,6 @@ DEPS: dict[str, dict[str, Any]] = {
                 "-DCONFIG_AV1_HIGHBITDEPTH=0",
                 "-DAVIF_CODEC_AOM_DECODE=OFF",
                 "-DAVIF_CODEC_DAV1D=LOCAL",
-                "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
                 "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON",
                 build_type="MinSizeRel",
             ),
