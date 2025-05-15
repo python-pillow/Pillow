@@ -8,4 +8,4 @@ source /vpy3/bin/activate
 cd /Pillow
 make clean
 make install
-make valgrind-memory
+make valgrind-leak
