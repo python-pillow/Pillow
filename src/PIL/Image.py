@@ -1538,10 +1538,11 @@ class Image:
         # XMP tags
         if ExifTags.Base.Orientation not in self._exif:
             xmp_tags = self.info.get("XML:com.adobe.xmp")
+            pattern: str | bytes = r'tiff:Orientation(="|>)([0-9])'
             if not xmp_tags and (xmp_tags := self.info.get("xmp")):
-                xmp_tags = xmp_tags.decode("utf-8")
+                pattern = rb'tiff:Orientation(="|>)([0-9])'
             if xmp_tags:
-                match = re.search(r'tiff:Orientation(="|>)([0-9])', xmp_tags)
+                match = re.search(pattern, xmp_tags)
                 if match:
                     self._exif[ExifTags.Base.Orientation] = int(match[2])
 
