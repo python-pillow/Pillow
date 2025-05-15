@@ -973,6 +973,11 @@ class TestImage:
                     assert tag not in exif.get_ifd(0x8769)
                 assert exif.get_ifd(0xA005)
 
+    def test_exif_from_xmp_bytes(self) -> None:
+        im = Image.new("RGB", (1, 1))
+        im.info["xmp"] = b'\xff tiff:Orientation="2"'
+        assert im.getexif()[274] == 2
+
     def test_empty_xmp(self) -> None:
         with Image.open("Tests/images/hopper.gif") as im:
             if ElementTree is None:
