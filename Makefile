@@ -101,6 +101,7 @@ valgrind:
 
 .PHONY: valgrind-leak
 valgrind-leak:
+	python3 -c "import pytest_valgrind" > /dev/null 2>&1 || python3 -m pip install pytest-valgrind
 	PYTHONMALLOC=malloc valgrind --suppressions=Tests/oss-fuzz/python.supp \
 	    --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite \
             --log-file=/tmp/valgrind-output \
