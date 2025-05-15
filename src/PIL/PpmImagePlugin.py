@@ -94,8 +94,8 @@ class PpmImageFile(ImageFile.ImageFile):
             msg = "Reached EOF while reading header"
             raise ValueError(msg)
         elif len(token) > 10:
-            msg = f"Token too long in file header: {token.decode()}"
-            raise ValueError(msg)
+            msg_too_long = b"Token too long in file header: %s" % token
+            raise ValueError(msg_too_long)
         return token
 
     def _open(self) -> None:
