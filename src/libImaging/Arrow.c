@@ -36,7 +36,6 @@ ReleaseExportedSchema(struct ArrowSchema *array) {
             child->release(child);
             child->release = NULL;
         }
-        // UNDONE -- should I be releasing the children?
         free(array->children[i]);
     }
     if (array->children) {
