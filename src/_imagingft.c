@@ -275,6 +275,7 @@ text_layout_raqm(
         if (!text || !size) {
             /* return 0 and clean up, no glyphs==no size,
                and raqm fails with empty strings */
+            PyMem_Free(text);
             goto failed;
         }
         set_text = raqm_set_text(rq, text, size);
