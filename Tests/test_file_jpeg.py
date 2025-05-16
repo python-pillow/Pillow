@@ -1034,6 +1034,11 @@ class TestFileJpeg:
             im.save(f, xmp=b"1" * 65505)
 
     @pytest.mark.timeout(timeout=1)
+    @pytest.mark.xfail(
+        "PILLOW_VALGRIND_TEST" in os.environ,
+        reason="Valgrind is slower",
+        raises=TimeoutError
+    )
     def test_eof(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # Even though this decoder never says that it is finished
         # the image should still end when there is no new data
