@@ -76,8 +76,7 @@ def test_decompression_bomb() -> None:
 @pytest.mark.timeout(4)
 @pytest.mark.xfail(
     "PILLOW_VALGRIND_TEST" in os.environ,
-    reason="Valgrind is slower",
-    raises=TimeoutError
+    reason="Valgrind is slower"
 )
 def test_oom() -> None:
     glyph = struct.pack(
