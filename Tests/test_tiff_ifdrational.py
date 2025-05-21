@@ -74,3 +74,14 @@ def test_ifd_rational_save(
     with Image.open(out) as reloaded:
         assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert float(IFDRational(301, 1)) == float(reloaded.tag_v2[282])
+
+
+@pytest.mark.parametrize(
+    "numerator, denominator, expected_result",
+    [
+        (1, 1, 1.0),
+        (1, 0, float("nan")),
+    ],
+)
+def test_float_cast(numerator, denominator, expected_result):
+    float(IFDRational(numerator, denominator)) == expected_result
