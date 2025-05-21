@@ -30,11 +30,11 @@ with instrument_imports():
 def TestOneInput(data):
     if len(data) < 10:  # Skip inputs that are too small
         return
-    
+
     try:
         # Create a BytesIO object from the fuzzer data
         image_io = io.BytesIO(data)
-        
+
         # Try to open the image
         with Image.open(image_io) as img:
             # Test EXIF extraction
@@ -45,7 +45,7 @@ def TestOneInput(data):
                     for tag_id, value in exif.items():
                         # Try to get the tag name
                         tag_name = ExifTags.TAGS.get(tag_id, tag_id)
-                        
+
                         # Try to convert GPS info
                         if tag_id == 34853:  # GPSInfo tag
                             for gps_tag, gps_value in value.items():
@@ -53,7 +53,7 @@ def TestOneInput(data):
             except Exception:
                 # Catch exceptions from EXIF processing
                 pass
-            
+
             # Test thumbnail extraction from EXIF
             try:
                 if hasattr(img, 'getexif'):
@@ -69,7 +69,7 @@ def TestOneInput(data):
             except Exception:
                 # Catch exceptions from thumbnail extraction
                 pass
-    
+
     except Exception:
         # Catch all other exceptions
         pass
