@@ -389,6 +389,7 @@ DEPS: dict[str, dict[str, Any]] = {
         "filename": f"libavif-{V['LIBAVIF']}.zip",
         "license": "LICENSE",
         "build": [
+            "rustup update",
             f"{sys.executable} -m pip install meson",
             *cmds_cmake(
                 "avif_static",
