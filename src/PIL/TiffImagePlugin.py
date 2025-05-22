@@ -691,7 +691,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 if all(isinstance(v, IFDRational) for v in values):
                     for v in values:
                         assert isinstance(v, IFDRational)
-                        if v < 0 or (math.isnan(v) and v.numerator < 0):
+                        if v < 0 or (math.isnan(v) and float(v.numerator) < 0):
                             self.tagtype[tag] = TiffTags.SIGNED_RATIONAL
                             break
                     else:
