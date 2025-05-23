@@ -127,9 +127,7 @@ static void
 release_const_array(struct ArrowArray *array) {
     Imaging im = (Imaging)array->private_data;
 
-    if (array->n_children == 0) {
-        ImagingDelete(im);
-    }
+    ImagingDelete(im);
 
     //  Free the buffers and the buffers array
     if (array->buffers) {
