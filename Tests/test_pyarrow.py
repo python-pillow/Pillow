@@ -162,7 +162,7 @@ class DataShape(NamedTuple):
 
 UINT_ARR = DataShape(
     dtype=fl_uint8_4_type,
-    elt=[1, 2, 3, 4],  # array of 4 uint 8 per pixel
+    elt=[1, 2, 3, 4],  # array of 4 uint8 per pixel
     elts_per_pixel=1,  # only one array per pixel
 )
 
