@@ -601,16 +601,11 @@ class Image:
         return new
 
     # Context manager support
-    def __enter__(self):
+    def __enter__(self) -> Image:
         return self
 
-    def __exit__(self, *args):
-        from . import ImageFile
-
-        if isinstance(self, ImageFile.ImageFile):
-            if getattr(self, "_exclusive_fp", False):
-                self._close_fp()
-            self.fp = None
+    def __exit__(self, *args: object) -> None:
+        pass
 
     def close(self) -> None:
         """
@@ -1528,10 +1523,14 @@ class Image:
                 exif_info = bytes.fromhex(
                     "".join(self.info["Raw profile type exif"].split("\n")[3:])
                 )
-            elif hasattr(self, "tag_v2"):
-                self._exif.bigtiff = self.tag_v2._bigtiff
-                self._exif.endian = self.tag_v2._endian
-                self._exif.load_from_fp(self.fp, self.tag_v2._offset)
+            else:
+                from . import TiffImagePlugin
+
+                if isinstance(self, TiffImagePlugin.TiffImageFile):
+                    self._exif.bigtiff = self.tag_v2._bigtiff
+                    self._exif.endian = self.tag_v2._endian
+                    assert self.fp is not None
+                    self._exif.load_from_fp(self.fp, self.tag_v2._offset)
         if exif_info is not None:
             self._exif.load(exif_info)
 
