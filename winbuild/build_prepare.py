@@ -116,7 +116,7 @@ V = {
     "HARFBUZZ": "11.1.0",
     "JPEGTURBO": "3.1.0",
     "LCMS2": "2.17",
-    "LIBAVIF": "1.2.1",
+    "LIBAVIF": "1.3.0",
     "LIBIMAGEQUANT": "4.3.4",
     "LIBPNG": "1.6.47",
     "LIBWEBP": "1.5.0",
@@ -389,6 +389,7 @@ DEPS: dict[str, dict[str, Any]] = {
         "filename": f"libavif-{V['LIBAVIF']}.zip",
         "license": "LICENSE",
         "build": [
+            "rustup update",
             f"{sys.executable} -m pip install meson",
             *cmds_cmake(
                 "avif_static",
@@ -399,7 +400,6 @@ DEPS: dict[str, dict[str, Any]] = {
                 "-DAVIF_CODEC_DAV1D=LOCAL",
                 "-DAVIF_CODEC_RAV1E=LOCAL",
                 "-DAVIF_CODEC_SVT=LOCAL",
-                "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
             ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
