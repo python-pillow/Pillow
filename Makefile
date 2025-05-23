@@ -95,7 +95,13 @@ sdist:
 .PHONY: test
 test:
 	python3 -c "import pytest" > /dev/null 2>&1 || python3 -m pip install pytest
-	python3 -m pytest -qq
+	python3 -m pytest -qq Tests/
+
+.PHONY: test-p
+test-p:
+	python3 -c "import xdist" > /dev/null 2>&1 || python3 -m pip install pytest-xdist
+	python3 -m pytest -qq -n auto Tests/
+
 
 .PHONY: valgrind
 valgrind:
