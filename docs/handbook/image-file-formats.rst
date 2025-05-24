@@ -1222,7 +1222,7 @@ numbers are returned as a tuple of ``(numerator, denominator)``.
 
     .. deprecated:: 3.0.0
 
-Reading Multi-frame TIFF Images
+Reading multi-frame TIFF images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The TIFF loader supports the :py:meth:`~PIL.Image.Image.seek` and
@@ -1664,6 +1664,11 @@ The :py:meth:`~PIL.Image.open` method sets the following
     Transparency color index. This key is omitted if the image is not
     transparent.
 
+XV thumbnails
+^^^^^^^^^^^^^
+
+Pillow can read XV thumbnail files.
+
 Write-only formats
 ------------------
 
@@ -1768,11 +1773,6 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     file, this will default to the current time.
 
     .. versionadded:: 5.3.0
-
-XV Thumbnails
-^^^^^^^^^^^^^
-
-Pillow can read XV thumbnail files.
 
 Identify-only formats
 ---------------------

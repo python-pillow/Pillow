@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageMorph
 .. py:currentmodule:: PIL.ImageMorph
 
-:py:mod:`~PIL.ImageMorph` Module
+:py:mod:`~PIL.ImageMorph` module
 ================================
 
 The :py:mod:`~PIL.ImageMorph` module provides morphology operations on images.

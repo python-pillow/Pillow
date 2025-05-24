@@ -257,7 +257,8 @@ class ImageFile(Image.Image):
 
     def __setstate__(self, state: list[Any]) -> None:
         self.tile = []
-        self.filename = state[5]
+        if len(state) > 5:
+            self.filename = state[5]
         super().__setstate__(state)
 
     def verify(self) -> None:

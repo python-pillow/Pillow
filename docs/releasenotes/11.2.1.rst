@@ -32,7 +32,7 @@ Image.Image.get_child_images()
 method uses an image's file pointer, and so child images could only be retrieved from
 an :py:class:`PIL.ImageFile.ImageFile` instance.
 
-API Changes
+API changes
 ===========
 
 ``append_images`` no longer requires ``save_all``
@@ -44,7 +44,7 @@ supports saving multiple frames::
 
     im.save("out.gif", append_images=ims)
 
-API Additions
+API additions
 =============
 
 ``"justify"`` multiline text alignment
@@ -86,7 +86,7 @@ DXT5, BC2, BC3 and BC5 are supported::
 
     im.save("out.dds", pixel_format="DXT1")
 
-Other Changes
+Other changes
 =============
 
 Arrow support

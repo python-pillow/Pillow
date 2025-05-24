@@ -1,6 +1,6 @@
 .. _PixelAccess:
 
-:py:class:`PixelAccess` Class
+:py:class:`PixelAccess` class
 =============================
 
 The PixelAccess class provides read and write access to
@@ -40,7 +40,7 @@ Access using negative indexes is also possible. ::
 
 
 
-:py:class:`PixelAccess` Class
+:py:class:`PixelAccess` class
 -----------------------------
 
 .. class:: PixelAccess

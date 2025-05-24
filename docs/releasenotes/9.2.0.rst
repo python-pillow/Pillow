@@ -126,7 +126,7 @@ Use instead::
     draw = ImageDraw.Draw(im)
     draw.text((100 / 2, 100 / 2), "Hello world", font=font, anchor="mm")
 
-API Additions
+API additions
 =============
 
 Image.apply_transparency
@@ -137,7 +137,7 @@ with "transparency" in ``im.info``, and apply the transparency to the palette in
 The image's palette mode will become "RGBA", and "transparency" will be removed from
 ``im.info``.
 
-Other Changes
+Other changes
 =============
 
 Using gnome-screenshot on Linux

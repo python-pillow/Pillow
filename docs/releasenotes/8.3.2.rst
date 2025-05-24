@@ -20,7 +20,7 @@ bytes off the end of the allocated buffer from the heap. Present since Pillow 7.
 
 This bug was found by Google's `OSS-Fuzz`_ `CIFuzz`_ runs.
 
-Other Changes
+Other changes
 =============
 
 Python 3.10 wheels

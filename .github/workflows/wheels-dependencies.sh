@@ -38,7 +38,7 @@ ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.13.3
-HARFBUZZ_VERSION=11.0.1
+HARFBUZZ_VERSION=11.2.1
 LIBPNG_VERSION=1.6.47
 JPEGTURBO_VERSION=3.1.0
 OPENJPEG_VERSION=2.5.3
@@ -92,7 +92,7 @@ function build_harfbuzz {
 
     local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/harfbuzz-$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
     (cd $out_dir \
-        && meson setup build --prefix=$BUILD_PREFIX --libdir=$BUILD_PREFIX/lib --buildtype=release -Dfreetype=enabled -Dglib=disabled -Dtests=disabled)
+        && meson setup build --prefix=$BUILD_PREFIX --libdir=$BUILD_PREFIX/lib --buildtype=minsize -Dfreetype=enabled -Dglib=disabled -Dtests=disabled)
     (cd $out_dir/build \
         && meson install)
     touch harfbuzz-stamp
