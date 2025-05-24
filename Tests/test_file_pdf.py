@@ -13,7 +13,12 @@ import pytest
 
 from PIL import Image, PdfParser, features
 
-from .helper import hopper, mark_if_feature_version, skip_unless_feature
+from .helper import (
+    hopper,
+    mark_if_feature_version,
+    skip_unless_feature,
+    timeout_unless_slower_valgrind,
+)
 
 
 def helper_save_as_pdf(tmp_path: Path, mode: str, **kwargs: Any) -> str:
@@ -339,8 +344,7 @@ def test_pdf_append_to_bytesio() -> None:
     assert len(f.getvalue()) > initial_size
 
 
-@pytest.mark.timeout(1)
-@pytest.mark.skipif("PILLOW_VALGRIND_TEST" in os.environ, reason="Valgrind is slower")
+@timeout_unless_slower_valgrind(1)
 @pytest.mark.parametrize("newline", (b"\r", b"\n"))
 def test_redos(newline: bytes) -> None:
     malicious = b" trailer<<>>" + newline * 3456
