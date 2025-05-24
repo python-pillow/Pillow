@@ -2226,6 +2226,7 @@ _unsharp_mask(ImagingObject *self, PyObject *args) {
     }
 
     if (!ImagingUnsharpMask(imOut, imIn, radius, percent, threshold)) {
+        ImagingDelete(imOut);
         return NULL;
     }
 
