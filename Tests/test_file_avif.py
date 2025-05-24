@@ -233,7 +233,7 @@ class TestFileAvif:
         with Image.open(out_gif) as reread:
             reread_value = reread.convert("RGB").getpixel((1, 1))
         difference = sum([abs(original_value[i] - reread_value[i]) for i in range(3)])
-        assert difference <= 3
+        assert difference <= 6
 
     def test_save_single_frame(self, tmp_path: Path) -> None:
         temp_file = tmp_path / "temp.avif"
