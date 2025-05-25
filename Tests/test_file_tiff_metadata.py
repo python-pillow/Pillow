@@ -385,14 +385,21 @@ def test_ifd_unsigned_rational(tmp_path: Path) -> None:
         assert 1 == reloaded.tag_v2[41493].denominator
 
 
-def test_ifd_signed_rational(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "numerator, denominator, expected",
+    (
+        (2**31 - 1, -(2**31), None),  # pair of 4 byte signed longs
+        (-(2**31), 2**31 - 1, None),
+        (-(2**31) - 1, 1, (2**31 - 1, -1)),  # out of bounds of 4 byte signed long
+        (-1, 0, None),  # IFDRational nan
+    ),
+)
+def test_ifd_signed_rational(
+    numerator: int, denominator: int, expected: tuple[int, int] | None, tmp_path: Path
+) -> None:
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
-    # pair of 4 byte signed longs
-    numerator = 2**31 - 1
-    denominator = -(2**31)
-
     info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
 
     out = tmp_path / "temp.tiff"
@@ -400,35 +407,12 @@ def test_ifd_signed_rational(tmp_path: Path) -> None:
 
     with Image.open(out) as reloaded:
         assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
-        assert numerator == reloaded.tag_v2[37380].numerator
-        assert denominator == reloaded.tag_v2[37380].denominator
-
-    numerator = -(2**31)
-    denominator = 2**31 - 1
-
-    info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
-
-    out = tmp_path / "temp.tiff"
-    im.save(out, tiffinfo=info, compression="raw")
-
-    with Image.open(out) as reloaded:
-        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
-        assert numerator == reloaded.tag_v2[37380].numerator
-        assert denominator == reloaded.tag_v2[37380].denominator
-
-    # out of bounds of 4 byte signed long
-    numerator = -(2**31) - 1
-    denominator = 1
-
-    info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
-
-    out = tmp_path / "temp.tiff"
-    im.save(out, tiffinfo=info, compression="raw")
-
-    with Image.open(out) as reloaded:
-        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
-        assert 2**31 - 1 == reloaded.tag_v2[37380].numerator
-        assert -1 == reloaded.tag_v2[37380].denominator
+        if expected is None:
+            expected = (numerator, denominator)
+        assert (
+            reloaded.tag_v2[37380].numerator,
+            reloaded.tag_v2[37380].denominator,
+        ) == expected
 
 
 def test_ifd_signed_long(tmp_path: Path) -> None:
