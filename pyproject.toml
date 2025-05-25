@@ -73,6 +73,7 @@ optional-dependencies.tests = [
   "pyroma>=5",
   "pytest",
   "pytest-cov",
+  "pytest-sugar",
   "pytest-timeout",
   "pytest-xdist",
   "trove-classifiers>=2024.10.12",
@@ -208,7 +209,7 @@ lint.isort.required-imports = [
 max_supported_python = "3.14"
 
 [tool.pytest.ini_options]
-addopts = "-ra --color=auto"
+addopts = "-ra --color=auto --numprocesses=auto"
 testpaths = [
   "Tests",
 ]
