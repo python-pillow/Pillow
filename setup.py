@@ -224,13 +224,14 @@ def _add_directory(
         path.insert(where, subdir)
 
 
-def _find_include_file(self: pil_build_ext, include: str) -> int:
+def _find_include_file(self: pil_build_ext, include: str) -> str | None:
     for directory in self.compiler.include_dirs:
         _dbg("Checking for include file %s in %s", (include, directory))
-        if os.path.isfile(os.path.join(directory, include)):
+        path = os.path.join(directory, include)
+        if os.path.isfile(path):
             _dbg("Found %s", include)
-            return 1
-    return 0
+            return path
+    return None
 
 
 def _find_library_file(self: pil_build_ext, library: str) -> str | None:
@@ -871,10 +872,15 @@ class pil_build_ext(build_ext):
 
         if feature.want("avif"):
             _dbg("Looking for avif")
-            if _find_include_file(self, "avif/avif.h"):
-                lib_avif = _find_library_file(self, "avif")
-                if lib_avif is not None:
-                    feature.set("avif", lib_avif)
+            if avif_h := _find_include_file(self, "avif/avif.h"):
+                with open(avif_h, "rb") as fp:
+                    major_version = int(
+                        fp.read().split(b"#define AVIF_VERSION_MAJOR ")[1].split()[0]
+                    )
+                    if major_version >= 1:
+                        lib_avif = _find_library_file(self, "avif")
+                        if lib_avif is not None:
+                            feature.set("avif", lib_avif)
 
         for f in feature:
             if not feature.get(f) and feature.require(f):
