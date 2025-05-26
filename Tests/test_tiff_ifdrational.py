@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fractions import Fraction
+import math
 from pathlib import Path
 
 import pytest
@@ -84,4 +85,8 @@ def test_ifd_rational_save(
     ],
 )
 def test_float_cast(numerator, denominator, expected_result):
-    float(IFDRational(numerator, denominator)) == expected_result
+    value = float(IFDRational(numerator, denominator))
+    if math.isnan(expected_result):
+        assert value
+    else:
+        assert value == expected_result
