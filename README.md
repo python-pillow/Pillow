@@ -95,7 +95,7 @@ This library provides extensive file format support, an efficient internal repre
 
 The core image library is designed for fast access to data stored in a few basic pixel formats. It should provide a solid foundation for a general image processing tool.
 
-## More Information
+## More information
 
 - [Documentation](https://pillow.readthedocs.io/)
   - [Installation](https://pillow.readthedocs.io/en/latest/installation/basic-installation.html)
@@ -107,6 +107,6 @@ The core image library is designed for fast access to data stored in a few basic
 - [Changelog](https://github.com/python-pillow/Pillow/releases)
   - [Pre-fork](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst#pre-fork)
 
-## Report a Vulnerability
+## Report a vulnerability
 
 To report a security vulnerability, please follow the procedure described in the [Tidelift security policy](https://tidelift.com/docs/security).
