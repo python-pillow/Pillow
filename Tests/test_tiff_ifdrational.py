@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from fractions import Fraction
 import math
+from fractions import Fraction
 from pathlib import Path
 
 import pytest
