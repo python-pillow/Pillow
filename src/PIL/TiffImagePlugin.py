@@ -372,7 +372,12 @@ class IFDRational(Rational):
             self._denominator = denominator
 
         if denominator == 0:
-            self._val = float("nan")
+            if value == 0:
+                self._val = float("nan")
+            elif value > 0:
+                self._val = math.inf
+            else:
+                self._val = -math.inf
         elif denominator == 1:
             self._val = Fraction(value)
         elif int(value) == value:
@@ -691,7 +696,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 if all(isinstance(v, IFDRational) for v in values):
                     for v in values:
                         assert isinstance(v, IFDRational)
-                        if v < 0 or (math.isnan(v) and float(v.numerator) < 0):
+                        if v < 0:
                             self.tagtype[tag] = TiffTags.SIGNED_RATIONAL
                             break
                     else:

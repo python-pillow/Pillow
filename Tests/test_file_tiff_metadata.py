@@ -302,7 +302,10 @@ def test_tagtype_on_zero_denominator(
 
     with Image.open(out) as reloaded:
         assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
-        assert math.isnan(reloaded.tag_v2[37380])
+        if expected == TiffTags.RATIONAL:
+            assert reloaded.tag_v2[37380] == math.inf
+        elif TiffTags.SIGNED_RATIONAL:
+            assert reloaded.tag_v2[37380] == -math.inf
 
 
 def test_undefined_zero(tmp_path: Path) -> None:
