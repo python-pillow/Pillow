@@ -19,7 +19,6 @@
 #
 from __future__ import annotations
 
-import itertools
 import os
 import struct
 from typing import IO, Any, cast
@@ -47,12 +46,20 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     mpf_offset = 28
     offsets: list[int] = []
-    for imSequence in itertools.chain([im], append_images):
+    total = 0
+    imSequences = [im] + list(append_images)
+    for imSequence in imSequences:
+        total += getattr(imSequence, "n_frames", 1)
+    for imSequence in imSequences:
         for im_frame in ImageSequence.Iterator(imSequence):
             if not offsets:
                 # APP2 marker
+                ifd_length = 66 + 16 * total
                 im_frame.encoderinfo["extra"] = (
-                    b"\xff\xe2" + struct.pack(">H", 6 + 82) + b"MPF\0" + b" " * 82
+                    b"\xff\xe2"
+                    + struct.pack(">H", 6 + ifd_length)
+                    + b"MPF\0"
+                    + b" " * ifd_length
                 )
                 exif = im_frame.encoderinfo.get("exif")
                 if isinstance(exif, Image.Exif):
