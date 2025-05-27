@@ -26,6 +26,7 @@ from .helper import (
     hopper,
     is_pypy,
     is_win32,
+    timeout_unless_slower_valgrind,
 )
 
 ElementTree: ModuleType | None
@@ -988,11 +989,8 @@ class TestFileTiff:
             with pytest.raises(OSError):
                 im.load()
 
-    @pytest.mark.timeout(6)
+    @timeout_unless_slower_valgrind(6)
     @pytest.mark.filterwarnings("ignore:Truncated File Read")
-    @pytest.mark.xfail(
-        "PILLOW_VALGRIND_TEST" in os.environ, reason="Valgrind is slower"
-    )
     def test_timeout(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/timeout-6646305047838720") as im:
             monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
@@ -1004,10 +1002,7 @@ class TestFileTiff:
             "Tests/images/oom-225817ca0f8c663be7ab4b9e717b02c661e66834.tif",
         ],
     )
-    @pytest.mark.timeout(2)
-    @pytest.mark.xfail(
-        "PILLOW_VALGRIND_TEST" in os.environ, reason="Valgrind is slower"
-    )
+    @timeout_unless_slower_valgrind(2)
     def test_oom(self, test_file: str) -> None:
         with pytest.raises(UnidentifiedImageError):
             with pytest.warns(UserWarning):
