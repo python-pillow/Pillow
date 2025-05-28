@@ -402,7 +402,7 @@ class IFDRational(Rational):
         f = self._val.limit_denominator(max_denominator)
         return f.numerator, f.denominator
 
-    def __float__(self):
+    def __float__(self) -> float:
         return float(self._val)
 
     def __repr__(self) -> str:
