@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageSequence
 .. py:currentmodule:: PIL.ImageSequence
 
-:py:mod:`~PIL.ImageSequence` Module
+:py:mod:`~PIL.ImageSequence` module
 ===================================
 
 The :py:mod:`~PIL.ImageSequence` module contains a wrapper class that lets you

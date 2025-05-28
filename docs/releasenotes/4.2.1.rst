@@ -3,7 +3,7 @@
 
 There are no functional changes in this release.
 
-Fixed Windows PyPy Build
+Fixed Windows PyPy build
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 A change in the 4.2.0 cycle broke the Windows PyPy build. This has

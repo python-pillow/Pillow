@@ -43,6 +43,7 @@ class TestImageGrab:
         if (
             sys.platform not in ("win32", "darwin")
             and not shutil.which("gnome-screenshot")
+            and not shutil.which("grim")
             and not shutil.which("spectacle")
         ):
             with pytest.raises(OSError) as e:

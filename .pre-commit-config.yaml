@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.4
+    rev: v0.11.8
     hooks:
       - id: ruff
         args: [--exit-non-zero-on-fix]
@@ -24,7 +24,7 @@ repos:
         exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.gd$|\.opt$)
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v20.1.0
+    rev: v20.1.3
     hooks:
       - id: clang-format
         types: [c]
@@ -51,14 +51,14 @@ repos:
         exclude: ^.github/.*TEMPLATE|^Tests/(fonts|images)/
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.32.1
+    rev: 0.33.0
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
       - id: check-renovate
 
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.5.2
+    rev: v1.6.0
     hooks:
       - id: zizmor
 
