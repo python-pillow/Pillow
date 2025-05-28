@@ -84,7 +84,7 @@ def test_ifd_rational_save(
         (1, 0, float("nan")),
     ],
 )
-def test_float_cast(numerator, denominator, expected_result):
+def test_float_cast(numerator: int, denominator: int, expected_result: float) -> None:
     value = float(IFDRational(numerator, denominator))
     if math.isnan(expected_result):
         assert value
