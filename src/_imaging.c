@@ -3218,7 +3218,8 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
                     (int)p[3],
                     &ink,
                     width,
-                    self->blend
+                    self->blend,
+                    NULL
                 ) < 0) {
                 free(xy);
                 return NULL;
@@ -3356,7 +3357,10 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
     int ink;
     int fill = 0;
     int width = 0;
-    if (!PyArg_ParseTuple(args, "Oi|ii", &data, &ink, &fill, &width)) {
+    ImagingObject *maskp = NULL;
+    if (!PyArg_ParseTuple(
+            args, "Oi|iiO!", &data, &ink, &fill, &width, &Imaging_Type, &maskp
+        )) {
         return NULL;
     }
 
@@ -3386,8 +3390,16 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
 
     free(xy);
 
-    if (ImagingDrawPolygon(self->image->image, n, ixy, &ink, fill, width, self->blend) <
-        0) {
+    if (ImagingDrawPolygon(
+            self->image->image,
+            n,
+            ixy,
+            &ink,
+            fill,
+            width,
+            self->blend,
+            maskp ? maskp->image : NULL
+        ) < 0) {
         free(ixy);
         return NULL;
     }
