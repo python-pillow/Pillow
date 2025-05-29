@@ -439,9 +439,7 @@ draw_horizontal_lines(
  * Filled polygon draw function using scan line algorithm.
  */
 static inline int
-polygon_generic(
-    Imaging im, int n, Edge *e, int ink, int eofill, hline_handler hline, int hasAlpha
-) {
+polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler hline) {
     Edge **edge_table;
     float *xx;
     int edge_count = 0;
@@ -461,6 +459,7 @@ polygon_generic(
         return -1;
     }
 
+    int hasAlpha = hline == hline32rgba;
     for (i = 0; i < n; i++) {
         if (ymin > e[i].ymin) {
             ymin = e[i].ymin;
@@ -592,17 +591,17 @@ polygon_generic(
 
 static inline int
 polygon8(Imaging im, int n, Edge *e, int ink, int eofill) {
-    return polygon_generic(im, n, e, ink, eofill, hline8, 0);
+    return polygon_generic(im, n, e, ink, eofill, hline8);
 }
 
 static inline int
 polygon32(Imaging im, int n, Edge *e, int ink, int eofill) {
-    return polygon_generic(im, n, e, ink, eofill, hline32, 0);
+    return polygon_generic(im, n, e, ink, eofill, hline32);
 }
 
 static inline int
 polygon32rgba(Imaging im, int n, Edge *e, int ink, int eofill) {
-    return polygon_generic(im, n, e, ink, eofill, hline32rgba, 1);
+    return polygon_generic(im, n, e, ink, eofill, hline32rgba);
 }
 
 static inline void
