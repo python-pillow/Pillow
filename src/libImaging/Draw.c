@@ -589,21 +589,6 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
     return 0;
 }
 
-static inline int
-polygon8(Imaging im, int n, Edge *e, int ink, int eofill) {
-    return polygon_generic(im, n, e, ink, eofill, hline8);
-}
-
-static inline int
-polygon32(Imaging im, int n, Edge *e, int ink, int eofill) {
-    return polygon_generic(im, n, e, ink, eofill, hline32);
-}
-
-static inline int
-polygon32rgba(Imaging im, int n, Edge *e, int ink, int eofill) {
-    return polygon_generic(im, n, e, ink, eofill, hline32rgba);
-}
-
 static inline void
 add_edge(Edge *e, int x0, int y0, int x1, int y1) {
     /* printf("edge %d %d %d %d\n", x0, y0, x1, y1); */
@@ -640,12 +625,11 @@ typedef struct {
     void (*point)(Imaging im, int x, int y, int ink);
     void (*hline)(Imaging im, int x0, int y0, int x1, int ink);
     void (*line)(Imaging im, int x0, int y0, int x1, int y1, int ink);
-    int (*polygon)(Imaging im, int n, Edge *e, int ink, int eofill);
 } DRAW;
 
-DRAW draw8 = {point8, hline8, line8, polygon8};
-DRAW draw32 = {point32, hline32, line32, polygon32};
-DRAW draw32rgba = {point32rgba, hline32rgba, line32rgba, polygon32rgba};
+DRAW draw8 = {point8, hline8, line8};
+DRAW draw32 = {point32, hline32, line32};
+DRAW draw32rgba = {point32rgba, hline32rgba, line32rgba};
 
 /* -------------------------------------------------------------------- */
 /* Interface                                                            */
@@ -730,7 +714,7 @@ ImagingDrawWideLine(
         add_edge(e + 2, vertices[2][0], vertices[2][1], vertices[3][0], vertices[3][1]);
         add_edge(e + 3, vertices[3][0], vertices[3][1], vertices[0][0], vertices[0][1]);
 
-        draw->polygon(im, 4, e, ink, 0);
+        polygon_generic(im, 4, e, ink, 0, draw->hline);
     }
     return 0;
 }
@@ -838,7 +822,7 @@ ImagingDrawPolygon(
         if (xy[i * 2] != xy[0] || xy[i * 2 + 1] != xy[1]) {
             add_edge(&e[n++], xy[i * 2], xy[i * 2 + 1], xy[0], xy[1]);
         }
-        draw->polygon(im, n, e, ink, 0);
+        polygon_generic(im, n, e, ink, 0, draw->hline);
         free(e);
 
     } else {
@@ -1988,7 +1972,7 @@ ImagingDrawOutline(
 
     DRAWINIT();
 
-    draw->polygon(im, outline->count, outline->edges, ink, 0);
+    polygon_generic(im, outline->count, outline->edges, ink, 0, draw->hline);
 
     return 0;
 }
