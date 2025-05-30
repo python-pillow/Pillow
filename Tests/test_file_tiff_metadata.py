@@ -304,7 +304,7 @@ def test_tagtype_on_zero_denominator(
         assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         if expected == TiffTags.RATIONAL:
             assert reloaded.tag_v2[37380] == math.inf
-        elif TiffTags.SIGNED_RATIONAL:
+        elif expected == TiffTags.SIGNED_RATIONAL:
             assert reloaded.tag_v2[37380] == -math.inf
 
 
