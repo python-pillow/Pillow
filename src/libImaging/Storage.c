@@ -757,7 +757,7 @@ ImagingNewArrow(
     if (strcmp(schema->format, "C") == 0            // uint8
         && im->pixelsize == 4                       // storage as 32 bpc
         && schema->n_children == 0                  // make sure schema is well formed.
-        && strcmp(im->arrow_band_format, "C") == 0  // Expected Format
+        && strcmp(im->arrow_band_format, "C") == 0  // expected format
         && 4 * pixels == external_array->length) {  // expected length
         // single flat array, interleaved storage.
         if (ImagingBorrowArrow(im, external_array, 1, array_capsule)) {

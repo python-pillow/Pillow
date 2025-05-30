@@ -29,7 +29,7 @@ def _test_img_equals_pyarray(
     px = img.load()
     assert px is not None
     if elts_per_pixel > 1 and mask is None:
-        # have to do element wise comparison when we're comparing
+        # have to do element-wise comparison when we're comparing
         # flattened r,g,b,a to a pixel.
         mask = list(range(elts_per_pixel))
     for x in range(0, img.size[0], int(img.size[0] / 10)):
@@ -56,7 +56,7 @@ def _test_img_equals_int32_pyarray(
     px = img.load()
     assert px is not None
     if mask is None:
-        # have to do element wise comparison when we're comparing
+        # have to do element-wise comparison when we're comparing
         # flattened rgba in an uint32 to a pixel.
         mask = list(range(elts_per_pixel))
     for x in range(0, img.size[0], int(img.size[0] / 10)):
