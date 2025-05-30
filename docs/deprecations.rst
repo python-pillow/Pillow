@@ -155,7 +155,7 @@ JpegImageFile.huffman_ac and JpegImageFile.huffman_dc
 The ``huffman_ac`` and ``huffman_dc`` dictionaries on JPEG images were unused. They
 have been deprecated, and will be removed in Pillow 12 (2025-10-15).
 
-Specific WebP Feature Checks
+Specific WebP feature checks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 11.0.0

@@ -83,7 +83,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
     def _open(self) -> None:
         # check placable header
         assert self.fp is not None
-        s = self.fp.read(80)
+        s = self.fp.read(44)
 
         if s.startswith(b"\xd7\xcd\xc6\x9a\x00\x00"):
             # placeable windows metafile

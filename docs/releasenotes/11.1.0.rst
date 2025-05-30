@@ -10,7 +10,7 @@ ExifTags.IFD.Makernote
 ``ExifTags.IFD.Makernote`` has been deprecated. Instead, use
 ``ExifTags.IFD.MakerNote``.
 
-API Changes
+API changes
 ===========
 
 Writing XMP bytes to JPEG and MPO
@@ -34,7 +34,7 @@ be used::
     second_im.encoderinfo = {"xmp": b"test"}
     im.save("out.mpo", save_all=True, append_images=[second_im])
 
-API Additions
+API additions
 =============
 
 Check for zlib-ng
@@ -54,7 +54,7 @@ TIFF images can now be saved as BigTIFF using a ``big_tiff`` argument::
 
     im.save("out.tiff", big_tiff=True)
 
-Other Changes
+Other changes
 =============
 
 Reading JPEG 2000 comments

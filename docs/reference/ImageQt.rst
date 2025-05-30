@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageQt
 .. py:currentmodule:: PIL.ImageQt
 
-:py:mod:`~PIL.ImageQt` Module
+:py:mod:`~PIL.ImageQt` module
 =============================
 
 The :py:mod:`~PIL.ImageQt` module contains support for creating PyQt6 or PySide6

@@ -16,7 +16,6 @@ except ImportError:
 # Decoder options as module globals, until there is a way to pass parameters
 # to Image.open (see https://github.com/python-pillow/Pillow/issues/569)
 DECODE_CODEC_CHOICE = "auto"
-# Decoding is only affected by this for libavif **0.8.4** or greater.
 DEFAULT_MAX_THREADS = 0
 
 

@@ -15,6 +15,7 @@ from .helper import (
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
+    timeout_unless_slower_valgrind,
 )
 
 HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
@@ -398,7 +399,7 @@ def test_emptyline() -> None:
     assert image.format == "EPS"
 
 
-@pytest.mark.timeout(timeout=5)
+@timeout_unless_slower_valgrind(5)
 @pytest.mark.parametrize(
     "test_file",
     ["Tests/images/eps/timeout-d675703545fee17acab56e5fec644c19979175de.eps"],
