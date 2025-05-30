@@ -723,6 +723,8 @@ ImagingNewArrow(
     int64_t pixels = (int64_t)xsize * (int64_t)ysize;
 
     // fmt:off   // don't reformat this
+    // stored as a single array, one element per pixel, either single band
+    // or multiband, where each pixel is an I32.
     if (((strcmp(schema->format, "I") == 0  // int32
           && im->pixelsize == 4             // 4xchar* storage
           && im->bands >= 2)                // INT32 into any INT32 Storage mode
@@ -735,6 +737,7 @@ ImagingNewArrow(
             return im;
         }
     }
+    // Stored as [[r,g,b,a],...]
     if (strcmp(schema->format, "+w:4") == 0  // 4 up array
         && im->pixelsize == 4                // storage as 32 bpc
         && schema->n_children > 0            // make sure schema is well formed.
@@ -746,6 +749,17 @@ ImagingNewArrow(
         && external_array->children                       // array is well formed
         && 4 * pixels == external_array->children[0]->length) {
         // 4 up element of char into pixelsize == 4
+        if (ImagingBorrowArrow(im, external_array, 1, array_capsule)) {
+            return im;
+        }
+    }
+    // Stored as [r,g,b,a,r,g,b,a,...]
+    if (strcmp(schema->format, "C") == 0            // uint8
+        && im->pixelsize == 4                       // storage as 32 bpc
+        && schema->n_children == 0                  // make sure schema is well formed.
+        && strcmp(im->arrow_band_format, "C") == 0  // expected format
+        && 4 * pixels == external_array->length) {  // expected length
+        // single flat array, interleaved storage.
         if (ImagingBorrowArrow(im, external_array, 1, array_capsule)) {
             return im;
         }
