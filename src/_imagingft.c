@@ -275,6 +275,7 @@ text_layout_raqm(
         if (!text || !size) {
             /* return 0 and clean up, no glyphs==no size,
                and raqm fails with empty strings */
+            PyMem_Free(text);
             goto failed;
         }
         set_text = raqm_set_text(rq, text, size);
@@ -425,6 +426,7 @@ text_layout_fallback(
             "setting text direction, language or font features is not supported "
             "without libraqm"
         );
+        return 0;
     }
 
     if (PyUnicode_Check(string)) {
