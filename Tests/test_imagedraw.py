@@ -783,9 +783,10 @@ def test_rectangle_I16(bbox: Coords) -> None:
     draw = ImageDraw.Draw(im)
 
     # Act
-    draw.rectangle(bbox, outline=0xFFFF)
+    draw.rectangle(bbox, outline=0xCDEF)
 
     # Assert
+    assert im.getpixel((X0, Y0)) == 0xCDEF
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_I.tiff")
 
 
