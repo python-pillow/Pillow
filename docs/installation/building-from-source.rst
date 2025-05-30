@@ -194,9 +194,9 @@ Many of Pillow's features require external libraries:
 
         pacman -S \
             mingw-w64-x86_64-gcc \
-            mingw-w64-x86_64-python3 \
-            mingw-w64-x86_64-python3-pip \
-            mingw-w64-x86_64-python3-setuptools
+            mingw-w64-x86_64-python \
+            mingw-w64-x86_64-python-pip \
+            mingw-w64-x86_64-python-setuptools
 
     Prerequisites are installed on **MSYS2 MinGW 64-bit** with::
 
