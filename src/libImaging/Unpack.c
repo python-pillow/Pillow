@@ -1624,7 +1624,7 @@ static struct {
     {"PA", "PA;L", 16, unpackLAL},
     {"PA", "LA", 16, unpackLA},
 
-    /*2 channel to RGB/RGBA*/
+    /* 2 channel to RGB/RGBA */
     {"RGB", "RG", 16, unpackRG},
     {"RGBA", "RG", 16, unpackRG},
     /* true colour */
