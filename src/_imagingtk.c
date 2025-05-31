@@ -46,24 +46,22 @@ static PyMethodDef functions[] = {
     {NULL, NULL} /* sentinel */
 };
 
+static PyModuleDef_Slot slots[] = {
+    {Py_mod_exec, load_tkinter_funcs},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
 PyMODINIT_FUNC
 PyInit__imagingtk(void) {
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_imagingtk",
-        .m_size = -1,
         .m_methods = functions,
+        .m_slots = slots
     };
-    PyObject *m;
-    m = PyModule_Create(&module_def);
-    if (load_tkinter_funcs() != 0) {
-        Py_DECREF(m);
-        return NULL;
-    }
 
-#ifdef Py_GIL_DISABLED
-    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
-#endif
-
-    return m;
+    return PyModuleDef_Init(&module_def);
 }
