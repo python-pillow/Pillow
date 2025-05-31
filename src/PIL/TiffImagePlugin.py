@@ -1217,9 +1217,10 @@ class TiffImageFile(ImageFile.ImageFile):
             return
         self._seek(frame)
         if self._im is not None and (
-            self.im.size != self._tile_size or self.im.mode != self.mode
+            self.im.size != self._tile_size
+            or self.im.mode != self.mode
+            or self.readonly
         ):
-            # The core image will no longer be used
             self._im = None
 
     def _seek(self, frame: int) -> None:
