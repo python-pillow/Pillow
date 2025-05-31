@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import Union
 
 import pytest
 
@@ -9,6 +9,7 @@ from PIL import Image, ImageQt
 
 from .helper import assert_image_equal_tofile, assert_image_similar, hopper
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     import PyQt6
     import PySide6
