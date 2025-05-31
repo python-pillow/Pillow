@@ -557,6 +557,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     hardly any gain in image quality. The value ``keep`` is only valid for JPEG
     files and will retain the original image quality level, subsampling, and
     qtables.
+    For more information on how qtables are modified based on the quality parameter,
+    see the qtables section.
 
 **optimize**
     If present and true, indicates that the encoder should make an extra pass
@@ -621,6 +623,11 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     *  a list, tuple, or dictionary (with integer keys =
        range(len(keys))) of lists of 64 integers. There must be
        between 2 and 4 tables.
+
+    If a quality parameter is provided, the qtables will be adjusted accordingly.
+    By default, the qtables are based on a standard JPEG table with a quality of 50.
+    The qtable values will be reduced if the quality is higher than 50 and increased
+    if the quality is lower than 50.
 
     .. versionadded:: 2.5.0
 
