@@ -26,6 +26,7 @@ def test_invalid_file() -> None:
     no_cursors_file = "Tests/images/no_cursors.cur"
 
     cur = CurImagePlugin.CurImageFile(TEST_FILE)
+    assert cur.fp is not None
     cur.fp.close()
     with open(no_cursors_file, "rb") as cur.fp:
         with pytest.raises(TypeError):
