@@ -445,9 +445,9 @@ def _save(
     image = stride * im.size[1]
 
     if im.mode == "1":
-        palette = b"".join(o8(i) * 4 for i in (0, 255))
+        palette = b"".join(o8(i) * 3 + b"\x00" for i in (0, 255))
     elif im.mode == "L":
-        palette = b"".join(o8(i) * 4 for i in range(256))
+        palette = b"".join(o8(i) * 3 + b"\x00" for i in range(256))
     elif im.mode == "P":
         palette = im.im.getpalette("RGB", "BGRX")
         colors = len(palette) // 4
