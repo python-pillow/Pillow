@@ -104,8 +104,6 @@ point32rgba(Imaging im, int x, int y, int ink) {
 
 static inline void
 hline8(Imaging im, int x0, int y0, int x1, int ink) {
-    int pixelwidth;
-
     if (y0 >= 0 && y0 < im->ysize) {
         if (x0 < 0) {
             x0 = 0;
@@ -118,10 +116,27 @@ hline8(Imaging im, int x0, int y0, int x1, int ink) {
             x1 = im->xsize - 1;
         }
         if (x0 <= x1) {
-            pixelwidth = strncmp(im->mode, "I;16", 4) == 0 ? 2 : 1;
-            memset(
-                im->image8[y0] + x0 * pixelwidth, (UINT8)ink, (x1 - x0 + 1) * pixelwidth
-            );
+            if (strncmp(im->mode, "I;16", 4) == 0) {
+                int bigendian = 0;
+                if (
+#ifdef WORDS_BIGENDIAN
+                    strcmp(im->mode, "I;16") == 0 || strcmp(im->mode, "I;16L") == 0
+#else
+                    strcmp(im->mode, "I;16B") == 0
+#endif
+                ) {
+                    bigendian = 1;
+                }
+
+                UINT8 *p = im->image8[y0];
+                while (x0 <= x1) {
+                    p[x0 * 2 + (bigendian ? 1 : 0)] = ink;
+                    p[x0 * 2 + (bigendian ? 0 : 1)] = ink >> 8;
+                    x0++;
+                }
+            } else {
+                memset(im->image8[y0] + x0, (UINT8)ink, (x1 - x0 + 1));
+            }
         }
     }
 }
