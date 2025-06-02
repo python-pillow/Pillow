@@ -308,9 +308,9 @@ _new_arrow(PyObject *self, PyObject *args) {
     }
 
     // ImagingBorrowArrow is responsible for retaining the array_capsule
-    ret =
-        PyImagingNew(ImagingNewArrow(mode, xsize, ysize, schema_capsule, array_capsule)
-        );
+    ret = PyImagingNew(
+        ImagingNewArrow(mode, xsize, ysize, schema_capsule, array_capsule)
+    );
     if (!ret) {
         return ImagingError_ValueError("Invalid Arrow array mode or size mismatch");
     }
@@ -1665,7 +1665,8 @@ _putdata(ImagingObject *self, PyObject *args) {
                 int bigendian = 0;
                 if (image->type == IMAGING_TYPE_SPECIAL) {
                     // I;16*
-                    if (strcmp(image->mode, "I;16B") == 0
+                    if (
+                        strcmp(image->mode, "I;16B") == 0
 #ifdef WORDS_BIGENDIAN
                         || strcmp(image->mode, "I;16N") == 0
 #endif
