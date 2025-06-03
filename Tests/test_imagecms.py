@@ -710,8 +710,16 @@ def test_deprecation() -> None:
     with pytest.warns(DeprecationWarning):
         assert isinstance(ImageCms.FLAGS, dict)
 
-    profile = ImageCmsProfile(ImageCms.createProfile("sRGB"))
+    p = ImageCms.createProfile("sRGB")
+    profile = ImageCmsProfile(p)
     with pytest.warns(DeprecationWarning):
         ImageCms.ImageCmsTransform(profile, profile, "RGBA;16B", "RGB")
     with pytest.warns(DeprecationWarning):
         ImageCms.ImageCmsTransform(profile, profile, "RGB", "RGBA;16B")
+
+    with pytest.warns(DeprecationWarning):
+        profile.product_name
+    with pytest.warns(DeprecationWarning):
+        profile.product_info
+    with pytest.warns(DeprecationWarning):
+        profile._set(p)
