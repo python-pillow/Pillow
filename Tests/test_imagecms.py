@@ -723,3 +723,5 @@ def test_deprecation() -> None:
         profile.product_info
     with pytest.warns(DeprecationWarning):
         profile._set(p)
+    with pytest.raises(AttributeError):
+        profile.this_attribute_does_not_exist
