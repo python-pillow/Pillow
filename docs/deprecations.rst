@@ -193,6 +193,29 @@ Image.Image.get_child_images()
 method uses an image's file pointer, and so child images could only be retrieved from
 an :py:class:`PIL.ImageFile.ImageFile` instance.
 
+ImageCms.ImageCmsProfile._set
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.3.0
+
+``ImageCms.ImageCmsProfile._set()`` has been deprecated, and will be removed in
+Pillow 13 (2026-10-15). You should construct a new ``ImageCmsProfile`` instance
+instead.
+
+ImageCms.ImageCmsProfile.product_name and .product_info
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.3.0
+
+``ImageCms.ImageCmsProfile.product_name`` and the corresponding
+``.product_info`` attributes have been deprecated, and will be removed in
+Pillow 13 (2026-10-15). These attributes can be accessed on the ``.profile``
+attribute of ``ImageCmsProfile`` instead.
+
+Note that ``.product_name`` and ``.product_info`` have been set to ``None`` on
+``ImageCmsProfile`` since Pillow 2.3.0 (2014-01-01), so any working code that
+makes use of this data will already access it on ``.profile``.
+
 Removed features
 ----------------
 
