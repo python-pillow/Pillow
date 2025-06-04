@@ -989,7 +989,7 @@ class TestImage:
         im = Image.new("RGB", (1, 1))
         im.info["xmp"] = (
             b'<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
-            b'<x:xmpmeta xmlns:x="adobe:ns:meta/" />\n<?xpacket end="w"?>\x00\x00'
+            b'<x:xmpmeta xmlns:x="adobe:ns:meta/" />\n<?xpacket end="w"?>\x00\x00 '
         )
         if ElementTree is None:
             with pytest.warns(
