@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import platform
+import struct
 import sys
 
 from PIL import features
@@ -9,7 +10,7 @@ from .helper import is_pypy
 
 
 def test_wheel_modules() -> None:
-    expected_modules = {"pil", "tkinter", "freetype2", "littlecms2", "webp"}
+    expected_modules = {"pil", "tkinter", "freetype2", "littlecms2", "webp", "avif"}
 
     # tkinter is not available in cibuildwheel installed CPython on Windows
     try:
@@ -18,6 +19,11 @@ def test_wheel_modules() -> None:
         assert tkinter
     except ImportError:
         expected_modules.remove("tkinter")
+
+    # libavif is not available on Windows for x86 and ARM64 architectures
+    if sys.platform == "win32":
+        if platform.machine() == "ARM64" or struct.calcsize("P") == 4:
+            expected_modules.remove("avif")
 
     assert set(features.get_supported_modules()) == expected_modules
 
