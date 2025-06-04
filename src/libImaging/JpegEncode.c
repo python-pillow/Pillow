@@ -131,6 +131,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     break;
                 default:
                     state->errcode = IMAGING_CODEC_CONFIG;
+                    jpeg_destroy_compress(&context->cinfo);
                     return -1;
             }
 
@@ -161,6 +162,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                                 /* Would subsample the green and blue
                                    channels, which doesn't make sense */
                                 state->errcode = IMAGING_CODEC_CONFIG;
+                                jpeg_destroy_compress(&context->cinfo);
                                 return -1;
                         }
                         jpeg_set_colorspace(&context->cinfo, JCS_RGB);
