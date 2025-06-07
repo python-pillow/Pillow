@@ -241,6 +241,9 @@ _FLAGS = {
 
 
 class ImageCmsProfile:
+    profile: core.CmsProfile
+    filename: str | None
+
     def __init__(self, profile: str | SupportsRead[bytes] | core.CmsProfile) -> None:
         """
         :param profile: Either a string representing a filename,
@@ -248,6 +251,7 @@ class ImageCmsProfile:
             low-level profile object
 
         """
+        self.filename = None
 
         if isinstance(profile, str):
             if sys.platform == "win32":
@@ -256,22 +260,40 @@ class ImageCmsProfile:
                     profile_bytes_path.decode("ascii")
                 except UnicodeDecodeError:
                     with open(profile, "rb") as f:
-                        self._set(core.profile_frombytes(f.read()))
+                        self.profile = core.profile_frombytes(f.read())
                     return
-            self._set(core.profile_open(profile), profile)
+            self.filename = profile
+            self.profile = core.profile_open(profile)
         elif hasattr(profile, "read"):
-            self._set(core.profile_frombytes(profile.read()))
+            self.profile = core.profile_frombytes(profile.read())
         elif isinstance(profile, core.CmsProfile):
-            self._set(profile)
+            self.profile = profile
         else:
             msg = "Invalid type for Profile"  # type: ignore[unreachable]
             raise TypeError(msg)
 
+    def __getattr__(self, attr: str) -> Any:
+        if attr in ("product_name", "product_info"):
+            deprecate(
+                f"ImageCms.ImageCmsProfile.{attr}",
+                13,
+                action=(
+                    f"Use ImageCms.ImageCmsProfile.profile.{attr} instead. "
+                    f"Note that {attr} has been set to 'None' since Pillow 2.3.0."
+                ),
+            )
+            return None
+        msg = f"'{self.__class__.__name__}' has no attribute '{attr}'"
+        raise AttributeError(msg)
+
     def _set(self, profile: core.CmsProfile, filename: str | None = None) -> None:
+        deprecate(
+            "ImageCmsProfile._set",
+            13,
+            action="Set the 'profile' and 'filename' attributes directly instead.",
+        )
         self.profile = profile
         self.filename = filename
-        self.product_name = None  # profile.product_name
-        self.product_info = None  # profile.product_info
 
     def tobytes(self) -> bytes:
         """
