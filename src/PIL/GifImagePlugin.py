@@ -360,7 +360,7 @@ class GifImageFile(ImageFile.ImageFile):
                 return (color, color, color)
 
         self.dispose = None
-        self.dispose_extent = frame_dispose_extent
+        self.dispose_extent: tuple[int, int, int, int] | None = frame_dispose_extent
         if self.dispose_extent and self.disposal_method >= 2:
             try:
                 if self.disposal_method == 2:

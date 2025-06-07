@@ -641,6 +641,10 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     ImagingSectionLeave(&cookie);
 
     WebPPictureFree(&pic);
+
+    output = writer.mem;
+    ret_size = writer.size;
+
     if (!ok) {
         int error_code = (&pic)->error_code;
         char message[50] = "";
@@ -652,10 +656,9 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
             );
         }
         PyErr_Format(PyExc_ValueError, "encoding error %d%s", error_code, message);
+        free(output);
         return NULL;
     }
-    output = writer.mem;
-    ret_size = writer.size;
 
     {
         /* I want to truncate the *_size items that get passed into WebP

@@ -602,8 +602,9 @@ ImagingBorrowArrow(
     }
 
     if (!borrowed_buffer) {
-        return (Imaging
-        )ImagingError_ValueError("Arrow Array, exactly 2 buffers required");
+        return (Imaging)ImagingError_ValueError(
+            "Arrow Array, exactly 2 buffers required"
+        );
     }
 
     for (y = i = 0; y < im->ysize; y++) {

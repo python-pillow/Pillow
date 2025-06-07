@@ -133,30 +133,30 @@ class TestFileJpeg:
         f = "Tests/images/pil_sample_cmyk.jpg"
         with Image.open(f) as im:
             # the source image has red pixels in the upper left corner.
-            value = im.getpixel((0, 0))
-            assert isinstance(value, tuple)
-            c, m, y, k = (x / 255.0 for x in value)
+            cmyk = im.getpixel((0, 0))
+            assert isinstance(cmyk, tuple)
+            c, m, y, k = (x / 255.0 for x in cmyk)
             assert c == 0.0
             assert m > 0.8
             assert y > 0.8
             assert k == 0.0
             # the opposite corner is black
-            value = im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            assert isinstance(value, tuple)
-            c, m, y, k = (x / 255.0 for x in value)
+            cmyk = im.getpixel((im.size[0] - 1, im.size[1] - 1))
+            assert isinstance(cmyk, tuple)
+            k = cmyk[3] / 255.0
             assert k > 0.9
             # roundtrip, and check again
             im = self.roundtrip(im)
-            value = im.getpixel((0, 0))
-            assert isinstance(value, tuple)
-            c, m, y, k = (x / 255.0 for x in value)
+            cmyk = im.getpixel((0, 0))
+            assert isinstance(cmyk, tuple)
+            c, m, y, k = (x / 255.0 for x in cmyk)
             assert c == 0.0
             assert m > 0.8
             assert y > 0.8
             assert k == 0.0
-            value = im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            assert isinstance(value, tuple)
-            c, m, y, k = (x / 255.0 for x in value)
+            cmyk = im.getpixel((im.size[0] - 1, im.size[1] - 1))
+            assert isinstance(cmyk, tuple)
+            k = cmyk[3] / 255.0
             assert k > 0.9
 
     def test_rgb(self) -> None:

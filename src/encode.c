@@ -703,6 +703,8 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         return NULL;
     }
 
+    encoder->cleanup = ImagingLibTiffEncodeCleanup;
+
     num_core_tags = sizeof(core_tags) / sizeof(int);
     for (pos = 0; pos < tags_size; pos++) {
         item = PyList_GetItemRef(tags, pos);
