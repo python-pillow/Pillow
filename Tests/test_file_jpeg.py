@@ -130,9 +130,7 @@ class TestFileJpeg:
     def test_cmyk(self) -> None:
         # Test CMYK handling.  Thanks to Tim and Charlie for test data,
         # Michael for getting me to look one more time.
-        f = "Tests/images/pil_sample_cmyk.jpg"
-        with Image.open(f) as im:
-            # the source image has red pixels in the upper left corner.
+        def check(im: ImageFile.ImageFile) -> None:
             cmyk = im.getpixel((0, 0))
             assert isinstance(cmyk, tuple)
             c, m, y, k = (x / 255.0 for x in cmyk)
@@ -145,19 +143,13 @@ class TestFileJpeg:
             assert isinstance(cmyk, tuple)
             k = cmyk[3] / 255.0
             assert k > 0.9
+
+        with Image.open("Tests/images/pil_sample_cmyk.jpg") as im:
+            # the source image has red pixels in the upper left corner.
+            check(im)
+
             # roundtrip, and check again
-            im = self.roundtrip(im)
-            cmyk = im.getpixel((0, 0))
-            assert isinstance(cmyk, tuple)
-            c, m, y, k = (x / 255.0 for x in cmyk)
-            assert c == 0.0
-            assert m > 0.8
-            assert y > 0.8
-            assert k == 0.0
-            cmyk = im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            assert isinstance(cmyk, tuple)
-            k = cmyk[3] / 255.0
-            assert k > 0.9
+            check(self.roundtrip(im))
 
     def test_rgb(self) -> None:
         def getchannels(im: JpegImagePlugin.JpegImageFile) -> tuple[int, ...]:
