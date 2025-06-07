@@ -396,6 +396,7 @@ class TestFileTiff:
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
 
             # Act
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             ret = str(im.ifd)
 
             # Assert
@@ -763,13 +764,13 @@ class TestFileTiff:
 
     def test_tiff_save_all(self) -> None:
         mp = BytesIO()
-        with Image.open("Tests/images/multipage.tiff") as im:
-            im.save(mp, format="tiff", save_all=True)
+        with Image.open("Tests/images/multipage.tiff") as img:
+            img.save(mp, format="tiff", save_all=True)
 
         mp.seek(0, os.SEEK_SET)
-        with Image.open(mp) as im:
-            assert isinstance(im, TiffImagePlugin.TiffImageFile)
-            assert im.n_frames == 3
+        with Image.open(mp) as img:
+            assert isinstance(img, TiffImagePlugin.TiffImageFile)
+            assert img.n_frames == 3
 
         # Test appending images
         mp = BytesIO()
@@ -957,6 +958,7 @@ class TestFileTiff:
 
         im = Image.open(tmpfile)
         fp = im.fp
+        assert fp is not None
         assert not fp.closed
         im.load()
         assert fp.closed
@@ -970,6 +972,7 @@ class TestFileTiff:
         with open(tmpfile, "rb") as f:
             im = Image.open(f)
             fp = im.fp
+            assert fp is not None
             assert not fp.closed
             im.load()
             assert not fp.closed
@@ -1020,8 +1023,9 @@ class TestFileTiffW32:
             im.save(tmpfile)
 
         im = Image.open(tmpfile)
+        assert im.fp is not None
+        assert not im.fp.closed
         fp = im.fp
-        assert not fp.closed
         with pytest.raises(OSError):
             os.remove(tmpfile)
         im.load()
