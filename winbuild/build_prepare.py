@@ -385,8 +385,8 @@ DEPS: dict[str, dict[str, Any]] = {
         "bins": [r"*.dll"],
     },
     "libavif": {
-        "url": f"https://github.com/AOMediaCodec/libavif/archive/v{V['LIBAVIF']}.zip",
-        "filename": f"libavif-{V['LIBAVIF']}.zip",
+        "url": f"https://github.com/AOMediaCodec/libavif/archive/v{V['LIBAVIF']}.tar.gz",
+        "filename": f"libavif-{V['LIBAVIF']}.tar.gz",
         "license": "LICENSE",
         "build": [
             "rustup update",
