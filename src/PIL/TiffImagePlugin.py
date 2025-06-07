@@ -1259,7 +1259,10 @@ class TiffImageFile(ImageFile.ImageFile):
         self.fp.seek(self._frame_pos[frame])
         self.tag_v2.load(self.fp)
         if XMP in self.tag_v2:
-            self.info["xmp"] = self.tag_v2[XMP]
+            xmp = self.tag_v2[XMP]
+            if isinstance(xmp, tuple) and len(xmp) == 1:
+                xmp = xmp[0]
+            self.info["xmp"] = xmp
         elif "xmp" in self.info:
             del self.info["xmp"]
         self._reload_exif()

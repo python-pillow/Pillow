@@ -1511,7 +1511,7 @@ class Image:
             return {}
         if "xmp" not in self.info:
             return {}
-        root = ElementTree.fromstring(self.info["xmp"].rstrip(b"\x00"))
+        root = ElementTree.fromstring(self.info["xmp"].rstrip(b"\x00 "))
         return {get_name(root.tag): get_value(root)}
 
     def getexif(self) -> Exif:
