@@ -2310,8 +2310,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         with AppendingTiffWriter(fp) as tf:
             for ims in [im] + append_images:
-                if not hasattr(ims, "encoderinfo"):
-                    ims.encoderinfo = {}
+                ims._attach_default_encoderinfo(im)
                 if not hasattr(ims, "encoderconfig"):
                     ims.encoderconfig = ()
                 nfr = getattr(ims, "n_frames", 1)

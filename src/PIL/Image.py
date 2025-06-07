@@ -2555,7 +2555,8 @@ class Image:
             self.load()
 
         save_all = params.pop("save_all", None)
-        self.encoderinfo = {**getattr(self, "encoderinfo", {}), **params}
+        self._default_encoderinfo = params
+        self._attach_default_encoderinfo(self)
         self.encoderconfig: tuple[Any, ...] = ()
 
         if format.upper() not in SAVE:
@@ -2599,6 +2600,12 @@ class Image:
                 pass
         if open_fp:
             fp.close()
+
+    def _attach_default_encoderinfo(self, im: Image) -> Any:
+        self.encoderinfo = {
+            **im._default_encoderinfo,
+            **getattr(self, "encoderinfo", {}),
+        }
 
     def seek(self, frame: int) -> None:
         """

@@ -312,10 +312,20 @@ def test_save_all() -> None:
 def test_save_xmp() -> None:
     im = Image.new("RGB", (1, 1))
     im2 = Image.new("RGB", (1, 1), "#f00")
+
+    def roundtrip_xmp():
+        im_reloaded = roundtrip(im, xmp=b"Default", save_all=True, append_images=[im2])
+        xmp = [im_reloaded.info["xmp"]]
+        im_reloaded.seek(1)
+        return xmp + [im_reloaded.info["xmp"]]
+
+    # Use the save parameters for all frames by default
+    assert roundtrip_xmp() == [b"Default", b"Default"]
+
+    # Specify a value for the first frame
+    im.encoderinfo = {"xmp": b"First frame"}
+    assert roundtrip_xmp() == [b"First frame", b"Default"]
+
+    # Specify value for the second frame
     im2.encoderinfo = {"xmp": b"Second frame"}
-    im_reloaded = roundtrip(im, xmp=b"First frame", save_all=True, append_images=[im2])
-
-    assert im_reloaded.info["xmp"] == b"First frame"
-
-    im_reloaded.seek(1)
-    assert im_reloaded.info["xmp"] == b"Second frame"
+    assert roundtrip_xmp() == [b"Default", b"Second frame"]
