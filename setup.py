@@ -18,8 +18,11 @@ import warnings
 from collections.abc import Iterator
 from typing import Any
 
+from pybind11.setup_helpers import ParallelCompile
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
+
+ParallelCompile("MAX_CONCURRENCY", default=0).install()
 
 
 def get_version() -> str:
@@ -1048,11 +1051,11 @@ ext_modules = [
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
 ]
 
-
 # parse configuration from _custom_build/backend.py
 while sys.argv[-1].startswith("--pillow-configuration="):
     _, key, value = sys.argv.pop().split("=", 2)
     configuration.setdefault(key, []).append(value)
+
 
 try:
     setup(
