@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import warnings
 from collections.abc import Generator
 from io import BytesIO
@@ -294,6 +295,52 @@ def test_roundtrip_save_all_1(tmp_path: Path) -> None:
 
         reloaded.seek(1)
         assert reloaded.getpixel((0, 0)) == 255
+
+
+def test_save_all_progress() -> None:
+    out = BytesIO()
+    progress = []
+
+    def callback(state) -> None:
+        if state["image_filename"]:
+            state["image_filename"] = os.path.basename(state["image_filename"])
+        progress.append(state)
+
+    Image.new("RGB", (1, 1)).save(out, "GIF", save_all=True, progress=callback)
+    assert progress == [
+        {
+            "image_index": 0,
+            "image_filename": None,
+            "completed_frames": 1,
+            "total_frames": 1,
+        }
+    ]
+
+    out = BytesIO()
+    progress = []
+
+    with Image.open("Tests/images/chi.gif") as im2:
+        im = Image.new("RGB", im2.size)
+        im.save(out, "GIF", save_all=True, append_images=[im2], progress=callback)
+
+    expected: list[dict[str, int | str | None]] = [
+        {
+            "image_index": 0,
+            "image_filename": None,
+            "completed_frames": 1,
+            "total_frames": 32,
+        }
+    ]
+    for i in range(31):
+        expected.append(
+            {
+                "image_index": 1,
+                "image_filename": "chi.gif",
+                "completed_frames": i + 2,
+                "total_frames": 32,
+            }
+        )
+    assert progress == expected
 
 
 @pytest.mark.parametrize(
