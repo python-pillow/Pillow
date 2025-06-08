@@ -134,7 +134,10 @@ def grabclipboard() -> Image.Image | list[str] | None:
             import struct
 
             o = struct.unpack_from("I", data)[0]
-            files = data[o:].decode("mbcs" if data[16] == 0 else "utf-16le").split("\0")
+            if data[16] == 0:
+                files = data[o:].decode("mbcs").split("\0")
+            else:
+                files = data[o:].decode("utf-16le").split("\0")
             return files[: files.index("")]
         if isinstance(data, bytes):
             data = io.BytesIO(data)
