@@ -193,15 +193,6 @@ Image.Image.get_child_images()
 method uses an image's file pointer, and so child images could only be retrieved from
 an :py:class:`PIL.ImageFile.ImageFile` instance.
 
-ImageCms.ImageCmsProfile._set
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 11.3.0
-
-``ImageCms.ImageCmsProfile._set()`` has been deprecated, and will be removed in
-Pillow 13 (2026-10-15). You should construct a new ``ImageCmsProfile`` instance
-instead.
-
 ImageCms.ImageCmsProfile.product_name and .product_info
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
