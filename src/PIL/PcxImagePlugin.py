@@ -54,7 +54,7 @@ class PcxImageFile(ImageFile.ImageFile):
         # header
         assert self.fp is not None
 
-        s = self.fp.read(128)
+        s = self.fp.read(68)
         if not _accept(s):
             msg = "not a PCX file"
             raise SyntaxError(msg)
@@ -66,7 +66,7 @@ class PcxImageFile(ImageFile.ImageFile):
             raise SyntaxError(msg)
         logger.debug("BBox: %s %s %s %s", *bbox)
 
-        offset = self.fp.tell()
+        offset = self.fp.tell() + 60
 
         # format
         version = s[1]
