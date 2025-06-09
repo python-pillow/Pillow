@@ -66,6 +66,8 @@ class PcxImageFile(ImageFile.ImageFile):
             raise SyntaxError(msg)
         logger.debug("BBox: %s %s %s %s", *bbox)
 
+        offset = self.fp.tell()
+
         # format
         version = s[1]
         bits = s[3]
@@ -102,7 +104,6 @@ class PcxImageFile(ImageFile.ImageFile):
                         break
                 if mode == "P":
                     self.palette = ImagePalette.raw("RGB", s[1:])
-            self.fp.seek(128)
 
         elif version == 5 and bits == 8 and planes == 3:
             mode = "RGB"
@@ -128,9 +129,7 @@ class PcxImageFile(ImageFile.ImageFile):
         bbox = (0, 0) + self.size
         logger.debug("size: %sx%s", *self.size)
 
-        self.tile = [
-            ImageFile._Tile("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))
-        ]
+        self.tile = [ImageFile._Tile("pcx", bbox, offset, (rawmode, planes * stride))]
 
 
 # --------------------------------------------------------------------
