@@ -12,6 +12,7 @@ from .helper import (
     hopper,
 )
 
+
 def test_sanity() -> None:
     with Image.open("Tests/images/hopper.qoi") as im:
         assert im.mode == "RGB"
@@ -54,4 +55,3 @@ def test_save(tmp_path: Path) -> None:
     im = hopper("P")
     with pytest.raises(ValueError):
         im.save(f)
-

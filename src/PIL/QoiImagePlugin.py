@@ -11,7 +11,9 @@ import os
 from typing import IO
 
 from . import Image, ImageFile
-from ._binary import i32be as i32, o32be as o32, o8
+from ._binary import i32be as i32
+from ._binary import o8
+from ._binary import o32be as o32
 
 
 def _accept(prefix: bytes) -> bool:
@@ -140,10 +142,10 @@ class QoiEncoder(ImageFile.PyEncoder):
     _previously_seen_pixels: dict[int, tuple[int]] = {}
 
     def _write_run(self, run):
-        return o8(0xc0 | (run - 1)) # QOI_OP_RUN
+        return o8(0xC0 | (run - 1))  # QOI_OP_RUN
 
     def _delta(self, left, right):
-        result = (left - right) & 0xff
+        result = (left - right) & 0xFF
         if result >= 0x80:
             result -= 0x100
         return result
@@ -178,7 +180,7 @@ class QoiEncoder(ImageFile.PyEncoder):
                     r, g, b, a = pixel
                     hash_value = (r * 3 + g * 5 + b * 7 + a * 11) % 64
                     if self._previously_seen_pixels.get(hash_value) == pixel:
-                        data += o8(hash_value) # QOI_OP_INDEX
+                        data += o8(hash_value)  # QOI_OP_INDEX
                     else:
                         self._previously_seen_pixels[hash_value] = pixel
 
@@ -191,23 +193,24 @@ class QoiEncoder(ImageFile.PyEncoder):
                             dgb = self._delta(db, dg)
 
                             if -2 <= dr < 2 and -2 <= dg < 2 and -2 <= db < 2:
-                                data += o8(0x40 | (dr + 2) << 4 |
-                                           (dg + 2) << 2 | (db + 2)) # QOI_OP_DIFF
+                                data += o8(
+                                    0x40 | (dr + 2) << 4 | (dg + 2) << 2 | (db + 2)
+                                )  # QOI_OP_DIFF
                             elif -8 <= dgr < 8 and -32 <= dg < 32 and -8 <= dgb < 8:
-                                data += o8(0x80 | (dg + 32)) # QOI_OP_LUMA
+                                data += o8(0x80 | (dg + 32))  # QOI_OP_LUMA
                                 data += o8((dgr + 8) << 4 | (dgb + 8))
                             else:
-                                data += o8(0xfe) # QOI_OP_RGB
+                                data += o8(0xFE)  # QOI_OP_RGB
                                 data += bytes(pixel[:3])
                         else:
-                            data += o8(0xff) # QOI_OP_RGBA
+                            data += o8(0xFF)  # QOI_OP_RGBA
                             data += bytes(pixel)
 
                 self._previous_pixel = pixel
 
         if run > 0:
             data += self._write_run(run)
-        data += bytes((0,0,0,0,0,0,0,1)) # padding
+        data += bytes((0, 0, 0, 0, 0, 0, 0, 1))  # padding
 
         return len(data), 0, data
 
