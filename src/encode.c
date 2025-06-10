@@ -27,6 +27,7 @@
 
 #include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
+#include "libImaging/Bcn.h"
 #include "libImaging/Gif.h"
 
 #ifdef HAVE_UNISTD_H
@@ -348,6 +349,31 @@ get_packer(ImagingEncoderObject *encoder, const char *mode, const char *rawmode)
     encoder->state.bits = bits;
 
     return 0;
+}
+
+/* -------------------------------------------------------------------- */
+/* BCN                                                                  */
+/* -------------------------------------------------------------------- */
+
+PyObject *
+PyImaging_BcnEncoderNew(PyObject *self, PyObject *args) {
+    ImagingEncoderObject *encoder;
+
+    char *mode;
+    int n;
+    if (!PyArg_ParseTuple(args, "si", &mode, &n)) {
+        return NULL;
+    }
+
+    encoder = PyImaging_EncoderNew(0);
+    if (encoder == NULL) {
+        return NULL;
+    }
+
+    encoder->encode = ImagingBcnEncode;
+    encoder->state.state = n;
+
+    return (PyObject *)encoder;
 }
 
 /* -------------------------------------------------------------------- */
@@ -676,6 +702,8 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         PyErr_SetString(PyExc_RuntimeError, "tiff codec initialization failed");
         return NULL;
     }
+
+    encoder->cleanup = ImagingLibTiffEncodeCleanup;
 
     num_core_tags = sizeof(core_tags) / sizeof(int);
     for (pos = 0; pos < tags_size; pos++) {

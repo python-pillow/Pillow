@@ -155,7 +155,7 @@ JpegImageFile.huffman_ac and JpegImageFile.huffman_dc
 The ``huffman_ac`` and ``huffman_dc`` dictionaries on JPEG images were unused. They
 have been deprecated, and will be removed in Pillow 12 (2025-10-15).
 
-Specific WebP Feature Checks
+Specific WebP feature checks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 11.0.0
@@ -186,7 +186,7 @@ ExifTags.IFD.Makernote
 Image.Image.get_child_images()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. deprecated:: 11.2.0
+.. deprecated:: 11.2.1
 
 ``Image.Image.get_child_images()`` has been deprecated. and will be removed in Pillow
 13 (2026-10-15). It will be moved to ``ImageFile.ImageFile.get_child_images()``. The

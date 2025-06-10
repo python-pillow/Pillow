@@ -1402,8 +1402,8 @@ static struct PyGetSetDef cms_profile_getsetters[] = {
     {"colorant_table_out", (getter)cms_profile_getattr_colorant_table_out},
     {"intent_supported", (getter)cms_profile_getattr_is_intent_supported},
     {"clut", (getter)cms_profile_getattr_is_clut},
-    {"icc_measurement_condition", (getter)cms_profile_getattr_icc_measurement_condition
-    },
+    {"icc_measurement_condition",
+     (getter)cms_profile_getattr_icc_measurement_condition},
     {"icc_viewing_condition", (getter)cms_profile_getattr_icc_viewing_condition},
 
     {NULL}

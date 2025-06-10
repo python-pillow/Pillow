@@ -35,7 +35,7 @@ import math
 import struct
 from collections.abc import Sequence
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, AnyStr, Callable, Union, cast
+from typing import Any, AnyStr, Callable, Union, cast
 
 from . import Image, ImageColor
 from ._deprecate import deprecate
@@ -44,6 +44,7 @@ from ._typing import Coords
 # experimental access to the outline API
 Outline: Callable[[], Image.core._Outline] = Image.core.outline
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from . import ImageDraw2, ImageFont
 
@@ -364,22 +365,10 @@ class ImageDraw:
                 # use the fill as a mask
                 mask = Image.new("1", self.im.size)
                 mask_ink = self._getink(1)[0]
-
-                fill_im = mask.copy()
-                draw = Draw(fill_im)
+                draw = Draw(mask)
                 draw.draw.draw_polygon(xy, mask_ink, 1)
 
-                ink_im = mask.copy()
-                draw = Draw(ink_im)
-                width = width * 2 - 1
-                draw.draw.draw_polygon(xy, mask_ink, 0, width)
-
-                mask.paste(ink_im, mask=fill_im)
-
-                im = Image.new(self.mode, self.im.size)
-                draw = Draw(im)
-                draw.draw.draw_polygon(xy, ink, 0, width)
-                self.im.paste(im.im, (0, 0) + im.size, mask.im)
+                self.draw.draw_polygon(xy, ink, 0, width * 2 - 1, mask.im)
 
     def regular_polygon(
         self,

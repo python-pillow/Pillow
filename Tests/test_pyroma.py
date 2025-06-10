@@ -23,5 +23,11 @@ def test_pyroma() -> None:
         )
 
     else:
-        # Should have a perfect score
-        assert rating == (10, [])
+        # Should have a perfect score, but pyroma does not support PEP 639 yet.
+        assert rating == (
+            9,
+            [
+                "Your package does neither have a license field "
+                "nor any license classifiers."
+            ],
+        )

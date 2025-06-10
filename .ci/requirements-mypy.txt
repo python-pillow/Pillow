@@ -1,9 +1,10 @@
-mypy==1.15.0
+mypy==1.16.0
 IceSpringPySideStubs-PyQt6
 IceSpringPySideStubs-PySide6
 ipython
 numpy
 packaging
+pyarrow-stubs
 pytest
 sphinx
 types-atheris

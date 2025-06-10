@@ -50,7 +50,7 @@ import warnings
 from collections.abc import Iterator, MutableMapping
 from fractions import Fraction
 from numbers import Number, Rational
-from typing import IO, TYPE_CHECKING, Any, Callable, NoReturn, cast
+from typing import IO, Any, Callable, NoReturn, cast
 
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
@@ -58,9 +58,10 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._deprecate import deprecate
 from ._typing import StrOrBytesPath
-from ._util import is_path
+from ._util import DeferredError, is_path
 from .TiffTags import TYPES
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from ._typing import Buffer, IntegralLike
 
@@ -1216,12 +1217,15 @@ class TiffImageFile(ImageFile.ImageFile):
             return
         self._seek(frame)
         if self._im is not None and (
-            self.im.size != self._tile_size or self.im.mode != self.mode
+            self.im.size != self._tile_size
+            or self.im.mode != self.mode
+            or self.readonly
         ):
-            # The core image will no longer be used
             self._im = None
 
     def _seek(self, frame: int) -> None:
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self.fp = self._fp
 
         while len(self._frame_pos) <= frame:
@@ -1608,6 +1612,10 @@ class TiffImageFile(ImageFile.ImageFile):
                     raise ValueError(msg)
                 w = tilewidth
 
+            if w == xsize and h == ysize and self._planar_configuration != 2:
+                # Every tile covers the image. Only use the last offset
+                offsets = offsets[-1:]
+
             for offset in offsets:
                 if x + w > xsize:
                     stride = w * sum(bps_tuple) / 8  # bytes per line
@@ -1630,11 +1638,11 @@ class TiffImageFile(ImageFile.ImageFile):
                         args,
                     )
                 )
-                x = x + w
+                x += w
                 if x >= xsize:
                     x, y = 0, y + h
                     if y >= ysize:
-                        x = y = 0
+                        y = 0
                         layer += 1
         else:
             logger.debug("- unsupported data organization")

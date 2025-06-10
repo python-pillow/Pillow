@@ -25,7 +25,7 @@ else
     MB_ML_LIBC=${AUDITWHEEL_POLICY::9}
     MB_ML_VER=${AUDITWHEEL_POLICY:9}
 fi
-PLAT=$CIBW_ARCHS
+PLAT="${CIBW_ARCHS:-$AUDITWHEEL_ARCH}"
 
 # Define custom utilities
 source wheels/multibuild/common_utils.sh
@@ -38,13 +38,14 @@ ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.13.3
-HARFBUZZ_VERSION=10.4.0
-LIBPNG_VERSION=1.6.47
+HARFBUZZ_VERSION=11.2.1
+LIBPNG_VERSION=1.6.48
 JPEGTURBO_VERSION=3.1.0
 OPENJPEG_VERSION=2.5.3
-XZ_VERSION=5.6.4
+XZ_VERSION=5.8.1
 TIFF_VERSION=4.7.0
 LCMS2_VERSION=2.17
+ZLIB_VERSION=1.3.1
 ZLIB_NG_VERSION=2.2.4
 LIBWEBP_VERSION=1.5.0
 BZIP2_VERSION=1.0.8
@@ -64,11 +65,7 @@ function build_pkg_config {
 
 function build_zlib_ng {
     if [ -e zlib-stamp ]; then return; fi
-    fetch_unpack https://github.com/zlib-ng/zlib-ng/archive/$ZLIB_NG_VERSION.tar.gz zlib-ng-$ZLIB_NG_VERSION.tar.gz
-    (cd zlib-ng-$ZLIB_NG_VERSION \
-        && ./configure --prefix=$BUILD_PREFIX --zlib-compat \
-        && make -j4 \
-        && make install)
+    build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --zlib-compat
 
     if [ -n "$IS_MACOS" ]; then
         # Ensure that on macOS, the library name is an absolute path, not an
@@ -95,7 +92,7 @@ function build_harfbuzz {
 
     local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/harfbuzz-$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
     (cd $out_dir \
-        && meson setup build --prefix=$BUILD_PREFIX --libdir=$BUILD_PREFIX/lib --buildtype=release -Dfreetype=enabled -Dglib=disabled)
+        && meson setup build --prefix=$BUILD_PREFIX --libdir=$BUILD_PREFIX/lib --buildtype=minsize -Dfreetype=enabled -Dglib=disabled -Dtests=disabled)
     (cd $out_dir/build \
         && meson install)
     touch harfbuzz-stamp
@@ -106,7 +103,11 @@ function build {
     if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
-    build_zlib_ng
+    if [[ -n "$IS_MACOS" ]] && [[ "$MACOSX_DEPLOYMENT_TARGET" == "10.10" || "$MACOSX_DEPLOYMENT_TARGET" == "10.13" ]]; then
+        build_new_zlib
+    else
+        build_zlib_ng
+    fi
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then

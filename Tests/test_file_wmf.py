@@ -8,7 +8,7 @@ import pytest
 
 from PIL import Image, ImageFile, WmfImagePlugin
 
-from .helper import assert_image_similar_tofile, hopper
+from .helper import assert_image_equal_tofile, assert_image_similar_tofile, hopper
 
 
 def test_load_raw() -> None:
@@ -44,6 +44,15 @@ def test_load_zero_inch() -> None:
             pass
 
 
+def test_render() -> None:
+    with open("Tests/images/drawing.emf", "rb") as fp:
+        data = fp.read()
+    b = BytesIO(data[:808] + b"\x00" + data[809:])
+    with Image.open(b) as im:
+        if hasattr(Image.core, "drawwmf"):
+            assert_image_equal_tofile(im, "Tests/images/drawing.emf")
+
+
 def test_register_handler(tmp_path: Path) -> None:
     class TestHandler(ImageFile.StubHandler):
         methodCalled = False
@@ -59,7 +68,7 @@ def test_register_handler(tmp_path: Path) -> None:
     WmfImagePlugin.register_handler(handler)
 
     im = hopper()
-    tmpfile = str(tmp_path / "temp.wmf")
+    tmpfile = tmp_path / "temp.wmf"
     im.save(tmpfile)
     assert handler.methodCalled
 
@@ -80,6 +89,7 @@ def test_load_float_dpi() -> None:
 
 def test_load_set_dpi() -> None:
     with Image.open("Tests/images/drawing.wmf") as im:
+        assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
         assert im.size == (82, 82)
 
         if hasattr(Image.core, "drawwmf"):
@@ -88,11 +98,27 @@ def test_load_set_dpi() -> None:
 
             assert_image_similar_tofile(im, "Tests/images/drawing_wmf_ref_144.png", 2.1)
 
+    with Image.open("Tests/images/drawing.emf") as im:
+        assert im.size == (1625, 1625)
+
+        if not hasattr(Image.core, "drawwmf"):
+            return
+        assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
+        im.load(im.info["dpi"])
+        assert im.size == (1625, 1625)
+
+    with Image.open("Tests/images/drawing.emf") as im:
+        assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
+        im.load((72, 144))
+        assert im.size == (82, 164)
+
+        assert_image_equal_tofile(im, "Tests/images/drawing_emf_ref_72_144.png")
+
 
 @pytest.mark.parametrize("ext", (".wmf", ".emf"))
 def test_save(ext: str, tmp_path: Path) -> None:
     im = hopper()
 
-    tmpfile = str(tmp_path / ("temp" + ext))
+    tmpfile = tmp_path / ("temp" + ext)
     with pytest.raises(OSError):
         im.save(tmpfile)

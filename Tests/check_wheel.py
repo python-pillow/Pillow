@@ -1,20 +1,24 @@
 from __future__ import annotations
 
+import platform
 import sys
 
 from PIL import features
+
+from .helper import is_pypy
 
 
 def test_wheel_modules() -> None:
     expected_modules = {"pil", "tkinter", "freetype2", "littlecms2", "webp"}
 
-    # tkinter is not available in cibuildwheel installed CPython on Windows
-    try:
-        import tkinter
+    if sys.platform == "win32":
+        # tkinter is not available in cibuildwheel installed CPython on Windows
+        try:
+            import tkinter
 
-        assert tkinter
-    except ImportError:
-        expected_modules.remove("tkinter")
+            assert tkinter
+        except ImportError:
+            expected_modules.remove("tkinter")
 
     assert set(features.get_supported_modules()) == expected_modules
 
@@ -40,5 +44,7 @@ def test_wheel_features() -> None:
 
     if sys.platform == "win32":
         expected_features.remove("xcb")
+    elif sys.platform == "darwin" and not is_pypy() and platform.processor() != "arm":
+        expected_features.remove("zlib_ng")
 
     assert set(features.get_supported_features()) == expected_features

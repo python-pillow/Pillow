@@ -63,7 +63,7 @@ typedef struct {
 } Edge;
 
 /* Type used in "polygon*" functions */
-typedef void (*hline_handler)(Imaging, int, int, int, int);
+typedef void (*hline_handler)(Imaging, int, int, int, int, Imaging);
 
 static inline void
 point8(Imaging im, int x, int y, int ink) {
@@ -103,7 +103,7 @@ point32rgba(Imaging im, int x, int y, int ink) {
 }
 
 static inline void
-hline8(Imaging im, int x0, int y0, int x1, int ink) {
+hline8(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
     int pixelwidth;
 
     if (y0 >= 0 && y0 < im->ysize) {
@@ -119,15 +119,30 @@ hline8(Imaging im, int x0, int y0, int x1, int ink) {
         }
         if (x0 <= x1) {
             pixelwidth = strncmp(im->mode, "I;16", 4) == 0 ? 2 : 1;
-            memset(
-                im->image8[y0] + x0 * pixelwidth, (UINT8)ink, (x1 - x0 + 1) * pixelwidth
-            );
+            if (mask == NULL) {
+                memset(
+                    im->image8[y0] + x0 * pixelwidth,
+                    (UINT8)ink,
+                    (x1 - x0 + 1) * pixelwidth
+                );
+            } else {
+                UINT8 *p = im->image8[y0];
+                while (x0 <= x1) {
+                    if (mask->image8[y0][x0]) {
+                        p[x0 * pixelwidth] = ink;
+                        if (pixelwidth == 2) {
+                            p[x0 * pixelwidth + 1] = ink;
+                        }
+                    }
+                    x0++;
+                }
+            }
         }
     }
 }
 
 static inline void
-hline32(Imaging im, int x0, int y0, int x1, int ink) {
+hline32(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
     INT32 *p;
 
     if (y0 >= 0 && y0 < im->ysize) {
@@ -143,13 +158,16 @@ hline32(Imaging im, int x0, int y0, int x1, int ink) {
         }
         p = im->image32[y0];
         while (x0 <= x1) {
-            p[x0++] = ink;
+            if (mask == NULL || mask->image8[y0][x0]) {
+                p[x0] = ink;
+            }
+            x0++;
         }
     }
 }
 
 static inline void
-hline32rgba(Imaging im, int x0, int y0, int x1, int ink) {
+hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
     unsigned int tmp;
 
     if (y0 >= 0 && y0 < im->ysize) {
@@ -167,9 +185,11 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink) {
             UINT8 *out = (UINT8 *)im->image[y0] + x0 * 4;
             UINT8 *in = (UINT8 *)&ink;
             while (x0 <= x1) {
-                out[0] = BLEND(in[3], out[0], in[0], tmp);
-                out[1] = BLEND(in[3], out[1], in[1], tmp);
-                out[2] = BLEND(in[3], out[2], in[2], tmp);
+                if (mask == NULL || mask->image8[y0][x0]) {
+                    out[0] = BLEND(in[3], out[0], in[0], tmp);
+                    out[1] = BLEND(in[3], out[1], in[1], tmp);
+                    out[2] = BLEND(in[3], out[2], in[2], tmp);
+                }
                 x0++;
                 out += 4;
             }
@@ -407,7 +427,14 @@ x_cmp(const void *x0, const void *x1) {
 
 static void
 draw_horizontal_lines(
-    Imaging im, int n, Edge *e, int ink, int *x_pos, int y, hline_handler hline
+    Imaging im,
+    int n,
+    Edge *e,
+    int ink,
+    int *x_pos,
+    int y,
+    hline_handler hline,
+    Imaging mask
 ) {
     int i;
     for (i = 0; i < n; i++) {
@@ -429,7 +456,7 @@ draw_horizontal_lines(
                 }
             }
 
-            (*hline)(im, xmin, e[i].ymin, xmax, ink);
+            (*hline)(im, xmin, e[i].ymin, xmax, ink, mask);
             *x_pos = xmax + 1;
         }
     }
@@ -440,7 +467,7 @@ draw_horizontal_lines(
  */
 static inline int
 polygon_generic(
-    Imaging im, int n, Edge *e, int ink, int eofill, hline_handler hline, int hasAlpha
+    Imaging im, int n, Edge *e, int ink, int eofill, hline_handler hline, Imaging mask
 ) {
     Edge **edge_table;
     float *xx;
@@ -461,6 +488,7 @@ polygon_generic(
         return -1;
     }
 
+    int hasAlpha = hline == hline32rgba;
     for (i = 0; i < n; i++) {
         if (ymin > e[i].ymin) {
             ymin = e[i].ymin;
@@ -470,7 +498,7 @@ polygon_generic(
         }
         if (e[i].ymin == e[i].ymax) {
             if (hasAlpha != 1) {
-                (*hline)(im, e[i].xmin, e[i].ymin, e[i].xmax, ink);
+                (*hline)(im, e[i].xmin, e[i].ymin, e[i].xmax, ink, mask);
             }
             continue;
         }
@@ -501,55 +529,49 @@ polygon_generic(
                     // Needed to draw consistent polygons
                     xx[j] = xx[j - 1];
                     j++;
-                } else if (current->dx != 0 && j % 2 == 1 &&
-                           roundf(xx[j - 1]) == xx[j - 1]) {
+                } else if ((ymin == current->ymin || ymin == current->ymax) &&
+                           current->dx != 0) {
                     // Connect discontiguous corners
                     for (k = 0; k < i; k++) {
                         Edge *other_edge = edge_table[k];
-                        if ((current->dx > 0 && other_edge->dx <= 0) ||
-                            (current->dx < 0 && other_edge->dx >= 0)) {
+                        if ((ymin != other_edge->ymin && ymin != other_edge->ymax) ||
+                            other_edge->dx == 0) {
                             continue;
                         }
                         // Check if the two edges join to make a corner
-                        if (xx[j - 1] ==
-                            (ymin - other_edge->y0) * other_edge->dx + other_edge->x0) {
+                        if (roundf(xx[j - 1]) ==
+                            roundf(
+                                (ymin - other_edge->y0) * other_edge->dx +
+                                other_edge->x0
+                            )) {
                             // Determine points from the edges on the next row
                             // Or if this is the last row, check the previous row
-                            int offset = ymin == ymax ? -1 : 1;
+                            int offset = ymin == current->ymax ? -1 : 1;
                             adjacent_line_x =
                                 (ymin + offset - current->y0) * current->dx +
                                 current->x0;
-                            adjacent_line_x_other_edge =
-                                (ymin + offset - other_edge->y0) * other_edge->dx +
-                                other_edge->x0;
-                            if (ymin == current->ymax) {
-                                if (current->dx > 0) {
-                                    xx[k] =
-                                        fmax(
+                            if (ymin + offset >= other_edge->ymin &&
+                                ymin + offset <= other_edge->ymax) {
+                                adjacent_line_x_other_edge =
+                                    (ymin + offset - other_edge->y0) * other_edge->dx +
+                                    other_edge->x0;
+                                if (xx[j - 1] > adjacent_line_x + 1 &&
+                                    xx[j - 1] > adjacent_line_x_other_edge + 1) {
+                                    xx[j - 1] =
+                                        roundf(fmax(
                                             adjacent_line_x, adjacent_line_x_other_edge
-                                        ) +
+                                        )) +
                                         1;
-                                } else {
-                                    xx[k] =
-                                        fmin(
+                                } else if (xx[j - 1] < adjacent_line_x - 1 &&
+                                           xx[j - 1] < adjacent_line_x_other_edge - 1) {
+                                    xx[j - 1] =
+                                        roundf(fmin(
                                             adjacent_line_x, adjacent_line_x_other_edge
-                                        ) -
-                                        1;
-                                }
-                            } else {
-                                if (current->dx > 0) {
-                                    xx[k] = fmin(
-                                        adjacent_line_x, adjacent_line_x_other_edge
-                                    );
-                                } else {
-                                    xx[k] =
-                                        fmax(
-                                            adjacent_line_x, adjacent_line_x_other_edge
-                                        ) +
+                                        )) -
                                         1;
                                 }
+                                break;
                             }
-                            break;
                         }
                     }
                 }
@@ -564,7 +586,7 @@ polygon_generic(
                     // Line would be before the current position
                     continue;
                 }
-                draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline);
+                draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline, mask);
                 if (x_end < x_pos) {
                     // Line would be before the current position
                     continue;
@@ -580,13 +602,13 @@ polygon_generic(
                         continue;
                     }
                 }
-                (*hline)(im, x_start, ymin, x_end, ink);
+                (*hline)(im, x_start, ymin, x_end, ink, mask);
                 x_pos = x_end + 1;
             }
-            draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline);
+            draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline, mask);
         } else {
             for (i = 1; i < j; i += 2) {
-                (*hline)(im, ROUND_UP(xx[i - 1]), ymin, ROUND_DOWN(xx[i]), ink);
+                (*hline)(im, ROUND_UP(xx[i - 1]), ymin, ROUND_DOWN(xx[i]), ink, mask);
             }
         }
     }
@@ -594,21 +616,6 @@ polygon_generic(
     free(xx);
     free(edge_table);
     return 0;
-}
-
-static inline int
-polygon8(Imaging im, int n, Edge *e, int ink, int eofill) {
-    return polygon_generic(im, n, e, ink, eofill, hline8, 0);
-}
-
-static inline int
-polygon32(Imaging im, int n, Edge *e, int ink, int eofill) {
-    return polygon_generic(im, n, e, ink, eofill, hline32, 0);
-}
-
-static inline int
-polygon32rgba(Imaging im, int n, Edge *e, int ink, int eofill) {
-    return polygon_generic(im, n, e, ink, eofill, hline32rgba, 1);
 }
 
 static inline void
@@ -645,14 +652,13 @@ add_edge(Edge *e, int x0, int y0, int x1, int y1) {
 
 typedef struct {
     void (*point)(Imaging im, int x, int y, int ink);
-    void (*hline)(Imaging im, int x0, int y0, int x1, int ink);
+    void (*hline)(Imaging im, int x0, int y0, int x1, int ink, Imaging mask);
     void (*line)(Imaging im, int x0, int y0, int x1, int y1, int ink);
-    int (*polygon)(Imaging im, int n, Edge *e, int ink, int eofill);
 } DRAW;
 
-DRAW draw8 = {point8, hline8, line8, polygon8};
-DRAW draw32 = {point32, hline32, line32, polygon32};
-DRAW draw32rgba = {point32rgba, hline32rgba, line32rgba, polygon32rgba};
+DRAW draw8 = {point8, hline8, line8};
+DRAW draw32 = {point32, hline32, line32};
+DRAW draw32rgba = {point32rgba, hline32rgba, line32rgba};
 
 /* -------------------------------------------------------------------- */
 /* Interface                                                            */
@@ -697,7 +703,15 @@ ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void *ink_, in
 
 int
 ImagingDrawWideLine(
-    Imaging im, int x0, int y0, int x1, int y1, const void *ink_, int width, int op
+    Imaging im,
+    int x0,
+    int y0,
+    int x1,
+    int y1,
+    const void *ink_,
+    int width,
+    int op,
+    Imaging mask
 ) {
     DRAW *draw;
     INT32 ink;
@@ -737,7 +751,7 @@ ImagingDrawWideLine(
         add_edge(e + 2, vertices[2][0], vertices[2][1], vertices[3][0], vertices[3][1]);
         add_edge(e + 3, vertices[3][0], vertices[3][1], vertices[0][0], vertices[0][1]);
 
-        draw->polygon(im, 4, e, ink, 0);
+        polygon_generic(im, 4, e, ink, 0, draw->hline, mask);
     }
     return 0;
 }
@@ -780,7 +794,7 @@ ImagingDrawRectangle(
         }
 
         for (y = y0; y <= y1; y++) {
-            draw->hline(im, x0, y, x1, ink);
+            draw->hline(im, x0, y, x1, ink, NULL);
         }
 
     } else {
@@ -789,8 +803,8 @@ ImagingDrawRectangle(
             width = 1;
         }
         for (i = 0; i < width; i++) {
-            draw->hline(im, x0, y0 + i, x1, ink);
-            draw->hline(im, x0, y1 - i, x1, ink);
+            draw->hline(im, x0, y0 + i, x1, ink, NULL);
+            draw->hline(im, x0, y1 - i, x1, ink, NULL);
             draw->line(im, x1 - i, y0 + width, x1 - i, y1 - width + 1, ink);
             draw->line(im, x0 + i, y0 + width, x0 + i, y1 - width + 1, ink);
         }
@@ -801,7 +815,14 @@ ImagingDrawRectangle(
 
 int
 ImagingDrawPolygon(
-    Imaging im, int count, int *xy, const void *ink_, int fill, int width, int op
+    Imaging im,
+    int count,
+    int *xy,
+    const void *ink_,
+    int fill,
+    int width,
+    int op,
+    Imaging mask
 ) {
     int i, n, x0, y0, x1, y1;
     DRAW *draw;
@@ -845,7 +866,7 @@ ImagingDrawPolygon(
         if (xy[i * 2] != xy[0] || xy[i * 2 + 1] != xy[1]) {
             add_edge(&e[n++], xy[i * 2], xy[i * 2 + 1], xy[0], xy[1]);
         }
-        draw->polygon(im, n, e, ink, 0);
+        polygon_generic(im, n, e, ink, 0, draw->hline, mask);
         free(e);
 
     } else {
@@ -867,11 +888,12 @@ ImagingDrawPolygon(
                     xy[i * 2 + 3],
                     ink_,
                     width,
-                    op
+                    op,
+                    mask
                 );
             }
             ImagingDrawWideLine(
-                im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink_, width, op
+                im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink_, width, op, mask
             );
         }
     }
@@ -1542,7 +1564,9 @@ ellipseNew(
     ellipse_init(&st, a, b, width);
     int32_t X0, Y, X1;
     while (ellipse_next(&st, &X0, &Y, &X1) != -1) {
-        draw->hline(im, x0 + (X0 + a) / 2, y0 + (Y + b) / 2, x0 + (X1 + a) / 2, ink);
+        draw->hline(
+            im, x0 + (X0 + a) / 2, y0 + (Y + b) / 2, x0 + (X1 + a) / 2, ink, NULL
+        );
     }
     return 0;
 }
@@ -1577,7 +1601,9 @@ clipEllipseNew(
     int32_t X0, Y, X1;
     int next_code;
     while ((next_code = clip_ellipse_next(&st, &X0, &Y, &X1)) >= 0) {
-        draw->hline(im, x0 + (X0 + a) / 2, y0 + (Y + b) / 2, x0 + (X1 + a) / 2, ink);
+        draw->hline(
+            im, x0 + (X0 + a) / 2, y0 + (Y + b) / 2, x0 + (X1 + a) / 2, ink, NULL
+        );
     }
     clip_ellipse_free(&st);
     return next_code == -1 ? 0 : -1;
@@ -1995,7 +2021,7 @@ ImagingDrawOutline(
 
     DRAWINIT();
 
-    draw->polygon(im, outline->count, outline->edges, ink, 0);
+    polygon_generic(im, outline->count, outline->edges, ink, 0, draw->hline, NULL);
 
     return 0;
 }

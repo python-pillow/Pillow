@@ -1,7 +1,7 @@
 .. py:module:: PIL.features
 .. py:currentmodule:: PIL.features
 
-:py:mod:`~PIL.features` Module
+:py:mod:`~PIL.features` module
 ==============================
 
 The :py:mod:`PIL.features` module can be used to detect which Pillow features are available on your system.
@@ -21,6 +21,7 @@ Support for the following modules can be checked:
 * ``freetype2``: FreeType font support via :py:func:`PIL.ImageFont.truetype`.
 * ``littlecms2``: LittleCMS 2 support via :py:mod:`PIL.ImageCms`.
 * ``webp``: WebP image support.
+* ``avif``: AVIF image support.
 
 .. autofunction:: PIL.features.check_module
 .. autofunction:: PIL.features.version_module

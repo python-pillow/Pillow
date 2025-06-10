@@ -23,7 +23,7 @@ if [[ $(uname) != CYGWIN* ]]; then
     sudo apt-get -qq install libfreetype6-dev liblcms2-dev libtiff-dev python3-tk\
                              ghostscript libjpeg-turbo8-dev libopenjp2-7-dev\
                              cmake meson imagemagick libharfbuzz-dev libfribidi-dev\
-                             sway wl-clipboard libopenblas-dev
+                             sway wl-clipboard libopenblas-dev nasm
 fi
 
 python3 -m pip install --upgrade pip
@@ -36,6 +36,9 @@ python3 -m pip install -U pytest
 python3 -m pip install -U pytest-cov
 python3 -m pip install -U pytest-timeout
 python3 -m pip install pyroma
+# optional test dependency, only install if there's a binary package.
+# fails on beta 3.14 and PyPy
+python3 -m pip install --only-binary=:all: pyarrow || true
 
 if [[ $(uname) != CYGWIN* ]]; then
     python3 -m pip install numpy
@@ -50,7 +53,7 @@ if [[ $(uname) != CYGWIN* ]]; then
     # Pyroma uses non-isolated build and fails with old setuptools
     if [[ $GHA_PYTHON_VERSION == 3.9 ]]; then
         # To match pyproject.toml
-        python3 -m pip install "setuptools>=67.8"
+        python3 -m pip install "setuptools>=77"
     fi
 
     # webp
@@ -61,6 +64,9 @@ if [[ $(uname) != CYGWIN* ]]; then
 
     # raqm
     pushd depends && ./install_raqm.sh && popd
+
+    # libavif
+    pushd depends && ./install_libavif.sh && popd
 
     # extra test images
     pushd depends && ./install_extra_test_images.sh && popd
