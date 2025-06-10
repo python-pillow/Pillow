@@ -141,10 +141,10 @@ class QoiEncoder(ImageFile.PyEncoder):
     _previous_pixel: tuple[int, int, int, int] | None = None
     _previously_seen_pixels: dict[int, tuple[int, int, int, int]] = {}
 
-    def _write_run(self, run):
+    def _write_run(self, run: int) -> bytes:
         return o8(0xC0 | (run - 1))  # QOI_OP_RUN
 
-    def _delta(self, left, right):
+    def _delta(self, left: int, right: int) -> int:
         result = (left - right) & 0xFF
         if result >= 0x80:
             result -= 0x100
