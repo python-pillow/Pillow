@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image, QoiImagePlugin
 
-from .helper import assert_image_equal_tofile
-
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    hopper,
+)
 
 def test_sanity() -> None:
     with Image.open("Tests/images/hopper.qoi") as im:
@@ -28,3 +33,25 @@ def test_invalid_file() -> None:
 
     with pytest.raises(SyntaxError):
         QoiImagePlugin.QoiImageFile(invalid_file)
+
+
+def test_save(tmp_path: Path) -> None:
+    f = tmp_path / "temp.qoi"
+
+    im = hopper("RGB")
+    im.save(f, qoi_colorspace="sRGB")
+
+    with Image.open(f) as reloaded:
+        assert_image_equal(im, reloaded)
+
+    for image in ["Tests/images/default_font.png", "Tests/images/pil123rgba.png"]:
+        with Image.open(image) as im:
+            im.save(f)
+
+            with Image.open(f) as reloaded:
+                assert_image_equal(im, reloaded)
+
+    im = hopper("P")
+    with pytest.raises(ValueError):
+        im.save(f)
+

@@ -8,9 +8,10 @@
 from __future__ import annotations
 
 import os
+from typing import IO
 
 from . import Image, ImageFile
-from ._binary import i32be as i32
+from ._binary import i32be as i32, o32be as o32, o8
 
 
 def _accept(prefix: bytes) -> bool:
@@ -110,6 +111,110 @@ class QoiDecoder(ImageFile.PyDecoder):
         return -1, 0
 
 
+def _save(im: Image.image, fp: IO[bytes], filename: str | bytes) -> None:
+    if im.mode == "RGB":
+        channels = 3
+    elif im.mode == "RGBA":
+        channels = 4
+    else:
+        msg = "Unsupported QOI image mode"
+        raise ValueError(msg)
+
+    if im.encoderinfo.get("qoi_colorspace") == "sRGB":
+        colorspace = 0
+    else:
+        colorspace = 1
+
+    fp.write(b"qoif")
+    fp.write(o32(im.size[0]))
+    fp.write(o32(im.size[1]))
+    fp.write(o8(channels))
+    fp.write(o8(colorspace))
+
+    ImageFile._save(im, fp, [ImageFile._Tile("qoi", (0, 0) + im.size, 0, im.mode)])
+
+
+class QoiEncoder(ImageFile.PyEncoder):
+    _pushes_fd = True
+    _previous_pixel: tuple[int] | None = None
+    _previously_seen_pixels: dict[int, tuple[int]] = {}
+
+    def _write_run(self, run):
+        return o8(0xc0 | (run - 1)) # QOI_OP_RUN
+
+    def _delta(self, left, right):
+        result = (left - right) & 0xff
+        if result >= 0x80:
+            result -= 0x100
+        return result
+
+    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
+        assert self.im is not None
+
+        self._previously_seen_pixels = {0: (0, 0, 0, 0)}
+        self._previous_pixel = (0, 0, 0, 255)
+
+        data = bytearray()
+        w, h = self.im.size
+        run = 0
+        bands = Image.getmodebands(self.im.mode)
+
+        for y in range(h):
+            for x in range(w):
+                pixel = self.im.getpixel((x, y))
+                if bands == 3:
+                    pixel = (*pixel, 255)
+
+                if pixel == self._previous_pixel:
+                    run += 1
+                    if run == 62:
+                        data += self._write_run(run)
+                        run = 0
+                else:
+                    if run > 0:
+                        data += self._write_run(run)
+                        run = 0
+
+                    r, g, b, a = pixel
+                    hash_value = (r * 3 + g * 5 + b * 7 + a * 11) % 64
+                    if self._previously_seen_pixels.get(hash_value) == pixel:
+                        data += o8(hash_value) # QOI_OP_INDEX
+                    else:
+                        self._previously_seen_pixels[hash_value] = pixel
+
+                        pr, pg, pb, pa = self._previous_pixel
+                        if a == pa:
+                            dr = self._delta(r, pr)
+                            dg = self._delta(g, pg)
+                            db = self._delta(b, pb)
+                            dgr = self._delta(dr, dg)
+                            dgb = self._delta(db, dg)
+
+                            if -2 <= dr < 2 and -2 <= dg < 2 and -2 <= db < 2:
+                                data += o8(0x40 | (dr + 2) << 4 |
+                                           (dg + 2) << 2 | (db + 2)) # QOI_OP_DIFF
+                            elif -8 <= dgr < 8 and -32 <= dg < 32 and -8 <= dgb < 8:
+                                data += o8(0x80 | (dg + 32)) # QOI_OP_LUMA
+                                data += o8((dgr + 8) << 4 | (dgb + 8))
+                            else:
+                                data += o8(0xfe) # QOI_OP_RGB
+                                data += bytes(pixel[:3])
+                        else:
+                            data += o8(0xff) # QOI_OP_RGBA
+                            data += bytes(pixel)
+
+                self._previous_pixel = pixel
+
+        if run > 0:
+            data += self._write_run(run)
+        data += bytes((0,0,0,0,0,0,0,1)) # padding
+
+        return len(data), 0, data
+
+
 Image.register_open(QoiImageFile.format, QoiImageFile, _accept)
 Image.register_decoder("qoi", QoiDecoder)
 Image.register_extension(QoiImageFile.format, ".qoi")
+
+Image.register_save(QoiImageFile.format, _save)
+Image.register_encoder("qoi", QoiEncoder)
