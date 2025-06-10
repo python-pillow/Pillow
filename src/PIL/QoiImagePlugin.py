@@ -113,7 +113,7 @@ class QoiDecoder(ImageFile.PyDecoder):
         return -1, 0
 
 
-def _save(im: Image.image, fp: IO[bytes], filename: str | bytes) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode == "RGB":
         channels = 3
     elif im.mode == "RGBA":
@@ -133,18 +133,18 @@ def _save(im: Image.image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.write(o8(channels))
     fp.write(o8(colorspace))
 
-    ImageFile._save(im, fp, [ImageFile._Tile("qoi", (0, 0) + im.size, 0, im.mode)])
+    ImageFile._save(im, fp, [ImageFile._Tile("qoi", (0, 0) + im.size)])
 
 
 class QoiEncoder(ImageFile.PyEncoder):
     _pushes_fd = True
-    _previous_pixel: tuple[int] | None = None
-    _previously_seen_pixels: dict[int, tuple[int]] = {}
+    _previous_pixel: tuple[int, int, int, int] | None = None
+    _previously_seen_pixels: dict[int, tuple[int, int, int, int]] = {}
 
-    def _write_run(self, run):
+    def _write_run(self, run: int) -> bytes:
         return o8(0xC0 | (run - 1))  # QOI_OP_RUN
 
-    def _delta(self, left, right):
+    def _delta(self, left: int, right: int) -> int:
         result = (left - right) & 0xFF
         if result >= 0x80:
             result -= 0x100
@@ -181,7 +181,7 @@ class QoiEncoder(ImageFile.PyEncoder):
                     hash_value = (r * 3 + g * 5 + b * 7 + a * 11) % 64
                     if self._previously_seen_pixels.get(hash_value) == pixel:
                         data += o8(hash_value)  # QOI_OP_INDEX
-                    else:
+                    elif self._previous_pixel:
                         self._previously_seen_pixels[hash_value] = pixel
 
                         pr, pg, pb, pa = self._previous_pixel
