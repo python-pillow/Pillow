@@ -18,6 +18,9 @@ OpenType fonts (as well as other font formats supported by the FreeType
 library). For earlier versions, TrueType support is only available as part of
 the imToolkit package.
 
+When measuring text sizes, this module will not break at newline characters. For
+multiline text, see the :py:mod:`~PIL.ImageDraw` module.
+
 .. warning::
     To protect against potential DOS attacks when using arbitrary strings as
     text input, Pillow will raise a :py:exc:`ValueError` if the number of characters
