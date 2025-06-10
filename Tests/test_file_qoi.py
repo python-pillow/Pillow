@@ -6,11 +6,7 @@ import pytest
 
 from PIL import Image, QoiImagePlugin
 
-from .helper import (
-    assert_image_equal,
-    assert_image_equal_tofile,
-    hopper,
-)
+from .helper import assert_image_equal_tofile, hopper
 
 
 def test_sanity() -> None:
@@ -42,15 +38,13 @@ def test_save(tmp_path: Path) -> None:
     im = hopper("RGB")
     im.save(f, qoi_colorspace="sRGB")
 
-    with Image.open(f) as reloaded:
-        assert_image_equal(im, reloaded)
+    assert_image_equal_tofile(im, f)
 
     for image in ["Tests/images/default_font.png", "Tests/images/pil123rgba.png"]:
         with Image.open(image) as im:
             im.save(f)
 
-            with Image.open(f) as reloaded:
-                assert_image_equal(im, reloaded)
+            assert_image_equal_tofile(im, f)
 
     im = hopper("P")
     with pytest.raises(ValueError):
