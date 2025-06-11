@@ -139,7 +139,7 @@ class QoiEncoder(ImageFile.PyEncoder):
     _previously_seen_pixels: dict[int, tuple[int, int, int, int]] = {}
 
     def _write_run(self, run: int) -> bytes:
-        return o8(0xC0 | (run - 1))  # QOI_OP_RUN
+        return o8(0b11000000 | (run - 1))  # QOI_OP_RUN
 
     def _delta(self, left: int, right: int) -> int:
         result = (left - right) & 0xFF
@@ -191,16 +191,19 @@ class QoiEncoder(ImageFile.PyEncoder):
 
                             if -2 <= dr < 2 and -2 <= dg < 2 and -2 <= db < 2:
                                 data += o8(
-                                    0x40 | (dr + 2) << 4 | (dg + 2) << 2 | (db + 2)
+                                    0b01000000
+                                    | (dr + 2) << 4
+                                    | (dg + 2) << 2
+                                    | (db + 2)
                                 )  # QOI_OP_DIFF
                             elif -8 <= dgr < 8 and -32 <= dg < 32 and -8 <= dgb < 8:
-                                data += o8(0x80 | (dg + 32))  # QOI_OP_LUMA
+                                data += o8(0b10000000 | (dg + 32))  # QOI_OP_LUMA
                                 data += o8((dgr + 8) << 4 | (dgb + 8))
                             else:
-                                data += o8(0xFE)  # QOI_OP_RGB
+                                data += o8(0b11111110)  # QOI_OP_RGB
                                 data += bytes(pixel[:3])
                         else:
-                            data += o8(0xFF)  # QOI_OP_RGBA
+                            data += o8(0b11111111)  # QOI_OP_RGBA
                             data += bytes(pixel)
 
                 self._previous_pixel = pixel
