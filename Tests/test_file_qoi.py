@@ -28,3 +28,9 @@ def test_invalid_file() -> None:
 
     with pytest.raises(SyntaxError):
         QoiImagePlugin.QoiImageFile(invalid_file)
+
+
+def test_op_index() -> None:
+    # QOI_OP_INDEX as the first chunk
+    with Image.open("Tests/images/op_index.qoi") as im:
+        assert im.getpixel((0, 0)) == (0, 0, 0, 0)
