@@ -137,9 +137,12 @@ class QoiEncoder(ImageFile.PyEncoder):
     _pushes_fd = True
     _previous_pixel: tuple[int, int, int, int] | None = None
     _previously_seen_pixels: dict[int, tuple[int, int, int, int]] = {}
+    _run = 0
 
-    def _write_run(self, run: int) -> bytes:
-        return o8(0b11000000 | (run - 1))  # QOI_OP_RUN
+    def _write_run(self) -> bytes:
+        data = o8(0b11000000 | (self._run - 1))  # QOI_OP_RUN
+        self._run = 0
+        return data
 
     def _delta(self, left: int, right: int) -> int:
         result = (left - right) & 0xFF
@@ -155,7 +158,6 @@ class QoiEncoder(ImageFile.PyEncoder):
 
         data = bytearray()
         w, h = self.im.size
-        run = 0
         bands = Image.getmodebands(self.im.mode)
 
         for y in range(h):
@@ -165,14 +167,12 @@ class QoiEncoder(ImageFile.PyEncoder):
                     pixel = (*pixel, 255)
 
                 if pixel == self._previous_pixel:
-                    run += 1
-                    if run == 62:
-                        data += self._write_run(run)
-                        run = 0
+                    self._run += 1
+                    if self._run == 62:
+                        data += self._write_run()
                 else:
-                    if run > 0:
-                        data += self._write_run(run)
-                        run = 0
+                    if self._run > 0:
+                        data += self._write_run()
 
                     r, g, b, a = pixel
                     hash_value = (r * 3 + g * 5 + b * 7 + a * 11) % 64
@@ -208,8 +208,8 @@ class QoiEncoder(ImageFile.PyEncoder):
 
                 self._previous_pixel = pixel
 
-        if run > 0:
-            data += self._write_run(run)
+        if self._run > 0:
+            data += self._write_run()
         data += bytes((0, 0, 0, 0, 0, 0, 0, 1))  # padding
 
         return len(data), 0, data
