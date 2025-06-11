@@ -181,25 +181,35 @@ class QoiEncoder(ImageFile.PyEncoder):
                     elif self._previous_pixel:
                         self._previously_seen_pixels[hash_value] = pixel
 
-                        pr, pg, pb, pa = self._previous_pixel
-                        if pa == a:
-                            dr = self._delta(r, pr)
-                            dg = self._delta(g, pg)
-                            db = self._delta(b, pb)
+                        prev_r, prev_g, prev_b, prev_a = self._previous_pixel
+                        if prev_a == a:
+                            delta_r = self._delta(r, prev_r)
+                            delta_g = self._delta(g, prev_g)
+                            delta_b = self._delta(b, prev_b)
 
-                            if -2 <= dr < 2 and -2 <= dg < 2 and -2 <= db < 2:
+                            if (
+                                -2 <= delta_r < 2
+                                and -2 <= delta_g < 2
+                                and -2 <= delta_b < 2
+                            ):
                                 data += o8(
                                     0b01000000
-                                    | (dr + 2) << 4
-                                    | (dg + 2) << 2
-                                    | (db + 2)
+                                    | (delta_r + 2) << 4
+                                    | (delta_g + 2) << 2
+                                    | (delta_b + 2)
                                 )  # QOI_OP_DIFF
                             else:
-                                dgr = self._delta(dr, dg)
-                                dgb = self._delta(db, dg)
-                                if -8 <= dgr < 8 and -32 <= dg < 32 and -8 <= dgb < 8:
-                                    data += o8(0b10000000 | (dg + 32))  # QOI_OP_LUMA
-                                    data += o8((dgr + 8) << 4 | (dgb + 8))
+                                delta_gr = self._delta(delta_r, delta_g)
+                                delta_gb = self._delta(delta_b, delta_g)
+                                if (
+                                    -8 <= delta_gr < 8
+                                    and -32 <= delta_g < 32
+                                    and -8 <= delta_gb < 8
+                                ):
+                                    data += o8(
+                                        0b10000000 | (delta_g + 32)
+                                    )  # QOI_OP_LUMA
+                                    data += o8((delta_gr + 8) << 4 | (delta_gb + 8))
                                 else:
                                     data += o8(0b11111110)  # QOI_OP_RGB
                                     data += bytes(pixel[:3])
