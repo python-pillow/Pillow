@@ -182,12 +182,10 @@ class QoiEncoder(ImageFile.PyEncoder):
                         self._previously_seen_pixels[hash_value] = pixel
 
                         pr, pg, pb, pa = self._previous_pixel
-                        if a == pa:
+                        if pa == a:
                             dr = self._delta(r, pr)
                             dg = self._delta(g, pg)
                             db = self._delta(b, pb)
-                            dgr = self._delta(dr, dg)
-                            dgb = self._delta(db, dg)
 
                             if -2 <= dr < 2 and -2 <= dg < 2 and -2 <= db < 2:
                                 data += o8(
@@ -196,12 +194,15 @@ class QoiEncoder(ImageFile.PyEncoder):
                                     | (dg + 2) << 2
                                     | (db + 2)
                                 )  # QOI_OP_DIFF
-                            elif -8 <= dgr < 8 and -32 <= dg < 32 and -8 <= dgb < 8:
-                                data += o8(0b10000000 | (dg + 32))  # QOI_OP_LUMA
-                                data += o8((dgr + 8) << 4 | (dgb + 8))
                             else:
-                                data += o8(0b11111110)  # QOI_OP_RGB
-                                data += bytes(pixel[:3])
+                                dgr = self._delta(dr, dg)
+                                dgb = self._delta(db, dg)
+                                if -8 <= dgr < 8 and -32 <= dg < 32 and -8 <= dgb < 8:
+                                    data += o8(0b10000000 | (dg + 32))  # QOI_OP_LUMA
+                                    data += o8((dgr + 8) << 4 | (dgb + 8))
+                                else:
+                                    data += o8(0b11111110)  # QOI_OP_RGB
+                                    data += bytes(pixel[:3])
                         else:
                             data += o8(0b11111111)  # QOI_OP_RGBA
                             data += bytes(pixel)
