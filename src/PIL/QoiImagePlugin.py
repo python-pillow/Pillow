@@ -145,9 +145,9 @@ class QoiEncoder(ImageFile.PyEncoder):
         return data
 
     def _delta(self, left: int, right: int) -> int:
-        result = (left - right) & 0xFF
-        if result >= 0x80:
-            result -= 0x100
+        result = (left - right) & 255
+        if result >= 128:
+            result -= 256
         return result
 
     def encode(self, bufsize: int) -> tuple[int, int, bytes]:
@@ -158,7 +158,7 @@ class QoiEncoder(ImageFile.PyEncoder):
 
         data = bytearray()
         w, h = self.im.size
-        bands = Image.getmodebands(self.im.mode)
+        bands = Image.getmodebands(self.mode)
 
         for y in range(h):
             for x in range(w):
@@ -171,7 +171,7 @@ class QoiEncoder(ImageFile.PyEncoder):
                     if self._run == 62:
                         data += self._write_run()
                 else:
-                    if self._run > 0:
+                    if self._run:
                         data += self._write_run()
 
                     r, g, b, a = pixel
@@ -208,7 +208,7 @@ class QoiEncoder(ImageFile.PyEncoder):
 
                 self._previous_pixel = pixel
 
-        if self._run > 0:
+        if self._run:
             data += self._write_run()
         data += bytes((0, 0, 0, 0, 0, 0, 0, 1))  # padding
 
