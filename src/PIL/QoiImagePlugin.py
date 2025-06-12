@@ -122,10 +122,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         msg = "Unsupported QOI image mode"
         raise ValueError(msg)
 
-    if im.encoderinfo.get("qoi_colorspace") == "sRGB":
-        colorspace = 0
-    else:
-        colorspace = 1
+    colorspace = 0 if im.encoderinfo.get("colorspace") == "sRGB" else 1
 
     fp.write(b"qoif")
     fp.write(o32(im.size[0]))
@@ -140,14 +137,17 @@ class QoiEncoder(ImageFile.PyEncoder):
     _pushes_fd = True
     _previous_pixel: tuple[int, int, int, int] | None = None
     _previously_seen_pixels: dict[int, tuple[int, int, int, int]] = {}
+    _run = 0
 
-    def _write_run(self, run: int) -> bytes:
-        return o8(0xC0 | (run - 1))  # QOI_OP_RUN
+    def _write_run(self) -> bytes:
+        data = o8(0b11000000 | (self._run - 1))  # QOI_OP_RUN
+        self._run = 0
+        return data
 
     def _delta(self, left: int, right: int) -> int:
-        result = (left - right) & 0xFF
-        if result >= 0x80:
-            result -= 0x100
+        result = (left - right) & 255
+        if result >= 128:
+            result -= 256
         return result
 
     def encode(self, bufsize: int) -> tuple[int, int, bytes]:
@@ -158,8 +158,7 @@ class QoiEncoder(ImageFile.PyEncoder):
 
         data = bytearray()
         w, h = self.im.size
-        run = 0
-        bands = Image.getmodebands(self.im.mode)
+        bands = Image.getmodebands(self.mode)
 
         for y in range(h):
             for x in range(w):
@@ -168,14 +167,12 @@ class QoiEncoder(ImageFile.PyEncoder):
                     pixel = (*pixel, 255)
 
                 if pixel == self._previous_pixel:
-                    run += 1
-                    if run == 62:
-                        data += self._write_run(run)
-                        run = 0
+                    self._run += 1
+                    if self._run == 62:
+                        data += self._write_run()
                 else:
-                    if run > 0:
-                        data += self._write_run(run)
-                        run = 0
+                    if self._run:
+                        data += self._write_run()
 
                     r, g, b, a = pixel
                     hash_value = (r * 3 + g * 5 + b * 7 + a * 11) % 64
@@ -184,32 +181,46 @@ class QoiEncoder(ImageFile.PyEncoder):
                     elif self._previous_pixel:
                         self._previously_seen_pixels[hash_value] = pixel
 
-                        pr, pg, pb, pa = self._previous_pixel
-                        if a == pa:
-                            dr = self._delta(r, pr)
-                            dg = self._delta(g, pg)
-                            db = self._delta(b, pb)
-                            dgr = self._delta(dr, dg)
-                            dgb = self._delta(db, dg)
+                        prev_r, prev_g, prev_b, prev_a = self._previous_pixel
+                        if prev_a == a:
+                            delta_r = self._delta(r, prev_r)
+                            delta_g = self._delta(g, prev_g)
+                            delta_b = self._delta(b, prev_b)
 
-                            if -2 <= dr < 2 and -2 <= dg < 2 and -2 <= db < 2:
+                            if (
+                                -2 <= delta_r < 2
+                                and -2 <= delta_g < 2
+                                and -2 <= delta_b < 2
+                            ):
                                 data += o8(
-                                    0x40 | (dr + 2) << 4 | (dg + 2) << 2 | (db + 2)
+                                    0b01000000
+                                    | (delta_r + 2) << 4
+                                    | (delta_g + 2) << 2
+                                    | (delta_b + 2)
                                 )  # QOI_OP_DIFF
-                            elif -8 <= dgr < 8 and -32 <= dg < 32 and -8 <= dgb < 8:
-                                data += o8(0x80 | (dg + 32))  # QOI_OP_LUMA
-                                data += o8((dgr + 8) << 4 | (dgb + 8))
                             else:
-                                data += o8(0xFE)  # QOI_OP_RGB
-                                data += bytes(pixel[:3])
+                                delta_gr = self._delta(delta_r, delta_g)
+                                delta_gb = self._delta(delta_b, delta_g)
+                                if (
+                                    -8 <= delta_gr < 8
+                                    and -32 <= delta_g < 32
+                                    and -8 <= delta_gb < 8
+                                ):
+                                    data += o8(
+                                        0b10000000 | (delta_g + 32)
+                                    )  # QOI_OP_LUMA
+                                    data += o8((delta_gr + 8) << 4 | (delta_gb + 8))
+                                else:
+                                    data += o8(0b11111110)  # QOI_OP_RGB
+                                    data += bytes(pixel[:3])
                         else:
-                            data += o8(0xFF)  # QOI_OP_RGBA
+                            data += o8(0b11111111)  # QOI_OP_RGBA
                             data += bytes(pixel)
 
                 self._previous_pixel = pixel
 
-        if run > 0:
-            data += self._write_run(run)
+        if self._run:
+            data += self._write_run()
         data += bytes((0, 0, 0, 0, 0, 0, 0, 1))  # padding
 
         return len(data), 0, data

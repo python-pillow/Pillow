@@ -1082,6 +1082,26 @@ Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L``, ``I
 
 Since Pillow 9.2.0, "plain" (P1 to P3) formats can be read as well.
 
+QOI
+^^^
+
+.. versionadded:: 9.5.0
+
+Pillow reads and writes images in Quite OK Image format using a Python decoder. If you
+wish to write code specifically for this format, :pypi:`qoi` is an alternative library
+that uses C to decode the image and interfaces with NumPy.
+
+.. _qoi-saving:
+
+Saving
+~~~~~~
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**colorspace**
+    If set to "sRGB", the colorspace will be written as sRGB with linear alpha, instead
+    of all channels being linear.
+
 SGI
 ^^^
 
@@ -1577,15 +1597,6 @@ PSD
 ^^^
 
 Pillow identifies and reads PSD files written by Adobe Photoshop 2.5 and 3.0.
-
-QOI
-^^^
-
-.. versionadded:: 9.5.0
-
-Pillow reads images in Quite OK Image format using a Python decoder. If you wish to
-write code specifically for this format, :pypi:`qoi` is an alternative library that
-uses C to decode the image and interfaces with NumPy.
 
 SUN
 ^^^
