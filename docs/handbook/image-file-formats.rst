@@ -1098,7 +1098,7 @@ Saving
 
 The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
 
-**qoi_colorspace**
+**colorspace**
     If set to "sRGB", the colorspace will be written as sRGB with linear alpha, instead
     of all channels being linear.
 

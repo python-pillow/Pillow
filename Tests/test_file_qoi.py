@@ -41,13 +41,13 @@ def test_op_index() -> None:
 def test_save(tmp_path: Path) -> None:
     f = tmp_path / "temp.qoi"
 
-    im = hopper("RGB")
-    im.save(f, qoi_colorspace="sRGB")
+    im = hopper()
+    im.save(f, colorspace="sRGB")
 
     assert_image_equal_tofile(im, f)
 
-    for image in ["Tests/images/default_font.png", "Tests/images/pil123rgba.png"]:
-        with Image.open(image) as im:
+    for path in ("Tests/images/default_font.png", "Tests/images/pil123rgba.png"):
+        with Image.open(path) as im:
             im.save(f)
 
             assert_image_equal_tofile(im, f)

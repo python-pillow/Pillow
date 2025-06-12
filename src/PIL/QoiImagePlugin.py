@@ -122,10 +122,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         msg = "Unsupported QOI image mode"
         raise ValueError(msg)
 
-    if im.encoderinfo.get("qoi_colorspace") == "sRGB":
-        colorspace = 0
-    else:
-        colorspace = 1
+    colorspace = 0 if im.encoderinfo.get("colorspace") == "sRGB" else 1
 
     fp.write(b"qoif")
     fp.write(o32(im.size[0]))
