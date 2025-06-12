@@ -9,16 +9,21 @@ if ("$venv" -like "*\cibw-run-*\pp*-win_amd64\*") {
     C:\vc_redist.x64.exe /install /quiet /norestart | Out-Null
 }
 $env:path += ";$pillow\winbuild\build\bin\"
+if (Test-Path $venv\Scripts\pypy.exe) {
+  $python = "pypy.exe"
+} else {
+  $python = "python.exe"
+}
 & reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe" /v "GlobalFlag" /t REG_SZ /d "0x02000000" /f
 if ("$venv" -like "*\cibw-run-*-win_amd64\*") {
-  & $venv\Scripts\python.exe -m pip install numpy
+  & $venv\Scripts\$python -m pip install numpy
 }
 cd $pillow
-& $venv\Scripts\python.exe -VV
+& $venv\Scripts\$python -VV
 if (!$?) { exit $LASTEXITCODE }
-& $venv\Scripts\python.exe selftest.py
+& $venv\Scripts\$python selftest.py
 if (!$?) { exit $LASTEXITCODE }
-& $venv\Scripts\python.exe -m pytest -vx Tests\check_wheel.py
+& $venv\Scripts\$python -m pytest -vx Tests\check_wheel.py
 if (!$?) { exit $LASTEXITCODE }
-& $venv\Scripts\python.exe -m pytest -vx Tests
+& $venv\Scripts\$python -m pytest -vx Tests
 if (!$?) { exit $LASTEXITCODE }
