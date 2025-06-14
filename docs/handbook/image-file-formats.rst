@@ -1087,7 +1087,7 @@ QOI
 
 .. versionadded:: 9.5.0
 
-Pillow reads and writes images in Quite OK Image format using a Python decoder. If you
+Pillow reads and writes images in Quite OK Image format using a Python codec. If you
 wish to write code specifically for this format, :pypi:`qoi` is an alternative library
 that uses C to decode the image and interfaces with NumPy.
 
