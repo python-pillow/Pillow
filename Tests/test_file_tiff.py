@@ -981,6 +981,7 @@ class TestFileTiff:
 
         im = Image.open(tmpfile)
         fp = im.fp
+        assert fp is not None
         assert not fp.closed
         im.load()
         assert fp.closed
@@ -994,6 +995,7 @@ class TestFileTiff:
         with open(tmpfile, "rb") as f:
             im = Image.open(f)
             fp = im.fp
+            assert fp is not None
             assert not fp.closed
             im.load()
             assert not fp.closed
@@ -1044,8 +1046,9 @@ class TestFileTiffW32:
             im.save(tmpfile)
 
         im = Image.open(tmpfile)
+        assert im.fp is not None
+        assert not im.fp.closed
         fp = im.fp
-        assert not fp.closed
         with pytest.raises(OSError):
             os.remove(tmpfile)
         im.load()

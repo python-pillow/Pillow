@@ -37,6 +37,7 @@ class XpmImageFile(ImageFile.ImageFile):
     format_description = "X11 Pixel Map"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(9)):
             msg = "not an XPM file"
             raise SyntaxError(msg)
@@ -109,6 +110,7 @@ class XpmImageFile(ImageFile.ImageFile):
 
         xsize, ysize = self.size
 
+        assert self.fp is not None
         s = [self.fp.readline()[1 : xsize + 1].ljust(xsize) for i in range(ysize)]
 
         return b"".join(s)
