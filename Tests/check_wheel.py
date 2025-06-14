@@ -21,8 +21,7 @@ def test_wheel_modules() -> None:
         except ImportError:
             expected_modules.remove("tkinter")
 
-    # libavif is not available on Windows for x86 and ARM64 architectures
-    if sys.platform == "win32":
+        # libavif is not available on Windows for x86 and ARM64 architectures
         if platform.machine() == "ARM64" or struct.calcsize("P") == 4:
             expected_modules.remove("avif")
 
