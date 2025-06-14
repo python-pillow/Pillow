@@ -23,10 +23,11 @@ TODO
 Deprecations
 ============
 
-TODO
-^^^^
+Image.fromarray mode parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+The ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` has been deprecated. The
+mode can be automatically determined from the object's shape and type instead.
 
 API changes
 ===========
