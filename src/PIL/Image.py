@@ -3272,7 +3272,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
 
     :param obj: Object with array interface
     :param mode: Optional mode to use when reading ``obj``. Will be determined from
-      type if ``None``.
+      type if ``None``. Deprecated.
 
       This will not be used to convert the data after reading, but will be used to
       change how the data is read::
@@ -3307,6 +3307,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
             msg = f"Cannot handle this data type: {typekey_shape}, {typestr}"
             raise TypeError(msg) from e
     else:
+        deprecate("'mode' parameter", 13)
         rawmode = mode
     if mode in ["1", "L", "I", "P", "F"]:
         ndmax = 2
