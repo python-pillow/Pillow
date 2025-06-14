@@ -47,6 +47,12 @@ TODO
 Other changes
 =============
 
+Support using grim with ImageGrab on Linux
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageGrab.grab` is now able to use ``gnome-screenshot``, ``grim`` or
+``spectacle`` on Linux in order to take a snapshot of the screen.
+
 Do not build against libavif < 1
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
