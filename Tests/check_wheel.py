@@ -12,13 +12,14 @@ from .helper import is_pypy
 def test_wheel_modules() -> None:
     expected_modules = {"pil", "tkinter", "freetype2", "littlecms2", "webp", "avif"}
 
-    # tkinter is not available in cibuildwheel installed CPython on Windows
-    try:
-        import tkinter
+    if sys.platform == "win32":
+        # tkinter is not available in cibuildwheel installed CPython on Windows
+        try:
+            import tkinter
 
-        assert tkinter
-    except ImportError:
-        expected_modules.remove("tkinter")
+            assert tkinter
+        except ImportError:
+            expected_modules.remove("tkinter")
 
     # libavif is not available on Windows for x86 and ARM64 architectures
     if sys.platform == "win32":

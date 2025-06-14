@@ -32,6 +32,7 @@ from .helper import (
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
+    timeout_unless_slower_valgrind,
 )
 
 ElementTree: ModuleType | None
@@ -144,14 +145,16 @@ class TestFileJpeg:
             assert k > 0.9
             # roundtrip, and check again
             im = self.roundtrip(im)
-            c, m, y, k = (x / 255.0 for x in im.getpixel((0, 0)))
+            cmyk = im.getpixel((0, 0))
+            assert isinstance(cmyk, tuple)
+            c, m, y, k = (x / 255.0 for x in cmyk)
             assert c == 0.0
             assert m > 0.8
             assert y > 0.8
             assert k == 0.0
-            c, m, y, k = (
-                x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            )
+            cmyk = im.getpixel((im.size[0] - 1, im.size[1] - 1))
+            assert isinstance(cmyk, tuple)
+            k = cmyk[3] / 255.0
             assert k > 0.9
 
     def test_rgb(self) -> None:
@@ -1033,7 +1036,7 @@ class TestFileJpeg:
         with pytest.raises(ValueError):
             im.save(f, xmp=b"1" * 65505)
 
-    @pytest.mark.timeout(timeout=1)
+    @timeout_unless_slower_valgrind(1)
     def test_eof(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # Even though this decoder never says that it is finished
         # the image should still end when there is no new data

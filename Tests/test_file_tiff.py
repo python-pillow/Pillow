@@ -14,6 +14,7 @@ from PIL import (
     ImageFile,
     JpegImagePlugin,
     TiffImagePlugin,
+    TiffTags,
     UnidentifiedImageError,
 )
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
@@ -26,6 +27,7 @@ from .helper import (
     hopper,
     is_pypy,
     is_win32,
+    timeout_unless_slower_valgrind,
 )
 
 ElementTree: ModuleType | None
@@ -899,6 +901,29 @@ class TestFileTiff:
                 assert description[0]["format"] == "image/tiff"
                 assert description[3]["BitsPerSample"]["Seq"]["li"] == ["8", "8", "8"]
 
+    def test_getxmp_undefined(self, tmp_path: Path) -> None:
+        tmpfile = tmp_path / "temp.tif"
+        im = Image.new("L", (1, 1))
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd.tagtype[700] = TiffTags.UNDEFINED
+        with Image.open("Tests/images/lab.tif") as im_xmp:
+            ifd[700] = im_xmp.info["xmp"]
+        im.save(tmpfile, tiffinfo=ifd)
+
+        with Image.open(tmpfile) as im_reloaded:
+            if ElementTree is None:
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
+                    assert im_reloaded.getxmp() == {}
+            else:
+                assert "xmp" in im_reloaded.info
+                xmp = im_reloaded.getxmp()
+
+                description = xmp["xmpmeta"]["RDF"]["Description"]
+                assert description[0]["format"] == "image/tiff"
+
     def test_get_photoshop_blocks(self) -> None:
         with Image.open("Tests/images/lab.tif") as im:
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
@@ -988,7 +1013,7 @@ class TestFileTiff:
             with pytest.raises(OSError):
                 im.load()
 
-    @pytest.mark.timeout(6)
+    @timeout_unless_slower_valgrind(6)
     @pytest.mark.filterwarnings("ignore:Truncated File Read")
     def test_timeout(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/timeout-6646305047838720") as im:
@@ -1001,7 +1026,7 @@ class TestFileTiff:
             "Tests/images/oom-225817ca0f8c663be7ab4b9e717b02c661e66834.tif",
         ],
     )
-    @pytest.mark.timeout(2)
+    @timeout_unless_slower_valgrind(2)
     def test_oom(self, test_file: str) -> None:
         with pytest.raises(UnidentifiedImageError):
             with pytest.warns(UserWarning):

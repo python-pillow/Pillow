@@ -51,7 +51,7 @@ class QoiDecoder(ImageFile.PyDecoder):
         assert self.fd is not None
 
         self._previously_seen_pixels = {}
-        self._add_to_previous_pixels(bytearray((0, 0, 0, 255)))
+        self._previous_pixel = bytearray((0, 0, 0, 255))
 
         data = bytearray()
         bands = Image.getmodebands(self.mode)

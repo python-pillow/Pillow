@@ -1,5 +1,5 @@
 """
-A Pillow loader for .dds files (S3TC-compressed aka DXTC)
+A Pillow plugin for .dds files (S3TC-compressed aka DXTC)
 Jerome Leclanche <jerome@leclan.ch>
 
 Documentation:
