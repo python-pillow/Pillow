@@ -47,6 +47,13 @@ TODO
 Other changes
 =============
 
+Do not build against libavif < 1
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow only supports libavif 1.0.0 or later. In order to prevent errors when building
+from source, if a user happens to have an earlier libavif on their system, Pillow will
+now ignore it.
+
 Python 3.14 beta
 ^^^^^^^^^^^^^^^^
 
