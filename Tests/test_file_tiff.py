@@ -49,25 +49,10 @@ class TestFileTiff:
         assert im.size == (128, 128)
         assert im.format == "TIFF"
 
-        hopper("1").save(filename)
-        with Image.open(filename):
-            pass
-
-        hopper("L").save(filename)
-        with Image.open(filename):
-            pass
-
-        hopper("P").save(filename)
-        with Image.open(filename):
-            pass
-
-        hopper("RGB").save(filename)
-        with Image.open(filename):
-            pass
-
-        hopper("I").save(filename)
-        with Image.open(filename):
-            pass
+        for mode in ("1", "L", "P", "RGB", "I", "I;16", "I;16L"):
+            hopper(mode).save(filename)
+            with Image.open(filename):
+                pass
 
     @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
     def test_unclosed_file(self) -> None:
