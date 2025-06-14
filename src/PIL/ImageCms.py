@@ -272,18 +272,18 @@ class ImageCmsProfile:
             msg = "Invalid type for Profile"  # type: ignore[unreachable]
             raise TypeError(msg)
 
-    def __getattr__(self, attr: str) -> Any:
-        if attr in ("product_name", "product_info"):
+    def __getattr__(self, name: str) -> Any:
+        if name in ("product_name", "product_info"):
             deprecate(
-                f"ImageCms.ImageCmsProfile.{attr}",
+                f"ImageCms.ImageCmsProfile.{name}",
                 13,
                 action=(
-                    f"Use ImageCms.ImageCmsProfile.profile.{attr} instead. "
-                    f"Note that {attr} has been set to 'None' since Pillow 2.3.0."
+                    f"Use ImageCms.ImageCmsProfile.profile.{name} instead. "
+                    f"Note that {name} has been set to 'None' since Pillow 2.3.0."
                 ),
             )
             return None
-        msg = f"'{self.__class__.__name__}' has no attribute '{attr}'"
+        msg = f"'{self.__class__.__name__}' has no attribute '{name}'"
         raise AttributeError(msg)
 
     def _set(self, profile: core.CmsProfile, filename: str | None = None) -> None:
