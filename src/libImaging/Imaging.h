@@ -271,8 +271,6 @@ ImagingSectionLeave(ImagingSectionCookie *cookie);
 /* ---------- */
 
 extern void *
-ImagingError_OSError(void);
-extern void *
 ImagingError_MemoryError(void);
 extern void *
 ImagingError_ModeError(void); /* maps to ValueError by default */
