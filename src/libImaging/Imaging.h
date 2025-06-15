@@ -280,8 +280,6 @@ extern void *
 ImagingError_Mismatch(void); /* maps to ValueError by default */
 extern void *
 ImagingError_ValueError(const char *message);
-extern void
-ImagingError_Clear(void);
 
 /* Transform callbacks */
 /* ------------------- */

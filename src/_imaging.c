@@ -369,11 +369,6 @@ ImagingError_ValueError(const char *message) {
     return NULL;
 }
 
-void
-ImagingError_Clear(void) {
-    PyErr_Clear();
-}
-
 /* -------------------------------------------------------------------- */
 /* HELPERS                                */
 /* -------------------------------------------------------------------- */
