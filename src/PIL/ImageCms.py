@@ -286,15 +286,6 @@ class ImageCmsProfile:
         msg = f"'{self.__class__.__name__}' has no attribute '{name}'"
         raise AttributeError(msg)
 
-    def _set(self, profile: core.CmsProfile, filename: str | None = None) -> None:
-        deprecate(
-            "ImageCmsProfile._set",
-            13,
-            action="Set the 'profile' and 'filename' attributes directly instead.",
-        )
-        self.profile = profile
-        self.filename = filename
-
     def tobytes(self) -> bytes:
         """
         Returns the profile in a format suitable for embedding in
