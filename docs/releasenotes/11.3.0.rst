@@ -47,6 +47,19 @@ TODO
 Other changes
 =============
 
+Support using more screenshot utilities with ImageGrab on Linux
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageGrab.grab` is now able to use GNOME Screenshot, grim or Spectacle
+on Linux in order to take a snapshot of the screen.
+
+Do not build against libavif < 1
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow only supports libavif 1.0.0 or later. In order to prevent errors when building
+from source, if a user happens to have an earlier libavif on their system, Pillow will
+now ignore it.
+
 Python 3.14 beta
 ^^^^^^^^^^^^^^^^
 
