@@ -339,12 +339,6 @@ static const char *readonly = "image is readonly";
 /* static const char* no_content = "image has no content"; */
 
 void *
-ImagingError_OSError(void) {
-    PyErr_SetString(PyExc_OSError, "error when accessing file");
-    return NULL;
-}
-
-void *
 ImagingError_MemoryError(void) {
     return PyErr_NoMemory();
 }
@@ -367,11 +361,6 @@ ImagingError_ValueError(const char *message) {
         PyExc_ValueError, (message) ? (char *)message : "unrecognized argument value"
     );
     return NULL;
-}
-
-void
-ImagingError_Clear(void) {
-    PyErr_Clear();
 }
 
 /* -------------------------------------------------------------------- */
