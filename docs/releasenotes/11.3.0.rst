@@ -23,10 +23,17 @@ TODO
 Deprecations
 ============
 
-TODO
-^^^^
+Saving I mode images as PNG
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+In order to fit the 32 bits of I mode images into PNG, when PNG images can only contain
+at most 16 bits for a channel, Pillow has been clipping the values. Rather than quietly
+changing the data, this is now deprecated. Instead, the image can be converted to
+another mode before saving::
+
+    from PIL import Image
+    im = Image.new("I", (1, 1))
+    im.convert("I;16").save("out.png")
 
 API changes
 ===========

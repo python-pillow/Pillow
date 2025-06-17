@@ -193,6 +193,20 @@ Image.Image.get_child_images()
 method uses an image's file pointer, and so child images could only be retrieved from
 an :py:class:`PIL.ImageFile.ImageFile` instance.
 
+Saving I mode images as PNG
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.3.0
+
+In order to fit the 32 bits of I mode images into PNG, when PNG images can only contain
+at most 16 bits for a channel, Pillow has been clipping the values. Rather than quietly
+changing the data, this is now deprecated. Instead, the image can be converted to
+another mode before saving::
+
+    from PIL import Image
+    im = Image.new("I", (1, 1))
+    im.convert("I;16").save("out.png")
+
 Removed features
 ----------------
 
