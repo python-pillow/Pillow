@@ -1370,7 +1370,7 @@ def _save(
         msg = f"cannot write mode {mode} as PNG"
         raise OSError(msg) from e
     if outmode == "I":
-        deprecate("Saving I mode images as PNG", 13)
+        deprecate("Saving I mode images as PNG", 13, stacklevel=4)
 
     #
     # write minimal PNG file
