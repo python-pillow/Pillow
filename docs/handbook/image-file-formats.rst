@@ -1661,7 +1661,8 @@ handler. ::
 XPM
 ^^^
 
-Pillow reads X pixmap files (mode ``P``) with 256 colors or less.
+Pillow reads X pixmap files as P mode images if there are 256 colors or less, and as
+RGB images otherwise.
 
 .. _xpm-opening:
 
