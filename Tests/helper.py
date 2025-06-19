@@ -101,6 +101,7 @@ def assert_image_equal_tofile(
     msg: str | None = None,
     mode: str | None = None,
 ) -> None:
+    img: Image.Image
     with Image.open(filename) as img:
         if mode:
             img = img.convert(mode)
@@ -144,6 +145,7 @@ def assert_image_similar_tofile(
     epsilon: float,
     msg: str | None = None,
 ) -> None:
+    img: Image.Image
     with Image.open(filename) as img:
         assert_image_similar(a, img, epsilon, msg)
 
