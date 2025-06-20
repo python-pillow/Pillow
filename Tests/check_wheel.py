@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import platform
-import struct
 import sys
 
 from PIL import features
@@ -21,8 +20,8 @@ def test_wheel_modules() -> None:
         except ImportError:
             expected_modules.remove("tkinter")
 
-        # libavif is not available on Windows for x86 and ARM64 architectures
-        if platform.machine() == "ARM64" or struct.calcsize("P") == 4:
+        # libavif is not available on Windows for ARM64 architectures
+        if platform.machine() == "ARM64":
             expected_modules.remove("avif")
 
     assert set(features.get_supported_modules()) == expected_modules
