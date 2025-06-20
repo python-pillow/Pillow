@@ -54,7 +54,7 @@ ImagingSavePPM(Imaging im, const char *outfile) {
 
     fp = fopen(outfile, "wb");
     if (!fp) {
-        (void)ImagingError_OSError();
+        PyErr_SetString(PyExc_OSError, "error when accessing file");
         return 0;
     }
 

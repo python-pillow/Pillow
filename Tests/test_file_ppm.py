@@ -294,9 +294,10 @@ def test_header_token_too_long(tmp_path: Path, data: bytes) -> None:
     with open(path, "wb") as f:
         f.write(data)
 
-    with pytest.raises(ValueError, match="Token too long in file header: "):
+    with pytest.raises(ValueError) as e:
         with Image.open(path):
             pass
+    assert "Token too long in file header: " in repr(e)
 
 
 def test_truncated_file(tmp_path: Path) -> None:
