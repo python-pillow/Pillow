@@ -2,6 +2,7 @@ include *.c
 include *.h
 include *.in
 include *.md
+include *.patch
 include *.py
 include *.rst
 include *.sh
@@ -13,6 +14,8 @@ include LICENSE
 include Makefile
 include tox.ini
 graft Tests
+graft checks
+graft patches
 graft src
 graft depends
 graft winbuild
