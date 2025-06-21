@@ -14,6 +14,7 @@ from PIL import (
     ImageFile,
     JpegImagePlugin,
     TiffImagePlugin,
+    TiffTags,
     UnidentifiedImageError,
 )
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
@@ -899,6 +900,29 @@ class TestFileTiff:
                 description = xmp["xmpmeta"]["RDF"]["Description"]
                 assert description[0]["format"] == "image/tiff"
                 assert description[3]["BitsPerSample"]["Seq"]["li"] == ["8", "8", "8"]
+
+    def test_getxmp_undefined(self, tmp_path: Path) -> None:
+        tmpfile = tmp_path / "temp.tif"
+        im = Image.new("L", (1, 1))
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd.tagtype[700] = TiffTags.UNDEFINED
+        with Image.open("Tests/images/lab.tif") as im_xmp:
+            ifd[700] = im_xmp.info["xmp"]
+        im.save(tmpfile, tiffinfo=ifd)
+
+        with Image.open(tmpfile) as im_reloaded:
+            if ElementTree is None:
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
+                    assert im_reloaded.getxmp() == {}
+            else:
+                assert "xmp" in im_reloaded.info
+                xmp = im_reloaded.getxmp()
+
+                description = xmp["xmpmeta"]["RDF"]["Description"]
+                assert description[0]["format"] == "image/tiff"
 
     def test_get_photoshop_blocks(self) -> None:
         with Image.open("Tests/images/lab.tif") as im:

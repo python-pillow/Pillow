@@ -145,14 +145,16 @@ class TestFileJpeg:
             assert k > 0.9
             # roundtrip, and check again
             im = self.roundtrip(im)
-            c, m, y, k = (x / 255.0 for x in im.getpixel((0, 0)))
+            cmyk = im.getpixel((0, 0))
+            assert isinstance(cmyk, tuple)
+            c, m, y, k = (x / 255.0 for x in cmyk)
             assert c == 0.0
             assert m > 0.8
             assert y > 0.8
             assert k == 0.0
-            c, m, y, k = (
-                x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            )
+            cmyk = im.getpixel((im.size[0] - 1, im.size[1] - 1))
+            assert isinstance(cmyk, tuple)
+            k = cmyk[3] / 255.0
             assert k > 0.9
 
     def test_rgb(self) -> None:

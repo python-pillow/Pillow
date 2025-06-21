@@ -163,7 +163,7 @@ def _find_library_dirs_ldconfig() -> list[str]:
     args: list[str]
     env: dict[str, str]
     expr: str
-    if sys.platform.startswith("linux") or sys.platform.startswith("gnu"):
+    if sys.platform.startswith(("linux", "gnu")):
         if struct.calcsize("l") == 4:
             machine = os.uname()[4] + "-32"
         else:
@@ -623,11 +623,7 @@ class pil_build_ext(build_ext):
 
                 for extension in self.extensions:
                     extension.extra_compile_args = ["-Wno-nullability-completeness"]
-        elif (
-            sys.platform.startswith("linux")
-            or sys.platform.startswith("gnu")
-            or sys.platform.startswith("freebsd")
-        ):
+        elif sys.platform.startswith(("linux", "gnu", "freebsd")):
             for dirname in _find_library_dirs_ldconfig():
                 _add_directory(library_dirs, dirname)
             if sys.platform.startswith("linux") and os.environ.get("ANDROID_ROOT"):
