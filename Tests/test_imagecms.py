@@ -715,3 +715,10 @@ def test_deprecation() -> None:
         ImageCms.ImageCmsTransform(profile, profile, "RGBA;16B", "RGB")
     with pytest.warns(DeprecationWarning):
         ImageCms.ImageCmsTransform(profile, profile, "RGB", "RGBA;16B")
+
+    with pytest.warns(DeprecationWarning):
+        profile.product_name
+    with pytest.warns(DeprecationWarning):
+        profile.product_info
+    with pytest.raises(AttributeError):
+        profile.this_attribute_does_not_exist
