@@ -23,7 +23,7 @@ cd $pillow
 if (!$?) { exit $LASTEXITCODE }
 & $venv\Scripts\$python selftest.py
 if (!$?) { exit $LASTEXITCODE }
-& $venv\Scripts\$python -m pytest -vx Tests\check_wheel.py
+& $venv\Scripts\$python -m pytest -vx checks\check_wheel.py
 if (!$?) { exit $LASTEXITCODE }
 & $venv\Scripts\$python -m pytest -vx Tests
 if (!$?) { exit $LASTEXITCODE }

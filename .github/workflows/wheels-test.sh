@@ -25,8 +25,6 @@ else
     yum install -y fribidi
 fi
 
-python3 -m pip install numpy
-
 if [ ! -d "test-images-main" ]; then
     curl -fsSL -o pillow-test-images.zip https://github.com/python-pillow/test-images/archive/main.zip
     unzip pillow-test-images.zip
@@ -35,5 +33,5 @@ fi
 
 # Runs tests
 python3 selftest.py
-python3 -m pytest Tests/check_wheel.py
+python3 -m pytest checks/check_wheel.py
 python3 -m pytest
