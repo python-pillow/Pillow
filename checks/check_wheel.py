@@ -4,7 +4,6 @@ import platform
 import sys
 
 from PIL import features
-
 from Tests.helper import is_pypy
 
 
