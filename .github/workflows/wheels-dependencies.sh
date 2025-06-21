@@ -3,20 +3,24 @@
 # Safety check - Pillow builds require that CIBW_ARCHS is set, and that it only
 # contains a single value (even though cibuildwheel allows multiple values in
 # CIBW_ARCHS).
-if [[ -z "$CIBW_ARCHS" ]]; then
-    echo "ERROR: Pillow builds require CIBW_ARCHS be defined."
-    exit 1
-fi
-if [[ "$CIBW_ARCHS" == *" "* ]]; then
-    echo "ERROR: Pillow builds only support a single architecture in CIBW_ARCHS."
-    exit 1
-fi
+echo "ENV CHECK: CIBW_ARCHS=$CIBW_ARCHS"
+function check_cibw_archs {
+    if [[ -z "$CIBW_ARCHS" ]]; then
+        echo "ERROR: Pillow builds require CIBW_ARCHS be defined."
+        exit 1
+    fi
+    if [[ "$CIBW_ARCHS" == *" "* ]]; then
+        echo "ERROR: Pillow builds only support a single architecture in CIBW_ARCHS."
+        exit 1
+    fi
+}
 
 # Setup that needs to be done before multibuild utils are invoked. Process
 # potential cross-build platforms before native platforms to ensure that we pick
 # up the cross environment.
 PROJECTDIR=$(pwd)
 if [[ "$CIBW_PLATFORM" == "ios" ]]; then
+    check_cibw_archs
     # On iOS, CIBW_ARCHS is actually a multi-arch - arm64_iphoneos,
     # arm64_iphonesimulator or x86_64_iphonesimulator. Split into the CPU
     # platform, and the iOS SDK.
@@ -65,6 +69,7 @@ if [[ "$CIBW_PLATFORM" == "ios" ]]; then
     HOST_MESON_FLAGS="--cross-file $WORKDIR/meson-cross.txt -Dprefer_static=true -Ddefault_library=static"
 
 elif [[ "$(uname -s)" == "Darwin" ]]; then
+    check_cibw_archs
     # Build macOS dependencies in `build/darwin`
     # Install them into `build/deps/darwin`
     PLAT="${CIBW_ARCHS:-$AUDITWHEEL_ARCH}"
