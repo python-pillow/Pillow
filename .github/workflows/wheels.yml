@@ -95,17 +95,17 @@ jobs:
             manylinux: "manylinux_2_28"
           - name: "iOS arm64 device"
             platform: ios
-            os: macos-13
+            os: macos-latest
             cibw_arch: arm64_iphoneos
             iphoneos_deployment_target: "13.0"
           - name: "iOS arm64 simulator"
             platform: ios
-            os: macos-13
+            os: macos-latest
             cibw_arch: arm64_iphonesimulator
             iphoneos_deployment_target: "13.0"
           - name: "iOS x86_64 simulator"
             platform: ios
-            os: macos-latest
+            os: macos-13
             cibw_arch: x86_64_iphonesimulator
             iphoneos_deployment_target: "13.0"
     steps:
