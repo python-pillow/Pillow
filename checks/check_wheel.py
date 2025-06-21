@@ -50,7 +50,7 @@ def test_wheel_features() -> None:
         expected_features.remove("zlib_ng")
     elif sys.platform == "ios":
         # Can't distribute raqm due to licensing, and there's no system version;
-        # fribid and harfbuzz won't be available if raqm isn't available.
+        # fribidi and harfbuzz won't be available if raqm isn't available.
         expected_features.remove("fribidi")
         expected_features.remove("raqm")
         expected_features.remove("harfbuzz")

@@ -683,7 +683,7 @@ class pil_build_ext(build_ext):
                 _add_directory(include_dirs, os.path.join(best_path, "include"))
 
         elif sys.platform == "darwin":
-            # Alwasy include the macOS SDK path.
+            # Always include the macOS SDK path.
             sdk_path = self.get_macos_sdk_path()
             if sdk_path:
                 _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
