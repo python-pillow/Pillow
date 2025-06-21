@@ -21,16 +21,21 @@ from pybind11.setup_helpers import ParallelCompile
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
-ParallelCompile("MAX_CONCURRENCY").install()
+configuration: dict[str, list[str]] = {}
+
+# parse configuration from _custom_build/backend.py
+while sys.argv[-1].startswith("--pillow-configuration="):
+    _, key, value = sys.argv.pop().split("=", 2)
+    configuration.setdefault(key, []).append(value)
+
+default = int(configuration.get("parallel", ["4"])[-1])
+ParallelCompile("MAX_CONCURRENCY", default).install()
 
 
 def get_version() -> str:
     version_file = "src/PIL/_version.py"
     with open(version_file, encoding="utf-8") as f:
         return f.read().split('"')[1]
-
-
-configuration: dict[str, list[str]] = {}
 
 
 PILLOW_VERSION = get_version()
@@ -1046,11 +1051,6 @@ ext_modules = [
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
 ]
 
-
-# parse configuration from _custom_build/backend.py
-while sys.argv[-1].startswith("--pillow-configuration="):
-    _, key, value = sys.argv.pop().split("=", 2)
-    configuration.setdefault(key, []).append(value)
 
 try:
     setup(
