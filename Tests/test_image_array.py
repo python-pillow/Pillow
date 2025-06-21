@@ -101,7 +101,8 @@ def test_fromarray_strides_without_tobytes() -> None:
 
     with pytest.raises(ValueError):
         wrapped = Wrapper({"shape": (1, 1), "strides": (1, 1)})
-        Image.fromarray(wrapped, "L")
+        with pytest.warns(DeprecationWarning):
+            Image.fromarray(wrapped, "L")
 
 
 def test_fromarray_palette() -> None:
@@ -110,7 +111,8 @@ def test_fromarray_palette() -> None:
     a = numpy.array(i)
 
     # Act
-    out = Image.fromarray(a, "P")
+    with pytest.warns(DeprecationWarning):
+        out = Image.fromarray(a, "P")
 
     # Assert that the Python and C palettes match
     assert out.palette is not None
