@@ -2,8 +2,8 @@
 
 # Safety check - Pillow builds require that CIBW_ARCHS is set, and that it only
 # contains a single value (even though cibuildwheel allows multiple values in
-# CIBW_ARCHS).
-echo "ENV CHECK: CIBW_ARCHS=$CIBW_ARCHS"
+# CIBW_ARCHS). This check doesn't work on Linux because of how the CIBW_ARCHS
+# variable is exposed.
 function check_cibw_archs {
     if [[ -z "$CIBW_ARCHS" ]]; then
         echo "ERROR: Pillow builds require CIBW_ARCHS be defined."
@@ -204,7 +204,7 @@ function build {
         build_simple libXau 1.0.12 https://www.x.org/pub/individual/lib
         build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
     else
-        sed "s/\$\{pc_sysrootdir\}//" $BUILD_PREFIX/share/pkgconfig/xcb-proto.pc > $BUILD_PREFIX/lib/pkgconfig/xcb-proto.pc
+        sed "s/\${pc_sysrootdir\}//" $BUILD_PREFIX/share/pkgconfig/xcb-proto.pc > $BUILD_PREFIX/lib/pkgconfig/xcb-proto.pc
     fi
     build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
 
