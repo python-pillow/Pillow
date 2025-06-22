@@ -70,8 +70,8 @@ now ignore it.
 AVIF support in wheels
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Support for reading and writing AVIF images is now included in Pillow's wheels, with
-libaom available as an encoder and dav1d as a decoder.
+Support for reading and writing AVIF images is now included in Pillow's wheels, except
+for Windows arm64. libaom is available as an encoder and dav1d as a decoder.
 
 Python 3.14 beta
 ^^^^^^^^^^^^^^^^
