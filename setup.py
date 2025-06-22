@@ -628,6 +628,26 @@ class pil_build_ext(build_ext):
                 _add_directory(library_dirs, "/usr/X11/lib")
                 _add_directory(include_dirs, "/usr/X11/include")
 
+            # Add the macOS SDK path.
+            sdk_path = self.get_macos_sdk_path()
+            if sdk_path:
+                _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
+                _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
+
+                for extension in self.extensions:
+                    extension.extra_compile_args = ["-Wno-nullability-completeness"]
+
+        elif sys.platform == "ios":
+            # Add the iOS SDK path.
+            sdk_path = self.get_ios_sdk_path()
+
+            # Add the iOS SDK path.
+            _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
+            _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
+
+            for extension in self.extensions:
+                extension.extra_compile_args = ["-Wno-nullability-completeness"]
+
         elif sys.platform.startswith(("linux", "gnu", "freebsd")):
             for dirname in _find_library_dirs_ldconfig():
                 _add_directory(library_dirs, dirname)
@@ -681,27 +701,6 @@ class pil_build_ext(build_ext):
                 _dbg("Adding %s to search list", best_path)
                 _add_directory(library_dirs, os.path.join(best_path, "lib"))
                 _add_directory(include_dirs, os.path.join(best_path, "include"))
-
-        elif sys.platform == "darwin":
-            # Always include the macOS SDK path.
-            sdk_path = self.get_macos_sdk_path()
-            if sdk_path:
-                _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
-                _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
-
-                for extension in self.extensions:
-                    extension.extra_compile_args = ["-Wno-nullability-completeness"]
-
-        elif sys.platform == "ios":
-            # Always include the iOS SDK path.
-            sdk_path = self.get_ios_sdk_path()
-
-            # Add the iOS SDK path.
-            _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
-            _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
-
-            for extension in self.extensions:
-                extension.extra_compile_args = ["-Wno-nullability-completeness"]
 
         #
         # insert new dirs *before* default libs, to avoid conflicts
