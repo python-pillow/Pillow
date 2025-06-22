@@ -2,7 +2,6 @@ include *.c
 include *.h
 include *.in
 include *.md
-include *.patch
 include *.py
 include *.rst
 include *.sh
