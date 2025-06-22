@@ -42,11 +42,10 @@ if [[ "$CIBW_PLATFORM" == "ios" ]]; then
     fi
 
     IOS_SDK_PATH=$(xcrun --sdk $IOS_SDK --show-sdk-path)
+    CMAKE_SYSTEM_NAME=iOS
     if [[ "$IOS_SDK" == "iphonesimulator" ]]; then
-        CMAKE_SYSTEM_NAME=iOS
         IOS_HOST_TRIPLE=$PLAT-apple-ios$IPHONEOS_DEPLOYMENT_TARGET-simulator
     else
-        CMAKE_SYSTEM_NAME=iOS
         IOS_HOST_TRIPLE=$PLAT-apple-ios$IPHONEOS_DEPLOYMENT_TARGET
     fi
 
