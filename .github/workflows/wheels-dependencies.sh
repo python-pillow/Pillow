@@ -163,8 +163,6 @@ function build_zlib_ng {
 
 function build_brotli {
     if [ -e brotli-stamp ]; then return; fi
-    local name=brotli
-    local version=$BROTLI_VERSION
     local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-$BROTLI_VERSION.tar.gz)
     (cd $out_dir \
         && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib $HOST_CMAKE_FLAGS  . \
@@ -174,10 +172,8 @@ function build_brotli {
 
 function build_harfbuzz {
     if [ -e harfbuzz-stamp ]; then return; fi
-    local name=harfbuzz
-    local version=$HARFBUZZ_VERSION
 
-    python3 -m pip install --disable-pip-version-check meson ninja
+    python3 -m pip install meson ninja
 
     local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/harfbuzz-$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
     (cd $out_dir \
@@ -302,7 +298,7 @@ if [[ -n "$IS_MACOS" ]]; then
 
     # Ensure cmake is available, and that the default prefix used by CMake is
     # the build prefix
-    python3 -m pip install --disable-pip-version-check cmake
+    python3 -m pip install cmake
     export CMAKE_PREFIX_PATH=$BUILD_PREFIX
 
     if [[ -n "$IOS_SDK" ]]; then
