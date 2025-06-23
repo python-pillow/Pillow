@@ -27,7 +27,7 @@ if [[ "$CIBW_PLATFORM" == "ios" ]]; then
     PLAT=$(echo $CIBW_ARCHS | sed "s/\(.*\)_\(.*\)/\1/")
     IOS_SDK=$(echo $CIBW_ARCHS | sed "s/\(.*\)_\(.*\)/\2/")
 
-    # Build iOS builds in `build/iphoneos` or `build/iphonesimulator/`
+    # Build iOS builds in `build/iphoneos` or `build/iphonesimulator`
     # (depending on the build target). Install them into `build/deps/iphoneos`
     # or `build/deps/iphonesimulator`
     WORKDIR=$(pwd)/build/$IOS_SDK
