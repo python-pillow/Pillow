@@ -116,7 +116,7 @@ function build_libavif {
     if [ -n "$IS_MACOS" ]; then
         lto=OFF
         libavif_cmake_flags=(
-            -DCMAKE_C_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto " \
+            -DCMAKE_C_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto" \
             -DCMAKE_CXX_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto" \
             -DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,-S,-x,-dead_strip_dylibs" \
         )
