@@ -97,17 +97,14 @@ jobs:
             platform: ios
             os: macos-latest
             cibw_arch: arm64_iphoneos
-            iphoneos_deployment_target: "13.0"
           - name: "iOS arm64 simulator"
             platform: ios
             os: macos-latest
             cibw_arch: arm64_iphonesimulator
-            iphoneos_deployment_target: "13.0"
           - name: "iOS x86_64 simulator"
             platform: ios
             os: macos-13
             cibw_arch: x86_64_iphonesimulator
-            iphoneos_deployment_target: "13.0"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -135,7 +132,6 @@ jobs:
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
-          IPHONEOS_DEPLOYMENT_TARGET: ${{ matrix.iphoneos_deployment_target }}
 
       - uses: actions/upload-artifact@v4
         with:
