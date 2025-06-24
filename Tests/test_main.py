@@ -7,7 +7,7 @@ import sys
 import pytest
 
 
-@pytest.mark.skipif(sys.platform == "ios", reason="Not required on mobile")
+@pytest.mark.skipif(sys.platform == "ios", reason="Processes not supported on iOS")
 @pytest.mark.parametrize(
     "args, report",
     ((["PIL"], False), (["PIL", "--report"], True), (["PIL.report"], True)),
