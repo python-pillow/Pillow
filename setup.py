@@ -509,11 +509,11 @@ class pil_build_ext(build_ext):
 
             if root is None and pkg_config:
                 if isinstance(lib_name, str):
-                    _dbg(f"Looking for `{lib_name}` using pkg-config.")
+                    _dbg("Looking for `%s` using pkg-config.", lib_name)
                     root = pkg_config(lib_name)
                 else:
                     for lib_name2 in lib_name:
-                        _dbg(f"Looking for `{lib_name2}` using pkg-config.")
+                        _dbg("Looking for `%s` using pkg-config.", lib_name2)
                         root = pkg_config(lib_name2)
                         if root:
                             break
