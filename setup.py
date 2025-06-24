@@ -16,7 +16,6 @@ import subprocess
 import sys
 import warnings
 from collections.abc import Iterator
-from typing import Any
 
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
@@ -148,11 +147,8 @@ class RequiredDependencyException(Exception):
 PLATFORM_MINGW = os.name == "nt" and "GCC" in sys.version
 
 
-def _dbg(s: str, tp: Any = None) -> None:
+def _dbg(s: str) -> None:
     if DEBUG:
-        if tp:
-            print(s % tp)
-            return
         print(s)
 
 
@@ -214,10 +210,10 @@ def _add_directory(
     subdir = os.path.realpath(subdir)
     if os.path.isdir(subdir) and subdir not in path:
         if where is None:
-            _dbg("Appending path %s", subdir)
+            _dbg(f"Appending path {subdir}")
             path.append(subdir)
         else:
-            _dbg("Inserting path %s", subdir)
+            _dbg(f"Inserting path {subdir}")
             path.insert(where, subdir)
     elif subdir in path and where is not None:
         path.remove(subdir)
@@ -226,10 +222,10 @@ def _add_directory(
 
 def _find_include_file(self: pil_build_ext, include: str) -> str | None:
     for directory in self.compiler.include_dirs:
-        _dbg("Checking for include file %s in %s", (include, directory))
+        _dbg(f"Checking for include file {include} in {directory}")
         path = os.path.join(directory, include)
         if os.path.isfile(path):
-            _dbg("Found %s", include)
+            _dbg(f"Found {include}")
             return path
     return None
 
@@ -237,22 +233,22 @@ def _find_include_file(self: pil_build_ext, include: str) -> str | None:
 def _find_library_file(self: pil_build_ext, library: str) -> str | None:
     ret = self.compiler.find_library_file(self.compiler.library_dirs, library)
     if ret:
-        _dbg("Found library %s at %s", (library, ret))
+        _dbg(f"Found library {library} at {ret}")
     else:
-        _dbg("Couldn't find library %s in %s", (library, self.compiler.library_dirs))
+        _dbg(f"Couldn't find library {library} in {self.compiler.library_dirs}")
     return ret
 
 
 def _find_include_dir(self: pil_build_ext, dirname: str, include: str) -> bool | str:
     for directory in self.compiler.include_dirs:
-        _dbg("Checking for include file %s in %s", (include, directory))
+        _dbg(f"Checking for include file {include} in {directory}")
         if os.path.isfile(os.path.join(directory, include)):
-            _dbg("Found %s in %s", (include, directory))
+            _dbg(f"Found {include} in {directory}")
             return True
         subdir = os.path.join(directory, dirname)
-        _dbg("Checking for include file %s in %s", (include, subdir))
+        _dbg(f"Checking for include file {include} in {subdir}")
         if os.path.isfile(os.path.join(subdir, include)):
-            _dbg("Found %s in %s", (include, subdir))
+            _dbg(f"Found {include} in {subdir}")
             return subdir
     return False
 
@@ -396,7 +392,7 @@ class pil_build_ext(build_ext):
             if getattr(self, f"disable_{x}"):
                 self.feature.set(x, False)
                 self.feature.required.discard(x)
-                _dbg("Disabling %s", x)
+                _dbg(f"Disabling {x}")
                 if getattr(self, f"enable_{x}"):
                     msg = f"Conflicting options: '-C {x}=enable' and '-C {x}=disable'"
                     raise ValueError(msg)
@@ -410,7 +406,7 @@ class pil_build_ext(build_ext):
                         raise ValueError(msg)
                     setattr(self, "disable_raqm", True)
             if getattr(self, f"enable_{x}"):
-                _dbg("Requiring %s", x)
+                _dbg(f"Requiring {x}")
                 self.feature.required.add(x)
                 if x == "raqm":
                     _dbg("'-C raqm=enable' implies '-C freetype=enable'")
@@ -425,7 +421,7 @@ class pil_build_ext(build_ext):
                         f"Conflicting options: '-C {x}=vendor' and not '-C raqm=vendor'"
                     )
                     raise ValueError(msg)
-                _dbg("Using vendored version of %s", x)
+                _dbg(f"Using vendored version of {x}")
                 self.feature.vendor.add(x)
 
     def _update_extension(
@@ -673,7 +669,7 @@ class pil_build_ext(build_ext):
                         best_path = os.path.join(program_files, name)
 
             if best_path:
-                _dbg("Adding %s to search list", best_path)
+                _dbg(f"Adding {best_path} to search list")
                 _add_directory(library_dirs, os.path.join(best_path, "lib"))
                 _add_directory(include_dirs, os.path.join(best_path, "include"))
 
@@ -715,7 +711,7 @@ class pil_build_ext(build_ext):
 
             # Find the best version
             for directory in self.compiler.include_dirs:
-                _dbg("Checking for openjpeg-#.# in %s", directory)
+                _dbg(f"Checking for openjpeg-#.# in {directory}")
                 try:
                     listdir = os.listdir(directory)
                 except Exception:
@@ -725,14 +721,14 @@ class pil_build_ext(build_ext):
                     if name.startswith("openjpeg-") and os.path.isfile(
                         os.path.join(directory, name, "openjpeg.h")
                     ):
-                        _dbg("Found openjpeg.h in %s/%s", (directory, name))
+                        _dbg(f"Found openjpeg.h in {directory}/{name}")
                         version = tuple(int(x) for x in name[9:].split("."))
                         if best_version is None or version > best_version:
                             best_version = version
                             best_path = os.path.join(directory, name)
                             _dbg(
-                                "Best openjpeg version %s so far in %s",
-                                (best_version, best_path),
+                                f"Best openjpeg version {best_version} "
+                                f"so far in {best_path}"
                             )
 
             if best_version and _find_library_file(self, "openjp2"):
@@ -767,16 +763,16 @@ class pil_build_ext(build_ext):
                 # look for freetype2 include files
                 freetype_version = 0
                 for subdir in self.compiler.include_dirs:
-                    _dbg("Checking for include file %s in %s", ("ft2build.h", subdir))
+                    _dbg(f"Checking for include file ft2build.h in {subdir}")
                     if os.path.isfile(os.path.join(subdir, "ft2build.h")):
-                        _dbg("Found %s in %s", ("ft2build.h", subdir))
+                        _dbg(f"Found ft2build.h in {subdir}")
                         freetype_version = 21
                         subdir = os.path.join(subdir, "freetype2")
                         break
                     subdir = os.path.join(subdir, "freetype2")
-                    _dbg("Checking for include file %s in %s", ("ft2build.h", subdir))
+                    _dbg(f"Checking for include file ft2build.h in {subdir}")
                     if os.path.isfile(os.path.join(subdir, "ft2build.h")):
-                        _dbg("Found %s in %s", ("ft2build.h", subdir))
+                        _dbg(f"Found ft2build.h in {subdir}")
                         freetype_version = 21
                         break
                 if freetype_version:
