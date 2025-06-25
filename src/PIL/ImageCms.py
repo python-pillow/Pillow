@@ -248,6 +248,9 @@ class ImageCmsProfile:
             low-level profile object
 
         """
+        self.filename = None
+        self.product_name = None  # profile.product_name
+        self.product_info = None  # profile.product_info
 
         if isinstance(profile, str):
             if sys.platform == "win32":
@@ -256,22 +259,17 @@ class ImageCmsProfile:
                     profile_bytes_path.decode("ascii")
                 except UnicodeDecodeError:
                     with open(profile, "rb") as f:
-                        self._set(core.profile_frombytes(f.read()))
+                        self.profile = core.profile_frombytes(f.read())
                     return
-            self._set(core.profile_open(profile), profile)
+            self.filename = profile
+            self.profile = core.profile_open(profile)
         elif hasattr(profile, "read"):
-            self._set(core.profile_frombytes(profile.read()))
+            self.profile = core.profile_frombytes(profile.read())
         elif isinstance(profile, core.CmsProfile):
-            self._set(profile)
+            self.profile = profile
         else:
             msg = "Invalid type for Profile"  # type: ignore[unreachable]
             raise TypeError(msg)
-
-    def _set(self, profile: core.CmsProfile, filename: str | None = None) -> None:
-        self.profile = profile
-        self.filename = filename
-        self.product_name = None  # profile.product_name
-        self.product_info = None  # profile.product_info
 
     def tobytes(self) -> bytes:
         """

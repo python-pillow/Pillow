@@ -767,18 +767,20 @@ class Image:
 
         .. warning::
 
-            This method returns the raw image data from the internal
-            storage.  For compressed image data (e.g. PNG, JPEG) use
-            :meth:`~.save`, with a BytesIO parameter for in-memory
-            data.
+            This method returns raw image data derived from Pillow's internal
+            storage. For compressed image data (e.g. PNG, JPEG) use
+            :meth:`~.save`, with a BytesIO parameter for in-memory data.
 
-        :param encoder_name: What encoder to use.  The default is to
-                             use the standard "raw" encoder.
+        :param encoder_name: What encoder to use.
 
-                             A list of C encoders can be seen under
-                             codecs section of the function array in
-                             :file:`_imaging.c`. Python encoders are
-                             registered within the relevant plugins.
+                             The default is to use the standard "raw" encoder.
+                             To see how this packs pixel data into the returned
+                             bytes, see :file:`libImaging/Pack.c`.
+
+                             A list of C encoders can be seen under codecs
+                             section of the function array in
+                             :file:`_imaging.c`. Python encoders are registered
+                             within the relevant plugins.
         :param args: Extra arguments to the encoder.
         :returns: A :py:class:`bytes` object.
         """
@@ -800,7 +802,9 @@ class Image:
         e = _getencoder(self.mode, encoder_name, encoder_args)
         e.setimage(self.im)
 
-        bufsize = max(65536, self.size[0] * 4)  # see RawEncode.c
+        from . import ImageFile
+
+        bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
 
         output = []
         while True:
@@ -1507,7 +1511,7 @@ class Image:
             return {}
         if "xmp" not in self.info:
             return {}
-        root = ElementTree.fromstring(self.info["xmp"].rstrip(b"\x00"))
+        root = ElementTree.fromstring(self.info["xmp"].rstrip(b"\x00 "))
         return {get_name(root.tag): get_value(root)}
 
     def getexif(self) -> Exif:
@@ -1538,10 +1542,11 @@ class Image:
         # XMP tags
         if ExifTags.Base.Orientation not in self._exif:
             xmp_tags = self.info.get("XML:com.adobe.xmp")
+            pattern: str | bytes = r'tiff:Orientation(="|>)([0-9])'
             if not xmp_tags and (xmp_tags := self.info.get("xmp")):
-                xmp_tags = xmp_tags.decode("utf-8")
+                pattern = rb'tiff:Orientation(="|>)([0-9])'
             if xmp_tags:
-                match = re.search(r'tiff:Orientation(="|>)([0-9])', xmp_tags)
+                match = re.search(pattern, xmp_tags)
                 if match:
                     self._exif[ExifTags.Base.Orientation] = int(match[2])
 
@@ -3267,7 +3272,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
 
     :param obj: Object with array interface
     :param mode: Optional mode to use when reading ``obj``. Will be determined from
-      type if ``None``.
+      type if ``None``. Deprecated.
 
       This will not be used to convert the data after reading, but will be used to
       change how the data is read::
@@ -3302,6 +3307,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
             msg = f"Cannot handle this data type: {typekey_shape}, {typestr}"
             raise TypeError(msg) from e
     else:
+        deprecate("'mode' parameter", 13)
         rawmode = mode
     if mode in ["1", "L", "I", "P", "F"]:
         ndmax = 2

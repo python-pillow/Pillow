@@ -31,7 +31,7 @@ import os
 import subprocess
 from enum import IntEnum
 from functools import cached_property
-from typing import IO, Any, Literal, NamedTuple, Union
+from typing import IO, Any, Literal, NamedTuple, Union, cast
 
 from . import (
     Image,
@@ -350,12 +350,15 @@ class GifImageFile(ImageFile.ImageFile):
             if self._frame_palette:
                 if color * 3 + 3 > len(self._frame_palette.palette):
                     color = 0
-                return tuple(self._frame_palette.palette[color * 3 : color * 3 + 3])
+                return cast(
+                    tuple[int, int, int],
+                    tuple(self._frame_palette.palette[color * 3 : color * 3 + 3]),
+                )
             else:
                 return (color, color, color)
 
         self.dispose = None
-        self.dispose_extent = frame_dispose_extent
+        self.dispose_extent: tuple[int, int, int, int] | None = frame_dispose_extent
         if self.dispose_extent and self.disposal_method >= 2:
             try:
                 if self.disposal_method == 2:
