@@ -197,8 +197,9 @@ ImagingPoint(Imaging imIn, const char *mode, const void *table) {
     return imOut;
 
 mode_mismatch:
-    return (Imaging
-    )ImagingError_ValueError("point operation not supported for this mode");
+    return (Imaging)ImagingError_ValueError(
+        "point operation not supported for this mode"
+    );
 }
 
 Imaging

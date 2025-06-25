@@ -602,8 +602,9 @@ ImagingBorrowArrow(
     }
 
     if (!borrowed_buffer) {
-        return (Imaging
-        )ImagingError_ValueError("Arrow Array, exactly 2 buffers required");
+        return (Imaging)ImagingError_ValueError(
+            "Arrow Array, exactly 2 buffers required"
+        );
     }
 
     for (y = i = 0; y < im->ysize; y++) {
@@ -644,7 +645,7 @@ ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
         return im;
     }
 
-    ImagingError_Clear();
+    PyErr_Clear();
 
     // Try to allocate the image once more with smallest possible block size
     MUTEX_LOCK(&ImagingDefaultArena.mutex);

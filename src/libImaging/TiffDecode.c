@@ -557,7 +557,8 @@ _decodeStrip(
                     (tdata_t)state->buffer,
                     strip_size
                 ) == -1) {
-                TRACE(("Decode Error, strip %d\n", TIFFComputeStrip(tiff, state->y, 0))
+                TRACE(
+                    ("Decode Error, strip %d\n", TIFFComputeStrip(tiff, state->y, 0))
                 );
                 state->errcode = IMAGING_CODEC_BROKEN;
                 return -1;
@@ -1031,7 +1032,10 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
                 TRACE(("Encode Error, row %d\n", state->y));
                 state->errcode = IMAGING_CODEC_BROKEN;
 
-                if (!clientstate->fp) {
+                if (clientstate->fp) {
+                    TIFFCleanup(tiff);
+                    clientstate->tiff = NULL;
+                } else {
                     free(clientstate->data);
                 }
                 return -1;

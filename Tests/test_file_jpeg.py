@@ -145,14 +145,16 @@ class TestFileJpeg:
             assert k > 0.9
             # roundtrip, and check again
             im = self.roundtrip(im)
-            c, m, y, k = (x / 255.0 for x in im.getpixel((0, 0)))
+            cmyk = im.getpixel((0, 0))
+            assert isinstance(cmyk, tuple)
+            c, m, y, k = (x / 255.0 for x in cmyk)
             assert c == 0.0
             assert m > 0.8
             assert y > 0.8
             assert k == 0.0
-            c, m, y, k = (
-                x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            )
+            cmyk = im.getpixel((im.size[0] - 1, im.size[1] - 1))
+            assert isinstance(cmyk, tuple)
+            k = cmyk[3] / 255.0
             assert k > 0.9
 
     def test_rgb(self) -> None:
@@ -1065,10 +1067,16 @@ class TestFileJpeg:
         for marker in b"\xff\xd8", b"\xff\xd9":
             assert marker in data[1]
             assert marker in data[2]
-        # DHT, DQT
-        for marker in b"\xff\xc4", b"\xff\xdb":
+
+        # DQT
+        markers = [b"\xff\xdb"]
+        if features.check_feature("libjpeg_turbo"):
+            # DHT
+            markers.append(b"\xff\xc4")
+        for marker in markers:
             assert marker in data[1]
             assert marker not in data[2]
+
         # SOF0, SOS, APP0 (JFIF header)
         for marker in b"\xff\xc0", b"\xff\xda", b"\xff\xe0":
             assert marker not in data[1]

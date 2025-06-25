@@ -16,7 +16,6 @@ import subprocess
 import sys
 import warnings
 from collections.abc import Iterator
-from typing import Any
 
 from pybind11.setup_helpers import ParallelCompile
 from setuptools import Extension, setup
@@ -151,7 +150,7 @@ class RequiredDependencyException(Exception):
 PLATFORM_MINGW = os.name == "nt" and "GCC" in sys.version
 
 
-def _dbg(s: str, tp: Any = None) -> None:
+def _dbg(s: str, tp: str | tuple[str, ...] | None = None) -> None:
     if DEBUG:
         if tp:
             print(s % tp)
@@ -166,7 +165,7 @@ def _find_library_dirs_ldconfig() -> list[str]:
     args: list[str]
     env: dict[str, str]
     expr: str
-    if sys.platform.startswith("linux") or sys.platform.startswith("gnu"):
+    if sys.platform.startswith(("linux", "gnu")):
         if struct.calcsize("l") == 4:
             machine = os.uname()[4] + "-32"
         else:
@@ -512,11 +511,11 @@ class pil_build_ext(build_ext):
 
             if root is None and pkg_config:
                 if isinstance(lib_name, str):
-                    _dbg(f"Looking for `{lib_name}` using pkg-config.")
+                    _dbg("Looking for `%s` using pkg-config.", lib_name)
                     root = pkg_config(lib_name)
                 else:
                     for lib_name2 in lib_name:
-                        _dbg(f"Looking for `{lib_name2}` using pkg-config.")
+                        _dbg("Looking for `%s` using pkg-config.", lib_name2)
                         root = pkg_config(lib_name2)
                         if root:
                             break
@@ -626,11 +625,7 @@ class pil_build_ext(build_ext):
 
                 for extension in self.extensions:
                     extension.extra_compile_args = ["-Wno-nullability-completeness"]
-        elif (
-            sys.platform.startswith("linux")
-            or sys.platform.startswith("gnu")
-            or sys.platform.startswith("freebsd")
-        ):
+        elif sys.platform.startswith(("linux", "gnu", "freebsd")):
             for dirname in _find_library_dirs_ldconfig():
                 _add_directory(library_dirs, dirname)
             if sys.platform.startswith("linux") and os.environ.get("ANDROID_ROOT"):
@@ -739,7 +734,7 @@ class pil_build_ext(build_ext):
                             best_path = os.path.join(directory, name)
                             _dbg(
                                 "Best openjpeg version %s so far in %s",
-                                (best_version, best_path),
+                                (str(best_version), best_path),
                             )
 
             if best_version and _find_library_file(self, "openjp2"):
@@ -761,12 +756,12 @@ class pil_build_ext(build_ext):
         if feature.want("tiff"):
             _dbg("Looking for tiff")
             if _find_include_file(self, "tiff.h"):
-                if _find_library_file(self, "tiff"):
-                    feature.set("tiff", "tiff")
                 if sys.platform in ["win32", "darwin"] and _find_library_file(
                     self, "libtiff"
                 ):
                     feature.set("tiff", "libtiff")
+                elif _find_library_file(self, "tiff"):
+                    feature.set("tiff", "tiff")
 
         if feature.want("freetype"):
             _dbg("Looking for freetype")
