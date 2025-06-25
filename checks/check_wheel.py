@@ -51,8 +51,6 @@ def test_wheel_features() -> None:
     elif sys.platform == "ios":
         # Can't distribute raqm due to licensing, and there's no system version;
         # fribidi and harfbuzz won't be available if raqm isn't available.
-        expected_features.remove("fribidi")
-        expected_features.remove("raqm")
-        expected_features.remove("harfbuzz")
+        expected_features -= {"raqm", "fribidi", "harfbuzz"}
 
     assert set(features.get_supported_features()) == expected_features

@@ -43,10 +43,9 @@ if [[ "$CIBW_PLATFORM" == "ios" ]]; then
 
     IOS_SDK_PATH=$(xcrun --sdk $IOS_SDK --show-sdk-path)
     CMAKE_SYSTEM_NAME=iOS
+    IOS_HOST_TRIPLE=$PLAT-apple-ios$IPHONEOS_DEPLOYMENT_TARGET
     if [[ "$IOS_SDK" == "iphonesimulator" ]]; then
-        IOS_HOST_TRIPLE=$PLAT-apple-ios$IPHONEOS_DEPLOYMENT_TARGET-simulator
-    else
-        IOS_HOST_TRIPLE=$PLAT-apple-ios$IPHONEOS_DEPLOYMENT_TARGET
+        IOS_HOST_TRIPLE=$IOS_HOST_TRIPLE-simulator
     fi
 
     # GNU Autotools doesn't recognize the existence of arm64-apple-ios-simulator
@@ -171,7 +170,6 @@ function build_brotli {
 
 function build_harfbuzz {
     if [ -e harfbuzz-stamp ]; then return; fi
-
     python3 -m pip install meson ninja
 
     local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/harfbuzz-$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
