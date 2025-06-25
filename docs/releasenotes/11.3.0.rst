@@ -1,0 +1,89 @@
+11.3.0
+------
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+Backwards incompatible changes
+==============================
+
+TODO
+^^^^
+
+Deprecations
+============
+
+Image.fromarray mode parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` has been deprecated. The
+mode can be automatically determined from the object's shape and type instead.
+
+Saving I mode images as PNG
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In order to fit the 32 bits of I mode images into PNG, when PNG images can only contain
+at most 16 bits for a channel, Pillow has been clipping the values. Rather than quietly
+changing the data, this is now deprecated. Instead, the image can be converted to
+another mode before saving::
+
+    from PIL import Image
+    im = Image.new("I", (1, 1))
+    im.convert("I;16").save("out.png")
+
+API changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API additions
+=============
+
+TODO
+^^^^
+
+TODO
+
+Other changes
+=============
+
+Added QOI saving
+^^^^^^^^^^^^^^^^
+
+Support has been added for saving QOI images. ``colorspace`` can be used to specify the
+colorspace as sRGB with linear alpha, e.g. ``im.save("out.qoi", colorspace="sRGB")``.
+By default, all channels will be linear.
+
+Support using more screenshot utilities with ImageGrab on Linux
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageGrab.grab` is now able to use GNOME Screenshot, grim or Spectacle
+on Linux in order to take a snapshot of the screen.
+
+Do not build against libavif < 1
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow only supports libavif 1.0.0 or later. In order to prevent errors when building
+from source, if a user happens to have an earlier libavif on their system, Pillow will
+now ignore it.
+
+Python 3.14 beta
+^^^^^^^^^^^^^^^^
+
+To help other projects prepare for Python 3.14, wheels are now built for the
+3.14 beta as a preview. This is not official support for Python 3.14, but rather
+an opportunity for you to test how Pillow works with the beta and report any
+problems.
