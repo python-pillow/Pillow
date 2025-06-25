@@ -752,10 +752,11 @@ class TestFileJpeg:
 
         # Act
         # Shouldn't raise error
-        fn = "Tests/images/sugarshack_bad_mpo_header.jpg"
-        with pytest.warns(UserWarning, Image.open, fn) as im:
-            # Assert
-            assert im.format == "JPEG"
+        with pytest.warns(UserWarning, match="malformed MPO file"):
+            im = Image.open("Tests/images/sugarshack_bad_mpo_header.jpg")
+
+        # Assert
+        assert im.format == "JPEG"
 
     @pytest.mark.parametrize("mode", ("1", "L", "RGB", "RGBX", "CMYK", "YCbCr"))
     def test_save_correct_modes(self, mode: str) -> None:
@@ -1103,9 +1104,9 @@ class TestFileJpeg:
     def test_deprecation(self) -> None:
         with Image.open(TEST_FILE) as im:
             assert isinstance(im, JpegImagePlugin.JpegImageFile)
-            with pytest.warns(DeprecationWarning):
+            with pytest.warns(DeprecationWarning, match="huffman_ac"):
                 assert im.huffman_ac == {}
-            with pytest.warns(DeprecationWarning):
+            with pytest.warns(DeprecationWarning, match="huffman_dc"):
                 assert im.huffman_dc == {}
 
 

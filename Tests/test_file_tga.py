@@ -190,7 +190,9 @@ def test_save_id_section(tmp_path: Path) -> None:
 
     # Save with custom id section greater than 255 characters
     id_section = b"Test content" * 25
-    with pytest.warns(UserWarning):
+    with pytest.warns(
+        UserWarning, match="id_section has been trimmed to 255 characters"
+    ):
         im.save(out, id_section=id_section)
 
     with Image.open(out) as test_im:

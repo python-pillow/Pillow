@@ -221,7 +221,7 @@ class TestFileTiff:
             assert isinstance(im, JpegImagePlugin.JpegImageFile)
 
             # Should not raise struct.error.
-            with pytest.warns(UserWarning):
+            with pytest.warns(UserWarning, match="Corrupt EXIF data"):
                 im._getexif()
 
     def test_save_rgba(self, tmp_path: Path) -> None:
@@ -1014,7 +1014,7 @@ class TestFileTiff:
     @timeout_unless_slower_valgrind(2)
     def test_oom(self, test_file: str) -> None:
         with pytest.raises(UnidentifiedImageError):
-            with pytest.warns(UserWarning):
+            with pytest.warns(UserWarning, match="Corrupt EXIF data"):
                 with Image.open(test_file):
                     pass
 

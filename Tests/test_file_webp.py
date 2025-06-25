@@ -33,8 +33,8 @@ class TestUnsupportedWebp:
             monkeypatch.setattr(WebPImagePlugin, "SUPPORTED", False)
 
         file_path = "Tests/images/hopper.webp"
-        with pytest.warns(UserWarning):
-            with pytest.raises(OSError):
+        with pytest.raises(OSError):
+            with pytest.warns(UserWarning, match="WEBP support not installed"):
                 with Image.open(file_path):
                     pass
 

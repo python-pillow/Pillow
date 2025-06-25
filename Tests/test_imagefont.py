@@ -1175,15 +1175,15 @@ def test_oom(test_file: str) -> None:
 
 def test_raqm_missing_warning(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(ImageFont.core, "HAVE_RAQM", False)
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(
+        UserWarning,
+        match="Raqm layout was requested, but Raqm is not available. "
+        "Falling back to basic layout.",
+    ):
         font = ImageFont.truetype(
             FONT_PATH, FONT_SIZE, layout_engine=ImageFont.Layout.RAQM
         )
     assert font.layout_engine == ImageFont.Layout.BASIC
-    assert str(record[-1].message) == (
-        "Raqm layout was requested, but Raqm is not available. "
-        "Falling back to basic layout."
-    )
 
 
 @pytest.mark.parametrize("size", [-1, 0])
@@ -1202,5 +1202,5 @@ def test_freetype_deprecation(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(features, "version_module", fake_version_module)
 
     # Act / Assert
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning, match="FreeType 2.9.0"):
         ImageFont.truetype(FONT_PATH, FONT_SIZE)
