@@ -28,7 +28,7 @@ while sys.argv[-1].startswith("--pillow-configuration="):
     _, key, value = sys.argv.pop().split("=", 2)
     configuration.setdefault(key, []).append(value)
 
-default = int(configuration.get("parallel", ["4"])[-1])
+default = int(configuration.get("parallel", ["0"])[-1])
 ParallelCompile("MAX_CONCURRENCY", default).install()
 
 
@@ -394,9 +394,7 @@ class pil_build_ext(build_ext):
             cpu_count = os.cpu_count()
             if cpu_count is not None:
                 try:
-                    self.parallel = int(
-                        os.environ.get("MAX_CONCURRENCY", min(4, cpu_count))
-                    )
+                    self.parallel = int(os.environ.get("MAX_CONCURRENCY", cpu_count))
                 except TypeError:
                     pass
         for x in self.feature:
