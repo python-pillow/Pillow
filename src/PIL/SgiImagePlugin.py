@@ -155,9 +155,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     z = len(im.mode)
     # Number of dimensions (x,y,z)
     if im.mode == "L":
-        dim = 1 if y == 1 else 2
+        dimension = 1 if y == 1 else 2
     else:
-        dim = 3
+        dimension = 3
 
     # Minimum Byte value
     pinmin = 0
@@ -172,7 +172,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.write(struct.pack(">h", magic_number))
     fp.write(o8(rle))
     fp.write(o8(bpc))
-    fp.write(struct.pack(">H", dim))
+    fp.write(struct.pack(">H", dimension))
     fp.write(struct.pack(">H", x))
     fp.write(struct.pack(">H", y))
     fp.write(struct.pack(">H", z))
