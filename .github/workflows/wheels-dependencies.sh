@@ -43,10 +43,9 @@ if [[ "$CIBW_PLATFORM" == "ios" ]]; then
 
     IOS_SDK_PATH=$(xcrun --sdk $IOS_SDK --show-sdk-path)
     CMAKE_SYSTEM_NAME=iOS
+    IOS_HOST_TRIPLE=$PLAT-apple-ios$IPHONEOS_DEPLOYMENT_TARGET
     if [[ "$IOS_SDK" == "iphonesimulator" ]]; then
-        IOS_HOST_TRIPLE=$PLAT-apple-ios$IPHONEOS_DEPLOYMENT_TARGET-simulator
-    else
-        IOS_HOST_TRIPLE=$PLAT-apple-ios$IPHONEOS_DEPLOYMENT_TARGET
+        IOS_HOST_TRIPLE=$IOS_HOST_TRIPLE-simulator
     fi
 
     # GNU Autotools doesn't recognize the existence of arm64-apple-ios-simulator
@@ -60,11 +59,11 @@ if [[ "$CIBW_PLATFORM" == "ios" ]]; then
     # Cmake has native support for iOS. However, most of that support is based
     # on using the Xcode builder, which isn't very helpful for most of Pillow's
     # dependencies. Therefore, we lean on the OSX configurations, plus CC/CFLAGS
-    # etc to ensure the right sysroot is selected.
+    # etc. to ensure the right sysroot is selected.
     HOST_CMAKE_FLAGS="-DCMAKE_SYSTEM_NAME=$CMAKE_SYSTEM_NAME -DCMAKE_SYSTEM_PROCESSOR=$GNU_ARCH -DCMAKE_OSX_DEPLOYMENT_TARGET=$IPHONEOS_DEPLOYMENT_TARGET -DCMAKE_OSX_SYSROOT=$IOS_SDK_PATH -DBUILD_SHARED_LIBS=NO"
 
     # Meson needs to be pointed at a cross-platform configuration file
-    # This will be generated once CC etc have been evaluated.
+    # This will be generated once CC etc. have been evaluated.
     HOST_MESON_FLAGS="--cross-file $WORKDIR/meson-cross.txt -Dprefer_static=true -Ddefault_library=static"
 
 elif [[ "$(uname -s)" == "Darwin" ]]; then
@@ -172,7 +171,6 @@ function build_brotli {
 
 function build_harfbuzz {
     if [ -e harfbuzz-stamp ]; then return; fi
-
     python3 -m pip install meson ninja
 
     local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/harfbuzz-$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
@@ -346,7 +344,7 @@ if [[ -n "$IS_MACOS" ]]; then
     mkdir -p "$BUILD_PREFIX/lib"
 
     # Ensure pkg-config is available. This is done *before* setting CC, CFLAGS
-    # etc to ensure that the build is *always* a macOS build, even when building
+    # etc. to ensure that the build is *always* a macOS build, even when building
     # for iOS.
     build_pkg_config
 
@@ -372,7 +370,7 @@ if [[ -n "$IS_MACOS" ]]; then
         # behavior into clang.
         unset IPHONEOS_DEPLOYMENT_TARGET
 
-        # Now that we know CC etc, we can create a meson cross-configuration file
+        # Now that we know CC etc., we can create a meson cross-configuration file
         create_meson_cross_config
     fi
 fi

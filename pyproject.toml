@@ -112,11 +112,11 @@ test-requires = [
 xbuild-tools = [  ]
 
 [tool.cibuildwheel.macos]
-# Disable platform guessing on macOS to avoid picking up homebrew etc
+# Disable platform guessing on macOS to avoid picking up Homebrew etc.
 config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable platform-guessing=disable"
 
 [tool.cibuildwheel.macos.environment]
-# Isolate macOS build environment from homebrew etc
+# Isolate macOS build environment from Homebrew etc.
 PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
 
 [tool.cibuildwheel.ios]
@@ -131,7 +131,10 @@ test-sources = [
   "pyproject.toml",
   "selftest.py",
 ]
-test-command = "python -m pytest -vv selftest.py checks/check_wheel.py Tests"
+test-command = [
+  "python -m selftest",
+  "python -m pytest checks/check_wheel.py Tests",
+]
 
 # There's no numpy wheel for iOS (yet...)
 test-requires = [  ]
