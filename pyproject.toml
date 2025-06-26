@@ -131,7 +131,10 @@ test-sources = [
   "pyproject.toml",
   "selftest.py",
 ]
-test-command = "python -m pytest -vv selftest.py checks/check_wheel.py Tests"
+test-command = [
+  "python -m selftest",
+  "python -m pytest checks/check_wheel.py Tests",
+]
 
 # There's no numpy wheel for iOS (yet...)
 test-requires = [  ]
