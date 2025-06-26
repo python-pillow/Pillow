@@ -23,6 +23,12 @@ TODO
 Deprecations
 ============
 
+Image.fromarray mode parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` has been deprecated. The
+mode can be automatically determined from the object's shape and type instead.
+
 Saving I mode images as PNG
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -73,6 +79,12 @@ Do not build against libavif < 1
 Pillow only supports libavif 1.0.0 or later. In order to prevent errors when building
 from source, if a user happens to have an earlier libavif on their system, Pillow will
 now ignore it.
+
+AVIF support in wheels
+^^^^^^^^^^^^^^^^^^^^^^
+
+Support for reading and writing AVIF images is now included in Pillow's wheels, except
+for Windows ARM64. libaom is available as an encoder and dav1d as a decoder.
 
 Python 3.14 beta
 ^^^^^^^^^^^^^^^^

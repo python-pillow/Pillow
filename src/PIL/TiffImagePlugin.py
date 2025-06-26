@@ -1680,7 +1680,7 @@ SAVE_INFO = {
     "PA": ("PA", II, 3, 1, (8, 8), 2),
     "I": ("I;32S", II, 1, 2, (32,), None),
     "I;16": ("I;16", II, 1, 1, (16,), None),
-    "I;16S": ("I;16S", II, 1, 2, (16,), None),
+    "I;16L": ("I;16L", II, 1, 1, (16,), None),
     "F": ("F;32F", II, 1, 3, (32,), None),
     "RGB": ("RGB", II, 2, 1, (8, 8, 8), None),
     "RGBX": ("RGBX", II, 2, 1, (8, 8, 8, 8), 0),
@@ -1688,10 +1688,7 @@ SAVE_INFO = {
     "CMYK": ("CMYK", II, 5, 1, (8, 8, 8, 8), None),
     "YCbCr": ("YCbCr", II, 6, 1, (8, 8, 8), None),
     "LAB": ("LAB", II, 8, 1, (8, 8, 8), None),
-    "I;32BS": ("I;32BS", MM, 1, 2, (32,), None),
     "I;16B": ("I;16B", MM, 1, 1, (16,), None),
-    "I;16BS": ("I;16BS", MM, 1, 2, (16,), None),
-    "F;32BF": ("F;32BF", MM, 1, 3, (32,), None),
 }
 
 
@@ -1967,7 +1964,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # we're storing image byte order. So, if the rawmode
         # contains I;16, we need to convert from native to image
         # byte order.
-        if im.mode in ("I;16B", "I;16"):
+        if im.mode in ("I;16", "I;16B", "I;16L"):
             rawmode = "I;16N"
 
         # Pass tags as sorted list so that the tags are set in a fixed order.

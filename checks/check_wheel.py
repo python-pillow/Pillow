@@ -8,7 +8,7 @@ from Tests.helper import is_pypy
 
 
 def test_wheel_modules() -> None:
-    expected_modules = {"pil", "tkinter", "freetype2", "littlecms2", "webp"}
+    expected_modules = {"pil", "tkinter", "freetype2", "littlecms2", "webp", "avif"}
 
     if sys.platform == "win32":
         # tkinter is not available in cibuildwheel installed CPython on Windows
@@ -21,6 +21,10 @@ def test_wheel_modules() -> None:
     elif sys.platform == "ios":
         # tkinter is not available on iOS
         expected_modules.remove("tkinter")
+
+        # libavif is not available on Windows for ARM64 architectures
+        if platform.machine() == "ARM64":
+            expected_modules.remove("avif")
 
     assert set(features.get_supported_modules()) == expected_modules
 

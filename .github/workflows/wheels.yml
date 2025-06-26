@@ -180,7 +180,7 @@ jobs:
           # Install extra test images
           xcopy /S /Y Tests\test-images\* Tests\images
 
-          & python.exe winbuild\build_prepare.py -v --no-imagequant --no-avif --architecture=${{ matrix.cibw_arch }}
+          & python.exe winbuild\build_prepare.py -v --no-imagequant --architecture=${{ matrix.cibw_arch }}
         shell: pwsh
 
       - name: Build wheels
