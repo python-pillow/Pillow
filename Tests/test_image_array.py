@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import pytest
 from packaging.version import parse as parse_version
@@ -13,6 +13,7 @@ numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 
 im = hopper().resize((128, 100))
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     import numpy.typing as npt
 
