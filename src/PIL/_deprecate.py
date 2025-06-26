@@ -12,6 +12,7 @@ def deprecate(
     *,
     action: str | None = None,
     plural: bool = False,
+    stacklevel: int = 3,
 ) -> None:
     """
     Deprecations helper.
@@ -67,5 +68,5 @@ def deprecate(
     warnings.warn(
         f"{deprecated} {is_} deprecated and will be removed in {removed}{action}",
         DeprecationWarning,
-        stacklevel=3,
+        stacklevel=stacklevel,
     )

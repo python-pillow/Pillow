@@ -37,6 +37,11 @@ def test_sanity(tmp_path: Path) -> None:
         im.save(f)
 
 
+def test_p_4_planes() -> None:
+    with Image.open("Tests/images/p_4_planes.pcx") as im:
+        assert im.getpixel((0, 0)) == 3
+
+
 def test_bad_image_size() -> None:
     with open("Tests/images/pil184.pcx", "rb") as fp:
         data = fp.read()

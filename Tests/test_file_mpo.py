@@ -188,7 +188,7 @@ def test_mp_attribute(test_file: str) -> None:
     with Image.open(test_file) as im:
         assert isinstance(im, MpoImagePlugin.MpoImageFile)
         mpinfo = im._getmp()
-        assert mpinfo is not None
+    assert mpinfo is not None
     for frame_number, mpentry in enumerate(mpinfo[0xB002]):
         mpattr = mpentry["Attribute"]
         if frame_number:
