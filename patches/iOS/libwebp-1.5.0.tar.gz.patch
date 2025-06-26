@@ -6,6 +6,9 @@
 # 7 separate invocations of make to avoid building the examples. Patching the makefile
 # to remove the examples is a simpler approach, and one that is more compatible with
 # the existing multibuild infrastructure.
+# 
+# In the next release, it should be possible to pass --disable-libwebpexamples 
+# instead of applying this patch.
 #
 diff -ur libwebp-1.5.0-orig/Makefile.am libwebp-1.5.0/Makefile.am
 --- libwebp-1.5.0-orig/Makefile.am	2024-12-20 09:17:50
