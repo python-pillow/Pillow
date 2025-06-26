@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageGrab
 .. py:currentmodule:: PIL.ImageGrab
 
-:py:mod:`~PIL.ImageGrab` Module
+:py:mod:`~PIL.ImageGrab` module
 ===============================
 
 The :py:mod:`~PIL.ImageGrab` module can be used to copy the contents of the screen
@@ -16,9 +16,9 @@ or the clipboard to a PIL image memory.
     the entire screen is copied, and on macOS, it will be at 2x if on a Retina screen.
 
     On Linux, if ``xdisplay`` is ``None`` and the default X11 display does not return
-    a snapshot of the screen, ``gnome-screenshot`` or ``spectacle`` will be used as a
-    fallback if they are installed. To disable this behaviour, pass ``xdisplay=""``
-    instead.
+    a snapshot of the screen, ``gnome-screenshot``, ``grim`` or ``spectacle`` will be
+    used as a fallback if they are installed. To disable this behaviour, pass
+    ``xdisplay=""`` instead.
 
     .. versionadded:: 1.1.3 (Windows), 3.0.0 (macOS), 7.1.0 (Linux)
 

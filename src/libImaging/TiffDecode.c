@@ -557,7 +557,8 @@ _decodeStrip(
                     (tdata_t)state->buffer,
                     strip_size
                 ) == -1) {
-                TRACE(("Decode Error, strip %d\n", TIFFComputeStrip(tiff, state->y, 0))
+                TRACE(
+                    ("Decode Error, strip %d\n", TIFFComputeStrip(tiff, state->y, 0))
                 );
                 state->errcode = IMAGING_CODEC_BROKEN;
                 return -1;
@@ -930,6 +931,27 @@ ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...) {
 }
 
 int
+ImagingLibTiffEncodeCleanup(ImagingCodecState state) {
+    TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
+    TIFF *tiff = clientstate->tiff;
+
+    if (!tiff) {
+        return 0;
+    }
+    // TIFFClose in libtiff calls tif_closeproc and TIFFCleanup
+    if (clientstate->fp) {
+        // Python will manage the closing of the file rather than libtiff
+        // So only call TIFFCleanup
+        TIFFCleanup(tiff);
+    } else {
+        // When tif_closeproc refers to our custom _tiffCloseProc though,
+        // that is fine, as it does not close the file
+        TIFFClose(tiff);
+    }
+    return 0;
+}
+
+int
 ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes) {
     /* One shot encoder. Encode everything to the tiff in the clientstate.
        If we're running off of a FD, then run once, we're good, everything
@@ -1010,17 +1032,10 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
                 TRACE(("Encode Error, row %d\n", state->y));
                 state->errcode = IMAGING_CODEC_BROKEN;
 
-                // TIFFClose in libtiff calls tif_closeproc and TIFFCleanup
                 if (clientstate->fp) {
-                    // Python will manage the closing of the file rather than libtiff
-                    // So only call TIFFCleanup
                     TIFFCleanup(tiff);
+                    clientstate->tiff = NULL;
                 } else {
-                    // When tif_closeproc refers to our custom _tiffCloseProc though,
-                    // that is fine, as it does not close the file
-                    TIFFClose(tiff);
-                }
-                if (!clientstate->fp) {
                     free(clientstate->data);
                 }
                 return -1;
@@ -1036,21 +1051,10 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
                 TRACE(("Error flushing the tiff"));
                 // likely reason is memory.
                 state->errcode = IMAGING_CODEC_MEMORY;
-                if (clientstate->fp) {
-                    TIFFCleanup(tiff);
-                } else {
-                    TIFFClose(tiff);
-                }
                 if (!clientstate->fp) {
                     free(clientstate->data);
                 }
                 return -1;
-            }
-            TRACE(("Closing \n"));
-            if (clientstate->fp) {
-                TIFFCleanup(tiff);
-            } else {
-                TIFFClose(tiff);
             }
             // reset the clientstate metadata to use it to read out the buffer.
             clientstate->loc = 0;

@@ -28,7 +28,7 @@ This was introduced in Pillow 9.2.0, found with `OSS-Fuzz`_ and fixed by limitin
 ``SAMPLESPERPIXEL`` to the number of planes that we can decode.
 
 
-API Additions
+API additions
 =============
 
 Allow default ImageDraw font to be set
@@ -65,7 +65,7 @@ The data from :py:data:`~PIL.ExifTags.TAGS` and
 :py:data:`~PIL.ExifTags.GPS`.
 
 
-Other Changes
+Other changes
 =============
 
 Python 3.11 wheels

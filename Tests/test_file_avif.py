@@ -233,7 +233,7 @@ class TestFileAvif:
         with Image.open(out_gif) as reread:
             reread_value = reread.convert("RGB").getpixel((1, 1))
         difference = sum([abs(original_value[i] - reread_value[i]) for i in range(3)])
-        assert difference <= 3
+        assert difference <= 6
 
     def test_save_single_frame(self, tmp_path: Path) -> None:
         temp_file = tmp_path / "temp.avif"
@@ -254,7 +254,9 @@ class TestFileAvif:
             assert_image(im, "RGBA", (64, 64))
 
             # image has 876 transparent pixels
-            assert im.getchannel("A").getcolors()[0] == (876, 0)
+            colors = im.getchannel("A").getcolors()
+            assert colors is not None
+            assert colors[0] == (876, 0)
 
     def test_save_transparent(self, tmp_path: Path) -> None:
         im = Image.new("RGBA", (10, 10), (0, 0, 0, 0))

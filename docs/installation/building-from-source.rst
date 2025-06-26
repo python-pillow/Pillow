@@ -8,12 +8,12 @@
 
 .. _building-from-source:
 
-Building From Source
+Building from source
 ====================
 
 .. _external-libraries:
 
-External Libraries
+External libraries
 ------------------
 
 .. note::
@@ -194,9 +194,9 @@ Many of Pillow's features require external libraries:
 
         pacman -S \
             mingw-w64-x86_64-gcc \
-            mingw-w64-x86_64-python3 \
-            mingw-w64-x86_64-python3-pip \
-            mingw-w64-x86_64-python3-setuptools
+            mingw-w64-x86_64-python \
+            mingw-w64-x86_64-python-pip \
+            mingw-w64-x86_64-python-setuptools
 
     Prerequisites are installed on **MSYS2 MinGW 64-bit** with::
 
@@ -271,7 +271,7 @@ After navigating to the Pillow directory, run::
 
 .. _compressed archive from PyPI: https://pypi.org/project/pillow/#files
 
-Build Options
+Build options
 ^^^^^^^^^^^^^
 
 * Config setting: ``-C parallel=n``. Can also be given
@@ -319,7 +319,7 @@ Sample usage::
 
 .. _old-versions:
 
-Old Versions
+Old versions
 ============
 
 You can download old distributions from the `release history at PyPI

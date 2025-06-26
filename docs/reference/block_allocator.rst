@@ -1,10 +1,10 @@
 
 .. _block_allocator:
 
-Block Allocator
+Block allocator
 ===============
 
-Previous Design
+Previous design
 ---------------
 
 Historically there have been two image allocators in Pillow:
@@ -16,7 +16,7 @@ large images and makes one allocation for each scan line of size
 between one allocation and potentially thousands of small allocations,
 leading to unpredictable performance penalties around the transition.
 
-New Design
+New design
 ----------
 
 ``ImagingAllocateArray`` now allocates space for images as a chain of
@@ -28,7 +28,7 @@ line. This is now the default for all internal allocations.
 specifically requesting a single segment of memory for sharing with
 other code.
 
-Memory Pools
+Memory pools
 ------------
 
 There is now a memory pool to contain a supply of recently freed
@@ -37,14 +37,14 @@ fresh allocation. This caching of free blocks is currently disabled by
 default, but can be enabled and tweaked using three environment
 variables:
 
-  * ``PILLOW_ALIGNMENT``, in bytes. Specifies the alignment of memory
-    allocations. Valid values are powers of 2 between 1 and
-    128, inclusive. Defaults to 1.
+* ``PILLOW_ALIGNMENT``, in bytes. Specifies the alignment of memory
+  allocations. Valid values are powers of 2 between 1 and
+  128, inclusive. Defaults to 1.
 
-  * ``PILLOW_BLOCK_SIZE``, in bytes, K, or M.  Specifies the maximum
-    block size for ``ImagingAllocateArray``. Valid values are
-    integers, with an optional ``k`` or ``m`` suffix. Defaults to 16M.
+* ``PILLOW_BLOCK_SIZE``, in bytes, K, or M.  Specifies the maximum
+  block size for ``ImagingAllocateArray``. Valid values are
+  integers, with an optional ``k`` or ``m`` suffix. Defaults to 16M.
 
-  * ``PILLOW_BLOCKS_MAX`` Specifies the number of freed blocks to
-    retain to fill future memory requests. Any freed blocks over this
-    threshold will be returned to the OS immediately. Defaults to 0.
+* ``PILLOW_BLOCKS_MAX`` Specifies the number of freed blocks to
+  retain to fill future memory requests. Any freed blocks over this
+  threshold will be returned to the OS immediately. Defaults to 0.

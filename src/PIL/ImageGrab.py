@@ -89,6 +89,8 @@ def grab(
         if display_name is None and sys.platform not in ("darwin", "win32"):
             if shutil.which("gnome-screenshot"):
                 args = ["gnome-screenshot", "-f"]
+            elif shutil.which("grim"):
+                args = ["grim"]
             elif shutil.which("spectacle"):
                 args = ["spectacle", "-n", "-b", "-f", "-o"]
             else:
@@ -132,10 +134,10 @@ def grabclipboard() -> Image.Image | list[str] | None:
             import struct
 
             o = struct.unpack_from("I", data)[0]
-            if data[16] != 0:
-                files = data[o:].decode("utf-16le").split("\0")
-            else:
+            if data[16] == 0:
                 files = data[o:].decode("mbcs").split("\0")
+            else:
+                files = data[o:].decode("utf-16le").split("\0")
             return files[: files.index("")]
         if isinstance(data, bytes):
             data = io.BytesIO(data)

@@ -1,4 +1,4 @@
-Pillow Tests
+Pillow tests
 ============
 
 Test scripts are named ``test_xxx.py``. Helper classes and functions can be found in ``helper.py``.

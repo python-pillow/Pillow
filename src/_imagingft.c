@@ -275,6 +275,7 @@ text_layout_raqm(
         if (!text || !size) {
             /* return 0 and clean up, no glyphs==no size,
                and raqm fails with empty strings */
+            PyMem_Free(text);
             goto failed;
         }
         set_text = raqm_set_text(rq, text, size);
@@ -425,6 +426,7 @@ text_layout_fallback(
             "setting text direction, language or font features is not supported "
             "without libraqm"
         );
+        return 0;
     }
 
     if (PyUnicode_Check(string)) {
@@ -1599,26 +1601,22 @@ setup_module(PyObject *m) {
     return 0;
 }
 
+static PyModuleDef_Slot slots[] = {
+    {Py_mod_exec, setup_module},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
 PyMODINIT_FUNC
 PyInit__imagingft(void) {
-    PyObject *m;
-
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_imagingft",
-        .m_size = -1,
         .m_methods = _functions,
+        .m_slots = slots
     };
 
-    m = PyModule_Create(&module_def);
-
-    if (setup_module(m) < 0) {
-        return NULL;
-    }
-
-#ifdef Py_GIL_DISABLED
-    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
-#endif
-
-    return m;
+    return PyModuleDef_Init(&module_def);
 }

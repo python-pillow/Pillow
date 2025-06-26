@@ -44,6 +44,7 @@ optional-dependencies.docs = [
   "furo",
   "olefile",
   "sphinx>=8.2",
+  "sphinx-autobuild",
   "sphinx-copybutton",
   "sphinx-inline-tabs",
   "sphinxext-opengraph",
@@ -69,6 +70,7 @@ optional-dependencies.tests = [
   "pytest",
   "pytest-cov",
   "pytest-timeout",
+  "pytest-xdist",
   "trove-classifiers>=2024.10.12",
 ]
 

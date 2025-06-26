@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageCms
 .. py:currentmodule:: PIL.ImageCms
 
-:py:mod:`~PIL.ImageCms` Module
+:py:mod:`~PIL.ImageCms` module
 ==============================
 
 The :py:mod:`~PIL.ImageCms` module provides color profile management

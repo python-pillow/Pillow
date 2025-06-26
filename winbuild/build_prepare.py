@@ -57,7 +57,10 @@ def cmd_nmake(
 
 
 def cmds_cmake(
-    target: str | tuple[str, ...] | list[str], *params: str, build_dir: str = "."
+    target: str | tuple[str, ...] | list[str],
+    *params: str,
+    build_dir: str = ".",
+    build_type: str = "Release",
 ) -> list[str]:
     if not isinstance(target, str):
         target = " ".join(target)
@@ -66,7 +69,7 @@ def cmds_cmake(
         " ".join(
             [
                 "{cmake}",
-                "-DCMAKE_BUILD_TYPE=Release",
+                f"-DCMAKE_BUILD_TYPE={build_type}",
                 "-DCMAKE_VERBOSE_MAKEFILE=ON",
                 "-DCMAKE_RULE_MESSAGES:BOOL=OFF",  # for NMake
                 "-DCMAKE_C_COMPILER=cl.exe",  # for Ninja
@@ -113,12 +116,12 @@ V = {
     "BROTLI": "1.1.0",
     "FREETYPE": "2.13.3",
     "FRIBIDI": "1.0.16",
-    "HARFBUZZ": "11.0.1",
-    "JPEGTURBO": "3.1.0",
+    "HARFBUZZ": "11.2.1",
+    "JPEGTURBO": "3.1.1",
     "LCMS2": "2.17",
-    "LIBAVIF": "1.2.1",
+    "LIBAVIF": "1.3.0",
     "LIBIMAGEQUANT": "4.3.4",
-    "LIBPNG": "1.6.47",
+    "LIBPNG": "1.6.49",
     "LIBWEBP": "1.5.0",
     "OPENJPEG": "2.5.3",
     "TIFF": "4.7.0",
@@ -385,10 +388,11 @@ DEPS: dict[str, dict[str, Any]] = {
         "bins": [r"*.dll"],
     },
     "libavif": {
-        "url": f"https://github.com/AOMediaCodec/libavif/archive/v{V['LIBAVIF']}.zip",
-        "filename": f"libavif-{V['LIBAVIF']}.zip",
+        "url": f"https://github.com/AOMediaCodec/libavif/archive/v{V['LIBAVIF']}.tar.gz",
+        "filename": f"libavif-{V['LIBAVIF']}.tar.gz",
         "license": "LICENSE",
         "build": [
+            "rustup update",
             f"{sys.executable} -m pip install meson",
             *cmds_cmake(
                 "avif_static",
@@ -396,10 +400,11 @@ DEPS: dict[str, dict[str, Any]] = {
                 "-DAVIF_LIBSHARPYUV=LOCAL",
                 "-DAVIF_LIBYUV=LOCAL",
                 "-DAVIF_CODEC_AOM=LOCAL",
+                "-DCONFIG_AV1_HIGHBITDEPTH=0",
+                "-DAVIF_CODEC_AOM_DECODE=OFF",
                 "-DAVIF_CODEC_DAV1D=LOCAL",
-                "-DAVIF_CODEC_RAV1E=LOCAL",
-                "-DAVIF_CODEC_SVT=LOCAL",
-                "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+                "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON",
+                build_type="MinSizeRel",
             ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
@@ -755,7 +760,7 @@ def main() -> None:
         disabled += ["libimagequant"]
     if args.no_fribidi:
         disabled += ["fribidi"]
-    if args.no_avif or args.architecture != "AMD64":
+    if args.no_avif or args.architecture == "ARM64":
         disabled += ["libavif"]
 
     prefs = {
