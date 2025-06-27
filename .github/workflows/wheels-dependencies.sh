@@ -84,7 +84,7 @@ fi
 # Define custom utilities
 source wheels/multibuild/common_utils.sh
 source wheels/multibuild/library_builders.sh
-if [ -z "$IS_MACOS" ]; then
+if [[ -z "$IS_MACOS" ]]; then
     source wheels/multibuild/manylinux_utils.sh
 fi
 
