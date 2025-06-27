@@ -149,7 +149,7 @@ function build_zlib_ng {
 
     HOST_CONFIGURE_FLAGS=$ORIGINAL_HOST_CONFIGURE_FLAGS
 
-    if [ -n "$IS_MACOS" ] && [ -z "$IOS_SDK" ]; then
+    if [[ -n "$IS_MACOS" ]] && [[ -z "$IOS_SDK" ]]; then
         # Ensure that on macOS, the library name is an absolute path, not an
         # @rpath, so that delocate picks up the right library (and doesn't need
         # DYLD_LIBRARY_PATH to be set). The default Makefile doesn't have an
@@ -164,7 +164,7 @@ function build_brotli {
     if [ -e brotli-stamp ]; then return; fi
     local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-$BROTLI_VERSION.tar.gz)
     (cd $out_dir \
-        && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib $HOST_CMAKE_FLAGS  . \
+        && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib $HOST_CMAKE_FLAGS . \
         && make install)
     touch brotli-stamp
 }
