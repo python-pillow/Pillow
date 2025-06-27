@@ -18,7 +18,7 @@ This only affects users who save untrusted data as a compressed DDS image.
 * Unclear if there's a restriction on the bytes that could be emitted. It's likely that
   the only restriction is that the bytes would be emitted in chunks of 8 or 16.
 
-This was introduced was introduced in 11.2.0 when the feature was added.
+This was introduced in Pillow 11.2.0 when the feature was added.
 
 Deprecations
 ============
