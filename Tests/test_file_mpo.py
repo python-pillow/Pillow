@@ -324,6 +324,9 @@ def test_save_xmp() -> None:
     im2.encoderinfo = {"xmp": b"Second frame"}
     im_reloaded = roundtrip(im, xmp=b"First frame", save_all=True, append_images=[im2])
 
+    # Test that encoderinfo is unchanged
+    assert im2.encoderinfo == {"xmp": b"Second frame"}
+
     assert im_reloaded.info["xmp"] == b"First frame"
 
     im_reloaded.seek(1)

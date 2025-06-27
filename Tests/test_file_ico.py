@@ -99,6 +99,7 @@ def test_getpixel(tmp_path: Path) -> None:
         reloaded.load()
         reloaded.size = (32, 32)
 
+        assert reloaded.load() is not None
         assert reloaded.getpixel((0, 0)) == (18, 20, 62)
 
 

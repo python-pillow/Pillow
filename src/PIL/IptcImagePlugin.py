@@ -183,7 +183,8 @@ class IptcImageFile(ImageFile.ImageFile):
         with Image.open(o) as _im:
             _im.load()
             self.im = _im.im
-        return None
+        self.tile = []
+        return Image.Image.load(self)
 
 
 Image.register_open(IptcImageFile.format, IptcImageFile)
