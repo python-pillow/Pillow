@@ -269,7 +269,7 @@ function build {
     fi
 
     if [[ -z "$IOS_SDK" ]]; then
-        # Short term workaround; buillib
+        # Short term workaround; don't build libavif on iOS
         build_libavif
     fi
     build_libpng
