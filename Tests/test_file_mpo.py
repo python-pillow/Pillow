@@ -294,7 +294,7 @@ def test_save_all() -> None:
 
     im = Image.new("RGB", (1, 1))
     for colors in (("#f00",), ("#f00", "#0f0")):
-        append_images = (Image.new("RGB", (1, 1), color) for color in colors)
+        append_images = [Image.new("RGB", (1, 1), color) for color in colors]
         im_reloaded = roundtrip(im, save_all=True, append_images=append_images)
 
         assert_image_equal(im, im_reloaded)
