@@ -224,6 +224,7 @@ def test_optimize_if_palette_can_be_reduced_by_half() -> None:
         out = BytesIO()
         im.save(out, "GIF", optimize=optimize)
         with Image.open(out) as reloaded:
+            assert reloaded.palette is not None
             assert len(reloaded.palette.palette) // 3 == colors
 
 
@@ -1361,6 +1362,7 @@ def test_palette_save_all_P(tmp_path: Path) -> None:
         # Assert that the frames are correct, and each frame has the same palette
         assert_image_equal(im.convert("RGB"), frames[0].convert("RGB"))
         assert im.palette is not None
+        assert im.global_palette is not None
         assert im.palette.palette == im.global_palette.palette
 
         im.seek(1)
