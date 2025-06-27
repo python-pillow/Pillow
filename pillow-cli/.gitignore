@@ -189,7 +189,7 @@ processed_images/
 
 # But keep README images and documentation images
 !README*.jpg
-!README*.jpeg  
+!README*.jpeg
 !README*.png
 !README*.gif
 !docs/*.jpg
