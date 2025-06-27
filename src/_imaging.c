@@ -339,12 +339,6 @@ static const char *readonly = "image is readonly";
 /* static const char* no_content = "image has no content"; */
 
 void *
-ImagingError_OSError(void) {
-    PyErr_SetString(PyExc_OSError, "error when accessing file");
-    return NULL;
-}
-
-void *
 ImagingError_MemoryError(void) {
     return PyErr_NoMemory();
 }
@@ -367,11 +361,6 @@ ImagingError_ValueError(const char *message) {
         PyExc_ValueError, (message) ? (char *)message : "unrecognized argument value"
     );
     return NULL;
-}
-
-void
-ImagingError_Clear(void) {
-    PyErr_Clear();
 }
 
 /* -------------------------------------------------------------------- */
@@ -3220,7 +3209,8 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
                     (int)p[3],
                     &ink,
                     width,
-                    self->blend
+                    self->blend,
+                    NULL
                 ) < 0) {
                 free(xy);
                 return NULL;
@@ -3358,7 +3348,10 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
     int ink;
     int fill = 0;
     int width = 0;
-    if (!PyArg_ParseTuple(args, "Oi|ii", &data, &ink, &fill, &width)) {
+    ImagingObject *maskp = NULL;
+    if (!PyArg_ParseTuple(
+            args, "Oi|iiO!", &data, &ink, &fill, &width, &Imaging_Type, &maskp
+        )) {
         return NULL;
     }
 
@@ -3388,8 +3381,16 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
 
     free(xy);
 
-    if (ImagingDrawPolygon(self->image->image, n, ixy, &ink, fill, width, self->blend) <
-        0) {
+    if (ImagingDrawPolygon(
+            self->image->image,
+            n,
+            ixy,
+            &ink,
+            fill,
+            width,
+            self->blend,
+            maskp ? maskp->image : NULL
+        ) < 0) {
         free(ixy);
         return NULL;
     }
@@ -4462,27 +4463,22 @@ setup_module(PyObject *m) {
     return 0;
 }
 
+static PyModuleDef_Slot slots[] = {
+    {Py_mod_exec, setup_module},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
 PyMODINIT_FUNC
 PyInit__imaging(void) {
-    PyObject *m;
-
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_imaging",
-        .m_size = -1,
         .m_methods = functions,
+        .m_slots = slots
     };
 
-    m = PyModule_Create(&module_def);
-
-    if (setup_module(m) < 0) {
-        Py_DECREF(m);
-        return NULL;
-    }
-
-#ifdef Py_GIL_DISABLED
-    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
-#endif
-
-    return m;
+    return PyModuleDef_Init(&module_def);
 }

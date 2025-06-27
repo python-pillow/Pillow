@@ -48,6 +48,7 @@ class TestImageTransform:
                 im.size, Image.Transform.AFFINE, [1, 0, 0, 0, 1, 0]
             )
             assert im.palette is not None
+            assert transformed.palette is not None
             assert im.palette.palette == transformed.palette.palette
 
     def test_extent(self) -> None:
