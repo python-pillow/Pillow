@@ -128,7 +128,6 @@ config-settings = "raqm=disable imagequant=disable platform-guessing=disable"
 test-sources = [
   "checks",
   "Tests",
-  "pyproject.toml",
   "selftest.py",
 ]
 test-command = [
