@@ -268,7 +268,10 @@ function build {
         build_tiff
     fi
 
-    build_libavif
+    if [[ -z "$IOS_SDK" ]]; then
+        # Short term workaround; buillib
+        build_libavif
+    fi
     build_libpng
     build_lcms2
     build_openjpeg

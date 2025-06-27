@@ -18,13 +18,17 @@ def test_wheel_modules() -> None:
             assert tkinter
         except ImportError:
             expected_modules.remove("tkinter")
-    elif sys.platform == "ios":
-        # tkinter is not available on iOS
-        expected_modules.remove("tkinter")
 
         # libavif is not available on Windows for ARM64 architectures
         if platform.machine() == "ARM64":
             expected_modules.remove("avif")
+
+    elif sys.platform == "ios":
+        # tkinter is not available on iOS
+        expected_modules.remove("tkinter")
+
+        # libavif is not available on iOS (for now)
+        expected_modules.remove("avif")
 
     assert set(features.get_supported_modules()) == expected_modules
 

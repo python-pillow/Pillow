@@ -133,7 +133,7 @@ test-sources = [
 ]
 test-command = [
   "python -m selftest",
-  "python -m pytest checks/check_wheel.py Tests",
+  "python -m pytest -vv checks/check_wheel.py Tests",
 ]
 
 # There's no numpy wheel for iOS (yet...)
