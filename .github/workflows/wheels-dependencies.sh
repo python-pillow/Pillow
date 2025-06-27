@@ -84,7 +84,7 @@ fi
 # Define custom utilities
 source wheels/multibuild/common_utils.sh
 source wheels/multibuild/library_builders.sh
-if [ -z "$IS_MACOS" ]; then
+if [[ -z "$IS_MACOS" ]]; then
     source wheels/multibuild/manylinux_utils.sh
 fi
 
@@ -149,7 +149,7 @@ function build_zlib_ng {
 
     HOST_CONFIGURE_FLAGS=$ORIGINAL_HOST_CONFIGURE_FLAGS
 
-    if [ -n "$IS_MACOS" ] && [ -z "$IOS_SDK" ]; then
+    if [[ -n "$IS_MACOS" ]] && [[ -z "$IOS_SDK" ]]; then
         # Ensure that on macOS, the library name is an absolute path, not an
         # @rpath, so that delocate picks up the right library (and doesn't need
         # DYLD_LIBRARY_PATH to be set). The default Makefile doesn't have an
