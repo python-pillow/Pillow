@@ -4,7 +4,7 @@
 Security
 ========
 
-:cve:`2025-48379`: Write Buffer Overflow on BCn encoding
+:cve:`2025-48379`: Write buffer overflow on BCn encoding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There is a heap buffer overflow when writing a sufficiently large (>64k encoded with
