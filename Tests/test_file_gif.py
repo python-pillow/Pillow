@@ -540,7 +540,9 @@ def test_dispose_background_transparency() -> None:
         img.seek(2)
         px = img.load()
         assert px is not None
-        assert px[35, 30][3] == 0
+        value = px[35, 30]
+        assert isinstance(value, tuple)
+        assert value[3] == 0
 
 
 @pytest.mark.parametrize(
@@ -1424,7 +1426,9 @@ def test_getdata(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_lzw_bits() -> None:
     # see https://github.com/python-pillow/Pillow/issues/2811
     with Image.open("Tests/images/issue_2811.gif") as im:
-        assert im.tile[0][3][0] == 11  # LZW bits
+        args = im.tile[0][3]
+        assert isinstance(args, tuple)
+        assert args[0] == 11  # LZW bits
         # codec error prepatch
         im.load()
 
@@ -1479,7 +1483,11 @@ def test_saving_rgba(tmp_path: Path) -> None:
 
     with Image.open(out) as reloaded:
         reloaded_rgba = reloaded.convert("RGBA")
-        assert reloaded_rgba.load()[0, 0][3] == 0
+        px = reloaded_rgba.load()
+        assert px is not None
+        value = px[0, 0]
+        assert isinstance(value, tuple)
+        assert value[3] == 0
 
 
 @pytest.mark.parametrize("params", ({}, {"disposal": 2, "optimize": False}))

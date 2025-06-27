@@ -222,12 +222,16 @@ def test_horizontal_orientations() -> None:
     with Image.open("Tests/images/rgb32rle_top_right.tga") as im:
         px = im.load()
         assert px is not None
-        assert px[90, 90][:3] == (0, 0, 0)
+        value = px[90, 90]
+        assert isinstance(value, tuple)
+        assert value[:3] == (0, 0, 0)
 
     with Image.open("Tests/images/rgb32rle_bottom_right.tga") as im:
         px = im.load()
         assert px is not None
-        assert px[90, 90][:3] == (0, 255, 0)
+        value = px[90, 90]
+        assert isinstance(value, tuple)
+        assert value[:3] == (0, 255, 0)
 
 
 def test_save_rle(tmp_path: Path) -> None:
