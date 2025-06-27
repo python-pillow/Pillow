@@ -47,7 +47,6 @@ def test_unknown_version() -> None:
     ],
 )
 def test_old_version(deprecated: str, plural: bool, expected: str) -> None:
-    expected = r""
     with pytest.raises(RuntimeError, match=expected):
         _deprecate.deprecate(deprecated, 1, plural=plural)
 

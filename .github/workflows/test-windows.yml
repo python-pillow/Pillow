@@ -31,16 +31,15 @@ env:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.11", "pypy3.10", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["pypy3.11", "pypy3.10", "3.10", "3.11", "3.12", ">=3.13.5", "3.14"]
         architecture: ["x64"]
-        os: ["windows-latest"]
         include:
             # Test the oldest Python on 32-bit
-            - { python-version: "3.9", architecture: "x86", os: "windows-2019" }
+            - { python-version: "3.9", architecture: "x86" }
 
     timeout-minutes: 45
 

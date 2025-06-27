@@ -156,6 +156,7 @@ def test_reload_exif_after_seek() -> None:
 def test_mp(test_file: str) -> None:
     with Image.open(test_file) as im:
         mpinfo = im._getmp()
+        assert mpinfo is not None
         assert mpinfo[45056] == b"0100"
         assert mpinfo[45057] == 2
 
@@ -165,6 +166,7 @@ def test_mp_offset() -> None:
     # in APP2 data, in contrast to normal 8
     with Image.open("Tests/images/sugarshack_ifd_offset.mpo") as im:
         mpinfo = im._getmp()
+        assert mpinfo is not None
         assert mpinfo[45056] == b"0100"
         assert mpinfo[45057] == 2
 
@@ -181,6 +183,7 @@ def test_mp_no_data() -> None:
 def test_mp_attribute(test_file: str) -> None:
     with Image.open(test_file) as im:
         mpinfo = im._getmp()
+    assert mpinfo is not None
     for frame_number, mpentry in enumerate(mpinfo[0xB002]):
         mpattr = mpentry["Attribute"]
         if frame_number:
@@ -316,6 +319,9 @@ def test_save_xmp() -> None:
     im2 = Image.new("RGB", (1, 1), "#f00")
     im2.encoderinfo = {"xmp": b"Second frame"}
     im_reloaded = roundtrip(im, xmp=b"First frame", save_all=True, append_images=[im2])
+
+    # Test that encoderinfo is unchanged
+    assert im2.encoderinfo == {"xmp": b"Second frame"}
 
     assert im_reloaded.info["xmp"] == b"First frame"
 
