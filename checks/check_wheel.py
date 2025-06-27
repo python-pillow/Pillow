@@ -25,10 +25,8 @@ def test_wheel_modules() -> None:
 
     elif sys.platform == "ios":
         # tkinter is not available on iOS
-        expected_modules.remove("tkinter")
-
         # libavif is not available on iOS (for now)
-        expected_modules.remove("avif")
+        expected_modules -= {"tkinter", "avif"}
 
     assert set(features.get_supported_modules()) == expected_modules
 
