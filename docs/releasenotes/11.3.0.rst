@@ -4,21 +4,21 @@
 Security
 ========
 
-TODO
-^^^^
+:cve:`2025-48379`: Write Buffer Overflow on BCn encoding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+There is a heap buffer overflow when writing a sufficiently large (>64k encoded with
+default settings) image in the DDS format due to writing into a buffer without checking
+for available space.
 
-:cve:`YYYY-XXXXX`: TODO
-^^^^^^^^^^^^^^^^^^^^^^^
+This only affects users who save untrusted data as a compressed DDS image.
 
-TODO
+* Unclear how large the potential write could be. It is likely limited by process
+  segfault, so it's not necessarily deterministic. It may be practically unbounded.
+* Unclear if there's a restriction on the bytes that could be emitted. It's likely that
+  the only restriction is that the bytes would be emitted in chunks of 8 or 16.
 
-Backwards incompatible changes
-==============================
-
-TODO
-^^^^
+This was introduced was introduced in 11.2.0 when the feature was added.
 
 Deprecations
 ============
@@ -40,22 +40,6 @@ another mode before saving::
     from PIL import Image
     im = Image.new("I", (1, 1))
     im.convert("I;16").save("out.png")
-
-API changes
-===========
-
-TODO
-^^^^
-
-TODO
-
-API additions
-=============
-
-TODO
-^^^^
-
-TODO
 
 Other changes
 =============
