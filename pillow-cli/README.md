@@ -295,7 +295,3 @@ This project is open source and available under the MIT License.
 -   Pillow >= 10.0.0
 -   NumPy >= 1.24.0
 -   tkinter (for GUI, usually included with Python)
-
-## Author
-
-Created with GitHub Copilot - June 2025
