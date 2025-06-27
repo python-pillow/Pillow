@@ -35,5 +35,5 @@ fi
 
 # Runs tests
 python3 selftest.py
-python3 -m pytest Tests/check_wheel.py
-python3 -m pytest
+python3 -m pytest -vv Tests/check_wheel.py
+python3 -m pytest -vv
