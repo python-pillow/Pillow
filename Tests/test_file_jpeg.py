@@ -752,6 +752,8 @@ class TestFileJpeg:
         # Assert
         assert im.format == "JPEG"
 
+        im.close()
+
     @pytest.mark.parametrize("mode", ("1", "L", "RGB", "RGBX", "CMYK", "YCbCr"))
     def test_save_correct_modes(self, mode: str) -> None:
         out = BytesIO()
