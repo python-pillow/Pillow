@@ -617,8 +617,8 @@ class TestFileJpeg:
                     None
                 )
             ]
-            for quality in range(101):
 
+            for quality in range(101):
                 qtable_from_qtable_quality = self.roundtrip(
                     im,
                     qtables={0: standard_l_qtable, 1: standard_chrominance_qtable},
