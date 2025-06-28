@@ -46,12 +46,10 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     mpf_offset = 28
     offsets: list[int] = []
-    total = 0
-    imSequences = [im] + list(append_images)
-    for imSequence in imSequences:
-        total += getattr(imSequence, "n_frames", 1)
-    for imSequence in imSequences:
-        for im_frame in ImageSequence.Iterator(imSequence):
+    im_sequences = [im, *append_images]
+    total = sum(getattr(seq, "n_frames", 1) for seq in im_sequences)
+    for im_sequence in im_sequences:
+        for im_frame in ImageSequence.Iterator(im_sequence):
             if not offsets:
                 # APP2 marker
                 ifd_length = 66 + 16 * total
