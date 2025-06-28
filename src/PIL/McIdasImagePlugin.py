@@ -50,9 +50,7 @@ class McIdasImageFile(ImageFile.ImageFile):
         if w[11] == 1:
             mode = rawmode = "L"
         elif w[11] == 2:
-            # FIXME: add memory map support
-            mode = "I"
-            rawmode = "I;16B"
+            mode = rawmode = "I;16B"
         elif w[11] == 4:
             # FIXME: add memory map support
             mode = "I"
