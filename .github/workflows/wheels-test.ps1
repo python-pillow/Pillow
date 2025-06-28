@@ -15,9 +15,6 @@ if (Test-Path $venv\Scripts\pypy.exe) {
   $python = "python.exe"
 }
 & reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe" /v "GlobalFlag" /t REG_SZ /d "0x02000000" /f
-if ("$venv" -like "*\cibw-run-*-win_amd64\*") {
-  & $venv\Scripts\$python -m pip install numpy
-}
 cd $pillow
 & $venv\Scripts\$python -VV
 if (!$?) { exit $LASTEXITCODE }
