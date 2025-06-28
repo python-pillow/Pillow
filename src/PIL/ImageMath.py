@@ -308,7 +308,7 @@ def unsafe_eval(
 
     # build execution namespace
     args: dict[str, Any] = ops.copy()
-    for k in list(options.keys()) + list(kw.keys()):
+    for k in [*options, *kw]:
         if "__" in k or hasattr(builtins, k):
             msg = f"'{k}' not allowed"
             raise ValueError(msg)
