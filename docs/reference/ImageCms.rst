@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageCms
 .. py:currentmodule:: PIL.ImageCms
 
-:py:mod:`~PIL.ImageCms` Module
+:py:mod:`~PIL.ImageCms` module
 ==============================
 
 The :py:mod:`~PIL.ImageCms` module provides color profile management
@@ -283,6 +283,14 @@ can be easily displayed in a chromaticity diagram, for example).
 
         This tag was available in ICC 3.2, but it is removed from
         version 4.
+
+        The value is in the format ``((X, Y, Z), (x, y, Y))``, if available.
+
+    .. py:attribute:: media_white_point
+        :type: tuple[tuple[float, float, float], tuple[float, float, float]] | None
+
+        This tag specifies the media white point and is used for
+        generating absolute colorimetry.
 
         The value is in the format ``((X, Y, Z), (x, y, Y))``, if available.
 

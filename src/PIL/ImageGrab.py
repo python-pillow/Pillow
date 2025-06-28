@@ -25,12 +25,17 @@ import tempfile
 
 from . import Image
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from . import ImageWin
+
 
 def grab(
     bbox: tuple[int, int, int, int] | None = None,
     include_layered_windows: bool = False,
     all_screens: bool = False,
     xdisplay: str | None = None,
+    window: int | ImageWin.HWND | None = None,
 ) -> Image.Image:
     im: Image.Image
     if xdisplay is None:
@@ -51,8 +56,12 @@ def grab(
                 return im_resized
             return im
         elif sys.platform == "win32":
+            if window is not None:
+                all_screens = -1
             offset, size, data = Image.core.grabscreen_win32(
-                include_layered_windows, all_screens
+                include_layered_windows,
+                all_screens,
+                int(window) if window is not None else 0,
             )
             im = Image.frombytes(
                 "RGB",
@@ -77,14 +86,18 @@ def grab(
             raise OSError(msg)
         size, data = Image.core.grabscreen_x11(display_name)
     except OSError:
-        if (
-            display_name is None
-            and sys.platform not in ("darwin", "win32")
-            and shutil.which("gnome-screenshot")
-        ):
+        if display_name is None and sys.platform not in ("darwin", "win32"):
+            if shutil.which("gnome-screenshot"):
+                args = ["gnome-screenshot", "-f"]
+            elif shutil.which("grim"):
+                args = ["grim"]
+            elif shutil.which("spectacle"):
+                args = ["spectacle", "-n", "-b", "-f", "-o"]
+            else:
+                raise
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
-            subprocess.call(["gnome-screenshot", "-f", filepath])
+            subprocess.call(args + [filepath])
             im = Image.open(filepath)
             im.load()
             os.unlink(filepath)
@@ -104,38 +117,27 @@ def grab(
 
 def grabclipboard() -> Image.Image | list[str] | None:
     if sys.platform == "darwin":
-        fh, filepath = tempfile.mkstemp(".png")
-        os.close(fh)
-        commands = [
-            'set theFile to (open for access POSIX file "'
-            + filepath
-            + '" with write permission)',
-            "try",
-            "    write (the clipboard as «class PNGf») to theFile",
-            "end try",
-            "close access theFile",
-        ]
-        script = ["osascript"]
-        for command in commands:
-            script += ["-e", command]
-        subprocess.call(script)
+        p = subprocess.run(
+            ["osascript", "-e", "get the clipboard as «class PNGf»"],
+            capture_output=True,
+        )
+        if p.returncode != 0:
+            return None
 
-        im = None
-        if os.stat(filepath).st_size != 0:
-            im = Image.open(filepath)
-            im.load()
-        os.unlink(filepath)
-        return im
+        import binascii
+
+        data = io.BytesIO(binascii.unhexlify(p.stdout[11:-3]))
+        return Image.open(data)
     elif sys.platform == "win32":
         fmt, data = Image.core.grabclipboard_win32()
         if fmt == "file":  # CF_HDROP
             import struct
 
             o = struct.unpack_from("I", data)[0]
-            if data[16] != 0:
-                files = data[o:].decode("utf-16le").split("\0")
-            else:
+            if data[16] == 0:
                 files = data[o:].decode("mbcs").split("\0")
+            else:
+                files = data[o:].decode("utf-16le").split("\0")
             return files[: files.index("")]
         if isinstance(data, bytes):
             data = io.BytesIO(data)

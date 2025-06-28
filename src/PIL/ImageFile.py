@@ -31,17 +31,20 @@ from __future__ import annotations
 import abc
 import io
 import itertools
+import logging
 import os
 import struct
-import sys
-from typing import IO, TYPE_CHECKING, Any, NamedTuple, cast
+from typing import IO, Any, NamedTuple, cast
 
-from . import Image
+from . import ExifTags, Image
 from ._deprecate import deprecate
-from ._util import is_path
+from ._util import DeferredError, is_path
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from ._typing import StrOrBytesPath
+
+logger = logging.getLogger(__name__)
 
 MAXBLOCK = 65536
 
@@ -98,8 +101,8 @@ def _tilesort(t: _Tile) -> int:
 class _Tile(NamedTuple):
     codec_name: str
     extents: tuple[int, int, int, int] | None
-    offset: int
-    args: tuple[Any, ...] | str | None
+    offset: int = 0
+    args: tuple[Any, ...] | str | None = None
 
 
 #
@@ -120,7 +123,7 @@ class ImageFile(Image.Image):
         self.custom_mimetype: str | None = None
 
         self.tile: list[_Tile] = []
-        """ A list of tile descriptors, or ``None`` """
+        """ A list of tile descriptors """
 
         self.readonly = 1  # until we know better
 
@@ -130,7 +133,7 @@ class ImageFile(Image.Image):
         if is_path(fp):
             # filename
             self.fp = open(fp, "rb")
-            self.filename = os.path.realpath(os.fspath(fp))
+            self.filename = os.fspath(fp)
             self._exclusive_fp = True
         else:
             # stream
@@ -163,6 +166,85 @@ class ImageFile(Image.Image):
     def _open(self) -> None:
         pass
 
+    def _close_fp(self):
+        if getattr(self, "_fp", False) and not isinstance(self._fp, DeferredError):
+            if self._fp != self.fp:
+                self._fp.close()
+            self._fp = DeferredError(ValueError("Operation on closed image"))
+        if self.fp:
+            self.fp.close()
+
+    def close(self) -> None:
+        """
+        Closes the file pointer, if possible.
+
+        This operation will destroy the image core and release its memory.
+        The image data will be unusable afterward.
+
+        This function is required to close images that have multiple frames or
+        have not had their file read and closed by the
+        :py:meth:`~PIL.Image.Image.load` method. See :ref:`file-handling` for
+        more information.
+        """
+        try:
+            self._close_fp()
+            self.fp = None
+        except Exception as msg:
+            logger.debug("Error closing: %s", msg)
+
+        super().close()
+
+    def get_child_images(self) -> list[ImageFile]:
+        child_images = []
+        exif = self.getexif()
+        ifds = []
+        if ExifTags.Base.SubIFDs in exif:
+            subifd_offsets = exif[ExifTags.Base.SubIFDs]
+            if subifd_offsets:
+                if not isinstance(subifd_offsets, tuple):
+                    subifd_offsets = (subifd_offsets,)
+                for subifd_offset in subifd_offsets:
+                    ifds.append((exif._get_ifd_dict(subifd_offset), subifd_offset))
+        ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
+        if ifd1 and ifd1.get(ExifTags.Base.JpegIFOffset):
+            assert exif._info is not None
+            ifds.append((ifd1, exif._info.next))
+
+        offset = None
+        for ifd, ifd_offset in ifds:
+            assert self.fp is not None
+            current_offset = self.fp.tell()
+            if offset is None:
+                offset = current_offset
+
+            fp = self.fp
+            if ifd is not None:
+                thumbnail_offset = ifd.get(ExifTags.Base.JpegIFOffset)
+                if thumbnail_offset is not None:
+                    thumbnail_offset += getattr(self, "_exif_offset", 0)
+                    self.fp.seek(thumbnail_offset)
+
+                    length = ifd.get(ExifTags.Base.JpegIFByteCount)
+                    assert isinstance(length, int)
+                    data = self.fp.read(length)
+                    fp = io.BytesIO(data)
+
+            with Image.open(fp) as im:
+                from . import TiffImagePlugin
+
+                if thumbnail_offset is None and isinstance(
+                    im, TiffImagePlugin.TiffImageFile
+                ):
+                    im._frame_pos = [ifd_offset]
+                    im._seek(0)
+                im.load()
+                child_images.append(im)
+
+        if offset is not None:
+            assert self.fp is not None
+            self.fp.seek(offset)
+        return child_images
+
     def get_format_mimetype(self) -> str | None:
         if self.custom_mimetype:
             return self.custom_mimetype
@@ -170,8 +252,13 @@ class ImageFile(Image.Image):
             return Image.MIME.get(self.format.upper())
         return None
 
+    def __getstate__(self) -> list[Any]:
+        return super().__getstate__() + [self.filename]
+
     def __setstate__(self, state: list[Any]) -> None:
         self.tile = []
+        if len(state) > 5:
+            self.filename = state[5]
         super().__setstate__(state)
 
     def verify(self) -> None:
@@ -196,8 +283,6 @@ class ImageFile(Image.Image):
 
         self.map: mmap.mmap | None = None
         use_mmap = self.filename and len(self.tile) == 1
-        # As of pypy 2.1.0, memory mapping was failing here.
-        use_mmap = use_mmap and not hasattr(sys, "pypy_version_info")
 
         readonly = 0
 
@@ -263,7 +348,7 @@ class ImageFile(Image.Image):
                     self.tile, lambda tile: (tile[0], tile[1], tile[3])
                 )
             ]
-            for decoder_name, extents, offset, args in self.tile:
+            for i, (decoder_name, extents, offset, args) in enumerate(self.tile):
                 seek(offset)
                 decoder = Image._getdecoder(
                     self.mode, decoder_name, args, self.decoderconfig
@@ -276,8 +361,13 @@ class ImageFile(Image.Image):
                     else:
                         b = prefix
                         while True:
+                            read_bytes = self.decodermaxblock
+                            if i + 1 < len(self.tile):
+                                next_offset = self.tile[i + 1].offset
+                                if next_offset > offset:
+                                    read_bytes = next_offset - offset
                             try:
-                                s = read(self.decodermaxblock)
+                                s = read(read_bytes)
                             except (IndexError, struct.error) as e:
                                 # truncated png/gif
                                 if LOAD_TRUNCATED_IMAGES:
@@ -356,7 +446,7 @@ class ImageFile(Image.Image):
         return self.tell() != frame
 
 
-class StubHandler:
+class StubHandler(abc.ABC):
     def open(self, im: StubImageFile) -> None:
         pass
 
@@ -365,7 +455,7 @@ class StubHandler:
         pass
 
 
-class StubImageFile(ImageFile):
+class StubImageFile(ImageFile, metaclass=abc.ABCMeta):
     """
     Base class for stub image loaders.
 
@@ -373,9 +463,9 @@ class StubImageFile(ImageFile):
     certain format, but relies on external code to load the file.
     """
 
+    @abc.abstractmethod
     def _open(self) -> None:
-        msg = "StubImageFile subclass must implement _open"
-        raise NotImplementedError(msg)
+        pass
 
     def load(self) -> Image.core.PixelAccess | None:
         loader = self._load()
@@ -389,10 +479,10 @@ class StubImageFile(ImageFile):
         self.__dict__ = image.__dict__
         return image.load()
 
+    @abc.abstractmethod
     def _load(self) -> StubHandler | None:
         """(Hook) Find actual image loader."""
-        msg = "StubImageFile subclass must implement _load"
-        raise NotImplementedError(msg)
+        pass
 
 
 class Parser:

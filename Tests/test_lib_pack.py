@@ -820,7 +820,7 @@ def test_unpack(
 def test_unpack_deprecated(
     mode: str, rawmode: str, data: int | bytes, pixels: list[float | tuple[int, ...]]
 ) -> None:
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning, match=mode):
         test_unpack(mode, rawmode, data, pixels)
 
 

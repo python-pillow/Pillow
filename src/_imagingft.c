@@ -82,6 +82,9 @@ struct {
     /* font objects */
 
     static FT_Library library;
+#ifdef Py_GIL_DISABLED
+static PyMutex ft_library_mutex;
+#endif
 
 typedef struct {
     PyObject_HEAD FT_Face face;
@@ -187,7 +190,9 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
 
     if (filename && font_bytes_size <= 0) {
         self->font_bytes = NULL;
+        MUTEX_LOCK(&ft_library_mutex);
         error = FT_New_Face(library, filename, index, &self->face);
+        MUTEX_UNLOCK(&ft_library_mutex);
     } else {
         /* need to have allocated storage for font_bytes for the life of the object.*/
         /* Don't free this before FT_Done_Face */
@@ -197,6 +202,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
         }
         if (!error) {
             memcpy(self->font_bytes, font_bytes, (size_t)font_bytes_size);
+            MUTEX_LOCK(&ft_library_mutex);
             error = FT_New_Memory_Face(
                 library,
                 (FT_Byte *)self->font_bytes,
@@ -204,6 +210,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
                 index,
                 &self->face
             );
+            MUTEX_UNLOCK(&ft_library_mutex);
         }
     }
 
@@ -268,6 +275,7 @@ text_layout_raqm(
         if (!text || !size) {
             /* return 0 and clean up, no glyphs==no size,
                and raqm fails with empty strings */
+            PyMem_Free(text);
             goto failed;
         }
         set_text = raqm_set_text(rq, text, size);
@@ -332,29 +340,23 @@ text_layout_raqm(
         len = PySequence_Fast_GET_SIZE(seq);
         for (j = 0; j < len; j++) {
             PyObject *item = PySequence_Fast_GET_ITEM(seq, j);
-            char *feature = NULL;
-            Py_ssize_t size = 0;
-            PyObject *bytes;
-
             if (!PyUnicode_Check(item)) {
                 Py_DECREF(seq);
                 PyErr_SetString(PyExc_TypeError, "expected a string");
                 goto failed;
             }
-            bytes = PyUnicode_AsUTF8String(item);
-            if (bytes == NULL) {
+
+            Py_ssize_t size;
+            const char *feature = PyUnicode_AsUTF8AndSize(item, &size);
+            if (feature == NULL) {
                 Py_DECREF(seq);
                 goto failed;
             }
-            feature = PyBytes_AS_STRING(bytes);
-            size = PyBytes_GET_SIZE(bytes);
             if (!raqm_add_font_feature(rq, feature, size)) {
                 Py_DECREF(seq);
-                Py_DECREF(bytes);
                 PyErr_SetString(PyExc_ValueError, "raqm_add_font_feature() failed");
                 goto failed;
             }
-            Py_DECREF(bytes);
         }
         Py_DECREF(seq);
     }
@@ -424,6 +426,7 @@ text_layout_fallback(
             "setting text direction, language or font features is not supported "
             "without libraqm"
         );
+        return 0;
     }
 
     if (PyUnicode_Check(string)) {
@@ -833,6 +836,7 @@ font_render(FontObject *self, PyObject *args) {
     int mask = 0;  /* is FT_LOAD_TARGET_MONO enabled? */
     int color = 0; /* is FT_LOAD_COLOR enabled? */
     float stroke_width = 0;
+    int stroke_filled = 0;
     PY_LONG_LONG foreground_ink_long = 0;
     unsigned int foreground_ink;
     const char *mode = NULL;
@@ -852,7 +856,7 @@ font_render(FontObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "OO|zzOzfzLffO:render",
+            "OO|zzOzfpzL(ff):render",
             &string,
             &fill,
             &mode,
@@ -860,6 +864,7 @@ font_render(FontObject *self, PyObject *args) {
             &features,
             &lang,
             &stroke_width,
+            &stroke_filled,
             &anchor,
             &foreground_ink_long,
             &x_start,
@@ -1004,7 +1009,8 @@ font_render(FontObject *self, PyObject *args) {
         if (stroker != NULL) {
             error = FT_Get_Glyph(glyph_slot, &glyph);
             if (!error) {
-                error = FT_Glyph_Stroke(&glyph, stroker, 1);
+                error = stroke_filled ? FT_Glyph_StrokeBorder(&glyph, stroker, 0, 1)
+                                      : FT_Glyph_Stroke(&glyph, stroker, 1);
             }
             if (!error) {
                 FT_Vector origin = {0, 0};
@@ -1370,8 +1376,7 @@ font_setvarname(FontObject *self, PyObject *args) {
         return geterror(error);
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1425,15 +1430,16 @@ font_setvaraxes(FontObject *self, PyObject *args) {
         return geterror(error);
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 #endif
 
 static void
 font_dealloc(FontObject *self) {
     if (self->face) {
+        MUTEX_LOCK(&ft_library_mutex);
         FT_Done_Face(self->face);
+        MUTEX_UNLOCK(&ft_library_mutex);
     }
     if (self->font_bytes) {
         PyMem_Free(self->font_bytes);
@@ -1514,36 +1520,11 @@ static struct PyGetSetDef font_getsetters[] = {
 };
 
 static PyTypeObject Font_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "Font", /*tp_name*/
-    sizeof(FontObject),                    /*tp_basicsize*/
-    0,                                     /*tp_itemsize*/
-    /* methods */
-    (destructor)font_dealloc, /*tp_dealloc*/
-    0,                        /*tp_vectorcall_offset*/
-    0,                        /*tp_getattr*/
-    0,                        /*tp_setattr*/
-    0,                        /*tp_as_async*/
-    0,                        /*tp_repr*/
-    0,                        /*tp_as_number*/
-    0,                        /*tp_as_sequence*/
-    0,                        /*tp_as_mapping*/
-    0,                        /*tp_hash*/
-    0,                        /*tp_call*/
-    0,                        /*tp_str*/
-    0,                        /*tp_getattro*/
-    0,                        /*tp_setattro*/
-    0,                        /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,       /*tp_flags*/
-    0,                        /*tp_doc*/
-    0,                        /*tp_traverse*/
-    0,                        /*tp_clear*/
-    0,                        /*tp_richcompare*/
-    0,                        /*tp_weaklistoffset*/
-    0,                        /*tp_iter*/
-    0,                        /*tp_iternext*/
-    font_methods,             /*tp_methods*/
-    0,                        /*tp_members*/
-    font_getsetters,          /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "Font",
+    .tp_basicsize = sizeof(FontObject),
+    .tp_dealloc = (destructor)font_dealloc,
+    .tp_methods = font_methods,
+    .tp_getset = font_getsetters,
 };
 
 static PyMethodDef _functions[] = {
@@ -1620,27 +1601,22 @@ setup_module(PyObject *m) {
     return 0;
 }
 
+static PyModuleDef_Slot slots[] = {
+    {Py_mod_exec, setup_module},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
 PyMODINIT_FUNC
 PyInit__imagingft(void) {
-    PyObject *m;
-
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_imagingft", /* m_name */
-        NULL,         /* m_doc */
-        -1,           /* m_size */
-        _functions,   /* m_methods */
+        .m_name = "_imagingft",
+        .m_methods = _functions,
+        .m_slots = slots
     };
 
-    m = PyModule_Create(&module_def);
-
-    if (setup_module(m) < 0) {
-        return NULL;
-    }
-
-#ifdef Py_GIL_DISABLED
-    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
-#endif
-
-    return m;
+    return PyModuleDef_Init(&module_def);
 }

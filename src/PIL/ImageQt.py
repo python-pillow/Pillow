@@ -19,11 +19,12 @@ from __future__ import annotations
 
 import sys
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, Callable, Union
+from typing import Any, Callable, Union
 
 from . import Image
 from ._util import is_path
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     import PyQt6
     import PySide6
@@ -213,4 +214,7 @@ def toqimage(im: Image.Image | str | QByteArray) -> ImageQt:
 
 def toqpixmap(im: Image.Image | str | QByteArray) -> QPixmap:
     qimage = toqimage(im)
-    return getattr(QPixmap, "fromImage")(qimage)
+    pixmap = getattr(QPixmap, "fromImage")(qimage)
+    if qt_version == "6":
+        pixmap.detach()
+    return pixmap

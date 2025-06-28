@@ -26,17 +26,6 @@ from typing import BinaryIO
 
 from . import FontFile, Image
 
-bdf_slant = {
-    "R": "Roman",
-    "I": "Italic",
-    "O": "Oblique",
-    "RI": "Reverse Italic",
-    "RO": "Reverse Oblique",
-    "OT": "Other",
-}
-
-bdf_spacing = {"P": "Proportional", "M": "Monospaced", "C": "Cell"}
-
 
 def bdf_char(
     f: BinaryIO,
@@ -54,7 +43,7 @@ def bdf_char(
         s = f.readline()
         if not s:
             return None
-        if s[:9] == b"STARTCHAR":
+        if s.startswith(b"STARTCHAR"):
             break
     id = s[9:].strip().decode("ascii")
 
@@ -62,7 +51,7 @@ def bdf_char(
     props = {}
     while True:
         s = f.readline()
-        if not s or s[:6] == b"BITMAP":
+        if not s or s.startswith(b"BITMAP"):
             break
         i = s.find(b" ")
         props[s[:i].decode("ascii")] = s[i + 1 : -1].decode("ascii")
@@ -71,7 +60,7 @@ def bdf_char(
     bitmap = bytearray()
     while True:
         s = f.readline()
-        if not s or s[:7] == b"ENDCHAR":
+        if not s or s.startswith(b"ENDCHAR"):
             break
         bitmap += s[:-1]
 
@@ -107,7 +96,7 @@ class BdfFontFile(FontFile.FontFile):
         super().__init__()
 
         s = fp.readline()
-        if s[:13] != b"STARTFONT 2.1":
+        if not s.startswith(b"STARTFONT 2.1"):
             msg = "not a valid BDF file"
             raise SyntaxError(msg)
 
@@ -116,7 +105,7 @@ class BdfFontFile(FontFile.FontFile):
 
         while True:
             s = fp.readline()
-            if not s or s[:13] == b"ENDPROPERTIES":
+            if not s or s.startswith(b"ENDPROPERTIES"):
                 break
             i = s.find(b" ")
             props[s[:i].decode("ascii")] = s[i + 1 : -1].decode("ascii")

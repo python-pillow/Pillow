@@ -16,7 +16,6 @@ import subprocess
 import sys
 import warnings
 from collections.abc import Iterator
-from typing import Any
 
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
@@ -32,6 +31,7 @@ configuration: dict[str, list[str]] = {}
 
 
 PILLOW_VERSION = get_version()
+AVIF_ROOT = None
 FREETYPE_ROOT = None
 HARFBUZZ_ROOT = None
 FRIBIDI_ROOT = None
@@ -45,7 +45,7 @@ WEBP_ROOT = None
 ZLIB_ROOT = None
 FUZZING_BUILD = "LIB_FUZZING_ENGINE" in os.environ
 
-if sys.platform == "win32" and sys.version_info >= (3, 14):
+if sys.platform == "win32" and sys.version_info >= (3, 15):
     import atexit
 
     atexit.register(
@@ -64,10 +64,12 @@ _IMAGING = ("decode", "encode", "map", "display", "outline", "path")
 _LIB_IMAGING = (
     "Access",
     "AlphaComposite",
+    "Arrow",
     "Resample",
     "Reduce",
     "Bands",
     "BcnDecode",
+    "BcnEncode",
     "BitDecode",
     "Blend",
     "Chops",
@@ -145,7 +147,7 @@ class RequiredDependencyException(Exception):
 PLATFORM_MINGW = os.name == "nt" and "GCC" in sys.version
 
 
-def _dbg(s: str, tp: Any = None) -> None:
+def _dbg(s: str, tp: str | tuple[str, ...] | None = None) -> None:
     if DEBUG:
         if tp:
             print(s % tp)
@@ -160,7 +162,7 @@ def _find_library_dirs_ldconfig() -> list[str]:
     args: list[str]
     env: dict[str, str]
     expr: str
-    if sys.platform.startswith("linux") or sys.platform.startswith("gnu"):
+    if sys.platform.startswith(("linux", "gnu")):
         if struct.calcsize("l") == 4:
             machine = os.uname()[4] + "-32"
         else:
@@ -221,13 +223,14 @@ def _add_directory(
         path.insert(where, subdir)
 
 
-def _find_include_file(self: pil_build_ext, include: str) -> int:
+def _find_include_file(self: pil_build_ext, include: str) -> str | None:
     for directory in self.compiler.include_dirs:
         _dbg("Checking for include file %s in %s", (include, directory))
-        if os.path.isfile(os.path.join(directory, include)):
+        path = os.path.join(directory, include)
+        if os.path.isfile(path):
             _dbg("Found %s", include)
-            return 1
-    return 0
+            return path
+    return None
 
 
 def _find_library_file(self: pil_build_ext, library: str) -> str | None:
@@ -305,6 +308,7 @@ class pil_build_ext(build_ext):
             "jpeg2000",
             "imagequant",
             "xcb",
+            "avif",
         ]
 
         required = {"jpeg", "zlib"}
@@ -344,7 +348,7 @@ class pil_build_ext(build_ext):
             for x in ("raqm", "fribidi")
         ]
         + [
-            ("disable-platform-guessing", None, "Disable platform guessing on Linux"),
+            ("disable-platform-guessing", None, "Disable platform guessing"),
             ("debug", None, "Debug logging"),
         ]
         + [("add-imaging-libs=", None, "Add libs to _imaging build")]
@@ -389,17 +393,18 @@ class pil_build_ext(build_ext):
                     pass
         for x in self.feature:
             if getattr(self, f"disable_{x}"):
-                setattr(self.feature, x, False)
+                self.feature.set(x, False)
                 self.feature.required.discard(x)
                 _dbg("Disabling %s", x)
                 if getattr(self, f"enable_{x}"):
-                    msg = f"Conflicting options: --enable-{x} and --disable-{x}"
+                    msg = f"Conflicting options: '-C {x}=enable' and '-C {x}=disable'"
                     raise ValueError(msg)
                 if x == "freetype":
-                    _dbg("--disable-freetype implies --disable-raqm")
+                    _dbg("'-C freetype=disable' implies '-C raqm=disable'")
                     if getattr(self, "enable_raqm"):
                         msg = (
-                            "Conflicting options: --enable-raqm and --disable-freetype"
+                            "Conflicting options: "
+                            "'-C raqm=enable' and '-C freetype=disable'"
                         )
                         raise ValueError(msg)
                     setattr(self, "disable_raqm", True)
@@ -407,15 +412,17 @@ class pil_build_ext(build_ext):
                 _dbg("Requiring %s", x)
                 self.feature.required.add(x)
                 if x == "raqm":
-                    _dbg("--enable-raqm implies --enable-freetype")
+                    _dbg("'-C raqm=enable' implies '-C freetype=enable'")
                     self.feature.required.add("freetype")
         for x in ("raqm", "fribidi"):
             if getattr(self, f"vendor_{x}"):
                 if getattr(self, "disable_raqm"):
-                    msg = f"Conflicting options: --vendor-{x} and --disable-raqm"
+                    msg = f"Conflicting options: '-C {x}=vendor' and '-C raqm=disable'"
                     raise ValueError(msg)
                 if x == "fribidi" and not getattr(self, "vendor_raqm"):
-                    msg = f"Conflicting options: --vendor-{x} and not --vendor-raqm"
+                    msg = (
+                        f"Conflicting options: '-C {x}=vendor' and not '-C raqm=vendor'"
+                    )
                     raise ValueError(msg)
                 _dbg("Using vendored version of %s", x)
                 self.feature.vendor.add(x)
@@ -448,7 +455,7 @@ class pil_build_ext(build_ext):
     def get_macos_sdk_path(self) -> str | None:
         try:
             sdk_path = (
-                subprocess.check_output(["xcrun", "--show-sdk-path"])
+                subprocess.check_output(["xcrun", "--show-sdk-path", "--sdk", "macosx"])
                 .strip()
                 .decode("latin1")
             )
@@ -477,6 +484,7 @@ class pil_build_ext(build_ext):
         #
         # add configured kits
         for root_name, lib_name in {
+            "AVIF_ROOT": "avif",
             "JPEG_ROOT": "libjpeg",
             "JPEG2K_ROOT": "libopenjp2",
             "TIFF_ROOT": ("libtiff-5", "libtiff-4"),
@@ -500,11 +508,11 @@ class pil_build_ext(build_ext):
 
             if root is None and pkg_config:
                 if isinstance(lib_name, str):
-                    _dbg(f"Looking for `{lib_name}` using pkg-config.")
+                    _dbg("Looking for `%s` using pkg-config.", lib_name)
                     root = pkg_config(lib_name)
                 else:
                     for lib_name2 in lib_name:
-                        _dbg(f"Looking for `{lib_name2}` using pkg-config.")
+                        _dbg("Looking for `%s` using pkg-config.", lib_name2)
                         root = pkg_config(lib_name2)
                         if root:
                             break
@@ -606,6 +614,7 @@ class pil_build_ext(build_ext):
                 _add_directory(library_dirs, "/usr/X11/lib")
                 _add_directory(include_dirs, "/usr/X11/include")
 
+            # Add the macOS SDK path.
             sdk_path = self.get_macos_sdk_path()
             if sdk_path:
                 _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
@@ -613,11 +622,7 @@ class pil_build_ext(build_ext):
 
                 for extension in self.extensions:
                     extension.extra_compile_args = ["-Wno-nullability-completeness"]
-        elif (
-            sys.platform.startswith("linux")
-            or sys.platform.startswith("gnu")
-            or sys.platform.startswith("freebsd")
-        ):
+        elif sys.platform.startswith(("linux", "gnu", "freebsd")):
             for dirname in _find_library_dirs_ldconfig():
                 _add_directory(library_dirs, dirname)
             if sys.platform.startswith("linux") and os.environ.get("ANDROID_ROOT"):
@@ -690,6 +695,8 @@ class pil_build_ext(build_ext):
                     feature.set("zlib", "z")
                 elif sys.platform == "win32" and _find_library_file(self, "zlib"):
                     feature.set("zlib", "zlib")  # alternative name
+                elif sys.platform == "win32" and _find_library_file(self, "zdll"):
+                    feature.set("zlib", "zdll")  # dll import library
 
         if feature.want("jpeg"):
             _dbg("Looking for jpeg")
@@ -724,7 +731,7 @@ class pil_build_ext(build_ext):
                             best_path = os.path.join(directory, name)
                             _dbg(
                                 "Best openjpeg version %s so far in %s",
-                                (best_version, best_path),
+                                (str(best_version), best_path),
                             )
 
             if best_version and _find_library_file(self, "openjp2"):
@@ -746,12 +753,12 @@ class pil_build_ext(build_ext):
         if feature.want("tiff"):
             _dbg("Looking for tiff")
             if _find_include_file(self, "tiff.h"):
-                if _find_library_file(self, "tiff"):
-                    feature.set("tiff", "tiff")
                 if sys.platform in ["win32", "darwin"] and _find_library_file(
                     self, "libtiff"
                 ):
                     feature.set("tiff", "libtiff")
+                elif _find_library_file(self, "tiff"):
+                    feature.set("tiff", "tiff")
 
         if feature.want("freetype"):
             _dbg("Looking for freetype")
@@ -838,6 +845,16 @@ class pil_build_ext(build_ext):
             if _find_include_file(self, "xcb/xcb.h"):
                 if _find_library_file(self, "xcb"):
                     feature.set("xcb", "xcb")
+
+        if feature.want("avif"):
+            _dbg("Looking for avif")
+            if avif_h := _find_include_file(self, "avif/avif.h"):
+                with open(avif_h, "rb") as fp:
+                    major_version = int(
+                        fp.read().split(b"#define AVIF_VERSION_MAJOR ")[1].split()[0]
+                    )
+                    if major_version >= 1 and _find_library_file(self, "avif"):
+                        feature.set("avif", "avif")
 
         for f in feature:
             if not feature.get(f) and feature.require(f):
@@ -927,6 +944,14 @@ class pil_build_ext(build_ext):
         else:
             self._remove_extension("PIL._webp")
 
+        if feature.get("avif"):
+            libs = [feature.get("avif")]
+            if sys.platform == "win32":
+                libs.extend(["ntdll", "userenv", "ws2_32", "bcrypt"])
+            self._update_extension("PIL._avif", libs)
+        else:
+            self._remove_extension("PIL._avif")
+
         tk_libs = ["psapi"] if sys.platform in ("win32", "cygwin") else []
         self._update_extension("PIL._imagingtk", tk_libs)
 
@@ -969,6 +994,7 @@ class pil_build_ext(build_ext):
             (feature.get("lcms"), "LITTLECMS2"),
             (feature.get("webp"), "WEBP"),
             (feature.get("xcb"), "XCB (X protocol)"),
+            (feature.get("avif"), "LIBAVIF"),
         ]
 
         all = 1
@@ -1001,7 +1027,7 @@ def debug_build() -> bool:
     return hasattr(sys, "gettotalrefcount") or FUZZING_BUILD
 
 
-files = ["src/_imaging.c"]
+files: list[str | os.PathLike[str]] = ["src/_imaging.c"]
 for src_file in _IMAGING:
     files.append("src/" + src_file + ".c")
 for src_file in _LIB_IMAGING:
@@ -1011,6 +1037,7 @@ ext_modules = [
     Extension("PIL._imagingft", ["src/_imagingft.c"]),
     Extension("PIL._imagingcms", ["src/_imagingcms.c"]),
     Extension("PIL._webp", ["src/_webp.c"]),
+    Extension("PIL._avif", ["src/_avif.c"]),
     Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),
     Extension("PIL._imagingmath", ["src/_imagingmath.c"]),
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
@@ -1044,7 +1071,7 @@ except DependencyException as err:
     msg = f"""
 
 The headers or library files could not be found for {str(err)},
-which was requested by the option flag --enable-{str(err)}
+which was requested by the option flag '-C {str(err)}=enable'
 
 """
     sys.stderr.write(msg)

@@ -13,6 +13,7 @@ on:
     paths:
       - ".ci/requirements-cibw.txt"
       - ".github/workflows/wheel*"
+      - "pyproject.toml"
       - "setup.py"
       - "wheels/*"
       - "winbuild/build_prepare.py"
@@ -23,6 +24,7 @@ on:
     paths:
       - ".ci/requirements-cibw.txt"
       - ".github/workflows/wheel*"
+      - "pyproject.toml"
       - "setup.py"
       - "wheels/*"
       - "winbuild/build_prepare.py"
@@ -40,61 +42,7 @@ env:
   FORCE_COLOR: 1
 
 jobs:
-  build-1-QEMU-emulated-wheels:
-    if: github.event_name != 'schedule'
-    name: aarch64 ${{ matrix.python-version }} ${{ matrix.spec }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version:
-          - pp310
-          - cp3{9,10,11}
-          - cp3{12,13}
-        spec:
-          - manylinux2014
-          - manylinux_2_28
-          - musllinux
-        exclude:
-          - { python-version: pp310, spec: musllinux }
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      # https://github.com/docker/setup-qemu-action
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Install cibuildwheel
-        run: |
-          python3 -m pip install -r .ci/requirements-cibw.txt
-
-      - name: Build wheels
-        run: |
-          python3 -m cibuildwheel --output-dir wheelhouse
-        env:
-          # Build only the currently selected Linux architecture (so we can
-          # parallelise for speed).
-          CIBW_ARCHS: "aarch64"
-          # Likewise, select only one Python version per job to speed this up.
-          CIBW_BUILD: "${{ matrix.python-version }}-${{ matrix.spec == 'musllinux' && 'musllinux' || 'manylinux' }}*"
-          CIBW_PRERELEASE_PYTHONS: True
-          # Extra options for manylinux.
-          CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.spec }}
-          CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ${{ matrix.spec }}
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dist-qemu-${{ matrix.python-version }}-${{ matrix.spec }}
-          path: ./wheelhouse/*.whl
-
-  build-2-native-wheels:
+  build-native-wheels:
     if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
@@ -110,12 +58,12 @@ jobs:
           - name: "macOS 10.13 x86_64"
             os: macos-13
             cibw_arch: x86_64
-            build: "cp3{12,13}*"
+            build: "cp3{12,13,14}*"
             macosx_deployment_target: "10.13"
           - name: "macOS 10.15 x86_64"
             os: macos-13
             cibw_arch: x86_64
-            build: "pp310*"
+            build: "pp3*"
             macosx_deployment_target: "10.15"
           - name: "macOS arm64"
             os: macos-latest
@@ -129,9 +77,18 @@ jobs:
             cibw_arch: x86_64
             build: "*manylinux*"
             manylinux: "manylinux_2_28"
+          - name: "manylinux2014 and musllinux aarch64"
+            os: ubuntu-24.04-arm
+            cibw_arch: aarch64
+          - name: "manylinux_2_28 aarch64"
+            os: ubuntu-24.04-arm
+            cibw_arch: aarch64
+            build: "*manylinux*"
+            manylinux: "manylinux_2_28"
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: true
 
       - uses: actions/setup-python@v5
@@ -148,10 +105,11 @@ jobs:
         env:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BUILD: ${{ matrix.build }}
-          CIBW_FREE_THREADED_SUPPORT: True
+          CIBW_ENABLE: cpython-prerelease cpython-freethreading pypy
+          CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.manylinux }}
+          CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
-          CIBW_PRERELEASE_PYTHONS: True
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
       - uses: actions/upload-artifact@v4
@@ -162,20 +120,26 @@ jobs:
   windows:
     if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
     name: Windows ${{ matrix.cibw_arch }}
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - cibw_arch: x86
+            os: windows-latest
           - cibw_arch: AMD64
+            os: windows-latest
           - cibw_arch: ARM64
+            os: windows-11-arm
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Checkout extra test images
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           repository: python-pillow/test-images
           path: Tests\test-images
 
@@ -222,8 +186,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL: "{package}\\winbuild\\build\\build_dep_all.cmd"
           CIBW_CACHE_PATH: "C:\\cibw"
-          CIBW_FREE_THREADED_SUPPORT: True
-          CIBW_PRERELEASE_PYTHONS: True
+          CIBW_ENABLE: cpython-prerelease cpython-freethreading pypy
           CIBW_TEST_SKIP: "*-win_arm64"
           CIBW_TEST_COMMAND: 'docker run --rm
             -v {project}:C:\pillow
@@ -251,13 +214,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.x"
-        cache: pip
-        cache-dependency-path: "Makefile"
 
     - run: make sdist
 
@@ -268,7 +231,7 @@ jobs:
 
   scientific-python-nightly-wheels-publish:
     if: github.repository_owner == 'python-pillow' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
-    needs: [build-2-native-wheels, windows]
+    needs: [build-native-wheels, windows]
     runs-on: ubuntu-latest
     name: Upload wheels to scientific-python-nightly-wheels
     steps:
@@ -278,14 +241,14 @@ jobs:
           path: dist
           merge-multiple: true
       - name: Upload wheels to scientific-python-nightly-wheels
-        uses: scientific-python/upload-nightly-action@82396a2ed4269ba06c6b2988bb4fd568ef3c3d6b # 0.6.1
+        uses: scientific-python/upload-nightly-action@b36e8c0c10dbcfd2e05bf95f17ef8c14fd708dbf # 0.6.2
         with:
           artifacts_path: dist
           anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
 
   pypi-publish:
     if: github.repository_owner == 'python-pillow' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    needs: [build-1-QEMU-emulated-wheels, build-2-native-wheels, windows, sdist]
+    needs: [build-native-wheels, windows, sdist]
     runs-on: ubuntu-latest
     name: Upload release to PyPI
     environment:

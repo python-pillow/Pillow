@@ -34,7 +34,7 @@ for r in range(8):
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:6] == _MAGIC
+    return prefix.startswith(_MAGIC)
 
 
 ##
@@ -74,9 +74,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
         self.palette = ImagePalette.raw("RGB", PALETTE)
 
         self.tile = [
-            ImageFile._Tile(
-                "raw", (0, 0) + self.size, self.fp.tell(), (self.mode, 0, 1)
-            )
+            ImageFile._Tile("raw", (0, 0) + self.size, self.fp.tell(), self.mode)
         ]
 
 

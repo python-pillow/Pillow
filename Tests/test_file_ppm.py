@@ -49,7 +49,7 @@ def test_sanity() -> None:
         (b"P5 3 1 257 \x00\x00\x00\x80\x01\x01", "I", (0, 32640, 65535)),
         # P6 with maxval < 255
         (
-            b"P6 3 1 17 \x00\x01\x02\x08\x09\x0A\x0F\x10\x11",
+            b"P6 3 1 17 \x00\x01\x02\x08\x09\x0a\x0f\x10\x11",
             "RGB",
             (
                 (0, 15, 30),
@@ -60,7 +60,7 @@ def test_sanity() -> None:
         # P6 with maxval > 255
         (
             b"P6 3 1 257 \x00\x00\x00\x01\x00\x02"
-            b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xFF\xFF",
+            b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xff\xff",
             "RGB",
             (
                 (0, 1, 2),
@@ -79,6 +79,7 @@ def test_arbitrary_maxval(
         assert im.mode == mode
 
         px = im.load()
+        assert px is not None
         assert tuple(px[x, 0] for x in range(3)) == pixels
 
 
@@ -93,7 +94,7 @@ def test_16bit_pgm() -> None:
 
 def test_16bit_pgm_write(tmp_path: Path) -> None:
     with Image.open("Tests/images/16_bit_binary.pgm") as im:
-        filename = str(tmp_path / "temp.pgm")
+        filename = tmp_path / "temp.pgm"
         im.save(filename, "PPM")
         assert_image_equal_tofile(im, filename)
 
@@ -105,7 +106,7 @@ def test_pnm(tmp_path: Path) -> None:
     with Image.open("Tests/images/hopper.pnm") as im:
         assert_image_similar(im, hopper(), 0.0001)
 
-        filename = str(tmp_path / "temp.pnm")
+        filename = tmp_path / "temp.pnm"
         im.save(filename)
 
         assert_image_equal_tofile(im, filename)
@@ -116,7 +117,7 @@ def test_pfm(tmp_path: Path) -> None:
         assert im.info["scale"] == 1.0
         assert_image_equal(im, hopper("F"))
 
-        filename = str(tmp_path / "tmp.pfm")
+        filename = tmp_path / "tmp.pfm"
         im.save(filename)
 
         assert_image_equal_tofile(im, filename)
@@ -127,7 +128,7 @@ def test_pfm_big_endian(tmp_path: Path) -> None:
         assert im.info["scale"] == 2.5
         assert_image_equal(im, hopper("F"))
 
-        filename = str(tmp_path / "tmp.pfm")
+        filename = tmp_path / "tmp.pfm"
         im.save(filename)
 
         assert_image_equal_tofile(im, filename)
@@ -193,8 +194,8 @@ def test_16bit_plain_pgm() -> None:
 def test_plain_data_with_comment(
     tmp_path: Path, header: bytes, data: bytes, comment_count: int
 ) -> None:
-    path1 = str(tmp_path / "temp1.ppm")
-    path2 = str(tmp_path / "temp2.ppm")
+    path1 = tmp_path / "temp1.ppm"
+    path2 = tmp_path / "temp2.ppm"
     comment = b"# comment" * comment_count
     with open(path1, "wb") as f1, open(path2, "wb") as f2:
         f1.write(header + b"\n\n" + data)
@@ -206,7 +207,7 @@ def test_plain_data_with_comment(
 
 @pytest.mark.parametrize("data", (b"P1\n128 128\n", b"P3\n128 128\n255\n"))
 def test_plain_truncated_data(tmp_path: Path, data: bytes) -> None:
-    path = str(tmp_path / "temp.ppm")
+    path = tmp_path / "temp.ppm"
     with open(path, "wb") as f:
         f.write(data)
 
@@ -217,7 +218,7 @@ def test_plain_truncated_data(tmp_path: Path, data: bytes) -> None:
 
 @pytest.mark.parametrize("data", (b"P1\n128 128\n1009", b"P3\n128 128\n255\n100A"))
 def test_plain_invalid_data(tmp_path: Path, data: bytes) -> None:
-    path = str(tmp_path / "temp.ppm")
+    path = tmp_path / "temp.ppm"
     with open(path, "wb") as f:
         f.write(data)
 
@@ -234,7 +235,7 @@ def test_plain_invalid_data(tmp_path: Path, data: bytes) -> None:
     ),
 )
 def test_plain_ppm_token_too_long(tmp_path: Path, data: bytes) -> None:
-    path = str(tmp_path / "temp.ppm")
+    path = tmp_path / "temp.ppm"
     with open(path, "wb") as f:
         f.write(data)
 
@@ -244,7 +245,7 @@ def test_plain_ppm_token_too_long(tmp_path: Path, data: bytes) -> None:
 
 
 def test_plain_ppm_value_negative(tmp_path: Path) -> None:
-    path = str(tmp_path / "temp.ppm")
+    path = tmp_path / "temp.ppm"
     with open(path, "wb") as f:
         f.write(b"P3\n128 128\n255\n-1")
 
@@ -254,7 +255,7 @@ def test_plain_ppm_value_negative(tmp_path: Path) -> None:
 
 
 def test_plain_ppm_value_too_large(tmp_path: Path) -> None:
-    path = str(tmp_path / "temp.ppm")
+    path = tmp_path / "temp.ppm"
     with open(path, "wb") as f:
         f.write(b"P3\n128 128\n255\n256")
 
@@ -269,7 +270,7 @@ def test_magic() -> None:
 
 
 def test_header_with_comments(tmp_path: Path) -> None:
-    path = str(tmp_path / "temp.ppm")
+    path = tmp_path / "temp.ppm"
     with open(path, "wb") as f:
         f.write(b"P6 #comment\n#comment\r12#comment\r8\n128 #comment\n255\n")
 
@@ -278,7 +279,7 @@ def test_header_with_comments(tmp_path: Path) -> None:
 
 
 def test_non_integer_token(tmp_path: Path) -> None:
-    path = str(tmp_path / "temp.ppm")
+    path = tmp_path / "temp.ppm"
     with open(path, "wb") as f:
         f.write(b"P6\nTEST")
 
@@ -287,29 +288,27 @@ def test_non_integer_token(tmp_path: Path) -> None:
             pass
 
 
-def test_header_token_too_long(tmp_path: Path) -> None:
-    path = str(tmp_path / "temp.ppm")
+@pytest.mark.parametrize("data", (b"P3\x0cAAAAAAAAAA\xee", b"P6\n 01234567890"))
+def test_header_token_too_long(tmp_path: Path, data: bytes) -> None:
+    path = tmp_path / "temp.ppm"
     with open(path, "wb") as f:
-        f.write(b"P6\n 01234567890")
+        f.write(data)
 
     with pytest.raises(ValueError) as e:
         with Image.open(path):
             pass
-
-    assert str(e.value) == "Token too long in file header: 01234567890"
+    assert "Token too long in file header: " in repr(e)
 
 
 def test_truncated_file(tmp_path: Path) -> None:
     # Test EOF in header
-    path = str(tmp_path / "temp.pgm")
+    path = tmp_path / "temp.pgm"
     with open(path, "wb") as f:
         f.write(b"P6")
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match="Reached EOF while reading header"):
         with Image.open(path):
             pass
-
-    assert str(e.value) == "Reached EOF while reading header"
 
     # Test EOF for PyDecoder
     fp = BytesIO(b"P5 3 1 4")
@@ -319,7 +318,7 @@ def test_truncated_file(tmp_path: Path) -> None:
 
 
 def test_not_enough_image_data(tmp_path: Path) -> None:
-    path = str(tmp_path / "temp.ppm")
+    path = tmp_path / "temp.ppm"
     with open(path, "wb") as f:
         f.write(b"P2 1 2 255 255")
 
@@ -330,15 +329,15 @@ def test_not_enough_image_data(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize("maxval", (b"0", b"65536"))
 def test_invalid_maxval(maxval: bytes, tmp_path: Path) -> None:
-    path = str(tmp_path / "temp.ppm")
+    path = tmp_path / "temp.ppm"
     with open(path, "wb") as f:
         f.write(b"P6\n3 1 " + maxval)
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(
+        ValueError, match="maxval must be greater than 0 and less than 65536"
+    ):
         with Image.open(path):
             pass
-
-    assert str(e.value) == "maxval must be greater than 0 and less than 65536"
 
 
 def test_neg_ppm() -> None:
@@ -353,7 +352,7 @@ def test_neg_ppm() -> None:
 
 
 def test_mimetypes(tmp_path: Path) -> None:
-    path = str(tmp_path / "temp.pgm")
+    path = tmp_path / "temp.pgm"
 
     with open(path, "wb") as f:
         f.write(b"P4\n128 128\n255")
@@ -367,21 +366,17 @@ def test_mimetypes(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("buffer", (True, False))
-def test_save_stdout(buffer: bool) -> None:
-    old_stdout = sys.stdout
+def test_save_stdout(buffer: bool, monkeypatch: pytest.MonkeyPatch) -> None:
 
     class MyStdOut:
         buffer = BytesIO()
 
     mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
 
-    sys.stdout = mystdout
+    monkeypatch.setattr(sys, "stdout", mystdout)
 
     with Image.open(TEST_FILE) as im:
         im.save(sys.stdout, "PPM")
-
-    # Reset stdout
-    sys.stdout = old_stdout
 
     if isinstance(mystdout, MyStdOut):
         mystdout = mystdout.buffer

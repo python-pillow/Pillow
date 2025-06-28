@@ -54,7 +54,7 @@ class PcxImageFile(ImageFile.ImageFile):
         # header
         assert self.fp is not None
 
-        s = self.fp.read(128)
+        s = self.fp.read(68)
         if not _accept(s):
             msg = "not a PCX file"
             raise SyntaxError(msg)
@@ -65,6 +65,8 @@ class PcxImageFile(ImageFile.ImageFile):
             msg = "bad PCX image size"
             raise SyntaxError(msg)
         logger.debug("BBox: %s %s %s %s", *bbox)
+
+        offset = self.fp.tell() + 60
 
         # format
         version = s[1]
@@ -86,7 +88,7 @@ class PcxImageFile(ImageFile.ImageFile):
 
         elif bits == 1 and planes in (2, 4):
             mode = "P"
-            rawmode = "P;%dL" % planes
+            rawmode = f"P;{planes}L"
             self.palette = ImagePalette.raw("RGB", s[16:64])
 
         elif version == 5 and bits == 8 and planes == 1:
@@ -102,7 +104,6 @@ class PcxImageFile(ImageFile.ImageFile):
                         break
                 if mode == "P":
                     self.palette = ImagePalette.raw("RGB", s[1:])
-            self.fp.seek(128)
 
         elif version == 5 and bits == 8 and planes == 3:
             mode = "RGB"
@@ -128,9 +129,7 @@ class PcxImageFile(ImageFile.ImageFile):
         bbox = (0, 0) + self.size
         logger.debug("size: %sx%s", *self.size)
 
-        self.tile = [
-            ImageFile._Tile("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))
-        ]
+        self.tile = [ImageFile._Tile("pcx", bbox, offset, (rawmode, planes * stride))]
 
 
 # --------------------------------------------------------------------
@@ -188,7 +187,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         + o16(dpi[0])
         + o16(dpi[1])
         + b"\0" * 24
-        + b"\xFF" * 24
+        + b"\xff" * 24
         + b"\0"
         + o8(planes)
         + o16(stride)

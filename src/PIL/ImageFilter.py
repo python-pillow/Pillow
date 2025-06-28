@@ -20,14 +20,15 @@ import abc
 import functools
 from collections.abc import Sequence
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Callable, cast
+from typing import Any, Callable, cast
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from . import _imaging
     from ._typing import NumpyArray
 
 
-class Filter:
+class Filter(abc.ABC):
     @abc.abstractmethod
     def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         pass
@@ -553,7 +554,7 @@ class Color3DLUT(MultibandFilter):
         ch_out = channels or ch_in
         size_1d, size_2d, size_3d = self.size
 
-        table = [0] * (size_1d * size_2d * size_3d * ch_out)
+        table: list[float] = [0] * (size_1d * size_2d * size_3d * ch_out)
         idx_in = 0
         idx_out = 0
         for b in range(size_3d):
@@ -598,8 +599,6 @@ class Color3DLUT(MultibandFilter):
             self.mode or image.mode,
             Image.Resampling.BILINEAR,
             self.channels,
-            self.size[0],
-            self.size[1],
-            self.size[2],
+            self.size,
             self.table,
         )

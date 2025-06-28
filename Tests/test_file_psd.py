@@ -25,16 +25,18 @@ def test_sanity() -> None:
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
 def test_unclosed_file() -> None:
-    def open() -> None:
+    def open_test_image() -> None:
         im = Image.open(test_file)
         im.load()
 
     with pytest.warns(ResourceWarning):
-        open()
+        open_test_image()
 
 
 def test_closed_file() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         im = Image.open(test_file)
         im.load()
         im.close()
@@ -42,6 +44,8 @@ def test_closed_file() -> None:
 
 def test_context_manager() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         with Image.open(test_file) as im:
             im.load()
 
@@ -55,17 +59,21 @@ def test_invalid_file() -> None:
 
 def test_n_frames() -> None:
     with Image.open("Tests/images/hopper_merged.psd") as im:
+        assert isinstance(im, PsdImagePlugin.PsdImageFile)
         assert im.n_frames == 1
         assert not im.is_animated
 
     for path in [test_file, "Tests/images/negative_layer_count.psd"]:
         with Image.open(path) as im:
+            assert isinstance(im, PsdImagePlugin.PsdImageFile)
             assert im.n_frames == 2
             assert im.is_animated
 
 
 def test_eoferror() -> None:
     with Image.open(test_file) as im:
+        assert isinstance(im, PsdImagePlugin.PsdImageFile)
+
         # PSD seek index starts at 1 rather than 0
         n_frames = im.n_frames + 1
 
@@ -115,11 +123,13 @@ def test_rgba() -> None:
 
 def test_negative_top_left_layer() -> None:
     with Image.open("Tests/images/negative_top_left_layer.psd") as im:
+        assert isinstance(im, PsdImagePlugin.PsdImageFile)
         assert im.layers[0][2] == (-50, -50, 50, 50)
 
 
 def test_layer_skip() -> None:
     with Image.open("Tests/images/five_channels.psd") as im:
+        assert isinstance(im, PsdImagePlugin.PsdImageFile)
         assert im.n_frames == 1
 
 
@@ -171,5 +181,6 @@ def test_crashes(test_file: str, raises: type[Exception]) -> None:
 def test_layer_crashes(test_file: str) -> None:
     with open(test_file, "rb") as f:
         with Image.open(f) as im:
+            assert isinstance(im, PsdImagePlugin.PsdImageFile)
             with pytest.raises(SyntaxError):
                 im.layers
