@@ -1,7 +1,7 @@
 [build-system]
 build-backend = "backend"
 requires = [
-  "setuptools>=67.8",
+  "setuptools>=77",
 ]
 backend-path = [
   "_custom_build",
@@ -14,14 +14,14 @@ readme = "README.md"
 keywords = [
   "Imaging",
 ]
-license = { text = "MIT-CMU" }
+license = "MIT-CMU"
+license-files = [ "LICENSE" ]
 authors = [
   { name = "Jeffrey A. Clark", email = "aclark@aclark.net" },
 ]
 requires-python = ">=3.9"
 classifiers = [
   "Development Status :: 6 - Mature",
-  "License :: OSI Approved :: CMU License (MIT-CMU)",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -43,7 +43,8 @@ dynamic = [
 optional-dependencies.docs = [
   "furo",
   "olefile",
-  "sphinx>=8.1",
+  "sphinx>=8.2",
+  "sphinx-autobuild",
   "sphinx-copybutton",
   "sphinx-inline-tabs",
   "sphinxext-opengraph",
@@ -54,6 +55,10 @@ optional-dependencies.fpx = [
 optional-dependencies.mic = [
   "olefile",
 ]
+optional-dependencies.test-arrow = [
+  "pyarrow",
+]
+
 optional-dependencies.tests = [
   "check-manifest",
   "coverage>=7.4.2",
@@ -65,8 +70,10 @@ optional-dependencies.tests = [
   "pytest",
   "pytest-cov",
   "pytest-timeout",
+  "pytest-xdist",
   "trove-classifiers>=2024.10.12",
 ]
+
 optional-dependencies.typing = [
   "typing-extensions; python_version<'3.10'",
 ]
@@ -104,7 +111,6 @@ test-extras = "tests"
 
 [tool.cibuildwheel.macos.environment]
 PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
-DYLD_LIBRARY_PATH = "$(pwd)/build/deps/darwin/lib"
 
 [tool.black]
 exclude = "wheels/multibuild"
@@ -122,6 +128,7 @@ lint.select = [
   "ISC",    # flake8-implicit-str-concat
   "LOG",    # flake8-logging
   "PGH",    # pygrep-hooks
+  "PIE",    # flake8-pie
   "PT",     # flake8-pytest-style
   "PYI",    # flake8-pyi
   "RUF100", # unused noqa (yesqa)
@@ -134,6 +141,7 @@ lint.ignore = [
   "E221",   # Multiple spaces before operator
   "E226",   # Missing whitespace around arithmetic operator
   "E241",   # Multiple spaces after ','
+  "PIE790", # flake8-pie: unnecessary-placeholder
   "PT001",  # pytest-fixture-incorrect-parentheses-style
   "PT007",  # pytest-parametrize-values-wrong-type
   "PT011",  # pytest-raises-too-broad

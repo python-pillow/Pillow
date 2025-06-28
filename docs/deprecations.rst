@@ -155,7 +155,7 @@ JpegImageFile.huffman_ac and JpegImageFile.huffman_dc
 The ``huffman_ac`` and ``huffman_dc`` dictionaries on JPEG images were unused. They
 have been deprecated, and will be removed in Pillow 12 (2025-10-15).
 
-Specific WebP Feature Checks
+Specific WebP feature checks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 11.0.0
@@ -186,12 +186,34 @@ ExifTags.IFD.Makernote
 Image.Image.get_child_images()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. deprecated:: 11.2.0
+.. deprecated:: 11.2.1
 
 ``Image.Image.get_child_images()`` has been deprecated. and will be removed in Pillow
 13 (2026-10-15). It will be moved to ``ImageFile.ImageFile.get_child_images()``. The
 method uses an image's file pointer, and so child images could only be retrieved from
 an :py:class:`PIL.ImageFile.ImageFile` instance.
+
+Image.fromarray mode parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.3.0
+
+The ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` has been deprecated. The
+mode can be automatically determined from the object's shape and type instead.
+
+Saving I mode images as PNG
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.3.0
+
+In order to fit the 32 bits of I mode images into PNG, when PNG images can only contain
+at most 16 bits for a channel, Pillow has been clipping the values. Rather than quietly
+changing the data, this is now deprecated. Instead, the image can be converted to
+another mode before saving::
+
+    from PIL import Image
+    im = Image.new("I", (1, 1))
+    im.convert("I;16").save("out.png")
 
 Removed features
 ----------------

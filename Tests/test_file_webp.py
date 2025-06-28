@@ -33,8 +33,8 @@ class TestUnsupportedWebp:
             monkeypatch.setattr(WebPImagePlugin, "SUPPORTED", False)
 
         file_path = "Tests/images/hopper.webp"
-        with pytest.warns(UserWarning):
-            with pytest.raises(OSError):
+        with pytest.raises(OSError):
+            with pytest.warns(UserWarning, match="WEBP support not installed"):
                 with Image.open(file_path):
                     pass
 
@@ -154,9 +154,8 @@ class TestFileWebp:
     @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
     def test_write_encoding_error_message(self, tmp_path: Path) -> None:
         im = Image.new("RGB", (15000, 15000))
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match="encoding error 6"):
             im.save(tmp_path / "temp.webp", method=0)
-        assert str(e.value) == "encoding error 6"
 
     @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
     def test_write_encoding_error_bad_dimension(self, tmp_path: Path) -> None:
@@ -220,6 +219,7 @@ class TestFileWebp:
         # Save P mode GIF with background
         with Image.open("Tests/images/chi.gif") as im:
             original_value = im.convert("RGB").getpixel((1, 1))
+            assert isinstance(original_value, tuple)
 
             # Save as WEBP
             im.save(out_webp, save_all=True)
@@ -231,7 +231,8 @@ class TestFileWebp:
 
         with Image.open(out_gif) as reread:
             reread_value = reread.convert("RGB").getpixel((1, 1))
-        difference = sum(abs(original_value[i] - reread_value[i]) for i in range(0, 3))
+        assert isinstance(reread_value, tuple)
+        difference = sum(abs(original_value[i] - reread_value[i]) for i in range(3))
         assert difference < 5
 
     def test_duration(self, tmp_path: Path) -> None:

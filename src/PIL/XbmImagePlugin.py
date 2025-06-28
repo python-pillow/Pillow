@@ -38,7 +38,7 @@ xbm_head = re.compile(
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix.lstrip()[:7] == b"#define"
+    return prefix.lstrip().startswith(b"#define")
 
 
 ##

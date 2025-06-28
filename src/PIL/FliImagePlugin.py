@@ -22,6 +22,7 @@ from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
 from ._binary import i32le as i32
 from ._binary import o8
+from ._util import DeferredError
 
 #
 # decoder
@@ -134,6 +135,8 @@ class FliImageFile(ImageFile.ImageFile):
             self._seek(f)
 
     def _seek(self, frame: int) -> None:
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         if frame == 0:
             self.__frame = -1
             self._fp.seek(self.__rewind)

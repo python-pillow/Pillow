@@ -50,7 +50,7 @@ import warnings
 from collections.abc import Iterator, MutableMapping
 from fractions import Fraction
 from numbers import Number, Rational
-from typing import IO, TYPE_CHECKING, Any, Callable, NoReturn, cast
+from typing import IO, Any, Callable, NoReturn, cast
 
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
@@ -58,9 +58,10 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._deprecate import deprecate
 from ._typing import StrOrBytesPath
-from ._util import is_path
+from ._util import DeferredError, is_path
 from .TiffTags import TYPES
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from ._typing import Buffer, IntegralLike
 
@@ -288,7 +289,7 @@ if not getattr(Image.core, "libtiff_support_custom_tags", True):
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] in PREFIXES
+    return prefix.startswith(tuple(PREFIXES))
 
 
 def _limit_rational(
@@ -404,7 +405,7 @@ class IFDRational(Rational):
     def __repr__(self) -> str:
         return str(float(self._val))
 
-    def __hash__(self) -> int:
+    def __hash__(self) -> int:  # type: ignore[override]
         return self._val.__hash__()
 
     def __eq__(self, other: object) -> bool:
@@ -1216,12 +1217,15 @@ class TiffImageFile(ImageFile.ImageFile):
             return
         self._seek(frame)
         if self._im is not None and (
-            self.im.size != self._tile_size or self.im.mode != self.mode
+            self.im.size != self._tile_size
+            or self.im.mode != self.mode
+            or self.readonly
         ):
-            # The core image will no longer be used
             self._im = None
 
     def _seek(self, frame: int) -> None:
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self.fp = self._fp
 
         while len(self._frame_pos) <= frame:
@@ -1256,7 +1260,10 @@ class TiffImageFile(ImageFile.ImageFile):
         self.fp.seek(self._frame_pos[frame])
         self.tag_v2.load(self.fp)
         if XMP in self.tag_v2:
-            self.info["xmp"] = self.tag_v2[XMP]
+            xmp = self.tag_v2[XMP]
+            if isinstance(xmp, tuple) and len(xmp) == 1:
+                xmp = xmp[0]
+            self.info["xmp"] = xmp
         elif "xmp" in self.info:
             del self.info["xmp"]
         self._reload_exif()
@@ -1280,7 +1287,7 @@ class TiffImageFile(ImageFile.ImageFile):
         blocks = {}
         val = self.tag_v2.get(ExifTags.Base.ImageResources)
         if val:
-            while val[:4] == b"8BIM":
+            while val.startswith(b"8BIM"):
                 id = i16(val[4:6])
                 n = math.ceil((val[6] + 1) / 2) * 2
                 size = i32(val[6 + n : 10 + n])
@@ -1584,7 +1591,7 @@ class TiffImageFile(ImageFile.ImageFile):
             # byte order.
             elif rawmode == "I;16":
                 rawmode = "I;16N"
-            elif rawmode.endswith(";16B") or rawmode.endswith(";16L"):
+            elif rawmode.endswith((";16B", ";16L")):
                 rawmode = rawmode[:-1] + "N"
 
             # Offset in the tile tuple is 0, we go from 0,0 to
@@ -1608,6 +1615,10 @@ class TiffImageFile(ImageFile.ImageFile):
                     raise ValueError(msg)
                 w = tilewidth
 
+            if w == xsize and h == ysize and self._planar_configuration != 2:
+                # Every tile covers the image. Only use the last offset
+                offsets = offsets[-1:]
+
             for offset in offsets:
                 if x + w > xsize:
                     stride = w * sum(bps_tuple) / 8  # bytes per line
@@ -1630,11 +1641,11 @@ class TiffImageFile(ImageFile.ImageFile):
                         args,
                     )
                 )
-                x = x + w
+                x += w
                 if x >= xsize:
                     x, y = 0, y + h
                     if y >= ysize:
-                        x = y = 0
+                        y = 0
                         layer += 1
         else:
             logger.debug("- unsupported data organization")
@@ -1669,7 +1680,7 @@ SAVE_INFO = {
     "PA": ("PA", II, 3, 1, (8, 8), 2),
     "I": ("I;32S", II, 1, 2, (32,), None),
     "I;16": ("I;16", II, 1, 1, (16,), None),
-    "I;16S": ("I;16S", II, 1, 2, (16,), None),
+    "I;16L": ("I;16L", II, 1, 1, (16,), None),
     "F": ("F;32F", II, 1, 3, (32,), None),
     "RGB": ("RGB", II, 2, 1, (8, 8, 8), None),
     "RGBX": ("RGBX", II, 2, 1, (8, 8, 8, 8), 0),
@@ -1677,10 +1688,7 @@ SAVE_INFO = {
     "CMYK": ("CMYK", II, 5, 1, (8, 8, 8, 8), None),
     "YCbCr": ("YCbCr", II, 6, 1, (8, 8, 8), None),
     "LAB": ("LAB", II, 8, 1, (8, 8, 8), None),
-    "I;32BS": ("I;32BS", MM, 1, 2, (32,), None),
     "I;16B": ("I;16B", MM, 1, 1, (16,), None),
-    "I;16BS": ("I;16BS", MM, 1, 2, (16,), None),
-    "F;32BF": ("F;32BF", MM, 1, 3, (32,), None),
 }
 
 
@@ -1956,7 +1964,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # we're storing image byte order. So, if the rawmode
         # contains I;16, we need to convert from native to image
         # byte order.
-        if im.mode in ("I;16B", "I;16"):
+        if im.mode in ("I;16", "I;16B", "I;16L"):
             rawmode = "I;16N"
 
         # Pass tags as sorted list so that the tags are set in a fixed order.
@@ -2295,9 +2303,7 @@ class AppendingTiffWriter(io.BytesIO):
 
 
 def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    encoderinfo = im.encoderinfo.copy()
-    encoderconfig = im.encoderconfig
-    append_images = list(encoderinfo.get("append_images", []))
+    append_images = list(im.encoderinfo.get("append_images", []))
     if not hasattr(im, "n_frames") and not append_images:
         return _save(im, fp, filename)
 
@@ -2305,12 +2311,11 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         with AppendingTiffWriter(fp) as tf:
             for ims in [im] + append_images:
-                ims.encoderinfo = encoderinfo
-                ims.encoderconfig = encoderconfig
-                if not hasattr(ims, "n_frames"):
-                    nfr = 1
-                else:
-                    nfr = ims.n_frames
+                if not hasattr(ims, "encoderinfo"):
+                    ims.encoderinfo = {}
+                if not hasattr(ims, "encoderconfig"):
+                    ims.encoderconfig = ()
+                nfr = getattr(ims, "n_frames", 1)
 
                 for idx in range(nfr):
                     ims.seek(idx)

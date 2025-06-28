@@ -65,7 +65,7 @@ ImageMath.eval()
 :py:meth:`~PIL.ImageMath.unsafe_eval` instead. See earlier security notes for more
 information.
 
-API Changes
+API changes
 ===========
 
 Added alpha_quality argument when saving WebP images
@@ -87,7 +87,7 @@ Negative P1-P3 PPM value error
 If a P1-P3 PPM image contains a negative value, a :py:exc:`ValueError` will now be
 raised.
 
-API Additions
+API additions
 =============
 
 Added PerspectiveTransform
@@ -97,7 +97,7 @@ Added PerspectiveTransform
 that all of the :py:data:`~PIL.Image.Transform` values now have a corresponding
 subclass of :py:class:`~PIL.ImageTransform.Transform`.
 
-Other Changes
+Other changes
 =============
 
 Portable FloatMap (PFM) images

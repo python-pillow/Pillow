@@ -27,6 +27,7 @@
 
 #include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
+#include "libImaging/Bcn.h"
 #include "libImaging/Gif.h"
 
 #ifdef HAVE_UNISTD_H
@@ -323,36 +324,11 @@ static struct PyGetSetDef getseters[] = {
 };
 
 static PyTypeObject ImagingEncoderType = {
-    PyVarObject_HEAD_INIT(NULL, 0) "ImagingEncoder", /*tp_name*/
-    sizeof(ImagingEncoderObject),                    /*tp_basicsize*/
-    0,                                               /*tp_itemsize*/
-    /* methods */
-    (destructor)_dealloc, /*tp_dealloc*/
-    0,                    /*tp_vectorcall_offset*/
-    0,                    /*tp_getattr*/
-    0,                    /*tp_setattr*/
-    0,                    /*tp_as_async*/
-    0,                    /*tp_repr*/
-    0,                    /*tp_as_number*/
-    0,                    /*tp_as_sequence*/
-    0,                    /*tp_as_mapping*/
-    0,                    /*tp_hash*/
-    0,                    /*tp_call*/
-    0,                    /*tp_str*/
-    0,                    /*tp_getattro*/
-    0,                    /*tp_setattro*/
-    0,                    /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,   /*tp_flags*/
-    0,                    /*tp_doc*/
-    0,                    /*tp_traverse*/
-    0,                    /*tp_clear*/
-    0,                    /*tp_richcompare*/
-    0,                    /*tp_weaklistoffset*/
-    0,                    /*tp_iter*/
-    0,                    /*tp_iternext*/
-    methods,              /*tp_methods*/
-    0,                    /*tp_members*/
-    getseters,            /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingEncoder",
+    .tp_basicsize = sizeof(ImagingEncoderObject),
+    .tp_dealloc = (destructor)_dealloc,
+    .tp_methods = methods,
+    .tp_getset = getseters,
 };
 
 /* -------------------------------------------------------------------- */
@@ -373,6 +349,31 @@ get_packer(ImagingEncoderObject *encoder, const char *mode, const char *rawmode)
     encoder->state.bits = bits;
 
     return 0;
+}
+
+/* -------------------------------------------------------------------- */
+/* BCN                                                                  */
+/* -------------------------------------------------------------------- */
+
+PyObject *
+PyImaging_BcnEncoderNew(PyObject *self, PyObject *args) {
+    ImagingEncoderObject *encoder;
+
+    char *mode;
+    int n;
+    if (!PyArg_ParseTuple(args, "si", &mode, &n)) {
+        return NULL;
+    }
+
+    encoder = PyImaging_EncoderNew(0);
+    if (encoder == NULL) {
+        return NULL;
+    }
+
+    encoder->encode = ImagingBcnEncode;
+    encoder->state.state = n;
+
+    return (PyObject *)encoder;
 }
 
 /* -------------------------------------------------------------------- */
@@ -701,6 +702,8 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         PyErr_SetString(PyExc_RuntimeError, "tiff codec initialization failed");
         return NULL;
     }
+
+    encoder->cleanup = ImagingLibTiffEncodeCleanup;
 
     num_core_tags = sizeof(core_tags) / sizeof(int);
     for (pos = 0; pos < tags_size; pos++) {
@@ -1253,7 +1256,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     PyObject *quality_layers = NULL;
     Py_ssize_t num_resolutions = 0;
     PyObject *cblk_size = NULL, *precinct_size = NULL;
-    PyObject *irreversible = NULL;
+    int irreversible = 0;
     char *progression = "LRCP";
     OPJ_PROG_ORDER prog_order;
     char *cinema_mode = "no";
@@ -1267,7 +1270,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|OOOsOnOOOssbbnz#p",
+            "ss|OOOsOnOOpssbbnz#p",
             &mode,
             &format,
             &offset,
@@ -1402,7 +1405,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
         precinct_size, &context->precinct_width, &context->precinct_height
     );
 
-    context->irreversible = PyObject_IsTrue(irreversible);
+    context->irreversible = irreversible;
     context->progression = prog_order;
     context->cinema_mode = cine_mode;
     context->mct = mct;

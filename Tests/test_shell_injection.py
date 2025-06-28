@@ -35,10 +35,11 @@ class TestShellInjection:
     @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
     def test_load_djpeg_filename(self, tmp_path: Path) -> None:
         for filename in test_filenames:
-            src_file = str(tmp_path / filename)
+            src_file = tmp_path / filename
             shutil.copy(TEST_JPG, src_file)
 
             with Image.open(src_file) as im:
+                assert isinstance(im, JpegImagePlugin.JpegImageFile)
                 im.load_djpeg()
 
     @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")

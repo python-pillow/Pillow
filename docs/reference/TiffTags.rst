@@ -1,7 +1,7 @@
 .. py:module:: PIL.TiffTags
 .. py:currentmodule:: PIL.TiffTags
 
-:py:mod:`~PIL.TiffTags` Module
+:py:mod:`~PIL.TiffTags` module
 ==============================
 
 The :py:mod:`~PIL.TiffTags` module exposes many of the standard TIFF

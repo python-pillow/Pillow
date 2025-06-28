@@ -1402,44 +1402,19 @@ static struct PyGetSetDef cms_profile_getsetters[] = {
     {"colorant_table_out", (getter)cms_profile_getattr_colorant_table_out},
     {"intent_supported", (getter)cms_profile_getattr_is_intent_supported},
     {"clut", (getter)cms_profile_getattr_is_clut},
-    {"icc_measurement_condition", (getter)cms_profile_getattr_icc_measurement_condition
-    },
+    {"icc_measurement_condition",
+     (getter)cms_profile_getattr_icc_measurement_condition},
     {"icc_viewing_condition", (getter)cms_profile_getattr_icc_viewing_condition},
 
     {NULL}
 };
 
 static PyTypeObject CmsProfile_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "PIL.ImageCms.core.CmsProfile", /*tp_name*/
-    sizeof(CmsProfileObject),                                      /*tp_basicsize*/
-    0,                                                             /*tp_itemsize*/
-    /* methods */
-    (destructor)cms_profile_dealloc, /*tp_dealloc*/
-    0,                               /*tp_vectorcall_offset*/
-    0,                               /*tp_getattr*/
-    0,                               /*tp_setattr*/
-    0,                               /*tp_as_async*/
-    0,                               /*tp_repr*/
-    0,                               /*tp_as_number*/
-    0,                               /*tp_as_sequence*/
-    0,                               /*tp_as_mapping*/
-    0,                               /*tp_hash*/
-    0,                               /*tp_call*/
-    0,                               /*tp_str*/
-    0,                               /*tp_getattro*/
-    0,                               /*tp_setattro*/
-    0,                               /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,              /*tp_flags*/
-    0,                               /*tp_doc*/
-    0,                               /*tp_traverse*/
-    0,                               /*tp_clear*/
-    0,                               /*tp_richcompare*/
-    0,                               /*tp_weaklistoffset*/
-    0,                               /*tp_iter*/
-    0,                               /*tp_iternext*/
-    cms_profile_methods,             /*tp_methods*/
-    0,                               /*tp_members*/
-    cms_profile_getsetters,          /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "PIL.ImageCms.core.CmsProfile",
+    .tp_basicsize = sizeof(CmsProfileObject),
+    .tp_dealloc = (destructor)cms_profile_dealloc,
+    .tp_methods = cms_profile_methods,
+    .tp_getset = cms_profile_getsetters,
 };
 
 static struct PyMethodDef cms_transform_methods[] = {
@@ -1447,36 +1422,10 @@ static struct PyMethodDef cms_transform_methods[] = {
 };
 
 static PyTypeObject CmsTransform_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "PIL.ImageCms.core.CmsTransform", /*tp_name*/
-    sizeof(CmsTransformObject),                                      /*tp_basicsize*/
-    0,                                                               /*tp_itemsize*/
-    /* methods */
-    (destructor)cms_transform_dealloc, /*tp_dealloc*/
-    0,                                 /*tp_vectorcall_offset*/
-    0,                                 /*tp_getattr*/
-    0,                                 /*tp_setattr*/
-    0,                                 /*tp_as_async*/
-    0,                                 /*tp_repr*/
-    0,                                 /*tp_as_number*/
-    0,                                 /*tp_as_sequence*/
-    0,                                 /*tp_as_mapping*/
-    0,                                 /*tp_hash*/
-    0,                                 /*tp_call*/
-    0,                                 /*tp_str*/
-    0,                                 /*tp_getattro*/
-    0,                                 /*tp_setattro*/
-    0,                                 /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,                /*tp_flags*/
-    0,                                 /*tp_doc*/
-    0,                                 /*tp_traverse*/
-    0,                                 /*tp_clear*/
-    0,                                 /*tp_richcompare*/
-    0,                                 /*tp_weaklistoffset*/
-    0,                                 /*tp_iter*/
-    0,                                 /*tp_iternext*/
-    cms_transform_methods,             /*tp_methods*/
-    0,                                 /*tp_members*/
-    0,                                 /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "PIL.ImageCms.core.CmsTransform",
+    .tp_basicsize = sizeof(CmsTransformObject),
+    .tp_dealloc = (destructor)cms_transform_dealloc,
+    .tp_methods = cms_transform_methods,
 };
 
 static int
@@ -1514,28 +1463,24 @@ setup_module(PyObject *m) {
     return 0;
 }
 
+static PyModuleDef_Slot slots[] = {
+    {Py_mod_exec, setup_module},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
 PyMODINIT_FUNC
 PyInit__imagingcms(void) {
-    PyObject *m;
+    PyDateTime_IMPORT;
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_imagingcms",
-        .m_size = -1,
         .m_methods = pyCMSdll_methods,
+        .m_slots = slots
     };
 
-    m = PyModule_Create(&module_def);
-
-    if (setup_module(m) < 0) {
-        return NULL;
-    }
-
-    PyDateTime_IMPORT;
-
-#ifdef Py_GIL_DISABLED
-    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
-#endif
-
-    return m;
+    return PyModuleDef_Init(&module_def);
 }

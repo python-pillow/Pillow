@@ -117,14 +117,13 @@ def read_png_or_jpeg2000(
     sig = fobj.read(12)
 
     im: Image.Image
-    if sig[:8] == b"\x89PNG\x0d\x0a\x1a\x0a":
+    if sig.startswith(b"\x89PNG\x0d\x0a\x1a\x0a"):
         fobj.seek(start)
         im = PngImagePlugin.PngImageFile(fobj)
         Image._decompression_bomb_check(im.size)
         return {"RGBA": im}
     elif (
-        sig[:4] == b"\xff\x4f\xff\x51"
-        or sig[:4] == b"\x0d\x0a\x87\x0a"
+        sig.startswith((b"\xff\x4f\xff\x51", b"\x0d\x0a\x87\x0a"))
         or sig == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a"
     ):
         if not enable_jpeg2k:
@@ -387,7 +386,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == MAGIC
+    return prefix.startswith(MAGIC)
 
 
 Image.register_open(IcnsImageFile.format, IcnsImageFile, _accept)

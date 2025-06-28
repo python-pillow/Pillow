@@ -17,9 +17,12 @@
 from __future__ import annotations
 
 import sys
-from typing import IO, TYPE_CHECKING
+from typing import IO
 
 from . import EpsImagePlugin
+
+TYPE_CHECKING = False
+
 
 ##
 # Simple PostScript graphics interface.

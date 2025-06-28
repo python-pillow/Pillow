@@ -25,7 +25,7 @@ else
     MB_ML_LIBC=${AUDITWHEEL_POLICY::9}
     MB_ML_VER=${AUDITWHEEL_POLICY:9}
 fi
-PLAT=$CIBW_ARCHS
+PLAT="${CIBW_ARCHS:-$AUDITWHEEL_ARCH}"
 
 # Define custom utilities
 source wheels/multibuild/common_utils.sh
@@ -38,40 +38,43 @@ ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.13.3
-HARFBUZZ_VERSION=10.2.0
-LIBPNG_VERSION=1.6.46
-JPEGTURBO_VERSION=3.1.0
+HARFBUZZ_VERSION=11.2.1
+LIBPNG_VERSION=1.6.49
+JPEGTURBO_VERSION=3.1.1
 OPENJPEG_VERSION=2.5.3
-XZ_VERSION=5.6.4
-TIFF_VERSION=4.6.0
-LCMS2_VERSION=2.16
-ZLIB_NG_VERSION=2.2.3
+XZ_VERSION=5.8.1
+TIFF_VERSION=4.7.0
+LCMS2_VERSION=2.17
+ZLIB_VERSION=1.3.1
+ZLIB_NG_VERSION=2.2.4
 LIBWEBP_VERSION=1.5.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0
+LIBAVIF_VERSION=1.3.0
 
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
     # This essentially duplicates the Homebrew recipe
-    ORIGINAL_CFLAGS=$CFLAGS
-    CFLAGS="$CFLAGS -Wno-int-conversion"
-    build_simple pkg-config 0.29.2 https://pkg-config.freedesktop.org/releases tar.gz \
+    CFLAGS="$CFLAGS -Wno-int-conversion" build_simple pkg-config 0.29.2 https://pkg-config.freedesktop.org/releases tar.gz \
         --disable-debug --disable-host-tool --with-internal-glib \
         --with-pc-path=$BUILD_PREFIX/share/pkgconfig:$BUILD_PREFIX/lib/pkgconfig \
         --with-system-include-path=$(xcrun --show-sdk-path --sdk macosx)/usr/include
-    CFLAGS=$ORIGINAL_CFLAGS
     export PKG_CONFIG=$BUILD_PREFIX/bin/pkg-config
     touch pkg-config-stamp
 }
 
 function build_zlib_ng {
     if [ -e zlib-stamp ]; then return; fi
-    fetch_unpack https://github.com/zlib-ng/zlib-ng/archive/$ZLIB_NG_VERSION.tar.gz zlib-ng-$ZLIB_NG_VERSION.tar.gz
-    (cd zlib-ng-$ZLIB_NG_VERSION \
-        && ./configure --prefix=$BUILD_PREFIX --zlib-compat \
-        && make -j4 \
-        && make install)
+    build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --zlib-compat
+
+    if [ -n "$IS_MACOS" ]; then
+        # Ensure that on macOS, the library name is an absolute path, not an
+        # @rpath, so that delocate picks up the right library (and doesn't need
+        # DYLD_LIBRARY_PATH to be set). The default Makefile doesn't have an
+        # option to control the install_name.
+        install_name_tool -id $BUILD_PREFIX/lib/libz.1.dylib $BUILD_PREFIX/lib/libz.1.dylib
+    fi
     touch zlib-stamp
 }
 
@@ -90,10 +93,63 @@ function build_harfbuzz {
 
     local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/harfbuzz-$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
     (cd $out_dir \
-        && meson setup build --prefix=$BUILD_PREFIX --libdir=$BUILD_PREFIX/lib --buildtype=release -Dfreetype=enabled -Dglib=disabled)
+        && meson setup build --prefix=$BUILD_PREFIX --libdir=$BUILD_PREFIX/lib --buildtype=minsize -Dfreetype=enabled -Dglib=disabled -Dtests=disabled)
     (cd $out_dir/build \
         && meson install)
     touch harfbuzz-stamp
+}
+
+function build_libavif {
+    if [ -e libavif-stamp ]; then return; fi
+
+    python3 -m pip install meson ninja
+
+    if [[ "$PLAT" == "x86_64" ]] || [ -n "$SANITIZER" ]; then
+        build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
+    fi
+
+    local build_type=MinSizeRel
+    local lto=ON
+
+    local libavif_cmake_flags
+
+    if [ -n "$IS_MACOS" ]; then
+        lto=OFF
+        libavif_cmake_flags=(
+            -DCMAKE_C_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto" \
+            -DCMAKE_CXX_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto" \
+            -DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,-S,-x,-dead_strip_dylibs" \
+        )
+    else
+        if [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "x86_64" ]]; then
+            build_type=Release
+        fi
+        libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
+    fi
+
+    local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
+    # CONFIG_AV1_HIGHBITDEPTH=0 is a flag for libaom (included as a subproject
+    # of libavif) that disables support for encoding high bit depth images.
+    (cd $out_dir \
+        && cmake \
+            -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX \
+            -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib \
+            -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib \
+            -DBUILD_SHARED_LIBS=ON \
+            -DAVIF_LIBSHARPYUV=LOCAL \
+            -DAVIF_LIBYUV=LOCAL \
+            -DAVIF_CODEC_AOM=LOCAL \
+            -DCONFIG_AV1_HIGHBITDEPTH=0 \
+            -DAVIF_CODEC_AOM_DECODE=OFF \
+            -DAVIF_CODEC_DAV1D=LOCAL \
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=$lto \
+            -DCMAKE_C_VISIBILITY_PRESET=hidden \
+            -DCMAKE_CXX_VISIBILITY_PRESET=hidden \
+            -DCMAKE_BUILD_TYPE=$build_type \
+            "${libavif_cmake_flags[@]}" \
+            . \
+        && make install)
+    touch libavif-stamp
 }
 
 function build {
@@ -101,7 +157,11 @@ function build {
     if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
-    build_zlib_ng
+    if [[ -n "$IS_MACOS" ]] && [[ "$MACOSX_DEPLOYMENT_TARGET" == "10.10" || "$MACOSX_DEPLOYMENT_TARGET" == "10.13" ]]; then
+        build_new_zlib
+    else
+        build_zlib_ng
+    fi
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
@@ -126,19 +186,18 @@ function build {
         build_tiff
     fi
 
+    build_libavif
     build_libpng
     build_lcms2
     build_openjpeg
 
-    ORIGINAL_CFLAGS=$CFLAGS
-    CFLAGS="$CFLAGS -O3 -DNDEBUG"
+    webp_cflags="-O3 -DNDEBUG"
     if [[ -n "$IS_MACOS" ]]; then
-        CFLAGS="$CFLAGS -Wl,-headerpad_max_install_names"
+        webp_cflags="$webp_cflags -Wl,-headerpad_max_install_names"
     fi
-    build_simple libwebp $LIBWEBP_VERSION \
+    CFLAGS="$CFLAGS $webp_cflags" build_simple libwebp $LIBWEBP_VERSION \
         https://storage.googleapis.com/downloads.webmproject.org/releases/webp tar.gz \
         --enable-libwebpmux --enable-libwebpdemux
-    CFLAGS=$ORIGINAL_CFLAGS
 
     build_brotli
 

@@ -1,7 +1,7 @@
 .. py:module:: PIL.Image
 .. py:currentmodule:: PIL.Image
 
-:py:mod:`~PIL.Image` Module
+:py:mod:`~PIL.Image` module
 ===========================
 
 The :py:mod:`~PIL.Image` module provides a class with the same name which is
@@ -79,6 +79,7 @@ Constructing images
 
 .. autofunction:: new
 .. autofunction:: fromarray
+.. autofunction:: fromarrow
 .. autofunction:: frombytes
 .. autofunction:: frombuffer
 
@@ -112,7 +113,7 @@ Registering plugins
 .. autofunction:: register_decoder
 .. autofunction:: register_encoder
 
-The Image Class
+The Image class
 ---------------
 
 .. autoclass:: PIL.Image.Image
@@ -260,7 +261,7 @@ method. ::
 .. automethod:: PIL.Image.Image.load
 .. automethod:: PIL.Image.Image.close
 
-Image Attributes
+Image attributes
 ----------------
 
 Instances of the :py:class:`Image` class have the following attributes:
@@ -369,6 +370,8 @@ Protocols
 ---------
 
 .. autoclass:: SupportsArrayInterface
+    :show-inheritance:
+.. autoclass:: SupportsArrowArrayInterface
     :show-inheritance:
 .. autoclass:: SupportsGetData
     :show-inheritance:

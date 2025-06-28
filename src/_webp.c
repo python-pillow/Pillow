@@ -449,7 +449,7 @@ _anim_decoder_get_info(PyObject *self) {
     WebPAnimInfo *info = &(decp->info);
 
     return Py_BuildValue(
-        "IIIIIs",
+        "(II)IIIs",
         info->canvas_width,
         info->canvas_height,
         info->loop_count,
@@ -530,36 +530,10 @@ static struct PyMethodDef _anim_encoder_methods[] = {
 
 // WebPAnimEncoder type definition
 static PyTypeObject WebPAnimEncoder_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "WebPAnimEncoder", /*tp_name */
-    sizeof(WebPAnimEncoderObject),                    /*tp_basicsize */
-    0,                                                /*tp_itemsize */
-    /* methods */
-    (destructor)_anim_encoder_dealloc, /*tp_dealloc*/
-    0,                                 /*tp_vectorcall_offset*/
-    0,                                 /*tp_getattr*/
-    0,                                 /*tp_setattr*/
-    0,                                 /*tp_as_async*/
-    0,                                 /*tp_repr*/
-    0,                                 /*tp_as_number*/
-    0,                                 /*tp_as_sequence*/
-    0,                                 /*tp_as_mapping*/
-    0,                                 /*tp_hash*/
-    0,                                 /*tp_call*/
-    0,                                 /*tp_str*/
-    0,                                 /*tp_getattro*/
-    0,                                 /*tp_setattro*/
-    0,                                 /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,                /*tp_flags*/
-    0,                                 /*tp_doc*/
-    0,                                 /*tp_traverse*/
-    0,                                 /*tp_clear*/
-    0,                                 /*tp_richcompare*/
-    0,                                 /*tp_weaklistoffset*/
-    0,                                 /*tp_iter*/
-    0,                                 /*tp_iternext*/
-    _anim_encoder_methods,             /*tp_methods*/
-    0,                                 /*tp_members*/
-    0,                                 /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "WebPAnimEncoder",
+    .tp_basicsize = sizeof(WebPAnimEncoderObject),
+    .tp_dealloc = (destructor)_anim_encoder_dealloc,
+    .tp_methods = _anim_encoder_methods,
 };
 
 // WebPAnimDecoder methods
@@ -573,36 +547,10 @@ static struct PyMethodDef _anim_decoder_methods[] = {
 
 // WebPAnimDecoder type definition
 static PyTypeObject WebPAnimDecoder_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "WebPAnimDecoder", /*tp_name */
-    sizeof(WebPAnimDecoderObject),                    /*tp_basicsize */
-    0,                                                /*tp_itemsize */
-    /* methods */
-    (destructor)_anim_decoder_dealloc, /*tp_dealloc*/
-    0,                                 /*tp_vectorcall_offset*/
-    0,                                 /*tp_getattr*/
-    0,                                 /*tp_setattr*/
-    0,                                 /*tp_as_async*/
-    0,                                 /*tp_repr*/
-    0,                                 /*tp_as_number*/
-    0,                                 /*tp_as_sequence*/
-    0,                                 /*tp_as_mapping*/
-    0,                                 /*tp_hash*/
-    0,                                 /*tp_call*/
-    0,                                 /*tp_str*/
-    0,                                 /*tp_getattro*/
-    0,                                 /*tp_setattro*/
-    0,                                 /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,                /*tp_flags*/
-    0,                                 /*tp_doc*/
-    0,                                 /*tp_traverse*/
-    0,                                 /*tp_clear*/
-    0,                                 /*tp_richcompare*/
-    0,                                 /*tp_weaklistoffset*/
-    0,                                 /*tp_iter*/
-    0,                                 /*tp_iternext*/
-    _anim_decoder_methods,             /*tp_methods*/
-    0,                                 /*tp_members*/
-    0,                                 /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "WebPAnimDecoder",
+    .tp_basicsize = sizeof(WebPAnimDecoderObject),
+    .tp_dealloc = (destructor)_anim_decoder_dealloc,
+    .tp_methods = _anim_decoder_methods,
 };
 
 /* -------------------------------------------------------------------- */
@@ -693,6 +641,10 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     ImagingSectionLeave(&cookie);
 
     WebPPictureFree(&pic);
+
+    output = writer.mem;
+    ret_size = writer.size;
+
     if (!ok) {
         int error_code = (&pic)->error_code;
         char message[50] = "";
@@ -704,10 +656,9 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
             );
         }
         PyErr_Format(PyExc_ValueError, "encoding error %d%s", error_code, message);
+        free(output);
         return NULL;
     }
-    output = writer.mem;
-    ret_size = writer.size;
 
     {
         /* I want to truncate the *_size items that get passed into WebP
@@ -829,26 +780,22 @@ setup_module(PyObject *m) {
     return 0;
 }
 
+static PyModuleDef_Slot slots[] = {
+    {Py_mod_exec, setup_module},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
 PyMODINIT_FUNC
 PyInit__webp(void) {
-    PyObject *m;
-
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_webp",
-        .m_size = -1,
         .m_methods = webpMethods,
+        .m_slots = slots
     };
 
-    m = PyModule_Create(&module_def);
-    if (setup_module(m) < 0) {
-        Py_DECREF(m);
-        return NULL;
-    }
-
-#ifdef Py_GIL_DISABLED
-    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
-#endif
-
-    return m;
+    return PyModuleDef_Init(&module_def);
 }

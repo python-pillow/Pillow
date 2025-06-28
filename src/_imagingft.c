@@ -275,6 +275,7 @@ text_layout_raqm(
         if (!text || !size) {
             /* return 0 and clean up, no glyphs==no size,
                and raqm fails with empty strings */
+            PyMem_Free(text);
             goto failed;
         }
         set_text = raqm_set_text(rq, text, size);
@@ -425,6 +426,7 @@ text_layout_fallback(
             "setting text direction, language or font features is not supported "
             "without libraqm"
         );
+        return 0;
     }
 
     if (PyUnicode_Check(string)) {
@@ -1518,36 +1520,11 @@ static struct PyGetSetDef font_getsetters[] = {
 };
 
 static PyTypeObject Font_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "Font", /*tp_name*/
-    sizeof(FontObject),                    /*tp_basicsize*/
-    0,                                     /*tp_itemsize*/
-    /* methods */
-    (destructor)font_dealloc, /*tp_dealloc*/
-    0,                        /*tp_vectorcall_offset*/
-    0,                        /*tp_getattr*/
-    0,                        /*tp_setattr*/
-    0,                        /*tp_as_async*/
-    0,                        /*tp_repr*/
-    0,                        /*tp_as_number*/
-    0,                        /*tp_as_sequence*/
-    0,                        /*tp_as_mapping*/
-    0,                        /*tp_hash*/
-    0,                        /*tp_call*/
-    0,                        /*tp_str*/
-    0,                        /*tp_getattro*/
-    0,                        /*tp_setattro*/
-    0,                        /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,       /*tp_flags*/
-    0,                        /*tp_doc*/
-    0,                        /*tp_traverse*/
-    0,                        /*tp_clear*/
-    0,                        /*tp_richcompare*/
-    0,                        /*tp_weaklistoffset*/
-    0,                        /*tp_iter*/
-    0,                        /*tp_iternext*/
-    font_methods,             /*tp_methods*/
-    0,                        /*tp_members*/
-    font_getsetters,          /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "Font",
+    .tp_basicsize = sizeof(FontObject),
+    .tp_dealloc = (destructor)font_dealloc,
+    .tp_methods = font_methods,
+    .tp_getset = font_getsetters,
 };
 
 static PyMethodDef _functions[] = {
@@ -1624,26 +1601,22 @@ setup_module(PyObject *m) {
     return 0;
 }
 
+static PyModuleDef_Slot slots[] = {
+    {Py_mod_exec, setup_module},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
 PyMODINIT_FUNC
 PyInit__imagingft(void) {
-    PyObject *m;
-
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_imagingft",
-        .m_size = -1,
         .m_methods = _functions,
+        .m_slots = slots
     };
 
-    m = PyModule_Create(&module_def);
-
-    if (setup_module(m) < 0) {
-        return NULL;
-    }
-
-#ifdef Py_GIL_DISABLED
-    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
-#endif
-
-    return m;
+    return PyModuleDef_Init(&module_def);
 }
