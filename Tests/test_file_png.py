@@ -805,7 +805,7 @@ class TestFilePng:
         test_file = tmp_path / "out.png"
 
         im = hopper("I")
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning, match="Saving I mode images as PNG"):
             im.save(test_file)
 
         with Image.open(test_file) as reloaded:

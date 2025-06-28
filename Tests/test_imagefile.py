@@ -152,7 +152,7 @@ class TestImageFile:
         assert reads.count(im.decodermaxblock) == 1
 
     def test_raise_oserror(self) -> None:
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning, match="raise_oserror"):
             with pytest.raises(OSError):
                 ImageFile.raise_oserror(1)
 

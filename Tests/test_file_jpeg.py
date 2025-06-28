@@ -130,21 +130,7 @@ class TestFileJpeg:
     def test_cmyk(self) -> None:
         # Test CMYK handling.  Thanks to Tim and Charlie for test data,
         # Michael for getting me to look one more time.
-        f = "Tests/images/pil_sample_cmyk.jpg"
-        with Image.open(f) as im:
-            # the source image has red pixels in the upper left corner.
-            c, m, y, k = (x / 255.0 for x in im.getpixel((0, 0)))
-            assert c == 0.0
-            assert m > 0.8
-            assert y > 0.8
-            assert k == 0.0
-            # the opposite corner is black
-            c, m, y, k = (
-                x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            )
-            assert k > 0.9
-            # roundtrip, and check again
-            im = self.roundtrip(im)
+        def check(im: ImageFile.ImageFile) -> None:
             cmyk = im.getpixel((0, 0))
             assert isinstance(cmyk, tuple)
             c, m, y, k = (x / 255.0 for x in cmyk)
@@ -152,10 +138,18 @@ class TestFileJpeg:
             assert m > 0.8
             assert y > 0.8
             assert k == 0.0
+            # the opposite corner is black
             cmyk = im.getpixel((im.size[0] - 1, im.size[1] - 1))
             assert isinstance(cmyk, tuple)
             k = cmyk[3] / 255.0
             assert k > 0.9
+
+        with Image.open("Tests/images/pil_sample_cmyk.jpg") as im:
+            # the source image has red pixels in the upper left corner.
+            check(im)
+
+            # roundtrip, and check again
+            check(self.roundtrip(im))
 
     def test_rgb(self) -> None:
         def getchannels(im: JpegImagePlugin.JpegImageFile) -> tuple[int, ...]:
@@ -752,10 +746,13 @@ class TestFileJpeg:
 
         # Act
         # Shouldn't raise error
-        fn = "Tests/images/sugarshack_bad_mpo_header.jpg"
-        with pytest.warns(UserWarning, Image.open, fn) as im:
-            # Assert
-            assert im.format == "JPEG"
+        with pytest.warns(UserWarning, match="malformed MPO file"):
+            im = Image.open("Tests/images/sugarshack_bad_mpo_header.jpg")
+
+        # Assert
+        assert im.format == "JPEG"
+
+        im.close()
 
     @pytest.mark.parametrize("mode", ("1", "L", "RGB", "RGBX", "CMYK", "YCbCr"))
     def test_save_correct_modes(self, mode: str) -> None:
@@ -1103,9 +1100,9 @@ class TestFileJpeg:
     def test_deprecation(self) -> None:
         with Image.open(TEST_FILE) as im:
             assert isinstance(im, JpegImagePlugin.JpegImageFile)
-            with pytest.warns(DeprecationWarning):
+            with pytest.warns(DeprecationWarning, match="huffman_ac"):
                 assert im.huffman_ac == {}
-            with pytest.warns(DeprecationWarning):
+            with pytest.warns(DeprecationWarning, match="huffman_dc"):
                 assert im.huffman_dc == {}
 
 

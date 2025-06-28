@@ -272,7 +272,7 @@ def _cached_hopper(mode: str) -> Image.Image:
     else:
         im = hopper()
     if mode.startswith("BGR;"):
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning, match="BGR;"):
             im = im.convert(mode)
     else:
         try:
