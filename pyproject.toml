@@ -148,6 +148,10 @@ environment.PATH = "$(pwd)/build/deps/iphoneos/bin:$PATH"
 select = "*_iphonesimulator"
 environment.PATH = "$(pwd)/build/deps/iphonesimulator/bin:$PATH"
 
+[[tool.cibuildwheel.overrides]]
+select = "*-win32"
+test-requires = [  ]
+
 [tool.black]
 exclude = "wheels/multibuild"
 
