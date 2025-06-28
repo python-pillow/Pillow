@@ -1232,7 +1232,9 @@ def test_removed_transparency(tmp_path: Path) -> None:
         im.putpixel((x, 0), (x, 0, 0))
 
     im.info["transparency"] = (255, 255, 255)
-    with pytest.warns(UserWarning):
+    with pytest.warns(
+        UserWarning, match="Couldn't allocate palette entry for transparency"
+    ):
         im.save(out)
 
     with Image.open(out) as reloaded:
@@ -1254,7 +1256,7 @@ def test_rgb_transparency(tmp_path: Path) -> None:
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = b""
     ims = [Image.new("RGB", (1, 1))]
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="should be converted to RGBA images"):
         im.save(out, save_all=True, append_images=ims)
 
     with Image.open(out) as reloaded:

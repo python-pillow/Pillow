@@ -303,11 +303,11 @@ def test_apng_chunk_errors() -> None:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         assert not im.is_animated
 
-    with pytest.warns(UserWarning):
-        with Image.open("Tests/images/apng/chunk_multi_actl.png") as im:
-            im.load()
-        assert isinstance(im, PngImagePlugin.PngImageFile)
-        assert not im.is_animated
+    with pytest.warns(UserWarning, match="Invalid APNG"):
+        im = Image.open("Tests/images/apng/chunk_multi_actl.png")
+    assert isinstance(im, PngImagePlugin.PngImageFile)
+    assert not im.is_animated
+    im.close()
 
     with Image.open("Tests/images/apng/chunk_actl_after_idat.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
@@ -330,18 +330,20 @@ def test_apng_chunk_errors() -> None:
 
 
 def test_apng_syntax_errors() -> None:
-    with pytest.warns(UserWarning):
-        with Image.open("Tests/images/apng/syntax_num_frames_zero.png") as im:
-            assert isinstance(im, PngImagePlugin.PngImageFile)
-            assert not im.is_animated
-            with pytest.raises(OSError):
-                im.load()
+    with pytest.warns(UserWarning, match="Invalid APNG"):
+        im = Image.open("Tests/images/apng/syntax_num_frames_zero.png")
+    assert isinstance(im, PngImagePlugin.PngImageFile)
+    assert not im.is_animated
+    with pytest.raises(OSError):
+        im.load()
+    im.close()
 
-    with pytest.warns(UserWarning):
-        with Image.open("Tests/images/apng/syntax_num_frames_zero_default.png") as im:
-            assert isinstance(im, PngImagePlugin.PngImageFile)
-            assert not im.is_animated
-            im.load()
+    with pytest.warns(UserWarning, match="Invalid APNG"):
+        im = Image.open("Tests/images/apng/syntax_num_frames_zero_default.png")
+    assert isinstance(im, PngImagePlugin.PngImageFile)
+    assert not im.is_animated
+    im.load()
+    im.close()
 
     # we can handle this case gracefully
     with Image.open("Tests/images/apng/syntax_num_frames_low.png") as im:
@@ -354,11 +356,12 @@ def test_apng_syntax_errors() -> None:
             im.seek(im.n_frames - 1)
             im.load()
 
-    with pytest.warns(UserWarning):
-        with Image.open("Tests/images/apng/syntax_num_frames_invalid.png") as im:
-            assert isinstance(im, PngImagePlugin.PngImageFile)
-            assert not im.is_animated
-            im.load()
+    with pytest.warns(UserWarning, match="Invalid APNG"):
+        im = Image.open("Tests/images/apng/syntax_num_frames_invalid.png")
+    assert isinstance(im, PngImagePlugin.PngImageFile)
+    assert not im.is_animated
+    im.load()
+    im.close()
 
 
 @pytest.mark.parametrize(

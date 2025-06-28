@@ -77,8 +77,8 @@ class TestUnsupportedAvif:
     def test_unsupported(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(AvifImagePlugin, "SUPPORTED", False)
 
-        with pytest.warns(UserWarning):
-            with pytest.raises(UnidentifiedImageError):
+        with pytest.raises(UnidentifiedImageError):
+            with pytest.warns(UserWarning, match="AVIF support not installed"):
                 with Image.open(TEST_AVIF_FILE):
                     pass
 

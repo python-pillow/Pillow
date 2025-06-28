@@ -48,7 +48,7 @@ def test_toarray() -> None:
             with pytest.raises(OSError):
                 numpy.array(im_truncated)
         else:
-            with pytest.warns(DeprecationWarning):
+            with pytest.warns(DeprecationWarning, match="__array_interface__"):
                 numpy.array(im_truncated)
 
 
@@ -102,7 +102,7 @@ def test_fromarray_strides_without_tobytes() -> None:
 
     with pytest.raises(ValueError):
         wrapped = Wrapper({"shape": (1, 1), "strides": (1, 1)})
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning, match="'mode' parameter"):
             Image.fromarray(wrapped, "L")
 
 
@@ -112,7 +112,7 @@ def test_fromarray_palette() -> None:
     a = numpy.array(i)
 
     # Act
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning, match="'mode' parameter"):
         out = Image.fromarray(a, "P")
 
     # Assert that the Python and C palettes match

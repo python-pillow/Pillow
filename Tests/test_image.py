@@ -53,7 +53,7 @@ except ImportError:
 # Deprecation helper
 def helper_image_new(mode: str, size: tuple[int, int]) -> Image.Image:
     if mode.startswith("BGR;"):
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning, match="BGR;"):
             return Image.new(mode, size)
     else:
         return Image.new(mode, size)
@@ -141,8 +141,8 @@ class TestImage:
         monkeypatch.setattr(Image, "WARN_POSSIBLE_FORMATS", True)
 
         im = io.BytesIO(b"")
-        with pytest.warns(UserWarning):
-            with pytest.raises(UnidentifiedImageError):
+        with pytest.raises(UnidentifiedImageError):
+            with pytest.warns(UserWarning, match="opening failed"):
                 with Image.open(im):
                     pass
 
@@ -1008,7 +1008,7 @@ class TestImage:
 
     def test_get_child_images(self) -> None:
         im = Image.new("RGB", (1, 1))
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning, match="Image.Image.get_child_images"):
             assert im.get_child_images() == []
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
@@ -1139,7 +1139,7 @@ class TestImage:
             assert im.fp is None
 
     def test_deprecation(self) -> None:
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning, match="Image.isImageType"):
             assert not Image.isImageType(None)
 
 
@@ -1150,7 +1150,7 @@ class TestImageBytes:
         source_bytes = im.tobytes()
 
         if mode.startswith("BGR;"):
-            with pytest.warns(DeprecationWarning):
+            with pytest.warns(DeprecationWarning, match=mode):
                 reloaded = Image.frombytes(mode, im.size, source_bytes)
         else:
             reloaded = Image.frombytes(mode, im.size, source_bytes)
