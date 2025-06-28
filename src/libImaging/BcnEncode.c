@@ -258,6 +258,10 @@ ImagingBcnEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
     UINT8 *dst = buf;
 
     for (;;) {
+        // Loop writes a max of 16 bytes per iteration
+        if (dst + 16 >= bytes + buf) {
+            break;
+        }
         if (n == 5) {
             encode_bc3_alpha(im, state, dst, 0);
             dst += 8;

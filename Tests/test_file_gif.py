@@ -224,6 +224,7 @@ def test_optimize_if_palette_can_be_reduced_by_half() -> None:
         out = BytesIO()
         im.save(out, "GIF", optimize=optimize)
         with Image.open(out) as reloaded:
+            assert reloaded.palette is not None
             assert len(reloaded.palette.palette) // 3 == colors
 
 
@@ -540,7 +541,9 @@ def test_dispose_background_transparency() -> None:
         img.seek(2)
         px = img.load()
         assert px is not None
-        assert px[35, 30][3] == 0
+        value = px[35, 30]
+        assert isinstance(value, tuple)
+        assert value[3] == 0
 
 
 @pytest.mark.parametrize(
@@ -1229,7 +1232,9 @@ def test_removed_transparency(tmp_path: Path) -> None:
         im.putpixel((x, 0), (x, 0, 0))
 
     im.info["transparency"] = (255, 255, 255)
-    with pytest.warns(UserWarning):
+    with pytest.warns(
+        UserWarning, match="Couldn't allocate palette entry for transparency"
+    ):
         im.save(out)
 
     with Image.open(out) as reloaded:
@@ -1251,7 +1256,7 @@ def test_rgb_transparency(tmp_path: Path) -> None:
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = b""
     ims = [Image.new("RGB", (1, 1))]
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="should be converted to RGBA images"):
         im.save(out, save_all=True, append_images=ims)
 
     with Image.open(out) as reloaded:
@@ -1359,6 +1364,7 @@ def test_palette_save_all_P(tmp_path: Path) -> None:
         # Assert that the frames are correct, and each frame has the same palette
         assert_image_equal(im.convert("RGB"), frames[0].convert("RGB"))
         assert im.palette is not None
+        assert im.global_palette is not None
         assert im.palette.palette == im.global_palette.palette
 
         im.seek(1)
@@ -1422,7 +1428,9 @@ def test_getdata(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_lzw_bits() -> None:
     # see https://github.com/python-pillow/Pillow/issues/2811
     with Image.open("Tests/images/issue_2811.gif") as im:
-        assert im.tile[0][3][0] == 11  # LZW bits
+        args = im.tile[0][3]
+        assert isinstance(args, tuple)
+        assert args[0] == 11  # LZW bits
         # codec error prepatch
         im.load()
 
@@ -1477,7 +1485,11 @@ def test_saving_rgba(tmp_path: Path) -> None:
 
     with Image.open(out) as reloaded:
         reloaded_rgba = reloaded.convert("RGBA")
-        assert reloaded_rgba.load()[0, 0][3] == 0
+        px = reloaded_rgba.load()
+        assert px is not None
+        value = px[0, 0]
+        assert isinstance(value, tuple)
+        assert value[3] == 0
 
 
 @pytest.mark.parametrize("params", ({}, {"disposal": 2, "optimize": False}))

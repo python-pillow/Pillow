@@ -362,7 +362,7 @@ class IcoImageFile(ImageFile.ImageFile):
             self.info["sizes"] = set(sizes)
 
             self.size = im.size
-        return None
+        return Image.Image.load(self)
 
     def load_seek(self, pos: int) -> None:
         # Flag the ImageFile.Parser so that it

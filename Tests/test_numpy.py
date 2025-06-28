@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING
 
 import pytest
 
@@ -9,6 +8,7 @@ from PIL import Image, _typing
 
 from .helper import assert_deep_equal, assert_image, hopper, skip_unless_feature
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     import numpy
     import numpy.typing as npt

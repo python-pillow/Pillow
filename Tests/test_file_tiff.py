@@ -49,25 +49,10 @@ class TestFileTiff:
         assert im.size == (128, 128)
         assert im.format == "TIFF"
 
-        hopper("1").save(filename)
-        with Image.open(filename):
-            pass
-
-        hopper("L").save(filename)
-        with Image.open(filename):
-            pass
-
-        hopper("P").save(filename)
-        with Image.open(filename):
-            pass
-
-        hopper("RGB").save(filename)
-        with Image.open(filename):
-            pass
-
-        hopper("I").save(filename)
-        with Image.open(filename):
-            pass
+        for mode in ("1", "L", "P", "RGB", "I", "I;16", "I;16L"):
+            hopper(mode).save(filename)
+            with Image.open(filename):
+                pass
 
     @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
     def test_unclosed_file(self) -> None:
@@ -236,7 +221,7 @@ class TestFileTiff:
             assert isinstance(im, JpegImagePlugin.JpegImageFile)
 
             # Should not raise struct.error.
-            with pytest.warns(UserWarning):
+            with pytest.warns(UserWarning, match="Corrupt EXIF data"):
                 im._getexif()
 
     def test_save_rgba(self, tmp_path: Path) -> None:
@@ -1029,7 +1014,7 @@ class TestFileTiff:
     @timeout_unless_slower_valgrind(2)
     def test_oom(self, test_file: str) -> None:
         with pytest.raises(UnidentifiedImageError):
-            with pytest.warns(UserWarning):
+            with pytest.warns(UserWarning, match="Corrupt EXIF data"):
                 with Image.open(test_file):
                     pass
 

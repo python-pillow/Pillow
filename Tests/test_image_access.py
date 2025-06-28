@@ -193,7 +193,7 @@ class TestImageGetPixel:
 
     @pytest.mark.parametrize("mode", ("BGR;15", "BGR;16", "BGR;24"))
     def test_deprecated(self, mode: str) -> None:
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning, match="BGR;"):
             self.check(mode)
 
     def test_list(self) -> None:
