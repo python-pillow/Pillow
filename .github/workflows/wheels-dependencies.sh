@@ -38,9 +38,9 @@ ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.13.3
-HARFBUZZ_VERSION=11.1.0
-LIBPNG_VERSION=1.6.47
-JPEGTURBO_VERSION=3.1.0
+HARFBUZZ_VERSION=11.2.1
+LIBPNG_VERSION=1.6.49
+JPEGTURBO_VERSION=3.1.1
 OPENJPEG_VERSION=2.5.3
 XZ_VERSION=5.8.1
 TIFF_VERSION=4.7.0
@@ -51,6 +51,7 @@ LIBWEBP_VERSION=1.5.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0
+LIBAVIF_VERSION=1.3.0
 
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
@@ -98,6 +99,59 @@ function build_harfbuzz {
     touch harfbuzz-stamp
 }
 
+function build_libavif {
+    if [ -e libavif-stamp ]; then return; fi
+
+    python3 -m pip install meson ninja
+
+    if [[ "$PLAT" == "x86_64" ]] || [ -n "$SANITIZER" ]; then
+        build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
+    fi
+
+    local build_type=MinSizeRel
+    local lto=ON
+
+    local libavif_cmake_flags
+
+    if [ -n "$IS_MACOS" ]; then
+        lto=OFF
+        libavif_cmake_flags=(
+            -DCMAKE_C_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto" \
+            -DCMAKE_CXX_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto" \
+            -DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,-S,-x,-dead_strip_dylibs" \
+        )
+    else
+        if [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "x86_64" ]]; then
+            build_type=Release
+        fi
+        libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
+    fi
+
+    local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
+    # CONFIG_AV1_HIGHBITDEPTH=0 is a flag for libaom (included as a subproject
+    # of libavif) that disables support for encoding high bit depth images.
+    (cd $out_dir \
+        && cmake \
+            -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX \
+            -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib \
+            -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib \
+            -DBUILD_SHARED_LIBS=ON \
+            -DAVIF_LIBSHARPYUV=LOCAL \
+            -DAVIF_LIBYUV=LOCAL \
+            -DAVIF_CODEC_AOM=LOCAL \
+            -DCONFIG_AV1_HIGHBITDEPTH=0 \
+            -DAVIF_CODEC_AOM_DECODE=OFF \
+            -DAVIF_CODEC_DAV1D=LOCAL \
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=$lto \
+            -DCMAKE_C_VISIBILITY_PRESET=hidden \
+            -DCMAKE_CXX_VISIBILITY_PRESET=hidden \
+            -DCMAKE_BUILD_TYPE=$build_type \
+            "${libavif_cmake_flags[@]}" \
+            . \
+        && make install)
+    touch libavif-stamp
+}
+
 function build {
     build_xz
     if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
@@ -132,6 +186,7 @@ function build {
         build_tiff
     fi
 
+    build_libavif
     build_libpng
     build_lcms2
     build_openjpeg

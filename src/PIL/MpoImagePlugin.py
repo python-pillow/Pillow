@@ -48,18 +48,20 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     mpf_offset = 28
     offsets: list[int] = []
-    imSequences = [im] + list(append_images)
+    im_sequences = [im, *append_images]
+    total = sum(getattr(seq, "n_frames", 1) for seq in im_sequences)
     if progress:
         completed = 0
-        total = 0
-        for imSequence in imSequences:
-            total += getattr(imSequence, "n_frames", 1)
-    for i, imSequence in enumerate(imSequences):
-        for im_frame in ImageSequence.Iterator(imSequence):
+    for i, seq in enumerate(im_sequences):
+        for im_frame in ImageSequence.Iterator(seq):
             if not offsets:
                 # APP2 marker
+                ifd_length = 66 + 16 * total
                 im_frame.encoderinfo["extra"] = (
-                    b"\xff\xe2" + struct.pack(">H", 6 + 82) + b"MPF\0" + b" " * 82
+                    b"\xff\xe2"
+                    + struct.pack(">H", 6 + ifd_length)
+                    + b"MPF\0"
+                    + b" " * ifd_length
                 )
                 exif = im_frame.encoderinfo.get("exif")
                 if isinstance(exif, Image.Exif):
@@ -75,7 +77,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 offsets.append(fp.tell() - offsets[-1])
             if progress:
                 completed += 1
-                im._save_all_progress(progress, imSequence, i, completed, total)
+                im._save_all_progress(progress, seq, i, completed, total)
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
     ifd[0xB000] = b"0100"

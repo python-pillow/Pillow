@@ -783,9 +783,10 @@ def test_rectangle_I16(bbox: Coords) -> None:
     draw = ImageDraw.Draw(im)
 
     # Act
-    draw.rectangle(bbox, outline=0xFFFF)
+    draw.rectangle(bbox, outline=0xCDEF)
 
     # Assert
+    assert im.getpixel((X0, Y0)) == 0xCDEF
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_I.tiff")
 
 
@@ -1734,5 +1735,5 @@ def test_incorrectly_ordered_coordinates(xy: tuple[int, int, int, int]) -> None:
 
 
 def test_getdraw() -> None:
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning, match="'hints' parameter"):
         ImageDraw.getdraw(None, [])

@@ -34,6 +34,7 @@ from .helper import (
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
+    timeout_unless_slower_valgrind,
 )
 
 ElementTree: ModuleType | None
@@ -52,7 +53,7 @@ except ImportError:
 # Deprecation helper
 def helper_image_new(mode: str, size: tuple[int, int]) -> Image.Image:
     if mode.startswith("BGR;"):
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning, match="BGR;"):
             return Image.new(mode, size)
     else:
         return Image.new(mode, size)
@@ -140,8 +141,8 @@ class TestImage:
         monkeypatch.setattr(Image, "WARN_POSSIBLE_FORMATS", True)
 
         im = io.BytesIO(b"")
-        with pytest.warns(UserWarning):
-            with pytest.raises(UnidentifiedImageError):
+        with pytest.raises(UnidentifiedImageError):
+            with pytest.warns(UserWarning, match="opening failed"):
                 with Image.open(im):
                     pass
 
@@ -572,10 +573,7 @@ class TestImage:
         i = Image.new("RGB", [1, 1])
         assert isinstance(i.size, tuple)
 
-    @pytest.mark.timeout(0.75)
-    @pytest.mark.skipif(
-        "PILLOW_VALGRIND_TEST" in os.environ, reason="Valgrind is slower"
-    )
+    @timeout_unless_slower_valgrind(0.75)
     @pytest.mark.parametrize("size", ((0, 100000000), (100000000, 0)))
     def test_empty_image(self, size: tuple[int, int]) -> None:
         Image.new("RGB", size)
@@ -673,6 +671,7 @@ class TestImage:
         im_remapped = im.remap_palette(list(range(256)))
         assert_image_equal(im, im_remapped)
         assert im.palette is not None
+        assert im_remapped.palette is not None
         assert im.palette.palette == im_remapped.palette.palette
 
         # Test illegal image mode
@@ -975,6 +974,11 @@ class TestImage:
                     assert tag not in exif.get_ifd(0x8769)
                 assert exif.get_ifd(0xA005)
 
+    def test_exif_from_xmp_bytes(self) -> None:
+        im = Image.new("RGB", (1, 1))
+        im.info["xmp"] = b'\xff tiff:Orientation="2"'
+        assert im.getexif()[274] == 2
+
     def test_empty_xmp(self) -> None:
         with Image.open("Tests/images/hopper.gif") as im:
             if ElementTree is None:
@@ -991,7 +995,7 @@ class TestImage:
         im = Image.new("RGB", (1, 1))
         im.info["xmp"] = (
             b'<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
-            b'<x:xmpmeta xmlns:x="adobe:ns:meta/" />\n<?xpacket end="w"?>\x00\x00'
+            b'<x:xmpmeta xmlns:x="adobe:ns:meta/" />\n<?xpacket end="w"?>\x00\x00 '
         )
         if ElementTree is None:
             with pytest.warns(
@@ -1004,7 +1008,7 @@ class TestImage:
 
     def test_get_child_images(self) -> None:
         im = Image.new("RGB", (1, 1))
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning, match="Image.Image.get_child_images"):
             assert im.get_child_images() == []
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
@@ -1135,7 +1139,7 @@ class TestImage:
             assert im.fp is None
 
     def test_deprecation(self) -> None:
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning, match="Image.isImageType"):
             assert not Image.isImageType(None)
 
 
@@ -1146,7 +1150,7 @@ class TestImageBytes:
         source_bytes = im.tobytes()
 
         if mode.startswith("BGR;"):
-            with pytest.warns(DeprecationWarning):
+            with pytest.warns(DeprecationWarning, match=mode):
                 reloaded = Image.frombytes(mode, im.size, source_bytes)
         else:
             reloaded = Image.frombytes(mode, im.size, source_bytes)

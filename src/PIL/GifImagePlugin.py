@@ -30,7 +30,7 @@ import os
 import subprocess
 from enum import IntEnum
 from functools import cached_property
-from typing import IO, Any, Literal, NamedTuple, Union
+from typing import IO, Any, Literal, NamedTuple, Union, cast
 
 from . import (
     Image,
@@ -349,12 +349,15 @@ class GifImageFile(ImageFile.ImageFile):
             if self._frame_palette:
                 if color * 3 + 3 > len(self._frame_palette.palette):
                     color = 0
-                return tuple(self._frame_palette.palette[color * 3 : color * 3 + 3])
+                return cast(
+                    tuple[int, int, int],
+                    tuple(self._frame_palette.palette[color * 3 : color * 3 + 3]),
+                )
             else:
                 return (color, color, color)
 
         self.dispose = None
-        self.dispose_extent = frame_dispose_extent
+        self.dispose_extent: tuple[int, int, int, int] | None = frame_dispose_extent
         if self.dispose_extent and self.disposal_method >= 2:
             try:
                 if self.disposal_method == 2:
@@ -655,19 +658,17 @@ def _write_multiple_frames(
     duration = im.encoderinfo.get("duration")
     disposal = im.encoderinfo.get("disposal", im.info.get("disposal"))
 
-    imSequences = [im] + list(im.encoderinfo.get("append_images", []))
+    im_sequences = [im, *im.encoderinfo.get("append_images", [])]
     progress = im.encoderinfo.get("progress")
     if progress:
-        total = 0
-        for imSequence in imSequences:
-            total += getattr(imSequence, "n_frames", 1)
+        total = sum(getattr(seq, "n_frames", 1) for seq in im_sequences)
 
     im_frames: list[_Frame] = []
     previous_im: Image.Image | None = None
     frame_count = 0
     background_im = None
-    for i, imSequence in enumerate(imSequences):
-        for im_frame in ImageSequence.Iterator(imSequence):
+    for i, seq in enumerate(im_sequences):
+        for im_frame in ImageSequence.Iterator(seq):
             # a copy is required here since seek can still mutate the image
             im_frame = _normalize_mode(im_frame.copy())
             if frame_count == 0:
@@ -698,9 +699,7 @@ def _write_multiple_frames(
                     if encoderinfo.get("duration"):
                         im_frames[-1].encoderinfo["duration"] += encoderinfo["duration"]
                     if progress:
-                        im._save_all_progress(
-                            progress, imSequence, i, frame_count, total
-                        )
+                        im._save_all_progress(progress, seq, i, frame_count, total)
                     continue
                 if im_frames[-1].encoderinfo.get("disposal") == 2:
                     # To appear correctly in viewers using a convention,
@@ -765,7 +764,7 @@ def _write_multiple_frames(
             previous_im = im_frame
             im_frames.append(_Frame(diff_frame or im_frame, bbox, encoderinfo))
             if progress:
-                im._save_all_progress(progress, imSequence, i, frame_count, total)
+                im._save_all_progress(progress, seq, i, frame_count, total)
 
     if len(im_frames) == 1:
         if "duration" in im.encoderinfo:

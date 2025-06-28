@@ -365,22 +365,10 @@ class ImageDraw:
                 # use the fill as a mask
                 mask = Image.new("1", self.im.size)
                 mask_ink = self._getink(1)[0]
-
-                fill_im = mask.copy()
-                draw = Draw(fill_im)
+                draw = Draw(mask)
                 draw.draw.draw_polygon(xy, mask_ink, 1)
 
-                ink_im = mask.copy()
-                draw = Draw(ink_im)
-                width = width * 2 - 1
-                draw.draw.draw_polygon(xy, mask_ink, 0, width)
-
-                mask.paste(ink_im, mask=fill_im)
-
-                im = Image.new(self.mode, self.im.size)
-                draw = Draw(im)
-                draw.draw.draw_polygon(xy, ink, 0, width)
-                self.im.paste(im.im, (0, 0) + im.size, mask.im)
+                self.draw.draw_polygon(xy, ink, 0, width * 2 - 1, mask.im)
 
     def regular_polygon(
         self,
@@ -702,27 +690,20 @@ class ImageDraw:
         font_size: float | None,
     ) -> tuple[
         ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont,
-        str,
-        list[tuple[tuple[float, float], AnyStr]],
+        list[tuple[tuple[float, float], str, AnyStr]],
     ]:
-        if direction == "ttb":
-            msg = "ttb direction is unsupported for multiline text"
-            raise ValueError(msg)
-
         if anchor is None:
-            anchor = "la"
+            anchor = "lt" if direction == "ttb" else "la"
         elif len(anchor) != 2:
             msg = "anchor must be a 2 character string"
             raise ValueError(msg)
-        elif anchor[1] in "tb":
+        elif anchor[1] in "tb" and direction != "ttb":
             msg = "anchor not supported for multiline text"
             raise ValueError(msg)
 
         if font is None:
             font = self._getfont(font_size)
 
-        widths = []
-        max_width: float = 0
         lines = text.split("\n" if isinstance(text, str) else b"\n")
         line_spacing = (
             self.textbbox((0, 0), "A", font, stroke_width=stroke_width)[3]
@@ -730,69 +711,89 @@ class ImageDraw:
             + spacing
         )
 
-        for line in lines:
-            line_width = self.textlength(
-                line,
-                font,
-                direction=direction,
-                features=features,
-                language=language,
-                embedded_color=embedded_color,
-            )
-            widths.append(line_width)
-            max_width = max(max_width, line_width)
-
         top = xy[1]
-        if anchor[1] == "m":
-            top -= (len(lines) - 1) * line_spacing / 2.0
-        elif anchor[1] == "d":
-            top -= (len(lines) - 1) * line_spacing
-
         parts = []
-        for idx, line in enumerate(lines):
+        if direction == "ttb":
             left = xy[0]
-            width_difference = max_width - widths[idx]
+            for line in lines:
+                parts.append(((left, top), anchor, line))
+                left += line_spacing
+        else:
+            widths = []
+            max_width: float = 0
+            for line in lines:
+                line_width = self.textlength(
+                    line,
+                    font,
+                    direction=direction,
+                    features=features,
+                    language=language,
+                    embedded_color=embedded_color,
+                )
+                widths.append(line_width)
+                max_width = max(max_width, line_width)
 
-            # first align left by anchor
-            if anchor[0] == "m":
-                left -= width_difference / 2.0
-            elif anchor[0] == "r":
-                left -= width_difference
+            if anchor[1] == "m":
+                top -= (len(lines) - 1) * line_spacing / 2.0
+            elif anchor[1] == "d":
+                top -= (len(lines) - 1) * line_spacing
 
-            # then align by align parameter
-            if align in ("left", "justify"):
-                pass
-            elif align == "center":
-                left += width_difference / 2.0
-            elif align == "right":
-                left += width_difference
-            else:
-                msg = 'align must be "left", "center", "right" or "justify"'
-                raise ValueError(msg)
+            for idx, line in enumerate(lines):
+                left = xy[0]
+                width_difference = max_width - widths[idx]
 
-            if align == "justify" and width_difference != 0:
-                words = line.split(" " if isinstance(text, str) else b" ")
-                word_widths = [
-                    self.textlength(
-                        word,
-                        font,
-                        direction=direction,
-                        features=features,
-                        language=language,
-                        embedded_color=embedded_color,
-                    )
-                    for word in words
-                ]
-                width_difference = max_width - sum(word_widths)
-                for i, word in enumerate(words):
-                    parts.append(((left, top), word))
-                    left += word_widths[i] + width_difference / (len(words) - 1)
-            else:
-                parts.append(((left, top), line))
+                # align by align parameter
+                if align in ("left", "justify"):
+                    pass
+                elif align == "center":
+                    left += width_difference / 2.0
+                elif align == "right":
+                    left += width_difference
+                else:
+                    msg = 'align must be "left", "center", "right" or "justify"'
+                    raise ValueError(msg)
 
-            top += line_spacing
+                if (
+                    align == "justify"
+                    and width_difference != 0
+                    and idx != len(lines) - 1
+                ):
+                    words = line.split(" " if isinstance(text, str) else b" ")
+                    if len(words) > 1:
+                        # align left by anchor
+                        if anchor[0] == "m":
+                            left -= max_width / 2.0
+                        elif anchor[0] == "r":
+                            left -= max_width
 
-        return font, anchor, parts
+                        word_widths = [
+                            self.textlength(
+                                word,
+                                font,
+                                direction=direction,
+                                features=features,
+                                language=language,
+                                embedded_color=embedded_color,
+                            )
+                            for word in words
+                        ]
+                        word_anchor = "l" + anchor[1]
+                        width_difference = max_width - sum(word_widths)
+                        for i, word in enumerate(words):
+                            parts.append(((left, top), word_anchor, word))
+                            left += word_widths[i] + width_difference / (len(words) - 1)
+                        top += line_spacing
+                        continue
+
+                # align left by anchor
+                if anchor[0] == "m":
+                    left -= width_difference / 2.0
+                elif anchor[0] == "r":
+                    left -= width_difference
+                parts.append(((left, top), anchor, line))
+                top += line_spacing
+
+        return font, parts
 
     def multiline_text(
         self,
@@ -817,7 +818,7 @@ class ImageDraw:
         *,
         font_size: float | None = None,
     ) -> None:
-        font, anchor, lines = self._prepare_multiline_text(
+        font, lines = self._prepare_multiline_text(
             xy,
             text,
             font,
@@ -832,7 +833,7 @@ class ImageDraw:
             font_size,
         )
 
-        for xy, line in lines:
+        for xy, anchor, line in lines:
             self.text(
                 xy,
                 line,
@@ -947,7 +948,7 @@ class ImageDraw:
         *,
         font_size: float | None = None,
     ) -> tuple[float, float, float, float]:
-        font, anchor, lines = self._prepare_multiline_text(
+        font, lines = self._prepare_multiline_text(
             xy,
             text,
             font,
@@ -964,7 +965,7 @@ class ImageDraw:
 
         bbox: tuple[float, float, float, float] | None = None
 
-        for xy, line in lines:
+        for xy, anchor, line in lines:
             bbox_line = self.textbbox(
                 xy,
                 line,

@@ -267,6 +267,23 @@ def test_render_multiline_text_align(
     assert_image_similar_tofile(im, f"Tests/images/multiline_text{ext}.png", 0.01)
 
 
+def test_render_multiline_text_justify_anchor(
+    font: ImageFont.FreeTypeFont,
+) -> None:
+    im = Image.new("RGB", (280, 240))
+    draw = ImageDraw.Draw(im)
+    for xy, anchor in (((0, 0), "la"), ((140, 80), "ma"), ((280, 160), "ra")):
+        draw.multiline_text(
+            xy,
+            "hey you you are awesome\nthis looks awkward\nthis\nlooks awkward",
+            font=font,
+            anchor=anchor,
+            align="justify",
+        )
+
+    assert_image_equal_tofile(im, "Tests/images/multiline_text_justify_anchor.png")
+
+
 def test_unknown_align(font: ImageFont.FreeTypeFont) -> None:
     im = Image.new(mode="RGB", size=(300, 100))
     draw = ImageDraw.Draw(im)
@@ -1175,15 +1192,15 @@ def test_oom(test_file: str) -> None:
 
 def test_raqm_missing_warning(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(ImageFont.core, "HAVE_RAQM", False)
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(
+        UserWarning,
+        match="Raqm layout was requested, but Raqm is not available. "
+        "Falling back to basic layout.",
+    ):
         font = ImageFont.truetype(
             FONT_PATH, FONT_SIZE, layout_engine=ImageFont.Layout.RAQM
         )
     assert font.layout_engine == ImageFont.Layout.BASIC
-    assert str(record[-1].message) == (
-        "Raqm layout was requested, but Raqm is not available. "
-        "Falling back to basic layout."
-    )
 
 
 @pytest.mark.parametrize("size", [-1, 0])
@@ -1202,5 +1219,5 @@ def test_freetype_deprecation(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(features, "version_module", fake_version_module)
 
     # Act / Assert
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning, match="FreeType 2.9.0"):
         ImageFont.truetype(FONT_PATH, FONT_SIZE)

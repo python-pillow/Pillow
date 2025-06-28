@@ -48,6 +48,7 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
+from ._deprecate import deprecate
 from ._util import DeferredError
 
 TYPE_CHECKING = False
@@ -1170,19 +1171,17 @@ def _write_multiple_frames(
     blend = im.encoderinfo.get("blend", im.info.get("blend", Blend.OP_SOURCE))
     progress = im.encoderinfo.get("progress")
 
-    imSequences = []
+    im_sequences = []
     if not default_image:
-        imSequences.append(im)
-    imSequences += append_images
+        im_sequences.append(im)
+    im_sequences += append_images
     if progress:
-        total = 0
-        for imSequence in imSequences:
-            total += getattr(imSequence, "n_frames", 1)
+        total = sum(getattr(seq, "n_frames", 1) for seq in im_sequences)
 
     im_frames: list[_Frame] = []
     frame_count = 0
-    for i, imSequence in enumerate(imSequences):
-        for im_frame in ImageSequence.Iterator(imSequence):
+    for i, seq in enumerate(im_sequences):
+        for im_frame in ImageSequence.Iterator(seq):
             if im_frame.mode == mode:
                 im_frame = im_frame.copy()
             else:
@@ -1230,15 +1229,13 @@ def _write_multiple_frames(
                 ):
                     previous.encoderinfo["duration"] += encoderinfo["duration"]
                     if progress:
-                        im._save_all_progress(
-                            progress, imSequence, i, frame_count, total
-                        )
+                        im._save_all_progress(progress, seq, i, frame_count, total)
                     continue
             else:
                 bbox = None
             im_frames.append(_Frame(im_frame, bbox, encoderinfo))
             if progress:
-                im._save_all_progress(progress, imSequence, i, frame_count, total)
+                im._save_all_progress(progress, seq, i, frame_count, total)
 
     if len(im_frames) == 1 and not default_image:
         return im_frames[0].im
@@ -1379,6 +1376,8 @@ def _save(
     except KeyError as e:
         msg = f"cannot write mode {mode} as PNG"
         raise OSError(msg) from e
+    if outmode == "I":
+        deprecate("Saving I mode images as PNG", 13, stacklevel=4)
 
     #
     # write minimal PNG file

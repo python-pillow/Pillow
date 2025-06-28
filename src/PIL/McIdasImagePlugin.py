@@ -44,7 +44,7 @@ class McIdasImageFile(ImageFile.ImageFile):
             raise SyntaxError(msg)
 
         self.area_descriptor_raw = s
-        self.area_descriptor = w = [0] + list(struct.unpack("!64i", s))
+        self.area_descriptor = w = [0, *struct.unpack("!64i", s)]
 
         # get mode
         if w[11] == 1:

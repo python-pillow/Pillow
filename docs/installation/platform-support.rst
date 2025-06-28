@@ -1,6 +1,6 @@
 .. _platform-support:
 
-Platform Support
+Platform support
 ================
 
 Current platform support for Pillow. Binary distributions are
@@ -9,7 +9,7 @@ should compile and run everywhere platform support is listed. In
 general, we aim to support all current versions of Linux, macOS, and
 Windows.
 
-Continuous Integration Targets
+Continuous integration targets
 ------------------------------
 
 These platforms are built and tested for every change.
@@ -40,18 +40,20 @@ These platforms are built and tested for every change.
 | macOS 13 Ventura                 | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | macOS 14 Sonoma                  | 3.10, 3.11, 3.12, 3.13,    | arm64               |
-|                                  | PyPy3                      |                     |
+|                                  | 3.14, PyPy3                |                     |
 +----------------------------------+----------------------------+---------------------+
-| Ubuntu Linux 22.04 LTS (Jammy)   | 3.9, 3.10, 3.11,           | x86-64              |
-|                                  | 3.12, 3.13, PyPy3          |                     |
+| Ubuntu Linux 22.04 LTS (Jammy)   | 3.10                       | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| Ubuntu Linux 24.04 LTS (Noble)   | 3.12                       | x86-64, arm64v8,    |
-|                                  |                            | ppc64le, s390x      |
+| Ubuntu Linux 24.04 LTS (Noble)   | 3.9, 3.10, 3.11,           | x86-64              |
+|                                  | 3.12, 3.13, 3.14, PyPy3    |                     |
+|                                  +----------------------------+---------------------+
+|                                  | 3.12                       | arm64v8, ppc64le,   |
+|                                  |                            | s390x               |
 +----------------------------------+----------------------------+---------------------+
-| Windows Server 2019              | 3.9                        | x86                 |
-+----------------------------------+----------------------------+---------------------+
-| Windows Server 2022              | 3.10, 3.11, 3.12, 3.13,    | x86-64              |
-|                                  | PyPy3                      |                     |
+| Windows Server 2022              | 3.9                        | x86                 |
+|                                  +----------------------------+---------------------+
+|                                  | 3.10, 3.11, 3.12, 3.13,    | x86-64              |
+|                                  | 3.14, PyPy3                |                     |
 |                                  +----------------------------+---------------------+
 |                                  | 3.12 (MinGW)               | x86-64              |
 |                                  +----------------------------+---------------------+
@@ -59,7 +61,7 @@ These platforms are built and tested for every change.
 +----------------------------------+----------------------------+---------------------+
 
 
-Other Platforms
+Other platforms
 ---------------
 
 These platforms have been reported to work at the versions mentioned.

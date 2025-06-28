@@ -94,7 +94,7 @@ The stub image plugin ``FitsStubImagePlugin`` has been deprecated and will be re
 Pillow 10.0.0 (2023-07-01). FITS images can be read without a handler through
 :mod:`~PIL.FitsImagePlugin` instead.
 
-API Changes
+API changes
 ===========
 
 Raise an error when performing a negative crop
@@ -137,7 +137,7 @@ On macOS, the last argument may need to be wrapped in quotes, e.g.
 Therefore ``requirements.txt`` has been removed along with the ``make install-req``
 command for installing its contents.
 
-API Additions
+API additions
 =============
 
 Added get_photoshop_blocks() to parse Photoshop TIFF tag
@@ -193,7 +193,7 @@ palette. ::
     from PIL import GifImagePlugin
     GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
 
-Other Changes
+Other changes
 =============
 
 musllinux wheels

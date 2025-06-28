@@ -1093,7 +1093,7 @@ w7IkEbzhVQAAAABJRU5ErkJggg==
 
 def load_default(size: float | None = None) -> FreeTypeFont | ImageFont:
     """If FreeType support is available, load a version of Aileron Regular,
-    https://dotcolon.net/font/aileron, with a more limited character set.
+    https://dotcolon.net/fonts/aileron, with a more limited character set.
 
     Otherwise, load a "better than nothing" font.
 
