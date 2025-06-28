@@ -207,8 +207,8 @@ j2k_set_cinema_params(Imaging im, int components, opj_cparameters_t *params) {
 
     if (params->cp_cinema == OPJ_CINEMA4K_24) {
         float max_rate =
-            ((float)(components * im->xsize * im->ysize * 8) / (CINEMA_24_CS_LENGTH * 8)
-            );
+            ((float)(components * im->xsize * im->ysize * 8) /
+             (CINEMA_24_CS_LENGTH * 8));
 
         params->POC[0].tile = 1;
         params->POC[0].resno0 = 0;
@@ -243,8 +243,8 @@ j2k_set_cinema_params(Imaging im, int components, opj_cparameters_t *params) {
         params->max_comp_size = COMP_24_CS_MAX_LENGTH;
     } else {
         float max_rate =
-            ((float)(components * im->xsize * im->ysize * 8) / (CINEMA_48_CS_LENGTH * 8)
-            );
+            ((float)(components * im->xsize * im->ysize * 8) /
+             (CINEMA_48_CS_LENGTH * 8));
 
         for (n = 0; n < params->tcp_numlayers; ++n) {
             rate = 0;
@@ -330,6 +330,13 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         components = 4;
         color_space = OPJ_CLRSPC_SRGB;
         pack = j2k_pack_rgba;
+#if ((OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR == 5 && OPJ_VERSION_BUILD >= 3) || \
+     (OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR > 5) || OPJ_VERSION_MAJOR > 2)
+    } else if (strcmp(im->mode, "CMYK") == 0) {
+        components = 4;
+        color_space = OPJ_CLRSPC_CMYK;
+        pack = j2k_pack_rgba;
+#endif
     } else {
         state->errcode = IMAGING_CODEC_BROKEN;
         state->state = J2K_STATE_FAILED;

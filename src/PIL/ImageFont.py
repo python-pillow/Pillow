@@ -34,12 +34,13 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any, BinaryIO, TypedDict, cast
+from typing import IO, Any, BinaryIO, TypedDict, cast
 
 from . import Image, features
 from ._typing import StrOrBytesPath
 from ._util import DeferredError, is_path
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from . import ImageFile
     from ._imaging import ImagingFont
@@ -270,7 +271,7 @@ class FreeTypeFont:
             )
 
         if is_path(font):
-            font = os.path.realpath(os.fspath(font))
+            font = os.fspath(font)
             if sys.platform == "win32":
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
                 try:
@@ -644,10 +645,10 @@ class FreeTypeFont:
             features,
             language,
             stroke_width,
+            kwargs.get("stroke_filled", False),
             anchor,
             ink,
-            start[0],
-            start[1],
+            start,
         )
 
     def font_variant(
@@ -1092,7 +1093,7 @@ w7IkEbzhVQAAAABJRU5ErkJggg==
 
 def load_default(size: float | None = None) -> FreeTypeFont | ImageFont:
     """If FreeType support is available, load a version of Aileron Regular,
-    https://dotcolon.net/font/aileron, with a more limited character set.
+    https://dotcolon.net/fonts/aileron, with a more limited character set.
 
     Otherwise, load a "better than nothing" font.
 

@@ -131,10 +131,20 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     break;
                 default:
                     state->errcode = IMAGING_CODEC_CONFIG;
+                    jpeg_destroy_compress(&context->cinfo);
                     return -1;
             }
 
-            /* Compressor configuration */
+                /* Compressor configuration */
+#ifdef JPEG_C_PARAM_SUPPORTED
+            /* MozJPEG */
+            if (!context->progressive) {
+                /* Do not use MozJPEG progressive default */
+                jpeg_c_set_int_param(
+                    &context->cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST
+                );
+            }
+#endif
             jpeg_set_defaults(&context->cinfo);
 
             /* Prevent RGB -> YCbCr conversion */
@@ -152,6 +162,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                                 /* Would subsample the green and blue
                                    channels, which doesn't make sense */
                                 state->errcode = IMAGING_CODEC_CONFIG;
+                                jpeg_destroy_compress(&context->cinfo);
                                 return -1;
                         }
                         jpeg_set_colorspace(&context->cinfo, JCS_RGB);

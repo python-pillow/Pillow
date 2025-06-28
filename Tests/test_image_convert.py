@@ -118,7 +118,7 @@ def test_trns_p(tmp_path: Path) -> None:
     im = hopper("P")
     im.info["transparency"] = 0
 
-    f = str(tmp_path / "temp.png")
+    f = tmp_path / "temp.png"
 
     im_l = im.convert("L")
     assert im_l.info["transparency"] == 0
@@ -154,7 +154,7 @@ def test_trns_l(tmp_path: Path) -> None:
     im = hopper("L")
     im.info["transparency"] = 128
 
-    f = str(tmp_path / "temp.png")
+    f = tmp_path / "temp.png"
 
     im_la = im.convert("LA")
     assert "transparency" not in im_la.info
@@ -177,7 +177,7 @@ def test_trns_RGB(tmp_path: Path) -> None:
     im = hopper("RGB")
     im.info["transparency"] = im.getpixel((0, 0))
 
-    f = str(tmp_path / "temp.png")
+    f = tmp_path / "temp.png"
 
     im_l = im.convert("L")
     assert im_l.info["transparency"] == im_l.getpixel((0, 0))  # undone
@@ -203,7 +203,10 @@ def test_trns_RGB(tmp_path: Path) -> None:
     assert "transparency" not in im_rgba.info
     assert im_rgba.getpixel((0, 0)) == (0, 0, 0, 0)
 
-    im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.Palette.ADAPTIVE)
+    with pytest.warns(
+        UserWarning, match="Couldn't allocate palette entry for transparency"
+    ):
+        im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
     assert "transparency" not in im_p.info
     im_p.save(f)
 
@@ -222,9 +225,7 @@ def test_l_macro_rounding(convert_mode: str) -> None:
         im.palette.getcolor((0, 1, 2))
 
         converted_im = im.convert(convert_mode)
-        px = converted_im.load()
-        assert px is not None
-        converted_color = px[0, 0]
+        converted_color = converted_im.getpixel((0, 0))
         if convert_mode == "LA":
             assert isinstance(converted_color, tuple)
             converted_color = converted_color[0]
@@ -236,6 +237,7 @@ def test_gif_with_rgba_palette_to_p() -> None:
     with Image.open("Tests/images/hopper.gif") as im:
         im.info["transparency"] = 255
         im.load()
+        assert im.palette is not None
         assert im.palette.mode == "RGB"
         im_p = im.convert("P")
 

@@ -56,7 +56,7 @@ def test_sanity() -> None:
 
 
 def test_options_deprecated() -> None:
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning, match="ImageMath.lambda_eval options"):
         assert ImageMath.lambda_eval(lambda args: 1, images) == 1
 
 

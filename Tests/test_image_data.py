@@ -145,7 +145,7 @@ def test_getdata_putdata(mode: str) -> None:
         pytest.xfail("Known failure of BGR;15 on big-endian")
     im = hopper(mode)
     if mode.startswith("BGR;"):
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning, match=mode):
             reloaded = Image.new(mode, im.size)
     else:
         reloaded = Image.new(mode, im.size)

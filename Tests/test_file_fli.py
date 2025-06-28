@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+import io
 import warnings
 
 import pytest
 
 from PIL import FliImagePlugin, Image, ImageFile
 
-from .helper import assert_image_equal, assert_image_equal_tofile, is_pypy
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    is_pypy,
+    timeout_unless_slower_valgrind,
+)
 
 # created as an export of a palette image from Gimp2.6
 # save as...-> hopper.fli, default options.
@@ -21,6 +27,8 @@ animated_test_file_with_prefix_chunk = "Tests/images/2422.flc"
 
 def test_sanity() -> None:
     with Image.open(static_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
+
         im.load()
         assert im.mode == "P"
         assert im.size == (128, 128)
@@ -28,6 +36,8 @@ def test_sanity() -> None:
         assert not im.is_animated
 
     with Image.open(animated_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
+
         assert im.mode == "P"
         assert im.size == (320, 200)
         assert im.format == "FLI"
@@ -35,36 +45,35 @@ def test_sanity() -> None:
         assert im.is_animated
 
 
-def test_prefix_chunk() -> None:
-    ImageFile.LOAD_TRUNCATED_IMAGES = True
-    try:
-        with Image.open(animated_test_file_with_prefix_chunk) as im:
-            assert im.mode == "P"
-            assert im.size == (320, 200)
-            assert im.format == "FLI"
-            assert im.info["duration"] == 171
-            assert im.is_animated
+def test_prefix_chunk(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+    with Image.open(animated_test_file_with_prefix_chunk) as im:
+        assert im.mode == "P"
+        assert im.size == (320, 200)
+        assert im.format == "FLI"
+        assert im.info["duration"] == 171
+        assert im.is_animated
 
-            palette = im.getpalette()
-            assert palette[3:6] == [255, 255, 255]
-            assert palette[381:384] == [204, 204, 12]
-            assert palette[765:] == [252, 0, 0]
-    finally:
-        ImageFile.LOAD_TRUNCATED_IMAGES = False
+        palette = im.getpalette()
+        assert palette[3:6] == [255, 255, 255]
+        assert palette[381:384] == [204, 204, 12]
+        assert palette[765:] == [252, 0, 0]
 
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
 def test_unclosed_file() -> None:
-    def open() -> None:
+    def open_test_image() -> None:
         im = Image.open(static_test_file)
         im.load()
 
     with pytest.warns(ResourceWarning):
-        open()
+        open_test_image()
 
 
 def test_closed_file() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         im = Image.open(static_test_file)
         im.load()
         im.close()
@@ -81,6 +90,8 @@ def test_seek_after_close() -> None:
 
 def test_context_manager() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         with Image.open(static_test_file) as im:
             im.load()
 
@@ -110,16 +121,19 @@ def test_palette_chunk_second() -> None:
 
 def test_n_frames() -> None:
     with Image.open(static_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
         assert im.n_frames == 1
         assert not im.is_animated
 
     with Image.open(animated_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
         assert im.n_frames == 384
         assert im.is_animated
 
 
 def test_eoferror() -> None:
     with Image.open(animated_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
         n_frames = im.n_frames
 
         # Test seeking past the last frame
@@ -129,6 +143,15 @@ def test_eoferror() -> None:
 
         # Test that seeking to the last frame does not raise an error
         im.seek(n_frames - 1)
+
+
+def test_missing_frame_size() -> None:
+    with open(animated_test_file, "rb") as fp:
+        data = fp.read()
+    data = data[:6188]
+    with Image.open(io.BytesIO(data)) as im:
+        with pytest.raises(EOFError, match="missing frame size"):
+            im.seek(1)
 
 
 def test_seek_tell() -> None:
@@ -155,9 +178,13 @@ def test_seek_tell() -> None:
 
 def test_seek() -> None:
     with Image.open(animated_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
         im.seek(50)
 
         assert_image_equal_tofile(im, "Tests/images/a_fli.png")
+
+        with pytest.raises(ValueError, match="cannot seek to frame 52"):
+            im._seek(52)
 
 
 @pytest.mark.parametrize(
@@ -167,7 +194,7 @@ def test_seek() -> None:
         "Tests/images/timeout-bff0a9dc7243a8e6ede2408d2ffa6a9964698b87.fli",
     ],
 )
-@pytest.mark.timeout(timeout=3)
+@timeout_unless_slower_valgrind(3)
 def test_timeouts(test_file: str) -> None:
     with open(test_file, "rb") as f:
         with Image.open(f) as im:

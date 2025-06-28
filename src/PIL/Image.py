@@ -41,14 +41,7 @@ import warnings
 from collections.abc import Callable, Iterator, MutableMapping, Sequence
 from enum import IntEnum
 from types import ModuleType
-from typing import (
-    IO,
-    TYPE_CHECKING,
-    Any,
-    Literal,
-    Protocol,
-    cast,
-)
+from typing import IO, Any, Literal, Protocol, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -218,6 +211,7 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 # --------------------------------------------------------------------
 # Registries
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     import mmap
     from xml.etree.ElementTree import Element
@@ -514,7 +508,7 @@ class ImagePointTransform:
 
 
 def _getscaleoffset(
-    expr: Callable[[ImagePointTransform], ImagePointTransform | float]
+    expr: Callable[[ImagePointTransform], ImagePointTransform | float],
 ) -> tuple[float, float]:
     a = expr(ImagePointTransform(1, 0))
     return (a.scale, a.offset) if isinstance(a, ImagePointTransform) else (0, a)
@@ -548,7 +542,6 @@ class Image:
 
     def __init__(self) -> None:
         # FIXME: take "new" parameters / other image?
-        # FIXME: turn mode and size into delegating properties?
         self._im: core.ImagingCore | DeferredError | None = None
         self._mode = ""
         self._size = (0, 0)
@@ -584,6 +577,14 @@ class Image:
     def mode(self) -> str:
         return self._mode
 
+    @property
+    def readonly(self) -> int:
+        return (self._im and self._im.readonly) or self._readonly
+
+    @readonly.setter
+    def readonly(self, readonly: int) -> None:
+        self._readonly = readonly
+
     def _new(self, im: core.ImagingCore) -> Image:
         new = Image()
         new.im = im
@@ -603,24 +604,16 @@ class Image:
     def __enter__(self):
         return self
 
-    def _close_fp(self):
-        if getattr(self, "_fp", False):
-            if self._fp != self.fp:
-                self._fp.close()
-            self._fp = DeferredError(ValueError("Operation on closed image"))
-        if self.fp:
-            self.fp.close()
-
     def __exit__(self, *args):
-        if hasattr(self, "fp"):
+        from . import ImageFile
+
+        if isinstance(self, ImageFile.ImageFile):
             if getattr(self, "_exclusive_fp", False):
                 self._close_fp()
             self.fp = None
 
     def close(self) -> None:
         """
-        Closes the file pointer, if possible.
-
         This operation will destroy the image core and release its memory.
         The image data will be unusable afterward.
 
@@ -629,14 +622,9 @@ class Image:
         :py:meth:`~PIL.Image.Image.load` method. See :ref:`file-handling` for
         more information.
         """
-        if hasattr(self, "fp"):
-            try:
-                self._close_fp()
-                self.fp = None
-            except Exception as msg:
-                logger.debug("Error closing: %s", msg)
-
         if getattr(self, "map", None):
+            if sys.platform == "win32" and hasattr(sys, "pypy_version_info"):
+                self.map.close()
             self.map: mmap.mmap | None = None
 
         # Instead of simply setting to None, we're setting up a
@@ -692,13 +680,10 @@ class Image:
         )
 
     def __repr__(self) -> str:
-        return "<%s.%s image mode=%s size=%dx%d at 0x%X>" % (
-            self.__class__.__module__,
-            self.__class__.__name__,
-            self.mode,
-            self.size[0],
-            self.size[1],
-            id(self),
+        return (
+            f"<{self.__class__.__module__}.{self.__class__.__name__} "
+            f"image mode={self.mode} size={self.size[0]}x{self.size[1]} "
+            f"at 0x{id(self):X}>"
         )
 
     def _repr_pretty_(self, p: PrettyPrinter, cycle: bool) -> None:
@@ -707,14 +692,8 @@ class Image:
         # Same as __repr__ but without unpredictable id(self),
         # to keep Jupyter notebook `text/plain` output stable.
         p.text(
-            "<%s.%s image mode=%s size=%dx%d>"
-            % (
-                self.__class__.__module__,
-                self.__class__.__name__,
-                self.mode,
-                self.size[0],
-                self.size[1],
-            )
+            f"<{self.__class__.__module__}.{self.__class__.__name__} "
+            f"image mode={self.mode} size={self.size[0]}x{self.size[1]}>"
         )
 
     def _repr_image(self, image_format: str, **kwargs: Any) -> bytes | None:
@@ -757,13 +736,23 @@ class Image:
         new["shape"], new["typestr"] = _conv_type_shape(self)
         return new
 
+    def __arrow_c_schema__(self) -> object:
+        self.load()
+        return self.im.__arrow_c_schema__()
+
+    def __arrow_c_array__(
+        self, requested_schema: object | None = None
+    ) -> tuple[object, object]:
+        self.load()
+        return (self.im.__arrow_c_schema__(), self.im.__arrow_c_array__())
+
     def __getstate__(self) -> list[Any]:
         im_data = self.tobytes()  # load image first
         return [self.info, self.mode, self.size, self.getpalette(), im_data]
 
     def __setstate__(self, state: list[Any]) -> None:
         Image.__init__(self)
-        info, mode, size, palette, data = state
+        info, mode, size, palette, data = state[:5]
         self.info = info
         self._mode = mode
         self._size = size
@@ -778,18 +767,20 @@ class Image:
 
         .. warning::
 
-            This method returns the raw image data from the internal
-            storage.  For compressed image data (e.g. PNG, JPEG) use
-            :meth:`~.save`, with a BytesIO parameter for in-memory
-            data.
+            This method returns raw image data derived from Pillow's internal
+            storage. For compressed image data (e.g. PNG, JPEG) use
+            :meth:`~.save`, with a BytesIO parameter for in-memory data.
 
-        :param encoder_name: What encoder to use.  The default is to
-                             use the standard "raw" encoder.
+        :param encoder_name: What encoder to use.
 
-                             A list of C encoders can be seen under
-                             codecs section of the function array in
-                             :file:`_imaging.c`. Python encoders are
-                             registered within the relevant plugins.
+                             The default is to use the standard "raw" encoder.
+                             To see how this packs pixel data into the returned
+                             bytes, see :file:`libImaging/Pack.c`.
+
+                             A list of C encoders can be seen under codecs
+                             section of the function array in
+                             :file:`_imaging.c`. Python encoders are registered
+                             within the relevant plugins.
         :param args: Extra arguments to the encoder.
         :returns: A :py:class:`bytes` object.
         """
@@ -811,7 +802,9 @@ class Image:
         e = _getencoder(self.mode, encoder_name, encoder_args)
         e.setimage(self.im)
 
-        bufsize = max(65536, self.size[0] * 4)  # see RawEncode.c
+        from . import ImageFile
+
+        bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
 
         output = []
         while True:
@@ -1025,7 +1018,7 @@ class Image:
                 elif len(mode) == 3:
                     transparency = tuple(
                         convert_transparency(matrix[i * 4 : i * 4 + 4], transparency)
-                        for i in range(0, len(transparency))
+                        for i in range(len(transparency))
                     )
                 new_im.info["transparency"] = transparency
             return new_im
@@ -1518,7 +1511,7 @@ class Image:
             return {}
         if "xmp" not in self.info:
             return {}
-        root = ElementTree.fromstring(self.info["xmp"].rstrip(b"\x00"))
+        root = ElementTree.fromstring(self.info["xmp"].rstrip(b"\x00 "))
         return {get_name(root.tag): get_value(root)}
 
     def getexif(self) -> Exif:
@@ -1549,8 +1542,11 @@ class Image:
         # XMP tags
         if ExifTags.Base.Orientation not in self._exif:
             xmp_tags = self.info.get("XML:com.adobe.xmp")
+            pattern: str | bytes = r'tiff:Orientation(="|>)([0-9])'
+            if not xmp_tags and (xmp_tags := self.info.get("xmp")):
+                pattern = rb'tiff:Orientation(="|>)([0-9])'
             if xmp_tags:
-                match = re.search(r'tiff:Orientation(="|>)([0-9])', xmp_tags)
+                match = re.search(pattern, xmp_tags)
                 if match:
                     self._exif[ExifTags.Base.Orientation] = int(match[2])
 
@@ -1563,50 +1559,10 @@ class Image:
         self.getexif()
 
     def get_child_images(self) -> list[ImageFile.ImageFile]:
-        child_images = []
-        exif = self.getexif()
-        ifds = []
-        if ExifTags.Base.SubIFDs in exif:
-            subifd_offsets = exif[ExifTags.Base.SubIFDs]
-            if subifd_offsets:
-                if not isinstance(subifd_offsets, tuple):
-                    subifd_offsets = (subifd_offsets,)
-                for subifd_offset in subifd_offsets:
-                    ifds.append((exif._get_ifd_dict(subifd_offset), subifd_offset))
-        ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
-        if ifd1 and ifd1.get(513):
-            assert exif._info is not None
-            ifds.append((ifd1, exif._info.next))
+        from . import ImageFile
 
-        offset = None
-        for ifd, ifd_offset in ifds:
-            current_offset = self.fp.tell()
-            if offset is None:
-                offset = current_offset
-
-            fp = self.fp
-            if ifd is not None:
-                thumbnail_offset = ifd.get(513)
-                if thumbnail_offset is not None:
-                    thumbnail_offset += getattr(self, "_exif_offset", 0)
-                    self.fp.seek(thumbnail_offset)
-                    data = self.fp.read(ifd.get(514))
-                    fp = io.BytesIO(data)
-
-            with open(fp) as im:
-                from . import TiffImagePlugin
-
-                if thumbnail_offset is None and isinstance(
-                    im, TiffImagePlugin.TiffImageFile
-                ):
-                    im._frame_pos = [ifd_offset]
-                    im._seek(0)
-                im.load()
-                child_images.append(im)
-
-        if offset is not None:
-            self.fp.seek(offset)
-        return child_images
+        deprecate("Image.Image.get_child_images", 13)
+        return ImageFile.ImageFile.get_child_images(self)  # type: ignore[arg-type]
 
     def getim(self) -> CapsuleType:
         """
@@ -2539,7 +2495,21 @@ class Image:
            format to use is determined from the filename extension.
            If a file object was used instead of a filename, this
            parameter should always be used.
-        :param params: Extra parameters to the image writer.
+        :param params: Extra parameters to the image writer. These can also be
+           set on the image itself through ``encoderinfo``. This is useful when
+           saving multiple images::
+
+             # Saving XMP data to a single image
+             from PIL import Image
+             red = Image.new("RGB", (1, 1), "#f00")
+             red.save("out.mpo", xmp=b"test")
+
+             # Saving XMP data to the second frame of an image
+             from PIL import Image
+             black = Image.new("RGB", (1, 1))
+             red = Image.new("RGB", (1, 1), "#f00")
+             red.encoderinfo = {"xmp": b"test"}
+             black.save("out.mpo", save_all=True, append_images=[red])
         :returns: None
         :exception ValueError: If the output format could not be determined
            from the file name.  Use the format option to solve this.
@@ -2550,7 +2520,7 @@ class Image:
         filename: str | bytes = ""
         open_fp = False
         if is_path(fp):
-            filename = os.path.realpath(os.fspath(fp))
+            filename = os.fspath(fp)
             open_fp = True
         elif fp == sys.stdout:
             try:
@@ -2559,14 +2529,7 @@ class Image:
                 pass
         if not filename and hasattr(fp, "name") and is_path(fp.name):
             # only set the name for metadata purposes
-            filename = os.path.realpath(os.fspath(fp.name))
-
-        # may mutate self!
-        self._ensure_mutable()
-
-        save_all = params.pop("save_all", False)
-        self.encoderinfo = params
-        self.encoderconfig: tuple[Any, ...] = ()
+            filename = os.fspath(fp.name)
 
         preinit()
 
@@ -2582,9 +2545,28 @@ class Image:
                 msg = f"unknown file extension: {ext}"
                 raise ValueError(msg) from e
 
+        from . import ImageFile
+
+        # may mutate self!
+        if isinstance(self, ImageFile.ImageFile) and os.path.abspath(
+            filename
+        ) == os.path.abspath(self.filename):
+            self._ensure_mutable()
+        else:
+            self.load()
+
+        save_all = params.pop("save_all", None)
+        encoderinfo = getattr(self, "encoderinfo", {})
+        self.encoderinfo = {**encoderinfo, **params}
+        self.encoderconfig: tuple[Any, ...] = ()
+
         if format.upper() not in SAVE:
             init()
-        if save_all:
+        if save_all or (
+            save_all is None
+            and params.get("append_images")
+            and format.upper() in SAVE_ALL
+        ):
             save_handler = SAVE_ALL[format.upper()]
         else:
             save_handler = SAVE[format.upper()]
@@ -2612,6 +2594,8 @@ class Image:
                 except PermissionError:
                     pass
             raise
+        finally:
+            self.encoderinfo = encoderinfo
         if open_fp:
             fp.close()
 
@@ -3025,7 +3009,7 @@ class Image:
 # Abstract handlers.
 
 
-class ImagePointHandler:
+class ImagePointHandler(abc.ABC):
     """
     Used as a mixin by point transforms
     (for use with :py:meth:`~PIL.Image.Image.point`)
@@ -3036,7 +3020,7 @@ class ImagePointHandler:
         pass
 
 
-class ImageTransformHandler:
+class ImageTransformHandler(abc.ABC):
     """
     Used as a mixin by geometry transforms
     (for use with :py:meth:`~PIL.Image.Image.transform`)
@@ -3054,15 +3038,6 @@ class ImageTransformHandler:
 
 # --------------------------------------------------------------------
 # Factories
-
-#
-# Debugging
-
-
-def _wedge() -> Image:
-    """Create grayscale wedge (for debugging only)"""
-
-    return Image()._new(core.wedge("L"))
 
 
 def _check_size(size: Any) -> None:
@@ -3254,6 +3229,18 @@ class SupportsArrayInterface(Protocol):
         raise NotImplementedError()
 
 
+class SupportsArrowArrayInterface(Protocol):
+    """
+    An object that has an ``__arrow_c_array__`` method corresponding to the arrow c
+    data interface.
+    """
+
+    def __arrow_c_array__(
+        self, requested_schema: "PyCapsule" = None  # type: ignore[name-defined]  # noqa: F821, UP037
+    ) -> tuple["PyCapsule", "PyCapsule"]:  # type: ignore[name-defined]  # noqa: F821, UP037
+        raise NotImplementedError()
+
+
 def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     """
     Creates an image memory from an object exporting the array interface
@@ -3283,7 +3270,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
 
     :param obj: Object with array interface
     :param mode: Optional mode to use when reading ``obj``. Will be determined from
-      type if ``None``.
+      type if ``None``. Deprecated.
 
       This will not be used to convert the data after reading, but will be used to
       change how the data is read::
@@ -3318,6 +3305,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
             msg = f"Cannot handle this data type: {typekey_shape}, {typestr}"
             raise TypeError(msg) from e
     else:
+        deprecate("'mode' parameter", 13)
         rawmode = mode
     if mode in ["1", "L", "I", "P", "F"]:
         ndmax = 2
@@ -3340,6 +3328,58 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
             raise ValueError(msg)
 
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
+
+
+def fromarrow(
+    obj: SupportsArrowArrayInterface, mode: str, size: tuple[int, int]
+) -> Image:
+    """Creates an image with zero-copy shared memory from an object exporting
+    the arrow_c_array interface protocol::
+
+      from PIL import Image
+      import pyarrow as pa
+      arr = pa.array([0]*(5*5*4), type=pa.uint8())
+      im = Image.fromarrow(arr, 'RGBA', (5, 5))
+
+    If the data representation of the ``obj`` is not compatible with
+    Pillow internal storage, a ValueError is raised.
+
+    Pillow images can also be converted to Arrow objects::
+
+      from PIL import Image
+      import pyarrow as pa
+      im = Image.open('hopper.jpg')
+      arr = pa.array(im)
+
+    As with array support, when converting Pillow images to arrays,
+    only pixel values are transferred. This means that P and PA mode
+    images will lose their palette.
+
+    :param obj: Object with an arrow_c_array interface
+    :param mode: Image mode.
+    :param size: Image size. This must match the storage of the arrow object.
+    :returns: An Image object
+
+    Note that according to the Arrow spec, both the producer and the
+    consumer should consider the exported array to be immutable, as
+    unsynchronized updates will potentially cause inconsistent data.
+
+    See: :ref:`arrow-support` for more detailed information
+
+    .. versionadded:: 11.2.1
+
+    """
+    if not hasattr(obj, "__arrow_c_array__"):
+        msg = "arrow_c_array interface not found"
+        raise ValueError(msg)
+
+    (schema_capsule, array_capsule) = obj.__arrow_c_array__()
+    _im = core.new_arrow(mode, size, schema_capsule, array_capsule)
+    if _im:
+        return Image()._new(_im)
+
+    msg = "new_arrow returned None without an exception"
+    raise ValueError(msg)
 
 
 def fromqimage(im: ImageQt.QImage) -> ImageFile.ImageFile:
@@ -3463,7 +3503,7 @@ def open(
     exclusive_fp = False
     filename: str | bytes = ""
     if is_path(fp):
-        filename = os.path.realpath(os.fspath(fp))
+        filename = os.fspath(fp)
 
     if filename:
         fp = builtins.open(filename, "rb")
@@ -3893,7 +3933,7 @@ class Exif(_ExifBase):
       gps_ifd = exif.get_ifd(ExifTags.IFD.GPSInfo)
       print(gps_ifd)
 
-    Other IFDs include ``ExifTags.IFD.Exif``, ``ExifTags.IFD.Makernote``,
+    Other IFDs include ``ExifTags.IFD.Exif``, ``ExifTags.IFD.MakerNote``,
     ``ExifTags.IFD.Interop`` and ``ExifTags.IFD.IFD1``.
 
     :py:mod:`~PIL.ExifTags` also has enum classes to provide names for data::
@@ -3943,7 +3983,7 @@ class Exif(_ExifBase):
             return self._fixup_dict(dict(info))
 
     def _get_head(self) -> bytes:
-        version = b"\x2B" if self.bigtiff else b"\x2A"
+        version = b"\x2b" if self.bigtiff else b"\x2a"
         if self.endian == "<":
             head = b"II" + version + b"\x00" + o32le(8)
         else:
@@ -4027,6 +4067,9 @@ class Exif(_ExifBase):
 
         head = self._get_head()
         ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
+        for tag, ifd_dict in self._ifds.items():
+            if tag not in self:
+                ifd[tag] = ifd_dict
         for tag, value in self.items():
             if tag in [
                 ExifTags.IFD.Exif,
@@ -4056,19 +4099,19 @@ class Exif(_ExifBase):
                     ifd = self._get_ifd_dict(offset, tag)
                     if ifd is not None:
                         self._ifds[tag] = ifd
-            elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.Makernote]:
+            elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.MakerNote]:
                 if ExifTags.IFD.Exif not in self._ifds:
                     self.get_ifd(ExifTags.IFD.Exif)
                 tag_data = self._ifds[ExifTags.IFD.Exif][tag]
-                if tag == ExifTags.IFD.Makernote:
+                if tag == ExifTags.IFD.MakerNote:
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
-                    if tag_data[:8] == b"FUJIFILM":
+                    if tag_data.startswith(b"FUJIFILM"):
                         ifd_offset = i32le(tag_data, 8)
                         ifd_data = tag_data[ifd_offset:]
 
                         makernote = {}
-                        for i in range(0, struct.unpack("<H", ifd_data[:2])[0]):
+                        for i in range(struct.unpack("<H", ifd_data[:2])[0]):
                             ifd_tag, typ, count, data = struct.unpack(
                                 "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
                             )
@@ -4103,7 +4146,7 @@ class Exif(_ExifBase):
                         self._ifds[tag] = dict(self._fixup_dict(makernote))
                     elif self.get(0x010F) == "Nintendo":
                         makernote = {}
-                        for i in range(0, struct.unpack(">H", tag_data[:2])[0]):
+                        for i in range(struct.unpack(">H", tag_data[:2])[0]):
                             ifd_tag, typ, count, data = struct.unpack(
                                 ">HHL4s", tag_data[i * 12 + 2 : (i + 1) * 12 + 2]
                             )
@@ -4147,7 +4190,7 @@ class Exif(_ExifBase):
             ifd = {
                 k: v
                 for (k, v) in ifd.items()
-                if k not in (ExifTags.IFD.Interop, ExifTags.IFD.Makernote)
+                if k not in (ExifTags.IFD.Interop, ExifTags.IFD.MakerNote)
             }
         return ifd
 

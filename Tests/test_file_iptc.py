@@ -23,6 +23,9 @@ def test_open() -> None:
         assert im.tile == [("iptc", (0, 0, 1, 1), 25, "raw")]
         assert_image_equal(im, expected)
 
+    with Image.open(f) as im:
+        assert im.load() is not None
+
 
 def test_getiptcinfo_jpg_none() -> None:
     # Arrange
@@ -58,10 +61,7 @@ def test_getiptcinfo_fotostation() -> None:
 
     # Assert
     assert iptc is not None
-    for tag in iptc.keys():
-        if tag[0] == 240:
-            return
-    pytest.fail("FotoStation tag not found")
+    assert 240 in (tag[0] for tag in iptc.keys()), "FotoStation tag not found"
 
 
 def test_getiptcinfo_zero_padding() -> None:
@@ -102,7 +102,7 @@ def test_i() -> None:
     c = b"a"
 
     # Act
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning, match="IptcImagePlugin.i"):
         ret = IptcImagePlugin.i(c)
 
     # Assert
@@ -117,7 +117,7 @@ def test_dump(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(sys, "stdout", mystdout)
 
     # Act
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning, match="IptcImagePlugin.dump"):
         IptcImagePlugin.dump(c)
 
     # Assert
@@ -125,5 +125,5 @@ def test_dump(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_pad_deprecation() -> None:
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning, match="IptcImagePlugin.PAD"):
         assert IptcImagePlugin.PAD == b"\0\0\0\0"

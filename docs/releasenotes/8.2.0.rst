@@ -74,7 +74,7 @@ Tk/Tcl 8.4
 Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-07-01),
 when Tk/Tcl 8.5 will be the minimum supported.
 
-API Changes
+API changes
 ===========
 
 Image.alpha_composite: dest
@@ -107,7 +107,7 @@ removed. Instead, ``Image.getmodebase()``, ``Image.getmodetype()``,
 ``Image.getmodebandnames()``, ``Image.getmodebands()`` or ``ImageMode.getmode()``
 can be used.
 
-API Additions
+API additions
 =============
 
 getxmp() for JPEG images
@@ -177,7 +177,7 @@ be specified through a keyword argument::
 
     im.save("out.tif", icc_profile=...)
 
-Other Changes
+Other changes
 =============
 
 GIF writer uses LZW encoding

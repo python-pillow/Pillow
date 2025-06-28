@@ -36,12 +36,12 @@ def test_sanity() -> None:
 
 
 def test_eval_deprecated() -> None:
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning, match="ImageMath.eval"):
         assert ImageMath.eval("1") == 1
 
 
 def test_options_deprecated() -> None:
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning, match="ImageMath.unsafe_eval options"):
         assert ImageMath.unsafe_eval("1", images) == 1
 
 

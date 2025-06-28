@@ -19,7 +19,7 @@ def test_check() -> None:
         assert features.check_codec(codec) == features.check(codec)
     for feature in features.features:
         if "webp" in feature:
-            with pytest.warns(DeprecationWarning):
+            with pytest.warns(DeprecationWarning, match="webp"):
                 assert features.check_feature(feature) == features.check(feature)
         else:
             assert features.check_feature(feature) == features.check(feature)
@@ -36,10 +36,11 @@ def test_version() -> None:
         else:
             assert function(name) == version
             if name != "PIL":
-                if name == "zlib" and version is not None:
-                    version = re.sub(".zlib-ng$", "", version)
-                elif name == "libtiff" and version is not None:
-                    version = re.sub("t$", "", version)
+                if version is not None:
+                    if name == "zlib" and features.check_feature("zlib_ng"):
+                        version = re.sub(".zlib-ng$", "", version)
+                    elif name == "libtiff":
+                        version = re.sub("t$", "", version)
                 assert version is None or re.search(r"\d+(\.\d+)*$", version)
 
     for module in features.modules:
@@ -48,24 +49,24 @@ def test_version() -> None:
         test(codec, features.version_codec)
     for feature in features.features:
         if "webp" in feature:
-            with pytest.warns(DeprecationWarning):
+            with pytest.warns(DeprecationWarning, match="webp"):
                 test(feature, features.version_feature)
         else:
             test(feature, features.version_feature)
 
 
 def test_webp_transparency() -> None:
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning, match="transp_webp"):
         assert (features.check("transp_webp") or False) == features.check_module("webp")
 
 
 def test_webp_mux() -> None:
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning, match="webp_mux"):
         assert (features.check("webp_mux") or False) == features.check_module("webp")
 
 
 def test_webp_anim() -> None:
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning, match="webp_anim"):
         assert (features.check("webp_anim") or False) == features.check_module("webp")
 
 
@@ -94,10 +95,9 @@ def test_check_codecs(feature: str) -> None:
 
 
 def test_check_warns_on_nonexistent() -> None:
-    with pytest.warns(UserWarning) as cm:
+    with pytest.warns(UserWarning, match="Unknown feature 'typo'."):
         has_feature = features.check("typo")
     assert has_feature is False
-    assert str(cm[-1].message) == "Unknown feature 'typo'."
 
 
 def test_supported_modules() -> None:

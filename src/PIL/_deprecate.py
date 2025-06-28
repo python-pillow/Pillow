@@ -12,6 +12,7 @@ def deprecate(
     *,
     action: str | None = None,
     plural: bool = False,
+    stacklevel: int = 3,
 ) -> None:
     """
     Deprecations helper.
@@ -47,6 +48,8 @@ def deprecate(
         raise RuntimeError(msg)
     elif when == 12:
         removed = "Pillow 12 (2025-10-15)"
+    elif when == 13:
+        removed = "Pillow 13 (2026-10-15)"
     else:
         msg = f"Unknown removal version: {when}. Update {__name__}?"
         raise ValueError(msg)
@@ -65,5 +68,5 @@ def deprecate(
     warnings.warn(
         f"{deprecated} {is_} deprecated and will be removed in {removed}{action}",
         DeprecationWarning,
-        stacklevel=3,
+        stacklevel=stacklevel,
     )

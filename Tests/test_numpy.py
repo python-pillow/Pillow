@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING
 
 import pytest
 
@@ -9,6 +8,7 @@ from PIL import Image, _typing
 
 from .helper import assert_deep_equal, assert_image, hopper, skip_unless_feature
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     import numpy
     import numpy.typing as npt
@@ -141,9 +141,7 @@ def test_save_tiff_uint16() -> None:
     a.shape = TEST_IMAGE_SIZE
     img = Image.fromarray(a)
 
-    img_px = img.load()
-    assert img_px is not None
-    assert img_px[0, 0] == pixel_value
+    assert img.getpixel((0, 0)) == pixel_value
 
 
 @pytest.mark.parametrize(
@@ -264,4 +262,6 @@ def test_no_resource_warning_for_numpy_array() -> None:
     with Image.open(test_file) as im:
         # Act/Assert
         with warnings.catch_warnings():
+            warnings.simplefilter("error")
+
             array(im)

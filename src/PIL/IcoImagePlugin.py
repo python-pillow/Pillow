@@ -118,7 +118,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == _MAGIC
+    return prefix.startswith(_MAGIC)
 
 
 class IconHeader(NamedTuple):
@@ -362,7 +362,7 @@ class IcoImageFile(ImageFile.ImageFile):
             self.info["sizes"] = set(sizes)
 
             self.size = im.size
-        return None
+        return Image.Image.load(self)
 
     def load_seek(self, pos: int) -> None:
         # Flag the ImageFile.Parser so that it

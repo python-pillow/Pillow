@@ -70,6 +70,7 @@ def test_quantize_no_dither() -> None:
     converted = image.quantize(dither=Image.Dither.NONE, palette=palette)
     assert converted.mode == "P"
     assert converted.palette is not None
+    assert palette.palette is not None
     assert converted.palette.palette == palette.palette.palette
 
 
@@ -148,10 +149,8 @@ def test_palette(method: Image.Quantize, color: tuple[int, ...]) -> None:
     im = Image.new("RGBA" if len(color) == 4 else "RGB", (1, 1), color)
 
     converted = im.quantize(method=method)
-    converted_px = converted.load()
-    assert converted_px is not None
     assert converted.palette is not None
-    assert converted_px[0, 0] == converted.palette.colors[color]
+    assert converted.getpixel((0, 0)) == converted.palette.colors[color]
 
 
 def test_small_palette() -> None:

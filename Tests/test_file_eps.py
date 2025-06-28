@@ -15,6 +15,7 @@ from .helper import (
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
+    timeout_unless_slower_valgrind,
 )
 
 HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
@@ -86,6 +87,8 @@ simple_eps_file_with_long_binary_data = (
 def test_sanity(filename: str, size: tuple[int, int], scale: int) -> None:
     expected_size = tuple(s * scale for s in size)
     with Image.open(filename) as image:
+        assert isinstance(image, EpsImagePlugin.EpsImageFile)
+
         image.load(scale=scale)
         assert image.mode == "RGB"
         assert image.size == expected_size
@@ -95,10 +98,14 @@ def test_sanity(filename: str, size: tuple[int, int], scale: int) -> None:
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_load() -> None:
     with Image.open(FILE1) as im:
-        assert im.load()[0, 0] == (255, 255, 255)
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == (255, 255, 255)
 
         # Test again now that it has already been loaded once
-        assert im.load()[0, 0] == (255, 255, 255)
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == (255, 255, 255)
 
 
 def test_binary() -> None:
@@ -223,6 +230,8 @@ def test_showpage() -> None:
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_transparency() -> None:
     with Image.open("Tests/images/eps/reqd_showpage.eps") as plot_image:
+        assert isinstance(plot_image, EpsImagePlugin.EpsImageFile)
+
         plot_image.load(transparency=True)
         assert plot_image.mode == "RGBA"
 
@@ -235,7 +244,7 @@ def test_transparency() -> None:
 def test_file_object(tmp_path: Path) -> None:
     # issue 479
     with Image.open(FILE1) as image1:
-        with open(str(tmp_path / "temp.eps"), "wb") as fh:
+        with open(tmp_path / "temp.eps", "wb") as fh:
             image1.save(fh, "EPS")
 
 
@@ -270,7 +279,7 @@ def test_1(filename: str) -> None:
 
 def test_image_mode_not_supported(tmp_path: Path) -> None:
     im = hopper("RGBA")
-    tmpfile = str(tmp_path / "temp.eps")
+    tmpfile = tmp_path / "temp.eps"
     with pytest.raises(ValueError):
         im.save(tmpfile)
 
@@ -304,6 +313,7 @@ def test_render_scale2() -> None:
 
     # Zero bounding box
     with Image.open(FILE1) as image1_scale2:
+        assert isinstance(image1_scale2, EpsImagePlugin.EpsImageFile)
         image1_scale2.load(scale=2)
         with Image.open(FILE1_COMPARE_SCALE2) as image1_scale2_compare:
             image1_scale2_compare = image1_scale2_compare.convert("RGB")
@@ -312,6 +322,7 @@ def test_render_scale2() -> None:
 
     # Non-zero bounding box
     with Image.open(FILE2) as image2_scale2:
+        assert isinstance(image2_scale2, EpsImagePlugin.EpsImageFile)
         image2_scale2.load(scale=2)
         with Image.open(FILE2_COMPARE_SCALE2) as image2_scale2_compare:
             image2_scale2_compare = image2_scale2_compare.convert("RGB")
@@ -388,7 +399,7 @@ def test_emptyline() -> None:
     assert image.format == "EPS"
 
 
-@pytest.mark.timeout(timeout=5)
+@timeout_unless_slower_valgrind(5)
 @pytest.mark.parametrize(
     "test_file",
     ["Tests/images/eps/timeout-d675703545fee17acab56e5fec644c19979175de.eps"],

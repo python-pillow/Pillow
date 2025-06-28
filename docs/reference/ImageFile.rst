@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageFile
 .. py:currentmodule:: PIL.ImageFile
 
-:py:mod:`~PIL.ImageFile` Module
+:py:mod:`~PIL.ImageFile` module
 ===============================
 
 The :py:mod:`~PIL.ImageFile` module provides support functions for the image open
@@ -19,7 +19,7 @@ Example: Parse an image
 
     from PIL import ImageFile
 
-    fp = open("hopper.pgm", "rb")
+    fp = open("hopper.ppm", "rb")
 
     p = ImageFile.Parser()
 
