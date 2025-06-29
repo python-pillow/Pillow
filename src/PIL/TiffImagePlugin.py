@@ -2303,24 +2303,35 @@ class AppendingTiffWriter(io.BytesIO):
 
 
 def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
+    progress = im.encoderinfo.get("progress")
     append_images = list(im.encoderinfo.get("append_images", []))
     if not hasattr(im, "n_frames") and not append_images:
-        return _save(im, fp, filename)
+        _save(im, fp, filename)
+        im._save_all_progress(progress)
+        return
 
     cur_idx = im.tell()
+    im_sequences = [im] + append_images
+    if progress:
+        completed = 0
+        total = sum(getattr(seq, "n_frames", 1) for seq in im_sequences)
     try:
         with AppendingTiffWriter(fp) as tf:
-            for ims in [im] + append_images:
-                if not hasattr(ims, "encoderinfo"):
-                    ims.encoderinfo = {}
-                if not hasattr(ims, "encoderconfig"):
-                    ims.encoderconfig = ()
-                nfr = getattr(ims, "n_frames", 1)
+            for i, seq in enumerate(im_sequences):
+                if not hasattr(seq, "encoderinfo"):
+                    seq.encoderinfo = {}
+                if not hasattr(seq, "encoderconfig"):
+                    seq.encoderconfig = ()
+                nfr = getattr(seq, "n_frames", 1)
 
                 for idx in range(nfr):
-                    ims.seek(idx)
-                    ims.load()
-                    _save(ims, tf, filename)
+                    seq.seek(idx)
+                    seq.load()
+                    _save(seq, tf, filename)
+                    if progress:
+                        completed += 1
+                        im._save_all_progress(progress, seq, i, completed, total)
+
                     tf.newFrame()
     finally:
         im.seek(cur_idx)
