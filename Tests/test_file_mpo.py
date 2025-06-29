@@ -120,9 +120,11 @@ def test_ignore_frame_size() -> None:
     # Ignore the different size of the second frame
     # since this is not a "Large Thumbnail" image
     with Image.open("Tests/images/ignore_frame_size.mpo") as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         assert im.size == (64, 64)
 
         im.seek(1)
+        assert im.mpinfo is not None
         assert (
             im.mpinfo[0xB002][1]["Attribute"]["MPType"]
             == "Multi-Frame Image: (Disparity)"
@@ -155,6 +157,7 @@ def test_reload_exif_after_seek() -> None:
 @pytest.mark.parametrize("test_file", test_files)
 def test_mp(test_file: str) -> None:
     with Image.open(test_file) as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         mpinfo = im._getmp()
         assert mpinfo is not None
         assert mpinfo[45056] == b"0100"
@@ -165,6 +168,7 @@ def test_mp_offset() -> None:
     # This image has been manually hexedited to have an IFD offset of 10
     # in APP2 data, in contrast to normal 8
     with Image.open("Tests/images/sugarshack_ifd_offset.mpo") as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         mpinfo = im._getmp()
         assert mpinfo is not None
         assert mpinfo[45056] == b"0100"
@@ -182,6 +186,7 @@ def test_mp_no_data() -> None:
 @pytest.mark.parametrize("test_file", test_files)
 def test_mp_attribute(test_file: str) -> None:
     with Image.open(test_file) as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         mpinfo = im._getmp()
     assert mpinfo is not None
     for frame_number, mpentry in enumerate(mpinfo[0xB002]):
