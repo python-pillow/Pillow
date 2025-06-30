@@ -5,7 +5,7 @@ from io import BytesIO, StringIO
 
 import pytest
 
-from PIL import Image, IptcImagePlugin
+from PIL import Image, IptcImagePlugin, TiffImagePlugin, TiffTags
 
 from .helper import assert_image_equal, hopper
 
@@ -78,13 +78,19 @@ def test_getiptcinfo_zero_padding() -> None:
 
 
 def test_getiptcinfo_tiff() -> None:
-    # Arrange
+    expected = {(1, 90): b"\x1b%G", (2, 0): b"\xcf\xc0"}
+
     with Image.open("Tests/images/hopper.Lab.tif") as im:
-        # Act
         iptc = IptcImagePlugin.getiptcinfo(im)
 
-    # Assert
-    assert iptc == {(1, 90): b"\x1b%G", (2, 0): b"\xcf\xc0"}
+    assert iptc == expected
+
+    # Test with LONG tag type
+    with Image.open("Tests/images/hopper.Lab.tif") as im:
+        im.tag_v2.tagtype[TiffImagePlugin.IPTC_NAA_CHUNK] = TiffTags.LONG
+        iptc = IptcImagePlugin.getiptcinfo(im)
+
+    assert iptc == expected
 
 
 def test_getiptcinfo_tiff_none() -> None:
