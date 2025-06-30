@@ -160,6 +160,10 @@ class TestImage:
         with pytest.raises(AttributeError):
             im.mode = "P"  # type: ignore[misc]
 
+    def test_empty_path(self) -> None:
+        with pytest.raises(FileNotFoundError):
+            Image.open("")
+
     def test_invalid_image(self) -> None:
         im = io.BytesIO(b"")
         with pytest.raises(UnidentifiedImageError):
