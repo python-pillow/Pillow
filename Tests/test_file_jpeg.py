@@ -621,7 +621,13 @@ class TestFileJpeg:
 
                 qtable_from_quality = self.roundtrip(im, quality=quality).quantization
 
-                assert qtable_from_qtable_quality == qtable_from_quality
+                if features.check_feature("libjpeg_turbo"):
+                    assert qtable_from_qtable_quality == qtable_from_quality
+                else:
+                    assert qtable_from_qtable_quality[0] == qtable_from_quality[0]
+                    assert (
+                        qtable_from_qtable_quality[1][1:] == qtable_from_quality[1][1:]
+                    )
 
             # list of qtable lists
             assert_image_similar(
