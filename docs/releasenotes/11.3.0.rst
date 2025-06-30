@@ -68,7 +68,13 @@ AVIF support in wheels
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Support for reading and writing AVIF images is now included in Pillow's wheels, except
-for Windows ARM64. libaom is available as an encoder and dav1d as a decoder.
+for Windows ARM64 and iOS. libaom is available as an encoder and dav1d as a decoder.
+
+iOS
+^^^
+
+Pillow now provides wheels that can be used on iOS ARM64 devices, and on the iOS
+simulator on ARM64 and x86_64. Currently, only Python 3.13 wheels are available.
 
 Python 3.14 beta
 ^^^^^^^^^^^^^^^^
