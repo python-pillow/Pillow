@@ -51,14 +51,14 @@ if [[ "$CIBW_PLATFORM" == "ios" ]]; then
     # GNU Autotools doesn't recognize the existence of arm64-apple-ios-simulator
     # as a valid host. However, the only difference between arm64-apple-ios and
     # arm64-apple-ios-simulator is the choice of sysroot, and that is
-    # coordinated by CC,CFLAGS etc. From the perspective of configure, the two
+    # coordinated by CC, CFLAGS etc. From the perspective of configure, the two
     # platforms are identical, so we can use arm64-apple-ios consistently.
     # This (mostly) avoids us needing to patch config.sub in dependency sources.
     HOST_CONFIGURE_FLAGS="--disable-shared --enable-static --host=$GNU_ARCH-apple-ios --build=$GNU_ARCH-apple-darwin"
 
-    # Cmake has native support for iOS. However, most of that support is based
+    # CMake has native support for iOS. However, most of that support is based
     # on using the Xcode builder, which isn't very helpful for most of Pillow's
-    # dependencies. Therefore, we lean on the OSX configurations, plus CC/CFLAGS
+    # dependencies. Therefore, we lean on the OSX configurations, plus CC, CFLAGS
     # etc. to ensure the right sysroot is selected.
     HOST_CMAKE_FLAGS="-DCMAKE_SYSTEM_NAME=$CMAKE_SYSTEM_NAME -DCMAKE_SYSTEM_PROCESSOR=$GNU_ARCH -DCMAKE_OSX_DEPLOYMENT_TARGET=$IPHONEOS_DEPLOYMENT_TARGET -DCMAKE_OSX_SYSROOT=$IOS_SDK_PATH -DBUILD_SHARED_LIBS=NO"
 

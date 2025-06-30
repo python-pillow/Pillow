@@ -1,9 +1,9 @@
 # libwebp example binaries require dependencies that aren't available for iOS builds.
 # There's also no easy way to invoke the build to *exclude* the example builds.
-# Since we don't need the examples anyway, remove them from the makefile.
+# Since we don't need the examples anyway, remove them from the Makefile.
 #
-# As a point of reference, libwebp provides an XCframework build script that involves
-# 7 separate invocations of make to avoid building the examples. Patching the makefile
+# As a point of reference, libwebp provides an XCFramework build script that involves
+# 7 separate invocations of make to avoid building the examples. Patching the Makefile
 # to remove the examples is a simpler approach, and one that is more compatible with
 # the existing multibuild infrastructure.
 # 
