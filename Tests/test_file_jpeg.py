@@ -611,6 +611,24 @@ class TestFileJpeg:
                     None
                 )
             ]
+
+            for quality in range(101):
+                qtable_from_qtable_quality = self.roundtrip(
+                    im,
+                    qtables={0: standard_l_qtable, 1: standard_chrominance_qtable},
+                    quality=quality,
+                ).quantization
+
+                qtable_from_quality = self.roundtrip(im, quality=quality).quantization
+
+                if features.check_feature("libjpeg_turbo"):
+                    assert qtable_from_qtable_quality == qtable_from_quality
+                else:
+                    assert qtable_from_qtable_quality[0] == qtable_from_quality[0]
+                    assert (
+                        qtable_from_qtable_quality[1][1:] == qtable_from_quality[1][1:]
+                    )
+
             # list of qtable lists
             assert_image_similar(
                 im,
