@@ -70,7 +70,7 @@ elif [[ "$(uname -s)" == "Darwin" ]]; then
     check_cibw_archs
     # Build macOS dependencies in `build/darwin`
     # Install them into `build/deps/darwin`
-    PLAT="${CIBW_ARCHS:-$AUDITWHEEL_ARCH}"
+    PLAT=$CIBW_ARCHS
     WORKDIR=$(pwd)/build/darwin
     BUILD_PREFIX=$(pwd)/build/deps/darwin
 else
