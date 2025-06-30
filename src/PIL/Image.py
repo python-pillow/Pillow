@@ -2600,7 +2600,7 @@ class Image:
         if open_fp:
             fp.close()
 
-    def _attach_default_encoderinfo(self, im: Image) -> Any:
+    def _attach_default_encoderinfo(self, im: Image) -> dict[str, Any]:
         encoderinfo = getattr(self, "encoderinfo", {})
         self.encoderinfo = {**im._default_encoderinfo, **encoderinfo}
         return encoderinfo

@@ -316,7 +316,7 @@ def test_save_xmp() -> None:
     im = Image.new("RGB", (1, 1))
     im2 = Image.new("RGB", (1, 1), "#f00")
 
-    def roundtrip_xmp():
+    def roundtrip_xmp() -> list[Any]:
         im_reloaded = roundtrip(im, xmp=b"Default", save_all=True, append_images=[im2])
         xmp = [im_reloaded.info["xmp"]]
         im_reloaded.seek(1)
