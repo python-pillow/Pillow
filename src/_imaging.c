@@ -3724,18 +3724,6 @@ _getattr_bands(ImagingObject *self, void *closure) {
     return PyLong_FromLong(self->image->bands);
 }
 
-static PyObject *
-_getattr_id(ImagingObject *self, void *closure) {
-    if (PyErr_WarnEx(
-            PyExc_DeprecationWarning,
-            "id property is deprecated and will be removed in Pillow 12 (2025-10-15)",
-            1
-        ) < 0) {
-        return NULL;
-    }
-    return PyLong_FromSsize_t((Py_ssize_t)self->image);
-}
-
 static void
 _ptr_destructor(PyObject *capsule) {
     PyObject *self = (PyObject *)PyCapsule_GetContext(capsule);
@@ -3751,27 +3739,6 @@ _getattr_ptr(ImagingObject *self, void *closure) {
 }
 
 static PyObject *
-_getattr_unsafe_ptrs(ImagingObject *self, void *closure) {
-    if (PyErr_WarnEx(
-            PyExc_DeprecationWarning,
-            "unsafe_ptrs property is deprecated and will be removed in Pillow 12 "
-            "(2025-10-15)",
-            1
-        ) < 0) {
-        return NULL;
-    }
-    return Py_BuildValue(
-        "(sn)(sn)(sn)",
-        "image8",
-        self->image->image8,
-        "image32",
-        self->image->image32,
-        "image",
-        self->image->image
-    );
-}
-
-static PyObject *
 _getattr_readonly(ImagingObject *self, void *closure) {
     return PyLong_FromLong(self->image->read_only);
 }
@@ -3780,9 +3747,7 @@ static struct PyGetSetDef getsetters[] = {
     {"mode", (getter)_getattr_mode},
     {"size", (getter)_getattr_size},
     {"bands", (getter)_getattr_bands},
-    {"id", (getter)_getattr_id},
     {"ptr", (getter)_getattr_ptr},
-    {"unsafe_ptrs", (getter)_getattr_unsafe_ptrs},
     {"readonly", (getter)_getattr_readonly},
     {NULL}
 };

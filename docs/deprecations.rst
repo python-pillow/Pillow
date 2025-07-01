@@ -122,16 +122,6 @@ The ``options`` parameter in :py:meth:`~PIL.ImageMath.lambda_eval()` and
 :py:meth:`~PIL.ImageMath.unsafe_eval()` has been deprecated. One or more keyword
 arguments can be used instead.
 
-Get internal pointers to objects
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 11.0.0
-
-``Image.core.ImagingCore.id`` and ``Image.core.ImagingCore.unsafe_ptrs`` have been
-deprecated and will be removed in Pillow 12 (2025-10-15). They were used for obtaining
-raw pointers to ``ImagingCore`` internals. To interact with C code, you can use
-``Image.Image.getim()``, which returns a ``Capsule`` object.
-
 ExifTags.IFD.Makernote
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -222,6 +212,17 @@ Specific WebP feature checks
 
 ``features.check("transp_webp")``, ``features.check("webp_mux")`` and
 ``features.check("webp_anim")`` have been removed.
+
+Get internal pointers to objects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+.. versionremoved:: 12.0.0
+
+``Image.core.ImagingCore.id`` and ``Image.core.ImagingCore.unsafe_ptrs`` have been
+removed. They were used for obtaining raw pointers to ``ImagingCore`` internals. To
+interact with C code, you can use ``Image.Image.getim()``, which returns a ``Capsule``
+object.
 
 TiffImagePlugin IFD_LEGACY_API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
