@@ -19,19 +19,6 @@ ImageDraw.getdraw hints parameter
 
 The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been deprecated.
 
-FreeType 2.9.0
-^^^^^^^^^^^^^^
-
-.. deprecated:: 11.0.0
-
-Support for FreeType 2.9.0 is deprecated and will be removed in Pillow 12.0.0
-(2025-10-15), when FreeType 2.9.1 will be the minimum supported.
-
-We recommend upgrading to at least FreeType `2.10.4`_, which fixed a severe
-vulnerability introduced in FreeType 2.6 (:cve:`2020-15999`).
-
-.. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
-
 ExifTags.IFD.Makernote
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -79,7 +66,7 @@ Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
 
 ImageFile.raise_oserror
-~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 10.2.0
 .. versionremoved:: 12.0.0
@@ -89,7 +76,7 @@ only useful for translating error codes returned by a codec's ``decode()`` metho
 which ImageFile already did automatically.
 
 IptcImageFile helper functions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 10.2.0
 .. versionremoved:: 12.0.0
@@ -100,7 +87,7 @@ intended for internal use, so there is no replacement. They can each be replaced
 single line of code using builtin functions in Python.
 
 ImageCms constants and versions() function
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 10.3.0
 .. versionremoved:: 12.0.0
@@ -180,6 +167,20 @@ ImageDraw.getdraw hints parameter
 .. versionremoved:: 12.0.0
 
 The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been removed.
+
+FreeType 2.9.0
+^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+.. versionremoved:: 12.0.0
+
+Support for FreeType 2.9.0 has been removed. FreeType 2.9.1 is the minimum version
+supported.
+
+We recommend upgrading to at least FreeType `2.10.4`_, which fixed a severe
+vulnerability introduced in FreeType 2.6 (:cve:`2020-15999`).
+
+.. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
 
 ICNS (width, height, scale) sizes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
