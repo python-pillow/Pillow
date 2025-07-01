@@ -12,16 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a :py:exc:`DeprecationWarning` is issued.
 
-ImageFile.raise_oserror
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 10.2.0
-
-``ImageFile.raise_oserror()`` has been deprecated and will be removed in Pillow
-12.0.0 (2025-10-15). The function is undocumented and is only useful for translating
-error codes returned by a codec's ``decode()`` method, which ImageFile already does
-automatically.
-
 IptcImageFile helper functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -205,6 +195,16 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+ImageFile.raise_oserror
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 10.2.0
+.. versionremoved:: 12.0.0
+
+``ImageFile.raise_oserror()`` has been removed. The function was undocumented and was
+only useful for translating error codes returned by a codec's ``decode()`` method,
+which ImageFile already did automatically.
 
 BGR;15, BGR 16 and BGR;24
 ^^^^^^^^^^^^^^^^^^^^^^^^^
