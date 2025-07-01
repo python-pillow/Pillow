@@ -122,14 +122,6 @@ The ``options`` parameter in :py:meth:`~PIL.ImageMath.lambda_eval()` and
 :py:meth:`~PIL.ImageMath.unsafe_eval()` has been deprecated. One or more keyword
 arguments can be used instead.
 
-JpegImageFile.huffman_ac and JpegImageFile.huffman_dc
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 11.0.0
-
-The ``huffman_ac`` and ``huffman_dc`` dictionaries on JPEG images were unused. They
-have been deprecated, and will be removed in Pillow 12 (2025-10-15).
-
 Specific WebP feature checks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -222,6 +214,15 @@ Image isImageType()
 
 ``Image.isImageType(im)`` has been removed. Use ``isinstance(im, Image.Image)``
 instead.
+
+JpegImageFile.huffman_ac and JpegImageFile.huffman_dc
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+.. versionremoved:: 12.0.0
+
+The ``huffman_ac`` and ``huffman_dc`` dictionaries on JPEG images were unused. They
+have been deprecated, and will be removed in Pillow 12 (2025-10-15).
 
 TiffImagePlugin IFD_LEGACY_API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
