@@ -77,14 +77,6 @@ The use in :py:mod:`.ImageCms` of input modes and output modes that are not Pill
 image modes has been deprecated. Defaulting to "L" or "1" if the mode cannot be mapped
 is also deprecated.
 
-Support for LibTIFF earlier than 4
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 10.4.0
-
-Support for LibTIFF earlier than version 4 has been deprecated.
-Upgrade to a newer version of LibTIFF instead.
-
 ImageDraw.getdraw hints parameter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -193,6 +185,15 @@ BGR;15, BGR 16 and BGR;24
 .. versionremoved:: 12.0.0
 
 The experimental BGR;15, BGR;16 and BGR;24 modes have been removed.
+
+Support for LibTIFF earlier than 4
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+.. versionremoved:: 12.0.0
+
+Support for LibTIFF earlier than version 4 has been removed.
+Upgrade to a newer version of LibTIFF instead.
 
 Image isImageType()
 ^^^^^^^^^^^^^^^^^^^

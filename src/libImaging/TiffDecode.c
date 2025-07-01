@@ -884,7 +884,6 @@ ImagingLibTiffMergeFieldInfo(
     // Refer to libtiff docs (http://www.simplesystems.org/libtiff/addingtags.html)
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
     uint32_t n;
-    int status = 0;
 
     // custom fields added with ImagingLibTiffMergeFieldInfo are only used for
     // decoding, ignore readcount;
@@ -907,14 +906,7 @@ ImagingLibTiffMergeFieldInfo(
 
     n = sizeof(info) / sizeof(info[0]);
 
-    // Test for libtiff 4.0 or later, excluding libtiff 3.9.6 and 3.9.7
-#if TIFFLIB_VERSION >= 20111221 && TIFFLIB_VERSION != 20120218 && \
-    TIFFLIB_VERSION != 20120922
-    status = TIFFMergeFieldInfo(clientstate->tiff, info, n);
-#else
-    TIFFMergeFieldInfo(clientstate->tiff, info, n);
-#endif
-    return status;
+    return TIFFMergeFieldInfo(clientstate->tiff, info, n);
 }
 
 int
