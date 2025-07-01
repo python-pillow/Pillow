@@ -23,10 +23,9 @@ import operator
 import sys
 from enum import IntEnum, IntFlag
 from functools import reduce
-from typing import Any, Literal, SupportsFloat, SupportsInt, Union
+from typing import Literal, SupportsFloat, SupportsInt, Union
 
-from . import Image, __version__
-from ._deprecate import deprecate
+from . import Image
 from ._typing import SupportsRead
 
 try:
@@ -287,31 +286,6 @@ class ImageCmsTransform(Image.ImagePointHandler):
         proof_intent: Intent = Intent.ABSOLUTE_COLORIMETRIC,
         flags: Flags = Flags.NONE,
     ):
-        supported_modes = (
-            "RGB",
-            "RGBA",
-            "RGBX",
-            "CMYK",
-            "I;16",
-            "I;16L",
-            "I;16B",
-            "YCbCr",
-            "LAB",
-            "L",
-            "1",
-        )
-        for mode in (input_mode, output_mode):
-            if mode not in supported_modes:
-                deprecate(
-                    mode,
-                    12,
-                    {
-                        "L;16": "I;16 or I;16L",
-                        "L:16B": "I;16B",
-                        "YCCA": "YCbCr",
-                        "YCC": "YCbCr",
-                    }.get(mode),
-                )
         if proof is None:
             self.transform = core.buildTransform(
                 input.profile, output.profile, input_mode, output_mode, intent, flags

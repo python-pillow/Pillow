@@ -673,12 +673,6 @@ def test_auxiliary_channels_isolated() -> None:
                 assert_image_equal(test_image.convert(dst_format[2]), reference_image)
 
 
-def test_long_modes() -> None:
-    p = ImageCms.getOpenProfile("Tests/icc/sGrey-v2-nano.icc")
-    with pytest.warns(DeprecationWarning, match="ABCDEFGHI"):
-        ImageCms.buildTransform(p, p, "ABCDEFGHI", "ABCDEFGHI")
-
-
 @pytest.mark.parametrize("mode", ("RGB", "RGBA", "RGBX"))
 def test_rgb_lab(mode: str) -> None:
     im = Image.new(mode, (1, 1))
@@ -696,11 +690,3 @@ def test_cmyk_lab() -> None:
     im = Image.new("CMYK", (1, 1))
     converted_im = im.convert("LAB")
     assert converted_im.getpixel((0, 0)) == (255, 128, 128)
-
-
-def test_deprecation() -> None:
-    profile = ImageCmsProfile(ImageCms.createProfile("sRGB"))
-    with pytest.warns(DeprecationWarning, match="RGBA;16B"):
-        ImageCms.ImageCmsTransform(profile, profile, "RGBA;16B", "RGB")
-    with pytest.warns(DeprecationWarning, match="RGBA;16B"):
-        ImageCms.ImageCmsTransform(profile, profile, "RGB", "RGBA;16B")

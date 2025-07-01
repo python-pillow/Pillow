@@ -12,15 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a :py:exc:`DeprecationWarning` is issued.
 
-Non-image modes in ImageCms
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 10.4.0
-
-The use in :py:mod:`.ImageCms` of input modes and output modes that are not Pillow
-image modes has been deprecated. Defaulting to "L" or "1" if the mode cannot be mapped
-is also deprecated.
-
 ImageDraw.getdraw hints parameter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -170,6 +161,16 @@ BGR;15, BGR 16 and BGR;24
 .. versionremoved:: 12.0.0
 
 The experimental BGR;15, BGR;16 and BGR;24 modes have been removed.
+
+Non-image modes in ImageCms
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+.. versionremoved:: 12.0.0
+
+The use in :py:mod:`.ImageCms` of input modes and output modes that are not Pillow
+image modes has been removed. Defaulting to "L" or "1" if the mode cannot be mapped has
+also been removed.
 
 Support for LibTIFF earlier than 4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
