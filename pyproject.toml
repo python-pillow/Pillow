@@ -9,7 +9,7 @@ backend-path = [
 
 [project]
 name = "pillow"
-description = "Python Imaging Library (Fork)"
+description = "Python Imaging Library (fork)"
 readme = "README.md"
 keywords = [
   "Imaging",
