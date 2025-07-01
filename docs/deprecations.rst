@@ -49,14 +49,6 @@ Deprecated                                    Use instead
                                               :py:data:`sys.version_info`, and ``PIL.__version__``
 ============================================  ====================================================
 
-ImageMath eval()
-^^^^^^^^^^^^^^^^
-
-.. deprecated:: 10.3.0
-
-``ImageMath.eval()`` has been deprecated. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
-:py:meth:`~PIL.ImageMath.unsafe_eval` instead.
-
 Non-image modes in ImageCms
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -93,15 +85,6 @@ ICNS (width, height, scale) sizes
 
 Setting an ICNS image size to ``(width, height, scale)`` before loading has been
 deprecated. Instead, ``load(scale)`` can be used.
-
-ImageMath.lambda_eval and ImageMath.unsafe_eval options parameter
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 11.0.0
-
-The ``options`` parameter in :py:meth:`~PIL.ImageMath.lambda_eval()` and
-:py:meth:`~PIL.ImageMath.unsafe_eval()` has been deprecated. One or more keyword
-arguments can be used instead.
 
 ExifTags.IFD.Makernote
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -179,6 +162,16 @@ Image isImageType()
 ``Image.isImageType(im)`` has been removed. Use ``isinstance(im, Image.Image)``
 instead.
 
+ImageMath.lambda_eval and ImageMath.unsafe_eval options parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+.. versionremoved:: 12.0.0
+
+The ``options`` parameter in :py:meth:`~PIL.ImageMath.lambda_eval()` and
+:py:meth:`~PIL.ImageMath.unsafe_eval()` has been removed. One or more keyword
+arguments can be used instead.
+
 JpegImageFile.huffman_ac and JpegImageFile.huffman_dc
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -207,6 +200,15 @@ Get internal pointers to objects
 removed. They were used for obtaining raw pointers to ``ImagingCore`` internals. To
 interact with C code, you can use ``Image.Image.getim()``, which returns a ``Capsule``
 object.
+
+ImageMath eval()
+^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.3.0
+.. versionremoved:: 12.0.0
+
+``ImageMath.eval()`` has been removed. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
+:py:meth:`~PIL.ImageMath.unsafe_eval` instead.
 
 BGR;15, BGR 16 and BGR;24
 ^^^^^^^^^^^^^^^^^^^^^^^^^
