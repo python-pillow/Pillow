@@ -108,20 +108,6 @@ pyCMS
 _VERSION = "1.0.0 pil"
 
 
-def __getattr__(name: str) -> Any:
-    if name == "DESCRIPTION":
-        deprecate("PIL.ImageCms.DESCRIPTION", 12)
-        return _DESCRIPTION
-    elif name == "VERSION":
-        deprecate("PIL.ImageCms.VERSION", 12)
-        return _VERSION
-    elif name == "FLAGS":
-        deprecate("PIL.ImageCms.FLAGS", 12, "PIL.ImageCms.Flags")
-        return _FLAGS
-    msg = f"module '{__name__}' has no attribute '{name}'"
-    raise AttributeError(msg)
-
-
 # --------------------------------------------------------------------.
 
 
@@ -1108,16 +1094,3 @@ def isIntentSupported(
             return -1
     except (AttributeError, OSError, TypeError, ValueError) as v:
         raise PyCMSError(v) from v
-
-
-def versions() -> tuple[str, str | None, str, str]:
-    """
-    (pyCMS) Fetches versions.
-    """
-
-    deprecate(
-        "PIL.ImageCms.versions()",
-        12,
-        '(PIL.features.version("littlecms2"), sys.version, PIL.__version__)',
-    )
-    return _VERSION, core.littlecms_version, sys.version.split()[0], __version__

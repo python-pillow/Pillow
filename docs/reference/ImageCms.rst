@@ -56,7 +56,6 @@ Functions
 .. autofunction:: get_display_profile
 .. autofunction:: isIntentSupported
 .. autofunction:: profileToProfile
-.. autofunction:: versions
 
 CmsProfile
 ----------

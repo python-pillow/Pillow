@@ -12,43 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a :py:exc:`DeprecationWarning` is issued.
 
-ImageCms constants and versions() function
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 10.3.0
-
-A number of constants and a function in :py:mod:`.ImageCms` have been deprecated.
-This includes a table of flags based on LittleCMS version 1 which has been
-replaced with a new class :py:class:`.ImageCms.Flags` based on LittleCMS 2 flags.
-
-============================================  ====================================================
-Deprecated                                    Use instead
-============================================  ====================================================
-``ImageCms.DESCRIPTION``                      No replacement
-``ImageCms.VERSION``                          ``PIL.__version__``
-``ImageCms.FLAGS["MATRIXINPUT"]``             :py:attr:`.ImageCms.Flags.CLUT_POST_LINEARIZATION`
-``ImageCms.FLAGS["MATRIXOUTPUT"]``            :py:attr:`.ImageCms.Flags.FORCE_CLUT`
-``ImageCms.FLAGS["MATRIXONLY"]``              No replacement
-``ImageCms.FLAGS["NOWHITEONWHITEFIXUP"]``     :py:attr:`.ImageCms.Flags.NOWHITEONWHITEFIXUP`
-``ImageCms.FLAGS["NOPRELINEARIZATION"]``      :py:attr:`.ImageCms.Flags.CLUT_PRE_LINEARIZATION`
-``ImageCms.FLAGS["GUESSDEVICECLASS"]``        :py:attr:`.ImageCms.Flags.GUESSDEVICECLASS`
-``ImageCms.FLAGS["NOTCACHE"]``                :py:attr:`.ImageCms.Flags.NOCACHE`
-``ImageCms.FLAGS["NOTPRECALC"]``              :py:attr:`.ImageCms.Flags.NOOPTIMIZE`
-``ImageCms.FLAGS["NULLTRANSFORM"]``           :py:attr:`.ImageCms.Flags.NULLTRANSFORM`
-``ImageCms.FLAGS["HIGHRESPRECALC"]``          :py:attr:`.ImageCms.Flags.HIGHRESPRECALC`
-``ImageCms.FLAGS["LOWRESPRECALC"]``           :py:attr:`.ImageCms.Flags.LOWRESPRECALC`
-``ImageCms.FLAGS["GAMUTCHECK"]``              :py:attr:`.ImageCms.Flags.GAMUTCHECK`
-``ImageCms.FLAGS["WHITEBLACKCOMPENSATION"]``  :py:attr:`.ImageCms.Flags.BLACKPOINTCOMPENSATION`
-``ImageCms.FLAGS["BLACKPOINTCOMPENSATION"]``  :py:attr:`.ImageCms.Flags.BLACKPOINTCOMPENSATION`
-``ImageCms.FLAGS["SOFTPROOFING"]``            :py:attr:`.ImageCms.Flags.SOFTPROOFING`
-``ImageCms.FLAGS["PRESERVEBLACK"]``           :py:attr:`.ImageCms.Flags.NONEGATIVES`
-``ImageCms.FLAGS["NODEFAULTRESOURCEDEF"]``    :py:attr:`.ImageCms.Flags.NODEFAULTRESOURCEDEF`
-``ImageCms.FLAGS["GRIDPOINTS"]``              :py:attr:`.ImageCms.Flags.GRIDPOINTS()`
-``ImageCms.versions()``                       :py:func:`PIL.features.version_module` with
-                                              ``feature="littlecms2"``, :py:data:`sys.version` or
-                                              :py:data:`sys.version_info`, and ``PIL.__version__``
-============================================  ====================================================
-
 Non-image modes in ImageCms
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -153,6 +116,78 @@ The functions ``IptcImageFile.dump`` and ``IptcImageFile.i``, and the constant
 intended for internal use, so there is no replacement. They can each be replaced by a
 single line of code using builtin functions in Python.
 
+ImageCms constants and versions() function
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 10.3.0
+.. versionremoved:: 12.0.0
+
+A number of constants and a function in :py:mod:`.ImageCms` have been removed. This
+includes a table of flags based on LittleCMS version 1 which has been replaced with a
+new class :py:class:`.ImageCms.Flags` based on LittleCMS 2 flags.
+
+============================================  ====================================================
+Deprecated                                    Use instead
+============================================  ====================================================
+``ImageCms.DESCRIPTION``                      No replacement
+``ImageCms.VERSION``                          ``PIL.__version__``
+``ImageCms.FLAGS["MATRIXINPUT"]``             :py:attr:`.ImageCms.Flags.CLUT_POST_LINEARIZATION`
+``ImageCms.FLAGS["MATRIXOUTPUT"]``            :py:attr:`.ImageCms.Flags.FORCE_CLUT`
+``ImageCms.FLAGS["MATRIXONLY"]``              No replacement
+``ImageCms.FLAGS["NOWHITEONWHITEFIXUP"]``     :py:attr:`.ImageCms.Flags.NOWHITEONWHITEFIXUP`
+``ImageCms.FLAGS["NOPRELINEARIZATION"]``      :py:attr:`.ImageCms.Flags.CLUT_PRE_LINEARIZATION`
+``ImageCms.FLAGS["GUESSDEVICECLASS"]``        :py:attr:`.ImageCms.Flags.GUESSDEVICECLASS`
+``ImageCms.FLAGS["NOTCACHE"]``                :py:attr:`.ImageCms.Flags.NOCACHE`
+``ImageCms.FLAGS["NOTPRECALC"]``              :py:attr:`.ImageCms.Flags.NOOPTIMIZE`
+``ImageCms.FLAGS["NULLTRANSFORM"]``           :py:attr:`.ImageCms.Flags.NULLTRANSFORM`
+``ImageCms.FLAGS["HIGHRESPRECALC"]``          :py:attr:`.ImageCms.Flags.HIGHRESPRECALC`
+``ImageCms.FLAGS["LOWRESPRECALC"]``           :py:attr:`.ImageCms.Flags.LOWRESPRECALC`
+``ImageCms.FLAGS["GAMUTCHECK"]``              :py:attr:`.ImageCms.Flags.GAMUTCHECK`
+``ImageCms.FLAGS["WHITEBLACKCOMPENSATION"]``  :py:attr:`.ImageCms.Flags.BLACKPOINTCOMPENSATION`
+``ImageCms.FLAGS["BLACKPOINTCOMPENSATION"]``  :py:attr:`.ImageCms.Flags.BLACKPOINTCOMPENSATION`
+``ImageCms.FLAGS["SOFTPROOFING"]``            :py:attr:`.ImageCms.Flags.SOFTPROOFING`
+``ImageCms.FLAGS["PRESERVEBLACK"]``           :py:attr:`.ImageCms.Flags.NONEGATIVES`
+``ImageCms.FLAGS["NODEFAULTRESOURCEDEF"]``    :py:attr:`.ImageCms.Flags.NODEFAULTRESOURCEDEF`
+``ImageCms.FLAGS["GRIDPOINTS"]``              :py:attr:`.ImageCms.Flags.GRIDPOINTS()`
+``ImageCms.versions()``                       :py:func:`PIL.features.version_module` with
+                                              ``feature="littlecms2"``, :py:data:`sys.version` or
+                                              :py:data:`sys.version_info`, and ``PIL.__version__``
+============================================  ====================================================
+
+ImageMath eval()
+^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.3.0
+.. versionremoved:: 12.0.0
+
+``ImageMath.eval()`` has been removed. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
+:py:meth:`~PIL.ImageMath.unsafe_eval` instead.
+
+BGR;15, BGR 16 and BGR;24
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+.. versionremoved:: 12.0.0
+
+The experimental BGR;15, BGR;16 and BGR;24 modes have been removed.
+
+Support for LibTIFF earlier than 4
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+.. versionremoved:: 12.0.0
+
+Support for LibTIFF earlier than version 4 has been removed.
+Upgrade to a newer version of LibTIFF instead.
+
+ImageDraw.getdraw hints parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+.. versionremoved:: 12.0.0
+
+The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been removed.
+
 Image isImageType()
 ^^^^^^^^^^^^^^^^^^^
 
@@ -200,40 +235,6 @@ Get internal pointers to objects
 removed. They were used for obtaining raw pointers to ``ImagingCore`` internals. To
 interact with C code, you can use ``Image.Image.getim()``, which returns a ``Capsule``
 object.
-
-ImageMath eval()
-^^^^^^^^^^^^^^^^
-
-.. deprecated:: 10.3.0
-.. versionremoved:: 12.0.0
-
-``ImageMath.eval()`` has been removed. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
-:py:meth:`~PIL.ImageMath.unsafe_eval` instead.
-
-BGR;15, BGR 16 and BGR;24
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 10.4.0
-.. versionremoved:: 12.0.0
-
-The experimental BGR;15, BGR;16 and BGR;24 modes have been removed.
-
-Support for LibTIFF earlier than 4
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 10.4.0
-.. versionremoved:: 12.0.0
-
-Support for LibTIFF earlier than version 4 has been removed.
-Upgrade to a newer version of LibTIFF instead.
-
-ImageDraw.getdraw hints parameter
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 10.4.0
-.. versionremoved:: 12.0.0
-
-The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been removed.
 
 TiffImagePlugin IFD_LEGACY_API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
