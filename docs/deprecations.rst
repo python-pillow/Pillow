@@ -168,6 +168,14 @@ Removed features
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
 
+ImageDraw.getdraw hints parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+.. versionremoved:: 12.0.0
+
+The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been removed.
+
 ImageFile.raise_oserror
 ~~~~~~~~~~~~~~~~~~~~~~~
 
