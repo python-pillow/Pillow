@@ -54,10 +54,6 @@ def skip_missing() -> None:
 def test_sanity() -> None:
     # basic smoke test.
     # this mostly follows the cms_test outline.
-    with pytest.warns(DeprecationWarning, match="PIL.ImageCms.versions"):
-        v = ImageCms.versions()  # should return four strings
-    assert v[0] == "1.0.0 pil"
-    assert list(map(type, v)) == [str, str, str, str]
 
     # internal version number
     version = features.version_module("littlecms2")
@@ -677,12 +673,6 @@ def test_auxiliary_channels_isolated() -> None:
                 assert_image_equal(test_image.convert(dst_format[2]), reference_image)
 
 
-def test_long_modes() -> None:
-    p = ImageCms.getOpenProfile("Tests/icc/sGrey-v2-nano.icc")
-    with pytest.warns(DeprecationWarning, match="ABCDEFGHI"):
-        ImageCms.buildTransform(p, p, "ABCDEFGHI", "ABCDEFGHI")
-
-
 @pytest.mark.parametrize("mode", ("RGB", "RGBA", "RGBX"))
 def test_rgb_lab(mode: str) -> None:
     im = Image.new(mode, (1, 1))
@@ -700,18 +690,3 @@ def test_cmyk_lab() -> None:
     im = Image.new("CMYK", (1, 1))
     converted_im = im.convert("LAB")
     assert converted_im.getpixel((0, 0)) == (255, 128, 128)
-
-
-def test_deprecation() -> None:
-    with pytest.warns(DeprecationWarning, match="ImageCms.DESCRIPTION"):
-        assert ImageCms.DESCRIPTION.strip().startswith("pyCMS")
-    with pytest.warns(DeprecationWarning, match="ImageCms.VERSION"):
-        assert ImageCms.VERSION == "1.0.0 pil"
-    with pytest.warns(DeprecationWarning, match="ImageCms.FLAGS"):
-        assert isinstance(ImageCms.FLAGS, dict)
-
-    profile = ImageCmsProfile(ImageCms.createProfile("sRGB"))
-    with pytest.warns(DeprecationWarning, match="RGBA;16B"):
-        ImageCms.ImageCmsTransform(profile, profile, "RGBA;16B", "RGB")
-    with pytest.warns(DeprecationWarning, match="RGBA;16B"):
-        ImageCms.ImageCmsTransform(profile, profile, "RGB", "RGBA;16B")

@@ -16,24 +16,14 @@
 #
 from __future__ import annotations
 
-from collections.abc import Sequence
 from io import BytesIO
 from typing import cast
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import i32be as i32
-from ._deprecate import deprecate
 
 COMPRESSION = {1: "raw", 5: "jpeg"}
-
-
-def __getattr__(name: str) -> bytes:
-    if name == "PAD":
-        deprecate("IptcImagePlugin.PAD", 12)
-        return b"\0\0\0\0"
-    msg = f"module '{__name__}' has no attribute '{name}'"
-    raise AttributeError(msg)
 
 
 #
@@ -46,20 +36,6 @@ def _i(c: bytes) -> int:
 
 def _i8(c: int | bytes) -> int:
     return c if isinstance(c, int) else c[0]
-
-
-def i(c: bytes) -> int:
-    """.. deprecated:: 10.2.0"""
-    deprecate("IptcImagePlugin.i", 12)
-    return _i(c)
-
-
-def dump(c: Sequence[int | bytes]) -> None:
-    """.. deprecated:: 10.2.0"""
-    deprecate("IptcImagePlugin.dump", 12)
-    for i in c:
-        print(f"{_i8(i):02x}", end=" ")
-    print()
 
 
 ##

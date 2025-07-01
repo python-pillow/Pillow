@@ -1115,14 +1115,6 @@ class TestFileJpeg:
 
         assert im._repr_jpeg_() is None
 
-    def test_deprecation(self) -> None:
-        with Image.open(TEST_FILE) as im:
-            assert isinstance(im, JpegImagePlugin.JpegImageFile)
-            with pytest.warns(DeprecationWarning, match="huffman_ac"):
-                assert im.huffman_ac == {}
-            with pytest.warns(DeprecationWarning, match="huffman_dc"):
-                assert im.huffman_dc == {}
-
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
 @skip_unless_feature("jpg")

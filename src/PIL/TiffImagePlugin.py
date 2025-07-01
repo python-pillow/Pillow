@@ -56,7 +56,6 @@ from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
-from ._deprecate import deprecate
 from ._typing import StrOrBytesPath
 from ._util import DeferredError, is_path
 from .TiffTags import TYPES
@@ -283,9 +282,6 @@ PREFIXES = [
     b"MM\x00\x2b",  # BigTIFF with big-endian byte order
     b"II\x2b\x00",  # BigTIFF with little-endian byte order
 ]
-
-if not getattr(Image.core, "libtiff_support_custom_tags", True):
-    deprecate("Support for LibTIFF earlier than version 4", 12)
 
 
 def _accept(prefix: bytes) -> bool:
@@ -1934,9 +1930,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             # Custom items are supported for int, float, unicode, string and byte
             # values. Other types and tuples require a tagtype.
             if tag not in TiffTags.LIBTIFF_CORE:
-                if not getattr(Image.core, "libtiff_support_custom_tags", False):
-                    continue
-
                 if tag in TiffTags.TAGS_V2_GROUPS:
                     types[tag] = TiffTags.LONG8
                 elif tag in ifd.tagtype:

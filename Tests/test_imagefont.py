@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import Any, BinaryIO
 
 import pytest
-from packaging.version import parse as parse_version
 
 from PIL import Image, ImageDraw, ImageFont, features
 from PIL._typing import StrOrBytesPath
@@ -691,16 +690,6 @@ def test_complex_font_settings() -> None:
 
 
 def test_variation_get(font: ImageFont.FreeTypeFont) -> None:
-    version = features.version_module("freetype2")
-    assert version is not None
-    freetype = parse_version(version)
-    if freetype < parse_version("2.9.1"):
-        with pytest.raises(NotImplementedError):
-            font.get_variation_names()
-        with pytest.raises(NotImplementedError):
-            font.get_variation_axes()
-        return
-
     with pytest.raises(OSError):
         font.get_variation_names()
     with pytest.raises(OSError):
@@ -763,14 +752,6 @@ def _check_text(font: ImageFont.FreeTypeFont, path: str, epsilon: float) -> None
 
 
 def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
-    version = features.version_module("freetype2")
-    assert version is not None
-    freetype = parse_version(version)
-    if freetype < parse_version("2.9.1"):
-        with pytest.raises(NotImplementedError):
-            font.set_variation_by_name("Bold")
-        return
-
     with pytest.raises(OSError):
         font.set_variation_by_name("Bold")
 
@@ -790,14 +771,6 @@ def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
 
 
 def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
-    version = features.version_module("freetype2")
-    assert version is not None
-    freetype = parse_version(version)
-    if freetype < parse_version("2.9.1"):
-        with pytest.raises(NotImplementedError):
-            font.set_variation_by_axes([100])
-        return
-
     with pytest.raises(OSError):
         font.set_variation_by_axes([500, 50])
 
@@ -1209,15 +1182,3 @@ def test_invalid_truetype_sizes_raise_valueerror(
 ) -> None:
     with pytest.raises(ValueError):
         ImageFont.truetype(FONT_PATH, size, layout_engine=layout_engine)
-
-
-def test_freetype_deprecation(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Arrange: mock features.version_module to return fake FreeType version
-    def fake_version_module(module: str) -> str:
-        return "2.9.0"
-
-    monkeypatch.setattr(features, "version_module", fake_version_module)
-
-    # Act / Assert
-    with pytest.warns(DeprecationWarning, match="FreeType 2.9.0"):
-        ImageFont.truetype(FONT_PATH, FONT_SIZE)

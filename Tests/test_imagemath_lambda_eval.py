@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import pytest
-
 from PIL import Image, ImageMath
 
 
@@ -53,11 +51,6 @@ def test_sanity() -> None:
         )
         == "I 3"
     )
-
-
-def test_options_deprecated() -> None:
-    with pytest.warns(DeprecationWarning, match="ImageMath.lambda_eval options"):
-        assert ImageMath.lambda_eval(lambda args: 1, images) == 1
 
 
 def test_ops() -> None:
