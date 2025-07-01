@@ -681,30 +681,6 @@ getink(PyObject *color, Imaging im, char *ink) {
                 } else if (!PyArg_ParseTuple(color, "iiL", &b, &g, &r)) {
                     return NULL;
                 }
-                if (!strcmp(im->mode, "BGR;15")) {
-                    UINT16 v = ((((UINT16)r) << 7) & 0x7c00) +
-                               ((((UINT16)g) << 2) & 0x03e0) +
-                               ((((UINT16)b) >> 3) & 0x001f);
-
-                    ink[0] = (UINT8)v;
-                    ink[1] = (UINT8)(v >> 8);
-                    ink[2] = ink[3] = 0;
-                    return ink;
-                } else if (!strcmp(im->mode, "BGR;16")) {
-                    UINT16 v = ((((UINT16)r) << 8) & 0xf800) +
-                               ((((UINT16)g) << 3) & 0x07e0) +
-                               ((((UINT16)b) >> 3) & 0x001f);
-                    ink[0] = (UINT8)v;
-                    ink[1] = (UINT8)(v >> 8);
-                    ink[2] = ink[3] = 0;
-                    return ink;
-                } else if (!strcmp(im->mode, "BGR;24")) {
-                    ink[0] = (UINT8)b;
-                    ink[1] = (UINT8)g;
-                    ink[2] = (UINT8)r;
-                    ink[3] = 0;
-                    return ink;
-                }
             }
     }
 
@@ -1650,54 +1626,33 @@ _putdata(ImagingObject *self, PyObject *args) {
                 return NULL;
             }
             double value;
-            if (image->bands == 1) {
-                int bigendian = 0;
-                if (image->type == IMAGING_TYPE_SPECIAL) {
-                    // I;16*
-                    if (
-                        strcmp(image->mode, "I;16B") == 0
+            int bigendian = 0;
+            if (image->type == IMAGING_TYPE_SPECIAL) {
+                // I;16*
+                if (
+                    strcmp(image->mode, "I;16B") == 0
 #ifdef WORDS_BIGENDIAN
-                        || strcmp(image->mode, "I;16N") == 0
+                    || strcmp(image->mode, "I;16N") == 0
 #endif
-                    ) {
-                        bigendian = 1;
-                    }
+                ) {
+                    bigendian = 1;
                 }
-                for (i = x = y = 0; i < n; i++) {
-                    set_value_to_item(seq, i);
-                    if (scale != 1.0 || offset != 0.0) {
-                        value = value * scale + offset;
-                    }
-                    if (image->type == IMAGING_TYPE_SPECIAL) {
-                        image->image8[y][x * 2 + (bigendian ? 1 : 0)] =
-                            CLIP8((int)value % 256);
-                        image->image8[y][x * 2 + (bigendian ? 0 : 1)] =
-                            CLIP8((int)value >> 8);
-                    } else {
-                        image->image8[y][x] = (UINT8)CLIP8(value);
-                    }
-                    if (++x >= (int)image->xsize) {
-                        x = 0, y++;
-                    }
+            }
+            for (i = x = y = 0; i < n; i++) {
+                set_value_to_item(seq, i);
+                if (scale != 1.0 || offset != 0.0) {
+                    value = value * scale + offset;
                 }
-            } else {
-                // BGR;*
-                int b;
-                for (i = x = y = 0; i < n; i++) {
-                    char ink[4];
-
-                    op = PySequence_Fast_GET_ITEM(seq, i);
-                    if (!op || !getink(op, image, ink)) {
-                        Py_DECREF(seq);
-                        return NULL;
-                    }
-                    /* FIXME: what about scale and offset? */
-                    for (b = 0; b < image->pixelsize; b++) {
-                        image->image8[y][x * image->pixelsize + b] = ink[b];
-                    }
-                    if (++x >= (int)image->xsize) {
-                        x = 0, y++;
-                    }
+                if (image->type == IMAGING_TYPE_SPECIAL) {
+                    image->image8[y][x * 2 + (bigendian ? 1 : 0)] =
+                        CLIP8((int)value % 256);
+                    image->image8[y][x * 2 + (bigendian ? 0 : 1)] =
+                        CLIP8((int)value >> 8);
+                } else {
+                    image->image8[y][x] = (UINT8)CLIP8(value);
+                }
+                if (++x >= (int)image->xsize) {
+                    x = 0, y++;
                 }
             }
             PyErr_Clear(); /* Avoid weird exceptions */

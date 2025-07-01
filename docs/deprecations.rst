@@ -78,13 +78,6 @@ ImageMath eval()
 ``ImageMath.eval()`` has been deprecated. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
 :py:meth:`~PIL.ImageMath.unsafe_eval` instead.
 
-BGR;15, BGR 16 and BGR;24
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 10.4.0
-
-The experimental BGR;15, BGR;16 and BGR;24 modes have been deprecated.
-
 Non-image modes in ImageCms
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -220,6 +213,14 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+BGR;15, BGR 16 and BGR;24
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+.. versionremoved:: 12.0.0
+
+The experimental BGR;15, BGR;16 and BGR;24 modes have been removed.
 
 TiffImagePlugin IFD_LEGACY_API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
