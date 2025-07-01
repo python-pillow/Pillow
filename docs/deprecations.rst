@@ -12,17 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a :py:exc:`DeprecationWarning` is issued.
 
-IptcImageFile helper functions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 10.2.0
-
-The functions ``IptcImageFile.dump`` and ``IptcImageFile.i``, and the constant
-``IptcImageFile.PAD`` have been deprecated and will be removed in Pillow
-12.0.0 (2025-10-15). These are undocumented helper functions intended
-for internal use, so there is no replacement. They can each be replaced
-by a single line of code using builtin functions in Python.
-
 ImageCms constants and versions() function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -160,14 +149,6 @@ Removed features
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
 
-ImageDraw.getdraw hints parameter
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 10.4.0
-.. versionremoved:: 12.0.0
-
-The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been removed.
-
 ImageFile.raise_oserror
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -178,22 +159,16 @@ ImageFile.raise_oserror
 only useful for translating error codes returned by a codec's ``decode()`` method,
 which ImageFile already did automatically.
 
-BGR;15, BGR 16 and BGR;24
-^^^^^^^^^^^^^^^^^^^^^^^^^
+IptcImageFile helper functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. deprecated:: 10.4.0
+.. deprecated:: 10.2.0
 .. versionremoved:: 12.0.0
 
-The experimental BGR;15, BGR;16 and BGR;24 modes have been removed.
-
-Support for LibTIFF earlier than 4
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 10.4.0
-.. versionremoved:: 12.0.0
-
-Support for LibTIFF earlier than version 4 has been removed.
-Upgrade to a newer version of LibTIFF instead.
+The functions ``IptcImageFile.dump`` and ``IptcImageFile.i``, and the constant
+``IptcImageFile.PAD`` have been removed. These were undocumented helper functions
+intended for internal use, so there is no replacement. They can each be replaced by a
+single line of code using builtin functions in Python.
 
 Image isImageType()
 ^^^^^^^^^^^^^^^^^^^
@@ -232,6 +207,31 @@ Get internal pointers to objects
 removed. They were used for obtaining raw pointers to ``ImagingCore`` internals. To
 interact with C code, you can use ``Image.Image.getim()``, which returns a ``Capsule``
 object.
+
+BGR;15, BGR 16 and BGR;24
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+.. versionremoved:: 12.0.0
+
+The experimental BGR;15, BGR;16 and BGR;24 modes have been removed.
+
+Support for LibTIFF earlier than 4
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+.. versionremoved:: 12.0.0
+
+Support for LibTIFF earlier than version 4 has been removed.
+Upgrade to a newer version of LibTIFF instead.
+
+ImageDraw.getdraw hints parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+.. versionremoved:: 12.0.0
+
+The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been removed.
 
 TiffImagePlugin IFD_LEGACY_API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
