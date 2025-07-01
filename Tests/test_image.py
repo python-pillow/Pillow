@@ -1132,10 +1132,6 @@ class TestImage:
             assert len(caplog.records) == 0
             assert im.fp is None
 
-    def test_deprecation(self) -> None:
-        with pytest.warns(DeprecationWarning, match="Image.isImageType"):
-            assert not Image.isImageType(None)
-
 
 class TestImageBytes:
     @pytest.mark.parametrize("mode", Image.MODES)

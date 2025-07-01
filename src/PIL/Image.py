@@ -115,21 +115,6 @@ except ImportError as v:
     raise
 
 
-def isImageType(t: Any) -> TypeGuard[Image]:
-    """
-    Checks if an object is an image object.
-
-    .. warning::
-
-       This function is for internal use only.
-
-    :param t: object to check if it's an image
-    :returns: True if the object is an image
-    """
-    deprecate("Image.isImageType(im)", 12, "isinstance(im, Image.Image)")
-    return hasattr(t, "im")
-
-
 #
 # Constants
 
@@ -219,7 +204,7 @@ if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
 
     from . import ImageFile, ImageFilter, ImagePalette, ImageQt, TiffImagePlugin
-    from ._typing import CapsuleType, NumpyArray, StrOrBytesPath, TypeGuard
+    from ._typing import CapsuleType, NumpyArray, StrOrBytesPath
 ID: list[str] = []
 OPEN: dict[
     str,

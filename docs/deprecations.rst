@@ -123,14 +123,6 @@ ICNS (width, height, scale) sizes
 Setting an ICNS image size to ``(width, height, scale)`` before loading has been
 deprecated. Instead, ``load(scale)`` can be used.
 
-Image isImageType()
-^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 11.0.0
-
-``Image.isImageType(im)`` has been deprecated. Use ``isinstance(im, Image.Image)``
-instead.
-
 ImageMath.lambda_eval and ImageMath.unsafe_eval options parameter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -221,6 +213,15 @@ BGR;15, BGR 16 and BGR;24
 .. versionremoved:: 12.0.0
 
 The experimental BGR;15, BGR;16 and BGR;24 modes have been removed.
+
+Image isImageType()
+^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+.. versionremoved:: 12.0.0
+
+``Image.isImageType(im)`` has been removed. Use ``isinstance(im, Image.Image)``
+instead.
 
 TiffImagePlugin IFD_LEGACY_API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
