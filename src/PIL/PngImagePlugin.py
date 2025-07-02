@@ -755,6 +755,7 @@ class PngImageFile(ImageFile.ImageFile):
     format_description = "Portable network graphics"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(8)):
             msg = "not a PNG file"
             raise SyntaxError(msg)
@@ -986,6 +987,7 @@ class PngImageFile(ImageFile.ImageFile):
         """internal: read more image data"""
 
         assert self.png is not None
+        assert self.fp is not None
         while self.__idat == 0:
             # end of chunk, skip forward to next one
 
@@ -1019,6 +1021,7 @@ class PngImageFile(ImageFile.ImageFile):
     def load_end(self) -> None:
         """internal: finished reading image data"""
         assert self.png is not None
+        assert self.fp is not None
         if self.__idat != 0:
             self.fp.read(self.__idat)
         while True:

@@ -84,8 +84,8 @@ def test_rgbx() -> None:
 
     with Image.open(io.BytesIO(data)) as im:
         r, g, b = im.split()
-        im = Image.merge("RGB", (b, g, r))
-        assert_image_equal_tofile(im, os.path.join(EXTRA_DIR, "32bpp.png"))
+        im_bgr = Image.merge("RGB", (b, g, r))
+        assert_image_equal_tofile(im_bgr, os.path.join(EXTRA_DIR, "32bpp.png"))
 
 
 @pytest.mark.skipif(

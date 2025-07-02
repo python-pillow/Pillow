@@ -61,6 +61,7 @@ class PsdImageFile(ImageFile.ImageFile):
     _close_exclusive_fp_after_loading = False
 
     def _open(self) -> None:
+        assert self.fp is not None
         read = self.fp.read
 
         #
@@ -178,6 +179,8 @@ class PsdImageFile(ImageFile.ImageFile):
         self._mode = mode
         self.tile = tile
         self.frame = layer
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self.fp = self._fp
 
     def tell(self) -> int:
