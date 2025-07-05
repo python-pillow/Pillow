@@ -25,7 +25,8 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
     int x, y;
 
     /* Check arguments */
-    if (!imDst || !imSrc || strcmp(imDst->mode, "RGBA")) {
+    if (!imDst || !imSrc ||
+        (strcmp(imDst->mode, "RGBA") && strcmp(imDst->mode, "LA"))) {
         return ImagingError_ModeError();
     }
 
