@@ -121,9 +121,6 @@ def get_supported_codecs() -> list[str]:
 
 
 features: dict[str, tuple[str, str | bool, str | None]] = {
-    "webp_anim": ("PIL._webp", True, None),
-    "webp_mux": ("PIL._webp", True, None),
-    "transp_webp": ("PIL._webp", True, None),
     "raqm": ("PIL._imagingft", "HAVE_RAQM", "raqm_version"),
     "fribidi": ("PIL._imagingft", "HAVE_FRIBIDI", "fribidi_version"),
     "harfbuzz": ("PIL._imagingft", "HAVE_HARFBUZZ", "harfbuzz_version"),

@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import sys
-from io import BytesIO, StringIO
-
-import pytest
+from io import BytesIO
 
 from PIL import Image, IptcImagePlugin, TiffImagePlugin, TiffTags
 
@@ -101,35 +98,3 @@ def test_getiptcinfo_tiff_none() -> None:
 
     # Assert
     assert iptc is None
-
-
-def test_i() -> None:
-    # Arrange
-    c = b"a"
-
-    # Act
-    with pytest.warns(DeprecationWarning, match="IptcImagePlugin.i"):
-        ret = IptcImagePlugin.i(c)
-
-    # Assert
-    assert ret == 97
-
-
-def test_dump(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Arrange
-    c = b"abc"
-    # Temporarily redirect stdout
-    mystdout = StringIO()
-    monkeypatch.setattr(sys, "stdout", mystdout)
-
-    # Act
-    with pytest.warns(DeprecationWarning, match="IptcImagePlugin.dump"):
-        IptcImagePlugin.dump(c)
-
-    # Assert
-    assert mystdout.getvalue() == "61 62 63 \n"
-
-
-def test_pad_deprecation() -> None:
-    with pytest.warns(DeprecationWarning, match="IptcImagePlugin.PAD"):
-        assert IptcImagePlugin.PAD == b"\0\0\0\0"

@@ -49,7 +49,6 @@ from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
-from ._deprecate import deprecate
 from .JpegPresets import presets
 
 TYPE_CHECKING = False
@@ -392,12 +391,6 @@ class JpegImageFile(ImageFile.ImageFile):
                 raise SyntaxError(msg)
 
         self._read_dpi_from_exif()
-
-    def __getattr__(self, name: str) -> Any:
-        if name in ("huffman_ac", "huffman_dc"):
-            deprecate(name, 12)
-            return getattr(self, "_" + name)
-        raise AttributeError(name)
 
     def __getstate__(self) -> list[Any]:
         return super().__getstate__() + [self.layers, self.layer]
