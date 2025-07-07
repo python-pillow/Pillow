@@ -38,7 +38,6 @@ from types import ModuleType
 from typing import Any, AnyStr, Callable, Union, cast
 
 from . import Image, ImageColor
-from ._deprecate import deprecate
 from ._typing import Coords
 
 # experimental access to the outline API
@@ -1009,16 +1008,11 @@ def Draw(im: Image.Image, mode: str | None = None) -> ImageDraw:
         return ImageDraw(im, mode)
 
 
-def getdraw(
-    im: Image.Image | None = None, hints: list[str] | None = None
-) -> tuple[ImageDraw2.Draw | None, ModuleType]:
+def getdraw(im: Image.Image | None = None) -> tuple[ImageDraw2.Draw | None, ModuleType]:
     """
     :param im: The image to draw in.
-    :param hints: An optional list of hints. Deprecated.
     :returns: A (drawing context, drawing resource factory) tuple.
     """
-    if hints is not None:
-        deprecate("'hints' parameter", 12)
     from . import ImageDraw2
 
     draw = ImageDraw2.Draw(im) if im is not None else None

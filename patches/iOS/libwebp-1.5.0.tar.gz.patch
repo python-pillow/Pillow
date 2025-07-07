@@ -1,0 +1,42 @@
+# libwebp example binaries require dependencies that aren't available for iOS builds.
+# There's also no easy way to invoke the build to *exclude* the example builds.
+# Since we don't need the examples anyway, remove them from the Makefile.
+#
+# As a point of reference, libwebp provides an XCFramework build script that involves
+# 7 separate invocations of make to avoid building the examples. Patching the Makefile
+# to remove the examples is a simpler approach, and one that is more compatible with
+# the existing multibuild infrastructure.
+# 
+# In the next release, it should be possible to pass --disable-libwebpexamples 
+# instead of applying this patch.
+#
+diff -ur libwebp-1.5.0-orig/Makefile.am libwebp-1.5.0/Makefile.am
+--- libwebp-1.5.0-orig/Makefile.am	2024-12-20 09:17:50
++++ libwebp-1.5.0/Makefile.am	2025-01-09 11:24:17
+@@ -5,5 +5,3 @@
+ if BUILD_EXTRAS
+   SUBDIRS += extras
+ endif
+-
+-SUBDIRS += examples
+diff -ur libwebp-1.5.0-orig/Makefile.in libwebp-1.5.0/Makefile.in
+--- libwebp-1.5.0-orig/Makefile.in	2024-12-20 09:52:53
++++ libwebp-1.5.0/Makefile.in	2025-01-09 11:24:17
+@@ -156,7 +156,7 @@
+   unique=`for i in $$list; do \
+     if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+   done | $(am__uniquify_input)`
+-DIST_SUBDIRS = sharpyuv src imageio man extras examples
++DIST_SUBDIRS = sharpyuv src imageio man extras
+ am__DIST_COMMON = $(srcdir)/Makefile.in \
+ 	$(top_srcdir)/src/webp/config.h.in AUTHORS COPYING ChangeLog \
+ 	NEWS README.md ar-lib compile config.guess config.sub \
+@@ -351,7 +351,7 @@
+ top_srcdir = @top_srcdir@
+ webp_libname_prefix = @webp_libname_prefix@
+ ACLOCAL_AMFLAGS = -I m4
+-SUBDIRS = sharpyuv src imageio man $(am__append_1) examples
++SUBDIRS = sharpyuv src imageio man $(am__append_1)
+ EXTRA_DIST = COPYING autogen.sh
+ all: all-recursive
+ 

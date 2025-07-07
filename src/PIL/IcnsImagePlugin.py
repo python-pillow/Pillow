@@ -25,7 +25,6 @@ import sys
 from typing import IO
 
 from . import Image, ImageFile, PngImagePlugin, features
-from ._deprecate import deprecate
 
 enable_jpeg2k = features.check_codec("jpg_2000")
 if enable_jpeg2k:
@@ -275,34 +274,25 @@ class IcnsImageFile(ImageFile.ImageFile):
             self.best_size[1] * self.best_size[2],
         )
 
-    @property  # type: ignore[override]
-    def size(self) -> tuple[int, int] | tuple[int, int, int]:
+    @property
+    def size(self) -> tuple[int, int]:
         return self._size
 
     @size.setter
-    def size(self, value: tuple[int, int] | tuple[int, int, int]) -> None:
-        if len(value) == 3:
-            deprecate("Setting size to (width, height, scale)", 12, "load(scale)")
-            if value in self.info["sizes"]:
-                self._size = value  # type: ignore[assignment]
+    def size(self, value: tuple[int, int]) -> None:
+        # Check that a matching size exists,
+        # or that there is a scale that would create a size that matches
+        for size in self.info["sizes"]:
+            simple_size = size[0] * size[2], size[1] * size[2]
+            scale = simple_size[0] // value[0]
+            if simple_size[1] / value[1] == scale:
+                self._size = value
                 return
-        else:
-            # Check that a matching size exists,
-            # or that there is a scale that would create a size that matches
-            for size in self.info["sizes"]:
-                simple_size = size[0] * size[2], size[1] * size[2]
-                scale = simple_size[0] // value[0]
-                if simple_size[1] / value[1] == scale:
-                    self._size = value
-                    return
         msg = "This is not one of the allowed sizes of this image"
         raise ValueError(msg)
 
     def load(self, scale: int | None = None) -> Image.core.PixelAccess | None:
-        if scale is not None or len(self.size) == 3:
-            if scale is None and len(self.size) == 3:
-                scale = self.size[2]
-            assert scale is not None
+        if scale is not None:
             width, height = self.size[:2]
             self.size = width * scale, height * scale
             self.best_size = width, height, scale

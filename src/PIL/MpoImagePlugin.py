@@ -73,7 +73,9 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 JpegImagePlugin._save(im_frame, fp, filename)
                 offsets.append(fp.tell())
             else:
+                encoderinfo = im_frame._attach_default_encoderinfo(im)
                 im_frame.save(fp, "JPEG")
+                im_frame.encoderinfo = encoderinfo
                 offsets.append(fp.tell() - offsets[-1])
             if progress:
                 completed += 1
