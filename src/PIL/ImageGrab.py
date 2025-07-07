@@ -43,7 +43,10 @@ def grab(
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
             args = ["screencapture"]
-            if bbox:
+            if window:
+                args += ["-l", str(window)]
+            # -R is not working with -l
+            if bbox and not window:
                 left, top, right, bottom = bbox
                 args += ["-R", f"{left},{top},{right-left},{bottom-top}"]
             subprocess.call(args + ["-x", filepath])
@@ -51,9 +54,16 @@ def grab(
             im.load()
             os.unlink(filepath)
             if bbox:
-                im_resized = im.resize((right - left, bottom - top))
-                im.close()
-                return im_resized
+                # manual crop for windowed mode
+                if window:
+                    left, top, right, bottom = bbox
+                    im_cropped = im.crop((left, top, right, bottom))
+                    im.close()
+                    return im_cropped
+                else:
+                    im_resized = im.resize((right - left, bottom - top))
+                    im.close()
+                    return im_resized
             return im
         elif sys.platform == "win32":
             if window is not None:
