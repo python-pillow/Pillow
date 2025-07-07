@@ -56,8 +56,7 @@ def grab(
             if bbox:
                 # manual crop for windowed mode
                 if window:
-                    left, top, right, bottom = bbox
-                    im_cropped = im.crop((left, top, right, bottom))
+                    im_cropped = im.crop(bbox)
                     im.close()
                     return im_cropped
                 else:
