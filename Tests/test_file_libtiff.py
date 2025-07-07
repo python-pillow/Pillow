@@ -81,7 +81,7 @@ class TestFileLibTiff(LibTiffTestCase):
         s = io.BytesIO()
         with open(test_file, "rb") as f:
             s.write(f.read())
-            s.seek(0)
+        s.seek(0)
         with Image.open(s) as im:
             assert im.size == (500, 500)
             self._assert_noerr(tmp_path, im)
@@ -256,19 +256,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
             im.save(out, tiffinfo=new_ifd)
 
-    @pytest.mark.parametrize(
-        "libtiff",
-        (
-            pytest.param(
-                True,
-                marks=pytest.mark.skipif(
-                    not getattr(Image.core, "libtiff_support_custom_tags", False),
-                    reason="Custom tags not supported by older libtiff",
-                ),
-            ),
-            False,
-        ),
-    )
+    @pytest.mark.parametrize("libtiff", (True, False))
     def test_custom_metadata(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, libtiff: bool
     ) -> None:
@@ -724,8 +712,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
         with Image.open(out) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
-            if Image.core.libtiff_support_custom_tags:
-                assert reloaded.tag_v2[34665] == 125456
+            assert reloaded.tag_v2[34665] == 125456
 
     def test_crashing_metadata(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
@@ -777,19 +764,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert icc_libtiff is not None
         assert icc == icc_libtiff
 
-    @pytest.mark.parametrize(
-        "libtiff",
-        (
-            pytest.param(
-                True,
-                marks=pytest.mark.skipif(
-                    not getattr(Image.core, "libtiff_support_custom_tags", False),
-                    reason="Custom tags not supported by older libtiff",
-                ),
-            ),
-            False,
-        ),
-    )
+    @pytest.mark.parametrize("libtiff", (True, False))
     def test_write_icc(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, libtiff: bool
     ) -> None:
@@ -1050,12 +1025,12 @@ class TestFileLibTiff(LibTiffTestCase):
         with open("Tests/images/old-style-jpeg-compression.tif", "rb") as fp:
             data = fp.read()
 
-            # Set EXIF Orientation to 2
-            data = data[:102] + b"\x02" + data[103:]
+        # Set EXIF Orientation to 2
+        data = data[:102] + b"\x02" + data[103:]
 
-            with Image.open(io.BytesIO(data)) as im:
-                im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
-            assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
+        with Image.open(io.BytesIO(data)) as im:
+            im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
 
     def test_open_missing_samplesperpixel(self) -> None:
         with Image.open(

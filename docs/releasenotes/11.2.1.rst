@@ -1,5 +1,13 @@
-11.2.0
+11.2.1
 ------
+
+.. warning::
+
+   The release of Pillow *11.2.0* was halted prematurely, due to hitting PyPI's
+   project size limit and concern over the size of Pillow wheels containing libavif.
+   The PyPI limit has now been increased and Pillow *11.2.1* has been released
+   instead, without libavif included in the wheels.
+   To avoid confusion, the incomplete 11.2.0 release has been removed from PyPI.
 
 Security
 ========
@@ -17,14 +25,14 @@ Deprecations
 Image.Image.get_child_images()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. deprecated:: 11.2.0
+.. deprecated:: 11.2.1
 
 ``Image.Image.get_child_images()`` has been deprecated. and will be removed in Pillow
 13 (2026-10-15). It will be moved to ``ImageFile.ImageFile.get_child_images()``. The
 method uses an image's file pointer, and so child images could only be retrieved from
 an :py:class:`PIL.ImageFile.ImageFile` instance.
 
-API Changes
+API changes
 ===========
 
 ``append_images`` no longer requires ``save_all``
@@ -36,7 +44,7 @@ supports saving multiple frames::
 
     im.save("out.gif", append_images=ims)
 
-API Additions
+API additions
 =============
 
 ``"justify"`` multiline text alignment
@@ -50,6 +58,15 @@ aligned using ``"justify"`` in :py:mod:`~PIL.ImageDraw`::
     draw = ImageDraw.Draw(im)
     draw.multiline_text((0, 0), "Multiline\ntext 1", align="justify")
     draw.multiline_textbbox((0, 0), "Multiline\ntext 2", align="justify")
+
+Specify window in ImageGrab on Windows
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When using :py:meth:`~PIL.ImageGrab.grab`, a specific window can be selected using the
+HWND::
+
+    from PIL import ImageGrab
+    ImageGrab.grab(window=hwnd)
 
 Check for MozJPEG
 ^^^^^^^^^^^^^^^^^
@@ -68,3 +85,34 @@ Compressed DDS images can now be saved using a ``pixel_format`` argument. DXT1, 
 DXT5, BC2, BC3 and BC5 are supported::
 
     im.save("out.dds", pixel_format="DXT1")
+
+Other changes
+=============
+
+Arrow support
+^^^^^^^^^^^^^
+
+`Arrow <https://arrow.apache.org/>`__ is an in-memory data exchange format that is the
+spiritual successor to the NumPy array interface. It provides for zero-copy access to
+columnar data, which in our case is ``Image`` data.
+
+To create an image with zero-copy shared memory from an object exporting the
+arrow_c_array interface protocol::
+
+    from PIL import Image
+    import pyarrow as pa
+    arr = pa.array([0]*(5*5*4), type=pa.uint8())
+    im = Image.fromarrow(arr, 'RGBA', (5, 5))
+
+Pillow images can also be converted to Arrow objects::
+
+    from PIL import Image
+    import pyarrow as pa
+    im = Image.open('hopper.jpg')
+    arr = pa.array(im)
+
+Reading and writing AVIF images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow can now read and write AVIF images when built from source with libavif 1.0.0
+or later.

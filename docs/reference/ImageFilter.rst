@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageFilter
 .. py:currentmodule:: PIL.ImageFilter
 
-:py:mod:`~PIL.ImageFilter` Module
+:py:mod:`~PIL.ImageFilter` module
 =================================
 
 The :py:mod:`~PIL.ImageFilter` module contains definitions for a pre-defined set of

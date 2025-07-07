@@ -49,7 +49,6 @@ from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
-from ._deprecate import deprecate
 from .JpegPresets import presets
 
 TYPE_CHECKING = False
@@ -393,18 +392,12 @@ class JpegImageFile(ImageFile.ImageFile):
 
         self._read_dpi_from_exif()
 
-    def __getattr__(self, name: str) -> Any:
-        if name in ("huffman_ac", "huffman_dc"):
-            deprecate(name, 12)
-            return getattr(self, "_" + name)
-        raise AttributeError(name)
-
     def __getstate__(self) -> list[Any]:
         return super().__getstate__() + [self.layers, self.layer]
 
     def __setstate__(self, state: list[Any]) -> None:
+        self.layers, self.layer = state[6:]
         super().__setstate__(state)
-        self.layers, self.layer = state[5:]
 
     def load_read(self, read_bytes: int) -> bytes:
         """
@@ -762,8 +755,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     extra = info.get("extra", b"")
 
     MAX_BYTES_IN_MARKER = 65533
-    xmp = info.get("xmp")
-    if xmp:
+    if xmp := info.get("xmp"):
         overhead_len = 29  # b"http://ns.adobe.com/xap/1.0/\x00"
         max_data_bytes_in_marker = MAX_BYTES_IN_MARKER - overhead_len
         if len(xmp) > max_data_bytes_in_marker:
@@ -772,8 +764,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         size = o16(2 + overhead_len + len(xmp))
         extra += b"\xff\xe1" + size + b"http://ns.adobe.com/xap/1.0/\x00" + xmp
 
-    icc_profile = info.get("icc_profile")
-    if icc_profile:
+    if icc_profile := info.get("icc_profile"):
         overhead_len = 14  # b"ICC_PROFILE\0" + o8(i) + o8(len(markers))
         max_data_bytes_in_marker = MAX_BYTES_IN_MARKER - overhead_len
         markers = []
@@ -831,7 +822,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # in a shot. Guessing on the size, at im.size bytes. (raw pixel size is
     # channels*size, this is a value that's been used in a django patch.
     # https://github.com/matthewwithanm/django-imagekit/issues/50
-    bufsize = 0
     if optimize or progressive:
         # CMYK can be bigger
         if im.mode == "CMYK":
@@ -848,7 +838,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     else:
         # The EXIF info needs to be written as one block, + APP1, + one spare byte.
         # Ensure that our buffer is big enough. Same with the icc_profile block.
-        bufsize = max(bufsize, len(exif) + 5, len(extra) + 1)
+        bufsize = max(len(exif) + 5, len(extra) + 1)
 
     ImageFile._save(
         im, fp, [ImageFile._Tile("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize

@@ -81,6 +81,7 @@ def test_pickle_jpeg() -> None:
         unpickled_image = pickle.loads(pickle.dumps(image))
 
     # Assert
+    assert unpickled_image.filename == "Tests/images/hopper.jpg"
     assert len(unpickled_image.layer) == 3
     assert unpickled_image.layers == 3
 
@@ -161,3 +162,13 @@ def test_pickle_font_file(tmp_path: Path, protocol: int) -> None:
 
     # Assert
     helper_assert_pickled_font_images(font, unpickled_font)
+
+
+def test_load_earlier_data() -> None:
+    im = pickle.loads(
+        b"\x80\x04\x95@\x00\x00\x00\x00\x00\x00\x00\x8c\x12PIL.PngImagePlugin"
+        b"\x94\x8c\x0cPngImageFile\x94\x93\x94)\x81\x94]\x94(}\x94\x8c\x01L\x94K\x01"
+        b"K\x01\x86\x94NC\x01\x00\x94eb."
+    )
+    assert im.mode == "L"
+    assert im.size == (1, 1)

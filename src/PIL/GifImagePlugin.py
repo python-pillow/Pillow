@@ -31,7 +31,7 @@ import os
 import subprocess
 from enum import IntEnum
 from functools import cached_property
-from typing import IO, Any, Literal, NamedTuple, Union
+from typing import IO, Any, Literal, NamedTuple, Union, cast
 
 from . import (
     Image,
@@ -350,12 +350,15 @@ class GifImageFile(ImageFile.ImageFile):
             if self._frame_palette:
                 if color * 3 + 3 > len(self._frame_palette.palette):
                     color = 0
-                return tuple(self._frame_palette.palette[color * 3 : color * 3 + 3])
+                return cast(
+                    tuple[int, int, int],
+                    tuple(self._frame_palette.palette[color * 3 : color * 3 + 3]),
+                )
             else:
                 return (color, color, color)
 
         self.dispose = None
-        self.dispose_extent = frame_dispose_extent
+        self.dispose_extent: tuple[int, int, int, int] | None = frame_dispose_extent
         if self.dispose_extent and self.disposal_method >= 2:
             try:
                 if self.disposal_method == 2:
@@ -477,8 +480,11 @@ class GifImageFile(ImageFile.ImageFile):
             self._prev_im = expanded_im
             assert self._prev_im is not None
         if self._frame_transparency is not None:
-            self.im.putpalettealpha(self._frame_transparency, 0)
-            frame_im = self.im.convert("RGBA")
+            if self.mode == "L":
+                frame_im = self.im.convert_transparent("LA", self._frame_transparency)
+            else:
+                self.im.putpalettealpha(self._frame_transparency, 0)
+                frame_im = self.im.convert("RGBA")
         else:
             frame_im = self.im.convert("RGB")
 
@@ -487,7 +493,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         self.im = self._prev_im
         self._mode = self.im.mode
-        if frame_im.mode == "RGBA":
+        if frame_im.mode in ("LA", "RGBA"):
             self.im.paste(frame_im, self.dispose_extent, frame_im)
         else:
             self.im.paste(frame_im, self.dispose_extent)

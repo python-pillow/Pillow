@@ -56,7 +56,6 @@ from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
-from ._deprecate import deprecate
 from ._typing import StrOrBytesPath
 from ._util import DeferredError, is_path
 from .TiffTags import TYPES
@@ -283,9 +282,6 @@ PREFIXES = [
     b"MM\x00\x2b",  # BigTIFF with big-endian byte order
     b"II\x2b\x00",  # BigTIFF with little-endian byte order
 ]
-
-if not getattr(Image.core, "libtiff_support_custom_tags", True):
-    deprecate("Support for LibTIFF earlier than version 4", 12)
 
 
 def _accept(prefix: bytes) -> bool:
@@ -1217,9 +1213,10 @@ class TiffImageFile(ImageFile.ImageFile):
             return
         self._seek(frame)
         if self._im is not None and (
-            self.im.size != self._tile_size or self.im.mode != self.mode
+            self.im.size != self._tile_size
+            or self.im.mode != self.mode
+            or self.readonly
         ):
-            # The core image will no longer be used
             self._im = None
 
     def _seek(self, frame: int) -> None:
@@ -1259,7 +1256,10 @@ class TiffImageFile(ImageFile.ImageFile):
         self.fp.seek(self._frame_pos[frame])
         self.tag_v2.load(self.fp)
         if XMP in self.tag_v2:
-            self.info["xmp"] = self.tag_v2[XMP]
+            xmp = self.tag_v2[XMP]
+            if isinstance(xmp, tuple) and len(xmp) == 1:
+                xmp = xmp[0]
+            self.info["xmp"] = xmp
         elif "xmp" in self.info:
             del self.info["xmp"]
         self._reload_exif()
@@ -1676,7 +1676,7 @@ SAVE_INFO = {
     "PA": ("PA", II, 3, 1, (8, 8), 2),
     "I": ("I;32S", II, 1, 2, (32,), None),
     "I;16": ("I;16", II, 1, 1, (16,), None),
-    "I;16S": ("I;16S", II, 1, 2, (16,), None),
+    "I;16L": ("I;16L", II, 1, 1, (16,), None),
     "F": ("F;32F", II, 1, 3, (32,), None),
     "RGB": ("RGB", II, 2, 1, (8, 8, 8), None),
     "RGBX": ("RGBX", II, 2, 1, (8, 8, 8, 8), 0),
@@ -1684,10 +1684,7 @@ SAVE_INFO = {
     "CMYK": ("CMYK", II, 5, 1, (8, 8, 8, 8), None),
     "YCbCr": ("YCbCr", II, 6, 1, (8, 8, 8), None),
     "LAB": ("LAB", II, 8, 1, (8, 8, 8), None),
-    "I;32BS": ("I;32BS", MM, 1, 2, (32,), None),
     "I;16B": ("I;16B", MM, 1, 1, (16,), None),
-    "I;16BS": ("I;16BS", MM, 1, 2, (16,), None),
-    "F;32BF": ("F;32BF", MM, 1, 3, (32,), None),
 }
 
 
@@ -1933,9 +1930,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             # Custom items are supported for int, float, unicode, string and byte
             # values. Other types and tuples require a tagtype.
             if tag not in TiffTags.LIBTIFF_CORE:
-                if not getattr(Image.core, "libtiff_support_custom_tags", False):
-                    continue
-
                 if tag in TiffTags.TAGS_V2_GROUPS:
                     types[tag] = TiffTags.LONG8
                 elif tag in ifd.tagtype:
@@ -1963,7 +1957,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # we're storing image byte order. So, if the rawmode
         # contains I;16, we need to convert from native to image
         # byte order.
-        if im.mode in ("I;16B", "I;16"):
+        if im.mode in ("I;16", "I;16B", "I;16L"):
             rawmode = "I;16N"
 
         # Pass tags as sorted list so that the tags are set in a fixed order.
@@ -2310,8 +2304,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         with AppendingTiffWriter(fp) as tf:
             for ims in [im] + append_images:
-                if not hasattr(ims, "encoderinfo"):
-                    ims.encoderinfo = {}
+                encoderinfo = ims._attach_default_encoderinfo(im)
                 if not hasattr(ims, "encoderconfig"):
                     ims.encoderconfig = ()
                 nfr = getattr(ims, "n_frames", 1)
@@ -2321,6 +2314,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                     ims.load()
                     _save(ims, tf, filename)
                     tf.newFrame()
+                ims.encoderinfo = encoderinfo
     finally:
         im.seek(cur_idx)
 

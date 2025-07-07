@@ -17,6 +17,7 @@ modules = {
     "freetype2": ("PIL._imagingft", "freetype2_version"),
     "littlecms2": ("PIL._imagingcms", "littlecms_version"),
     "webp": ("PIL._webp", "webpdecoder_version"),
+    "avif": ("PIL._avif", "libavif_version"),
 }
 
 
@@ -120,9 +121,6 @@ def get_supported_codecs() -> list[str]:
 
 
 features: dict[str, tuple[str, str | bool, str | None]] = {
-    "webp_anim": ("PIL._webp", True, None),
-    "webp_mux": ("PIL._webp", True, None),
-    "transp_webp": ("PIL._webp", True, None),
     "raqm": ("PIL._imagingft", "HAVE_RAQM", "raqm_version"),
     "fribidi": ("PIL._imagingft", "HAVE_FRIBIDI", "fribidi_version"),
     "harfbuzz": ("PIL._imagingft", "HAVE_HARFBUZZ", "harfbuzz_version"),
@@ -288,6 +286,7 @@ def pilinfo(out: IO[str] | None = None, supported_formats: bool = True) -> None:
         ("freetype2", "FREETYPE2"),
         ("littlecms2", "LITTLECMS2"),
         ("webp", "WEBP"),
+        ("avif", "AVIF"),
         ("jpg", "JPEG"),
         ("jpg_2000", "OPENJPEG (JPEG2000)"),
         ("zlib", "ZLIB (PNG/ZIP)"),

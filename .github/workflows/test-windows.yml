@@ -31,18 +31,17 @@ env:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.11", "pypy3.10", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["pypy3.11", "pypy3.10", "3.10", "3.11", "3.12", ">=3.13.5", "3.14"]
         architecture: ["x64"]
-        os: ["windows-latest"]
         include:
             # Test the oldest Python on 32-bit
-            - { python-version: "3.9", architecture: "x86", os: "windows-2019" }
+            - { python-version: "3.9", architecture: "x86" }
 
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     name: Python ${{ matrix.python-version }} (${{ matrix.architecture }})
 
@@ -84,9 +83,13 @@ jobs:
         python3 -m pip install --upgrade pip
 
     - name: Install CPython dependencies
-      if: "!contains(matrix.python-version, 'pypy') && matrix.architecture != 'x86'"
+      if: "!contains(matrix.python-version, 'pypy') && !contains(matrix.python-version, '3.14') && matrix.architecture != 'x86'"
       run: |
         python3 -m pip install PyQt6
+
+    - name: Install PyArrow dependency
+      run: |
+        python3 -m pip install --only-binary=:all: pyarrow || true
 
     - name: Install dependencies
       id: install
@@ -94,8 +97,8 @@ jobs:
         choco install nasm --no-progress
         echo "C:\Program Files\NASM" >> $env:GITHUB_PATH
 
-        choco install ghostscript --version=10.5.0 --no-progress
-        echo "C:\Program Files\gs\gs10.05.0\bin" >> $env:GITHUB_PATH
+        choco install ghostscript --version=10.5.1 --no-progress
+        echo "C:\Program Files\gs\gs10.05.1\bin" >> $env:GITHUB_PATH
 
         # Install extra test images
         xcopy /S /Y Tests\test-images\* Tests\images
@@ -144,6 +147,10 @@ jobs:
     - name: Build dependencies / libpng
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libpng.cmd"
+
+    - name: Build dependencies / libavif
+      if: steps.build-cache.outputs.cache-hit != 'true' && matrix.architecture == 'x64'
+      run: "& winbuild\\build\\build_dep_libavif.cmd"
 
     # for FreeType WOFF2 font support
     - name: Build dependencies / brotli

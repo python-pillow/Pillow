@@ -1402,8 +1402,8 @@ static struct PyGetSetDef cms_profile_getsetters[] = {
     {"colorant_table_out", (getter)cms_profile_getattr_colorant_table_out},
     {"intent_supported", (getter)cms_profile_getattr_is_intent_supported},
     {"clut", (getter)cms_profile_getattr_is_clut},
-    {"icc_measurement_condition", (getter)cms_profile_getattr_icc_measurement_condition
-    },
+    {"icc_measurement_condition",
+     (getter)cms_profile_getattr_icc_measurement_condition},
     {"icc_viewing_condition", (getter)cms_profile_getattr_icc_viewing_condition},
 
     {NULL}
@@ -1463,28 +1463,24 @@ setup_module(PyObject *m) {
     return 0;
 }
 
+static PyModuleDef_Slot slots[] = {
+    {Py_mod_exec, setup_module},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
 PyMODINIT_FUNC
 PyInit__imagingcms(void) {
-    PyObject *m;
+    PyDateTime_IMPORT;
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_imagingcms",
-        .m_size = -1,
         .m_methods = pyCMSdll_methods,
+        .m_slots = slots
     };
 
-    m = PyModule_Create(&module_def);
-
-    if (setup_module(m) < 0) {
-        return NULL;
-    }
-
-    PyDateTime_IMPORT;
-
-#ifdef Py_GIL_DISABLED
-    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
-#endif
-
-    return m;
+    return PyModuleDef_Init(&module_def);
 }

@@ -161,6 +161,12 @@ def assert_tuple_approx_equal(
             pytest.fail(msg + ": " + repr(actuals) + " != " + repr(targets))
 
 
+def timeout_unless_slower_valgrind(timeout: float) -> pytest.MarkDecorator:
+    if "PILLOW_VALGRIND_TEST" in os.environ:
+        return pytest.mark.pil_noop_mark()
+    return pytest.mark.timeout(timeout)
+
+
 def skip_unless_feature(feature: str) -> pytest.MarkDecorator:
     reason = f"{feature} not available"
     return pytest.mark.skipif(not features.check(feature), reason=reason)
@@ -265,17 +271,13 @@ def _cached_hopper(mode: str) -> Image.Image:
         im = hopper("L")
     else:
         im = hopper()
-    if mode.startswith("BGR;"):
-        with pytest.warns(DeprecationWarning):
-            im = im.convert(mode)
-    else:
-        try:
-            im = im.convert(mode)
-        except ImportError:
-            if mode == "LAB":
-                im = Image.open("Tests/images/hopper.Lab.tif")
-            else:
-                raise
+    try:
+        im = im.convert(mode)
+    except ImportError:
+        if mode == "LAB":
+            im = Image.open("Tests/images/hopper.Lab.tif")
+        else:
+            raise
     return im
 
 

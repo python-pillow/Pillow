@@ -37,7 +37,6 @@ import struct
 from typing import IO, Any, NamedTuple, cast
 
 from . import ExifTags, Image
-from ._deprecate import deprecate
 from ._util import DeferredError, is_path
 
 TYPE_CHECKING = False
@@ -81,16 +80,6 @@ def _get_oserror(error: int, *, encoder: bool) -> OSError:
         msg = f"{'encoder' if encoder else 'decoder'} error {error}"
     msg += f" when {'writing' if encoder else 'reading'} image file"
     return OSError(msg)
-
-
-def raise_oserror(error: int) -> OSError:
-    deprecate(
-        "raise_oserror",
-        12,
-        action="It is only useful for translating error codes returned by a codec's "
-        "decode() method, which ImageFile already does automatically.",
-    )
-    raise _get_oserror(error, encoder=False)
 
 
 def _tilesort(t: _Tile) -> int:
@@ -252,8 +241,13 @@ class ImageFile(Image.Image):
             return Image.MIME.get(self.format.upper())
         return None
 
+    def __getstate__(self) -> list[Any]:
+        return super().__getstate__() + [self.filename]
+
     def __setstate__(self, state: list[Any]) -> None:
         self.tile = []
+        if len(state) > 5:
+            self.filename = state[5]
         super().__setstate__(state)
 
     def verify(self) -> None:

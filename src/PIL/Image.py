@@ -115,21 +115,6 @@ except ImportError as v:
     raise
 
 
-def isImageType(t: Any) -> TypeGuard[Image]:
-    """
-    Checks if an object is an image object.
-
-    .. warning::
-
-       This function is for internal use only.
-
-    :param t: object to check if it's an image
-    :returns: True if the object is an image
-    """
-    deprecate("Image.isImageType(im)", 12, "isinstance(im, Image.Image)")
-    return hasattr(t, "im")
-
-
 #
 # Constants
 
@@ -219,7 +204,7 @@ if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
 
     from . import ImageFile, ImageFilter, ImagePalette, ImageQt, TiffImagePlugin
-    from ._typing import CapsuleType, NumpyArray, StrOrBytesPath, TypeGuard
+    from ._typing import CapsuleType, NumpyArray, StrOrBytesPath
 ID: list[str] = []
 OPEN: dict[
     str,
@@ -577,6 +562,14 @@ class Image:
     def mode(self) -> str:
         return self._mode
 
+    @property
+    def readonly(self) -> int:
+        return (self._im and self._im.readonly) or self._readonly
+
+    @readonly.setter
+    def readonly(self, readonly: int) -> None:
+        self._readonly = readonly
+
     def _new(self, im: core.ImagingCore) -> Image:
         new = Image()
         new.im = im
@@ -728,6 +721,16 @@ class Image:
         new["shape"], new["typestr"] = _conv_type_shape(self)
         return new
 
+    def __arrow_c_schema__(self) -> object:
+        self.load()
+        return self.im.__arrow_c_schema__()
+
+    def __arrow_c_array__(
+        self, requested_schema: object | None = None
+    ) -> tuple[object, object]:
+        self.load()
+        return (self.im.__arrow_c_schema__(), self.im.__arrow_c_array__())
+
     def __getstate__(self) -> list[Any]:
         im_data = self.tobytes()  # load image first
         return [self.info, self.mode, self.size, self.getpalette(), im_data]
@@ -749,18 +752,20 @@ class Image:
 
         .. warning::
 
-            This method returns the raw image data from the internal
-            storage.  For compressed image data (e.g. PNG, JPEG) use
-            :meth:`~.save`, with a BytesIO parameter for in-memory
-            data.
+            This method returns raw image data derived from Pillow's internal
+            storage. For compressed image data (e.g. PNG, JPEG) use
+            :meth:`~.save`, with a BytesIO parameter for in-memory data.
 
-        :param encoder_name: What encoder to use.  The default is to
-                             use the standard "raw" encoder.
+        :param encoder_name: What encoder to use.
 
-                             A list of C encoders can be seen under
-                             codecs section of the function array in
-                             :file:`_imaging.c`. Python encoders are
-                             registered within the relevant plugins.
+                             The default is to use the standard "raw" encoder.
+                             To see how this packs pixel data into the returned
+                             bytes, see :file:`libImaging/Pack.c`.
+
+                             A list of C encoders can be seen under codecs
+                             section of the function array in
+                             :file:`_imaging.c`. Python encoders are registered
+                             within the relevant plugins.
         :param args: Extra arguments to the encoder.
         :returns: A :py:class:`bytes` object.
         """
@@ -782,7 +787,9 @@ class Image:
         e = _getencoder(self.mode, encoder_name, encoder_args)
         e.setimage(self.im)
 
-        bufsize = max(65536, self.size[0] * 4)  # see RawEncode.c
+        from . import ImageFile
+
+        bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
 
         output = []
         while True:
@@ -957,9 +964,6 @@ class Image:
         :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
-
-        if mode in ("BGR;15", "BGR;16", "BGR;24"):
-            deprecate(mode, 12)
 
         self.load()
 
@@ -1489,7 +1493,7 @@ class Image:
             return {}
         if "xmp" not in self.info:
             return {}
-        root = ElementTree.fromstring(self.info["xmp"].rstrip(b"\x00"))
+        root = ElementTree.fromstring(self.info["xmp"].rstrip(b"\x00 "))
         return {get_name(root.tag): get_value(root)}
 
     def getexif(self) -> Exif:
@@ -1520,8 +1524,11 @@ class Image:
         # XMP tags
         if ExifTags.Base.Orientation not in self._exif:
             xmp_tags = self.info.get("XML:com.adobe.xmp")
+            pattern: str | bytes = r'tiff:Orientation(="|>)([0-9])'
+            if not xmp_tags and (xmp_tags := self.info.get("xmp")):
+                pattern = rb'tiff:Orientation(="|>)([0-9])'
             if xmp_tags:
-                match = re.search(r'tiff:Orientation(="|>)([0-9])', xmp_tags)
+                match = re.search(pattern, xmp_tags)
                 if match:
                     self._exif[ExifTags.Base.Orientation] = int(match[2])
 
@@ -2204,8 +2211,6 @@ class Image:
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
            :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
            If the image has mode "1" or "P", it is always set to
-           :py:data:`Resampling.NEAREST`. If the image mode is "BGR;15",
-           "BGR;16" or "BGR;24", then the default filter is
            :py:data:`Resampling.NEAREST`. Otherwise, the default filter is
            :py:data:`Resampling.BICUBIC`. See: :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats providing
@@ -2228,8 +2233,7 @@ class Image:
         """
 
         if resample is None:
-            bgr = self.mode.startswith("BGR;")
-            resample = Resampling.NEAREST if bgr else Resampling.BICUBIC
+            resample = Resampling.BICUBIC
         elif resample not in (
             Resampling.NEAREST,
             Resampling.BILINEAR,
@@ -2520,11 +2524,20 @@ class Image:
                 msg = f"unknown file extension: {ext}"
                 raise ValueError(msg) from e
 
+        from . import ImageFile
+
         # may mutate self!
-        self._ensure_mutable()
+        if isinstance(self, ImageFile.ImageFile) and os.path.abspath(
+            filename
+        ) == os.path.abspath(self.filename):
+            self._ensure_mutable()
+        else:
+            self.load()
 
         save_all = params.pop("save_all", None)
-        self.encoderinfo = {**getattr(self, "encoderinfo", {}), **params}
+        self._default_encoderinfo = params
+        encoderinfo = getattr(self, "encoderinfo", {})
+        self._attach_default_encoderinfo(self)
         self.encoderconfig: tuple[Any, ...] = ()
 
         if format.upper() not in SAVE:
@@ -2570,12 +2583,14 @@ class Image:
                     pass
             raise
         finally:
-            try:
-                del self.encoderinfo
-            except AttributeError:
-                pass
+            self.encoderinfo = encoderinfo
         if open_fp:
             fp.close()
+
+    def _attach_default_encoderinfo(self, im: Image) -> dict[str, Any]:
+        encoderinfo = getattr(self, "encoderinfo", {})
+        self.encoderinfo = {**im._default_encoderinfo, **encoderinfo}
+        return encoderinfo
 
     def _convert_mode(
         self, modes: list[str], params: dict[str, Any] = {}
@@ -3117,9 +3132,6 @@ def new(
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
-    if mode in ("BGR;15", "BGR;16", "BGR;24"):
-        deprecate(mode, 12)
-
     _check_size(size)
 
     if color is None:
@@ -3267,6 +3279,18 @@ class SupportsArrayInterface(Protocol):
         raise NotImplementedError()
 
 
+class SupportsArrowArrayInterface(Protocol):
+    """
+    An object that has an ``__arrow_c_array__`` method corresponding to the arrow c
+    data interface.
+    """
+
+    def __arrow_c_array__(
+        self, requested_schema: "PyCapsule" = None  # type: ignore[name-defined]  # noqa: F821, UP037
+    ) -> tuple["PyCapsule", "PyCapsule"]:  # type: ignore[name-defined]  # noqa: F821, UP037
+        raise NotImplementedError()
+
+
 def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     """
     Creates an image memory from an object exporting the array interface
@@ -3296,7 +3320,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
 
     :param obj: Object with array interface
     :param mode: Optional mode to use when reading ``obj``. Will be determined from
-      type if ``None``.
+      type if ``None``. Deprecated.
 
       This will not be used to convert the data after reading, but will be used to
       change how the data is read::
@@ -3331,6 +3355,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
             msg = f"Cannot handle this data type: {typekey_shape}, {typestr}"
             raise TypeError(msg) from e
     else:
+        deprecate("'mode' parameter", 13)
         rawmode = mode
     if mode in ["1", "L", "I", "P", "F"]:
         ndmax = 2
@@ -3353,6 +3378,58 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
             raise ValueError(msg)
 
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
+
+
+def fromarrow(
+    obj: SupportsArrowArrayInterface, mode: str, size: tuple[int, int]
+) -> Image:
+    """Creates an image with zero-copy shared memory from an object exporting
+    the arrow_c_array interface protocol::
+
+      from PIL import Image
+      import pyarrow as pa
+      arr = pa.array([0]*(5*5*4), type=pa.uint8())
+      im = Image.fromarrow(arr, 'RGBA', (5, 5))
+
+    If the data representation of the ``obj`` is not compatible with
+    Pillow internal storage, a ValueError is raised.
+
+    Pillow images can also be converted to Arrow objects::
+
+      from PIL import Image
+      import pyarrow as pa
+      im = Image.open('hopper.jpg')
+      arr = pa.array(im)
+
+    As with array support, when converting Pillow images to arrays,
+    only pixel values are transferred. This means that P and PA mode
+    images will lose their palette.
+
+    :param obj: Object with an arrow_c_array interface
+    :param mode: Image mode.
+    :param size: Image size. This must match the storage of the arrow object.
+    :returns: An Image object
+
+    Note that according to the Arrow spec, both the producer and the
+    consumer should consider the exported array to be immutable, as
+    unsynchronized updates will potentially cause inconsistent data.
+
+    See: :ref:`arrow-support` for more detailed information
+
+    .. versionadded:: 11.2.1
+
+    """
+    if not hasattr(obj, "__arrow_c_array__"):
+        msg = "arrow_c_array interface not found"
+        raise ValueError(msg)
+
+    (schema_capsule, array_capsule) = obj.__arrow_c_array__()
+    _im = core.new_arrow(mode, size, schema_capsule, array_capsule)
+    if _im:
+        return Image()._new(_im)
+
+    msg = "new_arrow returned None without an exception"
+    raise ValueError(msg)
 
 
 def fromqimage(im: ImageQt.QImage) -> ImageFile.ImageFile:
@@ -3477,8 +3554,6 @@ def open(
     filename: str | bytes = ""
     if is_path(fp):
         filename = os.fspath(fp)
-
-    if filename:
         fp = builtins.open(filename, "rb")
         exclusive_fp = True
     else:

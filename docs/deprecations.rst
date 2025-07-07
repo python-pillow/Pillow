@@ -12,35 +12,89 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a :py:exc:`DeprecationWarning` is issued.
 
+ImageDraw.getdraw hints parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+
+The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been deprecated.
+
+ExifTags.IFD.Makernote
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.1.0
+
+``ExifTags.IFD.Makernote`` has been deprecated. Instead, use
+``ExifTags.IFD.MakerNote``.
+
+Image.Image.get_child_images()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.2.1
+
+``Image.Image.get_child_images()`` has been deprecated. and will be removed in Pillow
+13 (2026-10-15). It will be moved to ``ImageFile.ImageFile.get_child_images()``. The
+method uses an image's file pointer, and so child images could only be retrieved from
+an :py:class:`PIL.ImageFile.ImageFile` instance.
+
+Image.fromarray mode parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.3.0
+
+The ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` has been deprecated. The
+mode can be automatically determined from the object's shape and type instead.
+
+Saving I mode images as PNG
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.3.0
+
+In order to fit the 32 bits of I mode images into PNG, when PNG images can only contain
+at most 16 bits for a channel, Pillow has been clipping the values. Rather than quietly
+changing the data, this is now deprecated. Instead, the image can be converted to
+another mode before saving::
+
+    from PIL import Image
+    im = Image.new("I", (1, 1))
+    im.convert("I;16").save("out.png")
+
+Removed features
+----------------
+
+Deprecated features are only removed in major releases after an appropriate
+period of deprecation has passed.
+
 ImageFile.raise_oserror
-~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 10.2.0
+.. versionremoved:: 12.0.0
 
-``ImageFile.raise_oserror()`` has been deprecated and will be removed in Pillow
-12.0.0 (2025-10-15). The function is undocumented and is only useful for translating
-error codes returned by a codec's ``decode()`` method, which ImageFile already does
-automatically.
+``ImageFile.raise_oserror()`` has been removed. The function was undocumented and was
+only useful for translating error codes returned by a codec's ``decode()`` method,
+which ImageFile already did automatically.
 
 IptcImageFile helper functions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 10.2.0
+.. versionremoved:: 12.0.0
 
 The functions ``IptcImageFile.dump`` and ``IptcImageFile.i``, and the constant
-``IptcImageFile.PAD`` have been deprecated and will be removed in Pillow
-12.0.0 (2025-10-15). These are undocumented helper functions intended
-for internal use, so there is no replacement. They can each be replaced
-by a single line of code using builtin functions in Python.
+``IptcImageFile.PAD`` have been removed. These were undocumented helper functions
+intended for internal use, so there is no replacement. They can each be replaced by a
+single line of code using builtin functions in Python.
 
 ImageCms constants and versions() function
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 10.3.0
+.. versionremoved:: 12.0.0
 
-A number of constants and a function in :py:mod:`.ImageCms` have been deprecated.
-This includes a table of flags based on LittleCMS version 1 which has been
-replaced with a new class :py:class:`.ImageCms.Flags` based on LittleCMS 2 flags.
+A number of constants and a function in :py:mod:`.ImageCms` have been removed. This
+includes a table of flags based on LittleCMS version 1 which has been replaced with a
+new class :py:class:`.ImageCms.Flags` based on LittleCMS 2 flags.
 
 ============================================  ====================================================
 Deprecated                                    Use instead
@@ -74,48 +128,54 @@ ImageMath eval()
 ^^^^^^^^^^^^^^^^
 
 .. deprecated:: 10.3.0
+.. versionremoved:: 12.0.0
 
-``ImageMath.eval()`` has been deprecated. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
+``ImageMath.eval()`` has been removed. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
 :py:meth:`~PIL.ImageMath.unsafe_eval` instead.
 
 BGR;15, BGR 16 and BGR;24
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 10.4.0
+.. versionremoved:: 12.0.0
 
-The experimental BGR;15, BGR;16 and BGR;24 modes have been deprecated.
+The experimental BGR;15, BGR;16 and BGR;24 modes have been removed.
 
 Non-image modes in ImageCms
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 10.4.0
+.. versionremoved:: 12.0.0
 
 The use in :py:mod:`.ImageCms` of input modes and output modes that are not Pillow
-image modes has been deprecated. Defaulting to "L" or "1" if the mode cannot be mapped
-is also deprecated.
+image modes has been removed. Defaulting to "L" or "1" if the mode cannot be mapped has
+also been removed.
 
 Support for LibTIFF earlier than 4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 10.4.0
+.. versionremoved:: 12.0.0
 
-Support for LibTIFF earlier than version 4 has been deprecated.
+Support for LibTIFF earlier than version 4 has been removed.
 Upgrade to a newer version of LibTIFF instead.
 
 ImageDraw.getdraw hints parameter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 10.4.0
+.. versionremoved:: 12.0.0
 
-The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been deprecated.
+The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been removed.
 
 FreeType 2.9.0
 ^^^^^^^^^^^^^^
 
 .. deprecated:: 11.0.0
+.. versionremoved:: 12.0.0
 
-Support for FreeType 2.9.0 is deprecated and will be removed in Pillow 12.0.0
-(2025-10-15), when FreeType 2.9.1 will be the minimum supported.
+Support for FreeType 2.9.0 has been removed. FreeType 2.9.1 is the minimum version
+supported.
 
 We recommend upgrading to at least FreeType `2.10.4`_, which fixed a severe
 vulnerability introduced in FreeType 2.6 (:cve:`2020-15999`).
@@ -128,83 +188,62 @@ ICNS (width, height, scale) sizes
 .. deprecated:: 11.0.0
 
 Setting an ICNS image size to ``(width, height, scale)`` before loading has been
-deprecated. Instead, ``load(scale)`` can be used.
+removed. Instead, ``load(scale)`` can be used.
 
 Image isImageType()
 ^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 11.0.0
+.. versionremoved:: 12.0.0
 
-``Image.isImageType(im)`` has been deprecated. Use ``isinstance(im, Image.Image)``
+``Image.isImageType(im)`` has been removed. Use ``isinstance(im, Image.Image)``
 instead.
 
 ImageMath.lambda_eval and ImageMath.unsafe_eval options parameter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 11.0.0
+.. versionremoved:: 12.0.0
 
 The ``options`` parameter in :py:meth:`~PIL.ImageMath.lambda_eval()` and
-:py:meth:`~PIL.ImageMath.unsafe_eval()` has been deprecated. One or more keyword
+:py:meth:`~PIL.ImageMath.unsafe_eval()` has been removed. One or more keyword
 arguments can be used instead.
 
 JpegImageFile.huffman_ac and JpegImageFile.huffman_dc
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 11.0.0
+.. versionremoved:: 12.0.0
 
 The ``huffman_ac`` and ``huffman_dc`` dictionaries on JPEG images were unused. They
-have been deprecated, and will be removed in Pillow 12 (2025-10-15).
+have been removed.
 
-Specific WebP Feature Checks
+Specific WebP feature checks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 11.0.0
+.. versionremoved:: 12.0.0
 
 ``features.check("transp_webp")``, ``features.check("webp_mux")`` and
-``features.check("webp_anim")`` are now deprecated. They will always return
-``True`` if the WebP module is installed, until they are removed in Pillow
-12.0.0 (2025-10-15).
+``features.check("webp_anim")`` have been removed.
 
 Get internal pointers to objects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 11.0.0
+.. versionremoved:: 12.0.0
 
 ``Image.core.ImagingCore.id`` and ``Image.core.ImagingCore.unsafe_ptrs`` have been
-deprecated and will be removed in Pillow 12 (2025-10-15). They were used for obtaining
-raw pointers to ``ImagingCore`` internals. To interact with C code, you can use
-``Image.Image.getim()``, which returns a ``Capsule`` object.
-
-ExifTags.IFD.Makernote
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 11.1.0
-
-``ExifTags.IFD.Makernote`` has been deprecated. Instead, use
-``ExifTags.IFD.MakerNote``.
-
-Image.Image.get_child_images()
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 11.2.0
-
-``Image.Image.get_child_images()`` has been deprecated. and will be removed in Pillow
-13 (2026-10-15). It will be moved to ``ImageFile.ImageFile.get_child_images()``. The
-method uses an image's file pointer, and so child images could only be retrieved from
-an :py:class:`PIL.ImageFile.ImageFile` instance.
-
-Removed features
-----------------
-
-Deprecated features are only removed in major releases after an appropriate
-period of deprecation has passed.
+removed. They were used for obtaining raw pointers to ``ImagingCore`` internals. To
+interact with C code, you can use ``Image.Image.getim()``, which returns a ``Capsule``
+object.
 
 TiffImagePlugin IFD_LEGACY_API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. versionremoved:: 11.0.0
 
-``TiffImagePlugin.IFD_LEGACY_API`` was removed, as it was an unused setting.
+``TiffImagePlugin.IFD_LEGACY_API`` has been removed, as it was an unused setting.
 
 PSFile
 ~~~~~~

@@ -4,7 +4,11 @@ import pytest
 
 from PIL import Image, ImageDraw, ImageFont
 
-from .helper import assert_image_similar_tofile, skip_unless_feature
+from .helper import (
+    assert_image_equal_tofile,
+    assert_image_similar_tofile,
+    skip_unless_feature,
+)
 
 FONT_SIZE = 20
 FONT_PATH = "Tests/fonts/DejaVuSans/DejaVuSans.ttf"
@@ -354,9 +358,25 @@ def test_combine_multiline(anchor: str, align: str) -> None:
     d.line(((200, 0), (200, 400)), "gray")
     bbox = d.multiline_textbbox((200, 200), text, anchor=anchor, font=f, align=align)
     d.rectangle(bbox, outline="red")
-    d.multiline_text((200, 200), text, fill="black", anchor=anchor, font=f, align=align)
+    d.multiline_text((200, 200), text, "black", anchor=anchor, font=f, align=align)
 
     assert_image_similar_tofile(im, path, 0.015)
+
+
+def test_combine_multiline_ttb() -> None:
+    path = "Tests/images/test_combine_multiline_ttb.png"
+    f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 48)
+    text = "te\nxt"
+
+    im = Image.new("RGB", (400, 400), "white")
+    d = ImageDraw.Draw(im)
+    d.line(((0, 200), (400, 200)), "gray")
+    d.line(((200, 0), (200, 400)), "gray")
+    bbox = d.multiline_textbbox((200, 200), text, f, direction="ttb")
+    d.rectangle(bbox, outline="red")
+    d.multiline_text((200, 200), text, "black", f, direction="ttb")
+
+    assert_image_equal_tofile(im, path)
 
 
 def test_anchor_invalid_ttb() -> None:
@@ -378,8 +398,3 @@ def test_anchor_invalid_ttb() -> None:
             d.multiline_text((0, 0), "foo\nbar", anchor=anchor, direction="ttb")
         with pytest.raises(ValueError):
             d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor, direction="ttb")
-    # ttb multiline text does not support anchors at all
-    with pytest.raises(ValueError):
-        d.multiline_text((0, 0), "foo\nbar", anchor="mm", direction="ttb")
-    with pytest.raises(ValueError):
-        d.multiline_textbbox((0, 0), "foo\nbar", anchor="mm", direction="ttb")

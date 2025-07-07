@@ -36,7 +36,7 @@ from io import BytesIO
 from types import ModuleType
 from typing import IO, Any, BinaryIO, TypedDict, cast
 
-from . import Image, features
+from . import Image
 from ._typing import StrOrBytesPath
 from ._util import DeferredError, is_path
 
@@ -235,21 +235,6 @@ class FreeTypeFont:
         self.size = size
         self.index = index
         self.encoding = encoding
-
-        try:
-            from packaging.version import parse as parse_version
-        except ImportError:
-            pass
-        else:
-            if freetype_version := features.version_module("freetype2"):
-                if parse_version(freetype_version) < parse_version("2.9.1"):
-                    warnings.warn(
-                        "Support for FreeType 2.9.0 is deprecated and will be removed "
-                        "in Pillow 12 (2025-10-15). Please upgrade to FreeType 2.9.1 "
-                        "or newer, preferably FreeType 2.10.4 which fixes "
-                        "CVE-2020-15999.",
-                        DeprecationWarning,
-                    )
 
         if layout_engine not in (Layout.BASIC, Layout.RAQM):
             layout_engine = Layout.BASIC
@@ -1093,7 +1078,7 @@ w7IkEbzhVQAAAABJRU5ErkJggg==
 
 def load_default(size: float | None = None) -> FreeTypeFont | ImageFont:
     """If FreeType support is available, load a version of Aileron Regular,
-    https://dotcolon.net/font/aileron, with a more limited character set.
+    https://dotcolon.net/fonts/aileron, with a more limited character set.
 
     Otherwise, load a "better than nothing" font.
 

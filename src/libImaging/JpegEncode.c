@@ -131,6 +131,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     break;
                 default:
                     state->errcode = IMAGING_CODEC_CONFIG;
+                    jpeg_destroy_compress(&context->cinfo);
                     return -1;
             }
 
@@ -161,6 +162,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                                 /* Would subsample the green and blue
                                    channels, which doesn't make sense */
                                 state->errcode = IMAGING_CODEC_CONFIG;
+                                jpeg_destroy_compress(&context->cinfo);
                                 return -1;
                         }
                         jpeg_set_colorspace(&context->cinfo, JCS_RGB);
@@ -173,18 +175,21 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             /* Use custom quantization tables */
             if (context->qtables) {
                 int i;
-                int quality = 100;
+                int quality = 50;
                 int last_q = 0;
+                boolean force_baseline = FALSE;
                 if (context->quality != -1) {
                     quality = context->quality;
+                    force_baseline = TRUE;
                 }
+                int scale_factor = jpeg_quality_scaling(quality);
                 for (i = 0; i < context->qtablesLen; i++) {
                     jpeg_add_quant_table(
                         &context->cinfo,
                         i,
                         &context->qtables[i * DCTSIZE2],
-                        quality,
-                        FALSE
+                        scale_factor,
+                        force_baseline
                     );
                     context->cinfo.comp_info[i].quant_tbl_no = i;
                     last_q = i;
@@ -193,7 +198,11 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     // jpeg_set_defaults created two qtables internally, but we only
                     // wanted one.
                     jpeg_add_quant_table(
-                        &context->cinfo, 1, &context->qtables[0], quality, FALSE
+                        &context->cinfo,
+                        1,
+                        &context->qtables[0],
+                        scale_factor,
+                        force_baseline
                     );
                 }
                 for (i = last_q; i < context->cinfo.num_components; i++) {
