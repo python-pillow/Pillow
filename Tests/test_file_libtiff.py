@@ -11,7 +11,15 @@ from typing import Any, NamedTuple
 
 import pytest
 
-from PIL import Image, ImageFilter, ImageOps, TiffImagePlugin, TiffTags, features
+from PIL import (
+    Image,
+    ImageFile,
+    ImageFilter,
+    ImageOps,
+    TiffImagePlugin,
+    TiffTags,
+    features,
+)
 from PIL.TiffImagePlugin import OSUBFILETYPE, SAMPLEFORMAT, STRIPOFFSETS, SUBIFD
 
 from .helper import (
@@ -27,7 +35,7 @@ from .helper import (
 
 @skip_unless_feature("libtiff")
 class LibTiffTestCase:
-    def _assert_noerr(self, tmp_path: Path, im: TiffImagePlugin.TiffImageFile) -> None:
+    def _assert_noerr(self, tmp_path: Path, im: ImageFile.ImageFile) -> None:
         """Helper tests that assert basic sanity about the g4 tiff reading"""
         # 1 bit
         assert im.mode == "1"
@@ -429,7 +437,6 @@ class TestFileLibTiff(LibTiffTestCase):
             assert isinstance(orig, TiffImagePlugin.TiffImageFile)
 
             out = tmp_path / "temp.tif"
-
             orig.tag[269] = "temp.tif"
             orig.save(out)
 
@@ -457,8 +464,8 @@ class TestFileLibTiff(LibTiffTestCase):
         # test case from irc, how to do blur on b/w image
         # and save to compressed tif.
         out = tmp_path / "temp.tif"
-        with Image.open("Tests/images/pport_g4.tif") as im:
-            im = im.convert("L")
+        with Image.open("Tests/images/pport_g4.tif") as img:
+            im = img.convert("L")
 
         im = im.filter(ImageFilter.GaussianBlur(4))
         im.save(out, compression="tiff_adobe_deflate")
@@ -552,8 +559,9 @@ class TestFileLibTiff(LibTiffTestCase):
             im.save(out, compression=compression)
 
     def test_fp_leak(self) -> None:
-        im: Image.Image | None = Image.open("Tests/images/hopper_g4_500.tif")
+        im: ImageFile.ImageFile | None = Image.open("Tests/images/hopper_g4_500.tif")
         assert im is not None
+        assert im.fp is not None
         fn = im.fp.fileno()
 
         os.fstat(fn)
@@ -1028,8 +1036,8 @@ class TestFileLibTiff(LibTiffTestCase):
         # Set EXIF Orientation to 2
         data = data[:102] + b"\x02" + data[103:]
 
-        with Image.open(io.BytesIO(data)) as im:
-            im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        with Image.open(io.BytesIO(data)) as img:
+            im = img.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
         assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
 
     def test_open_missing_samplesperpixel(self) -> None:
@@ -1097,9 +1105,8 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
             for i in range(2, 9):
                 with Image.open("Tests/images/g4_orientation_" + str(i) + ".tif") as im:
-                    im = ImageOps.exif_transpose(im)
-
-                    assert_image_similar(base_im, im, 0.7)
+                    transposed_im = ImageOps.exif_transpose(im)
+                    assert_image_similar(base_im, transposed_im, 0.7)
 
     @pytest.mark.parametrize(
         "test_file",
