@@ -104,6 +104,7 @@ class SpiderImageFile(ImageFile.ImageFile):
     def _open(self) -> None:
         # check header
         n = 27 * 4  # read 27 float values
+        assert self.fp is not None
         f = self.fp.read(n)
 
         try:
