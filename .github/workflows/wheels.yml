@@ -77,22 +77,22 @@ jobs:
             platform: linux
             os: ubuntu-latest
             cibw_arch: x86_64
+            manylinux: "manylinux2014"
           - name: "manylinux_2_28 x86_64"
             platform: linux
             os: ubuntu-latest
             cibw_arch: x86_64
             build: "*manylinux*"
-            manylinux: "manylinux_2_28"
           - name: "manylinux2014 and musllinux aarch64"
             platform: linux
             os: ubuntu-24.04-arm
             cibw_arch: aarch64
+            manylinux: "manylinux2014"
           - name: "manylinux_2_28 aarch64"
             platform: linux
             os: ubuntu-24.04-arm
             cibw_arch: aarch64
             build: "*manylinux*"
-            manylinux: "manylinux_2_28"
           - name: "iOS arm64 device"
             platform: ios
             os: macos-latest
