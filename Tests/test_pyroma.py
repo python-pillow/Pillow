@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from importlib.metadata import metadata
+
 import pytest
 
 from PIL import __version__
@@ -9,7 +11,7 @@ pyroma = pytest.importorskip("pyroma", reason="Pyroma not installed")
 
 def test_pyroma() -> None:
     # Arrange
-    data = pyroma.projectdata.get_data(".")
+    data = pyroma.projectdata.map_metadata_keys(metadata("Pillow"))
 
     # Act
     rating = pyroma.ratings.rate(data)
@@ -23,11 +25,5 @@ def test_pyroma() -> None:
         )
 
     else:
-        # Should have a perfect score, but pyroma does not support PEP 639 yet.
-        assert rating == (
-            9,
-            [
-                "Your package does neither have a license field "
-                "nor any license classifiers."
-            ],
-        )
+        # Should have a perfect score
+        assert rating == (10, [])

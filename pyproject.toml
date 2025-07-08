@@ -9,7 +9,7 @@ backend-path = [
 
 [project]
 name = "pillow"
-description = "Python Imaging Library (Fork)"
+description = "Python Imaging Library (fork)"
 readme = "README.md"
 keywords = [
   "Imaging",
@@ -103,14 +103,54 @@ before-all = ".github/workflows/wheels-dependencies.sh"
 build-verbosity = 1
 
 config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable"
-# Disable platform guessing on macOS
-macos.config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable platform-guessing=disable"
 
 test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-extras = "tests"
+test-requires = [
+  "numpy",
+]
+xbuild-tools = [  ]
+
+[tool.cibuildwheel.macos]
+# Disable platform guessing on macOS to avoid picking up Homebrew etc.
+config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable platform-guessing=disable"
 
 [tool.cibuildwheel.macos.environment]
+# Isolate macOS build environment from Homebrew etc.
 PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
+
+[tool.cibuildwheel.ios]
+# Disable platform guessing on iOS, and disable raqm (since there won't be a
+# vendor version, and we can't distribute it due to licensing)
+config-settings = "raqm=disable imagequant=disable platform-guessing=disable"
+
+# iOS needs to be given a specific pytest invocation and list of test sources.
+test-sources = [
+  "checks",
+  "Tests",
+  "selftest.py",
+]
+test-command = [
+  "python -m selftest",
+  "python -m pytest -vv -x -W always checks/check_wheel.py Tests",
+]
+
+# There's no numpy wheel for iOS (yet...)
+test-requires = [  ]
+
+[[tool.cibuildwheel.overrides]]
+# iOS environment is isolated by cibuildwheel, but needs the dependencies
+select = "*_iphoneos"
+environment.PATH = "$(pwd)/build/deps/iphoneos/bin:$PATH"
+
+[[tool.cibuildwheel.overrides]]
+# iOS simulator environment is isolated by cibuildwheel, but needs the dependencies
+select = "*_iphonesimulator"
+environment.PATH = "$(pwd)/build/deps/iphonesimulator/bin:$PATH"
+
+[[tool.cibuildwheel.overrides]]
+select = "*-win32"
+test-requires = [  ]
 
 [tool.black]
 exclude = "wheels/multibuild"
@@ -168,7 +208,7 @@ lint.isort.required-imports = [
 max_supported_python = "3.13"
 
 [tool.pytest.ini_options]
-addopts = "-ra --color=yes"
+addopts = "-ra --color=auto"
 testpaths = [
   "Tests",
 ]

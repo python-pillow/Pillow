@@ -256,19 +256,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
             im.save(out, tiffinfo=new_ifd)
 
-    @pytest.mark.parametrize(
-        "libtiff",
-        (
-            pytest.param(
-                True,
-                marks=pytest.mark.skipif(
-                    not getattr(Image.core, "libtiff_support_custom_tags", False),
-                    reason="Custom tags not supported by older libtiff",
-                ),
-            ),
-            False,
-        ),
-    )
+    @pytest.mark.parametrize("libtiff", (True, False))
     def test_custom_metadata(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, libtiff: bool
     ) -> None:
@@ -724,8 +712,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
         with Image.open(out) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
-            if Image.core.libtiff_support_custom_tags:
-                assert reloaded.tag_v2[34665] == 125456
+            assert reloaded.tag_v2[34665] == 125456
 
     def test_crashing_metadata(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
@@ -777,19 +764,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert icc_libtiff is not None
         assert icc == icc_libtiff
 
-    @pytest.mark.parametrize(
-        "libtiff",
-        (
-            pytest.param(
-                True,
-                marks=pytest.mark.skipif(
-                    not getattr(Image.core, "libtiff_support_custom_tags", False),
-                    reason="Custom tags not supported by older libtiff",
-                ),
-            ),
-            False,
-        ),
-    )
+    @pytest.mark.parametrize("libtiff", (True, False))
     def test_write_icc(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, libtiff: bool
     ) -> None:

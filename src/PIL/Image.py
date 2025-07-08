@@ -115,21 +115,6 @@ except ImportError as v:
     raise
 
 
-def isImageType(t: Any) -> TypeGuard[Image]:
-    """
-    Checks if an object is an image object.
-
-    .. warning::
-
-       This function is for internal use only.
-
-    :param t: object to check if it's an image
-    :returns: True if the object is an image
-    """
-    deprecate("Image.isImageType(im)", 12, "isinstance(im, Image.Image)")
-    return hasattr(t, "im")
-
-
 #
 # Constants
 
@@ -219,7 +204,7 @@ if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
 
     from . import ImageFile, ImageFilter, ImagePalette, ImageQt, TiffImagePlugin
-    from ._typing import CapsuleType, NumpyArray, StrOrBytesPath, TypeGuard
+    from ._typing import CapsuleType, NumpyArray, StrOrBytesPath
 ID: list[str] = []
 OPEN: dict[
     str,
@@ -979,9 +964,6 @@ class Image:
         :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
-
-        if mode in ("BGR;15", "BGR;16", "BGR;24"):
-            deprecate(mode, 12)
 
         self.load()
 
@@ -2229,8 +2211,6 @@ class Image:
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
            :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
            If the image has mode "1" or "P", it is always set to
-           :py:data:`Resampling.NEAREST`. If the image mode is "BGR;15",
-           "BGR;16" or "BGR;24", then the default filter is
            :py:data:`Resampling.NEAREST`. Otherwise, the default filter is
            :py:data:`Resampling.BICUBIC`. See: :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats providing
@@ -2253,8 +2233,7 @@ class Image:
         """
 
         if resample is None:
-            bgr = self.mode.startswith("BGR;")
-            resample = Resampling.NEAREST if bgr else Resampling.BICUBIC
+            resample = Resampling.BICUBIC
         elif resample not in (
             Resampling.NEAREST,
             Resampling.BILINEAR,
@@ -2556,7 +2535,9 @@ class Image:
             self.load()
 
         save_all = params.pop("save_all", None)
-        self.encoderinfo = {**getattr(self, "encoderinfo", {}), **params}
+        self._default_encoderinfo = params
+        encoderinfo = getattr(self, "encoderinfo", {})
+        self._attach_default_encoderinfo(self)
         self.encoderconfig: tuple[Any, ...] = ()
 
         if format.upper() not in SAVE:
@@ -2594,12 +2575,14 @@ class Image:
                     pass
             raise
         finally:
-            try:
-                del self.encoderinfo
-            except AttributeError:
-                pass
+            self.encoderinfo = encoderinfo
         if open_fp:
             fp.close()
+
+    def _attach_default_encoderinfo(self, im: Image) -> dict[str, Any]:
+        encoderinfo = getattr(self, "encoderinfo", {})
+        self.encoderinfo = {**im._default_encoderinfo, **encoderinfo}
+        return encoderinfo
 
     def seek(self, frame: int) -> None:
         """
@@ -3081,9 +3064,6 @@ def new(
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
-    if mode in ("BGR;15", "BGR;16", "BGR;24"):
-        deprecate(mode, 12)
-
     _check_size(size)
 
     if color is None:
@@ -3272,7 +3252,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
 
     :param obj: Object with array interface
     :param mode: Optional mode to use when reading ``obj``. Will be determined from
-      type if ``None``.
+      type if ``None``. Deprecated.
 
       This will not be used to convert the data after reading, but will be used to
       change how the data is read::
@@ -3307,6 +3287,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
             msg = f"Cannot handle this data type: {typekey_shape}, {typestr}"
             raise TypeError(msg) from e
     else:
+        deprecate("'mode' parameter", 13)
         rawmode = mode
     if mode in ["1", "L", "I", "P", "F"]:
         ndmax = 2
@@ -3505,8 +3486,6 @@ def open(
     filename: str | bytes = ""
     if is_path(fp):
         filename = os.fspath(fp)
-
-    if filename:
         fp = builtins.open(filename, "rb")
         exclusive_fp = True
     else:

@@ -681,30 +681,6 @@ getink(PyObject *color, Imaging im, char *ink) {
                 } else if (!PyArg_ParseTuple(color, "iiL", &b, &g, &r)) {
                     return NULL;
                 }
-                if (!strcmp(im->mode, "BGR;15")) {
-                    UINT16 v = ((((UINT16)r) << 7) & 0x7c00) +
-                               ((((UINT16)g) << 2) & 0x03e0) +
-                               ((((UINT16)b) >> 3) & 0x001f);
-
-                    ink[0] = (UINT8)v;
-                    ink[1] = (UINT8)(v >> 8);
-                    ink[2] = ink[3] = 0;
-                    return ink;
-                } else if (!strcmp(im->mode, "BGR;16")) {
-                    UINT16 v = ((((UINT16)r) << 8) & 0xf800) +
-                               ((((UINT16)g) << 3) & 0x07e0) +
-                               ((((UINT16)b) >> 3) & 0x001f);
-                    ink[0] = (UINT8)v;
-                    ink[1] = (UINT8)(v >> 8);
-                    ink[2] = ink[3] = 0;
-                    return ink;
-                } else if (!strcmp(im->mode, "BGR;24")) {
-                    ink[0] = (UINT8)b;
-                    ink[1] = (UINT8)g;
-                    ink[2] = (UINT8)r;
-                    ink[3] = 0;
-                    return ink;
-                }
             }
     }
 
@@ -1650,54 +1626,33 @@ _putdata(ImagingObject *self, PyObject *args) {
                 return NULL;
             }
             double value;
-            if (image->bands == 1) {
-                int bigendian = 0;
-                if (image->type == IMAGING_TYPE_SPECIAL) {
-                    // I;16*
-                    if (
-                        strcmp(image->mode, "I;16B") == 0
+            int bigendian = 0;
+            if (image->type == IMAGING_TYPE_SPECIAL) {
+                // I;16*
+                if (
+                    strcmp(image->mode, "I;16B") == 0
 #ifdef WORDS_BIGENDIAN
-                        || strcmp(image->mode, "I;16N") == 0
+                    || strcmp(image->mode, "I;16N") == 0
 #endif
-                    ) {
-                        bigendian = 1;
-                    }
+                ) {
+                    bigendian = 1;
                 }
-                for (i = x = y = 0; i < n; i++) {
-                    set_value_to_item(seq, i);
-                    if (scale != 1.0 || offset != 0.0) {
-                        value = value * scale + offset;
-                    }
-                    if (image->type == IMAGING_TYPE_SPECIAL) {
-                        image->image8[y][x * 2 + (bigendian ? 1 : 0)] =
-                            CLIP8((int)value % 256);
-                        image->image8[y][x * 2 + (bigendian ? 0 : 1)] =
-                            CLIP8((int)value >> 8);
-                    } else {
-                        image->image8[y][x] = (UINT8)CLIP8(value);
-                    }
-                    if (++x >= (int)image->xsize) {
-                        x = 0, y++;
-                    }
+            }
+            for (i = x = y = 0; i < n; i++) {
+                set_value_to_item(seq, i);
+                if (scale != 1.0 || offset != 0.0) {
+                    value = value * scale + offset;
                 }
-            } else {
-                // BGR;*
-                int b;
-                for (i = x = y = 0; i < n; i++) {
-                    char ink[4];
-
-                    op = PySequence_Fast_GET_ITEM(seq, i);
-                    if (!op || !getink(op, image, ink)) {
-                        Py_DECREF(seq);
-                        return NULL;
-                    }
-                    /* FIXME: what about scale and offset? */
-                    for (b = 0; b < image->pixelsize; b++) {
-                        image->image8[y][x * image->pixelsize + b] = ink[b];
-                    }
-                    if (++x >= (int)image->xsize) {
-                        x = 0, y++;
-                    }
+                if (image->type == IMAGING_TYPE_SPECIAL) {
+                    image->image8[y][x * 2 + (bigendian ? 1 : 0)] =
+                        CLIP8((int)value % 256);
+                    image->image8[y][x * 2 + (bigendian ? 0 : 1)] =
+                        CLIP8((int)value >> 8);
+                } else {
+                    image->image8[y][x] = (UINT8)CLIP8(value);
+                }
+                if (++x >= (int)image->xsize) {
+                    x = 0, y++;
                 }
             }
             PyErr_Clear(); /* Avoid weird exceptions */
@@ -3769,18 +3724,6 @@ _getattr_bands(ImagingObject *self, void *closure) {
     return PyLong_FromLong(self->image->bands);
 }
 
-static PyObject *
-_getattr_id(ImagingObject *self, void *closure) {
-    if (PyErr_WarnEx(
-            PyExc_DeprecationWarning,
-            "id property is deprecated and will be removed in Pillow 12 (2025-10-15)",
-            1
-        ) < 0) {
-        return NULL;
-    }
-    return PyLong_FromSsize_t((Py_ssize_t)self->image);
-}
-
 static void
 _ptr_destructor(PyObject *capsule) {
     PyObject *self = (PyObject *)PyCapsule_GetContext(capsule);
@@ -3796,27 +3739,6 @@ _getattr_ptr(ImagingObject *self, void *closure) {
 }
 
 static PyObject *
-_getattr_unsafe_ptrs(ImagingObject *self, void *closure) {
-    if (PyErr_WarnEx(
-            PyExc_DeprecationWarning,
-            "unsafe_ptrs property is deprecated and will be removed in Pillow 12 "
-            "(2025-10-15)",
-            1
-        ) < 0) {
-        return NULL;
-    }
-    return Py_BuildValue(
-        "(sn)(sn)(sn)",
-        "image8",
-        self->image->image8,
-        "image32",
-        self->image->image32,
-        "image",
-        self->image->image
-    );
-}
-
-static PyObject *
 _getattr_readonly(ImagingObject *self, void *closure) {
     return PyLong_FromLong(self->image->read_only);
 }
@@ -3825,9 +3747,7 @@ static struct PyGetSetDef getsetters[] = {
     {"mode", (getter)_getattr_mode},
     {"size", (getter)_getattr_size},
     {"bands", (getter)_getattr_bands},
-    {"id", (getter)_getattr_id},
     {"ptr", (getter)_getattr_ptr},
-    {"unsafe_ptrs", (getter)_getattr_unsafe_ptrs},
     {"readonly", (getter)_getattr_readonly},
     {NULL}
 };
@@ -4432,16 +4352,6 @@ setup_module(PyObject *m) {
         PyObject *v = PyUnicode_FromString(ImagingTiffVersion());
         PyDict_SetItemString(d, "libtiff_version", v ? v : Py_None);
         Py_XDECREF(v);
-
-        // Test for libtiff 4.0 or later, excluding libtiff 3.9.6 and 3.9.7
-        PyObject *support_custom_tags;
-#if TIFFLIB_VERSION >= 20111221 && TIFFLIB_VERSION != 20120218 && \
-    TIFFLIB_VERSION != 20120922
-        support_custom_tags = Py_True;
-#else
-        support_custom_tags = Py_False;
-#endif
-        PyDict_SetItemString(d, "libtiff_support_custom_tags", support_custom_tags);
     }
 #endif
 
@@ -4463,27 +4373,22 @@ setup_module(PyObject *m) {
     return 0;
 }
 
+static PyModuleDef_Slot slots[] = {
+    {Py_mod_exec, setup_module},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
 PyMODINIT_FUNC
 PyInit__imaging(void) {
-    PyObject *m;
-
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_imaging",
-        .m_size = -1,
         .m_methods = functions,
+        .m_slots = slots
     };
 
-    m = PyModule_Create(&module_def);
-
-    if (setup_module(m) < 0) {
-        Py_DECREF(m);
-        return NULL;
-    }
-
-#ifdef Py_GIL_DISABLED
-    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
-#endif
-
-    return m;
+    return PyModuleDef_Init(&module_def);
 }

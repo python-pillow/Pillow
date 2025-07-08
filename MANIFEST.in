@@ -13,6 +13,8 @@ include LICENSE
 include Makefile
 include tox.ini
 graft Tests
+graft checks
+graft patches
 graft src
 graft depends
 graft winbuild

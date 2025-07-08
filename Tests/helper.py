@@ -271,17 +271,13 @@ def _cached_hopper(mode: str) -> Image.Image:
         im = hopper("L")
     else:
         im = hopper()
-    if mode.startswith("BGR;"):
-        with pytest.warns(DeprecationWarning):
-            im = im.convert(mode)
-    else:
-        try:
-            im = im.convert(mode)
-        except ImportError:
-            if mode == "LAB":
-                im = Image.open("Tests/images/hopper.Lab.tif")
-            else:
-                raise
+    try:
+        im = im.convert(mode)
+    except ImportError:
+        if mode == "LAB":
+            im = Image.open("Tests/images/hopper.Lab.tif")
+        else:
+            raise
     return im
 
 

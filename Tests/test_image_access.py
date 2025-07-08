@@ -123,10 +123,6 @@ class TestImageGetPixel:
         bands = Image.getmodebands(mode)
         if bands == 1:
             return 1
-        if mode in ("BGR;15", "BGR;16"):
-            # These modes have less than 8 bits per band,
-            # so (1, 2, 3) cannot be roundtripped.
-            return (16, 32, 49)
         return tuple(range(1, bands + 1))
 
     def check(self, mode: str, expected_color_int: int | None = None) -> None:
@@ -191,11 +187,6 @@ class TestImageGetPixel:
     def test_basic(self, mode: str) -> None:
         self.check(mode)
 
-    @pytest.mark.parametrize("mode", ("BGR;15", "BGR;16", "BGR;24"))
-    def test_deprecated(self, mode: str) -> None:
-        with pytest.warns(DeprecationWarning):
-            self.check(mode)
-
     def test_list(self) -> None:
         im = hopper()
         assert im.getpixel([0, 0]) == (20, 20, 70)
@@ -218,7 +209,7 @@ class TestImageGetPixel:
 
 
 class TestImagePutPixelError:
-    IMAGE_MODES1 = ["LA", "RGB", "RGBA", "BGR;15"]
+    IMAGE_MODES1 = ["LA", "RGB", "RGBA"]
     IMAGE_MODES2 = ["L", "I", "I;16"]
     INVALID_TYPES = ["foo", 1.0, None]
 
@@ -234,11 +225,6 @@ class TestImagePutPixelError:
         (
             ("L", (0, 2), "color must be int or single-element tuple"),
             ("LA", (0, 3), "color must be int, or tuple of one or two elements"),
-            (
-                "BGR;15",
-                (0, 2),
-                "color must be int, or tuple of one or three elements",
-            ),
             (
                 "RGB",
                 (0, 2, 5),
