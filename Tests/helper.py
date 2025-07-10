@@ -291,16 +291,6 @@ def djpeg_available() -> bool:
     return False
 
 
-def cjpeg_available() -> bool:
-    if shutil.which("cjpeg"):
-        try:
-            subprocess.check_call(["cjpeg", "-version"])
-            return True
-        except subprocess.CalledProcessError:  # pragma: no cover
-            return False
-    return False
-
-
 def netpbm_available() -> bool:
     return bool(shutil.which("ppmquant") and shutil.which("ppmtogif"))
 
