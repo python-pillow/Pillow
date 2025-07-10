@@ -103,7 +103,7 @@ TIFF_VERSION=4.7.0
 LCMS2_VERSION=2.17
 ZLIB_VERSION=1.3.1
 ZLIB_NG_VERSION=2.2.4
-LIBWEBP_VERSION=1.5.0  # Patched; next release won't need patching. See patch file.
+LIBWEBP_VERSION=1.6.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0  # Patched; next release won't need patching. See patch file.
@@ -282,7 +282,7 @@ function build {
     fi
     CFLAGS="$CFLAGS $webp_cflags" build_simple libwebp $LIBWEBP_VERSION \
         https://storage.googleapis.com/downloads.webmproject.org/releases/webp tar.gz \
-        --enable-libwebpmux --enable-libwebpdemux
+        --enable-libwebpmux --enable-libwebpdemux --disable-libwebpexamples
 
     build_brotli
 
