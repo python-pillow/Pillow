@@ -922,6 +922,17 @@ class TestImage:
         reloaded_exif.load(exif.tobytes())
         assert reloaded_exif.get_ifd(0x8769) == exif.get_ifd(0x8769)
 
+    def test_delete_ifd_tag(self) -> None:
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+        exif.get_ifd(0x8769)
+        assert 0x8769 in exif
+        del exif[0x8769]
+
+        reloaded_exif = Image.Exif()
+        reloaded_exif.load(exif.tobytes())
+        assert 0x8769 not in reloaded_exif
+
     def test_exif_load_from_fp(self) -> None:
         with Image.open("Tests/images/flower.jpg") as im:
             data = im.info["exif"]
