@@ -845,16 +845,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     )
 
 
-def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
-    tempfile = im._dump()
-    subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])
-    try:
-        os.unlink(tempfile)
-    except OSError:
-        pass
-
-
 ##
 # Factory for making JPEG and MPO instances
 def jpeg_factory(
