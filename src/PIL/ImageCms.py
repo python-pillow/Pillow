@@ -23,9 +23,10 @@ import operator
 import sys
 from enum import IntEnum, IntFlag
 from functools import reduce
-from typing import Literal, SupportsFloat, SupportsInt, Union
+from typing import Any, Literal, SupportsFloat, SupportsInt, Union
 
 from . import Image
+from ._deprecate import deprecate
 from ._typing import SupportsRead
 
 try:
@@ -226,6 +227,9 @@ _FLAGS = {
 
 
 class ImageCmsProfile:
+    profile: core.CmsProfile
+    filename: str | None
+
     def __init__(self, profile: str | SupportsRead[bytes] | core.CmsProfile) -> None:
         """
         :param profile: Either a string representing a filename,
@@ -234,8 +238,6 @@ class ImageCmsProfile:
 
         """
         self.filename = None
-        self.product_name = None  # profile.product_name
-        self.product_info = None  # profile.product_info
 
         if isinstance(profile, str):
             if sys.platform == "win32":
@@ -255,6 +257,20 @@ class ImageCmsProfile:
         else:
             msg = "Invalid type for Profile"  # type: ignore[unreachable]
             raise TypeError(msg)
+
+    def __getattr__(self, name: str) -> Any:
+        if name in ("product_name", "product_info"):
+            deprecate(
+                f"ImageCms.ImageCmsProfile.{name}",
+                13,
+                action=(
+                    f"Use ImageCms.ImageCmsProfile.profile.{name} instead. "
+                    f"Note that {name} has been set to 'None' since Pillow 2.3.0."
+                ),
+            )
+            return None
+        msg = f"'{self.__class__.__name__}' has no attribute '{name}'"
+        raise AttributeError(msg)
 
     def tobytes(self) -> bytes:
         """
