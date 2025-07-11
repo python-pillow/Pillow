@@ -32,7 +32,7 @@ class PcdImageFile(ImageFile.ImageFile):
         assert self.fp is not None
 
         self.fp.seek(2048)
-        s = self.fp.read(2048)
+        s = self.fp.read(1539)
 
         if not s.startswith(b"PCD_"):
             msg = "not a PCD file"
