@@ -286,7 +286,7 @@ function build {
     fi
     CFLAGS="$CFLAGS $webp_cflags" LDFLAGS="$LDFLAGS $webp_ldflags" build_simple libwebp $LIBWEBP_VERSION \
         https://storage.googleapis.com/downloads.webmproject.org/releases/webp tar.gz \
-        --enable-libwebpmux --enable-libwebpdemux --disable-libwebpexamples
+        --enable-libwebpmux --enable-libwebpdemux
 
     build_brotli
 
