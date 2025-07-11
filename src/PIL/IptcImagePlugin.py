@@ -34,10 +34,6 @@ def _i(c: bytes) -> int:
     return i32((b"\0\0\0\0" + c)[-4:])
 
 
-def _i8(c: int | bytes) -> int:
-    return c if isinstance(c, int) else c[0]
-
-
 ##
 # Image plugin for IPTC/NAA datastreams.  To read IPTC/NAA fields
 # from TIFF and JPEG files, use the <b>getiptcinfo</b> function.
