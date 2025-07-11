@@ -3401,7 +3401,7 @@ _fromarray_typemap = {
     ((1, 1), ">f8"): ("F", "F;64BF", []),
     ((1, 1, 2), "|u1"): ("LA", "LA", ["La", "PA"]),
     ((1, 1, 3), "|u1"): ("RGB", "RGB", ["YCbCr", "LAB", "HSV"]),
-    ((1, 1, 4), "|u1"): ("RGBA", "RGBA", ["RGBa"]),
+    ((1, 1, 4), "|u1"): ("RGBA", "RGBA", ["RGBa", "RGBX", "CMYK"]),
     # shortcuts:
     ((1, 1), f"{_ENDIAN}i4"): ("I", "I", []),
     ((1, 1), f"{_ENDIAN}f4"): ("F", "F", []),
