@@ -202,14 +202,24 @@ function build_libavif {
             -DCMAKE_CXX_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto" \
             -DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,-S,-x,-dead_strip_dylibs" \
         )
+        if [[ -z "$IOS_SDK" ]]; then
+            libavif_cmake_flags=(
+                $libavif_cmake_flags
+                -DBUILD_SHARED_LIBS=ON
+            )
+        fi
     else
         if [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "x86_64" ]]; then
             build_type=Release
         fi
-        libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
+        libavif_cmake_flags=(
+            -DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now" \
+            -DBUILD_SHARED_LIBS=ON \
+        )
     fi
 
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
+
     # CONFIG_AV1_HIGHBITDEPTH=0 is a flag for libaom (included as a subproject
     # of libavif) that disables support for encoding high bit depth images.
     (cd $out_dir \
@@ -217,7 +227,6 @@ function build_libavif {
             -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX \
             -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib \
             -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib \
-            -DBUILD_SHARED_LIBS=ON \
             -DAVIF_LIBSHARPYUV=LOCAL \
             -DAVIF_LIBYUV=LOCAL \
             -DAVIF_CODEC_AOM=LOCAL \
@@ -229,8 +238,17 @@ function build_libavif {
             -DCMAKE_CXX_VISIBILITY_PRESET=hidden \
             -DCMAKE_BUILD_TYPE=$build_type \
             "${libavif_cmake_flags[@]}" \
-            . \
-        && make install)
+            $HOST_CMAKE_FLAGS . )
+
+    if [[ -n "$IOS_SDK" ]]; then
+        # libavif's CMake configuration generates a meson cross file... but it
+        # doesn't work for iOS cross-compilation. Copy in Pillow-generated
+        # meson-cross config to replace the cmake-generated version.
+        cp $WORKDIR/meson-cross.txt $out_dir/crossfile-apple.meson
+    fi
+
+    (cd $out_dir && make install)
+
     touch libavif-stamp
 }
 
@@ -268,10 +286,7 @@ function build {
         build_tiff
     fi
 
-    if [[ -z "$IOS_SDK" ]]; then
-        # Short term workaround; don't build libavif on iOS
-        build_libavif
-    fi
+    build_libavif
     build_libpng
     build_lcms2
     build_openjpeg
