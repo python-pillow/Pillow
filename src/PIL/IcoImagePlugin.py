@@ -326,6 +326,7 @@ class IcoImageFile(ImageFile.ImageFile):
     format_description = "Windows Icon"
 
     def _open(self) -> None:
+        assert self.fp is not None
         self.ico = IcoFile(self.fp)
         self.info["sizes"] = self.ico.sizes()
         self.size = self.ico.entry[0].dim
