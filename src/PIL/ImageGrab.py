@@ -45,8 +45,7 @@ def grab(
             args = ["screencapture"]
             if window:
                 args += ["-l", str(window)]
-            # -R is not working with -l
-            if bbox and not window:
+            elif bbox:
                 left, top, right, bottom = bbox
                 args += ["-R", f"{left},{top},{right-left},{bottom-top}"]
             subprocess.call(args + ["-x", filepath])
@@ -54,9 +53,29 @@ def grab(
             im.load()
             os.unlink(filepath)
             if bbox:
-                # manual crop for windowed mode
                 if window:
-                    im_cropped = im.crop(bbox)
+                    # Determine if the window was in retina mode or not
+                    # by capturing it without the shadow,
+                    # and checking how different the width is
+                    fh, filepath = tempfile.mkstemp(".png")
+                    os.close(fh)
+                    subprocess.call(
+                        ["screencapture", "-l", str(window), "-o", "-x", filepath]
+                    )
+                    with Image.open(filepath) as im_no_shadow:
+                        retina = im.width - im_no_shadow.width > 100
+                    os.unlink(filepath)
+
+                    # Since screencapture's -R does not work with -l,
+                    # crop the image manually
+                    if retina:
+                        left, top, right, bottom = bbox
+                        im_cropped = im.resize(
+                            (right - left, bottom - top),
+                            box=tuple(coord * 2 for coord in bbox),
+                        )
+                    else:
+                        im_cropped = im.crop(bbox)
                     im.close()
                     return im_cropped
                 else:
