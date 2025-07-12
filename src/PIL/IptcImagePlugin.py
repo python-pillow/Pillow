@@ -96,16 +96,18 @@ class IptcImageFile(ImageFile.ImageFile):
         # mode
         layers = self.info[(3, 60)][0]
         component = self.info[(3, 60)][1]
-        if (3, 65) in self.info:
-            id = self.info[(3, 65)][0] - 1
-        else:
-            id = 0
         if layers == 1 and not component:
             self._mode = "L"
-        elif layers == 3 and component:
-            self._mode = "RGB"[id]
-        elif layers == 4 and component:
-            self._mode = "CMYK"[id]
+            band = None
+        else:
+            if layers == 3 and component:
+                self._mode = "RGB"
+            elif layers == 4 and component:
+                self._mode = "CMYK"
+            if (3, 65) in self.info:
+                band = self.info[(3, 65)][0] - 1
+            else:
+                band = 0
 
         # size
         self._size = self.getint((3, 20)), self.getint((3, 30))
@@ -120,14 +122,16 @@ class IptcImageFile(ImageFile.ImageFile):
         # tile
         if tag == (8, 10):
             self.tile = [
-                ImageFile._Tile("iptc", (0, 0) + self.size, offset, compression)
+                ImageFile._Tile("iptc", (0, 0) + self.size, offset, (compression, band))
             ]
 
     def load(self) -> Image.core.PixelAccess | None:
         if self.tile:
-            offset, compression = self.tile[0][2:]
+            args = self.tile[0].args
+            assert isinstance(args, tuple)
+            compression, band = args
 
-            self.fp.seek(offset)
+            self.fp.seek(self.tile[0].offset)
 
             # Copy image data to temporary file
             o = BytesIO()
@@ -147,7 +151,12 @@ class IptcImageFile(ImageFile.ImageFile):
                     size -= len(s)
 
             with Image.open(o) as _im:
-                _im.load()
+                if band is not None:
+                    bands = [Image.new("L", _im.size)] * Image.getmodebands(self.mode)
+                    bands[band] = _im
+                    _im = Image.merge(self.mode, bands)
+                else:
+                    _im.load()
                 self.im = _im.im
             self.tile = []
         return ImageFile.ImageFile.load(self)
