@@ -269,7 +269,7 @@ class ImageCmsProfile:
                 ),
             )
             return None
-        msg = f"'{self.__class__.__name__}' has no attribute '{name}'"
+        msg = f"'{self.__class__.__name__}' object has no attribute '{name}'"
         raise AttributeError(msg)
 
     def tobytes(self) -> bytes:
