@@ -66,12 +66,7 @@ ImageCms.ImageCmsProfile.product_name and .product_info
 
 ``ImageCms.ImageCmsProfile.product_name`` and the corresponding
 ``.product_info`` attributes have been deprecated, and will be removed in
-Pillow 13 (2026-10-15). These attributes can be accessed on the ``.profile``
-attribute of ``ImageCmsProfile`` instead.
-
-Note that ``.product_name`` and ``.product_info`` have been set to ``None`` on
-``ImageCmsProfile`` since Pillow 2.3.0 (2014-01-01), so any working code that
-makes use of this data will already access it on ``.profile``.
+Pillow 13 (2026-10-15). They have been set to ``None`` since Pillow 2.3.0.
 
 Removed features
 ----------------

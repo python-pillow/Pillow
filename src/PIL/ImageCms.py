@@ -260,14 +260,7 @@ class ImageCmsProfile:
 
     def __getattr__(self, name: str) -> Any:
         if name in ("product_name", "product_info"):
-            deprecate(
-                f"ImageCms.ImageCmsProfile.{name}",
-                13,
-                action=(
-                    f"Use ImageCms.ImageCmsProfile.profile.{name} instead. "
-                    f"Note that {name} has been set to 'None' since Pillow 2.3.0."
-                ),
-            )
+            deprecate(f"ImageCms.ImageCmsProfile.{name}", 13)
             return None
         msg = f"'{self.__class__.__name__}' object has no attribute '{name}'"
         raise AttributeError(msg)
