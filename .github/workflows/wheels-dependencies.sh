@@ -95,7 +95,7 @@ ARCHIVE_SDIR=pillow-depends-main
 # you change those versions, ensure the patch is also updated.
 FREETYPE_VERSION=2.13.3
 HARFBUZZ_VERSION=11.2.1
-LIBPNG_VERSION=1.6.49
+LIBPNG_VERSION=1.6.50
 JPEGTURBO_VERSION=3.1.1
 OPENJPEG_VERSION=2.5.3
 XZ_VERSION=5.8.1
