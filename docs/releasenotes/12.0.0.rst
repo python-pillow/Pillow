@@ -110,10 +110,12 @@ vulnerability introduced in FreeType 2.6 (:cve:`2020-15999`).
 Deprecations
 ============
 
-TODO
-^^^^
+ImageCms.ImageCmsProfile.product_name and .product_info
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+``ImageCms.ImageCmsProfile.product_name`` and the corresponding
+``.product_info`` attributes have been deprecated, and will be removed in
+Pillow 13 (2026-10-15). They have been set to ``None`` since Pillow 2.3.0.
 
 API changes
 ===========
