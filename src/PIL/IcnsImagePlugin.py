@@ -265,6 +265,7 @@ class IcnsImageFile(ImageFile.ImageFile):
     format_description = "Mac OS icns resource"
 
     def _open(self) -> None:
+        assert self.fp is not None
         self.icns = IcnsFile(self.fp)
         self._mode = "RGBA"
         self.info["sizes"] = self.icns.itersizes()
