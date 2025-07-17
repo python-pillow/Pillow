@@ -18,11 +18,7 @@ def test_check() -> None:
     for codec in features.codecs:
         assert features.check_codec(codec) == features.check(codec)
     for feature in features.features:
-        if "webp" in feature:
-            with pytest.warns(DeprecationWarning, match="webp"):
-                assert features.check_feature(feature) == features.check(feature)
-        else:
-            assert features.check_feature(feature) == features.check(feature)
+        assert features.check_feature(feature) == features.check(feature)
 
 
 def test_version() -> None:
@@ -48,11 +44,7 @@ def test_version() -> None:
     for codec in features.codecs:
         test(codec, features.version_codec)
     for feature in features.features:
-        if "webp" in feature:
-            with pytest.warns(DeprecationWarning, match="webp"):
-                test(feature, features.version_feature)
-        else:
-            test(feature, features.version_feature)
+        test(feature, features.version_feature)
 
 
 @skip_unless_feature("libjpeg_turbo")
