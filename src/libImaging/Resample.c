@@ -470,10 +470,9 @@ ImagingResampleHorizontal_16bpc(
     double *k;
 
     int bigendian = 0;
-    if (
-        strcmp(imIn->mode, "I;16N") == 0
+    if (imIn->mode == IMAGING_MODE_I_16N
 #ifdef WORDS_BIGENDIAN
-        || strcmp(imIn->mode, "I;16B") == 0
+        || imIn->mode == IMAGING_MODE_I_16B
 #endif
     ) {
         bigendian = 1;
@@ -510,10 +509,9 @@ ImagingResampleVertical_16bpc(
     double *k;
 
     int bigendian = 0;
-    if (
-        strcmp(imIn->mode, "I;16N") == 0
+    if (imIn->mode == IMAGING_MODE_I_16N
 #ifdef WORDS_BIGENDIAN
-        || strcmp(imIn->mode, "I;16B") == 0
+        || imIn->mode == IMAGING_MODE_I_16B
 #endif
     ) {
         bigendian = 1;
@@ -648,12 +646,12 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]) {
     ResampleFunction ResampleHorizontal;
     ResampleFunction ResampleVertical;
 
-    if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "1") == 0) {
+    if (imIn->mode == IMAGING_MODE_P || imIn->mode == IMAGING_MODE_1) {
         return (Imaging)ImagingError_ModeError();
     }
 
     if (imIn->type == IMAGING_TYPE_SPECIAL) {
-        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+        if (isModeI16(imIn->mode)) {
             ResampleHorizontal = ImagingResampleHorizontal_16bpc;
             ResampleVertical = ImagingResampleVertical_16bpc;
         } else {
