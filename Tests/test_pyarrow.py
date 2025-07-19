@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import Any, NamedTuple
 
 import pytest
@@ -244,3 +245,29 @@ def test_from_int32array(mode: str, data_tp: DataShape, mask: list[int] | None) 
     img = Image.fromarrow(arr, mode, TEST_IMAGE_SIZE)
 
     _test_img_equals_int32_pyarray(img, arr, mask, elts_per_pixel)
+
+
+@pytest.mark.parametrize(
+    "mode, metadata",
+    (
+        ("LA", ["L", "X", "X", "A"]),
+        ("RGB", ["R", "G", "B", "X"]),
+        ("RGBX", ["R", "G", "B", "X"]),
+        ("RGBA", ["R", "G", "B", "A"]),
+        ("CMYK", ["C", "M", "Y", "K"]),
+        ("YCbCr", ["Y", "Cb", "Cr", "X"]),
+        ("HSV", ["H", "S", "V", "X"]),
+    ),
+)
+def test_image_metadata(mode: str, metadata: list[str]) -> None:
+    img = hopper(mode)
+
+    arr = pyarrow.array(img)  # type: ignore[call-overload]
+
+    assert arr.type.field(0).metadata
+    assert arr.type.field(0).metadata[b"image"]
+
+    parsed_metadata = json.loads(arr.type.field(0).metadata[b"image"].decode("utf8"))
+
+    assert "bands" in parsed_metadata
+    assert parsed_metadata["bands"] == metadata
