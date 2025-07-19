@@ -199,6 +199,11 @@ ImagingPackInit(void);
 extern void
 ImagingPackFree(void);
 
+extern void
+ImagingUnpackInit(void);
+extern void
+ImagingUnpackFree(void);
+
 /* Objects */
 /* ------- */
 
