@@ -38,6 +38,8 @@ else:
                 return bool
 
 
+_Ink = Union[float, tuple[int, ...], str]
+
 Coords = Union[Sequence[float], Sequence[Sequence[float]]]
 
 
