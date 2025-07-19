@@ -4319,6 +4319,7 @@ setup_module(PyObject *m) {
 
     ImagingAccessInit();
     ImagingConvertInit();
+    ImagingPackInit();
 
 #ifdef HAVE_LIBJPEG
     {
