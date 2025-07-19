@@ -1,7 +1,6 @@
 #ifndef __MODE_H__
 #define __MODE_H__
 
-
 typedef enum {
     IMAGING_MODE_UNKNOWN,
 
@@ -35,12 +34,13 @@ typedef enum {
 } ModeID;
 
 typedef struct {
-    const char * const name;
+    const char *const name;
 } ModeData;
 
-const ModeID findModeID(const char * const name);
-const ModeData * const getModeData(const ModeID id);
-
+const ModeID
+findModeID(const char *const name);
+const ModeData *const
+getModeData(const ModeID id);
 
 typedef enum {
     IMAGING_RAWMODE_UNKNOWN,
@@ -226,13 +226,15 @@ typedef enum {
 } RawModeID;
 
 typedef struct {
-    const char * const name;
+    const char *const name;
 } RawModeData;
 
-const RawModeID findRawModeID(const char * const name);
-const RawModeData * const getRawModeData(const RawModeID id);
+const RawModeID
+findRawModeID(const char *const name);
+const RawModeData *const
+getRawModeData(const RawModeID id);
 
+int
+isModeI16(const ModeID mode);
 
-int isModeI16(const ModeID mode);
-
-#endif // __MODE_H__
+#endif  // __MODE_H__

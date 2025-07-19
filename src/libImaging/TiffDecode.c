@@ -246,10 +246,26 @@ _pickUnpackers(
         // We'll pick appropriate set of unpackers depending on planar_configuration
         // It does not matter if data is RGB(A), CMYK or LUV really,
         // we just copy it plane by plane
-        unpackers[0] = ImagingFindUnpacker(IMAGING_MODE_RGBA, bits_per_sample == 16 ? IMAGING_RAWMODE_R_16N : IMAGING_RAWMODE_R, NULL);
-        unpackers[1] = ImagingFindUnpacker(IMAGING_MODE_RGBA, bits_per_sample == 16 ? IMAGING_RAWMODE_G_16N : IMAGING_RAWMODE_G, NULL);
-        unpackers[2] = ImagingFindUnpacker(IMAGING_MODE_RGBA, bits_per_sample == 16 ? IMAGING_RAWMODE_B_16N : IMAGING_RAWMODE_B, NULL);
-        unpackers[3] = ImagingFindUnpacker(IMAGING_MODE_RGBA, bits_per_sample == 16 ? IMAGING_RAWMODE_A_16N : IMAGING_RAWMODE_A, NULL);
+        unpackers[0] = ImagingFindUnpacker(
+            IMAGING_MODE_RGBA,
+            bits_per_sample == 16 ? IMAGING_RAWMODE_R_16N : IMAGING_RAWMODE_R,
+            NULL
+        );
+        unpackers[1] = ImagingFindUnpacker(
+            IMAGING_MODE_RGBA,
+            bits_per_sample == 16 ? IMAGING_RAWMODE_G_16N : IMAGING_RAWMODE_G,
+            NULL
+        );
+        unpackers[2] = ImagingFindUnpacker(
+            IMAGING_MODE_RGBA,
+            bits_per_sample == 16 ? IMAGING_RAWMODE_B_16N : IMAGING_RAWMODE_B,
+            NULL
+        );
+        unpackers[3] = ImagingFindUnpacker(
+            IMAGING_MODE_RGBA,
+            bits_per_sample == 16 ? IMAGING_RAWMODE_A_16N : IMAGING_RAWMODE_A,
+            NULL
+        );
 
         return im->bands;
     } else {
@@ -763,7 +779,9 @@ ImagingLibTiffDecode(
 
                 if (extrasamples >= 1 && (sampleinfo[0] == EXTRASAMPLE_UNSPECIFIED ||
                                           sampleinfo[0] == EXTRASAMPLE_ASSOCALPHA)) {
-                    shuffle = ImagingFindUnpacker(IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBa, NULL);
+                    shuffle = ImagingFindUnpacker(
+                        IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBa, NULL
+                    );
 
                     for (y = state->yoff; y < state->ysize; y++) {
                         UINT8 *ptr = (UINT8 *)im->image[y + state->yoff] +

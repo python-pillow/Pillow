@@ -210,8 +210,8 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
     Imaging imOut;
     int x, y;
 
-    if (!imIn || (imIn->mode != IMAGING_MODE_I &&
-        imIn->mode != IMAGING_MODE_I_16 && imIn->mode != IMAGING_MODE_F)) {
+    if (!imIn || (imIn->mode != IMAGING_MODE_I && imIn->mode != IMAGING_MODE_I_16 &&
+                  imIn->mode != IMAGING_MODE_F)) {
         return (Imaging)ImagingError_ModeError();
     }
 

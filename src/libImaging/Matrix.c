@@ -46,11 +46,8 @@ ImagingConvertMatrix(Imaging im, const ModeID mode, float m[]) {
             }
         }
         ImagingSectionLeave(&cookie);
-    } else if (
-        mode == IMAGING_MODE_HSV ||
-        mode == IMAGING_MODE_LAB ||
-        mode == IMAGING_MODE_RGB
-    ) {
+    } else if (mode == IMAGING_MODE_HSV || mode == IMAGING_MODE_LAB ||
+               mode == IMAGING_MODE_RGB) {
         imOut = ImagingNewDirty(mode, im->xsize, im->ysize);
         if (!imOut) {
             return NULL;

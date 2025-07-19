@@ -1692,25 +1692,22 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (imIn->mode == IMAGING_MODE_RGB && (mode == IMAGING_MODE_RGBA || mode == IMAGING_MODE_RGBa)) {
+    if (imIn->mode == IMAGING_MODE_RGB &&
+        (mode == IMAGING_MODE_RGBA || mode == IMAGING_MODE_RGBa)) {
         convert = rgb2rgba;
         if (mode == IMAGING_MODE_RGBa) {
             premultiplied = 1;
         }
-    } else if (imIn->mode == IMAGING_MODE_RGB && (mode == IMAGING_MODE_LA || mode == IMAGING_MODE_La)) {
+    } else if (imIn->mode == IMAGING_MODE_RGB &&
+               (mode == IMAGING_MODE_LA || mode == IMAGING_MODE_La)) {
         convert = rgb2la;
         source_transparency = 1;
         if (mode == IMAGING_MODE_La) {
             premultiplied = 1;
         }
-    } else if ((imIn->mode == IMAGING_MODE_1 ||
-                imIn->mode == IMAGING_MODE_I ||
-                imIn->mode == IMAGING_MODE_I_16 ||
-                imIn->mode == IMAGING_MODE_L
-               ) && (
-                mode == IMAGING_MODE_RGBA ||
-                mode == IMAGING_MODE_LA
-               )) {
+    } else if ((imIn->mode == IMAGING_MODE_1 || imIn->mode == IMAGING_MODE_I ||
+                imIn->mode == IMAGING_MODE_I_16 || imIn->mode == IMAGING_MODE_L) &&
+               (mode == IMAGING_MODE_RGBA || mode == IMAGING_MODE_LA)) {
         if (imIn->mode == IMAGING_MODE_1) {
             convert = bit2rgb;
         } else if (imIn->mode == IMAGING_MODE_I) {
