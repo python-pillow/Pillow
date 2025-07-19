@@ -11,10 +11,6 @@
 
 #include "Imaging.h"
 
-#define ACCESS_TABLE_SIZE 24
-static struct ImagingAccessInstance ACCESS_TABLE[ACCESS_TABLE_SIZE];
-
-
 /* fetch individual pixel */
 
 static void
@@ -120,66 +116,53 @@ put_pixel_32(Imaging im, int x, int y, const void *color) {
     memcpy(&im->image32[y][x], color, sizeof(INT32));
 }
 
-
-static void
-set_access_table_item(
-    const int index,
-    const Mode * const mode,
-    void (*get_pixel)(Imaging im, int x, int y, void *pixel),
-    void (*put_pixel)(Imaging im, int x, int y, const void *pixel)
-) {
-    ACCESS_TABLE[index].mode = mode;
-    ACCESS_TABLE[index].get_pixel = get_pixel;
-    ACCESS_TABLE[index].put_pixel = put_pixel;
-}
+static struct ImagingAccessInstance *accessors = NULL;
 
 void
 ImagingAccessInit(void) {
-    int i = 0;
-    set_access_table_item(i++, IMAGING_MODE_1, get_pixel_8, put_pixel_8);
-    set_access_table_item(i++, IMAGING_MODE_L, get_pixel_8, put_pixel_8);
-    set_access_table_item(i++, IMAGING_MODE_LA, get_pixel_32_2bands, put_pixel_32);
-    set_access_table_item(i++, IMAGING_MODE_La, get_pixel_32_2bands, put_pixel_32);
-    set_access_table_item(i++, IMAGING_MODE_I, get_pixel_32, put_pixel_32);
-    set_access_table_item(i++, IMAGING_MODE_I_16, get_pixel_16L, put_pixel_16L);
-    set_access_table_item(i++, IMAGING_MODE_I_16L, get_pixel_16L, put_pixel_16L);
-    set_access_table_item(i++, IMAGING_MODE_I_16B, get_pixel_16B, put_pixel_16B);
+    const struct ImagingAccessInstance temp[] = {
+        {IMAGING_MODE_1, get_pixel_8, put_pixel_8},
+        {IMAGING_MODE_L, get_pixel_8, put_pixel_8},
+        {IMAGING_MODE_LA, get_pixel_32_2bands, put_pixel_32},
+        {IMAGING_MODE_La, get_pixel_32_2bands, put_pixel_32},
+        {IMAGING_MODE_I, get_pixel_32, put_pixel_32},
+        {IMAGING_MODE_I_16, get_pixel_16L, put_pixel_16L},
+        {IMAGING_MODE_I_16L, get_pixel_16L, put_pixel_16L},
+        {IMAGING_MODE_I_16B, get_pixel_16B, put_pixel_16B},
 #ifdef WORDS_BIGENDIAN
-    set_access_table_item(i++, IMAGING_MODE_I_16N, get_pixel_16B, put_pixel_16B);
+        {IMAGING_MODE_I_16N, get_pixel_16B, put_pixel_16B},
 #else
-    set_access_table_item(i++, IMAGING_MODE_I_16N, get_pixel_16L, put_pixel_16L);
+        {IMAGING_MODE_I_16N, get_pixel_16L, put_pixel_16L},
 #endif
-    set_access_table_item(i++, IMAGING_MODE_I_32L, get_pixel_32L, put_pixel_32L);
-    set_access_table_item(i++, IMAGING_MODE_I_32B, get_pixel_32B, put_pixel_32B);
-    set_access_table_item(i++, IMAGING_MODE_F, get_pixel_32, put_pixel_32);
-    set_access_table_item(i++, IMAGING_MODE_P, get_pixel_8, put_pixel_8);
-    set_access_table_item(i++, IMAGING_MODE_PA, get_pixel_32_2bands, put_pixel_32);
-    set_access_table_item(i++, IMAGING_MODE_RGB, get_pixel_32, put_pixel_32);
-    set_access_table_item(i++, IMAGING_MODE_RGBA, get_pixel_32, put_pixel_32);
-    set_access_table_item(i++, IMAGING_MODE_RGBa, get_pixel_32, put_pixel_32);
-    set_access_table_item(i++, IMAGING_MODE_RGBX, get_pixel_32, put_pixel_32);
-    set_access_table_item(i++, IMAGING_MODE_CMYK, get_pixel_32, put_pixel_32);
-    set_access_table_item(i++, IMAGING_MODE_YCbCr, get_pixel_32, put_pixel_32);
-    set_access_table_item(i++, IMAGING_MODE_LAB, get_pixel_32, put_pixel_32);
-    set_access_table_item(i++, IMAGING_MODE_HSV, get_pixel_32, put_pixel_32);
-
-
-    if (i != ACCESS_TABLE_SIZE) {
-        fprintf(
-            stderr,
-            "AccessInit: incorrect number of items added to ACCESS_TABLE; expected %i but got %i\n",
-            ACCESS_TABLE_SIZE,
-            i);
+        {IMAGING_MODE_I_32L, get_pixel_32L, put_pixel_32L},
+        {IMAGING_MODE_I_32B, get_pixel_32B, put_pixel_32B},
+        {IMAGING_MODE_F, get_pixel_32, put_pixel_32},
+        {IMAGING_MODE_P, get_pixel_8, put_pixel_8},
+        {IMAGING_MODE_PA, get_pixel_32_2bands, put_pixel_32},
+        {IMAGING_MODE_RGB, get_pixel_32, put_pixel_32},
+        {IMAGING_MODE_RGBA, get_pixel_32, put_pixel_32},
+        {IMAGING_MODE_RGBa, get_pixel_32, put_pixel_32},
+        {IMAGING_MODE_RGBX, get_pixel_32, put_pixel_32},
+        {IMAGING_MODE_CMYK, get_pixel_32, put_pixel_32},
+        {IMAGING_MODE_YCbCr, get_pixel_32, put_pixel_32},
+        {IMAGING_MODE_LAB, get_pixel_32, put_pixel_32},
+        {IMAGING_MODE_HSV, get_pixel_32, put_pixel_32},
+        {NULL}
+    };
+    accessors = malloc(sizeof(temp));
+    if (accessors == NULL) {
+        fprintf(stderr, "AccessInit: failed to allocate memory for accessors table\n");
         exit(1);
     }
+    memcpy(accessors, temp, sizeof(temp));
 }
 
 ImagingAccess
 ImagingAccessNew(const Imaging im) {
     int i;
-    for (i = 0; i < ACCESS_TABLE_SIZE; i++) {
-        if (im->mode == ACCESS_TABLE[i].mode) {
-            return &ACCESS_TABLE[i];
+    for (i = 0; accessors[i].mode; i++) {
+        if (im->mode == accessors[i].mode) {
+            return &accessors[i];
         }
     }
     return NULL;
@@ -189,4 +172,7 @@ void
 _ImagingAccessDelete(Imaging im, ImagingAccess access) {}
 
 void
-ImagingAccessFree(void) {}
+ImagingAccessFree(void) {
+    free(accessors);
+    accessors = NULL;
+}
