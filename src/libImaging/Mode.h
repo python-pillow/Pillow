@@ -86,4 +86,6 @@ extern const RawMode * const IMAGING_RAWMODE_YCbCrK;
 const RawMode * findRawMode(const char * const name);
 
 
+int isModeI16(const Mode * const mode);
+
 #endif // __MODE_H__

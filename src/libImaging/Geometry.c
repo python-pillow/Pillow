@@ -41,7 +41,7 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
-        if (strncmp(imIn->mode->name, "I;16", 4) == 0) {
+        if (isModeI16(imIn->mode)) {
             FLIP_LEFT_RIGHT(UINT16, image8)
         } else {
             FLIP_LEFT_RIGHT(UINT8, image8)
@@ -127,7 +127,7 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
-        if (strncmp(imIn->mode->name, "I;16", 4) == 0) {
+        if (isModeI16(imIn->mode)) {
             ROTATE_90(UINT16, image8);
         } else {
             ROTATE_90(UINT8, image8);
@@ -186,7 +186,7 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
-        if (strncmp(imIn->mode->name, "I;16", 4) == 0) {
+        if (isModeI16(imIn->mode)) {
             TRANSPOSE(UINT16, image8);
         } else {
             TRANSPOSE(UINT8, image8);
@@ -247,7 +247,7 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
-        if (strncmp(imIn->mode->name, "I;16", 4) == 0) {
+        if (isModeI16(imIn->mode)) {
             TRANSVERSE(UINT16, image8);
         } else {
             TRANSVERSE(UINT8, image8);
@@ -291,7 +291,7 @@ ImagingRotate180(Imaging imOut, Imaging imIn) {
 
     yr = imIn->ysize - 1;
     if (imIn->image8) {
-        if (strncmp(imIn->mode->name, "I;16", 4) == 0) {
+        if (isModeI16(imIn->mode)) {
             ROTATE_180(UINT16, image8)
         } else {
             ROTATE_180(UINT8, image8)
@@ -351,7 +351,7 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
-        if (strncmp(imIn->mode->name, "I;16", 4) == 0) {
+        if (isModeI16(imIn->mode)) {
             ROTATE_270(UINT16, image8);
         } else {
             ROTATE_270(UINT8, image8);

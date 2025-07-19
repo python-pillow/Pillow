@@ -68,7 +68,7 @@ typedef void (*hline_handler)(Imaging, int, int, int, int, Imaging);
 static inline void
 point8(Imaging im, int x, int y, int ink) {
     if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize) {
-        if (strncmp(im->mode->name, "I;16", 4) == 0) {
+        if (isModeI16(im->mode)) {
 #ifdef WORDS_BIGENDIAN
             im->image8[y][x * 2] = (UINT8)(ink >> 8);
             im->image8[y][x * 2 + 1] = (UINT8)ink;
@@ -672,17 +672,17 @@ DRAW draw32rgba = {point32rgba, hline32rgba, line32rgba};
 /* Interface                                                            */
 /* -------------------------------------------------------------------- */
 
-#define DRAWINIT()                                     \
-    if (im->image8) {                                  \
-        draw = &draw8;                                 \
-        if (strncmp(im->mode->name, "I;16", 4) == 0) { \
-            ink = INK16(ink_);                         \
-        } else {                                       \
-            ink = INK8(ink_);                          \
-        }                                              \
-    } else {                                           \
-        draw = (op) ? &draw32rgba : &draw32;           \
-        memcpy(&ink, ink_, sizeof(ink));               \
+#define DRAWINIT()                           \
+    if (im->image8) {                        \
+        draw = &draw8;                       \
+        if (isModeI16(im->mode)) {           \
+            ink = INK16(ink_);               \
+        } else {                             \
+            ink = INK8(ink_);                \
+        }                                    \
+    } else {                                 \
+        draw = (op) ? &draw32rgba : &draw32; \
+        memcpy(&ink, ink_, sizeof(ink));     \
     }
 
 int

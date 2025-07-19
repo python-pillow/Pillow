@@ -662,11 +662,7 @@ getink(PyObject *color, Imaging im, char *ink) {
             memcpy(ink, &ftmp, sizeof(ftmp));
             return ink;
         case IMAGING_TYPE_SPECIAL:
-            if (im->mode == IMAGING_MODE_I_16
-                || im->mode == IMAGING_MODE_I_16L
-                || im->mode == IMAGING_MODE_I_16B
-                || im->mode == IMAGING_MODE_I_16N
-            ) {
+            if (isModeI16(im->mode)) {
                 ink[0] = (UINT8)r;
                 ink[1] = (UINT8)(r >> 8);
                 ink[2] = ink[3] = 0;
