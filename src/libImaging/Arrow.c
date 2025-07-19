@@ -85,6 +85,33 @@ image_band_json(Imaging im) {
 }
 
 char *
+single_band_json(Imaging im) {
+    char *format = "{\"bands\": [\"%s\"]}";
+    char *json;
+    // Bands can be 1 band * (maybe but probably not) 2 characters each
+    int len = strlen(format) + 2 + 1;
+    int err;
+
+    json = calloc(1, len);
+
+    if (!json) {
+        return NULL;
+    }
+
+    err = PyOS_snprintf(
+        json,
+        len,
+        format,
+        im->band_names[0]
+    );
+    if (err < 0) {
+        return NULL;
+    }
+    return json;
+}
+
+
+char *
 assemble_metadata(const char *band_json) {
     /* format is
        int32: number of key/value pairs (noted N below)
@@ -179,7 +206,17 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     }
 
     if (im->bands == 1) {
-        return export_named_type(schema, im->arrow_band_format, im->band_names[0]);
+        retval = export_named_type(schema, im->arrow_band_format, im->band_names[0]);
+        if (retval != 0) {
+            return retval;
+        }
+        // band related metadata
+        band_json = single_band_json(im);
+        if (band_json) {
+            schema->metadata = assemble_metadata(band_json);
+            free(band_json);
+        }
+        return retval;
     }
 
     retval = export_named_type(schema, "+w:4", "");
