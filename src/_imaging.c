@@ -368,7 +368,7 @@ ImagingError_ValueError(const char *message) {
 /* -------------------------------------------------------------------- */
 
 static int
-getbands(const char *mode) {
+getbands(const Mode *mode) {
     Imaging im;
     int bands;
 
@@ -662,7 +662,11 @@ getink(PyObject *color, Imaging im, char *ink) {
             memcpy(ink, &ftmp, sizeof(ftmp));
             return ink;
         case IMAGING_TYPE_SPECIAL:
-            if (strncmp(im->mode, "I;16", 4) == 0) {
+            if (im->mode == IMAGING_MODE_I_16
+                || im->mode == IMAGING_MODE_I_16L
+                || im->mode == IMAGING_MODE_I_16B
+                || im->mode == IMAGING_MODE_I_16N
+            ) {
                 ink[0] = (UINT8)r;
                 ink[1] = (UINT8)(r >> 8);
                 ink[2] = ink[3] = 0;
@@ -681,6 +685,30 @@ getink(PyObject *color, Imaging im, char *ink) {
                 } else if (!PyArg_ParseTuple(color, "iiL", &b, &g, &r)) {
                     return NULL;
                 }
+                if (im->mode == IMAGING_MODE_BGR_15) {
+                    UINT16 v = ((((UINT16)r) << 7) & 0x7c00) +
+                               ((((UINT16)g) << 2) & 0x03e0) +
+                               ((((UINT16)b) >> 3) & 0x001f);
+
+                    ink[0] = (UINT8)v;
+                    ink[1] = (UINT8)(v >> 8);
+                    ink[2] = ink[3] = 0;
+                    return ink;
+                } else if (im->mode == IMAGING_MODE_BGR_16) {
+                    UINT16 v = ((((UINT16)r) << 8) & 0xf800) +
+                               ((((UINT16)g) << 3) & 0x07e0) +
+                               ((((UINT16)b) >> 3) & 0x001f);
+                    ink[0] = (UINT8)v;
+                    ink[1] = (UINT8)(v >> 8);
+                    ink[2] = ink[3] = 0;
+                    return ink;
+                } else if (im->mode == IMAGING_MODE_BGR_24) {
+                    ink[0] = (UINT8)b;
+                    ink[1] = (UINT8)g;
+                    ink[2] = (UINT8)r;
+                    ink[3] = 0;
+                    return ink;
+                }
             }
     }
 
@@ -694,7 +722,7 @@ getink(PyObject *color, Imaging im, char *ink) {
 
 static PyObject *
 _fill(PyObject *self, PyObject *args) {
-    char *mode;
+    char *mode_name;
     int xsize, ysize;
     PyObject *color;
     char buffer[4];
@@ -703,9 +731,11 @@ _fill(PyObject *self, PyObject *args) {
     xsize = ysize = 256;
     color = NULL;
 
-    if (!PyArg_ParseTuple(args, "s|(ii)O", &mode, &xsize, &ysize, &color)) {
+    if (!PyArg_ParseTuple(args, "s|(ii)O", &mode_name, &xsize, &ysize, &color)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
 
     im = ImagingNewDirty(mode, xsize, ysize);
     if (!im) {
@@ -727,46 +757,54 @@ _fill(PyObject *self, PyObject *args) {
 
 static PyObject *
 _new(PyObject *self, PyObject *args) {
-    char *mode;
+    char *mode_name;
     int xsize, ysize;
 
-    if (!PyArg_ParseTuple(args, "s(ii)", &mode, &xsize, &ysize)) {
+    if (!PyArg_ParseTuple(args, "s(ii)", &mode_name, &xsize, &ysize)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
 
     return PyImagingNew(ImagingNew(mode, xsize, ysize));
 }
 
 static PyObject *
 _new_block(PyObject *self, PyObject *args) {
-    char *mode;
+    char *mode_name;
     int xsize, ysize;
 
-    if (!PyArg_ParseTuple(args, "s(ii)", &mode, &xsize, &ysize)) {
+    if (!PyArg_ParseTuple(args, "s(ii)", &mode_name, &xsize, &ysize)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
 
     return PyImagingNew(ImagingNewBlock(mode, xsize, ysize));
 }
 
 static PyObject *
 _linear_gradient(PyObject *self, PyObject *args) {
-    char *mode;
+    char *mode_name;
 
-    if (!PyArg_ParseTuple(args, "s", &mode)) {
+    if (!PyArg_ParseTuple(args, "s", &mode_name)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
 
     return PyImagingNew(ImagingFillLinearGradient(mode));
 }
 
 static PyObject *
 _radial_gradient(PyObject *self, PyObject *args) {
-    char *mode;
+    char *mode_name;
 
-    if (!PyArg_ParseTuple(args, "s", &mode)) {
+    if (!PyArg_ParseTuple(args, "s", &mode_name)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
 
     return PyImagingNew(ImagingFillRadialGradient(mode));
 }
@@ -907,7 +945,7 @@ _prepare_lut_table(PyObject *table, Py_ssize_t table_size) {
 
 static PyObject *
 _color_lut_3d(ImagingObject *self, PyObject *args) {
-    char *mode;
+    char *mode_name;
     int filter;
     int table_channels;
     int size1D, size2D, size3D;
@@ -919,7 +957,7 @@ _color_lut_3d(ImagingObject *self, PyObject *args) {
     if (!PyArg_ParseTuple(
             args,
             "sii(iii)O:color_lut_3d",
-            &mode,
+            &mode_name,
             &filter,
             &table_channels,
             &size1D,
@@ -929,6 +967,8 @@ _color_lut_3d(ImagingObject *self, PyObject *args) {
         )) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
 
     /* actually, it is trilinear */
     if (filter != IMAGING_TRANSFORM_BILINEAR) {
@@ -976,11 +1016,11 @@ _color_lut_3d(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _convert(ImagingObject *self, PyObject *args) {
-    char *mode;
+    char *mode_name;
     int dither = 0;
     ImagingObject *paletteimage = NULL;
 
-    if (!PyArg_ParseTuple(args, "s|iO", &mode, &dither, &paletteimage)) {
+    if (!PyArg_ParseTuple(args, "s|iO", &mode_name, &dither, &paletteimage)) {
         return NULL;
     }
     if (paletteimage != NULL) {
@@ -996,6 +1036,8 @@ _convert(ImagingObject *self, PyObject *args) {
             return NULL;
         }
     }
+
+    const Mode * const mode = findMode(mode_name);
 
     return PyImagingNew(ImagingConvert(
         self->image, mode, paletteimage ? paletteimage->image->palette : NULL, dither
@@ -1021,14 +1063,14 @@ _convert2(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _convert_matrix(ImagingObject *self, PyObject *args) {
-    char *mode;
+    char *mode_name;
     float m[12];
-    if (!PyArg_ParseTuple(args, "s(ffff)", &mode, m + 0, m + 1, m + 2, m + 3)) {
+    if (!PyArg_ParseTuple(args, "s(ffff)", &mode_name, m + 0, m + 1, m + 2, m + 3)) {
         PyErr_Clear();
         if (!PyArg_ParseTuple(
                 args,
                 "s(ffffffffffff)",
-                &mode,
+                &mode_name,
                 m + 0,
                 m + 1,
                 m + 2,
@@ -1046,18 +1088,22 @@ _convert_matrix(ImagingObject *self, PyObject *args) {
         }
     }
 
+    const Mode * const mode = findMode(mode_name);
+
     return PyImagingNew(ImagingConvertMatrix(self->image, mode, m));
 }
 
 static PyObject *
 _convert_transparent(ImagingObject *self, PyObject *args) {
-    char *mode;
+    char *mode_name;
     int r, g, b;
-    if (PyArg_ParseTuple(args, "s(iii)", &mode, &r, &g, &b)) {
+    if (PyArg_ParseTuple(args, "s(iii)", &mode_name, &r, &g, &b)) {
+        const Mode * const mode = findMode(mode_name);
         return PyImagingNew(ImagingConvertTransparent(self->image, mode, r, g, b));
     }
     PyErr_Clear();
-    if (PyArg_ParseTuple(args, "si", &mode, &r)) {
+    if (PyArg_ParseTuple(args, "si", &mode_name, &r)) {
+        const Mode * const mode = findMode(mode_name);
         return PyImagingNew(ImagingConvertTransparent(self->image, mode, r, 0, 0));
     }
     return NULL;
@@ -1156,9 +1202,9 @@ _getpalette(ImagingObject *self, PyObject *args) {
     int bits;
     ImagingShuffler pack;
 
-    char *mode = "RGB";
-    char *rawmode = "RGB";
-    if (!PyArg_ParseTuple(args, "|ss", &mode, &rawmode)) {
+    char *mode_name = "RGB";
+    char *rawmode_name = "RGB";
+    if (!PyArg_ParseTuple(args, "|ss", &mode_name, &rawmode_name)) {
         return NULL;
     }
 
@@ -1166,6 +1212,9 @@ _getpalette(ImagingObject *self, PyObject *args) {
         PyErr_SetString(PyExc_ValueError, no_palette);
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
+    const RawMode * const rawmode = findRawMode(rawmode_name);
 
     pack = ImagingFindPacker(mode, rawmode, &bits);
     if (!pack) {
@@ -1193,7 +1242,7 @@ _getpalettemode(ImagingObject *self) {
         return NULL;
     }
 
-    return PyUnicode_FromString(self->image->palette->mode);
+    return PyUnicode_FromString(self->image->palette->mode->name);
 }
 
 static inline int
@@ -1474,12 +1523,14 @@ _point(ImagingObject *self, PyObject *args) {
     Imaging im;
 
     PyObject *list;
-    char *mode;
-    if (!PyArg_ParseTuple(args, "Oz", &list, &mode)) {
+    char *mode_name;
+    if (!PyArg_ParseTuple(args, "Oz", &list, &mode_name)) {
         return NULL;
     }
 
-    if (mode && !strcmp(mode, "F")) {
+    const Mode * const mode = findMode(mode_name);
+
+    if (mode == IMAGING_MODE_F) {
         FLOAT32 *data;
 
         /* map from 8-bit data to floating point */
@@ -1490,8 +1541,7 @@ _point(ImagingObject *self, PyObject *args) {
         }
         im = ImagingPoint(self->image, mode, (void *)data);
         free(data);
-
-    } else if (!strcmp(self->image->mode, "I") && mode && !strcmp(mode, "L")) {
+    } else if (self->image->mode == IMAGING_MODE_I && mode == IMAGING_MODE_L) {
         UINT8 *data;
 
         /* map from 16-bit subset of 32-bit data to 8-bit */
@@ -1503,7 +1553,6 @@ _point(ImagingObject *self, PyObject *args) {
         }
         im = ImagingPoint(self->image, mode, (void *)data);
         free(data);
-
     } else {
         INT32 *data;
         UINT8 lut[1024];
@@ -1524,7 +1573,7 @@ _point(ImagingObject *self, PyObject *args) {
             return NULL;
         }
 
-        if (mode && !strcmp(mode, "I")) {
+        if (mode == IMAGING_MODE_I) {
             im = ImagingPoint(self->image, mode, (void *)data);
         } else if (mode && bands > 1) {
             for (i = 0; i < 256; i++) {
@@ -1629,10 +1678,9 @@ _putdata(ImagingObject *self, PyObject *args) {
             int bigendian = 0;
             if (image->type == IMAGING_TYPE_SPECIAL) {
                 // I;16*
-                if (
-                    strcmp(image->mode, "I;16B") == 0
+                if (image->mode == IMAGING_MODE_I_16B
 #ifdef WORDS_BIGENDIAN
-                    || strcmp(image->mode, "I;16N") == 0
+                    || image->mode == IMAGING_MODE_I_16N
 #endif
                 ) {
                     bigendian = 1;
@@ -1729,7 +1777,7 @@ _quantize(ImagingObject *self, PyObject *args) {
 
     if (!self->image->xsize || !self->image->ysize) {
         /* no content; return an empty image */
-        return PyImagingNew(ImagingNew("P", self->image->xsize, self->image->ysize));
+        return PyImagingNew(ImagingNew(IMAGING_MODE_P, self->image->xsize, self->image->ysize));
     }
 
     return PyImagingNew(ImagingQuantize(self->image, colours, method, kmeans));
@@ -1740,18 +1788,30 @@ _putpalette(ImagingObject *self, PyObject *args) {
     ImagingShuffler unpack;
     int bits;
 
-    char *palette_mode, *rawmode;
+    char *palette_mode_name, *rawmode_name;
     UINT8 *palette;
     Py_ssize_t palettesize;
     if (!PyArg_ParseTuple(
-            args, "ssy#", &palette_mode, &rawmode, &palette, &palettesize
+            args, "ssy#", &palette_mode_name, &rawmode_name, &palette, &palettesize
         )) {
         return NULL;
     }
 
-    if (strcmp(self->image->mode, "L") && strcmp(self->image->mode, "LA") &&
-        strcmp(self->image->mode, "P") && strcmp(self->image->mode, "PA")) {
+    if (self->image->mode != IMAGING_MODE_L && self->image->mode != IMAGING_MODE_LA &&
+        self->image->mode != IMAGING_MODE_P && self->image->mode != IMAGING_MODE_PA) {
         PyErr_SetString(PyExc_ValueError, wrong_mode);
+        return NULL;
+    }
+
+    const Mode * const palette_mode = findMode(palette_mode_name);
+    if (palette_mode == NULL) {
+        PyErr_SetString(PyExc_ValueError, wrong_mode);
+        return NULL;
+    }
+
+    const RawMode * const rawmode = findRawMode(rawmode_name);
+    if (rawmode == NULL) {
+        PyErr_SetString(PyExc_ValueError, wrong_raw_mode);
         return NULL;
     }
 
@@ -1768,7 +1828,7 @@ _putpalette(ImagingObject *self, PyObject *args) {
 
     ImagingPaletteDelete(self->image->palette);
 
-    strcpy(self->image->mode, strlen(self->image->mode) == 2 ? "PA" : "P");
+    self->image->mode = strlen(self->image->mode->name) == 2 ? IMAGING_MODE_PA : IMAGING_MODE_P;
 
     self->image->palette = ImagingPaletteNew(palette_mode);
 
@@ -1796,7 +1856,7 @@ _putpalettealpha(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    strcpy(self->image->palette->mode, "RGBA");
+    self->image->palette->mode = IMAGING_MODE_RGBA;
     self->image->palette->palette[index * 4 + 3] = (UINT8)alpha;
 
     Py_RETURN_NONE;
@@ -1821,7 +1881,7 @@ _putpalettealphas(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    strcpy(self->image->palette->mode, "RGBA");
+    self->image->palette->mode = IMAGING_MODE_RGBA;
     for (i = 0; i < length; i++) {
         self->image->palette->palette[i * 4 + 3] = (UINT8)values[i];
     }
@@ -1989,8 +2049,10 @@ _reduce(ImagingObject *self, PyObject *args) {
     return PyImagingNew(imOut);
 }
 
-#define IS_RGB(mode) \
-    (!strcmp(mode, "RGB") || !strcmp(mode, "RGBA") || !strcmp(mode, "RGBX"))
+static int
+isRGB(const Mode * const mode) {
+    return mode == IMAGING_MODE_RGB || mode == IMAGING_MODE_RGBA || mode == IMAGING_MODE_RGBX;
+}
 
 static PyObject *
 im_setmode(ImagingObject *self, PyObject *args) {
@@ -1998,23 +2060,25 @@ im_setmode(ImagingObject *self, PyObject *args) {
 
     Imaging im;
 
-    char *mode;
+    char *mode_name;
     Py_ssize_t modelen;
-    if (!PyArg_ParseTuple(args, "s#:setmode", &mode, &modelen)) {
+    if (!PyArg_ParseTuple(args, "s#:setmode", &mode_name, &modelen)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
 
     im = self->image;
 
     /* move all logic in here to the libImaging primitive */
 
-    if (!strcmp(im->mode, mode)) {
+    if (im->mode == mode) {
         ; /* same mode; always succeeds */
-    } else if (IS_RGB(im->mode) && IS_RGB(mode)) {
+    } else if (isRGB(im->mode) && isRGB(mode)) {
         /* color to color */
-        strcpy(im->mode, mode);
+        im->mode = mode;
         im->bands = modelen;
-        if (!strcmp(mode, "RGBA")) {
+        if (mode == IMAGING_MODE_RGBA) {
             (void)ImagingFillBand(im, 3, 255);
         }
     } else {
@@ -2294,7 +2358,7 @@ _getextrema(ImagingObject *self) {
             case IMAGING_TYPE_FLOAT32:
                 return Py_BuildValue("dd", extrema.f[0], extrema.f[1]);
             case IMAGING_TYPE_SPECIAL:
-                if (strcmp(self->image->mode, "I;16") == 0) {
+                if (self->image->mode == IMAGING_MODE_I_16) {
                     return Py_BuildValue("HH", extrema.s[0], extrema.s[1]);
                 }
         }
@@ -2383,7 +2447,7 @@ _putband(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _merge(PyObject *self, PyObject *args) {
-    char *mode;
+    char *mode_name;
     ImagingObject *band0 = NULL;
     ImagingObject *band1 = NULL;
     ImagingObject *band2 = NULL;
@@ -2393,7 +2457,7 @@ _merge(PyObject *self, PyObject *args) {
     if (!PyArg_ParseTuple(
             args,
             "sO!|O!O!O!",
-            &mode,
+            &mode_name,
             &Imaging_Type,
             &band0,
             &Imaging_Type,
@@ -2405,6 +2469,8 @@ _merge(PyObject *self, PyObject *args) {
         )) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
 
     if (band0) {
         bands[0] = band0->image;
@@ -3711,7 +3777,7 @@ static struct PyMethodDef methods[] = {
 
 static PyObject *
 _getattr_mode(ImagingObject *self, void *closure) {
-    return PyUnicode_FromString(self->image->mode);
+    return PyUnicode_FromString(self->image->mode->name);
 }
 
 static PyObject *
