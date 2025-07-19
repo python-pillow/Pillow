@@ -18,7 +18,7 @@
 #define CLIPF(v) ((v <= 0.0) ? 0 : (v >= 255.0F) ? 255 : (UINT8)v)
 
 Imaging
-ImagingConvertMatrix(Imaging im, const Mode *mode, float m[]) {
+ImagingConvertMatrix(Imaging im, const ModeID mode, float m[]) {
     Imaging imOut;
     int x, y;
     ImagingSectionCookie cookie;

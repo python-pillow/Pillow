@@ -82,7 +82,7 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    const Mode * const mode = findMode(mode_name);
+    const ModeID mode = findModeID(mode_name);
 
     if (stride <= 0) {
         if (mode == IMAGING_MODE_L || mode == IMAGING_MODE_P) {

@@ -25,13 +25,13 @@
 
 #include "ImDib.h"
 
-const Mode *
+ModeID
 ImagingGetModeDIB(int size_out[2]) {
     /* Get device characteristics */
 
     const HDC dc = CreateCompatibleDC(NULL);
 
-    const Mode *mode = IMAGING_MODE_P;
+    ModeID mode = IMAGING_MODE_P;
     if (!(GetDeviceCaps(dc, RASTERCAPS) & RC_PALETTE)) {
         mode = IMAGING_MODE_RGB;
         if (GetDeviceCaps(dc, BITSPIXEL) == 1) {
@@ -50,7 +50,7 @@ ImagingGetModeDIB(int size_out[2]) {
 }
 
 ImagingDIB
-ImagingNewDIB(const Mode * const mode, int xsize, int ysize) {
+ImagingNewDIB(const ModeID mode, int xsize, int ysize) {
     /* Create a Windows bitmap */
 
     ImagingDIB dib;

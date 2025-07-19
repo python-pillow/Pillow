@@ -180,8 +180,8 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t by
 
             /* Decoder settings */
 
-            /* jpegmode indicates what's in the file; if not set, we'll
-               trust the decoder */
+            /* jpegmode indicates what's in the file. */
+            /* If not valid, we'll trust the decoder. */
             if (context->jpegmode == IMAGING_RAWMODE_L) {
                 context->cinfo.jpeg_color_space = JCS_GRAYSCALE;
             } else if (context->jpegmode == IMAGING_RAWMODE_RGB) {
@@ -194,8 +194,8 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t by
                 context->cinfo.jpeg_color_space = JCS_YCCK;
             }
 
-            /* rawmode indicates what we want from the decoder.  if not
-               set, conversions are disabled */
+            /* rawmode indicates what we want from the decoder. */
+            /* If not valid, conversions are disabled. */
             if (context->rawmode == IMAGING_RAWMODE_L) {
                 context->cinfo.out_color_space = JCS_GRAYSCALE;
             } else if (context->rawmode == IMAGING_RAWMODE_RGB) {
@@ -214,7 +214,7 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t by
             } else if (context->rawmode == IMAGING_RAWMODE_YCbCrK) {
                 context->cinfo.out_color_space = JCS_YCCK;
             } else {
-                /* Disable decoder conversions */
+                /* Disable decoder conversions. */
                 context->cinfo.jpeg_color_space = JCS_UNKNOWN;
                 context->cinfo.out_color_space = JCS_UNKNOWN;
             }

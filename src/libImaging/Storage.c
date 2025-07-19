@@ -42,7 +42,7 @@
  */
 
 Imaging
-ImagingNewPrologueSubtype(const Mode *mode, int xsize, int ysize, int size) {
+ImagingNewPrologueSubtype(const ModeID mode, int xsize, int ysize, int size) {
     Imaging im;
 
     /* linesize overflow check, roughly the current largest space req'd */
@@ -256,7 +256,7 @@ ImagingNewPrologueSubtype(const Mode *mode, int xsize, int ysize, int size) {
 }
 
 Imaging
-ImagingNewPrologue(const Mode *mode, int xsize, int ysize) {
+ImagingNewPrologue(const ModeID mode, int xsize, int ysize) {
     return ImagingNewPrologueSubtype(
         mode, xsize, ysize, sizeof(struct ImagingMemoryInstance)
     );
@@ -593,7 +593,7 @@ ImagingBorrowArrow(
  */
 
 Imaging
-ImagingNewInternal(const Mode *mode, int xsize, int ysize, int dirty) {
+ImagingNewInternal(const ModeID mode, int xsize, int ysize, int dirty) {
     Imaging im;
 
     if (xsize < 0 || ysize < 0) {
@@ -629,7 +629,7 @@ ImagingNewInternal(const Mode *mode, int xsize, int ysize, int dirty) {
 }
 
 Imaging
-ImagingNew(const Mode *mode, int xsize, int ysize) {
+ImagingNew(const ModeID mode, int xsize, int ysize) {
     if (ImagingDefaultArena.use_block_allocator) {
         return ImagingNewBlock(mode, xsize, ysize);
     }
@@ -637,7 +637,7 @@ ImagingNew(const Mode *mode, int xsize, int ysize) {
 }
 
 Imaging
-ImagingNewDirty(const Mode *mode, int xsize, int ysize) {
+ImagingNewDirty(const ModeID mode, int xsize, int ysize) {
     if (ImagingDefaultArena.use_block_allocator) {
         return ImagingNewBlock(mode, xsize, ysize);
     }
@@ -645,7 +645,7 @@ ImagingNewDirty(const Mode *mode, int xsize, int ysize) {
 }
 
 Imaging
-ImagingNewBlock(const Mode *mode, int xsize, int ysize) {
+ImagingNewBlock(const ModeID mode, int xsize, int ysize) {
     Imaging im;
 
     if (xsize < 0 || ysize < 0) {
@@ -667,7 +667,7 @@ ImagingNewBlock(const Mode *mode, int xsize, int ysize) {
 
 Imaging
 ImagingNewArrow(
-    const Mode *mode,
+    const ModeID mode,
     int xsize,
     int ysize,
     PyObject *schema_capsule,
@@ -740,7 +740,7 @@ ImagingNewArrow(
 }
 
 Imaging
-ImagingNew2Dirty(const Mode *mode, Imaging imOut, Imaging imIn) {
+ImagingNew2Dirty(const ModeID mode, Imaging imOut, Imaging imIn) {
     /* allocate or validate output image */
 
     if (imOut) {

@@ -2,227 +2,237 @@
 #define __MODE_H__
 
 
-typedef struct {
-    const char * const name;
-} Mode;
+typedef enum {
+    IMAGING_MODE_UNKNOWN,
 
-extern const Mode * const IMAGING_MODE_1;
-extern const Mode * const IMAGING_MODE_CMYK;
-extern const Mode * const IMAGING_MODE_F;
-extern const Mode * const IMAGING_MODE_HSV;
-extern const Mode * const IMAGING_MODE_I;
-extern const Mode * const IMAGING_MODE_L;
-extern const Mode * const IMAGING_MODE_LA;
-extern const Mode * const IMAGING_MODE_LAB;
-extern const Mode * const IMAGING_MODE_La;
-extern const Mode * const IMAGING_MODE_P;
-extern const Mode * const IMAGING_MODE_PA;
-extern const Mode * const IMAGING_MODE_RGB;
-extern const Mode * const IMAGING_MODE_RGBA;
-extern const Mode * const IMAGING_MODE_RGBX;
-extern const Mode * const IMAGING_MODE_RGBa;
-extern const Mode * const IMAGING_MODE_YCbCr;
+    IMAGING_MODE_1,
+    IMAGING_MODE_CMYK,
+    IMAGING_MODE_F,
+    IMAGING_MODE_HSV,
+    IMAGING_MODE_I,
+    IMAGING_MODE_L,
+    IMAGING_MODE_LA,
+    IMAGING_MODE_LAB,
+    IMAGING_MODE_La,
+    IMAGING_MODE_P,
+    IMAGING_MODE_PA,
+    IMAGING_MODE_RGB,
+    IMAGING_MODE_RGBA,
+    IMAGING_MODE_RGBX,
+    IMAGING_MODE_RGBa,
+    IMAGING_MODE_YCbCr,
 
-extern const Mode * const IMAGING_MODE_BGR_15;
-extern const Mode * const IMAGING_MODE_BGR_16;
-extern const Mode * const IMAGING_MODE_BGR_24;
+    IMAGING_MODE_BGR_15,
+    IMAGING_MODE_BGR_16,
+    IMAGING_MODE_BGR_24,
 
-extern const Mode * const IMAGING_MODE_I_16;
-extern const Mode * const IMAGING_MODE_I_16L;
-extern const Mode * const IMAGING_MODE_I_16B;
-extern const Mode * const IMAGING_MODE_I_16N;
-extern const Mode * const IMAGING_MODE_I_32L;
-extern const Mode * const IMAGING_MODE_I_32B;
-
-const Mode * findMode(const char * const name);
-
+    IMAGING_MODE_I_16,
+    IMAGING_MODE_I_16L,
+    IMAGING_MODE_I_16B,
+    IMAGING_MODE_I_16N,
+    IMAGING_MODE_I_32L,
+    IMAGING_MODE_I_32B,
+} ModeID;
 
 typedef struct {
     const char * const name;
-} RawMode;
+} ModeData;
 
-// Non-rawmode aliases.
-extern const RawMode * const IMAGING_RAWMODE_1;
-extern const RawMode * const IMAGING_RAWMODE_CMYK;
-extern const RawMode * const IMAGING_RAWMODE_F;
-extern const RawMode * const IMAGING_RAWMODE_HSV;
-extern const RawMode * const IMAGING_RAWMODE_I;
-extern const RawMode * const IMAGING_RAWMODE_L;
-extern const RawMode * const IMAGING_RAWMODE_LA;
-extern const RawMode * const IMAGING_RAWMODE_LAB;
-extern const RawMode * const IMAGING_RAWMODE_La;
-extern const RawMode * const IMAGING_RAWMODE_P;
-extern const RawMode * const IMAGING_RAWMODE_PA;
-extern const RawMode * const IMAGING_RAWMODE_RGB;
-extern const RawMode * const IMAGING_RAWMODE_RGBA;
-extern const RawMode * const IMAGING_RAWMODE_RGBX;
-extern const RawMode * const IMAGING_RAWMODE_RGBa;
-extern const RawMode * const IMAGING_RAWMODE_YCbCr;
-
-// BGR modes.
-extern const RawMode * const IMAGING_RAWMODE_BGR_15;
-extern const RawMode * const IMAGING_RAWMODE_BGR_16;
-extern const RawMode * const IMAGING_RAWMODE_BGR_24;
-extern const RawMode * const IMAGING_RAWMODE_BGR_32;
-
-// I;* modes.
-extern const RawMode * const IMAGING_RAWMODE_I_16;
-extern const RawMode * const IMAGING_RAWMODE_I_16L;
-extern const RawMode * const IMAGING_RAWMODE_I_16B;
-extern const RawMode * const IMAGING_RAWMODE_I_16N;
-extern const RawMode * const IMAGING_RAWMODE_I_32L;
-extern const RawMode * const IMAGING_RAWMODE_I_32B;
-
-// Rawmodes
-extern const RawMode * const IMAGING_RAWMODE_1_8;
-extern const RawMode * const IMAGING_RAWMODE_1_I;
-extern const RawMode * const IMAGING_RAWMODE_1_IR;
-extern const RawMode * const IMAGING_RAWMODE_1_R;
-extern const RawMode * const IMAGING_RAWMODE_A;
-extern const RawMode * const IMAGING_RAWMODE_ABGR;
-extern const RawMode * const IMAGING_RAWMODE_ARGB;
-extern const RawMode * const IMAGING_RAWMODE_A_16B;
-extern const RawMode * const IMAGING_RAWMODE_A_16L;
-extern const RawMode * const IMAGING_RAWMODE_A_16N;
-extern const RawMode * const IMAGING_RAWMODE_B;
-extern const RawMode * const IMAGING_RAWMODE_BGAR;
-extern const RawMode * const IMAGING_RAWMODE_BGR;
-extern const RawMode * const IMAGING_RAWMODE_BGRA;
-extern const RawMode * const IMAGING_RAWMODE_BGRA_15;
-extern const RawMode * const IMAGING_RAWMODE_BGRA_15Z;
-extern const RawMode * const IMAGING_RAWMODE_BGRA_16B;
-extern const RawMode * const IMAGING_RAWMODE_BGRA_16L;
-extern const RawMode * const IMAGING_RAWMODE_BGRX;
-extern const RawMode * const IMAGING_RAWMODE_BGR_5;
-extern const RawMode * const IMAGING_RAWMODE_BGRa;
-extern const RawMode * const IMAGING_RAWMODE_BGXR;
-extern const RawMode * const IMAGING_RAWMODE_B_16B;
-extern const RawMode * const IMAGING_RAWMODE_B_16L;
-extern const RawMode * const IMAGING_RAWMODE_B_16N;
-extern const RawMode * const IMAGING_RAWMODE_C;
-extern const RawMode * const IMAGING_RAWMODE_CMYKX;
-extern const RawMode * const IMAGING_RAWMODE_CMYKXX;
-extern const RawMode * const IMAGING_RAWMODE_CMYK_16B;
-extern const RawMode * const IMAGING_RAWMODE_CMYK_16L;
-extern const RawMode * const IMAGING_RAWMODE_CMYK_16N;
-extern const RawMode * const IMAGING_RAWMODE_CMYK_I;
-extern const RawMode * const IMAGING_RAWMODE_CMYK_L;
-extern const RawMode * const IMAGING_RAWMODE_C_I;
-extern const RawMode * const IMAGING_RAWMODE_Cb;
-extern const RawMode * const IMAGING_RAWMODE_Cr;
-extern const RawMode * const IMAGING_RAWMODE_F_16;
-extern const RawMode * const IMAGING_RAWMODE_F_16B;
-extern const RawMode * const IMAGING_RAWMODE_F_16BS;
-extern const RawMode * const IMAGING_RAWMODE_F_16N;
-extern const RawMode * const IMAGING_RAWMODE_F_16NS;
-extern const RawMode * const IMAGING_RAWMODE_F_16S;
-extern const RawMode * const IMAGING_RAWMODE_F_32;
-extern const RawMode * const IMAGING_RAWMODE_F_32B;
-extern const RawMode * const IMAGING_RAWMODE_F_32BF;
-extern const RawMode * const IMAGING_RAWMODE_F_32BS;
-extern const RawMode * const IMAGING_RAWMODE_F_32F;
-extern const RawMode * const IMAGING_RAWMODE_F_32N;
-extern const RawMode * const IMAGING_RAWMODE_F_32NF;
-extern const RawMode * const IMAGING_RAWMODE_F_32NS;
-extern const RawMode * const IMAGING_RAWMODE_F_32S;
-extern const RawMode * const IMAGING_RAWMODE_F_64BF;
-extern const RawMode * const IMAGING_RAWMODE_F_64F;
-extern const RawMode * const IMAGING_RAWMODE_F_64NF;
-extern const RawMode * const IMAGING_RAWMODE_F_8;
-extern const RawMode * const IMAGING_RAWMODE_F_8S;
-extern const RawMode * const IMAGING_RAWMODE_G;
-extern const RawMode * const IMAGING_RAWMODE_G_16B;
-extern const RawMode * const IMAGING_RAWMODE_G_16L;
-extern const RawMode * const IMAGING_RAWMODE_G_16N;
-extern const RawMode * const IMAGING_RAWMODE_H;
-extern const RawMode * const IMAGING_RAWMODE_I_12;
-extern const RawMode * const IMAGING_RAWMODE_I_16BS;
-extern const RawMode * const IMAGING_RAWMODE_I_16NS;
-extern const RawMode * const IMAGING_RAWMODE_I_16R;
-extern const RawMode * const IMAGING_RAWMODE_I_16S;
-extern const RawMode * const IMAGING_RAWMODE_I_32;
-extern const RawMode * const IMAGING_RAWMODE_I_32BS;
-extern const RawMode * const IMAGING_RAWMODE_I_32N;
-extern const RawMode * const IMAGING_RAWMODE_I_32NS;
-extern const RawMode * const IMAGING_RAWMODE_I_32S;
-extern const RawMode * const IMAGING_RAWMODE_I_8;
-extern const RawMode * const IMAGING_RAWMODE_I_8S;
-extern const RawMode * const IMAGING_RAWMODE_K;
-extern const RawMode * const IMAGING_RAWMODE_K_I;
-extern const RawMode * const IMAGING_RAWMODE_LA_16B;
-extern const RawMode * const IMAGING_RAWMODE_LA_L;
-extern const RawMode * const IMAGING_RAWMODE_L_16;
-extern const RawMode * const IMAGING_RAWMODE_L_16B;
-extern const RawMode * const IMAGING_RAWMODE_L_2;
-extern const RawMode * const IMAGING_RAWMODE_L_2I;
-extern const RawMode * const IMAGING_RAWMODE_L_2IR;
-extern const RawMode * const IMAGING_RAWMODE_L_2R;
-extern const RawMode * const IMAGING_RAWMODE_L_4;
-extern const RawMode * const IMAGING_RAWMODE_L_4I;
-extern const RawMode * const IMAGING_RAWMODE_L_4IR;
-extern const RawMode * const IMAGING_RAWMODE_L_4R;
-extern const RawMode * const IMAGING_RAWMODE_L_I;
-extern const RawMode * const IMAGING_RAWMODE_L_R;
-extern const RawMode * const IMAGING_RAWMODE_M;
-extern const RawMode * const IMAGING_RAWMODE_M_I;
-extern const RawMode * const IMAGING_RAWMODE_PA_L;
-extern const RawMode * const IMAGING_RAWMODE_PX;
-extern const RawMode * const IMAGING_RAWMODE_P_1;
-extern const RawMode * const IMAGING_RAWMODE_P_2;
-extern const RawMode * const IMAGING_RAWMODE_P_2L;
-extern const RawMode * const IMAGING_RAWMODE_P_4;
-extern const RawMode * const IMAGING_RAWMODE_P_4L;
-extern const RawMode * const IMAGING_RAWMODE_P_R;
-extern const RawMode * const IMAGING_RAWMODE_R;
-extern const RawMode * const IMAGING_RAWMODE_RGBAX;
-extern const RawMode * const IMAGING_RAWMODE_RGBAXX;
-extern const RawMode * const IMAGING_RAWMODE_RGBA_15;
-extern const RawMode * const IMAGING_RAWMODE_RGBA_16B;
-extern const RawMode * const IMAGING_RAWMODE_RGBA_16L;
-extern const RawMode * const IMAGING_RAWMODE_RGBA_16N;
-extern const RawMode * const IMAGING_RAWMODE_RGBA_4B;
-extern const RawMode * const IMAGING_RAWMODE_RGBA_I;
-extern const RawMode * const IMAGING_RAWMODE_RGBA_L;
-extern const RawMode * const IMAGING_RAWMODE_RGBXX;
-extern const RawMode * const IMAGING_RAWMODE_RGBXXX;
-extern const RawMode * const IMAGING_RAWMODE_RGBX_16B;
-extern const RawMode * const IMAGING_RAWMODE_RGBX_16L;
-extern const RawMode * const IMAGING_RAWMODE_RGBX_16N;
-extern const RawMode * const IMAGING_RAWMODE_RGBX_L;
-extern const RawMode * const IMAGING_RAWMODE_RGB_15;
-extern const RawMode * const IMAGING_RAWMODE_RGB_16;
-extern const RawMode * const IMAGING_RAWMODE_RGB_16B;
-extern const RawMode * const IMAGING_RAWMODE_RGB_16L;
-extern const RawMode * const IMAGING_RAWMODE_RGB_16N;
-extern const RawMode * const IMAGING_RAWMODE_RGB_4B;
-extern const RawMode * const IMAGING_RAWMODE_RGB_L;
-extern const RawMode * const IMAGING_RAWMODE_RGB_R;
-extern const RawMode * const IMAGING_RAWMODE_RGBaX;
-extern const RawMode * const IMAGING_RAWMODE_RGBaXX;
-extern const RawMode * const IMAGING_RAWMODE_RGBa_16B;
-extern const RawMode * const IMAGING_RAWMODE_RGBa_16L;
-extern const RawMode * const IMAGING_RAWMODE_RGBa_16N;
-extern const RawMode * const IMAGING_RAWMODE_R_16B;
-extern const RawMode * const IMAGING_RAWMODE_R_16L;
-extern const RawMode * const IMAGING_RAWMODE_R_16N;
-extern const RawMode * const IMAGING_RAWMODE_S;
-extern const RawMode * const IMAGING_RAWMODE_V;
-extern const RawMode * const IMAGING_RAWMODE_X;
-extern const RawMode * const IMAGING_RAWMODE_XBGR;
-extern const RawMode * const IMAGING_RAWMODE_XRGB;
-extern const RawMode * const IMAGING_RAWMODE_Y;
-extern const RawMode * const IMAGING_RAWMODE_YCCA_P;
-extern const RawMode * const IMAGING_RAWMODE_YCC_P;
-extern const RawMode * const IMAGING_RAWMODE_YCbCrK;
-extern const RawMode * const IMAGING_RAWMODE_YCbCrX;
-extern const RawMode * const IMAGING_RAWMODE_YCbCr_L;
-extern const RawMode * const IMAGING_RAWMODE_Y_I;
-extern const RawMode * const IMAGING_RAWMODE_aBGR;
-extern const RawMode * const IMAGING_RAWMODE_aRGB;
-
-const RawMode * findRawMode(const char * const name);
+const ModeID findModeID(const char * const name);
+const ModeData * const getModeData(const ModeID id);
 
 
-int isModeI16(const Mode * const mode);
+typedef enum {
+    IMAGING_RAWMODE_UNKNOWN,
+
+    // Non-rawmode aliases.
+    IMAGING_RAWMODE_1,
+    IMAGING_RAWMODE_CMYK,
+    IMAGING_RAWMODE_F,
+    IMAGING_RAWMODE_HSV,
+    IMAGING_RAWMODE_I,
+    IMAGING_RAWMODE_L,
+    IMAGING_RAWMODE_LA,
+    IMAGING_RAWMODE_LAB,
+    IMAGING_RAWMODE_La,
+    IMAGING_RAWMODE_P,
+    IMAGING_RAWMODE_PA,
+    IMAGING_RAWMODE_RGB,
+    IMAGING_RAWMODE_RGBA,
+    IMAGING_RAWMODE_RGBX,
+    IMAGING_RAWMODE_RGBa,
+    IMAGING_RAWMODE_YCbCr,
+
+    // BGR modes.
+    IMAGING_RAWMODE_BGR_15,
+    IMAGING_RAWMODE_BGR_16,
+    IMAGING_RAWMODE_BGR_24,
+    IMAGING_RAWMODE_BGR_32,
+
+    // I;* modes.
+    IMAGING_RAWMODE_I_16,
+    IMAGING_RAWMODE_I_16L,
+    IMAGING_RAWMODE_I_16B,
+    IMAGING_RAWMODE_I_16N,
+    IMAGING_RAWMODE_I_32L,
+    IMAGING_RAWMODE_I_32B,
+
+    // Rawmodes
+    IMAGING_RAWMODE_1_8,
+    IMAGING_RAWMODE_1_I,
+    IMAGING_RAWMODE_1_IR,
+    IMAGING_RAWMODE_1_R,
+    IMAGING_RAWMODE_A,
+    IMAGING_RAWMODE_ABGR,
+    IMAGING_RAWMODE_ARGB,
+    IMAGING_RAWMODE_A_16B,
+    IMAGING_RAWMODE_A_16L,
+    IMAGING_RAWMODE_A_16N,
+    IMAGING_RAWMODE_B,
+    IMAGING_RAWMODE_BGAR,
+    IMAGING_RAWMODE_BGR,
+    IMAGING_RAWMODE_BGRA,
+    IMAGING_RAWMODE_BGRA_15,
+    IMAGING_RAWMODE_BGRA_15Z,
+    IMAGING_RAWMODE_BGRA_16B,
+    IMAGING_RAWMODE_BGRA_16L,
+    IMAGING_RAWMODE_BGRX,
+    IMAGING_RAWMODE_BGR_5,
+    IMAGING_RAWMODE_BGRa,
+    IMAGING_RAWMODE_BGXR,
+    IMAGING_RAWMODE_B_16B,
+    IMAGING_RAWMODE_B_16L,
+    IMAGING_RAWMODE_B_16N,
+    IMAGING_RAWMODE_C,
+    IMAGING_RAWMODE_CMYKX,
+    IMAGING_RAWMODE_CMYKXX,
+    IMAGING_RAWMODE_CMYK_16B,
+    IMAGING_RAWMODE_CMYK_16L,
+    IMAGING_RAWMODE_CMYK_16N,
+    IMAGING_RAWMODE_CMYK_I,
+    IMAGING_RAWMODE_CMYK_L,
+    IMAGING_RAWMODE_C_I,
+    IMAGING_RAWMODE_Cb,
+    IMAGING_RAWMODE_Cr,
+    IMAGING_RAWMODE_F_16,
+    IMAGING_RAWMODE_F_16B,
+    IMAGING_RAWMODE_F_16BS,
+    IMAGING_RAWMODE_F_16N,
+    IMAGING_RAWMODE_F_16NS,
+    IMAGING_RAWMODE_F_16S,
+    IMAGING_RAWMODE_F_32,
+    IMAGING_RAWMODE_F_32B,
+    IMAGING_RAWMODE_F_32BF,
+    IMAGING_RAWMODE_F_32BS,
+    IMAGING_RAWMODE_F_32F,
+    IMAGING_RAWMODE_F_32N,
+    IMAGING_RAWMODE_F_32NF,
+    IMAGING_RAWMODE_F_32NS,
+    IMAGING_RAWMODE_F_32S,
+    IMAGING_RAWMODE_F_64BF,
+    IMAGING_RAWMODE_F_64F,
+    IMAGING_RAWMODE_F_64NF,
+    IMAGING_RAWMODE_F_8,
+    IMAGING_RAWMODE_F_8S,
+    IMAGING_RAWMODE_G,
+    IMAGING_RAWMODE_G_16B,
+    IMAGING_RAWMODE_G_16L,
+    IMAGING_RAWMODE_G_16N,
+    IMAGING_RAWMODE_H,
+    IMAGING_RAWMODE_I_12,
+    IMAGING_RAWMODE_I_16BS,
+    IMAGING_RAWMODE_I_16NS,
+    IMAGING_RAWMODE_I_16R,
+    IMAGING_RAWMODE_I_16S,
+    IMAGING_RAWMODE_I_32,
+    IMAGING_RAWMODE_I_32BS,
+    IMAGING_RAWMODE_I_32N,
+    IMAGING_RAWMODE_I_32NS,
+    IMAGING_RAWMODE_I_32S,
+    IMAGING_RAWMODE_I_8,
+    IMAGING_RAWMODE_I_8S,
+    IMAGING_RAWMODE_K,
+    IMAGING_RAWMODE_K_I,
+    IMAGING_RAWMODE_LA_16B,
+    IMAGING_RAWMODE_LA_L,
+    IMAGING_RAWMODE_L_16,
+    IMAGING_RAWMODE_L_16B,
+    IMAGING_RAWMODE_L_2,
+    IMAGING_RAWMODE_L_2I,
+    IMAGING_RAWMODE_L_2IR,
+    IMAGING_RAWMODE_L_2R,
+    IMAGING_RAWMODE_L_4,
+    IMAGING_RAWMODE_L_4I,
+    IMAGING_RAWMODE_L_4IR,
+    IMAGING_RAWMODE_L_4R,
+    IMAGING_RAWMODE_L_I,
+    IMAGING_RAWMODE_L_R,
+    IMAGING_RAWMODE_M,
+    IMAGING_RAWMODE_M_I,
+    IMAGING_RAWMODE_PA_L,
+    IMAGING_RAWMODE_PX,
+    IMAGING_RAWMODE_P_1,
+    IMAGING_RAWMODE_P_2,
+    IMAGING_RAWMODE_P_2L,
+    IMAGING_RAWMODE_P_4,
+    IMAGING_RAWMODE_P_4L,
+    IMAGING_RAWMODE_P_R,
+    IMAGING_RAWMODE_R,
+    IMAGING_RAWMODE_RGBAX,
+    IMAGING_RAWMODE_RGBAXX,
+    IMAGING_RAWMODE_RGBA_15,
+    IMAGING_RAWMODE_RGBA_16B,
+    IMAGING_RAWMODE_RGBA_16L,
+    IMAGING_RAWMODE_RGBA_16N,
+    IMAGING_RAWMODE_RGBA_4B,
+    IMAGING_RAWMODE_RGBA_I,
+    IMAGING_RAWMODE_RGBA_L,
+    IMAGING_RAWMODE_RGBXX,
+    IMAGING_RAWMODE_RGBXXX,
+    IMAGING_RAWMODE_RGBX_16B,
+    IMAGING_RAWMODE_RGBX_16L,
+    IMAGING_RAWMODE_RGBX_16N,
+    IMAGING_RAWMODE_RGBX_L,
+    IMAGING_RAWMODE_RGB_15,
+    IMAGING_RAWMODE_RGB_16,
+    IMAGING_RAWMODE_RGB_16B,
+    IMAGING_RAWMODE_RGB_16L,
+    IMAGING_RAWMODE_RGB_16N,
+    IMAGING_RAWMODE_RGB_4B,
+    IMAGING_RAWMODE_RGB_L,
+    IMAGING_RAWMODE_RGB_R,
+    IMAGING_RAWMODE_RGBaX,
+    IMAGING_RAWMODE_RGBaXX,
+    IMAGING_RAWMODE_RGBa_16B,
+    IMAGING_RAWMODE_RGBa_16L,
+    IMAGING_RAWMODE_RGBa_16N,
+    IMAGING_RAWMODE_R_16B,
+    IMAGING_RAWMODE_R_16L,
+    IMAGING_RAWMODE_R_16N,
+    IMAGING_RAWMODE_S,
+    IMAGING_RAWMODE_V,
+    IMAGING_RAWMODE_X,
+    IMAGING_RAWMODE_XBGR,
+    IMAGING_RAWMODE_XRGB,
+    IMAGING_RAWMODE_Y,
+    IMAGING_RAWMODE_YCCA_P,
+    IMAGING_RAWMODE_YCC_P,
+    IMAGING_RAWMODE_YCbCrK,
+    IMAGING_RAWMODE_YCbCrX,
+    IMAGING_RAWMODE_YCbCr_L,
+    IMAGING_RAWMODE_Y_I,
+    IMAGING_RAWMODE_aBGR,
+    IMAGING_RAWMODE_aRGB,
+} RawModeID;
+
+typedef struct {
+    const char * const name;
+} RawModeData;
+
+const RawModeID findRawModeID(const char * const name);
+const RawModeData * const getRawModeData(const RawModeID id);
+
+
+int isModeI16(const ModeID mode);
 
 #endif // __MODE_H__

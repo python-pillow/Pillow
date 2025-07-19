@@ -27,7 +27,7 @@ struct ImagingDIBInstance {
     UINT8 *bits;
     HPALETTE palette;
     /* Used by cut and paste */
-    const Mode *mode;
+    ModeID mode;
     int xsize, ysize;
     int pixelsize;
     int linesize;
@@ -37,11 +37,11 @@ struct ImagingDIBInstance {
 
 typedef struct ImagingDIBInstance *ImagingDIB;
 
-extern const Mode *
+extern ModeID
 ImagingGetModeDIB(int size_out[2]);
 
 extern ImagingDIB
-ImagingNewDIB(const Mode * const mode, int xsize, int ysize);
+ImagingNewDIB(ModeID mode, int xsize, int ysize);
 
 extern void
 ImagingDeleteDIB(ImagingDIB im);

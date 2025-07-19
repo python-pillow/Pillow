@@ -21,7 +21,7 @@
 #include <math.h>
 
 ImagingPalette
-ImagingPaletteNew(const Mode *mode) {
+ImagingPaletteNew(const ModeID mode) {
     /* Create a palette object */
 
     int i;
