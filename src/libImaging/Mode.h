@@ -35,6 +35,8 @@ extern const Mode * const IMAGING_MODE_I_16;
 extern const Mode * const IMAGING_MODE_I_16L;
 extern const Mode * const IMAGING_MODE_I_16B;
 extern const Mode * const IMAGING_MODE_I_16N;
+extern const Mode * const IMAGING_MODE_I_32L;
+extern const Mode * const IMAGING_MODE_I_32B;
 
 const Mode * findMode(const char * const name);
 
@@ -67,11 +69,13 @@ extern const RawMode * const IMAGING_RAWMODE_BGR_16;
 extern const RawMode * const IMAGING_RAWMODE_BGR_24;
 extern const RawMode * const IMAGING_RAWMODE_BGR_32;
 
-// I;16 modes.
+// I;* modes.
 extern const RawMode * const IMAGING_RAWMODE_I_16;
 extern const RawMode * const IMAGING_RAWMODE_I_16L;
 extern const RawMode * const IMAGING_RAWMODE_I_16B;
 extern const RawMode * const IMAGING_RAWMODE_I_16N;
+extern const RawMode * const IMAGING_RAWMODE_I_32L;
+extern const RawMode * const IMAGING_RAWMODE_I_32B;
 
 // Rawmodes
 extern const RawMode * const IMAGING_RAWMODE_1_R;
