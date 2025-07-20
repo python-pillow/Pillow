@@ -1313,7 +1313,7 @@ copy4skip2(UINT8 *_out, const UINT8 *in, int pixels) {
 /* Unpack to "I" and "F" images */
 
 #define UNPACK_RAW(NAME, GET, INTYPE, OUTTYPE)                   \
-    static void NAME(UINT8 *out, const UINT8 *in, int pixels) { \
+    static void NAME(UINT8 *out_, const UINT8 *in, int pixels) { \
         int i;                                                   \
         OUTTYPE *out = (OUTTYPE *)out_;                          \
         for (i = 0; i < pixels; i++, in += sizeof(INTYPE)) {     \
@@ -1322,7 +1322,7 @@ copy4skip2(UINT8 *_out, const UINT8 *in, int pixels) {
     }
 
 #define UNPACK(NAME, COPY, INTYPE, OUTTYPE)                      \
-    static void NAME(UINT8 *out, const UINT8 *in, int pixels) { \
+    static void NAME(UINT8 *out_, const UINT8 *in, int pixels) { \
         int i;                                                   \
         OUTTYPE *out = (OUTTYPE *)out_;                          \
         INTYPE tmp_;                                             \
@@ -1839,9 +1839,7 @@ static struct {
 
     {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_16R, 16, unpackI16R_I16},
 
-    {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_12, 12, unpackI12_I16},  // 12 bit Tiffs stored in 16bits.
-
-    {NULL} /* sentinel */
+    {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_12, 12, unpackI12_I16}  // 12 bit Tiffs stored in 16bits.
 };
 
 ImagingShuffler

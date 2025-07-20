@@ -651,9 +651,7 @@ static struct {
     {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_16N, 16, packI16N_I16
     },  // LibTiff native->image endian.
     {IMAGING_MODE_I_16L, IMAGING_RAWMODE_I_16N, 16, packI16N_I16},
-    {IMAGING_MODE_I_16B, IMAGING_RAWMODE_I_16N, 16, packI16N_I16B},
-
-    {NULL} /* sentinel */
+    {IMAGING_MODE_I_16B, IMAGING_RAWMODE_I_16N, 16, packI16N_I16B}
 };
 
 ImagingShuffler

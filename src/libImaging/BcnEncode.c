@@ -253,7 +253,7 @@ int
 ImagingBcnEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
     int n = state->state;
     int has_alpha_channel =
-        strcmp(im->mode, "RGBA") == 0 || strcmp(im->mode, "LA") == 0;
+        im->mode == IMAGING_MODE_RGBA || im->mode == IMAGING_MODE_LA;
 
     UINT8 *dst = buf;
 

@@ -297,6 +297,7 @@ ExportArrowArrayPyCapsule(ImagingObject *self) {
 static PyObject *
 _new_arrow(PyObject *self, PyObject *args) {
     char *mode;
+    ModeID mode_id;
     int xsize, ysize;
     PyObject *schema_capsule, *array_capsule;
     PyObject *ret;
@@ -307,9 +308,11 @@ _new_arrow(PyObject *self, PyObject *args) {
         return NULL;
     }
 
+    mode_id = findModeID(mode);
+
     // ImagingBorrowArrow is responsible for retaining the array_capsule
     ret = PyImagingNew(
-        ImagingNewArrow(mode, xsize, ysize, schema_capsule, array_capsule)
+        ImagingNewArrow(mode_id, xsize, ysize, schema_capsule, array_capsule)
     );
     if (!ret) {
         return ImagingError_ValueError("Invalid Arrow array mode or size mismatch");
