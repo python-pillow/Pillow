@@ -98,18 +98,12 @@ single_band_json(Imaging im) {
         return NULL;
     }
 
-    err = PyOS_snprintf(
-        json,
-        len,
-        format,
-        im->band_names[0]
-    );
+    err = PyOS_snprintf(json, len, format, im->band_names[0]);
     if (err < 0) {
         return NULL;
     }
     return json;
 }
-
 
 char *
 assemble_metadata(const char *band_json) {

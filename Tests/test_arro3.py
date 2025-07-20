@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 from typing import Any, NamedTuple
-from itertools import repeat, chain
 
 import pytest
 
@@ -17,12 +16,12 @@ from .helper import (
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from arro3.core import Array, DataType, Field, fixed_size_list_array
     from arro3 import compute
+    from arro3.core import Array, DataType, Field, fixed_size_list_array
 else:
     arro3 = pytest.importorskip("arro3", reason="Arro3 not installed")
-    from arro3.core import Array, DataType, Field, fixed_size_list_array
     from arro3 import compute
+    from arro3.core import Array, DataType, Field, fixed_size_list_array
 
 TEST_IMAGE_SIZE = (10, 10)
 
@@ -81,7 +80,9 @@ def _test_img_equals_int32_pyarray(
             for ix, elt in enumerate(mask):
                 assert pixel[ix] == arr_pixel_tuple[elt]
 
+
 fl_uint8_4_type = DataType.list(Field("_", DataType.uint8()).with_nullable(False), 4)
+
 
 @pytest.mark.parametrize(
     "mode, dtype, mask",
