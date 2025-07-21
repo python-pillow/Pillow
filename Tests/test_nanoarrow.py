@@ -190,9 +190,6 @@ INT32 = DataShape(
 )
 
 
-@pytest.mark.xfail(
-    reason="Support for nested array creation is not available in nanoarrow/python"
-)
 @pytest.mark.parametrize(
     "mode, data_tp, mask",
     (
@@ -218,13 +215,13 @@ def test_fromarray(mode: str, data_tp: DataShape, mask: list[int] | None) -> Non
 
     ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
     if dtype == fl_uint8_4_type:
-        # Apparently there's no good way to create this array from python using nanoarrow
-        # https://github.com/apache/arrow-nanoarrow/issues/620
-        # the following lines will fail.
-        tmp_arr = nanoarrow.c_array(
+        tmp_arr = nanoarrow.Array(
             elt * (ct_pixels * elts_per_pixel), schema=nanoarrow.uint8()
         )
-        arr = nanoarrow.Array(tmp_arr, schema=dtype)
+        c_array = nanoarrow.c_array_from_buffers(
+            dtype, ct_pixels, buffers=[], children=[tmp_arr]
+        )
+        arr = nanoarrow.Array(c_array)
     else:
         arr = nanoarrow.Array(
             nanoarrow.c_array([elt] * (ct_pixels * elts_per_pixel), schema=dtype)
@@ -290,6 +287,7 @@ def test_image_nested_metadata(mode: str, metadata: list[str]) -> None:
     assert "bands" in parsed_metadata
     assert parsed_metadata["bands"] == metadata
 
+
 @pytest.mark.parametrize(
     "mode, metadata",
     (
@@ -306,9 +304,7 @@ def test_image_flat_metadata(mode: str, metadata: list[str]) -> None:
     assert arr.schema.metadata
     assert arr.schema.metadata[b"image"]
 
-    parsed_metadata = json.loads(
-        arr.schema.metadata[b"image"].decode("utf8")
-    )
+    parsed_metadata = json.loads(arr.schema.metadata[b"image"].decode("utf8"))
 
     assert "bands" in parsed_metadata
     assert parsed_metadata["bands"] == metadata
