@@ -59,8 +59,8 @@ optional-dependencies.mic = [
 optional-dependencies.test-arrow = [
   "arro3-compute",
   "arro3-core",
-  "pyarrow",
   "nanoarrow",
+  "pyarrow",
 ]
 
 optional-dependencies.tests = [

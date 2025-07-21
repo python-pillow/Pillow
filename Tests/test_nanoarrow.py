@@ -78,9 +78,9 @@ def _test_img_equals_int32_pyarray(
                 assert pixel[ix] == arr_pixel_tuple[elt]
 
 
-fl_uint8_4_type = nanoarrow.fixed_size_list(value_type=nanoarrow.uint8(nullable=False),
-                                            list_size=4,
-                                            nullable=False)
+fl_uint8_4_type = nanoarrow.fixed_size_list(
+    value_type=nanoarrow.uint8(nullable=False), list_size=4, nullable=False
+)
 
 
 @pytest.mark.parametrize(
@@ -190,7 +190,9 @@ INT32 = DataShape(
 )
 
 
-@pytest.mark.xfail(reason="Support for nested array creation is not available in nanoarrow/python")
+@pytest.mark.xfail(
+    reason="Support for nested array creation is not available in nanoarrow/python"
+)
 @pytest.mark.parametrize(
     "mode, data_tp, mask",
     (
@@ -219,10 +221,14 @@ def test_fromarray(mode: str, data_tp: DataShape, mask: list[int] | None) -> Non
         # Apparently there's no good way to create this array from python using nanoarrow
         # https://github.com/apache/arrow-nanoarrow/issues/620
         # the following lines will fail.
-        tmp_arr = nanoarrow.c_array(elt * (ct_pixels * elts_per_pixel), schema=nanoarrow.uint8())
+        tmp_arr = nanoarrow.c_array(
+            elt * (ct_pixels * elts_per_pixel), schema=nanoarrow.uint8()
+        )
         arr = nanoarrow.Array(tmp_arr, schema=dtype)
     else:
-        arr = nanoarrow.Array(nanoarrow.c_array([elt] * (ct_pixels * elts_per_pixel), schema=dtype))
+        arr = nanoarrow.Array(
+            nanoarrow.c_array([elt] * (ct_pixels * elts_per_pixel), schema=dtype)
+        )
     img = Image.fromarrow(arr, mode, TEST_IMAGE_SIZE)
 
     _test_img_equals_pyarray(img, arr, mask, elts_per_pixel)
@@ -249,7 +255,9 @@ def test_from_int32array(mode: str, data_tp: DataShape, mask: list[int] | None) 
     (dtype, elt, elts_per_pixel) = data_tp
 
     ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
-    arr = nanoarrow.Array(nanoarrow.c_array([elt] * (ct_pixels * elts_per_pixel), schema=dtype))
+    arr = nanoarrow.Array(
+        nanoarrow.c_array([elt] * (ct_pixels * elts_per_pixel), schema=dtype)
+    )
     img = Image.fromarrow(arr, mode, TEST_IMAGE_SIZE)
 
     _test_img_equals_int32_pyarray(img, arr, mask, elts_per_pixel)
@@ -275,7 +283,9 @@ def test_image_nested_metadata(mode: str, metadata: list[str]) -> None:
     assert arr.schema.value_type.metadata
     assert arr.schema.value_type.metadata[b"image"]
 
-    parsed_metadata = json.loads(arr.schema.value_type.metadata[b"image"].decode("utf8"))
+    parsed_metadata = json.loads(
+        arr.schema.value_type.metadata[b"image"].decode("utf8")
+    )
 
     assert "bands" in parsed_metadata
     assert parsed_metadata["bands"] == metadata
