@@ -289,3 +289,26 @@ def test_image_nested_metadata(mode: str, metadata: list[str]) -> None:
 
     assert "bands" in parsed_metadata
     assert parsed_metadata["bands"] == metadata
+
+@pytest.mark.parametrize(
+    "mode, metadata",
+    (
+        ("L", ["L"]),
+        ("I", ["I"]),
+        ("F", ["F"]),
+    ),
+)
+def test_image_flat_metadata(mode: str, metadata: list[str]) -> None:
+    img = hopper(mode)
+
+    arr = nanoarrow.Array(img)  # type: ignore[call-overload]
+
+    assert arr.schema.metadata
+    assert arr.schema.metadata[b"image"]
+
+    parsed_metadata = json.loads(
+        arr.schema.metadata[b"image"].decode("utf8")
+    )
+
+    assert "bands" in parsed_metadata
+    assert parsed_metadata["bands"] == metadata
