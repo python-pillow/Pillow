@@ -537,7 +537,7 @@ class ImageDraw:
     def text(
         self,
         xy: tuple[float, float],
-        text: AnyStr,
+        text: AnyStr | ImageText.ImageText,
         fill: _Ink | None = None,
         font: (
             ImageFont.ImageFont
@@ -558,15 +558,18 @@ class ImageDraw:
         **kwargs: Any,
     ) -> None:
         """Draw text."""
-        if font is None:
-            font = self._getfont(kwargs.get("font_size"))
-        imagetext = ImageText.ImageText(
-            text, font, self.mode, spacing, direction, features, language
-        )
-        if embedded_color:
-            imagetext.embed_color()
-        if stroke_width:
-            imagetext.stroke(stroke_width, stroke_fill)
+        if isinstance(text, ImageText.ImageText):
+            imagetext = text
+        else:
+            if font is None:
+                font = self._getfont(kwargs.get("font_size"))
+            imagetext = ImageText.ImageText(
+                text, font, self.mode, spacing, direction, features, language
+            )
+            if embedded_color:
+                imagetext.embed_color()
+            if stroke_width:
+                imagetext.stroke(stroke_width, stroke_fill)
 
         def getink(fill: _Ink | None) -> int:
             ink, fill_ink = self._getink(fill)

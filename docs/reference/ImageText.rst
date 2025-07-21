@@ -6,7 +6,7 @@
 
 The :py:mod:`~PIL.ImageText` module defines a class with the same name. Instances of
 this class provide a way to use fonts with text strings or bytes. The result is a
-simple API to apply styling to pieces of text and measure them.
+simple API to apply styling to pieces of text and measure or draw them.
 
 Example
 -------
@@ -22,6 +22,10 @@ Example
 
     print(text.get_length())  # 154.0
     print(text.get_bbox())  # (-2, 3, 156, 22)
+
+    im = Image.new("RGB", text.get_bbox()[2:])
+    d = ImageDraw.Draw(im)
+    d.text((0, 0), text, "#f00")
 
 Methods
 -------

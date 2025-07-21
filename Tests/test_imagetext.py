@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from PIL import ImageFont, ImageText
+from PIL import Image, ImageDraw, ImageFont, ImageText
 
-from .helper import skip_unless_feature
+from .helper import assert_image_similar_tofile, skip_unless_feature
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 
@@ -39,3 +39,34 @@ def test_get_bbox(font: ImageFont.FreeTypeFont) -> None:
     assert ImageText.ImageText("M", font).get_bbox() == (0, 4, 12, 16)
     assert ImageText.ImageText("y", font).get_bbox() == (0, 7, 12, 20)
     assert ImageText.ImageText("a", font).get_bbox() == (0, 7, 12, 16)
+
+
+def test_standard_embedded_color(layout_engine: ImageFont.Layout) -> None:
+    font = ImageFont.truetype(FONT_PATH, 40, layout_engine=layout_engine)
+    text = ImageText.ImageText("Hello World!", font)
+    text.embed_color()
+
+    im = Image.new("RGB", (300, 64), "white")
+    draw = ImageDraw.Draw(im)
+    draw.text((10, 10), text, "#fa6")
+
+    assert_image_similar_tofile(im, "Tests/images/standard_embedded.png", 3.1)
+
+
+@skip_unless_feature("freetype2")
+def test_stroke() -> None:
+    for suffix, stroke_fill in {"same": None, "different": "#0f0"}.items():
+        # Arrange
+        im = Image.new("RGB", (120, 130))
+        draw = ImageDraw.Draw(im)
+        font = ImageFont.truetype(FONT_PATH, 120)
+        text = ImageText.ImageText("A", font)
+        text.stroke(2, stroke_fill)
+
+        # Act
+        draw.text((12, 12), text, "#f00")
+
+        # Assert
+        assert_image_similar_tofile(
+            im, "Tests/images/imagedraw_stroke_" + suffix + ".png", 3.1
+        )
