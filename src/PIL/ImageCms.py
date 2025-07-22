@@ -227,9 +227,6 @@ _FLAGS = {
 
 
 class ImageCmsProfile:
-    profile: core.CmsProfile
-    filename: str | None
-
     def __init__(self, profile: str | SupportsRead[bytes] | core.CmsProfile) -> None:
         """
         :param profile: Either a string representing a filename,
@@ -237,7 +234,7 @@ class ImageCmsProfile:
             low-level profile object
 
         """
-        self.filename = None
+        self.filename: str | None = None
 
         if isinstance(profile, str):
             if sys.platform == "win32":
@@ -249,7 +246,7 @@ class ImageCmsProfile:
                         self.profile = core.profile_frombytes(f.read())
                     return
             self.filename = profile
-            self.profile = core.profile_open(profile)
+            self.profile: core.CmsProfile = core.profile_open(profile)
         elif hasattr(profile, "read"):
             self.profile = core.profile_frombytes(profile.read())
         elif isinstance(profile, core.CmsProfile):
