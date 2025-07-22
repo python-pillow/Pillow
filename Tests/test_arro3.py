@@ -225,23 +225,18 @@ def test_fromarray(mode: str, data_tp: DataShape, mask: list[int] | None) -> Non
 
 
 @pytest.mark.parametrize(
-    "mode, data_tp, mask",
+    "mode, mask",
     (
-        ("LA", UINT32, [0, 3]),
-        ("RGB", UINT32, [0, 1, 2]),
-        ("RGBA", UINT32, None),
-        ("CMYK", UINT32, None),
-        ("YCbCr", UINT32, [0, 1, 2]),
-        ("HSV", UINT32, [0, 1, 2]),
-        ("LA", INT32, [0, 3]),
-        ("RGB", INT32, [0, 1, 2]),
-        ("RGBA", INT32, None),
-        ("CMYK", INT32, None),
-        ("YCbCr", INT32, [0, 1, 2]),
-        ("HSV", INT32, [0, 1, 2]),
+        ("LA", [0, 3]),
+        ("RGB", [0, 1, 2]),
+        ("RGBA", None),
+        ("CMYK", None),
+        ("YCbCr", [0, 1, 2]),
+        ("HSV", [0, 1, 2]),
     ),
 )
-def test_from_int32array(mode: str, data_tp: DataShape, mask: list[int] | None) -> None:
+@pytest.mark.parametrize("data_tp", (UINT32, INT32))
+def test_from_int32array(mode: str, mask: list[int] | None, data_tp: DataShape) -> None:
     (dtype, elt, elts_per_pixel) = data_tp
 
     ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
