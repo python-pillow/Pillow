@@ -246,7 +246,7 @@ class ImageCmsProfile:
                         self.profile = core.profile_frombytes(f.read())
                     return
             self.filename = profile
-            self.profile: core.CmsProfile = core.profile_open(profile)
+            self.profile = core.profile_open(profile)
         elif hasattr(profile, "read"):
             self.profile = core.profile_frombytes(profile.read())
         elif isinstance(profile, core.CmsProfile):
