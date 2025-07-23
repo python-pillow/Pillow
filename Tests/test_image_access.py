@@ -276,11 +276,10 @@ class TestEmbeddable:
         except Exception:
             pytest.skip("Compiler could not be initialized")
 
-        try:
-            with open("embed_pil.c", "w", encoding="utf-8") as fh:
-                home = sys.prefix.replace("\\", "\\\\")
-                fh.write(
-                    f"""
+        with open("embed_pil.c", "w", encoding="utf-8") as fh:
+            home = sys.prefix.replace("\\", "\\\\")
+            fh.write(
+                f"""
 #include "Python.h"
 
 int main(int argc, char* argv[])
@@ -302,19 +301,20 @@ int main(int argc, char* argv[])
     return 0;
 }}
         """
-                )
+            )
 
-            objects = compiler.compile(["embed_pil.c"])
-            compiler.link_executable(objects, "embed_pil")
+        objects = compiler.compile(["embed_pil.c"])
+        compiler.link_executable(objects, "embed_pil")
 
-            env = os.environ.copy()
-            env["PATH"] = sys.prefix + ";" + env["PATH"]
+        env = os.environ.copy()
+        env["PATH"] = sys.prefix + ";" + env["PATH"]
 
-            # Do not display the Windows Error Reporting dialog
-            getattr(ctypes, "windll").kernel32.SetErrorMode(0x0002)
+        # Do not display the Windows Error Reporting dialog
+        getattr(ctypes, "windll").kernel32.SetErrorMode(0x0002)
 
-            process = subprocess.Popen(["embed_pil.exe"], env=env)
-            process.communicate()
-            assert process.returncode == 0
-        finally:
-            os.remove("embed_pil.c")
+        process = subprocess.Popen(["embed_pil.exe"], env=env)
+        process.communicate()
+        assert process.returncode == 0
+
+    def teardown_method(self) -> None:
+        os.remove("embed_pil.c")
