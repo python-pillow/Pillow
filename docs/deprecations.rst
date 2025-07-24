@@ -12,13 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a :py:exc:`DeprecationWarning` is issued.
 
-ImageDraw.getdraw hints parameter
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 10.4.0
-
-The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been deprecated.
-
 ExifTags.IFD.Makernote
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -195,6 +188,7 @@ ICNS (width, height, scale) sizes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 11.0.0
+.. versionremoved:: 12.0.0
 
 Setting an ICNS image size to ``(width, height, scale)`` before loading has been
 removed. Instead, ``load(scale)`` can be used.

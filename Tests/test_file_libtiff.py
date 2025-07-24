@@ -873,8 +873,8 @@ class TestFileLibTiff(LibTiffTestCase):
                 assert im.mode == "RGB"
                 assert im.size == (128, 128)
                 assert im.format == "TIFF"
-                im2 = hopper()
-                assert_image_similar(im, im2, 5)
+                with hopper() as im2:
+                    assert_image_similar(im, im2, 5)
         except OSError:
             captured = capfd.readouterr()
             if "LZMA compression support is not configured" in captured.err:

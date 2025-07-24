@@ -60,7 +60,7 @@ if [[ "$CIBW_PLATFORM" == "ios" ]]; then
     # on using the Xcode builder, which isn't very helpful for most of Pillow's
     # dependencies. Therefore, we lean on the OSX configurations, plus CC, CFLAGS
     # etc. to ensure the right sysroot is selected.
-    HOST_CMAKE_FLAGS="-DCMAKE_SYSTEM_NAME=$CMAKE_SYSTEM_NAME -DCMAKE_SYSTEM_PROCESSOR=$GNU_ARCH -DCMAKE_OSX_DEPLOYMENT_TARGET=$IPHONEOS_DEPLOYMENT_TARGET -DCMAKE_OSX_SYSROOT=$IOS_SDK_PATH -DBUILD_SHARED_LIBS=NO"
+    HOST_CMAKE_FLAGS="-DCMAKE_SYSTEM_NAME=$CMAKE_SYSTEM_NAME -DCMAKE_SYSTEM_PROCESSOR=$GNU_ARCH -DCMAKE_OSX_DEPLOYMENT_TARGET=$IPHONEOS_DEPLOYMENT_TARGET -DCMAKE_OSX_SYSROOT=$IOS_SDK_PATH -DBUILD_SHARED_LIBS=NO -DENABLE_SHARED=NO"
 
     # Meson needs to be pointed at a cross-platform configuration file
     # This will be generated once CC etc. have been evaluated.
@@ -103,7 +103,7 @@ TIFF_VERSION=4.7.0
 LCMS2_VERSION=2.17
 ZLIB_VERSION=1.3.1
 ZLIB_NG_VERSION=2.2.4
-LIBWEBP_VERSION=1.5.0  # Patched; next release won't need patching. See patch file.
+LIBWEBP_VERSION=1.6.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0  # Patched; next release won't need patching. See patch file.
@@ -280,7 +280,11 @@ function build {
     if [[ -n "$IS_MACOS" ]]; then
         webp_cflags="$webp_cflags -Wl,-headerpad_max_install_names"
     fi
-    CFLAGS="$CFLAGS $webp_cflags" build_simple libwebp $LIBWEBP_VERSION \
+    webp_ldflags=""
+    if [[ -n "$IOS_SDK" ]]; then
+        webp_ldflags="$webp_ldflags -llzma -lz"
+    fi
+    CFLAGS="$CFLAGS $webp_cflags" LDFLAGS="$LDFLAGS $webp_ldflags" build_simple libwebp $LIBWEBP_VERSION \
         https://storage.googleapis.com/downloads.webmproject.org/releases/webp tar.gz \
         --enable-libwebpmux --enable-libwebpdemux
 
@@ -379,6 +383,15 @@ if [[ -n "$IS_MACOS" ]]; then
 fi
 
 wrap_wheel_builder build
+
+# A safety catch for iOS. iOS can't use dynamic libraries, but clang will prefer
+# to link dynamic libraries to static libraries. The only way to reliably
+# prevent this is to not have dynamic libraries available in the first place.
+# The build process *shouldn't* generate any dylibs... but just in case, purge
+# any dylibs that *have* been installed into the build prefix directory.
+if [[ -n "$IOS_SDK" ]]; then
+    find "$BUILD_PREFIX" -name "*.dylib" -exec rm -rf {} \;
+fi
 
 # Return to the project root to finish the build
 popd > /dev/null
