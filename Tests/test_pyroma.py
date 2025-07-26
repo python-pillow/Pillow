@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import shutil
+
 import pytest
 
 from PIL import __version__
@@ -7,6 +9,7 @@ from PIL import __version__
 pyroma = pytest.importorskip("pyroma", reason="Pyroma not installed")
 
 
+@pytest.mark.skipif(not shutil.which("git"), reason="Git is used by check-manifest")
 def test_pyroma() -> None:
     # Arrange
     data = pyroma.projectdata.get_data(".")
