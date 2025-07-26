@@ -52,7 +52,7 @@ jobs:
           persist-credentials: false
 
       - name: Install Cygwin
-        uses: cygwin/cygwin-install-action@v5
+        uses: cygwin/cygwin-install-action@v6
         with:
           packages: >
             gcc-g++
@@ -88,10 +88,6 @@ jobs:
         uses: egor-tensin/cleanup-path@v4
         with:
           dirs: 'C:\cygwin\bin;C:\cygwin\lib\lapack'
-
-      - name: Select Python version
-        run: |
-          ln -sf c:/cygwin/bin/python3.${{ matrix.python-minor-version }} c:/cygwin/bin/python3
 
       - name: pip cache
         uses: actions/cache@v4
