@@ -89,10 +89,6 @@ jobs:
         with:
           dirs: 'C:\cygwin\bin;C:\cygwin\lib\lapack'
 
-      - name: Select Python version
-        run: |
-          ln -sf c:/cygwin/bin/python3.${{ matrix.python-minor-version }} c:/cygwin/bin/python3
-
       - name: pip cache
         uses: actions/cache@v4
         with:
