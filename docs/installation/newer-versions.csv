@@ -1,5 +1,6 @@
 ﻿Python,3.13,3.12,3.11,3.10,3.9,3.8,3.7,3.6,3.5
-Pillow >= 11,Yes,Yes,Yes,Yes,Yes,,,,
+Pillow 12,Yes,Yes,Yes,Yes,,,,,
+Pillow 11,Yes,Yes,Yes,Yes,Yes,,,,
 Pillow 10.1 - 10.4,,Yes,Yes,Yes,Yes,Yes,,,
 Pillow 10.0,,,Yes,Yes,Yes,Yes,,,
 Pillow 9.3 - 9.5,,,Yes,Yes,Yes,Yes,Yes,,

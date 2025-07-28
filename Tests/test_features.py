@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import io
 import re
-from typing import Callable
 
 import pytest
 
 from PIL import features
 
 from .helper import skip_unless_feature
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def test_check() -> None:

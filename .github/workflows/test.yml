@@ -49,7 +49,6 @@ jobs:
           "3.12",
           "3.11",
           "3.10",
-          "3.9",
         ]
         include:
         - { python-version: "3.11", PYTHONOPTIMIZE: 1, REVERSE: "--reverse" }
@@ -57,10 +56,6 @@ jobs:
         # Free-threaded
         - { python-version: "3.14t", disable-gil: true }
         - { python-version: "3.13t", disable-gil: true }
-        # M1 only available for 3.10+
-        - { os: "macos-13", python-version: "3.9" }
-        exclude:
-        - { os: "macos-latest", python-version: "3.9" }
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}

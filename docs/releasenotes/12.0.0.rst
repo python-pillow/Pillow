@@ -17,6 +17,12 @@ TODO
 Backwards incompatible changes
 ==============================
 
+Python 3.9
+^^^^^^^^^^
+
+Pillow has dropped support for Python 3.9,
+which reached end-of-life in October 2025.
+
 ImageFile.raise_oserror
 ^^^^^^^^^^^^^^^^^^^^^^^
 
