@@ -42,7 +42,6 @@ jobs:
         ]
         python-version: [
           "pypy3.11",
-          "pypy3.10",
           "3.14t",
           "3.14",
           "3.13t",
