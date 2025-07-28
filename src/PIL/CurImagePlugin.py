@@ -18,7 +18,8 @@
 from __future__ import annotations
 
 from io import BytesIO
-from typing import IO, NamedTuple
+from math import ceil, log
+from typing import IO
 
 from . import BmpImagePlugin, IcoImagePlugin, Image, ImageFile
 from ._binary import i16le as i16
@@ -110,20 +111,6 @@ def _accept(prefix: bytes) -> bool:
     return prefix.startswith(_MAGIC)
 
 
-class IconHeader(NamedTuple):
-    width: int
-    height: int
-    nb_color: int
-    reserved: int
-    bpp: int
-    x_hotspot: int
-    y_hotspot: int
-    size: int
-    offset: int
-    dim: tuple[int, int]
-    square: int
-
-
 ##
 # Image plugin for Windows Cursor files.
 class CurFile(IcoImagePlugin.IcoFile):
@@ -139,7 +126,7 @@ class CurFile(IcoImagePlugin.IcoFile):
             raise SyntaxError(msg)
 
         self.buf = buf
-        self.entry = []
+        entry = []
 
         # Number of items in file
         self.nb_items = i16(s, 4)
@@ -151,9 +138,12 @@ class CurFile(IcoImagePlugin.IcoFile):
             # See Wikipedia
             width = s[0] or 256
             height = s[1] or 256
+            square = width * height
 
             size = i32(s, 8)
-            square = width * height
+
+            # No. of colors in image (0 if >=8bpp)
+            nb_color = s[2]
 
             # TODO: This needs further investigation. Cursor files do not really
             # specify their bpp like ICO's as those bits are used for the y_hotspot.
@@ -167,26 +157,31 @@ class CurFile(IcoImagePlugin.IcoFile):
             else:
                 bpp = bpp_without_and
 
-            icon_header = IconHeader(
-                width=width,
-                height=height,
-                nb_color=s[2],  # No. of colors in image (0 if >=8bpp)
-                reserved=s[3],
-                bpp=bpp,
-                x_hotspot=i16(s, 4),
-                y_hotspot=i16(s, 6),
-                size=size,
-                offset=i32(s, 12),
-                dim=(width, height),
-                square=square,
+            entry.append(
+                (
+                    square,
+                    IcoImagePlugin.IconHeader(
+                        width=width,
+                        height=height,
+                        nb_color=nb_color,
+                        reserved=s[3],
+                        planes=0,
+                        bpp=bpp,
+                        size=size,
+                        offset=i32(s, 12),
+                        dim=(width, height),
+                        square=square,
+                        color_depth=bpp
+                        or (nb_color != 0 and ceil(log(nb_color, 2)))
+                        or 256,
+                    ),
+                    (i16(s, 4), i16(s, 6)),  # x, y
+                )
             )
 
-            self.entry.append(icon_header)
-
-        self.entry = sorted(self.entry, key=lambda x: x.square, reverse=True)
-
-    def hotspots(self) -> list[tuple[int, int]]:
-        return [(h.x_hotspot, h.y_hotspot) for h in self.entry]
+        entry = sorted(entry, key=lambda x: x[0], reverse=True)
+        self.entry = [x[1] for x in entry]
+        self.hotspots = [x[2] for x in entry]
 
 
 class CurImageFile(IcoImagePlugin.IcoImageFile):
@@ -218,7 +213,7 @@ class CurImageFile(IcoImagePlugin.IcoImageFile):
     def _open(self) -> None:
         self.ico = CurFile(self.fp)
         self.info["sizes"] = self.ico.sizes()
-        self.info["hotspots"] = self.ico.hotspots()
+        self.info["hotspots"] = self.ico.hotspots
         if len(self.ico.entry) > 0:
             self.size = self.ico.entry[0].dim
         else:
