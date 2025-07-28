@@ -3253,7 +3253,8 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     :param obj: Object with array interface
     :param mode: Optional mode to use when reading ``obj``. Since pixel values do not
       contain information about palettes or color spaces, this can be used to place
-      grayscale L mode data within a P mode image, or read RGB data as YCbCr.
+      grayscale L mode data within a P mode image, or read RGB data as YCbCr for
+      example.
 
       See: :ref:`concept-modes` for general information about modes.
     :returns: An image object.

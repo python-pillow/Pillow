@@ -134,7 +134,11 @@ TODO
 Other changes
 =============
 
-TODO
-^^^^
+Image.fromarray mode parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+In Pillow 11.3.0, the ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` was
+deprecated. Part of this functionality has been restored in Pillow 12.0.0. Since pixel
+values do not contain information about palettes or color spaces, the parameter can be
+used to place grayscale L mode data within a P mode image, or read RGB data as YCbCr
+for example.
