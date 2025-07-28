@@ -6,13 +6,16 @@ import pytest
 
 from PIL import CurImagePlugin, Image
 
+from .helper import assert_image_equal
 
-def test_deerstalker() -> None:
+
+def test_sanity() -> None:
     with Image.open("Tests/images/cur/deerstalker.cur") as im:
         assert im.size == (32, 32)
         assert im.info["hotspots"] == [(0, 0)]
         assert isinstance(im, CurImagePlugin.CurImageFile)
-        # Check some pixel colors to ensure image is loaded properly
+
+        # Check pixel colors to ensure image is loaded properly
         assert im.getpixel((10, 1)) == (0, 0, 0, 0)
         assert im.getpixel((11, 1)) == (253, 254, 254, 1)
         assert im.getpixel((16, 16)) == (84, 87, 86, 255)
@@ -23,7 +26,8 @@ def test_posy_link() -> None:
         assert im.size == (128, 128)
         assert im.info["sizes"] == {(128, 128), (96, 96), (64, 64), (48, 48), (32, 32)}
         assert im.info["hotspots"] == [(25, 7), (18, 5), (12, 3), (9, 2), (5, 1)]
-        # check some pixel colors
+
+        # check pixel colors
         assert im.getpixel((0, 0)) == (0, 0, 0, 0)
         assert im.getpixel((20, 20)) == (0, 0, 0, 255)
         assert im.getpixel((40, 40)) == (255, 255, 255, 255)
@@ -79,9 +83,8 @@ def test_save_win98_arrow() -> None:
                 hotspots=[(10, 10)],
                 bitmap_format="bmp",
             )
-
             with Image.open(output) as reloaded:
-                assert im.tobytes() == reloaded.tobytes()
+                assert_image_equal(im, reloaded)
 
         with BytesIO() as output:
             im.save(output, format="CUR")
@@ -120,11 +123,10 @@ def test_save_posy_link() -> None:
             # make sure saved output is readable
             # and sizes/hotspots are correct
             with Image.open(output, formats=["CUR"]) as reloaded:
-                assert (48, 48) == reloaded.size
-                assert set(sizes[3:]) == reloaded.info["sizes"]
+                assert reloaded.size == (48, 48)
+                assert reloaded.info["sizes"] == set(sizes[3:])
 
-            # make sure error is thrown when size and hotspot len's
-            # don't match
+            # check error is thrown when size and hotspot length don't match
             with pytest.raises(ValueError):
                 im.save(
                     output,

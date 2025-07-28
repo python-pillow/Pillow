@@ -6,18 +6,18 @@ import pytest
 
 from PIL import Image
 
+from .helper import assert_image_equal_tofile
+
 
 def test_aero_busy() -> None:
     with Image.open("Tests/images/ani/aero_busy.ani") as im:
         assert im.size == (64, 64)
         assert im.n_frames == 18
 
-        with Image.open("Tests/images/ani/aero_busy_0.png") as png:
-            assert png.tobytes() == im.tobytes()
+        assert_image_equal_tofile(im, "Tests/images/ani/aero_busy_0.png")
 
         im.seek(8)
-        with Image.open("Tests/images/ani/aero_busy_8.png") as png:
-            assert png.tobytes() == im.tobytes()
+        assert_image_equal_tofile(im, "Tests/images/ani/aero_busy_8.png")
 
         with pytest.raises(EOFError):
             im.seek(-1)
@@ -31,44 +31,33 @@ def test_posy_busy() -> None:
         assert im.size == (96, 96)
         assert im.n_frames == 77
 
-        with Image.open("Tests/images/ani/posy_busy_0.png") as png:
-            assert png.tobytes() == im.tobytes()
+        assert_image_equal_tofile(im, "Tests/images/ani/posy_busy_0.png")
 
         im.seek(24)
-        with Image.open("Tests/images/ani/posy_busy_24.png") as png:
-            assert png.tobytes() == im.tobytes()
+        assert_image_equal_tofile(im, "Tests/images/ani/posy_busy_24.png")
 
         with pytest.raises(EOFError):
             im.seek(77)
 
 
-def test_stopwtch() -> None:
+def test_seq_rate() -> None:
     with Image.open("Tests/images/ani/stopwtch.ani") as im:
         assert im.size == (32, 32)
         assert im.n_frames == 8
 
-        assert im.info["seq"][0] == 0
-        assert im.info["seq"][2] == 0
+        assert im.info["seq"][:3] == [0, 1, 0]
+        assert im.info["rate"] == [8, 16, 16] + [8] * 42
 
-        for i, r in enumerate(im.info["rate"]):
-            if i == 1 or i == 2:
-                assert r == 16
-            else:
-                assert r == 8
-
-        with Image.open("Tests/images/ani/stopwtch_0.png") as png:
-            assert png.tobytes() == im.tobytes()
+        assert_image_equal_tofile(im, "Tests/images/ani/stopwtch_0.png")
 
         im.seek(5)
-        with Image.open("Tests/images/ani/stopwtch_5.png") as png:
-            assert png.tobytes() == im.tobytes()
+        assert_image_equal_tofile(im, "Tests/images/ani/stopwtch_5.png")
 
         with pytest.raises(EOFError):
             im.seek(8)
 
 
 def test_save() -> None:
-    directory_path = "Tests/images/ani/"
     filenames = [
         "aero_busy_0.png",
         "aero_busy_8.png",
@@ -78,7 +67,7 @@ def test_save() -> None:
         "stopwtch_5.png",
     ]
 
-    images = [Image.open(directory_path + filename) for filename in filenames]
+    images = [Image.open("Tests/images/ani/" + filename) for filename in filenames]
 
     with BytesIO() as output:
         images[0].save(
