@@ -204,7 +204,7 @@ function build_libavif {
         )
         if [[ -z "$IOS_SDK" ]]; then
             libavif_cmake_flags=(
-                $libavif_cmake_flags
+                "${libavif_cmake_flags[@]}" \
                 -DBUILD_SHARED_LIBS=ON
             )
         fi
