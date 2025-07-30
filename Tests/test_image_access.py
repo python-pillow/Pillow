@@ -317,4 +317,8 @@ int main(int argc, char* argv[])
         assert process.returncode == 0
 
     def teardown_method(self) -> None:
-        os.remove("embed_pil.c")
+        try:
+            os.remove("embed_pil.c")
+        except FileNotFoundError:
+            # If the test was skipped or failed, the file won't exist,
+            pass
