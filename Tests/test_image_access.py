@@ -320,5 +320,5 @@ int main(int argc, char* argv[])
         try:
             os.remove("embed_pil.c")
         except FileNotFoundError:
-            # If the test was skipped or failed, the file won't exist,
+            # If the test was skipped or failed, the file won't exist
             pass

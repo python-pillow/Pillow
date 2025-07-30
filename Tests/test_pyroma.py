@@ -10,10 +10,10 @@ pyroma = pytest.importorskip("pyroma", reason="Pyroma not installed")
 
 
 def map_metadata_keys(metadata):
-    "Convert installed wheel metadata into canonical Core Metadata 2.4 format."
-    # This was a utility method in pyroma 4.3.3; it was removed in 5.0
+    # Convert installed wheel metadata into canonical Core Metadata 2.4 format.
+    # This was a utility method in pyroma 4.3.3; it was removed in 5.0.
     # This implementation is constructed from the relevant logic from
-    # PyRoma 5.0's `build_metadata()` implementation.
+    # Pyroma 5.0's `build_metadata()` implementation.
 
     data = {}
     for key in set(metadata.keys()):
