@@ -13,8 +13,9 @@ def map_metadata_keys(metadata):
     # Convert installed wheel metadata into canonical Core Metadata 2.4 format.
     # This was a utility method in pyroma 4.3.3; it was removed in 5.0.
     # This implementation is constructed from the relevant logic from
-    # Pyroma 5.0's `build_metadata()` implementation.
-
+    # Pyroma 5.0's `build_metadata()` implementation. This has been submitted
+    # upstream to Pyroma as https://github.com/regebro/pyroma/pull/116,
+    # so it may be possible to simplify this test in future.
     data = {}
     for key in set(metadata.keys()):
         value = metadata.get_all(key)
