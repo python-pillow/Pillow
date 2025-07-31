@@ -104,6 +104,25 @@ def test_unsupported_module() -> None:
         features.version_module(module)
 
 
+def test_unsupported_feature() -> None:
+    # Arrange
+    feature = "unsupported_feature"
+    # Act / Assert
+    with pytest.raises(ValueError):
+        features.check_feature(feature)
+    with pytest.raises(ValueError):
+        features.version_feature(feature)
+
+
+def test_unsupported_version() -> None:
+    assert features.version("unsupported_version") is None
+
+
+def test_modulenotfound(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(features, "features", {"test": ("PIL._test", "", "")})
+    assert features.check_feature("test") is None
+
+
 @pytest.mark.parametrize("supported_formats", (True, False))
 def test_pilinfo(supported_formats: bool) -> None:
     buf = io.StringIO()
