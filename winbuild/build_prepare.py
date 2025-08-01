@@ -121,7 +121,7 @@ V = {
     "LCMS2": "2.17",
     "LIBAVIF": "1.3.0",
     "LIBIMAGEQUANT": "4.3.4",
-    "LIBPNG": "1.6.49",
+    "LIBPNG": "1.6.50",
     "LIBWEBP": "1.6.0",
     "OPENJPEG": "2.5.3",
     "TIFF": "4.7.0",

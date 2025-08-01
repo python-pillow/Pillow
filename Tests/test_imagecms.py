@@ -690,3 +690,17 @@ def test_cmyk_lab() -> None:
     im = Image.new("CMYK", (1, 1))
     converted_im = im.convert("LAB")
     assert converted_im.getpixel((0, 0)) == (255, 128, 128)
+
+
+def test_deprecation() -> None:
+    profile = ImageCmsProfile(ImageCms.createProfile("sRGB"))
+    with pytest.warns(
+        DeprecationWarning, match="ImageCms.ImageCmsProfile.product_name"
+    ):
+        profile.product_name
+    with pytest.warns(
+        DeprecationWarning, match="ImageCms.ImageCmsProfile.product_info"
+    ):
+        profile.product_info
+    with pytest.raises(AttributeError):
+        profile.this_attribute_does_not_exist
