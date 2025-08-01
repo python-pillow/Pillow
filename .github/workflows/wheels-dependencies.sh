@@ -191,6 +191,7 @@ function build_libavif {
     fi
 
     local build_type=MinSizeRel
+    local build_shared=ON
     local lto=ON
 
     local libavif_cmake_flags
@@ -202,20 +203,14 @@ function build_libavif {
             -DCMAKE_CXX_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto" \
             -DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,-S,-x,-dead_strip_dylibs" \
         )
-        if [[ -z "$IOS_SDK" ]]; then
-            libavif_cmake_flags=(
-                "${libavif_cmake_flags[@]}" \
-                -DBUILD_SHARED_LIBS=ON
-            )
+        if [[ -n "$IOS_SDK" ]]; then
+            build_shared=OFF
         fi
     else
         if [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "x86_64" ]]; then
             build_type=Release
         fi
-        libavif_cmake_flags=(
-            -DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now" \
-            -DBUILD_SHARED_LIBS=ON \
-        )
+        libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
     fi
 
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
@@ -227,6 +222,7 @@ function build_libavif {
             -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX \
             -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib \
             -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib \
+            -DBUILD_SHARED_LIBS=$build_shared \
             -DAVIF_LIBSHARPYUV=LOCAL \
             -DAVIF_LIBYUV=LOCAL \
             -DAVIF_CODEC_AOM=LOCAL \
