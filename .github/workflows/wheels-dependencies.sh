@@ -286,7 +286,12 @@ function build {
         build_tiff
     fi
 
-    build_libavif
+    if [[ -z "$IOS_SDK" ]] || [[ "$PLAT" == "arm64" ]]; then
+        # Building libavif for x86_64 iOS simulator isn't currently possible
+        # because it requires the use of nasm, which doesn't create
+        # iOS-compatible binaries.
+        build_libavif
+    fi
     build_libpng
     build_lcms2
     build_openjpeg
