@@ -7,7 +7,7 @@ import shutil
 import sys
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Literal, cast
 
 import pytest
 
@@ -31,6 +31,9 @@ except ImportError:
     # Skipped via setup_module()
     pass
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import Any
 
 SRGB = "Tests/icc/sRGB_IEC61966-2-1_black_scaled.icc"
 HAVE_PROFILE = os.path.exists(SRGB)
