@@ -34,18 +34,21 @@ from __future__ import annotations
 import math
 import struct
 from collections.abc import Sequence
-from types import ModuleType
-from typing import Any, AnyStr, Callable, cast
+from typing import cast
 
 from . import Image, ImageColor, ImageText
-from ._typing import Coords, _Ink
-
-# experimental access to the outline API
-Outline: Callable[[], Image.core._Outline] = Image.core.outline
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from collections.abc import Callable
+    from types import ModuleType
+    from typing import Any, AnyStr
+
     from . import ImageDraw2, ImageFont
+    from ._typing import Coords, _Ink
+
+# experimental access to the outline API
+Outline: Callable[[], Image.core._Outline] = Image.core.outline
 
 """
 A simple 2D drawing interface for PIL images.
