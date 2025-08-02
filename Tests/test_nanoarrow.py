@@ -16,9 +16,9 @@ from .helper import (
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    import pyarrow
+    import nanoarrow
 else:
-    pyarrow = pytest.importorskip("pyarrow", reason="PyArrow not installed")
+    nanoarrow = pytest.importorskip("nanoarrow", reason="Nanoarrow not installed")
 
 TEST_IMAGE_SIZE = (10, 10)
 
@@ -78,18 +78,17 @@ def _test_img_equals_int32_pyarray(
                 assert pixel[ix] == arr_pixel_tuple[elt]
 
 
-# really hard to get a non-nullable list type
-fl_uint8_4_type = pyarrow.field(
-    "_", pyarrow.list_(pyarrow.field("_", pyarrow.uint8()).with_nullable(False), 4)
-).type
+fl_uint8_4_type = nanoarrow.fixed_size_list(
+    value_type=nanoarrow.uint8(nullable=False), list_size=4, nullable=False
+)
 
 
 @pytest.mark.parametrize(
     "mode, dtype, mask",
     (
-        ("L", pyarrow.uint8(), None),
-        ("I", pyarrow.int32(), None),
-        ("F", pyarrow.float32(), None),
+        ("L", nanoarrow.uint8(nullable=False), None),
+        ("I", nanoarrow.int32(nullable=False), None),
+        ("F", nanoarrow.float32(nullable=False), None),
         ("LA", fl_uint8_4_type, [0, 3]),
         ("RGB", fl_uint8_4_type, [0, 1, 2]),
         ("RGBA", fl_uint8_4_type, None),
@@ -99,16 +98,17 @@ fl_uint8_4_type = pyarrow.field(
         ("HSV", fl_uint8_4_type, [0, 1, 2]),
     ),
 )
-def test_to_array(mode: str, dtype: pyarrow.DataType, mask: list[int] | None) -> None:
+def test_to_array(mode: str, dtype: nanoarrow, mask: list[int] | None) -> None:
     img = hopper(mode)
 
     # Resize to non-square
     img = img.crop((3, 0, 124, 127))
     assert img.size == (121, 127)
 
-    arr = pyarrow.array(img)  # type: ignore[call-overload]
+    arr = nanoarrow.Array(img)  # type: ignore[call-overload]
     _test_img_equals_pyarray(img, arr, mask)
-    assert arr.type == dtype
+    assert arr.schema.type == dtype.type
+    assert arr.schema.nullable == dtype.nullable
 
     reloaded = Image.fromarrow(arr, mode, img.size)
 
@@ -123,15 +123,15 @@ def test_lifetime() -> None:
 
     img = hopper("L")
 
-    arr_1 = pyarrow.array(img)  # type: ignore[call-overload]
-    arr_2 = pyarrow.array(img)  # type: ignore[call-overload]
+    arr_1 = nanoarrow.Array(img)  # type: ignore[call-overload]
+    arr_2 = nanoarrow.Array(img)  # type: ignore[call-overload]
 
     del img
 
-    assert arr_1.sum().as_py() > 0
+    assert sum(arr_1.iter_py()) > 0
     del arr_1
 
-    assert arr_2.sum().as_py() > 0
+    assert sum(arr_2.iter_py()) > 0
     del arr_2
 
 
@@ -141,13 +141,13 @@ def test_lifetime2() -> None:
 
     img = hopper("L")
 
-    arr_1 = pyarrow.array(img)  # type: ignore[call-overload]
-    arr_2 = pyarrow.array(img)  # type: ignore[call-overload]
+    arr_1 = nanoarrow.Array(img)  # type: ignore[call-overload]
+    arr_2 = nanoarrow.Array(img)  # type: ignore[call-overload]
 
-    assert arr_1.sum().as_py() > 0
+    assert sum(arr_1.iter_py()) > 0
     del arr_1
 
-    assert arr_2.sum().as_py() > 0
+    assert sum(arr_2.iter_py()) > 0
     del arr_2
 
     img2 = img.copy()
@@ -157,7 +157,7 @@ def test_lifetime2() -> None:
 
 
 class DataShape(NamedTuple):
-    dtype: pyarrow.DataType
+    dtype: nanoarrow
     # Strictly speaking, elt should be a pixel or pixel component, so
     # list[uint8][4], float, int, uint32, uint8, etc.  But more
     # correctly, it should be exactly the dtype from the line above.
@@ -172,19 +172,19 @@ UINT_ARR = DataShape(
 )
 
 UINT = DataShape(
-    dtype=pyarrow.uint8(),
+    dtype=nanoarrow.uint8(),
     elt=3,  # one uint8,
     elts_per_pixel=4,  # but repeated 4x per pixel
 )
 
 UINT32 = DataShape(
-    dtype=pyarrow.uint32(),
+    dtype=nanoarrow.uint32(),
     elt=0xABCDEF45,  # one packed int, doesn't fit in a int32 > 0x80000000
     elts_per_pixel=1,  # one per pixel
 )
 
 INT32 = DataShape(
-    dtype=pyarrow.uint32(),
+    dtype=nanoarrow.uint32(),
     elt=0x12CDEF45,  # one packed int
     elts_per_pixel=1,  # one per pixel
 )
@@ -193,9 +193,9 @@ INT32 = DataShape(
 @pytest.mark.parametrize(
     "mode, data_tp, mask",
     (
-        ("L", DataShape(pyarrow.uint8(), 3, 1), None),
-        ("I", DataShape(pyarrow.int32(), 1 << 24, 1), None),
-        ("F", DataShape(pyarrow.float32(), 3.14159, 1), None),
+        ("L", DataShape(nanoarrow.uint8(), 3, 1), None),
+        ("I", DataShape(nanoarrow.int32(), 1 << 24, 1), None),
+        ("F", DataShape(nanoarrow.float32(), 3.14159, 1), None),
         ("LA", UINT_ARR, [0, 3]),
         ("LA", UINT, [0, 3]),
         ("RGB", UINT_ARR, [0, 1, 2]),
@@ -214,7 +214,18 @@ def test_fromarray(mode: str, data_tp: DataShape, mask: list[int] | None) -> Non
     (dtype, elt, elts_per_pixel) = data_tp
 
     ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
-    arr = pyarrow.array([elt] * (ct_pixels * elts_per_pixel), type=dtype)
+    if dtype == fl_uint8_4_type:
+        tmp_arr = nanoarrow.Array(
+            elt * (ct_pixels * elts_per_pixel), schema=nanoarrow.uint8()
+        )
+        c_array = nanoarrow.c_array_from_buffers(
+            dtype, ct_pixels, buffers=[], children=[tmp_arr]
+        )
+        arr = nanoarrow.Array(c_array)
+    else:
+        arr = nanoarrow.Array(
+            nanoarrow.c_array([elt] * (ct_pixels * elts_per_pixel), schema=dtype)
+        )
     img = Image.fromarrow(arr, mode, TEST_IMAGE_SIZE)
 
     _test_img_equals_pyarray(img, arr, mask, elts_per_pixel)
@@ -241,7 +252,9 @@ def test_from_int32array(mode: str, data_tp: DataShape, mask: list[int] | None) 
     (dtype, elt, elts_per_pixel) = data_tp
 
     ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
-    arr = pyarrow.array([elt] * (ct_pixels * elts_per_pixel), type=dtype)
+    arr = nanoarrow.Array(
+        nanoarrow.c_array([elt] * (ct_pixels * elts_per_pixel), schema=dtype)
+    )
     img = Image.fromarrow(arr, mode, TEST_IMAGE_SIZE)
 
     _test_img_equals_int32_pyarray(img, arr, mask, elts_per_pixel)
@@ -259,15 +272,39 @@ def test_from_int32array(mode: str, data_tp: DataShape, mask: list[int] | None) 
         ("HSV", ["H", "S", "V", "X"]),
     ),
 )
-def test_image_metadata(mode: str, metadata: list[str]) -> None:
+def test_image_nested_metadata(mode: str, metadata: list[str]) -> None:
     img = hopper(mode)
 
-    arr = pyarrow.array(img)  # type: ignore[call-overload]
+    arr = nanoarrow.Array(img)  # type: ignore[call-overload]
 
-    assert arr.type.field(0).metadata
-    assert arr.type.field(0).metadata[b"image"]
+    assert arr.schema.value_type.metadata
+    assert arr.schema.value_type.metadata[b"image"]
 
-    parsed_metadata = json.loads(arr.type.field(0).metadata[b"image"].decode("utf8"))
+    parsed_metadata = json.loads(
+        arr.schema.value_type.metadata[b"image"].decode("utf8")
+    )
+
+    assert "bands" in parsed_metadata
+    assert parsed_metadata["bands"] == metadata
+
+
+@pytest.mark.parametrize(
+    "mode, metadata",
+    (
+        ("L", ["L"]),
+        ("I", ["I"]),
+        ("F", ["F"]),
+    ),
+)
+def test_image_flat_metadata(mode: str, metadata: list[str]) -> None:
+    img = hopper(mode)
+
+    arr = nanoarrow.Array(img)  # type: ignore[call-overload]
+
+    assert arr.schema.metadata
+    assert arr.schema.metadata[b"image"]
+
+    parsed_metadata = json.loads(arr.schema.metadata[b"image"].decode("utf8"))
 
     assert "bands" in parsed_metadata
     assert parsed_metadata["bands"] == metadata
