@@ -33,21 +33,22 @@ from __future__ import annotations
 
 import math
 import struct
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from typing import cast
 
 from . import Image, ImageColor
 
-# experimental access to the outline API
-Outline: Callable[[], Image.core._Outline] = Image.core.outline
-
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from types import ModuleType
     from typing import Any, AnyStr
 
     from . import ImageDraw2, ImageFont
     from ._typing import Coords
+
+# experimental access to the outline API
+Outline: Callable[[], Image.core._Outline] = Image.core.outline
 
 _Ink = float | tuple[int, ...] | str
 
