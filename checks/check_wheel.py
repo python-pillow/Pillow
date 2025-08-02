@@ -27,10 +27,6 @@ def test_wheel_modules() -> None:
         # tkinter is not available on iOS
         expected_modules.remove("tkinter")
 
-        # libavif is not available on x86_64 iOS simulators
-        if platform.machine() == "x86_64":
-            expected_modules.remove("avif")
-
     assert set(features.get_supported_modules()) == expected_modules
 
 

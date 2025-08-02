@@ -186,7 +186,7 @@ function build_libavif {
 
     python3 -m pip install meson ninja
 
-    if [[ "$PLAT" == "x86_64" ]] || [ -n "$SANITIZER" ]; then
+    if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IOS_SDK" ]]) || [ -n "$SANITIZER" ]; then
         build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
     fi
 
@@ -196,7 +196,7 @@ function build_libavif {
 
     local libavif_cmake_flags
 
-    if [ -n "$IS_MACOS" ]; then
+    if [[ -n "$IS_MACOS" ]]; then
         lto=OFF
         libavif_cmake_flags=(
             -DCMAKE_C_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto" \
@@ -211,6 +211,14 @@ function build_libavif {
             build_type=Release
         fi
         libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
+    fi
+    if [[ -n "$IOS_SDK" ]] && [[ "$PLAT" == "x86_64" ]]; then
+        libavif_cmake_flags+=(-DAOM_TARGET_CPU=generic)
+    else
+        libavif_cmake_flags+=(
+            -DAVIF_CODEC_AOM_DECODE=OFF \
+            -DAVIF_CODEC_DAV1D=LOCAL
+        )
     fi
 
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
@@ -227,8 +235,6 @@ function build_libavif {
             -DAVIF_LIBYUV=LOCAL \
             -DAVIF_CODEC_AOM=LOCAL \
             -DCONFIG_AV1_HIGHBITDEPTH=0 \
-            -DAVIF_CODEC_AOM_DECODE=OFF \
-            -DAVIF_CODEC_DAV1D=LOCAL \
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=$lto \
             -DCMAKE_C_VISIBILITY_PRESET=hidden \
             -DCMAKE_CXX_VISIBILITY_PRESET=hidden \
@@ -282,12 +288,7 @@ function build {
         build_tiff
     fi
 
-    if [[ -z "$IOS_SDK" ]] || [[ "$PLAT" == "arm64" ]]; then
-        # Building libavif for x86_64 iOS simulator isn't currently possible
-        # because it requires the use of nasm, which doesn't create
-        # iOS-compatible binaries.
-        build_libavif
-    fi
+    build_libavif
     build_libpng
     build_lcms2
     build_openjpeg
