@@ -12,8 +12,8 @@ if TYPE_CHECKING:
     try:
         import numpy.typing as npt
 
-        NumpyArray = npt.NDArray[Any]  # requires numpy>=1.21
-    except (ImportError, AttributeError):
+        NumpyArray = npt.NDArray[Any]
+    except ImportError:
         pass
 
 if sys.version_info >= (3, 13):
