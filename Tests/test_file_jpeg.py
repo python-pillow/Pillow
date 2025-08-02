@@ -26,7 +26,6 @@ from .helper import (
     assert_image_equal_tofile,
     assert_image_similar,
     assert_image_similar_tofile,
-    cjpeg_available,
     djpeg_available,
     hopper,
     is_win32,
@@ -730,14 +729,6 @@ class TestFileJpeg:
             assert isinstance(img, JpegImagePlugin.JpegImageFile)
             img.load_djpeg()
             assert_image_similar_tofile(img, TEST_FILE, 5)
-
-    @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
-    def test_save_cjpeg(self, tmp_path: Path) -> None:
-        with Image.open(TEST_FILE) as img:
-            tempfile = str(tmp_path / "temp.jpg")
-            JpegImagePlugin._save_cjpeg(img, BytesIO(), tempfile)
-            # Default save quality is 75%, so a tiny bit of difference is alright
-            assert_image_similar_tofile(img, tempfile, 17)
 
     def test_no_duplicate_0x1001_tag(self) -> None:
         # Arrange

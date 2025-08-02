@@ -42,7 +42,6 @@ import subprocess
 import sys
 import tempfile
 import warnings
-from typing import IO, Any
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -53,6 +52,8 @@ from .JpegPresets import presets
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from typing import IO, Any
+
     from .MpoImagePlugin import MpoImageFile
 
 #
@@ -843,16 +844,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     ImageFile._save(
         im, fp, [ImageFile._Tile("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize
     )
-
-
-def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
-    tempfile = im._dump()
-    subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])
-    try:
-        os.unlink(tempfile)
-    except OSError:
-        pass
 
 
 ##

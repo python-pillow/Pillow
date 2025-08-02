@@ -380,21 +380,28 @@ def test_palette() -> None:
         assert_image_equal_tofile(im, "Tests/images/transparent.gif")
 
 
+def test_unsupported_header_size() -> None:
+    with pytest.raises(OSError, match="Unsupported header size 0"):
+        with Image.open(BytesIO(b"DDS " + b"\x00" * 4)):
+            pass
+
+
 def test_unsupported_bitcount() -> None:
-    with pytest.raises(OSError):
+    with pytest.raises(OSError, match="Unsupported bitcount 24 for 131072"):
         with Image.open("Tests/images/unsupported_bitcount.dds"):
             pass
 
 
 @pytest.mark.parametrize(
-    "test_file",
+    "test_file, message",
     (
-        "Tests/images/unimplemented_dxgi_format.dds",
-        "Tests/images/unimplemented_pfflags.dds",
+        ("Tests/images/unimplemented_dxgi_format.dds", "Unimplemented DXGI format 93"),
+        ("Tests/images/unimplemented_pixel_format.dds", "Unimplemented pixel format 0"),
+        ("Tests/images/unimplemented_pfflags.dds", "Unknown pixel format flags 8"),
     ),
 )
-def test_not_implemented(test_file: str) -> None:
-    with pytest.raises(NotImplementedError):
+def test_not_implemented(test_file: str, message: str) -> None:
+    with pytest.raises(NotImplementedError, match=message):
         with Image.open(test_file):
             pass
 

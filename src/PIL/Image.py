@@ -38,10 +38,9 @@ import struct
 import sys
 import tempfile
 import warnings
-from collections.abc import Callable, Iterator, MutableMapping, Sequence
+from collections.abc import MutableMapping
 from enum import IntEnum
-from types import ModuleType
-from typing import IO, Any, Literal, Protocol, cast
+from typing import IO, Protocol, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -63,6 +62,12 @@ try:
     from defusedxml import ElementTree
 except ImportError:
     ElementTree = None
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator, Sequence
+    from types import ModuleType
+    from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
 
@@ -1730,9 +1735,10 @@ class Image:
         details).
 
         Instead of an image, the source can be a integer or tuple
-        containing pixel values.  The method then fills the region
-        with the given color.  When creating RGB images, you can
-        also use color strings as supported by the ImageColor module.
+        containing pixel values. The method then fills the region
+        with the given color. When creating RGB images, you can
+        also use color strings as supported by the ImageColor module. See
+        :ref:`colors` for more information.
 
         If a mask is given, this method updates only the regions
         indicated by the mask. You can use either "1", "L", "LA", "RGBA"
@@ -1988,7 +1994,8 @@ class Image:
         sequence ends. The scale and offset values are used to adjust the
         sequence values: **pixel = value*scale + offset**.
 
-        :param data: A flattened sequence object.
+        :param data: A flattened sequence object. See :ref:`colors` for more
+            information about values.
         :param scale: An optional scale value.  The default is 1.0.
         :param offset: An optional offset value.  The default is 0.0.
         """
@@ -2047,7 +2054,7 @@ class Image:
         Modifies the pixel at the given position. The color is given as
         a single numerical value for single-band images, and a tuple for
         multi-band images. In addition to this, RGB and RGBA tuples are
-        accepted for P and PA images.
+        accepted for P and PA images. See :ref:`colors` for more information.
 
         Note that this method is relatively slow.  For more extensive changes,
         use :py:meth:`~PIL.Image.Image.paste` or the :py:mod:`~PIL.ImageDraw`
@@ -3055,12 +3062,12 @@ def new(
     :param mode: The mode to use for the new image. See:
        :ref:`concept-modes`.
     :param size: A 2-tuple, containing (width, height) in pixels.
-    :param color: What color to use for the image.  Default is black.
-       If given, this should be a single integer or floating point value
-       for single-band modes, and a tuple for multi-band modes (one value
-       per band).  When creating RGB or HSV images, you can also use color
-       strings as supported by the ImageColor module.  If the color is
-       None, the image is not initialised.
+    :param color: What color to use for the image. Default is black. If given,
+       this should be a single integer or floating point value for single-band
+       modes, and a tuple for multi-band modes (one value per band). When
+       creating RGB or HSV images, you can also use color strings as supported
+       by the ImageColor module. See :ref:`colors` for more information. If the
+       color is None, the image is not initialised.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 

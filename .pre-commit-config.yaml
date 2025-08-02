@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.0
+    rev: v0.12.2
     hooks:
       - id: ruff-check
         args: [--exit-non-zero-on-fix]
@@ -11,7 +11,7 @@ repos:
       - id: black
 
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.8.5
+    rev: 1.8.6
     hooks:
     - id: bandit
       args: [--severity-level=high]
@@ -24,7 +24,7 @@ repos:
         exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.gd$|\.opt$|\.patch$)
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v20.1.6
+    rev: v20.1.7
     hooks:
       - id: clang-format
         types: [c]
@@ -51,14 +51,14 @@ repos:
         exclude: ^.github/.*TEMPLATE|^Tests/(fonts|images)/|\.patch$
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.33.1
+    rev: 0.33.2
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
       - id: check-renovate
 
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.9.0
+    rev: v1.11.0
     hooks:
       - id: zizmor
 
