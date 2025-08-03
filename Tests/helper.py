@@ -10,16 +10,19 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from collections.abc import Sequence
 from functools import lru_cache
 from io import BytesIO
-from pathlib import Path
-from typing import Any, Callable
 
 import pytest
 from packaging.version import parse as parse_version
 
 from PIL import Image, ImageFile, ImageMath, features
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+    from pathlib import Path
+    from typing import Any
 
 logger = logging.getLogger(__name__)
 

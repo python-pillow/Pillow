@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import io
 import re
-from typing import Callable
 
 import pytest
 
 from PIL import features
 
 from .helper import skip_unless_feature
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def test_check() -> None:
@@ -18,11 +21,7 @@ def test_check() -> None:
     for codec in features.codecs:
         assert features.check_codec(codec) == features.check(codec)
     for feature in features.features:
-        if "webp" in feature:
-            with pytest.warns(DeprecationWarning, match="webp"):
-                assert features.check_feature(feature) == features.check(feature)
-        else:
-            assert features.check_feature(feature) == features.check(feature)
+        assert features.check_feature(feature) == features.check(feature)
 
 
 def test_version() -> None:
@@ -48,11 +47,7 @@ def test_version() -> None:
     for codec in features.codecs:
         test(codec, features.version_codec)
     for feature in features.features:
-        if "webp" in feature:
-            with pytest.warns(DeprecationWarning, match="webp"):
-                test(feature, features.version_feature)
-        else:
-            test(feature, features.version_feature)
+        test(feature, features.version_feature)
 
 
 @skip_unless_feature("libjpeg_turbo")
@@ -110,6 +105,25 @@ def test_unsupported_module() -> None:
         features.check_module(module)
     with pytest.raises(ValueError):
         features.version_module(module)
+
+
+def test_unsupported_feature() -> None:
+    # Arrange
+    feature = "unsupported_feature"
+    # Act / Assert
+    with pytest.raises(ValueError):
+        features.check_feature(feature)
+    with pytest.raises(ValueError):
+        features.version_feature(feature)
+
+
+def test_unsupported_version() -> None:
+    assert features.version("unsupported_version") is None
+
+
+def test_modulenotfound(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(features, "features", {"test": ("PIL._test", "", "")})
+    assert features.check_feature("test") is None
 
 
 @pytest.mark.parametrize("supported_formats", (True, False))

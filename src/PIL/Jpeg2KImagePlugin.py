@@ -18,10 +18,14 @@ from __future__ import annotations
 import io
 import os
 import struct
-from collections.abc import Callable
-from typing import IO, cast
+from typing import cast
 
 from . import Image, ImageFile, ImagePalette, _binary
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import IO
 
 
 class BoxReader:
