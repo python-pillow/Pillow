@@ -278,38 +278,6 @@ rgb2f(UINT8 *out_, const UINT8 *in, int xsize) {
 }
 
 static void
-rgb2bgr15(UINT8 *out_, const UINT8 *in, int xsize) {
-    int x;
-    for (x = 0; x < xsize; x++, in += 4, out_ += 2) {
-        UINT16 v = ((((UINT16)in[0]) << 7) & 0x7c00) +
-                   ((((UINT16)in[1]) << 2) & 0x03e0) +
-                   ((((UINT16)in[2]) >> 3) & 0x001f);
-        memcpy(out_, &v, sizeof(v));
-    }
-}
-
-static void
-rgb2bgr16(UINT8 *out_, const UINT8 *in, int xsize) {
-    int x;
-    for (x = 0; x < xsize; x++, in += 4, out_ += 2) {
-        UINT16 v = ((((UINT16)in[0]) << 8) & 0xf800) +
-                   ((((UINT16)in[1]) << 3) & 0x07e0) +
-                   ((((UINT16)in[2]) >> 3) & 0x001f);
-        memcpy(out_, &v, sizeof(v));
-    }
-}
-
-static void
-rgb2bgr24(UINT8 *out, const UINT8 *in, int xsize) {
-    int x;
-    for (x = 0; x < xsize; x++, in += 4) {
-        *out++ = in[2];
-        *out++ = in[1];
-        *out++ = in[0];
-    }
-}
-
-static void
 rgb2hsv_row(UINT8 *out, const UINT8 *in) {  // following colorsys.py
     float h, s, rc, gc, bc, cr;
     UINT8 maxc, minc;
@@ -971,9 +939,6 @@ static struct {
     {"RGB", "I;16N", rgb2i16l},
 #endif
     {"RGB", "F", rgb2f},
-    {"RGB", "BGR;15", rgb2bgr15},
-    {"RGB", "BGR;16", rgb2bgr16},
-    {"RGB", "BGR;24", rgb2bgr24},
     {"RGB", "RGBA", rgb2rgba},
     {"RGB", "RGBa", rgb2rgba},
     {"RGB", "RGBX", rgb2rgba},

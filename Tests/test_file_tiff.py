@@ -221,7 +221,7 @@ class TestFileTiff:
             assert isinstance(im, JpegImagePlugin.JpegImageFile)
 
             # Should not raise struct.error.
-            with pytest.warns(UserWarning):
+            with pytest.warns(UserWarning, match="Corrupt EXIF data"):
                 im._getexif()
 
     def test_save_rgba(self, tmp_path: Path) -> None:
@@ -681,16 +681,21 @@ class TestFileTiff:
             assert im.tag_v2[278] == 256
 
         im = hopper()
+        im.encoderinfo = {"tiffinfo": {278: 100}}
         im2 = Image.new("L", (128, 128))
-        im2.encoderinfo = {"tiffinfo": {278: 256}}
-        im.save(outfile, save_all=True, append_images=[im2])
+        im3 = im2.copy()
+        im3.encoderinfo = {"tiffinfo": {278: 300}}
+        im.save(outfile, save_all=True, tiffinfo={278: 200}, append_images=[im2, im3])
 
         with Image.open(outfile) as im:
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
-            assert im.tag_v2[278] == 128
+            assert im.tag_v2[278] == 100
 
             im.seek(1)
-            assert im.tag_v2[278] == 256
+            assert im.tag_v2[278] == 200
+
+            im.seek(2)
+            assert im.tag_v2[278] == 300
 
     def test_strip_raw(self) -> None:
         infile = "Tests/images/tiff_strip_raw.tif"
@@ -1014,7 +1019,7 @@ class TestFileTiff:
     @timeout_unless_slower_valgrind(2)
     def test_oom(self, test_file: str) -> None:
         with pytest.raises(UnidentifiedImageError):
-            with pytest.warns(UserWarning):
+            with pytest.warns(UserWarning, match="Corrupt EXIF data"):
                 with Image.open(test_file):
                     pass
 

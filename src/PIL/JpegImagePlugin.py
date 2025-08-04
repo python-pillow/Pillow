@@ -42,18 +42,18 @@ import subprocess
 import sys
 import tempfile
 import warnings
-from typing import IO, Any
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
-from ._deprecate import deprecate
 from .JpegPresets import presets
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from typing import IO, Any
+
     from .MpoImagePlugin import MpoImageFile
 
 #
@@ -392,12 +392,6 @@ class JpegImageFile(ImageFile.ImageFile):
                 raise SyntaxError(msg)
 
         self._read_dpi_from_exif()
-
-    def __getattr__(self, name: str) -> Any:
-        if name in ("huffman_ac", "huffman_dc"):
-            deprecate(name, 12)
-            return getattr(self, "_" + name)
-        raise AttributeError(name)
 
     def __getstate__(self) -> list[Any]:
         return super().__getstate__() + [self.layers, self.layer]
@@ -850,16 +844,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     ImageFile._save(
         im, fp, [ImageFile._Tile("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize
     )
-
-
-def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
-    tempfile = im._dump()
-    subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])
-    try:
-        os.unlink(tempfile)
-    except OSError:
-        pass
 
 
 ##

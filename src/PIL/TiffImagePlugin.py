@@ -47,23 +47,24 @@ import math
 import os
 import struct
 import warnings
-from collections.abc import Iterator, MutableMapping
+from collections.abc import Callable, MutableMapping
 from fractions import Fraction
 from numbers import Number, Rational
-from typing import IO, Any, Callable, NoReturn, cast
+from typing import IO, Any, cast
 
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
-from ._deprecate import deprecate
-from ._typing import StrOrBytesPath
 from ._util import DeferredError, is_path
 from .TiffTags import TYPES
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from ._typing import Buffer, IntegralLike
+    from collections.abc import Iterator
+    from typing import NoReturn
+
+    from ._typing import Buffer, IntegralLike, StrOrBytesPath
 
 logger = logging.getLogger(__name__)
 
@@ -283,9 +284,6 @@ PREFIXES = [
     b"MM\x00\x2b",  # BigTIFF with big-endian byte order
     b"II\x2b\x00",  # BigTIFF with little-endian byte order
 ]
-
-if not getattr(Image.core, "libtiff_support_custom_tags", True):
-    deprecate("Support for LibTIFF earlier than version 4", 12)
 
 
 def _accept(prefix: bytes) -> bool:
@@ -1934,9 +1932,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             # Custom items are supported for int, float, unicode, string and byte
             # values. Other types and tuples require a tagtype.
             if tag not in TiffTags.LIBTIFF_CORE:
-                if not getattr(Image.core, "libtiff_support_custom_tags", False):
-                    continue
-
                 if tag in TiffTags.TAGS_V2_GROUPS:
                     types[tag] = TiffTags.LONG8
                 elif tag in ifd.tagtype:
@@ -2311,8 +2306,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         with AppendingTiffWriter(fp) as tf:
             for ims in [im] + append_images:
-                if not hasattr(ims, "encoderinfo"):
-                    ims.encoderinfo = {}
+                encoderinfo = ims._attach_default_encoderinfo(im)
                 if not hasattr(ims, "encoderconfig"):
                     ims.encoderconfig = ()
                 nfr = getattr(ims, "n_frames", 1)
@@ -2322,6 +2316,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                     ims.load()
                     _save(ims, tf, filename)
                     tf.newFrame()
+                ims.encoderinfo = encoderinfo
     finally:
         im.seek(cur_idx)
 

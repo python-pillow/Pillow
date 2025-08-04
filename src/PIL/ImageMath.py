@@ -17,11 +17,14 @@
 from __future__ import annotations
 
 import builtins
-from types import CodeType
-from typing import Any, Callable
 
 from . import Image, _imagingmath
-from ._deprecate import deprecate
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from types import CodeType
+    from typing import Any
 
 
 class _Operand:
@@ -233,11 +236,7 @@ ops = {
 }
 
 
-def lambda_eval(
-    expression: Callable[[dict[str, Any]], Any],
-    options: dict[str, Any] = {},
-    **kw: Any,
-) -> Any:
+def lambda_eval(expression: Callable[[dict[str, Any]], Any], **kw: Any) -> Any:
     """
     Returns the result of an image function.
 
@@ -246,23 +245,13 @@ def lambda_eval(
     :py:func:`~PIL.Image.merge` function.
 
     :param expression: A function that receives a dictionary.
-    :param options: Values to add to the function's dictionary. Deprecated.
-                    You can instead use one or more keyword arguments.
     :param **kw: Values to add to the function's dictionary.
     :return: The expression result. This is usually an image object, but can
              also be an integer, a floating point value, or a pixel tuple,
              depending on the expression.
     """
 
-    if options:
-        deprecate(
-            "ImageMath.lambda_eval options",
-            12,
-            "ImageMath.lambda_eval keyword arguments",
-        )
-
     args: dict[str, Any] = ops.copy()
-    args.update(options)
     args.update(kw)
     for k, v in args.items():
         if isinstance(v, Image.Image):
@@ -275,11 +264,7 @@ def lambda_eval(
         return out
 
 
-def unsafe_eval(
-    expression: str,
-    options: dict[str, Any] = {},
-    **kw: Any,
-) -> Any:
+def unsafe_eval(expression: str, **kw: Any) -> Any:
     """
     Evaluates an image expression. This uses Python's ``eval()`` function to process
     the expression string, and carries the security risks of doing so. It is not
@@ -291,29 +276,19 @@ def unsafe_eval(
     :py:func:`~PIL.Image.merge` function.
 
     :param expression: A string containing a Python-style expression.
-    :param options: Values to add to the evaluation context. Deprecated.
-                    You can instead use one or more keyword arguments.
     :param **kw: Values to add to the evaluation context.
     :return: The evaluated expression. This is usually an image object, but can
              also be an integer, a floating point value, or a pixel tuple,
              depending on the expression.
     """
 
-    if options:
-        deprecate(
-            "ImageMath.unsafe_eval options",
-            12,
-            "ImageMath.unsafe_eval keyword arguments",
-        )
-
     # build execution namespace
     args: dict[str, Any] = ops.copy()
-    for k in list(options.keys()) + list(kw.keys()):
+    for k in kw:
         if "__" in k or hasattr(builtins, k):
             msg = f"'{k}' not allowed"
             raise ValueError(msg)
 
-    args.update(options)
     args.update(kw)
     for k, v in args.items():
         if isinstance(v, Image.Image):
@@ -337,32 +312,3 @@ def unsafe_eval(
         return out.im
     except AttributeError:
         return out
-
-
-def eval(
-    expression: str,
-    _dict: dict[str, Any] = {},
-    **kw: Any,
-) -> Any:
-    """
-    Evaluates an image expression.
-
-    Deprecated. Use lambda_eval() or unsafe_eval() instead.
-
-    :param expression: A string containing a Python-style expression.
-    :param _dict: Values to add to the evaluation context.  You
-                  can either use a dictionary, or one or more keyword
-                  arguments.
-    :return: The evaluated expression. This is usually an image object, but can
-             also be an integer, a floating point value, or a pixel tuple,
-             depending on the expression.
-
-    ..  deprecated:: 10.3.0
-    """
-
-    deprecate(
-        "ImageMath.eval",
-        12,
-        "ImageMath.lambda_eval or ImageMath.unsafe_eval",
-    )
-    return unsafe_eval(expression, _dict, **kw)

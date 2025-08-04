@@ -38,10 +38,9 @@ import struct
 import sys
 import tempfile
 import warnings
-from collections.abc import Callable, Iterator, MutableMapping, Sequence
+from collections.abc import MutableMapping
 from enum import IntEnum
-from types import ModuleType
-from typing import IO, Any, Literal, Protocol, cast
+from typing import IO, Protocol, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -63,6 +62,12 @@ try:
     from defusedxml import ElementTree
 except ImportError:
     ElementTree = None
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator, Sequence
+    from types import ModuleType
+    from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
 
@@ -113,21 +118,6 @@ except ImportError as v:
     # Fail here anyway. Don't let people run with a mostly broken Pillow.
     # see docs/porting.rst
     raise
-
-
-def isImageType(t: Any) -> TypeGuard[Image]:
-    """
-    Checks if an object is an image object.
-
-    .. warning::
-
-       This function is for internal use only.
-
-    :param t: object to check if it's an image
-    :returns: True if the object is an image
-    """
-    deprecate("Image.isImageType(im)", 12, "isinstance(im, Image.Image)")
-    return hasattr(t, "im")
 
 
 #
@@ -219,7 +209,7 @@ if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
 
     from . import ImageFile, ImageFilter, ImagePalette, ImageQt, TiffImagePlugin
-    from ._typing import CapsuleType, NumpyArray, StrOrBytesPath, TypeGuard
+    from ._typing import CapsuleType, NumpyArray, StrOrBytesPath
 ID: list[str] = []
 OPEN: dict[
     str,
@@ -979,9 +969,6 @@ class Image:
         :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
-
-        if mode in ("BGR;15", "BGR;16", "BGR;24"):
-            deprecate(mode, 12)
 
         self.load()
 
@@ -1748,9 +1735,10 @@ class Image:
         details).
 
         Instead of an image, the source can be a integer or tuple
-        containing pixel values.  The method then fills the region
-        with the given color.  When creating RGB images, you can
-        also use color strings as supported by the ImageColor module.
+        containing pixel values. The method then fills the region
+        with the given color. When creating RGB images, you can
+        also use color strings as supported by the ImageColor module. See
+        :ref:`colors` for more information.
 
         If a mask is given, this method updates only the regions
         indicated by the mask. You can use either "1", "L", "LA", "RGBA"
@@ -2006,7 +1994,8 @@ class Image:
         sequence ends. The scale and offset values are used to adjust the
         sequence values: **pixel = value*scale + offset**.
 
-        :param data: A flattened sequence object.
+        :param data: A flattened sequence object. See :ref:`colors` for more
+            information about values.
         :param scale: An optional scale value.  The default is 1.0.
         :param offset: An optional offset value.  The default is 0.0.
         """
@@ -2065,7 +2054,7 @@ class Image:
         Modifies the pixel at the given position. The color is given as
         a single numerical value for single-band images, and a tuple for
         multi-band images. In addition to this, RGB and RGBA tuples are
-        accepted for P and PA images.
+        accepted for P and PA images. See :ref:`colors` for more information.
 
         Note that this method is relatively slow.  For more extensive changes,
         use :py:meth:`~PIL.Image.Image.paste` or the :py:mod:`~PIL.ImageDraw`
@@ -2229,8 +2218,6 @@ class Image:
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
            :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
            If the image has mode "1" or "P", it is always set to
-           :py:data:`Resampling.NEAREST`. If the image mode is "BGR;15",
-           "BGR;16" or "BGR;24", then the default filter is
            :py:data:`Resampling.NEAREST`. Otherwise, the default filter is
            :py:data:`Resampling.BICUBIC`. See: :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats providing
@@ -2253,8 +2240,7 @@ class Image:
         """
 
         if resample is None:
-            bgr = self.mode.startswith("BGR;")
-            resample = Resampling.NEAREST if bgr else Resampling.BICUBIC
+            resample = Resampling.BICUBIC
         elif resample not in (
             Resampling.NEAREST,
             Resampling.BILINEAR,
@@ -2556,7 +2542,9 @@ class Image:
             self.load()
 
         save_all = params.pop("save_all", None)
-        self.encoderinfo = {**getattr(self, "encoderinfo", {}), **params}
+        self._default_encoderinfo = params
+        encoderinfo = getattr(self, "encoderinfo", {})
+        self._attach_default_encoderinfo(self)
         self.encoderconfig: tuple[Any, ...] = ()
 
         if format.upper() not in SAVE:
@@ -2594,12 +2582,14 @@ class Image:
                     pass
             raise
         finally:
-            try:
-                del self.encoderinfo
-            except AttributeError:
-                pass
+            self.encoderinfo = encoderinfo
         if open_fp:
             fp.close()
+
+    def _attach_default_encoderinfo(self, im: Image) -> dict[str, Any]:
+        encoderinfo = getattr(self, "encoderinfo", {})
+        self.encoderinfo = {**im._default_encoderinfo, **encoderinfo}
+        return encoderinfo
 
     def seek(self, frame: int) -> None:
         """
@@ -3072,17 +3062,14 @@ def new(
     :param mode: The mode to use for the new image. See:
        :ref:`concept-modes`.
     :param size: A 2-tuple, containing (width, height) in pixels.
-    :param color: What color to use for the image.  Default is black.
-       If given, this should be a single integer or floating point value
-       for single-band modes, and a tuple for multi-band modes (one value
-       per band).  When creating RGB or HSV images, you can also use color
-       strings as supported by the ImageColor module.  If the color is
-       None, the image is not initialised.
+    :param color: What color to use for the image. Default is black. If given,
+       this should be a single integer or floating point value for single-band
+       modes, and a tuple for multi-band modes (one value per band). When
+       creating RGB or HSV images, you can also use color strings as supported
+       by the ImageColor module. See :ref:`colors` for more information. If the
+       color is None, the image is not initialised.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
-
-    if mode in ("BGR;15", "BGR;16", "BGR;24"):
-        deprecate(mode, 12)
 
     _check_size(size)
 
@@ -3506,8 +3493,6 @@ def open(
     filename: str | bytes = ""
     if is_path(fp):
         filename = os.fspath(fp)
-
-    if filename:
         fp = builtins.open(filename, "rb")
         exclusive_fp = True
     else:

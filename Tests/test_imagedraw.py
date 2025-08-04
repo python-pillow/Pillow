@@ -1,13 +1,10 @@
 from __future__ import annotations
 
 import os.path
-from collections.abc import Sequence
-from typing import Callable
 
 import pytest
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont, features
-from PIL._typing import Coords
 
 from .helper import (
     assert_image_equal,
@@ -16,6 +13,12 @@ from .helper import (
     hopper,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+
+    from PIL._typing import Coords
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -1732,8 +1735,3 @@ def test_incorrectly_ordered_coordinates(xy: tuple[int, int, int, int]) -> None:
         draw.rectangle(xy)
     with pytest.raises(ValueError):
         draw.rounded_rectangle(xy)
-
-
-def test_getdraw() -> None:
-    with pytest.warns(DeprecationWarning):
-        ImageDraw.getdraw(None, [])
