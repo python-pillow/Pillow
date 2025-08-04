@@ -557,6 +557,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     hardly any gain in image quality. The value ``keep`` is only valid for JPEG
     files and will retain the original image quality level, subsampling, and
     qtables.
+    For more information on how qtables are modified based on the quality parameter,
+    see the qtables section.
 
 **optimize**
     If present and true, indicates that the encoder should make an extra pass
@@ -621,6 +623,11 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     *  a list, tuple, or dictionary (with integer keys =
        range(len(keys))) of lists of 64 integers. There must be
        between 2 and 4 tables.
+
+    If a quality parameter is provided, the qtables will be adjusted accordingly.
+    By default, the qtables are based on a standard JPEG table with a quality of 50.
+    The qtable values will be reduced if the quality is higher than 50 and increased
+    if the quality is lower than 50.
 
     .. versionadded:: 2.5.0
 
@@ -1081,6 +1088,26 @@ Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L``, ``I
 "Raw" (P4 to P6) formats can be read, and are used when writing.
 
 Since Pillow 9.2.0, "plain" (P1 to P3) formats can be read as well.
+
+QOI
+^^^
+
+.. versionadded:: 9.5.0
+
+Pillow reads and writes images in Quite OK Image format using a Python codec. If you
+wish to write code specifically for this format, :pypi:`qoi` is an alternative library
+that uses C to decode the image and interfaces with NumPy.
+
+.. _qoi-saving:
+
+Saving
+~~~~~~
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**colorspace**
+    If set to "sRGB", the colorspace will be written as sRGB with linear alpha, instead
+    of all channels being linear.
 
 SGI
 ^^^
@@ -1578,15 +1605,6 @@ PSD
 
 Pillow identifies and reads PSD files written by Adobe Photoshop 2.5 and 3.0.
 
-QOI
-^^^
-
-.. versionadded:: 9.5.0
-
-Pillow reads images in Quite OK Image format using a Python decoder. If you wish to
-write code specifically for this format, :pypi:`qoi` is an alternative library that
-uses C to decode the image and interfaces with NumPy.
-
 SUN
 ^^^
 
@@ -1650,7 +1668,8 @@ handler. ::
 XPM
 ^^^
 
-Pillow reads X pixmap files (mode ``P``) with 256 colors or less.
+Pillow reads X pixmap files as P mode images if there are 256 colors or less, and as
+RGB images otherwise.
 
 .. _xpm-opening:
 

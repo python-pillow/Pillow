@@ -16,19 +16,26 @@ import subprocess
 import sys
 import warnings
 from collections.abc import Iterator
-from typing import Any
 
+from pybind11.setup_helpers import ParallelCompile
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
+
+configuration: dict[str, list[str]] = {}
+
+# parse configuration from _custom_build/backend.py
+while sys.argv[-1].startswith("--pillow-configuration="):
+    _, key, value = sys.argv.pop().split("=", 2)
+    configuration.setdefault(key, []).append(value)
+
+default = int(configuration.get("parallel", ["0"])[-1])
+ParallelCompile("MAX_CONCURRENCY", default).install()
 
 
 def get_version() -> str:
     version_file = "src/PIL/_version.py"
     with open(version_file, encoding="utf-8") as f:
         return f.read().split('"')[1]
-
-
-configuration: dict[str, list[str]] = {}
 
 
 PILLOW_VERSION = get_version()
@@ -148,7 +155,7 @@ class RequiredDependencyException(Exception):
 PLATFORM_MINGW = os.name == "nt" and "GCC" in sys.version
 
 
-def _dbg(s: str, tp: Any = None) -> None:
+def _dbg(s: str, tp: str | tuple[str, ...] | None = None) -> None:
     if DEBUG:
         if tp:
             print(s % tp)
@@ -387,9 +394,7 @@ class pil_build_ext(build_ext):
             cpu_count = os.cpu_count()
             if cpu_count is not None:
                 try:
-                    self.parallel = int(
-                        os.environ.get("MAX_CONCURRENCY", min(4, cpu_count))
-                    )
+                    self.parallel = int(os.environ.get("MAX_CONCURRENCY", cpu_count))
                 except TypeError:
                     pass
         for x in self.feature:
@@ -474,6 +479,19 @@ class pil_build_ext(build_ext):
                 sdk_path = commandlinetools_sdk_path
         return sdk_path
 
+    def get_ios_sdk_path(self) -> str:
+        try:
+            sdk = sys.implementation._multiarch.split("-")[-1]
+            _dbg("Using %s SDK", sdk)
+            return (
+                subprocess.check_output(["xcrun", "--show-sdk-path", "--sdk", sdk])
+                .strip()
+                .decode("latin1")
+            )
+        except Exception:
+            msg = "Unable to identify location of iOS SDK."
+            raise ValueError(msg)
+
     def build_extensions(self) -> None:
         library_dirs: list[str] = []
         include_dirs: list[str] = []
@@ -509,11 +527,11 @@ class pil_build_ext(build_ext):
 
             if root is None and pkg_config:
                 if isinstance(lib_name, str):
-                    _dbg(f"Looking for `{lib_name}` using pkg-config.")
+                    _dbg("Looking for `%s` using pkg-config.", lib_name)
                     root = pkg_config(lib_name)
                 else:
                     for lib_name2 in lib_name:
-                        _dbg(f"Looking for `{lib_name2}` using pkg-config.")
+                        _dbg("Looking for `%s` using pkg-config.", lib_name2)
                         root = pkg_config(lib_name2)
                         if root:
                             break
@@ -623,6 +641,18 @@ class pil_build_ext(build_ext):
 
                 for extension in self.extensions:
                     extension.extra_compile_args = ["-Wno-nullability-completeness"]
+
+        elif sys.platform == "ios":
+            # Add the iOS SDK path.
+            sdk_path = self.get_ios_sdk_path()
+
+            # Add the iOS SDK path.
+            _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
+            _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
+
+            for extension in self.extensions:
+                extension.extra_compile_args = ["-Wno-nullability-completeness"]
+
         elif sys.platform.startswith(("linux", "gnu", "freebsd")):
             for dirname in _find_library_dirs_ldconfig():
                 _add_directory(library_dirs, dirname)
@@ -732,7 +762,7 @@ class pil_build_ext(build_ext):
                             best_path = os.path.join(directory, name)
                             _dbg(
                                 "Best openjpeg version %s so far in %s",
-                                (best_version, best_path),
+                                (str(best_version), best_path),
                             )
 
             if best_version and _find_library_file(self, "openjp2"):
@@ -754,12 +784,12 @@ class pil_build_ext(build_ext):
         if feature.want("tiff"):
             _dbg("Looking for tiff")
             if _find_include_file(self, "tiff.h"):
-                if _find_library_file(self, "tiff"):
-                    feature.set("tiff", "tiff")
                 if sys.platform in ["win32", "darwin"] and _find_library_file(
                     self, "libtiff"
                 ):
                     feature.set("tiff", "libtiff")
+                elif _find_library_file(self, "tiff"):
+                    feature.set("tiff", "tiff")
 
         if feature.want("freetype"):
             _dbg("Looking for freetype")
@@ -878,6 +908,9 @@ class pil_build_ext(build_ext):
                 # so we have to guess; by default it is defined in all Windows builds.
                 # See #4237, #5243, #5359 for more information.
                 defs.append(("USE_WIN32_FILEIO", None))
+            elif sys.platform == "ios":
+                # Ensure transitive dependencies are linked.
+                libs.append("lzma")
         if feature.get("jpeg"):
             libs.append(feature.get("jpeg"))
             defs.append(("HAVE_LIBJPEG", None))
@@ -894,6 +927,9 @@ class pil_build_ext(build_ext):
             defs.append(("HAVE_LIBIMAGEQUANT", None))
         if feature.get("xcb"):
             libs.append(feature.get("xcb"))
+            if sys.platform == "ios":
+                # Ensure transitive dependencies are linked.
+                libs.append("Xau")
             defs.append(("HAVE_XCB", None))
         if sys.platform == "win32":
             libs.extend(["kernel32", "user32", "gdi32"])
@@ -925,6 +961,11 @@ class pil_build_ext(build_ext):
                         libs.append(feature.get("fribidi"))
                     else:  # building FriBiDi shim from src/thirdparty
                         srcs.append("src/thirdparty/fribidi-shim/fribidi.c")
+
+            if sys.platform == "ios":
+                # Ensure transitive dependencies are linked.
+                libs.extend(["z", "bz2", "brotlicommon", "brotlidec", "png"])
+
             self._update_extension("PIL._imagingft", libs, defs, srcs)
 
         else:
@@ -941,6 +982,9 @@ class pil_build_ext(build_ext):
         webp = feature.get("webp")
         if isinstance(webp, str):
             libs = [webp, webp + "mux", webp + "demux"]
+            if sys.platform == "ios":
+                # Ensure transitive dependencies are linked.
+                libs.append("sharpyuv")
             self._update_extension("PIL._webp", libs)
         else:
             self._remove_extension("PIL._webp")
@@ -1044,11 +1088,6 @@ ext_modules = [
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
 ]
 
-
-# parse configuration from _custom_build/backend.py
-while sys.argv[-1].startswith("--pillow-configuration="):
-    _, key, value = sys.argv.pop().split("=", 2)
-    configuration.setdefault(key, []).append(value)
 
 try:
     setup(

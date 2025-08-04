@@ -151,11 +151,6 @@ class TestImageFile:
         # Despite multiple tiles, assert only one tile caused a read of maxblock size
         assert reads.count(im.decodermaxblock) == 1
 
-    def test_raise_oserror(self) -> None:
-        with pytest.warns(DeprecationWarning):
-            with pytest.raises(OSError):
-                ImageFile.raise_oserror(1)
-
     def test_raise_typeerror(self) -> None:
         with pytest.raises(TypeError):
             parser = ImageFile.Parser()

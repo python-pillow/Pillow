@@ -30,7 +30,6 @@ from .helper import (
     assert_image_similar_tofile,
     assert_not_all_same,
     hopper,
-    is_big_endian,
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
@@ -50,19 +49,10 @@ except ImportError:
     PrettyPrinter = None
 
 
-# Deprecation helper
-def helper_image_new(mode: str, size: tuple[int, int]) -> Image.Image:
-    if mode.startswith("BGR;"):
-        with pytest.warns(DeprecationWarning):
-            return Image.new(mode, size)
-    else:
-        return Image.new(mode, size)
-
-
 class TestImage:
-    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
+    @pytest.mark.parametrize("mode", Image.MODES)
     def test_image_modes_success(self, mode: str) -> None:
-        helper_image_new(mode, (1, 1))
+        Image.new(mode, (1, 1))
 
     @pytest.mark.parametrize("mode", ("", "bad", "very very long"))
     def test_image_modes_fail(self, mode: str) -> None:
@@ -141,8 +131,8 @@ class TestImage:
         monkeypatch.setattr(Image, "WARN_POSSIBLE_FORMATS", True)
 
         im = io.BytesIO(b"")
-        with pytest.warns(UserWarning):
-            with pytest.raises(UnidentifiedImageError):
+        with pytest.raises(UnidentifiedImageError):
+            with pytest.warns(UserWarning, match="opening failed"):
                 with Image.open(im):
                     pass
 
@@ -159,6 +149,10 @@ class TestImage:
 
         with pytest.raises(AttributeError):
             im.mode = "P"  # type: ignore[misc]
+
+    def test_empty_path(self) -> None:
+        with pytest.raises(FileNotFoundError):
+            Image.open("")
 
     def test_invalid_image(self) -> None:
         im = io.BytesIO(b"")
@@ -974,6 +968,11 @@ class TestImage:
                     assert tag not in exif.get_ifd(0x8769)
                 assert exif.get_ifd(0xA005)
 
+    def test_exif_from_xmp_bytes(self) -> None:
+        im = Image.new("RGB", (1, 1))
+        im.info["xmp"] = b'\xff tiff:Orientation="2"'
+        assert im.getexif()[274] == 2
+
     def test_empty_xmp(self) -> None:
         with Image.open("Tests/images/hopper.gif") as im:
             if ElementTree is None:
@@ -990,7 +989,7 @@ class TestImage:
         im = Image.new("RGB", (1, 1))
         im.info["xmp"] = (
             b'<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
-            b'<x:xmpmeta xmlns:x="adobe:ns:meta/" />\n<?xpacket end="w"?>\x00\x00'
+            b'<x:xmpmeta xmlns:x="adobe:ns:meta/" />\n<?xpacket end="w"?>\x00\x00 '
         )
         if ElementTree is None:
             with pytest.warns(
@@ -1003,7 +1002,7 @@ class TestImage:
 
     def test_get_child_images(self) -> None:
         im = Image.new("RGB", (1, 1))
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning, match="Image.Image.get_child_images"):
             assert im.get_child_images() == []
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
@@ -1133,39 +1132,29 @@ class TestImage:
             assert len(caplog.records) == 0
             assert im.fp is None
 
-    def test_deprecation(self) -> None:
-        with pytest.warns(DeprecationWarning):
-            assert not Image.isImageType(None)
-
 
 class TestImageBytes:
-    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
+    @pytest.mark.parametrize("mode", Image.MODES)
     def test_roundtrip_bytes_constructor(self, mode: str) -> None:
         im = hopper(mode)
         source_bytes = im.tobytes()
 
-        if mode.startswith("BGR;"):
-            with pytest.warns(DeprecationWarning):
-                reloaded = Image.frombytes(mode, im.size, source_bytes)
-        else:
-            reloaded = Image.frombytes(mode, im.size, source_bytes)
+        reloaded = Image.frombytes(mode, im.size, source_bytes)
         assert reloaded.tobytes() == source_bytes
 
-    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
+    @pytest.mark.parametrize("mode", Image.MODES)
     def test_roundtrip_bytes_method(self, mode: str) -> None:
         im = hopper(mode)
         source_bytes = im.tobytes()
 
-        reloaded = helper_image_new(mode, im.size)
+        reloaded = Image.new(mode, im.size)
         reloaded.frombytes(source_bytes)
         assert reloaded.tobytes() == source_bytes
 
-    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
+    @pytest.mark.parametrize("mode", Image.MODES)
     def test_getdata_putdata(self, mode: str) -> None:
-        if is_big_endian() and mode == "BGR;15":
-            pytest.xfail("Known failure of BGR;15 on big-endian")
         im = hopper(mode)
-        reloaded = helper_image_new(mode, im.size)
+        reloaded = Image.new(mode, im.size)
         reloaded.putdata(im.getdata())
         assert_image_equal(im, reloaded)
 

@@ -288,14 +288,16 @@ def test_non_integer_token(tmp_path: Path) -> None:
             pass
 
 
-def test_header_token_too_long(tmp_path: Path) -> None:
+@pytest.mark.parametrize("data", (b"P3\x0cAAAAAAAAAA\xee", b"P6\n 01234567890"))
+def test_header_token_too_long(tmp_path: Path, data: bytes) -> None:
     path = tmp_path / "temp.ppm"
     with open(path, "wb") as f:
-        f.write(b"P6\n 01234567890")
+        f.write(data)
 
-    with pytest.raises(ValueError, match="Token too long in file header: 01234567890"):
+    with pytest.raises(ValueError) as e:
         with Image.open(path):
             pass
+    assert "Token too long in file header: " in repr(e)
 
 
 def test_truncated_file(tmp_path: Path) -> None:

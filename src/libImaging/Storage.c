@@ -151,36 +151,6 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         strcpy(im->band_names[2], "B");
         strcpy(im->band_names[3], "X");
 
-    } else if (strcmp(mode, "BGR;15") == 0) {
-        /* EXPERIMENTAL */
-        /* 15-bit reversed true colour */
-        im->bands = 3;
-        im->pixelsize = 2;
-        im->linesize = (xsize * 2 + 3) & -4;
-        im->type = IMAGING_TYPE_SPECIAL;
-        /* not allowing arrow due to line length packing */
-        strcpy(im->arrow_band_format, "");
-
-    } else if (strcmp(mode, "BGR;16") == 0) {
-        /* EXPERIMENTAL */
-        /* 16-bit reversed true colour */
-        im->bands = 3;
-        im->pixelsize = 2;
-        im->linesize = (xsize * 2 + 3) & -4;
-        im->type = IMAGING_TYPE_SPECIAL;
-        /* not allowing arrow due to line length packing */
-        strcpy(im->arrow_band_format, "");
-
-    } else if (strcmp(mode, "BGR;24") == 0) {
-        /* EXPERIMENTAL */
-        /* 24-bit reversed true colour */
-        im->bands = 3;
-        im->pixelsize = 3;
-        im->linesize = (xsize * 3 + 3) & -4;
-        im->type = IMAGING_TYPE_SPECIAL;
-        /* not allowing arrow due to line length packing */
-        strcpy(im->arrow_band_format, "");
-
     } else if (strcmp(mode, "RGBX") == 0) {
         /* 32-bit true colour images with padding */
         im->bands = im->pixelsize = 4;
@@ -645,7 +615,7 @@ ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
         return im;
     }
 
-    ImagingError_Clear();
+    PyErr_Clear();
 
     // Try to allocate the image once more with smallest possible block size
     MUTEX_LOCK(&ImagingDefaultArena.mutex);

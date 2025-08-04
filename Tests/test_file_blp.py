@@ -7,9 +7,8 @@ import pytest
 from PIL import BlpImagePlugin, Image
 
 from .helper import (
-    assert_image_equal,
     assert_image_equal_tofile,
-    assert_image_similar,
+    assert_image_similar_tofile,
     hopper,
 )
 
@@ -52,18 +51,16 @@ def test_save(tmp_path: Path) -> None:
         im = hopper("P")
         im.save(f, blp_version=version)
 
-        with Image.open(f) as reloaded:
-            assert_image_equal(im.convert("RGB"), reloaded)
+        assert_image_equal_tofile(im.convert("RGB"), f)
 
         with Image.open("Tests/images/transparent.png") as im:
             f = tmp_path / "temp.blp"
             im.convert("P").save(f, blp_version=version)
 
-            with Image.open(f) as reloaded:
-                assert_image_similar(im, reloaded, 8)
+            assert_image_similar_tofile(im, f, 8)
 
     im = hopper()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Unsupported BLP image mode"):
         im.save(f)
 
 

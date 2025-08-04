@@ -57,7 +57,10 @@ def cmd_nmake(
 
 
 def cmds_cmake(
-    target: str | tuple[str, ...] | list[str], *params: str, build_dir: str = "."
+    target: str | tuple[str, ...] | list[str],
+    *params: str,
+    build_dir: str = ".",
+    build_type: str = "Release",
 ) -> list[str]:
     if not isinstance(target, str):
         target = " ".join(target)
@@ -66,7 +69,7 @@ def cmds_cmake(
         " ".join(
             [
                 "{cmake}",
-                "-DCMAKE_BUILD_TYPE=Release",
+                f"-DCMAKE_BUILD_TYPE={build_type}",
                 "-DCMAKE_VERBOSE_MAKEFILE=ON",
                 "-DCMAKE_RULE_MESSAGES:BOOL=OFF",  # for NMake
                 "-DCMAKE_C_COMPILER=cl.exe",  # for Ninja
@@ -114,12 +117,12 @@ V = {
     "FREETYPE": "2.13.3",
     "FRIBIDI": "1.0.16",
     "HARFBUZZ": "11.2.1",
-    "JPEGTURBO": "3.1.0",
+    "JPEGTURBO": "3.1.1",
     "LCMS2": "2.17",
     "LIBAVIF": "1.3.0",
     "LIBIMAGEQUANT": "4.3.4",
-    "LIBPNG": "1.6.48",
-    "LIBWEBP": "1.5.0",
+    "LIBPNG": "1.6.50",
+    "LIBWEBP": "1.6.0",
     "OPENJPEG": "2.5.3",
     "TIFF": "4.7.0",
     "XZ": "5.8.1",
@@ -146,18 +149,17 @@ DEPS: dict[str, dict[str, Any]] = {
         },
         "build": [
             *cmds_cmake(
-                ("jpeg-static", "cjpeg-static", "djpeg-static"),
+                ("jpeg-static", "djpeg-static"),
                 "-DENABLE_SHARED:BOOL=FALSE",
                 "-DWITH_JPEG8:BOOL=TRUE",
                 "-DWITH_CRT_DLL:BOOL=TRUE",
             ),
             cmd_copy("jpeg-static.lib", "libjpeg.lib"),
-            cmd_copy("cjpeg-static.exe", "cjpeg.exe"),
             cmd_copy("djpeg-static.exe", "djpeg.exe"),
         ],
         "headers": ["jconfig.h", r"src\j*.h"],
         "libs": ["libjpeg.lib"],
-        "bins": ["cjpeg.exe", "djpeg.exe"],
+        "bins": ["djpeg.exe"],
     },
     "zlib": {
         "url": f"https://github.com/zlib-ng/zlib-ng/archive/refs/tags/{V['ZLIBNG']}.tar.gz",
@@ -385,8 +387,8 @@ DEPS: dict[str, dict[str, Any]] = {
         "bins": [r"*.dll"],
     },
     "libavif": {
-        "url": f"https://github.com/AOMediaCodec/libavif/archive/v{V['LIBAVIF']}.zip",
-        "filename": f"libavif-{V['LIBAVIF']}.zip",
+        "url": f"https://github.com/AOMediaCodec/libavif/archive/v{V['LIBAVIF']}.tar.gz",
+        "filename": f"libavif-{V['LIBAVIF']}.tar.gz",
         "license": "LICENSE",
         "build": [
             "rustup update",
@@ -397,9 +399,11 @@ DEPS: dict[str, dict[str, Any]] = {
                 "-DAVIF_LIBSHARPYUV=LOCAL",
                 "-DAVIF_LIBYUV=LOCAL",
                 "-DAVIF_CODEC_AOM=LOCAL",
+                "-DCONFIG_AV1_HIGHBITDEPTH=0",
+                "-DAVIF_CODEC_AOM_DECODE=OFF",
                 "-DAVIF_CODEC_DAV1D=LOCAL",
-                "-DAVIF_CODEC_RAV1E=LOCAL",
-                "-DAVIF_CODEC_SVT=LOCAL",
+                "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON",
+                build_type="MinSizeRel",
             ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
@@ -755,7 +759,7 @@ def main() -> None:
         disabled += ["libimagequant"]
     if args.no_fribidi:
         disabled += ["fribidi"]
-    if args.no_avif or args.architecture != "AMD64":
+    if args.no_avif or args.architecture == "ARM64":
         disabled += ["libavif"]
 
     prefs = {

@@ -10,16 +10,19 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from collections.abc import Sequence
 from functools import lru_cache
 from io import BytesIO
-from pathlib import Path
-from typing import Any, Callable
 
 import pytest
 from packaging.version import parse as parse_version
 
 from PIL import Image, ImageFile, ImageMath, features
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+    from pathlib import Path
+    from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -271,17 +274,13 @@ def _cached_hopper(mode: str) -> Image.Image:
         im = hopper("L")
     else:
         im = hopper()
-    if mode.startswith("BGR;"):
-        with pytest.warns(DeprecationWarning):
-            im = im.convert(mode)
-    else:
-        try:
-            im = im.convert(mode)
-        except ImportError:
-            if mode == "LAB":
-                im = Image.open("Tests/images/hopper.Lab.tif")
-            else:
-                raise
+    try:
+        im = im.convert(mode)
+    except ImportError:
+        if mode == "LAB":
+            im = Image.open("Tests/images/hopper.Lab.tif")
+        else:
+            raise
     return im
 
 
@@ -289,16 +288,6 @@ def djpeg_available() -> bool:
     if shutil.which("djpeg"):
         try:
             subprocess.check_call(["djpeg", "-version"])
-            return True
-        except subprocess.CalledProcessError:  # pragma: no cover
-            return False
-    return False
-
-
-def cjpeg_available() -> bool:
-    if shutil.which("cjpeg"):
-        try:
-            subprocess.check_call(["cjpeg", "-version"])
             return True
         except subprocess.CalledProcessError:  # pragma: no cover
             return False

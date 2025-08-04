@@ -8,7 +8,6 @@ pull_request_rules:
       - status-success=Docker Test Successful
       - status-success=Windows Test Successful
       - status-success=MSYS2 Test Successful
-      - status-success=Cygwin Test Successful
     actions:
       merge:
         method: merge

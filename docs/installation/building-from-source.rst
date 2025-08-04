@@ -44,7 +44,7 @@ Many of Pillow's features require external libraries:
 
 * **libtiff** provides compressed TIFF functionality
 
-  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.7.0**
+  * Pillow has been tested with libtiff versions **4.0-4.7.0**
 
 * **libfreetype** provides type related services
 
@@ -288,10 +288,9 @@ Build options
 
 * Config setting: ``-C parallel=n``. Can also be given
   with environment variable: ``MAX_CONCURRENCY=n``. Pillow can use
-  multiprocessing to build the extension. Setting ``-C parallel=n``
+  multiprocessing to build the extensions. Setting ``-C parallel=n``
   sets the number of CPUs to use to ``n``, or can disable parallel building by
-  using a setting of 1. By default, it uses 4 CPUs, or if 4 are not
-  available, as many as are present.
+  using a setting of 1. By default, it uses as many CPUs as are present.
 
 * Config settings: ``-C zlib=disable``, ``-C jpeg=disable``,
   ``-C tiff=disable``, ``-C freetype=disable``, ``-C raqm=disable``,
