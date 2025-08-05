@@ -111,7 +111,7 @@ jobs:
         GHA_PYTHON_VERSION: ${{ matrix.python-version }}
 
     - name: Register gcc problem matcher
-      if: "matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'"
+      if: "matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'"
       run: echo "::add-matcher::.github/problem-matchers/gcc.json"
 
     - name: Build
