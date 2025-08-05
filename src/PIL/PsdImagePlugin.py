@@ -61,6 +61,7 @@ class PsdImageFile(ImageFile.ImageFile):
     _close_exclusive_fp_after_loading = False
 
     def _open(self) -> None:
+        assert self.fp is not None
         read = self.fp.read
 
         #
