@@ -266,7 +266,9 @@ static PyTypeObject ImagingDecoderType = {
 /* -------------------------------------------------------------------- */
 
 int
-get_unpacker(ImagingDecoderObject *decoder, const char *mode, const char *rawmode) {
+get_unpacker(
+    ImagingDecoderObject *decoder, const ModeID mode, const RawModeID rawmode
+) {
     int bits;
     ImagingShuffler unpack;
 
@@ -291,17 +293,20 @@ PyObject *
 PyImaging_BitDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
+    const char *mode_name;
     int bits = 8;
     int pad = 8;
     int fill = 0;
     int sign = 0;
     int ystep = 1;
-    if (!PyArg_ParseTuple(args, "s|iiiii", &mode, &bits, &pad, &fill, &sign, &ystep)) {
+    if (!PyArg_ParseTuple(
+            args, "s|iiiii", &mode_name, &bits, &pad, &fill, &sign, &ystep
+        )) {
         return NULL;
     }
 
-    if (strcmp(mode, "F") != 0) {
+    const ModeID mode = findModeID(mode_name);
+    if (mode != IMAGING_MODE_F) {
         PyErr_SetString(PyExc_ValueError, "bad image mode");
         return NULL;
     }
@@ -331,34 +336,36 @@ PyObject *
 PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *actual;
+    char *mode_name;
     int n = 0;
     char *pixel_format = "";
-    if (!PyArg_ParseTuple(args, "si|s", &mode, &n, &pixel_format)) {
+    if (!PyArg_ParseTuple(args, "si|s", &mode_name, &n, &pixel_format)) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    ModeID actual;
 
     switch (n) {
         case 1: /* BC1: 565 color, 1-bit alpha */
         case 2: /* BC2: 565 color, 4-bit alpha */
         case 3: /* BC3: 565 color, 2-endpoint 8-bit interpolated alpha */
         case 7: /* BC7: 4-channel 8-bit via everything */
-            actual = "RGBA";
+            actual = IMAGING_MODE_RGBA;
             break;
         case 4: /* BC4: 1-channel 8-bit via 1 BC3 alpha block */
-            actual = "L";
+            actual = IMAGING_MODE_L;
             break;
         case 5: /* BC5: 2-channel 8-bit via 2 BC3 alpha blocks */
         case 6: /* BC6: 3-channel 16-bit float */
-            actual = "RGB";
+            actual = IMAGING_MODE_RGB;
             break;
         default:
             PyErr_SetString(PyExc_ValueError, "block compression type unknown");
             return NULL;
     }
 
-    if (strcmp(mode, actual) != 0) {
+    if (mode != actual) {
         PyErr_SetString(PyExc_ValueError, "bad image mode");
         return NULL;
     }
@@ -401,15 +408,18 @@ PyObject *
 PyImaging_GifDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
+    const char *mode_name;
     int bits = 8;
     int interlace = 0;
     int transparency = -1;
-    if (!PyArg_ParseTuple(args, "s|iii", &mode, &bits, &interlace, &transparency)) {
+    if (!PyArg_ParseTuple(
+            args, "s|iii", &mode_name, &bits, &interlace, &transparency
+        )) {
         return NULL;
     }
 
-    if (strcmp(mode, "L") != 0 && strcmp(mode, "P") != 0) {
+    const ModeID mode = findModeID(mode_name);
+    if (mode != IMAGING_MODE_L && mode != IMAGING_MODE_P) {
         PyErr_SetString(PyExc_ValueError, "bad image mode");
         return NULL;
     }
@@ -436,11 +446,13 @@ PyObject *
 PyImaging_HexDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
-    if (!PyArg_ParseTuple(args, "ss", &mode, &rawmode)) {
+    char *mode_name, *rawmode_name;
+    if (!PyArg_ParseTuple(args, "ss", &mode_name, &rawmode_name)) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
 
     decoder = PyImaging_DecoderNew(0);
     if (decoder == NULL) {
@@ -469,15 +481,20 @@ PyImaging_HexDecoderNew(PyObject *self, PyObject *args) {
 PyObject *
 PyImaging_LibTiffDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
-    char *mode;
-    char *rawmode;
+    char *mode_name;
+    char *rawmode_name;
     char *compname;
     int fp;
     uint32_t ifdoffset;
 
-    if (!PyArg_ParseTuple(args, "sssiI", &mode, &rawmode, &compname, &fp, &ifdoffset)) {
+    if (!PyArg_ParseTuple(
+            args, "sssiI", &mode_name, &rawmode_name, &compname, &fp, &ifdoffset
+        )) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
 
     TRACE(("new tiff decoder %s\n", compname));
 
@@ -511,11 +528,14 @@ PyObject *
 PyImaging_PackbitsDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
-    if (!PyArg_ParseTuple(args, "ss", &mode, &rawmode)) {
+    char *mode_name;
+    char *rawmode_name;
+    if (!PyArg_ParseTuple(args, "ss", &mode_name, &rawmode_name)) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
 
     decoder = PyImaging_DecoderNew(0);
     if (decoder == NULL) {
@@ -545,7 +565,7 @@ PyImaging_PcdDecoderNew(PyObject *self, PyObject *args) {
     }
 
     /* Unpack from PhotoYCC to RGB */
-    if (get_unpacker(decoder, "RGB", "YCC;P") < 0) {
+    if (get_unpacker(decoder, IMAGING_MODE_RGB, IMAGING_RAWMODE_YCC_P) < 0) {
         return NULL;
     }
 
@@ -562,12 +582,14 @@ PyObject *
 PyImaging_PcxDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name, *rawmode_name;
     int stride;
-    if (!PyArg_ParseTuple(args, "ssi", &mode, &rawmode, &stride)) {
+    if (!PyArg_ParseTuple(args, "ssi", &mode_name, &rawmode_name, &stride)) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
 
     decoder = PyImaging_DecoderNew(0);
     if (decoder == NULL) {
@@ -593,13 +615,15 @@ PyObject *
 PyImaging_RawDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name, *rawmode_name;
     int stride = 0;
     int ystep = 1;
-    if (!PyArg_ParseTuple(args, "ss|ii", &mode, &rawmode, &stride, &ystep)) {
+    if (!PyArg_ParseTuple(args, "ss|ii", &mode_name, &rawmode_name, &stride, &ystep)) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
 
     decoder = PyImaging_DecoderNew(sizeof(RAWSTATE));
     if (decoder == NULL) {
@@ -627,13 +651,15 @@ PyObject *
 PyImaging_SgiRleDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name, *rawmode_name;
     int ystep = 1;
     int bpc = 1;
-    if (!PyArg_ParseTuple(args, "ss|ii", &mode, &rawmode, &ystep, &bpc)) {
+    if (!PyArg_ParseTuple(args, "ss|ii", &mode_name, &rawmode_name, &ystep, &bpc)) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
 
     decoder = PyImaging_DecoderNew(sizeof(SGISTATE));
     if (decoder == NULL) {
@@ -661,11 +687,13 @@ PyObject *
 PyImaging_SunRleDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
-    if (!PyArg_ParseTuple(args, "ss", &mode, &rawmode)) {
+    char *mode_name, *rawmode_name;
+    if (!PyArg_ParseTuple(args, "ss", &mode_name, &rawmode_name)) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
 
     decoder = PyImaging_DecoderNew(0);
     if (decoder == NULL) {
@@ -689,13 +717,15 @@ PyObject *
 PyImaging_TgaRleDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name, *rawmode_name;
     int ystep = 1;
     int depth = 8;
-    if (!PyArg_ParseTuple(args, "ss|ii", &mode, &rawmode, &ystep, &depth)) {
+    if (!PyArg_ParseTuple(args, "ss|ii", &mode_name, &rawmode_name, &ystep, &depth)) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
 
     decoder = PyImaging_DecoderNew(0);
     if (decoder == NULL) {
@@ -727,7 +757,7 @@ PyImaging_XbmDecoderNew(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (get_unpacker(decoder, "1", "1;R") < 0) {
+    if (get_unpacker(decoder, IMAGING_MODE_1, IMAGING_RAWMODE_1_R) < 0) {
         return NULL;
     }
 
@@ -748,12 +778,14 @@ PyObject *
 PyImaging_ZipDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name, *rawmode_name;
     int interlaced = 0;
-    if (!PyArg_ParseTuple(args, "ss|i", &mode, &rawmode, &interlaced)) {
+    if (!PyArg_ParseTuple(args, "ss|i", &mode_name, &rawmode_name, &interlaced)) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
 
     decoder = PyImaging_DecoderNew(sizeof(ZIPSTATE));
     if (decoder == NULL) {
@@ -798,19 +830,21 @@ PyObject *
 PyImaging_JpegDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;  /* what we want from the decoder */
-    char *jpegmode; /* what's in the file */
+    char *mode_name;
+    char *rawmode_name;  /* what we want from the decoder */
+    char *jpegmode_name; /* what's in the file */
     int scale = 1;
     int draft = 0;
 
-    if (!PyArg_ParseTuple(args, "ssz|ii", &mode, &rawmode, &jpegmode, &scale, &draft)) {
+    if (!PyArg_ParseTuple(
+            args, "ssz|ii", &mode_name, &rawmode_name, &jpegmode_name, &scale, &draft
+        )) {
         return NULL;
     }
 
-    if (!jpegmode) {
-        jpegmode = "";
-    }
+    const ModeID mode = findModeID(mode_name);
+    RawModeID rawmode = findRawModeID(rawmode_name);
+    const RawModeID jpegmode = findRawModeID(jpegmode_name);
 
     decoder = PyImaging_DecoderNew(sizeof(JPEGSTATE));
     if (decoder == NULL) {
@@ -820,8 +854,8 @@ PyImaging_JpegDecoderNew(PyObject *self, PyObject *args) {
     // libjpeg-turbo supports different output formats.
     // We are choosing Pillow's native format (3 color bytes + 1 padding)
     // to avoid extra conversion in Unpack.c.
-    if (ImagingJpegUseJCSExtensions() && strcmp(rawmode, "RGB") == 0) {
-        rawmode = "RGBX";
+    if (ImagingJpegUseJCSExtensions() && rawmode == IMAGING_RAWMODE_RGB) {
+        rawmode = IMAGING_RAWMODE_RGBX;
     }
 
     if (get_unpacker(decoder, mode, rawmode) < 0) {
@@ -831,11 +865,13 @@ PyImaging_JpegDecoderNew(PyObject *self, PyObject *args) {
     decoder->decode = ImagingJpegDecode;
     decoder->cleanup = ImagingJpegDecodeCleanup;
 
-    strncpy(((JPEGSTATE *)decoder->state.context)->rawmode, rawmode, 8);
-    strncpy(((JPEGSTATE *)decoder->state.context)->jpegmode, jpegmode, 8);
+    JPEGSTATE *jpeg_decoder_state_context = (JPEGSTATE *)decoder->state.context;
 
-    ((JPEGSTATE *)decoder->state.context)->scale = scale;
-    ((JPEGSTATE *)decoder->state.context)->draft = draft;
+    jpeg_decoder_state_context->rawmode = rawmode;
+    jpeg_decoder_state_context->jpegmode = jpegmode;
+
+    jpeg_decoder_state_context->scale = scale;
+    jpeg_decoder_state_context->draft = draft;
 
     return (PyObject *)decoder;
 }
