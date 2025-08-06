@@ -365,8 +365,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
         with Image.open(out) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
-            if 700 in reloaded.tag_v2:
-                assert reloaded.tag_v2[700] == b"xmlpacket tag"
+            assert reloaded.tag_v2[700] == b"xmlpacket tag"
 
     def test_int_dpi(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         # issue #1765
