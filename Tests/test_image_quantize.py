@@ -116,6 +116,15 @@ def test_quantize_kmeans(method: Image.Quantize) -> None:
         im.quantize(kmeans=-1, method=method)
 
 
+@skip_unless_feature("libimagequant")
+def test_resize() -> None:
+    im = hopper().resize((100, 100))
+    converted = im.quantize(100, Image.Quantize.LIBIMAGEQUANT)
+    colors = converted.getcolors()
+    assert colors is not None
+    assert len(colors) == 100
+
+
 def test_colors() -> None:
     im = hopper()
     colors = 2
