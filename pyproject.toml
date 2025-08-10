@@ -150,6 +150,11 @@ environment.PATH = "$(pwd)/build/deps/iphonesimulator/bin:$PATH"
 select = "*-win32"
 test-requires = [  ]
 
+[[tool.cibuildwheel.overrides]]
+select = "*_ppc64le"
+config-settings = "raqm=disable fribidi=disable imagequant=disable"
+test-requires = [  ]
+
 [tool.black]
 exclude = "wheels/multibuild"
 

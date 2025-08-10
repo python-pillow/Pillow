@@ -280,6 +280,10 @@ function build {
     build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
 
     build_libjpeg_turbo
+    if [[ "$AUDITWHEEL_ARCH" == "ppc64le" ]]; then
+        return
+    fi
+
     if [[ -n "$IS_MACOS" ]]; then
         # Custom tiff build to include jpeg; by default, configure won't include
         # headers/libs in the custom macOS/iOS prefix. Explicitly disable webp,
