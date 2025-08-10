@@ -93,6 +93,31 @@ jobs:
             os: ubuntu-24.04-arm
             cibw_arch: aarch64
             build: "*manylinux*"
+          - name: "manylinux_2_28 3.10 ppc64le"
+            platform: linux
+            os: ubuntu-latest
+            cibw_arch: ppc64le
+            build: "*cp310-manylinux*"
+          - name: "manylinux_2_28 3.11 ppc64le"
+            platform: linux
+            os: ubuntu-latest
+            cibw_arch: ppc64le
+            build: "*cp311-manylinux*"
+          - name: "manylinux_2_28 3.12 ppc64le"
+            platform: linux
+            os: ubuntu-latest
+            cibw_arch: ppc64le
+            build: "*cp312-manylinux*"
+          - name: "manylinux_2_28 3.13 ppc64le"
+            platform: linux
+            os: ubuntu-latest
+            cibw_arch: ppc64le
+            build: "*cp313*-manylinux*"
+          - name: "manylinux_2_28 3.14 ppc64le"
+            platform: linux
+            os: ubuntu-latest
+            cibw_arch: ppc64le
+            build: "*cp314*-manylinux*"
           - name: "iOS arm64 device"
             platform: ios
             os: macos-latest
@@ -114,6 +139,10 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.x"
+
+      - name: Set up QEMU
+        if: "matrix.cibw_arch == 'ppc64le'"
+        uses: docker/setup-qemu-action@v3
 
       - name: Install cibuildwheel
         run: |
