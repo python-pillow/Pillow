@@ -57,7 +57,7 @@ repos:
       - id: check-readthedocs
       - id: check-renovate
 
-  - repo: https://github.com/woodruffw/zizmor-pre-commit
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
     rev: v1.11.0
     hooks:
       - id: zizmor
