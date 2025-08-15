@@ -1010,8 +1010,14 @@ class Image:
                 new_im.info["transparency"] = transparency
             return new_im
 
-        if mode == "P" and self.mode == "RGBA":
-            return self.quantize(colors)
+        if self.mode == "RGBA":
+            if mode == "P":
+                return self.quantize(colors)
+            elif mode == "PA":
+                r, g, b, a = self.split()
+                rgb = merge("RGB", (r, g, b))
+                p = rgb.quantize(colors)
+                return merge("PA", (p, a))
 
         trns = None
         delete_trns = False
