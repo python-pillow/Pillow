@@ -1143,7 +1143,7 @@ class Image:
                 raise ValueError(msg) from e
 
         new_im = self._new(im)
-        if mode == "P" and palette != Palette.ADAPTIVE:
+        if mode in ("P", "PA") and palette != Palette.ADAPTIVE:
             from . import ImagePalette
 
             new_im.palette = ImagePalette.ImagePalette("RGB", im.getpalette("RGB"))
