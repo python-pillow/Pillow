@@ -891,6 +891,15 @@ def test_anchor_invalid(font: ImageFont.FreeTypeFont) -> None:
             d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor)
 
 
+def test_has_characters(font: ImageFont.FreeTypeFont) -> None:
+    assert font.has_characters("")
+
+    assert font.has_characters("Test text")
+    assert font.has_characters(b"Test text")
+
+    assert not font.has_characters("Test \u0001")
+
+
 @pytest.mark.parametrize("bpp", (1, 2, 4, 8))
 def test_bitmap_font(layout_engine: ImageFont.Layout, bpp: int) -> None:
     text = "Bitmap Font"
