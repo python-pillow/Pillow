@@ -24,8 +24,8 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
 
     /* Check arguments */
     if (!imIn1 || !imIn2 || imIn1->type != IMAGING_TYPE_UINT8 || imIn1->palette ||
-        strcmp(imIn1->mode, "1") == 0 || imIn2->palette ||
-        strcmp(imIn2->mode, "1") == 0) {
+        imIn1->mode == IMAGING_MODE_1 || imIn2->palette ||
+        imIn2->mode == IMAGING_MODE_1) {
         return ImagingError_ModeError();
     }
 
