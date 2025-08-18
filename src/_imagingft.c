@@ -518,6 +518,44 @@ text_layout(
 }
 
 static PyObject *
+font_hascharacters(FontObject *self, PyObject *args) {
+    int i;
+    char *buffer = NULL;
+    FT_ULong ch;
+    Py_ssize_t count;
+    FT_GlyphSlot glyph;
+    PyObject *string;
+
+    if (!PyArg_ParseTuple(args, "O", &string)) {
+        return NULL;
+    }
+
+    if (PyUnicode_Check(string)) {
+        count = PyUnicode_GET_LENGTH(string);
+    } else if (PyBytes_Check(string)) {
+        PyBytes_AsStringAndSize(string, &buffer, &count);
+    } else {
+        PyErr_SetString(PyExc_TypeError, "expected string or bytes");
+        return 0;
+    }
+    if (count == 0) {
+        return Py_True;
+    }
+
+    for (i = 0; i < count; i++) {
+        if (buffer) {
+            ch = buffer[i];
+        } else {
+            ch = PyUnicode_READ_CHAR(string, i);
+        }
+        if (FT_Get_Char_Index(self->face, ch) == 0) {
+            return Py_False;
+        }
+    }
+    return Py_True;
+}
+
+static PyObject *
 font_getlength(FontObject *self, PyObject *args) {
     int length;                   /* length along primary axis, in 26.6 precision */
     GlyphInfo *glyph_info = NULL; /* computed text layout */
@@ -1451,6 +1489,7 @@ static PyMethodDef font_methods[] = {
     {"render", (PyCFunction)font_render, METH_VARARGS},
     {"getsize", (PyCFunction)font_getsize, METH_VARARGS},
     {"getlength", (PyCFunction)font_getlength, METH_VARARGS},
+    {"hascharacters", (PyCFunction)font_hascharacters, METH_VARARGS},
 #if FREETYPE_MAJOR > 2 || (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 9) || \
     (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 9 && FREETYPE_PATCH == 1)
     {"getvarnames", (PyCFunction)font_getvarnames, METH_NOARGS},
