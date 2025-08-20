@@ -99,7 +99,8 @@ else:
 
         if __version__ != getattr(core, "PILLOW_VERSION", None):
             msg = (
-                "The _imaging extension was built for another version of Pillow or PIL:\n"
+                "The _imaging extension was built for another version of "
+                "Pillow or PIL:\n"
                 f"Core version: {getattr(core, 'PILLOW_VERSION', None)}\n"
                 f"Pillow version: {__version__}"
             )
