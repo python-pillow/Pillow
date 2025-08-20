@@ -86,6 +86,7 @@ WARN_POSSIBLE_FORMATS: bool = False
 MAX_IMAGE_PIXELS: int | None = int(1024 * 1024 * 1024 // 4 // 3)
 
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from . import _imaging as core
 else:
@@ -205,7 +206,6 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 # --------------------------------------------------------------------
 # Registries
 
-TYPE_CHECKING = False
 if TYPE_CHECKING:
     import mmap
     from xml.etree.ElementTree import Element
