@@ -32,6 +32,7 @@ def _accept(prefix: bytes) -> bool:
     return (
         len(prefix) >= 6
         and i16(prefix, 4) in [0xAF11, 0xAF12]
+        and i16(prefix, 12) == 8  # 8-bit colour
         and i16(prefix, 14) in [0, 3]  # flags
     )
 
