@@ -86,38 +86,41 @@ WARN_POSSIBLE_FORMATS: bool = False
 MAX_IMAGE_PIXELS: int | None = int(1024 * 1024 * 1024 // 4 // 3)
 
 
-try:
-    # If the _imaging C module is not present, Pillow will not load.
-    # Note that other modules should not refer to _imaging directly;
-    # import Image and use the Image.core variable instead.
-    # Also note that Image.core is not a publicly documented interface,
-    # and should be considered private and subject to change.
+if TYPE_CHECKING:
     from . import _imaging as core
+else:
+    try:
+        # If the _imaging C module is not present, Pillow will not load.
+        # Note that other modules should not refer to _imaging directly;
+        # import Image and use the Image.core variable instead.
+        # Also note that Image.core is not a publicly documented interface,
+        # and should be considered private and subject to change.
+        from . import _imaging as core
 
-    if __version__ != getattr(core, "PILLOW_VERSION", None):
-        msg = (
-            "The _imaging extension was built for another version of Pillow or PIL:\n"
-            f"Core version: {getattr(core, 'PILLOW_VERSION', None)}\n"
-            f"Pillow version: {__version__}"
-        )
-        raise ImportError(msg)
+        if __version__ != getattr(core, "PILLOW_VERSION", None):
+            msg = (
+                "The _imaging extension was built for another version of Pillow or PIL:\n"
+                f"Core version: {getattr(core, 'PILLOW_VERSION', None)}\n"
+                f"Pillow version: {__version__}"
+            )
+            raise ImportError(msg)
 
-except ImportError as v:
-    core = DeferredError.new(ImportError("The _imaging C module is not installed."))
-    # Explanations for ways that we know we might have an import error
-    if str(v).startswith("Module use of python"):
-        # The _imaging C module is present, but not compiled for
-        # the right version (windows only).  Print a warning, if
-        # possible.
-        warnings.warn(
-            "The _imaging extension was built for another version of Python.",
-            RuntimeWarning,
-        )
-    elif str(v).startswith("The _imaging extension"):
-        warnings.warn(str(v), RuntimeWarning)
-    # Fail here anyway. Don't let people run with a mostly broken Pillow.
-    # see docs/porting.rst
-    raise
+    except ImportError as v:
+        core = DeferredError.new(ImportError("The _imaging C module is not installed."))
+        # Explanations for ways that we know we might have an import error
+        if str(v).startswith("Module use of python"):
+            # The _imaging C module is present, but not compiled for
+            # the right version (windows only).  Print a warning, if
+            # possible.
+            warnings.warn(
+                "The _imaging extension was built for another version of Python.",
+                RuntimeWarning,
+            )
+        elif str(v).startswith("The _imaging extension"):
+            warnings.warn(str(v), RuntimeWarning)
+        # Fail here anyway. Don't let people run with a mostly broken Pillow.
+        # see docs/porting.rst
+        raise
 
 
 #
