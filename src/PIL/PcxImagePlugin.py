@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[0] == 10 and prefix[1] in [0, 2, 3, 5]
+    return len(prefix) >= 2 and prefix[0] == 10 and prefix[1] in [0, 2, 3, 5]
 
 
 ##
