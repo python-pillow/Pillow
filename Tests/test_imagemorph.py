@@ -7,7 +7,7 @@ import pytest
 
 from PIL import Image, ImageMorph, _imagingmorph
 
-from .helper import assert_image_equal_tofile, hopper
+from .helper import assert_image_equal_tofile, hopper, timeout_unless_slower_valgrind
 
 
 def string_to_img(image_string: str) -> Image.Image:
@@ -266,16 +266,18 @@ def test_unknown_pattern() -> None:
         ImageMorph.LutBuilder(op_name="unknown")
 
 
-def test_pattern_syntax_error() -> None:
+@pytest.mark.parametrize(
+    "pattern", ("a pattern with a syntax error", "4:(" + "X" * 30000)
+)
+@timeout_unless_slower_valgrind(1)
+def test_pattern_syntax_error(pattern: str) -> None:
     # Arrange
     lb = ImageMorph.LutBuilder(op_name="corner")
-    new_patterns = ["a pattern with a syntax error"]
+    new_patterns = [pattern]
     lb.add_patterns(new_patterns)
 
     # Act / Assert
-    with pytest.raises(
-        Exception, match='Syntax error in pattern "a pattern with a syntax error"'
-    ):
+    with pytest.raises(Exception, match='Syntax error in pattern "'):
         lb.build_lut()
 
 
