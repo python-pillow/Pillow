@@ -175,6 +175,14 @@ def skip_unless_feature(feature: str) -> pytest.MarkDecorator:
     return pytest.mark.skipif(not features.check(feature), reason=reason)
 
 
+def has_feature_version(feature: str, required: str) -> bool:
+    version = features.version(feature)
+    assert version is not None
+    version_required = parse_version(required)
+    version_available = parse_version(version)
+    return version_available >= version_required
+
+
 def skip_unless_feature_version(
     feature: str, required: str, reason: str | None = None
 ) -> pytest.MarkDecorator:
