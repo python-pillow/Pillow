@@ -2259,7 +2259,10 @@ class Image:
                 for filter in (
                     (Resampling.NEAREST, "Image.Resampling.NEAREST"),
                     (Resampling.LANCZOS, "Image.Resampling.LANCZOS"),
-                    (Resampling.MAGIC_KERNEL_SHARP_2021, "Image.Resampling.MAGIC_KERNEL_SHARP_2021"),
+                    (
+                        Resampling.MAGIC_KERNEL_SHARP_2021,
+                        "Image.Resampling.MAGIC_KERNEL_SHARP_2021",
+                    ),
                     (Resampling.BILINEAR, "Image.Resampling.BILINEAR"),
                     (Resampling.BICUBIC, "Image.Resampling.BICUBIC"),
                     (Resampling.BOX, "Image.Resampling.BOX"),
@@ -2930,7 +2933,12 @@ class Image:
             Resampling.BILINEAR,
             Resampling.BICUBIC,
         ):
-            if resample in (Resampling.BOX, Resampling.HAMMING, Resampling.LANCZOS, Resampling.MAGIC_KERNEL_SHARP_2021):
+            if resample in (
+                Resampling.BOX,
+                Resampling.HAMMING,
+                Resampling.LANCZOS,
+                Resampling.MAGIC_KERNEL_SHARP_2021,
+            ):
                 unusable: dict[int, str] = {
                     Resampling.BOX: "Image.Resampling.BOX",
                     Resampling.HAMMING: "Image.Resampling.HAMMING",

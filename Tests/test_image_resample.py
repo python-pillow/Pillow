@@ -179,7 +179,6 @@ class TestImagingCoreResampleAccuracy:
         for channel in case.split():
             self.check_case(channel, self.make_sample(data, (10, 10)))
 
-
     @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
     def test_enlarge_box(self, mode: str) -> None:
         case = self.make_case(mode, (2, 2), 0xE1)
@@ -341,7 +340,9 @@ class TestCoreResampleAlphaCorrect:
         self.run_levels_case(case.resize((512, 32), Image.Resampling.HAMMING))
         self.run_levels_case(case.resize((512, 32), Image.Resampling.BICUBIC))
         self.run_levels_case(case.resize((512, 32), Image.Resampling.LANCZOS))
-        self.run_levels_case(case.resize((512, 32), Image.Resampling.MAGIC_KERNEL_SHARP_2021))
+        self.run_levels_case(
+            case.resize((512, 32), Image.Resampling.MAGIC_KERNEL_SHARP_2021)
+        )
 
     @pytest.mark.xfail(reason="Current implementation isn't precise enough")
     def test_levels_la(self) -> None:
@@ -351,7 +352,9 @@ class TestCoreResampleAlphaCorrect:
         self.run_levels_case(case.resize((512, 32), Image.Resampling.HAMMING))
         self.run_levels_case(case.resize((512, 32), Image.Resampling.BICUBIC))
         self.run_levels_case(case.resize((512, 32), Image.Resampling.LANCZOS))
-        self.run_levels_case(case.resize((512, 32), Image.Resampling.MAGIC_KERNEL_SHARP_2021))
+        self.run_levels_case(
+            case.resize((512, 32), Image.Resampling.MAGIC_KERNEL_SHARP_2021)
+        )
 
     def make_dirty_case(
         self, mode: str, clean_pixel: tuple[int, ...], dirty_pixel: tuple[int, ...]
@@ -395,7 +398,8 @@ class TestCoreResampleAlphaCorrect:
             case.resize((20, 20), Image.Resampling.LANCZOS), (255, 255, 0)
         )
         self.run_dirty_case(
-            case.resize((20, 20), Image.Resampling.MAGIC_KERNEL_SHARP_2021), (255, 255, 0)
+            case.resize((20, 20), Image.Resampling.MAGIC_KERNEL_SHARP_2021),
+            (255, 255, 0),
         )
 
     def test_dirty_pixels_la(self) -> None:
@@ -405,7 +409,9 @@ class TestCoreResampleAlphaCorrect:
         self.run_dirty_case(case.resize((20, 20), Image.Resampling.HAMMING), (255,))
         self.run_dirty_case(case.resize((20, 20), Image.Resampling.BICUBIC), (255,))
         self.run_dirty_case(case.resize((20, 20), Image.Resampling.LANCZOS), (255,))
-        self.run_dirty_case(case.resize((20, 20), Image.Resampling.MAGIC_KERNEL_SHARP_2021), (255,))
+        self.run_dirty_case(
+            case.resize((20, 20), Image.Resampling.MAGIC_KERNEL_SHARP_2021), (255,)
+        )
 
 
 class TestCoreResamplePasses:

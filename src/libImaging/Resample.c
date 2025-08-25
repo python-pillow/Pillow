@@ -83,7 +83,7 @@ static inline double
 magic_kernel_sharp_2021_filter(double x) {
     x = fabs(x);
     if (x < 0.5) {
-        return 577.0 / 576.0 - 239.0 / 144.0 * x *x;
+        return 577.0 / 576.0 - 239.0 / 144.0 * x * x;
     }
     if (x < 1.5) {
         return 35.0 / 36.0 * (x - 1.0) * (x - 239.0 / 140.0);
