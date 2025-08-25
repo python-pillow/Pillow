@@ -217,23 +217,36 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 
     .. versionadded:: 1.1.3
 
+.. data:: Resampling.MAGIC_KERNEL_SHARP_2021
+    :noindex:
+
+    A high-quality sharpening filter designed by John Costella, known as the
+    'Magic Kernel'. It is engineered to produce sharp results with minimal
+    resampling artifacts like ringing and aliasing.
+    This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
+    and :py:meth:`~PIL.Image.Image.thumbnail` methods.
+
+    .. versionadded:: 11.4.0
+
 
 Filters comparison table
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-+---------------------------+-------------+-----------+-------------+
-| Filter                    | Downscaling | Upscaling | Performance |
-|                           | quality     | quality   |             |
-+===========================+=============+===========+=============+
-|:data:`Resampling.NEAREST` |             |           | ⭐⭐⭐⭐⭐  |
-+---------------------------+-------------+-----------+-------------+
-|:data:`Resampling.BOX`     | ⭐          |           | ⭐⭐⭐⭐    |
-+---------------------------+-------------+-----------+-------------+
-|:data:`Resampling.BILINEAR`| ⭐          | ⭐        | ⭐⭐⭐      |
-+---------------------------+-------------+-----------+-------------+
-|:data:`Resampling.HAMMING` | ⭐⭐        |           | ⭐⭐⭐      |
-+---------------------------+-------------+-----------+-------------+
-|:data:`Resampling.BICUBIC` | ⭐⭐⭐      | ⭐⭐⭐    | ⭐⭐        |
-+---------------------------+-------------+-----------+-------------+
-|:data:`Resampling.LANCZOS` | ⭐⭐⭐⭐    | ⭐⭐⭐⭐  | ⭐          |
-+---------------------------+-------------+-----------+-------------+
++-------------------------------------------+-------------+------------+-------------+
+| Filter                                    | Downscaling | Upscaling  | Performance |
+|                                           | quality     | quality    |             |
++===========================================+=============+============+=============+
+|:data:`Resampling.NEAREST`                 |             |            | ⭐⭐⭐⭐⭐  |
++-------------------------------------------+-------------+------------+-------------+
+|:data:`Resampling.BOX`                     | ⭐          |            | ⭐⭐⭐⭐    |
++-------------------------------------------+-------------+------------+-------------+
+|:data:`Resampling.BILINEAR`                | ⭐          | ⭐         | ⭐⭐⭐      |
++-------------------------------------------+-------------+------------+-------------+
+|:data:`Resampling.HAMMING`                 | ⭐⭐        |            | ⭐⭐⭐      |
++-------------------------------------------+-------------+------------+-------------+
+|:data:`Resampling.BICUBIC`                 | ⭐⭐⭐      | ⭐⭐⭐     | ⭐⭐        |
++-------------------------------------------+-------------+------------+-------------+
+|:data:`Resampling.LANCZOS`                 | ⭐⭐⭐⭐    | ⭐⭐⭐⭐   | ⭐          |
++-------------------------------------------+-------------+------------+-------------+
+|:data:`Resampling.MAGIC_KERNEL_SHARP_2021` | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐ | ⭐⭐        |
++-------------------------------------------+-------------+------------+-------------+

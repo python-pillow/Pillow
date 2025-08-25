@@ -294,6 +294,7 @@ ImagingError_ValueError(const char *message);
 #define IMAGING_TRANSFORM_HAMMING 5
 #define IMAGING_TRANSFORM_BICUBIC 3
 #define IMAGING_TRANSFORM_LANCZOS 1
+#define IMAGING_TRANSFORM_MAGIC_KERNEL_SHARP_2021 6
 
 typedef int (*ImagingTransformMap)(double *X, double *Y, int x, int y, void *data);
 typedef int (*ImagingTransformFilter)(void *out, Imaging im, double x, double y);

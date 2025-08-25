@@ -151,6 +151,7 @@ class Resampling(IntEnum):
     HAMMING = 5
     BICUBIC = 3
     LANCZOS = 1
+    MAGIC_KERNEL_SHARP_2021 = 6
 
 
 _filters_support = {
@@ -159,6 +160,7 @@ _filters_support = {
     Resampling.HAMMING: 1.0,
     Resampling.BICUBIC: 2.0,
     Resampling.LANCZOS: 3.0,
+    Resampling.MAGIC_KERNEL_SHARP_2021: 4.5,
 }
 
 
@@ -2215,10 +2217,11 @@ class Image:
         :param resample: An optional resampling filter.  This can be
            one of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
-           :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
-           If the image has mode "1" or "P", it is always set to
-           :py:data:`Resampling.NEAREST`. Otherwise, the default filter is
-           :py:data:`Resampling.BICUBIC`. See: :ref:`concept-filters`.
+           :py:data:`Resampling.BICUBIC`, :py:data:`Resampling.LANCZOS` or
+           :py:data:`Resampling.MAGIC_KERNEL_SHARP_2021`. If the image has mode
+           "1" or "P", it is always set to :py:data:`Resampling.NEAREST`.
+           Otherwise, the default filter is :py:data:`Resampling.BICUBIC`. See:
+           :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats providing
            the source image region to be scaled.
            The values must be within (0, 0, width, height) rectangle.
@@ -2245,6 +2248,7 @@ class Image:
             Resampling.BILINEAR,
             Resampling.BICUBIC,
             Resampling.LANCZOS,
+            Resampling.MAGIC_KERNEL_SHARP_2021,
             Resampling.BOX,
             Resampling.HAMMING,
         ):
@@ -2255,6 +2259,7 @@ class Image:
                 for filter in (
                     (Resampling.NEAREST, "Image.Resampling.NEAREST"),
                     (Resampling.LANCZOS, "Image.Resampling.LANCZOS"),
+                    (Resampling.MAGIC_KERNEL_SHARP_2021, "Image.Resampling.MAGIC_KERNEL_SHARP_2021"),
                     (Resampling.BILINEAR, "Image.Resampling.BILINEAR"),
                     (Resampling.BICUBIC, "Image.Resampling.BICUBIC"),
                     (Resampling.BOX, "Image.Resampling.BOX"),
@@ -2710,10 +2715,11 @@ class Image:
         :param resample: Optional resampling filter.  This can be one
            of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
-           :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
-           If omitted, it defaults to :py:data:`Resampling.BICUBIC`.
-           (was :py:data:`Resampling.NEAREST` prior to version 2.5.0).
-           See: :ref:`concept-filters`.
+           :py:data:`Resampling.BICUBIC`, :py:data:`Resampling.LANCZOS` or
+           :py:data:`Resampling.MAGIC_KERNEL_SHARP_2021`. If omitted, it
+           defaults to :py:data:`Resampling.BICUBIC`. (was
+           :py:data:`Resampling.NEAREST` prior to version 2.5.0). See:
+           :ref:`concept-filters`.
         :param reducing_gap: Apply optimization by resizing the image
            in two steps. First, reducing the image by integer times
            using :py:meth:`~PIL.Image.Image.reduce` or
@@ -2924,11 +2930,12 @@ class Image:
             Resampling.BILINEAR,
             Resampling.BICUBIC,
         ):
-            if resample in (Resampling.BOX, Resampling.HAMMING, Resampling.LANCZOS):
+            if resample in (Resampling.BOX, Resampling.HAMMING, Resampling.LANCZOS, Resampling.MAGIC_KERNEL_SHARP_2021):
                 unusable: dict[int, str] = {
                     Resampling.BOX: "Image.Resampling.BOX",
                     Resampling.HAMMING: "Image.Resampling.HAMMING",
                     Resampling.LANCZOS: "Image.Resampling.LANCZOS",
+                    Resampling.MAGIC_KERNEL_SHARP_2021: "Image.Resampling.MAGIC_KERNEL_SHARP_2021",
                 }
                 msg = unusable[resample] + f" ({resample}) cannot be used."
             else:

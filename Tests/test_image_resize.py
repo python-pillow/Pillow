@@ -72,6 +72,7 @@ class TestImagingCoreResize:
             Image.Resampling.HAMMING,
             Image.Resampling.BICUBIC,
             Image.Resampling.LANCZOS,
+            Image.Resampling.MAGIC_KERNEL_SHARP_2021,
         ),
     )
     def test_reduce_filters(self, resample: Image.Resampling) -> None:
@@ -88,6 +89,7 @@ class TestImagingCoreResize:
             Image.Resampling.HAMMING,
             Image.Resampling.BICUBIC,
             Image.Resampling.LANCZOS,
+            Image.Resampling.MAGIC_KERNEL_SHARP_2021,
         ),
     )
     def test_enlarge_filters(self, resample: Image.Resampling) -> None:
@@ -104,6 +106,7 @@ class TestImagingCoreResize:
             Image.Resampling.HAMMING,
             Image.Resampling.BICUBIC,
             Image.Resampling.LANCZOS,
+            Image.Resampling.MAGIC_KERNEL_SHARP_2021,
         ),
     )
     @pytest.mark.parametrize(
