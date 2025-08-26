@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import sys
 from io import BytesIO
 
 import pytest
 
-from .helper import hopper, is_win32
+from PIL import Image
 
 iterations = 5000
 
@@ -18,7 +19,9 @@ valgrind --tool=massif python test-installed.py -s -v checks/check_jpeg_leaks.py
 """
 
 
-pytestmark = pytest.mark.skipif(is_win32(), reason="requires Unix or macOS")
+pytestmark = pytest.mark.skipif(
+    sys.platform.startswith("win32"), reason="requires Unix or macOS"
+)
 
 """
 pre patch:
@@ -112,10 +115,10 @@ standard_chrominance_qtable = (
     ),
 )
 def test_qtables_leak(qtables: tuple[tuple[int, ...]] | list[tuple[int, ...]]) -> None:
-    im = hopper("RGB")
-    for _ in range(iterations):
-        test_output = BytesIO()
-        im.save(test_output, "JPEG", qtables=qtables)
+    with Image.open("Tests/images/hopper.ppm") as im:
+        for _ in range(iterations):
+            test_output = BytesIO()
+            im.save(test_output, "JPEG", qtables=qtables)
 
 
 def test_exif_leak() -> None:
@@ -173,12 +176,12 @@ def test_exif_leak() -> None:
        0 +----------------------------------------------------------------------->Gi
          0                                                                   11.33
     """
-    im = hopper("RGB")
     exif = b"12345678" * 4096
 
-    for _ in range(iterations):
-        test_output = BytesIO()
-        im.save(test_output, "JPEG", exif=exif)
+    with Image.open("Tests/images/hopper.ppm") as im:
+        for _ in range(iterations):
+            test_output = BytesIO()
+            im.save(test_output, "JPEG", exif=exif)
 
 
 def test_base_save() -> None:
@@ -207,8 +210,7 @@ def test_base_save() -> None:
          | :@ @@ @ # : : :: :: @:: :::: :::: :::: : : : : : : :::::::::::: :::@:::
        0 +----------------------------------------------------------------------->Gi
          0                                                                   7.882"""
-    im = hopper("RGB")
-
-    for _ in range(iterations):
-        test_output = BytesIO()
-        im.save(test_output, "JPEG")
+    with Image.open("Tests/images/hopper.ppm") as im:
+        for _ in range(iterations):
+            test_output = BytesIO()
+            im.save(test_output, "JPEG")

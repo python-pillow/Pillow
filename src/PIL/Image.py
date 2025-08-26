@@ -103,7 +103,6 @@ try:
         raise ImportError(msg)
 
 except ImportError as v:
-    core = DeferredError.new(ImportError("The _imaging C module is not installed."))
     # Explanations for ways that we know we might have an import error
     if str(v).startswith("Module use of python"):
         # The _imaging C module is present, but not compiled for

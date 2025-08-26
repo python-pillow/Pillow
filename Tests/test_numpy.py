@@ -28,15 +28,13 @@ def test_numpy_to_image() -> None:
             a = numpy.array(data, dtype=dtype)
             a.shape = TEST_IMAGE_SIZE
             i = Image.fromarray(a)
-            if list(i.getdata()) != data:
-                print("data mismatch for", dtype)
+            assert list(i.getdata()) == data
         else:
             data = list(range(100))
             a = numpy.array([[x] * bands for x in data], dtype=dtype)
             a.shape = TEST_IMAGE_SIZE[0], TEST_IMAGE_SIZE[1], bands
             i = Image.fromarray(a)
-            if list(i.getchannel(0).getdata()) != list(range(100)):
-                print("data mismatch for", dtype)
+            assert list(i.getchannel(0).getdata()) == list(range(100))
         return i
 
     # Check supported 1-bit integer formats

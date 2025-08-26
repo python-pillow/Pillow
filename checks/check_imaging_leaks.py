@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import sys
 from collections.abc import Callable
 from typing import Any
 
@@ -8,12 +9,12 @@ import pytest
 
 from PIL import Image
 
-from .helper import is_win32
-
 min_iterations = 100
 max_iterations = 10000
 
-pytestmark = pytest.mark.skipif(is_win32(), reason="requires Unix or macOS")
+pytestmark = pytest.mark.skipif(
+    sys.platform.startswith("win32"), reason="requires Unix or macOS"
+)
 
 
 def _get_mem_usage() -> float:

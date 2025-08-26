@@ -94,7 +94,7 @@ ARCHIVE_SDIR=pillow-depends-main
 # annotations have a source code patch that is required for some platforms. If
 # you change those versions, ensure the patch is also updated.
 FREETYPE_VERSION=2.13.3
-HARFBUZZ_VERSION=11.2.1
+HARFBUZZ_VERSION=11.3.3
 LIBPNG_VERSION=1.6.50
 JPEGTURBO_VERSION=3.1.1
 OPENJPEG_VERSION=2.5.3
@@ -165,7 +165,7 @@ function build_brotli {
     local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-$BROTLI_VERSION.tar.gz)
     (cd $out_dir \
         && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib $HOST_CMAKE_FLAGS . \
-        && make install)
+        && make -j4 install)
     touch brotli-stamp
 }
 
@@ -249,7 +249,7 @@ function build_libavif {
         cp $WORKDIR/meson-cross.txt $out_dir/crossfile-apple.meson
     fi
 
-    (cd $out_dir && make install)
+    (cd $out_dir && make -j4 install)
 
     touch libavif-stamp
 }
