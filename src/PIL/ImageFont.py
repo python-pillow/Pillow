@@ -681,11 +681,7 @@ class FreeTypeFont:
         :returns: A list of the named styles in a variation font.
         :exception OSError: If the font is not a variation font.
         """
-        try:
-            names = self.font.getvarnames()
-        except AttributeError as e:
-            msg = "FreeType 2.9.1 or greater is required"
-            raise NotImplementedError(msg) from e
+        names = self.font.getvarnames()
         return [name.replace(b"\x00", b"") for name in names]
 
     def set_variation_by_name(self, name: str | bytes) -> None:
@@ -712,11 +708,7 @@ class FreeTypeFont:
         :returns: A list of the axes in a variation font.
         :exception OSError: If the font is not a variation font.
         """
-        try:
-            axes = self.font.getvaraxes()
-        except AttributeError as e:
-            msg = "FreeType 2.9.1 or greater is required"
-            raise NotImplementedError(msg) from e
+        axes = self.font.getvaraxes()
         for axis in axes:
             if axis["name"]:
                 axis["name"] = axis["name"].replace(b"\x00", b"")
@@ -727,11 +719,7 @@ class FreeTypeFont:
         :param axes: A list of values for each axis.
         :exception OSError: If the font is not a variation font.
         """
-        try:
-            self.font.setvaraxes(axes)
-        except AttributeError as e:
-            msg = "FreeType 2.9.1 or greater is required"
-            raise NotImplementedError(msg) from e
+        self.font.setvaraxes(axes)
 
 
 class TransposedFont:
