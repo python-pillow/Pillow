@@ -11,4 +11,4 @@ sphinx
 types-atheris
 types-defusedxml
 types-olefile
-types-setuptools>=75.2.0
+types-setuptools
