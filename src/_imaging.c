@@ -1677,7 +1677,8 @@ _putdata(ImagingObject *self, PyObject *args) {
             int bigendian = 0;
             if (image->type == IMAGING_TYPE_SPECIAL) {
                 // I;16*
-                if (image->mode == IMAGING_MODE_I_16B
+                if (
+                    image->mode == IMAGING_MODE_I_16B
 #ifdef WORDS_BIGENDIAN
                     || image->mode == IMAGING_MODE_I_16N
 #endif

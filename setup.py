@@ -16,7 +16,7 @@ import subprocess
 import sys
 import warnings
 from collections.abc import Iterator
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from pybind11.setup_helpers import ParallelCompile
 from setuptools import Extension, setup
