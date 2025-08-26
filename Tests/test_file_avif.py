@@ -77,8 +77,8 @@ class TestUnsupportedAvif:
     def test_unsupported(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(AvifImagePlugin, "SUPPORTED", False)
 
-        with pytest.warns(UserWarning):
-            with pytest.raises(UnidentifiedImageError):
+        with pytest.raises(UnidentifiedImageError):
+            with pytest.warns(UserWarning, match="AVIF support not installed"):
                 with Image.open(TEST_AVIF_FILE):
                     pass
 
@@ -254,7 +254,9 @@ class TestFileAvif:
             assert_image(im, "RGBA", (64, 64))
 
             # image has 876 transparent pixels
-            assert im.getchannel("A").getcolors()[0] == (876, 0)
+            colors = im.getchannel("A").getcolors()
+            assert colors is not None
+            assert colors[0] == (876, 0)
 
     def test_save_transparent(self, tmp_path: Path) -> None:
         im = Image.new("RGBA", (10, 10), (0, 0, 0, 0))

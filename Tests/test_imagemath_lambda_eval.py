@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 
-from PIL import Image, ImageMath
+from PIL import Image, ImageMath, _imagingmath
 
 
 def pixel(im: Image.Image | int) -> str | int:
@@ -53,11 +53,6 @@ def test_sanity() -> None:
         )
         == "I 3"
     )
-
-
-def test_options_deprecated() -> None:
-    with pytest.warns(DeprecationWarning):
-        assert ImageMath.lambda_eval(lambda args: 1, images) == 1
 
 
 def test_ops() -> None:
@@ -505,3 +500,31 @@ def test_logical_not_equal() -> None:
         )
         == "I 1"
     )
+
+
+def test_reflected_operands() -> None:
+    assert pixel(ImageMath.lambda_eval(lambda args: 1 + args["A"], **images)) == "I 2"
+    assert pixel(ImageMath.lambda_eval(lambda args: 1 - args["A"], **images)) == "I 0"
+    assert pixel(ImageMath.lambda_eval(lambda args: 1 * args["A"], **images)) == "I 1"
+    assert pixel(ImageMath.lambda_eval(lambda args: 1 / args["A"], **images)) == "I 1"
+    assert pixel(ImageMath.lambda_eval(lambda args: 1 % args["A"], **images)) == "I 0"
+    assert pixel(ImageMath.lambda_eval(lambda args: 1 ** args["A"], **images)) == "I 1"
+    assert pixel(ImageMath.lambda_eval(lambda args: 1 & args["A"], **images)) == "I 1"
+    assert pixel(ImageMath.lambda_eval(lambda args: 1 | args["A"], **images)) == "I 1"
+    assert pixel(ImageMath.lambda_eval(lambda args: 1 ^ args["A"], **images)) == "I 0"
+
+
+def test_unsupported_mode() -> None:
+    im = Image.new("RGB", (1, 1))
+    with pytest.raises(ValueError, match="unsupported mode: RGB"):
+        ImageMath.lambda_eval(lambda args: args["im"] + 1, im=im)
+
+
+def test_bad_operand_type(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delattr(_imagingmath, "abs_I")
+    with pytest.raises(TypeError, match="bad operand type for 'abs'"):
+        ImageMath.lambda_eval(lambda args: abs(args["I"]), I=I)
+
+    monkeypatch.delattr(_imagingmath, "max_F")
+    with pytest.raises(TypeError, match="bad operand type for 'max'"):
+        ImageMath.lambda_eval(lambda args: args["max"](args["I"], args["F"]), I=I, F=F)

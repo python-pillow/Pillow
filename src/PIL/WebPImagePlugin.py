@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from io import BytesIO
-from typing import IO, Any
 
 from . import Image, ImageFile
 
@@ -12,6 +11,9 @@ try:
 except ImportError:
     SUPPORTED = False
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
 
 _VP8_MODES_BY_IDENTIFIER = {
     b"VP8 ": "RGB",

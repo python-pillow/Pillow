@@ -175,7 +175,9 @@ class MacViewer(Viewer):
         if not os.path.exists(path):
             raise FileNotFoundError
         subprocess.call(["open", "-a", "Preview.app", path])
-        executable = sys.executable or shutil.which("python3")
+
+        pyinstaller = getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
+        executable = (not pyinstaller and sys.executable) or shutil.which("python3")
         if executable:
             subprocess.Popen(
                 [

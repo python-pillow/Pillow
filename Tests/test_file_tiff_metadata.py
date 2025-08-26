@@ -300,7 +300,7 @@ def test_empty_metadata() -> None:
     head = f.read(8)
     info = TiffImagePlugin.ImageFileDirectory(head)
     # Should not raise struct.error.
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="Corrupt EXIF data"):
         info.load(f)
 
 
@@ -481,7 +481,7 @@ def test_too_many_entries() -> None:
     ifd.tagtype[277] = TiffTags.SHORT
 
     # Should not raise ValueError.
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="Metadata Warning"):
         assert ifd[277] == 4
 
 

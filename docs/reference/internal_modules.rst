@@ -53,11 +53,6 @@ on some Python versions.
 
     An object that supports the read method.
 
-.. py:data:: TypeGuard
-    :value: typing.TypeGuard
-
-    See :py:obj:`typing.TypeGuard`.
-
 :mod:`~PIL._util` module
 ------------------------
 

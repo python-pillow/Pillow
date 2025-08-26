@@ -7,7 +7,7 @@ import shutil
 import sys
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Literal, cast
 
 import pytest
 
@@ -31,6 +31,9 @@ except ImportError:
     # Skipped via setup_module()
     pass
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import Any
 
 SRGB = "Tests/icc/sRGB_IEC61966-2-1_black_scaled.icc"
 HAVE_PROFILE = os.path.exists(SRGB)
@@ -54,10 +57,6 @@ def skip_missing() -> None:
 def test_sanity() -> None:
     # basic smoke test.
     # this mostly follows the cms_test outline.
-    with pytest.warns(DeprecationWarning):
-        v = ImageCms.versions()  # should return four strings
-    assert v[0] == "1.0.0 pil"
-    assert list(map(type, v)) == [str, str, str, str]
 
     # internal version number
     version = features.version_module("littlecms2")
@@ -212,9 +211,10 @@ def test_exceptions() -> None:
         ImageCms.getProfileName(None)  # type: ignore[arg-type]
     skip_missing()
 
-    # Python <= 3.9: "an integer is required (got type NoneType)"
-    # Python > 3.9: "'NoneType' object cannot be interpreted as an integer"
-    with pytest.raises(ImageCms.PyCMSError, match="integer"):
+    with pytest.raises(
+        ImageCms.PyCMSError,
+        match="'NoneType' object cannot be interpreted as an integer",
+    ):
         ImageCms.isIntentSupported(SRGB, None, None)  # type: ignore[arg-type]
 
 
@@ -677,12 +677,6 @@ def test_auxiliary_channels_isolated() -> None:
                 assert_image_equal(test_image.convert(dst_format[2]), reference_image)
 
 
-def test_long_modes() -> None:
-    p = ImageCms.getOpenProfile("Tests/icc/sGrey-v2-nano.icc")
-    with pytest.warns(DeprecationWarning):
-        ImageCms.buildTransform(p, p, "ABCDEFGHI", "ABCDEFGHI")
-
-
 @pytest.mark.parametrize("mode", ("RGB", "RGBA", "RGBX"))
 def test_rgb_lab(mode: str) -> None:
     im = Image.new(mode, (1, 1))
@@ -703,15 +697,14 @@ def test_cmyk_lab() -> None:
 
 
 def test_deprecation() -> None:
-    with pytest.warns(DeprecationWarning):
-        assert ImageCms.DESCRIPTION.strip().startswith("pyCMS")
-    with pytest.warns(DeprecationWarning):
-        assert ImageCms.VERSION == "1.0.0 pil"
-    with pytest.warns(DeprecationWarning):
-        assert isinstance(ImageCms.FLAGS, dict)
-
     profile = ImageCmsProfile(ImageCms.createProfile("sRGB"))
-    with pytest.warns(DeprecationWarning):
-        ImageCms.ImageCmsTransform(profile, profile, "RGBA;16B", "RGB")
-    with pytest.warns(DeprecationWarning):
-        ImageCms.ImageCmsTransform(profile, profile, "RGB", "RGBA;16B")
+    with pytest.warns(
+        DeprecationWarning, match="ImageCms.ImageCmsProfile.product_name"
+    ):
+        profile.product_name
+    with pytest.warns(
+        DeprecationWarning, match="ImageCms.ImageCmsProfile.product_info"
+    ):
+        profile.product_info
+    with pytest.raises(AttributeError):
+        profile.this_attribute_does_not_exist

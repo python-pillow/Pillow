@@ -118,8 +118,9 @@ ImagingFillRadialGradient(const char *mode) {
 
     for (y = 0; y < 256; y++) {
         for (x = 0; x < 256; x++) {
-            d = (int
-            )sqrt((double)((x - 128) * (x - 128) + (y - 128) * (y - 128)) * 2.0);
+            d = (int)sqrt(
+                (double)((x - 128) * (x - 128) + (y - 128) * (y - 128)) * 2.0
+            );
             if (d >= 255) {
                 d = 255;
             }

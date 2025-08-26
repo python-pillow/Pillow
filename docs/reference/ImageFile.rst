@@ -74,5 +74,6 @@ Constants
 ---------
 
 .. autodata:: PIL.ImageFile.LOAD_TRUNCATED_IMAGES
+.. autodata:: PIL.ImageFile.MAXBLOCK
 .. autodata:: PIL.ImageFile.ERRORS
     :annotation:

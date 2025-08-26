@@ -81,7 +81,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
     format_description = "Windows Metafile"
 
     def _open(self) -> None:
-        # check placable header
+        # check placeable header
         assert self.fp is not None
         s = self.fp.read(44)
 

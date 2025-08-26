@@ -1,7 +1,7 @@
 #!/bin/bash
 # install webp
 
-archive=libwebp-1.5.0
+archive=libwebp-1.6.0
 
 ./download-and-extract.sh $archive https://raw.githubusercontent.com/python-pillow/pillow-depends/main/$archive.tar.gz
 

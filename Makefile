@@ -75,7 +75,7 @@ debug:
 
 .PHONY: release-test
 release-test:
-	python3 Tests/check_release_notes.py
+	python3 checks/check_release_notes.py
 	python3 -m pip install -e .[tests]
 	python3 selftest.py
 	python3 -m pytest Tests
@@ -97,12 +97,26 @@ test:
 	python3 -c "import pytest" > /dev/null 2>&1 || python3 -m pip install pytest
 	python3 -m pytest -qq
 
+.PHONY: test-p
+test-p:
+	python3 -c "import xdist" > /dev/null 2>&1 || python3 -m pip install pytest-xdist
+	python3 -m pytest -qq -n auto
+
+
 .PHONY: valgrind
 valgrind:
 	python3 -c "import pytest_valgrind" > /dev/null 2>&1 || python3 -m pip install pytest-valgrind
-	PYTHONMALLOC=malloc valgrind --suppressions=Tests/oss-fuzz/python.supp --leak-check=no \
+	PILLOW_VALGRIND_TEST=true PYTHONMALLOC=malloc valgrind --suppressions=Tests/oss-fuzz/python.supp --leak-check=no \
             --log-file=/tmp/valgrind-output \
             python3 -m pytest --no-memcheck -vv --valgrind --valgrind-log=/tmp/valgrind-output
+
+.PHONY: valgrind-leak
+valgrind-leak:
+	python3 -c "import pytest_valgrind" > /dev/null 2>&1 || python3 -m pip install pytest-valgrind
+	PILLOW_VALGRIND_TEST=true PYTHONMALLOC=malloc valgrind --suppressions=Tests/oss-fuzz/python.supp \
+	    --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite \
+            --log-file=/tmp/valgrind-output \
+            python3 -m pytest -vv --valgrind --valgrind-log=/tmp/valgrind-output
 
 .PHONY: readme
 readme:

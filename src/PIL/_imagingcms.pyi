@@ -1,14 +1,14 @@
 import datetime
 import sys
-from typing import Literal, SupportsFloat, TypedDict
+from typing import Literal, SupportsFloat, TypeAlias, TypedDict
 
 from ._typing import CapsuleType
 
 littlecms_version: str | None
 
-_Tuple3f = tuple[float, float, float]
-_Tuple2x3f = tuple[_Tuple3f, _Tuple3f]
-_Tuple3x3f = tuple[_Tuple3f, _Tuple3f, _Tuple3f]
+_Tuple3f: TypeAlias = tuple[float, float, float]
+_Tuple2x3f: TypeAlias = tuple[_Tuple3f, _Tuple3f]
+_Tuple3x3f: TypeAlias = tuple[_Tuple3f, _Tuple3f, _Tuple3f]
 
 class _IccMeasurementCondition(TypedDict):
     observer: int

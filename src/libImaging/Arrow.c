@@ -36,7 +36,10 @@ ReleaseExportedSchema(struct ArrowSchema *array) {
             child->release(child);
             child->release = NULL;
         }
-        // UNDONE -- should I be releasing the children?
+        free(array->children[i]);
+    }
+    if (array->children) {
+        free(array->children);
     }
 
     // Release dictionary
@@ -98,7 +101,7 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     }
 
     /* for now, single block images */
-    if (!(im->blocks_count == 0 || im->blocks_count == 1)) {
+    if (im->blocks_count > 1) {
         return IMAGING_ARROW_MEMORY_LAYOUT;
     }
 
@@ -117,6 +120,7 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     retval = export_named_type(schema->children[0], im->arrow_band_format, "pixel");
     if (retval != 0) {
         free(schema->children[0]);
+        free(schema->children);
         schema->release(schema);
         return retval;
     }
@@ -127,9 +131,7 @@ static void
 release_const_array(struct ArrowArray *array) {
     Imaging im = (Imaging)array->private_data;
 
-    if (array->n_children == 0) {
-        ImagingDelete(im);
-    }
+    ImagingDelete(im);
 
     //  Free the buffers and the buffers array
     if (array->buffers) {
@@ -157,7 +159,7 @@ export_single_channel_array(Imaging im, struct ArrowArray *array) {
     int length = im->xsize * im->ysize;
 
     /* for now, single block images */
-    if (!(im->blocks_count == 0 || im->blocks_count == 1)) {
+    if (im->blocks_count > 1) {
         return IMAGING_ARROW_MEMORY_LAYOUT;
     }
 
@@ -200,7 +202,7 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
     int length = im->xsize * im->ysize;
 
     /* for now, single block images */
-    if (!(im->blocks_count == 0 || im->blocks_count == 1)) {
+    if (im->blocks_count > 1) {
         return IMAGING_ARROW_MEMORY_LAYOUT;
     }
 

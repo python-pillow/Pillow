@@ -271,8 +271,6 @@ ImagingSectionLeave(ImagingSectionCookie *cookie);
 /* ---------- */
 
 extern void *
-ImagingError_OSError(void);
-extern void *
 ImagingError_MemoryError(void);
 extern void *
 ImagingError_ModeError(void); /* maps to ValueError by default */
@@ -280,8 +278,6 @@ extern void *
 ImagingError_Mismatch(void); /* maps to ValueError by default */
 extern void *
 ImagingError_ValueError(const char *message);
-extern void
-ImagingError_Clear(void);
 
 /* Transform callbacks */
 /* ------------------- */
@@ -510,7 +506,15 @@ extern int
 ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void *ink, int op);
 extern int
 ImagingDrawWideLine(
-    Imaging im, int x0, int y0, int x1, int y1, const void *ink, int width, int op
+    Imaging im,
+    int x0,
+    int y0,
+    int x1,
+    int y1,
+    const void *ink,
+    int width,
+    int op,
+    Imaging mask
 );
 extern int
 ImagingDrawPieslice(
@@ -530,7 +534,14 @@ extern int
 ImagingDrawPoint(Imaging im, int x, int y, const void *ink, int op);
 extern int
 ImagingDrawPolygon(
-    Imaging im, int points, int *xy, const void *ink, int fill, int width, int op
+    Imaging im,
+    int points,
+    int *xy,
+    const void *ink,
+    int fill,
+    int width,
+    int op,
+    Imaging mask
 );
 extern int
 ImagingDrawRectangle(

@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image, QoiImagePlugin
 
-from .helper import assert_image_equal_tofile
+from .helper import assert_image_equal_tofile, hopper
 
 
 def test_sanity() -> None:
@@ -28,3 +30,28 @@ def test_invalid_file() -> None:
 
     with pytest.raises(SyntaxError):
         QoiImagePlugin.QoiImageFile(invalid_file)
+
+
+def test_op_index() -> None:
+    # QOI_OP_INDEX as the first chunk
+    with Image.open("Tests/images/op_index.qoi") as im:
+        assert im.getpixel((0, 0)) == (0, 0, 0, 0)
+
+
+def test_save(tmp_path: Path) -> None:
+    f = tmp_path / "temp.qoi"
+
+    im = hopper()
+    im.save(f, colorspace="sRGB")
+
+    assert_image_equal_tofile(im, f)
+
+    for path in ("Tests/images/default_font.png", "Tests/images/pil123rgba.png"):
+        with Image.open(path) as im:
+            im.save(f)
+
+            assert_image_equal_tofile(im, f)
+
+    im = hopper("P")
+    with pytest.raises(ValueError, match="Unsupported QOI image mode"):
+        im.save(f)

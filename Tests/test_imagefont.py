@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import Any, BinaryIO
 
 import pytest
-from packaging.version import parse as parse_version
 
 from PIL import Image, ImageDraw, ImageFont, features
 from PIL._typing import StrOrBytesPath
@@ -265,6 +264,23 @@ def test_render_multiline_text_align(
     draw.multiline_text((0, 0), TEST_TEXT, font=font, align=align)
 
     assert_image_similar_tofile(im, f"Tests/images/multiline_text{ext}.png", 0.01)
+
+
+def test_render_multiline_text_justify_anchor(
+    font: ImageFont.FreeTypeFont,
+) -> None:
+    im = Image.new("RGB", (280, 240))
+    draw = ImageDraw.Draw(im)
+    for xy, anchor in (((0, 0), "la"), ((140, 80), "ma"), ((280, 160), "ra")):
+        draw.multiline_text(
+            xy,
+            "hey you you are awesome\nthis looks awkward\nthis\nlooks awkward",
+            font=font,
+            anchor=anchor,
+            align="justify",
+        )
+
+    assert_image_equal_tofile(im, "Tests/images/multiline_text_justify_anchor.png")
 
 
 def test_unknown_align(font: ImageFont.FreeTypeFont) -> None:
@@ -674,16 +690,6 @@ def test_complex_font_settings() -> None:
 
 
 def test_variation_get(font: ImageFont.FreeTypeFont) -> None:
-    version = features.version_module("freetype2")
-    assert version is not None
-    freetype = parse_version(version)
-    if freetype < parse_version("2.9.1"):
-        with pytest.raises(NotImplementedError):
-            font.get_variation_names()
-        with pytest.raises(NotImplementedError):
-            font.get_variation_axes()
-        return
-
     with pytest.raises(OSError):
         font.get_variation_names()
     with pytest.raises(OSError):
@@ -746,14 +752,6 @@ def _check_text(font: ImageFont.FreeTypeFont, path: str, epsilon: float) -> None
 
 
 def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
-    version = features.version_module("freetype2")
-    assert version is not None
-    freetype = parse_version(version)
-    if freetype < parse_version("2.9.1"):
-        with pytest.raises(NotImplementedError):
-            font.set_variation_by_name("Bold")
-        return
-
     with pytest.raises(OSError):
         font.set_variation_by_name("Bold")
 
@@ -773,14 +771,6 @@ def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
 
 
 def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
-    version = features.version_module("freetype2")
-    assert version is not None
-    freetype = parse_version(version)
-    if freetype < parse_version("2.9.1"):
-        with pytest.raises(NotImplementedError):
-            font.set_variation_by_axes([100])
-        return
-
     with pytest.raises(OSError):
         font.set_variation_by_axes([500, 50])
 
@@ -1175,15 +1165,15 @@ def test_oom(test_file: str) -> None:
 
 def test_raqm_missing_warning(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(ImageFont.core, "HAVE_RAQM", False)
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(
+        UserWarning,
+        match="Raqm layout was requested, but Raqm is not available. "
+        "Falling back to basic layout.",
+    ):
         font = ImageFont.truetype(
             FONT_PATH, FONT_SIZE, layout_engine=ImageFont.Layout.RAQM
         )
     assert font.layout_engine == ImageFont.Layout.BASIC
-    assert str(record[-1].message) == (
-        "Raqm layout was requested, but Raqm is not available. "
-        "Falling back to basic layout."
-    )
 
 
 @pytest.mark.parametrize("size", [-1, 0])
@@ -1192,15 +1182,3 @@ def test_invalid_truetype_sizes_raise_valueerror(
 ) -> None:
     with pytest.raises(ValueError):
         ImageFont.truetype(FONT_PATH, size, layout_engine=layout_engine)
-
-
-def test_freetype_deprecation(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Arrange: mock features.version_module to return fake FreeType version
-    def fake_version_module(module: str) -> str:
-        return "2.9.0"
-
-    monkeypatch.setattr(features, "version_module", fake_version_module)
-
-    # Act / Assert
-    with pytest.warns(DeprecationWarning):
-        ImageFont.truetype(FONT_PATH, FONT_SIZE)

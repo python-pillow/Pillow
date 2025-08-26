@@ -19,7 +19,6 @@
 #
 from __future__ import annotations
 
-import itertools
 import os
 import struct
 from typing import IO, Any, cast
@@ -47,12 +46,18 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     mpf_offset = 28
     offsets: list[int] = []
-    for imSequence in itertools.chain([im], append_images):
-        for im_frame in ImageSequence.Iterator(imSequence):
+    im_sequences = [im, *append_images]
+    total = sum(getattr(seq, "n_frames", 1) for seq in im_sequences)
+    for im_sequence in im_sequences:
+        for im_frame in ImageSequence.Iterator(im_sequence):
             if not offsets:
                 # APP2 marker
+                ifd_length = 66 + 16 * total
                 im_frame.encoderinfo["extra"] = (
-                    b"\xff\xe2" + struct.pack(">H", 6 + 82) + b"MPF\0" + b" " * 82
+                    b"\xff\xe2"
+                    + struct.pack(">H", 6 + ifd_length)
+                    + b"MPF\0"
+                    + b" " * ifd_length
                 )
                 exif = im_frame.encoderinfo.get("exif")
                 if isinstance(exif, Image.Exif):
@@ -64,7 +69,9 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 JpegImagePlugin._save(im_frame, fp, filename)
                 offsets.append(fp.tell())
             else:
+                encoderinfo = im_frame._attach_default_encoderinfo(im)
                 im_frame.save(fp, "JPEG")
+                im_frame.encoderinfo = encoderinfo
                 offsets.append(fp.tell() - offsets[-1])
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()

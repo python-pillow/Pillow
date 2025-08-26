@@ -93,19 +93,11 @@ def test_sizes() -> None:
     with Image.open(TEST_FILE) as im:
         assert isinstance(im, IcnsImagePlugin.IcnsImageFile)
         for w, h, r in im.info["sizes"]:
-            wr = w * r
-            hr = h * r
-            with pytest.warns(DeprecationWarning):
-                im.size = (w, h, r)
-            im.load()
-            assert im.mode == "RGBA"
-            assert im.size == (wr, hr)
-
             # Test using load() with scale
             im.size = (w, h)
             im.load(scale=r)
             assert im.mode == "RGBA"
-            assert im.size == (wr, hr)
+            assert im.size == (w * r, h * r)
 
         # Check that we cannot load an incorrect size
         with pytest.raises(ValueError):

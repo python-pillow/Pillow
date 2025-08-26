@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import colorsys
 import itertools
-from typing import Callable
 
 from PIL import Image
 
 from .helper import assert_image_similar, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def int_to_float(i: int) -> float:

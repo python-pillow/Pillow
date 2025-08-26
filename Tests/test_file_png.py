@@ -100,11 +100,11 @@ class TestFilePng:
             assert im.format == "PNG"
             assert im.get_format_mimetype() == "image/png"
 
-        for mode in ["1", "L", "P", "RGB", "I", "I;16", "I;16B"]:
+        for mode in ["1", "L", "P", "RGB", "I;16", "I;16B"]:
             im = hopper(mode)
             im.save(test_file)
             with Image.open(test_file) as reloaded:
-                if mode in ("I", "I;16B"):
+                if mode == "I;16B":
                     reloaded = reloaded.convert(mode)
                 assert_image_equal(reloaded, im)
 
@@ -800,6 +800,16 @@ class TestFilePng:
         monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
         with Image.open("Tests/images/truncated_end_chunk.png") as im:
             assert_image_equal_tofile(im, "Tests/images/hopper.png")
+
+    def test_deprecation(self, tmp_path: Path) -> None:
+        test_file = tmp_path / "out.png"
+
+        im = hopper("I")
+        with pytest.warns(DeprecationWarning, match="Saving I mode images as PNG"):
+            im.save(test_file)
+
+        with Image.open(test_file) as reloaded:
+            assert_image_equal(im, reloaded.convert("I"))
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")

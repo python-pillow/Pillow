@@ -472,12 +472,6 @@ copy2(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-copy3(UINT8 *out, const UINT8 *in, int pixels) {
-    /* BGR;24, etc */
-    memcpy(out, in, pixels * 3);
-}
-
-static void
 copy4(UINT8 *out, const UINT8 *in, int pixels) {
     /* RGBA, CMYK quadruples */
     memcpy(out, in, 4 * pixels);
@@ -657,9 +651,6 @@ static struct {
     {"I;16", "I;16N", 16, packI16N_I16},  // LibTiff native->image endian.
     {"I;16L", "I;16N", 16, packI16N_I16},
     {"I;16B", "I;16N", 16, packI16N_I16B},
-    {"BGR;15", "BGR;15", 16, copy2},
-    {"BGR;16", "BGR;16", 16, copy2},
-    {"BGR;24", "BGR;24", 24, copy3},
 
     {NULL} /* sentinel */
 };

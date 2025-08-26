@@ -155,7 +155,8 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
         } else {
             int bigendian = 0;
             if (im->type == IMAGING_TYPE_SPECIAL) {
-                if (strcmp(im->mode, "I;16B") == 0
+                if (
+                    strcmp(im->mode, "I;16B") == 0
 #ifdef WORDS_BIGENDIAN
                     || strcmp(im->mode, "I;16N") == 0
 #endif
@@ -308,7 +309,8 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
         } else {
             int bigendian = 0;
             if (im->type == IMAGING_TYPE_SPECIAL) {
-                if (strcmp(im->mode, "I;16B") == 0
+                if (
+                    strcmp(im->mode, "I;16B") == 0
 #ifdef WORDS_BIGENDIAN
                     || strcmp(im->mode, "I;16N") == 0
 #endif

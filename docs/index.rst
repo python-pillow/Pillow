@@ -29,10 +29,6 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://github.com/python-pillow/Pillow/actions/workflows/test-mingw.yml
    :alt: GitHub Actions build status (Test MinGW)
 
-.. image:: https://github.com/python-pillow/Pillow/workflows/Test%20Cygwin/badge.svg
-   :target: https://github.com/python-pillow/Pillow/actions/workflows/test-cygwin.yml
-   :alt: GitHub Actions build status (Test Cygwin)
-
 .. image:: https://github.com/python-pillow/Pillow/workflows/Wheels/badge.svg
    :target: https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml
    :alt: GitHub Actions build status (Wheels)

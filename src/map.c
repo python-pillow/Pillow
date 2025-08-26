@@ -137,6 +137,7 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
         }
     }
 
+    im->read_only = view.readonly;
     im->destroy = mapping_destroy_buffer;
 
     Py_INCREF(target);

@@ -27,6 +27,6 @@ def test_valid_file() -> None:
 
         # Assert
         assert im.format == "MCIDAS"
-        assert im.mode == "I"
+        assert im.mode == "I;16B"
         assert im.size == (1800, 400)
         assert_image_equal_tofile(im, saved_file)
