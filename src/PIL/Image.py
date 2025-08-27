@@ -4218,6 +4218,8 @@ class Exif(_ExifBase):
             del self._info[tag]
         else:
             del self._data[tag]
+            if tag in self._ifds:
+                del self._ifds[tag]
 
     def __iter__(self) -> Iterator[int]:
         keys = set(self._data)
