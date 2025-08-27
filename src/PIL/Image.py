@@ -38,10 +38,9 @@ import struct
 import sys
 import tempfile
 import warnings
-from collections.abc import Callable, Iterator, MutableMapping, Sequence
+from collections.abc import MutableMapping
 from enum import IntEnum
-from types import ModuleType
-from typing import IO, Any, Literal, Protocol, cast
+from typing import IO, Protocol, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -63,6 +62,12 @@ try:
     from defusedxml import ElementTree
 except ImportError:
     ElementTree = None
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator, Sequence
+    from types import ModuleType
+    from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +103,6 @@ try:
         raise ImportError(msg)
 
 except ImportError as v:
-    core = DeferredError.new(ImportError("The _imaging C module is not installed."))
     # Explanations for ways that we know we might have an import error
     if str(v).startswith("Module use of python"):
         # The _imaging C module is present, but not compiled for
@@ -3566,9 +3570,8 @@ def alpha_composite(im1: Image, im2: Image) -> Image:
     """
     Alpha composite im2 over im1.
 
-    :param im1: The first image. Must have mode RGBA.
-    :param im2: The second image.  Must have mode RGBA, and the same size as
-       the first image.
+    :param im1: The first image. Must have mode RGBA or LA.
+    :param im2: The second image. Must have the same mode and size as the first image.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
@@ -4215,6 +4218,8 @@ class Exif(_ExifBase):
             del self._info[tag]
         else:
             del self._data[tag]
+            if tag in self._ifds:
+                del self._ifds[tag]
 
     def __iter__(self) -> Iterator[int]:
         keys = set(self._data)

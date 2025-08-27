@@ -25,13 +25,12 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
     int x, y;
 
     /* Check arguments */
-    if (!imDst || !imSrc || imDst->mode != IMAGING_MODE_RGBA ||
-        imDst->type != IMAGING_TYPE_UINT8 || imDst->bands != 4) {
+    if (!imDst || !imSrc ||
+        (imDst->mode != IMAGING_MODE_RGBA && imDst->mode != IMAGING_MODE_LA)) {
         return ImagingError_ModeError();
     }
 
-    if (imDst->mode != imSrc->mode || imDst->type != imSrc->type ||
-        imDst->bands != imSrc->bands || imDst->xsize != imSrc->xsize ||
+    if (imDst->mode != imSrc->mode || imDst->xsize != imSrc->xsize ||
         imDst->ysize != imSrc->ysize) {
         return ImagingError_Mismatch();
     }

@@ -1231,8 +1231,6 @@ glyph_error:
     return NULL;
 }
 
-#if FREETYPE_MAJOR > 2 || (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 9) || \
-    (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 9 && FREETYPE_PATCH == 1)
 static PyObject *
 font_getvarnames(FontObject *self) {
     int error;
@@ -1442,7 +1440,6 @@ font_setvaraxes(FontObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
-#endif
 
 static void
 font_dealloc(FontObject *self) {
@@ -1461,13 +1458,10 @@ static PyMethodDef font_methods[] = {
     {"render", (PyCFunction)font_render, METH_VARARGS},
     {"getsize", (PyCFunction)font_getsize, METH_VARARGS},
     {"getlength", (PyCFunction)font_getlength, METH_VARARGS},
-#if FREETYPE_MAJOR > 2 || (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 9) || \
-    (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 9 && FREETYPE_PATCH == 1)
     {"getvarnames", (PyCFunction)font_getvarnames, METH_NOARGS},
     {"getvaraxes", (PyCFunction)font_getvaraxes, METH_NOARGS},
     {"setvarname", (PyCFunction)font_setvarname, METH_VARARGS},
     {"setvaraxes", (PyCFunction)font_setvaraxes, METH_VARARGS},
-#endif
     {NULL, NULL}
 };
 

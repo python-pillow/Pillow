@@ -10,16 +10,19 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from collections.abc import Sequence
 from functools import lru_cache
 from io import BytesIO
-from pathlib import Path
-from typing import Any, Callable
 
 import pytest
 from packaging.version import parse as parse_version
 
 from PIL import Image, ImageFile, ImageMath, features
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+    from pathlib import Path
+    from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -170,6 +173,14 @@ def timeout_unless_slower_valgrind(timeout: float) -> pytest.MarkDecorator:
 def skip_unless_feature(feature: str) -> pytest.MarkDecorator:
     reason = f"{feature} not available"
     return pytest.mark.skipif(not features.check(feature), reason=reason)
+
+
+def has_feature_version(feature: str, required: str) -> bool:
+    version = features.version(feature)
+    assert version is not None
+    version_required = parse_version(required)
+    version_available = parse_version(version)
+    return version_available >= version_required
 
 
 def skip_unless_feature_version(

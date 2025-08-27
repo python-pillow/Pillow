@@ -388,6 +388,37 @@ class TestImage:
         assert img_colors is not None
         assert sorted(img_colors) == expected_colors
 
+    def test_alpha_composite_la(self) -> None:
+        # Arrange
+        expected_colors = sorted(
+            [
+                (3300, (255, 255)),
+                (1156, (170, 192)),
+                (1122, (128, 255)),
+                (1089, (0, 0)),
+                (1122, (255, 128)),
+                (1122, (0, 128)),
+                (1089, (0, 255)),
+            ]
+        )
+
+        dst = Image.new("LA", size=(100, 100), color=(0, 255))
+        draw = ImageDraw.Draw(dst)
+        draw.rectangle((0, 33, 100, 66), fill=(0, 128))
+        draw.rectangle((0, 67, 100, 100), fill=(0, 0))
+        src = Image.new("LA", size=(100, 100), color=(255, 255))
+        draw = ImageDraw.Draw(src)
+        draw.rectangle((33, 0, 66, 100), fill=(255, 128))
+        draw.rectangle((67, 0, 100, 100), fill=(255, 0))
+
+        # Act
+        img = Image.alpha_composite(dst, src)
+
+        # Assert
+        img_colors = img.getcolors()
+        assert img_colors is not None
+        assert sorted(img_colors) == expected_colors
+
     def test_alpha_inplace(self) -> None:
         src = Image.new("RGBA", (128, 128), "blue")
 
@@ -921,6 +952,17 @@ class TestImage:
         reloaded_exif = Image.Exif()
         reloaded_exif.load(exif.tobytes())
         assert reloaded_exif.get_ifd(0x8769) == exif.get_ifd(0x8769)
+
+    def test_delete_ifd_tag(self) -> None:
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+        exif.get_ifd(0x8769)
+        assert 0x8769 in exif
+        del exif[0x8769]
+
+        reloaded_exif = Image.Exif()
+        reloaded_exif.load(exif.tobytes())
+        assert 0x8769 not in reloaded_exif
 
     def test_exif_load_from_fp(self) -> None:
         with Image.open("Tests/images/flower.jpg") as im:

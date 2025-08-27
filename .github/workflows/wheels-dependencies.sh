@@ -94,7 +94,7 @@ ARCHIVE_SDIR=pillow-depends-main
 # annotations have a source code patch that is required for some platforms. If
 # you change those versions, ensure the patch is also updated.
 FREETYPE_VERSION=2.13.3
-HARFBUZZ_VERSION=11.2.1
+HARFBUZZ_VERSION=11.3.3
 LIBPNG_VERSION=1.6.50
 JPEGTURBO_VERSION=3.1.1
 OPENJPEG_VERSION=2.5.3
@@ -165,7 +165,7 @@ function build_brotli {
     local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-$BROTLI_VERSION.tar.gz)
     (cd $out_dir \
         && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib $HOST_CMAKE_FLAGS . \
-        && make install)
+        && make -j4 install)
     touch brotli-stamp
 }
 
@@ -186,30 +186,43 @@ function build_libavif {
 
     python3 -m pip install meson ninja
 
-    if [[ "$PLAT" == "x86_64" ]] || [ -n "$SANITIZER" ]; then
+    if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IOS_SDK" ]]) || [ -n "$SANITIZER" ]; then
         build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
     fi
 
     local build_type=MinSizeRel
+    local build_shared=ON
     local lto=ON
 
     local libavif_cmake_flags
 
-    if [ -n "$IS_MACOS" ]; then
+    if [[ -n "$IS_MACOS" ]]; then
         lto=OFF
         libavif_cmake_flags=(
             -DCMAKE_C_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto" \
             -DCMAKE_CXX_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto" \
             -DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,-S,-x,-dead_strip_dylibs" \
         )
+        if [[ -n "$IOS_SDK" ]]; then
+            build_shared=OFF
+        fi
     else
         if [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "x86_64" ]]; then
             build_type=Release
         fi
         libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
     fi
+    if [[ -n "$IOS_SDK" ]] && [[ "$PLAT" == "x86_64" ]]; then
+        libavif_cmake_flags+=(-DAOM_TARGET_CPU=generic)
+    else
+        libavif_cmake_flags+=(
+            -DAVIF_CODEC_AOM_DECODE=OFF \
+            -DAVIF_CODEC_DAV1D=LOCAL
+        )
+    fi
 
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
+
     # CONFIG_AV1_HIGHBITDEPTH=0 is a flag for libaom (included as a subproject
     # of libavif) that disables support for encoding high bit depth images.
     (cd $out_dir \
@@ -217,20 +230,27 @@ function build_libavif {
             -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX \
             -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib \
             -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib \
-            -DBUILD_SHARED_LIBS=ON \
+            -DBUILD_SHARED_LIBS=$build_shared \
             -DAVIF_LIBSHARPYUV=LOCAL \
             -DAVIF_LIBYUV=LOCAL \
             -DAVIF_CODEC_AOM=LOCAL \
             -DCONFIG_AV1_HIGHBITDEPTH=0 \
-            -DAVIF_CODEC_AOM_DECODE=OFF \
-            -DAVIF_CODEC_DAV1D=LOCAL \
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=$lto \
             -DCMAKE_C_VISIBILITY_PRESET=hidden \
             -DCMAKE_CXX_VISIBILITY_PRESET=hidden \
             -DCMAKE_BUILD_TYPE=$build_type \
             "${libavif_cmake_flags[@]}" \
-            . \
-        && make install)
+            $HOST_CMAKE_FLAGS . )
+
+    if [[ -n "$IOS_SDK" ]]; then
+        # libavif's CMake configuration generates a meson cross file... but it
+        # doesn't work for iOS cross-compilation. Copy in Pillow-generated
+        # meson-cross config to replace the cmake-generated version.
+        cp $WORKDIR/meson-cross.txt $out_dir/crossfile-apple.meson
+    fi
+
+    (cd $out_dir && make -j4 install)
+
     touch libavif-stamp
 }
 
@@ -268,10 +288,7 @@ function build {
         build_tiff
     fi
 
-    if [[ -z "$IOS_SDK" ]]; then
-        # Short term workaround; don't build libavif on iOS
-        build_libavif
-    fi
+    build_libavif
     build_libpng
     build_lcms2
     build_openjpeg
