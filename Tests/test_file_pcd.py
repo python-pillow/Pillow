@@ -6,6 +6,8 @@ import pytest
 
 from PIL import Image
 
+from .helper import assert_image_equal
+
 
 def test_load_raw() -> None:
     with Image.open("Tests/images/hopper.pcd") as im:
@@ -30,3 +32,8 @@ def test_rotated(orientation: int) -> None:
     f = BytesIO(data)
     with Image.open(f) as im:
         assert im.size == (512, 768)
+
+        with Image.open("Tests/images/hopper.pcd") as expected:
+            assert_image_equal(
+                im, expected.rotate(90 if orientation == 1 else -90, expand=True)
+            )
