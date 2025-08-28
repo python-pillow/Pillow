@@ -35,5 +35,5 @@ def test_rotated(orientation: int) -> None:
 
         with Image.open("Tests/images/hopper.pcd") as expected:
             assert_image_equal(
-                im, expected.rotate(90 if orientation == 1 else -90, expand=True)
+                im, expected.rotate(90 if orientation == 1 else 270, expand=True)
             )

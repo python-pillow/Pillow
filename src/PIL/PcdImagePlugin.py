@@ -43,7 +43,7 @@ class PcdImageFile(ImageFile.ImageFile):
         if orientation == 1:
             self.tile_post_rotate = 90
         elif orientation == 3:
-            self.tile_post_rotate = -90
+            self.tile_post_rotate = 270
 
         self._mode = "RGB"
         self._size = (512, 768) if orientation in (1, 3) else (768, 512)
