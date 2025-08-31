@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Tests potential DOS of Jpeg2kImagePlugin with 0 length block.
 # Run from anywhere that PIL is importable.
 from __future__ import annotations
