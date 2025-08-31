@@ -159,3 +159,10 @@ deprecated. Part of this functionality has been restored in Pillow 12.0.0. Since
 values do not contain information about palettes or color spaces, the parameter can be
 used to place grayscale L mode data within a P mode image, or read RGB data as YCbCr
 for example.
+
+ImageMorph operations must have length 1
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Valid ImageMorph operations are 4, N, 1 and M. By limiting the length to 1 character
+within Pillow, long execution times can be avoided if a user provided long pattern
+strings. Reported by Jang Choi.
