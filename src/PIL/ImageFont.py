@@ -126,7 +126,7 @@ class ImageFont:
 
     def _load_pilfont_data(self, file: IO[bytes], image: Image.Image) -> None:
         # read PILfont header
-        if file.readline() != b"PILfont\n":
+        if file.read(8) != b"PILfont\n":
             msg = "Not a PILfont file"
             raise SyntaxError(msg)
         file.readline()
