@@ -129,7 +129,7 @@ class ImageFont:
         if file.readline() != b"PILfont\n":
             msg = "Not a PILfont file"
             raise SyntaxError(msg)
-        file.readline().split(b";")
+        file.readline()
         self.info = []  # FIXME: should be a dictionary
         while True:
             s = file.readline()
