@@ -188,10 +188,10 @@ lint.ignore = [
   "PYI034", # flake8-pyi: typing.Self added in Python 3.11
   "UP038",  # pyupgrade: deprecated rule
 ]
-lint.per-file-ignores."Tests/oss-fuzz/fuzz_font.py" = [
+lint.per-file-ignores."Tests/oss_fuzz/fuzz_font.py" = [
   "I002",
 ]
-lint.per-file-ignores."Tests/oss-fuzz/fuzz_pillow.py" = [
+lint.per-file-ignores."Tests/oss_fuzz/fuzz_pillow.py" = [
   "I002",
 ]
 lint.flake8-pytest-style.parametrize-names-type = "csv"
