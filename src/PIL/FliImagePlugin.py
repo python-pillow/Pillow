@@ -77,8 +77,7 @@ class FliImageFile(ImageFile.ImageFile):
 
         if i16(s, 4) == 0xF100:
             # prefix chunk; ignore it
-            self.__offset = self.__offset + i32(s)
-            self.fp.seek(self.__offset)
+            self.fp.seek(self.__offset + i32(s))
             s = self.fp.read(16)
 
         if i16(s, 4) == 0xF1FA:
