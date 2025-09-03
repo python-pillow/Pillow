@@ -365,9 +365,6 @@ class AniFile:
     def sizes(self) -> list[int]:
         return [data["size"] for data in self.image_data]
 
-    def hotspots(self) -> None:
-        pass
-
 
 class AniImageFile(ImageFile.ImageFile):
     """
