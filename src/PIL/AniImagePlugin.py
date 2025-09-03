@@ -107,13 +107,10 @@ def _write_single_frame(im: Image.Image, fp: IO[bytes]) -> None:
     fp.write(icon_data)
     fram_end = fp.tell()
 
-    fp.seek(icon_offset - 4)
-    icon_size = fram_end - icon_offset
-    fp.write(o32(icon_size))
-
-    fp.seek(list_offset - 4)
-    list_size = fram_end - list_offset
-    fp.write(o32(list_size))
+    for offset in (icon_offset, list_offset):
+        fp.seek(offset - 4)
+        size = fram_end - offset
+        fp.write(o32(size))
 
     fp.seek(fram_end)
 
