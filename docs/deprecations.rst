@@ -35,11 +35,12 @@ Image.fromarray mode parameter
 
 .. deprecated:: 11.3.0
 
-Using the ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` to change data types
-has been deprecated. Since pixel values do not contain information about palettes or
-color spaces, the parameter can still be used to place grayscale L mode data within a
-P mode image, or read RGB data as YCbCr for example. If omitted, the mode will be
-automatically determined from the object's shape and type.
+Using the ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` was deprecated in
+Pillow 11.3.0. In Pillow 12.0.0, this was partially reverted, and it is now only
+deprecated when changing data types. Since pixel values do not contain information
+about palettes or color spaces, the parameter can still be used to place grayscale L
+mode data within a P mode image, or read RGB data as YCbCr for example. If omitted, the
+mode will be automatically determined from the object's shape and type.
 
 Saving I mode images as PNG
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
