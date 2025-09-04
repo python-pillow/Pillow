@@ -101,8 +101,7 @@ OPENJPEG_VERSION=2.5.3
 XZ_VERSION=5.8.1
 TIFF_VERSION=4.7.0
 LCMS2_VERSION=2.17
-ZLIB_VERSION=1.3.1
-ZLIB_NG_VERSION=2.2.4
+ZLIB_NG_VERSION=2.2.5
 LIBWEBP_VERSION=1.6.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
@@ -259,11 +258,7 @@ function build {
     if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
-    if [[ -n "$IS_MACOS" ]] && [[ "$MACOSX_DEPLOYMENT_TARGET" == "10.10" || "$MACOSX_DEPLOYMENT_TARGET" == "10.13" ]]; then
-        build_new_zlib
-    else
-        build_zlib_ng
-    fi
+    build_zlib_ng
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [[ -n "$IS_MACOS" ]]; then
