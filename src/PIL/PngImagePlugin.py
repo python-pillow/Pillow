@@ -38,9 +38,8 @@ import re
 import struct
 import warnings
 import zlib
-from collections.abc import Callable
 from enum import IntEnum
-from typing import IO, Any, NamedTuple, NoReturn, cast
+from typing import IO, NamedTuple, cast
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i16be as i16
@@ -53,6 +52,9 @@ from ._util import DeferredError
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import Any, NoReturn
+
     from . import _imaging
 
 logger = logging.getLogger(__name__)

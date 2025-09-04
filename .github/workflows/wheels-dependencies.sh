@@ -60,7 +60,7 @@ if [[ "$CIBW_PLATFORM" == "ios" ]]; then
     # on using the Xcode builder, which isn't very helpful for most of Pillow's
     # dependencies. Therefore, we lean on the OSX configurations, plus CC, CFLAGS
     # etc. to ensure the right sysroot is selected.
-    HOST_CMAKE_FLAGS="-DCMAKE_SYSTEM_NAME=$CMAKE_SYSTEM_NAME -DCMAKE_SYSTEM_PROCESSOR=$GNU_ARCH -DCMAKE_OSX_DEPLOYMENT_TARGET=$IPHONEOS_DEPLOYMENT_TARGET -DCMAKE_OSX_SYSROOT=$IOS_SDK_PATH -DBUILD_SHARED_LIBS=NO"
+    HOST_CMAKE_FLAGS="-DCMAKE_SYSTEM_NAME=$CMAKE_SYSTEM_NAME -DCMAKE_SYSTEM_PROCESSOR=$GNU_ARCH -DCMAKE_OSX_DEPLOYMENT_TARGET=$IPHONEOS_DEPLOYMENT_TARGET -DCMAKE_OSX_SYSROOT=$IOS_SDK_PATH -DBUILD_SHARED_LIBS=NO -DENABLE_SHARED=NO"
 
     # Meson needs to be pointed at a cross-platform configuration file
     # This will be generated once CC etc. have been evaluated.
@@ -94,16 +94,16 @@ ARCHIVE_SDIR=pillow-depends-main
 # annotations have a source code patch that is required for some platforms. If
 # you change those versions, ensure the patch is also updated.
 FREETYPE_VERSION=2.13.3
-HARFBUZZ_VERSION=11.2.1
-LIBPNG_VERSION=1.6.49
-JPEGTURBO_VERSION=3.1.1
+HARFBUZZ_VERSION=11.3.3
+LIBPNG_VERSION=1.6.50
+JPEGTURBO_VERSION=3.1.2
 OPENJPEG_VERSION=2.5.3
 XZ_VERSION=5.8.1
+ZSTD_VERSION=1.5.7
 TIFF_VERSION=4.7.0
 LCMS2_VERSION=2.17
-ZLIB_VERSION=1.3.1
-ZLIB_NG_VERSION=2.2.4
-LIBWEBP_VERSION=1.5.0  # Patched; next release won't need patching. See patch file.
+ZLIB_NG_VERSION=2.2.5
+LIBWEBP_VERSION=1.6.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0  # Patched; next release won't need patching. See patch file.
@@ -165,7 +165,7 @@ function build_brotli {
     local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-$BROTLI_VERSION.tar.gz)
     (cd $out_dir \
         && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib $HOST_CMAKE_FLAGS . \
-        && make install)
+        && make -j4 install)
     touch brotli-stamp
 }
 
@@ -186,30 +186,43 @@ function build_libavif {
 
     python3 -m pip install meson ninja
 
-    if [[ "$PLAT" == "x86_64" ]] || [ -n "$SANITIZER" ]; then
+    if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IOS_SDK" ]]) || [ -n "$SANITIZER" ]; then
         build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
     fi
 
     local build_type=MinSizeRel
+    local build_shared=ON
     local lto=ON
 
     local libavif_cmake_flags
 
-    if [ -n "$IS_MACOS" ]; then
+    if [[ -n "$IS_MACOS" ]]; then
         lto=OFF
         libavif_cmake_flags=(
             -DCMAKE_C_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto" \
             -DCMAKE_CXX_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto" \
             -DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,-S,-x,-dead_strip_dylibs" \
         )
+        if [[ -n "$IOS_SDK" ]]; then
+            build_shared=OFF
+        fi
     else
         if [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "x86_64" ]]; then
             build_type=Release
         fi
         libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
     fi
+    if [[ -n "$IOS_SDK" ]] && [[ "$PLAT" == "x86_64" ]]; then
+        libavif_cmake_flags+=(-DAOM_TARGET_CPU=generic)
+    else
+        libavif_cmake_flags+=(
+            -DAVIF_CODEC_AOM_DECODE=OFF \
+            -DAVIF_CODEC_DAV1D=LOCAL
+        )
+    fi
 
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
+
     # CONFIG_AV1_HIGHBITDEPTH=0 is a flag for libaom (included as a subproject
     # of libavif) that disables support for encoding high bit depth images.
     (cd $out_dir \
@@ -217,21 +230,36 @@ function build_libavif {
             -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX \
             -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib \
             -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib \
-            -DBUILD_SHARED_LIBS=ON \
+            -DBUILD_SHARED_LIBS=$build_shared \
             -DAVIF_LIBSHARPYUV=LOCAL \
             -DAVIF_LIBYUV=LOCAL \
             -DAVIF_CODEC_AOM=LOCAL \
             -DCONFIG_AV1_HIGHBITDEPTH=0 \
-            -DAVIF_CODEC_AOM_DECODE=OFF \
-            -DAVIF_CODEC_DAV1D=LOCAL \
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=$lto \
             -DCMAKE_C_VISIBILITY_PRESET=hidden \
             -DCMAKE_CXX_VISIBILITY_PRESET=hidden \
             -DCMAKE_BUILD_TYPE=$build_type \
             "${libavif_cmake_flags[@]}" \
-            . \
-        && make install)
+            $HOST_CMAKE_FLAGS . )
+
+    if [[ -n "$IOS_SDK" ]]; then
+        # libavif's CMake configuration generates a meson cross file... but it
+        # doesn't work for iOS cross-compilation. Copy in Pillow-generated
+        # meson-cross config to replace the cmake-generated version.
+        cp $WORKDIR/meson-cross.txt $out_dir/crossfile-apple.meson
+    fi
+
+    (cd $out_dir && make -j4 install)
+
     touch libavif-stamp
+}
+
+function build_zstd {
+    if [ -e zstd-stamp ]; then return; fi
+    local out_dir=$(fetch_unpack https://github.com/facebook/zstd/releases/download/v$ZSTD_VERSION/zstd-$ZSTD_VERSION.tar.gz)
+    (cd $out_dir \
+        && make -j4 install)
+    touch zstd-stamp
 }
 
 function build {
@@ -239,11 +267,7 @@ function build {
     if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
-    if [[ -n "$IS_MACOS" ]] && [[ "$MACOSX_DEPLOYMENT_TARGET" == "10.10" || "$MACOSX_DEPLOYMENT_TARGET" == "10.13" ]]; then
-        build_new_zlib
-    else
-        build_zlib_ng
-    fi
+    build_zlib_ng
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [[ -n "$IS_MACOS" ]]; then
@@ -265,13 +289,11 @@ function build {
             --with-jpeg-include-dir=$BUILD_PREFIX/include --with-jpeg-lib-dir=$BUILD_PREFIX/lib \
             --disable-webp --disable-libdeflate --disable-zstd
     else
+        build_zstd
         build_tiff
     fi
 
-    if [[ -z "$IOS_SDK" ]]; then
-        # Short term workaround; don't build libavif on iOS
-        build_libavif
-    fi
+    build_libavif
     build_libpng
     build_lcms2
     build_openjpeg
@@ -280,7 +302,11 @@ function build {
     if [[ -n "$IS_MACOS" ]]; then
         webp_cflags="$webp_cflags -Wl,-headerpad_max_install_names"
     fi
-    CFLAGS="$CFLAGS $webp_cflags" build_simple libwebp $LIBWEBP_VERSION \
+    webp_ldflags=""
+    if [[ -n "$IOS_SDK" ]]; then
+        webp_ldflags="$webp_ldflags -llzma -lz"
+    fi
+    CFLAGS="$CFLAGS $webp_cflags" LDFLAGS="$LDFLAGS $webp_ldflags" build_simple libwebp $LIBWEBP_VERSION \
         https://storage.googleapis.com/downloads.webmproject.org/releases/webp tar.gz \
         --enable-libwebpmux --enable-libwebpdemux
 
@@ -379,6 +405,15 @@ if [[ -n "$IS_MACOS" ]]; then
 fi
 
 wrap_wheel_builder build
+
+# A safety catch for iOS. iOS can't use dynamic libraries, but clang will prefer
+# to link dynamic libraries to static libraries. The only way to reliably
+# prevent this is to not have dynamic libraries available in the first place.
+# The build process *shouldn't* generate any dylibs... but just in case, purge
+# any dylibs that *have* been installed into the build prefix directory.
+if [[ -n "$IOS_SDK" ]]; then
+    find "$BUILD_PREFIX" -name "*.dylib" -exec rm -rf {} \;
+fi
 
 # Return to the project root to finish the build
 popd > /dev/null
