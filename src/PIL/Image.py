@@ -2632,7 +2632,9 @@ class Image:
         :param title: Optional title to use for the image window, where possible.
         """
 
-        _show(self, title=title)
+        from . import ImageShow
+
+        ImageShow.show(self, title)
 
     def split(self) -> tuple[Image, ...]:
         """
@@ -3797,6 +3799,7 @@ def register_encoder(name: str, encoder: type[ImageFile.PyEncoder]) -> None:
 def _show(image: Image, **options: Any) -> None:
     from . import ImageShow
 
+    deprecate("Image._show", 13, "ImageShow.show")
     ImageShow.show(image, **options)
 
 
