@@ -99,6 +99,7 @@ LIBPNG_VERSION=1.6.50
 JPEGTURBO_VERSION=3.1.2
 OPENJPEG_VERSION=2.5.3
 XZ_VERSION=5.8.1
+ZSTD_VERSION=1.5.7
 TIFF_VERSION=4.7.0
 LCMS2_VERSION=2.17
 ZLIB_NG_VERSION=2.2.5
@@ -253,6 +254,14 @@ function build_libavif {
     touch libavif-stamp
 }
 
+function build_zstd {
+    if [ -e zstd-stamp ]; then return; fi
+    local out_dir=$(fetch_unpack https://github.com/facebook/zstd/releases/download/v$ZSTD_VERSION/zstd-$ZSTD_VERSION.tar.gz)
+    (cd $out_dir \
+        && make -j4 install)
+    touch zstd-stamp
+}
+
 function build {
     build_xz
     if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
@@ -280,6 +289,7 @@ function build {
             --with-jpeg-include-dir=$BUILD_PREFIX/include --with-jpeg-lib-dir=$BUILD_PREFIX/lib \
             --disable-webp --disable-libdeflate --disable-zstd
     else
+        build_zstd
         build_tiff
     fi
 
