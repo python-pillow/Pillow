@@ -1,3 +1,19 @@
+Overview of changes leading to 0.10.3
+Tuesday, August 5, 2025
+====================================
+
+Fix raqm_set_text_utf8/utf16 reading beyond len for multibyte.
+
+Support building against SheenBidi 2.9.
+
+Fix deprecation warning with latest HarfBuzz.
+
+Overview of changes leading to 0.10.2
+Sunday, September 22, 2024
+====================================
+
+Fix Unicode codepoint conversion from UTF-16.
+
 Overview of changes leading to 0.10.1
 Wednesday, April 12, 2023
 ====================================
