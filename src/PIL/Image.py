@@ -2632,7 +2632,9 @@ class Image:
         :param title: Optional title to use for the image window, where possible.
         """
 
-        _show(self, title=title)
+        from . import ImageShow
+
+        ImageShow.show(self, title)
 
     def split(self) -> tuple[Image, ...]:
         """
@@ -3570,9 +3572,8 @@ def alpha_composite(im1: Image, im2: Image) -> Image:
     """
     Alpha composite im2 over im1.
 
-    :param im1: The first image. Must have mode RGBA.
-    :param im2: The second image.  Must have mode RGBA, and the same size as
-       the first image.
+    :param im1: The first image. Must have mode RGBA or LA.
+    :param im2: The second image. Must have the same mode and size as the first image.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
@@ -3798,6 +3799,7 @@ def register_encoder(name: str, encoder: type[ImageFile.PyEncoder]) -> None:
 def _show(image: Image, **options: Any) -> None:
     from . import ImageShow
 
+    deprecate("Image._show", 13, "ImageShow.show")
     ImageShow.show(image, **options)
 
 
@@ -4219,6 +4221,8 @@ class Exif(_ExifBase):
             del self._info[tag]
         else:
             del self._data[tag]
+            if tag in self._ifds:
+                del self._ifds[tag]
 
     def __iter__(self) -> Iterator[int]:
         keys = set(self._data)

@@ -61,6 +61,14 @@ ImageCms.ImageCmsProfile.product_name and .product_info
 ``.product_info`` attributes have been deprecated, and will be removed in
 Pillow 13 (2026-10-15). They have been set to ``None`` since Pillow 2.3.0.
 
+Image._show
+~~~~~~~~~~~
+
+.. deprecated:: 12.0.0
+
+``Image._show`` has been deprecated, and will be removed in Pillow 13 (2026-10-15).
+Use :py:meth:`~PIL.ImageShow.show` instead.
+
 Removed features
 ----------------
 
