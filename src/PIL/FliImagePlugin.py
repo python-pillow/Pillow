@@ -48,6 +48,7 @@ class FliImageFile(ImageFile.ImageFile):
 
     def _open(self) -> None:
         # HEAD
+        assert self.fp is not None
         s = self.fp.read(128)
         if not (_accept(s) and s[20:22] == b"\x00\x00"):
             msg = "not an FLI/FLC file"
@@ -110,6 +111,7 @@ class FliImageFile(ImageFile.ImageFile):
         # load palette
 
         i = 0
+        assert self.fp is not None
         for e in range(i16(self.fp.read(2))):
             s = self.fp.read(2)
             i = i + s[0]
