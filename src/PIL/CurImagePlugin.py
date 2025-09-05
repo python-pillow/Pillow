@@ -38,6 +38,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
     format_description = "Windows Cursor"
 
     def _open(self) -> None:
+        assert self.fp is not None
         offset = self.fp.tell()
 
         # check magic
