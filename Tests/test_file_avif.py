@@ -14,6 +14,7 @@ import pytest
 
 from PIL import (
     AvifImagePlugin,
+    GifImagePlugin,
     Image,
     ImageDraw,
     ImageFile,
@@ -240,6 +241,7 @@ class TestFileAvif:
         with Image.open("Tests/images/chi.gif") as im:
             im.save(temp_file)
         with Image.open(temp_file) as im:
+            assert isinstance(im, AvifImagePlugin.AvifImageFile)
             assert im.n_frames == 1
 
     def test_invalid_file(self) -> None:
@@ -598,10 +600,12 @@ class TestAvifAnimation:
         """
 
         with Image.open(TEST_AVIF_FILE) as im:
+            assert isinstance(im, AvifImagePlugin.AvifImageFile)
             assert im.n_frames == 1
             assert not im.is_animated
 
         with Image.open("Tests/images/avif/star.avifs") as im:
+            assert isinstance(im, AvifImagePlugin.AvifImageFile)
             assert im.n_frames == 5
             assert im.is_animated
 
@@ -612,11 +616,13 @@ class TestAvifAnimation:
         """
 
         with Image.open("Tests/images/avif/star.gif") as original:
+            assert isinstance(original, GifImagePlugin.GifImageFile)
             assert original.n_frames > 1
 
             temp_file = tmp_path / "temp.avif"
             original.save(temp_file, save_all=True)
             with Image.open(temp_file) as im:
+                assert isinstance(im, AvifImagePlugin.AvifImageFile)
                 assert im.n_frames == original.n_frames
 
                 # Compare first frame in P mode to frame from original GIF
@@ -636,6 +642,7 @@ class TestAvifAnimation:
 
         def check(temp_file: Path) -> None:
             with Image.open(temp_file) as im:
+                assert isinstance(im, AvifImagePlugin.AvifImageFile)
                 assert im.n_frames == 4
 
                 # Compare first frame to original
@@ -708,6 +715,7 @@ class TestAvifAnimation:
             )
 
         with Image.open(temp_file) as im:
+            assert isinstance(im, AvifImagePlugin.AvifImageFile)
             assert im.n_frames == 5
             assert im.is_animated
 
@@ -737,6 +745,7 @@ class TestAvifAnimation:
             )
 
         with Image.open(temp_file) as im:
+            assert isinstance(im, AvifImagePlugin.AvifImageFile)
             assert im.n_frames == 5
             assert im.is_animated
 
