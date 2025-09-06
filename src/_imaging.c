@@ -2419,7 +2419,12 @@ _merge(PyObject *self, PyObject *args) {
         bands[3] = band3->image;
     }
 
-    return PyImagingNew(ImagingMerge(mode, bands));
+    Imaging imOut = ImagingMerge(mode, bands);
+    if (!imOut) {
+        return NULL;
+    }
+    ImagingCopyPalette(imOut, bands[0]);
+    return PyImagingNew(imOut);
 }
 
 static PyObject *
