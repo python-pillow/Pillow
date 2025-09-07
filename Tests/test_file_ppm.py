@@ -141,6 +141,12 @@ def test_pfm_big_endian(tmp_path: Path) -> None:
         assert_image_equal_tofile(im, filename)
 
 
+def test_save_unsupported_mode(tmp_path: Path) -> None:
+    im = hopper("P")
+    with pytest.raises(OSError, match="cannot write mode P as PPM"):
+        im.save(tmp_path / "out.ppm")
+
+
 @pytest.mark.parametrize(
     "data",
     [
