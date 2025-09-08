@@ -30,6 +30,14 @@ def test_default_font(font: ImageFont.ImageFont) -> None:
     assert_image_equal_tofile(im, "Tests/images/default_font.png")
 
 
+def test_invalid_mode() -> None:
+    font = ImageFont.ImageFont()
+    fp = BytesIO()
+    with Image.open("Tests/images/hopper.png") as im:
+        with pytest.raises(TypeError, match="invalid font image mode"):
+            font._load_pilfont_data(fp, im)
+
+
 def test_without_freetype() -> None:
     original_core = ImageFont.core
     if features.check_module("freetype2"):
