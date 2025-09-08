@@ -171,4 +171,4 @@ ImageMorph operations must have length 1
 
 Valid ImageMorph operations are 4, N, 1 and M. By limiting the length to 1 character
 within Pillow, long execution times can be avoided if a user provided long pattern
-strings. Reported by Jang Choi.
+strings. Reported by Jang Choi (https://github.com/uko3211).
