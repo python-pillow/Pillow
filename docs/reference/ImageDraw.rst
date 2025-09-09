@@ -63,7 +63,7 @@ Transparency and Alpha Channel
 When generating an image in memory and adding transparent elements (for
 instance a red rectangle placed on a blue background) to be composited
 against the background (creating a purple rectangle), you may mistakenly
-assume that the base image (generated from `Image.new()`) must be use RGBA
+assume that the base image (generated from ``Image.new()``) must be use RGBA
 color space. This is incorrect. For a semi-transparent element to be
 composited against the base image, the base image object must be in the
 RGB color-space. If the base image is kept in the RGBA color space then an
