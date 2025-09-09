@@ -57,6 +57,31 @@ Color names
 
 See :ref:`color-names` for the color names supported by Pillow.
 
+Transparency and Alpha Channel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When generating an image in memory and adding transparent elements (for
+instance a red rectangle placed on a blue background) to be composited
+against the background (creating a purple rectangle), you may mistakenly
+assume that the base image (generated from `Image.new()`) must be use RGBA
+color space. This is incorrect. For a semi-transparent element to be
+composited against the base image, the base image object must be in the
+RGB color-space. If the base image is kept in the RGBA color space then an
+alpha channel mask is created and all added elements will have their
+shapes completely added to the alpha channel of the base image, causing
+the element to show as composited against 100% white.
+
+::
+
+    # generate a blank image with a blue background
+    custom_image = Image.new('RGB', (100, 100), color=(128, 128, 255))
+    # generate a draw object with the RGBA colorspace
+    d = ImageDraw.Draw(custom_image, 'RGBA')
+    # generate a red rectangle with transparency
+    d.rectangle([25, 25, 50, 50], fill=(255, 128, 128, 128))
+
+
+
 Fonts
 ^^^^^
 
