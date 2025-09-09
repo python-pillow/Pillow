@@ -2070,9 +2070,7 @@ class Image:
         :param value: The pixel value.
         """
 
-        if self.readonly:
-            self._copy()
-        self.load()
+        self._ensure_mutable()
 
         if (
             self.mode in ("P", "PA")
