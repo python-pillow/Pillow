@@ -186,6 +186,21 @@ def test_palette(mode: str) -> None:
     )
 
 
+def test_rgba_palette() -> None:
+    im = Image.new("P", (1, 1))
+
+    red = (255, 0, 0, 255)
+    translucent_black = (0, 0, 0, 127)
+    im.putpalette(red + translucent_black, "RGBA")
+
+    expanded_im = ImageOps.expand(im, 1, 1)
+
+    palette = expanded_im.palette
+    assert palette is not None
+    assert palette.mode == "RGBA"
+    assert expanded_im.convert("RGBA").getpixel((0, 0)) == translucent_black
+
+
 def test_pil163() -> None:
     # Division by zero in equalize if < 255 pixels in image (@PIL163)
 
