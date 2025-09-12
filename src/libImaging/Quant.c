@@ -1745,19 +1745,23 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
         for (i = y = 0; y < im->ysize; y++) {
             for (x = 0; x < im->xsize; x++, i++) {
                 p[i].v = im->image32[y][x];
-                if (withAlpha && p[i].c.a == 0) {
-                    if (transparency == 0) {
-                        transparency = 1;
-                        r = p[i].c.r;
-                        g = p[i].c.g;
-                        b = p[i].c.b;
-                    } else {
-                        /* Set all subsequent transparent pixels
-                        to the same colour as the first */
-                        p[i].c.r = r;
-                        p[i].c.g = g;
-                        p[i].c.b = b;
+                if (withAlpha) {
+                    if (p[i].c.a == 0) {
+                        if (transparency == 0) {
+                            transparency = 1;
+                            r = p[i].c.r;
+                            g = p[i].c.g;
+                            b = p[i].c.b;
+                        } else {
+                            /* Set all subsequent transparent pixels
+                            to the same colour as the first */
+                            p[i].c.r = r;
+                            p[i].c.g = g;
+                            p[i].c.b = b;
+                        }
                     }
+                } else {
+                    p[i].c.a = 255;
                 }
             }
         }
