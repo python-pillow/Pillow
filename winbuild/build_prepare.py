@@ -116,8 +116,8 @@ V = {
     "BROTLI": "1.1.0",
     "FREETYPE": "2.13.3",
     "FRIBIDI": "1.0.16",
-    "HARFBUZZ": "11.3.3",
-    "JPEGTURBO": "3.1.1",
+    "HARFBUZZ": "11.4.5",
+    "JPEGTURBO": "3.1.2",
     "LCMS2": "2.17",
     "LIBAVIF": "1.3.0",
     "LIBIMAGEQUANT": "4.4.0",
@@ -126,7 +126,7 @@ V = {
     "OPENJPEG": "2.5.3",
     "TIFF": "4.7.0",
     "XZ": "5.8.1",
-    "ZLIBNG": "2.2.4",
+    "ZLIBNG": "2.2.5",
 }
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
 

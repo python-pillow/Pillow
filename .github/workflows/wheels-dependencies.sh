@@ -94,15 +94,15 @@ ARCHIVE_SDIR=pillow-depends-main
 # annotations have a source code patch that is required for some platforms. If
 # you change those versions, ensure the patch is also updated.
 FREETYPE_VERSION=2.13.3
-HARFBUZZ_VERSION=11.3.3
+HARFBUZZ_VERSION=11.4.5
 LIBPNG_VERSION=1.6.50
-JPEGTURBO_VERSION=3.1.1
+JPEGTURBO_VERSION=3.1.2
 OPENJPEG_VERSION=2.5.3
 XZ_VERSION=5.8.1
+ZSTD_VERSION=1.5.7
 TIFF_VERSION=4.7.0
 LCMS2_VERSION=2.17
-ZLIB_VERSION=1.3.1
-ZLIB_NG_VERSION=2.2.4
+ZLIB_NG_VERSION=2.2.5
 LIBWEBP_VERSION=1.6.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
@@ -254,16 +254,20 @@ function build_libavif {
     touch libavif-stamp
 }
 
+function build_zstd {
+    if [ -e zstd-stamp ]; then return; fi
+    local out_dir=$(fetch_unpack https://github.com/facebook/zstd/releases/download/v$ZSTD_VERSION/zstd-$ZSTD_VERSION.tar.gz)
+    (cd $out_dir \
+        && make -j4 install)
+    touch zstd-stamp
+}
+
 function build {
     build_xz
     if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
-    if [[ -n "$IS_MACOS" ]] && [[ "$MACOSX_DEPLOYMENT_TARGET" == "10.10" || "$MACOSX_DEPLOYMENT_TARGET" == "10.13" ]]; then
-        build_new_zlib
-    else
-        build_zlib_ng
-    fi
+    build_zlib_ng
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [[ -n "$IS_MACOS" ]]; then
@@ -289,6 +293,7 @@ function build {
             --with-jpeg-include-dir=$BUILD_PREFIX/include --with-jpeg-lib-dir=$BUILD_PREFIX/lib \
             --disable-webp --disable-libdeflate --disable-zstd
     else
+        build_zstd
         build_tiff
     fi
 

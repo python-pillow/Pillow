@@ -4,7 +4,6 @@ import platform
 import sys
 
 from PIL import features
-from Tests.helper import is_pypy
 
 
 def test_wheel_modules() -> None:
@@ -53,8 +52,6 @@ def test_wheel_features() -> None:
 
     if sys.platform == "win32":
         expected_features.remove("xcb")
-    elif sys.platform == "darwin" and not is_pypy() and platform.processor() != "arm":
-        expected_features.remove("zlib_ng")
     elif sys.platform == "ios":
         # Can't distribute raqm due to licensing, and there's no system version;
         # fribidi and harfbuzz won't be available if raqm isn't available.
