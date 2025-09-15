@@ -108,9 +108,11 @@ def test_frame_size() -> None:
     # in the SOF marker of the second frame
     with Image.open("Tests/images/sugarshack_frame_size.mpo") as im:
         assert im.size == (640, 480)
+        im.load()
 
         im.seek(1)
         assert im.size == (680, 480)
+        im.load()
 
         im.seek(0)
         assert im.size == (640, 480)
