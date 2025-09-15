@@ -104,18 +104,16 @@ def test_exif(test_file: str) -> None:
 
 
 def test_frame_size() -> None:
-    # This image has been hexedited to contain a different size
-    # in the SOF marker of the second frame
-    with Image.open("Tests/images/sugarshack_frame_size.mpo") as im:
-        assert im.size == (640, 480)
+    with Image.open("Tests/images/frame_size.mpo") as im:
+        assert im.size == (56, 70)
         im.load()
 
         im.seek(1)
-        assert im.size == (680, 480)
+        assert im.size == (349, 434)
         im.load()
 
         im.seek(0)
-        assert im.size == (640, 480)
+        assert im.size == (56, 70)
 
 
 def test_ignore_frame_size() -> None:
