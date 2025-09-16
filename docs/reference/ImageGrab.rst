@@ -44,7 +44,8 @@ or the clipboard to a PIL image memory.
         .. versionadded:: 7.1.0
 
     :param window:
-        Capture a single window. On Windows, this is a HWND. On macOS, it uses windowid.
+        Capture a single window. On Windows, this is a HWND. On macOS, this is a
+        CGWindowID.
 
         .. versionadded:: 11.2.1 Windows support
         .. versionadded:: 12.0.0 macOS support
