@@ -44,7 +44,8 @@ or the clipboard to a PIL image memory.
     :param window:
         Capture a single window. On Windows, this is a HWND. On macOS, it uses windowid.
 
-        .. versionadded:: 11.2.1 (Windows), 12.0.0 (macOS)
+        .. versionadded:: 11.2.1 Windows support
+        .. versionadded:: 12.0.0 macOS support
     :return: An image
 
 .. py:function:: grabclipboard()
