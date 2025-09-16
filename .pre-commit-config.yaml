@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.2
+    rev: v0.12.11
     hooks:
       - id: ruff-check
         args: [--exit-non-zero-on-fix]
@@ -24,7 +24,7 @@ repos:
         exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.gd$|\.opt$|\.patch$)
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v20.1.7
+    rev: v21.1.0
     hooks:
       - id: clang-format
         types: [c]
@@ -36,7 +36,7 @@ repos:
       - id: rst-backticks
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
@@ -51,14 +51,14 @@ repos:
         exclude: ^.github/.*TEMPLATE|^Tests/(fonts|images)/|\.patch$
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.33.2
+    rev: 0.33.3
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
       - id: check-renovate
 
-  - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.11.0
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.12.1
     hooks:
       - id: zizmor
 
@@ -79,7 +79,7 @@ repos:
         additional_dependencies: [trove-classifiers>=2024.10.12]
 
   - repo: https://github.com/tox-dev/tox-ini-fmt
-    rev: 1.5.0
+    rev: 1.6.0
     hooks:
       - id: tox-ini-fmt
 

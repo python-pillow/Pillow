@@ -49,8 +49,7 @@ class WalImageFile(ImageFile.ImageFile):
 
         # strings are null-terminated
         self.info["name"] = header[:32].split(b"\0", 1)[0]
-        next_name = header[56 : 56 + 32].split(b"\0", 1)[0]
-        if next_name:
+        if next_name := header[56 : 56 + 32].split(b"\0", 1)[0]:
             self.info["next_name"] = next_name
 
     def load(self) -> Image.core.PixelAccess | None:

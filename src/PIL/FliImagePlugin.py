@@ -30,7 +30,7 @@ from ._util import DeferredError
 
 def _accept(prefix: bytes) -> bool:
     return (
-        len(prefix) >= 6
+        len(prefix) >= 16
         and i16(prefix, 4) in [0xAF11, 0xAF12]
         and i16(prefix, 14) in [0, 3]  # flags
     )
