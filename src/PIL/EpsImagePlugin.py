@@ -354,6 +354,9 @@ class EpsImageFile(ImageFile.ImageFile):
                 read_comment(s)
             elif bytes_mv[:9] == b"%%Trailer":
                 trailer_reached = True
+            elif bytes_mv[:14] == b"%%BeginBinary:":
+                bytecount = int(byte_arr[14:bytes_read])
+                self.fp.seek(bytecount, os.SEEK_CUR)
             bytes_read = 0
 
         # A "BoundingBox" is always required,
