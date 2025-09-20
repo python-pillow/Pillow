@@ -75,6 +75,8 @@ These platforms have been reported to work at the versions mentioned.
 | Operating system                 | | Tested Python            | | Latest tested  | | Tested     |
 |                                  | | versions                 | | Pillow version | | processors |
 +==================================+============================+==================+==============+
+| macOS 26 Tahoe                   | 3.9, 3.10, 3.11, 3.12, 3.13| 11.3.0           |arm           |
++----------------------------------+----------------------------+------------------+--------------+
 | macOS 15 Sequoia                 | 3.9, 3.10, 3.11, 3.12, 3.13| 11.3.0           |arm           |
 |                                  +----------------------------+------------------+              |
 |                                  | 3.8                        | 10.4.0           |              |
