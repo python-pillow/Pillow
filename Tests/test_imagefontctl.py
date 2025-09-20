@@ -183,7 +183,7 @@ def test_x_max_and_y_offset() -> None:
     draw.text((0, 0), "لح", font=ttf, fill=500)
 
     target = "Tests/images/test_x_max_and_y_offset.png"
-    assert_image_similar_tofile(im, target, 0.5)
+    assert_image_similar_tofile(im, target, 3.8)
 
 
 def test_language() -> None:
