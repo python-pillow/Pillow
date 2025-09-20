@@ -19,6 +19,7 @@ from .helper import (
     assert_image_equal,
     assert_image_equal_tofile,
     assert_image_similar_tofile,
+    has_feature_version,
     is_win32,
     skip_unless_feature,
     skip_unless_feature_version,
@@ -549,7 +550,7 @@ def test_default_font() -> None:
     draw.text((10, 60), txt, font=larger_default_font)
 
     # Assert
-    assert_image_equal_tofile(im, "Tests/images/default_font_freetype.png")
+    assert_image_similar_tofile(im, "Tests/images/default_font_freetype.png", 0.13)
 
 
 @pytest.mark.parametrize("mode", ("", "1", "RGBA"))
@@ -1055,7 +1056,10 @@ def test_colr(layout_engine: ImageFont.Layout) -> None:
 
     d.text((15, 5), "Bungee", font=font, embedded_color=True)
 
-    assert_image_similar_tofile(im, "Tests/images/colr_bungee.png", 21)
+    if has_feature_version("freetype2", "2.14.0"):
+        assert_image_similar_tofile(im, "Tests/images/colr_bungee.png", 6.1)
+    else:
+        assert_image_similar_tofile(im, "Tests/images/colr_bungee_older.png", 21)
 
 
 @skip_unless_feature_version("freetype2", "2.10.0")
@@ -1071,7 +1075,7 @@ def test_colr_mask(layout_engine: ImageFont.Layout) -> None:
 
     d.text((15, 5), "Bungee", "black", font=font)
 
-    assert_image_similar_tofile(im, "Tests/images/colr_bungee_mask.png", 22)
+    assert_image_similar_tofile(im, "Tests/images/colr_bungee_mask.png", 14.1)
 
 
 def test_woff2(layout_engine: ImageFont.Layout) -> None:
