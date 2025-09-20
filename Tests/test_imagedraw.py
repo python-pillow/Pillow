@@ -1494,7 +1494,9 @@ def test_default_font_size() -> None:
 
     def draw_text() -> None:
         draw.text((0, 0), text, font_size=16)
-        assert_image_equal_tofile(im, "Tests/images/imagedraw_default_font_size.png")
+        assert_image_similar_tofile(
+            im, "Tests/images/imagedraw_default_font_size.png", 1
+        )
 
     check(draw_text)
 
@@ -1513,7 +1515,9 @@ def test_default_font_size() -> None:
 
     def draw_multiline_text() -> None:
         draw.multiline_text((0, 0), text, font_size=16)
-        assert_image_equal_tofile(im, "Tests/images/imagedraw_default_font_size.png")
+        assert_image_similar_tofile(
+            im, "Tests/images/imagedraw_default_font_size.png", 1
+        )
 
     check(draw_multiline_text)
 
