@@ -103,7 +103,7 @@ jobs:
             cibw_arch: arm64_iphonesimulator
           - name: "iOS x86_64 simulator"
             platform: ios
-            os: macos-13
+            os: macos-14
             cibw_arch: x86_64_iphonesimulator
     steps:
       - uses: actions/checkout@v5
