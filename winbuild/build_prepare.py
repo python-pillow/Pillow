@@ -123,7 +123,7 @@ V = {
     "LIBIMAGEQUANT": "4.4.0",
     "LIBPNG": "1.6.50",
     "LIBWEBP": "1.6.0",
-    "OPENJPEG": "2.5.3",
+    "OPENJPEG": "2.5.4",
     "TIFF": "4.7.0",
     "XZ": "5.8.1",
     "ZLIBNG": "2.2.5",
