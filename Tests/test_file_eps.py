@@ -197,6 +197,14 @@ def test_load_long_binary_data(prefix: bytes) -> None:
         assert img.format == "EPS"
 
 
+def test_begin_binary() -> None:
+    with open("Tests/images/eps/binary_preview_map.eps", "rb") as fp:
+        data = bytearray(fp.read())
+    data[76875 : 76875 + 11] = b"%" * 11
+    with Image.open(io.BytesIO(data)) as img:
+        assert img.size == (399, 480)
+
+
 @mark_if_feature_version(
     pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
 )
