@@ -2,21 +2,10 @@
 
 set -e
 
-if [[ "$ImageOS" == "macos13" ]]; then
-    brew uninstall gradle maven
-
-    wget https://raw.githubusercontent.com/python-pillow/pillow-depends/main/freetype-2.14.1.tar.gz
-    tar -xvzf freetype-2.14.1.tar.gz
-    (cd freetype-2.14.1 \
-        && ./configure \
-        && make -j4 \
-        && make install)
-else
-    brew install freetype
-fi
 brew install \
     aom \
     dav1d \
+    freetype \
     ghostscript \
     jpeg-turbo \
     libimagequant \

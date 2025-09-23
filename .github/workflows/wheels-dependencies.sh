@@ -109,6 +109,11 @@ LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0  # Patched; next release won't need patching. See patch file.
 LIBAVIF_VERSION=1.3.0
 
+function macos_intel_cross_build_setup {
+    # Prevent multibuild from disabling cross compiling on arm64
+    :
+}
+
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
     # This essentially duplicates the Homebrew recipe.
@@ -267,7 +272,11 @@ function build {
     if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
-    build_zlib_ng
+    if [[ -n "$IS_MACOS" ]]; then
+        CFLAGS="$CFLAGS -headerpad_max_install_names" build_zlib_ng
+    else
+        build_zlib_ng
+    fi
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [[ -n "$IS_MACOS" ]]; then
