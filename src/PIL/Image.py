@@ -793,7 +793,11 @@ class Image:
 
         from . import ImageFile
 
-        bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
+        mode_descr = ImageMode.getmode(self.mode)
+        bytes_per_value = int(mode_descr.typestr[-1])
+        channels = len(mode_descr.bands)
+        bufsize = self.height * self.width * channels * bytes_per_value
+        bufsize = max(ImageFile.MAXBLOCK, bufsize)  # see RawEncode.c
 
         output = []
         while True:
