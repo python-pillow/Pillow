@@ -124,7 +124,7 @@ V = {
     "LIBPNG": "1.6.50",
     "LIBWEBP": "1.6.0",
     "OPENJPEG": "2.5.4",
-    "TIFF": "4.7.0",
+    "TIFF": "4.7.1",
     "XZ": "5.8.1",
     "ZLIBNG": "2.2.5",
 }
@@ -227,12 +227,6 @@ DEPS: dict[str, dict[str, Any]] = {
             r"libtiff\tif_webp.c": {
                 # link against libwebp.lib
                 "#ifdef WEBP_SUPPORT": '#ifdef WEBP_SUPPORT\n#pragma comment(lib, "libwebp.lib")',  # noqa: E501
-            },
-            r"test\CMakeLists.txt": {
-                "add_executable(test_write_read_tags ../placeholder.h)": "",
-                "target_sources(test_write_read_tags PRIVATE test_write_read_tags.c)": "",  # noqa: E501
-                "target_link_libraries(test_write_read_tags PRIVATE tiff)": "",
-                "list(APPEND simple_tests test_write_read_tags)": "",
             },
         },
         "build": [
