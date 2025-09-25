@@ -235,7 +235,6 @@ DEPS: dict[str, dict[str, Any]] = {
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
                 "-DWebP_LIBRARY=libwebp",
                 '-DCMAKE_C_FLAGS="-nologo -DLZMA_API_STATIC"',
-                "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
             )
         ],
         "headers": [r"libtiff\tiff*.h"],
