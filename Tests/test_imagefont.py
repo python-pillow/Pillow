@@ -493,6 +493,11 @@ def test_stroke_mask() -> None:
     assert mask.getpixel((42, 5)) == 255
 
 
+def test_load_invalid_file() -> None:
+    with pytest.raises(SyntaxError, match="Not a PILfont file"):
+        ImageFont.load("Tests/images/1_trns.png")
+
+
 def test_load_when_image_not_found() -> None:
     with tempfile.NamedTemporaryFile(delete=False) as tmp:
         pass
