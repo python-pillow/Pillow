@@ -106,6 +106,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     _close_exclusive_fp_after_loading = False
 
     def _open(self) -> None:
+        assert self.fp is not None
         self.fp.seek(0)  # prep the fp in order to pass the JPEG test
         JpegImagePlugin.JpegImageFile._open(self)
         self._after_jpeg_open()
@@ -125,6 +126,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         assert self.n_frames == len(self.__mpoffsets)
         del self.info["mpoffset"]  # no longer needed
         self.is_animated = self.n_frames > 1
+        assert self.fp is not None
         self._fp = self.fp  # FIXME: hack
         self._fp.seek(self.__mpoffsets[0])  # get ready to read first frame
         self.__frame = 0

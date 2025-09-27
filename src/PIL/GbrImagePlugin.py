@@ -42,6 +42,7 @@ class GbrImageFile(ImageFile.ImageFile):
     format_description = "GIMP brush file"
 
     def _open(self) -> None:
+        assert self.fp is not None
         header_size = i32(self.fp.read(4))
         if header_size < 20:
             msg = "not a GIMP brush"
@@ -88,6 +89,7 @@ class GbrImageFile(ImageFile.ImageFile):
 
     def load(self) -> Image.core.PixelAccess | None:
         if self._im is None:
+            assert self.fp is not None
             self.im = Image.core.new(self.mode, self.size)
             self.frombytes(self.fp.read(self._data_size))
         return Image.Image.load(self)
