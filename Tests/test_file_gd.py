@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from io import BytesIO
+
 import pytest
 
 from PIL import GdImageFile, UnidentifiedImageError
@@ -14,6 +16,14 @@ def test_sanity() -> None:
         assert im.size == (128, 128)
         assert im.format == "GD"
         assert_image_similar_tofile(im.convert("RGB"), "Tests/images/hopper.jpg", 14)
+
+
+def test_transparency() -> None:
+    with open(TEST_GD_FILE, "rb") as fp:
+        data = bytearray(fp.read())
+    data[7:11] = b"\x00\x00\x00\x05"
+    with GdImageFile.open(BytesIO(data)) as im:
+        assert im.info["transparency"] == 5
 
 
 def test_bad_mode() -> None:
