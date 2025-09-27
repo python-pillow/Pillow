@@ -877,146 +877,11 @@ I16_RGB(UINT8 *out, const UINT8 *in, int xsize) {
     }
 }
 
-static struct {
-    const char *from;
-    const char *to;
-    ImagingShuffler convert;
-} converters[] = {
-
-    {"1", "L", bit2l},
-    {"1", "I", bit2i},
-    {"1", "F", bit2f},
-    {"1", "RGB", bit2rgb},
-    {"1", "RGBA", bit2rgb},
-    {"1", "RGBX", bit2rgb},
-    {"1", "CMYK", bit2cmyk},
-    {"1", "YCbCr", bit2ycbcr},
-    {"1", "HSV", bit2hsv},
-
-    {"L", "1", l2bit},
-    {"L", "LA", l2la},
-    {"L", "I", l2i},
-    {"L", "F", l2f},
-    {"L", "RGB", l2rgb},
-    {"L", "RGBA", l2rgb},
-    {"L", "RGBX", l2rgb},
-    {"L", "CMYK", l2cmyk},
-    {"L", "YCbCr", l2ycbcr},
-    {"L", "HSV", l2hsv},
-
-    {"LA", "L", la2l},
-    {"LA", "La", lA2la},
-    {"LA", "RGB", la2rgb},
-    {"LA", "RGBA", la2rgb},
-    {"LA", "RGBX", la2rgb},
-    {"LA", "CMYK", la2cmyk},
-    {"LA", "YCbCr", la2ycbcr},
-    {"LA", "HSV", la2hsv},
-
-    {"La", "LA", la2lA},
-
-    {"I", "L", i2l},
-    {"I", "F", i2f},
-    {"I", "RGB", i2rgb},
-    {"I", "RGBA", i2rgb},
-    {"I", "RGBX", i2rgb},
-    {"I", "HSV", i2hsv},
-
-    {"F", "L", f2l},
-    {"F", "I", f2i},
-
-    {"RGB", "1", rgb2bit},
-    {"RGB", "L", rgb2l},
-    {"RGB", "LA", rgb2la},
-    {"RGB", "La", rgb2la},
-    {"RGB", "I", rgb2i},
-    {"RGB", "I;16", rgb2i16l},
-    {"RGB", "I;16L", rgb2i16l},
-    {"RGB", "I;16B", rgb2i16b},
-#ifdef WORDS_BIGENDIAN
-    {"RGB", "I;16N", rgb2i16b},
-#else
-    {"RGB", "I;16N", rgb2i16l},
-#endif
-    {"RGB", "F", rgb2f},
-    {"RGB", "RGBA", rgb2rgba},
-    {"RGB", "RGBa", rgb2rgba},
-    {"RGB", "RGBX", rgb2rgba},
-    {"RGB", "CMYK", rgb2cmyk},
-    {"RGB", "YCbCr", ImagingConvertRGB2YCbCr},
-    {"RGB", "HSV", rgb2hsv},
-
-    {"RGBA", "1", rgb2bit},
-    {"RGBA", "L", rgb2l},
-    {"RGBA", "LA", rgba2la},
-    {"RGBA", "I", rgb2i},
-    {"RGBA", "F", rgb2f},
-    {"RGBA", "RGB", rgba2rgb},
-    {"RGBA", "RGBa", rgbA2rgba},
-    {"RGBA", "RGBX", rgb2rgba},
-    {"RGBA", "CMYK", rgb2cmyk},
-    {"RGBA", "YCbCr", ImagingConvertRGB2YCbCr},
-    {"RGBA", "HSV", rgb2hsv},
-
-    {"RGBa", "RGBA", rgba2rgbA},
-    {"RGBa", "RGB", rgba2rgb_},
-
-    {"RGBX", "1", rgb2bit},
-    {"RGBX", "L", rgb2l},
-    {"RGBX", "LA", rgb2la},
-    {"RGBX", "I", rgb2i},
-    {"RGBX", "F", rgb2f},
-    {"RGBX", "RGB", rgba2rgb},
-    {"RGBX", "CMYK", rgb2cmyk},
-    {"RGBX", "YCbCr", ImagingConvertRGB2YCbCr},
-    {"RGBX", "HSV", rgb2hsv},
-
-    {"CMYK", "RGB", cmyk2rgb},
-    {"CMYK", "RGBA", cmyk2rgb},
-    {"CMYK", "RGBX", cmyk2rgb},
-    {"CMYK", "HSV", cmyk2hsv},
-
-    {"YCbCr", "L", ycbcr2l},
-    {"YCbCr", "LA", ycbcr2la},
-    {"YCbCr", "RGB", ImagingConvertYCbCr2RGB},
-
-    {"HSV", "RGB", hsv2rgb},
-
-    {"I", "I;16", I_I16L},
-    {"I;16", "I", I16L_I},
-    {"I;16", "RGB", I16_RGB},
-    {"L", "I;16", L_I16L},
-    {"I;16", "L", I16L_L},
-
-    {"I", "I;16L", I_I16L},
-    {"I;16L", "I", I16L_I},
-    {"I", "I;16B", I_I16B},
-    {"I;16B", "I", I16B_I},
-
-    {"L", "I;16L", L_I16L},
-    {"I;16L", "L", I16L_L},
-    {"L", "I;16B", L_I16B},
-    {"I;16B", "L", I16B_L},
-#ifdef WORDS_BIGENDIAN
-    {"L", "I;16N", L_I16B},
-    {"I;16N", "L", I16B_L},
-#else
-    {"L", "I;16N", L_I16L},
-    {"I;16N", "L", I16L_L},
-#endif
-
-    {"I;16", "F", I16L_F},
-    {"I;16L", "F", I16L_F},
-    {"I;16B", "F", I16B_F},
-
-    {NULL}
-};
-
-/* FIXME: translate indexed versions to pointer versions below this line */
-
 /* ------------------- */
 /* Palette conversions */
 /* ------------------- */
+
+/* FIXME: translate indexed versions to pointer versions below this line */
 
 static void
 p2bit(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
@@ -1065,13 +930,13 @@ pa2p(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 p2pa(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    int rgb = strcmp(palette->mode, "RGB");
+    const int rgb = palette->mode == IMAGING_MODE_RGB;
     for (x = 0; x < xsize; x++, in++) {
         const UINT8 *rgba = &palette->palette[in[0] * 4];
         *out++ = in[0];
         *out++ = in[0];
         *out++ = in[0];
-        *out++ = rgb == 0 ? 255 : rgba[3];
+        *out++ = rgb ? 255 : rgba[3];
     }
 }
 
@@ -1225,7 +1090,7 @@ pa2ycbcr(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 }
 
 static Imaging
-frompalette(Imaging imOut, Imaging imIn, const char *mode) {
+frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
     ImagingSectionCookie cookie;
     int alpha;
     int y;
@@ -1237,31 +1102,31 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode) {
         return (Imaging)ImagingError_ValueError("no palette");
     }
 
-    alpha = !strcmp(imIn->mode, "PA");
+    alpha = imIn->mode == IMAGING_MODE_PA;
 
-    if (strcmp(mode, "1") == 0) {
+    if (mode == IMAGING_MODE_1) {
         convert = alpha ? pa2bit : p2bit;
-    } else if (strcmp(mode, "L") == 0) {
+    } else if (mode == IMAGING_MODE_L) {
         convert = alpha ? pa2l : p2l;
-    } else if (strcmp(mode, "LA") == 0) {
+    } else if (mode == IMAGING_MODE_LA) {
         convert = alpha ? pa2la : p2la;
-    } else if (strcmp(mode, "P") == 0) {
+    } else if (mode == IMAGING_MODE_P) {
         convert = pa2p;
-    } else if (strcmp(mode, "PA") == 0) {
+    } else if (mode == IMAGING_MODE_PA) {
         convert = p2pa;
-    } else if (strcmp(mode, "I") == 0) {
+    } else if (mode == IMAGING_MODE_I) {
         convert = alpha ? pa2i : p2i;
-    } else if (strcmp(mode, "F") == 0) {
+    } else if (mode == IMAGING_MODE_F) {
         convert = alpha ? pa2f : p2f;
-    } else if (strcmp(mode, "RGB") == 0) {
+    } else if (mode == IMAGING_MODE_RGB) {
         convert = alpha ? pa2rgb : p2rgb;
-    } else if (strcmp(mode, "RGBA") == 0 || strcmp(mode, "RGBX") == 0) {
+    } else if (mode == IMAGING_MODE_RGBA || mode == IMAGING_MODE_RGBX) {
         convert = alpha ? pa2rgba : p2rgba;
-    } else if (strcmp(mode, "CMYK") == 0) {
+    } else if (mode == IMAGING_MODE_CMYK) {
         convert = alpha ? pa2cmyk : p2cmyk;
-    } else if (strcmp(mode, "YCbCr") == 0) {
+    } else if (mode == IMAGING_MODE_YCbCr) {
         convert = alpha ? pa2ycbcr : p2ycbcr;
-    } else if (strcmp(mode, "HSV") == 0) {
+    } else if (mode == IMAGING_MODE_HSV) {
         convert = alpha ? pa2hsv : p2hsv;
     } else {
         return (Imaging)ImagingError_ValueError("conversion not supported");
@@ -1271,7 +1136,7 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode) {
     if (!imOut) {
         return NULL;
     }
-    if (strcmp(mode, "P") == 0 || strcmp(mode, "PA") == 0) {
+    if (mode == IMAGING_MODE_P || mode == IMAGING_MODE_PA) {
         ImagingPaletteDelete(imOut->palette);
         imOut->palette = ImagingPaletteDuplicate(imIn->palette);
     }
@@ -1295,24 +1160,26 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode) {
 #endif
 static Imaging
 topalette(
-    Imaging imOut, Imaging imIn, const char *mode, ImagingPalette inpalette, int dither
+    Imaging imOut, Imaging imIn, const ModeID mode, ImagingPalette inpalette, int dither
 ) {
     ImagingSectionCookie cookie;
     int alpha;
     int x, y;
     ImagingPalette palette = inpalette;
 
-    /* Map L or RGB/RGBX/RGBA to palette image */
-    if (strcmp(imIn->mode, "L") != 0 && strncmp(imIn->mode, "RGB", 3) != 0) {
+    /* Map L or RGB/RGBX/RGBA/RGBa to palette image */
+    if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_RGB &&
+        imIn->mode != IMAGING_MODE_RGBX && imIn->mode != IMAGING_MODE_RGBA &&
+        imIn->mode != IMAGING_MODE_RGBa) {
         return (Imaging)ImagingError_ValueError("conversion not supported");
     }
 
-    alpha = !strcmp(mode, "PA");
+    alpha = mode == IMAGING_MODE_PA;
 
     if (palette == NULL) {
         /* FIXME: make user configurable */
         if (imIn->bands == 1) {
-            palette = ImagingPaletteNew("RGB");
+            palette = ImagingPaletteNew(IMAGING_MODE_RGB);
 
             palette->size = 256;
             int i;
@@ -1499,11 +1366,11 @@ tobilevel(Imaging imOut, Imaging imIn) {
     int *errors;
 
     /* Map L or RGB to dithered 1 image */
-    if (strcmp(imIn->mode, "L") != 0 && strcmp(imIn->mode, "RGB") != 0) {
+    if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_RGB) {
         return (Imaging)ImagingError_ValueError("conversion not supported");
     }
 
-    imOut = ImagingNew2Dirty("1", imOut, imIn);
+    imOut = ImagingNew2Dirty(IMAGING_MODE_1, imOut, imIn);
     if (!imOut) {
         return NULL;
     }
@@ -1585,19 +1452,152 @@ tobilevel(Imaging imOut, Imaging imIn) {
 #pragma optimize("", on)
 #endif
 
+/* ------------------- */
+/* Conversion handlers */
+/* ------------------- */
+
+static struct {
+    const ModeID from;
+    const ModeID to;
+    ImagingShuffler convert;
+} converters[] = {
+    {IMAGING_MODE_1, IMAGING_MODE_L, bit2l},
+    {IMAGING_MODE_1, IMAGING_MODE_I, bit2i},
+    {IMAGING_MODE_1, IMAGING_MODE_F, bit2f},
+    {IMAGING_MODE_1, IMAGING_MODE_RGB, bit2rgb},
+    {IMAGING_MODE_1, IMAGING_MODE_RGBA, bit2rgb},
+    {IMAGING_MODE_1, IMAGING_MODE_RGBX, bit2rgb},
+    {IMAGING_MODE_1, IMAGING_MODE_CMYK, bit2cmyk},
+    {IMAGING_MODE_1, IMAGING_MODE_YCbCr, bit2ycbcr},
+    {IMAGING_MODE_1, IMAGING_MODE_HSV, bit2hsv},
+
+    {IMAGING_MODE_L, IMAGING_MODE_1, l2bit},
+    {IMAGING_MODE_L, IMAGING_MODE_LA, l2la},
+    {IMAGING_MODE_L, IMAGING_MODE_I, l2i},
+    {IMAGING_MODE_L, IMAGING_MODE_F, l2f},
+    {IMAGING_MODE_L, IMAGING_MODE_RGB, l2rgb},
+    {IMAGING_MODE_L, IMAGING_MODE_RGBA, l2rgb},
+    {IMAGING_MODE_L, IMAGING_MODE_RGBX, l2rgb},
+    {IMAGING_MODE_L, IMAGING_MODE_CMYK, l2cmyk},
+    {IMAGING_MODE_L, IMAGING_MODE_YCbCr, l2ycbcr},
+    {IMAGING_MODE_L, IMAGING_MODE_HSV, l2hsv},
+
+    {IMAGING_MODE_LA, IMAGING_MODE_L, la2l},
+    {IMAGING_MODE_LA, IMAGING_MODE_La, lA2la},
+    {IMAGING_MODE_LA, IMAGING_MODE_RGB, la2rgb},
+    {IMAGING_MODE_LA, IMAGING_MODE_RGBA, la2rgb},
+    {IMAGING_MODE_LA, IMAGING_MODE_RGBX, la2rgb},
+    {IMAGING_MODE_LA, IMAGING_MODE_CMYK, la2cmyk},
+    {IMAGING_MODE_LA, IMAGING_MODE_YCbCr, la2ycbcr},
+    {IMAGING_MODE_LA, IMAGING_MODE_HSV, la2hsv},
+
+    {IMAGING_MODE_La, IMAGING_MODE_LA, la2lA},
+
+    {IMAGING_MODE_I, IMAGING_MODE_L, i2l},
+    {IMAGING_MODE_I, IMAGING_MODE_F, i2f},
+    {IMAGING_MODE_I, IMAGING_MODE_RGB, i2rgb},
+    {IMAGING_MODE_I, IMAGING_MODE_RGBA, i2rgb},
+    {IMAGING_MODE_I, IMAGING_MODE_RGBX, i2rgb},
+    {IMAGING_MODE_I, IMAGING_MODE_HSV, i2hsv},
+
+    {IMAGING_MODE_F, IMAGING_MODE_L, f2l},
+    {IMAGING_MODE_F, IMAGING_MODE_I, f2i},
+
+    {IMAGING_MODE_RGB, IMAGING_MODE_1, rgb2bit},
+    {IMAGING_MODE_RGB, IMAGING_MODE_L, rgb2l},
+    {IMAGING_MODE_RGB, IMAGING_MODE_LA, rgb2la},
+    {IMAGING_MODE_RGB, IMAGING_MODE_La, rgb2la},
+    {IMAGING_MODE_RGB, IMAGING_MODE_I, rgb2i},
+    {IMAGING_MODE_RGB, IMAGING_MODE_I_16, rgb2i16l},
+    {IMAGING_MODE_RGB, IMAGING_MODE_I_16L, rgb2i16l},
+    {IMAGING_MODE_RGB, IMAGING_MODE_I_16B, rgb2i16b},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_RGB, IMAGING_MODE_I_16N, rgb2i16b},
+#else
+    {IMAGING_MODE_RGB, IMAGING_MODE_I_16N, rgb2i16l},
+#endif
+    {IMAGING_MODE_RGB, IMAGING_MODE_F, rgb2f},
+    {IMAGING_MODE_RGB, IMAGING_MODE_RGBA, rgb2rgba},
+    {IMAGING_MODE_RGB, IMAGING_MODE_RGBa, rgb2rgba},
+    {IMAGING_MODE_RGB, IMAGING_MODE_RGBX, rgb2rgba},
+    {IMAGING_MODE_RGB, IMAGING_MODE_CMYK, rgb2cmyk},
+    {IMAGING_MODE_RGB, IMAGING_MODE_YCbCr, ImagingConvertRGB2YCbCr},
+    {IMAGING_MODE_RGB, IMAGING_MODE_HSV, rgb2hsv},
+
+    {IMAGING_MODE_RGBA, IMAGING_MODE_1, rgb2bit},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_L, rgb2l},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_LA, rgba2la},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_I, rgb2i},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_F, rgb2f},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_RGB, rgba2rgb},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_RGBa, rgbA2rgba},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_RGBX, rgb2rgba},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_CMYK, rgb2cmyk},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_YCbCr, ImagingConvertRGB2YCbCr},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_HSV, rgb2hsv},
+
+    {IMAGING_MODE_RGBa, IMAGING_MODE_RGBA, rgba2rgbA},
+    {IMAGING_MODE_RGBa, IMAGING_MODE_RGB, rgba2rgb_},
+
+    {IMAGING_MODE_RGBX, IMAGING_MODE_1, rgb2bit},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_L, rgb2l},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_LA, rgb2la},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_I, rgb2i},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_F, rgb2f},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_RGB, rgba2rgb},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_CMYK, rgb2cmyk},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_YCbCr, ImagingConvertRGB2YCbCr},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_HSV, rgb2hsv},
+
+    {IMAGING_MODE_CMYK, IMAGING_MODE_RGB, cmyk2rgb},
+    {IMAGING_MODE_CMYK, IMAGING_MODE_RGBA, cmyk2rgb},
+    {IMAGING_MODE_CMYK, IMAGING_MODE_RGBX, cmyk2rgb},
+    {IMAGING_MODE_CMYK, IMAGING_MODE_HSV, cmyk2hsv},
+
+    {IMAGING_MODE_YCbCr, IMAGING_MODE_L, ycbcr2l},
+    {IMAGING_MODE_YCbCr, IMAGING_MODE_LA, ycbcr2la},
+    {IMAGING_MODE_YCbCr, IMAGING_MODE_RGB, ImagingConvertYCbCr2RGB},
+
+    {IMAGING_MODE_HSV, IMAGING_MODE_RGB, hsv2rgb},
+
+    {IMAGING_MODE_I, IMAGING_MODE_I_16, I_I16L},
+    {IMAGING_MODE_I_16, IMAGING_MODE_I, I16L_I},
+    {IMAGING_MODE_I_16, IMAGING_MODE_RGB, I16_RGB},
+    {IMAGING_MODE_L, IMAGING_MODE_I_16, L_I16L},
+    {IMAGING_MODE_I_16, IMAGING_MODE_L, I16L_L},
+
+    {IMAGING_MODE_I, IMAGING_MODE_I_16L, I_I16L},
+    {IMAGING_MODE_I_16L, IMAGING_MODE_I, I16L_I},
+    {IMAGING_MODE_I, IMAGING_MODE_I_16B, I_I16B},
+    {IMAGING_MODE_I_16B, IMAGING_MODE_I, I16B_I},
+
+    {IMAGING_MODE_L, IMAGING_MODE_I_16L, L_I16L},
+    {IMAGING_MODE_I_16L, IMAGING_MODE_L, I16L_L},
+    {IMAGING_MODE_L, IMAGING_MODE_I_16B, L_I16B},
+    {IMAGING_MODE_I_16B, IMAGING_MODE_L, I16B_L},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_L, IMAGING_MODE_I_16N, L_I16B},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_L, I16B_L},
+#else
+    {IMAGING_MODE_L, IMAGING_MODE_I_16N, L_I16L},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_L, I16L_L},
+#endif
+
+    {IMAGING_MODE_I_16, IMAGING_MODE_F, I16L_F},
+    {IMAGING_MODE_I_16L, IMAGING_MODE_F, I16L_F},
+    {IMAGING_MODE_I_16B, IMAGING_MODE_F, I16B_F}
+};
+
 static Imaging
-convert(
-    Imaging imOut, Imaging imIn, const char *mode, ImagingPalette palette, int dither
-) {
+convert(Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int dither) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
-    int y;
 
     if (!imIn) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (!mode) {
+    if (mode == IMAGING_MODE_UNKNOWN) {
         /* Map palette image to full depth */
         if (!imIn->palette) {
             return (Imaging)ImagingError_ModeError();
@@ -1605,33 +1605,31 @@ convert(
         mode = imIn->palette->mode;
     } else {
         /* Same mode? */
-        if (!strcmp(imIn->mode, mode)) {
+        if (imIn->mode == mode) {
             return ImagingCopy2(imOut, imIn);
         }
     }
 
     /* test for special conversions */
 
-    if (strcmp(imIn->mode, "P") == 0 || strcmp(imIn->mode, "PA") == 0) {
+    if (imIn->mode == IMAGING_MODE_P || imIn->mode == IMAGING_MODE_PA) {
         return frompalette(imOut, imIn, mode);
     }
 
-    if (strcmp(mode, "P") == 0 || strcmp(mode, "PA") == 0) {
+    if (mode == IMAGING_MODE_P || mode == IMAGING_MODE_PA) {
         return topalette(imOut, imIn, mode, palette, dither);
     }
 
-    if (dither && strcmp(mode, "1") == 0) {
+    if (dither && mode == IMAGING_MODE_1) {
         return tobilevel(imOut, imIn);
     }
 
     /* standard conversion machinery */
 
     convert = NULL;
-
-    for (y = 0; converters[y].from; y++) {
-        if (!strcmp(imIn->mode, converters[y].from) &&
-            !strcmp(mode, converters[y].to)) {
-            convert = converters[y].convert;
+    for (size_t i = 0; i < sizeof(converters) / sizeof(*converters); i++) {
+        if (imIn->mode == converters[i].from && mode == converters[i].to) {
+            convert = converters[i].convert;
             break;
         }
     }
@@ -1642,7 +1640,11 @@ convert(
 #else
         static char buf[100];
         snprintf(
-            buf, 100, "conversion from %.10s to %.10s not supported", imIn->mode, mode
+            buf,
+            100,
+            "conversion from %.10s to %.10s not supported",
+            getModeData(imIn->mode)->name,
+            getModeData(mode)->name
         );
         return (Imaging)ImagingError_ValueError(buf);
 #endif
@@ -1654,7 +1656,7 @@ convert(
     }
 
     ImagingSectionEnter(&cookie);
-    for (y = 0; y < imIn->ysize; y++) {
+    for (int y = 0; y < imIn->ysize; y++) {
         (*convert)((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
     }
     ImagingSectionLeave(&cookie);
@@ -1663,7 +1665,7 @@ convert(
 }
 
 Imaging
-ImagingConvert(Imaging imIn, const char *mode, ImagingPalette palette, int dither) {
+ImagingConvert(Imaging imIn, const ModeID mode, ImagingPalette palette, int dither) {
     return convert(NULL, imIn, mode, palette, dither);
 }
 
@@ -1673,7 +1675,7 @@ ImagingConvert2(Imaging imOut, Imaging imIn) {
 }
 
 Imaging
-ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
+ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
     Imaging imOut = NULL;
@@ -1687,27 +1689,27 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (strcmp(imIn->mode, "RGB") == 0 &&
-        (strcmp(mode, "RGBA") == 0 || strcmp(mode, "RGBa") == 0)) {
+    if (imIn->mode == IMAGING_MODE_RGB &&
+        (mode == IMAGING_MODE_RGBA || mode == IMAGING_MODE_RGBa)) {
         convert = rgb2rgba;
-        if (strcmp(mode, "RGBa") == 0) {
+        if (mode == IMAGING_MODE_RGBa) {
             premultiplied = 1;
         }
-    } else if (strcmp(imIn->mode, "RGB") == 0 &&
-               (strcmp(mode, "LA") == 0 || strcmp(mode, "La") == 0)) {
+    } else if (imIn->mode == IMAGING_MODE_RGB &&
+               (mode == IMAGING_MODE_LA || mode == IMAGING_MODE_La)) {
         convert = rgb2la;
         source_transparency = 1;
-        if (strcmp(mode, "La") == 0) {
+        if (mode == IMAGING_MODE_La) {
             premultiplied = 1;
         }
-    } else if ((strcmp(imIn->mode, "1") == 0 || strcmp(imIn->mode, "I") == 0 ||
-                strcmp(imIn->mode, "I;16") == 0 || strcmp(imIn->mode, "L") == 0) &&
-               (strcmp(mode, "RGBA") == 0 || strcmp(mode, "LA") == 0)) {
-        if (strcmp(imIn->mode, "1") == 0) {
+    } else if ((imIn->mode == IMAGING_MODE_1 || imIn->mode == IMAGING_MODE_I ||
+                imIn->mode == IMAGING_MODE_I_16 || imIn->mode == IMAGING_MODE_L) &&
+               (mode == IMAGING_MODE_RGBA || mode == IMAGING_MODE_LA)) {
+        if (imIn->mode == IMAGING_MODE_1) {
             convert = bit2rgb;
-        } else if (strcmp(imIn->mode, "I") == 0) {
+        } else if (imIn->mode == IMAGING_MODE_I) {
             convert = i2rgb;
-        } else if (strcmp(imIn->mode, "I;16") == 0) {
+        } else if (imIn->mode == IMAGING_MODE_I_16) {
             convert = I16_RGB;
         } else {
             convert = l2rgb;
@@ -1719,8 +1721,8 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
             buf,
             100,
             "conversion from %.10s to %.10s not supported in convert_transparent",
-            imIn->mode,
-            mode
+            getModeData(imIn->mode)->name,
+            getModeData(mode)->name
         );
         return (Imaging)ImagingError_ValueError(buf);
     }
@@ -1743,15 +1745,15 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
 }
 
 Imaging
-ImagingConvertInPlace(Imaging imIn, const char *mode) {
+ImagingConvertInPlace(Imaging imIn, const ModeID mode) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
     int y;
 
     /* limited support for inplace conversion */
-    if (strcmp(imIn->mode, "L") == 0 && strcmp(mode, "1") == 0) {
+    if (imIn->mode == IMAGING_MODE_L && mode == IMAGING_MODE_1) {
         convert = l2bit;
-    } else if (strcmp(imIn->mode, "1") == 0 && strcmp(mode, "L") == 0) {
+    } else if (imIn->mode == IMAGING_MODE_1 && mode == IMAGING_MODE_L) {
         convert = bit2l;
     } else {
         return ImagingError_ModeError();
