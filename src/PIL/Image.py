@@ -1336,12 +1336,6 @@ class Image:
         """
         pass
 
-    def _expand(self, xmargin: int, ymargin: int | None = None) -> Image:
-        if ymargin is None:
-            ymargin = xmargin
-        self.load()
-        return self._new(self.im.expand(xmargin, ymargin))
-
     def filter(self, filter: ImageFilter.Filter | type[ImageFilter.Filter]) -> Image:
         """
         Filters this image using the given filter.  For a list of
