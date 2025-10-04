@@ -30,7 +30,7 @@ from ._util import DeferredError
 
 def _accept(prefix: bytes) -> bool:
     return (
-        len(prefix) >= 6
+        len(prefix) >= 16
         and i16(prefix, 4) in [0xAF11, 0xAF12]
         and i16(prefix, 14) in [0, 3]  # flags
     )
@@ -49,7 +49,12 @@ class FliImageFile(ImageFile.ImageFile):
     def _open(self) -> None:
         # HEAD
         s = self.fp.read(128)
-        if not (_accept(s) and s[20:22] == b"\x00\x00"):
+        if not (
+            _accept(s)
+            and s[20:22] == b"\x00" * 2
+            and s[42:80] == b"\x00" * 38
+            and s[88:] == b"\x00" * 40
+        ):
             msg = "not an FLI/FLC file"
             raise SyntaxError(msg)
 

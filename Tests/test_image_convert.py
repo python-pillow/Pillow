@@ -97,6 +97,13 @@ def test_opaque() -> None:
     assert_image_equal(alpha, solid)
 
 
+def test_rgba() -> None:
+    with Image.open("Tests/images/transparent.png") as im:
+        assert im.mode == "RGBA"
+
+        assert_image_similar(im.convert("RGBa").convert("RGB"), im.convert("RGB"), 1.5)
+
+
 def test_rgba_p() -> None:
     im = hopper("RGBA")
     im.putalpha(hopper("L"))
@@ -114,11 +121,12 @@ def test_rgba_pa() -> None:
     assert_image_similar(im, expected, 9.3)
 
 
-def test_rgba() -> None:
-    with Image.open("Tests/images/transparent.png") as im:
-        assert im.mode == "RGBA"
+def test_pa() -> None:
+    im = hopper().convert("PA")
 
-        assert_image_similar(im.convert("RGBa").convert("RGB"), im.convert("RGB"), 1.5)
+    palette = im.palette
+    assert palette is not None
+    assert palette.colors != {}
 
 
 def test_trns_p(tmp_path: Path) -> None:
