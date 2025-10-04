@@ -1099,6 +1099,12 @@ class TestImage:
             assert im.palette is not None
             assert im.palette.colors[(27, 35, 6, 214)] == 24
 
+    def test_merge_pa(self) -> None:
+        p = hopper("P")
+        a = Image.new("L", p.size)
+        pa = Image.merge("PA", (p, a))
+        assert p.getpalette() == pa.getpalette()
+
     def test_constants(self) -> None:
         for enum in (
             Image.Transpose,
