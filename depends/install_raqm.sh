@@ -8,6 +8,6 @@ archive=libraqm-0.10.3
 
 pushd $archive
 
-meson build --prefix=/usr && sudo ninja -C build install
+meson build --prefix=/usr && ninja -C build install
 
 popd
