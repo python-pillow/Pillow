@@ -1,12 +1,12 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.11
+    rev: v0.13.3
     hooks:
       - id: ruff-check
         args: [--exit-non-zero-on-fix]
 
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 25.1.0
+    rev: 25.9.0
     hooks:
       - id: black
 
@@ -24,7 +24,7 @@ repos:
         exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.gd$|\.opt$|\.patch$)
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v21.1.0
+    rev: v21.1.2
     hooks:
       - id: clang-format
         types: [c]
@@ -51,14 +51,14 @@ repos:
         exclude: ^.github/.*TEMPLATE|^Tests/(fonts|images)/|\.patch$
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.33.3
+    rev: 0.34.0
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
       - id: check-renovate
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.12.1
+    rev: v1.14.2
     hooks:
       - id: zizmor
 
@@ -68,7 +68,7 @@ repos:
       - id: sphinx-lint
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.6.0
+    rev: v2.7.0
     hooks:
       - id: pyproject-fmt
 
