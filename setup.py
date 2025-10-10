@@ -16,12 +16,12 @@ import subprocess
 import sys
 import warnings
 from collections.abc import Iterator
-from typing import TYPE_CHECKING
 
 from pybind11.setup_helpers import ParallelCompile
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from setuptools import _BuildInfo
 
