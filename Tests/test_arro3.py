@@ -16,7 +16,9 @@ from .helper import (
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from arro3 import compute
+    from arro3 import compute  #  type: ignore [import-not-found]
+
+    #  type: ignore [import-not-found]
     from arro3.core import Array, DataType, Field, fixed_size_list_array
 else:
     arro3 = pytest.importorskip("arro3", reason="Arro3 not installed")
@@ -106,7 +108,7 @@ def test_to_array(mode: str, dtype: DataType, mask: list[int] | None) -> None:
     img = img.crop((3, 0, 124, 127))
     assert img.size == (121, 127)
 
-    arr = Array(img)  # type: ignore[call-overload]
+    arr = Array(img)
     _test_img_equals_pyarray(img, arr, mask)
     assert arr.type == dtype
 
@@ -123,8 +125,8 @@ def test_lifetime() -> None:
 
     img = hopper("L")
 
-    arr_1 = Array(img)  # type: ignore[call-overload]
-    arr_2 = Array(img)  # type: ignore[call-overload]
+    arr_1 = Array(img)
+    arr_2 = Array(img)
 
     del img
 
@@ -141,8 +143,8 @@ def test_lifetime2() -> None:
 
     img = hopper("L")
 
-    arr_1 = Array(img)  # type: ignore[call-overload]
-    arr_2 = Array(img)  # type: ignore[call-overload]
+    arr_1 = Array(img)
+    arr_2 = Array(img)
 
     assert compute.sum(arr_1).as_py() > 0
     del arr_1
@@ -261,8 +263,9 @@ def test_from_int32array(mode: str, mask: list[int] | None, data_tp: DataShape) 
 def test_image_metadata(mode: str, metadata: list[str]) -> None:
     img = hopper(mode)
 
-    arr = Array(img)  # type: ignore[call-overload]
+    arr = Array(img)
 
+    assert arr.type.value_field
     assert arr.type.value_field.metadata
     assert arr.type.value_field.metadata[b"image"]
 

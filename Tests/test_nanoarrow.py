@@ -16,7 +16,7 @@ from .helper import (
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    import nanoarrow
+    import nanoarrow  # type: ignore [import-untyped]
 else:
     nanoarrow = pytest.importorskip("nanoarrow", reason="Nanoarrow not installed")
 
@@ -105,7 +105,7 @@ def test_to_array(mode: str, dtype: nanoarrow, mask: list[int] | None) -> None:
     img = img.crop((3, 0, 124, 127))
     assert img.size == (121, 127)
 
-    arr = nanoarrow.Array(img)  # type: ignore[call-overload]
+    arr = nanoarrow.Array(img)
     _test_img_equals_pyarray(img, arr, mask)
     assert arr.schema.type == dtype.type
     assert arr.schema.nullable == dtype.nullable
@@ -123,8 +123,8 @@ def test_lifetime() -> None:
 
     img = hopper("L")
 
-    arr_1 = nanoarrow.Array(img)  # type: ignore[call-overload]
-    arr_2 = nanoarrow.Array(img)  # type: ignore[call-overload]
+    arr_1 = nanoarrow.Array(img)
+    arr_2 = nanoarrow.Array(img)
 
     del img
 
@@ -141,8 +141,8 @@ def test_lifetime2() -> None:
 
     img = hopper("L")
 
-    arr_1 = nanoarrow.Array(img)  # type: ignore[call-overload]
-    arr_2 = nanoarrow.Array(img)  # type: ignore[call-overload]
+    arr_1 = nanoarrow.Array(img)
+    arr_2 = nanoarrow.Array(img)
 
     assert sum(arr_1.iter_py()) > 0
     del arr_1
@@ -270,7 +270,7 @@ def test_from_int32array(mode: str, mask: list[int] | None, data_tp: DataShape) 
 def test_image_nested_metadata(mode: str, metadata: list[str]) -> None:
     img = hopper(mode)
 
-    arr = nanoarrow.Array(img)  # type: ignore[call-overload]
+    arr = nanoarrow.Array(img)
 
     assert arr.schema.value_type.metadata
     assert arr.schema.value_type.metadata[b"image"]
@@ -294,7 +294,7 @@ def test_image_nested_metadata(mode: str, metadata: list[str]) -> None:
 def test_image_flat_metadata(mode: str, metadata: list[str]) -> None:
     img = hopper(mode)
 
-    arr = nanoarrow.Array(img)  # type: ignore[call-overload]
+    arr = nanoarrow.Array(img)
 
     assert arr.schema.metadata
     assert arr.schema.metadata[b"image"]
