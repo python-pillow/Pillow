@@ -43,16 +43,21 @@ class PcdImageFile(ImageFile.ImageFile):
         if orientation == 1:
             self.tile_post_rotate = 90
         elif orientation == 3:
-            self.tile_post_rotate = -90
+            self.tile_post_rotate = 270
 
         self._mode = "RGB"
         self._size = (512, 768) if orientation in (1, 3) else (768, 512)
-        self.tile = [ImageFile._Tile("pcd", (0, 0) + self.size, 96 * 2048)]
+        self.tile = [ImageFile._Tile("pcd", (0, 0, 768, 512), 96 * 2048)]
+
+    def load_prepare(self) -> None:
+        if self._im is None and self.tile_post_rotate:
+            self.im = Image.core.new(self.mode, (768, 512))
+        ImageFile.ImageFile.load_prepare(self)
 
     def load_end(self) -> None:
         if self.tile_post_rotate:
             # Handle rotated PCDs
-            self.im = self.im.rotate(self.tile_post_rotate)
+            self.im = self.rotate(self.tile_post_rotate, expand=True).im
 
 
 #
