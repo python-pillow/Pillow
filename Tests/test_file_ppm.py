@@ -92,6 +92,13 @@ def test_16bit_pgm() -> None:
         assert_image_equal_tofile(im, "Tests/images/16_bit_binary_pgm.tiff")
 
 
+def test_p4_save(tmp_path: Path) -> None:
+    with Image.open("Tests/images/hopper_1bit.pbm") as im:
+        filename = tmp_path / "temp.pbm"
+        im.save(filename)
+        assert_image_equal_tofile(im, filename)
+
+
 def test_16bit_pgm_write(tmp_path: Path) -> None:
     with Image.open("Tests/images/16_bit_binary.pgm") as im:
         filename = tmp_path / "temp.pgm"
@@ -132,6 +139,12 @@ def test_pfm_big_endian(tmp_path: Path) -> None:
         im.save(filename)
 
         assert_image_equal_tofile(im, filename)
+
+
+def test_save_unsupported_mode(tmp_path: Path) -> None:
+    im = hopper("P")
+    with pytest.raises(OSError, match="cannot write mode P as PPM"):
+        im.save(tmp_path / "out.ppm")
 
 
 @pytest.mark.parametrize(
