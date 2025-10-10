@@ -16,7 +16,7 @@ from .helper import (
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    import nanoarrow  # type: ignore [import-untyped]
+    import nanoarrow  # type: ignore [import-not-found]
 else:
     nanoarrow = pytest.importorskip("nanoarrow", reason="Nanoarrow not installed")
 
