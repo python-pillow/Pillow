@@ -39,6 +39,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  EXPECTED_DISTS: 91
   FORCE_COLOR: 1
 
 jobs:
@@ -250,9 +251,27 @@ jobs:
         name: dist-sdist
         path: dist/*.tar.gz
 
+  count-dists:
+    needs: [build-native-wheels, windows, sdist]
+    runs-on: ubuntu-latest
+    name: Count dists
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
+      - name: "What did we get?"
+        run: |
+          ls -alR
+          echo "Number of dists, should be $EXPECTED_DISTS:"
+          files=$(ls dist 2>/dev/null | wc -l)
+          echo $files
+          [ "$files" -eq $EXPECTED_DISTS ] || exit 1
+
   scientific-python-nightly-wheels-publish:
     if: github.repository_owner == 'python-pillow' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
-    needs: [build-native-wheels, windows]
+    needs: count-dists
     runs-on: ubuntu-latest
     name: Upload wheels to scientific-python-nightly-wheels
     steps:
@@ -269,7 +288,7 @@ jobs:
 
   pypi-publish:
     if: github.repository_owner == 'python-pillow' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    needs: [build-native-wheels, windows, sdist]
+    needs: count-dists
     runs-on: ubuntu-latest
     name: Upload release to PyPI
     environment:
