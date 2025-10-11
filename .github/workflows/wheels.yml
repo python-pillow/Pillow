@@ -265,8 +265,9 @@ jobs:
         run: |
           ls -alR
           echo "Number of dists, should be $EXPECTED_DISTS:"
-          ls -1 dist | wc -l
-          files=$(ls dist 2>/dev/null | wc -l) && [ "$files" -eq $EXPECTED_DISTS ] || exit 1
+          files=$(ls dist 2>/dev/null | wc -l)
+          echo $files
+          [ "$files" -eq $EXPECTED_DISTS ] || exit 1
 
   scientific-python-nightly-wheels-publish:
     if: github.repository_owner == 'python-pillow' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
