@@ -251,9 +251,26 @@ jobs:
         name: dist-sdist
         path: dist/*.tar.gz
 
+  count-dists:
+    needs: [build-native-wheels, windows, sdist]
+    runs-on: ubuntu-latest
+    name: Count dists
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
+      - name: "What did we get?"
+        run: |
+          ls -alR
+          echo "Number of dists, should be $EXPECTED_DISTS:"
+          ls -1 dist | wc -l
+          files=$(ls dist 2>/dev/null | wc -l) && [ "$files" -eq $EXPECTED_DISTS ] || exit 1
+
   scientific-python-nightly-wheels-publish:
     if: github.repository_owner == 'python-pillow' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
-    needs: [build-native-wheels, windows]
+    needs: [build-native-wheels, windows, count-dists]
     runs-on: ubuntu-latest
     name: Upload wheels to scientific-python-nightly-wheels
     steps:
@@ -270,7 +287,7 @@ jobs:
 
   pypi-publish:
     if: github.repository_owner == 'python-pillow' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    needs: [build-native-wheels, windows, sdist]
+    needs: [build-native-wheels, windows, sdist, count-dists]
     runs-on: ubuntu-latest
     name: Upload release to PyPI
     environment:
@@ -288,20 +305,3 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           attestations: true
-
-  count-dists:
-    needs: [build-native-wheels, windows, sdist]
-    runs-on: ubuntu-latest
-    name: Count dists
-    steps:
-      - uses: actions/download-artifact@v5
-        with:
-          pattern: dist-*
-          path: dist
-          merge-multiple: true
-      - name: "What did we get?"
-        run: |
-          ls -alR
-          echo "Number of dists, should be $EXPECTED_DISTS:"
-          ls -1 dist | wc -l
-          files=$(ls dist 2>/dev/null | wc -l) && [ "$files" -eq $EXPECTED_DISTS ] || exit 1
