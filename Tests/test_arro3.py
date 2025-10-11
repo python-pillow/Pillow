@@ -116,9 +116,6 @@ def test_to_array(mode: str, dtype: DataType, mask: list[int] | None) -> None:
     assert arr.type == dtype
 
     reloaded = Image.fromarrow(arr, mode, img.size)
-
-    assert reloaded
-
     assert_image_equal(img, reloaded)
 
 
