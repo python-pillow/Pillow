@@ -232,26 +232,31 @@ jobs:
           path: winbuild\build\bin\fribidi*
 
   sdist:
-    if: github.event_name != 'schedule'
+    if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v5
+      if: github.event_name != 'schedule'
       with:
         persist-credentials: false
 
     - name: Set up Python
       uses: actions/setup-python@v6
+      if: github.event_name != 'schedule'
       with:
         python-version: "3.x"
 
-    - run: make sdist
+    - if: github.event_name != 'schedule'
+      run: make sdist
 
     - uses: actions/upload-artifact@v4
+      if: github.event_name != 'schedule'
       with:
         name: dist-sdist
         path: dist/*.tar.gz
 
   count-dists:
+    if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
     needs: [build-native-wheels, windows, sdist]
     runs-on: ubuntu-latest
     name: Count dists
@@ -264,6 +269,9 @@ jobs:
       - name: "What did we get?"
         run: |
           ls -alR
+          if [[ github.event_name == 'schedule' ]]; then
+            EXPECTED_DISTS=$((EXPECTED_DISTS-1))
+          fi
           echo "Number of dists, should be $EXPECTED_DISTS:"
           files=$(ls dist 2>/dev/null | wc -l)
           echo $files
