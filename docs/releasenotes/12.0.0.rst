@@ -1,19 +1,6 @@
 12.0.0
 ------
 
-Security
-========
-
-TODO
-^^^^
-
-TODO
-
-:cve:`YYYY-XXXXX`: TODO
-^^^^^^^^^^^^^^^^^^^^^^^
-
-TODO
-
 Backwards incompatible changes
 ==============================
 
