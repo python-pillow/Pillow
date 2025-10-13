@@ -232,7 +232,7 @@ jobs:
           path: winbuild\build\bin\fribidi*
 
   sdist:
-    if: github.event_name != 'schedule'
+    if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v5
@@ -277,7 +277,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v5
         with:
-          pattern: dist-*
+          pattern: dist-*.whl
           path: dist
           merge-multiple: true
       - name: Upload wheels to scientific-python-nightly-wheels
