@@ -57,6 +57,43 @@ Color names
 
 See :ref:`color-names` for the color names supported by Pillow.
 
+Alpha channel
+^^^^^^^^^^^^^
+
+By default, when drawing onto an existing image, the image's pixel values are simply
+replaced by the new color::
+
+    im = Image.new("RGBA", (1, 1), (255, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rectangle((0, 0, 1, 1), (0, 255, 0, 127))
+    assert im.getpixel((0, 0)) == (0, 255, 0, 127)
+
+    # Alpha channel values have no effect when drawing with RGB mode
+    im = Image.new("RGB", (1, 1), (255, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rectangle((0, 0, 1, 1), (0, 255, 0, 127))
+    assert im.getpixel((0, 0)) == (0, 255, 0)
+
+If you would like to combine translucent color with an RGB image, then initialize the
+ImageDraw instance with the RGBA mode::
+
+    from PIL import Image, ImageDraw
+    im = Image.new("RGB", (1, 1), (255, 0, 0))
+    d = ImageDraw.Draw(im, "RGBA")
+    d.rectangle((0, 0, 1, 1), (0, 255, 0, 127))
+    assert im.getpixel((0, 0)) == (128, 127, 0)
+
+If you would like to combine translucent color with an RGBA image underneath, you will
+need to combine multiple images::
+
+    from PIL import Image, ImageDraw
+    im = Image.new("RGBA", (1, 1), (255, 0, 0, 255))
+    im2 = Image.new("RGBA", (1, 1))
+    d = ImageDraw.Draw(im2)
+    d.rectangle((0, 0, 1, 1), (0, 255, 0, 127))
+    im.paste(im2.convert("RGB"), mask=im2)
+    assert im.getpixel((0, 0)) == (128, 127, 0, 255)
+
 Fonts
 ^^^^^
 

@@ -1009,8 +1009,14 @@ class Image:
                 new_im.info["transparency"] = transparency
             return new_im
 
-        if mode == "P" and self.mode == "RGBA":
-            return self.quantize(colors)
+        if self.mode == "RGBA":
+            if mode == "P":
+                return self.quantize(colors)
+            elif mode == "PA":
+                r, g, b, a = self.split()
+                rgb = merge("RGB", (r, g, b))
+                p = rgb.quantize(colors)
+                return merge("PA", (p, a))
 
         trns = None
         delete_trns = False
@@ -1142,7 +1148,7 @@ class Image:
                 raise ValueError(msg) from e
 
         new_im = self._new(im)
-        if mode == "P" and palette != Palette.ADAPTIVE:
+        if mode in ("P", "PA") and palette != Palette.ADAPTIVE:
             from . import ImagePalette
 
             new_im.palette = ImagePalette.ImagePalette("RGB", im.getpalette("RGB"))
@@ -1335,12 +1341,6 @@ class Image:
            (width, height).
         """
         pass
-
-    def _expand(self, xmargin: int, ymargin: int | None = None) -> Image:
-        if ymargin is None:
-            ymargin = xmargin
-        self.load()
-        return self._new(self.im.expand(xmargin, ymargin))
 
     def filter(self, filter: ImageFilter.Filter | type[ImageFilter.Filter]) -> Image:
         """
@@ -2070,9 +2070,7 @@ class Image:
         :param value: The pixel value.
         """
 
-        if self.readonly:
-            self._copy()
-        self.load()
+        self._ensure_mutable()
 
         if (
             self.mode in ("P", "PA")

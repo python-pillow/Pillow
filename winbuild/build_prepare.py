@@ -116,15 +116,15 @@ V = {
     "BROTLI": "1.1.0",
     "FREETYPE": "2.14.1",
     "FRIBIDI": "1.0.16",
-    "HARFBUZZ": "11.4.5",
+    "HARFBUZZ": "12.1.0",
     "JPEGTURBO": "3.1.2",
     "LCMS2": "2.17",
     "LIBAVIF": "1.3.0",
     "LIBIMAGEQUANT": "4.4.0",
     "LIBPNG": "1.6.50",
     "LIBWEBP": "1.6.0",
-    "OPENJPEG": "2.5.3",
-    "TIFF": "4.7.0",
+    "OPENJPEG": "2.5.4",
+    "TIFF": "4.7.1",
     "XZ": "5.8.1",
     "ZLIBNG": "2.2.5",
 }
@@ -228,12 +228,6 @@ DEPS: dict[str, dict[str, Any]] = {
                 # link against libwebp.lib
                 "#ifdef WEBP_SUPPORT": '#ifdef WEBP_SUPPORT\n#pragma comment(lib, "libwebp.lib")',  # noqa: E501
             },
-            r"test\CMakeLists.txt": {
-                "add_executable(test_write_read_tags ../placeholder.h)": "",
-                "target_sources(test_write_read_tags PRIVATE test_write_read_tags.c)": "",  # noqa: E501
-                "target_link_libraries(test_write_read_tags PRIVATE tiff)": "",
-                "list(APPEND simple_tests test_write_read_tags)": "",
-            },
         },
         "build": [
             *cmds_cmake(
@@ -241,7 +235,6 @@ DEPS: dict[str, dict[str, Any]] = {
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
                 "-DWebP_LIBRARY=libwebp",
                 '-DCMAKE_C_FLAGS="-nologo -DLZMA_API_STATIC"',
-                "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
             )
         ],
         "headers": [r"libtiff\tiff*.h"],

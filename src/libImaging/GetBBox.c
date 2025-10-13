@@ -212,7 +212,7 @@ ImagingGetExtrema(Imaging im, void *extrema) {
                 UINT16 v;
                 UINT8 *pixel = *im->image8;
 #ifdef WORDS_BIGENDIAN
-                v = pixel[0] + (pixel[1] << 8);
+                v = pixel[0] + ((UINT16)pixel[1] << 8);
 #else
                 memcpy(&v, pixel, sizeof(v));
 #endif
@@ -221,7 +221,7 @@ ImagingGetExtrema(Imaging im, void *extrema) {
                     for (x = 0; x < im->xsize; x++) {
                         pixel = (UINT8 *)im->image[y] + x * sizeof(v);
 #ifdef WORDS_BIGENDIAN
-                        v = pixel[0] + (pixel[1] << 8);
+                        v = pixel[0] + ((UINT16)pixel[1] << 8);
 #else
                         memcpy(&v, pixel, sizeof(v));
 #endif

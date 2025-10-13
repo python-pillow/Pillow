@@ -93,14 +93,18 @@ ARCHIVE_SDIR=pillow-depends-main
 # Package versions for fresh source builds. Version numbers with "Patched"
 # annotations have a source code patch that is required for some platforms. If
 # you change those versions, ensure the patch is also updated.
-FREETYPE_VERSION=2.13.3
-HARFBUZZ_VERSION=11.4.5
+if [[ -n "$IOS_SDK" ]]; then
+  FREETYPE_VERSION=2.13.3
+else
+  FREETYPE_VERSION=2.14.1
+fi
+HARFBUZZ_VERSION=12.1.0
 LIBPNG_VERSION=1.6.50
 JPEGTURBO_VERSION=3.1.2
-OPENJPEG_VERSION=2.5.3
+OPENJPEG_VERSION=2.5.4
 XZ_VERSION=5.8.1
 ZSTD_VERSION=1.5.7
-TIFF_VERSION=4.7.0
+TIFF_VERSION=4.7.1
 LCMS2_VERSION=2.17
 ZLIB_NG_VERSION=2.2.5
 LIBWEBP_VERSION=1.6.0
@@ -323,6 +327,10 @@ function build {
 
     if [[ -n "$IS_MACOS" ]]; then
         # Custom freetype build
+        if [[ -z "$IOS_SDK" ]]; then
+          build_simple sed 4.9 https://mirrors.middlendian.com/gnu/sed
+        fi
+
         build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no
     else
         build_freetype

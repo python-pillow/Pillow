@@ -1,19 +1,6 @@
 12.0.0
 ------
 
-Security
-========
-
-TODO
-^^^^
-
-TODO
-
-:cve:`YYYY-XXXXX`: TODO
-^^^^^^^^^^^^^^^^^^^^^^^
-
-TODO
-
 Backwards incompatible changes
 ==============================
 
@@ -132,18 +119,10 @@ Pillow 13 (2026-10-15). They have been set to ``None`` since Pillow 2.3.0.
 API changes
 ===========
 
-TODO
-^^^^
+Image.alpha_composite: LA images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
-
-API additions
-=============
-
-TODO
-^^^^
-
-TODO
+:py:meth:`~PIL.Image.alpha_composite` can now use LA images as well as RGBA.
 
 Other changes
 =============
