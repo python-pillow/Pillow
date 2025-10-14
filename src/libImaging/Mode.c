@@ -19,7 +19,6 @@ const ModeData MODES[] = {
     [IMAGING_MODE_RGBa] = {"RGBa"},     [IMAGING_MODE_YCbCr] = {"YCbCr"},
 
     [IMAGING_MODE_BGR_15] = {"BGR;15"}, [IMAGING_MODE_BGR_16] = {"BGR;16"},
-    [IMAGING_MODE_BGR_24] = {"BGR;24"},
 
     [IMAGING_MODE_I_16] = {"I;16"},     [IMAGING_MODE_I_16L] = {"I;16L"},
     [IMAGING_MODE_I_16B] = {"I;16B"},   [IMAGING_MODE_I_16N] = {"I;16N"},
@@ -74,8 +73,6 @@ const RawModeData RAWMODES[] = {
 
     [IMAGING_RAWMODE_BGR_15] = {"BGR;15"},
     [IMAGING_RAWMODE_BGR_16] = {"BGR;16"},
-    [IMAGING_RAWMODE_BGR_24] = {"BGR;24"},
-    [IMAGING_RAWMODE_BGR_32] = {"BGR;32"},
 
     [IMAGING_RAWMODE_I_16] = {"I;16"},
     [IMAGING_RAWMODE_I_16L] = {"I;16L"},

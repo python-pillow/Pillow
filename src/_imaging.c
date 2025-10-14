@@ -701,12 +701,6 @@ getink(PyObject *color, Imaging im, char *ink) {
                     ink[1] = (UINT8)(v >> 8);
                     ink[2] = ink[3] = 0;
                     return ink;
-                } else if (im->mode == IMAGING_MODE_BGR_24) {
-                    ink[0] = (UINT8)b;
-                    ink[1] = (UINT8)g;
-                    ink[2] = (UINT8)r;
-                    ink[3] = 0;
-                    return ink;
                 }
             }
     }

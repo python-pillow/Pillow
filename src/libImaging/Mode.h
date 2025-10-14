@@ -23,7 +23,6 @@ typedef enum {
 
     IMAGING_MODE_BGR_15,
     IMAGING_MODE_BGR_16,
-    IMAGING_MODE_BGR_24,
 
     IMAGING_MODE_I_16,
     IMAGING_MODE_I_16L,
@@ -66,8 +65,6 @@ typedef enum {
     // BGR modes.
     IMAGING_RAWMODE_BGR_15,
     IMAGING_RAWMODE_BGR_16,
-    IMAGING_RAWMODE_BGR_24,
-    IMAGING_RAWMODE_BGR_32,
 
     // I;* modes.
     IMAGING_RAWMODE_I_16,
