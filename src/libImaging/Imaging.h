@@ -148,7 +148,7 @@ struct ImagingAccessInstance {
 struct ImagingHistogramInstance {
     /* Format */
     char mode[IMAGING_MODE_LENGTH]; /* Band names (of corresponding source image) */
-    int bands;                      /* Number of bands (1, 3, or 4) */
+    int bands;                      /* Number of bands (1, 2, 3, or 4) */
 
     /* Data */
     long *histogram; /* Histogram (bands*256 longs) */
