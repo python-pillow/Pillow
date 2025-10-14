@@ -39,6 +39,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  EXPECTED_DISTS: 91
   FORCE_COLOR: 1
 
 jobs:
@@ -54,19 +55,19 @@ jobs:
             platform: macos
             os: macos-15-intel
             cibw_arch: x86_64
-            build: "cp3{9,10,11}*"
+            build: "cp3{10,11}*"
             macosx_deployment_target: "10.10"
           - name: "macOS 10.13 x86_64"
             platform: macos
             os: macos-15-intel
             cibw_arch: x86_64
-            build: "cp3{12,13,14}*"
+            build: "cp3{12,13}*"
             macosx_deployment_target: "10.13"
           - name: "macOS 10.15 x86_64"
             platform: macos
             os: macos-15-intel
             cibw_arch: x86_64
-            build: "pp3*"
+            build: "{cp314,pp3}*"
             macosx_deployment_target: "10.15"
           - name: "macOS arm64"
             platform: macos
@@ -231,7 +232,7 @@ jobs:
           path: winbuild\build\bin\fribidi*
 
   sdist:
-    if: github.event_name != 'schedule'
+    if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v5
@@ -250,15 +251,33 @@ jobs:
         name: dist-sdist
         path: dist/*.tar.gz
 
+  count-dists:
+    needs: [build-native-wheels, windows, sdist]
+    runs-on: ubuntu-latest
+    name: Count dists
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
+      - name: "What did we get?"
+        run: |
+          ls -alR
+          echo "Number of dists, should be $EXPECTED_DISTS:"
+          files=$(ls dist 2>/dev/null | wc -l)
+          echo $files
+          [ "$files" -eq $EXPECTED_DISTS ] || exit 1
+
   scientific-python-nightly-wheels-publish:
     if: github.repository_owner == 'python-pillow' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
-    needs: [build-native-wheels, windows]
+    needs: count-dists
     runs-on: ubuntu-latest
     name: Upload wheels to scientific-python-nightly-wheels
     steps:
       - uses: actions/download-artifact@v5
         with:
-          pattern: dist-*
+          pattern: dist-*.whl
           path: dist
           merge-multiple: true
       - name: Upload wheels to scientific-python-nightly-wheels
@@ -269,7 +288,7 @@ jobs:
 
   pypi-publish:
     if: github.repository_owner == 'python-pillow' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    needs: [build-native-wheels, windows, sdist]
+    needs: count-dists
     runs-on: ubuntu-latest
     name: Upload release to PyPI
     environment:

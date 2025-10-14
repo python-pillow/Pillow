@@ -284,33 +284,6 @@ class TestImage:
         assert item is not None
         assert item != num
 
-    def test_expand_x(self) -> None:
-        # Arrange
-        im = hopper()
-        orig_size = im.size
-        xmargin = 5
-
-        # Act
-        im = im._expand(xmargin)
-
-        # Assert
-        assert im.size[0] == orig_size[0] + 2 * xmargin
-        assert im.size[1] == orig_size[1] + 2 * xmargin
-
-    def test_expand_xy(self) -> None:
-        # Arrange
-        im = hopper()
-        orig_size = im.size
-        xmargin = 5
-        ymargin = 3
-
-        # Act
-        im = im._expand(xmargin, ymargin)
-
-        # Assert
-        assert im.size[0] == orig_size[0] + 2 * xmargin
-        assert im.size[1] == orig_size[1] + 2 * ymargin
-
     def test_getbands(self) -> None:
         # Assert
         assert hopper("RGB").getbands() == ("R", "G", "B")
@@ -1125,6 +1098,12 @@ class TestImage:
             im.apply_transparency()
             assert im.palette is not None
             assert im.palette.colors[(27, 35, 6, 214)] == 24
+
+    def test_merge_pa(self) -> None:
+        p = hopper("P")
+        a = Image.new("L", p.size)
+        pa = Image.merge("PA", (p, a))
+        assert p.getpalette() == pa.getpalette()
 
     def test_constants(self) -> None:
         for enum in (
