@@ -684,24 +684,6 @@ getink(PyObject *color, Imaging im, char *ink) {
                 } else if (!PyArg_ParseTuple(color, "iiL", &b, &g, &r)) {
                     return NULL;
                 }
-                if (im->mode == IMAGING_MODE_BGR_15) {
-                    UINT16 v = ((((UINT16)r) << 7) & 0x7c00) +
-                               ((((UINT16)g) << 2) & 0x03e0) +
-                               ((((UINT16)b) >> 3) & 0x001f);
-
-                    ink[0] = (UINT8)v;
-                    ink[1] = (UINT8)(v >> 8);
-                    ink[2] = ink[3] = 0;
-                    return ink;
-                } else if (im->mode == IMAGING_MODE_BGR_16) {
-                    UINT16 v = ((((UINT16)r) << 8) & 0xf800) +
-                               ((((UINT16)g) << 3) & 0x07e0) +
-                               ((((UINT16)b) >> 3) & 0x001f);
-                    ink[0] = (UINT8)v;
-                    ink[1] = (UINT8)(v >> 8);
-                    ink[2] = ink[3] = 0;
-                    return ink;
-                }
             }
     }
 

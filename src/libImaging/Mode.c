@@ -18,8 +18,6 @@ const ModeData MODES[] = {
     [IMAGING_MODE_RGBA] = {"RGBA"},     [IMAGING_MODE_RGBX] = {"RGBX"},
     [IMAGING_MODE_RGBa] = {"RGBa"},     [IMAGING_MODE_YCbCr] = {"YCbCr"},
 
-    [IMAGING_MODE_BGR_15] = {"BGR;15"}, [IMAGING_MODE_BGR_16] = {"BGR;16"},
-
     [IMAGING_MODE_I_16] = {"I;16"},     [IMAGING_MODE_I_16L] = {"I;16L"},
     [IMAGING_MODE_I_16B] = {"I;16B"},   [IMAGING_MODE_I_16N] = {"I;16N"},
     [IMAGING_MODE_I_32L] = {"I;32L"},   [IMAGING_MODE_I_32B] = {"I;32B"},
