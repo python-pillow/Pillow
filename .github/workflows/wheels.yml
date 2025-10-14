@@ -277,7 +277,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v5
         with:
-          pattern: dist-*.whl
+          pattern: dist-!(sdist)*
           path: dist
           merge-multiple: true
       - name: Upload wheels to scientific-python-nightly-wheels
