@@ -23,6 +23,18 @@
 
 #include "Imaging.h"
 
+#define PREPARE_PASTE_LOOP()        \
+    int y, y_end, offset;           \
+    if (imOut == imIn && dy > sy) { \
+        y = ysize - 1;              \
+        y_end = -1;                 \
+        offset = -1;                \
+    } else {                        \
+        y = 0;                      \
+        y_end = ysize;              \
+        offset = 1;                 \
+    }
+
 static inline void
 paste(
     Imaging imOut,
@@ -37,14 +49,13 @@ paste(
 ) {
     /* paste opaque region */
 
-    int y;
-
     dx *= pixelsize;
     sx *= pixelsize;
 
     xsize *= pixelsize;
 
-    for (y = 0; y < ysize; y++) {
+    PREPARE_PASTE_LOOP();
+    for (; y != y_end; y += offset) {
         memcpy(imOut->image[y + dy] + dx, imIn->image[y + sy] + sx, xsize);
     }
 }
@@ -64,12 +75,13 @@ paste_mask_1(
 ) {
     /* paste with mode "1" mask */
 
-    int x, y;
+    int x;
 
+    PREPARE_PASTE_LOOP();
     if (imOut->image8) {
         int in_i16 = isModeI16(imIn->mode);
         int out_i16 = isModeI16(imOut->mode);
-        for (y = 0; y < ysize; y++) {
+        for (; y != y_end; y += offset) {
             UINT8 *out = imOut->image8[y + dy] + dx;
             if (out_i16) {
                 out += dx;
@@ -97,7 +109,7 @@ paste_mask_1(
         }
 
     } else {
-        for (y = 0; y < ysize; y++) {
+        for (; y != y_end; y += offset) {
             INT32 *out = imOut->image32[y + dy] + dx;
             INT32 *in = imIn->image32[y + sy] + sx;
             UINT8 *mask = imMask->image8[y + sy] + sx;
@@ -126,11 +138,12 @@ paste_mask_L(
 ) {
     /* paste with mode "L" matte */
 
-    int x, y;
+    int x;
     unsigned int tmp1;
 
+    PREPARE_PASTE_LOOP();
     if (imOut->image8) {
-        for (y = 0; y < ysize; y++) {
+        for (; y != y_end; y += offset) {
             UINT8 *out = imOut->image8[y + dy] + dx;
             UINT8 *in = imIn->image8[y + sy] + sx;
             UINT8 *mask = imMask->image8[y + sy] + sx;
@@ -141,7 +154,7 @@ paste_mask_L(
         }
 
     } else {
-        for (y = 0; y < ysize; y++) {
+        for (; y != y_end; y += offset) {
             UINT8 *out = (UINT8 *)(imOut->image32[y + dy] + dx);
             UINT8 *in = (UINT8 *)(imIn->image32[y + sy] + sx);
             UINT8 *mask = (UINT8 *)(imMask->image8[y + sy] + sx);
@@ -174,11 +187,12 @@ paste_mask_RGBA(
 ) {
     /* paste with mode "RGBA" matte */
 
-    int x, y;
+    int x;
     unsigned int tmp1;
 
+    PREPARE_PASTE_LOOP();
     if (imOut->image8) {
-        for (y = 0; y < ysize; y++) {
+        for (; y != y_end; y += offset) {
             UINT8 *out = imOut->image8[y + dy] + dx;
             UINT8 *in = imIn->image8[y + sy] + sx;
             UINT8 *mask = (UINT8 *)imMask->image[y + sy] + sx * 4 + 3;
@@ -189,7 +203,7 @@ paste_mask_RGBA(
         }
 
     } else {
-        for (y = 0; y < ysize; y++) {
+        for (; y != y_end; y += offset) {
             UINT8 *out = (UINT8 *)(imOut->image32[y + dy] + dx);
             UINT8 *in = (UINT8 *)(imIn->image32[y + sy] + sx);
             UINT8 *mask = (UINT8 *)(imMask->image32[y + sy] + sx);
@@ -222,11 +236,12 @@ paste_mask_RGBa(
 ) {
     /* paste with mode "RGBa" matte */
 
-    int x, y;
+    int x;
     unsigned int tmp1;
 
+    PREPARE_PASTE_LOOP();
     if (imOut->image8) {
-        for (y = 0; y < ysize; y++) {
+        for (; y != y_end; y += offset) {
             UINT8 *out = imOut->image8[y + dy] + dx;
             UINT8 *in = imIn->image8[y + sy] + sx;
             UINT8 *mask = (UINT8 *)imMask->image[y + sy] + sx * 4 + 3;
@@ -237,7 +252,7 @@ paste_mask_RGBa(
         }
 
     } else {
-        for (y = 0; y < ysize; y++) {
+        for (; y != y_end; y += offset) {
             UINT8 *out = (UINT8 *)(imOut->image32[y + dy] + dx);
             UINT8 *in = (UINT8 *)(imIn->image32[y + sy] + sx);
             UINT8 *mask = (UINT8 *)(imMask->image32[y + sy] + sx);

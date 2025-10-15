@@ -1,19 +1,6 @@
 12.0.0
 ------
 
-Security
-========
-
-TODO
-^^^^
-
-TODO
-
-:cve:`YYYY-XXXXX`: TODO
-^^^^^^^^^^^^^^^^^^^^^^^
-
-TODO
-
 Backwards incompatible changes
 ==============================
 
@@ -116,6 +103,12 @@ vulnerability introduced in FreeType 2.6 (:cve:`2020-15999`).
 Deprecations
 ============
 
+Image._show
+^^^^^^^^^^^
+
+``Image._show`` has been deprecated, and will be removed in Pillow 13 (2026-10-15).
+Use :py:meth:`~PIL.ImageShow.show` instead.
+
 ImageCms.ImageCmsProfile.product_name and .product_info
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -126,18 +119,10 @@ Pillow 13 (2026-10-15). They have been set to ``None`` since Pillow 2.3.0.
 API changes
 ===========
 
-TODO
-^^^^
+Image.alpha_composite: LA images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
-
-API additions
-=============
-
-TODO
-^^^^
-
-TODO
+:py:meth:`~PIL.Image.alpha_composite` can now use LA images as well as RGBA.
 
 Other changes
 =============
@@ -150,3 +135,19 @@ others prepare for 3.14, and to ensure Pillow could be used immediately at the r
 of 3.14.0 final (2025-10-07, :pep:`745`).
 
 Pillow 12.0.0 now officially supports Python 3.14.
+
+Image.fromarray mode parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In Pillow 11.3.0, the ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` was
+deprecated. Part of this functionality has been restored in Pillow 12.0.0. Since pixel
+values do not contain information about palettes or color spaces, the parameter can be
+used to place grayscale L mode data within a P mode image, or read RGB data as YCbCr
+for example.
+
+ImageMorph operations must have length 1
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Valid ImageMorph operations are 4, N, 1 and M. By limiting the length to 1 character
+within Pillow, long execution times can be avoided if a user provided long pattern
+strings. Reported by `Jang Choi <https://github.com/uko3211>`__.

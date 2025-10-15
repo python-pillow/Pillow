@@ -147,7 +147,7 @@ ImagingPaletteDelete(ImagingPalette palette) {
 
 #define BOX 8
 
-#define BOXVOLUME BOX *BOX *BOX
+#define BOXVOLUME BOX * BOX * BOX
 
 void
 ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b) {

@@ -906,8 +906,6 @@ PyImaging_Jpeg2KDecoderNew(PyObject *self, PyObject *args) {
 
     if (strcmp(format, "j2k") == 0) {
         codec_format = OPJ_CODEC_J2K;
-    } else if (strcmp(format, "jpt") == 0) {
-        codec_format = OPJ_CODEC_JPT;
     } else if (strcmp(format, "jp2") == 0) {
         codec_format = OPJ_CODEC_JP2;
     } else {

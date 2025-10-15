@@ -59,6 +59,6 @@ cmake \
     "${LIBAVIF_CMAKE_FLAGS[@]}" \
     .
 
-sudo make install
+make install
 
 popd

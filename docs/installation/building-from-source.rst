@@ -44,7 +44,7 @@ Many of Pillow's features require external libraries:
 
 * **libtiff** provides compressed TIFF functionality
 
-  * Pillow has been tested with libtiff versions **4.0-4.7.0**
+  * Pillow has been tested with libtiff versions **4.0-4.7.1**
 
 * **libfreetype** provides type related services
 
@@ -58,7 +58,7 @@ Many of Pillow's features require external libraries:
 * **openjpeg** provides JPEG 2000 functionality.
 
   * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1**,
-    **2.4.0**, **2.5.0**, **2.5.2** and **2.5.3**.
+    **2.4.0**, **2.5.0**, **2.5.2**, **2.5.3** and **2.5.4**.
   * Pillow does **not** support the earlier **1.5** series which ships
     with Debian Jessie.
 

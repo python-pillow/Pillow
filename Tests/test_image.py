@@ -19,6 +19,7 @@ from PIL import (
     ImageDraw,
     ImageFile,
     ImagePalette,
+    ImageShow,
     UnidentifiedImageError,
     features,
 )
@@ -282,33 +283,6 @@ class TestImage:
         # Shouldn't cause AttributeError (#774)
         assert item is not None
         assert item != num
-
-    def test_expand_x(self) -> None:
-        # Arrange
-        im = hopper()
-        orig_size = im.size
-        xmargin = 5
-
-        # Act
-        im = im._expand(xmargin)
-
-        # Assert
-        assert im.size[0] == orig_size[0] + 2 * xmargin
-        assert im.size[1] == orig_size[1] + 2 * xmargin
-
-    def test_expand_xy(self) -> None:
-        # Arrange
-        im = hopper()
-        orig_size = im.size
-        xmargin = 5
-        ymargin = 3
-
-        # Act
-        im = im._expand(xmargin, ymargin)
-
-        # Assert
-        assert im.size[0] == orig_size[0] + 2 * xmargin
-        assert im.size[1] == orig_size[1] + 2 * ymargin
 
     def test_getbands(self) -> None:
         # Assert
@@ -1047,6 +1021,13 @@ class TestImage:
         with pytest.warns(DeprecationWarning, match="Image.Image.get_child_images"):
             assert im.get_child_images() == []
 
+    def test_show(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(ImageShow, "_viewers", [])
+
+        im = Image.new("RGB", (1, 1))
+        with pytest.warns(DeprecationWarning, match="Image._show"):
+            Image._show(im)
+
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size: tuple[int, int]) -> None:
         im = Image.new("RGB", size)
@@ -1117,6 +1098,12 @@ class TestImage:
             im.apply_transparency()
             assert im.palette is not None
             assert im.palette.colors[(27, 35, 6, 214)] == 24
+
+    def test_merge_pa(self) -> None:
+        p = hopper("P")
+        a = Image.new("L", p.size)
+        pa = Image.merge("PA", (p, a))
+        assert p.getpalette() == pa.getpalette()
 
     def test_constants(self) -> None:
         for enum in (

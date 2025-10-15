@@ -9,18 +9,18 @@
 const ModeData MODES[] = {
     [IMAGING_MODE_UNKNOWN] = {""},
 
-    [IMAGING_MODE_1] = {"1"},           [IMAGING_MODE_CMYK] = {"CMYK"},
-    [IMAGING_MODE_F] = {"F"},           [IMAGING_MODE_HSV] = {"HSV"},
-    [IMAGING_MODE_I] = {"I"},           [IMAGING_MODE_L] = {"L"},
-    [IMAGING_MODE_LA] = {"LA"},         [IMAGING_MODE_LAB] = {"LAB"},
-    [IMAGING_MODE_La] = {"La"},         [IMAGING_MODE_P] = {"P"},
-    [IMAGING_MODE_PA] = {"PA"},         [IMAGING_MODE_RGB] = {"RGB"},
-    [IMAGING_MODE_RGBA] = {"RGBA"},     [IMAGING_MODE_RGBX] = {"RGBX"},
-    [IMAGING_MODE_RGBa] = {"RGBa"},     [IMAGING_MODE_YCbCr] = {"YCbCr"},
+    [IMAGING_MODE_1] = {"1"},         [IMAGING_MODE_CMYK] = {"CMYK"},
+    [IMAGING_MODE_F] = {"F"},         [IMAGING_MODE_HSV] = {"HSV"},
+    [IMAGING_MODE_I] = {"I"},         [IMAGING_MODE_L] = {"L"},
+    [IMAGING_MODE_LA] = {"LA"},       [IMAGING_MODE_LAB] = {"LAB"},
+    [IMAGING_MODE_La] = {"La"},       [IMAGING_MODE_P] = {"P"},
+    [IMAGING_MODE_PA] = {"PA"},       [IMAGING_MODE_RGB] = {"RGB"},
+    [IMAGING_MODE_RGBA] = {"RGBA"},   [IMAGING_MODE_RGBX] = {"RGBX"},
+    [IMAGING_MODE_RGBa] = {"RGBa"},   [IMAGING_MODE_YCbCr] = {"YCbCr"},
 
-    [IMAGING_MODE_I_16] = {"I;16"},     [IMAGING_MODE_I_16L] = {"I;16L"},
-    [IMAGING_MODE_I_16B] = {"I;16B"},   [IMAGING_MODE_I_16N] = {"I;16N"},
-    [IMAGING_MODE_I_32L] = {"I;32L"},   [IMAGING_MODE_I_32B] = {"I;32B"},
+    [IMAGING_MODE_I_16] = {"I;16"},   [IMAGING_MODE_I_16L] = {"I;16L"},
+    [IMAGING_MODE_I_16B] = {"I;16B"}, [IMAGING_MODE_I_16N] = {"I;16N"},
+    [IMAGING_MODE_I_32L] = {"I;32L"}, [IMAGING_MODE_I_32B] = {"I;32B"},
 };
 
 const ModeID

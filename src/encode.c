@@ -955,6 +955,18 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                     );
                     free(av);
                 }
+            } else if (type == TIFF_RATIONAL) {
+                FLOAT32 *av;
+                /* malloc check ok, calloc checks for overflow */
+                av = calloc(len, sizeof(FLOAT32));
+                if (av) {
+                    for (i = 0; i < len; i++) {
+                        av[i] = (FLOAT32)PyFloat_AsDouble(PyTuple_GetItem(value, i));
+                    }
+                    status =
+                        ImagingLibTiffSetField(&encoder->state, (ttag_t)key_int, av);
+                    free(av);
+                }
             }
         } else {
             if (type == TIFF_SHORT) {

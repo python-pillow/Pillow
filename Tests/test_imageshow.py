@@ -59,14 +59,11 @@ def test_show(mode: str) -> None:
     assert ImageShow.show(im)
 
 
-def test_show_without_viewers() -> None:
-    viewers = ImageShow._viewers
-    ImageShow._viewers = []
+def test_show_without_viewers(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(ImageShow, "_viewers", [])
 
     with hopper() as im:
         assert not ImageShow.show(im)
-
-    ImageShow._viewers = viewers
 
 
 @pytest.mark.parametrize(
