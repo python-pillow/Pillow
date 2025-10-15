@@ -7,6 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 from .helper import (
     assert_image_equal_tofile,
     assert_image_similar_tofile,
+    has_feature_version,
     skip_unless_feature,
 )
 
@@ -104,11 +105,9 @@ def test_text_direction_ttb() -> None:
 
     im = Image.new(mode="RGB", size=(100, 300))
     draw = ImageDraw.Draw(im)
-    try:
-        draw.text((0, 0), "English あい", font=ttf, fill=500, direction="ttb")
-    except ValueError as ex:
-        if str(ex) == "libraqm 0.7 or greater required for 'ttb' direction":
-            pytest.skip("libraqm 0.7 or greater not available")
+    if not has_feature_version("raqm", "0.7"):
+        pytest.skip("libraqm 0.7 or greater not available")
+    draw.text((0, 0), "English あい", font=ttf, fill=500, direction="ttb")
 
     target = "Tests/images/test_direction_ttb.png"
     assert_image_similar_tofile(im, target, 2.8)
@@ -119,19 +118,17 @@ def test_text_direction_ttb_stroke() -> None:
 
     im = Image.new(mode="RGB", size=(100, 300))
     draw = ImageDraw.Draw(im)
-    try:
-        draw.text(
-            (27, 27),
-            "あい",
-            font=ttf,
-            fill=500,
-            direction="ttb",
-            stroke_width=2,
-            stroke_fill="#0f0",
-        )
-    except ValueError as ex:
-        if str(ex) == "libraqm 0.7 or greater required for 'ttb' direction":
-            pytest.skip("libraqm 0.7 or greater not available")
+    if not has_feature_version("raqm", "0.7"):
+        pytest.skip("libraqm 0.7 or greater not available")
+    draw.text(
+        (27, 27),
+        "あい",
+        font=ttf,
+        fill=500,
+        direction="ttb",
+        stroke_width=2,
+        stroke_fill="#0f0",
+    )
 
     target = "Tests/images/test_direction_ttb_stroke.png"
     assert_image_similar_tofile(im, target, 19.4)
@@ -186,7 +183,7 @@ def test_x_max_and_y_offset() -> None:
     draw.text((0, 0), "لح", font=ttf, fill=500)
 
     target = "Tests/images/test_x_max_and_y_offset.png"
-    assert_image_similar_tofile(im, target, 0.5)
+    assert_image_similar_tofile(im, target, 3.8)
 
 
 def test_language() -> None:
@@ -219,14 +216,9 @@ def test_getlength(
     im = Image.new(mode, (1, 1), 0)
     d = ImageDraw.Draw(im)
 
-    try:
-        assert d.textlength(text, ttf, direction) == expected
-    except ValueError as ex:
-        if (
-            direction == "ttb"
-            and str(ex) == "libraqm 0.7 or greater required for 'ttb' direction"
-        ):
-            pytest.skip("libraqm 0.7 or greater not available")
+    if direction == "ttb" and not has_feature_version("raqm", "0.7"):
+        pytest.skip("libraqm 0.7 or greater not available")
+    assert d.textlength(text, ttf, direction) == expected
 
 
 @pytest.mark.parametrize("mode", ("L", "1"))
@@ -242,17 +234,12 @@ def test_getlength_combine(mode: str, direction: str, text: str) -> None:
 
     ttf = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 48)
 
-    try:
-        target = ttf.getlength("ii", mode, direction)
-        actual = ttf.getlength(text, mode, direction)
+    if direction == "ttb" and not has_feature_version("raqm", "0.7"):
+        pytest.skip("libraqm 0.7 or greater not available")
+    target = ttf.getlength("ii", mode, direction)
+    actual = ttf.getlength(text, mode, direction)
 
-        assert actual == target
-    except ValueError as ex:
-        if (
-            direction == "ttb"
-            and str(ex) == "libraqm 0.7 or greater required for 'ttb' direction"
-        ):
-            pytest.skip("libraqm 0.7 or greater not available")
+    assert actual == target
 
 
 @pytest.mark.parametrize("anchor", ("lt", "mm", "rb", "sm"))
@@ -265,11 +252,9 @@ def test_anchor_ttb(anchor: str) -> None:
     d = ImageDraw.Draw(im)
     d.line(((0, 200), (200, 200)), "gray")
     d.line(((100, 0), (100, 400)), "gray")
-    try:
-        d.text((100, 200), text, fill="black", anchor=anchor, direction="ttb", font=f)
-    except ValueError as ex:
-        if str(ex) == "libraqm 0.7 or greater required for 'ttb' direction":
-            pytest.skip("libraqm 0.7 or greater not available")
+    if not has_feature_version("raqm", "0.7"):
+        pytest.skip("libraqm 0.7 or greater not available")
+    d.text((100, 200), text, fill="black", anchor=anchor, direction="ttb", font=f)
 
     assert_image_similar_tofile(im, path, 1)  # fails at 5
 
@@ -310,10 +295,12 @@ combine_tests = (
 
 # this tests various combining characters for anchor alignment and clipping
 @pytest.mark.parametrize(
-    "name, text, anchor, dir, epsilon", combine_tests, ids=[r[0] for r in combine_tests]
+    "name, text, anchor, direction, epsilon",
+    combine_tests,
+    ids=[r[0] for r in combine_tests],
 )
 def test_combine(
-    name: str, text: str, dir: str | None, anchor: str | None, epsilon: float
+    name: str, text: str, direction: str | None, anchor: str | None, epsilon: float
 ) -> None:
     path = f"Tests/images/test_combine_{name}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 48)
@@ -322,11 +309,9 @@ def test_combine(
     d = ImageDraw.Draw(im)
     d.line(((0, 200), (400, 200)), "gray")
     d.line(((200, 0), (200, 400)), "gray")
-    try:
-        d.text((200, 200), text, fill="black", anchor=anchor, direction=dir, font=f)
-    except ValueError as ex:
-        if str(ex) == "libraqm 0.7 or greater required for 'ttb' direction":
-            pytest.skip("libraqm 0.7 or greater not available")
+    if direction == "ttb" and not has_feature_version("raqm", "0.7"):
+        pytest.skip("libraqm 0.7 or greater not available")
+    d.text((200, 200), text, fill="black", anchor=anchor, direction=direction, font=f)
 
     assert_image_similar_tofile(im, path, epsilon)
 

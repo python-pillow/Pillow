@@ -1,4 +1,4 @@
-mypy==1.17.0
+mypy==1.18.2
 IceSpringPySideStubs-PyQt6
 IceSpringPySideStubs-PySide6
 ipython

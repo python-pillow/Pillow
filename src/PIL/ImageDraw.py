@@ -74,9 +74,7 @@ class ImageDraw:
            must be the same as the image mode.  If omitted, the mode
            defaults to the mode of the image.
         """
-        im.load()
-        if im.readonly:
-            im._copy()  # make it writeable
+        im._ensure_mutable()
         blend = 0
         if mode is None:
             mode = im.mode

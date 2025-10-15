@@ -93,16 +93,20 @@ ARCHIVE_SDIR=pillow-depends-main
 # Package versions for fresh source builds. Version numbers with "Patched"
 # annotations have a source code patch that is required for some platforms. If
 # you change those versions, ensure the patch is also updated.
-FREETYPE_VERSION=2.13.3
-HARFBUZZ_VERSION=11.2.1
+if [[ -n "$IOS_SDK" ]]; then
+  FREETYPE_VERSION=2.13.3
+else
+  FREETYPE_VERSION=2.14.1
+fi
+HARFBUZZ_VERSION=12.1.0
 LIBPNG_VERSION=1.6.50
-JPEGTURBO_VERSION=3.1.1
-OPENJPEG_VERSION=2.5.3
+JPEGTURBO_VERSION=3.1.2
+OPENJPEG_VERSION=2.5.4
 XZ_VERSION=5.8.1
-TIFF_VERSION=4.7.0
+ZSTD_VERSION=1.5.7
+TIFF_VERSION=4.7.1
 LCMS2_VERSION=2.17
-ZLIB_VERSION=1.3.1
-ZLIB_NG_VERSION=2.2.4
+ZLIB_NG_VERSION=2.2.5
 LIBWEBP_VERSION=1.6.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
@@ -165,7 +169,7 @@ function build_brotli {
     local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-$BROTLI_VERSION.tar.gz)
     (cd $out_dir \
         && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib $HOST_CMAKE_FLAGS . \
-        && make install)
+        && make -j4 install)
     touch brotli-stamp
 }
 
@@ -249,9 +253,17 @@ function build_libavif {
         cp $WORKDIR/meson-cross.txt $out_dir/crossfile-apple.meson
     fi
 
-    (cd $out_dir && make install)
+    (cd $out_dir && make -j4 install)
 
     touch libavif-stamp
+}
+
+function build_zstd {
+    if [ -e zstd-stamp ]; then return; fi
+    local out_dir=$(fetch_unpack https://github.com/facebook/zstd/releases/download/v$ZSTD_VERSION/zstd-$ZSTD_VERSION.tar.gz)
+    (cd $out_dir \
+        && make -j4 install)
+    touch zstd-stamp
 }
 
 function build {
@@ -259,8 +271,8 @@ function build {
     if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
-    if [[ -n "$IS_MACOS" ]] && [[ "$MACOSX_DEPLOYMENT_TARGET" == "10.10" || "$MACOSX_DEPLOYMENT_TARGET" == "10.13" ]]; then
-        build_new_zlib
+    if [[ -n "$IS_MACOS" ]]; then
+        CFLAGS="$CFLAGS -headerpad_max_install_names" build_zlib_ng
     else
         build_zlib_ng
     fi
@@ -285,6 +297,7 @@ function build {
             --with-jpeg-include-dir=$BUILD_PREFIX/include --with-jpeg-lib-dir=$BUILD_PREFIX/lib \
             --disable-webp --disable-libdeflate --disable-zstd
     else
+        build_zstd
         build_tiff
     fi
 
@@ -309,6 +322,10 @@ function build {
 
     if [[ -n "$IS_MACOS" ]]; then
         # Custom freetype build
+        if [[ -z "$IOS_SDK" ]]; then
+          build_simple sed 4.9 https://mirrors.middlendian.com/gnu/sed
+        fi
+
         build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no
     else
         build_freetype

@@ -57,6 +57,9 @@ optional-dependencies.mic = [
   "olefile",
 ]
 optional-dependencies.test-arrow = [
+  "arro3-compute",
+  "arro3-core",
+  "nanoarrow",
   "pyarrow",
 ]
 
