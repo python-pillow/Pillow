@@ -562,17 +562,17 @@ class ImageDraw:
     ) -> None:
         """Draw text."""
         if isinstance(text, ImageText.Text):
-            imagetext = text
+            image_text = text
         else:
             if font is None:
                 font = self._getfont(kwargs.get("font_size"))
-            imagetext = ImageText.Text(
+            image_text = ImageText.Text(
                 text, font, self.mode, spacing, direction, features, language
             )
             if embedded_color:
-                imagetext.embed_color()
+                image_text.embed_color()
             if stroke_width:
-                imagetext.stroke(stroke_width, stroke_fill)
+                image_text.stroke(stroke_width, stroke_fill)
 
         def getink(fill: _Ink | None) -> int:
             ink, fill_ink = self._getink(fill)
@@ -586,14 +586,14 @@ class ImageDraw:
             return
 
         stroke_ink = None
-        if imagetext.stroke_width:
+        if image_text.stroke_width:
             stroke_ink = (
-                getink(imagetext.stroke_fill)
-                if imagetext.stroke_fill is not None
+                getink(image_text.stroke_fill)
+                if image_text.stroke_fill is not None
                 else ink
             )
 
-        for xy, anchor, line in imagetext._split(xy, anchor, align):
+        for xy, anchor, line in image_text._split(xy, anchor, align):
 
             def draw_text(ink: int, stroke_width: float = 0) -> None:
                 mode = self.fontmode
@@ -604,7 +604,7 @@ class ImageDraw:
                     coord.append(int(xy[i]))
                 start = (math.modf(xy[0])[0], math.modf(xy[1])[0])
                 try:
-                    mask, offset = imagetext.font.getmask2(  # type: ignore[union-attr,misc]
+                    mask, offset = image_text.font.getmask2(  # type: ignore[union-attr,misc]
                         line,
                         mode,
                         direction=direction,
@@ -621,7 +621,7 @@ class ImageDraw:
                     coord = [coord[0] + offset[0], coord[1] + offset[1]]
                 except AttributeError:
                     try:
-                        mask = imagetext.font.getmask(  # type: ignore[misc]
+                        mask = image_text.font.getmask(  # type: ignore[misc]
                             line,
                             mode,
                             direction,
@@ -635,9 +635,9 @@ class ImageDraw:
                             **kwargs,
                         )
                     except TypeError:
-                        mask = imagetext.font.getmask(line)
+                        mask = image_text.font.getmask(line)
                 if mode == "RGBA":
-                    # imagetext.font.getmask2(mode="RGBA")
+                    # image_text.font.getmask2(mode="RGBA")
                     # returns color in RGB bands and mask in A
                     # extract mask and set text alpha
                     color, mask = mask, mask.getband(3)
@@ -653,7 +653,7 @@ class ImageDraw:
 
             if stroke_ink is not None:
                 # Draw stroked text
-                draw_text(stroke_ink, imagetext.stroke_width)
+                draw_text(stroke_ink, image_text.stroke_width)
 
                 # Draw normal text
                 if ink != stroke_ink:
@@ -721,7 +721,7 @@ class ImageDraw:
         """Get the length of a given string, in pixels with 1/64 precision."""
         if font is None:
             font = self._getfont(font_size)
-        imagetext = ImageText.Text(
+        image_text = ImageText.Text(
             text,
             font,
             self.mode,
@@ -730,8 +730,8 @@ class ImageDraw:
             language=language,
         )
         if embedded_color:
-            imagetext.embed_color()
-        return imagetext.get_length()
+            image_text.embed_color()
+        return image_text.get_length()
 
     def textbbox(
         self,
@@ -757,14 +757,14 @@ class ImageDraw:
         """Get the bounding box of a given string, in pixels."""
         if font is None:
             font = self._getfont(font_size)
-        imagetext = ImageText.Text(
+        image_text = ImageText.Text(
             text, font, self.mode, spacing, direction, features, language
         )
         if embedded_color:
-            imagetext.embed_color()
+            image_text.embed_color()
         if stroke_width:
-            imagetext.stroke(stroke_width)
-        return imagetext.get_bbox(xy, anchor, align)
+            image_text.stroke(stroke_width)
+        return image_text.get_bbox(xy, anchor, align)
 
     def multiline_textbbox(
         self,
