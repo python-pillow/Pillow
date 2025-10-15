@@ -248,7 +248,7 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n)
         return ImagingError_ValueError("radius must be >= 0");
     }
 
-    if (strcmp(imIn->mode, imOut->mode) || imIn->type != imOut->type ||
+    if (imIn->mode != imOut->mode || imIn->type != imOut->type ||
         imIn->bands != imOut->bands || imIn->xsize != imOut->xsize ||
         imIn->ysize != imOut->ysize) {
         return ImagingError_Mismatch();
@@ -258,10 +258,10 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n)
         return ImagingError_ModeError();
     }
 
-    if (!(strcmp(imIn->mode, "RGB") == 0 || strcmp(imIn->mode, "RGBA") == 0 ||
-          strcmp(imIn->mode, "RGBa") == 0 || strcmp(imIn->mode, "RGBX") == 0 ||
-          strcmp(imIn->mode, "CMYK") == 0 || strcmp(imIn->mode, "L") == 0 ||
-          strcmp(imIn->mode, "LA") == 0 || strcmp(imIn->mode, "La") == 0)) {
+    if (imIn->mode != IMAGING_MODE_RGB && imIn->mode != IMAGING_MODE_RGBA &&
+        imIn->mode != IMAGING_MODE_RGBa && imIn->mode != IMAGING_MODE_RGBX &&
+        imIn->mode != IMAGING_MODE_CMYK && imIn->mode != IMAGING_MODE_L &&
+        imIn->mode != IMAGING_MODE_LA && imIn->mode != IMAGING_MODE_La) {
         return ImagingError_ModeError();
     }
 

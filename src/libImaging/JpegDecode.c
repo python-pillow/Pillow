@@ -180,41 +180,41 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t by
 
             /* Decoder settings */
 
-            /* jpegmode indicates what's in the file; if not set, we'll
-               trust the decoder */
-            if (strcmp(context->jpegmode, "L") == 0) {
+            /* jpegmode indicates what's in the file. */
+            /* If not valid, we'll trust the decoder. */
+            if (context->jpegmode == IMAGING_RAWMODE_L) {
                 context->cinfo.jpeg_color_space = JCS_GRAYSCALE;
-            } else if (strcmp(context->jpegmode, "RGB") == 0) {
+            } else if (context->jpegmode == IMAGING_RAWMODE_RGB) {
                 context->cinfo.jpeg_color_space = JCS_RGB;
-            } else if (strcmp(context->jpegmode, "CMYK") == 0) {
+            } else if (context->jpegmode == IMAGING_RAWMODE_CMYK) {
                 context->cinfo.jpeg_color_space = JCS_CMYK;
-            } else if (strcmp(context->jpegmode, "YCbCr") == 0) {
+            } else if (context->jpegmode == IMAGING_RAWMODE_YCbCr) {
                 context->cinfo.jpeg_color_space = JCS_YCbCr;
-            } else if (strcmp(context->jpegmode, "YCbCrK") == 0) {
+            } else if (context->jpegmode == IMAGING_RAWMODE_YCbCrK) {
                 context->cinfo.jpeg_color_space = JCS_YCCK;
             }
 
-            /* rawmode indicates what we want from the decoder.  if not
-               set, conversions are disabled */
-            if (strcmp(context->rawmode, "L") == 0) {
+            /* rawmode indicates what we want from the decoder. */
+            /* If not valid, conversions are disabled. */
+            if (context->rawmode == IMAGING_RAWMODE_L) {
                 context->cinfo.out_color_space = JCS_GRAYSCALE;
-            } else if (strcmp(context->rawmode, "RGB") == 0) {
+            } else if (context->rawmode == IMAGING_RAWMODE_RGB) {
                 context->cinfo.out_color_space = JCS_RGB;
             }
 #ifdef JCS_EXTENSIONS
-            else if (strcmp(context->rawmode, "RGBX") == 0) {
+            else if (context->rawmode == IMAGING_RAWMODE_RGBX) {
                 context->cinfo.out_color_space = JCS_EXT_RGBX;
             }
 #endif
-            else if (strcmp(context->rawmode, "CMYK") == 0 ||
-                     strcmp(context->rawmode, "CMYK;I") == 0) {
+            else if (context->rawmode == IMAGING_RAWMODE_CMYK ||
+                     context->rawmode == IMAGING_RAWMODE_CMYK_I) {
                 context->cinfo.out_color_space = JCS_CMYK;
-            } else if (strcmp(context->rawmode, "YCbCr") == 0) {
+            } else if (context->rawmode == IMAGING_RAWMODE_YCbCr) {
                 context->cinfo.out_color_space = JCS_YCbCr;
-            } else if (strcmp(context->rawmode, "YCbCrK") == 0) {
+            } else if (context->rawmode == IMAGING_RAWMODE_YCbCrK) {
                 context->cinfo.out_color_space = JCS_YCCK;
             } else {
-                /* Disable decoder conversions */
+                /* Disable decoder conversions. */
                 context->cinfo.jpeg_color_space = JCS_UNKNOWN;
                 context->cinfo.out_color_space = JCS_UNKNOWN;
             }
