@@ -16,7 +16,7 @@ Example
     from PIL import Image, ImageDraw, ImageFont, ImageText
     font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 24)
 
-    text = ImageText.ImageText("Hello world", font)
+    text = ImageText.Text("Hello world", font)
     text.embed_color()
     text.stroke(2, "#0f0")
 
@@ -30,5 +30,5 @@ Example
 Methods
 -------
 
-.. autoclass:: PIL.ImageText.ImageText
+.. autoclass:: PIL.ImageText.Text
     :members:

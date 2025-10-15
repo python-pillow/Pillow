@@ -26,24 +26,24 @@ def font(layout_engine: ImageFont.Layout) -> ImageFont.FreeTypeFont:
 
 
 def test_get_length(font: ImageFont.FreeTypeFont) -> None:
-    assert ImageText.ImageText("A", font).get_length() == 12
-    assert ImageText.ImageText("AB", font).get_length() == 24
-    assert ImageText.ImageText("M", font).get_length() == 12
-    assert ImageText.ImageText("y", font).get_length() == 12
-    assert ImageText.ImageText("a", font).get_length() == 12
+    assert ImageText.Text("A", font).get_length() == 12
+    assert ImageText.Text("AB", font).get_length() == 24
+    assert ImageText.Text("M", font).get_length() == 12
+    assert ImageText.Text("y", font).get_length() == 12
+    assert ImageText.Text("a", font).get_length() == 12
 
 
 def test_get_bbox(font: ImageFont.FreeTypeFont) -> None:
-    assert ImageText.ImageText("A", font).get_bbox() == (0, 4, 12, 16)
-    assert ImageText.ImageText("AB", font).get_bbox() == (0, 4, 24, 16)
-    assert ImageText.ImageText("M", font).get_bbox() == (0, 4, 12, 16)
-    assert ImageText.ImageText("y", font).get_bbox() == (0, 7, 12, 20)
-    assert ImageText.ImageText("a", font).get_bbox() == (0, 7, 12, 16)
+    assert ImageText.Text("A", font).get_bbox() == (0, 4, 12, 16)
+    assert ImageText.Text("AB", font).get_bbox() == (0, 4, 24, 16)
+    assert ImageText.Text("M", font).get_bbox() == (0, 4, 12, 16)
+    assert ImageText.Text("y", font).get_bbox() == (0, 7, 12, 20)
+    assert ImageText.Text("a", font).get_bbox() == (0, 7, 12, 16)
 
 
 def test_standard_embedded_color(layout_engine: ImageFont.Layout) -> None:
     font = ImageFont.truetype(FONT_PATH, 40, layout_engine=layout_engine)
-    text = ImageText.ImageText("Hello World!", font)
+    text = ImageText.Text("Hello World!", font)
     text.embed_color()
 
     im = Image.new("RGB", (300, 64), "white")
@@ -60,7 +60,7 @@ def test_stroke() -> None:
         im = Image.new("RGB", (120, 130))
         draw = ImageDraw.Draw(im)
         font = ImageFont.truetype(FONT_PATH, 120)
-        text = ImageText.ImageText("A", font)
+        text = ImageText.Text("A", font)
         text.stroke(2, stroke_fill)
 
         # Act

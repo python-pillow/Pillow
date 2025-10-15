@@ -540,7 +540,7 @@ class ImageDraw:
     def text(
         self,
         xy: tuple[float, float],
-        text: AnyStr | ImageText.ImageText,
+        text: AnyStr | ImageText.Text,
         fill: _Ink | None = None,
         font: (
             ImageFont.ImageFont
@@ -561,12 +561,12 @@ class ImageDraw:
         **kwargs: Any,
     ) -> None:
         """Draw text."""
-        if isinstance(text, ImageText.ImageText):
+        if isinstance(text, ImageText.Text):
             imagetext = text
         else:
             if font is None:
                 font = self._getfont(kwargs.get("font_size"))
-            imagetext = ImageText.ImageText(
+            imagetext = ImageText.Text(
                 text, font, self.mode, spacing, direction, features, language
             )
             if embedded_color:
@@ -721,7 +721,7 @@ class ImageDraw:
         """Get the length of a given string, in pixels with 1/64 precision."""
         if font is None:
             font = self._getfont(font_size)
-        imagetext = ImageText.ImageText(
+        imagetext = ImageText.Text(
             text,
             font,
             self.mode,
@@ -757,7 +757,7 @@ class ImageDraw:
         """Get the bounding box of a given string, in pixels."""
         if font is None:
             font = self._getfont(font_size)
-        imagetext = ImageText.ImageText(
+        imagetext = ImageText.Text(
             text, font, self.mode, spacing, direction, features, language
         )
         if embedded_color:

@@ -4,7 +4,7 @@ from . import ImageFont
 from ._typing import _Ink
 
 
-class ImageText:
+class Text:
     def __init__(
         self,
         text: str | bytes,
@@ -104,26 +104,26 @@ class ImageText:
 
         For example, instead of::
 
-            hello = ImageText.ImageText("Hello", font).get_length()
-            world = ImageText.ImageText("World", font).get_length()
-            helloworld = ImageText.ImageText("HelloWorld", font).get_length()
+            hello = ImageText.Text("Hello", font).get_length()
+            world = ImageText.Text("World", font).get_length()
+            helloworld = ImageText.Text("HelloWorld", font).get_length()
             assert hello + world == helloworld
 
         use::
 
             hello = (
-                ImageText.ImageText("HelloW", font).get_length() -
-                ImageText.ImageText("W", font).get_length()
+                ImageText.Text("HelloW", font).get_length() -
+                ImageText.Text("W", font).get_length()
             )  # adjusted for kerning
-            world = ImageText.ImageText("World", font).get_length()
-            helloworld = ImageText.ImageText("HelloWorld", font).get_length()
+            world = ImageText.Text("World", font).get_length()
+            helloworld = ImageText.Text("HelloWorld", font).get_length()
             assert hello + world == helloworld
 
         or disable kerning with (requires libraqm)::
 
-            hello = ImageText.ImageText("Hello", font, features=["-kern"]).get_length()
-            world = ImageText.ImageText("World", font, features=["-kern"]).get_length()
-            helloworld = ImageText.ImageText(
+            hello = ImageText.Text("Hello", font, features=["-kern"]).get_length()
+            world = ImageText.Text("World", font, features=["-kern"]).get_length()
+            helloworld = ImageText.Text(
                 "HelloWorld", font, features=["-kern"]
             ).get_length()
             assert hello + world == helloworld
