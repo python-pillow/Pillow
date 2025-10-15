@@ -100,7 +100,7 @@ jobs:
             cibw_arch: arm64_iphoneos
           - name: "iOS arm64 simulator"
             platform: ios
-            os: macos-latest
+            os: macos-14
             cibw_arch: arm64_iphonesimulator
           - name: "iOS x86_64 simulator"
             platform: ios
