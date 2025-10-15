@@ -187,7 +187,6 @@ export_named_type(struct ArrowSchema *schema, char *format, char *name) {
 int
 export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     int retval = 0;
-    char *metadata;
     char *band_json;
 
     if (strcmp(im->arrow_band_format, "") == 0) {
@@ -221,7 +220,9 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     schema->n_children = 1;
     schema->children = calloc(1, sizeof(struct ArrowSchema *));
     schema->children[0] = (struct ArrowSchema *)calloc(1, sizeof(struct ArrowSchema));
-    retval = export_named_type(schema->children[0], im->arrow_band_format, im->mode);
+    retval = export_named_type(
+        schema->children[0], im->arrow_band_format, getModeData(im->mode)->name
+    );
     if (retval != 0) {
         free(schema->children[0]);
         free(schema->children);

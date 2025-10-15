@@ -26,11 +26,11 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
 
     /* Check arguments */
     if (!imDst || !imSrc ||
-        (strcmp(imDst->mode, "RGBA") && strcmp(imDst->mode, "LA"))) {
+        (imDst->mode != IMAGING_MODE_RGBA && imDst->mode != IMAGING_MODE_LA)) {
         return ImagingError_ModeError();
     }
 
-    if (strcmp(imDst->mode, imSrc->mode) || imDst->xsize != imSrc->xsize ||
+    if (imDst->mode != imSrc->mode || imDst->xsize != imSrc->xsize ||
         imDst->ysize != imSrc->ysize) {
         return ImagingError_Mismatch();
     }
