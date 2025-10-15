@@ -16,8 +16,8 @@ from .helper import (
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from arro3 import compute  #  type: ignore [import-not-found]
-    from arro3.core import (  #  type: ignore [import-not-found]
+    from arro3 import compute
+    from arro3.core import (
         Array,
         DataType,
         Field,
