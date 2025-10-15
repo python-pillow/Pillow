@@ -582,6 +582,8 @@ Methods
         hello_world = hello + world  # kerning is disabled, no need to adjust
         assert hello_world == draw.textlength("HelloWorld", font, features=["-kern"])  # True
 
+    .. seealso:: :py:meth:`PIL.ImageText.Text.get_length`
+
     .. versionadded:: 8.0.0
 
     :param text: Text to be measured. May not contain any newline characters.
@@ -682,6 +684,8 @@ Methods
     Use :py:meth:`textlength` to get the offset of following text with
     1/64 pixel precision. The bounding box includes extra margins for
     some fonts, e.g. italics or accents.
+
+    .. seealso:: :py:meth:`PIL.ImageText.Text.get_bbox`
 
     .. versionadded:: 8.0.0
 

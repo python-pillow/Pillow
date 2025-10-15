@@ -124,6 +124,39 @@ Image.alpha_composite: LA images
 
 :py:meth:`~PIL.Image.alpha_composite` can now use LA images as well as RGBA.
 
+API additions
+=============
+
+Added ImageText.Text
+^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`PIL.ImageText.Text` has been added, as a simpler way to use fonts with text
+strings or bytes.
+
+Without ``ImageText.Text``::
+
+  from PIL import Image, ImageDraw
+  im = Image.new(mode, size)
+  d = ImageDraw.Draw(im)
+
+  d.textlength(text, font, direction, features, language, embedded_color)
+  d.multiline_textbbox(xy, text, font, anchor, spacing, align, direction, features, language, stroke_width, embedded_color)
+  d.text(xy, text, fill, font, anchor, spacing, align, direction, features, language, stroke_width, stroke_fill, embedded_color)
+
+With ``ImageText.Text``::
+
+  from PIL import ImageText
+  text = ImageText.Text(text, font, mode, spacing, direction, features, language)
+  text.embed_color()
+  text.stroke(stroke_width, stroke_fill)
+
+  text.get_length()
+  text.get_bbox(xy, anchor, align)
+
+  im = Image.new(mode, size)
+  d = ImageDraw.Draw(im)
+  d.text(xy, text, fill, anchor=anchor, align=align)
+
 Other changes
 =============
 
