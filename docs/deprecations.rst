@@ -35,8 +35,12 @@ Image.fromarray mode parameter
 
 .. deprecated:: 11.3.0
 
-The ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` has been deprecated. The
-mode can be automatically determined from the object's shape and type instead.
+Using the ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` was deprecated in
+Pillow 11.3.0. In Pillow 12.0.0, this was partially reverted, and it is now only
+deprecated when changing data types. Since pixel values do not contain information
+about palettes or color spaces, the parameter can still be used to place grayscale L
+mode data within a P mode image, or read RGB data as YCbCr for example. If omitted, the
+mode will be automatically determined from the object's shape and type.
 
 Saving I mode images as PNG
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -60,6 +64,14 @@ ImageCms.ImageCmsProfile.product_name and .product_info
 ``ImageCms.ImageCmsProfile.product_name`` and the corresponding
 ``.product_info`` attributes have been deprecated, and will be removed in
 Pillow 13 (2026-10-15). They have been set to ``None`` since Pillow 2.3.0.
+
+Image._show
+~~~~~~~~~~~
+
+.. deprecated:: 12.0.0
+
+``Image._show`` has been deprecated, and will be removed in Pillow 13 (2026-10-15).
+Use :py:meth:`~PIL.ImageShow.show` instead.
 
 Removed features
 ----------------

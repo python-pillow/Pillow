@@ -313,6 +313,9 @@ class ImageFile(Image.Image):
                 and args[0] == self.mode
                 and args[0] in Image._MAPMODES
             ):
+                if offset < 0:
+                    msg = "Tile offset cannot be negative"
+                    raise ValueError(msg)
                 try:
                     # use mmap, if possible
                     import mmap

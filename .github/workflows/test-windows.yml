@@ -67,7 +67,7 @@ jobs:
 
     # sets env: pythonLocation
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
@@ -97,8 +97,8 @@ jobs:
         choco install nasm --no-progress
         echo "C:\Program Files\NASM" >> $env:GITHUB_PATH
 
-        choco install ghostscript --version=10.5.1 --no-progress
-        echo "C:\Program Files\gs\gs10.05.1\bin" >> $env:GITHUB_PATH
+        choco install ghostscript --version=10.6.0 --no-progress
+        echo "C:\Program Files\gs\gs10.06.0\bin" >> $env:GITHUB_PATH
 
         # Install extra test images
         xcopy /S /Y Tests\test-images\* Tests\images

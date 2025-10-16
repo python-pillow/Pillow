@@ -27,6 +27,8 @@ else:
     Buffer = Any
 
 
+_Ink = float | tuple[int, ...] | str
+
 Coords = Sequence[float] | Sequence[Sequence[float]]
 
 
