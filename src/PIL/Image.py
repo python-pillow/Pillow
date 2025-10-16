@@ -1159,7 +1159,8 @@ class Image:
             if new_im.mode == "P" and new_im.palette:
                 try:
                     new_im.info["transparency"] = new_im.palette.getcolor(
-                        cast(tuple[int, ...], trns), new_im  # trns was converted to RGB
+                        cast(tuple[int, ...], trns),
+                        new_im,  # trns was converted to RGB
                     )
                 except ValueError as e:
                     del new_im.info["transparency"]
@@ -1433,7 +1434,7 @@ class Image:
         Note that the sequence object returned by this method is an
         internal PIL data type, which only supports certain sequence
         operations.  To convert it to an ordinary sequence (e.g. for
-        printing), use ``list(im.getdata())``.
+        printing), use ``list(iter(im.getdata()))``.
 
         :param band: What band to return.  The default is to return
            all bands.  To return a single band, pass in the index
@@ -3224,7 +3225,8 @@ class SupportsArrowArrayInterface(Protocol):
     """
 
     def __arrow_c_array__(
-        self, requested_schema: "PyCapsule" = None  # type: ignore[name-defined]  # noqa: F821, UP037
+        self,
+        requested_schema: "PyCapsule" = None,  # type: ignore[name-defined]  # noqa: F821, UP037
     ) -> tuple["PyCapsule", "PyCapsule"]:  # type: ignore[name-defined]  # noqa: F821, UP037
         raise NotImplementedError()
 
