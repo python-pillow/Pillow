@@ -714,14 +714,7 @@ getfilter(Imaging im, int filterid) {
                     case IMAGING_TYPE_UINT8:
                         return nearest_filter8;
                     case IMAGING_TYPE_SPECIAL:
-                        switch (im->pixelsize) {
-                            case 1:
-                                return nearest_filter8;
-                            case 2:
-                                return nearest_filter16;
-                            case 4:
-                                return nearest_filter32;
-                        }
+                        return nearest_filter16;
                 }
             } else {
                 return nearest_filter32;
