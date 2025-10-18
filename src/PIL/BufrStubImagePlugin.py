@@ -41,6 +41,7 @@ class BufrStubImageFile(ImageFile.StubImageFile):
     format_description = "BUFR"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(4)):
             msg = "Not a BUFR file"
             raise SyntaxError(msg)
