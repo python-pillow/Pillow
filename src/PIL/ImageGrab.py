@@ -36,6 +36,8 @@ def grab(
     all_screens: bool = False,
     xdisplay: str | None = None,
     window: int | ImageWin.HWND | None = None,
+    *,
+    scale_down: bool = False,
 ) -> Image.Image:
     im: Image.Image
     if xdisplay is None:
@@ -50,7 +52,7 @@ def grab(
             im = Image.open(filepath)
             im.load()
             os.unlink(filepath)
-            if bbox:
+            if bbox and scale_down:
                 im_resized = im.resize((right - left, bottom - top))
                 im.close()
                 return im_resized
