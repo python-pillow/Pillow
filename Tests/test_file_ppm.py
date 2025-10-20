@@ -92,6 +92,13 @@ def test_16bit_pgm() -> None:
         assert_image_equal_tofile(im, "Tests/images/16_bit_binary_pgm.tiff")
 
 
+def test_p4_save(tmp_path: Path) -> None:
+    with Image.open("Tests/images/hopper_1bit.pbm") as im:
+        filename = tmp_path / "temp.pbm"
+        im.save(filename)
+        assert_image_equal_tofile(im, filename)
+
+
 def test_16bit_pgm_write(tmp_path: Path) -> None:
     with Image.open("Tests/images/16_bit_binary.pgm") as im:
         filename = tmp_path / "temp.pgm"
@@ -132,6 +139,12 @@ def test_pfm_big_endian(tmp_path: Path) -> None:
         im.save(filename)
 
         assert_image_equal_tofile(im, filename)
+
+
+def test_save_unsupported_mode(tmp_path: Path) -> None:
+    im = hopper("P")
+    with pytest.raises(OSError, match="cannot write mode P as PPM"):
+        im.save(tmp_path / "out.ppm")
 
 
 @pytest.mark.parametrize(
@@ -288,14 +301,16 @@ def test_non_integer_token(tmp_path: Path) -> None:
             pass
 
 
-def test_header_token_too_long(tmp_path: Path) -> None:
+@pytest.mark.parametrize("data", (b"P3\x0cAAAAAAAAAA\xee", b"P6\n 01234567890"))
+def test_header_token_too_long(tmp_path: Path, data: bytes) -> None:
     path = tmp_path / "temp.ppm"
     with open(path, "wb") as f:
-        f.write(b"P6\n 01234567890")
+        f.write(data)
 
-    with pytest.raises(ValueError, match="Token too long in file header: 01234567890"):
+    with pytest.raises(ValueError) as e:
         with Image.open(path):
             pass
+    assert "Token too long in file header: " in repr(e)
 
 
 def test_truncated_file(tmp_path: Path) -> None:

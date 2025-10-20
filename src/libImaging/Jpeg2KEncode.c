@@ -207,8 +207,8 @@ j2k_set_cinema_params(Imaging im, int components, opj_cparameters_t *params) {
 
     if (params->cp_cinema == OPJ_CINEMA4K_24) {
         float max_rate =
-            ((float)(components * im->xsize * im->ysize * 8) / (CINEMA_24_CS_LENGTH * 8)
-            );
+            ((float)(components * im->xsize * im->ysize * 8) /
+             (CINEMA_24_CS_LENGTH * 8));
 
         params->POC[0].tile = 1;
         params->POC[0].resno0 = 0;
@@ -243,8 +243,8 @@ j2k_set_cinema_params(Imaging im, int components, opj_cparameters_t *params) {
         params->max_comp_size = COMP_24_CS_MAX_LENGTH;
     } else {
         float max_rate =
-            ((float)(components * im->xsize * im->ysize * 8) / (CINEMA_48_CS_LENGTH * 8)
-            );
+            ((float)(components * im->xsize * im->ysize * 8) /
+             (CINEMA_48_CS_LENGTH * 8));
 
         for (n = 0; n < params->tcp_numlayers; ++n) {
             rate = 0;
@@ -305,34 +305,34 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
 #endif
 
     /* Setup an opj_image */
-    if (strcmp(im->mode, "L") == 0) {
+    if (im->mode == IMAGING_MODE_L) {
         components = 1;
         color_space = OPJ_CLRSPC_GRAY;
         pack = j2k_pack_l;
-    } else if (strcmp(im->mode, "I;16") == 0 || strcmp(im->mode, "I;16B") == 0) {
+    } else if (im->mode == IMAGING_MODE_I_16 || im->mode == IMAGING_MODE_I_16B) {
         components = 1;
         color_space = OPJ_CLRSPC_GRAY;
         pack = j2k_pack_i16;
         prec = 16;
-    } else if (strcmp(im->mode, "LA") == 0) {
+    } else if (im->mode == IMAGING_MODE_LA) {
         components = 2;
         color_space = OPJ_CLRSPC_GRAY;
         pack = j2k_pack_la;
-    } else if (strcmp(im->mode, "RGB") == 0) {
+    } else if (im->mode == IMAGING_MODE_RGB) {
         components = 3;
         color_space = OPJ_CLRSPC_SRGB;
         pack = j2k_pack_rgb;
-    } else if (strcmp(im->mode, "YCbCr") == 0) {
+    } else if (im->mode == IMAGING_MODE_YCbCr) {
         components = 3;
         color_space = OPJ_CLRSPC_SYCC;
         pack = j2k_pack_rgb;
-    } else if (strcmp(im->mode, "RGBA") == 0) {
+    } else if (im->mode == IMAGING_MODE_RGBA) {
         components = 4;
         color_space = OPJ_CLRSPC_SRGB;
         pack = j2k_pack_rgba;
 #if ((OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR == 5 && OPJ_VERSION_BUILD >= 3) || \
      (OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR > 5) || OPJ_VERSION_MAJOR > 2)
-    } else if (strcmp(im->mode, "CMYK") == 0) {
+    } else if (im->mode == IMAGING_MODE_CMYK) {
         components = 4;
         color_space = OPJ_CLRSPC_CMYK;
         pack = j2k_pack_rgba;
@@ -497,9 +497,9 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         goto quick_exit;
     }
 
-    if (strcmp(im->mode, "RGBA") == 0) {
+    if (im->mode == IMAGING_MODE_RGBA) {
         image->comps[3].alpha = 1;
-    } else if (strcmp(im->mode, "LA") == 0) {
+    } else if (im->mode == IMAGING_MODE_LA) {
         image->comps[1].alpha = 1;
     }
 

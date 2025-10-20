@@ -38,9 +38,8 @@ import re
 import struct
 import warnings
 import zlib
-from collections.abc import Callable
 from enum import IntEnum
-from typing import IO, Any, NamedTuple, NoReturn, cast
+from typing import IO, NamedTuple, cast
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i16be as i16
@@ -48,10 +47,14 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
+from ._deprecate import deprecate
 from ._util import DeferredError
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import Any, NoReturn
+
     from . import _imaging
 
 logger = logging.getLogger(__name__)
@@ -1368,6 +1371,8 @@ def _save(
     except KeyError as e:
         msg = f"cannot write mode {mode} as PNG"
         raise OSError(msg) from e
+    if outmode == "I":
+        deprecate("Saving I mode images as PNG", 13, stacklevel=4)
 
     #
     # write minimal PNG file

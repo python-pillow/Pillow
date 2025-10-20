@@ -19,6 +19,7 @@ from PIL import (
     ImageDraw,
     ImageFile,
     ImagePalette,
+    ImageShow,
     UnidentifiedImageError,
     features,
 )
@@ -30,7 +31,6 @@ from .helper import (
     assert_image_similar_tofile,
     assert_not_all_same,
     hopper,
-    is_big_endian,
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
@@ -50,19 +50,10 @@ except ImportError:
     PrettyPrinter = None
 
 
-# Deprecation helper
-def helper_image_new(mode: str, size: tuple[int, int]) -> Image.Image:
-    if mode.startswith("BGR;"):
-        with pytest.warns(DeprecationWarning):
-            return Image.new(mode, size)
-    else:
-        return Image.new(mode, size)
-
-
 class TestImage:
-    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
+    @pytest.mark.parametrize("mode", Image.MODES)
     def test_image_modes_success(self, mode: str) -> None:
-        helper_image_new(mode, (1, 1))
+        Image.new(mode, (1, 1))
 
     @pytest.mark.parametrize("mode", ("", "bad", "very very long"))
     def test_image_modes_fail(self, mode: str) -> None:
@@ -141,8 +132,8 @@ class TestImage:
         monkeypatch.setattr(Image, "WARN_POSSIBLE_FORMATS", True)
 
         im = io.BytesIO(b"")
-        with pytest.warns(UserWarning):
-            with pytest.raises(UnidentifiedImageError):
+        with pytest.raises(UnidentifiedImageError):
+            with pytest.warns(UserWarning, match="opening failed"):
                 with Image.open(im):
                     pass
 
@@ -159,6 +150,10 @@ class TestImage:
 
         with pytest.raises(AttributeError):
             im.mode = "P"  # type: ignore[misc]
+
+    def test_empty_path(self) -> None:
+        with pytest.raises(FileNotFoundError):
+            Image.open("")
 
     def test_invalid_image(self) -> None:
         im = io.BytesIO(b"")
@@ -289,33 +284,6 @@ class TestImage:
         assert item is not None
         assert item != num
 
-    def test_expand_x(self) -> None:
-        # Arrange
-        im = hopper()
-        orig_size = im.size
-        xmargin = 5
-
-        # Act
-        im = im._expand(xmargin)
-
-        # Assert
-        assert im.size[0] == orig_size[0] + 2 * xmargin
-        assert im.size[1] == orig_size[1] + 2 * xmargin
-
-    def test_expand_xy(self) -> None:
-        # Arrange
-        im = hopper()
-        orig_size = im.size
-        xmargin = 5
-        ymargin = 3
-
-        # Act
-        im = im._expand(xmargin, ymargin)
-
-        # Assert
-        assert im.size[0] == orig_size[0] + 2 * xmargin
-        assert im.size[1] == orig_size[1] + 2 * ymargin
-
     def test_getbands(self) -> None:
         # Assert
         assert hopper("RGB").getbands() == ("R", "G", "B")
@@ -385,6 +353,37 @@ class TestImage:
         draw = ImageDraw.Draw(src)
         draw.rectangle((33, 0, 66, 100), fill=(255, 0, 0, 128))
         draw.rectangle((67, 0, 100, 100), fill=(255, 0, 0, 0))
+
+        # Act
+        img = Image.alpha_composite(dst, src)
+
+        # Assert
+        img_colors = img.getcolors()
+        assert img_colors is not None
+        assert sorted(img_colors) == expected_colors
+
+    def test_alpha_composite_la(self) -> None:
+        # Arrange
+        expected_colors = sorted(
+            [
+                (3300, (255, 255)),
+                (1156, (170, 192)),
+                (1122, (128, 255)),
+                (1089, (0, 0)),
+                (1122, (255, 128)),
+                (1122, (0, 128)),
+                (1089, (0, 255)),
+            ]
+        )
+
+        dst = Image.new("LA", size=(100, 100), color=(0, 255))
+        draw = ImageDraw.Draw(dst)
+        draw.rectangle((0, 33, 100, 66), fill=(0, 128))
+        draw.rectangle((0, 67, 100, 100), fill=(0, 0))
+        src = Image.new("LA", size=(100, 100), color=(255, 255))
+        draw = ImageDraw.Draw(src)
+        draw.rectangle((33, 0, 66, 100), fill=(255, 128))
+        draw.rectangle((67, 0, 100, 100), fill=(255, 0))
 
         # Act
         img = Image.alpha_composite(dst, src)
@@ -671,6 +670,7 @@ class TestImage:
         im_remapped = im.remap_palette(list(range(256)))
         assert_image_equal(im, im_remapped)
         assert im.palette is not None
+        assert im_remapped.palette is not None
         assert im.palette.palette == im_remapped.palette.palette
 
         # Test illegal image mode
@@ -927,6 +927,17 @@ class TestImage:
         reloaded_exif.load(exif.tobytes())
         assert reloaded_exif.get_ifd(0x8769) == exif.get_ifd(0x8769)
 
+    def test_delete_ifd_tag(self) -> None:
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+        exif.get_ifd(0x8769)
+        assert 0x8769 in exif
+        del exif[0x8769]
+
+        reloaded_exif = Image.Exif()
+        reloaded_exif.load(exif.tobytes())
+        assert 0x8769 not in reloaded_exif
+
     def test_exif_load_from_fp(self) -> None:
         with Image.open("Tests/images/flower.jpg") as im:
             data = im.info["exif"]
@@ -973,6 +984,11 @@ class TestImage:
                     assert tag not in exif.get_ifd(0x8769)
                 assert exif.get_ifd(0xA005)
 
+    def test_exif_from_xmp_bytes(self) -> None:
+        im = Image.new("RGB", (1, 1))
+        im.info["xmp"] = b'\xff tiff:Orientation="2"'
+        assert im.getexif()[274] == 2
+
     def test_empty_xmp(self) -> None:
         with Image.open("Tests/images/hopper.gif") as im:
             if ElementTree is None:
@@ -989,7 +1005,7 @@ class TestImage:
         im = Image.new("RGB", (1, 1))
         im.info["xmp"] = (
             b'<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
-            b'<x:xmpmeta xmlns:x="adobe:ns:meta/" />\n<?xpacket end="w"?>\x00\x00'
+            b'<x:xmpmeta xmlns:x="adobe:ns:meta/" />\n<?xpacket end="w"?>\x00\x00 '
         )
         if ElementTree is None:
             with pytest.warns(
@@ -1002,8 +1018,15 @@ class TestImage:
 
     def test_get_child_images(self) -> None:
         im = Image.new("RGB", (1, 1))
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning, match="Image.Image.get_child_images"):
             assert im.get_child_images() == []
+
+    def test_show(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(ImageShow, "_viewers", [])
+
+        im = Image.new("RGB", (1, 1))
+        with pytest.warns(DeprecationWarning, match="Image._show"):
+            Image._show(im)
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size: tuple[int, int]) -> None:
@@ -1076,6 +1099,12 @@ class TestImage:
             assert im.palette is not None
             assert im.palette.colors[(27, 35, 6, 214)] == 24
 
+    def test_merge_pa(self) -> None:
+        p = hopper("P")
+        a = Image.new("L", p.size)
+        pa = Image.merge("PA", (p, a))
+        assert p.getpalette() == pa.getpalette()
+
     def test_constants(self) -> None:
         for enum in (
             Image.Transpose,
@@ -1132,39 +1161,29 @@ class TestImage:
             assert len(caplog.records) == 0
             assert im.fp is None
 
-    def test_deprecation(self) -> None:
-        with pytest.warns(DeprecationWarning):
-            assert not Image.isImageType(None)
-
 
 class TestImageBytes:
-    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
+    @pytest.mark.parametrize("mode", Image.MODES)
     def test_roundtrip_bytes_constructor(self, mode: str) -> None:
         im = hopper(mode)
         source_bytes = im.tobytes()
 
-        if mode.startswith("BGR;"):
-            with pytest.warns(DeprecationWarning):
-                reloaded = Image.frombytes(mode, im.size, source_bytes)
-        else:
-            reloaded = Image.frombytes(mode, im.size, source_bytes)
+        reloaded = Image.frombytes(mode, im.size, source_bytes)
         assert reloaded.tobytes() == source_bytes
 
-    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
+    @pytest.mark.parametrize("mode", Image.MODES)
     def test_roundtrip_bytes_method(self, mode: str) -> None:
         im = hopper(mode)
         source_bytes = im.tobytes()
 
-        reloaded = helper_image_new(mode, im.size)
+        reloaded = Image.new(mode, im.size)
         reloaded.frombytes(source_bytes)
         assert reloaded.tobytes() == source_bytes
 
-    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
+    @pytest.mark.parametrize("mode", Image.MODES)
     def test_getdata_putdata(self, mode: str) -> None:
-        if is_big_endian() and mode == "BGR;15":
-            pytest.xfail("Known failure of BGR;15 on big-endian")
         im = hopper(mode)
-        reloaded = helper_image_new(mode, im.size)
+        reloaded = Image.new(mode, im.size)
         reloaded.putdata(im.getdata())
         assert_image_equal(im, reloaded)
 

@@ -44,15 +44,13 @@ class McIdasImageFile(ImageFile.ImageFile):
             raise SyntaxError(msg)
 
         self.area_descriptor_raw = s
-        self.area_descriptor = w = [0] + list(struct.unpack("!64i", s))
+        self.area_descriptor = w = [0, *struct.unpack("!64i", s)]
 
         # get mode
         if w[11] == 1:
             mode = rawmode = "L"
         elif w[11] == 2:
-            # FIXME: add memory map support
-            mode = "I"
-            rawmode = "I;16B"
+            mode = rawmode = "I;16B"
         elif w[11] == 4:
             # FIXME: add memory map support
             mode = "I"

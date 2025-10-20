@@ -44,6 +44,18 @@ def test_load_zero_inch() -> None:
             pass
 
 
+def test_load_unsupported_wmf() -> None:
+    b = BytesIO(b"\xd7\xcd\xc6\x9a\x00\x00" + b"\x01" * 10)
+    with pytest.raises(SyntaxError, match="Unsupported WMF file format"):
+        WmfImagePlugin.WmfStubImageFile(b)
+
+
+def test_load_unsupported() -> None:
+    b = BytesIO(b"\x01\x00\x00\x00")
+    with pytest.raises(SyntaxError, match="Unsupported file format"):
+        WmfImagePlugin.WmfStubImageFile(b)
+
+
 def test_render() -> None:
     with open("Tests/images/drawing.emf", "rb") as fp:
         data = fp.read()

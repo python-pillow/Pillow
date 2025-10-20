@@ -89,8 +89,8 @@ HandleMuxError(WebPMuxError err, char *chunk) {
 
 static int
 import_frame_libwebp(WebPPicture *frame, Imaging im) {
-    if (strcmp(im->mode, "RGBA") && strcmp(im->mode, "RGB") &&
-        strcmp(im->mode, "RGBX")) {
+    if (im->mode != IMAGING_MODE_RGBA && im->mode != IMAGING_MODE_RGB &&
+        im->mode != IMAGING_MODE_RGBX) {
         PyErr_SetString(PyExc_ValueError, "unsupported image mode");
         return -1;
     }
@@ -104,7 +104,7 @@ import_frame_libwebp(WebPPicture *frame, Imaging im) {
         return -2;
     }
 
-    int ignore_fourth_channel = strcmp(im->mode, "RGBA");
+    int ignore_fourth_channel = im->mode != IMAGING_MODE_RGBA;
     for (int y = 0; y < im->ysize; ++y) {
         UINT8 *src = (UINT8 *)im->image32[y];
         UINT32 *dst = frame->argb + frame->argb_stride * y;
@@ -143,7 +143,7 @@ typedef struct {
     PyObject_HEAD WebPAnimDecoder *dec;
     WebPAnimInfo info;
     WebPData data;
-    char *mode;
+    ModeID mode;
 } WebPAnimDecoderObject;
 
 static PyTypeObject WebPAnimDecoder_Type;
@@ -396,7 +396,7 @@ _anim_decoder_new(PyObject *self, PyObject *args) {
     const uint8_t *webp;
     Py_ssize_t size;
     WebPData webp_src;
-    char *mode;
+    ModeID mode;
     WebPDecoderConfig config;
     WebPAnimDecoderObject *decp = NULL;
     WebPAnimDecoder *dec = NULL;
@@ -409,10 +409,10 @@ _anim_decoder_new(PyObject *self, PyObject *args) {
     webp_src.size = size;
 
     // Sniff the mode, since the decoder API doesn't tell us
-    mode = "RGBA";
+    mode = IMAGING_MODE_RGBA;
     if (WebPGetFeatures(webp, size, &config.input) == VP8_STATUS_OK) {
         if (!config.input.has_alpha) {
-            mode = "RGBX";
+            mode = IMAGING_MODE_RGBX;
         }
     }
 
@@ -455,7 +455,7 @@ _anim_decoder_get_info(PyObject *self) {
         info->loop_count,
         info->bgcolor,
         info->frame_count,
-        decp->mode
+        getModeData(decp->mode)->name
     );
 }
 
@@ -641,6 +641,10 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     ImagingSectionLeave(&cookie);
 
     WebPPictureFree(&pic);
+
+    output = writer.mem;
+    ret_size = writer.size;
+
     if (!ok) {
         int error_code = (&pic)->error_code;
         char message[50] = "";
@@ -652,10 +656,9 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
             );
         }
         PyErr_Format(PyExc_ValueError, "encoding error %d%s", error_code, message);
+        free(output);
         return NULL;
     }
-    output = writer.mem;
-    ret_size = writer.size;
 
     {
         /* I want to truncate the *_size items that get passed into WebP
@@ -777,26 +780,22 @@ setup_module(PyObject *m) {
     return 0;
 }
 
+static PyModuleDef_Slot slots[] = {
+    {Py_mod_exec, setup_module},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
 PyMODINIT_FUNC
 PyInit__webp(void) {
-    PyObject *m;
-
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_webp",
-        .m_size = -1,
         .m_methods = webpMethods,
+        .m_slots = slots
     };
 
-    m = PyModule_Create(&module_def);
-    if (setup_module(m) < 0) {
-        Py_DECREF(m);
-        return NULL;
-    }
-
-#ifdef Py_GIL_DISABLED
-    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
-#endif
-
-    return m;
+    return PyModuleDef_Init(&module_def);
 }

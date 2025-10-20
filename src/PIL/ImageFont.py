@@ -36,7 +36,7 @@ from io import BytesIO
 from types import ModuleType
 from typing import IO, Any, BinaryIO, TypedDict, cast
 
-from . import Image, features
+from . import Image
 from ._typing import StrOrBytesPath
 from ._util import DeferredError, is_path
 
@@ -125,11 +125,16 @@ class ImageFont:
             image.close()
 
     def _load_pilfont_data(self, file: IO[bytes], image: Image.Image) -> None:
+        # check image
+        if image.mode not in ("1", "L"):
+            msg = "invalid font image mode"
+            raise TypeError(msg)
+
         # read PILfont header
-        if file.readline() != b"PILfont\n":
+        if file.read(8) != b"PILfont\n":
             msg = "Not a PILfont file"
             raise SyntaxError(msg)
-        file.readline().split(b";")
+        file.readline()
         self.info = []  # FIXME: should be a dictionary
         while True:
             s = file.readline()
@@ -139,11 +144,6 @@ class ImageFont:
 
         # read PILfont metrics
         data = file.read(256 * 20)
-
-        # check image
-        if image.mode not in ("1", "L"):
-            msg = "invalid font image mode"
-            raise TypeError(msg)
 
         image.load()
 
@@ -235,21 +235,6 @@ class FreeTypeFont:
         self.size = size
         self.index = index
         self.encoding = encoding
-
-        try:
-            from packaging.version import parse as parse_version
-        except ImportError:
-            pass
-        else:
-            if freetype_version := features.version_module("freetype2"):
-                if parse_version(freetype_version) < parse_version("2.9.1"):
-                    warnings.warn(
-                        "Support for FreeType 2.9.0 is deprecated and will be removed "
-                        "in Pillow 12 (2025-10-15). Please upgrade to FreeType 2.9.1 "
-                        "or newer, preferably FreeType 2.10.4 which fixes "
-                        "CVE-2020-15999.",
-                        DeprecationWarning,
-                    )
 
         if layout_engine not in (Layout.BASIC, Layout.RAQM):
             layout_engine = Layout.BASIC
@@ -686,11 +671,7 @@ class FreeTypeFont:
         :returns: A list of the named styles in a variation font.
         :exception OSError: If the font is not a variation font.
         """
-        try:
-            names = self.font.getvarnames()
-        except AttributeError as e:
-            msg = "FreeType 2.9.1 or greater is required"
-            raise NotImplementedError(msg) from e
+        names = self.font.getvarnames()
         return [name.replace(b"\x00", b"") for name in names]
 
     def set_variation_by_name(self, name: str | bytes) -> None:
@@ -717,11 +698,7 @@ class FreeTypeFont:
         :returns: A list of the axes in a variation font.
         :exception OSError: If the font is not a variation font.
         """
-        try:
-            axes = self.font.getvaraxes()
-        except AttributeError as e:
-            msg = "FreeType 2.9.1 or greater is required"
-            raise NotImplementedError(msg) from e
+        axes = self.font.getvaraxes()
         for axis in axes:
             if axis["name"]:
                 axis["name"] = axis["name"].replace(b"\x00", b"")
@@ -732,11 +709,7 @@ class FreeTypeFont:
         :param axes: A list of values for each axis.
         :exception OSError: If the font is not a variation font.
         """
-        try:
-            self.font.setvaraxes(axes)
-        except AttributeError as e:
-            msg = "FreeType 2.9.1 or greater is required"
-            raise NotImplementedError(msg) from e
+        self.font.setvaraxes(axes)
 
 
 class TransposedFont:

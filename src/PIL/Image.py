@@ -38,10 +38,9 @@ import struct
 import sys
 import tempfile
 import warnings
-from collections.abc import Callable, Iterator, MutableMapping, Sequence
+from collections.abc import MutableMapping
 from enum import IntEnum
-from types import ModuleType
-from typing import IO, Any, Literal, Protocol, cast
+from typing import IO, Protocol, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -63,6 +62,12 @@ try:
     from defusedxml import ElementTree
 except ImportError:
     ElementTree = None
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator, Sequence
+    from types import ModuleType
+    from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +103,6 @@ try:
         raise ImportError(msg)
 
 except ImportError as v:
-    core = DeferredError.new(ImportError("The _imaging C module is not installed."))
     # Explanations for ways that we know we might have an import error
     if str(v).startswith("Module use of python"):
         # The _imaging C module is present, but not compiled for
@@ -113,21 +117,6 @@ except ImportError as v:
     # Fail here anyway. Don't let people run with a mostly broken Pillow.
     # see docs/porting.rst
     raise
-
-
-def isImageType(t: Any) -> TypeGuard[Image]:
-    """
-    Checks if an object is an image object.
-
-    .. warning::
-
-       This function is for internal use only.
-
-    :param t: object to check if it's an image
-    :returns: True if the object is an image
-    """
-    deprecate("Image.isImageType(im)", 12, "isinstance(im, Image.Image)")
-    return hasattr(t, "im")
 
 
 #
@@ -219,7 +208,7 @@ if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
 
     from . import ImageFile, ImageFilter, ImagePalette, ImageQt, TiffImagePlugin
-    from ._typing import CapsuleType, NumpyArray, StrOrBytesPath, TypeGuard
+    from ._typing import CapsuleType, NumpyArray, StrOrBytesPath
 ID: list[str] = []
 OPEN: dict[
     str,
@@ -767,18 +756,20 @@ class Image:
 
         .. warning::
 
-            This method returns the raw image data from the internal
-            storage.  For compressed image data (e.g. PNG, JPEG) use
-            :meth:`~.save`, with a BytesIO parameter for in-memory
-            data.
+            This method returns raw image data derived from Pillow's internal
+            storage. For compressed image data (e.g. PNG, JPEG) use
+            :meth:`~.save`, with a BytesIO parameter for in-memory data.
 
-        :param encoder_name: What encoder to use.  The default is to
-                             use the standard "raw" encoder.
+        :param encoder_name: What encoder to use.
 
-                             A list of C encoders can be seen under
-                             codecs section of the function array in
-                             :file:`_imaging.c`. Python encoders are
-                             registered within the relevant plugins.
+                             The default is to use the standard "raw" encoder.
+                             To see how this packs pixel data into the returned
+                             bytes, see :file:`libImaging/Pack.c`.
+
+                             A list of C encoders can be seen under codecs
+                             section of the function array in
+                             :file:`_imaging.c`. Python encoders are registered
+                             within the relevant plugins.
         :param args: Extra arguments to the encoder.
         :returns: A :py:class:`bytes` object.
         """
@@ -800,7 +791,9 @@ class Image:
         e = _getencoder(self.mode, encoder_name, encoder_args)
         e.setimage(self.im)
 
-        bufsize = max(65536, self.size[0] * 4)  # see RawEncode.c
+        from . import ImageFile
+
+        bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
 
         output = []
         while True:
@@ -976,9 +969,6 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if mode in ("BGR;15", "BGR;16", "BGR;24"):
-            deprecate(mode, 12)
-
         self.load()
 
         has_transparency = "transparency" in self.info
@@ -1019,8 +1009,14 @@ class Image:
                 new_im.info["transparency"] = transparency
             return new_im
 
-        if mode == "P" and self.mode == "RGBA":
-            return self.quantize(colors)
+        if self.mode == "RGBA":
+            if mode == "P":
+                return self.quantize(colors)
+            elif mode == "PA":
+                r, g, b, a = self.split()
+                rgb = merge("RGB", (r, g, b))
+                p = rgb.quantize(colors)
+                return merge("PA", (p, a))
 
         trns = None
         delete_trns = False
@@ -1152,7 +1148,7 @@ class Image:
                 raise ValueError(msg) from e
 
         new_im = self._new(im)
-        if mode == "P" and palette != Palette.ADAPTIVE:
+        if mode in ("P", "PA") and palette != Palette.ADAPTIVE:
             from . import ImagePalette
 
             new_im.palette = ImagePalette.ImagePalette("RGB", im.getpalette("RGB"))
@@ -1346,12 +1342,6 @@ class Image:
         """
         pass
 
-    def _expand(self, xmargin: int, ymargin: int | None = None) -> Image:
-        if ymargin is None:
-            ymargin = xmargin
-        self.load()
-        return self._new(self.im.expand(xmargin, ymargin))
-
     def filter(self, filter: ImageFilter.Filter | type[ImageFilter.Filter]) -> Image:
         """
         Filters this image using the given filter.  For a list of
@@ -1507,7 +1497,7 @@ class Image:
             return {}
         if "xmp" not in self.info:
             return {}
-        root = ElementTree.fromstring(self.info["xmp"].rstrip(b"\x00"))
+        root = ElementTree.fromstring(self.info["xmp"].rstrip(b"\x00 "))
         return {get_name(root.tag): get_value(root)}
 
     def getexif(self) -> Exif:
@@ -1538,10 +1528,11 @@ class Image:
         # XMP tags
         if ExifTags.Base.Orientation not in self._exif:
             xmp_tags = self.info.get("XML:com.adobe.xmp")
+            pattern: str | bytes = r'tiff:Orientation(="|>)([0-9])'
             if not xmp_tags and (xmp_tags := self.info.get("xmp")):
-                xmp_tags = xmp_tags.decode("utf-8")
+                pattern = rb'tiff:Orientation(="|>)([0-9])'
             if xmp_tags:
-                match = re.search(r'tiff:Orientation(="|>)([0-9])', xmp_tags)
+                match = re.search(pattern, xmp_tags)
                 if match:
                     self._exif[ExifTags.Base.Orientation] = int(match[2])
 
@@ -1743,9 +1734,10 @@ class Image:
         details).
 
         Instead of an image, the source can be a integer or tuple
-        containing pixel values.  The method then fills the region
-        with the given color.  When creating RGB images, you can
-        also use color strings as supported by the ImageColor module.
+        containing pixel values. The method then fills the region
+        with the given color. When creating RGB images, you can
+        also use color strings as supported by the ImageColor module. See
+        :ref:`colors` for more information.
 
         If a mask is given, this method updates only the regions
         indicated by the mask. You can use either "1", "L", "LA", "RGBA"
@@ -2001,7 +1993,8 @@ class Image:
         sequence ends. The scale and offset values are used to adjust the
         sequence values: **pixel = value*scale + offset**.
 
-        :param data: A flattened sequence object.
+        :param data: A flattened sequence object. See :ref:`colors` for more
+            information about values.
         :param scale: An optional scale value.  The default is 1.0.
         :param offset: An optional offset value.  The default is 0.0.
         """
@@ -2060,7 +2053,7 @@ class Image:
         Modifies the pixel at the given position. The color is given as
         a single numerical value for single-band images, and a tuple for
         multi-band images. In addition to this, RGB and RGBA tuples are
-        accepted for P and PA images.
+        accepted for P and PA images. See :ref:`colors` for more information.
 
         Note that this method is relatively slow.  For more extensive changes,
         use :py:meth:`~PIL.Image.Image.paste` or the :py:mod:`~PIL.ImageDraw`
@@ -2077,9 +2070,7 @@ class Image:
         :param value: The pixel value.
         """
 
-        if self.readonly:
-            self._copy()
-        self.load()
+        self._ensure_mutable()
 
         if (
             self.mode in ("P", "PA")
@@ -2224,8 +2215,6 @@ class Image:
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
            :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
            If the image has mode "1" or "P", it is always set to
-           :py:data:`Resampling.NEAREST`. If the image mode is "BGR;15",
-           "BGR;16" or "BGR;24", then the default filter is
            :py:data:`Resampling.NEAREST`. Otherwise, the default filter is
            :py:data:`Resampling.BICUBIC`. See: :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats providing
@@ -2248,8 +2237,7 @@ class Image:
         """
 
         if resample is None:
-            bgr = self.mode.startswith("BGR;")
-            resample = Resampling.NEAREST if bgr else Resampling.BICUBIC
+            resample = Resampling.BICUBIC
         elif resample not in (
             Resampling.NEAREST,
             Resampling.BILINEAR,
@@ -2551,7 +2539,9 @@ class Image:
             self.load()
 
         save_all = params.pop("save_all", None)
-        self.encoderinfo = {**getattr(self, "encoderinfo", {}), **params}
+        self._default_encoderinfo = params
+        encoderinfo = getattr(self, "encoderinfo", {})
+        self._attach_default_encoderinfo(self)
         self.encoderconfig: tuple[Any, ...] = ()
 
         if format.upper() not in SAVE:
@@ -2589,12 +2579,14 @@ class Image:
                     pass
             raise
         finally:
-            try:
-                del self.encoderinfo
-            except AttributeError:
-                pass
+            self.encoderinfo = encoderinfo
         if open_fp:
             fp.close()
+
+    def _attach_default_encoderinfo(self, im: Image) -> dict[str, Any]:
+        encoderinfo = getattr(self, "encoderinfo", {})
+        self.encoderinfo = {**im._default_encoderinfo, **encoderinfo}
+        return encoderinfo
 
     def seek(self, frame: int) -> None:
         """
@@ -2638,7 +2630,9 @@ class Image:
         :param title: Optional title to use for the image window, where possible.
         """
 
-        _show(self, title=title)
+        from . import ImageShow
+
+        ImageShow.show(self, title)
 
     def split(self) -> tuple[Image, ...]:
         """
@@ -3067,17 +3061,14 @@ def new(
     :param mode: The mode to use for the new image. See:
        :ref:`concept-modes`.
     :param size: A 2-tuple, containing (width, height) in pixels.
-    :param color: What color to use for the image.  Default is black.
-       If given, this should be a single integer or floating point value
-       for single-band modes, and a tuple for multi-band modes (one value
-       per band).  When creating RGB or HSV images, you can also use color
-       strings as supported by the ImageColor module.  If the color is
-       None, the image is not initialised.
+    :param color: What color to use for the image. Default is black. If given,
+       this should be a single integer or floating point value for single-band
+       modes, and a tuple for multi-band modes (one value per band). When
+       creating RGB or HSV images, you can also use color strings as supported
+       by the ImageColor module. See :ref:`colors` for more information. If the
+       color is None, the image is not initialised.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
-
-    if mode in ("BGR;15", "BGR;16", "BGR;24"):
-        deprecate(mode, 12)
 
     _check_size(size)
 
@@ -3266,19 +3257,10 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     transferred. This means that P and PA mode images will lose their palette.
 
     :param obj: Object with array interface
-    :param mode: Optional mode to use when reading ``obj``. Will be determined from
-      type if ``None``.
-
-      This will not be used to convert the data after reading, but will be used to
-      change how the data is read::
-
-        from PIL import Image
-        import numpy as np
-        a = np.full((1, 1), 300)
-        im = Image.fromarray(a, mode="L")
-        im.getpixel((0, 0))  # 44
-        im = Image.fromarray(a, mode="RGB")
-        im.getpixel((0, 0))  # (44, 1, 0)
+    :param mode: Optional mode to use when reading ``obj``. Since pixel values do not
+      contain information about palettes or color spaces, this can be used to place
+      grayscale L mode data within a P mode image, or read RGB data as YCbCr for
+      example.
 
       See: :ref:`concept-modes` for general information about modes.
     :returns: An image object.
@@ -3289,20 +3271,28 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     shape = arr["shape"]
     ndim = len(shape)
     strides = arr.get("strides", None)
-    if mode is None:
-        try:
-            typekey = (1, 1) + shape[2:], arr["typestr"]
-        except KeyError as e:
+    try:
+        typekey = (1, 1) + shape[2:], arr["typestr"]
+    except KeyError as e:
+        if mode is not None:
+            typekey = None
+            color_modes: list[str] = []
+        else:
             msg = "Cannot handle this data type"
             raise TypeError(msg) from e
+    if typekey is not None:
         try:
-            mode, rawmode = _fromarray_typemap[typekey]
+            typemode, rawmode, color_modes = _fromarray_typemap[typekey]
         except KeyError as e:
             typekey_shape, typestr = typekey
             msg = f"Cannot handle this data type: {typekey_shape}, {typestr}"
             raise TypeError(msg) from e
-    else:
+    if mode is not None:
+        if mode != typemode and mode not in color_modes:
+            deprecate("'mode' parameter for changing data types", 13)
         rawmode = mode
+    else:
+        mode = typemode
     if mode in ["1", "L", "I", "P", "F"]:
         ndmax = 2
     elif mode == "RGB":
@@ -3399,29 +3389,29 @@ def fromqpixmap(im: ImageQt.QPixmap) -> ImageFile.ImageFile:
 
 
 _fromarray_typemap = {
-    # (shape, typestr) => mode, rawmode
+    # (shape, typestr) => mode, rawmode, color modes
     # first two members of shape are set to one
-    ((1, 1), "|b1"): ("1", "1;8"),
-    ((1, 1), "|u1"): ("L", "L"),
-    ((1, 1), "|i1"): ("I", "I;8"),
-    ((1, 1), "<u2"): ("I", "I;16"),
-    ((1, 1), ">u2"): ("I", "I;16B"),
-    ((1, 1), "<i2"): ("I", "I;16S"),
-    ((1, 1), ">i2"): ("I", "I;16BS"),
-    ((1, 1), "<u4"): ("I", "I;32"),
-    ((1, 1), ">u4"): ("I", "I;32B"),
-    ((1, 1), "<i4"): ("I", "I;32S"),
-    ((1, 1), ">i4"): ("I", "I;32BS"),
-    ((1, 1), "<f4"): ("F", "F;32F"),
-    ((1, 1), ">f4"): ("F", "F;32BF"),
-    ((1, 1), "<f8"): ("F", "F;64F"),
-    ((1, 1), ">f8"): ("F", "F;64BF"),
-    ((1, 1, 2), "|u1"): ("LA", "LA"),
-    ((1, 1, 3), "|u1"): ("RGB", "RGB"),
-    ((1, 1, 4), "|u1"): ("RGBA", "RGBA"),
+    ((1, 1), "|b1"): ("1", "1;8", []),
+    ((1, 1), "|u1"): ("L", "L", ["P"]),
+    ((1, 1), "|i1"): ("I", "I;8", []),
+    ((1, 1), "<u2"): ("I", "I;16", []),
+    ((1, 1), ">u2"): ("I", "I;16B", []),
+    ((1, 1), "<i2"): ("I", "I;16S", []),
+    ((1, 1), ">i2"): ("I", "I;16BS", []),
+    ((1, 1), "<u4"): ("I", "I;32", []),
+    ((1, 1), ">u4"): ("I", "I;32B", []),
+    ((1, 1), "<i4"): ("I", "I;32S", []),
+    ((1, 1), ">i4"): ("I", "I;32BS", []),
+    ((1, 1), "<f4"): ("F", "F;32F", []),
+    ((1, 1), ">f4"): ("F", "F;32BF", []),
+    ((1, 1), "<f8"): ("F", "F;64F", []),
+    ((1, 1), ">f8"): ("F", "F;64BF", []),
+    ((1, 1, 2), "|u1"): ("LA", "LA", ["La", "PA"]),
+    ((1, 1, 3), "|u1"): ("RGB", "RGB", ["YCbCr", "LAB", "HSV"]),
+    ((1, 1, 4), "|u1"): ("RGBA", "RGBA", ["RGBa", "RGBX", "CMYK"]),
     # shortcuts:
-    ((1, 1), f"{_ENDIAN}i4"): ("I", "I"),
-    ((1, 1), f"{_ENDIAN}f4"): ("F", "F"),
+    ((1, 1), f"{_ENDIAN}i4"): ("I", "I", []),
+    ((1, 1), f"{_ENDIAN}f4"): ("F", "F", []),
 }
 
 
@@ -3500,8 +3490,6 @@ def open(
     filename: str | bytes = ""
     if is_path(fp):
         filename = os.fspath(fp)
-
-    if filename:
         fp = builtins.open(filename, "rb")
         exclusive_fp = True
     else:
@@ -3580,9 +3568,8 @@ def alpha_composite(im1: Image, im2: Image) -> Image:
     """
     Alpha composite im2 over im1.
 
-    :param im1: The first image. Must have mode RGBA.
-    :param im2: The second image.  Must have mode RGBA, and the same size as
-       the first image.
+    :param im1: The first image. Must have mode RGBA or LA.
+    :param im2: The second image. Must have the same mode and size as the first image.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
@@ -3808,6 +3795,7 @@ def register_encoder(name: str, encoder: type[ImageFile.PyEncoder]) -> None:
 def _show(image: Image, **options: Any) -> None:
     from . import ImageShow
 
+    deprecate("Image._show", 13, "ImageShow.show")
     ImageShow.show(image, **options)
 
 
@@ -4229,6 +4217,8 @@ class Exif(_ExifBase):
             del self._info[tag]
         else:
             del self._data[tag]
+            if tag in self._ifds:
+                del self._ifds[tag]
 
     def __iter__(self) -> Iterator[int]:
         keys = set(self._data)

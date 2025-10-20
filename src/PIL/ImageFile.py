@@ -37,7 +37,6 @@ import struct
 from typing import IO, Any, NamedTuple, cast
 
 from . import ExifTags, Image
-from ._deprecate import deprecate
 from ._util import DeferredError, is_path
 
 TYPE_CHECKING = False
@@ -47,6 +46,18 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 MAXBLOCK = 65536
+"""
+By default, Pillow processes image data in blocks. This helps to prevent excessive use
+of resources. Codecs may disable this behaviour with ``_pulls_fd`` or ``_pushes_fd``.
+
+When reading an image, this is the number of bytes to read at once.
+
+When writing an image, this is the number of bytes to write at once.
+If the image width times 4 is greater, then that will be used instead.
+Plugins may also set a greater number.
+
+User code may set this to another number.
+"""
 
 SAFEBLOCK = 1024 * 1024
 
@@ -81,16 +92,6 @@ def _get_oserror(error: int, *, encoder: bool) -> OSError:
         msg = f"{'encoder' if encoder else 'decoder'} error {error}"
     msg += f" when {'writing' if encoder else 'reading'} image file"
     return OSError(msg)
-
-
-def raise_oserror(error: int) -> OSError:
-    deprecate(
-        "raise_oserror",
-        12,
-        action="It is only useful for translating error codes returned by a codec's "
-        "decode() method, which ImageFile already does automatically.",
-    )
-    raise _get_oserror(error, encoder=False)
 
 
 def _tilesort(t: _Tile) -> int:
@@ -312,6 +313,9 @@ class ImageFile(Image.Image):
                 and args[0] == self.mode
                 and args[0] in Image._MAPMODES
             ):
+                if offset < 0:
+                    msg = "Tile offset cannot be negative"
+                    raise ValueError(msg)
                 try:
                     # use mmap, if possible
                     import mmap

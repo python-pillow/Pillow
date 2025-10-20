@@ -151,11 +151,6 @@ class TestImageFile:
         # Despite multiple tiles, assert only one tile caused a read of maxblock size
         assert reads.count(im.decodermaxblock) == 1
 
-    def test_raise_oserror(self) -> None:
-        with pytest.warns(DeprecationWarning):
-            with pytest.raises(OSError):
-                ImageFile.raise_oserror(1)
-
     def test_raise_typeerror(self) -> None:
         with pytest.raises(TypeError):
             parser = ImageFile.Parser()
@@ -168,6 +163,11 @@ class TestImageFile:
         p.feed(input)
         with pytest.raises(OSError):
             p.close()
+
+    def test_negative_offset(self) -> None:
+        with Image.open("Tests/images/raw_negative_stride.bin") as im:
+            with pytest.raises(ValueError, match="Tile offset cannot be negative"):
+                im.load()
 
     def test_no_format(self) -> None:
         buf = BytesIO(b"\x00" * 255)
