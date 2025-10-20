@@ -60,6 +60,7 @@ ImagingNewPrologueSubtype(const ModeID mode, int xsize, int ysize, int size) {
     im->ysize = ysize;
     im->refcount = 1;
     im->type = IMAGING_TYPE_UINT8;
+    im->modedata = getModeData(mode);
 
     if (mode == IMAGING_MODE_1) {
         /* 1-bit images */
@@ -635,7 +636,6 @@ ImagingNewArrow(
     if (!im) {
         return NULL;
     }
-    ModeData *modedata = getModeData(mode);
 
     int64_t pixels = (int64_t)xsize * (int64_t)ysize;
 
@@ -646,7 +646,7 @@ ImagingNewArrow(
           && im->pixelsize == 4             // 4xchar* storage
           && im->bands >= 2)                // INT32 into any INT32 Storage mode
          ||                                 // (()||()) &&
-         (strcmp(schema->format, modedata->arrow_band_format) == 0  // same mode
+         (strcmp(schema->format, im->modedata->arrow_band_format) == 0  // same mode
           && im->bands == 1))                                 // Single band match
         && pixels == external_array->length) {
         // one arrow element per, and it matches a pixelsize*char
@@ -660,7 +660,7 @@ ImagingNewArrow(
         && schema->n_children > 0            // make sure schema is well formed.
         && schema->children                  // make sure schema is well formed
         && strcmp(schema->children[0]->format, "C") == 0  // Expected format
-        && strcmp(modedata->arrow_band_format, "C") == 0  // Expected Format
+        && strcmp(im->modedata->arrow_band_format, "C") == 0  // Expected Format
         && pixels == external_array->length               // expected length
         && external_array->n_children == 1                // array is well formed
         && external_array->children                       // array is well formed
@@ -674,7 +674,7 @@ ImagingNewArrow(
     if (strcmp(schema->format, "C") == 0            // uint8
         && im->pixelsize == 4                       // storage as 32 bpc
         && schema->n_children == 0                  // make sure schema is well formed.
-        && strcmp(modedata->arrow_band_format, "C") == 0  // expected format
+        && strcmp(im->modedata->arrow_band_format, "C") == 0  // expected format
         && 4 * pixels == external_array->length) {  // expected length
         // single flat array, interleaved storage.
         if (ImagingBorrowArrow(im, external_array, 1, array_capsule)) {

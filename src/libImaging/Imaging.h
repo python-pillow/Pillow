@@ -80,6 +80,7 @@ typedef struct {
 struct ImagingMemoryInstance {
     /* Format */
     ModeID mode; /* Image mode (IMAGING_MODE_*) */
+    const ModeData *modedata; /* mode data struct */
     int type;    /* Data type (IMAGING_TYPE_*) */
     int depth;   /* Depth (ignored in this version) */
     int bands;   /* Number of bands (1, 2, 3, or 4) */

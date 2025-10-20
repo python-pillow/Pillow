@@ -62,7 +62,6 @@ image_band_json(Imaging im) {
     // Bands can be 4 bands * 2 characters each
     int len = strlen(format) + 8 + 1;
     int err;
-    ModeData *modedata = getModeData(im->mode);
 
     json = calloc(1, len);
 
@@ -74,10 +73,10 @@ image_band_json(Imaging im) {
         json,
         len,
         format,
-        modedata->band_names[0],
-        modedata->band_names[1],
-        modedata->band_names[2],
-        modedata->band_names[3]
+        im->modedata->band_names[0],
+        im->modedata->band_names[1],
+        im->modedata->band_names[2],
+        im->modedata->band_names[3]
     );
     if (err < 0) {
         return NULL;
@@ -99,7 +98,7 @@ single_band_json(Imaging im) {
         return NULL;
     }
 
-    err = PyOS_snprintf(json, len, format, getModeData(im->mode)->band_names[0]);
+    err = PyOS_snprintf(json, len, format, im->modedata->band_names[0]);
     if (err < 0) {
         return NULL;
     }
@@ -189,9 +188,8 @@ int
 export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     int retval = 0;
     char *band_json;
-    ModeData *modedata = getModeData(im->mode);
 
-    if (strcmp(modedata->arrow_band_format, "") == 0) {
+    if (strcmp(im->modedata->arrow_band_format, "") == 0) {
         return IMAGING_ARROW_INCOMPATIBLE_MODE;
     }
 
@@ -200,10 +198,10 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
         return IMAGING_ARROW_MEMORY_LAYOUT;
     }
 
-    modedata = getModeData(im->mode);
-
     if (im->bands == 1) {
-        retval = export_named_type(schema, modedata->arrow_band_format, modedata->band_names[0]);
+        retval = export_named_type(schema,
+                                   im->modedata->arrow_band_format,
+                                   im->modedata->band_names[0]);
         if (retval != 0) {
             return retval;
         }
@@ -225,7 +223,7 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     schema->children = calloc(1, sizeof(struct ArrowSchema *));
     schema->children[0] = (struct ArrowSchema *)calloc(1, sizeof(struct ArrowSchema));
     retval = export_named_type(
-        schema->children[0], modedata->arrow_band_format, modedata->name
+        schema->children[0], im->modedata->arrow_band_format, im->modedata->name
     );
     if (retval != 0) {
         free(schema->children[0]);
@@ -409,7 +407,7 @@ err:
 
 int
 export_imaging_array(Imaging im, struct ArrowArray *array) {
-    if (strcmp(getModeData(im->mode)->arrow_band_format, "") == 0) {
+    if (strcmp(im->modedata->arrow_band_format, "") == 0) {
         return IMAGING_ARROW_INCOMPATIBLE_MODE;
     }
 
