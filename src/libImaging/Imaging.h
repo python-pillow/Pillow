@@ -106,8 +106,6 @@ struct ImagingMemoryInstance {
 
     /* arrow */
     int refcount;              /* Number of arrow arrays that have been allocated */
-    char band_names[4][3];     /* names of bands, max 2 char + null terminator */
-    char arrow_band_format[2]; /* single character + null terminator */
 
     int read_only; /* flag for read-only. set for arrow borrowed arrays */
     PyObject *arrow_array_capsule; /* upstream arrow array source */
