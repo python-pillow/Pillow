@@ -62,113 +62,74 @@ ImagingNewPrologueSubtype(const ModeID mode, int xsize, int ysize, int size) {
     im->type = IMAGING_TYPE_UINT8;
     im->modedata = getModeData(mode);
 
+    im->bands = im->modedata->bands;
+    im->pixelsize = im->modedata->pixelsize;
+    im->linesize = xsize * im->pixelsize;
+
     if (mode == IMAGING_MODE_1) {
         /* 1-bit images */
-        im->bands = im->pixelsize = 1;
-        im->linesize = xsize;
 
     } else if (mode == IMAGING_MODE_P) {
         /* 8-bit palette mapped images */
-        im->bands = im->pixelsize = 1;
-        im->linesize = xsize;
         im->palette = ImagingPaletteNew(IMAGING_MODE_RGB);
 
     } else if (mode == IMAGING_MODE_PA) {
         /* 8-bit palette with alpha */
-        im->bands = 2;
-        im->pixelsize = 4; /* store in image32 memory */
-        im->linesize = xsize * 4;
         im->palette = ImagingPaletteNew(IMAGING_MODE_RGB);
 
     } else if (mode == IMAGING_MODE_L) {
         /* 8-bit grayscale (luminance) images */
-        im->bands = im->pixelsize = 1;
-        im->linesize = xsize;
 
     } else if (mode == IMAGING_MODE_LA) {
         /* 8-bit grayscale (luminance) with alpha */
-        im->bands = 2;
-        im->pixelsize = 4; /* store in image32 memory */
-        im->linesize = xsize * 4;
 
     } else if (mode == IMAGING_MODE_La) {
         /* 8-bit grayscale (luminance) with premultiplied alpha */
-        im->bands = 2;
-        im->pixelsize = 4; /* store in image32 memory */
-        im->linesize = xsize * 4;
 
     } else if (mode == IMAGING_MODE_F) {
         /* 32-bit floating point images */
-        im->bands = 1;
-        im->pixelsize = 4;
-        im->linesize = xsize * 4;
         im->type = IMAGING_TYPE_FLOAT32;
 
     } else if (mode == IMAGING_MODE_I) {
         /* 32-bit integer images */
-        im->bands = 1;
-        im->pixelsize = 4;
-        im->linesize = xsize * 4;
         im->type = IMAGING_TYPE_INT32;
 
     } else if (isModeI16(mode)) {
         /* EXPERIMENTAL */
         /* 16-bit raw integer images */
-        im->bands = 1;
-        im->pixelsize = 2;
-        im->linesize = xsize * 2;
         im->type = IMAGING_TYPE_SPECIAL;
 
     } else if (mode == IMAGING_MODE_RGB) {
         /* 24-bit true colour images */
-        im->bands = 3;
-        im->pixelsize = 4;
-        im->linesize = xsize * 4;
 
     } else if (mode == IMAGING_MODE_RGBX) {
         /* 32-bit true colour images with padding */
-        im->bands = im->pixelsize = 4;
-        im->linesize = xsize * 4;
 
     } else if (mode == IMAGING_MODE_RGBA) {
         /* 32-bit true colour images with alpha */
-        im->bands = im->pixelsize = 4;
-        im->linesize = xsize * 4;
 
     } else if (mode == IMAGING_MODE_RGBa) {
         /* 32-bit true colour images with premultiplied alpha */
-        im->bands = im->pixelsize = 4;
-        im->linesize = xsize * 4;
 
     } else if (mode == IMAGING_MODE_CMYK) {
         /* 32-bit colour separation */
-        im->bands = im->pixelsize = 4;
-        im->linesize = xsize * 4;
 
     } else if (mode == IMAGING_MODE_YCbCr) {
         /* 24-bit video format */
-        im->bands = 3;
-        im->pixelsize = 4;
-        im->linesize = xsize * 4;
 
     } else if (mode == IMAGING_MODE_LAB) {
         /* 24-bit color, luminance, + 2 color channels */
         /* L is uint8, a,b are int8 */
-        im->bands = 3;
-        im->pixelsize = 4;
-        im->linesize = xsize * 4;
 
     } else if (mode == IMAGING_MODE_HSV) {
         /* 24-bit color, luminance, + 2 color channels */
         /* L is uint8, a,b are int8 */
-        im->bands = 3;
-        im->pixelsize = 4;
-        im->linesize = xsize * 4;
 
     } else {
         free(im);
         return (Imaging)ImagingError_ValueError("unrecognized image mode");
     }
+
 
     /* Setup image descriptor */
     im->mode = mode;
