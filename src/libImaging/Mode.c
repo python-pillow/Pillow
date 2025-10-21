@@ -9,154 +9,175 @@
 const ModeData MODES[] = {
     [IMAGING_MODE_UNKNOWN] = {""},
 
-    [IMAGING_MODE_1] = {
-        .name = "1",
-        .arrow_band_format = "C",
-        .bands = 1,
-        .pixelsize = 1,
-        .band_names = {"1"},
-    },
-    [IMAGING_MODE_CMYK] = {
-        .name = "CMYK",
-        .bands = 4,
-        .pixelsize = 4,
-        .arrow_band_format = "C",
-        .band_names = {"C", "M", "Y", "K"},
-    },
-    [IMAGING_MODE_F] = {
-        .name = "F",
-        .bands = 1,
-        .pixelsize = 4,
-        .arrow_band_format = "f",
-        .band_names = {"F"},
-    },
-    [IMAGING_MODE_HSV] = {
-        .name = "HSV",
-        .bands = 3,
-        .pixelsize = 4,
-        .arrow_band_format = "C",
-        .band_names = {"H", "S", "V", "X"},
-    },
-    [IMAGING_MODE_I] = {
-        .name = "I",
-        .bands = 1,
-        .pixelsize = 4,
-        .arrow_band_format = "i",
-        .band_names = {"I"},
-    },
-    [IMAGING_MODE_L] = {
-        .name = "L",
-        .bands = 1,
-        .pixelsize = 1,
-        .arrow_band_format = "C",
-        .band_names = {"L"},
-    },
-    [IMAGING_MODE_LA] = {
-        .name = "LA",
-        .bands = 2,
-        .pixelsize = 4,
-        .arrow_band_format = "C",
-        .band_names = {"L", "X", "X", "A"},
-    },
-    [IMAGING_MODE_LAB] = {
-        .name = "LAB",
-        .bands = 3,
-        .pixelsize = 4,
-        .arrow_band_format = "C",
-        .band_names = {"L", "a", "b", "X"},
-    },
-    [IMAGING_MODE_La] = {
-        .name = "La",
-        .bands = 2,
-        .pixelsize = 4,
-        .arrow_band_format = "C",
-        .band_names = {"L", "X", "X", "a"},
-    },
-    [IMAGING_MODE_P] = {
-        .name = "P",
-        .bands = 1,
-        .pixelsize = 1,
-        .arrow_band_format = "C",
-        .band_names = {"P"},
-    },
-    [IMAGING_MODE_PA] = {
-        .name = "PA",
-        .bands = 2,
-        .pixelsize = 4,
-        .arrow_band_format = "C",
-        .band_names = {"P", "X", "X", "A"},
-    },
-    [IMAGING_MODE_RGB] = {
-        .name = "RGB",
-        .bands = 3,
-        .pixelsize = 4,
-        .arrow_band_format = "C",
-        .band_names = {"R", "G", "B", "X"},
-    },
-    [IMAGING_MODE_RGBA] = {
-        .name = "RGBA",
-        .bands = 4,
-        .pixelsize = 4,
-        .arrow_band_format = "C",
-        .band_names = {"R", "G", "B", "A"},
-    },
-    [IMAGING_MODE_RGBX] = {
-        .name = "RGBX",
-        .bands = 4,
-        .pixelsize = 4,
-        .arrow_band_format = "C",
-        .band_names = {"R", "G", "B", "X"},
-    },
-    [IMAGING_MODE_RGBa] = {
-        .name = "RGBa",
-        .bands = 4,
-        .pixelsize = 4,
-        .arrow_band_format = "C",
-        .band_names = {"R", "G", "B", "a"},
-    },
-    [IMAGING_MODE_YCbCr] = {
-        .name = "YCbCr",
-        .bands = 3,
-        .pixelsize = 4,
-        .arrow_band_format = "C",
-        .band_names = {"Y", "Cb", "Cr", "X"},
-    },
+    [IMAGING_MODE_1] =
+        {
+            .name = "1",
+            .arrow_band_format = "C",
+            .bands = 1,
+            .pixelsize = 1,
+            .band_names = {"1"},
+        },
+    [IMAGING_MODE_CMYK] =
+        {
+            .name = "CMYK",
+            .bands = 4,
+            .pixelsize = 4,
+            .arrow_band_format = "C",
+            .band_names = {"C", "M", "Y", "K"},
+        },
+    [IMAGING_MODE_F] =
+        {
+            .name = "F",
+            .bands = 1,
+            .pixelsize = 4,
+            .arrow_band_format = "f",
+            .band_names = {"F"},
+        },
+    [IMAGING_MODE_HSV] =
+        {
+            .name = "HSV",
+            .bands = 3,
+            .pixelsize = 4,
+            .arrow_band_format = "C",
+            .band_names = {"H", "S", "V", "X"},
+        },
+    [IMAGING_MODE_I] =
+        {
+            .name = "I",
+            .bands = 1,
+            .pixelsize = 4,
+            .arrow_band_format = "i",
+            .band_names = {"I"},
+        },
+    [IMAGING_MODE_L] =
+        {
+            .name = "L",
+            .bands = 1,
+            .pixelsize = 1,
+            .arrow_band_format = "C",
+            .band_names = {"L"},
+        },
+    [IMAGING_MODE_LA] =
+        {
+            .name = "LA",
+            .bands = 2,
+            .pixelsize = 4,
+            .arrow_band_format = "C",
+            .band_names = {"L", "X", "X", "A"},
+        },
+    [IMAGING_MODE_LAB] =
+        {
+            .name = "LAB",
+            .bands = 3,
+            .pixelsize = 4,
+            .arrow_band_format = "C",
+            .band_names = {"L", "a", "b", "X"},
+        },
+    [IMAGING_MODE_La] =
+        {
+            .name = "La",
+            .bands = 2,
+            .pixelsize = 4,
+            .arrow_band_format = "C",
+            .band_names = {"L", "X", "X", "a"},
+        },
+    [IMAGING_MODE_P] =
+        {
+            .name = "P",
+            .bands = 1,
+            .pixelsize = 1,
+            .arrow_band_format = "C",
+            .band_names = {"P"},
+        },
+    [IMAGING_MODE_PA] =
+        {
+            .name = "PA",
+            .bands = 2,
+            .pixelsize = 4,
+            .arrow_band_format = "C",
+            .band_names = {"P", "X", "X", "A"},
+        },
+    [IMAGING_MODE_RGB] =
+        {
+            .name = "RGB",
+            .bands = 3,
+            .pixelsize = 4,
+            .arrow_band_format = "C",
+            .band_names = {"R", "G", "B", "X"},
+        },
+    [IMAGING_MODE_RGBA] =
+        {
+            .name = "RGBA",
+            .bands = 4,
+            .pixelsize = 4,
+            .arrow_band_format = "C",
+            .band_names = {"R", "G", "B", "A"},
+        },
+    [IMAGING_MODE_RGBX] =
+        {
+            .name = "RGBX",
+            .bands = 4,
+            .pixelsize = 4,
+            .arrow_band_format = "C",
+            .band_names = {"R", "G", "B", "X"},
+        },
+    [IMAGING_MODE_RGBa] =
+        {
+            .name = "RGBa",
+            .bands = 4,
+            .pixelsize = 4,
+            .arrow_band_format = "C",
+            .band_names = {"R", "G", "B", "a"},
+        },
+    [IMAGING_MODE_YCbCr] =
+        {
+            .name = "YCbCr",
+            .bands = 3,
+            .pixelsize = 4,
+            .arrow_band_format = "C",
+            .band_names = {"Y", "Cb", "Cr", "X"},
+        },
 
-    [IMAGING_MODE_I_16] = {
-        .name = "I;16",
-        .bands = 1,
-        .pixelsize = 2,
-        .arrow_band_format = "s",
-        .band_names = {"I"},
-    },
-    [IMAGING_MODE_I_16L] = {
-        .name = "I;16L",
-        .bands = 1,
-        .pixelsize = 2,
-        .arrow_band_format = "s",
-        .band_names = {"I"},
-    },
-    [IMAGING_MODE_I_16B] = {
-        .name = "I;16B",
-        .bands = 1,
-        .pixelsize = 2,
-        .arrow_band_format = "s",
-        .band_names = {"I"},
-    },
-    [IMAGING_MODE_I_16N] = {
-        .name = "I;16N",
-        .bands = 1,
-        .pixelsize = 2,
-        .arrow_band_format = "s",
-        .band_names = {"I"},
-    },
-    [IMAGING_MODE_I_32L] = {
-        .name = "I;32L",
-        .bands = 1,
-        .pixelsize = 4,
-        .arrow_band_format = "i",
-        .band_names = {"I"},
-    },
+    [IMAGING_MODE_I_16] =
+        {
+            .name = "I;16",
+            .bands = 1,
+            .pixelsize = 2,
+            .arrow_band_format = "s",
+            .band_names = {"I"},
+        },
+    [IMAGING_MODE_I_16L] =
+        {
+            .name = "I;16L",
+            .bands = 1,
+            .pixelsize = 2,
+            .arrow_band_format = "s",
+            .band_names = {"I"},
+        },
+    [IMAGING_MODE_I_16B] =
+        {
+            .name = "I;16B",
+            .bands = 1,
+            .pixelsize = 2,
+            .arrow_band_format = "s",
+            .band_names = {"I"},
+        },
+    [IMAGING_MODE_I_16N] =
+        {
+            .name = "I;16N",
+            .bands = 1,
+            .pixelsize = 2,
+            .arrow_band_format = "s",
+            .band_names = {"I"},
+        },
+    [IMAGING_MODE_I_32L] =
+        {
+            .name = "I;32L",
+            .bands = 1,
+            .pixelsize = 4,
+            .arrow_band_format = "i",
+            .band_names = {"I"},
+        },
     [IMAGING_MODE_I_32B] = {
         .name = "I;32B",
         .bands = 1,

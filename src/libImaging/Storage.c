@@ -130,7 +130,6 @@ ImagingNewPrologueSubtype(const ModeID mode, int xsize, int ysize, int size) {
         return (Imaging)ImagingError_ValueError("unrecognized image mode");
     }
 
-
     /* Setup image descriptor */
     im->mode = mode;
 
@@ -608,7 +607,7 @@ ImagingNewArrow(
           && im->bands >= 2)                // INT32 into any INT32 Storage mode
          ||                                 // (()||()) &&
          (strcmp(schema->format, im->modedata->arrow_band_format) == 0  // same mode
-          && im->bands == 1))                                 // Single band match
+          && im->bands == 1))  // Single band match
         && pixels == external_array->length) {
         // one arrow element per, and it matches a pixelsize*char
         if (ImagingBorrowArrow(im, external_array, im->pixelsize, array_capsule)) {
@@ -620,11 +619,11 @@ ImagingNewArrow(
         && im->pixelsize == 4                // storage as 32 bpc
         && schema->n_children > 0            // make sure schema is well formed.
         && schema->children                  // make sure schema is well formed
-        && strcmp(schema->children[0]->format, "C") == 0  // Expected format
+        && strcmp(schema->children[0]->format, "C") == 0      // Expected format
         && strcmp(im->modedata->arrow_band_format, "C") == 0  // Expected Format
-        && pixels == external_array->length               // expected length
-        && external_array->n_children == 1                // array is well formed
-        && external_array->children                       // array is well formed
+        && pixels == external_array->length                   // expected length
+        && external_array->n_children == 1                    // array is well formed
+        && external_array->children                           // array is well formed
         && 4 * pixels == external_array->children[0]->length) {
         // 4 up element of char into pixelsize == 4
         if (ImagingBorrowArrow(im, external_array, 1, array_capsule)) {
@@ -632,11 +631,11 @@ ImagingNewArrow(
         }
     }
     // Stored as [r,g,b,a,r,g,b,a,...]
-    if (strcmp(schema->format, "C") == 0            // uint8
-        && im->pixelsize == 4                       // storage as 32 bpc
-        && schema->n_children == 0                  // make sure schema is well formed.
+    if (strcmp(schema->format, "C") == 0  // uint8
+        && im->pixelsize == 4             // storage as 32 bpc
+        && schema->n_children == 0        // make sure schema is well formed.
         && strcmp(im->modedata->arrow_band_format, "C") == 0  // expected format
-        && 4 * pixels == external_array->length) {  // expected length
+        && 4 * pixels == external_array->length) {            // expected length
         // single flat array, interleaved storage.
         if (ImagingBorrowArrow(im, external_array, 1, array_capsule)) {
             return im;

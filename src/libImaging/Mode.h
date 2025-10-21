@@ -34,7 +34,7 @@ typedef struct {
     const char *const arrow_band_format;
     const int bands;
     const int pixelsize;
-    const char *band_names[4];     /* names of bands */
+    const char *band_names[4]; /* names of bands */
 } ModeData;
 
 const ModeID

@@ -199,9 +199,9 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     }
 
     if (im->bands == 1) {
-        retval = export_named_type(schema,
-                                   im->modedata->arrow_band_format,
-                                   im->modedata->band_names[0]);
+        retval = export_named_type(
+            schema, im->modedata->arrow_band_format, im->modedata->band_names[0]
+        );
         if (retval != 0) {
             return retval;
         }
