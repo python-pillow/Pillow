@@ -190,7 +190,9 @@ def test_save_id_section(tmp_path: Path) -> None:
 
     # Save with custom id section greater than 255 characters
     id_section = b"Test content" * 25
-    with pytest.warns(UserWarning):
+    with pytest.warns(
+        UserWarning, match="id_section has been trimmed to 255 characters"
+    ):
         im.save(out, id_section=id_section)
 
     with Image.open(out) as test_im:
@@ -220,12 +222,16 @@ def test_horizontal_orientations() -> None:
     with Image.open("Tests/images/rgb32rle_top_right.tga") as im:
         px = im.load()
         assert px is not None
-        assert px[90, 90][:3] == (0, 0, 0)
+        value = px[90, 90]
+        assert isinstance(value, tuple)
+        assert value[:3] == (0, 0, 0)
 
     with Image.open("Tests/images/rgb32rle_bottom_right.tga") as im:
         px = im.load()
         assert px is not None
-        assert px[90, 90][:3] == (0, 255, 0)
+        value = px[90, 90]
+        assert isinstance(value, tuple)
+        assert value[:3] == (0, 255, 0)
 
 
 def test_save_rle(tmp_path: Path) -> None:
@@ -268,13 +274,17 @@ def test_save_l_transparency(tmp_path: Path) -> None:
     in_file = "Tests/images/la.tga"
     with Image.open(in_file) as im:
         assert im.mode == "LA"
-        assert im.getchannel("A").getcolors()[0][0] == num_transparent
+        colors = im.getchannel("A").getcolors()
+        assert colors is not None
+        assert colors[0][0] == num_transparent
 
         out = tmp_path / "temp.tga"
         im.save(out)
 
     with Image.open(out) as test_im:
         assert test_im.mode == "LA"
-        assert test_im.getchannel("A").getcolors()[0][0] == num_transparent
+        colors = test_im.getchannel("A").getcolors()
+        assert colors is not None
+        assert colors[0][0] == num_transparent
 
         assert_image_equal(im, test_im)

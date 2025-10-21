@@ -16,24 +16,14 @@
 #
 from __future__ import annotations
 
-from collections.abc import Sequence
 from io import BytesIO
 from typing import cast
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import i32be as i32
-from ._deprecate import deprecate
 
 COMPRESSION = {1: "raw", 5: "jpeg"}
-
-
-def __getattr__(name: str) -> bytes:
-    if name == "PAD":
-        deprecate("IptcImagePlugin.PAD", 12)
-        return b"\0\0\0\0"
-    msg = f"module '{__name__}' has no attribute '{name}'"
-    raise AttributeError(msg)
 
 
 #
@@ -42,24 +32,6 @@ def __getattr__(name: str) -> bytes:
 
 def _i(c: bytes) -> int:
     return i32((b"\0\0\0\0" + c)[-4:])
-
-
-def _i8(c: int | bytes) -> int:
-    return c if isinstance(c, int) else c[0]
-
-
-def i(c: bytes) -> int:
-    """.. deprecated:: 10.2.0"""
-    deprecate("IptcImagePlugin.i", 12)
-    return _i(c)
-
-
-def dump(c: Sequence[int | bytes]) -> None:
-    """.. deprecated:: 10.2.0"""
-    deprecate("IptcImagePlugin.dump", 12)
-    for i in c:
-        print(f"{_i8(i):02x}", end=" ")
-    print()
 
 
 ##
@@ -124,16 +96,18 @@ class IptcImageFile(ImageFile.ImageFile):
         # mode
         layers = self.info[(3, 60)][0]
         component = self.info[(3, 60)][1]
-        if (3, 65) in self.info:
-            id = self.info[(3, 65)][0] - 1
-        else:
-            id = 0
         if layers == 1 and not component:
             self._mode = "L"
-        elif layers == 3 and component:
-            self._mode = "RGB"[id]
-        elif layers == 4 and component:
-            self._mode = "CMYK"[id]
+            band = None
+        else:
+            if layers == 3 and component:
+                self._mode = "RGB"
+            elif layers == 4 and component:
+                self._mode = "CMYK"
+            if (3, 65) in self.info:
+                band = self.info[(3, 65)][0] - 1
+            else:
+                band = 0
 
         # size
         self._size = self.getint((3, 20)), self.getint((3, 30))
@@ -148,38 +122,44 @@ class IptcImageFile(ImageFile.ImageFile):
         # tile
         if tag == (8, 10):
             self.tile = [
-                ImageFile._Tile("iptc", (0, 0) + self.size, offset, compression)
+                ImageFile._Tile("iptc", (0, 0) + self.size, offset, (compression, band))
             ]
 
     def load(self) -> Image.core.PixelAccess | None:
-        if len(self.tile) != 1 or self.tile[0][0] != "iptc":
-            return ImageFile.ImageFile.load(self)
+        if self.tile:
+            args = self.tile[0].args
+            assert isinstance(args, tuple)
+            compression, band = args
 
-        offset, compression = self.tile[0][2:]
+            self.fp.seek(self.tile[0].offset)
 
-        self.fp.seek(offset)
-
-        # Copy image data to temporary file
-        o = BytesIO()
-        if compression == "raw":
-            # To simplify access to the extracted file,
-            # prepend a PPM header
-            o.write(b"P5\n%d %d\n255\n" % self.size)
-        while True:
-            type, size = self.field()
-            if type != (8, 10):
-                break
-            while size > 0:
-                s = self.fp.read(min(size, 8192))
-                if not s:
+            # Copy image data to temporary file
+            o = BytesIO()
+            if compression == "raw":
+                # To simplify access to the extracted file,
+                # prepend a PPM header
+                o.write(b"P5\n%d %d\n255\n" % self.size)
+            while True:
+                type, size = self.field()
+                if type != (8, 10):
                     break
-                o.write(s)
-                size -= len(s)
+                while size > 0:
+                    s = self.fp.read(min(size, 8192))
+                    if not s:
+                        break
+                    o.write(s)
+                    size -= len(s)
 
-        with Image.open(o) as _im:
-            _im.load()
-            self.im = _im.im
-        return None
+            with Image.open(o) as _im:
+                if band is not None:
+                    bands = [Image.new("L", _im.size)] * Image.getmodebands(self.mode)
+                    bands[band] = _im
+                    _im = Image.merge(self.mode, bands)
+                else:
+                    _im.load()
+                self.im = _im.im
+            self.tile = []
+        return ImageFile.ImageFile.load(self)
 
 
 Image.register_open(IptcImageFile.format, IptcImageFile)
@@ -219,7 +199,7 @@ def getiptcinfo(
         # get raw data from the IPTC/NAA tag (PhotoShop tags the data
         # as 4-byte integers, so we cannot use the get method...)
         try:
-            data = im.tag_v2[TiffImagePlugin.IPTC_NAA_CHUNK]
+            data = im.tag_v2._tagdata[TiffImagePlugin.IPTC_NAA_CHUNK]
         except KeyError:
             pass
 

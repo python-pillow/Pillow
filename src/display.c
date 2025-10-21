@@ -47,7 +47,7 @@ typedef struct {
 static PyTypeObject ImagingDisplayType;
 
 static ImagingDisplayObject *
-_new(const char *mode, int xsize, int ysize) {
+_new(const ModeID mode, int xsize, int ysize) {
     ImagingDisplayObject *display;
 
     if (PyType_Ready(&ImagingDisplayType) < 0) {
@@ -235,7 +235,7 @@ static struct PyMethodDef methods[] = {
 
 static PyObject *
 _getattr_mode(ImagingDisplayObject *self, void *closure) {
-    return Py_BuildValue("s", self->dib->mode);
+    return Py_BuildValue("s", getModeData(self->dib->mode)->name);
 }
 
 static PyObject *
@@ -258,13 +258,14 @@ static PyTypeObject ImagingDisplayType = {
 PyObject *
 PyImaging_DisplayWin32(PyObject *self, PyObject *args) {
     ImagingDisplayObject *display;
-    char *mode;
+    char *mode_name;
     int xsize, ysize;
 
-    if (!PyArg_ParseTuple(args, "s(ii)", &mode, &xsize, &ysize)) {
+    if (!PyArg_ParseTuple(args, "s(ii)", &mode_name, &xsize, &ysize)) {
         return NULL;
     }
 
+    const ModeID mode = findModeID(mode_name);
     display = _new(mode, xsize, ysize);
     if (display == NULL) {
         return NULL;
@@ -275,12 +276,9 @@ PyImaging_DisplayWin32(PyObject *self, PyObject *args) {
 
 PyObject *
 PyImaging_DisplayModeWin32(PyObject *self, PyObject *args) {
-    char *mode;
     int size[2];
-
-    mode = ImagingGetModeDIB(size);
-
-    return Py_BuildValue("s(ii)", mode, size[0], size[1]);
+    const ModeID mode = ImagingGetModeDIB(size);
+    return Py_BuildValue("s(ii)", getModeData(mode)->name, size[0], size[1]);
 }
 
 /* -------------------------------------------------------------------- */
@@ -327,11 +325,11 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
     // added in Windows 10 (1607)
     // loaded dynamically to avoid link errors
     user32 = LoadLibraryA("User32.dll");
-    SetThreadDpiAwarenessContext_function = (Func_SetThreadDpiAwarenessContext
-    )GetProcAddress(user32, "SetThreadDpiAwarenessContext");
+    SetThreadDpiAwarenessContext_function = (Func_SetThreadDpiAwarenessContext)
+        GetProcAddress(user32, "SetThreadDpiAwarenessContext");
     if (SetThreadDpiAwarenessContext_function != NULL) {
-        GetWindowDpiAwarenessContext_function = (Func_GetWindowDpiAwarenessContext
-        )GetProcAddress(user32, "GetWindowDpiAwarenessContext");
+        GetWindowDpiAwarenessContext_function = (Func_GetWindowDpiAwarenessContext)
+            GetProcAddress(user32, "GetWindowDpiAwarenessContext");
         if (screens == -1 && GetWindowDpiAwarenessContext_function != NULL) {
             dpiAwareness = GetWindowDpiAwarenessContext_function(wnd);
         }

@@ -115,7 +115,7 @@ Example
 
 Here's an example script to build on Windows::
 
-    set PYTHON=C:\Python39\bin
+    set PYTHON=C:\Python310\bin
     cd /D C:\Pillow\winbuild
     %PYTHON%\python.exe build_prepare.py -v --depends C:\pillow-depends
     build\build_dep_all.cmd
@@ -124,5 +124,5 @@ Here's an example script to build on Windows::
     %PYTHON%\python.exe -m pip install -v -C raqm=vendor -C fribidi=vendor .
     path C:\Pillow\winbuild\build\bin;%PATH%
     %PYTHON%\python.exe selftest.py
-    %PYTHON%\python.exe -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
+    %PYTHON%\python.exe -m pytest -vv -x --cov PIL --cov Tests --cov-report term --cov-report xml Tests
     %PYTHON%\python.exe -m pip wheel -v -C raqm=vendor -C fribidi=vendor .

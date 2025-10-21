@@ -26,12 +26,12 @@ from .helper import (
     assert_image_equal_tofile,
     assert_image_similar,
     assert_image_similar_tofile,
-    cjpeg_available,
     djpeg_available,
     hopper,
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
+    timeout_unless_slower_valgrind,
 )
 
 ElementTree: ModuleType | None
@@ -129,30 +129,26 @@ class TestFileJpeg:
     def test_cmyk(self) -> None:
         # Test CMYK handling.  Thanks to Tim and Charlie for test data,
         # Michael for getting me to look one more time.
-        f = "Tests/images/pil_sample_cmyk.jpg"
-        with Image.open(f) as im:
-            # the source image has red pixels in the upper left corner.
-            c, m, y, k = (x / 255.0 for x in im.getpixel((0, 0)))
+        def check(im: ImageFile.ImageFile) -> None:
+            cmyk = im.getpixel((0, 0))
+            assert isinstance(cmyk, tuple)
+            c, m, y, k = (x / 255.0 for x in cmyk)
             assert c == 0.0
             assert m > 0.8
             assert y > 0.8
             assert k == 0.0
             # the opposite corner is black
-            c, m, y, k = (
-                x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            )
+            cmyk = im.getpixel((im.size[0] - 1, im.size[1] - 1))
+            assert isinstance(cmyk, tuple)
+            k = cmyk[3] / 255.0
             assert k > 0.9
+
+        with Image.open("Tests/images/pil_sample_cmyk.jpg") as im:
+            # the source image has red pixels in the upper left corner.
+            check(im)
+
             # roundtrip, and check again
-            im = self.roundtrip(im)
-            c, m, y, k = (x / 255.0 for x in im.getpixel((0, 0)))
-            assert c == 0.0
-            assert m > 0.8
-            assert y > 0.8
-            assert k == 0.0
-            c, m, y, k = (
-                x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            )
-            assert k > 0.9
+            check(self.roundtrip(im))
 
     def test_rgb(self) -> None:
         def getchannels(im: JpegImagePlugin.JpegImageFile) -> tuple[int, ...]:
@@ -334,8 +330,10 @@ class TestFileJpeg:
 
         # Reading
         with Image.open("Tests/images/exif_gps.jpg") as im:
-            exif = im._getexif()
-            assert exif[gps_index] == expected_exif_gps
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+            exif_data = im._getexif()
+            assert exif_data is not None
+            assert exif_data[gps_index] == expected_exif_gps
 
         # Writing
         f = tmp_path / "temp.jpg"
@@ -344,8 +342,10 @@ class TestFileJpeg:
         hopper().save(f, exif=exif)
 
         with Image.open(f) as reloaded:
-            exif = reloaded._getexif()
-            assert exif[gps_index] == expected_exif_gps
+            assert isinstance(reloaded, JpegImagePlugin.JpegImageFile)
+            exif_data = reloaded._getexif()
+            assert exif_data is not None
+            assert exif_data[gps_index] == expected_exif_gps
 
     def test_empty_exif_gps(self) -> None:
         with Image.open("Tests/images/empty_gps_ifd.jpg") as im:
@@ -372,6 +372,7 @@ class TestFileJpeg:
         exifs = []
         for i in range(2):
             with Image.open("Tests/images/exif-200dpcm.jpg") as im:
+                assert isinstance(im, JpegImagePlugin.JpegImageFile)
                 exifs.append(im._getexif())
         assert exifs[0] == exifs[1]
 
@@ -405,13 +406,17 @@ class TestFileJpeg:
         }
 
         with Image.open("Tests/images/exif_gps.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             exif = im._getexif()
+        assert exif is not None
 
         for tag, value in expected_exif.items():
             assert value == exif[tag]
 
     def test_exif_gps_typeerror(self) -> None:
         with Image.open("Tests/images/exif_gps_typeerror.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+
             # Should not raise a TypeError
             im._getexif()
 
@@ -491,7 +496,9 @@ class TestFileJpeg:
 
     def test_exif(self) -> None:
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             info = im._getexif()
+            assert info is not None
             assert info[305] == "Adobe Photoshop CS Macintosh"
 
     def test_get_child_images(self) -> None:
@@ -614,6 +621,24 @@ class TestFileJpeg:
                     None
                 )
             ]
+
+            for quality in range(101):
+                qtable_from_qtable_quality = self.roundtrip(
+                    im,
+                    qtables={0: standard_l_qtable, 1: standard_chrominance_qtable},
+                    quality=quality,
+                ).quantization
+
+                qtable_from_quality = self.roundtrip(im, quality=quality).quantization
+
+                if features.check_feature("libjpeg_turbo"):
+                    assert qtable_from_qtable_quality == qtable_from_quality
+                else:
+                    assert qtable_from_qtable_quality[0] == qtable_from_quality[0]
+                    assert (
+                        qtable_from_qtable_quality[1][1:] == qtable_from_quality[1][1:]
+                    )
+
             # list of qtable lists
             assert_image_similar(
                 im,
@@ -676,11 +701,13 @@ class TestFileJpeg:
 
     def test_save_multiple_16bit_qtables(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             im2 = self.roundtrip(im, qtables="keep")
             assert im.quantization == im2.quantization
 
     def test_save_single_16bit_qtable(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             im2 = self.roundtrip(im, qtables={0: im.quantization[0]})
             assert len(im2.quantization) == 1
             assert im2.quantization[0] == im.quantization[0]
@@ -716,14 +743,6 @@ class TestFileJpeg:
             img.load_djpeg()
             assert_image_similar_tofile(img, TEST_FILE, 5)
 
-    @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
-    def test_save_cjpeg(self, tmp_path: Path) -> None:
-        with Image.open(TEST_FILE) as img:
-            tempfile = str(tmp_path / "temp.jpg")
-            JpegImagePlugin._save_cjpeg(img, BytesIO(), tempfile)
-            # Default save quality is 75%, so a tiny bit of difference is alright
-            assert_image_similar_tofile(img, tempfile, 17)
-
     def test_no_duplicate_0x1001_tag(self) -> None:
         # Arrange
         tag_ids = {v: k for k, v in ExifTags.TAGS.items()}
@@ -749,10 +768,13 @@ class TestFileJpeg:
 
         # Act
         # Shouldn't raise error
-        fn = "Tests/images/sugarshack_bad_mpo_header.jpg"
-        with pytest.warns(UserWarning, Image.open, fn) as im:
-            # Assert
-            assert im.format == "JPEG"
+        with pytest.warns(UserWarning, match="malformed MPO file"):
+            im = Image.open("Tests/images/sugarshack_bad_mpo_header.jpg")
+
+        # Assert
+        assert im.format == "JPEG"
+
+        im.close()
 
     @pytest.mark.parametrize("mode", ("1", "L", "RGB", "RGBX", "CMYK", "YCbCr"))
     def test_save_correct_modes(self, mode: str) -> None:
@@ -889,7 +911,10 @@ class TestFileJpeg:
         # in contrast to normal 8
         with Image.open("Tests/images/exif-ifd-offset.jpg") as im:
             # Act / Assert
-            assert im._getexif()[306] == "2017:03:13 23:03:09"
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+            exif = im._getexif()
+            assert exif is not None
+            assert exif[306] == "2017:03:13 23:03:09"
 
     def test_multiple_exif(self) -> None:
         with Image.open("Tests/images/multiple_exif.jpg") as im:
@@ -1033,7 +1058,7 @@ class TestFileJpeg:
         with pytest.raises(ValueError):
             im.save(f, xmp=b"1" * 65505)
 
-    @pytest.mark.timeout(timeout=1)
+    @timeout_unless_slower_valgrind(1)
     def test_eof(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # Even though this decoder never says that it is finished
         # the image should still end when there is no new data
@@ -1064,10 +1089,16 @@ class TestFileJpeg:
         for marker in b"\xff\xd8", b"\xff\xd9":
             assert marker in data[1]
             assert marker in data[2]
-        # DHT, DQT
-        for marker in b"\xff\xc4", b"\xff\xdb":
+
+        # DQT
+        markers = [b"\xff\xdb"]
+        if features.check_feature("libjpeg_turbo"):
+            # DHT
+            markers.append(b"\xff\xc4")
+        for marker in markers:
             assert marker in data[1]
             assert marker not in data[2]
+
         # SOF0, SOS, APP0 (JFIF header)
         for marker in b"\xff\xc0", b"\xff\xda", b"\xff\xe0":
             assert marker not in data[1]
@@ -1090,14 +1121,6 @@ class TestFileJpeg:
         im = hopper("F")
 
         assert im._repr_jpeg_() is None
-
-    def test_deprecation(self) -> None:
-        with Image.open(TEST_FILE) as im:
-            assert isinstance(im, JpegImagePlugin.JpegImageFile)
-            with pytest.warns(DeprecationWarning):
-                assert im.huffman_ac == {}
-            with pytest.warns(DeprecationWarning):
-                assert im.huffman_dc == {}
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")

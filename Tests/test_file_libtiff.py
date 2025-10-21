@@ -256,19 +256,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
             im.save(out, tiffinfo=new_ifd)
 
-    @pytest.mark.parametrize(
-        "libtiff",
-        (
-            pytest.param(
-                True,
-                marks=pytest.mark.skipif(
-                    not getattr(Image.core, "libtiff_support_custom_tags", False),
-                    reason="Custom tags not supported by older libtiff",
-                ),
-            ),
-            False,
-        ),
-    )
+    @pytest.mark.parametrize("libtiff", (True, False))
     def test_custom_metadata(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, libtiff: bool
     ) -> None:
@@ -367,6 +355,27 @@ class TestFileLibTiff(LibTiffTestCase):
             # Should not segfault
             im.save(outfile)
 
+    def test_whitepoint_tag(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        out = tmp_path / "temp.tif"
+        hopper().save(out, tiffinfo={318: (0.3127, 0.3289)})
+
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2[318] == pytest.approx((0.3127, 0.3289))
+
+        # Save tag by default
+        out = tmp_path / "temp2.tif"
+        with Image.open("Tests/images/rdf.tif") as im:
+            im.save(out)
+
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2[318] == pytest.approx((0.3127, 0.3289999))
+
     def test_xmlpacket_tag(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
@@ -377,8 +386,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
         with Image.open(out) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
-            if 700 in reloaded.tag_v2:
-                assert reloaded.tag_v2[700] == b"xmlpacket tag"
+            assert reloaded.tag_v2[700] == b"xmlpacket tag"
 
     def test_int_dpi(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         # issue #1765
@@ -724,8 +732,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
         with Image.open(out) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
-            if Image.core.libtiff_support_custom_tags:
-                assert reloaded.tag_v2[34665] == 125456
+            assert reloaded.tag_v2[34665] == 125456
 
     def test_crashing_metadata(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
@@ -777,19 +784,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert icc_libtiff is not None
         assert icc == icc_libtiff
 
-    @pytest.mark.parametrize(
-        "libtiff",
-        (
-            pytest.param(
-                True,
-                marks=pytest.mark.skipif(
-                    not getattr(Image.core, "libtiff_support_custom_tags", False),
-                    reason="Custom tags not supported by older libtiff",
-                ),
-            ),
-            False,
-        ),
-    )
+    @pytest.mark.parametrize("libtiff", (True, False))
     def test_write_icc(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, libtiff: bool
     ) -> None:
@@ -898,8 +893,8 @@ class TestFileLibTiff(LibTiffTestCase):
                 assert im.mode == "RGB"
                 assert im.size == (128, 128)
                 assert im.format == "TIFF"
-                im2 = hopper()
-                assert_image_similar(im, im2, 5)
+                with hopper() as im2:
+                    assert_image_similar(im, im2, 5)
         except OSError:
             captured = capfd.readouterr()
             if "LZMA compression support is not configured" in captured.err:

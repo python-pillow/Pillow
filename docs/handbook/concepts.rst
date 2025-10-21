@@ -101,6 +101,28 @@ Palette
 The palette mode (``P``) uses a color palette to define the actual color for
 each pixel.
 
+.. _colors:
+
+Colors
+------
+
+To specify colors, you can use tuples with a value for each channel in the image, e.g.
+``Image.new("RGB", (1, 1), (255, 0, 0))``.
+
+If an image has a single channel, you can use a single number instead, e.g.
+``Image.new("L", (1, 1), 255)``. For "F" mode images, floating point values are also
+accepted. In the case of "P" mode images, these will be indexes for the color palette.
+
+If a single value is used for an image with more than one channel, it will still be
+parsed::
+
+    >>> from PIL import Image
+    >>> im = Image.new("RGBA", (1, 1), 0x04030201)
+    >>> im.getpixel((0, 0))
+    (1, 2, 3, 4)
+
+Some methods accept other forms, such as color names. See :ref:`color-names`.
+
 Info
 ----
 

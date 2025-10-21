@@ -212,31 +212,43 @@ cms_transform_dealloc(CmsTransformObject *self) {
 /* internal functions */
 
 static cmsUInt32Number
-findLCMStype(char *PILmode) {
-    if (strcmp(PILmode, "RGB") == 0 || strcmp(PILmode, "RGBA") == 0 ||
-        strcmp(PILmode, "RGBX") == 0) {
-        return TYPE_RGBA_8;
+findLCMStype(const char *const mode_name) {
+    const ModeID mode = findModeID(mode_name);
+    switch (mode) {
+        case IMAGING_MODE_RGB:
+        case IMAGING_MODE_RGBA:
+        case IMAGING_MODE_RGBX:
+            return TYPE_RGBA_8;
+        case IMAGING_MODE_CMYK:
+            return TYPE_CMYK_8;
+        case IMAGING_MODE_I_16:
+        case IMAGING_MODE_I_16L:
+            return TYPE_GRAY_16;
+        case IMAGING_MODE_I_16B:
+            return TYPE_GRAY_16_SE;
+        case IMAGING_MODE_YCbCr:
+            return TYPE_YCbCr_8;
+        case IMAGING_MODE_LAB:
+            // LabX equivalent like ALab, but not reversed -- no #define in lcms2
+            return (
+                COLORSPACE_SH(PT_LabV2) | CHANNELS_SH(3) | BYTES_SH(1) | EXTRA_SH(1)
+            );
+        default:
+            // This function only accepts a subset of the imaging modes Pillow has.
+            break;
     }
-    if (strcmp(PILmode, "RGBA;16B") == 0) {
+    // The following modes are not valid PIL Image modes.
+    if (strcmp(mode_name, "RGBA;16B") == 0) {
         return TYPE_RGBA_16;
     }
-    if (strcmp(PILmode, "CMYK") == 0) {
-        return TYPE_CMYK_8;
-    }
-    if (strcmp(PILmode, "I;16") == 0 || strcmp(PILmode, "I;16L") == 0 ||
-        strcmp(PILmode, "L;16") == 0) {
+    if (strcmp(mode_name, "L;16") == 0) {
         return TYPE_GRAY_16;
     }
-    if (strcmp(PILmode, "I;16B") == 0 || strcmp(PILmode, "L;16B") == 0) {
+    if (strcmp(mode_name, "L;16B") == 0) {
         return TYPE_GRAY_16_SE;
     }
-    if (strcmp(PILmode, "YCbCr") == 0 || strcmp(PILmode, "YCCA") == 0 ||
-        strcmp(PILmode, "YCC") == 0) {
+    if (strcmp(mode_name, "YCCA") == 0 || strcmp(mode_name, "YCC") == 0) {
         return TYPE_YCbCr_8;
-    }
-    if (strcmp(PILmode, "LAB") == 0) {
-        // LabX equivalent like ALab, but not reversed -- no #define in lcms2
-        return (COLORSPACE_SH(PT_LabV2) | CHANNELS_SH(3) | BYTES_SH(1) | EXTRA_SH(1));
     }
     /* presume "1" or "L" by default */
     return TYPE_GRAY_8;
@@ -1463,28 +1475,24 @@ setup_module(PyObject *m) {
     return 0;
 }
 
+static PyModuleDef_Slot slots[] = {
+    {Py_mod_exec, setup_module},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
 PyMODINIT_FUNC
 PyInit__imagingcms(void) {
-    PyObject *m;
+    PyDateTime_IMPORT;
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_imagingcms",
-        .m_size = -1,
         .m_methods = pyCMSdll_methods,
+        .m_slots = slots
     };
 
-    m = PyModule_Create(&module_def);
-
-    if (setup_module(m) < 0) {
-        return NULL;
-    }
-
-    PyDateTime_IMPORT;
-
-#ifdef Py_GIL_DISABLED
-    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
-#endif
-
-    return m;
+    return PyModuleDef_Init(&module_def);
 }

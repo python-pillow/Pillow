@@ -15,6 +15,7 @@ from .helper import (
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
+    timeout_unless_slower_valgrind,
 )
 
 HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
@@ -194,6 +195,14 @@ def test_load_long_binary_data(prefix: bytes) -> None:
         assert img.mode == "1"
         assert img.size == (100, 100)
         assert img.format == "EPS"
+
+
+def test_begin_binary() -> None:
+    with open("Tests/images/eps/binary_preview_map.eps", "rb") as fp:
+        data = bytearray(fp.read())
+    data[76875 : 76875 + 11] = b"%" * 11
+    with Image.open(io.BytesIO(data)) as img:
+        assert img.size == (399, 480)
 
 
 @mark_if_feature_version(
@@ -398,7 +407,7 @@ def test_emptyline() -> None:
     assert image.format == "EPS"
 
 
-@pytest.mark.timeout(timeout=5)
+@timeout_unless_slower_valgrind(5)
 @pytest.mark.parametrize(
     "test_file",
     ["Tests/images/eps/timeout-d675703545fee17acab56e5fec644c19979175de.eps"],

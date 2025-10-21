@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-version=1.2.1
+version=1.3.0
 
 ./download-and-extract.sh libavif-$version https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$version.tar.gz
 
@@ -59,6 +59,6 @@ cmake \
     "${LIBAVIF_CMAKE_FLAGS[@]}" \
     .
 
-sudo make install
+make install
 
 popd

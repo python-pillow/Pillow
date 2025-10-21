@@ -8,9 +8,12 @@
 from __future__ import annotations
 
 import os
+from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i32be as i32
+from ._binary import o8
+from ._binary import o32be as o32
 
 
 def _accept(prefix: bytes) -> bool:
@@ -51,7 +54,7 @@ class QoiDecoder(ImageFile.PyDecoder):
         assert self.fd is not None
 
         self._previously_seen_pixels = {}
-        self._add_to_previous_pixels(bytearray((0, 0, 0, 255)))
+        self._previous_pixel = bytearray((0, 0, 0, 255))
 
         data = bytearray()
         bands = Image.getmodebands(self.mode)
@@ -110,6 +113,122 @@ class QoiDecoder(ImageFile.PyDecoder):
         return -1, 0
 
 
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
+    if im.mode == "RGB":
+        channels = 3
+    elif im.mode == "RGBA":
+        channels = 4
+    else:
+        msg = "Unsupported QOI image mode"
+        raise ValueError(msg)
+
+    colorspace = 0 if im.encoderinfo.get("colorspace") == "sRGB" else 1
+
+    fp.write(b"qoif")
+    fp.write(o32(im.size[0]))
+    fp.write(o32(im.size[1]))
+    fp.write(o8(channels))
+    fp.write(o8(colorspace))
+
+    ImageFile._save(im, fp, [ImageFile._Tile("qoi", (0, 0) + im.size)])
+
+
+class QoiEncoder(ImageFile.PyEncoder):
+    _pushes_fd = True
+    _previous_pixel: tuple[int, int, int, int] | None = None
+    _previously_seen_pixels: dict[int, tuple[int, int, int, int]] = {}
+    _run = 0
+
+    def _write_run(self) -> bytes:
+        data = o8(0b11000000 | (self._run - 1))  # QOI_OP_RUN
+        self._run = 0
+        return data
+
+    def _delta(self, left: int, right: int) -> int:
+        result = (left - right) & 255
+        if result >= 128:
+            result -= 256
+        return result
+
+    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
+        assert self.im is not None
+
+        self._previously_seen_pixels = {0: (0, 0, 0, 0)}
+        self._previous_pixel = (0, 0, 0, 255)
+
+        data = bytearray()
+        w, h = self.im.size
+        bands = Image.getmodebands(self.mode)
+
+        for y in range(h):
+            for x in range(w):
+                pixel = self.im.getpixel((x, y))
+                if bands == 3:
+                    pixel = (*pixel, 255)
+
+                if pixel == self._previous_pixel:
+                    self._run += 1
+                    if self._run == 62:
+                        data += self._write_run()
+                else:
+                    if self._run:
+                        data += self._write_run()
+
+                    r, g, b, a = pixel
+                    hash_value = (r * 3 + g * 5 + b * 7 + a * 11) % 64
+                    if self._previously_seen_pixels.get(hash_value) == pixel:
+                        data += o8(hash_value)  # QOI_OP_INDEX
+                    elif self._previous_pixel:
+                        self._previously_seen_pixels[hash_value] = pixel
+
+                        prev_r, prev_g, prev_b, prev_a = self._previous_pixel
+                        if prev_a == a:
+                            delta_r = self._delta(r, prev_r)
+                            delta_g = self._delta(g, prev_g)
+                            delta_b = self._delta(b, prev_b)
+
+                            if (
+                                -2 <= delta_r < 2
+                                and -2 <= delta_g < 2
+                                and -2 <= delta_b < 2
+                            ):
+                                data += o8(
+                                    0b01000000
+                                    | (delta_r + 2) << 4
+                                    | (delta_g + 2) << 2
+                                    | (delta_b + 2)
+                                )  # QOI_OP_DIFF
+                            else:
+                                delta_gr = self._delta(delta_r, delta_g)
+                                delta_gb = self._delta(delta_b, delta_g)
+                                if (
+                                    -8 <= delta_gr < 8
+                                    and -32 <= delta_g < 32
+                                    and -8 <= delta_gb < 8
+                                ):
+                                    data += o8(
+                                        0b10000000 | (delta_g + 32)
+                                    )  # QOI_OP_LUMA
+                                    data += o8((delta_gr + 8) << 4 | (delta_gb + 8))
+                                else:
+                                    data += o8(0b11111110)  # QOI_OP_RGB
+                                    data += bytes(pixel[:3])
+                        else:
+                            data += o8(0b11111111)  # QOI_OP_RGBA
+                            data += bytes(pixel)
+
+                self._previous_pixel = pixel
+
+        if self._run:
+            data += self._write_run()
+        data += bytes((0, 0, 0, 0, 0, 0, 0, 1))  # padding
+
+        return len(data), 0, data
+
+
 Image.register_open(QoiImageFile.format, QoiImageFile, _accept)
 Image.register_decoder("qoi", QoiDecoder)
 Image.register_extension(QoiImageFile.format, ".qoi")
+
+Image.register_save(QoiImageFile.format, _save)
+Image.register_encoder("qoi", QoiEncoder)

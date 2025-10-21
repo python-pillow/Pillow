@@ -16,9 +16,11 @@
 
 #include "Imaging.h"
 
-#define I16(ptr) ((ptr)[0] + ((ptr)[1] << 8))
+#define I16(ptr) ((ptr)[0] + ((int)(ptr)[1] << 8))
 
-#define I32(ptr) ((ptr)[0] + ((ptr)[1] << 8) + ((ptr)[2] << 16) + ((ptr)[3] << 24))
+#define I32(ptr)                                                   \
+    ((ptr)[0] + ((INT32)(ptr)[1] << 8) + ((INT32)(ptr)[2] << 16) + \
+     ((INT32)(ptr)[3] << 24))
 
 #define ERR_IF_DATA_OOB(offset)                 \
     if ((data + (offset)) > ptr + bytes) {      \

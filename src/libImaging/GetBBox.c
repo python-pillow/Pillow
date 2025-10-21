@@ -90,9 +90,9 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
         if (im->bands == 3) {
             ((UINT8 *)&mask)[3] = 0;
         } else if (alpha_only &&
-                   (strcmp(im->mode, "RGBa") == 0 || strcmp(im->mode, "RGBA") == 0 ||
-                    strcmp(im->mode, "La") == 0 || strcmp(im->mode, "LA") == 0 ||
-                    strcmp(im->mode, "PA") == 0)) {
+                   (im->mode == IMAGING_MODE_RGBa || im->mode == IMAGING_MODE_RGBA ||
+                    im->mode == IMAGING_MODE_La || im->mode == IMAGING_MODE_LA ||
+                    im->mode == IMAGING_MODE_PA)) {
 #ifdef WORDS_BIGENDIAN
             mask = 0x000000ff;
 #else
@@ -208,11 +208,11 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             memcpy(((char *)extrema) + sizeof(fmin), &fmax, sizeof(fmax));
             break;
         case IMAGING_TYPE_SPECIAL:
-            if (strcmp(im->mode, "I;16") == 0) {
+            if (im->mode == IMAGING_MODE_I_16) {
                 UINT16 v;
                 UINT8 *pixel = *im->image8;
 #ifdef WORDS_BIGENDIAN
-                v = pixel[0] + (pixel[1] << 8);
+                v = pixel[0] + ((UINT16)pixel[1] << 8);
 #else
                 memcpy(&v, pixel, sizeof(v));
 #endif
@@ -221,7 +221,7 @@ ImagingGetExtrema(Imaging im, void *extrema) {
                     for (x = 0; x < im->xsize; x++) {
                         pixel = (UINT8 *)im->image[y] + x * sizeof(v);
 #ifdef WORDS_BIGENDIAN
-                        v = pixel[0] + (pixel[1] << 8);
+                        v = pixel[0] + ((UINT16)pixel[1] << 8);
 #else
                         memcpy(&v, pixel, sizeof(v));
 #endif

@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[0] == 10 and prefix[1] in [0, 2, 3, 5]
+    return len(prefix) >= 2 and prefix[0] == 10 and prefix[1] in [0, 2, 3, 5]
 
 
 ##
@@ -54,7 +54,7 @@ class PcxImageFile(ImageFile.ImageFile):
         # header
         assert self.fp is not None
 
-        s = self.fp.read(128)
+        s = self.fp.read(68)
         if not _accept(s):
             msg = "not a PCX file"
             raise SyntaxError(msg)
@@ -65,6 +65,8 @@ class PcxImageFile(ImageFile.ImageFile):
             msg = "bad PCX image size"
             raise SyntaxError(msg)
         logger.debug("BBox: %s %s %s %s", *bbox)
+
+        offset = self.fp.tell() + 60
 
         # format
         version = s[1]
@@ -102,7 +104,6 @@ class PcxImageFile(ImageFile.ImageFile):
                         break
                 if mode == "P":
                     self.palette = ImagePalette.raw("RGB", s[1:])
-            self.fp.seek(128)
 
         elif version == 5 and bits == 8 and planes == 3:
             mode = "RGB"
@@ -128,9 +129,7 @@ class PcxImageFile(ImageFile.ImageFile):
         bbox = (0, 0) + self.size
         logger.debug("size: %sx%s", *self.size)
 
-        self.tile = [
-            ImageFile._Tile("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))
-        ]
+        self.tile = [ImageFile._Tile("pcx", bbox, offset, (rawmode, planes * stride))]
 
 
 # --------------------------------------------------------------------

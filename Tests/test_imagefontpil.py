@@ -7,7 +7,7 @@ import pytest
 
 from PIL import Image, ImageDraw, ImageFont, _util, features
 
-from .helper import assert_image_equal_tofile
+from .helper import assert_image_equal_tofile, timeout_unless_slower_valgrind
 
 fonts = [ImageFont.load_default_imagefont()]
 if not features.check_module("freetype2"):
@@ -28,6 +28,14 @@ def test_default_font(font: ImageFont.ImageFont) -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/default_font.png")
+
+
+def test_invalid_mode() -> None:
+    font = ImageFont.ImageFont()
+    fp = BytesIO()
+    with Image.open("Tests/images/hopper.png") as im:
+        with pytest.raises(TypeError, match="invalid font image mode"):
+            font._load_pilfont_data(fp, im)
 
 
 def test_without_freetype() -> None:
@@ -72,7 +80,7 @@ def test_decompression_bomb() -> None:
         font.getmask("A" * 1_000_000)
 
 
-@pytest.mark.timeout(4)
+@timeout_unless_slower_valgrind(4)
 def test_oom() -> None:
     glyph = struct.pack(
         ">hhhhhhhhhh", 1, 0, -32767, -32767, 32767, 32767, -32767, -32767, 32767, 32767
