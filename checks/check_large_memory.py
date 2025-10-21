@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 
@@ -13,10 +14,15 @@ from PIL import Image
 # second test.  Running this automatically would amount to a denial of
 # service on our testing infrastructure.  I expect this test to fail
 # on any 32-bit machine, as well as any smallish things (like
-# Raspberry Pis).
+# Raspberry Pis). It does succeed on a 3gb Ubuntu 12.04x64 VM on Python
+# 2.7 and 3.2.
 
 
-np = pytest.importorskip("numpy", reason="NumPy not installed")
+numpy: ModuleType | None
+try:
+    import numpy
+except ImportError:
+    numpy = None
 
 YDIM = 32769
 XDIM = 48000
@@ -26,10 +32,8 @@ pytestmark = pytest.mark.skipif(sys.maxsize <= 2**32, reason="requires 64-bit sy
 
 
 def _write_png(tmp_path: Path, xdim: int, ydim: int) -> None:
-    dtype = np.uint8
-    a = np.zeros((xdim, ydim), dtype=dtype)
-    f = str(tmp_path / "temp.png")
-    im = Image.fromarray(a, "L")
+    f = tmp_path / "temp.png"
+    im = Image.new("L", (xdim, ydim), 0)
     im.save(f)
 
 
@@ -41,3 +45,10 @@ def test_large(tmp_path: Path) -> None:
 def test_2gpx(tmp_path: Path) -> None:
     """failed prepatch"""
     _write_png(tmp_path, XDIM, XDIM)
+
+
+@pytest.mark.skipif(numpy is None, reason="Numpy is not installed")
+def test_size_greater_than_int() -> None:
+    assert numpy is not None
+    arr = numpy.ndarray(shape=(16394, 16394))
+    Image.fromarray(arr)

@@ -25,7 +25,6 @@ typedef struct {
 
 typedef struct {
     UINT16 c0, c1;
-    UINT32 lut;
 } bc1_color;
 
 typedef struct {
@@ -40,13 +39,10 @@ typedef struct {
 
 #define LOAD16(p) (p)[0] | ((p)[1] << 8)
 
-#define LOAD32(p) (p)[0] | ((p)[1] << 8) | ((p)[2] << 16) | ((p)[3] << 24)
-
 static void
 bc1_color_load(bc1_color *dst, const UINT8 *src) {
     dst->c0 = LOAD16(src);
     dst->c1 = LOAD16(src + 2);
-    dst->lut = LOAD32(src + 4);
 }
 
 static rgba
@@ -70,7 +66,7 @@ static void
 decode_bc1_color(rgba *dst, const UINT8 *src, int separate_alpha) {
     bc1_color col;
     rgba p[4];
-    int n, cw;
+    int n, o, cw;
     UINT16 r0, g0, b0, r1, g1, b1;
     bc1_color_load(&col, src);
 
@@ -103,9 +99,11 @@ decode_bc1_color(rgba *dst, const UINT8 *src, int separate_alpha) {
         p[3].b = 0;
         p[3].a = 0;
     }
-    for (n = 0; n < 16; n++) {
-        cw = 3 & (col.lut >> (2 * n));
-        dst[n] = p[cw];
+    for (n = 0; n < 4; n++) {
+        for (o = 0; o < 4; o++) {
+            cw = 3 & ((src + 4)[n] >> (2 * o));
+            dst[n * 4 + o] = p[cw];
+        }
     }
 }
 
@@ -605,7 +603,7 @@ static void
 bc6_sign_extend(UINT16 *v, int prec) {
     int x = *v;
     if (x & (1 << (prec - 1))) {
-        x |= -1 << prec;
+        x |= -(1 << prec);
     }
     *v = (UINT16)x;
 }

@@ -171,7 +171,7 @@ class TestImagingCoreResize:
         # platforms. So if a future Pillow change requires that the test file
         # be updated, that is okay.
         im = hopper().resize((64, 64))
-        temp_file = str(tmp_path / "temp.gif")
+        temp_file = tmp_path / "temp.gif"
         im.save(temp_file)
 
         with Image.open(temp_file) as reloaded:
@@ -324,7 +324,7 @@ class TestImageResize:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.BICUBIC) == im.resize((20, 20))
 
-    @pytest.mark.parametrize("mode", ("1", "P", "BGR;15", "BGR;16"))
+    @pytest.mark.parametrize("mode", ("1", "P"))
     def test_default_filter_nearest(self, mode: str) -> None:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.NEAREST) == im.resize((20, 20))

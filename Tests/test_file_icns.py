@@ -43,7 +43,7 @@ def test_load() -> None:
 
 
 def test_save(tmp_path: Path) -> None:
-    temp_file = str(tmp_path / "temp.icns")
+    temp_file = tmp_path / "temp.icns"
 
     with Image.open(TEST_FILE) as im:
         im.save(temp_file)
@@ -60,7 +60,7 @@ def test_save(tmp_path: Path) -> None:
 
 
 def test_save_append_images(tmp_path: Path) -> None:
-    temp_file = str(tmp_path / "temp.icns")
+    temp_file = tmp_path / "temp.icns"
     provided_im = Image.new("RGBA", (32, 32), (255, 0, 0, 128))
 
     with Image.open(TEST_FILE) as im:
@@ -69,6 +69,7 @@ def test_save_append_images(tmp_path: Path) -> None:
         assert_image_similar_tofile(im, temp_file, 1)
 
         with Image.open(temp_file) as reread:
+            assert isinstance(reread, IcnsImagePlugin.IcnsImageFile)
             reread.size = (16, 16)
             reread.load(2)
             assert_image_equal(reread, provided_im)
@@ -90,20 +91,13 @@ def test_sizes() -> None:
     # Check that we can load all of the sizes, and that the final pixel
     # dimensions are as expected
     with Image.open(TEST_FILE) as im:
+        assert isinstance(im, IcnsImagePlugin.IcnsImageFile)
         for w, h, r in im.info["sizes"]:
-            wr = w * r
-            hr = h * r
-            with pytest.warns(DeprecationWarning):
-                im.size = (w, h, r)
-            im.load()
-            assert im.mode == "RGBA"
-            assert im.size == (wr, hr)
-
             # Test using load() with scale
             im.size = (w, h)
             im.load(scale=r)
             assert im.mode == "RGBA"
-            assert im.size == (wr, hr)
+            assert im.size == (w * r, h * r)
 
         # Check that we cannot load an incorrect size
         with pytest.raises(ValueError):
@@ -118,6 +112,7 @@ def test_older_icon() -> None:
             wr = w * r
             hr = h * r
             with Image.open("Tests/images/pillow2.icns") as im2:
+                assert isinstance(im2, IcnsImagePlugin.IcnsImageFile)
                 im2.size = (w, h)
                 im2.load(r)
                 assert im2.mode == "RGBA"
@@ -135,6 +130,7 @@ def test_jp2_icon() -> None:
             wr = w * r
             hr = h * r
             with Image.open("Tests/images/pillow3.icns") as im2:
+                assert isinstance(im2, IcnsImagePlugin.IcnsImageFile)
                 im2.size = (w, h)
                 im2.load(r)
                 assert im2.mode == "RGBA"

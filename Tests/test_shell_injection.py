@@ -2,14 +2,18 @@ from __future__ import annotations
 
 import shutil
 from io import BytesIO
-from pathlib import Path
-from typing import IO, Callable
 
 import pytest
 
 from PIL import GifImagePlugin, Image, JpegImagePlugin
 
-from .helper import cjpeg_available, djpeg_available, is_win32, netpbm_available
+from .helper import djpeg_available, is_win32, netpbm_available
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from pathlib import Path
+    from typing import IO
 
 TEST_JPG = "Tests/images/hopper.jpg"
 TEST_GIF = "Tests/images/hopper.gif"
@@ -35,16 +39,12 @@ class TestShellInjection:
     @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
     def test_load_djpeg_filename(self, tmp_path: Path) -> None:
         for filename in test_filenames:
-            src_file = str(tmp_path / filename)
+            src_file = tmp_path / filename
             shutil.copy(TEST_JPG, src_file)
 
             with Image.open(src_file) as im:
+                assert isinstance(im, JpegImagePlugin.JpegImageFile)
                 im.load_djpeg()
-
-    @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
-    def test_save_cjpeg_filename(self, tmp_path: Path) -> None:
-        with Image.open(TEST_JPG) as im:
-            self.assert_save_filename_check(tmp_path, im, JpegImagePlugin._save_cjpeg)
 
     @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
     def test_save_netpbm_filename_bmp_mode(self, tmp_path: Path) -> None:

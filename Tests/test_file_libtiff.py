@@ -36,10 +36,11 @@ class LibTiffTestCase:
         im.load()
         im.getdata()
 
+        assert isinstance(im, TiffImagePlugin.TiffImageFile)
         assert im._compression == "group4"
 
         # can we write it back out, in a different form.
-        out = str(tmp_path / "temp.png")
+        out = tmp_path / "temp.png"
         im.save(out)
 
         out_bytes = io.BytesIO()
@@ -80,7 +81,7 @@ class TestFileLibTiff(LibTiffTestCase):
         s = io.BytesIO()
         with open(test_file, "rb") as f:
             s.write(f.read())
-            s.seek(0)
+        s.seek(0)
         with Image.open(s) as im:
             assert im.size == (500, 500)
             self._assert_noerr(tmp_path, im)
@@ -123,7 +124,7 @@ class TestFileLibTiff(LibTiffTestCase):
         """Checking to see that the saved image is the same as what we wrote"""
         test_file = "Tests/images/hopper_g4_500.tif"
         with Image.open(test_file) as orig:
-            out = str(tmp_path / "temp.tif")
+            out = tmp_path / "temp.tif"
             rot = orig.transpose(Image.Transpose.ROTATE_90)
             assert rot.size == (500, 500)
             rot.save(out)
@@ -151,8 +152,9 @@ class TestFileLibTiff(LibTiffTestCase):
     @pytest.mark.parametrize("legacy_api", (False, True))
     def test_write_metadata(self, legacy_api: bool, tmp_path: Path) -> None:
         """Test metadata writing through libtiff"""
-        f = str(tmp_path / "temp.tiff")
+        f = tmp_path / "temp.tiff"
         with Image.open("Tests/images/hopper_g4.tif") as img:
+            assert isinstance(img, TiffImagePlugin.TiffImageFile)
             img.save(f, tiffinfo=img.tag)
 
             if legacy_api:
@@ -170,6 +172,7 @@ class TestFileLibTiff(LibTiffTestCase):
         ]
 
         with Image.open(f) as loaded:
+            assert isinstance(loaded, TiffImagePlugin.TiffImageFile)
             if legacy_api:
                 reloaded = loaded.tag.named()
             else:
@@ -212,6 +215,7 @@ class TestFileLibTiff(LibTiffTestCase):
         # Exclude ones that have special meaning
         # that we're already testing them
         with Image.open("Tests/images/hopper_g4.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             for tag in im.tag_v2:
                 try:
                     del core_items[tag]
@@ -247,24 +251,12 @@ class TestFileLibTiff(LibTiffTestCase):
             # Extra samples really doesn't make sense in this application.
             del new_ifd[338]
 
-            out = str(tmp_path / "temp.tif")
+            out = tmp_path / "temp.tif"
             monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
 
             im.save(out, tiffinfo=new_ifd)
 
-    @pytest.mark.parametrize(
-        "libtiff",
-        (
-            pytest.param(
-                True,
-                marks=pytest.mark.skipif(
-                    not getattr(Image.core, "libtiff_support_custom_tags", False),
-                    reason="Custom tags not supported by older libtiff",
-                ),
-            ),
-            False,
-        ),
-    )
+    @pytest.mark.parametrize("libtiff", (True, False))
     def test_custom_metadata(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, libtiff: bool
     ) -> None:
@@ -313,10 +305,11 @@ class TestFileLibTiff(LibTiffTestCase):
         ) -> None:
             im = hopper()
 
-            out = str(tmp_path / "temp.tif")
+            out = tmp_path / "temp.tif"
             im.save(out, tiffinfo=tiffinfo)
 
             with Image.open(out) as reloaded:
+                assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
                 for tag, value in tiffinfo.items():
                     reloaded_value = reloaded.tag_v2[tag]
                     if (
@@ -347,35 +340,58 @@ class TestFileLibTiff(LibTiffTestCase):
         )
 
     def test_osubfiletype(self, tmp_path: Path) -> None:
-        outfile = str(tmp_path / "temp.tif")
+        outfile = tmp_path / "temp.tif"
         with Image.open("Tests/images/g4_orientation_6.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             im.tag_v2[OSUBFILETYPE] = 1
             im.save(outfile)
 
     def test_subifd(self, tmp_path: Path) -> None:
-        outfile = str(tmp_path / "temp.tif")
+        outfile = tmp_path / "temp.tif"
         with Image.open("Tests/images/g4_orientation_6.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             im.tag_v2[SUBIFD] = 10000
 
             # Should not segfault
             im.save(outfile)
+
+    def test_whitepoint_tag(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        out = tmp_path / "temp.tif"
+        hopper().save(out, tiffinfo={318: (0.3127, 0.3289)})
+
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2[318] == pytest.approx((0.3127, 0.3289))
+
+        # Save tag by default
+        out = tmp_path / "temp2.tif"
+        with Image.open("Tests/images/rdf.tif") as im:
+            im.save(out)
+
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2[318] == pytest.approx((0.3127, 0.3289999))
 
     def test_xmlpacket_tag(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
         monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
 
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
         hopper().save(out, tiffinfo={700: b"xmlpacket tag"})
 
         with Image.open(out) as reloaded:
-            if 700 in reloaded.tag_v2:
-                assert reloaded.tag_v2[700] == b"xmlpacket tag"
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2[700] == b"xmlpacket tag"
 
     def test_int_dpi(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         # issue #1765
         im = hopper("RGB")
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
         monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
         im.save(out, dpi=(72, 72))
         with Image.open(out) as reloaded:
@@ -383,7 +399,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_g3_compression(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/hopper_g4_500.tif") as i:
-            out = str(tmp_path / "temp.tif")
+            out = tmp_path / "temp.tif"
             i.save(out, compression="group3")
 
             with Image.open(out) as reread:
@@ -400,7 +416,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert b[0] == ord(b"\xe0")
             assert b[1] == ord(b"\x01")
 
-            out = str(tmp_path / "temp.tif")
+            out = tmp_path / "temp.tif"
             # out = "temp.le.tif"
             im.save(out)
         with Image.open(out) as reread:
@@ -420,7 +436,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert b[0] == ord(b"\x01")
             assert b[1] == ord(b"\xe0")
 
-            out = str(tmp_path / "temp.tif")
+            out = tmp_path / "temp.tif"
             im.save(out)
             with Image.open(out) as reread:
                 assert reread.info["compression"] == im.info["compression"]
@@ -430,12 +446,15 @@ class TestFileLibTiff(LibTiffTestCase):
         """Tests String data in info directory"""
         test_file = "Tests/images/hopper_g4_500.tif"
         with Image.open(test_file) as orig:
-            out = str(tmp_path / "temp.tif")
+            assert isinstance(orig, TiffImagePlugin.TiffImageFile)
+
+            out = tmp_path / "temp.tif"
 
             orig.tag[269] = "temp.tif"
             orig.save(out)
 
         with Image.open(out) as reread:
+            assert isinstance(reread, TiffImagePlugin.TiffImageFile)
             assert "temp.tif" == reread.tag_v2[269]
             assert "temp.tif" == reread.tag[269][0]
 
@@ -457,7 +476,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_blur(self, tmp_path: Path) -> None:
         # test case from irc, how to do blur on b/w image
         # and save to compressed tif.
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
         with Image.open("Tests/images/pport_g4.tif") as im:
             im = im.convert("L")
 
@@ -470,7 +489,7 @@ class TestFileLibTiff(LibTiffTestCase):
         # Test various tiff compressions and assert similar image content but reduced
         # file sizes.
         im = hopper("RGB")
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
         im.save(out)
         size_raw = os.path.getsize(out)
 
@@ -494,7 +513,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_tiff_jpeg_compression(self, tmp_path: Path) -> None:
         im = hopper("RGB")
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
         im.save(out, compression="tiff_jpeg")
 
         with Image.open(out) as reloaded:
@@ -502,7 +521,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_tiff_deflate_compression(self, tmp_path: Path) -> None:
         im = hopper("RGB")
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
         im.save(out, compression="tiff_deflate")
 
         with Image.open(out) as reloaded:
@@ -510,7 +529,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_quality(self, tmp_path: Path) -> None:
         im = hopper("RGB")
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
 
         with pytest.raises(ValueError):
             im.save(out, compression="tiff_lzw", quality=50)
@@ -525,7 +544,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_cmyk_save(self, tmp_path: Path) -> None:
         im = hopper("CMYK")
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
 
         im.save(out, compression="tiff_adobe_deflate")
         assert_image_equal_tofile(im, out)
@@ -534,19 +553,20 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_palette_save(
         self, im: Image.Image, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
 
         monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
         im.save(out)
 
         with Image.open(out) as reloaded:
             # colormap/palette tag
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert len(reloaded.tag_v2[320]) == 768
 
     @pytest.mark.parametrize("compression", ("tiff_ccitt", "group3", "group4"))
     def test_bw_compression_w_rgb(self, compression: str, tmp_path: Path) -> None:
         im = hopper("RGB")
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
 
         with pytest.raises(OSError):
             im.save(out, compression=compression)
@@ -572,6 +592,7 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/multipage.tiff") as im:
             # file is a multipage tiff,  10x10 green, 10x10 red, 20x20 blue
 
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             im.seek(0)
             assert im.size == (10, 10)
             assert im.convert("RGB").getpixel((0, 0)) == (0, 128, 0)
@@ -591,6 +612,7 @@ class TestFileLibTiff(LibTiffTestCase):
         # issue #862
         monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
         with Image.open("Tests/images/multipage.tiff") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             frames = im.n_frames
             assert frames == 3
             for _ in range(frames):
@@ -610,6 +632,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test__next(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
         with Image.open("Tests/images/hopper.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert not im.tag.next
             im.load()
             assert not im.tag.next
@@ -686,34 +709,37 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_save_ycbcr(self, tmp_path: Path) -> None:
         im = hopper("YCbCr")
-        outfile = str(tmp_path / "temp.tif")
+        outfile = tmp_path / "temp.tif"
         im.save(outfile, compression="jpeg")
 
         with Image.open(outfile) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2[530] == (1, 1)
             assert reloaded.tag_v2[532] == (0, 255, 128, 255, 128, 255)
 
     def test_exif_ifd(self) -> None:
         out = io.BytesIO()
         with Image.open("Tests/images/tiff_adobe_deflate.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.tag_v2[34665] == 125456
             im.save(out, "TIFF")
 
             with Image.open(out) as reloaded:
+                assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
                 assert 34665 not in reloaded.tag_v2
 
             im.save(out, "TIFF", tiffinfo={34665: 125456})
 
         with Image.open(out) as reloaded:
-            if Image.core.libtiff_support_custom_tags:
-                assert reloaded.tag_v2[34665] == 125456
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2[34665] == 125456
 
     def test_crashing_metadata(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
         # issue 1597
         with Image.open("Tests/images/rdf.tif") as im:
-            out = str(tmp_path / "temp.tif")
+            out = tmp_path / "temp.tif"
 
             monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
             # this shouldn't crash
@@ -724,7 +750,7 @@ class TestFileLibTiff(LibTiffTestCase):
         # Test TIFF with tag 297 (Page Number) having value of 0 0.
         # The first number is the current page number.
         # The second is the total number of pages, zero means not available.
-        outfile = str(tmp_path / "temp.tif")
+        outfile = tmp_path / "temp.tif"
         # Created by printing a page in Chrome to PDF, then:
         # /usr/bin/gs -q -sDEVICE=tiffg3 -sOutputFile=total-pages-zero.tif
         # -dNOPAUSE /tmp/test.pdf -c quit
@@ -736,7 +762,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_fd_duplication(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/1651
 
-        tmpfile = str(tmp_path / "temp.tif")
+        tmpfile = tmp_path / "temp.tif"
         with open(tmpfile, "wb") as f:
             with open("Tests/images/g4-multi.tiff", "rb") as src:
                 f.write(src.read())
@@ -758,19 +784,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert icc_libtiff is not None
         assert icc == icc_libtiff
 
-    @pytest.mark.parametrize(
-        "libtiff",
-        (
-            pytest.param(
-                True,
-                marks=pytest.mark.skipif(
-                    not getattr(Image.core, "libtiff_support_custom_tags", False),
-                    reason="Custom tags not supported by older libtiff",
-                ),
-            ),
-            False,
-        ),
-    )
+    @pytest.mark.parametrize("libtiff", (True, False))
     def test_write_icc(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, libtiff: bool
     ) -> None:
@@ -779,13 +793,14 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/hopper.iccprofile.tif") as img:
             icc_profile = img.info["icc_profile"]
 
-            out = str(tmp_path / "temp.tif")
+            out = tmp_path / "temp.tif"
             img.save(out, icc_profile=icc_profile)
         with Image.open(out) as reloaded:
             assert icc_profile == reloaded.info["icc_profile"]
 
     def test_multipage_compression(self) -> None:
         with Image.open("Tests/images/compression.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             im.seek(0)
             assert im._compression == "tiff_ccitt"
             assert im.size == (10, 10)
@@ -802,7 +817,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_save_tiff_with_jpegtables(self, tmp_path: Path) -> None:
         # Arrange
-        outfile = str(tmp_path / "temp.tif")
+        outfile = tmp_path / "temp.tif"
 
         # Created with ImageMagick: convert hopper.jpg hopper_jpg.tif
         # Contains JPEGTables (347) tag
@@ -864,7 +879,7 @@ class TestFileLibTiff(LibTiffTestCase):
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
         im = Image.new("F", (1, 1))
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
         monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
         im.save(out)
 
@@ -878,8 +893,8 @@ class TestFileLibTiff(LibTiffTestCase):
                 assert im.mode == "RGB"
                 assert im.size == (128, 128)
                 assert im.format == "TIFF"
-                im2 = hopper()
-                assert_image_similar(im, im2, 5)
+                with hopper() as im2:
+                    assert_image_similar(im, im2, 5)
         except OSError:
             captured = capfd.readouterr()
             if "LZMA compression support is not configured" in captured.err:
@@ -1008,7 +1023,7 @@ class TestFileLibTiff(LibTiffTestCase):
     @pytest.mark.parametrize("compression", (None, "jpeg"))
     def test_block_tile_tags(self, compression: str | None, tmp_path: Path) -> None:
         im = hopper()
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
 
         tags = {
             TiffImagePlugin.TILEWIDTH: 256,
@@ -1025,6 +1040,17 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_old_style_jpeg(self) -> None:
         with Image.open("Tests/images/old-style-jpeg-compression.tif") as im:
             assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
+
+    def test_old_style_jpeg_orientation(self) -> None:
+        with open("Tests/images/old-style-jpeg-compression.tif", "rb") as fp:
+            data = fp.read()
+
+        # Set EXIF Orientation to 2
+        data = data[:102] + b"\x02" + data[103:]
+
+        with Image.open(io.BytesIO(data)) as im:
+            im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
 
     def test_open_missing_samplesperpixel(self) -> None:
         with Image.open(
@@ -1079,6 +1105,7 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
             for i in range(2, 9):
                 with Image.open("Tests/images/g4_orientation_" + str(i) + ".tif") as im:
+                    assert isinstance(im, TiffImagePlugin.TiffImageFile)
                     assert 274 in im.tag_v2
 
                     im.load()
@@ -1147,7 +1174,7 @@ class TestFileLibTiff(LibTiffTestCase):
     @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", "jpeg"))
     def test_save_multistrip(self, compression: str, tmp_path: Path) -> None:
         im = hopper("RGB").resize((256, 256))
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
         im.save(out, compression=compression)
 
         with Image.open(out) as im:
@@ -1160,7 +1187,7 @@ class TestFileLibTiff(LibTiffTestCase):
         self, argument: bool, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         im = hopper("RGB").resize((256, 256))
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
 
         if not argument:
             monkeypatch.setattr(TiffImagePlugin, "STRIP_SIZE", 2**18)
@@ -1176,13 +1203,13 @@ class TestFileLibTiff(LibTiffTestCase):
     @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", None))
     def test_save_zero(self, compression: str | None, tmp_path: Path) -> None:
         im = Image.new("RGB", (0, 0))
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
         with pytest.raises(SystemError):
             im.save(out, compression=compression)
 
     def test_save_many_compressed(self, tmp_path: Path) -> None:
         im = hopper()
-        out = str(tmp_path / "temp.tif")
+        out = tmp_path / "temp.tif"
         for _ in range(10000):
             im.save(out, compression="jpeg")
 

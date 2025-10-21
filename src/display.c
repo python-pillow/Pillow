@@ -47,7 +47,7 @@ typedef struct {
 static PyTypeObject ImagingDisplayType;
 
 static ImagingDisplayObject *
-_new(const char *mode, int xsize, int ysize) {
+_new(const ModeID mode, int xsize, int ysize) {
     ImagingDisplayObject *display;
 
     if (PyType_Ready(&ImagingDisplayType) < 0) {
@@ -235,7 +235,7 @@ static struct PyMethodDef methods[] = {
 
 static PyObject *
 _getattr_mode(ImagingDisplayObject *self, void *closure) {
-    return Py_BuildValue("s", self->dib->mode);
+    return Py_BuildValue("s", getModeData(self->dib->mode)->name);
 }
 
 static PyObject *
@@ -258,13 +258,14 @@ static PyTypeObject ImagingDisplayType = {
 PyObject *
 PyImaging_DisplayWin32(PyObject *self, PyObject *args) {
     ImagingDisplayObject *display;
-    char *mode;
+    char *mode_name;
     int xsize, ysize;
 
-    if (!PyArg_ParseTuple(args, "s(ii)", &mode, &xsize, &ysize)) {
+    if (!PyArg_ParseTuple(args, "s(ii)", &mode_name, &xsize, &ysize)) {
         return NULL;
     }
 
+    const ModeID mode = findModeID(mode_name);
     display = _new(mode, xsize, ysize);
     if (display == NULL) {
         return NULL;
@@ -275,57 +276,80 @@ PyImaging_DisplayWin32(PyObject *self, PyObject *args) {
 
 PyObject *
 PyImaging_DisplayModeWin32(PyObject *self, PyObject *args) {
-    char *mode;
     int size[2];
-
-    mode = ImagingGetModeDIB(size);
-
-    return Py_BuildValue("s(ii)", mode, size[0], size[1]);
+    const ModeID mode = ImagingGetModeDIB(size);
+    return Py_BuildValue("s(ii)", getModeData(mode)->name, size[0], size[1]);
 }
 
 /* -------------------------------------------------------------------- */
 /* Windows screen grabber */
 
+typedef HANDLE(__stdcall *Func_GetWindowDpiAwarenessContext)(HANDLE);
 typedef HANDLE(__stdcall *Func_SetThreadDpiAwarenessContext)(HANDLE);
 
 PyObject *
 PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
-    int x = 0, y = 0, width, height;
-    int includeLayeredWindows = 0, all_screens = 0;
+    int x = 0, y = 0, width = -1, height;
+    int includeLayeredWindows = 0, screens = 0;
     HBITMAP bitmap;
     BITMAPCOREHEADER core;
     HDC screen, screen_copy;
+    HWND wnd;
     DWORD rop;
     PyObject *buffer;
-    HANDLE dpiAwareness;
+    HANDLE dpiAwareness = NULL;
     HMODULE user32;
+    Func_GetWindowDpiAwarenessContext GetWindowDpiAwarenessContext_function;
     Func_SetThreadDpiAwarenessContext SetThreadDpiAwarenessContext_function;
 
-    if (!PyArg_ParseTuple(args, "|ii", &includeLayeredWindows, &all_screens)) {
+    if (!PyArg_ParseTuple(
+            args, "|ii" F_HANDLE, &includeLayeredWindows, &screens, &wnd
+        )) {
         return NULL;
     }
 
     /* step 1: create a memory DC large enough to hold the
        entire screen */
 
-    screen = CreateDC("DISPLAY", NULL, NULL, NULL);
+    if (screens == -1) {
+        screen = GetDC(wnd);
+        if (screen == NULL) {
+            PyErr_SetString(PyExc_OSError, "unable to get device context for handle");
+            return NULL;
+        }
+    } else {
+        screen = CreateDC("DISPLAY", NULL, NULL, NULL);
+    }
     screen_copy = CreateCompatibleDC(screen);
 
     // added in Windows 10 (1607)
     // loaded dynamically to avoid link errors
     user32 = LoadLibraryA("User32.dll");
-    SetThreadDpiAwarenessContext_function = (Func_SetThreadDpiAwarenessContext
-    )GetProcAddress(user32, "SetThreadDpiAwarenessContext");
+    SetThreadDpiAwarenessContext_function = (Func_SetThreadDpiAwarenessContext)
+        GetProcAddress(user32, "SetThreadDpiAwarenessContext");
     if (SetThreadDpiAwarenessContext_function != NULL) {
+        GetWindowDpiAwarenessContext_function = (Func_GetWindowDpiAwarenessContext)
+            GetProcAddress(user32, "GetWindowDpiAwarenessContext");
+        if (screens == -1 && GetWindowDpiAwarenessContext_function != NULL) {
+            dpiAwareness = GetWindowDpiAwarenessContext_function(wnd);
+        }
         // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = ((DPI_CONTEXT_HANDLE)-3)
-        dpiAwareness = SetThreadDpiAwarenessContext_function((HANDLE)-3);
+        dpiAwareness = SetThreadDpiAwarenessContext_function(
+            dpiAwareness == NULL ? (HANDLE)-3 : dpiAwareness
+        );
     }
 
-    if (all_screens) {
+    if (screens == 1) {
         x = GetSystemMetrics(SM_XVIRTUALSCREEN);
         y = GetSystemMetrics(SM_YVIRTUALSCREEN);
         width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    } else if (screens == -1) {
+        RECT rect;
+        if (GetClientRect(wnd, &rect)) {
+            width = rect.right;
+            height = rect.bottom;
+        }
     } else {
         width = GetDeviceCaps(screen, HORZRES);
         height = GetDeviceCaps(screen, VERTRES);
@@ -336,6 +360,10 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
     }
 
     FreeLibrary(user32);
+
+    if (width == -1) {
+        goto error;
+    }
 
     bitmap = CreateCompatibleBitmap(screen, width, height);
     if (!bitmap) {
@@ -382,7 +410,11 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
 
     DeleteObject(bitmap);
     DeleteDC(screen_copy);
-    DeleteDC(screen);
+    if (screens == -1) {
+        ReleaseDC(wnd, screen);
+    } else {
+        DeleteDC(screen);
+    }
 
     return Py_BuildValue("(ii)(ii)N", x, y, width, height, buffer);
 
@@ -390,7 +422,11 @@ error:
     PyErr_SetString(PyExc_OSError, "screen grab failed");
 
     DeleteDC(screen_copy);
-    DeleteDC(screen);
+    if (screens == -1) {
+        ReleaseDC(wnd, screen);
+    } else {
+        DeleteDC(screen);
+    }
 
     return NULL;
 }
@@ -687,6 +723,14 @@ PyImaging_EventLoopWin32(PyObject *self, PyObject *args) {
 
 #define GET32(p, o) ((DWORD *)(p + o))[0]
 
+static int CALLBACK
+enhMetaFileProc(
+    HDC hdc, HANDLETABLE *lpht, const ENHMETARECORD *lpmr, int nHandles, LPARAM data
+) {
+    PlayEnhMetaFileRecord(hdc, lpht, lpmr, nHandles);
+    return 1;
+}
+
 PyObject *
 PyImaging_DrawWmf(PyObject *self, PyObject *args) {
     HBITMAP bitmap;
@@ -767,10 +811,7 @@ PyImaging_DrawWmf(PyObject *self, PyObject *args) {
     /* FIXME: make background transparent? configurable? */
     FillRect(dc, &rect, GetStockObject(WHITE_BRUSH));
 
-    if (!PlayEnhMetaFile(dc, meta, &rect)) {
-        PyErr_SetString(PyExc_OSError, "cannot render metafile");
-        goto error;
-    }
+    EnumEnhMetaFile(dc, meta, enhMetaFileProc, NULL, &rect);
 
     /* step 4: extract bits from bitmap */
 

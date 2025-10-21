@@ -16,9 +16,11 @@
 from __future__ import annotations
 
 import re
-from typing import IO
+from io import BytesIO
 
-from ._binary import o8
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 
 class GimpPaletteFile:
@@ -26,14 +28,18 @@ class GimpPaletteFile:
 
     rawmode = "RGB"
 
-    def __init__(self, fp: IO[bytes]) -> None:
-        palette = [o8(i) * 3 for i in range(256)]
-
+    def _read(self, fp: IO[bytes], limit: bool = True) -> None:
         if not fp.readline().startswith(b"GIMP Palette"):
             msg = "not a GIMP palette file"
             raise SyntaxError(msg)
 
-        for i in range(256):
+        palette: list[int] = []
+        i = 0
+        while True:
+            if limit and i == 256 + 3:
+                break
+
+            i += 1
             s = fp.readline()
             if not s:
                 break
@@ -41,18 +47,29 @@ class GimpPaletteFile:
             # skip fields and comment lines
             if re.match(rb"\w+:|#", s):
                 continue
-            if len(s) > 100:
+            if limit and len(s) > 100:
                 msg = "bad palette file"
                 raise SyntaxError(msg)
 
-            v = tuple(map(int, s.split()[:3]))
-            if len(v) != 3:
+            v = s.split(maxsplit=3)
+            if len(v) < 3:
                 msg = "bad palette entry"
                 raise ValueError(msg)
 
-            palette[i] = o8(v[0]) + o8(v[1]) + o8(v[2])
+            palette += (int(v[i]) for i in range(3))
+            if limit and len(palette) == 768:
+                break
 
-        self.palette = b"".join(palette)
+        self.palette = bytes(palette)
+
+    def __init__(self, fp: IO[bytes]) -> None:
+        self._read(fp)
+
+    @classmethod
+    def frombytes(cls, data: bytes) -> GimpPaletteFile:
+        self = cls.__new__(cls)
+        self._read(BytesIO(data), False)
+        return self
 
     def getpalette(self) -> tuple[bytes, str]:
         return self.palette, self.rawmode

@@ -42,35 +42,35 @@ jobs:
         ]
         python-version: [
           "pypy3.11",
-          "pypy3.10",
+          "3.14t",
           "3.14",
           "3.13t",
           "3.13",
           "3.12",
           "3.11",
           "3.10",
-          "3.9",
         ]
         include:
-        - { python-version: "3.11", PYTHONOPTIMIZE: 1, REVERSE: "--reverse" }
-        - { python-version: "3.10", PYTHONOPTIMIZE: 2 }
+        - { python-version: "3.12", PYTHONOPTIMIZE: 1, REVERSE: "--reverse" }
+        - { python-version: "3.11", PYTHONOPTIMIZE: 2 }
         # Free-threaded
+        - { python-version: "3.14t", disable-gil: true }
         - { python-version: "3.13t", disable-gil: true }
-        # M1 only available for 3.10+
-        - { os: "macos-13", python-version: "3.9" }
+        # Intel
+        - { os: "macos-15-intel", python-version: "3.10" }
         exclude:
-        - { os: "macos-latest", python-version: "3.9" }
+        - { os: "macos-latest", python-version: "3.10" }
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         persist-credentials: false
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: Quansight-Labs/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
@@ -111,7 +111,7 @@ jobs:
         GHA_PYTHON_VERSION: ${{ matrix.python-version }}
 
     - name: Register gcc problem matcher
-      if: "matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'"
+      if: "matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'"
       run: echo "::add-matcher::.github/problem-matchers/gcc.json"
 
     - name: Build

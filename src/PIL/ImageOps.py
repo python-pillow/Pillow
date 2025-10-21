@@ -499,14 +499,15 @@ def expand(
     height = top + image.size[1] + bottom
     color = _color(fill, image.mode)
     if image.palette:
-        palette = ImagePalette.ImagePalette(palette=image.getpalette())
+        mode = image.palette.mode
+        palette = ImagePalette.ImagePalette(mode, image.getpalette(mode))
         if isinstance(color, tuple) and (len(color) == 3 or len(color) == 4):
             color = palette.getcolor(color)
     else:
         palette = None
     out = Image.new(image.mode, (width, height), color)
     if palette:
-        out.putpalette(palette.palette)
+        out.putpalette(palette.palette, mode)
     out.paste(image, (left, top))
     return out
 

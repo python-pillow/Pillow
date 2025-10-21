@@ -97,6 +97,13 @@ def test_opaque() -> None:
     assert_image_equal(alpha, solid)
 
 
+def test_rgba() -> None:
+    with Image.open("Tests/images/transparent.png") as im:
+        assert im.mode == "RGBA"
+
+        assert_image_similar(im.convert("RGBa").convert("RGB"), im.convert("RGB"), 1.5)
+
+
 def test_rgba_p() -> None:
     im = hopper("RGBA")
     im.putalpha(hopper("L"))
@@ -107,18 +114,26 @@ def test_rgba_p() -> None:
     assert_image_similar(im, comparable, 20)
 
 
-def test_rgba() -> None:
-    with Image.open("Tests/images/transparent.png") as im:
-        assert im.mode == "RGBA"
+def test_rgba_pa() -> None:
+    im = hopper("RGBA").convert("PA").convert("RGB")
+    expected = hopper("RGB")
 
-        assert_image_similar(im.convert("RGBa").convert("RGB"), im.convert("RGB"), 1.5)
+    assert_image_similar(im, expected, 9.3)
+
+
+def test_pa() -> None:
+    im = hopper().convert("PA")
+
+    palette = im.palette
+    assert palette is not None
+    assert palette.colors != {}
 
 
 def test_trns_p(tmp_path: Path) -> None:
     im = hopper("P")
     im.info["transparency"] = 0
 
-    f = str(tmp_path / "temp.png")
+    f = tmp_path / "temp.png"
 
     im_l = im.convert("L")
     assert im_l.info["transparency"] == 0
@@ -154,7 +169,7 @@ def test_trns_l(tmp_path: Path) -> None:
     im = hopper("L")
     im.info["transparency"] = 128
 
-    f = str(tmp_path / "temp.png")
+    f = tmp_path / "temp.png"
 
     im_la = im.convert("LA")
     assert "transparency" not in im_la.info
@@ -177,7 +192,7 @@ def test_trns_RGB(tmp_path: Path) -> None:
     im = hopper("RGB")
     im.info["transparency"] = im.getpixel((0, 0))
 
-    f = str(tmp_path / "temp.png")
+    f = tmp_path / "temp.png"
 
     im_l = im.convert("L")
     assert im_l.info["transparency"] == im_l.getpixel((0, 0))  # undone
@@ -203,7 +218,10 @@ def test_trns_RGB(tmp_path: Path) -> None:
     assert "transparency" not in im_rgba.info
     assert im_rgba.getpixel((0, 0)) == (0, 0, 0, 0)
 
-    im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.Palette.ADAPTIVE)
+    with pytest.warns(
+        UserWarning, match="Couldn't allocate palette entry for transparency"
+    ):
+        im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
     assert "transparency" not in im_p.info
     im_p.save(f)
 

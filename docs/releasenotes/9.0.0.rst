@@ -59,7 +59,7 @@ initializing ``ImagePath.Path``.
 
 .. _OSS-Fuzz: https://github.com/google/oss-fuzz
 
-Backwards Incompatible Changes
+Backwards incompatible changes
 ==============================
 
 Python 3.6
@@ -102,7 +102,7 @@ ImageFile.raise_ioerror
 has been removed. Use ``ImageFile.raise_oserror`` instead.
 
 
-API Changes
+API changes
 ===========
 
 Added line width parameter to ImageDraw polygon
@@ -111,7 +111,7 @@ Added line width parameter to ImageDraw polygon
 An optional line ``width`` parameter has been added to ``ImageDraw.Draw.polygon``.
 
 
-API Additions
+API additions
 =============
 
 ImageShow.XDGViewer
@@ -132,7 +132,7 @@ Support has been added for the "title" argument in
 argument will also now be supported, e.g. ``im.show(title="My Image")`` and
 ``ImageShow.show(im, title="My Image")``.
 
-Other Changes
+Other changes
 =============
 
 Convert subsequent GIF frames to RGB or RGBA

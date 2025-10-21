@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from io import BytesIO
-from typing import IO, Any
 
 from . import Image, ImageFile
 
@@ -12,6 +11,9 @@ try:
 except ImportError:
     SUPPORTED = False
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
 
 _VP8_MODES_BY_IDENTIFIER = {
     b"VP8 ": "RGB",
@@ -238,7 +240,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     cur_idx = im.tell()
     try:
         for ims in [im] + append_images:
-            # Get # of frames in this image
+            # Get number of frames in this image
             nfr = getattr(ims, "n_frames", 1)
 
             for idx in range(nfr):

@@ -34,19 +34,30 @@ import itertools
 import logging
 import os
 import struct
-import sys
-from typing import IO, TYPE_CHECKING, Any, NamedTuple, cast
+from typing import IO, Any, NamedTuple, cast
 
 from . import ExifTags, Image
-from ._deprecate import deprecate
 from ._util import DeferredError, is_path
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from ._typing import StrOrBytesPath
 
 logger = logging.getLogger(__name__)
 
 MAXBLOCK = 65536
+"""
+By default, Pillow processes image data in blocks. This helps to prevent excessive use
+of resources. Codecs may disable this behaviour with ``_pulls_fd`` or ``_pushes_fd``.
+
+When reading an image, this is the number of bytes to read at once.
+
+When writing an image, this is the number of bytes to write at once.
+If the image width times 4 is greater, then that will be used instead.
+Plugins may also set a greater number.
+
+User code may set this to another number.
+"""
 
 SAFEBLOCK = 1024 * 1024
 
@@ -81,16 +92,6 @@ def _get_oserror(error: int, *, encoder: bool) -> OSError:
         msg = f"{'encoder' if encoder else 'decoder'} error {error}"
     msg += f" when {'writing' if encoder else 'reading'} image file"
     return OSError(msg)
-
-
-def raise_oserror(error: int) -> OSError:
-    deprecate(
-        "raise_oserror",
-        12,
-        action="It is only useful for translating error codes returned by a codec's "
-        "decode() method, which ImageFile already does automatically.",
-    )
-    raise _get_oserror(error, encoder=False)
 
 
 def _tilesort(t: _Tile) -> int:
@@ -167,7 +168,7 @@ class ImageFile(Image.Image):
         pass
 
     def _close_fp(self):
-        if getattr(self, "_fp", False):
+        if getattr(self, "_fp", False) and not isinstance(self._fp, DeferredError):
             if self._fp != self.fp:
                 self._fp.close()
             self._fp = DeferredError(ValueError("Operation on closed image"))
@@ -252,8 +253,13 @@ class ImageFile(Image.Image):
             return Image.MIME.get(self.format.upper())
         return None
 
+    def __getstate__(self) -> list[Any]:
+        return super().__getstate__() + [self.filename]
+
     def __setstate__(self, state: list[Any]) -> None:
         self.tile = []
+        if len(state) > 5:
+            self.filename = state[5]
         super().__setstate__(state)
 
     def verify(self) -> None:
@@ -278,8 +284,6 @@ class ImageFile(Image.Image):
 
         self.map: mmap.mmap | None = None
         use_mmap = self.filename and len(self.tile) == 1
-        # As of pypy 2.1.0, memory mapping was failing here.
-        use_mmap = use_mmap and not hasattr(sys, "pypy_version_info")
 
         readonly = 0
 
@@ -309,6 +313,9 @@ class ImageFile(Image.Image):
                 and args[0] == self.mode
                 and args[0] in Image._MAPMODES
             ):
+                if offset < 0:
+                    msg = "Tile offset cannot be negative"
+                    raise ValueError(msg)
                 try:
                     # use mmap, if possible
                     import mmap
@@ -345,7 +352,7 @@ class ImageFile(Image.Image):
                     self.tile, lambda tile: (tile[0], tile[1], tile[3])
                 )
             ]
-            for decoder_name, extents, offset, args in self.tile:
+            for i, (decoder_name, extents, offset, args) in enumerate(self.tile):
                 seek(offset)
                 decoder = Image._getdecoder(
                     self.mode, decoder_name, args, self.decoderconfig
@@ -358,8 +365,13 @@ class ImageFile(Image.Image):
                     else:
                         b = prefix
                         while True:
+                            read_bytes = self.decodermaxblock
+                            if i + 1 < len(self.tile):
+                                next_offset = self.tile[i + 1].offset
+                                if next_offset > offset:
+                                    read_bytes = next_offset - offset
                             try:
-                                s = read(self.decodermaxblock)
+                                s = read(read_bytes)
                             except (IndexError, struct.error) as e:
                                 # truncated png/gif
                                 if LOAD_TRUNCATED_IMAGES:

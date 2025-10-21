@@ -23,14 +23,13 @@ int
 ImagingSaveRaw(Imaging im, FILE *fp) {
     int x, y, i;
 
-    if (strcmp(im->mode, "1") == 0 || strcmp(im->mode, "L") == 0) {
+    if (im->mode == IMAGING_MODE_1 || im->mode == IMAGING_MODE_L) {
         /* @PIL227: FIXME: for mode "1", map != 0 to 255 */
 
         /* PGM "L" */
         for (y = 0; y < im->ysize; y++) {
             fwrite(im->image[y], 1, im->xsize, fp);
         }
-
     } else {
         /* PPM "RGB" or other internal format */
         for (y = 0; y < im->ysize; y++) {
@@ -54,14 +53,14 @@ ImagingSavePPM(Imaging im, const char *outfile) {
 
     fp = fopen(outfile, "wb");
     if (!fp) {
-        (void)ImagingError_OSError();
+        PyErr_SetString(PyExc_OSError, "error when accessing file");
         return 0;
     }
 
-    if (strcmp(im->mode, "1") == 0 || strcmp(im->mode, "L") == 0) {
+    if (im->mode == IMAGING_MODE_1 || im->mode == IMAGING_MODE_L) {
         /* Write "PGM" */
         fprintf(fp, "P5\n%d %d\n255\n", im->xsize, im->ysize);
-    } else if (strcmp(im->mode, "RGB") == 0) {
+    } else if (im->mode == IMAGING_MODE_RGB) {
         /* Write "PPM" */
         fprintf(fp, "P6\n%d %d\n255\n", im->xsize, im->ysize);
     } else {

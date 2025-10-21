@@ -45,9 +45,9 @@ def test_split_merge(mode: str) -> None:
 
 def test_split_open(tmp_path: Path) -> None:
     if features.check("zlib"):
-        test_file = str(tmp_path / "temp.png")
+        test_file = tmp_path / "temp.png"
     else:
-        test_file = str(tmp_path / "temp.pcx")
+        test_file = tmp_path / "temp.pcx"
 
     def split_open(mode: str) -> int:
         hopper(mode).save(test_file)
