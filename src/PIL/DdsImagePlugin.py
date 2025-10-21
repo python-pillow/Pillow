@@ -333,6 +333,7 @@ class DdsImageFile(ImageFile.ImageFile):
     format_description = "DirectDraw Surface"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(4)):
             msg = "not a DDS file"
             raise SyntaxError(msg)
@@ -516,6 +517,8 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
                 # Remove the zero padding, and scale it to 8 bits
                 data += o8(
                     int(((masked_value >> mask_offsets[i]) / mask_totals[i]) * 255)
+                    if mask_totals[i]
+                    else 0
                 )
         self.set_as_raw(data)
         return -1, 0
