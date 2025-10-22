@@ -75,7 +75,6 @@ const RawModeData RAWMODES[] = {
     [IMAGING_RAWMODE_I_16L] = {"I;16L"},
     [IMAGING_RAWMODE_I_16B] = {"I;16B"},
     [IMAGING_RAWMODE_I_16N] = {"I;16N"},
-    [IMAGING_RAWMODE_I_32L] = {"I;32L"},
     [IMAGING_RAWMODE_I_32B] = {"I;32B"},
 
     [IMAGING_RAWMODE_1_8] = {"1;8"},
