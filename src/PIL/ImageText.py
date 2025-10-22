@@ -316,6 +316,5 @@ class Text:
                     max(bbox[3], bbox_line[3]),
                 )
 
-        if bbox is None:
-            return xy[0], xy[1], xy[0], xy[1]
+        assert bbox is not None
         return bbox

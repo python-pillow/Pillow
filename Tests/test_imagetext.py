@@ -32,6 +32,10 @@ def test_get_length(font: ImageFont.FreeTypeFont) -> None:
     assert ImageText.Text("y", font).get_length() == 12
     assert ImageText.Text("a", font).get_length() == 12
 
+    text = ImageText.Text("\n", font)
+    with pytest.raises(ValueError, match="can't measure length of multiline text"):
+        text.get_length()
+
 
 def test_get_bbox(font: ImageFont.FreeTypeFont) -> None:
     assert ImageText.Text("A", font).get_bbox() == (0, 4, 12, 16)
@@ -45,12 +49,19 @@ def test_standard_embedded_color(layout_engine: ImageFont.Layout) -> None:
     font = ImageFont.truetype(FONT_PATH, 40, layout_engine=layout_engine)
     text = ImageText.Text("Hello World!", font)
     text.embed_color()
+    assert text.get_length() == 288
 
     im = Image.new("RGB", (300, 64), "white")
     draw = ImageDraw.Draw(im)
     draw.text((10, 10), text, "#fa6")
 
     assert_image_similar_tofile(im, "Tests/images/standard_embedded.png", 3.1)
+
+    text = ImageText.Text("", mode="1")
+    with pytest.raises(
+        ValueError, match="Embedded color supported only in RGB and RGBA modes"
+    ):
+        text.embed_color()
 
 
 @skip_unless_feature("freetype2")
