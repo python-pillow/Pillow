@@ -20,7 +20,6 @@ const ModeData MODES[] = {
 
     [IMAGING_MODE_I_16] = {"I;16"},   [IMAGING_MODE_I_16L] = {"I;16L"},
     [IMAGING_MODE_I_16B] = {"I;16B"}, [IMAGING_MODE_I_16N] = {"I;16N"},
-    [IMAGING_MODE_I_32L] = {"I;32L"}, [IMAGING_MODE_I_32B] = {"I;32B"},
 };
 
 const ModeID
