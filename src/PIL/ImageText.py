@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 from . import ImageFont
 from ._typing import _Ink
 
@@ -87,6 +89,70 @@ class Text:
             return "RGBA"
         else:
             return "L"
+
+    def wrap(self, width: int) -> None:
+        str_type = isinstance(self.text, str)
+        wrapped_lines = []
+        emptystring = "" if str_type else b""
+        fontmode = self._get_fontmode()
+        for line in self.text.splitlines():
+            wrapped_line = emptystring
+            words = line.split()
+            while words:
+                word = words[0]
+
+                new_wrapped_line: str | bytes
+                if wrapped_line:
+                    if str_type:
+                        new_wrapped_line = (
+                            cast(str, wrapped_line) + " " + cast(str, word)
+                        )
+                    else:
+                        new_wrapped_line = (
+                            cast(bytes, wrapped_line) + b" " + cast(bytes, word)
+                        )
+                else:
+                    new_wrapped_line = word
+
+                def get_width(text) -> float:
+                    left, _, right, _ = self.font.getbbox(
+                        text,
+                        fontmode,
+                        self.direction,
+                        self.features,
+                        self.language,
+                        self.stroke_width,
+                    )
+                    return right - left
+
+                if get_width(new_wrapped_line) > width:
+                    if wrapped_line:
+                        wrapped_lines.append(wrapped_line)
+                        wrapped_line = emptystring
+                    else:
+                        # This word is too long for a single line, so split the word
+                        characters = word
+                        i = len(characters)
+                        while i > 1 and get_width(characters[:i]) > width:
+                            i -= 1
+                        wrapped_line = characters[:i]
+                        if str_type:
+                            cast(list[str], words)[0] = cast(str, characters[i:])
+                        else:
+                            cast(list[bytes], words)[0] = cast(bytes, characters[i:])
+                else:
+                    words.pop(0)
+                    wrapped_line = new_wrapped_line
+            if wrapped_line:
+                wrapped_lines.append(wrapped_line)
+        if str_type:
+            self.text = "\n".join(
+                [line for line in wrapped_lines if isinstance(line, str)]
+            )
+        else:
+            self.text = b"\n".join(
+                [line for line in wrapped_lines if isinstance(line, bytes)]
+            )
 
     def get_length(self) -> float:
         """
