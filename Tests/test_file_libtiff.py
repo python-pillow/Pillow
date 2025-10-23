@@ -355,12 +355,15 @@ class TestFileLibTiff(LibTiffTestCase):
             # Should not segfault
             im.save(outfile)
 
-    def test_ifd(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    @pytest.mark.parametrize("tagtype", (TiffTags.SIGNED_RATIONAL, TiffTags.IFD))
+    def test_tag_type(
+        self, tagtype: int, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
         monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
 
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         ifd[37000] = 100
-        ifd.tagtype[37000] = TiffTags.IFD
+        ifd.tagtype[37000] = tagtype
 
         out = tmp_path / "temp.tif"
         im = Image.new("L", (1, 1))
