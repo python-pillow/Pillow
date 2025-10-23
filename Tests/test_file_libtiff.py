@@ -355,6 +355,20 @@ class TestFileLibTiff(LibTiffTestCase):
             # Should not segfault
             im.save(outfile)
 
+    def test_ifd(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[37000] = 100
+        ifd.tagtype[37000] = TiffTags.IFD
+
+        out = tmp_path / "temp.tif"
+        im = Image.new("L", (1, 1))
+        im.save(out, tiffinfo=ifd)
+
+        with Image.open(out) as reloaded:
+            assert reloaded.tag_v2[37000] == 100
+
     def test_inknames_tag(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
