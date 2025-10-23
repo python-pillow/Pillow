@@ -108,3 +108,20 @@ def test_stroke() -> None:
         assert_image_similar_tofile(
             im, "Tests/images/imagedraw_stroke_" + suffix + ".png", 3.1
         )
+
+
+def test_wrap() -> None:
+    # No wrap required
+    text = ImageText.Text("Hello World!")
+    text.wrap(100)
+    assert text.text == "Hello World!"
+
+    # Wrap word to a new line
+    text = ImageText.Text("Hello World!")
+    text.wrap(50)
+    assert text.text == "Hello\nWorld!"
+
+    # Split word across lines
+    text = ImageText.Text("Hello World!")
+    text.wrap(25)
+    assert text.text == "Hello\nWorl\nd!"
