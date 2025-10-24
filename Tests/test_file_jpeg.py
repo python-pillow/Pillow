@@ -1133,8 +1133,9 @@ class TestFileCloseW32:
             im.save(tmpfile)
 
         im = Image.open(tmpfile)
+        assert im.fp is not None
+        assert not im.fp.closed
         fp = im.fp
-        assert not fp.closed
         with pytest.raises(OSError):
             os.remove(tmpfile)
         im.load()
