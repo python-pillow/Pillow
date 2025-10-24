@@ -764,9 +764,9 @@ class TestFileTiff:
 
         # Test appending images
         mp = BytesIO()
-        im = Image.new("RGB", (100, 100), "#f00")
+        im_rgb = Image.new("RGB", (100, 100), "#f00")
         ims = [Image.new("RGB", (100, 100), color) for color in ["#0f0", "#00f"]]
-        im.copy().save(mp, format="TIFF", save_all=True, append_images=ims)
+        im_rgb.copy().save(mp, format="TIFF", save_all=True, append_images=ims)
 
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as reread:
@@ -778,7 +778,7 @@ class TestFileTiff:
             yield from ims
 
         mp = BytesIO()
-        im.save(mp, format="TIFF", save_all=True, append_images=im_generator(ims))
+        im_rgb.save(mp, format="TIFF", save_all=True, append_images=im_generator(ims))
 
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as reread:

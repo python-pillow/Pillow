@@ -175,13 +175,13 @@ def test_change_stripbytecounts_tag_type(tmp_path: Path) -> None:
         del info[278]
 
         # Resize the image so that STRIPBYTECOUNTS will be larger than a SHORT
-        im = im.resize((500, 500))
-        info[TiffImagePlugin.IMAGEWIDTH] = im.width
+        im_resized = im.resize((500, 500))
+        info[TiffImagePlugin.IMAGEWIDTH] = im_resized.width
 
         # STRIPBYTECOUNTS can be a SHORT or a LONG
         info.tagtype[TiffImagePlugin.STRIPBYTECOUNTS] = TiffTags.SHORT
 
-        im.save(out, tiffinfo=info)
+        im_resized.save(out, tiffinfo=info)
 
     with Image.open(out) as reloaded:
         assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
