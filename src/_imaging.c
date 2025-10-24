@@ -543,12 +543,7 @@ getpixel(Imaging im, ImagingAccess access, int x, int y) {
         case IMAGING_TYPE_FLOAT32:
             return PyFloat_FromDouble(pixel.f);
         case IMAGING_TYPE_SPECIAL:
-            if (im->bands == 1) {
-                return PyLong_FromLong(pixel.h);
-            } else {
-                return Py_BuildValue("BBB", pixel.b[0], pixel.b[1], pixel.b[2]);
-            }
-            break;
+            return PyLong_FromLong(pixel.h);
     }
 
     /* unknown type */
@@ -665,26 +660,10 @@ getink(PyObject *color, Imaging im, char *ink) {
             memcpy(ink, &ftmp, sizeof(ftmp));
             return ink;
         case IMAGING_TYPE_SPECIAL:
-            if (isModeI16(im->mode)) {
-                ink[0] = (UINT8)r;
-                ink[1] = (UINT8)(r >> 8);
-                ink[2] = ink[3] = 0;
-                return ink;
-            } else {
-                if (rIsInt) {
-                    b = (UINT8)(r >> 16);
-                    g = (UINT8)(r >> 8);
-                    r = (UINT8)r;
-                } else if (tupleSize != 3) {
-                    PyErr_SetString(
-                        PyExc_TypeError,
-                        "color must be int, or tuple of one or three elements"
-                    );
-                    return NULL;
-                } else if (!PyArg_ParseTuple(color, "iiL", &b, &g, &r)) {
-                    return NULL;
-                }
-            }
+            ink[0] = (UINT8)r;
+            ink[1] = (UINT8)(r >> 8);
+            ink[2] = ink[3] = 0;
+            return ink;
     }
 
     PyErr_SetString(PyExc_ValueError, wrong_mode);
