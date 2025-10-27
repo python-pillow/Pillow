@@ -558,7 +558,6 @@ LIBTIFF_CORE = {
 LIBTIFF_CORE.remove(255)  # We don't have support for subfiletypes
 LIBTIFF_CORE.remove(322)  # We don't have support for writing tiled images with libtiff
 LIBTIFF_CORE.remove(323)  # Tiled images
-LIBTIFF_CORE.remove(333)  # Ink Names either
 
 # Note to advanced users: There may be combinations of these
 # parameters and values that when added properly, will work and

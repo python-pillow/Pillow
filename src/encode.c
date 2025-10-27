@@ -668,10 +668,10 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     int key_int, status, is_core_tag, is_var_length, num_core_tags, i;
     TIFFDataType type = TIFF_NOTYPE;
     // This list also exists in TiffTags.py
-    const int core_tags[] = {256,   257, 258,   259, 262, 263, 266,   269,   274,
-                             277,   278, 280,   281, 340, 341, 282,   283,   284,
-                             286,   287, 296,   297, 320, 321, 338,   32995, 32998,
-                             32996, 339, 32997, 330, 531, 530, 65537, 301,   532};
+    const int core_tags[] = {256, 257, 258,   259,   262,   263,   266,  269, 274, 277,
+                             278, 280, 281,   282,   283,   284,   286,  287, 296, 297,
+                             301, 320, 321,   330,   333,   338,   339,  340, 341, 530,
+                             531, 532, 32995, 32996, 32997, 32998, 65537};
 
     Py_ssize_t tags_size;
     PyObject *item;
@@ -821,7 +821,8 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             }
         }
 
-        if (type == TIFF_BYTE || type == TIFF_UNDEFINED) {
+        if (type == TIFF_BYTE || type == TIFF_UNDEFINED ||
+            key_int == TIFFTAG_INKNAMES) {
             status = ImagingLibTiffSetField(
                 &encoder->state,
                 (ttag_t)key_int,
@@ -973,7 +974,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (UINT16)PyLong_AsLong(value)
                 );
-            } else if (type == TIFF_LONG) {
+            } else if (type == TIFF_LONG || type == TIFF_IFD) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (UINT32)PyLong_AsLong(value)
                 );
@@ -989,10 +990,6 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (FLOAT32)PyFloat_AsDouble(value)
                 );
-            } else if (type == TIFF_DOUBLE) {
-                status = ImagingLibTiffSetField(
-                    &encoder->state, (ttag_t)key_int, (FLOAT64)PyFloat_AsDouble(value)
-                );
             } else if (type == TIFF_SBYTE) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (INT8)PyLong_AsLong(value)
@@ -1001,7 +998,8 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, PyBytes_AsString(value)
                 );
-            } else if (type == TIFF_RATIONAL) {
+            } else if (type == TIFF_DOUBLE || type == TIFF_SRATIONAL ||
+                       type == TIFF_RATIONAL) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (FLOAT64)PyFloat_AsDouble(value)
                 );
