@@ -1,0 +1,88 @@
+from PIL import Image, ImageDraw, ImageFont
+
+# --- 1. Setup Image and Colors ---
+WIDTH, HEIGHT = 1080, 1080
+COLOR_NAVY = (24, 44, 73)
+COLOR_YELLOW = (255, 184, 0)
+COLOR_SKY_BLUE = (0, 191, 255)
+COLOR_WHITE = (255, 255, 255)
+
+# Create the base image (Navy Blue Background)
+img = Image.new('RGB', (WIDTH, HEIGHT), color=COLOR_NAVY)
+draw = ImageDraw.Draw(img)
+
+# --- 2. Define Fonts (Assuming System Fonts or Preloaded) ---
+# NOTE: Replace 'arial.ttf' with an actual path to a clean, modern font file
+try:
+    font_bold = ImageFont.truetype("arialbd.ttf", 60)
+    font_sub = ImageFont.truetype("arial.ttf", 40)
+    font_cta = ImageFont.truetype("arialbd.ttf", 55)
+    font_service = ImageFont.truetype("arial.ttf", 35)
+except IOError:
+    # Use default font if custom font not found
+    font_bold = ImageFont.load_default()
+    font_sub = ImageFont.load_default()
+    font_cta = ImageFont.load_default()
+    font_service = ImageFont.load_default()
+
+# --- 3. Draw Main Headline ---
+HEADLINE = "Grow Your Business with Expert Social Media Marketing 🚀"
+draw.text((50, 60), HEADLINE, fill=COLOR_WHITE, font=font_bold)
+
+# --- 4. Draw Subheadline ---
+SUBHEAD = "From Invisible Online to a Recognized Brand."
+draw.text((50, 140), SUBHEAD, fill=COLOR_SKY_BLUE, font=font_sub)
+
+# --- 5. Conceptual Image/Mockup Area (Placeholder) ---
+# This is where a complex visual (laptop, phone, analytics) would go.
+# We'll draw a white box placeholder.
+MOCKUP_AREA = (550, 180, 1030, 550)
+draw.rectangle(MOCKUP_AREA, fill=COLOR_WHITE, outline=COLOR_SKY_BLUE, width=5)
+draw.text((600, 350), "Mockup Visuals Here (Laptop, Charts)", fill=COLOR_NAVY, font=font_sub)
+
+# --- 6. Marketer/Brand Identity (Placeholder) ---
+# Placeholder for Usama Jellani / SKYREACH DIGITAL logo/portrait
+draw.ellipse((50, 250, 180, 380), fill=COLOR_SKY_BLUE, outline=COLOR_WHITE)
+draw.text((200, 280), "Usama Jellani", fill=COLOR_WHITE, font=font_sub)
+draw.text((200, 330), "SKYREACH DIGITAL", fill=COLOR_YELLOW, font=font_service)
+
+# --- 7. Key Services List ---
+services = [
+    "✅ Facebook & Instagram Ads",
+    "✅ Page Setup + Management",
+    "✅ Reels, Stories & Content Planning",
+]
+y_position = 600
+for service in services:
+    draw.text((50, y_position), service, fill=COLOR_WHITE, font=font_service)
+    y_position += 60
+
+# --- 8. Tagline ---
+TAGLINE = "Your Brand. My Strategy. Real Growth."
+draw.text((50, 850), TAGLINE, fill=COLOR_WHITE, font=font_sub)
+draw.line([(50, 840), (1030, 840)], fill=COLOR_YELLOW, width=3)
+
+# --- 9. Call to Action (CTA Button) ---
+CTA_TEXT = "DM Now for Free Consultation 📩"
+CTA_WIDTH = 600
+CTA_HEIGHT = 80
+CTA_X = (WIDTH - CTA_WIDTH) // 2
+CTA_Y = 930
+CTA_RECT = (CTA_X, CTA_Y, CTA_X + CTA_WIDTH, CTA_Y + CTA_HEIGHT)
+
+# Draw the bright yellow button rectangle
+draw.rectangle(CTA_RECT, fill=COLOR_YELLOW, radius=15)
+
+# Calculate text position to center it
+text_bbox = draw.textbbox((0,0), CTA_TEXT, font=font_cta)
+text_width = text_bbox[2] - text_bbox[0]
+text_height = text_bbox[3] - text_bbox[1]
+text_x = CTA_X + (CTA_WIDTH - text_width) // 2
+text_y = CTA_Y + (CTA_HEIGHT - text_height) // 2
+
+# Draw the CTA text on the button
+draw.text((text_x, text_y), CTA_TEXT, fill=COLOR_NAVY, font=font_cta)
+
+# --- 10. Save the Image ---
+img.save("usama_jellani_ad_conceptual.png")
+print("Conceptual ad image saved as usama_jellani_ad_conceptual.png")
