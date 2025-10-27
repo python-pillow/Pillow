@@ -58,8 +58,8 @@ def test_rgba_quantize() -> None:
 
 def test_quantize() -> None:
     with Image.open("Tests/images/caption_6_33_22.png") as image:
-        image = image.convert("RGB")
-    converted = image.quantize()
+        converted = image.convert("RGB")
+    converted = converted.quantize()
     assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 1)
 
@@ -67,13 +67,13 @@ def test_quantize() -> None:
 def test_quantize_no_dither() -> None:
     image = hopper()
     with Image.open("Tests/images/caption_6_33_22.png") as palette:
-        palette = palette.convert("P")
+        palette_p = palette.convert("P")
 
-    converted = image.quantize(dither=Image.Dither.NONE, palette=palette)
+    converted = image.quantize(dither=Image.Dither.NONE, palette=palette_p)
     assert converted.mode == "P"
     assert converted.palette is not None
-    assert palette.palette is not None
-    assert converted.palette.palette == palette.palette.palette
+    assert palette_p.palette is not None
+    assert converted.palette.palette == palette_p.palette.palette
 
 
 def test_quantize_no_dither2() -> None:
@@ -97,10 +97,10 @@ def test_quantize_no_dither2() -> None:
 def test_quantize_dither_diff() -> None:
     image = hopper()
     with Image.open("Tests/images/caption_6_33_22.png") as palette:
-        palette = palette.convert("P")
+        palette_p = palette.convert("P")
 
-    dither = image.quantize(dither=Image.Dither.FLOYDSTEINBERG, palette=palette)
-    nodither = image.quantize(dither=Image.Dither.NONE, palette=palette)
+    dither = image.quantize(dither=Image.Dither.FLOYDSTEINBERG, palette=palette_p)
+    nodither = image.quantize(dither=Image.Dither.NONE, palette=palette_p)
 
     assert dither.tobytes() != nodither.tobytes()
 
