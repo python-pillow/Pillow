@@ -88,7 +88,11 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             compress_type = context->compress_type;
         }
 
+#ifdef HAVE_ZLIBNG
+        err = zng_deflateInit2(
+#else
         err = deflateInit2(
+#endif
             &context->z_stream,
             /* compression level */
             compress_level,
@@ -106,7 +110,11 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
         }
 
         if (context->dictionary && context->dictionary_size > 0) {
+#ifdef HAVE_ZLIBNG
+            err = zng_deflateSetDictionary(
+#else
             err = deflateSetDictionary(
+#endif
                 &context->z_stream,
                 (unsigned char *)context->dictionary,
                 context->dictionary_size
@@ -126,7 +134,11 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
     context->z_stream.avail_out = bytes;
     if (context->z_stream.next_in && context->z_stream.avail_in > 0) {
         /* We have some data from previous round, deflate it first */
+#ifdef HAVE_ZLIBNG
+        err = zng_deflate(&context->z_stream, Z_NO_FLUSH);
+#else
         err = deflate(&context->z_stream, Z_NO_FLUSH);
+#endif
 
         if (err < 0) {
             /* Something went wrong inside the compression library */
@@ -142,7 +154,11 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             free(context->up);
             free(context->prior);
             free(context->previous);
+#ifdef HAVE_ZLIBNG
+            zng_deflateEnd(&context->z_stream);
+#else
             deflateEnd(&context->z_stream);
+#endif
             return -1;
         }
     }
@@ -279,7 +295,11 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     context->z_stream.next_in = context->output;
                     context->z_stream.avail_in = state->bytes + 1;
 
+#ifdef HAVE_ZLIBNG
+                    err = zng_deflate(&context->z_stream, Z_NO_FLUSH);
+#else
                     err = deflate(&context->z_stream, Z_NO_FLUSH);
+#endif
 
                     if (err < 0) {
                         /* Something went wrong inside the compression library */
@@ -295,7 +315,11 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                         free(context->up);
                         free(context->prior);
                         free(context->previous);
+#ifdef HAVE_ZLIBNG
+                        zng_deflateEnd(&context->z_stream);
+#else
                         deflateEnd(&context->z_stream);
+#endif
                         ImagingSectionLeave(&cookie);
                         return -1;
                     }
@@ -315,7 +339,11 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                 /* End of image data; flush compressor buffers */
 
                 while (context->z_stream.avail_out > 0) {
+#ifdef HAVE_ZLIBNG
+                    err = zng_deflate(&context->z_stream, Z_FINISH);
+#else
                     err = deflate(&context->z_stream, Z_FINISH);
+#endif
 
                     if (err == Z_STREAM_END) {
                         free(context->paeth);
@@ -324,7 +352,11 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                         free(context->prior);
                         free(context->previous);
 
+#ifdef HAVE_ZLIBNG
+                        zng_deflateEnd(&context->z_stream);
+#else
                         deflateEnd(&context->z_stream);
+#endif
 
                         state->errcode = IMAGING_CODEC_END;
 
@@ -364,7 +396,11 @@ ImagingZipEncodeCleanup(ImagingCodecState state) {
 
 const char *
 ImagingZipVersion(void) {
+#ifdef HAVE_ZLIBNG
+    return zlibng_version();
+#else
     return zlibVersion();
+#endif
 }
 
 #endif
