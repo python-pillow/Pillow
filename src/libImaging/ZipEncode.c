@@ -90,9 +90,6 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
 
 #ifdef HAVE_ZLIBNG
         err = zng_deflateInit2(
-#else
-        err = deflateInit2(
-#endif
             &context->z_stream,
             /* compression level */
             compress_level,
@@ -104,6 +101,20 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             /* compression strategy (image data are filtered)*/
             compress_type
         );
+#else
+        err = deflateInit2(
+            &context->z_stream,
+            /* compression level */
+            compress_level,
+            /* compression method */
+            Z_DEFLATED,
+            /* compression memory resources */
+            15,
+            9,
+            /* compression strategy (image data are filtered)*/
+            compress_type
+        );
+#endif
         if (err < 0) {
             state->errcode = IMAGING_CODEC_CONFIG;
             return -1;
@@ -112,13 +123,17 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
         if (context->dictionary && context->dictionary_size > 0) {
 #ifdef HAVE_ZLIBNG
             err = zng_deflateSetDictionary(
-#else
-            err = deflateSetDictionary(
-#endif
                 &context->z_stream,
                 (unsigned char *)context->dictionary,
                 context->dictionary_size
             );
+#else
+            err = deflateSetDictionary(
+                &context->z_stream,
+                (unsigned char *)context->dictionary,
+                context->dictionary_size
+            );
+#endif
             if (err < 0) {
                 state->errcode = IMAGING_CODEC_CONFIG;
                 return -1;
