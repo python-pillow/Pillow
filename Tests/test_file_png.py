@@ -338,6 +338,15 @@ class TestFilePng:
             assert colors is not None
             assert colors[0][0] == num_transparent
 
+    def test_save_1_transparency(self, tmp_path: Path) -> None:
+        out = tmp_path / "temp.png"
+
+        im = Image.new("1", (1, 1), 1)
+        im.save(out, transparency=1)
+
+        with Image.open(out) as reloaded:
+            assert reloaded.info["transparency"] == 255
+
     def test_save_rgb_single_transparency(self, tmp_path: Path) -> None:
         in_file = "Tests/images/caption_6_33_22.png"
         with Image.open(in_file) as im:
