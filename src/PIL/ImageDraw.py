@@ -591,49 +591,49 @@ class ImageDraw:
                 else ink
             )
 
-        for xy, anchor, line in image_text._split(xy, anchor, align):
+        for line in image_text._split(xy, anchor, align):
 
             def draw_text(ink: int, stroke_width: float = 0) -> None:
                 mode = self.fontmode
                 if stroke_width == 0 and embedded_color:
                     mode = "RGBA"
-                coord = []
-                for i in range(2):
-                    coord.append(int(xy[i]))
-                start = (math.modf(xy[0])[0], math.modf(xy[1])[0])
+                x = int(line.x)
+                y = int(line.y)
+                start = (math.modf(line.x)[0], math.modf(line.y)[0])
                 try:
                     mask, offset = image_text.font.getmask2(  # type: ignore[union-attr,misc]
-                        line,
+                        line.text,
                         mode,
                         direction=direction,
                         features=features,
                         language=language,
                         stroke_width=stroke_width,
                         stroke_filled=True,
-                        anchor=anchor,
+                        anchor=line.anchor,
                         ink=ink,
                         start=start,
                         *args,
                         **kwargs,
                     )
-                    coord = [coord[0] + offset[0], coord[1] + offset[1]]
+                    x += offset[0]
+                    y += offset[1]
                 except AttributeError:
                     try:
                         mask = image_text.font.getmask(  # type: ignore[misc]
-                            line,
+                            line.text,
                             mode,
                             direction,
                             features,
                             language,
                             stroke_width,
-                            anchor,
+                            line.anchor,
                             ink,
                             start=start,
                             *args,
                             **kwargs,
                         )
                     except TypeError:
-                        mask = image_text.font.getmask(line)
+                        mask = image_text.font.getmask(line.text)
                 if mode == "RGBA":
                     # image_text.font.getmask2(mode="RGBA")
                     # returns color in RGB bands and mask in A
@@ -641,13 +641,12 @@ class ImageDraw:
                     color, mask = mask, mask.getband(3)
                     ink_alpha = struct.pack("i", ink)[3]
                     color.fillband(3, ink_alpha)
-                    x, y = coord
                     if self.im is not None:
                         self.im.paste(
                             color, (x, y, x + mask.size[0], y + mask.size[1]), mask
                         )
                 else:
-                    self.draw.draw_bitmap(coord, mask, ink)
+                    self.draw.draw_bitmap((x, y), mask, ink)
 
             if stroke_ink is not None:
                 # Draw stroked text

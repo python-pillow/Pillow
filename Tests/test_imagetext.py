@@ -110,18 +110,28 @@ def test_stroke() -> None:
         )
 
 
-def test_wrap() -> None:
-    # No wrap required
-    text = ImageText.Text("Hello World!")
-    text.wrap(100)
-    assert text.text == "Hello World!"
+@pytest.mark.parametrize(
+    "text, width, expected",
+    (
+        ("Hello World!", 100, "Hello World!"),  # No wrap required
+        ("Hello World!", 50, "Hello\nWorld!"),  # Wrap word to a new line
+        ("Hello World!", 25, "Hello\nWorl\nd!"),  # Split word across lines
+        # Keep multiple spaces within a line
+        ("Keep  multiple spaces", 75, "Keep  multiple\nspaces"),
+    ),
+)
+@pytest.mark.parametrize("string", (True, False))
+def test_wrap(text: str, width: int, expected: str, string: bool) -> None:
+    text = ImageText.Text(text if string else text.encode())
+    assert text.wrap(width) is None
+    assert text.text == expected if string else expected.encode()
 
-    # Wrap word to a new line
-    text = ImageText.Text("Hello World!")
-    text.wrap(50)
-    assert text.text == "Hello\nWorld!"
 
-    # Split word across lines
-    text = ImageText.Text("Hello World!")
-    text.wrap(25)
-    assert text.text == "Hello\nWorl\nd!"
+def test_wrap_height() -> None:
+    text = ImageText.Text("Text does not fit within height")
+    assert text.wrap(50, 25).text == " within height"
+    assert text.text == "Text does\nnot fit"
+
+    text = ImageText.Text("Text does not fit singlelongword")
+    assert text.wrap(50, 25).text == " singlelongword"
+    assert text.text == "Text does\nnot fit"
