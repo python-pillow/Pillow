@@ -21,7 +21,7 @@ repos:
     rev: v1.5.5
     hooks:
       - id: remove-tabs
-        exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.gd$|\.opt$|\.patch$)
+        exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.gd$|\.opt$)
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v21.1.2
@@ -46,9 +46,9 @@ repos:
       - id: check-yaml
         args: [--allow-multiple-documents]
       - id: end-of-file-fixer
-        exclude: ^Tests/images/|\.patch$
+        exclude: ^Tests/images/
       - id: trailing-whitespace
-        exclude: ^.github/.*TEMPLATE|^Tests/(fonts|images)/|\.patch$
+        exclude: ^.github/.*TEMPLATE|^Tests/(fonts|images)/
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.34.0
