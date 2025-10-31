@@ -1,9 +1,16 @@
 from __future__ import annotations
 
-from typing import cast
+from typing import NamedTuple, cast
 
 from . import ImageFont
 from ._typing import _Ink
+
+
+class _Line(NamedTuple):
+    x: float
+    y: float
+    anchor: str
+    text: str | bytes
 
 
 class Text:
@@ -90,69 +97,140 @@ class Text:
         else:
             return "L"
 
-    def wrap(self, width: int) -> None:
-        str_type = isinstance(self.text, str)
-        wrapped_lines = []
-        emptystring = "" if str_type else b""
+    def wrap(
+        self,
+        width: int,
+        height: int | None = None,
+    ) -> Text | None:
+        wrapped_lines: list[str] | list[bytes] = []
+        emptystring = "" if isinstance(self.text, str) else b""
+        newline = "\n" if isinstance(self.text, str) else b"\n"
         fontmode = self._get_fontmode()
-        for line in self.text.splitlines():
-            wrapped_line = emptystring
-            words = line.split()
-            while words:
-                word = words[0]
 
-                new_wrapped_line: str | bytes
-                if wrapped_line:
-                    if str_type:
-                        new_wrapped_line = (
-                            cast(str, wrapped_line) + " " + cast(str, word)
-                        )
-                    else:
-                        new_wrapped_line = (
-                            cast(bytes, wrapped_line) + b" " + cast(bytes, word)
-                        )
+        def getbbox(text) -> tuple[float, float]:
+            _, _, right, bottom = self.font.getbbox(
+                text,
+                fontmode,
+                self.direction,
+                self.features,
+                self.language,
+                self.stroke_width,
+            )
+            return right, bottom
+
+        wrapped_line = emptystring
+        word = emptystring
+        reached_end = False
+        remaining_position = 0
+
+        def join_text(a: str | bytes, b: str | bytes) -> str | bytes:
+            if isinstance(a, str):
+                return a + cast(str, b)
+            else:
+                return a + cast(bytes, b)
+
+        for i in range(len(self.text)):
+            last_character = i == len(self.text) - 1
+
+            def add_line() -> bool:
+                nonlocal wrapped_lines, remaining_position
+                lines = cast(
+                    list[str] | list[bytes], wrapped_lines + [wrapped_line.rstrip()]
+                )
+                if height is not None:
+                    last_line_y = self._split(lines=lines)[-1].y
+                    last_line_height = getbbox(wrapped_line)[1]
+                    if last_line_y + last_line_height > height:
+                        return False
+
+                wrapped_lines = lines
+                remaining_position = i - len(word)
+                if last_character:
+                    remaining_position += 1
+                return True
+
+            character = self.text[i : i + 1]
+            if last_character:
+                word = join_text(word, character)
+                character = newline
+            if character.isspace():
+                if not word or word.isspace():
+                    # Do not use whitespace until a non-whitespace character is reached
+                    # Trimming whitespace from the end of the line
+                    word = join_text(word, character)
                 else:
-                    new_wrapped_line = word
+                    # Append the word to the current line
+                    if not wrapped_line:
+                        word = word.lstrip()
+                    new_wrapped_line = join_text(wrapped_line, word)
+                    if getbbox(new_wrapped_line)[0] > width:
 
-                def get_width(text) -> float:
-                    left, _, right, _ = self.font.getbbox(
-                        text,
-                        fontmode,
-                        self.direction,
-                        self.features,
-                        self.language,
-                        self.stroke_width,
-                    )
-                    return right - left
+                        def split_word():
+                            nonlocal wrapped_line, word, reached_end
+                            # This word is too long for a single line, so split the word
+                            j = len(word)
+                            while j > 1 and getbbox(word[:j])[0] > width:
+                                j -= 1
+                            wrapped_line = word[:j]
+                            if not add_line():
+                                reached_end = True
+                                return
+                            word = word[j:]
+                            wrapped_line = word
+                            if getbbox(wrapped_line)[0] > width:
+                                split_word()
 
-                if get_width(new_wrapped_line) > width:
-                    if wrapped_line:
-                        wrapped_lines.append(wrapped_line)
-                        wrapped_line = emptystring
-                    else:
-                        # This word is too long for a single line, so split the word
-                        characters = word
-                        i = len(characters)
-                        while i > 1 and get_width(characters[:i]) > width:
-                            i -= 1
-                        wrapped_line = characters[:i]
-                        if str_type:
-                            cast(list[str], words)[0] = cast(str, characters[i:])
+                        if wrapped_line:
+                            # This word does not fit on the line
+                            if not add_line():
+                                reached_end = True
+                                break
+                            word = word.lstrip()
+                            if getbbox(word)[0] > width:
+                                split_word()
+                            else:
+                                wrapped_line = word
                         else:
-                            cast(list[bytes], words)[0] = cast(bytes, characters[i:])
-                else:
-                    words.pop(0)
-                    wrapped_line = new_wrapped_line
-            if wrapped_line:
-                wrapped_lines.append(wrapped_line)
-        if str_type:
-            self.text = "\n".join(
-                [line for line in wrapped_lines if isinstance(line, str)]
+                            split_word()
+                        if reached_end:
+                            break
+                    else:
+                        # This word fits on the line
+                        wrapped_line = new_wrapped_line
+                        word = emptystring
+
+                    word = emptystring if character == newline else character
+
+            if character == newline:
+                if not add_line():
+                    break
+                wrapped_line = emptystring
+            elif not character.isspace():
+                # Word is not finished yet
+                word = join_text(word, character)
+
+        remaining_text = self.text[remaining_position:]
+        if remaining_text:
+            text = Text(
+                text=remaining_text,
+                font=self.font,
+                mode=self.mode,
+                spacing=self.spacing,
+                direction=self.direction,
+                features=self.features,
+                language=self.language,
             )
+            text.embedded_color = self.embedded_color
+            text.stroke_width = self.stroke_width
+            text.stroke_fill = self.stroke_fill
         else:
-            self.text = b"\n".join(
-                [line for line in wrapped_lines if isinstance(line, bytes)]
-            )
+            text = None
+
+        if isinstance(self.text, str):
+            self.text = "\n".join(cast(list[str], wrapped_lines))
+        else:
+            self.text = b"\n".join(cast(list[bytes], wrapped_lines))
+        return text
 
     def get_length(self) -> float:
         """
@@ -212,21 +290,26 @@ class Text:
         )
 
     def _split(
-        self, xy: tuple[float, float], anchor: str | None, align: str
-    ) -> list[tuple[tuple[float, float], str, str | bytes]]:
+        self,
+        xy: tuple[float, float] = (0, 0),
+        anchor: str | None = None,
+        align: str = "left",
+        lines: list[str] | list[bytes] | None = None,
+    ) -> list[_Line]:
         if anchor is None:
             anchor = "lt" if self.direction == "ttb" else "la"
         elif len(anchor) != 2:
             msg = "anchor must be a 2 character string"
             raise ValueError(msg)
 
-        lines = (
-            self.text.split("\n")
-            if isinstance(self.text, str)
-            else self.text.split(b"\n")
-        )
+        if lines is None:
+            lines = (
+                self.text.split("\n")
+                if isinstance(self.text, str)
+                else self.text.split(b"\n")
+            )
         if len(lines) == 1:
-            return [(xy, anchor, self.text)]
+            return [_Line(xy[0], xy[1], anchor, lines[0])]
 
         if anchor[1] in "tb" and self.direction != "ttb":
             msg = "anchor not supported for multiline text"
@@ -251,7 +334,7 @@ class Text:
         if self.direction == "ttb":
             left = xy[0]
             for line in lines:
-                parts.append(((left, top), anchor, line))
+                parts.append(_Line(left, top, anchor, line))
                 left += line_spacing
         else:
             widths = []
@@ -314,7 +397,7 @@ class Text:
                         width_difference = max_width - sum(word_widths)
                         i = 0
                         for word in words:
-                            parts.append(((left, top), word_anchor, word))
+                            parts.append(_Line(left, top, word_anchor, word))
                             left += word_widths[i] + width_difference / (len(words) - 1)
                             i += 1
                         top += line_spacing
@@ -325,7 +408,7 @@ class Text:
                     left -= width_difference / 2.0
                 elif anchor[0] == "r":
                     left -= width_difference
-                parts.append(((left, top), anchor, line))
+                parts.append(_Line(left, top, anchor, line))
                 top += line_spacing
 
         return parts
@@ -356,9 +439,9 @@ class Text:
         """
         bbox: tuple[float, float, float, float] | None = None
         fontmode = self._get_fontmode()
-        for xy, anchor, line in self._split(xy, anchor, align):
+        for x, y, anchor, text in self._split(xy, anchor, align):
             bbox_line = self.font.getbbox(
-                line,
+                text,
                 fontmode,
                 self.direction,
                 self.features,
@@ -367,10 +450,10 @@ class Text:
                 anchor,
             )
             bbox_line = (
-                bbox_line[0] + xy[0],
-                bbox_line[1] + xy[1],
-                bbox_line[2] + xy[0],
-                bbox_line[3] + xy[1],
+                bbox_line[0] + x,
+                bbox_line[1] + y,
+                bbox_line[2] + x,
+                bbox_line[3] + y,
             )
             if bbox is None:
                 bbox = bbox_line
