@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.13.3
+    rev: v0.14.3
     hooks:
       - id: ruff-check
         args: [--exit-non-zero-on-fix]
@@ -51,24 +51,24 @@ repos:
         exclude: ^.github/.*TEMPLATE|^Tests/(fonts|images)/|\.patch$
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.34.0
+    rev: 0.34.1
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
       - id: check-renovate
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.14.2
+    rev: v1.16.2
     hooks:
       - id: zizmor
 
   - repo: https://github.com/sphinx-contrib/sphinx-lint
-    rev: v1.0.0
+    rev: v1.0.1
     hooks:
       - id: sphinx-lint
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.7.0
+    rev: v2.11.0
     hooks:
       - id: pyproject-fmt
 
@@ -79,7 +79,7 @@ repos:
         additional_dependencies: [trove-classifiers>=2024.10.12]
 
   - repo: https://github.com/tox-dev/tox-ini-fmt
-    rev: 1.6.0
+    rev: 1.7.0
     hooks:
       - id: tox-ini-fmt
 
