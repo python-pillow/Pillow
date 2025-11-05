@@ -50,6 +50,7 @@ jobs:
           debian-13-trixie-x86,
           debian-13-trixie-amd64,
           fedora-42-amd64,
+          fedora-43-amd64,
           gentoo,
           ubuntu-22.04-jammy-amd64,
           ubuntu-24.04-noble-amd64,
