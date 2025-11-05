@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from typing import NamedTuple, cast
+import math
+import re
+from typing import AnyStr, Generic, NamedTuple
 
 from . import ImageFont
 from ._typing import _Ink
+
+Font = ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont
 
 
 class _Line(NamedTuple):
@@ -13,16 +17,87 @@ class _Line(NamedTuple):
     text: str | bytes
 
 
-class Text:
+class _Wrap(Generic[AnyStr]):
+    lines: list[AnyStr] = []
+    position = 0
+    offset = 0
+
     def __init__(
         self,
-        text: str | bytes,
-        font: (
-            ImageFont.ImageFont
-            | ImageFont.FreeTypeFont
-            | ImageFont.TransposedFont
-            | None
-        ) = None,
+        text: Text[AnyStr],
+        width: int,
+        height: int | None = None,
+        font: Font | None = None,
+    ) -> None:
+        self.text: Text[AnyStr] = text
+        self.width = width
+        self.height = height
+        self.font = font
+
+        input_text = self.text.text
+        emptystring = "" if isinstance(input_text, str) else b""
+        line = emptystring
+
+        for word in re.findall(
+            r"\s*\S+" if isinstance(input_text, str) else rb"\s*\S+", input_text
+        ):
+            newlines = re.findall(
+                r"[^\S\n]*\n" if isinstance(input_text, str) else rb"[^\S\n]*\n", word
+            )
+            if newlines:
+                if not self.add_line(line):
+                    break
+                for i, line in enumerate(newlines):
+                    if i != 0 and not self.add_line(emptystring):
+                        break
+                    self.position += len(line)
+                    word = word[len(line) :]
+                line = emptystring
+
+            new_line = line + word
+            if self.text._get_bbox(new_line, self.font)[2] <= width:
+                # This word fits on the line
+                line = new_line
+                continue
+
+            # This word does not fit on the line
+            if line and not self.add_line(line):
+                break
+
+            original_length = len(word)
+            word = word.lstrip()
+            self.offset = original_length - len(word)
+
+            if self.text._get_bbox(word, self.font)[2] > width:
+                if font is None:
+                    msg = "Word does not fit within line"
+                    raise ValueError(msg)
+                break
+            line = word
+        else:
+            if line:
+                self.add_line(line)
+        self.remaining_text: AnyStr = input_text[self.position :]
+
+    def add_line(self, line: AnyStr) -> bool:
+        lines = self.lines + [line]
+        if self.height is not None:
+            last_line_y = self.text._split(lines=lines)[-1].y
+            last_line_height = self.text._get_bbox(line, self.font)[3]
+            if last_line_y + last_line_height > self.height:
+                return False
+
+        self.lines = lines
+        self.position += len(line) + self.offset
+        self.offset = 0
+        return True
+
+
+class Text(Generic[AnyStr]):
+    def __init__(
+        self,
+        text: AnyStr,
+        font: Font | None = None,
         mode: str = "RGB",
         spacing: float = 4,
         direction: str | None = None,
@@ -56,7 +131,7 @@ class Text:
                          It should be a `BCP 47 language code`_.
                          Requires libraqm.
         """
-        self.text = text
+        self.text: AnyStr = text
         self.font = font or ImageFont.load_default()
 
         self.mode = mode
@@ -101,118 +176,67 @@ class Text:
         self,
         width: int,
         height: int | None = None,
-    ) -> Text | None:
-        wrapped_lines: list[str] | list[bytes] = []
-        emptystring = "" if isinstance(self.text, str) else b""
-        newline = "\n" if isinstance(self.text, str) else b"\n"
-        fontmode = self._get_fontmode()
+        scaling: str | tuple[str, int] | None = None,
+    ) -> Text[AnyStr] | None:
+        if isinstance(self.font, ImageFont.TransposedFont):
+            msg = "TransposedFont not supported"
+            raise ValueError(msg)
+        if self.direction not in (None, "ltr"):
+            msg = "Only ltr direction supported"
+            raise ValueError(msg)
 
-        def getbbox(text) -> tuple[float, float]:
-            _, _, right, bottom = self.font.getbbox(
-                text,
-                fontmode,
-                self.direction,
-                self.features,
-                self.language,
-                self.stroke_width,
-            )
-            return right, bottom
+        if scaling is None:
+            wrap = _Wrap(self, width, height)
+        else:
+            if not isinstance(self.font, ImageFont.FreeTypeFont):
+                msg = "'scaling' only supports FreeTypeFont"
+                raise ValueError(msg)
+            if height is None:
+                msg = "'scaling' requires 'height'"
+                raise ValueError(msg)
 
-        wrapped_line = emptystring
-        word = emptystring
-        reached_end = False
-        remaining_position = 0
-
-        def join_text(a: str | bytes, b: str | bytes) -> str | bytes:
-            if isinstance(a, str):
-                return a + cast(str, b)
+            if isinstance(scaling, str):
+                limit = 1
             else:
-                return a + cast(bytes, b)
+                scaling, limit = scaling
 
-        for i in range(len(self.text)):
-            last_character = i == len(self.text) - 1
+            font = self.font
+            wrap = _Wrap(self, width, height, font)
+            if scaling == "shrink":
+                if not wrap.remaining_text:
+                    return None
 
-            def add_line() -> bool:
-                nonlocal wrapped_lines, remaining_position
-                lines = cast(
-                    list[str] | list[bytes], wrapped_lines + [wrapped_line.rstrip()]
-                )
-                if height is not None:
-                    last_line_y = self._split(lines=lines)[-1].y
-                    last_line_height = getbbox(wrapped_line)[1]
-                    if last_line_y + last_line_height > height:
-                        return False
+                size = math.ceil(font.size)
+                while wrap.remaining_text:
+                    if size == max(limit, 1):
+                        msg = "Text could not be scaled"
+                        raise ValueError(msg)
+                    size -= 1
+                    font = self.font.font_variant(size=size)
+                    wrap = _Wrap(self, width, height, font)
+                self.font = font
+            else:
+                if wrap.remaining_text:
+                    msg = "Text could not be scaled"
+                    raise ValueError(msg)
 
-                wrapped_lines = lines
-                remaining_position = i - len(word)
-                if last_character:
-                    remaining_position += 1
-                return True
+                size = math.floor(font.size)
+                while not wrap.remaining_text:
+                    if size == limit:
+                        msg = "Text could not be scaled"
+                        raise ValueError(msg)
+                    size += 1
+                    font = self.font.font_variant(size=size)
+                    last_wrap = wrap
+                    wrap = _Wrap(self, width, height, font)
+                size -= 1
+                if size != self.font.size:
+                    self.font = self.font.font_variant(size=size)
+                wrap = last_wrap
 
-            character = self.text[i : i + 1]
-            if last_character:
-                word = join_text(word, character)
-                character = newline
-            if character.isspace():
-                if not word or word.isspace():
-                    # Do not use whitespace until a non-whitespace character is reached
-                    # Trimming whitespace from the end of the line
-                    word = join_text(word, character)
-                else:
-                    # Append the word to the current line
-                    if not wrapped_line:
-                        word = word.lstrip()
-                    new_wrapped_line = join_text(wrapped_line, word)
-                    if getbbox(new_wrapped_line)[0] > width:
-
-                        def split_word():
-                            nonlocal wrapped_line, word, reached_end
-                            # This word is too long for a single line, so split the word
-                            j = len(word)
-                            while j > 1 and getbbox(word[:j])[0] > width:
-                                j -= 1
-                            wrapped_line = word[:j]
-                            if not add_line():
-                                reached_end = True
-                                return
-                            word = word[j:]
-                            wrapped_line = word
-                            if getbbox(wrapped_line)[0] > width:
-                                split_word()
-
-                        if wrapped_line:
-                            # This word does not fit on the line
-                            if not add_line():
-                                reached_end = True
-                                break
-                            word = word.lstrip()
-                            if getbbox(word)[0] > width:
-                                split_word()
-                            else:
-                                wrapped_line = word
-                        else:
-                            split_word()
-                        if reached_end:
-                            break
-                    else:
-                        # This word fits on the line
-                        wrapped_line = new_wrapped_line
-                        word = emptystring
-
-                    word = emptystring if character == newline else character
-
-            if character == newline:
-                if not add_line():
-                    break
-                wrapped_line = emptystring
-            elif not character.isspace():
-                # Word is not finished yet
-                word = join_text(word, character)
-
-        remaining_text = self.text[remaining_position:]
-        if remaining_text:
+        if wrap.remaining_text:
             text = Text(
-                text=remaining_text,
+                text=wrap.remaining_text,
                 font=self.font,
                 mode=self.mode,
                 spacing=self.spacing,
@@ -226,10 +250,8 @@ class Text:
         else:
             text = None
 
-        if isinstance(self.text, str):
-            self.text = "\n".join(cast(list[str], wrapped_lines))
-        else:
-            self.text = b"\n".join(cast(list[bytes], wrapped_lines))
+        newline = "\n" if isinstance(self.text, str) else b"\n"
+        self.text = newline.join(wrap.lines)
         return text
 
     def get_length(self) -> float:
@@ -413,6 +435,19 @@ class Text:
 
         return parts
 
+    def _get_bbox(
+        self, text: str | bytes, font: Font | None = None, anchor: str | None = None
+    ) -> tuple[float, float, float, float]:
+        return (font or self.font).getbbox(
+            text,
+            self._get_fontmode(),
+            self.direction,
+            self.features,
+            self.language,
+            self.stroke_width,
+            anchor,
+        )
+
     def get_bbox(
         self,
         xy: tuple[float, float] = (0, 0),
@@ -438,17 +473,8 @@ class Text:
         :return: ``(left, top, right, bottom)`` bounding box
         """
         bbox: tuple[float, float, float, float] | None = None
-        fontmode = self._get_fontmode()
         for x, y, anchor, text in self._split(xy, anchor, align):
-            bbox_line = self.font.getbbox(
-                text,
-                fontmode,
-                self.direction,
-                self.features,
-                self.language,
-                self.stroke_width,
-                anchor,
-            )
+            bbox_line = self._get_bbox(text, anchor=anchor)
             bbox_line = (
                 bbox_line[0] + x,
                 bbox_line[1] + y,

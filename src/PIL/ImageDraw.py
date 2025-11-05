@@ -538,7 +538,7 @@ class ImageDraw:
     def text(
         self,
         xy: tuple[float, float],
-        text: AnyStr | ImageText.Text,
+        text: AnyStr | ImageText.Text[AnyStr],
         fill: _Ink | None = None,
         font: (
             ImageFont.ImageFont
