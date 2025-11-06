@@ -78,7 +78,7 @@ def test_fromarray() -> None:
             },
         )
         out = Image.fromarray(wrapped)
-        return out.mode, out.size, list(i.getdata()) == list(out.getdata())
+        return out.mode, out.size, i.get_flattened_data() == out.get_flattened_data()
 
     # assert test("1") == ("1", (128, 100), True)
     assert test("L") == ("L", (128, 100), True)
