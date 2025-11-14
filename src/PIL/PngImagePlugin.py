@@ -1152,6 +1152,15 @@ class _fdat:
         self.seq_num += 1
 
 
+def _apply_encoderinfo(im: Image.Image, encoderinfo: dict[str, Any]) -> None:
+    im.encoderconfig = (
+        encoderinfo.get("optimize", False),
+        encoderinfo.get("compress_level", -1),
+        encoderinfo.get("compress_type", -1),
+        encoderinfo.get("dictionary", b""),
+    )
+
+
 class _Frame(NamedTuple):
     im: Image.Image
     bbox: tuple[int, int, int, int] | None
@@ -1245,10 +1254,10 @@ def _write_multiple_frames(
 
     # default image IDAT (if it exists)
     if default_image:
-        if im.mode != mode:
-            im = im.convert(mode)
+        default_im = im if im.mode == mode else im.convert(mode)
+        _apply_encoderinfo(default_im, im.encoderinfo)
         ImageFile._save(
-            im,
+            default_im,
             cast(IO[bytes], _idat(fp, chunk)),
             [ImageFile._Tile("zip", (0, 0) + im.size, 0, rawmode)],
         )
@@ -1282,6 +1291,7 @@ def _write_multiple_frames(
         )
         seq_num += 1
         # frame data
+        _apply_encoderinfo(im_frame, im.encoderinfo)
         if frame == 0 and not default_image:
             # first frame must be in IDAT chunks for backwards compatibility
             ImageFile._save(
@@ -1356,14 +1366,6 @@ def _save(
             else:
                 bits = 4
             outmode += f";{bits}"
-
-    # encoder options
-    im.encoderconfig = (
-        im.encoderinfo.get("optimize", False),
-        im.encoderinfo.get("compress_level", -1),
-        im.encoderinfo.get("compress_type", -1),
-        im.encoderinfo.get("dictionary", b""),
-    )
 
     # get the corresponding PNG mode
     try:
@@ -1494,6 +1496,7 @@ def _save(
             im, fp, chunk, mode, rawmode, default_image, append_images
         )
     if single_im:
+        _apply_encoderinfo(single_im, im.encoderinfo)
         ImageFile._save(
             single_im,
             cast(IO[bytes], _idat(fp, chunk)),
