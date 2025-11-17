@@ -489,7 +489,7 @@ converting ``RGB`` images to ``L``, and resize images to 1/2, 1/4 or 1/8 of
 their original size while loading them.
 
 By default Pillow doesn't allow loading of truncated JPEG files, set
-:data:`.ImageFile.LOAD_TRUNCATED_IMAGES` to override this.
+:py:data:`.ImageFile.LOAD_TRUNCATED_IMAGES` to override this.
 
 .. _jpeg-opening:
 
@@ -860,7 +860,7 @@ image formats, EXIF data is not guaranteed to be present in
 called.
 
 By default Pillow doesn't allow loading of truncated PNG files, set
-:data:`.ImageFile.LOAD_TRUNCATED_IMAGES` to override this.
+:py:data:`.ImageFile.LOAD_TRUNCATED_IMAGES` to override this.
 
 .. _png-opening:
 
@@ -900,9 +900,9 @@ The :py:func:`~PIL.Image.open` function sets the following
 ``open`` also sets ``Image.text`` to a dictionary of the values of the
 ``tEXt``, ``zTXt``, and ``iTXt`` chunks of the PNG image. Individual
 compressed chunks are limited to a decompressed size of
-:data:`.PngImagePlugin.MAX_TEXT_CHUNK`, by default 1MB, to prevent
+:py:data:`.PngImagePlugin.MAX_TEXT_CHUNK`, by default 1MB, to prevent
 decompression bombs. Additionally, the total size of all of the text
-chunks is limited to :data:`.PngImagePlugin.MAX_TEXT_MEMORY`, defaulting to
+chunks is limited to :py:data:`.PngImagePlugin.MAX_TEXT_MEMORY`, defaulting to
 64MB.
 
 .. _png-saving:
@@ -1328,7 +1328,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 **compression**
     A string containing the desired compression method for the
     file. (valid only with libtiff installed) Valid compression
-    methods are: :data:`None`, ``"group3"``, ``"group4"``, ``"jpeg"``, ``"lzma"``,
+    methods are: :py:data:`None`, ``"group3"``, ``"group4"``, ``"jpeg"``, ``"lzma"``,
     ``"packbits"``, ``"tiff_adobe_deflate"``, ``"tiff_ccitt"``, ``"tiff_lzw"``,
     ``"tiff_raw_16"``, ``"tiff_sgilog"``, ``"tiff_sgilog24"``, ``"tiff_thunderscan"``,
     ``"webp"``, ``"zstd"``

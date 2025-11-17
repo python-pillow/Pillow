@@ -66,10 +66,10 @@ See :ref:`concept-filters` to learn the difference. In short,
 Image.draft() return value
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If the :py:meth:`~PIL.Image.Image.draft` method has no effect, it returns :data:`None`.
-If it does have an effect, then it previously returned the image itself.
-However, unlike other `chain methods`_, :py:meth:`~PIL.Image.Image.draft` does not
-return a modified version of the image, but modifies it in-place. So instead, if
+If the :py:meth:`~PIL.Image.Image.draft` method has no effect, it returns
+:py:data:`None`. If it does have an effect, then it previously returned the image
+itself. However, unlike other `chain methods`_, :py:meth:`~PIL.Image.Image.draft` does
+not return a modified version of the image, but modifies it in-place. So instead, if
 :py:meth:`~PIL.Image.Image.draft` has an effect, Pillow will now return a tuple
 of the image mode and a co-ordinate box. The box is the original coordinates in the
 bounds of resulting image. This may be useful in a subsequent
@@ -95,7 +95,7 @@ the closer the result to the fair resampling. The smaller ``reducing_gap``,
 the faster resizing. With ``reducing_gap`` greater or equal to 3.0,
 the result is indistinguishable from fair resampling.
 
-The default value for :py:meth:`~PIL.Image.Image.resize` is :data:`None`,
+The default value for :py:meth:`~PIL.Image.Image.resize` is :py:data:`None`,
 which means that the optimization is turned off by default.
 
 The default value for :py:meth:`~PIL.Image.Image.thumbnail` is 2.0,

@@ -243,7 +243,7 @@ This rotates the input image by ``theta`` degrees counter clockwise::
 .. automethod:: PIL.Image.Image.transform
 .. automethod:: PIL.Image.Image.transpose
 
-This flips the input image by using the :data:`Transpose.FLIP_LEFT_RIGHT`
+This flips the input image by using the :py:data:`Transpose.FLIP_LEFT_RIGHT`
 method. ::
 
     from PIL import Image
@@ -278,7 +278,7 @@ Instances of the :py:class:`Image` class have the following attributes:
 
     The file format of the source file. For images created by the library
     itself (via a factory function, or by running a method on an existing
-    image), this attribute is set to :data:`None`.
+    image), this attribute is set to :py:data:`None`.
 
 .. py:attribute:: Image.mode
     :type: str
@@ -307,7 +307,7 @@ Instances of the :py:class:`Image` class have the following attributes:
 
     Colour palette table, if any. If mode is "P" or "PA", this should be an
     instance of the :py:class:`~PIL.ImagePalette.ImagePalette` class.
-    Otherwise, it should be set to :data:`None`.
+    Otherwise, it should be set to :py:data:`None`.
 
 .. py:attribute:: Image.info
     :type: dict
@@ -336,7 +336,8 @@ Instances of the :py:class:`Image` class have the following attributes:
     ``getattr(image, "is_animated", False)`` to check if Pillow is aware of multiple
     frames in an image regardless of its format.
 
-    .. seealso:: :attr:`~Image.n_frames`, :func:`~Image.seek` and :func:`~Image.tell`
+    .. seealso:: :py:attr:`~Image.n_frames`, :py:func:`~Image.seek` and
+        :py:func:`~Image.tell`
 
 .. py:attribute:: Image.n_frames
     :type: int
@@ -351,7 +352,8 @@ Instances of the :py:class:`Image` class have the following attributes:
     ``getattr(image, "n_frames", 1)`` to check the number of frames that Pillow is
     aware of in an image regardless of its format.
 
-    .. seealso:: :attr:`~Image.is_animated`, :func:`~Image.seek` and :func:`~Image.tell`
+    .. seealso:: :py:attr:`~Image.is_animated`, :py:func:`~Image.seek` and
+        :py:func:`~Image.tell`
 
 .. autoattribute:: PIL.Image.Image.has_transparency_data
 
@@ -393,7 +395,7 @@ Constants
 Transpose methods
 ^^^^^^^^^^^^^^^^^
 
-Used to specify the :meth:`Image.transpose` method to use.
+Used to specify the :py:meth:`Image.transpose` method to use.
 
 .. autoclass:: Transpose
     :members:
@@ -402,7 +404,7 @@ Used to specify the :meth:`Image.transpose` method to use.
 Transform methods
 ^^^^^^^^^^^^^^^^^
 
-Used to specify the :meth:`Image.transform` method to use.
+Used to specify the :py:meth:`Image.transform` method to use.
 
 .. py:class:: Transform
 
@@ -439,7 +441,7 @@ Dither modes
 ^^^^^^^^^^^^
 
 Used to specify the dithering method to use for the
-:meth:`~Image.convert` and :meth:`~Image.quantize` methods.
+:py:meth:`~Image.convert` and :py:meth:`~Image.quantize` methods.
 
 .. py:class:: Dither
 
@@ -462,7 +464,7 @@ Used to specify the dithering method to use for the
 Palettes
 ^^^^^^^^
 
-Used to specify the palette to use for the :meth:`~Image.convert` method.
+Used to specify the palette to use for the :py:meth:`~Image.convert` method.
 
 .. autoclass:: Palette
     :members:
@@ -471,7 +473,8 @@ Used to specify the palette to use for the :meth:`~Image.convert` method.
 Quantization methods
 ^^^^^^^^^^^^^^^^^^^^
 
-Used to specify the quantization method to use for the :meth:`~Image.quantize` method.
+Used to specify the quantization method to use for the :py:meth:`~Image.quantize`
+method.
 
 .. py:class:: Quantize
 

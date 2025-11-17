@@ -175,7 +175,7 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 
     Each pixel of source image contributes to one pixel of the
     destination image with identical weights.
-    For upscaling is equivalent of :data:`Resampling.NEAREST`.
+    For upscaling is equivalent of :py:data:`Resampling.NEAREST`.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
     and :py:meth:`~PIL.Image.Image.thumbnail` methods.
 
@@ -192,8 +192,8 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 .. data:: Resampling.HAMMING
     :noindex:
 
-    Produces a sharper image than :data:`Resampling.BILINEAR`, doesn't have
-    dislocations on local level like with :data:`Resampling.BOX`.
+    Produces a sharper image than :py:data:`Resampling.BILINEAR`, doesn't have
+    dislocations on local level like with :py:data:`Resampling.BOX`.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
     and :py:meth:`~PIL.Image.Image.thumbnail` methods.
 
@@ -221,19 +221,19 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 Filters comparison table
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-+---------------------------+-------------+-----------+-------------+
-| Filter                    | Downscaling | Upscaling | Performance |
-|                           | quality     | quality   |             |
-+===========================+=============+===========+=============+
-|:data:`Resampling.NEAREST` |             |           | ⭐⭐⭐⭐⭐  |
-+---------------------------+-------------+-----------+-------------+
-|:data:`Resampling.BOX`     | ⭐          |           | ⭐⭐⭐⭐    |
-+---------------------------+-------------+-----------+-------------+
-|:data:`Resampling.BILINEAR`| ⭐          | ⭐        | ⭐⭐⭐      |
-+---------------------------+-------------+-----------+-------------+
-|:data:`Resampling.HAMMING` | ⭐⭐        |           | ⭐⭐⭐      |
-+---------------------------+-------------+-----------+-------------+
-|:data:`Resampling.BICUBIC` | ⭐⭐⭐      | ⭐⭐⭐    | ⭐⭐        |
-+---------------------------+-------------+-----------+-------------+
-|:data:`Resampling.LANCZOS` | ⭐⭐⭐⭐    | ⭐⭐⭐⭐  | ⭐          |
-+---------------------------+-------------+-----------+-------------+
++------------------------------+-------------+-----------+-------------+
+| Filter                       | Downscaling | Upscaling | Performance |
+|                              | quality     | quality   |             |
++==============================+=============+===========+=============+
+|:py:data:`Resampling.NEAREST` |             |           | ⭐⭐⭐⭐⭐  |
++------------------------------+-------------+-----------+-------------+
+|:py:data:`Resampling.BOX`     | ⭐          |           | ⭐⭐⭐⭐    |
++------------------------------+-------------+-----------+-------------+
+|:py:data:`Resampling.BILINEAR`| ⭐          | ⭐        | ⭐⭐⭐      |
++------------------------------+-------------+-----------+-------------+
+|:py:data:`Resampling.HAMMING` | ⭐⭐        |           | ⭐⭐⭐      |
++------------------------------+-------------+-----------+-------------+
+|:py:data:`Resampling.BICUBIC` | ⭐⭐⭐      | ⭐⭐⭐    | ⭐⭐        |
++------------------------------+-------------+-----------+-------------+
+|:py:data:`Resampling.LANCZOS` | ⭐⭐⭐⭐    | ⭐⭐⭐⭐  | ⭐          |
++------------------------------+-------------+-----------+-------------+
