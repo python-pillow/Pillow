@@ -48,7 +48,7 @@ or the clipboard to a PIL image memory.
         CGWindowID.
 
         .. versionadded:: 11.2.1 Windows support
-        .. versionadded:: 12.0.0 macOS support
+        .. versionadded:: 12.1.0 macOS support
     :return: An image
 
 .. py:function:: grabclipboard()
