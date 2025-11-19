@@ -23,8 +23,9 @@ class TestUnsupportedJpegXl:
         monkeypatch.setattr(JpegXlImagePlugin, "SUPPORTED", False)
 
         with pytest.raises(OSError):
-            with Image.open("Tests/images/hopper.jxl"):
-                pass
+            with pytest.warns(UserWarning, match="JXL support not installed"):
+                with Image.open("Tests/images/hopper.jxl"):
+                    pass
 
 
 @skip_unless_feature("jpegxl")
