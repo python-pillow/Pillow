@@ -90,7 +90,7 @@ class JpegXlImageFile(ImageFile.ImageFile):
             # libjxl said this frame is the last one
             self.n_frames = self.__physical_frame
 
-        # duration in miliseconds
+        # duration in milliseconds
         duration = 1000 * tps_duration * (1 / self._tps_dur_secs)
         timestamp = self.__timestamp
         self.__timestamp += duration
