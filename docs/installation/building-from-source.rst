@@ -206,6 +206,7 @@ Many of Pillow's features require external libraries:
 
         pacman -S \
             mingw-w64-x86_64-libjpeg-turbo \
+            mingw-w64-x86_64-libjxl \
             mingw-w64-x86_64-zlib \
             mingw-w64-x86_64-libtiff \
             mingw-w64-x86_64-freetype \
