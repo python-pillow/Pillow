@@ -15,9 +15,9 @@ modules = {
     "tkinter": ("PIL._tkinter_finder", "tk_version"),
     "freetype2": ("PIL._imagingft", "freetype2_version"),
     "littlecms2": ("PIL._imagingcms", "littlecms_version"),
-    "jpegxl": ("PIL._jpegxl", "libjxl_version"),
     "webp": ("PIL._webp", "webpdecoder_version"),
     "avif": ("PIL._avif", "libavif_version"),
+    "jpegxl": ("PIL._jpegxl", "libjxl_version"),
 }
 
 

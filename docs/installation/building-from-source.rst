@@ -97,6 +97,10 @@ Many of Pillow's features require external libraries:
     and decoder, such as rav1e and dav1d, or libaom, which both encodes and
     decodes AVIF images.
 
+* **libjxl** provides support for the JPEG XL format.
+
+  * Pillow requires libjxl version **0.9.0** or greater.
+
 .. tab:: Linux
 
     If you didn't build Python from source, make sure you have Python's
@@ -284,7 +288,7 @@ Build options
   ``-C tiff=disable``, ``-C freetype=disable``, ``-C raqm=disable``,
   ``-C lcms=disable``, ``-C webp=disable``,
   ``-C jpeg2000=disable``, ``-C imagequant=disable``, ``-C xcb=disable``,
-  ``-C avif=disable``.
+  ``-C avif=disable``, ``-C jpegxl=disable``.
   Disable building the corresponding feature even if the development
   libraries are present on the building machine.
 
@@ -292,7 +296,7 @@ Build options
   ``-C tiff=enable``, ``-C freetype=enable``, ``-C raqm=enable``,
   ``-C lcms=enable``, ``-C webp=enable``,
   ``-C jpeg2000=enable``, ``-C imagequant=enable``, ``-C xcb=enable``,
-  ``-C avif=enable``.
+  ``-C avif=enable``, ``-C jpegxl=enable``.
   Require that the corresponding feature is built. The build will raise
   an exception if the libraries are not found. Tcl and Tk must be used
   together.
