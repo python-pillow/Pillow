@@ -116,7 +116,7 @@ Many of Pillow's features require external libraries:
 
     .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
-    Prerequisites for **Ubuntu 16.04 LTS - 22.04 LTS** are installed with::
+    Prerequisites for **Ubuntu 16.04 LTS - 24.04 LTS** are installed with::
 
         sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
             libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
