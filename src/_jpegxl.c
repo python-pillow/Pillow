@@ -288,12 +288,7 @@ decoder_loop_skip_process:
         // got color encoding
         if (decp->status == JXL_DEC_COLOR_ENCODING) {
             decp->status = JxlDecoderGetICCProfileSize(
-                decp->decoder,
-#if JPEGXL_MINOR_VERSION < 9
-                NULL,
-#endif
-                JXL_COLOR_PROFILE_TARGET_DATA,
-                &decp->jxl_icc_len
+                decp->decoder, JXL_COLOR_PROFILE_TARGET_DATA, &decp->jxl_icc_len
             );
             _JXL_CHECK("JxlDecoderGetICCProfileSize");
 
@@ -305,9 +300,6 @@ decoder_loop_skip_process:
 
             decp->status = JxlDecoderGetColorAsICCProfile(
                 decp->decoder,
-#if JPEGXL_MINOR_VERSION < 9
-                NULL,
-#endif
                 JXL_COLOR_PROFILE_TARGET_DATA,
                 decp->jxl_icc,
                 decp->jxl_icc_len
