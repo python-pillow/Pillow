@@ -17,7 +17,7 @@
 #
 from __future__ import annotations
 
-from . import BmpImagePlugin, Image, ImageFile
+from . import BmpImagePlugin, Image
 from ._binary import i16le as i16
 from ._binary import i32le as i32
 
@@ -38,6 +38,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
     format_description = "Windows Cursor"
 
     def _open(self) -> None:
+        assert self.fp is not None
         offset = self.fp.tell()
 
         # check magic
@@ -63,8 +64,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
 
         # patch up the bitmap height
         self._size = self.size[0], self.size[1] // 2
-        d, e, o, a = self.tile[0]
-        self.tile[0] = ImageFile._Tile(d, (0, 0) + self.size, o, a)
+        self.tile = [self.tile[0]._replace(extents=(0, 0) + self.size)]
 
 
 #

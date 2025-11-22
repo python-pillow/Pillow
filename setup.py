@@ -21,6 +21,10 @@ from pybind11.setup_helpers import ParallelCompile
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from setuptools import _BuildInfo
+
 configuration: dict[str, list[str]] = {}
 
 # parse configuration from _custom_build/backend.py
@@ -1090,6 +1094,10 @@ def debug_build() -> bool:
     return hasattr(sys, "gettotalrefcount") or FUZZING_BUILD
 
 
+libraries: list[tuple[str, _BuildInfo]] = [
+    ("pil_imaging_mode", {"sources": ["src/libImaging/Mode.c"]}),
+]
+
 files: list[str | os.PathLike[str]] = ["src/_imaging.c"]
 for src_file in _IMAGING:
     files.append("src/" + src_file + ".c")
@@ -1112,6 +1120,7 @@ try:
     setup(
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=ext_modules,
+        libraries=libraries,
         zip_safe=not (debug_build() or PLATFORM_MINGW),
     )
 except RequiredDependencyException as err:

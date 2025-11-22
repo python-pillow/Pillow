@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 import pytest
-from packaging.version import parse as parse_version
 
-from PIL import Image, features
+from PIL import Image
 
-from .helper import assert_image_similar, hopper, is_ppc64le, skip_unless_feature
+from .helper import (
+    assert_image_similar,
+    has_feature_version,
+    hopper,
+    is_ppc64le,
+    skip_unless_feature,
+)
 
 
 def test_sanity() -> None:
@@ -23,11 +28,8 @@ def test_sanity() -> None:
 @skip_unless_feature("libimagequant")
 def test_libimagequant_quantize() -> None:
     image = hopper()
-    if is_ppc64le():
-        version = features.version_feature("libimagequant")
-        assert version is not None
-        if parse_version(version) < parse_version("4"):
-            pytest.skip("Fails with libimagequant earlier than 4.0.0 on ppc64le")
+    if is_ppc64le() and not has_feature_version("libimagequant", "4"):
+        pytest.skip("Fails with libimagequant earlier than 4.0.0 on ppc64le")
     converted = image.quantize(100, Image.Quantize.LIBIMAGEQUANT)
     assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 15)
@@ -114,6 +116,15 @@ def test_quantize_kmeans(method: Image.Quantize) -> None:
 
     with pytest.raises(ValueError):
         im.quantize(kmeans=-1, method=method)
+
+
+@skip_unless_feature("libimagequant")
+def test_resize() -> None:
+    im = hopper().resize((100, 100))
+    converted = im.quantize(100, Image.Quantize.LIBIMAGEQUANT)
+    colors = converted.getcolors()
+    assert colors is not None
+    assert len(colors) == 100
 
 
 def test_colors() -> None:

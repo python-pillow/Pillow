@@ -80,7 +80,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
     format_description = "Windows Metafile"
 
     def _open(self) -> None:
-        # check placable header
+        # check placeable header
         s = self.fp.read(44)
 
         if s.startswith(b"\xd7\xcd\xc6\x9a\x00\x00"):

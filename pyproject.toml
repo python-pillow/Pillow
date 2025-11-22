@@ -57,6 +57,9 @@ optional-dependencies.mic = [
   "olefile",
 ]
 optional-dependencies.test-arrow = [
+  "arro3-compute",
+  "arro3-core",
+  "nanoarrow",
   "pyarrow",
 ]
 
@@ -186,7 +189,6 @@ lint.ignore = [
   "PT012",  # pytest-raises-with-multiple-statements
   "PT017",  # pytest-assert-in-except
   "PYI034", # flake8-pyi: typing.Self added in Python 3.11
-  "UP038",  # pyupgrade: deprecated rule
 ]
 lint.per-file-ignores."Tests/oss-fuzz/fuzz_font.py" = [
   "I002",

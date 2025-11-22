@@ -128,7 +128,7 @@ im_point_32_8(Imaging imOut, Imaging imIn, im_point_context *context) {
 }
 
 Imaging
-ImagingPoint(Imaging imIn, const char *mode, const void *table) {
+ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
     /* lookup table transform */
 
     ImagingSectionCookie cookie;
@@ -140,15 +140,15 @@ ImagingPoint(Imaging imIn, const char *mode, const void *table) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (!mode) {
+    if (mode == IMAGING_MODE_UNKNOWN) {
         mode = imIn->mode;
     }
 
     if (imIn->type != IMAGING_TYPE_UINT8) {
-        if (imIn->type != IMAGING_TYPE_INT32 || strcmp(mode, "L") != 0) {
+        if (imIn->type != IMAGING_TYPE_INT32 || mode != IMAGING_MODE_L) {
             goto mode_mismatch;
         }
-    } else if (!imIn->image8 && strcmp(imIn->mode, mode) != 0) {
+    } else if (!imIn->image8 && imIn->mode != mode) {
         goto mode_mismatch;
     }
 
@@ -210,8 +210,8 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
     Imaging imOut;
     int x, y;
 
-    if (!imIn || (strcmp(imIn->mode, "I") != 0 && strcmp(imIn->mode, "I;16") != 0 &&
-                  strcmp(imIn->mode, "F") != 0)) {
+    if (!imIn || (imIn->mode != IMAGING_MODE_I && imIn->mode != IMAGING_MODE_I_16 &&
+                  imIn->mode != IMAGING_MODE_F)) {
         return (Imaging)ImagingError_ModeError();
     }
 
@@ -245,7 +245,7 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
             ImagingSectionLeave(&cookie);
             break;
         case IMAGING_TYPE_SPECIAL:
-            if (strcmp(imIn->mode, "I;16") == 0) {
+            if (imIn->mode == IMAGING_MODE_I_16) {
                 ImagingSectionEnter(&cookie);
                 for (y = 0; y < imIn->ysize; y++) {
                     char *in = (char *)imIn->image[y];

@@ -22,7 +22,8 @@
 
 static void
 read4B(UINT32 *dest, UINT8 *buf) {
-    *dest = (UINT32)((buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3]);
+    *dest = ((UINT32)buf[0] << 24) | ((UINT32)buf[1] << 16) | ((UINT32)buf[2] << 8) |
+            buf[3];
 }
 
 /*

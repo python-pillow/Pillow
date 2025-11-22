@@ -603,7 +603,7 @@ static void
 bc6_sign_extend(UINT16 *v, int prec) {
     int x = *v;
     if (x & (1 << (prec - 1))) {
-        x |= -1 << prec;
+        x |= -(1 << prec);
     }
     *v = (UINT16)x;
 }
