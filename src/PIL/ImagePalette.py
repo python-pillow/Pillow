@@ -166,7 +166,7 @@ class ImagePalette:
             except KeyError as e:
                 # allocate new color slot
                 index = self._new_color_index(image, e)
-                assert isinstance(self._palette, bytearray)
+                assert isinstance(self._palette, (bytes, bytearray))
                 self.colors[color] = index
                 if index * 3 < len(self.palette):
                     self._palette = (
