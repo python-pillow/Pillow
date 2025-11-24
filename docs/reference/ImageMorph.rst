@@ -10,7 +10,7 @@ techniques based on the shape and structure of regions in an image. Basic
 uses are dilation, erosion, edge detection, and hit or miss pattern
 matching.
 
-`ImageMorph` works by applying a lookup table (LUT) to a binary representation
+``ImageMorph`` works by applying a lookup table (LUT) to a binary representation
 of the input image. Patterns used for these operations are defined using small
 ASCII masks, which are converted into LUTs through :class:`LutBuilder`. The
 resulting LUTs can then be applied to an image using :class:`MorphOp`.
