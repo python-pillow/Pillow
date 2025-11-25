@@ -897,7 +897,9 @@ class Image:
                 else:
                     self.im.putpalettealphas(self.info["transparency"])
                 self.palette.mode = "RGBA"
-            else:
+            elif self.palette.mode != mode:
+                # If the palette rawmode is different to the mode,
+                # then update the Python palette data
                 self.palette.palette = self.im.getpalette(
                     self.palette.mode, self.palette.mode
                 )
