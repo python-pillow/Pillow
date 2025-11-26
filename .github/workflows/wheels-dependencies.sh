@@ -102,6 +102,7 @@ HARFBUZZ_VERSION=12.2.0
 LIBPNG_VERSION=1.6.50
 JPEGTURBO_VERSION=3.1.2
 OPENJPEG_VERSION=2.5.4
+JPEGXL_VERSION=0.11.1
 XZ_VERSION=5.8.1
 ZSTD_VERSION=1.5.7
 TIFF_VERSION=4.7.1
@@ -171,6 +172,21 @@ function build_brotli {
         && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib $HOST_CMAKE_FLAGS . \
         && make -j4 install)
     touch brotli-stamp
+}
+
+function build_jpegxl {
+    if [ -e jpegxl-stamp ]; then return; fi
+
+    local out_dir=$(fetch_unpack https://github.com/google/highway/archive/1.3.0.tar.gz)
+    (cd $out_dir \
+        && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib $HOST_CMAKE_FLAGS . \
+        && make install)
+
+    local out_dir=$(fetch_unpack https://github.com/libjxl/libjxl/archive/v$JPEGXL_VERSION.tar.gz)
+    (cd $out_dir \
+        && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib -DJPEGXL_ENABLE_SJPEG=OFF -DJPEGXL_ENABLE_SKCMS=OFF -DBUILD_TESTING=OFF $HOST_CMAKE_FLAGS . \
+        && make install)
+    touch jpegxl-stamp
 }
 
 function build_harfbuzz {
@@ -335,6 +351,10 @@ function build {
         # On iOS, there's no vendor-provided raqm, and we can't ship it due to
         # licensing, so there's no point building harfbuzz.
         build_harfbuzz
+
+        if [[ "$MB_ML_VER" != 2014 ]]; then
+            build_jpegxl
+        fi
     fi
 }
 

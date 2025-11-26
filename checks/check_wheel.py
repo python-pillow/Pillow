@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import platform
 import sys
 
@@ -25,6 +26,8 @@ def test_wheel_modules() -> None:
     elif sys.platform == "ios":
         # tkinter is not available on iOS
         expected_modules.remove("tkinter")
+    elif os.environ.get("AUDITWHEEL_POLICY") != "manylinux2014":
+        expected_modules.add("jpegxl")
 
     assert set(features.get_supported_modules()) == expected_modules
 
