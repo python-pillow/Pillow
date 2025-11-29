@@ -139,15 +139,6 @@ Example::
     count, out = op.apply(im)
 
 
-Relationship to `_imagingmorph`
--------------------------------
-
-The :mod:`PIL.ImageMorph` module provides a Python interface, while the
-low-level implementation of morphological lookup table evaluation is handled
-by the C extension module :mod:`_imagingmorph`. Users should interact
-with :class:`LutBuilder` and :class:`MorphOp`, not with the C extension
-directly.
-
 .. automodule:: PIL.ImageMorph
     :members:
     :undoc-members:
