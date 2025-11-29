@@ -106,7 +106,11 @@ XZ_VERSION=5.8.1
 ZSTD_VERSION=1.5.7
 TIFF_VERSION=4.7.1
 LCMS2_VERSION=2.17
-ZLIB_NG_VERSION=2.2.5
+if [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "aarch64" ]]; then
+  ZLIB_NG_VERSION=2.2.5
+else
+  ZLIB_NG_VERSION=2.3.1
+fi
 LIBWEBP_VERSION=1.6.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
@@ -149,18 +153,13 @@ function build_zlib_ng {
     ORIGINAL_HOST_CONFIGURE_FLAGS=$HOST_CONFIGURE_FLAGS
     unset HOST_CONFIGURE_FLAGS
 
-    build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --zlib-compat
+    if [[ "$ZLIB_NG_VERSION" == 2.2.5 ]]; then
+        build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --zlib-compat
+    else
+        build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --installnamedir=$BUILD_PREFIX/lib --zlib-compat
+    fi
 
     HOST_CONFIGURE_FLAGS=$ORIGINAL_HOST_CONFIGURE_FLAGS
-
-    if [[ -n "$IS_MACOS" ]] && [[ -z "$IOS_SDK" ]]; then
-        # Ensure that on macOS, the library name is an absolute path, not an
-        # @rpath, so that delocate picks up the right library (and doesn't need
-        # DYLD_LIBRARY_PATH to be set). The default Makefile doesn't have an
-        # option to control the install_name. This isn't needed on iOS, as iOS
-        # only builds the static library.
-        install_name_tool -id $BUILD_PREFIX/lib/libz.1.dylib $BUILD_PREFIX/lib/libz.1.dylib
-    fi
     touch zlib-stamp
 }
 

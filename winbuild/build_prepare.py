@@ -126,7 +126,7 @@ V = {
     "OPENJPEG": "2.5.4",
     "TIFF": "4.7.1",
     "XZ": "5.8.1",
-    "ZLIBNG": "2.2.5",
+    "ZLIBNG": "2.3.1",
 }
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
 
@@ -167,12 +167,12 @@ DEPS: dict[str, dict[str, Any]] = {
         "license": "LICENSE.md",
         "patch": {
             r"CMakeLists.txt": {
-                "set_target_properties(zlib PROPERTIES OUTPUT_NAME zlibstatic${{SUFFIX}})": "set_target_properties(zlib PROPERTIES OUTPUT_NAME zlib)",  # noqa: E501
+                "set_target_properties(zlib-ng PROPERTIES OUTPUT_NAME zlibstatic${{SUFFIX}})": "set_target_properties(zlib-ng PROPERTIES OUTPUT_NAME zlib)",  # noqa: E501
             },
         },
         "build": [
             *cmds_cmake(
-                "zlib", "-DBUILD_SHARED_LIBS:BOOL=OFF", "-DZLIB_COMPAT:BOOL=ON"
+                "zlib-ng", "-DBUILD_SHARED_LIBS:BOOL=OFF", "-DZLIB_COMPAT:BOOL=ON"
             ),
         ],
         "headers": [r"z*.h"],
