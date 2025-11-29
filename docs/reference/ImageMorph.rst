@@ -67,7 +67,7 @@ Basic uses like dilation and erosion can be created by specifying
 preset names (``"dilation4"``, ``"dilation8"``, ``"erosion4"``,
 ``"erosion8"``, ``"edge"``), or you may define custom patterns.
 
-Example: creating a LUT for a 2×2 corner detector::
+For example, creating a LUT for a 2×2 corner detector::
 
     from PIL import ImageMorph
 
