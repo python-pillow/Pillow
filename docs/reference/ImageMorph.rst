@@ -98,12 +98,13 @@ Example: applying a simple dilation operation::
 
     from PIL import Image, ImageMorph
 
-    im = Image.open("input.png").convert("L")
+    with Image.open("input.png") as im:
+        im = im.convert("L")
 
-    # Built-in 8-connected dilation
-    op = ImageMorph.MorphOp(op_name="dilation8")
+        # Built-in 8-connected dilation
+        op = ImageMorph.MorphOp(op_name="dilation8")
 
-    count, out = op.apply(im)
+        count, out = op.apply(im)
     out.save("dilated.png")
 
 You could also use the method :meth:`MorphOp.match` to check where a pattern
