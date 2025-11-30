@@ -54,7 +54,7 @@ def grab(
             os.unlink(filepath)
             if bbox:
                 if window:
-                    # Determine if the window was in retina mode or not
+                    # Determine if the window was in Retina mode or not
                     # by capturing it without the shadow,
                     # and checking how different the width is
                     fh, filepath = tempfile.mkstemp(".png")
