@@ -509,7 +509,9 @@ class PngStream(ChunkStream):
                 # otherwise, we have a byte string with one alpha value
                 # for each palette entry
                 self.im_info["transparency"] = s
-        elif self.im_mode in ("1", "L", "I;16"):
+        elif self.im_mode == "1":
+            self.im_info["transparency"] = 255 if i16(s) else 0
+        elif self.im_mode in ("L", "I;16"):
             self.im_info["transparency"] = i16(s)
         elif self.im_mode == "RGB":
             self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
