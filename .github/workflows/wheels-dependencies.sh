@@ -32,7 +32,6 @@ if [[ "$CIBW_PLATFORM" == "ios" ]]; then
     # or `build/deps/iphonesimulator`
     WORKDIR=$(pwd)/build/$IOS_SDK
     BUILD_PREFIX=$(pwd)/build/deps/$IOS_SDK
-    PATCH_DIR=$(pwd)/patches/iOS
 
     # GNU tooling insists on using aarch64 rather than arm64
     if [[ $PLAT == "arm64" ]]; then
@@ -90,9 +89,7 @@ fi
 
 ARCHIVE_SDIR=pillow-depends-main
 
-# Package versions for fresh source builds. Version numbers with "Patched"
-# annotations have a source code patch that is required for some platforms. If
-# you change those versions, ensure the patch is also updated.
+# Package versions for fresh source builds.
 if [[ -n "$IOS_SDK" ]]; then
   FREETYPE_VERSION=2.13.3
 else
@@ -114,7 +111,7 @@ fi
 LIBWEBP_VERSION=1.6.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
-BROTLI_VERSION=1.1.0  # Patched; next release won't need patching. See patch file.
+BROTLI_VERSION=1.2.0
 LIBAVIF_VERSION=1.3.0
 
 function build_pkg_config {
@@ -167,7 +164,7 @@ function build_brotli {
     if [ -e brotli-stamp ]; then return; fi
     local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-$BROTLI_VERSION.tar.gz)
     (cd $out_dir \
-        && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib $HOST_CMAKE_FLAGS . \
+        && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib -DCMAKE_MACOSX_BUNDLE=OFF $HOST_CMAKE_FLAGS . \
         && make -j4 install)
     touch brotli-stamp
 }
