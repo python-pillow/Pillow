@@ -116,8 +116,8 @@ class GifImageFile(ImageFile.ImageFile):
             # check if palette contains colour indices
             p = self.fp.read(3 << bits)
             if self._is_palette_needed(p):
-                p = ImagePalette.raw("RGB", p)
-                self.global_palette = self.palette = p
+                palette = ImagePalette.raw("RGB", p)
+                self.global_palette = self.palette = palette
 
         self._fp = self.fp  # FIXME: hack
         self.__rewind = self.fp.tell()
