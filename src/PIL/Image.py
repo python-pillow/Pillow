@@ -1519,6 +1519,9 @@ class Image:
                     "".join(self.info["Raw profile type exif"].split("\n")[3:])
                 )
             elif hasattr(self, "tag_v2"):
+                from . import TiffImagePlugin
+
+                assert isinstance(self, TiffImagePlugin.TiffImageFile)
                 self._exif.bigtiff = self.tag_v2._bigtiff
                 self._exif.endian = self.tag_v2._endian
                 self._exif.load_from_fp(self.fp, self.tag_v2._offset)

@@ -378,6 +378,7 @@ class TestFileLibTiff(LibTiffTestCase):
         im.save(out, tiffinfo=ifd)
 
         with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2[37000] == 100
 
     def test_inknames_tag(
