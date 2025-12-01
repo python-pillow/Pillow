@@ -1155,9 +1155,9 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
             for i in range(2, 9):
                 with Image.open("Tests/images/g4_orientation_" + str(i) + ".tif") as im:
-                    im = ImageOps.exif_transpose(im)
+                    im_transposed = ImageOps.exif_transpose(im)
 
-                    assert_image_similar(base_im, im, 0.7)
+                assert_image_similar(base_im, im_transposed, 0.7)
 
     @pytest.mark.parametrize(
         "test_file",
