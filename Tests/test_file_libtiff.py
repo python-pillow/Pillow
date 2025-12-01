@@ -11,7 +11,15 @@ from typing import Any, NamedTuple
 
 import pytest
 
-from PIL import Image, ImageFilter, ImageOps, TiffImagePlugin, TiffTags, features
+from PIL import (
+    Image,
+    ImageFile,
+    ImageFilter,
+    ImageOps,
+    TiffImagePlugin,
+    TiffTags,
+    features,
+)
 from PIL.TiffImagePlugin import OSUBFILETYPE, SAMPLEFORMAT, STRIPOFFSETS, SUBIFD
 
 from .helper import (
@@ -27,7 +35,7 @@ from .helper import (
 
 @skip_unless_feature("libtiff")
 class LibTiffTestCase:
-    def _assert_noerr(self, tmp_path: Path, im: TiffImagePlugin.TiffImageFile) -> None:
+    def _assert_noerr(self, tmp_path: Path, im: ImageFile.ImageFile) -> None:
         """Helper tests that assert basic sanity about the g4 tiff reading"""
         # 1 bit
         assert im.mode == "1"
