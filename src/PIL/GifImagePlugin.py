@@ -256,7 +256,7 @@ class GifImageFile(ImageFile.ImageFile):
                         info["comment"] += b"\n" + comment
                     else:
                         info["comment"] = comment
-                    s = None
+                    s = b""
                     continue
                 elif s[0] == 255 and frame == 0 and block is not None:
                     #
@@ -299,7 +299,7 @@ class GifImageFile(ImageFile.ImageFile):
                 bits = self.fp.read(1)[0]
                 self.__offset = self.fp.tell()
                 break
-            s = None
+            s = b""
 
         if interlace is None:
             msg = "image not found in GIF frame"
