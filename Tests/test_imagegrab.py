@@ -60,12 +60,20 @@ class TestImageGrab:
             ImageGrab.grab(xdisplay="error.test:0.0")
         assert str(e.value).startswith("X connection failed")
 
-    @pytest.mark.skipif(sys.platform != "win32", reason="Windows only")
+    @pytest.mark.skipif(
+        sys.platform not in ("darwin", "win32"), reason="macOS and Windows only"
+    )
     def test_grab_invalid_handle(self) -> None:
-        with pytest.raises(OSError, match="unable to get device context for handle"):
-            ImageGrab.grab(window=-1)
-        with pytest.raises(OSError, match="screen grab failed"):
-            ImageGrab.grab(window=0)
+        if sys.platform == "darwin":
+            with pytest.raises(subprocess.CalledProcessError):
+                ImageGrab.grab(window=-1)
+        else:
+            with pytest.raises(
+                OSError, match="unable to get device context for handle"
+            ):
+                ImageGrab.grab(window=-1)
+            with pytest.raises(OSError, match="screen grab failed"):
+                ImageGrab.grab(window=0)
 
     def test_grabclipboard(self) -> None:
         if sys.platform == "darwin":
