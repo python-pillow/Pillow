@@ -9,7 +9,7 @@ import pytest
 
 from PIL import Image, ImageGrab
 
-from .helper import assert_image_equal_tofile, skip_unless_feature
+from .helper import assert_image_equal_tofile, on_ci, skip_unless_feature
 
 
 class TestImageGrab:
@@ -59,6 +59,30 @@ class TestImageGrab:
         with pytest.raises(OSError) as e:
             ImageGrab.grab(xdisplay="error.test:0.0")
         assert str(e.value).startswith("X connection failed")
+
+    @pytest.mark.skipif(
+        sys.platform != "darwin" or not on_ci(), reason="Only runs on macOS CI"
+    )
+    def test_grab_handle(self) -> None:
+        p = subprocess.Popen(
+            [
+                "osascript",
+                "-e",
+                'tell application "Finder"\n'
+                'open ("/" as POSIX file)\n'
+                "get id of front window\n"
+                "end tell",
+            ],
+            stdout=subprocess.PIPE,
+        )
+        stdout = p.stdout
+        assert stdout is not None
+        window = int(stdout.read())
+
+        ImageGrab.grab(window=window)
+
+        im = ImageGrab.grab((0, 0, 10, 10), window=window)
+        assert im.size == (10, 10)
 
     @pytest.mark.skipif(
         sys.platform not in ("darwin", "win32"), reason="macOS and Windows only"
