@@ -12,7 +12,7 @@ TEST_FILE = "Tests/images/iptc.jpg"
 
 
 def create_iptc_image(info: dict[str, int] = {}) -> BytesIO:
-    def field(tag, value):
+    def field(tag: tuple[int, int], value: bytes) -> bytes:
         return bytes((0x1C,) + tag + (0, len(value))) + value
 
     data = field((3, 60), bytes((info.get("layers", 1), info.get("component", 0))))

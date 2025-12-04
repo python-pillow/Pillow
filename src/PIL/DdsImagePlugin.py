@@ -12,7 +12,6 @@ https://creativecommons.org/publicdomain/zero/1.0/
 
 from __future__ import annotations
 
-import io
 import struct
 import sys
 from enum import IntEnum, IntFlag
@@ -333,6 +332,7 @@ class DdsImageFile(ImageFile.ImageFile):
     format_description = "DirectDraw Surface"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(4)):
             msg = "not a DDS file"
             raise SyntaxError(msg)
@@ -340,21 +340,20 @@ class DdsImageFile(ImageFile.ImageFile):
         if header_size != 124:
             msg = f"Unsupported header size {repr(header_size)}"
             raise OSError(msg)
-        header_bytes = self.fp.read(header_size - 4)
-        if len(header_bytes) != 120:
-            msg = f"Incomplete header: {len(header_bytes)} bytes"
+        header = self.fp.read(header_size - 4)
+        if len(header) != 120:
+            msg = f"Incomplete header: {len(header)} bytes"
             raise OSError(msg)
-        header = io.BytesIO(header_bytes)
 
-        flags, height, width = struct.unpack("<3I", header.read(12))
+        flags, height, width = struct.unpack("<3I", header[:12])
         self._size = (width, height)
         extents = (0, 0) + self.size
 
-        pitch, depth, mipmaps = struct.unpack("<3I", header.read(12))
-        struct.unpack("<11I", header.read(44))  # reserved
+        pitch, depth, mipmaps = struct.unpack("<3I", header[12:24])
+        struct.unpack("<11I", header[24:68])  # reserved
 
         # pixel format
-        pfsize, pfflags, fourcc, bitcount = struct.unpack("<4I", header.read(16))
+        pfsize, pfflags, fourcc, bitcount = struct.unpack("<4I", header[68:84])
         n = 0
         rawmode = None
         if pfflags & DDPF.RGB:
@@ -366,7 +365,7 @@ class DdsImageFile(ImageFile.ImageFile):
                 self._mode = "RGB"
                 mask_count = 3
 
-            masks = struct.unpack(f"<{mask_count}I", header.read(mask_count * 4))
+            masks = struct.unpack(f"<{mask_count}I", header[84 : 84 + mask_count * 4])
             self.tile = [ImageFile._Tile("dds_rgb", extents, 0, (bitcount, masks))]
             return
         elif pfflags & DDPF.LUMINANCE:
@@ -516,6 +515,8 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
                 # Remove the zero padding, and scale it to 8 bits
                 data += o8(
                     int(((masked_value >> mask_offsets[i]) / mask_totals[i]) * 255)
+                    if mask_totals[i]
+                    else 0
                 )
         self.set_as_raw(data)
         return -1, 0

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from io import BytesIO
 from pathlib import Path
 
 import pytest
@@ -716,6 +717,25 @@ def test_apng_save_size(tmp_path: Path) -> None:
 
     with Image.open(test_file) as reloaded:
         assert reloaded.size == (200, 200)
+
+
+def test_compress_level() -> None:
+    compress_level_sizes = {}
+    for compress_level in (0, 9):
+        out = BytesIO()
+
+        im = Image.new("L", (100, 100))
+        im.save(
+            out,
+            "PNG",
+            save_all=True,
+            append_images=[Image.new("L", (200, 200))],
+            compress_level=compress_level,
+        )
+
+        compress_level_sizes[compress_level] = len(out.getvalue())
+
+    assert compress_level_sizes[0] > compress_level_sizes[9]
 
 
 def test_seek_after_close() -> None:
