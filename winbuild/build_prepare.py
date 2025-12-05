@@ -113,20 +113,20 @@ ARCHITECTURES = {
 }
 
 V = {
-    "BROTLI": "1.1.0",
+    "BROTLI": "1.2.0",
     "FREETYPE": "2.14.1",
     "FRIBIDI": "1.0.16",
-    "HARFBUZZ": "12.1.0",
+    "HARFBUZZ": "12.2.0",
     "JPEGTURBO": "3.1.2",
     "LCMS2": "2.17",
     "LIBAVIF": "1.3.0",
-    "LIBIMAGEQUANT": "4.4.0",
-    "LIBPNG": "1.6.50",
+    "LIBIMAGEQUANT": "4.4.1",
+    "LIBPNG": "1.6.51",
     "LIBWEBP": "1.6.0",
     "OPENJPEG": "2.5.4",
     "TIFF": "4.7.1",
     "XZ": "5.8.1",
-    "ZLIBNG": "2.2.5",
+    "ZLIBNG": "2.3.1",
 }
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
 
@@ -167,12 +167,12 @@ DEPS: dict[str, dict[str, Any]] = {
         "license": "LICENSE.md",
         "patch": {
             r"CMakeLists.txt": {
-                "set_target_properties(zlib PROPERTIES OUTPUT_NAME zlibstatic${{SUFFIX}})": "set_target_properties(zlib PROPERTIES OUTPUT_NAME zlib)",  # noqa: E501
+                "set_target_properties(zlib-ng PROPERTIES OUTPUT_NAME zlibstatic${{SUFFIX}})": "set_target_properties(zlib-ng PROPERTIES OUTPUT_NAME zlib)",  # noqa: E501
             },
         },
         "build": [
             *cmds_cmake(
-                "zlib", "-DBUILD_SHARED_LIBS:BOOL=OFF", "-DZLIB_COMPAT:BOOL=ON"
+                "zlib-ng", "-DBUILD_SHARED_LIBS:BOOL=OFF", "-DZLIB_COMPAT:BOOL=ON"
             ),
         ],
         "headers": [r"z*.h"],

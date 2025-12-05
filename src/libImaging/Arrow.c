@@ -149,7 +149,7 @@ assemble_metadata(const char *band_json) {
 }
 
 int
-export_named_type(struct ArrowSchema *schema, char *format, char *name) {
+export_named_type(struct ArrowSchema *schema, char *format, const char *name) {
     char *formatp;
     char *namep;
     size_t format_len = strlen(format) + 1;
