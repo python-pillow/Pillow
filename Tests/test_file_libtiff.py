@@ -11,7 +11,15 @@ from typing import Any, NamedTuple
 
 import pytest
 
-from PIL import Image, ImageFilter, ImageOps, TiffImagePlugin, TiffTags, features
+from PIL import (
+    Image,
+    ImageFile,
+    ImageFilter,
+    ImageOps,
+    TiffImagePlugin,
+    TiffTags,
+    features,
+)
 from PIL.TiffImagePlugin import OSUBFILETYPE, SAMPLEFORMAT, STRIPOFFSETS, SUBIFD
 
 from .helper import (
@@ -27,7 +35,7 @@ from .helper import (
 
 @skip_unless_feature("libtiff")
 class LibTiffTestCase:
-    def _assert_noerr(self, tmp_path: Path, im: TiffImagePlugin.TiffImageFile) -> None:
+    def _assert_noerr(self, tmp_path: Path, im: ImageFile.ImageFile) -> None:
         """Helper tests that assert basic sanity about the g4 tiff reading"""
         # 1 bit
         assert im.mode == "1"
@@ -370,6 +378,7 @@ class TestFileLibTiff(LibTiffTestCase):
         im.save(out, tiffinfo=ifd)
 
         with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2[37000] == 100
 
     def test_inknames_tag(
@@ -1146,9 +1155,9 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
             for i in range(2, 9):
                 with Image.open("Tests/images/g4_orientation_" + str(i) + ".tif") as im:
-                    im = ImageOps.exif_transpose(im)
+                    im_transposed = ImageOps.exif_transpose(im)
 
-                    assert_image_similar(base_im, im, 0.7)
+                assert_image_similar(base_im, im_transposed, 0.7)
 
     @pytest.mark.parametrize(
         "test_file",
