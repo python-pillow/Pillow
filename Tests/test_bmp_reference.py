@@ -72,7 +72,7 @@ def test_good() -> None:
         "pal8-0.bmp": "pal8.png",
         "pal8rle.bmp": "pal8.png",
         "pal8topdown.bmp": "pal8.png",
-        "pal8nonsquare.bmp": "pal8nonsquare-v.png",
+        "pal8nonsquare.bmp": "pal8nonsquare-e.png",
         "pal8os2.bmp": "pal8.png",
         "pal8os2sp.bmp": "pal8.png",
         "pal8os2v2.bmp": "pal8.png",
@@ -103,7 +103,7 @@ def test_good() -> None:
                         # with paletized image, since the palette might
                         # be differently ordered for an equivalent image.
                         im = im.convert("RGBA")
-                        compare = im.convert("RGBA")
+                        compare = compare.convert("RGBA")
                     assert_image_similar(im, compare, 5)
 
         except Exception as msg:
