@@ -154,10 +154,11 @@ class IptcImageFile(ImageFile.ImageFile):
                 if band is not None:
                     bands = [Image.new("L", _im.size)] * Image.getmodebands(self.mode)
                     bands[band] = _im
-                    _im = Image.merge(self.mode, bands)
+                    im = Image.merge(self.mode, bands)
                 else:
-                    _im.load()
-                self.im = _im.im
+                    im = _im
+                    im.load()
+                self.im = im.im
             self.tile = []
         return ImageFile.ImageFile.load(self)
 
