@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from PIL import Image, ImageChops
+
 
 def test_compare_identical_images():
     im1 = Image.new("RGB", (10, 10), "red")

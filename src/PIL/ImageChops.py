@@ -19,7 +19,6 @@ from __future__ import annotations
 
 from . import Image
 
-from typing import Dict, Union
 
 def constant(image: Image.Image, value: int) -> Image.Image:
     """Fill a channel with a given gray level.
@@ -330,7 +329,6 @@ def compare_images(image1, image2):
         "different_pixels": nonzero,
         "percent_difference": nonzero * 100.0 / total,
     }
-
 
 
 def offset(image: Image.Image, xoffset: int, yoffset: int | None = None) -> Image.Image:
