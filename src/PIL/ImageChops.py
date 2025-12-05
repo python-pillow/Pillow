@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from . import Image
 
+from typing import Dict, Union
 
 def constant(image: Image.Image, value: int) -> Image.Image:
     """Fill a channel with a given gray level.
@@ -291,6 +292,45 @@ def composite(
     """
 
     return Image.composite(image1, image2, mask)
+
+
+def compare_images(image1, image2):
+    """
+    Compare two images pixel by pixel.
+
+    :param image1: The first image.
+    :param image2: The second image.
+    :returns: A dictionary containing:
+
+        - ``different_pixels`` – the number of pixels that differ
+        - ``percent_difference`` – the percentage of differing pixels
+
+    :raises ValueError: If the images have different sizes or modes.
+    """
+    if image1.mode != image2.mode:
+        raise ValueError("Images must have the same mode")
+    if image1.size != image2.size:
+        raise ValueError("Images must have the same size")
+
+    # Use ImageChops.difference to detect pixel differences
+    diff = difference(image1, image2).convert("L")
+
+    # If identical, diff is entirely zero
+    if diff.getbbox() is None:
+        return {
+            "different_pixels": 0,
+            "percent_difference": 0.0,
+        }
+
+    # Count non-zero (different) pixels
+    nonzero = sum(1 for px in diff.getdata() if px != 0)
+    total = image1.size[0] * image1.size[1]
+
+    return {
+        "different_pixels": nonzero,
+        "percent_difference": nonzero * 100.0 / total,
+    }
+
 
 
 def offset(image: Image.Image, xoffset: int, yoffset: int | None = None) -> Image.Image:
