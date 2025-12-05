@@ -1,0 +1,115 @@
+name: Test MSYS2
+
+on:
+  push:
+    branches:
+      - "**"
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - "docs/**"
+      - "wheels/**"
+  pull_request:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - "docs/**"
+      - "wheels/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COVERAGE_CORE: sysmon
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # skip to save CI time:
+          # see https://github.com/python-pillow/Pillow/pull/6888#issuecomment-1400392821
+          # - msystem: "UCRT64"
+          - msystem: "CLANG64"
+          - msystem: "MINGW64"
+    defaults:
+      run:
+        shell: bash.exe --login -eo pipefail "{0}"
+    env:
+      MSYSTEM: ${{ matrix.msystem }}
+      CHERE_INVOKING: 1
+
+    timeout-minutes: 30
+    name: MSYS2 ${{ matrix.msystem }}
+
+    steps:
+      - name: Checkout Pillow
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up shell
+        run: echo "C:\msys64\usr\bin\" >> $env:GITHUB_PATH
+        shell: pwsh
+
+      - name: Install dependencies
+        run: |
+          pacman -S --noconfirm \
+              make \
+              pactoys \
+              subversion
+
+          pacboy -S --noconfirm \
+              freetype:p \
+              gcc:p \
+              ghostscript:p \
+              lcms2:p \
+              libimagequant:p \
+              libjpeg-turbo:p \
+              libraqm:p \
+              libtiff:p \
+              libwebp:p \
+              openjpeg2:p \
+              python-numpy:p \
+              python-olefile:p \
+              python-pip:p \
+              python-pyqt6:p
+
+          python3 -m pip install pyroma pytest pytest-cov pytest-timeout
+
+          pushd depends && ./install_extra_test_images.sh && popd
+
+      - name: Build Pillow
+        run: .ci/build.sh
+
+      - name: Test Pillow
+        run: .ci/test.sh
+
+      - name: After success
+        run: .ci/after_success.sh
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage.xml
+          flags: GHA_Windows
+          name: MSYS2 ${{ matrix.msystem }}
+
+  success:
+    permissions:
+      contents: none
+    needs: build
+    runs-on: ubuntu-latest
+    name: MSYS2 Test Successful
+    steps:
+      - name: Success
+        run: echo MSYS2 Test Successful
