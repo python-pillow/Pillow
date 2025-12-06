@@ -20,21 +20,19 @@ TEST_IMAGE_SIZE = (10, 10)
 
 def test_numpy_to_image() -> None:
     def to_image(dtype: npt.DTypeLike, bands: int = 1, boolean: int = 0) -> Image.Image:
+        data = tuple(range(100))
         if bands == 1:
             if boolean:
-                data = [0, 255] * 50
-            else:
-                data = list(range(100))
+                data = (0, 255) * 50
             a = numpy.array(data, dtype=dtype)
             a.shape = TEST_IMAGE_SIZE
             i = Image.fromarray(a)
-            assert list(i.getdata()) == data
+            assert i.get_flattened_data() == data
         else:
-            data = list(range(100))
             a = numpy.array([[x] * bands for x in data], dtype=dtype)
             a.shape = TEST_IMAGE_SIZE[0], TEST_IMAGE_SIZE[1], bands
             i = Image.fromarray(a)
-            assert list(i.getchannel(0).getdata()) == list(range(100))
+            assert i.get_flattened_data(0) == tuple(range(100))
         return i
 
     # Check supported 1-bit integer formats
@@ -191,7 +189,7 @@ def test_putdata() -> None:
     arr = numpy.zeros((15000,), numpy.float32)
     im.putdata(arr)
 
-    assert len(im.getdata()) == len(arr)
+    assert len(im.get_flattened_data()) == len(arr)
 
 
 def test_resize() -> None:
@@ -248,7 +246,7 @@ def test_bool() -> None:
     a[0][0] = True
 
     im2 = Image.fromarray(a)
-    assert im2.getdata()[0] == 255
+    assert im2.getpixel((0, 0)) == 255
 
 
 def test_no_resource_warning_for_numpy_array() -> None:
