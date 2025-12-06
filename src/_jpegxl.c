@@ -98,8 +98,6 @@ typedef struct {
     JxlBasicInfo basic_info;
     JxlPixelFormat pixel_format;
 
-    Py_ssize_t n_frames;
-
     char *mode;
 } JpegXlDecoderObject;
 
@@ -166,27 +164,26 @@ _jxl_decoder_rewind(PyObject *self) {
     Py_RETURN_NONE;
 }
 
-bool
-_jxl_decoder_count_frames(PyObject *self) {
-    JpegXlDecoderObject *decp = (JpegXlDecoderObject *)self;
-
-    decp->n_frames = 0;
+PyObject *
+_jxl_decoder_get_frames_left(PyObject *self) {
+    int frames_left = 0;
 
     // count all JXL_DEC_NEED_IMAGE_OUT_BUFFER events
+    JpegXlDecoderObject *decp = (JpegXlDecoderObject *)self;
     while (decp->status != JXL_DEC_SUCCESS) {
         decp->status = JxlDecoderProcessInput(decp->decoder);
 
         if (decp->status == JXL_DEC_NEED_IMAGE_OUT_BUFFER) {
             if (JxlDecoderSkipCurrentFrame(decp->decoder) != JXL_DEC_SUCCESS) {
-                return false;
+                PyErr_SetString(PyExc_OSError, "Error when counting frames");
+                break;
             }
-            decp->n_frames++;
+            frames_left++;
         }
     }
+    JxlDecoderRewind(decp->decoder);
 
-    _jxl_decoder_rewind((PyObject *)decp);
-
-    return true;
+    return Py_BuildValue("i", frames_left);
 }
 
 PyObject *
@@ -206,7 +203,6 @@ _jxl_decoder_new(PyObject *self, PyObject *args) {
     decp->jxl_exif_len = 0;
     decp->jxl_xmp = NULL;
     decp->jxl_xmp_len = 0;
-    decp->n_frames = 0;
 
     // used for printing more detailed error messages
     char *jxl_call_name;
@@ -371,14 +367,6 @@ decoder_loop_skip_process:
         goto end_with_custom_error;
     }
 
-    if (decp->basic_info.have_animation) {
-        // get frame count by iterating over image out events
-        if (!_jxl_decoder_count_frames((PyObject *)decp)) {
-            PyErr_SetString(PyExc_OSError, "something went wrong when counting frames");
-            goto end_with_custom_error;
-        }
-    }
-
     return (PyObject *)decp;
 
     // on success we should never reach here
@@ -410,15 +398,14 @@ _jxl_decoder_get_info(PyObject *self) {
     JpegXlDecoderObject *decp = (JpegXlDecoderObject *)self;
 
     return Py_BuildValue(
-        "(II)sOIIII",
+        "(II)sOIII",
         decp->basic_info.xsize,
         decp->basic_info.ysize,
         decp->mode,
         decp->basic_info.have_animation ? Py_True : Py_False,
         decp->basic_info.animation.tps_numerator,
         decp->basic_info.animation.tps_denominator,
-        decp->basic_info.animation.num_loops,
-        decp->n_frames
+        decp->basic_info.animation.num_loops
     );
 }
 
@@ -432,6 +419,10 @@ _jxl_decoder_get_next(PyObject *self) {
     char *jxl_call_name;
 
     // process events until next frame output is ready
+    if (decp->status == JXL_DEC_FRAME) {
+        decp->status = JxlDecoderGetFrameHeader(decp->decoder, &fhdr);
+        _JXL_CHECK("JxlDecoderGetFrameHeader");
+    }
     while (decp->status != JXL_DEC_NEED_IMAGE_OUT_BUFFER) {
         decp->status = JxlDecoderProcessInput(decp->decoder);
 
@@ -444,14 +435,10 @@ _jxl_decoder_get_next(PyObject *self) {
         if (decp->status == JXL_DEC_NEED_MORE_INPUT) {
             _jxl_decoder_set_input((PyObject *)decp);
             _JXL_CHECK("JxlDecoderSetInput")
-            continue;
-        }
-
-        if (decp->status == JXL_DEC_FRAME) {
+        } else if (decp->status == JXL_DEC_FRAME) {
             // decode frame header
             decp->status = JxlDecoderGetFrameHeader(decp->decoder, &fhdr);
             _JXL_CHECK("JxlDecoderGetFrameHeader");
-            continue;
         }
     }
 
@@ -573,6 +560,10 @@ static struct PyMethodDef _jpegxl_decoder_methods[] = {
     {"get_icc", (PyCFunction)_jxl_decoder_get_icc, METH_NOARGS, "get_icc"},
     {"get_exif", (PyCFunction)_jxl_decoder_get_exif, METH_NOARGS, "get_exif"},
     {"get_xmp", (PyCFunction)_jxl_decoder_get_xmp, METH_NOARGS, "get_xmp"},
+    {"get_frames_left",
+     (PyCFunction)_jxl_decoder_get_frames_left,
+     METH_NOARGS,
+     "get_frames_left"},
     {"rewind", (PyCFunction)_jxl_decoder_rewind, METH_NOARGS, "rewind"},
     {NULL, NULL} /* sentinel */
 };

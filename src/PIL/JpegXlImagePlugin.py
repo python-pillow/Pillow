@@ -13,15 +13,6 @@ except ImportError:
     SUPPORTED = False
 
 
-## Future idea:
-## it's not known how many frames an animated image has
-## by default, _jxl_decoder_new will iterate over all frames without decoding them
-## then libjxl decoder is rewinded and we're ready to decode frame by frame
-## if OPEN_COUNTS_FRAMES is False, n_frames will be None until the last frame is decoded
-## it only applies to animated jpeg xl images
-# OPEN_COUNTS_FRAMES = True
-
-
 def _accept(prefix: bytes) -> bool | str:
     is_jxl = prefix.startswith(
         (b"\xff\x0a", b"\x00\x00\x00\x0c\x4a\x58\x4c\x20\x0d\x0a\x87\x0a")
@@ -34,8 +25,9 @@ def _accept(prefix: bytes) -> bool | str:
 class JpegXlImageFile(ImageFile.ImageFile):
     format = "JPEG XL"
     format_description = "JPEG XL image"
-    __loaded = 0
+    __loaded = -1
     __logical_frame = 0
+    __physical_frame = 0
 
     def _open(self) -> None:
         self._decoder = _jpegxl.JpegXlDecoder(self.fp.read())
@@ -47,16 +39,10 @@ class JpegXlImageFile(ImageFile.ImageFile):
             tps_num,
             tps_denom,
             self.info["loop"],
-            n_frames,
         ) = self._decoder.get_info()
 
-        self._tps_dur_secs = 1
-        self.n_frames: int | None = 1
-        if self.is_animated:
-            self.n_frames = None
-            if n_frames > 0:
-                self.n_frames = n_frames
-                self._tps_dur_secs = tps_num / tps_denom
+        self._n_frames = None if self.is_animated else 1
+        self._tps_dur_secs = tps_num / tps_denom if tps_denom != 0 else 1
 
         # TODO: handle libjxl time codes
         self.__timestamp = 0
@@ -72,7 +58,14 @@ class JpegXlImageFile(ImageFile.ImageFile):
         if xmp := self._decoder.get_xmp():
             self.info["xmp"] = xmp
 
-        self._rewind()
+    @property
+    def n_frames(self) -> int:
+        if self._n_frames is None:
+            current = self.tell()
+            self._n_frames = current + self._decoder.get_frames_left()
+            self.seek(current)
+
+        return self._n_frames
 
     def _get_next(self) -> tuple[bytes, float, float]:
         # Get next frame
@@ -85,9 +78,9 @@ class JpegXlImageFile(ImageFile.ImageFile):
             raise EOFError(msg)
 
         data, tps_duration, is_last = next_frame
-        if is_last and self.n_frames is None:
+        if is_last and self._n_frames is None:
             # libjxl said this frame is the last one
-            self.n_frames = self.__physical_frame
+            self._n_frames = self.__physical_frame
 
         # duration in milliseconds
         duration = 1000 * tps_duration * (1 / self._tps_dur_secs)
@@ -96,24 +89,22 @@ class JpegXlImageFile(ImageFile.ImageFile):
 
         return data, timestamp, duration
 
-    def _rewind(self, hard: bool = False) -> None:
-        if hard:
-            self._decoder.rewind()
-        self.__physical_frame = 0
-        self.__loaded = -1
-        self.__timestamp = 0
-
     def _seek(self, frame: int) -> None:
         if frame == self.__physical_frame:
             return  # Nothing to do
         if frame < self.__physical_frame:
             # also rewind libjxl decoder instance
-            self._rewind(hard=True)
+            self._decoder.rewind()
+            self.__physical_frame = 0
+            self.__loaded = -1
+            self.__timestamp = 0
 
         while self.__physical_frame < frame:
             self._get_next()  # Advance to the requested frame
 
     def seek(self, frame: int) -> None:
+        if self._n_frames is None:
+            self.n_frames
         if not self._seek_check(frame):
             return
 
