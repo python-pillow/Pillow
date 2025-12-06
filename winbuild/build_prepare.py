@@ -113,20 +113,20 @@ ARCHITECTURES = {
 }
 
 V = {
-    "BROTLI": "1.1.0",
-    "FREETYPE": "2.13.3",
+    "BROTLI": "1.2.0",
+    "FREETYPE": "2.14.1",
     "FRIBIDI": "1.0.16",
-    "HARFBUZZ": "11.2.1",
-    "JPEGTURBO": "3.1.1",
+    "HARFBUZZ": "12.2.0",
+    "JPEGTURBO": "3.1.2",
     "LCMS2": "2.17",
     "LIBAVIF": "1.3.0",
-    "LIBIMAGEQUANT": "4.3.4",
-    "LIBPNG": "1.6.49",
-    "LIBWEBP": "1.5.0",
-    "OPENJPEG": "2.5.3",
-    "TIFF": "4.7.0",
+    "LIBIMAGEQUANT": "4.4.1",
+    "LIBPNG": "1.6.51",
+    "LIBWEBP": "1.6.0",
+    "OPENJPEG": "2.5.4",
+    "TIFF": "4.7.1",
     "XZ": "5.8.1",
-    "ZLIBNG": "2.2.4",
+    "ZLIBNG": "2.3.1",
 }
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
 
@@ -149,18 +149,17 @@ DEPS: dict[str, dict[str, Any]] = {
         },
         "build": [
             *cmds_cmake(
-                ("jpeg-static", "cjpeg-static", "djpeg-static"),
+                ("jpeg-static", "djpeg-static"),
                 "-DENABLE_SHARED:BOOL=FALSE",
                 "-DWITH_JPEG8:BOOL=TRUE",
                 "-DWITH_CRT_DLL:BOOL=TRUE",
             ),
             cmd_copy("jpeg-static.lib", "libjpeg.lib"),
-            cmd_copy("cjpeg-static.exe", "cjpeg.exe"),
             cmd_copy("djpeg-static.exe", "djpeg.exe"),
         ],
         "headers": ["jconfig.h", r"src\j*.h"],
         "libs": ["libjpeg.lib"],
-        "bins": ["cjpeg.exe", "djpeg.exe"],
+        "bins": ["djpeg.exe"],
     },
     "zlib": {
         "url": f"https://github.com/zlib-ng/zlib-ng/archive/refs/tags/{V['ZLIBNG']}.tar.gz",
@@ -168,12 +167,12 @@ DEPS: dict[str, dict[str, Any]] = {
         "license": "LICENSE.md",
         "patch": {
             r"CMakeLists.txt": {
-                "set_target_properties(zlib PROPERTIES OUTPUT_NAME zlibstatic${{SUFFIX}})": "set_target_properties(zlib PROPERTIES OUTPUT_NAME zlib)",  # noqa: E501
+                "set_target_properties(zlib-ng PROPERTIES OUTPUT_NAME zlibstatic${{SUFFIX}})": "set_target_properties(zlib-ng PROPERTIES OUTPUT_NAME zlib)",  # noqa: E501
             },
         },
         "build": [
             *cmds_cmake(
-                "zlib", "-DBUILD_SHARED_LIBS:BOOL=OFF", "-DZLIB_COMPAT:BOOL=ON"
+                "zlib-ng", "-DBUILD_SHARED_LIBS:BOOL=OFF", "-DZLIB_COMPAT:BOOL=ON"
             ),
         ],
         "headers": [r"z*.h"],
@@ -229,12 +228,6 @@ DEPS: dict[str, dict[str, Any]] = {
                 # link against libwebp.lib
                 "#ifdef WEBP_SUPPORT": '#ifdef WEBP_SUPPORT\n#pragma comment(lib, "libwebp.lib")',  # noqa: E501
             },
-            r"test\CMakeLists.txt": {
-                "add_executable(test_write_read_tags ../placeholder.h)": "",
-                "target_sources(test_write_read_tags PRIVATE test_write_read_tags.c)": "",  # noqa: E501
-                "target_link_libraries(test_write_read_tags PRIVATE tiff)": "",
-                "list(APPEND simple_tests test_write_read_tags)": "",
-            },
         },
         "build": [
             *cmds_cmake(
@@ -242,7 +235,6 @@ DEPS: dict[str, dict[str, Any]] = {
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
                 "-DWebP_LIBRARY=libwebp",
                 '-DCMAKE_C_FLAGS="-nologo -DLZMA_API_STATIC"',
-                "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
             )
         ],
         "headers": [r"libtiff\tiff*.h"],

@@ -23,9 +23,10 @@ import operator
 import sys
 from enum import IntEnum, IntFlag
 from functools import reduce
-from typing import Literal, SupportsFloat, SupportsInt, Union
+from typing import Any, Literal, SupportsFloat, SupportsInt, Union
 
 from . import Image
+from ._deprecate import deprecate
 from ._typing import SupportsRead
 
 try:
@@ -233,9 +234,7 @@ class ImageCmsProfile:
             low-level profile object
 
         """
-        self.filename = None
-        self.product_name = None  # profile.product_name
-        self.product_info = None  # profile.product_info
+        self.filename: str | None = None
 
         if isinstance(profile, str):
             if sys.platform == "win32":
@@ -255,6 +254,13 @@ class ImageCmsProfile:
         else:
             msg = "Invalid type for Profile"  # type: ignore[unreachable]
             raise TypeError(msg)
+
+    def __getattr__(self, name: str) -> Any:
+        if name in ("product_name", "product_info"):
+            deprecate(f"ImageCms.ImageCmsProfile.{name}", 13)
+            return None
+        msg = f"'{self.__class__.__name__}' object has no attribute '{name}'"
+        raise AttributeError(msg)
 
     def tobytes(self) -> bytes:
         """

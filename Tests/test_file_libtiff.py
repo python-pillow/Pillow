@@ -355,6 +355,56 @@ class TestFileLibTiff(LibTiffTestCase):
             # Should not segfault
             im.save(outfile)
 
+    @pytest.mark.parametrize("tagtype", (TiffTags.SIGNED_RATIONAL, TiffTags.IFD))
+    def test_tag_type(
+        self, tagtype: int, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[37000] = 100
+        ifd.tagtype[37000] = tagtype
+
+        out = tmp_path / "temp.tif"
+        im = Image.new("L", (1, 1))
+        im.save(out, tiffinfo=ifd)
+
+        with Image.open(out) as reloaded:
+            assert reloaded.tag_v2[37000] == 100
+
+    def test_inknames_tag(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        out = tmp_path / "temp.tif"
+        hopper("L").save(out, tiffinfo={333: "name\x00"})
+
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2[333] in ("name", "name\x00")
+
+    def test_whitepoint_tag(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        out = tmp_path / "temp.tif"
+        hopper().save(out, tiffinfo={318: (0.3127, 0.3289)})
+
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2[318] == pytest.approx((0.3127, 0.3289))
+
+        # Save tag by default
+        out = tmp_path / "temp2.tif"
+        with Image.open("Tests/images/rdf.tif") as im:
+            im.save(out)
+
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2[318] == pytest.approx((0.3127, 0.3289999))
+
     def test_xmlpacket_tag(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
@@ -365,8 +415,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
         with Image.open(out) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
-            if 700 in reloaded.tag_v2:
-                assert reloaded.tag_v2[700] == b"xmlpacket tag"
+            assert reloaded.tag_v2[700] == b"xmlpacket tag"
 
     def test_int_dpi(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         # issue #1765
@@ -873,8 +922,8 @@ class TestFileLibTiff(LibTiffTestCase):
                 assert im.mode == "RGB"
                 assert im.size == (128, 128)
                 assert im.format == "TIFF"
-                im2 = hopper()
-                assert_image_similar(im, im2, 5)
+                with hopper() as im2:
+                    assert_image_similar(im, im2, 5)
         except OSError:
             captured = capfd.readouterr()
             if "LZMA compression support is not configured" in captured.err:

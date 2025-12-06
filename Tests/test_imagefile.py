@@ -164,6 +164,11 @@ class TestImageFile:
         with pytest.raises(OSError):
             p.close()
 
+    def test_negative_offset(self) -> None:
+        with Image.open("Tests/images/raw_negative_stride.bin") as im:
+            with pytest.raises(ValueError, match="Tile offset cannot be negative"):
+                im.load()
+
     def test_no_format(self) -> None:
         buf = BytesIO(b"\x00" * 255)
 

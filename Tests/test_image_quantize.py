@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 import pytest
-from packaging.version import parse as parse_version
 
-from PIL import Image, features
+from PIL import Image
 
-from .helper import assert_image_similar, hopper, is_ppc64le, skip_unless_feature
+from .helper import (
+    assert_image_similar,
+    has_feature_version,
+    hopper,
+    is_ppc64le,
+    skip_unless_feature,
+)
 
 
 def test_sanity() -> None:
@@ -23,11 +28,8 @@ def test_sanity() -> None:
 @skip_unless_feature("libimagequant")
 def test_libimagequant_quantize() -> None:
     image = hopper()
-    if is_ppc64le():
-        version = features.version_feature("libimagequant")
-        assert version is not None
-        if parse_version(version) < parse_version("4"):
-            pytest.skip("Fails with libimagequant earlier than 4.0.0 on ppc64le")
+    if is_ppc64le() and not has_feature_version("libimagequant", "4"):
+        pytest.skip("Fails with libimagequant earlier than 4.0.0 on ppc64le")
     converted = image.quantize(100, Image.Quantize.LIBIMAGEQUANT)
     assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 15)
@@ -56,8 +58,8 @@ def test_rgba_quantize() -> None:
 
 def test_quantize() -> None:
     with Image.open("Tests/images/caption_6_33_22.png") as image:
-        image = image.convert("RGB")
-    converted = image.quantize()
+        converted = image.convert("RGB")
+    converted = converted.quantize()
     assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 1)
 
@@ -65,13 +67,13 @@ def test_quantize() -> None:
 def test_quantize_no_dither() -> None:
     image = hopper()
     with Image.open("Tests/images/caption_6_33_22.png") as palette:
-        palette = palette.convert("P")
+        palette_p = palette.convert("P")
 
-    converted = image.quantize(dither=Image.Dither.NONE, palette=palette)
+    converted = image.quantize(dither=Image.Dither.NONE, palette=palette_p)
     assert converted.mode == "P"
     assert converted.palette is not None
-    assert palette.palette is not None
-    assert converted.palette.palette == palette.palette.palette
+    assert palette_p.palette is not None
+    assert converted.palette.palette == palette_p.palette.palette
 
 
 def test_quantize_no_dither2() -> None:
@@ -95,10 +97,10 @@ def test_quantize_no_dither2() -> None:
 def test_quantize_dither_diff() -> None:
     image = hopper()
     with Image.open("Tests/images/caption_6_33_22.png") as palette:
-        palette = palette.convert("P")
+        palette_p = palette.convert("P")
 
-    dither = image.quantize(dither=Image.Dither.FLOYDSTEINBERG, palette=palette)
-    nodither = image.quantize(dither=Image.Dither.NONE, palette=palette)
+    dither = image.quantize(dither=Image.Dither.FLOYDSTEINBERG, palette=palette_p)
+    nodither = image.quantize(dither=Image.Dither.NONE, palette=palette_p)
 
     assert dither.tobytes() != nodither.tobytes()
 
@@ -114,6 +116,15 @@ def test_quantize_kmeans(method: Image.Quantize) -> None:
 
     with pytest.raises(ValueError):
         im.quantize(kmeans=-1, method=method)
+
+
+@skip_unless_feature("libimagequant")
+def test_resize() -> None:
+    im = hopper().resize((100, 100))
+    converted = im.quantize(100, Image.Quantize.LIBIMAGEQUANT)
+    colors = converted.getcolors()
+    assert colors is not None
+    assert len(colors) == 100
 
 
 def test_colors() -> None:

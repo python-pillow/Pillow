@@ -26,7 +26,6 @@ from .helper import (
     assert_image_equal_tofile,
     assert_image_similar,
     assert_image_similar_tofile,
-    cjpeg_available,
     djpeg_available,
     hopper,
     is_win32,
@@ -331,8 +330,10 @@ class TestFileJpeg:
 
         # Reading
         with Image.open("Tests/images/exif_gps.jpg") as im:
-            exif = im._getexif()
-            assert exif[gps_index] == expected_exif_gps
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+            exif_data = im._getexif()
+            assert exif_data is not None
+            assert exif_data[gps_index] == expected_exif_gps
 
         # Writing
         f = tmp_path / "temp.jpg"
@@ -341,8 +342,10 @@ class TestFileJpeg:
         hopper().save(f, exif=exif)
 
         with Image.open(f) as reloaded:
-            exif = reloaded._getexif()
-            assert exif[gps_index] == expected_exif_gps
+            assert isinstance(reloaded, JpegImagePlugin.JpegImageFile)
+            exif_data = reloaded._getexif()
+            assert exif_data is not None
+            assert exif_data[gps_index] == expected_exif_gps
 
     def test_empty_exif_gps(self) -> None:
         with Image.open("Tests/images/empty_gps_ifd.jpg") as im:
@@ -369,6 +372,7 @@ class TestFileJpeg:
         exifs = []
         for i in range(2):
             with Image.open("Tests/images/exif-200dpcm.jpg") as im:
+                assert isinstance(im, JpegImagePlugin.JpegImageFile)
                 exifs.append(im._getexif())
         assert exifs[0] == exifs[1]
 
@@ -402,13 +406,17 @@ class TestFileJpeg:
         }
 
         with Image.open("Tests/images/exif_gps.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             exif = im._getexif()
+        assert exif is not None
 
         for tag, value in expected_exif.items():
             assert value == exif[tag]
 
     def test_exif_gps_typeerror(self) -> None:
         with Image.open("Tests/images/exif_gps_typeerror.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+
             # Should not raise a TypeError
             im._getexif()
 
@@ -488,7 +496,9 @@ class TestFileJpeg:
 
     def test_exif(self) -> None:
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             info = im._getexif()
+            assert info is not None
             assert info[305] == "Adobe Photoshop CS Macintosh"
 
     def test_get_child_images(self) -> None:
@@ -691,11 +701,13 @@ class TestFileJpeg:
 
     def test_save_multiple_16bit_qtables(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             im2 = self.roundtrip(im, qtables="keep")
             assert im.quantization == im2.quantization
 
     def test_save_single_16bit_qtable(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             im2 = self.roundtrip(im, qtables={0: im.quantization[0]})
             assert len(im2.quantization) == 1
             assert im2.quantization[0] == im.quantization[0]
@@ -730,14 +742,6 @@ class TestFileJpeg:
             assert isinstance(img, JpegImagePlugin.JpegImageFile)
             img.load_djpeg()
             assert_image_similar_tofile(img, TEST_FILE, 5)
-
-    @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
-    def test_save_cjpeg(self, tmp_path: Path) -> None:
-        with Image.open(TEST_FILE) as img:
-            tempfile = str(tmp_path / "temp.jpg")
-            JpegImagePlugin._save_cjpeg(img, BytesIO(), tempfile)
-            # Default save quality is 75%, so a tiny bit of difference is alright
-            assert_image_similar_tofile(img, tempfile, 17)
 
     def test_no_duplicate_0x1001_tag(self) -> None:
         # Arrange
@@ -907,7 +911,10 @@ class TestFileJpeg:
         # in contrast to normal 8
         with Image.open("Tests/images/exif-ifd-offset.jpg") as im:
             # Act / Assert
-            assert im._getexif()[306] == "2017:03:13 23:03:09"
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+            exif = im._getexif()
+            assert exif is not None
+            assert exif[306] == "2017:03:13 23:03:09"
 
     def test_multiple_exif(self) -> None:
         with Image.open("Tests/images/multiple_exif.jpg") as im:

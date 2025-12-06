@@ -294,6 +294,7 @@ def test_roundtrip_save_all(tmp_path: Path) -> None:
         im.save(out, save_all=True)
 
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.n_frames == 5
 
 
@@ -1421,6 +1422,7 @@ def test_palette_save_all_P(tmp_path: Path) -> None:
 
     with Image.open(out) as im:
         # Assert that the frames are correct, and each frame has the same palette
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         assert_image_equal(im.convert("RGB"), frames[0].convert("RGB"))
         assert im.palette is not None
         assert im.global_palette is not None

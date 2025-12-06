@@ -1,10 +1,13 @@
-mypy==1.16.1
+mypy==1.19.0
+arro3-compute
+arro3-core
 IceSpringPySideStubs-PyQt6
 IceSpringPySideStubs-PySide6
 ipython
 numpy
 packaging
 pyarrow-stubs
+pybind11
 pytest
 sphinx
 types-atheris

@@ -47,22 +47,24 @@ import math
 import os
 import struct
 import warnings
-from collections.abc import Iterator, MutableMapping
+from collections.abc import Callable, MutableMapping
 from fractions import Fraction
 from numbers import Number, Rational
-from typing import IO, Any, Callable, NoReturn, cast
+from typing import IO, Any, cast
 
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
-from ._typing import StrOrBytesPath
 from ._util import DeferredError, is_path
 from .TiffTags import TYPES
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from ._typing import Buffer, IntegralLike
+    from collections.abc import Iterator
+    from typing import NoReturn
+
+    from ._typing import Buffer, IntegralLike, StrOrBytesPath
 
 logger = logging.getLogger(__name__)
 
@@ -250,6 +252,7 @@ OPEN_INFO = {
     (II, 3, (1,), 1, (8,), ()): ("P", "P"),
     (MM, 3, (1,), 1, (8,), ()): ("P", "P"),
     (II, 3, (1,), 1, (8, 8), (0,)): ("P", "PX"),
+    (MM, 3, (1,), 1, (8, 8), (0,)): ("P", "PX"),
     (II, 3, (1,), 1, (8, 8), (2,)): ("PA", "PA"),
     (MM, 3, (1,), 1, (8, 8), (2,)): ("PA", "PA"),
     (II, 3, (1,), 2, (8,), ()): ("P", "P;R"),
@@ -1175,6 +1178,7 @@ class TiffImageFile(ImageFile.ImageFile):
         """Open the first image in a TIFF file"""
 
         # Header
+        assert self.fp is not None
         ifh = self.fp.read(8)
         if ifh[2] == 43:
             ifh += self.fp.read(8)
@@ -1341,6 +1345,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # To be nice on memory footprint, if there's a
         # file descriptor, use that instead of reading
         # into a string in python.
+        assert self.fp is not None
         try:
             fp = hasattr(self.fp, "fileno") and self.fp.fileno()
             # flush the file descriptor, prevents error on pypy 2.4+
@@ -1934,9 +1939,10 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                     types[tag] = TiffTags.LONG8
                 elif tag in ifd.tagtype:
                     types[tag] = ifd.tagtype[tag]
-                elif not (isinstance(value, (int, float, str, bytes))):
-                    continue
-                else:
+                elif isinstance(value, (int, float, str, bytes)) or (
+                    isinstance(value, tuple)
+                    and all(isinstance(v, (int, float, IFDRational)) for v in value)
+                ):
                     type = TiffTags.lookup(tag).type
                     if type:
                         types[tag] = type

@@ -38,10 +38,9 @@ import struct
 import sys
 import tempfile
 import warnings
-from collections.abc import Callable, Iterator, MutableMapping, Sequence
+from collections.abc import MutableMapping
 from enum import IntEnum
-from types import ModuleType
-from typing import IO, Any, Literal, Protocol, cast
+from typing import IO, Protocol, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -63,6 +62,12 @@ try:
     from defusedxml import ElementTree
 except ImportError:
     ElementTree = None
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator, Sequence
+    from types import ModuleType
+    from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +103,6 @@ try:
         raise ImportError(msg)
 
 except ImportError as v:
-    core = DeferredError.new(ImportError("The _imaging C module is not installed."))
     # Explanations for ways that we know we might have an import error
     if str(v).startswith("Module use of python"):
         # The _imaging C module is present, but not compiled for
@@ -1005,8 +1009,14 @@ class Image:
                 new_im.info["transparency"] = transparency
             return new_im
 
-        if mode == "P" and self.mode == "RGBA":
-            return self.quantize(colors)
+        if self.mode == "RGBA":
+            if mode == "P":
+                return self.quantize(colors)
+            elif mode == "PA":
+                r, g, b, a = self.split()
+                rgb = merge("RGB", (r, g, b))
+                p = rgb.quantize(colors)
+                return merge("PA", (p, a))
 
         trns = None
         delete_trns = False
@@ -1138,7 +1148,7 @@ class Image:
                 raise ValueError(msg) from e
 
         new_im = self._new(im)
-        if mode == "P" and palette != Palette.ADAPTIVE:
+        if mode in ("P", "PA") and palette != Palette.ADAPTIVE:
             from . import ImagePalette
 
             new_im.palette = ImagePalette.ImagePalette("RGB", im.getpalette("RGB"))
@@ -1331,12 +1341,6 @@ class Image:
            (width, height).
         """
         pass
-
-    def _expand(self, xmargin: int, ymargin: int | None = None) -> Image:
-        if ymargin is None:
-            ymargin = xmargin
-        self.load()
-        return self._new(self.im.expand(xmargin, ymargin))
 
     def filter(self, filter: ImageFilter.Filter | type[ImageFilter.Filter]) -> Image:
         """
@@ -1730,9 +1734,10 @@ class Image:
         details).
 
         Instead of an image, the source can be a integer or tuple
-        containing pixel values.  The method then fills the region
-        with the given color.  When creating RGB images, you can
-        also use color strings as supported by the ImageColor module.
+        containing pixel values. The method then fills the region
+        with the given color. When creating RGB images, you can
+        also use color strings as supported by the ImageColor module. See
+        :ref:`colors` for more information.
 
         If a mask is given, this method updates only the regions
         indicated by the mask. You can use either "1", "L", "LA", "RGBA"
@@ -1988,7 +1993,8 @@ class Image:
         sequence ends. The scale and offset values are used to adjust the
         sequence values: **pixel = value*scale + offset**.
 
-        :param data: A flattened sequence object.
+        :param data: A flattened sequence object. See :ref:`colors` for more
+            information about values.
         :param scale: An optional scale value.  The default is 1.0.
         :param offset: An optional offset value.  The default is 0.0.
         """
@@ -2047,7 +2053,7 @@ class Image:
         Modifies the pixel at the given position. The color is given as
         a single numerical value for single-band images, and a tuple for
         multi-band images. In addition to this, RGB and RGBA tuples are
-        accepted for P and PA images.
+        accepted for P and PA images. See :ref:`colors` for more information.
 
         Note that this method is relatively slow.  For more extensive changes,
         use :py:meth:`~PIL.Image.Image.paste` or the :py:mod:`~PIL.ImageDraw`
@@ -2064,9 +2070,7 @@ class Image:
         :param value: The pixel value.
         """
 
-        if self.readonly:
-            self._copy()
-        self.load()
+        self._ensure_mutable()
 
         if (
             self.mode in ("P", "PA")
@@ -2646,7 +2650,9 @@ class Image:
         :param title: Optional title to use for the image window, where possible.
         """
 
-        _show(self, title=title)
+        from . import ImageShow
+
+        ImageShow.show(self, title)
 
     def split(self) -> tuple[Image, ...]:
         """
@@ -3075,12 +3081,12 @@ def new(
     :param mode: The mode to use for the new image. See:
        :ref:`concept-modes`.
     :param size: A 2-tuple, containing (width, height) in pixels.
-    :param color: What color to use for the image.  Default is black.
-       If given, this should be a single integer or floating point value
-       for single-band modes, and a tuple for multi-band modes (one value
-       per band).  When creating RGB or HSV images, you can also use color
-       strings as supported by the ImageColor module.  If the color is
-       None, the image is not initialised.
+    :param color: What color to use for the image. Default is black. If given,
+       this should be a single integer or floating point value for single-band
+       modes, and a tuple for multi-band modes (one value per band). When
+       creating RGB or HSV images, you can also use color strings as supported
+       by the ImageColor module. See :ref:`colors` for more information. If the
+       color is None, the image is not initialised.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
@@ -3271,19 +3277,10 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     transferred. This means that P and PA mode images will lose their palette.
 
     :param obj: Object with array interface
-    :param mode: Optional mode to use when reading ``obj``. Will be determined from
-      type if ``None``. Deprecated.
-
-      This will not be used to convert the data after reading, but will be used to
-      change how the data is read::
-
-        from PIL import Image
-        import numpy as np
-        a = np.full((1, 1), 300)
-        im = Image.fromarray(a, mode="L")
-        im.getpixel((0, 0))  # 44
-        im = Image.fromarray(a, mode="RGB")
-        im.getpixel((0, 0))  # (44, 1, 0)
+    :param mode: Optional mode to use when reading ``obj``. Since pixel values do not
+      contain information about palettes or color spaces, this can be used to place
+      grayscale L mode data within a P mode image, or read RGB data as YCbCr for
+      example.
 
       See: :ref:`concept-modes` for general information about modes.
     :returns: An image object.
@@ -3294,21 +3291,28 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     shape = arr["shape"]
     ndim = len(shape)
     strides = arr.get("strides", None)
-    if mode is None:
-        try:
-            typekey = (1, 1) + shape[2:], arr["typestr"]
-        except KeyError as e:
+    try:
+        typekey = (1, 1) + shape[2:], arr["typestr"]
+    except KeyError as e:
+        if mode is not None:
+            typekey = None
+            color_modes: list[str] = []
+        else:
             msg = "Cannot handle this data type"
             raise TypeError(msg) from e
+    if typekey is not None:
         try:
-            mode, rawmode = _fromarray_typemap[typekey]
+            typemode, rawmode, color_modes = _fromarray_typemap[typekey]
         except KeyError as e:
             typekey_shape, typestr = typekey
             msg = f"Cannot handle this data type: {typekey_shape}, {typestr}"
             raise TypeError(msg) from e
-    else:
-        deprecate("'mode' parameter", 13)
+    if mode is not None:
+        if mode != typemode and mode not in color_modes:
+            deprecate("'mode' parameter for changing data types", 13)
         rawmode = mode
+    else:
+        mode = typemode
     if mode in ["1", "L", "I", "P", "F"]:
         ndmax = 2
     elif mode == "RGB":
@@ -3405,29 +3409,29 @@ def fromqpixmap(im: ImageQt.QPixmap) -> ImageFile.ImageFile:
 
 
 _fromarray_typemap = {
-    # (shape, typestr) => mode, rawmode
+    # (shape, typestr) => mode, rawmode, color modes
     # first two members of shape are set to one
-    ((1, 1), "|b1"): ("1", "1;8"),
-    ((1, 1), "|u1"): ("L", "L"),
-    ((1, 1), "|i1"): ("I", "I;8"),
-    ((1, 1), "<u2"): ("I", "I;16"),
-    ((1, 1), ">u2"): ("I", "I;16B"),
-    ((1, 1), "<i2"): ("I", "I;16S"),
-    ((1, 1), ">i2"): ("I", "I;16BS"),
-    ((1, 1), "<u4"): ("I", "I;32"),
-    ((1, 1), ">u4"): ("I", "I;32B"),
-    ((1, 1), "<i4"): ("I", "I;32S"),
-    ((1, 1), ">i4"): ("I", "I;32BS"),
-    ((1, 1), "<f4"): ("F", "F;32F"),
-    ((1, 1), ">f4"): ("F", "F;32BF"),
-    ((1, 1), "<f8"): ("F", "F;64F"),
-    ((1, 1), ">f8"): ("F", "F;64BF"),
-    ((1, 1, 2), "|u1"): ("LA", "LA"),
-    ((1, 1, 3), "|u1"): ("RGB", "RGB"),
-    ((1, 1, 4), "|u1"): ("RGBA", "RGBA"),
+    ((1, 1), "|b1"): ("1", "1;8", []),
+    ((1, 1), "|u1"): ("L", "L", ["P"]),
+    ((1, 1), "|i1"): ("I", "I;8", []),
+    ((1, 1), "<u2"): ("I", "I;16", []),
+    ((1, 1), ">u2"): ("I", "I;16B", []),
+    ((1, 1), "<i2"): ("I", "I;16S", []),
+    ((1, 1), ">i2"): ("I", "I;16BS", []),
+    ((1, 1), "<u4"): ("I", "I;32", []),
+    ((1, 1), ">u4"): ("I", "I;32B", []),
+    ((1, 1), "<i4"): ("I", "I;32S", []),
+    ((1, 1), ">i4"): ("I", "I;32BS", []),
+    ((1, 1), "<f4"): ("F", "F;32F", []),
+    ((1, 1), ">f4"): ("F", "F;32BF", []),
+    ((1, 1), "<f8"): ("F", "F;64F", []),
+    ((1, 1), ">f8"): ("F", "F;64BF", []),
+    ((1, 1, 2), "|u1"): ("LA", "LA", ["La", "PA"]),
+    ((1, 1, 3), "|u1"): ("RGB", "RGB", ["YCbCr", "LAB", "HSV"]),
+    ((1, 1, 4), "|u1"): ("RGBA", "RGBA", ["RGBa", "RGBX", "CMYK"]),
     # shortcuts:
-    ((1, 1), f"{_ENDIAN}i4"): ("I", "I"),
-    ((1, 1), f"{_ENDIAN}f4"): ("F", "F"),
+    ((1, 1), f"{_ENDIAN}i4"): ("I", "I", []),
+    ((1, 1), f"{_ENDIAN}f4"): ("F", "F", []),
 }
 
 
@@ -3584,9 +3588,8 @@ def alpha_composite(im1: Image, im2: Image) -> Image:
     """
     Alpha composite im2 over im1.
 
-    :param im1: The first image. Must have mode RGBA.
-    :param im2: The second image.  Must have mode RGBA, and the same size as
-       the first image.
+    :param im1: The first image. Must have mode RGBA or LA.
+    :param im2: The second image. Must have the same mode and size as the first image.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
@@ -3812,6 +3815,7 @@ def register_encoder(name: str, encoder: type[ImageFile.PyEncoder]) -> None:
 def _show(image: Image, **options: Any) -> None:
     from . import ImageShow
 
+    deprecate("Image._show", 13, "ImageShow.show")
     ImageShow.show(image, **options)
 
 
@@ -4233,6 +4237,8 @@ class Exif(_ExifBase):
             del self._info[tag]
         else:
             del self._data[tag]
+            if tag in self._ifds:
+                del self._ifds[tag]
 
     def __iter__(self) -> Iterator[int]:
         keys = set(self._data)

@@ -7,7 +7,7 @@ import shutil
 import sys
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Literal, cast
 
 import pytest
 
@@ -31,6 +31,9 @@ except ImportError:
     # Skipped via setup_module()
     pass
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import Any
 
 SRGB = "Tests/icc/sRGB_IEC61966-2-1_black_scaled.icc"
 HAVE_PROFILE = os.path.exists(SRGB)
@@ -208,9 +211,10 @@ def test_exceptions() -> None:
         ImageCms.getProfileName(None)  # type: ignore[arg-type]
     skip_missing()
 
-    # Python <= 3.9: "an integer is required (got type NoneType)"
-    # Python > 3.9: "'NoneType' object cannot be interpreted as an integer"
-    with pytest.raises(ImageCms.PyCMSError, match="integer"):
+    with pytest.raises(
+        ImageCms.PyCMSError,
+        match="'NoneType' object cannot be interpreted as an integer",
+    ):
         ImageCms.isIntentSupported(SRGB, None, None)  # type: ignore[arg-type]
 
 
@@ -690,3 +694,17 @@ def test_cmyk_lab() -> None:
     im = Image.new("CMYK", (1, 1))
     converted_im = im.convert("LAB")
     assert converted_im.getpixel((0, 0)) == (255, 128, 128)
+
+
+def test_deprecation() -> None:
+    profile = ImageCmsProfile(ImageCms.createProfile("sRGB"))
+    with pytest.warns(
+        DeprecationWarning, match="ImageCms.ImageCmsProfile.product_name"
+    ):
+        profile.product_name
+    with pytest.warns(
+        DeprecationWarning, match="ImageCms.ImageCmsProfile.product_info"
+    ):
+        profile.product_info
+    with pytest.raises(AttributeError):
+        profile.this_attribute_does_not_exist

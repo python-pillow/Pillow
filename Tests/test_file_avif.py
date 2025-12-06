@@ -14,6 +14,7 @@ import pytest
 
 from PIL import (
     AvifImagePlugin,
+    GifImagePlugin,
     Image,
     ImageDraw,
     ImageFile,
@@ -266,6 +267,7 @@ class TestFileAvif:
     def test_background_from_gif(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/chi.gif") as im:
             original_value = im.convert("RGB").getpixel((1, 1))
+            assert isinstance(original_value, tuple)
 
             # Save as AVIF
             out_avif = tmp_path / "temp.avif"
@@ -278,6 +280,7 @@ class TestFileAvif:
 
         with Image.open(out_gif) as reread:
             reread_value = reread.convert("RGB").getpixel((1, 1))
+        assert isinstance(reread_value, tuple)
         difference = sum([abs(original_value[i] - reread_value[i]) for i in range(3)])
         assert difference <= 6
 
@@ -286,6 +289,7 @@ class TestFileAvif:
         with Image.open("Tests/images/chi.gif") as im:
             im.save(temp_file)
         with Image.open(temp_file) as im:
+            assert isinstance(im, AvifImagePlugin.AvifImageFile)
             assert im.n_frames == 1
 
     def test_invalid_file(self) -> None:
@@ -644,10 +648,12 @@ class TestAvifAnimation:
         """
 
         with Image.open(TEST_AVIF_FILE) as im:
+            assert isinstance(im, AvifImagePlugin.AvifImageFile)
             assert im.n_frames == 1
             assert not im.is_animated
 
         with Image.open("Tests/images/avif/star.avifs") as im:
+            assert isinstance(im, AvifImagePlugin.AvifImageFile)
             assert im.n_frames == 5
             assert im.is_animated
 
@@ -658,11 +664,13 @@ class TestAvifAnimation:
         """
 
         with Image.open("Tests/images/avif/star.gif") as original:
+            assert isinstance(original, GifImagePlugin.GifImageFile)
             assert original.n_frames > 1
 
             temp_file = tmp_path / "temp.avif"
             original.save(temp_file, save_all=True)
             with Image.open(temp_file) as im:
+                assert isinstance(im, AvifImagePlugin.AvifImageFile)
                 assert im.n_frames == original.n_frames
 
                 # Compare first frame in P mode to frame from original GIF
@@ -682,6 +690,7 @@ class TestAvifAnimation:
 
         def check(temp_file: Path) -> None:
             with Image.open(temp_file) as im:
+                assert isinstance(im, AvifImagePlugin.AvifImageFile)
                 assert im.n_frames == 4
 
                 # Compare first frame to original
@@ -754,6 +763,7 @@ class TestAvifAnimation:
             )
 
         with Image.open(temp_file) as im:
+            assert isinstance(im, AvifImagePlugin.AvifImageFile)
             assert im.n_frames == 5
             assert im.is_animated
 
@@ -783,6 +793,7 @@ class TestAvifAnimation:
             )
 
         with Image.open(temp_file) as im:
+            assert isinstance(im, AvifImagePlugin.AvifImageFile)
             assert im.n_frames == 5
             assert im.is_animated
 

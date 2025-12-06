@@ -36,10 +36,9 @@ decode_565(UINT16 x) {
 
 static UINT16
 encode_565(rgba item) {
-    UINT8 r, g, b;
-    r = item.color[0] >> (8 - 5);
-    g = item.color[1] >> (8 - 6);
-    b = item.color[2] >> (8 - 5);
+    UINT16 r = item.color[0] >> (8 - 5);
+    UINT8 g = item.color[1] >> (8 - 6);
+    UINT8 b = item.color[2] >> (8 - 5);
     return (r << (5 + 6)) | (g << 5) | b;
 }
 
@@ -157,7 +156,8 @@ encode_bc1_color(Imaging im, ImagingCodecState state, UINT8 *dst, int separate_a
 static void
 encode_bc2_block(Imaging im, ImagingCodecState state, UINT8 *dst) {
     int i, j;
-    UINT8 block[16], current_alpha;
+    UINT8 block[16];
+    UINT32 current_alpha;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
             int x = state->x + i * im->pixelsize;
@@ -253,7 +253,7 @@ int
 ImagingBcnEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
     int n = state->state;
     int has_alpha_channel =
-        strcmp(im->mode, "RGBA") == 0 || strcmp(im->mode, "LA") == 0;
+        im->mode == IMAGING_MODE_RGBA || im->mode == IMAGING_MODE_LA;
 
     UINT8 *dst = buf;
 

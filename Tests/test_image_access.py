@@ -315,3 +315,10 @@ int main(int argc, char* argv[])
         process = subprocess.Popen(["embed_pil.exe"], env=env)
         process.communicate()
         assert process.returncode == 0
+
+    def teardown_method(self) -> None:
+        try:
+            os.remove("embed_pil.c")
+        except FileNotFoundError:
+            # If the test was skipped or failed, the file won't exist
+            pass

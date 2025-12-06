@@ -17,17 +17,29 @@ import sys
 import warnings
 from collections.abc import Iterator
 
+from pybind11.setup_helpers import ParallelCompile
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from setuptools import _BuildInfo
+
+configuration: dict[str, list[str]] = {}
+
+# parse configuration from _custom_build/backend.py
+while sys.argv[-1].startswith("--pillow-configuration="):
+    _, key, value = sys.argv.pop().split("=", 2)
+    configuration.setdefault(key, []).append(value)
+
+default = int(configuration.get("parallel", ["0"])[-1])
+ParallelCompile("MAX_CONCURRENCY", default).install()
 
 
 def get_version() -> str:
     version_file = "src/PIL/_version.py"
     with open(version_file, encoding="utf-8") as f:
         return f.read().split('"')[1]
-
-
-configuration: dict[str, list[str]] = {}
 
 
 PILLOW_VERSION = get_version()
@@ -386,9 +398,7 @@ class pil_build_ext(build_ext):
             cpu_count = os.cpu_count()
             if cpu_count is not None:
                 try:
-                    self.parallel = int(
-                        os.environ.get("MAX_CONCURRENCY", min(4, cpu_count))
-                    )
+                    self.parallel = int(os.environ.get("MAX_CONCURRENCY", cpu_count))
                 except TypeError:
                     pass
         for x in self.feature:
@@ -1066,6 +1076,10 @@ def debug_build() -> bool:
     return hasattr(sys, "gettotalrefcount") or FUZZING_BUILD
 
 
+libraries: list[tuple[str, _BuildInfo]] = [
+    ("pil_imaging_mode", {"sources": ["src/libImaging/Mode.c"]}),
+]
+
 files: list[str | os.PathLike[str]] = ["src/_imaging.c"]
 for src_file in _IMAGING:
     files.append("src/" + src_file + ".c")
@@ -1083,15 +1097,11 @@ ext_modules = [
 ]
 
 
-# parse configuration from _custom_build/backend.py
-while sys.argv[-1].startswith("--pillow-configuration="):
-    _, key, value = sys.argv.pop().split("=", 2)
-    configuration.setdefault(key, []).append(value)
-
 try:
     setup(
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=ext_modules,
+        libraries=libraries,
         zip_safe=not (debug_build() or PLATFORM_MINGW),
     )
 except RequiredDependencyException as err:
