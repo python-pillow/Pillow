@@ -81,7 +81,7 @@ For example, creating a LUT for a 2×2 corner detector::
     lut = lb.build_lut()
 
 You can inspect, save, or reuse the LUT with :meth:`LutBuilder.get_lut`,
-:meth:`LutBuilder.load_lut`, or :meth:`LutBuilder.save_lut`.
+:meth:`MorphOp.load_lut`, or :meth:`MorphOp.save_lut`.
 
 
 Applying morphology with :class:`MorphOp`
@@ -139,9 +139,12 @@ Example::
     op.load_lut("custom.lut")
     count, out = op.apply(im)
 
-
-.. automodule:: PIL.ImageMorph
+.. autoclass:: LutBuilder
     :members:
     :undoc-members:
     :show-inheritance:
-    :noindex:
+
+.. autoclass:: MorphOp
+    :members:
+    :undoc-members:
+    :show-inheritance:
