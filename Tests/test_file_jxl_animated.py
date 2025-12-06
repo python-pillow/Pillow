@@ -6,7 +6,7 @@ from PIL import Image
 
 from .helper import assert_image_equal, skip_unless_feature
 
-pytestmark = [skip_unless_feature("jpegxl")]
+pytestmark = skip_unless_feature("jpegxl")
 
 
 def test_n_frames() -> None:
@@ -27,7 +27,7 @@ def test_float_duration() -> None:
         assert im.info["duration"] == 70
 
 
-def test_seeking() -> None:
+def test_seek() -> None:
     """
     Open an animated jxl file, and then try seeking through frames in reverse-order,
     verifying the durations are correct.
@@ -42,9 +42,7 @@ def test_seeking() -> None:
             total_dur = 0
             for frame in reversed(range(im1.n_frames)):
                 im1.seek(frame)
-                im1.load()
                 im2.seek(frame)
-                im2.load()
 
                 assert_image_equal(im1.convert("RGB"), im2.convert("RGB"))
 

@@ -14,7 +14,7 @@ except ImportError:
 
 
 ## Future idea:
-## it's not known how many frames does animated image have
+## it's not known how many frames an animated image has
 ## by default, _jxl_decoder_new will iterate over all frames without decoding them
 ## then libjxl decoder is rewinded and we're ready to decode frame by frame
 ## if OPEN_COUNTS_FRAMES is False, n_frames will be None until the last frame is decoded
@@ -74,8 +74,7 @@ class JpegXlImageFile(ImageFile.ImageFile):
 
         self._rewind()
 
-    def _get_next(self) -> tuple[bytes, float, float, bool]:
-
+    def _get_next(self) -> tuple[bytes, float, float]:
         # Get next frame
         next_frame = self._decoder.get_next()
         self.__physical_frame += 1
@@ -95,7 +94,7 @@ class JpegXlImageFile(ImageFile.ImageFile):
         timestamp = self.__timestamp
         self.__timestamp += duration
 
-        return data, timestamp, duration, is_last
+        return data, timestamp, duration
 
     def _rewind(self, hard: bool = False) -> None:
         if hard:
@@ -125,9 +124,7 @@ class JpegXlImageFile(ImageFile.ImageFile):
         if self.__loaded != self.__logical_frame:
             self._seek(self.__logical_frame)
 
-            data, timestamp, duration, is_last = self._get_next()
-            self.info["timestamp"] = timestamp
-            self.info["duration"] = duration
+            data, self.info["timestamp"], self.info["duration"] = self._get_next()
             self.__loaded = self.__logical_frame
 
             # Set tile

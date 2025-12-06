@@ -8,7 +8,7 @@ from PIL import Image, JpegXlImagePlugin
 
 from .helper import skip_unless_feature
 
-pytestmark = [skip_unless_feature("jpegxl")]
+pytestmark = skip_unless_feature("jpegxl")
 
 ElementTree: ModuleType | None
 try:
@@ -33,8 +33,8 @@ def test_read_exif_metadata() -> None:
 
         exif = im.getexif()
 
-        # Camera make
-        assert exif[271] == "Canon"
+    # Camera make
+    assert exif[271] == "Canon"
 
     with Image.open("Tests/images/flower.jpg") as im_jpeg:
         expected_exif = im_jpeg.info["exif"]
@@ -49,7 +49,7 @@ def test_read_exif_metadata_without_prefix() -> None:
         assert im.info["exif"][:6] != b"Exif\x00\x00"
 
         exif = im.getexif()
-        assert exif[305] == "Adobe Photoshop CS6 (Macintosh)"
+    assert exif[305] == "Adobe Photoshop CS6 (Macintosh)"
 
 
 def test_read_icc_profile() -> None:

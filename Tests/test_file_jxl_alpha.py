@@ -4,7 +4,7 @@ from PIL import Image
 
 from .helper import assert_image_similar_tofile, skip_unless_feature
 
-pytestmark = [skip_unless_feature("jpegxl")]
+pytestmark = skip_unless_feature("jpegxl")
 
 
 def test_read_rgba() -> None:
