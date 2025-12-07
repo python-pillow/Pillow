@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.11", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["pypy3.11", "3.11", "3.12", "3.13", "3.14", "3.15"]
         architecture: ["x64"]
         include:
             # Test the oldest Python on 32-bit
