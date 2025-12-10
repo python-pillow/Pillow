@@ -293,7 +293,7 @@ def composite(
     return Image.composite(image1, image2, mask)
 
 
-def compare_images(image1, image2):
+def compare_images(image1: Image.Image, image2: Image.Image) -> dict[str, float]:
     """
     Compare two images pixel by pixel.
 
@@ -324,7 +324,7 @@ def compare_images(image1, image2):
         }
 
     # Count non-zero (different) pixels
-    nonzero = sum(1 for px in diff.getdata() if px != 0)
+    nonzero = sum(1 for px in tuple(diff.getdata()) if px != 0)
     total = image1.size[0] * image1.size[1]
 
     return {
