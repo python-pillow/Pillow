@@ -187,8 +187,9 @@ jobs:
     # trim ~150MB for each job
     - name: Optimize build cache
       if: steps.build-cache.outputs.cache-hit != 'true'
-      run: rmdir /S /Q winbuild\build\src
-      shell: cmd
+      run: |
+        rm -rf winbuild\build\src
+      shell: bash
 
     - name: Build Pillow
       run: |
@@ -205,9 +206,7 @@ jobs:
 
     - name: Test Pillow
       run: |
-        path %GITHUB_WORKSPACE%\winbuild\build\bin;%PATH%
         .ci\test.cmd
-      shell: cmd
 
     - name: Prepare to upload errors
       if: failure()
