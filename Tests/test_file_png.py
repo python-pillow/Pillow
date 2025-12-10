@@ -787,7 +787,9 @@ class TestFilePng:
             im.save(test_file, exif=im.getexif())
 
         with Image.open(test_file) as reloaded:
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
             exif = reloaded._getexif()
+        assert exif is not None
         assert exif[305] == "Adobe Photoshop CS Macintosh"
 
     def test_exif_argument(self, tmp_path: Path) -> None:

@@ -143,6 +143,7 @@ def test_getiptcinfo_tiff() -> None:
 
     # Test with LONG tag type
     with Image.open("Tests/images/hopper.Lab.tif") as im:
+        assert isinstance(im, TiffImagePlugin.TiffImageFile)
         im.tag_v2.tagtype[TiffImagePlugin.IPTC_NAA_CHUNK] = TiffTags.LONG
         iptc = IptcImagePlugin.getiptcinfo(im)
 
