@@ -307,9 +307,11 @@ def compare_images(image1, image2):
     :raises ValueError: If the images have different sizes or modes.
     """
     if image1.mode != image2.mode:
-        raise ValueError("Images must have the same mode")
+        msg = "Images must have the same mode"
+        raise ValueError(msg)
     if image1.size != image2.size:
-        raise ValueError("Images must have the same size")
+        msg = "Images must have the same size"
+        raise ValueError(msg)
 
     # Use ImageChops.difference to detect pixel differences
     diff = difference(image1, image2).convert("L")
