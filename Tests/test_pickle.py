@@ -90,18 +90,18 @@ def test_pickle_la_mode_with_palette(tmp_path: Path) -> None:
     # Arrange
     filename = tmp_path / "temp.pkl"
     with Image.open("Tests/images/hopper.jpg") as im:
-        im = im.convert("PA")
+        im_pa = im.convert("PA")
 
     # Act / Assert
     for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
-        im._mode = "LA"
+        im_pa._mode = "LA"
         with open(filename, "wb") as f:
-            pickle.dump(im, f, protocol)
+            pickle.dump(im_pa, f, protocol)
         with open(filename, "rb") as f:
             loaded_im = pickle.load(f)
 
-        im._mode = "PA"
-        assert im == loaded_im
+        im_pa._mode = "PA"
+        assert im_pa == loaded_im
 
 
 @skip_unless_feature("webp")

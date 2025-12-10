@@ -198,10 +198,10 @@ def test_bitmap() -> None:
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
     with Image.open("Tests/images/pil123rgba.png") as small:
-        small = small.resize((50, 50), Image.Resampling.NEAREST)
+        small_resized = small.resize((50, 50), Image.Resampling.NEAREST)
 
         # Act
-        draw.bitmap((10, 10), small)
+        draw.bitmap((10, 10), small_resized)
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_bitmap.png")

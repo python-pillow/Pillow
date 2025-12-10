@@ -43,7 +43,9 @@ def grab(
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
             args = ["screencapture"]
-            if bbox:
+            if window:
+                args += ["-l", str(window)]
+            elif bbox:
                 left, top, right, bottom = bbox
                 args += ["-R", f"{left},{top},{right-left},{bottom-top}"]
             subprocess.call(args + ["-x", filepath])
@@ -51,9 +53,35 @@ def grab(
             im.load()
             os.unlink(filepath)
             if bbox:
-                im_resized = im.resize((right - left, bottom - top))
-                im.close()
-                return im_resized
+                if window:
+                    # Determine if the window was in Retina mode or not
+                    # by capturing it without the shadow,
+                    # and checking how different the width is
+                    fh, filepath = tempfile.mkstemp(".png")
+                    os.close(fh)
+                    subprocess.call(
+                        ["screencapture", "-l", str(window), "-o", "-x", filepath]
+                    )
+                    with Image.open(filepath) as im_no_shadow:
+                        retina = im.width - im_no_shadow.width > 100
+                    os.unlink(filepath)
+
+                    # Since screencapture's -R does not work with -l,
+                    # crop the image manually
+                    if retina:
+                        left, top, right, bottom = bbox
+                        im_cropped = im.resize(
+                            (right - left, bottom - top),
+                            box=tuple(coord * 2 for coord in bbox),
+                        )
+                    else:
+                        im_cropped = im.crop(bbox)
+                    im.close()
+                    return im_cropped
+                else:
+                    im_resized = im.resize((right - left, bottom - top))
+                    im.close()
+                    return im_resized
             return im
         elif sys.platform == "win32":
             if window is not None:

@@ -42,6 +42,8 @@ jobs:
         ]
         python-version: [
           "pypy3.11",
+          "3.15t",
+          "3.15",
           "3.14t",
           "3.14",
           "3.13t",
@@ -54,6 +56,7 @@ jobs:
         - { python-version: "3.12", PYTHONOPTIMIZE: 1, REVERSE: "--reverse" }
         - { python-version: "3.11", PYTHONOPTIMIZE: 2 }
         # Free-threaded
+        - { python-version: "3.15t", disable-gil: true }
         - { python-version: "3.14t", disable-gil: true }
         - { python-version: "3.13t", disable-gil: true }
         # Intel
@@ -65,7 +68,7 @@ jobs:
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         persist-credentials: false
 

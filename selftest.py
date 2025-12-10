@@ -40,12 +40,14 @@ def testimage() -> None:
     >>> with Image.open("Tests/images/hopper.gif") as im:
     ...     _info(im)
     ('GIF', 'P', (128, 128))
-    >>> _info(Image.open("Tests/images/hopper.ppm"))
+    >>> with Image.open("Tests/images/hopper.ppm") as im:
+    ...     _info(im)
     ('PPM', 'RGB', (128, 128))
     >>> try:
-    ...  _info(Image.open("Tests/images/hopper.jpg"))
+    ...     with Image.open("Tests/images/hopper.jpg") as im:
+    ...         _info(im)
     ... except OSError as v:
-    ...  print(v)
+    ...     print(v)
     ('JPEG', 'RGB', (128, 128))
 
     PIL doesn't actually load the image data until it's needed,

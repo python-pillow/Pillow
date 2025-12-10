@@ -49,6 +49,12 @@ def test_getcolor() -> None:
         palette.getcolor("unknown")  # type: ignore[arg-type]
 
 
+def test_getcolor_rgba() -> None:
+    palette = ImagePalette.ImagePalette("RGBA", (1, 2, 3, 4))
+    palette.getcolor((5, 6, 7, 8))
+    assert palette.palette == b"\x01\x02\x03\x04\x05\x06\x07\x08"
+
+
 def test_getcolor_rgba_color_rgb_palette() -> None:
     palette = ImagePalette.ImagePalette("RGB")
 

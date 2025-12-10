@@ -127,11 +127,15 @@ class ImageFont:
     def _load_pilfont_data(self, file: IO[bytes], image: Image.Image) -> None:
         # check image
         if image.mode not in ("1", "L"):
+            image.close()
+
             msg = "invalid font image mode"
             raise TypeError(msg)
 
         # read PILfont header
         if file.read(8) != b"PILfont\n":
+            image.close()
+
             msg = "Not a PILfont file"
             raise SyntaxError(msg)
         file.readline()

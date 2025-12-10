@@ -314,8 +314,8 @@ class TestImageResize:
     @skip_unless_feature("libtiff")
     def test_transposed(self) -> None:
         with Image.open("Tests/images/g4_orientation_5.tif") as im:
-            im = im.resize((64, 64))
-            assert im.size == (64, 64)
+            im_resized = im.resize((64, 64))
+            assert im_resized.size == (64, 64)
 
     @pytest.mark.parametrize(
         "mode", ("L", "RGB", "I", "I;16", "I;16L", "I;16B", "I;16N", "F")

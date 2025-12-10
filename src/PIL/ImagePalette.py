@@ -118,7 +118,7 @@ class ImagePalette:
     ) -> int:
         if not isinstance(self.palette, bytearray):
             self._palette = bytearray(self.palette)
-        index = len(self.palette) // 3
+        index = len(self.palette) // len(self.mode)
         special_colors: tuple[int | tuple[int, ...] | None, ...] = ()
         if image:
             special_colors = (
@@ -168,11 +168,12 @@ class ImagePalette:
                 index = self._new_color_index(image, e)
                 assert isinstance(self._palette, bytearray)
                 self.colors[color] = index
-                if index * 3 < len(self.palette):
+                mode_len = len(self.mode)
+                if index * mode_len < len(self.palette):
                     self._palette = (
-                        self._palette[: index * 3]
+                        self._palette[: index * mode_len]
                         + bytes(color)
-                        + self._palette[index * 3 + 3 :]
+                        + self._palette[index * mode_len + mode_len :]
                     )
                 else:
                     self._palette += bytes(color)
