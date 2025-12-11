@@ -49,6 +49,7 @@ class IptcImageFile(ImageFile.ImageFile):
     def field(self) -> tuple[tuple[int, int] | None, int]:
         #
         # get a IPTC field header
+        assert self.fp is not None
         s = self.fp.read(5)
         if not s.strip(b"\x00"):
             return None, 0
@@ -76,6 +77,7 @@ class IptcImageFile(ImageFile.ImageFile):
 
     def _open(self) -> None:
         # load descriptive fields
+        assert self.fp is not None
         while True:
             offset = self.fp.tell()
             tag, size = self.field()
@@ -131,6 +133,7 @@ class IptcImageFile(ImageFile.ImageFile):
             assert isinstance(args, tuple)
             compression, band = args
 
+            assert self.fp is not None
             self.fp.seek(self.tile[0].offset)
 
             # Copy image data to temporary file
