@@ -104,25 +104,27 @@ def test_exif(test_file: str) -> None:
 
 
 def test_frame_size() -> None:
-    # This image has been hexedited to contain a different size
-    # in the SOF marker of the second frame
-    with Image.open("Tests/images/sugarshack_frame_size.mpo") as im:
-        assert im.size == (640, 480)
+    with Image.open("Tests/images/frame_size.mpo") as im:
+        assert im.size == (56, 70)
+        im.load()
 
         im.seek(1)
-        assert im.size == (680, 480)
+        assert im.size == (349, 434)
+        im.load()
 
         im.seek(0)
-        assert im.size == (640, 480)
+        assert im.size == (56, 70)
 
 
 def test_ignore_frame_size() -> None:
     # Ignore the different size of the second frame
     # since this is not a "Large Thumbnail" image
     with Image.open("Tests/images/ignore_frame_size.mpo") as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         assert im.size == (64, 64)
 
         im.seek(1)
+        assert im.mpinfo is not None
         assert (
             im.mpinfo[0xB002][1]["Attribute"]["MPType"]
             == "Multi-Frame Image: (Disparity)"
@@ -155,6 +157,7 @@ def test_reload_exif_after_seek() -> None:
 @pytest.mark.parametrize("test_file", test_files)
 def test_mp(test_file: str) -> None:
     with Image.open(test_file) as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         mpinfo = im._getmp()
         assert mpinfo is not None
         assert mpinfo[45056] == b"0100"
@@ -165,6 +168,7 @@ def test_mp_offset() -> None:
     # This image has been manually hexedited to have an IFD offset of 10
     # in APP2 data, in contrast to normal 8
     with Image.open("Tests/images/sugarshack_ifd_offset.mpo") as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         mpinfo = im._getmp()
         assert mpinfo is not None
         assert mpinfo[45056] == b"0100"
@@ -182,6 +186,7 @@ def test_mp_no_data() -> None:
 @pytest.mark.parametrize("test_file", test_files)
 def test_mp_attribute(test_file: str) -> None:
     with Image.open(test_file) as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         mpinfo = im._getmp()
     assert mpinfo is not None
     for frame_number, mpentry in enumerate(mpinfo[0xB002]):
@@ -295,12 +300,12 @@ def test_save_all() -> None:
             im_reloaded.seek(1)
             assert_image_similar(im, im_reloaded, 30)
 
-    im = Image.new("RGB", (1, 1))
+    im_rgb = Image.new("RGB", (1, 1))
     for colors in (("#f00",), ("#f00", "#0f0")):
         append_images = [Image.new("RGB", (1, 1), color) for color in colors]
-        im_reloaded = roundtrip(im, save_all=True, append_images=append_images)
+        im_reloaded = roundtrip(im_rgb, save_all=True, append_images=append_images)
 
-        assert_image_equal(im, im_reloaded)
+        assert_image_equal(im_rgb, im_reloaded)
         assert isinstance(im_reloaded, MpoImagePlugin.MpoImageFile)
         assert im_reloaded.mpinfo is not None
         assert im_reloaded.mpinfo[45056] == b"0100"
@@ -310,7 +315,7 @@ def test_save_all() -> None:
             assert_image_similar(im_reloaded, im_expected, 1)
 
     # Test that a single frame image will not be saved as an MPO
-    jpg = roundtrip(im, save_all=True)
+    jpg = roundtrip(im_rgb, save_all=True)
     assert "mp" not in jpg.info
 
 

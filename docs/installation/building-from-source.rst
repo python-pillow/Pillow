@@ -44,7 +44,7 @@ Many of Pillow's features require external libraries:
 
 * **libtiff** provides compressed TIFF functionality
 
-  * Pillow has been tested with libtiff versions **4.0-4.7.0**
+  * Pillow has been tested with libtiff versions **4.0-4.7.1**
 
 * **libfreetype** provides type related services
 
@@ -58,13 +58,13 @@ Many of Pillow's features require external libraries:
 * **openjpeg** provides JPEG 2000 functionality.
 
   * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1**,
-    **2.4.0**, **2.5.0**, **2.5.2** and **2.5.3**.
+    **2.4.0**, **2.5.0**, **2.5.2**, **2.5.3** and **2.5.4**.
   * Pillow does **not** support the earlier **1.5** series which ships
     with Debian Jessie.
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.4.0**
+  * Pillow has been tested with libimagequant **2.6-4.4.1**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -116,7 +116,7 @@ Many of Pillow's features require external libraries:
 
     .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
-    Prerequisites for **Ubuntu 16.04 LTS - 22.04 LTS** are installed with::
+    Prerequisites for **Ubuntu 16.04 LTS - 24.04 LTS** are installed with::
 
         sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
             libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \

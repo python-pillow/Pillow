@@ -1,4 +1,6 @@
-mypy==1.17.1
+mypy==1.19.0
+arro3-compute
+arro3-core
 IceSpringPySideStubs-PyQt6
 IceSpringPySideStubs-PySide6
 ipython

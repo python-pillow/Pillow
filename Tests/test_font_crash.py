@@ -9,7 +9,8 @@ from .helper import skip_unless_feature
 
 class TestFontCrash:
     def _fuzz_font(self, font: ImageFont.FreeTypeFont) -> None:
-        # from fuzzers.fuzz_font
+        # Copy of the code from fuzz_font() in Tests/oss-fuzz/fuzzers.py
+        # that triggered a problem when fuzzing
         font.getbbox("ABC")
         font.getmask("test text")
         with Image.new(mode="RGBA", size=(200, 200)) as im:

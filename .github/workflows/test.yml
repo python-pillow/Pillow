@@ -42,6 +42,8 @@ jobs:
         ]
         python-version: [
           "pypy3.11",
+          "3.15t",
+          "3.15",
           "3.14t",
           "3.14",
           "3.13t",
@@ -54,10 +56,11 @@ jobs:
         - { python-version: "3.12", PYTHONOPTIMIZE: 1, REVERSE: "--reverse" }
         - { python-version: "3.11", PYTHONOPTIMIZE: 2 }
         # Free-threaded
+        - { python-version: "3.15t", disable-gil: true }
         - { python-version: "3.14t", disable-gil: true }
         - { python-version: "3.13t", disable-gil: true }
         # Intel
-        - { os: "macos-13", python-version: "3.10" }
+        - { os: "macos-15-intel", python-version: "3.10" }
         exclude:
         - { os: "macos-latest", python-version: "3.10" }
 
@@ -65,12 +68,12 @@ jobs:
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         persist-credentials: false
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
@@ -140,7 +143,7 @@ jobs:
         mkdir -p Tests/errors
 
     - name: Upload errors
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: failure()
       with:
         name: errors

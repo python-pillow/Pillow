@@ -43,10 +43,10 @@ ImagingHistogramNew(Imaging im) {
     if (!h) {
         return (ImagingHistogram)ImagingError_MemoryError();
     }
-    strncpy(h->mode, im->mode, IMAGING_MODE_LENGTH - 1);
-    h->mode[IMAGING_MODE_LENGTH - 1] = 0;
 
+    h->mode = im->mode;
     h->bands = im->bands;
+
     h->histogram = calloc(im->pixelsize, 256 * sizeof(long));
     if (!h->histogram) {
         free(h);
@@ -73,7 +73,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
         if (im->xsize != imMask->xsize || im->ysize != imMask->ysize) {
             return ImagingError_Mismatch();
         }
-        if (strcmp(imMask->mode, "1") != 0 && strcmp(imMask->mode, "L") != 0) {
+        if (imMask->mode != IMAGING_MODE_1 && imMask->mode != IMAGING_MODE_L) {
             return ImagingError_ValueError("bad transparency mask");
         }
     }

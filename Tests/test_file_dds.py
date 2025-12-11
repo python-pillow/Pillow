@@ -380,6 +380,11 @@ def test_palette() -> None:
         assert_image_equal_tofile(im, "Tests/images/transparent.gif")
 
 
+def test_zero_mask_totals() -> None:
+    with Image.open("Tests/images/zero_mask_totals.dds") as im:
+        im.load()
+
+
 def test_unsupported_header_size() -> None:
     with pytest.raises(OSError, match="Unsupported header size 0"):
         with Image.open(BytesIO(b"DDS " + b"\x00" * 4)):

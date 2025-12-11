@@ -20,7 +20,9 @@ or the clipboard to a PIL image memory.
     used as a fallback if they are installed. To disable this behaviour, pass
     ``xdisplay=""`` instead.
 
-    .. versionadded:: 1.1.3 (Windows), 3.0.0 (macOS), 7.1.0 (Linux)
+    .. versionadded:: 1.1.3 Windows support
+    .. versionadded:: 3.0.0 macOS support
+    .. versionadded:: 7.1.0 Linux support
 
     :param bbox: What region to copy. Default is the entire screen.
                  On macOS, this is not increased to 2x for Retina screens, so the full
@@ -42,9 +44,11 @@ or the clipboard to a PIL image memory.
         .. versionadded:: 7.1.0
 
     :param window:
-        HWND, to capture a single window. Windows only.
+        Capture a single window. On Windows, this is a HWND. On macOS, this is a
+        CGWindowID.
 
-        .. versionadded:: 11.2.1
+        .. versionadded:: 11.2.1 Windows support
+        .. versionadded:: 12.1.0 macOS support
     :return: An image
 
 .. py:function:: grabclipboard()
@@ -53,7 +57,9 @@ or the clipboard to a PIL image memory.
 
     On Linux, ``wl-paste`` or ``xclip`` is required.
 
-    .. versionadded:: 1.1.4 (Windows), 3.3.0 (macOS), 9.4.0 (Linux)
+    .. versionadded:: 1.1.4 Windows support
+    .. versionadded:: 3.3.0 macOS support
+    .. versionadded:: 9.4.0 Linux support
 
     :return: On Windows, an image, a list of filenames,
              or None if the clipboard does not contain image data or filenames.

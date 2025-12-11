@@ -229,7 +229,9 @@ class TestFilePng:
         assert_image(im, "RGBA", (162, 150))
 
         # image has 124 unique alpha values
-        assert len(im.getchannel("A").getcolors()) == 124
+        colors = im.getchannel("A").getcolors()
+        assert colors is not None
+        assert len(colors) == 124
 
     def test_load_transparent_rgb(self) -> None:
         test_file = "Tests/images/rgb_trns.png"
@@ -241,7 +243,9 @@ class TestFilePng:
         assert_image(im, "RGBA", (64, 64))
 
         # image has 876 transparent pixels
-        assert im.getchannel("A").getcolors()[0][0] == 876
+        colors = im.getchannel("A").getcolors()
+        assert colors is not None
+        assert colors[0][0] == 876
 
     def test_save_p_transparent_palette(self, tmp_path: Path) -> None:
         in_file = "Tests/images/pil123p.png"
@@ -262,7 +266,9 @@ class TestFilePng:
         assert_image(im, "RGBA", (162, 150))
 
         # image has 124 unique alpha values
-        assert len(im.getchannel("A").getcolors()) == 124
+        colors = im.getchannel("A").getcolors()
+        assert colors is not None
+        assert len(colors) == 124
 
     def test_save_p_single_transparency(self, tmp_path: Path) -> None:
         in_file = "Tests/images/p_trns_single.png"
@@ -285,7 +291,9 @@ class TestFilePng:
         assert im.getpixel((31, 31)) == (0, 255, 52, 0)
 
         # image has 876 transparent pixels
-        assert im.getchannel("A").getcolors()[0][0] == 876
+        colors = im.getchannel("A").getcolors()
+        assert colors is not None
+        assert colors[0][0] == 876
 
     def test_save_p_transparent_black(self, tmp_path: Path) -> None:
         # check if solid black image with full transparency
@@ -313,7 +321,9 @@ class TestFilePng:
                 assert im.info["transparency"] == 255
 
                 im_rgba = im.convert("RGBA")
-            assert im_rgba.getchannel("A").getcolors()[0][0] == num_transparent
+            colors = im_rgba.getchannel("A").getcolors()
+            assert colors is not None
+            assert colors[0][0] == num_transparent
 
             test_file = tmp_path / "temp.png"
             im.save(test_file)
@@ -324,7 +334,18 @@ class TestFilePng:
                 assert_image_equal(im, test_im)
 
             test_im_rgba = test_im.convert("RGBA")
-            assert test_im_rgba.getchannel("A").getcolors()[0][0] == num_transparent
+            colors = test_im_rgba.getchannel("A").getcolors()
+            assert colors is not None
+            assert colors[0][0] == num_transparent
+
+    def test_save_1_transparency(self, tmp_path: Path) -> None:
+        out = tmp_path / "temp.png"
+
+        im = Image.new("1", (1, 1), 1)
+        im.save(out, transparency=1)
+
+        with Image.open(out) as reloaded:
+            assert reloaded.info["transparency"] == 255
 
     def test_save_rgb_single_transparency(self, tmp_path: Path) -> None:
         in_file = "Tests/images/caption_6_33_22.png"
@@ -671,6 +692,9 @@ class TestFilePng:
         im.save(out, bits=4, save_all=save_all)
 
         with Image.open(out) as reloaded:
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+            assert reloaded.png is not None
+            assert reloaded.png.im_palette is not None
             assert len(reloaded.png.im_palette[1]) == 48
 
     def test_plte_length(self, tmp_path: Path) -> None:
@@ -681,6 +705,9 @@ class TestFilePng:
         im.save(out)
 
         with Image.open(out) as reloaded:
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+            assert reloaded.png is not None
+            assert reloaded.png.im_palette is not None
             assert len(reloaded.png.im_palette[1]) == 3
 
     def test_getxmp(self) -> None:
@@ -702,13 +729,17 @@ class TestFilePng:
     def test_exif(self) -> None:
         # With an EXIF chunk
         with Image.open("Tests/images/exif.png") as im:
-            exif = im._getexif()
-        assert exif[274] == 1
+            assert isinstance(im, PngImagePlugin.PngImageFile)
+            exif_data = im._getexif()
+        assert exif_data is not None
+        assert exif_data[274] == 1
 
         # With an ImageMagick zTXt chunk
         with Image.open("Tests/images/exif_imagemagick.png") as im:
-            exif = im._getexif()
-            assert exif[274] == 1
+            assert isinstance(im, PngImagePlugin.PngImageFile)
+            exif_data = im._getexif()
+            assert exif_data is not None
+            assert exif_data[274] == 1
 
             # Assert that info still can be extracted
             # when the image is no longer a PngImageFile instance
@@ -717,8 +748,10 @@ class TestFilePng:
 
         # With a tEXt chunk
         with Image.open("Tests/images/exif_text.png") as im:
-            exif = im._getexif()
-        assert exif[274] == 1
+            assert isinstance(im, PngImagePlugin.PngImageFile)
+            exif_data = im._getexif()
+        assert exif_data is not None
+        assert exif_data[274] == 1
 
         # With XMP tags
         with Image.open("Tests/images/xmp_tags_orientation.png") as im:
@@ -740,8 +773,10 @@ class TestFilePng:
             im.save(test_file, exif=im.getexif())
 
         with Image.open(test_file) as reloaded:
-            exif = reloaded._getexif()
-        assert exif[274] == 1
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+            exif_data = reloaded._getexif()
+        assert exif_data is not None
+        assert exif_data[274] == 1
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
@@ -752,7 +787,9 @@ class TestFilePng:
             im.save(test_file, exif=im.getexif())
 
         with Image.open(test_file) as reloaded:
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
             exif = reloaded._getexif()
+        assert exif is not None
         assert exif[305] == "Adobe Photoshop CS Macintosh"
 
     def test_exif_argument(self, tmp_path: Path) -> None:

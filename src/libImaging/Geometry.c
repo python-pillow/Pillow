@@ -19,7 +19,7 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xr;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || imIn->mode != imOut->mode) {
         return (Imaging)ImagingError_ModeError();
     }
     if (imIn->xsize != imOut->xsize || imIn->ysize != imOut->ysize) {
@@ -41,7 +41,7 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
-        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+        if (isModeI16(imIn->mode)) {
             FLIP_LEFT_RIGHT(UINT16, image8)
         } else {
             FLIP_LEFT_RIGHT(UINT8, image8)
@@ -62,7 +62,7 @@ ImagingFlipTopBottom(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int y, yr;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || imIn->mode != imOut->mode) {
         return (Imaging)ImagingError_ModeError();
     }
     if (imIn->xsize != imOut->xsize || imIn->ysize != imOut->ysize) {
@@ -89,7 +89,7 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
     int x, y, xx, yy, xr, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || imIn->mode != imOut->mode) {
         return (Imaging)ImagingError_ModeError();
     }
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize) {
@@ -127,7 +127,7 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
-        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+        if (isModeI16(imIn->mode)) {
             ROTATE_90(UINT16, image8);
         } else {
             ROTATE_90(UINT8, image8);
@@ -149,7 +149,7 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
     int x, y, xx, yy, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || imIn->mode != imOut->mode) {
         return (Imaging)ImagingError_ModeError();
     }
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize) {
@@ -186,7 +186,7 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
-        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+        if (isModeI16(imIn->mode)) {
             TRANSPOSE(UINT16, image8);
         } else {
             TRANSPOSE(UINT8, image8);
@@ -208,7 +208,7 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
     int x, y, xr, yr, xx, yy, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || imIn->mode != imOut->mode) {
         return (Imaging)ImagingError_ModeError();
     }
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize) {
@@ -247,7 +247,7 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
-        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+        if (isModeI16(imIn->mode)) {
             TRANSVERSE(UINT16, image8);
         } else {
             TRANSVERSE(UINT8, image8);
@@ -268,7 +268,7 @@ ImagingRotate180(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xr, yr;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || imIn->mode != imOut->mode) {
         return (Imaging)ImagingError_ModeError();
     }
     if (imIn->xsize != imOut->xsize || imIn->ysize != imOut->ysize) {
@@ -291,7 +291,7 @@ ImagingRotate180(Imaging imOut, Imaging imIn) {
 
     yr = imIn->ysize - 1;
     if (imIn->image8) {
-        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+        if (isModeI16(imIn->mode)) {
             ROTATE_180(UINT16, image8)
         } else {
             ROTATE_180(UINT8, image8)
@@ -313,7 +313,7 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
     int x, y, xx, yy, yr, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || imIn->mode != imOut->mode) {
         return (Imaging)ImagingError_ModeError();
     }
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize) {
@@ -351,7 +351,7 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
-        if (strncmp(imIn->mode, "I;16", 4) == 0) {
+        if (isModeI16(imIn->mode)) {
             ROTATE_270(UINT16, image8);
         } else {
             ROTATE_270(UINT8, image8);
@@ -714,14 +714,7 @@ getfilter(Imaging im, int filterid) {
                     case IMAGING_TYPE_UINT8:
                         return nearest_filter8;
                     case IMAGING_TYPE_SPECIAL:
-                        switch (im->pixelsize) {
-                            case 1:
-                                return nearest_filter8;
-                            case 2:
-                                return nearest_filter16;
-                            case 4:
-                                return nearest_filter32;
-                        }
+                        return nearest_filter16;
                 }
             } else {
                 return nearest_filter32;
@@ -791,7 +784,7 @@ ImagingGenericTransform(
     char *out;
     double xx, yy;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || imIn->mode != imOut->mode) {
         return (Imaging)ImagingError_ModeError();
     }
 
@@ -848,7 +841,7 @@ ImagingScaleAffine(
     int xmin, xmax;
     int *xintab;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || imIn->mode != imOut->mode) {
         return (Imaging)ImagingError_ModeError();
     }
 
@@ -1035,7 +1028,7 @@ ImagingTransformAffine(
     double xx, yy;
     double xo, yo;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || imIn->mode != imOut->mode) {
         return (Imaging)ImagingError_ModeError();
     }
 

@@ -22,11 +22,13 @@ except ImportError:
 def test_read_exif_metadata() -> None:
     file_path = "Tests/images/flower.webp"
     with Image.open(file_path) as image:
+        assert isinstance(image, WebPImagePlugin.WebPImageFile)
         assert image.format == "WEBP"
         exif_data = image.info.get("exif", None)
         assert exif_data
 
         exif = image._getexif()
+        assert exif is not None
 
         # Camera make
         assert exif[271] == "Canon"
