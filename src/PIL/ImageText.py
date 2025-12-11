@@ -178,6 +178,19 @@ class Text(Generic[AnyStr]):
         height: int | None = None,
         scaling: str | tuple[str, int] | None = None,
     ) -> Text[AnyStr] | None:
+        """
+        Wrap text to fit within a given width.
+
+        :param width: The width to fit within.
+        :param height: An optional height limit. Any text that does not fit within this
+                       will be returned as a new :py:class:`.Text` object.
+        :param scaling: An optional directive to scale the text, either "grow" as much
+                        as possible within the given dimensions, or "shrink" until it
+                        fits. It can also be a tuple of (direction, limit), with an
+                        integer limit to stop scaling at.
+
+        :returns: An :py:class:`.Text` object, or None.
+        """
         if isinstance(self.font, ImageFont.TransposedFont):
             msg = "TransposedFont not supported"
             raise ValueError(msg)
