@@ -162,14 +162,13 @@ const ModeData MODES[] = {
             .arrow_band_format = "s",
             .band_names = {"I"},
         },
-    [IMAGING_MODE_I_16N] =
-        {
-            .name = "I;16N",
-            .bands = 1,
-            .pixelsize = 2,
-            .arrow_band_format = "s",
-            .band_names = {"I"},
-        },
+    [IMAGING_MODE_I_16N] = {
+        .name = "I;16N",
+        .bands = 1,
+        .pixelsize = 2,
+        .arrow_band_format = "s",
+        .band_names = {"I"},
+    },
 };
 
 const ModeID
