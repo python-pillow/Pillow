@@ -278,25 +278,25 @@ def test_apng_mode() -> None:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         assert im.mode == "P"
         im.seek(im.n_frames - 1)
-        im = im.convert("RGB")
-        assert im.getpixel((0, 0)) == (0, 255, 0)
-        assert im.getpixel((64, 32)) == (0, 255, 0)
+        im_rgb = im.convert("RGB")
+    assert im_rgb.getpixel((0, 0)) == (0, 255, 0)
+    assert im_rgb.getpixel((64, 32)) == (0, 255, 0)
 
     with Image.open("Tests/images/apng/mode_palette_alpha.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         assert im.mode == "P"
         im.seek(im.n_frames - 1)
-        im = im.convert("RGBA")
-        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
-        assert im.getpixel((64, 32)) == (0, 255, 0, 255)
+        im_rgba = im.convert("RGBA")
+    assert im_rgba.getpixel((0, 0)) == (0, 255, 0, 255)
+    assert im_rgba.getpixel((64, 32)) == (0, 255, 0, 255)
 
     with Image.open("Tests/images/apng/mode_palette_1bit_alpha.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         assert im.mode == "P"
         im.seek(im.n_frames - 1)
-        im = im.convert("RGBA")
-        assert im.getpixel((0, 0)) == (0, 0, 255, 128)
-        assert im.getpixel((64, 32)) == (0, 0, 255, 128)
+        im_rgba = im.convert("RGBA")
+    assert im_rgba.getpixel((0, 0)) == (0, 0, 255, 128)
+    assert im_rgba.getpixel((64, 32)) == (0, 0, 255, 128)
 
 
 def test_apng_chunk_errors() -> None:

@@ -57,7 +57,7 @@ TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA = "Tests/images/uncompressed_rgb.dds"
 def test_sanity_dxt1_bc1(image_path: str) -> None:
     """Check DXT1 and BC1 images can be opened"""
     with Image.open(TEST_FILE_DXT1.replace(".dds", ".png")) as target:
-        target = target.convert("RGBA")
+        target_rgba = target.convert("RGBA")
     with Image.open(image_path) as im:
         im.load()
 
@@ -65,7 +65,7 @@ def test_sanity_dxt1_bc1(image_path: str) -> None:
         assert im.mode == "RGBA"
         assert im.size == (256, 256)
 
-        assert_image_equal(im, target)
+        assert_image_equal(im, target_rgba)
 
 
 def test_sanity_dxt3() -> None:
@@ -520,9 +520,9 @@ def test_save_dx10_bc5(tmp_path: Path) -> None:
         im.save(out, pixel_format="BC5")
     assert_image_similar_tofile(im, out, 9.56)
 
-    im = hopper("L")
+    im_l = hopper("L")
     with pytest.raises(OSError, match="only RGB mode can be written as BC5"):
-        im.save(out, pixel_format="BC5")
+        im_l.save(out, pixel_format="BC5")
 
 
 @pytest.mark.parametrize(
