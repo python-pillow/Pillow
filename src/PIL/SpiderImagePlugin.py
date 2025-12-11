@@ -323,9 +323,9 @@ if __name__ == "__main__":
             outfile = sys.argv[2]
 
             # perform some image operation
-            im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+            transposed_im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
             print(
                 f"saving a flipped version of {os.path.basename(filename)} "
                 f"as {outfile} "
             )
-            im.save(outfile, SpiderImageFile.format)
+            transposed_im.save(outfile, SpiderImageFile.format)

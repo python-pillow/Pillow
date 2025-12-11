@@ -95,16 +95,16 @@ def test_good() -> None:
     for f in get_files("g"):
         try:
             with Image.open(f) as im:
-                im.load()
                 with Image.open(get_compare(f)) as compare:
-                    compare.load()
-                    if im.mode == "P":
-                        # assert image similar doesn't really work
-                        # with paletized image, since the palette might
-                        # be differently ordered for an equivalent image.
-                        im = im.convert("RGBA")
-                        compare = compare.convert("RGBA")
-                    assert_image_similar(im, compare, 5)
+                    # assert image similar doesn't really work
+                    # with paletized image, since the palette might
+                    # be differently ordered for an equivalent image.
+                    im_converted = im.convert("RGBA") if im.mode == "P" else im
+                    compare_converted = (
+                        compare.convert("RGBA") if im.mode == "P" else compare
+                    )
+
+                    assert_image_similar(im_converted, compare_converted, 5)
 
         except Exception as msg:
             # there are three here that are unsupported:
