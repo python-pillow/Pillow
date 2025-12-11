@@ -61,6 +61,7 @@ if TYPE_CHECKING:
 
 
 def Skip(self: JpegImageFile, marker: int) -> None:
+    assert self.fp is not None
     n = i16(self.fp.read(2)) - 2
     ImageFile._safe_read(self.fp, n)
 
@@ -70,6 +71,7 @@ def APP(self: JpegImageFile, marker: int) -> None:
     # Application marker.  Store these in the APP dictionary.
     # Also look for well-known application markers.
 
+    assert self.fp is not None
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
 
@@ -174,6 +176,7 @@ def APP(self: JpegImageFile, marker: int) -> None:
 def COM(self: JpegImageFile, marker: int) -> None:
     #
     # Comment marker.  Store these in the APP dictionary.
+    assert self.fp is not None
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
 
@@ -190,6 +193,7 @@ def SOF(self: JpegImageFile, marker: int) -> None:
     # mode.  Note that this could be made a bit brighter, by
     # looking for JFIF and Adobe APP markers.
 
+    assert self.fp is not None
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
     self._size = i16(s, 3), i16(s, 1)
@@ -240,6 +244,7 @@ def DQT(self: JpegImageFile, marker: int) -> None:
     # FIXME: The quantization tables can be used to estimate the
     # compression quality.
 
+    assert self.fp is not None
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
     while len(s):
@@ -340,6 +345,7 @@ class JpegImageFile(ImageFile.ImageFile):
     format_description = "JPEG (ISO 10918)"
 
     def _open(self) -> None:
+        assert self.fp is not None
         s = self.fp.read(3)
 
         if not _accept(s):
@@ -408,6 +414,7 @@ class JpegImageFile(ImageFile.ImageFile):
         For premature EOF and LOAD_TRUNCATED_IMAGES adds EOI marker
         so libjpeg can finish decoding
         """
+        assert self.fp is not None
         s = self.fp.read(read_bytes)
 
         if not s and ImageFile.LOAD_TRUNCATED_IMAGES and not hasattr(self, "_ended"):

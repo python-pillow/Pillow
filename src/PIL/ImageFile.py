@@ -285,6 +285,7 @@ class ImageFile(Image.Image):
         self.map: mmap.mmap | None = None
         use_mmap = self.filename and len(self.tile) == 1
 
+        assert self.fp is not None
         readonly = 0
 
         # look for read/seek overrides
