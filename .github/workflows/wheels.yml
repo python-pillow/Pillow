@@ -100,14 +100,14 @@ jobs:
             cibw_arch: arm64_iphoneos
           - name: "iOS arm64 simulator"
             platform: ios
-            os: macos-14
+            os: macos-latest
             cibw_arch: arm64_iphonesimulator
           - name: "iOS x86_64 simulator"
             platform: ios
             os: macos-15-intel
             cibw_arch: x86_64_iphonesimulator
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
           submodules: true
@@ -134,7 +134,7 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: dist-${{ matrix.name }}
           path: ./wheelhouse/*.whl
@@ -154,12 +154,12 @@ jobs:
           - cibw_arch: ARM64
             os: windows-11-arm
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
       - name: Checkout extra test images
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
           repository: python-pillow/test-images
@@ -220,13 +220,13 @@ jobs:
         shell: cmd
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: dist-windows-${{ matrix.cibw_arch }}
           path: ./wheelhouse/*.whl
 
       - name: Upload fribidi.dll
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: fribidi-windows-${{ matrix.cibw_arch }}
           path: winbuild\build\bin\fribidi*
@@ -235,7 +235,7 @@ jobs:
     if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         persist-credentials: false
 
@@ -246,7 +246,7 @@ jobs:
 
     - run: make sdist
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       with:
         name: dist-sdist
         path: dist/*.tar.gz
@@ -256,7 +256,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Count dists
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           pattern: dist-*
           path: dist
@@ -275,7 +275,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Upload wheels to scientific-python-nightly-wheels
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           pattern: dist-!(sdist)*
           path: dist
@@ -297,7 +297,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           pattern: dist-*
           path: dist

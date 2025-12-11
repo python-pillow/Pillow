@@ -15,7 +15,7 @@ def test_sanity() -> None:
 
 
 def test_mode() -> None:
-    def getdata(mode: str) -> tuple[float | tuple[int, ...], int, int]:
+    def getdata(mode: str) -> tuple[float | tuple[int, ...] | None, int, int]:
         im = hopper(mode).resize((32, 30), Image.Resampling.NEAREST)
         data = im.getdata()
         return data[0], len(data), len(list(data))

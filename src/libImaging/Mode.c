@@ -170,21 +170,6 @@ const ModeData MODES[] = {
             .arrow_band_format = "s",
             .band_names = {"I"},
         },
-    [IMAGING_MODE_I_32L] =
-        {
-            .name = "I;32L",
-            .bands = 1,
-            .pixelsize = 4,
-            .arrow_band_format = "i",
-            .band_names = {"I"},
-        },
-    [IMAGING_MODE_I_32B] = {
-        .name = "I;32B",
-        .bands = 1,
-        .pixelsize = 4,
-        .arrow_band_format = "i",
-        .band_names = {"I"},
-    },
 };
 
 const ModeID
@@ -240,7 +225,6 @@ const RawModeData RAWMODES[] = {
     [IMAGING_RAWMODE_I_16L] = {"I;16L"},
     [IMAGING_RAWMODE_I_16B] = {"I;16B"},
     [IMAGING_RAWMODE_I_16N] = {"I;16N"},
-    [IMAGING_RAWMODE_I_32L] = {"I;32L"},
     [IMAGING_RAWMODE_I_32B] = {"I;32B"},
 
     [IMAGING_RAWMODE_1_8] = {"1;8"},
