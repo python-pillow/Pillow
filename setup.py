@@ -725,7 +725,12 @@ class pil_build_ext(build_ext):
 
         if feature.want("zlib"):
             _dbg("Looking for zlib")
-            if _find_include_file(self, "zlib.h"):
+            if _find_include_file(self, "zlib-ng.h"):
+                if _find_library_file(self, "z-ng"):
+                    feature.set("zlib", "z-ng")
+                elif sys.platform == "win32" and _find_library_file(self, "zlib-ng"):
+                    feature.set("zlib", "zlib-ng")
+            elif _find_include_file(self, "zlib.h"):
                 if _find_library_file(self, "z"):
                     feature.set("zlib", "z")
                 elif sys.platform == "win32" and _find_library_file(self, "zlib"):
@@ -923,9 +928,11 @@ class pil_build_ext(build_ext):
             defs.append(("HAVE_OPENJPEG", None))
             if sys.platform == "win32" and not PLATFORM_MINGW:
                 defs.append(("OPJ_STATIC", None))
-        if feature.get("zlib"):
-            libs.append(feature.get("zlib"))
+        if zlib := feature.get("zlib"):
+            libs.append(zlib)
             defs.append(("HAVE_LIBZ", None))
+            if zlib in ["z-ng", "zlib-ng"]:
+                defs.append(("HAVE_ZLIBNG", None))
         if feature.get("imagequant"):
             libs.append(feature.get("imagequant"))
             defs.append(("HAVE_LIBIMAGEQUANT", None))
