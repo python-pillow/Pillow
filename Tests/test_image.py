@@ -1181,10 +1181,10 @@ class TestImageBytes:
         assert reloaded.tobytes() == source_bytes
 
     @pytest.mark.parametrize("mode", Image.MODES)
-    def test_getdata_putdata(self, mode: str) -> None:
+    def test_get_flattened_data_putdata(self, mode: str) -> None:
         im = hopper(mode)
         reloaded = Image.new(mode, im.size)
-        reloaded.putdata(im.getdata())
+        reloaded.putdata(im.get_flattened_data())
         assert_image_equal(im, reloaded)
 
 
