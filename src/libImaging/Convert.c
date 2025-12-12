@@ -1310,9 +1310,9 @@ topalette(
                     e += 3;
                 }
 
-                e[0] = b0;
-                e[1] = b1;
-                e[2] = b2;
+                e[0] = r0;
+                e[1] = g0;
+                e[2] = b0;
             }
             ImagingSectionLeave(&cookie);
             free(errors);
