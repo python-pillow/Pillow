@@ -1281,20 +1281,20 @@ topalette(
                     b -= (int)palette->palette[cache[0] * 4 + 2];
 
                     /* propagate errors */
-                    e[0] = 3*r + r0;
-                    r0 = 5*r + r1;
+                    e[0] = 3 * r + r0;
+                    r0 = 5 * r + r1;
                     r1 = r;
-                    r = 7*r;
+                    r = 7 * r;
 
-                    e[1] = 3*g + g0;
-                    g0 = 5*g + g1;
+                    e[1] = 3 * g + g0;
+                    g0 = 5 * g + g1;
                     g1 = g;
-                    g = 7*g;
+                    g = 7 * g;
 
-                    e[2] = 3*b + b0;
-                    b0 = 5*b + b1;
+                    e[2] = 3 * b + b0;
+                    b0 = 5 * b + b1;
                     b1 = b;
-                    b = 7*b;
+                    b = 7 * b;
 
                     e += 3;
                 }
@@ -1387,10 +1387,10 @@ tobilevel(Imaging imOut, Imaging imIn) {
 
                 /* propagate errors */
                 l -= (int)out[x];
-                errors[x] = 3*l + l0;
-                l0 = 5*l + l1;
+                errors[x] = 3 * l + l0;
+                l0 = 5 * l + l1;
                 l1 = l;
-                l = 7*l;
+                l = 7 * l;
             }
 
             errors[x] = l0;
@@ -1414,10 +1414,10 @@ tobilevel(Imaging imOut, Imaging imIn) {
 
                 /* propagate errors */
                 l -= (int)out[x];
-                errors[x] = 3*l + l0;
-                l0 = 5*l + l1;
+                errors[x] = 3 * l + l0;
+                l0 = 5 * l + l1;
                 l1 = l;
-                l = 7*l;
+                l = 7 * l;
             }
 
             errors[x] = l0;
