@@ -606,7 +606,7 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
     assert_image_equal(img, out)
 
 
-def test_dither_primary_returns_image():
+def test_dither_primary_returns_image() -> None:
     im = Image.new("RGB", (4, 4), (128, 128, 128))
     out = ImageOps.dither_primary(im)
 
@@ -615,20 +615,25 @@ def test_dither_primary_returns_image():
     assert out.mode == "RGB"
 
 
-def test_dither_primary_uses_only_primary_colors():
+def test_dither_primary_uses_only_primary_colors() -> None:
     im = Image.new("RGB", (4, 4), (200, 100, 50))
     out = ImageOps.dither_primary(im)
 
-    pixels = out.load()
+    px = out.load()
+    assert px is not None
+
     for x in range(out.width):
         for y in range(out.height):
-            r, g, b = pixels[x, y]
+            value = px[x, y]
+            assert isinstance(value, tuple)
+
+            r, g, b = value
             assert r in (0, 255)
             assert g in (0, 255)
             assert b in (0, 255)
 
 
-def test_dither_primary_small_image():
+def test_dither_primary_small_image() -> None:
     im = Image.new("RGB", (2, 2), (255, 0, 0))
     out = ImageOps.dither_primary(im)
 
