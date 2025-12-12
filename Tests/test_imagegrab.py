@@ -9,7 +9,7 @@ import pytest
 
 from PIL import Image, ImageGrab
 
-from .helper import assert_image_equal_tofile, skip_unless_feature
+from .helper import assert_image_equal_tofile, on_ci, skip_unless_feature
 
 
 class TestImageGrab:
@@ -60,12 +60,44 @@ class TestImageGrab:
             ImageGrab.grab(xdisplay="error.test:0.0")
         assert str(e.value).startswith("X connection failed")
 
-    @pytest.mark.skipif(sys.platform != "win32", reason="Windows only")
+    @pytest.mark.skipif(
+        sys.platform != "darwin" or not on_ci(), reason="Only runs on macOS CI"
+    )
+    def test_grab_handle(self) -> None:
+        p = subprocess.Popen(
+            [
+                "osascript",
+                "-e",
+                'tell application "Finder"\n'
+                'open ("/" as POSIX file)\n'
+                "get id of front window\n"
+                "end tell",
+            ],
+            stdout=subprocess.PIPE,
+        )
+        stdout = p.stdout
+        assert stdout is not None
+        window = int(stdout.read())
+
+        ImageGrab.grab(window=window)
+
+        im = ImageGrab.grab((0, 0, 10, 10), window=window)
+        assert im.size == (10, 10)
+
+    @pytest.mark.skipif(
+        sys.platform not in ("darwin", "win32"), reason="macOS and Windows only"
+    )
     def test_grab_invalid_handle(self) -> None:
-        with pytest.raises(OSError, match="unable to get device context for handle"):
-            ImageGrab.grab(window=-1)
-        with pytest.raises(OSError, match="screen grab failed"):
-            ImageGrab.grab(window=0)
+        if sys.platform == "darwin":
+            with pytest.raises(subprocess.CalledProcessError):
+                ImageGrab.grab(window=-1)
+        else:
+            with pytest.raises(
+                OSError, match="unable to get device context for handle"
+            ):
+                ImageGrab.grab(window=-1)
+            with pytest.raises(OSError, match="screen grab failed"):
+                ImageGrab.grab(window=0)
 
     def test_grabclipboard(self) -> None:
         if sys.platform == "darwin":
