@@ -605,7 +605,8 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
     )  # single color 10 cutoff
     assert_image_equal(img, out)
 
-from PIL import Image, ImageOps
+
+from PIL import ImageOps
 
 
 def test_dither_primary_returns_image():

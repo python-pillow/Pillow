@@ -643,6 +643,7 @@ def mirror(image: Image.Image) -> Image.Image:
     """
     return image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
+
 def _dither_saturation(value: float, quadrant: int) -> int:
     if value > 233:
         return 255
@@ -653,6 +654,7 @@ def _dither_saturation(value: float, quadrant: int) -> int:
     if value > 32:
         return 255 if quadrant == 1 else 0
     return 0
+
 
 def dither_primary(image: Image.Image) -> Image.Image:
     """
