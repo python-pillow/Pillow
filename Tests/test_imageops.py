@@ -604,3 +604,34 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
         img, cutoff=10, preserve_tone=True
     )  # single color 10 cutoff
     assert_image_equal(img, out)
+
+from PIL import Image, ImageOps
+
+
+def test_dither_primary_returns_image():
+    im = Image.new("RGB", (4, 4), (128, 128, 128))
+    out = ImageOps.dither_primary(im)
+
+    assert isinstance(out, Image.Image)
+    assert out.size == im.size
+    assert out.mode == "RGB"
+
+
+def test_dither_primary_uses_only_primary_colors():
+    im = Image.new("RGB", (4, 4), (200, 100, 50))
+    out = ImageOps.dither_primary(im)
+
+    pixels = out.load()
+    for x in range(out.width):
+        for y in range(out.height):
+            r, g, b = pixels[x, y]
+            assert r in (0, 255)
+            assert g in (0, 255)
+            assert b in (0, 255)
+
+
+def test_dither_primary_small_image():
+    im = Image.new("RGB", (2, 2), (255, 0, 0))
+    out = ImageOps.dither_primary(im)
+
+    assert out.size == (2, 2)

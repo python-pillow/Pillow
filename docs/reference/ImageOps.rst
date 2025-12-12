@@ -11,6 +11,7 @@ only work on L and RGB images.
 .. versionadded:: 1.1.3
 
 .. autofunction:: autocontrast
+.. autofunction:: dither_primary
 .. autofunction:: colorize
 .. autofunction:: crop
 .. autofunction:: scale
