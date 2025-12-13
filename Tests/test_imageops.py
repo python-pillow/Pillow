@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from PIL import Image, ImageDraw, ImageOps, ImageStat, features
+from typing import cast
 
 from .helper import (
     assert_image_equal,
