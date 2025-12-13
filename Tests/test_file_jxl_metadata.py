@@ -39,7 +39,7 @@ def test_read_exif_metadata() -> None:
     with Image.open("Tests/images/flower.jpg") as im_jpeg:
         expected_exif = im_jpeg.info["exif"]
 
-    # jpeg xl always returns exif without 'Exif\0\0' prefix
+    # JPEG XL always returns exif without 'Exif\0\0' prefix
     assert exif_data == expected_exif[6:]
 
 
@@ -97,8 +97,8 @@ def test_4_byte_exif(monkeypatch: pytest.MonkeyPatch) -> None:
             def __init__(self, b: bytes) -> None:
                 pass
 
-            def get_info(self) -> tuple[tuple[int, int], str, int, int, int, int]:
-                return ((1, 1), "L", 0, 0, 0, 0)
+            def get_info(self) -> tuple[tuple[int, int], str, int, int, int, int, int]:
+                return ((1, 1), "L", 0, 0, 0, 0, 0)
 
             def get_icc(self) -> None:
                 pass

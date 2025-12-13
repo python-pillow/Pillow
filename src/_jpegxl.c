@@ -18,10 +18,10 @@ void
 _jxl_get_pixel_format(JxlPixelFormat *pf, const JxlBasicInfo *bi) {
     pf->num_channels = bi->num_color_channels + bi->num_extra_channels;
 
-    if (bi->exponent_bits_per_sample > 0 || bi->alpha_exponent_bits > 0) {
-        pf->data_type = JXL_TYPE_FLOAT;  // not yet supported
+    if (bi->exponent_bits_per_sample) {
+        pf->data_type = JXL_TYPE_FLOAT;
     } else if (bi->bits_per_sample > 8) {
-        pf->data_type = JXL_TYPE_UINT16;  // not yet supported
+        pf->data_type = JXL_TYPE_UINT16;
     } else {
         pf->data_type = JXL_TYPE_UINT8;
     }
@@ -35,41 +35,36 @@ _jxl_get_pixel_format(JxlPixelFormat *pf, const JxlBasicInfo *bi) {
 // TODO: floating point mode
 char *
 _jxl_get_mode(const JxlBasicInfo *bi) {
-    // 16-bit single channel images are supported
-    if (bi->bits_per_sample == 16 && bi->num_color_channels == 1 &&
-        bi->alpha_bits == 0 && !bi->alpha_premultiplied) {
-        return "I;16";
-    }
-
-    // PIL doesn't support high bit depth images
-    // it will throw an exception but that's for your own good
-    // you wouldn't want to see distorted image
-    if (bi->bits_per_sample != 8) {
-        return NULL;
-    }
-
-    // image has transparency
-    if (bi->alpha_bits > 0) {
-        if (bi->num_color_channels == 3) {
-            if (bi->alpha_premultiplied) {
-                return "RGBa";
-            }
-            return "RGBA";
-        }
-        if (bi->num_color_channels == 1) {
-            if (bi->alpha_premultiplied) {
-                return "La";
-            }
-            return "LA";
+    if (bi->num_color_channels == 1 && !bi->alpha_bits) {
+        if (bi->bits_per_sample == 16) {
+            return "I;16";
         }
     }
 
-    // image has no transparency
-    if (bi->num_color_channels == 3) {
-        return "RGB";
-    }
-    if (bi->num_color_channels == 1) {
-        return "L";
+    if (bi->bits_per_sample == 8) {
+        // image has transparency
+        if (bi->alpha_bits) {
+            if (bi->num_color_channels == 3) {
+                if (bi->alpha_premultiplied) {
+                    return "RGBa";
+                }
+                return "RGBA";
+            }
+            if (bi->num_color_channels == 1) {
+                if (bi->alpha_premultiplied) {
+                    return "La";
+                }
+                return "LA";
+            }
+        } else {
+            // image has no transparency
+            if (bi->num_color_channels == 3) {
+                return "RGB";
+            }
+            if (bi->num_color_channels == 1) {
+                return "L";
+            }
+        }
     }
 
     // could not recognize mode
@@ -85,10 +80,10 @@ typedef struct {
     Py_ssize_t jxl_data_len;  // length of input jxl bitstream
 
     uint8_t *outbuf;
-    Py_ssize_t outbuf_len;
+    size_t outbuf_len;
 
     uint8_t *jxl_icc;
-    Py_ssize_t jxl_icc_len;
+    size_t jxl_icc_len;
     uint8_t *jxl_exif;
     Py_ssize_t jxl_exif_len;
     uint8_t *jxl_xmp;
@@ -262,26 +257,16 @@ decoder_loop_skip_process:
             goto end;
         }
 
-        // got basic info
         if (decp->status == JXL_DEC_BASIC_INFO) {
             decp->status = JxlDecoderGetBasicInfo(decp->decoder, &decp->basic_info);
             _JXL_CHECK("JxlDecoderGetBasicInfo");
 
             _jxl_get_pixel_format(&decp->pixel_format, &decp->basic_info);
-            if (decp->pixel_format.data_type != JXL_TYPE_UINT8 &&
-                decp->pixel_format.data_type != JXL_TYPE_UINT16) {
-                // only 8 bit integer value images are supported for now
-                PyErr_SetString(
-                    PyExc_NotImplementedError, "unsupported pixel data type"
-                );
-                goto end_with_custom_error;
-            }
             decp->mode = _jxl_get_mode(&decp->basic_info);
 
             continue;
         }
 
-        // got color encoding
         if (decp->status == JXL_DEC_COLOR_ENCODING) {
             decp->status = JxlDecoderGetICCProfileSize(
                 decp->decoder, JXL_COLOR_PROFILE_TARGET_DATA, &decp->jxl_icc_len
@@ -317,7 +302,7 @@ decoder_loop_skip_process:
                 continue;
             }
 
-            size_t cur_compr_box_size;
+            uint64_t cur_compr_box_size;
             decp->status = JxlDecoderGetBoxSizeRaw(decp->decoder, &cur_compr_box_size);
             _JXL_CHECK("JxlDecoderGetBoxSizeRaw");
 
@@ -361,12 +346,6 @@ decoder_loop_skip_process:
 
     } while (decp->status != JXL_DEC_FRAME);
 
-    // couldn't determine Image mode or it is unsupported
-    if (!decp->mode) {
-        PyErr_SetString(PyExc_NotImplementedError, "only 8-bit images are supported");
-        goto end_with_custom_error;
-    }
-
     return (PyObject *)decp;
 
     // on success we should never reach here
@@ -396,16 +375,21 @@ end_with_custom_error:
 PyObject *
 _jxl_decoder_get_info(PyObject *self) {
     JpegXlDecoderObject *decp = (JpegXlDecoderObject *)self;
-
+    JxlFrameHeader fhdr = {};
+    if (JxlDecoderGetFrameHeader(decp->decoder, &fhdr) != JXL_DEC_SUCCESS) {
+        PyErr_SetString(PyExc_OSError, "Error determining duration");
+        return NULL;
+    }
     return Py_BuildValue(
-        "(II)sOIII",
+        "(II)sOIIII",
         decp->basic_info.xsize,
         decp->basic_info.ysize,
         decp->mode,
         decp->basic_info.have_animation ? Py_True : Py_False,
         decp->basic_info.animation.tps_numerator,
         decp->basic_info.animation.tps_denominator,
-        decp->basic_info.animation.num_loops
+        decp->basic_info.animation.num_loops,
+        fhdr.duration
     );
 }
 
@@ -425,11 +409,6 @@ _jxl_decoder_get_next(PyObject *self) {
     }
     while (decp->status != JXL_DEC_NEED_IMAGE_OUT_BUFFER) {
         decp->status = JxlDecoderProcessInput(decp->decoder);
-
-        // every frame was decoded successfully
-        if (decp->status == JXL_DEC_SUCCESS) {
-            Py_RETURN_NONE;
-        }
 
         // this should only occur after rewind
         if (decp->status == JXL_DEC_NEED_MORE_INPUT) {
@@ -454,7 +433,7 @@ _jxl_decoder_get_next(PyObject *self) {
         uint8_t *_new_outbuf = realloc(decp->outbuf, decp->outbuf_len);
         if (!_new_outbuf) {
             PyErr_SetString(PyExc_OSError, "failed to allocate outbuf");
-            goto end_with_custom_error;
+            return NULL;
         }
         decp->outbuf = _new_outbuf;
     }
@@ -469,7 +448,7 @@ _jxl_decoder_get_next(PyObject *self) {
 
     if (decp->status != JXL_DEC_FULL_IMAGE) {
         PyErr_SetString(PyExc_OSError, "failed to read next frame");
-        goto end_with_custom_error;
+        return NULL;
     }
 
     bytes = PyBytes_FromStringAndSize((char *)(decp->outbuf), decp->outbuf_len);
@@ -493,13 +472,6 @@ end:
         decp->status
     );
     PyErr_SetString(PyExc_OSError, err_msg);
-
-end_with_custom_error:
-
-    // no need to deallocate anything here
-    // user can just ignore error
-
-    return NULL;
 }
 
 PyObject *

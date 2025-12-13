@@ -37,7 +37,7 @@ class TestFileJpegXl:
 
     def test_read_rgb(self) -> None:
         """
-        Can we read a RGB mode Jpeg XL file without error?
+        Can we read an RGB mode JPEG XL file without error?
         Does it have the bits we expect?
         """
 
@@ -52,9 +52,22 @@ class TestFileJpegXl:
             # djxl hopper.jxl hopper_jxl_bits.ppm
             assert_image_similar_tofile(im, "Tests/images/hopper_jxl_bits.ppm", 1)
 
+    def test_read_rgba(self) -> None:
+        # Generated with `cjxl transparent.png transparent.jxl -q 100 -e 8`
+        with Image.open("Tests/images/transparent.jxl") as im:
+            assert im.mode == "RGBA"
+            assert im.size == (200, 150)
+            assert im.format == "JPEG XL"
+            im.load()
+            im.getdata()
+
+            im.tobytes()
+
+            assert_image_similar_tofile(im, "Tests/images/transparent.png", 1)
+
     def test_read_i16(self) -> None:
         """
-        Can we read 16-bit Grayscale Jpeg XL image?
+        Can we read 16-bit Grayscale JPEG XL image?
         """
 
         with Image.open("Tests/images/jxl/16bit_subcutaneous.cropped.jxl") as im:

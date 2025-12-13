@@ -21,10 +21,14 @@ def test_n_frames() -> None:
         assert im.is_animated
 
 
-def test_float_duration() -> None:
+def test_duration() -> None:
     with Image.open("Tests/images/iss634.jxl") as im:
-        im.load()
         assert im.info["duration"] == 70
+        assert im.info["timestamp"] == 0
+
+        im.seek(2)
+        assert im.info["duration"] == 60
+        assert im.info["timestamp"] == 140
 
 
 def test_seek() -> None:
@@ -62,8 +66,11 @@ def test_seek() -> None:
 
 def test_seek_errors() -> None:
     with Image.open("Tests/images/iss634.jxl") as im:
-        with pytest.raises(EOFError):
+        with pytest.raises(EOFError, match="attempt to seek outside sequence"):
             im.seek(-1)
 
-        with pytest.raises(EOFError):
+        im.seek(1)
+        with pytest.raises(EOFError, match="no more images in JPEG XL file"):
             im.seek(47)
+
+        assert im.tell() == 1

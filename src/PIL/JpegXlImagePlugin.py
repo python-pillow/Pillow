@@ -25,9 +25,7 @@ def _accept(prefix: bytes) -> bool | str:
 class JpegXlImageFile(ImageFile.ImageFile):
     format = "JPEG XL"
     format_description = "JPEG XL image"
-    __loaded = -1
-    __logical_frame = 0
-    __physical_frame = 0
+    __frame = 0
 
     def _open(self) -> None:
         self._decoder = _jpegxl.JpegXlDecoder(self.fp.read())
@@ -39,24 +37,27 @@ class JpegXlImageFile(ImageFile.ImageFile):
             tps_num,
             tps_denom,
             self.info["loop"],
+            tps_duration,
         ) = self._decoder.get_info()
 
         self._n_frames = None if self.is_animated else 1
         self._tps_dur_secs = tps_num / tps_denom if tps_denom != 0 else 1
+        self.info["duration"] = 1000 * tps_duration * (1 / self._tps_dur_secs)
 
         # TODO: handle libjxl time codes
-        self.__timestamp = 0
+        self.info["timestamp"] = 0
 
         if icc := self._decoder.get_icc():
             self.info["icc_profile"] = icc
         if exif := self._decoder.get_exif():
-            # jpeg xl does some weird shenanigans when storing exif
+            # JPEG XL does some weird shenanigans when storing exif
             # it omits first 6 bytes of tiff header but adds 4 byte offset instead
             if len(exif) > 4:
                 exif_start_offset = struct.unpack(">I", exif[:4])[0]
                 self.info["exif"] = exif[exif_start_offset + 4 :]
         if xmp := self._decoder.get_xmp():
             self.info["xmp"] = xmp
+        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.mode)]
 
     @property
     def n_frames(self) -> int:
@@ -67,64 +68,45 @@ class JpegXlImageFile(ImageFile.ImageFile):
 
         return self._n_frames
 
-    def _get_next(self) -> tuple[bytes, float, float]:
-        # Get next frame
-        next_frame = self._decoder.get_next()
-        self.__physical_frame += 1
+    def _get_next(self) -> bytes:
+        data, tps_duration, is_last = self._decoder.get_next()
 
-        # this actually means EOF, errors are raised in _jxl
-        if next_frame is None:
-            msg = "failed to decode next frame in JXL file"
-            raise EOFError(msg)
-
-        data, tps_duration, is_last = next_frame
         if is_last and self._n_frames is None:
-            # libjxl said this frame is the last one
-            self._n_frames = self.__physical_frame
+            self._n_frames = self.__frame
 
         # duration in milliseconds
-        duration = 1000 * tps_duration * (1 / self._tps_dur_secs)
-        timestamp = self.__timestamp
-        self.__timestamp += duration
+        self.info["timestamp"] += self.info["duration"]
+        self.info["duration"] = 1000 * tps_duration * (1 / self._tps_dur_secs)
 
-        return data, timestamp, duration
-
-    def _seek(self, frame: int) -> None:
-        if frame == self.__physical_frame:
-            return  # Nothing to do
-        if frame < self.__physical_frame:
-            # also rewind libjxl decoder instance
-            self._decoder.rewind()
-            self.__physical_frame = 0
-            self.__loaded = -1
-            self.__timestamp = 0
-
-        while self.__physical_frame < frame:
-            self._get_next()  # Advance to the requested frame
+        return data
 
     def seek(self, frame: int) -> None:
-        if self._n_frames is None:
-            self.n_frames
         if not self._seek_check(frame):
             return
 
-        # Set logical frame to requested position
-        self.__logical_frame = frame
+        if frame < self.__frame:
+            self.__frame = 0
+            self._decoder.rewind()
+            self.info["timestamp"] = 0
+
+        last_frame = self.__frame
+        while self.__frame < frame:
+            self._get_next()
+            self.__frame += 1
+            if self._n_frames is not None and self._n_frames < frame:
+                self.seek(last_frame)
+                msg = "no more images in JPEG XL file"
+                raise EOFError(msg)
+
+        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.mode)]
 
     def load(self) -> Image.core.PixelAccess | None:
-        if self.__loaded != self.__logical_frame:
-            self._seek(self.__logical_frame)
+        if self.tile:
+            data = self._get_next()
 
-            data, self.info["timestamp"], self.info["duration"] = self._get_next()
-            self.__loaded = self.__logical_frame
-
-            # Set tile
             if self.fp and self._exclusive_fp:
                 self.fp.close()
-            # this is horribly memory inefficient
-            # you need probably 2*(raw image plane) bytes of memory
             self.fp = BytesIO(data)
-            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.mode)]
 
         return super().load()
 
@@ -132,7 +114,7 @@ class JpegXlImageFile(ImageFile.ImageFile):
         pass
 
     def tell(self) -> int:
-        return self.__logical_frame
+        return self.__frame
 
 
 Image.register_open(JpegXlImageFile.format, JpegXlImageFile, _accept)
