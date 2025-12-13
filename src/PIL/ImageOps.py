@@ -24,7 +24,7 @@ import re
 from collections.abc import Sequence
 from typing import Literal, Protocol, cast, overload
 
-from . import ExifTags, Image, ImagePalette, ImageFilter
+from . import ExifTags, Image, ImageFilter, ImagePalette
 
 #
 # helpers
@@ -667,13 +667,9 @@ def sobel(image: Image.Image) -> Image.Image:
     image = image.convert("L")
     width, height = image.size
 
-    Kx = [[-1, 0, 1],
-          [-2, 0, 2],
-          [-1, 0, 1]]
+    Kx = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]
 
-    Ky = [[1, 2, 1],
-          [0, 0, 0],
-          [-1, -2, -1]]
+    Ky = [[1, 2, 1], [0, 0, 0], [-1, -2, -1]]
 
     out = Image.new("L", (width, height))
 
@@ -690,7 +686,7 @@ def sobel(image: Image.Image) -> Image.Image:
                     ky = Ky[dy + 1][dx + 1]
 
                     gx += v * kx
-                    gy += v * ky 
+                    gy += v * ky
             # Approximate gradient magnitude and clamp to [0, 255]
             mag = int(min(255, abs(gx) + abs(gy)))
             out.putpixel((x, y), int(mag))
@@ -705,16 +701,14 @@ def _glow_mask(edge_img: Image.Image) -> Image.Image:
     :param edge_img: A grayscale image containing edge intensities.
     :return: An image.
     """
+
     def screen_point(x):
         return 255 - ((255 - x) * (255 - x) // 255)
 
     return edge_img.point(screen_point)
 
 
-def _neon_colorize(
-    mask: Image.Image,
-    color: tuple[int, int, int]
-) -> Image.Image:
+def _neon_colorize(mask: Image.Image, color: tuple[int, int, int]) -> Image.Image:
     """
     Apply a color tint to an intensity mask for neon/glow effects.
     :param mask: single-channel mask.
@@ -742,9 +736,7 @@ def _neon_colorize(
 
 
 def _neon_blend(
-    original: Image.Image,
-    neon: Image.Image,
-    alpha: float = 0.55
+    original: Image.Image, neon: Image.Image, alpha: float = 0.55
 ) -> Image.Image:
     """
     Blend the original image with its neon/glow layer
@@ -780,9 +772,7 @@ def _neon_blend(
 
 
 def neon_effect(
-    image: Image.Image,
-    color: tuple[int, int, int] = (255, 0, 255),
-    alpha: float = 0.2
+    image: Image.Image, color: tuple[int, int, int] = (255, 0, 255), alpha: float = 0.2
 ) -> Image.Image:
     """
     Apply a neon glow effect to an image using edge detection,

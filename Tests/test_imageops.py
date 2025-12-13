@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
 
 from PIL import Image, ImageDraw, ImageOps, ImageStat, features
-from typing import cast
 
 from .helper import (
     assert_image_equal,
