@@ -779,6 +779,32 @@ def _neon_blend(
     return out
 
 
+def neon_effect(
+    image: Image.Image,
+    color: tuple[int, int, int] = (255, 0, 255),
+    alpha: float = 0.2
+) -> Image.Image:
+    """
+    Apply a neon glow effect to an image using edge detection,
+    blur-based glow generation, colorization, and alpha blending.
+    It calls all auxiliary functions required to generate
+    the final result.
+
+    :param image: Image to create the effect
+    :param color: RGB color used for neon effect
+    :alpha: controls the intensity of the neon effect
+    :return: An image
+
+    """
+    edges = sobel(image)
+    edges = edges.filter(ImageFilter.GaussianBlur(2))
+
+    glow = _glow_mask(edges)
+    neon = _neon_colorize(glow, color)
+
+    return _neon_blend(image, neon, alpha)
+
+
 def invert(image: Image.Image) -> Image.Image:
     """
     Invert (negate) the image.
