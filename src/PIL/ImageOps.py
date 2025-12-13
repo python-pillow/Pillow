@@ -654,6 +654,50 @@ def sepia(image: Image.Image) -> Image.Image:
     return out
 
 
+def sobel(image: Image.Image) -> Image.Image:
+    """
+    Applies a Sobel edge-detection filter to the given image.
+
+    This function computes the Sobel gradient magnitude using the
+    horizontal (Gx) and vertical (Gy) Sobel kernels.
+
+    :param: image: the image to apply the filter
+    :return: An image.
+    """
+    image = image.convert("L")
+    width, height = image.size
+
+    Kx = [[-1, 0, 1],
+          [-2, 0, 2],
+          [-1, 0, 1]]
+
+    Ky = [[1, 2, 1],
+          [0, 0, 0],
+          [-1, -2, -1]]
+
+    out = Image.new("L", (width, height))
+
+    for y in range(1, height - 1):
+        for x in range(1, width - 1):
+
+            gx = gy = 0
+
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    v = cast(int, image.getpixel((x + dx, y + dy)))
+
+                    kx = Kx[dy + 1][dx + 1]
+                    ky = Ky[dy + 1][dx + 1]
+
+                    gx += v * kx
+                    gy += v * ky 
+            # Approximate gradient magnitude and clamp to [0, 255]
+            mag = int(min(255, abs(gx) + abs(gy)))
+            out.putpixel((x, y), int(mag))
+
+    return out
+
+
 def invert(image: Image.Image) -> Image.Image:
     """
     Invert (negate) the image.
