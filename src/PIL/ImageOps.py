@@ -698,6 +698,19 @@ def sobel(image: Image.Image) -> Image.Image:
     return out
 
 
+def _glow_mask(edge_img: Image.Image) -> Image.Image:
+    """
+    Apply a glow-enhancing mask transformation to an edge image.
+
+    :param edge_img: A grayscale image containing edge intensities.
+    :return: An image.
+    """
+    def screen_point(x):
+        return 255 - ((255 - x) * (255 - x) // 255)
+
+    return edge_img.point(screen_point)
+
+
 def invert(image: Image.Image) -> Image.Image:
     """
     Invert (negate) the image.
