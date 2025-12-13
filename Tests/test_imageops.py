@@ -604,3 +604,83 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
         img, cutoff=10, preserve_tone=True
     )  # single color 10 cutoff
     assert_image_equal(img, out)
+
+
+def test_sepia_preserves_size_and_mode() -> None:
+    img = Image.new("RGB", (10, 10), (100, 150, 200))
+    out = ImageOps.sepia(img)
+
+    assert out.size == img.size
+    assert out.mode == "RGB"
+
+
+def test_sobel_detects_edge() -> None:
+    img = Image.new("L", (5, 5), 0)
+    for x in range(3, 5):
+        img.putpixel((x, 2), 255)
+
+    out = ImageOps.sobel(img)
+    assert max(out.getdata()) > 0
+
+
+def test_sobel_output_mode_and_size() -> None:
+    img = Image.new("RGB", (10, 10), "black")
+    out = ImageOps.sobel(img)
+
+    assert out.mode == "L"
+    assert out.size == img.size
+
+
+def test_glow_mask_preserves_mode_and_size() -> None:
+    img = Image.new("L", (10, 10), 128)
+    out = ImageOps._glow_mask(img)
+
+    assert out.mode == "L"
+    assert out.size == img.size
+
+
+def test_glow_mask_increases_intensity() -> None:
+    img = Image.new("L", (1, 1), 128)
+    out = ImageOps._glow_mask(img)
+
+    v = cast(int, out.getpixel((0, 0)))
+    assert v > 128
+
+
+def test_neon_colorize_output_mode() -> None:
+    mask = Image.new("L", (5, 5), 128)
+    out = ImageOps._neon_colorize(mask, (255, 0, 0))
+
+    assert out.mode == "RGB"
+    assert out.size == mask.size
+
+
+def test_neon_colorize_red_channel_only() -> None:
+    mask = Image.new("L", (1, 1), 255)
+    out = ImageOps._neon_colorize(mask, (255, 0, 0))
+
+    assert out.getpixel((0, 0)) == (255, 0, 0)
+
+
+def test_neon_blend_alpha_zero() -> None:
+    base = Image.new("RGB", (1, 1), (10, 20, 30))
+    neon = Image.new("RGB", (1, 1), (200, 200, 200))
+
+    out = ImageOps._neon_blend(base, neon, alpha=0)
+    assert out.getpixel((0, 0)) == (10, 20, 30)
+
+
+def test_neon_blend_alpha_one() -> None:
+    base = Image.new("RGB", (1, 1), (10, 20, 30))
+    neon = Image.new("RGB", (1, 1), (200, 200, 200))
+
+    out = ImageOps._neon_blend(base, neon, alpha=1)
+    assert out.getpixel((0, 0)) == (200, 200, 200)
+
+
+def test_neon_effect_mode_and_size() -> None:
+    img = Image.new("RGB", (20, 20), "black")
+    out = ImageOps.neon_effect(img)
+
+    assert out.mode == "RGB"
+    assert out.size == img.size
