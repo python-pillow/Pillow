@@ -24,7 +24,7 @@ import re
 from collections.abc import Sequence
 from typing import Literal, Protocol, cast, overload
 
-from . import ExifTags, Image, ImagePalette
+from . import ExifTags, Image, ImagePalette, ImageFilter
 
 #
 # helpers
