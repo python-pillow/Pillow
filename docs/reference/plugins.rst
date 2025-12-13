@@ -169,6 +169,14 @@ Plugin reference
     :undoc-members:
     :show-inheritance:
 
+:mod:`~PIL.JpegXlImagePlugin` module
+------------------------------------
+
+.. automodule:: PIL.JpegXlImagePlugin
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`~PIL.McIdasImagePlugin` module
 ------------------------------------
 
