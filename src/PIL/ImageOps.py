@@ -711,6 +711,36 @@ def _glow_mask(edge_img: Image.Image) -> Image.Image:
     return edge_img.point(screen_point)
 
 
+def _neon_colorize(
+    mask: Image.Image,
+    color: tuple[int, int, int]
+) -> Image.Image:
+    """
+    Apply a color tint to an intensity mask for neon/glow effects.
+    :param mask: single-channel mask.
+    :param color: color to be applied
+    :return: An image
+    """
+    r, g, b = color
+    width, height = mask.size
+    out = Image.new("RGB", (width, height))
+
+    for y in range(height):
+        for x in range(width):
+            v = cast(int, mask.getpixel((x, y)))
+
+            out.putpixel(
+                (x, y),
+                (
+                    min(255, v * r // 255),
+                    min(255, v * g // 255),
+                    min(255, v * b // 255),
+                ),
+            )
+
+    return out
+
+
 def invert(image: Image.Image) -> Image.Image:
     """
     Invert (negate) the image.
