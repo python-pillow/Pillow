@@ -741,6 +741,44 @@ def _neon_colorize(
     return out
 
 
+def _neon_blend(
+    original: Image.Image,
+    neon: Image.Image,
+    alpha: float = 0.55
+) -> Image.Image:
+    """
+    Blend the original image with its neon/glow layer
+
+    :param original: Image to blend whith neon layer
+    :param neon: neon Layer
+    :param alpha: controls intensity of neon effect
+    :return: An image
+    """
+    if alpha < 0:
+        alpha = 0
+    if alpha > 1:
+        alpha = 1
+
+    width, height = original.size
+    out = Image.new("RGB", (width, height))
+
+    for y in range(height):
+        for x in range(width):
+            r1, g1, b1 = cast(tuple[int, int, int], original.getpixel((x, y)))
+            r2, g2, b2 = cast(tuple[int, int, int], neon.getpixel((x, y)))
+
+            out.putpixel(
+                (x, y),
+                (
+                    int((1 - alpha) * r1 + alpha * r2),
+                    int((1 - alpha) * g1 + alpha * g2),
+                    int((1 - alpha) * b1 + alpha * b2),
+                ),
+            )
+
+    return out
+
+
 def invert(image: Image.Image) -> Image.Image:
     """
     Invert (negate) the image.
