@@ -623,6 +623,37 @@ def grayscale(image: Image.Image) -> Image.Image:
     return image.convert("L")
 
 
+def sepia(image: Image.Image) -> Image.Image:
+    """
+    Apply a sepia tone effect to an image.
+
+    :param image: The image to modify.
+    :return: An image.
+
+    """
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+
+    width, height = image.size
+    out = Image.new("RGB", (width, height))
+
+    for x in range(width):
+        for y in range(height):
+            r, g, b = cast(tuple[int, int, int], image.getpixel((x, y)))
+
+            tr = int(0.393 * r + 0.769 * g + 0.189 * b)
+            tg = int(0.349 * r + 0.686 * g + 0.168 * b)
+            tb = int(0.272 * r + 0.534 * g + 0.131 * b)
+
+            tr = min(255, int(tr))
+            tg = min(255, int(tg))
+            tb = min(255, int(tb))
+
+            out.putpixel((x, y), (tr, tg, tb))
+
+    return out
+
+
 def invert(image: Image.Image) -> Image.Image:
     """
     Invert (negate) the image.
