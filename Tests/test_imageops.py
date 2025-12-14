@@ -615,7 +615,7 @@ def test_dither_primary_returns_image() -> None:
     assert out.mode == "RGB"
 
 
-def test_dither_primary_uses_only_primary_colors():
+def test_dither_primary_uses_only_primary_colors() -> None:
     im = Image.new("RGB", (4, 4), (200, 100, 50))
     out = ImageOps.dither_primary(im)
 
