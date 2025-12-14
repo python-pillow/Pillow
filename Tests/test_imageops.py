@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import cast
-
 import pytest
 
 from PIL import Image, ImageDraw, ImageOps, ImageStat, features
@@ -612,8 +610,8 @@ def test_sepia_preserves_size_and_mode() -> None:
     img = Image.new("RGB", (10, 10), (100, 150, 200))
     out = ImageOps.sepia(img)
 
-    assert out.size == img.size
     assert out.mode == "RGB"
+    assert out.size == img.size
 
 
 def test_sobel_detects_edge() -> None:
@@ -645,8 +643,9 @@ def test_glow_mask_increases_intensity() -> None:
     img = Image.new("L", (1, 1), 128)
     out = ImageOps._glow_mask(img)
 
-    v = cast(int, out.getpixel((0, 0)))
-    assert v > 128
+    value = out.getpixel((0, 0))
+    assert isinstance(value, (int, float))
+    assert value > 128
 
 
 def test_neon_colorize_output_mode() -> None:
@@ -681,7 +680,7 @@ def test_neon_blend_alpha_one() -> None:
 
 
 def test_neon_effect_mode_and_size() -> None:
-    img = Image.new("RGB", (20, 20), "black")
+    img = Image.new("RGB", (20, 20))
     out = ImageOps.neon_effect(img)
 
     assert out.mode == "RGB"
