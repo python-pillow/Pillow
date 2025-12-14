@@ -658,13 +658,13 @@ def sobel(image: Image.Image) -> Image.Image:
     This function computes the Sobel gradient magnitude using the
     horizontal (Gx) and vertical (Gy) Sobel kernels.
 
-    :param: image: the image to apply the filter
+    :param image: the image to apply the filter
     :return: An image.
     """
-    image = image.convert("L")
+    if image.mode != "L":
+        image = image.convert("L")
 
     Kx = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]
-
     Ky = [[1, 2, 1], [0, 0, 0], [-1, -2, -1]]
 
     out = Image.new("L", image.size)
@@ -681,6 +681,7 @@ def sobel(image: Image.Image) -> Image.Image:
 
                     gx += v * Kx[dy + 1][dx + 1]
                     gy += v * Ky[dy + 1][dx + 1]
+
             # Approximate gradient magnitude and clamp to [0, 255]
             mag = int(min(255, abs(gx) + abs(gy)))
             out.putpixel((x, y), mag)
