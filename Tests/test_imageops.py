@@ -619,10 +619,15 @@ def test_dither_primary_uses_only_primary_colors() -> None:
     im = Image.new("RGB", (4, 4), (200, 100, 50))
     out = ImageOps.dither_primary(im)
 
-    pixels = out.load()
+    px = out.load()
+    assert px is not None
+
     for x in range(out.width):
         for y in range(out.height):
-            r, g, b = pixels[x, y]
+            value = px[x, y]
+            assert isinstance(value, tuple)
+
+            r, g, b = value
             assert r in (0, 255)
             assert g in (0, 255)
             assert b in (0, 255)
