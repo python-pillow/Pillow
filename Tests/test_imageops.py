@@ -606,7 +606,7 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
     assert_image_equal(img, out)
 
 
-def test_dither_primary_returns_image():
+def test_dither_primary_returns_image() -> None:
     im = Image.new("RGB", (4, 4), (128, 128, 128))
     out = ImageOps.dither_primary(im)
 
