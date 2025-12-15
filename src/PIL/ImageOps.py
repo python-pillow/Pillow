@@ -669,52 +669,35 @@ def dither_primary(image: Image.Image) -> Image.Image:
     """
     if image.mode != "RGB":
         image = image.convert("RGB")
-    width, height = image.size
 
-    src = image.load()
-    out = Image.new("RGB", (width, height))
-    dst = out.load()
+    bands = []
+    for band in image.split():
+        # Step 1: primary color reduction
+        band = band.point(lambda x: 255 if x > 127 else 0)
+        bands.append(band)
 
-    # Step 1: primary color reduction
-    assert src is not None
-    for x in range(width):
-        for y in range(height):
-            px = src[x, y]
-            assert isinstance(px, tuple)
-            r, g, b = px
-            src[x, y] = (
-                255 if r > 127 else 0,
-                255 if g > 127 else 0,
-                255 if b > 127 else 0,
-            )
+        # Step 2: ordered dithering (2x2 blocks)
+        px = band.load()
+        assert px is not None
+        for x in range(0, band.width - 1, 2):
+            for y in range(0, band.height - 1, 2):
+                p1 = px[x, y]
+                p2 = px[x, y + 1]
+                p3 = px[x + 1, y]
+                p4 = px[x + 1, y + 1]
 
-    # Step 2: ordered dithering (2x2 blocks)
-    assert dst is not None
-    for x in range(0, width - 1, 2):
-        for y in range(0, height - 1, 2):
-            p1 = src[x, y]
-            p2 = src[x, y + 1]
-            p3 = src[x + 1, y]
-            p4 = src[x + 1, y + 1]
+                assert isinstance(p1, (int, float))
+                assert isinstance(p2, (int, float))
+                assert isinstance(p3, (int, float))
+                assert isinstance(p4, (int, float))
 
-            assert isinstance(p1, tuple)
-            assert isinstance(p2, tuple)
-            assert isinstance(p3, tuple)
-            assert isinstance(p4, tuple)
-            red = (p1[0] + p2[0] + p3[0] + p4[0]) / 4
-            green = (p1[1] + p2[1] + p3[1] + p4[1]) / 4
-            blue = (p1[2] + p2[2] + p3[2] + p4[2]) / 4
+                value = (p1 + p2 + p3 + p4) / 4
 
-            r1 = [_dither_saturation(red, q) for q in range(4)]
-            g1 = [_dither_saturation(green, q) for q in range(4)]
-            b1 = [_dither_saturation(blue, q) for q in range(4)]
-
-            dst[x, y] = (r1[0], g1[0], b1[0])
-            dst[x, y + 1] = (r1[1], g1[1], b1[1])
-            dst[x + 1, y] = (r1[2], g1[2], b1[2])
-            dst[x + 1, y + 1] = (r1[3], g1[3], b1[3])
-
-    return out
+                px[x, y] = _dither_saturation(value, 0)
+                px[x, y + 1] = _dither_saturation(value, 1)
+                px[x + 1, y] = _dither_saturation(value, 2)
+                px[x + 1, y + 1] = _dither_saturation(value, 3)
+    return Image.merge("RGB", bands)
 
 
 def posterize(image: Image.Image, bits: int) -> Image.Image:

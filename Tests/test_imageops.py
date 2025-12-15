@@ -606,35 +606,18 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
     assert_image_equal(img, out)
 
 
-def test_dither_primary_returns_image() -> None:
-    im = Image.new("RGB", (4, 4), (128, 128, 128))
+@pytest.mark.parametrize("size", (2, 4))
+def test_dither_primary(size: int) -> None:
+    im = Image.new("RGB", (size, size), (200, 100, 50))
     out = ImageOps.dither_primary(im)
 
-    assert isinstance(out, Image.Image)
-    assert out.size == im.size
-    assert out.mode == "RGB"
+    expected = Image.new("RGB", (size, size), (255, 0, 0))
+    assert_image_equal(out, expected)
 
 
-def test_dither_primary_uses_only_primary_colors() -> None:
-    im = Image.new("RGB", (4, 4), (200, 100, 50))
+def test_dither_primary_non_rgb() -> None:
+    im = Image.new("L", (2, 2), 100)
     out = ImageOps.dither_primary(im)
 
-    px = out.load()
-    assert px is not None
-
-    for x in range(out.width):
-        for y in range(out.height):
-            value = px[x, y]
-            assert isinstance(value, tuple)
-
-            r, g, b = value
-            assert r in (0, 255)
-            assert g in (0, 255)
-            assert b in (0, 255)
-
-
-def test_dither_primary_small_image() -> None:
-    im = Image.new("RGB", (2, 2), (255, 0, 0))
-    out = ImageOps.dither_primary(im)
-
-    assert out.size == (2, 2)
+    expected = Image.new("RGB", (2, 2))
+    assert_image_equal(out, expected)
