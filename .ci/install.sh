@@ -56,5 +56,8 @@ pushd depends && sudo ./install_raqm.sh && popd
 # libavif
 pushd depends && sudo ./install_libavif.sh && popd
 
+# libjxl
+pushd depends && sudo ./install_libjxl.sh && popd
+
 # extra test images
 pushd depends && ./install_extra_test_images.sh && popd

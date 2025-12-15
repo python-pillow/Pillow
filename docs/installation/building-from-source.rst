@@ -129,6 +129,8 @@ Many of Pillow's features require external libraries:
     To install libraqm, ``sudo apt-get install meson`` and then see
     ``depends/install_raqm.sh``.
 
+    To install libjxl, see ``depends/install_libjxl.sh``.
+
     Build prerequisites for libavif on Ubuntu are installed with::
 
         sudo apt-get install cmake ninja-build nasm
@@ -166,7 +168,7 @@ Many of Pillow's features require external libraries:
     The easiest way to install external libraries is via `Homebrew
     <https://brew.sh/>`_. After you install Homebrew, run::
 
-        brew install libavif libjpeg libraqm libtiff little-cms2 openjpeg webp
+        brew install jpeg-xl libavif libjpeg libraqm libtiff little-cms2 openjpeg webp
 
     If you would like to use libavif with more codecs than just aom, then
     instead of installing libavif through Homebrew directly, you can use
