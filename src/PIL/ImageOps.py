@@ -667,7 +667,8 @@ def dither_primary(image: Image.Image) -> Image.Image:
     :param image: The image to process.
     :return: An image.
     """
-    image = image.convert("RGB")
+    if image.mode != "RGB":
+        image = image.convert("RGB")
     width, height = image.size
 
     src = image.load()
