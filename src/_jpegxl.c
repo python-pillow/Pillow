@@ -1,6 +1,5 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
-#include <stdbool.h>
 #include "libImaging/Imaging.h"
 
 #include <jxl/codestream_header.h>
@@ -295,8 +294,8 @@ decoder_loop_skip_process:
             decp->status = JxlDecoderGetBoxType(decp->decoder, btype, JXL_TRUE);
             _JXL_CHECK("JxlDecoderGetBoxType");
 
-            bool is_box_exif = !memcmp(btype, "Exif", 4);
-            bool is_box_xmp = !memcmp(btype, "xml ", 4);
+            int is_box_exif = !memcmp(btype, "Exif", 4);
+            int is_box_xmp = !memcmp(btype, "xml ", 4);
             if (!is_box_exif && !is_box_xmp) {
                 // not exif/xmp box so continue
                 continue;
@@ -472,6 +471,7 @@ end:
         decp->status
     );
     PyErr_SetString(PyExc_OSError, err_msg);
+    return NULL;
 }
 
 PyObject *
@@ -562,7 +562,6 @@ setup_module(PyObject *m) {
         return -1;
     }
 
-    // TODO(oloke) ready object types?
     PyObject *d = PyModule_GetDict(m);
     PyObject *v = PyUnicode_FromString(JpegXlDecoderVersion_str());
     PyDict_SetItemString(d, "libjxl_version", v ? v : Py_None);
