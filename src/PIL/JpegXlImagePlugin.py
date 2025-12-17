@@ -43,8 +43,6 @@ class JpegXlImageFile(ImageFile.ImageFile):
         self._n_frames = None if self.is_animated else 1
         self._tps_dur_secs = tps_num / tps_denom if tps_denom != 0 else 1
         self.info["duration"] = 1000 * tps_duration * (1 / self._tps_dur_secs)
-
-        # TODO: handle libjxl time codes
         self.info["timestamp"] = 0
 
         if icc := self._decoder.get_icc():
