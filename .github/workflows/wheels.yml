@@ -186,24 +186,7 @@ jobs:
 
       - name: Build wheels
         run: |
-          setlocal EnableDelayedExpansion
-          for %%f in (winbuild\build\license\*) do (
-            set x=%%~nf
-            rem Skip FriBiDi license, it is not included in the wheel.
-            set fribidi=!x:~0,7!
-            if NOT !fribidi!==fribidi (
-              rem Skip imagequant license, it is not included in the wheel.
-              set libimagequant=!x:~0,13!
-              if NOT !libimagequant!==libimagequant (
-                echo. >> LICENSE
-                echo ===== %%~nf ===== >> LICENSE
-                echo. >> LICENSE
-                type %%f >> LICENSE
-              )
-            )
-          )
-          call winbuild\\build\\build_env.cmd
-          %pythonLocation%\python.exe -m cibuildwheel . --output-dir wheelhouse
+          .github\workflows\wheels-build.cmd
         env:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL: "{package}\\winbuild\\build\\build_dep_all.cmd"
@@ -217,7 +200,6 @@ jobs:
             -e CI -e GITHUB_ACTIONS
             mcr.microsoft.com/windows/servercore:ltsc2022
             powershell C:\pillow\.github\workflows\wheels-test.ps1 %CD%\..\venv-test'
-        shell: cmd
 
       - name: Upload wheels
         uses: actions/upload-artifact@v5
