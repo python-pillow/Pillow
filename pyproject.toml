@@ -42,7 +42,7 @@ dynamic = [
   "version",
 ]
 optional-dependencies.docs = [
-  "docutils==0.21",  # Pending https://github.com/pradyunsg/sphinx-inline-tabs/pull/51
+  "docutils==0.21",      # Pending https://github.com/pradyunsg/sphinx-inline-tabs/pull/51
   "furo",
   "olefile",
   "sphinx>=8.2",
