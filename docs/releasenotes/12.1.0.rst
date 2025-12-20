@@ -1,0 +1,59 @@
+12.1.0
+------
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+Backwards incompatible changes
+==============================
+
+TODO
+^^^^
+
+TODO
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API additions
+=============
+
+Specify window in ImageGrab on macOS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When using :py:meth:`~PIL.ImageGrab.grab`, a specific window can now be selected on
+macOS in addition to Windows. On macOS, this is a CGWindowID::
+
+    from PIL import ImageGrab
+    ImageGrab.grab(window=cgwindowid)
+
+Other changes
+=============
+
+TODO
+^^^^
+
+TODO

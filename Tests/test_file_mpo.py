@@ -300,12 +300,12 @@ def test_save_all() -> None:
             im_reloaded.seek(1)
             assert_image_similar(im, im_reloaded, 30)
 
-    im = Image.new("RGB", (1, 1))
+    im_rgb = Image.new("RGB", (1, 1))
     for colors in (("#f00",), ("#f00", "#0f0")):
         append_images = [Image.new("RGB", (1, 1), color) for color in colors]
-        im_reloaded = roundtrip(im, save_all=True, append_images=append_images)
+        im_reloaded = roundtrip(im_rgb, save_all=True, append_images=append_images)
 
-        assert_image_equal(im, im_reloaded)
+        assert_image_equal(im_rgb, im_reloaded)
         assert isinstance(im_reloaded, MpoImagePlugin.MpoImageFile)
         assert im_reloaded.mpinfo is not None
         assert im_reloaded.mpinfo[45056] == b"0100"
@@ -315,7 +315,7 @@ def test_save_all() -> None:
             assert_image_similar(im_reloaded, im_expected, 1)
 
     # Test that a single frame image will not be saved as an MPO
-    jpg = roundtrip(im, save_all=True)
+    jpg = roundtrip(im_rgb, save_all=True)
     assert "mp" not in jpg.info
 
 

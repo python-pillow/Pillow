@@ -80,8 +80,8 @@ def test_16bit() -> None:
         _test_float_conversion(im)
 
     for color in (65535, 65536):
-        im = Image.new("I", (1, 1), color)
-        im_i16 = im.convert("I;16")
+        im_i = Image.new("I", (1, 1), color)
+        im_i16 = im_i.convert("I;16")
         assert im_i16.getpixel((0, 0)) == 65535
 
 
