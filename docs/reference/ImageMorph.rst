@@ -30,9 +30,6 @@ converted to mode ``"L"``::
 
     im = im.convert("L")
 
-For best results, use images with values restricted to 0 (black) and 255
-(white), though intermediate grayscale values are also supported.
-
 
 Defining structuring element patterns
 -------------------------------------
