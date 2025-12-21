@@ -1524,6 +1524,8 @@ class Image:
                 assert isinstance(self, TiffImagePlugin.TiffImageFile)
                 self._exif.bigtiff = self.tag_v2._bigtiff
                 self._exif.endian = self.tag_v2._endian
+
+                assert self.fp is not None
                 self._exif.load_from_fp(self.fp, self.tag_v2._offset)
         if exif_info is not None:
             self._exif.load(exif_info)
