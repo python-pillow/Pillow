@@ -213,13 +213,13 @@ class CurImageFile(IcoImagePlugin.IcoImageFile):
     def _open(self) -> None:
         assert self.fp is not None
         self.ico = CurFile(self.fp)
-        self.info["sizes"] = self.ico.sizes()
-        self.info["hotspots"] = self.ico.hotspots
-        if len(self.ico.entry) > 0:
-            self.size = self.ico.entry[0].dim
-        else:
+        if not self.ico.entry:
             msg = "No cursors were found"
             raise TypeError(msg)
+
+        self.info["sizes"] = self.ico.sizes()
+        self.info["hotspots"] = self.ico.hotspots
+        self._size = self.ico.entry[0].dim
         self.load()
 
 
