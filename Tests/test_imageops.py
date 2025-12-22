@@ -631,23 +631,6 @@ def test_sobel_output_mode_and_size() -> None:
     assert out.size == img.size
 
 
-def test_glow_mask_preserves_mode_and_size() -> None:
-    img = Image.new("L", (10, 10), 128)
-    out = ImageOps._glow_mask(img)
-
-    assert out.mode == "L"
-    assert out.size == img.size
-
-
-def test_glow_mask_increases_intensity() -> None:
-    img = Image.new("L", (1, 1), 128)
-    out = ImageOps._glow_mask(img)
-
-    value = out.getpixel((0, 0))
-    assert isinstance(value, (int, float))
-    assert value > 128
-
-
 def test_neon_colorize_output_mode() -> None:
     mask = Image.new("L", (5, 5), 128)
     out = ImageOps._neon_colorize(mask, (255, 0, 0))

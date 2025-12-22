@@ -689,20 +689,6 @@ def sobel(image: Image.Image) -> Image.Image:
     return out
 
 
-def _glow_mask(edge_img: Image.Image) -> Image.Image:
-    """
-    Apply a glow-enhancing mask transformation to an edge image.
-
-    :param edge_img: A grayscale image containing edge intensities.
-    :return: An image.
-    """
-
-    def screen_point(value: int) -> int:
-        return 255 - ((255 - value) * (255 - value) // 255)
-
-    return edge_img.point(screen_point)
-
-
 def _neon_colorize(mask: Image.Image, color: tuple[int, int, int]) -> Image.Image:
     """
     Apply a color tint to an intensity mask for neon/glow effects.
@@ -780,9 +766,10 @@ def neon_effect(
     edges = sobel(image)
     edges = edges.filter(ImageFilter.GaussianBlur(2))
 
-    glow = _glow_mask(edges)
-    neon = _neon_colorize(glow, color)
+    # Apply a glow-enhancing mask transformation
+    glow = edges.point(lambda value: 255 - ((255 - value) ** 2 // 255))
 
+    neon = _neon_colorize(glow, color)
     return _neon_blend(image, neon, alpha)
 
 
