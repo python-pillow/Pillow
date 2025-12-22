@@ -38,6 +38,12 @@ def test_largest_cursor() -> None:
         + o16(0)  # planes
         + o16(1)  # bits
     )
+
+    fp = BytesIO()
+    im = Image.new("1", (8, 8))
+    im.save(fp, "PNG")
+    data += fp.getvalue()
+
     with Image.open(BytesIO(data)) as im:
         assert im.size == (8, 8)
 

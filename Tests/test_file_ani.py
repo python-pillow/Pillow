@@ -17,6 +17,7 @@ def test_aero_busy() -> None:
         assert_image_equal_tofile(im, "Tests/images/ani/aero_busy_0.png")
 
         im.seek(8)
+        assert im.tell() == 8
         assert_image_equal_tofile(im, "Tests/images/ani/aero_busy_8.png")
 
         with pytest.raises(EOFError):

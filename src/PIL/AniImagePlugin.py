@@ -401,7 +401,7 @@ class AniImageFile(ImageFile.ImageFile):
         assert self.ani.anih is not None
         self.n_frames = self.ani.anih["nFrames"]
 
-        self.frame = 0
+        self.__frame = 0
         self.seek(0)
         self.load()
         self.size = self.im.size
@@ -418,7 +418,7 @@ class AniImageFile(ImageFile.ImageFile):
         self._size = value
 
     def load(self) -> Image.core.PixelAccess | None:
-        im = self.ani.frame(self.frame)
+        im = self.ani.frame(self.__frame)
         self.info["sizes"] = im.info["sizes"]
         self.info["hotspots"] = im.info["hotspots"]
         self.im = im.im
@@ -429,7 +429,10 @@ class AniImageFile(ImageFile.ImageFile):
         if not self._seek_check(frame):
             return
 
-        self.frame = frame
+        self.__frame = frame
+
+    def tell(self) -> int:
+        return self.__frame
 
 
 Image.register_open(AniImageFile.format, AniImageFile, _accept)
