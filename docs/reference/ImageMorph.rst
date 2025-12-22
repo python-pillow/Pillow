@@ -19,17 +19,15 @@ This module is useful for tasks such as noise cleanup, detecting specific
 pixel shapes, extracting boundaries, thinning, or locating features defined by
 small structuring elements.
 
-
 Supported image modes
 ---------------------
 
 Morphological operations in Pillow operate on images in mode ``"L"`` (8-bit
-grayscale). A nonzero pixel is treated as “on”, and a zero-valued pixel as
-“off”. To apply morphology to a binary image, ensure that the image is first
+grayscale). A nonzero pixel is treated as "on", and a zero-valued pixel as
+"off". To apply morphology to a binary image, ensure that the image is first
 converted to mode ``"L"``::
 
     im = im.convert("L")
-
 
 Defining structuring element patterns
 -------------------------------------
@@ -37,9 +35,9 @@ Defining structuring element patterns
 A structuring pattern is defined using a small ASCII mask consisting of the
 characters:
 
-* ``1`` — pixel must be “on”
-* ``0`` — pixel must be “off”
-* ``-`` — “don’t care” value (ignored during matching)
+* ``1`` — pixel must be "on"
+* ``0`` — pixel must be "off"
+* ``-`` — "don’t care" value (ignored during matching)
 
 For example, this mask detects a 2×2 corner shape::
 
@@ -52,17 +50,16 @@ Multiple patterns can be combined into a single LUT. Patterns must all be the
 same size, and Pillow builds a lookup table from them using
 :class:`LutBuilder`.
 
-
 Using :class:`LutBuilder`
 -------------------------
 
 The :class:`LutBuilder` class constructs a LUT that defines how a morphological
 operation should behave. A LUT maps every possible 3×3 neighborhood around a
-pixel to an output pixel value (either “on” or “off”).
+pixel to an output pixel value (either "on" or "off").
 
-Basic uses like dilation and erosion can be created by specifying
-preset names (``"dilation4"``, ``"dilation8"``, ``"erosion4"``,
-``"erosion8"``, ``"edge"``), or you may define custom patterns.
+Basic uses like dilation and erosion can be achieved by specifying preset operation
+names (``"corner"``, ``"dilation4"``, ``"dilation8"``, ``"erosion4"``, ``"erosion8"``,
+``"edge"``), or you may define custom patterns.
 
 For example, creating a LUT for a 2×2 corner detector::
 
@@ -79,7 +76,6 @@ For example, creating a LUT for a 2×2 corner detector::
 
 You can inspect, save, or reuse the LUT with :meth:`LutBuilder.get_lut`,
 :meth:`MorphOp.load_lut`, or :meth:`MorphOp.save_lut`.
-
 
 Applying morphology with :class:`MorphOp`
 -----------------------------------------
@@ -106,7 +102,7 @@ Example: applying a simple dilation operation::
 
 You could also use the method :meth:`MorphOp.match` to check where a pattern
 matches without modifying the image, and :meth:`MorphOp.get_on_pixels` to
-get the coordinates of “on” pixels after pattern matching.
+get the coordinates of "on" pixels after pattern matching.
 
 Example: pattern matching without modifying the image::
 
@@ -115,7 +111,6 @@ Example: pattern matching without modifying the image::
 
     # result is a list of (x, y) coordinates
     print("Edge pixels found:", len(result))
-
 
 Saving and loading LUTs
 -----------------------
