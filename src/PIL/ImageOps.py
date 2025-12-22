@@ -689,18 +689,6 @@ def sobel(image: Image.Image) -> Image.Image:
     return out
 
 
-def _neon_colorize(mask: Image.Image, color: tuple[int, int, int]) -> Image.Image:
-    """
-    Apply a color tint to an intensity mask for neon/glow effects.
-    :param mask: single-channel mask.
-    :param color: color to be applied
-    :return: An image
-    """
-    return Image.merge(
-        "RGB", tuple(mask.point(lambda v: min(255, int(v * c / 255))) for c in color)
-    )
-
-
 def _neon_blend(
     original: Image.Image, neon: Image.Image, alpha: float = 0.55
 ) -> Image.Image:
@@ -725,15 +713,11 @@ def _neon_blend(
             value2 = neon.getpixel((x, y))
             assert isinstance(value1, tuple)
             assert isinstance(value2, tuple)
-            r1, g1, b1 = value1
-            r2, g2, b2 = value2
 
             out.putpixel(
                 (x, y),
-                (
-                    int((1 - alpha) * r1 + alpha * r2),
-                    int((1 - alpha) * g1 + alpha * g2),
-                    int((1 - alpha) * b1 + alpha * b2),
+                tuple(
+                    int((1 - alpha) * value1[i] + alpha * value2[i]) for i in range(3)
                 ),
             )
 
@@ -753,15 +737,18 @@ def neon_effect(
     :param color: RGB color used for neon effect
     :alpha: controls the intensity of the neon effect
     :return: An image
-
     """
-    edges = sobel(image)
-    edges = edges.filter(ImageFilter.GaussianBlur(2))
+    edges = sobel(image).filter(ImageFilter.GaussianBlur(2))
 
     # Apply a glow-enhancing mask transformation
     glow = edges.point(lambda value: 255 - ((255 - value) ** 2 // 255))
 
-    neon = _neon_colorize(glow, color)
+    # Apply a color tint to the intensity mask
+    neon = Image.merge(
+        "RGB",
+        tuple(glow.point(lambda value: min(255, int(value * c / 255))) for c in color),
+    )
+
     return _neon_blend(image, neon, alpha)
 
 
