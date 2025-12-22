@@ -37,7 +37,7 @@ characters:
 
 * ``1`` — pixel must be "on"
 * ``0`` — pixel must be "off"
-* ``-`` — "don’t care" value (ignored during matching)
+* ``.`` or ``X`` — "don’t care" value (ignored during matching)
 
 For example, this mask detects a 2×2 corner shape::
 
