@@ -689,41 +689,6 @@ def sobel(image: Image.Image) -> Image.Image:
     return out
 
 
-def _neon_blend(
-    original: Image.Image, neon: Image.Image, alpha: float = 0.55
-) -> Image.Image:
-    """
-    Blend the original image with its neon/glow layer
-
-    :param original: Image to blend whith neon layer
-    :param neon: neon Layer
-    :param alpha: controls intensity of neon effect
-    :return: An image
-    """
-    if alpha < 0:
-        alpha = 0
-    if alpha > 1:
-        alpha = 1
-
-    out = Image.new("RGB", original.size)
-
-    for y in range(original.height):
-        for x in range(original.width):
-            value1 = original.getpixel((x, y))
-            value2 = neon.getpixel((x, y))
-            assert isinstance(value1, tuple)
-            assert isinstance(value2, tuple)
-
-            out.putpixel(
-                (x, y),
-                tuple(
-                    int((1 - alpha) * value1[i] + alpha * value2[i]) for i in range(3)
-                ),
-            )
-
-    return out
-
-
 def neon_effect(
     image: Image.Image, color: tuple[int, int, int] = (255, 0, 255), alpha: float = 0.2
 ) -> Image.Image:
@@ -749,7 +714,7 @@ def neon_effect(
         tuple(glow.point(lambda value: min(255, int(value * c / 255))) for c in color),
     )
 
-    return _neon_blend(image, neon, alpha)
+    return Image.blend(image, neon, alpha)
 
 
 def invert(image: Image.Image) -> Image.Image:

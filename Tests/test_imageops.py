@@ -631,22 +631,6 @@ def test_sobel_output_mode_and_size() -> None:
     assert out.size == img.size
 
 
-def test_neon_blend_alpha_zero() -> None:
-    base = Image.new("RGB", (1, 1), (10, 20, 30))
-    neon = Image.new("RGB", (1, 1), (200, 200, 200))
-
-    out = ImageOps._neon_blend(base, neon, alpha=0)
-    assert out.getpixel((0, 0)) == (10, 20, 30)
-
-
-def test_neon_blend_alpha_one() -> None:
-    base = Image.new("RGB", (1, 1), (10, 20, 30))
-    neon = Image.new("RGB", (1, 1), (200, 200, 200))
-
-    out = ImageOps._neon_blend(base, neon, alpha=1)
-    assert out.getpixel((0, 0)) == (200, 200, 200)
-
-
 def test_neon_effect_mode_and_size() -> None:
     img = Image.new("RGB", (20, 20))
     out = ImageOps.neon_effect(img)
