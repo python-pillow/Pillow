@@ -696,17 +696,9 @@ def _neon_colorize(mask: Image.Image, color: tuple[int, int, int]) -> Image.Imag
     :param color: color to be applied
     :return: An image
     """
-    r, g, b = color
-    out = Image.new("RGB", mask.size)
-
-    for y in range(mask.height):
-        for x in range(mask.width):
-            v = mask.getpixel((x, y))
-            assert isinstance(v, (int, float))
-
-            out.putpixel((x, y), tuple(min(255, int(v * c / 255)) for c in (r, g, b)))
-
-    return out
+    return Image.merge(
+        "RGB", tuple(mask.point(lambda v: min(255, int(v * c / 255))) for c in color)
+    )
 
 
 def _neon_blend(
