@@ -41,6 +41,31 @@ TODO
 API additions
 =============
 
+ImageText.Text.wrap
+^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`.ImageText.Text.wrap` has been added, to wrap text to fit within a given
+width::
+
+    from PIL import ImageText
+    text = ImageText.Text("Hello World!")
+    text.wrap(50)
+    print(text.text)  # "Hello\nWorld!"
+
+or within a certain width and height, returning a new :py:class:`.ImageText.Text`
+instance if the text does not fit::
+
+    text = ImageText.Text("Text does not fit within height")
+    print(text.wrap(50, 25).text == " within height")
+    print(text.text)  # "Text does\nnot fit"
+
+or scaling, optionally with a font size limit::
+
+    text.wrap(50, 15, "shrink")
+    text.wrap(50, 15, ("shrink", 7))
+    text.wrap(58, 10, "grow")
+    text.wrap(50, 50, ("grow", 12))
+
 Specify window in ImageGrab on macOS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
