@@ -188,9 +188,10 @@ def test_corner() -> None:
     assert len(coords) == 4
     assert tuple(coords) == ((2, 2), (4, 2), (2, 4), (4, 4))
 
-    coords = mop.get_on_pixels(Aout)
-    assert len(coords) == 4
-    assert tuple(coords) == ((2, 2), (4, 2), (2, 4), (4, 4))
+    for image in (Aout, Aout.convert("1")):
+        coords = mop.get_on_pixels(image)
+        assert len(coords) == 4
+        assert tuple(coords) == ((2, 2), (4, 2), (2, 4), (4, 4))
 
 
 def test_mirroring() -> None:
@@ -239,7 +240,7 @@ def test_incorrect_mode() -> None:
         mop.apply(im)
     with pytest.raises(ValueError, match="Image mode must be L"):
         mop.match(im)
-    with pytest.raises(ValueError, match="Image mode must be L"):
+    with pytest.raises(ValueError, match="Image mode must be 1 or L"):
         mop.get_on_pixels(im)
 
 
