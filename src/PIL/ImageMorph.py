@@ -209,8 +209,8 @@ class MorphOp:
             msg = "No operator loaded"
             raise Exception(msg)
 
-        if image.mode != "L":
-            msg = "Image mode must be L"
+        if image.mode not in ("1", "L"):
+            msg = "Image mode must be 1 or L"
             raise ValueError(msg)
         outimage = Image.new(image.mode, image.size, None)
         count = _imagingmorph.apply(bytes(self.lut), image.getim(), outimage.getim())
@@ -226,8 +226,8 @@ class MorphOp:
             msg = "No operator loaded"
             raise Exception(msg)
 
-        if image.mode != "L":
-            msg = "Image mode must be L"
+        if image.mode not in ("1", "L"):
+            msg = "Image mode must be 1 or L"
             raise ValueError(msg)
         return _imagingmorph.match(bytes(self.lut), image.getim())
 
