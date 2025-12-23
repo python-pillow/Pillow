@@ -12,17 +12,17 @@ pytestmark = skip_unless_feature("jpegxl")
 def test_n_frames() -> None:
     """Ensure that jxl format sets n_frames and is_animated attributes correctly."""
 
-    with Image.open("Tests/images/hopper.jxl") as im:
+    with Image.open("Tests/images/jxl/hopper.jxl") as im:
         assert im.n_frames == 1
         assert not im.is_animated
 
-    with Image.open("Tests/images/iss634.jxl") as im:
+    with Image.open("Tests/images/jxl/iss634.jxl") as im:
         assert im.n_frames == 41
         assert im.is_animated
 
 
 def test_duration() -> None:
-    with Image.open("Tests/images/iss634.jxl") as im:
+    with Image.open("Tests/images/jxl/iss634.jxl") as im:
         assert im.info["duration"] == 70
         assert im.info["timestamp"] == 0
 
@@ -43,17 +43,17 @@ def test_seek() -> None:
             assert im1.is_animated
 
             # Traverse frames in reverse, checking timestamps and durations
-            total_dur = 0
+            total_duration = 0
             for frame in reversed(range(im1.n_frames)):
                 im1.seek(frame)
                 im2.seek(frame)
 
                 assert_image_equal(im1.convert("RGB"), im2.convert("RGB"))
 
-                total_dur += im1.info["duration"]
+                total_duration += im1.info["duration"]
                 assert im1.info["duration"] == im2.info["duration"]
                 assert im1.info["timestamp"] == im1.info["timestamp"]
-            assert total_dur == 8000
+            assert total_duration == 8000
 
             assert im1.tell() == 0
             assert im2.tell() == 0
@@ -65,7 +65,7 @@ def test_seek() -> None:
 
 
 def test_seek_errors() -> None:
-    with Image.open("Tests/images/iss634.jxl") as im:
+    with Image.open("Tests/images/jxl/iss634.jxl") as im:
         with pytest.raises(EOFError, match="attempt to seek outside sequence"):
             im.seek(-1)
 

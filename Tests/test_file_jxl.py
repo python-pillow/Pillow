@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import os
 import re
 
 import pytest
 
-from PIL import Image, JpegXlImagePlugin, features
+from PIL import Image, JpegXlImagePlugin, UnidentifiedImageError, features
 
 from .helper import assert_image_similar_tofile, skip_unless_feature
 
@@ -13,10 +14,6 @@ try:
 except ImportError:
     pass
 
-# cjxl v0.9.2 41b8cdab
-# hopper.jxl: cjxl hopper.png hopper.jxl -q 75 -e 8
-# 16_bit_binary.jxl: cjxl 16_bit_binary.pgm 16_bit_binary.jxl -q 100 -e 9
-
 
 class TestUnsupportedJpegXl:
     def test_unsupported(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -24,7 +21,7 @@ class TestUnsupportedJpegXl:
 
         with pytest.raises(OSError):
             with pytest.warns(UserWarning, match="JXL support not installed"):
-                Image.open("Tests/images/hopper.jxl")
+                Image.open("Tests/images/jxl/hopper.jxl")
 
 
 @skip_unless_feature("jpegxl")
@@ -34,53 +31,34 @@ class TestFileJpegXl:
         assert version is not None
         assert re.search(r"\d+\.\d+\.\d+$", version)
 
-    def test_read_rgb(self) -> None:
-        """
-        Can we read an RGB mode JPEG XL file without error?
-        Does it have the bits we expect?
-        """
-
-        with Image.open("Tests/images/hopper.jxl") as im:
-            assert im.mode == "RGB"
-            assert im.size == (128, 128)
+    @pytest.mark.parametrize(
+        "mode, test_file",
+        (
+            ("1", "hopper_bw_500.png"),
+            ("L", "hopper_gray.jpg"),
+            ("I;16", "jxl/16bit_subcutaneous.cropped.png"),
+            ("RGB", "hopper.jpg"),
+            ("RGBA", "transparent.png"),
+        ),
+    )
+    def test_read(self, mode: str, test_file: str) -> None:
+        with Image.open(
+            "Tests/images/jxl/"
+            + os.path.splitext(os.path.basename(test_file))[0]
+            + ".jxl"
+        ) as im:
             assert im.format == "JPEG XL"
-            im.getdata()
+            assert im.mode == mode
 
-            # generated with:
-            # djxl hopper.jxl hopper_jxl_bits.ppm
-            assert_image_similar_tofile(im, "Tests/images/hopper_jxl_bits.ppm", 1)
+            assert_image_similar_tofile(im, "Tests/images/" + test_file, 1.9)
 
-    def test_read_rgba(self) -> None:
-        # Generated with `cjxl transparent.png transparent.jxl -q 100 -e 8`
-        with Image.open("Tests/images/transparent.jxl") as im:
-            assert im.mode == "RGBA"
-            assert im.size == (200, 150)
-            assert im.format == "JPEG XL"
-            im.getdata()
-
-            im.tobytes()
-
-            assert_image_similar_tofile(im, "Tests/images/transparent.png", 1)
-
-    def test_read_i16(self) -> None:
-        """
-        Can we read 16-bit Grayscale JPEG XL image?
-        """
-
-        with Image.open("Tests/images/jxl/16bit_subcutaneous.cropped.jxl") as im:
-            assert im.mode == "I;16"
-            assert im.size == (128, 64)
-            assert im.format == "JPEG XL"
-            im.getdata()
-
-            assert_image_similar_tofile(
-                im, "Tests/images/jxl/16bit_subcutaneous.cropped.png", 1
-            )
+    def test_unknown_mode(self) -> None:
+        with pytest.raises(UnidentifiedImageError):
+            Image.open("Tests/images/jxl/unknown_mode.jxl")
 
     def test_JpegXlDecode_with_invalid_args(self) -> None:
         """
         Calling decoder functions with no arguments should result in an error.
         """
-
         with pytest.raises(TypeError):
             _jpegxl.JpegXlDecoder()

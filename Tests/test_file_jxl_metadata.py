@@ -27,7 +27,7 @@ except ImportError:
 
 
 def test_read_exif_metadata() -> None:
-    with Image.open("Tests/images/flower.jxl") as im:
+    with Image.open("Tests/images/jxl/flower.jxl") as im:
         assert im.format == "JPEG XL"
         exif_data = im.info["exif"]
 
@@ -44,7 +44,7 @@ def test_read_exif_metadata() -> None:
 
 
 def test_read_exif_metadata_without_prefix() -> None:
-    with Image.open("Tests/images/flower2.jxl") as im:
+    with Image.open("Tests/images/jxl/flower2.jxl") as im:
         # Assert prefix is not present
         assert im.info["exif"][:6] != b"Exif\x00\x00"
 
@@ -53,12 +53,12 @@ def test_read_exif_metadata_without_prefix() -> None:
 
 
 def test_read_icc_profile() -> None:
-    with Image.open("Tests/images/flower.jxl") as im:
+    with Image.open("Tests/images/jxl/flower.jxl") as im:
         assert "icc_profile" in im.info
 
 
 def test_getxmp() -> None:
-    with Image.open("Tests/images/flower.jxl") as im:
+    with Image.open("Tests/images/jxl/flower.jxl") as im:
         assert "xmp" not in im.info
         if ElementTree is None:
             with pytest.warns(
@@ -70,7 +70,7 @@ def test_getxmp() -> None:
             xmp = im.getxmp()
         assert xmp == {}
 
-    with Image.open("Tests/images/flower2.jxl") as im:
+    with Image.open("Tests/images/jxl/flower2.jxl") as im:
         if ElementTree is None:
             with pytest.warns(
                 UserWarning,
@@ -105,10 +105,10 @@ def test_4_byte_exif(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(JpegXlImagePlugin, "_jpegxl", _mock_jpegxl)
 
-    with Image.open("Tests/images/hopper.jxl") as im:
+    with Image.open("Tests/images/jxl/hopper.jxl") as im:
         assert "exif" not in im.info
 
 
 def test_read_exif_metadata_empty() -> None:
-    with Image.open("Tests/images/hopper.jxl") as im:
+    with Image.open("Tests/images/jxl/hopper.jxl") as im:
         assert im.getexif() == {}

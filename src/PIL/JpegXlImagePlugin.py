@@ -55,7 +55,8 @@ class JpegXlImageFile(ImageFile.ImageFile):
                 self.info["exif"] = exif[exif_start_offset + 4 :]
         if xmp := self._decoder.get_xmp():
             self.info["xmp"] = xmp
-        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.mode)]
+        rawmode = "L" if self.mode == "1" else self.mode
+        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, rawmode)]
 
     @property
     def n_frames(self) -> int:

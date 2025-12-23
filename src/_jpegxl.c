@@ -14,21 +14,16 @@
 void
 _jxl_get_pixel_format(JxlPixelFormat *pf, const JxlBasicInfo *bi) {
     pf->num_channels = bi->num_color_channels + bi->num_extra_channels;
-
-    if (bi->exponent_bits_per_sample) {
-        pf->data_type = JXL_TYPE_FLOAT;
-    } else if (bi->bits_per_sample > 8) {
-        pf->data_type = JXL_TYPE_UINT16;
-    } else {
-        pf->data_type = JXL_TYPE_UINT8;
-    }
-
+    pf->data_type = bi->bits_per_sample > 8 ? JXL_TYPE_UINT16 : JXL_TYPE_UINT8;
     pf->align = 0;
 }
 
 char *
 _jxl_get_mode(const JxlBasicInfo *bi) {
     if (bi->num_color_channels == 1 && !bi->alpha_bits) {
+        if (bi->bits_per_sample == 1) {
+            return "1";
+        }
         if (bi->bits_per_sample == 16) {
             return "I;16";
         }
@@ -39,9 +34,6 @@ _jxl_get_mode(const JxlBasicInfo *bi) {
             // image has transparency
             if (bi->num_color_channels == 3) {
                 return bi->alpha_premultiplied ? "RGBa" : "RGBA";
-            }
-            if (bi->num_color_channels == 1) {
-                return bi->alpha_premultiplied ? "La" : "LA";
             }
         } else {
             // image has no transparency
@@ -290,7 +282,7 @@ decoder_loop_skip_process:
                     realloc(final_jxl_buf, final_jxl_buf_len + compressed_box_size);
                 if (!_new_jxl_buf) {
                     PyErr_SetString(PyExc_OSError, "failed to allocate final_jxl_buf");
-                    goto end;
+                    goto end_with_custom_error;
                 }
                 final_jxl_buf = _new_jxl_buf;
 
