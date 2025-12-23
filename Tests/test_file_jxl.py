@@ -24,8 +24,7 @@ class TestUnsupportedJpegXl:
 
         with pytest.raises(OSError):
             with pytest.warns(UserWarning, match="JXL support not installed"):
-                with Image.open("Tests/images/hopper.jxl"):
-                    pass
+                Image.open("Tests/images/hopper.jxl")
 
 
 @skip_unless_feature("jpegxl")
@@ -45,7 +44,6 @@ class TestFileJpegXl:
             assert im.mode == "RGB"
             assert im.size == (128, 128)
             assert im.format == "JPEG XL"
-            im.load()
             im.getdata()
 
             # generated with:
@@ -58,7 +56,6 @@ class TestFileJpegXl:
             assert im.mode == "RGBA"
             assert im.size == (200, 150)
             assert im.format == "JPEG XL"
-            im.load()
             im.getdata()
 
             im.tobytes()
@@ -74,7 +71,6 @@ class TestFileJpegXl:
             assert im.mode == "I;16"
             assert im.size == (128, 64)
             assert im.format == "JPEG XL"
-            im.load()
             im.getdata()
 
             assert_image_similar_tofile(

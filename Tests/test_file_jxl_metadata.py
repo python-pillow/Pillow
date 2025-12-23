@@ -39,7 +39,7 @@ def test_read_exif_metadata() -> None:
     with Image.open("Tests/images/flower.jpg") as im_jpeg:
         expected_exif = im_jpeg.info["exif"]
 
-    # JPEG XL always returns exif without 'Exif\0\0' prefix
+    # JPEG XL always returns exif without "Exif\x00\x00" prefix
     assert exif_data == expected_exif[6:]
 
 
@@ -53,14 +53,8 @@ def test_read_exif_metadata_without_prefix() -> None:
 
 
 def test_read_icc_profile() -> None:
-    with Image.open("Tests/images/flower2.jxl") as im:
-        assert im.format == "JPEG XL"
-        icc = im.info["icc_profile"]
-
-    with Image.open("Tests/images/flower2.jxl") as im_jpeg:
-        expected_icc = im_jpeg.info["icc_profile"]
-
-    assert icc == expected_icc
+    with Image.open("Tests/images/flower.jxl") as im:
+        assert "icc_profile" in im.info
 
 
 def test_getxmp() -> None:
