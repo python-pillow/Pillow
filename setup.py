@@ -48,8 +48,9 @@ FREETYPE_ROOT = None
 HARFBUZZ_ROOT = None
 FRIBIDI_ROOT = None
 IMAGEQUANT_ROOT = None
-JPEG2K_ROOT = None
 JPEG_ROOT = None
+JPEG2K_ROOT = None
+JPEGXL_ROOT = None
 LCMS_ROOT = None
 RAQM_ROOT = None
 TIFF_ROOT = None
@@ -511,6 +512,7 @@ class pil_build_ext(build_ext):
             "AVIF_ROOT": "avif",
             "JPEG_ROOT": "libjpeg",
             "JPEG2K_ROOT": "libopenjp2",
+            "JPEGXL_ROOT": "jxl",
             "TIFF_ROOT": ("libtiff-5", "libtiff-4"),
             "ZLIB_ROOT": "zlib",
             "FREETYPE_ROOT": "freetype2",
