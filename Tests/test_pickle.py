@@ -19,30 +19,28 @@ def helper_pickle_file(
     # Arrange
     with Image.open(test_file) as im:
         filename = tmp_path / "temp.pkl"
-        if mode:
-            im = im.convert(mode)
+        converted_im = im.convert(mode) if mode else im
 
         # Act
         with open(filename, "wb") as f:
-            pickle.dump(im, f, protocol)
+            pickle.dump(converted_im, f, protocol)
         with open(filename, "rb") as f:
             loaded_im = pickle.load(f)
 
         # Assert
-        assert im == loaded_im
+        assert converted_im == loaded_im
 
 
 def helper_pickle_string(protocol: int, test_file: str, mode: str | None) -> None:
     with Image.open(test_file) as im:
-        if mode:
-            im = im.convert(mode)
+        converted_im = im.convert(mode) if mode else im
 
         # Act
-        dumped_string = pickle.dumps(im, protocol)
+        dumped_string = pickle.dumps(converted_im, protocol)
         loaded_im = pickle.loads(dumped_string)
 
         # Assert
-        assert im == loaded_im
+        assert converted_im == loaded_im
 
 
 @pytest.mark.parametrize(
