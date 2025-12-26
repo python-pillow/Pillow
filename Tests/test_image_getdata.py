@@ -1,23 +1,23 @@
 from __future__ import annotations
 
+import pytest
+
 from PIL import Image
 
 from .helper import hopper
 
 
 def test_sanity() -> None:
-    data = hopper().getdata()
+    data = hopper().get_flattened_data()
 
-    len(data)
-    list(data)
-
+    assert len(data) == 128 * 128
     assert data[0] == (20, 20, 70)
 
 
 def test_mode() -> None:
     def getdata(mode: str) -> tuple[float | tuple[int, ...] | None, int, int]:
         im = hopper(mode).resize((32, 30), Image.Resampling.NEAREST)
-        data = im.getdata()
+        data = im.get_flattened_data()
         return data[0], len(data), len(list(data))
 
     assert getdata("1") == (0, 960, 960)
@@ -28,3 +28,13 @@ def test_mode() -> None:
     assert getdata("RGBA") == ((11, 13, 52, 255), 960, 960)
     assert getdata("CMYK") == ((244, 242, 203, 0), 960, 960)
     assert getdata("YCbCr") == ((16, 147, 123), 960, 960)
+
+
+def test_deprecation() -> None:
+    im = hopper()
+    with pytest.warns(DeprecationWarning, match="getdata"):
+        data = im.getdata()
+
+    assert len(data) == 128 * 128
+    assert data[0] == (20, 20, 70)
+    assert list(data)[0] == (20, 20, 70)

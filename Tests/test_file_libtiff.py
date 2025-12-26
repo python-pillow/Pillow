@@ -42,7 +42,6 @@ class LibTiffTestCase:
 
         # Does the data actually load
         im.load()
-        im.getdata()
 
         assert isinstance(im, TiffImagePlugin.TiffImageFile)
         assert im._compression == "group4"
