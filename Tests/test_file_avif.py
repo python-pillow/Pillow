@@ -772,6 +772,7 @@ class TestAvifAnimation:
 MAX_THREADS = os.cpu_count() or 1
 
 
+@pytest.mark.xdist_group(name="leak-group")
 @skip_unless_feature("avif")
 class TestAvifLeaks(PillowLeakTestCase):
     mem_limit = MAX_THREADS * 3 * 1024
