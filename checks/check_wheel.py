@@ -8,7 +8,15 @@ from PIL import features
 
 
 def test_wheel_modules() -> None:
-    expected_modules = {"pil", "tkinter", "freetype2", "littlecms2", "webp", "avif"}
+    expected_modules = {
+        "pil",
+        "tkinter",
+        "freetype2",
+        "littlecms2",
+        "webp",
+        "avif",
+        "jpegxl",
+    }
 
     if sys.platform == "win32":
         # tkinter is not available in cibuildwheel installed CPython on Windows
@@ -19,15 +27,17 @@ def test_wheel_modules() -> None:
         except ImportError:
             expected_modules.remove("tkinter")
 
+        expected_modules.remove("jpegxl")
+
         # libavif is not available on Windows for ARM64 architectures
         if platform.machine() == "ARM64":
             expected_modules.remove("avif")
 
     elif sys.platform == "ios":
         # tkinter is not available on iOS
-        expected_modules.remove("tkinter")
-    elif os.environ.get("AUDITWHEEL_POLICY") != "manylinux2014":
-        expected_modules.add("jpegxl")
+        expected_modules -= {"tkinter", "jpegxl"}
+    elif os.environ.get("AUDITWHEEL_POLICY") == "manylinux2014":
+        expected_modules.remove("jpegxl")
 
     assert set(features.get_supported_modules()) == expected_modules
 

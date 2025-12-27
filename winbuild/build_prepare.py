@@ -117,7 +117,9 @@ V = {
     "FREETYPE": "2.14.1",
     "FRIBIDI": "1.0.16",
     "HARFBUZZ": "12.2.0",
+    "HIGHWAY": "1.3.0",
     "JPEGTURBO": "3.1.3",
+    "JPEGXL": "0.11.1",
     "LCMS2": "2.17",
     "LIBAVIF": "1.3.0",
     "LIBIMAGEQUANT": "4.4.1",
@@ -255,7 +257,10 @@ DEPS: dict[str, dict[str, Any]] = {
         "filename": f"brotli-{V['BROTLI']}.tar.gz",
         "license": "LICENSE",
         "build": [
-            *cmds_cmake(("brotlicommon", "brotlidec"), "-DBUILD_SHARED_LIBS:BOOL=OFF"),
+            *cmds_cmake(
+                ("brotlicommon", "brotlidec", "brotlienc"),
+                "-DBUILD_SHARED_LIBS:BOOL=OFF",
+            ),
             cmd_xcopy(r"c\include", "{inc_dir}"),
         ],
         "libs": ["*.lib"],
@@ -331,6 +336,35 @@ DEPS: dict[str, dict[str, Any]] = {
             cmd_copy(r"src\lib\openjp2\*.h", rf"{{inc_dir}}\openjpeg-{V['OPENJPEG']}"),
         ],
         "libs": [r"bin\*.lib"],
+    },
+    "highway": {
+        "url": f"https://github.com/google/highway/archive/{V['HIGHWAY']}.tar.gz",
+        "filename": f"highway-{V['HIGHWAY']}.tar.gz",
+        "license": "LICENSE",
+        "build": [*cmds_cmake("hwy")],
+        "libs": ["hwy.lib"],
+    },
+    "libjxl": {
+        "url": f"https://github.com/libjxl/libjxl/archive/v{V['JPEGXL']}.tar.gz",
+        "filename": f"libjxl-{V['JPEGXL']}.tar.gz",
+        "license": "LICENSE",
+        "build": [
+            *cmds_cmake(
+                "jxl",
+                rf"-DHWY_INCLUDE_DIR=..\highway-{V['HIGHWAY']}",
+                r"-DLCMS2_LIBRARY=..\..\lib\lcms2_static",
+                r"-DLCMS2_INCLUDE_DIR=..\..\inc",
+                "-DJPEGXL_ENABLE_SJPEG:BOOL=OFF",
+                "-DJPEGXL_ENABLE_SKCMS:BOOL=OFF",
+                "-DBUILD_TESTING:BOOL=OFF",
+                "-DBUILD_SHARED_LIBS:BOOL=OFF",
+            ),
+            cmd_copy(r"lib\jxl.lib", "{lib_dir}"),
+            *cmds_cmake("jxl_threads"),
+            cmd_copy(r"lib\jxl_threads.lib", "{lib_dir}"),
+            cmd_mkdir(r"{inc_dir}\jxl"),
+            cmd_copy(r"lib\include\jxl\*.h", r"{inc_dir}\jxl"),
+        ],
     },
     "libimagequant": {
         "url": "https://github.com/ImageOptim/libimagequant/archive/{V['LIBIMAGEQUANT']}.tar.gz",
@@ -630,6 +664,8 @@ def build_dep_all(disabled: list[str], prefs: dict[str, str], verbose: bool) -> 
             print(f"Skipping disabled dependency {dep_name}")
             continue
         script = build_dep(dep_name, prefs, verbose)
+        if dep_name in ("highway", "libjxl"):
+            continue
         if gha_groups:
             lines.append(f"@echo ::group::Running {script}")
         lines.append(rf'cmd.exe /c "{{build_dir}}\{script}"')

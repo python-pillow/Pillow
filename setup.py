@@ -445,6 +445,7 @@ class pil_build_ext(build_ext):
         libraries: list[str] | list[str | bool | None],
         define_macros: list[tuple[str, str | None]] | None = None,
         sources: list[str] | None = None,
+        args: list[str] | None = None,
     ) -> None:
         for extension in self.extensions:
             if extension.name == name:
@@ -453,6 +454,8 @@ class pil_build_ext(build_ext):
                     extension.define_macros += define_macros
                 if sources is not None:
                     extension.sources += sources
+                if args is not None:
+                    extension.extra_compile_args += args
                 if FUZZING_BUILD:
                     extension.language = "c++"
                     extension.extra_link_args = ["--stdlib=libc++"]
@@ -782,8 +785,8 @@ class pil_build_ext(build_ext):
 
         if feature.want("jpegxl"):
             _dbg("Looking for jpegxl")
-            if _find_include_file(self, "jxl/encode.h") and _find_include_file(
-                self, "jxl/decode.h"
+            if _find_include_file(self, "jxl/decode.h") and _find_include_file(
+                self, "jxl/thread_parallel_runner.h"
             ):
                 if _find_library_file(self, "jxl") and _find_library_file(
                     self, "jxl_threads"
@@ -1017,7 +1020,11 @@ class pil_build_ext(build_ext):
         jpegxl = feature.get("jpegxl")
         if isinstance(jpegxl, str):
             libs = [jpegxl, jpegxl + "_threads"]
-            self._update_extension("PIL._jpegxl", libs)
+            args: list[str] | None = None
+            if sys.platform == "win32":
+                libs.extend(["brotlicommon", "brotlidec", "brotlienc", "hwy"])
+                args = ["-DJXL_STATIC_DEFINE"]
+            self._update_extension("PIL._jpegxl", libs, args=args)
         else:
             self._remove_extension("PIL._jpegxl")
 
