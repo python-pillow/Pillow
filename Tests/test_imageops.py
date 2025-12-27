@@ -606,8 +606,9 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
     assert_image_equal(img, out)
 
 
-def test_sepia_preserves_size_and_mode() -> None:
-    img = Image.new("RGB", (10, 10), (100, 150, 200))
+@pytest.mark.parametrize("mode", ("L", "RGB"))
+def test_sepia_size_and_mode(mode: str) -> None:
+    img = Image.new(mode, (10, 10))
     out = ImageOps.sepia(img)
 
     assert out.mode == "RGB"
