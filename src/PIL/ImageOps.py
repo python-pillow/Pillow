@@ -700,7 +700,8 @@ def neon_effect(
 
     :param image: Image to create the effect
     :param color: RGB color used for neon effect
-    :alpha: controls the intensity of the neon effect
+    :param alpha: Controls the intensity of the neon effect. If alpha is 0.0, a copy of
+       the image is returned unaltered.
     :return: An image
     """
     edges = sobel(image).filter(ImageFilter.GaussianBlur(2))
