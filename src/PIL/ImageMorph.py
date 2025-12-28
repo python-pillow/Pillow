@@ -159,7 +159,7 @@ class LutBuilder:
         return patterns
 
     def build_lut(self) -> bytearray:
-        """Compile all patterns into a morphology LUT, and returns it.
+        """Compile all patterns into a morphology LUT, and return it.
 
         This is the data to be passed into MorphOp."""
         self.build_default_lut()
