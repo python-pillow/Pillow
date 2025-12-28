@@ -131,6 +131,7 @@ class ImageFile(Image.Image):
         self.decoderconfig: tuple[Any, ...] = ()
         self.decodermaxblock = MAXBLOCK
 
+        self._fp: IO[bytes] | DeferredError
         if is_path(fp):
             # filename
             self.fp = open(fp, "rb")
@@ -167,7 +168,7 @@ class ImageFile(Image.Image):
     def _open(self) -> None:
         pass
 
-    def _close_fp(self):
+    def _close_fp(self) -> None:
         if getattr(self, "_fp", False) and not isinstance(self._fp, DeferredError):
             if self._fp != self.fp:
                 self._fp.close()
