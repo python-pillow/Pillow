@@ -28,6 +28,7 @@ class JpegXlImageFile(ImageFile.ImageFile):
     __frame = 0
 
     def _open(self) -> None:
+        assert self.fp is not None
         self._decoder = _jpegxl.JpegXlDecoder(self.fp.read())
 
         (
