@@ -92,10 +92,11 @@ class LutBuilder:
     def add_patterns(self, patterns: list[str]) -> None:
         self.patterns += patterns
 
-    def build_default_lut(self) -> None:
+    def build_default_lut(self) -> bytearray:
         symbols = [0, 1]
         m = 1 << 4  # pos of current pixel
         self.lut = bytearray(symbols[(i & m) > 0] for i in range(LUT_SIZE))
+        return self.lut
 
     def get_lut(self) -> bytearray | None:
         return self.lut

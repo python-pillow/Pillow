@@ -116,7 +116,7 @@ V = {
     "BROTLI": "1.2.0",
     "FREETYPE": "2.14.1",
     "FRIBIDI": "1.0.16",
-    "HARFBUZZ": "12.2.0",
+    "HARFBUZZ": "12.3.0",
     "HIGHWAY": "1.3.0",
     "JPEGTURBO": "3.1.3",
     "JPEGXL": "0.11.1",
