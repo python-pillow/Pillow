@@ -658,7 +658,7 @@ def sobel(image: Image.Image) -> Image.Image:
     This function computes the Sobel gradient magnitude using the
     horizontal (Gx) and vertical (Gy) Sobel kernels.
 
-    :param image: the image to apply the filter
+    :param image: The image to be filtered
     :return: An image.
     """
     if image.mode != "L":
