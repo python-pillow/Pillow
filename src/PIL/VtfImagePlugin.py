@@ -184,6 +184,7 @@ class VtfImageFile(ImageFile.ImageFile):
     format_description = "Valve Texture Format"
 
     def _open(self):
+        assert self.fp is not None
         if not _accept(self.fp.read(12)):
             msg = "not a VTF file"
             raise SyntaxError(msg)
