@@ -341,7 +341,17 @@ DEPS: dict[str, dict[str, Any]] = {
         "url": f"https://github.com/google/highway/archive/{V['HIGHWAY']}.tar.gz",
         "filename": f"highway-{V['HIGHWAY']}.tar.gz",
         "license": "LICENSE",
-        "build": [*cmds_cmake("hwy")],
+        "patch": {
+            r"CMakeLists.txt": {
+                "cmake_minimum_required(VERSION 3.10)": "cmake_minimum_required(VERSION 3.15)",  # noqa: E501
+            }
+        },
+        "build": [
+            *cmds_cmake(
+                "hwy",
+                '-DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded$<$<CONFIG:Debug>:Debug>"',
+            )
+        ],
         "libs": ["hwy.lib"],
     },
     "libjxl": {
@@ -356,6 +366,7 @@ DEPS: dict[str, dict[str, Any]] = {
                 r"-DLCMS2_INCLUDE_DIR=..\..\inc",
                 "-DJPEGXL_ENABLE_SJPEG:BOOL=OFF",
                 "-DJPEGXL_ENABLE_SKCMS:BOOL=OFF",
+                "-DJPEGXL_STATIC:BOOL=ON",
                 "-DBUILD_TESTING:BOOL=OFF",
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
             ),
@@ -664,7 +675,7 @@ def build_dep_all(disabled: list[str], prefs: dict[str, str], verbose: bool) -> 
             print(f"Skipping disabled dependency {dep_name}")
             continue
         script = build_dep(dep_name, prefs, verbose)
-        if dep_name in ("highway", "libjxl"):
+        if dep_name in ("highway", "libjxl") and hasattr(sys, "pypy_translation_info"):
             continue
         if gha_groups:
             lines.append(f"@echo ::group::Running {script}")
