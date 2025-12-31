@@ -742,6 +742,21 @@ def test_variation_get(font: ImageFont.FreeTypeFont) -> None:
     ]
 
 
+def test_variation_duplicates() -> None:
+    font = ImageFont.truetype("Tests/fonts/AdobeVFPrototypeDuplicates.ttf")
+    assert font.get_variation_names(), [
+        b"ExtraLight",
+        b"Light",
+        b"Regular",
+        b"Semibold",
+        b"Bold",
+        b"Black",
+        b"Black Medium Contrast",
+        b"Black High Contrast",
+        b"Default",
+    ]
+
+
 def _check_text(font: ImageFont.FreeTypeFont, path: str, epsilon: float) -> None:
     im = Image.new("RGB", (100, 75), "white")
     d = ImageDraw.Draw(im)
