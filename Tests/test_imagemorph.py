@@ -280,6 +280,11 @@ def test_pattern_syntax_error(pattern: str) -> None:
         lb.build_lut()
 
 
+def test_build_default_lut() -> None:
+    lb = ImageMorph.LutBuilder(op_name="corner")
+    assert lb.build_default_lut() == lb.lut
+
+
 def test_load_invalid_mrl() -> None:
     # Arrange
     invalid_mrl = "Tests/images/hopper.png"

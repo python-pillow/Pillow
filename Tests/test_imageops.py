@@ -457,9 +457,9 @@ def test_exif_transpose() -> None:
         assert 0x0112 not in transposed_im.getexif()
 
     # Orientation set directly on Image.Exif
-    im = hopper()
-    im.getexif()[0x0112] = 3
-    transposed_im = ImageOps.exif_transpose(im)
+    im1 = hopper()
+    im1.getexif()[0x0112] = 3
+    transposed_im = ImageOps.exif_transpose(im1)
     assert 0x0112 not in transposed_im.getexif()
 
 
