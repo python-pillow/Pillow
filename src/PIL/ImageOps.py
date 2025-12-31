@@ -669,8 +669,8 @@ def sobel(image: Image.Image) -> Image.Image:
 
     out = Image.new("L", image.size)
 
-    for y in range(1, image.height - 1):
-        for x in range(1, image.width - 1):
+    for x in range(1, image.width - 1):
+        for y in range(1, image.height - 1):
 
             gx = gy = 0.0
 
