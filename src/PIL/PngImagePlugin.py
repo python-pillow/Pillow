@@ -855,9 +855,7 @@ class PngImageFile(ImageFile.ImageFile):
         self.png.verify()
         self.png.close()
 
-        if self._exclusive_fp:
-            self.fp.close()
-        self.fp = None
+        super().verify()
 
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
