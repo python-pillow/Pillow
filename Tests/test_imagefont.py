@@ -702,7 +702,7 @@ def test_variation_get(font: ImageFont.FreeTypeFont) -> None:
         font.get_variation_axes()
 
     font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf")
-    assert font.get_variation_names(), [
+    assert font.get_variation_names() == [
         b"ExtraLight",
         b"Light",
         b"Regular",
