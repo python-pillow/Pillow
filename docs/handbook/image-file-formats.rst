@@ -1041,9 +1041,8 @@ following parameters can also be set:
     Defaults to 0.
 
 **duration**
-    Integer (or list or tuple of integers) length of time to display this APNG frame
-    (in milliseconds).
-    Defaults to 0.
+    The length of time (or list or tuple of lengths of time) to display this APNG frame
+    (in milliseconds). Defaults to 0.
 
 **disposal**
     An integer (or list or tuple of integers) specifying the APNG disposal
