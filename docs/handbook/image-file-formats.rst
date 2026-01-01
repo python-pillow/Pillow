@@ -999,7 +999,7 @@ where applicable:
     The number of times to loop this APNG, 0 indicates infinite looping.
 
 **duration**
-    The time to display this APNG frame (in milliseconds).
+    The time to display this APNG frame (in milliseconds), given as a float.
 
 .. note::
 
