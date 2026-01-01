@@ -1,6 +1,17 @@
 12.1.0
 ------
 
+Deprecations
+============
+
+Image getdata()
+^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.getdata` has been deprecated.
+:py:meth:`~PIL.Image.Image.get_flattened_data` can be used instead. This new method is
+identical, except that it returns a tuple of pixel values, instead of an internal
+Pillow data type.
+
 API changes
 ===========
 
@@ -12,6 +23,13 @@ To match the behaviour of :py:meth:`~PIL.ImageMorph.LutBuilder.build_lut`,
 
 API additions
 =============
+
+Image get_flattened_data()
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.get_flattened_data` is identical to the deprecated
+:py:meth:`~PIL.Image.Image.getdata`, except that the new method returns a tuple of
+pixel values, instead of an internal Pillow data type.
 
 Specify window in ImageGrab on macOS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

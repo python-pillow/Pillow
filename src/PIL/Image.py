@@ -1435,11 +1435,30 @@ class Image:
            value (e.g. 0 to get the "R" band from an "RGB" image).
         :returns: A sequence-like object.
         """
+        deprecate("Image.Image.getdata", 14, "get_flattened_data")
 
         self.load()
         if band is not None:
             return self.im.getband(band)
         return self.im  # could be abused
+
+    def get_flattened_data(
+        self, band: int | None = None
+    ) -> tuple[tuple[int, ...], ...] | tuple[float, ...]:
+        """
+        Returns the contents of this image as a tuple containing pixel values.
+        The sequence object is flattened, so that values for line one follow
+        directly after the values of line zero, and so on.
+
+        :param band: What band to return.  The default is to return
+           all bands.  To return a single band, pass in the index
+           value (e.g. 0 to get the "R" band from an "RGB" image).
+        :returns: A tuple containing pixel values.
+        """
+        self.load()
+        if band is not None:
+            return tuple(self.im.getband(band))
+        return tuple(self.im)
 
     def getextrema(self) -> tuple[float, float] | tuple[tuple[int, int], ...]:
         """
