@@ -1,42 +1,14 @@
 12.1.0
 ------
 
-Security
-========
-
-TODO
-^^^^
-
-TODO
-
-:cve:`YYYY-XXXXX`: TODO
-^^^^^^^^^^^^^^^^^^^^^^^
-
-TODO
-
-Backwards incompatible changes
-==============================
-
-TODO
-^^^^
-
-TODO
-
-Deprecations
-============
-
-TODO
-^^^^
-
-TODO
-
 API changes
 ===========
 
-TODO
-^^^^
+ImageMorph build_default_lut()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+To be match the behaviour of :py:meth:`~PIL.ImageMorph.LutBuilder.build_lut`,
+:py:meth:`~PIL.ImageMorph.LutBuilder.build_default_lut()` now returns the new LUT.
 
 API additions
 =============
@@ -49,11 +21,3 @@ macOS in addition to Windows. On macOS, this is a CGWindowID::
 
     from PIL import ImageGrab
     ImageGrab.grab(window=cgwindowid)
-
-Other changes
-=============
-
-TODO
-^^^^
-
-TODO
