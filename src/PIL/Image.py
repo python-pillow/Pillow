@@ -590,16 +590,11 @@ class Image:
         return new
 
     # Context manager support
-    def __enter__(self):
+    def __enter__(self) -> Image:
         return self
 
-    def __exit__(self, *args):
-        from . import ImageFile
-
-        if isinstance(self, ImageFile.ImageFile):
-            if getattr(self, "_exclusive_fp", False):
-                self._close_fp()
-            self.fp = None
+    def __exit__(self, *args: object) -> None:
+        pass
 
     def close(self) -> None:
         """
