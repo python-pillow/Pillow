@@ -823,7 +823,7 @@ class TestFilePng:
         monkeypatch.setattr(sys, "stdout", mystdout)
 
         with Image.open(TEST_PNG_FILE) as im:
-            im.save(sys.stdout, "PNG")
+            im.save(sys.stdout, "PNG")  # type: ignore[arg-type]
 
         if isinstance(mystdout, MyStdOut):
             mystdout = mystdout.buffer

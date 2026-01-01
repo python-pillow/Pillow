@@ -131,6 +131,7 @@ class ImageFile(Image.Image):
         self.decoderconfig: tuple[Any, ...] = ()
         self.decodermaxblock = MAXBLOCK
 
+        self.fp: IO[bytes] | None
         self._fp: IO[bytes] | DeferredError
         if is_path(fp):
             # filename
@@ -168,6 +169,10 @@ class ImageFile(Image.Image):
     def _open(self) -> None:
         pass
 
+    # Context manager support
+    def __enter__(self) -> ImageFile:
+        return self
+
     def _close_fp(self) -> None:
         if getattr(self, "_fp", False) and not isinstance(self._fp, DeferredError):
             if self._fp != self.fp:
@@ -175,6 +180,11 @@ class ImageFile(Image.Image):
             self._fp = DeferredError(ValueError("Operation on closed image"))
         if self.fp:
             self.fp.close()
+
+    def __exit__(self, *args: object) -> None:
+        if getattr(self, "_exclusive_fp", False):
+            self._close_fp()
+        self.fp = None
 
     def close(self) -> None:
         """
@@ -268,7 +278,7 @@ class ImageFile(Image.Image):
 
         # raise exception if something's wrong.  must be called
         # directly after open, and closes file when finished.
-        if self._exclusive_fp:
+        if self._exclusive_fp and self.fp:
             self.fp.close()
         self.fp = None
 
