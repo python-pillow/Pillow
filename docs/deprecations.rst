@@ -76,7 +76,7 @@ Use :py:meth:`~PIL.ImageShow.show` instead.
 Image getdata()
 ~~~~~~~~~~~~~~~
 
-.. deprecated:: 12.2.0
+.. deprecated:: 12.1.0
 
 :py:meth:`~PIL.Image.Image.getdata` has been deprecated.
 :py:meth:`~PIL.Image.Image.get_flattened_data` can be used instead. This new method is
