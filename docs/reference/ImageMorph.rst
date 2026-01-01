@@ -5,7 +5,7 @@
 ================================
 
 The :py:mod:`~PIL.ImageMorph` module allows `morphology`_ operators ("MorphOp") to be
-applied to L mode images::
+applied to 1 or L mode images::
 
   from PIL import Image, ImageMorph
   img = Image.open("Tests/images/hopper.bw")

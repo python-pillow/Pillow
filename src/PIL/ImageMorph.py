@@ -233,14 +233,15 @@ class MorphOp:
         Returns a tuple of the number of changed pixels and the
         morphed image.
 
+        :param image: A 1-mode or L-mode image.
         :exception Exception: If the current operator is None.
-        :exception ValueError: If the image is not L mode."""
+        :exception ValueError: If the image is not 1 or L mode."""
         if self.lut is None:
             msg = "No operator loaded"
             raise Exception(msg)
 
-        if image.mode != "L":
-            msg = "Image mode must be L"
+        if image.mode not in ("1", "L"):
+            msg = "Image mode must be 1 or L"
             raise ValueError(msg)
         outimage = Image.new(image.mode, image.size)
         count = _imagingmorph.apply(bytes(self.lut), image.getim(), outimage.getim())
@@ -253,29 +254,29 @@ class MorphOp:
         Returns a list of tuples of (x,y) coordinates of all matching pixels. See
         :ref:`coordinate-system`.
 
-        :param image: An L-mode image.
+        :param image: A 1-mode or L-mode image.
         :exception Exception: If the current operator is None.
-        :exception ValueError: If the image is not L mode."""
+        :exception ValueError: If the image is not 1 or L mode."""
         if self.lut is None:
             msg = "No operator loaded"
             raise Exception(msg)
 
-        if image.mode != "L":
-            msg = "Image mode must be L"
+        if image.mode not in ("1", "L"):
+            msg = "Image mode must be 1 or L"
             raise ValueError(msg)
         return _imagingmorph.match(bytes(self.lut), image.getim())
 
     def get_on_pixels(self, image: Image.Image) -> list[tuple[int, int]]:
-        """Get a list of all turned on pixels in a grayscale image
+        """Get a list of all turned on pixels in a 1 or L mode image.
 
         Returns a list of tuples of (x,y) coordinates of all non-empty pixels. See
         :ref:`coordinate-system`.
 
-        :param image: An L-mode image.
-        :exception ValueError: If the image is not L mode."""
+        :param image: A 1-mode or L-mode image.
+        :exception ValueError: If the image is not 1 or L mode."""
 
-        if image.mode != "L":
-            msg = "Image mode must be L"
+        if image.mode not in ("1", "L"):
+            msg = "Image mode must be 1 or L"
             raise ValueError(msg)
         return _imagingmorph.get_on_pixels(image.getim())
 
