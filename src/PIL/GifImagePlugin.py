@@ -753,7 +753,7 @@ def _write_multiple_frames(
                             if delta.mode == "P":
                                 # Convert to L without considering palette
                                 delta_l = Image.new("L", delta.size)
-                                delta_l.putdata(delta.getdata())
+                                delta_l.putdata(delta.get_flattened_data())
                                 delta = delta_l
                             mask = ImageMath.lambda_eval(
                                 lambda args: args["convert"](args["im"] * 255, "1"),

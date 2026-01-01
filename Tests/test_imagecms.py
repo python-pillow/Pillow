@@ -274,13 +274,13 @@ def test_simple_lab() -> None:
     # not a linear luminance map. so L != 128:
     assert k == (137, 128, 128)
 
-    l_data = i_lab.getdata(0)
-    a_data = i_lab.getdata(1)
-    b_data = i_lab.getdata(2)
+    l_data = i_lab.get_flattened_data(0)
+    a_data = i_lab.get_flattened_data(1)
+    b_data = i_lab.get_flattened_data(2)
 
-    assert list(l_data) == [137] * 100
-    assert list(a_data) == [128] * 100
-    assert list(b_data) == [128] * 100
+    assert l_data == (137,) * 100
+    assert a_data == (128,) * 100
+    assert b_data == (128,) * 100
 
 
 def test_lab_color() -> None:
