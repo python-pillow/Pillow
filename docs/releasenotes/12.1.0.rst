@@ -7,7 +7,7 @@ API changes
 ImageMorph build_default_lut()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To be match the behaviour of :py:meth:`~PIL.ImageMorph.LutBuilder.build_lut`,
+To match the behaviour of :py:meth:`~PIL.ImageMorph.LutBuilder.build_lut`,
 :py:meth:`~PIL.ImageMorph.LutBuilder.build_default_lut()` now returns the new LUT.
 
 API additions
