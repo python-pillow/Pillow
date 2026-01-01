@@ -21,3 +21,11 @@ macOS in addition to Windows. On macOS, this is a CGWindowID::
 
     from PIL import ImageGrab
     ImageGrab.grab(window=cgwindowid)
+
+Other changes
+=============
+
+Added MorphOp support for 1 mode images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageMorph.MorphOp` now supports both 1 mode and L mode images.
