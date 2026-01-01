@@ -76,7 +76,7 @@ repos:
     rev: v0.24.1
     hooks:
       - id: validate-pyproject
-        additional_dependencies: [trove-classifiers>=2024.10.12]
+        additional_dependencies: [tomli, trove-classifiers>=2024.10.12]
 
   - repo: https://github.com/tox-dev/tox-ini-fmt
     rev: 1.7.0
