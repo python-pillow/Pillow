@@ -71,10 +71,12 @@ def test_sanity() -> None:
 def test_new_color() -> None:
     with Image.open("Tests/images/chi.gif") as im:
         draw = ImageDraw.Draw(im)
+        assert im.palette is not None
         assert len(im.palette.colors) == 249
 
         # Test drawing a new color onto the palette
         draw.line((0, 0), fill=(0, 0, 0))
+        assert im.palette is not None
         assert len(im.palette.colors) == 250
         assert im.palette.dirty
 
