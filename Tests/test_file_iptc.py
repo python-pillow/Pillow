@@ -6,7 +6,7 @@ import pytest
 
 from PIL import Image, IptcImagePlugin, TiffImagePlugin, TiffTags
 
-from .helper import assert_image_equal, hopper
+from .helper import assert_image_equal
 
 TEST_FILE = "Tests/images/iptc.jpg"
 
@@ -85,7 +85,7 @@ def test_getiptcinfo() -> None:
 
 def test_getiptcinfo_jpg_none() -> None:
     # Arrange
-    with hopper() as im:
+    with Image.open("Tests/images/hopper.jpg") as im:
         # Act
         iptc = IptcImagePlugin.getiptcinfo(im)
 

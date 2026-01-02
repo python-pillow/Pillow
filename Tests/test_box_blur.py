@@ -28,9 +28,13 @@ def box_blur(image: Image.Image, radius: float = 1, n: int = 1) -> Image.Image:
 
 
 def assert_image(im: Image.Image, data: list[list[int]], delta: int = 0) -> None:
-    it = iter(im.getdata())
+    it = iter(im.get_flattened_data())
     for data_row in data:
-        im_row = [next(it) for _ in range(im.size[0])]
+        im_row = []
+        for _ in range(im.width):
+            im_v = next(it)
+            assert isinstance(im_v, (int, float))
+            im_row.append(im_v)
         if any(abs(data_v - im_v) > delta for data_v, im_v in zip(data_row, im_row)):
             assert im_row == data_row
     with pytest.raises(StopIteration):

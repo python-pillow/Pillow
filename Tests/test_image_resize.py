@@ -160,7 +160,7 @@ class TestImagingCoreResize:
         r = self.resize(Image.new("RGB", (0, 0), "white"), (212, 195), resample)
         assert r.mode == "RGB"
         assert r.size == (212, 195)
-        assert r.getdata()[0] == (0, 0, 0)
+        assert r.getpixel((0, 0)) == (0, 0, 0)
 
     def test_unknown_filter(self) -> None:
         with pytest.raises(ValueError):
