@@ -621,7 +621,7 @@ def test_sobel_detects_edge() -> None:
         img.putpixel((x, 2), 255)
 
     out = ImageOps.sobel(img)
-    assert max(out.getdata()) > 0
+    assert max(out.tobytes()) > 0
 
 
 def test_sobel_output_mode_and_size() -> None:
