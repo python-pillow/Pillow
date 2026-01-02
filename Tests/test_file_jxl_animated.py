@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from PIL import Image
+from PIL import GifImagePlugin, Image, JpegXlImagePlugin
 
 from .helper import assert_image_equal, skip_unless_feature
 
@@ -13,10 +13,12 @@ def test_n_frames() -> None:
     """Ensure that jxl format sets n_frames and is_animated attributes correctly."""
 
     with Image.open("Tests/images/jxl/hopper.jxl") as im:
+        assert isinstance(im, JpegXlImagePlugin.JpegXlImageFile)
         assert im.n_frames == 1
         assert not im.is_animated
 
     with Image.open("Tests/images/jxl/iss634.jxl") as im:
+        assert isinstance(im, JpegXlImagePlugin.JpegXlImageFile)
         assert im.n_frames == 41
         assert im.is_animated
 
@@ -39,6 +41,8 @@ def test_seek() -> None:
 
     with Image.open("Tests/images/jxl/traffic_light.jxl") as im1:
         with Image.open("Tests/images/jxl/traffic_light.gif") as im2:
+            assert isinstance(im1, JpegXlImagePlugin.JpegXlImageFile)
+            assert isinstance(im2, GifImagePlugin.GifImageFile)
             assert im1.n_frames == im2.n_frames
             assert im1.is_animated
 
