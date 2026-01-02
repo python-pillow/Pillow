@@ -2,7 +2,7 @@
 NotoNastaliqUrdu-Regular.ttf and NotoSansSymbols-Regular.ttf, from https://github.com/googlei18n/noto-fonts
 NotoSans-Regular.ttf, from https://www.google.com/get/noto/
 NotoSansJP-Thin.otf, from https://www.google.com/get/noto/help/cjk/
-AdobeVFPrototype.ttf, from https://github.com/adobe-fonts/adobe-variable-font-prototype
+AdobeVFPrototype.ttf, from https://github.com/adobe-fonts/adobe-variable-font-prototype. AdobeVFPrototypeDuplicates.ttf is a modified version of this
 TINY5x3GX.ttf, from http://velvetyne.fr/fonts/tiny
 ArefRuqaa-Regular.ttf, from https://github.com/google/fonts/tree/master/ofl/arefruqaa
 ter-x20b.pcf, from http://terminus-font.sourceforge.net/

@@ -95,10 +95,10 @@ def test_crop_zero() -> None:
 
     cropped = im.crop((10, 10, 20, 20))
     assert cropped.size == (10, 10)
-    assert cropped.getdata()[0] == (0, 0, 0)
+    assert cropped.getpixel((0, 0)) == (0, 0, 0)
 
     im = Image.new("RGB", (0, 0))
 
     cropped = im.crop((10, 10, 20, 20))
     assert cropped.size == (10, 10)
-    assert cropped.getdata()[2] == (0, 0, 0)
+    assert cropped.getpixel((2, 0)) == (0, 0, 0)

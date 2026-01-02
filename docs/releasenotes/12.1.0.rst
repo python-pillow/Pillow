@@ -1,70 +1,35 @@
 12.1.0
 ------
 
-Security
-========
-
-TODO
-^^^^
-
-TODO
-
-:cve:`YYYY-XXXXX`: TODO
-^^^^^^^^^^^^^^^^^^^^^^^
-
-TODO
-
-Backwards incompatible changes
-==============================
-
-TODO
-^^^^
-
-TODO
-
 Deprecations
 ============
 
-TODO
-^^^^
+Image getdata()
+^^^^^^^^^^^^^^^
 
-TODO
+:py:meth:`~PIL.Image.Image.getdata` has been deprecated.
+:py:meth:`~PIL.Image.Image.get_flattened_data` can be used instead. This new method is
+identical, except that it returns a tuple of pixel values, instead of an internal
+Pillow data type.
 
 API changes
 ===========
 
-TODO
-^^^^
+ImageMorph build_default_lut()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+To match the behaviour of :py:meth:`~PIL.ImageMorph.LutBuilder.build_lut`,
+:py:meth:`~PIL.ImageMorph.LutBuilder.build_default_lut()` now returns the new LUT.
 
 API additions
 =============
 
-ImageText.Text.wrap
-^^^^^^^^^^^^^^^^^^^
+Image get_flattened_data()
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:py:meth:`.ImageText.Text.wrap` has been added, to wrap text to fit within a given
-width::
-
-    from PIL import ImageText
-    text = ImageText.Text("Hello World!")
-    text.wrap(50)
-    print(text.text)  # "Hello\nWorld!"
-
-or within a certain width and height, returning a new :py:class:`.ImageText.Text`
-instance if the text does not fit::
-
-    text = ImageText.Text("Text does not fit within height")
-    print(text.wrap(50, 25).text == " within height")
-    print(text.text)  # "Text does\nnot fit"
-
-or scaling, optionally with a font size limit::
-
-    text.wrap(50, 15, "shrink")
-    text.wrap(50, 15, ("shrink", 7))
-    text.wrap(58, 10, "grow")
-    text.wrap(50, 50, ("grow", 12))
+:py:meth:`~PIL.Image.Image.get_flattened_data` is identical to the deprecated
+:py:meth:`~PIL.Image.Image.getdata`, except that the new method returns a tuple of
+pixel values, instead of an internal Pillow data type.
 
 Specify window in ImageGrab on macOS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -78,7 +43,7 @@ macOS in addition to Windows. On macOS, this is a CGWindowID::
 Other changes
 =============
 
-TODO
-^^^^
+Added MorphOp support for 1 mode images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+:py:class:`~PIL.ImageMorph.MorphOp` now supports both 1 mode and L mode images.

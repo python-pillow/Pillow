@@ -42,7 +42,6 @@ class LibTiffTestCase:
 
         # Does the data actually load
         im.load()
-        im.getdata()
 
         assert isinstance(im, TiffImagePlugin.TiffImageFile)
         assert im._compression == "group4"
@@ -516,12 +515,12 @@ class TestFileLibTiff(LibTiffTestCase):
         # and save to compressed tif.
         out = tmp_path / "temp.tif"
         with Image.open("Tests/images/pport_g4.tif") as im:
-            im = im.convert("L")
+            im_l = im.convert("L")
 
-        im = im.filter(ImageFilter.GaussianBlur(4))
-        im.save(out, compression="tiff_adobe_deflate")
+        im_l = im_l.filter(ImageFilter.GaussianBlur(4))
+        im_l.save(out, compression="tiff_adobe_deflate")
 
-        assert_image_equal_tofile(im, out)
+        assert_image_equal_tofile(im_l, out)
 
     def test_compressions(self, tmp_path: Path) -> None:
         # Test various tiff compressions and assert similar image content but reduced
@@ -610,8 +609,9 @@ class TestFileLibTiff(LibTiffTestCase):
             im.save(out, compression=compression)
 
     def test_fp_leak(self) -> None:
-        im: Image.Image | None = Image.open("Tests/images/hopper_g4_500.tif")
+        im: ImageFile.ImageFile | None = Image.open("Tests/images/hopper_g4_500.tif")
         assert im is not None
+        assert im.fp is not None
         fn = im.fp.fileno()
 
         os.fstat(fn)
@@ -1087,8 +1087,10 @@ class TestFileLibTiff(LibTiffTestCase):
         data = data[:102] + b"\x02" + data[103:]
 
         with Image.open(io.BytesIO(data)) as im:
-            im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
-        assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
+            im_transposed = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        assert_image_equal_tofile(
+            im_transposed, "Tests/images/old-style-jpeg-compression.png"
+        )
 
     def test_open_missing_samplesperpixel(self) -> None:
         with Image.open(
