@@ -250,14 +250,14 @@ class TestImageTransform:
     def test_missing_method_data(self) -> None:
         with hopper() as im:
             with pytest.raises(ValueError):
-                im.transform((100, 100), None)
+                im.transform((100, 100), None)  # type: ignore[arg-type]
 
     @pytest.mark.parametrize("resample", (Image.Resampling.BOX, "unknown"))
     def test_unknown_resampling_filter(self, resample: Image.Resampling | str) -> None:
         with hopper() as im:
             (w, h) = im.size
             with pytest.raises(ValueError):
-                im.transform((100, 100), Image.Transform.EXTENT, (0, 0, w, h), resample)
+                im.transform((100, 100), Image.Transform.EXTENT, (0, 0, w, h), resample)  # type: ignore[arg-type]
 
 
 class TestImageTransformAffine:

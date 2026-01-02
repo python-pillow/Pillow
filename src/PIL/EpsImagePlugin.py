@@ -189,6 +189,7 @@ class EpsImageFile(ImageFile.ImageFile):
     mode_map = {1: "L", 2: "LAB", 3: "RGB", 4: "CMYK"}
 
     def _open(self) -> None:
+        assert self.fp is not None
         (length, offset) = self._find_offset(self.fp)
 
         # go to offset - start of "%!PS"
@@ -403,6 +404,7 @@ class EpsImageFile(ImageFile.ImageFile):
     ) -> Image.core.PixelAccess | None:
         # Load EPS via Ghostscript
         if self.tile:
+            assert self.fp is not None
             self.im = Ghostscript(self.tile, self.size, self.fp, scale, transparency)
             self._mode = self.im.mode
             self._size = self.im.size

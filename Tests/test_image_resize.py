@@ -160,7 +160,7 @@ class TestImagingCoreResize:
         r = self.resize(Image.new("RGB", (0, 0), "white"), (212, 195), resample)
         assert r.mode == "RGB"
         assert r.size == (212, 195)
-        assert r.getdata()[0] == (0, 0, 0)
+        assert r.getpixel((0, 0)) == (0, 0, 0)
 
     def test_unknown_filter(self) -> None:
         with pytest.raises(ValueError):
@@ -314,8 +314,8 @@ class TestImageResize:
     @skip_unless_feature("libtiff")
     def test_transposed(self) -> None:
         with Image.open("Tests/images/g4_orientation_5.tif") as im:
-            im = im.resize((64, 64))
-            assert im.size == (64, 64)
+            im_resized = im.resize((64, 64))
+            assert im_resized.size == (64, 64)
 
     @pytest.mark.parametrize(
         "mode", ("L", "RGB", "I", "I;16", "I;16L", "I;16B", "I;16N", "F")

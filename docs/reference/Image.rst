@@ -191,6 +191,7 @@ This helps to get the bounding box coordinates of the input image::
 .. automethod:: PIL.Image.Image.getchannel
 .. automethod:: PIL.Image.Image.getcolors
 .. automethod:: PIL.Image.Image.getdata
+.. automethod:: PIL.Image.Image.get_flattened_data
 .. automethod:: PIL.Image.Image.getexif
 .. automethod:: PIL.Image.Image.getextrema
 .. automethod:: PIL.Image.Image.getpalette

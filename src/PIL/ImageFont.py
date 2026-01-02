@@ -127,11 +127,15 @@ class ImageFont:
     def _load_pilfont_data(self, file: IO[bytes], image: Image.Image) -> None:
         # check image
         if image.mode not in ("1", "L"):
+            image.close()
+
             msg = "invalid font image mode"
             raise TypeError(msg)
 
         # read PILfont header
         if file.read(8) != b"PILfont\n":
+            image.close()
+
             msg = "Not a PILfont file"
             raise SyntaxError(msg)
         file.readline()
@@ -671,8 +675,12 @@ class FreeTypeFont:
         :returns: A list of the named styles in a variation font.
         :exception OSError: If the font is not a variation font.
         """
-        names = self.font.getvarnames()
-        return [name.replace(b"\x00", b"") for name in names]
+        names = []
+        for name in self.font.getvarnames():
+            name = name.replace(b"\x00", b"")
+            if name not in names:
+                names.append(name)
+        return names
 
     def set_variation_by_name(self, name: str | bytes) -> None:
         """

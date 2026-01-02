@@ -1287,7 +1287,6 @@ font_getvarnames(FontObject *self) {
                 }
                 PyList_SetItem(list_names, j, list_name);
                 list_names_filled[j] = 1;
-                break;
             }
         }
     }

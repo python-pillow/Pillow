@@ -2459,7 +2459,6 @@ _merge(PyObject *self, PyObject *args) {
 
 static PyObject *
 _split(ImagingObject *self) {
-    int fails = 0;
     Py_ssize_t i;
     PyObject *list;
     PyObject *imaging_object;
@@ -2473,13 +2472,11 @@ _split(ImagingObject *self) {
     for (i = 0; i < self->image->bands; i++) {
         imaging_object = PyImagingNew(bands[i]);
         if (!imaging_object) {
-            fails += 1;
+            Py_DECREF(list);
+            list = NULL;
+            break;
         }
         PyTuple_SET_ITEM(list, i, imaging_object);
-    }
-    if (fails) {
-        Py_DECREF(list);
-        list = NULL;
     }
     return list;
 }
