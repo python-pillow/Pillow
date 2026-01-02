@@ -56,7 +56,7 @@ or the clipboard to a PIL image memory.
     :param scale_down: On macOS, Retina screens will provide images at 2x size by default. This will prevent that, and scale down to 1x.
                        Keyword-only argument.
 
-        .. versionadded:: 12.1.0
+        .. versionadded:: 12.2.0
     :return: An image
 
 .. py:function:: grabclipboard()
