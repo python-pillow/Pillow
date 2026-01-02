@@ -41,6 +41,7 @@ class GribStubImageFile(ImageFile.StubImageFile):
     format_description = "GRIB"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(8)):
             msg = "Not a GRIB file"
             raise SyntaxError(msg)
