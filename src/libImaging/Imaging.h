@@ -79,11 +79,12 @@ typedef struct {
 
 struct ImagingMemoryInstance {
     /* Format */
-    ModeID mode; /* Image mode (IMAGING_MODE_*) */
-    int type;    /* Data type (IMAGING_TYPE_*) */
-    int depth;   /* Depth (ignored in this version) */
-    int bands;   /* Number of bands (1, 2, 3, or 4) */
-    int xsize;   /* Image dimension. */
+    ModeID mode;              /* Image mode (IMAGING_MODE_*) */
+    const ModeData *modedata; /* mode data struct */
+    int type;                 /* Data type (IMAGING_TYPE_*) */
+    int depth;                /* Depth (ignored in this version) */
+    int bands;                /* Number of bands (1, 2, 3, or 4) */
+    int xsize;                /* Image dimension. */
     int ysize;
 
     /* Colour palette (for "P" images only) */
@@ -105,9 +106,7 @@ struct ImagingMemoryInstance {
     void (*destroy)(Imaging im);
 
     /* arrow */
-    int refcount;              /* Number of arrow arrays that have been allocated */
-    char band_names[4][3];     /* names of bands, max 2 char + null terminator */
-    char arrow_band_format[2]; /* single character + null terminator */
+    int refcount; /* Number of arrow arrays that have been allocated */
 
     int read_only; /* flag for read-only. set for arrow borrowed arrays */
     PyObject *arrow_array_capsule; /* upstream arrow array source */
