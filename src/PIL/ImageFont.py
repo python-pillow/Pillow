@@ -686,7 +686,14 @@ class FreeTypeFont:
         names = self.get_variation_names()
         if not isinstance(name, bytes):
             name = name.encode()
-        index = names.index(name) + 1
+        self.set_variation_by_name_index(names.index(name))
+
+    def set_variation_by_name_index(self, index: int) -> None:
+        """
+        :param name: The index within the list of named styles in a variation font.
+        :exception OSError: If the font is not a variation font.
+        """
+        index += 1
 
         if index == getattr(self, "_last_variation_index", None):
             # When the same name is set twice in a row,
