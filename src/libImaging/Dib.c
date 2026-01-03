@@ -23,7 +23,7 @@
 
 #ifdef _WIN32
 
-#include "ImDib.h"
+#include "ImagingDib.h"
 
 ModeID
 ImagingGetModeDIB(int size_out[2]) {

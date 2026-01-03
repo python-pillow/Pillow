@@ -32,7 +32,7 @@
 
 #ifdef _WIN32
 
-#include "libImaging/ImDib.h"
+#include "libImaging/ImagingDib.h"
 
 #if SIZEOF_VOID_P == 8
 #define F_HANDLE "K"
