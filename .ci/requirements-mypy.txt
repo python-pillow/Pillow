@@ -1,4 +1,4 @@
-mypy==1.19.0
+mypy==1.19.1
 arro3-compute
 arro3-core
 IceSpringPySideStubs-PyQt6
