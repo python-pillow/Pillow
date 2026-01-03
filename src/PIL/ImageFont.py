@@ -675,12 +675,8 @@ class FreeTypeFont:
         :returns: A list of the named styles in a variation font.
         :exception OSError: If the font is not a variation font.
         """
-        names = []
-        for name in self.font.getvarnames():
-            name = name.replace(b"\x00", b"")
-            if name not in names:
-                names.append(name)
-        return names
+        names = self.font.getvarnames()
+        return [name.replace(b"\x00", b"") for name in names]
 
     def set_variation_by_name(self, name: str | bytes) -> None:
         """
