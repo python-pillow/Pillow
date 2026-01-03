@@ -112,7 +112,7 @@ jobs:
 
     - name: Cache build
       id: build-cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: winbuild\build
         key:
@@ -217,7 +217,7 @@ jobs:
       shell: bash
 
     - name: Upload errors
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       if: failure()
       with:
         name: errors
