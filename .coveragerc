@@ -18,6 +18,5 @@ exclude_also =
 
 [run]
 omit =
-    Tests/32bit_segfault_check.py
-    Tests/check_*.py
+    checks/*.py
     Tests/createfontdatachunk.py

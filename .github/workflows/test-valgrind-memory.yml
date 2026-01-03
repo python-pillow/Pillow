@@ -1,0 +1,60 @@
+name: Test Valgrind Memory Leaks
+
+# like the Docker tests, but running valgrind only on *.c/*.h changes.
+
+# this is very expensive. Only run on the pull request.
+on:
+  # push:
+  #   branches:
+  #     - "**"
+  #   paths:
+  #     - ".github/workflows/test-valgrind.yml"
+  #     - "**.c"
+  #     - "**.h"
+  pull_request:
+    paths:
+      - ".github/workflows/test-valgrind.yml"
+      - "**.c"
+      - "**.h"
+      - "depends/docker-test-valgrind-memory.sh"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        docker: [
+          ubuntu-22.04-jammy-amd64-valgrind,
+        ]
+        dockerTag: [main]
+
+    name: ${{ matrix.docker }}
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        persist-credentials: false
+
+    - name: Build system information
+      run: python3 .github/workflows/system-info.py
+
+    - name: Docker pull
+      run: |
+        docker pull pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
+
+    - name: Build and Run Valgrind
+      run: |
+        # The Pillow user in the docker container is UID 1001
+        sudo chown -R 1001 $GITHUB_WORKSPACE
+        docker run --name pillow_container -e "PILLOW_VALGRIND_TEST=true" -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }} /Pillow/depends/docker-test-valgrind-memory.sh
+        sudo chown -R runner $GITHUB_WORKSPACE

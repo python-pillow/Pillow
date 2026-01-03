@@ -65,11 +65,12 @@ def test_ifd_rational_save(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, libtiff: bool
 ) -> None:
     im = hopper()
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     res = IFDRational(301, 1)
 
     monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", libtiff)
     im.save(out, dpi=(res, res), compression="raw")
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert float(IFDRational(301, 1)) == float(reloaded.tag_v2[282])

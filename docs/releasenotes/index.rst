@@ -1,4 +1,4 @@
-Release Notes
+Release notes
 =============
 
 Pillow is released quarterly on January 2nd, April 1st, July 1st and October 15th.
@@ -14,7 +14,11 @@ expected to be backported to earlier versions.
 .. toctree::
   :maxdepth: 2
 
-  11.2.0
+  versioning
+  12.1.0
+  12.0.0
+  11.3.0
+  11.2.1
   11.1.0
   11.0.0
   10.4.0
@@ -77,4 +81,3 @@ expected to be backported to earlier versions.
   2.5.2
   2.3.2
   2.3.1
-  versioning

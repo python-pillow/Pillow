@@ -42,7 +42,7 @@
  */
 
 Imaging
-ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
+ImagingNewPrologueSubtype(const ModeID mode, int xsize, int ysize, int size) {
     Imaging im;
 
     /* linesize overflow check, roughly the current largest space req'd */
@@ -58,136 +58,165 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
     /* Setup image descriptor */
     im->xsize = xsize;
     im->ysize = ysize;
-
+    im->refcount = 1;
     im->type = IMAGING_TYPE_UINT8;
+    strcpy(im->arrow_band_format, "C");
 
-    if (strcmp(mode, "1") == 0) {
+    if (mode == IMAGING_MODE_1) {
         /* 1-bit images */
         im->bands = im->pixelsize = 1;
         im->linesize = xsize;
+        strcpy(im->band_names[0], "1");
 
-    } else if (strcmp(mode, "P") == 0) {
+    } else if (mode == IMAGING_MODE_P) {
         /* 8-bit palette mapped images */
         im->bands = im->pixelsize = 1;
         im->linesize = xsize;
-        im->palette = ImagingPaletteNew("RGB");
+        im->palette = ImagingPaletteNew(IMAGING_MODE_RGB);
+        strcpy(im->band_names[0], "P");
 
-    } else if (strcmp(mode, "PA") == 0) {
+    } else if (mode == IMAGING_MODE_PA) {
         /* 8-bit palette with alpha */
         im->bands = 2;
         im->pixelsize = 4; /* store in image32 memory */
         im->linesize = xsize * 4;
-        im->palette = ImagingPaletteNew("RGB");
+        im->palette = ImagingPaletteNew(IMAGING_MODE_RGB);
+        strcpy(im->band_names[0], "P");
+        strcpy(im->band_names[1], "X");
+        strcpy(im->band_names[2], "X");
+        strcpy(im->band_names[3], "A");
 
-    } else if (strcmp(mode, "L") == 0) {
+    } else if (mode == IMAGING_MODE_L) {
         /* 8-bit grayscale (luminance) images */
         im->bands = im->pixelsize = 1;
         im->linesize = xsize;
+        strcpy(im->band_names[0], "L");
 
-    } else if (strcmp(mode, "LA") == 0) {
+    } else if (mode == IMAGING_MODE_LA) {
         /* 8-bit grayscale (luminance) with alpha */
         im->bands = 2;
         im->pixelsize = 4; /* store in image32 memory */
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "L");
+        strcpy(im->band_names[1], "X");
+        strcpy(im->band_names[2], "X");
+        strcpy(im->band_names[3], "A");
 
-    } else if (strcmp(mode, "La") == 0) {
+    } else if (mode == IMAGING_MODE_La) {
         /* 8-bit grayscale (luminance) with premultiplied alpha */
         im->bands = 2;
         im->pixelsize = 4; /* store in image32 memory */
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "L");
+        strcpy(im->band_names[1], "X");
+        strcpy(im->band_names[2], "X");
+        strcpy(im->band_names[3], "a");
 
-    } else if (strcmp(mode, "F") == 0) {
+    } else if (mode == IMAGING_MODE_F) {
         /* 32-bit floating point images */
         im->bands = 1;
         im->pixelsize = 4;
         im->linesize = xsize * 4;
         im->type = IMAGING_TYPE_FLOAT32;
+        strcpy(im->arrow_band_format, "f");
+        strcpy(im->band_names[0], "F");
 
-    } else if (strcmp(mode, "I") == 0) {
+    } else if (mode == IMAGING_MODE_I) {
         /* 32-bit integer images */
         im->bands = 1;
         im->pixelsize = 4;
         im->linesize = xsize * 4;
         im->type = IMAGING_TYPE_INT32;
+        strcpy(im->arrow_band_format, "i");
+        strcpy(im->band_names[0], "I");
 
-    } else if (strcmp(mode, "I;16") == 0 || strcmp(mode, "I;16L") == 0 ||
-               strcmp(mode, "I;16B") == 0 || strcmp(mode, "I;16N") == 0) {
+    } else if (isModeI16(mode)) {
         /* EXPERIMENTAL */
         /* 16-bit raw integer images */
         im->bands = 1;
         im->pixelsize = 2;
         im->linesize = xsize * 2;
         im->type = IMAGING_TYPE_SPECIAL;
+        strcpy(im->arrow_band_format, "s");
+        strcpy(im->band_names[0], "I");
 
-    } else if (strcmp(mode, "RGB") == 0) {
+    } else if (mode == IMAGING_MODE_RGB) {
         /* 24-bit true colour images */
         im->bands = 3;
         im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "R");
+        strcpy(im->band_names[1], "G");
+        strcpy(im->band_names[2], "B");
+        strcpy(im->band_names[3], "X");
 
-    } else if (strcmp(mode, "BGR;15") == 0) {
-        /* EXPERIMENTAL */
-        /* 15-bit reversed true colour */
-        im->bands = 3;
-        im->pixelsize = 2;
-        im->linesize = (xsize * 2 + 3) & -4;
-        im->type = IMAGING_TYPE_SPECIAL;
-
-    } else if (strcmp(mode, "BGR;16") == 0) {
-        /* EXPERIMENTAL */
-        /* 16-bit reversed true colour */
-        im->bands = 3;
-        im->pixelsize = 2;
-        im->linesize = (xsize * 2 + 3) & -4;
-        im->type = IMAGING_TYPE_SPECIAL;
-
-    } else if (strcmp(mode, "BGR;24") == 0) {
-        /* EXPERIMENTAL */
-        /* 24-bit reversed true colour */
-        im->bands = 3;
-        im->pixelsize = 3;
-        im->linesize = (xsize * 3 + 3) & -4;
-        im->type = IMAGING_TYPE_SPECIAL;
-
-    } else if (strcmp(mode, "RGBX") == 0) {
+    } else if (mode == IMAGING_MODE_RGBX) {
         /* 32-bit true colour images with padding */
         im->bands = im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "R");
+        strcpy(im->band_names[1], "G");
+        strcpy(im->band_names[2], "B");
+        strcpy(im->band_names[3], "X");
 
-    } else if (strcmp(mode, "RGBA") == 0) {
+    } else if (mode == IMAGING_MODE_RGBA) {
         /* 32-bit true colour images with alpha */
         im->bands = im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "R");
+        strcpy(im->band_names[1], "G");
+        strcpy(im->band_names[2], "B");
+        strcpy(im->band_names[3], "A");
 
-    } else if (strcmp(mode, "RGBa") == 0) {
+    } else if (mode == IMAGING_MODE_RGBa) {
         /* 32-bit true colour images with premultiplied alpha */
         im->bands = im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "R");
+        strcpy(im->band_names[1], "G");
+        strcpy(im->band_names[2], "B");
+        strcpy(im->band_names[3], "a");
 
-    } else if (strcmp(mode, "CMYK") == 0) {
+    } else if (mode == IMAGING_MODE_CMYK) {
         /* 32-bit colour separation */
         im->bands = im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "C");
+        strcpy(im->band_names[1], "M");
+        strcpy(im->band_names[2], "Y");
+        strcpy(im->band_names[3], "K");
 
-    } else if (strcmp(mode, "YCbCr") == 0) {
+    } else if (mode == IMAGING_MODE_YCbCr) {
         /* 24-bit video format */
         im->bands = 3;
         im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "Y");
+        strcpy(im->band_names[1], "Cb");
+        strcpy(im->band_names[2], "Cr");
+        strcpy(im->band_names[3], "X");
 
-    } else if (strcmp(mode, "LAB") == 0) {
+    } else if (mode == IMAGING_MODE_LAB) {
         /* 24-bit color, luminance, + 2 color channels */
         /* L is uint8, a,b are int8 */
         im->bands = 3;
         im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "L");
+        strcpy(im->band_names[1], "a");
+        strcpy(im->band_names[2], "b");
+        strcpy(im->band_names[3], "X");
 
-    } else if (strcmp(mode, "HSV") == 0) {
+    } else if (mode == IMAGING_MODE_HSV) {
         /* 24-bit color, luminance, + 2 color channels */
         /* L is uint8, a,b are int8 */
         im->bands = 3;
         im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "H");
+        strcpy(im->band_names[1], "S");
+        strcpy(im->band_names[2], "V");
+        strcpy(im->band_names[3], "X");
 
     } else {
         free(im);
@@ -195,7 +224,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
     }
 
     /* Setup image descriptor */
-    strcpy(im->mode, mode);
+    im->mode = mode;
 
     /* Pointer array (allocate at least one line, to avoid MemoryError
        exceptions on platforms where calloc(0, x) returns NULL) */
@@ -218,6 +247,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
             break;
     }
 
+    // UNDONE -- not accurate for arrow
     MUTEX_LOCK(&ImagingDefaultArena.mutex);
     ImagingDefaultArena.stats_new_count += 1;
     MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
@@ -226,7 +256,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
 }
 
 Imaging
-ImagingNewPrologue(const char *mode, int xsize, int ysize) {
+ImagingNewPrologue(const ModeID mode, int xsize, int ysize) {
     return ImagingNewPrologueSubtype(
         mode, xsize, ysize, sizeof(struct ImagingMemoryInstance)
     );
@@ -238,8 +268,18 @@ ImagingDelete(Imaging im) {
         return;
     }
 
+    MUTEX_LOCK(&im->mutex);
+    im->refcount--;
+
+    if (im->refcount > 0) {
+        MUTEX_UNLOCK(&im->mutex);
+        return;
+    }
+    MUTEX_UNLOCK(&im->mutex);
+
     if (im->palette) {
         ImagingPaletteDelete(im->palette);
+        im->palette = NULL;
     }
 
     if (im->destroy) {
@@ -270,6 +310,7 @@ struct ImagingMemoryArena ImagingDefaultArena = {
     0,
     0,
     0,  // Stats
+    0,  // use_block_allocator
 #ifdef Py_GIL_DISABLED
     {0},
 #endif
@@ -300,6 +341,11 @@ ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max) {
     arena->blocks_max = blocks_max;
 
     return 1;
+}
+
+void
+ImagingMemorySetBlockAllocator(ImagingMemoryArena arena, int use_block_allocator) {
+    arena->use_block_allocator = use_block_allocator;
 }
 
 void
@@ -396,11 +442,13 @@ ImagingAllocateArray(Imaging im, ImagingMemoryArena arena, int dirty, int block_
     if (lines_per_block == 0) {
         lines_per_block = 1;
     }
+    im->lines_per_block = lines_per_block;
     blocks_count = (im->ysize + lines_per_block - 1) / lines_per_block;
     // printf("NEW size: %dx%d, ls: %d, lpb: %d, blocks: %d\n",
     //        im->xsize, im->ysize, aligned_linesize, lines_per_block, blocks_count);
 
     /* One extra pointer is always NULL */
+    im->blocks_count = blocks_count;
     im->blocks = calloc(sizeof(*im->blocks), blocks_count + 1);
     if (!im->blocks) {
         return (Imaging)ImagingError_MemoryError();
@@ -487,12 +535,65 @@ ImagingAllocateBlock(Imaging im) {
     return im;
 }
 
+/* Borrowed Arrow Storage Type */
+/* --------------------------- */
+/* Don't allocate the image. */
+
+static void
+ImagingDestroyArrow(Imaging im) {
+    // Rely on the internal Python destructor for the array capsule.
+    if (im->arrow_array_capsule) {
+        Py_DECREF(im->arrow_array_capsule);
+        im->arrow_array_capsule = NULL;
+    }
+}
+
+Imaging
+ImagingBorrowArrow(
+    Imaging im,
+    struct ArrowArray *external_array,
+    int offset_width,
+    PyObject *arrow_capsule
+) {
+    // offset_width is the number of char* for a single offset from arrow
+    Py_ssize_t y, i;
+
+    char *borrowed_buffer = NULL;
+    struct ArrowArray *arr = external_array;
+
+    if (arr->n_children == 1) {
+        arr = arr->children[0];
+    }
+    if (arr->n_buffers == 2) {
+        // buffer 0 is the null list
+        // buffer 1 is the data
+        borrowed_buffer = (char *)arr->buffers[1] + (offset_width * arr->offset);
+    }
+
+    if (!borrowed_buffer) {
+        return (Imaging)ImagingError_ValueError(
+            "Arrow Array, exactly 2 buffers required"
+        );
+    }
+
+    for (y = i = 0; y < im->ysize; y++) {
+        im->image[y] = borrowed_buffer + i;
+        i += im->linesize;
+    }
+    im->read_only = 1;
+    Py_INCREF(arrow_capsule);
+    im->arrow_array_capsule = arrow_capsule;
+    im->destroy = ImagingDestroyArrow;
+
+    return im;
+}
+
 /* --------------------------------------------------------------------
  * Create a new, internally allocated, image.
  */
 
 Imaging
-ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
+ImagingNewInternal(const ModeID mode, int xsize, int ysize, int dirty) {
     Imaging im;
 
     if (xsize < 0 || ysize < 0) {
@@ -513,7 +614,7 @@ ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
         return im;
     }
 
-    ImagingError_Clear();
+    PyErr_Clear();
 
     // Try to allocate the image once more with smallest possible block size
     MUTEX_LOCK(&ImagingDefaultArena.mutex);
@@ -528,17 +629,23 @@ ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
 }
 
 Imaging
-ImagingNew(const char *mode, int xsize, int ysize) {
+ImagingNew(const ModeID mode, int xsize, int ysize) {
+    if (ImagingDefaultArena.use_block_allocator) {
+        return ImagingNewBlock(mode, xsize, ysize);
+    }
     return ImagingNewInternal(mode, xsize, ysize, 0);
 }
 
 Imaging
-ImagingNewDirty(const char *mode, int xsize, int ysize) {
+ImagingNewDirty(const ModeID mode, int xsize, int ysize) {
+    if (ImagingDefaultArena.use_block_allocator) {
+        return ImagingNewBlock(mode, xsize, ysize);
+    }
     return ImagingNewInternal(mode, xsize, ysize, 1);
 }
 
 Imaging
-ImagingNewBlock(const char *mode, int xsize, int ysize) {
+ImagingNewBlock(const ModeID mode, int xsize, int ysize) {
     Imaging im;
 
     if (xsize < 0 || ysize < 0) {
@@ -559,12 +666,86 @@ ImagingNewBlock(const char *mode, int xsize, int ysize) {
 }
 
 Imaging
-ImagingNew2Dirty(const char *mode, Imaging imOut, Imaging imIn) {
+ImagingNewArrow(
+    const ModeID mode,
+    int xsize,
+    int ysize,
+    PyObject *schema_capsule,
+    PyObject *array_capsule
+) {
+    /* A borrowed arrow array */
+    Imaging im;
+    struct ArrowSchema *schema =
+        (struct ArrowSchema *)PyCapsule_GetPointer(schema_capsule, "arrow_schema");
+
+    struct ArrowArray *external_array =
+        (struct ArrowArray *)PyCapsule_GetPointer(array_capsule, "arrow_array");
+
+    if (xsize < 0 || ysize < 0) {
+        return (Imaging)ImagingError_ValueError("bad image size");
+    }
+
+    im = ImagingNewPrologue(mode, xsize, ysize);
+    if (!im) {
+        return NULL;
+    }
+
+    int64_t pixels = (int64_t)xsize * (int64_t)ysize;
+
+    // fmt:off   // don't reformat this
+    // stored as a single array, one element per pixel, either single band
+    // or multiband, where each pixel is an I32.
+    if (((strcmp(schema->format, "I") == 0  // int32
+          && im->pixelsize == 4             // 4xchar* storage
+          && im->bands >= 2)                // INT32 into any INT32 Storage mode
+         ||                                 // (()||()) &&
+         (strcmp(schema->format, im->arrow_band_format) == 0  // same mode
+          && im->bands == 1))                                 // Single band match
+        && pixels == external_array->length) {
+        // one arrow element per, and it matches a pixelsize*char
+        if (ImagingBorrowArrow(im, external_array, im->pixelsize, array_capsule)) {
+            return im;
+        }
+    }
+    // Stored as [[r,g,b,a],...]
+    if (strcmp(schema->format, "+w:4") == 0  // 4 up array
+        && im->pixelsize == 4                // storage as 32 bpc
+        && schema->n_children > 0            // make sure schema is well formed.
+        && schema->children                  // make sure schema is well formed
+        && strcmp(schema->children[0]->format, "C") == 0  // Expected format
+        && strcmp(im->arrow_band_format, "C") == 0        // Expected Format
+        && pixels == external_array->length               // expected length
+        && external_array->n_children == 1                // array is well formed
+        && external_array->children                       // array is well formed
+        && 4 * pixels == external_array->children[0]->length) {
+        // 4 up element of char into pixelsize == 4
+        if (ImagingBorrowArrow(im, external_array, 1, array_capsule)) {
+            return im;
+        }
+    }
+    // Stored as [r,g,b,a,r,g,b,a,...]
+    if (strcmp(schema->format, "C") == 0            // uint8
+        && im->pixelsize == 4                       // storage as 32 bpc
+        && schema->n_children == 0                  // make sure schema is well formed.
+        && strcmp(im->arrow_band_format, "C") == 0  // expected format
+        && 4 * pixels == external_array->length) {  // expected length
+        // single flat array, interleaved storage.
+        if (ImagingBorrowArrow(im, external_array, 1, array_capsule)) {
+            return im;
+        }
+    }
+    // fmt: on
+    ImagingDelete(im);
+    return NULL;
+}
+
+Imaging
+ImagingNew2Dirty(const ModeID mode, Imaging imOut, Imaging imIn) {
     /* allocate or validate output image */
 
     if (imOut) {
         /* make sure images match */
-        if (strcmp(imOut->mode, mode) != 0 || imOut->xsize != imIn->xsize ||
+        if (imOut->mode != mode || imOut->xsize != imIn->xsize ||
             imOut->ysize != imIn->ysize) {
             return ImagingError_Mismatch();
         }

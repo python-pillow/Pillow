@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from array import array
+from typing import cast
 
 import pytest
 
@@ -12,21 +13,19 @@ from .helper import assert_image_equal, hopper
 
 def test_sanity() -> None:
     im1 = hopper()
+    for data in (im1.get_flattened_data(), im1.im):
+        im2 = Image.new(im1.mode, im1.size, 0)
+        im2.putdata(data)
 
-    data = list(im1.getdata())
+        assert_image_equal(im1, im2)
 
-    im2 = Image.new(im1.mode, im1.size, 0)
-    im2.putdata(data)
+        # readonly
+        im2 = Image.new(im1.mode, im2.size, 0)
+        im2.readonly = 1
+        im2.putdata(data)
 
-    assert_image_equal(im1, im2)
-
-    # readonly
-    im2 = Image.new(im1.mode, im2.size, 0)
-    im2.readonly = 1
-    im2.putdata(data)
-
-    assert not im2.readonly
-    assert_image_equal(im1, im2)
+        assert not im2.readonly
+        assert_image_equal(im1, im2)
 
 
 def test_long_integers() -> None:
@@ -60,32 +59,22 @@ def test_mode_with_L_with_float() -> None:
 @pytest.mark.parametrize("mode", ("I", "I;16", "I;16L", "I;16B"))
 def test_mode_i(mode: str) -> None:
     src = hopper("L")
-    data = list(src.getdata())
+    data = src.get_flattened_data()
     im = Image.new(mode, src.size, 0)
     im.putdata(data, 2, 256)
 
-    target = [2 * elt + 256 for elt in data]
-    assert list(im.getdata()) == target
+    target = tuple(2 * elt + 256 for elt in cast(tuple[int, ...], data))
+    assert im.get_flattened_data() == target
 
 
 def test_mode_F() -> None:
     src = hopper("L")
-    data = list(src.getdata())
+    data = src.get_flattened_data()
     im = Image.new("F", src.size, 0)
     im.putdata(data, 2.0, 256.0)
 
-    target = [2.0 * float(elt) + 256.0 for elt in data]
-    assert list(im.getdata()) == target
-
-
-@pytest.mark.parametrize("mode", ("BGR;15", "BGR;16", "BGR;24"))
-def test_mode_BGR(mode: str) -> None:
-    data = [(16, 32, 49), (32, 32, 98)]
-    with pytest.warns(DeprecationWarning):
-        im = Image.new(mode, (1, 2))
-    im.putdata(data)
-
-    assert list(im.getdata()) == data
+    target = tuple(2.0 * float(elt) + 256.0 for elt in cast(tuple[int, ...], data))
+    assert im.get_flattened_data() == target
 
 
 def test_array_B() -> None:
@@ -96,7 +85,7 @@ def test_array_B() -> None:
     im = Image.new("L", (150, 100))
     im.putdata(arr)
 
-    assert len(im.getdata()) == len(arr)
+    assert len(im.get_flattened_data()) == len(arr)
 
 
 def test_array_F() -> None:
@@ -107,7 +96,7 @@ def test_array_F() -> None:
     arr = array("f", [0.0]) * 15000
     im.putdata(arr)
 
-    assert len(im.getdata()) == len(arr)
+    assert len(im.get_flattened_data()) == len(arr)
 
 
 def test_not_flattened() -> None:

@@ -13,15 +13,15 @@ def test_white() -> None:
 
         k = i.getpixel((0, 0))
 
-        L = i.getdata(0)
-        a = i.getdata(1)
-        b = i.getdata(2)
+        L = i.get_flattened_data(0)
+        a = i.get_flattened_data(1)
+        b = i.get_flattened_data(2)
 
     assert k == (255, 128, 128)
 
-    assert list(L) == [255] * 100
-    assert list(a) == [128] * 100
-    assert list(b) == [128] * 100
+    assert L == (255,) * 100
+    assert a == (128,) * 100
+    assert b == (128,) * 100
 
 
 def test_green() -> None:

@@ -186,6 +186,21 @@ def test_palette(mode: str) -> None:
     )
 
 
+def test_rgba_palette() -> None:
+    im = Image.new("P", (1, 1))
+
+    red = (255, 0, 0, 255)
+    translucent_black = (0, 0, 0, 127)
+    im.putpalette(red + translucent_black, "RGBA")
+
+    expanded_im = ImageOps.expand(im, 1, 1)
+
+    palette = expanded_im.palette
+    assert palette is not None
+    assert palette.mode == "RGBA"
+    assert expanded_im.convert("RGBA").getpixel((0, 0)) == translucent_black
+
+
 def test_pil163() -> None:
     # Division by zero in equalize if < 255 pixels in image (@PIL163)
 
@@ -246,10 +261,10 @@ def test_colorize_2color() -> None:
 
     # Open test image (256px by 10px, black to white)
     with Image.open("Tests/images/bw_gradient.png") as im:
-        im = im.convert("L")
+        im_l = im.convert("L")
 
     # Create image with original 2-color functionality
-    im_test = ImageOps.colorize(im, "red", "green")
+    im_test = ImageOps.colorize(im_l, "red", "green")
 
     # Test output image (2-color)
     left = (0, 1)
@@ -286,11 +301,11 @@ def test_colorize_2color_offset() -> None:
 
     # Open test image (256px by 10px, black to white)
     with Image.open("Tests/images/bw_gradient.png") as im:
-        im = im.convert("L")
+        im_l = im.convert("L")
 
     # Create image with original 2-color functionality with offsets
     im_test = ImageOps.colorize(
-        im, black="red", white="green", blackpoint=50, whitepoint=100
+        im_l, black="red", white="green", blackpoint=50, whitepoint=100
     )
 
     # Test output image (2-color) with offsets
@@ -328,11 +343,11 @@ def test_colorize_3color_offset() -> None:
 
     # Open test image (256px by 10px, black to white)
     with Image.open("Tests/images/bw_gradient.png") as im:
-        im = im.convert("L")
+        im_l = im.convert("L")
 
     # Create image with new three color functionality with offsets
     im_test = ImageOps.colorize(
-        im,
+        im_l,
         black="red",
         white="green",
         mid="blue",
@@ -442,9 +457,9 @@ def test_exif_transpose() -> None:
         assert 0x0112 not in transposed_im.getexif()
 
     # Orientation set directly on Image.Exif
-    im = hopper()
-    im.getexif()[0x0112] = 3
-    transposed_im = ImageOps.exif_transpose(im)
+    im1 = hopper()
+    im1.getexif()[0x0112] = 3
+    transposed_im = ImageOps.exif_transpose(im1)
     assert 0x0112 not in transposed_im.getexif()
 
 

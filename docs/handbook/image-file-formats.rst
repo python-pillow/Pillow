@@ -24,6 +24,83 @@ present, and the :py:attr:`~PIL.Image.Image.format` attribute will be ``None``.
 Fully supported formats
 -----------------------
 
+AVIF
+^^^^
+
+Pillow reads and writes AVIF files, including AVIF sequence images.
+It is only possible to save 8-bit AVIF images, and all AVIF images are decoded
+as 8-bit RGB(A).
+
+The :py:meth:`~PIL.Image.Image.save` method supports the following options:
+
+**quality**
+    Integer, 0-100, defaults to 75. 0 gives the smallest size and poorest
+    quality, 100 the largest size and best quality.
+
+**subsampling**
+    If present, sets the subsampling for the encoder. Defaults to ``4:2:0``.
+    Options include:
+
+    * ``4:0:0``
+    * ``4:2:0``
+    * ``4:2:2``
+    * ``4:4:4``
+
+**speed**
+    Quality/speed trade-off (0=slower/better, 10=fastest). Defaults to 6.
+
+**max_threads**
+    Limit the number of active threads used. By default, there is no limit. If the aom
+    codec is used, there is a maximum of 64.
+
+**range**
+    YUV range, either "full" or "limited". Defaults to "full".
+
+**codec**
+    AV1 codec to use for encoding. Specific values are "aom", "rav1e", and
+    "svt", presuming the chosen codec is available. Defaults to "auto", which
+    will choose the first available codec in the order of the preceding list.
+
+**tile_rows** / **tile_cols**
+    For tile encoding, the (log 2) number of tile rows and columns to use.
+    Valid values are 0-6, default 0. Ignored if "autotiling" is set to true.
+
+**autotiling**
+    Split the image up to allow parallelization. Enabled automatically if "tile_rows"
+    and "tile_cols" both have their default values of zero.
+
+**alpha_premultiplied**
+    Encode the image with premultiplied alpha. Defaults to ``False``.
+
+**advanced**
+    Codec specific options.
+
+**icc_profile**
+    The ICC Profile to include in the saved file.
+
+**exif**
+    The exif data to include in the saved file.
+
+**xmp**
+    The XMP data to include in the saved file.
+
+Saving sequences
+~~~~~~~~~~~~~~~~
+
+When calling :py:meth:`~PIL.Image.Image.save` to write an AVIF file, by default
+only the first frame of a multiframe image will be saved. If the ``save_all``
+argument is present and true, then all frames will be saved, and the following
+options will also be available.
+
+**append_images**
+    A list of images to append as additional frames. Each of the
+    images in the list can be single or multiframe images.
+
+**duration**
+    The display duration of each frame, in milliseconds. Pass a single
+    integer for a constant duration, or a list or tuple to set the
+    duration for each frame separately.
+
 BLP
 ^^^
 
@@ -91,6 +168,12 @@ DXT1 and DXT5 pixel formats can be read, only in ``RGBA`` mode.
 .. versionadded:: 10.1.0
    BC5U can be read in ``RGB`` mode, and 8-bit color indexed images can be read
    in ``P`` mode.
+
+
+.. versionadded:: 11.2.1
+   DXT1, DXT3, DXT5, BC2, BC3 and BC5 pixel formats can be saved::
+
+       im.save(out, pixel_format="DXT1")
 
 
 DIB
@@ -229,13 +312,14 @@ following options are available::
     im.save(out, save_all=True, append_images=[im1, im2, ...])
 
 **save_all**
-    If present and true, all frames of the image will be saved. If
-    not, then only the first frame of a multiframe image will be saved.
+    If present and true, or if ``append_images`` is not empty, all frames of
+    the image will be saved. Otherwise, only the first frame of a multiframe
+    image will be saved.
 
 **append_images**
     A list of images to append as additional frames. Each of the
     images in the list can be single or multiframe images.
-    This is currently supported for GIF, PDF, PNG, TIFF, and WebP.
+    This is supported for AVIF, GIF, PDF, PNG, TIFF and WebP.
 
     It is also supported for ICO and ICNS. If images are passed in of relevant
     sizes, they will be used instead of scaling down the main image.
@@ -473,6 +557,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     hardly any gain in image quality. The value ``keep`` is only valid for JPEG
     files and will retain the original image quality level, subsampling, and
     qtables.
+    For more information on how qtables are modified based on the quality parameter,
+    see the qtables section.
 
 **optimize**
     If present and true, indicates that the encoder should make an extra pass
@@ -537,6 +623,11 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     *  a list, tuple, or dictionary (with integer keys =
        range(len(keys))) of lists of 64 integers. There must be
        between 2 and 4 tables.
+
+    If a quality parameter is provided, the qtables will be adjusted accordingly.
+    By default, the qtables are based on a standard JPEG table with a quality of 50.
+    The qtable values will be reduced if the quality is higher than 50 and increased
+    if the quality is lower than 50.
 
     .. versionadded:: 2.5.0
 
@@ -717,8 +808,8 @@ Saving
 
 When calling :py:meth:`~PIL.Image.Image.save` to write an MPO file, by default
 only the first frame of a multiframe image will be saved. If the ``save_all``
-argument is present and true, then all frames will be saved, and the following
-option will also be available.
+argument is present and true, or if ``append_images`` is not empty, all frames
+will be saved.
 
 **append_images**
     A list of images to append as additional pictures. Each of the
@@ -908,7 +999,7 @@ where applicable:
     The number of times to loop this APNG, 0 indicates infinite looping.
 
 **duration**
-    The time to display this APNG frame (in milliseconds).
+    The time to display this APNG frame (in milliseconds), given as a float.
 
 .. note::
 
@@ -928,7 +1019,8 @@ Saving
 
 When calling :py:meth:`~PIL.Image.Image.save`, by default only a single frame PNG file
 will be saved. To save an APNG file (including a single frame APNG), the ``save_all``
-parameter must be set to ``True``. The following parameters can also be set:
+parameter should be set to ``True`` or ``append_images`` should not be empty. The
+following parameters can also be set:
 
 **default_image**
     Boolean value, specifying whether or not the base image is a default image.
@@ -949,9 +1041,8 @@ parameter must be set to ``True``. The following parameters can also be set:
     Defaults to 0.
 
 **duration**
-    Integer (or list or tuple of integers) length of time to display this APNG frame
-    (in milliseconds).
-    Defaults to 0.
+    The length of time (or list or tuple of lengths of time) to display this APNG frame
+    (in milliseconds). Defaults to 0.
 
 **disposal**
     An integer (or list or tuple of integers) specifying the APNG disposal
@@ -996,6 +1087,26 @@ Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L``, ``I
 "Raw" (P4 to P6) formats can be read, and are used when writing.
 
 Since Pillow 9.2.0, "plain" (P1 to P3) formats can be read as well.
+
+QOI
+^^^
+
+.. versionadded:: 9.5.0
+
+Pillow reads and writes images in Quite OK Image format using a Python codec. If you
+wish to write code specifically for this format, :pypi:`qoi` is an alternative library
+that uses C to decode the image and interfaces with NumPy.
+
+.. _qoi-saving:
+
+Saving
+~~~~~~
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**colorspace**
+    If set to "sRGB", the colorspace will be written as sRGB with linear alpha, instead
+    of all channels being linear.
 
 SGI
 ^^^
@@ -1137,7 +1248,7 @@ numbers are returned as a tuple of ``(numerator, denominator)``.
 
     .. deprecated:: 3.0.0
 
-Reading Multi-frame TIFF Images
+Reading multi-frame TIFF images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The TIFF loader supports the :py:meth:`~PIL.Image.Image.seek` and
@@ -1157,7 +1268,8 @@ Saving
 The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
 
 **save_all**
-    If true, Pillow will save all frames of the image to a multiframe tiff document.
+    If true, or if ``append_images`` is not empty, Pillow will save all frames of the
+    image to a multiframe tiff document.
 
     .. versionadded:: 3.4.0
 
@@ -1307,8 +1419,8 @@ Saving sequences
 
 When calling :py:meth:`~PIL.Image.Image.save` to write a WebP file, by default
 only the first frame of a multiframe image will be saved. If the ``save_all``
-argument is present and true, then all frames will be saved, and the following
-options will also be available.
+argument is present and true, or if ``append_images`` is not empty, all frames
+will be saved, and the following options will also be available.
 
 **append_images**
     A list of images to append as additional frames. Each of the
@@ -1492,15 +1604,6 @@ PSD
 
 Pillow identifies and reads PSD files written by Adobe Photoshop 2.5 and 3.0.
 
-QOI
-^^^
-
-.. versionadded:: 9.5.0
-
-Pillow reads images in Quite OK Image format using a Python decoder. If you wish to
-write code specifically for this format, :pypi:`qoi` is an alternative library that
-uses C to decode the image and interfaces with NumPy.
-
 SUN
 ^^^
 
@@ -1564,7 +1667,8 @@ handler. ::
 XPM
 ^^^
 
-Pillow reads X pixmap files (mode ``P``) with 256 colors or less.
+Pillow reads X pixmap files as P mode images if there are 256 colors or less, and as
+RGB images otherwise.
 
 .. _xpm-opening:
 
@@ -1577,6 +1681,11 @@ The :py:meth:`~PIL.Image.open` method sets the following
 **transparency**
     Transparency color index. This key is omitted if the image is not
     transparent.
+
+XV thumbnails
+^^^^^^^^^^^^^
+
+Pillow can read XV thumbnail files.
 
 Write-only formats
 ------------------
@@ -1610,15 +1719,14 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 **save_all**
     If a multiframe image is used, by default, only the first image will be saved.
     To save all frames, each frame to a separate page of the PDF, the ``save_all``
-    parameter must be present and set to ``True``.
+    parameter should be present and set to ``True`` or ``append_images`` should not be
+    empty.
 
     .. versionadded:: 3.0.0
 
 **append_images**
     A list of :py:class:`PIL.Image.Image` objects to append as additional pages. Each
-    of the images in the list can be single or multiframe images. The ``save_all``
-    parameter must be present and set to ``True`` in conjunction with
-    ``append_images``.
+    of the images in the list can be single or multiframe images.
 
     .. versionadded:: 4.2.0
 
@@ -1683,11 +1791,6 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     file, this will default to the current time.
 
     .. versionadded:: 5.3.0
-
-XV Thumbnails
-^^^^^^^^^^^^^
-
-Pillow can read XV thumbnail files.
 
 Identify-only formats
 ---------------------

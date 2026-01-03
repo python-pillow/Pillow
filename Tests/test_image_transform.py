@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import math
-from typing import Callable
 
 import pytest
 
 from PIL import Image, ImageTransform
 
 from .helper import assert_image_equal, assert_image_similar, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class TestImageTransform:
@@ -48,6 +51,7 @@ class TestImageTransform:
                 im.size, Image.Transform.AFFINE, [1, 0, 0, 0, 1, 0]
             )
             assert im.palette is not None
+            assert transformed.palette is not None
             assert im.palette.palette == transformed.palette.palette
 
     def test_extent(self) -> None:
@@ -246,14 +250,14 @@ class TestImageTransform:
     def test_missing_method_data(self) -> None:
         with hopper() as im:
             with pytest.raises(ValueError):
-                im.transform((100, 100), None)
+                im.transform((100, 100), None)  # type: ignore[arg-type]
 
     @pytest.mark.parametrize("resample", (Image.Resampling.BOX, "unknown"))
     def test_unknown_resampling_filter(self, resample: Image.Resampling | str) -> None:
         with hopper() as im:
             (w, h) = im.size
             with pytest.raises(ValueError):
-                im.transform((100, 100), Image.Transform.EXTENT, (0, 0, w, h), resample)
+                im.transform((100, 100), Image.Transform.EXTENT, (0, 0, w, h), resample)  # type: ignore[arg-type]
 
 
 class TestImageTransformAffine:

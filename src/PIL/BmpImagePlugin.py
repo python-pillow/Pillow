@@ -48,6 +48,8 @@ BIT2MODE = {
     32: ("RGB", "BGRX"),
 }
 
+USE_RAW_ALPHA = False
+
 
 def _accept(prefix: bytes) -> bool:
     return prefix.startswith(b"BM")
@@ -74,6 +76,7 @@ class BmpImageFile(ImageFile.ImageFile):
 
     def _bitmap(self, header: int = 0, offset: int = 0) -> None:
         """Read relevant info about the BMP"""
+        assert self.fp is not None
         read, seek = self.fp.read, self.fp.seek
         if header:
             seek(header)
@@ -242,7 +245,9 @@ class BmpImageFile(ImageFile.ImageFile):
                 msg = "Unsupported BMP bitfields layout"
                 raise OSError(msg)
         elif file_info["compression"] == self.COMPRESSIONS["RAW"]:
-            if file_info["bits"] == 32 and header == 22:  # 32-bit .cur offset
+            if file_info["bits"] == 32 and (
+                header == 22 or USE_RAW_ALPHA  # 32-bit .cur offset
+            ):
                 raw_mode, self._mode = "BGRA", "RGBA"
         elif file_info["compression"] in (
             self.COMPRESSIONS["RLE8"],
@@ -307,6 +312,7 @@ class BmpImageFile(ImageFile.ImageFile):
     def _open(self) -> None:
         """Open file, check magic number and read header"""
         # read 14 bytes: magic number, filesize, reserved, header final offset
+        assert self.fp is not None
         head_data = self.fp.read(14)
         # choke if the file does not have the required magic bytes
         if not _accept(head_data):
@@ -441,9 +447,9 @@ def _save(
     image = stride * im.size[1]
 
     if im.mode == "1":
-        palette = b"".join(o8(i) * 4 for i in (0, 255))
+        palette = b"".join(o8(i) * 3 + b"\x00" for i in (0, 255))
     elif im.mode == "L":
-        palette = b"".join(o8(i) * 4 for i in range(256))
+        palette = b"".join(o8(i) * 3 + b"\x00" for i in range(256))
     elif im.mode == "P":
         palette = im.im.getpalette("RGB", "BGRX")
         colors = len(palette) // 4

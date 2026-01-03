@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageOps
 .. py:currentmodule:: PIL.ImageOps
 
-:py:mod:`~PIL.ImageOps` Module
+:py:mod:`~PIL.ImageOps` module
 ==============================
 
 The :py:mod:`~PIL.ImageOps` module contains a number of ‘ready-made’ image

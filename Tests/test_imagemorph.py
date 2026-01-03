@@ -7,7 +7,7 @@ import pytest
 
 from PIL import Image, ImageMorph, _imagingmorph
 
-from .helper import assert_image_equal_tofile, hopper
+from .helper import assert_image_equal_tofile, hopper, timeout_unless_slower_valgrind
 
 
 def string_to_img(image_string: str) -> Image.Image:
@@ -15,13 +15,10 @@ def string_to_img(image_string: str) -> Image.Image:
     rows = [s for s in image_string.replace(" ", "").split("\n") if len(s)]
     height = len(rows)
     width = len(rows[0])
-    im = Image.new("L", (width, height))
-    for i in range(width):
-        for j in range(height):
-            c = rows[j][i]
-            v = c in "X1"
-            im.putpixel((i, j), v)
-
+    im = Image.new("1", (width, height))
+    for x in range(width):
+        for y in range(height):
+            im.putpixel((x, y), rows[y][x] in "X1")
     return im
 
 
@@ -42,10 +39,10 @@ def img_to_string(im: Image.Image) -> str:
     """Turn a (small) binary image into a string representation"""
     chars = ".1"
     result = []
-    for r in range(im.height):
+    for y in range(im.height):
         line = ""
-        for c in range(im.width):
-            value = im.getpixel((c, r))
+        for x in range(im.width):
+            value = im.getpixel((x, y))
             assert not isinstance(value, tuple)
             assert value is not None
             line += chars[value > 0]
@@ -165,10 +162,12 @@ def test_edge() -> None:
     )
 
 
-def test_corner() -> None:
+@pytest.mark.parametrize("mode", ("1", "L"))
+def test_corner(mode: str) -> None:
     # Create a corner detector pattern
     mop = ImageMorph.MorphOp(patterns=["1:(... ... ...)->0", "4:(00. 01. ...)->1"])
-    count, Aout = mop.apply(A)
+    image = A.convert(mode) if mode == "L" else A
+    count, Aout = mop.apply(image)
     assert count == 5
     assert_img_equal_img_string(
         Aout,
@@ -184,7 +183,7 @@ def test_corner() -> None:
     )
 
     # Test the coordinate counting with the same operator
-    coords = mop.match(A)
+    coords = mop.match(image)
     assert len(coords) == 4
     assert tuple(coords) == ((2, 2), (4, 2), (2, 4), (4, 4))
 
@@ -232,15 +231,15 @@ def test_negate() -> None:
 
 
 def test_incorrect_mode() -> None:
-    im = hopper("RGB")
     mop = ImageMorph.MorphOp(op_name="erosion8")
 
-    with pytest.raises(ValueError, match="Image mode must be L"):
-        mop.apply(im)
-    with pytest.raises(ValueError, match="Image mode must be L"):
-        mop.match(im)
-    with pytest.raises(ValueError, match="Image mode must be L"):
-        mop.get_on_pixels(im)
+    with hopper() as im:
+        with pytest.raises(ValueError, match="Image mode must be 1 or L"):
+            mop.apply(im)
+        with pytest.raises(ValueError, match="Image mode must be 1 or L"):
+            mop.match(im)
+        with pytest.raises(ValueError, match="Image mode must be 1 or L"):
+            mop.get_on_pixels(im)
 
 
 def test_add_patterns() -> None:
@@ -266,17 +265,24 @@ def test_unknown_pattern() -> None:
         ImageMorph.LutBuilder(op_name="unknown")
 
 
-def test_pattern_syntax_error() -> None:
+@pytest.mark.parametrize(
+    "pattern", ("a pattern with a syntax error", "4:(" + "X" * 30000)
+)
+@timeout_unless_slower_valgrind(1)
+def test_pattern_syntax_error(pattern: str) -> None:
     # Arrange
     lb = ImageMorph.LutBuilder(op_name="corner")
-    new_patterns = ["a pattern with a syntax error"]
+    new_patterns = [pattern]
     lb.add_patterns(new_patterns)
 
     # Act / Assert
-    with pytest.raises(
-        Exception, match='Syntax error in pattern "a pattern with a syntax error"'
-    ):
+    with pytest.raises(Exception, match='Syntax error in pattern "'):
         lb.build_lut()
+
+
+def test_build_default_lut() -> None:
+    lb = ImageMorph.LutBuilder(op_name="corner")
+    assert lb.build_default_lut() == lb.lut
 
 
 def test_load_invalid_mrl() -> None:

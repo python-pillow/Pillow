@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageFont
 .. py:currentmodule:: PIL.ImageFont
 
-:py:mod:`~PIL.ImageFont` Module
+:py:mod:`~PIL.ImageFont` module
 ===============================
 
 The :py:mod:`~PIL.ImageFont` module defines a class with the same name. Instances of
@@ -17,6 +17,9 @@ Starting with version 1.1.4, PIL can be configured to support TrueType and
 OpenType fonts (as well as other font formats supported by the FreeType
 library). For earlier versions, TrueType support is only available as part of
 the imToolkit package.
+
+When measuring text sizes, this module will not break at newline characters. For
+multiline text, see the :py:mod:`~PIL.ImageDraw` module.
 
 .. warning::
     To protect against potential DOS attacks when using arbitrary strings as

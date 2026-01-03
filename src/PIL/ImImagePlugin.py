@@ -31,6 +31,7 @@ import re
 from typing import IO, Any
 
 from . import Image, ImageFile, ImagePalette
+from ._util import DeferredError
 
 # --------------------------------------------------------------------
 # Standard tags
@@ -124,6 +125,7 @@ class ImImageFile(ImageFile.ImageFile):
         # Quick rejection: if there's not an LF among the first
         # 100 bytes, this is (probably) not a text header.
 
+        assert self.fp is not None
         if b"\n" not in self.fp.read(100):
             msg = "not an IM file"
             raise SyntaxError(msg)
@@ -290,6 +292,8 @@ class ImImageFile(ImageFile.ImageFile):
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
 
         self.frame = frame
 

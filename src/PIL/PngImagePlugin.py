@@ -38,9 +38,9 @@ import re
 import struct
 import warnings
 import zlib
-from collections.abc import Callable
 from enum import IntEnum
-from typing import IO, TYPE_CHECKING, Any, NamedTuple, NoReturn, cast
+from fractions import Fraction
+from typing import IO, NamedTuple, cast
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i16be as i16
@@ -48,8 +48,14 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
+from ._deprecate import deprecate
+from ._util import DeferredError
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import Any, NoReturn
+
     from . import _imaging
 
 logger = logging.getLogger(__name__)
@@ -504,7 +510,9 @@ class PngStream(ChunkStream):
                 # otherwise, we have a byte string with one alpha value
                 # for each palette entry
                 self.im_info["transparency"] = s
-        elif self.im_mode in ("1", "L", "I;16"):
+        elif self.im_mode == "1":
+            self.im_info["transparency"] = 255 if i16(s) else 0
+        elif self.im_mode in ("L", "I;16"):
             self.im_info["transparency"] = i16(s)
         elif self.im_mode == "RGB":
             self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
@@ -752,6 +760,7 @@ class PngImageFile(ImageFile.ImageFile):
     format_description = "Portable network graphics"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(8)):
             msg = "not a PNG file"
             raise SyntaxError(msg)
@@ -848,9 +857,7 @@ class PngImageFile(ImageFile.ImageFile):
         self.png.verify()
         self.png.close()
 
-        if self._exclusive_fp:
-            self.fp.close()
-        self.fp = None
+        super().verify()
 
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
@@ -869,6 +876,8 @@ class PngImageFile(ImageFile.ImageFile):
 
     def _seek(self, frame: int, rewind: bool = False) -> None:
         assert self.png is not None
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
 
         self.dispose: _imaging.ImagingCore | None
         dispose_extent = None
@@ -981,6 +990,7 @@ class PngImageFile(ImageFile.ImageFile):
         """internal: read more image data"""
 
         assert self.png is not None
+        assert self.fp is not None
         while self.__idat == 0:
             # end of chunk, skip forward to next one
 
@@ -1014,6 +1024,7 @@ class PngImageFile(ImageFile.ImageFile):
     def load_end(self) -> None:
         """internal: finished reading image data"""
         assert self.png is not None
+        assert self.fp is not None
         if self.__idat != 0:
             self.fp.read(self.__idat)
         while True:
@@ -1145,6 +1156,15 @@ class _fdat:
         self.seq_num += 1
 
 
+def _apply_encoderinfo(im: Image.Image, encoderinfo: dict[str, Any]) -> None:
+    im.encoderconfig = (
+        encoderinfo.get("optimize", False),
+        encoderinfo.get("compress_level", -1),
+        encoderinfo.get("compress_type", -1),
+        encoderinfo.get("dictionary", b""),
+    )
+
+
 class _Frame(NamedTuple):
     im: Image.Image
     bbox: tuple[int, int, int, int] | None
@@ -1238,10 +1258,10 @@ def _write_multiple_frames(
 
     # default image IDAT (if it exists)
     if default_image:
-        if im.mode != mode:
-            im = im.convert(mode)
+        default_im = im if im.mode == mode else im.convert(mode)
+        _apply_encoderinfo(default_im, im.encoderinfo)
         ImageFile._save(
-            im,
+            default_im,
             cast(IO[bytes], _idat(fp, chunk)),
             [ImageFile._Tile("zip", (0, 0) + im.size, 0, rawmode)],
         )
@@ -1256,7 +1276,11 @@ def _write_multiple_frames(
             im_frame = im_frame.crop(bbox)
         size = im_frame.size
         encoderinfo = frame_data.encoderinfo
-        frame_duration = int(round(encoderinfo.get("duration", 0)))
+        frame_duration = encoderinfo.get("duration", 0)
+        delay = Fraction(frame_duration / 1000).limit_denominator(65535)
+        if delay.numerator > 65535:
+            msg = "cannot write duration"
+            raise ValueError(msg)
         frame_disposal = encoderinfo.get("disposal", disposal)
         frame_blend = encoderinfo.get("blend", blend)
         # frame control
@@ -1268,13 +1292,14 @@ def _write_multiple_frames(
             o32(size[1]),  # height
             o32(bbox[0]),  # x_offset
             o32(bbox[1]),  # y_offset
-            o16(frame_duration),  # delay_numerator
-            o16(1000),  # delay_denominator
+            o16(delay.numerator),  # delay_numerator
+            o16(delay.denominator),  # delay_denominator
             o8(frame_disposal),  # dispose_op
             o8(frame_blend),  # blend_op
         )
         seq_num += 1
         # frame data
+        _apply_encoderinfo(im_frame, im.encoderinfo)
         if frame == 0 and not default_image:
             # first frame must be in IDAT chunks for backwards compatibility
             ImageFile._save(
@@ -1350,20 +1375,14 @@ def _save(
                 bits = 4
             outmode += f";{bits}"
 
-    # encoder options
-    im.encoderconfig = (
-        im.encoderinfo.get("optimize", False),
-        im.encoderinfo.get("compress_level", -1),
-        im.encoderinfo.get("compress_type", -1),
-        im.encoderinfo.get("dictionary", b""),
-    )
-
     # get the corresponding PNG mode
     try:
         rawmode, bit_depth, color_type = _OUTMODES[outmode]
     except KeyError as e:
         msg = f"cannot write mode {mode} as PNG"
         raise OSError(msg) from e
+    if outmode == "I":
+        deprecate("Saving I mode images as PNG", 13, stacklevel=4)
 
     #
     # write minimal PNG file
@@ -1485,6 +1504,7 @@ def _save(
             im, fp, chunk, mode, rawmode, default_image, append_images
         )
     if single_im:
+        _apply_encoderinfo(single_im, im.encoderinfo)
         ImageFile._save(
             single_im,
             cast(IO[bytes], _idat(fp, chunk)),

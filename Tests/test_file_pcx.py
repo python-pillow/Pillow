@@ -11,7 +11,7 @@ from .helper import assert_image_equal, hopper
 
 
 def _roundtrip(tmp_path: Path, im: Image.Image) -> None:
-    f = str(tmp_path / "temp.pcx")
+    f = tmp_path / "temp.pcx"
     im.save(f)
     with Image.open(f) as im2:
         assert im2.mode == im.mode
@@ -31,10 +31,15 @@ def test_sanity(tmp_path: Path) -> None:
     _roundtrip(tmp_path, im)
 
     # Test an unsupported mode
-    f = str(tmp_path / "temp.pcx")
+    f = tmp_path / "temp.pcx"
     im = hopper("RGBA")
     with pytest.raises(ValueError):
         im.save(f)
+
+
+def test_p_4_planes() -> None:
+    with Image.open("Tests/images/p_4_planes.pcx") as im:
+        assert im.getpixel((0, 0)) == 3
 
 
 def test_bad_image_size() -> None:

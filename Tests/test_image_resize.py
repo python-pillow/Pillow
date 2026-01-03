@@ -160,7 +160,7 @@ class TestImagingCoreResize:
         r = self.resize(Image.new("RGB", (0, 0), "white"), (212, 195), resample)
         assert r.mode == "RGB"
         assert r.size == (212, 195)
-        assert r.getdata()[0] == (0, 0, 0)
+        assert r.getpixel((0, 0)) == (0, 0, 0)
 
     def test_unknown_filter(self) -> None:
         with pytest.raises(ValueError):
@@ -171,7 +171,7 @@ class TestImagingCoreResize:
         # platforms. So if a future Pillow change requires that the test file
         # be updated, that is okay.
         im = hopper().resize((64, 64))
-        temp_file = str(tmp_path / "temp.gif")
+        temp_file = tmp_path / "temp.gif"
         im.save(temp_file)
 
         with Image.open(temp_file) as reloaded:
@@ -314,8 +314,8 @@ class TestImageResize:
     @skip_unless_feature("libtiff")
     def test_transposed(self) -> None:
         with Image.open("Tests/images/g4_orientation_5.tif") as im:
-            im = im.resize((64, 64))
-            assert im.size == (64, 64)
+            im_resized = im.resize((64, 64))
+            assert im_resized.size == (64, 64)
 
     @pytest.mark.parametrize(
         "mode", ("L", "RGB", "I", "I;16", "I;16L", "I;16B", "I;16N", "F")
@@ -324,7 +324,7 @@ class TestImageResize:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.BICUBIC) == im.resize((20, 20))
 
-    @pytest.mark.parametrize("mode", ("1", "P", "BGR;15", "BGR;16"))
+    @pytest.mark.parametrize("mode", ("1", "P"))
     def test_default_filter_nearest(self, mode: str) -> None:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.NEAREST) == im.resize((20, 20))

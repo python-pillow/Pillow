@@ -36,9 +36,6 @@ As of 2019, Pillow development is
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-mingw.yml"><img
                 alt="GitHub Actions build status (Test MinGW)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20MinGW/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-cygwin.yml"><img
-                alt="GitHub Actions build status (Test Cygwin)"
-                src="https://github.com/python-pillow/Pillow/workflows/Test%20Cygwin/badge.svg"></a>
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-docker.yml"><img
                 alt="GitHub Actions build status (Test Docker)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg"></a>
@@ -95,7 +92,7 @@ This library provides extensive file format support, an efficient internal repre
 
 The core image library is designed for fast access to data stored in a few basic pixel formats. It should provide a solid foundation for a general image processing tool.
 
-## More Information
+## More information
 
 - [Documentation](https://pillow.readthedocs.io/)
   - [Installation](https://pillow.readthedocs.io/en/latest/installation/basic-installation.html)
@@ -107,6 +104,6 @@ The core image library is designed for fast access to data stored in a few basic
 - [Changelog](https://github.com/python-pillow/Pillow/releases)
   - [Pre-fork](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst#pre-fork)
 
-## Report a Vulnerability
+## Report a vulnerability
 
 To report a security vulnerability, please follow the procedure described in the [Tidelift security policy](https://tidelift.com/docs/security).

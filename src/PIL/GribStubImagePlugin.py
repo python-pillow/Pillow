@@ -33,7 +33,7 @@ def register_handler(handler: ImageFile.StubHandler | None) -> None:
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix.startswith(b"GRIB") and prefix[7] == 1
+    return len(prefix) >= 8 and prefix.startswith(b"GRIB") and prefix[7] == 1
 
 
 class GribStubImageFile(ImageFile.StubImageFile):
@@ -41,6 +41,7 @@ class GribStubImageFile(ImageFile.StubImageFile):
     format_description = "GRIB"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(8)):
             msg = "Not a GRIB file"
             raise SyntaxError(msg)

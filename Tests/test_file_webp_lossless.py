@@ -13,7 +13,7 @@ RGB_MODE = "RGB"
 
 
 def test_write_lossless_rgb(tmp_path: Path) -> None:
-    temp_file = str(tmp_path / "temp.webp")
+    temp_file = tmp_path / "temp.webp"
 
     hopper(RGB_MODE).save(temp_file, lossless=True)
 
@@ -24,6 +24,5 @@ def test_write_lossless_rgb(tmp_path: Path) -> None:
         assert image.size == (128, 128)
         assert image.format == "WEBP"
         image.load()
-        image.getdata()
 
         assert_image_equal(image, hopper(RGB_MODE))

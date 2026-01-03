@@ -16,9 +16,11 @@
 
 #include "Imaging.h"
 
-#define I16(ptr) ((ptr)[0] + ((ptr)[1] << 8))
+#define I16(ptr) ((ptr)[0] + ((int)(ptr)[1] << 8))
 
-#define I32(ptr) ((ptr)[0] + ((ptr)[1] << 8) + ((ptr)[2] << 16) + ((ptr)[3] << 24))
+#define I32(ptr)                                                                   \
+    ((ptr)[0] + ((unsigned long)(ptr)[1] << 8) + ((unsigned long)(ptr)[2] << 16) + \
+     ((unsigned long)(ptr)[3] << 24))
 
 #define ERR_IF_DATA_OOB(offset)                 \
     if ((data + (offset)) > ptr + bytes) {      \
@@ -29,8 +31,8 @@
 int
 ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
     UINT8 *ptr;
-    int framesize;
-    int c, chunks, advance;
+    unsigned long framesize, advance;
+    int c, chunks;
     int l, lines;
     int i, j, x = 0, y, ymax;
 

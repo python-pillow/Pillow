@@ -18,8 +18,6 @@ import sys
 from functools import lru_cache
 from typing import NamedTuple
 
-from ._deprecate import deprecate
-
 
 class ModeDescriptor(NamedTuple):
     """Wrapper for mode strings."""
@@ -57,16 +55,11 @@ def getmode(mode: str) -> ModeDescriptor:
         "HSV": ("RGB", "L", ("H", "S", "V"), "|u1"),
         # extra experimental modes
         "RGBa": ("RGB", "L", ("R", "G", "B", "a"), "|u1"),
-        "BGR;15": ("RGB", "L", ("B", "G", "R"), "|u1"),
-        "BGR;16": ("RGB", "L", ("B", "G", "R"), "|u1"),
-        "BGR;24": ("RGB", "L", ("B", "G", "R"), "|u1"),
         "LA": ("L", "L", ("L", "A"), "|u1"),
         "La": ("L", "L", ("L", "a"), "|u1"),
         "PA": ("RGB", "L", ("P", "A"), "|u1"),
     }
     if mode in modes:
-        if mode in ("BGR;15", "BGR;16", "BGR;24"):
-            deprecate(mode, 12)
         base_mode, base_type, bands, type_str = modes[mode]
         return ModeDescriptor(mode, bands, base_mode, base_type, type_str)
 

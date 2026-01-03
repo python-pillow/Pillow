@@ -18,31 +18,29 @@ def helper_pickle_file(
 ) -> None:
     # Arrange
     with Image.open(test_file) as im:
-        filename = str(tmp_path / "temp.pkl")
-        if mode:
-            im = im.convert(mode)
+        filename = tmp_path / "temp.pkl"
+        converted_im = im.convert(mode) if mode else im
 
         # Act
         with open(filename, "wb") as f:
-            pickle.dump(im, f, protocol)
+            pickle.dump(converted_im, f, protocol)
         with open(filename, "rb") as f:
             loaded_im = pickle.load(f)
 
         # Assert
-        assert im == loaded_im
+        assert converted_im == loaded_im
 
 
 def helper_pickle_string(protocol: int, test_file: str, mode: str | None) -> None:
     with Image.open(test_file) as im:
-        if mode:
-            im = im.convert(mode)
+        converted_im = im.convert(mode) if mode else im
 
         # Act
-        dumped_string = pickle.dumps(im, protocol)
+        dumped_string = pickle.dumps(converted_im, protocol)
         loaded_im = pickle.loads(dumped_string)
 
         # Assert
-        assert im == loaded_im
+        assert converted_im == loaded_im
 
 
 @pytest.mark.parametrize(
@@ -81,26 +79,27 @@ def test_pickle_jpeg() -> None:
         unpickled_image = pickle.loads(pickle.dumps(image))
 
     # Assert
+    assert unpickled_image.filename == "Tests/images/hopper.jpg"
     assert len(unpickled_image.layer) == 3
     assert unpickled_image.layers == 3
 
 
 def test_pickle_la_mode_with_palette(tmp_path: Path) -> None:
     # Arrange
-    filename = str(tmp_path / "temp.pkl")
+    filename = tmp_path / "temp.pkl"
     with Image.open("Tests/images/hopper.jpg") as im:
-        im = im.convert("PA")
+        im_pa = im.convert("PA")
 
     # Act / Assert
     for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
-        im._mode = "LA"
+        im_pa._mode = "LA"
         with open(filename, "wb") as f:
-            pickle.dump(im, f, protocol)
+            pickle.dump(im_pa, f, protocol)
         with open(filename, "rb") as f:
             loaded_im = pickle.load(f)
 
-        im._mode = "PA"
-        assert im == loaded_im
+        im_pa._mode = "PA"
+        assert im_pa == loaded_im
 
 
 @skip_unless_feature("webp")
@@ -151,7 +150,7 @@ def test_pickle_font_string(protocol: int) -> None:
 def test_pickle_font_file(tmp_path: Path, protocol: int) -> None:
     # Arrange
     font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
-    filename = str(tmp_path / "temp.pkl")
+    filename = tmp_path / "temp.pkl"
 
     # Act: roundtrip
     with open(filename, "wb") as f:
@@ -161,3 +160,13 @@ def test_pickle_font_file(tmp_path: Path, protocol: int) -> None:
 
     # Assert
     helper_assert_pickled_font_images(font, unpickled_font)
+
+
+def test_load_earlier_data() -> None:
+    im = pickle.loads(
+        b"\x80\x04\x95@\x00\x00\x00\x00\x00\x00\x00\x8c\x12PIL.PngImagePlugin"
+        b"\x94\x8c\x0cPngImageFile\x94\x93\x94)\x81\x94]\x94(}\x94\x8c\x01L\x94K\x01"
+        b"K\x01\x86\x94NC\x01\x00\x94eb."
+    )
+    assert im.mode == "L"
+    assert im.size == (1, 1)

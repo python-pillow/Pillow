@@ -25,12 +25,17 @@ import tempfile
 
 from . import Image
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from . import ImageWin
+
 
 def grab(
     bbox: tuple[int, int, int, int] | None = None,
     include_layered_windows: bool = False,
     all_screens: bool = False,
     xdisplay: str | None = None,
+    window: int | ImageWin.HWND | None = None,
 ) -> Image.Image:
     im: Image.Image
     if xdisplay is None:
@@ -38,7 +43,9 @@ def grab(
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
             args = ["screencapture"]
-            if bbox:
+            if window:
+                args += ["-l", str(window)]
+            elif bbox:
                 left, top, right, bottom = bbox
                 args += ["-R", f"{left},{top},{right-left},{bottom-top}"]
             subprocess.call(args + ["-x", filepath])
@@ -46,13 +53,43 @@ def grab(
             im.load()
             os.unlink(filepath)
             if bbox:
-                im_resized = im.resize((right - left, bottom - top))
-                im.close()
-                return im_resized
+                if window:
+                    # Determine if the window was in Retina mode or not
+                    # by capturing it without the shadow,
+                    # and checking how different the width is
+                    fh, filepath = tempfile.mkstemp(".png")
+                    os.close(fh)
+                    subprocess.call(
+                        ["screencapture", "-l", str(window), "-o", "-x", filepath]
+                    )
+                    with Image.open(filepath) as im_no_shadow:
+                        retina = im.width - im_no_shadow.width > 100
+                    os.unlink(filepath)
+
+                    # Since screencapture's -R does not work with -l,
+                    # crop the image manually
+                    if retina:
+                        left, top, right, bottom = bbox
+                        im_cropped = im.resize(
+                            (right - left, bottom - top),
+                            box=tuple(coord * 2 for coord in bbox),
+                        )
+                    else:
+                        im_cropped = im.crop(bbox)
+                    im.close()
+                    return im_cropped
+                else:
+                    im_resized = im.resize((right - left, bottom - top))
+                    im.close()
+                    return im_resized
             return im
         elif sys.platform == "win32":
+            if window is not None:
+                all_screens = -1
             offset, size, data = Image.core.grabscreen_win32(
-                include_layered_windows, all_screens
+                include_layered_windows,
+                all_screens,
+                int(window) if window is not None else 0,
             )
             im = Image.frombytes(
                 "RGB",
@@ -77,14 +114,18 @@ def grab(
             raise OSError(msg)
         size, data = Image.core.grabscreen_x11(display_name)
     except OSError:
-        if (
-            display_name is None
-            and sys.platform not in ("darwin", "win32")
-            and shutil.which("gnome-screenshot")
-        ):
+        if display_name is None and sys.platform not in ("darwin", "win32"):
+            if shutil.which("gnome-screenshot"):
+                args = ["gnome-screenshot", "-f"]
+            elif shutil.which("grim"):
+                args = ["grim"]
+            elif shutil.which("spectacle"):
+                args = ["spectacle", "-n", "-b", "-f", "-o"]
+            else:
+                raise
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
-            subprocess.call(["gnome-screenshot", "-f", filepath])
+            subprocess.call(args + [filepath])
             im = Image.open(filepath)
             im.load()
             os.unlink(filepath)
@@ -121,10 +162,10 @@ def grabclipboard() -> Image.Image | list[str] | None:
             import struct
 
             o = struct.unpack_from("I", data)[0]
-            if data[16] != 0:
-                files = data[o:].decode("utf-16le").split("\0")
-            else:
+            if data[16] == 0:
                 files = data[o:].decode("mbcs").split("\0")
+            else:
+                files = data[o:].decode("utf-16le").split("\0")
             return files[: files.index("")]
         if isinstance(data, bytes):
             data = io.BytesIO(data)

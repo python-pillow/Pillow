@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageTk
 .. py:currentmodule:: PIL.ImageTk
 
-:py:mod:`~PIL.ImageTk` Module
+:py:mod:`~PIL.ImageTk` module
 =============================
 
 The :py:mod:`~PIL.ImageTk` module contains support to create and modify Tkinter

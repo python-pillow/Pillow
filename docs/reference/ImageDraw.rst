@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageDraw
 .. py:currentmodule:: PIL.ImageDraw
 
-:py:mod:`~PIL.ImageDraw` Module
+:py:mod:`~PIL.ImageDraw` module
 ===============================
 
 The :py:mod:`~PIL.ImageDraw` module provides simple 2D graphics for
@@ -45,19 +45,54 @@ Colors
 ^^^^^^
 
 To specify colors, you can use numbers or tuples just as you would use with
-:py:meth:`PIL.Image.new` or :py:meth:`PIL.Image.Image.putpixel`. For “1”,
-“L”, and “I” images, use integers. For “RGB” images, use a 3-tuple containing
-integer values. For “F” images, use integer or floating point values.
+:py:meth:`PIL.Image.new`. See :ref:`colors` for more information.
 
 For palette images (mode “P”), use integers as color indexes. In 1.1.4 and
 later, you can also use RGB 3-tuples or color names (see below). The drawing
 layer will automatically assign color indexes, as long as you don’t draw with
 more than 256 colors.
 
-Color Names
+Color names
 ^^^^^^^^^^^
 
 See :ref:`color-names` for the color names supported by Pillow.
+
+Alpha channel
+^^^^^^^^^^^^^
+
+By default, when drawing onto an existing image, the image's pixel values are simply
+replaced by the new color::
+
+    im = Image.new("RGBA", (1, 1), (255, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rectangle((0, 0, 1, 1), (0, 255, 0, 127))
+    assert im.getpixel((0, 0)) == (0, 255, 0, 127)
+
+    # Alpha channel values have no effect when drawing with RGB mode
+    im = Image.new("RGB", (1, 1), (255, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rectangle((0, 0, 1, 1), (0, 255, 0, 127))
+    assert im.getpixel((0, 0)) == (0, 255, 0)
+
+If you would like to combine translucent color with an RGB image, then initialize the
+ImageDraw instance with the RGBA mode::
+
+    from PIL import Image, ImageDraw
+    im = Image.new("RGB", (1, 1), (255, 0, 0))
+    d = ImageDraw.Draw(im, "RGBA")
+    d.rectangle((0, 0, 1, 1), (0, 255, 0, 127))
+    assert im.getpixel((0, 0)) == (128, 127, 0)
+
+If you would like to combine translucent color with an RGBA image underneath, you will
+need to combine multiple images::
+
+    from PIL import Image, ImageDraw
+    im = Image.new("RGBA", (1, 1), (255, 0, 0, 255))
+    im2 = Image.new("RGBA", (1, 1))
+    d = ImageDraw.Draw(im2)
+    d.rectangle((0, 0, 1, 1), (0, 255, 0, 127))
+    im.paste(im2.convert("RGB"), mask=im2)
+    assert im.getpixel((0, 0)) == (128, 127, 0, 255)
 
 Fonts
 ^^^^^
@@ -75,7 +110,7 @@ To load a OpenType/TrueType font, use the truetype function in the
 :py:mod:`~PIL.ImageFont` module. Note that this function depends on third-party
 libraries, and may not available in all PIL builds.
 
-Example: Draw Partial Opacity Text
+Example: Draw partial opacity text
 ----------------------------------
 
 ::
@@ -102,7 +137,7 @@ Example: Draw Partial Opacity Text
 
         out.show()
 
-Example: Draw Multiline Text
+Example: Draw multiline text
 ----------------------------
 
 ::
@@ -391,7 +426,7 @@ Methods
                   the relative alignment of lines. Use the ``anchor`` parameter to
                   specify the alignment to ``xy``.
 
-                  .. versionadded:: 11.2.0 ``"justify"``
+                  .. versionadded:: 11.2.1 ``"justify"``
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
@@ -462,7 +497,7 @@ Methods
                   the relative alignment of lines. Use the ``anchor`` parameter to
                   specify the alignment to ``xy``.
 
-                  .. versionadded:: 11.2.0 ``"justify"``
+                  .. versionadded:: 11.2.1 ``"justify"``
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
@@ -547,6 +582,8 @@ Methods
         hello_world = hello + world  # kerning is disabled, no need to adjust
         assert hello_world == draw.textlength("HelloWorld", font, features=["-kern"])  # True
 
+    .. seealso:: :py:meth:`PIL.ImageText.Text.get_length`
+
     .. versionadded:: 8.0.0
 
     :param text: Text to be measured. May not contain any newline characters.
@@ -609,7 +646,7 @@ Methods
                   the relative alignment of lines. Use the ``anchor`` parameter to
                   specify the alignment to ``xy``.
 
-                  .. versionadded:: 11.2.0 ``"justify"``
+                  .. versionadded:: 11.2.1 ``"justify"``
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
@@ -648,6 +685,8 @@ Methods
     1/64 pixel precision. The bounding box includes extra margins for
     some fonts, e.g. italics or accents.
 
+    .. seealso:: :py:meth:`PIL.ImageText.Text.get_bbox`
+
     .. versionadded:: 8.0.0
 
     :param xy: The anchor coordinates of the text.
@@ -663,7 +702,7 @@ Methods
                   the relative alignment of lines. Use the ``anchor`` parameter to
                   specify the alignment to ``xy``.
 
-                  .. versionadded:: 11.2.0 ``"justify"``
+                  .. versionadded:: 11.2.1 ``"justify"``
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
