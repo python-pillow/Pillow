@@ -1,7 +1,5 @@
 # https://docs.zizmor.sh/configuration/
 rules:
-  obfuscation:
-    disable: true
   unpinned-uses:
     config:
       policies:
