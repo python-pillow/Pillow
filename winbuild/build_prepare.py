@@ -118,7 +118,7 @@ V = {
     "FRIBIDI": "1.0.16",
     "HARFBUZZ": "12.3.0",
     "JPEGTURBO": "3.1.3",
-    "LCMS2": "2.17",
+    "LCMS2": "2.18",
     "LIBAVIF": "1.3.0",
     "LIBIMAGEQUANT": "4.4.1",
     "LIBPNG": "1.6.53",
