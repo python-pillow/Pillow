@@ -1,0 +1,64 @@
+12.2.0
+------
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+Backwards incompatible changes
+==============================
+
+TODO
+^^^^
+
+TODO
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API additions
+=============
+
+FreeTypeFont.has_characters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``ImageFont.FreeTypeFont`` has a new method for checking whether characters are present
+in the font or not. :py:meth:`.ImageFont.FreeTypeFont.has_characters` will return
+``True`` if all of the characters in the given string are available::
+
+    from PIL import ImageFont
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+    font.has_characters("Test")  # True
+    font.has_characters(b"Test")  # True
+    font.has_characters("\u2022")  # True
+    font.has_characters("\u0000")  # False
+
+Other changes
+=============
+
+TODO
+^^^^
+
+TODO
