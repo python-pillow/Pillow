@@ -263,6 +263,15 @@ class TestImage:
             im.save(temp_file)
             assert im.readonly
 
+    @pytest.mark.parametrize("size", ((0, 1), (1, 0), (0, 0)))
+    def test_save_zero_dimension(self, tmp_path: Path, size: tuple[int, int]) -> None:
+        im = Image.new("RGB", size)
+        msg = "cannot save image with zero width or height"
+        with pytest.raises(ValueError, match=msg):
+            im.save(tmp_path / "test.png")
+        with pytest.raises(ValueError, match=msg):
+            im.save(tmp_path / "test.gif")
+
     def test_dump(self, tmp_path: Path) -> None:
         im = Image.new("L", (10, 10))
         im._dump(str(tmp_path / "temp_L.ppm"))

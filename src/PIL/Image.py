@@ -2517,9 +2517,14 @@ class Image:
         :returns: None
         :exception ValueError: If the output format could not be determined
            from the file name.  Use the format option to solve this.
+        :exception ValueError: If the image has zero width or height.
         :exception OSError: If the file could not be written.  The file
            may have been created, and may contain partial data.
         """
+
+        if self.size[0] <= 0 or self.size[1] <= 0:
+            msg = f"cannot save image with zero width or height (size: {self.size})"
+            raise ValueError(msg)
 
         filename: str | bytes = ""
         open_fp = False
