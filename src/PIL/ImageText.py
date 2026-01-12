@@ -1,19 +1,103 @@
 from __future__ import annotations
 
+import math
+import re
+from typing import AnyStr, Generic, NamedTuple
+
 from . import ImageFont
 from ._typing import _Ink
 
+Font = ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont
 
-class Text:
+
+class _Line(NamedTuple):
+    x: float
+    y: float
+    anchor: str
+    text: str | bytes
+
+
+class _Wrap(Generic[AnyStr]):
+    lines: list[AnyStr] = []
+    position = 0
+    offset = 0
+
     def __init__(
         self,
-        text: str | bytes,
-        font: (
-            ImageFont.ImageFont
-            | ImageFont.FreeTypeFont
-            | ImageFont.TransposedFont
-            | None
-        ) = None,
+        text: Text[AnyStr],
+        width: int,
+        height: int | None = None,
+        font: Font | None = None,
+    ) -> None:
+        self.text: Text[AnyStr] = text
+        self.width = width
+        self.height = height
+        self.font = font
+
+        input_text = self.text.text
+        emptystring = "" if isinstance(input_text, str) else b""
+        line = emptystring
+
+        for word in re.findall(
+            r"\s*\S+" if isinstance(input_text, str) else rb"\s*\S+", input_text
+        ):
+            newlines = re.findall(
+                r"[^\S\n]*\n" if isinstance(input_text, str) else rb"[^\S\n]*\n", word
+            )
+            if newlines:
+                if not self.add_line(line):
+                    break
+                for i, line in enumerate(newlines):
+                    if i != 0 and not self.add_line(emptystring):
+                        break
+                    self.position += len(line)
+                    word = word[len(line) :]
+                line = emptystring
+
+            new_line = line + word
+            if self.text._get_bbox(new_line, self.font)[2] <= width:
+                # This word fits on the line
+                line = new_line
+                continue
+
+            # This word does not fit on the line
+            if line and not self.add_line(line):
+                break
+
+            original_length = len(word)
+            word = word.lstrip()
+            self.offset = original_length - len(word)
+
+            if self.text._get_bbox(word, self.font)[2] > width:
+                if font is None:
+                    msg = "Word does not fit within line"
+                    raise ValueError(msg)
+                break
+            line = word
+        else:
+            if line:
+                self.add_line(line)
+        self.remaining_text: AnyStr = input_text[self.position :]
+
+    def add_line(self, line: AnyStr) -> bool:
+        lines = self.lines + [line]
+        if self.height is not None:
+            last_line_y = self.text._split(lines=lines)[-1].y
+            last_line_height = self.text._get_bbox(line, self.font)[3]
+            if last_line_y + last_line_height > self.height:
+                return False
+
+        self.lines = lines
+        self.position += len(line) + self.offset
+        self.offset = 0
+        return True
+
+
+class Text(Generic[AnyStr]):
+    def __init__(
+        self,
+        text: AnyStr,
+        font: Font | None = None,
         mode: str = "RGB",
         spacing: float = 4,
         direction: str | None = None,
@@ -47,7 +131,7 @@ class Text:
                          It should be a `BCP 47 language code`_.
                          Requires libraqm.
         """
-        self.text = text
+        self.text: AnyStr = text
         self.font = font or ImageFont.load_default()
 
         self.mode = mode
@@ -87,6 +171,101 @@ class Text:
             return "RGBA"
         else:
             return "L"
+
+    def wrap(
+        self,
+        width: int,
+        height: int | None = None,
+        scaling: str | tuple[str, int] | None = None,
+    ) -> Text[AnyStr] | None:
+        """
+        Wrap text to fit within a given width.
+
+        :param width: The width to fit within.
+        :param height: An optional height limit. Any text that does not fit within this
+                       will be returned as a new :py:class:`.Text` object.
+        :param scaling: An optional directive to scale the text, either "grow" as much
+                        as possible within the given dimensions, or "shrink" until it
+                        fits. It can also be a tuple of (direction, limit), with an
+                        integer limit to stop scaling at.
+
+        :returns: An :py:class:`.Text` object, or None.
+        """
+        if isinstance(self.font, ImageFont.TransposedFont):
+            msg = "TransposedFont not supported"
+            raise ValueError(msg)
+        if self.direction not in (None, "ltr"):
+            msg = "Only ltr direction supported"
+            raise ValueError(msg)
+
+        if scaling is None:
+            wrap = _Wrap(self, width, height)
+        else:
+            if not isinstance(self.font, ImageFont.FreeTypeFont):
+                msg = "'scaling' only supports FreeTypeFont"
+                raise ValueError(msg)
+            if height is None:
+                msg = "'scaling' requires 'height'"
+                raise ValueError(msg)
+
+            if isinstance(scaling, str):
+                limit = 1
+            else:
+                scaling, limit = scaling
+
+            font = self.font
+            wrap = _Wrap(self, width, height, font)
+            if scaling == "shrink":
+                if not wrap.remaining_text:
+                    return None
+
+                size = math.ceil(font.size)
+                while wrap.remaining_text:
+                    if size == max(limit, 1):
+                        msg = "Text could not be scaled"
+                        raise ValueError(msg)
+                    size -= 1
+                    font = self.font.font_variant(size=size)
+                    wrap = _Wrap(self, width, height, font)
+                self.font = font
+            else:
+                if wrap.remaining_text:
+                    msg = "Text could not be scaled"
+                    raise ValueError(msg)
+
+                size = math.floor(font.size)
+                while not wrap.remaining_text:
+                    if size == limit:
+                        msg = "Text could not be scaled"
+                        raise ValueError(msg)
+                    size += 1
+                    font = self.font.font_variant(size=size)
+                    last_wrap = wrap
+                    wrap = _Wrap(self, width, height, font)
+                size -= 1
+                if size != self.font.size:
+                    self.font = self.font.font_variant(size=size)
+                wrap = last_wrap
+
+        if wrap.remaining_text:
+            text = Text(
+                text=wrap.remaining_text,
+                font=self.font,
+                mode=self.mode,
+                spacing=self.spacing,
+                direction=self.direction,
+                features=self.features,
+                language=self.language,
+            )
+            text.embedded_color = self.embedded_color
+            text.stroke_width = self.stroke_width
+            text.stroke_fill = self.stroke_fill
+        else:
+            text = None
+
+        newline = "\n" if isinstance(self.text, str) else b"\n"
+        self.text = newline.join(wrap.lines)
+        return text
 
     def get_length(self) -> float:
         """
@@ -146,21 +325,26 @@ class Text:
         )
 
     def _split(
-        self, xy: tuple[float, float], anchor: str | None, align: str
-    ) -> list[tuple[tuple[float, float], str, str | bytes]]:
+        self,
+        xy: tuple[float, float] = (0, 0),
+        anchor: str | None = None,
+        align: str = "left",
+        lines: list[str] | list[bytes] | None = None,
+    ) -> list[_Line]:
         if anchor is None:
             anchor = "lt" if self.direction == "ttb" else "la"
         elif len(anchor) != 2:
             msg = "anchor must be a 2 character string"
             raise ValueError(msg)
 
-        lines = (
-            self.text.split("\n")
-            if isinstance(self.text, str)
-            else self.text.split(b"\n")
-        )
+        if lines is None:
+            lines = (
+                self.text.split("\n")
+                if isinstance(self.text, str)
+                else self.text.split(b"\n")
+            )
         if len(lines) == 1:
-            return [(xy, anchor, self.text)]
+            return [_Line(xy[0], xy[1], anchor, lines[0])]
 
         if anchor[1] in "tb" and self.direction != "ttb":
             msg = "anchor not supported for multiline text"
@@ -185,7 +369,7 @@ class Text:
         if self.direction == "ttb":
             left = xy[0]
             for line in lines:
-                parts.append(((left, top), anchor, line))
+                parts.append(_Line(left, top, anchor, line))
                 left += line_spacing
         else:
             widths = []
@@ -248,7 +432,7 @@ class Text:
                         width_difference = max_width - sum(word_widths)
                         i = 0
                         for word in words:
-                            parts.append(((left, top), word_anchor, word))
+                            parts.append(_Line(left, top, word_anchor, word))
                             left += word_widths[i] + width_difference / (len(words) - 1)
                             i += 1
                         top += line_spacing
@@ -259,10 +443,23 @@ class Text:
                     left -= width_difference / 2.0
                 elif anchor[0] == "r":
                     left -= width_difference
-                parts.append(((left, top), anchor, line))
+                parts.append(_Line(left, top, anchor, line))
                 top += line_spacing
 
         return parts
+
+    def _get_bbox(
+        self, text: str | bytes, font: Font | None = None, anchor: str | None = None
+    ) -> tuple[float, float, float, float]:
+        return (font or self.font).getbbox(
+            text,
+            self._get_fontmode(),
+            self.direction,
+            self.features,
+            self.language,
+            self.stroke_width,
+            anchor,
+        )
 
     def get_bbox(
         self,
@@ -289,22 +486,13 @@ class Text:
         :return: ``(left, top, right, bottom)`` bounding box
         """
         bbox: tuple[float, float, float, float] | None = None
-        fontmode = self._get_fontmode()
-        for xy, anchor, line in self._split(xy, anchor, align):
-            bbox_line = self.font.getbbox(
-                line,
-                fontmode,
-                self.direction,
-                self.features,
-                self.language,
-                self.stroke_width,
-                anchor,
-            )
+        for x, y, anchor, text in self._split(xy, anchor, align):
+            bbox_line = self._get_bbox(text, anchor=anchor)
             bbox_line = (
-                bbox_line[0] + xy[0],
-                bbox_line[1] + xy[1],
-                bbox_line[2] + xy[0],
-                bbox_line[3] + xy[1],
+                bbox_line[0] + x,
+                bbox_line[1] + y,
+                bbox_line[2] + x,
+                bbox_line[3] + y,
             )
             if bbox is None:
                 bbox = bbox_line
