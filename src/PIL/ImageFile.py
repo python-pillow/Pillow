@@ -814,7 +814,7 @@ class PyCodec:
             self.state.ysize = y1 - y0
 
         if self.state.xsize <= 0 or self.state.ysize <= 0:
-            msg = "Size cannot be negative"
+            msg = "Size cannot be zero or negative"
             raise ValueError(msg)
 
         if (
