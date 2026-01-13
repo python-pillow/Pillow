@@ -64,6 +64,14 @@ def test_save(tmp_path: Path) -> None:
         assert im2.format == "SPIDER"
 
 
+@pytest.mark.parametrize("size", ((0, 1), (1, 0), (0, 0)))
+def test_save_zero(size: tuple[int, int]) -> None:
+    b = BytesIO()
+    im = Image.new("1", size)
+    with pytest.raises(SystemError):
+        im.save(b, "SPIDER")
+
+
 def test_tempfile() -> None:
     # Arrange
     im = hopper()

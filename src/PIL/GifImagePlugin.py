@@ -937,7 +937,13 @@ def _get_optimize(im: Image.Image, info: dict[str, Any]) -> list[int] | None:
     :param info: encoderinfo
     :returns: list of indexes of palette entries in use, or None
     """
-    if im.mode in ("P", "L") and info and info.get("optimize"):
+    if (
+        im.mode in ("P", "L")
+        and info
+        and info.get("optimize")
+        and im.width != 0
+        and im.height != 0
+    ):
         # Potentially expensive operation.
 
         # The palette saves 3 bytes per color not used, but palette
