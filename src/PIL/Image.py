@@ -784,7 +784,7 @@ class Image:
 
         # unpack data
         e = _getencoder(self.mode, encoder_name, encoder_args)
-        e.setimage(self.im)
+        e.setimage(self.im, (0, 0) + self.size)
 
         from . import ImageFile
 
