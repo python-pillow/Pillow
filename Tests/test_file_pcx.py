@@ -37,6 +37,14 @@ def test_sanity(tmp_path: Path) -> None:
         im.save(f)
 
 
+@pytest.mark.parametrize("size", ((0, 1), (1, 0), (0, 0)))
+def test_save_zero(size: tuple[int, int]) -> None:
+    b = io.BytesIO()
+    im = Image.new("1", size)
+    with pytest.raises(ValueError):
+        im.save(b, "PCX")
+
+
 def test_p_4_planes() -> None:
     with Image.open("Tests/images/p_4_planes.pcx") as im:
         assert im.getpixel((0, 0)) == 3
