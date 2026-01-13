@@ -85,7 +85,7 @@ class TestFileJpeg:
     def test_zero(self, size: tuple[int, int], tmp_path: Path) -> None:
         f = tmp_path / "temp.jpg"
         im = Image.new("RGB", size)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="cannot write empty image"):
             im.save(f)
 
     def test_app(self) -> None:

@@ -661,10 +661,6 @@ def get_sampling(im: Image.Image) -> int:
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    if im.width == 0 or im.height == 0:
-        msg = "cannot write empty image as JPEG"
-        raise ValueError(msg)
-
     try:
         rawmode = RAWMODE[im.mode]
     except KeyError as e:
