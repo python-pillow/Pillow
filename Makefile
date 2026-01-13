@@ -62,7 +62,7 @@ install:
 
 .PHONY: install-coverage
 install-coverage:
-	CFLAGS="-coverage -Werror=implicit-function-declaration" python3 -m pip -v install .
+	CFLAGS="-coverage -Werror=implicit-function-declaration" python3 -m pip -v install .[tests]
 	python3 selftest.py
 
 .PHONY: debug
@@ -96,12 +96,6 @@ sdist:
 test:
 	python3 -c "import pytest" > /dev/null 2>&1 || python3 -m pip install pytest
 	python3 -m pytest -qq
-
-.PHONY: test-p
-test-p:
-	python3 -c "import xdist" > /dev/null 2>&1 || python3 -m pip install pytest-xdist
-	python3 -m pytest -qq -n auto
-
 
 .PHONY: valgrind
 valgrind:
