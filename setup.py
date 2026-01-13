@@ -1089,7 +1089,11 @@ ext_modules = [
     Extension("PIL._webp", ["src/_webp.c"]),
     Extension("PIL._avif", ["src/_avif.c"]),
     Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),
-    Extension("PIL._imagingmath", ["src/_imagingmath.c"]),
+    Extension(
+        "PIL._imagingmath",
+        ["src/_imagingmath.c"],
+        libraries=None if sys.platform == "win32" else ["m"],
+    ),
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
 ]
 
