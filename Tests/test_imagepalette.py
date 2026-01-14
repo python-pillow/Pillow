@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from io import BytesIO
 from pathlib import Path
 
 import pytest
 
-from PIL import Image, ImagePalette
+from PIL import Image, ImagePalette, PaletteFile
 
 from .helper import assert_image_equal, assert_image_equal_tofile
 
@@ -202,6 +203,19 @@ def test_2bit_palette(tmp_path: Path) -> None:
     assert_image_equal_tofile(img, outfile)
 
 
+def test_getpalette() -> None:
+    b = BytesIO(b"0 1\n1 2 3 4")
+    p = PaletteFile.PaletteFile(b)
+
+    palette, rawmode = p.getpalette()
+    assert palette[:6] == b"\x01\x01\x01\x02\x03\x04"
+    assert rawmode == "RGB"
+
+
 def test_invalid_palette() -> None:
     with pytest.raises(OSError):
         ImagePalette.load("Tests/images/hopper.jpg")
+
+    b = BytesIO(b"1" * 101)
+    with pytest.raises(SyntaxError, match="bad palette file"):
+        PaletteFile.PaletteFile(b)
