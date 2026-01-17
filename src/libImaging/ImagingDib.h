@@ -12,7 +12,7 @@
 
 #ifdef _WIN32
 
-#include "ImPlatform.h"
+#include "ImagingPlatform.h"
 
 #if defined(__cplusplus)
 extern "C" {
