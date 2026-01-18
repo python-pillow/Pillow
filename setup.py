@@ -363,7 +363,6 @@ class pil_build_ext(build_ext):
             ("disable-platform-guessing", None, "Disable platform guessing"),
             ("debug", None, "Debug logging"),
         ]
-        + [("add-imaging-libs=", None, "Add libs to _imaging build")]
     )
 
     @staticmethod
@@ -374,7 +373,6 @@ class pil_build_ext(build_ext):
         self.disable_platform_guessing = self.check_configuration(
             "platform-guessing", "disable"
         )
-        self.add_imaging_libs = ""
         build_ext.initialize_options(self)
         for x in self.feature:
             setattr(self, f"disable_{x}", self.check_configuration(x, "disable"))
@@ -901,7 +899,6 @@ class pil_build_ext(build_ext):
         # core library
 
         libs: list[str | bool | None] = []
-        libs.extend(self.add_imaging_libs.split())
         defs: list[tuple[str, str | None]] = []
         if feature.get("tiff"):
             libs.append(feature.get("tiff"))

@@ -68,10 +68,22 @@ def test_sanity() -> None:
     draw.rectangle(list(range(4)))
 
 
-def test_valueerror() -> None:
+def test_new_color() -> None:
     with Image.open("Tests/images/chi.gif") as im:
         draw = ImageDraw.Draw(im)
+        assert im.palette is not None
+        assert len(im.palette.colors) == 249
+
+        # Test drawing a new color onto the palette
         draw.line((0, 0), fill=(0, 0, 0))
+        assert im.palette is not None
+        assert len(im.palette.colors) == 250
+        assert im.palette.dirty
+
+        # Test drawing another new color, now that the palette is dirty
+        draw.point((0, 0), fill=(1, 0, 0))
+        assert len(im.palette.colors) == 251
+        assert im.convert("RGB").getpixel((0, 0)) == (1, 0, 0)
 
 
 def test_mode_mismatch() -> None:
@@ -881,6 +893,18 @@ def test_rounded_rectangle_joined_x_different_corners() -> None:
     assert_image_equal_tofile(
         im, "Tests/images/imagedraw_rounded_rectangle_joined_x_different_corners.png"
     )
+
+
+def test_rounded_rectangle_radius() -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im, "RGB")
+
+    # Act
+    draw.rounded_rectangle((25, 25, 75, 75), 24, fill="red", outline="green", width=5)
+
+    # Assert
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_rounded_rectangle_radius.png")
 
 
 @pytest.mark.parametrize(

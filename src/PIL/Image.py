@@ -590,16 +590,11 @@ class Image:
         return new
 
     # Context manager support
-    def __enter__(self):
+    def __enter__(self) -> Image:
         return self
 
-    def __exit__(self, *args):
-        from . import ImageFile
-
-        if isinstance(self, ImageFile.ImageFile):
-            if getattr(self, "_exclusive_fp", False):
-                self._close_fp()
-            self.fp = None
+    def __exit__(self, *args: object) -> None:
+        pass
 
     def close(self) -> None:
         """
@@ -897,7 +892,9 @@ class Image:
                 else:
                     self.im.putpalettealphas(self.info["transparency"])
                 self.palette.mode = "RGBA"
-            else:
+            elif self.palette.mode != mode:
+                # If the palette rawmode is different to the mode,
+                # then update the Python palette data
                 self.palette.palette = self.im.getpalette(
                     self.palette.mode, self.palette.mode
                 )
@@ -1440,11 +1437,30 @@ class Image:
            value (e.g. 0 to get the "R" band from an "RGB" image).
         :returns: A sequence-like object.
         """
+        deprecate("Image.Image.getdata", 14, "get_flattened_data")
 
         self.load()
         if band is not None:
             return self.im.getband(band)
         return self.im  # could be abused
+
+    def get_flattened_data(
+        self, band: int | None = None
+    ) -> tuple[tuple[int, ...], ...] | tuple[float, ...]:
+        """
+        Returns the contents of this image as a tuple containing pixel values.
+        The sequence object is flattened, so that values for line one follow
+        directly after the values of line zero, and so on.
+
+        :param band: What band to return.  The default is to return
+           all bands.  To return a single band, pass in the index
+           value (e.g. 0 to get the "R" band from an "RGB" image).
+        :returns: A tuple containing pixel values.
+        """
+        self.load()
+        if band is not None:
+            return tuple(self.im.getband(band))
+        return tuple(self.im)
 
     def getextrema(self) -> tuple[float, float] | tuple[tuple[int, int], ...]:
         """
@@ -1519,8 +1535,13 @@ class Image:
                     "".join(self.info["Raw profile type exif"].split("\n")[3:])
                 )
             elif hasattr(self, "tag_v2"):
+                from . import TiffImagePlugin
+
+                assert isinstance(self, TiffImagePlugin.TiffImageFile)
                 self._exif.bigtiff = self.tag_v2._bigtiff
                 self._exif.endian = self.tag_v2._endian
+
+                assert self.fp is not None
                 self._exif.load_from_fp(self.fp, self.tag_v2._offset)
         if exif_info is not None:
             self._exif.load(exif_info)
