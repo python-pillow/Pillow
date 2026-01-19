@@ -406,6 +406,9 @@ def _load_plugin_for_extension(ext: str | bytes) -> bool:
     """Load only the plugin needed for a specific file extension."""
     if isinstance(ext, bytes):
         ext = ext.decode()
+    if ext in EXTENSION:
+        return True
+
     plugin = _EXTENSION_PLUGIN.get(ext.lower())
     if plugin is None:
         return False
