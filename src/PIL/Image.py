@@ -2631,14 +2631,20 @@ class Image:
             # only set the name for metadata purposes
             filename = os.fspath(fp.name)
 
-        filename_ext = os.path.splitext(filename)[1].lower()
-        ext = filename_ext.decode() if isinstance(filename_ext, bytes) else filename_ext
-
-        # Try importing only the plugin for this extension first
-        if not _import_plugin_for_extension(ext):
+        if format:
             preinit()
+        else:
+            filename_ext = os.path.splitext(filename)[1].lower()
+            ext = (
+                filename_ext.decode()
+                if isinstance(filename_ext, bytes)
+                else filename_ext
+            )
 
-        if not format:
+            # Try importing only the plugin for this extension first
+            if not _import_plugin_for_extension(ext):
+                preinit()
+
             if ext not in EXTENSION:
                 init()
             try:
