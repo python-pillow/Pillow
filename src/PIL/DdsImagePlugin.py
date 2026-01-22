@@ -513,33 +513,26 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
         data = bytearray()
         bytecount = bitcount // 8
         dest_length = self.state.xsize * self.state.ysize * len(masks)
-        consolidated_mask = list(zip(masks, mask_offsets, mask_totals))
         # consume the data
         has_more = True
         while len(data) < dest_length and has_more:
             chunk = self.fd.read(bytecount)
+            # work around BufferedIO not being seekable
             has_more = len(chunk) > 0
             value = int.from_bytes(chunk, "little")
-            for mask, offset, total in consolidated_mask:
+            for i, mask, in enumerate(masks):
                 masked_value = value & mask
                 # Remove the zero padding, and scale it to 8 bits
                 data += o8(
-                    int((masked_value >> offset) * total)
+                    int((masked_value >> mask_offsets[i]) * mask_totals[i])
                 )
 
-        # extra padding pixels
+        # extra padding pixels -- always all 0
         if len(data) < dest_length:
-            value = int.from_bytes(b'', "little")
             pixel = bytearray()
-            for mask, offset, total in consolidated_mask:
-                masked_value = value & mask
-                # Remove the zero padding, and scale it to 8 bits
-                pixel += o8(
-                    int((masked_value >> offset) * total)
-                )
-
-            ct_pixels = math.ceil((dest_length - len(data)) / bytecount)
-            data += pixel * ct_pixels
+            pixel += o8(0)
+            ct_bytes = dest_length - len(data)
+            data += pixel * ct_bytes
 
 
         self.set_as_raw(data)
