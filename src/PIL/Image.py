@@ -414,9 +414,11 @@ def _import_plugin_for_extension(ext: str | bytes) -> bool:
         return False
 
     try:
+        logger.debug("Importing %s", plugin)
         __import__(f"PIL.{plugin}", globals(), locals(), [])
         return True
-    except ImportError:
+    except ImportError as e:
+        logger.debug("Image: failed to import %s: %s", plugin, e)
         return False
 
 
