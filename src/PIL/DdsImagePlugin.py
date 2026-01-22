@@ -520,7 +520,7 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
             # work around BufferedIO not being seekable
             has_more = len(chunk) > 0
             value = int.from_bytes(chunk, "little")
-            for i, mask, in enumerate(masks):
+            for i, mask in enumerate(masks):
                 masked_value = value & mask
                 # Remove the zero padding, and scale it to 8 bits
                 data += o8(
