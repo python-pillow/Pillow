@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import struct
 import sys
+import math
 from enum import IntEnum, IntFlag
 from typing import IO
 
@@ -513,14 +514,34 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
         bytecount = bitcount // 8
         dest_length = self.state.xsize * self.state.ysize * len(masks)
         consolidated_mask = list(zip(masks, mask_offsets, mask_totals))
-        while len(data) < dest_length:
-            value = int.from_bytes(self.fd.read(bytecount), "little")
+        # consume the data
+        has_more = True
+        while len(data) < dest_length and has_more:
+            chunk = self.fd.read(bytecount)
+            has_more = len(chunk) > 0
+            value = int.from_bytes(chunk, "little")
             for mask, offset, total in consolidated_mask:
                 masked_value = value & mask
                 # Remove the zero padding, and scale it to 8 bits
                 data += o8(
                     int((masked_value >> offset) * total)
                 )
+
+        # extra padding pixels
+        if len(data) < dest_length:
+            value = int.from_bytes(b'', "little")
+            pixel = bytearray()
+            for mask, offset, total in consolidated_mask:
+                masked_value = value & mask
+                # Remove the zero padding, and scale it to 8 bits
+                pixel += o8(
+                    int((masked_value >> offset) * total)
+                )
+
+            ct_pixels = math.ceil((dest_length - len(data)) / bytecount)
+            data += pixel * ct_pixels
+
+
         self.set_as_raw(data)
         return -1, 0
 
