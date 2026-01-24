@@ -15,7 +15,6 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
-    timeout_unless_slower_valgrind,
 )
 
 TEST_FILE_DXT1 = "Tests/images/dxt1-rgb-4bbp-noalpha_MipMaps-1.dds"
@@ -543,7 +542,6 @@ def test_save_large_file(tmp_path: Path, pixel_format: str, mode: str) -> None:
     im.save(tmp_path / "img.dds", pixel_format=pixel_format)
 
 
-@timeout_unless_slower_valgrind(1)
 @pytest.mark.parametrize(
     "test_file",
     [
@@ -553,6 +551,7 @@ def test_save_large_file(tmp_path: Path, pixel_format: str, mode: str) -> None:
         "Tests/images/timeout-c60a3d7314213624607bfb3e38d551a8b24a7435.dds",
     ],
 )
-def test_timeout(test_file) -> None:
+def test_not_enough_image_data(test_file: str) -> None:
     with Image.open(test_file) as im:
-        im.load()
+        with pytest.raises(ValueError, match="not enough image data"):
+            im.load()
