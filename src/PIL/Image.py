@@ -416,7 +416,7 @@ def _import_plugin_for_extension(ext: str | bytes) -> bool:
 
     try:
         logger.debug("Importing %s", plugin)
-        __import__(f"PIL.{plugin}", globals(), locals(), [])
+        __import__(f"{__spec__.parent}.{plugin}", globals(), locals(), [])
         return True
     except ImportError as e:
         logger.debug("Image: failed to import %s: %s", plugin, e)
@@ -481,11 +481,10 @@ def init() -> bool:
     if _initialized >= 2:
         return False
 
-    parent_name = __name__.rpartition(".")[0]
     for plugin in _plugins:
         try:
             logger.debug("Importing %s", plugin)
-            __import__(f"{parent_name}.{plugin}", globals(), locals(), [])
+            __import__(f"{__spec__.parent}.{plugin}", globals(), locals(), [])
         except ImportError as e:
             logger.debug("Image: failed to import %s: %s", plugin, e)
 
