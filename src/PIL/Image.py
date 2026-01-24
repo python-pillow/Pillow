@@ -3630,8 +3630,8 @@ def open(
 
     prefix = fp.read(16)
 
-    # Try to load just the plugin needed for this file extension
-    # before falling back to preinit() which loads common plugins
+    # Try to import just the plugin needed for this file extension
+    # before falling back to preinit() which imports common plugins
     ext = os.path.splitext(filename)[1] if filename else ""
     if not (ext and _import_plugin_for_extension(ext)):
         preinit()
