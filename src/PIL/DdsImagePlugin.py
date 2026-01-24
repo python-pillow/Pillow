@@ -509,7 +509,10 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
         bytecount = bitcount // 8
         dest_length = self.state.xsize * self.state.ysize * len(masks)
         while len(data) < dest_length:
-            value = int.from_bytes(self.fd.read(bytecount), "little")
+            bytes_read = self.fd.read(bytecount)
+            if len(bytes_read) < bytecount:
+                break
+            value = int.from_bytes(bytes_read, "little")
             for i, mask in enumerate(masks):
                 masked_value = value & mask
                 # Remove the zero padding, and scale it to 8 bits
