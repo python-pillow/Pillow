@@ -489,8 +489,13 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
     def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
-        assert self.fd is not None
         bitcount, masks = self.args
+
+        data = bytearray()
+        bytecount = bitcount // 8
+        if not bytecount:
+            self.set_as_raw(data)
+            return -1, 0
 
         # Some masks will be padded with zeros, e.g. R 0b11 G 0b1100
         # Calculate how many zeros each mask is padded with
@@ -505,8 +510,7 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
             mask_offsets.append(offset)
             mask_totals.append(mask >> offset)
 
-        data = bytearray()
-        bytecount = bitcount // 8
+        assert self.fd is not None
         dest_length = self.state.xsize * self.state.ysize * len(masks)
         while len(data) < dest_length:
             bytes_read = self.fd.read(bytecount)
