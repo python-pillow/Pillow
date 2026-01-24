@@ -406,10 +406,11 @@ def _import_plugin_for_extension(ext: str | bytes) -> bool:
     """Import only the plugin needed for a specific file extension."""
     if isinstance(ext, bytes):
         ext = ext.decode()
+    ext = ext.lower()
     if ext in EXTENSION:
         return True
 
-    plugin = _EXTENSION_PLUGIN.get(ext.lower())
+    plugin = _EXTENSION_PLUGIN.get(ext)
     if plugin is None:
         return False
 
