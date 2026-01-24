@@ -323,7 +323,7 @@ def getmodebands(mode: str) -> int:
 
 _initialized = 0
 
-# Mapping from file extension to plugin module name for lazy loading
+# Mapping from file extension to plugin module name for lazy importing
 _EXTENSION_PLUGIN: dict[str, str] = {
     # Common formats (preinit)
     ".bmp": "BmpImagePlugin",
@@ -402,8 +402,8 @@ _EXTENSION_PLUGIN: dict[str, str] = {
 }
 
 
-def _load_plugin_for_extension(ext: str | bytes) -> bool:
-    """Load only the plugin needed for a specific file extension."""
+def _import_plugin_for_extension(ext: str | bytes) -> bool:
+    """Import only the plugin needed for a specific file extension."""
     if isinstance(ext, bytes):
         ext = ext.decode()
     if ext in EXTENSION:
@@ -414,9 +414,11 @@ def _load_plugin_for_extension(ext: str | bytes) -> bool:
         return False
 
     try:
+        logger.debug("Importing %s", plugin)
         __import__(f"PIL.{plugin}", globals(), locals(), [])
         return True
-    except ImportError:
+    except ImportError as e:
+        logger.debug("Image: failed to import %s: %s", plugin, e)
         return False
 
 
@@ -2631,14 +2633,20 @@ class Image:
             # only set the name for metadata purposes
             filename = os.fspath(fp.name)
 
-        filename_ext = os.path.splitext(filename)[1].lower()
-        ext = filename_ext.decode() if isinstance(filename_ext, bytes) else filename_ext
-
-        # Try loading only the plugin for this extension first
-        if not _load_plugin_for_extension(ext):
+        if format:
             preinit()
+        else:
+            filename_ext = os.path.splitext(filename)[1].lower()
+            ext = (
+                filename_ext.decode()
+                if isinstance(filename_ext, bytes)
+                else filename_ext
+            )
 
-        if not format:
+            # Try importing only the plugin for this extension first
+            if not _import_plugin_for_extension(ext):
+                preinit()
+
             if ext not in EXTENSION:
                 init()
             try:
@@ -3625,7 +3633,7 @@ def open(
     # Try to load just the plugin needed for this file extension
     # before falling back to preinit() which loads common plugins
     ext = os.path.splitext(filename)[1] if filename else ""
-    if not (ext and _load_plugin_for_extension(ext)):
+    if not (ext and _import_plugin_for_extension(ext)):
         preinit()
 
     warning_messages: list[str] = []
