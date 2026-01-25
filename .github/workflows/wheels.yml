@@ -12,6 +12,7 @@ on:
   push:
     paths:
       - ".ci/requirements-cibw.txt"
+      - ".github/dependencies.json"
       - ".github/workflows/wheel*"
       - "pyproject.toml"
       - "setup.py"
@@ -23,6 +24,7 @@ on:
   pull_request:
     paths:
       - ".ci/requirements-cibw.txt"
+      - ".github/dependencies.json"
       - ".github/workflows/wheel*"
       - "pyproject.toml"
       - "setup.py"
