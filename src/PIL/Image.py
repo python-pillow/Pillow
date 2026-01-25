@@ -404,6 +404,9 @@ _EXTENSION_PLUGIN: dict[str, str] = {
 
 def _import_plugin_for_extension(ext: str | bytes) -> bool:
     """Import only the plugin needed for a specific file extension."""
+    if not ext:
+        return False
+
     if isinstance(ext, bytes):
         ext = ext.decode()
     ext = ext.lower()
@@ -3633,7 +3636,7 @@ def open(
     # Try to import just the plugin needed for this file extension
     # before falling back to preinit() which imports common plugins
     ext = os.path.splitext(filename)[1] if filename else ""
-    if not (ext and _import_plugin_for_extension(ext)):
+    if not _import_plugin_for_extension(ext):
         preinit()
 
     warning_messages: list[str] = []
