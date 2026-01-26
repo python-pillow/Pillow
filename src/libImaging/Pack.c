@@ -242,6 +242,17 @@ packLA(UINT8 *out, const UINT8 *in, int pixels) {
         in += 4;
     }
 }
+static void
+packRG(UINT8 *out, const UINT8 *in, int pixels) {
+    int i;
+    /* RG, pixel interleaved */
+    for (i = 0; i < pixels; i++) {
+        out[0] = in[R];
+        out[1] = in[G];
+        out += 2;
+        in += 4;
+    }
+}
 
 static void
 packLAL(UINT8 *out, const UINT8 *in, int pixels) {
@@ -474,7 +485,7 @@ copy2(UINT8 *out, const UINT8 *in, int pixels) {
 static void
 copy4(UINT8 *out, const UINT8 *in, int pixels) {
     /* RGBA, CMYK quadruples */
-    memcpy(out, in, 4 * pixels);
+    memcpy(out, in, pixels * 4);
 }
 
 static void
@@ -563,6 +574,7 @@ static struct {
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGRX, 32, ImagingPackBGRX},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_XBGR, 32, ImagingPackXBGR},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB_L, 24, packRGBL},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_RG, 16, packRG},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_R, 8, band0},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_G, 8, band1},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_B, 8, band2},
@@ -575,6 +587,7 @@ static struct {
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_BGRA, 32, ImagingPackBGRA},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_ABGR, 32, ImagingPackABGR},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_BGRa, 32, ImagingPackBGRa},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RG, 16, packRG},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_R, 8, band0},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_G, 8, band1},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_B, 8, band2},
