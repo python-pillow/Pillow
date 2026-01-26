@@ -466,6 +466,9 @@ class TestImage:
         # Assert
         assert Image._initialized == 2
 
+        for extension in Image.EXTENSION:
+            assert extension in Image._EXTENSION_PLUGIN
+
     def test_registered_extensions(self) -> None:
         # Arrange
         # Open an image to trigger plugin registration
