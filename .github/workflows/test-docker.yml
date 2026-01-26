@@ -43,7 +43,6 @@ jobs:
           ubuntu-24.04-noble-s390x,
           # Then run the remainder
           alpine,
-          amazon-2-amd64,
           amazon-2023-amd64,
           arch,
           centos-stream-9-amd64,
