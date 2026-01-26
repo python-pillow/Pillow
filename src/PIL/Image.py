@@ -326,7 +326,7 @@ _initialized = 0
 
 def preinit() -> None:
     """
-    Explicitly loads BMP, GIF, JPEG, PPM and PPM file format drivers.
+    Explicitly loads BMP, GIF, JPEG, PPM and PNG file format drivers.
 
     It is called when opening or saving images.
     """
