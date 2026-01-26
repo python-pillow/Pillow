@@ -1485,21 +1485,15 @@ def test_stroke_multiline() -> None:
 
 
 @skip_unless_feature("freetype2")
-def test_setting_default_font() -> None:
-    # Arrange
+def test_setting_default_font(monkeypatch: pytest.MonkeyPatch) -> None:
     im = Image.new("RGB", (100, 250))
     draw = ImageDraw.Draw(im)
+    assert isinstance(draw.getfont(), ImageFont.load_default().__class__)
+
+    draw = ImageDraw.Draw(im)
     font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
-
-    # Act
-    ImageDraw.ImageDraw.font = font
-
-    # Assert
-    try:
-        assert draw.getfont() == font
-    finally:
-        ImageDraw.ImageDraw.font = None
-        assert isinstance(draw.getfont(), ImageFont.load_default().__class__)
+    monkeypatch.setattr(ImageDraw.ImageDraw, "font", font)
+    assert draw.getfont() == font
 
 
 def test_default_font_size() -> None:
