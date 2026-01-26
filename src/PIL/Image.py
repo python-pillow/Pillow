@@ -428,7 +428,7 @@ def _import_plugin_for_extension(ext: str | bytes) -> bool:
 
 def preinit() -> None:
     """
-    Explicitly loads BMP, GIF, JPEG, PPM and PPM file format drivers.
+    Explicitly loads BMP, GIF, JPEG, PPM and PNG file format drivers.
 
     It is called when opening or saving images.
     """
