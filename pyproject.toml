@@ -187,16 +187,15 @@ lint.isort.required-imports = [
 max_supported_python = "3.15"
 
 [tool.mypy]
-follow_imports = "silent"
 python_version = "3.11"
-disallow_any_generics = true
-disallow_untyped_defs = true
-warn_redundant_casts = true
-warn_unused_ignores = true
+disallow_subclassing_any = false
+disallow_untyped_calls = false
+warn_return_any = false
 warn_unreachable = true
 enable_error_code = "ignore-without-code"
-extra_checks = true
+strict = true
 pretty = true
+no_implicit_reexport = false
 
 [tool.pytest]
 addopts = [ "-ra", "--color=auto" ]
