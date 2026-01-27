@@ -69,6 +69,8 @@ if TYPE_CHECKING:
     from types import ModuleType
     from typing import Any, Literal
 
+    from ._typing import Buffer
+
 logger = logging.getLogger(__name__)
 
 
@@ -86,37 +88,45 @@ WARN_POSSIBLE_FORMATS: bool = False
 MAX_IMAGE_PIXELS: int | None = int(1024 * 1024 * 1024 // 4 // 3)
 
 
-try:
-    # If the _imaging C module is not present, Pillow will not load.
-    # Note that other modules should not refer to _imaging directly;
-    # import Image and use the Image.core variable instead.
-    # Also note that Image.core is not a publicly documented interface,
-    # and should be considered private and subject to change.
-    from . import _imaging as core
+if TYPE_CHECKING:
+    from . import _imaging
 
-    if __version__ != getattr(core, "PILLOW_VERSION", None):
-        msg = (
-            "The _imaging extension was built for another version of Pillow or PIL:\n"
-            f"Core version: {getattr(core, 'PILLOW_VERSION', None)}\n"
-            f"Pillow version: {__version__}"
-        )
-        raise ImportError(msg)
+    # mypy will not recognize `core` as public symbol when import as
+    # `from . import _imaging as core`
+    core = _imaging
+else:
+    try:
+        # If the _imaging C module is not present, Pillow will not load.
+        # Note that other modules should not refer to _imaging directly;
+        # import Image and use the Image.core variable instead.
+        # Also note that Image.core is not a publicly documented interface,
+        # and should be considered private and subject to change.
+        from . import _imaging as core
 
-except ImportError as v:
-    # Explanations for ways that we know we might have an import error
-    if str(v).startswith("Module use of python"):
-        # The _imaging C module is present, but not compiled for
-        # the right version (windows only).  Print a warning, if
-        # possible.
-        warnings.warn(
-            "The _imaging extension was built for another version of Python.",
-            RuntimeWarning,
-        )
-    elif str(v).startswith("The _imaging extension"):
-        warnings.warn(str(v), RuntimeWarning)
-    # Fail here anyway. Don't let people run with a mostly broken Pillow.
-    # see docs/porting.rst
-    raise
+        if __version__ != getattr(core, "PILLOW_VERSION", None):
+            msg = (
+                f"The _imaging extension was built for another version of Pillow or "
+                f"PIL:\n "
+                f"Core version: {getattr(core, 'PILLOW_VERSION', None)}\n"
+                f"Pillow version: {__version__}"
+            )
+            raise ImportError(msg)
+
+    except ImportError as v:
+        # Explanations for ways that we know we might have an import error
+        if str(v).startswith("Module use of python"):
+            # The _imaging C module is present, but not compiled for
+            # the right version (windows only).  Print a warning, if
+            # possible.
+            warnings.warn(
+                "The _imaging extension was built for another version of Python.",
+                RuntimeWarning,
+            )
+        elif str(v).startswith("The _imaging extension"):
+            warnings.warn(str(v), RuntimeWarning)
+        # Fail here anyway. Don't let people run with a mostly broken Pillow.
+        # see docs/porting.rst
+        raise
 
 
 #
@@ -931,7 +941,7 @@ class Image:
 
     def frombytes(
         self,
-        data: bytes | bytearray | SupportsArrayInterface,
+        data: Buffer | SupportsArrayInterface,
         decoder_name: str = "raw",
         *args: Any,
     ) -> None:
@@ -3232,7 +3242,7 @@ def new(
 def frombytes(
     mode: str,
     size: tuple[int, int],
-    data: bytes | bytearray | SupportsArrayInterface,
+    data: Buffer | SupportsArrayInterface,
     decoder_name: str = "raw",
     *args: Any,
 ) -> Image:

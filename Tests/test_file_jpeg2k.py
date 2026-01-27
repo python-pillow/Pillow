@@ -165,7 +165,7 @@ def test_reduce() -> None:
         assert callable(im.reduce)
 
         im.reduce = 2  # type: ignore[assignment, method-assign]
-        assert im.reduce == 2
+        assert im.reduce == 2  # type: ignore[comparison-overlap]
 
         im.load()
         assert im.size == (160, 120)

@@ -33,6 +33,7 @@ from ._binary import i32le as i32
 from ._binary import o8
 from ._binary import o16le as o16
 from ._binary import o32le as o32
+from ._typing import Buffer
 
 #
 # --------------------------------------------------------------------
@@ -327,7 +328,7 @@ class BmpImageFile(ImageFile.ImageFile):
 class BmpRleDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Buffer | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
         rle4 = self.args[1]
         data = bytearray()

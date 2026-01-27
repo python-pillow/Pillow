@@ -14,6 +14,7 @@ from PIL import (
     _binary,
     features,
 )
+from PIL._typing import Buffer
 
 from .helper import (
     assert_image,
@@ -238,7 +239,7 @@ class MockPyDecoder(ImageFile.PyDecoder):
 
         super().__init__(mode, *args)
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Buffer | Image.SupportsArrayInterface) -> tuple[int, int]:
         # eof
         return -1, 0
 

@@ -21,6 +21,7 @@ from . import Image, ImageFile, ImagePalette
 from ._binary import i32le as i32
 from ._binary import o8
 from ._binary import o32le as o32
+from ._typing import Buffer
 
 # Magic ("DDS ")
 DDS_MAGIC = 0x20534444
@@ -488,7 +489,7 @@ class DdsImageFile(ImageFile.ImageFile):
 class DdsRgbDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Buffer | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
         bitcount, masks = self.args
 

@@ -19,6 +19,7 @@ import re
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import o8
+from ._typing import Buffer
 
 # XPM header
 xpm_head = re.compile(b'"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)')
@@ -118,7 +119,7 @@ class XpmImageFile(ImageFile.ImageFile):
 class XpmDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Buffer | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
 
         data = bytearray()
