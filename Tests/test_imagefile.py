@@ -31,7 +31,7 @@ SAFEBLOCK = ImageFile.SAFEBLOCK
 
 
 class TestImageFile:
-    def test_parser(self) -> None:
+    def test_parser(self, monkeypatch: pytest.MonkeyPatch) -> None:
         def roundtrip(format: str) -> tuple[Image.Image, Image.Image]:
             im = hopper("L").resize((1000, 1000), Image.Resampling.NEAREST)
             if format in ("MSP", "XBM"):
@@ -55,12 +55,9 @@ class TestImageFile:
         assert_image_equal(*roundtrip("IM"))
         assert_image_equal(*roundtrip("MSP"))
         if features.check("zlib"):
-            try:
-                # force multiple blocks in PNG driver
-                ImageFile.MAXBLOCK = 8192
-                assert_image_equal(*roundtrip("PNG"))
-            finally:
-                ImageFile.MAXBLOCK = MAXBLOCK
+            # force multiple blocks in PNG driver
+            monkeypatch.setattr(ImageFile, "MAXBLOCK", 8192)
+            assert_image_equal(*roundtrip("PNG"))
         assert_image_equal(*roundtrip("PPM"))
         assert_image_equal(*roundtrip("TIFF"))
         assert_image_equal(*roundtrip("XBM"))
@@ -120,14 +117,11 @@ class TestImageFile:
             assert (128, 128) == p.image.size
 
     @skip_unless_feature("zlib")
-    def test_safeblock(self) -> None:
+    def test_safeblock(self, monkeypatch: pytest.MonkeyPatch) -> None:
         im1 = hopper()
 
-        try:
-            ImageFile.SAFEBLOCK = 1
-            im2 = fromstring(tostring(im1, "PNG"))
-        finally:
-            ImageFile.SAFEBLOCK = SAFEBLOCK
+        monkeypatch.setattr(ImageFile, "SAFEBLOCK", 1)
+        im2 = fromstring(tostring(im1, "PNG"))
 
         assert_image_equal(im1, im2)
 
