@@ -110,7 +110,7 @@ class ImageFont:
                 except Exception:
                     pass
                 else:
-                    if image and image.mode in ("1", "L"):
+                    if image.mode in ("1", "L"):
                         break
             else:
                 if image:

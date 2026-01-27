@@ -570,7 +570,7 @@ class TestImage:
         im = Image.new("L", (100, 0))
         assert im.size == (100, 0)
 
-        assert Image.new("RGB", (1, 1))
+        assert isinstance(Image.new("RGB", (1, 1)), Image.Image)
         # Should pass lists too
         i = Image.new("RGB", [1, 1])
         assert isinstance(i.size, tuple)
