@@ -91,7 +91,7 @@ MAX_IMAGE_PIXELS: int | None = int(1024 * 1024 * 1024 // 4 // 3)
 if TYPE_CHECKING:
     from . import _imaging
 
-    # mypy will not recognize `core` as public symbol when import as
+    # mypy will not recognize `core` as a public symbol when imported as
     # `from . import _imaging as core`
     core = _imaging
 else:
