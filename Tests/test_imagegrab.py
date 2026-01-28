@@ -12,6 +12,7 @@ from PIL import Image, ImageGrab
 from .helper import assert_image_equal_tofile, skip_unless_feature
 
 
+@pytest.mark.xdist_group(name="imagegrab-group")
 class TestImageGrab:
     @pytest.mark.skipif(
         os.environ.get("USERNAME") == "ContainerAdministrator",
