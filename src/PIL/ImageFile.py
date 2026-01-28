@@ -61,7 +61,7 @@ User code may set this to another number.
 
 SAFEBLOCK = 1024 * 1024
 
-LOAD_TRUNCATED_IMAGES = False
+LOAD_TRUNCATED_IMAGES: bool = False
 """Whether or not to load truncated image files. User code may change this."""
 
 ERRORS = {
