@@ -1244,7 +1244,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_save_zero(self, compression: str | None, tmp_path: Path) -> None:
         im = Image.new("RGB", (0, 0))
         out = tmp_path / "temp.tif"
-        with pytest.raises(SystemError):
+        with pytest.raises(ValueError, match="cannot write empty image"):
             im.save(out, compression=compression)
 
     def test_save_many_compressed(self, tmp_path: Path) -> None:
