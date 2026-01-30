@@ -1189,6 +1189,7 @@ def getdata(
         data = []
 
         def write(self, data: Buffer) -> int:
+            data = bytes(data)
             self.data.append(data)
             return len(data)
 
