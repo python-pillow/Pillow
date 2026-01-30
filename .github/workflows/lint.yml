@@ -16,14 +16,26 @@ concurrency:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    name: Lint
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [
+          "3.14",
+          "3.13",
+          "3.12",
+          "3.11",
+          "3.10",
+        ]
+
+    name: Lint ${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.x"
+          python-version: ${{ matrix.python-version }}
       - name: Install uv
         uses: astral-sh/setup-uv@v7
       - name: Lint
