@@ -14,6 +14,8 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from typing import IO
 
+    from ._typing import Buffer
+
     _DictBase = collections.UserDict[str | bytes, Any]
 else:
     _DictBase = collections.UserDict
@@ -316,11 +318,11 @@ class PdfBinary:
 
 
 class PdfStream:
-    def __init__(self, dictionary: PdfDict, buf: bytes) -> None:
+    def __init__(self, dictionary: PdfDict, buf: Buffer) -> None:
         self.dictionary = dictionary
         self.buf = buf
 
-    def decode(self) -> bytes:
+    def decode(self) -> Buffer:
         try:
             filter = self.dictionary[b"Filter"]
         except KeyError:
