@@ -214,7 +214,6 @@ testpaths = [
 ]
 
 [tool.mypy]
-python_version = "3.10"
 pretty = true
 disallow_any_generics = true
 disallow_untyped_defs = true
