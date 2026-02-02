@@ -95,7 +95,7 @@ def test_textsize(
     tempname = save_font(request, tmp_path, encoding)
     font = ImageFont.load(tempname)
     for i in range(255):
-        (ox, oy, dx, dy) = font.getbbox(bytearray([i]))
+        ox, oy, dx, dy = font.getbbox(bytearray([i]))
         assert ox == 0
         assert oy == 0
         assert dy == 20

@@ -22,8 +22,7 @@ def string_to_img(image_string: str) -> Image.Image:
     return im
 
 
-A = string_to_img(
-    """
+A = string_to_img("""
     .......
     .......
     ..111..
@@ -31,8 +30,7 @@ A = string_to_img(
     ..111..
     .......
     .......
-    """
-)
+    """)
 
 
 def img_to_string(im: Image.Image) -> str:

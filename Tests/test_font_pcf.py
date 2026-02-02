@@ -80,7 +80,7 @@ def test_textsize(request: pytest.FixtureRequest, tmp_path: Path) -> None:
     tempname = save_font(request, tmp_path)
     font = ImageFont.load(tempname)
     for i in range(255):
-        (ox, oy, dx, dy) = font.getbbox(chr(i))
+        ox, oy, dx, dy = font.getbbox(chr(i))
         assert ox == 0
         assert oy == 0
         assert dy == 20
