@@ -42,7 +42,7 @@ def read_32t(
     fobj: IO[bytes], start_length: tuple[int, int], size: tuple[int, int, int]
 ) -> dict[str, Image.Image]:
     # The 128x128 icon seems to have an extra header for some reason.
-    (start, length) = start_length
+    start, length = start_length
     fobj.seek(start)
     sig = fobj.read(4)
     if sig != b"\x00\x00\x00\x00":
@@ -58,7 +58,7 @@ def read_32(
     Read a 32bit RGB icon resource.  Seems to be either uncompressed or
     an RLE packbits-like scheme.
     """
-    (start, length) = start_length
+    start, length = start_length
     fobj.seek(start)
     pixel_size = (size[0] * size[2], size[1] * size[2])
     sizesq = pixel_size[0] * pixel_size[1]
@@ -111,7 +111,7 @@ def read_mk(
 def read_png_or_jpeg2000(
     fobj: IO[bytes], start_length: tuple[int, int], size: tuple[int, int, int]
 ) -> dict[str, Image.Image]:
-    (start, length) = start_length
+    start, length = start_length
     fobj.seek(start)
     sig = fobj.read(12)
 

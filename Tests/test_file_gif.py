@@ -1433,7 +1433,7 @@ def test_getdata(monkeypatch: pytest.MonkeyPatch) -> None:
     # with open('Tests/images/gif_header_data.pkl', 'wb') as f:
     #    pickle.dump((h, d), f, 1)
     with open("Tests/images/gif_header_data.pkl", "rb") as f:
-        (h_target, d_target) = pickle.load(f)
+        h_target, d_target = pickle.load(f)
 
     assert h == h_target
     assert d == d_target

@@ -2546,7 +2546,7 @@ class Image:
         ]
 
         def transform(x: float, y: float, matrix: list[float]) -> tuple[float, float]:
-            (a, b, c, d, e, f) = matrix
+            a, b, c, d, e, f = matrix
             return a * x + b * y + c, d * x + e * y + f
 
         matrix[2], matrix[5] = transform(
@@ -3489,7 +3489,7 @@ def fromarrow(
         msg = "arrow_c_array interface not found"
         raise ValueError(msg)
 
-    (schema_capsule, array_capsule) = obj.__arrow_c_array__()
+    schema_capsule, array_capsule = obj.__arrow_c_array__()
     _im = core.new_arrow(mode, size, schema_capsule, array_capsule)
     if _im:
         return Image()._new(_im)
