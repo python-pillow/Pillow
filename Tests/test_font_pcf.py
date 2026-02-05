@@ -10,7 +10,6 @@ from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 
 from .helper import (
     assert_image_equal_tofile,
-    assert_image_similar_tofile,
     skip_unless_feature,
 )
 
@@ -73,7 +72,7 @@ def test_draw(request: pytest.FixtureRequest, tmp_path: Path) -> None:
     im = Image.new("L", (130, 30), "white")
     draw = ImageDraw.Draw(im)
     draw.text((0, 0), message, "black", font=font)
-    assert_image_similar_tofile(im, "Tests/images/test_draw_pbm_target.png", 0)
+    assert_image_equal_tofile(im, "Tests/images/test_draw_pbm_target.png")
 
 
 def test_textsize(request: pytest.FixtureRequest, tmp_path: Path) -> None:
@@ -100,7 +99,7 @@ def _test_high_characters(
     im = Image.new("L", (750, 30), "white")
     draw = ImageDraw.Draw(im)
     draw.text((0, 0), message, "black", font=font)
-    assert_image_similar_tofile(im, "Tests/images/high_ascii_chars.png", 0)
+    assert_image_equal_tofile(im, "Tests/images/high_ascii_chars.png")
 
 
 def test_high_characters(request: pytest.FixtureRequest, tmp_path: Path) -> None:

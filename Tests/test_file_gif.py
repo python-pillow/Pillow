@@ -399,7 +399,7 @@ def test_save_netpbm_bmp_mode(tmp_path: Path) -> None:
     b = BytesIO()
     GifImagePlugin._save_netpbm(img_rgb, b, tempfile)
     with Image.open(tempfile) as reloaded:
-        assert_image_similar(img_rgb, reloaded.convert("RGB"), 0)
+        assert_image_equal(img_rgb, reloaded.convert("RGB"))
 
 
 @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
@@ -411,7 +411,7 @@ def test_save_netpbm_l_mode(tmp_path: Path) -> None:
         b = BytesIO()
         GifImagePlugin._save_netpbm(img_l, b, tempfile)
         with Image.open(tempfile) as reloaded:
-            assert_image_similar(img_l, reloaded.convert("L"), 0)
+            assert_image_equal(img_l, reloaded.convert("L"))
 
 
 def test_seek() -> None:
