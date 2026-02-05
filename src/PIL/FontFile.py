@@ -15,10 +15,11 @@
 #
 from __future__ import annotations
 
+import io
 import os
 from typing import BinaryIO
 
-from . import Image, _binary
+from . import Image, ImageFont, _binary
 
 WIDTH = 800
 
@@ -123,12 +124,33 @@ class FontFile:
 
         # font metrics
         with open(os.path.splitext(filename)[0] + ".pil", "wb") as fp:
-            fp.write(b"PILfont\n")
-            fp.write(f";;;;;;{self.ysize};\n".encode("ascii"))  # HACK!!!
-            fp.write(b"DATA\n")
-            for id in range(256):
-                m = self.metrics[id]
-                if not m:
-                    puti16(fp, (0,) * 10)
-                else:
-                    puti16(fp, m[0] + m[1] + m[2])
+            self.save_metrics(fp)
+
+    def save_metrics(self, fp: BinaryIO) -> None:
+        """Save font metrics to a file-like object"""
+        fp.write(b"PILfont\n")
+        fp.write(f";;;;;;{self.ysize};\n".encode("ascii"))  # HACK!!!
+        fp.write(b"DATA\n")
+        for id in range(256):
+            m = self.metrics[id]
+            if not m:
+                puti16(fp, (0,) * 10)
+            else:
+                puti16(fp, m[0] + m[1] + m[2])
+
+    def to_imagefont(self) -> ImageFont.ImageFont:
+        """Convert to ImageFont"""
+
+        self.compile()
+
+        # font data
+        if not self.bitmap:
+            msg = "No bitmap created"
+            raise ValueError(msg)
+
+        buf = io.BytesIO()
+        self.save_metrics(buf)
+        buf.seek(0)
+        imgfont = ImageFont.ImageFont()
+        imgfont._load_pilfont_data(buf, self.bitmap)
+        return imgfont
