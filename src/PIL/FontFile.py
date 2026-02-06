@@ -151,6 +151,6 @@ class FontFile:
         buf = io.BytesIO()
         self.save_metrics(buf)
         buf.seek(0)
-        imgfont = ImageFont.ImageFont()
-        imgfont._load_pilfont_data(buf, self.bitmap)
-        return imgfont
+        imagefont = ImageFont.ImageFont()
+        imagefont._load_pilfont_data(buf, self.bitmap)
+        return imagefont
