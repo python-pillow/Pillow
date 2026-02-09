@@ -82,7 +82,7 @@ def test_to_imagefont(request: pytest.FixtureRequest, tmp_path: Path) -> None:
     im = Image.new("L", (130, 30), "white")
     draw = ImageDraw.Draw(im)
     draw.text((0, 0), message, "black", font=imgfont)
-    assert_image_similar_tofile(im, "Tests/images/test_draw_pbm_target.png", 0)
+    assert_image_equal_tofile(im, "Tests/images/test_draw_pbm_target.png")
 
 
 def test_textsize(request: pytest.FixtureRequest, tmp_path: Path) -> None:
