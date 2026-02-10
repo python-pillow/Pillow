@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=0.11.1
+version=0.11.2
 
 ./download-and-extract.sh highway-1.3.0 https://github.com/google/highway/archive/1.3.0.tar.gz
 

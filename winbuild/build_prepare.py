@@ -119,7 +119,7 @@ V = {
     "HARFBUZZ": "12.3.2",
     "HIGHWAY": "1.3.0",
     "JPEGTURBO": "3.1.3",
-    "JPEGXL": "0.11.1",
+    "JPEGXL": "0.11.2",
     "LCMS2": "2.18",
     "LIBAVIF": "1.3.0",
     "LIBIMAGEQUANT": "4.4.1",
