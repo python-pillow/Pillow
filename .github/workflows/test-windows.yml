@@ -31,15 +31,16 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.11", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["pypy3.11", "3.11", "3.12", "3.13", "3.14", "3.15"]
         architecture: ["x64"]
+        os: ["windows-latest"]
         include:
             # Test the oldest Python on 32-bit
-            - { python-version: "3.10", architecture: "x86" }
+            - { python-version: "3.10", architecture: "x86", os: "windows-2022" }
 
     timeout-minutes: 45
 
@@ -47,19 +48,19 @@ jobs:
 
     steps:
     - name: Checkout Pillow
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         persist-credentials: false
 
     - name: Checkout cached dependencies
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         persist-credentials: false
         repository: python-pillow/pillow-depends
         path: winbuild\depends
 
     - name: Checkout extra test images
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         persist-credentials: false
         repository: python-pillow/test-images
@@ -83,7 +84,7 @@ jobs:
         python3 -m pip install --upgrade pip
 
     - name: Install CPython dependencies
-      if: "!contains(matrix.python-version, 'pypy') && !contains(matrix.python-version, '3.14') && matrix.architecture != 'x86'"
+      if: "!contains(matrix.python-version, 'pypy') && matrix.architecture != 'x86'"
       run: |
         python3 -m pip install PyQt6
 
@@ -111,7 +112,7 @@ jobs:
 
     - name: Cache build
       id: build-cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: winbuild\build
         key:
@@ -187,8 +188,9 @@ jobs:
     # trim ~150MB for each job
     - name: Optimize build cache
       if: steps.build-cache.outputs.cache-hit != 'true'
-      run: rmdir /S /Q winbuild\build\src
-      shell: cmd
+      run: |
+        rm -rf winbuild\build\src
+      shell: bash
 
     - name: Build Pillow
       run: |
@@ -205,9 +207,7 @@ jobs:
 
     - name: Test Pillow
       run: |
-        path %GITHUB_WORKSPACE%\winbuild\build\bin;%PATH%
         .ci\test.cmd
-      shell: cmd
 
     - name: Prepare to upload errors
       if: failure()
@@ -216,7 +216,7 @@ jobs:
       shell: bash
 
     - name: Upload errors
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: failure()
       with:
         name: errors

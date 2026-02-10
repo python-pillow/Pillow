@@ -45,33 +45,30 @@ class WebPImageFile(ImageFile.ImageFile):
     def _open(self) -> None:
         # Use the newer AnimDecoder API to parse the (possibly) animated file,
         # and access muxed chunks like ICC/EXIF/XMP.
+        assert self.fp is not None
         self._decoder = _webp.WebPAnimDecoder(self.fp.read())
 
         # Get info from decoder
-        self._size, loop_count, bgcolor, frame_count, mode = self._decoder.get_info()
-        self.info["loop"] = loop_count
-        bg_a, bg_r, bg_g, bg_b = (
-            (bgcolor >> 24) & 0xFF,
-            (bgcolor >> 16) & 0xFF,
-            (bgcolor >> 8) & 0xFF,
-            bgcolor & 0xFF,
+        self._size, self.info["loop"], bgcolor, self.n_frames, self.rawmode = (
+            self._decoder.get_info()
         )
-        self.info["background"] = (bg_r, bg_g, bg_b, bg_a)
-        self.n_frames = frame_count
+        self.info["background"] = (
+            (bgcolor >> 16) & 0xFF,  # R
+            (bgcolor >> 8) & 0xFF,  # G
+            bgcolor & 0xFF,  # B
+            (bgcolor >> 24) & 0xFF,  # A
+        )
         self.is_animated = self.n_frames > 1
-        self._mode = "RGB" if mode == "RGBX" else mode
-        self.rawmode = mode
+        self._mode = "RGB" if self.rawmode == "RGBX" else self.rawmode
 
         # Attempt to read ICC / EXIF / XMP chunks from file
-        icc_profile = self._decoder.get_chunk("ICCP")
-        exif = self._decoder.get_chunk("EXIF")
-        xmp = self._decoder.get_chunk("XMP ")
-        if icc_profile:
-            self.info["icc_profile"] = icc_profile
-        if exif:
-            self.info["exif"] = exif
-        if xmp:
-            self.info["xmp"] = xmp
+        for key, chunk_name in {
+            "icc_profile": "ICCP",
+            "exif": "EXIF",
+            "xmp": "XMP ",
+        }.items():
+            if value := self._decoder.get_chunk(chunk_name):
+                self.info[key] = value
 
         # Initialize seek state
         self._reset(reset=False)
@@ -129,9 +126,7 @@ class WebPImageFile(ImageFile.ImageFile):
             self._seek(self.__logical_frame)
 
             # We need to load the image data for this frame
-            data, timestamp, duration = self._get_next()
-            self.info["timestamp"] = timestamp
-            self.info["duration"] = duration
+            data, self.info["timestamp"], self.info["duration"] = self._get_next()
             self.__loaded = self.__logical_frame
 
             # Set tile

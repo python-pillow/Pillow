@@ -73,6 +73,16 @@ Image._show
 ``Image._show`` has been deprecated, and will be removed in Pillow 13 (2026-10-15).
 Use :py:meth:`~PIL.ImageShow.show` instead.
 
+Image getdata()
+~~~~~~~~~~~~~~~
+
+.. deprecated:: 12.1.0
+
+:py:meth:`~PIL.Image.Image.getdata` has been deprecated.
+:py:meth:`~PIL.Image.Image.get_flattened_data` can be used instead. This new method is
+identical, except that it returns a tuple of pixel values, instead of an internal
+Pillow data type.
+
 Removed features
 ----------------
 

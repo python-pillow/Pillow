@@ -252,6 +252,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
     format_description = "JPEG 2000 (ISO 15444)"
 
     def _open(self) -> None:
+        assert self.fp is not None
         sig = self.fp.read(4)
         if sig == b"\xff\x4f\xff\x51":
             self.codec = "j2k"
@@ -304,6 +305,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         ]
 
     def _parse_comment(self) -> None:
+        assert self.fp is not None
         while True:
             marker = self.fp.read(2)
             if not marker:

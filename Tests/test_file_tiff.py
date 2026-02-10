@@ -764,9 +764,9 @@ class TestFileTiff:
 
         # Test appending images
         mp = BytesIO()
-        im = Image.new("RGB", (100, 100), "#f00")
+        im_rgb = Image.new("RGB", (100, 100), "#f00")
         ims = [Image.new("RGB", (100, 100), color) for color in ["#0f0", "#00f"]]
-        im.copy().save(mp, format="TIFF", save_all=True, append_images=ims)
+        im_rgb.copy().save(mp, format="TIFF", save_all=True, append_images=ims)
 
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as reread:
@@ -778,7 +778,7 @@ class TestFileTiff:
             yield from ims
 
         mp = BytesIO()
-        im.save(mp, format="TIFF", save_all=True, append_images=im_generator(ims))
+        im_rgb.save(mp, format="TIFF", save_all=True, append_images=im_generator(ims))
 
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as reread:
@@ -971,6 +971,7 @@ class TestFileTiff:
 
         im = Image.open(tmpfile)
         fp = im.fp
+        assert fp is not None
         assert not fp.closed
         im.load()
         assert fp.closed
@@ -984,6 +985,7 @@ class TestFileTiff:
         with open(tmpfile, "rb") as f:
             im = Image.open(f)
             fp = im.fp
+            assert fp is not None
             assert not fp.closed
             im.load()
             assert not fp.closed
@@ -1034,8 +1036,9 @@ class TestFileTiffW32:
             im.save(tmpfile)
 
         im = Image.open(tmpfile)
+        assert im.fp is not None
+        assert not im.fp.closed
         fp = im.fp
-        assert not fp.closed
         with pytest.raises(OSError):
             os.remove(tmpfile)
         im.load()

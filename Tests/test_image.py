@@ -456,15 +456,20 @@ class TestImage:
         # Assert
         assert len(Image.ID) == id_length
 
-    def test_registered_extensions_uninitialized(self) -> None:
+    def test_registered_extensions_uninitialized(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         # Arrange
-        Image._initialized = 0
+        monkeypatch.setattr(Image, "_initialized", 0)
 
         # Act
         Image.registered_extensions()
 
         # Assert
         assert Image._initialized == 2
+
+        for extension in Image.EXTENSION:
+            assert extension in Image._EXTENSION_PLUGIN
 
     def test_registered_extensions(self) -> None:
         # Arrange
@@ -613,8 +618,8 @@ class TestImage:
         assert im.getpixel((0, 0)) == 0
         assert im.getpixel((255, 255)) == 255
         with Image.open(target_file) as target:
-            target = target.convert(mode)
-        assert_image_equal(im, target)
+            im_target = target.convert(mode)
+        assert_image_equal(im, im_target)
 
     def test_radial_gradient_wrong_mode(self) -> None:
         # Arrange
@@ -638,8 +643,8 @@ class TestImage:
         assert im.getpixel((0, 0)) == 255
         assert im.getpixel((128, 128)) == 0
         with Image.open(target_file) as target:
-            target = target.convert(mode)
-        assert_image_equal(im, target)
+            im_target = target.convert(mode)
+        assert_image_equal(im, im_target)
 
     def test_register_extensions(self) -> None:
         test_format = "a"
@@ -663,20 +668,20 @@ class TestImage:
             assert_image_equal(im, im.remap_palette(list(range(256))))
 
         # Test identity transform with an RGBA palette
-        im = Image.new("P", (256, 1))
+        im_p = Image.new("P", (256, 1))
         for x in range(256):
-            im.putpixel((x, 0), x)
-        im.putpalette(list(range(256)) * 4, "RGBA")
-        im_remapped = im.remap_palette(list(range(256)))
-        assert_image_equal(im, im_remapped)
-        assert im.palette is not None
+            im_p.putpixel((x, 0), x)
+        im_p.putpalette(list(range(256)) * 4, "RGBA")
+        im_remapped = im_p.remap_palette(list(range(256)))
+        assert_image_equal(im_p, im_remapped)
+        assert im_p.palette is not None
         assert im_remapped.palette is not None
-        assert im.palette.palette == im_remapped.palette.palette
+        assert im_p.palette.palette == im_remapped.palette.palette
 
         # Test illegal image mode
-        with hopper() as im:
+        with hopper() as im_hopper:
             with pytest.raises(ValueError):
-                im.remap_palette([])
+                im_hopper.remap_palette([])
 
     def test_remap_palette_transparency(self) -> None:
         im = Image.new("P", (1, 2), (0, 0, 0))
@@ -1181,10 +1186,10 @@ class TestImageBytes:
         assert reloaded.tobytes() == source_bytes
 
     @pytest.mark.parametrize("mode", Image.MODES)
-    def test_getdata_putdata(self, mode: str) -> None:
+    def test_get_flattened_data_putdata(self, mode: str) -> None:
         im = hopper(mode)
         reloaded = Image.new(mode, im.size)
-        reloaded.putdata(im.getdata())
+        reloaded.putdata(im.get_flattened_data())
         assert_image_equal(im, reloaded)
 
 

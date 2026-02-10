@@ -100,14 +100,14 @@ jobs:
             cibw_arch: arm64_iphoneos
           - name: "iOS arm64 simulator"
             platform: ios
-            os: macos-14
+            os: macos-latest
             cibw_arch: arm64_iphonesimulator
           - name: "iOS x86_64 simulator"
             platform: ios
             os: macos-15-intel
             cibw_arch: x86_64_iphonesimulator
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
           submodules: true
@@ -134,7 +134,7 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: dist-${{ matrix.name }}
           path: ./wheelhouse/*.whl
@@ -154,12 +154,12 @@ jobs:
           - cibw_arch: ARM64
             os: windows-11-arm
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
       - name: Checkout extra test images
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
           repository: python-pillow/test-images
@@ -186,24 +186,18 @@ jobs:
 
       - name: Build wheels
         run: |
-          setlocal EnableDelayedExpansion
-          for %%f in (winbuild\build\license\*) do (
-            set x=%%~nf
-            rem Skip FriBiDi license, it is not included in the wheel.
-            set fribidi=!x:~0,7!
-            if NOT !fribidi!==fribidi (
-              rem Skip imagequant license, it is not included in the wheel.
-              set libimagequant=!x:~0,13!
-              if NOT !libimagequant!==libimagequant (
-                echo. >> LICENSE
-                echo ===== %%~nf ===== >> LICENSE
-                echo. >> LICENSE
-                type %%f >> LICENSE
-              )
-            )
-          )
-          call winbuild\\build\\build_env.cmd
-          %pythonLocation%\python.exe -m cibuildwheel . --output-dir wheelhouse
+          for f in winbuild/build/license/*; do
+            name=$(basename "${f%.*}")
+            # Skip FriBiDi license, it is not included in the wheel.
+            [[ $name == fribidi* ]] && continue
+            # Skip imagequant license, it is not included in the wheel.
+            [[ $name == libimagequant* ]] && continue
+            echo "" >> LICENSE
+            echo "===== $name =====" >> LICENSE
+            echo "" >> LICENSE
+            cat "$f" >> LICENSE
+          done
+          cmd //c "winbuild\\build\\build_env.cmd && $pythonLocation\\python.exe -m cibuildwheel . --output-dir wheelhouse"
         env:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL: "{package}\\winbuild\\build\\build_dep_all.cmd"
@@ -217,16 +211,16 @@ jobs:
             -e CI -e GITHUB_ACTIONS
             mcr.microsoft.com/windows/servercore:ltsc2022
             powershell C:\pillow\.github\workflows\wheels-test.ps1 %CD%\..\venv-test'
-        shell: cmd
+        shell: bash
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dist-windows-${{ matrix.cibw_arch }}
           path: ./wheelhouse/*.whl
 
       - name: Upload fribidi.dll
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: fribidi-windows-${{ matrix.cibw_arch }}
           path: winbuild\build\bin\fribidi*
@@ -235,7 +229,7 @@ jobs:
     if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         persist-credentials: false
 
@@ -246,7 +240,7 @@ jobs:
 
     - run: make sdist
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       with:
         name: dist-sdist
         path: dist/*.tar.gz
@@ -256,7 +250,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Count dists
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v7
         with:
           pattern: dist-*
           path: dist
@@ -275,13 +269,13 @@ jobs:
     runs-on: ubuntu-latest
     name: Upload wheels to scientific-python-nightly-wheels
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v7
         with:
           pattern: dist-!(sdist)*
           path: dist
           merge-multiple: true
       - name: Upload wheels to scientific-python-nightly-wheels
-        uses: scientific-python/upload-nightly-action@b36e8c0c10dbcfd2e05bf95f17ef8c14fd708dbf # 0.6.2
+        uses: scientific-python/upload-nightly-action@5748273c71e2d8d3a61f3a11a16421c8954f9ecf # 0.6.3
         with:
           artifacts_path: dist
           anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
@@ -297,7 +291,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v7
         with:
           pattern: dist-*
           path: dist

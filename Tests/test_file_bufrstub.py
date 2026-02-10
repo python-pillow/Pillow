@@ -61,6 +61,7 @@ def test_handler(tmp_path: Path) -> None:
 
         def load(self, im: ImageFile.StubImageFile) -> Image.Image:
             self.loaded = True
+            assert im.fp is not None
             im.fp.close()
             return Image.new("RGB", (1, 1))
 

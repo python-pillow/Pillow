@@ -2,55 +2,31 @@ name: Lint
 
 on: [push, pull_request, workflow_dispatch]
 
+permissions: {}
+
 env:
   FORCE_COLOR: 1
-
-permissions:
-  contents: read
+  PREK_COLOR: always
+  RUFF_OUTPUT_FORMAT: github
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
-
+  lint:
     runs-on: ubuntu-latest
-
     name: Lint
-
     steps:
-    - uses: actions/checkout@v5
-      with:
-        persist-credentials: false
-
-    - name: pre-commit cache
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pre-commit
-        key: lint-pre-commit-${{ hashFiles('**/.pre-commit-config.yaml') }}
-        restore-keys: |
-          lint-pre-commit-
-
-    - name: Set up Python
-      uses: actions/setup-python@v6
-      with:
-        python-version: "3.x"
-        cache: pip
-        cache-dependency-path: "setup.py"
-
-    - name: Build system information
-      run: python3 .github/workflows/system-info.py
-
-    - name: Install dependencies
-      run: |
-        python3 -m pip install -U pip
-        python3 -m pip install -U tox
-
-    - name: Lint
-      run: tox -e lint
-      env:
-        PRE_COMMIT_COLOR: always
-
-    - name: Mypy
-      run: tox -e mypy
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Lint
+        run: uvx --with tox-uv tox -e lint
+      - name: Mypy
+        run: uvx --with tox-uv tox -e mypy
