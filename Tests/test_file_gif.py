@@ -327,14 +327,13 @@ def test_loading_multiple_palettes(path: str, mode: str) -> None:
 
         im.seek(1)
         assert im.mode == mode
-        if mode == "RGBA":
-            im = im.convert("RGB")
+        im_rgb = im.convert("RGB") if mode == "RGBA" else im
 
         # Check a color only from the old palette
-        assert im.getpixel((0, 0)) == original_color
+        assert im_rgb.getpixel((0, 0)) == original_color
 
         # Check a color from the new palette
-        assert im.getpixel((24, 24)) not in first_frame_colors
+        assert im_rgb.getpixel((24, 24)) not in first_frame_colors
 
 
 def test_headers_saving_for_animated_gifs(tmp_path: Path) -> None:
@@ -354,16 +353,16 @@ def test_palette_handling(tmp_path: Path) -> None:
     # see https://github.com/python-pillow/Pillow/issues/513
 
     with Image.open(TEST_GIF) as im:
-        im = im.convert("RGB")
+        im_rgb = im.convert("RGB")
 
-        im = im.resize((100, 100), Image.Resampling.LANCZOS)
-        im2 = im.convert("P", palette=Image.Palette.ADAPTIVE, colors=256)
+    im_rgb = im_rgb.resize((100, 100), Image.Resampling.LANCZOS)
+    im_p = im_rgb.convert("P", palette=Image.Palette.ADAPTIVE, colors=256)
 
-        f = tmp_path / "temp.gif"
-        im2.save(f, optimize=True)
+    f = tmp_path / "temp.gif"
+    im_p.save(f, optimize=True)
 
     with Image.open(f) as reloaded:
-        assert_image_similar(im, reloaded.convert("RGB"), 10)
+        assert_image_similar(im_rgb, reloaded.convert("RGB"), 10)
 
 
 def test_palette_434(tmp_path: Path) -> None:
@@ -383,35 +382,36 @@ def test_palette_434(tmp_path: Path) -> None:
         with roundtrip(im, optimize=True) as reloaded:
             assert_image_similar(im, reloaded, 1)
 
-        im = im.convert("RGB")
-        # check automatic P conversion
-        with roundtrip(im) as reloaded:
-            reloaded = reloaded.convert("RGB")
-            assert_image_equal(im, reloaded)
+        im_rgb = im.convert("RGB")
+
+    # check automatic P conversion
+    with roundtrip(im_rgb) as reloaded:
+        reloaded = reloaded.convert("RGB")
+        assert_image_equal(im_rgb, reloaded)
 
 
 @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
 def test_save_netpbm_bmp_mode(tmp_path: Path) -> None:
     with Image.open(TEST_GIF) as img:
-        img = img.convert("RGB")
+        img_rgb = img.convert("RGB")
 
-        tempfile = str(tmp_path / "temp.gif")
-        b = BytesIO()
-        GifImagePlugin._save_netpbm(img, b, tempfile)
-        with Image.open(tempfile) as reloaded:
-            assert_image_similar(img, reloaded.convert("RGB"), 0)
+    tempfile = str(tmp_path / "temp.gif")
+    b = BytesIO()
+    GifImagePlugin._save_netpbm(img_rgb, b, tempfile)
+    with Image.open(tempfile) as reloaded:
+        assert_image_equal(img_rgb, reloaded.convert("RGB"))
 
 
 @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
 def test_save_netpbm_l_mode(tmp_path: Path) -> None:
     with Image.open(TEST_GIF) as img:
-        img = img.convert("L")
+        img_l = img.convert("L")
 
         tempfile = str(tmp_path / "temp.gif")
         b = BytesIO()
-        GifImagePlugin._save_netpbm(img, b, tempfile)
+        GifImagePlugin._save_netpbm(img_l, b, tempfile)
         with Image.open(tempfile) as reloaded:
-            assert_image_similar(img, reloaded.convert("L"), 0)
+            assert_image_equal(img_l, reloaded.convert("L"))
 
 
 def test_seek() -> None:
@@ -1038,9 +1038,9 @@ def test_webp_background(tmp_path: Path) -> None:
             im.save(out)
 
     # Test non-opaque WebP background
-    im = Image.new("L", (100, 100), "#000")
-    im.info["background"] = (0, 0, 0, 0)
-    im.save(out)
+    im2 = Image.new("L", (100, 100), "#000")
+    im2.info["background"] = (0, 0, 0, 0)
+    im2.save(out)
 
 
 def test_comment(tmp_path: Path) -> None:
@@ -1048,16 +1048,16 @@ def test_comment(tmp_path: Path) -> None:
         assert im.info["comment"] == b"File written by Adobe Photoshop\xa8 4.0"
 
     out = tmp_path / "temp.gif"
-    im = Image.new("L", (100, 100), "#000")
-    im.info["comment"] = b"Test comment text"
-    im.save(out)
+    im2 = Image.new("L", (100, 100), "#000")
+    im2.info["comment"] = b"Test comment text"
+    im2.save(out)
     with Image.open(out) as reread:
-        assert reread.info["comment"] == im.info["comment"]
+        assert reread.info["comment"] == im2.info["comment"]
 
-    im.info["comment"] = "Test comment text"
-    im.save(out)
+    im2.info["comment"] = "Test comment text"
+    im2.save(out)
     with Image.open(out) as reread:
-        assert reread.info["comment"] == im.info["comment"].encode()
+        assert reread.info["comment"] == im2.info["comment"].encode()
 
         # Test that GIF89a is used for comments
         assert reread.info["version"] == b"GIF89a"
@@ -1433,7 +1433,7 @@ def test_getdata(monkeypatch: pytest.MonkeyPatch) -> None:
     # with open('Tests/images/gif_header_data.pkl', 'wb') as f:
     #    pickle.dump((h, d), f, 1)
     with open("Tests/images/gif_header_data.pkl", "rb") as f:
-        (h_target, d_target) = pickle.load(f)
+        h_target, d_target = pickle.load(f)
 
     assert h == h_target
     assert d == d_target

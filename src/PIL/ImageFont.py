@@ -127,11 +127,15 @@ class ImageFont:
     def _load_pilfont_data(self, file: IO[bytes], image: Image.Image) -> None:
         # check image
         if image.mode not in ("1", "L"):
+            image.close()
+
             msg = "invalid font image mode"
             raise TypeError(msg)
 
         # read PILfont header
         if file.read(8) != b"PILfont\n":
+            image.close()
+
             msg = "Not a PILfont file"
             raise SyntaxError(msg)
         file.readline()
@@ -671,8 +675,12 @@ class FreeTypeFont:
         :returns: A list of the named styles in a variation font.
         :exception OSError: If the font is not a variation font.
         """
-        names = self.font.getvarnames()
-        return [name.replace(b"\x00", b"") for name in names]
+        names = []
+        for name in self.font.getvarnames():
+            name = name.replace(b"\x00", b"")
+            if name not in names:
+                names.append(name)
+        return names
 
     def set_variation_by_name(self, name: str | bytes) -> None:
         """
@@ -932,9 +940,7 @@ def load_default_imagefont() -> ImageFont:
     f = ImageFont()
     f._load_pilfont_data(
         # courB08
-        BytesIO(
-            base64.b64decode(
-                b"""
+        BytesIO(base64.b64decode(b"""
 UElMZm9udAo7Ozs7OzsxMDsKREFUQQoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -1026,13 +1032,8 @@ AJsAEQAGAAAAAP/6AAX//wCbAAoAoAAPAAYAAAAA//oABQABAKAACgClABEABgAA////+AAGAAAA
 pQAKAKwAEgAGAAD////4AAYAAACsAAoAswASAAYAAP////gABgAAALMACgC6ABIABgAA////+QAG
 AAAAugAKAMEAEQAGAAD////4AAYAAgDBAAoAyAAUAAYAAP////kABQACAMgACgDOABMABgAA////
 +QAGAAIAzgAKANUAEw==
-"""
-            )
-        ),
-        Image.open(
-            BytesIO(
-                base64.b64decode(
-                    b"""
+""")),
+        Image.open(BytesIO(base64.b64decode(b"""
 iVBORw0KGgoAAAANSUhEUgAAAx4AAAAUAQAAAAArMtZoAAAEwElEQVR4nABlAJr/AHVE4czCI/4u
 Mc4b7vuds/xzjz5/3/7u/n9vMe7vnfH/9++vPn/xyf5zhxzjt8GHw8+2d83u8x27199/nxuQ6Od9
 M43/5z2I+9n9ZtmDBwMQECDRQw/eQIQohJXxpBCNVE6QCCAAAAD//wBlAJr/AgALyj1t/wINwq0g
@@ -1056,10 +1057,7 @@ evta/58PTEWzr21hufPjA8N+qlnBwAAAAAD//2JiWLci5v1+HmFXDqcnULE/MxgYGBj+f6CaJQAA
 AAD//2Ji2FrkY3iYpYC5qDeGgeEMAwPDvwQBBoYvcTwOVLMEAAAA//9isDBgkP///0EOg9z35v//
 Gc/eeW7BwPj5+QGZhANUswMAAAD//2JgqGBgYGBgqEMXlvhMPUsAAAAA//8iYDd1AAAAAP//AwDR
 w7IkEbzhVQAAAABJRU5ErkJggg==
-"""
-                )
-            )
-        ),
+"""))),
     )
     return f
 
@@ -1080,9 +1078,7 @@ def load_default(size: float | None = None) -> FreeTypeFont | ImageFont:
     """
     if isinstance(core, ModuleType) or size is not None:
         return truetype(
-            BytesIO(
-                base64.b64decode(
-                    b"""
+            BytesIO(base64.b64decode(b"""
 AAEAAAAPAIAAAwBwRkZUTYwDlUAAADFoAAAAHEdERUYAqADnAAAo8AAAACRHUE9ThhmITwAAKfgAA
 AduR1NVQnHxefoAACkUAAAA4k9TLzJovoHLAAABeAAAAGBjbWFw5lFQMQAAA6gAAAGqZ2FzcP//AA
 MAACjoAAAACGdseWYmRXoPAAAGQAAAHfhoZWFkE18ayQAAAPwAAAA2aGhlYQboArEAAAE0AAAAJGh
@@ -1303,9 +1299,7 @@ ABUADgAPAAAACwAQAAAAAAAAAAAAAAAAAAUAGAACAAIAAgAAAAIAGAAXAAAAGAAAABYAFgACABYAA
 gAWAAAAEQADAAoAFAAMAA0ABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASAAAAEgAGAAEAHgAkAC
 YAJwApACoALQAuAC8AMgAzADcAOAA5ADoAPAA9AEUASABOAE8AUgBTAFUAVwBZAFoAWwBcAF0AcwA
 AAAAAAQAAAADa3tfFAAAAANAan9kAAAAA4QodoQ==
-"""
-                )
-            ),
+""")),
             10 if size is None else size,
             layout_engine=Layout.BASIC,
         )

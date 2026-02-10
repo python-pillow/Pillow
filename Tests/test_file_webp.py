@@ -60,7 +60,6 @@ class TestFileWebp:
             assert image.size == (128, 128)
             assert image.format == "WEBP"
             image.load()
-            image.getdata()
 
             # generated with:
             # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
@@ -77,7 +76,6 @@ class TestFileWebp:
             assert image.size == (128, 128)
             assert image.format == "WEBP"
             image.load()
-            image.getdata()
 
             if mode == self.rgb_mode:
                 # generated with: dwebp -ppm temp.webp -o hopper_webp_write.ppm

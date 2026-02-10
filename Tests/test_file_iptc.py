@@ -6,13 +6,13 @@ import pytest
 
 from PIL import Image, IptcImagePlugin, TiffImagePlugin, TiffTags
 
-from .helper import assert_image_equal, hopper
+from .helper import assert_image_equal
 
 TEST_FILE = "Tests/images/iptc.jpg"
 
 
 def create_iptc_image(info: dict[str, int] = {}) -> BytesIO:
-    def field(tag, value):
+    def field(tag: tuple[int, int], value: bytes) -> bytes:
         return bytes((0x1C,) + tag + (0, len(value))) + value
 
     data = field((3, 60), bytes((info.get("layers", 1), info.get("component", 0))))
@@ -85,7 +85,7 @@ def test_getiptcinfo() -> None:
 
 def test_getiptcinfo_jpg_none() -> None:
     # Arrange
-    with hopper() as im:
+    with Image.open("Tests/images/hopper.jpg") as im:
         # Act
         iptc = IptcImagePlugin.getiptcinfo(im)
 
@@ -143,6 +143,7 @@ def test_getiptcinfo_tiff() -> None:
 
     # Test with LONG tag type
     with Image.open("Tests/images/hopper.Lab.tif") as im:
+        assert isinstance(im, TiffImagePlugin.TiffImageFile)
         im.tag_v2.tagtype[TiffImagePlugin.IPTC_NAA_CHUNK] = TiffTags.LONG
         iptc = IptcImagePlugin.getiptcinfo(im)
 

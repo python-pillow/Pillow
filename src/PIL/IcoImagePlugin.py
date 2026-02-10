@@ -17,6 +17,20 @@
 # <casadebender@gmail.com>.
 # https://code.google.com/archive/p/casadebender/wikis/Win32IconImagePlugin.wiki
 #
+# Copyright 2008 Bryan Davis
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # Icon format references:
 #   * https://en.wikipedia.org/wiki/ICO_(file_format)
 #   * https://msdn.microsoft.com/en-us/library/ms997538.aspx
@@ -326,6 +340,7 @@ class IcoImageFile(ImageFile.ImageFile):
     format_description = "Windows Icon"
 
     def _open(self) -> None:
+        assert self.fp is not None
         self.ico = IcoFile(self.fp)
         self.info["sizes"] = self.ico.sizes()
         self.size = self.ico.entry[0].dim

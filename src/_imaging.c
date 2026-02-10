@@ -543,12 +543,7 @@ getpixel(Imaging im, ImagingAccess access, int x, int y) {
         case IMAGING_TYPE_FLOAT32:
             return PyFloat_FromDouble(pixel.f);
         case IMAGING_TYPE_SPECIAL:
-            if (im->bands == 1) {
-                return PyLong_FromLong(pixel.h);
-            } else {
-                return Py_BuildValue("BBB", pixel.b[0], pixel.b[1], pixel.b[2]);
-            }
-            break;
+            return PyLong_FromLong(pixel.h);
     }
 
     /* unknown type */
@@ -665,26 +660,10 @@ getink(PyObject *color, Imaging im, char *ink) {
             memcpy(ink, &ftmp, sizeof(ftmp));
             return ink;
         case IMAGING_TYPE_SPECIAL:
-            if (isModeI16(im->mode)) {
-                ink[0] = (UINT8)r;
-                ink[1] = (UINT8)(r >> 8);
-                ink[2] = ink[3] = 0;
-                return ink;
-            } else {
-                if (rIsInt) {
-                    b = (UINT8)(r >> 16);
-                    g = (UINT8)(r >> 8);
-                    r = (UINT8)r;
-                } else if (tupleSize != 3) {
-                    PyErr_SetString(
-                        PyExc_TypeError,
-                        "color must be int, or tuple of one or three elements"
-                    );
-                    return NULL;
-                } else if (!PyArg_ParseTuple(color, "iiL", &b, &g, &r)) {
-                    return NULL;
-                }
-            }
+            ink[0] = (UINT8)r;
+            ink[1] = (UINT8)(r >> 8);
+            ink[2] = ink[3] = 0;
+            return ink;
     }
 
     PyErr_SetString(PyExc_ValueError, wrong_mode);
@@ -2480,7 +2459,6 @@ _merge(PyObject *self, PyObject *args) {
 
 static PyObject *
 _split(ImagingObject *self) {
-    int fails = 0;
     Py_ssize_t i;
     PyObject *list;
     PyObject *imaging_object;
@@ -2494,13 +2472,11 @@ _split(ImagingObject *self) {
     for (i = 0; i < self->image->bands; i++) {
         imaging_object = PyImagingNew(bands[i]);
         if (!imaging_object) {
-            fails += 1;
+            Py_DECREF(list);
+            list = NULL;
+            break;
         }
         PyTuple_SET_ITEM(list, i, imaging_object);
-    }
-    if (fails) {
-        Py_DECREF(list);
-        list = NULL;
     }
     return list;
 }

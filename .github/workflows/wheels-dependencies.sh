@@ -32,7 +32,6 @@ if [[ "$CIBW_PLATFORM" == "ios" ]]; then
     # or `build/deps/iphonesimulator`
     WORKDIR=$(pwd)/build/$IOS_SDK
     BUILD_PREFIX=$(pwd)/build/deps/$IOS_SDK
-    PATCH_DIR=$(pwd)/patches/iOS
 
     # GNU tooling insists on using aarch64 rather than arm64
     if [[ $PLAT == "arm64" ]]; then
@@ -90,27 +89,25 @@ fi
 
 ARCHIVE_SDIR=pillow-depends-main
 
-# Package versions for fresh source builds. Version numbers with "Patched"
-# annotations have a source code patch that is required for some platforms. If
-# you change those versions, ensure the patch is also updated.
+# Package versions for fresh source builds.
 if [[ -n "$IOS_SDK" ]]; then
   FREETYPE_VERSION=2.13.3
 else
   FREETYPE_VERSION=2.14.1
 fi
-HARFBUZZ_VERSION=12.1.0
-LIBPNG_VERSION=1.6.50
-JPEGTURBO_VERSION=3.1.2
+HARFBUZZ_VERSION=12.3.2
+LIBPNG_VERSION=1.6.54
+JPEGTURBO_VERSION=3.1.3
 OPENJPEG_VERSION=2.5.4
-XZ_VERSION=5.8.1
+XZ_VERSION=5.8.2
 ZSTD_VERSION=1.5.7
 TIFF_VERSION=4.7.1
-LCMS2_VERSION=2.17
-ZLIB_NG_VERSION=2.2.5
+LCMS2_VERSION=2.18
+ZLIB_NG_VERSION=2.3.3
 LIBWEBP_VERSION=1.6.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
-BROTLI_VERSION=1.1.0  # Patched; next release won't need patching. See patch file.
+BROTLI_VERSION=1.2.0
 LIBAVIF_VERSION=1.3.0
 
 function build_pkg_config {
@@ -149,18 +146,9 @@ function build_zlib_ng {
     ORIGINAL_HOST_CONFIGURE_FLAGS=$HOST_CONFIGURE_FLAGS
     unset HOST_CONFIGURE_FLAGS
 
-    build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --zlib-compat
+    build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --installnamedir=$BUILD_PREFIX/lib --zlib-compat
 
     HOST_CONFIGURE_FLAGS=$ORIGINAL_HOST_CONFIGURE_FLAGS
-
-    if [[ -n "$IS_MACOS" ]] && [[ -z "$IOS_SDK" ]]; then
-        # Ensure that on macOS, the library name is an absolute path, not an
-        # @rpath, so that delocate picks up the right library (and doesn't need
-        # DYLD_LIBRARY_PATH to be set). The default Makefile doesn't have an
-        # option to control the install_name. This isn't needed on iOS, as iOS
-        # only builds the static library.
-        install_name_tool -id $BUILD_PREFIX/lib/libz.1.dylib $BUILD_PREFIX/lib/libz.1.dylib
-    fi
     touch zlib-stamp
 }
 
@@ -168,7 +156,7 @@ function build_brotli {
     if [ -e brotli-stamp ]; then return; fi
     local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-$BROTLI_VERSION.tar.gz)
     (cd $out_dir \
-        && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib $HOST_CMAKE_FLAGS . \
+        && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib -DCMAKE_MACOSX_BUNDLE=OFF $HOST_CMAKE_FLAGS . \
         && make -j4 install)
     touch brotli-stamp
 }
@@ -279,7 +267,7 @@ function build {
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [[ -n "$IS_MACOS" ]]; then
-        build_simple xorgproto 2024.1 https://www.x.org/pub/individual/proto
+        build_simple xorgproto 2025.1 https://www.x.org/pub/individual/proto
         build_simple libXau 1.0.12 https://www.x.org/pub/individual/lib
         build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
     else

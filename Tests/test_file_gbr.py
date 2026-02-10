@@ -33,7 +33,7 @@ def test_multiple_load_operations() -> None:
         assert_image_equal_tofile(im, "Tests/images/gbr.png")
 
 
-def create_gbr_image(info: dict[str, int] = {}, magic_number=b"") -> BytesIO:
+def create_gbr_image(info: dict[str, int] = {}, magic_number: bytes = b"") -> BytesIO:
     return BytesIO(
         b"".join(
             _binary.o32be(i)

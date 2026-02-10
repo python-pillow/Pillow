@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from io import BytesIO
 from pathlib import Path
 
 import pytest
@@ -277,25 +278,25 @@ def test_apng_mode() -> None:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         assert im.mode == "P"
         im.seek(im.n_frames - 1)
-        im = im.convert("RGB")
-        assert im.getpixel((0, 0)) == (0, 255, 0)
-        assert im.getpixel((64, 32)) == (0, 255, 0)
+        im_rgb = im.convert("RGB")
+    assert im_rgb.getpixel((0, 0)) == (0, 255, 0)
+    assert im_rgb.getpixel((64, 32)) == (0, 255, 0)
 
     with Image.open("Tests/images/apng/mode_palette_alpha.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         assert im.mode == "P"
         im.seek(im.n_frames - 1)
-        im = im.convert("RGBA")
-        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
-        assert im.getpixel((64, 32)) == (0, 255, 0, 255)
+        im_rgba = im.convert("RGBA")
+    assert im_rgba.getpixel((0, 0)) == (0, 255, 0, 255)
+    assert im_rgba.getpixel((64, 32)) == (0, 255, 0, 255)
 
     with Image.open("Tests/images/apng/mode_palette_1bit_alpha.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         assert im.mode == "P"
         im.seek(im.n_frames - 1)
-        im = im.convert("RGBA")
-        assert im.getpixel((0, 0)) == (0, 0, 255, 128)
-        assert im.getpixel((64, 32)) == (0, 0, 255, 128)
+        im_rgba = im.convert("RGBA")
+    assert im_rgba.getpixel((0, 0)) == (0, 0, 255, 128)
+    assert im_rgba.getpixel((64, 32)) == (0, 0, 255, 128)
 
 
 def test_apng_chunk_errors() -> None:
@@ -517,6 +518,24 @@ def test_apng_save_duration_loop(tmp_path: Path) -> None:
         assert im.info["duration"] == 600
 
 
+def test_apng_save_duration_float(tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    im = Image.new("1", (1, 1))
+    im2 = Image.new("1", (1, 1), 1)
+    im.save(test_file, save_all=True, append_images=[im2], duration=0.5)
+
+    with Image.open(test_file) as reloaded:
+        assert reloaded.info["duration"] == 0.5
+
+
+def test_apng_save_large_duration(tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    im = Image.new("1", (1, 1))
+    im2 = Image.new("1", (1, 1), 1)
+    with pytest.raises(ValueError, match="cannot write duration"):
+        im.save(test_file, save_all=True, append_images=[im2], duration=65536000)
+
+
 def test_apng_save_disposal(tmp_path: Path) -> None:
     test_file = tmp_path / "temp.png"
     size = (128, 64)
@@ -716,6 +735,25 @@ def test_apng_save_size(tmp_path: Path) -> None:
 
     with Image.open(test_file) as reloaded:
         assert reloaded.size == (200, 200)
+
+
+def test_compress_level() -> None:
+    compress_level_sizes = {}
+    for compress_level in (0, 9):
+        out = BytesIO()
+
+        im = Image.new("L", (100, 100))
+        im.save(
+            out,
+            "PNG",
+            save_all=True,
+            append_images=[Image.new("L", (200, 200))],
+            compress_level=compress_level,
+        )
+
+        compress_level_sizes[compress_level] = len(out.getvalue())
+
+    assert compress_level_sizes[0] > compress_level_sizes[9]
 
 
 def test_seek_after_close() -> None:
