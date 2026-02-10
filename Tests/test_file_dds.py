@@ -553,6 +553,6 @@ def test_save_large_file(tmp_path: Path, pixel_format: str, mode: str) -> None:
         "Tests/images/timeout-c60a3d7314213624607bfb3e38d551a8b24a7435.dds",
     ],
 )
-def test_timeout(test_file) -> None:
+def test_timeout(test_file: str) -> None:
     with Image.open(test_file) as im:
         im.load()
