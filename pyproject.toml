@@ -112,14 +112,6 @@ test-requires = [
 ]
 xbuild-tools = [  ]
 
-[tool.cibuildwheel.macos]
-# Disable platform guessing on macOS to avoid picking up Homebrew etc.
-config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable platform-guessing=disable"
-
-[tool.cibuildwheel.macos.environment]
-# Isolate macOS build environment from Homebrew etc.
-PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
-
 [tool.cibuildwheel.ios]
 # Disable platform guessing on iOS, and disable raqm (since there won't be a
 # vendor version, and we can't distribute it due to licensing)
@@ -138,6 +130,14 @@ test-command = [
 
 # There's no numpy wheel for iOS (yet...)
 test-requires = [  ]
+
+[tool.cibuildwheel.macos]
+# Disable platform guessing on macOS to avoid picking up Homebrew etc.
+config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable platform-guessing=disable"
+
+[tool.cibuildwheel.macos.environment]
+# Isolate macOS build environment from Homebrew etc.
+PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
 
 [[tool.cibuildwheel.overrides]]
 # iOS environment is isolated by cibuildwheel, but needs the dependencies
@@ -217,6 +217,7 @@ testpaths = [
 python_version = "3.10"
 pretty = true
 disallow_any_generics = true
+disallow_untyped_defs = true
 enable_error_code = "ignore-without-code"
 extra_checks = true
 follow_imports = "silent"

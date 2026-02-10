@@ -112,7 +112,7 @@ jobs:
 
     - name: Cache build
       id: build-cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: winbuild\build
         key:
@@ -196,8 +196,9 @@ jobs:
     # trim ~150MB for each job
     - name: Optimize build cache
       if: steps.build-cache.outputs.cache-hit != 'true'
-      run: rmdir /S /Q winbuild\build\src
-      shell: cmd
+      run: |
+        rm -rf winbuild\build\src
+      shell: bash
 
     - name: Build Pillow
       run: |
@@ -214,9 +215,7 @@ jobs:
 
     - name: Test Pillow
       run: |
-        path %GITHUB_WORKSPACE%\winbuild\build\bin;%PATH%
         .ci\test.cmd
-      shell: cmd
 
     - name: Prepare to upload errors
       if: failure()
@@ -225,7 +224,7 @@ jobs:
       shell: bash
 
     - name: Upload errors
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       if: failure()
       with:
         name: errors

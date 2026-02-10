@@ -1,8 +1,5 @@
-# Configuration for the zizmor static analysis tool, run via pre-commit in CI
 # https://docs.zizmor.sh/configuration/
 rules:
-  obfuscation:
-    disable: true
   unpinned-uses:
     config:
       policies:

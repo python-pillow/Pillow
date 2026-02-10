@@ -654,20 +654,16 @@ class TestFilePng:
         with pytest.raises(SyntaxError, match="Unknown compression method"):
             PngImagePlugin.PngImageFile("Tests/images/unknown_compression_method.png")
 
-    def test_padded_idat(self) -> None:
+    def test_padded_idat(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # This image has been manually hexedited
         # so that the IDAT chunk has padding at the end
         # Set MAXBLOCK to the length of the actual data
         # so that the decoder finishes reading before the chunk ends
-        MAXBLOCK = ImageFile.MAXBLOCK
-        ImageFile.MAXBLOCK = 45
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        monkeypatch.setattr(ImageFile, "MAXBLOCK", 45)
+        monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
 
         with Image.open("Tests/images/padded_idat.png") as im:
             im.load()
-
-            ImageFile.MAXBLOCK = MAXBLOCK
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
             assert_image_equal_tofile(im, "Tests/images/bw_gradient.png")
 
@@ -823,7 +819,7 @@ class TestFilePng:
         monkeypatch.setattr(sys, "stdout", mystdout)
 
         with Image.open(TEST_PNG_FILE) as im:
-            im.save(sys.stdout, "PNG")
+            im.save(sys.stdout, "PNG")  # type: ignore[arg-type]
 
         if isinstance(mystdout, MyStdOut):
             mystdout = mystdout.buffer

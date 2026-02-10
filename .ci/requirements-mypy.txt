@@ -1,4 +1,4 @@
-mypy==1.19.0
+mypy==1.19.1
 arro3-compute
 arro3-core
 IceSpringPySideStubs-PyQt6
@@ -9,7 +9,6 @@ packaging
 pyarrow-stubs
 pybind11
 pytest
-sphinx
 types-atheris
 types-defusedxml
 types-olefile

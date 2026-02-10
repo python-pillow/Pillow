@@ -518,6 +518,24 @@ def test_apng_save_duration_loop(tmp_path: Path) -> None:
         assert im.info["duration"] == 600
 
 
+def test_apng_save_duration_float(tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    im = Image.new("1", (1, 1))
+    im2 = Image.new("1", (1, 1), 1)
+    im.save(test_file, save_all=True, append_images=[im2], duration=0.5)
+
+    with Image.open(test_file) as reloaded:
+        assert reloaded.info["duration"] == 0.5
+
+
+def test_apng_save_large_duration(tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    im = Image.new("1", (1, 1))
+    im2 = Image.new("1", (1, 1), 1)
+    with pytest.raises(ValueError, match="cannot write duration"):
+        im.save(test_file, save_all=True, append_images=[im2], duration=65536000)
+
+
 def test_apng_save_disposal(tmp_path: Path) -> None:
     test_file = tmp_path / "temp.png"
     size = (128, 64)

@@ -116,19 +116,19 @@ V = {
     "BROTLI": "1.2.0",
     "FREETYPE": "2.14.1",
     "FRIBIDI": "1.0.16",
-    "HARFBUZZ": "12.3.0",
+    "HARFBUZZ": "12.3.2",
     "HIGHWAY": "1.3.0",
     "JPEGTURBO": "3.1.3",
     "JPEGXL": "0.11.1",
-    "LCMS2": "2.17",
+    "LCMS2": "2.18",
     "LIBAVIF": "1.3.0",
     "LIBIMAGEQUANT": "4.4.1",
-    "LIBPNG": "1.6.53",
+    "LIBPNG": "1.6.54",
     "LIBWEBP": "1.6.0",
     "OPENJPEG": "2.5.4",
     "TIFF": "4.7.1",
     "XZ": "5.8.2",
-    "ZLIBNG": "2.3.2",
+    "ZLIBNG": "2.3.3",
 }
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
 
