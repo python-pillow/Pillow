@@ -39,7 +39,7 @@ disk, and calls an external display utility.
 Image processing
 ----------------
 
-The library contains basic image processing functionality, including point operations, filtering with a set of built-in convolution kernels, and colour space conversions.
+The library contains basic image processing functionality, including point operations, filtering with a set of built-in convolution kernels, and color space conversions.
 
 The library also supports image resizing, rotation and arbitrary affine transforms.
 

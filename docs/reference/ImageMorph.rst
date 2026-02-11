@@ -15,7 +15,7 @@ applied to 1 or L mode images::
 
 .. _morphology: https://en.wikipedia.org/wiki/Mathematical_morphology
 
-In addition to applying operators, you can also analyse images.
+In addition to applying operators, you can also analyze images.
 
 You can inspect an image in isolation to determine which pixels are non-empty::
 

@@ -27,7 +27,7 @@ Pillow decodes files in two stages:
 
 An image plugin should contain a format handler derived from the
 :py:class:`PIL.ImageFile.ImageFile` base class. This class should provide an
-``_open`` method, which reads the file header and set at least the internal
+``_open`` method, which reads the file header and sets at least the internal
 ``_size`` and ``_mode`` attributes so that :py:attr:`~PIL.Image.Image.mode` and
 :py:attr:`~PIL.Image.Image.size` are populated. To be able to load the file,
 the method must also create a list of ``tile`` descriptors, which contain a
@@ -217,14 +217,14 @@ table describes some commonly used **raw modes**:
 +-----------+-------------------------------------------------------------------+
 | ``P``     | 8-bit palette-mapped image.                                       |
 +-----------+-------------------------------------------------------------------+
-| ``RGB``   | 24-bit true colour, stored as (red, green, blue).                 |
+| ``RGB``   | 24-bit true color, stored as (red, green, blue).                 |
 +-----------+-------------------------------------------------------------------+
-| ``BGR``   | 24-bit true colour, stored as (blue, green, red).                 |
+| ``BGR``   | 24-bit true color, stored as (blue, green, red).                 |
 +-----------+-------------------------------------------------------------------+
-| ``RGBX``  | | 24-bit true colour, stored as (red, green, blue, pad). The pad  |
+| ``RGBX``  | | 24-bit true color, stored as (red, green, blue, pad). The pad  |
 |           | | pixels may vary.                                                |
 +-----------+-------------------------------------------------------------------+
-| ``RGB;L`` | | 24-bit true colour, line interleaved (first all red pixels, then|
+| ``RGB;L`` | | 24-bit true color, line interleaved (first all red pixels, then|
 |           | | all green pixels, finally all blue pixels).                     |
 +-----------+-------------------------------------------------------------------+
 
@@ -393,7 +393,7 @@ state structure, and a buffer of data to be transformed.
 It is the codec's responsibility to pull as much data as possible out of the
 buffer and return the number of bytes consumed. The next call to the codec will
 include the previous unconsumed tail. The codec function will be called
-multiple times as the data processed.
+multiple times as the data is processed.
 
 Alternatively, if ``pulls_fd`` or ``pushes_fd`` is set, then the decode or
 encode function is called once, with an empty buffer. It is the codec's
@@ -436,7 +436,7 @@ Python-based file codec:
    ``_pushes_fd`` property) is set to ``True``, then ``decode`` and ``encode``
    will only be called once. In the decoder, ``self.fd`` can be used to access
    the file-like object. Using this will provide a codec with more freedom, but
-   that freedom may mean increased memory usage if entire file is held in
+   that freedom may mean increased memory usage if the entire file is held in
    memory at once by the codec.
 
    In ``decode``, once the data has been interpreted, ``set_as_raw`` can be
@@ -446,7 +446,7 @@ Python-based file codec:
    is complete. This can be used to clean up any resources used by the codec.
 
    If you set ``_pulls_fd`` or ``_pushes_fd`` to ``True`` however, then you
-   probably chose to perform any cleanup tasks  at the end of ``decode`` or
+   probably chose to perform any cleanup tasks at the end of ``decode`` or
    ``encode``.
 
 For an example :py:class:`PIL.ImageFile.PyDecoder`, see `DdsImagePlugin

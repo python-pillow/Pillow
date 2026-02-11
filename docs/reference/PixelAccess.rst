@@ -53,7 +53,7 @@ Access using negative indexes is also possible. ::
 
         :param xy: The pixel coordinate, given as (x, y).
         :returns: a pixel value for single band images, a tuple of
-                  pixel values for multiband images.
+                  pixel values for multi-band images.
 
   .. method:: __setitem__(self, xy: tuple[int, int], color: float | tuple[int, ...]) -> None
 

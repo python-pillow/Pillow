@@ -199,7 +199,7 @@ Loading
 ~~~~~~~
 
 To use Ghostscript, Pillow searches for the "gs" executable. On Windows, it
-also searches for "gswin32c" and "gswin64c". To customise this behaviour,
+also searches for "gswin32c" and "gswin64c". To customize this behavior,
 ``EpsImagePlugin.gs_binary = "gswin64"`` will set the name of the executable to
 use. ``EpsImagePlugin.gs_binary = False`` will prevent Ghostscript use.
 
@@ -219,7 +219,7 @@ method with the following parameters to affect how Ghostscript renders the EPS.
 
 **transparency**
     If true, generates an RGBA image with a transparent background, instead of
-    the default behaviour of an RGB image with a white background.
+    the default behavior of an RGB image with a white background.
 
 
 GIF
@@ -236,7 +236,7 @@ images. Seeking to later frames in a ``P`` image will change the image to
 ``P`` mode images are changed to ``RGB`` because each frame of a GIF may contain
 its own individual palette of up to 256 colors. When a new frame is placed onto a
 previous frame, those colors may combine to exceed the ``P`` mode limit of 256
-colors. Instead, the image is converted to ``RGB`` handle this.
+colors. Instead, the image is converted to ``RGB`` to handle this.
 
 If you would prefer the first ``P`` image frame to be ``RGB`` as well, so that
 every ``P`` frame is converted to ``RGB`` or ``RGBA`` mode, there is a setting
@@ -345,7 +345,7 @@ following options are available::
 **palette**
     Use the specified palette for the saved image. The palette should
     be a bytes or bytearray object containing the palette entries in
-    RGBRGB... form. It should be no more than 768 bytes. Alternately,
+    RGBRGB... form. It should be no more than 768 bytes. Alternatively,
     the palette can be passed in as an
     :py:class:`PIL.ImagePalette.ImagePalette` object.
 
@@ -449,7 +449,7 @@ Saving
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **sizes**
-    A list of sizes including in this ico file; these are a 2-tuple,
+    A list of sizes included in this ico file; these are a 2-tuple,
     ``(width, height)``; Default to ``[(16, 16), (24, 24), (32, 32), (48, 48),
     (64, 64), (128, 128), (256, 256)]``. Any sizes bigger than the original
     size or 256 will be ignored.
@@ -1309,7 +1309,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     .. versionadded:: 6.1.0
 
     Added support for signed types (e.g. ``TIFF_SIGNED_LONG``) and multiple values.
-    Multiple values for a single tag must be to
+    Multiple values for a single tag must be passed to
     :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2` as a tuple and
     require a matching type in
     :py:attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype` tagtype.
@@ -1445,7 +1445,7 @@ will be saved, and the following options will also be available.
 **kmin, kmax**
     Minimum and maximum distance between consecutive key frames in
     the output. The library may insert some key frames as needed
-    to satisfy this criteria. Note that these conditions should
+    to satisfy these criteria. Note that these conditions should
     hold: kmax > kmin and kmin >= kmax / 2 + 1. Also, if kmax <= 0,
     then key-frame insertion is disabled; and if kmax == 1, then all
     frames will be key-frames (kmin value does not matter for these
