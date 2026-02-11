@@ -4,7 +4,7 @@
 Security
 ========
 
-:cve:`2021-25289`: Fix OOB write with invalid tile extents
+:cve:`2026-25990`: Fix OOB write with invalid tile extents
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Check that tile extents do not use negative x or y offsets when decoding or encoding,
