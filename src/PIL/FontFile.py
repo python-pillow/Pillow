@@ -15,7 +15,6 @@
 #
 from __future__ import annotations
 
-import io
 import os
 from typing import BinaryIO
 
@@ -111,6 +110,22 @@ class FontFile:
                 self.bitmap.paste(im.crop(src), s)
                 self.metrics[i] = d, dst, s
 
+    def _encode_metrics(self) -> bytes:
+        values: tuple[int, ...] = ()
+        for id in range(256):
+            m = self.metrics[id]
+            if m:
+                values += m[0] + m[1] + m[2]
+            else:
+                values += (0,) * 10
+
+        metrics = b""
+        for v in values:
+            if v < 0:
+                v += 65536
+            metrics += _binary.o16be(v)
+        return metrics
+
     def save(self, filename: str) -> None:
         """Save font"""
 
@@ -124,19 +139,10 @@ class FontFile:
 
         # font metrics
         with open(os.path.splitext(filename)[0] + ".pil", "wb") as fp:
-            self.save_metrics(fp)
-
-    def save_metrics(self, fp: BinaryIO) -> None:
-        """Save font metrics to a file-like object"""
-        fp.write(b"PILfont\n")
-        fp.write(f";;;;;;{self.ysize};\n".encode("ascii"))  # HACK!!!
-        fp.write(b"DATA\n")
-        for id in range(256):
-            m = self.metrics[id]
-            if not m:
-                puti16(fp, (0,) * 10)
-            else:
-                puti16(fp, m[0] + m[1] + m[2])
+            fp.write(b"PILfont\n")
+            fp.write(f";;;;;;{self.ysize};\n".encode("ascii"))  # HACK!!!
+            fp.write(b"DATA\n")
+            fp.write(self._encode_metrics())
 
     def to_imagefont(self) -> ImageFont.ImageFont:
         """Convert to ImageFont"""
@@ -148,9 +154,6 @@ class FontFile:
             msg = "No bitmap created"
             raise ValueError(msg)
 
-        buf = io.BytesIO()
-        self.save_metrics(buf)
-        buf.seek(0)
-        imgfont = ImageFont.ImageFont()
-        imgfont._load_pilfont_data(buf, self.bitmap)
-        return imgfont
+        imagefont = ImageFont.ImageFont()
+        imagefont._load(self.bitmap, self._encode_metrics())
+        return imagefont

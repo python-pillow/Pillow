@@ -75,13 +75,13 @@ def test_draw(request: pytest.FixtureRequest, tmp_path: Path) -> None:
     assert_image_equal_tofile(im, "Tests/images/test_draw_pbm_target.png")
 
 
-def test_to_imagefont(request: pytest.FixtureRequest, tmp_path: Path) -> None:
+def test_to_imagefont(tmp_path: Path) -> None:
     with open(fontname, "rb") as test_file:
         pcffont = PcfFontFile.PcfFontFile(test_file)
-    imgfont = pcffont.to_imagefont()
+    imagefont = pcffont.to_imagefont()
     im = Image.new("L", (130, 30), "white")
     draw = ImageDraw.Draw(im)
-    draw.text((0, 0), message, "black", font=imgfont)
+    draw.text((0, 0), message, "black", font=imagefont)
     assert_image_equal_tofile(im, "Tests/images/test_draw_pbm_target.png")
 
 
