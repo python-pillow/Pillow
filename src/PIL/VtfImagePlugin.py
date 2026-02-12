@@ -115,7 +115,7 @@ class VTFHeader(NamedTuple):
     bumpmap_scale: float
     pixel_format: VtfPF
     mipmap_count: int
-    low_pixel_format: int
+    low_pixel_format: VtfPF
     low_width: int
     low_height: int
     depth: int = 0
@@ -126,7 +126,7 @@ BLOCK_COMPRESSED = (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA, VtfPF.DXT3, VtfPF.DXT5)
 HEADER_V70 = "2HI2H4x3f4xfIbI2b"
 
 
-def _get_texture_size(pixel_format: int, size: tuple[int, int]) -> int:
+def _get_texture_size(pixel_format: VtfPF, size: tuple[int, int]) -> int:
     for factor, pixel_formats in (
         (0.5, (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA)),
         (1, (VtfPF.DXT3, VtfPF.DXT5, VtfPF.A8, VtfPF.I8)),
