@@ -59,6 +59,7 @@ def test_posy_link() -> None:
         assert im.getpixel((20, 20)) == (0, 0, 0, 255)
         assert im.getpixel((40, 40)) == (255, 255, 255, 255)
 
+        assert isinstance(im, CurImagePlugin.CurImageFile)
         im.size = (32, 32)
         im.load()
         assert im.getpixel((0, 0)) == (0, 0, 0, 0)

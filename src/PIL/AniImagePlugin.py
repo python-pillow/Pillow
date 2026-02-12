@@ -283,7 +283,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 
 class AniFile:
-    def __init__(self, fp: BytesIO) -> None:
+    def __init__(self, fp: IO[bytes]) -> None:
         if not _accept(fp.read(4)):
             SyntaxError("Not an ANI file")
 
@@ -394,6 +394,7 @@ class AniImageFile(ImageFile.ImageFile):
     format_description = "Windows Animated Cursor"
 
     def _open(self) -> None:
+        assert self.fp is not None
         self.ani = AniFile(self.fp)
         self.info["seq"] = self.ani.seq
         self.info["rate"] = self.ani.rate

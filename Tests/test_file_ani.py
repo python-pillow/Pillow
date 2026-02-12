@@ -4,13 +4,14 @@ from io import BytesIO
 
 import pytest
 
-from PIL import Image
+from PIL import AniImagePlugin, Image
 
 from .helper import assert_image_equal_tofile
 
 
 def test_aero_busy() -> None:
     with Image.open("Tests/images/ani/aero_busy.ani") as im:
+        assert isinstance(im, AniImagePlugin.AniImageFile)
         assert im.size == (64, 64)
         assert im.n_frames == 18
 
@@ -29,6 +30,7 @@ def test_aero_busy() -> None:
 
 def test_posy_busy() -> None:
     with Image.open("Tests/images/ani/posy_busy.ani") as im:
+        assert isinstance(im, AniImagePlugin.AniImageFile)
         assert im.size == (96, 96)
         assert im.n_frames == 77
 
@@ -43,6 +45,7 @@ def test_posy_busy() -> None:
 
 def test_seq_rate() -> None:
     with Image.open("Tests/images/ani/stopwtch.ani") as im:
+        assert isinstance(im, AniImagePlugin.AniImageFile)
         assert im.size == (32, 32)
         assert im.n_frames == 8
 
@@ -122,6 +125,7 @@ def test_save() -> None:
         )
 
         with Image.open(output, formats=["ANI"]) as im:
+            assert isinstance(im, AniImagePlugin.AniImageFile)
             assert im.n_frames == 6
             assert im.info["seq"] == [0, 2, 4, 1, 3, 5, 0, 1, 0, 1]
             assert im.info["rate"] == [1, 2, 3, 1, 2, 3, 1, 2, 3, 4]
