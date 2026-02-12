@@ -828,16 +828,6 @@ PCX
 
 Pillow reads and writes PCX files containing ``1``, ``L``, ``P``, or ``RGB`` data.
 
-PFM
-^^^
-
-.. versionadded:: 10.3.0
-
-Pillow reads and writes grayscale (Pf format) Portable FloatMap (PFM) files
-containing ``F`` data.
-
-Color (PF format) PFM files are not supported.
-
 Opening
 ~~~~~~~
 
@@ -1081,12 +1071,17 @@ following parameters can also be set:
 PPM
 ^^^
 
-Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L``, ``I`` or
-``RGB`` data.
+Pillow reads and writes PBM, PGM, PPM, PNM and PFM files containing ``1``, ``L``, ``I``,
+``RGB`` or ``F`` data.
 
 "Raw" (P4 to P6) formats can be read, and are used when writing.
 
 Since Pillow 9.2.0, "plain" (P1 to P3) formats can be read as well.
+
+Since Pillow 10.3.0, grayscale (Pf format) Portable FloatMap (PFM) files containing
+``F`` data can be read and used when writing as well.
+
+Color (PF format) PFM files are not supported.
 
 QOI
 ^^^
