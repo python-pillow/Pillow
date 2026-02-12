@@ -217,14 +217,14 @@ table describes some commonly used **raw modes**:
 +-----------+-------------------------------------------------------------------+
 | ``P``     | 8-bit palette-mapped image.                                       |
 +-----------+-------------------------------------------------------------------+
-| ``RGB``   | 24-bit true color, stored as (red, green, blue).                 |
+| ``RGB``   | 24-bit true color, stored as (red, green, blue).                  |
 +-----------+-------------------------------------------------------------------+
-| ``BGR``   | 24-bit true color, stored as (blue, green, red).                 |
+| ``BGR``   | 24-bit true color, stored as (blue, green, red).                  |
 +-----------+-------------------------------------------------------------------+
-| ``RGBX``  | | 24-bit true color, stored as (red, green, blue, pad). The pad  |
+| ``RGBX``  | | 24-bit true color, stored as (red, green, blue, pad). The pad   |
 |           | | pixels may vary.                                                |
 +-----------+-------------------------------------------------------------------+
-| ``RGB;L`` | | 24-bit true color, line interleaved (first all red pixels, then|
+| ``RGB;L`` | | 24-bit true color, line interleaved (first all red pixels, then |
 |           | | all green pixels, finally all blue pixels).                     |
 +-----------+-------------------------------------------------------------------+
 
