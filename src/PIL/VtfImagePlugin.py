@@ -113,7 +113,7 @@ class VTFHeader(NamedTuple):
     reflectivity_g: float
     reflectivity_b: float
     bumpmap_scale: float
-    pixel_format: int
+    pixel_format: VtfPF
     mipmap_count: int
     low_pixel_format: int
     low_width: int
@@ -183,7 +183,7 @@ class VtfImageFile(ImageFile.ImageFile):
     format = "VTF"
     format_description = "Valve Texture Format"
 
-    def _open(self):
+    def _open(self) -> None:
         assert self.fp is not None
         if not _accept(self.fp.read(12)):
             msg = "not a VTF file"
@@ -222,6 +222,7 @@ class VtfImageFile(ImageFile.ImageFile):
             msg = f"Unsupported VTF pixel format: {pixel_format}"
             raise VTFException(msg)
 
+        args: tuple[int, str] | str
         if pixel_format in BLOCK_COMPRESSED:
             codec_name = "bcn"
             if pixel_format in (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA):
