@@ -182,3 +182,20 @@ def test_layer_crashes(test_file: str) -> None:
         assert isinstance(im, PsdImagePlugin.PsdImageFile)
         with pytest.raises(SyntaxError):
             im.layers
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        "Tests/images/psd-oob-write.psd",
+        "Tests/images/psd-oob-write-x.psd",
+        "Tests/images/psd-oob-write-y.psd",
+    ],
+)
+def test_bounds_crash(test_file: str) -> None:
+    with Image.open(test_file) as im:
+        assert isinstance(im, PsdImagePlugin.PsdImageFile)
+        im.seek(im.n_frames)
+
+        with pytest.raises(ValueError):
+            im.load()
