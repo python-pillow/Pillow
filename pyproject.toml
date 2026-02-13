@@ -209,7 +209,7 @@ lint.isort.required-imports = [
 max_supported_python = "3.14"
 
 [tool.pytest.ini_options]
-addopts = "-ra --color=auto --numprocesses=auto"
+addopts = "-ra --color=auto --numprocesses=auto --dist=loadscope"
 testpaths = [
   "Tests",
 ]
