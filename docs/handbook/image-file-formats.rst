@@ -1076,10 +1076,12 @@ Pillow reads and writes PBM, PGM, PPM, PNM and PFM files containing ``1``, ``L``
 
 "Raw" (P4 to P6) formats can be read, and are used when writing.
 
-Since Pillow 9.2.0, "plain" (P1 to P3) formats can be read as well.
+.. versionadded:: 9.2.0
+   "Plain" (P1 to P3) formats can be read.
 
-Since Pillow 10.3.0, grayscale (Pf format) Portable FloatMap (PFM) files containing
-``F`` data can be read and used when writing as well.
+.. versionadded:: 10.3.0
+   Grayscale (Pf format) Portable FloatMap (PFM) files containing
+   ``F`` data can be read and used when writing.
 
 Color (PF format) PFM files are not supported.
 
