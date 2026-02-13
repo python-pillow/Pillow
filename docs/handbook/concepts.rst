@@ -173,9 +173,9 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 .. data:: Resampling.BOX
     :noindex:
 
-    Each pixel of source image contributes to one pixel of the
+    Each pixel of the source image contributes to one pixel of the
     destination image with identical weights.
-    For upscaling is equivalent of :data:`Resampling.NEAREST`.
+    For upscaling, it is equivalent to :data:`Resampling.NEAREST`.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
     and :py:meth:`~PIL.Image.Image.thumbnail` methods.
 
@@ -184,7 +184,7 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 .. data:: Resampling.BILINEAR
     :noindex:
 
-    For resize calculate the output pixel value using linear interpolation
+    For resize, calculates the output pixel value using linear interpolation
     on all pixels that may contribute to the output value.
     For other transformations linear interpolation over a 2x2 environment
     in the input image is used.
@@ -202,7 +202,7 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 .. data:: Resampling.BICUBIC
     :noindex:
 
-    For resize calculate the output pixel value using cubic interpolation
+    For resize, calculates the output pixel value using cubic interpolation
     on all pixels that may contribute to the output value.
     For other transformations cubic interpolation over a 4x4 environment
     in the input image is used.
