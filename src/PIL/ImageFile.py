@@ -801,9 +801,9 @@ class PyCodec:
         self.im = im
 
         if extents:
-            (x0, y0, x1, y1) = extents
+            x0, y0, x1, y1 = extents
         else:
-            (x0, y0, x1, y1) = (0, 0, 0, 0)
+            x0, y0, x1, y1 = (0, 0, 0, 0)
 
         if x0 == 0 and x1 == 0:
             self.state.xsize, self.state.ysize = self.im.size
@@ -814,7 +814,7 @@ class PyCodec:
             self.state.ysize = y1 - y0
 
         if self.state.xsize <= 0 or self.state.ysize <= 0:
-            msg = "Size cannot be negative"
+            msg = "Size must be positive"
             raise ValueError(msg)
 
         if (

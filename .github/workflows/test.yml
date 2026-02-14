@@ -29,6 +29,7 @@ concurrency:
 env:
   COVERAGE_CORE: sysmon
   FORCE_COLOR: 1
+  PIP_DISABLE_PIP_VERSION_CHECK: 1
 
 jobs:
   build:
@@ -92,7 +93,7 @@ jobs:
 
     - name: Cache libimagequant
       if: startsWith(matrix.os, 'ubuntu')
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       id: cache-libimagequant
       with:
         path: ~/cache-libimagequant
@@ -143,7 +144,7 @@ jobs:
         mkdir -p Tests/errors
 
     - name: Upload errors
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       if: failure()
       with:
         name: errors
