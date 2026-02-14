@@ -45,7 +45,6 @@ if hasattr(Image.core, "drawwmf"):
 
     class WmfHandler(ImageFile.StubHandler):
         def open(self, im: ImageFile.StubImageFile) -> None:
-            im._mode = "RGB"
             self.bbox = im.info["wmf_bbox"]
 
         def load(self, im: ImageFile.StubImageFile) -> Image.Image:

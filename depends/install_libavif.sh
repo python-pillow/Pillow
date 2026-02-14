@@ -7,6 +7,10 @@ version=1.3.0
 
 pushd libavif-$version
 
+# Apply patch for SVT-AV1 4.0 compatibility
+# Pending release of https://github.com/AOMediaCodec/libavif/pull/2971
+patch -p1 < ../libavif-svt4.patch
+
 if [ $(uname) == "Darwin" ] && [ -x "$(command -v brew)" ]; then
     PREFIX=$(brew --prefix)
 else

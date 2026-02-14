@@ -738,7 +738,7 @@ class TestFileLibTiff(LibTiffTestCase):
             buffer_io.seek(0)
 
             with Image.open(buffer_io) as saved_im:
-                assert_image_similar(pilim, saved_im, 0)
+                assert_image_equal(pilim, saved_im)
 
         save_bytesio()
         save_bytesio("raw")

@@ -68,10 +68,22 @@ def test_sanity() -> None:
     draw.rectangle(list(range(4)))
 
 
-def test_valueerror() -> None:
+def test_new_color() -> None:
     with Image.open("Tests/images/chi.gif") as im:
         draw = ImageDraw.Draw(im)
+        assert im.palette is not None
+        assert len(im.palette.colors) == 249
+
+        # Test drawing a new color onto the palette
         draw.line((0, 0), fill=(0, 0, 0))
+        assert im.palette is not None
+        assert len(im.palette.colors) == 250
+        assert im.palette.dirty
+
+        # Test drawing another new color, now that the palette is dirty
+        draw.point((0, 0), fill=(1, 0, 0))
+        assert len(im.palette.colors) == 251
+        assert im.convert("RGB").getpixel((0, 0)) == (1, 0, 0)
 
 
 def test_mode_mismatch() -> None:
@@ -883,6 +895,18 @@ def test_rounded_rectangle_joined_x_different_corners() -> None:
     )
 
 
+def test_rounded_rectangle_radius() -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im, "RGB")
+
+    # Act
+    draw.rounded_rectangle((25, 25, 75, 75), 24, fill="red", outline="green", width=5)
+
+    # Assert
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_rounded_rectangle_radius.png")
+
+
 @pytest.mark.parametrize(
     "xy, radius, type",
     [
@@ -1461,21 +1485,15 @@ def test_stroke_multiline() -> None:
 
 
 @skip_unless_feature("freetype2")
-def test_setting_default_font() -> None:
-    # Arrange
+def test_setting_default_font(monkeypatch: pytest.MonkeyPatch) -> None:
     im = Image.new("RGB", (100, 250))
     draw = ImageDraw.Draw(im)
+    assert isinstance(draw.getfont(), ImageFont.load_default().__class__)
+
+    draw = ImageDraw.Draw(im)
     font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
-
-    # Act
-    ImageDraw.ImageDraw.font = font
-
-    # Assert
-    try:
-        assert draw.getfont() == font
-    finally:
-        ImageDraw.ImageDraw.font = None
-        assert isinstance(draw.getfont(), ImageFont.load_default().__class__)
+    monkeypatch.setattr(ImageDraw.ImageDraw, "font", font)
+    assert draw.getfont() == font
 
 
 def test_default_font_size() -> None:

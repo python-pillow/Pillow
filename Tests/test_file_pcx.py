@@ -119,36 +119,36 @@ def test_large_count(tmp_path: Path) -> None:
     _roundtrip(tmp_path, im)
 
 
-def _test_buffer_overflow(tmp_path: Path, im: Image.Image, size: int = 1024) -> None:
-    _last = ImageFile.MAXBLOCK
-    ImageFile.MAXBLOCK = size
-    try:
-        _roundtrip(tmp_path, im)
-    finally:
-        ImageFile.MAXBLOCK = _last
+def _test_buffer_overflow(
+    tmp_path: Path, im: Image.Image, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(ImageFile, "MAXBLOCK", 1024)
+    _roundtrip(tmp_path, im)
 
 
-def test_break_in_count_overflow(tmp_path: Path) -> None:
+def test_break_in_count_overflow(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     assert px is not None
     for y in range(4):
         for x in range(256):
             px[x, y] = x % 128
-    _test_buffer_overflow(tmp_path, im)
+    _test_buffer_overflow(tmp_path, im, monkeypatch)
 
 
-def test_break_one_in_loop(tmp_path: Path) -> None:
+def test_break_one_in_loop(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     assert px is not None
     for y in range(5):
         for x in range(256):
             px[x, y] = x % 128
-    _test_buffer_overflow(tmp_path, im)
+    _test_buffer_overflow(tmp_path, im, monkeypatch)
 
 
-def test_break_many_in_loop(tmp_path: Path) -> None:
+def test_break_many_in_loop(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     assert px is not None
@@ -157,10 +157,10 @@ def test_break_many_in_loop(tmp_path: Path) -> None:
             px[x, y] = x % 128
     for x in range(8):
         px[x, 4] = 16
-    _test_buffer_overflow(tmp_path, im)
+    _test_buffer_overflow(tmp_path, im, monkeypatch)
 
 
-def test_break_one_at_end(tmp_path: Path) -> None:
+def test_break_one_at_end(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     assert px is not None
@@ -168,10 +168,10 @@ def test_break_one_at_end(tmp_path: Path) -> None:
         for x in range(256):
             px[x, y] = x % 128
     px[0, 3] = 128 + 64
-    _test_buffer_overflow(tmp_path, im)
+    _test_buffer_overflow(tmp_path, im, monkeypatch)
 
 
-def test_break_many_at_end(tmp_path: Path) -> None:
+def test_break_many_at_end(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     assert px is not None
@@ -181,10 +181,10 @@ def test_break_many_at_end(tmp_path: Path) -> None:
     for x in range(4):
         px[x * 2, 3] = 128 + 64
         px[x + 256 - 4, 3] = 0
-    _test_buffer_overflow(tmp_path, im)
+    _test_buffer_overflow(tmp_path, im, monkeypatch)
 
 
-def test_break_padding(tmp_path: Path) -> None:
+def test_break_padding(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     im = Image.new("L", (257, 5))
     px = im.load()
     assert px is not None
@@ -193,4 +193,4 @@ def test_break_padding(tmp_path: Path) -> None:
             px[x, y] = x % 128
     for x in range(5):
         px[x, 3] = 0
-    _test_buffer_overflow(tmp_path, im)
+    _test_buffer_overflow(tmp_path, im, monkeypatch)

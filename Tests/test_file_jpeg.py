@@ -590,9 +590,7 @@ class TestFileJpeg:
             assert im2.quantization == {0: bounds_qtable}
 
             # values from wizard.txt in jpeg9-a src package.
-            standard_l_qtable = [
-                int(s)
-                for s in """
+            standard_l_qtable = [int(s) for s in """
                 16  11  10  16  24  40  51  61
                 12  12  14  19  26  58  60  55
                 14  13  16  24  40  57  69  56
@@ -601,14 +599,9 @@ class TestFileJpeg:
                 24  35  55  64  81 104 113  92
                 49  64  78  87 103 121 120 101
                 72  92  95  98 112 100 103  99
-                """.split(
-                    None
-                )
-            ]
+                """.split(None)]
 
-            standard_chrominance_qtable = [
-                int(s)
-                for s in """
+            standard_chrominance_qtable = [int(s) for s in """
                 17  18  24  47  99  99  99  99
                 18  21  26  66  99  99  99  99
                 24  26  56  99  99  99  99  99
@@ -617,10 +610,7 @@ class TestFileJpeg:
                 99  99  99  99  99  99  99  99
                 99  99  99  99  99  99  99  99
                 99  99  99  99  99  99  99  99
-                """.split(
-                    None
-                )
-            ]
+                """.split(None)]
 
             for quality in range(101):
                 qtable_from_qtable_quality = self.roundtrip(

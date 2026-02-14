@@ -5,6 +5,8 @@ import sys
 from io import BytesIO
 from pathlib import Path
 
+import pytest
+
 from PIL import Image, PSDraw
 
 
@@ -47,21 +49,16 @@ def test_draw_postscript(tmp_path: Path) -> None:
     assert os.path.getsize(tempfile) > 0
 
 
-def test_stdout() -> None:
+def test_stdout(monkeypatch: pytest.MonkeyPatch) -> None:
     # Temporarily redirect stdout
-    old_stdout = sys.stdout
-
     class MyStdOut:
         buffer = BytesIO()
 
     mystdout = MyStdOut()
 
-    sys.stdout = mystdout
+    monkeypatch.setattr(sys, "stdout", mystdout)
 
     ps = PSDraw.PSDraw()
     _create_document(ps)
-
-    # Reset stdout
-    sys.stdout = old_stdout
 
     assert mystdout.buffer.getvalue() != b""

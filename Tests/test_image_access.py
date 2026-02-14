@@ -278,8 +278,7 @@ class TestEmbeddable:
 
         with open("embed_pil.c", "w", encoding="utf-8") as fh:
             home = sys.prefix.replace("\\", "\\\\")
-            fh.write(
-                f"""
+            fh.write(f"""
 #include "Python.h"
 
 int main(int argc, char* argv[])
@@ -300,8 +299,7 @@ int main(int argc, char* argv[])
 
     return 0;
 }}
-        """
-            )
+        """)
 
         objects = compiler.compile(["embed_pil.c"])
         compiler.link_executable(objects, "embed_pil")
