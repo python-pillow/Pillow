@@ -18,7 +18,7 @@ from __future__ import annotations
 import os
 from typing import BinaryIO
 
-from . import Image, _binary
+from . import Image, ImageFont, _binary
 
 WIDTH = 800
 
@@ -110,6 +110,22 @@ class FontFile:
                 self.bitmap.paste(im.crop(src), s)
                 self.metrics[i] = d, dst, s
 
+    def _encode_metrics(self) -> bytes:
+        values: tuple[int, ...] = ()
+        for id in range(256):
+            m = self.metrics[id]
+            if m:
+                values += m[0] + m[1] + m[2]
+            else:
+                values += (0,) * 10
+
+        metrics = b""
+        for v in values:
+            if v < 0:
+                v += 65536
+            metrics += _binary.o16be(v)
+        return metrics
+
     def save(self, filename: str) -> None:
         """Save font"""
 
@@ -126,9 +142,18 @@ class FontFile:
             fp.write(b"PILfont\n")
             fp.write(f";;;;;;{self.ysize};\n".encode("ascii"))  # HACK!!!
             fp.write(b"DATA\n")
-            for id in range(256):
-                m = self.metrics[id]
-                if not m:
-                    puti16(fp, (0,) * 10)
-                else:
-                    puti16(fp, m[0] + m[1] + m[2])
+            fp.write(self._encode_metrics())
+
+    def to_imagefont(self) -> ImageFont.ImageFont:
+        """Convert to ImageFont"""
+
+        self.compile()
+
+        # font data
+        if not self.bitmap:
+            msg = "No bitmap created"
+            raise ValueError(msg)
+
+        imagefont = ImageFont.ImageFont()
+        imagefont._load(self.bitmap, self._encode_metrics())
+        return imagefont
