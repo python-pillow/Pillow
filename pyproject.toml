@@ -210,6 +210,9 @@ max_supported_python = "3.14"
 
 [tool.pytest.ini_options]
 addopts = "-ra --color=auto --numprocesses=auto --dist=loadscope"
+markers = [
+  "isolated: tests that are not compatible with pytest-xdist (deselect with '-m \"not isolated\"')",
+]
 testpaths = [
   "Tests",
 ]
