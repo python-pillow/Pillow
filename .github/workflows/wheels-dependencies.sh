@@ -95,15 +95,15 @@ if [[ -n "$IOS_SDK" ]]; then
 else
   FREETYPE_VERSION=2.14.1
 fi
-HARFBUZZ_VERSION=12.3.0
-LIBPNG_VERSION=1.6.53
+HARFBUZZ_VERSION=12.3.2
+LIBPNG_VERSION=1.6.54
 JPEGTURBO_VERSION=3.1.3
 OPENJPEG_VERSION=2.5.4
 XZ_VERSION=5.8.2
 ZSTD_VERSION=1.5.7
 TIFF_VERSION=4.7.1
-LCMS2_VERSION=2.17
-ZLIB_NG_VERSION=2.3.2
+LCMS2_VERSION=2.18
+ZLIB_NG_VERSION=2.3.3
 LIBWEBP_VERSION=1.6.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
@@ -267,7 +267,7 @@ function build {
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [[ -n "$IS_MACOS" ]]; then
-        build_simple xorgproto 2024.1 https://www.x.org/pub/individual/proto
+        build_simple xorgproto 2025.1 https://www.x.org/pub/individual/proto
         build_simple libXau 1.0.12 https://www.x.org/pub/individual/lib
         build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
     else

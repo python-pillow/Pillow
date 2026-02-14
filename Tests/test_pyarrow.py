@@ -211,7 +211,7 @@ INT32 = DataShape(
     ),
 )
 def test_fromarray(mode: str, data_tp: DataShape, mask: list[int] | None) -> None:
-    (dtype, elt, elts_per_pixel) = data_tp
+    dtype, elt, elts_per_pixel = data_tp
 
     ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
     arr = pyarrow.array([elt] * (ct_pixels * elts_per_pixel), type=dtype)
@@ -238,7 +238,7 @@ def test_fromarray(mode: str, data_tp: DataShape, mask: list[int] | None) -> Non
     ),
 )
 def test_from_int32array(mode: str, data_tp: DataShape, mask: list[int] | None) -> None:
-    (dtype, elt, elts_per_pixel) = data_tp
+    dtype, elt, elts_per_pixel = data_tp
 
     ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
     arr = pyarrow.array([elt] * (ct_pixels * elts_per_pixel), type=dtype)

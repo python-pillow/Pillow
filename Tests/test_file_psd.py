@@ -100,7 +100,7 @@ def test_seek_tell() -> None:
 
         im.seek(2)
         layer_number = im.tell()
-        assert layer_number == 2
+    assert layer_number == 2
 
 
 def test_seek_eoferror() -> None:
@@ -138,7 +138,7 @@ def test_icc_profile() -> None:
         assert "icc_profile" in im.info
 
         icc_profile = im.info["icc_profile"]
-        assert len(icc_profile) == 3144
+    assert len(icc_profile) == 3144
 
 
 def test_no_icc_profile() -> None:
@@ -158,17 +158,16 @@ def test_combined_larger_than_size() -> None:
 
 
 @pytest.mark.parametrize(
-    "test_file,raises",
+    "test_file",
     [
-        ("Tests/images/timeout-c8efc3fded6426986ba867a399791bae544f59bc.psd", OSError),
-        ("Tests/images/timeout-dedc7a4ebd856d79b4359bbcc79e8ef231ce38f6.psd", OSError),
+        "Tests/images/timeout-c8efc3fded6426986ba867a399791bae544f59bc.psd",
+        "Tests/images/timeout-dedc7a4ebd856d79b4359bbcc79e8ef231ce38f6.psd",
     ],
 )
-def test_crashes(test_file: str, raises: type[Exception]) -> None:
-    with open(test_file, "rb") as f:
-        with pytest.raises(raises):
-            with Image.open(f):
-                pass
+def test_crashes(test_file: str) -> None:
+    with pytest.raises(OSError):
+        with Image.open(test_file):
+            pass
 
 
 @pytest.mark.parametrize(
@@ -179,8 +178,24 @@ def test_crashes(test_file: str, raises: type[Exception]) -> None:
     ],
 )
 def test_layer_crashes(test_file: str) -> None:
-    with open(test_file, "rb") as f:
-        with Image.open(f) as im:
-            assert isinstance(im, PsdImagePlugin.PsdImageFile)
-            with pytest.raises(SyntaxError):
-                im.layers
+    with Image.open(test_file) as im:
+        assert isinstance(im, PsdImagePlugin.PsdImageFile)
+        with pytest.raises(SyntaxError):
+            im.layers
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        "Tests/images/psd-oob-write.psd",
+        "Tests/images/psd-oob-write-x.psd",
+        "Tests/images/psd-oob-write-y.psd",
+    ],
+)
+def test_bounds_crash(test_file: str) -> None:
+    with Image.open(test_file) as im:
+        assert isinstance(im, PsdImagePlugin.PsdImageFile)
+        im.seek(im.n_frames)
+
+        with pytest.raises(ValueError):
+            im.load()

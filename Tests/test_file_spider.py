@@ -14,6 +14,10 @@ from .helper import assert_image_equal, hopper, is_pypy
 TEST_FILE = "Tests/images/hopper.spider"
 
 
+def teardown_module() -> None:
+    del Image.EXTENSION[".spider"]
+
+
 def test_sanity() -> None:
     with Image.open(TEST_FILE) as im:
         im.load()
