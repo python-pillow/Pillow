@@ -640,6 +640,16 @@ class FreeTypeFont:
             start,
         )
 
+    def has_characters(self, text: str | bytes) -> bool:
+        """
+        Check if the font has all of the characters in the text.
+
+        :param text: Text to render.
+
+        :return: Boolean.
+        """
+        return self.font.hascharacters(text)
+
     def font_variant(
         self,
         font: StrOrBytesPath | BinaryIO | None = None,
