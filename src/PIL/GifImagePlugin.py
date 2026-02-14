@@ -25,7 +25,6 @@
 #
 from __future__ import annotations
 
-import itertools
 import math
 import os
 import subprocess
@@ -666,12 +665,17 @@ def _write_multiple_frames(
     duration = im.encoderinfo.get("duration")
     disposal = im.encoderinfo.get("disposal", im.info.get("disposal"))
 
+    im_sequences = [im, *im.encoderinfo.get("append_images", [])]
+    progress = im.encoderinfo.get("progress")
+    if progress:
+        total = sum(getattr(seq, "n_frames", 1) for seq in im_sequences)
+
     im_frames: list[_Frame] = []
     previous_im: Image.Image | None = None
     frame_count = 0
     background_im = None
-    for imSequence in itertools.chain([im], im.encoderinfo.get("append_images", [])):
-        for im_frame in ImageSequence.Iterator(imSequence):
+    for i, seq in enumerate(im_sequences):
+        for im_frame in ImageSequence.Iterator(seq):
             # a copy is required here since seek can still mutate the image
             im_frame = _normalize_mode(im_frame.copy())
             if frame_count == 0:
@@ -701,6 +705,8 @@ def _write_multiple_frames(
                     # This frame is identical to the previous frame
                     if encoderinfo.get("duration"):
                         im_frames[-1].encoderinfo["duration"] += encoderinfo["duration"]
+                    if progress:
+                        im._save_all_progress(progress, seq, i, frame_count, total)
                     continue
                 if im_frames[-1].encoderinfo.get("disposal") == 2:
                     # To appear correctly in viewers using a convention,
@@ -764,6 +770,8 @@ def _write_multiple_frames(
                 bbox = None
             previous_im = im_frame
             im_frames.append(_Frame(diff_frame or im_frame, bbox, encoderinfo))
+            if progress:
+                im._save_all_progress(progress, seq, i, frame_count, total)
 
     if len(im_frames) == 1:
         if "duration" in im.encoderinfo:
