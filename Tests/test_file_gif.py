@@ -310,6 +310,14 @@ def test_roundtrip_save_all_1(tmp_path: Path) -> None:
         assert reloaded.getpixel((0, 0)) == 255
 
 
+@pytest.mark.parametrize("size", ((0, 1), (1, 0), (0, 0)))
+def test_save_zero(size: tuple[int, int]) -> None:
+    b = BytesIO()
+    im = Image.new("RGB", size)
+    with pytest.raises(SystemError):
+        im.save(b, "GIF")
+
+
 @pytest.mark.parametrize(
     "path, mode",
     (
