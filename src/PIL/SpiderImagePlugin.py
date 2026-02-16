@@ -104,6 +104,7 @@ class SpiderImageFile(ImageFile.ImageFile):
     def _open(self) -> None:
         # check header
         n = 27 * 4  # read 27 float values
+        assert self.fp is not None
         f = self.fp.read(n)
 
         try:
@@ -243,7 +244,7 @@ def loadImageSeries(filelist: list[str] | None = None) -> list[Image.Image] | No
 
 def makeSpiderHeader(im: Image.Image) -> list[bytes]:
     nsam, nrow = im.size
-    lenbyt = nsam * 4  # There are labrec records in the header
+    lenbyt = max(1, nsam) * 4  # There are labrec records in the header
     labrec = int(1024 / lenbyt)
     if 1024 % lenbyt != 0:
         labrec += 1
@@ -289,9 +290,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 def _save_spider(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # get the filename extension and register it with Image
-    filename_ext = os.path.splitext(filename)[1]
-    ext = filename_ext.decode() if isinstance(filename_ext, bytes) else filename_ext
-    Image.register_extension(SpiderImageFile.format, ext)
+    if filename_ext := os.path.splitext(filename)[1]:
+        ext = filename_ext.decode() if isinstance(filename_ext, bytes) else filename_ext
+        Image.register_extension(SpiderImageFile.format, ext)
     _save(im, fp, filename)
 
 
@@ -323,9 +324,9 @@ if __name__ == "__main__":
             outfile = sys.argv[2]
 
             # perform some image operation
-            im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+            transposed_im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
             print(
                 f"saving a flipped version of {os.path.basename(filename)} "
                 f"as {outfile} "
             )
-            im.save(outfile, SpiderImageFile.format)
+            transposed_im.save(outfile, SpiderImageFile.format)

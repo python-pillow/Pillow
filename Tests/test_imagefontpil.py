@@ -38,20 +38,18 @@ def test_invalid_mode() -> None:
             font._load_pilfont_data(fp, im)
 
 
-def test_without_freetype() -> None:
-    original_core = ImageFont.core
+def test_without_freetype(monkeypatch: pytest.MonkeyPatch) -> None:
     if features.check_module("freetype2"):
-        ImageFont.core = _util.DeferredError(ImportError("Disabled for testing"))
-    try:
-        with pytest.raises(ImportError):
-            ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+        monkeypatch.setattr(
+            ImageFont, "core", _util.DeferredError(ImportError("Disabled for testing"))
+        )
+    with pytest.raises(ImportError):
+        ImageFont.truetype("Tests/fonts/FreeMono.ttf")
 
-        assert isinstance(ImageFont.load_default(), ImageFont.ImageFont)
+    assert isinstance(ImageFont.load_default(), ImageFont.ImageFont)
 
-        with pytest.raises(ImportError):
-            ImageFont.load_default(size=14)
-    finally:
-        ImageFont.core = original_core
+    with pytest.raises(ImportError):
+        ImageFont.load_default(size=14)
 
 
 @pytest.mark.parametrize("font", fonts)

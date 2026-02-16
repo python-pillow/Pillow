@@ -39,6 +39,7 @@ import struct
 import warnings
 import zlib
 from enum import IntEnum
+from fractions import Fraction
 from typing import IO, NamedTuple, cast
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
@@ -759,6 +760,7 @@ class PngImageFile(ImageFile.ImageFile):
     format_description = "Portable network graphics"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(8)):
             msg = "not a PNG file"
             raise SyntaxError(msg)
@@ -855,9 +857,7 @@ class PngImageFile(ImageFile.ImageFile):
         self.png.verify()
         self.png.close()
 
-        if self._exclusive_fp:
-            self.fp.close()
-        self.fp = None
+        super().verify()
 
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
@@ -990,6 +990,7 @@ class PngImageFile(ImageFile.ImageFile):
         """internal: read more image data"""
 
         assert self.png is not None
+        assert self.fp is not None
         while self.__idat == 0:
             # end of chunk, skip forward to next one
 
@@ -1023,6 +1024,7 @@ class PngImageFile(ImageFile.ImageFile):
     def load_end(self) -> None:
         """internal: finished reading image data"""
         assert self.png is not None
+        assert self.fp is not None
         if self.__idat != 0:
             self.fp.read(self.__idat)
         while True:
@@ -1281,7 +1283,11 @@ def _write_multiple_frames(
             im_frame = im_frame.crop(bbox)
         size = im_frame.size
         encoderinfo = frame_data.encoderinfo
-        frame_duration = int(round(encoderinfo.get("duration", 0)))
+        frame_duration = encoderinfo.get("duration", 0)
+        delay = Fraction(frame_duration / 1000).limit_denominator(65535)
+        if delay.numerator > 65535:
+            msg = "cannot write duration"
+            raise ValueError(msg)
         frame_disposal = encoderinfo.get("disposal", disposal)
         frame_blend = encoderinfo.get("blend", blend)
         # frame control
@@ -1293,8 +1299,8 @@ def _write_multiple_frames(
             o32(size[1]),  # height
             o32(bbox[0]),  # x_offset
             o32(bbox[1]),  # y_offset
-            o16(frame_duration),  # delay_numerator
-            o16(1000),  # delay_denominator
+            o16(delay.numerator),  # delay_numerator
+            o16(delay.denominator),  # delay_denominator
             o8(frame_disposal),  # dispose_op
             o8(frame_blend),  # blend_op
         )

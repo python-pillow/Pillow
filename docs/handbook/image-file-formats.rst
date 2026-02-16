@@ -828,16 +828,6 @@ PCX
 
 Pillow reads and writes PCX files containing ``1``, ``L``, ``P``, or ``RGB`` data.
 
-PFM
-^^^
-
-.. versionadded:: 10.3.0
-
-Pillow reads and writes grayscale (Pf format) Portable FloatMap (PFM) files
-containing ``F`` data.
-
-Color (PF format) PFM files are not supported.
-
 Opening
 ~~~~~~~
 
@@ -999,7 +989,7 @@ where applicable:
     The number of times to loop this APNG, 0 indicates infinite looping.
 
 **duration**
-    The time to display this APNG frame (in milliseconds).
+    The time to display this APNG frame (in milliseconds), given as a float.
 
 .. note::
 
@@ -1041,9 +1031,8 @@ following parameters can also be set:
     Defaults to 0.
 
 **duration**
-    Integer (or list or tuple of integers) length of time to display this APNG frame
-    (in milliseconds).
-    Defaults to 0.
+    The length of time (or list or tuple of lengths of time) to display this APNG frame
+    (in milliseconds). Defaults to 0.
 
 **disposal**
     An integer (or list or tuple of integers) specifying the APNG disposal
@@ -1082,12 +1071,19 @@ following parameters can also be set:
 PPM
 ^^^
 
-Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L``, ``I`` or
-``RGB`` data.
+Pillow reads and writes PBM, PGM, PPM, PNM and PFM files containing ``1``, ``L``, ``I``,
+``RGB`` or ``F`` data.
 
 "Raw" (P4 to P6) formats can be read, and are used when writing.
 
-Since Pillow 9.2.0, "plain" (P1 to P3) formats can be read as well.
+.. versionadded:: 9.2.0
+   "Plain" (P1 to P3) formats can be read.
+
+.. versionadded:: 10.3.0
+   Grayscale (Pf format) Portable FloatMap (PFM) files containing
+   ``F`` data can be read and used when writing.
+
+Color (PF format) PFM files are not supported.
 
 QOI
 ^^^

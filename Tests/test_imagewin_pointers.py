@@ -87,7 +87,7 @@ if is_win32():
 
     def test_pointer(tmp_path: Path) -> None:
         im = hopper()
-        (width, height) = im.size
+        width, height = im.size
         opath = tmp_path / "temp.png"
         imdib = ImageWin.Dib(im)
 

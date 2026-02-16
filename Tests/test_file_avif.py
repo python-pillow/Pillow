@@ -121,7 +121,6 @@ class TestFileAvif:
             assert image.size == (128, 128)
             assert image.format == "AVIF"
             assert image.get_format_mimetype() == "image/avif"
-            image.getdata()
 
             # generated with:
             # avifdec hopper.avif hopper_avif_write.png
@@ -143,7 +142,6 @@ class TestFileAvif:
             assert reloaded.mode == "RGB"
             assert reloaded.size == (128, 128)
             assert reloaded.format == "AVIF"
-            reloaded.getdata()
 
             # avifdec hopper.avif avif/hopper_avif_write.png
             assert_image_similar_tofile(

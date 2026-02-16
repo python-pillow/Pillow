@@ -58,6 +58,7 @@ class FpxImageFile(ImageFile.ImageFile):
         # read the OLE directory and see if this is a likely
         # to be a FlashPix file
 
+        assert self.fp is not None
         try:
             self.ole = olefile.OleFileIO(self.fp)
         except OSError as e:
@@ -140,7 +141,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
         size = i32(s, 4), i32(s, 8)
         # tilecount = i32(s, 12)
-        tilesize = i32(s, 16), i32(s, 20)
+        xtile, ytile = i32(s, 16), i32(s, 20)
         # channels = i32(s, 24)
         offset = i32(s, 28)
         length = i32(s, 32)
@@ -155,7 +156,6 @@ class FpxImageFile(ImageFile.ImageFile):
 
         x = y = 0
         xsize, ysize = size
-        xtile, ytile = tilesize
         self.tile = []
 
         for i in range(0, len(s), length):
@@ -223,12 +223,13 @@ class FpxImageFile(ImageFile.ImageFile):
                 msg = "unknown/invalid compression"
                 raise OSError(msg)
 
-            x = x + xtile
+            x += xtile
             if x >= xsize:
                 x, y = 0, y + ytile
                 if y >= ysize:
                     break  # isn't really required
 
+        assert self.fp is not None
         self.stream = stream
         self._fp = self.fp
         self.fp = None

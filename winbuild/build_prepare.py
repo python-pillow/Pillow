@@ -116,17 +116,17 @@ V = {
     "BROTLI": "1.2.0",
     "FREETYPE": "2.14.1",
     "FRIBIDI": "1.0.16",
-    "HARFBUZZ": "12.2.0",
-    "JPEGTURBO": "3.1.2",
-    "LCMS2": "2.17",
+    "HARFBUZZ": "12.3.2",
+    "JPEGTURBO": "3.1.3",
+    "LCMS2": "2.18",
     "LIBAVIF": "1.3.0",
     "LIBIMAGEQUANT": "4.4.1",
-    "LIBPNG": "1.6.51",
+    "LIBPNG": "1.6.54",
     "LIBWEBP": "1.6.0",
     "OPENJPEG": "2.5.4",
     "TIFF": "4.7.1",
-    "XZ": "5.8.1",
-    "ZLIBNG": "2.3.1",
+    "XZ": "5.8.2",
+    "ZLIBNG": "2.3.3",
 }
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
 
@@ -183,11 +183,7 @@ DEPS: dict[str, dict[str, Any]] = {
         "filename": f"xz-{V['XZ']}.tar.gz",
         "license": "COPYING",
         "build": [
-            *cmds_cmake(
-                "liblzma",
-                "-DBUILD_SHARED_LIBS:BOOL=OFF"
-                + (" -DXZ_CLMUL_CRC:BOOL=OFF" if struct.calcsize("P") == 4 else ""),
-            ),
+            *cmds_cmake("liblzma", "-DBUILD_SHARED_LIBS:BOOL=OFF"),
             cmd_mkdir(r"{inc_dir}\lzma"),
             cmd_copy(r"src\liblzma\api\lzma\*.h", r"{inc_dir}\lzma"),
         ],

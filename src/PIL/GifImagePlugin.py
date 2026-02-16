@@ -86,6 +86,7 @@ class GifImageFile(ImageFile.ImageFile):
     global_palette = None
 
     def data(self) -> bytes | None:
+        assert self.fp is not None
         s = self.fp.read(1)
         if s and s[0]:
             return self.fp.read(s[0])
@@ -99,6 +100,7 @@ class GifImageFile(ImageFile.ImageFile):
 
     def _open(self) -> None:
         # Screen
+        assert self.fp is not None
         s = self.fp.read(13)
         if not _accept(s):
             msg = "not a GIF file"
@@ -115,8 +117,8 @@ class GifImageFile(ImageFile.ImageFile):
             # check if palette contains colour indices
             p = self.fp.read(3 << bits)
             if self._is_palette_needed(p):
-                p = ImagePalette.raw("RGB", p)
-                self.global_palette = self.palette = p
+                palette = ImagePalette.raw("RGB", p)
+                self.global_palette = self.palette = palette
 
         self._fp = self.fp  # FIXME: hack
         self.__rewind = self.fp.tell()
@@ -255,7 +257,7 @@ class GifImageFile(ImageFile.ImageFile):
                         info["comment"] += b"\n" + comment
                     else:
                         info["comment"] = comment
-                    s = None
+                    s = b""
                     continue
                 elif s[0] == 255 and frame == 0 and block is not None:
                     #
@@ -298,7 +300,7 @@ class GifImageFile(ImageFile.ImageFile):
                 bits = self.fp.read(1)[0]
                 self.__offset = self.fp.tell()
                 break
-            s = None
+            s = b""
 
         if interlace is None:
             msg = "image not found in GIF frame"
@@ -757,7 +759,7 @@ def _write_multiple_frames(
                             if delta.mode == "P":
                                 # Convert to L without considering palette
                                 delta_l = Image.new("L", delta.size)
-                                delta_l.putdata(delta.getdata())
+                                delta_l.putdata(delta.get_flattened_data())
                                 delta = delta_l
                             mask = ImageMath.lambda_eval(
                                 lambda args: args["convert"](args["im"] * 255, "1"),
@@ -943,7 +945,13 @@ def _get_optimize(im: Image.Image, info: dict[str, Any]) -> list[int] | None:
     :param info: encoderinfo
     :returns: list of indexes of palette entries in use, or None
     """
-    if im.mode in ("P", "L") and info and info.get("optimize"):
+    if (
+        im.mode in ("P", "L")
+        and info
+        and info.get("optimize")
+        and im.width != 0
+        and im.height != 0
+    ):
         # Potentially expensive operation.
 
         # The palette saves 3 bytes per color not used, but palette

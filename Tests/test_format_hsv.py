@@ -29,7 +29,7 @@ def linear_gradient() -> Image.Image:
     im = Image.linear_gradient(mode="L")
     im90 = im.rotate(90)
 
-    (px, h) = im.size
+    px, h = im.size
 
     r = Image.new("L", (px * 3, h))
     g = r.copy()
@@ -54,7 +54,7 @@ def to_xxx_colorsys(
 ) -> Image.Image:
     # convert the hard way using the library colorsys routines.
 
-    (r, g, b) = im.split()
+    r, g, b = im.split()
 
     conv_func = int_to_float
 

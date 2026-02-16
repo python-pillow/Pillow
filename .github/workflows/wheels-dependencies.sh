@@ -95,19 +95,15 @@ if [[ -n "$IOS_SDK" ]]; then
 else
   FREETYPE_VERSION=2.14.1
 fi
-HARFBUZZ_VERSION=12.2.0
-LIBPNG_VERSION=1.6.51
-JPEGTURBO_VERSION=3.1.2
+HARFBUZZ_VERSION=12.3.2
+LIBPNG_VERSION=1.6.54
+JPEGTURBO_VERSION=3.1.3
 OPENJPEG_VERSION=2.5.4
-XZ_VERSION=5.8.1
+XZ_VERSION=5.8.2
 ZSTD_VERSION=1.5.7
 TIFF_VERSION=4.7.1
-LCMS2_VERSION=2.17
-if [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "aarch64" ]]; then
-  ZLIB_NG_VERSION=2.2.5
-else
-  ZLIB_NG_VERSION=2.3.1
-fi
+LCMS2_VERSION=2.18
+ZLIB_NG_VERSION=2.3.3
 LIBWEBP_VERSION=1.6.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
@@ -150,11 +146,7 @@ function build_zlib_ng {
     ORIGINAL_HOST_CONFIGURE_FLAGS=$HOST_CONFIGURE_FLAGS
     unset HOST_CONFIGURE_FLAGS
 
-    if [[ "$ZLIB_NG_VERSION" == 2.2.5 ]]; then
-        build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --zlib-compat
-    else
-        build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --installnamedir=$BUILD_PREFIX/lib --zlib-compat
-    fi
+    build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --installnamedir=$BUILD_PREFIX/lib --zlib-compat
 
     HOST_CONFIGURE_FLAGS=$ORIGINAL_HOST_CONFIGURE_FLAGS
     touch zlib-stamp
@@ -275,7 +267,7 @@ function build {
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [[ -n "$IS_MACOS" ]]; then
-        build_simple xorgproto 2024.1 https://www.x.org/pub/individual/proto
+        build_simple xorgproto 2025.1 https://www.x.org/pub/individual/proto
         build_simple libXau 1.0.12 https://www.x.org/pub/individual/lib
         build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
     else

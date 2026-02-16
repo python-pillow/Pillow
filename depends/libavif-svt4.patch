@@ -1,0 +1,14 @@
+--- a/src/codec_svt.c
++++ b/src/codec_svt.c
+@@ -162,7 +162,11 @@ static avifResult svtCodecEncodeImage(avifEncoder * encoder,
+ #else
+         svt_config->logical_processors = encoder->maxThreads;
+ #endif
++#if SVT_AV1_CHECK_VERSION(4, 0, 0)
++        svt_config->aq_mode = 2;
++#else
+         svt_config->enable_adaptive_quantization = 2;
++#endif
+         // disable 2-pass
+ #if SVT_AV1_CHECK_VERSION(0, 9, 0)
+         svt_config->rc_stats_buffer = (SvtAv1FixedBuf) { NULL, 0 };

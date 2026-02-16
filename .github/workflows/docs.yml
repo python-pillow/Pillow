@@ -48,19 +48,35 @@ jobs:
     - name: Build system information
       run: python3 .github/workflows/system-info.py
 
+    - name: Cache libavif
+      uses: actions/cache@v5
+      id: cache-libavif
+      with:
+        path: ~/cache-libavif
+        key: ${{ runner.os }}-libavif-${{ hashFiles('depends/install_libavif.sh', 'depends/libavif-svt4.patch') }}
+
     - name: Cache libimagequant
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       id: cache-libimagequant
       with:
         path: ~/cache-libimagequant
         key: ${{ runner.os }}-libimagequant-${{ hashFiles('depends/install_imagequant.sh') }}
+
+    - name: Cache libwebp
+      uses: actions/cache@v5
+      id: cache-libwebp
+      with:
+        path: ~/cache-libwebp
+        key: ${{ runner.os }}-libwebp-${{ hashFiles('depends/install_webp.sh') }}
 
     - name: Install Linux dependencies
       run: |
         .ci/install.sh
       env:
         GHA_PYTHON_VERSION: "3.x"
+        GHA_LIBAVIF_CACHE_HIT: ${{ steps.cache-libavif.outputs.cache-hit }}
         GHA_LIBIMAGEQUANT_CACHE_HIT: ${{ steps.cache-libimagequant.outputs.cache-hit }}
+        GHA_LIBWEBP_CACHE_HIT: ${{ steps.cache-libwebp.outputs.cache-hit }}
 
     - name: Build
       run: |
