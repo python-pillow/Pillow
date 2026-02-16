@@ -323,21 +323,23 @@ def test_save_all_progress() -> None:
     out = BytesIO()
     progress = []
 
-    def callback(state) -> None:
-        if state["image_filename"]:
-            state["image_filename"] = (
-                state["image_filename"].replace("\\", "/").split("Tests/images/")[-1]
+    def callback(state: Image.Progress) -> None:
+        if state.image_filename:
+            state = state._replace(
+                image_filename=state.image_filename.replace("\\", "/").split(
+                    "Tests/images/"
+                )[-1]
             )
         progress.append(state)
 
     Image.new("RGB", (1, 1)).save(out, "MPO", save_all=True, progress=callback)
     assert progress == [
-        {
-            "image_index": 0,
-            "image_filename": None,
-            "completed_frames": 1,
-            "total_frames": 1,
-        }
+        Image.Progress(
+            image_index=0,
+            image_filename=None,
+            completed_frames=1,
+            total_frames=1,
+        )
     ]
 
     out = BytesIO()
@@ -351,12 +353,12 @@ def test_save_all_progress() -> None:
     for i, filename in enumerate(["sugarshack.mpo", "frozenpond.mpo"]):
         for j in range(2):
             expected.append(
-                {
-                    "image_index": i,
-                    "image_filename": filename,
-                    "completed_frames": i * 2 + j + 1,
-                    "total_frames": 4,
-                }
+                Image.Progress(
+                    image_index=i,
+                    image_filename=filename,
+                    completed_frames=i * 2 + j + 1,
+                    total_frames=4,
+                )
             )
     assert progress == expected
 

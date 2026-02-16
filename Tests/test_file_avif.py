@@ -220,19 +220,21 @@ class TestFileAvif:
         out = BytesIO()
         progress = []
 
-        def callback(state) -> None:
-            if state["image_filename"]:
-                state["image_filename"] = os.path.basename(state["image_filename"])
+        def callback(state: Image.Progress) -> None:
+            if state.image_filename:
+                state = state._replace(
+                    image_filename=os.path.basename(state.image_filename)
+                )
             progress.append(state)
 
         Image.new("RGB", (1, 1)).save(out, "AVIF", save_all=True, progress=callback)
         assert progress == [
-            {
-                "image_index": 0,
-                "image_filename": None,
-                "completed_frames": 1,
-                "total_frames": 1,
-            }
+            Image.Progress(
+                image_index=0,
+                image_filename=None,
+                completed_frames=1,
+                total_frames=1,
+            )
         ]
 
         out = BytesIO()
@@ -245,20 +247,20 @@ class TestFileAvif:
         expected = []
         for i in range(5):
             expected.append(
-                {
-                    "image_index": 0,
-                    "image_filename": "star.avifs",
-                    "completed_frames": i + 1,
-                    "total_frames": 6,
-                }
+                Image.Progress(
+                    image_index=0,
+                    image_filename="star.avifs",
+                    completed_frames=i + 1,
+                    total_frames=6,
+                )
             )
         expected.append(
-            {
-                "image_index": 1,
-                "image_filename": None,
-                "completed_frames": 6,
-                "total_frames": 6,
-            }
+            Image.Progress(
+                image_index=1,
+                image_filename=None,
+                completed_frames=6,
+                total_frames=6,
+            )
         )
         assert progress == expected
 

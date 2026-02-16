@@ -40,7 +40,7 @@ import tempfile
 import warnings
 from collections.abc import MutableMapping
 from enum import IntEnum
-from typing import IO, Protocol, cast
+from typing import IO, NamedTuple, Protocol, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -78,6 +78,13 @@ class DecompressionBombWarning(RuntimeWarning):
 
 class DecompressionBombError(Exception):
     pass
+
+
+class Progress(NamedTuple):
+    image_index: int
+    image_filename: str | None
+    completed_frames: int
+    total_frames: int
 
 
 WARN_POSSIBLE_FORMATS: bool = False
@@ -2720,7 +2727,7 @@ class Image:
 
     def _save_all_progress(
         self,
-        progress,
+        progress: Callable[[Progress], None] | None,
         im: Image | None = None,
         im_index: int = 0,
         completed: int = 1,
@@ -2730,12 +2737,12 @@ class Image:
             return
 
         progress(
-            {
-                "image_index": im_index,
-                "image_filename": getattr(im or self, "filename", None),
-                "completed_frames": completed,
-                "total_frames": total,
-            }
+            Progress(
+                image_index=im_index,
+                image_filename=getattr(im or self, "filename", None),
+                completed_frames=completed,
+                total_frames=total,
+            )
         )
 
     def seek(self, frame: int) -> None:

@@ -132,19 +132,21 @@ class TestFileWebp:
         out = BytesIO()
         progress = []
 
-        def callback(state) -> None:
-            if state["image_filename"]:
-                state["image_filename"] = os.path.basename(state["image_filename"])
+        def callback(state: Image.Progress) -> None:
+            if state.image_filename:
+                state = state._replace(
+                    image_filename=os.path.basename(state.image_filename)
+                )
             progress.append(state)
 
         Image.new("RGB", (1, 1)).save(out, "WEBP", save_all=True, progress=callback)
         assert progress == [
-            {
-                "image_index": 0,
-                "image_filename": None,
-                "completed_frames": 1,
-                "total_frames": 1,
-            }
+            Image.Progress(
+                image_index=0,
+                image_filename=None,
+                completed_frames=1,
+                total_frames=1,
+            )
         ]
 
         out = BytesIO()
@@ -157,20 +159,20 @@ class TestFileWebp:
         expected = []
         for i in range(42):
             expected.append(
-                {
-                    "image_index": 0,
-                    "image_filename": "iss634.webp",
-                    "completed_frames": i + 1,
-                    "total_frames": 43,
-                }
+                Image.Progress(
+                    image_index=0,
+                    image_filename="iss634.webp",
+                    completed_frames=i + 1,
+                    total_frames=43,
+                )
             )
         expected.append(
-            {
-                "image_index": 1,
-                "image_filename": None,
-                "completed_frames": 43,
-                "total_frames": 43,
-            }
+            Image.Progress(
+                image_index=1,
+                image_filename=None,
+                completed_frames=43,
+                total_frames=43,
+            )
         )
         assert progress == expected
 

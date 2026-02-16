@@ -789,19 +789,21 @@ class TestFileTiff:
         out = BytesIO()
         progress = []
 
-        def callback(state) -> None:
-            if state["image_filename"]:
-                state["image_filename"] = os.path.basename(state["image_filename"])
+        def callback(state: Image.Progress) -> None:
+            if state.image_filename:
+                state = state._replace(
+                    image_filename=os.path.basename(state.image_filename)
+                )
             progress.append(state)
 
         Image.new("RGB", (1, 1)).save(out, "TIFF", save_all=True, progress=callback)
         assert progress == [
-            {
-                "image_index": 0,
-                "image_filename": None,
-                "completed_frames": 1,
-                "total_frames": 1,
-            }
+            Image.Progress(
+                image_index=0,
+                image_filename=None,
+                completed_frames=1,
+                total_frames=1,
+            )
         ]
 
         out = BytesIO()
@@ -814,21 +816,21 @@ class TestFileTiff:
                 )
 
         expected = [
-            {
-                "image_index": 0,
-                "image_filename": "hopper.tif",
-                "completed_frames": 1,
-                "total_frames": 4,
-            }
+            Image.Progress(
+                image_index=0,
+                image_filename="hopper.tif",
+                completed_frames=1,
+                total_frames=4,
+            )
         ]
         for i in range(3):
             expected.append(
-                {
-                    "image_index": 1,
-                    "image_filename": "multipage.tiff",
-                    "completed_frames": i + 2,
-                    "total_frames": 4,
-                }
+                Image.Progress(
+                    image_index=1,
+                    image_filename="multipage.tiff",
+                    completed_frames=i + 2,
+                    total_frames=4,
+                )
             )
         assert progress == expected
 
