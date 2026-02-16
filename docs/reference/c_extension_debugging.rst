@@ -457,7 +457,7 @@ Caveats
    You probably won't have the capability to do that from within the
    docker container, as the trace capacity isn't allowed by default.
 
--  Variations of this are possible on the Mac/Windows, but the details
+-  Variations of this are possible on macOS/Windows, but the details
    are going to be different.
 
 -  IIRC, Fedora has the gdb bits working by default. Ubuntu has always
