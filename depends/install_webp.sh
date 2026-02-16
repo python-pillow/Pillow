@@ -8,7 +8,6 @@ if [[ "$GHA_LIBWEBP_CACHE_HIT" == "true" ]]; then
     # Copy cached files into place
     sudo cp ~/cache-libwebp/lib/* /usr/lib/
     sudo cp -r ~/cache-libwebp/include/webp /usr/include/
-    sudo cp ~/cache-libwebp/pkgconfig/* /usr/lib/pkgconfig/
 
 else
 
@@ -27,7 +26,6 @@ else
         cp /usr/lib/libwebp*.so* /usr/lib/libwebp*.a ~/cache-libwebp/lib/
         cp /usr/lib/libsharpyuv*.so* /usr/lib/libsharpyuv*.a ~/cache-libwebp/lib/
         cp -r /usr/include/webp ~/cache-libwebp/include/
-        cp /usr/lib/pkgconfig/libwebp*.pc /usr/lib/pkgconfig/libsharpyuv.pc ~/cache-libwebp/pkgconfig/
     fi
 
     popd

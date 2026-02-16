@@ -10,8 +10,6 @@ if [[ "$GHA_LIBAVIF_CACHE_HIT" == "true" ]]; then
     # Copy cached files into place
     sudo cp ~/cache-libavif/lib/* $LIBDIR/
     sudo cp -r ~/cache-libavif/include/avif /usr/include/
-    sudo cp ~/cache-libavif/pkgconfig/* $LIBDIR/pkgconfig/
-    sudo cp -r ~/cache-libavif/cmake/libavif $LIBDIR/cmake/
 
 else
 
@@ -83,12 +81,8 @@ else
         rm -rf ~/cache-libavif
         mkdir -p ~/cache-libavif/lib
         mkdir -p ~/cache-libavif/include
-        mkdir -p ~/cache-libavif/pkgconfig
-        mkdir -p ~/cache-libavif/cmake
         cp $LIBDIR/libavif.so* ~/cache-libavif/lib/
         cp -r /usr/include/avif ~/cache-libavif/include/
-        cp $LIBDIR/pkgconfig/libavif.pc ~/cache-libavif/pkgconfig/
-        cp -r $LIBDIR/cmake/libavif ~/cache-libavif/cmake/
     fi
 
     popd
