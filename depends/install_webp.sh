@@ -22,7 +22,6 @@ else
         rm -rf ~/cache-libwebp
         mkdir -p ~/cache-libwebp/lib
         mkdir -p ~/cache-libwebp/include
-        mkdir -p ~/cache-libwebp/pkgconfig
         cp /usr/lib/libwebp*.so* /usr/lib/libwebp*.a ~/cache-libwebp/lib/
         cp /usr/lib/libsharpyuv.so* /usr/lib/libsharpyuv.a ~/cache-libwebp/lib/
         cp -r /usr/include/webp ~/cache-libwebp/include/
