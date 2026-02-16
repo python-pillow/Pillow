@@ -65,7 +65,7 @@ or the clipboard to a PIL image memory.
              or None if the clipboard does not contain image data or filenames.
              Note that if a list is returned, the filenames may not represent image files.
 
-             On Mac, an image,
+             On macOS, an image,
              or None if the clipboard does not contain image data.
 
              On Linux, an image.
