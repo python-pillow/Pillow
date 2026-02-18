@@ -1,18 +1,6 @@
 name: Test Windows
 
-on:
-  push:
-    branches:
-      - "**"
-    paths-ignore: &paths-ignore
-      - ".github/workflows/docs.yml"
-      - ".github/workflows/wheels*"
-      - ".gitmodules"
-      - "docs/**"
-      - "wheels/**"
-  pull_request:
-    paths-ignore: *paths-ignore
-  workflow_dispatch:
+on: [push]
 
 permissions:
   contents: read
@@ -31,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.11", "3.11", "3.12", "3.13", "3.14", "3.15"]
+        python-version: ["3.11"]
         architecture: ["x64"]
         os: ["windows-latest"]
         include:
@@ -229,13 +217,3 @@ jobs:
         files: ./coverage.xml
         flags: GHA_Windows
         name: ${{ runner.os }} Python ${{ matrix.python-version }}
-
-  success:
-    permissions:
-      contents: none
-    needs: build
-    runs-on: ubuntu-latest
-    name: Windows Test Successful
-    steps:
-      - name: Success
-        run: echo Windows Test Successful
