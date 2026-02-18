@@ -195,11 +195,13 @@ def test_layer_crashes(test_file: str) -> None:
         "Tests/images/psd-oob-write.psd",
         "Tests/images/psd-oob-write-x.psd",
         "Tests/images/psd-oob-write-y.psd",
+        "Tests/images/psd-oob-write-overflow.psd",
     ],
 )
 def test_bounds_crash(test_file: str) -> None:
     with Image.open(test_file) as im:
         assert isinstance(im, PsdImagePlugin.PsdImageFile)
+        im.load()
         im.seek(im.n_frames)
 
         with pytest.raises(ValueError):
