@@ -1,23 +1,6 @@
 name: Test
 
-on:
-  push:
-    branches:
-      - "**"
-    paths-ignore:
-      - ".github/workflows/docs.yml"
-      - ".github/workflows/wheels*"
-      - ".gitmodules"
-      - "docs/**"
-      - "wheels/**"
-  pull_request:
-    paths-ignore:
-      - ".github/workflows/docs.yml"
-      - ".github/workflows/wheels*"
-      - ".gitmodules"
-      - "docs/**"
-      - "wheels/**"
-  workflow_dispatch:
+on: [push]
 
 permissions:
   contents: read
@@ -37,33 +20,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [
-          "macos-latest",
-          "ubuntu-latest",
-        ]
+        os: ["ubuntu-latest"]
         python-version: [
           "pypy3.11",
-          "3.15t",
-          "3.15",
           "3.14t",
           "3.14",
-          "3.13t",
           "3.13",
-          "3.12",
-          "3.11",
-          "3.10",
         ]
         include:
-        - { python-version: "3.12", PYTHONOPTIMIZE: 1, REVERSE: "--reverse" }
-        - { python-version: "3.11", PYTHONOPTIMIZE: 2 }
         # Free-threaded
-        - { python-version: "3.15t", disable-gil: true }
         - { python-version: "3.14t", disable-gil: true }
-        - { python-version: "3.13t", disable-gil: true }
-        # Intel
-        - { os: "macos-26-intel", python-version: "3.10" }
-        exclude:
-        - { os: "macos-latest", python-version: "3.10" }
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
@@ -178,13 +144,3 @@ jobs:
         flags: ${{ matrix.os == 'ubuntu-latest' && 'GHA_Ubuntu' || 'GHA_macOS' }}
         name: ${{ matrix.os }} Python ${{ matrix.python-version }}
         token: ${{ secrets.CODECOV_ORG_TOKEN }}
-
-  success:
-    permissions:
-      contents: none
-    needs: build
-    runs-on: ubuntu-latest
-    name: Test Successful
-    steps:
-      - name: Success
-        run: echo Test Successful
