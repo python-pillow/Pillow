@@ -485,7 +485,7 @@ _encoder_add(AvifEncoderObject *self, PyObject *args) {
         frame = image;
     } else {
         frame = avifImageCreateEmpty();
-        if (image == NULL) {
+        if (frame == NULL) {
             PyErr_SetString(PyExc_ValueError, "Image creation failed");
             return NULL;
         }
