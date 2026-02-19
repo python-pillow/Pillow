@@ -7,7 +7,11 @@
  * Copyright (c) Fredrik Lundh 1996.
  */
 
-#include "zlib.h"
+#ifdef HAVE_ZLIBNG
+#include <zlib-ng.h>
+#else
+#include <zlib.h>
+#endif
 
 /* modes */
 #define ZIP_PNG 0            /* continuous, filtered image data */
@@ -35,7 +39,11 @@ typedef struct {
 
     /* PRIVATE CONTEXT (set by decoder/encoder) */
 
+#ifdef HAVE_ZLIBNG
+    zng_stream z_stream; /* (de)compression stream */
+#else
     z_stream z_stream; /* (de)compression stream */
+#endif
 
     UINT8 *previous; /* previous line (allocated) */
 
