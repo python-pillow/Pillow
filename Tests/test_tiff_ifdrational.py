@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from fractions import Fraction
 from pathlib import Path
 
@@ -74,3 +75,20 @@ def test_ifd_rational_save(
     with Image.open(out) as reloaded:
         assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert float(IFDRational(301, 1)) == float(reloaded.tag_v2[282])
+
+
+@pytest.mark.parametrize(
+    "numerator, denominator, expected_result",
+    [
+        (1, 1, 1.0),
+        (1, 0, math.inf),
+        (-1, 0, -math.inf),
+        (0, 0, float("nan")),
+    ],
+)
+def test_float_cast(numerator: int, denominator: int, expected_result: float) -> None:
+    value = float(IFDRational(numerator, denominator))
+    if math.isnan(expected_result):
+        assert value
+    else:
+        assert value == expected_result
