@@ -581,7 +581,7 @@ class Parser:
                 flag = hasattr(im, "load_seek") or hasattr(im, "load_read")
                 if flag or len(im.tile) != 1:
                     # custom load code, or multiple tiles
-                    self.decode = None
+                    self.decoder = None
                 else:
                     # initialize decoder
                     im.load_prepare()
