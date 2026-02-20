@@ -191,10 +191,10 @@ class ImagePalette:
         if self.rawmode:
             msg = "palette contains raw palette data"
             raise ValueError(msg)
-        close_fp = False
+        open_fp = False
         if isinstance(fp, str):
             fp = open(fp, "w")
-            close_fp = True
+            open_fp = True
         try:
             fp.write("# Palette\n")
             fp.write(f"# Mode: {self.mode}\n")
@@ -207,7 +207,7 @@ class ImagePalette:
                         fp.write(" 0")
                 fp.write("\n")
         finally:
-            if close_fp:
+            if open_fp:
                 fp.close()
 
 
