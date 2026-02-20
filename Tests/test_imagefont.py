@@ -753,6 +753,8 @@ def test_variation_duplicates() -> None:
         b"Black",
         b"Black Medium Contrast",
         b"Black High Contrast",
+        b"Black High Contrast",
+        b"Black High Contrast",
         b"Default",
     ]
 
@@ -789,6 +791,18 @@ def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
         font.set_variation_by_name(name)
         assert font.getname()[1] == "200"
     _check_text(font, "Tests/images/variation_tiny_name.png", 40)
+
+
+def test_variation_set_by_name_index(font: ImageFont.FreeTypeFont) -> None:
+    with pytest.raises(OSError):
+        font.set_variation_by_name_index(0)
+
+    font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
+    _check_text(font, "Tests/images/variation_adobe.png", 11)
+    index = font.get_variation_names().index(b"Bold")
+    font.set_variation_by_name_index(index)
+    assert font.getname()[1] == "Bold"
+    _check_text(font, "Tests/images/variation_adobe_name.png", 16)
 
 
 def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
