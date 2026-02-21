@@ -752,7 +752,7 @@ class TestFileTiff:
         with Image.open(outfile) as reloaded:
             assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
-    def test_tiff_save_all(self) -> None:
+    def test_save_all(self) -> None:
         mp = BytesIO()
         with Image.open("Tests/images/multipage.tiff") as im:
             im.save(mp, format="tiff", save_all=True)
@@ -784,6 +784,55 @@ class TestFileTiff:
         with Image.open(mp) as reread:
             assert isinstance(reread, TiffImagePlugin.TiffImageFile)
             assert reread.n_frames == 3
+
+    def test_save_all_progress(self) -> None:
+        out = BytesIO()
+        progress = []
+
+        def callback(state: Image.Progress) -> None:
+            if state.image_filename:
+                state = state._replace(
+                    image_filename=os.path.basename(state.image_filename)
+                )
+            progress.append(state)
+
+        Image.new("RGB", (1, 1)).save(out, "TIFF", save_all=True, progress=callback)
+        assert progress == [
+            Image.Progress(
+                image_index=0,
+                image_filename=None,
+                completed_frames=1,
+                total_frames=1,
+            )
+        ]
+
+        out = BytesIO()
+        progress = []
+
+        with Image.open("Tests/images/hopper.tif") as im:
+            with Image.open("Tests/images/multipage.tiff") as im2:
+                im.save(
+                    out, "TIFF", save_all=True, append_images=[im2], progress=callback
+                )
+
+        expected = [
+            Image.Progress(
+                image_index=0,
+                image_filename="hopper.tif",
+                completed_frames=1,
+                total_frames=4,
+            )
+        ]
+        for i in range(3):
+            expected.append(
+                Image.Progress(
+                    image_index=1,
+                    image_filename="multipage.tiff",
+                    completed_frames=i + 2,
+                    total_frames=4,
+                )
+            )
+        assert progress == expected
 
     def test_fixoffsets(self) -> None:
         b = BytesIO(b"II\x2a\x00\x00\x00\x00\x00")
