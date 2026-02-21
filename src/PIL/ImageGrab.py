@@ -36,6 +36,8 @@ def grab(
     all_screens: bool = False,
     xdisplay: str | None = None,
     window: int | ImageWin.HWND | None = None,
+    *,
+    scale_down: bool = False,
 ) -> Image.Image:
     im: Image.Image
     if xdisplay is None:
@@ -70,15 +72,16 @@ def grab(
                     # crop the image manually
                     if retina:
                         left, top, right, bottom = bbox
+                        scale = 1 if scale_down else 2
                         im_cropped = im.resize(
-                            (right - left, bottom - top),
+                            ((right - left) * scale, (bottom - top) * scale),
                             box=tuple(coord * 2 for coord in bbox),
                         )
                     else:
                         im_cropped = im.crop(bbox)
                     im.close()
                     return im_cropped
-                else:
+                elif scale_down:
                     im_resized = im.resize((right - left, bottom - top))
                     im.close()
                     return im_resized
