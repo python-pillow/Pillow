@@ -229,12 +229,6 @@ class TestFileTiff:
         outfile = tmp_path / "temp.tif"
         im.save(outfile)
 
-    def test_save_unsupported_mode(self, tmp_path: Path) -> None:
-        im = hopper("HSV")
-        outfile = tmp_path / "temp.tif"
-        with pytest.raises(OSError):
-            im.save(outfile)
-
     def test_8bit_s(self) -> None:
         with Image.open("Tests/images/8bit.s.tif") as im:
             im.load()

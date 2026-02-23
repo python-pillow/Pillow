@@ -20,7 +20,9 @@ import os
 import struct
 from typing import cast
 
-from . import Image, ImageFile, ImagePalette, _binary
+from packaging.version import parse
+
+from . import Image, ImageFile, ImagePalette, _binary, features
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -370,6 +372,15 @@ def _accept(prefix: bytes) -> bool:
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # Get the keyword arguments
     info = im.encoderinfo
+
+    # Prevent OSError: broken data stream when writing image file
+    supported_modes = ["I;16", "L", "LA", "RGB", "RGBA"]
+    # CMYK fails on Ubuntu
+    if version := features.version_codec("jpg_2000"):
+        if parse(version) >= parse("2.5.3"):
+            supported_modes.append("CMYK")
+    if im.mode not in supported_modes:
+        im = im.convert("RGBA")
 
     if isinstance(filename, str):
         filename = filename.encode()

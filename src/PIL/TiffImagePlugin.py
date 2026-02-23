@@ -1694,14 +1694,12 @@ SAVE_INFO = {
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    try:
-        rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
-    except KeyError as e:
-        msg = f"cannot write mode {im.mode} as TIFF"
-        raise OSError(msg) from e
-
     encoderinfo = im.encoderinfo
     encoderconfig = im.encoderconfig
+    if im.mode not in SAVE_INFO:
+        im = im.convert("RGBA")
+
+    rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
 
     ifd = ImageFileDirectory_v2(prefix=prefix)
     if encoderinfo.get("big_tiff"):
@@ -2305,6 +2303,19 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     append_images = list(im.encoderinfo.get("append_images", []))
     if not hasattr(im, "n_frames") and not append_images:
         return _save(im, fp, filename)
+
+    if im.mode not in SAVE_INFO:
+        info = im.encoderinfo
+        im = im.convert("RGBA")
+        im.encoderinfo = info
+
+    for i in range(len(append_images)):
+        frame = append_images[i]
+        if frame.mode != im.mode:
+            info = frame.encoderinfo if hasattr(frame, "encoderinfo") else {}
+            frame = frame.convert(im.mode)
+            frame.encoderinfo = info
+            append_images[i] = frame
 
     cur_idx = im.tell()
     try:

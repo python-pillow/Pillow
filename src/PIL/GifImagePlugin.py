@@ -527,6 +527,8 @@ def _normalize_mode(im: Image.Image) -> Image.Image:
     if im.mode in RAWMODE:
         im.load()
         return im
+    if im.mode in ("CMYK", "HSV", "LAB", "PA", "RGBa", "RGBX", "YCbCr"):
+        im = im.convert("RGBA")
     if Image.getmodebase(im.mode) == "RGB":
         im = im.convert("P", palette=Image.Palette.ADAPTIVE)
         assert im.palette is not None
