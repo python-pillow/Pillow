@@ -37,7 +37,7 @@ def _border(border: int | tuple[int, ...]) -> tuple[int, int, int, int]:
         elif len(border) == 4:
             left, top, right, bottom = border
         else:
-            msg = "border must be an integer or a 2- or 4-tuple"
+            msg = "border must be an integer, or a tuple of two or four elements"
             raise ValueError(msg)
     else:
         left = top = right = bottom = border
