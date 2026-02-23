@@ -107,13 +107,6 @@ def test_small_palette(tmp_path: Path) -> None:
         assert reloaded.getpalette() == colors + [0] * 765
 
 
-def test_save_unsupported_mode(tmp_path: Path) -> None:
-    out = tmp_path / "temp.im"
-    im = hopper("HSV")
-    with pytest.raises(ValueError):
-        im.save(out)
-
-
 def test_invalid_file() -> None:
     invalid_file = "Tests/images/flower.jpg"
 

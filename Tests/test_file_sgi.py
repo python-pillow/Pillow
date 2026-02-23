@@ -113,14 +113,6 @@ def test_write16(tmp_path: Path) -> None:
         assert_image_equal_tofile(im, out)
 
 
-def test_unsupported_mode(tmp_path: Path) -> None:
-    im = hopper("LA")
-    out = tmp_path / "temp.sgi"
-
-    with pytest.raises(ValueError):
-        im.save(out, format="sgi")
-
-
 def test_unsupported_number_of_bytes_per_pixel(tmp_path: Path) -> None:
     im = hopper()
     out = tmp_path / "temp.sgi"

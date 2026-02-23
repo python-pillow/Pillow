@@ -166,8 +166,7 @@ Image.register_decoder("MSP", MspDecoder)
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode != "1":
-        msg = f"cannot write mode {im.mode} as MSP"
-        raise OSError(msg)
+        im = im.convert("RGBA").convert("1")
 
     # create MSP header
     header = [0] * 16

@@ -115,17 +115,25 @@ _COMPRESSION_TYPES = {"none": 0xFF, "rle": 0x01, "scanline": 0x00}
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
+    encoderinfo = im.encoderinfo
+    if (
+        im.mode not in ("1", "L", "P")
+        or im.mode == "L"
+        and im.info.get("bpp") not in (1, 2, 4)
+    ):
+        im = im.convert("RGBA").convert("P")
+
     if im.mode == "P":
         rawmode = "P"
         bpp = 8
         version = 1
 
     elif im.mode == "L":
-        if im.encoderinfo.get("bpp") in (1, 2, 4):
+        if encoderinfo.get("bpp") in (1, 2, 4):
             # this is 8-bit grayscale, so we shift it to get the high-order bits,
             # and invert it because
             # Palm does grayscale from white (0) to black (1)
-            bpp = im.encoderinfo["bpp"]
+            bpp = encoderinfo["bpp"]
             maxval = (1 << bpp) - 1
             shift = 8 - bpp
             im = im.point(lambda x: maxval - (x >> shift))
@@ -151,11 +159,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         bpp = 1
         version = 0
 
-    else:
-        msg = f"cannot write mode {im.mode} as Palm"
-        raise OSError(msg)
-
-    #
     # make sure image data is available
     im.load()
 

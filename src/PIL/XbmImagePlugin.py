@@ -71,14 +71,14 @@ class XbmImageFile(ImageFile.ImageFile):
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
+    encoderinfo = im.encoderinfo
     if im.mode != "1":
-        msg = f"cannot write mode {im.mode} as XBM"
-        raise OSError(msg)
+        im = im.convert("RGBA").convert("1")
 
     fp.write(f"#define im_width {im.size[0]}\n".encode("ascii"))
     fp.write(f"#define im_height {im.size[1]}\n".encode("ascii"))
 
-    hotspot = im.encoderinfo.get("hotspot")
+    hotspot = encoderinfo.get("hotspot")
     if hotspot:
         fp.write(f"#define im_x_hot {hotspot[0]}\n".encode("ascii"))
         fp.write(f"#define im_y_hot {hotspot[1]}\n".encode("ascii"))

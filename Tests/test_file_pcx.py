@@ -30,12 +30,6 @@ def test_sanity(tmp_path: Path) -> None:
     im.putpalette((255, 0, 0))
     _roundtrip(tmp_path, im)
 
-    # Test an unsupported mode
-    f = tmp_path / "temp.pcx"
-    im = hopper("RGBA")
-    with pytest.raises(ValueError):
-        im.save(f)
-
 
 @pytest.mark.parametrize("size", ((0, 1), (1, 0), (0, 0)))
 def test_save_zero(size: tuple[int, int]) -> None:

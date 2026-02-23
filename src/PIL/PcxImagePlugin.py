@@ -150,11 +150,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         msg = "Cannot write empty image as PCX"
         raise ValueError(msg)
 
-    try:
-        version, bits, planes, rawmode = SAVE[im.mode]
-    except KeyError as e:
-        msg = f"Cannot save {im.mode} images as PCX"
-        raise ValueError(msg) from e
+    if im.mode not in SAVE:
+        im = im.convert("RGB")
+    version, bits, planes, rawmode = SAVE[im.mode]
 
     # bytes per plane
     stride = (im.size[0] * bits + 7) // 8

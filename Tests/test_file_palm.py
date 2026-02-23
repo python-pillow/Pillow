@@ -4,8 +4,6 @@ import os.path
 import subprocess
 from pathlib import Path
 
-import pytest
-
 from PIL import Image
 
 from .helper import assert_image_equal, hopper, magick_command
@@ -67,9 +65,3 @@ def test_p_mode(tmp_path: Path) -> None:
     # Act / Assert
     helper_save_as_palm(tmp_path, mode)
     roundtrip(tmp_path, mode)
-
-
-@pytest.mark.parametrize("mode", ("L", "RGB"))
-def test_oserror(tmp_path: Path, mode: str) -> None:
-    with pytest.raises(OSError):
-        helper_save_as_palm(tmp_path, mode)

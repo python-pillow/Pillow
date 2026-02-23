@@ -274,7 +274,7 @@ def makeSpiderHeader(im: Image.Image) -> list[bytes]:
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode != "F":
-        im = im.convert("F")
+        im = im.convert("RGBA").convert("F")
 
     hdr = makeSpiderHeader(im)
     if len(hdr) < 256:

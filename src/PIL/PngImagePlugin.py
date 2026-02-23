@@ -1350,6 +1350,10 @@ def _save(
         size = tuple(max(frame_size[i] for frame_size in sizes) for i in range(2))
     else:
         size = im.size
+        if im.mode not in _OUTMODES:
+            encoderinfo = im.encoderinfo
+            im = im.convert("RGBA")
+            im.encoderinfo = encoderinfo
         mode = im.mode
 
     outmode = mode
