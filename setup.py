@@ -48,8 +48,9 @@ FREETYPE_ROOT = None
 HARFBUZZ_ROOT = None
 FRIBIDI_ROOT = None
 IMAGEQUANT_ROOT = None
-JPEG2K_ROOT = None
 JPEG_ROOT = None
+JPEG2K_ROOT = None
+JPEGXL_ROOT = None
 LCMS_ROOT = None
 RAQM_ROOT = None
 TIFF_ROOT = None
@@ -312,6 +313,7 @@ class pil_build_ext(build_ext):
         features = [
             "zlib",
             "jpeg",
+            "jpegxl",
             "tiff",
             "freetype",
             "raqm",
@@ -441,6 +443,7 @@ class pil_build_ext(build_ext):
         libraries: list[str] | list[str | bool | None],
         define_macros: list[tuple[str, str | None]] | None = None,
         sources: list[str] | None = None,
+        args: list[str] | None = None,
     ) -> None:
         for extension in self.extensions:
             if extension.name == name:
@@ -449,6 +452,8 @@ class pil_build_ext(build_ext):
                     extension.define_macros += define_macros
                 if sources is not None:
                     extension.sources += sources
+                if args is not None:
+                    extension.extra_compile_args += args
                 if FUZZING_BUILD:
                     extension.language = "c++"
                     extension.extra_link_args = ["--stdlib=libc++"]
@@ -508,6 +513,7 @@ class pil_build_ext(build_ext):
             "AVIF_ROOT": "avif",
             "JPEG_ROOT": "libjpeg",
             "JPEG2K_ROOT": "libopenjp2",
+            "JPEGXL_ROOT": "jxl",
             "TIFF_ROOT": ("libtiff-5", "libtiff-4"),
             "ZLIB_ROOT": "zlib",
             "FREETYPE_ROOT": "freetype2",
@@ -775,6 +781,16 @@ class pil_build_ext(build_ext):
                 feature.set("jpeg2000", "openjp2")
                 feature.set("openjpeg_version", ".".join(str(x) for x in best_version))
 
+        if feature.want("jpegxl"):
+            _dbg("Looking for jpegxl")
+            if _find_include_file(self, "jxl/decode.h") and _find_include_file(
+                self, "jxl/thread_parallel_runner.h"
+            ):
+                if _find_library_file(self, "jxl") and _find_library_file(
+                    self, "jxl_threads"
+                ):
+                    feature.set("jpegxl", "jxl")
+
         if feature.want("imagequant"):
             _dbg("Looking for imagequant")
             if _find_include_file(self, "libimagequant.h"):
@@ -998,6 +1014,17 @@ class pil_build_ext(build_ext):
         else:
             self._remove_extension("PIL._avif")
 
+        jpegxl = feature.get("jpegxl")
+        if isinstance(jpegxl, str):
+            libs = [jpegxl, jpegxl + "_threads"]
+            args: list[str] | None = None
+            if sys.platform == "win32":
+                libs.extend(["brotlicommon", "brotlidec", "brotlienc", "hwy"])
+                args = ["-DJXL_STATIC_DEFINE"]
+            self._update_extension("PIL._jpegxl", libs, args=args)
+        else:
+            self._remove_extension("PIL._jpegxl")
+
         tk_libs = ["psapi"] if sys.platform in ("win32", "cygwin") else []
         self._update_extension("PIL._imagingtk", tk_libs)
 
@@ -1038,6 +1065,7 @@ class pil_build_ext(build_ext):
             (feature.get("freetype"), "FREETYPE2"),
             (feature.get("raqm"), "RAQM (Text shaping)", raqm_extra_info),
             (feature.get("lcms"), "LITTLECMS2"),
+            (feature.get("jpegxl"), "JPEG XL"),
             (feature.get("webp"), "WEBP"),
             (feature.get("xcb"), "XCB (X protocol)"),
             (feature.get("avif"), "LIBAVIF"),
@@ -1086,6 +1114,7 @@ ext_modules = [
     Extension("PIL._imaging", files),
     Extension("PIL._imagingft", ["src/_imagingft.c"]),
     Extension("PIL._imagingcms", ["src/_imagingcms.c"]),
+    Extension("PIL._jpegxl", ["src/_jpegxl.c"]),
     Extension("PIL._webp", ["src/_webp.c"]),
     Extension("PIL._avif", ["src/_avif.c"]),
     Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),
