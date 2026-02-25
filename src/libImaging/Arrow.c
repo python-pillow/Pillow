@@ -73,10 +73,10 @@ image_band_json(Imaging im) {
         json,
         len,
         format,
-        im->band_names[0],
-        im->band_names[1],
-        im->band_names[2],
-        im->band_names[3]
+        im->modedata->band_names[0],
+        im->modedata->band_names[1],
+        im->modedata->band_names[2],
+        im->modedata->band_names[3]
     );
     if (err < 0) {
         return NULL;
@@ -98,7 +98,7 @@ single_band_json(Imaging im) {
         return NULL;
     }
 
-    err = PyOS_snprintf(json, len, format, im->band_names[0]);
+    err = PyOS_snprintf(json, len, format, im->modedata->band_names[0]);
     if (err < 0) {
         return NULL;
     }
@@ -189,7 +189,7 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     int retval = 0;
     char *band_json;
 
-    if (strcmp(im->arrow_band_format, "") == 0) {
+    if (strcmp(im->modedata->arrow_band_format, "") == 0) {
         return IMAGING_ARROW_INCOMPATIBLE_MODE;
     }
 
@@ -199,7 +199,9 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     }
 
     if (im->bands == 1) {
-        retval = export_named_type(schema, im->arrow_band_format, im->band_names[0]);
+        retval = export_named_type(
+            schema, im->modedata->arrow_band_format, im->modedata->band_names[0]
+        );
         if (retval != 0) {
             return retval;
         }
@@ -221,7 +223,7 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     schema->children = calloc(1, sizeof(struct ArrowSchema *));
     schema->children[0] = (struct ArrowSchema *)calloc(1, sizeof(struct ArrowSchema));
     retval = export_named_type(
-        schema->children[0], im->arrow_band_format, getModeData(im->mode)->name
+        schema->children[0], im->modedata->arrow_band_format, im->modedata->name
     );
     if (retval != 0) {
         free(schema->children[0]);
@@ -405,7 +407,7 @@ err:
 
 int
 export_imaging_array(Imaging im, struct ArrowArray *array) {
-    if (strcmp(im->arrow_band_format, "") == 0) {
+    if (strcmp(im->modedata->arrow_band_format, "") == 0) {
         return IMAGING_ARROW_INCOMPATIBLE_MODE;
     }
 
