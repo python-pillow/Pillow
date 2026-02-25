@@ -341,6 +341,7 @@ _EXTENSION_PLUGIN: dict[str, str] = {
     ".png": "PngImagePlugin",
     ".apng": "PngImagePlugin",
     # Less common formats (init)
+    ".ani": "AniImagePlugin",
     ".avif": "AvifImagePlugin",
     ".avifs": "AvifImagePlugin",
     ".blp": "BlpImagePlugin",
