@@ -80,7 +80,11 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
         context->z_stream.zfree = (free_func)NULL;
         context->z_stream.opaque = (voidpf)NULL;
 
+#ifdef HAVE_ZLIBNG
+        err = zng_inflateInit(&context->z_stream);
+#else
         err = inflateInit(&context->z_stream);
+#endif
         if (err < 0) {
             state->errcode = IMAGING_CODEC_CONFIG;
             free(context->previous);
@@ -112,7 +116,11 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
         context->z_stream.next_out = state->buffer + context->last_output;
         context->z_stream.avail_out = row_len + context->prefix - context->last_output;
 
+#ifdef HAVE_ZLIBNG
+        err = zng_inflate(&context->z_stream, Z_NO_FLUSH);
+#else
         err = inflate(&context->z_stream, Z_NO_FLUSH);
+#endif
 
         if (err < 0) {
             /* Something went wrong inside the compression library */
@@ -125,7 +133,11 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
             }
             free(context->previous);
             context->previous = NULL;
+#ifdef HAVE_ZLIBNG
+            zng_inflateEnd(&context->z_stream);
+#else
             inflateEnd(&context->z_stream);
+#endif
             return -1;
         }
 
@@ -196,7 +208,11 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
                         state->errcode = IMAGING_CODEC_UNKNOWN;
                         free(context->previous);
                         context->previous = NULL;
+#ifdef HAVE_ZLIBNG
+                        zng_inflateEnd(&context->z_stream);
+#else
                         inflateEnd(&context->z_stream);
+#endif
                         return -1;
                 }
                 break;
@@ -270,7 +286,11 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
 
             free(context->previous);
             context->previous = NULL;
+#ifdef HAVE_ZLIBNG
+            zng_inflateEnd(&context->z_stream);
+#else
             inflateEnd(&context->z_stream);
+#endif
             return -1; /* end of file (errcode=0) */
         }
 
@@ -292,7 +312,11 @@ ImagingZipDecodeCleanup(ImagingCodecState state) {
 
     /* Clean up */
     if (context->previous) {
+#ifdef HAVE_ZLIBNG
+        zng_inflateEnd(&context->z_stream);
+#else
         inflateEnd(&context->z_stream);
+#endif
         free(context->previous);
         context->previous = NULL;
     }
