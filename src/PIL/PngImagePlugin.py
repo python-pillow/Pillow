@@ -1403,8 +1403,7 @@ def _save(
 
     chunks = [b"cHRM", b"cICP", b"gAMA", b"sBIT", b"sRGB", b"tIME"]
 
-    icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
-    if icc:
+    if icc := im.encoderinfo.get("icc_profile", im.info.get("icc_profile")):
         # ICC profile
         # according to PNG spec, the iCCP chunk contains:
         # Profile name  1-79 bytes (character string)
@@ -1419,8 +1418,7 @@ def _save(
         # Disallow sRGB chunks when an iCCP-chunk has been emitted.
         chunks.remove(b"sRGB")
 
-    info = im.encoderinfo.get("pnginfo")
-    if info:
+    if info := im.encoderinfo.get("pnginfo"):
         chunks_multiple_allowed = [b"sPLT", b"iTXt", b"tEXt", b"zTXt"]
         for info_chunk in info.chunks:
             cid, data = info_chunk[:2]
@@ -1472,8 +1470,7 @@ def _save(
             alpha_bytes = colors
             chunk(fp, b"tRNS", alpha[:alpha_bytes])
 
-    dpi = im.encoderinfo.get("dpi")
-    if dpi:
+    if dpi := im.encoderinfo.get("dpi"):
         chunk(
             fp,
             b"pHYs",
@@ -1490,8 +1487,7 @@ def _save(
                 chunks.remove(cid)
                 chunk(fp, cid, data)
 
-    exif = im.encoderinfo.get("exif")
-    if exif:
+    if exif := im.encoderinfo.get("exif"):
         if isinstance(exif, Image.Exif):
             exif = exif.tobytes(8)
         if exif.startswith(b"Exif\x00\x00"):
