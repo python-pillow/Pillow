@@ -11,7 +11,7 @@ from .helper import assert_image_equal, hopper
 def test_sanity(data_type: str) -> None:
     im1 = hopper()
 
-    data = im1.tobytes()
+    data: bytes | memoryview[int] = im1.tobytes()
     if data_type == "memoryview":
         data = memoryview(data)
     im2 = Image.frombytes(im1.mode, im1.size, data)

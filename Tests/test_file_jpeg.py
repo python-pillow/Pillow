@@ -19,6 +19,7 @@ from PIL import (
     UnidentifiedImageError,
     features,
 )
+from PIL._typing import Buffer
 
 from .helper import (
     assert_image,
@@ -39,6 +40,7 @@ try:
     from defusedxml import ElementTree
 except ImportError:
     ElementTree = None
+
 
 TEST_FILE = "Tests/images/hopper.jpg"
 
@@ -1054,7 +1056,7 @@ class TestFileJpeg:
         # the image should still end when there is no new data
         class InfiniteMockPyDecoder(ImageFile.PyDecoder):
             def decode(
-                self, buffer: bytes | Image.SupportsArrayInterface
+                self, buffer: Buffer | Image.SupportsArrayInterface
             ) -> tuple[int, int]:
                 return 0, 0
 

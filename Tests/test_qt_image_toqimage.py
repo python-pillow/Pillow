@@ -10,12 +10,14 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from pathlib import Path
 
+    QImage = type
+else:
+    if ImageQt.qt_is_installed:
+        from PIL.ImageQt import QImage
+
 pytestmark = pytest.mark.skipif(
     not ImageQt.qt_is_installed, reason="Qt bindings are not installed"
 )
-
-if ImageQt.qt_is_installed:
-    from PIL.ImageQt import QImage
 
 
 @pytest.mark.parametrize("mode", ("RGB", "RGBA", "L", "P", "1"))

@@ -14,9 +14,15 @@ from __future__ import annotations
 
 import struct
 from io import BytesIO
-from typing import IO
 
 from PIL import Image, ImageFile
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
+
+    from typing_extensions import Buffer
+
 
 # Magic ("DDS ")
 DDS_MAGIC = 0x20534444
@@ -258,7 +264,7 @@ class DdsImageFile(ImageFile.ImageFile):
 class DXT1Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Buffer | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
         try:
             self.set_as_raw(_dxt1(self.fd, self.state.xsize, self.state.ysize))
@@ -271,7 +277,7 @@ class DXT1Decoder(ImageFile.PyDecoder):
 class DXT5Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Buffer | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
         try:
             self.set_as_raw(_dxt5(self.fd, self.state.xsize, self.state.ysize))

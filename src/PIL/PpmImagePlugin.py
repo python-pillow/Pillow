@@ -22,6 +22,7 @@ from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import o8
 from ._binary import o32le as o32
+from ._typing import Buffer
 
 #
 # --------------------------------------------------------------------
@@ -169,12 +170,12 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
 
         return self.fd.read(ImageFile.SAFEBLOCK)
 
-    def _find_comment_end(self, block: bytes, start: int = 0) -> int:
+    def _find_comment_end(self, block: bytes | bytearray, start: int = 0) -> int:
         a = block.find(b"\n", start)
         b = block.find(b"\r", start)
         return min(a, b) if a * b > 0 else max(a, b)  # lowest nonnegative index (or -1)
 
-    def _ignore_comments(self, block: bytes) -> bytes:
+    def _ignore_comments(self, block: bytes | bytearray) -> bytes | bytearray:
         if self._comment_spans:
             # Finish current comment
             while block:
@@ -216,6 +217,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         data = bytearray()
         total_bytes = self.state.xsize * self.state.ysize
 
+        block: bytes | bytearray
         while len(data) != total_bytes:
             block = self._read_block()  # read next block
             if not block:
@@ -241,9 +243,9 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         bands = Image.getmodebands(self.mode)
         total_bytes = self.state.xsize * self.state.ysize * bands * out_byte_count
 
-        half_token = b""
+        half_token: bytes | bytearray = b""
         while len(data) != total_bytes:
-            block = self._read_block()  # read next block
+            block: bytes | bytearray = self._read_block()  # read next block
             if not block:
                 if half_token:
                     block = bytearray(b" ")  # flush half_token
@@ -284,7 +286,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
                     break
         return data
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Buffer | Image.SupportsArrayInterface) -> tuple[int, int]:
         self._comment_spans = False
         if self.mode == "1":
             data = self._decode_bitonal()
@@ -300,7 +302,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
 class PpmDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Buffer | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
 
         data = bytearray()
