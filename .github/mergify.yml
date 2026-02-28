@@ -4,6 +4,7 @@ pull_request_rules:
       - "#approved-reviews-by>=1"
       - label=automerge
       - status-success=Lint
+      - status-success=Typing Successful
       - status-success=Test Successful
       - status-success=Docker Test Successful
       - status-success=Windows Test Successful
