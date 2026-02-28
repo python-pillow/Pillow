@@ -438,33 +438,28 @@ def preinit() -> None:
         return
 
     try:
-        from . import BmpImagePlugin
+        from . import BmpImagePlugin as BmpImagePlugin
 
-        assert BmpImagePlugin
     except ImportError:
         pass
     try:
-        from . import GifImagePlugin
+        from . import GifImagePlugin as GifImagePlugin
 
-        assert GifImagePlugin
     except ImportError:
         pass
     try:
-        from . import JpegImagePlugin
+        from . import JpegImagePlugin as JpegImagePlugin
 
-        assert JpegImagePlugin
     except ImportError:
         pass
     try:
-        from . import PpmImagePlugin
+        from . import PpmImagePlugin as PpmImagePlugin
 
-        assert PpmImagePlugin
     except ImportError:
         pass
     try:
-        from . import PngImagePlugin
+        from . import PngImagePlugin as PngImagePlugin
 
-        assert PngImagePlugin
     except ImportError:
         pass
 
