@@ -17,7 +17,7 @@ or the clipboard to a PIL image memory.
 
     On Linux, if ``xdisplay`` is ``None`` and the default X11 display does not return
     a snapshot of the screen, ``gnome-screenshot``, ``grim`` or ``spectacle`` will be
-    used as a fallback if they are installed. To disable this behaviour, pass
+    used as a fallback if they are installed. To disable this behavior, pass
     ``xdisplay=""`` instead.
 
     .. versionadded:: 1.1.3 Windows support
@@ -65,7 +65,7 @@ or the clipboard to a PIL image memory.
              or None if the clipboard does not contain image data or filenames.
              Note that if a list is returned, the filenames may not represent image files.
 
-             On Mac, an image,
+             On macOS, an image,
              or None if the clipboard does not contain image data.
 
              On Linux, an image.

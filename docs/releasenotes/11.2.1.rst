@@ -16,7 +16,7 @@ Undefined shift when loading compressed DDS images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When loading some compressed DDS formats, an integer was bitshifted by 24 places to
-generate the 32 bits of the lookup table. This was undefined behaviour, and has been
+generate the 32 bits of the lookup table. This was undefined behavior, and has been
 present since Pillow 3.4.0.
 
 Deprecations
@@ -27,7 +27,7 @@ Image.Image.get_child_images()
 
 .. deprecated:: 11.2.1
 
-``Image.Image.get_child_images()`` has been deprecated. and will be removed in Pillow
+``Image.Image.get_child_images()`` has been deprecated and will be removed in Pillow
 13 (2026-10-15). It will be moved to ``ImageFile.ImageFile.get_child_images()``. The
 method uses an image's file pointer, and so child images could only be retrieved from
 an :py:class:`PIL.ImageFile.ImageFile` instance.
@@ -38,7 +38,7 @@ API changes
 ``append_images`` no longer requires ``save_all``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Previously, ``save_all`` was required to in order to use ``append_images``. Now,
+Previously, ``save_all`` was required in order to use ``append_images``. Now,
 ``save_all`` will default to ``True`` if ``append_images`` is not empty and the format
 supports saving multiple frames::
 

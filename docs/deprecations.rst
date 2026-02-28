@@ -25,7 +25,7 @@ Image.Image.get_child_images()
 
 .. deprecated:: 11.2.1
 
-``Image.Image.get_child_images()`` has been deprecated. and will be removed in Pillow
+``Image.Image.get_child_images()`` has been deprecated and will be removed in Pillow
 13 (2026-10-15). It will be moved to ``ImageFile.ImageFile.get_child_images()``. The
 method uses an image's file pointer, and so child images could only be retrieved from
 an :py:class:`PIL.ImageFile.ImageFile` instance.
@@ -543,7 +543,7 @@ Image._showxv
 .. deprecated:: 7.2.0
 .. versionremoved:: 9.0.0
 
-Use :py:meth:`.Image.Image.show` instead. If custom behaviour is required, use
+Use :py:meth:`.Image.Image.show` instead. If custom behavior is required, use
 :py:func:`.ImageShow.register` to add a custom :py:class:`.ImageShow.Viewer` class.
 
 ImageFile.raise_ioerror
@@ -681,7 +681,7 @@ PyQt4 and PySide
 Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
 2018-08-31 and PySide since 2015-10-14.
 
-Support for PyQt4 and PySide has been removed  from ``ImageQt``. Please upgrade to PyQt5
+Support for PyQt4 and PySide has been removed from ``ImageQt``. Please upgrade to PyQt5
 or PySide2.
 
 Setting the size of TIFF images

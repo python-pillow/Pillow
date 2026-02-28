@@ -106,9 +106,9 @@ contains font metrics, the latter raster data.
 To load a bitmap font, use the load functions in the :py:mod:`~PIL.ImageFont`
 module.
 
-To load a OpenType/TrueType font, use the truetype function in the
+To load an OpenType/TrueType font, use the truetype function in the
 :py:mod:`~PIL.ImageFont` module. Note that this function depends on third-party
-libraries, and may not available in all PIL builds.
+libraries, and may not be available in all PIL builds.
 
 Example: Draw partial opacity text
 ----------------------------------
@@ -264,7 +264,7 @@ Methods
 
 .. py:method:: ImageDraw.circle(xy, radius, fill=None, outline=None, width=1)
 
-    Draws a circle with a given radius centering on a point.
+    Draws a circle with a given radius centered on a point.
 
     .. versionadded:: 10.4.0
 
