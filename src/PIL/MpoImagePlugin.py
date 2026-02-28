@@ -59,11 +59,10 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                     + b"MPF\0"
                     + b" " * ifd_length
                 )
-                exif = im_frame.encoderinfo.get("exif")
-                if isinstance(exif, Image.Exif):
-                    exif = exif.tobytes()
-                    im_frame.encoderinfo["exif"] = exif
-                if exif:
+                if exif := im_frame.encoderinfo.get("exif"):
+                    if isinstance(exif, Image.Exif):
+                        exif = exif.tobytes()
+                        im_frame.encoderinfo["exif"] = exif
                     mpf_offset += 4 + len(exif)
 
                 JpegImagePlugin._save(im_frame, fp, filename)
