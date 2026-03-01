@@ -24,7 +24,7 @@ import re
 from collections.abc import Sequence
 from typing import Literal, Protocol, cast, overload
 
-from . import ExifTags, Image, ImagePalette
+from . import ExifTags, Image, ImageFilter, ImagePalette
 
 #
 # helpers
@@ -621,6 +621,101 @@ def grayscale(image: Image.Image) -> Image.Image:
     :return: An image.
     """
     return image.convert("L")
+
+
+def sepia(image: Image.Image) -> Image.Image:
+    """
+    Apply a sepia tone effect to an image.
+
+    :param image: The image to modify.
+    :return: An image.
+
+    """
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+
+    out = Image.new("RGB", image.size)
+
+    for x in range(image.width):
+        for y in range(image.height):
+            value = image.getpixel((x, y))
+            assert isinstance(value, tuple)
+            r, g, b = value
+
+            tr = 0.393 * r + 0.769 * g + 0.189 * b
+            tg = 0.349 * r + 0.686 * g + 0.168 * b
+            tb = 0.272 * r + 0.534 * g + 0.131 * b
+
+            out.putpixel((x, y), tuple(min(255, int(c)) for c in (tr, tg, tb)))
+
+    return out
+
+
+def sobel(image: Image.Image) -> Image.Image:
+    """
+    Applies a Sobel edge-detection filter to the given image.
+
+    This function computes the Sobel gradient magnitude using the
+    horizontal (Gx) and vertical (Gy) Sobel kernels.
+
+    :param image: The image to be filtered
+    :return: An image.
+    """
+    if image.mode != "L":
+        image = image.convert("L")
+
+    Kx = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]
+    Ky = [[1, 2, 1], [0, 0, 0], [-1, -2, -1]]
+
+    out = Image.new("L", image.size)
+
+    for x in range(1, image.width - 1):
+        for y in range(1, image.height - 1):
+
+            gx = gy = 0.0
+
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    v = image.getpixel((x + dx, y + dy))
+                    assert isinstance(v, (int, float))
+
+                    gx += v * Kx[dy + 1][dx + 1]
+                    gy += v * Ky[dy + 1][dx + 1]
+
+            # Approximate gradient magnitude and clamp to [0, 255]
+            mag = int(min(255, abs(gx) + abs(gy)))
+            out.putpixel((x, y), mag)
+
+    return out
+
+
+def neon_effect(
+    image: Image.Image, color: tuple[int, int, int] = (255, 0, 255), alpha: float = 0.2
+) -> Image.Image:
+    """
+    Apply a neon glow effect to an image using edge detection,
+    blur-based glow generation, colorization, and alpha blending.
+    It calls all auxiliary functions required to generate
+    the final result.
+
+    :param image: Image to create the effect
+    :param color: RGB color used for neon effect
+    :param alpha: Controls the intensity of the neon effect. If alpha is 0.0, a copy of
+       the image is returned unaltered.
+    :return: An image
+    """
+    edges = sobel(image).filter(ImageFilter.GaussianBlur(2))
+
+    # Apply a glow-enhancing mask transformation
+    glow = edges.point(lambda value: 255 - ((255 - value) ** 2 // 255))
+
+    # Apply a color tint to the intensity mask
+    neon = Image.merge(
+        "RGB",
+        tuple(glow.point(lambda value: min(255, int(value * c / 255))) for c in color),
+    )
+
+    return Image.blend(image, neon, alpha)
 
 
 def invert(image: Image.Image) -> Image.Image:

@@ -604,3 +604,37 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
         img, cutoff=10, preserve_tone=True
     )  # single color 10 cutoff
     assert_image_equal(img, out)
+
+
+@pytest.mark.parametrize("mode", ("L", "RGB"))
+def test_sepia_size_and_mode(mode: str) -> None:
+    img = Image.new(mode, (10, 10))
+    out = ImageOps.sepia(img)
+
+    assert out.mode == "RGB"
+    assert out.size == img.size
+
+
+def test_sobel_detects_edge() -> None:
+    img = Image.new("L", (5, 5))
+    for x in range(3, 5):
+        img.putpixel((x, 2), 255)
+
+    out = ImageOps.sobel(img)
+    assert max(out.tobytes()) > 0
+
+
+def test_sobel_output_mode_and_size() -> None:
+    img = Image.new("RGB", (10, 10))
+    out = ImageOps.sobel(img)
+
+    assert out.mode == "L"
+    assert out.size == img.size
+
+
+def test_neon_effect_mode_and_size() -> None:
+    img = Image.new("RGB", (20, 20))
+    out = ImageOps.neon_effect(img)
+
+    assert out.mode == "RGB"
+    assert out.size == img.size
