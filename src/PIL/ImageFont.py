@@ -675,12 +675,8 @@ class FreeTypeFont:
         :returns: A list of the named styles in a variation font.
         :exception OSError: If the font is not a variation font.
         """
-        names = []
-        for name in self.font.getvarnames():
-            name = name.replace(b"\x00", b"")
-            if name not in names:
-                names.append(name)
-        return names
+        names = self.font.getvarnames()
+        return [name.replace(b"\x00", b"") for name in names]
 
     def set_variation_by_name(self, name: str | bytes) -> None:
         """
@@ -690,7 +686,14 @@ class FreeTypeFont:
         names = self.get_variation_names()
         if not isinstance(name, bytes):
             name = name.encode()
-        index = names.index(name) + 1
+        self.set_variation_by_name_index(names.index(name))
+
+    def set_variation_by_name_index(self, index: int) -> None:
+        """
+        :param name: The index within the list of named styles in a variation font.
+        :exception OSError: If the font is not a variation font.
+        """
+        index += 1
 
         if index == getattr(self, "_last_variation_index", None):
             # When the same name is set twice in a row,
