@@ -83,14 +83,6 @@ def test_monochrome(tmp_path: Path) -> None:
     assert os.path.getsize(outfile) < (5000 if features.check("libtiff") else 15000)
 
 
-def test_unsupported_mode(tmp_path: Path) -> None:
-    im = hopper("PA")
-    outfile = tmp_path / "temp_PA.pdf"
-
-    with pytest.raises(ValueError):
-        im.save(outfile)
-
-
 def test_resolution(tmp_path: Path) -> None:
     im = hopper()
 

@@ -1231,15 +1231,23 @@ class Image:
         if dither is None:
             dither = Dither.FLOYDSTEINBERG
 
+        if self.im.mode == "La":
+            im = self.im.convert("LA")
+        elif self.im.mode == "LAB":
+            im = self.im.convert("RGBA", dither)
+        else:
+            im = self.im
+
         try:
-            im = self.im.convert(mode, dither)
+            im = im.convert(mode, dither)
         except ValueError:
             try:
-                # normalize source image and try again
+                # normalize source image
                 modebase = getmodebase(self.mode)
                 if modebase == self.mode:
                     raise
-                im = self.im.convert(modebase)
+                im = im.convert(modebase, dither)
+                # try again
                 im = im.convert(mode, dither)
             except KeyError as e:
                 msg = "illegal conversion"
@@ -2591,8 +2599,8 @@ class Image:
         <../handbook/image-file-formats>` for each writer.
 
         You can use a file object instead of a filename. In this case,
-        you must always specify the format. The file object must
-        implement the ``seek``, ``tell``, and ``write``
+        you must always specify the format or the name property.
+        The file object must implement the ``seek``, ``tell``, and ``write``
         methods, and be opened in binary mode.
 
         :param fp: A filename (string), os.PathLike object or file object.
@@ -2635,6 +2643,13 @@ class Image:
         if not filename and hasattr(fp, "name") and is_path(fp.name):
             # only set the name for metadata purposes
             filename = os.fspath(fp.name)
+
+        # Accept extension as format so plugins can use
+        # the filename to set the proper mode.
+        if format in EXTENSION:
+            if not filename and not hasattr(fp, "name"):
+                filename = os.fspath(format)
+            format = EXTENSION[format]
 
         if format:
             preinit()

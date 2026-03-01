@@ -1694,14 +1694,12 @@ SAVE_INFO = {
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    try:
-        rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
-    except KeyError as e:
-        msg = f"cannot write mode {im.mode} as TIFF"
-        raise OSError(msg) from e
-
     encoderinfo = im.encoderinfo
     encoderconfig = im.encoderconfig
+    if im.mode not in SAVE_INFO:
+        im = im.convert("RGBA")
+
+    rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
 
     ifd = ImageFileDirectory_v2(prefix=prefix)
     if encoderinfo.get("big_tiff"):

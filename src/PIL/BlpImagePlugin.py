@@ -463,11 +463,12 @@ class BLPEncoder(ImageFile.PyEncoder):
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
+    encoderinfo = im.encoderinfo
+    # PA is possible according to https://wowwiki-archive.fandom.com/wiki/BLP_file
     if im.mode != "P":
-        msg = "Unsupported BLP image mode"
-        raise ValueError(msg)
+        im = im.convert("RGBA").convert("P")
 
-    magic = b"BLP1" if im.encoderinfo.get("blp_version") == "BLP1" else b"BLP2"
+    magic = b"BLP1" if encoderinfo.get("blp_version") == "BLP1" else b"BLP2"
     fp.write(magic)
 
     assert im.palette is not None

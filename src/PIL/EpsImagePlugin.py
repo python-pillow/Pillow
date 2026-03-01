@@ -426,6 +426,12 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes, eps: int = 1) -
     # make sure image data is available
     im.load()
 
+    if im.mode not in ("L", "RGB", "CMYK"):
+        if im.mode == "LAB":
+            im = im.convert("RGB")
+        else:
+            im = im.convert("CMYK")
+
     # determine PostScript image mode
     if im.mode == "L":
         operator = (8, 1, b"image")

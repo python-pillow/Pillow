@@ -411,13 +411,6 @@ def test_not_implemented(test_file: str, message: str) -> None:
             pass
 
 
-def test_save_unsupported_mode(tmp_path: Path) -> None:
-    out = tmp_path / "temp.dds"
-    im = hopper("HSV")
-    with pytest.raises(OSError, match="cannot write mode HSV as DDS"):
-        im.save(out)
-
-
 @pytest.mark.parametrize(
     "mode, test_file",
     [

@@ -177,21 +177,20 @@ SAVE = {
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    try:
-        rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
-    except KeyError as e:
-        msg = f"cannot write mode {im.mode} as TGA"
-        raise OSError(msg) from e
+    encoderinfo = im.encoderinfo
+    if im.mode not in SAVE:
+        im = im.convert("RGBA")
+    rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
 
-    if "rle" in im.encoderinfo:
-        rle = im.encoderinfo["rle"]
+    if "rle" in encoderinfo:
+        rle = encoderinfo["rle"]
     else:
-        compression = im.encoderinfo.get("compression", im.info.get("compression"))
+        compression = encoderinfo.get("compression", im.info.get("compression"))
         rle = compression == "tga_rle"
     if rle:
         imagetype += 8
 
-    id_section = im.encoderinfo.get("id_section", im.info.get("id_section", ""))
+    id_section = encoderinfo.get("id_section", im.info.get("id_section", ""))
     id_len = len(id_section)
     if id_len > 255:
         id_len = 255
@@ -209,7 +208,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     else:
         flags = 0
 
-    orientation = im.encoderinfo.get("orientation", im.info.get("orientation", -1))
+    orientation = encoderinfo.get("orientation", im.info.get("orientation", -1))
     if orientation > 0:
         flags = flags | 0x20
 

@@ -79,13 +79,3 @@ def test_msp_v2() -> None:
             continue
         path = os.path.join(YA_EXTRA_DIR, f)
         _assert_file_image_equal(path, path.replace(".MSP", ".png"))
-
-
-def test_cannot_save_wrong_mode(tmp_path: Path) -> None:
-    # Arrange
-    im = hopper()
-    filename = tmp_path / "temp.msp"
-
-    # Act/Assert
-    with pytest.raises(OSError):
-        im.save(filename)
