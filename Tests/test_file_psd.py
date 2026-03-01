@@ -85,6 +85,11 @@ def test_eoferror() -> None:
         # Test that seeking to the last frame does not raise an error
         im.seek(n_frames - 1)
 
+    # Test seeking past the last frame without calling n_frames first
+    with Image.open(test_file) as im:
+        with pytest.raises(EOFError):
+            im.seek(3)
+
 
 def test_seek_tell() -> None:
     with Image.open(test_file) as im:
