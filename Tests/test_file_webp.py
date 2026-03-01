@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import io
+import os
 import re
 import sys
 import warnings
+from io import BytesIO
 from pathlib import Path
 from typing import Any
 
@@ -103,10 +104,10 @@ class TestFileWebp:
     def test_write_method(self, tmp_path: Path) -> None:
         self._roundtrip(tmp_path, self.rgb_mode, 12.0, {"method": 6})
 
-        buffer_no_args = io.BytesIO()
+        buffer_no_args = BytesIO()
         hopper().save(buffer_no_args, format="WEBP")
 
-        buffer_method = io.BytesIO()
+        buffer_method = BytesIO()
         hopper().save(buffer_method, format="WEBP", method=6)
         assert buffer_no_args.getbuffer() != buffer_method.getbuffer()
 
@@ -126,6 +127,54 @@ class TestFileWebp:
         im = Image.new("1", (1, 1))
         with pytest.raises(ValueError):
             _webp.WebPEncode(im.getim(), False, 0, 0, "", 4, 0, b"", "")
+
+    def test_save_all_progress(self) -> None:
+        out = BytesIO()
+        progress = []
+
+        def callback(state: Image.Progress) -> None:
+            if state.image_filename:
+                state = state._replace(
+                    image_filename=os.path.basename(state.image_filename)
+                )
+            progress.append(state)
+
+        Image.new("RGB", (1, 1)).save(out, "WEBP", save_all=True, progress=callback)
+        assert progress == [
+            Image.Progress(
+                image_index=0,
+                image_filename=None,
+                completed_frames=1,
+                total_frames=1,
+            )
+        ]
+
+        out = BytesIO()
+        progress = []
+
+        with Image.open("Tests/images/iss634.webp") as im:
+            im2 = Image.new("RGB", im.size)
+            im.save(out, "WEBP", save_all=True, append_images=[im2], progress=callback)
+
+        expected = []
+        for i in range(42):
+            expected.append(
+                Image.Progress(
+                    image_index=0,
+                    image_filename="iss634.webp",
+                    completed_frames=i + 1,
+                    total_frames=43,
+                )
+            )
+        expected.append(
+            Image.Progress(
+                image_index=1,
+                image_filename=None,
+                completed_frames=43,
+                total_frames=43,
+            )
+        )
+        assert progress == expected
 
     def test_icc_profile(self, tmp_path: Path) -> None:
         self._roundtrip(tmp_path, self.rgb_mode, 12.5, {"icc_profile": None})

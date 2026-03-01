@@ -153,6 +153,7 @@ def _convert_frame(im: Image.Image) -> Image.Image:
 
 def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     encoderinfo = im.encoderinfo.copy()
+    progress = encoderinfo.get("progress")
     append_images = list(encoderinfo.get("append_images", []))
 
     # If total frame count is 1, then save using the legacy API, which
@@ -162,6 +163,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         total += getattr(ims, "n_frames", 1)
     if total == 1:
         _save(im, fp, filename)
+        im._save_all_progress(progress)
         return
 
     background: int | tuple[int, ...] = (0, 0, 0, 0)
@@ -234,7 +236,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     timestamp = 0
     cur_idx = im.tell()
     try:
-        for ims in [im] + append_images:
+        for i, ims in enumerate([im] + append_images):
             # Get number of frames in this image
             nfr = getattr(ims, "n_frames", 1)
 
@@ -259,6 +261,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 else:
                     timestamp += duration
                 frame_idx += 1
+                im._save_all_progress(progress, ims, i, frame_idx, total)
 
     finally:
         im.seek(cur_idx)
