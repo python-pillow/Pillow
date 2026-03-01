@@ -148,6 +148,10 @@ class ImageFile(Image.Image):
         try:
             try:
                 self._open()
+
+                if isinstance(self, StubImageFile):
+                    if loader := self._load():
+                        loader.open(self)
             except (
                 IndexError,  # end of data
                 TypeError,  # end of data (ord)
