@@ -1,0 +1,60 @@
+12.2.0
+------
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+Backwards incompatible changes
+==============================
+
+TODO
+^^^^
+
+TODO
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API additions
+=============
+
+Added ``scale_down`` argument to ``ImageGrab.grab()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageGrab.grab` now accepts an optional keyword argument of
+``scale_down``. This affects macOS screenshots with a ``bbox`` on a Retina screen. By
+default, images will be captured at 2x. If ``scale_down`` is ``True``, they will be at
+1x.
+
+Previously, macOS screenshots with a ``bbox`` were captured at 1x by default.
+
+Other changes
+=============
+
+TODO
+^^^^
+
+TODO
