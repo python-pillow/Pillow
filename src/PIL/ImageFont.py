@@ -149,6 +149,9 @@ class ImageFont:
         # read PILfont metrics
         data = file.read(256 * 20)
 
+        self._load(image, data)
+
+    def _load(self, image: Image.Image, data: bytes) -> None:
         image.load()
 
         self.font = Image.core.font(image.im, data)
