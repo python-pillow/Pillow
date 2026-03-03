@@ -112,8 +112,8 @@ class FontFile:
 
     def _encode_metrics(self) -> bytes:
         values: tuple[int, ...] = ()
-        for id in range(256):
-            m = self.metrics[id]
+        for i in range(256):
+            m = self.metrics[i]
             if m:
                 values += m[0] + m[1] + m[2]
             else:
