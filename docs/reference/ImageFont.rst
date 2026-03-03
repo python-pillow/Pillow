@@ -8,9 +8,9 @@ The :py:mod:`~PIL.ImageFont` module defines a class with the same name. Instance
 this class store bitmap fonts, and are used with the
 :py:meth:`PIL.ImageDraw.ImageDraw.text` method.
 
-PIL uses its own font file format to store bitmap fonts, limited to 256 characters. You
+Pillow uses its own font file format to store bitmap fonts, limited to 256 characters. You
 can use :py:meth:`~PIL.FontFile.FontFile.to_imagefont` to convert BDF and PCF font
-descriptors (X window font formats) to this format::
+descriptors (X Window font formats) to this format::
 
     from PIL import PcfFontFile
     with open("Tests/fonts/10x20-ISO8859-1.pcf", "rb") as fp:
