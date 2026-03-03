@@ -186,8 +186,8 @@ lint.isort.required-imports = [
 max_supported_python = "3.14"
 
 [tool.pytest]
-ini_options.addopts = "-ra --color=auto"
-ini_options.testpaths = [
+addopts = [ "-ra", "--color=auto" ]
+testpaths = [
   "Tests",
 ]
 
