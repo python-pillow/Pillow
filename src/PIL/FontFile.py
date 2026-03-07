@@ -111,20 +111,20 @@ class FontFile:
                 self.metrics[i] = d, dst, s
 
     def _encode_metrics(self) -> bytes:
-        values: tuple[int, ...] = ()
+        values: list[int] = []
         for i in range(256):
             m = self.metrics[i]
             if m:
-                values += m[0] + m[1] + m[2]
+                values.extend(m[0] + m[1] + m[2])
             else:
-                values += (0,) * 10
+                values.extend((0,) * 10)
 
-        metrics = b""
+        data = bytearray()
         for v in values:
             if v < 0:
                 v += 65536
-            metrics += _binary.o16be(v)
-        return metrics
+            data += _binary.o16be(v)
+        return bytes(data)
 
     def save(self, filename: str) -> None:
         """Save font"""
