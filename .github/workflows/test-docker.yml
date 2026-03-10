@@ -83,7 +83,7 @@ jobs:
 
     - name: Docker pull
       run: |
-        docker pull pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
+        docker pull ${{ matrix.qemu-arch && format('--platform=linux/{0}', matrix.qemu-arch)}} pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
 
     - name: Docker build
       run: |

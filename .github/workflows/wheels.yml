@@ -53,19 +53,19 @@ jobs:
         include:
           - name: "macOS 10.10 x86_64"
             platform: macos
-            os: macos-15-intel
+            os: macos-26-intel
             cibw_arch: x86_64
             build: "cp3{10,11}*"
             macosx_deployment_target: "10.10"
           - name: "macOS 10.13 x86_64"
             platform: macos
-            os: macos-15-intel
+            os: macos-26-intel
             cibw_arch: x86_64
             build: "cp3{12,13}*"
             macosx_deployment_target: "10.13"
           - name: "macOS 10.15 x86_64"
             platform: macos
-            os: macos-15-intel
+            os: macos-26-intel
             cibw_arch: x86_64
             build: "{cp314,pp3}*"
             macosx_deployment_target: "10.15"
@@ -104,7 +104,7 @@ jobs:
             cibw_arch: arm64_iphonesimulator
           - name: "iOS x86_64 simulator"
             platform: ios
-            os: macos-15-intel
+            os: macos-26-intel
             cibw_arch: x86_64_iphonesimulator
     steps:
       - uses: actions/checkout@v6
@@ -250,7 +250,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Count dists
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: dist-*
           path: dist
@@ -269,7 +269,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Upload wheels to scientific-python-nightly-wheels
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: dist-!(sdist)*
           path: dist
@@ -291,7 +291,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: dist-*
           path: dist

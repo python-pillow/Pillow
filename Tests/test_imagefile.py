@@ -163,6 +163,13 @@ class TestImageFile:
             with pytest.raises(ValueError, match="Tile offset cannot be negative"):
                 im.load()
 
+    @pytest.mark.parametrize("xy", ((-1, 0), (0, -1)))
+    def test_negative_tile_extents(self, xy: tuple[int, int]) -> None:
+        im = Image.new("1", (1, 1))
+        fp = BytesIO()
+        with pytest.raises(SystemError, match="tile cannot extend outside image"):
+            ImageFile._save(im, fp, [ImageFile._Tile("raw", xy + (1, 1), 0, "1")])
+
     def test_no_format(self) -> None:
         buf = BytesIO(b"\x00" * 255)
 

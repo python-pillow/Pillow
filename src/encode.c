@@ -254,7 +254,8 @@ _setimage(ImagingEncoderObject *encoder, PyObject *args) {
         state->ysize = y1 - y0;
     }
 
-    if (state->xsize <= 0 || state->xsize + state->xoff > im->xsize ||
+    if (state->xoff < 0 || state->xsize <= 0 ||
+        state->xsize + state->xoff > im->xsize || state->yoff < 0 ||
         state->ysize <= 0 || state->ysize + state->yoff > im->ysize) {
         PyErr_SetString(PyExc_SystemError, "tile cannot extend outside image");
         return NULL;
@@ -998,8 +999,9 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, PyBytes_AsString(value)
                 );
-            } else if (type == TIFF_DOUBLE || type == TIFF_SRATIONAL ||
-                       type == TIFF_RATIONAL) {
+            } else if (
+                type == TIFF_DOUBLE || type == TIFF_SRATIONAL || type == TIFF_RATIONAL
+            ) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (FLOAT64)PyFloat_AsDouble(value)
                 );
