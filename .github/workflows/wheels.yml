@@ -116,6 +116,12 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Set up QEMU
+        if: matrix.cibw_arch == 'riscv64'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: riscv64
+
       - name: Install cibuildwheel
         run: |
           python3 -m pip install -r .ci/requirements-cibw.txt
