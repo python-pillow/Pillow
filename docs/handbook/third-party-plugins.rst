@@ -7,6 +7,7 @@ itself.
 
 Here is a list of PyPI projects that offer additional plugins:
 
+* :pypi:`amigainfo`: Adds support for Amiga Workbench .info icon files.
 * :pypi:`DjvuRleImagePlugin`: Plugin for the DjVu RLE image format as defined in the DjVuLibre docs.
 * :pypi:`heif-image-plugin`: Simple HEIF/HEIC images plugin, based on the pyheif library.
 * :pypi:`jxlpy`: Introduces reading and writing support for JPEG XL.
