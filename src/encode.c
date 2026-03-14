@@ -239,6 +239,10 @@ _setimage(ImagingEncoderObject *encoder, PyObject *args) {
     if (!im) {
         return NULL;
     }
+    if (im->xsize == 0 || im->ysize == 0) {
+        PyErr_SetString(PyExc_ValueError, "cannot write empty image");
+        return NULL;
+    }
 
     encoder->im = im;
 
