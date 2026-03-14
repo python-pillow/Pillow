@@ -33,10 +33,14 @@ TODO
 API changes
 ===========
 
-TODO
-^^^^
+Error when encoding an empty image
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Attempting to encode an image with zero width or height would previously raise
+a :py:exc:`SystemError`. That has now been changed to a :py:exc:`ValueError`.
+
+This does not add any new errors. SGI, ICNS and ICO formats are still able to
+save (0, 0) images.
 
 API additions
 =============
