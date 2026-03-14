@@ -1,0 +1,63 @@
+12.2.0
+------
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+Backwards incompatible changes
+==============================
+
+TODO
+^^^^
+
+TODO
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API additions
+=============
+
+FontFile.to_imagefont()
+^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.FontFile.FontFile` instances can now be directly converted to
+:py:class:`~PIL.ImageFont.ImageFont` instances::
+
+    >>> from PIL import PcfFontFile
+    >>> with open("Tests/fonts/10x20-ISO8859-1.pcf", "rb") as fp:
+    ...   pcffont = PcfFontFile.PcfFontFile(fp)
+    ...   pcffont.to_imagefont()
+    ...
+    <PIL.ImageFont.ImageFont object at 0x10457bb80>
+
+Other changes
+=============
+
+TODO
+^^^^
+
+TODO
