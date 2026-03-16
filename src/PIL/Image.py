@@ -2145,8 +2145,8 @@ class Image:
         Alternatively, an 8-bit string may be used instead of an integer sequence.
 
         :param data: A palette sequence (either a list or a string).
-        :param rawmode: The raw mode of the palette. Either "RGB", "RGBA", or a mode
-           that can be transformed to "RGB" or "RGBA" (e.g. "R", "BGR;15", "RGBA;L").
+        :param rawmode: The raw mode of the palette. Either "RGB", "RGBA", "CMYK", or a
+           mode that can be transformed to one of those modes (e.g. "R", "RGBA;L").
         """
         from . import ImagePalette
 
@@ -2165,7 +2165,12 @@ class Image:
             palette = ImagePalette.raw(rawmode, data)
         self._mode = "PA" if "A" in self.mode else "P"
         self.palette = palette
-        self.palette.mode = "RGBA" if "A" in rawmode else "RGB"
+        if rawmode.startswith("CMYK"):
+            self.palette.mode = "CMYK"
+        elif "A" in rawmode:
+            self.palette.mode = "RGBA"
+        else:
+            self.palette.mode = "RGB"
         self.load()  # install new palette
 
     def putpixel(
