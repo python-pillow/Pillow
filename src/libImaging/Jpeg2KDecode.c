@@ -601,6 +601,7 @@ j2ku_sycca_rgba(
 static const struct j2k_decode_unpacker j2k_unpackers[] = {
     {IMAGING_MODE_L, OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_l},
     {IMAGING_MODE_P, OPJ_CLRSPC_SRGB, 1, 0, j2ku_gray_l},
+    {IMAGING_MODE_P, OPJ_CLRSPC_CMYK, 1, 0, j2ku_gray_l},
     {IMAGING_MODE_PA, OPJ_CLRSPC_SRGB, 2, 0, j2ku_graya_la},
     {IMAGING_MODE_I_16, OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i},
     {IMAGING_MODE_I_16B, OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i},
