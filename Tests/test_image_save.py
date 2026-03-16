@@ -10,8 +10,8 @@ def test_image_save() -> None:
     im = Image.new("RGBA", (1, 1))
     out = BytesIO()
     im.save(out, format=".bw")
-    im = Image.open(out)
-    assert im.mode == "L"
+    with Image.open(out) as reloaded:
+        assert reloaded.mode == "L"
 
     for format in Image.SAVE.keys():
         if format in ("JPEG2000", "PDF") and not features.check_codec("jpg_2000"):
