@@ -445,6 +445,7 @@ def test_pclr() -> None:
     ) as im:
         assert im.mode == "P"
         assert im.palette is not None
+        assert im.palette.mode == "CMYK"
         assert len(im.palette.colors) == 139
         assert im.palette.colors[(0, 0, 0, 0)] == 0
 
