@@ -440,6 +440,13 @@ def test_pclr() -> None:
         assert len(im.palette.colors) == 256
         assert im.palette.colors[(255, 255, 255)] == 0
 
+    for enumcs in (0, 15, 17):
+        with open(f"{EXTRA_DIR}/issue104_jpxstream.jp2", "rb") as fp:
+            data = bytearray(fp.read())
+        data[114:115] = bytes([enumcs])
+        with Image.open(BytesIO(data)) as im:
+            assert im.mode == "L"
+
     with Image.open(
         f"{EXTRA_DIR}/147af3f1083de4393666b7d99b01b58b_signal_sigsegv_130c531_6155_5136.jp2"
     ) as im:
