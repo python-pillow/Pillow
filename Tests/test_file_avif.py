@@ -29,6 +29,7 @@ from .helper import (
     assert_image_similar_tofile,
     hopper,
     skip_unless_feature,
+    skip_unless_feature_version,
 )
 
 try:
@@ -46,7 +47,7 @@ def assert_xmp_orientation(xmp: bytes, expected: int) -> None:
     assert int(xmp.split(b'tiff:Orientation="')[1].split(b'"')[0]) == expected
 
 
-def roundtrip(im: ImageFile.ImageFile, **options: Any) -> ImageFile.ImageFile:
+def roundtrip(im: Image.Image, **options: Any) -> ImageFile.ImageFile:
     out = BytesIO()
     im.save(out, "AVIF", **options)
     return Image.open(out)
@@ -419,6 +420,14 @@ class TestFileAvif:
         with Image.open(TEST_AVIF_FILE) as im:
             test_file = tmp_path / "temp.avif"
             im.save(test_file, subsampling=subsampling)
+
+    @skip_unless_feature_version("avif", "1.3.0")
+    def test_encoding_subsampling_400(self) -> None:
+        im = hopper()
+        reloaded = roundtrip(im, subsampling="4:0:0")
+
+        assert reloaded.mode == "L"
+        assert_image_similar(reloaded, im.convert("L"), 1.67)
 
     def test_encoder_subsampling_invalid(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:

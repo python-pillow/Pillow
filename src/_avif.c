@@ -706,8 +706,19 @@ _decoder_get_info(AvifDecoderObject *self) {
     PyObject *xmp = NULL;
     PyObject *ret = NULL;
 
-    if (image->xmp.size) {
-        xmp = PyBytes_FromStringAndSize((const char *)image->xmp.data, image->xmp.size);
+    char *mode;
+    if (decoder->alphaPresent) {
+        mode = "RGBA";
+#if AVIF_VERSION >= 1030000  // 1.3.0
+    } else if (image->yuvFormat == AVIF_PIXEL_FORMAT_YUV400) {
+        mode = "L";
+#endif
+    } else {
+        mode = "RGB";
+    }
+
+    if (image->icc.size) {
+        icc = PyBytes_FromStringAndSize((const char *)image->icc.data, image->icc.size);
     }
 
     if (image->exif.size) {
@@ -715,8 +726,8 @@ _decoder_get_info(AvifDecoderObject *self) {
             PyBytes_FromStringAndSize((const char *)image->exif.data, image->exif.size);
     }
 
-    if (image->icc.size) {
-        icc = PyBytes_FromStringAndSize((const char *)image->icc.data, image->icc.size);
+    if (image->xmp.size) {
+        xmp = PyBytes_FromStringAndSize((const char *)image->xmp.data, image->xmp.size);
     }
 
     ret = Py_BuildValue(
@@ -724,7 +735,7 @@ _decoder_get_info(AvifDecoderObject *self) {
         image->width,
         image->height,
         decoder->imageCount,
-        decoder->alphaPresent ? "RGBA" : "RGB",
+        mode,
         NULL == icc ? Py_None : icc,
         NULL == exif ? Py_None : exif,
         irot_imir_to_exif_orientation(image),
@@ -771,7 +782,15 @@ _decoder_get_frame(AvifDecoderObject *self, PyObject *args) {
     avifRGBImageSetDefaults(&rgb, image);
 
     rgb.depth = 8;
-    rgb.format = decoder->alphaPresent ? AVIF_RGB_FORMAT_RGBA : AVIF_RGB_FORMAT_RGB;
+    if (decoder->alphaPresent) {
+        rgb.format = AVIF_RGB_FORMAT_RGBA;
+#if AVIF_VERSION >= 1030000  // 1.3.0
+    } else if (image->yuvFormat == AVIF_PIXEL_FORMAT_YUV400) {
+        rgb.format = AVIF_RGB_FORMAT_GRAY;
+#endif
+    } else {
+        rgb.format = AVIF_RGB_FORMAT_RGB;
+    }
 
     result = avifRGBImageAllocatePixels(&rgb);
     if (result != AVIF_RESULT_OK) {
