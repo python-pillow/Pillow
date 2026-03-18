@@ -4,7 +4,7 @@ import os
 from io import BytesIO
 from typing import IO
 
-from . import ExifTags, Image, ImageFile
+from . import ExifTags, Image, ImageFile, ImageSequence
 
 try:
     from . import _avif
@@ -239,18 +239,12 @@ def _save(
     is_single_frame = total == 1
     try:
         for ims in [im] + append_images:
-            # Get number of frames in this image
-            nfr = getattr(ims, "n_frames", 1)
-
-            for idx in range(nfr):
-                ims.seek(idx)
-
+            for frame in ImageSequence.Iterator(ims):
                 # Make sure image mode is supported
-                frame = ims
-                rawmode = ims.mode
-                if ims.mode not in {"RGB", "RGBA"}:
-                    rawmode = "RGBA" if ims.has_transparency_data else "RGB"
-                    frame = ims.convert(rawmode)
+                rawmode = frame.mode
+                if frame.mode not in {"RGB", "RGBA"}:
+                    rawmode = "RGBA" if frame.has_transparency_data else "RGB"
+                    frame = frame.convert(rawmode)
 
                 # Update frame duration
                 if isinstance(duration, (list, tuple)):
