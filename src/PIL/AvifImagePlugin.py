@@ -153,13 +153,31 @@ def _save(
     else:
         append_images = []
 
+    grayscale = True
+    for ims in [im] + append_images:
+        for frame in ImageSequence.Iterator(ims):
+            if frame.mode not in {
+                "1",
+                "L",
+                "I",
+                "I;16",
+                "I;16L",
+                "I;16B",
+                "I;16N",
+                "F",
+            }:
+                grayscale = False
+                break
+        if not grayscale:
+            break
+
     quality = info.get("quality", 75)
     if not isinstance(quality, int) or quality < 0 or quality > 100:
         msg = "Invalid quality setting"
         raise ValueError(msg)
 
     duration = info.get("duration", 0)
-    subsampling = info.get("subsampling", "4:2:0")
+    subsampling = info.get("subsampling", "4:0:0" if grayscale else "4:2:0")
     speed = info.get("speed", 6)
     max_threads = info.get("max_threads", _get_default_max_threads())
     codec = info.get("codec", "auto")

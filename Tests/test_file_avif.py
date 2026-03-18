@@ -129,6 +129,14 @@ class TestFileAvif:
                 image, "Tests/images/avif/hopper_avif_write.png", 11.5
             )
 
+    @skip_unless_feature_version("avif", "1.3.0")
+    def test_write_l(self) -> None:
+        im = hopper("L")
+        reloaded = roundtrip(im)
+
+        assert reloaded.mode == "L"
+        assert_image_similar(reloaded, im, 1.67)
+
     def test_write_rgb(self, tmp_path: Path) -> None:
         """
         Can we write a RGB mode file to avif without error?
