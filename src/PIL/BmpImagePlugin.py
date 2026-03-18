@@ -179,11 +179,8 @@ class BmpImageFile(ImageFile.ImageFile):
 
         # ------- If color count was not found in the header, compute from bits
         assert isinstance(file_info["bits"], int)
-        file_info["colors"] = (
-            file_info["colors"]
-            if file_info.get("colors", 0)
-            else (1 << file_info["bits"])
-        )
+        if not file_info.get("colors", 0):
+            file_info["colors"] = 1 << file_info["bits"]
         assert isinstance(file_info["colors"], int)
         if offset == 14 + file_info["header_size"] and file_info["bits"] <= 8:
             offset += 4 * file_info["colors"]
