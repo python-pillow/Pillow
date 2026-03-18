@@ -238,13 +238,21 @@ def test_unsupported_bmp_bitfields_layout() -> None:
         Image.open(fp)
 
 
-def test_offset() -> None:
+@pytest.mark.parametrize(
+    "offset, path",
+    (
+        (26, "pal8os2.bmp"),
+        (54, "pal8.bmp"),
+    ),
+)
+def test_offset(offset: int, path: str) -> None:
+    image_path = "Tests/images/bmp/g/" + path
     # Exclude the palette size from the pixel data offset
-    with open("Tests/images/bmp/g/pal8.bmp", "rb") as fp:
+    with open(image_path, "rb") as fp:
         data = fp.read()
-        data = data[:10] + o32(54) + data[14:]
+        data = data[:10] + o32(offset) + data[14:]
         with Image.open(io.BytesIO(data)) as im:
-            assert_image_equal_tofile(im, "Tests/images/bmp/g/pal8.bmp")
+            assert_image_equal_tofile(im, image_path)
 
 
 def test_use_raw_alpha(monkeypatch: pytest.MonkeyPatch) -> None:
