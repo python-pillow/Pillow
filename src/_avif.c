@@ -505,6 +505,10 @@ _encoder_add(AvifEncoderObject *self, PyObject *args) {
 
     if (strcmp(mode, "RGBA") == 0) {
         rgb.format = AVIF_RGB_FORMAT_RGBA;
+#if AVIF_VERSION >= 1030000  // 1.3.0
+    } else if (strcmp(mode, "L") == 0) {
+        rgb.format = AVIF_RGB_FORMAT_GRAY;
+#endif
     } else {
         rgb.format = AVIF_RGB_FORMAT_RGB;
     }

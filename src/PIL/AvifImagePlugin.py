@@ -154,18 +154,10 @@ def _save(
         append_images = []
 
     grayscale = True
+    grayscale_modes = {"1", "L", "I", "I;16", "I;16L", "I;16B", "I;16N", "F"}
     for ims in [im] + append_images:
         for frame in ImageSequence.Iterator(ims):
-            if frame.mode not in {
-                "1",
-                "L",
-                "I",
-                "I;16",
-                "I;16L",
-                "I;16B",
-                "I;16N",
-                "F",
-            }:
+            if frame.mode not in grayscale_modes:
                 grayscale = False
                 break
         if not grayscale:
@@ -256,8 +248,13 @@ def _save(
             for frame in ImageSequence.Iterator(ims):
                 # Make sure image mode is supported
                 rawmode = frame.mode
-                if frame.mode not in {"RGB", "RGBA"}:
-                    rawmode = "RGBA" if frame.has_transparency_data else "RGB"
+                if ims.mode not in {"L", "RGB", "RGBA"}:
+                    if ims.has_transparency_data:
+                        rawmode = "RGBA"
+                    elif ims.mode in grayscale_modes:
+                        rawmode = "L"
+                    else:
+                        rawmode = "RGB"
                     frame = frame.convert(rawmode)
 
                 # Update frame duration
