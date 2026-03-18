@@ -42,7 +42,7 @@ def test_fallback_if_mmap_errors() -> None:
     # This image has been truncated,
     # so that the buffer is not large enough when using mmap
     with Image.open("Tests/images/mmap_error.bmp") as im:
-        assert_image_equal_tofile(im, "Tests/images/pal8_offset.bmp")
+        assert_image_equal_tofile(im, "Tests/images/bmp/g/pal8.bmp")
 
 
 def test_save_to_bytes() -> None:
@@ -239,10 +239,12 @@ def test_unsupported_bmp_bitfields_layout() -> None:
 
 
 def test_offset() -> None:
-    # This image has been hexedited
-    # to exclude the palette size from the pixel data offset
-    with Image.open("Tests/images/pal8_offset.bmp") as im:
-        assert_image_equal_tofile(im, "Tests/images/bmp/g/pal8.bmp")
+    # Exclude the palette size from the pixel data offset
+    with open("Tests/images/bmp/g/pal8.bmp", "rb") as fp:
+        data = fp.read()
+        data = data[:10] + o32(54) + data[14:]
+        with Image.open(io.BytesIO(data)) as im:
+            assert_image_equal_tofile(im, "Tests/images/bmp/g/pal8.bmp")
 
 
 def test_use_raw_alpha(monkeypatch: pytest.MonkeyPatch) -> None:
