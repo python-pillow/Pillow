@@ -402,7 +402,7 @@ cleanup:
 const char *
 ImagingJpegVersion(void) {
     static char version[20];
-    sprintf(version, "%d.%d", JPEG_LIB_VERSION / 10, JPEG_LIB_VERSION % 10);
+    snprintf(version, sizeof(version), "%d.%d", JPEG_LIB_VERSION / 10, JPEG_LIB_VERSION % 10);
     return version;
 }
 

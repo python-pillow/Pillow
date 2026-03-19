@@ -53,10 +53,10 @@ HandleMuxError(WebPMuxError err, char *chunk) {
     // Create the error message
     if (chunk == NULL) {
         message_len =
-            sprintf(message, "could not assemble chunks: %s", kErrorMessages[-err]);
+            snprintf(message, sizeof(message), "could not assemble chunks: %s", kErrorMessages[-err]);
     } else {
-        message_len = sprintf(
-            message, "could not set %.4s chunk: %s", chunk, kErrorMessages[-err]
+        message_len = snprintf(
+            message, sizeof(message), "could not set %.4s chunk: %s", chunk, kErrorMessages[-err]
         );
     }
     if (message_len < 0) {
@@ -649,8 +649,9 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
         int error_code = (&pic)->error_code;
         char message[50] = "";
         if (error_code == VP8_ENC_ERROR_BAD_DIMENSION) {
-            sprintf(
+            snprintf(
                 message,
+                sizeof(message),
                 ": Image size exceeds WebP limit of %d pixels",
                 WEBP_MAX_DIMENSION
             );
@@ -743,8 +744,9 @@ const char *
 WebPDecoderVersion_str(void) {
     static char version[20];
     int version_number = WebPGetDecoderVersion();
-    sprintf(
+    snprintf(
         version,
+        sizeof(version),
         "%d.%d.%d",
         version_number >> 16,
         (version_number >> 8) % 0x100,
