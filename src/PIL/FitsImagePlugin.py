@@ -128,7 +128,19 @@ class FitsGzipDecoder(ImageFile.PyDecoder):
 
     def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
+
+        # Limit decompressed size to prevent decompression bomb DoS.
+        # Each pixel uses 4 bytes in the decompressed FITS BINTABLE format.
+        max_expected = self.state.xsize * self.state.ysize * 4
+        max_decompressed = max(max_expected * 2, 1024 * 1024)  # at least 1 MB
+
         value = gzip.decompress(self.fd.read())
+        if len(value) > max_decompressed:
+            msg = (
+                f"FITS gzip decompressed data too large: "
+                f"{len(value)} bytes > {max_decompressed} bytes limit"
+            )
+            raise ValueError(msg)
 
         rows = []
         offset = 0
