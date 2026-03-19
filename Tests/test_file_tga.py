@@ -13,8 +13,6 @@ _TGA_DIR = os.path.join("Tests", "images", "tga")
 _TGA_DIR_COMMON = os.path.join(_TGA_DIR, "common")
 
 
-_ORIGINS = ("tl", "bl")
-
 _ORIGIN_TO_ORIENTATION = {"tl": 1, "bl": -1}
 
 
@@ -29,7 +27,7 @@ _ORIGIN_TO_ORIENTATION = {"tl": 1, "bl": -1}
         ("200x32", "RGBA"),
     ),
 )
-@pytest.mark.parametrize("origin", _ORIGINS)
+@pytest.mark.parametrize("origin", _ORIGIN_TO_ORIENTATION)
 @pytest.mark.parametrize("rle", (True, False))
 def test_sanity(
     size_mode: tuple[str, str], origin: str, rle: str, tmp_path: Path
