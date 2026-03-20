@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import pytest
+
 from PIL import Image, ImageDraw, ImageFont
 
-from .helper import skip_unless_feature_version
+from .helper import has_feature_version, skip_unless_feature_version
 
 
 class TestFontCrash:
@@ -18,5 +20,10 @@ class TestFontCrash:
 
     @skip_unless_feature_version("freetype2", "2.12.0")
     def test_segfault(self) -> None:
-        font = ImageFont.truetype("Tests/fonts/fuzz_font-5203009437302784")
-        self._fuzz_font(font)
+        font_path = "Tests/fonts/fuzz_font-5203009437302784"
+        if has_feature_version("freetype2", "2.14.0"):
+            with pytest.raises(OSError, match="broken file"):
+                ImageFont.truetype(font_path)
+        else:
+            font = ImageFont.truetype(font_path)
+            self._fuzz_font(font)
