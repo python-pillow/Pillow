@@ -633,31 +633,25 @@ class TestCoreResample16bpc:
     def test_resampling_clamp(self) -> None:
         # Lanczos weighting during downsampling can push accumulated float sums
         # above 65535. These must be clamped to 65535, not corrupted byte-by-byte.
+        ims = {}
         width, height = 100, 10
-        # I;16 image: left half = 0, right half = 65535
-        im_16 = Image.new("I;16", (width, height))
-        for y in range(height):
-            for x in range(width // 2, width):
-                im_16.putpixel((x, y), 65535)
-        # F image: same values as float reference
-        im_f = Image.new("F", (width, height))
-        for y in range(height):
-            for x in range(width // 2, width):
-                im_f.putpixel((x, y), 65535.0)
+        for mode in ("I;16", "F"):
+            # Left half = 0, right half = 65535
+            im = Image.new(mode, (width, height))
+            for y in range(height):
+                for x in range(width // 2, width):
+                    im.putpixel((x, y), 65535)
 
-        # 5x downsampling with Lanczos creates ~8.7% overshoot at the step edge
-        result_16 = im_16.resize((20, height), Image.Resampling.LANCZOS)
-        result_f = im_f.resize((20, height), Image.Resampling.LANCZOS)
+            # 5x downsampling with Lanczos creates ~8.7% overshoot at the step edge
+            ims[mode] = im.resize((20, height), Image.Resampling.LANCZOS)
 
-        px_16 = result_16.load()
-        px_f = result_f.load()
-        assert px_16 is not None
-        assert px_f is not None
         for y in range(height):
             for x in range(20):
-                v = px_f[x, y]
+                v = ims["F"].getpixel((x, y))
                 assert isinstance(v, float)
                 expected = max(0, min(65535, round(v)))
+
+                value = ims["I;16"].getpixel((x, y))
                 assert (
-                    px_16[x, y] == expected
-                ), f"Pixel ({x}, {y}): expected {expected}, got {px_16[x, y]}"
+                    value == expected
+                ), f"Pixel ({x}, {y}): expected {expected}, got {value}"
