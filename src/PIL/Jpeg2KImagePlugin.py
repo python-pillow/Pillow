@@ -203,6 +203,7 @@ def _parse_jp2_header(
                 if enumcs in (0, 15):
                     colr = "1"
                 elif enumcs == 12:
+                    colr = "CMYK"
                     if nc == 4:
                         mode = "CMYK"
                 elif enumcs == 17:
@@ -217,7 +218,11 @@ def _parse_jp2_header(
                 if bitdepth > max_bitdepth:
                     max_bitdepth = bitdepth
             if max_bitdepth <= 8:
-                palette = ImagePalette.ImagePalette("RGBA" if npc == 4 else "RGB")
+                if npc == 4:
+                    palette_mode = "CMYK" if colr == "CMYK" else "RGBA"
+                else:
+                    palette_mode = "RGB"
+                palette = ImagePalette.ImagePalette(palette_mode)
                 for i in range(ne):
                     color: list[int] = []
                     for value in header.read_fields(">" + ("B" * npc)):
