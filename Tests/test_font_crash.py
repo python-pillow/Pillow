@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from PIL import Image, ImageDraw, ImageFont
 
-from .helper import skip_unless_feature_version
-
 
 class TestFontCrash:
     def _fuzz_font(self, font: ImageFont.FreeTypeFont) -> None:
@@ -16,7 +14,6 @@ class TestFontCrash:
             draw.multiline_textbbox((10, 10), "ABC\nAaaa", font, stroke_width=2)
             draw.text((10, 10), "Test Text", font=font, fill="#000")
 
-    @skip_unless_feature_version("freetype2", "2.12.0")
     def test_segfault(self) -> None:
         font = ImageFont.truetype("Tests/fonts/fuzz_font-5203009437302784")
         self._fuzz_font(font)
