@@ -90,7 +90,7 @@ fi
 ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds.
-FREETYPE_VERSION=2.14.2
+FREETYPE_VERSION=2.14.3
 HARFBUZZ_VERSION=13.2.1
 LIBPNG_VERSION=1.6.55
 JPEGTURBO_VERSION=3.1.3
