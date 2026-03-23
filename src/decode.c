@@ -163,7 +163,7 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
     x0 = y0 = x1 = y1 = 0;
 
     /* FIXME: should publish the ImagingType descriptor */
-    if (!PyArg_ParseTuple(args, "O|(iiii)", &op, &x0, &y0, &x1, &y1)) {
+    if (!PyArg_ParseTuple(args, "O(iiii)", &op, &x0, &y0, &x1, &y1)) {
         return NULL;
     }
     im = PyImaging_AsImaging(op);
@@ -176,15 +176,10 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
     state = &decoder->state;
 
     /* Setup decoding tile extent */
-    if (x0 == 0 && x1 == 0) {
-        state->xsize = im->xsize;
-        state->ysize = im->ysize;
-    } else {
-        state->xoff = x0;
-        state->yoff = y0;
-        state->xsize = x1 - x0;
-        state->ysize = y1 - y0;
-    }
+    state->xoff = x0;
+    state->yoff = y0;
+    state->xsize = x1 - x0;
+    state->ysize = y1 - y0;
 
     if (state->xoff < 0 || state->xsize <= 0 ||
         state->xsize + state->xoff > (int)im->xsize || state->yoff < 0 ||

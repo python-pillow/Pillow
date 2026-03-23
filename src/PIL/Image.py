@@ -886,7 +886,7 @@ class Image:
 
         # unpack data
         e = _getencoder(self.mode, encoder_name, encoder_args)
-        e.setimage(self.im)
+        e.setimage(self.im, (0, 0) + self.size)
 
         from . import ImageFile
 
@@ -957,7 +957,7 @@ class Image:
 
         # unpack data
         d = _getdecoder(self.mode, decoder_name, decoder_args)
-        d.setimage(self.im)
+        d.setimage(self.im, (0, 0) + self.size)
         s = d.decode(data)
 
         if s[0] >= 0:
@@ -2146,8 +2146,8 @@ class Image:
         Alternatively, an 8-bit string may be used instead of an integer sequence.
 
         :param data: A palette sequence (either a list or a string).
-        :param rawmode: The raw mode of the palette. Either "RGB", "RGBA", or a mode
-           that can be transformed to "RGB" or "RGBA" (e.g. "R", "BGR;15", "RGBA;L").
+        :param rawmode: The raw mode of the palette. Either "RGB", "RGBA", "CMYK", or a
+           mode that can be transformed to one of those modes (e.g. "R", "RGBA;L").
         """
         from . import ImagePalette
 
@@ -2166,7 +2166,12 @@ class Image:
             palette = ImagePalette.raw(rawmode, data)
         self._mode = "PA" if "A" in self.mode else "P"
         self.palette = palette
-        self.palette.mode = "RGBA" if "A" in rawmode else "RGB"
+        if rawmode.startswith("CMYK"):
+            self.palette.mode = "CMYK"
+        elif "A" in rawmode:
+            self.palette.mode = "RGBA"
+        else:
+            self.palette.mode = "RGB"
         self.load()  # install new palette
 
     def putpixel(
