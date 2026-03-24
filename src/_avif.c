@@ -709,7 +709,7 @@ _decoder_get_info(AvifDecoderObject *self) {
     if (image->xmp.size) {
         xmp = PyBytes_FromStringAndSize((const char *)image->xmp.data, image->xmp.size);
         if (!xmp) {
-          return NULL;
+            return NULL;
         }
     }
 
@@ -717,17 +717,17 @@ _decoder_get_info(AvifDecoderObject *self) {
         exif =
             PyBytes_FromStringAndSize((const char *)image->exif.data, image->exif.size);
         if (!exif) {
-          Py_XDECREF(xmp);
-          return NULL;
+            Py_XDECREF(xmp);
+            return NULL;
         }
     }
 
     if (image->icc.size) {
         icc = PyBytes_FromStringAndSize((const char *)image->icc.data, image->icc.size);
         if (!icc) {
-          Py_XDECREF(xmp);
-          Py_XDECREF(exif);
-          return NULL;
+            Py_XDECREF(xmp);
+            Py_XDECREF(exif);
+            return NULL;
         }
     }
 
