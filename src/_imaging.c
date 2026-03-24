@@ -286,6 +286,9 @@ PyObject *
 ExportArrowArrayPyCapsule(ImagingObject *self) {
     struct ArrowArray *array =
         (struct ArrowArray *)calloc(1, sizeof(struct ArrowArray));
+    if (!array) {
+        return ArrowError(IMAGING_CODEC_MEMORY);
+    }
     int err = export_imaging_array(self->image, array);
     if (err == 0) {
         return PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
