@@ -104,7 +104,7 @@ LIBWEBP_VERSION=1.6.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.2.0
-LIBAVIF_VERSION=1.4.0
+LIBAVIF_VERSION=1.4.1
 
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
