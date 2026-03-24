@@ -503,6 +503,9 @@ _anim_decoder_get_next(PyObject *self) {
     bytes = PyBytes_FromStringAndSize(
         (char *)buf, decp->info.canvas_width * 4 * decp->info.canvas_height
     );
+    if (!bytes) {
+        return NULL;
+    }
 
     ret = Py_BuildValue("Si", bytes, timestamp);
 
