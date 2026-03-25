@@ -1346,6 +1346,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     } else if (strcmp(format, "jp2") == 0) {
         codec_format = OPJ_CODEC_JP2;
     } else {
+        PyErr_SetString(PyExc_ValueError, "unknown codec format");
         return NULL;
     }
 
@@ -1360,6 +1361,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     } else if (strcmp(progression, "CPRL") == 0) {
         prog_order = OPJ_CPRL;
     } else {
+        PyErr_SetString(PyExc_ValueError, "unknown progression");
         return NULL;
     }
 
@@ -1372,6 +1374,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     } else if (strcmp(cinema_mode, "cinema4k-24") == 0) {
         cine_mode = OPJ_CINEMA4K_24;
     } else {
+        PyErr_SetString(PyExc_ValueError, "unknown cinema mode");
         return NULL;
     }
 
