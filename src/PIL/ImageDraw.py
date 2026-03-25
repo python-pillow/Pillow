@@ -340,8 +340,7 @@ class ImageDraw:
                 else:
                     flat_xy = cast(Sequence[float], xy)
                     joint_points = [
-                        tuple(flat_xy[i : i + 2])
-                        for i in range(0, len(flat_xy), 2)
+                        tuple(flat_xy[i : i + 2]) for i in range(0, len(flat_xy), 2)
                     ]
                 for i in range(1, len(joint_points) - 1):
                     point = joint_points[i]
