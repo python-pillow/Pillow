@@ -905,6 +905,7 @@ PyImaging_Jpeg2KDecoderNew(PyObject *self, PyObject *args) {
     } else if (strcmp(format, "jp2") == 0) {
         codec_format = OPJ_CODEC_JP2;
     } else {
+        PyErr_SetString(PyExc_ValueError, "unknown codec format");
         return NULL;
     }
 
