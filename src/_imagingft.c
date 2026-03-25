@@ -518,7 +518,7 @@ text_layout(
 }
 
 static PyObject *
-font_getlength(FontObject *self, PyObject *args) {
+font_getlength_impl(FontObject *self, PyObject *args) {
     int length;                   /* length along primary axis, in 26.6 precision */
     GlyphInfo *glyph_info = NULL; /* computed text layout */
     size_t i, count;              /* glyph_info index and length */
@@ -565,6 +565,15 @@ font_getlength(FontObject *self, PyObject *args) {
     }
 
     return PyLong_FromLong(length);
+}
+
+static PyObject *
+font_getlength(FontObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = font_getlength_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 static int
@@ -746,7 +755,7 @@ bad_anchor:
 }
 
 static PyObject *
-font_getsize(FontObject *self, PyObject *args) {
+font_getsize_impl(FontObject *self, PyObject *args) {
     int width, height, x_offset, y_offset;
     int load_flags; /* FreeType load_flags parameter */
     int error;
@@ -820,7 +829,16 @@ font_getsize(FontObject *self, PyObject *args) {
 }
 
 static PyObject *
-font_render(FontObject *self, PyObject *args) {
+font_getsize(FontObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = font_getsize_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+font_render_impl(FontObject *self, PyObject *args) {
     int x, y;         /* pen position, in 26.6 precision */
     int px, py;       /* position of current glyph, in pixels */
     int x_min, y_max; /* text offset in 26.6 precision */
@@ -1234,6 +1252,15 @@ glyph_error:
 }
 
 static PyObject *
+font_render(FontObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = font_render_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
 font_getvarnames(FontObject *self) {
     int error;
     FT_UInt i, j, num_namedstyles, name_count;
@@ -1372,7 +1399,7 @@ font_getvaraxes(FontObject *self) {
 }
 
 static PyObject *
-font_setvarname(FontObject *self, PyObject *args) {
+font_setvarname_impl(FontObject *self, PyObject *args) {
     int error;
 
     int instance_index;
@@ -1389,7 +1416,16 @@ font_setvarname(FontObject *self, PyObject *args) {
 }
 
 static PyObject *
-font_setvaraxes(FontObject *self, PyObject *args) {
+font_setvarname(FontObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = font_setvarname_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+font_setvaraxes_impl(FontObject *self, PyObject *args) {
     int error;
 
     PyObject *axes, *item;
@@ -1442,6 +1478,15 @@ font_setvaraxes(FontObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
+static PyObject *
+font_setvaraxes(FontObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = font_setvaraxes_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
 static void
 font_dealloc(FontObject *self) {
     if (self->face) {
@@ -1483,28 +1528,73 @@ font_getattr_style(FontObject *self, void *closure) {
 }
 
 static PyObject *
-font_getattr_ascent(FontObject *self, void *closure) {
+font_getattr_ascent_impl(FontObject *self, void *closure) {
     return PyLong_FromLong(PIXEL(self->face->size->metrics.ascender));
 }
 
 static PyObject *
-font_getattr_descent(FontObject *self, void *closure) {
+font_getattr_ascent(FontObject *self, void *closure) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = font_getattr_ascent_impl(self, closure);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+font_getattr_descent_impl(FontObject *self, void *closure) {
     return PyLong_FromLong(-PIXEL(self->face->size->metrics.descender));
 }
 
 static PyObject *
-font_getattr_height(FontObject *self, void *closure) {
+font_getattr_descent(FontObject *self, void *closure) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = font_getattr_descent_impl(self, closure);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+font_getattr_height_impl(FontObject *self, void *closure) {
     return PyLong_FromLong(PIXEL(self->face->size->metrics.height));
 }
 
 static PyObject *
-font_getattr_x_ppem(FontObject *self, void *closure) {
+font_getattr_height(FontObject *self, void *closure) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = font_getattr_height_impl(self, closure);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+font_getattr_x_ppem_impl(FontObject *self, void *closure) {
     return PyLong_FromLong(self->face->size->metrics.x_ppem);
 }
 
 static PyObject *
-font_getattr_y_ppem(FontObject *self, void *closure) {
+font_getattr_x_ppem(FontObject *self, void *closure) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = font_getattr_x_ppem_impl(self, closure);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+font_getattr_y_ppem_impl(FontObject *self, void *closure) {
     return PyLong_FromLong(self->face->size->metrics.y_ppem);
+}
+
+static PyObject *
+font_getattr_y_ppem(FontObject *self, void *closure) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = font_getattr_y_ppem_impl(self, closure);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 static PyObject *
