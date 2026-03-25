@@ -153,15 +153,12 @@ def _save(
     else:
         append_images = []
 
-    grayscale = True
     grayscale_modes = {"1", "L", "I", "I;16", "I;16L", "I;16B", "I;16N", "F"}
-    for ims in [im] + append_images:
-        for frame in ImageSequence.Iterator(ims):
-            if frame.mode not in grayscale_modes:
-                grayscale = False
-                break
-        if not grayscale:
-            break
+    grayscale = all(
+        frame.mode in grayscale_modes
+        for ims in [im] + append_images
+        for frame in ImageSequence.Iterator(ims)
+    )
 
     quality = info.get("quality", 75)
     if not isinstance(quality, int) or quality < 0 or quality > 100:
