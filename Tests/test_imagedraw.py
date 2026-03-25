@@ -1842,9 +1842,7 @@ def test_polygon_dash_empty_raises() -> None:
     draw = ImageDraw.Draw(im)
 
     with pytest.raises(ValueError):
-        draw.polygon(
-            [(10, 10), (90, 10), (90, 90)], outline="blue", dash=()
-        )
+        draw.polygon([(10, 10), (90, 10), (90, 90)], outline="blue", dash=())
 
 
 def test_rectangle_dash() -> None:

@@ -231,9 +231,7 @@ class ImageDraw:
         ellipse_xy = (xy[0] - radius, xy[1] - radius, xy[0] + radius, xy[1] + radius)
         self.ellipse(ellipse_xy, fill, outline, width)
 
-    def _normalize_points(
-        self, xy: Coords
-    ) -> list[tuple[float, float]]:
+    def _normalize_points(self, xy: Coords) -> list[tuple[float, float]]:
         """Convert various coordinate formats to a list of (x, y) tuples."""
         if isinstance(xy[0], (list, tuple)):
             return [
@@ -243,8 +241,7 @@ class ImageDraw:
         else:
             flat = cast(Sequence[float], xy)
             return [
-                (float(flat[i]), float(flat[i + 1]))
-                for i in range(0, len(flat), 2)
+                (float(flat[i]), float(flat[i + 1])) for i in range(0, len(flat), 2)
             ]
 
     def _draw_dashed_line(
