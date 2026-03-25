@@ -280,7 +280,7 @@ class ImageDraw:
                 dash_index = i
                 break
             consumed += d
-        pixels_used = offset - consumed
+        pixels_used: float = offset - consumed
 
         while remaining > 0.5:
             current_dash_length = dash[dash_index % len(dash)]
@@ -334,22 +334,23 @@ class ImageDraw:
         if ink is not None:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
-                points: Sequence[Sequence[float]]
+                joint_points: Sequence[Sequence[float]]
                 if isinstance(xy[0], (list, tuple)):
-                    points = cast(Sequence[Sequence[float]], xy)
+                    joint_points = cast(Sequence[Sequence[float]], xy)
                 else:
-                    points = [
-                        cast(Sequence[float], tuple(xy[i : i + 2]))
-                        for i in range(0, len(xy), 2)
+                    flat_xy = cast(Sequence[float], xy)
+                    joint_points = [
+                        tuple(flat_xy[i : i + 2])
+                        for i in range(0, len(flat_xy), 2)
                     ]
-                for i in range(1, len(points) - 1):
-                    point = points[i]
+                for i in range(1, len(joint_points) - 1):
+                    point = joint_points[i]
                     angles = [
                         math.degrees(math.atan2(end[0] - start[0], start[1] - end[1]))
                         % 360
                         for start, end in (
-                            (points[i - 1], point),
-                            (point, points[i + 1]),
+                            (joint_points[i - 1], point),
+                            (point, joint_points[i + 1]),
                         )
                     ]
                     if angles[0] == angles[1]:
