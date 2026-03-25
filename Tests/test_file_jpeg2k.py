@@ -148,6 +148,22 @@ def test_prog_res_rt(card: ImageFile.ImageFile) -> None:
     assert_image_equal(im, card)
 
 
+def test_unknown_progression(tmp_path: Path) -> None:
+    outfile = tmp_path / "temp.jp2"
+
+    im = Image.new("1", (1, 1))
+    with pytest.raises(ValueError, match="unknown progression"):
+        im.save(outfile, progression="invalid")
+
+
+def test_unknown_cinema_mode(tmp_path: Path) -> None:
+    outfile = tmp_path / "temp.jp2"
+
+    im = Image.new("1", (1, 1))
+    with pytest.raises(ValueError, match="unknown cinema mode"):
+        im.save(outfile, cinema_mode="invalid")
+
+
 @pytest.mark.parametrize("num_resolutions", range(2, 6))
 def test_default_num_resolutions(
     card: ImageFile.ImageFile, num_resolutions: int
@@ -445,6 +461,7 @@ def test_pclr() -> None:
     ) as im:
         assert im.mode == "P"
         assert im.palette is not None
+        assert im.palette.mode == "CMYK"
         assert len(im.palette.colors) == 139
         assert im.palette.colors[(0, 0, 0, 0)] == 0
 

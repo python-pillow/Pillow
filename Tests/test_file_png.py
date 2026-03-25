@@ -707,6 +707,16 @@ class TestFilePng:
             assert reloaded.png.im_palette is not None
             assert len(reloaded.png.im_palette[1]) == 3
 
+    def test_plte_cmyk(self, tmp_path: Path) -> None:
+        im = Image.new("P", (1, 1))
+        im.putpalette((0, 100, 150, 200), "CMYK")
+
+        out = tmp_path / "temp.png"
+        im.save(out)
+
+        with Image.open(out) as reloaded:
+            assert reloaded.convert("CMYK").getpixel((0, 0)) == (200, 222, 232, 0)
+
     def test_getxmp(self) -> None:
         with Image.open("Tests/images/color_snakes.png") as im:
             if ElementTree is None:
