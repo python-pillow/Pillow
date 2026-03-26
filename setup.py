@@ -1078,10 +1078,10 @@ libraries: list[tuple[str, _BuildInfo]] = [
 ]
 
 files: list[str | os.PathLike[str]] = ["src/_imaging.c"]
-for src_file in _IMAGING:
-    files.append("src/" + src_file + ".c")
-for src_file in _LIB_IMAGING:
-    files.append(os.path.join("src/libImaging", src_file + ".c"))
+files.extend("src/" + src_file + ".c" for src_file in _IMAGING)
+files.extend(
+    os.path.join("src/libImaging", src_file + ".c") for src_file in _LIB_IMAGING
+)
 ext_modules = [
     Extension("PIL._imaging", files),
     Extension("PIL._imagingft", ["src/_imagingft.c"]),

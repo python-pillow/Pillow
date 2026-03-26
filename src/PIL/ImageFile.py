@@ -215,8 +215,10 @@ class ImageFile(Image.Image):
             if subifd_offsets:
                 if not isinstance(subifd_offsets, tuple):
                     subifd_offsets = (subifd_offsets,)
-                for subifd_offset in subifd_offsets:
-                    ifds.append((exif._get_ifd_dict(subifd_offset), subifd_offset))
+                ifds = [
+                    (exif._get_ifd_dict(subifd_offset), subifd_offset)
+                    for subifd_offset in subifd_offsets
+                ]
         ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
         if ifd1 and ifd1.get(ExifTags.Base.JpegIFOffset):
             assert exif._info is not None

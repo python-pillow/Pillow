@@ -544,11 +544,11 @@ def write_script(
 def get_footer(dep: dict[str, Any]) -> list[str]:
     lines = []
     for out in dep.get("headers", []):
-        lines.append(cmd_copy(out, "{inc_dir}"))
+        lines.append(cmd_copy(out, "{inc_dir}"))  # noqa: PERF401
     for out in dep.get("libs", []):
-        lines.append(cmd_copy(out, "{lib_dir}"))
+        lines.append(cmd_copy(out, "{lib_dir}"))  # noqa: PERF401
     for out in dep.get("bins", []):
-        lines.append(cmd_copy(out, "{bin_dir}"))
+        lines.append(cmd_copy(out, "{bin_dir}"))  # noqa: PERF401
     return lines
 
 
