@@ -149,6 +149,7 @@ lint.select = [
   "PERF101", # perflint: unnecessary-list-cast
   "PERF102", # perflint: incorrect-dict-iterator
   "PERF401", # perflint: manual-list-comprehension
+  "PERF402", # perflint: manual-list-copy
   "PGH",     # pygrep-hooks
   "PIE",     # flake8-pie
   "PT",      # flake8-pytest-style
