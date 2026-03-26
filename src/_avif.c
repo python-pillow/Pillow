@@ -811,7 +811,7 @@ _decoder_get_frame(AvifDecoderObject *self, PyObject *args) {
 
     if (rgb.height > PY_SSIZE_T_MAX / rgb.rowBytes) {
         PyErr_SetString(PyExc_MemoryError, "Integer overflow in pixel size");
-        // UNDONE avifRGBImageFreePixels(&rgb); ??
+        avifRGBImageFreePixels(&rgb);
         return NULL;
     }
 
