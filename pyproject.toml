@@ -139,26 +139,22 @@ exclude = "wheels/multibuild"
 exclude = [ "wheels/multibuild" ]
 fix = true
 lint.select = [
-  "C4",      # flake8-comprehensions
-  "E",       # pycodestyle errors
-  "EM",      # flake8-errmsg
-  "F",       # pyflakes errors
-  "I",       # isort
-  "ISC",     # flake8-implicit-str-concat
-  "LOG",     # flake8-logging
-  "PERF101", # perflint: unnecessary-list-cast
-  "PERF102", # perflint: incorrect-dict-iterator
-  "PERF401", # perflint: manual-list-comprehension
-  "PERF402", # perflint: manual-list-copy
-  "PERF403", # perflint: manual-dict-comprehension
-  "PGH",     # pygrep-hooks
-  "PIE",     # flake8-pie
-  "PT",      # flake8-pytest-style
-  "PYI",     # flake8-pyi
-  "RUF100",  # unused noqa (yesqa)
-  "UP",      # pyupgrade
-  "W",       # pycodestyle warnings
-  "YTT",     # flake8-2020
+  "C4",     # flake8-comprehensions
+  "E",      # pycodestyle errors
+  "EM",     # flake8-errmsg
+  "F",      # pyflakes errors
+  "I",      # isort
+  "ISC",    # flake8-implicit-str-concat
+  "LOG",    # flake8-logging
+  "PERF",   # perflint
+  "PGH",    # pygrep-hooks
+  "PIE",    # flake8-pie
+  "PT",     # flake8-pytest-style
+  "PYI",    # flake8-pyi
+  "RUF100", # unused noqa (yesqa)
+  "UP",     # pyupgrade
+  "W",      # pycodestyle warnings
+  "YTT",    # flake8-2020
 ]
 lint.ignore = [
   "E203",   # Whitespace before ':'

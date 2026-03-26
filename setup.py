@@ -302,7 +302,7 @@ def _pkg_config(name: str) -> tuple[list[str], list[str]] | None:
                 subprocess.check_output(command_cflags).decode("utf8").strip(),
             )[::2][1:]
             return libs, cflags
-        except Exception:
+        except Exception:  # noqa: PERF203
             pass
     return None
 

@@ -153,7 +153,7 @@ def APP(self: JpegImageFile, marker: int) -> None:
                     photoshop[code] = data
                 offset += size
                 offset += offset & 1  # align
-            except struct.error:
+            except struct.error:  # noqa: PERF203
                 break  # insufficient data
 
     elif marker == 0xFFEE and s.startswith(b"Adobe"):
@@ -744,7 +744,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                         msg = "Invalid quantization table"
                         raise TypeError(msg)
                     table_array = array.array("H", table)
-                except TypeError as e:
+                except TypeError as e:  # noqa: PERF203
                     msg = "Invalid quantization table"
                     raise ValueError(msg) from e
                 else:
