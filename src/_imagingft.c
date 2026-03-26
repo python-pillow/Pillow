@@ -947,7 +947,7 @@ font_render(FontObject *self, PyObject *args) {
         return NULL;
     }
     im = (Imaging)PyCapsule_GetPointer(imagePtr, IMAGING_MAGIC);
-    Py_XDECREF(imagePtr);
+    Py_DECREF(imagePtr);
 
     x_offset = round(x_offset - stroke_width);
     y_offset = round(y_offset - stroke_width);
