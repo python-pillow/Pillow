@@ -5,7 +5,10 @@ archive=$1
 url=$2
 
 if [ ! -f $archive.tar.gz ]; then
-    wget --no-verbose -O $archive.tar.gz $url
+    wget -O $archive.tar.gz $url \
+        --no-verbose \
+        --retry-connrefused \
+        --retry-on-http-error=429,503,504
 fi
 
 rmdir $archive
