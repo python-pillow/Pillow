@@ -433,6 +433,7 @@ _encoder_dealloc(AvifEncoderObject *self) {
     if (self->image) {
         avifImageDestroy(self->image);
     }
+    Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *
@@ -692,6 +693,7 @@ _decoder_dealloc(AvifDecoderObject *self) {
         avifDecoderDestroy(self->decoder);
     }
     PyBuffer_Release(&self->buffer);
+    Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *

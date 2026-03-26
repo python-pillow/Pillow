@@ -219,6 +219,7 @@ _anim_encoder_dealloc(PyObject *self) {
     WebPAnimEncoderObject *encp = (WebPAnimEncoderObject *)self;
     WebPPictureFree(&(encp->frame));
     WebPAnimEncoderDelete(encp->enc);
+    Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *
@@ -441,6 +442,7 @@ _anim_decoder_dealloc(PyObject *self) {
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
     WebPDataClear(&(decp->data));
     WebPAnimDecoderDelete(decp->dec);
+    Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *
