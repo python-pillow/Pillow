@@ -727,6 +727,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     const RawModeID rawmode = findRawModeID(rawmode_name);
 
     if (get_packer(encoder, mode, rawmode) < 0) {
+        Py_DECREF(encoder);
         return NULL;
     }
 
@@ -742,6 +743,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     for (pos = 0; pos < tags_size; pos++) {
         item = PyList_GetItemRef(tags, pos);
         if (item == NULL) {
+            Py_DECREF(encoder);
             return NULL;
         }
 
@@ -766,6 +768,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         if (!is_core_tag) {
             PyObject *tag_type;
             if (PyDict_GetItemRef(types, key, &tag_type) < 0) {
+                Py_DECREF(encoder);
                 return NULL;  // Exception has been already set
             }
             if (tag_type) {
@@ -837,6 +840,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             if (key_int == TIFFTAG_COLORMAP) {
                 int stride = 256;
                 if (len != 768) {
+                    Py_DECREF(encoder);
                     PyErr_SetString(
                         PyExc_ValueError, "Requiring 768 items for Colormap"
                     );
