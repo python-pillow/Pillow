@@ -189,7 +189,7 @@ match(PyObject *self, PyObject *args) {
             if (lut[lut_idx]) {
                 PyObject *coordObj = Py_BuildValue("(nn)", col_idx, row_idx);
                 if (!coordObj) {
-                    Py_XDECREF(ret);
+                    Py_DECREF(ret);
                     return NULL;
                 }
                 PyList_Append(ret, coordObj);
@@ -238,7 +238,7 @@ get_on_pixels(PyObject *self, PyObject *args) {
             if (row[col_idx]) {
                 PyObject *coordObj = Py_BuildValue("(nn)", col_idx, row_idx);
                 if (!coordObj) {
-                    Py_XDECREF(ret);
+                    Py_DECREF(ret);
                     return NULL;
                 }
                 PyList_Append(ret, coordObj);

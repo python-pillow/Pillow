@@ -943,6 +943,7 @@ font_render(FontObject *self, PyObject *args) {
     PyObject *imagePtr = PyObject_GetAttrString(image, "ptr");
     if (!imagePtr) {
         PyMem_Del(glyph_info);
+        Py_DECREF(image);
         return NULL;
     }
     im = (Imaging)PyCapsule_GetPointer(imagePtr, IMAGING_MAGIC);
