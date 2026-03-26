@@ -1216,7 +1216,9 @@ _getxy(PyObject *xy, int *x, int *y) {
         PyObject *int_value = PyObject_CallMethod(value, "__int__", NULL);
         if (int_value != NULL && PyLong_Check(int_value)) {
             *x = PyLong_AS_LONG(int_value);
+            Py_DECREF(int_value);
         } else {
+            Py_XDECREF(int_value);
             goto badval;
         }
     }
@@ -1230,7 +1232,9 @@ _getxy(PyObject *xy, int *x, int *y) {
         PyObject *int_value = PyObject_CallMethod(value, "__int__", NULL);
         if (int_value != NULL && PyLong_Check(int_value)) {
             *y = PyLong_AS_LONG(int_value);
+            Py_DECREF(int_value);
         } else {
+            Py_XDECREF(int_value);
             goto badval;
         }
     }

@@ -114,7 +114,7 @@ ARCHITECTURES = {
 
 V = {
     "BROTLI": "1.2.0",
-    "FREETYPE": "2.14.2",
+    "FREETYPE": "2.14.3",
     "FRIBIDI": "1.0.16",
     "HARFBUZZ": "13.2.1",
     "JPEGTURBO": "3.1.3",
