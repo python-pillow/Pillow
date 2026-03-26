@@ -425,7 +425,7 @@ end:
     return (PyObject *)self;
 }
 
-PyObject *
+void
 _encoder_dealloc(AvifEncoderObject *self) {
     if (self->encoder) {
         avifEncoderDestroy(self->encoder);
@@ -433,7 +433,7 @@ _encoder_dealloc(AvifEncoderObject *self) {
     if (self->image) {
         avifImageDestroy(self->image);
     }
-    Py_RETURN_NONE;
+    Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *
@@ -687,13 +687,13 @@ AvifDecoderNew(PyObject *self_, PyObject *args) {
     return (PyObject *)self;
 }
 
-PyObject *
+void
 _decoder_dealloc(AvifDecoderObject *self) {
     if (self->decoder) {
         avifDecoderDestroy(self->decoder);
     }
     PyBuffer_Release(&self->buffer);
-    Py_RETURN_NONE;
+    Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *
