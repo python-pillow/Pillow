@@ -1450,11 +1450,10 @@ setup_module(PyObject *m) {
     PyType_Ready(&CmsProfile_Type);
     PyType_Ready(&CmsTransform_Type);
 
-    Py_INCREF(&CmsProfile_Type);
-    PyModule_AddObject(m, "CmsProfile", (PyObject *)&CmsProfile_Type);
-
-    Py_INCREF(&CmsTransform_Type);
-    PyModule_AddObject(m, "CmsTransform", (PyObject *)&CmsTransform_Type);
+    if (PyModule_AddObjectRef(m, "CmsProfile", (PyObject *)&CmsProfile_Type) < 0 ||
+        PyModule_AddObjectRef(m, "CmsTransform", (PyObject *)&CmsTransform_Type) < 0) {
+        return -1;
+    }
 
     d = PyModule_GetDict(m);
 

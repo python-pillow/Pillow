@@ -4324,8 +4324,9 @@ setup_module(PyObject *m) {
 #else
     have_libjpegturbo = Py_False;
 #endif
-    Py_INCREF(have_libjpegturbo);
-    PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", have_libjpegturbo);
+    if (PyModule_AddObjectRef(m, "HAVE_LIBJPEGTURBO", have_libjpegturbo) < 0) {
+        return -1;
+    }
 
     PyObject *have_mozjpeg;
 #ifdef JPEG_C_PARAM_SUPPORTED
@@ -4333,8 +4334,9 @@ setup_module(PyObject *m) {
 #else
     have_mozjpeg = Py_False;
 #endif
-    Py_INCREF(have_mozjpeg);
-    PyModule_AddObject(m, "HAVE_MOZJPEG", have_mozjpeg);
+    if (PyModule_AddObjectRef(m, "HAVE_MOZJPEG", have_mozjpeg) < 0) {
+        return -1;
+    }
 
     PyObject *have_libimagequant;
 #ifdef HAVE_LIBIMAGEQUANT
@@ -4348,8 +4350,9 @@ setup_module(PyObject *m) {
 #else
     have_libimagequant = Py_False;
 #endif
-    Py_INCREF(have_libimagequant);
-    PyModule_AddObject(m, "HAVE_LIBIMAGEQUANT", have_libimagequant);
+    if (PyModule_AddObjectRef(m, "HAVE_LIBIMAGEQUANT", have_libimagequant) < 0) {
+        return -1;
+    }
 
 #ifdef HAVE_LIBZ
     /* zip encoding strategies */
@@ -4377,8 +4380,9 @@ setup_module(PyObject *m) {
 #else
     have_zlibng = Py_False;
 #endif
-    Py_INCREF(have_zlibng);
-    PyModule_AddObject(m, "HAVE_ZLIBNG", have_zlibng);
+    if (PyModule_AddObjectRef(m, "HAVE_ZLIBNG", have_zlibng) < 0) {
+        return -1;
+    }
 
 #ifdef HAVE_LIBTIFF
     {
@@ -4395,8 +4399,9 @@ setup_module(PyObject *m) {
 #else
     have_xcb = Py_False;
 #endif
-    Py_INCREF(have_xcb);
-    PyModule_AddObject(m, "HAVE_XCB", have_xcb);
+    if (PyModule_AddObjectRef(m, "HAVE_XCB", have_xcb) < 0) {
+        return -1;
+    }
 
     PyObject *pillow_version = PyUnicode_FromString(version);
     PyDict_SetItemString(
