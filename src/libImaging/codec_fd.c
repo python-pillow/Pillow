@@ -41,6 +41,9 @@ _imaging_write_pyFd(PyObject *fd, char *src, Py_ssize_t bytes) {
     PyObject *byteObj;
 
     byteObj = PyBytes_FromStringAndSize(src, bytes);
+    if (!byteObj) {
+        return -1;
+    }
     result = PyObject_CallMethod(fd, "write", "O", byteObj);
 
     Py_DECREF(byteObj);
