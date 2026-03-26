@@ -1447,8 +1447,9 @@ setup_module(PyObject *m) {
     int vn;
 
     /* Ready object types */
-    PyType_Ready(&CmsProfile_Type);
-    PyType_Ready(&CmsTransform_Type);
+    if (PyType_Ready(&CmsProfile_Type) < 0 || PyType_Ready(&CmsTransform_Type) < 0) {
+        return -1;
+    }
 
     Py_INCREF(&CmsProfile_Type);
     PyModule_AddObject(m, "CmsProfile", (PyObject *)&CmsProfile_Type);
