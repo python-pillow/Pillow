@@ -254,6 +254,9 @@ void
 ReleaseArrowSchemaPyCapsule(PyObject *capsule) {
     struct ArrowSchema *schema =
         (struct ArrowSchema *)PyCapsule_GetPointer(capsule, "arrow_schema");
+    if (!schema) {
+        return;
+    }
     if (schema->release != NULL) {
         schema->release(schema);
     }
@@ -276,6 +279,9 @@ void
 ReleaseArrowArrayPyCapsule(PyObject *capsule) {
     struct ArrowArray *array =
         (struct ArrowArray *)PyCapsule_GetPointer(capsule, "arrow_array");
+    if (!array) {
+        return;
+    }
     if (array->release != NULL) {
         array->release(array);
     }

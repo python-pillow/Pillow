@@ -948,6 +948,11 @@ font_render(FontObject *self, PyObject *args) {
     }
     im = (Imaging)PyCapsule_GetPointer(imagePtr, IMAGING_MAGIC);
     Py_DECREF(imagePtr);
+    if (!im) {
+        PyMem_Del(glyph_info);
+        Py_DECREF(image);
+        return NULL;
+    }
 
     x_offset = round(x_offset - stroke_width);
     y_offset = round(y_offset - stroke_width);

@@ -53,7 +53,13 @@ apply(PyObject *self, PyObject *args) {
     }
 
     imgin = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!imgin) {
+        return NULL;
+    }
     imgout = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
+    if (!imgout) {
+        return NULL;
+    }
     width = imgin->xsize;
     height = imgin->ysize;
 
@@ -223,6 +229,9 @@ get_on_pixels(PyObject *self, PyObject *args) {
     }
 
     img = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!img) {
+        return NULL;
+    }
     rows = img->image8;
     width = img->xsize;
     height = img->ysize;
