@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import os
+from io import BytesIO
 from pathlib import Path
 
 import pytest
 
-from PIL import Image, UnidentifiedImageError
+from PIL import Image, UnidentifiedImageError, _binary
 
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
@@ -90,6 +91,25 @@ def test_rgba_16() -> None:
 
         assert im.getpixel((0, 0)) == (172, 0, 255, 255)
         assert im.getpixel((1, 0)) == (0, 255, 82, 0)
+
+
+def test_v2_no_alpha() -> None:
+    test_file = "Tests/images/tga/common/200x32_rgba_tl_rle.tga"
+    with open(test_file, "rb") as fp:
+        data = fp.read()
+        data += (
+            b"\x00" * 495
+            + _binary.o32le(len(data))
+            + _binary.o32le(0)
+            + b"TRUEVISION-XFILE.\x00"
+        )
+    with Image.open(BytesIO(data)) as im:
+        with Image.open(test_file) as im2:
+            r, g, b = im2.split()[:3]
+        a = Image.new("L", im2.size, 255)
+        expected = Image.merge("RGBA", (r, g, b, a))
+
+        assert_image_equal(im, expected)
 
 
 def test_id_field() -> None:

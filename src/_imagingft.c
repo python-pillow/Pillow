@@ -1545,7 +1545,9 @@ setup_module(PyObject *m) {
     d = PyModule_GetDict(m);
 
     /* Ready object type */
-    PyType_Ready(&Font_Type);
+    if (PyType_Ready(&Font_Type) < 0) {
+        return -1;
+    }
 
     if (FT_Init_FreeType(&library)) {
         return 0; /* leave it uninitialized */

@@ -12,6 +12,9 @@ _imaging_read_pyFd(PyObject *fd, char *dest, Py_ssize_t bytes) {
     int bytes_result;
 
     result = PyObject_CallMethod(fd, "read", "n", bytes);
+    if (result == NULL) {
+        goto err;
+    }
 
     bytes_result = PyBytes_AsStringAndSize(result, &buffer, &length);
     if (bytes_result == -1) {
@@ -28,7 +31,7 @@ _imaging_read_pyFd(PyObject *fd, char *dest, Py_ssize_t bytes) {
     return length;
 
 err:
-    Py_DECREF(result);
+    Py_XDECREF(result);
     return -1;
 }
 
@@ -41,6 +44,10 @@ _imaging_write_pyFd(PyObject *fd, char *src, Py_ssize_t bytes) {
     result = PyObject_CallMethod(fd, "write", "O", byteObj);
 
     Py_DECREF(byteObj);
+    if (result == NULL) {
+        return -1;
+    }
+
     Py_DECREF(result);
 
     return bytes;
@@ -51,6 +58,9 @@ _imaging_seek_pyFd(PyObject *fd, Py_ssize_t offset, int whence) {
     PyObject *result;
 
     result = PyObject_CallMethod(fd, "seek", "ni", offset, whence);
+    if (result == NULL) {
+        return -1;
+    }
 
     Py_DECREF(result);
     return 0;
@@ -62,6 +72,9 @@ _imaging_tell_pyFd(PyObject *fd) {
     Py_ssize_t location;
 
     result = PyObject_CallMethod(fd, "tell", NULL);
+    if (result == NULL) {
+        return -1;
+    }
     location = PyLong_AsSsize_t(result);
 
     Py_DECREF(result);

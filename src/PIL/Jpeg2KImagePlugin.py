@@ -176,7 +176,7 @@ def _parse_jp2_header(
     nc = None
     dpi = None  # 2-tuple of DPI info, or None
     palette = None
-    cmyk = False
+    colr = None
 
     while header.has_next_box():
         tbox = header.next_box_type()
@@ -199,10 +199,16 @@ def _parse_jp2_header(
                 mode = "RGBA"
         elif tbox == b"colr":
             meth, _, _, enumcs = header.read_fields(">BBBI")
-            if cmyk := (meth == 1 and enumcs == 12):
-                if nc == 4:
-                    mode = "CMYK"
-        elif tbox == b"pclr" and mode in ("L", "LA"):
+            if meth == 1:
+                if enumcs in (0, 15):
+                    colr = "1"
+                elif enumcs == 12:
+                    colr = "CMYK"
+                    if nc == 4:
+                        mode = "CMYK"
+                elif enumcs == 17:
+                    colr = "L"
+        elif tbox == b"pclr" and mode in ("L", "LA") and colr not in ("1", "L"):
             ne, npc = header.read_fields(">HB")
             assert isinstance(ne, int)
             assert isinstance(npc, int)
@@ -213,7 +219,7 @@ def _parse_jp2_header(
                     max_bitdepth = bitdepth
             if max_bitdepth <= 8:
                 if npc == 4:
-                    palette_mode = "CMYK" if cmyk else "RGBA"
+                    palette_mode = "CMYK" if colr == "CMYK" else "RGBA"
                 else:
                     palette_mode = "RGB"
                 palette = ImagePalette.ImagePalette(palette_mode)
