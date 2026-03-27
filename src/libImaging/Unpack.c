@@ -427,6 +427,18 @@ unpackLA(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
+unpackRG(UINT8 *_out, const UINT8 *in, int pixels) {
+    int i;
+    /* RG, pixel interleaved */
+    for (i = 0; i < pixels; i++) {
+        _out[R] = in[0];
+        _out[G] = in[1];
+        in += 2;
+        _out += 4;
+    }
+}
+
+static void
 unpackLAL(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
     /* LA, line interleaved */
@@ -1605,6 +1617,9 @@ static struct {
     {IMAGING_MODE_PA, IMAGING_RAWMODE_PA_L, 16, unpackLAL},
     {IMAGING_MODE_PA, IMAGING_RAWMODE_LA, 16, unpackLA},
 
+    /* 2 channel to RGB/RGBA */
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_RG, 16, unpackRG},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RG, 16, unpackRG},
     /* true colour */
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB, 24, ImagingUnpackRGB},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB_L, 24, unpackRGBL},
