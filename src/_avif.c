@@ -721,17 +721,29 @@ _decoder_get_info(AvifDecoderObject *self) {
         mode = "RGB";
     }
 
-    if (image->icc.size) {
-        icc = PyBytes_FromStringAndSize((const char *)image->icc.data, image->icc.size);
+    if (image->xmp.size) {
+        xmp = PyBytes_FromStringAndSize((const char *)image->xmp.data, image->xmp.size);
+        if (!xmp) {
+            return NULL;
+        }
     }
 
     if (image->exif.size) {
         exif =
             PyBytes_FromStringAndSize((const char *)image->exif.data, image->exif.size);
+        if (!exif) {
+            Py_XDECREF(xmp);
+            return NULL;
+        }
     }
 
-    if (image->xmp.size) {
-        xmp = PyBytes_FromStringAndSize((const char *)image->xmp.data, image->xmp.size);
+    if (image->icc.size) {
+        icc = PyBytes_FromStringAndSize((const char *)image->icc.data, image->icc.size);
+        if (!icc) {
+            Py_XDECREF(xmp);
+            Py_XDECREF(exif);
+            return NULL;
+        }
     }
 
     ret = Py_BuildValue(
@@ -822,6 +834,7 @@ _decoder_get_frame(AvifDecoderObject *self, PyObject *args) {
 
     if (rgb.height > PY_SSIZE_T_MAX / rgb.rowBytes) {
         PyErr_SetString(PyExc_MemoryError, "Integer overflow in pixel size");
+        avifRGBImageFreePixels(&rgb);
         return NULL;
     }
 
@@ -829,6 +842,9 @@ _decoder_get_frame(AvifDecoderObject *self, PyObject *args) {
 
     bytes = PyBytes_FromStringAndSize((char *)rgb.pixels, size);
     avifRGBImageFreePixels(&rgb);
+    if (!bytes) {
+        return NULL;
+    }
 
     ret = Py_BuildValue(
         "SKKK",

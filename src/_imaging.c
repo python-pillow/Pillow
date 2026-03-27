@@ -254,6 +254,9 @@ void
 ReleaseArrowSchemaPyCapsule(PyObject *capsule) {
     struct ArrowSchema *schema =
         (struct ArrowSchema *)PyCapsule_GetPointer(capsule, "arrow_schema");
+    if (!schema) {
+        return;
+    }
     if (schema->release != NULL) {
         schema->release(schema);
     }
@@ -276,6 +279,9 @@ void
 ReleaseArrowArrayPyCapsule(PyObject *capsule) {
     struct ArrowArray *array =
         (struct ArrowArray *)PyCapsule_GetPointer(capsule, "arrow_array");
+    if (!array) {
+        return;
+    }
     if (array->release != NULL) {
         array->release(array);
     }
@@ -2473,6 +2479,9 @@ _split(ImagingObject *self) {
     }
 
     list = PyTuple_New(self->image->bands);
+    if (!list) {
+        return NULL;
+    }
     for (i = 0; i < self->image->bands; i++) {
         imaging_object = PyImagingNew(bands[i]);
         if (!imaging_object) {
@@ -3769,6 +3778,9 @@ _ptr_destructor(PyObject *capsule) {
 static PyObject *
 _getattr_ptr(ImagingObject *self, void *closure) {
     PyObject *capsule = PyCapsule_New(self->image, IMAGING_MAGIC, _ptr_destructor);
+    if (!capsule) {
+        return NULL;
+    }
     Py_INCREF(self);
     PyCapsule_SetContext(capsule, self);
     return capsule;

@@ -558,7 +558,13 @@ cms_transform_apply(CmsTransformObject *self, PyObject *args) {
     }
 
     im = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!im) {
+        return NULL;
+    }
     imOut = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
+    if (!imOut) {
+        return NULL;
+    }
 
     return Py_BuildValue("i", pyCMSdoTransform(im, imOut, self->transform));
 }
