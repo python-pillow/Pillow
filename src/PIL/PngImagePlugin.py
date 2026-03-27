@@ -1353,6 +1353,9 @@ def _save(
         mode = im.mode
 
     outmode = mode
+    palette = []
+    if im.palette:
+        palette = im.getpalette() or []
     if mode == "P":
         #
         # attempt to minimize storage requirements for palette images
@@ -1362,7 +1365,7 @@ def _save(
         else:
             # check palette contents
             if im.palette:
-                colors = max(min(len(im.palette.getdata()[1]) // 3, 256), 1)
+                colors = max(min(len(palette) // 3, 256), 1)
             else:
                 colors = 256
 
@@ -1435,7 +1438,7 @@ def _save(
 
     if im.mode == "P":
         palette_byte_number = colors * 3
-        palette_bytes = im.im.getpalette("RGB")[:palette_byte_number]
+        palette_bytes = bytes(palette[:palette_byte_number])
         while len(palette_bytes) < palette_byte_number:
             palette_bytes += b"\0"
         chunk(fp, b"PLTE", palette_bytes)
