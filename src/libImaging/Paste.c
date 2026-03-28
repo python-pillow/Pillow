@@ -352,16 +352,16 @@ ImagingPaste(
 
 static inline void
 fill(
-    Imaging imOut, const void *ink_, int dx, int dy, int xsize, int ysize, int pixelsize
+    Imaging imOut, const UINT8 *ink, int dx, int dy, int xsize, int ysize, int pixelsize
 ) {
     /* fill opaque region */
 
-    int x, y;
+    int x, y, i;
     UINT8 ink8 = 0;
     INT32 ink32 = 0L;
 
-    memcpy(&ink32, ink_, pixelsize);
-    memcpy(&ink8, ink_, sizeof(ink8));
+    memcpy(&ink32, ink, pixelsize);
+    memcpy(&ink8, ink, sizeof(ink8));
 
     if (imOut->image8 || ink32 == 0L) {
         dx *= pixelsize;
@@ -371,12 +371,24 @@ fill(
         }
 
     } else {
+#if defined _WIN32 && !defined _WIN64
+        dx *= pixelsize;
+        for (y = 0; y < ysize; y++) {
+            UINT8 *out = (UINT8 *)imOut->image[y + dy] + dx;
+            for (x = 0; x < xsize; x++) {
+                for (i = 0; i < pixelsize; i++) {
+                    *out++ = ink[i];
+                }
+            }
+        }
+#else
         for (y = 0; y < ysize; y++) {
             INT32 *out = imOut->image32[y + dy] + dx;
             for (x = 0; x < xsize; x++) {
                 out[x] = ink32;
             }
         }
+#endif
     }
 }
 

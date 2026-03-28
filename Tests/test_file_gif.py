@@ -314,7 +314,7 @@ def test_roundtrip_save_all_1(tmp_path: Path) -> None:
 def test_save_zero(size: tuple[int, int]) -> None:
     b = BytesIO()
     im = Image.new("RGB", size)
-    with pytest.raises(SystemError):
+    with pytest.raises(ValueError, match="cannot write empty image"):
         im.save(b, "GIF")
 
 

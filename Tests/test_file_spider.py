@@ -72,7 +72,7 @@ def test_save(tmp_path: Path) -> None:
 def test_save_zero(size: tuple[int, int]) -> None:
     b = BytesIO()
     im = Image.new("1", size)
-    with pytest.raises(SystemError):
+    with pytest.raises(ValueError, match="cannot write empty image"):
         im.save(b, "SPIDER")
 
 

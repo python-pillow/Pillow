@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-version=1.3.0
+version=1.4.1
 
 if [[ "$GHA_LIBAVIF_CACHE_HIT" == "true" ]]; then
 
@@ -16,10 +16,6 @@ else
     ./download-and-extract.sh libavif-$version https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$version.tar.gz
 
     pushd libavif-$version
-
-    # Apply patch for SVT-AV1 4.0 compatibility
-    # Pending release of https://github.com/AOMediaCodec/libavif/pull/2971
-    patch -p1 < ../libavif-svt4.patch
 
     if [ $(uname) == "Darwin" ] && [ -x "$(command -v brew)" ]; then
         PREFIX=$(brew --prefix)
