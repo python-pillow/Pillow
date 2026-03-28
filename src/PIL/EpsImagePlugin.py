@@ -203,7 +203,9 @@ class EpsImageFile(ImageFile.ImageFile):
         imagedata_size: tuple[int, int] | None = None
 
         byte_arr = bytearray(255)
-        bytes_mv = memoryview(byte_arr)
+        # the extra `bytes` annotation here works around several false positive
+        # `comparison-overlap` mypy errors
+        bytes_mv: bytes | memoryview = memoryview(byte_arr)
         bytes_read = 0
         reading_header_comments = True
         reading_trailer_comments = False
