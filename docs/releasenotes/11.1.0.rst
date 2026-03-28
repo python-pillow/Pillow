@@ -22,7 +22,7 @@ Pillow 11.0.0 added writing XMP data to JPEG and MPO images::
     im.save("out.jpg")
 
 However, this meant that XMP data was automatically kept from an opened image,
-which is inconsistent with the rest of Pillow's behaviour. This functionality
+which is inconsistent with the rest of Pillow's behavior. This functionality
 has been removed. To write XMP data, the ``xmp`` argument can still be used for
 JPEG files::
 
