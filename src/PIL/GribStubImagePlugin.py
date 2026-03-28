@@ -52,10 +52,6 @@ class GribStubImageFile(ImageFile.StubImageFile):
         self._mode = "F"
         self._size = 1, 1
 
-        loader = self._load()
-        if loader:
-            loader.open(self)
-
     def _load(self) -> ImageFile.StubHandler | None:
         return _handler
 
