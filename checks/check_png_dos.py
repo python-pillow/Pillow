@@ -28,8 +28,7 @@ def test_dos_text() -> None:
     try:
         im = Image.open(TEST_FILE)
         im.load()
-    except ValueError as msg:
-        assert msg, "Decompressed Data Too Large"
+    except ValueError:
         return
 
     assert isinstance(im, PngImagePlugin.PngImageFile)
