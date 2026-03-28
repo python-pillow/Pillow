@@ -14,29 +14,17 @@ TODO
 
 TODO
 
-Backwards incompatible changes
-==============================
-
-TODO
-^^^^
-
-TODO
-
-Deprecations
-============
-
-TODO
-^^^^
-
-TODO
-
 API changes
 ===========
 
-TODO
-^^^^
+Error when encoding an empty image
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Attempting to encode an image with zero width or height would previously raise
+a :py:exc:`SystemError`. That has now been changed to a :py:exc:`ValueError`.
+
+This does not add any new errors. SGI, ICNS and ICO formats are still able to
+save (0, 0) images.
 
 API additions
 =============
@@ -51,10 +39,24 @@ default, images will be captured at 2x. If ``scale_down`` is ``True``, they will
 
 Previously, macOS screenshots with a ``bbox`` were captured at 1x by default.
 
+FontFile.to_imagefont()
+^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.FontFile.FontFile` instances can now be directly converted to
+:py:class:`~PIL.ImageFont.ImageFont` instances::
+
+    >>> from PIL import PcfFontFile
+    >>> with open("Tests/fonts/10x20-ISO8859-1.pcf", "rb") as fp:
+    ...   pcffont = PcfFontFile.PcfFontFile(fp)
+    ...   pcffont.to_imagefont()
+    ...
+    <PIL.ImageFont.ImageFont object at 0x10457bb80>
+
 Other changes
 =============
 
-TODO
-^^^^
+Support reading JPEG2000 images with CMYK palettes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+JPEG2000 images with CMYK palettes can now be read. This is the first integration of
+CMYK palettes into Pillow.

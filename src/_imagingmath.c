@@ -187,8 +187,17 @@ _unop(PyObject *self, PyObject *args) {
     }
 
     unop = (void *)PyCapsule_GetPointer(op, MATH_FUNC_UNOP_MAGIC);
+    if (!unop) {
+        return NULL;
+    }
     out = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!out) {
+        return NULL;
+    }
     im1 = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
+    if (!im1) {
+        return NULL;
+    }
 
     unop(out, im1);
 
@@ -219,9 +228,21 @@ _binop(PyObject *self, PyObject *args) {
     }
 
     binop = (void *)PyCapsule_GetPointer(op, MATH_FUNC_BINOP_MAGIC);
+    if (!binop) {
+        return NULL;
+    }
     out = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!out) {
+        return NULL;
+    }
     im1 = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
+    if (!im1) {
+        return NULL;
+    }
     im2 = (Imaging)PyCapsule_GetPointer(i2, IMAGING_MAGIC);
+    if (!im2) {
+        return NULL;
+    }
 
     binop(out, im1, im2);
 
