@@ -480,6 +480,9 @@ PyImaging_GrabClipboardWin32(PyObject *self, PyObject *args) {
     GlobalUnlock(handle);
     CloseClipboard();
 
+    if (!result) {
+        return NULL;
+    }
     return Py_BuildValue("zN", format_names[format], result);
 }
 

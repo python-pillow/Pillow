@@ -369,7 +369,7 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     bytes_read = self.fd.read(2)
                     if len(bytes_read) < 2:
                         break
-                    right, up = self.fd.read(2)
+                    right, up = bytes_read
                     data += b"\x00" * (right + up * self.state.xsize)
                     x = len(data) % self.state.xsize
                 else:

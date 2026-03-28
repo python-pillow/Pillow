@@ -17,11 +17,13 @@
 #
 from __future__ import annotations
 
+import os
 import warnings
 from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
+from ._binary import i32le as i32
 from ._binary import o8
 from ._binary import o16le as o16
 
@@ -157,6 +159,20 @@ class TgaImageFile(ImageFile.ImageFile):
             pass  # cannot decode
 
     def load_end(self) -> None:
+        if self.mode == "RGBA":
+            assert self.fp is not None
+            self.fp.seek(-26, os.SEEK_END)
+            footer = self.fp.read(26)
+            if footer.endswith(b"TRUEVISION-XFILE.\x00"):
+                # version 2
+                extension_offset = i32(footer)
+                if extension_offset:
+                    self.fp.seek(extension_offset + 494)
+                    attributes_type = self.fp.read(1)
+                    if attributes_type == b"\x00":
+                        # No alpha
+                        self.im.fillband(3, 255)
+
         if self._flip_horizontally:
             self.im = self.im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
