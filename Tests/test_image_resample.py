@@ -630,45 +630,27 @@ class TestCoreResampleBox:
 
 
 class TestCoreResample16bpc:
-    def test_resampling_clamp_overflow(self) -> None:
-        # Lanczos weighting during downsampling can push accumulated float sums
-        # above 65535. These must be clamped to 65535, not corrupted byte-by-byte.
+    # Lanczos weighting during downsampling can push accumulated float sums
+    @pytest.mark.parametrize(
+        "width_range",
+        (
+            # below 0. These must be clamped to 0, not corrupted byte-by-byte.
+            (0, 50),  # Left half = 65535, right half = 0
+            # above 65535. These must be clamped to 65535, not corrupted byte-by-byte.
+            (50, 100),  # # Left half = 0, right half = 65535
+        ),
+    )
+    def test_resampling_clamp_overflow(self, width_range: tuple[int, int]) -> None:
         ims = {}
         width, height = 100, 10
         for mode in ("I;16", "F"):
-            # Left half = 0, right half = 65535
             im = Image.new(mode, (width, height))
             for y in range(height):
-                for x in range(width // 2, width):
+                for x in range(*width_range):
                     im.putpixel((x, y), 65535)
 
-            # 5x downsampling with Lanczos creates ~8.7% overshoot at the step edge
-            ims[mode] = im.resize((20, height), Image.Resampling.LANCZOS)
-
-        for y in range(height):
-            for x in range(20):
-                v = ims["F"].getpixel((x, y))
-                assert isinstance(v, float)
-                expected = max(0, min(65535, round(v)))
-
-                value = ims["I;16"].getpixel((x, y))
-                assert (
-                    value == expected
-                ), f"Pixel ({x}, {y}): expected {expected}, got {value}"
-
-    def test_resampling_clamp_underflow(self) -> None:
-        # Lanczos weighting during downsampling can push accumulated float sums
-        # below 0. These must be clamped to 0, not corrupted byte-by-byte.
-        ims = {}
-        width, height = 100, 10
-        for mode in ("I;16", "F"):
-            # Left half = 65535, right half = 0
-            im = Image.new(mode, (width, height))
-            for y in range(height):
-                for x in range(width // 2):
-                    im.putpixel((x, y), 65535)
-
-            # 5x downsampling with Lanczos creates ~8.7% undershoot at the step edge
+            # 5x downsampling with Lanczos
+            # creates ~8.7% overshoot or undershoot at the step edge
             ims[mode] = im.resize((20, height), Image.Resampling.LANCZOS)
 
         for y in range(height):
