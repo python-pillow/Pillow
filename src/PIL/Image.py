@@ -488,7 +488,7 @@ def init() -> bool:
         try:
             logger.debug("Importing %s", plugin)
             __import__(f"{__spec__.parent}.{plugin}", globals(), locals(), [])
-        except ImportError as e:
+        except ImportError as e:  # noqa: PERF203
             logger.debug("Image: failed to import %s: %s", plugin, e)
 
     if OPEN or SAVE:

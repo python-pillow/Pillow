@@ -80,8 +80,7 @@ def read_32(
                 if byte_int & 0x80:
                     blocksize = byte_int - 125
                     byte = fobj.read(1)
-                    for i in range(blocksize):
-                        data.append(byte)
+                    data.extend([byte] * blocksize)
                 else:
                     blocksize = byte_int + 1
                     data.append(fobj.read(blocksize))

@@ -146,6 +146,7 @@ lint.select = [
   "I",      # isort
   "ISC",    # flake8-implicit-str-concat
   "LOG",    # flake8-logging
+  "PERF",   # perflint
   "PGH",    # pygrep-hooks
   "PIE",    # flake8-pie
   "PT",     # flake8-pytest-style

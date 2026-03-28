@@ -542,14 +542,11 @@ def write_script(
 
 
 def get_footer(dep: dict[str, Any]) -> list[str]:
-    lines = []
-    for out in dep.get("headers", []):
-        lines.append(cmd_copy(out, "{inc_dir}"))
-    for out in dep.get("libs", []):
-        lines.append(cmd_copy(out, "{lib_dir}"))
-    for out in dep.get("bins", []):
-        lines.append(cmd_copy(out, "{bin_dir}"))
-    return lines
+    return (
+        [cmd_copy(out, "{inc_dir}") for out in dep.get("headers", [])]
+        + [cmd_copy(out, "{lib_dir}") for out in dep.get("libs", [])]
+        + [cmd_copy(out, "{bin_dir}") for out in dep.get("bins", [])]
+    )
 
 
 def build_env(prefs: dict[str, str], verbose: bool) -> None:
