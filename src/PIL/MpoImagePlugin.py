@@ -40,16 +40,20 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     append_images = im.encoderinfo.get("append_images", [])
+    progress = im.encoderinfo.get("progress")
     if not append_images and not getattr(im, "is_animated", False):
         _save(im, fp, filename)
+        im._save_all_progress(progress)
         return
 
     mpf_offset = 28
     offsets: list[int] = []
     im_sequences = [im, *append_images]
     total = sum(getattr(seq, "n_frames", 1) for seq in im_sequences)
-    for im_sequence in im_sequences:
-        for im_frame in ImageSequence.Iterator(im_sequence):
+    if progress:
+        completed = 0
+    for i, seq in enumerate(im_sequences):
+        for im_frame in ImageSequence.Iterator(seq):
             if not offsets:
                 # APP2 marker
                 ifd_length = 66 + 16 * total
@@ -72,6 +76,9 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 im_frame.save(fp, "JPEG")
                 im_frame.encoderinfo = encoderinfo
                 offsets.append(fp.tell() - offsets[-1])
+            if progress:
+                completed += 1
+                im._save_all_progress(progress, seq, i, completed, total)
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
     ifd[0xB000] = b"0100"
