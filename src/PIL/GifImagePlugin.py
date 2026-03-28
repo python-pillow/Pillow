@@ -164,13 +164,13 @@ class GifImageFile(ImageFile.ImageFile):
             self._seek(0)
 
         last_frame = self.__frame
-        for f in range(self.__frame + 1, frame + 1):
-            try:
+        try:
+            for f in range(self.__frame + 1, frame + 1):
                 self._seek(f)
-            except EOFError as e:  # noqa: PERF203
-                self.seek(last_frame)
-                msg = "no more images in GIF file"
-                raise EOFError(msg) from e
+        except EOFError as e:
+            self.seek(last_frame)
+            msg = "no more images in GIF file"
+            raise EOFError(msg) from e
 
     def _seek(self, frame: int, update_image: bool = True) -> None:
         if isinstance(self._fp, DeferredError):
