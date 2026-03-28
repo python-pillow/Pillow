@@ -866,13 +866,13 @@ class PngImageFile(ImageFile.ImageFile):
             self._seek(0, True)
 
         last_frame = self.__frame
-        for f in range(self.__frame + 1, frame + 1):
-            try:
+        try:
+            for f in range(self.__frame + 1, frame + 1):
                 self._seek(f)
-            except EOFError as e:
-                self.seek(last_frame)
-                msg = "no more images in APNG file"
-                raise EOFError(msg) from e
+        except EOFError as e:
+            self.seek(last_frame)
+            msg = "no more images in APNG file"
+            raise EOFError(msg) from e
 
     def _seek(self, frame: int, rewind: bool = False) -> None:
         assert self.png is not None

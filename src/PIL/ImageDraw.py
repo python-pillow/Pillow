@@ -597,9 +597,7 @@ class ImageDraw:
                 mode = self.fontmode
                 if stroke_width == 0 and embedded_color:
                     mode = "RGBA"
-                coord = []
-                for i in range(2):
-                    coord.append(int(xy[i]))
+                coord = [int(xy[i]) for i in range(2)]
                 start = (math.modf(xy[0])[0], math.modf(xy[1])[0])
                 try:
                     mask, offset = image_text.font.getmask2(  # type: ignore[union-attr,misc]
