@@ -1,0 +1,52 @@
+name: Typing
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions: {}
+
+env:
+  FORCE_COLOR: 1
+  PREK_COLOR: always
+  RUFF_OUTPUT_FORMAT: github
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typing:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [
+          "3.14",
+          "3.13",
+          "3.12",
+          "3.11",
+          "3.10",
+        ]
+
+    name: Typing Python ${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Typing
+        run: uvx --with tox-uv tox -e mypy -- --python-version=${{ matrix.python-version }}
+
+  success:
+    permissions:
+      contents: none
+    needs: typing
+    runs-on: ubuntu-latest
+    name: Typing Successful
+    steps:
+      - name: Success
+        run: echo Typing Successful
