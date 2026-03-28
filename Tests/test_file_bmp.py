@@ -221,6 +221,11 @@ def test_rle8_eof(file_name: str, length: int) -> None:
             im.load()
 
 
+def test_rle_delta() -> None:
+    with Image.open("Tests/images/bmp/q/pal8rletrns.bmp") as im:
+        assert_image_equal_tofile(im, "Tests/images/pal8rletrns.png")
+
+
 def test_unsupported_bmp_bitfields_layout() -> None:
     fp = io.BytesIO(
         o32(40)  # header size

@@ -224,10 +224,7 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/hopper_g4.tif") as im:
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
             for tag in im.tag_v2:
-                try:
-                    del core_items[tag]
-                except KeyError:
-                    pass
+                core_items.pop(tag, None)
             del core_items[320]  # colormap is special, tested below
 
             # Type codes:
@@ -1244,7 +1241,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_save_zero(self, compression: str | None, tmp_path: Path) -> None:
         im = Image.new("RGB", (0, 0))
         out = tmp_path / "temp.tif"
-        with pytest.raises(SystemError):
+        with pytest.raises(ValueError, match="cannot write empty image"):
             im.save(out, compression=compression)
 
     def test_save_many_compressed(self, tmp_path: Path) -> None:
