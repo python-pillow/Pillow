@@ -94,6 +94,12 @@ jobs:
             os: ubuntu-24.04-arm
             cibw_arch: aarch64
             build: "*manylinux*"
+          - name: "manylinux_2_39 riscv64"
+            platform: linux
+            os: ubuntu-latest
+            cibw_arch: riscv64
+            build: "cp3{12,13}-manylinux*"
+            manylinux: "manylinux_2_39"
           - name: "iOS arm64 device"
             platform: ios
             os: macos-latest
@@ -116,6 +122,12 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Set up QEMU
+        if: matrix.cibw_arch == 'riscv64'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: riscv64
+
       - name: Install cibuildwheel
         run: |
           python3 -m pip install -r .ci/requirements-cibw.txt
@@ -131,6 +143,7 @@ jobs:
           CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
+          CIBW_MANYLINUX_RISCV64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
