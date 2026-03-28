@@ -425,7 +425,7 @@ end:
     return (PyObject *)self;
 }
 
-PyObject *
+void
 _encoder_dealloc(AvifEncoderObject *self) {
     if (self->encoder) {
         avifEncoderDestroy(self->encoder);
@@ -433,7 +433,7 @@ _encoder_dealloc(AvifEncoderObject *self) {
     if (self->image) {
         avifImageDestroy(self->image);
     }
-    Py_RETURN_NONE;
+    Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *
@@ -687,13 +687,13 @@ AvifDecoderNew(PyObject *self_, PyObject *args) {
     return (PyObject *)self;
 }
 
-PyObject *
+void
 _decoder_dealloc(AvifDecoderObject *self) {
     if (self->decoder) {
         avifDecoderDestroy(self->decoder);
     }
     PyBuffer_Release(&self->buffer);
-    Py_RETURN_NONE;
+    Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *
@@ -708,15 +708,27 @@ _decoder_get_info(AvifDecoderObject *self) {
 
     if (image->xmp.size) {
         xmp = PyBytes_FromStringAndSize((const char *)image->xmp.data, image->xmp.size);
+        if (!xmp) {
+            return NULL;
+        }
     }
 
     if (image->exif.size) {
         exif =
             PyBytes_FromStringAndSize((const char *)image->exif.data, image->exif.size);
+        if (!exif) {
+            Py_XDECREF(xmp);
+            return NULL;
+        }
     }
 
     if (image->icc.size) {
         icc = PyBytes_FromStringAndSize((const char *)image->icc.data, image->icc.size);
+        if (!icc) {
+            Py_XDECREF(xmp);
+            Py_XDECREF(exif);
+            return NULL;
+        }
     }
 
     ret = Py_BuildValue(
@@ -799,6 +811,7 @@ _decoder_get_frame(AvifDecoderObject *self, PyObject *args) {
 
     if (rgb.height > PY_SSIZE_T_MAX / rgb.rowBytes) {
         PyErr_SetString(PyExc_MemoryError, "Integer overflow in pixel size");
+        avifRGBImageFreePixels(&rgb);
         return NULL;
     }
 
@@ -806,6 +819,9 @@ _decoder_get_frame(AvifDecoderObject *self, PyObject *args) {
 
     bytes = PyBytes_FromStringAndSize((char *)rgb.pixels, size);
     avifRGBImageFreePixels(&rgb);
+    if (!bytes) {
+        return NULL;
+    }
 
     ret = Py_BuildValue(
         "SKKK",

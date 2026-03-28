@@ -941,8 +941,18 @@ font_render(FontObject *self, PyObject *args) {
         return NULL;
     }
     PyObject *imagePtr = PyObject_GetAttrString(image, "ptr");
+    if (!imagePtr) {
+        PyMem_Del(glyph_info);
+        Py_DECREF(image);
+        return NULL;
+    }
     im = (Imaging)PyCapsule_GetPointer(imagePtr, IMAGING_MAGIC);
-    Py_XDECREF(imagePtr);
+    Py_DECREF(imagePtr);
+    if (!im) {
+        PyMem_Del(glyph_info);
+        Py_DECREF(image);
+        return NULL;
+    }
 
     x_offset = round(x_offset - stroke_width);
     y_offset = round(y_offset - stroke_width);
@@ -1545,7 +1555,9 @@ setup_module(PyObject *m) {
     d = PyModule_GetDict(m);
 
     /* Ready object type */
-    PyType_Ready(&Font_Type);
+    if (PyType_Ready(&Font_Type) < 0) {
+        return -1;
+    }
 
     if (FT_Init_FreeType(&library)) {
         return 0; /* leave it uninitialized */
