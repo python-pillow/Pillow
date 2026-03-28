@@ -14,22 +14,6 @@ TODO
 
 TODO
 
-Backwards incompatible changes
-==============================
-
-TODO
-^^^^
-
-TODO
-
-Deprecations
-============
-
-TODO
-^^^^
-
-TODO
-
 API changes
 ===========
 
@@ -61,7 +45,8 @@ FontFile.to_imagefont()
 Other changes
 =============
 
-TODO
-^^^^
+Support reading JPEG2000 images with CMYK palettes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+JPEG2000 images with CMYK palettes can now be read. This is the first integration of
+CMYK palettes into Pillow.
