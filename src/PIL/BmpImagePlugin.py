@@ -429,14 +429,11 @@ def _dib_save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 def _save(
     im: Image.Image, fp: IO[bytes], filename: str | bytes, bitmap_header: bool = True
 ) -> None:
-    try:
-        rawmode, bits, colors = SAVE[im.mode]
-    except KeyError as e:
-        msg = f"cannot write mode {im.mode} as BMP"
-        raise OSError(msg) from e
-
     info = im.encoderinfo
+    if im.mode not in SAVE:
+        im = im.convert("RGBA")
 
+    rawmode, bits, colors = SAVE[im.mode]
     dpi = info.get("dpi", (96, 96))
 
     # 1 meter == 39.3701 inches

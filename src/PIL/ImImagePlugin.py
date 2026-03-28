@@ -341,13 +341,11 @@ SAVE = {
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    try:
-        image_type, rawmode = SAVE[im.mode]
-    except KeyError as e:
-        msg = f"Cannot save {im.mode} images as IM"
-        raise ValueError(msg) from e
-
-    frames = im.encoderinfo.get("frames", 1)
+    encoderinfo = im.encoderinfo
+    if im.mode not in SAVE:
+        im = im.convert("RGBA")
+    image_type, rawmode = SAVE[im.mode]
+    frames = encoderinfo.get("frames", 1)
 
     fp.write(f"Image type: {image_type} image\r\n".encode("ascii"))
     if filename:

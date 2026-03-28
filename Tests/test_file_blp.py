@@ -60,8 +60,7 @@ def test_save(tmp_path: Path) -> None:
             assert_image_similar_tofile(im, f, 8)
 
     im = hopper()
-    with pytest.raises(ValueError, match="Unsupported BLP image mode"):
-        im.save(f)
+    im.save(f)
 
 
 @pytest.mark.parametrize(

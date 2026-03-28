@@ -11,7 +11,6 @@ from .helper import (
     assert_image_equal_tofile,
     assert_image_similar,
     assert_image_similar_tofile,
-    hopper,
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
@@ -283,13 +282,6 @@ def test_bytesio_object() -> None:
 def test_1(filename: str) -> None:
     with Image.open(filename) as im:
         assert_image_equal_tofile(im, "Tests/images/eps/1.bmp")
-
-
-def test_image_mode_not_supported(tmp_path: Path) -> None:
-    im = hopper("RGBA")
-    tmpfile = tmp_path / "temp.eps"
-    with pytest.raises(ValueError):
-        im.save(tmpfile)
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")

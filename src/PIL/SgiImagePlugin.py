@@ -128,12 +128,15 @@ class SgiImageFile(ImageFile.ImageFile):
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    if im.mode not in {"RGB", "RGBA", "L"}:
-        msg = "Unsupported SGI image mode"
-        raise ValueError(msg)
-
     # Get the keyword arguments
     info = im.encoderinfo
+
+    if str(filename).endswith(".rgb"):
+        im = im.convert("RGB")
+    elif str(filename).endswith(".bw"):
+        im = im.convert("L")
+    elif str(filename).endswith(".rgba") or im.mode not in {"RGB", "RGBA", "L"}:
+        im = im.convert("RGBA")
 
     # Byte-per-pixel precision, 1 = 8bits per pixel
     bpc = info.get("bpc", 1)

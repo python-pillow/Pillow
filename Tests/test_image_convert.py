@@ -15,21 +15,7 @@ def test_sanity() -> None:
         assert out.mode == mode
         assert out.size == im.size
 
-    modes = (
-        "1",
-        "L",
-        "LA",
-        "P",
-        "PA",
-        "I",
-        "F",
-        "RGB",
-        "RGBA",
-        "RGBX",
-        "CMYK",
-        "YCbCr",
-        "HSV",
-    )
+    modes = Image.MODES
 
     for input_mode in modes:
         im = hopper(input_mode)

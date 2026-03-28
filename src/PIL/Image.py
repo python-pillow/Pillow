@@ -1066,6 +1066,9 @@ class Image:
         :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
+        # colorspace conversion
+        if dither is None:
+            dither = Dither.FLOYDSTEINBERG
 
         self.load()
 
@@ -1212,7 +1215,7 @@ class Image:
             im = self
             if mode == "LAB":
                 if im.mode not in ("RGB", "RGBA", "RGBX"):
-                    im = im.convert("RGBA")
+                    im = im.convert("RGBA", dither=dither)
                 other_mode = im.mode
             else:
                 other_mode = mode
@@ -1227,19 +1230,39 @@ class Image:
                 )
                 return transform.apply(im)
 
-        # colorspace conversion
-        if dither is None:
-            dither = Dither.FLOYDSTEINBERG
+        if self.im.mode == "LAB" and (
+            mode
+            in ("1", "CMYK", "F", "HSV", "L", "LA", "La", "P", "PA", "RGBa", "YCbCr")
+            or mode.startswith("I")
+        ):
+            return self.convert("RGBA", dither=dither).convert(mode, dither=dither)
+
+        if (
+            self.im.mode in ("1", "F", "L") or self.im.mode.startswith("I")
+        ) and mode in ("La", "RGBa"):
+            return self.convert("RGB").convert(mode)
+
+        if self.im.mode in ("La", "LA", "P") and mode == "RGBa":
+            return self.convert("RGBA").convert(mode)
+
+        if self.im.mode == "P" and (mode.startswith("I") or mode in ("La",)):
+            return self.convert("RGBA").convert(mode, dither=dither)
+
+        if self.im.mode == "La":
+            im = self.im.convert("LA")
+        else:
+            im = self.im
 
         try:
-            im = self.im.convert(mode, dither)
+            im = im.convert(mode, dither)
         except ValueError:
             try:
-                # normalize source image and try again
+                # normalize source image
                 modebase = getmodebase(self.mode)
                 if modebase == self.mode:
                     raise
-                im = self.im.convert(modebase)
+                im = im.convert(modebase, dither)
+                # try again
                 im = im.convert(mode, dither)
             except KeyError as e:
                 msg = "illegal conversion"
@@ -2596,8 +2619,8 @@ class Image:
         <../handbook/image-file-formats>` for each writer.
 
         You can use a file object instead of a filename. In this case,
-        you must always specify the format. The file object must
-        implement the ``seek``, ``tell``, and ``write``
+        you must always specify the format or the name property.
+        The file object must implement the ``seek``, ``tell``, and ``write``
         methods, and be opened in binary mode.
 
         :param fp: A filename (string), os.PathLike object or file object.
@@ -2640,6 +2663,13 @@ class Image:
         if not filename and hasattr(fp, "name") and is_path(fp.name):
             # only set the name for metadata purposes
             filename = os.fspath(fp.name)
+
+        # Accept extension as format so plugins can use
+        # the filename to set the proper mode.
+        if format in EXTENSION:
+            if not filename and not hasattr(fp, "name"):
+                filename = os.fspath(format)
+            format = EXTENSION[format]
 
         if format:
             preinit()

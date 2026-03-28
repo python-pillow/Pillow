@@ -523,13 +523,13 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
+    encoderinfo = im.encoderinfo
     if im.mode not in ("RGB", "RGBA", "L", "LA"):
-        msg = f"cannot write mode {im.mode} as DDS"
-        raise OSError(msg)
+        im = im.convert("RGBA")
 
     flags = DDSD.CAPS | DDSD.HEIGHT | DDSD.WIDTH | DDSD.PIXELFORMAT
     bitcount = len(im.getbands()) * 8
-    pixel_format = im.encoderinfo.get("pixel_format")
+    pixel_format = encoderinfo.get("pixel_format")
     args: tuple[int] | str
     if pixel_format:
         codec_name = "bcn"
