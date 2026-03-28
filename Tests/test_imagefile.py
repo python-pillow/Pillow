@@ -308,7 +308,20 @@ class TestPyDecoder(CodecsTest):
         assert MockPyDecoder.last.state.xsize == 200
         assert MockPyDecoder.last.state.ysize == 200
 
-    def test_negsize(self) -> None:
+    def test_negative_offset(self) -> None:
+        buf = BytesIO(b"\x00" * 255)
+
+        im = MockImageFile(buf)
+        im.tile = [ImageFile._Tile("MOCK", (-10, yoff, xsize, ysize), 32, None)]
+
+        with pytest.raises(ValueError):
+            im.load()
+
+        im.tile = [ImageFile._Tile("MOCK", (xoff, -10, xsize, ysize), 32, None)]
+        with pytest.raises(ValueError):
+            im.load()
+
+    def test_negative_size(self) -> None:
         buf = BytesIO(b"\x00" * 255)
 
         im = MockImageFile(buf)
@@ -386,7 +399,39 @@ class TestPyEncoder(CodecsTest):
         assert MockPyEncoder.last.state.xsize == 200
         assert MockPyEncoder.last.state.ysize == 200
 
-    def test_negsize(self) -> None:
+    def test_negative_offset(self) -> None:
+        buf = BytesIO(b"\x00" * 255)
+
+        im = MockImageFile(buf)
+
+        fp = BytesIO()
+        MockPyEncoder.last = None
+        with pytest.raises(ValueError):
+            ImageFile._save(
+                im,
+                fp,
+                [
+                    ImageFile._Tile(
+                        "MOCK", (-10, yoff, xoff + xsize, yoff + ysize), 0, "RGB"
+                    )
+                ],
+            )
+        last: MockPyEncoder | None = MockPyEncoder.last
+        assert last
+        assert last.cleanup_called
+
+        with pytest.raises(ValueError):
+            ImageFile._save(
+                im,
+                fp,
+                [
+                    ImageFile._Tile(
+                        "MOCK", (xoff, -10, xoff + xsize, yoff + ysize), 0, "RGB"
+                    )
+                ],
+            )
+
+    def test_negative_size(self) -> None:
         buf = BytesIO(b"\x00" * 255)
 
         im = MockImageFile(buf)
