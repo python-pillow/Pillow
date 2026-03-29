@@ -224,10 +224,7 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/hopper_g4.tif") as im:
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
             for tag in im.tag_v2:
-                try:
-                    del core_items[tag]
-                except KeyError:
-                    pass
+                core_items.pop(tag, None)
             del core_items[320]  # colormap is special, tested below
 
             # Type codes:

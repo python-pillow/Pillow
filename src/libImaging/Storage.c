@@ -677,9 +677,15 @@ ImagingNewArrow(
     Imaging im;
     struct ArrowSchema *schema =
         (struct ArrowSchema *)PyCapsule_GetPointer(schema_capsule, "arrow_schema");
+    if (!schema) {
+        return NULL;
+    }
 
     struct ArrowArray *external_array =
         (struct ArrowArray *)PyCapsule_GetPointer(array_capsule, "arrow_array");
+    if (!external_array) {
+        return NULL;
+    }
 
     if (xsize < 0 || ysize < 0) {
         return (Imaging)ImagingError_ValueError("bad image size");

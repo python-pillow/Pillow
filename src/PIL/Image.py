@@ -488,7 +488,7 @@ def init() -> bool:
         try:
             logger.debug("Importing %s", plugin)
             __import__(f"{__spec__.parent}.{plugin}", globals(), locals(), [])
-        except ImportError as e:
+        except ImportError as e:  # noqa: PERF203
             logger.debug("Image: failed to import %s: %s", plugin, e)
 
     if OPEN or SAVE:
@@ -4234,80 +4234,83 @@ class Exif(_ExifBase):
                 if tag == ExifTags.IFD.MakerNote:
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
-                    if tag_data.startswith(b"FUJIFILM"):
-                        ifd_offset = i32le(tag_data, 8)
-                        ifd_data = tag_data[ifd_offset:]
+                    try:
+                        if tag_data.startswith(b"FUJIFILM"):
+                            ifd_offset = i32le(tag_data, 8)
+                            ifd_data = tag_data[ifd_offset:]
 
-                        makernote = {}
-                        for i in range(struct.unpack("<H", ifd_data[:2])[0]):
-                            ifd_tag, typ, count, data = struct.unpack(
-                                "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
-                            )
-                            try:
-                                (
-                                    unit_size,
-                                    handler,
-                                ) = ImageFileDirectory_v2._load_dispatch[typ]
-                            except KeyError:
-                                continue
-                            size = count * unit_size
-                            if size > 4:
-                                (offset,) = struct.unpack("<L", data)
-                                data = ifd_data[offset - 12 : offset + size - 12]
-                            else:
-                                data = data[:size]
-
-                            if len(data) != size:
-                                warnings.warn(
-                                    "Possibly corrupt EXIF MakerNote data.  "
-                                    f"Expecting to read {size} bytes but only got "
-                                    f"{len(data)}. Skipping tag {ifd_tag}"
+                            makernote = {}
+                            for i in range(struct.unpack("<H", ifd_data[:2])[0]):
+                                ifd_tag, typ, count, data = struct.unpack(
+                                    "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
                                 )
-                                continue
+                                try:
+                                    (
+                                        unit_size,
+                                        handler,
+                                    ) = ImageFileDirectory_v2._load_dispatch[typ]
+                                except KeyError:
+                                    continue
+                                size = count * unit_size
+                                if size > 4:
+                                    (offset,) = struct.unpack("<L", data)
+                                    data = ifd_data[offset - 12 : offset + size - 12]
+                                else:
+                                    data = data[:size]
 
-                            if not data:
-                                continue
+                                if len(data) != size:
+                                    warnings.warn(
+                                        "Possibly corrupt EXIF MakerNote data.  "
+                                        f"Expecting to read {size} bytes but only got "
+                                        f"{len(data)}. Skipping tag {ifd_tag}"
+                                    )
+                                    continue
 
-                            makernote[ifd_tag] = handler(
-                                ImageFileDirectory_v2(), data, False
-                            )
-                        self._ifds[tag] = dict(self._fixup_dict(makernote))
-                    elif self.get(0x010F) == "Nintendo":
-                        makernote = {}
-                        for i in range(struct.unpack(">H", tag_data[:2])[0]):
-                            ifd_tag, typ, count, data = struct.unpack(
-                                ">HHL4s", tag_data[i * 12 + 2 : (i + 1) * 12 + 2]
-                            )
-                            if ifd_tag == 0x1101:
-                                # CameraInfo
-                                (offset,) = struct.unpack(">L", data)
-                                self.fp.seek(offset)
+                                if not data:
+                                    continue
 
-                                camerainfo: dict[str, int | bytes] = {
-                                    "ModelID": self.fp.read(4)
-                                }
+                                makernote[ifd_tag] = handler(
+                                    ImageFileDirectory_v2(), data, False
+                                )
+                            self._ifds[tag] = dict(self._fixup_dict(makernote))
+                        elif self.get(0x010F) == "Nintendo":
+                            makernote = {}
+                            for i in range(struct.unpack(">H", tag_data[:2])[0]):
+                                ifd_tag, typ, count, data = struct.unpack(
+                                    ">HHL4s", tag_data[i * 12 + 2 : (i + 1) * 12 + 2]
+                                )
+                                if ifd_tag == 0x1101:
+                                    # CameraInfo
+                                    (offset,) = struct.unpack(">L", data)
+                                    self.fp.seek(offset)
 
-                                self.fp.read(4)
-                                # Seconds since 2000
-                                camerainfo["TimeStamp"] = i32le(self.fp.read(12))
+                                    camerainfo: dict[str, int | bytes] = {
+                                        "ModelID": self.fp.read(4)
+                                    }
 
-                                self.fp.read(4)
-                                camerainfo["InternalSerialNumber"] = self.fp.read(4)
+                                    self.fp.read(4)
+                                    # Seconds since 2000
+                                    camerainfo["TimeStamp"] = i32le(self.fp.read(12))
 
-                                self.fp.read(12)
-                                parallax = self.fp.read(4)
-                                handler = ImageFileDirectory_v2._load_dispatch[
-                                    TiffTags.FLOAT
-                                ][1]
-                                camerainfo["Parallax"] = handler(
-                                    ImageFileDirectory_v2(), parallax, False
-                                )[0]
+                                    self.fp.read(4)
+                                    camerainfo["InternalSerialNumber"] = self.fp.read(4)
 
-                                self.fp.read(4)
-                                camerainfo["Category"] = self.fp.read(2)
+                                    self.fp.read(12)
+                                    parallax = self.fp.read(4)
+                                    handler = ImageFileDirectory_v2._load_dispatch[
+                                        TiffTags.FLOAT
+                                    ][1]
+                                    camerainfo["Parallax"] = handler(
+                                        ImageFileDirectory_v2(), parallax, False
+                                    )[0]
 
-                                makernote = {0x1101: camerainfo}
-                        self._ifds[tag] = makernote
+                                    self.fp.read(4)
+                                    camerainfo["Category"] = self.fp.read(2)
+
+                                    makernote = {0x1101: camerainfo}
+                            self._ifds[tag] = makernote
+                    except struct.error:
+                        pass
                 else:
                     # Interop
                     ifd = self._get_ifd_dict(tag_data, tag)

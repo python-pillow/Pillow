@@ -28,6 +28,7 @@ concurrency:
 
 env:
   COVERAGE_CORE: sysmon
+  FORCE_COLOR: 1
 
 jobs:
   build:

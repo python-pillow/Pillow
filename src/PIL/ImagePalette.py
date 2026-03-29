@@ -198,13 +198,11 @@ class ImagePalette:
         try:
             fp.write("# Palette\n")
             fp.write(f"# Mode: {self.mode}\n")
+            palette_len = len(self.palette)
             for i in range(256):
                 fp.write(f"{i}")
                 for j in range(i * len(self.mode), (i + 1) * len(self.mode)):
-                    try:
-                        fp.write(f" {self.palette[j]}")
-                    except IndexError:
-                        fp.write(" 0")
+                    fp.write(f" {self.palette[j] if j < palette_len else 0}")
                 fp.write("\n")
         finally:
             if open_fp:
