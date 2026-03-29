@@ -65,17 +65,17 @@ def grab(
                         ["screencapture", "-l", str(window), "-o", "-x", filepath]
                     )
                     with Image.open(filepath) as im_no_shadow:
-                        retina = im.width - im_no_shadow.width > 100
+                        screen_scale = (im.width - im_no_shadow.width) // 68
                     os.unlink(filepath)
 
                     # Since screencapture's -R does not work with -l,
                     # crop the image manually
-                    if retina:
+                    if screen_scale > 1:
                         left, top, right, bottom = bbox
-                        scale = 1 if scale_down else 2
+                        scale = 1 if scale_down else screen_scale
                         im_cropped = im.resize(
                             ((right - left) * scale, (bottom - top) * scale),
-                            box=tuple(coord * 2 for coord in bbox),
+                            box=tuple(coord * screen_scale for coord in bbox),
                         )
                     else:
                         im_cropped = im.crop(bbox)
