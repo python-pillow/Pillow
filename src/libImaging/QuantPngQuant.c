@@ -134,14 +134,7 @@ const char *
 ImagingImageQuantVersion(void) {
     static char version[20];
     int number = liq_version();
-    snprintf(
-        version,
-        sizeof(version),
-        "%d.%d.%d",
-        number / 10000,
-        (number / 100) % 100,
-        number % 100
-    );
+    sprintf(version, "%d.%d.%d", number / 10000, (number / 100) % 100, number % 100);
     return version;
 }
 
