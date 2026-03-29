@@ -267,6 +267,9 @@ PyObject *
 ExportArrowSchemaPyCapsule(ImagingObject *self) {
     struct ArrowSchema *schema =
         (struct ArrowSchema *)calloc(1, sizeof(struct ArrowSchema));
+    if (!schema) {
+        return ArrowError(IMAGING_CODEC_MEMORY);
+    }
     int err = export_imaging_schema(self->image, schema);
     if (err == 0) {
         return PyCapsule_New(schema, "arrow_schema", ReleaseArrowSchemaPyCapsule);
