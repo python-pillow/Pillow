@@ -756,13 +756,17 @@ class Image:
         if self.__class__ is not other.__class__:
             return False
         assert isinstance(other, Image)
-        return (
+        if self is other:
+            return True
+        if not (
             self.mode == other.mode
             and self.size == other.size
             and self.info == other.info
-            and self.getpalette() == other.getpalette()
-            and self.tobytes() == other.tobytes()
-        )
+        ):
+            return False
+        self.load()
+        other.load()
+        return self.im == other.im
 
     def __repr__(self) -> str:
         return (
