@@ -1768,6 +1768,12 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         legacy_ifd = im.tag.to_v2()
 
     supplied_tags = {**legacy_ifd, **getattr(im, "tag_v2", {})}
+    if supplied_tags.get(PLANAR_CONFIGURATION) == 2 and EXTRASAMPLES in supplied_tags:
+        # If the image used separate component planes,
+        # then EXTRASAMPLES should be ignored when saving contiguously
+        if SAMPLESPERPIXEL in supplied_tags:
+            supplied_tags[SAMPLESPERPIXEL] -= len(supplied_tags[EXTRASAMPLES])
+        del supplied_tags[EXTRASAMPLES]
     for tag in (
         # IFD offset that may not be correct in the saved image
         EXIFIFD,
