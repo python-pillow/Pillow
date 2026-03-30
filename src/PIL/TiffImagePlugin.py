@@ -1483,18 +1483,24 @@ class TiffImageFile(ImageFile.ImageFile):
 
         bps_tuple = self.tag_v2.get(BITSPERSAMPLE, (1,))
         extra_tuple = self.tag_v2.get(EXTRASAMPLES, ())
+        samples_per_pixel = self.tag_v2.get(
+            SAMPLESPERPIXEL,
+            3 if self._compression == "tiff_jpeg" and photo in (2, 6) else 1,
+        )
         if photo in (2, 6, 8):  # RGB, YCbCr, LAB
             bps_count = 3
         elif photo == 5:  # CMYK
             bps_count = 4
         else:
             bps_count = 1
+        if self._planar_configuration == 2 and extra_tuple and max(extra_tuple) == 0:
+            # If components are stored separately,
+            # then unspecified extra components at the end can be ignored
+            bps_tuple = bps_tuple[: -len(extra_tuple)]
+            samples_per_pixel -= len(extra_tuple)
+            extra_tuple = ()
         bps_count += len(extra_tuple)
         bps_actual_count = len(bps_tuple)
-        samples_per_pixel = self.tag_v2.get(
-            SAMPLESPERPIXEL,
-            3 if self._compression == "tiff_jpeg" and photo in (2, 6) else 1,
-        )
 
         if samples_per_pixel > MAX_SAMPLESPERPIXEL:
             # DOS check, samples_per_pixel can be a Long, and we extend the tuple below

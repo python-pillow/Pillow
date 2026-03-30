@@ -1055,6 +1055,10 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/tiff_strip_planar_16bit_RGBa.tiff") as im:
             assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
 
+    def test_separate_planar_extra_samples(self) -> None:
+        with Image.open("Tests/images/separate_planar_extra_samples.tiff") as im:
+            assert im.mode == "L"
+
     @pytest.mark.parametrize("compression", (None, "jpeg"))
     def test_block_tile_tags(self, compression: str | None, tmp_path: Path) -> None:
         im = hopper()
