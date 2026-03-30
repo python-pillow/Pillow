@@ -456,9 +456,11 @@ class TestImage:
         # Assert
         assert len(Image.ID) == id_length
 
-    def test_registered_extensions_uninitialized(self) -> None:
+    def test_registered_extensions_uninitialized(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         # Arrange
-        Image._initialized = 0
+        monkeypatch.setattr(Image, "_initialized", 0)
 
         # Act
         Image.registered_extensions()

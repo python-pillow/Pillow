@@ -232,11 +232,15 @@ _setimage(ImagingEncoderObject *encoder, PyObject *args) {
     x0 = y0 = x1 = y1 = 0;
 
     /* FIXME: should publish the ImagingType descriptor */
-    if (!PyArg_ParseTuple(args, "O|(nnnn)", &op, &x0, &y0, &x1, &y1)) {
+    if (!PyArg_ParseTuple(args, "O(nnnn)", &op, &x0, &y0, &x1, &y1)) {
         return NULL;
     }
     im = PyImaging_AsImaging(op);
     if (!im) {
+        return NULL;
+    }
+    if (im->xsize == 0 || im->ysize == 0) {
+        PyErr_SetString(PyExc_ValueError, "cannot write empty image");
         return NULL;
     }
 
@@ -244,17 +248,13 @@ _setimage(ImagingEncoderObject *encoder, PyObject *args) {
 
     state = &encoder->state;
 
-    if (x0 == 0 && x1 == 0) {
-        state->xsize = im->xsize;
-        state->ysize = im->ysize;
-    } else {
-        state->xoff = x0;
-        state->yoff = y0;
-        state->xsize = x1 - x0;
-        state->ysize = y1 - y0;
-    }
+    state->xoff = x0;
+    state->yoff = y0;
+    state->xsize = x1 - x0;
+    state->ysize = y1 - y0;
 
-    if (state->xsize <= 0 || state->xsize + state->xoff > im->xsize ||
+    if (state->xoff < 0 || state->xsize <= 0 ||
+        state->xsize + state->xoff > im->xsize || state->yoff < 0 ||
         state->ysize <= 0 || state->ysize + state->yoff > im->ysize) {
         PyErr_SetString(PyExc_SystemError, "tile cannot extend outside image");
         return NULL;
@@ -727,6 +727,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     const RawModeID rawmode = findRawModeID(rawmode_name);
 
     if (get_packer(encoder, mode, rawmode) < 0) {
+        Py_DECREF(encoder);
         return NULL;
     }
 
@@ -742,6 +743,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     for (pos = 0; pos < tags_size; pos++) {
         item = PyList_GetItemRef(tags, pos);
         if (item == NULL) {
+            Py_DECREF(encoder);
             return NULL;
         }
 
@@ -766,6 +768,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         if (!is_core_tag) {
             PyObject *tag_type;
             if (PyDict_GetItemRef(types, key, &tag_type) < 0) {
+                Py_DECREF(encoder);
                 return NULL;  // Exception has been already set
             }
             if (tag_type) {
@@ -837,6 +840,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             if (key_int == TIFFTAG_COLORMAP) {
                 int stride = 256;
                 if (len != 768) {
+                    Py_DECREF(encoder);
                     PyErr_SetString(
                         PyExc_ValueError, "Requiring 768 items for Colormap"
                     );
@@ -998,8 +1002,9 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, PyBytes_AsString(value)
                 );
-            } else if (type == TIFF_DOUBLE || type == TIFF_SRATIONAL ||
-                       type == TIFF_RATIONAL) {
+            } else if (
+                type == TIFF_DOUBLE || type == TIFF_SRATIONAL || type == TIFF_RATIONAL
+            ) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (FLOAT64)PyFloat_AsDouble(value)
                 );
@@ -1342,11 +1347,10 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
 
     if (strcmp(format, "j2k") == 0) {
         codec_format = OPJ_CODEC_J2K;
-    } else if (strcmp(format, "jpt") == 0) {
-        codec_format = OPJ_CODEC_JPT;
     } else if (strcmp(format, "jp2") == 0) {
         codec_format = OPJ_CODEC_JP2;
     } else {
+        PyErr_SetString(PyExc_ValueError, "unknown codec format");
         return NULL;
     }
 
@@ -1361,6 +1365,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     } else if (strcmp(progression, "CPRL") == 0) {
         prog_order = OPJ_CPRL;
     } else {
+        PyErr_SetString(PyExc_ValueError, "unknown progression");
         return NULL;
     }
 
@@ -1373,6 +1378,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     } else if (strcmp(cinema_mode, "cinema4k-24") == 0) {
         cine_mode = OPJ_CINEMA4K_24;
     } else {
+        PyErr_SetString(PyExc_ValueError, "unknown cinema mode");
         return NULL;
     }
 

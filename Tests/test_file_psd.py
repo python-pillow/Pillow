@@ -85,6 +85,11 @@ def test_eoferror() -> None:
         # Test that seeking to the last frame does not raise an error
         im.seek(n_frames - 1)
 
+    # Test seeking past the last frame without calling n_frames first
+    with Image.open(test_file) as im:
+        with pytest.raises(EOFError):
+            im.seek(3)
+
 
 def test_seek_tell() -> None:
     with Image.open(test_file) as im:
@@ -182,3 +187,20 @@ def test_layer_crashes(test_file: str) -> None:
         assert isinstance(im, PsdImagePlugin.PsdImageFile)
         with pytest.raises(SyntaxError):
             im.layers
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        "Tests/images/psd-oob-write.psd",
+        "Tests/images/psd-oob-write-x.psd",
+        "Tests/images/psd-oob-write-y.psd",
+    ],
+)
+def test_bounds_crash(test_file: str) -> None:
+    with Image.open(test_file) as im:
+        assert isinstance(im, PsdImagePlugin.PsdImageFile)
+        im.seek(im.n_frames)
+
+        with pytest.raises(ValueError):
+            im.load()

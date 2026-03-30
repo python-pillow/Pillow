@@ -31,7 +31,7 @@ SAFEBLOCK = ImageFile.SAFEBLOCK
 
 
 class TestImageFile:
-    def test_parser(self) -> None:
+    def test_parser(self, monkeypatch: pytest.MonkeyPatch) -> None:
         def roundtrip(format: str) -> tuple[Image.Image, Image.Image]:
             im = hopper("L").resize((1000, 1000), Image.Resampling.NEAREST)
             if format in ("MSP", "XBM"):
@@ -55,12 +55,9 @@ class TestImageFile:
         assert_image_equal(*roundtrip("IM"))
         assert_image_equal(*roundtrip("MSP"))
         if features.check("zlib"):
-            try:
-                # force multiple blocks in PNG driver
-                ImageFile.MAXBLOCK = 8192
-                assert_image_equal(*roundtrip("PNG"))
-            finally:
-                ImageFile.MAXBLOCK = MAXBLOCK
+            # force multiple blocks in PNG driver
+            monkeypatch.setattr(ImageFile, "MAXBLOCK", 8192)
+            assert_image_equal(*roundtrip("PNG"))
         assert_image_equal(*roundtrip("PPM"))
         assert_image_equal(*roundtrip("TIFF"))
         assert_image_equal(*roundtrip("XBM"))
@@ -120,14 +117,11 @@ class TestImageFile:
             assert (128, 128) == p.image.size
 
     @skip_unless_feature("zlib")
-    def test_safeblock(self) -> None:
+    def test_safeblock(self, monkeypatch: pytest.MonkeyPatch) -> None:
         im1 = hopper()
 
-        try:
-            ImageFile.SAFEBLOCK = 1
-            im2 = fromstring(tostring(im1, "PNG"))
-        finally:
-            ImageFile.SAFEBLOCK = SAFEBLOCK
+        monkeypatch.setattr(ImageFile, "SAFEBLOCK", 1)
+        im2 = fromstring(tostring(im1, "PNG"))
 
         assert_image_equal(im1, im2)
 
@@ -168,6 +162,13 @@ class TestImageFile:
         with Image.open("Tests/images/raw_negative_stride.bin") as im:
             with pytest.raises(ValueError, match="Tile offset cannot be negative"):
                 im.load()
+
+    @pytest.mark.parametrize("xy", ((-1, 0), (0, -1)))
+    def test_negative_tile_extents(self, xy: tuple[int, int]) -> None:
+        im = Image.new("1", (1, 1))
+        fp = BytesIO()
+        with pytest.raises(SystemError, match="tile cannot extend outside image"):
+            ImageFile._save(im, fp, [ImageFile._Tile("raw", xy + (1, 1), 0, "1")])
 
     def test_no_format(self) -> None:
         buf = BytesIO(b"\x00" * 255)

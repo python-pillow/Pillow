@@ -164,13 +164,13 @@ class GifImageFile(ImageFile.ImageFile):
             self._seek(0)
 
         last_frame = self.__frame
-        for f in range(self.__frame + 1, frame + 1):
-            try:
+        try:
+            for f in range(self.__frame + 1, frame + 1):
                 self._seek(f)
-            except EOFError as e:
-                self.seek(last_frame)
-                msg = "no more images in GIF file"
-                raise EOFError(msg) from e
+        except EOFError as e:
+            self.seek(last_frame)
+            msg = "no more images in GIF file"
+            raise EOFError(msg) from e
 
     def _seek(self, frame: int, update_image: bool = True) -> None:
         if isinstance(self._fp, DeferredError):
@@ -937,7 +937,13 @@ def _get_optimize(im: Image.Image, info: dict[str, Any]) -> list[int] | None:
     :param info: encoderinfo
     :returns: list of indexes of palette entries in use, or None
     """
-    if im.mode in ("P", "L") and info and info.get("optimize"):
+    if (
+        im.mode in ("P", "L")
+        and info
+        and info.get("optimize")
+        and im.width != 0
+        and im.height != 0
+    ):
         # Potentially expensive operation.
 
         # The palette saves 3 bytes per color not used, but palette

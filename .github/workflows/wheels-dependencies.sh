@@ -90,25 +90,21 @@ fi
 ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds.
-if [[ -n "$IOS_SDK" ]]; then
-  FREETYPE_VERSION=2.13.3
-else
-  FREETYPE_VERSION=2.14.1
-fi
-HARFBUZZ_VERSION=12.3.0
-LIBPNG_VERSION=1.6.54
-JPEGTURBO_VERSION=3.1.3
+FREETYPE_VERSION=2.14.3
+HARFBUZZ_VERSION=13.2.1
+LIBPNG_VERSION=1.6.56
+JPEGTURBO_VERSION=3.1.4.1
 OPENJPEG_VERSION=2.5.4
 XZ_VERSION=5.8.2
 ZSTD_VERSION=1.5.7
 TIFF_VERSION=4.7.1
-LCMS2_VERSION=2.17
-ZLIB_NG_VERSION=2.3.2
+LCMS2_VERSION=2.18
+ZLIB_NG_VERSION=2.3.3
 LIBWEBP_VERSION=1.6.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.2.0
-LIBAVIF_VERSION=1.3.0
+LIBAVIF_VERSION=1.4.1
 
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
@@ -310,10 +306,6 @@ function build {
 
     if [[ -n "$IS_MACOS" ]]; then
         # Custom freetype build
-        if [[ -z "$IOS_SDK" ]]; then
-          build_simple sed 4.9 https://mirrors.middlendian.com/gnu/sed
-        fi
-
         build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no
     else
         build_freetype
