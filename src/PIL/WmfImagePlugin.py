@@ -147,10 +147,6 @@ class WmfStubImageFile(ImageFile.StubImageFile):
         self._mode = "RGB"
         self._size = size
 
-        loader = self._load()
-        if loader:
-            loader.open(self)
-
     def _load(self) -> ImageFile.StubHandler | None:
         return _handler
 
