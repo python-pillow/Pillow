@@ -15,7 +15,7 @@ TEST_FILE = "Tests/images/hopper.spider"
 
 
 def teardown_module() -> None:
-    del Image.EXTENSION[".spider"]
+    Image.EXTENSION.pop(".spider", None)
 
 
 def test_sanity() -> None:
@@ -66,6 +66,14 @@ def test_save(tmp_path: Path) -> None:
         assert im2.mode == "F"
         assert im2.size == (128, 128)
         assert im2.format == "SPIDER"
+
+
+@pytest.mark.parametrize("size", ((0, 1), (1, 0), (0, 0)))
+def test_save_zero(size: tuple[int, int]) -> None:
+    b = BytesIO()
+    im = Image.new("1", size)
+    with pytest.raises(ValueError, match="cannot write empty image"):
+        im.save(b, "SPIDER")
 
 
 def test_tempfile() -> None:

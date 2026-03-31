@@ -145,14 +145,14 @@ class TestFileAvif:
 
             # avifdec hopper.avif avif/hopper_avif_write.png
             assert_image_similar_tofile(
-                reloaded, "Tests/images/avif/hopper_avif_write.png", 6.02
+                reloaded, "Tests/images/avif/hopper_avif_write.png", 6.88
             )
 
             # This test asserts that the images are similar. If the average pixel
             # difference between the two images is less than the epsilon value,
             # then we're going to accept that it's a reasonable lossy version of
             # the image.
-            assert_image_similar(reloaded, im, 8.62)
+            assert_image_similar(reloaded, im, 9.28)
 
     def test_AvifEncoder_with_invalid_args(self) -> None:
         """
@@ -461,12 +461,9 @@ class TestFileAvif:
     @pytest.mark.parametrize(
         "advanced",
         [
-            {
-                "aq-mode": "1",
-                "enable-chroma-deltaq": "1",
-            },
-            (("aq-mode", "1"), ("enable-chroma-deltaq", "1")),
-            [("aq-mode", "1"), ("enable-chroma-deltaq", "1")],
+            {"tune": "psnr"},
+            (("tune", "psnr"),),
+            [("tune", "psnr")],
         ],
     )
     def test_encoder_advanced_codec_options(

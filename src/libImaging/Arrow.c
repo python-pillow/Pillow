@@ -170,16 +170,17 @@ export_named_type(struct ArrowSchema *schema, char *format, const char *name) {
     strncpy(formatp, format, format_len);
     strncpy(namep, name, name_len);
 
-    *schema = (struct ArrowSchema){// Type description
-                                   .format = formatp,
-                                   .name = namep,
-                                   .metadata = NULL,
-                                   .flags = 0,
-                                   .n_children = 0,
-                                   .children = NULL,
-                                   .dictionary = NULL,
-                                   // Bookkeeping
-                                   .release = &ReleaseExportedSchema
+    *schema = (struct ArrowSchema){
+        // Type description
+        .format = formatp,
+        .name = namep,
+        .metadata = NULL,
+        .flags = 0,
+        .n_children = 0,
+        .children = NULL,
+        .dictionary = NULL,
+        // Bookkeeping
+        .release = &ReleaseExportedSchema
     };
     return 0;
 }
@@ -287,17 +288,18 @@ export_single_channel_array(Imaging im, struct ArrowArray *array) {
     im->refcount++;
     MUTEX_UNLOCK(&im->mutex);
     // Initialize primitive fields
-    *array = (struct ArrowArray){// Data description
-                                 .length = length,
-                                 .offset = 0,
-                                 .null_count = 0,
-                                 .n_buffers = 2,
-                                 .n_children = 0,
-                                 .children = NULL,
-                                 .dictionary = NULL,
-                                 // Bookkeeping
-                                 .release = &release_const_array,
-                                 .private_data = im
+    *array = (struct ArrowArray){
+        // Data description
+        .length = length,
+        .offset = 0,
+        .null_count = 0,
+        .n_buffers = 2,
+        .n_children = 0,
+        .children = NULL,
+        .dictionary = NULL,
+        // Bookkeeping
+        .release = &release_const_array,
+        .private_data = im
     };
 
     // Allocate list of buffers
@@ -332,17 +334,18 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
     // Initialize primitive fields
     // Fixed length arrays are 1 buffer of validity, and the length in pixels.
     // Data is in a child array.
-    *array = (struct ArrowArray){// Data description
-                                 .length = length,
-                                 .offset = 0,
-                                 .null_count = 0,
-                                 .n_buffers = 1,
-                                 .n_children = 1,
-                                 .children = NULL,
-                                 .dictionary = NULL,
-                                 // Bookkeeping
-                                 .release = &release_const_array,
-                                 .private_data = im
+    *array = (struct ArrowArray){
+        // Data description
+        .length = length,
+        .offset = 0,
+        .null_count = 0,
+        .n_buffers = 1,
+        .n_children = 1,
+        .children = NULL,
+        .dictionary = NULL,
+        // Bookkeeping
+        .release = &release_const_array,
+        .private_data = im
     };
 
     // Allocate list of buffers
@@ -367,17 +370,18 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
     MUTEX_LOCK(&im->mutex);
     im->refcount++;
     MUTEX_UNLOCK(&im->mutex);
-    *array->children[0] = (struct ArrowArray){// Data description
-                                              .length = length * 4,
-                                              .offset = 0,
-                                              .null_count = 0,
-                                              .n_buffers = 2,
-                                              .n_children = 0,
-                                              .children = NULL,
-                                              .dictionary = NULL,
-                                              // Bookkeeping
-                                              .release = &release_const_array,
-                                              .private_data = im
+    *array->children[0] = (struct ArrowArray){
+        // Data description
+        .length = length * 4,
+        .offset = 0,
+        .null_count = 0,
+        .n_buffers = 2,
+        .n_children = 0,
+        .children = NULL,
+        .dictionary = NULL,
+        // Bookkeeping
+        .release = &release_const_array,
+        .private_data = im
     };
 
     array->children[0]->buffers =

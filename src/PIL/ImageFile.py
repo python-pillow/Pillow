@@ -148,6 +148,10 @@ class ImageFile(Image.Image):
         try:
             try:
                 self._open()
+
+                if isinstance(self, StubImageFile):
+                    if loader := self._load():
+                        loader.open(self)
             except (
                 IndexError,  # end of data
                 TypeError,  # end of data (ord)
@@ -215,8 +219,10 @@ class ImageFile(Image.Image):
             if subifd_offsets:
                 if not isinstance(subifd_offsets, tuple):
                     subifd_offsets = (subifd_offsets,)
-                for subifd_offset in subifd_offsets:
-                    ifds.append((exif._get_ifd_dict(subifd_offset), subifd_offset))
+                ifds = [
+                    (exif._get_ifd_dict(subifd_offset), subifd_offset)
+                    for subifd_offset in subifd_offsets
+                ]
         ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
         if ifd1 and ifd1.get(ExifTags.Base.JpegIFOffset):
             assert exif._info is not None
@@ -579,10 +585,7 @@ class Parser:
                 pass  # not enough data
             else:
                 flag = hasattr(im, "load_seek") or hasattr(im, "load_read")
-                if flag or len(im.tile) != 1:
-                    # custom load code, or multiple tiles
-                    self.decode = None
-                else:
+                if not flag and len(im.tile) == 1:
                     # initialize decoder
                     im.load_prepare()
                     d, e, o, a = im.tile[0]

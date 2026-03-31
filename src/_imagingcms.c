@@ -558,7 +558,13 @@ cms_transform_apply(CmsTransformObject *self, PyObject *args) {
     }
 
     im = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!im) {
+        return NULL;
+    }
     imOut = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
+    if (!imOut) {
+        return NULL;
+    }
 
     return Py_BuildValue("i", pyCMSdoTransform(im, imOut, self->transform));
 }
@@ -1447,14 +1453,14 @@ setup_module(PyObject *m) {
     int vn;
 
     /* Ready object types */
-    PyType_Ready(&CmsProfile_Type);
-    PyType_Ready(&CmsTransform_Type);
+    if (PyType_Ready(&CmsProfile_Type) < 0 || PyType_Ready(&CmsTransform_Type) < 0) {
+        return -1;
+    }
 
-    Py_INCREF(&CmsProfile_Type);
-    PyModule_AddObject(m, "CmsProfile", (PyObject *)&CmsProfile_Type);
-
-    Py_INCREF(&CmsTransform_Type);
-    PyModule_AddObject(m, "CmsTransform", (PyObject *)&CmsTransform_Type);
+    if (PyModule_AddObjectRef(m, "CmsProfile", (PyObject *)&CmsProfile_Type) < 0 ||
+        PyModule_AddObjectRef(m, "CmsTransform", (PyObject *)&CmsTransform_Type) < 0) {
+        return -1;
+    }
 
     d = PyModule_GetDict(m);
 
