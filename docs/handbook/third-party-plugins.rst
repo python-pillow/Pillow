@@ -12,11 +12,11 @@ Here is a list of PyPI projects that offer additional plugins:
 * :pypi:`DjvuRleImagePlugin`: Plugin for the DjVu RLE image format as defined in the DjVuLibre docs.
 * :pypi:`heif-image-plugin`: Simple HEIF/HEIC images plugin, based on the pyheif library.
 * :pypi:`jxlpy`: Introduces reading and writing support for JPEG XL.
-* :pypi:`pillow-degas`: Adds reading Atari Degas image files.
+* :pypi:`pillow-degas`: Adds reading Atari ST Degas image files.
 * :pypi:`pillow-heif`: Python bindings to libheif for working with HEIF images.
 * :pypi:`pillow-jpls`: Plugin for the JPEG-LS codec, based on the Charls JPEG-LS implementation. Python bindings implemented using pybind11.
 * :pypi:`pillow-jxl-plugin`: Plugin for JPEG-XL, using Rust for bindings.
 * :pypi:`pillow-mbm`: Adds support for KSP's proprietary MBM texture format.
-* :pypi:`pillow-netpbm`: Adds .pam support, and loads images using `netpbm <https://en.wikipedia.org/wiki/Netpbm>`_'s converter collection.
+* :pypi:`pillow-netpbm`: Adds .pam support, and loads images using `Netpbm <https://en.wikipedia.org/wiki/Netpbm>`__'s converter collection.
 * :pypi:`pillow-svg`: Implements basic SVG read support. Supports basic paths, shapes, and text.
 * :pypi:`raw-pillow-opener`: Simple camera raw opener, based on the rawpy library.
