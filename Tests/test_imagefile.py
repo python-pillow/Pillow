@@ -170,6 +170,27 @@ class TestImageFile:
         with pytest.raises(SystemError, match="tile cannot extend outside image"):
             ImageFile._save(im, fp, [ImageFile._Tile("raw", xy + (1, 1), 0, "1")])
 
+    def test_extents_none(self) -> None:
+        with Image.open("Tests/images/hopper.jpg") as im:
+            im.tile = [im.tile[0]._replace(extents=None)]
+            im.load()
+
+        for extents in ("invalid", (0,), ("0", "0", "0", "0")):
+            with Image.open("Tests/images/hopper.jpg") as im:
+                im.tile = [im.tile[0]._replace(extents=extents)]  # type: ignore[arg-type]
+                with pytest.raises(ValueError, match="invalid extents"):
+                    im.load()
+
+        im2 = Image.new("L", (1, 1))
+        fp = BytesIO()
+        tile = ImageFile._Tile("jpeg", None, 0, "L")
+        ImageFile._save(im2, fp, [tile])
+
+        for extents in ("invalid", (0,), ("0", "0", "0", "0")):
+            tile = tile._replace(extents=extents)  # type: ignore[arg-type]
+            with pytest.raises(ValueError, match="invalid extents"):
+                ImageFile._save(im2, fp, [tile])
+
     def test_no_format(self) -> None:
         buf = BytesIO(b"\x00" * 255)
 
