@@ -15,7 +15,7 @@ TEST_FILE = "Tests/images/hopper.spider"
 
 
 def teardown_module() -> None:
-    del Image.EXTENSION[".spider"]
+    Image.EXTENSION.pop(".spider", None)
 
 
 def test_sanity() -> None:
