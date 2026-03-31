@@ -67,6 +67,11 @@ or scaling, optionally with a font size limit::
     text.wrap(58, 10, "grow")
     text.wrap(50, 50, ("grow", 12))
 
+EXIF tag FrameRate
+^^^^^^^^^^^^^^^^^^
+
+The EXIF tag ``FrameRate`` has been added.
+
 Other changes
 =============
 
@@ -75,3 +80,16 @@ Support reading JPEG2000 images with CMYK palettes
 
 JPEG2000 images with CMYK palettes can now be read. This is the first integration of
 CMYK palettes into Pillow.
+
+Lazy plugin loading
+^^^^^^^^^^^^^^^^^^^
+
+When opening or saving an image, Pillow now lazily loads only the required plugin
+based on the file extension, instead of importing all plugins upfront. This makes
+``open`` 2.3-15.6x faster and ``save`` 2.2-9x faster for common formats.
+
+Thread safety for free-threaded Python
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Critical sections are now used to protect FreeType font objects, improving thread
+safety when using fonts in the free-threaded build of Python.
