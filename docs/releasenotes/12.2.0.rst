@@ -41,7 +41,7 @@ Passing nested lists as coordinates to APIs that accept coordinates such as
 and :py:meth:`~PIL.ImageDraw.ImageDraw.line` could cause a heap buffer overflow,
 as nested lists were recursively unpacked beyond the allocated buffer.
 Coordinate lists are now validated to contain exactly two numeric coordinates.
-This was introduced in Pillow 12.0.0.
+This was introduced in Pillow 11.2.1.
 
 API changes
 ===========
