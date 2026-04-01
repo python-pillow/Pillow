@@ -33,6 +33,16 @@ Integer overflow when processing fonts
 If a font advances for each glyph by an exceeding large amount, when Pillow keeps track
 of the current position, it may lead to an integer overflow. This has been fixed.
 
+Heap buffer overflow with nested list coordinates
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Passing nested lists as coordinates to APIs that accept coordinates such as
+``ImagePath.Path``, :py:meth:`~PIL.ImageDraw.ImageDraw.polygon`
+and :py:meth:`~PIL.ImageDraw.ImageDraw.line` could cause a heap buffer overflow,
+as nested lists were recursively unpacked beyond the allocated buffer.
+Coordinate lists are now validated to contain exactly two numeric coordinates.
+This was introduced in Pillow 11.2.1.
+
 API changes
 ===========
 
