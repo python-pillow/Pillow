@@ -198,6 +198,12 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
         }
     }
 
+    if (x0 < 0 || y0 < 0 || x1 <= x0 || y1 <= y0 || x1 > (int)im->xsize ||
+        y1 > (int)im->ysize) {
+        PyErr_SetString(PyExc_ValueError, "tile cannot extend outside image");
+        return NULL;
+    }
+
     decoder->im = im;
 
     state = &decoder->state;
@@ -207,13 +213,6 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
     state->yoff = y0;
     state->xsize = x1 - x0;
     state->ysize = y1 - y0;
-
-    if (state->xoff < 0 || state->xsize <= 0 ||
-        state->xsize + state->xoff > (int)im->xsize || state->yoff < 0 ||
-        state->ysize <= 0 || state->ysize + state->yoff > (int)im->ysize) {
-        PyErr_SetString(PyExc_ValueError, "tile cannot extend outside image");
-        return NULL;
-    }
 
     /* Allocate memory buffer (if bits field is set) */
     if (state->bits > 0) {

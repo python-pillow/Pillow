@@ -806,6 +806,10 @@ class PyCodec:
         if extents:
             x0, y0, x1, y1 = extents
 
+            if x0 < 0 or y0 < 0 or x1 > self.im.size[0] or y1 > self.im.size[1]:
+                msg = "Tile cannot extend outside image"
+                raise ValueError(msg)
+
             self.state.xoff = x0
             self.state.yoff = y0
             self.state.xsize = x1 - x0
@@ -815,13 +819,6 @@ class PyCodec:
 
         if self.state.xsize <= 0 or self.state.ysize <= 0:
             msg = "Size must be positive"
-            raise ValueError(msg)
-
-        if (
-            self.state.xsize + self.state.xoff > self.im.size[0]
-            or self.state.ysize + self.state.yoff > self.im.size[1]
-        ):
-            msg = "Tile cannot extend outside image"
             raise ValueError(msg)
 
 
