@@ -18,7 +18,7 @@ keywords = [
 license = "MIT-CMU"
 license-files = [ "LICENSE" ]
 authors = [
-  { name = "Jeffrey A. Clark", email = "aclark@aclark.net" },
+  { name = "Jeffrey 'Alex' Clark", email = "aclark@aclark.net" },
 ]
 requires-python = ">=3.10"
 classifiers = [

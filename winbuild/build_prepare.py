@@ -117,7 +117,7 @@ V = {
     "FREETYPE": "2.14.3",
     "FRIBIDI": "1.0.16",
     "HARFBUZZ": "13.2.1",
-    "JPEGTURBO": "3.1.3",
+    "JPEGTURBO": "3.1.4.1",
     "LCMS2": "2.18",
     "LIBAVIF": "1.4.1",
     "LIBIMAGEQUANT": "4.4.1",
@@ -125,7 +125,7 @@ V = {
     "LIBWEBP": "1.6.0",
     "OPENJPEG": "2.5.4",
     "TIFF": "4.7.1",
-    "XZ": "5.8.2",
+    "XZ": "5.8.3",
     "ZLIBNG": "2.3.3",
 }
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])

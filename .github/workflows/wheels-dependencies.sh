@@ -93,9 +93,9 @@ ARCHIVE_SDIR=pillow-depends-main
 FREETYPE_VERSION=2.14.3
 HARFBUZZ_VERSION=13.2.1
 LIBPNG_VERSION=1.6.56
-JPEGTURBO_VERSION=3.1.3
+JPEGTURBO_VERSION=3.1.4.1
 OPENJPEG_VERSION=2.5.4
-XZ_VERSION=5.8.2
+XZ_VERSION=5.8.3
 ZSTD_VERSION=1.5.7
 TIFF_VERSION=4.7.1
 LCMS2_VERSION=2.18
@@ -178,7 +178,6 @@ function build_libavif {
         build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
     fi
 
-    local build_type=MinSizeRel
     local build_shared=ON
     local lto=ON
 
@@ -195,9 +194,6 @@ function build_libavif {
             build_shared=OFF
         fi
     else
-        if [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "x86_64" ]]; then
-            build_type=Release
-        fi
         libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
     fi
     if [[ -n "$IOS_SDK" ]] && [[ "$PLAT" == "x86_64" ]]; then
@@ -226,7 +222,7 @@ function build_libavif {
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=$lto \
             -DCMAKE_C_VISIBILITY_PRESET=hidden \
             -DCMAKE_CXX_VISIBILITY_PRESET=hidden \
-            -DCMAKE_BUILD_TYPE=$build_type \
+            -DCMAKE_BUILD_TYPE=MinSizeRel \
             "${libavif_cmake_flags[@]}" \
             $HOST_CMAKE_FLAGS . )
 
