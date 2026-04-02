@@ -148,6 +148,10 @@ class ImageFile(Image.Image):
         try:
             try:
                 self._open()
+
+                if isinstance(self, StubImageFile):
+                    if loader := self._load():
+                        loader.open(self)
             except (
                 IndexError,  # end of data
                 TypeError,  # end of data (ord)
@@ -215,8 +219,10 @@ class ImageFile(Image.Image):
             if subifd_offsets:
                 if not isinstance(subifd_offsets, tuple):
                     subifd_offsets = (subifd_offsets,)
-                for subifd_offset in subifd_offsets:
-                    ifds.append((exif._get_ifd_dict(subifd_offset), subifd_offset))
+                ifds = [
+                    (exif._get_ifd_dict(subifd_offset), subifd_offset)
+                    for subifd_offset in subifd_offsets
+                ]
         ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
         if ifd1 and ifd1.get(ExifTags.Base.JpegIFOffset):
             assert exif._info is not None
@@ -579,10 +585,7 @@ class Parser:
                 pass  # not enough data
             else:
                 flag = hasattr(im, "load_seek") or hasattr(im, "load_read")
-                if flag or len(im.tile) != 1:
-                    # custom load code, or multiple tiles
-                    self.decode = None
-                else:
+                if not flag and len(im.tile) == 1:
                     # initialize decoder
                     im.load_prepare()
                     d, e, o, a = im.tile[0]
@@ -801,27 +804,21 @@ class PyCodec:
         self.im = im
 
         if extents:
-            (x0, y0, x1, y1) = extents
-        else:
-            (x0, y0, x1, y1) = (0, 0, 0, 0)
+            x0, y0, x1, y1 = extents
 
-        if x0 == 0 and x1 == 0:
-            self.state.xsize, self.state.ysize = self.im.size
-        else:
+            if x0 < 0 or y0 < 0 or x1 > self.im.size[0] or y1 > self.im.size[1]:
+                msg = "Tile cannot extend outside image"
+                raise ValueError(msg)
+
             self.state.xoff = x0
             self.state.yoff = y0
             self.state.xsize = x1 - x0
             self.state.ysize = y1 - y0
+        else:
+            self.state.xsize, self.state.ysize = self.im.size
 
         if self.state.xsize <= 0 or self.state.ysize <= 0:
-            msg = "Size cannot be negative"
-            raise ValueError(msg)
-
-        if (
-            self.state.xsize + self.state.xoff > self.im.size[0]
-            or self.state.ysize + self.state.yoff > self.im.size[1]
-        ):
-            msg = "Tile cannot extend outside image"
+            msg = "Size must be positive"
             raise ValueError(msg)
 
 

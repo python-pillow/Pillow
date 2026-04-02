@@ -114,19 +114,19 @@ ARCHITECTURES = {
 
 V = {
     "BROTLI": "1.2.0",
-    "FREETYPE": "2.14.1",
+    "FREETYPE": "2.14.3",
     "FRIBIDI": "1.0.16",
-    "HARFBUZZ": "12.3.0",
-    "JPEGTURBO": "3.1.3",
-    "LCMS2": "2.17",
-    "LIBAVIF": "1.3.0",
+    "HARFBUZZ": "13.2.1",
+    "JPEGTURBO": "3.1.4.1",
+    "LCMS2": "2.18",
+    "LIBAVIF": "1.4.1",
     "LIBIMAGEQUANT": "4.4.1",
-    "LIBPNG": "1.6.53",
+    "LIBPNG": "1.6.56",
     "LIBWEBP": "1.6.0",
     "OPENJPEG": "2.5.4",
     "TIFF": "4.7.1",
-    "XZ": "5.8.2",
-    "ZLIBNG": "2.3.2",
+    "XZ": "5.8.3",
+    "ZLIBNG": "2.3.3",
 }
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
 
@@ -542,14 +542,11 @@ def write_script(
 
 
 def get_footer(dep: dict[str, Any]) -> list[str]:
-    lines = []
-    for out in dep.get("headers", []):
-        lines.append(cmd_copy(out, "{inc_dir}"))
-    for out in dep.get("libs", []):
-        lines.append(cmd_copy(out, "{lib_dir}"))
-    for out in dep.get("bins", []):
-        lines.append(cmd_copy(out, "{bin_dir}"))
-    return lines
+    return (
+        [cmd_copy(out, "{inc_dir}") for out in dep.get("headers", [])]
+        + [cmd_copy(out, "{lib_dir}") for out in dep.get("libs", [])]
+        + [cmd_copy(out, "{bin_dir}") for out in dep.get("bins", [])]
+    )
 
 
 def build_env(prefs: dict[str, str], verbose: bool) -> None:

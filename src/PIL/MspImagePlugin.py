@@ -140,7 +140,7 @@ class MspDecoder(ImageFile.PyDecoder):
                     runtype = row[idx]
                     idx += 1
                     if runtype == 0:
-                        (runcount, runval) = struct.unpack_from("Bc", row, idx)
+                        runcount, runval = struct.unpack_from("Bc", row, idx)
                         img.write(runval * runcount)
                         idx += 2
                     else:
