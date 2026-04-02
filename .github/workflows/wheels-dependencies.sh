@@ -178,7 +178,6 @@ function build_libavif {
         build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
     fi
 
-    local build_type=MinSizeRel
     local build_shared=ON
     local lto=ON
 
@@ -195,9 +194,6 @@ function build_libavif {
             build_shared=OFF
         fi
     else
-        if [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "x86_64" ]]; then
-            build_type=Release
-        fi
         libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
     fi
     if [[ -n "$IOS_SDK" ]] && [[ "$PLAT" == "x86_64" ]]; then
@@ -226,7 +222,7 @@ function build_libavif {
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=$lto \
             -DCMAKE_C_VISIBILITY_PRESET=hidden \
             -DCMAKE_CXX_VISIBILITY_PRESET=hidden \
-            -DCMAKE_BUILD_TYPE=$build_type \
+            -DCMAKE_BUILD_TYPE=MinSizeRel \
             "${libavif_cmake_flags[@]}" \
             $HOST_CMAKE_FLAGS . )
 
