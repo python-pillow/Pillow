@@ -685,7 +685,9 @@ class PdfParser:
         if b"Prev" in self.trailer_dict:
             self.read_prev_trailer(self.trailer_dict[b"Prev"])
 
-    def read_prev_trailer(self, xref_section_offset: int) -> None:
+    def read_prev_trailer(
+        self, xref_section_offset: int, processed_offsets: list[int] = []
+    ) -> None:
         assert self.buf is not None
         trailer_offset = self.read_xref_table(xref_section_offset=xref_section_offset)
         m = self.re_trailer_prev.search(
@@ -700,7 +702,11 @@ class PdfParser:
         )
         trailer_dict = self.interpret_trailer(trailer_data)
         if b"Prev" in trailer_dict:
-            self.read_prev_trailer(trailer_dict[b"Prev"])
+            processed_offsets.append(xref_section_offset)
+            check_format_condition(
+                trailer_dict[b"Prev"] not in processed_offsets, "trailer loop found"
+            )
+            self.read_prev_trailer(trailer_dict[b"Prev"], processed_offsets)
 
     re_whitespace_optional = re.compile(whitespace_optional)
     re_name = re.compile(

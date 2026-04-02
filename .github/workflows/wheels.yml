@@ -39,7 +39,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  EXPECTED_DISTS: 91
+  EXPECTED_DISTS: 75
   FORCE_COLOR: 1
 
 jobs:
@@ -74,26 +74,26 @@ jobs:
             os: macos-latest
             cibw_arch: arm64
             macosx_deployment_target: "11.0"
-          - name: "manylinux2014 and musllinux x86_64"
-            platform: linux
-            os: ubuntu-latest
-            cibw_arch: x86_64
-            manylinux: "manylinux2014"
           - name: "manylinux_2_28 x86_64"
             platform: linux
             os: ubuntu-latest
             cibw_arch: x86_64
             build: "*manylinux*"
-          - name: "manylinux2014 and musllinux aarch64"
+          - name: "musllinux x86_64"
             platform: linux
-            os: ubuntu-24.04-arm
-            cibw_arch: aarch64
-            manylinux: "manylinux2014"
+            os: ubuntu-latest
+            cibw_arch: x86_64
+            build: "*musllinux*"
           - name: "manylinux_2_28 aarch64"
             platform: linux
             os: ubuntu-24.04-arm
             cibw_arch: aarch64
             build: "*manylinux*"
+          - name: "musllinux aarch64"
+            platform: linux
+            os: ubuntu-24.04-arm
+            cibw_arch: aarch64
+            build: "*musllinux*"
           - name: "iOS arm64 device"
             platform: ios
             os: macos-latest
@@ -128,10 +128,6 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_ENABLE: cpython-prerelease cpython-freethreading pypy
-          CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.manylinux }}
-          CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ${{ matrix.manylinux }}
-          CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
-          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
       - uses: actions/upload-artifact@v6

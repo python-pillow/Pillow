@@ -45,25 +45,29 @@ def grab(
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
             args = ["screencapture"]
-            if window:
+            if window is not None:
                 args += ["-l", str(window)]
             elif bbox:
                 left, top, right, bottom = bbox
                 args += ["-R", f"{left},{top},{right-left},{bottom-top}"]
-            subprocess.call(args + ["-x", filepath])
+            args += ["-x", filepath]
+            retcode = subprocess.call(args)
+            if retcode:
+                raise subprocess.CalledProcessError(retcode, args)
             im = Image.open(filepath)
             im.load()
             os.unlink(filepath)
             if bbox:
-                if window:
+                if window is not None:
                     # Determine if the window was in Retina mode or not
                     # by capturing it without the shadow,
                     # and checking how different the width is
                     fh, filepath = tempfile.mkstemp(".png")
                     os.close(fh)
-                    subprocess.call(
-                        ["screencapture", "-l", str(window), "-o", "-x", filepath]
-                    )
+                    args = ["screencapture", "-l", str(window), "-o", "-x", filepath]
+                    retcode = subprocess.call(args)
+                    if retcode:
+                        raise subprocess.CalledProcessError(retcode, args)
                     with Image.open(filepath) as im_no_shadow:
                         screen_scale = (im.width - im_no_shadow.width) // 68
                     os.unlink(filepath)
@@ -128,7 +132,10 @@ def grab(
                 raise
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
-            subprocess.call(args + [filepath])
+            args.append(filepath)
+            retcode = subprocess.call(args)
+            if retcode:
+                raise subprocess.CalledProcessError(retcode, args)
             im = Image.open(filepath)
             im.load()
             os.unlink(filepath)
