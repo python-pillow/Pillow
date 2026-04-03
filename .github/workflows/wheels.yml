@@ -130,7 +130,7 @@ jobs:
           CIBW_ENABLE: cpython-prerelease cpython-freethreading pypy
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: dist-${{ matrix.name }}
           path: ./wheelhouse/*.whl
@@ -210,13 +210,13 @@ jobs:
         shell: bash
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: dist-windows-${{ matrix.cibw_arch }}
           path: ./wheelhouse/*.whl
 
       - name: Upload fribidi.dll
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: fribidi-windows-${{ matrix.cibw_arch }}
           path: winbuild\build\bin\fribidi*
@@ -236,7 +236,7 @@ jobs:
 
     - run: make sdist
 
-    - uses: actions/upload-artifact@v6
+    - uses: actions/upload-artifact@v7
       with:
         name: dist-sdist
         path: dist/*.tar.gz
