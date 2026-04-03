@@ -1443,9 +1443,9 @@ def _save(
             palette_bytes += b"\0"
         chunk(fp, b"PLTE", palette_bytes)
 
-    transparency = im.encoderinfo.get("transparency", im.info.get("transparency", None))
+    transparency = im.encoderinfo.get("transparency", im.info.get("transparency"))
 
-    if transparency or transparency == 0:
+    if transparency is not None:
         if im.mode == "P":
             # limit to actual palette size
             alpha_bytes = colors
@@ -1461,17 +1461,15 @@ def _save(
         elif im.mode == "RGB":
             red, green, blue = transparency
             chunk(fp, b"tRNS", o16(red) + o16(green) + o16(blue))
-        else:
-            if "transparency" in im.encoderinfo:
-                # don't bother with transparency if it's an RGBA
-                # and it's in the info dict. It's probably just stale.
-                msg = "cannot use transparency for this mode"
-                raise OSError(msg)
-    else:
-        if im.mode == "P" and im.im.getpalettemode() == "RGBA":
-            alpha = im.im.getpalette("RGBA", "A")
-            alpha_bytes = colors
-            chunk(fp, b"tRNS", alpha[:alpha_bytes])
+        elif im.encoderinfo.get("transparency") is not None:
+            # don't bother with transparency if it's an RGBA
+            # and it's in the info dict. It's probably just stale.
+            msg = "cannot use transparency for this mode"
+            raise OSError(msg)
+    elif im.mode == "P" and im.im.getpalettemode() == "RGBA":
+        alpha = im.im.getpalette("RGBA", "A")
+        alpha_bytes = colors
+        chunk(fp, b"tRNS", alpha[:alpha_bytes])
 
     if dpi := im.encoderinfo.get("dpi"):
         chunk(
