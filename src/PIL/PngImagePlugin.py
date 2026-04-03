@@ -1451,16 +1451,30 @@ def _save(
             alpha_bytes = colors
             if isinstance(transparency, bytes):
                 chunk(fp, b"tRNS", transparency[:alpha_bytes])
-            else:
+            elif isinstance(transparency, int):
                 transparency = max(0, min(255, transparency))
                 alpha = b"\xff" * transparency + b"\0"
                 chunk(fp, b"tRNS", alpha[:alpha_bytes])
+            else:
+                msg = "transparency for P must be an integer or bytes"
+                raise ValueError(msg)
         elif im.mode in ("1", "L", "I", "I;16"):
-            transparency = max(0, min(65535, transparency))
-            chunk(fp, b"tRNS", o16(transparency))
+            if isinstance(transparency, int):
+                transparency = max(0, min(65535, transparency))
+                chunk(fp, b"tRNS", o16(transparency))
+            else:
+                msg = f"transparency for {im.mode} must be an integer"
+                raise ValueError(msg)
         elif im.mode == "RGB":
-            red, green, blue = transparency
-            chunk(fp, b"tRNS", o16(red) + o16(green) + o16(blue))
+            if not isinstance(transparency, (list, tuple)):
+                msg = "transparency for RGB must be list or tuple"
+                raise ValueError(msg)
+            elif len(transparency) != 3:
+                msg = "transparency for RGB must have length 3"
+                raise ValueError(msg)
+            else:
+                red, green, blue = transparency
+                chunk(fp, b"tRNS", o16(red) + o16(green) + o16(blue))
         elif im.encoderinfo.get("transparency") is not None:
             # don't bother with transparency if it's an RGBA
             # and it's in the info dict. It's probably just stale.
