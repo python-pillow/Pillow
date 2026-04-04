@@ -868,29 +868,45 @@ def floodfill(
     edge = {(x, y)}
     # use a set to keep record of current and previous edge pixels
     # to reduce memory consumption
-    full_edge = set()
-    while edge:
-        new_edge = set()
-        for x, y in edge:  # 4 adjacent method
-            for s, t in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
-                # If already processed, or if a coordinate is negative, skip
-                if (s, t) in full_edge or s < 0 or t < 0:
-                    continue
-                try:
-                    p = pixel[s, t]
-                except (ValueError, IndexError):
-                    pass
-                else:
-                    full_edge.add((s, t))
-                    if border is None:
-                        fill = _color_diff(p, background) <= thresh
+    full_edge: set[tuple[int, int]] = set()
+    if border is None:
+        # Optimize the common case: no border, threshold-based fill
+        while edge:
+            new_edge: set[tuple[int, int]] = set()
+            for x, y in edge:  # 4 adjacent method
+                for s, t in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                    if (s, t) in full_edge or s < 0 or t < 0:
+                        continue
+                    try:
+                        p = pixel[s, t]
+                    except (ValueError, IndexError):
+                        pass
                     else:
-                        fill = p not in (value, border)
-                    if fill:
-                        pixel[s, t] = value
-                        new_edge.add((s, t))
-        full_edge = edge  # discard pixels processed
-        edge = new_edge
+                        full_edge.add((s, t))
+                        if _color_diff(p, background) <= thresh:
+                            pixel[s, t] = value
+                            new_edge.add((s, t))
+            full_edge = edge  # discard pixels processed
+            edge = new_edge
+    else:
+        # Border-based fill
+        while edge:
+            new_edge = set()
+            for x, y in edge:
+                for s, t in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                    if (s, t) in full_edge or s < 0 or t < 0:
+                        continue
+                    try:
+                        p = pixel[s, t]
+                    except (ValueError, IndexError):
+                        pass
+                    else:
+                        full_edge.add((s, t))
+                        if p != value and p != border:
+                            pixel[s, t] = value
+                            new_edge.add((s, t))
+            full_edge = edge
+            edge = new_edge
 
 
 def _compute_regular_polygon_vertices(
