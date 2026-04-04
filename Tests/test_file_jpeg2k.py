@@ -178,9 +178,9 @@ def test_default_num_resolutions(
 
 def test_reduce() -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
-        assert callable(im.reduce)
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
 
-        im.reduce = 2  # type: ignore[assignment, method-assign]
+        im.reduce = 2
         assert im.reduce == 2
 
         im.load()
