@@ -96,26 +96,18 @@ class Stat:
     @cached_property
     def sum(self) -> list[float]:
         """Sum of all pixels for each band in the image."""
-
-        v = []
-        for i in range(0, len(self.h), 256):
-            layer_sum = 0.0
-            for j in range(256):
-                layer_sum += j * self.h[i + j]
-            v.append(layer_sum)
-        return v
+        return [
+            float(sum(j * self.h[i + j] for j in range(256)))
+            for i in range(0, len(self.h), 256)
+        ]
 
     @cached_property
     def sum2(self) -> list[float]:
         """Squared sum of all pixels for each band in the image."""
-
-        v = []
-        for i in range(0, len(self.h), 256):
-            sum2 = 0.0
-            for j in range(256):
-                sum2 += (j**2) * float(self.h[i + j])
-            v.append(sum2)
-        return v
+        return [
+            float(sum(j * j * self.h[i + j] for j in range(256)))
+            for i in range(0, len(self.h), 256)
+        ]
 
     @cached_property
     def mean(self) -> list[float]:
@@ -127,12 +119,13 @@ class Stat:
         """Median pixel level for each band in the image."""
 
         v = []
+        h = self.h
         for i in self.bands:
             s = 0
             half = self.count[i] // 2
             b = i * 256
             for j in range(256):
-                s = s + self.h[b + j]
+                s = s + h[b + j]
                 if s > half:
                     break
             v.append(j)
