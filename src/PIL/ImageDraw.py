@@ -1016,7 +1016,10 @@ def _color_diff(
     """
     Uses 1-norm distance to calculate difference between two values.
     """
-    first = color1 if isinstance(color1, tuple) else (color1,)
-    second = color2 if isinstance(color2, tuple) else (color2,)
-
-    return sum(abs(first[i] - second[i]) for i in range(len(second)))
+    if isinstance(color1, tuple):
+        if isinstance(color2, tuple):
+            return sum(abs(a - b) for a, b in zip(color1, color2))
+        return abs(color1[0] - color2)
+    if isinstance(color2, tuple):
+        return abs(color1 - color2[0])
+    return abs(color1 - color2)
