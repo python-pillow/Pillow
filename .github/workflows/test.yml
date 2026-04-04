@@ -162,7 +162,7 @@ jobs:
         mkdir -p Tests/errors
 
     - name: Upload errors
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: failure()
       with:
         name: errors
@@ -173,7 +173,7 @@ jobs:
         .ci/after_success.sh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@v6
       with:
         flags: ${{ matrix.os == 'ubuntu-latest' && 'GHA_Ubuntu' || 'GHA_macOS' }}
         name: ${{ matrix.os }} Python ${{ matrix.python-version }}

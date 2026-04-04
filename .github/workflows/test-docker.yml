@@ -76,7 +76,7 @@ jobs:
 
     - name: Set up QEMU
       if: "matrix.qemu-arch"
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@v4
       with:
         platforms: ${{ matrix.qemu-arch }}
 
@@ -104,7 +104,7 @@ jobs:
         .ci/after_success.sh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@v6
       with:
         flags: GHA_Docker
         name: ${{ matrix.docker }}

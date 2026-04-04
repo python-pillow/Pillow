@@ -39,7 +39,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  EXPECTED_DISTS: 75
+  EXPECTED_DISTS: 66
   FORCE_COLOR: 1
 
 jobs:
@@ -139,11 +139,11 @@ jobs:
           CIBW_PLATFORM: ${{ matrix.platform }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BUILD: ${{ matrix.build }}
-          CIBW_ENABLE: cpython-prerelease cpython-freethreading pypy
+          CIBW_ENABLE: cpython-prerelease pypy
           CIBW_MANYLINUX_RISCV64_IMAGE: ${{ matrix.manylinux }}
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: dist-${{ matrix.name }}
           path: ./wheelhouse/*.whl
@@ -211,7 +211,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL: "{package}\\winbuild\\build\\build_dep_all.cmd"
           CIBW_CACHE_PATH: "C:\\cibw"
-          CIBW_ENABLE: cpython-prerelease cpython-freethreading pypy
+          CIBW_ENABLE: cpython-prerelease pypy
           CIBW_TEST_SKIP: "*-win_arm64"
           CIBW_TEST_COMMAND: 'docker run --rm
             -v {project}:C:\pillow
@@ -223,13 +223,13 @@ jobs:
         shell: bash
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: dist-windows-${{ matrix.cibw_arch }}
           path: ./wheelhouse/*.whl
 
       - name: Upload fribidi.dll
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: fribidi-windows-${{ matrix.cibw_arch }}
           path: winbuild\build\bin\fribidi*
@@ -249,7 +249,7 @@ jobs:
 
     - run: make sdist
 
-    - uses: actions/upload-artifact@v6
+    - uses: actions/upload-artifact@v7
       with:
         name: dist-sdist
         path: dist/*.tar.gz
