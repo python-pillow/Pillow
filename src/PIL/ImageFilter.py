@@ -445,7 +445,6 @@ class Color3DLUT(MultibandFilter):
             # Convert to a flat list
             if table and isinstance(table[0], (list, tuple)):
                 raw_table = cast(Sequence[Sequence[int]], table)
-                flat_table: list[int] = []
                 for pixel in raw_table:
                     if len(pixel) != channels:
                         msg = (
@@ -453,8 +452,9 @@ class Color3DLUT(MultibandFilter):
                             f"have a length of {channels}."
                         )
                         raise ValueError(msg)
-                    flat_table.extend(pixel)
-                table = flat_table
+                from itertools import chain
+
+                table = list(chain.from_iterable(raw_table))
 
         if wrong_size or len(table) != items * channels:
             msg = (
