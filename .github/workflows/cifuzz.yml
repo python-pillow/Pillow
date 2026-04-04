@@ -47,13 +47,13 @@ jobs:
         language: python
         dry-run: false
     - name: Upload New Crash
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: failure() && steps.build.outcome == 'success'
       with:
         name: artifacts
         path: ./out/artifacts
     - name: Upload Legacy Crash
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: steps.run.outcome == 'success'
       with:
         name: crash
