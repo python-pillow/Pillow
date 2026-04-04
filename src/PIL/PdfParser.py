@@ -404,9 +404,9 @@ class PdfParser:
         if self.buf:
             try:
                 self.read_pdf_info()
-            except PdfFormatError as e:
+            except PdfFormatError:
                 self.close()
-                raise e
+                raise
         else:
             self.file_size_total = self.file_size_this = 0
             self.root = PdfDict()
