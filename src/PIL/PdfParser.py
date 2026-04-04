@@ -402,7 +402,11 @@ class PdfParser:
         self.pages_ref: IndirectReference | None
         self.last_xref_section_offset: int | None
         if self.buf:
-            self.read_pdf_info()
+            try:
+                self.read_pdf_info()
+            except PdfFormatError:
+                self.close()
+                raise
         else:
             self.file_size_total = self.file_size_this = 0
             self.root = PdfDict()
