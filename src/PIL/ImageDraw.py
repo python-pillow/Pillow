@@ -983,44 +983,31 @@ def _compute_regular_polygon_vertices(
         msg = "rotation should be an int or float"  # type: ignore[unreachable]
         raise ValueError(msg)
 
-    # 2. Define Helper Functions
-    def _apply_rotation(point: list[float], degrees: float) -> tuple[float, float]:
-        return (
-            round(
-                point[0] * math.cos(math.radians(360 - degrees))
-                - point[1] * math.sin(math.radians(360 - degrees))
-                + centroid[0],
-                2,
-            ),
-            round(
-                point[1] * math.cos(math.radians(360 - degrees))
-                + point[0] * math.sin(math.radians(360 - degrees))
-                + centroid[1],
-                2,
-            ),
-        )
+    # 2. Compute vertices directly
+    # Since start_point is always [polygon_radius, 0], the rotation formula simplifies to:
+    #   X = polygon_radius * cos(rad) + centroid_x
+    #   Y = polygon_radius * sin(rad) + centroid_y
+    # where rad = radians(360 - angle)
+    degrees = 360 / n_sides
+    # Start with the bottom left polygon vertex
+    current_angle = (270 - 0.5 * degrees) + rotation
+    cx, cy = centroid[0], centroid[1]
+    _cos = math.cos
+    _sin = math.sin
+    _radians = math.radians
 
-    def _compute_polygon_vertex(angle: float) -> tuple[float, float]:
-        start_point = [polygon_radius, 0]
-        return _apply_rotation(start_point, angle)
+    vertices: list[tuple[float, float]] = []
+    for _ in range(n_sides):
+        rad = _radians(360 - current_angle)
+        vertices.append((
+            round(polygon_radius * _cos(rad) + cx, 2),
+            round(polygon_radius * _sin(rad) + cy, 2),
+        ))
+        current_angle += degrees
+        if current_angle > 360:
+            current_angle -= 360
 
-    def _get_angles(n_sides: int, rotation: float) -> list[float]:
-        angles = []
-        degrees = 360 / n_sides
-        # Start with the bottom left polygon vertex
-        current_angle = (270 - 0.5 * degrees) + rotation
-        for _ in range(n_sides):
-            angles.append(current_angle)
-            current_angle += degrees
-            if current_angle > 360:
-                current_angle -= 360
-        return angles
-
-    # 3. Variable Declarations
-    angles = _get_angles(n_sides, rotation)
-
-    # 4. Compute Vertices
-    return [_compute_polygon_vertex(angle) for angle in angles]
+    return vertices
 
 
 def _color_diff(
