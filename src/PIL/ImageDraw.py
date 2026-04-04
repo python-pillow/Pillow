@@ -1034,6 +1034,21 @@ def _color_diff(
     """
     if isinstance(color1, tuple):
         if isinstance(color2, tuple):
+            # Fast path for common RGB (3) and RGBA (4) cases
+            n = len(color2)
+            if n == 3:
+                return (
+                    abs(color1[0] - color2[0])
+                    + abs(color1[1] - color2[1])
+                    + abs(color1[2] - color2[2])
+                )
+            elif n == 4:
+                return (
+                    abs(color1[0] - color2[0])
+                    + abs(color1[1] - color2[1])
+                    + abs(color1[2] - color2[2])
+                    + abs(color1[3] - color2[3])
+                )
             return sum(abs(a - b) for a, b in zip(color1, color2))
         return abs(color1[0] - color2)
     if isinstance(color2, tuple):
