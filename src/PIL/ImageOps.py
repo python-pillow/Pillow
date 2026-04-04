@@ -624,7 +624,7 @@ def posterize(image: Image.Image, bits: int) -> Image.Image:
     :param bits: The number of bits to keep for each channel (1-8).
     :return: An image.
     """
-    mask = ~(2 ** (8 - bits) - 1)
+    mask = ~((1 << (8 - bits)) - 1)
     lut = [i & mask for i in range(256)]
     return _lut(image, lut)
 
