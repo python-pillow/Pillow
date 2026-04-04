@@ -54,7 +54,9 @@ Previously, macOS screenshots with a ``bbox`` were captured at 1x by default.
 Other changes
 =============
 
-TODO
-^^^^
+Removed Python 3.13 free-threaded wheels
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Python 3.13 added an experimental free-threaded mode, and Pillow 11.0.0 added
+corresponding wheels. Now that Python 3.14 includes official support for it, Pillow has
+removed wheels for Python 3.13 free-threaded mode.
