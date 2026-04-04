@@ -957,10 +957,9 @@ def _get_optimize(im: Image.Image, info: dict[str, Any]) -> list[int] | None:
         optimise = _FORCE_OPTIMIZE or im.mode == "L"
         if optimise or im.width * im.height < 512 * 512:
             # check which colors are used
-            used_palette_colors = []
-            for i, count in enumerate(im.histogram()):
-                if count:
-                    used_palette_colors.append(i)
+            used_palette_colors = [
+                i for i, count in enumerate(im.histogram()) if count
+            ]
 
             if optimise or max(used_palette_colors) >= len(used_palette_colors):
                 return used_palette_colors
