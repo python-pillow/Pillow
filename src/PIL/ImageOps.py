@@ -207,63 +207,43 @@ def colorize(
     rgb_white = cast(Sequence[int], _color(white, "RGB"))
     rgb_mid = cast(Sequence[int], _color(mid, "RGB")) if mid is not None else None
 
-    # Empty lists for the mapping
-    red = []
-    green = []
-    blue = []
-
-    # Create the low-end values
-    for i in range(blackpoint):
-        red.append(rgb_black[0])
-        green.append(rgb_black[1])
-        blue.append(rgb_black[2])
-
-    # Create the mapping (2-color)
+    # Build per-channel LUTs using list comprehensions to avoid per-element append
     if rgb_mid is None:
-        range_map = range(whitepoint - blackpoint)
-
-        for i in range_map:
-            red.append(
-                rgb_black[0] + i * (rgb_white[0] - rgb_black[0]) // len(range_map)
+        # 2-color mapping
+        range_len = whitepoint - blackpoint
+        lut_channels: list[list[int]] = []
+        for ch in range(3):
+            black_val = rgb_black[ch]
+            white_val = rgb_white[ch]
+            diff = white_val - black_val
+            channel = (
+                [black_val] * blackpoint
+                + [black_val + i * diff // range_len for i in range(range_len)]
+                + [white_val] * (256 - whitepoint)
             )
-            green.append(
-                rgb_black[1] + i * (rgb_white[1] - rgb_black[1]) // len(range_map)
-            )
-            blue.append(
-                rgb_black[2] + i * (rgb_white[2] - rgb_black[2]) // len(range_map)
-            )
-
-    # Create the mapping (3-color)
+            lut_channels.append(channel)
     else:
-        range_map1 = range(midpoint - blackpoint)
-        range_map2 = range(whitepoint - midpoint)
-
-        for i in range_map1:
-            red.append(
-                rgb_black[0] + i * (rgb_mid[0] - rgb_black[0]) // len(range_map1)
+        # 3-color mapping
+        range_len1 = midpoint - blackpoint
+        range_len2 = whitepoint - midpoint
+        lut_channels = []
+        for ch in range(3):
+            black_val = rgb_black[ch]
+            mid_val = rgb_mid[ch]
+            white_val = rgb_white[ch]
+            diff1 = mid_val - black_val
+            diff2 = white_val - mid_val
+            channel = (
+                [black_val] * blackpoint
+                + [black_val + i * diff1 // range_len1 for i in range(range_len1)]
+                + [mid_val + i * diff2 // range_len2 for i in range(range_len2)]
+                + [white_val] * (256 - whitepoint)
             )
-            green.append(
-                rgb_black[1] + i * (rgb_mid[1] - rgb_black[1]) // len(range_map1)
-            )
-            blue.append(
-                rgb_black[2] + i * (rgb_mid[2] - rgb_black[2]) // len(range_map1)
-            )
-        for i in range_map2:
-            red.append(rgb_mid[0] + i * (rgb_white[0] - rgb_mid[0]) // len(range_map2))
-            green.append(
-                rgb_mid[1] + i * (rgb_white[1] - rgb_mid[1]) // len(range_map2)
-            )
-            blue.append(rgb_mid[2] + i * (rgb_white[2] - rgb_mid[2]) // len(range_map2))
-
-    # Create the high-end values
-    for i in range(256 - whitepoint):
-        red.append(rgb_white[0])
-        green.append(rgb_white[1])
-        blue.append(rgb_white[2])
+            lut_channels.append(channel)
 
     # Return converted image
     image = image.convert("RGB")
-    return _lut(image, red + green + blue)
+    return _lut(image, lut_channels[0] + lut_channels[1] + lut_channels[2])
 
 
 def contain(
