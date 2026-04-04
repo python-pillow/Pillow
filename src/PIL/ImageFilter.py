@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 import abc
-import functools
 from collections.abc import Sequence
 from typing import cast
 
@@ -78,7 +77,7 @@ class Kernel(BuiltinFilter):
     ) -> None:
         if scale is None:
             # default scale is sum of kernel
-            scale = functools.reduce(lambda a, b: a + b, kernel)
+            scale = sum(kernel)
         if size[0] * size[1] != len(kernel):
             msg = "not enough coefficients in kernel"
             raise ValueError(msg)

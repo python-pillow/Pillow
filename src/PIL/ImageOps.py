@@ -18,8 +18,6 @@
 #
 from __future__ import annotations
 
-import functools
-import operator
 import re
 from collections.abc import Sequence
 from typing import Literal, Protocol, cast, overload
@@ -115,9 +113,7 @@ def autocontrast(
             if not isinstance(cutoff, tuple):
                 cutoff = (cutoff, cutoff)
             # get number of pixels
-            n = 0
-            for ix in range(256):
-                n = n + h[ix]
+            n = sum(h)
             # remove cutoff% pixels from the low end
             cut = int(n * cutoff[0] // 100)
             for lo in range(256):
@@ -149,17 +145,13 @@ def autocontrast(
                 break
         if hi <= lo:
             # don't bother
-            lut.extend(list(range(256)))
+            lut.extend(range(256))
         else:
             scale = 255.0 / (hi - lo)
             offset = -lo * scale
-            for ix in range(256):
-                ix = int(ix * scale + offset)
-                if ix < 0:
-                    ix = 0
-                elif ix > 255:
-                    ix = 255
-                lut.append(ix)
+            lut.extend(
+                min(255, max(0, int(ix * scale + offset))) for ix in range(256)
+            )
     return _lut(image, lut)
 
 
@@ -448,11 +440,11 @@ def equalize(image: Image.Image, mask: Image.Image | None = None) -> Image.Image
     for b in range(0, len(h), 256):
         histo = [_f for _f in h[b : b + 256] if _f]
         if len(histo) <= 1:
-            lut.extend(list(range(256)))
+            lut.extend(range(256))
         else:
-            step = (functools.reduce(operator.add, histo) - histo[-1]) // 255
+            step = (sum(histo) - histo[-1]) // 255
             if not step:
-                lut.extend(list(range(256)))
+                lut.extend(range(256))
             else:
                 n = step // 2
                 for i in range(256):
@@ -645,12 +637,7 @@ def solarize(image: Image.Image, threshold: int = 128) -> Image.Image:
     :param threshold: All pixels above this grayscale level are inverted.
     :return: An image.
     """
-    lut = []
-    for i in range(256):
-        if i < threshold:
-            lut.append(i)
-        else:
-            lut.append(255 - i)
+    lut = [i if i < threshold else 255 - i for i in range(256)]
     return _lut(image, lut)
 
 
