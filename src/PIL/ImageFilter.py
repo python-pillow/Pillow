@@ -507,15 +507,18 @@ class Color3DLUT(MultibandFilter):
             msg = "Only 3 or 4 output channels are supported"
             raise ValueError(msg)
 
-        table: list[float] = [0] * (size_1d * size_2d * size_3d * channels)
-        idx_out = 0
-        for b in range(size_3d):
-            for g in range(size_2d):
-                for r in range(size_1d):
-                    table[idx_out : idx_out + channels] = callback(
-                        r / (size_1d - 1), g / (size_2d - 1), b / (size_3d - 1)
-                    )
-                    idx_out += channels
+        # Precompute normalized coordinate arrays to avoid repeated division
+        r_values = [r / (size_1d - 1) for r in range(size_1d)]
+        g_values = [g / (size_2d - 1) for g in range(size_2d)]
+        b_values = [b / (size_3d - 1) for b in range(size_3d)]
+
+        # Build table using extend to avoid slice assignment overhead
+        table: list[float] = []
+        table_extend = table.extend
+        for bv in b_values:
+            for gv in g_values:
+                for rv in r_values:
+                    table_extend(callback(rv, gv, bv))
 
         return cls(
             (size_1d, size_2d, size_3d),
@@ -557,25 +560,30 @@ class Color3DLUT(MultibandFilter):
         ch_out = channels or ch_in
         size_1d, size_2d, size_3d = self.size
 
-        table: list[float] = [0] * (size_1d * size_2d * size_3d * ch_out)
+        # Precompute normalized coordinates and use extend for efficiency
+        source_table = self.table
+        table: list[float] = []
+        table_extend = table.extend
         idx_in = 0
-        idx_out = 0
-        for b in range(size_3d):
-            for g in range(size_2d):
-                for r in range(size_1d):
-                    values = self.table[idx_in : idx_in + ch_in]
-                    if with_normals:
-                        values = callback(
-                            r / (size_1d - 1),
-                            g / (size_2d - 1),
-                            b / (size_3d - 1),
-                            *values,
+        if with_normals:
+            r_values = [r / (size_1d - 1) for r in range(size_1d)]
+            g_values = [g / (size_2d - 1) for g in range(size_2d)]
+            b_values = [b / (size_3d - 1) for b in range(size_3d)]
+            for bv in b_values:
+                for gv in g_values:
+                    for rv in r_values:
+                        table_extend(
+                            callback(rv, gv, bv, *source_table[idx_in : idx_in + ch_in])
                         )
-                    else:
-                        values = callback(*values)
-                    table[idx_out : idx_out + ch_out] = values
-                    idx_in += ch_in
-                    idx_out += ch_out
+                        idx_in += ch_in
+        else:
+            for b in range(size_3d):
+                for g in range(size_2d):
+                    for r in range(size_1d):
+                        table_extend(
+                            callback(*source_table[idx_in : idx_in + ch_in])
+                        )
+                        idx_in += ch_in
 
         return type(self)(
             self.size,
