@@ -39,7 +39,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  EXPECTED_DISTS: 66
+  EXPECTED_DISTS: 68
   FORCE_COLOR: 1
 
 jobs:
