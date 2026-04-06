@@ -48,6 +48,8 @@ repos:
         args: [--allow-multiple-documents]
       - id: end-of-file-fixer
         exclude: ^Tests/images/
+      - id: file-contents-sorter
+        files: .github/workflows/Brewfile
       - id: trailing-whitespace
         exclude: ^\.github/.*TEMPLATE|^Tests/(fonts|images)/
 
