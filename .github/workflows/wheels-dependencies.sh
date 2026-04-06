@@ -204,6 +204,12 @@ function build_libavif {
             -DAVIF_CODEC_DAV1D=LOCAL
         )
     fi
+    # libaom's riscv64 RVV code calls functions without declarations, which
+    # GCC 14 (manylinux_2_39) treats as errors. Disable arch-specific AOM
+    # optimizations for riscv64; QEMU-based builds don't benefit from them.
+    if [[ "$(uname -m)" == "riscv64" ]]; then
+        libavif_cmake_flags+=(-DAOM_TARGET_CPU=generic)
+    fi
 
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
 
