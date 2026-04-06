@@ -92,4 +92,3 @@ jobs:
           files: ./coverage.xml
           flags: GHA_Windows
           name: "MSYS2 MinGW"
-          token: ${{ secrets.CODECOV_ORG_TOKEN }}

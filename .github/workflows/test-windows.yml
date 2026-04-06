@@ -234,7 +234,6 @@ jobs:
         files: ./coverage.xml
         flags: GHA_Windows
         name: ${{ runner.os }} Python ${{ matrix.python-version }}
-        token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:
     permissions:
