@@ -279,6 +279,36 @@ jobs:
           artifacts_path: dist
           anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
 
+  sbom:
+    if: github.repository_owner == 'python-pillow' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    needs: count-dists
+    runs-on: ubuntu-latest
+    name: Generate and publish SBOM
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Generate CycloneDX SBOM
+        run: python .github/generate-sbom.py
+
+      - name: Upload SBOM as workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom
+          path: "*.cdx.json"
+
+      - name: Attach SBOM to GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.ref_name }}" *.cdx.json
+
   pypi-publish:
     if: github.event.repository.fork == false && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     needs: count-dists
