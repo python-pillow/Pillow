@@ -296,7 +296,7 @@ jobs:
           python-version: "3.x"
 
       - name: Generate CycloneDX SBOM
-        run: python .github/generate-sbom.py
+        run: python3 .github/generate-sbom.py
 
       - name: Upload SBOM as workflow artifact
         uses: actions/upload-artifact@v7
