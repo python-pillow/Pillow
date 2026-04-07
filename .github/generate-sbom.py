@@ -3,7 +3,7 @@
 vendored/optional native library dependencies.
 
 Usage:
-    python .github/generate-sbom.py [output-file]
+    python3 .github/generate-sbom.py [output-file]
 
 Output defaults to pillow-{version}.cdx.json in the current directory.
 """
