@@ -233,7 +233,7 @@ RGBA image and also using it as the mask would paste the opaque portion
 of the image but not its transparent background.
 
 The Python Imaging Library also allows you to work with the individual bands of
-an multi-band image, such as an RGB image. The split method creates a set of
+a multi-band image, such as an RGB image. The split method creates a set of
 new images, each containing one band from the original multi-band image. The
 merge function takes a mode and a tuple of images, and combines them into a new
 image. The following sample swaps the three bands of an RGB image:
@@ -736,7 +736,7 @@ speed is usually more important than quality) and printing to a monochrome
 laser printer (when only a grayscale version of the image is needed).
 
 The :py:meth:`~PIL.Image.Image.draft` method manipulates an opened but not yet
-loaded image so it as closely as possible matches the given mode and size. This
+loaded image so that it matches the given mode and size as closely as possible. This
 is done by reconfiguring the image decoder.
 
 Reading in draft mode

@@ -14,7 +14,7 @@ metadata tag numbers, names, and type information.
 
     .. versionadded:: 8.3.0
 
-    :returns: Taginfo namedtuple, From the :py:data:`~PIL.TiffTags.TAGS_V2` info if possible,
+    :returns: Taginfo namedtuple, from the :py:data:`~PIL.TiffTags.TAGS_V2` info if possible,
         otherwise just populating the value and name from :py:data:`~PIL.TiffTags.TAGS`.
         If the tag is not recognized, "unknown" is returned for the name
 
@@ -59,7 +59,7 @@ metadata tag numbers, names, and type information.
 .. py:data:: PIL.TiffTags.TAGS
     :type: dict
 
-    The ``TAGS`` dictionary maps 16-bit integer TIFF tag number to
+    The ``TAGS`` dictionary maps 16-bit integer TIFF tag numbers to
     descriptive string names.  For instance:
 
         >>> from PIL.TiffTags import TAGS
@@ -67,13 +67,13 @@ metadata tag numbers, names, and type information.
         'ImageDescription'
 
     This dictionary contains a superset of the tags in :py:data:`~PIL.TiffTags.TAGS_V2`, common
-    EXIF tags, and other well known metadata tags.
+    EXIF tags, and other well-known metadata tags.
 
 .. py:data:: PIL.TiffTags.TYPES
     :type: dict
 
     The ``TYPES`` dictionary maps the TIFF type short integer to a
-    human readable type name.
+    human-readable type name.
 
 .. py:data:: PIL.TiffTags.LIBTIFF_CORE
     :type: list
