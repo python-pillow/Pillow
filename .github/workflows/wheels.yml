@@ -307,7 +307,7 @@ jobs:
       - name: Attach SBOM to GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${{ github.ref_name }}" *.cdx.json
+        run: gh release upload "$GITHUB_REF_NAME" *.cdx.json
 
   pypi-publish:
     if: github.event.repository.fork == false && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
