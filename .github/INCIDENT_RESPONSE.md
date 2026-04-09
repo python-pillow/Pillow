@@ -199,6 +199,7 @@ After the fix is released and the advisory is public:
 
 ### Internal (during embargo)
 - Use the **private GitHub Security Advisory** thread for coordination with the reporter.
+- Use private communication channels for all other coordination.
 - Do not discuss details in public issues, PRs, or Gitter/IRC channels.
 
 ### External (at or after disclosure)
