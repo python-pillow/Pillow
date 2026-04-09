@@ -116,9 +116,7 @@ def generate(version: str) -> dict:
             "hashes": [
                 {
                     "alg": "SHA-256",
-                    "content": sha256_file(
-                        thirdparty / "fribidi-shim" / "fribidi.c"
-                    ),
+                    "content": sha256_file(thirdparty / "fribidi-shim" / "fribidi.c"),
                 }
             ],
             "pedigree": {
