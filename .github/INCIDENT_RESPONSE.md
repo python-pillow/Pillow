@@ -13,9 +13,7 @@ Maintaining readiness before an incident occurs reduces response time and errors
 ### 1.1 Version Support Matrix
 
 Security fixes are applied to the **latest stable release only**. Users on older versions
-are expected to upgrade. This is consistent with Pillow's quarterly release cadence and
-is not currently documented elsewhere — reporters should assume only the latest release
-will receive a patch.
+are expected to upgrade. Reporters should assume only the latest release will receive a patch.
 
 | Branch | Status |
 |---|---|
