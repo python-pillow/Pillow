@@ -297,7 +297,6 @@ warrant proactive notification.
 | [Plone](https://plone.org/) | CMS image handling |
 | [Jupyter / IPython](https://jupyter.org/) | Inline image display |
 | [ReportLab](https://www.reportlab.com/) | PDF image embedding |
-| [Wand](https://docs.wand-py.org/) | Sometimes used alongside Pillow |
 | [Tidelift subscribers](https://tidelift.com/) | Enterprise consumers (coordinated via Tidelift) |
 
 #### Pillow ecosystem plugins
