@@ -259,6 +259,7 @@ require a Pillow point release even if Pillow's own code is unchanged.
 
 | Package | Required? | Purpose |
 |---|---|---|
+| `setuptools` | Build-time only | Package build backend |
 | `pybind11` | Build-time only | C++ ↔ Python bindings |
 | `olefile` | Optional (`fpx`, `mic` extras) | OLE2 container parsing (FPX, MIC formats) |
 | `defusedxml` | Optional (`xmp` extra) | Safe XML parsing for XMP metadata |
