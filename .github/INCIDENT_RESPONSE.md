@@ -12,17 +12,18 @@ Maintaining readiness before an incident occurs reduces response time and errors
 
 ### 1.1 Version Support Matrix
 
-Only the following branches receive security fixes. Reporters should verify their affected
-version before filing; maintainers should cherry-pick fixes only to supported branches.
+Security fixes are applied to the **latest stable release only**. Users on older versions
+are expected to upgrade. This is consistent with Pillow's quarterly release cadence and
+is not currently documented elsewhere — reporters should assume only the latest release
+will receive a patch.
 
-| Branch | Status | Notes |
-|---|---|---|
-| `main` | ✅ Active development | Always patched |
-| Latest stable (e.g. `11.x`) | ✅ Security fixes | Current quarterly release series |
-| Previous stable (e.g. `10.x`) | ⚠️ Critical only | One release series back; Critical CVEs only |
-| Older branches | ❌ End of life | No security support; users must upgrade |
+| Branch | Status |
+|---|---|
+| `main` / latest stable | ✅ Security fixes applied |
+| All older releases | ❌ No security support — please upgrade |
 
-> Update this table with each quarterly release.
+> If backport support for older releases is ever added, update this table and document it
+> in [SECURITY.md](SECURITY.md).
 
 ### 1.2 Team Readiness
 
