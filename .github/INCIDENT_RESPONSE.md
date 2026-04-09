@@ -27,24 +27,15 @@ will receive a patch.
 
 ### 1.2 Team Readiness
 
-- Maintain a private list of current maintainer contact details (GitHub handles, email,
-  Mastodon) in a location accessible to all maintainers (e.g. a pinned private team
-  discussion or the Tidelift maintainer portal).
-- Ensure at least two maintainers have admin access to:
-  - The GitHub repository (to manage Security Advisories)
-  - The [PyPI Pillow project](https://pypi.org/project/Pillow/) (to yank releases)
-  - The Tidelift maintainer portal
-- Rotate and audit PyPI API tokens and GitHub Actions secrets at least once per year,
-  and immediately after any maintainer leaves the project.
+The four members of the Pillow core team are in regular contact and share collective
+responsibility for incident response. Any core team member may act as Incident Lead.
+Contact details are known to all team members.
 
-### 1.3 Annual Readiness Review
+### 1.3 Readiness Review
 
-Once per year (suggested: at the January quarterly release), maintainers should:
+At each quarterly release, maintainers should:
 
 1. Re-read this document and update any stale content (version table, contacts, tooling).
-2. Verify the GitHub private security advisory flow still works (open and close a test advisory).
-3. Confirm PyPI yank access is functional.
-4. Review Dependabot and CodeQL alert settings are enabled on the repository.
 
 ---
 
@@ -381,7 +372,7 @@ When a CVE is published for a bundled C library:
 This document is a living record. It should be kept current so it is useful when an
 incident actually occurs.
 
-- **Annual review** — revisit during the §1.3 readiness review each January.
+- **Quarterly review** — revisit during the §1.3 readiness review at each quarterly release.
 - **Post-incident update** — if the response process revealed gaps or needed improvisation,
   update this document before the post-incident review is closed (§9).
 - **Ownership** — changes are approved by the Core Team and recorded in Git history.
