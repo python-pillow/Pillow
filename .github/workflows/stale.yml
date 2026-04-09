@@ -17,7 +17,7 @@ env:
 
 jobs:
   stale:
-    if: github.repository_owner == 'python-pillow'
+    if: github.event.repository.fork == false
     permissions:
       issues: write
 
