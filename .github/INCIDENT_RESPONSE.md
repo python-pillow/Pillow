@@ -61,7 +61,21 @@ This plan covers:
 
 ---
 
-## 3. Roles
+## 3. Definitions
+
+| Term | Meaning |
+|---|---|
+| **Incident** | Any event that compromises or threatens the confidentiality, integrity, or availability of Pillow's code, release artifacts, or infrastructure. |
+| **Vulnerability** | A security flaw in Pillow or a bundled library that can be exploited by a crafted image or API call. |
+| **Incident Lead** | The maintainer who owns coordination of the response from triage to closure. |
+| **Embargo** | A period during which fix details are kept private to allow coordinated patching before public disclosure. |
+| **Yank** | A PyPI action that keeps a release downloadable by pinned users but removes it from default `pip install` resolution. |
+| **CVE** | Common Vulnerabilities and Exposures — a public identifier assigned to a specific vulnerability. |
+| **CNA** | CVE Numbering Authority — GitHub is a CNA and can assign CVEs directly through the advisory workflow. |
+
+---
+
+## 4. Roles
 
 | Role | Responsibility |
 |---|---|
@@ -76,7 +90,7 @@ explicitly at the start of each incident to avoid gaps.
 
 ---
 
-## 4. Severity Classification
+## 5. Severity Classification
 
 Use the [CVSS v3.1](https://www.first.org/cvss/v3.1/specification-document) base score as
 a guide, mapped to the following levels:
@@ -90,9 +104,11 @@ a guide, mapped to the following levels:
 
 Supply-chain and CI/CD incidents are always treated as **Critical** regardless of CVSS.
 
+> **Note:** These are good-faith targets for a small volunteer maintainer team, not contractual SLAs. Public safety and transparency will always be prioritised, even when timing varies.
+
 ---
 
-## 5. Detection Sources
+## 6. Detection Sources
 
 Vulnerabilities and incidents may be reported or discovered through:
 
@@ -106,9 +122,9 @@ Vulnerabilities and incidents may be reported or discovered through:
 
 ---
 
-## 6. Response Process
+## 7. Response Process
 
-### 6.1 Triage (all severities)
+### 7.1 Triage (all severities)
 
 1. **Acknowledge receipt** to the reporter within **72 hours** using the template in
    [Appendix A](#appendix-a-communication-templates). Ask the reporter:
@@ -130,7 +146,7 @@ Vulnerabilities and incidents may be reported or discovered through:
    - A legal concern arises (e.g. GDPR-reportable data exposure) → contact the project's legal/fiscal sponsor
    - The Incident Lead is unreachable for > 24 hours on a Critical issue → any other maintainer may assume the role
 
-### 6.2 Fix Development
+### 7.2 Fix Development
 
 1. Develop the fix in a **private fork** or directly in the private security advisory
    workspace on GitHub. Do **not** push to a public branch before the embargo lifts.
@@ -141,7 +157,7 @@ Vulnerabilities and incidents may be reported or discovered through:
    ```
 4. Review the patch with at least one other maintainer.
 
-### 6.3 Standard (Non-Embargoed) Release
+### 7.3 Standard (Non-Embargoed) Release
 
 For Medium and Low severity, or when no distro pre-notification is needed:
 
@@ -152,7 +168,7 @@ For Medium and Low severity, or when no distro pre-notification is needed:
 4. Publish the GitHub Security Advisory (this simultaneously publishes the CVE).
 5. Announce on [Mastodon](https://fosstodon.org/@pillow).
 
-### 6.4 Embargoed Release
+### 7.4 Embargoed Release
 
 For Critical and High severity where distro pre-notification improves user safety:
 
@@ -169,7 +185,7 @@ For Critical and High severity where distro pre-notification improves user safet
    - Publish the GitHub Security Advisory.
    - Announce on [Mastodon](https://fosstodon.org/@pillow).
 
-### 6.5 Rollback Procedures
+### 7.5 Rollback Procedures
 
 If a security patch introduces a critical regression after release:
 
@@ -182,10 +198,10 @@ If a security patch introduces a critical regression after release:
    that the release has been yanked.
 3. If the previous (vulnerable) version was also yanked, **un-yank it temporarily** so users
    have a functional fallback while the corrected release is prepared.
-4. Prepare a corrected point release (incrementing the patch version), repeating §6.2–§6.3.
+4. Prepare a corrected point release (incrementing the patch version), repeating §7.2–§7.3.
 5. Document the regression in the post-incident review (§9).
 
-### 6.6 Supply-Chain / Infrastructure Compromise
+### 7.6 Supply-Chain / Infrastructure Compromise
 
 1. **Immediately** revoke any potentially compromised credentials:
    - PyPI API tokens (regenerate and update in GitHub secrets)
@@ -200,9 +216,19 @@ If a security patch introduces a critical regression after release:
 4. Notify GitHub Security if repository access or Actions secrets are involved.
 5. Issue a public advisory describing the scope and any user action required.
 
+### 7.7 Recovery
+
+After the fix is released and the advisory is public:
+
+1. Verify that the patched wheels are live on PyPI and passing CI across all supported platforms.
+2. Confirm any yanked releases are handled correctly (re-yank if un-yanked as a fallback during rollback).
+3. Resume normal development operations on `main`.
+4. Monitor the GitHub issue tracker and Mastodon for user reports of residual problems for at least **72 hours** post-release.
+5. Close the private GitHub Security Advisory once recovery is confirmed.
+
 ---
 
-## 7. Communication
+## 8. Communication
 
 ### Internal (during embargo)
 - Use the **private GitHub Security Advisory** thread for all coordination.
@@ -228,7 +254,7 @@ If a security patch introduces a critical regression after release:
 
 ---
 
-## 8. Post-Incident Review
+## 9. Post-Incident Review
 
 Within **2 weeks** of a Critical or High severity fix being released:
 
@@ -252,12 +278,12 @@ Within **2 weeks** of a Critical or High severity fix being released:
 
 ---
 
-## 9. Dependency Map
+## 10. Dependency Map
 
 Understanding what Pillow depends on (upstream) and what depends on Pillow (downstream)
 is essential for scoping impact and coordinating notifications during an incident.
 
-### 9.1 Upstream Dependencies
+### 10.1 Upstream Dependencies
 
 #### Bundled C libraries (shipped in official wheels)
 
@@ -294,7 +320,7 @@ require a Pillow point release even if Pillow's own code is unchanged.
 | `olefile` | Optional (`fpx`, `mic` extras) | OLE2 container parsing (FPX, MIC formats) |
 | `defusedxml` | Optional (`xmp` extra) | Safe XML parsing for XMP metadata |
 
-### 9.2 Downstream Dependencies
+### 10.2 Downstream Dependencies
 
 A vulnerability in Pillow can have wide impact. Notify or consider the blast radius of
 these downstream consumers when assessing severity and planning communications.
@@ -336,7 +362,7 @@ maintainers should be notified for Critical/High issues that affect the plugin A
 or the formats they decode. See the
 [full plugin list](https://pillow.readthedocs.io/en/stable/handbook/third-party-plugins.html).
 
-### 9.3 Responding to an Upstream Vulnerability
+### 10.3 Responding to an Upstream Vulnerability
 
 When a CVE is published for a bundled C library:
 
@@ -349,7 +375,20 @@ When a CVE is published for a bundled C library:
 
 ---
 
-## 10. References
+## 11. Plan Maintenance
+
+This document is a living record. It should be kept current so it is useful when an
+incident actually occurs.
+
+- **Annual review** — revisit during the §1.3 readiness review each January.
+- **Post-incident update** — if the response process revealed gaps or needed improvisation,
+  update this document before the post-incident review is closed (§9).
+- **Ownership** — changes are approved by the Core Team and recorded in Git history.
+  Substantive changes should be noted in the PR description so they are easy to find later.
+
+---
+
+## 12. References
 
 - [Security Policy](SECURITY.md)
 - [Release Checklist](../RELEASING.md)
