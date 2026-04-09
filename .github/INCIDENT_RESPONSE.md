@@ -125,8 +125,7 @@ Vulnerabilities and incidents may be reported or discovered through:
 5. **Request a CVE** through the GitHub Security Advisory workflow (GitHub is a CVE
    Numbering Authority — no separate MITRE form required). The CVE is reserved privately
    and published automatically when the advisory goes public.
-6. Notify Tidelift if the severity is High or Critical.
-7. **Escalation** — Escalate beyond the core maintainer team if any of the following apply:
+6. **Escalation** — Escalate beyond the core maintainer team if any of the following apply:
    - The vulnerability is being actively exploited in the wild → notify [GitHub Security](mailto:security@github.com) and the [Python Security Response Team](https://www.python.org/news/security/)
    - The fix requires changes to CPython or a dependency outside Pillow's control → contact the relevant upstream immediately
    - A legal concern arises (e.g. GDPR-reportable data exposure) → contact the project's legal/fiscal sponsor
