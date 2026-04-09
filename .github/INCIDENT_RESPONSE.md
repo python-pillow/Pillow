@@ -22,9 +22,6 @@ will receive a patch.
 | `main` / latest stable | ✅ Security fixes applied |
 | All older releases | ❌ No security support — please upgrade |
 
-> If backport support for older releases is ever added, update this table and document it
-> in [SECURITY.md](SECURITY.md).
-
 ### 1.2 Team Readiness
 
 The four members of the Pillow core team are in regular contact and share collective
