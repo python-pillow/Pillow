@@ -72,8 +72,7 @@ This plan covers:
 | **Communications Owner** | Drafts the GitHub Security Advisory, announces on Mastodon, notifies distros. |
 | **Tidelift Contact** | For reports that arrive via Tidelift, coordinate through the Tidelift security portal. |
 
-For the typical small maintainer team, one person may fill multiple roles. Assign roles
-explicitly at the start of each incident to avoid gaps.
+One person may fill multiple roles.
 
 ---
 
