@@ -221,31 +221,7 @@ After the fix is released and the advisory is public:
 
 ---
 
-## 9. Post-Incident Review
-
-Within **2 weeks** of a Critical or High severity fix being released:
-
-1. Hold a brief retrospective (async is fine for a distributed team).
-2. Document the following metrics for the incident record:
-
-   | Metric | Target | Actual |
-   |---|---|---|
-   | Time to acknowledge reporter | ≤ 72 hours | |
-   | Time to reproduce & assess severity | ≤ 5 days | |
-   | Time to develop & review fix | Varies by severity | |
-   | Time from report to public release | Critical ≤ 14 days; High ≤ 30 days | |
-
-3. Record:
-   - What went well
-   - What could be improved
-   - Root cause: what allowed the vulnerability to exist
-   - Whether any distro/downstream was impacted before the fix was available
-4. File follow-up issues for any process improvements identified.
-5. Update this document if the response process needs revision.
-
----
-
-## 10. Dependency Map
+## 9. Dependency Map
 
 Understanding what Pillow depends on (upstream) and what depends on Pillow (downstream)
 is essential for scoping impact and coordinating notifications during an incident.
@@ -348,10 +324,6 @@ This document is a living record. It should be kept current so it is useful when
 incident actually occurs.
 
 - **Quarterly review** — revisit during the Section 1.3 readiness review at each quarterly release.
-- **Post-incident update** — if the response process revealed gaps or needed improvisation,
-  update this document before the post-incident review is closed (Section 9).
-- **Ownership** — changes are approved by the Core Team and recorded in Git history.
-  Substantive changes should be noted in the PR description so they are easy to find later.
 
 ---
 
