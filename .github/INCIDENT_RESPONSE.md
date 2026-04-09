@@ -168,23 +168,7 @@ For Critical and High severity where distro pre-notification improves user safet
    - Publish the GitHub Security Advisory.
    - Announce on [Mastodon](https://fosstodon.org/@pillow).
 
-### 7.5 Rollback Procedures
-
-If a security patch introduces a critical regression after release:
-
-1. **Yank the release immediately** via the PyPI web interface:
-   [https://pypi.org/manage/project/pillow/](https://pypi.org/manage/project/pillow/)
-   (navigate to the release, click **"Yank"**).
-   Yanked releases remain downloadable by pinned users but are excluded from `pip install`
-   resolution, giving time to fix without leaving users unpatched.
-2. Post a public notice in the GitHub release and on Mastodon explaining the regression and
-   that the release has been yanked.
-3. If the previous (vulnerable) version was also yanked, **un-yank it temporarily** so users
-   have a functional fallback while the corrected release is prepared.
-4. Prepare a corrected point release (incrementing the patch version), repeating sections 7.2–7.3.
-5. Document the regression in the post-incident review (Section 9).
-
-### 7.6 Supply-Chain / Infrastructure Compromise
+### 7.5 Supply-Chain / Infrastructure Compromise
 
 1. **Immediately** revoke any potentially compromised credentials:
    - PyPI API tokens (regenerate and update in GitHub secrets)
@@ -199,12 +183,12 @@ If a security patch introduces a critical regression after release:
 4. Notify GitHub Security if repository access or Actions secrets are involved.
 5. Issue a public advisory describing the scope and any user action required.
 
-### 7.7 Recovery
+### 7.6 Recovery
 
 After the fix is released and the advisory is public:
 
 1. Verify that the patched wheels are live on PyPI and passing CI across all supported platforms.
-2. Confirm any yanked releases are handled correctly (re-yank if un-yanked as a fallback during rollback).
+2. Confirm any yanked releases are handled correctly .
 3. Resume normal development operations on `main`.
 4. Monitor the GitHub issue tracker and Mastodon for user reports of residual problems for at least **72 hours** post-release.
 5. Close the private GitHub Security Advisory once recovery is confirmed.
