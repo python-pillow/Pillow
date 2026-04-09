@@ -174,7 +174,7 @@ For Critical and High severity where distro pre-notification improves user safet
 If a security patch introduces a critical regression after release:
 
 1. **Yank the release immediately** via the PyPI web interface:
-   [https://pypi.org/manage/project/pillow/release/\<version\>/](https://pypi.org/manage/project/pillow/)
+   [https://pypi.org/manage/project/pillow/](https://pypi.org/manage/project/pillow/)
    (navigate to the release, click **"Yank"**).
    Yanked releases remain downloadable by pinned users but are excluded from `pip install`
    resolution, giving time to fix without leaving users unpatched.
@@ -272,7 +272,7 @@ require a Pillow point release even if Pillow's own code is unchanged.
 | [libwebp](https://chromium.googlesource.com/webm/libwebp) | WebP encode/decode | [Chromium tracker](https://bugs.chromium.org/p/webm/) |
 | [libavif](https://github.com/AOMediaCodec/libavif) | AVIF encode/decode | [GitHub](https://github.com/AOMediaCodec/libavif/security) |
 | [aom](https://aomedia.googlesource.com/aom/) | AV1 codec (AVIF) | [Chromium tracker](https://bugs.chromium.org/p/aomedia/) |
-| [dav1d](https://code.videolan.org/videolan/dav1d) | AV1 decode (AVIF) | [VideoLAN](https://security.videolan.org/) |
+| [dav1d](https://code.videolan.org/videolan/dav1d) | AV1 decode (AVIF) | [VideoLAN Security](https://www.videolan.org/security/) |
 | [openjpeg](https://www.openjpeg.org/) | JPEG 2000 encode/decode | [GitHub](https://github.com/uclouvain/openjpeg/security) |
 | [freetype2](https://freetype.org/) | Font rendering | [GitLab](https://gitlab.freedesktop.org/freetype/freetype/-/issues) |
 | [lcms2](https://www.littlecms.com/) | ICC color management | [GitHub](https://github.com/mm2/Little-CMS) |
@@ -281,7 +281,7 @@ require a Pillow point release even if Pillow's own code is unchanged.
 | [fribidi](https://github.com/fribidi/fribidi) | Unicode bidi (via raqm) | [GitHub](https://github.com/fribidi/fribidi) |
 | [zlib](https://zlib.net/) | Deflate compression | [zlib.net](https://zlib.net/) |
 | [liblzma / xz-utils](https://tukaani.org/xz/) | XZ/LZMA compression | [GitHub](https://github.com/tukaani-project/xz) |
-| [bzip2](https://sourceware.org/bzip2/) | BZ2 compression | [Sourceware](https://sourceware.org/bzip2/) |
+| [bzip2](https://gitlab.com/bzip2/bzip2) | BZ2 compression | [GitLab](https://gitlab.com/bzip2/bzip2/-/issues) |
 | [zstd](https://github.com/facebook/zstd) | Zstandard compression | [GitHub](https://github.com/facebook/zstd/security) |
 | [brotli](https://github.com/google/brotli) | Brotli compression | [GitHub](https://github.com/google/brotli) |
 | [libyuv](https://chromium.googlesource.com/libyuv/libyuv/) | YUV conversion | [Chromium tracker](https://bugs.chromium.org/p/libyuv/) |
@@ -356,7 +356,7 @@ When a CVE is published for a bundled C library:
 - [Contributing Guide](CONTRIBUTING.md)
 - [Tidelift Security Contact](https://tidelift.com/security)
 - [GitHub: Privately reporting a security vulnerability](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing/privately-reporting-a-security-vulnerability)
-- [GitHub as a CVE Numbering Authority (CNA)](https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/about-github-security-advisories-for-repositories#cve-identification-numbers)
+- [GitHub as a CVE Numbering Authority (CNA)](https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/about-repository-security-advisories)
 - [FIRST CVSS v3.1 Calculator](https://www.first.org/cvss/calculator/3.1)
 - [linux-distros mailing list](https://oss-security.openwall.org/wiki/mailing-lists/distros)
 - [OpenSSF CVD Guide](https://github.com/ossf/oss-vulnerability-guide) *(basis for this plan)*
