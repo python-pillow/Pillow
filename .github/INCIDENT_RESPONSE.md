@@ -118,7 +118,7 @@ Vulnerabilities and incidents may be reported or discovered through:
    - Whether they intend to publish their own advisory, and if so, their preferred timeline
    - Thank them explicitly — reporters do the project a favour by disclosing privately.
 2. Reproduce the issue. If the report is invalid, close it and notify the reporter.
-3. Assign a severity level (Section 3) and an Incident Lead.
+3. Assign a severity level ([§5 Severity Classification](#5-severity-classification)).
 4. If the GitHub Security Advisory was not created by the reporter, create one now and keep
    it **private** until the fix is released. Add the reporter as a collaborator if they wish
    to be involved.
