@@ -324,7 +324,7 @@ When a CVE is published for a bundled C library:
 This document is a living record. It should be kept current so it is useful when an
 incident actually occurs.
 
-- **Quarterly review** — revisit during the Section 1.3 readiness review at each quarterly release.
+- **Quarterly review** — revisit during the [Section 1.3 readiness review](#13-readiness-review) at each quarterly release.
 
 ---
 
