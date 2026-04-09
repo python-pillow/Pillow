@@ -30,9 +30,7 @@ Contact details are known to all team members.
 
 ### 1.3 Readiness Review
 
-At each quarterly release, maintainers should:
-
-1. Re-read this document and update any stale content (version table, contacts, tooling).
+At each quarterly release, maintainers should re-read this document and update any stale content.
 
 ---
 
