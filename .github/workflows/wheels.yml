@@ -12,6 +12,7 @@ on:
   push:
     paths:
       - ".ci/requirements-cibw.txt"
+      - ".github/generate-sbom.py"
       - ".github/workflows/wheel*"
       - "pyproject.toml"
       - "setup.py"
@@ -23,6 +24,7 @@ on:
   pull_request:
     paths:
       - ".ci/requirements-cibw.txt"
+      - ".github/generate-sbom.py"
       - ".github/workflows/wheel*"
       - "pyproject.toml"
       - "setup.py"
@@ -280,15 +282,8 @@ jobs:
           anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
 
   sbom:
-    if: |
-      github.event.repository.fork == false
-      && github.event_name == 'push'
-      && startsWith(github.ref, 'refs/tags')
-    needs: count-dists
     runs-on: ubuntu-latest
-    name: Generate and publish SBOM
-    permissions:
-      contents: write
+    name: Generate SBOM
     steps:
       - uses: actions/checkout@v6
         with:
@@ -306,6 +301,22 @@ jobs:
         with:
           name: sbom
           path: "*.cdx.json"
+
+  sbom-publish:
+    if: |
+      github.event.repository.fork == false
+      && github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags')
+    needs: [count-dists, sbom]
+    runs-on: ubuntu-latest
+    name: Publish SBOM to GitHub release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: sbom
+          path: .
 
       - name: Attach SBOM to GitHub release
         env:
