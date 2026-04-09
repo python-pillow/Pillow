@@ -83,8 +83,8 @@ a guide, mapped to the following levels:
 
 | Severity | CVSS | Definition | Target Response SLA |
 |---|---|---|---|
-| **Critical** | 9.0 – 10.0 | Remote code execution, arbitrary write, or complete integrity/confidentiality loss achievable by opening a crafted image | 48 hours to patch; embargoed release where possible |
-| **High** | 7.0 – 8.9 | Heap/stack buffer overflow, use-after-free, or significant information disclosure | 7 days to patch |
+| **Critical** | 9.0 – 10.0 | Remote code execution, arbitrary write, or complete integrity/confidentiality loss achievable by opening a crafted image | Best effort; embargoed release where possible |
+| **High** | 7.0 – 8.9 | Heap/stack buffer overflow, use-after-free, or significant information disclosure | Best effort |
 | **Medium** | 4.0 – 6.9 | Denial of service via crafted image, out-of-bounds read, limited info disclosure | Next scheduled quarterly release, or earlier point release if needed |
 | **Low** | 0.1 – 3.9 | Minor information disclosure, unlikely to be exploitable in practice | Next quarterly release |
 
