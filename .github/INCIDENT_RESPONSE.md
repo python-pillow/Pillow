@@ -118,7 +118,7 @@ Vulnerabilities and incidents may be reported or discovered through:
    - Whether they intend to publish their own advisory, and if so, their preferred timeline
    - Thank them explicitly — reporters do the project a favour by disclosing privately.
 2. Reproduce the issue. If the report is invalid, close it and notify the reporter.
-3. Assign a severity level ([§5 Severity Classification](#5-severity-classification)).
+3. Assign a severity level ([Section 5: Severity Classification](#5-severity-classification)).
 4. If the GitHub Security Advisory was not created by the reporter, create one now and keep
    it **private** until the fix is released. Add the reporter as a collaborator if they wish
    to be involved.
@@ -183,8 +183,8 @@ If a security patch introduces a critical regression after release:
    that the release has been yanked.
 3. If the previous (vulnerable) version was also yanked, **un-yank it temporarily** so users
    have a functional fallback while the corrected release is prepared.
-4. Prepare a corrected point release (incrementing the patch version), repeating §7.2–§7.3.
-5. Document the regression in the post-incident review (§9).
+4. Prepare a corrected point release (incrementing the patch version), repeating sections 7.2–7.3.
+5. Document the regression in the post-incident review (Section 9).
 
 ### 7.6 Supply-Chain / Infrastructure Compromise
 
@@ -365,9 +365,9 @@ When a CVE is published for a bundled C library:
 This document is a living record. It should be kept current so it is useful when an
 incident actually occurs.
 
-- **Quarterly review** — revisit during the §1.3 readiness review at each quarterly release.
+- **Quarterly review** — revisit during the Section 1.3 readiness review at each quarterly release.
 - **Post-incident update** — if the response process revealed gaps or needed improvisation,
-  update this document before the post-incident review is closed (§9).
+  update this document before the post-incident review is closed (Section 9).
 - **Ownership** — changes are approved by the Core Team and recorded in Git history.
   Substantive changes should be noted in the PR description so they are easy to find later.
 
