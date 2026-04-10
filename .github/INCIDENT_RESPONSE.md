@@ -218,7 +218,7 @@ After the fix is released and the advisory is public:
 - Fixed version(s)
 - Nature of the vulnerability (without full exploit details if still fresh)
 - Credit to the reporter (with their consent)
-- Upgrade instructions (`pip install --upgrade Pillow`)
+- Upgrade instructions (`python3 -m pip install --upgrade Pillow`)
 
 ---
 
@@ -278,7 +278,7 @@ these downstream consumers when assessing severity and planning communications.
 | Fedora / RHEL / CentOS | `python3-pillow` | [Red Hat Security](https://access.redhat.com/security/) |
 | Alpine Linux | `py3-pillow` | [Alpine security](https://security.alpinelinux.org/) |
 | Arch Linux | `python-pillow` | [Arch security tracker](https://security.archlinux.org/) |
-| Homebrew (macOS) | `pillow` | [Homebrew maintainers](https://github.com/Homebrew/homebrew-core) |
+| Homebrew | `pillow` | [Homebrew maintainers](https://github.com/Homebrew/homebrew-core) |
 | conda-forge | `pillow` | [conda-forge](https://github.com/conda-forge/pillow-feedstock) |
 
 #### Major Python ecosystem consumers
@@ -411,7 +411,7 @@ incident actually occurs.
 >
 > **Remediation:**
 > ```
-> pip install --upgrade Pillow
+> python3 -m pip install --upgrade Pillow
 > ```
 >
 > **Timeline:**
