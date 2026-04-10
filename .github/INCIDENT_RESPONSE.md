@@ -76,7 +76,7 @@ One person may fill multiple roles.
 
 ## 5. Severity Classification
 
-Use the [CVSS v3.1](https://www.first.org/cvss/v3.1/specification-document) base score as
+Use the [CVSS 4.0](https://www.first.org/cvss/v4.0/specification-document) base score as
 a guide, mapped to the following levels:
 
 | Severity | CVSS | Definition | Target Response SLA |
@@ -98,11 +98,10 @@ Vulnerabilities and incidents may be reported or discovered through:
 
 1. **GitHub private security advisory** — preferred channel; see [SECURITY.md](SECURITY.md)
 2. **Tidelift security contact** — <https://tidelift.com/security>
-3. **Direct maintainer contact** — DM on Mastodon or email
-4. **External researcher / coordinated disclosure** — e.g. Google Project Zero, vendor PSIRT
-5. **Automated scanning** — Dependabot, GitHub code-scanning (CodeQL), CI fuzzing
-6. **Distro security teams** — Debian, Red Hat, Ubuntu, Alpine may report upstream
-7. **User bug report** — public issue (reassess if it has security implications before it stays public)
+3. **External researcher / coordinated disclosure** — e.g. Google Project Zero, vendor PSIRT
+4. **Automated scanning** — Dependabot, GitHub code-scanning (CodeQL), CI fuzzing
+5. **Distro security teams** — Debian, Red Hat, Ubuntu, Alpine may report upstream
+6. **User bug report** — public issue (reassess if it has security implications and convert to a private advisory if needed)
 
 ---
 
@@ -142,9 +141,9 @@ For Medium and Low severity, or when no distro pre-notification is needed:
 1. Merge the fix to `main`, then cherry-pick to all affected release branches
    (see [RELEASING.md — Point release](../RELEASING.md)).
 2. Amend commit messages to include the CVE identifier.
-3. Tag and push; the GitHub Actions "Wheels" workflow will build and upload to PyPI.
+3. Follow the [Point release](../RELEASING.md#point-release) process in RELEASING.md to
+   tag, push, and confirm wheels are live on PyPI.
 4. Publish the GitHub Security Advisory (this simultaneously publishes the CVE).
-5. Announce on [Mastodon](https://fosstodon.org/@pillow).
 
 ### 7.4 Embargoed Release
 
@@ -158,25 +157,24 @@ For Critical and High severity where distro pre-notification improves user safet
    or directly to individual distro security teams.
 4. On the embargo date:
    - Amend commit messages with the CVE identifier.
-   - Tag and push all affected release branches (see [RELEASING.md — Embargoed release](../RELEASING.md)).
-   - Confirm the "Wheels" workflow has passed and wheels are live on PyPI.
+   - Follow the [Embargoed release](../RELEASING.md#embargoed-release) process in
+     RELEASING.md to tag, push, and confirm wheels are live on PyPI.
    - Publish the GitHub Security Advisory.
-   - Announce on [Mastodon](https://fosstodon.org/@pillow).
 
 ### 7.5 Supply-Chain / Infrastructure Compromise
 
 1. **Immediately** revoke any potentially compromised credentials:
-   - PyPI API tokens (regenerate and update in GitHub secrets)
+   - PyPI API tokens
    - GitHub personal access tokens and OAuth apps
    - Codecov or other CI service tokens
 2. Audit recent commits and releases for tampering:
    - Verify release tags against known-good SHAs
    - Re-inspect any wheel published since the potential compromise window
-3. If a PyPI release is suspected to be tampered: yank it immediately via
-   [https://pypi.org/manage/project/pillow/](https://pypi.org/manage/project/pillow/);
-   file a report with the [PyPI security team](mailto:security@pypi.org).
-4. Notify GitHub Security if repository access or Actions secrets are involved.
-5. Issue a public advisory describing the scope and any user action required.
+3. If a PyPI release is suspected to be tampered: yank it immediately via the
+   [PyPI release management page](https://pypi.org/manage/project/Pillow/releases/)
+   (login required); see [https://pypi.org/security/](https://pypi.org/security/) for
+   reporting to the PyPI security team.
+4. Issue a public advisory describing the scope and any user action required.
 
 ### 7.6 Recovery
 
@@ -222,7 +220,7 @@ After the fix is released and the advisory is public:
 Understanding what Pillow depends on (upstream) and what depends on Pillow (downstream)
 is essential for scoping impact and coordinating notifications during an incident.
 
-### 10.1 Upstream Dependencies
+### 9.1 Upstream Dependencies
 
 #### Bundled C libraries (shipped in official wheels)
 
@@ -233,20 +231,20 @@ require a Pillow point release even if Pillow's own code is unchanged.
 |---|---|---|
 | [libjpeg-turbo](https://libjpeg-turbo.org/) | JPEG encode/decode | [GitHub](https://github.com/libjpeg-turbo/libjpeg-turbo/security) |
 | [libpng](http://www.libpng.org/pub/png/libpng.html) | PNG encode/decode | [SourceForge](https://sourceforge.net/p/libpng/bugs/) |
-| [libtiff](https://libtiff.gitlab.io/libtiff/) | TIFF encode/decode | [GitLab](https://gitlab.com/libtiff/libtiff/-/issues) |
+| [libtiff](https://libtiff.gitlab.io/libtiff/) | TIFF encode/decode | [GitLab](https://gitlab.com/libtiff/libtiff/-/work_items) |
 | [libwebp](https://chromium.googlesource.com/webm/libwebp) | WebP encode/decode | [Chromium tracker](https://bugs.chromium.org/p/webm/) |
 | [libavif](https://github.com/AOMediaCodec/libavif) | AVIF encode/decode | [GitHub](https://github.com/AOMediaCodec/libavif/security) |
 | [aom](https://aomedia.googlesource.com/aom/) | AV1 codec (AVIF) | [Chromium tracker](https://bugs.chromium.org/p/aomedia/) |
 | [dav1d](https://code.videolan.org/videolan/dav1d) | AV1 decode (AVIF) | [VideoLAN Security](https://www.videolan.org/security/) |
 | [openjpeg](https://www.openjpeg.org/) | JPEG 2000 encode/decode | [GitHub](https://github.com/uclouvain/openjpeg/security) |
-| [freetype2](https://freetype.org/) | Font rendering | [GitLab](https://gitlab.freedesktop.org/freetype/freetype/-/issues) |
+| [freetype2](https://freetype.org/) | Font rendering | [GitLab](https://gitlab.freedesktop.org/freetype/freetype/-/work_items) |
 | [lcms2](https://www.littlecms.com/) | ICC color management | [GitHub](https://github.com/mm2/Little-CMS) |
 | [harfbuzz](https://harfbuzz.github.io/) | Text shaping (via raqm) | [GitHub](https://github.com/harfbuzz/harfbuzz/security) |
 | [raqm](https://github.com/HOST-Oman/libraqm) | Complex text layout | [GitHub](https://github.com/HOST-Oman/libraqm) |
 | [fribidi](https://github.com/fribidi/fribidi) | Unicode bidi (via raqm) | [GitHub](https://github.com/fribidi/fribidi) |
 | [zlib](https://zlib.net/) | Deflate compression | [zlib.net](https://zlib.net/) |
 | [liblzma / xz-utils](https://tukaani.org/xz/) | XZ/LZMA compression | [GitHub](https://github.com/tukaani-project/xz) |
-| [bzip2](https://gitlab.com/bzip2/bzip2) | BZ2 compression | [GitLab](https://gitlab.com/bzip2/bzip2/-/issues) |
+| [bzip2](https://gitlab.com/bzip2/bzip2) | BZ2 compression | [GitLab](https://gitlab.com/bzip2/bzip2/-/work_items) |
 | [zstd](https://github.com/facebook/zstd) | Zstandard compression | [GitHub](https://github.com/facebook/zstd/security) |
 | [brotli](https://github.com/google/brotli) | Brotli compression | [GitHub](https://github.com/google/brotli) |
 | [libyuv](https://chromium.googlesource.com/libyuv/libyuv/) | YUV conversion | [Chromium tracker](https://bugs.chromium.org/p/libyuv/) |
@@ -260,7 +258,21 @@ require a Pillow point release even if Pillow's own code is unchanged.
 | `olefile` | Optional (`fpx`, `mic` extras) | OLE2 container parsing (FPX, MIC formats) |
 | `defusedxml` | Optional (`xmp` extra) | Safe XML parsing for XMP metadata |
 
-### 10.2 Downstream Dependencies
+See [`pyproject.toml`](../pyproject.toml) for the complete and authoritative list of
+optional dependencies.
+
+### 9.2 Responding to an Upstream Vulnerability
+
+When a CVE is published for a bundled C library:
+
+1. Assess whether the vulnerable code path is reachable through Pillow's API.
+2. If reachable, treat as a Pillow vulnerability and follow [Section 5: Severity Classification](#5-severity-classification).
+3. Update the bundled library version in the wheel build scripts and rebuild wheels.
+4. Reference the upstream CVE in Pillow's release notes and GitHub Security Advisory.
+5. If not reachable, document the rationale in a public issue so downstream distributors
+   can make informed decisions about patching their system packages.
+
+### 9.3 Downstream Dependencies
 
 A vulnerability in Pillow can have wide impact. Notify or consider the blast radius of
 these downstream consumers when assessing severity and planning communications.
@@ -299,18 +311,7 @@ warrant proactive notification.
 Third-party plugins extend Pillow and are distributed separately on PyPI. Their
 maintainers should be notified for Critical/High issues that affect the plugin API
 or the formats they decode. See the
-[full plugin list](https://pillow.readthedocs.io/en/stable/handbook/third-party-plugins.html).
-
-### 10.3 Responding to an Upstream Vulnerability
-
-When a CVE is published for a bundled C library:
-
-1. Assess whether the vulnerable code path is reachable through Pillow's API.
-2. If reachable, treat as a Pillow vulnerability and follow Section 5.
-3. Update the bundled library version in the wheel build scripts and rebuild wheels.
-4. Reference the upstream CVE in Pillow's release notes and GitHub Security Advisory.
-5. If not reachable, document the rationale in a public issue so downstream distributors
-   can make informed decisions about patching their system packages.
+[full plugin list](https://pillow.readthedocs.io/en/stable/handbook/third-party-plugins.html#plugin-list).
 
 ---
 
@@ -328,7 +329,7 @@ This document is a living record. It should be kept current so it is useful when
 - [Tidelift Security Contact](https://tidelift.com/security)
 - [GitHub: Privately reporting a security vulnerability](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing/privately-reporting-a-security-vulnerability)
 - [GitHub as a CVE Numbering Authority (CNA)](https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/about-repository-security-advisories)
-- [FIRST CVSS v3.1 Calculator](https://www.first.org/cvss/calculator/3.1)
+- [FIRST CVSS 4.0 Calculator](https://www.first.org/cvss/calculator/4.0)
 - [linux-distros mailing list](https://oss-security.openwall.org/wiki/mailing-lists/distros)
 - [OpenSSF CVD Guide](https://github.com/ossf/oss-vulnerability-guide) *(basis for this plan)*
 
