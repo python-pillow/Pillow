@@ -162,7 +162,7 @@ def generate(version: str) -> dict:
             "name": "libjpeg / libjpeg-turbo",
             "description": "JPEG codec (required by default; disable with "
             "-C jpeg=disable). Tested with libjpeg 6b/8/9-9d "
-            "and libjpeg-turbo 8.",
+            "and libjpeg-turbo 2-3.",
             "licenses": [
                 {"license": {"id": "IJG"}},
                 {"license": {"id": "BSD-3-Clause"}},
