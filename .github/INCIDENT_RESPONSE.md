@@ -133,11 +133,7 @@ Vulnerabilities and incidents may be reported or discovered through:
 1. Develop the fix in a **private fork** or directly in the private security advisory
    workspace on GitHub. Do **not** push to a public branch before the embargo lifts.
 2. Write a regression test that fails before the fix and passes after.
-3. Run the full test suite locally across all supported Python versions:
-   ```bash
-   make release-test
-   ```
-4. Review the patch with at least one other maintainer.
+3. Review the patch with at least one other maintainer.
 
 ### 7.3 Standard (Non-Embargoed) Release
 
