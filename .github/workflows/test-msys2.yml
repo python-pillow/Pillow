@@ -1,4 +1,4 @@
-name: Test MinGW
+name: Test MSYS2
 
 on:
   push:
@@ -33,16 +33,24 @@ env:
 jobs:
   build:
     runs-on: windows-latest
-
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # skip to save CI time:
+          # see https://github.com/python-pillow/Pillow/pull/6888#issuecomment-1400392821
+          # - msystem: "UCRT64"
+          - msystem: "CLANG64"
+          - msystem: "MINGW64"
     defaults:
       run:
         shell: bash.exe --login -eo pipefail "{0}"
     env:
-      MSYSTEM: MINGW64
+      MSYSTEM: ${{ matrix.msystem }}
       CHERE_INVOKING: 1
 
     timeout-minutes: 30
-    name: "MinGW"
+    name: MSYS2 ${{ matrix.msystem }}
 
     steps:
       - name: Checkout Pillow
@@ -57,39 +65,52 @@ jobs:
       - name: Install dependencies
         run: |
           pacman -S --noconfirm \
-              mingw-w64-x86_64-freetype \
-              mingw-w64-x86_64-gcc \
-              mingw-w64-x86_64-ghostscript \
-              mingw-w64-x86_64-lcms2 \
-              mingw-w64-x86_64-libavif \
-              mingw-w64-x86_64-libimagequant \
-              mingw-w64-x86_64-libjpeg-turbo \
-              mingw-w64-x86_64-libraqm \
-              mingw-w64-x86_64-libtiff \
-              mingw-w64-x86_64-libwebp \
-              mingw-w64-x86_64-openjpeg2 \
-              mingw-w64-x86_64-python-numpy \
-              mingw-w64-x86_64-python-olefile \
-              mingw-w64-x86_64-python-pip \
-              mingw-w64-x86_64-python-pytest \
-              mingw-w64-x86_64-python-pytest-cov \
-              mingw-w64-x86_64-python-pytest-timeout \
-              mingw-w64-x86_64-python-pyqt6
+              make \
+              pactoys \
+              subversion
+
+          pacboy -S --noconfirm \
+              freetype:p \
+              gcc:p \
+              ghostscript:p \
+              lcms2:p \
+              libimagequant:p \
+              libjpeg-turbo:p \
+              libraqm:p \
+              libtiff:p \
+              libwebp:p \
+              openjpeg2:p \
+              python-numpy:p \
+              python-olefile:p \
+              python-pip:p \
+              python-pyqt6:p
+
+          python3 -m pip install pyroma pytest pytest-cov pytest-timeout
 
           pushd depends && ./install_extra_test_images.sh && popd
 
       - name: Build Pillow
-        run: CFLAGS="-coverage" python3 -m pip install .
+        run: .ci/build.sh
 
       - name: Test Pillow
-        run: |
-          python3 selftest.py --installed
-          .ci/test.sh
+        run: .ci/test.sh
+
+      - name: After success
+        run: .ci/after_success.sh
 
       - name: Upload coverage
         uses: codecov/codecov-action@v6
         with:
           files: ./coverage.xml
           flags: GHA_Windows
-          name: "MSYS2 MinGW"
-          token: ${{ secrets.CODECOV_ORG_TOKEN }}
+          name: MSYS2 ${{ matrix.msystem }}
+
+  success:
+    permissions:
+      contents: none
+    needs: build
+    runs-on: ubuntu-latest
+    name: MSYS2 Test Successful
+    steps:
+      - name: Success
+        run: echo MSYS2 Test Successful
