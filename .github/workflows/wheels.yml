@@ -264,6 +264,9 @@ jobs:
     needs: count-dists
     runs-on: ubuntu-latest
     name: Upload wheels to scientific-python-nightly-wheels
+    environment:
+      name: release-anaconda
+      url: https://anaconda.org/channels/anaconda/packages/pillow/overview
     steps:
       - uses: actions/download-artifact@v8
         with:
