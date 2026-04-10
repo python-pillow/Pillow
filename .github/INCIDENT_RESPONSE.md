@@ -124,7 +124,6 @@ Vulnerabilities and incidents may be reported or discovered through:
    Numbering Authority — no separate MITRE form required). The CVE is reserved privately
    and published automatically when the advisory goes public.
 6. **Escalation** — Escalate beyond the core maintainer team if any of the following apply:
-   - The vulnerability is being actively exploited in the wild → notify [GitHub Security](mailto:security@github.com) and the [Python Security Response Team](https://www.python.org/news/security/)
    - The fix requires changes to CPython or a dependency outside Pillow's control → contact the relevant upstream immediately
    - A legal concern arises (e.g. GDPR-reportable data exposure) → contact the project's legal/fiscal sponsor
    - The Incident Lead is unreachable for > 24 hours on a Critical issue → any other maintainer may assume the role
