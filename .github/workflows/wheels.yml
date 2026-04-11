@@ -266,7 +266,7 @@ jobs:
     name: Upload wheels to scientific-python-nightly-wheels
     environment:
       name: release-anaconda
-      url: https://anaconda.org/channels/anaconda/packages/pillow/overview
+      url: https://anaconda.org/channels/scientific-python-nightly-wheels/packages/pillow/overview
     steps:
       - uses: actions/download-artifact@v8
         with:
