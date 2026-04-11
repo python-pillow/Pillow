@@ -181,7 +181,7 @@ def test_reduce() -> None:
         assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
 
         im.reduce = 2
-        assert im.reduce == 2  # type: ignore[comparison-overlap]
+        assert im.reduce == 2
 
         im.load()
         assert im.size == (160, 120)
