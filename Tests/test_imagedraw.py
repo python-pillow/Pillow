@@ -1801,7 +1801,7 @@ def test_line_dash_empty() -> None:
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
         draw.line([(10, 50), (90, 50)], dash=())
 
 
@@ -1843,7 +1843,7 @@ def test_polygon_dash_empty() -> None:
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
         draw.polygon([(10, 10), (90, 10), (90, 90)], dash=())
 
 
@@ -1874,5 +1874,5 @@ def test_rectangle_dash_empty() -> None:
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
         draw.rectangle([10, 10, 90, 90], dash=())
