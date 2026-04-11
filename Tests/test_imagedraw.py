@@ -1787,11 +1787,14 @@ def test_line_dash_odd_pattern() -> None:
     # An odd-length dash pattern should be doubled per SVG spec
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
-
-    # Should not raise; odd pattern (10,) becomes (10, 10)
     draw.line([(10, 50), (90, 50)], "yellow", 2, dash=(10,))
 
-    assert im.getbbox() is not None
+    expected = Image.new("RGB", (W, H))
+    draw2 = ImageDraw.Draw(expected)
+    draw2.line([(10, 50), (90, 50)], "yellow", 2, dash=(10, 10))
+
+    # odd pattern (10,) becomes (10, 10)
+    assert_image_equal(im, expected)
 
 
 def test_line_dash_empty() -> None:
@@ -1834,7 +1837,6 @@ def test_polygon_dash_with_fill() -> None:
 
     # Verify center pixel is red (fill) and some edge pixels are blue (outline)
     assert im.getpixel((50, 50)) == (255, 0, 0)
-    assert im.getbbox() is not None
 
 
 def test_polygon_dash_empty() -> None:
@@ -1866,7 +1868,6 @@ def test_rectangle_dash_with_fill() -> None:
 
     # Verify center pixel is red (fill)
     assert im.getpixel((50, 50)) == (255, 0, 0)
-    assert im.getbbox() is not None
 
 
 def test_rectangle_dash_empty() -> None:
