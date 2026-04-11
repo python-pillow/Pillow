@@ -235,14 +235,11 @@ class ImageDraw:
         """Convert various coordinate formats to a list of (x, y) tuples."""
         if isinstance(xy[0], (list, tuple)):
             return [
-                (float(point[0]), float(point[1]))
-                for point in cast(Sequence[Sequence[float]], xy)
+                (point[0], point[1]) for point in cast(Sequence[Sequence[float]], xy)
             ]
         else:
             flat = cast(Sequence[float], xy)
-            return [
-                (float(flat[i]), float(flat[i + 1])) for i in range(0, len(flat), 2)
-            ]
+            return [(flat[i], flat[i + 1]) for i in range(0, len(flat), 2)]
 
     def _draw_dashed_line(
         self,
@@ -334,14 +331,7 @@ class ImageDraw:
         if ink is not None:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
-                joint_points: Sequence[Sequence[float]]
-                if isinstance(xy[0], (list, tuple)):
-                    joint_points = cast(Sequence[Sequence[float]], xy)
-                else:
-                    flat_xy = cast(Sequence[float], xy)
-                    joint_points = [
-                        tuple(flat_xy[i : i + 2]) for i in range(0, len(flat_xy), 2)
-                    ]
+                joint_points = self._normalize_points(xy)
                 for i in range(1, len(joint_points) - 1):
                     point = joint_points[i]
                     angles = [
@@ -504,10 +494,7 @@ class ImageDraw:
             if len(dash) == 0:
                 msg = "dash must be a non-empty tuple of ints"
                 raise ValueError(msg)
-            if isinstance(xy[0], (list, tuple)):
-                (x0, y0), (x1, y1) = cast(Sequence[Sequence[float]], xy)
-            else:
-                x0, y0, x1, y1 = cast(Sequence[float], xy)
+            (x0, y0), (x1, y1) = self._normalize_points(xy)
             rect_points: list[tuple[float, float]] = [
                 (x0, y0),
                 (x1, y0),
@@ -541,10 +528,7 @@ class ImageDraw:
         corners: tuple[bool, bool, bool, bool] | None = None,
     ) -> None:
         """Draw a rounded rectangle."""
-        if isinstance(xy[0], (list, tuple)):
-            (x0, y0), (x1, y1) = cast(Sequence[Sequence[float]], xy)
-        else:
-            x0, y0, x1, y1 = cast(Sequence[float], xy)
+        (x0, y0), (x1, y1) = self._normalize_points(xy)
         if x1 < x0:
             msg = "x1 must be greater than or equal to x0"
             raise ValueError(msg)
