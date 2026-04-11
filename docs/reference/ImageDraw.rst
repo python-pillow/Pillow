@@ -310,7 +310,7 @@ Methods
         doubled (following the SVG specification). When ``dash`` is set,
         ``joint`` is ignored.
 
-        .. versionadded:: 12.2.0
+        .. versionadded:: 12.3.0
 
 .. py:method:: ImageDraw.pieslice(xy, start, end, fill=None, outline=None, width=1)
 
@@ -356,7 +356,7 @@ Methods
         repeats). If an odd number of values is given, the pattern is
         doubled (following the SVG specification).
 
-        .. versionadded:: 12.2.0
+        .. versionadded:: 12.3.0
 
 
 .. py:method:: ImageDraw.regular_polygon(bounding_circle, n_sides, rotation=0, fill=None, outline=None, width=1)
@@ -395,7 +395,7 @@ Methods
         repeats). If an odd number of values is given, the pattern is
         doubled (following the SVG specification).
 
-        .. versionadded:: 12.2.0
+        .. versionadded:: 12.3.0
 
 .. py:method:: ImageDraw.rounded_rectangle(xy, radius=0, fill=None, outline=None, width=1, corners=None)
 
