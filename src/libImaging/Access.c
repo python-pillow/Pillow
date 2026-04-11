@@ -15,20 +15,25 @@
 
 static void
 get_pixel_32_2bands(Imaging im, int x, int y, void *color) {
+    MUTEX_LOCK(&im->mutex);
     char *out = color;
     UINT8 *p = (UINT8 *)&im->image32[y][x];
     out[0] = p[0];
     out[1] = p[3];
+    MUTEX_UNLOCK(&im->mutex);
 }
 
 static void
 get_pixel_8(Imaging im, int x, int y, void *color) {
     char *out = color;
+    MUTEX_LOCK(&im->mutex);
     out[0] = im->image8[y][x];
+    MUTEX_UNLOCK(&im->mutex);
 }
 
 static void
 get_pixel_16L(Imaging im, int x, int y, void *color) {
+    MUTEX_LOCK(&im->mutex);
     UINT8 *in = (UINT8 *)&im->image[y][x + x];
 #ifdef WORDS_BIGENDIAN
     UINT16 out = in[0] + ((UINT16)in[1] << 8);
@@ -36,10 +41,12 @@ get_pixel_16L(Imaging im, int x, int y, void *color) {
 #else
     memcpy(color, in, sizeof(UINT16));
 #endif
+    MUTEX_UNLOCK(&im->mutex);
 }
 
 static void
 get_pixel_16B(Imaging im, int x, int y, void *color) {
+    MUTEX_LOCK(&im->mutex);
     UINT8 *in = (UINT8 *)&im->image[y][x + x];
 #ifdef WORDS_BIGENDIAN
     memcpy(color, in, sizeof(UINT16));
@@ -47,36 +54,47 @@ get_pixel_16B(Imaging im, int x, int y, void *color) {
     UINT16 out = in[1] + ((UINT16)in[0] << 8);
     memcpy(color, &out, sizeof(out));
 #endif
+    MUTEX_UNLOCK(&im->mutex);
 }
 
 static void
 get_pixel_32(Imaging im, int x, int y, void *color) {
+    MUTEX_LOCK(&im->mutex);
     memcpy(color, &im->image32[y][x], sizeof(INT32));
+    MUTEX_UNLOCK(&im->mutex);
 }
 
 /* store individual pixel */
 
 static void
 put_pixel_8(Imaging im, int x, int y, const void *color) {
+    MUTEX_LOCK(&im->mutex);
     im->image8[y][x] = *((UINT8 *)color);
+    MUTEX_UNLOCK(&im->mutex);
 }
 
 static void
 put_pixel_16L(Imaging im, int x, int y, const void *color) {
+    MUTEX_LOCK(&im->mutex);
     memcpy(&im->image8[y][x + x], color, 2);
+    MUTEX_UNLOCK(&im->mutex);
 }
 
 static void
 put_pixel_16B(Imaging im, int x, int y, const void *color) {
+    MUTEX_LOCK(&im->mutex);
     const char *in = color;
     UINT8 *out = (UINT8 *)&im->image8[y][x + x];
     out[0] = in[1];
     out[1] = in[0];
+    MUTEX_UNLOCK(&im->mutex);
 }
 
 static void
 put_pixel_32(Imaging im, int x, int y, const void *color) {
+    MUTEX_LOCK(&im->mutex);
     memcpy(&im->image32[y][x], color, sizeof(INT32));
+    MUTEX_UNLOCK(&im->mutex);
 }
 
 static struct ImagingAccessInstance accessors[] = {
@@ -108,11 +126,14 @@ static struct ImagingAccessInstance accessors[] = {
 
 ImagingAccess
 ImagingAccessNew(const Imaging im) {
+    MUTEX_LOCK(&im->mutex);
     for (size_t i = 0; i < sizeof(accessors) / sizeof(*accessors); i++) {
         if (im->mode == accessors[i].mode) {
+            MUTEX_UNLOCK(&im->mutex);
             return &accessors[i];
         }
     }
+    MUTEX_UNLOCK(&im->mutex);
     return NULL;
 }
 
