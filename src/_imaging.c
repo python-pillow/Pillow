@@ -73,6 +73,7 @@
 
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
+#include "thirdparty/pythoncapi_compat.h"
 
 #ifdef HAVE_LIBJPEG
 #include "jconfig.h"
@@ -687,7 +688,7 @@ getink(PyObject *color, Imaging im, char *ink) {
 /* -------------------------------------------------------------------- */
 
 static PyObject *
-_fill(PyObject *self, PyObject *args) {
+_fill_impl(PyObject *self, PyObject *args) {
     char *mode_name;
     int xsize, ysize;
     PyObject *color;
@@ -722,7 +723,16 @@ _fill(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_new(PyObject *self, PyObject *args) {
+_fill(PyObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _fill_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+_new_impl(PyObject *self, PyObject *args) {
     char *mode_name;
     int xsize, ysize;
 
@@ -736,7 +746,16 @@ _new(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_new_block(PyObject *self, PyObject *args) {
+_new(PyObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _new_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+_new_block_impl(PyObject *self, PyObject *args) {
     char *mode_name;
     int xsize, ysize;
 
@@ -750,7 +769,16 @@ _new_block(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_linear_gradient(PyObject *self, PyObject *args) {
+_new_block(PyObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _new_block_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+_linear_gradient_impl(PyObject *self, PyObject *args) {
     char *mode_name;
 
     if (!PyArg_ParseTuple(args, "s", &mode_name)) {
@@ -763,7 +791,16 @@ _linear_gradient(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_radial_gradient(PyObject *self, PyObject *args) {
+_linear_gradient(PyObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _linear_gradient_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+_radial_gradient_impl(PyObject *self, PyObject *args) {
     char *mode_name;
 
     if (!PyArg_ParseTuple(args, "s", &mode_name)) {
@@ -776,7 +813,16 @@ _radial_gradient(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_alpha_composite(ImagingObject *self, PyObject *args) {
+_radial_gradient(PyObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _radial_gradient_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+_alpha_composite_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep1;
     ImagingObject *imagep2;
 
@@ -790,7 +836,16 @@ _alpha_composite(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_blend(ImagingObject *self, PyObject *args) {
+_alpha_composite(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _alpha_composite_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+_blend_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep1;
     ImagingObject *imagep2;
     double alpha;
@@ -803,6 +858,15 @@ _blend(ImagingObject *self, PyObject *args) {
     }
 
     return PyImagingNew(ImagingBlend(imagep1->image, imagep2->image, (float)alpha));
+}
+
+static PyObject *
+_blend(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _blend_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 /* -------------------------------------------------------------------- */
@@ -910,7 +974,7 @@ _prepare_lut_table(PyObject *table, Py_ssize_t table_size) {
 }
 
 static PyObject *
-_color_lut_3d(ImagingObject *self, PyObject *args) {
+_color_lut_3d_impl(ImagingObject *self, PyObject *args) {
     char *mode_name;
     int filter;
     int table_channels;
@@ -981,7 +1045,16 @@ _color_lut_3d(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_convert(ImagingObject *self, PyObject *args) {
+_color_lut_3d(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _color_lut_3d_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+_convert_impl(ImagingObject *self, PyObject *args) {
     char *mode_name;
     int dither = 0;
     ImagingObject *paletteimage = NULL;
@@ -1011,7 +1084,16 @@ _convert(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_convert2(ImagingObject *self, PyObject *args) {
+_convert(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _convert_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+_convert2_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep1;
     ImagingObject *imagep2;
     if (!PyArg_ParseTuple(
@@ -1028,7 +1110,16 @@ _convert2(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_convert_matrix(ImagingObject *self, PyObject *args) {
+_convert2(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _convert2_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+_convert_matrix_impl(ImagingObject *self, PyObject *args) {
     char *mode_name;
     float m[12];
     if (!PyArg_ParseTuple(args, "s(ffff)", &mode_name, m + 0, m + 1, m + 2, m + 3)) {
@@ -1060,7 +1151,16 @@ _convert_matrix(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_convert_transparent(ImagingObject *self, PyObject *args) {
+_convert_matrix(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _convert_matrix_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+_convert_transparent_impl(ImagingObject *self, PyObject *args) {
     char *mode_name;
     int r, g, b;
     if (PyArg_ParseTuple(args, "s(iii)", &mode_name, &r, &g, &b)) {
@@ -1076,12 +1176,29 @@ _convert_transparent(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_copy(ImagingObject *self, PyObject *args) {
-    return PyImagingNew(ImagingCopy(self->image));
+_convert_transparent(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _convert_transparent_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 static PyObject *
-_crop(ImagingObject *self, PyObject *args) {
+_copy_impl(ImagingObject *self, PyObject *args) {
+    return PyImagingNew(ImagingCopy(self->image));
+}
+static PyObject *
+_copy(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _copy_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+_crop_impl(ImagingObject *self, PyObject *args) {
     int x0, y0, x1, y1;
     if (!PyArg_ParseTuple(args, "(iiii)", &x0, &y0, &x1, &y1)) {
         return NULL;
@@ -1089,9 +1206,17 @@ _crop(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingCrop(self->image, x0, y0, x1, y1));
 }
+static PyObject *
+_crop(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _crop_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_expand_image(ImagingObject *self, PyObject *args) {
+_expand_image_impl(ImagingObject *self, PyObject *args) {
     int x, y;
     if (!PyArg_ParseTuple(args, "ii", &x, &y)) {
         return NULL;
@@ -1099,9 +1224,17 @@ _expand_image(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingExpand(self->image, x, y));
 }
+static PyObject *
+_expand_image(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _expand_image_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_filter(ImagingObject *self, PyObject *args) {
+_filter_impl(ImagingObject *self, PyObject *args) {
     PyObject *imOut;
     Py_ssize_t kernelsize;
     FLOAT32 *kerneldata;
@@ -1135,9 +1268,17 @@ _filter(ImagingObject *self, PyObject *args) {
 
     return imOut;
 }
+static PyObject *
+_filter(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _filter_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_gaussian_blur(ImagingObject *self, PyObject *args) {
+_gaussian_blur_impl(ImagingObject *self, PyObject *args) {
     Imaging imIn;
     Imaging imOut;
 
@@ -1160,9 +1301,17 @@ _gaussian_blur(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(imOut);
 }
+static PyObject *
+_gaussian_blur(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _gaussian_blur_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_getpalette(ImagingObject *self, PyObject *args) {
+_getpalette_impl(ImagingObject *self, PyObject *args) {
     PyObject *palette;
     int palettesize;
     int bits;
@@ -1200,15 +1349,32 @@ _getpalette(ImagingObject *self, PyObject *args) {
 
     return palette;
 }
-
 static PyObject *
-_getpalettemode(ImagingObject *self) {
+_getpalette(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _getpalette_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+// UNDONE -- no second argument?
+static PyObject *
+_getpalettemode_impl(ImagingObject *self) {
     if (!self->image->palette) {
         PyErr_SetString(PyExc_ValueError, no_palette);
         return NULL;
     }
 
     return PyUnicode_FromString(getModeData(self->image->palette->mode)->name);
+}
+static PyObject *
+_getpalettemode(ImagingObject *self) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _getpalettemode_impl(self);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 static inline int
@@ -1263,7 +1429,7 @@ badval:
 }
 
 static PyObject *
-_getpixel(ImagingObject *self, PyObject *args) {
+_getpixel_impl(ImagingObject *self, PyObject *args) {
     PyObject *xy;
     int x, y;
 
@@ -1290,6 +1456,14 @@ union hist_extrema {
     INT32 i[2];
     FLOAT32 f[2];
 };
+static PyObject *
+_getpixel(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _getpixel_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static union hist_extrema *
 parse_histogram_extremap(
@@ -1331,7 +1505,7 @@ parse_histogram_extremap(
 }
 
 static PyObject *
-_histogram(ImagingObject *self, PyObject *args) {
+_histogram_impl(ImagingObject *self, PyObject *args) {
     ImagingHistogram h;
     PyObject *list;
     int i;
@@ -1374,9 +1548,17 @@ _histogram(ImagingObject *self, PyObject *args) {
 
     return list;
 }
+static PyObject *
+_histogram(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _histogram_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_entropy(ImagingObject *self, PyObject *args) {
+_entropy_impl(ImagingObject *self, PyObject *args) {
     ImagingHistogram h;
     int idx, length;
     long sum;
@@ -1422,9 +1604,17 @@ _entropy(ImagingObject *self, PyObject *args) {
 
     return PyFloat_FromDouble(-entropy);
 }
+static PyObject *
+_entropy(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _entropy_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_modefilter(ImagingObject *self, PyObject *args) {
+_modefilter_impl(ImagingObject *self, PyObject *args) {
     int size;
     if (!PyArg_ParseTuple(args, "i", &size)) {
         return NULL;
@@ -1432,9 +1622,17 @@ _modefilter(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingModeFilter(self->image, size));
 }
+static PyObject *
+_modefilter(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _modefilter_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_offset(ImagingObject *self, PyObject *args) {
+_offset_impl(ImagingObject *self, PyObject *args) {
     int xoffset, yoffset;
     if (!PyArg_ParseTuple(args, "ii", &xoffset, &yoffset)) {
         return NULL;
@@ -1442,9 +1640,17 @@ _offset(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingOffset(self->image, xoffset, yoffset));
 }
+static PyObject *
+_offset(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _offset_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_paste(ImagingObject *self, PyObject *args) {
+_paste_impl(ImagingObject *self, PyObject *args) {
     int status;
     char ink[4];
 
@@ -1483,9 +1689,17 @@ _paste(ImagingObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_paste(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _paste_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_point(ImagingObject *self, PyObject *args) {
+_point_impl(ImagingObject *self, PyObject *args) {
     static const char *wrong_number = "wrong number of lut entries";
 
     Py_ssize_t n;
@@ -1567,9 +1781,17 @@ _point(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(im);
 }
+static PyObject *
+_point(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _point_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_point_transform(ImagingObject *self, PyObject *args) {
+_point_transform_impl(ImagingObject *self, PyObject *args) {
     double scale = 1.0;
     double offset = 0.0;
     if (!PyArg_ParseTuple(args, "|dd", &scale, &offset)) {
@@ -1578,9 +1800,17 @@ _point_transform(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingPointTransform(self->image, scale, offset));
 }
+static PyObject *
+_point_transform(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _point_transform_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_putdata(ImagingObject *self, PyObject *args) {
+_putdata_impl(ImagingObject *self, PyObject *args) {
     Imaging image;
     // i & n are # pixels, require py_ssize_t. x can be as large as n. y, just because.
     Py_ssize_t n, i, x, y;
@@ -1736,9 +1966,17 @@ _putdata(ImagingObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_putdata(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _putdata_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_quantize(ImagingObject *self, PyObject *args) {
+_quantize_impl(ImagingObject *self, PyObject *args) {
     int colours = 256;
     int method = 0;
     int kmeans = 0;
@@ -1755,9 +1993,17 @@ _quantize(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingQuantize(self->image, colours, method, kmeans));
 }
+static PyObject *
+_quantize(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _quantize_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_putpalette(ImagingObject *self, PyObject *args) {
+_putpalette_impl(ImagingObject *self, PyObject *args) {
     ImagingShuffler unpack;
     int bits;
 
@@ -1816,9 +2062,17 @@ _putpalette(ImagingObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_putpalette(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _putpalette_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_putpalettealpha(ImagingObject *self, PyObject *args) {
+_putpalettealpha_impl(ImagingObject *self, PyObject *args) {
     int index;
     int alpha = 0;
     if (!PyArg_ParseTuple(args, "i|i", &index, &alpha)) {
@@ -1840,9 +2094,17 @@ _putpalettealpha(ImagingObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_putpalettealpha(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _putpalettealpha_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_putpalettealphas(ImagingObject *self, PyObject *args) {
+_putpalettealphas_impl(ImagingObject *self, PyObject *args) {
     int i;
     UINT8 *values;
     Py_ssize_t length;
@@ -1867,9 +2129,17 @@ _putpalettealphas(ImagingObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_putpalettealphas(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _putpalettealphas_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_putpixel(ImagingObject *self, PyObject *args) {
+_putpixel_impl(ImagingObject *self, PyObject *args) {
     Imaging im;
     char ink[4];
 
@@ -1903,9 +2173,17 @@ _putpixel(ImagingObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_putpixel(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _putpixel_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_rankfilter(ImagingObject *self, PyObject *args) {
+_rankfilter_impl(ImagingObject *self, PyObject *args) {
     int size, rank;
     if (!PyArg_ParseTuple(args, "ii", &size, &rank)) {
         return NULL;
@@ -1913,9 +2191,17 @@ _rankfilter(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingRankFilter(self->image, size, rank));
 }
+static PyObject *
+_rankfilter(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _rankfilter_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_resize(ImagingObject *self, PyObject *args) {
+_resize_impl(ImagingObject *self, PyObject *args) {
     Imaging imIn;
     Imaging imOut;
 
@@ -1981,9 +2267,17 @@ _resize(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(imOut);
 }
+static PyObject *
+_resize(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _resize_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_reduce(ImagingObject *self, PyObject *args) {
+_reduce_impl(ImagingObject *self, PyObject *args) {
     Imaging imIn;
     Imaging imOut;
 
@@ -2028,6 +2322,15 @@ _reduce(ImagingObject *self, PyObject *args) {
     return PyImagingNew(imOut);
 }
 
+static PyObject *
+_reduce(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _reduce_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
 static int
 isRGB(const ModeID mode) {
     return mode == IMAGING_MODE_RGB || mode == IMAGING_MODE_RGBA ||
@@ -2035,7 +2338,7 @@ isRGB(const ModeID mode) {
 }
 
 static PyObject *
-im_setmode(ImagingObject *self, PyObject *args) {
+im_setmode_impl(ImagingObject *self, PyObject *args) {
     /* attempt to modify the mode of an image in place */
 
     Imaging im;
@@ -2075,9 +2378,17 @@ im_setmode(ImagingObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+im_setmode(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = im_setmode_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_transform(ImagingObject *self, PyObject *args) {
+_transform_impl(ImagingObject *self, PyObject *args) {
     static const char *wrong_number = "wrong number of matrix entries";
 
     Imaging imOut;
@@ -2138,9 +2449,17 @@ _transform(ImagingObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_transform(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _transform_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_transpose(ImagingObject *self, PyObject *args) {
+_transpose_impl(ImagingObject *self, PyObject *args) {
     Imaging imIn;
     Imaging imOut;
 
@@ -2196,9 +2515,17 @@ _transpose(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(imOut);
 }
+static PyObject *
+_transpose(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _transpose_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_unsharp_mask(ImagingObject *self, PyObject *args) {
+_unsharp_mask_impl(ImagingObject *self, PyObject *args) {
     Imaging imIn;
     Imaging imOut;
 
@@ -2221,9 +2548,17 @@ _unsharp_mask(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(imOut);
 }
+static PyObject *
+_unsharp_mask(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _unsharp_mask_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_box_blur(ImagingObject *self, PyObject *args) {
+_box_blur_impl(ImagingObject *self, PyObject *args) {
     Imaging imIn;
     Imaging imOut;
 
@@ -2248,14 +2583,30 @@ _box_blur(ImagingObject *self, PyObject *args) {
 }
 
 /* -------------------------------------------------------------------- */
-
 static PyObject *
-_isblock(ImagingObject *self) {
-    return PyBool_FromLong(self->image->block != NULL);
+_box_blur(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _box_blur_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 static PyObject *
-_getbbox(ImagingObject *self, PyObject *args) {
+_isblock_impl(ImagingObject *self) {
+    return PyBool_FromLong(self->image->block != NULL);
+}
+static PyObject *
+_isblock(ImagingObject *self) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _isblock_impl(self);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+_getbbox_impl(ImagingObject *self, PyObject *args) {
     int bbox[4];
 
     int alpha_only = 1;
@@ -2269,9 +2620,17 @@ _getbbox(ImagingObject *self, PyObject *args) {
 
     return Py_BuildValue("iiii", bbox[0], bbox[1], bbox[2], bbox[3]);
 }
+static PyObject *
+_getbbox(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _getbbox_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_getcolors(ImagingObject *self, PyObject *args) {
+_getcolors_impl(ImagingObject *self, PyObject *args) {
     ImagingColorItem *items;
     int i, colors;
     PyObject *out;
@@ -2313,9 +2672,17 @@ _getcolors(ImagingObject *self, PyObject *args) {
 
     return out;
 }
+static PyObject *
+_getcolors(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _getcolors_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_getextrema(ImagingObject *self) {
+_getextrema_impl(ImagingObject *self) {
     union {
         UINT8 u[2];
         INT32 i[2];
@@ -2346,9 +2713,17 @@ _getextrema(ImagingObject *self) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_getextrema(ImagingObject *self) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _getextrema_impl(self);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_getprojection(ImagingObject *self) {
+_getprojection_impl(ImagingObject *self) {
     unsigned char *xprofile;
     unsigned char *yprofile;
     PyObject *result;
@@ -2382,9 +2757,17 @@ _getprojection(ImagingObject *self) {
 }
 
 /* -------------------------------------------------------------------- */
+static PyObject *
+_getprojection(ImagingObject *self) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _getprojection_impl(self);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_getband(ImagingObject *self, PyObject *args) {
+_getband_impl(ImagingObject *self, PyObject *args) {
     int band;
 
     if (!PyArg_ParseTuple(args, "i", &band)) {
@@ -2393,9 +2776,17 @@ _getband(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingGetBand(self->image, band));
 }
+static PyObject *
+_getband(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _getband_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_fillband(ImagingObject *self, PyObject *args) {
+_fillband_impl(ImagingObject *self, PyObject *args) {
     int band;
     int color;
 
@@ -2409,9 +2800,17 @@ _fillband(ImagingObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_fillband(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _fillband_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_putband(ImagingObject *self, PyObject *args) {
+_putband_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
     int band;
     if (!PyArg_ParseTuple(args, "O!i", &Imaging_Type, &imagep, &band)) {
@@ -2424,9 +2823,17 @@ _putband(ImagingObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_putband(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _putband_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_merge(PyObject *self, PyObject *args) {
+_merge_impl(PyObject *self, PyObject *args) {
     char *mode_name;
     ImagingObject *band0 = NULL;
     ImagingObject *band1 = NULL;
@@ -2472,9 +2879,17 @@ _merge(PyObject *self, PyObject *args) {
     ImagingCopyPalette(imOut, bands[0]);
     return PyImagingNew(imOut);
 }
+static PyObject *
+_merge(PyObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _merge_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_split(ImagingObject *self) {
+_split_impl(ImagingObject *self) {
     Py_ssize_t i;
     PyObject *list;
     PyObject *imaging_object;
@@ -2501,14 +2916,30 @@ _split(ImagingObject *self) {
 }
 
 /* Channel operations (ImageChops) ------------------------------------ */
-
 static PyObject *
-_chop_invert(ImagingObject *self) {
-    return PyImagingNew(ImagingNegative(self->image));
+_split(ImagingObject *self) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _split_impl(self);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 static PyObject *
-_chop_lighter(ImagingObject *self, PyObject *args) {
+_chop_invert_impl(ImagingObject *self) {
+    return PyImagingNew(ImagingNegative(self->image));
+}
+static PyObject *
+_chop_invert(ImagingObject *self) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_invert_impl(self);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+_chop_lighter_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
 
     if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
@@ -2517,9 +2948,17 @@ _chop_lighter(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingChopLighter(self->image, imagep->image));
 }
+static PyObject *
+_chop_lighter(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_lighter_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_chop_darker(ImagingObject *self, PyObject *args) {
+_chop_darker_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
 
     if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
@@ -2528,9 +2967,17 @@ _chop_darker(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingChopDarker(self->image, imagep->image));
 }
+static PyObject *
+_chop_darker(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_darker_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_chop_difference(ImagingObject *self, PyObject *args) {
+_chop_difference_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
 
     if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
@@ -2539,9 +2986,17 @@ _chop_difference(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingChopDifference(self->image, imagep->image));
 }
+static PyObject *
+_chop_difference(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_difference_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_chop_multiply(ImagingObject *self, PyObject *args) {
+_chop_multiply_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
 
     if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
@@ -2550,9 +3005,17 @@ _chop_multiply(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingChopMultiply(self->image, imagep->image));
 }
+static PyObject *
+_chop_multiply(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_multiply_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_chop_screen(ImagingObject *self, PyObject *args) {
+_chop_screen_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
 
     if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
@@ -2561,9 +3024,17 @@ _chop_screen(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingChopScreen(self->image, imagep->image));
 }
+static PyObject *
+_chop_screen(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_screen_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_chop_add(ImagingObject *self, PyObject *args) {
+_chop_add_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
     float scale;
     int offset;
@@ -2577,9 +3048,17 @@ _chop_add(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingChopAdd(self->image, imagep->image, scale, offset));
 }
+static PyObject *
+_chop_add(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_add_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_chop_subtract(ImagingObject *self, PyObject *args) {
+_chop_subtract_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
     float scale;
     int offset;
@@ -2593,9 +3072,17 @@ _chop_subtract(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingChopSubtract(self->image, imagep->image, scale, offset));
 }
+static PyObject *
+_chop_subtract(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_subtract_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_chop_and(ImagingObject *self, PyObject *args) {
+_chop_and_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
 
     if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
@@ -2604,9 +3091,17 @@ _chop_and(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingChopAnd(self->image, imagep->image));
 }
+static PyObject *
+_chop_and(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_and_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_chop_or(ImagingObject *self, PyObject *args) {
+_chop_or_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
 
     if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
@@ -2615,9 +3110,17 @@ _chop_or(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingChopOr(self->image, imagep->image));
 }
+static PyObject *
+_chop_or(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_or_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_chop_xor(ImagingObject *self, PyObject *args) {
+_chop_xor_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
 
     if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
@@ -2626,9 +3129,17 @@ _chop_xor(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingChopXor(self->image, imagep->image));
 }
+static PyObject *
+_chop_xor(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_xor_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_chop_add_modulo(ImagingObject *self, PyObject *args) {
+_chop_add_modulo_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
 
     if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
@@ -2637,9 +3148,17 @@ _chop_add_modulo(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingChopAddModulo(self->image, imagep->image));
 }
+static PyObject *
+_chop_add_modulo(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_add_modulo_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_chop_subtract_modulo(ImagingObject *self, PyObject *args) {
+_chop_subtract_modulo_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
 
     if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
@@ -2648,9 +3167,17 @@ _chop_subtract_modulo(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingChopSubtractModulo(self->image, imagep->image));
 }
+static PyObject *
+_chop_subtract_modulo(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_subtract_modulo_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_chop_soft_light(ImagingObject *self, PyObject *args) {
+_chop_soft_light_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
 
     if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
@@ -2659,9 +3186,17 @@ _chop_soft_light(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingChopSoftLight(self->image, imagep->image));
 }
+static PyObject *
+_chop_soft_light(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_soft_light_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_chop_hard_light(ImagingObject *self, PyObject *args) {
+_chop_hard_light_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
 
     if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
@@ -2670,9 +3205,17 @@ _chop_hard_light(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingChopHardLight(self->image, imagep->image));
 }
+static PyObject *
+_chop_hard_light(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_hard_light_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_chop_overlay(ImagingObject *self, PyObject *args) {
+_chop_overlay_impl(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
 
     if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
@@ -2682,10 +3225,19 @@ _chop_overlay(ImagingObject *self, PyObject *args) {
     return PyImagingNew(ImagingOverlay(self->image, imagep->image));
 }
 
+static PyObject *
+_chop_overlay(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _chop_overlay_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
 /* Fonts (ImageDraw and ImageFont) ------------------------------------ */
 
 static PyObject *
-_font_new(PyObject *self_, PyObject *args) {
+_font_new_impl(PyObject *self_, PyObject *args) {
     ImagingFontObject *self;
     int i, y0, y1;
     static const char *wrong_length = "descriptor table has wrong size";
@@ -2765,6 +3317,15 @@ _font_new(PyObject *self_, PyObject *args) {
     return (PyObject *)self;
 }
 
+static PyObject *
+_font_new(PyObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _font_new_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
 static void
 _font_dealloc(ImagingFontObject *self) {
     Py_XDECREF(self->ref);
@@ -2816,7 +3377,7 @@ _font_text_asBytes(PyObject *encoded_string, unsigned char **text) {
 }
 
 static PyObject *
-_font_getmask(ImagingFontObject *self, PyObject *args) {
+_font_getmask_impl(ImagingFontObject *self, PyObject *args) {
     Imaging im;
     Imaging bitmap = NULL;
     int x, b;
@@ -2884,9 +3445,17 @@ failed:
     ImagingDelete(im);
     Py_RETURN_NONE;
 }
+static PyObject *
+_font_getmask(ImagingFontObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _font_getmask_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_font_getsize(ImagingFontObject *self, PyObject *args) {
+_font_getsize_impl(ImagingFontObject *self, PyObject *args) {
     unsigned char *text;
     PyObject *encoded_string;
     PyObject *val;
@@ -2905,6 +3474,15 @@ _font_getsize(ImagingFontObject *self, PyObject *args) {
     return val;
 }
 
+static PyObject *
+_font_getsize(ImagingFontObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _font_getsize_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
 static struct PyMethodDef _font_methods[] = {
     {"getmask", (PyCFunction)_font_getmask, METH_VARARGS},
     {"getsize", (PyCFunction)_font_getsize, METH_VARARGS},
@@ -2914,7 +3492,7 @@ static struct PyMethodDef _font_methods[] = {
 /* Graphics (ImageDraw) ----------------------------------------------- */
 
 static PyObject *
-_draw_new(PyObject *self_, PyObject *args) {
+_draw_new_impl(PyObject *self_, PyObject *args) {
     ImagingDrawObject *self;
 
     ImagingObject *imagep;
@@ -2939,6 +3517,15 @@ _draw_new(PyObject *self_, PyObject *args) {
     return (PyObject *)self;
 }
 
+static PyObject *
+_draw_new(PyObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _draw_new_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
 static void
 _draw_dealloc(ImagingDrawObject *self) {
     Py_XDECREF(self->image);
@@ -2949,7 +3536,7 @@ extern Py_ssize_t
 PyPath_Flatten(PyObject *data, double **xy);
 
 static PyObject *
-_draw_ink(ImagingDrawObject *self, PyObject *args) {
+_draw_ink_impl(ImagingDrawObject *self, PyObject *args) {
     INT32 ink = 0;
     PyObject *color;
     if (!PyArg_ParseTuple(args, "O", &color)) {
@@ -2962,9 +3549,17 @@ _draw_ink(ImagingDrawObject *self, PyObject *args) {
 
     return PyLong_FromLong((int)ink);
 }
+static PyObject *
+_draw_ink(ImagingDrawObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _draw_ink_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_draw_arc(ImagingDrawObject *self, PyObject *args) {
+_draw_arc_impl(ImagingDrawObject *self, PyObject *args) {
     double *xy;
     Py_ssize_t n;
 
@@ -3017,9 +3612,17 @@ _draw_arc(ImagingDrawObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_draw_arc(ImagingDrawObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _draw_arc_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_draw_bitmap(ImagingDrawObject *self, PyObject *args) {
+_draw_bitmap_impl(ImagingDrawObject *self, PyObject *args) {
     double *xy;
     Py_ssize_t n;
 
@@ -3054,9 +3657,17 @@ _draw_bitmap(ImagingDrawObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_draw_bitmap(ImagingDrawObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _draw_bitmap_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_draw_chord(ImagingDrawObject *self, PyObject *args) {
+_draw_chord_impl(ImagingDrawObject *self, PyObject *args) {
     double *xy;
     Py_ssize_t n;
 
@@ -3110,9 +3721,17 @@ _draw_chord(ImagingDrawObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_draw_chord(ImagingDrawObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _draw_chord_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_draw_ellipse(ImagingDrawObject *self, PyObject *args) {
+_draw_ellipse_impl(ImagingDrawObject *self, PyObject *args) {
     double *xy;
     Py_ssize_t n;
 
@@ -3164,9 +3783,17 @@ _draw_ellipse(ImagingDrawObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_draw_ellipse(ImagingDrawObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _draw_ellipse_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_draw_lines(ImagingDrawObject *self, PyObject *args) {
+_draw_lines_impl(ImagingDrawObject *self, PyObject *args) {
     double *xy;
     Py_ssize_t i, n;
 
@@ -3228,9 +3855,17 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_draw_lines(ImagingDrawObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _draw_lines_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_draw_points(ImagingDrawObject *self, PyObject *args) {
+_draw_points_impl(ImagingDrawObject *self, PyObject *args) {
     double *xy;
     Py_ssize_t i, n;
 
@@ -3260,12 +3895,21 @@ _draw_points(ImagingDrawObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
+static PyObject *
+_draw_points(ImagingDrawObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _draw_points_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
 /* from outline.c */
 extern ImagingOutline
 PyOutline_AsOutline(PyObject *outline);
 
 static PyObject *
-_draw_outline(ImagingDrawObject *self, PyObject *args) {
+_draw_outline_impl(ImagingDrawObject *self, PyObject *args) {
     ImagingOutline outline;
 
     PyObject *outline_;
@@ -3287,9 +3931,17 @@ _draw_outline(ImagingDrawObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_draw_outline(ImagingDrawObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _draw_outline_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_draw_pieslice(ImagingDrawObject *self, PyObject *args) {
+_draw_pieslice_impl(ImagingDrawObject *self, PyObject *args) {
     double *xy;
     Py_ssize_t n;
 
@@ -3343,9 +3995,17 @@ _draw_pieslice(ImagingDrawObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_draw_pieslice(ImagingDrawObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _draw_pieslice_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_draw_polygon(ImagingDrawObject *self, PyObject *args) {
+_draw_polygon_impl(ImagingDrawObject *self, PyObject *args) {
     double *xy;
     int *ixy;
     Py_ssize_t n, i;
@@ -3405,9 +4065,17 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+static PyObject *
+_draw_polygon(ImagingDrawObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _draw_polygon_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_draw_rectangle(ImagingDrawObject *self, PyObject *args) {
+_draw_rectangle_impl(ImagingDrawObject *self, PyObject *args) {
     double *xy;
     Py_ssize_t n;
 
@@ -3460,6 +4128,15 @@ _draw_rectangle(ImagingDrawObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
+static PyObject *
+_draw_rectangle(ImagingDrawObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _draw_rectangle_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
 static struct PyMethodDef _draw_methods[] = {
     /* Graphics (ImageDraw) */
     {"draw_lines", (PyCFunction)_draw_lines, METH_VARARGS},
@@ -3477,7 +4154,7 @@ static struct PyMethodDef _draw_methods[] = {
 };
 
 static PyObject *
-pixel_access_new(ImagingObject *imagep, PyObject *args) {
+pixel_access_new_impl(ImagingObject *imagep, PyObject *args) {
     PixelAccessObject *self;
 
     int readonly = 0;
@@ -3499,6 +4176,15 @@ pixel_access_new(ImagingObject *imagep, PyObject *args) {
     return (PyObject *)self;
 }
 
+static PyObject *
+pixel_access_new(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = pixel_access_new_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
 static void
 pixel_access_dealloc(PixelAccessObject *self) {
     Py_XDECREF(self->image);
@@ -3506,13 +4192,22 @@ pixel_access_dealloc(PixelAccessObject *self) {
 }
 
 static PyObject *
-pixel_access_getitem(PixelAccessObject *self, PyObject *xy) {
+pixel_access_getitem_impl(PixelAccessObject *self, PyObject *xy) {
     int x, y;
     if (_getxy(xy, &x, &y)) {
         return NULL;
     }
 
     return getpixel(self->image->image, self->image->access, x, y);
+}
+
+static PyObject *
+pixel_access_getitem(PixelAccessObject *self, PyObject *xy) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = pixel_access_getitem_impl(self, xy);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 static int
@@ -3560,7 +4255,7 @@ pixel_access_setitem(PixelAccessObject *self, PyObject *xy, PyObject *color) {
 /* -------------------------------------------------------------------- */
 
 static PyObject *
-_effect_mandelbrot(ImagingObject *self, PyObject *args) {
+_effect_mandelbrot_impl(ImagingObject *self, PyObject *args) {
     int xsize = 512;
     int ysize = 512;
     double extent[4];
@@ -3587,9 +4282,17 @@ _effect_mandelbrot(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingEffectMandelbrot(xsize, ysize, extent, quality));
 }
+static PyObject *
+_effect_mandelbrot(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _effect_mandelbrot_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_effect_noise(ImagingObject *self, PyObject *args) {
+_effect_noise_impl(ImagingObject *self, PyObject *args) {
     int xsize, ysize;
     float sigma = 128;
     if (!PyArg_ParseTuple(args, "(ii)|f", &xsize, &ysize, &sigma)) {
@@ -3598,9 +4301,17 @@ _effect_noise(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingEffectNoise(xsize, ysize, sigma));
 }
+static PyObject *
+_effect_noise(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _effect_noise_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_effect_spread(ImagingObject *self, PyObject *args) {
+_effect_spread_impl(ImagingObject *self, PyObject *args) {
     int dist;
 
     if (!PyArg_ParseTuple(args, "i", &dist)) {
@@ -3608,6 +4319,15 @@ _effect_spread(ImagingObject *self, PyObject *args) {
     }
 
     return PyImagingNew(ImagingEffectSpread(self->image, dist));
+}
+
+static PyObject *
+_effect_spread(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _effect_spread_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 /* -------------------------------------------------------------------- */
@@ -3651,7 +4371,7 @@ _getcodecstatus(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 static PyObject *
-_save_ppm(ImagingObject *self, PyObject *args) {
+_save_ppm_impl(ImagingObject *self, PyObject *args) {
     char *filename;
 
     if (!PyArg_ParseTuple(args, "s", &filename)) {
@@ -3663,6 +4383,15 @@ _save_ppm(ImagingObject *self, PyObject *args) {
     }
 
     Py_RETURN_NONE;
+}
+
+static PyObject *
+_save_ppm(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _save_ppm_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 /* -------------------------------------------------------------------- */
@@ -3761,18 +4490,43 @@ static struct PyMethodDef methods[] = {
 /* attributes */
 
 static PyObject *
-_getattr_mode(ImagingObject *self, void *closure) {
+_getattr_mode_impl(ImagingObject *self, void *closure) {
     return PyUnicode_FromString(getModeData(self->image->mode)->name);
+}
+static PyObject *
+_getattr_mode(ImagingObject *self, void *closure) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _getattr_mode_impl(self, closure);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 static PyObject *
-_getattr_size(ImagingObject *self, void *closure) {
+_getattr_size_impl(ImagingObject *self, void *closure) {
     return Py_BuildValue("ii", self->image->xsize, self->image->ysize);
+}
+static PyObject *
+_getattr_size(ImagingObject *self, void *closure) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _getattr_size_impl(self, closure);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
+static PyObject *
+_getattr_bands_impl(ImagingObject *self, void *closure) {
+    return PyLong_FromLong(self->image->bands);
 }
 
 static PyObject *
 _getattr_bands(ImagingObject *self, void *closure) {
-    return PyLong_FromLong(self->image->bands);
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _getattr_bands_impl(self, closure);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 static void
@@ -3782,7 +4536,7 @@ _ptr_destructor(PyObject *capsule) {
 }
 
 static PyObject *
-_getattr_ptr(ImagingObject *self, void *closure) {
+_getattr_ptr_impl(ImagingObject *self, void *closure) {
     PyObject *capsule = PyCapsule_New(self->image, IMAGING_MAGIC, _ptr_destructor);
     if (!capsule) {
         return NULL;
@@ -3791,10 +4545,26 @@ _getattr_ptr(ImagingObject *self, void *closure) {
     PyCapsule_SetContext(capsule, self);
     return capsule;
 }
+static PyObject *
+_getattr_ptr(ImagingObject *self, void *closure) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _getattr_ptr_impl(self, closure);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
 
 static PyObject *
-_getattr_readonly(ImagingObject *self, void *closure) {
+_getattr_readonly_impl(ImagingObject *self, void *closure) {
     return PyLong_FromLong(self->image->read_only);
+}
+static PyObject *
+_getattr_readonly(ImagingObject *self, void *closure) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _getattr_readonly_impl(self, closure);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 static struct PyGetSetDef getsetters[] = {
@@ -3809,14 +4579,23 @@ static struct PyGetSetDef getsetters[] = {
 /* basic sequence semantics */
 
 static Py_ssize_t
-image_length(ImagingObject *self) {
+image_length_impl(ImagingObject *self) {
     Imaging im = self->image;
 
     return (Py_ssize_t)im->xsize * im->ysize;
 }
 
+static Py_ssize_t
+image_length(ImagingObject *self) {
+    Py_ssize_t result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = image_length_impl(self);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
 static PyObject *
-image_item(ImagingObject *self, Py_ssize_t i) {
+image_item_impl(ImagingObject *self, Py_ssize_t i) {
     int x, y;
     Imaging im = self->image;
 
@@ -3828,6 +4607,15 @@ image_item(ImagingObject *self, Py_ssize_t i) {
     }
 
     return getpixel(im, self->access, x, y);
+}
+
+static PyObject *
+image_item(ImagingObject *self, Py_ssize_t i) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = image_item_impl(self, i);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 static PySequenceMethods image_as_sequence = {
