@@ -79,14 +79,14 @@ def generate(version: str) -> dict:
 
     vendored_components = [
         {
-            "bom-ref": "pkg:github/HOST-Oman/libraqm@0.10.3",
+            "bom-ref": "pkg:github/HOST-Oman/libraqm@0.10.5",
             "type": "library",
             "name": "raqm",
-            "version": "0.10.3",
+            "version": "0.10.5",
             "description": "Complex text layout library "
             "(vendored in src/thirdparty/raqm/)",
             "licenses": [{"license": {"id": "MIT"}}],
-            "purl": "pkg:github/HOST-Oman/libraqm@0.10.3",
+            "purl": "pkg:github/HOST-Oman/libraqm@0.10.5",
             "hashes": [
                 {
                     "alg": "SHA-256",
@@ -94,13 +94,13 @@ def generate(version: str) -> dict:
                 }
             ],
             "pedigree": {
-                "notes": "Vendored unmodified from upstream HOST-Oman/libraqm v0.10.3."
+                "notes": "Vendored unmodified from upstream HOST-Oman/libraqm v0.10.5."
             },
             "externalReferences": [
                 {"type": "vcs", "url": "https://github.com/HOST-Oman/libraqm"},
                 {
                     "type": "distribution",
-                    "url": "https://github.com/HOST-Oman/libraqm/releases/tag/v0.10.3",
+                    "url": "https://github.com/HOST-Oman/libraqm/releases/tag/v0.10.5",
                 },
             ],
         },
@@ -385,7 +385,7 @@ def generate(version: str) -> dict:
             "ref": f"{purl}#c-ext/PIL._imagingft",
             "dependsOn": [
                 "pkg:generic/freetype2",
-                "pkg:github/HOST-Oman/libraqm@0.10.3",
+                "pkg:github/HOST-Oman/libraqm@0.10.5",
                 f"{purl}#thirdparty/fribidi-shim",
                 "pkg:generic/harfbuzz",
                 "pkg:generic/fribidi",
@@ -408,7 +408,7 @@ def generate(version: str) -> dict:
             "dependsOn": ["pkg:pypi/pybind11"],
         },
         {
-            "ref": "pkg:github/HOST-Oman/libraqm@0.10.3",
+            "ref": "pkg:github/HOST-Oman/libraqm@0.10.5",
             "dependsOn": [
                 f"{purl}#thirdparty/fribidi-shim",
                 "pkg:generic/harfbuzz",
