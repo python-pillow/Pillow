@@ -94,8 +94,8 @@
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
             "matchStrings": ["\"tiff\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
             "depNameTemplate": "tiff",
-            "packageNameTemplate": "libsdl-org/libtiff",
-            "datasourceTemplate": "github-tags",
+            "packageNameTemplate": "libtiff/libtiff",
+            "datasourceTemplate": "gitlab-tags",
             "extractVersionTemplate": "^v(?<version>.+)$"
         },
         {
