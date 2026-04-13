@@ -419,7 +419,7 @@ class ImageDraw:
         if corners is None:
             corners = (True, True, True, True)
 
-        d = radius * 2
+        d = min(x1 - x0, y1 - y0, radius * 2)
 
         x0 = round(x0)
         y0 = round(y0)
