@@ -130,7 +130,8 @@
             "matchStrings": ["\"freetype\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
             "depNameTemplate": "freetype",
             "packageNameTemplate": "freetype/freetype",
-            "datasourceTemplate": "github-tags",
+            "datasourceTemplate": "gitlab-tags",
+            "registryUrlTemplate": "https://gitlab.freedesktop.org",
             "extractVersionTemplate": "^VER-(?<version>[\\d-]+)$",
             "versioningTemplate": "regex:^(?<major>\\d+)[.-](?<minor>\\d+)[.-](?<patch>\\d+)$"
         },
