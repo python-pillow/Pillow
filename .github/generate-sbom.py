@@ -417,6 +417,7 @@ def generate(version: str) -> dict:
     ]
 
     return {
+      "$schema": "http://cyclonedx.org/schema/bom-1.7.schema.json",
         "bomFormat": "CycloneDX",
         "specVersion": "1.7",
         "serialNumber": f"urn:uuid:{serial}",
