@@ -343,21 +343,23 @@ This document is a living record. It should be kept current so it is useful when
 >
 > Hi \<name\>,
 >
-> Thank you for taking the time to report this — we genuinely appreciate it.
+> Thank you for taking the time to report this issue. We appreciate it.
 >
-> We have received your report and will assess it within the next few days. We will keep
-> you updated on our progress.
+> We have received your report and will review it as soon as possible. We will
+> keep you updated on our progress.
 >
-> A few quick questions so we can handle this well:
-> - How would you like to be credited in the advisory? (name, handle, organisation, or anonymous)
-> - Do you plan to publish your own write-up or advisory? If so, is there a disclosure date
->   that works for you?
+> Questions:
 >
-> We aim to treat all vulnerability reports in line with coordinated disclosure principles.
-> If you have any questions or concerns at any point, please reply to this thread.
+> - How would you like to be credited in the advisory? (name, handle,
+>   organisation, or anonymous)
+> - Do you plan to publish your own write-up or advisory? If so, do you have a
+>   disclosure date in mind?
 >
-> Thanks again,
-> The Pillow maintainers
+> We apply coordinated disclosure principles to all vulnerability reports. If
+> you have any questions or concerns at any point, please reply to this thread.
+>
+> Thank you again,
+> The Pillow team
 
 ### A.2 Embargoed Distro Notification
 
