@@ -224,7 +224,7 @@ Recommendations
 
 The following mitigations are listed in priority order.
 
-1. **Sandbox image processing** — run Pillow workers in a seccomp/AppArmor-
+1. **Sandbox image processing** — run Pillow workers in a seccomp/AppArmor
    restricted subprocess, isolated from the main application process.
 2. **Block or sandbox EPS** — reject EPS at the application boundary, or run
    Ghostscript in an isolated container.
