@@ -60,7 +60,7 @@ def generate(version: str) -> dict:
         ("PIL._webp", "WebP image format extension"),
         ("PIL._avif", "AVIF image format extension"),
         ("PIL._imagingtk", "Tk/Tcl display extension"),
-        ("PIL._imagingmath", "Image math operations extension (via pybind11)"),
+        ("PIL._imagingmath", "Image math operations extension"),
         ("PIL._imagingmorph", "Image morphology extension"),
     ]
 
