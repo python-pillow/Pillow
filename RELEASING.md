@@ -39,7 +39,7 @@ Released as needed for security, installation or critical bug fixes.
   ```bash
   git push
   ```
-* [ ] If this is a security fix: publish the [GitHub Security Advisory](https://github.com/python-pillow/Pillow/security/advisories).
+* [ ] If this is a security fix: publish the [GitHub Security Advisory or Advisories](https://github.com/python-pillow/Pillow/security/advisories).
 
 ## Embargoed release
 
