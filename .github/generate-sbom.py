@@ -79,14 +79,14 @@ def generate(version: str) -> dict:
 
     vendored_components = [
         {
-            "bom-ref": "pkg:github/HOST-Oman/libraqm@0.10.5",
+            "bom-ref": "pkg:github/HOST-Oman/libraqm@0.10.3",
             "type": "library",
             "name": "raqm",
-            "version": "0.10.5",
+            "version": "0.10.3",
             "description": "Complex text layout library "
             "(vendored in src/thirdparty/raqm/)",
             "licenses": [{"license": {"id": "MIT"}}],
-            "purl": "pkg:github/HOST-Oman/libraqm@0.10.5",
+            "purl": "pkg:github/HOST-Oman/libraqm@0.10.3",
             "hashes": [
                 {
                     "alg": "SHA-256",
@@ -94,13 +94,83 @@ def generate(version: str) -> dict:
                 }
             ],
             "pedigree": {
-                "notes": "Vendored unmodified from upstream HOST-Oman/libraqm v0.10.5."
+                "ancestors": [
+                    {
+                        "bom-ref": "pkg:github/HOST-Oman/libraqm@0.10.3#upstream",
+                        "type": "library",
+                        "name": "raqm",
+                        "version": "0.10.3",
+                        "purl": "pkg:github/HOST-Oman/libraqm@0.10.3",
+                        "externalReferences": [
+                            {
+                                "type": "distribution",
+                                "url": "https://github.com/HOST-Oman/libraqm/releases/tag/v0.10.3",
+                            }
+                        ],
+                    }
+                ],
+                "patches": [
+                    {
+                        "type": "generated",
+                        "diff": {
+                            "text": {
+                                # raqm-version.h.in → raqm-version.h:
+                                # template @RAQM_VERSION_*@ placeholders replaced
+                                # with literal 0.10.3 values; filename changed to
+                                # drop the .in suffix; minor indentation fix.
+                                "content": (
+                                    "LS0tIGEvc3JjL3JhcW0tdmVyc2lvbi5oLmluCisrKyBiL3NyYy9yYXFtLXZlcnNpb24uaApAQCAt"
+                                    "MzEsMTQgKzMxLDE0IEBACiAjaWZuZGVmIF9SQVFNX1ZFUlNJT05fSF8KICNkZWZpbmUgX1JBUU"
+                                    "1fVkVSU0lPTl9IXwogCi0jZGVmaW5lIFJBUU1fVkVSU0lPTl9NQUpPUiBAUkFRTV9WRVJTSU9O"
+                                    "X01BSk9SQAotI2RlZmluZSBSQVFNX1ZFUlNJT05fTUlOT1IgQFJBUU1fVkVSU0lPTl9NSU5PUkAK"
+                                    "LSNkZWZpbmUgUkFRTV9WRVJTSU9OX01JQ1JPIEBSQVFNX1ZFUlNJT05fTUlDUk9ACisjZGVmaW5l"
+                                    "IFJBUU1fVkVSU0lPTl9NQUpPUiAwCisjZGVmaW5lIFJBUU1fVkVSU0lPTl9NSU5PUiAxMAorI2Rl"
+                                    "ZmluZSBSQVFNX1ZFUlNJT05fTUlDUk8gMwogCi0jZGVmaW5lIFJBUU1fVkVSU0lPTl9TVFJJTkcg"
+                                    "IkBSQVFNX1ZFUlNJT05AIgorI2RlZmluZSBSQVFNX1ZFUlNJT05fU1RSSU5HICIwLjEwLjMiCiAK"
+                                    "ICNkZWZpbmUgUkFRTV9WRVJTSU9OX0FUTEVBU1QobWFqb3IsbWlub3IsbWljcm8pIFwKLSgobWFq"
+                                    "b3IpKjEwMDAwKyhtaW5vcikqMTAwKyhtaWNybykgPD0gXAotIFJBUU1fVkVSU0lPTl9NQUpPUiox"
+                                    "MDAwMCtSQVFNX1ZFUlNJT05fTUlOT1IqMTAwK1JBUU1fVkVSU0lPTl9NSUNSTykKKyAgICAoKG1h"
+                                    "am9yKSoxMDAwMCsobWlub3IpKjEwMCsobWljcm8pIDw9IFwKKyAgICAgUkFRTV9WRVJTSU9OX01B"
+                                    "Sk9SKjEwMDAwK1JBUU1fVkVSU0lPTl9NSU5PUioxMDArUkFRTV9WRVJTSU9OX01JQ1JPKQogCiAj"
+                                    "ZW5kaWYgLyogX1JBUU1fVkVSU0lPTl9IXyAqLwo="
+                                ),
+                                "encoding": "base64",
+                            }
+                        },
+                    },
+                    {
+                        "type": "unofficial",
+                        "diff": {
+                            "text": {
+                                # raqm.c: wrap the <fribidi.h> include in an
+                                # #ifdef HAVE_FRIBIDI_SYSTEM guard so that when
+                                # building without a system FriBiDi Pillow's own
+                                # fribidi-shim is used instead.
+                                "content": (
+                                    "LS0tIGEvc3JjL3JhcW0uYworKysgYi9zcmMvcmFxbS5jCkBAIC0zNiw3ICszNiwxMSBAQAogI2lu"
+                                    "Y2x1ZGUgPFNoZWVuQmlkaS5oPgogI2VuZGlmCiAjZWxzZQorI2lmZGVmIEhBVkVfRlJJQklESV9T"
+                                    "WVNURU0KICNpbmNsdWRlIDxmcmliaWRpLmg+CisjZWxzZQorI2luY2x1ZGUgIi4uL2ZyaWJpZGkt"
+                                    "c2hpbS9mcmliaWRpLmgiCisjZW5kaWYKICNlbmRpZgogCiAjaW5jbHVkZSA8aGIuaD4K"
+                                ),
+                                "encoding": "base64",
+                            }
+                        },
+                    },
+                ],
+                "notes": (
+                    "Vendored from upstream HOST-Oman/libraqm v0.10.3 with two "
+                    "Pillow-specific modifications: (1) raqm-version.h.in was "
+                    "pre-processed into raqm-version.h with version placeholders "
+                    "replaced by literal values; (2) raqm.c wraps the <fribidi.h> "
+                    "include in an #ifdef HAVE_FRIBIDI_SYSTEM guard so Pillow's "
+                    "bundled fribidi-shim is used when a system FriBiDi is absent."
+                ),
             },
             "externalReferences": [
                 {"type": "vcs", "url": "https://github.com/HOST-Oman/libraqm"},
                 {
                     "type": "distribution",
-                    "url": "https://github.com/HOST-Oman/libraqm/releases/tag/v0.10.5",
+                    "url": "https://github.com/HOST-Oman/libraqm/releases/tag/v0.10.3",
                 },
             ],
         },
@@ -385,7 +455,7 @@ def generate(version: str) -> dict:
             "ref": f"{purl}#c-ext/PIL._imagingft",
             "dependsOn": [
                 "pkg:generic/freetype2",
-                "pkg:github/HOST-Oman/libraqm@0.10.5",
+                "pkg:github/HOST-Oman/libraqm@0.10.3",
                 f"{purl}#thirdparty/fribidi-shim",
                 "pkg:generic/harfbuzz",
                 "pkg:generic/fribidi",
@@ -408,7 +478,7 @@ def generate(version: str) -> dict:
             "dependsOn": ["pkg:pypi/pybind11"],
         },
         {
-            "ref": "pkg:github/HOST-Oman/libraqm@0.10.5",
+            "ref": "pkg:github/HOST-Oman/libraqm@0.10.3",
             "dependsOn": [
                 f"{purl}#thirdparty/fribidi-shim",
                 "pkg:generic/harfbuzz",
