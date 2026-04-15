@@ -3690,7 +3690,7 @@ def open(
                 raise
         return None
 
-    if im := _open_core(fp, filename, prefix, ID):
+    if not (im := _open_core(fp, filename, prefix, ID)):
         # Try preinit (few common plugins) then init (all plugins)
         for loader in (preinit, init):
             checked_formats = ID.copy()
