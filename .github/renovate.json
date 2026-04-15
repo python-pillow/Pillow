@@ -14,7 +14,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"brotli\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"brotli\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "brotli",
             "packageNameTemplate": "google/brotli",
             "datasourceTemplate": "github-releases",
@@ -23,7 +23,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"fribidi\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"fribidi\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "fribidi",
             "packageNameTemplate": "fribidi/fribidi",
             "datasourceTemplate": "github-releases",
@@ -32,7 +32,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"harfbuzz\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"harfbuzz\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "harfbuzz",
             "packageNameTemplate": "harfbuzz/harfbuzz",
             "datasourceTemplate": "github-releases"
@@ -40,7 +40,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"jpegturbo\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"jpegturbo\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "jpegturbo",
             "packageNameTemplate": "libjpeg-turbo/libjpeg-turbo",
             "datasourceTemplate": "github-releases"
@@ -48,7 +48,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"lcms2\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"lcms2\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "lcms2",
             "packageNameTemplate": "mm2/Little-CMS",
             "datasourceTemplate": "github-releases",
@@ -57,7 +57,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"libavif\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"libavif\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "libavif",
             "packageNameTemplate": "AOMediaCodec/libavif",
             "datasourceTemplate": "github-releases",
@@ -66,7 +66,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"libimagequant\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"libimagequant\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "libimagequant",
             "packageNameTemplate": "ImageOptim/libimagequant",
             "datasourceTemplate": "github-tags"
@@ -74,7 +74,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"libwebp\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"libwebp\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "libwebp",
             "packageNameTemplate": "webmproject/libwebp",
             "datasourceTemplate": "github-tags",
@@ -83,7 +83,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"openjpeg\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"openjpeg\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "openjpeg",
             "packageNameTemplate": "uclouvain/openjpeg",
             "datasourceTemplate": "github-releases",
@@ -92,7 +92,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"tiff\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"tiff\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "tiff",
             "packageNameTemplate": "libtiff/libtiff",
             "datasourceTemplate": "gitlab-tags",
@@ -101,7 +101,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"xz\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"xz\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "xz",
             "packageNameTemplate": "tukaani-project/xz",
             "datasourceTemplate": "github-releases",
@@ -110,7 +110,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"zlib-ng\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"zlib-ng\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "zlib-ng",
             "packageNameTemplate": "zlib-ng/zlib-ng",
             "datasourceTemplate": "github-releases"
@@ -118,7 +118,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"zstd\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"zstd\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "zstd",
             "packageNameTemplate": "facebook/zstd",
             "datasourceTemplate": "github-releases",
@@ -127,7 +127,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"freetype\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"freetype\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "freetype",
             "packageNameTemplate": "freetype/freetype",
             "datasourceTemplate": "gitlab-tags",
@@ -138,7 +138,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"libpng\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"libpng\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "libpng",
             "packageNameTemplate": "pnggroup/libpng",
             "datasourceTemplate": "github-tags",
@@ -147,7 +147,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"libxcb\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"libxcb\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "libxcb",
             "packageNameTemplate": "xorg/lib/libxcb",
             "datasourceTemplate": "gitlab-tags",
@@ -157,7 +157,7 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"bzip2\":\\s*\"(?<currentValue>\\d+[^\"]*?)\""],
+            "matchStrings": ["\"bzip2\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "bzip2",
             "packageNameTemplate": "bzip2/bzip2",
             "datasourceTemplate": "gitlab-tags",
