@@ -97,7 +97,7 @@ Supply-chain and CI/CD incidents are always treated as **Critical** regardless o
 Vulnerabilities and incidents may be reported or discovered through:
 
 1. **GitHub private security advisory** — preferred channel; see [SECURITY.md](SECURITY.md)
-2. **Tidelift security contact** — <https://tidelift.com/security>
+2. **Tidelift security contact** — <https://tidelift.com/docs/security>
 3. **External researcher / coordinated disclosure** — e.g. Google Project Zero, vendor PSIRT
 4. **Automated scanning** — Dependabot, GitHub code-scanning (CodeQL), CI fuzzing
 5. **Distro security teams** — Debian, Red Hat, Ubuntu, Alpine may report upstream
@@ -230,24 +230,24 @@ require a Pillow point release even if Pillow's own code is unchanged.
 | Library | Purpose | Security advisory tracker |
 |---|---|---|
 | [libjpeg-turbo](https://libjpeg-turbo.org/) | JPEG encode/decode | [GitHub](https://github.com/libjpeg-turbo/libjpeg-turbo/security) |
-| [libpng](http://www.libpng.org/pub/png/libpng.html) | PNG encode/decode | [SourceForge](https://sourceforge.net/p/libpng/bugs/) |
+| [libpng](http://www.libpng.org/pub/png/libpng.html) | PNG encode/decode within FreeType 2, OpenJPEG and WebP | [SourceForge](https://sourceforge.net/p/libpng/bugs/) |
 | [libtiff](https://libtiff.gitlab.io/libtiff/) | TIFF encode/decode | [GitLab](https://gitlab.com/libtiff/libtiff/-/work_items) |
-| [libwebp](https://chromium.googlesource.com/webm/libwebp) | WebP encode/decode | [Chromium tracker](https://bugs.chromium.org/p/webm/) |
+| [libwebp](https://chromium.googlesource.com/webm/libwebp) | WebP encode/decode | [Chromium tracker](https://issues.webmproject.org/issues) |
 | [libavif](https://github.com/AOMediaCodec/libavif) | AVIF encode/decode | [GitHub](https://github.com/AOMediaCodec/libavif/security) |
-| [aom](https://aomedia.googlesource.com/aom/) | AV1 codec (AVIF) | [Chromium tracker](https://bugs.chromium.org/p/aomedia/) |
+| [aom](https://aomedia.googlesource.com/aom/) | AV1 codec (AVIF) | [Chromium tracker](https://aomedia.issues.chromium.org/issues) |
 | [dav1d](https://code.videolan.org/videolan/dav1d) | AV1 decode (AVIF) | [VideoLAN Security](https://www.videolan.org/security/) |
 | [openjpeg](https://www.openjpeg.org/) | JPEG 2000 encode/decode | [GitHub](https://github.com/uclouvain/openjpeg/security) |
 | [freetype2](https://freetype.org/) | Font rendering | [GitLab](https://gitlab.freedesktop.org/freetype/freetype/-/work_items) |
-| [lcms2](https://www.littlecms.com/) | ICC color management | [GitHub](https://github.com/mm2/Little-CMS) |
+| [lcms2](https://www.littlecms.com/) | ICC color management | [GitHub](https://github.com/mm2/Little-CMS/security) |
 | [harfbuzz](https://harfbuzz.github.io/) | Text shaping (via raqm) | [GitHub](https://github.com/harfbuzz/harfbuzz/security) |
 | [raqm](https://github.com/HOST-Oman/libraqm) | Complex text layout | [GitHub](https://github.com/HOST-Oman/libraqm) |
 | [fribidi](https://github.com/fribidi/fribidi) | Unicode bidi (via raqm) | [GitHub](https://github.com/fribidi/fribidi) |
 | [zlib](https://zlib.net/) | Deflate compression | [zlib.net](https://zlib.net/) |
-| [liblzma / xz-utils](https://tukaani.org/xz/) | XZ/LZMA compression | [GitHub](https://github.com/tukaani-project/xz) |
+| [liblzma / xz-utils](https://tukaani.org/xz/) | XZ/LZMA compression | [GitHub](https://github.com/tukaani-project/xz/security) |
 | [bzip2](https://gitlab.com/bzip2/bzip2) | BZ2 compression | [GitLab](https://gitlab.com/bzip2/bzip2/-/work_items) |
 | [zstd](https://github.com/facebook/zstd) | Zstandard compression | [GitHub](https://github.com/facebook/zstd/security) |
-| [brotli](https://github.com/google/brotli) | Brotli compression | [GitHub](https://github.com/google/brotli) |
-| [libyuv](https://chromium.googlesource.com/libyuv/libyuv/) | YUV conversion | [Chromium tracker](https://bugs.chromium.org/p/libyuv/) |
+| [brotli](https://github.com/google/brotli) | Brotli compression | [GitHub](https://github.com/google/brotli/security) |
+| [libyuv](https://chromium.googlesource.com/libyuv/libyuv/) | YUV conversion | [Chromium tracker](https://libyuv.issues.chromium.org/issues) |
 
 #### Python-level dependencies
 
@@ -285,7 +285,7 @@ these downstream consumers when assessing severity and planning communications.
 | Fedora / RHEL / CentOS | `python3-pillow` | [Red Hat Security](https://access.redhat.com/security/) |
 | Alpine Linux | `py3-pillow` | [Alpine security](https://security.alpinelinux.org/) |
 | Arch Linux | `python-pillow` | [Arch security tracker](https://security.archlinux.org/) |
-| Homebrew | `pillow` | [Homebrew maintainers](https://github.com/Homebrew/homebrew-core) |
+| Homebrew | `pillow` | [Homebrew maintainers](https://github.com/Homebrew/homebrew-core/security) |
 | conda-forge | `pillow` | [conda-forge](https://github.com/conda-forge/pillow-feedstock) |
 
 #### Major Python ecosystem consumers
@@ -326,7 +326,7 @@ This document is a living record. It should be kept current so it is useful when
 - [Security Policy](SECURITY.md)
 - [Release Checklist](../RELEASING.md)
 - [Contributing Guide](CONTRIBUTING.md)
-- [Tidelift Security Contact](https://tidelift.com/security)
+- [Tidelift Security Contact](https://tidelift.com/docs/security)
 - [GitHub: Privately reporting a security vulnerability](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing/privately-reporting-a-security-vulnerability)
 - [GitHub as a CVE Numbering Authority (CNA)](https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/about-repository-security-advisories)
 - [FIRST CVSS 4.0 Calculator](https://www.first.org/cvss/calculator/4.0)
@@ -369,10 +369,15 @@ This document is a living record. It should be kept current so it is useful when
 > information confidential until the disclosure date listed below.
 >
 > **CVE:** \<CVE-XXXX-XXXXX\>
+>
 > **Affected versions:** \<e.g. Pillow < 11.x.x\>
+>
 > **Fixed version:** \<version\>
+>
 > **Severity:** \<Critical / High / Medium / Low\> (CVSS \<score\>: \<vector\>)
+>
 > **Reporter:** \<name / affiliation, or "reported privately"\>
+>
 > **Public disclosure date:** \<DATE TIME UTC\>
 >
 > **Summary:**
@@ -396,9 +401,13 @@ This document is a living record. It should be kept current so it is useful when
 > **Summary:** \<One-paragraph technical summary.\>
 >
 > **CVE:** \<CVE-XXXX-XXXXX\>
+>
 > **Affected versions:** Pillow \< \<fixed version\>
+>
 > **Fixed version:** \<version\>
+>
 > **Severity:** \<rating\> (CVSS \<score\>)
+>
 > **Reporter:** \<credited name / "reported privately"\>
 >
 > **Details:**
