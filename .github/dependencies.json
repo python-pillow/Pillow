@@ -1,0 +1,19 @@
+{
+  "brotli": "1.2.0",
+  "bzip2": "1.0.8",
+  "freetype": "2.14.3",
+  "fribidi": "1.0.16",
+  "harfbuzz": "13.2.1",
+  "jpegturbo": "3.1.4.1",
+  "lcms2": "2.18",
+  "libavif": "1.4.1",
+  "libimagequant": "4.4.1",
+  "libpng": "1.6.56",
+  "libwebp": "1.6.0",
+  "libxcb": "1.17.0",
+  "openjpeg": "2.5.4",
+  "tiff": "4.7.1",
+  "xz": "5.8.3",
+  "zlib-ng": "2.3.3",
+  "zstd": "1.5.7"
+}
