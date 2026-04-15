@@ -23,6 +23,26 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
+            "matchStrings": ["\"bzip2\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
+            "depNameTemplate": "bzip2",
+            "packageNameTemplate": "bzip2/bzip2",
+            "datasourceTemplate": "gitlab-tags",
+            "extractVersionTemplate": "^bzip2-(?<version>.+)$"
+        },
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
+            "matchStrings": ["\"freetype\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
+            "depNameTemplate": "freetype",
+            "packageNameTemplate": "freetype/freetype",
+            "datasourceTemplate": "gitlab-tags",
+            "registryUrlTemplate": "https://gitlab.freedesktop.org",
+            "extractVersionTemplate": "^VER-(?<version>[\\d-]+)$",
+            "versioningTemplate": "regex:^(?<major>\\d+)[.-](?<minor>\\d+)[.-](?<patch>\\d+)$"
+        },
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
             "matchStrings": ["\"fribidi\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "fribidi",
             "packageNameTemplate": "fribidi/fribidi",
@@ -74,11 +94,30 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
+            "matchStrings": ["\"libpng\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
+            "depNameTemplate": "libpng",
+            "packageNameTemplate": "pnggroup/libpng",
+            "datasourceTemplate": "github-tags",
+            "extractVersionTemplate": "^v(?<version>.+)$"
+        },
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
             "matchStrings": ["\"libwebp\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "libwebp",
             "packageNameTemplate": "webmproject/libwebp",
             "datasourceTemplate": "github-tags",
             "extractVersionTemplate": "^v(?<version>.+)$"
+        },
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
+            "matchStrings": ["\"libxcb\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
+            "depNameTemplate": "libxcb",
+            "packageNameTemplate": "xorg/lib/libxcb",
+            "datasourceTemplate": "gitlab-tags",
+            "registryUrlTemplate": "https://gitlab.freedesktop.org",
+            "extractVersionTemplate": "^libxcb-(?<version>.+)$"
         },
         {
             "customType": "regex",
@@ -123,45 +162,6 @@
             "packageNameTemplate": "facebook/zstd",
             "datasourceTemplate": "github-releases",
             "extractVersionTemplate": "^v(?<version>.+)$"
-        },
-        {
-            "customType": "regex",
-            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"freetype\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
-            "depNameTemplate": "freetype",
-            "packageNameTemplate": "freetype/freetype",
-            "datasourceTemplate": "gitlab-tags",
-            "registryUrlTemplate": "https://gitlab.freedesktop.org",
-            "extractVersionTemplate": "^VER-(?<version>[\\d-]+)$",
-            "versioningTemplate": "regex:^(?<major>\\d+)[.-](?<minor>\\d+)[.-](?<patch>\\d+)$"
-        },
-        {
-            "customType": "regex",
-            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"libpng\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
-            "depNameTemplate": "libpng",
-            "packageNameTemplate": "pnggroup/libpng",
-            "datasourceTemplate": "github-tags",
-            "extractVersionTemplate": "^v(?<version>.+)$"
-        },
-        {
-            "customType": "regex",
-            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"libxcb\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
-            "depNameTemplate": "libxcb",
-            "packageNameTemplate": "xorg/lib/libxcb",
-            "datasourceTemplate": "gitlab-tags",
-            "registryUrlTemplate": "https://gitlab.freedesktop.org",
-            "extractVersionTemplate": "^libxcb-(?<version>.+)$"
-        },
-        {
-            "customType": "regex",
-            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"bzip2\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
-            "depNameTemplate": "bzip2",
-            "packageNameTemplate": "bzip2/bzip2",
-            "datasourceTemplate": "gitlab-tags",
-            "extractVersionTemplate": "^bzip2-(?<version>.+)$"
         }
     ],
     "packageRules": [
