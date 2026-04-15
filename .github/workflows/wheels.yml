@@ -13,7 +13,7 @@ on:
     paths:
       - ".ci/requirements-cibw.txt"
       - ".github/dependencies.json"
-      - ".github/workflows/wheel*"
+      - ".github/workflows/wheels*"
       - "pyproject.toml"
       - "setup.py"
       - "wheels/*"
@@ -25,7 +25,7 @@ on:
     paths:
       - ".ci/requirements-cibw.txt"
       - ".github/dependencies.json"
-      - ".github/workflows/wheel*"
+      - ".github/workflows/wheels*"
       - "pyproject.toml"
       - "setup.py"
       - "wheels/*"
