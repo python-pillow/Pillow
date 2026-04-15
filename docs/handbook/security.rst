@@ -141,14 +141,14 @@ Denial of service
 
 A small compressed image can expand to gigabytes in memory.
 :py:data:`PIL.Image.MAX_IMAGE_PIXELS` raises
-``DecompressionBombError`` at 2× the limit and
-``DecompressionBombWarning`` at 1×. PNG text chunks are
+``Image.DecompressionBombError`` at 2× the limit and
+``Image.DecompressionBombWarning`` at 1×. PNG text chunks are
 separately capped by ``PngImagePlugin.MAX_TEXT_CHUNK`` and
 ``MAX_TEXT_MEMORY``. Check the values in your installed Pillow version at
 runtime or in the reference/source for the current defaults.
 
 *Mitigations:* **never** set ``Image.MAX_IMAGE_PIXELS = None`` in production;
-treat ``DecompressionBombWarning`` as an error; set OS/container memory limits
+treat ``Image.DecompressionBombWarning`` as an error; set OS/container memory limits
 per worker.
 
 **D-2 — CPU exhaustion**
@@ -234,7 +234,7 @@ The following mitigations are listed in priority order.
    libwebp, openjpeg, freetype, Ghostscript. Subscribe to `Pillow security
    advisories <https://github.com/python-pillow/Pillow/security/advisories>`_.
 5. **Enforce** ``MAX_IMAGE_PIXELS`` — never set it to ``None``; treat
-   ``DecompressionBombWarning`` as an error.
+   ``Image.DecompressionBombWarning`` as an error.
 6. **Allowlist image formats** — unregister plugins your application does not
    need.
 7. **Strip metadata on output** — never pass through EXIF/XMP/ICC from user
@@ -242,8 +242,8 @@ The following mitigations are listed in priority order.
 8. **Sanitise all metadata** returned by Pillow before using it downstream.
 9. **Pin dependencies with hash verification** — use
    ``pip install --require-hashes`` and lockfiles.
-10. **Log and alert** on ``DecompressionBombWarning``,
-    ``DecompressionBombError``, ``PIL.UnidentifiedImageError``,
+10. **Log and alert** on ``Image.DecompressionBombWarning``,
+    ``Image.DecompressionBombError``, ``PIL.UnidentifiedImageError``,
     and all exceptions from ``Image.open()``.
 
 .. _security-reporting:
@@ -255,7 +255,7 @@ To report sensitive vulnerability information, report it `privately on GitHub
 <https://github.com/python-pillow/Pillow/security/advisories/new>`_.
 
 If you cannot use GitHub, use the `Tidelift security contact
-<https://tidelift.com/security>`_. Tidelift will coordinate the fix and
+<https://tidelift.com/docs/security>`_. Tidelift will coordinate the fix and
 disclosure.
 
 **Do not report sensitive vulnerability information in public.**

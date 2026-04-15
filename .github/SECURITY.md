@@ -4,13 +4,13 @@
 
 To report sensitive vulnerability information, report it [privately on GitHub](https://github.com/python-pillow/Pillow/security/advisories/new).
 
-If you cannot use GitHub, use the [Tidelift security contact](https://tidelift.com/security). Tidelift will coordinate the fix and disclosure.
+If you cannot use GitHub, use the [Tidelift security contact](https://tidelift.com/docs/security). Tidelift will coordinate the fix and disclosure.
 
 **DO NOT report sensitive vulnerability information in public.**
 
 ## Threat model
 
-Pillow's primary attack surface is parsing untrusted image data. A full STRIDE threat model covering spoofing, tampering, repudiation, information disclosure, denial of service, and elevation of privilege is maintained in the [Security handbook page](https://pillow.readthedocs.io/en/stable/handbook/security.html).
+Pillow's primary attack surface is parsing untrusted image data. A full STRIDE threat model covering spoofing, tampering, repudiation, information disclosure, denial of service, and elevation of privilege is maintained in the [Security handbook page](https://pillow.readthedocs.io/en/latest/handbook/security.html).
 
 Key risks to be aware of when using Pillow to process untrusted images:
 
