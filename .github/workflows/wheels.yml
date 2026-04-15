@@ -98,7 +98,7 @@ jobs:
             platform: linux
             os: ubuntu-latest
             cibw_arch: riscv64
-            build: "cp3{12,13}-manylinux*"
+            build: "cp3{13,14}-manylinux*"
             manylinux: "manylinux_2_39"
           - name: "iOS arm64 device"
             platform: ios
