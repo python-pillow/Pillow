@@ -1,5 +1,7 @@
 # Security policy
 
-To report sensitive vulnerability information, please use the [Tidelift security contact](https://tidelift.com/security). Tidelift will coordinate the fix and disclosure.
+To report sensitive vulnerability information, report it [privately on GitHub](https://github.com/python-pillow/Pillow/security/advisories/new).
 
-If your organisation/employer is a distributor of Pillow and would like advance notification of security-related bugs, please let us know your preferred contact method.
+If you cannot use GitHub, use the [Tidelift security contact](https://tidelift.com/security). Tidelift will coordinate the fix and disclosure.
+
+DO NOT report sensitive vulnerability information in public.

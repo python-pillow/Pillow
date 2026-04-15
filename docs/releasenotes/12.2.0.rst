@@ -4,8 +4,8 @@
 Security
 ========
 
-Prevent FITS decompression bomb
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2026-40192`: Prevent FITS decompression bomb
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When decompressing GZIP data from a FITS image, Pillow did not limit the amount of data
 being read, meaning that it was vulnerable to GZIP decompression bombs. This was
@@ -16,9 +16,9 @@ The data being read is now limited to only the necessary amount.
 Fix OOB write with invalid tile extents
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Pillow 12.1.1 added improved checks for tile extents to prevent an OOB write from
-specially crafted PSD images in Pillow >= 10.3.0. However, these checks did not
-consider integer overflow. This has been corrected.
+Pillow 12.1.1 addressed :cve:`2026-25990` by improving checks for tile extents to
+prevent an OOB write from specially crafted PSD images in Pillow >= 10.3.0. However,
+these checks did not consider integer overflow. This has been corrected.
 
 Prevent PDF parsing trailer infinite loop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
