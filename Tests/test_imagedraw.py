@@ -1765,7 +1765,7 @@ def test_line_dash() -> None:
     draw = ImageDraw.Draw(im)
 
     # Act
-    draw.line([(10, 50), (90, 50)], fill="yellow", width=2, dash=(10, 5))
+    draw.line([(10, 50), (90, 50)], "yellow", 2, dash=(10, 5))
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_line_dash.png")
@@ -1777,7 +1777,7 @@ def test_line_dash_multi_segment() -> None:
     draw = ImageDraw.Draw(im)
 
     # Act - draw a dashed multi-segment line
-    draw.line([(10, 10), (50, 50), (90, 10)], fill="yellow", width=2, dash=(8, 4))
+    draw.line([(10, 10), (50, 50), (90, 10)], "yellow", 2, dash=(8, 4))
 
     # Assert - verify the image is not all black (dashes were drawn)
     assert im.getbbox() is not None
@@ -1787,19 +1787,22 @@ def test_line_dash_odd_pattern() -> None:
     # An odd-length dash pattern should be doubled per SVG spec
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
+    draw.line([(10, 50), (90, 50)], "yellow", 2, dash=(10,))
 
-    # Should not raise; odd pattern (10,) becomes (10, 10)
-    draw.line([(10, 50), (90, 50)], fill="yellow", width=2, dash=(10,))
+    expected = Image.new("RGB", (W, H))
+    draw2 = ImageDraw.Draw(expected)
+    draw2.line([(10, 50), (90, 50)], "yellow", 2, dash=(10, 10))
 
-    assert im.getbbox() is not None
+    # odd pattern (10,) becomes (10, 10)
+    assert_image_equal(im, expected)
 
 
-def test_line_dash_empty_raises() -> None:
+def test_line_dash_empty() -> None:
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
 
-    with pytest.raises(ValueError):
-        draw.line([(10, 50), (90, 50)], fill="yellow", dash=())
+    with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
+        draw.line([(10, 50), (90, 50)], dash=())
 
 
 def test_polygon_dash() -> None:
@@ -1834,15 +1837,14 @@ def test_polygon_dash_with_fill() -> None:
 
     # Verify center pixel is red (fill) and some edge pixels are blue (outline)
     assert im.getpixel((50, 50)) == (255, 0, 0)
-    assert im.getbbox() is not None
 
 
-def test_polygon_dash_empty_raises() -> None:
+def test_polygon_dash_empty() -> None:
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
 
-    with pytest.raises(ValueError):
-        draw.polygon([(10, 10), (90, 10), (90, 90)], outline="blue", dash=())
+    with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
+        draw.polygon([(10, 10), (90, 10), (90, 90)], dash=())
 
 
 def test_rectangle_dash() -> None:
@@ -1866,12 +1868,11 @@ def test_rectangle_dash_with_fill() -> None:
 
     # Verify center pixel is red (fill)
     assert im.getpixel((50, 50)) == (255, 0, 0)
-    assert im.getbbox() is not None
 
 
-def test_rectangle_dash_empty_raises() -> None:
+def test_rectangle_dash_empty() -> None:
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
 
-    with pytest.raises(ValueError):
-        draw.rectangle([10, 10, 90, 90], outline="green", dash=())
+    with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
+        draw.rectangle([10, 10, 90, 90], dash=())
