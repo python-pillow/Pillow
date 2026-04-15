@@ -3598,10 +3598,12 @@ def open(
        and be opened in binary mode. The file object will also seek to zero
        before reading.
     :param mode: The mode.  If given, this argument must be "r".
-    :param formats: A list or tuple of formats to attempt to load the file in, e.g.
-       ("JPEG", "GIF"). This can be used to restrict the set of formats checked.
+    :param formats: A list or tuple of formats to attempt to load the file in, for
+       example, ``("JPEG", "GIF")``. This can be used to restrict the set of formats
+       checked.
 
-       To exclude a format, start the format with "!", e.g. ("!EPS", "!PSD").
+       To exclude a format, start the format with "!", for example,
+       ``("!EPS", "!PSD")``.
 
        Pass ``None`` to try all supported formats.
 
