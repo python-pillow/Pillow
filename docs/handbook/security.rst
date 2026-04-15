@@ -140,11 +140,12 @@ Denial of service
 **D-1 — Decompression bomb**
 
 A small compressed image can expand to gigabytes in memory.
-:py:data:`PIL.Image.MAX_IMAGE_PIXELS` (~89 MP by default) raises
+:py:data:`PIL.Image.MAX_IMAGE_PIXELS` raises
 ``DecompressionBombError`` at 2× the limit and
 ``DecompressionBombWarning`` at 1×. PNG text chunks are
-separately capped by ``PngImagePlugin.MAX_TEXT_CHUNK`` (1 MiB) and
-``MAX_TEXT_MEMORY`` (64 MiB).
+separately capped by ``PngImagePlugin.MAX_TEXT_CHUNK`` and
+``MAX_TEXT_MEMORY``. Check the values in your installed Pillow version at
+runtime or in the reference/source for the current defaults.
 
 *Mitigations:* **never** set ``Image.MAX_IMAGE_PIXELS = None`` in production;
 treat ``DecompressionBombWarning`` as an error; set OS/container memory limits
@@ -188,13 +189,12 @@ Opening an EPS file invokes the system Ghostscript binary (``gs``) via
 ``subprocess``. Ghostscript has a long history of sandbox-escape CVEs
 permitting arbitrary code execution from malicious PostScript.
 
-*Mitigations:* **block EPS files** at the application input layer; if EPS must
-be supported, run Ghostscript in a fully isolated sandbox with no network and
-no sensitive mounts; unregister the plugin if unused::
-
-    from PIL import Image, EpsImagePlugin
-    Image.OPEN.pop("EPS", None)
-
+*Mitigations:* **block EPS files** at the application input layer before
+passing files to Pillow; if EPS must be supported, run Ghostscript in a fully
+isolated sandbox with no network and no sensitive mounts. Pillow does not
+provide a stable public API for unregistering individual format plugins, so do
+not rely on mutating internal registries such as ``Image.OPEN`` as a security
+control.
 **E-3 — ``ImageMath.unsafe_eval()`` code injection**
 
 :py:meth:`~PIL.ImageMath.unsafe_eval` calls Python's built-in ``eval()`` with
