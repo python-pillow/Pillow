@@ -79,14 +79,13 @@ def generate(version: str) -> dict:
 
     vendored_components = [
         {
-            "bom-ref": "pkg:github/HOST-Oman/libraqm@0.10.5",
+            "bom-ref": f"{purl}#thirdparty/raqm",
             "type": "library",
             "name": "raqm",
             "version": "0.10.5",
             "description": "Complex text layout library "
             "(vendored in src/thirdparty/raqm/)",
             "licenses": [{"license": {"id": "MIT"}}],
-            "purl": "pkg:github/HOST-Oman/libraqm@0.10.5",
             "hashes": [
                 {
                     "alg": "SHA-256",
@@ -167,10 +166,9 @@ def generate(version: str) -> dict:
                 ),
             },
             "externalReferences": [
-                {"type": "vcs", "url": "https://github.com/HOST-Oman/libraqm"},
                 {
-                    "type": "distribution",
-                    "url": "https://github.com/HOST-Oman/libraqm/releases/tag/v0.10.5",
+                    "type": "vcs",
+                    "url": "https://github.com/python-pillow/Pillow/tree/main/src/thirdparty/raqm",
                 },
             ],
         },
@@ -423,7 +421,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:pypi/pybind11",
             "type": "library",
             "name": "pybind11",
-            "scope": "optional",
+            "scope": "excluded",
             "description": "C++/Python binding library "
             "(build-time dependency for PIL._imagingmath).",
             "licenses": [{"license": {"id": "BSD-3-Clause"}}],
@@ -455,7 +453,7 @@ def generate(version: str) -> dict:
             "ref": f"{purl}#c-ext/PIL._imagingft",
             "dependsOn": [
                 "pkg:generic/freetype2",
-                "pkg:github/HOST-Oman/libraqm@0.10.5",
+                f"{purl}#thirdparty/raqm",
                 f"{purl}#thirdparty/fribidi-shim",
                 "pkg:generic/harfbuzz",
                 "pkg:generic/fribidi",
@@ -478,7 +476,7 @@ def generate(version: str) -> dict:
             "dependsOn": ["pkg:pypi/pybind11"],
         },
         {
-            "ref": "pkg:github/HOST-Oman/libraqm@0.10.5",
+            "ref": f"{purl}#thirdparty/raqm",
             "dependsOn": [
                 f"{purl}#thirdparty/fribidi-shim",
                 "pkg:generic/harfbuzz",
