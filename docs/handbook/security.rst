@@ -116,16 +116,7 @@ be inadvertently included in output images served publicly.
 *Mitigations:* explicitly strip EXIF and XMP on save (set ``exif=b""``,
 ``icc_profile=None``, omit ``pnginfo``); verify output with ``exiftool`` in CI.
 
-**I-2 — Sensitive exception messages**
-
-Parser errors can include byte offsets, dimension values, and tile descriptors.
-Propagating these to API responses aids attacker reconnaissance.
-
-*Mitigations:* catch ``PIL.UnidentifiedImageError``,
-``PIL.Image.DecompressionBombError``, and general exceptions at the
-application boundary; return generic messages to clients.
-
-**I-3 — Temporary file exposure**
+**I-2 — Temporary file exposure**
 
 Several code paths write pixel data to temporary files via
 ``tempfile.mkstemp()``. Exception paths can leave these files behind on shared
