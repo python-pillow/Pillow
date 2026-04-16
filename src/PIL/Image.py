@@ -3632,8 +3632,16 @@ def open(
         if not isinstance(formats, (list, tuple)):
             msg = "formats must be a list or tuple"  # type: ignore[unreachable]
             raise TypeError(msg)
-        formats = tuple(format.upper() for format in formats)
-        exclude = all(format.startswith("!") for format in formats)
+
+        allowed = set()
+        excluded = set()
+        for f in formats:
+            f = f.upper()
+            if f.startswith("!"):
+                excluded.add(f[1:])
+            else:
+                allowed.add(f)
+        allowed -= excluded
 
     exclusive_fp = False
     filename: str | bytes = ""
@@ -3666,13 +3674,13 @@ def open(
         prefix: bytes,
         check_formats: list[str],
     ) -> ImageFile.ImageFile | None:
+        if formats is not None:
+            if allowed:
+                check_formats = [f for f in check_formats if f in allowed]
+            else:
+                check_formats = [f for f in check_formats if f not in excluded]
+
         for i in check_formats:
-            if formats is not None:
-                if exclude:
-                    if "!" + i in formats:
-                        continue
-                elif i not in formats or "!" + i in formats:
-                    continue
             try:
                 factory, accept = OPEN[i]
                 result = not accept or accept(prefix)
