@@ -3691,7 +3691,12 @@ def open(
                     im = factory(fp, filename)
                     _decompression_bomb_check(im.size)
                     return im
-            except (SyntaxError, IndexError, TypeError, struct.error) as e:
+            except (  # noqa: PERF203
+                SyntaxError,
+                IndexError,
+                TypeError,
+                struct.error,
+            ) as e:
                 if WARN_POSSIBLE_FORMATS:
                     warning_messages.append(i + " opening failed. " + str(e))
             except BaseException:
