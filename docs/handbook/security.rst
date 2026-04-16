@@ -22,7 +22,7 @@ boundary between untrusted image input and the Pillow API.
    Untrusted zone   │             Pillow API                   │
    ─────────────    │                                          │
    Image files ────►│  Image.open()  ──►  Format plugins       │
-   Byte streams     │  (40+ parsers)       (Python + C FFI)   │
+   Byte streams     │  (40+ parsers)       (Python + C FFI)    │
    User metadata    │                                          │
                     │  ImageMath.unsafe_eval(expr)  ───────────┼──► Python eval()
                     │  ImageShow.show(image)  ─────────────────┼──► os.system / subprocess
