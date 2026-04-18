@@ -548,7 +548,7 @@ ImagingDestroyArrow(Imaging im) {
     }
 }
 
-Imaging
+int
 ImagingBorrowArrow(
     Imaging im,
     struct ArrowArray *external_array,
@@ -571,9 +571,8 @@ ImagingBorrowArrow(
     }
 
     if (!borrowed_buffer) {
-        return (Imaging)ImagingError_ValueError(
-            "Arrow Array, exactly 2 buffers required"
-        );
+        ImagingError_ValueError("Arrow Array, exactly 2 buffers required");
+        return 0;
     }
 
     for (y = i = 0; y < im->ysize; y++) {
@@ -585,7 +584,7 @@ ImagingBorrowArrow(
     im->arrow_array_capsule = arrow_capsule;
     im->destroy = ImagingDestroyArrow;
 
-    return im;
+    return 1;
 }
 
 /* --------------------------------------------------------------------
