@@ -708,9 +708,11 @@ ImagingNewArrow(
           && im->bands == 1))                                 // Single band match
         && pixels == external_array->length) {
         // one arrow element per, and it matches a pixelsize*char
-        if (ImagingBorrowArrow(im, external_array, im->pixelsize, array_capsule)) {
-            return im;
+        if (!ImagingBorrowArrow(im, external_array, im->pixelsize, array_capsule)) {
+            ImagingDelete(im);
+            return NULL;
         }
+        return im;
     }
     // Stored as [[r,g,b,a],...]
     if (strcmp(schema->format, "+w:4") == 0  // 4 up array
@@ -724,9 +726,11 @@ ImagingNewArrow(
         && external_array->children                       // array is well formed
         && 4 * pixels == external_array->children[0]->length) {
         // 4 up element of char into pixelsize == 4
-        if (ImagingBorrowArrow(im, external_array, 1, array_capsule)) {
-            return im;
+        if (!ImagingBorrowArrow(im, external_array, 1, array_capsule)) {
+            ImagingDelete(im);
+            return NULL;
         }
+        return im;
     }
     // Stored as [r,g,b,a,r,g,b,a,...]
     if (strcmp(schema->format, "C") == 0            // uint8
@@ -735,13 +739,17 @@ ImagingNewArrow(
         && strcmp(im->arrow_band_format, "C") == 0  // expected format
         && 4 * pixels == external_array->length) {  // expected length
         // single flat array, interleaved storage.
-        if (ImagingBorrowArrow(im, external_array, 1, array_capsule)) {
-            return im;
+        if (!ImagingBorrowArrow(im, external_array, 1, array_capsule)) {
+            ImagingDelete(im);
+            return NULL;
         }
+        return im;
     }
     // fmt: on
     ImagingDelete(im);
-    return NULL;
+    return (Imaging)ImagingError_ValueError(
+        "Invalid Arrow array mode or size mismatch"
+    );
 }
 
 Imaging
