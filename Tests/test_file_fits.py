@@ -44,10 +44,11 @@ def test_truncated_fits() -> None:
 
 
 def test_naxis_zero() -> None:
-    # This test image has been manually hexedited
-    # to set the number of data axes to zero
-    with pytest.raises(ValueError):
-        with Image.open("Tests/images/hopper_naxis_zero.fits"):
+    image_data = b"".join(
+        data.ljust(80, b" ") for data in [b"SIMPLE  = T", b"NAXIS   = 0", b"END"]
+    ).ljust(2881)
+    with pytest.raises(ValueError, match="No image data"):
+        with Image.open(BytesIO(image_data)):
             pass
 
 
