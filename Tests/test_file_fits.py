@@ -24,6 +24,8 @@ def test_open() -> None:
 
 def test_gzip1() -> None:
     with Image.open("Tests/images/m13_gzip.fits") as im:
+        assert im.getpixel((0, 0)) == 111
+
         assert_image_equal_tofile(im, "Tests/images/m13.fits")
 
 
@@ -34,6 +36,22 @@ def test_invalid_file() -> None:
     # Act / Assert
     with pytest.raises(SyntaxError):
         FitsImagePlugin.FitsImageFile(invalid_file)
+
+
+def test_unsupported_number_of_bits() -> None:
+    image_data = b"".join(
+        data.ljust(80, b" ")
+        for data in [
+            b"SIMPLE  = T",
+            b"BITPIX  = 128",
+            b"NAXIS   = 1",
+            b"NAXIS1  = 0",
+            b"END",
+        ]
+    )
+    with pytest.raises(OSError, match="Unsupported number of bits"):
+        with Image.open(BytesIO(image_data)):
+            pass
 
 
 def test_truncated_fits() -> None:
