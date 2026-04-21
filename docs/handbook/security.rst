@@ -191,7 +191,7 @@ not rely on mutating internal registries such as ``Image.OPEN`` as a security
 control.
 
 
-**E-3 — ``ImageMath.unsafe_eval()`` code injection**
+**E-3 — ImageMath.unsafe_eval() code injection**
 
 :py:meth:`~PIL.ImageMath.unsafe_eval` calls Python's built-in ``eval()`` with
 only a minimal ``__builtins__`` restriction, which can be bypassed via
@@ -202,7 +202,7 @@ arbitrary code execution.
 ``ImageMath.unsafe_eval()``; use :py:meth:`~PIL.ImageMath.lambda_eval` instead,
 which accepts a Python callable and never calls ``eval``.
 
-**E-4 — Font path traversal via ``ImageFont``**
+**E-4 — Font path traversal via ImageFont**
 
 ``ImageFont.truetype(font, size)`` passes the filename to the FreeType C
 library. If font paths are constructed from user input without
