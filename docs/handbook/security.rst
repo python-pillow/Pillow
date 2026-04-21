@@ -28,7 +28,10 @@ boundary between untrusted image input and the Pillow API.
                     │  ImageShow.show(image)  ─────────────────┼──► os.system / subprocess
                     │  EpsImagePlugin.open(eps)  ──────────────┼──► Ghostscript (gs)
                     └──────────────┬───────────────────────────┘
-                                   │ C extension (_imaging)
+                                   │ C extensions:
+                                   │  _imaging · _imagingft · _imagingcms
+                                   │  _webp · _avif · _imagingtk
+                                   │  _imagingmath · _imagingmorph
                                    ▼
                     ┌──────────────────────────────────────────┐
                     │  C libraries (bundled or system)         │
