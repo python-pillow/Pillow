@@ -81,8 +81,8 @@ Pillow does not remove hidden data (JPEG comments, PNG text chunks, appended
 bytes) when re-saving. An attacker can embed data that survives the
 encode-decode cycle invisibly.
 
-*Mitigations:* to guarantee a clean output, load pixel data via
-``image.tobytes()`` and rebuild the image from raw bytes before saving.
+*Mitigations:* to guarantee a clean output when saving, create a new image instance via
+``image.copy()`` and delete the ``image.info`` contents.
 
 **T-3 — Supply chain tampering**
 
