@@ -71,14 +71,14 @@ round-tripping images. Applications that store or render metadata without
 sanitisation are vulnerable to second-order injection (SQLi, XSS, command
 injection).
 
-*Mitigations:* treat all values from ``image.info``, ``image._getexif()``, and
-``image.text`` as untrusted; sanitise before storing or rendering; strip
-metadata when it is not required.
+*Mitigations:* treat all values from ``image.info``, ``image._getexif()``,
+``image.getexif()``, and ``image.text`` as untrusted; sanitise before storing
+or rendering; strip metadata when it is not required.
 
 **T-2 — Covert data channel (steganography)**
 
-Pillow does not remove hidden data (JPEG comments, PNG text chunks, appended
-bytes) when re-saving. An attacker can embed data that survives the
+Pillow does not remove hidden data (JPEG comments, PNG text chunks) when
+re-saving. An attacker can embed data that survives the
 encode-decode cycle invisibly.
 
 *Mitigations:* to guarantee a clean output when saving, create a new image instance via
@@ -100,13 +100,13 @@ Repudiation
 
 **R-1 — No structured audit trail**
 
-Pillow does not emit structured audit logs of files opened, formats detected,
-or operations performed, making forensic investigation harder after an
-incident.
+Without application-level logging there is no record of which images were
+opened, what formats were detected, or what operations were performed, making
+forensic investigation harder after an incident.
 
-*Mitigations:* applications should log the filename/hash, detected format, and
-dimensions of every image processed; log and alert on
-``Image.DecompressionBombWarning`` and ``PIL.UnidentifiedImageError``.
+*Mitigations:* log the filename/hash, detected format, and dimensions of every
+image processed; log and alert on ``Image.DecompressionBombWarning``,
+``Image.DecompressionBombError``, and ``PIL.UnidentifiedImageError``.
 
 Information disclosure
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -189,6 +189,7 @@ isolated sandbox with no network and no sensitive mounts. Pillow does not
 provide a stable public API for unregistering individual format plugins, so do
 not rely on mutating internal registries such as ``Image.OPEN`` as a security
 control.
+
 **E-3 — ``ImageMath.unsafe_eval()`` code injection**
 
 :py:meth:`~PIL.ImageMath.unsafe_eval` calls Python's built-in ``eval()`` with
@@ -224,8 +225,9 @@ The following mitigations are listed in priority order.
    Ghostscript in an isolated container.
 3. **Never use** ``ImageMath.unsafe_eval()`` **with user input** — migrate all
    callers to :py:meth:`~PIL.ImageMath.lambda_eval`.
-4. **Keep all dependencies current** — Pillow, libjpeg, libpng, libtiff,
-   libwebp, openjpeg, freetype, Ghostscript. Subscribe to `Pillow security
+4. **Keep all dependencies current** — Pillow and its C library dependencies
+   (including libjpeg, libpng, libtiff, libwebp, openjpeg, freetype,
+   littlecms2, Ghostscript, and others). Subscribe to `Pillow security
    advisories <https://github.com/python-pillow/Pillow/security/advisories>`_.
 5. **Enforce** ``MAX_IMAGE_PIXELS`` — never set it to ``None``; treat
    ``Image.DecompressionBombWarning`` as an error.
