@@ -46,8 +46,8 @@ type. An attacker can name a file ``safe.png`` while its content is TIFF, JPEG
 2000, or EPS, causing a different — potentially more dangerous — parser to run.
 
 *Mitigations:* validate MIME type and magic bytes independently before calling
-``Image.open()``; pass the ``format`` parameter explicitly; maintain an
-allowlist of accepted formats.
+``Image.open()``; pass the ``formats`` argument with an allowlist of accepted
+formats.
 
 **S-2 — Plugin registry spoofing**
 
@@ -226,8 +226,9 @@ The following mitigations are listed in priority order.
    advisories <https://github.com/python-pillow/Pillow/security/advisories>`_.
 5. **Enforce** ``MAX_IMAGE_PIXELS`` — never set it to ``None``; treat
    ``Image.DecompressionBombWarning`` as an error.
-6. **Allowlist image formats** — unregister plugins your application does not
-   need.
+6. **Allowlist image formats** — restrict accepted formats when opening
+   images, for example with ``Image.open(..., formats=...)``, and isolate
+   installs/environments if you need to minimise supported formats.
 7. **Strip metadata on output** — never pass through EXIF/XMP/ICC from user
    uploads to publicly served images.
 8. **Sanitise all metadata** returned by Pillow before using it downstream.
