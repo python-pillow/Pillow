@@ -33,7 +33,7 @@ boundary between untrusted image input and the Pillow API.
                     ┌──────────────────────────────────────────┐
                     │  C libraries (bundled or system)         │
                     │  libjpeg · libpng · libtiff · libwebp    │
-                    │  openjpeg · freetype · littlecms         │
+                    │  openjpeg · freetype · littlecms2        │
                     └──────────────────────────────────────────┘
 
 Spoofing
@@ -84,7 +84,7 @@ encode-decode cycle invisibly.
 **T-3 — Supply chain tampering**
 
 Pre-compiled wheels bundle libjpeg-turbo, libpng, libtiff, libwebp, openjpeg,
-freetype, and littlecms. A compromised PyPI release or build pipeline could
+freetype, and littlecms2. A compromised PyPI release or build pipeline could
 ship malicious binaries.
 
 *Mitigations:* pin with hash verification (``pip install --require-hashes``);
