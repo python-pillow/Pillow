@@ -190,6 +190,7 @@ provide a stable public API for unregistering individual format plugins, so do
 not rely on mutating internal registries such as ``Image.OPEN`` as a security
 control.
 
+
 **E-3 — ``ImageMath.unsafe_eval()`` code injection**
 
 :py:meth:`~PIL.ImageMath.unsafe_eval` calls Python's built-in ``eval()`` with
