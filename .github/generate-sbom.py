@@ -13,7 +13,6 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import json
-import sys
 import uuid
 from pathlib import Path
 
@@ -493,15 +492,15 @@ def generate(version: str) -> dict:
         "metadata": {
             "timestamp": now,
             "lifecycles": [{"phase": "build"}],
-    "tools": {
-      "components": [
-        {
-          "type": "application",
-          "name": "generate-sbom.py",
-          "group": "Pillow"
-        }
-      ]
-    },
+            "tools": {
+                "components": [
+                    {
+                        "type": "application",
+                        "name": "generate-sbom.py",
+                        "group": "Pillow",
+                    }
+                ]
+            },
             "component": metadata_component,
         },
         "components": ext_components + vendored_components + native_deps,
