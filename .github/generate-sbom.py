@@ -10,6 +10,7 @@ Output defaults to pillow-{version}.cdx.json in the current directory.
 
 from __future__ import annotations
 
+import argparse
 import datetime as dt
 import hashlib
 import json
@@ -446,6 +447,7 @@ def generate(version: str) -> dict:
                 "pkg:generic/zlib",
                 "pkg:generic/libtiff",
                 "pkg:generic/openjpeg",
+                "pkg:generic/libimagequant",
             ],
         },
         {
@@ -473,6 +475,10 @@ def generate(version: str) -> dict:
         {
             "ref": f"{purl}#c-ext/PIL._imagingmath",
             "dependsOn": ["pkg:pypi/pybind11"],
+        },
+        {
+            "ref": f"{purl}#c-ext/PIL._imagingtk",
+            "dependsOn": ["pkg:generic/libxcb"],
         },
         {
             "ref": f"{purl}#thirdparty/raqm",
