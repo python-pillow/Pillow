@@ -1,4 +1,4 @@
-# Copilot Instructions for Pillow
+# Agent Instructions for Pillow
 
 ## What this project is
 
