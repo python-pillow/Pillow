@@ -12,6 +12,7 @@ on:
   push:
     paths:
       - ".ci/requirements-cibw.txt"
+      - ".ci/requirements-sbom.txt"
       - ".github/dependencies.json"
       - ".github/generate-sbom.py"
       - ".github/workflows/wheels*"
@@ -25,6 +26,7 @@ on:
   pull_request:
     paths:
       - ".ci/requirements-cibw.txt"
+      - ".ci/requirements-sbom.txt"
       - ".github/dependencies.json"
       - ".github/generate-sbom.py"
       - ".github/workflows/wheels*"
