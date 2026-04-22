@@ -69,7 +69,7 @@ python3 -m tox -e mypy
 
 ## Documentation
 
-Docs use Sphinx/RST. Build locally with `make docserve`. Release notes go in
+Docs use Sphinx/RST. Build locally with `make doc`. Release notes go in
 `docs/releasenotes/<version>.rst` using the existing section structure
 (Security, Backwards incompatible changes, Deprecations, API changes, API
 additions, Other changes). Use the `:cve:` RST role for CVE references.
@@ -99,4 +99,4 @@ Use fully qualified exception names: `Image.DecompressionBombError` and
 `Image.DecompressionBombWarning`, not the bare class names.
 
 Do not embed specific numeric values for thresholds like `MAX_IMAGE_PIXELS` —
-they change across releases. Reference the named constant instead.
+they may be changed by the user at runtime. Reference the named constant instead.
