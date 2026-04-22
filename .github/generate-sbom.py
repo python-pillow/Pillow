@@ -110,7 +110,7 @@ def generate(version: str) -> dict:
                 ],
                 "patches": [
                     {
-                        "type": "generated",
+                        "type": "unofficial",
                         "diff": {
                             "text": {
                                 # raqm-version.h.in → raqm-version.h:
@@ -493,13 +493,15 @@ def generate(version: str) -> dict:
         "metadata": {
             "timestamp": now,
             "lifecycles": [{"phase": "build"}],
-            "tools": [
-                {
-                    "type": "application",
-                    "name": "generate-sbom.py",
-                    "vendor": "Pillow",
-                }
-            ],
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "generate-sbom.py",
+          "group": "Pillow"
+        }
+      ]
+    },
             "component": metadata_component,
         },
         "components": ext_components + vendored_components + native_deps,
@@ -507,11 +509,27 @@ def generate(version: str) -> dict:
     }
 
 
-if __name__ == "__main__":
+def main() -> None:
     version = get_version()
-    output = (
-        Path(sys.argv[1]) if len(sys.argv) > 1 else Path(f"pillow-{version}.cdx.json")
+
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
+    parser.add_argument(
+        "output",
+        nargs="?",
+        type=Path,
+        default=Path(f"pillow-{version}.cdx.json"),
+        help="output file",
+    )
+    args = parser.parse_args()
+
     sbom = generate(version)
-    output.write_text(json.dumps(sbom, indent=2) + "\n", encoding="utf-8")
-    print(f"Wrote {output} (Pillow {version}, {len(sbom['components'])} components)")
+    args.output.write_text(json.dumps(sbom, indent=2) + "\n", encoding="utf-8")
+    print(
+        f"Wrote {args.output} (Pillow {version}, {len(sbom['components'])} components)"
+    )
+
+
+if __name__ == "__main__":
+    main()
