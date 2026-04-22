@@ -353,7 +353,7 @@ class Text(Generic[AnyStr]):
         fontmode = self._get_fontmode()
         line_spacing = (
             self.font.getbbox(
-                "A",
+                "Aj",
                 fontmode,
                 None,
                 self.features,
