@@ -13,7 +13,7 @@ Threat model (STRIDE)
 ---------------------
 
 The analysis below follows the `STRIDE
-<https://en.wikipedia.org/wiki/STRIDE_(security)>`_ framework and covers the
+<https://en.wikipedia.org/wiki/STRIDE_model>`_ framework and covers the
 boundary between untrusted image input and the Pillow API.
 
 .. code-block:: text
@@ -22,7 +22,7 @@ boundary between untrusted image input and the Pillow API.
    Untrusted zone   │             Pillow API                   │
    ─────────────    │                                          │
    Image files ────►│  Image.open()  ──►  Format plugins       │
-   Byte streams     │  (40+ parsers)       (Python + C FFI)    │
+   Byte streams     │  (40+ parsers)      (Python + C FFI)     │
    User metadata    │                                          │
                     │  ImageMath.unsafe_eval(expr)  ───────────┼──► Python eval()
                     │  ImageShow.show(image)  ─────────────────┼──► os.system / subprocess
@@ -87,11 +87,11 @@ encode-decode cycle invisibly.
 **T-3 — Supply chain tampering**
 
 Pre-compiled wheels bundle libjpeg-turbo, libpng, libtiff, libwebp, openjpeg,
-freetype, and littlecms2. A compromised PyPI release or build pipeline could
-ship malicious binaries.
+freetype, littlecms2, and other libraries. A compromised PyPI release or build pipeline
+could ship malicious binaries.
 
-*Mitigations:* pin with hash verification (``pip install --require-hashes``);
-monitor `Pillow security advisories
+*Mitigations:* pin with hash verification
+(``python3 -m pip install --require-hashes``); monitor `Pillow security advisories
 <https://github.com/python-pillow/Pillow/security/advisories>`_; use
 Dependabot or OSV-Scanner for bundled C library CVEs.
 
