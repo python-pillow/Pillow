@@ -126,7 +126,7 @@ jobs:
 
       - name: Set up QEMU
         if: matrix.cibw_arch == 'riscv64'
-        uses: docker/setup-qemu-action@v4
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
         with:
           platforms: riscv64
 
