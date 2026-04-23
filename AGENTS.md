@@ -75,13 +75,6 @@ Docs use Sphinx/RST. Build locally with `make doc`. Release notes go in
 additions, Other changes). Use the `:cve:` RST role for CVE references.
 Include a release note entry for any user-visible change.
 
-## CI checks (must all pass before merge)
-
-GitHub Actions runs: `test.yml` (pytest on Linux/macOS/Windows), `lint.yml`
-(pre-commit), `docs.yml` (Sphinx build), and `wheels.yml` on tag push.
-
----
-
 ## Pillow-specific guidance
 
 Use `python3` and `python3 -m pip install` — never `python` or bare `pip`.
