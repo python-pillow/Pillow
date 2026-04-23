@@ -11,9 +11,12 @@ Output defaults to pillow-{version}.cdx.json in the current directory.
 from __future__ import annotations
 
 import argparse
+import base64
 import datetime as dt
+import difflib
 import hashlib
 import json
+import urllib.request
 import uuid
 from pathlib import Path
 
@@ -25,6 +28,25 @@ def get_version() -> str:
 
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def upstream_diff_b64(
+    upstream_url: str,
+    upstream_display: str,
+    local_path: Path,
+    local_display: str,
+) -> str:
+    """Fetch an upstream file and return a base64-encoded unified diff vs the local copy."""
+    with urllib.request.urlopen(upstream_url) as resp:
+        upstream_text = resp.read().decode("utf-8", errors="replace")
+    local_text = local_path.read_text(encoding="utf-8", errors="replace")
+    diff_lines = difflib.unified_diff(
+        upstream_text.splitlines(keepends=True),
+        local_text.splitlines(keepends=True),
+        fromfile=f"a/{upstream_display}",
+        tofile=f"b/{local_display}",
+    )
+    return base64.b64encode("".join(diff_lines).encode()).decode()
 
 
 def generate(version: str) -> dict:
@@ -117,21 +139,11 @@ def generate(version: str) -> dict:
                                 # template @RAQM_VERSION_*@ placeholders replaced
                                 # with literal 0.10.5 values; filename changed to
                                 # drop the .in suffix; minor indentation fix.
-                                "content": (
-                                    "LS0tIGEvc3JjL3JhcW0tdmVyc2lvbi5oLmluCisrKyBiL3NyYy9yYXFtLXZlcnNpb24uaApAQCAt"
-                                    "MzEsMTQgKzMxLDE0IEBACiAjaWZuZGVmIF9SQVFNX1ZFUlNJT05fSF8KICNkZWZpbmUgX1JBUU"
-                                    "1fVkVSU0lPTl9IXwogCi0jZGVmaW5lIFJBUU1fVkVSU0lPTl9NQUpPUiBAUkFRTV9WRVJTSU9O"
-                                    "X01BSk9SQAotI2RlZmluZSBSQVFNX1ZFUlNJT05fTUlOT1IgQFJBUU1fVkVSU0lPTl9NSU5PUkAK"
-                                    "LSNkZWZpbmUgUkFRTV9WRVJTSU9OX01JQ1JPIEBSQVFNX1ZFUlNJT05fTUlDUk9ACisjZGVmaW5l"
-                                    "IFJBUU1fVkVSU0lPTl9NQUpPUiAwCisjZGVmaW5lIFJBUU1fVkVSU0lPTl9NSU5PUiAxMAorI2Rl"
-                                    "ZmluZSBSQVFNX1ZFUlNJT05fTUlDUk8gNQogCi0jZGVmaW5lIFJBUU1fVkVSU0lPTl9TVFJJTkcg"
-                                    "IkBSQVFNX1ZFUlNJT05AIgorI2RlZmluZSBSQVFNX1ZFUlNJT05fU1RSSU5HICIwLjEwLjUiCiAK"
-                                    "ICNkZWZpbmUgUkFRTV9WRVJTSU9OX0FUTEVBU1QobWFqb3IsbWlub3IsbWljcm8pIFwKLQkobWFq"
-                                    "b3IpKjEwMDAwKyhtaW5vcikqMTAwKyhtaWNybykgPD0gXAotCSBSQVFNX1ZFUlNJT05fTUFKT1Iq"
-                                    "MTAwMDArUkFRTV9WRVJTSU9OX01JTk9SKjEwMCtSQVFNX1ZFUlNJT05fTUlDUk8pCisgICAgKCht"
-                                    "YWpvcikqMTAwMDArKG1pbm9yKSoxMDArKG1pY3JvKSA8PSBcCisgICAgIFJBUU1fVkVSU0lPTl9N"
-                                    "QUpPUioxMDAwMCtSQVFNX1ZFUlNJT05fTUlOT1IqMTAwK1JBUU1fVkVSU0lPTl9NSUNSTykKCiAj"
-                                    "ZW5kaWYgLyogX1JBUU1fVkVSU0lPTl9IXyAqLwo="
+                                "content": upstream_diff_b64(
+                                    "https://raw.githubusercontent.com/HOST-Oman/libraqm/v0.10.5/src/raqm-version.h.in",
+                                    "src/raqm-version.h.in",
+                                    thirdparty / "raqm" / "raqm-version.h",
+                                    "src/raqm-version.h",
                                 ),
                                 "encoding": "base64",
                             }
@@ -145,11 +157,11 @@ def generate(version: str) -> dict:
                                 # #ifdef HAVE_FRIBIDI_SYSTEM guard so that when
                                 # building without a system FriBiDi Pillow's own
                                 # fribidi-shim is used instead.
-                                "content": (
-                                    "LS0tIGEvc3JjL3JhcW0uYworKysgYi9zcmMvcmFxbS5jCkBAIC0zNiw3ICszNiwxMSBAQAogI2lu"
-                                    "Y2x1ZGUgPFNoZWVuQmlkaS5oPgogI2VuZGlmCiAjZWxzZQorI2lmZGVmIEhBVkVfRlJJQklESV9T"
-                                    "WVNURU0KICNpbmNsdWRlIDxmcmliaWRpLmg+CisjZWxzZQorI2luY2x1ZGUgIi4uL2ZyaWJpZGkt"
-                                    "c2hpbS9mcmliaWRpLmgiCisjZW5kaWYKICNlbmRpZgogCiAjaW5jbHVkZSA8aGIuaD4K"
+                                "content": upstream_diff_b64(
+                                    "https://raw.githubusercontent.com/HOST-Oman/libraqm/v0.10.5/src/raqm.c",
+                                    "src/raqm.c",
+                                    thirdparty / "raqm" / "raqm.c",
+                                    "src/raqm.c",
                                 ),
                                 "encoding": "base64",
                             }
@@ -447,6 +459,7 @@ def generate(version: str) -> dict:
                 "pkg:generic/libtiff",
                 "pkg:generic/openjpeg",
                 "pkg:generic/libimagequant",
+                "pkg:generic/libxcb",
             ],
         },
         {
@@ -472,12 +485,8 @@ def generate(version: str) -> dict:
             "dependsOn": ["pkg:generic/libavif"],
         },
         {
-            "ref": f"{purl}#c-ext/PIL._imagingmath",
-            "dependsOn": ["pkg:pypi/pybind11"],
-        },
-        {
             "ref": f"{purl}#c-ext/PIL._imagingtk",
-            "dependsOn": ["pkg:generic/libxcb"],
+            "dependsOn": [],
         },
         {
             "ref": f"{purl}#thirdparty/raqm",
