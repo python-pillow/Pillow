@@ -69,6 +69,12 @@ ImageCms.ImageCmsProfile.product_name and .product_info
 Deprecations
 ============
 
+Image.putpixel 'value' lists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Passing lists to the ``value`` parameter of :py:meth:`~PIL.Image.Image.putpixel` have
+been deprecated. Use tuples instead.
+
 JpegImageFile.load_djpeg
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
