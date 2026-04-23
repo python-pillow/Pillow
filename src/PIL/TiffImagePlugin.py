@@ -371,7 +371,12 @@ class IFDRational(Rational):
             self._denominator = denominator
 
         if denominator == 0:
-            self._val = float("nan")
+            if value == 0:
+                self._val = float("nan")
+            elif value > 0:
+                self._val = math.inf
+            else:
+                self._val = -math.inf
         elif denominator == 1:
             self._val = Fraction(value)
         elif int(value) == value:
@@ -400,6 +405,9 @@ class IFDRational(Rational):
         assert isinstance(self._val, Fraction)
         f = self._val.limit_denominator(max_denominator)
         return f.numerator, f.denominator
+
+    def __float__(self) -> float:
+        return float(self._val)
 
     def __repr__(self) -> str:
         return str(float(self._val))
