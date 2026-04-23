@@ -391,7 +391,7 @@ def generate(version: str) -> dict:
             "name": "libimagequant",
             "scope": "optional",
             "description": "Improved colour quantization (optional). "
-            "Tested with 2.6-4.4.1. NOTE: GPLv3 licensed.",
+            "Tested with 2.6-4.4.1.",
             "licenses": [{"license": {"id": "GPL-3.0-only"}}],
             "externalReferences": [
                 {"type": "website", "url": "https://pngquant.org/lib/"},
@@ -407,7 +407,7 @@ def generate(version: str) -> dict:
             "name": "libxcb",
             "scope": "optional",
             "description": "X11 screen-grab support (optional, "
-            "used by PIL._imagingtk on Linux).",
+            "used by PIL._imaging on macOS and Linux).",
             "licenses": [{"license": {"id": "MIT"}}],
             "externalReferences": [
                 {"type": "website", "url": "https://xcb.freedesktop.org"},
@@ -423,7 +423,7 @@ def generate(version: str) -> dict:
             "name": "pybind11",
             "scope": "excluded",
             "description": "C++/Python binding library "
-            "(build-time dependency for PIL._imagingmath).",
+            "(build-time dependency).",
             "licenses": [{"license": {"id": "BSD-3-Clause"}}],
             "externalReferences": [
                 {"type": "website", "url": "https://pybind11.readthedocs.io"},
