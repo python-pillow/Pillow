@@ -422,8 +422,7 @@ def generate(version: str) -> dict:
             "type": "library",
             "name": "pybind11",
             "scope": "excluded",
-            "description": "C++/Python binding library "
-            "(build-time dependency).",
+            "description": "C++/Python binding library " "(build-time dependency).",
             "licenses": [{"license": {"id": "BSD-3-Clause"}}],
             "externalReferences": [
                 {"type": "website", "url": "https://pybind11.readthedocs.io"},
