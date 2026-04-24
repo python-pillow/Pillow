@@ -32,23 +32,24 @@ def sha256_file(path: Path) -> str:
 
 def upstream_diff_b64(
     upstream_url: str,
-    upstream_display: str,
+    upstream_display: bytes,
     local_path: Path,
-    local_display: str,
+    local_display: bytes,
 ) -> str:
     """
     Fetch an upstream file and return a base64-encoded unified diff vs the local copy.
     """
     with urllib.request.urlopen(upstream_url) as resp:
-        upstream_text = resp.read().decode("utf-8", errors="replace")
-    local_text = local_path.read_text(encoding="utf-8", errors="replace")
-    diff_lines = difflib.unified_diff(
+        upstream_text = resp.read()
+    local_text = local_path.read_bytes()
+    diff_lines = difflib.diff_bytes(
+        difflib.unified_diff,
         upstream_text.splitlines(keepends=True),
         local_text.splitlines(keepends=True),
-        fromfile=f"a/{upstream_display}",
-        tofile=f"b/{local_display}",
+        fromfile=b"a/" + upstream_display,
+        tofile=b"b/" + local_display,
     )
-    return base64.b64encode("".join(diff_lines).encode()).decode()
+    return base64.b64encode(b"".join(diff_lines)).decode()
 
 
 def generate(version: str) -> dict:
@@ -143,9 +144,9 @@ def generate(version: str) -> dict:
                                 # drop the .in suffix; minor indentation fix.
                                 "content": upstream_diff_b64(
                                     "https://raw.githubusercontent.com/HOST-Oman/libraqm/v0.10.5/src/raqm-version.h.in",
-                                    "src/raqm-version.h.in",
+                                    b"src/raqm-version.h.in",
                                     thirdparty / "raqm" / "raqm-version.h",
-                                    "src/raqm-version.h",
+                                    b"src/raqm-version.h",
                                 ),
                                 "encoding": "base64",
                             }
@@ -161,9 +162,9 @@ def generate(version: str) -> dict:
                                 # fribidi-shim is used instead.
                                 "content": upstream_diff_b64(
                                     "https://raw.githubusercontent.com/HOST-Oman/libraqm/v0.10.5/src/raqm.c",
-                                    "src/raqm.c",
+                                    b"src/raqm.c",
                                     thirdparty / "raqm" / "raqm.c",
-                                    "src/raqm.c",
+                                    b"src/raqm.c",
                                 ),
                                 "encoding": "base64",
                             }
