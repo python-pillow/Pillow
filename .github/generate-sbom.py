@@ -234,10 +234,6 @@ def generate(version: str) -> dict:
                     "type": "vcs",
                     "url": "https://github.com/python/pythoncapi-compat",
                 },
-                {
-                    "type": "distribution",
-                    "url": "https://github.com/python/pythoncapi-compat/releases",
-                },
             ],
         },
     ]
@@ -255,8 +251,8 @@ def generate(version: str) -> dict:
                 {"license": {"id": "BSD-3-Clause"}},
             ],
             "externalReferences": [
-                {"type": "website", "url": "https://libjpeg-turbo.org"},
                 {"type": "website", "url": "https://ijg.org"},
+                {"type": "website", "url": "https://libjpeg-turbo.org"},
                 {
                     "type": "distribution",
                     "url": "https://github.com/libjpeg-turbo/libjpeg-turbo/releases",
@@ -272,7 +268,7 @@ def generate(version: str) -> dict:
             "licenses": [{"license": {"id": "Zlib"}}],
             "externalReferences": [
                 {"type": "website", "url": "https://zlib.net"},
-                {"type": "distribution", "url": "https://zlib.net/"},
+                {"type": "distribution", "url": "https://zlib.net"},
             ],
         },
         {
@@ -416,7 +412,7 @@ def generate(version: str) -> dict:
                 {"type": "website", "url": "https://pngquant.org/lib/"},
                 {
                     "type": "distribution",
-                    "url": "https://github.com/ImageOptim/libimagequant/releases",
+                    "url": "https://github.com/ImageOptim/libimagequant/tags",
                 },
             ],
         },
@@ -441,7 +437,7 @@ def generate(version: str) -> dict:
             "type": "library",
             "name": "pybind11",
             "scope": "excluded",
-            "description": "C++/Python binding library (build-time dependency).",
+            "description": "Parallel C compilation library (build-time dependency).",
             "licenses": [{"license": {"id": "BSD-3-Clause"}}],
             "externalReferences": [
                 {"type": "website", "url": "https://pybind11.readthedocs.io"},
@@ -518,7 +514,7 @@ def generate(version: str) -> dict:
                     {
                         "type": "application",
                         "name": "generate-sbom.py",
-                        "group": "Pillow",
+                        "group": "pillow",
                     }
                 ]
             },
