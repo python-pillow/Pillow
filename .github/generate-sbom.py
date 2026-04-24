@@ -71,6 +71,7 @@ def generate(version: str) -> dict:
             {"type": "website", "url": "https://python-pillow.github.io"},
             {"type": "vcs", "url": "https://github.com/python-pillow/Pillow"},
             {"type": "documentation", "url": "https://pillow.readthedocs.io"},
+            {"type": "security-contact", "url": "https://github.com/python-pillow/Pillow/security/policy"},
         ],
     }
 
