@@ -308,7 +308,7 @@ jobs:
 
       - name: Validate SBOM
         run: |
-          pip install -r .ci/requirements-sbom.txt
+          python3 -m pip install -r .ci/requirements-sbom.txt
           check-jsonschema --schemafile "https://raw.githubusercontent.com/CycloneDX/specification/1.7/schema/bom-1.7.schema.json" *.cdx.json
 
   sbom-publish:
