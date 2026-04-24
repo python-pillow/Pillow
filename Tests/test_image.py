@@ -34,7 +34,7 @@ from .helper import (
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
-    timeout_unless_slower_valgrind,
+    timeout_unless_slower,
 )
 
 ElementTree: ModuleType | None
@@ -577,7 +577,7 @@ class TestImage:
         i = Image.new("RGB", [1, 1])
         assert isinstance(i.size, tuple)
 
-    @timeout_unless_slower_valgrind(0.75)
+    @timeout_unless_slower(0.75)
     @pytest.mark.parametrize("size", ((0, 100000000), (100000000, 0)))
     def test_empty_image(self, size: tuple[int, int]) -> None:
         Image.new("RGB", size)

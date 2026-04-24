@@ -17,7 +17,7 @@ from .helper import (
     hopper,
     mark_if_feature_version,
     skip_unless_feature,
-    timeout_unless_slower_valgrind,
+    timeout_unless_slower,
 )
 
 
@@ -344,7 +344,7 @@ def test_pdf_append_to_bytesio() -> None:
     assert len(f.getvalue()) > initial_size
 
 
-@timeout_unless_slower_valgrind(1)
+@timeout_unless_slower(1)
 @pytest.mark.parametrize("newline", (b"\r", b"\n"))
 def test_redos(newline: bytes) -> None:
     malicious = b" trailer<<>>" + newline * 3456
