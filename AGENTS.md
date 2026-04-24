@@ -11,15 +11,15 @@ pure Python format plugins live in `src/PIL/`, and eight C extension modules
 ## Project layout
 
 ```
-src/PIL/              Python source and C extension stubs (.pyi)
-src/thirdparty/       Vendored C libraries (raqm, fribidi-shim, pythoncapi_compat)
-Tests/                pytest test suite; Tests/helper.py has shared utilities
-docs/                 Sphinx documentation (RST)
-docs/releasenotes/    Per-release changelog entries
-setup.py              C extension build configuration
-_custom_build/        Custom setuptools build backend
-src/PIL/_version.py   Version number (PEP 440)
-pyproject.toml        Project metadata and optional dependency groups
+src/PIL/                 Python source and C extension stubs (.pyi)
+src/thirdparty/          Vendored C libraries (raqm, fribidi-shim, pythoncapi_compat)
+Tests/                   pytest test suite; Tests/helper.py has shared utilities
+docs/                    Sphinx documentation (RST)
+docs/releasenotes/       Per-release changelog entries
+setup.py                 C extension build configuration
+_custom_build/           Custom setuptools build backend
+src/PIL/_version.py      Version number (PEP 440)
+pyproject.toml           Project metadata and optional dependency groups
 .pre-commit-config.yaml  All linting and formatting hooks
 ```
 
@@ -36,8 +36,8 @@ on the system.
 ## Test
 
 ```bash
-python3 selftest.py          # quick sanity check
-python3 -m pytest Tests/     # full test suite
+python3 selftest.py               # quick sanity check
+python3 -m pytest Tests/          # full test suite
 python3 -m pytest Tests/ -n auto  # parallel (requires pytest-xdist)
 ```
 
