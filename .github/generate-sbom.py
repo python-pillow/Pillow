@@ -36,7 +36,9 @@ def upstream_diff_b64(
     local_path: Path,
     local_display: str,
 ) -> str:
-    """Fetch an upstream file and return a base64-encoded unified diff vs the local copy."""
+    """
+    Fetch an upstream file and return a base64-encoded unified diff vs the local copy.
+    """
     with urllib.request.urlopen(upstream_url) as resp:
         upstream_text = resp.read().decode("utf-8", errors="replace")
     local_text = local_path.read_text(encoding="utf-8", errors="replace")
