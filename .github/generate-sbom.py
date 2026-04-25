@@ -219,7 +219,7 @@ def generate(version: str) -> dict:
             "name": "pythoncapi_compat",
             "description": "Backport header for new CPython C-API functions "
             "(vendored in src/thirdparty/pythoncapi_compat.h)",
-            "licenses": [{"license": {"id": "MIT-0"}}],
+            "licenses": [{"license": {"id": "0BSD"}}],
             "hashes": [
                 {
                     "alg": "SHA-256",
@@ -277,7 +277,7 @@ def generate(version: str) -> dict:
             "name": "libtiff",
             "scope": "optional",
             "description": "TIFF codec (optional). Tested with libtiff 4.0-4.7.1.",
-            "licenses": [{"license": {"id": "HPND"}}],
+            "licenses": [{"license": {"id": "libtiff"}}],
             "externalReferences": [
                 {"type": "website", "url": "https://libtiff.gitlab.io/libtiff/"},
                 {
@@ -407,7 +407,7 @@ def generate(version: str) -> dict:
             "scope": "optional",
             "description": "Improved colour quantization (optional). "
             "Tested with 2.6-4.4.1.",
-            "licenses": [{"license": {"id": "GPL-3.0-only"}}],
+            "licenses": [{"license": {"id": "GPL-3.0-or-later"}}],
             "externalReferences": [
                 {"type": "website", "url": "https://pngquant.org/lib/"},
                 {
@@ -423,7 +423,7 @@ def generate(version: str) -> dict:
             "scope": "optional",
             "description": "X11 screen-grab support (optional, "
             "used by PIL._imaging on macOS and Linux).",
-            "licenses": [{"license": {"id": "MIT"}}],
+            "licenses": [{"license": {"id": "X11"}}],
             "externalReferences": [
                 {"type": "website", "url": "https://xcb.freedesktop.org"},
                 {
