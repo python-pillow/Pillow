@@ -488,10 +488,6 @@ def generate(version: str) -> dict:
             "dependsOn": ["pkg:generic/libavif"],
         },
         {
-            "ref": f"{purl}#c-ext/PIL._imagingtk",
-            "dependsOn": [],
-        },
-        {
             "ref": f"{purl}#thirdparty/raqm",
             "dependsOn": [
                 f"{purl}#thirdparty/fribidi-shim",
