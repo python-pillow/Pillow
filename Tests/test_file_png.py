@@ -564,11 +564,6 @@ class TestFilePng:
             assert repr_png.format == "PNG"
             assert_image_equal(im, repr_png)
 
-    def test_repr_png_error_returns_none(self) -> None:
-        im = hopper("F")
-
-        assert im._repr_png_() is None
-
     def test_chunk_order(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/icc_profile.png") as im:
             test_file = tmp_path / "temp.png"

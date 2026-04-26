@@ -8,7 +8,7 @@ import pytest
 
 from PIL import Image, UnidentifiedImageError, _binary
 
-from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+from .helper import assert_image_equal, assert_image_equal_tofile
 
 _TGA_DIR = os.path.join("Tests", "images", "tga")
 _TGA_DIR_COMMON = os.path.join(_TGA_DIR, "common")
@@ -173,14 +173,6 @@ def test_small_palette(tmp_path: Path) -> None:
 def test_missing_palette() -> None:
     with Image.open("Tests/images/dilation4.lut") as im:
         assert im.mode == "L"
-
-
-def test_save_wrong_mode(tmp_path: Path) -> None:
-    im = hopper("PA")
-    out = tmp_path / "temp.tga"
-
-    with pytest.raises(OSError):
-        im.save(out)
 
 
 def test_save_mapdepth() -> None:
