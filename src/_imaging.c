@@ -85,8 +85,10 @@
 #endif
 #endif
 
-#ifdef HAVE_LIBZ
-#include "zlib.h"
+#ifdef HAVE_ZLIBNG
+#include <zlib-ng.h>
+#else
+#include <zlib.h>
 #endif
 
 #ifdef HAVE_LIBTIFF
