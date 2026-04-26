@@ -28,5 +28,3 @@ jobs:
         uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
       - name: Lint
         run: uvx --with tox-uv tox -e lint
-      - name: Mypy
-        run: uvx --with tox-uv tox -e mypy

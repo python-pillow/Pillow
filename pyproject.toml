@@ -187,7 +187,6 @@ lint.isort.required-imports = [
 max_supported_python = "3.14"
 
 [tool.mypy]
-python_version = "3.10"
 pretty = true
 disallow_any_generics = true
 disallow_untyped_defs = true
