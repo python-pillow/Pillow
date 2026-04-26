@@ -3598,11 +3598,17 @@ def open(
        and be opened in binary mode. The file object will also seek to zero
        before reading.
     :param mode: The mode.  If given, this argument must be "r".
-    :param formats: A list or tuple of formats to attempt to load the file in.
-       This can be used to restrict the set of formats checked.
-       Pass ``None`` to try all supported formats. You can print the set of
-       available formats by running ``python3 -m PIL`` or using
-       the :py:func:`PIL.features.pilinfo` function.
+    :param formats: A list or tuple of formats to attempt to load the file in, for
+       example, ``("JPEG", "GIF")``. This can be used to restrict the set of formats
+       checked.
+
+       To exclude a format, start the format with "!", for example,
+       ``("!EPS", "!PSD")``.
+
+       Pass ``None`` to try all supported formats.
+
+       You can print the set of available formats by running ``python3 -m PIL`` or
+       using the :py:func:`PIL.features.pilinfo` function.
     :returns: An :py:class:`~PIL.Image.Image` object.
     :exception FileNotFoundError: If the file cannot be found.
     :exception PIL.UnidentifiedImageError: If the image cannot be opened and
@@ -3622,11 +3628,20 @@ def open(
         )
         raise ValueError(msg)
 
-    if formats is None:
-        formats = ID
-    elif not isinstance(formats, (list, tuple)):
-        msg = "formats must be a list or tuple"  # type: ignore[unreachable]
-        raise TypeError(msg)
+    if formats is not None:
+        if not isinstance(formats, (list, tuple)):
+            msg = "formats must be a list or tuple"  # type: ignore[unreachable]
+            raise TypeError(msg)
+
+        allowed = set()
+        excluded = set()
+        for f in formats:
+            f = f.upper()
+            if f.startswith("!"):
+                excluded.add(f[1:])
+            else:
+                allowed.add(f)
+        allowed -= excluded
 
     exclusive_fp = False
     filename: str | bytes = ""
@@ -3657,12 +3672,15 @@ def open(
         fp: IO[bytes],
         filename: str | bytes,
         prefix: bytes,
-        formats: list[str] | tuple[str, ...],
+        check_formats: list[str],
     ) -> ImageFile.ImageFile | None:
-        for i in formats:
-            i = i.upper()
-            if i not in OPEN:
-                init()
+        if formats is not None:
+            if allowed:
+                check_formats = [f for f in check_formats if f in allowed]
+            else:
+                check_formats = [f for f in check_formats if f not in excluded]
+
+        for i in check_formats:
             try:
                 factory, accept = OPEN[i]
                 result = not accept or accept(prefix)
@@ -3673,7 +3691,12 @@ def open(
                     im = factory(fp, filename)
                     _decompression_bomb_check(im.size)
                     return im
-            except (SyntaxError, IndexError, TypeError, struct.error) as e:
+            except (  # noqa: PERF203
+                SyntaxError,
+                IndexError,
+                TypeError,
+                struct.error,
+            ) as e:
                 if WARN_POSSIBLE_FORMATS:
                     warning_messages.append(i + " opening failed. " + str(e))
             except BaseException:
@@ -3682,21 +3705,13 @@ def open(
                 raise
         return None
 
-    im = _open_core(fp, filename, prefix, formats)
-
-    if im is None and formats is ID:
+    if not (im := _open_core(fp, filename, prefix, ID)):
         # Try preinit (few common plugins) then init (all plugins)
         for loader in (preinit, init):
             checked_formats = ID.copy()
             loader()
-            if formats != checked_formats:
-                im = _open_core(
-                    fp,
-                    filename,
-                    prefix,
-                    tuple(f for f in formats if f not in checked_formats),
-                )
-                if im is not None:
+            if check_formats := [f for f in ID if f not in checked_formats]:
+                if im := _open_core(fp, filename, prefix, check_formats):
                     break
 
     if im:

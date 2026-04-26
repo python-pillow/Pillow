@@ -128,6 +128,15 @@ class TestImage:
                 assert im.mode == "RGB"
                 assert im.size == (128, 128)
 
+    @pytest.mark.parametrize("formats", (("!PNG",), ("PNG", "!PNG"), ("JPEG", "!PNG")))
+    def test_open_formats_exclude(self, formats: tuple[str]) -> None:
+        with Image.open("Tests/images/hopper.jpg", formats=formats):
+            pass
+
+        with pytest.raises(UnidentifiedImageError):
+            with Image.open("Tests/images/hopper.png", formats=formats):
+                pass
+
     def test_open_verbose_failure(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(Image, "WARN_POSSIBLE_FORMATS", True)
 
