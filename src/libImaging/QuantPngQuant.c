@@ -39,6 +39,13 @@ quantize_pngquant(
     *paletteLength = 0;
     *quantizedPixels = NULL;
 
+    /* Check for integer overflow in width * height to prevent
+     * undersized allocations leading to heap buffer overflow. */
+    if (height != 0 && (size_t)width > SIZE_MAX / (size_t)height) {
+        goto err;
+    }
+    size_t total_pixels = (size_t)width * (size_t)height;
+
     /* configure pngquant */
     attr = liq_attr_create();
     if (!attr) {
@@ -77,7 +84,7 @@ quantize_pngquant(
     }
 
     /* write output pixels (pngquant uses char array) */
-    charMatrix = malloc(width * height);
+    charMatrix = malloc(total_pixels);
     if (!charMatrix) {
         goto err;
     }
@@ -86,18 +93,18 @@ quantize_pngquant(
         goto err;
     }
     for (y = 0; y < height; y++) {
-        charMatrixRows[y] = &charMatrix[y * width];
+        charMatrixRows[y] = &charMatrix[(size_t)y * width];
     }
     if (LIQ_OK != liq_write_remapped_image_rows(remap, image, charMatrixRows)) {
         goto err;
     }
 
     /* transcribe output pixels (pillow uses uint32_t array) */
-    *quantizedPixels = malloc(sizeof(uint32_t) * width * height);
+    *quantizedPixels = malloc(sizeof(uint32_t) * total_pixels);
     if (!*quantizedPixels) {
         goto err;
     }
-    for (i = 0; i < width * height; i++) {
+    for (i = 0; i < total_pixels; i++) {
         (*quantizedPixels)[i] = charMatrix[i];
     }
 
