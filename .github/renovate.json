@@ -60,10 +60,27 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
+            "matchStrings": ["\"highway\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
+            "depNameTemplate": "highway",
+            "packageNameTemplate": "google/highway",
+            "datasourceTemplate": "github-releases"
+        },
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
             "matchStrings": ["\"jpegturbo\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "jpegturbo",
             "packageNameTemplate": "libjpeg-turbo/libjpeg-turbo",
             "datasourceTemplate": "github-releases"
+        },
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
+            "matchStrings": ["\"jpegxl\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
+            "depNameTemplate": "jpegxl",
+            "packageNameTemplate": "libjxl/libjxl",
+            "datasourceTemplate": "github-releases",
+            "extractVersionTemplate": "^v(?<version>.+)$"
         },
         {
             "customType": "regex",

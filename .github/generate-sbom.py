@@ -86,6 +86,7 @@ def generate(version: str) -> dict:
         ),
         ("PIL._imagingft", "FreeType font rendering extension"),
         ("PIL._imagingcms", "LittleCMS2 colour management extension"),
+        ("PIL._jpegxl", "JPEG XL image format extension"),
         ("PIL._webp", "WebP image format extension"),
         ("PIL._avif", "AVIF image format extension"),
         ("PIL._imagingtk", "Tk/Tcl display extension"),
@@ -397,6 +398,22 @@ def generate(version: str) -> dict:
                 {
                     "type": "distribution",
                     "url": "https://github.com/fribidi/fribidi/releases",
+                },
+            ],
+        },
+        {
+            "bom-ref": "pkg:generic/jpegxl",
+            "type": "library",
+            "name": "jpegxl",
+            "description": "JPEG XL codec (optional, used by PIL._jpegxl).",
+            "licenses": [
+                {"license": {"id": "BSD-3-Clause"}},
+            ],
+            "externalReferences": [
+                {"type": "website", "url": "https://jpeg.org/jpegxl"},
+                {
+                    "type": "distribution",
+                    "url": "https://github.com/libjxl/libjxl/releases",
                 },
             ],
         },

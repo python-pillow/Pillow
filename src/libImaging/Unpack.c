@@ -256,6 +256,14 @@ unpack18(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
+static void
+unpack1L(UINT8 *out, const UINT8 *in, int pixels) {
+    int i;
+    for (i = 0; i < pixels; i++) {
+        out[i] = in[i] > 128 ? 255 : 0;
+    }
+}
+
 /* Unpack to "L" image */
 
 static void
@@ -1564,6 +1572,7 @@ static struct {
     {IMAGING_MODE_1, IMAGING_RAWMODE_1_R, 1, unpack1R},
     {IMAGING_MODE_1, IMAGING_RAWMODE_1_IR, 1, unpack1IR},
     {IMAGING_MODE_1, IMAGING_RAWMODE_1_8, 8, unpack18},
+    {IMAGING_MODE_1, IMAGING_RAWMODE_L, 8, unpack1L},
 
     /* grayscale */
     {IMAGING_MODE_L, IMAGING_RAWMODE_L_2, 2, unpackL2},
