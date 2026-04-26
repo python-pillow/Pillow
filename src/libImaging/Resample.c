@@ -717,82 +717,113 @@ ImagingResampleInner(
     Imaging imTemp = NULL;
     Imaging imOut = NULL;
 
-    int i, need_horizontal, need_vertical;
+    int i, second_pass, need_horizontal, need_vertical, error = 0;
     int ybox_first, ybox_last;
-    int ksize_horiz, ksize_vert;
+    int ksize_horiz = 0, ksize_vert = 0;
     int *bounds_horiz, *bounds_vert;
     double *kk_horiz, *kk_vert;
 
     need_horizontal = xsize != imIn->xsize || box[0] || box[2] != xsize;
     need_vertical = ysize != imIn->ysize || box[1] || box[3] != ysize;
 
-    ksize_vert = precompute_coeffs(
-        imIn->ysize, box[1], box[3], ysize, filterp, &bounds_vert, &kk_vert
-    );
-    if (!ksize_vert) {
-        return NULL;
+    // If height is being scaled down, but not width,
+    // then run the vertical pass first, to make the horizontal pass faster
+    int horizontal_first = !(xsize >= (box[2] - box[0]) && ysize < (box[3] - box[1]));
+
+    if ((need_horizontal && horizontal_first) || need_vertical) {
+        ksize_vert = precompute_coeffs(
+            imIn->ysize, box[1], box[3], ysize, filterp, &bounds_vert, &kk_vert
+        );
+        if (!ksize_vert) {
+            return NULL;
+        }
     }
-
-    // First used row in the source image
-    ybox_first = bounds_vert[0];
-    // Last used row in the source image
-    ybox_last = bounds_vert[ysize * 2 - 2] + bounds_vert[ysize * 2 - 1];
-
-    /* two-pass resize, horizontal pass */
     if (need_horizontal) {
+        if (horizontal_first) {
+            // First used row in the source image
+            ybox_first = bounds_vert[0];
+            // Last used row in the source image
+            ybox_last = bounds_vert[ysize * 2 - 2] + bounds_vert[ysize * 2 - 1];
+
+            // Shift bounds for vertical pass
+            for (i = 0; i < ysize; i++) {
+                bounds_vert[i * 2] -= ybox_first;
+            }
+        }
+
         ksize_horiz = precompute_coeffs(
             imIn->xsize, box[0], box[2], xsize, filterp, &bounds_horiz, &kk_horiz
         );
         if (!ksize_horiz) {
-            free(bounds_vert);
-            free(kk_vert);
-            return NULL;
+            error = 1;
+            goto end;
         }
+    }
 
-        // Shift bounds for vertical pass
-        for (i = 0; i < ysize; i++) {
-            bounds_vert[i * 2] -= ybox_first;
-        }
+#define PASS(function, w, h, offset, ksize, bounds, kk) \
+    second_pass = imTemp != NULL;                       \
+    imTemp = ImagingNewDirty(imIn->mode, w, h);         \
+    if (!imTemp) {                                      \
+        error = 1;                                      \
+        goto end;                                       \
+    }                                                   \
+    function(imTemp, imIn, offset, ksize, bounds, kk);  \
+    if (second_pass) {                                  \
+        ImagingDelete(imIn);                            \
+    }                                                   \
+    imIn = imTemp;
 
-        imTemp = ImagingNewDirty(imIn->mode, xsize, ybox_last - ybox_first);
-        if (imTemp) {
-            ResampleHorizontal(
-                imTemp, imIn, ybox_first, ksize_horiz, bounds_horiz, kk_horiz
+    if (horizontal_first) {
+        if (need_horizontal) {
+            PASS(
+                ResampleHorizontal,
+                xsize,
+                ybox_last - ybox_first,
+                ybox_first,
+                ksize_horiz,
+                bounds_horiz,
+                kk_horiz
             );
         }
-        free(bounds_horiz);
-        free(kk_horiz);
-        if (!imTemp) {
-            free(bounds_vert);
-            free(kk_vert);
-            return NULL;
-        }
-        imOut = imIn = imTemp;
-    }
-
-    /* vertical pass */
-    if (need_vertical) {
-        imOut = ImagingNewDirty(imIn->mode, imIn->xsize, ysize);
-        if (imOut) {
-            /* imIn can be the original image or horizontally resampled one */
-            ResampleVertical(imOut, imIn, 0, ksize_vert, bounds_vert, kk_vert);
-        }
-        /* it's safe to call ImagingDelete with empty value
-           if previous step was not performed. */
-        ImagingDelete(imTemp);
-        free(bounds_vert);
-        free(kk_vert);
-        if (!imOut) {
-            return NULL;
+        if (need_vertical) {
+            PASS(ResampleVertical, xsize, ysize, 0, ksize_vert, bounds_vert, kk_vert);
         }
     } else {
-        // Free in any case
+        if (need_vertical) {
+            PASS(
+                ResampleVertical,
+                imIn->xsize,
+                ysize,
+                0,
+                ksize_vert,
+                bounds_vert,
+                kk_vert
+            );
+        }
+        if (need_horizontal) {
+            PASS(
+                ResampleHorizontal, xsize, ysize, 0, ksize_horiz, bounds_horiz, kk_horiz
+            );
+        }
+    }
+
+end:
+    if (ksize_horiz) {
+        free(bounds_horiz);
+        free(kk_horiz);
+    }
+    if (ksize_vert) {
         free(bounds_vert);
         free(kk_vert);
     }
+    if (error) {
+        return NULL;
+    }
 
-    /* none of the previous steps are performed, copying */
-    if (!imOut) {
+    if (imTemp) {
+        imOut = imTemp;
+    } else {
+        // none of the previous steps are performed, copying
         imOut = ImagingCopy(imIn);
     }
 
