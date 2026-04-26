@@ -4,7 +4,7 @@ import re
 import sys
 import warnings
 import zlib
-from io import BytesIO
+from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from types import ModuleType
 from typing import Any, cast
@@ -707,6 +707,16 @@ class TestFilePng:
             assert reloaded.png.im_palette is not None
             assert len(reloaded.png.im_palette[1]) == 3
 
+    def test_plte_cmyk(self, tmp_path: Path) -> None:
+        im = Image.new("P", (1, 1))
+        im.putpalette((0, 100, 150, 200), "CMYK")
+
+        out = tmp_path / "temp.png"
+        im.save(out)
+
+        with Image.open(out) as reloaded:
+            assert reloaded.convert("CMYK").getpixel((0, 0)) == (200, 222, 232, 0)
+
     def test_getxmp(self) -> None:
         with Image.open("Tests/images/color_snakes.png") as im:
             if ElementTree is None:
@@ -811,19 +821,15 @@ class TestFilePng:
     @pytest.mark.parametrize("buffer", (True, False))
     def test_save_stdout(self, buffer: bool, monkeypatch: pytest.MonkeyPatch) -> None:
 
-        class MyStdOut:
-            buffer = BytesIO()
-
-        mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
+        fp = BytesIO()
+        mystdout = TextIOWrapper(fp) if buffer else fp
 
         monkeypatch.setattr(sys, "stdout", mystdout)
 
         with Image.open(TEST_PNG_FILE) as im:
             im.save(sys.stdout, "PNG")  # type: ignore[arg-type]
 
-        if isinstance(mystdout, MyStdOut):
-            mystdout = mystdout.buffer
-        with Image.open(mystdout) as reloaded:
+        with Image.open(fp) as reloaded:
             assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
 
     def test_truncated_end_chunk(self, monkeypatch: pytest.MonkeyPatch) -> None:

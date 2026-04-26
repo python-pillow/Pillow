@@ -726,19 +726,10 @@ ImagingResampleInner(
     need_horizontal = xsize != imIn->xsize || box[0] || box[2] != xsize;
     need_vertical = ysize != imIn->ysize || box[1] || box[3] != ysize;
 
-    ksize_horiz = precompute_coeffs(
-        imIn->xsize, box[0], box[2], xsize, filterp, &bounds_horiz, &kk_horiz
-    );
-    if (!ksize_horiz) {
-        return NULL;
-    }
-
     ksize_vert = precompute_coeffs(
         imIn->ysize, box[1], box[3], ysize, filterp, &bounds_vert, &kk_vert
     );
     if (!ksize_vert) {
-        free(bounds_horiz);
-        free(kk_horiz);
         return NULL;
     }
 
@@ -749,6 +740,15 @@ ImagingResampleInner(
 
     /* two-pass resize, horizontal pass */
     if (need_horizontal) {
+        ksize_horiz = precompute_coeffs(
+            imIn->xsize, box[0], box[2], xsize, filterp, &bounds_horiz, &kk_horiz
+        );
+        if (!ksize_horiz) {
+            free(bounds_vert);
+            free(kk_vert);
+            return NULL;
+        }
+
         // Shift bounds for vertical pass
         for (i = 0; i < ysize; i++) {
             bounds_vert[i * 2] -= ybox_first;
@@ -768,10 +768,6 @@ ImagingResampleInner(
             return NULL;
         }
         imOut = imIn = imTemp;
-    } else {
-        // Free in any case
-        free(bounds_horiz);
-        free(kk_horiz);
     }
 
     /* vertical pass */

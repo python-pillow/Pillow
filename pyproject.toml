@@ -18,7 +18,7 @@ keywords = [
 license = "MIT-CMU"
 license-files = [ "LICENSE" ]
 authors = [
-  { name = "Jeffrey A. Clark", email = "aclark@aclark.net" },
+  { name = "Jeffrey 'Alex' Clark", email = "aclark@aclark.net" },
 ]
 requires-python = ">=3.10"
 classifiers = [
@@ -62,7 +62,6 @@ optional-dependencies.test-arrow = [
   "nanoarrow",
   "pyarrow",
 ]
-
 optional-dependencies.tests = [
   "check-manifest",
   "coverage>=7.4.2",
@@ -77,16 +76,15 @@ optional-dependencies.tests = [
   "pytest-xdist",
   "trove-classifiers>=2024.10.12",
 ]
-
 optional-dependencies.xmp = [
   "defusedxml",
 ]
+urls."Release notes" = "https://pillow.readthedocs.io/en/stable/releasenotes/index.html"
 urls.Changelog = "https://github.com/python-pillow/Pillow/releases"
 urls.Documentation = "https://pillow.readthedocs.io"
 urls.Funding = "https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=pypi"
 urls.Homepage = "https://python-pillow.github.io"
 urls.Mastodon = "https://fosstodon.org/@pillow"
-urls."Release notes" = "https://pillow.readthedocs.io/en/stable/releasenotes/index.html"
 urls.Source = "https://github.com/python-pillow/Pillow"
 
 [tool.setuptools]
@@ -95,70 +93,50 @@ packages = [
 ]
 include-package-data = true
 package-dir = { "" = "src" }
-
-[tool.setuptools.dynamic]
-version = { attr = "PIL.__version__" }
+dynamic.version = { attr = "PIL.__version__" }
 
 [tool.cibuildwheel]
 before-all = ".github/workflows/wheels-dependencies.sh"
 build-verbosity = 1
-
 config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable"
-
 test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-extras = "tests"
 test-requires = [
   "numpy",
 ]
-xbuild-tools = [  ]
-
-[tool.cibuildwheel.ios]
+xbuild-tools = []
 # Disable platform guessing on iOS, and disable raqm (since there won't be a
 # vendor version, and we can't distribute it due to licensing)
-config-settings = "raqm=disable imagequant=disable platform-guessing=disable"
-
+ios.config-settings = "raqm=disable imagequant=disable platform-guessing=disable"
 # iOS needs to be given a specific pytest invocation and list of test sources.
-test-sources = [
+ios.test-sources = [
   "checks",
   "Tests",
   "selftest.py",
 ]
-test-command = [
+ios.test-command = [
   "python -m selftest",
   "python -m pytest -vv -x -W always checks/check_wheel.py Tests",
 ]
-
 # There's no numpy wheel for iOS (yet...)
-test-requires = [  ]
-
-[tool.cibuildwheel.macos]
+ios.test-requires = []
 # Disable platform guessing on macOS to avoid picking up Homebrew etc.
-config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable platform-guessing=disable"
-
-[tool.cibuildwheel.macos.environment]
+macos.config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable platform-guessing=disable"
 # Isolate macOS build environment from Homebrew etc.
-PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
-
-[[tool.cibuildwheel.overrides]]
-# iOS environment is isolated by cibuildwheel, but needs the dependencies
-select = "*_iphoneos"
-environment.PATH = "$(pwd)/build/deps/iphoneos/bin:$PATH"
-
-[[tool.cibuildwheel.overrides]]
-# iOS simulator environment is isolated by cibuildwheel, but needs the dependencies
-select = "*_iphonesimulator"
-environment.PATH = "$(pwd)/build/deps/iphonesimulator/bin:$PATH"
-
-[[tool.cibuildwheel.overrides]]
-select = "*-win32"
-test-requires = [  ]
+macos.environment.PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
+overrides = [
+  # iOS environment is isolated by cibuildwheel, but needs the dependencies
+  { select = "*_iphoneos", environment.PATH = "$(pwd)/build/deps/iphoneos/bin:$PATH" },
+  # iOS simulator environment is isolated by cibuildwheel, but needs the dependencies
+  { select = "*_iphonesimulator", environment.PATH = "$(pwd)/build/deps/iphonesimulator/bin:$PATH" },
+  { select = "*-win32", test-requires = [] },
+]
 
 [tool.black]
 exclude = "wheels/multibuild"
 
 [tool.ruff]
 exclude = [ "wheels/multibuild" ]
-
 fix = true
 lint.select = [
   "C4",     # flake8-comprehensions
@@ -168,6 +146,7 @@ lint.select = [
   "I",      # isort
   "ISC",    # flake8-implicit-str-concat
   "LOG",    # flake8-logging
+  "PERF",   # perflint
   "PGH",    # pygrep-hooks
   "PIE",    # flake8-pie
   "PT",     # flake8-pytest-style
@@ -207,12 +186,6 @@ lint.isort.required-imports = [
 [tool.pyproject-fmt]
 max_supported_python = "3.14"
 
-[tool.pytest.ini_options]
-addopts = "-ra --color=auto"
-testpaths = [
-  "Tests",
-]
-
 [tool.mypy]
 python_version = "3.10"
 pretty = true
@@ -224,3 +197,9 @@ follow_imports = "silent"
 warn_redundant_casts = true
 warn_unreachable = true
 warn_unused_ignores = true
+
+[tool.pytest]
+addopts = [ "-ra", "--color=auto" ]
+testpaths = [
+  "Tests",
+]

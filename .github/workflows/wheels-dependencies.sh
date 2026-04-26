@@ -89,27 +89,24 @@ fi
 
 ARCHIVE_SDIR=pillow-depends-main
 
-# Package versions for fresh source builds.
-if [[ -n "$IOS_SDK" ]]; then
-  FREETYPE_VERSION=2.13.3
-else
-  FREETYPE_VERSION=2.14.1
-fi
-HARFBUZZ_VERSION=12.3.2
-LIBPNG_VERSION=1.6.54
-JPEGTURBO_VERSION=3.1.3
-OPENJPEG_VERSION=2.5.4
-JPEGXL_VERSION=0.11.2
-XZ_VERSION=5.8.2
-ZSTD_VERSION=1.5.7
-TIFF_VERSION=4.7.1
-LCMS2_VERSION=2.18
-ZLIB_NG_VERSION=2.3.3
-LIBWEBP_VERSION=1.6.0
-BZIP2_VERSION=1.0.8
-LIBXCB_VERSION=1.17.0
-BROTLI_VERSION=1.2.0
-LIBAVIF_VERSION=1.3.0
+VERSIONS_FILE="$PROJECTDIR/.github/dependencies.json"
+_get_ver() { python3 -c "import json; print(json.load(open('$VERSIONS_FILE'))['$1'])"; }
+FREETYPE_VERSION=$(_get_ver freetype)
+HARFBUZZ_VERSION=$(_get_ver harfbuzz)
+LIBPNG_VERSION=$(_get_ver libpng)
+JPEGTURBO_VERSION=$(_get_ver jpegturbo)
+OPENJPEG_VERSION=$(_get_ver openjpeg)
+JPEGXL_VERSION=$(_get_ver jpegxl)
+XZ_VERSION=$(_get_ver xz)
+ZSTD_VERSION=$(_get_ver zstd)
+TIFF_VERSION=$(_get_ver tiff)
+LCMS2_VERSION=$(_get_ver lcms2)
+ZLIB_NG_VERSION=$(_get_ver zlib-ng)
+LIBWEBP_VERSION=$(_get_ver libwebp)
+BZIP2_VERSION=$(_get_ver bzip2)
+LIBXCB_VERSION=$(_get_ver libxcb)
+BROTLI_VERSION=$(_get_ver brotli)
+LIBAVIF_VERSION=$(_get_ver libavif)
 
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
@@ -165,7 +162,8 @@ function build_brotli {
 function build_jpegxl {
     if [ -e jpegxl-stamp ]; then return; fi
 
-    local out_dir=$(fetch_unpack https://github.com/google/highway/archive/1.3.0.tar.gz)
+    local highway_version=$(_get_ver highway)
+    local out_dir=$(fetch_unpack https://github.com/google/highway/archive/$highway_version.tar.gz)
     (cd $out_dir \
         && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib $HOST_CMAKE_FLAGS . \
         && make -j4 install)
@@ -198,7 +196,6 @@ function build_libavif {
         build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
     fi
 
-    local build_type=MinSizeRel
     local build_shared=ON
     local lto=ON
 
@@ -215,9 +212,6 @@ function build_libavif {
             build_shared=OFF
         fi
     else
-        if [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "x86_64" ]]; then
-            build_type=Release
-        fi
         libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
     fi
     if [[ -n "$IOS_SDK" ]] && [[ "$PLAT" == "x86_64" ]]; then
@@ -246,7 +240,7 @@ function build_libavif {
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=$lto \
             -DCMAKE_C_VISIBILITY_PRESET=hidden \
             -DCMAKE_CXX_VISIBILITY_PRESET=hidden \
-            -DCMAKE_BUILD_TYPE=$build_type \
+            -DCMAKE_BUILD_TYPE=MinSizeRel \
             "${libavif_cmake_flags[@]}" \
             $HOST_CMAKE_FLAGS . )
 
@@ -313,10 +307,6 @@ function build {
 
     if [[ -n "$IS_MACOS" ]]; then
         # Custom freetype build
-        if [[ -z "$IOS_SDK" ]]; then
-          build_simple sed 4.9 https://mirrors.middlendian.com/gnu/sed
-        fi
-
         build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no
     else
         build_freetype
@@ -327,9 +317,7 @@ function build {
         # licensing, so there's no point building harfbuzz.
         build_harfbuzz
 
-        if [[ "$MB_ML_VER" != 2014 ]]; then
-            build_jpegxl
-        fi
+        build_jpegxl
     fi
 
     webp_cflags="-O3 -DNDEBUG"
