@@ -205,6 +205,12 @@ function build_libavif {
             -DAVIF_CODEC_DAV1D=LOCAL
         )
     fi
+    # libaom's riscv64 RVV code calls functions without declarations, which
+    # GCC 14 (manylinux_2_39) treats as errors. Disable arch-specific AOM
+    # optimizations for riscv64; QEMU-based builds don't benefit from them.
+    if [[ "$(uname -m)" == "riscv64" ]]; then
+        libavif_cmake_flags+=(-DAOM_TARGET_CPU=generic)
+    fi
 
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
 
@@ -268,6 +274,13 @@ function build {
     fi
     build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
 
+    # libjpeg-turbo 3.1.4.1 simdcoverage.c references riscv64 RVV SIMD
+    # functions that are only in upstream main and not yet released. Disable
+    # SIMD for riscv64 to avoid the build error; there is no production
+    # riscv64 SIMD support in this version anyway.
+    if [[ "$(uname -m)" == "riscv64" ]]; then
+        HOST_CMAKE_FLAGS="${HOST_CMAKE_FLAGS} -DWITH_SIMD=FALSE"
+    fi
     build_libjpeg_turbo
     if [[ -n "$IS_MACOS" ]]; then
         # Custom tiff build to include jpeg; by default, configure won't include
