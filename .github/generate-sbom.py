@@ -26,6 +26,11 @@ def get_version() -> str:
     return version_file.read_text(encoding="utf-8").split('"')[1]
 
 
+def load_dep_versions() -> dict[str, str]:
+    deps_file = Path(__file__).parent / "dependencies.json"
+    return json.loads(deps_file.read_text(encoding="utf-8"))
+
+
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -58,6 +63,7 @@ def generate(version: str) -> dict:
     purl = f"pkg:pypi/pillow@{version}"
     root = Path(__file__).parent.parent
     thirdparty = root / "src" / "thirdparty"
+    versions = load_dep_versions()
 
     metadata_component = {
         "bom-ref": purl,
@@ -243,6 +249,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/freetype2",
             "type": "library",
             "name": "FreeType",
+            "version": versions["freetype"],
             "scope": "optional",
             "description": "Font rendering (optional, used by PIL._imagingft). "
             "Required for text/font support.",
@@ -259,6 +266,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/fribidi",
             "type": "library",
             "name": "FriBiDi",
+            "version": versions["fribidi"],
             "scope": "optional",
             "description": "Unicode bidi algorithm library (optional, "
             "loaded at runtime by fribidi-shim).",
@@ -275,6 +283,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/harfbuzz",
             "type": "library",
             "name": "HarfBuzz",
+            "version": versions["harfbuzz"],
             "scope": "optional",
             "description": "Text shaping (optional, required by libraqm "
             "for complex text layout).",
@@ -291,9 +300,9 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/libavif",
             "type": "library",
             "name": "libavif",
+            "version": versions["libavif"],
             "scope": "optional",
-            "description": "AVIF codec (optional, used by PIL._avif). "
-            "Requires libavif >= 1.0.0.",
+            "description": "AVIF codec (optional, used by PIL._avif).",
             "licenses": [{"license": {"id": "BSD-2-Clause"}}],
             "externalReferences": [
                 {"type": "website", "url": "https://github.com/AOMediaCodec/libavif"},
@@ -307,9 +316,9 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/libimagequant",
             "type": "library",
             "name": "libimagequant",
+            "version": versions["libimagequant"],
             "scope": "optional",
-            "description": "Improved colour quantization (optional). "
-            "Tested with 2.6-4.4.1.",
+            "description": "Improved colour quantization (optional).",
             "licenses": [{"license": {"id": "GPL-3.0-or-later"}}],
             "externalReferences": [
                 {"type": "website", "url": "https://pngquant.org/lib/"},
@@ -323,9 +332,9 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/libjpeg",
             "type": "library",
             "name": "libjpeg / libjpeg-turbo",
+            "version": versions["jpegturbo"],
             "description": "JPEG codec (required by default; disable with "
-            "-C jpeg=disable). Tested with libjpeg 6b/8/9-9d "
-            "and libjpeg-turbo 2-3.",
+            "-C jpeg=disable).",
             "licenses": [
                 {"license": {"id": "IJG"}},
                 {"license": {"id": "BSD-3-Clause"}},
@@ -343,8 +352,9 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/libtiff",
             "type": "library",
             "name": "libtiff",
+            "version": versions["tiff"],
             "scope": "optional",
-            "description": "TIFF codec (optional). Tested with libtiff 4.0-4.7.1.",
+            "description": "TIFF codec (optional).",
             "licenses": [{"license": {"id": "libtiff"}}],
             "externalReferences": [
                 {"type": "website", "url": "https://libtiff.gitlab.io/libtiff/"},
@@ -358,6 +368,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/libwebp",
             "type": "library",
             "name": "libwebp",
+            "version": versions["libwebp"],
             "scope": "optional",
             "description": "WebP codec (optional, used by PIL._webp).",
             "licenses": [{"license": {"id": "BSD-3-Clause"}}],
@@ -376,6 +387,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/libxcb",
             "type": "library",
             "name": "libxcb",
+            "version": versions["libxcb"],
             "scope": "optional",
             "description": "X11 screen-grab support (optional, "
             "used by PIL._imaging on macOS and Linux).",
@@ -392,9 +404,9 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/littlecms2",
             "type": "library",
             "name": "Little CMS 2",
+            "version": versions["lcms2"],
             "scope": "optional",
-            "description": "Colour management (optional, used by PIL._imagingcms). "
-            "Tested with lcms2 2.7-2.18.",
+            "description": "Colour management (optional, used by PIL._imagingcms).",
             "licenses": [{"license": {"id": "MIT"}}],
             "externalReferences": [
                 {"type": "website", "url": "https://www.littlecms.com"},
@@ -408,9 +420,9 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/openjpeg",
             "type": "library",
             "name": "OpenJPEG",
+            "version": versions["openjpeg"],
             "scope": "optional",
-            "description": "JPEG 2000 codec (optional). "
-            "Tested with openjpeg 2.0.0-2.5.4.",
+            "description": "JPEG 2000 codec (optional).",
             "licenses": [{"license": {"id": "BSD-2-Clause"}}],
             "externalReferences": [
                 {"type": "website", "url": "https://www.openjpeg.org"},
@@ -439,6 +451,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/zlib",
             "type": "library",
             "name": "zlib",
+            "version": versions["zlib-ng"],
             "description": "Deflate/PNG compression (required by default; "
             "disable with -C zlib=disable).",
             "licenses": [{"license": {"id": "Zlib"}}],
