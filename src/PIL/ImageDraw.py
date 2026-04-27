@@ -175,7 +175,7 @@ class ImageDraw:
     ) -> None:
         """Draw an arc."""
         ink, fill = self._getink(fill)
-        if ink is not None:
+        if ink is not None and width != 0:
             self.draw.draw_arc(xy, start, end, ink, width)
 
     def bitmap(
@@ -235,12 +235,12 @@ class ImageDraw:
         self,
         xy: Coords,
         fill: _Ink | None = None,
-        width: int = 0,
+        width: int = 1,
         joint: str | None = None,
     ) -> None:
         """Draw a line, or a connected sequence of line segments."""
         ink = self._getink(fill)[0]
-        if ink is not None:
+        if ink is not None and width != 0:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
                 points: Sequence[Sequence[float]]
