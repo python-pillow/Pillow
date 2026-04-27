@@ -10,7 +10,7 @@ on:
   #        │  │ │ │ │
   - cron: "42 1 * * 0,3"
   push:
-    paths:
+    paths: &paths
       - ".ci/requirements-cibw.txt"
       - ".ci/requirements-sbom.txt"
       - ".github/dependencies.json"
@@ -24,17 +24,7 @@ on:
     tags:
       - "*"
   pull_request:
-    paths:
-      - ".ci/requirements-cibw.txt"
-      - ".ci/requirements-sbom.txt"
-      - ".github/dependencies.json"
-      - ".github/generate-sbom.py"
-      - ".github/workflows/wheels*"
-      - "pyproject.toml"
-      - "setup.py"
-      - "wheels/*"
-      - "winbuild/build_prepare.py"
-      - "winbuild/fribidi.cmake"
+    paths: *paths
   workflow_dispatch:
 
 permissions:
