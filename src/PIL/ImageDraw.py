@@ -244,7 +244,7 @@ class ImageDraw:
         p1: Sequence[float],
         p2: Sequence[float],
         dash: tuple[int, ...],
-        fill: _Ink | None,
+        ink: int,
         width: int,
         dash_offset: int,
     ) -> int:
@@ -285,7 +285,7 @@ class ImageDraw:
             ny = y + vy * step
 
             if dash_index % 2 == 0:
-                self.line([(x, y), (nx, ny)], fill, width)
+                self.draw.draw_lines([(x, y), (nx, ny)], ink, width)
 
             x = nx
             y = ny
@@ -318,7 +318,7 @@ class ImageDraw:
             dash_offset = 0
             for i in range(len(points) - 1):
                 dash_offset = self._draw_dashed_line(
-                    points[i], points[i + 1], dash, fill, width, dash_offset
+                    points[i], points[i + 1], dash, ink, width, dash_offset
                 )
             return
         ink = self._getink(fill)[0]
@@ -444,7 +444,7 @@ class ImageDraw:
             dash_offset = 0
             for i in range(len(points) - 1):
                 dash_offset = self._draw_dashed_line(
-                    points[i], points[i + 1], dash, outline, width, dash_offset
+                    points[i], points[i + 1], dash, ink, width, dash_offset
                 )
         elif ink is not None and ink != fill_ink and width != 0:
             if width == 1:
@@ -504,7 +504,7 @@ class ImageDraw:
                     rect_points[i],
                     rect_points[i + 1],
                     dash,
-                    outline,
+                    ink,
                     width,
                     dash_offset,
                 )
