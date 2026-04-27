@@ -4,19 +4,14 @@ on:
   push:
     branches:
       - "**"
-    paths-ignore:
+    paths-ignore: &paths-ignore
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
       - "docs/**"
       - "wheels/**"
   pull_request:
-    paths-ignore:
-      - ".github/workflows/docs.yml"
-      - ".github/workflows/wheels*"
-      - ".gitmodules"
-      - "docs/**"
-      - "wheels/**"
+    paths-ignore: *paths-ignore
   workflow_dispatch:
 
 permissions:

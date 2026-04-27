@@ -4,19 +4,14 @@ on:
   push:
     branches:
       - "**"
-    paths:
+    paths: &paths
       - ".github/dependencies.json"
       - ".github/workflows/cifuzz.yml"
       - ".github/workflows/wheels-dependencies.sh"
       - "**.c"
       - "**.h"
   pull_request:
-    paths:
-      - ".github/dependencies.json"
-      - ".github/workflows/cifuzz.yml"
-      - ".github/workflows/wheels-dependencies.sh"
-      - "**.c"
-      - "**.h"
+    paths: *paths
   workflow_dispatch:
 
 permissions:
