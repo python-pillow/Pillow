@@ -895,6 +895,14 @@ decompression bombs. Additionally, the total size of all of the text
 chunks is limited to :data:`.PngImagePlugin.MAX_TEXT_MEMORY`, defaulting to
 64MB.
 
+The :py:class:`~PIL.PngImagePlugin.PngImageFile` class also exposes the
+following attribute:
+
+**bit_depth**
+    The per-sample bit depth read from the PNG ``IHDR`` chunk. Valid values
+    depend on the PNG color type and are one of ``1``, ``2``, ``4``, ``8`` or
+    ``16``.
+
 .. _png-saving:
 
 Saving
