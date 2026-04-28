@@ -22,6 +22,40 @@ _VP8_MODES_BY_IDENTIFIER = {
 }
 
 
+def _is_lossless(data: bytes) -> bool:
+    # A WebP file is considered lossless when every coded frame uses the
+    # VP8L bitstream. See https://developers.google.com/speed/webp/docs/riff_container
+    if len(data) < 16 or data[:4] != b"RIFF" or data[8:12] != b"WEBP":
+        return False
+    chunk = data[12:16]
+    if chunk == b"VP8L":
+        return True
+    if chunk != b"VP8X":
+        return False
+
+    # Extended file format: walk the sub-chunks looking for any lossy frame.
+    pos = 12
+    found_frame = False
+    end = len(data)
+    while pos + 8 <= end:
+        fourcc = data[pos : pos + 4]
+        size = int.from_bytes(data[pos + 4 : pos + 8], "little")
+        pos += 8
+        if fourcc == b"VP8 ":
+            return False
+        if fourcc == b"VP8L":
+            found_frame = True
+        elif fourcc == b"ANMF" and pos + 20 <= end:
+            # ANMF: 16 bytes of frame info, then one VP8 / VP8L sub-chunk
+            sub = data[pos + 16 : pos + 20]
+            if sub == b"VP8 ":
+                return False
+            if sub == b"VP8L":
+                found_frame = True
+        pos += size + (size & 1)  # RIFF chunks are padded to an even length
+    return found_frame
+
+
 def _accept(prefix: bytes) -> bool | str:
     is_riff_file_format = prefix.startswith(b"RIFF")
     is_webp_file = prefix[8:12] == b"WEBP"
@@ -46,7 +80,9 @@ class WebPImageFile(ImageFile.ImageFile):
         # Use the newer AnimDecoder API to parse the (possibly) animated file,
         # and access muxed chunks like ICC/EXIF/XMP.
         assert self.fp is not None
-        self._decoder = _webp.WebPAnimDecoder(self.fp.read())
+        data = self.fp.read()
+        self.is_lossless = _is_lossless(data)
+        self._decoder = _webp.WebPAnimDecoder(data)
 
         # Get info from decoder
         self._size, self.info["loop"], bgcolor, self.n_frames, self.rawmode = (
