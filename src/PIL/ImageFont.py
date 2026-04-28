@@ -1081,7 +1081,7 @@ def yaff(font: StrOrBytesPath | BinaryIO) -> YaffImageFont:
     :exception OSError: If the file could not be read.
     :exception SyntaxError: If the file is not a valid YAFF font.
 
-    .. versionadded:: 11.3.0
+    .. versionadded:: 12.3.0
     """
     return YaffImageFont(font)
 
