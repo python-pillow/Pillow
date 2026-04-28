@@ -776,7 +776,7 @@ class YaffImageFont:
 
         font = ImageFont.yaff("path/to/font.yaff")
 
-    .. versionadded:: 11.3.0
+    .. versionadded:: 12.3.0
     """
 
     def __init__(self, font: StrOrBytesPath | BinaryIO) -> None:
