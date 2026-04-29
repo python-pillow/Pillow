@@ -182,7 +182,7 @@ def load(
     :raises SyntaxError: If the file is not a valid YAFF font.
     """
     if hasattr(font, "read"):
-        data = font.read()  # type: ignore[union-attr]
+        data = font.read()
         if isinstance(data, bytes):
             text = data.decode("utf-8-sig")
         else:
