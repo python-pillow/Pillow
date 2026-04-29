@@ -10,9 +10,11 @@ on:
   #        │  │ │ │ │
   - cron: "42 1 * * 0,3"
   push:
-    paths:
+    paths: &paths
       - ".ci/requirements-cibw.txt"
+      - ".ci/requirements-sbom.txt"
       - ".github/dependencies.json"
+      - ".github/generate-sbom.py"
       - ".github/workflows/wheels*"
       - "pyproject.toml"
       - "setup.py"
@@ -22,15 +24,7 @@ on:
     tags:
       - "*"
   pull_request:
-    paths:
-      - ".ci/requirements-cibw.txt"
-      - ".github/dependencies.json"
-      - ".github/workflows/wheels*"
-      - "pyproject.toml"
-      - "setup.py"
-      - "wheels/*"
-      - "winbuild/build_prepare.py"
-      - "winbuild/fribidi.cmake"
+    paths: *paths
   workflow_dispatch:
 
 permissions:
@@ -294,6 +288,53 @@ jobs:
         with:
           artifacts_path: dist
           anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
+
+  sbom:
+    runs-on: ubuntu-latest
+    name: Generate SBOM
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.x"
+
+      - name: Generate CycloneDX SBOM
+        run: python3 .github/generate-sbom.py
+
+      - name: Upload SBOM as workflow artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom
+          path: "*.cdx.json"
+
+      - name: Validate SBOM
+        run: |
+          python3 -m pip install -r .ci/requirements-sbom.txt
+          check-jsonschema --schemafile "https://raw.githubusercontent.com/CycloneDX/specification/1.7/schema/bom-1.7.schema.json" *.cdx.json
+
+  sbom-publish:
+    if: |
+      github.event.repository.fork == false
+      && github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags')
+    needs: [count-dists, sbom]
+    runs-on: ubuntu-latest
+    name: Publish SBOM to GitHub release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sbom
+          path: .
+
+      - name: Attach SBOM to GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$GITHUB_REF_NAME" *.cdx.json
 
   pypi-publish:
     if: github.event.repository.fork == false && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')

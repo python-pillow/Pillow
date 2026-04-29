@@ -13,28 +13,28 @@ introduced in Pillow 10.3.0.
 
 The data being read is now limited to only the necessary amount.
 
-Fix OOB write with invalid tile extents
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2026-42311`: Fix OOB write with invalid tile extents
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pillow 12.1.1 addressed :cve:`2026-25990` by improving checks for tile extents to
 prevent an OOB write from specially crafted PSD images in Pillow >= 10.3.0. However,
 these checks did not consider integer overflow. This has been corrected.
 
-Prevent PDF parsing trailer infinite loop
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2026-42310`: Prevent PDF parsing trailer infinite loop
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When parsing a PDF, if a trailer refers to itself, or a more complex cyclic loop
 exists, then an infinite loop occurs. Pillow now keeps a record of which trailers it
 has already processed. PdfParser was added in Pillow 4.2.0.
 
-Integer overflow when processing fonts
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2026-42308`: Integer overflow when processing fonts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If a font advances for each glyph by an exceeding large amount, when Pillow keeps track
 of the current position, it may lead to an integer overflow. This has been fixed.
 
-Heap buffer overflow with nested list coordinates
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2026-42309`: Heap buffer overflow with nested list coordinates
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Passing nested lists as coordinates to APIs that accept coordinates such as
 ``ImagePath.Path``, :py:meth:`~PIL.ImageDraw.ImageDraw.polygon`
