@@ -465,7 +465,7 @@ def generate(version: str) -> dict:
     dependencies = [
         {
             "ref": purl,
-            "dependsOn": sorted(e["bom-ref"] for e in ext_components),
+            "dependsOn": [e["bom-ref"] for e in ext_components],
         },
         {
             "ref": f"{purl}#c-ext/PIL._avif",
