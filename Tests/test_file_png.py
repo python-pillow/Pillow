@@ -233,6 +233,7 @@ class TestFilePng:
     )
     def test_bit_depth(self, test_file: str, expected_bit_depth: int) -> None:
         with Image.open(test_file) as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
             assert im.bit_depth == expected_bit_depth
 
     def test_load_transparent_p(self) -> None:
