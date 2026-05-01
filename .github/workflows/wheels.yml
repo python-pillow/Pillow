@@ -307,12 +307,12 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: sbom
-          path: "*.cdx.json"
+          path: "pillow-*.cdx.json"
 
       - name: Validate SBOM
         run: |
           python3 -m pip install -r .ci/requirements-sbom.txt
-          check-jsonschema --schemafile "https://raw.githubusercontent.com/CycloneDX/specification/1.7/schema/bom-1.7.schema.json" *.cdx.json
+          check-jsonschema --schemafile "https://raw.githubusercontent.com/CycloneDX/specification/1.7/schema/bom-1.7.schema.json" pillow-*.cdx.json
 
   sbom-publish:
     if: |
@@ -333,7 +333,7 @@ jobs:
       - name: Attach SBOM to GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "$GITHUB_REF_NAME" *.cdx.json
+        run: gh release upload "$GITHUB_REF_NAME" pillow-*.cdx.json
 
   pypi-publish:
     if: github.event.repository.fork == false && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
