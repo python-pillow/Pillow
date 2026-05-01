@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from PIL import Image
+from PIL import Image, WebPImagePlugin
 
 from .helper import assert_image_equal, hopper
 
@@ -32,12 +32,15 @@ def test_is_lossless(tmp_path: Path) -> None:
     lossless_file = tmp_path / "lossless.webp"
     hopper(RGB_MODE).save(lossless_file, lossless=True)
     with Image.open(lossless_file) as image:
+        assert isinstance(image, WebPImagePlugin.WebPImageFile)
         assert image.is_lossless is True
 
     lossy_file = tmp_path / "lossy.webp"
     hopper(RGB_MODE).save(lossy_file, lossless=False)
     with Image.open(lossy_file) as image:
+        assert isinstance(image, WebPImagePlugin.WebPImageFile)
         assert image.is_lossless is False
 
     with Image.open("Tests/images/hopper.webp") as image:
+        assert isinstance(image, WebPImagePlugin.WebPImageFile)
         assert image.is_lossless is False
