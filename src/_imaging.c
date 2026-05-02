@@ -688,7 +688,7 @@ getink(PyObject *color, Imaging im, char *ink) {
 /* -------------------------------------------------------------------- */
 
 static PyObject *
-_fill_impl(PyObject *self, PyObject *args) {
+_fill(PyObject *self, PyObject *args) {
     char *mode_name;
     int xsize, ysize;
     PyObject *color;
@@ -723,16 +723,7 @@ _fill_impl(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_fill(PyObject *self, PyObject *args) {
-    PyObject *result;
-    Py_BEGIN_CRITICAL_SECTION(self);
-    result = _fill_impl(self, args);
-    Py_END_CRITICAL_SECTION();
-    return result;
-}
-
-static PyObject *
-_new_impl(PyObject *self, PyObject *args) {
+_new(PyObject *self, PyObject *args) {
     char *mode_name;
     int xsize, ysize;
 
@@ -746,16 +737,7 @@ _new_impl(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_new(PyObject *self, PyObject *args) {
-    PyObject *result;
-    Py_BEGIN_CRITICAL_SECTION(self);
-    result = _new_impl(self, args);
-    Py_END_CRITICAL_SECTION();
-    return result;
-}
-
-static PyObject *
-_new_block_impl(PyObject *self, PyObject *args) {
+_new_block(PyObject *self, PyObject *args) {
     char *mode_name;
     int xsize, ysize;
 
@@ -769,16 +751,7 @@ _new_block_impl(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_new_block(PyObject *self, PyObject *args) {
-    PyObject *result;
-    Py_BEGIN_CRITICAL_SECTION(self);
-    result = _new_block_impl(self, args);
-    Py_END_CRITICAL_SECTION();
-    return result;
-}
-
-static PyObject *
-_linear_gradient_impl(PyObject *self, PyObject *args) {
+_linear_gradient(PyObject *self, PyObject *args) {
     char *mode_name;
 
     if (!PyArg_ParseTuple(args, "s", &mode_name)) {
@@ -791,16 +764,7 @@ _linear_gradient_impl(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_linear_gradient(PyObject *self, PyObject *args) {
-    PyObject *result;
-    Py_BEGIN_CRITICAL_SECTION(self);
-    result = _linear_gradient_impl(self, args);
-    Py_END_CRITICAL_SECTION();
-    return result;
-}
-
-static PyObject *
-_radial_gradient_impl(PyObject *self, PyObject *args) {
+_radial_gradient(PyObject *self, PyObject *args) {
     char *mode_name;
 
     if (!PyArg_ParseTuple(args, "s", &mode_name)) {
@@ -813,16 +777,7 @@ _radial_gradient_impl(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_radial_gradient(PyObject *self, PyObject *args) {
-    PyObject *result;
-    Py_BEGIN_CRITICAL_SECTION(self);
-    result = _radial_gradient_impl(self, args);
-    Py_END_CRITICAL_SECTION();
-    return result;
-}
-
-static PyObject *
-_alpha_composite_impl(ImagingObject *self, PyObject *args) {
+_alpha_composite(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep1;
     ImagingObject *imagep2;
 
@@ -832,20 +787,15 @@ _alpha_composite_impl(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    return PyImagingNew(ImagingAlphaComposite(imagep1->image, imagep2->image));
-}
-
-static PyObject *
-_alpha_composite(ImagingObject *self, PyObject *args) {
     PyObject *result;
-    Py_BEGIN_CRITICAL_SECTION(self);
-    result = _alpha_composite_impl(self, args);
-    Py_END_CRITICAL_SECTION();
+    Py_BEGIN_CRITICAL_SECTION2(imagep1, imagep2);
+    result = PyImagingNew(ImagingAlphaComposite(imagep1->image, imagep2->image));
+    Py_END_CRITICAL_SECTION2();
     return result;
 }
 
 static PyObject *
-_blend_impl(ImagingObject *self, PyObject *args) {
+_blend(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep1;
     ImagingObject *imagep2;
     double alpha;
@@ -857,16 +807,12 @@ _blend_impl(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    return PyImagingNew(ImagingBlend(imagep1->image, imagep2->image, (float)alpha));
-}
-
-static PyObject *
-_blend(ImagingObject *self, PyObject *args) {
     PyObject *result;
-    Py_BEGIN_CRITICAL_SECTION(self);
-    result = _blend_impl(self, args);
-    Py_END_CRITICAL_SECTION();
+    Py_BEGIN_CRITICAL_SECTION2(imagep1, imagep2);
+    result = PyImagingNew(ImagingBlend(imagep1->image, imagep2->image, (float)alpha));
+    Py_END_CRITICAL_SECTION2();
     return result;
+
 }
 
 /* -------------------------------------------------------------------- */
