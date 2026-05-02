@@ -5084,6 +5084,8 @@ static PyMethodDef functions[] = {
 
 extern int encode_setup(void);
 extern int decode_setup(void);
+extern int path_setup(void);
+extern int outline_setup(void);
 
 static int
 setup_module(PyObject *m) {
@@ -5107,6 +5109,12 @@ setup_module(PyObject *m) {
         return -1;
     }
     if (decode_setup() < 0) {
+        return -1;
+    }
+    if (path_setup() < 0) {
+        return -1;
+    }
+    if (outline_setup() < 0) {
         return -1;
     }
 
