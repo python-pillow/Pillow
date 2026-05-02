@@ -400,6 +400,9 @@ class PngStream(ChunkStream):
 
         self.text_memory = 0
 
+    def __enter__(self) -> PngStream:
+        return self
+
     def check_text_memory(self, chunklen: int) -> None:
         self.text_memory += chunklen
         if self.text_memory > MAX_TEXT_MEMORY:
