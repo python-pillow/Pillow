@@ -5082,6 +5082,9 @@ static PyMethodDef functions[] = {
     {NULL, NULL} /* sentinel */
 };
 
+extern int encode_setup(void);
+extern int decode_setup(void);
+
 static int
 setup_module(PyObject *m) {
     PyObject *d = PyModule_GetDict(m);
@@ -5098,6 +5101,12 @@ setup_module(PyObject *m) {
         return -1;
     }
     if (PyType_Ready(&PixelAccess_Type) < 0) {
+        return -1;
+    }
+    if (encode_setup() < 0) {
+        return -1;
+    }
+    if (decode_setup() < 0) {
         return -1;
     }
 
