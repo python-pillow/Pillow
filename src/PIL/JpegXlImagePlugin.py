@@ -29,7 +29,12 @@ class JpegXlImageFile(ImageFile.ImageFile):
 
     def _open(self) -> None:
         assert self.fp is not None
-        self._decoder = _jpegxl.JpegXlDecoder(self.fp.read())
+        s = self.fp.read()
+        if not _accept(s):
+            msg = "not a JPEG XL file"
+            raise SyntaxError(msg)
+
+        self._decoder = _jpegxl.JpegXlDecoder(s)
 
         (
             self._size,
