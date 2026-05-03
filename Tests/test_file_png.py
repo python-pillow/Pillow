@@ -502,8 +502,9 @@ class TestFilePng:
             im = roundtrip(im)
         assert im.info["transparency"] == (248, 248, 248)
 
-        im = roundtrip(im, transparency=(0, 1, 2))
-        assert im.info["transparency"] == (0, 1, 2)
+        for transparency in ((0, 1, 2), [0, 1, 2]):
+            im = roundtrip(im, transparency=transparency)
+            assert im.info["transparency"] == (0, 1, 2)
 
     def test_trns_p(self, tmp_path: Path) -> None:
         # Check writing a transparency of 0, issue #528
@@ -517,6 +518,36 @@ class TestFilePng:
             assert "transparency" in im2.info
 
             assert_image_equal(im2.convert("RGBA"), im.convert("RGBA"))
+
+    def test_trns_invalid(self, tmp_path: Path) -> None:
+        out = tmp_path / "temp.png"
+
+        for mode in ("1", "L", "I;16"):
+            im = Image.new(mode, (1, 1))
+            with pytest.raises(
+                ValueError, match=f"transparency for {mode} must be an integer"
+            ):
+                im.save(out, transparency="invalid")
+
+        im = Image.new("I", (1, 1))
+        with pytest.warns(DeprecationWarning, match="Saving I mode images as PNG"):
+            with pytest.raises(ValueError):
+                im.save(out, transparency="invalid")
+
+        im = Image.new("P", (1, 1))
+        with pytest.raises(
+            ValueError, match="transparency for P must be an integer or bytes"
+        ):
+            im.save(out, transparency="invalid")
+
+        im = Image.new("RGB", (1, 1))
+        with pytest.raises(
+            ValueError, match="transparency for RGB must be list or tuple"
+        ):
+            im.save(out, transparency="invalid")
+
+        with pytest.raises(ValueError, match="transparency for RGB must have length 3"):
+            im.save(out, transparency=(1, 2))
 
     def test_trns_null(self) -> None:
         # Check reading images with null tRNS value, issue #1239
