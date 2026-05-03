@@ -3,7 +3,7 @@
   "bzip2": "1.0.8",
   "freetype": "2.14.3",
   "fribidi": "1.0.16",
-  "harfbuzz": "13.2.1",
+  "harfbuzz": "14.2.0",
   "jpegturbo": "3.1.4.1",
   "lcms2": "2.18",
   "libavif": "1.4.1",
