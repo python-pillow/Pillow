@@ -383,7 +383,7 @@ class PdfParser:
             msg = "specify buf or f or filename, but not both buf and f"
             raise RuntimeError(msg)
         self.filename = filename
-        self.buf: bytes | bytearray | mmap.mmap | None = buf
+        self.buf: bytes | bytearray | memoryview | mmap.mmap | None = buf
         self.f = f
         self.start_offset = start_offset
         self.should_close_buf = False
@@ -437,6 +437,8 @@ class PdfParser:
     def close_buf(self) -> None:
         if isinstance(self.buf, mmap.mmap):
             self.buf.close()
+        elif isinstance(self.buf, memoryview):
+            self.buf.release()
         self.buf = None
 
     def close(self) -> None:
