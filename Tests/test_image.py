@@ -862,7 +862,7 @@ class TestImage:
     def test_exif_webp(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/hopper.webp") as im:
             exif = im.getexif()
-            assert exif == {}
+            assert dict(exif) == {}
 
             out = tmp_path / "temp.webp"
             exif[258] = 8
@@ -884,7 +884,7 @@ class TestImage:
     def test_exif_png(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/exif.png") as im:
             exif = im.getexif()
-            assert exif == {274: 1}
+            assert dict(exif) == {274: 1}
 
             out = tmp_path / "temp.png"
             exif[258] = 8
