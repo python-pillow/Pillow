@@ -25,7 +25,7 @@ _VP8_MODES_BY_IDENTIFIER = {
 def _is_lossless(data: bytes) -> bool:
     # A WebP file is considered lossless when every coded frame uses the
     # VP8L bitstream. See https://developers.google.com/speed/webp/docs/riff_container
-    if len(data) < 16 or data[:4] != b"RIFF" or data[8:12] != b"WEBP":
+    if not _accept(data):
         return False
     chunk = data[12:16]
     if chunk == b"VP8L":
