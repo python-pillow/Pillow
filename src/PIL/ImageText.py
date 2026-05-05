@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import re
+import string
 from typing import AnyStr, Generic, NamedTuple
 
 from . import ImageFont
@@ -353,7 +354,7 @@ class Text(Generic[AnyStr]):
         fontmode = self._get_fontmode()
         line_spacing = (
             self.font.getbbox(
-                "A",
+                string.ascii_letters,
                 fontmode,
                 None,
                 self.features,
