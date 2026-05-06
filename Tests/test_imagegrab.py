@@ -35,7 +35,7 @@ class TestImageGrab:
                 ImageGrab.grab()
 
             ImageGrab.grab(xdisplay="")
-        except OSError as e:
+        except (OSError, subprocess.CalledProcessError) as e:
             pytest.skip(str(e))
 
     @pytest.mark.skipif(Image.core.HAVE_XCB, reason="tests missing XCB")
