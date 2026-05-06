@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import sys
-from io import BytesIO
+from io import BytesIO, TextIOWrapper
 from pathlib import Path
 
 import pytest
@@ -375,17 +375,13 @@ def test_mimetypes(tmp_path: Path) -> None:
 @pytest.mark.parametrize("buffer", (True, False))
 def test_save_stdout(buffer: bool, monkeypatch: pytest.MonkeyPatch) -> None:
 
-    class MyStdOut:
-        buffer = BytesIO()
-
-    mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
+    fp = BytesIO()
+    mystdout = TextIOWrapper(fp) if buffer else fp
 
     monkeypatch.setattr(sys, "stdout", mystdout)
 
     with Image.open(TEST_FILE) as im:
         im.save(sys.stdout, "PPM")  # type: ignore[arg-type]
 
-    if isinstance(mystdout, MyStdOut):
-        mystdout = mystdout.buffer
-    with Image.open(mystdout) as reloaded:
+    with Image.open(fp) as reloaded:
         assert_image_equal_tofile(reloaded, TEST_FILE)

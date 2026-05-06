@@ -866,13 +866,13 @@ class PngImageFile(ImageFile.ImageFile):
             self._seek(0, True)
 
         last_frame = self.__frame
-        for f in range(self.__frame + 1, frame + 1):
-            try:
+        try:
+            for f in range(self.__frame + 1, frame + 1):
                 self._seek(f)
-            except EOFError as e:
-                self.seek(last_frame)
-                msg = "no more images in APNG file"
-                raise EOFError(msg) from e
+        except EOFError as e:
+            self.seek(last_frame)
+            msg = "no more images in APNG file"
+            raise EOFError(msg) from e
 
     def _seek(self, frame: int, rewind: bool = False) -> None:
         assert self.png is not None
@@ -1359,6 +1359,9 @@ def _save(
         mode = im.mode
 
     outmode = mode
+    palette = []
+    if im.palette:
+        palette = im.getpalette() or []
     if mode == "P":
         #
         # attempt to minimize storage requirements for palette images
@@ -1368,7 +1371,7 @@ def _save(
         else:
             # check palette contents
             if im.palette:
-                colors = max(min(len(im.palette.getdata()[1]) // 3, 256), 1)
+                colors = max(min(len(palette) // 3, 256), 1)
             else:
                 colors = 256
 
@@ -1441,40 +1444,52 @@ def _save(
 
     if im.mode == "P":
         palette_byte_number = colors * 3
-        palette_bytes = im.im.getpalette("RGB")[:palette_byte_number]
+        palette_bytes = bytes(palette[:palette_byte_number])
         while len(palette_bytes) < palette_byte_number:
             palette_bytes += b"\0"
         chunk(fp, b"PLTE", palette_bytes)
 
-    transparency = im.encoderinfo.get("transparency", im.info.get("transparency", None))
+    transparency = im.encoderinfo.get("transparency", im.info.get("transparency"))
 
-    if transparency or transparency == 0:
+    if transparency is not None:
         if im.mode == "P":
             # limit to actual palette size
             alpha_bytes = colors
             if isinstance(transparency, bytes):
                 chunk(fp, b"tRNS", transparency[:alpha_bytes])
-            else:
+            elif isinstance(transparency, int):
                 transparency = max(0, min(255, transparency))
                 alpha = b"\xff" * transparency + b"\0"
                 chunk(fp, b"tRNS", alpha[:alpha_bytes])
+            else:
+                msg = "transparency for P must be an integer or bytes"
+                raise ValueError(msg)
         elif im.mode in ("1", "L", "I", "I;16"):
-            transparency = max(0, min(65535, transparency))
-            chunk(fp, b"tRNS", o16(transparency))
+            if isinstance(transparency, int):
+                transparency = max(0, min(65535, transparency))
+                chunk(fp, b"tRNS", o16(transparency))
+            else:
+                msg = f"transparency for {im.mode} must be an integer"
+                raise ValueError(msg)
         elif im.mode == "RGB":
-            red, green, blue = transparency
-            chunk(fp, b"tRNS", o16(red) + o16(green) + o16(blue))
-        else:
-            if "transparency" in im.encoderinfo:
-                # don't bother with transparency if it's an RGBA
-                # and it's in the info dict. It's probably just stale.
-                msg = "cannot use transparency for this mode"
-                raise OSError(msg)
-    else:
-        if im.mode == "P" and im.im.getpalettemode() == "RGBA":
-            alpha = im.im.getpalette("RGBA", "A")
-            alpha_bytes = colors
-            chunk(fp, b"tRNS", alpha[:alpha_bytes])
+            if not isinstance(transparency, (list, tuple)):
+                msg = "transparency for RGB must be list or tuple"
+                raise ValueError(msg)
+            elif len(transparency) != 3:
+                msg = "transparency for RGB must have length 3"
+                raise ValueError(msg)
+            else:
+                red, green, blue = transparency
+                chunk(fp, b"tRNS", o16(red) + o16(green) + o16(blue))
+        elif im.encoderinfo.get("transparency") is not None:
+            # don't bother with transparency if it's an RGBA
+            # and it's in the info dict. It's probably just stale.
+            msg = "cannot use transparency for this mode"
+            raise OSError(msg)
+    elif im.mode == "P" and im.im.getpalettemode() == "RGBA":
+        alpha = im.im.getpalette("RGBA", "A")
+        alpha_bytes = colors
+        chunk(fp, b"tRNS", alpha[:alpha_bytes])
 
     if dpi := im.encoderinfo.get("dpi"):
         chunk(

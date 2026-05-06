@@ -100,3 +100,6 @@ pillow-test-images.zip
 
 # mypy
 .mypy_cache
+
+# Generated SBOM
+pillow-*.cdx.json
