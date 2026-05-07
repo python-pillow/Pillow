@@ -303,12 +303,12 @@ Methods
     :param joint: Joint type between a sequence of lines. It can be ``"curve"``, for rounded edges, or :data:`None`.
 
         .. versionadded:: 5.3.0
-    :param dash: An optional dash pattern, given as a tuple of ints.
-        The dash pattern specifies the lengths of alternating drawn and
-        blank segments (e.g. ``(10, 5)`` draws 10 pixels, skips 5, and
-        repeats). If an odd number of values is given, the pattern is
-        doubled (following the SVG specification). When ``dash`` is set,
-        ``joint`` is ignored.
+    :param dash: An optional dash pattern, given as a tuple of integers.
+        The dash pattern specifies the lengths of alternating drawn and blank segments
+        (e.g. ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd number of
+        values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
+        skips 2, draws 3, skips 1, draws 2, and so on). When ``dash`` is set, ``joint``
+        is ignored.
 
         .. versionadded:: 12.3.0
 
@@ -350,11 +350,11 @@ Methods
     :param fill: Color to use for the fill.
     :param outline: Color to use for the outline.
     :param width: The line width, in pixels.
-    :param dash: An optional dash pattern, given as a tuple of ints.
-        The dash pattern specifies the lengths of alternating drawn and
-        blank segments (e.g. ``(10, 5)`` draws 10 pixels, skips 5, and
-        repeats). If an odd number of values is given, the pattern is
-        doubled (following the SVG specification).
+    :param dash: An optional dash pattern, given as a tuple of integers.
+        The dash pattern specifies the lengths of alternating drawn and blank segments
+        (e.g. ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd number of
+        values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
+        skips 2, draws 3, skips 1, draws 2, and so on).
 
         .. versionadded:: 12.3.0
 
@@ -389,11 +389,11 @@ Methods
     :param width: The line width, in pixels.
 
         .. versionadded:: 5.3.0
-    :param dash: An optional dash pattern, given as a tuple of ints.
-        The dash pattern specifies the lengths of alternating drawn and
-        blank segments (e.g. ``(10, 5)`` draws 10 pixels, skips 5, and
-        repeats). If an odd number of values is given, the pattern is
-        doubled (following the SVG specification).
+    :param dash: An optional dash pattern, given as a tuple of integers.
+        The dash pattern specifies the lengths of alternating drawn and blank segments
+        (e.g. ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd number of
+        values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
+        skips 2, draws 3, skips 1, draws 2, and so on).
 
         .. versionadded:: 12.3.0
 

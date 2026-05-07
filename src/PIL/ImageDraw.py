@@ -315,9 +315,6 @@ class ImageDraw:
             if len(dash) == 0:
                 msg = "dash must be a non-empty tuple of ints"
                 raise ValueError(msg)
-            # If odd number of elements, double the pattern per SVG spec
-            if len(dash) % 2 != 0:
-                dash *= 2
             points = self._normalize_points(xy)
             dash_offset = 0
             for i in range(len(points) - 1):
@@ -440,8 +437,6 @@ class ImageDraw:
             if len(dash) == 0:
                 msg = "dash must be a non-empty tuple of ints"
                 raise ValueError(msg)
-            if len(dash) % 2 != 0:
-                dash *= 2
             points = self._normalize_points(xy)
             # Close the polygon by connecting last point to first
             if points[0] != points[-1]:
@@ -503,10 +498,8 @@ class ImageDraw:
                 (x0, y1),
                 (x0, y0),
             ]
-            if len(dash) % 2 != 0:
-                dash *= 2
             dash_offset = 0
-            for i in range(len(rect_points) - 1):
+            for i in range(4):
                 dash_offset = self._draw_dashed_line(
                     rect_points[i],
                     rect_points[i + 1],

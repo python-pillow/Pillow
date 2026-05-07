@@ -1783,20 +1783,6 @@ def test_line_dash_multi_segment() -> None:
     assert im.getbbox() is not None
 
 
-def test_line_dash_odd_pattern() -> None:
-    # An odd-length dash pattern should be doubled per SVG spec
-    im = Image.new("RGB", (W, H))
-    draw = ImageDraw.Draw(im)
-    draw.line([(10, 50), (90, 50)], "yellow", 2, dash=(10,))
-
-    expected = Image.new("RGB", (W, H))
-    draw2 = ImageDraw.Draw(expected)
-    draw2.line([(10, 50), (90, 50)], "yellow", 2, dash=(10, 10))
-
-    # odd pattern (10,) becomes (10, 10)
-    assert_image_equal(im, expected)
-
-
 def test_line_dash_empty() -> None:
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
