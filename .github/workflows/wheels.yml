@@ -276,6 +276,7 @@ jobs:
           anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
 
   sbom:
+    if: github.event_name != 'schedule' || github.event.repository.fork == false
     runs-on: ubuntu-latest
     name: Generate SBOM
     steps:
