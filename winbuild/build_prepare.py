@@ -659,8 +659,6 @@ def build_dep_all(disabled: list[str], prefs: dict[str, str], verbose: bool) -> 
             print(f"Skipping disabled dependency {dep_name}")
             continue
         script = build_dep(dep_name, prefs, verbose)
-        if dep_name in ("highway", "libjxl") and hasattr(sys, "pypy_translation_info"):
-            continue
         if gha_groups:
             lines.append(f"@echo ::group::Running {script}")
         lines.append(rf'cmd.exe /c "{{build_dir}}\{script}"')
