@@ -51,10 +51,6 @@ jobs:
         include:
         - { python-version: "3.12", PYTHONOPTIMIZE: 1, REVERSE: "--reverse" }
         - { python-version: "3.11", PYTHONOPTIMIZE: 2 }
-        # Free-threaded
-        - { python-version: "3.15t", disable-gil: true }
-        - { python-version: "3.14t", disable-gil: true }
-        - { python-version: "3.13t", disable-gil: true }
         # Intel
         - { os: "macos-26-intel", python-version: "3.10" }
         exclude:
@@ -79,7 +75,7 @@ jobs:
           "pyproject.toml"
 
     - name: Set PYTHON_GIL
-      if: "${{ matrix.disable-gil }}"
+      if: endsWith(matrix.python-version, 't')
       run: |
         echo "PYTHON_GIL=0" >> $GITHUB_ENV
 
