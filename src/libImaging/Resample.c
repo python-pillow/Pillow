@@ -297,6 +297,8 @@ ImagingResampleHorizontal_8bpc(
     normalize_coeffs_8bpc(imOut->xsize, ksize, prekk);
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
+
     if (imIn->image8) {
         for (yy = 0; yy < imOut->ysize; yy++) {
             for (xx = 0; xx < imOut->xsize; xx++) {
@@ -373,6 +375,7 @@ ImagingResampleHorizontal_8bpc(
             }
         }
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 }
 
@@ -390,6 +393,8 @@ ImagingResampleVertical_8bpc(
     normalize_coeffs_8bpc(imOut->ysize, ksize, prekk);
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
+    
     if (imIn->image8) {
         for (yy = 0; yy < imOut->ysize; yy++) {
             k = &kk[yy * ksize];
@@ -457,6 +462,7 @@ ImagingResampleVertical_8bpc(
             }
         }
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 }
 
@@ -480,6 +486,8 @@ ImagingResampleHorizontal_16bpc(
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
+
     for (yy = 0; yy < imOut->ysize; yy++) {
         for (xx = 0; xx < imOut->xsize; xx++) {
             xmin = bounds[xx * 2 + 0];
@@ -497,6 +505,7 @@ ImagingResampleHorizontal_16bpc(
             imOut->image8[yy][xx * 2 + (bigendian ? 0 : 1)] = CLIP8(ss_int >> 8);
         }
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 }
 
@@ -520,6 +529,8 @@ ImagingResampleVertical_16bpc(
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
+
     for (yy = 0; yy < imOut->ysize; yy++) {
         ymin = bounds[yy * 2 + 0];
         ymax = bounds[yy * 2 + 1];
@@ -536,6 +547,7 @@ ImagingResampleVertical_16bpc(
             imOut->image8[yy][xx * 2 + (bigendian ? 0 : 1)] = CLIP8(ss_int >> 8);
         }
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 }
 
@@ -549,6 +561,8 @@ ImagingResampleHorizontal_32bpc(
     double *k;
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
+
     switch (imIn->type) {
         case IMAGING_TYPE_INT32:
             for (yy = 0; yy < imOut->ysize; yy++) {
@@ -580,6 +594,7 @@ ImagingResampleHorizontal_32bpc(
             }
             break;
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 }
 
@@ -593,6 +608,8 @@ ImagingResampleVertical_32bpc(
     double *k;
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
+	
     switch (imIn->type) {
         case IMAGING_TYPE_INT32:
             for (yy = 0; yy < imOut->ysize; yy++) {
@@ -624,6 +641,7 @@ ImagingResampleVertical_32bpc(
             }
             break;
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 }
 
