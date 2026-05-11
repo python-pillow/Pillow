@@ -13,7 +13,7 @@ Usage:
 # requires-python = ">=3.10"
 # dependencies = [
 #     "humanize",
-#     "prettytable>=3.16",
+#     "prettytable",
 #     "termcolor",
 # ]
 # ///
@@ -37,8 +37,7 @@ PYPI_JSON_URL = "https://pypi.org/pypi/pillow/json"
 # Wheel filename: {distribution}-{version}(-{build})?-{python}-{abi}-{platform}.whl
 # sdist filename: {distribution}-{version}.tar.gz
 WHEEL_RE = re.compile(
-    r"^(?P<dist>[^-]+)-(?P<version>[^-]+)"
-    r"(?:-(?P<build>\d[^-]*))?"
+    r"^[^-]+-[^-]+(?:-(?P<build>\d[^-]*))?"
     r"-(?P<python>[^-]+)-(?P<abi>[^-]+)-(?P<platform>[^-]+)\.whl$",
     re.IGNORECASE,
 )
@@ -48,12 +47,12 @@ SDIST_RE = re.compile(
 )
 
 
-def key_for(filename: str) -> str | None:
+def key_for(filename: str) -> str:
     """Return a version-independent identifier for a dist file."""
     if m := WHEEL_RE.match(filename):
-        build = f"-{m['build']}" if m["build"] else ""
-        return f"wheel:{build}-{m['python']}-{m['abi']}-{m['platform']}"
-    if m := SDIST_RE.match(filename):
+        build = f"{m['build']}-" if m["build"] else ""
+        return f"wheel:{build}{m['python']}-{m['abi']}-{m['platform']}"
+    if SDIST_RE.match(filename):
         return "sdist"
     msg = f"Unexpected dist name: {filename}"
     raise ValueError(msg)
@@ -78,8 +77,6 @@ def fetch_pypi_sizes() -> tuple[str, dict[str, tuple[str, int]]]:
     for entry in data.get("urls", []):
         filename = entry["filename"]
         key = key_for(filename)
-        if key is None:
-            continue
         sizes[key] = (filename, entry["size"])
     return version, sizes
 
@@ -90,8 +87,6 @@ def collect_local_sizes(dist_dir: Path) -> dict[str, tuple[str, int]]:
         if not path.is_file():
             continue
         key = key_for(path.name)
-        if key is None:
-            continue
         sizes[key] = (path.name, path.stat().st_size)
     return sizes
 
@@ -103,10 +98,23 @@ def human(n: int | None) -> str:
 
 
 def pct_change(before: int | None, after: int | None) -> str:
-    if not before or after is None:
+    if before is None or after is None:
         return "n/a"
-    delta = (after - before) / before * 100
+    delta = 0 if before == 0 else (after - before) / before * 100
     return f"{delta:+.2f}%"
+
+
+def pct_severity(text: str) -> dict[str, str] | None:
+    """Return status indicators based on the change percent."""
+    if text == "n/a":
+        return None
+    pct = float(text.rstrip("%"))
+    if pct >= 5:
+        return {"color": "red", "emoji": "🔴"}
+    if pct > 0:
+        return {"color": "yellow", "emoji": "🟡"}
+    else:
+        return {"color": "green", "emoji": "🟢"}
 
 
 def render_table(
@@ -116,62 +124,44 @@ def render_table(
     *,
     markdown: bool,
 ) -> str:
-    color = not markdown
     table = PrettyTable()
     table.set_style(TableStyle.MARKDOWN if markdown else TableStyle.SINGLE_BORDER)
     table.field_names = ["File", "Size before", "Size now", "Change"]
     table.align = "r"
     table.align["File"] = "l"
 
-    def pct_severity(text: str) -> str | None:
-        """Return "good" / "warn" / "bad" based on the change percent."""
-        if text == "n/a":
-            return None
-        pct = float(text.rstrip("%"))
-        if pct <= 0:
-            return "good"
-        if pct >= 5:
-            return "bad"
-        if pct >= 1:
-            return "warn"
-        return None
-
-    ANSI_COLORS = {"good": "green", "warn": "yellow", "bad": "red"}
-    EMOJI = {"good": "🟢", "warn": "🟡", "bad": "🔴"}
-
     def style(cells: list[str], role: str) -> list[str]:
         severity = pct_severity(cells[3])
         if markdown:
             if severity:
-                cells[3] = f"{EMOJI[severity]} {cells[3]}"
+                cells[3] = f"{severity['emoji']} {cells[3]}"
             if role == "orphan":
                 return [f"*{c}*" for c in cells]
             if role == "summary":
                 return [f"**{c}**" for c in cells]
             return cells
+
         if role == "orphan":
             return [colored(c, "dark_grey") for c in cells]
+
         bold_attrs = ["bold"] if role == "summary" else []
-        if severity:
-            cells[3] = colored(cells[3], ANSI_COLORS[severity], attrs=bold_attrs)
-        elif bold_attrs:
-            cells[3] = colored(cells[3], attrs=bold_attrs)
         if bold_attrs:
             cells[:3] = [colored(c, attrs=bold_attrs) for c in cells[:3]]
+        if severity:
+            cells[3] = colored(cells[3], severity["color"], attrs=bold_attrs)
+        elif bold_attrs:
+            cells[3] = colored(cells[3], attrs=bold_attrs)
         return cells
 
-    keys = sorted(set(baseline_sizes) | set(local_sizes))
+    keys = list(set(baseline_sizes) | set(local_sizes))
     # Put sdist first for readability
     keys.sort(key=lambda k: (k != "sdist", k))
 
-    wheel_before = 0
-    wheel_after = 0
-    total_before = 0
-    total_after = 0
-    wheel_before_count = 0
-    wheel_after_count = 0
-    total_after_count = 0
-    for i, key in enumerate(keys):
+    wheel_before = []
+    wheel_after = []
+    total_before = []
+    total_after = []
+    for key in keys:
         baseline_entry = baseline_sizes.get(key)
         local_entry = local_sizes.get(key)
         display_name = display_for((local_entry or baseline_entry)[0])
@@ -182,16 +172,13 @@ def render_table(
             role = "orphan"
         else:
             # Present locally (in both, or newly added): count in totals
-            total_after += after
-            total_after_count += 1
+            total_after.append(after)
             if before is not None:
-                total_before += before
+                total_before.append(before)
             if key != "sdist":
-                wheel_after += after
-                wheel_after_count += 1
+                wheel_after.append(after)
                 if before is not None:
-                    wheel_before += before
-                    wheel_before_count += 1
+                    wheel_before.append(before)
             role = "data"
         cells = [
             display_name,
@@ -204,15 +191,15 @@ def render_table(
     if not markdown:
         table.add_divider()
 
-    if wheel_after_count:
-        avg_before = wheel_before // wheel_before_count if wheel_before_count else None
+    if wheel_after:
+        avg_before = sum(wheel_before) // len(wheel_before) if wheel_before else None
         table.add_row(
             style(
                 [
-                    f"wheel average ({wheel_after_count} wheels)",
+                    f"wheel average ({len(wheel_after)} wheels)",
                     human(avg_before),
-                    human(wheel_after // wheel_after_count),
-                    pct_change(avg_before, wheel_after // wheel_after_count),
+                    human(sum(wheel_after) // len(wheel_after)),
+                    pct_change(avg_before, sum(wheel_after) // len(wheel_after)),
                 ],
                 "summary",
             )
@@ -220,31 +207,31 @@ def render_table(
         table.add_row(
             style(
                 [
-                    f"wheel total ({wheel_after_count} wheels)",
-                    human(wheel_before),
-                    human(wheel_after),
-                    pct_change(wheel_before, wheel_after),
+                    f"wheel total ({len(wheel_after)} wheels)",
+                    human(sum(wheel_before)),
+                    human(sum(wheel_after)),
+                    pct_change(sum(wheel_before), sum(wheel_after)),
                 ],
                 "summary",
             ),
             divider=not markdown,
         )
 
-    if total_after_count:
+    if total_after:
         table.add_row(
             style(
                 [
-                    f"artifacts total ({total_after_count} artifacts)",
-                    human(total_before),
-                    human(total_after),
-                    pct_change(total_before, total_after),
+                    f"artifacts total ({len(total_after)} artifacts)",
+                    human(sum(total_before)),
+                    human(sum(total_after)),
+                    pct_change(sum(total_before), sum(total_after)),
                 ],
                 "summary",
             )
         )
 
     title = f"## Dist size comparison vs {baseline_label}"
-    if color:
+    if not markdown:
         title = colored(title, attrs=["bold"])
     return f"{title}\n\n{table.get_string()}\n"
 
