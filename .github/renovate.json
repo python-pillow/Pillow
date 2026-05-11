@@ -7,6 +7,7 @@
         "Dependency"
     ],
     "minimumReleaseAge": "7 days",
+    "prCreation": "not-pending",
     "schedule": [
         "* * 3 * *"
     ],
