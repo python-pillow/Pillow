@@ -35,19 +35,23 @@ ImagingFill(Imaging im, const void *colour) {
         if (access) {
             for (y = 0; y < im->ysize; y++) {
                 for (x = 0; x < im->xsize; x++) {
+                    // has internal mutex 
                     access->put_pixel(im, x, y, colour);
                 }
             }
             ImagingAccessDelete(im, access);
         } else {
             /* wipe the image */
+            MUTEX_LOCK(&im->mutex);
             for (y = 0; y < im->ysize; y++) {
                 memset(im->image[y], 0, im->linesize);
             }
+            MUTEX_UNLOCK(&im->mutex);
         }
     } else {
         INT32 c = 0L;
         ImagingSectionEnter(&cookie);
+        MUTEX_LOCK(&im->mutex);
         memcpy(&c, colour, im->pixelsize);
         if (im->image32 && c != 0L) {
             for (y = 0; y < im->ysize; y++) {
@@ -61,6 +65,7 @@ ImagingFill(Imaging im, const void *colour) {
                 memset(im->image[y], cc, im->linesize);
             }
         }
+        MUTEX_UNLOCK(&im->mutex);           
         ImagingSectionLeave(&cookie);
     }
 
