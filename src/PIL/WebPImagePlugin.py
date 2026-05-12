@@ -25,8 +25,6 @@ _VP8_MODES_BY_IDENTIFIER = {
 def _is_lossless(data: bytes) -> bool:
     # A WebP file is considered lossless when every coded frame uses the
     # VP8L bitstream. See https://developers.google.com/speed/webp/docs/riff_container
-    if not _accept(data):
-        return False
     chunk = data[12:16]
     if chunk == b"VP8L":
         return True
@@ -77,12 +75,16 @@ class WebPImageFile(ImageFile.ImageFile):
     __logical_frame = 0
 
     def _open(self) -> None:
+        assert self.fp is not None
+        s = self.fp.read()
+        if not _accept(s):
+            msg = "not a WEBP file"
+            raise SyntaxError(msg)
+
         # Use the newer AnimDecoder API to parse the (possibly) animated file,
         # and access muxed chunks like ICC/EXIF/XMP.
-        assert self.fp is not None
-        data = self.fp.read()
-        self.is_lossless = _is_lossless(data)
-        self._decoder = _webp.WebPAnimDecoder(data)
+        self.is_lossless = _is_lossless(s)
+        self._decoder = _webp.WebPAnimDecoder(s)
 
         # Get info from decoder
         self._size, self.info["loop"], bgcolor, self.n_frames, self.rawmode = (

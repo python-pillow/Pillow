@@ -13,6 +13,7 @@ on:
     paths: &paths
       - ".ci/requirements-cibw.txt"
       - ".ci/requirements-sbom.txt"
+      - ".github/compare-dist-sizes.py"
       - ".github/dependencies.json"
       - ".github/generate-sbom.py"
       - ".github/workflows/wheels*"
@@ -255,6 +256,28 @@ jobs:
           echo $files
           [ "$files" -eq $EXPECTED_DISTS ] || exit 1
 
+  compare-dist-sizes:
+    needs: [build-native-wheels, windows, sdist]
+    runs-on: ubuntu-latest
+    name: Compare dist sizes vs PyPI
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: false
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
+
+      - name: Compare dist sizes vs latest PyPI release
+        run: uv run .github/compare-dist-sizes.py dist
+
   scientific-python-nightly-wheels-publish:
     if: github.event.repository.fork == false && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
     needs: count-dists
@@ -276,6 +299,7 @@ jobs:
           anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
 
   sbom:
+    if: github.event_name != 'schedule' || github.event.repository.fork == false
     runs-on: ubuntu-latest
     name: Generate SBOM
     steps:
