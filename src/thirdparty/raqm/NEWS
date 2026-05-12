@@ -1,3 +1,21 @@
+Overview of changes leading to 0.10.5
+Saturday, April 11, 2026
+====================================
+
+Check for NULL return from malloc in couple of places.
+
+Overview of changes leading to 0.10.4
+Thursday, February 5, 2026
+====================================
+
+Add build option to skip tests.
+
+Add dependency override for use as a subproject.
+
+Fix tests when b_ndebug=true.
+
+Build, CI and documentation updates.
+
 Overview of changes leading to 0.10.3
 Tuesday, August 5, 2025
 ====================================

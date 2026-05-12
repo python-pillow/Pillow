@@ -178,9 +178,9 @@ def test_default_num_resolutions(
 
 def test_reduce() -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
-        assert callable(im.reduce)
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
 
-        im.reduce = 2  # type: ignore[assignment, method-assign]
+        im.reduce = 2
         assert im.reduce == 2
 
         im.load()
@@ -455,6 +455,13 @@ def test_pclr() -> None:
         assert im.palette is not None
         assert len(im.palette.colors) == 256
         assert im.palette.colors[(255, 255, 255)] == 0
+
+    for enumcs in (0, 15, 17):
+        with open(f"{EXTRA_DIR}/issue104_jpxstream.jp2", "rb") as fp:
+            data = bytearray(fp.read())
+        data[114:115] = bytes([enumcs])
+        with Image.open(BytesIO(data)) as im:
+            assert im.mode == "L"
 
     with Image.open(
         f"{EXTRA_DIR}/147af3f1083de4393666b7d99b01b58b_signal_sigsegv_130c531_6155_5136.jp2"
