@@ -1713,6 +1713,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
 
         /* FIXME: converting a "L" image to "P" with 256 colors
            should be done by a simple copy... */
+        ImagingSectionEnter(&cookie);
+        MUTEX_LOCK(&im->mutex);
 
         for (i = y = 0; y < im->ysize; y++) {
             for (x = 0; x < im->xsize; x++, i++) {
@@ -1720,9 +1722,13 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
                 p[i].c.a = 255;
             }
         }
+        MUTEX_UNLOCK(&im->mutex);
+        ImagingSectionLeave(&cookie);
 
     } else if (im->mode == IMAGING_MODE_P) {
         /* palette */
+        ImagingSectionEnter(&cookie);
+        MUTEX_LOCK(&im->mutex);
 
         pp = im->palette->palette;
 
@@ -1735,10 +1741,14 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
                 p[i].c.a = pp[v * 4 + 3];
             }
         }
+        MUTEX_UNLOCK(&im->mutex);
+        ImagingSectionLeave(&cookie);
 
     } else if (im->mode == IMAGING_MODE_RGB || im->mode == IMAGING_MODE_RGBA) {
         /* true colour */
-
+        ImagingSectionEnter(&cookie);
+        MUTEX_LOCK(&im->mutex);
+        
         withAlpha = im->mode == IMAGING_MODE_RGBA;
         int transparency = 0;
         unsigned char r = 0, g = 0, b = 0;
@@ -1765,6 +1775,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
                 }
             }
         }
+        MUTEX_UNLOCK(&im->mutex);
+        ImagingSectionLeave(&cookie);
 
     } else {
         free(p);
@@ -1772,7 +1784,6 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     }
 
     ImagingSectionEnter(&cookie);
-
     switch (mode) {
         case 0:
             /* median cut */
