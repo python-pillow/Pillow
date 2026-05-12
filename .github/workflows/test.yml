@@ -73,11 +73,6 @@ jobs:
           ".ci/*.sh"
           "pyproject.toml"
 
-    - name: Set PYTHON_GIL
-      if: endsWith(matrix.python-version, 't')
-      run: |
-        echo "PYTHON_GIL=0" >> $GITHUB_ENV
-
     - name: Build system information
       run: python3 .github/workflows/system-info.py
 
