@@ -812,7 +812,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
             break;
         }
 
-        /* Adjust the tile co-ordinates based on the reduction (OpenJPEG
+        /* Adjust the tile coordinates based on the reduction (OpenJPEG
            doesn't do this for us) */
         tile_info.x0 = (tile_info.x0 + correction) >> context->reduce;
         tile_info.y0 = (tile_info.y0 + correction) >> context->reduce;
