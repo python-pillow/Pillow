@@ -692,7 +692,7 @@ class PdfParser:
             self.read_prev_trailer(self.trailer_dict[b"Prev"])
 
     def read_prev_trailer(
-        self, xref_section_offset: int, processed_offsets: list[int] = None
+        self, xref_section_offset: int, processed_offsets: list[int] | None = None
     ) -> None:
         assert self.buf is not None
         trailer_offset = self.read_xref_table(xref_section_offset=xref_section_offset)
