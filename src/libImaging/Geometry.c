@@ -50,7 +50,7 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     } else {
         FLIP_LEFT_RIGHT(INT32, image32)
     }
-    
+
     MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 

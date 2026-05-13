@@ -30,7 +30,8 @@ typedef struct {
 
 static PyTypeObject OutlineType;
 
-int outline_setup(void) {
+int
+outline_setup(void) {
     if (PyType_Ready(&OutlineType) < 0) {
         return -1;
     }

@@ -1748,7 +1748,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
         /* true colour */
         ImagingSectionEnter(&cookie);
         MUTEX_LOCK(&im->mutex);
-        
+
         withAlpha = im->mode == IMAGING_MODE_RGBA;
         int transparency = 0;
         unsigned char r = 0, g = 0, b = 0;

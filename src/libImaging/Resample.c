@@ -394,7 +394,7 @@ ImagingResampleVertical_8bpc(
 
     ImagingSectionEnter(&cookie);
     MUTEX_LOCK(&imIn->mutex);
-    
+
     if (imIn->image8) {
         for (yy = 0; yy < imOut->ysize; yy++) {
             k = &kk[yy * ksize];
@@ -609,7 +609,7 @@ ImagingResampleVertical_32bpc(
 
     ImagingSectionEnter(&cookie);
     MUTEX_LOCK(&imIn->mutex);
-	
+
     switch (imIn->type) {
         case IMAGING_TYPE_INT32:
             for (yy = 0; yy < imOut->ysize; yy++) {

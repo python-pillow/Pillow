@@ -51,7 +51,8 @@ typedef struct {
 
 static PyTypeObject ImagingEncoderType;
 
-int encode_setup(void) {
+int
+encode_setup(void) {
     if (PyType_Ready(&ImagingEncoderType) < 0) {
         return -1;
     }

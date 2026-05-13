@@ -498,8 +498,6 @@ getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
     return result;
 }
 
-
-
 FLOAT32
 float16tofloat32(const FLOAT16 in) {
     UINT32 t1;
@@ -823,7 +821,6 @@ _blend(ImagingObject *self, PyObject *args) {
     result = PyImagingNew(ImagingBlend(imagep1->image, imagep2->image, (float)alpha));
     Py_END_CRITICAL_SECTION2();
     return result;
-
 }
 
 /* -------------------------------------------------------------------- */
@@ -1069,7 +1066,6 @@ _convert2(ImagingObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
-
 
 static PyObject *
 _convert_matrix_impl(ImagingObject *self, PyObject *args) {
@@ -2014,7 +2010,7 @@ _putpalette_impl(ImagingObject *self, PyObject *args) {
     self->image->palette = ImagingPaletteNew(palette_mode);
     ImagingPaletteDelete(old_palette);
     if (!self->image->palette) {
-      return NULL;
+        return NULL;
     }
 
     self->image->palette->size = palettesize * 8 / bits;
@@ -2992,7 +2988,8 @@ _chop_subtract(ImagingObject *self, PyObject *args) {
 
     PyObject *result;
     Py_BEGIN_CRITICAL_SECTION2(self, imagep);
-    result = PyImagingNew(ImagingChopSubtract(self->image, imagep->image, scale, offset));
+    result =
+        PyImagingNew(ImagingChopSubtract(self->image, imagep->image, scale, offset));
     Py_END_CRITICAL_SECTION2();
     return result;
 }
@@ -3396,7 +3393,6 @@ _draw_new(PyObject *self_, PyObject *args) {
     return (PyObject *)self;
 }
 
-
 static void
 _draw_dealloc(ImagingDrawObject *self) {
     Py_XDECREF(self->image);
@@ -3750,7 +3746,6 @@ _draw_points(ImagingDrawObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-
 /* from outline.c */
 extern ImagingOutline
 PyOutline_AsOutline(PyObject *outline);
@@ -3889,15 +3884,15 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
     int result;
     Py_BEGIN_CRITICAL_SECTION2(self, self->image);
     result = ImagingDrawPolygon(
-                                self->image->image,
-                                n,
-            ixy,
-            &ink,
-            fill,
-            width,
-            self->blend,
-            maskp ? maskp->image : NULL
-                                );
+        self->image->image,
+        n,
+        ixy,
+        &ink,
+        fill,
+        width,
+        self->blend,
+        maskp ? maskp->image : NULL
+    );
     Py_END_CRITICAL_SECTION2();
 
     if (result < 0) {
@@ -3965,7 +3960,6 @@ _draw_rectangle(ImagingDrawObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
-
 
 static struct PyMethodDef _draw_methods[] = {
     /* Graphics (ImageDraw) */
@@ -4891,11 +4885,16 @@ static PyMethodDef functions[] = {
     {NULL, NULL} /* sentinel */
 };
 
-extern int encode_setup(void);
-extern int decode_setup(void);
-extern int path_setup(void);
-extern int outline_setup(void);
-extern int display_setup(void);
+extern int
+encode_setup(void);
+extern int
+decode_setup(void);
+extern int
+path_setup(void);
+extern int
+outline_setup(void);
+extern int
+display_setup(void);
 
 static int
 setup_module(PyObject *m) {

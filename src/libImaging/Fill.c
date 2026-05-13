@@ -35,7 +35,7 @@ ImagingFill(Imaging im, const void *colour) {
         if (access) {
             for (y = 0; y < im->ysize; y++) {
                 for (x = 0; x < im->xsize; x++) {
-                    // has internal mutex 
+                    // has internal mutex
                     access->put_pixel(im, x, y, colour);
                 }
             }
@@ -65,7 +65,7 @@ ImagingFill(Imaging im, const void *colour) {
                 memset(im->image[y], cc, im->linesize);
             }
         }
-        MUTEX_UNLOCK(&im->mutex);           
+        MUTEX_UNLOCK(&im->mutex);
         ImagingSectionLeave(&cookie);
     }
 

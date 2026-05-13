@@ -57,7 +57,8 @@ typedef struct {
 
 static PyTypeObject ImagingDecoderType;
 
-int decode_setup(void) {
+int
+decode_setup(void) {
     if (PyType_Ready(&ImagingDecoderType) < 0) {
         return -1;
     }

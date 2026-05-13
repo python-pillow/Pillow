@@ -49,7 +49,8 @@ typedef struct {
 
 static PyTypeObject PyPathType;
 
-int path_setup(void) {
+int
+path_setup(void) {
     if (PyType_Ready(&PyPathType) < 0) {
         return -1;
     }

@@ -572,11 +572,11 @@ cms_transform_apply_impl(CmsTransformObject *self, PyObject *args) {
 
 static PyObject *
 cms_transform_apply(CmsTransformObject *self, PyObject *args) {
-  PyObject *result;
-  Py_BEGIN_CRITICAL_SECTION(self);
-  result = cms_transform_apply_impl(self, args);
-  Py_END_CRITICAL_SECTION();
-  return result;
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = cms_transform_apply_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 /* -------------------------------------------------------------------- */

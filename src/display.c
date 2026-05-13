@@ -46,7 +46,8 @@ typedef struct {
 
 static PyTypeObject ImagingDisplayType;
 
-int display_setup(void) {
+int
+display_setup(void) {
     if (PyType_Ready(&ImagingDisplayType) < 0) {
         return -1;
     }
@@ -839,7 +840,8 @@ error:
 
 #else
 
-int display_setup(void) {
+int
+display_setup(void) {
     return 0;
 }
 
