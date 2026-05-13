@@ -24,9 +24,7 @@ def pytest_report_header(config: pytest.Config) -> str:
         return f"pytest_report_header failed: {e}"
 
 
-def pytest_terminal_summary(
-    terminalreporter: pytest.TerminalReporter, exitstatus: int, config: pytest.Config
-) -> None:
+def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter) -> None:
     if (
         FREE_THREADED_BUILD
         and not gil_enabled_at_start
