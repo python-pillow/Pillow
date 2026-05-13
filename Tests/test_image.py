@@ -244,7 +244,7 @@ class TestImage:
     @pytest.mark.skipif(is_win32(), reason="Test requires opening tempfile twice")
     @pytest.mark.skipif(
         sys.platform == "cygwin",
-        reason="Test requires opening an mmaped file for writing",
+        reason="Test requires opening an mmapped file for writing",
     )
     def test_readonly_save(self, tmp_path: Path) -> None:
         temp_file = tmp_path / "temp.bmp"

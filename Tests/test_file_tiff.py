@@ -1041,7 +1041,7 @@ class TestFileTiffW32:
     def test_fd_leak(self, tmp_path: Path) -> None:
         tmpfile = tmp_path / "temp.tif"
 
-        # this is an mmaped file.
+        # this is an mmapped file.
         with Image.open("Tests/images/uint16_1_4660.tif") as im:
             im.save(tmpfile)
 
