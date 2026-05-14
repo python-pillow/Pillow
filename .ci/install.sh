@@ -39,8 +39,8 @@ python3 -m pip install --only-binary=:all: pyarrow || true
 # PyQt6 doesn't support PyPy3
 if [[ $GHA_PYTHON_VERSION == 3.* ]]; then
     sudo apt-get -qq install libegl1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxkbcommon-x11-0
-    # TODO Update condition when pyqt6 supports free-threading
-    if ! [[ "$PYTHON_GIL" == "0" ]]; then python3 -m pip install pyqt6 ; fi
+    # pyqt6 doesn't yet support free-threading; only install if a wheel is available
+    python3 -m pip install --only-binary=:all: pyqt6 || true
 fi
 
 # webp
