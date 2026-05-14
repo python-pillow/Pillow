@@ -32,7 +32,7 @@ def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter) -> None:
     ):
         tr = terminalreporter
         tr.ensure_newline()
-        tr.section("GIL re-enabled", sep="=", red=True, bold=True)
+        tr.section("GIL re-enabled", red=True, bold=True)
         tr.line("The GIL was re-enabled at runtime during the tests.")
         tr.line("This can happen with no test failures if the RuntimeWarning")
         tr.line("raised by Python when this happens is filtered by a test.")
