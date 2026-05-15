@@ -54,5 +54,9 @@ jobs:
       run: |
         # The Pillow user in the docker container is UID 1001
         sudo chown -R 1001 $GITHUB_WORKSPACE
-        docker run --name pillow_container -e "PILLOW_VALGRIND_TEST=true" -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
+        docker run --name pillow_container \
+          -e "PILLOW_VALGRIND_TEST=true" \
+          -e "PYTEST_ADDOPTS=-n0" \
+          -v $GITHUB_WORKSPACE:/Pillow \
+          pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
         sudo chown -R runner $GITHUB_WORKSPACE

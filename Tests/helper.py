@@ -216,6 +216,7 @@ def mark_if_feature_version(
     return pytest.mark.pil_noop_mark()
 
 
+@pytest.mark.isolated
 @pytest.mark.skipif(sys.platform.startswith("win32"), reason="Requires Unix or macOS")
 class PillowLeakTestCase:
     # requires unix/macOS

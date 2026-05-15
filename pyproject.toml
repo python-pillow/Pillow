@@ -72,6 +72,7 @@ optional-dependencies.tests = [
   "pyroma>=5",
   "pytest",
   "pytest-cov",
+  "pytest-sugar",
   "pytest-timeout",
   "pytest-xdist",
   "trove-classifiers>=2024.10.12",
@@ -199,7 +200,10 @@ warn_unreachable = true
 warn_unused_ignores = true
 
 [tool.pytest]
-addopts = [ "-ra", "--color=auto" ]
+addopts = [ "-ra", "--color=auto", "--numprocesses=auto", "--dist=loadscope" ]
+markers = [
+  "isolated: tests that are not compatible with pytest-xdist (deselect with '-m \"not isolated\"')",
+]
 testpaths = [
   "Tests",
 ]
