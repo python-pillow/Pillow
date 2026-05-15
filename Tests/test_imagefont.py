@@ -365,7 +365,7 @@ def test_rotated_transposed_font(
         bbox_b[2] - bbox_b[0],
     )
 
-    # Check top left co-ordinates are correct
+    # Check top left coordinates are correct
     assert bbox_b[:2] == (20, 20)
 
     # text length is undefined for vertical text
@@ -410,7 +410,7 @@ def test_unrotated_transposed_font(
         bbox_b[3] - bbox_b[1],
     )
 
-    # Check top left co-ordinates are correct
+    # Check top left coordinates are correct
     assert bbox_b[:2] == (20, 20)
 
     assert length_a == length_b

@@ -118,14 +118,27 @@ assign_item_to_array(double *xy, Py_ssize_t j, PyObject *op) {
     } else if (PyNumber_Check(op)) {
         xy[j++] = PyFloat_AsDouble(op);
     } else if (PyList_Check(op)) {
+        if (PyList_GET_SIZE(op) != 2) {
+            PyErr_SetString(
+                PyExc_ValueError, "coordinate list must contain exactly 2 coordinates"
+            );
+            return -1;
+        }
         for (int k = 0; k < 2; k++) {
             PyObject *op1 = PyList_GetItemRef(op, k);
             if (op1 == NULL) {
                 return -1;
             }
-            j = assign_item_to_array(xy, j, op1);
+            if (PyFloat_Check(op1) || PyLong_Check(op1) || PyNumber_Check(op1)) {
+                j = assign_item_to_array(xy, j, op1);
+            } else {
+                j = -1;
+            }
             Py_DECREF(op1);
             if (j == -1) {
+                PyErr_SetString(
+                    PyExc_ValueError, "coordinate list must contain numbers"
+                );
                 return -1;
             }
         }

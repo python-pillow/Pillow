@@ -18,7 +18,7 @@ keywords = [
 license = "MIT-CMU"
 license-files = [ "LICENSE" ]
 authors = [
-  { name = "Jeffrey A. Clark", email = "aclark@aclark.net" },
+  { name = "Jeffrey 'Alex' Clark", email = "aclark@aclark.net" },
 ]
 requires-python = ">=3.10"
 classifiers = [
@@ -146,6 +146,7 @@ lint.select = [
   "I",      # isort
   "ISC",    # flake8-implicit-str-concat
   "LOG",    # flake8-logging
+  "PERF",   # perflint
   "PGH",    # pygrep-hooks
   "PIE",    # flake8-pie
   "PT",     # flake8-pytest-style
@@ -185,12 +186,6 @@ lint.isort.required-imports = [
 [tool.pyproject-fmt]
 max_supported_python = "3.14"
 
-[tool.pytest]
-addopts = [ "-ra", "--color=auto" ]
-testpaths = [
-  "Tests",
-]
-
 [tool.mypy]
 python_version = "3.10"
 pretty = true
@@ -202,3 +197,9 @@ follow_imports = "silent"
 warn_redundant_casts = true
 warn_unreachable = true
 warn_unused_ignores = true
+
+[tool.pytest]
+addopts = [ "-ra", "--color=auto" ]
+testpaths = [
+  "Tests",
+]

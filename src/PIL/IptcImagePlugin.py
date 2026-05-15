@@ -185,13 +185,9 @@ def getiptcinfo(
 
     data = None
 
-    info: dict[tuple[int, int], bytes | list[bytes]] = {}
     if isinstance(im, IptcImageFile):
         # return info dictionary right away
-        for k, v in im.info.items():
-            if isinstance(k, tuple):
-                info[k] = v
-        return info
+        return {k: v for k, v in im.info.items() if isinstance(k, tuple)}
 
     elif isinstance(im, JpegImagePlugin.JpegImageFile):
         # extract the IPTC/NAA resource
@@ -227,7 +223,4 @@ def getiptcinfo(
     except (IndexError, KeyError):
         pass  # expected failure
 
-    for k, v in iptc_im.info.items():
-        if isinstance(k, tuple):
-            info[k] = v
-    return info
+    return {k: v for k, v in iptc_im.info.items() if isinstance(k, tuple)}

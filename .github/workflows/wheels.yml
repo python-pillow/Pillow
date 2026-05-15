@@ -10,9 +10,13 @@ on:
   #        │  │ │ │ │
   - cron: "42 1 * * 0,3"
   push:
-    paths:
+    paths: &paths
       - ".ci/requirements-cibw.txt"
-      - ".github/workflows/wheel*"
+      - ".ci/requirements-sbom.txt"
+      - ".github/compare-dist-sizes.py"
+      - ".github/dependencies.json"
+      - ".github/generate-sbom.py"
+      - ".github/workflows/wheels*"
       - "pyproject.toml"
       - "setup.py"
       - "wheels/*"
@@ -21,14 +25,7 @@ on:
     tags:
       - "*"
   pull_request:
-    paths:
-      - ".ci/requirements-cibw.txt"
-      - ".github/workflows/wheel*"
-      - "pyproject.toml"
-      - "setup.py"
-      - "wheels/*"
-      - "winbuild/build_prepare.py"
-      - "winbuild/fribidi.cmake"
+    paths: *paths
   workflow_dispatch:
 
 permissions:
@@ -39,12 +36,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  EXPECTED_DISTS: 91
+  EXPECTED_DISTS: 66
   FORCE_COLOR: 1
 
 jobs:
   build-native-wheels:
-    if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
+    if: github.event_name != 'schedule' || github.event.repository.fork == false
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -74,26 +71,26 @@ jobs:
             os: macos-latest
             cibw_arch: arm64
             macosx_deployment_target: "11.0"
-          - name: "manylinux2014 and musllinux x86_64"
-            platform: linux
-            os: ubuntu-latest
-            cibw_arch: x86_64
-            manylinux: "manylinux2014"
           - name: "manylinux_2_28 x86_64"
             platform: linux
             os: ubuntu-latest
             cibw_arch: x86_64
             build: "*manylinux*"
-          - name: "manylinux2014 and musllinux aarch64"
+          - name: "musllinux x86_64"
             platform: linux
-            os: ubuntu-24.04-arm
-            cibw_arch: aarch64
-            manylinux: "manylinux2014"
+            os: ubuntu-latest
+            cibw_arch: x86_64
+            build: "*musllinux*"
           - name: "manylinux_2_28 aarch64"
             platform: linux
             os: ubuntu-24.04-arm
             cibw_arch: aarch64
             build: "*manylinux*"
+          - name: "musllinux aarch64"
+            platform: linux
+            os: ubuntu-24.04-arm
+            cibw_arch: aarch64
+            build: "*musllinux*"
           - name: "iOS arm64 device"
             platform: ios
             os: macos-latest
@@ -104,15 +101,15 @@ jobs:
             cibw_arch: arm64_iphonesimulator
           - name: "iOS x86_64 simulator"
             platform: ios
-            os: macos-15-intel
+            os: macos-26-intel
             cibw_arch: x86_64_iphonesimulator
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           submodules: true
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.x"
 
@@ -127,20 +124,16 @@ jobs:
           CIBW_PLATFORM: ${{ matrix.platform }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BUILD: ${{ matrix.build }}
-          CIBW_ENABLE: cpython-prerelease cpython-freethreading pypy
-          CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.manylinux }}
-          CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ${{ matrix.manylinux }}
-          CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
-          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
+          CIBW_ENABLE: cpython-prerelease pypy
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dist-${{ matrix.name }}
           path: ./wheelhouse/*.whl
 
   windows:
-    if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
+    if: github.event_name != 'schedule' || github.event.repository.fork == false
     name: Windows ${{ matrix.cibw_arch }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -154,18 +147,18 @@ jobs:
           - cibw_arch: ARM64
             os: windows-11-arm
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
       - name: Checkout extra test images
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           repository: python-pillow/test-images
           path: Tests\test-images
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.x"
 
@@ -202,7 +195,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL: "{package}\\winbuild\\build\\build_dep_all.cmd"
           CIBW_CACHE_PATH: "C:\\cibw"
-          CIBW_ENABLE: cpython-prerelease cpython-freethreading pypy
+          CIBW_ENABLE: cpython-prerelease pypy
           CIBW_TEST_SKIP: "*-win_arm64"
           CIBW_TEST_COMMAND: 'docker run --rm
             -v {project}:C:\pillow
@@ -214,33 +207,33 @@ jobs:
         shell: bash
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dist-windows-${{ matrix.cibw_arch }}
           path: ./wheelhouse/*.whl
 
       - name: Upload fribidi.dll
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: fribidi-windows-${{ matrix.cibw_arch }}
           path: winbuild\build\bin\fribidi*
 
   sdist:
-    if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
+    if: github.event_name != 'schedule' || github.event.repository.fork == false
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         persist-credentials: false
 
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
         python-version: "3.x"
 
     - run: make sdist
 
-    - uses: actions/upload-artifact@v6
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: dist-sdist
         path: dist/*.tar.gz
@@ -250,7 +243,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Count dists
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: dist-*
           path: dist
@@ -263,25 +256,98 @@ jobs:
           echo $files
           [ "$files" -eq $EXPECTED_DISTS ] || exit 1
 
+  compare-dist-sizes:
+    needs: [build-native-wheels, windows, sdist]
+    runs-on: ubuntu-latest
+    name: Compare dist sizes vs PyPI
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: false
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
+
+      - name: Compare dist sizes vs latest PyPI release
+        run: uv run .github/compare-dist-sizes.py dist
+
   scientific-python-nightly-wheels-publish:
-    if: github.repository_owner == 'python-pillow' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    if: github.event.repository.fork == false && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
     needs: count-dists
     runs-on: ubuntu-latest
     name: Upload wheels to scientific-python-nightly-wheels
+    environment:
+      name: release-anaconda
+      url: https://anaconda.org/channels/scientific-python-nightly-wheels/packages/pillow/overview
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: dist-!(sdist)*
           path: dist
           merge-multiple: true
       - name: Upload wheels to scientific-python-nightly-wheels
-        uses: scientific-python/upload-nightly-action@5748273c71e2d8d3a61f3a11a16421c8954f9ecf # 0.6.3
+        uses: scientific-python/upload-nightly-action@e76cfec8a4611fd02808a801b0ff5a7d7c1b2d99 # 0.6.4
         with:
           artifacts_path: dist
           anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
 
+  sbom:
+    if: github.event_name != 'schedule' || github.event.repository.fork == false
+    runs-on: ubuntu-latest
+    name: Generate SBOM
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.x"
+
+      - name: Generate CycloneDX SBOM
+        run: python3 .github/generate-sbom.py
+
+      - name: Upload SBOM as workflow artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom
+          path: "pillow-*.cdx.json"
+
+      - name: Validate SBOM
+        run: |
+          python3 -m pip install -r .ci/requirements-sbom.txt
+          check-jsonschema --schemafile "https://raw.githubusercontent.com/CycloneDX/specification/1.7/schema/bom-1.7.schema.json" pillow-*.cdx.json
+
+  sbom-publish:
+    if: |
+      github.event.repository.fork == false
+      && github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags')
+    needs: [count-dists, sbom]
+    runs-on: ubuntu-latest
+    name: Publish SBOM to GitHub release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sbom
+          path: .
+
+      - name: Attach SBOM to GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$GITHUB_REF_NAME" pillow-*.cdx.json
+
   pypi-publish:
-    if: github.repository_owner == 'python-pillow' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: github.event.repository.fork == false && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     needs: count-dists
     runs-on: ubuntu-latest
     name: Upload release to PyPI
@@ -291,12 +357,12 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: dist-*
           path: dist
           merge-multiple: true
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
         with:
           attestations: true
