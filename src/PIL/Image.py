@@ -371,6 +371,7 @@ _EXTENSION_PLUGIN: dict[str, str] = {
     ".jpf": "Jpeg2KImagePlugin",
     ".jpx": "Jpeg2KImagePlugin",
     ".j2c": "Jpeg2KImagePlugin",
+    ".jxl": "JpegXlImagePlugin",
     ".mic": "MicImagePlugin",
     ".mpg": "MpegImagePlugin",
     ".mpeg": "MpegImagePlugin",

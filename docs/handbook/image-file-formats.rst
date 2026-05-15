@@ -1565,6 +1565,31 @@ IPTC/NAA
 
 Pillow provides limited read support for IPTC/NAA newsphoto files.
 
+JPEG XL
+^^^^^^^
+
+Pillow identifies and reads JPEG XL files. Requires libjxl version **0.9.0** or
+greater.
+
+The :py:meth:`~PIL.Image.open` method sets the following
+:py:attr:`~PIL.Image.Image.info` properties:
+
+**duration**
+    The delay (in milliseconds) between each frame.
+
+**exif**
+    Raw EXIF data from the image.
+
+**icc_profile**
+    The ICC color profile for the image.
+
+**timestamp**
+    The time of the current frame. This is the sum of the duration of all previous
+    frames.
+
+**xmp**
+    Raw XMP data from the image.
+
 MCIDAS
 ^^^^^^
 

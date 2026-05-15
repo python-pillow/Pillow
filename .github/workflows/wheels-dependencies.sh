@@ -96,6 +96,7 @@ HARFBUZZ_VERSION=$(_get_ver harfbuzz)
 LIBPNG_VERSION=$(_get_ver libpng)
 JPEGTURBO_VERSION=$(_get_ver jpegturbo)
 OPENJPEG_VERSION=$(_get_ver openjpeg)
+JPEGXL_VERSION=$(_get_ver jpegxl)
 XZ_VERSION=$(_get_ver xz)
 ZSTD_VERSION=$(_get_ver zstd)
 TIFF_VERSION=$(_get_ver tiff)
@@ -156,6 +157,22 @@ function build_brotli {
         && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib -DCMAKE_MACOSX_BUNDLE=OFF $HOST_CMAKE_FLAGS . \
         && make -j4 install)
     touch brotli-stamp
+}
+
+function build_jpegxl {
+    if [ -e jpegxl-stamp ]; then return; fi
+
+    local highway_version=$(_get_ver highway)
+    local out_dir=$(fetch_unpack https://github.com/google/highway/archive/$highway_version.tar.gz)
+    (cd $out_dir \
+        && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib $HOST_CMAKE_FLAGS . \
+        && make -j4 install)
+
+    local out_dir=$(fetch_unpack https://github.com/libjxl/libjxl/archive/v$JPEGXL_VERSION.tar.gz)
+    (cd $out_dir \
+        && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib -DJPEGXL_ENABLE_SJPEG=OFF -DJPEGXL_ENABLE_SKCMS=OFF -DBUILD_TESTING=OFF $HOST_CMAKE_FLAGS . \
+        && make -j4 install)
+    touch jpegxl-stamp
 }
 
 function build_harfbuzz {
@@ -286,19 +303,6 @@ function build {
     build_libpng
     build_lcms2
     build_openjpeg
-
-    webp_cflags="-O3 -DNDEBUG"
-    if [[ -n "$IS_MACOS" ]]; then
-        webp_cflags="$webp_cflags -Wl,-headerpad_max_install_names"
-    fi
-    webp_ldflags=""
-    if [[ -n "$IOS_SDK" ]]; then
-        webp_ldflags="$webp_ldflags -llzma -lz"
-    fi
-    CFLAGS="$CFLAGS $webp_cflags" LDFLAGS="$LDFLAGS $webp_ldflags" build_simple libwebp $LIBWEBP_VERSION \
-        https://storage.googleapis.com/downloads.webmproject.org/releases/webp tar.gz \
-        --enable-libwebpmux --enable-libwebpdemux
-
     build_brotli
 
     if [[ -n "$IS_MACOS" ]]; then
@@ -312,7 +316,21 @@ function build {
         # On iOS, there's no vendor-provided raqm, and we can't ship it due to
         # licensing, so there's no point building harfbuzz.
         build_harfbuzz
+
+        build_jpegxl
     fi
+
+    webp_cflags="-O3 -DNDEBUG"
+    if [[ -n "$IS_MACOS" ]]; then
+        webp_cflags="$webp_cflags -Wl,-headerpad_max_install_names"
+    fi
+    webp_ldflags=""
+    if [[ -n "$IOS_SDK" ]]; then
+        webp_ldflags="$webp_ldflags -llzma -lz"
+    fi
+    CFLAGS="$CFLAGS $webp_cflags" LDFLAGS="$LDFLAGS $webp_ldflags" build_simple libwebp $LIBWEBP_VERSION \
+        https://storage.googleapis.com/downloads.webmproject.org/releases/webp tar.gz \
+        --enable-libwebpmux --enable-libwebpdemux
 }
 
 function create_meson_cross_config {

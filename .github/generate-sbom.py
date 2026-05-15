@@ -96,6 +96,7 @@ def generate(version: str) -> dict:
         ("PIL._imagingmath", "Image math operations extension"),
         ("PIL._imagingmorph", "Image morphology extension"),
         ("PIL._imagingtk", "Tk/Tcl display extension"),
+        ("PIL._jpegxl", "JPEG XL image format extension"),
         ("PIL._webp", "WebP image format extension"),
     ]
 
@@ -293,6 +294,22 @@ def generate(version: str) -> dict:
                 {
                     "type": "distribution",
                     "url": "https://github.com/harfbuzz/harfbuzz/releases",
+                },
+            ],
+        },
+        {
+            "bom-ref": "pkg:generic/jpegxl",
+            "type": "library",
+            "name": "jpegxl",
+            "description": "JPEG XL codec (optional, used by PIL._jpegxl).",
+            "licenses": [
+                {"license": {"id": "BSD-3-Clause"}},
+            ],
+            "externalReferences": [
+                {"type": "website", "url": "https://jpeg.org/jpegxl"},
+                {
+                    "type": "distribution",
+                    "url": "https://github.com/libjxl/libjxl/releases",
                 },
             ],
         },

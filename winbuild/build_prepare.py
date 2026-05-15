@@ -244,7 +244,10 @@ DEPS: dict[str, dict[str, Any]] = {
         "filename": f"brotli-{V['brotli']}.tar.gz",
         "license": "LICENSE",
         "build": [
-            *cmds_cmake(("brotlicommon", "brotlidec"), "-DBUILD_SHARED_LIBS:BOOL=OFF"),
+            *cmds_cmake(
+                ("brotlicommon", "brotlidec", "brotlienc"),
+                "-DBUILD_SHARED_LIBS:BOOL=OFF",
+            ),
             cmd_xcopy(r"c\include", "{inc_dir}"),
         ],
         "libs": ["*.lib"],
@@ -320,6 +323,46 @@ DEPS: dict[str, dict[str, Any]] = {
             cmd_copy(r"src\lib\openjp2\*.h", rf"{{inc_dir}}\openjpeg-{V['openjpeg']}"),
         ],
         "libs": [r"bin\*.lib"],
+    },
+    "highway": {
+        "url": f"https://github.com/google/highway/archive/{V['highway']}.tar.gz",
+        "filename": f"highway-{V['highway']}.tar.gz",
+        "license": "LICENSE",
+        "patch": {
+            r"CMakeLists.txt": {
+                "cmake_minimum_required(VERSION 3.10)": "cmake_minimum_required(VERSION 3.15)",  # noqa: E501
+            }
+        },
+        "build": [
+            *cmds_cmake(
+                "hwy",
+                '-DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded$<$<CONFIG:Debug>:Debug>"',
+            )
+        ],
+        "libs": ["hwy.lib"],
+    },
+    "libjxl": {
+        "url": f"https://github.com/libjxl/libjxl/archive/v{V['jpegxl']}.tar.gz",
+        "filename": f"libjxl-{V['jpegxl']}.tar.gz",
+        "license": "LICENSE",
+        "build": [
+            *cmds_cmake(
+                "jxl",
+                rf"-DHWY_INCLUDE_DIR=..\highway-{V['highway']}",
+                r"-DLCMS2_LIBRARY=..\..\lib\lcms2_static",
+                r"-DLCMS2_INCLUDE_DIR=..\..\inc",
+                "-DJPEGXL_ENABLE_SJPEG:BOOL=OFF",
+                "-DJPEGXL_ENABLE_SKCMS:BOOL=OFF",
+                "-DJPEGXL_STATIC:BOOL=ON",
+                "-DBUILD_TESTING:BOOL=OFF",
+                "-DBUILD_SHARED_LIBS:BOOL=OFF",
+            ),
+            cmd_copy(r"lib\jxl.lib", "{lib_dir}"),
+            *cmds_cmake("jxl_threads"),
+            cmd_copy(r"lib\jxl_threads.lib", "{lib_dir}"),
+            cmd_mkdir(r"{inc_dir}\jxl"),
+            cmd_copy(r"lib\include\jxl\*.h", r"{inc_dir}\jxl"),
+        ],
     },
     "libimagequant": {
         "url": "https://github.com/ImageOptim/libimagequant/archive/{V['libimagequant']}.tar.gz",
