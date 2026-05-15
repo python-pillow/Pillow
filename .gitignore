@@ -98,5 +98,8 @@ pillow-test-images.zip
 # pyinstaller
 *.spec
 
+# mypy
+.mypy_cache
+
 # Generated SBOM
 pillow-*.cdx.json

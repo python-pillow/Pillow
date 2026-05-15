@@ -661,13 +661,11 @@ def get_sampling(im: Image.Image) -> int:
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    try:
-        rawmode = RAWMODE[im.mode]
-    except KeyError as e:
-        msg = f"cannot write mode {im.mode} as JPEG"
-        raise OSError(msg) from e
-
     info = im.encoderinfo
+
+    if im.mode not in RAWMODE:
+        im = im.convert("RGB")
+    rawmode = RAWMODE[im.mode]
 
     dpi = [round(x) for x in info.get("dpi", (0, 0))]
 

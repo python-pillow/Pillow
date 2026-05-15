@@ -772,14 +772,6 @@ class TestFileJpeg:
         img = Image.new(mode, (20, 20))
         img.save(out, "JPEG")
 
-    @pytest.mark.parametrize("mode", ("LA", "La", "RGBA", "RGBa", "P"))
-    def test_save_wrong_modes(self, mode: str) -> None:
-        # ref https://github.com/python-pillow/Pillow/issues/2005
-        out = BytesIO()
-        img = Image.new(mode, (20, 20))
-        with pytest.raises(OSError):
-            img.save(out, "JPEG")
-
     def test_save_tiff_with_dpi(self, tmp_path: Path) -> None:
         # Arrange
         outfile = tmp_path / "temp.tif"
@@ -1106,11 +1098,6 @@ class TestFileJpeg:
         with Image.open(BytesIO(b)) as repr_jpeg:
             assert repr_jpeg.format == "JPEG"
             assert_image_similar(im, repr_jpeg, 17)
-
-    def test_repr_jpeg_error_returns_none(self) -> None:
-        im = hopper("F")
-
-        assert im._repr_jpeg_() is None
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")

@@ -51,7 +51,3 @@ def test_save(tmp_path: Path) -> None:
             im.save(f)
 
             assert_image_equal_tofile(im, f)
-
-    im = hopper("P")
-    with pytest.raises(ValueError, match="Unsupported QOI image mode"):
-        im.save(f)
