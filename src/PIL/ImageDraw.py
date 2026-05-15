@@ -231,34 +231,109 @@ class ImageDraw:
         ellipse_xy = (xy[0] - radius, xy[1] - radius, xy[0] + radius, xy[1] + radius)
         self.ellipse(ellipse_xy, fill, outline, width)
 
+    def _normalize_points(self, xy: Coords) -> list[Sequence[float]]:
+        """Convert various coordinate formats to a list of (x, y) tuples."""
+        if isinstance(xy[0], (list, tuple)):
+            return list(cast(Sequence[Sequence[float]], xy))
+        else:
+            flat_xy = cast(Sequence[float], xy)
+            return [flat_xy[i : i + 2] for i in range(0, len(flat_xy), 2)]
+
+    def _draw_dashed_line(
+        self,
+        p1: Sequence[float],
+        p2: Sequence[float],
+        dash: tuple[int, ...],
+        fill: _Ink | None,
+        width: int,
+        dash_offset: int,
+    ) -> int:
+        """Draw a single dashed line segment between two points.
+
+        Returns the updated dash_offset for continuing the pattern
+        along the next segment.
+        """
+        dx = p2[0] - p1[0]
+        dy = p2[1] - p1[1]
+        segment_length = math.hypot(dx, dy)
+        if segment_length == 0:
+            return dash_offset
+
+        vx = dx / segment_length
+        vy = dy / segment_length
+
+        remaining = segment_length
+        x, y = p1
+
+        # Determine where we are in the dash pattern
+        dash_cycle_length = sum(dash)
+        offset = dash_offset % dash_cycle_length
+        dash_index = 0
+        consumed = 0
+        for i, d in enumerate(dash):
+            if consumed + d > offset:
+                dash_index = i
+                break
+            consumed += d
+        pixels_used: float = offset - consumed
+
+        while remaining > 0.5:
+            current_dash_length = dash[dash_index % len(dash)]
+            step = min(current_dash_length - pixels_used, remaining)
+
+            nx = x + vx * step
+            ny = y + vy * step
+
+            if dash_index % 2 == 0:
+                self.line([(x, y), (nx, ny)], fill, width)
+
+            x = nx
+            y = ny
+            remaining -= step
+            pixels_used += step
+
+            if pixels_used >= current_dash_length:
+                pixels_used = 0
+                dash_index += 1
+
+        return (dash_offset + int(round(segment_length))) % dash_cycle_length
+
     def line(
         self,
         xy: Coords,
         fill: _Ink | None = None,
         width: int = 1,
         joint: str | None = None,
+        dash: tuple[int, ...] | None = None,
     ) -> None:
         """Draw a line, or a connected sequence of line segments."""
+        if dash is not None:
+            if len(dash) == 0:
+                msg = "dash must be a non-empty tuple of ints"
+                raise ValueError(msg)
+            # If odd number of elements, double the pattern per SVG spec
+            if len(dash) % 2 != 0:
+                dash *= 2
+            points = self._normalize_points(xy)
+            dash_offset = 0
+            for i in range(len(points) - 1):
+                dash_offset = self._draw_dashed_line(
+                    points[i], points[i + 1], dash, fill, width, dash_offset
+                )
+            return
         ink = self._getink(fill)[0]
         if ink is not None and width != 0:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
-                points: Sequence[Sequence[float]]
-                if isinstance(xy[0], (list, tuple)):
-                    points = cast(Sequence[Sequence[float]], xy)
-                else:
-                    points = [
-                        cast(Sequence[float], tuple(xy[i : i + 2]))
-                        for i in range(0, len(xy), 2)
-                    ]
-                for i in range(1, len(points) - 1):
-                    point = points[i]
+                joint_points = self._normalize_points(xy)
+                for i in range(1, len(joint_points) - 1):
+                    point = joint_points[i]
                     angles = [
                         math.degrees(math.atan2(end[0] - start[0], start[1] - end[1]))
                         % 360
                         for start, end in (
-                            (points[i - 1], point),
-                            (point, points[i + 1]),
+                            (joint_points[i - 1], point),
+                            (point, joint_points[i + 1]),
                         )
                     ]
                     if angles[0] == angles[1]:
@@ -350,12 +425,28 @@ class ImageDraw:
         fill: _Ink | None = None,
         outline: _Ink | None = None,
         width: int = 1,
+        dash: tuple[int, ...] | None = None,
     ) -> None:
         """Draw a polygon."""
         ink, fill_ink = self._getink(outline, fill)
         if fill_ink is not None:
             self.draw.draw_polygon(xy, fill_ink, 1)
-        if ink is not None and ink != fill_ink and width != 0:
+        if dash is not None:
+            if len(dash) == 0:
+                msg = "dash must be a non-empty tuple of ints"
+                raise ValueError(msg)
+            if len(dash) % 2 != 0:
+                dash *= 2
+            points = self._normalize_points(xy)
+            # Close the polygon by connecting last point to first
+            if points[0] != points[-1]:
+                points.append(points[0])
+            dash_offset = 0
+            for i in range(len(points) - 1):
+                dash_offset = self._draw_dashed_line(
+                    points[i], points[i + 1], dash, outline, width, dash_offset
+                )
+        elif ink is not None and ink != fill_ink and width != 0:
             if width == 1:
                 self.draw.draw_polygon(xy, ink, 0, width)
             elif self.im is not None:
@@ -387,12 +478,37 @@ class ImageDraw:
         fill: _Ink | None = None,
         outline: _Ink | None = None,
         width: int = 1,
+        dash: tuple[int, ...] | None = None,
     ) -> None:
         """Draw a rectangle."""
         ink, fill_ink = self._getink(outline, fill)
         if fill_ink is not None:
             self.draw.draw_rectangle(xy, fill_ink, 1)
-        if ink is not None and ink != fill_ink and width != 0:
+        if dash is not None:
+            if len(dash) == 0:
+                msg = "dash must be a non-empty tuple of ints"
+                raise ValueError(msg)
+            (x0, y0), (x1, y1) = self._normalize_points(xy)
+            rect_points = [
+                (x0, y0),
+                (x1, y0),
+                (x1, y1),
+                (x0, y1),
+                (x0, y0),
+            ]
+            if len(dash) % 2 != 0:
+                dash *= 2
+            dash_offset = 0
+            for i in range(len(rect_points) - 1):
+                dash_offset = self._draw_dashed_line(
+                    rect_points[i],
+                    rect_points[i + 1],
+                    dash,
+                    outline,
+                    width,
+                    dash_offset,
+                )
+        elif ink is not None and ink != fill_ink and width != 0:
             self.draw.draw_rectangle(xy, ink, 0, width)
 
     def rounded_rectangle(
@@ -406,10 +522,7 @@ class ImageDraw:
         corners: tuple[bool, bool, bool, bool] | None = None,
     ) -> None:
         """Draw a rounded rectangle."""
-        if isinstance(xy[0], (list, tuple)):
-            (x0, y0), (x1, y1) = cast(Sequence[Sequence[float]], xy)
-        else:
-            x0, y0, x1, y1 = cast(Sequence[float], xy)
+        (x0, y0), (x1, y1) = self._normalize_points(xy)
         if x1 < x0:
             msg = "x1 must be greater than or equal to x0"
             raise ValueError(msg)
