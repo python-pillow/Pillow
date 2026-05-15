@@ -36,7 +36,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  EXPECTED_DISTS: 66
+  EXPECTED_DISTS: 68
   FORCE_COLOR: 1
 
 jobs:
@@ -91,6 +91,12 @@ jobs:
             os: ubuntu-24.04-arm
             cibw_arch: aarch64
             build: "*musllinux*"
+          - name: "manylinux_2_39 riscv64"
+            platform: linux
+            os: ubuntu-latest
+            cibw_arch: riscv64
+            build: "cp3{13,14}-manylinux*"
+            manylinux: "manylinux_2_39"
           - name: "iOS arm64 device"
             platform: ios
             os: macos-latest
@@ -113,6 +119,12 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Set up QEMU
+        if: matrix.cibw_arch == 'riscv64'
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+        with:
+          platforms: riscv64
+
       - name: Install cibuildwheel
         run: |
           python3 -m pip install -r .ci/requirements-cibw.txt
@@ -125,6 +137,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_ENABLE: cpython-prerelease pypy
+          CIBW_MANYLINUX_RISCV64_IMAGE: ${{ matrix.manylinux }}
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -11,7 +11,7 @@ from .helper import (
     assert_image_equal,
     assert_image_equal_tofile,
     is_pypy,
-    timeout_unless_slower_valgrind,
+    timeout_unless_slower,
 )
 
 # created as an export of a palette image from Gimp2.6
@@ -196,7 +196,7 @@ def test_seek() -> None:
         "Tests/images/timeout-bff0a9dc7243a8e6ede2408d2ffa6a9964698b87.fli",
     ],
 )
-@timeout_unless_slower_valgrind(3)
+@timeout_unless_slower(3)
 def test_timeouts(test_file: str) -> None:
     with open(test_file, "rb") as f:
         with Image.open(f) as im:
