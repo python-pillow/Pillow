@@ -2428,7 +2428,14 @@ class Image:
                     (box[3] - reduce_box[1]) / factor_y,
                 )
 
-        return self._new(self.im.resize(size, resample, box))
+        if self.size[1] > self.size[0] * 100 and size[1] < self.size[1]:
+            im = self.im.resize(
+                (self.size[0], size[1]), resample, (0, box[1], self.size[0], box[3])
+            )
+            im = im.resize(size, resample, (box[0], 0, box[2], size[1]))
+        else:
+            im = self.im.resize(size, resample, box)
+        return self._new(im)
 
     def reduce(
         self,
@@ -2632,11 +2639,8 @@ class Image:
         if is_path(fp):
             filename = os.fspath(fp)
             open_fp = True
-        elif fp == sys.stdout:
-            try:
-                fp = sys.stdout.buffer
-            except AttributeError:
-                pass
+        elif fp == sys.stdout and isinstance(sys.stdout, io.TextIOWrapper):
+            fp = sys.stdout.buffer
         if not filename and hasattr(fp, "name") and is_path(fp.name):
             # only set the name for metadata purposes
             filename = os.fspath(fp.name)

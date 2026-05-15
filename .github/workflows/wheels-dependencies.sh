@@ -89,22 +89,23 @@ fi
 
 ARCHIVE_SDIR=pillow-depends-main
 
-# Package versions for fresh source builds.
-FREETYPE_VERSION=2.14.3
-HARFBUZZ_VERSION=13.2.1
-LIBPNG_VERSION=1.6.56
-JPEGTURBO_VERSION=3.1.4.1
-OPENJPEG_VERSION=2.5.4
-XZ_VERSION=5.8.2
-ZSTD_VERSION=1.5.7
-TIFF_VERSION=4.7.1
-LCMS2_VERSION=2.18
-ZLIB_NG_VERSION=2.3.3
-LIBWEBP_VERSION=1.6.0
-BZIP2_VERSION=1.0.8
-LIBXCB_VERSION=1.17.0
-BROTLI_VERSION=1.2.0
-LIBAVIF_VERSION=1.4.1
+VERSIONS_FILE="$PROJECTDIR/.github/dependencies.json"
+_get_ver() { python3 -c "import json; print(json.load(open('$VERSIONS_FILE'))['$1'])"; }
+FREETYPE_VERSION=$(_get_ver freetype)
+HARFBUZZ_VERSION=$(_get_ver harfbuzz)
+LIBPNG_VERSION=$(_get_ver libpng)
+JPEGTURBO_VERSION=$(_get_ver jpegturbo)
+OPENJPEG_VERSION=$(_get_ver openjpeg)
+XZ_VERSION=$(_get_ver xz)
+ZSTD_VERSION=$(_get_ver zstd)
+TIFF_VERSION=$(_get_ver tiff)
+LCMS2_VERSION=$(_get_ver lcms2)
+ZLIB_NG_VERSION=$(_get_ver zlib-ng)
+LIBWEBP_VERSION=$(_get_ver libwebp)
+BZIP2_VERSION=$(_get_ver bzip2)
+LIBXCB_VERSION=$(_get_ver libxcb)
+BROTLI_VERSION=$(_get_ver brotli)
+LIBAVIF_VERSION=$(_get_ver libavif)
 
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
@@ -178,7 +179,6 @@ function build_libavif {
         build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
     fi
 
-    local build_type=MinSizeRel
     local build_shared=ON
     local lto=ON
 
@@ -195,9 +195,6 @@ function build_libavif {
             build_shared=OFF
         fi
     else
-        if [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "x86_64" ]]; then
-            build_type=Release
-        fi
         libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
     fi
     if [[ -n "$IOS_SDK" ]] && [[ "$PLAT" == "x86_64" ]]; then
@@ -226,7 +223,7 @@ function build_libavif {
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=$lto \
             -DCMAKE_C_VISIBILITY_PRESET=hidden \
             -DCMAKE_CXX_VISIBILITY_PRESET=hidden \
-            -DCMAKE_BUILD_TYPE=$build_type \
+            -DCMAKE_BUILD_TYPE=MinSizeRel \
             "${libavif_cmake_flags[@]}" \
             $HOST_CMAKE_FLAGS . )
 

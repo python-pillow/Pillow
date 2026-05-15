@@ -187,15 +187,6 @@ lint.isort.required-imports = [
 [tool.pyproject-fmt]
 max_supported_python = "3.14"
 
-[tool.pytest]
-addopts = [ "-ra", "--color=auto", "--numprocesses=auto", "--dist=loadscope" ]
-markers = [
-  "isolated: tests that are not compatible with pytest-xdist (deselect with '-m \"not isolated\"')",
-]
-testpaths = [
-  "Tests",
-]
-
 [tool.mypy]
 python_version = "3.10"
 pretty = true
@@ -207,3 +198,12 @@ follow_imports = "silent"
 warn_redundant_casts = true
 warn_unreachable = true
 warn_unused_ignores = true
+
+[tool.pytest]
+addopts = [ "-ra", "--color=auto", "--numprocesses=auto", "--dist=loadscope" ]
+markers = [
+  "isolated: tests that are not compatible with pytest-xdist (deselect with '-m \"not isolated\"')",
+]
+testpaths = [
+  "Tests",
+]

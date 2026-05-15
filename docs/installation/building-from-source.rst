@@ -51,7 +51,7 @@ Many of Pillow's features require external libraries:
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.18**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.19**.
 
 * **libwebp** provides the WebP format.
 
@@ -116,7 +116,7 @@ Many of Pillow's features require external libraries:
 
     .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
-    Prerequisites for **Ubuntu 16.04 LTS - 24.04 LTS** are installed with::
+    Prerequisites for **Ubuntu 16.04 LTS - 26.04 LTS** are installed with::
 
         sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
             libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \

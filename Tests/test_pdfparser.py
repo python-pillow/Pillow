@@ -125,3 +125,8 @@ def test_duplicate_xref_entry() -> None:
     pdf = PdfParser("Tests/images/duplicate_xref_entry.pdf")
     assert pdf.xref_table.existing_entries[6][0] == 1197
     pdf.close()
+
+
+def test_trailer_loop() -> None:
+    with pytest.raises(PdfFormatError, match="trailer loop found"):
+        PdfParser("Tests/images/trailer_loop.pdf")
