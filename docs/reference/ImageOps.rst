@@ -26,6 +26,9 @@ only work on L and RGB images.
 .. autofunction:: posterize
 .. autofunction:: solarize
 .. autofunction:: exif_transpose
+.. autofunction:: sepia
+.. autofunction:: sobel
+.. autofunction:: neon_effect
 
 .. _relative-resize:
 
