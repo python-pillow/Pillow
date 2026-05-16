@@ -1375,6 +1375,13 @@ WebP
 
 Pillow reads and writes WebP files. Requires libwebp v0.5.0 or later.
 
+The :py:class:`~PIL.WebPImagePlugin.WebPImageFile` class also exposes the
+following attribute:
+
+**is_lossless**
+    ``True`` if every coded frame in the file uses VP8L (lossless)
+    compression, ``False`` otherwise.
+
 .. _webp-saving:
 
 Saving
