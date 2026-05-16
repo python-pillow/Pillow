@@ -323,13 +323,9 @@ _new_arrow(PyObject *self, PyObject *args) {
     mode_id = findModeID(mode);
 
     // ImagingBorrowArrow is responsible for retaining the array_capsule
-    ret = PyImagingNew(
+    return PyImagingNew(
         ImagingNewArrow(mode_id, xsize, ysize, schema_capsule, array_capsule)
     );
-    if (!ret) {
-        return ImagingError_ValueError("Invalid Arrow array mode or size mismatch");
-    }
-    return ret;
 }
 
 /* -------------------------------------------------------------------- */
