@@ -41,37 +41,3 @@ ImagingSaveRaw(Imaging im, FILE *fp) {
 
     return 1;
 }
-
-int
-ImagingSavePPM(Imaging im, const char *outfile) {
-    FILE *fp;
-
-    if (!im) {
-        (void)ImagingError_ValueError(NULL);
-        return 0;
-    }
-
-    fp = fopen(outfile, "wb");
-    if (!fp) {
-        PyErr_SetString(PyExc_OSError, "error when accessing file");
-        return 0;
-    }
-
-    if (im->mode == IMAGING_MODE_1 || im->mode == IMAGING_MODE_L) {
-        /* Write "PGM" */
-        fprintf(fp, "P5\n%d %d\n255\n", im->xsize, im->ysize);
-    } else if (im->mode == IMAGING_MODE_RGB) {
-        /* Write "PPM" */
-        fprintf(fp, "P6\n%d %d\n255\n", im->xsize, im->ysize);
-    } else {
-        fclose(fp);
-        (void)ImagingError_ModeError();
-        return 0;
-    }
-
-    ImagingSaveRaw(im, fp);
-
-    fclose(fp);
-
-    return 1;
-}
