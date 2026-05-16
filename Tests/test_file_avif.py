@@ -216,6 +216,54 @@ class TestFileAvif:
             with Image.open(blob) as im:
                 im.load()
 
+    def test_save_all_progress(self) -> None:
+        out = BytesIO()
+        progress = []
+
+        def callback(state: Image.Progress) -> None:
+            if state.image_filename:
+                state = state._replace(
+                    image_filename=os.path.basename(state.image_filename)
+                )
+            progress.append(state)
+
+        Image.new("RGB", (1, 1)).save(out, "AVIF", save_all=True, progress=callback)
+        assert progress == [
+            Image.Progress(
+                image_index=0,
+                image_filename=None,
+                completed_frames=1,
+                total_frames=1,
+            )
+        ]
+
+        out = BytesIO()
+        progress = []
+
+        with Image.open("Tests/images/avif/star.avifs") as im:
+            im2 = Image.new(im.mode, im.size)
+            im.save(out, "AVIF", save_all=True, append_images=[im2], progress=callback)
+
+        expected = []
+        for i in range(5):
+            expected.append(
+                Image.Progress(
+                    image_index=0,
+                    image_filename="star.avifs",
+                    completed_frames=i + 1,
+                    total_frames=6,
+                )
+            )
+        expected.append(
+            Image.Progress(
+                image_index=1,
+                image_filename=None,
+                completed_frames=6,
+                total_frames=6,
+            )
+        )
+        assert progress == expected
+
     def test_background_from_gif(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/chi.gif") as im:
             original_value = im.convert("RGB").getpixel((1, 1))
