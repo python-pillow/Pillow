@@ -222,6 +222,20 @@ class TestFilePng:
 
             im.load()
 
+    @pytest.mark.parametrize(
+        "test_file, expected_bit_depth",
+        (
+            ("Tests/images/hopper.png", 8),
+            ("Tests/images/hopper_bw_500.png", 1),
+            ("Tests/images/tiny.png", 4),
+            ("Tests/images/i_trns.png", 16),
+        ),
+    )
+    def test_bit_depth(self, test_file: str, expected_bit_depth: int) -> None:
+        with Image.open(test_file) as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
+            assert im.bit_depth == expected_bit_depth
+
     def test_load_transparent_p(self) -> None:
         test_file = "Tests/images/pil123p.png"
         with Image.open(test_file) as im:
