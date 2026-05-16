@@ -232,8 +232,8 @@ The following mitigations are listed in priority order.
    advisories <https://github.com/python-pillow/Pillow/security/advisories>`_.
 5. **Enforce** ``MAX_IMAGE_PIXELS`` — never set it to ``None``; treat
    ``Image.DecompressionBombWarning`` as an error.
-6. **Allowlist image formats** — restrict accepted formats when opening
-   images, for example with ``Image.open(..., formats=...)``, and isolate
+6. **Restrict image formats** — restrict formats when opening images, for
+   example with ``Image.open(..., formats=...)``, and isolate
    installs/environments if you need to minimise supported formats.
 7. **Strip metadata on output** — never pass through EXIF/XMP/ICC from user
    uploads to publicly served images.
