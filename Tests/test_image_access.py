@@ -116,6 +116,11 @@ class TestImagePutPixel:
         assert numpy is not None
         assert px[numpy.int32(1), numpy.int32(2)] == (18, 20, 59)
 
+    def test_deprecation(self) -> None:
+        im = Image.new("PA", (1, 1))
+        with pytest.warns(DeprecationWarning, match="'value' lists"):
+            im.putpixel((0, 0), [0, 0, 0])  # type: ignore[arg-type]
+
 
 class TestImageGetPixel:
     @staticmethod

@@ -2173,9 +2173,7 @@ class Image:
             self.palette.mode = "RGB"
         self.load()  # install new palette
 
-    def putpixel(
-        self, xy: tuple[int, int], value: float | tuple[int, ...] | list[int]
-    ) -> None:
+    def putpixel(self, xy: tuple[int, int], value: float | tuple[int, ...]) -> None:
         """
         Modifies the pixel at the given position. The color is given as
         a single numerical value for single-band images, and a tuple for
@@ -2204,6 +2202,9 @@ class Image:
             and isinstance(value, (list, tuple))
             and len(value) in [3, 4]
         ):
+            if isinstance(value, list):  # type: ignore[unreachable]
+                deprecate("'value' lists", 14, "tuples", plural=True)  # type: ignore[unreachable]
+
             # RGB or RGBA value for a P or PA image
             if self.mode == "PA":
                 alpha = value[3] if len(value) == 4 else 255
