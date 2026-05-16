@@ -4,19 +4,14 @@ on:
   push:
     branches:
       - "**"
-    paths-ignore:
+    paths-ignore: &paths-ignore
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
       - "docs/**"
       - "wheels/**"
   pull_request:
-    paths-ignore:
-      - ".github/workflows/docs.yml"
-      - ".github/workflows/wheels*"
-      - ".gitmodules"
-      - "docs/**"
-      - "wheels/**"
+    paths-ignore: *paths-ignore
   workflow_dispatch:
 
 permissions:
@@ -54,7 +49,7 @@ jobs:
 
     steps:
       - name: Checkout Pillow
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
@@ -99,7 +94,7 @@ jobs:
         run: .ci/after_success.sh
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
         with:
           files: ./coverage.xml
           flags: GHA_Windows

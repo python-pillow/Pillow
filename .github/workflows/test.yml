@@ -4,19 +4,14 @@ on:
   push:
     branches:
       - "**"
-    paths-ignore:
+    paths-ignore: &paths-ignore
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
       - "docs/**"
       - "wheels/**"
   pull_request:
-    paths-ignore:
-      - ".github/workflows/docs.yml"
-      - ".github/workflows/wheels*"
-      - ".gitmodules"
-      - "docs/**"
-      - "wheels/**"
+    paths-ignore: *paths-ignore
   workflow_dispatch:
 
 permissions:
@@ -47,7 +42,6 @@ jobs:
           "3.15",
           "3.14t",
           "3.14",
-          "3.13t",
           "3.13",
           "3.12",
           "3.11",
@@ -56,10 +50,6 @@ jobs:
         include:
         - { python-version: "3.12", PYTHONOPTIMIZE: 1, REVERSE: "--reverse" }
         - { python-version: "3.11", PYTHONOPTIMIZE: 2 }
-        # Free-threaded
-        - { python-version: "3.15t", disable-gil: true }
-        - { python-version: "3.14t", disable-gil: true }
-        - { python-version: "3.13t", disable-gil: true }
         # Intel
         - { os: "macos-26-intel", python-version: "3.10" }
         exclude:
@@ -69,12 +59,12 @@ jobs:
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         persist-credentials: false
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
@@ -83,17 +73,12 @@ jobs:
           ".ci/*.sh"
           "pyproject.toml"
 
-    - name: Set PYTHON_GIL
-      if: "${{ matrix.disable-gil }}"
-      run: |
-        echo "PYTHON_GIL=0" >> $GITHUB_ENV
-
     - name: Build system information
       run: python3 .github/workflows/system-info.py
 
     - name: Cache libavif
       if: startsWith(matrix.os, 'ubuntu')
-      uses: actions/cache@v5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       id: cache-libavif
       with:
         path: ~/cache-libavif
@@ -101,7 +86,7 @@ jobs:
 
     - name: Cache libimagequant
       if: startsWith(matrix.os, 'ubuntu')
-      uses: actions/cache@v5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       id: cache-libimagequant
       with:
         path: ~/cache-libimagequant
@@ -109,7 +94,7 @@ jobs:
 
     - name: Cache libwebp
       if: startsWith(matrix.os, 'ubuntu')
-      uses: actions/cache@v5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       id: cache-libwebp
       with:
         path: ~/cache-libwebp
@@ -162,7 +147,7 @@ jobs:
         mkdir -p Tests/errors
 
     - name: Upload errors
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       if: failure()
       with:
         name: errors
@@ -173,11 +158,10 @@ jobs:
         .ci/after_success.sh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v6
+      uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
       with:
         flags: ${{ matrix.os == 'ubuntu-latest' && 'GHA_Ubuntu' || 'GHA_macOS' }}
         name: ${{ matrix.os }} Python ${{ matrix.python-version }}
-        token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:
     permissions:
