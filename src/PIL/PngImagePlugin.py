@@ -400,6 +400,9 @@ class PngStream(ChunkStream):
 
         self.text_memory = 0
 
+    def __enter__(self) -> PngStream:
+        return self
+
     def check_text_memory(self, chunklen: int) -> None:
         self.text_memory += chunklen
         if self.text_memory > MAX_TEXT_MEMORY:
@@ -461,7 +464,7 @@ class PngStream(ChunkStream):
         self.im_size = i32(s, 0), i32(s, 4)
         try:
             self.im_mode, self.im_rawmode = _MODES[(s[8], s[9])]
-        except Exception:
+        except KeyError:
             pass
         if s[12]:
             self.im_info["interlace"] = 1
