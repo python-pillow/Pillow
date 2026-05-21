@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 import re
+import shlex
 import shutil
 import struct
 import subprocess
@@ -307,6 +308,41 @@ def _pkg_config(name: str) -> tuple[list[str], list[str]] | None:
     return None
 
 
+def _pkg_config_static(
+    name: str, exclude_libraries: tuple[str | bool | None, ...] = ()
+) -> tuple[list[str], list[str], list[str]] | None:
+    command = os.environ.get("PKG_CONFIG", "pkg-config")
+    for keep_system in (True, False):
+        try:
+            command_libs = [command, "--libs", "--static", name]
+            stderr = None
+            if keep_system:
+                command_libs.append("--keep-system-libs")
+                stderr = subprocess.DEVNULL
+            if not DEBUG:
+                command_libs.append("--silence-errors")
+            libs = []
+            library_dirs = []
+            extra_link_args = []
+            for arg in shlex.split(
+                subprocess.check_output(command_libs, stderr=stderr)
+                .decode("utf8")
+                .strip()
+            ):
+                if arg.startswith("-L"):
+                    library_dirs.append(arg[2:])
+                elif arg.startswith("-l"):
+                    library = arg[2:]
+                    if library not in exclude_libraries:
+                        libs.append(library)
+                else:
+                    extra_link_args.append(arg)
+            return libs, library_dirs, extra_link_args
+        except Exception:  # noqa: PERF203
+            pass
+    return None
+
+
 class pil_build_ext(build_ext):
     class ext_feature:
         features = [
@@ -441,6 +477,7 @@ class pil_build_ext(build_ext):
         libraries: list[str] | list[str | bool | None],
         define_macros: list[tuple[str, str | None]] | None = None,
         sources: list[str] | None = None,
+        extra_link_args: list[str] | None = None,
     ) -> None:
         for extension in self.extensions:
             if extension.name == name:
@@ -449,9 +486,11 @@ class pil_build_ext(build_ext):
                     extension.define_macros += define_macros
                 if sources is not None:
                     extension.sources += sources
+                if extra_link_args is not None:
+                    extension.extra_link_args += extra_link_args
                 if FUZZING_BUILD:
                     extension.language = "c++"
-                    extension.extra_link_args = ["--stdlib=libc++"]
+                    extension.extra_link_args.append("--stdlib=libc++")
                 break
 
     def _remove_extension(self, name: str) -> None:
@@ -497,6 +536,8 @@ class pil_build_ext(build_ext):
     def build_extensions(self) -> None:
         library_dirs: list[str] = []
         include_dirs: list[str] = []
+        pkg_config_modules: dict[str, str] = {}
+        tiff_library: str | None = None
 
         pkg_config = None
         if _cmd_exists(os.environ.get("PKG_CONFIG", "pkg-config")):
@@ -531,11 +572,14 @@ class pil_build_ext(build_ext):
                 if isinstance(lib_name, str):
                     _dbg("Looking for `%s` using pkg-config.", lib_name)
                     root = pkg_config(lib_name)
+                    if root:
+                        pkg_config_modules[root_name] = lib_name
                 else:
                     for lib_name2 in lib_name:
                         _dbg("Looking for `%s` using pkg-config.", lib_name2)
                         root = pkg_config(lib_name2)
                         if root:
+                            pkg_config_modules[root_name] = lib_name2
                             break
 
             if isinstance(root, tuple):
@@ -786,11 +830,12 @@ class pil_build_ext(build_ext):
         if feature.want("tiff"):
             _dbg("Looking for tiff")
             if _find_include_file(self, "tiff.h"):
-                if sys.platform in ["win32", "darwin"] and _find_library_file(
-                    self, "libtiff"
-                ):
+                tiff_library = _find_library_file(self, "libtiff")
+                if sys.platform in ["win32", "darwin"] and tiff_library:
                     feature.set("tiff", "libtiff")
-                elif _find_library_file(self, "tiff"):
+                else:
+                    tiff_library = _find_library_file(self, "tiff")
+                if feature.want("tiff") and tiff_library:
                     feature.set("tiff", "tiff")
 
         if feature.want("freetype"):
@@ -900,9 +945,24 @@ class pil_build_ext(build_ext):
 
         libs: list[str | bool | None] = []
         defs: list[tuple[str, str | None]] = []
+        extra_link_args: list[str] = []
         if feature.get("tiff"):
             libs.append(feature.get("tiff"))
             defs.append(("HAVE_LIBTIFF", None))
+            if tiff_library and tiff_library.endswith(".a"):
+                pkg_config_module = pkg_config_modules.get("TIFF_ROOT")
+                if pkg_config_module:
+                    pkg_config_static = _pkg_config_static(
+                        pkg_config_module, (feature.get("tiff"),)
+                    )
+                    if pkg_config_static:
+                        tiff_libs, tiff_library_dirs, tiff_extra_link_args = (
+                            pkg_config_static
+                        )
+                        for library_dir in tiff_library_dirs:
+                            _add_directory(self.compiler.library_dirs, library_dir)
+                        libs.extend(tiff_libs)
+                        extra_link_args.extend(tiff_extra_link_args)
             if sys.platform == "win32":
                 # This define needs to be defined if-and-only-if it was defined
                 # when compiling LibTIFF. LibTIFF doesn't expose it in `tiffconf.h`,
@@ -939,7 +999,9 @@ class pil_build_ext(build_ext):
 
         defs.append(("PILLOW_VERSION", f'"{PILLOW_VERSION}"'))
 
-        self._update_extension("PIL._imaging", libs, defs)
+        self._update_extension(
+            "PIL._imaging", libs, defs, extra_link_args=extra_link_args
+        )
 
         #
         # additional libraries
