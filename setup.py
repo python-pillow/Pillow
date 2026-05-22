@@ -309,7 +309,7 @@ def _pkg_config(name: str) -> tuple[list[str], list[str]] | None:
 
 
 def _pkg_config_static(
-    name: str, exclude_libraries: tuple[str | bool | None, ...]
+    name: str, exclude_library: str | None
 ) -> tuple[list[str], list[str], list[str]] | None:
     command = os.environ.get("PKG_CONFIG", "pkg-config")
     for keep_system in (True, False):
@@ -333,7 +333,7 @@ def _pkg_config_static(
                     library_dirs.append(arg[2:])
                 elif arg.startswith("-l"):
                     library = arg[2:]
-                    if library not in exclude_libraries:
+                    if library != exclude_library:
                         libs.append(library)
                 else:
                     extra_link_args.append(arg)
@@ -949,8 +949,10 @@ class pil_build_ext(build_ext):
             defs.append(("HAVE_LIBTIFF", None))
             if tiff_library and tiff_library.endswith(".a"):
                 if pkg_config_module := pkg_config_modules.get("TIFF_ROOT"):
+                    exclude_library = feature.get("tiff")
                     pkg_config_static = _pkg_config_static(
-                        pkg_config_module, (feature.get("tiff"),)
+                        pkg_config_module,
+                        exclude_library if isinstance(exclude_library, str) else None,
                     )
                     if pkg_config_static:
                         tiff_libs, tiff_library_dirs, tiff_extra_link_args = (
