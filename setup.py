@@ -571,14 +571,12 @@ class pil_build_ext(build_ext):
             if root is None and pkg_config:
                 if isinstance(lib_name, str):
                     _dbg("Looking for `%s` using pkg-config.", lib_name)
-                    root = pkg_config(lib_name)
-                    if root:
+                    if root := pkg_config(lib_name):
                         pkg_config_modules[root_name] = lib_name
                 else:
                     for lib_name2 in lib_name:
                         _dbg("Looking for `%s` using pkg-config.", lib_name2)
-                        root = pkg_config(lib_name2)
-                        if root:
+                        if root := pkg_config(lib_name2):
                             pkg_config_modules[root_name] = lib_name2
                             break
 
@@ -950,8 +948,7 @@ class pil_build_ext(build_ext):
             libs.append(feature.get("tiff"))
             defs.append(("HAVE_LIBTIFF", None))
             if tiff_library and tiff_library.endswith(".a"):
-                pkg_config_module = pkg_config_modules.get("TIFF_ROOT")
-                if pkg_config_module:
+                if pkg_config_module := pkg_config_modules.get("TIFF_ROOT"):
                     pkg_config_static = _pkg_config_static(
                         pkg_config_module, (feature.get("tiff"),)
                     )
