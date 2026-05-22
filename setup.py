@@ -309,7 +309,7 @@ def _pkg_config(name: str) -> tuple[list[str], list[str]] | None:
 
 
 def _pkg_config_static(
-    name: str, exclude_libraries: tuple[str | bool | None, ...] = ()
+    name: str, exclude_libraries: tuple[str | bool | None, ...]
 ) -> tuple[list[str], list[str], list[str]] | None:
     command = os.environ.get("PKG_CONFIG", "pkg-config")
     for keep_system in (True, False):
