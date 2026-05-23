@@ -26,9 +26,6 @@ def test_wheel_modules() -> None:
         except ImportError:
             expected_modules.remove("tkinter")
 
-        if hasattr(sys, "pypy_translation_info"):
-            expected_modules.remove("jpegxl")
-
         # libavif is not available on Windows for ARM64 architectures
         if platform.machine() == "ARM64":
             expected_modules.remove("avif")
