@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from . import Image, ImageFilter
-import random
-import math
 import io
+import math
+import random
+
+from . import Image, ImageFilter
+
 
 def _lcd_resampling(img: Image.Image) -> Image.Image:
     """
@@ -30,6 +32,7 @@ def _lcd_resampling(img: Image.Image) -> Image.Image:
 
     return resampled_img
 
+
 def _projective_transformation(img: Image.Image) -> Image.Image:
     """
     Apply a random projective transformation to simulate varying camera
@@ -39,9 +42,9 @@ def _projective_transformation(img: Image.Image) -> Image.Image:
     :return: An image.
     """
     w, h = img.size
-    theta = math.radians(random.uniform(-1,1))
+    theta = math.radians(random.uniform(-1, 1))
 
-    #rotation
+    # rotation
     a = math.cos(theta)
     b = -math.sin(theta)
     d = math.sin(theta)
@@ -56,11 +59,10 @@ def _projective_transformation(img: Image.Image) -> Image.Image:
     h_p = random.uniform(-1e-5, 1e-5)
 
     # H
-    coeffs = (a, b, c,
-              d, e, f,
-              g, h_p)
+    coeffs = (a, b, c, d, e, f, g, h_p)
 
     return img.transform((w, h), Image.PERSPECTIVE, coeffs, resample=Image.BICUBIC)
+
 
 def _radial_distortion(img: Image.Image, k=-1e-7) -> Image.Image:
     """
@@ -89,7 +91,7 @@ def _radial_distortion(img: Image.Image, k=-1e-7) -> Image.Image:
 
             # Boundary check
             if 0 <= radial_x < w and 0 <= radial_y < h:
-                radial_distort.putpixel((radial_x, radial_y),(r, g, b))
+                radial_distort.putpixel((radial_x, radial_y), (r, g, b))
 
     return radial_distort
 
@@ -124,6 +126,7 @@ def _flat_top_kernel(size=5, sigma=1.0, n=2):
 
     return kernel
 
+
 def _flat_top_filtering(img, size=5, sigma=1.0, n=2):
     """
     Applying the flat top gaussian kernel on the image to simulate anti-aliasing fiter
@@ -139,7 +142,8 @@ def _flat_top_filtering(img, size=5, sigma=1.0, n=2):
     for row in kernel:
         flat_kernel.extend(row)
 
-    return img.filter(ImageFilter.Kernel((5,5), flat_kernel, scale=1))
+    return img.filter(ImageFilter.Kernel((5, 5), flat_kernel, scale=1))
+
 
 def _bayer_resampling(img: Image.Image) -> Image.Image:
     """
@@ -167,6 +171,7 @@ def _bayer_resampling(img: Image.Image) -> Image.Image:
 
     return resample
 
+
 def _add_noise(img: Image.Image) -> Image.Image:
     """
     Add standard normal noise to the image to simulate sensor noise
@@ -186,13 +191,16 @@ def _add_noise(img: Image.Image) -> Image.Image:
 
     return noisy
 
+
 def _clamp(v, lo, hi):
     return lo if v < lo else (hi if v > hi else v)
+
 
 def _get_channel(img, x, y, ch, w, h):
     x = _clamp(x, 0, w - 1)
     y = _clamp(y, 0, h - 1)
     return img.getpixel((x, y))[ch]
+
 
 def _demosaic_bilinear(img: Image.Image) -> Image.Image:
     """
@@ -210,32 +218,64 @@ def _demosaic_bilinear(img: Image.Image) -> Image.Image:
             pixel = img.getpixel((x, y))
 
             if y % 2 == 0 and x % 2 == 0:
-                new_r = (_get_channel(img, x-1, y, 0, w, h) + _get_channel(img, x+1, y, 0, w, h)) >> 1
+                new_r = (
+                    _get_channel(img, x - 1, y, 0, w, h)
+                    + _get_channel(img, x + 1, y, 0, w, h)
+                ) >> 1
                 new_g = pixel[1]
-                new_b = (_get_channel(img, x, y-1, 2, w, h) + _get_channel(img, x, y+1, 2, w, h)) >> 1
+                new_b = (
+                    _get_channel(img, x, y - 1, 2, w, h)
+                    + _get_channel(img, x, y + 1, 2, w, h)
+                ) >> 1
 
             elif y % 2 == 0 and x % 2 == 1:
                 new_r = pixel[0]
-                new_g = (_get_channel(img, x-1, y, 1, w, h) + _get_channel(img, x+1, y, 1, w, h) +
-                         _get_channel(img, x, y-1, 1, w, h) + _get_channel(img, x, y+1, 1, w, h)) >> 2
-                new_b = (_get_channel(img, x-1, y-1, 2, w, h) + _get_channel(img, x+1, y-1, 2, w, h) +
-                         _get_channel(img, x-1, y+1, 2, w, h) + _get_channel(img, x+1, y+1, 2, w, h)) >> 2
+                new_g = (
+                    _get_channel(img, x - 1, y, 1, w, h)
+                    + _get_channel(img, x + 1, y, 1, w, h)
+                    + _get_channel(img, x, y - 1, 1, w, h)
+                    + _get_channel(img, x, y + 1, 1, w, h)
+                ) >> 2
+                new_b = (
+                    _get_channel(img, x - 1, y - 1, 2, w, h)
+                    + _get_channel(img, x + 1, y - 1, 2, w, h)
+                    + _get_channel(img, x - 1, y + 1, 2, w, h)
+                    + _get_channel(img, x + 1, y + 1, 2, w, h)
+                ) >> 2
 
             elif y % 2 == 1 and x % 2 == 0:
-                new_r = (_get_channel(img, x-1, y-1, 0, w, h) + _get_channel(img, x+1, y-1, 0, w, h) +
-                         _get_channel(img, x-1, y+1, 0, w, h) + _get_channel(img, x+1, y+1, 0, w, h)) >> 2
-                new_g = (_get_channel(img, x-1, y, 1, w, h) + _get_channel(img, x+1, y, 1, w, h) +
-                         _get_channel(img, x, y-1, 1, w, h) + _get_channel(img, x, y+1, 1, w, h)) >> 2
+                new_r = (
+                    _get_channel(img, x - 1, y - 1, 0, w, h)
+                    + _get_channel(img, x + 1, y - 1, 0, w, h)
+                    + _get_channel(img, x - 1, y + 1, 0, w, h)
+                    + _get_channel(img, x + 1, y + 1, 0, w, h)
+                ) >> 2
+                new_g = (
+                    _get_channel(img, x - 1, y, 1, w, h)
+                    + _get_channel(img, x + 1, y, 1, w, h)
+                    + _get_channel(img, x, y - 1, 1, w, h)
+                    + _get_channel(img, x, y + 1, 1, w, h)
+                ) >> 2
                 new_b = pixel[2]
 
             else:
-                new_r = (_get_channel(img, x, y-1, 0, w, h) + _get_channel(img, x, y+1, 0, w, h)) >> 1
+                new_r = (
+                    _get_channel(img, x, y - 1, 0, w, h)
+                    + _get_channel(img, x, y + 1, 0, w, h)
+                ) >> 1
                 new_g = pixel[1]
-                new_b = (_get_channel(img, x-1, y, 2, w, h) + _get_channel(img, x+1, y, 2, w, h)) >> 1
+                new_b = (
+                    _get_channel(img, x - 1, y, 2, w, h)
+                    + _get_channel(img, x + 1, y, 2, w, h)
+                ) >> 1
 
-            out.putpixel((x, y), (_clamp(new_r, 0, 255), _clamp(new_g, 0, 255), _clamp(new_b, 0, 255)))
+            out.putpixel(
+                (x, y),
+                (_clamp(new_r, 0, 255), _clamp(new_g, 0, 255), _clamp(new_b, 0, 255)),
+            )
 
     return out
+
 
 def _denoise(img: Image.Image) -> Image.Image:
     return img.filter(ImageFilter.GaussianBlur(radius=1))
@@ -243,7 +283,7 @@ def _denoise(img: Image.Image) -> Image.Image:
 
 def _jpeg_compression(img: Image.Image) -> Image.Image:
     buffer = io.BytesIO()
-    img.save(buffer, format='JPEG')
+    img.save(buffer, format="JPEG")
     buffer.seek(0)
 
-    return Image.open(buffer).convert('RGB')
+    return Image.open(buffer).convert("RGB")
