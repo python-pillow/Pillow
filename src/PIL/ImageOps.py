@@ -24,6 +24,18 @@ import re
 from collections.abc import Sequence
 from typing import Literal, Protocol, cast, overload
 
+from ._moire import (
+    _lcd_resampling,
+    _projective_transformation,
+    _radial_distortion,
+    _flat_top_filtering,
+    _bayer_resampling,
+    _add_noise,
+    _demosaic_bilinear,
+    _denoise,
+    _jpeg_compression,
+)
+
 from . import ExifTags, Image, ImagePalette
 
 #
@@ -646,6 +658,26 @@ def mirror(image: Image.Image) -> Image.Image:
     """
     return image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
+def moire(image: Image.Image) -> Image.Image:
+    """
+    This is the applications of the helper functions defines in _moire.py to generate a synthetic moire image.
+    :param image:
+    :return: An image.
+    """
+    if len(image.getbands()) == 1:
+        image = image.convert("RGB")
+
+    resampled_img = _lcd_resampling(image)
+    projective_transform = _projective_transformation(resampled_img)
+    distorted_img = _radial_distortion(projective_transform)
+    filtered_img = _flat_top_filtering(distorted_img)
+    Bayer = _bayer_resampling(filtered_img)
+    Bayer_noise = _add_noise(Bayer)
+    rgb_img = _demosaic_bilinear(Bayer_noise)
+    rgb_denoised = _denoise(rgb_img)
+    compressed_img = _jpeg_compression(rgb_denoised)
+
+    return compressed_img
 
 def posterize(image: Image.Image, bits: int) -> Image.Image:
     """
