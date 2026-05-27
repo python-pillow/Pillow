@@ -24,18 +24,19 @@ import re
 from collections.abc import Sequence
 from typing import Literal, Protocol, cast, overload
 
-from . import ExifTags, Image, ImagePalette
 from ._moire import (
-    _add_noise,
-    _bayer_resampling,
-    _demosaic_bilinear,
-    _denoise,
-    _flat_top_filtering,
-    _jpeg_compression,
     _lcd_resampling,
     _projective_transformation,
     _radial_distortion,
+    _flat_top_filtering,
+    _bayer_resampling,
+    _add_noise,
+    _demosaic_bilinear,
+    _denoise,
+    _jpeg_compression,
 )
+
+from . import ExifTags, Image, ImagePalette
 
 #
 # helpers
@@ -657,10 +658,9 @@ def mirror(image: Image.Image) -> Image.Image:
     """
     return image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
-
 def moire(image: Image.Image) -> Image.Image:
     """
-    Generates a synthetic Moire image
+    Generate a synthetic Moire image.
     :param image:
     :return: An image.
     """
@@ -678,7 +678,6 @@ def moire(image: Image.Image) -> Image.Image:
     compressed_img = _jpeg_compression(rgb_denoised)
 
     return compressed_img
-
 
 def posterize(image: Image.Image, bits: int) -> Image.Image:
     """
