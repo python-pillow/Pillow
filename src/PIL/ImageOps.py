@@ -660,7 +660,7 @@ def mirror(image: Image.Image) -> Image.Image:
 
 def moire(image: Image.Image) -> Image.Image:
     """
-    This is the applications of the helper functions defines in _moire.py to generate a synthetic moire image.
+    Generates a synthetic Moire image
     :param image:
     :return: An image.
     """
