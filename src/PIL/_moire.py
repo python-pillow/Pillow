@@ -65,7 +65,7 @@ def _projective_transformation(img: Image.Image) -> Image.Image:
     return img.transform((w, h), Image.PERSPECTIVE, coeffs, resample=Image.BICUBIC)
 
 
-def _radial_distortion(img: Image.Image, k: float=-1e-7) -> Image.Image:
+def _radial_distortion(img: Image.Image, k: float = -1e-7) -> Image.Image:
     """
     Use radial distortion function to simulate lens distortion
 
@@ -97,7 +97,9 @@ def _radial_distortion(img: Image.Image, k: float=-1e-7) -> Image.Image:
     return radial_distort
 
 
-def _flat_top_kernel(size: int=5, sigma: float=1.0, n: int=2) -> list[list[float]]:
+def _flat_top_kernel(
+    size: int = 5, sigma: float = 1.0, n: int = 2
+) -> list[list[float]]:
     """
     Generate a flat-top Gaussian kernel.
 
@@ -128,7 +130,9 @@ def _flat_top_kernel(size: int=5, sigma: float=1.0, n: int=2) -> list[list[float
     return kernel
 
 
-def _flat_top_filtering(img: Image.Image, size: int=5, sigma: float=1.0, n: int=2) -> Image.Image:
+def _flat_top_filtering(
+    img: Image.Image, size: int = 5, sigma: float = 1.0, n: int = 2
+) -> Image.Image:
     """
     Applying the flat top gaussian kernel on the image to simulate anti-aliasing fiter
 
