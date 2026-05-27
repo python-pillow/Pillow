@@ -96,7 +96,7 @@ def _radial_distortion(img: Image.Image, k=-1e-7) -> Image.Image:
     return radial_distort
 
 
-def _flat_top_kernel(size=5, sigma=1.0, n=2):
+def _flat_top_kernel(size=5, sigma=1.0, n=2) -> list[list[float]]:
     """
     Generate a flat-top Gaussian kernel.
 
@@ -127,7 +127,7 @@ def _flat_top_kernel(size=5, sigma=1.0, n=2):
     return kernel
 
 
-def _flat_top_filtering(img, size=5, sigma=1.0, n=2):
+def _flat_top_filtering(img, size=5, sigma=1.0, n=2) -> Image.Image:
     """
     Applying the flat top gaussian kernel on the image to simulate anti-aliasing fiter
 
@@ -192,11 +192,11 @@ def _add_noise(img: Image.Image) -> Image.Image:
     return noisy
 
 
-def _clamp(v, lo, hi):
+def _clamp(v, lo, hi) -> int:
     return lo if v < lo else (hi if v > hi else v)
 
 
-def _get_channel(img, x, y, ch, w, h):
+def _get_channel(img, x, y, ch, w, h) -> int:
     x = _clamp(x, 0, w - 1)
     y = _clamp(y, 0, h - 1)
     return img.getpixel((x, y))[ch]
