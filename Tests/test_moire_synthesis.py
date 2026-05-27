@@ -15,7 +15,7 @@ def test_moire_output_mode():
     assert result.mode == "RGB"
 
 
-def test_moire_accepts_non_rgb():
+def test_moire_accepts_non_rgb() -> None:
     img = Image.new("L", (100, 100), 128)
     result = ImageOps.moire(img)
     assert result.mode == "RGB"
