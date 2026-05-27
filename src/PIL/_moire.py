@@ -62,7 +62,7 @@ def _projective_transformation(img: Image.Image) -> Image.Image:
     # H
     coeffs = (a, b, c, d, e, f, g, h_p)
 
-    return img.transform((w, h), Image.PERSPECTIVE, coeffs, resample=Image.BICUBIC)
+    return img.transform((w, h), Image.Transform.PERSPECTIVE, coeffs, resample=Image.Resampling.BICUBIC)
 
 
 def _radial_distortion(img: Image.Image, k: float = -1e-7) -> Image.Image:
@@ -110,7 +110,7 @@ def _flat_top_kernel(
     """
     kernel = []
     center = size // 2
-    total = 0
+    total = 0.0
 
     for y in range(size):
         row = []
