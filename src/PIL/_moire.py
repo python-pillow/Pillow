@@ -62,7 +62,9 @@ def _projective_transformation(img: Image.Image) -> Image.Image:
     # H
     coeffs = (a, b, c, d, e, f, g, h_p)
 
-    return img.transform((w, h), Image.Transform.PERSPECTIVE, coeffs, resample=Image.Resampling.BICUBIC)
+    return img.transform(
+        (w, h), Image.Transform.PERSPECTIVE, coeffs, resample=Image.Resampling.BICUBIC
+    )
 
 
 def _radial_distortion(img: Image.Image, k: float = -1e-7) -> Image.Image:
