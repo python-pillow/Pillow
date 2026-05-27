@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import math
 import random
+from typing import cast
 
 from . import Image, ImageFilter
 
@@ -21,7 +22,7 @@ def _lcd_resampling(img: Image.Image) -> Image.Image:
     for y in range(h):
         num = 1
         for x in range(w):
-            r, g, b = img.getpixel((x, y))
+            r, g, b = cast(tuple[int, int, int], img.getpixel((x, y)))
             if num % 3 == 0:
                 resampled_img.putpixel((x, y), (0, 0, b))
             elif num % 3 == 1:
@@ -64,7 +65,7 @@ def _projective_transformation(img: Image.Image) -> Image.Image:
     return img.transform((w, h), Image.PERSPECTIVE, coeffs, resample=Image.BICUBIC)
 
 
-def _radial_distortion(img: Image.Image, k=-1e-7) -> Image.Image:
+def _radial_distortion(img: Image.Image, k: float=-1e-7) -> Image.Image:
     """
     Use radial distortion function to simulate lens distortion
 
@@ -80,7 +81,7 @@ def _radial_distortion(img: Image.Image, k=-1e-7) -> Image.Image:
 
     for y in range(h):
         for x in range(w):
-            r, g, b = img.getpixel((x, y))
+            r, g, b = cast(tuple[int, int, int], img.getpixel((x, y)))
             xc = x - cx
             yc = y - cy
             radius2 = xc**2 + yc**2
@@ -96,7 +97,7 @@ def _radial_distortion(img: Image.Image, k=-1e-7) -> Image.Image:
     return radial_distort
 
 
-def _flat_top_kernel(size=5, sigma=1.0, n=2) -> list[list[float]]:
+def _flat_top_kernel(size: int=5, sigma: float=1.0, n: int=2) -> list[list[float]]:
     """
     Generate a flat-top Gaussian kernel.
 
@@ -127,7 +128,7 @@ def _flat_top_kernel(size=5, sigma=1.0, n=2) -> list[list[float]]:
     return kernel
 
 
-def _flat_top_filtering(img, size=5, sigma=1.0, n=2) -> Image.Image:
+def _flat_top_filtering(img: Image.Image, size: int=5, sigma: float=1.0, n: int=2) -> Image.Image:
     """
     Applying the flat top gaussian kernel on the image to simulate anti-aliasing fiter
 
@@ -157,7 +158,7 @@ def _bayer_resampling(img: Image.Image) -> Image.Image:
 
     for y in range(h):
         for x in range(w):
-            r, g, b = img.getpixel((x, y))
+            r, g, b = cast(tuple[int, int, int], img.getpixel((x, y)))
             if y % 2 == 0:
                 if x % 2 == 0:
                     resample.putpixel((x, y), (0, g, 0))
@@ -183,7 +184,7 @@ def _add_noise(img: Image.Image) -> Image.Image:
     noisy = Image.new("RGB", (w, h))
     for y in range(h):
         for x in range(w):
-            r, g, b = img.getpixel((x, y))
+            r, g, b = cast(tuple[int, int, int], img.getpixel((x, y)))
             nr = int(r + random.gauss(0, 1))
             ng = int(g + random.gauss(0, 1))
             nb = int(b + random.gauss(0, 1))
@@ -192,14 +193,14 @@ def _add_noise(img: Image.Image) -> Image.Image:
     return noisy
 
 
-def _clamp(v, lo, hi) -> int:
+def _clamp(v: int, lo: int, hi: int) -> int:
     return lo if v < lo else (hi if v > hi else v)
 
 
-def _get_channel(img, x, y, ch, w, h) -> int:
+def _get_channel(img: Image.Image, x: int, y: int, ch: int, w: int, h: int) -> int:
     x = _clamp(x, 0, w - 1)
     y = _clamp(y, 0, h - 1)
-    return img.getpixel((x, y))[ch]
+    return cast(tuple[int, int, int], img.getpixel((x, y)))[ch]
 
 
 def _demosaic_bilinear(img: Image.Image) -> Image.Image:
@@ -215,7 +216,7 @@ def _demosaic_bilinear(img: Image.Image) -> Image.Image:
 
     for y in range(h):
         for x in range(w):
-            pixel = img.getpixel((x, y))
+            pixel = cast(tuple[int, int, int], img.getpixel((x, y)))
 
             if y % 2 == 0 and x % 2 == 0:
                 new_r = (
