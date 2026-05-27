@@ -958,9 +958,9 @@ class pil_build_ext(build_ext):
                         tiff_libs, tiff_library_dirs, tiff_extra_link_args = (
                             pkg_config_static
                         )
+                        libs.extend(tiff_libs)
                         for library_dir in tiff_library_dirs:
                             _add_directory(self.compiler.library_dirs, library_dir)
-                        libs.extend(tiff_libs)
                         extra_link_args.extend(tiff_extra_link_args)
             if sys.platform == "win32":
                 # This define needs to be defined if-and-only-if it was defined
