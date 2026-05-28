@@ -69,6 +69,7 @@ def _textlength(
     )
     return image_text.get_length()
 
+
 """
 A simple 2D drawing interface for PIL images.
 <p>
@@ -886,20 +887,30 @@ class ImageDraw:
                 if current_line_words and word_length > max_width:
                     # Word would exceed max_width — flush current line
                     lines.append(" ".join(current_line_words))
-                    widths.append(_textlength(
-                        " ".join(current_line_words),
-                        font, direction, features, language,
-                    ))
+                    widths.append(
+                        _textlength(
+                            " ".join(current_line_words),
+                            font,
+                            direction,
+                            features,
+                            language,
+                        )
+                    )
                     current_line_words = [word]
                 else:
                     current_line_words.append(word)
 
             if current_line_words:
                 lines.append(" ".join(current_line_words))
-                widths.append(_textlength(
-                    " ".join(current_line_words),
-                    font, direction, features, language,
-                ))
+                widths.append(
+                    _textlength(
+                        " ".join(current_line_words),
+                        font,
+                        direction,
+                        features,
+                        language,
+                    )
+                )
 
             if text.endswith("\n") or paragraph != text.split("\n")[-1]:
                 lines.append("")

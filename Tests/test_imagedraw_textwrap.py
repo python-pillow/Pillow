@@ -1,6 +1,6 @@
-from io import BytesIO
+from __future__ import annotations
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 
 def textwrap_basic():
@@ -24,9 +24,7 @@ def textwrap_single_line():
 
 def textwrap_newline_preserved():
     """Paragraphs separated by newlines are preserved."""
-    lines, widths = ImageDraw.textwrap(
-        "line one\nline two", max_width=500
-    )
+    lines, widths = ImageDraw.textwrap("line one\nline two", max_width=500)
     assert "line one" in lines
     assert "" in lines  # empty line between paragraphs
 
