@@ -50,6 +50,25 @@ if TYPE_CHECKING:
 # experimental access to the outline API
 Outline: Callable[[], Image.core._Outline] = Image.core.outline
 
+
+def _textlength(
+    text: AnyStr,
+    font: ImageFont.ImageFont,
+    direction: str | None = None,
+    features: list[str] | None = None,
+    language: str | None = None,
+) -> float:
+    """Helper to measure text length in pixels without an ImageDraw instance."""
+    image_text = ImageText.Text(
+        text,
+        font,
+        "RGB",
+        direction=direction,
+        features=features,
+        language=language,
+    )
+    return image_text.get_length()
+
 """
 A simple 2D drawing interface for PIL images.
 <p>
@@ -798,6 +817,98 @@ class ImageDraw:
             embedded_color,
             font_size=font_size,
         )
+
+    @staticmethod
+    def textwrap(
+        text: AnyStr,
+        font: (
+            ImageFont.ImageFont
+            | ImageFont.FreeTypeFont
+            | ImageFont.TransposedFont
+            | None
+        ) = None,
+        max_width: float = 0,
+        *,
+        direction: str | None = None,
+        features: list[str] | None = None,
+        language: str | None = None,
+        spacing: float = 4,
+    ) -> tuple[list[str], list[float]]:
+        """Wrap text to a given width.
+
+        Breaks *text* into lines at whitespace so that no line exceeds
+        *max_width*. Each word is treated atomically — it is not broken
+        across lines unless it alone exceeds *max_width*, in which case
+        the line containing it will be wider than *max_width*.
+
+        :param text: The text to wrap. Lines separated by newlines are
+            preserved as separate paragraphs — wrapping starts fresh for
+            each paragraph.
+        :param font: Font for measuring text width. If not provided, a
+            default font is used (for ``getdefaultfont``). Use a specific
+            font for accurate measurements.
+        :param max_width: Maximum pixel width for each line. Lines that
+            exceed this will have their excess content wrapped to the next
+            line.
+        :param direction: Text direction, passed to font measurement.
+        :param features: List of feature tags.
+        :param language: Language tag.
+        :param spacing: Line spacing in pixels between wrapped lines.
+        :return: A tuple of (*lines*, *widths*), where *lines* is a list
+            of wrapped text strings and *widths* is the pixel width of
+            each line. If any paragraph ends, an empty string is appended
+            to *lines*.
+        """
+        if font is None:
+            from .ImageFont import load_default
+
+            font = load_default()
+
+        lines: list[str] = []
+        widths: list[float] = []
+
+        for paragraph in text.split("\n"):
+            words = paragraph.split(" ")
+            # Filter out empty strings from consecutive spaces, but preserve
+            # trailing spaces at paragraph boundaries
+            current_line_words: list[str] = []
+
+            for word in words:
+                if not word:
+                    # Skip empty strings from consecutive spaces
+                    continue
+
+                test_line = " ".join(current_line_words + [word])
+                word_length = _textlength(
+                    test_line, font, direction, features, language
+                )
+
+                if current_line_words and word_length > max_width:
+                    # Word would exceed max_width — flush current line
+                    lines.append(" ".join(current_line_words))
+                    widths.append(_textlength(
+                        " ".join(current_line_words),
+                        font, direction, features, language,
+                    ))
+                    current_line_words = [word]
+                else:
+                    current_line_words.append(word)
+
+            if current_line_words:
+                lines.append(" ".join(current_line_words))
+                widths.append(_textlength(
+                    " ".join(current_line_words),
+                    font, direction, features, language,
+                ))
+
+            if text.endswith("\n") or paragraph != text.split("\n")[-1]:
+                lines.append("")
+                widths.append(0)
+
+        return lines, widths
+
+
+Draw: type[ImageDraw] = ImageDraw  # backward-compat alias
 
 
 def Draw(im: Image.Image, mode: str | None = None) -> ImageDraw:
