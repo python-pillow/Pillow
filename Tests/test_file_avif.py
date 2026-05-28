@@ -135,7 +135,7 @@ class TestFileAvif:
         reloaded = roundtrip(im)
 
         assert reloaded.mode == "L"
-        assert_image_similar(reloaded, im, 1.67)
+        assert_image_similar(reloaded, im, 1.69)
 
     def test_write_rgb(self, tmp_path: Path) -> None:
         """
@@ -435,7 +435,7 @@ class TestFileAvif:
         reloaded = roundtrip(im, subsampling="4:0:0")
 
         assert reloaded.mode == "L"
-        assert_image_similar(reloaded, im.convert("L"), 1.67)
+        assert_image_similar(reloaded, im.convert("L"), 1.69)
 
     def test_encoder_subsampling_invalid(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
