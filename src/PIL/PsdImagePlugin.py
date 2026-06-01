@@ -226,8 +226,10 @@ def _layerinfo(
 
             if channel_id == 65535:
                 b = "A"
-            else:
+            elif channel_id < 4:
                 b = "RGBA"[channel_id]
+            else:
+                b = ""
 
             bands.append(b)
             read(4)  # size
