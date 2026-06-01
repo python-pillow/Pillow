@@ -27,15 +27,6 @@ if TYPE_CHECKING:
 
 configuration: dict[str, list[str]] = {}
 
-# parse configuration from _custom_build/backend.py
-while sys.argv[-1].startswith("--pillow-configuration="):
-    _, key, value = sys.argv.pop().split("=", 2)
-    configuration.setdefault(key, []).append(value)
-
-default = int(configuration.get("parallel", ["0"])[-1])
-ParallelCompile("MAX_CONCURRENCY", default).install()
-
-
 def get_version() -> str:
     version_file = "src/PIL/_version.py"
     with open(version_file, encoding="utf-8") as f:
@@ -56,20 +47,6 @@ TIFF_ROOT = None
 WEBP_ROOT = None
 ZLIB_ROOT = None
 FUZZING_BUILD = "LIB_FUZZING_ENGINE" in os.environ
-
-if sys.platform == "win32" and sys.version_info >= (3, 16):
-    import atexit
-
-    atexit.register(
-        lambda: warnings.warn(
-            f"Pillow {PILLOW_VERSION} does not support Python "
-            f"{sys.version_info.major}.{sys.version_info.minor} and does not provide "
-            "prebuilt Windows binaries. We do not recommend building from source on "
-            "Windows.",
-            RuntimeWarning,
-        )
-    )
-
 
 _IMAGING = ("decode", "encode", "map", "display", "outline", "path")
 
@@ -1073,40 +1050,62 @@ def debug_build() -> bool:
     return hasattr(sys, "gettotalrefcount") or FUZZING_BUILD
 
 
-libraries: list[tuple[str, _BuildInfo]] = [
-    ("pil_imaging_mode", {"sources": ["src/libImaging/Mode.c"]}),
-]
+def run() -> None:
+    global configuration
+    configuration = {}
+    while sys.argv and sys.argv[-1].startswith("--pillow-configuration="):
+        _, key, value = sys.argv.pop().split("=", 2)
+        configuration.setdefault(key, []).append(value)
 
-files: list[str | os.PathLike[str]] = ["src/_imaging.c"]
-files.extend("src/" + src_file + ".c" for src_file in _IMAGING)
-files.extend(
-    os.path.join("src/libImaging", src_file + ".c") for src_file in _LIB_IMAGING
-)
-ext_modules = [
-    Extension("PIL._imaging", files),
-    Extension("PIL._imagingft", ["src/_imagingft.c"]),
-    Extension("PIL._imagingcms", ["src/_imagingcms.c"]),
-    Extension("PIL._webp", ["src/_webp.c"]),
-    Extension("PIL._avif", ["src/_avif.c"]),
-    Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),
-    Extension(
-        "PIL._imagingmath",
-        ["src/_imagingmath.c"],
-        libraries=None if sys.platform == "win32" else ["m"],
-    ),
-    Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
-]
+    default = int(configuration.get("parallel", ["0"])[-1])
+    ParallelCompile("MAX_CONCURRENCY", default).install()
 
+    if sys.platform == "win32" and sys.version_info >= (3, 16):
+        import atexit
 
-try:
-    setup(
-        cmdclass={"build_ext": pil_build_ext},
-        ext_modules=ext_modules,
-        libraries=libraries,
-        zip_safe=not (debug_build() or PLATFORM_MINGW),
+        atexit.register(
+            lambda: warnings.warn(
+                f"Pillow {PILLOW_VERSION} does not support Python "
+                f"{sys.version_info.major}.{sys.version_info.minor} and does not provide "
+                "prebuilt Windows binaries. We do not recommend building from source on "
+                "Windows.",
+                RuntimeWarning,
+            )
+        )
+
+    libraries: list[tuple[str, _BuildInfo]] = [
+        ("pil_imaging_mode", {"sources": ["src/libImaging/Mode.c"]}),
+    ]
+
+    files: list[str | os.PathLike[str]] = ["src/_imaging.c"]
+    files.extend("src/" + src_file + ".c" for src_file in _IMAGING)
+    files.extend(
+        os.path.join("src/libImaging", src_file + ".c") for src_file in _LIB_IMAGING
     )
-except RequiredDependencyException as err:
-    msg = f"""
+    ext_modules = [
+        Extension("PIL._imaging", files),
+        Extension("PIL._imagingft", ["src/_imagingft.c"]),
+        Extension("PIL._imagingcms", ["src/_imagingcms.c"]),
+        Extension("PIL._webp", ["src/_webp.c"]),
+        Extension("PIL._avif", ["src/_avif.c"]),
+        Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),
+        Extension(
+            "PIL._imagingmath",
+            ["src/_imagingmath.c"],
+            libraries=None if sys.platform == "win32" else ["m"],
+        ),
+        Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
+    ]
+
+    try:
+        setup(
+            cmdclass={"build_ext": pil_build_ext},
+            ext_modules=ext_modules,
+            libraries=libraries,
+            zip_safe=not (debug_build() or PLATFORM_MINGW),
+        )
+    except RequiredDependencyException as err:
+        msg = f"""
 
 The headers or library files could not be found for {str(err)},
 a required dependency when compiling Pillow from source.
@@ -1115,14 +1114,14 @@ Please see the install instructions at:
    https://pillow.readthedocs.io/en/latest/installation/basic-installation.html
 
 """
-    sys.stderr.write(msg)
-    raise RequiredDependencyException(msg)
-except DependencyException as err:
-    msg = f"""
+        sys.stderr.write(msg)
+        raise RequiredDependencyException(msg)
+    except DependencyException as err:
+        msg = f"""
 
 The headers or library files could not be found for {str(err)},
 which was requested by the option flag '-C {str(err)}=enable'
 
 """
-    sys.stderr.write(msg)
-    raise DependencyException(msg)
+        sys.stderr.write(msg)
+        raise DependencyException(msg)
