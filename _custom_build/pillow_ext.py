@@ -27,6 +27,7 @@ if TYPE_CHECKING:
 
 configuration: dict[str, list[str]] = {}
 
+
 def get_version() -> str:
     version_file = "src/PIL/_version.py"
     with open(version_file, encoding="utf-8") as f:
