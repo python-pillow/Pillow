@@ -222,12 +222,12 @@ def _layerinfo(
             continue
 
         for _ in range(ct_types):
-            type = i16(read(2))
+            channel_id = i16(read(2))
 
-            if type == 65535:
+            if channel_id == 65535:
                 b = "A"
             else:
-                b = "RGBA"[type]
+                b = "RGBA"[channel_id]
 
             bands.append(b)
             read(4)  # size
