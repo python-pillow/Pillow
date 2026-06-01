@@ -19,6 +19,7 @@ function check_cibw_archs {
 # potential cross-build platforms before native platforms to ensure that we pick
 # up the cross environment.
 PROJECTDIR=$(pwd)
+PATCH_DIR=$(pwd)/patches
 if [[ "$CIBW_PLATFORM" == "ios" ]]; then
     check_cibw_archs
     # On iOS, CIBW_ARCHS is actually a multi-arch - arm64_iphoneos,
