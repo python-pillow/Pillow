@@ -35,7 +35,7 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
     }
 
     /* Shortcuts */
-    if (alpha == 0.0) {
+    if (imIn1 == imIn2 || alpha == 0.0) {
         return ImagingCopy(imIn1);
     } else if (alpha == 1.0) {
         return ImagingCopy(imIn2);
