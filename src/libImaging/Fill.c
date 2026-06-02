@@ -21,7 +21,6 @@
 
 Imaging
 ImagingFill(Imaging im, const void *colour) {
-    int x, y;
     ImagingSectionCookie cookie;
 
     /* 0-width or 0-height image. No need to do anything */
@@ -29,19 +28,23 @@ ImagingFill(Imaging im, const void *colour) {
         return im;
     }
 
+    // xsize and ysize are invariant during the loops below.
+    int xsize = im->xsize;
+    int ysize = im->ysize;
+
     if (im->type == IMAGING_TYPE_SPECIAL) {
         /* use generic API */
         ImagingAccess access = ImagingAccessNew(im);
         if (access) {
-            for (y = 0; y < im->ysize; y++) {
-                for (x = 0; x < im->xsize; x++) {
+            for (int y = 0; y < ysize; y++) {
+                for (int x = 0; x < xsize; x++) {
                     access->put_pixel(im, x, y, colour);
                 }
             }
             ImagingAccessDelete(im, access);
         } else {
             /* wipe the image */
-            for (y = 0; y < im->ysize; y++) {
+            for (int y = 0; y < ysize; y++) {
                 memset(im->image[y], 0, im->linesize);
             }
         }
@@ -50,14 +53,16 @@ ImagingFill(Imaging im, const void *colour) {
         ImagingSectionEnter(&cookie);
         memcpy(&c, colour, im->pixelsize);
         if (im->image32 && c != 0L) {
-            for (y = 0; y < im->ysize; y++) {
-                for (x = 0; x < im->xsize; x++) {
-                    im->image32[y][x] = c;
+            for (int y = 0; y < ysize; y++) {
+                // Restrict safe: sole owner of image data here.
+                INT32 *restrict row = im->image32[y];
+                for (int x = 0; x < xsize; x++) {
+                    row[x] = c;
                 }
             }
         } else {
             unsigned char cc = (unsigned char)*(UINT8 *)colour;
-            for (y = 0; y < im->ysize; y++) {
+            for (int y = 0; y < ysize; y++) {
                 memset(im->image[y], cc, im->linesize);
             }
         }
