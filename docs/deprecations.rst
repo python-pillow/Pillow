@@ -25,7 +25,7 @@ Image.Image.get_child_images()
 
 .. deprecated:: 11.2.1
 
-``Image.Image.get_child_images()`` has been deprecated and will be removed in Pillow
+``Image.Image.get_child_images()`` has been deprecated, and will be removed in Pillow
 13 (2026-10-15). It will be moved to ``ImageFile.ImageFile.get_child_images()``. The
 method uses an image's file pointer, and so child images could only be retrieved from
 an :py:class:`PIL.ImageFile.ImageFile` instance.
@@ -157,7 +157,7 @@ ImageMath eval()
 ``ImageMath.eval()`` has been removed. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
 :py:meth:`~PIL.ImageMath.unsafe_eval` instead.
 
-BGR;15, BGR 16 and BGR;24
+BGR;15, BGR;16 and BGR;24
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 10.4.0
