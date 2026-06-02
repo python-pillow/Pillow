@@ -1067,9 +1067,9 @@ def run() -> None:
         atexit.register(
             lambda: warnings.warn(
                 f"Pillow {PILLOW_VERSION} does not support Python "
-                f"{sys.version_info.major}.{sys.version_info.minor} and does not provide "
-                "prebuilt Windows binaries. We do not recommend building from source on "
-                "Windows.",
+                f"{sys.version_info.major}.{sys.version_info.minor} and does not "
+                "provide prebuilt Windows binaries. We do not recommend building from "
+                "source on Windows.",
                 RuntimeWarning,
             )
         )
