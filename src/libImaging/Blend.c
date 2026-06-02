@@ -46,23 +46,28 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
         return NULL;
     }
 
+    // We know these won't change in the loops below,
+    // so the compiler can optimize better if we pull them out.
+    int ysize = imIn1->ysize;
+    int linesize = imIn1->linesize;
+
     if (alpha >= 0 && alpha <= 1.0) {
         /* Interpolate between bands */
-        for (y = 0; y < imIn1->ysize; y++) {
+        for (y = 0; y < ysize; y++) {
             UINT8 *in1 = (UINT8 *)imIn1->image[y];
             UINT8 *in2 = (UINT8 *)imIn2->image[y];
             UINT8 *out = (UINT8 *)imOut->image[y];
-            for (x = 0; x < imIn1->linesize; x++) {
+            for (x = 0; x < linesize; x++) {
                 out[x] = (UINT8)((int)in1[x] + alpha * ((int)in2[x] - (int)in1[x]));
             }
         }
     } else {
         /* Extrapolation; must make sure to clip resulting values */
-        for (y = 0; y < imIn1->ysize; y++) {
+        for (y = 0; y < ysize; y++) {
             UINT8 *in1 = (UINT8 *)imIn1->image[y];
             UINT8 *in2 = (UINT8 *)imIn2->image[y];
             UINT8 *out = (UINT8 *)imOut->image[y];
-            for (x = 0; x < imIn1->linesize; x++) {
+            for (x = 0; x < linesize; x++) {
                 float temp = (float)((int)in1[x] + alpha * ((int)in2[x] - (int)in1[x]));
                 if (temp <= 0.0) {
                     out[x] = 0;
