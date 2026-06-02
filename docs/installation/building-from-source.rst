@@ -249,7 +249,7 @@ If the prerequisites are installed in the standard library locations
 for your machine (e.g. :file:`/usr` or :file:`/usr/local`), no
 additional configuration should be required. If they are installed in
 a non-standard location, you may need to configure setuptools to use
-those locations by editing :file:`setup.py` or
+those locations by editing :file:`_custom_build/pillow_ext.py` or
 :file:`pyproject.toml`, or by adding environment variables on the command
 line::
 
