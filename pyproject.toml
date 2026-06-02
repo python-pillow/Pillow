@@ -111,13 +111,13 @@ macos.environment.PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3
 # Disable platform guessing on iOS, and disable raqm (since there won't be a
 # vendor version, and we can't distribute it due to licensing)
 ios.config-settings = "raqm=disable imagequant=disable platform-guessing=disable"
+# iOS needs to be given a specific pytest invocation and list of test sources.
 ios.test-command = [
   "python -m selftest",
   "python -m pytest -vv -x -W always checks/check_wheel.py Tests",
 ]
 # There's no numpy wheel for iOS (yet...)
 ios.test-requires = []
-# iOS needs to be given a specific pytest invocation and list of test sources.
 ios.test-sources = [
   "checks",
   "Tests",
