@@ -54,9 +54,10 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
     if (alpha >= 0 && alpha <= 1.0) {
         /* Interpolate between bands */
         for (y = 0; y < ysize; y++) {
-            UINT8 *in1 = (UINT8 *)imIn1->image[y];
-            UINT8 *in2 = (UINT8 *)imIn2->image[y];
-            UINT8 *out = (UINT8 *)imOut->image[y];
+            // restrict safe: imIn1 and imIn2 are read-only; imOut is a new allocation
+            UINT8 *restrict in1 = (UINT8 *)imIn1->image[y];
+            UINT8 *restrict in2 = (UINT8 *)imIn2->image[y];
+            UINT8 *restrict out = (UINT8 *)imOut->image[y];
             for (x = 0; x < linesize; x++) {
                 out[x] = (UINT8)((int)in1[x] + alpha * ((int)in2[x] - (int)in1[x]));
             }
@@ -64,9 +65,10 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
     } else {
         /* Extrapolation; must make sure to clip resulting values */
         for (y = 0; y < ysize; y++) {
-            UINT8 *in1 = (UINT8 *)imIn1->image[y];
-            UINT8 *in2 = (UINT8 *)imIn2->image[y];
-            UINT8 *out = (UINT8 *)imOut->image[y];
+            // restrict safe: imIn1 and imIn2 are read-only; imOut is a new allocation
+            UINT8 *restrict in1 = (UINT8 *)imIn1->image[y];
+            UINT8 *restrict in2 = (UINT8 *)imIn2->image[y];
+            UINT8 *restrict out = (UINT8 *)imOut->image[y];
             for (x = 0; x < linesize; x++) {
                 float temp = (float)((int)in1[x] + alpha * ((int)in2[x] - (int)in1[x]));
                 if (temp <= 0.0) {
