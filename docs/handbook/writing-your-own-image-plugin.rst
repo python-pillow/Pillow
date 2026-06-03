@@ -393,7 +393,7 @@ state structure, and a buffer of data to be transformed.
 It is the codec's responsibility to pull as much data as possible out of the
 buffer and return the number of bytes consumed. The next call to the codec will
 include the previous unconsumed tail. The codec function will be called
-multiple times as the data processed.
+multiple times as the data is processed.
 
 Alternatively, if ``pulls_fd`` or ``pushes_fd`` is set, then the decode or
 encode function is called once, with an empty buffer. It is the codec's
@@ -446,7 +446,7 @@ Python-based file codec:
    is complete. This can be used to clean up any resources used by the codec.
 
    If you set ``_pulls_fd`` or ``_pushes_fd`` to ``True`` however, then you
-   probably chose to perform any cleanup tasks  at the end of ``decode`` or
+   probably chose to perform any cleanup tasks at the end of ``decode`` or
    ``encode``.
 
 For an example :py:class:`PIL.ImageFile.PyDecoder`, see `DdsImagePlugin

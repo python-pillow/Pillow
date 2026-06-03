@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -281,6 +282,11 @@ def test_bytesio_object() -> None:
     ),
 )
 def test_1(filename: str) -> None:
+    gs_binary = EpsImagePlugin.gs_binary
+    assert isinstance(gs_binary, str)
+    if subprocess.check_output([gs_binary, "--version"]) == b"10.06.0\n":
+        pytest.skip("Fails with Ghostscript 10.06.0")
+
     with Image.open(filename) as im:
         assert_image_equal_tofile(im, "Tests/images/eps/1.bmp")
 

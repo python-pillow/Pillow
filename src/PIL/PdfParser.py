@@ -383,7 +383,7 @@ class PdfParser:
             msg = "specify buf or f or filename, but not both buf and f"
             raise RuntimeError(msg)
         self.filename = filename
-        self.buf: bytes | bytearray | mmap.mmap | None = buf
+        self.buf: bytes | bytearray | memoryview | mmap.mmap | None = buf
         self.f = f
         self.start_offset = start_offset
         self.should_close_buf = False
@@ -402,7 +402,11 @@ class PdfParser:
         self.pages_ref: IndirectReference | None
         self.last_xref_section_offset: int | None
         if self.buf:
-            self.read_pdf_info()
+            try:
+                self.read_pdf_info()
+            except PdfFormatError:
+                self.close()
+                raise
         else:
             self.file_size_total = self.file_size_this = 0
             self.root = PdfDict()
@@ -431,7 +435,9 @@ class PdfParser:
         self.seek_end()
 
     def close_buf(self) -> None:
-        if isinstance(self.buf, mmap.mmap):
+        if isinstance(self.buf, memoryview):
+            self.buf.release()
+        elif isinstance(self.buf, mmap.mmap):
             self.buf.close()
         self.buf = None
 
@@ -685,7 +691,9 @@ class PdfParser:
         if b"Prev" in self.trailer_dict:
             self.read_prev_trailer(self.trailer_dict[b"Prev"])
 
-    def read_prev_trailer(self, xref_section_offset: int) -> None:
+    def read_prev_trailer(
+        self, xref_section_offset: int, processed_offsets: list[int] | None = None
+    ) -> None:
         assert self.buf is not None
         trailer_offset = self.read_xref_table(xref_section_offset=xref_section_offset)
         m = self.re_trailer_prev.search(
@@ -700,7 +708,13 @@ class PdfParser:
         )
         trailer_dict = self.interpret_trailer(trailer_data)
         if b"Prev" in trailer_dict:
-            self.read_prev_trailer(trailer_dict[b"Prev"])
+            if processed_offsets is None:
+                processed_offsets = []
+            processed_offsets.append(xref_section_offset)
+            check_format_condition(
+                trailer_dict[b"Prev"] not in processed_offsets, "trailer loop found"
+            )
+            self.read_prev_trailer(trailer_dict[b"Prev"], processed_offsets)
 
     re_whitespace_optional = re.compile(whitespace_optional)
     re_name = re.compile(

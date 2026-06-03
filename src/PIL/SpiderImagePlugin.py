@@ -244,7 +244,7 @@ def loadImageSeries(filelist: list[str] | None = None) -> list[Image.Image] | No
 
 def makeSpiderHeader(im: Image.Image) -> list[bytes]:
     nsam, nrow = im.size
-    lenbyt = nsam * 4  # There are labrec records in the header
+    lenbyt = max(1, nsam) * 4  # There are labrec records in the header
     labrec = int(1024 / lenbyt)
     if 1024 % lenbyt != 0:
         labrec += 1
