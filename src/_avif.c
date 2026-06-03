@@ -425,7 +425,7 @@ end:
     return (PyObject *)self;
 }
 
-PyObject *
+void
 _encoder_dealloc(AvifEncoderObject *self) {
     if (self->encoder) {
         avifEncoderDestroy(self->encoder);
@@ -433,7 +433,7 @@ _encoder_dealloc(AvifEncoderObject *self) {
     if (self->image) {
         avifImageDestroy(self->image);
     }
-    Py_RETURN_NONE;
+    Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *
@@ -485,7 +485,7 @@ _encoder_add(AvifEncoderObject *self, PyObject *args) {
         frame = image;
     } else {
         frame = avifImageCreateEmpty();
-        if (image == NULL) {
+        if (frame == NULL) {
             PyErr_SetString(PyExc_ValueError, "Image creation failed");
             return NULL;
         }
@@ -505,6 +505,10 @@ _encoder_add(AvifEncoderObject *self, PyObject *args) {
 
     if (strcmp(mode, "RGBA") == 0) {
         rgb.format = AVIF_RGB_FORMAT_RGBA;
+#if AVIF_VERSION >= 1030000  // 1.3.0
+    } else if (strcmp(mode, "L") == 0) {
+        rgb.format = AVIF_RGB_FORMAT_GRAY;
+#endif
     } else {
         rgb.format = AVIF_RGB_FORMAT_RGB;
     }
@@ -687,13 +691,13 @@ AvifDecoderNew(PyObject *self_, PyObject *args) {
     return (PyObject *)self;
 }
 
-PyObject *
+void
 _decoder_dealloc(AvifDecoderObject *self) {
     if (self->decoder) {
         avifDecoderDestroy(self->decoder);
     }
     PyBuffer_Release(&self->buffer);
-    Py_RETURN_NONE;
+    Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *
@@ -706,17 +710,40 @@ _decoder_get_info(AvifDecoderObject *self) {
     PyObject *xmp = NULL;
     PyObject *ret = NULL;
 
+    char *mode;
+    if (decoder->alphaPresent) {
+        mode = "RGBA";
+#if AVIF_VERSION >= 1030000  // 1.3.0
+    } else if (image->yuvFormat == AVIF_PIXEL_FORMAT_YUV400) {
+        mode = "L";
+#endif
+    } else {
+        mode = "RGB";
+    }
+
     if (image->xmp.size) {
         xmp = PyBytes_FromStringAndSize((const char *)image->xmp.data, image->xmp.size);
+        if (!xmp) {
+            return NULL;
+        }
     }
 
     if (image->exif.size) {
         exif =
             PyBytes_FromStringAndSize((const char *)image->exif.data, image->exif.size);
+        if (!exif) {
+            Py_XDECREF(xmp);
+            return NULL;
+        }
     }
 
     if (image->icc.size) {
         icc = PyBytes_FromStringAndSize((const char *)image->icc.data, image->icc.size);
+        if (!icc) {
+            Py_XDECREF(xmp);
+            Py_XDECREF(exif);
+            return NULL;
+        }
     }
 
     ret = Py_BuildValue(
@@ -724,7 +751,7 @@ _decoder_get_info(AvifDecoderObject *self) {
         image->width,
         image->height,
         decoder->imageCount,
-        decoder->alphaPresent ? "RGBA" : "RGB",
+        mode,
         NULL == icc ? Py_None : icc,
         NULL == exif ? Py_None : exif,
         irot_imir_to_exif_orientation(image),
@@ -771,7 +798,15 @@ _decoder_get_frame(AvifDecoderObject *self, PyObject *args) {
     avifRGBImageSetDefaults(&rgb, image);
 
     rgb.depth = 8;
-    rgb.format = decoder->alphaPresent ? AVIF_RGB_FORMAT_RGBA : AVIF_RGB_FORMAT_RGB;
+    if (decoder->alphaPresent) {
+        rgb.format = AVIF_RGB_FORMAT_RGBA;
+#if AVIF_VERSION >= 1030000  // 1.3.0
+    } else if (image->yuvFormat == AVIF_PIXEL_FORMAT_YUV400) {
+        rgb.format = AVIF_RGB_FORMAT_GRAY;
+#endif
+    } else {
+        rgb.format = AVIF_RGB_FORMAT_RGB;
+    }
 
     result = avifRGBImageAllocatePixels(&rgb);
     if (result != AVIF_RESULT_OK) {
@@ -799,6 +834,7 @@ _decoder_get_frame(AvifDecoderObject *self, PyObject *args) {
 
     if (rgb.height > PY_SSIZE_T_MAX / rgb.rowBytes) {
         PyErr_SetString(PyExc_MemoryError, "Integer overflow in pixel size");
+        avifRGBImageFreePixels(&rgb);
         return NULL;
     }
 
@@ -806,6 +842,9 @@ _decoder_get_frame(AvifDecoderObject *self, PyObject *args) {
 
     bytes = PyBytes_FromStringAndSize((char *)rgb.pixels, size);
     avifRGBImageFreePixels(&rgb);
+    if (!bytes) {
+        return NULL;
+    }
 
     ret = Py_BuildValue(
         "SKKK",

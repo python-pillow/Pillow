@@ -537,8 +537,9 @@ polygon_generic(
                     // Needed to draw consistent polygons
                     xx[j] = xx[j - 1];
                     j++;
-                } else if ((ymin == current->ymin || ymin == current->ymax) &&
-                           current->dx != 0) {
+                } else if (
+                    (ymin == current->ymin || ymin == current->ymax) && current->dx != 0
+                ) {
                     // Connect discontiguous corners
                     for (k = 0; k < i; k++) {
                         Edge *other_edge = edge_table[k];
@@ -570,8 +571,10 @@ polygon_generic(
                                             adjacent_line_x, adjacent_line_x_other_edge
                                         )) +
                                         1;
-                                } else if (xx[j - 1] < adjacent_line_x - 1 &&
-                                           xx[j - 1] < adjacent_line_x_other_edge - 1) {
+                                } else if (
+                                    xx[j - 1] < adjacent_line_x - 1 &&
+                                    xx[j - 1] < adjacent_line_x_other_edge - 1
+                                ) {
                                     xx[j - 1] =
                                         roundf(fmin(
                                             adjacent_line_x, adjacent_line_x_other_edge

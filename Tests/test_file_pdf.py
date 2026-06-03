@@ -209,15 +209,17 @@ def test_save_all_progress() -> None:
 
     expected = []
     for i, filename in enumerate(["sugarshack.mpo", "frozenpond.mpo"]):
-        for j in range(2):
-            expected.append(
+        expected.extend(
+            [
                 Image.Progress(
                     image_index=i,
                     image_filename=filename,
                     completed_frames=i * 2 + j + 1,
                     total_frames=4,
                 )
-            )
+                for j in range(2)
+            ]
+        )
     assert progress == expected
 
 

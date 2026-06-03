@@ -315,7 +315,7 @@ def test_roundtrip_save_all_1(tmp_path: Path) -> None:
 def test_save_zero(size: tuple[int, int]) -> None:
     b = BytesIO()
     im = Image.new("RGB", size)
-    with pytest.raises(SystemError):
+    with pytest.raises(ValueError, match="cannot write empty image"):
         im.save(b, "GIF")
 
 
@@ -354,16 +354,15 @@ def test_save_all_progress() -> None:
             completed_frames=1,
             total_frames=32,
         )
-    ]
-    for i in range(31):
-        expected.append(
-            Image.Progress(
-                image_index=1,
-                image_filename="chi.gif",
-                completed_frames=i + 2,
-                total_frames=32,
-            )
+    ] + [
+        Image.Progress(
+            image_index=1,
+            image_filename="chi.gif",
+            completed_frames=i + 2,
+            total_frames=32,
         )
+        for i in range(31)
+    ]
     assert progress == expected
 
 

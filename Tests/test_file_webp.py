@@ -50,6 +50,12 @@ class TestFileWebp:
         assert version is not None
         assert re.search(r"\d+\.\d+\.\d+$", version)
 
+    def test_invalid_file(self) -> None:
+        invalid_file = "Tests/images/flower.jpg"
+
+        with pytest.raises(SyntaxError):
+            WebPImagePlugin.WebPImageFile(invalid_file)
+
     def test_read_rgb(self) -> None:
         """
         Can we read a RGB mode WebP file without error?
@@ -156,24 +162,22 @@ class TestFileWebp:
             im2 = Image.new("RGB", im.size)
             im.save(out, "WEBP", save_all=True, append_images=[im2], progress=callback)
 
-        expected = []
-        for i in range(42):
-            expected.append(
-                Image.Progress(
-                    image_index=0,
-                    image_filename="iss634.webp",
-                    completed_frames=i + 1,
-                    total_frames=43,
-                )
+        expected = [
+            Image.Progress(
+                image_index=0,
+                image_filename="iss634.webp",
+                completed_frames=i + 1,
+                total_frames=43,
             )
-        expected.append(
+            for i in range(42)
+        ] + [
             Image.Progress(
                 image_index=1,
                 image_filename=None,
                 completed_frames=43,
                 total_frames=43,
             )
-        )
+        ]
         assert progress == expected
 
     def test_icc_profile(self, tmp_path: Path) -> None:

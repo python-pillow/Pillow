@@ -289,6 +289,7 @@ class Base(IntEnum):
     OpcodeList2 = 0xC741
     OpcodeList3 = 0xC74E
     NoiseProfile = 0xC761
+    FrameRate = 0xC764
 
 
 """Maps EXIF tags to tag names."""

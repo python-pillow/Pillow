@@ -758,25 +758,23 @@ def test_save_all_progress() -> None:
                 out, "PNG", save_all=True, append_images=[im, im2], progress=callback
             )
 
-    expected = []
-    for i in range(2):
-        expected.append(
-            Image.Progress(
-                image_index=i,
-                image_filename="single_frame.png",
-                completed_frames=i + 1,
-                total_frames=7,
-            )
+    expected = [
+        Image.Progress(
+            image_index=i,
+            image_filename="single_frame.png",
+            completed_frames=i + 1,
+            total_frames=7,
         )
-    for i in range(5):
-        expected.append(
-            Image.Progress(
-                image_index=2,
-                image_filename="delay.png",
-                completed_frames=i + 3,
-                total_frames=7,
-            )
+        for i in range(2)
+    ] + [
+        Image.Progress(
+            image_index=2,
+            image_filename="delay.png",
+            completed_frames=i + 3,
+            total_frames=7,
         )
+        for i in range(5)
+    ]
     assert progress == expected
 
 

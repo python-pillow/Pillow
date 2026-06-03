@@ -16,6 +16,7 @@ from PIL import (
     TiffImagePlugin,
     TiffTags,
     UnidentifiedImageError,
+    _binary,
 )
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
@@ -822,16 +823,15 @@ class TestFileTiff:
                 completed_frames=1,
                 total_frames=4,
             )
-        ]
-        for i in range(3):
-            expected.append(
-                Image.Progress(
-                    image_index=1,
-                    image_filename="multipage.tiff",
-                    completed_frames=i + 2,
-                    total_frames=4,
-                )
+        ] + [
+            Image.Progress(
+                image_index=1,
+                image_filename="multipage.tiff",
+                completed_frames=i + 2,
+                total_frames=4,
             )
+            for i in range(3)
+        ]
         assert progress == expected
 
     def test_fixoffsets(self) -> None:
@@ -989,6 +989,15 @@ class TestFileTiff:
                 4000,
                 4001,
             ]
+
+    def test_truncated_photoshop_blocks(self) -> None:
+        with Image.open("Tests/images/hopper.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            im.tag_v2[34377] = b"8BIM"
+            assert im.get_photoshop_blocks() == {}
+
+            im.tag_v2[34377] = b"8BIM" + _binary.o16be(0) + _binary.o8(2) + b" " * 5
+            assert im.get_photoshop_blocks() == {}
 
     def test_tiff_chunks(self, tmp_path: Path) -> None:
         tmpfile = tmp_path / "temp.tif"
