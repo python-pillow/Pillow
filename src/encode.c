@@ -222,25 +222,55 @@ PyImaging_AsImaging(PyObject *op);
 
 static PyObject *
 _setimage(ImagingEncoderObject *encoder, PyObject *args) {
-    PyObject *op;
+    PyObject *op, *extents;
     Imaging im;
     ImagingCodecState state;
     Py_ssize_t x0, y0, x1, y1;
 
-    /* Define where image data should be stored */
-
-    x0 = y0 = x1 = y1 = 0;
-
     /* FIXME: should publish the ImagingType descriptor */
-    if (!PyArg_ParseTuple(args, "O(nnnn)", &op, &x0, &y0, &x1, &y1)) {
+    if (!PyArg_ParseTuple(args, "OO", &op, &extents)) {
         return NULL;
     }
     im = PyImaging_AsImaging(op);
     if (!im) {
         return NULL;
     }
+    if (extents == Py_None) {
+        x0 = 0;
+        y0 = 0;
+        x1 = im->xsize;
+        y1 = im->ysize;
+    } else {
+        if (!PyTuple_Check(extents) || PyTuple_GET_SIZE(extents) != 4) {
+            PyErr_SetString(PyExc_ValueError, "invalid extents");
+            return NULL;
+        }
+        for (int i = 0; i < 4; i++) {
+            PyObject *extent = PyTuple_GetItem(extents, i);
+            if (!PyLong_Check(extent)) {
+                PyErr_SetString(PyExc_ValueError, "invalid extents");
+                return NULL;
+            }
+            Py_ssize_t e = (Py_ssize_t)PyLong_AsLong(extent);
+
+            if (i == 0) {
+                x0 = e;
+            } else if (i == 1) {
+                y0 = e;
+            } else if (i == 2) {
+                x1 = e;
+            } else {
+                y1 = e;
+            }
+        }
+    }
     if (im->xsize == 0 || im->ysize == 0) {
         PyErr_SetString(PyExc_ValueError, "cannot write empty image");
+        return NULL;
+    }
+
+    if (x0 < 0 || y0 < 0 || x1 <= x0 || y1 <= y0 || x1 > im->xsize || y1 > im->ysize) {
+        PyErr_SetString(PyExc_SystemError, "tile cannot extend outside image");
         return NULL;
     }
 
@@ -252,13 +282,6 @@ _setimage(ImagingEncoderObject *encoder, PyObject *args) {
     state->yoff = y0;
     state->xsize = x1 - x0;
     state->ysize = y1 - y0;
-
-    if (state->xoff < 0 || state->xsize <= 0 ||
-        state->xsize + state->xoff > im->xsize || state->yoff < 0 ||
-        state->ysize <= 0 || state->ysize + state->yoff > im->ysize) {
-        PyErr_SetString(PyExc_SystemError, "tile cannot extend outside image");
-        return NULL;
-    }
 
     /* Allocate memory buffer (if bits field is set) */
     if (state->bits > 0) {

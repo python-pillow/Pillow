@@ -356,7 +356,7 @@ fill(
 ) {
     /* fill opaque region */
 
-    int x, y, i;
+    int x, y;
     UINT8 ink8 = 0;
     INT32 ink32 = 0L;
 
@@ -372,6 +372,7 @@ fill(
 
     } else {
 #if defined _WIN32 && !defined _WIN64
+        int i;
         dx *= pixelsize;
         for (y = 0; y < ysize; y++) {
             UINT8 *out = (UINT8 *)imOut->image[y + dy] + dx;

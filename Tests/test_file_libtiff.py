@@ -224,10 +224,7 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/hopper_g4.tif") as im:
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
             for tag in im.tag_v2:
-                try:
-                    del core_items[tag]
-                except KeyError:
-                    pass
+                core_items.pop(tag, None)
             del core_items[320]  # colormap is special, tested below
 
             # Type codes:
@@ -1057,6 +1054,15 @@ class TestFileLibTiff(LibTiffTestCase):
         # tiff_16bit_RGBa.tiff tiff_strip_planar_16bit_RGBa.tiff
         with Image.open("Tests/images/tiff_strip_planar_16bit_RGBa.tiff") as im:
             assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
+
+    def test_separate_planar_extra_samples(self, tmp_path: Path) -> None:
+        out = tmp_path / "temp.tif"
+        with Image.open("Tests/images/separate_planar_extra_samples.tiff") as im:
+            assert im.mode == "L"
+
+            im.save(out)
+        with Image.open(out) as reloaded:
+            assert reloaded.mode == "L"
 
     @pytest.mark.parametrize("compression", (None, "jpeg"))
     def test_block_tile_tags(self, compression: str | None, tmp_path: Path) -> None:

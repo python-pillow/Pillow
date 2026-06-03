@@ -267,6 +267,9 @@ PyObject *
 ExportArrowSchemaPyCapsule(ImagingObject *self) {
     struct ArrowSchema *schema =
         (struct ArrowSchema *)calloc(1, sizeof(struct ArrowSchema));
+    if (!schema) {
+        return ArrowError(IMAGING_CODEC_MEMORY);
+    }
     int err = export_imaging_schema(self->image, schema);
     if (err == 0) {
         return PyCapsule_New(schema, "arrow_schema", ReleaseArrowSchemaPyCapsule);
@@ -292,6 +295,9 @@ PyObject *
 ExportArrowArrayPyCapsule(ImagingObject *self) {
     struct ArrowArray *array =
         (struct ArrowArray *)calloc(1, sizeof(struct ArrowArray));
+    if (!array) {
+        return ArrowError(IMAGING_CODEC_MEMORY);
+    }
     int err = export_imaging_array(self->image, array);
     if (err == 0) {
         return PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
@@ -3166,8 +3172,8 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
 
     PyObject *data;
     int ink;
-    int width = 0;
-    if (!PyArg_ParseTuple(args, "Oi|i", &data, &ink, &width)) {
+    int width;
+    if (!PyArg_ParseTuple(args, "Oii", &data, &ink, &width)) {
         return NULL;
     }
 
@@ -3176,7 +3182,7 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (width <= 1) {
+    if (width == 1) {
         double *p = NULL;
         for (i = 0; i < n - 1; i++) {
             p = &xy[i + i];

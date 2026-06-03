@@ -2,20 +2,7 @@
 
 set -e
 
-brew install \
-    aom \
-    dav1d \
-    freetype \
-    ghostscript \
-    jpeg-turbo \
-    libimagequant \
-    libraqm \
-    libtiff \
-    little-cms2 \
-    openjpeg \
-    rav1e \
-    svt-av1 \
-    webp
+brew bundle --file=.github/workflows/Brewfile
 export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig"
 
 python3 -m pip install coverage
