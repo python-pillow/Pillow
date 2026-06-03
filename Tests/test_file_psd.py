@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+import sys
 import warnings
 
 import pytest
 
 from PIL import Image, PsdImagePlugin
 
-from .helper import assert_image_equal_tofile, assert_image_similar, hopper, is_pypy
+from .helper import (
+    assert_image_equal_tofile,
+    assert_image_similar,
+    hopper,
+    is_pypy,
+)
 
 test_file = "Tests/images/hopper.psd"
 
@@ -204,3 +210,17 @@ def test_bounds_crash(test_file: str) -> None:
 
         with pytest.raises(ValueError):
             im.load()
+
+
+def test_bounds_crash_overflow() -> None:
+    with Image.open("Tests/images/psd-oob-write-overflow.psd") as im:
+        assert isinstance(im, PsdImagePlugin.PsdImageFile)
+        im.load()
+        if sys.maxsize <= 2**32:
+            with pytest.raises(OverflowError):
+                im.seek(im.n_frames)
+        else:
+            im.seek(im.n_frames)
+
+            with pytest.raises(ValueError):
+                im.load()

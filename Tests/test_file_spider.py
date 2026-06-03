@@ -14,10 +14,6 @@ from .helper import assert_image_equal, hopper, is_pypy
 TEST_FILE = "Tests/images/hopper.spider"
 
 
-def teardown_module() -> None:
-    del Image.EXTENSION[".spider"]
-
-
 def test_sanity() -> None:
     with Image.open(TEST_FILE) as im:
         im.load()
@@ -66,6 +62,8 @@ def test_save(tmp_path: Path) -> None:
         assert im2.mode == "F"
         assert im2.size == (128, 128)
         assert im2.format == "SPIDER"
+
+    del Image.EXTENSION[".spider"]
 
 
 @pytest.mark.parametrize("size", ((0, 1), (1, 0), (0, 0)))

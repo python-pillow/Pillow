@@ -10,8 +10,8 @@
 
 static void
 ReleaseExportedSchema(struct ArrowSchema *array) {
-    // This should not be called on already released array
-    // assert(array->release != NULL);
+    // TODO here: release and/or deallocate all data directly owned by
+    // the ArrowArray struct, such as the private_data.
 
     if (!array->release) {
         return;
@@ -30,31 +30,36 @@ ReleaseExportedSchema(struct ArrowSchema *array) {
     }
 
     // Release children
-    for (int64_t i = 0; i < array->n_children; ++i) {
-        struct ArrowSchema *child = array->children[i];
-        if (child->release != NULL) {
-            child->release(child);
-            child->release = NULL;
-        }
-        free(array->children[i]);
-    }
     if (array->children) {
+        for (int64_t i = 0; i < array->n_children; ++i) {
+            struct ArrowSchema *child = array->children[i];
+            if (child != NULL) {
+                if (child->release != NULL) {
+                    child->release(child);
+                    child->release = NULL;
+                }
+                free(array->children[i]);
+            }
+        }
         free(array->children);
+        array->children = NULL;
     }
 
     // Release dictionary
     struct ArrowSchema *dict = array->dictionary;
-    if (dict != NULL && dict->release != NULL) {
-        dict->release(dict);
-        dict->release = NULL;
+    if (dict != NULL) {
+        if (dict->release != NULL) {
+            dict->release(dict);
+            dict->release = NULL;
+        }
+        free(dict);
+        array->dictionary = NULL;
     }
-
-    // TODO here: release and/or deallocate all data directly owned by
-    // the ArrowArray struct, such as the private_data.
 
     // Mark array released
     array->release = NULL;
 }
+
 char *
 image_band_json(Imaging im) {
     char *format = "{\"bands\": [\"%s\", \"%s\", \"%s\", \"%s\"]}";
@@ -220,13 +225,19 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     // if it's not 1 band, it's an int32 at the moment. 4 uint8 bands.
     schema->n_children = 1;
     schema->children = calloc(1, sizeof(struct ArrowSchema *));
+    if (!schema->children) {
+        schema->release(schema);
+        return IMAGING_CODEC_MEMORY;
+    }
     schema->children[0] = (struct ArrowSchema *)calloc(1, sizeof(struct ArrowSchema));
+    if (!schema->children[0]) {
+        schema->release(schema);
+        return IMAGING_CODEC_MEMORY;
+    }
     retval = export_named_type(
         schema->children[0], im->arrow_band_format, getModeData(im->mode)->name
     );
     if (retval != 0) {
-        free(schema->children[0]);
-        free(schema->children);
         schema->release(schema);
         return retval;
     }
@@ -256,11 +267,12 @@ release_const_array(struct ArrowArray *array) {
         array->buffers = NULL;
     }
     if (array->children) {
-        // undone -- does arrow release all the children recursively?
         for (int i = 0; i < array->n_children; i++) {
-            if (array->children[i]->release) {
-                array->children[i]->release(array->children[i]);
-                array->children[i]->release = NULL;
+            if (array->children[i]) {
+                if (array->children[i]->release) {
+                    array->children[i]->release(array->children[i]);
+                    array->children[i]->release = NULL;
+                }
                 free(array->children[i]);
             }
         }
@@ -303,8 +315,11 @@ export_single_channel_array(Imaging im, struct ArrowArray *array) {
     };
 
     // Allocate list of buffers
-    array->buffers = (const void **)malloc(sizeof(void *) * array->n_buffers);
-    // assert(array->buffers != NULL);
+    array->buffers = (const void **)calloc(1, sizeof(void *) * array->n_buffers);
+    if (!array->buffers) {
+        array->release(array);
+        return IMAGING_CODEC_MEMORY;
+    }
     array->buffers[0] = NULL;  // no nulls, null bitmap can be omitted
 
     if (im->block) {
@@ -386,6 +401,9 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
 
     array->children[0]->buffers =
         (const void **)calloc(2, sizeof(void *) * array->n_buffers);
+    if (!array->children[0]->buffers) {
+        goto err;
+    }
 
     if (im->block) {
         array->children[0]->buffers[1] = im->block;
@@ -395,15 +413,7 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
     return 0;
 
 err:
-    if (array->children[0]) {
-        free(array->children[0]);
-    }
-    if (array->children) {
-        free(array->children);
-    }
-    if (array->buffers) {
-        free(array->buffers);
-    }
+    array->release(array);
     return IMAGING_CODEC_MEMORY;
 }
 

@@ -4,17 +4,14 @@ on:
   push:
     branches:
       - "**"
-    paths:
+    paths: &paths
+      - ".github/dependencies.json"
       - ".github/workflows/cifuzz.yml"
       - ".github/workflows/wheels-dependencies.sh"
       - "**.c"
       - "**.h"
   pull_request:
-    paths:
-      - ".github/workflows/cifuzz.yml"
-      - ".github/workflows/wheels-dependencies.sh"
-      - "**.c"
-      - "**.h"
+    paths: *paths
   workflow_dispatch:
 
 permissions:
@@ -33,27 +30,27 @@ jobs:
     steps:
     - name: Build Fuzzers
       id: build
-      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
+      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@d87225267726cf7ce1a3e17cf103c5ac943c4f05 # master
       with:
         oss-fuzz-project-name: 'pillow'
         language: python
         dry-run: false
     - name: Run Fuzzers
       id: run
-      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
+      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@d87225267726cf7ce1a3e17cf103c5ac943c4f05 # master
       with:
         oss-fuzz-project-name: 'pillow'
         fuzz-seconds: 600
         language: python
         dry-run: false
     - name: Upload New Crash
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       if: failure() && steps.build.outcome == 'success'
       with:
         name: artifacts
         path: ./out/artifacts
     - name: Upload Legacy Crash
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       if: steps.run.outcome == 'success'
       with:
         name: crash

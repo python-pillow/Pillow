@@ -1,0 +1,48 @@
+commit 782a11d6b5b61c6dc21e714950a4af5bf89f023c
+Author: Even Rouault <even.rouault@spatialys.com>
+Date:   Sun Feb 22 23:32:47 2026 +0100
+
+    TIFFReadRGBAImage(): prevent integer overflow and later heap overflow on images with huge width in YCbCr tile decoding functions
+
+    Fixes https://gitlab.com/libtiff/libtiff/-/issues/787
+
+diff --git a/libtiff/tif_getimage.c b/libtiff/tif_getimage.c
+index 4543ddda..fa82d091 100644
+--- libtiff/tif_getimage.c
++++ libtiff/tif_getimage.c
+@@ -2224,7 +2224,7 @@ DECLAREContigPutFunc(putcontig8bitYCbCr44tile)
+     uint32_t *cp1 = cp + w + toskew;
+     uint32_t *cp2 = cp1 + w + toskew;
+     uint32_t *cp3 = cp2 + w + toskew;
+-    int32_t incr = 3 * w + 4 * toskew;
++    const tmsize_t incr = 3 * (tmsize_t)w + 4 * (tmsize_t)toskew;
+
+     (void)y;
+     /* adjust fromskew */
+@@ -2364,7 +2364,7 @@ DECLAREContigPutFunc(putcontig8bitYCbCr44tile)
+ DECLAREContigPutFunc(putcontig8bitYCbCr42tile)
+ {
+     uint32_t *cp1 = cp + w + toskew;
+-    int32_t incr = 2 * toskew + w;
++    const tmsize_t incr = 2 * (tmsize_t)toskew + w;
+
+     (void)y;
+     fromskew = (fromskew / 4) * (4 * 2 + 2);
+@@ -2522,7 +2522,7 @@ DECLAREContigPutFunc(putcontig8bitYCbCr41tile)
+ DECLAREContigPutFunc(putcontig8bitYCbCr22tile)
+ {
+     uint32_t *cp2;
+-    int32_t incr = 2 * toskew + w;
++    const tmsize_t incr = 2 * (tmsize_t)toskew + w;
+     (void)y;
+     fromskew = (fromskew / 2) * (2 * 2 + 2);
+     cp2 = cp + w + toskew;
+@@ -2625,7 +2625,7 @@ DECLAREContigPutFunc(putcontig8bitYCbCr21tile)
+ DECLAREContigPutFunc(putcontig8bitYCbCr12tile)
+ {
+     uint32_t *cp2;
+-    int32_t incr = 2 * toskew + w;
++    const tmsize_t incr = 2 * (tmsize_t)toskew + w;
+     (void)y;
+     fromskew = (fromskew / 1) * (1 * 2 + 2);
+     cp2 = cp + w + toskew;

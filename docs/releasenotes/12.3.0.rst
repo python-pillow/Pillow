@@ -1,0 +1,57 @@
+12.3.0
+------
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+Backwards incompatible changes
+==============================
+
+TODO
+^^^^
+
+TODO
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API additions
+=============
+
+TODO
+^^^^
+
+TODO
+
+Other changes
+=============
+
+Removed Python 3.13 free-threaded wheels
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Python 3.13 added an experimental free-threaded mode, and Pillow 11.0.0 added
+corresponding wheels. Now that Python 3.14 includes official support for it, Pillow has
+removed wheels for Python 3.13 free-threaded mode.
