@@ -101,7 +101,7 @@ jobs:
             cibw_arch: arm64_iphonesimulator
           - name: "iOS x86_64 simulator"
             platform: ios
-            os: macos-15-intel
+            os: macos-26-intel
             cibw_arch: x86_64_iphonesimulator
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2

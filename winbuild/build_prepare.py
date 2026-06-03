@@ -213,6 +213,10 @@ DEPS: dict[str, dict[str, Any]] = {
                 # link against libwebp.lib
                 "#ifdef WEBP_SUPPORT": '#ifdef WEBP_SUPPORT\n#pragma comment(lib, "libwebp.lib")',  # noqa: E501
             },
+            r"libtiff\tif_getimage.c": {
+                "int32_t incr = 3 * w + 4 * toskew;": "const tmsize_t incr = 3 * (tmsize_t)w + 4 * (tmsize_t)toskew;",  # noqa: E501
+                "int32_t incr = 2 * toskew + w;": "const tmsize_t incr = 2 * (tmsize_t)toskew + w;",  # noqa: E501
+            },
         },
         "build": [
             *cmds_cmake(

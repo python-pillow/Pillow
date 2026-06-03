@@ -373,6 +373,45 @@ def generate(version: str) -> dict:
             "scope": "optional",
             "description": "TIFF codec (optional).",
             "licenses": [{"license": {"id": "libtiff"}}],
+            "pedigree": {
+                "ancestors": [
+                    {
+                        "bom-ref": "pkg:generic/libtiff@4.7.1#upstream",
+                        "type": "library",
+                        "name": "libtiff",
+                        "version": "4.7.1",
+                        "purl": "pkg:generic/libtiff@4.7.1",
+                        "externalReferences": [
+                            {
+                                "type": "distribution",
+                                "url": "https://gitlab.com/libtiff/libtiff/-/tags/v4.7.1",
+                            }
+                        ],
+                    }
+                ],
+                "patches": [
+                    {
+                        "type": "cherry-pick",
+                        "diff": {
+                            "text": {
+                                # apply https://gitlab.com/libtiff/libtiff/-/commit/782a11d6
+                                "content": base64.b64encode(
+                                    (
+                                        Path(__file__).parent.parent
+                                        / "patches"
+                                        / "tiff-4.7.1.tar.gz.patch"
+                                    ).read_bytes()
+                                ).decode(),
+                                "encoding": "base64",
+                            }
+                        },
+                    },
+                ],
+                "notes": (
+                    "Vendored from upstream libtiff v4.7.1 with a commit from master "
+                    "cherry-picked to fix CVE-2026-4775."
+                ),
+            },
             "externalReferences": [
                 {"type": "website", "url": "https://libtiff.gitlab.io/libtiff/"},
                 {
