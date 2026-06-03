@@ -15,8 +15,8 @@ from PIL.Image import Resampling, Transpose
 TYPE_CHECKING = False
 
 if TYPE_CHECKING:
-    from pytest_benchmark.fixture import (
-        BenchmarkFixture,  # type: ignore[import-not-found]
+    from pytest_benchmark.fixture import (  # type: ignore[import-not-found]
+        BenchmarkFixture,
     )
 
 pytest.importorskip(
