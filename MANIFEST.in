@@ -15,6 +15,7 @@ include tox.ini
 graft Tests
 graft Tests/images
 graft checks
+graft patches
 graft src
 graft depends
 graft winbuild

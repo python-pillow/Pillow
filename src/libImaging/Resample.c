@@ -492,9 +492,9 @@ ImagingResampleHorizontal_16bpc(
                         << 8)) *
                       k[x];
             }
-            ss_int = ROUND_UP(ss);
-            imOut->image8[yy][xx * 2 + (bigendian ? 1 : 0)] = CLIP8(ss_int % 256);
-            imOut->image8[yy][xx * 2 + (bigendian ? 0 : 1)] = CLIP8(ss_int >> 8);
+            ss_int = CLIP16(ROUND_UP(ss));
+            imOut->image8[yy][xx * 2 + (bigendian ? 1 : 0)] = ss_int & 0xFF;
+            imOut->image8[yy][xx * 2 + (bigendian ? 0 : 1)] = ss_int >> 8;
         }
     }
     ImagingSectionLeave(&cookie);
@@ -531,9 +531,9 @@ ImagingResampleVertical_16bpc(
                        (imIn->image8[y + ymin][xx * 2 + (bigendian ? 0 : 1)] << 8)) *
                       k[y];
             }
-            ss_int = ROUND_UP(ss);
-            imOut->image8[yy][xx * 2 + (bigendian ? 1 : 0)] = CLIP8(ss_int % 256);
-            imOut->image8[yy][xx * 2 + (bigendian ? 0 : 1)] = CLIP8(ss_int >> 8);
+            ss_int = CLIP16(ROUND_UP(ss));
+            imOut->image8[yy][xx * 2 + (bigendian ? 1 : 0)] = ss_int & 0xFF;
+            imOut->image8[yy][xx * 2 + (bigendian ? 0 : 1)] = ss_int >> 8;
         }
     }
     ImagingSectionLeave(&cookie);

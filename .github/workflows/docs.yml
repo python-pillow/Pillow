@@ -4,15 +4,12 @@ on:
   push:
     branches:
       - "**"
-    paths:
+    paths: &paths
       - ".github/workflows/docs.yml"
       - "docs/**"
       - "src/PIL/**"
   pull_request:
-    paths:
-      - ".github/workflows/docs.yml"
-      - "docs/**"
-      - "src/PIL/**"
+    paths: *paths
   workflow_dispatch:
 
 permissions:
@@ -32,12 +29,12 @@ jobs:
     name: Docs
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         persist-credentials: false
 
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
         python-version: "3.x"
         cache: pip
@@ -49,21 +46,21 @@ jobs:
       run: python3 .github/workflows/system-info.py
 
     - name: Cache libavif
-      uses: actions/cache@v5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       id: cache-libavif
       with:
         path: ~/cache-libavif
         key: ${{ runner.os }}-libavif-${{ hashFiles('depends/install_libavif.sh', 'depends/libavif-svt4.patch') }}
 
     - name: Cache libimagequant
-      uses: actions/cache@v5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       id: cache-libimagequant
       with:
         path: ~/cache-libimagequant
         key: ${{ runner.os }}-libimagequant-${{ hashFiles('depends/install_imagequant.sh') }}
 
     - name: Cache libwebp
-      uses: actions/cache@v5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       id: cache-libwebp
       with:
         path: ~/cache-libwebp
