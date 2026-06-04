@@ -53,6 +53,7 @@ typedef struct {
     Imaging im;
     PyObject *lock;
     int pulls_fd;
+    int has_image;
 } ImagingDecoderObject;
 
 static PyTypeObject ImagingDecoderType;
@@ -92,6 +93,7 @@ PyImaging_DecoderNew(int contextsize) {
     /* Target image */
     decoder->lock = NULL;
     decoder->im = NULL;
+    decoder->has_image = 0;
 
     /* Initialize the cleanup function pointer */
     decoder->cleanup = NULL;
@@ -168,6 +170,10 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
     if (!im) {
         return NULL;
     }
+    if (decoder->has_image) {
+        PyErr_SetString(PyExc_ValueError, "decoder already has an image");
+        return NULL;
+    }
     if (extents == Py_None) {
         x0 = 0;
         y0 = 0;
@@ -234,6 +240,7 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
     Py_INCREF(op);
     Py_XDECREF(decoder->lock);
     decoder->lock = op;
+    decoder->has_image = 1;
 
     Py_RETURN_NONE;
 }

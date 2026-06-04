@@ -301,6 +301,14 @@ class CodecsTest:
 
 
 class TestPyDecoder(CodecsTest):
+    def test_c_decoder_setimage_once(self) -> None:
+        im = Image.new("L", (1, 1))
+        decoder = Image._getdecoder("L", "raw", "L")
+
+        decoder.setimage(im.im, (0, 0, 1, 1))
+        with pytest.raises(ValueError, match="decoder already has an image"):
+            decoder.setimage(im.im, (0, 0, 1, 1))
+
     def test_setimage(self) -> None:
         buf = BytesIO(b"\x00" * 255)
 
