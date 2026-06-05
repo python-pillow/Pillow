@@ -267,7 +267,7 @@ Additionally:
    unknown security issue that was inadvertely fixed.
 2. Demonstrating a memory overflow is enough. Please do not weaponize
    the reproducer to do remote code execution.
-3. Please do not report unexpected Python exceptions as a DOS or a
+3. Please do not report unexpected Python exceptions as a DoS or a
    memory safety bug.  An issue that raises a Python exception in a
    library is unlikely to be considered a security issue. This may or
    may not be an ordinary bug depending on the context.
