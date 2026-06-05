@@ -257,3 +257,17 @@ If you cannot use GitHub, use the `Tidelift security contact
 disclosure.
 
 **Do not report sensitive vulnerability information in public.**
+
+Additionally:
+
+1. Please ensure that your issue is reproducable in **main**. We only
+   support the latest version. The one exception -- if your issue is
+   exploitable in the latest public release, but not in main, and the
+   pull request does not mention a security implication this may be an
+   unknown security issue that was inadvertely fixed.
+2. Demonstrating a memory overflow is enough. Please do not weaponize
+   the reproducer to do remote code execution.
+3. Please do not report unexpected Python exceptions as a DOS or a
+   memory safety bug.  An issue that raises a Python exception in a
+   library is unlikely to be considered a security issue. This may or
+   may not be an ordinary bug depending on the context.
