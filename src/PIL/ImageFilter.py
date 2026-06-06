@@ -90,7 +90,7 @@ class RankFilter(Filter):
     Create a rank filter.  The rank filter sorts all pixels in
     a window of the given size, and returns the ``rank``'th value.
 
-    :param size: The kernel size, in pixels.
+    :param size: The kernel size, in pixels. Must be odd.
     :param rank: What pixel value to pick.  Use 0 for a min filter,
                  ``size * size / 2`` for a median filter, ``size * size - 1``
                  for a max filter, etc.
@@ -99,6 +99,12 @@ class RankFilter(Filter):
     name = "Rank"
 
     def __init__(self, size: int, rank: int) -> None:
+        if size % 2 == 0:
+            msg = "bad filter size"
+            raise ValueError(msg)
+        if rank < 0 or rank >= size * size:
+            msg = "bad rank value"
+            raise ValueError(msg)
         self.size = size
         self.rank = rank
 
@@ -121,8 +127,8 @@ class MedianFilter(RankFilter):
     name = "Median"
 
     def __init__(self, size: int = 3) -> None:
-        self.size = size
-        self.rank = size * size // 2
+        rank = size * size // 2
+        super().__init__(size, rank)
 
 
 class MinFilter(RankFilter):
@@ -136,8 +142,8 @@ class MinFilter(RankFilter):
     name = "Min"
 
     def __init__(self, size: int = 3) -> None:
-        self.size = size
-        self.rank = 0
+        rank = 0
+        super().__init__(size, rank)
 
 
 class MaxFilter(RankFilter):
@@ -151,8 +157,8 @@ class MaxFilter(RankFilter):
     name = "Max"
 
     def __init__(self, size: int = 3) -> None:
-        self.size = size
-        self.rank = size * size - 1
+        rank = size * size - 1
+        super().__init__(size, rank)
 
 
 class ModeFilter(Filter):
