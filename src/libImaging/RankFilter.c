@@ -73,7 +73,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
     }
 
     /* malloc check ok, for overflow in the define below */
-    if (size > INT_MAX / size || size > INT_MAX / (size * (int)sizeof(FLOAT32))) {
+    if (size > INT_MAX / (size * (int)sizeof(FLOAT32))) {
         return (Imaging)ImagingError_ValueError("filter size too large");
     }
 
