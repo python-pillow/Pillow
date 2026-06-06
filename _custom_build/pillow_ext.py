@@ -1052,8 +1052,6 @@ def debug_build() -> bool:
 
 
 def run() -> None:
-    global configuration
-    configuration = {}
     while sys.argv and sys.argv[-1].startswith("--pillow-configuration="):
         _, key, value = sys.argv.pop().split("=", 2)
         configuration.setdefault(key, []).append(value)
