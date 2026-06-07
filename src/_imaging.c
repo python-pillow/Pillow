@@ -2545,7 +2545,7 @@ _isblock_impl(ImagingObject *self) {
     return PyBool_FromLong(self->image->block != NULL);
 }
 static PyObject *
-_isblock(ImagingObject *self) {
+_isblock(ImagingObject *self, PyObject *args) {
     PyObject *result;
     Py_BEGIN_CRITICAL_SECTION(self);
     result = _isblock_impl(self);
@@ -2662,7 +2662,7 @@ _getextrema_impl(ImagingObject *self) {
     Py_RETURN_NONE;
 }
 static PyObject *
-_getextrema(ImagingObject *self) {
+_getextrema(ImagingObject *self, PyObject *args) {
     PyObject *result;
     Py_BEGIN_CRITICAL_SECTION(self);
     result = _getextrema_impl(self);
@@ -2706,7 +2706,7 @@ _getprojection_impl(ImagingObject *self) {
 
 /* -------------------------------------------------------------------- */
 static PyObject *
-_getprojection(ImagingObject *self) {
+_getprojection(ImagingObject *self, PyObject *args) {
     PyObject *result;
     Py_BEGIN_CRITICAL_SECTION(self);
     result = _getprojection_impl(self);
@@ -2855,7 +2855,7 @@ _split_impl(ImagingObject *self) {
 
 /* Channel operations (ImageChops) ------------------------------------ */
 static PyObject *
-_split(ImagingObject *self) {
+_split(ImagingObject *self, PyObject *args) {
     PyObject *result;
     Py_BEGIN_CRITICAL_SECTION(self);
     result = _split_impl(self);
@@ -2868,7 +2868,7 @@ _chop_invert_impl(ImagingObject *self) {
     return PyImagingNew(ImagingNegative(self->image));
 }
 static PyObject *
-_chop_invert(ImagingObject *self) {
+_chop_invert(ImagingObject *self, PyObject *args) {
     PyObject *result;
     Py_BEGIN_CRITICAL_SECTION(self);
     result = _chop_invert_impl(self);
