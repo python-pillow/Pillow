@@ -1307,7 +1307,6 @@ _getpalette(ImagingObject *self, PyObject *args) {
     return result;
 }
 
-// UNDONE -- no second argument?
 static PyObject *
 _getpalettemode_impl(ImagingObject *self) {
     if (!self->image->palette) {
@@ -1318,7 +1317,7 @@ _getpalettemode_impl(ImagingObject *self) {
     return PyUnicode_FromString(getModeData(self->image->palette->mode)->name);
 }
 static PyObject *
-_getpalettemode(ImagingObject *self) {
+_getpalettemode(ImagingObject *self, PyObject *args) {
     PyObject *result;
     Py_BEGIN_CRITICAL_SECTION(self);
     result = _getpalettemode_impl(self);
