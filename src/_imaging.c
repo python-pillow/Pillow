@@ -2005,8 +2005,7 @@ _putpalette_impl(ImagingObject *self, PyObject *args) {
         // The image already has a palette mode so we don't need to change it.
     }
 
-    ImagingPalette old_palette;
-    old_palette = self->image->palette;
+    ImagingPalette old_palette = self->image->palette;
     self->image->palette = ImagingPaletteNew(palette_mode);
     ImagingPaletteDelete(old_palette);
     if (!self->image->palette) {
