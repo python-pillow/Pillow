@@ -43,10 +43,15 @@ class WebPImageFile(ImageFile.ImageFile):
     __logical_frame = 0
 
     def _open(self) -> None:
+        assert self.fp is not None
+        s = self.fp.read()
+        if not _accept(s):
+            msg = "not a WEBP file"
+            raise SyntaxError(msg)
+
         # Use the newer AnimDecoder API to parse the (possibly) animated file,
         # and access muxed chunks like ICC/EXIF/XMP.
-        assert self.fp is not None
-        self._decoder = _webp.WebPAnimDecoder(self.fp.read())
+        self._decoder = _webp.WebPAnimDecoder(s)
 
         # Get info from decoder
         self._size, self.info["loop"], bgcolor, self.n_frames, self.rawmode = (

@@ -54,7 +54,7 @@
  * @short_description: A library for complex text layout
  * @include: raqm.h
  *
- * Raqm is a light weight text layout library with strong emphasis on
+ * Raqm is a lightweight text layout library with strong emphasis on
  * supporting languages and writing systems that require complex text layout.
  *
  * The main object in Raqm API is #raqm_t, it stores all the states of the
@@ -338,6 +338,8 @@ _raqm_alloc_run (raqm_t *rq)
   else
   {
     run = malloc (sizeof (raqm_run_t));
+    if (!run)
+      return NULL;
     run->font = NULL;
     run->buffer = NULL;
   }
@@ -515,7 +517,7 @@ raqm_clear_contents (raqm_t *rq)
  * @len: the length of @text.
  *
  * Adds @text to @rq to be used for layout. It must be a valid UTF-32 text, any
- * invalid character will be replaced with U+FFFD. The text should typically
+ * invalid characters will be replaced with U+FFFD. The text should typically
  * represent a full paragraph, since doing the layout of chunks of text
  * separately can give improper output.
  *
@@ -765,13 +767,13 @@ raqm_set_par_direction (raqm_t          *rq,
  * raqm_set_language:
  * @rq: a #raqm_t.
  * @lang: a BCP47 language code.
- * @start: index of first character that should use @face.
+ * @start: index of the first character that should use @face.
  * @len: number of characters using @face.
  *
  * Sets a [BCP47 language
  * code](https://www.w3.org/International/articles/language-tags/) to be used
- * for @len-number of characters staring at @start.  The @start and @len are
- * input string array indices (i.e. counting bytes in UTF-8 and scaler values
+ * for @len-number of characters starting at @start.  The @start and @len are
+ * input string array indices (i.e. counting bytes in UTF-8 and scalar values
  * in UTF-32).
  *
  * This method can be used repeatedly to set different languages for different
@@ -951,7 +953,7 @@ raqm_set_freetype_face (raqm_t *rq,
  * raqm_set_freetype_face_range:
  * @rq: a #raqm_t.
  * @face: an #FT_Face.
- * @start: index of first character that should use @face from the input string.
+ * @start: index of the first character that should use @face from the input string.
  * @len: number of elements using @face.
  *
  * Sets an #FT_Face to be used for @len-number of characters staring at @start.
@@ -962,7 +964,7 @@ raqm_set_freetype_face (raqm_t *rq,
  *
  * This method can be used repeatedly to set different faces for different
  * parts of the text. It is the responsibility of the client to make sure that
- * face ranges cover the whole text, and is properly aligned.
+ * face ranges cover the whole text, and are properly aligned.
  *
  * See also raqm_set_freetype_face().
  *
@@ -1023,9 +1025,6 @@ _raqm_set_freetype_load_flags (raqm_t *rq,
  * Sets the load flags passed to FreeType when loading glyphs, should be the
  * same flags used by the client when rendering FreeType glyphs.
  *
- * This requires version of HarfBuzz that has hb_ft_font_set_load_flags(), for
- * older version the flags will be ignored.
- *
  * Return value:
  * `true` if no errors happened, `false` otherwise.
  *
@@ -1042,21 +1041,18 @@ raqm_set_freetype_load_flags (raqm_t *rq,
  * raqm_set_freetype_load_flags_range:
  * @rq: a #raqm_t.
  * @flags: FreeType load flags.
- * @start: index of first character that should use @flags.
+ * @start: index of the first character that should use @flags.
  * @len: number of characters using @flags.
  *
  * Sets the load flags passed to FreeType when loading glyphs for @len-number
  * of characters staring at @start. Flags should be the same as used by the
  * client when rendering corresponding FreeType glyphs. The @start and @len
- * are input string array indices (i.e. counting bytes in UTF-8 and scaler
+ * are input string array indices (i.e. counting bytes in UTF-8 and scalar
  * values in UTF-32).
  *
  * This method can be used repeatedly to set different flags for different
  * parts of the text. It is the responsibility of the client to make sure that
  * flag ranges cover the whole text.
- *
- * This requires version of HarfBuzz that has hb_ft_font_set_load_flags(), for
- * older version the flags will be ignored.
  *
  * See also raqm_set_freetype_load_flags().
  *
@@ -1143,7 +1139,7 @@ _raqm_set_spacing (raqm_t *rq,
  * raqm_set_letter_spacing_range:
  * @rq: a #raqm_t.
  * @spacing: amount of spacing in Freetype Font Units (26.6 format).
- * @start: index of first character that should use @spacing.
+ * @start: index of the first character that should use @spacing.
  * @len: number of characters using @spacing.
  *
  * Set the letter spacing or tracking for a given range, the value
@@ -1200,12 +1196,12 @@ raqm_set_letter_spacing_range(raqm_t *rq,
  * raqm_set_word_spacing_range:
  * @rq: a #raqm_t.
  * @spacing: amount of spacing in Freetype Font Units (26.6 format).
- * @start: index of first character that should use @spacing.
+ * @start: index of the first character that should use @spacing.
  * @len: number of characters using @spacing.
  *
  * Set the word spacing for a given range. Word spacing will only be applied to
  * 'word separator' characters, such as 'space', 'no break space' and
- * Ethiopic word separator'.
+ * 'Ethiopic word separator'.
  * The value will be added onto the advance and offset for RTL, and the advance
  * for other directions.
  *
@@ -1239,7 +1235,7 @@ raqm_set_word_spacing_range(raqm_t *rq,
  * @rq: a #raqm_t.
  * @gid: glyph id to use for invisible glyphs.
  *
- * Sets the glyph id to be used for invisible glyhphs.
+ * Sets the glyph id to be used for invisible glyphs.
  *
  * If @gid is negative, invisible glyphs will be suppressed from the output.
  *
@@ -1629,6 +1625,11 @@ _raqm_reorder_runs (const FriBidiCharType *types,
   }
 
   runs = malloc (sizeof (_raqm_bidi_run) * count);
+  if (!runs)
+  {
+    *run_count = 0;
+    return NULL;
+  }
 
   while (run_start < len)
   {
@@ -2747,10 +2748,10 @@ raqm_version_string (void)
  * @minor: Library minor version component.
  * @micro: Library micro version component.
  *
- * Checks if library version is less than or equal the specified version.
+ * Checks if library version is less than or equal to the specified version.
  *
  * Return value:
- * `true` if library version is less than or equal the specified version,
+ * `true` if library version is less than or equal to the specified version,
  * `false` otherwise.
  *
  * Since: 0.7
@@ -2769,10 +2770,10 @@ raqm_version_atleast (unsigned int major,
  * @minor: Library minor version component.
  * @micro: Library micro version component.
  *
- * Checks if library version is less than or equal the specified version.
+ * Checks if library version is less than or equal to the specified version.
  *
  * Return value:
- * `true` if library version is less than or equal the specified version,
+ * `true` if library version is less than or equal to the specified version,
  * `false` otherwise.
  *
  * Since: 0.7

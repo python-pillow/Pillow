@@ -3653,8 +3653,8 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
 
     PyObject *data;
     int ink;
-    int width = 0;
-    if (!PyArg_ParseTuple(args, "Oi|i", &data, &ink, &width)) {
+    int width;
+    if (!PyArg_ParseTuple(args, "Oii", &data, &ink, &width)) {
         return NULL;
     }
 
@@ -3664,7 +3664,7 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
     }
 
     Py_BEGIN_CRITICAL_SECTION2(self, self->image);
-    if (width <= 1) {
+    if (width == 1) {
         double *p = NULL;
         for (i = 0; i < n - 1; i++) {
             p = &xy[i + i];

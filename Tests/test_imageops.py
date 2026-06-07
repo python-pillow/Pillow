@@ -256,6 +256,13 @@ def test_expand_palette(border: int | tuple[int, int, int, int]) -> None:
         assert_image_equal(im_cropped, im)
 
 
+@pytest.mark.parametrize("border", ((1,), (1, 2, 3), (1, 2, 3, 4, 5)))
+def test_expand_invalid_border(border: tuple[int, ...]) -> None:
+    im = Image.new("1", (1, 1))
+    with pytest.raises(ValueError):
+        ImageOps.expand(im, border)
+
+
 def test_colorize_2color() -> None:
     # Test the colorizing function with 2-color functionality
 

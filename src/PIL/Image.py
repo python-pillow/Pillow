@@ -2639,11 +2639,8 @@ class Image:
         if is_path(fp):
             filename = os.fspath(fp)
             open_fp = True
-        elif fp == sys.stdout:
-            try:
-                fp = sys.stdout.buffer
-            except AttributeError:
-                pass
+        elif fp == sys.stdout and isinstance(sys.stdout, io.TextIOWrapper):
+            fp = sys.stdout.buffer
         if not filename and hasattr(fp, "name") and is_path(fp.name):
             # only set the name for metadata purposes
             filename = os.fspath(fp.name)

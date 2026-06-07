@@ -627,3 +627,37 @@ class TestCoreResampleBox:
                 0.4,
                 f">>> {size} {box} {flt}",
             )
+
+
+class TestCoreResample16bpc:
+    # Lanczos weighting during downsampling can push accumulated float sums
+    @pytest.mark.parametrize(
+        "offset",
+        (
+            # below 0. These must be clamped to 0, not corrupted byte-by-byte.
+            0,  # Left half = 65535, right half = 0
+            # above 65535. These must be clamped to 65535, not corrupted byte-by-byte.
+            50,  # # Left half = 0, right half = 65535
+        ),
+    )
+    def test_resampling_clamp_overflow(self, offset: int) -> None:
+        ims = {}
+        width, height = 100, 10
+        for mode in ("I;16", "F"):
+            im = Image.new(mode, (width, height))
+            im.paste(65535, (offset, 0, offset + width // 2, height))
+
+            # 5x downsampling with Lanczos
+            # creates ~8.7% overshoot or undershoot at the step edge
+            ims[mode] = im.resize((20, height), Image.Resampling.LANCZOS)
+
+        for y in range(height):
+            for x in range(20):
+                v = ims["F"].getpixel((x, y))
+                assert isinstance(v, float)
+                expected = max(0, min(65535, round(v)))
+
+                value = ims["I;16"].getpixel((x, y))
+                assert (
+                    value == expected
+                ), f"Pixel ({x}, {y}): expected {expected}, got {value}"
