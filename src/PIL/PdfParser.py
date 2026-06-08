@@ -826,7 +826,7 @@ class PdfParser:
     @classmethod
     def get_value(
         cls,
-        data: bytes | bytearray | mmap.mmap,
+        data: bytes | bytearray | memoryview | mmap.mmap,
         offset: int,
         expect_indirect: IndirectReference | None = None,
         max_nesting: int = -1,
@@ -987,7 +987,7 @@ class PdfParser:
 
     @classmethod
     def get_literal_string(
-        cls, data: bytes | bytearray | mmap.mmap, offset: int
+        cls, data: bytes | bytearray | memoryview | mmap.mmap, offset: int
     ) -> tuple[bytes, int]:
         nesting_depth = 0
         result = bytearray()
