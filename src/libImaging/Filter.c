@@ -51,47 +51,46 @@ clip32(float in) {
 }
 
 Imaging
-ImagingExpand(Imaging imIn, int xmargin, int ymargin) {
+ImagingExpand(Imaging imIn, int margin) {
     Imaging imOut;
     int x, y;
     ImagingSectionCookie cookie;
 
-    if (xmargin < 0 && ymargin < 0) {
+    if (margin < 0) {
         return (Imaging)ImagingError_ValueError("bad kernel size");
     }
 
-    imOut = ImagingNewDirty(
-        imIn->mode, imIn->xsize + 2 * xmargin, imIn->ysize + 2 * ymargin
-    );
+    imOut =
+        ImagingNewDirty(imIn->mode, imIn->xsize + 2 * margin, imIn->ysize + 2 * margin);
     if (!imOut) {
         return NULL;
     }
 
-#define EXPAND_LINE(type, image, yin, yout)                        \
-    {                                                              \
-        for (x = 0; x < xmargin; x++) {                            \
-            imOut->image[yout][x] = imIn->image[yin][0];           \
-        }                                                          \
-        for (x = 0; x < imIn->xsize; x++) {                        \
-            imOut->image[yout][x + xmargin] = imIn->image[yin][x]; \
-        }                                                          \
-        for (x = 0; x < xmargin; x++) {                            \
-            imOut->image[yout][xmargin + imIn->xsize + x] =        \
-                imIn->image[yin][imIn->xsize - 1];                 \
-        }                                                          \
+#define EXPAND_LINE(type, image, yin, yout)                       \
+    {                                                             \
+        for (x = 0; x < margin; x++) {                            \
+            imOut->image[yout][x] = imIn->image[yin][0];          \
+        }                                                         \
+        for (x = 0; x < imIn->xsize; x++) {                       \
+            imOut->image[yout][x + margin] = imIn->image[yin][x]; \
+        }                                                         \
+        for (x = 0; x < margin; x++) {                            \
+            imOut->image[yout][margin + imIn->xsize + x] =        \
+                imIn->image[yin][imIn->xsize - 1];                \
+        }                                                         \
     }
 
-#define EXPAND(type, image)                                                       \
-    {                                                                             \
-        for (y = 0; y < ymargin; y++) {                                           \
-            EXPAND_LINE(type, image, 0, y);                                       \
-        }                                                                         \
-        for (y = 0; y < imIn->ysize; y++) {                                       \
-            EXPAND_LINE(type, image, y, y + ymargin);                             \
-        }                                                                         \
-        for (y = 0; y < ymargin; y++) {                                           \
-            EXPAND_LINE(type, image, imIn->ysize - 1, ymargin + imIn->ysize + y); \
-        }                                                                         \
+#define EXPAND(type, image)                                                      \
+    {                                                                            \
+        for (y = 0; y < margin; y++) {                                           \
+            EXPAND_LINE(type, image, 0, y);                                      \
+        }                                                                        \
+        for (y = 0; y < imIn->ysize; y++) {                                      \
+            EXPAND_LINE(type, image, y, y + margin);                             \
+        }                                                                        \
+        for (y = 0; y < margin; y++) {                                           \
+            EXPAND_LINE(type, image, imIn->ysize - 1, margin + imIn->ysize + y); \
+        }                                                                        \
     }
 
     ImagingSectionEnter(&cookie);
