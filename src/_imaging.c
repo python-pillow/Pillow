@@ -108,7 +108,7 @@
 #define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
 
 /* -------------------------------------------------------------------- */
-/* OBJECT ADMINISTRATION                        */
+/* OBJECT ADMINISTRATION                                                */
 /* -------------------------------------------------------------------- */
 
 typedef struct {
@@ -375,7 +375,7 @@ ImagingError_ValueError(const char *message) {
 }
 
 /* -------------------------------------------------------------------- */
-/* HELPERS                                */
+/* HELPERS                                                              */
 /* -------------------------------------------------------------------- */
 
 static int
@@ -679,7 +679,7 @@ getink(PyObject *color, Imaging im, char *ink) {
 }
 
 /* -------------------------------------------------------------------- */
-/* FACTORIES                                */
+/* FACTORIES                                                            */
 /* -------------------------------------------------------------------- */
 
 static PyObject *
@@ -3607,7 +3607,7 @@ _effect_spread(ImagingObject *self, PyObject *args) {
 }
 
 /* -------------------------------------------------------------------- */
-/* UTILITIES                                */
+/* UTILITIES                                                            */
 /* -------------------------------------------------------------------- */
 
 static PyObject *
@@ -3640,25 +3640,6 @@ _getcodecstatus(PyObject *self, PyObject *args) {
     }
 
     return PyUnicode_FromString(msg);
-}
-
-/* -------------------------------------------------------------------- */
-/* DEBUGGING HELPERS                            */
-/* -------------------------------------------------------------------- */
-
-static PyObject *
-_save_ppm(ImagingObject *self, PyObject *args) {
-    char *filename;
-
-    if (!PyArg_ParseTuple(args, "s", &filename)) {
-        return NULL;
-    }
-
-    if (!ImagingSavePPM(self->image, filename)) {
-        return NULL;
-    }
-
-    Py_RETURN_NONE;
 }
 
 /* -------------------------------------------------------------------- */
@@ -3743,9 +3724,6 @@ static struct PyMethodDef methods[] = {
 
     /* Special effects */
     {"effect_spread", (PyCFunction)_effect_spread, METH_VARARGS},
-
-    /* Misc. */
-    {"save_ppm", (PyCFunction)_save_ppm, METH_VARARGS},
 
     /* arrow */
     {"__arrow_c_schema__", (PyCFunction)ExportArrowSchemaPyCapsule, METH_VARARGS},
