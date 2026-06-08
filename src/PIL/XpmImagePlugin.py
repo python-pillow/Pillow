@@ -118,7 +118,9 @@ class XpmImageFile(ImageFile.ImageFile):
 class XpmDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(
+        self, buffer: bytes | bytearray | memoryview | Image.SupportsArrayInterface
+    ) -> tuple[int, int]:
         assert self.fd is not None
 
         data = bytearray()

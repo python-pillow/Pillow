@@ -1054,7 +1054,8 @@ class TestFileJpeg:
         # the image should still end when there is no new data
         class InfiniteMockPyDecoder(ImageFile.PyDecoder):
             def decode(
-                self, buffer: bytes | Image.SupportsArrayInterface
+                self,
+                buffer: bytes | bytearray | memoryview | Image.SupportsArrayInterface,
             ) -> tuple[int, int]:
                 return 0, 0
 

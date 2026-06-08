@@ -924,7 +924,7 @@ class Image:
 
     def frombytes(
         self,
-        data: bytes | bytearray | SupportsArrayInterface,
+        data: bytes | bytearray | memoryview | SupportsArrayInterface,
         decoder_name: str = "raw",
         *args: Any,
     ) -> None:
@@ -3234,7 +3234,7 @@ def new(
 def frombytes(
     mode: str,
     size: tuple[int, int],
-    data: bytes | bytearray | SupportsArrayInterface,
+    data: bytes | bytearray | memoryview | SupportsArrayInterface,
     decoder_name: str = "raw",
     *args: Any,
 ) -> Image:
