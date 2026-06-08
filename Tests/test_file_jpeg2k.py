@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import re
+import struct
 from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
@@ -545,6 +546,18 @@ def test_plt_marker(card: ImageFile.ImageFile) -> None:
         hdr = out.read(2)
         length = _binary.i16be(hdr)
         out.seek(length - 2, os.SEEK_CUR)
+
+
+def test_marker_length() -> None:
+    magic = b"\xff\x4f\xff\x51"
+    b = BytesIO(magic + b"\x00\x00")
+    with pytest.raises(ValueError, match="SIZ marker length must be at least 38"):
+        Image.open(b)
+
+    siz_marker = _binary.o16be(38) + b"\x00" * 34 + struct.pack(">H", 2)
+    b = BytesIO(magic + siz_marker + b"\x00" * 4)
+    with pytest.raises(ValueError, match="Marker length too small"):
+        Image.open(b)
 
 
 def test_9bit() -> None:
