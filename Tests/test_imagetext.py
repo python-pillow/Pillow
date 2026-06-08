@@ -154,8 +154,8 @@ def test_wrap_height() -> None:
     text = ImageText.Text("Text does not fit within height")
     wrapped = text.wrap(width, 25 if features.check_module("freetype2") else 40)
     assert wrapped is not None
-    assert wrapped.text == " within height"
-    assert text.text == "Text does\nnot fit"
+    assert wrapped.text == " not fit within height"
+    assert text.text == "Text does"
 
     text = ImageText.Text("Text does not fit\nwithin height")
     wrapped = text.wrap(width, 20)
@@ -166,8 +166,8 @@ def test_wrap_height() -> None:
     text = ImageText.Text("Text does not fit\n\nwithin height")
     wrapped = text.wrap(width, 25 if features.check_module("freetype2") else 40)
     assert wrapped is not None
-    assert wrapped.text == "\nwithin height"
-    assert text.text == "Text does\nnot fit"
+    assert wrapped.text == " not fit\n\nwithin height"
+    assert text.text == "Text does"
 
 
 def test_wrap_scaling_unsupported() -> None:

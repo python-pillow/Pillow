@@ -223,7 +223,7 @@ def test_float_size(layout_engine: ImageFont.Layout) -> None:
 def test_render_multiline(font: ImageFont.FreeTypeFont) -> None:
     im = Image.new(mode="RGB", size=(300, 100))
     draw = ImageDraw.Draw(im)
-    line_spacing = font.getbbox("A")[3] + 4
+    line_spacing = font.getbbox("Aj")[3] + 4
     lines = TEST_TEXT.split("\n")
     y: float = 0
     for line in lines:
