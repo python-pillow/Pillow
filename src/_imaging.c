@@ -2775,6 +2775,9 @@ textwidth(ImagingFontObject *self, const unsigned char *text) {
         xsize += self->glyphs[*text].dx;
     }
 
+    if (xsize < 0) {
+        return 0;
+    }
     return xsize;
 }
 
