@@ -391,6 +391,7 @@ class PngStream(ChunkStream):
         self.im_text: dict[str, str | iTXt] = {}
         self.im_size = (0, 0)
         self.im_mode = ""
+        self.im_bit_depth = 0
         self.im_tile: list[ImageFile._Tile] = []
         self.im_palette: tuple[str, bytes] | None = None
         self.im_custom_mimetype: str | None = None
@@ -459,6 +460,7 @@ class PngStream(ChunkStream):
             msg = "Truncated IHDR chunk"
             raise ValueError(msg)
         self.im_size = i32(s, 0), i32(s, 4)
+        self.im_bit_depth = s[8]
         try:
             self.im_mode, self.im_rawmode = _MODES[(s[8], s[9])]
         except Exception:
@@ -801,6 +803,7 @@ class PngImageFile(ImageFile.ImageFile):
         self._mode = self.png.im_mode
         self._size = self.png.im_size
         self.info = self.png.im_info
+        self.bit_depth = self.png.im_bit_depth
         self._text: dict[str, str | iTXt] | None = None
         self.tile = self.png.im_tile
         self.custom_mimetype = self.png.im_custom_mimetype
