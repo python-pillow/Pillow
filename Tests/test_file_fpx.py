@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from io import BytesIO
+
 import pytest
 
 from PIL import Image
@@ -43,7 +45,16 @@ def test_invalid_file() -> None:
         FpxImagePlugin.FpxImageFile(ole_file)
 
 
-def test_fpx_invalid_number_of_bands() -> None:
+def test_invalid_size() -> None:
+    # Test a valid OLE file, but not an FPX file
+    with open("Tests/images/input_bw_one_band.fpx", "rb") as f:
+        data = f.read()
+    data = data[:4204] + b"\x00" * 8 + data[4212:]
+    with pytest.raises(ValueError, match="Tile must be 64 pixels by 64 pixels"):
+        Image.open(BytesIO(data))
+
+
+def test_invalid_number_of_bands() -> None:
     with pytest.raises(OSError, match="Invalid number of bands"):
         with Image.open("Tests/images/input_bw_five_bands.fpx"):
             pass
