@@ -116,7 +116,7 @@ class TestImageWinDib:
 
         # Act
         # Make one the same as the using tobytes()/frombytes()
-        test_buffer = dib1.tobytes()
+        test_buffer: bytes | memoryview[int] = dib1.tobytes()
         for datatype in ("bytes", "memoryview"):
             if datatype == "memoryview":
                 test_buffer = memoryview(test_buffer)

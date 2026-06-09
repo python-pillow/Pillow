@@ -39,6 +39,7 @@ from io import BytesIO
 from typing import IO
 
 from . import Image, ImageFile
+from ._typing import Buffer
 
 
 class Format(IntEnum):
@@ -295,7 +296,7 @@ class BlpImageFile(ImageFile.ImageFile):
 class _BLPBaseDecoder(abc.ABC, ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Buffer | Image.SupportsArrayInterface) -> tuple[int, int]:
         try:
             self._read_header()
             self._load()

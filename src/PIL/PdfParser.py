@@ -14,6 +14,8 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from typing import IO
 
+    from ._typing import Buffer
+
     _DictBase = collections.UserDict[str | bytes, Any]
 else:
     _DictBase = collections.UserDict
@@ -316,11 +318,11 @@ class PdfBinary:
 
 
 class PdfStream:
-    def __init__(self, dictionary: PdfDict, buf: bytes) -> None:
+    def __init__(self, dictionary: PdfDict, buf: Buffer) -> None:
         self.dictionary = dictionary
         self.buf = buf
 
-    def decode(self) -> bytes:
+    def decode(self) -> Buffer:
         try:
             filter = self.dictionary[b"Filter"]
         except KeyError:
@@ -824,7 +826,7 @@ class PdfParser:
     @classmethod
     def get_value(
         cls,
-        data: bytes | bytearray | mmap.mmap,
+        data: bytes | bytearray | memoryview | mmap.mmap,
         offset: int,
         expect_indirect: IndirectReference | None = None,
         max_nesting: int = -1,
@@ -985,7 +987,7 @@ class PdfParser:
 
     @classmethod
     def get_literal_string(
-        cls, data: bytes | bytearray | mmap.mmap, offset: int
+        cls, data: bytes | bytearray | memoryview | mmap.mmap, offset: int
     ) -> tuple[bytes, int]:
         nesting_depth = 0
         result = bytearray()

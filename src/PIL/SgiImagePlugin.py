@@ -29,6 +29,7 @@ from typing import IO
 from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import o8
+from ._typing import Buffer
 
 
 def _accept(prefix: bytes) -> bool:
@@ -198,7 +199,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 class SGI16Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Buffer | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
         assert self.im is not None
 

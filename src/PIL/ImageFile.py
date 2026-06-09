@@ -41,7 +41,7 @@ from ._util import DeferredError, is_path
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from ._typing import StrOrBytesPath
+    from ._typing import Buffer, StrOrBytesPath
 
 logger = logging.getLogger(__name__)
 
@@ -836,7 +836,7 @@ class PyDecoder(PyCodec):
     def pulls_fd(self) -> bool:
         return self._pulls_fd
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Buffer | Image.SupportsArrayInterface) -> tuple[int, int]:
         """
         Override to perform the decoding process.
 
@@ -849,7 +849,10 @@ class PyDecoder(PyCodec):
         raise NotImplementedError(msg)
 
     def set_as_raw(
-        self, data: bytes, rawmode: str | None = None, extra: tuple[Any, ...] = ()
+        self,
+        data: bytes | bytearray,
+        rawmode: str | None = None,
+        extra: tuple[Any, ...] = (),
     ) -> None:
         """
         Convenience method to set the internal image from a stream of raw data
@@ -890,7 +893,7 @@ class PyEncoder(PyCodec):
     def pushes_fd(self) -> bool:
         return self._pushes_fd
 
-    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
+    def encode(self, bufsize: int) -> tuple[int, int, bytes | bytearray]:
         """
         Override to perform the encoding process.
 

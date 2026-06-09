@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 from . import Image
+from ._typing import Buffer
 
 
 class HDC:
@@ -183,7 +184,7 @@ class Dib:
         else:
             self.image.paste(im.im)
 
-    def frombytes(self, buffer: bytes) -> None:
+    def frombytes(self, buffer: Buffer) -> None:
         """
         Load display memory contents from byte data.
 
