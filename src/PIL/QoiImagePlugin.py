@@ -115,15 +115,13 @@ class QoiDecoder(ImageFile.PyDecoder):
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    if im.mode == "RGB":
-        channels = 3
-    elif im.mode == "RGBA":
-        channels = 4
-    else:
-        msg = "Unsupported QOI image mode"
-        raise ValueError(msg)
+    encoderinfo = im.encoderinfo
 
-    colorspace = 0 if im.encoderinfo.get("colorspace") == "sRGB" else 1
+    if im.mode not in ("RGB", "RGBA"):
+        im = im.convert("RGBA")
+
+    channels = 3 if im.mode == "RGB" else 4
+    colorspace = 0 if encoderinfo.get("colorspace") == "sRGB" else 1
 
     fp.write(b"qoif")
     fp.write(o32(im.size[0]))

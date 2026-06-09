@@ -1340,6 +1340,8 @@ def _save(
         append_images = im.encoderinfo.get("append_images", [])
         for im_seq in itertools.chain([im], append_images):
             for im_frame in ImageSequence.Iterator(im_seq):
+                if im_frame.mode not in _OUTMODES:
+                    im_frame = im_frame.convert("RGBA")
                 modes.add(im_frame.mode)
                 sizes.add(im_frame.size)
         for mode in ("RGBA", "RGB", "P"):
@@ -1350,6 +1352,10 @@ def _save(
         size = tuple(max(frame_size[i] for frame_size in sizes) for i in range(2))
     else:
         size = im.size
+        if im.mode not in _OUTMODES:
+            encoderinfo = im.encoderinfo
+            im = im.convert("RGBA")
+            im.encoderinfo = encoderinfo
         mode = im.mode
 
     outmode = mode
