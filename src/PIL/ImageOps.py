@@ -25,6 +25,17 @@ from collections.abc import Sequence
 from typing import Literal, Protocol, cast, overload
 
 from . import ExifTags, Image, ImagePalette
+from ._moire import (
+    _add_noise,
+    _bayer_resampling,
+    _demosaic_bilinear,
+    _denoise,
+    _flat_top_filtering,
+    _jpeg_compression,
+    _lcd_resampling,
+    _projective_transformation,
+    _radial_distortion,
+)
 
 #
 # helpers
@@ -645,6 +656,28 @@ def mirror(image: Image.Image) -> Image.Image:
     :return: An image.
     """
     return image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+
+
+def moire(image: Image.Image) -> Image.Image:
+    """
+    Generate a synthetic Moire image.
+    :param image:
+    :return: An image.
+    """
+    if len(image.getbands()) == 1:
+        image = image.convert("RGB")
+
+    resampled_img = _lcd_resampling(image)
+    projective_transform = _projective_transformation(resampled_img)
+    distorted_img = _radial_distortion(projective_transform)
+    filtered_img = _flat_top_filtering(distorted_img)
+    Bayer = _bayer_resampling(filtered_img)
+    Bayer_noise = _add_noise(Bayer)
+    rgb_img = _demosaic_bilinear(Bayer_noise)
+    rgb_denoised = _denoise(rgb_img)
+    compressed_img = _jpeg_compression(rgb_denoised)
+
+    return compressed_img
 
 
 def posterize(image: Image.Image, bits: int) -> Image.Image:
