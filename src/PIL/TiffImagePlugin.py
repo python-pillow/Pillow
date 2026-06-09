@@ -401,6 +401,9 @@ class IFDRational(Rational):
         f = self._val.limit_denominator(max_denominator)
         return f.numerator, f.denominator
 
+    def __float__(self) -> float:
+        return float(self._val)
+
     def __repr__(self) -> str:
         return str(float(self._val))
 
@@ -687,7 +690,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 if all(isinstance(v, IFDRational) for v in values):
                     for v in values:
                         assert isinstance(v, IFDRational)
-                        if v < 0:
+                        if v < 0 or (math.isnan(v) and float(v.numerator) < 0):
                             self.tagtype[tag] = TiffTags.SIGNED_RATIONAL
                             break
                     else:
