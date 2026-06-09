@@ -24,14 +24,7 @@ sudo apt-get -qq install libfreetype6-dev liblcms2-dev libtiff-dev python3-tk\
 
 python3 -m pip install --upgrade pip
 python3 -m pip install --upgrade wheel
-python3 -m pip install coverage
-python3 -m pip install defusedxml
 python3 -m pip install ipython
-python3 -m pip install olefile
-python3 -m pip install -U pytest
-python3 -m pip install -U pytest-cov
-python3 -m pip install -U pytest-timeout
-python3 -m pip install pyroma
 # optional test dependencies, only install if there's a binary package.
 python3 -m pip install --only-binary=:all: numpy || true
 python3 -m pip install --only-binary=:all: pyarrow || true
