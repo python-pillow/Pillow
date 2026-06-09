@@ -184,33 +184,45 @@ Many of Pillow's features require external libraries:
 
 .. tab:: Windows using MSYS2/MinGW
 
-    To build Pillow using MSYS2, make sure you run the **MSYS2 MinGW 32-bit** or
-    **MSYS2 MinGW 64-bit** console, *not* **MSYS2** directly.
+    The following instructions are for the **MSYS2 UCRT64** system.
+    To build Pillow on one of the other MSYS2 systems, replace all occurences of
+    ``mingw-w64-ucrt-x86_64`` with the corresponding prefix:
 
-    The following instructions target the 64-bit build, for 32-bit
-    replace all occurrences of ``mingw-w64-x86_64-`` with ``mingw-w64-i686-``.
+    .. list-table::
+        :header-rows: 1
+
+        * - MSYS2 system
+          - Package prefix
+        * - **UCRT64**
+          - ``mingw-w64-ucrt-x86_64``
+        * - **CLANG64**
+          - ``mingw-w64-clang-x86_64``
+        * - **MINGW64**
+          - ``mingw-w64-x86_64``
+
+    Installing in **MSYS2 MSYS** is not supported.
 
     Make sure you have Python and GCC installed::
 
         pacman -S \
-            mingw-w64-x86_64-gcc \
-            mingw-w64-x86_64-python \
-            mingw-w64-x86_64-python-pip \
-            mingw-w64-x86_64-python-setuptools
+            mingw-w64-ucrt-x86_64-gcc \
+            mingw-w64-ucrt-x86_64-python3 \
+            mingw-w64-ucrt-x86_64-python3-pip \
+            mingw-w64-ucrt-x86_64-python3-setuptools
 
-    Prerequisites are installed on **MSYS2 MinGW 64-bit** with::
+    Prerequisites are installed on **MSYS2 UCRT64** with::
 
         pacman -S \
-            mingw-w64-x86_64-libjpeg-turbo \
-            mingw-w64-x86_64-zlib \
-            mingw-w64-x86_64-libtiff \
-            mingw-w64-x86_64-freetype \
-            mingw-w64-x86_64-lcms2 \
-            mingw-w64-x86_64-libwebp \
-            mingw-w64-x86_64-openjpeg2 \
-            mingw-w64-x86_64-libimagequant \
-            mingw-w64-x86_64-libraqm \
-            mingw-w64-x86_64-libavif
+            mingw-w64-ucrt-x86_64-libjpeg-turbo \
+            mingw-w64-ucrt-x86_64-zlib \
+            mingw-w64-ucrt-x86_64-libtiff \
+            mingw-w64-ucrt-x86_64-freetype \
+            mingw-w64-ucrt-x86_64-lcms2 \
+            mingw-w64-ucrt-x86_64-libwebp \
+            mingw-w64-ucrt-x86_64-openjpeg2 \
+            mingw-w64-ucrt-x86_64-libimagequant \
+            mingw-w64-ucrt-x86_64-libraqm \
+            mingw-w64-ucrt-x86_64-libavif
 
 .. tab:: FreeBSD
 
