@@ -65,15 +65,21 @@ Functions
 Methods
 -------
 
+.. autoclass:: PIL.ImageFont.BaseImageFont
+    :members:
+
 .. autoclass:: PIL.ImageFont.ImageFont
     :members:
+    :show-inheritance:
 
 .. autoclass:: PIL.ImageFont.FreeTypeFont
     :members:
+    :show-inheritance:
 
 .. autoclass:: PIL.ImageFont.TransposedFont
     :members:
     :undoc-members:
+    :show-inheritance:
 
 Constants
 ---------
