@@ -7,7 +7,12 @@ from typing import AnyStr, Generic, NamedTuple
 from . import ImageFont
 from ._typing import _Ink
 
-Font = ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont
+Font = (
+    ImageFont.ImageFont
+    | ImageFont.FreeTypeFont
+    | ImageFont.TransposedFont
+    | ImageFont.YaffImageFont
+)
 
 
 class _Line(NamedTuple):

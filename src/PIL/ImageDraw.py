@@ -60,7 +60,11 @@ directly.
 
 class ImageDraw:
     font: (
-        ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont | None
+        ImageFont.ImageFont
+        | ImageFont.FreeTypeFont
+        | ImageFont.TransposedFont
+        | ImageFont.YaffImageFont
+        | None
     ) = None
 
     def __init__(self, im: Image.Image, mode: str | None = None) -> None:
@@ -105,7 +109,12 @@ class ImageDraw:
 
     def getfont(
         self,
-    ) -> ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont:
+    ) -> (
+        ImageFont.ImageFont
+        | ImageFont.FreeTypeFont
+        | ImageFont.TransposedFont
+        | ImageFont.YaffImageFont
+    ):
         """
         Get the current default font.
 
@@ -132,7 +141,12 @@ class ImageDraw:
 
     def _getfont(
         self, font_size: float | None
-    ) -> ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont:
+    ) -> (
+        ImageFont.ImageFont
+        | ImageFont.FreeTypeFont
+        | ImageFont.TransposedFont
+        | ImageFont.YaffImageFont
+    ):
         if font_size is not None:
             from . import ImageFont
 

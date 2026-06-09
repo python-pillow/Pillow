@@ -769,6 +769,159 @@ class TransposedFont:
         return self.font.getlength(text, *args, **kwargs)
 
 
+class YaffImageFont:
+    """Bitmap font loaded from a YAFF format file, with kerning support.
+
+    To load a YAFF font::
+
+        font = ImageFont.yaff("path/to/font.yaff")
+
+    .. versionadded:: 12.3.0
+    """
+
+    def __init__(self, font: StrOrBytesPath | BinaryIO) -> None:
+        from . import YaffFontFile
+
+        self.path = font if is_path(font) else ""
+        data = YaffFontFile.load(font)
+
+        self.glyphs = data.glyphs
+        self.ascent = data.ascent
+        self.descent = data.descent
+        self.line_height = data.line_height
+        self.default_char = data.default_char
+        self._global_left_bearing = data.global_left_bearing
+        self._global_right_bearing = data.global_right_bearing
+        self._global_shift_up = data.global_shift_up
+
+    def _get_glyph(self, codepoint: int) -> Any:
+        glyph = self.glyphs.get(codepoint)
+        if glyph is not None:
+            return glyph
+        if self.default_char is not None:
+            return self.glyphs.get(self.default_char)
+        return None
+
+    def _advance_width(self, glyph: Any) -> int:
+        lb = glyph.left_bearing + self._global_left_bearing
+        rb = glyph.right_bearing + self._global_right_bearing
+        return lb + glyph.image.width + rb
+
+    def _kern(self, cp_a: int, cp_b: int) -> int:
+        """Compute kerning adjustment between two codepoints."""
+        total = 0
+        glyph_a = self.glyphs.get(cp_a)
+        glyph_b = self.glyphs.get(cp_b)
+        if glyph_a is not None:
+            total += glyph_a.right_kerning.get(cp_b, 0)
+        if glyph_b is not None:
+            total += glyph_b.left_kerning.get(cp_a, 0)
+        return total
+
+    def getmetrics(self) -> tuple[int, int]:
+        """Return font ascent and descent.
+
+        :return: A ``(ascent, descent)`` tuple.
+        """
+        return self.ascent, self.descent
+
+    def getlength(self, text: str | bytes, *args: Any, **kwargs: Any) -> int:
+        """Return the advance width of the text in pixels, including kerning.
+
+        :param text: Text to measure.
+        :return: Width in pixels.
+        """
+        if isinstance(text, bytes):
+            text = text.decode("utf-8")
+
+        total = 0
+        prev_cp: int | None = None
+        for char in text:
+            cp = ord(char)
+            glyph = self._get_glyph(cp)
+            if glyph is None:
+                prev_cp = None
+                continue
+            if prev_cp is not None:
+                total += self._kern(prev_cp, cp)
+            total += self._advance_width(glyph)
+            prev_cp = cp
+        return max(total, 0)
+
+    def getbbox(
+        self, text: str | bytes, *args: Any, **kwargs: Any
+    ) -> tuple[int, int, int, int]:
+        """Return bounding box of the text.
+
+        :param text: Text to measure.
+        :return: A ``(left, top, right, bottom)`` bounding box tuple.
+        """
+        width = self.getlength(text)
+        return 0, 0, width, self.ascent + self.descent
+
+    def getmask(
+        self, text: str | bytes, mode: str = "", *args: Any, **kwargs: Any
+    ) -> Image.core.ImagingCore:
+        """Create a bitmap for the text.
+
+        :param text: Text to render.
+        :param mode: Font rendering mode (``"1"`` or ``"L"``).
+        :return: An internal PIL storage memory instance.
+        """
+        return self.getmask2(text, mode, *args, **kwargs)[0]
+
+    def getmask2(
+        self, text: str | bytes, mode: str = "", *args: Any, **kwargs: Any
+    ) -> tuple[Image.core.ImagingCore, tuple[int, int]]:
+        """Create a bitmap for the text with positioning offset.
+
+        :param text: Text to render.
+        :param mode: Font rendering mode (``"1"`` or ``"L"``).
+        :return: A ``(mask, offset)`` tuple.
+        """
+        if isinstance(text, bytes):
+            text = text.decode("utf-8")
+
+        width = self.getlength(text)
+        height = self.ascent + self.descent
+
+        if width == 0 or height == 0:
+            im = Image.new("1", (max(width, 1), max(height, 1)))
+            if mode == "L":
+                im = im.convert("L")
+            return im.im, (0, 0)
+
+        im = Image.new("1", (width, height))
+
+        x = 0
+        prev_cp: int | None = None
+        for char in text:
+            cp = ord(char)
+            glyph = self._get_glyph(cp)
+            if glyph is None:
+                prev_cp = None
+                continue
+
+            if prev_cp is not None:
+                x += self._kern(prev_cp, cp)
+
+            if glyph.image.width > 0 and glyph.image.height > 0:
+                lb = glyph.left_bearing + self._global_left_bearing
+                su = glyph.shift_up + self._global_shift_up
+                gx = x + lb
+                gy = self.ascent - su - glyph.image.height
+                # Use OR compositing so overlapping glyphs combine
+                im.paste(glyph.image, (gx, gy), glyph.image)
+
+            x += self._advance_width(glyph)
+            prev_cp = cp
+
+        if mode == "L":
+            im = im.convert("L")
+
+        return im.im, (0, 0)
+
+
 def load(filename: str) -> ImageFont:
     """
     Load a font file. This function loads a font object from the given
@@ -914,6 +1067,23 @@ def truetype(
         if first_font_with_a_different_extension:
             return freetype(first_font_with_a_different_extension)
         raise
+
+
+def yaff(font: StrOrBytesPath | BinaryIO) -> YaffImageFont:
+    """Load a YAFF bitmap font file.
+
+    This function loads a font from a YAFF format file and returns a font
+    object that supports kerning and proportional glyph widths. For loading
+    TrueType or OpenType fonts, see :py:func:`~PIL.ImageFont.truetype`.
+
+    :param font: A filename or file-like object containing a YAFF font.
+    :return: A font object.
+    :exception OSError: If the file could not be read.
+    :exception SyntaxError: If the file is not a valid YAFF font.
+
+    .. versionadded:: 12.3.0
+    """
+    return YaffImageFont(font)
 
 
 def load_path(filename: str | bytes) -> ImageFont:
