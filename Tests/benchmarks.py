@@ -9,14 +9,15 @@ from io import BytesIO
 
 import pytest
 
-from PIL import Image, ImageFilter
+from PIL import Image, ImageChops, ImageFilter
 from PIL.Image import Resampling, Transpose
 
 TYPE_CHECKING = False
-
 if TYPE_CHECKING:
-    from pytest_benchmark.fixture import (
-        BenchmarkFixture,  # type: ignore[import-not-found]
+    from collections.abc import Callable
+
+    from pytest_benchmark.fixture import (  # type: ignore[import-not-found]
+        BenchmarkFixture,
     )
 
 pytest.importorskip(
@@ -43,6 +44,7 @@ PATHS = [
 # These are derived from the other configuration, above.
 RGB_MODES = [mode for mode in MODES if mode.startswith("RGB")]
 ALPHA_MODES = [mode for mode in MODES if mode.endswith("A")]
+SCALE_MODES = [*MODES, "I", "F"]
 
 
 def _format_size(size: tuple[int, int]) -> str:
@@ -103,7 +105,7 @@ def test_blend(
 @pytest.mark.benchmark(group="scale")
 @pytest.mark.parametrize("resampler", Resampling, ids=lambda r: r.name)
 @pytest.mark.parametrize("scale", [0.01, 0.125, 0.8, 2.14])
-@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("mode", SCALE_MODES)
 @pytest.mark.parametrize("size", SIZES, ids=_format_size)
 def test_scale(
     bench: BenchmarkFixture,
@@ -341,3 +343,140 @@ def test_merge(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> Non
     bands = im.split()
     bench.extra_info["label"] = [f"merge {mode}"]
     bench(Image.merge, mode, bands)
+
+
+@pytest.mark.benchmark(group="allocate")
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_fill(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> None:
+    nbands = len(Image.new(mode, (1, 1)).getbands())
+    color = (10, 20, 30, 40)[:nbands] if nbands > 1 else 10
+    bench.extra_info["label"] = [f"fill {mode}"]
+    bench(Image.new, mode, size, color)
+
+
+CHOPS_OPS = [
+    ImageChops.add,
+    ImageChops.subtract,
+    ImageChops.multiply,
+    ImageChops.screen,
+    ImageChops.difference,
+    ImageChops.lighter,
+    ImageChops.darker,
+    ImageChops.add_modulo,
+    ImageChops.soft_light,
+    ImageChops.hard_light,
+    ImageChops.overlay,
+]
+
+
+@pytest.mark.benchmark(group="chops")
+@pytest.mark.parametrize("op", CHOPS_OPS, ids=lambda f: f.__name__)
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_chops(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+    op: Callable[[Image.Image, Image.Image], Image.Image],
+) -> None:
+    im1 = make_pillow_image(mode, size)
+    im2 = make_pillow_image(mode, size, pattern_offset=1024)
+    bench.extra_info["label"] = [op.__name__]
+    result = bench(op, im1, im2)
+    assert result.size == im1.size
+
+
+@pytest.mark.benchmark(group="chops")
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_invert(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> None:
+    im = make_pillow_image(mode, size)
+    bench.extra_info["label"] = ["invert"]
+    bench(ImageChops.invert, im)
+
+
+@pytest.mark.benchmark(group="chops")
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_offset(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> None:
+    im = make_pillow_image(mode, size)
+    bench.extra_info["label"] = ["offset"]
+    bench(ImageChops.offset, im, 123, 45)
+
+
+@pytest.mark.benchmark(group="histogram")
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_histogram(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> None:
+    im = make_pillow_image(mode, size)
+    bench.extra_info["label"] = [f"histogram {mode}"]
+    bench(im.histogram)
+
+
+@pytest.mark.benchmark(group="histogram")
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_histogram_masked(
+    bench: BenchmarkFixture, mode: str, size: tuple[int, int]
+) -> None:
+    im = make_pillow_image(mode, size)
+    mask = make_pillow_image("L", size)
+    bench.extra_info["label"] = [f"masked histogram {mode}"]
+    bench(im.histogram, mask)
+
+
+L_MATRIX = (0.299, 0.587, 0.114, 0.0)
+RGB_MATRIX = (
+    0.412, 0.357, 0.180, 0.0,
+    0.212, 0.715, 0.072, 0.0,
+    0.019, 0.119, 0.950, 0.0,
+)  # fmt: skip
+
+
+@pytest.mark.benchmark(group="convert")
+@pytest.mark.parametrize(
+    "mode_to, matrix",
+    [("L", L_MATRIX), ("RGB", RGB_MATRIX)],
+)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_matrix_convert(
+    bench: BenchmarkFixture,
+    mode_to: str,
+    matrix: tuple[float, ...],
+    size: tuple[int, int],
+) -> None:
+    im = make_pillow_image("RGB", size)
+    bench.extra_info["label"] = [f"matrix RGB to {mode_to}"]
+    bench(im.convert, mode_to, matrix)
+
+
+@pytest.mark.benchmark(group="point")
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_point_lut(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> None:
+    im = make_pillow_image(mode, size)
+    lut = [255 - i for i in range(256)] * len(im.getbands())
+    bench.extra_info["label"] = [f"LUT {mode}"]
+    bench(im.point, lut)
+
+
+@pytest.mark.benchmark(group="point")
+@pytest.mark.parametrize("mode", ["I", "F"])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_point_transform(
+    bench: BenchmarkFixture, mode: str, size: tuple[int, int]
+) -> None:
+    im = make_pillow_image(mode, size)
+    bench.extra_info["label"] = [f"transform {mode}"]
+    bench(im.point, lambda v: v * 1.5 + 3.0)
+
+
+@pytest.mark.benchmark(group="quantize")
+@pytest.mark.parametrize("mode", [m for m in MODES if m in ("L", "RGB", "RGBA")])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_quantize(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> None:
+    im = make_pillow_image(mode, size)
+    bench.extra_info["label"] = [f"quantize {mode}"]
+    result = bench(im.quantize, 256)
+    assert result.mode == "P"
