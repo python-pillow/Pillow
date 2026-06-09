@@ -202,7 +202,7 @@ class TestImage:
                 from collections.abc import Buffer
 
                 def write(self, data: Buffer) -> int:
-                    return len(data)
+                    return len(bytes(data))
 
             else:
 

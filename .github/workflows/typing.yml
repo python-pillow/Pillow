@@ -1,4 +1,4 @@
-name: Lint
+name: Typing
 
 on: [push, pull_request, workflow_dispatch]
 
@@ -14,9 +14,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
+  typing:
     runs-on: ubuntu-latest
-    name: Lint
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [
+          "3.14",
+          "3.13",
+          "3.12",
+          "3.11",
+          "3.10",
+        ]
+
+    name: Typing Python ${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -26,5 +38,15 @@ jobs:
           python-version: "3.x"
       - name: Install uv
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
-      - name: Lint
-        run: uvx --with tox-uv tox -e lint
+      - name: Typing
+        run: uvx --with tox-uv tox -e mypy -- --python-version=${{ matrix.python-version }}
+
+  success:
+    permissions:
+      contents: none
+    needs: typing
+    runs-on: ubuntu-latest
+    name: Typing Successful
+    steps:
+      - name: Success
+        run: echo Typing Successful
