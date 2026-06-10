@@ -163,6 +163,16 @@ jobs:
         flags: ${{ matrix.os == 'ubuntu-latest' && 'GHA_Ubuntu' || 'GHA_macOS' }}
         name: ${{ matrix.os }} Python ${{ matrix.python-version }}
 
+    - name: Run benchmarks
+      run: |
+        .ci/benchmark.sh
+
+    - name: Upload benchmarks
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: benchmarks-${{ matrix.os }}-${{ matrix.python-version }}
+        path: .benchmarks
+
   success:
     permissions:
       contents: none
