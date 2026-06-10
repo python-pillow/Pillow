@@ -2167,7 +2167,9 @@ class Image:
         self.load()  # install new palette
 
     def putpixel(
-        self, xy: tuple[int, int], value: float | tuple[int, ...] | list[int]
+        self,
+        xy: tuple[int, int] | list[int],
+        value: float | tuple[int, ...] | list[int],
     ) -> None:
         """
         Modifies the pixel at the given position. The color is given as
