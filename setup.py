@@ -57,7 +57,7 @@ WEBP_ROOT = None
 ZLIB_ROOT = None
 FUZZING_BUILD = "LIB_FUZZING_ENGINE" in os.environ
 
-if sys.platform == "win32" and sys.version_info >= (3, 15):
+if sys.platform == "win32" and sys.version_info >= (3, 16):
     import atexit
 
     atexit.register(
@@ -94,7 +94,6 @@ _LIB_IMAGING = (
     "Draw",
     "Effects",
     "EpsEncode",
-    "File",
     "Fill",
     "Filter",
     "FliDecode",

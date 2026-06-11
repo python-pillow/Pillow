@@ -49,6 +49,12 @@ class TestFileWebp:
         assert version is not None
         assert re.search(r"\d+\.\d+\.\d+$", version)
 
+    def test_invalid_file(self) -> None:
+        invalid_file = "Tests/images/flower.jpg"
+
+        with pytest.raises(SyntaxError):
+            WebPImagePlugin.WebPImageFile(invalid_file)
+
     def test_read_rgb(self) -> None:
         """
         Can we read a RGB mode WebP file without error?

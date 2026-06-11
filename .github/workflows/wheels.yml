@@ -36,7 +36,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  EXPECTED_DISTS: 68
+  EXPECTED_DISTS: 89
   FORCE_COLOR: 1
 
 jobs:
@@ -64,7 +64,7 @@ jobs:
             platform: macos
             os: macos-26-intel
             cibw_arch: x86_64
-            build: "{cp314,pp3}*"
+            build: "{cp314,cp315,pp3}*"
             macosx_deployment_target: "10.15"
           - name: "macOS arm64"
             platform: macos
@@ -107,7 +107,7 @@ jobs:
             cibw_arch: arm64_iphonesimulator
           - name: "iOS x86_64 simulator"
             platform: ios
-            os: macos-15-intel
+            os: macos-26-intel
             cibw_arch: x86_64_iphonesimulator
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2

@@ -108,7 +108,7 @@
 #define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
 
 /* -------------------------------------------------------------------- */
-/* OBJECT ADMINISTRATION                        */
+/* OBJECT ADMINISTRATION                                                */
 /* -------------------------------------------------------------------- */
 
 typedef struct {
@@ -323,13 +323,9 @@ _new_arrow(PyObject *self, PyObject *args) {
     mode_id = findModeID(mode);
 
     // ImagingBorrowArrow is responsible for retaining the array_capsule
-    ret = PyImagingNew(
+    return PyImagingNew(
         ImagingNewArrow(mode_id, xsize, ysize, schema_capsule, array_capsule)
     );
-    if (!ret) {
-        return ImagingError_ValueError("Invalid Arrow array mode or size mismatch");
-    }
-    return ret;
 }
 
 /* -------------------------------------------------------------------- */
@@ -379,7 +375,7 @@ ImagingError_ValueError(const char *message) {
 }
 
 /* -------------------------------------------------------------------- */
-/* HELPERS                                */
+/* HELPERS                                                              */
 /* -------------------------------------------------------------------- */
 
 static int
@@ -683,7 +679,7 @@ getink(PyObject *color, Imaging im, char *ink) {
 }
 
 /* -------------------------------------------------------------------- */
-/* FACTORIES                                */
+/* FACTORIES                                                            */
 /* -------------------------------------------------------------------- */
 
 static PyObject *
@@ -3172,8 +3168,8 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
 
     PyObject *data;
     int ink;
-    int width = 0;
-    if (!PyArg_ParseTuple(args, "Oi|i", &data, &ink, &width)) {
+    int width;
+    if (!PyArg_ParseTuple(args, "Oii", &data, &ink, &width)) {
         return NULL;
     }
 
@@ -3182,7 +3178,7 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (width <= 1) {
+    if (width == 1) {
         double *p = NULL;
         for (i = 0; i < n - 1; i++) {
             p = &xy[i + i];
@@ -3611,7 +3607,7 @@ _effect_spread(ImagingObject *self, PyObject *args) {
 }
 
 /* -------------------------------------------------------------------- */
-/* UTILITIES                                */
+/* UTILITIES                                                            */
 /* -------------------------------------------------------------------- */
 
 static PyObject *
@@ -3644,25 +3640,6 @@ _getcodecstatus(PyObject *self, PyObject *args) {
     }
 
     return PyUnicode_FromString(msg);
-}
-
-/* -------------------------------------------------------------------- */
-/* DEBUGGING HELPERS                            */
-/* -------------------------------------------------------------------- */
-
-static PyObject *
-_save_ppm(ImagingObject *self, PyObject *args) {
-    char *filename;
-
-    if (!PyArg_ParseTuple(args, "s", &filename)) {
-        return NULL;
-    }
-
-    if (!ImagingSavePPM(self->image, filename)) {
-        return NULL;
-    }
-
-    Py_RETURN_NONE;
 }
 
 /* -------------------------------------------------------------------- */
@@ -3747,9 +3724,6 @@ static struct PyMethodDef methods[] = {
 
     /* Special effects */
     {"effect_spread", (PyCFunction)_effect_spread, METH_VARARGS},
-
-    /* Misc. */
-    {"save_ppm", (PyCFunction)_save_ppm, METH_VARARGS},
 
     /* arrow */
     {"__arrow_c_schema__", (PyCFunction)ExportArrowSchemaPyCapsule, METH_VARARGS},

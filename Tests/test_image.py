@@ -270,8 +270,11 @@ class TestImage:
         im = Image.new("RGB", (10, 10))
         im._dump(str(tmp_path / "temp_RGB.ppm"))
 
+        im = Image.new("RGBA", (10, 10))
+        im._dump(str(tmp_path / "temp_RGBA.ppm"))
+
         im = Image.new("HSV", (10, 10))
-        with pytest.raises(ValueError):
+        with pytest.raises(OSError):
             im._dump(str(tmp_path / "temp_HSV.ppm"))
 
     def test_comparison_with_other_type(self) -> None:
