@@ -141,9 +141,23 @@ class Text(Generic[AnyStr]):
         self.language = language
 
         self.embedded_color = False
+        self.line_height: float | None = None
 
         self.stroke_width: float = 0
         self.stroke_fill: _Ink | None = None
+
+    def use_max_line_height(self) -> None:
+        """
+        Use the maximum line height from the text.
+        """
+        self.line_height = self.font.getbbox(
+            self.text,
+            self._get_fontmode(),
+            None,
+            self.features,
+            self.language,
+            self.stroke_width,
+        )[3]
 
     def embed_color(self) -> None:
         """
@@ -351,8 +365,10 @@ class Text(Generic[AnyStr]):
             raise ValueError(msg)
 
         fontmode = self._get_fontmode()
-        line_spacing = (
-            self.font.getbbox(
+        if self.line_height is not None:
+            line_height = self.line_height
+        else:
+            line_height = self.font.getbbox(
                 "A",
                 fontmode,
                 None,
@@ -360,9 +376,7 @@ class Text(Generic[AnyStr]):
                 self.language,
                 self.stroke_width,
             )[3]
-            + self.stroke_width
-            + self.spacing
-        )
+        line_spacing = line_height + self.stroke_width + self.spacing
 
         top = xy[1]
         parts = []
