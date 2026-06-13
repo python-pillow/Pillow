@@ -584,7 +584,7 @@ bounding_box_and_anchors(
     GlyphInfo *glyph_info,
     size_t count,
     int load_flags,
-    int *width,
+    int64_t *width,
     int *height,
     int *x_offset,
     int *y_offset
@@ -743,7 +743,7 @@ bounding_box_and_anchors(
             }
         }
     }
-    *width = x_max - x_min;
+    *width = (int64_t)x_max - x_min;
     *height = y_max - y_min;
     *x_offset = -x_anchor + x_min;
     *y_offset = -(-y_anchor + y_max);
@@ -756,7 +756,8 @@ bad_anchor:
 
 static PyObject *
 font_getsize_impl(FontObject *self, PyObject *args) {
-    int width, height, x_offset, y_offset;
+    int64_t width;
+    int height, x_offset, y_offset;
     int load_flags; /* FreeType load_flags parameter */
     int error;
     GlyphInfo *glyph_info = NULL; /* computed text layout */
@@ -825,7 +826,7 @@ font_getsize_impl(FontObject *self, PyObject *args) {
         return NULL;
     }
 
-    return Py_BuildValue("(ii)(ii)", width, height, x_offset, y_offset);
+    return Py_BuildValue("(Li)(ii)", width, height, x_offset, y_offset);
 }
 
 static PyObject *
@@ -875,7 +876,8 @@ font_render_impl(FontObject *self, PyObject *args) {
     PyObject *fill;
     float x_start = 0;
     float y_start = 0;
-    int width, height, x_offset, y_offset;
+    int64_t width;
+    int height, x_offset, y_offset;
     int horizontal_dir; /* is primary axis horizontal? */
 
     /* render string into given buffer (the buffer *must* have
@@ -953,7 +955,7 @@ font_render_impl(FontObject *self, PyObject *args) {
 
     width += ceil(stroke_width * 2 + x_start);
     height += ceil(stroke_width * 2 + y_start);
-    image = PyObject_CallFunction(fill, "ii", width, height);
+    image = PyObject_CallFunction(fill, "Li", width, height);
     if (image == NULL) {
         PyMem_Del(glyph_info);
         return NULL;
