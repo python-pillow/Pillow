@@ -1088,12 +1088,12 @@ _crop(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _expand_image(ImagingObject *self, PyObject *args) {
-    int x, y;
-    if (!PyArg_ParseTuple(args, "ii", &x, &y)) {
+    int m;
+    if (!PyArg_ParseTuple(args, "i", &m)) {
         return NULL;
     }
 
-    return PyImagingNew(ImagingExpand(self->image, x, y));
+    return PyImagingNew(ImagingExpand(self->image, m));
 }
 
 static PyObject *
