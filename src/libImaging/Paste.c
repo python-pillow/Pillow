@@ -274,7 +274,7 @@ int
 ImagingPaste(
     Imaging imOut, Imaging imIn, Imaging imMask, int dx0, int dy0, int dx1, int dy1
 ) {
-    int xsize, ysize;
+    int64_t xsize, ysize;
     int pixelsize;
     int sx0, sy0;
     ImagingSectionCookie cookie;
@@ -286,8 +286,8 @@ ImagingPaste(
 
     pixelsize = imOut->pixelsize;
 
-    xsize = dx1 - dx0;
-    ysize = dy1 - dy0;
+    xsize = (int64_t)dx1 - dx0;
+    ysize = (int64_t)dy1 - dy0;
 
     if (xsize != imIn->xsize || ysize != imIn->ysize || pixelsize != imIn->pixelsize) {
         (void)ImagingError_Mismatch();
@@ -598,7 +598,7 @@ ImagingFill2(
     Imaging imOut, const void *ink, Imaging imMask, int dx0, int dy0, int dx1, int dy1
 ) {
     ImagingSectionCookie cookie;
-    int xsize, ysize;
+    int64_t xsize, ysize;
     int pixelsize;
     int sx0, sy0;
 
@@ -609,8 +609,8 @@ ImagingFill2(
 
     pixelsize = imOut->pixelsize;
 
-    xsize = dx1 - dx0;
-    ysize = dy1 - dy0;
+    xsize = (int64_t)dx1 - dx0;
+    ysize = (int64_t)dy1 - dy0;
 
     if (imMask && (xsize != imMask->xsize || ysize != imMask->ysize)) {
         (void)ImagingError_Mismatch();
