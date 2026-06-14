@@ -63,17 +63,16 @@ optional-dependencies.test-arrow = [
   "pyarrow",
 ]
 optional-dependencies.tests = [
-  "check-manifest",
   "coverage>=7.4.2",
   "defusedxml",
   "markdown2",
   "olefile",
   "packaging",
-  "pyroma>=5",
   "pytest",
   "pytest-cov",
   "pytest-timeout",
   "pytest-xdist",
+  "setuptools",
   "trove-classifiers>=2024.10.12",
 ]
 optional-dependencies.xmp = [

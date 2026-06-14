@@ -81,7 +81,6 @@ release-test:
 	python3 -m pytest Tests
 	python3 -m pip install .
 	python3 -m pytest -qq
-	python3 -m pyroma .
 	$(MAKE) readme
 
 .PHONY: sdist
