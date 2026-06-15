@@ -86,6 +86,13 @@ repos:
     hooks:
       - id: tox-ini-fmt
 
+  - repo: https://github.com/regebro/pyroma
+    rev: 5.0.1
+    hooks:
+      - id: pyroma
+        additional_dependencies: [check-manifest]
+        stages: [manual]
+
   - repo: meta
     hooks:
       - id: check-hooks-apply
