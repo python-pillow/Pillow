@@ -41,6 +41,33 @@ env:
   FORCE_COLOR: 1
 
 jobs:
+  sbom:
+    if: github.event_name != 'schedule' || github.event.repository.fork == false
+    runs-on: ubuntu-latest
+    name: Generate SBOM
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.x"
+
+      - name: Generate CycloneDX SBOM
+        run: python3 .github/generate-sbom.py
+
+      - name: Validate SBOM
+        run: |
+          python3 -m pip install -r .ci/requirements-sbom.txt
+          check-jsonschema --schemafile "https://raw.githubusercontent.com/CycloneDX/specification/1.7/schema/bom-1.7.schema.json" pillow-*.cdx.json
+
+      - name: Upload SBOM as workflow artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom
+          path: "pillow-*.cdx.json"
+
   build-native-wheels:
     needs: sbom
     if: github.event_name != 'schedule' || github.event.repository.fork == false
@@ -319,33 +346,6 @@ jobs:
         with:
           artifacts_path: dist
           anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
-
-  sbom:
-    if: github.event_name != 'schedule' || github.event.repository.fork == false
-    runs-on: ubuntu-latest
-    name: Generate SBOM
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-
-      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
-        with:
-          python-version: "3.x"
-
-      - name: Generate CycloneDX SBOM
-        run: python3 .github/generate-sbom.py
-
-      - name: Validate SBOM
-        run: |
-          python3 -m pip install -r .ci/requirements-sbom.txt
-          check-jsonschema --schemafile "https://raw.githubusercontent.com/CycloneDX/specification/1.7/schema/bom-1.7.schema.json" pillow-*.cdx.json
-
-      - name: Upload SBOM as workflow artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: sbom
-          path: "pillow-*.cdx.json"
 
   sbom-publish:
     if: |
