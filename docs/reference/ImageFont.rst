@@ -6,7 +6,8 @@
 
 The :py:mod:`~PIL.ImageFont` module defines a class with the same name. Instances of
 this class store bitmap fonts, and are used with the
-:py:meth:`PIL.ImageDraw.ImageDraw.text` method.
+:py:meth:`PIL.ImageDraw.ImageDraw.text` method or the :py:class:`PIL.ImageText.Text`
+class.
 
 Pillow uses its own font file format to store bitmap fonts, limited to 256 characters. You
 can use :py:meth:`~PIL.FontFile.FontFile.to_imagefont` to convert BDF and PCF font
