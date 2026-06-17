@@ -382,7 +382,8 @@ Methods
     :param xy: Two points to define the bounding box. Sequence of either
             ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``, where ``x1 >= x0`` and
             ``y1 >= y0``. The bounding box is inclusive of both endpoints.
-    :param radius: Radius of the corners.
+    :param radius: Radius of the corners, limited to half of the smallest dimension of
+            the bounding box.
     :param fill: Color to use for the fill.
     :param outline: Color to use for the outline.
     :param width: The line width, in pixels.
