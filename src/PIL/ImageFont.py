@@ -790,7 +790,7 @@ class TransposedFont(BaseImageFont):
         return self.font.getlength(text, *args, **kwargs)
 
 
-class YaffImageFont:
+class YaffImageFont(BaseImageFont):
     """Bitmap font loaded from a YAFF format file, with kerning support.
 
     To load a YAFF font::
