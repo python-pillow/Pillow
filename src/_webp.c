@@ -219,6 +219,7 @@ _anim_encoder_dealloc(PyObject *self) {
     WebPAnimEncoderObject *encp = (WebPAnimEncoderObject *)self;
     WebPPictureFree(&(encp->frame));
     WebPAnimEncoderDelete(encp->enc);
+    Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *
@@ -261,6 +262,9 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
     }
 
     im = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!im) {
+        return NULL;
+    }
 
     // Setup config for this frame
     if (!WebPConfigInit(&config)) {
@@ -441,6 +445,7 @@ _anim_decoder_dealloc(PyObject *self) {
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
     WebPDataClear(&(decp->data));
     WebPAnimDecoderDelete(decp->dec);
+    Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *
@@ -503,6 +508,9 @@ _anim_decoder_get_next(PyObject *self) {
     bytes = PyBytes_FromStringAndSize(
         (char *)buf, decp->info.canvas_width * 4 * decp->info.canvas_height
     );
+    if (!bytes) {
+        return NULL;
+    }
 
     ret = Py_BuildValue("Si", bytes, timestamp);
 
@@ -605,6 +613,9 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     }
 
     im = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!im) {
+        return NULL;
+    }
 
     // Setup config for this frame
     if (!WebPConfigInit(&config)) {

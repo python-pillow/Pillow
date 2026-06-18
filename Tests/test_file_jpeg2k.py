@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import re
+import struct
 from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
@@ -148,6 +149,22 @@ def test_prog_res_rt(card: ImageFile.ImageFile) -> None:
     assert_image_equal(im, card)
 
 
+def test_unknown_progression(tmp_path: Path) -> None:
+    outfile = tmp_path / "temp.jp2"
+
+    im = Image.new("1", (1, 1))
+    with pytest.raises(ValueError, match="unknown progression"):
+        im.save(outfile, progression="invalid")
+
+
+def test_unknown_cinema_mode(tmp_path: Path) -> None:
+    outfile = tmp_path / "temp.jp2"
+
+    im = Image.new("1", (1, 1))
+    with pytest.raises(ValueError, match="unknown cinema mode"):
+        im.save(outfile, cinema_mode="invalid")
+
+
 @pytest.mark.parametrize("num_resolutions", range(2, 6))
 def test_default_num_resolutions(
     card: ImageFile.ImageFile, num_resolutions: int
@@ -162,9 +179,9 @@ def test_default_num_resolutions(
 
 def test_reduce() -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
-        assert callable(im.reduce)
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
 
-        im.reduce = 2  # type: ignore[assignment, method-assign]
+        im.reduce = 2
         assert im.reduce == 2
 
         im.load()
@@ -440,11 +457,19 @@ def test_pclr() -> None:
         assert len(im.palette.colors) == 256
         assert im.palette.colors[(255, 255, 255)] == 0
 
+    for enumcs in (0, 15, 17):
+        with open(f"{EXTRA_DIR}/issue104_jpxstream.jp2", "rb") as fp:
+            data = bytearray(fp.read())
+        data[114:115] = bytes([enumcs])
+        with Image.open(BytesIO(data)) as im:
+            assert im.mode == "L"
+
     with Image.open(
         f"{EXTRA_DIR}/147af3f1083de4393666b7d99b01b58b_signal_sigsegv_130c531_6155_5136.jp2"
     ) as im:
         assert im.mode == "P"
         assert im.palette is not None
+        assert im.palette.mode == "CMYK"
         assert len(im.palette.colors) == 139
         assert im.palette.colors[(0, 0, 0, 0)] == 0
 
@@ -521,6 +546,18 @@ def test_plt_marker(card: ImageFile.ImageFile) -> None:
         hdr = out.read(2)
         length = _binary.i16be(hdr)
         out.seek(length - 2, os.SEEK_CUR)
+
+
+def test_marker_length() -> None:
+    magic = b"\xff\x4f\xff\x51"
+    b = BytesIO(magic + b"\x00\x00")
+    with pytest.raises(ValueError, match="SIZ marker length must be at least 38"):
+        Image.open(b)
+
+    siz_marker = _binary.o16be(38) + b"\x00" * 34 + struct.pack(">H", 2)
+    b = BytesIO(magic + siz_marker + b"\x00" * 4)
+    with pytest.raises(ValueError, match="Marker length too small"):
+        Image.open(b)
 
 
 def test_9bit() -> None:

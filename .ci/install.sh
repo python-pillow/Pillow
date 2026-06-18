@@ -31,7 +31,6 @@ python3 -m pip install olefile
 python3 -m pip install -U pytest
 python3 -m pip install -U pytest-cov
 python3 -m pip install -U pytest-timeout
-python3 -m pip install pyroma
 # optional test dependencies, only install if there's a binary package.
 python3 -m pip install --only-binary=:all: numpy || true
 python3 -m pip install --only-binary=:all: pyarrow || true
@@ -39,8 +38,8 @@ python3 -m pip install --only-binary=:all: pyarrow || true
 # PyQt6 doesn't support PyPy3
 if [[ $GHA_PYTHON_VERSION == 3.* ]]; then
     sudo apt-get -qq install libegl1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxkbcommon-x11-0
-    # TODO Update condition when pyqt6 supports free-threading
-    if ! [[ "$PYTHON_GIL" == "0" ]]; then python3 -m pip install pyqt6 ; fi
+    # pyqt6 doesn't yet support free-threading; only install if a wheel is available
+    python3 -m pip install --only-binary=:all: pyqt6 || true
 fi
 
 # webp
@@ -53,7 +52,7 @@ pushd depends && ./install_imagequant.sh && popd
 pushd depends && sudo ./install_raqm.sh && popd
 
 # libavif
-pushd depends && sudo ./install_libavif.sh && popd
+pushd depends && ./install_libavif.sh && popd
 
 # extra test images
 pushd depends && ./install_extra_test_images.sh && popd

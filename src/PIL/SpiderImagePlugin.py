@@ -37,7 +37,7 @@ from __future__ import annotations
 import os
 import struct
 import sys
-from typing import IO, Any, cast
+from typing import IO, Any
 
 from . import Image, ImageFile
 from ._util import DeferredError
@@ -193,7 +193,7 @@ class SpiderImageFile(ImageFile.ImageFile):
     def convert2byte(self, depth: int = 255) -> Image.Image:
         extrema = self.getextrema()
         assert isinstance(extrema[0], float)
-        minimum, maximum = cast(tuple[float, float], extrema)
+        minimum, maximum = extrema
         m: float = 1
         if maximum != minimum:
             m = depth / (maximum - minimum)
@@ -244,7 +244,7 @@ def loadImageSeries(filelist: list[str] | None = None) -> list[Image.Image] | No
 
 def makeSpiderHeader(im: Image.Image) -> list[bytes]:
     nsam, nrow = im.size
-    lenbyt = nsam * 4  # There are labrec records in the header
+    lenbyt = max(1, nsam) * 4  # There are labrec records in the header
     labrec = int(1024 / lenbyt)
     if 1024 % lenbyt != 0:
         labrec += 1
@@ -290,9 +290,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 def _save_spider(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # get the filename extension and register it with Image
-    filename_ext = os.path.splitext(filename)[1]
-    ext = filename_ext.decode() if isinstance(filename_ext, bytes) else filename_ext
-    Image.register_extension(SpiderImageFile.format, ext)
+    if filename_ext := os.path.splitext(filename)[1]:
+        ext = filename_ext.decode() if isinstance(filename_ext, bytes) else filename_ext
+        Image.register_extension(SpiderImageFile.format, ext)
     _save(im, fp, filename)
 
 

@@ -127,8 +127,8 @@ def APP(self: JpegImageFile, marker: int) -> None:
         # parse the image resource block
         offset = 14
         photoshop = self.info.setdefault("photoshop", {})
-        while s[offset : offset + 4] == b"8BIM":
-            try:
+        try:
+            while s[offset : offset + 4] == b"8BIM":
                 offset += 4
                 # resource code
                 code = i16(s, offset)
@@ -153,8 +153,8 @@ def APP(self: JpegImageFile, marker: int) -> None:
                     photoshop[code] = data
                 offset += size
                 offset += offset & 1  # align
-            except struct.error:
-                break  # insufficient data
+        except struct.error:
+            pass  # insufficient data
 
     elif marker == 0xFFEE and s.startswith(b"Adobe"):
         self.info["adobe"] = i16(s, 5)
@@ -661,10 +661,6 @@ def get_sampling(im: Image.Image) -> int:
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    if im.width == 0 or im.height == 0:
-        msg = "cannot write empty image as JPEG"
-        raise ValueError(msg)
-
     try:
         rawmode = RAWMODE[im.mode]
     except KeyError as e:
@@ -742,17 +738,15 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             if not (0 < len(qtables) < 5):
                 msg = "None or too many quantization tables"
                 raise ValueError(msg)
-            for idx, table in enumerate(qtables):
-                try:
+            try:
+                for idx, table in enumerate(qtables):
                     if len(table) != 64:
                         msg = "Invalid quantization table"
                         raise TypeError(msg)
-                    table_array = array.array("H", table)
-                except TypeError as e:
-                    msg = "Invalid quantization table"
-                    raise ValueError(msg) from e
-                else:
-                    qtables[idx] = list(table_array)
+                    qtables[idx] = list(array.array("H", table))
+            except TypeError as e:
+                msg = "Invalid quantization table"
+                raise ValueError(msg) from e
             return qtables
 
     if qtables == "keep":

@@ -190,7 +190,7 @@ class EpsImageFile(ImageFile.ImageFile):
 
     def _open(self) -> None:
         assert self.fp is not None
-        (length, offset) = self._find_offset(self.fp)
+        length, offset = self._find_offset(self.fp)
 
         # go to offset - start of "%!PS"
         self.fp.seek(offset)

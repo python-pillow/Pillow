@@ -945,6 +945,21 @@ def test_rounded_rectangle_zero_radius(bbox: Coords) -> None:
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_width_fill.png")
 
 
+@pytest.mark.parametrize("w, h", ((200, 100), (100, 200)))
+def test_rounded_rectangle_large_radius(w: int, h: int) -> None:
+    im = Image.new("RGB", (w, h))
+    draw = ImageDraw.Draw(im)
+    draw.rounded_rectangle(
+        (0, 0, w, h), 100, "red", corners=(True, False, False, False)
+    )
+
+    expected = Image.new("RGB", (w, h))
+    draw = ImageDraw.Draw(expected)
+    draw.rounded_rectangle((0, 0, w, h), 50, "red", corners=(True, False, False, False))
+
+    assert_image_equal(im, expected)
+
+
 @pytest.mark.parametrize(
     "xy, suffix",
     [
@@ -1485,21 +1500,15 @@ def test_stroke_multiline() -> None:
 
 
 @skip_unless_feature("freetype2")
-def test_setting_default_font() -> None:
-    # Arrange
+def test_setting_default_font(monkeypatch: pytest.MonkeyPatch) -> None:
     im = Image.new("RGB", (100, 250))
     draw = ImageDraw.Draw(im)
+    assert isinstance(draw.getfont(), ImageFont.load_default().__class__)
+
+    draw = ImageDraw.Draw(im)
     font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
-
-    # Act
-    ImageDraw.ImageDraw.font = font
-
-    # Assert
-    try:
-        assert draw.getfont() == font
-    finally:
-        ImageDraw.ImageDraw.font = None
-        assert isinstance(draw.getfont(), ImageFont.load_default().__class__)
+    monkeypatch.setattr(ImageDraw.ImageDraw, "font", font)
+    assert draw.getfont() == font
 
 
 def test_default_font_size() -> None:

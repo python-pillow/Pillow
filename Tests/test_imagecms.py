@@ -278,9 +278,9 @@ def test_simple_lab() -> None:
     a_data = i_lab.get_flattened_data(1)
     b_data = i_lab.get_flattened_data(2)
 
-    assert l_data == (137,) * 100
-    assert a_data == (128,) * 100
-    assert b_data == (128,) * 100
+    assert l_data == (137.0,) * 100
+    assert a_data == (128.0,) * 100
+    assert b_data == (128.0,) * 100
 
 
 def test_lab_color() -> None:

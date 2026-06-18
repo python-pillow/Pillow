@@ -488,7 +488,7 @@ class DdsImageFile(ImageFile.ImageFile):
 class DdsRgbDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         bitcount, masks = self.args
 
         data = bytearray()

@@ -179,14 +179,12 @@ class BmpImageFile(ImageFile.ImageFile):
 
         # ------- If color count was not found in the header, compute from bits
         assert isinstance(file_info["bits"], int)
-        file_info["colors"] = (
-            file_info["colors"]
-            if file_info.get("colors", 0)
-            else (1 << file_info["bits"])
-        )
+        if not file_info.get("colors", 0):
+            file_info["colors"] = 1 << file_info["bits"]
+        assert isinstance(file_info["palette_padding"], int)
         assert isinstance(file_info["colors"], int)
         if offset == 14 + file_info["header_size"] and file_info["bits"] <= 8:
-            offset += 4 * file_info["colors"]
+            offset += file_info["palette_padding"] * file_info["colors"]
 
         # ---------------------- Check bit depth for unusual unsupported values
         self._mode, raw_mode = BIT2MODE.get(file_info["bits"], ("", ""))
@@ -265,7 +263,6 @@ class BmpImageFile(ImageFile.ImageFile):
                 msg = f"Unsupported BMP Palette size ({file_info['colors']})"
                 raise OSError(msg)
             else:
-                assert isinstance(file_info["palette_padding"], int)
                 padding = file_info["palette_padding"]
                 palette = read(padding * file_info["colors"])
                 grayscale = True
@@ -327,7 +324,7 @@ class BmpImageFile(ImageFile.ImageFile):
 class BmpRleDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         assert self.fd is not None
         rle4 = self.args[1]
         data = bytearray()
@@ -369,7 +366,7 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     bytes_read = self.fd.read(2)
                     if len(bytes_read) < 2:
                         break
-                    right, up = self.fd.read(2)
+                    right, up = bytes_read
                     data += b"\x00" * (right + up * self.state.xsize)
                     x = len(data) % self.state.xsize
                 else:

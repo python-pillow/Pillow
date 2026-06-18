@@ -270,8 +270,11 @@ class TestImage:
         im = Image.new("RGB", (10, 10))
         im._dump(str(tmp_path / "temp_RGB.ppm"))
 
+        im = Image.new("RGBA", (10, 10))
+        im._dump(str(tmp_path / "temp_RGBA.ppm"))
+
         im = Image.new("HSV", (10, 10))
-        with pytest.raises(ValueError):
+        with pytest.raises(OSError):
             im._dump(str(tmp_path / "temp_HSV.ppm"))
 
     def test_comparison_with_other_type(self) -> None:
@@ -456,15 +459,20 @@ class TestImage:
         # Assert
         assert len(Image.ID) == id_length
 
-    def test_registered_extensions_uninitialized(self) -> None:
+    def test_registered_extensions_uninitialized(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         # Arrange
-        Image._initialized = 0
+        monkeypatch.setattr(Image, "_initialized", 0)
 
         # Act
         Image.registered_extensions()
 
         # Assert
         assert Image._initialized == 2
+
+        for extension in Image.EXTENSION:
+            assert extension in Image._EXTENSION_PLUGIN
 
     def test_registered_extensions(self) -> None:
         # Arrange
@@ -857,7 +865,7 @@ class TestImage:
     def test_exif_webp(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/hopper.webp") as im:
             exif = im.getexif()
-            assert exif == {}
+            assert dict(exif) == {}
 
             out = tmp_path / "temp.webp"
             exif[258] = 8
@@ -879,7 +887,7 @@ class TestImage:
     def test_exif_png(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/exif.png") as im:
             exif = im.getexif()
-            assert exif == {274: 1}
+            assert dict(exif) == {274: 1}
 
             out = tmp_path / "temp.png"
             exif[258] = 8

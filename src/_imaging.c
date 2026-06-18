@@ -108,7 +108,7 @@
 #define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
 
 /* -------------------------------------------------------------------- */
-/* OBJECT ADMINISTRATION                        */
+/* OBJECT ADMINISTRATION                                                */
 /* -------------------------------------------------------------------- */
 
 typedef struct {
@@ -254,6 +254,9 @@ void
 ReleaseArrowSchemaPyCapsule(PyObject *capsule) {
     struct ArrowSchema *schema =
         (struct ArrowSchema *)PyCapsule_GetPointer(capsule, "arrow_schema");
+    if (!schema) {
+        return;
+    }
     if (schema->release != NULL) {
         schema->release(schema);
     }
@@ -264,6 +267,9 @@ PyObject *
 ExportArrowSchemaPyCapsule(ImagingObject *self) {
     struct ArrowSchema *schema =
         (struct ArrowSchema *)calloc(1, sizeof(struct ArrowSchema));
+    if (!schema) {
+        return ArrowError(IMAGING_CODEC_MEMORY);
+    }
     int err = export_imaging_schema(self->image, schema);
     if (err == 0) {
         return PyCapsule_New(schema, "arrow_schema", ReleaseArrowSchemaPyCapsule);
@@ -276,6 +282,9 @@ void
 ReleaseArrowArrayPyCapsule(PyObject *capsule) {
     struct ArrowArray *array =
         (struct ArrowArray *)PyCapsule_GetPointer(capsule, "arrow_array");
+    if (!array) {
+        return;
+    }
     if (array->release != NULL) {
         array->release(array);
     }
@@ -286,6 +295,9 @@ PyObject *
 ExportArrowArrayPyCapsule(ImagingObject *self) {
     struct ArrowArray *array =
         (struct ArrowArray *)calloc(1, sizeof(struct ArrowArray));
+    if (!array) {
+        return ArrowError(IMAGING_CODEC_MEMORY);
+    }
     int err = export_imaging_array(self->image, array);
     if (err == 0) {
         return PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
@@ -311,13 +323,9 @@ _new_arrow(PyObject *self, PyObject *args) {
     mode_id = findModeID(mode);
 
     // ImagingBorrowArrow is responsible for retaining the array_capsule
-    ret = PyImagingNew(
+    return PyImagingNew(
         ImagingNewArrow(mode_id, xsize, ysize, schema_capsule, array_capsule)
     );
-    if (!ret) {
-        return ImagingError_ValueError("Invalid Arrow array mode or size mismatch");
-    }
-    return ret;
 }
 
 /* -------------------------------------------------------------------- */
@@ -367,7 +375,7 @@ ImagingError_ValueError(const char *message) {
 }
 
 /* -------------------------------------------------------------------- */
-/* HELPERS                                */
+/* HELPERS                                                              */
 /* -------------------------------------------------------------------- */
 
 static int
@@ -671,7 +679,7 @@ getink(PyObject *color, Imaging im, char *ink) {
 }
 
 /* -------------------------------------------------------------------- */
-/* FACTORIES                                */
+/* FACTORIES                                                            */
 /* -------------------------------------------------------------------- */
 
 static PyObject *
@@ -1080,12 +1088,12 @@ _crop(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _expand_image(ImagingObject *self, PyObject *args) {
-    int x, y;
-    if (!PyArg_ParseTuple(args, "ii", &x, &y)) {
+    int m;
+    if (!PyArg_ParseTuple(args, "i", &m)) {
         return NULL;
     }
 
-    return PyImagingNew(ImagingExpand(self->image, x, y));
+    return PyImagingNew(ImagingExpand(self->image, m));
 }
 
 static PyObject *
@@ -1216,7 +1224,9 @@ _getxy(PyObject *xy, int *x, int *y) {
         PyObject *int_value = PyObject_CallMethod(value, "__int__", NULL);
         if (int_value != NULL && PyLong_Check(int_value)) {
             *x = PyLong_AS_LONG(int_value);
+            Py_DECREF(int_value);
         } else {
+            Py_XDECREF(int_value);
             goto badval;
         }
     }
@@ -1230,7 +1240,9 @@ _getxy(PyObject *xy, int *x, int *y) {
         PyObject *int_value = PyObject_CallMethod(value, "__int__", NULL);
         if (int_value != NULL && PyLong_Check(int_value)) {
             *y = PyLong_AS_LONG(int_value);
+            Py_DECREF(int_value);
         } else {
+            Py_XDECREF(int_value);
             goto badval;
         }
     }
@@ -2469,6 +2481,9 @@ _split(ImagingObject *self) {
     }
 
     list = PyTuple_New(self->image->bands);
+    if (!list) {
+        return NULL;
+    }
     for (i = 0; i < self->image->bands; i++) {
         imaging_object = PyImagingNew(bands[i]);
         if (!imaging_object) {
@@ -3153,8 +3168,8 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
 
     PyObject *data;
     int ink;
-    int width = 0;
-    if (!PyArg_ParseTuple(args, "Oi|i", &data, &ink, &width)) {
+    int width;
+    if (!PyArg_ParseTuple(args, "Oii", &data, &ink, &width)) {
         return NULL;
     }
 
@@ -3163,7 +3178,7 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (width <= 1) {
+    if (width == 1) {
         double *p = NULL;
         for (i = 0; i < n - 1; i++) {
             p = &xy[i + i];
@@ -3592,7 +3607,7 @@ _effect_spread(ImagingObject *self, PyObject *args) {
 }
 
 /* -------------------------------------------------------------------- */
-/* UTILITIES                                */
+/* UTILITIES                                                            */
 /* -------------------------------------------------------------------- */
 
 static PyObject *
@@ -3625,25 +3640,6 @@ _getcodecstatus(PyObject *self, PyObject *args) {
     }
 
     return PyUnicode_FromString(msg);
-}
-
-/* -------------------------------------------------------------------- */
-/* DEBUGGING HELPERS                            */
-/* -------------------------------------------------------------------- */
-
-static PyObject *
-_save_ppm(ImagingObject *self, PyObject *args) {
-    char *filename;
-
-    if (!PyArg_ParseTuple(args, "s", &filename)) {
-        return NULL;
-    }
-
-    if (!ImagingSavePPM(self->image, filename)) {
-        return NULL;
-    }
-
-    Py_RETURN_NONE;
 }
 
 /* -------------------------------------------------------------------- */
@@ -3729,9 +3725,6 @@ static struct PyMethodDef methods[] = {
     /* Special effects */
     {"effect_spread", (PyCFunction)_effect_spread, METH_VARARGS},
 
-    /* Misc. */
-    {"save_ppm", (PyCFunction)_save_ppm, METH_VARARGS},
-
     /* arrow */
     {"__arrow_c_schema__", (PyCFunction)ExportArrowSchemaPyCapsule, METH_VARARGS},
     {"__arrow_c_array__", (PyCFunction)ExportArrowArrayPyCapsule, METH_VARARGS},
@@ -3765,6 +3758,9 @@ _ptr_destructor(PyObject *capsule) {
 static PyObject *
 _getattr_ptr(ImagingObject *self, void *closure) {
     PyObject *capsule = PyCapsule_New(self->image, IMAGING_MAGIC, _ptr_destructor);
+    if (!capsule) {
+        return NULL;
+    }
     Py_INCREF(self);
     PyCapsule_SetContext(capsule, self);
     return capsule;
@@ -4320,8 +4316,9 @@ setup_module(PyObject *m) {
 #else
     have_libjpegturbo = Py_False;
 #endif
-    Py_INCREF(have_libjpegturbo);
-    PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", have_libjpegturbo);
+    if (PyModule_AddObjectRef(m, "HAVE_LIBJPEGTURBO", have_libjpegturbo) < 0) {
+        return -1;
+    }
 
     PyObject *have_mozjpeg;
 #ifdef JPEG_C_PARAM_SUPPORTED
@@ -4329,8 +4326,9 @@ setup_module(PyObject *m) {
 #else
     have_mozjpeg = Py_False;
 #endif
-    Py_INCREF(have_mozjpeg);
-    PyModule_AddObject(m, "HAVE_MOZJPEG", have_mozjpeg);
+    if (PyModule_AddObjectRef(m, "HAVE_MOZJPEG", have_mozjpeg) < 0) {
+        return -1;
+    }
 
     PyObject *have_libimagequant;
 #ifdef HAVE_LIBIMAGEQUANT
@@ -4344,8 +4342,9 @@ setup_module(PyObject *m) {
 #else
     have_libimagequant = Py_False;
 #endif
-    Py_INCREF(have_libimagequant);
-    PyModule_AddObject(m, "HAVE_LIBIMAGEQUANT", have_libimagequant);
+    if (PyModule_AddObjectRef(m, "HAVE_LIBIMAGEQUANT", have_libimagequant) < 0) {
+        return -1;
+    }
 
 #ifdef HAVE_LIBZ
     /* zip encoding strategies */
@@ -4373,8 +4372,9 @@ setup_module(PyObject *m) {
 #else
     have_zlibng = Py_False;
 #endif
-    Py_INCREF(have_zlibng);
-    PyModule_AddObject(m, "HAVE_ZLIBNG", have_zlibng);
+    if (PyModule_AddObjectRef(m, "HAVE_ZLIBNG", have_zlibng) < 0) {
+        return -1;
+    }
 
 #ifdef HAVE_LIBTIFF
     {
@@ -4391,8 +4391,9 @@ setup_module(PyObject *m) {
 #else
     have_xcb = Py_False;
 #endif
-    Py_INCREF(have_xcb);
-    PyModule_AddObject(m, "HAVE_XCB", have_xcb);
+    if (PyModule_AddObjectRef(m, "HAVE_XCB", have_xcb) < 0) {
+        return -1;
+    }
 
     PyObject *pillow_version = PyUnicode_FromString(version);
     PyDict_SetItemString(
