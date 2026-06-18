@@ -53,7 +53,7 @@ or the clipboard to a PIL image memory.
         .. versionadded:: 11.2.1 Windows support
         .. versionadded:: 12.1.0 macOS support
 
-    :param scale_down: On macOS, Retina screens will provide images at 2x size by default. This will prevent that, and scale down to 1x.
+    :param scale_down: On macOS, Retina screens will provide ``bbox`` images at 2x size by default. This will prevent that, and scale down to 1x.
                        Keyword-only argument.
 
         .. versionadded:: 12.3.0

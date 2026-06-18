@@ -88,7 +88,7 @@ class TestImageGrab:
 
         ImageGrab.grab(window=window)
 
-        im = ImageGrab.grab((0, 0, 10, 10), window=window)
+        im = ImageGrab.grab((0, 0, 10, 10), window=window, scale_down=True)
         assert im.size == (10, 10)
 
     @pytest.mark.skipif(
