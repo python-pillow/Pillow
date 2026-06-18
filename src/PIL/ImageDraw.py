@@ -130,7 +130,6 @@ class ImageDraw:
 
     def _getfont(self, font_size: float | None) -> ImageFont.BaseImageFont:
         if font_size is not None:
-            from . import ImageFont
 
             return ImageFont.load_default(font_size)
         else:
