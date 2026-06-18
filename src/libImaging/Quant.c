@@ -1375,7 +1375,9 @@ quantize(
     fflush(stdout);
     timer = clock();
 #endif
-    annotate_hash_table(root, h, &nPaletteEntries);
+    if (!annotate_hash_table(root, h, &nPaletteEntries)) {
+        goto error_3;
+    }
 #ifdef DEBUG
     printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
 #endif
