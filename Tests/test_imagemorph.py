@@ -22,8 +22,7 @@ def string_to_img(image_string: str) -> Image.Image:
     return im
 
 
-A = string_to_img(
-    """
+A = string_to_img("""
     .......
     .......
     ..111..
@@ -31,8 +30,7 @@ A = string_to_img(
     ..111..
     .......
     .......
-    """
-)
+    """)
 
 
 def img_to_string(im: Image.Image) -> str:
@@ -231,15 +229,15 @@ def test_negate() -> None:
 
 
 def test_incorrect_mode() -> None:
-    im = hopper()
     mop = ImageMorph.MorphOp(op_name="erosion8")
 
-    with pytest.raises(ValueError, match="Image mode must be 1 or L"):
-        mop.apply(im)
-    with pytest.raises(ValueError, match="Image mode must be 1 or L"):
-        mop.match(im)
-    with pytest.raises(ValueError, match="Image mode must be 1 or L"):
-        mop.get_on_pixels(im)
+    with hopper() as im:
+        with pytest.raises(ValueError, match="Image mode must be 1 or L"):
+            mop.apply(im)
+        with pytest.raises(ValueError, match="Image mode must be 1 or L"):
+            mop.match(im)
+        with pytest.raises(ValueError, match="Image mode must be 1 or L"):
+            mop.get_on_pixels(im)
 
 
 def test_add_patterns() -> None:

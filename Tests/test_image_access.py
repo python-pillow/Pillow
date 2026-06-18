@@ -260,6 +260,7 @@ class TestEmbeddable:
     @pytest.mark.xfail(not (sys.version_info >= (3, 13)), reason="failing test")
     @pytest.mark.skipif(not is_win32(), reason="requires Windows")
     def test_embeddable(self) -> None:
+        pytest.importorskip("setuptools", reason="setuptools not installed")
         import ctypes
 
         from setuptools.command import build_ext
@@ -278,8 +279,7 @@ class TestEmbeddable:
 
         with open("embed_pil.c", "w", encoding="utf-8") as fh:
             home = sys.prefix.replace("\\", "\\\\")
-            fh.write(
-                f"""
+            fh.write(f"""
 #include "Python.h"
 
 int main(int argc, char* argv[])
@@ -300,8 +300,7 @@ int main(int argc, char* argv[])
 
     return 0;
 }}
-        """
-            )
+        """)
 
         objects = compiler.compile(["embed_pil.c"])
         compiler.link_executable(objects, "embed_pil")

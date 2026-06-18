@@ -53,7 +53,13 @@ apply(PyObject *self, PyObject *args) {
     }
 
     imgin = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!imgin) {
+        return NULL;
+    }
     imgout = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
+    if (!imgout) {
+        return NULL;
+    }
     width = imgin->xsize;
     height = imgin->ysize;
 
@@ -143,6 +149,9 @@ match(PyObject *self, PyObject *args) {
     }
 
     imgin = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!imgin) {
+        return NULL;
+    }
 
     if (imgin->type != IMAGING_TYPE_UINT8 || imgin->bands != 1) {
         PyErr_SetString(PyExc_RuntimeError, "Unsupported image type");
@@ -185,6 +194,10 @@ match(PyObject *self, PyObject *args) {
                  (b6 << 6) | (b7 << 7) | (b8 << 8));
             if (lut[lut_idx]) {
                 PyObject *coordObj = Py_BuildValue("(nn)", col_idx, row_idx);
+                if (!coordObj) {
+                    Py_DECREF(ret);
+                    return NULL;
+                }
                 PyList_Append(ret, coordObj);
                 Py_XDECREF(coordObj);
             }
@@ -216,6 +229,9 @@ get_on_pixels(PyObject *self, PyObject *args) {
     }
 
     img = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!img) {
+        return NULL;
+    }
     rows = img->image8;
     width = img->xsize;
     height = img->ysize;
@@ -230,6 +246,10 @@ get_on_pixels(PyObject *self, PyObject *args) {
         for (col_idx = 0; col_idx < width; col_idx++) {
             if (row[col_idx]) {
                 PyObject *coordObj = Py_BuildValue("(nn)", col_idx, row_idx);
+                if (!coordObj) {
+                    Py_DECREF(ret);
+                    return NULL;
+                }
                 PyList_Append(ret, coordObj);
                 Py_XDECREF(coordObj);
             }

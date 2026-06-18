@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import io
 from pathlib import Path
 
 import pytest
 
-from PIL import Image, ImagePalette
+from PIL import Image, ImagePalette, PaletteFile
 
 from .helper import assert_image_equal, assert_image_equal_tofile
 
@@ -20,6 +21,13 @@ def test_reload() -> None:
         assert im.palette is not None
         im.palette.dirty = 1
         assert_image_equal(im.convert("RGB"), original.convert("RGB"))
+
+
+def test_save_fp() -> None:
+    palette = ImagePalette.ImagePalette()
+    with io.StringIO() as fp:
+        palette.save(fp)
+        assert not fp.closed
 
 
 def test_getcolor() -> None:
@@ -202,6 +210,19 @@ def test_2bit_palette(tmp_path: Path) -> None:
     assert_image_equal_tofile(img, outfile)
 
 
+def test_getpalette() -> None:
+    b = io.BytesIO(b"0 1\n1 2 3 4")
+    p = PaletteFile.PaletteFile(b)
+
+    palette, rawmode = p.getpalette()
+    assert palette[:6] == b"\x01\x01\x01\x02\x03\x04"
+    assert rawmode == "RGB"
+
+
 def test_invalid_palette() -> None:
     with pytest.raises(OSError):
         ImagePalette.load("Tests/images/hopper.jpg")
+
+    b = io.BytesIO(b"1" * 101)
+    with pytest.raises(SyntaxError, match="bad palette file"):
+        PaletteFile.PaletteFile(b)

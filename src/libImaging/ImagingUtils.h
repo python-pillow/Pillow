@@ -27,6 +27,8 @@
 
 #define CLIP8(v) ((v) <= 0 ? 0 : (v) < 256 ? (v) : 255)
 
+#define CLIP16(v) ((v) <= 0 ? 0 : (v) < 65536 ? (v) : 65535)
+
 /* This is to work around a bug in GCC prior 4.9 in 64 bit mode.
    GCC generates code with partial dependency which is 3 times slower.
    See: https://stackoverflow.com/a/26588074/253146 */
