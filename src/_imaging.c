@@ -1607,6 +1607,7 @@ _putdata(ImagingObject *self, PyObject *args) {
 #define set_value_to_item(seq, i)                                       \
     op = PySequence_Fast_GET_ITEM(seq, i);                              \
     if (PySequence_Check(op)) {                                         \
+        Py_DECREF(seq);                                                 \
         PyErr_SetString(PyExc_TypeError, "sequence must be flattened"); \
         return NULL;                                                    \
     } else {                                                            \
