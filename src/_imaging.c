@@ -842,7 +842,9 @@ _prepare_lut_table(PyObject *table, Py_ssize_t table_size) {
                     }
                 }
             }
-            PyBuffer_Release(&buffer_info);
+            if (!table_data) {
+                PyBuffer_Release(&buffer_info);
+            }
         }
     }
 
@@ -859,6 +861,8 @@ _prepare_lut_table(PyObject *table, Py_ssize_t table_size) {
     if (!prepared) {
         if (free_table_data) {
             free(table_data);
+        } else {
+            PyBuffer_Release(&buffer_info);
         }
         return (INT16 *)ImagingError_MemoryError();
     }
@@ -901,6 +905,8 @@ _prepare_lut_table(PyObject *table, Py_ssize_t table_size) {
 #undef PRECISION_BITS
     if (free_table_data) {
         free(table_data);
+    } else {
+        PyBuffer_Release(&buffer_info);
     }
     return prepared;
 }
@@ -1088,12 +1094,12 @@ _crop(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _expand_image(ImagingObject *self, PyObject *args) {
-    int x, y;
-    if (!PyArg_ParseTuple(args, "ii", &x, &y)) {
+    int m;
+    if (!PyArg_ParseTuple(args, "i", &m)) {
         return NULL;
     }
 
-    return PyImagingNew(ImagingExpand(self->image, x, y));
+    return PyImagingNew(ImagingExpand(self->image, m));
 }
 
 static PyObject *

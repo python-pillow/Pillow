@@ -23,7 +23,7 @@ from typing import Any
 
 from . import Image
 
-_viewers = []
+_viewers: list[Viewer] = []
 
 
 def register(viewer: type[Viewer] | Viewer, order: int = 1) -> None:
