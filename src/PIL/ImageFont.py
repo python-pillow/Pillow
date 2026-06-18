@@ -846,13 +846,15 @@ class YaffImageFont(BaseImageFont):
         """
         return self.ascent, self.descent
 
-    def getlength(self, text: str | bytes, *args: Any, **kwargs: Any) -> int:
+    def getlength(
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+    ) -> int:
         """Return the advance width of the text in pixels, including kerning.
 
         :param text: Text to measure.
         :return: Width in pixels.
         """
-        if isinstance(text, bytes):
+        if isinstance(text, (bytes, bytearray)):
             text = text.decode("utf-8")
 
         total = 0
@@ -870,7 +872,7 @@ class YaffImageFont(BaseImageFont):
         return max(total, 0)
 
     def getbbox(
-        self, text: str | bytes, *args: Any, **kwargs: Any
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
     ) -> tuple[int, int, int, int]:
         """Return bounding box of the text.
 
