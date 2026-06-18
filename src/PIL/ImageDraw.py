@@ -36,7 +36,7 @@ import struct
 from collections.abc import Sequence
 from typing import cast
 
-from . import Image, ImageColor, ImageText
+from . import Image, ImageColor, ImageFont, ImageText
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from types import ModuleType
     from typing import Any, AnyStr
 
-    from . import ImageDraw2, ImageFont
+    from . import ImageDraw2
     from ._typing import Coords, _Ink
 
 # experimental access to the outline API
@@ -59,9 +59,7 @@ directly.
 
 
 class ImageDraw:
-    font: (
-        ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont | None
-    ) = None
+    font: ImageFont.BaseImageFont | None = None
 
     def __init__(self, im: Image.Image, mode: str | None = None) -> None:
         """
@@ -105,7 +103,7 @@ class ImageDraw:
 
     def getfont(
         self,
-    ) -> ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont:
+    ) -> ImageFont.BaseImageFont:
         """
         Get the current default font.
 
@@ -125,17 +123,11 @@ class ImageDraw:
         :returns: An image font."""
         if not self.font:
             # FIXME: should add a font repository
-            from . import ImageFont
-
             self.font = ImageFont.load_default()
         return self.font
 
-    def _getfont(
-        self, font_size: float | None
-    ) -> ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont:
+    def _getfont(self, font_size: float | None) -> ImageFont.BaseImageFont:
         if font_size is not None:
-            from . import ImageFont
-
             return ImageFont.load_default(font_size)
         else:
             return self.getfont()
@@ -175,7 +167,7 @@ class ImageDraw:
     ) -> None:
         """Draw an arc."""
         ink, fill = self._getink(fill)
-        if ink is not None:
+        if ink is not None and width != 0:
             self.draw.draw_arc(xy, start, end, ink, width)
 
     def bitmap(
@@ -235,12 +227,12 @@ class ImageDraw:
         self,
         xy: Coords,
         fill: _Ink | None = None,
-        width: int = 0,
+        width: int = 1,
         joint: str | None = None,
     ) -> None:
         """Draw a line, or a connected sequence of line segments."""
         ink = self._getink(fill)[0]
-        if ink is not None:
+        if ink is not None and width != 0:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
                 points: Sequence[Sequence[float]]
@@ -419,7 +411,7 @@ class ImageDraw:
         if corners is None:
             corners = (True, True, True, True)
 
-        d = radius * 2
+        d = min(x1 - x0, y1 - y0, radius * 2)
 
         x0 = round(x0)
         y0 = round(y0)
@@ -540,12 +532,7 @@ class ImageDraw:
         xy: tuple[float, float],
         text: AnyStr | ImageText.Text[AnyStr],
         fill: _Ink | None = None,
-        font: (
-            ImageFont.ImageFont
-            | ImageFont.FreeTypeFont
-            | ImageFont.TransposedFont
-            | None
-        ) = None,
+        font: ImageFont.BaseImageFont | None = None,
         anchor: str | None = None,
         spacing: float = 4,
         align: str = "left",
@@ -600,26 +587,26 @@ class ImageDraw:
                 x = int(line.x)
                 y = int(line.y)
                 start = (math.modf(line.x)[0], math.modf(line.y)[0])
-                try:
-                    mask, offset = image_text.font.getmask2(  # type: ignore[union-attr,misc]
+                if isinstance(image_text.font, ImageFont.FreeTypeFont):
+                    mask, offset = image_text.font.getmask2(
                         line.text,
                         mode,
-                        direction=direction,
-                        features=features,
-                        language=language,
-                        stroke_width=stroke_width,
+                        direction,
+                        features,
+                        language,
+                        stroke_width,
+                        line.anchor,
+                        ink,
+                        start,
                         stroke_filled=True,
-                        anchor=line.anchor,
-                        ink=ink,
-                        start=start,
                         *args,
                         **kwargs,
                     )
                     x += offset[0]
                     y += offset[1]
-                except AttributeError:
+                else:
                     try:
-                        mask = image_text.font.getmask(  # type: ignore[misc]
+                        mask = image_text.font.getmask(
                             line.text,
                             mode,
                             direction,
@@ -664,12 +651,7 @@ class ImageDraw:
         xy: tuple[float, float],
         text: AnyStr,
         fill: _Ink | None = None,
-        font: (
-            ImageFont.ImageFont
-            | ImageFont.FreeTypeFont
-            | ImageFont.TransposedFont
-            | None
-        ) = None,
+        font: ImageFont.BaseImageFont | None = None,
         anchor: str | None = None,
         spacing: float = 4,
         align: str = "left",
@@ -702,12 +684,7 @@ class ImageDraw:
     def textlength(
         self,
         text: AnyStr,
-        font: (
-            ImageFont.ImageFont
-            | ImageFont.FreeTypeFont
-            | ImageFont.TransposedFont
-            | None
-        ) = None,
+        font: ImageFont.BaseImageFont | None = None,
         direction: str | None = None,
         features: list[str] | None = None,
         language: str | None = None,
@@ -734,12 +711,7 @@ class ImageDraw:
         self,
         xy: tuple[float, float],
         text: AnyStr,
-        font: (
-            ImageFont.ImageFont
-            | ImageFont.FreeTypeFont
-            | ImageFont.TransposedFont
-            | None
-        ) = None,
+        font: ImageFont.BaseImageFont | None = None,
         anchor: str | None = None,
         spacing: float = 4,
         align: str = "left",
@@ -767,12 +739,7 @@ class ImageDraw:
         self,
         xy: tuple[float, float],
         text: AnyStr,
-        font: (
-            ImageFont.ImageFont
-            | ImageFont.FreeTypeFont
-            | ImageFont.TransposedFont
-            | None
-        ) = None,
+        font: ImageFont.BaseImageFont | None = None,
         anchor: str | None = None,
         spacing: float = 4,
         align: str = "left",

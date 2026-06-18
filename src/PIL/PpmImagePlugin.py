@@ -246,7 +246,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
             block = self._read_block()  # read next block
             if not block:
                 if half_token:
-                    block = bytearray(b" ")  # flush half_token
+                    block = b" "  # flush half_token
                 else:
                     # eof
                     break
@@ -284,7 +284,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
                     break
         return data
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         self._comment_spans = False
         if self.mode == "1":
             data = self._decode_bitonal()
@@ -300,7 +300,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
 class PpmDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         assert self.fd is not None
 
         data = bytearray()

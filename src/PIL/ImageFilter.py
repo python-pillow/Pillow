@@ -106,7 +106,7 @@ class RankFilter(Filter):
         if image.mode == "P":
             msg = "cannot filter palette images"
             raise ValueError(msg)
-        image = image.expand(self.size // 2, self.size // 2)
+        image = image.expand(self.size // 2)
         return image.rankfilter(self.size, self.rank)
 
 
@@ -189,10 +189,10 @@ class GaussianBlur(MultibandFilter):
 
     def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         xy = self.radius
+        if xy == (0, 0) or xy == 0:
+            return image.copy()
         if isinstance(xy, (int, float)):
             xy = (xy, xy)
-        if xy == (0, 0):
-            return image.copy()
         return image.gaussian_blur(xy)
 
 
@@ -221,10 +221,10 @@ class BoxBlur(MultibandFilter):
 
     def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         xy = self.radius
+        if xy == (0, 0) or xy == 0:
+            return image.copy()
         if isinstance(xy, (int, float)):
             xy = (xy, xy)
-        if xy == (0, 0):
-            return image.copy()
         return image.box_blur(xy)
 
 

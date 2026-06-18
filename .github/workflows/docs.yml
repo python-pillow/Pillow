@@ -4,15 +4,12 @@ on:
   push:
     branches:
       - "**"
-    paths:
+    paths: &paths
       - ".github/workflows/docs.yml"
       - "docs/**"
       - "src/PIL/**"
   pull_request:
-    paths:
-      - ".github/workflows/docs.yml"
-      - "docs/**"
-      - "src/PIL/**"
+    paths: *paths
   workflow_dispatch:
 
 permissions:

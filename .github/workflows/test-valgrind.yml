@@ -6,15 +6,12 @@ on:
   push:
     branches:
       - "**"
-    paths:
+    paths: &paths
       - ".github/workflows/test-valgrind.yml"
       - "**.c"
       - "**.h"
   pull_request:
-    paths:
-      - ".github/workflows/test-valgrind.yml"
-      - "**.c"
-      - "**.h"
+    paths: *paths
   workflow_dispatch:
 
 permissions:

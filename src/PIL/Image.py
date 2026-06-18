@@ -731,24 +731,17 @@ class Image:
     def _dump(
         self, file: str | None = None, format: str | None = None, **options: Any
     ) -> str:
-        suffix = ""
-        if format:
-            suffix = f".{format}"
+        suffix = f".{format}" if format else ""
 
-        if not file:
-            f, filename = tempfile.mkstemp(suffix)
-            os.close(f)
-        else:
+        if file:
             filename = file
             if not filename.endswith(suffix):
-                filename = filename + suffix
-
-        self.load()
-
-        if not format or format == "PPM":
-            self.im.save_ppm(filename)
+                filename += suffix
         else:
-            self.save(filename, format, **options)
+            f, filename = tempfile.mkstemp(suffix)
+            os.close(f)
+
+        self.save(filename, format or "PPM", **options)
 
         return filename
 
@@ -931,7 +924,7 @@ class Image:
 
     def frombytes(
         self,
-        data: bytes | bytearray | SupportsArrayInterface,
+        data: DecoderInput,
         decoder_name: str = "raw",
         *args: Any,
     ) -> None:
@@ -2173,7 +2166,11 @@ class Image:
             self.palette.mode = "RGB"
         self.load()  # install new palette
 
-    def putpixel(self, xy: tuple[int, int], value: float | tuple[int, ...]) -> None:
+    def putpixel(
+        self,
+        xy: tuple[int, int] | list[int],
+        value: float | tuple[int, ...],
+    ) -> None:
         """
         Modifies the pixel at the given position. The color is given as
         a single numerical value for single-band images, and a tuple for
@@ -2640,11 +2637,8 @@ class Image:
         if is_path(fp):
             filename = os.fspath(fp)
             open_fp = True
-        elif fp == sys.stdout:
-            try:
-                fp = sys.stdout.buffer
-            except AttributeError:
-                pass
+        elif fp == sys.stdout and isinstance(sys.stdout, io.TextIOWrapper):
+            fp = sys.stdout.buffer
         if not filename and hasattr(fp, "name") and is_path(fp.name):
             # only set the name for metadata purposes
             filename = os.fspath(fp.name)
@@ -3245,7 +3239,7 @@ def new(
 def frombytes(
     mode: str,
     size: tuple[int, int],
-    data: bytes | bytearray | SupportsArrayInterface,
+    data: DecoderInput,
     decoder_name: str = "raw",
     *args: Any,
 ) -> Image:
@@ -3358,6 +3352,9 @@ class SupportsArrayInterface(Protocol):
     @property
     def __array_interface__(self) -> dict[str, Any]:
         raise NotImplementedError()
+
+
+DecoderInput = bytes | bytearray | memoryview | SupportsArrayInterface
 
 
 class SupportsArrowArrayInterface(Protocol):

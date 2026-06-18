@@ -8,12 +8,13 @@ on:
   #   branches:
   #     - "**"
   #   paths:
-  #     - ".github/workflows/test-valgrind.yml"
+  #     - ".github/workflows/test-valgrind-memory.yml"
   #     - "**.c"
   #     - "**.h"
+  #     - "depends/docker-test-valgrind-memory.sh"
   pull_request:
     paths:
-      - ".github/workflows/test-valgrind.yml"
+      - ".github/workflows/test-valgrind-memory.yml"
       - "**.c"
       - "**.h"
       - "depends/docker-test-valgrind-memory.sh"

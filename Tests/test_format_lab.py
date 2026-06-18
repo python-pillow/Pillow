@@ -19,9 +19,9 @@ def test_white() -> None:
 
     assert k == (255, 128, 128)
 
-    assert L == (255,) * 100
-    assert a == (128,) * 100
-    assert b == (128,) * 100
+    assert L == (255.0,) * 100
+    assert a == (128.0,) * 100
+    assert b == (128.0,) * 100
 
 
 def test_green() -> None:
