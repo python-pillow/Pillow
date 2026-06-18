@@ -404,7 +404,7 @@ class FreeTypeFont(BaseImageFont):
 
     def getbbox(
         self,
-        text: str | bytes,
+        text: str | bytes | bytearray,
         mode: str = "",
         direction: str | None = None,
         features: list[str] | None = None,
@@ -772,7 +772,7 @@ class TransposedFont(BaseImageFont):
         return im
 
     def getbbox(
-        self, text: str | bytes, *args: Any, **kwargs: Any
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
     ) -> tuple[int, int, float, float]:
         # TransposedFont doesn't support getmask2, move top-left point to (0, 0)
         # this has no effect on ImageFont and simulates anchor="lt" for FreeTypeFont

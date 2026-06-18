@@ -836,7 +836,7 @@ class PyDecoder(PyCodec):
     def pulls_fd(self) -> bool:
         return self._pulls_fd
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         """
         Override to perform the decoding process.
 
@@ -849,7 +849,10 @@ class PyDecoder(PyCodec):
         raise NotImplementedError(msg)
 
     def set_as_raw(
-        self, data: bytes, rawmode: str | None = None, extra: tuple[Any, ...] = ()
+        self,
+        data: bytes | bytearray,
+        rawmode: str | None = None,
+        extra: tuple[Any, ...] = (),
     ) -> None:
         """
         Convenience method to set the internal image from a stream of raw data
