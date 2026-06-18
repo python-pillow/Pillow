@@ -123,14 +123,11 @@ class ImageDraw:
         :returns: An image font."""
         if not self.font:
             # FIXME: should add a font repository
-            from . import ImageFont
-
             self.font = ImageFont.load_default()
         return self.font
 
     def _getfont(self, font_size: float | None) -> ImageFont.BaseImageFont:
         if font_size is not None:
-
             return ImageFont.load_default(font_size)
         else:
             return self.getfont()
