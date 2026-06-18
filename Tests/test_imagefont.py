@@ -821,7 +821,7 @@ def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
     ids=("ls", "ms", "rs", "ma", "mt", "mm", "mb", "md"),
 )
 def test_anchor(
-    layout_engine: ImageFont.Layout, anchor: str, left: int, top: int
+    layout_engine: ImageFont.Layout, anchor: str, left: float, top: float
 ) -> None:
     name, text = "quick", "Quick"
     path = f"Tests/images/test_anchor_{name}_{anchor}.png"
