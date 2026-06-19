@@ -1204,7 +1204,7 @@ _getpalette(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_getpalettemode(ImagingObject *self) {
+_getpalettemode(ImagingObject *self, PyObject *args) {
     if (!self->image->palette) {
         PyErr_SetString(PyExc_ValueError, no_palette);
         return NULL;
@@ -2253,7 +2253,7 @@ _box_blur(ImagingObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 static PyObject *
-_isblock(ImagingObject *self) {
+_isblock(ImagingObject *self, PyObject *args) {
     return PyBool_FromLong(self->image->block != NULL);
 }
 
@@ -2318,7 +2318,7 @@ _getcolors(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_getextrema(ImagingObject *self) {
+_getextrema(ImagingObject *self, PyObject *args) {
     union {
         UINT8 u[2];
         INT32 i[2];
@@ -2351,7 +2351,7 @@ _getextrema(ImagingObject *self) {
 }
 
 static PyObject *
-_getprojection(ImagingObject *self) {
+_getprojection(ImagingObject *self, PyObject *args) {
     unsigned char *xprofile;
     unsigned char *yprofile;
     PyObject *result;
@@ -2477,7 +2477,7 @@ _merge(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_split(ImagingObject *self) {
+_split(ImagingObject *self, PyObject *args) {
     Py_ssize_t i;
     PyObject *list;
     PyObject *imaging_object;
@@ -2506,7 +2506,7 @@ _split(ImagingObject *self) {
 /* Channel operations (ImageChops) ------------------------------------ */
 
 static PyObject *
-_chop_invert(ImagingObject *self) {
+_chop_invert(ImagingObject *self, PyObject *args) {
     return PyImagingNew(ImagingNegative(self->image));
 }
 

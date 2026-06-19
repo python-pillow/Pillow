@@ -449,7 +449,7 @@ _anim_decoder_dealloc(PyObject *self) {
 }
 
 PyObject *
-_anim_decoder_get_info(PyObject *self) {
+_anim_decoder_get_info(PyObject *self, PyObject *args) {
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
     WebPAnimInfo *info = &(decp->info);
 
@@ -488,7 +488,7 @@ _anim_decoder_get_chunk(PyObject *self, PyObject *args) {
 }
 
 PyObject *
-_anim_decoder_get_next(PyObject *self) {
+_anim_decoder_get_next(PyObject *self, PyObject *args) {
     uint8_t *buf;
     int timestamp;
     int ok;
@@ -519,7 +519,7 @@ _anim_decoder_get_next(PyObject *self) {
 }
 
 PyObject *
-_anim_decoder_reset(PyObject *self) {
+_anim_decoder_reset(PyObject *self, PyObject *args) {
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
     WebPAnimDecoderReset(decp->dec);
     Py_RETURN_NONE;
