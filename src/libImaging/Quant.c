@@ -1837,6 +1837,11 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
 
     if (result > 0) {
         imOut = ImagingNewDirty(IMAGING_MODE_P, im->xsize, im->ysize);
+        if (!imOut) {
+            free(newData);
+            free(palette);
+            return NULL;
+        }
         ImagingSectionEnter(&cookie);
 
         for (i = y = 0; y < im->ysize; y++) {
