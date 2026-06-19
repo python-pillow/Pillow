@@ -1273,7 +1273,7 @@ font_render(FontObject *self, PyObject *args) {
 }
 
 static PyObject *
-font_getvarnames(FontObject *self) {
+font_getvarnames(FontObject *self, PyObject *args) {
     int error;
     FT_UInt i, j, num_namedstyles, name_count;
     FT_MM_Var *master;
@@ -1338,7 +1338,7 @@ font_getvarnames(FontObject *self) {
 }
 
 static PyObject *
-font_getvaraxes(FontObject *self) {
+font_getvaraxes(FontObject *self, PyObject *args) {
     int error;
     FT_UInt i, j, num_axis, name_count;
     FT_MM_Var *master;
