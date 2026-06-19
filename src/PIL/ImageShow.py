@@ -148,6 +148,7 @@ class WindowsViewer(Viewer):
         if '"' in file:
             msg = "Windows filenames cannot contain double quotes"
             raise ValueError(msg)
+        file = file.replace("%", '"%"')
         return (
             f'start "Pillow" /WAIT "{file}" '
             "&& ping -n 4 127.0.0.1 >NUL "

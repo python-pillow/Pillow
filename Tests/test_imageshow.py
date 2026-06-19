@@ -110,6 +110,9 @@ def test_windowsviewer() -> None:
     with pytest.raises(ValueError, match="cannot contain double quotes"):
         viewer.get_command('"')
 
+    # Check that percentages are escaped
+    assert "%" not in viewer.get_command("%").replace('""%""', "")
+
 
 def test_ipythonviewer() -> None:
     pytest.importorskip("IPython", reason="IPython not installed")
