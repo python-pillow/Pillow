@@ -18,6 +18,7 @@ def test_path() -> None:
     assert p[0] == (0.0, 1.0)
     assert p[-1] == (8.0, 9.0)
     assert list(p[:1]) == [(0.0, 1.0)]
+    assert list(p[-1:]) == [(8.0, 9.0)]
     with pytest.raises(TypeError) as cm:
         p["foo"]
     assert str(cm.value) == "Path indices must be integers, not str"
