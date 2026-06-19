@@ -691,6 +691,10 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
                             // and value 0 indicates data will NOT be copied.
 
         WebPMux *mux = WebPMuxNew();
+        if (mux == NULL) {
+            PyErr_SetString(PyExc_RuntimeError, "could not create mux object");
+            return NULL;
+        }
         WebPMuxSetImage(mux, &image, copy_data);
 
         if (dbg) {
