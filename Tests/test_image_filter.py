@@ -136,10 +136,22 @@ def test_rankfilter_error(filter: ImageFilter.RankFilter) -> None:
 
 
 def test_rankfilter_properties() -> None:
-    rankfilter = ImageFilter.RankFilter(1, 2)
+    rankfilter = ImageFilter.RankFilter(3, 2)
 
-    assert rankfilter.size == 1
+    assert rankfilter.size == 3
     assert rankfilter.rank == 2
+
+    with pytest.raises(ValueError, match="bad filter size"):
+        ImageFilter.RankFilter(2, 1)
+    with pytest.raises(ValueError, match="bad filter size"):
+        ImageFilter.MaxFilter(2)
+    with pytest.raises(ValueError, match="bad filter size"):
+        ImageFilter.MedianFilter(2)
+    with pytest.raises(ValueError, match="bad filter size"):
+        ImageFilter.MinFilter(2)
+
+    with pytest.raises(ValueError, match="bad rank value"):
+        ImageFilter.RankFilter(1, 1)
 
 
 def test_builtinfilter_p() -> None:
