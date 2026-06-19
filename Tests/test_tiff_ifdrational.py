@@ -41,14 +41,12 @@ def test_sanity() -> None:
 
 def test_float() -> None:
     # float() must agree with ==, int() and repr(), which all use the
-    # normalized fraction. For a non-integral numerator (1.5 / 3 == 0.5) the
-    # inherited Rational.__float__ used int(numerator) / int(denominator) and
-    # returned 1/3 instead.
+    # normalized fraction
     r = IFDRational(1.5, 3)
     assert r == 0.5
     assert float(r) == 0.5
 
-    # Integral and 0/0 (nan) cases stay correct.
+    # Integer numerator and 0/0 (nan) cases
     assert float(IFDRational(4, 2)) == 2.0
     assert math.isnan(float(IFDRational(0, 0)))
 
