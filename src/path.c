@@ -180,6 +180,7 @@ PyPath_Flatten(PyObject *data, double **pxy) {
             n = buffer.len / (2 * sizeof(float));
             xy = alloc_array(n);
             if (!xy) {
+                PyBuffer_Release(&buffer);
                 return -1;
             }
             for (i = 0; i < n + n; i++) {
