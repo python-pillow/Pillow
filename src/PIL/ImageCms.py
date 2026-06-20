@@ -327,9 +327,7 @@ class ImageCmsTransform(Image.ImagePointHandler):
         if im.mode != self.output_mode:
             msg = "mode mismatch"
             raise ValueError(msg)  # wrong output mode
-        self.transform.apply(im.getim(), im.getim())
-        im.info["icc_profile"] = self.output_profile.tobytes()
-        return im
+        return self.apply(im, im)
 
 
 def get_display_profile(handle: SupportsInt | None = None) -> ImageCmsProfile | None:
