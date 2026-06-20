@@ -197,6 +197,8 @@ def test_exceptions() -> None:
     pLab = ImageCms.createProfile("LAB")
     t = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
     with pytest.raises(ValueError, match="mode mismatch"):
+        t.apply(hopper("LAB"), hopper("RGBA"))
+    with pytest.raises(ValueError, match="mode mismatch"):
         t.apply_in_place(hopper("RGBA"))
 
     # the procedural pyCMS API uses PyCMSError for all sorts of errors
