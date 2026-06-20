@@ -145,6 +145,9 @@ class WindowsViewer(Viewer):
     options = {"compress_level": 1, "save_all": True}
 
     def get_command(self, file: str, **options: Any) -> str:
+        if '"' in file:
+            msg = "Windows filenames cannot contain double quotes"
+            raise ValueError(msg)
         return (
             f'start "Pillow" /WAIT "{file}" '
             "&& ping -n 4 127.0.0.1 >NUL "
