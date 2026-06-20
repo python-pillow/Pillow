@@ -16,10 +16,16 @@ import zipfile
 from pathlib import Path
 
 
-def record_entry(path: str, data: bytes) -> str:
+def record_entry(path: str, data: bytes) -> bytes:
     """Build a RECORD line: `path,sha256=<base64url-nopad>,<size>`."""
     digest = base64.urlsafe_b64encode(hashlib.sha256(data).digest())
-    return f"{path},sha256={digest.rstrip(b'=').decode()},{len(data)}"
+    return (
+        path.encode("utf-8")
+        + b",sha256="
+        + digest.rstrip(b"=")
+        + b","
+        + str(len(data)).encode()
+    )
 
 
 def embed(wheel: Path, sbom: Path) -> None:
@@ -38,9 +44,9 @@ def embed(wheel: Path, sbom: Path) -> None:
     sbom_path = f"{dist_info}/sboms/{sbom.name}"
 
     # Append a matching RECORD line for the SBOM (RECORD's own line has no hash).
-    lines = contents[record_name].decode("utf-8").splitlines()
+    lines = contents[record_name].splitlines()
     lines.append(record_entry(sbom_path, sbom_bytes))
-    contents[record_name] = ("\n".join(lines) + "\n").encode("utf-8")
+    contents[record_name] = b"\n".join(lines) + b"\n"
 
     tmp = wheel.with_name(wheel.name + ".tmp")
     with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zf:
