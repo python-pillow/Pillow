@@ -272,7 +272,15 @@ ExportArrowSchemaPyCapsule(ImagingObject *self) {
     }
     int err = export_imaging_schema(self->image, schema);
     if (err == 0) {
-        return PyCapsule_New(schema, "arrow_schema", ReleaseArrowSchemaPyCapsule);
+        PyObject *capsule =
+            PyCapsule_New(schema, "arrow_schema", ReleaseArrowSchemaPyCapsule);
+        if (capsule == NULL) {
+            if (schema->release != NULL) {
+                schema->release(schema);
+            }
+            free(schema);
+        }
+        return capsule;
     }
     free(schema);
     return ArrowError(err);
@@ -300,7 +308,15 @@ ExportArrowArrayPyCapsule(ImagingObject *self) {
     }
     int err = export_imaging_array(self->image, array);
     if (err == 0) {
-        return PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
+        PyObject *capsule =
+            PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
+        if (capsule == NULL) {
+            if (array->release != NULL) {
+                array->release(array);
+            }
+            free(array);
+        }
+        return capsule;
     }
     free(array);
     return ArrowError(err);
