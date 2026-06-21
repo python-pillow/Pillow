@@ -2505,11 +2505,17 @@ _split(ImagingObject *self, PyObject *args) {
 
     list = PyTuple_New(self->image->bands);
     if (!list) {
+        for (int j = 0; j < self->image->bands; j++) {
+            ImagingDelete(bands[j]);
+        }
         return NULL;
     }
     for (i = 0; i < self->image->bands; i++) {
         imaging_object = PyImagingNew(bands[i]);
         if (!imaging_object) {
+            for (int j = 0; j < self->image->bands; j++) {
+                ImagingDelete(bands[j]);
+            }
             Py_DECREF(list);
             list = NULL;
             break;
