@@ -799,6 +799,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 if (type_int >= TIFF_BYTE && type_int <= TIFF_LONG8) {
                     type = (TIFFDataType)type_int;
                 }
+                Py_DECREF(tag_type);
             }
         }
 
