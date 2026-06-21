@@ -59,6 +59,9 @@ ImagingExpand(Imaging imIn, int margin) {
     if (margin < 0) {
         return (Imaging)ImagingError_ValueError("bad kernel size");
     }
+    if (margin > INT_MAX / (margin * (int)sizeof(FLOAT32))) {
+        return (Imaging)ImagingError_ValueError("filter size too large");
+    }
 
     imOut =
         ImagingNewDirty(imIn->mode, imIn->xsize + 2 * margin, imIn->ysize + 2 * margin);

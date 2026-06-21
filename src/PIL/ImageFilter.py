@@ -102,6 +102,9 @@ class RankFilter(Filter):
         if size % 2 == 0:
             msg = "bad filter size"
             raise ValueError(msg)
+        if size * size * 4 > (2**31 - 1):
+            msg = "filter size too large"
+            raise ValueError(msg)
         if rank < 0 or rank >= size * size:
             msg = "bad rank value"
             raise ValueError(msg)

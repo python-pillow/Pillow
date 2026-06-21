@@ -150,6 +150,12 @@ def test_rankfilter_properties() -> None:
     with pytest.raises(ValueError, match="bad filter size"):
         ImageFilter.MinFilter(2)
 
+    with pytest.raises(ValueError, match="filter size too large"):
+        ImageFilter.RankFilter(23171, 1)
+    im = Image.new("1", (1, 1))
+    with pytest.raises(ValueError, match="filter size too large"):
+        im.im.expand(23171)
+
     with pytest.raises(ValueError, match="bad rank value"):
         ImageFilter.RankFilter(1, 1)
 
