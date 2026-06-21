@@ -849,6 +849,11 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
 
         if (type == TIFF_BYTE || type == TIFF_UNDEFINED ||
             key_int == TIFFTAG_INKNAMES) {
+            if (!PyBytes_Check(value)) {
+                Py_DECREF(encoder);
+                PyErr_SetString(PyExc_ValueError, "Incorrect tag value type");
+                return NULL;
+            }
             status = ImagingLibTiffSetField(
                 &encoder->state,
                 (ttag_t)key_int,
@@ -1022,6 +1027,11 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                     &encoder->state, (ttag_t)key_int, (INT8)PyLong_AsLong(value)
                 );
             } else if (type == TIFF_ASCII) {
+                if (!PyBytes_Check(value)) {
+                    Py_DECREF(encoder);
+                    PyErr_SetString(PyExc_ValueError, "Incorrect tag value type");
+                    return NULL;
+                }
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, PyBytes_AsString(value)
                 );
