@@ -854,7 +854,7 @@ _profile_read_named_color_list(CmsProfileObject *self, cmsTagSignature info) {
     n = cmsNamedColorCount(ncl);
     result = PyList_New(n);
     if (!result) {
-        Py_RETURN_NONE;
+        return NULL;
     }
 
     for (i = 0; i < n; i++) {
@@ -863,7 +863,7 @@ _profile_read_named_color_list(CmsProfileObject *self, cmsTagSignature info) {
         str = PyUnicode_FromString(name);
         if (str == NULL) {
             Py_DECREF(result);
-            Py_RETURN_NONE;
+            return NULL;
         }
         PyList_SET_ITEM(result, i, str);
     }
@@ -930,7 +930,7 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
 
     result = PyDict_New();
     if (result == NULL) {
-        Py_RETURN_NONE;
+        return NULL;
     }
 
     n = cmsGetSupportedIntents(INTENTS, intent_ids, intent_descs);
@@ -960,7 +960,7 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
             Py_XDECREF(id);
             Py_XDECREF(entry);
             Py_XDECREF(result);
-            Py_RETURN_NONE;
+            return NULL;
         }
         PyDict_SetItem(result, id, entry);
         Py_DECREF(id);
