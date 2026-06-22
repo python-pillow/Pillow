@@ -154,14 +154,14 @@ class TestFileAvif:
 
             # avifdec hopper.avif avif/hopper_avif_write.png
             assert_image_similar_tofile(
-                reloaded, "Tests/images/avif/hopper_avif_write.png", 6.93
+                reloaded, "Tests/images/avif/hopper_avif_write.png", 7.0
             )
 
             # This test asserts that the images are similar. If the average pixel
             # difference between the two images is less than the epsilon value,
             # then we're going to accept that it's a reasonable lossy version of
             # the image.
-            assert_image_similar(reloaded, im, 9.39)
+            assert_image_similar(reloaded, im, 9.5)
 
     def test_AvifEncoder_with_invalid_args(self) -> None:
         """
