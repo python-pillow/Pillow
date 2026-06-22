@@ -206,8 +206,7 @@ def test_rle4_absolute_odd() -> None:
     # An RLE4 absolute run with an odd number of pixels is packed into
     # ceil(count / 2) bytes, the final nibble being padding. Build a 3x1
     # image whose single row is one absolute run of 3 pixels (indices 1, 2, 3).
-    palette = b"".join(o32(c) for c in (0x000000, 0x0000FF, 0x00FF00, 0xFF0000))
-    palette += b"\x00" * (16 * 4 - len(palette))
+    palette = b"\x00" * 4
     rle = (
         b"\x00\x03"  # absolute mode, 3 pixels
         b"\x12\x30"  # nibbles 1, 2, 3 and a padding nibble
@@ -221,8 +220,8 @@ def test_rle4_absolute_odd() -> None:
         + o16(4)  # bits per pixel
         + o32(2)  # BI_RLE4 compression
         + o32(len(rle))  # image size
-        + o32(0) * 2  # resolution
-        + o32(16)  # palette length
+        + o32(0) * 2  # pixels per meter
+        + o32(1)  # used colors
         + o32(0)  # important colors
     )
     offset = 14 + len(header) + len(palette)
