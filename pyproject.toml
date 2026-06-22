@@ -63,17 +63,16 @@ optional-dependencies.test-arrow = [
   "pyarrow",
 ]
 optional-dependencies.tests = [
-  "check-manifest",
   "coverage>=7.4.2",
   "defusedxml",
   "markdown2",
   "olefile",
   "packaging",
-  "pyroma>=5",
   "pytest",
   "pytest-cov",
   "pytest-timeout",
   "pytest-xdist",
+  "setuptools",
   "trove-classifiers>=2024.10.12",
 ]
 optional-dependencies.xmp = [
@@ -129,6 +128,8 @@ overrides = [
   # iOS simulator environment is isolated by cibuildwheel, but needs the dependencies
   { select = "*_iphonesimulator", environment.PATH = "$(pwd)/build/deps/iphonesimulator/bin:$PATH" },
   { select = "*-win32", test-requires = [] },
+  # NumPy does not yet support Python 3.15
+  { select = "cp315*-win_amd64", test-requires = [] },
 ]
 xbuild-tools = []
 

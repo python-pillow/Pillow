@@ -357,6 +357,20 @@ class TestImagingPaste:
         im.copy().paste(im2)
         im.copy().paste(im2, (0, 0))
 
+    @pytest.mark.parametrize(
+        "box",
+        (
+            (2**31 - 1, 0, -(2**31), 1),
+            (0, 2**31 - 1, 1, -(2**31)),
+        ),
+    )
+    def test_overflow(self, box: tuple[int, int, int, int]) -> None:
+        im = Image.new("1", (1, 1))
+        im.paste(1, box)
+
+        with pytest.raises(ValueError, match="images do not match"):
+            im.paste(im.copy(), box)
+
     def test_incorrect_abbreviated_form(self) -> None:
         im = Image.new("L", (1, 1))
         with pytest.raises(ValueError):

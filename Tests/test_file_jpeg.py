@@ -1053,9 +1053,7 @@ class TestFileJpeg:
         # Even though this decoder never says that it is finished
         # the image should still end when there is no new data
         class InfiniteMockPyDecoder(ImageFile.PyDecoder):
-            def decode(
-                self, buffer: bytes | Image.SupportsArrayInterface
-            ) -> tuple[int, int]:
+            def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
                 return 0, 0
 
         Image.register_decoder("INFINITE", InfiniteMockPyDecoder)

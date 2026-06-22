@@ -180,6 +180,7 @@ PyPath_Flatten(PyObject *data, double **pxy) {
             n = buffer.len / (2 * sizeof(float));
             xy = alloc_array(n);
             if (!xy) {
+                PyBuffer_Release(&buffer);
                 return -1;
             }
             for (i = 0; i < n + n; i++) {
@@ -592,7 +593,7 @@ path_subscript(PyPathObject *self, PyObject *item) {
         return path_getitem(self, i);
     }
     if (PySlice_Check(item)) {
-        int len = 4;
+        int len = self->count;
         Py_ssize_t start, stop, step, slicelength;
 
         if (PySlice_GetIndicesEx(item, len, &start, &stop, &step, &slicelength) < 0) {

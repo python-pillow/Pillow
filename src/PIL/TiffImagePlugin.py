@@ -318,8 +318,8 @@ def _limit_signed_rational(
 ##
 # Wrapper for TIFF IFDs.
 
-_load_dispatch = {}
-_write_dispatch = {}
+_load_dispatch: dict[int, tuple[int, _LoaderFunc]] = {}
+_write_dispatch: dict[int, Callable[..., Any]] = {}
 
 
 def _delegate(op: str) -> Any:
@@ -464,6 +464,7 @@ class IFDRational(Rational):
     __ceil__ = _delegate("__ceil__")
     __floor__ = _delegate("__floor__")
     __round__ = _delegate("__round__")
+    __float__ = _delegate("__float__")
     # Python >= 3.11
     if hasattr(Fraction, "__int__"):
         __int__ = _delegate("__int__")

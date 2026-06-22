@@ -68,6 +68,15 @@ def test_textbbox(font: ImageFont.ImageFont) -> None:
     assert d.textbbox((0, 0), "test", font=font) == (0, 0, 24, 11)
 
 
+def test_negative_dx() -> None:
+    glyph = struct.pack(">hhhhhhhhhh", -1, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    fp = BytesIO(b"PILfont\n\nDATA\n" + glyph * 256)
+
+    font = ImageFont.ImageFont()
+    font._load_pilfont_data(fp, Image.new("L", (1, 1)))
+    assert font.getlength("A") == 0
+
+
 def test_decompression_bomb() -> None:
     glyph = struct.pack(">hhhhhhhhhh", 1, 0, 0, 0, 256, 256, 0, 0, 256, 256)
     fp = BytesIO(b"PILfont\n\nDATA\n" + glyph * 256)

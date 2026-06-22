@@ -124,6 +124,14 @@ class TestFilePng:
             with Image.open(test_file):
                 pass
 
+    def test_ihdr_unknown_mode(self) -> None:
+        fp = BytesIO(chunk(b"IHDR", b"\x00" * 13))
+        with PngImagePlugin.PngStream(fp) as png:
+            cid, pos, length = png.read()
+            png.call(cid, pos, length)
+
+            assert png.im_mode == ""
+
     def test_bad_text(self) -> None:
         # Make sure PIL can read malformed tEXt chunks (@PIL152)
 

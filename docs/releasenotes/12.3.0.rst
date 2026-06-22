@@ -41,13 +41,25 @@ TODO
 API additions
 =============
 
-TODO
-^^^^
+Added ``scale_down`` argument to ``ImageGrab.grab()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+:py:meth:`~PIL.ImageGrab.grab` now accepts an optional keyword argument of
+``scale_down``. This affects macOS screenshots with a ``bbox`` on a Retina screen. By
+default, images will be captured at 2x. If ``scale_down`` is ``True``, they will be at
+1x.
+
+Previously, macOS screenshots with a ``bbox`` were captured at 1x by default.
 
 Other changes
 =============
+
+Python 3.15 beta
+^^^^^^^^^^^^^^^^
+
+To help other projects prepare for Python 3.15, wheels are now built for the 3.15 beta
+as a preview. This is not official support for Python 3.15, but rather an opportunity
+for you to test how Pillow works with the beta and report any problems.
 
 Removed Python 3.13 free-threaded wheels
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

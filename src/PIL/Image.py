@@ -924,7 +924,7 @@ class Image:
 
     def frombytes(
         self,
-        data: bytes | bytearray | SupportsArrayInterface,
+        data: DecoderInput,
         decoder_name: str = "raw",
         *args: Any,
     ) -> None:
@@ -2167,7 +2167,9 @@ class Image:
         self.load()  # install new palette
 
     def putpixel(
-        self, xy: tuple[int, int], value: float | tuple[int, ...] | list[int]
+        self,
+        xy: tuple[int, int] | list[int],
+        value: float | tuple[int, ...] | list[int],
     ) -> None:
         """
         Modifies the pixel at the given position. The color is given as
@@ -3234,7 +3236,7 @@ def new(
 def frombytes(
     mode: str,
     size: tuple[int, int],
-    data: bytes | bytearray | SupportsArrayInterface,
+    data: DecoderInput,
     decoder_name: str = "raw",
     *args: Any,
 ) -> Image:
@@ -3347,6 +3349,9 @@ class SupportsArrayInterface(Protocol):
     @property
     def __array_interface__(self) -> dict[str, Any]:
         raise NotImplementedError()
+
+
+DecoderInput = bytes | bytearray | memoryview | SupportsArrayInterface
 
 
 class SupportsArrowArrayInterface(Protocol):

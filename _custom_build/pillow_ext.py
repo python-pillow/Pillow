@@ -505,15 +505,12 @@ class pil_build_ext(build_ext):
                 )
 
             if root is None and pkg_config:
-                if isinstance(lib_name, str):
-                    _dbg("Looking for `%s` using pkg-config.", lib_name)
-                    root = pkg_config(lib_name)
-                else:
-                    for lib_name2 in lib_name:
-                        _dbg("Looking for `%s` using pkg-config.", lib_name2)
-                        root = pkg_config(lib_name2)
-                        if root:
-                            break
+                for lib_name2 in (
+                    [lib_name] if isinstance(lib_name, str) else lib_name
+                ):
+                    _dbg("Looking for `%s` using pkg-config.", lib_name2)
+                    if root := pkg_config(lib_name2):
+                        break
 
             if isinstance(root, tuple):
                 lib_root, include_root = root

@@ -183,7 +183,7 @@ class Dib:
         else:
             self.image.paste(im.im)
 
-    def frombytes(self, buffer: bytes) -> None:
+    def frombytes(self, buffer: bytes | memoryview) -> None:
         """
         Load display memory contents from byte data.
 

@@ -1462,6 +1462,8 @@ setup_module(PyObject *m) {
         return -1;
     }
 
+    PyDateTime_IMPORT;
+
     d = PyModule_GetDict(m);
 
     /* this check is also in PIL.features.pilinfo() */
@@ -1491,8 +1493,6 @@ static PyModuleDef_Slot slots[] = {
 
 PyMODINIT_FUNC
 PyInit__imagingcms(void) {
-    PyDateTime_IMPORT;
-
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_imagingcms",
