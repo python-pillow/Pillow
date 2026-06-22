@@ -384,8 +384,11 @@ memory_return_block(ImagingMemoryArena arena, ImagingMemoryBlock block) {
     if (arena->blocks_cached < arena->blocks_max) {
         // Reduce block size
         if (block.size > arena->block_size) {
-            block.size = arena->block_size;
-            block.ptr = realloc(block.ptr, arena->block_size);
+            char *ptr = realloc(block.ptr, arena->block_size);
+            if (ptr) {
+                block.ptr = ptr;
+                block.size = arena->block_size;
+            }
         }
         arena->blocks_pool[arena->blocks_cached] = block;
         arena->blocks_cached += 1;
