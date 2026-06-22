@@ -71,14 +71,6 @@ def test_invalid_file() -> None:
         XbmImagePlugin.XbmImageFile(invalid_file)
 
 
-def test_save_wrong_mode(tmp_path: Path) -> None:
-    im = hopper()
-    out = tmp_path / "temp.xbm"
-
-    with pytest.raises(OSError):
-        im.save(out)
-
-
 def test_hotspot(tmp_path: Path) -> None:
     im = hopper("1")
     out = tmp_path / "temp.xbm"

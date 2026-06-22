@@ -66,6 +66,25 @@ def _write_image(
 
     width, height = im.size
 
+    encoderinfo = im.encoderinfo
+    if im.mode in (
+        "F",
+        "HSV",
+        "I",
+        "I;16",
+        "I;16B",
+        "I;16L",
+        "I;16N",
+        "La",
+        "LAB",
+        "PA",
+        "RGBa",
+        "RGBX",
+        "YCbCr",
+    ):
+        im = im.convert("RGBA")
+        im.encoderinfo = encoderinfo  # for Jpeg2K plugin
+
     dict_obj: dict[str, Any] = {"BitsPerComponent": 8}
     if im.mode == "1":
         if features.check("libtiff"):
