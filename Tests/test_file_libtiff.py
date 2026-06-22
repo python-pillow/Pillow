@@ -321,7 +321,7 @@ class TestFileLibTiff(LibTiffTestCase):
                         and libtiff
                     ):
                         # libtiff does not support real RATIONALS
-                        assert round(abs(float(reloaded_value) - float(value)), 7) == 0
+                        assert float(reloaded_value) == pytest.approx(float(value))
                         continue
 
                     assert reloaded_value == value
