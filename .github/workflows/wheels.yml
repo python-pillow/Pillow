@@ -36,7 +36,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  EXPECTED_DISTS: 66
+  EXPECTED_DISTS: 87
   FORCE_COLOR: 1
 
 jobs:
@@ -64,7 +64,7 @@ jobs:
             platform: macos
             os: macos-26-intel
             cibw_arch: x86_64
-            build: "{cp314,pp3}*"
+            build: "{cp314,cp315,pp3}*"
             macosx_deployment_target: "10.15"
           - name: "macOS arm64"
             platform: macos
@@ -125,6 +125,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_ENABLE: cpython-prerelease pypy
+          CIBW_ENVIRONMENT_PASS_LINUX: FORCE_COLOR
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -201,7 +202,7 @@ jobs:
             -v {project}:C:\pillow
             -v C:\cibw:C:\cibw
             -v %CD%\..\venv-test:%CD%\..\venv-test
-            -e CI -e GITHUB_ACTIONS
+            -e CI -e GITHUB_ACTIONS -e FORCE_COLOR
             mcr.microsoft.com/windows/servercore:ltsc2022
             powershell C:\pillow\.github\workflows\wheels-test.ps1 %CD%\..\venv-test'
         shell: bash
