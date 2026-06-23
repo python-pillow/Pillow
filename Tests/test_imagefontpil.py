@@ -77,6 +77,16 @@ def test_negative_dx() -> None:
     assert font.getlength("A") == 0
 
 
+def test_width_overflow() -> None:
+    glyph = struct.pack(">hhhhhhhhhh", 32767, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    fp = BytesIO(b"PILfont\n\nDATA\n" + glyph * 256)
+
+    font = ImageFont.ImageFont()
+    font._load_pilfont_data(fp, Image.new("L", (1, 1)))
+    with pytest.raises(OverflowError, match="Width too large"):
+        font.getlength("A" * 100_000)
+
+
 def test_decompression_bomb() -> None:
     glyph = struct.pack(">hhhhhhhhhh", 1, 0, 0, 0, 256, 256, 0, 0, 256, 256)
     fp = BytesIO(b"PILfont\n\nDATA\n" + glyph * 256)
