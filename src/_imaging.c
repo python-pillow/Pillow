@@ -2801,7 +2801,12 @@ textwidth(ImagingFontObject *self, const unsigned char *text) {
     int xsize;
 
     for (xsize = 0; *text; text++) {
-        xsize += self->glyphs[*text].dx;
+        int dx = self->glyphs[*text].dx;
+        if (dx > 0 && xsize > INT_MAX - dx) {
+            PyErr_SetString(PyExc_OverflowError, "Width too large");
+            return -1;
+        }
+        xsize += dx;
     }
 
     if (xsize < 0) {
@@ -2866,7 +2871,12 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
         return NULL;
     }
 
-    im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize);
+    int xsize = textwidth(self, text);
+    if (xsize == -1) {
+        free(text);
+        return NULL;
+    }
+    im = ImagingNew(self->bitmap->mode, xsize, self->ysize);
     if (!im) {
         free(text);
         return ImagingError_MemoryError();
@@ -2928,8 +2938,12 @@ _font_getsize(ImagingFontObject *self, PyObject *args) {
         return NULL;
     }
 
-    val = Py_BuildValue("ii", textwidth(self, text), self->ysize);
+    int xsize = textwidth(self, text);
     free(text);
+    if (xsize == -1) {
+        return NULL;
+    }
+    val = Py_BuildValue("ii", xsize, self->ysize);
     return val;
 }
 
