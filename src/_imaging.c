@@ -4319,8 +4319,11 @@ setup_module(PyObject *m) {
     {
         extern const char *ImagingJpegVersion(void);
         PyObject *v = PyUnicode_FromString(ImagingJpegVersion());
-        PyDict_SetItemString(d, "jpeglib_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "jpeglib_version", v);
+        Py_DECREF(v);
     }
 #endif
 
@@ -4328,8 +4331,11 @@ setup_module(PyObject *m) {
     {
         extern const char *ImagingJpeg2KVersion(void);
         PyObject *v = PyUnicode_FromString(ImagingJpeg2KVersion());
-        PyDict_SetItemString(d, "jp2klib_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "jp2klib_version", v);
+        Py_DECREF(v);
     }
 #endif
 
@@ -4340,8 +4346,11 @@ setup_module(PyObject *m) {
 #define tostr1(a) #a
 #define tostr(a) tostr1(a)
         PyObject *v = PyUnicode_FromString(tostr(LIBJPEG_TURBO_VERSION));
-        PyDict_SetItemString(d, "libjpeg_turbo_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "libjpeg_turbo_version", v);
+        Py_DECREF(v);
 #undef tostr
 #undef tostr1
     }
@@ -4368,8 +4377,11 @@ setup_module(PyObject *m) {
     {
         extern const char *ImagingImageQuantVersion(void);
         PyObject *v = PyUnicode_FromString(ImagingImageQuantVersion());
-        PyDict_SetItemString(d, "imagequant_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "imagequant_version", v);
+        Py_DECREF(v);
     }
 #else
     have_libimagequant = Py_False;
@@ -4388,8 +4400,11 @@ setup_module(PyObject *m) {
     {
         extern const char *ImagingZipVersion(void);
         PyObject *v = PyUnicode_FromString(ImagingZipVersion());
-        PyDict_SetItemString(d, "zlib_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "zlib_version", v);
+        Py_DECREF(v);
     }
 #endif
 
@@ -4398,8 +4413,11 @@ setup_module(PyObject *m) {
     have_zlibng = Py_True;
     {
         PyObject *v = PyUnicode_FromString(ZLIBNG_VERSION);
-        PyDict_SetItemString(d, "zlib_ng_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "zlib_ng_version", v);
+        Py_DECREF(v);
     }
 #else
     have_zlibng = Py_False;
@@ -4412,8 +4430,11 @@ setup_module(PyObject *m) {
     {
         extern const char *ImagingTiffVersion(void);
         PyObject *v = PyUnicode_FromString(ImagingTiffVersion());
-        PyDict_SetItemString(d, "libtiff_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "libtiff_version", v);
+        Py_DECREF(v);
     }
 #endif
 
@@ -4428,10 +4449,11 @@ setup_module(PyObject *m) {
     }
 
     PyObject *pillow_version = PyUnicode_FromString(version);
-    PyDict_SetItemString(
-        d, "PILLOW_VERSION", pillow_version ? pillow_version : Py_None
-    );
-    Py_XDECREF(pillow_version);
+    if (!pillow_version) {
+        return -1;
+    }
+    PyDict_SetItemString(d, "PILLOW_VERSION", pillow_version);
+    Py_DECREF(pillow_version);
 
     return 0;
 }

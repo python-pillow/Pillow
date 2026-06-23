@@ -789,8 +789,11 @@ setup_module(PyObject *m) {
 
     PyObject *d = PyModule_GetDict(m);
     PyObject *v = PyUnicode_FromString(WebPDecoderVersion_str());
-    PyDict_SetItemString(d, "webpdecoder_version", v ? v : Py_None);
-    Py_XDECREF(v);
+    if (!v) {
+        return -1;
+    }
+    PyDict_SetItemString(d, "webpdecoder_version", v);
+    Py_DECREF(v);
 
     return 0;
 }
