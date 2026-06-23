@@ -10,6 +10,8 @@ import time
 import zlib
 from typing import Any, NamedTuple
 
+from . import ImageFile
+
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from typing import IO
@@ -320,17 +322,18 @@ class PdfStream:
         self.dictionary = dictionary
         self.buf = buf
 
-    def decode(self) -> bytes:
+    def decode(self, max_length: int = ImageFile.SAFEBLOCK) -> bytes:
         try:
             filter = self.dictionary[b"Filter"]
         except KeyError:
             return self.buf
         if filter == b"FlateDecode":
-            try:
-                expected_length = self.dictionary[b"DL"]
-            except KeyError:
-                expected_length = self.dictionary[b"Length"]
-            return zlib.decompress(self.buf, bufsize=int(expected_length))
+            dobj = zlib.decompressobj()
+            plaintext = dobj.decompress(self.buf, max_length)
+            if dobj.unconsumed_tail:
+                msg = "Decompressed data too large"
+                raise ValueError(msg)
+            return plaintext
         else:
             msg = f"stream filter {repr(filter)} unknown/unsupported"
             raise NotImplementedError(msg)
