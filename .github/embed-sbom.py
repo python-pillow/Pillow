@@ -89,8 +89,7 @@ def main() -> None:
 
     wheels = sorted(args.wheelhouse.glob("*.whl"))
     if not wheels:
-        print(f"error: no wheels found in {args.wheelhouse}", file=sys.stderr)
-        raise SystemExit(1)
+        parser.error(f"no wheels found in {args.wheelhouse}")
 
     for wheel in wheels:
         embed(wheel, sbom)
