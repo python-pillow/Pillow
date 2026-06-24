@@ -16,13 +16,19 @@ import zipfile
 from pathlib import Path
 
 
-def record_entry(path: str, data: bytes) -> str:
+def record_entry(path: str, data: bytes) -> bytes:
     """Build a RECORD line: `path,sha256=<base64url-nopad>,<size>`."""
     digest = base64.urlsafe_b64encode(hashlib.sha256(data).digest())
-    return f"{path},sha256={digest.rstrip(b'=').decode()},{len(data)}"
+    return (
+        path.encode("utf-8")
+        + b",sha256="
+        + digest.rstrip(b"=")
+        + b","
+        + str(len(data)).encode()
+    )
 
 
-def embed(wheel: Path, sbom_name: str, sbom_bytes: bytes) -> None:
+def embed(wheel: Path, sbom: Path) -> None:
     with zipfile.ZipFile(wheel) as zf:
         infos = zf.infolist()
         contents = {info.filename: zf.read(info.filename) for info in infos}
@@ -33,12 +39,14 @@ def embed(wheel: Path, sbom_name: str, sbom_bytes: bytes) -> None:
         if name.endswith(".dist-info/RECORD") and name.count("/") == 1
     )
     dist_info = record_name.rsplit("/", 1)[0]
-    sbom_path = f"{dist_info}/sboms/{sbom_name}"
+
+    sbom_bytes = sbom.read_bytes()
+    sbom_path = f"{dist_info}/sboms/{sbom.name}"
 
     # Append a matching RECORD line for the SBOM (RECORD's own line has no hash).
-    lines = contents[record_name].decode("utf-8").splitlines()
+    lines = contents[record_name].splitlines()
     lines.append(record_entry(sbom_path, sbom_bytes))
-    contents[record_name] = ("\n".join(lines) + "\n").encode("utf-8")
+    contents[record_name] = b"\n".join(lines) + b"\n"
 
     tmp = wheel.with_name(wheel.name + ".tmp")
     with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -49,16 +57,18 @@ def embed(wheel: Path, sbom_name: str, sbom_bytes: bytes) -> None:
         zf.writestr(sbom_path, sbom_bytes)
     tmp.replace(wheel)
 
+    print(f"Embedded {sbom.name} in {wheel.name}")
 
-def load_sbom(path: Path) -> tuple[str, bytes]:
-    """Read the SBOM; `path` may be the file or a directory containing one."""
+
+def scan_dir(path: Path) -> Path:
+    """If `path` is a directory, return the path of the SBOM within."""
     if path.is_dir():
         candidates = list(path.glob("*.cdx.json"))
         if len(candidates) != 1:
             msg = f"expected exactly one *.cdx.json in {path}, found {len(candidates)}"
             raise SystemExit(msg)
-        path = candidates[0]
-    return path.name, path.read_bytes()
+        return candidates[0]
+    return path
 
 
 def main() -> None:
@@ -75,7 +85,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    sbom_name, sbom_bytes = load_sbom(args.sbom)
+    sbom = scan_dir(args.sbom)
 
     wheels = sorted(args.wheelhouse.glob("*.whl"))
     if not wheels:
@@ -83,8 +93,7 @@ def main() -> None:
         raise SystemExit(1)
 
     for wheel in wheels:
-        embed(wheel, sbom_name, sbom_bytes)
-        print(f"Embedded {sbom_name} in {wheel.name}")
+        embed(wheel, sbom)
 
 
 if __name__ == "__main__":
