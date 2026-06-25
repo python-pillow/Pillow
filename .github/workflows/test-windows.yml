@@ -112,7 +112,7 @@ jobs:
       with:
         path: winbuild\build
         key:
-          ${{ hashFiles('winbuild\build_prepare.py') }}-${{ hashFiles('.github\workflows\test-windows.yml') }}-${{ env.pythonLocation }}-${{ steps.install.outputs.vs }}
+          ${{ hashFiles('.github\dependencies.json') }}-${{ hashFiles('winbuild\build_prepare.py') }}-${{ hashFiles('.github\workflows\test-windows.yml') }}-${{ env.pythonLocation }}-${{ steps.install.outputs.vs }}
 
     - name: Prepare build
       if: steps.build-cache.outputs.cache-hit != 'true'
