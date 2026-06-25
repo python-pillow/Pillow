@@ -365,7 +365,7 @@ def test_rotated_transposed_font(
         bbox_b[2] - bbox_b[0],
     )
 
-    # Check top left co-ordinates are correct
+    # Check top left coordinates are correct
     assert bbox_b[:2] == (20, 20)
 
     # text length is undefined for vertical text
@@ -410,7 +410,7 @@ def test_unrotated_transposed_font(
         bbox_b[3] - bbox_b[1],
     )
 
-    # Check top left co-ordinates are correct
+    # Check top left coordinates are correct
     assert bbox_b[:2] == (20, 20)
 
     assert length_a == length_b
@@ -821,7 +821,7 @@ def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
     ids=("ls", "ms", "rs", "ma", "mt", "mm", "mb", "md"),
 )
 def test_anchor(
-    layout_engine: ImageFont.Layout, anchor: str, left: int, top: int
+    layout_engine: ImageFont.Layout, anchor: str, left: float, top: float
 ) -> None:
     name, text = "quick", "Quick"
     path = f"Tests/images/test_anchor_{name}_{anchor}.png"

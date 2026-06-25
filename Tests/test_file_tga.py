@@ -179,8 +179,18 @@ def test_save_wrong_mode(tmp_path: Path) -> None:
     im = hopper("PA")
     out = tmp_path / "temp.tga"
 
-    with pytest.raises(OSError):
+    with pytest.raises(OSError, match="cannot write mode PA as TGA"):
         im.save(out)
+
+
+def test_save_1_mode_rle(tmp_path: Path) -> None:
+    im = Image.new("1", (1, 1))
+    out = tmp_path / "temp.tga"
+
+    with pytest.raises(
+        OSError, match="cannot write mode 1 as TGA with run-length encoding"
+    ):
+        im.save(out, compression="tga_rle")
 
 
 def test_save_mapdepth() -> None:

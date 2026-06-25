@@ -854,7 +854,7 @@ _profile_read_named_color_list(CmsProfileObject *self, cmsTagSignature info) {
     n = cmsNamedColorCount(ncl);
     result = PyList_New(n);
     if (!result) {
-        Py_RETURN_NONE;
+        return NULL;
     }
 
     for (i = 0; i < n; i++) {
@@ -863,7 +863,7 @@ _profile_read_named_color_list(CmsProfileObject *self, cmsTagSignature info) {
         str = PyUnicode_FromString(name);
         if (str == NULL) {
             Py_DECREF(result);
-            Py_RETURN_NONE;
+            return NULL;
         }
         PyList_SET_ITEM(result, i, str);
     }
@@ -930,7 +930,7 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
 
     result = PyDict_New();
     if (result == NULL) {
-        Py_RETURN_NONE;
+        return NULL;
     }
 
     n = cmsGetSupportedIntents(INTENTS, intent_ids, intent_descs);
@@ -960,7 +960,7 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
             Py_XDECREF(id);
             Py_XDECREF(entry);
             Py_XDECREF(result);
-            Py_RETURN_NONE;
+            return NULL;
         }
         PyDict_SetItem(result, id, entry);
         Py_DECREF(id);
@@ -1462,6 +1462,8 @@ setup_module(PyObject *m) {
         return -1;
     }
 
+    PyDateTime_IMPORT;
+
     d = PyModule_GetDict(m);
 
     /* this check is also in PIL.features.pilinfo() */
@@ -1475,8 +1477,11 @@ setup_module(PyObject *m) {
     } else {
         v = PyUnicode_FromFormat("%d.%d", vn / 1000, (vn / 10) % 100);
     }
-    PyDict_SetItemString(d, "littlecms_version", v ? v : Py_None);
-    Py_XDECREF(v);
+    if (!v) {
+        return -1;
+    }
+    PyDict_SetItemString(d, "littlecms_version", v);
+    Py_DECREF(v);
 
     return 0;
 }
@@ -1491,8 +1496,6 @@ static PyModuleDef_Slot slots[] = {
 
 PyMODINIT_FUNC
 PyInit__imagingcms(void) {
-    PyDateTime_IMPORT;
-
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_imagingcms",

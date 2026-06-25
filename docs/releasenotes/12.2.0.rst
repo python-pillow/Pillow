@@ -30,8 +30,8 @@ has already processed. PdfParser was added in Pillow 4.2.0.
 :cve:`2026-42308`: Integer overflow when processing fonts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If a font advances for each glyph by an exceeding large amount, when Pillow keeps track
-of the current position, it may lead to an integer overflow. This has been fixed.
+If a font advances for each glyph by an exceedingly large amount, when Pillow keeps
+track of the current position, it may lead to an integer overflow. This has been fixed.
 
 :cve:`2026-42309`: Heap buffer overflow with nested list coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -692,7 +692,7 @@ class PdfParser:
             self.read_prev_trailer(self.trailer_dict[b"Prev"])
 
     def read_prev_trailer(
-        self, xref_section_offset: int, processed_offsets: list[int] = []
+        self, xref_section_offset: int, processed_offsets: list[int] | None = None
     ) -> None:
         assert self.buf is not None
         trailer_offset = self.read_xref_table(xref_section_offset=xref_section_offset)
@@ -708,6 +708,8 @@ class PdfParser:
         )
         trailer_dict = self.interpret_trailer(trailer_data)
         if b"Prev" in trailer_dict:
+            if processed_offsets is None:
+                processed_offsets = []
             processed_offsets.append(xref_section_offset)
             check_format_condition(
                 trailer_dict[b"Prev"] not in processed_offsets, "trailer loop found"
@@ -822,7 +824,7 @@ class PdfParser:
     @classmethod
     def get_value(
         cls,
-        data: bytes | bytearray | mmap.mmap,
+        data: bytes | bytearray | memoryview | mmap.mmap,
         offset: int,
         expect_indirect: IndirectReference | None = None,
         max_nesting: int = -1,
@@ -900,7 +902,7 @@ class PdfParser:
                 if stream_len is None or not isinstance(stream_len, int):
                     msg = f"bad or missing Length in stream dict ({stream_len})"
                     raise PdfFormatError(msg)
-                stream_data = data[m.end() : m.end() + stream_len]
+                stream_data = bytes(data[m.end() : m.end() + stream_len])
                 m = cls.re_stream_end.match(data, m.end() + stream_len)
                 check_format_condition(m is not None, "stream end not found")
                 assert m is not None
@@ -983,7 +985,7 @@ class PdfParser:
 
     @classmethod
     def get_literal_string(
-        cls, data: bytes | bytearray | mmap.mmap, offset: int
+        cls, data: bytes | bytearray | memoryview | mmap.mmap, offset: int
     ) -> tuple[bytes, int]:
         nesting_depth = 0
         result = bytearray()

@@ -584,8 +584,8 @@ bounding_box_and_anchors(
     GlyphInfo *glyph_info,
     size_t count,
     int load_flags,
-    int *width,
-    int *height,
+    int64_t *width,
+    int64_t *height,
     int *x_offset,
     int *y_offset
 ) {
@@ -743,8 +743,8 @@ bounding_box_and_anchors(
             }
         }
     }
-    *width = x_max - x_min;
-    *height = y_max - y_min;
+    *width = (int64_t)x_max - x_min;
+    *height = (int64_t)y_max - y_min;
     *x_offset = -x_anchor + x_min;
     *y_offset = -(-y_anchor + y_max);
     return 0;
@@ -756,7 +756,8 @@ bad_anchor:
 
 static PyObject *
 font_getsize_impl(FontObject *self, PyObject *args) {
-    int width, height, x_offset, y_offset;
+    int64_t width, height;
+    int x_offset, y_offset;
     int load_flags; /* FreeType load_flags parameter */
     int error;
     GlyphInfo *glyph_info = NULL; /* computed text layout */
@@ -825,7 +826,7 @@ font_getsize_impl(FontObject *self, PyObject *args) {
         return NULL;
     }
 
-    return Py_BuildValue("(ii)(ii)", width, height, x_offset, y_offset);
+    return Py_BuildValue("(LL)(ii)", width, height, x_offset, y_offset);
 }
 
 static PyObject *
@@ -875,7 +876,8 @@ font_render_impl(FontObject *self, PyObject *args) {
     PyObject *fill;
     float x_start = 0;
     float y_start = 0;
-    int width, height, x_offset, y_offset;
+    int64_t width, height;
+    int x_offset, y_offset;
     int horizontal_dir; /* is primary axis horizontal? */
 
     /* render string into given buffer (the buffer *must* have
@@ -953,7 +955,7 @@ font_render_impl(FontObject *self, PyObject *args) {
 
     width += ceil(stroke_width * 2 + x_start);
     height += ceil(stroke_width * 2 + y_start);
-    image = PyObject_CallFunction(fill, "ii", width, height);
+    image = PyObject_CallFunction(fill, "LL", width, height);
     if (image == NULL) {
         PyMem_Del(glyph_info);
         return NULL;
@@ -1271,7 +1273,7 @@ font_render(FontObject *self, PyObject *args) {
 }
 
 static PyObject *
-font_getvarnames(FontObject *self) {
+font_getvarnames(FontObject *self, PyObject *args) {
     int error;
     FT_UInt i, j, num_namedstyles, name_count;
     FT_MM_Var *master;
@@ -1336,7 +1338,7 @@ font_getvarnames(FontObject *self) {
 }
 
 static PyObject *
-font_getvaraxes(FontObject *self) {
+font_getvaraxes(FontObject *self, PyObject *args) {
     int error;
     FT_UInt i, j, num_axis, name_count;
     FT_MM_Var *master;
@@ -1656,8 +1658,11 @@ setup_module(PyObject *m) {
     FT_Library_Version(library, &major, &minor, &patch);
 
     v = PyUnicode_FromFormat("%d.%d.%d", major, minor, patch);
-    PyDict_SetItemString(d, "freetype2_version", v ? v : Py_None);
-    Py_XDECREF(v);
+    if (!v) {
+        return -1;
+    }
+    PyDict_SetItemString(d, "freetype2_version", v);
+    Py_DECREF(v);
 
 #ifdef HAVE_RAQM
 #if defined(HAVE_RAQM_SYSTEM) || defined(HAVE_FRIBIDI_SYSTEM)
@@ -1680,6 +1685,9 @@ setup_module(PyObject *m) {
         v = NULL;
 #ifdef RAQM_VERSION_MAJOR
         v = PyUnicode_FromString(raqm_version_string());
+        if (!v) {
+            return -1;
+        }
 #endif
         PyDict_SetItemString(d, "raqm_version", v ? v : Py_None);
         Py_XDECREF(v);
@@ -1691,6 +1699,9 @@ setup_module(PyObject *m) {
             const char *b = strchr(fribidi_version_info, '\n');
             if (a && b && a + 2 < b) {
                 v = PyUnicode_FromStringAndSize(a + 2, b - (a + 2));
+                if (!v) {
+                    return -1;
+                }
             }
         }
 #endif
@@ -1700,6 +1711,9 @@ setup_module(PyObject *m) {
         v = NULL;
 #ifdef HB_VERSION_STRING
         v = PyUnicode_FromString(hb_version_string());
+        if (!v) {
+            return -1;
+        }
 #endif
         PyDict_SetItemString(d, "harfbuzz_version", v ? v : Py_None);
         Py_XDECREF(v);

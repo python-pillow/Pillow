@@ -197,6 +197,10 @@ def test_exceptions() -> None:
     pLab = ImageCms.createProfile("LAB")
     t = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
     with pytest.raises(ValueError, match="mode mismatch"):
+        t.apply(hopper("RGBA"))
+    with pytest.raises(ValueError, match="mode mismatch"):
+        t.apply(hopper("LAB"), hopper("RGBA"))
+    with pytest.raises(ValueError, match="mode mismatch"):
         t.apply_in_place(hopper("RGBA"))
 
     # the procedural pyCMS API uses PyCMSError for all sorts of errors
@@ -278,9 +282,9 @@ def test_simple_lab() -> None:
     a_data = i_lab.get_flattened_data(1)
     b_data = i_lab.get_flattened_data(2)
 
-    assert l_data == (137,) * 100
-    assert a_data == (128,) * 100
-    assert b_data == (128,) * 100
+    assert l_data == (137.0,) * 100
+    assert a_data == (128.0,) * 100
+    assert b_data == (128.0,) * 100
 
 
 def test_lab_color() -> None:
