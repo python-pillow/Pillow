@@ -182,6 +182,7 @@
             "extractVersionTemplate": "^v(?<version>.+)$"
         }
     ],
+    "ignoreDeps": ["numpy"],
     "packageRules": [
         {
             "groupName": "github-actions",

@@ -30,6 +30,13 @@ def test_compile() -> None:
     assert font.ysize == 2
 
 
+def test_decompression_bomb() -> None:
+    font = FontFile.FontFile()
+    font.glyph[0] = ((0, 0), (0, 0, 0, 0), (0, 0, 10000, 10000), Image.new("L", (0, 0)))
+    with pytest.raises(Image.DecompressionBombError):
+        font.compile()
+
+
 def test_save(tmp_path: Path) -> None:
     tempname = str(tmp_path / "temp.pil")
 

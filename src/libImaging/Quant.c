@@ -1375,7 +1375,9 @@ quantize(
     fflush(stdout);
     timer = clock();
 #endif
-    annotate_hash_table(root, h, &nPaletteEntries);
+    if (!annotate_hash_table(root, h, &nPaletteEntries)) {
+        goto error_3;
+    }
 #ifdef DEBUG
     printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
 #endif
@@ -1835,6 +1837,11 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
 
     if (result > 0) {
         imOut = ImagingNewDirty(IMAGING_MODE_P, im->xsize, im->ysize);
+        if (!imOut) {
+            free(newData);
+            free(palette);
+            return NULL;
+        }
         ImagingSectionEnter(&cookie);
 
         for (i = y = 0; y < im->ysize; y++) {

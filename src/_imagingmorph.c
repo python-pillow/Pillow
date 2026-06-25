@@ -198,8 +198,12 @@ match(PyObject *self, PyObject *args) {
                     Py_DECREF(ret);
                     return NULL;
                 }
-                PyList_Append(ret, coordObj);
-                Py_XDECREF(coordObj);
+                if (PyList_Append(ret, coordObj) == -1) {
+                    Py_DECREF(ret);
+                    Py_DECREF(coordObj);
+                    return NULL;
+                }
+                Py_DECREF(coordObj);
             }
         }
     }
@@ -250,8 +254,12 @@ get_on_pixels(PyObject *self, PyObject *args) {
                     Py_DECREF(ret);
                     return NULL;
                 }
-                PyList_Append(ret, coordObj);
-                Py_XDECREF(coordObj);
+                if (PyList_Append(ret, coordObj) == -1) {
+                    Py_DECREF(ret);
+                    Py_DECREF(coordObj);
+                    return NULL;
+                }
+                Py_DECREF(coordObj);
             }
         }
     }
