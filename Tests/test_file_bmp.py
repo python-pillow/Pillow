@@ -236,7 +236,7 @@ def test_rle4_absolute_odd() -> None:
     )
 
     with Image.open(io.BytesIO(data)) as im:
-        assert [im.getpixel((x, 0)) for x in range(3)] == [1, 2, 3]
+        assert [im.getpixel((x, 0)) for x in range(im.width)] == [1, 2, 3]
 
 
 @pytest.mark.parametrize(
