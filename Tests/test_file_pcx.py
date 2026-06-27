@@ -202,3 +202,16 @@ def test_break_padding(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     for x in range(5):
         px[x, 3] = 0
     _test_buffer_overflow(tmp_path, im, monkeypatch)
+
+
+@pytest.mark.parametrize(
+    "data_len, rawmode",
+    (
+        (5, "P;4L"),
+        (3, "P;2L"),
+    ),
+)
+def test_truncated(data_len: int, rawmode: str) -> None:
+    data = b"\x00" * data_len
+    with pytest.raises(ValueError, match="not enough image data"):
+        Image.frombuffer("P", (9, 1), data, "raw", rawmode, 0, 1)
