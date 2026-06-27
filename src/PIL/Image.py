@@ -943,6 +943,12 @@ class Image:
             # may pass tuple instead of argument list
             decoder_args = decoder_args[0]
 
+        if decoder_args and decoder_args[0] in {"P;2L", "P;4L"}:
+            multiple = 4 if decoder_args[0] == "P;2L" else 8
+            if len(data) % multiple:
+                msg = "not enough image data"
+                raise ValueError(msg)
+
         # default format
         if decoder_name == "raw" and decoder_args == ():
             decoder_args = self.mode
@@ -3348,6 +3354,9 @@ class SupportsArrayInterface(Protocol):
 
     @property
     def __array_interface__(self) -> dict[str, Any]:
+        raise NotImplementedError()
+
+    def __len__(self) -> int:
         raise NotImplementedError()
 
 
