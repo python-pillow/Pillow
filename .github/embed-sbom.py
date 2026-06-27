@@ -37,7 +37,7 @@ def embed(wheel: Path, sbom: Path) -> None:
         for name in contents
         if name.endswith(".dist-info/RECORD") and name.count("/") == 1
     )
-    dist_info = record_name.rsplit("/", 1)[0]
+    dist_info = record_name.split("/", 1)[0]
 
     sbom_bytes = sbom.read_bytes()
     sbom_path = f"{dist_info}/sboms/{sbom.name}"
@@ -47,14 +47,12 @@ def embed(wheel: Path, sbom: Path) -> None:
     lines.append(record_entry(sbom_path, sbom_bytes))
     contents[record_name] = b"\n".join(lines) + b"\n"
 
-    tmp = wheel.with_name(wheel.name + ".tmp")
-    with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zf:
+    with zipfile.ZipFile(wheel, "w", zipfile.ZIP_DEFLATED) as zf:
         # Re-use each original ZipInfo to preserve timestamps, mode bits and
-        # compression; only RECORD's contents change.
+        # compression; only RECORD's contents change
         for info in infos:
             zf.writestr(info, contents[info.filename])
         zf.writestr(sbom_path, sbom_bytes)
-    tmp.replace(wheel)
 
     print(f"Embedded {sbom.name} in {wheel.name}")
 
