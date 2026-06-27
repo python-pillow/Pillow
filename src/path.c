@@ -335,11 +335,15 @@ path_compact(PyPathObject *self, PyObject *args) {
     }
 
     i = self->count - j;
-    self->count = j;
 
     /* shrink coordinate array */
     /* malloc check ok, self->count is smaller than it was before */
-    self->xy = realloc(self->xy, 2 * self->count * sizeof(double));
+    double *new_xy = realloc(self->xy, 2 * j * sizeof(double));
+    if (!new_xy) {
+        return ImagingError_MemoryError();
+    }
+    self->xy = new_xy;
+    self->count = j;
 
     return Py_BuildValue("i", i); /* number of removed vertices */
 }
