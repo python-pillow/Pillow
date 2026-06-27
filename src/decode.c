@@ -37,6 +37,7 @@
 #include "libImaging/Bit.h"
 #include "libImaging/Bcn.h"
 #include "libImaging/Gif.h"
+#include "libImaging/PcxDecode.h"
 #include "libImaging/Raw.h"
 #include "libImaging/Sgi.h"
 
@@ -618,7 +619,13 @@ PyImaging_PcxDecoderNew(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (get_unpacker(decoder, mode, rawmode) < 0) {
+    if (strcmp(rawmode_name, "P;2L") == 0) {
+        decoder->state.shuffle = unpackP2L;
+        decoder->state.bits = 2;
+    } else if (strcmp(rawmode_name, "P;4L") == 0) {
+        decoder->state.shuffle = unpackP4L;
+        decoder->state.bits = 4;
+    } else if (get_unpacker(decoder, mode, rawmode) < 0) {
         return NULL;
     }
 
