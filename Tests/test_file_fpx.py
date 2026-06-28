@@ -46,7 +46,6 @@ def test_invalid_file() -> None:
 
 
 def test_invalid_tile_size() -> None:
-    # Test a valid OLE file, but not an FPX file
     with open("Tests/images/input_bw_one_band.fpx", "rb") as f:
         data = f.read()
     data = data[:4204] + b"\x00" * 8 + data[4212:]
