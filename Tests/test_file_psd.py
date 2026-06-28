@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import sys
 import warnings
 
@@ -155,6 +156,21 @@ def test_icc_profile() -> None:
 def test_no_icc_profile() -> None:
     with Image.open("Tests/images/hopper_merged.psd") as im:
         assert "icc_profile" not in im.info
+
+
+def test_unknown_channel_id() -> None:
+    with open("Tests/images/rgba.psd", "rb") as fp:
+        data = fp.read()
+
+    # Set channel id to 4
+    data = data[:90] + b"\x00\x04" + data[92:]
+
+    b = io.BytesIO(data)
+    with Image.open(b) as im:
+        assert isinstance(im, PsdImagePlugin.PsdImageFile)
+
+        # unknown mode
+        assert im.layers[0][1] == ""
 
 
 def test_combined_larger_than_size() -> None:
