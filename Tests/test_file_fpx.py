@@ -45,7 +45,7 @@ def test_invalid_file() -> None:
         FpxImagePlugin.FpxImageFile(ole_file)
 
 
-def test_invalid_size() -> None:
+def test_invalid_tile_size() -> None:
     # Test a valid OLE file, but not an FPX file
     with open("Tests/images/input_bw_one_band.fpx", "rb") as f:
         data = f.read()
