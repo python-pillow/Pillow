@@ -190,7 +190,12 @@ PyPath_Flatten(PyObject *data, double **pxy) {
             PyBuffer_Release(&buffer);
             return n;
         }
-        PyErr_Clear();
+        if (PyErr_Occurred()) {
+            if (!PyErr_ExceptionMatches(PyExc_BufferError)) {
+                return -1;
+            }
+            PyErr_Clear();
+        }
     }
 
     if (!PySequence_Check(data)) {
