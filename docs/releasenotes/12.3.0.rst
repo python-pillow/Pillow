@@ -25,10 +25,13 @@ TODO
 Deprecations
 ============
 
-TODO
-^^^^
+Image.putpixel 'value' lists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+.. deprecated:: 12.3.0
+
+Passing lists to the ``value`` parameter of :py:meth:`~PIL.Image.Image.putpixel` have
+been deprecated. Use tuples instead.
 
 API changes
 ===========
