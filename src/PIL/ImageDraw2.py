@@ -25,6 +25,8 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._typing", "typing"}
+
 from typing import Any, AnyStr, BinaryIO
 
 from . import Image, ImageColor, ImageDraw, ImageFont, ImagePath

@@ -31,6 +31,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"collections.abc", "math", "struct", "typing"}
+
 import math
 import struct
 from collections.abc import Sequence

@@ -8,6 +8,8 @@
 ##
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "typing"}
+
 from typing import IO
 
 from . import Image, ImageFile

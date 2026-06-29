@@ -15,6 +15,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"os", "typing"}
+
 import os
 from typing import BinaryIO
 

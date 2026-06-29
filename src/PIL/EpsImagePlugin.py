@@ -21,6 +21,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "io", "os", "subprocess", "tempfile", "typing"}
+
 import io
 import os
 import re
