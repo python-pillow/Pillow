@@ -129,7 +129,7 @@ class TestImage:
                 assert im.size == (128, 128)
 
     @pytest.mark.parametrize("formats", (("!PNG",), ("PNG", "!PNG"), ("JPEG", "!PNG")))
-    def test_open_formats_exclude(self, formats: tuple[str]) -> None:
+    def test_open_formats_exclude(self, formats: tuple[str, ...]) -> None:
         with Image.open("Tests/images/hopper.jpg", formats=formats):
             pass
 
