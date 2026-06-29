@@ -33,6 +33,17 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL.JpegPresets",
+    "PIL._binary",
+    "array",
+    "io",
+    "math",
+    "struct",
+    "subprocess",
+    "warnings",
+}
+
 import array
 import io
 import math

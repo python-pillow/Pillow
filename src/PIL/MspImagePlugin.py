@@ -24,6 +24,8 @@
 # See also: https://www.fileformat.info/format/mspaint/egff.htm
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "io", "struct"}
+
 import io
 import struct
 

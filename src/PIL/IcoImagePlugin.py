@@ -36,6 +36,8 @@
 #   * https://msdn.microsoft.com/en-us/library/ms997538.aspx
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "io", "math", "warnings"}
+
 import warnings
 from io import BytesIO
 from math import ceil, log

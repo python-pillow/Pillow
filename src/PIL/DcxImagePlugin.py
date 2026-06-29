@@ -22,6 +22,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "PIL._util"}
+
 from . import Image
 from ._binary import i32le as i32
 from ._util import DeferredError

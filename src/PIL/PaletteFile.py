@@ -14,6 +14,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 from ._binary import o8
 
 TYPE_CHECKING = False

@@ -26,6 +26,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "tkinter"}
+
 import tkinter
 from io import BytesIO
 

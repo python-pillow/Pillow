@@ -28,6 +28,8 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 from . import Image, ImageFile, ImagePalette, UnidentifiedImageError
 from ._binary import i16be as i16
 from ._binary import i32be as i32

@@ -26,6 +26,16 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL._binary",
+    "PIL._deprecate",
+    "PIL._util",
+    "io",
+    "math",
+    "re",
+    "struct",
+}
+
 import abc
 import atexit
 import builtins

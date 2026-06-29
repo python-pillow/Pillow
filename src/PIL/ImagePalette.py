@@ -17,6 +17,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"array"}
+
 import array
 
 from . import GimpGradientFile, GimpPaletteFile, ImageColor, PaletteFile
