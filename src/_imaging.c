@@ -1693,7 +1693,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                     x = 0, y++;
                 }
             }
-            PyErr_Clear(); /* Avoid weird exceptions */
         }
     } else {
         /* 32-bit images */
@@ -1712,7 +1711,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                         x = 0, y++;
                     }
                 }
-                PyErr_Clear(); /* Avoid weird exceptions */
                 break;
             case IMAGING_TYPE_FLOAT32:
                 for (i = x = y = 0; i < n; i++) {
@@ -1724,7 +1722,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                         x = 0, y++;
                     }
                 }
-                PyErr_Clear(); /* Avoid weird exceptions */
                 break;
             default:
                 for (i = x = y = 0; i < n; i++) {
@@ -1746,7 +1743,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                         x = 0, y++;
                     }
                 }
-                PyErr_Clear(); /* Avoid weird exceptions */
                 break;
         }
     }
