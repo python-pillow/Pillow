@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import sysconfig
-
 import pytest
 
 from PIL import Image, ImageDraw, ImageFont, ImageText, features
@@ -86,10 +84,10 @@ def test_use_max_line_height() -> None:
     draw = ImageDraw.Draw(im)
     draw.text((0, 0), text, "#ff0")
     expected = "Tests/images/use_max_line_height.png"
-    if sysconfig.get_platform() in ("win32", "win-amd64"):
-        assert_image_similar_tofile(im, expected, 12.28)
-    else:
+    if features.check_feature("raqm"):
         assert_image_equal_tofile(im, expected)
+    else:
+        assert_image_similar_tofile(im, expected, 12.28)
 
 
 def test_standard_embedded_color(layout_engine: ImageFont.Layout) -> None:
