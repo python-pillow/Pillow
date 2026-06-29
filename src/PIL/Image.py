@@ -3673,13 +3673,16 @@ def open(
     ) -> ImageFile.ImageFile | None:
         if formats is not None:
             if allowed:
-                check_formats = [f for f in check_formats if f in allowed]
+                check_formats = list(allowed)
             elif excluded:
-                check_formats = [f for f in check_formats if f not in excluded]
+                init()
+                check_formats = [f for f in ID if f not in excluded]
             else:
                 check_formats = []
 
         for i in check_formats:
+            if i not in OPEN:
+                init()
             try:
                 factory, accept = OPEN[i]
                 result = not accept or accept(prefix)
@@ -3690,7 +3693,7 @@ def open(
                     im = factory(fp, filename)
                     _decompression_bomb_check(im.size)
                     return im
-            except (  # noqa: PERF203
+            except (
                 SyntaxError,
                 IndexError,
                 TypeError,
@@ -3704,7 +3707,7 @@ def open(
                 raise
         return None
 
-    if not (im := _open_core(fp, filename, prefix, ID)):
+    if not (im := _open_core(fp, filename, prefix, ID)) and formats is None:
         # Try preinit (few common plugins) then init (all plugins)
         for loader in (preinit, init):
             checked_formats = ID.copy()
