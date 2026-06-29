@@ -99,4 +99,6 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-latest' }}
       with:
         mode: simulation
-        run: python3 -m pip install -e . pytest-codspeed && pytest -vv --codspeed Tests/benchmarks.py
+        run: |
+          python3 -m pip install -e . pytest-codspeed
+          pytest -vv --codspeed Tests/benchmarks.py

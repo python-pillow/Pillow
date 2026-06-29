@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     )
 
 if not (find_spec("pytest_benchmark") or find_spec("pytest_codspeed")):
-    pytest.skip("pytest-benchmark or pytest-codspeed required")
+    pytest.skip("pytest-benchmark or pytest-codspeed required", allow_module_level=True)
 
 # These can be adjusted to add more modes to benchmark
 # (however all features benchmarked might not support all PIL modes).
