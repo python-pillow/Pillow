@@ -106,6 +106,9 @@ class TestImage:
             with Image.open(PNGFILE, formats=123):  # type: ignore[arg-type]
                 pass
 
+        with pytest.raises(UnidentifiedImageError):
+            Image.open(PNGFILE, formats=[])
+
         format_list: list[list[str] | tuple[str, ...]] = [
             ["JPEG"],
             ("JPEG",),

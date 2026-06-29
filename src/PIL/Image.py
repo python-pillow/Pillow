@@ -3674,8 +3674,10 @@ def open(
         if formats is not None:
             if allowed:
                 check_formats = [f for f in check_formats if f in allowed]
-            else:
+            elif excluded:
                 check_formats = [f for f in check_formats if f not in excluded]
+            else:
+                check_formats = []
 
         for i in check_formats:
             try:
