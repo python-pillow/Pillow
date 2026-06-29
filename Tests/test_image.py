@@ -1125,6 +1125,14 @@ class TestImage:
             for name in enum.__members__:
                 assert getattr(Image, name) == enum[name]
 
+    def test_decoder_setimage_once(self) -> None:
+        im = Image.new("L", (1, 1))
+        decoder = Image._getdecoder("L", "raw", "L")
+
+        decoder.setimage(im.im, None)
+        with pytest.raises(ValueError, match="decoder already has an image"):
+            decoder.setimage(im.im, None)
+
     @pytest.mark.parametrize(
         "path",
         [
