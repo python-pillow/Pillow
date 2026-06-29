@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._typing", "math", "re"}
+
 import math
 import re
 from typing import AnyStr, Generic, NamedTuple

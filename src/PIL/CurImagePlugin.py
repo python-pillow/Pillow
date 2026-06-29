@@ -17,6 +17,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 from . import BmpImagePlugin, Image, ImageOps
 from ._binary import i16le as i16
 from ._binary import i32le as i32
