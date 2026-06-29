@@ -213,5 +213,6 @@ def test_break_padding(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
 )
 def test_truncated(data_len: int, rawmode: str) -> None:
     data = b"\x00" * data_len
-    with pytest.raises(ValueError, match="not enough image data"):
-        Image.frombuffer("P", (9, 1), data, "raw", rawmode, 0, 1)
+    with pytest.warns(DeprecationWarning, match=rawmode):
+        with pytest.raises(ValueError, match="not enough image data"):
+            Image.frombuffer("P", (9, 1), data, "raw", rawmode, 0, 1)
