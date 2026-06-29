@@ -337,7 +337,6 @@ path_compact(PyPathObject *self, PyObject *args) {
     i = self->count - j;
 
     /* shrink coordinate array */
-    /* malloc check ok, self->count is smaller than it was before */
     double *new_xy = realloc(self->xy, 2 * j * sizeof(double));
     if (!new_xy) {
         return ImagingError_MemoryError();
