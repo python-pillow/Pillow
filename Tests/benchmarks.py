@@ -5,6 +5,7 @@ pytest-benchmark tests for Pillow features.
 from __future__ import annotations
 
 import pathlib
+from importlib.util import find_spec
 from io import BytesIO
 
 import pytest
@@ -20,10 +21,8 @@ if TYPE_CHECKING:
         BenchmarkFixture,
     )
 
-pytest.importorskip(
-    "pytest_benchmark",
-    reason="benchmarks.py requires pytest-benchmark",
-)
+if not (find_spec("pytest_benchmark") or find_spec("pytest_codspeed")):
+    pytest.skip("pytest-benchmark or pytest-codspeed required")
 
 # These can be adjusted to add more modes to benchmark
 # (however all features benchmarked might not support all PIL modes).
