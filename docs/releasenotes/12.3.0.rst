@@ -62,6 +62,13 @@ Decompression bomb checks have now been added to :py:class:`~PIL.FontFile.FontFi
 and its subclasses, checking the width and height of characters. Reported by Rahul
 Singh and Dinesh.
 
+:cve:`2026-55380`: Prevent GD decompression bomb
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A decompression bomb check has been added to :py:class:`~PIL.GdImageFile.GdImageFile`.
+This is format must be explicitly called though, rather than being accessible from
+``Image.open()``. Reported by Rahul Singh.
+
 API additions
 =============
 
