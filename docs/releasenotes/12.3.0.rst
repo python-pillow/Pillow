@@ -40,6 +40,13 @@ McIdas out-of-bounds (OOB) read
 McIdas images can specify the stride, and if incorrectly set, may cause an OOB read.
 This has been fixed. Reported by Devansh Shah, RUDRA Cybersecurity Pvt. Ltd.
 
+Out-of-bounds (OOB) write from large RankFilter sizes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageFilter.RankFilter`, and its subclasses, can potentially write
+out-of-bounds if given a large size. This has been fixed. Reported by
+`Seratov <https://github.com/Seratov>`__.
+
 API additions
 =============
 
