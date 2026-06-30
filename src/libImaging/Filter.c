@@ -125,7 +125,7 @@ kernel_i16(int size, UINT8 *in0, int x, const float *kernel, int bigendian) {
     return result;
 }
 
-void
+static void
 ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
 #define KERNEL1x3(in0, x, kernel, d)                               \
     (_i2f(in0[x - d]) * (kernel)[0] + _i2f(in0[x]) * (kernel)[1] + \
@@ -276,7 +276,7 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
     memcpy(imOut->image[y], im->image[y], im->linesize);
 }
 
-void
+static void
 ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
 #define KERNEL1x5(in0, x, kernel, d)                                       \
     (_i2f(in0[x - d - d]) * (kernel)[0] + _i2f(in0[x - d]) * (kernel)[1] + \
