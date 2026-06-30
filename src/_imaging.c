@@ -1096,7 +1096,7 @@ _convert_transparent(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (PyTuple_Check(transparency)) {
+    if (PySequence_Check(transparency)) {
         if (!PyArg_ParseTuple(args, "s(iii)", &mode_name, &r, &g, &b)) {
             return NULL;
         }
