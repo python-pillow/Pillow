@@ -118,3 +118,8 @@ Removed Python 3.13 free-threaded wheels
 Python 3.13 added an experimental free-threaded mode, and Pillow 11.0.0 added
 corresponding wheels. Now that Python 3.14 includes official support for it, Pillow has
 removed wheels for Python 3.13 free-threaded mode.
+
+Performance improvements
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+A number of changes have been made to optimize the use of C when manipulating images.
