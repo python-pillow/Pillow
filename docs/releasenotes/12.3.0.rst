@@ -62,6 +62,13 @@ Large paste box dimensions can cause an OOB write in ``Image.crop()``,
 ``Image.paste()`` and ``Image.alpha_composite()``. This has been fixed. Reported by
 `Seratov <https://github.com/Seratov>`__.
 
+Out-of-bounds (OOB) write in ``ImageCmsTransform``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Apply a transform mode to a different image mode can trigger an OOB write in
+``ImageCmsTransform``. Errors are now raised if the mode does not match. Reported by
+`Seratov <https://github.com/Seratov>`__.
+
 :cve:`2026-54059`, :cve:`2026-54060`, :cve:`2026-55379`: Prevent FontFile decompression bomb
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
