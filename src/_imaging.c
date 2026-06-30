@@ -1053,7 +1053,11 @@ _convert_matrix(ImagingObject *self, PyObject *args) {
     if (!PyArg_ParseTuple(args, "sO", &mode_name, &matrix)) {
         return NULL;
     }
-    if (PyTuple_Size(matrix) == 12) {
+    Py_ssize_t size = PyTuple_Size(matrix);
+    if (size == -1) {
+        return NULL;
+    }
+    if (size == 12) {
         if (!PyArg_ParseTuple(
                 args,
                 "s(ffffffffffff)",
