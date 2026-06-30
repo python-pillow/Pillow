@@ -82,7 +82,7 @@ jobs:
       id: cache-libavif
       with:
         path: ~/cache-libavif
-        key: ${{ runner.os }}-libavif-${{ hashFiles('depends/install_libavif.sh', 'depends/libavif-svt4.patch') }}
+        key: ${{ runner.os }}-libavif-${{ hashFiles('depends/install_libavif.sh') }}
 
     - name: Cache libimagequant
       if: startsWith(matrix.os, 'ubuntu')
