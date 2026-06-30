@@ -47,6 +47,14 @@ Out-of-bounds (OOB) write from large RankFilter sizes
 out-of-bounds if given a large size. This has been fixed. Reported by
 `Seratov <https://github.com/Seratov>`__.
 
+Out-of-bounds (OOB) read when saving 1 mode TGA images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Saving 1 mode images as TGA with run-length encoding can trigger an OOB read. This was
+added in Pillow 5.2.0, but the functionality is not possible under the TGA
+specification, so it has been removed. Reported by
+`Seratov <https://github.com/Seratov>`__.
+
 API additions
 =============
 
