@@ -11,10 +11,12 @@ When parsing a PDF, ``PdfStream.decode()`` attempts to decompress data without a
 limit. A default maximum of ``ImageFile.SAFEBLOCK`` has been added. PdfParser was added
 in Pillow 5.1.0.
 
-:cve:`YYYY-XXXXX`: TODO
-^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2026-55798`: WindowsViewer.get_command injection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+If an attacker has control over the path passed to
+ImageShow.WindowsViewer.get_command(), and the result is executed by the user, the
+attacker may be able to execute arbitrary shell commands.
 
 Backwards incompatible changes
 ==============================
