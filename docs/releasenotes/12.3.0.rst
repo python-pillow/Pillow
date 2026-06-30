@@ -4,10 +4,12 @@
 Security
 ========
 
-TODO
-^^^^
+Prevent decompression bomb when parsing PDF
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+When parsing a PDF, ``PdfStream.decode()`` attempts to decompress data without any
+limit. A default maximum of ``ImageFile.SAFEBLOCK`` has been added. PdfParser was added
+in Pillow 5.1.0.
 
 :cve:`YYYY-XXXXX`: TODO
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -30,14 +32,6 @@ TODO
 
 TODO
 
-API changes
-===========
-
-TODO
-^^^^
-
-TODO
-
 API additions
 =============
 
@@ -50,6 +44,12 @@ default, images will be captured at 2x. If ``scale_down`` is ``True``, they will
 1x.
 
 Previously, macOS screenshots with a ``bbox`` were captured at 1x by default.
+
+Added ``max_length`` argument to ``PdfStream.decode()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When calling ``PdfStream.decode()``, the maximum length of data to decode can now be
+specified. This will default to ``ImageFile.SAFEBLOCK``.
 
 Other changes
 =============
