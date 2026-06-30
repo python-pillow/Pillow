@@ -24,30 +24,27 @@
  * FIXME: Implement image processing gradient filters
  */
 
+#include <stdint.h>
 #include "Imaging.h"
 
 #define ROUND_UP(f) ((int)((f) >= 0.0 ? (f) + 0.5F : (f) - 0.5F))
+#define INT32_MAX_F 2147483647.0F
 
 static inline UINT8
 clip8(float in) {
-    if (in <= 0.0) {
-        return 0;
-    }
-    if (in >= 255.0) {
-        return 255;
-    }
+    // Branchless clamp to [0, 255].
+    in = in < 0.0f ? 0.0f : in;
+    in = in > 255.0f ? 255.0f : in;
     return (UINT8)in;
 }
 
 static inline INT32
 clip32(float in) {
-    if (in <= 0.0) {
-        return 0;
-    }
-    if (in >= pow(2, 31) - 1) {
-        return pow(2, 31) - 1;
-    }
-    return (INT32)in;
+    // Clamp the low bound branchlessly (maxss).
+    in = in < 0.0f ? 0.0f : in;
+    // Must explicitly return INT32_MAX for the high bound
+    // to avoid incorrect overflow to INT_MIN.
+    return in >= INT32_MAX_F ? INT32_MAX : (INT32)in;
 }
 
 Imaging
