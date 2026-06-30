@@ -170,7 +170,6 @@ ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
     ImagingSectionCookie cookie;
     Imaging imOut;
     im_point_context context;
-    void (*point)(Imaging imIn, Imaging imOut, im_point_context *context);
 
     if (!imIn) {
         return (Imaging)ImagingError_ModeError();
@@ -193,41 +192,37 @@ ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
         return NULL;
     }
 
-    /* find appropriate handler */
+    ImagingCopyPalette(imOut, imIn);
+
+    ImagingSectionEnter(&cookie);
+    context.table = table;
+
     if (imIn->type == IMAGING_TYPE_UINT8) {
         if (imIn->bands == imOut->bands && imIn->type == imOut->type) {
             switch (imIn->bands) {
                 case 1:
-                    point = im_point_8_8;
+                    im_point_8_8(imOut, imIn, &context);
                     break;
                 case 2:
-                    point = im_point_2x8_2x8;
+                    im_point_2x8_2x8(imOut, imIn, &context);
                     break;
                 case 3:
-                    point = im_point_3x8_3x8;
+                    im_point_3x8_3x8(imOut, imIn, &context);
                     break;
                 case 4:
-                    point = im_point_4x8_4x8;
+                    im_point_4x8_4x8(imOut, imIn, &context);
                     break;
                 default:
                     /* this cannot really happen */
-                    point = im_point_8_8;
+                    im_point_8_8(imOut, imIn, &context);
                     break;
             }
         } else {
-            point = im_point_8_32;
+            im_point_8_32(imOut, imIn, &context);
         }
     } else {
-        point = im_point_32_8;
+        im_point_32_8(imOut, imIn, &context);
     }
-
-    ImagingCopyPalette(imOut, imIn);
-
-    ImagingSectionEnter(&cookie);
-
-    context.table = table;
-    point(imOut, imIn, &context);
-
     ImagingSectionLeave(&cookie);
 
     return imOut;
