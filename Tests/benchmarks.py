@@ -13,7 +13,7 @@ from io import BytesIO
 
 import pytest
 
-from PIL import Image, ImageChops, ImageDraw, ImageFilter
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 from PIL.Image import Resampling, Transform, Transpose
 
 TYPE_CHECKING = False
@@ -776,6 +776,16 @@ def test_point_transform(
     im = make_pillow_image(mode, size)
     bench.extra_info["label"] = [f"transform {mode}"]
     bench(im.point, lambda v: v * 1.5 + 3.0)
+
+
+@pytest.mark.benchmark(group="font")
+@pytest.mark.parametrize("mode", ["", "1", "L"])
+def test_font_getmask(bench: BenchmarkFixture, mode: str) -> None:
+    font = ImageFont.load_default_imagefont()
+    text = "The quick brown fox jumps over the lazy dog. " * 8
+    bench.extra_info["label"] = [f"getmask mode {mode!r}"]
+    mask = bench(font.getmask, text, mode)
+    assert mask.size[0] > 0
 
 
 @pytest.mark.benchmark(group="quantize")
