@@ -18,12 +18,19 @@ If an attacker has control over the path passed to
 ImageShow.WindowsViewer.get_command(), and the result is executed by the user, the
 attacker may be able to execute arbitrary shell commands.
 
-EpsImagePlugin infinite loop
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+EPS image infinite loop
+^^^^^^^^^^^^^^^^^^^^^^^
 
 If a negative byte count is specified for the BeginBinary byte count, an infinite loop
 is possible as Pillow seeks repeatedly backwards. This value will now be validated.
 BeginBinary parsing was only added in Pillow 12.0.0.
+
+JPEG2000 image memory usage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The total component width was incorrectly accumulated across tiles within a JPEG2000
+image, potentially leading to excessive memory use. This was introduced as part of an
+earlier security fix in Pillow 8.2.0, but has now been fixed.
 
 Backwards incompatible changes
 ==============================
