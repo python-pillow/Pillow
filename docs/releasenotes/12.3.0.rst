@@ -40,6 +40,14 @@ McIdas out-of-bounds (OOB) read
 McIdas images can specify the stride, and if incorrectly set, may cause an OOB read.
 This has been fixed. Reported by Devansh Shah, RUDRA Cybersecurity Pvt. Ltd.
 
+Out-of-bounds (OOB) read when saving 1 mode TGA images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Saving 1 mode images as TGA with run-length encoding can trigger an OOB read. This was
+added in Pillow 5.2.0, but the functionality is not possible under the TGA
+specification, so it has been removed. Reported by
+`Seratov <https://github.com/Seratov>`__.
+
 Out-of-bounds (OOB) write from large RankFilter sizes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -47,12 +55,11 @@ Out-of-bounds (OOB) write from large RankFilter sizes
 out-of-bounds if given a large size. This has been fixed. Reported by
 `Seratov <https://github.com/Seratov>`__.
 
-Out-of-bounds (OOB) read when saving 1 mode TGA images
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Out-of-bounds (OOB) write from ``Image.paste()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Saving 1 mode images as TGA with run-length encoding can trigger an OOB read. This was
-added in Pillow 5.2.0, but the functionality is not possible under the TGA
-specification, so it has been removed. Reported by
+Large paste box dimensions can cause an OOB write in ``Image.crop()``,
+``Image.paste()`` and ``Image.alpha_composite()``. This has been fixed. Reported by
 `Seratov <https://github.com/Seratov>`__.
 
 :cve:`2026-54059`, :cve:`2026-54060`, :cve:`2026-55379`: Prevent FontFile decompression bomb
