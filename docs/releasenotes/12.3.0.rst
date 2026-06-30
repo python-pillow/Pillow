@@ -9,44 +9,36 @@ Prevent decompression bomb when parsing PDF
 
 When parsing a PDF, ``PdfStream.decode()`` attempts to decompress data without any
 limit. A default maximum of ``ImageFile.SAFEBLOCK`` has been added. PdfParser was added
-in Pillow 5.1.0.
+in Pillow 5.1.0. Reported by `redyank <https://github.com/redyank>`__.
 
 :cve:`2026-55798`: WindowsViewer.get_command injection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If an attacker has control over the path passed to
 ImageShow.WindowsViewer.get_command(), and the result is executed by the user, the
-attacker may be able to execute arbitrary shell commands.
+attacker may be able to execute arbitrary shell commands. Reported by Bin Luo,
+University of Electronic Science and Technology of China (luob87709@gmail.com).
 
 EPS image infinite loop
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 If a negative byte count is specified for the BeginBinary byte count, an infinite loop
 is possible as Pillow seeks repeatedly backwards. This value will now be validated.
-BeginBinary parsing was only added in Pillow 12.0.0.
+BeginBinary parsing was only added in Pillow 12.0.0. Reported by
+`jiagongzheng-stack <https://github.com/jiagongzheng-stack>`__.
 
 JPEG2000 image memory usage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The total component width was incorrectly accumulated across tiles within a JPEG2000
 image, potentially leading to excessive memory use. This was introduced as part of an
-earlier security fix in Pillow 8.2.0, but has now been fixed.
+earlier security fix in Pillow 8.2.0, but has now been fixed. Reported by Fr3v1.
 
-Backwards incompatible changes
-==============================
+McIdas out-of-bounds (OOB) read
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
-^^^^
-
-TODO
-
-Deprecations
-============
-
-TODO
-^^^^
-
-TODO
+McIdas images can specify the stride, and if incorrectly set, may cause an OOB read.
+This has been fixed. Reported by Devansh Shah, RUDRA Cybersecurity Pvt. Ltd.
 
 API additions
 =============
