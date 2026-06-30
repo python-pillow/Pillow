@@ -1634,6 +1634,10 @@ _putdata(ImagingObject *self, PyObject *args) {
         return NULL;                                                    \
     } else {                                                            \
         value = PyFloat_AsDouble(op);                                   \
+        if (value == -1.0 && PyErr_Occurred()) {                        \
+            Py_DECREF(seq);                                             \
+            return NULL;                                                \
+        }                                                               \
     }
     if (image->image8) {
         if (PyBytes_Check(data)) {
