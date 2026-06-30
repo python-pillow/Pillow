@@ -67,16 +67,9 @@ from ._binary import i32le, o32be, o32le
 from ._deprecate import deprecate
 from ._util import DeferredError, is_path
 
-ElementTree: ModuleType | None
-try:
-    from defusedxml import ElementTree
-except ImportError:
-    ElementTree = None
-
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
-    from types import ModuleType
     from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
@@ -1596,6 +1589,11 @@ class Image:
 
         :returns: XMP tags in a dictionary.
         """
+        try:
+            from defusedxml import ElementTree
+        except ImportError:
+            warnings.warn("XMP data cannot be read without defusedxml dependency")
+            return {}
 
         def get_name(tag: str) -> str:
             return re.sub("^{[^}]+}", "", tag)
@@ -1620,9 +1618,6 @@ class Image:
                 return element.text
             return value
 
-        if ElementTree is None:
-            warnings.warn("XMP data cannot be read without defusedxml dependency")
-            return {}
         if "xmp" not in self.info:
             return {}
         root = ElementTree.fromstring(self.info["xmp"].rstrip(b"\x00 "))
