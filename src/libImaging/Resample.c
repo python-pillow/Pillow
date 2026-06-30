@@ -179,7 +179,7 @@ clip8(int in) {
     return clip8_lookups[in >> PRECISION_BITS];
 }
 
-int
+static int
 precompute_coeffs(
     int inSize,
     float in0,
@@ -190,7 +190,6 @@ precompute_coeffs(
     double **kkp
 ) {
     double support, scale, filterscale;
-    double center, ww, ss;
     int xx, x, ksize, xmin, xmax;
     int *bounds;
     double *kk, *k;
@@ -229,10 +228,10 @@ precompute_coeffs(
         return 0;
     }
 
+    double inv_filterscale = 1.0 / filterscale;  // invariant over the loop
     for (xx = 0; xx < outSize; xx++) {
-        center = in0 + (xx + 0.5) * scale;
-        ww = 0.0;
-        ss = 1.0 / filterscale;
+        double center = in0 + (xx + 0.5) * scale;
+        double ww = 0.0;
         // Round the value
         xmin = (int)(center - support + 0.5);
         if (xmin < 0) {
@@ -246,12 +245,12 @@ precompute_coeffs(
         xmax -= xmin;
         k = &kk[xx * ksize];
         for (x = 0; x < xmax; x++) {
-            double w = filterp->filter((x + xmin - center + 0.5) * ss);
+            double w = filterp->filter((x + xmin - center + 0.5) * inv_filterscale);
             k[x] = w;
             ww += w;
         }
-        for (x = 0; x < xmax; x++) {
-            if (ww != 0.0) {
+        if (ww != 0.0) {
+            for (x = 0; x < xmax; x++) {
                 k[x] /= ww;
             }
         }
@@ -267,7 +266,7 @@ precompute_coeffs(
     return ksize;
 }
 
-void
+static void
 normalize_coeffs_8bpc(int outSize, int ksize, double *prekk) {
     int x;
     INT32 *kk;
