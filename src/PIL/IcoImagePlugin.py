@@ -64,10 +64,18 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     frames = []
     provided_ims = [im] + im.encoderinfo.get("append_images", [])
     width, height = im.size
-    for size in sorted(set(sizes)):
-        if size[0] > width or size[1] > height or size[0] > 256 or size[1] > 256:
-            continue
-
+    sizes = [
+        size
+        for size in sorted(set(sizes))
+        if size[0] <= width and size[1] <= height and size[0] <= 256 and size[1] <= 256
+    ]
+    if not sizes:
+        # Every requested size is larger than the source image, so fall back to
+        # the image's own size (capped at the 256x256 ICO maximum). This avoids
+        # writing an empty, unreadable file when the image is smaller than the
+        # smallest default size.
+        sizes = [(min(width, 256), min(height, 256))]
+    for size in sizes:
         for provided_im in provided_ims:
             if provided_im.size != size:
                 continue
