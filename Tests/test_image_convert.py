@@ -225,6 +225,10 @@ def test_trns_RGB(tmp_path: Path) -> None:
     assert "transparency" not in im_p.info
     im_p.save(f)
 
+    im.info["transparency"] = list(im.info["transparency"])
+    im_rgba = im.convert("RGBA")
+    assert "transparency" not in im_rgba.info
+
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = im.getpixel((0, 0))
     im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
