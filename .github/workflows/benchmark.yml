@@ -31,9 +31,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [
-          "ubuntu-latest",
-        ]
         python-version: [
           # NB: Codspeed doesn't seem to support multiple runs of the same benchmark:
           #     > At least one benchmark was run multiple times in your benchmarking workflow.
@@ -42,8 +39,8 @@ jobs:
           "3.14",
         ]
 
-    runs-on: ${{ matrix.os }}
-    name: Benchmark ${{ matrix.os }} Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    name: Benchmark Python ${{ matrix.python-version }}
 
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -61,7 +58,6 @@ jobs:
           "pyproject.toml"
 
     - name: Cache libavif
-      if: startsWith(matrix.os, 'ubuntu')
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       id: cache-libavif
       with:
@@ -69,7 +65,6 @@ jobs:
         key: ${{ runner.os }}-libavif-${{ hashFiles('depends/install_libavif.sh') }}
 
     - name: Cache libimagequant
-      if: startsWith(matrix.os, 'ubuntu')
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       id: cache-libimagequant
       with:
@@ -77,7 +72,6 @@ jobs:
         key: ${{ runner.os }}-libimagequant-${{ hashFiles('depends/install_imagequant.sh') }}
 
     - name: Cache libwebp
-      if: startsWith(matrix.os, 'ubuntu')
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       id: cache-libwebp
       with:
@@ -85,7 +79,6 @@ jobs:
         key: ${{ runner.os }}-libwebp-${{ hashFiles('depends/install_webp.sh') }}
 
     - name: Install Linux dependencies
-      if: startsWith(matrix.os, 'ubuntu')
       run: |
         .ci/install.sh
       env:
@@ -96,7 +89,6 @@ jobs:
 
     - name: Run CodSpeed benchmarks
       uses: CodSpeedHQ/action@a4a36bb07c0638b0b4ca52bf1f3dad1b4289e52f # v4.18.1
-      if: ${{ matrix.os == 'ubuntu-latest' }}
       with:
         mode: simulation
         run: |
