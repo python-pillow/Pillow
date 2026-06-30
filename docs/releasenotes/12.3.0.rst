@@ -55,6 +55,13 @@ added in Pillow 5.2.0, but the functionality is not possible under the TGA
 specification, so it has been removed. Reported by
 `Seratov <https://github.com/Seratov>`__.
 
+:cve:`2026-54059`, :cve:`2026-54060`, :cve:`2026-55379`: Prevent FontFile decompression bomb
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Decompression bomb checks have now been added to :py:class:`~PIL.FontFile.FontFile`,
+and its subclasses, checking the width and height of characters. Reported by Rahul
+Singh and Dinesh.
+
 API additions
 =============
 
