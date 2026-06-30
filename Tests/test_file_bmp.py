@@ -69,6 +69,23 @@ def test_small_palette(tmp_path: Path) -> None:
         assert reloaded.getpalette() == colors
 
 
+def test_save_empty_palette() -> None:
+    indices = bytes(range(64))
+    im = Image.new("P", (8, 8))
+    im.frombytes(indices)
+
+    output = io.BytesIO()
+    im.save(output, "BMP")
+
+    # biClrUsed, at info header offset 32
+    assert _binary.i32le(output.getvalue(), 46) == 1
+
+    output.seek(0)
+    with Image.open(output) as reloaded:
+        assert reloaded.size == (8, 8)
+        assert reloaded.tobytes() == indices
+
+
 def test_save_too_large(tmp_path: Path) -> None:
     outfile = tmp_path / "temp.bmp"
     with Image.new("RGB", (1, 1)) as im:
