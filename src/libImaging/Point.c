@@ -25,29 +25,39 @@ typedef struct {
     const void *table;
 } im_point_context;
 
+/**
+ * Contract: imIn is read-only and imOut must be a distinct image.
+ */
 static void
 im_point_8_8(Imaging imOut, Imaging imIn, im_point_context *context) {
-    int x, y;
     /* 8-bit source, 8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
-    for (y = 0; y < imIn->ysize; y++) {
-        UINT8 *in = imIn->image8[y];
-        UINT8 *out = imOut->image8[y];
-        for (x = 0; x < imIn->xsize; x++) {
+    // Invariant over the loop.
+    int xsize = imIn->xsize, ysize = imIn->ysize;
+    for (int y = 0; y < ysize; y++) {
+        // restrict safe: imIn is read-only, imOut is a fresh allocation.
+        UINT8 *restrict in = imIn->image8[y];
+        UINT8 *restrict out = imOut->image8[y];
+        for (int x = 0; x < xsize; x++) {
             out[x] = table[in[x]];
         }
     }
 }
 
+/**
+ * Contract: imIn is read-only and imOut must be a distinct image.
+ */
 static void
 im_point_2x8_2x8(Imaging imOut, Imaging imIn, im_point_context *context) {
-    int x, y;
     /* 2x8-bit source, 2x8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
-    for (y = 0; y < imIn->ysize; y++) {
-        UINT8 *in = (UINT8 *)imIn->image[y];
-        UINT8 *out = (UINT8 *)imOut->image[y];
-        for (x = 0; x < imIn->xsize; x++) {
+    // Invariant over the loop.
+    int xsize = imIn->xsize, ysize = imIn->ysize;
+    for (int y = 0; y < ysize; y++) {
+        // restrict safe: imIn is read-only, imOut is a fresh allocation.
+        UINT8 *restrict in = (UINT8 *)imIn->image[y];
+        UINT8 *restrict out = (UINT8 *)imOut->image[y];
+        for (int x = 0; x < xsize; x++) {
             out[0] = table[in[0]];
             out[3] = table[in[3] + 256];
             in += 4;
@@ -56,15 +66,20 @@ im_point_2x8_2x8(Imaging imOut, Imaging imIn, im_point_context *context) {
     }
 }
 
+/**
+ * Contract: imIn is read-only and imOut must be a distinct image.
+ */
 static void
 im_point_3x8_3x8(Imaging imOut, Imaging imIn, im_point_context *context) {
-    int x, y;
     /* 3x8-bit source, 3x8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
-    for (y = 0; y < imIn->ysize; y++) {
-        UINT8 *in = (UINT8 *)imIn->image[y];
-        UINT8 *out = (UINT8 *)imOut->image[y];
-        for (x = 0; x < imIn->xsize; x++) {
+    // Invariant over the loop.
+    int xsize = imIn->xsize, ysize = imIn->ysize;
+    for (int y = 0; y < ysize; y++) {
+        // restrict safe: imIn is read-only, imOut is a fresh allocation.
+        UINT8 *restrict in = (UINT8 *)imIn->image[y];
+        UINT8 *restrict out = (UINT8 *)imOut->image[y];
+        for (int x = 0; x < xsize; x++) {
             out[0] = table[in[0]];
             out[1] = table[in[1] + 256];
             out[2] = table[in[2] + 512];
@@ -74,15 +89,20 @@ im_point_3x8_3x8(Imaging imOut, Imaging imIn, im_point_context *context) {
     }
 }
 
+/**
+ * Contract: imIn is read-only and imOut must be a distinct image.
+ */
 static void
 im_point_4x8_4x8(Imaging imOut, Imaging imIn, im_point_context *context) {
-    int x, y;
     /* 4x8-bit source, 4x8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
-    for (y = 0; y < imIn->ysize; y++) {
-        UINT8 *in = (UINT8 *)imIn->image[y];
-        UINT8 *out = (UINT8 *)imOut->image[y];
-        for (x = 0; x < imIn->xsize; x++) {
+    // Invariant over the loop.
+    int xsize = imIn->xsize, ysize = imIn->ysize;
+    for (int y = 0; y < ysize; y++) {
+        // restrict safe: imIn is read-only, imOut is a fresh allocation.
+        UINT8 *restrict in = (UINT8 *)imIn->image[y];
+        UINT8 *restrict out = (UINT8 *)imOut->image[y];
+        for (int x = 0; x < xsize; x++) {
             out[0] = table[in[0]];
             out[1] = table[in[1] + 256];
             out[2] = table[in[2] + 512];
@@ -93,29 +113,39 @@ im_point_4x8_4x8(Imaging imOut, Imaging imIn, im_point_context *context) {
     }
 }
 
+/**
+ * Contract: imIn is read-only and imOut must be a distinct image.
+ */
 static void
 im_point_8_32(Imaging imOut, Imaging imIn, im_point_context *context) {
-    int x, y;
     /* 8-bit source, 32-bit destination */
     char *table = (char *)context->table;
-    for (y = 0; y < imIn->ysize; y++) {
-        UINT8 *in = imIn->image8[y];
-        INT32 *out = imOut->image32[y];
-        for (x = 0; x < imIn->xsize; x++) {
+    // Invariant over the loop.
+    int xsize = imIn->xsize, ysize = imIn->ysize;
+    for (int y = 0; y < ysize; y++) {
+        // restrict safe: imIn is read-only, imOut is a fresh allocation.
+        UINT8 *restrict in = imIn->image8[y];
+        INT32 *restrict out = imOut->image32[y];
+        for (int x = 0; x < xsize; x++) {
             memcpy(out + x, table + in[x] * sizeof(INT32), sizeof(INT32));
         }
     }
 }
 
+/**
+ * Contract: imIn is read-only and imOut must be a distinct image.
+ */
 static void
 im_point_32_8(Imaging imOut, Imaging imIn, im_point_context *context) {
-    int x, y;
     /* 32-bit source, 8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
-    for (y = 0; y < imIn->ysize; y++) {
-        INT32 *in = imIn->image32[y];
-        UINT8 *out = imOut->image8[y];
-        for (x = 0; x < imIn->xsize; x++) {
+    // Invariant over the loop.
+    int xsize = imIn->xsize, ysize = imIn->ysize;
+    for (int y = 0; y < ysize; y++) {
+        // restrict safe: imIn is read-only, imOut is a fresh allocation.
+        INT32 *restrict in = imIn->image32[y];
+        UINT8 *restrict out = imOut->image8[y];
+        for (int x = 0; x < xsize; x++) {
             int v = in[x];
             if (v < 0) {
                 v = 0;
@@ -202,20 +232,28 @@ mode_mismatch:
     );
 }
 
+/**
+ * Apply an affine (scale/offset) transform to every pixel of imIn,
+ * returning a newly allocated result.
+ *
+ * Contract: imIn is read-only.
+ */
 Imaging
 ImagingPointTransform(Imaging imIn, double scale, double offset) {
     /* scale/offset transform */
 
     ImagingSectionCookie cookie;
     Imaging imOut;
-    int x, y;
 
     if (!imIn || (imIn->mode != IMAGING_MODE_I && imIn->mode != IMAGING_MODE_I_16 &&
                   imIn->mode != IMAGING_MODE_F)) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
+    // Invariant over the loops.
+    int xsize = imIn->xsize, ysize = imIn->ysize;
+
+    imOut = ImagingNew(imIn->mode, xsize, ysize);
     if (!imOut) {
         return NULL;
     }
@@ -223,11 +261,12 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
     switch (imIn->type) {
         case IMAGING_TYPE_INT32:
             ImagingSectionEnter(&cookie);
-            for (y = 0; y < imIn->ysize; y++) {
-                INT32 *in = imIn->image32[y];
-                INT32 *out = imOut->image32[y];
+            for (int y = 0; y < ysize; y++) {
+                // restrict safe: imIn is read-only, imOut is a fresh allocation.
+                INT32 *restrict in = imIn->image32[y];
+                INT32 *restrict out = imOut->image32[y];
                 /* FIXME: add clipping? */
-                for (x = 0; x < imIn->xsize; x++) {
+                for (int x = 0; x < xsize; x++) {
                     out[x] = in[x] * scale + offset;
                 }
             }
@@ -235,10 +274,11 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
             break;
         case IMAGING_TYPE_FLOAT32:
             ImagingSectionEnter(&cookie);
-            for (y = 0; y < imIn->ysize; y++) {
-                FLOAT32 *in = (FLOAT32 *)imIn->image32[y];
-                FLOAT32 *out = (FLOAT32 *)imOut->image32[y];
-                for (x = 0; x < imIn->xsize; x++) {
+            for (int y = 0; y < ysize; y++) {
+                // restrict safe: imIn is read-only, imOut is a fresh allocation.
+                FLOAT32 *restrict in = (FLOAT32 *)imIn->image32[y];
+                FLOAT32 *restrict out = (FLOAT32 *)imOut->image32[y];
+                for (int x = 0; x < xsize; x++) {
                     out[x] = in[x] * scale + offset;
                 }
             }
@@ -247,11 +287,12 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
         case IMAGING_TYPE_SPECIAL:
             if (imIn->mode == IMAGING_MODE_I_16) {
                 ImagingSectionEnter(&cookie);
-                for (y = 0; y < imIn->ysize; y++) {
-                    char *in = (char *)imIn->image[y];
-                    char *out = (char *)imOut->image[y];
+                for (int y = 0; y < ysize; y++) {
+                    // restrict safe: imIn is read-only, imOut is a fresh allocation.
+                    char *restrict in = imIn->image[y];
+                    char *restrict out = imOut->image[y];
                     /* FIXME: add clipping? */
-                    for (x = 0; x < imIn->xsize; x++) {
+                    for (int x = 0; x < xsize; x++) {
                         UINT16 v;
                         memcpy(&v, in + x * sizeof(v), sizeof(v));
                         v = v * scale + offset;
