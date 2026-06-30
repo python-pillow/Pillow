@@ -25,6 +25,9 @@ typedef struct {
     const void *table;
 } im_point_context;
 
+// Note: all point handlers must fill the entirety of `imOut`,
+//       as it is allocated dirty by `ImagingPoint`.
+
 /**
  * Contract: imIn is read-only and imOut must be a distinct image.
  */
@@ -59,6 +62,8 @@ im_point_2x8_2x8(Imaging imOut, Imaging imIn, im_point_context *context) {
         UINT8 *restrict out = (UINT8 *)imOut->image[y];
         for (int x = 0; x < xsize; x++) {
             out[0] = table[in[0]];
+            out[1] = 0;
+            out[2] = 0;
             out[3] = table[in[3] + 256];
             in += 4;
             out += 4;
@@ -83,6 +88,7 @@ im_point_3x8_3x8(Imaging imOut, Imaging imIn, im_point_context *context) {
             out[0] = table[in[0]];
             out[1] = table[in[1] + 256];
             out[2] = table[in[2] + 512];
+            out[3] = 0;
             in += 4;
             out += 4;
         }
@@ -182,7 +188,7 @@ ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
         goto mode_mismatch;
     }
 
-    imOut = ImagingNew(mode, imIn->xsize, imIn->ysize);
+    imOut = ImagingNewDirty(mode, imIn->xsize, imIn->ysize);
     if (!imOut) {
         return NULL;
     }
@@ -253,7 +259,7 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
     // Invariant over the loops.
     int xsize = imIn->xsize, ysize = imIn->ysize;
 
-    imOut = ImagingNew(imIn->mode, xsize, ysize);
+    imOut = ImagingNewDirty(imIn->mode, xsize, ysize);
     if (!imOut) {
         return NULL;
     }
