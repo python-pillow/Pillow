@@ -357,19 +357,24 @@ def test_matrix_xyz(mode: str) -> None:
 
 def test_matrix_identity() -> None:
     # Arrange
-    im = hopper("RGB")
+    im = hopper()
+    assert im.mode == "RGB"
+
     # fmt: off
     identity_matrix = (
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0)
     # fmt: on
-    assert im.mode == "RGB"
 
     # Act
     # Convert with an identity matrix
-    converted_im = im.convert(mode="RGB", matrix=identity_matrix)
+    converted_im = im.convert("RGB", identity_matrix)
 
     # Assert
     # No change
+    assert_image_equal(converted_im, im)
+
+    # Test list
+    converted_im = im.convert("RGB", list(identity_matrix))
     assert_image_equal(converted_im, im)
