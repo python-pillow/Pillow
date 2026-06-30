@@ -125,39 +125,32 @@ ImagingFillRadialGradient(const ModeID mode) {
         return NULL;
     }
 
+#define ASSIGN_ROW(row, y)                                                            \
+    for (int x = 0; x < 256; x++) {                                                   \
+        int d =                                                                       \
+            (int)sqrt((double)((x - 128) * (x - 128) + (y - 128) * (y - 128)) * 2.0); \
+        row[x] = d >= 255 ? 255 : d;                                                  \
+    }
+
     // Branch on pixel type outside the loops so the compiler can tighten them.
     // Restrict safe: sole owner of the freshly-allocated image data here.
     if (im->image8) {
         for (int y = 0; y < 256; y++) {
             UINT8 *restrict row = im->image8[y];
-            for (int x = 0; x < 256; x++) {
-                int d = (int)sqrt(
-                    (double)((x - 128) * (x - 128) + (y - 128) * (y - 128)) * 2.0
-                );
-                row[x] = d >= 255 ? 255 : d;
-            }
+            ASSIGN_ROW(row, y);
         }
     } else if (im->type == IMAGING_TYPE_FLOAT32) {
         for (int y = 0; y < 256; y++) {
             FLOAT32 *restrict row = (FLOAT32 *)im->image32[y];
-            for (int x = 0; x < 256; x++) {
-                int d = (int)sqrt(
-                    (double)((x - 128) * (x - 128) + (y - 128) * (y - 128)) * 2.0
-                );
-                row[x] = d >= 255 ? 255 : d;
-            }
+            ASSIGN_ROW(row, y);
         }
     } else {
         for (int y = 0; y < 256; y++) {
             INT32 *restrict row = im->image32[y];
-            for (int x = 0; x < 256; x++) {
-                int d = (int)sqrt(
-                    (double)((x - 128) * (x - 128) + (y - 128) * (y - 128)) * 2.0
-                );
-                row[x] = d >= 255 ? 255 : d;
-            }
+            ASSIGN_ROW(row, y);
         }
     }
+#undef ASSIGN_ROW
 
     return im;
 }
