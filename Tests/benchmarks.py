@@ -135,17 +135,28 @@ def test_box_blur(
 
 
 @pytest.mark.benchmark(group="composition")
+@pytest.mark.parametrize("alpha", ["opaque", "transparent", "mixed"])
 @pytest.mark.parametrize("mode", ALPHA_MODES)
 @pytest.mark.parametrize("size", SIZES, ids=_format_size)
-def test_alpha_composition(
+def test_alpha_composite(
     bench: BenchmarkFixture,
     mode: str,
     size: tuple[int, int],
+    alpha: str,
 ) -> None:
-    im = make_pillow_image(mode, size)
-    second = im.copy()
-    bench.extra_info["label"] = ["Composition"]
-    bench(Image.alpha_composite, im, second)
+    im1 = make_pillow_image(mode, size)
+    im2 = make_pillow_image(mode, size, pattern_offset=1024)
+    if alpha == "opaque":
+        im2.putalpha(255)
+    elif alpha == "transparent":
+        im2.putalpha(0)
+    else:  # "mixed"
+        width, height = size
+        gradient = bytes((x * 256) // width for x in range(width)) * height
+        im2.putalpha(Image.frombytes("L", size, gradient))
+    bench.extra_info["label"] = ["Composition", alpha]
+    result = bench(Image.alpha_composite, im1, im2)
+    assert result.size == im1.size
 
 
 @pytest.mark.benchmark(group="convert")

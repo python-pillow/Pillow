@@ -307,7 +307,7 @@ ImagingConvert(Imaging im, ModeID mode, ImagingPalette palette, int dither);
 extern Imaging
 ImagingConvertInPlace(Imaging im, ModeID mode);
 extern Imaging
-ImagingConvertMatrix(Imaging im, ModeID mode, float m[]);
+ImagingConvertMatrix(Imaging im, ModeID mode, const float m[12]);
 extern Imaging
 ImagingConvertTransparent(Imaging im, ModeID mode, int r, int g, int b);
 extern Imaging
