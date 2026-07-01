@@ -1191,7 +1191,7 @@ def test_append_images(tmp_path: Path) -> None:
         assert reread.n_frames == 3
 
     # Tests appending using a generator
-    def im_generator(ims: list[Image.Image]) -> Generator[Image.Image, None, None]:
+    def im_generator(ims: list[Image.Image]) -> Generator[Image.Image]:
         yield from ims
 
     im.save(out, save_all=True, append_images=im_generator(ims))
