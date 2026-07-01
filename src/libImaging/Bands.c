@@ -17,6 +17,10 @@
 
 #include "Imaging.h"
 
+/**
+ * Extract a single band from imIn into a newly allocated single-band image.
+ * Contract: imIn is read-only and the returned image is a distinct allocation.
+ */
 Imaging
 ImagingGetBand(Imaging imIn, int band) {
     Imaging imOut;
@@ -68,6 +72,14 @@ ImagingGetBand(Imaging imIn, int band) {
     return imOut;
 }
 
+/**
+ * Split imIn into its component bands.
+ * The caller must provide an array of 4 Imaging pointers,
+ * which will be allocated and filled with the individual bands.
+ * The number of bands returned is the number of bands in imIn.
+ *
+ * Contract: imIn is read-only.
+ */
 int
 ImagingSplit(Imaging imIn, Imaging bands[4]) {
     int i, j, x, y;
@@ -173,6 +185,11 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
     return imIn->bands;
 }
 
+/**
+ * Insert single-band imIn into `band` of imOut, in place.
+ *
+ * Contract: imIn and imOut MUST be distinct images and not alias.
+ */
 Imaging
 ImagingPutBand(Imaging imOut, Imaging imIn, int band) {
     int x, y;
@@ -219,6 +236,9 @@ ImagingPutBand(Imaging imOut, Imaging imIn, int band) {
     return imOut;
 }
 
+/**
+ * Fill a single band of imOut with a constant colour, in place.
+ */
 Imaging
 ImagingFillBand(Imaging imOut, int band, int color) {
     int x, y;
@@ -253,6 +273,11 @@ ImagingFillBand(Imaging imOut, int band, int color) {
     return imOut;
 }
 
+/**
+ * Merge the caller-supplied bands[] into a newly allocated multi-band image.
+ *
+ * Contract: the bands[] inputs are read-only, and the output is new.
+ */
 Imaging
 ImagingMerge(const ModeID mode, Imaging bands[4]) {
     int i, x, y;
