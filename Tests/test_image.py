@@ -1024,11 +1024,6 @@ class TestImage:
         else:
             assert im.getxmp() == {"xmpmeta": None}
 
-    def test_get_child_images(self) -> None:
-        im = Image.new("RGB", (1, 1))
-        with pytest.warns(DeprecationWarning, match="Image.Image.get_child_images"):
-            assert im.get_child_images() == []
-
     def test_show(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(ImageShow, "_viewers", [])
 
