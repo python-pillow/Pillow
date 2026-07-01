@@ -127,6 +127,11 @@ kernel_i16(int size, UINT8 *in0, int x, const float *kernel, int bigendian) {
     return result;
 }
 
+/**
+ * Convolve `im` with a 3x3 kernel, writing the result to imOut.
+ *
+ * Contract: imOut and im *MUST* be distinct images.
+ */
 static void
 ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
 #define KERNEL1x3(in0, x, kernel, d)                                     \
@@ -279,6 +284,11 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
     memcpy(imOut->image[y], im->image[y], im->linesize);
 }
 
+/**
+ * Convolve `im` with a 5x5 kernel, writing the result to imOut.
+ *
+ * Contract: imOut and im *MUST* be distinct images.
+ */
 static void
 ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
 #define KERNEL1x5(in0, x, kernel, d)                                             \
