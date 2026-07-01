@@ -951,7 +951,7 @@ def load_path(filename: str | bytes) -> ImageFont:
     for directory in sys.path:
         try:
             return load(os.path.join(directory, filename))
-        except OSError:  # noqa: PERF203
+        except OSError:
             pass
     msg = f'cannot find font file "{filename}" in sys.path'
     if os.path.exists(filename):
