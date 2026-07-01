@@ -19,6 +19,10 @@ typedef struct {
     UINT8 a;
 } rgba8;
 
+/**
+ * Alpha-composite imSrc over imDst, returning a newly allocated result.
+ * Contract: imDst and imSrc are read-only and may alias each other.
+ */
 Imaging
 ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
     Imaging imOut;
