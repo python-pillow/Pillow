@@ -543,7 +543,7 @@ Image._showxv
 .. deprecated:: 7.2.0
 .. versionremoved:: 9.0.0
 
-Use :py:meth:`.Image.Image.show` instead. If custom behaviour is required, use
+Use :py:meth:`.Image.Image.show` instead. If custom behavior is required, use
 :py:func:`.ImageShow.register` to add a custom :py:class:`.ImageShow.Viewer` class.
 
 ImageFile.raise_ioerror

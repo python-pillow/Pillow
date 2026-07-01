@@ -264,7 +264,7 @@ Methods
 
 .. py:method:: ImageDraw.circle(xy, radius, fill=None, outline=None, width=1)
 
-    Draws a circle with a given radius centering on a point.
+    Draws a circle with a given radius centered on a point.
 
     .. versionadded:: 10.4.0
 

@@ -67,13 +67,13 @@ metadata tag numbers, names, and type information.
         'ImageDescription'
 
     This dictionary contains a superset of the tags in :py:data:`~PIL.TiffTags.TAGS_V2`, common
-    EXIF tags, and other well known metadata tags.
+    EXIF tags, and other well-known metadata tags.
 
 .. py:data:: PIL.TiffTags.TYPES
     :type: dict
 
     The ``TYPES`` dictionary maps the TIFF type short integer to a
-    human readable type name.
+    human-readable type name.
 
 .. py:data:: PIL.TiffTags.LIBTIFF_CORE
     :type: list
