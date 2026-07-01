@@ -70,6 +70,7 @@ optional-dependencies.tests = [
   "packaging",
   "pytest",
   "pytest-cov",
+  "pytest-sugar",
   "pytest-timeout",
   "pytest-xdist",
   "setuptools",
@@ -200,7 +201,10 @@ extra_checks = true
 pretty = true
 
 [tool.pytest]
-addopts = [ "-ra", "--color=auto" ]
+addopts = [ "-ra", "--color=auto", "--numprocesses=auto", "--dist=loadscope" ]
+markers = [
+  "isolated: tests that are not compatible with pytest-xdist (deselect with '-m \"not isolated\"')",
+]
 testpaths = [
   "Tests",
 ]
