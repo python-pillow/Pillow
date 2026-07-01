@@ -123,3 +123,7 @@ Performance improvements
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 A number of changes have been made to optimize the use of C when manipulating images.
+This improves performance by up to 5.6 times of ``Image``'s
+``alpha_composite``, ``fill``, ``filter``, ``getchannel``, ``linear_gradient``,
+``matrix``, ``merge``, ``negative``, ``putalpha``, ``quantize``,
+``radial_gradient``, ``resample``, ``split``, and ``ImageChops`` operations.
