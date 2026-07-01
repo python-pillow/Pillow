@@ -365,6 +365,22 @@ def test_fill(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> None
     bench(Image.new, mode, size, color)
 
 
+@pytest.mark.benchmark(group="allocate")
+@pytest.mark.parametrize("mode", ["1", "F", "I", "L", "P"])
+def test_linear_gradient(bench: BenchmarkFixture, mode: str) -> None:
+    result = bench(Image.linear_gradient, mode)
+    assert result.size == (256, 256)
+    assert result.mode == mode
+
+
+@pytest.mark.benchmark(group="allocate")
+@pytest.mark.parametrize("mode", ["1", "F", "I", "L", "P"])
+def test_radial_gradient(bench: BenchmarkFixture, mode: str) -> None:
+    result = bench(Image.radial_gradient, mode)
+    assert result.size == (256, 256)
+    assert result.mode == mode
+
+
 CHOPS_OPS = [
     ImageChops.add,
     ImageChops.subtract,
