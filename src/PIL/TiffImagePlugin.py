@@ -687,8 +687,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 self.tagtype[tag] = TiffTags.UNDEFINED
                 if all(isinstance(v, IFDRational) for v in values):
                     for v in values:
-                        assert isinstance(v, IFDRational)
-                        if v < 0:
+                        if v < IFDRational(0):
                             self.tagtype[tag] = TiffTags.SIGNED_RATIONAL
                             break
                     else:
