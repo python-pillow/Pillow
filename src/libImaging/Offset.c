@@ -16,6 +16,12 @@
 
 #include "Imaging.h"
 
+/**
+ * Copy `im` into a newly allocated image,
+ * wrapping every pixel by (xoffset, yoffset) modulo the image size.
+ *
+ * Contract: im is read-only.
+ */
 Imaging
 ImagingOffset(Imaging im, int xoffset, int yoffset) {
     int x, y;
@@ -45,19 +51,23 @@ ImagingOffset(Imaging im, int xoffset, int yoffset) {
         yoffset += im->ysize;
     }
 
-#define OFFSET(image)                               \
-    for (y = 0; y < im->ysize; y++) {               \
-        for (x = 0; x < im->xsize; x++) {           \
-            int yi = (y + yoffset) % im->ysize;     \
-            int xi = (x + xoffset) % im->xsize;     \
-            imOut->image[y][x] = im->image[yi][xi]; \
-        }                                           \
+    // yi depends only on y, so compute it (and both row pointers) once per
+    // row instead of redoing the modulo and pointer chase for every x.
+#define OFFSET(type, image)                     \
+    for (y = 0; y < im->ysize; y++) {           \
+        int yi = (y + yoffset) % im->ysize;     \
+        type *restrict out = imOut->image[y];   \
+        type *restrict in = im->image[yi];      \
+        for (x = 0; x < im->xsize; x++) {       \
+            int xi = (x + xoffset) % im->xsize; \
+            out[x] = in[xi];                    \
+        }                                       \
     }
 
     if (im->image8) {
-        OFFSET(image8)
+        OFFSET(UINT8, image8)
     } else {
-        OFFSET(image32)
+        OFFSET(INT32, image32)
     }
 
     return imOut;
