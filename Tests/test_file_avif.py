@@ -603,7 +603,7 @@ class TestFileAvif:
 @skip_unless_feature("avif")
 class TestAvifAnimation:
     @contextmanager
-    def star_frames(self) -> Generator[list[Image.Image], None, None]:
+    def star_frames(self) -> Generator[list[Image.Image]]:
         with Image.open("Tests/images/avif/star.png") as f:
             yield [f, f.rotate(90), f.rotate(180), f.rotate(270)]
 
@@ -676,7 +676,7 @@ class TestAvifAnimation:
             # Test appending using a generator
             def imGenerator(
                 ims: list[Image.Image],
-            ) -> Generator[Image.Image, None, None]:
+            ) -> Generator[Image.Image]:
                 yield from ims
 
             temp_file2 = tmp_path / "temp_generator.avif"

@@ -8,7 +8,7 @@ from PIL import Image, ImageFile, ImageFilter
 
 
 @pytest.fixture
-def test_images() -> Generator[dict[str, ImageFile.ImageFile], None, None]:
+def test_images() -> Generator[dict[str, ImageFile.ImageFile]]:
     ims = {
         "im": Image.open("Tests/images/hopper.ppm"),
         "snakes": Image.open("Tests/images/color_snakes.png"),

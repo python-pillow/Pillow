@@ -59,7 +59,7 @@ def upstream_diff_b64(
 
 def generate(version: str) -> dict:
     serial = str(uuid.uuid4())
-    now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now = dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     purl = f"pkg:pypi/pillow@{version}"
     root = Path(__file__).parent.parent
     thirdparty = root / "src" / "thirdparty"
