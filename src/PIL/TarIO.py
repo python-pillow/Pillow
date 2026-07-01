@@ -15,6 +15,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"io"}
+
 import io
 
 from . import ContainerIO

@@ -16,12 +16,13 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "os", "shutil", "subprocess", "tempfile"}
+
 import io
 import os
 import shutil
 import subprocess
 import sys
-import tempfile
 
 from . import Image
 
@@ -40,6 +41,8 @@ def grab(
     scale_down: bool = False,
 ) -> Image.Image:
     im: Image.Image
+    import tempfile
+
     if xdisplay is None:
         if sys.platform == "darwin":
             fh, filepath = tempfile.mkstemp(".png")

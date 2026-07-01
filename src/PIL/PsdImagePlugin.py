@@ -17,6 +17,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "PIL._util", "functools", "io", "typing"}
+
 import io
 from functools import cached_property
 from typing import IO

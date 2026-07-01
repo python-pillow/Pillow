@@ -17,6 +17,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "os", "typing", "warnings"}
+
 import os
 import warnings
 from typing import IO
