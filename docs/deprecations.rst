@@ -20,18 +20,6 @@ ExifTags.IFD.Makernote
 ``ExifTags.IFD.Makernote`` has been deprecated. Instead, use
 ``ExifTags.IFD.MakerNote``.
 
-Image.fromarray mode parameter
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 11.3.0
-
-Using the ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` was deprecated in
-Pillow 11.3.0. In Pillow 12.0.0, this was partially reverted, and it is now only
-deprecated when changing data types. Since pixel values do not contain information
-about palettes or color spaces, the parameter can still be used to place grayscale L
-mode data within a P mode image, or read RGB data as YCbCr for example. If omitted, the
-mode will be automatically determined from the object's shape and type.
-
 ImageCms.ImageCmsProfile.product_name and .product_info
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -79,6 +67,20 @@ mode before saving::
     from PIL import Image
     im = Image.new("I", (1, 1))
     im.convert("I;16").save("out.png")
+
+Image.fromarray mode parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.3.0
+.. versionremoved:: 13.0.0
+
+Using the ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` was deprecated in
+Pillow 11.3.0. In Pillow 12.0.0, this was partially reverted, and now the only
+functionality removed is when the mode changes data types. Since pixel values do not
+contain information about palettes or color spaces, the parameter can still be used to
+place grayscale L mode data within a P mode image, or read RGB data as YCbCr for
+example. If omitted, the mode will be automatically determined from the object's shape
+and type.
 
 Image.Image.get_child_images()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

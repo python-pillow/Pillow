@@ -122,11 +122,3 @@ def test_fromarray_palette() -> None:
     # Assert that the Python and C palettes match
     assert out.palette is not None
     assert len(out.palette.colors) == len(out.im.getpalette()) / 3
-
-
-def test_deprecation() -> None:
-    a = numpy.array(im.convert("L"))
-    with pytest.warns(
-        DeprecationWarning, match="'mode' parameter for changing data types"
-    ):
-        Image.fromarray(a, "1")

@@ -3429,7 +3429,8 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
             raise TypeError(msg) from e
     if mode is not None:
         if mode != typemode and mode not in color_modes:
-            deprecate("'mode' parameter for changing data types", 13)
+            msg = "Invalid mode for data type"
+            raise ValueError(msg)
         rawmode = mode
     else:
         mode = typemode
