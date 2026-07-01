@@ -112,6 +112,12 @@ To help other projects prepare for Python 3.15, wheels are now built for the 3.1
 as a preview. This is not official support for Python 3.15, but rather an opportunity
 for you to test how Pillow works with the beta and report any problems.
 
+SBOM in wheels
+^^^^^^^^^^^^^^
+
+Following :pep:`770`, the Software Bill-of-Materials (SBOM) has now been embedded into
+Pillow's wheels.
+
 Removed Python 3.13 free-threaded wheels
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
