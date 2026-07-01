@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import math
 import struct
 from pathlib import Path
 
@@ -278,6 +279,33 @@ def test_writing_other_types_to_undefined(
     with Image.open(out) as reloaded:
         assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert reloaded.tag_v2[33723] == b"1"
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    (
+        (IFDRational(1, 0), TiffTags.RATIONAL),
+        (IFDRational(-1, 0), TiffTags.SIGNED_RATIONAL),
+    ),
+)
+def test_tagtype_on_zero_denominator(
+    value: IFDRational, expected: int, tmp_path: Path
+) -> None:
+    info = TiffImagePlugin.ImageFileDirectory_v2()
+
+    info[37380] = value
+    assert info.tagtype[37380] == expected
+
+    im = hopper()
+    out = tmp_path / "temp.tiff"
+    im.save(out, tiffinfo=info)
+
+    with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+        if expected == TiffTags.RATIONAL:
+            assert reloaded.tag_v2[37380] == math.inf
+        elif expected == TiffTags.SIGNED_RATIONAL:
+            assert reloaded.tag_v2[37380] == -math.inf
 
 
 def test_undefined_zero(tmp_path: Path) -> None:
