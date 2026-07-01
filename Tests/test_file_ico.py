@@ -88,6 +88,43 @@ def test_save_to_bytes() -> None:
         )
 
 
+@pytest.mark.parametrize("size", ((1, 1), (8, 8), (15, 15), (8, 12)))
+def test_save_smaller_than_default_sizes(size: tuple[int, int]) -> None:
+    # An image smaller than the smallest default size (16x16) must still be
+    # saved as a valid, readable ICO rather than a header-only, empty file.
+    im = Image.new("RGBA", size, (10, 20, 30, 255))
+    im.putpixel((size[0] - 1, size[1] - 1), (200, 100, 50, 255))
+
+    output = io.BytesIO()
+    im.save(output, "ico")
+
+    output.seek(0)
+    with Image.open(output) as reloaded:
+        assert reloaded.format == "ICO"
+        assert reloaded.size == size
+        assert reloaded.info["sizes"] == {size}
+        assert reloaded.convert("RGBA").getpixel((size[0] - 1, size[1] - 1)) == (
+            200,
+            100,
+            50,
+            255,
+        )
+
+
+def test_save_all_sizes_larger_than_image() -> None:
+    # When every requested size is larger than the image, all are ignored, so
+    # fall back to the image's own size instead of writing an empty file.
+    im = Image.new("RGBA", (8, 8), (10, 20, 30, 255))
+
+    output = io.BytesIO()
+    im.save(output, "ico", sizes=[(16, 16), (32, 32)])
+
+    output.seek(0)
+    with Image.open(output) as reloaded:
+        assert reloaded.format == "ICO"
+        assert reloaded.size == (8, 8)
+
+
 def test_getpixel(tmp_path: Path) -> None:
     temp_file = tmp_path / "temp.ico"
 
