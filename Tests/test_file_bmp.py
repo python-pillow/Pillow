@@ -69,6 +69,47 @@ def test_small_palette(tmp_path: Path) -> None:
         assert reloaded.getpalette() == colors
 
 
+@pytest.mark.parametrize("size", ((1, 1), (7, 5), (8, 8), (16, 16)))
+def test_save_empty_palette(size: tuple[int, int]) -> None:
+    # A "P" image with an empty palette (no putpalette call) must round-trip
+    # through BMP. Previously the writer emitted biClrUsed=0 and no color
+    # table; a reader treats biClrUsed=0 at 8bpp as 256 entries, so the pixel
+    # offset pointed past a table that was never written and the file could
+    # not be reopened ("image file is truncated").
+    im = Image.new("P", size)
+    width, height = size
+    indices = bytes((x * 7 + y * 5) & 0xFF for y in range(height) for x in range(width))
+    im.frombytes(indices)
+
+    output = io.BytesIO()
+    im.save(output, "BMP")
+
+    # A color table is written, so biClrUsed (info header offset 32) is set ...
+    data = output.getvalue()
+    assert _binary.i32le(data, 46) != 0
+
+    # ... and the image reopens as "P" with its pixel indices intact.
+    output.seek(0)
+    with Image.open(output) as reloaded:
+        assert reloaded.mode == "P"
+        assert reloaded.size == size
+        assert reloaded.tobytes() == indices
+
+
+def test_save_empty_palette_round_trips_like_other_formats() -> None:
+    # PNG, GIF and TIFF all reopen a "P" image with an empty palette; BMP must
+    # not be the outlier that writes a file it cannot read back.
+    im = Image.new("P", (8, 8))
+    im.frombytes(bytes(range(64)))
+
+    for fmt in ("BMP", "PNG", "GIF", "TIFF"):
+        output = io.BytesIO()
+        im.save(output, fmt)
+        output.seek(0)
+        with Image.open(output) as reloaded:
+            reloaded.load()
+
+
 def test_save_too_large(tmp_path: Path) -> None:
     outfile = tmp_path / "temp.bmp"
     with Image.new("RGB", (1, 1)) as im:
