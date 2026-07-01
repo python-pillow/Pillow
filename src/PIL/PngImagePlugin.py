@@ -48,7 +48,6 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
-from ._deprecate import deprecate
 from ._util import DeferredError
 
 TYPE_CHECKING = False
@@ -1112,7 +1111,6 @@ _OUTMODES = {
     "L;4": ("L;4", b"\x04", b"\x00"),
     "L": ("L", b"\x08", b"\x00"),
     "LA": ("LA", b"\x08", b"\x04"),
-    "I": ("I;16B", b"\x10", b"\x00"),
     "I;16": ("I;16B", b"\x10", b"\x00"),
     "I;16B": ("I;16B", b"\x10", b"\x00"),
     "P;1": ("P;1", b"\x01", b"\x03"),
@@ -1387,8 +1385,6 @@ def _save(
     except KeyError as e:
         msg = f"cannot write mode {mode} as PNG"
         raise OSError(msg) from e
-    if outmode == "I":
-        deprecate("Saving I mode images as PNG", 13, stacklevel=4)
 
     #
     # write minimal PNG file
