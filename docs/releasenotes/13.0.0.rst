@@ -53,6 +53,13 @@ Image._show
 
 ``Image._show`` has been removed. Use :py:meth:`~PIL.ImageShow.show` instead.
 
+ImageCms.ImageCmsProfile.product_name and .product_info
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``ImageCms.ImageCmsProfile.product_name`` and the corresponding
+``.product_info`` attributes have been removed. They were set to ``None`` since Pillow
+2.3.0.
+
 Deprecations
 ============
 

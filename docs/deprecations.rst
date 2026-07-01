@@ -20,15 +20,6 @@ ExifTags.IFD.Makernote
 ``ExifTags.IFD.Makernote`` has been deprecated. Instead, use
 ``ExifTags.IFD.MakerNote``.
 
-ImageCms.ImageCmsProfile.product_name and .product_info
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 12.0.0
-
-``ImageCms.ImageCmsProfile.product_name`` and the corresponding
-``.product_info`` attributes have been deprecated, and will be removed in
-Pillow 13 (2026-10-15). They have been set to ``None`` since Pillow 2.3.0.
-
 Image getdata()
 ~~~~~~~~~~~~~~~
 
@@ -52,6 +43,16 @@ Image._show
 .. versionremoved:: 13.0.0
 
 ``Image._show`` has been removed. Use :py:meth:`~PIL.ImageShow.show` instead.
+
+ImageCms.ImageCmsProfile.product_name and .product_info
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 12.0.0
+.. versionremoved:: 13.0.0
+
+``ImageCms.ImageCmsProfile.product_name`` and the corresponding
+``.product_info`` attributes have been removed. They were set to ``None`` since Pillow
+2.3.0.
 
 Saving I mode images as PNG
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
