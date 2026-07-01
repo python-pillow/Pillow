@@ -3938,17 +3938,6 @@ def register_encoder(name: str, encoder: type[ImageFile.PyEncoder]) -> None:
 
 
 # --------------------------------------------------------------------
-# Simple display support.
-
-
-def _show(image: Image, **options: Any) -> None:
-    from . import ImageShow
-
-    deprecate("Image._show", 13, "ImageShow.show")
-    ImageShow.show(image, **options)
-
-
-# --------------------------------------------------------------------
 # Effects
 
 

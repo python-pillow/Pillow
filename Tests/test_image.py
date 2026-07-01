@@ -19,7 +19,6 @@ from PIL import (
     ImageDraw,
     ImageFile,
     ImagePalette,
-    ImageShow,
     UnidentifiedImageError,
     features,
 )
@@ -1023,13 +1022,6 @@ class TestImage:
                 assert im.getxmp() == {}
         else:
             assert im.getxmp() == {"xmpmeta": None}
-
-    def test_show(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(ImageShow, "_viewers", [])
-
-        im = Image.new("RGB", (1, 1))
-        with pytest.warns(DeprecationWarning, match="Image._show"):
-            Image._show(im)
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size: tuple[int, int]) -> None:
