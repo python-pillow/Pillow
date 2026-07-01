@@ -112,9 +112,24 @@ To help other projects prepare for Python 3.15, wheels are now built for the 3.1
 as a preview. This is not official support for Python 3.15, but rather an opportunity
 for you to test how Pillow works with the beta and report any problems.
 
+SBOM in wheels
+^^^^^^^^^^^^^^
+
+Following :pep:`770`, the Software Bill-of-Materials (SBOM) has now been embedded into
+Pillow's wheels.
+
 Removed Python 3.13 free-threaded wheels
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Python 3.13 added an experimental free-threaded mode, and Pillow 11.0.0 added
 corresponding wheels. Now that Python 3.14 includes official support for it, Pillow has
 removed wheels for Python 3.13 free-threaded mode.
+
+Performance improvements
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+A number of changes have been made to optimize the use of C when manipulating images.
+This improves performance by up to 5.6 times of ``Image``'s
+``alpha_composite``, ``fill``, ``filter``, ``getchannel``, ``linear_gradient``,
+``matrix``, ``merge``, ``negative``, ``putalpha``, ``quantize``,
+``radial_gradient``, ``resample``, ``split``, and ``ImageChops`` operations.
