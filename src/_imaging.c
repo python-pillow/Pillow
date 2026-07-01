@@ -2876,7 +2876,7 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
         free(text);
         return NULL;
     }
-    im = ImagingNew(self->bitmap->mode, xsize, self->ysize);
+    im = ImagingNewDirty(self->bitmap->mode, xsize, self->ysize);  // Emptied below
     if (!im) {
         free(text);
         return ImagingError_MemoryError();
