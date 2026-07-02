@@ -1115,6 +1115,9 @@ _expand_image(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
+    if (m == 0) {
+        return PyImagingNew(ImagingCopy(self->image));
+    }
     return PyImagingNew(ImagingExpand(self->image, m));
 }
 

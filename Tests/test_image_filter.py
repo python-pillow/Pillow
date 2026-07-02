@@ -232,6 +232,7 @@ def test_invalid_box_blur_filter(radius: int | tuple[int, int]) -> None:
 
 def test_rankfilter_size_1() -> None:
     im = Image.new("L", (3, 3), 128)
+
     # Size 1 should not crash (margin is 0)
     assert im.filter(ImageFilter.MinFilter(1)).getpixel((1, 1)) == 128
     assert im.filter(ImageFilter.MaxFilter(1)).getpixel((1, 1)) == 128
