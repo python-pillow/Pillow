@@ -229,6 +229,7 @@ def test_invalid_box_blur_filter(radius: int | tuple[int, int]) -> None:
     with pytest.raises(ValueError):
         im.filter(box_blur_filter)
 
+
 def test_rankfilter_size_1() -> None:
     im = Image.new("L", (3, 3), 128)
     # Size 1 should not crash (margin is 0)
