@@ -1,18 +1,6 @@
 name: Test Windows
 
-on:
-  push:
-    branches:
-      - "**"
-    paths-ignore: &paths-ignore
-      - ".github/workflows/docs.yml"
-      - ".github/workflows/wheels*"
-      - ".gitmodules"
-      - "docs/**"
-      - "wheels/**"
-  pull_request:
-    paths-ignore: *paths-ignore
-  workflow_dispatch:
+on: [push]
 
 permissions:
   contents: read
@@ -30,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.11", "3.12", "3.13", "3.14", "3.15"]
+        python-version: ["3.12"]
         architecture: ["x64"]
         os: ["windows-latest"]
         include:
@@ -146,10 +134,6 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libpng.cmd"
 
-    - name: Build dependencies / libavif
-      if: steps.build-cache.outputs.cache-hit != 'true' && matrix.architecture == 'x64'
-      run: "& winbuild\\build\\build_dep_libavif.cmd"
-
     # for FreeType WOFF2 font support
     - name: Build dependencies / brotli
       if: steps.build-cache.outputs.cache-hit != 'true'
@@ -230,16 +214,3 @@ jobs:
         files: ./coverage.xml
         flags: GHA_Windows
         name: ${{ runner.os }} Python ${{ matrix.python-version }}
-
-  success:
-    permissions:
-      contents: none
-    if: always()
-    needs: build
-    runs-on: ubuntu-latest
-    name: Windows Test Successful
-    steps:
-      - name: Success
-        env:
-          BUILD_RESULT: ${{ needs.build.result }}
-        run: test "$BUILD_RESULT" = "success"

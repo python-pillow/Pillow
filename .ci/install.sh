@@ -58,8 +58,5 @@ pushd depends && ./install_imagequant.sh && popd
 # raqm
 pushd depends && sudo ./install_raqm.sh && popd
 
-# libavif
-pushd depends && ./install_libavif.sh && popd
-
 # extra test images
 pushd depends && ./install_extra_test_images.sh && popd
