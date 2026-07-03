@@ -170,8 +170,7 @@ def test_kernel_not_enough_coefficients() -> None:
         ImageFilter.Kernel((3, 3), (0, 0))
 
 
-@pytest.mark.parametrize("mode", MODES)
-def test_consistency_3x3(mode: str) -> None:
+def test_consistency_3x3() -> None:
     with Image.open("Tests/images/hopper.bmp") as source:
         with Image.open("Tests/images/hopper_emboss.bmp") as reference:
             kernel = ImageFilter.Kernel(
@@ -186,8 +185,7 @@ def test_consistency_3x3(mode: str) -> None:
             assert_image_equal(source.filter(kernel), reference)
 
 
-@pytest.mark.parametrize("mode", MODES)
-def test_consistency_5x5(mode: str) -> None:
+def test_consistency_5x5() -> None:
     with Image.open("Tests/images/hopper.bmp") as source:
         with Image.open("Tests/images/hopper_emboss_more.bmp") as reference:
             kernel = ImageFilter.Kernel(
