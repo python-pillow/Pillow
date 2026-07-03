@@ -2876,14 +2876,11 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
         free(text);
         return NULL;
     }
-    im = ImagingNewDirty(self->bitmap->mode, xsize, self->ysize);  // Emptied below
+    im = ImagingNew(self->bitmap->mode, xsize, self->ysize);
     if (!im) {
         free(text);
         return ImagingError_MemoryError();
     }
-
-    b = 0;
-    (void)ImagingFill(im, &b);
 
     b = self->baseline;
     for (x = 0; text[i]; i++) {
