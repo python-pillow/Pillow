@@ -248,6 +248,57 @@ ImagingGetExtrema(Imaging im, void *extrema) {
     return 1; /* ok */
 }
 
+int
+ImagingGetExtremaMultiband(Imaging im, UINT8 extrema[8]) {
+    // Per-band min/max for interleaved 8-bit images (up to 4 bands).
+    // Writes 2 * im->bands bytes to extrema as [min0, max0, min1, max1, ...].
+    // Returns the band count on success, 0 for an empty image, or -1 on error.
+    int bands = im->bands, xsize = im->xsize, ysize = im->ysize;
+    UINT8 vmin[4], vmax[4];
+
+    if (im->type != IMAGING_TYPE_UINT8 || im->image8 || bands < 2 || bands > 4) {
+        // `_getextrema` should have checked these, but best be sure,
+        // in case someone ends up calling this directly.
+        (void)ImagingError_ModeError();
+        return -1;
+    }
+
+    if (!xsize || !ysize) {
+        return 0; /* zero size */
+    }
+
+    UINT8 *restrict in = (UINT8 *)im->image[0];
+    for (int b = 0; b < 4; b++) {
+        vmin[b] = vmax[b] = in[b];
+    }
+
+    for (int y = 0; y < ysize; y++) {
+        UINT8 *restrict in = (UINT8 *)im->image[y];
+        for (int x = 0; x < xsize; x++, in += 4) {
+            for (int b = 0; b < 4; b++) {
+                if (in[b] < vmin[b]) {
+                    vmin[b] = in[b];
+                }
+                if (in[b] > vmax[b]) {
+                    vmax[b] = in[b];
+                }
+            }
+        }
+    }
+
+    // The second band of a two-band image is stored in the fourth byte
+    // (mirrors the special case in ImagingGetBand).
+    if (bands == 2) {
+        vmin[1] = vmin[3];
+        vmax[1] = vmax[3];
+    }
+    for (int b = 0; b < bands; b++) {
+        extrema[b * 2 + 0] = vmin[b];
+        extrema[b * 2 + 1] = vmax[b];
+    }
+    return bands;
+}
+
 /* static ImagingColorItem* getcolors8(Imaging im, int maxcolors, int* size);*/
 static ImagingColorItem *
 getcolors32(Imaging im, int maxcolors, int *size);
