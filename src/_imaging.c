@@ -2337,15 +2337,39 @@ _getcolors(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _getextrema(ImagingObject *self, PyObject *args) {
+    if (self->image->type == IMAGING_TYPE_UINT8 && self->image->bands > 1 &&
+        self->image->bands <= 4) {
+        // Fast per-band extrema for 8-bit multiband images (RGB, RGBA, etc.)
+        UINT8 mb[2 * 4];
+        int bands = self->image->bands;
+        int nb = ImagingGetExtremaMultiband(self->image, mb);
+        if (nb < 0) {
+            return NULL;
+        }
+        PyObject *result = PyTuple_New(bands);
+        if (!result) {
+            return NULL;
+        }
+        for (int b = 0; b < bands; b++) {
+            // nb == 0 for an empty image: report None per band.
+            PyObject *item =
+                nb ? Py_BuildValue("BB", mb[b * 2], mb[b * 2 + 1]) : Py_NewRef(Py_None);
+            if (!item) {
+                Py_DECREF(result);
+                return NULL;
+            }
+            PyTuple_SET_ITEM(result, b, item);
+        }
+        return result;
+    }
+
     union {
         UINT8 u[2];
         INT32 i[2];
         FLOAT32 f[2];
         UINT16 s[2];
     } extrema;
-    int status;
-
-    status = ImagingGetExtrema(self->image, &extrema);
+    int status = ImagingGetExtrema(self->image, &extrema);
     if (status < 0) {
         return NULL;
     }
