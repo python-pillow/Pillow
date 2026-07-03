@@ -21,7 +21,7 @@ ExifTags.IFD.Makernote
 ``ExifTags.IFD.MakerNote``.
 
 Image getdata()
-~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
 .. deprecated:: 12.1.0
 
@@ -30,9 +30,8 @@ Image getdata()
 identical, except that it returns a tuple of pixel values, instead of an internal
 Pillow data type.
 
-
 JpegImageFile.load_djpeg
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 13.0.0
 
@@ -41,6 +40,15 @@ JpegImageFile.load_djpeg
 
 Use the built-in JPEG decoder instead, or call ``djpeg`` directly and decode the
 resulting image with Pillow.
+
+Reading "P;2L" and "P;4L" raw mode data directly
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 13.0.0
+
+Using :py:func:`.Image.frombuffer()`, :py:func:`.Image.frombytes()` or
+:py:meth:`~PIL.Image.Image.frombytes()` to read "P;2L" or "P;4L" raw mode data has been
+deprecated.
 
 Removed features
 ----------------
