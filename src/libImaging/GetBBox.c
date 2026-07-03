@@ -198,20 +198,20 @@ ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj) {
 
 int
 ImagingGetExtrema(Imaging im, void *extrema) {
-    int x, y;
     INT32 imin, imax;
     FLOAT32 fmin, fmax;
 
-    if (!im->xsize || !im->ysize) {
+    int xsize = im->xsize, ysize = im->ysize;
+    if (!xsize || !ysize) {
         return 0; /* zero size */
     }
 
     switch (im->type) {
         case IMAGING_TYPE_UINT8:
             imin = imax = im->image8[0][0];
-            for (y = 0; y < im->ysize; y++) {
+            for (int y = 0; y < ysize; y++) {
                 UINT8 *in = im->image8[y];
-                for (x = 0; x < im->xsize; x++) {
+                for (int x = 0; x < xsize; x++) {
                     if (imin > in[x]) {
                         imin = in[x];
                     } else if (imax < in[x]) {
@@ -227,9 +227,9 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             break;
         case IMAGING_TYPE_INT32:
             imin = imax = im->image32[0][0];
-            for (y = 0; y < im->ysize; y++) {
+            for (int y = 0; y < ysize; y++) {
                 INT32 *in = im->image32[y];
-                for (x = 0; x < im->xsize; x++) {
+                for (int x = 0; x < xsize; x++) {
                     if (imin > in[x]) {
                         imin = in[x];
                     } else if (imax < in[x]) {
@@ -242,9 +242,9 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             break;
         case IMAGING_TYPE_FLOAT32:
             fmin = fmax = ((FLOAT32 *)im->image32[0])[0];
-            for (y = 0; y < im->ysize; y++) {
+            for (int y = 0; y < ysize; y++) {
                 FLOAT32 *in = (FLOAT32 *)im->image32[y];
-                for (x = 0; x < im->xsize; x++) {
+                for (int x = 0; x < xsize; x++) {
                     if (fmin > in[x]) {
                         fmin = in[x];
                     } else if (fmax < in[x]) {
@@ -265,8 +265,8 @@ ImagingGetExtrema(Imaging im, void *extrema) {
                 memcpy(&v, pixel, sizeof(v));
 #endif
                 imin = imax = v;
-                for (y = 0; y < im->ysize; y++) {
-                    for (x = 0; x < im->xsize; x++) {
+                for (int y = 0; y < ysize; y++) {
+                    for (int x = 0; x < xsize; x++) {
                         pixel = (UINT8 *)im->image[y] + x * sizeof(v);
 #ifdef WORDS_BIGENDIAN
                         v = pixel[0] + ((UINT16)pixel[1] << 8);
