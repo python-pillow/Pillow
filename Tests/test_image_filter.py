@@ -170,8 +170,7 @@ def test_kernel_not_enough_coefficients() -> None:
         ImageFilter.Kernel((3, 3), (0, 0))
 
 
-@pytest.mark.parametrize("mode", MODES)
-def test_consistency_3x3(mode: str) -> None:
+def test_consistency_3x3() -> None:
     matrix = (
         -1, -1,  0,
         -1,  0,  1,
@@ -183,8 +182,7 @@ def test_consistency_3x3(mode: str) -> None:
             assert_image_equal(source.filter(kernel), reference)
 
 
-@pytest.mark.parametrize("mode", MODES)
-def test_consistency_5x5(mode: str) -> None:
+def test_consistency_5x5() -> None:
     matrix = (
         -1, -1, -1, -1,  0,
         -1, -1, -1,  0,  1,
