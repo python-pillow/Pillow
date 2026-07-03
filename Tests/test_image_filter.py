@@ -170,36 +170,72 @@ def test_kernel_not_enough_coefficients() -> None:
         ImageFilter.Kernel((3, 3), (0, 0))
 
 
-def test_consistency_3x3() -> None:
-    with Image.open("Tests/images/hopper.bmp") as source:
-        with Image.open("Tests/images/hopper_emboss.bmp") as reference:
-            kernel = ImageFilter.Kernel(
-                (3, 3),
-                # fmt: off
-                (-1, -1,  0,
-                 -1,  0,  1,
-                 0,   1,  1),
-                # fmt: on
-                0.3,
-            )
-            assert_image_equal(source.filter(kernel), reference)
+# fmt: off
+EMBOSS_3x3 = (
+    -1, -1,  0,
+    -1,  0,  1,
+     0,  1,  1,
+)
+EMBOSS_5x5 = (
+    -1, -1, -1, -1,  0,
+    -1, -1, -1,  0,  1,
+    -1, -1,  0,  1,  1,
+    -1,  0,  1,  1,  1,
+     0,  1,  1,  1,  1,
+)
+# fmt: on
 
 
-def test_consistency_5x5() -> None:
+@pytest.mark.parametrize(
+    "size, weights, expected",
+    [
+        pytest.param(
+            (3, 3),
+            EMBOSS_3x3,
+            "Tests/images/hopper_emboss.bmp",
+            id="3x3",
+        ),
+        pytest.param(
+            (5, 5), EMBOSS_5x5, "Tests/images/hopper_emboss_more.bmp", id="5x5"
+        ),
+    ],
+)
+def test_consistency(
+    size: tuple[int, int], weights: tuple[int, ...], expected: str
+) -> None:
     with Image.open("Tests/images/hopper.bmp") as source:
-        with Image.open("Tests/images/hopper_emboss_more.bmp") as reference:
-            kernel = ImageFilter.Kernel(
-                (5, 5),
-                # fmt: off
-                (-1, -1, -1, -1,  0,
-                 -1, -1, -1,  0,  1,
-                 -1, -1,  0,  1,  1,
-                 -1,  0,  1,  1,  1,
-                 0,   1,  1,  1,  1),
-                # fmt: on
-                0.3,
+        with Image.open(expected) as reference:
+            kernel = ImageFilter.Kernel(size, weights, 0.3)
+            result = source.filter(kernel)
+            assert_image_equal(result, reference)
+
+
+@pytest.mark.parametrize(
+    "size, weights",
+    [
+        pytest.param((3, 3), EMBOSS_3x3, id="3x3"),
+        pytest.param((5, 5), EMBOSS_5x5, id="5x5"),
+    ],
+)
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_consistency_i16(
+    size: tuple[int, int], weights: tuple[int, ...], mode: str
+) -> None:
+    kernel = ImageFilter.Kernel(size, weights, 0.3)
+    reference = hopper("I").filter(kernel)
+    result = hopper(mode).filter(kernel)
+    assert result.mode == mode
+    assert result.size == reference.size
+    # Compare logical pixel values.
+    assert (
+        max(
+            abs(a - b)  # type: ignore[operator]
+            for a, b in zip(
+                reference.get_flattened_data(), result.get_flattened_data(), strict=True
             )
-            assert_image_equal(source.filter(kernel), reference)
+        )
+        <= 1
+    )
 
 
 @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
