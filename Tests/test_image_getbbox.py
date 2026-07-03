@@ -44,6 +44,28 @@ def test_bbox() -> None:
             check(im, (255, 255))
 
 
+@pytest.mark.parametrize("mode", ("L", "RGB", "RGBA", "I", "F"))
+@pytest.mark.parametrize(
+    "box",
+    (
+        (0, 0, 1, 1),  # single pixel, top-left
+        (99, 0, 100, 1),  # single pixel, top-right
+        (0, 99, 1, 100),  # single pixel, bottom-left
+        (99, 99, 100, 100),  # single pixel, bottom-right
+        (0, 0, 100, 1),  # full top row
+        (0, 99, 100, 100),  # full bottom row
+        (0, 0, 1, 100),  # full left column
+        (99, 0, 100, 100),  # full right column
+        (40, 40, 60, 60),  # centred block
+    ),
+)
+def test_bbox_edges(mode: str, box: tuple[int, int, int, int]) -> None:
+    im = Image.new(mode, (100, 100), 0)
+    bands = Image.getmodebands(mode)
+    im.paste((255,) * bands, box)
+    assert im.getbbox() == box
+
+
 @pytest.mark.parametrize("mode", ("RGBA", "RGBa", "La", "LA", "PA"))
 def test_bbox_alpha_only_false(mode: str) -> None:
     im = Image.new(mode, (100, 100))
