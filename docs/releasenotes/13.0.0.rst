@@ -63,10 +63,12 @@ ImageCms.ImageCmsProfile.product_name and .product_info
 Deprecations
 ============
 
-TODO
-^^^^
+Reading "P;2L" and "P;4L" raw mode data directly
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Using :py:func:`.Image.frombuffer()`, :py:func:`.Image.frombytes()` or
+:py:meth:`~PIL.Image.Image.frombytes()` to read "P;2L" or "P;4L" raw mode data has been
+deprecated.
 
 API changes
 ===========
