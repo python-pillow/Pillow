@@ -212,11 +212,8 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             for (int y = 0; y < ysize; y++) {
                 UINT8 *in = im->image8[y];
                 for (int x = 0; x < xsize; x++) {
-                    if (imin > in[x]) {
-                        imin = in[x];
-                    } else if (imax < in[x]) {
-                        imax = in[x];
-                    }
+                    imin = imin < in[x] ? imin : in[x];
+                    imax = imax > in[x] ? imax : in[x];
                 }
                 if (imin == 0 && imax == 255) {
                     break;
@@ -230,11 +227,8 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             for (int y = 0; y < ysize; y++) {
                 INT32 *in = im->image32[y];
                 for (int x = 0; x < xsize; x++) {
-                    if (imin > in[x]) {
-                        imin = in[x];
-                    } else if (imax < in[x]) {
-                        imax = in[x];
-                    }
+                    imin = imin < in[x] ? imin : in[x];
+                    imax = imax > in[x] ? imax : in[x];
                 }
             }
             memcpy(extrema, &imin, sizeof(imin));
@@ -245,6 +239,8 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             for (int y = 0; y < ysize; y++) {
                 FLOAT32 *in = (FLOAT32 *)im->image32[y];
                 for (int x = 0; x < xsize; x++) {
+                    // Kept as if/else (unlike the integer branches above),
+                    // since float min/max isn't vectorisable due to NaN semantics.
                     if (fmin > in[x]) {
                         fmin = in[x];
                     } else if (fmax < in[x]) {
