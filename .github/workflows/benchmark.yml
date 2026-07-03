@@ -88,9 +88,16 @@ jobs:
         GHA_LIBWEBP_CACHE_HIT: ${{ steps.cache-libwebp.outputs.cache-hit }}
 
     - name: Run CodSpeed benchmarks
+      if: github.event_name != 'pull_request' || github.event.repository.fork == false
       uses: CodSpeedHQ/action@a4a36bb07c0638b0b4ca52bf1f3dad1b4289e52f # v4.18.1
       with:
         mode: simulation
         run: |
           python3 -m pip install -e . pytest-codspeed
           python3 -m pytest -vv --codspeed Tests/benchmarks.py
+
+    - name: Run CodSpeed benchmarks on pull requests to a fork
+      if: github.event_name == 'pull_request' && github.event.repository.fork == true
+      run: |
+        python3 -m pip install -e . pytest-codspeed
+        python3 -m pytest -vv --codspeed Tests/benchmarks.py
