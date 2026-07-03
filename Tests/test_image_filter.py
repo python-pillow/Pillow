@@ -58,11 +58,11 @@ def test_sanity_error(mode: str) -> None:
         im.filter("hello")  # type: ignore[arg-type]
 
 
-# crashes on small images
 @pytest.mark.parametrize("size", ((1, 1), (2, 2), (3, 3)))
-def test_crash(size: tuple[int, int]) -> None:
+def test_noop_on_small_images(size: tuple[int, int]) -> None:
+    # If image is smaller than kernel size, return it as-is
     im = Image.new("RGB", size)
-    im.filter(ImageFilter.SMOOTH)
+    assert_image_equal(im, im.filter(ImageFilter.SMOOTH))
 
 
 @pytest.mark.parametrize(
