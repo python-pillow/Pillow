@@ -93,6 +93,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             frame = provided_im.copy()
             frame.thumbnail(size, Image.Resampling.LANCZOS, reducing_gap=None)
             frames.append(frame)
+    if not frames:
+        msg = "All sizes too large for image"
+        raise ValueError(msg)
     fp.write(o16(len(frames)))  # idCount(2)
     offset = fp.tell() + len(frames) * 16
     for frame in frames:

@@ -224,6 +224,11 @@ def test_only_save_relevant_sizes(tmp_path: Path) -> None:
         # Assert
         assert reloaded.info["sizes"] == {(16, 16), (24, 24), (32, 32), (48, 48)}
 
+    im2 = Image.new("1", (1, 1))
+    outfile = tmp_path / "temp.ico"
+    with pytest.raises(ValueError, match="All sizes too large for image"):
+        im2.save(outfile, sizes=[(2, 2)])
+
 
 def test_save_append_images(tmp_path: Path) -> None:
     # append_images should be used for scaled down versions of the image
