@@ -98,6 +98,7 @@ dynamic.version = { attr = "PIL.__version__" }
 build-verbosity = 1
 config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable"
 before-all = ".github/workflows/wheels-dependencies.sh"
+linux.before-all = ["pipx install -f patchelf==0.19.0.0rc1", ".github/workflows/wheels-dependencies.sh"]
 test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-requires = [
   "numpy",
