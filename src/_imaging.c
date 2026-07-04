@@ -2882,9 +2882,6 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
         return ImagingError_MemoryError();
     }
 
-    b = 0;
-    (void)ImagingFill(im, &b);
-
     b = self->baseline;
     for (x = 0; text[i]; i++) {
         glyph = &self->glyphs[text[i]];
