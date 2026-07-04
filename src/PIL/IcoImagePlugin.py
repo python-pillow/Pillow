@@ -57,15 +57,18 @@ _MAGIC = b"\0\0\1\0"
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.write(_MAGIC)  # (2+2)
     bmp = im.encoderinfo.get("bitmap_format") == "bmp"
-    sizes = im.encoderinfo.get(
-        "sizes",
-        [(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
-    )
+    if "sizes" in im.encoderinfo:
+        sizes = sorted(set(im.encoderinfo["sizes"]))
+    else:
+        sizes = (
+            [im.size]
+            if min(im.size) < 16
+            else [(d, d) for d in (16, 24, 32, 48, 64, 128, 256)]
+        )
     frames = []
     provided_ims = [im] + im.encoderinfo.get("append_images", [])
-    width, height = im.size
-    for size in sorted(set(sizes)):
-        if size[0] > width or size[1] > height or size[0] > 256 or size[1] > 256:
+    for size in sizes:
+        if size[0] > min(256, im.width) or size[1] > min(256, im.height):
             continue
 
         for provided_im in provided_ims:

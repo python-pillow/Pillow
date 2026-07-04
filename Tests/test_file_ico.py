@@ -187,6 +187,15 @@ def test_incorrect_size() -> None:
             im.size = (1, 1)
 
 
+def test_save_1x2(tmp_path: Path) -> None:
+    im = Image.new("1", (1, 2))
+    outfile = tmp_path / "temp.ico"
+    im.save(outfile)
+
+    with Image.open(outfile) as reloaded:
+        assert_image_equal(im, reloaded)
+
+
 def test_save_256x256(tmp_path: Path) -> None:
     """Issue #2264 https://github.com/python-pillow/Pillow/issues/2264"""
     # Arrange
@@ -195,9 +204,9 @@ def test_save_256x256(tmp_path: Path) -> None:
 
         # Act
         im.save(outfile)
-    with Image.open(outfile) as im_saved:
+    with Image.open(outfile) as reloaded:
         # Assert
-        assert im_saved.size == (256, 256)
+        assert reloaded.size == (256, 256)
 
 
 def test_only_save_relevant_sizes(tmp_path: Path) -> None:
@@ -211,9 +220,9 @@ def test_only_save_relevant_sizes(tmp_path: Path) -> None:
         # Act
         im.save(outfile)
 
-    with Image.open(outfile) as im_saved:
+    with Image.open(outfile) as reloaded:
         # Assert
-        assert im_saved.info["sizes"] == {(16, 16), (24, 24), (32, 32), (48, 48)}
+        assert reloaded.info["sizes"] == {(16, 16), (24, 24), (32, 32), (48, 48)}
 
 
 def test_save_append_images(tmp_path: Path) -> None:
