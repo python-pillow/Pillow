@@ -43,18 +43,6 @@ def get_version() -> str:
 
 
 PILLOW_VERSION = get_version()
-AVIF_ROOT = None
-FREETYPE_ROOT = None
-HARFBUZZ_ROOT = None
-FRIBIDI_ROOT = None
-IMAGEQUANT_ROOT = None
-JPEG2K_ROOT = None
-JPEG_ROOT = None
-LCMS_ROOT = None
-RAQM_ROOT = None
-TIFF_ROOT = None
-WEBP_ROOT = None
-ZLIB_ROOT = None
 FUZZING_BUILD = "LIB_FUZZING_ENGINE" in os.environ
 
 if sys.platform == "win32" and sys.version_info >= (3, 16):
@@ -517,16 +505,14 @@ class pil_build_ext(build_ext):
             "LCMS_ROOT": "lcms2",
             "IMAGEQUANT_ROOT": "libimagequant",
         }.items():
-            root = globals()[root_name]
-
-            if root is None and root_name in os.environ:
+            root = None
+            if root_name in os.environ:
                 root_prefix = os.environ[root_name]
                 root = (
-                    os.path.join(root_prefix, "lib"),
-                    os.path.join(root_prefix, "include"),
+                    [os.path.join(root_prefix, "lib")],
+                    [os.path.join(root_prefix, "include")],
                 )
-
-            if root is None and pkg_config:
+            elif pkg_config:
                 for lib_name2 in (
                     [lib_name] if isinstance(lib_name, str) else lib_name
                 ):
@@ -534,19 +520,10 @@ class pil_build_ext(build_ext):
                     if root := pkg_config(lib_name2):
                         break
 
-            if isinstance(root, tuple):
+            if root is not None:
                 lib_root, include_root = root
-            else:
-                lib_root = include_root = root
-
-            if lib_root is not None:
-                if not isinstance(lib_root, (tuple, list)):
-                    lib_root = (lib_root,)
                 for lib_dir in lib_root:
                     _add_directory(library_dirs, lib_dir)
-            if include_root is not None:
-                if not isinstance(include_root, (tuple, list)):
-                    include_root = (include_root,)
                 for include_dir in include_root:
                     _add_directory(include_dirs, include_dir)
 
