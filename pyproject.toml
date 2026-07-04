@@ -98,12 +98,12 @@ dynamic.version = { attr = "PIL.__version__" }
 build-verbosity = 1
 config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable"
 before-all = ".github/workflows/wheels-dependencies.sh"
-linux.before-all = ["pipx install -f patchelf==0.19.0.0rc1", ".github/workflows/wheels-dependencies.sh"]
 test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-requires = [
   "numpy",
 ]
 test-extras = "tests"
+linux.before-all = [ "pipx install -f patchelf==0.19.0.0rc1", ".github/workflows/wheels-dependencies.sh" ]
 # Disable platform guessing on macOS to avoid picking up Homebrew etc.
 macos.config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable platform-guessing=disable"
 # Isolate macOS build environment from Homebrew etc.
