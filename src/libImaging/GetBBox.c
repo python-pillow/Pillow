@@ -23,7 +23,6 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
     /* Get the bounding box for any non-zero data in the image.*/
 
     int xsize = im->xsize, ysize = im->ysize;
-    int has_data;
 
     /* Initialize bounding box to max values */
     bbox[0] = xsize;
@@ -33,19 +32,23 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
 #define GETBBOX(image, mask, type)                             \
     /* first stage: looking for any pixels from top */         \
     for (int y = 0; y < ysize; y++) {                          \
-        has_data = 0;                                          \
         const type *restrict row = (const type *)im->image[y]; \
+        /* vectorisable OR-reduce of the row */                \
+        type acc = 0;                                          \
+        for (int x = 0; x < xsize; x++) {                      \
+            acc |= row[x] & mask;                              \
+        }                                                      \
+        if (!acc) {                                            \
+            continue;                                          \
+        }                                                      \
         for (int x = 0; x < xsize; x++) {                      \
             if (row[x] & mask) {                               \
-                has_data = 1;                                  \
                 bbox[0] = x;                                   \
                 bbox[1] = y;                                   \
                 break;                                         \
             }                                                  \
         }                                                      \
-        if (has_data) {                                        \
-            break;                                             \
-        }                                                      \
+        break;                                                 \
     }                                                          \
     /* Check that we have a box */                             \
     if (bbox[1] < 0) {                                         \
@@ -53,33 +56,55 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
     }                                                          \
     /* second stage: looking for any pixels from bottom */     \
     for (int y = ysize - 1; y >= bbox[1]; y--) {               \
-        has_data = 0;                                          \
         const type *restrict row = (const type *)im->image[y]; \
+        /* vectorisable OR-reduce of the row */                \
+        type acc = 0;                                          \
+        for (int x = 0; x < xsize; x++) {                      \
+            acc |= row[x] & mask;                              \
+        }                                                      \
+        if (!acc) {                                            \
+            continue;                                          \
+        }                                                      \
         for (int x = 0; x < xsize; x++) {                      \
             if (row[x] & mask) {                               \
-                has_data = 1;                                  \
                 bbox[0] = x < bbox[0] ? x : bbox[0];           \
                 bbox[3] = y + 1;                               \
                 break;                                         \
             }                                                  \
         }                                                      \
-        if (has_data) {                                        \
-            break;                                             \
-        }                                                      \
+        break;                                                 \
     }                                                          \
     /* third stage: looking for left and right boundaries */   \
     for (int y = bbox[1]; y < bbox[3]; y++) {                  \
         const type *restrict row = (const type *)im->image[y]; \
-        for (int x = 0; x < bbox[0]; x++) {                    \
-            if (row[x] & mask) {                               \
-                bbox[0] = x;                                   \
-                break;                                         \
+        if (bbox[0] > 0) {                                     \
+            /* vectorisable OR-reduce of the left margin */    \
+            type acc = 0;                                      \
+            for (int x = 0; x < bbox[0]; x++) {                \
+                acc |= row[x] & mask;                          \
+            }                                                  \
+            if (acc) {                                         \
+                for (int x = 0; x < bbox[0]; x++) {            \
+                    if (row[x] & mask) {                       \
+                        bbox[0] = x;                           \
+                        break;                                 \
+                    }                                          \
+                }                                              \
             }                                                  \
         }                                                      \
-        for (int x = xsize - 1; x >= bbox[2]; x--) {           \
-            if (row[x] & mask) {                               \
-                bbox[2] = x + 1;                               \
-                break;                                         \
+        if (bbox[2] < xsize) {                                 \
+            /* vectorisable OR-reduce of the right margin */   \
+            type acc = 0;                                      \
+            for (int x = bbox[2]; x < xsize; x++) {            \
+                acc |= row[x] & mask;                          \
+            }                                                  \
+            if (acc) {                                         \
+                for (int x = xsize - 1; x >= bbox[2]; x--) {   \
+                    if (row[x] & mask) {                       \
+                        bbox[2] = x + 1;                       \
+                        break;                                 \
+                    }                                          \
+                }                                              \
             }                                                  \
         }                                                      \
     }
@@ -87,7 +112,7 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
     if (im->image8) {
         if (isModeI16(im->mode)) {
             // In I16 modes, image8 is two-byte pixels, so scan as UINT16.
-            // Since we're looking for zeroes, endianness testing is independent.
+            // Since we're looking for zeroes, endianness doesn't matter.
             GETBBOX(image8, 0xffff, UINT16);
         } else {
             GETBBOX(image8, 0xff, UINT8);
