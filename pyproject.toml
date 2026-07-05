@@ -208,6 +208,7 @@ testpaths = [
 [tool.coverage]
 run.omit = [
   "checks/*.py",
+  "Tests/benchmarks.py",
   "Tests/createfontdatachunk.py",
 ]
 report.exclude_also = [
