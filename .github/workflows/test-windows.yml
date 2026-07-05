@@ -30,7 +30,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.12", "pypy3.11", "3.15", "3.14", "3.13", "3.12"]
+        python-version: [
+          "pypy3.12",
+          "pypy3.11",
+          "3.15t",
+          "3.15",
+          "3.14t",
+          "3.14",
+          "3.13",
+          "3.12",
+        ]
         architecture: ["x64"]
         os: ["windows-latest"]
         include:
@@ -81,7 +90,7 @@ jobs:
     - name: Install CPython dependencies
       if: "!contains(matrix.python-version, 'pypy') && matrix.architecture != 'x86'"
       run: |
-        python3 -m pip install PyQt6
+        python3 -m pip install --only-binary=:all: PyQt6 || true
 
     - name: Install PyArrow dependency
       run: |
