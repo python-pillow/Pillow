@@ -204,3 +204,24 @@ addopts = [ "-ra", "--color=auto" ]
 testpaths = [
   "Tests",
 ]
+
+[tool.coverage]
+run.omit = [
+  "checks/*.py",
+  "Tests/createfontdatachunk.py",
+]
+report.exclude_also = [
+  "@abc.abstractmethod",
+  "^\\s*\\.\\.\\.(\\s*#.*)?$",
+  # Empty bodies in protocols or abstract methods
+  "^\\s*def [a-zA-Z0-9_]+\\(.*\\)(\\s*->.*)?:\\s*\\.\\.\\.(\\s*#.*)?$",
+  # Don't complain about compatibility code for missing optional dependencies
+  "except ImportError",
+  "if __name__ == .__main__.:",
+  # Don't complain if non-runnable code isn't run
+  "if 0:",
+  # Don't complain about debug code
+  "if DEBUG:",
+  # Don't complain about code that generally isn't run
+  "if TYPE_CHECKING:",
+]
