@@ -1169,6 +1169,29 @@ def test_line_horizontal() -> None:
     )
 
 
+def test_line_horizontal_w1px_direction() -> None:
+    # Drawing right-to-left must paint the same pixels as left-to-right.
+    im_lr = Image.new("L", (20, 3))
+    ImageDraw.Draw(im_lr).line((2, 1, 17, 1), fill=255)
+    assert [im_lr.getpixel((x, 1)) for x in range(20)] == [
+        255 if 2 <= x <= 17 else 0 for x in range(20)
+    ]
+
+    im_rl = Image.new("L", (20, 3))
+    ImageDraw.Draw(im_rl).line((17, 1, 2, 1), fill=255)
+    assert_image_equal(im_rl, im_lr)
+
+
+def test_line_joints_blend_once() -> None:
+    # Pixels shared by consecutive polyline segments
+    # (and the final endpoint, which is drawn separately)
+    # must be blended exactly once.
+    im = Image.new("RGB", (20, 3))
+    draw = ImageDraw.Draw(im, "RGBA")
+    draw.line([(0, 1), (10, 1), (19, 1)], fill=(255, 255, 255, 128))
+    assert {im.getpixel((x, 1)) for x in range(20)} == {(128, 128, 128)}
+
+
 @pytest.mark.xfail(reason="failing test")
 def test_line_h_s1_w2() -> None:
     img, draw = create_base_image_draw((20, 20))
