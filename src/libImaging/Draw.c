@@ -257,226 +257,90 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
     }
 }
 
+#define GEN_LINE(point, hline)                                  \
+    {                                                           \
+        int i, n, e, dx, dy, xs, ys;                            \
+        /* normalize coordinates */                             \
+        dy = y1 - y0;                                           \
+        if (dy < 0) {                                           \
+            dy = -dy, ys = -1;                                  \
+        } else {                                                \
+            ys = 1;                                             \
+        }                                                       \
+        if (dy == 0) { /* horizontal, exclude endpoint */       \
+            if (x1 > x0) {                                      \
+                hline(im, x0, y0, x1 - 1, ink, NULL);           \
+            } else if (x0 > x1) {                               \
+                hline(im, x1 + 1, y0, x0, ink, NULL);           \
+            }                                                   \
+            return;                                             \
+        }                                                       \
+        dx = x1 - x0;                                           \
+        if (dx < 0) {                                           \
+            dx = -dx, xs = -1;                                  \
+        } else {                                                \
+            xs = 1;                                             \
+        }                                                       \
+                                                                \
+        n = (dx > dy) ? dx : dy;                                \
+                                                                \
+        if (dx == 0) { /* vertical */                           \
+            for (i = 0; i < dy; i++) {                          \
+                point(im, x0, y0, ink);                         \
+                y0 += ys;                                       \
+            }                                                   \
+        } else if (dx > dy) { /* bresenham, horizontal slope */ \
+            n = dx;                                             \
+            dy += dy;                                           \
+            e = dy - dx;                                        \
+            dx += dx;                                           \
+                                                                \
+            for (i = 0; i < n; i++) {                           \
+                point(im, x0, y0, ink);                         \
+                if (e >= 0) {                                   \
+                    y0 += ys;                                   \
+                    e -= dx;                                    \
+                }                                               \
+                e += dy;                                        \
+                x0 += xs;                                       \
+            }                                                   \
+        } else { /* bresenham, vertical slope */                \
+            n = dy;                                             \
+            dx += dx;                                           \
+            e = dx - dy;                                        \
+            dy += dy;                                           \
+                                                                \
+            for (i = 0; i < n; i++) {                           \
+                point(im, x0, y0, ink);                         \
+                if (e >= 0) {                                   \
+                    x0 += xs;                                   \
+                    e -= dy;                                    \
+                }                                               \
+                e += dx;                                        \
+                y0 += ys;                                       \
+            }                                                   \
+        }                                                       \
+    }
+
 static inline void
 line8(Imaging im, int x0, int y0, int x1, int y1, int ink) {
-    int i, n, e;
-    int dx, dy;
-    int xs, ys;
-
-    /* normalize coordinates */
-    dx = x1 - x0;
-    if (dx < 0) {
-        dx = -dx, xs = -1;
-    } else {
-        xs = 1;
-    }
-    dy = y1 - y0;
-    if (dy < 0) {
-        dy = -dy, ys = -1;
-    } else {
-        ys = 1;
-    }
-
-    n = (dx > dy) ? dx : dy;
-
-    if (dx == 0) {
-        /* vertical */
-        for (i = 0; i < dy; i++) {
-            point8(im, x0, y0, ink);
-            y0 += ys;
-        }
-
-    } else if (dy == 0) {
-        /* horizontal */
-        for (i = 0; i < dx; i++) {
-            point8(im, x0, y0, ink);
-            x0 += xs;
-        }
-
-    } else if (dx > dy) {
-        /* bresenham, horizontal slope */
-        n = dx;
-        dy += dy;
-        e = dy - dx;
-        dx += dx;
-
-        for (i = 0; i < n; i++) {
-            point8(im, x0, y0, ink);
-            if (e >= 0) {
-                y0 += ys;
-                e -= dx;
-            }
-            e += dy;
-            x0 += xs;
-        }
-
-    } else {
-        /* bresenham, vertical slope */
-        n = dy;
-        dx += dx;
-        e = dx - dy;
-        dy += dy;
-
-        for (i = 0; i < n; i++) {
-            point8(im, x0, y0, ink);
-            if (e >= 0) {
-                x0 += xs;
-                e -= dy;
-            }
-            e += dx;
-            y0 += ys;
-        }
-    }
+    GEN_LINE(point8, hline8);
 }
 
 static inline void
 line32(Imaging im, int x0, int y0, int x1, int y1, int ink) {
-    int i, n, e;
-    int dx, dy;
-    int xs, ys;
-
-    /* normalize coordinates */
-    dx = x1 - x0;
-    if (dx < 0) {
-        dx = -dx, xs = -1;
-    } else {
-        xs = 1;
-    }
-    dy = y1 - y0;
-    if (dy < 0) {
-        dy = -dy, ys = -1;
-    } else {
-        ys = 1;
-    }
-
-    n = (dx > dy) ? dx : dy;
-
-    if (dx == 0) {
-        /* vertical */
-        for (i = 0; i < dy; i++) {
-            point32(im, x0, y0, ink);
-            y0 += ys;
-        }
-
-    } else if (dy == 0) {
-        /* horizontal */
-        for (i = 0; i < dx; i++) {
-            point32(im, x0, y0, ink);
-            x0 += xs;
-        }
-
-    } else if (dx > dy) {
-        /* bresenham, horizontal slope */
-        n = dx;
-        dy += dy;
-        e = dy - dx;
-        dx += dx;
-
-        for (i = 0; i < n; i++) {
-            point32(im, x0, y0, ink);
-            if (e >= 0) {
-                y0 += ys;
-                e -= dx;
-            }
-            e += dy;
-            x0 += xs;
-        }
-
-    } else {
-        /* bresenham, vertical slope */
-        n = dy;
-        dx += dx;
-        e = dx - dy;
-        dy += dy;
-
-        for (i = 0; i < n; i++) {
-            point32(im, x0, y0, ink);
-            if (e >= 0) {
-                x0 += xs;
-                e -= dy;
-            }
-            e += dx;
-            y0 += ys;
-        }
-    }
+    GEN_LINE(point32, hline32);
 }
 
 static inline void
 line32rgba(Imaging im, int x0, int y0, int x1, int y1, int ink) {
-    int i, n, e;
-    int dx, dy;
-    int xs, ys;
-
     UINT8 a = ((UINT8 *)&ink)[3];
     if (a == 0) {  // Transparent ink. Nothing to paint.
         return;
     }
-
-    /* normalize coordinates */
-    dx = x1 - x0;
-    if (dx < 0) {
-        dx = -dx, xs = -1;
-    } else {
-        xs = 1;
-    }
-    dy = y1 - y0;
-    if (dy < 0) {
-        dy = -dy, ys = -1;
-    } else {
-        ys = 1;
-    }
-
-    n = (dx > dy) ? dx : dy;
-
-    if (dx == 0) {
-        /* vertical */
-        for (i = 0; i < dy; i++) {
-            point32rgba(im, x0, y0, ink);
-            y0 += ys;
-        }
-
-    } else if (dy == 0) {
-        /* horizontal */
-        for (i = 0; i < dx; i++) {
-            point32rgba(im, x0, y0, ink);
-            x0 += xs;
-        }
-
-    } else if (dx > dy) {
-        /* bresenham, horizontal slope */
-        n = dx;
-        dy += dy;
-        e = dy - dx;
-        dx += dx;
-
-        for (i = 0; i < n; i++) {
-            point32rgba(im, x0, y0, ink);
-            if (e >= 0) {
-                y0 += ys;
-                e -= dx;
-            }
-            e += dy;
-            x0 += xs;
-        }
-
-    } else {
-        /* bresenham, vertical slope */
-        n = dy;
-        dx += dx;
-        e = dx - dy;
-        dy += dy;
-
-        for (i = 0; i < n; i++) {
-            point32rgba(im, x0, y0, ink);
-            if (e >= 0) {
-                x0 += xs;
-                e -= dy;
-            }
-            e += dx;
-            y0 += ys;
-        }
-    }
+    GEN_LINE(point32rgba, hline32rgba);
 }
+#undef GEN_LINE
 
 static int
 x_cmp(const void *x0, const void *x1) {
