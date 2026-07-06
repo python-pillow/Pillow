@@ -667,9 +667,9 @@ typedef struct {
     void (*line)(Imaging im, int x0, int y0, int x1, int y1, int ink);
 } DRAW;
 
-DRAW draw8 = {point8, hline8, line8};
-DRAW draw32 = {point32, hline32, line32};
-DRAW draw32rgba = {point32rgba, hline32rgba, line32rgba};
+static DRAW draw8 = {point8, hline8, line8};
+static DRAW draw32 = {point32, hline32, line32};
+static DRAW draw32rgba = {point32rgba, hline32rgba, line32rgba};
 
 /* -------------------------------------------------------------------- */
 /* Interface                                                            */
@@ -933,7 +933,7 @@ typedef struct {
     int8_t finished;
 } quarter_state;
 
-void
+static void
 quarter_init(quarter_state *s, int32_t a, int32_t b) {
     if (a < 0 || b < 0) {
         s->finished = 1;
@@ -953,12 +953,12 @@ quarter_init(quarter_state *s, int32_t a, int32_t b) {
 
 // deviation of the point from ellipse curve, basically a substitution
 // of the point into the ellipse equation
-int64_t
+static int64_t
 quarter_delta(quarter_state *s, int64_t x, int64_t y) {
     return llabs(s->a2 * y * y + s->b2 * x * x - s->a2b2);
 }
 
-int8_t
+static int8_t
 quarter_next(quarter_state *s, int32_t *ret_x, int32_t *ret_y) {
     if (s->finished) {
         return -1;
@@ -1009,7 +1009,7 @@ typedef struct {
     int8_t leftmost;
 } ellipse_state;
 
-void
+static void
 ellipse_init(ellipse_state *s, int32_t a, int32_t b, int32_t w) {
     s->bufcnt = 0;
     s->leftmost = a % 2;
@@ -1023,7 +1023,7 @@ ellipse_init(ellipse_state *s, int32_t a, int32_t b, int32_t w) {
     }
 }
 
-int8_t
+static int8_t
 ellipse_next(ellipse_state *s, int32_t *ret_x0, int32_t *ret_y, int32_t *ret_x1) {
     if (s->bufcnt == 0) {
         if (s->finished) {
@@ -1106,7 +1106,7 @@ typedef struct event_list {
 } event_list;
 
 // Mirrors all the clipping nodes of the tree relative to the y = x line.
-void
+static void
 clip_tree_transpose(clip_node *root) {
     if (root != NULL) {
         if (root->type == CT_CLIP) {
@@ -1123,7 +1123,7 @@ clip_tree_transpose(clip_node *root) {
 // non-intersecting segments sorted by X coordinate.
 // Combining nodes (AND, OR) may also accept sequences for intersecting
 // segments, i.e. something like correct bracket sequences.
-int
+static int
 clip_tree_do_clip(
     clip_node *root, int32_t x0, int32_t y, int32_t x1, event_list **ret
 ) {
@@ -1267,7 +1267,7 @@ typedef void (*clip_ellipse_init)(
 );
 
 // Resulting angles will satisfy 0 <= al < 360, al <= ar <= al + 360
-void
+static void
 normalize_angles(float *al, float *ar) {
     if (*ar - *al >= 360) {
         *al = 0;
@@ -1279,7 +1279,7 @@ normalize_angles(float *al, float *ar) {
 }
 
 // An arc with caps orthogonal to the ellipse curve.
-void
+static void
 arc_init(clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, float ar) {
     if (a < b) {
         // transpose the coordinate system
@@ -1349,7 +1349,7 @@ arc_init(clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, float
 }
 
 // A chord line.
-void
+static void
 chord_line_init(
     clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, float ar
 ) {
@@ -1377,7 +1377,7 @@ chord_line_init(
 }
 
 // Pie side.
-void
+static void
 pie_side_init(
     clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, float _
 ) {
@@ -1422,7 +1422,7 @@ pie_side_init(
 }
 
 // A chord.
-void
+static void
 chord_init(clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, float ar) {
     ellipse_init(&s->st, a, b, w);
 
@@ -1441,7 +1441,7 @@ chord_init(clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, flo
 }
 
 // A pie. Can also be used to draw an arc with ugly sharp caps.
-void
+static void
 pie_init(clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, float ar) {
     ellipse_init(&s->st, a, b, w);
 
@@ -1485,7 +1485,7 @@ pie_init(clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, float
     }
 }
 
-void
+static void
 clip_ellipse_free(clip_ellipse_state *s) {
     while (s->head != NULL) {
         event_list *t = s->head;
@@ -1494,7 +1494,7 @@ clip_ellipse_free(clip_ellipse_state *s) {
     }
 }
 
-int8_t
+static int8_t
 clip_ellipse_next(
     clip_ellipse_state *s, int32_t *ret_x0, int32_t *ret_y, int32_t *ret_x1
 ) {
