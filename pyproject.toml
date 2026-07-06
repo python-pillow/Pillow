@@ -207,7 +207,7 @@ testpaths = [
 
 [tool.coverage]
 run.core = "sysmon"  # default for 3.14+, available for 3.12+
-run.disable_warnings = [ "no-sysmon" ]  # 3.11 and earlier
+run.disable_warnings = [ "no-sysmon" ]  # 3.11
 run.omit = [
   "checks/*.py",
   "Tests/benchmarks.py",
