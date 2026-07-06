@@ -41,7 +41,6 @@ ImagingFill(Imaging im, const void *colour) {
                     access->put_pixel(im, x, y, colour);
                 }
             }
-            ImagingAccessDelete(im, access);
         } else {
             /* wipe the image */
             for (int y = 0; y < ysize; y++) {
