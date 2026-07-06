@@ -47,8 +47,9 @@ empty_output_buffer(j_compress_ptr cinfo) {
     return FALSE;
 }
 
-GLOBAL(void)
-jpeg_buffer_dest(j_compress_ptr cinfo, JPEGDESTINATION *destination) {
+static GLOBAL(void) jpeg_buffer_dest(
+    j_compress_ptr cinfo, JPEGDESTINATION *destination
+) {
     cinfo->dest = (void *)destination;
 
     destination->pub.init_destination = stub;
