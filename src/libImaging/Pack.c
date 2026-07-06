@@ -254,7 +254,7 @@ packLAL(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingPackRGB(UINT8 *out, const UINT8 *in, int pixels) {
     int i = 0;
     /* RGB triplets */
@@ -270,7 +270,7 @@ ImagingPackRGB(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingPackXRGB(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* XRGB, triplets with left padding */
@@ -284,6 +284,7 @@ ImagingPackXRGB(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
+// Used by Dib.c, hence not static.
 void
 ImagingPackBGR(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
@@ -297,7 +298,7 @@ ImagingPackBGR(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingPackBGRX(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* BGRX, reversed bytes with right padding */
@@ -311,7 +312,7 @@ ImagingPackBGRX(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingPackXBGR(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* XBGR, reversed bytes with left padding */
@@ -325,7 +326,7 @@ ImagingPackXBGR(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingPackCMYK2RGB(UINT8 *out, const UINT8 *in, int xsize) {
     int x, nk, tmp;
     for (x = 0; x < xsize; x++) {
@@ -338,7 +339,7 @@ ImagingPackCMYK2RGB(UINT8 *out, const UINT8 *in, int xsize) {
     }
 }
 
-void
+static void
 ImagingPackBGRA(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* BGRA, reversed bytes with right alpha */
@@ -352,7 +353,7 @@ ImagingPackBGRA(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingPackABGR(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* ABGR, reversed bytes with left alpha */
@@ -366,7 +367,7 @@ ImagingPackABGR(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingPackBGRa(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* BGRa, reversed bytes with premultiplied alpha */
@@ -459,7 +460,7 @@ packI32S(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingPackLAB(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* LAB triplets */

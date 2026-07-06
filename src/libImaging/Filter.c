@@ -106,6 +106,7 @@ ImagingExpand(Imaging imIn, int margin) {
     return imOut;
 }
 
+// Deliberately not static: looks like GCC inlining this may be slower.
 float
 kernel_i16(int size, UINT8 *in0, int x, const float *kernel, int bigendian) {
     int i;

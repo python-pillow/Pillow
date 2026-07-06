@@ -763,7 +763,7 @@ getfilter(Imaging im, int filterid) {
 
 /* transformation engines */
 
-Imaging
+static Imaging
 ImagingGenericTransform(
     Imaging imOut,
     Imaging imIn,
@@ -1006,7 +1006,7 @@ affine_fixed(
     return imOut;
 }
 
-Imaging
+static Imaging
 ImagingTransformAffine(
     Imaging imOut,
     Imaging imIn,
