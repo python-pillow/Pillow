@@ -204,11 +204,17 @@ hline32(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
             x1 = im->xsize - 1;
         }
         p = im->image32[y0];
-        while (x0 <= x1) {
-            if (mask == NULL || mask->image8[y0][x0]) {
+        if (mask == NULL) {
+            for (; x0 <= x1; x0++) {
                 p[x0] = ink;
             }
-            x0++;
+        } else {
+            UINT8 *mask_row = mask->image8[y0];
+            for (; x0 <= x1; x0++) {
+                if (mask_row[x0]) {
+                    p[x0] = ink;
+                }
+            }
         }
     }
 }
@@ -216,6 +222,10 @@ hline32(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
 static inline void
 hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
     unsigned int tmp;
+    UINT8 r = ((UINT8 *)&ink)[0];
+    UINT8 g = ((UINT8 *)&ink)[1];
+    UINT8 b = ((UINT8 *)&ink)[2];
+    UINT8 a = ((UINT8 *)&ink)[3];
 
     if (y0 >= 0 && y0 < im->ysize) {
         if (x0 < 0) {
@@ -228,17 +238,25 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
         } else if (x1 >= im->xsize) {
             x1 = im->xsize - 1;
         }
-        if (x0 <= x1) {
-            UINT8 *out = (UINT8 *)im->image[y0] + x0 * 4;
-            UINT8 *in = (UINT8 *)&ink;
-            while (x0 <= x1) {
-                if (mask == NULL || mask->image8[y0][x0]) {
-                    out[0] = BLEND(in[3], out[0], in[0], tmp);
-                    out[1] = BLEND(in[3], out[1], in[1], tmp);
-                    out[2] = BLEND(in[3], out[2], in[2], tmp);
+        if (x0 > x1) {
+            return;
+        }
+
+        UINT8 *restrict out = (UINT8 *)im->image[y0] + x0 * 4;
+        if (mask == NULL) {
+            for (; x0 <= x1; x0++, out += 4) {
+                out[0] = BLEND(a, out[0], r, tmp);
+                out[1] = BLEND(a, out[1], g, tmp);
+                out[2] = BLEND(a, out[2], b, tmp);
+            }
+        } else {
+            UINT8 *mask_row = mask->image8[y0];
+            for (; x0 <= x1; x0++, out += 4) {
+                if (mask_row[x0]) {
+                    out[0] = BLEND(a, out[0], r, tmp);
+                    out[1] = BLEND(a, out[1], g, tmp);
+                    out[2] = BLEND(a, out[2], b, tmp);
                 }
-                x0++;
-                out += 4;
             }
         }
     }
