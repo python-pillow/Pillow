@@ -115,6 +115,3 @@ ImagingAccessNew(const Imaging im) {
     }
     return NULL;
 }
-
-void
-_ImagingAccessDelete(Imaging im, ImagingAccess access) {}
