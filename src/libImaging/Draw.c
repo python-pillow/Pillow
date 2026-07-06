@@ -118,10 +118,22 @@ point32(Imaging im, int x, int y, int ink) {
 static inline void
 point32rgba(Imaging im, int x, int y, int ink) {
     unsigned int tmp;
+    const UINT8 *in = (UINT8 *)&ink;
+    if (in[3] == 0) {
+        // Transparent ink. Nothing to paint.
+        return;
+    }
+    if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
+        // Painting outside the canvas.
+        return;
+    }
 
-    if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize) {
-        UINT8 *out = (UINT8 *)im->image[y] + x * 4;
-        UINT8 *in = (UINT8 *)&ink;
+    UINT8 *out = (UINT8 *)im->image[y] + x * 4;
+    if (in[3] == 255) {  // Solid ink, no need to blend.
+        out[0] = in[0];
+        out[1] = in[1];
+        out[2] = in[2];
+    } else {
         out[0] = BLEND(in[3], out[0], in[0], tmp);
         out[1] = BLEND(in[3], out[1], in[1], tmp);
         out[2] = BLEND(in[3], out[2], in[2], tmp);
@@ -219,6 +231,13 @@ hline32(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
     }
 }
 
+// On arm64/NEON, doing no-op work for the unused band allows for better vectorization
+#if defined(__aarch64__) || defined(__ARM_NEON)
+#define KEEP_UNUSED_BAND(out, a, tmp) (out)[3] = BLEND(a, (out)[3], (out)[3], tmp)
+#else
+#define KEEP_UNUSED_BAND(out, a, tmp) ((void)0)
+#endif
+
 static inline void
 hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
     unsigned int tmp;
@@ -227,30 +246,48 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
     UINT8 b = ((UINT8 *)&ink)[2];
     UINT8 a = ((UINT8 *)&ink)[3];
 
-    if (y0 >= 0 && y0 < im->ysize) {
-        if (x0 < 0) {
-            x0 = 0;
-        } else if (x0 >= im->xsize) {
-            return;
-        }
-        if (x1 < 0) {
-            return;
-        } else if (x1 >= im->xsize) {
-            x1 = im->xsize - 1;
-        }
-        if (x0 > x1) {
-            return;
-        }
+    if (a == 0) {  // Transparent ink. Nothing to paint.
+        return;
+    }
 
-        UINT8 *restrict out = (UINT8 *)im->image[y0] + x0 * 4;
-        if (mask == NULL) {
+    int xsize = im->xsize, ysize = im->ysize;
+    if (y0 < 0 || y0 >= ysize || x0 >= xsize || x1 < 0) {
+        // Painting outside the canvas.
+        return;
+    }
+
+    x0 = x0 < 0 ? 0 : x0;
+    x1 = x1 >= xsize ? xsize - 1 : x1;
+
+    UINT8 *restrict out = (UINT8 *)im->image[y0] + x0 * 4;
+
+    if (mask == NULL) {
+        if (a == 255) {  // Solid ink, no need to blend.
+            for (; x0 <= x1; x0++, out += 4) {
+                out[0] = r;
+                out[1] = g;
+                out[2] = b;
+                KEEP_UNUSED_BAND(out, 255, tmp);
+            }
+        } else {
             for (; x0 <= x1; x0++, out += 4) {
                 out[0] = BLEND(a, out[0], r, tmp);
                 out[1] = BLEND(a, out[1], g, tmp);
                 out[2] = BLEND(a, out[2], b, tmp);
+                KEEP_UNUSED_BAND(out, a, tmp);
+            }
+        }
+    } else {
+        UINT8 *mask_row = mask->image8[y0];
+        if (a == 255) {  // Solid paint, no need to blend.
+            for (; x0 <= x1; x0++, out += 4) {
+                if (mask_row[x0]) {
+                    out[0] = r;
+                    out[1] = g;
+                    out[2] = b;
+                }
             }
         } else {
-            UINT8 *mask_row = mask->image8[y0];
             for (; x0 <= x1; x0++, out += 4) {
                 if (mask_row[x0]) {
                     out[0] = BLEND(a, out[0], r, tmp);
@@ -344,6 +381,12 @@ line32(Imaging im, int x0, int y0, int x1, int y1, int ink) {
 
 static inline void
 line32rgba(Imaging im, int x0, int y0, int x1, int y1, int ink) {
+    UINT8 *in = (UINT8 *)&ink;
+    int a = in[3];
+    if (a == 0) {  // Transparent ink. Nothing to paint.
+        return;
+    }
+
     GEN_LINE(point32rgba, hline32rgba);
 }
 #undef GEN_LINE
