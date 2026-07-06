@@ -195,7 +195,7 @@ create_sorted_color_palette(const ColorCube cube) {
     return buckets;
 }
 
-void
+static void
 add_bucket_values(ColorBucket src, ColorBucket dst) {
     dst->count += src->count;
     dst->r += src->r;
@@ -281,7 +281,7 @@ copy_color_cube(
     return result;
 }
 
-void
+static void
 subtract_color_buckets(ColorCube cube, ColorBucket buckets, long nBuckets) {
     ColorBucket minuend, subtrahend;
     long i;
@@ -310,13 +310,13 @@ set_lookup_value(const ColorCube cube, const Pixel *p, long value) {
     bucket->count = value;
 }
 
-uint64_t
+static uint64_t
 lookup_color(const ColorCube cube, const Pixel *p) {
     ColorBucket bucket = color_bucket_from_cube(cube, p);
     return bucket->count;
 }
 
-void
+static void
 add_lookup_buckets(ColorCube cube, ColorBucket palette, long nColors, long offset) {
     long i;
     Pixel p;
@@ -326,7 +326,7 @@ add_lookup_buckets(ColorCube cube, ColorBucket palette, long nColors, long offse
     }
 }
 
-ColorBucket
+static ColorBucket
 combined_palette(
     ColorBucket bucketsA,
     unsigned long nBucketsA,
@@ -378,8 +378,8 @@ map_image_pixels(
     }
 }
 
-const unsigned int CUBE_LEVELS[8] = {4, 4, 4, 0, 2, 2, 2, 0};
-const unsigned int CUBE_LEVELS_ALPHA[8] = {3, 4, 3, 3, 2, 2, 2, 2};
+static const unsigned int CUBE_LEVELS[8] = {4, 4, 4, 0, 2, 2, 2, 0};
+static const unsigned int CUBE_LEVELS_ALPHA[8] = {3, 4, 3, 3, 2, 2, 2, 2};
 
 int
 quantize_octree(

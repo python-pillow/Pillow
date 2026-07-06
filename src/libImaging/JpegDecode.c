@@ -95,8 +95,7 @@ skip_input_data(j_decompress_ptr cinfo, long num_bytes) {
     }
 }
 
-GLOBAL(void)
-jpeg_buffer_src(j_decompress_ptr cinfo, JPEGSOURCE *source) {
+static GLOBAL(void) jpeg_buffer_src(j_decompress_ptr cinfo, JPEGSOURCE *source) {
     cinfo->src = (void *)source;
 
     /* Prepare for suspending reader */
