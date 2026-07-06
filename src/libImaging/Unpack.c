@@ -581,7 +581,7 @@ unpackP4L(UINT8 *out, const UINT8 *in, int pixels) {
 
 /* Unpack to "RGB" image */
 
-void
+static void
 ImagingUnpackRGB(UINT8 *_out, const UINT8 *in, int pixels) {
     int i = 0;
     /* RGB triplets */
@@ -601,7 +601,7 @@ ImagingUnpackRGB(UINT8 *_out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 unpackRGB16L(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
     /* 16-bit RGB triplets, little-endian order */
@@ -613,7 +613,7 @@ unpackRGB16L(UINT8 *_out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 unpackRGB16B(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
     /* 16-bit RGB triplets, big-endian order */
@@ -647,7 +647,7 @@ unpackRGBR(UINT8 *_out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingUnpackBGR(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
     /* RGB, reversed bytes */
@@ -659,7 +659,7 @@ ImagingUnpackBGR(UINT8 *_out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingUnpackRGB15(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
     /* RGB, 5 bits per pixel */
@@ -674,7 +674,7 @@ ImagingUnpackRGB15(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingUnpackRGBA15(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
     /* RGB, 5/5/5/1 bits per pixel */
@@ -689,7 +689,7 @@ ImagingUnpackRGBA15(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingUnpackBGR15(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
     /* RGB, reversed bytes, 5 bits per pixel */
@@ -704,7 +704,7 @@ ImagingUnpackBGR15(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingUnpackBGRA15(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
     /* RGB, rearranged channels, 5/5/5/1 bits per pixel */
@@ -719,7 +719,7 @@ ImagingUnpackBGRA15(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingUnpackBGRA15Z(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
     /* RGB, rearranged channels, 5/5/5/1 bits per pixel, inverted alpha */
@@ -734,7 +734,7 @@ ImagingUnpackBGRA15Z(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingUnpackRGB16(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
     /* RGB, 5/6/5 bits per pixel */
@@ -749,7 +749,7 @@ ImagingUnpackRGB16(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingUnpackBGR16(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
     /* RGB, reversed bytes, 5/6/5 bits per pixel */
@@ -764,7 +764,7 @@ ImagingUnpackBGR16(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingUnpackRGB4B(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
     /* RGB, 4 bits per pixel */
@@ -779,7 +779,7 @@ ImagingUnpackRGB4B(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 ImagingUnpackRGBA4B(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
     /* RGBA, 4 bits per pixel */
@@ -1042,7 +1042,7 @@ unpackRGBAL(UINT8 *_out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 unpackRGBA16L(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
     /* 16-bit RGBA, little-endian order */
@@ -1053,7 +1053,7 @@ unpackRGBA16L(UINT8 *_out, const UINT8 *in, int pixels) {
     }
 }
 
-void
+static void
 unpackRGBA16B(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
     /* 16-bit RGBA, big-endian order */
@@ -1160,7 +1160,7 @@ unpackCMYKI(UINT8 *_out, const UINT8 *in, int pixels) {
    Since we don't have any signed ints, we're going with the shifted versions
    internally, and we'll unshift for saving and whatnot.
 */
-void
+static void
 ImagingUnpackLAB(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* LAB triplets */
