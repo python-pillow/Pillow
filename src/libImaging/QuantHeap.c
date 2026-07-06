@@ -145,6 +145,7 @@ ImagingQuantHeapAdd(Heap *h, void *val) {
     return 1;
 }
 
+// Presently unused
 int
 ImagingQuantHeapTop(Heap *h, void **r) {
     if (!h->heapcount) {
