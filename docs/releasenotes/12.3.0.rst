@@ -4,8 +4,8 @@
 Security
 ========
 
-Prevent decompression bomb when parsing PDF
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2026-59200`: Prevent decompression bomb when parsing PDF
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When parsing a PDF, ``PdfStream.decode()`` attempts to decompress data without any
 limit. A default maximum of ``ImageFile.SAFEBLOCK`` has been added. ``PdfParser`` was
@@ -19,51 +19,51 @@ If an attacker has control over the path passed to
 attacker may be able to execute arbitrary shell commands. Reported by Bin Luo,
 University of Electronic Science and Technology of China (luob87709@gmail.com).
 
-EPS image infinite loop
-^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2026-59203`: EPS image infinite loop
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If a negative byte count is specified for the BeginBinary byte count, an infinite loop
 is possible as Pillow seeks repeatedly backwards. This value will now be validated.
 BeginBinary parsing was only added in Pillow 12.0.0. Reported by
 `jiagongzheng-stack <https://github.com/jiagongzheng-stack>`__.
 
-JPEG2000 image memory usage
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2026-59204`: JPEG2000 image memory usage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The total component width was incorrectly accumulated across tiles within a JPEG2000
 image, potentially leading to excessive memory use. This was introduced as part of an
 earlier security fix in Pillow 8.2.0, but has now been fixed. Reported by Fr3v1.
 
-McIdas out-of-bounds (OOB) read
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2026-54058`: McIdas out-of-bounds (OOB) read
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 McIdas images can specify the stride, and if incorrectly set, may cause an OOB read.
 This has been fixed. Reported by Devansh Shah, RUDRA Cybersecurity Pvt. Ltd.
 
-Out-of-bounds (OOB) read when saving 1 mode TGA images
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2026-59198`: Out-of-bounds (OOB) read when saving 1 mode TGA images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Saving 1 mode images as TGA with run-length encoding can trigger an OOB read. This was
 added in Pillow 5.2.0, but the functionality is not possible under the TGA
 specification, so it has been removed. Reported by
 `Seratov <https://github.com/Seratov>`__.
 
-Out-of-bounds (OOB) write from large RankFilter sizes
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2026-59197`: Out-of-bounds (OOB) write from large RankFilter sizes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :py:class:`~PIL.ImageFilter.RankFilter`, and its subclasses, can potentially write
 out-of-bounds if given a large size. This has been fixed. Reported by
 `Seratov <https://github.com/Seratov>`__.
 
-Out-of-bounds (OOB) write from ``Image.paste()``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2026-59199`: Out-of-bounds (OOB) write from ``Image.paste()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Large paste box dimensions can cause an OOB write in ``Image.crop()``,
 ``Image.paste()`` and ``Image.alpha_composite()``. This has been fixed. Reported by
 `Seratov <https://github.com/Seratov>`__.
 
-Out-of-bounds (OOB) write in ``ImageCmsTransform``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2026-59205`: Out-of-bounds (OOB) write in ``ImageCmsTransform``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Apply a transform mode to a different image mode can trigger an OOB write in
 ``ImageCmsTransform``. Errors are now raised if the mode does not match. Reported by
