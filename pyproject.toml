@@ -201,7 +201,7 @@ extra_checks = true
 pretty = true
 
 [tool.pytest]
-addopts = [ "-ra", "--color=auto", "--numprocesses=auto", "--dist=loadscope" ]
+addopts = [ "-ra", "--color=auto", "--numprocesses=logical", "--dist=worksteal" ]
 markers = [
   "isolated: tests that are not compatible with pytest-xdist (deselect with '-m \"not isolated\"')",
 ]
