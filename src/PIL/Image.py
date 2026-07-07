@@ -2164,7 +2164,7 @@ class Image:
     def putpixel(
         self,
         xy: tuple[int, int] | list[int],
-        value: float | tuple[int, ...] | list[int],
+        value: float | tuple[int, ...],
     ) -> None:
         """
         Modifies the pixel at the given position. The color is given as
