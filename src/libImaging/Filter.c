@@ -56,7 +56,7 @@ ImagingExpand(Imaging imIn, int margin) {
     if (margin < 0) {
         return (Imaging)ImagingError_ValueError("bad kernel size");
     }
-    if (margin > INT_MAX / (margin * (int)sizeof(FLOAT32))) {
+    if (margin > 0 && margin > INT_MAX / (margin * (int)sizeof(FLOAT32))) {
         return (Imaging)ImagingError_ValueError("filter size too large");
     }
 
