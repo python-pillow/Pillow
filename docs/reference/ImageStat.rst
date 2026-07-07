@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageStat
 .. py:currentmodule:: PIL.ImageStat
 
-:py:mod:`~PIL.ImageStat` Module
+:py:mod:`~PIL.ImageStat` module
 ===============================
 
 The :py:mod:`~PIL.ImageStat` module calculates global statistics for an image, or

@@ -120,7 +120,7 @@ class Stat:
     @cached_property
     def mean(self) -> list[float]:
         """Average (arithmetic mean) pixel level for each band in the image."""
-        return [self.sum[i] / self.count[i] for i in self.bands]
+        return [self.sum[i] / self.count[i] if self.count[i] else 0 for i in self.bands]
 
     @cached_property
     def median(self) -> list[int]:
@@ -141,13 +141,20 @@ class Stat:
     @cached_property
     def rms(self) -> list[float]:
         """RMS (root-mean-square) for each band in the image."""
-        return [math.sqrt(self.sum2[i] / self.count[i]) for i in self.bands]
+        return [
+            math.sqrt(self.sum2[i] / self.count[i]) if self.count[i] else 0
+            for i in self.bands
+        ]
 
     @cached_property
     def var(self) -> list[float]:
         """Variance for each band in the image."""
         return [
-            (self.sum2[i] - (self.sum[i] ** 2.0) / self.count[i]) / self.count[i]
+            (
+                (self.sum2[i] - (self.sum[i] ** 2.0) / self.count[i]) / self.count[i]
+                if self.count[i]
+                else 0
+            )
             for i in self.bands
         ]
 

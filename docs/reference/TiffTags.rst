@@ -1,7 +1,7 @@
 .. py:module:: PIL.TiffTags
 .. py:currentmodule:: PIL.TiffTags
 
-:py:mod:`~PIL.TiffTags` Module
+:py:mod:`~PIL.TiffTags` module
 ==============================
 
 The :py:mod:`~PIL.TiffTags` module exposes many of the standard TIFF
@@ -14,7 +14,7 @@ metadata tag numbers, names, and type information.
 
     .. versionadded:: 8.3.0
 
-    :returns: Taginfo namedtuple, From the :py:data:`~PIL.TiffTags.TAGS_V2` info if possible,
+    :returns: Taginfo namedtuple, from the :py:data:`~PIL.TiffTags.TAGS_V2` info if possible,
         otherwise just populating the value and name from :py:data:`~PIL.TiffTags.TAGS`.
         If the tag is not recognized, "unknown" is returned for the name
 
@@ -59,7 +59,7 @@ metadata tag numbers, names, and type information.
 .. py:data:: PIL.TiffTags.TAGS
     :type: dict
 
-    The ``TAGS`` dictionary maps 16-bit integer TIFF tag number to
+    The ``TAGS`` dictionary maps 16-bit integer TIFF tag numbers to
     descriptive string names.  For instance:
 
         >>> from PIL.TiffTags import TAGS

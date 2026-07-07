@@ -189,7 +189,8 @@ class EpsImageFile(ImageFile.ImageFile):
     mode_map = {1: "L", 2: "LAB", 3: "RGB", 4: "CMYK"}
 
     def _open(self) -> None:
-        (length, offset) = self._find_offset(self.fp)
+        assert self.fp is not None
+        length, offset = self._find_offset(self.fp)
 
         # go to offset - start of "%!PS"
         self.fp.seek(offset)
@@ -354,6 +355,12 @@ class EpsImageFile(ImageFile.ImageFile):
                 read_comment(s)
             elif bytes_mv[:9] == b"%%Trailer":
                 trailer_reached = True
+            elif bytes_mv[:14] == b"%%BeginBinary:":
+                bytecount = int(byte_arr[14:bytes_read])
+                if bytecount < 0:
+                    msg = "BeginBinary bytecount cannot be negative"
+                    raise ValueError(msg)
+                self.fp.seek(bytecount, os.SEEK_CUR)
             bytes_read = 0
 
         # A "BoundingBox" is always required,
@@ -400,6 +407,7 @@ class EpsImageFile(ImageFile.ImageFile):
     ) -> Image.core.PixelAccess | None:
         # Load EPS via Ghostscript
         if self.tile:
+            assert self.fp is not None
             self.im = Ghostscript(self.tile, self.size, self.fp, scale, transparency)
             self._mode = self.im.mode
             self._size = self.im.size

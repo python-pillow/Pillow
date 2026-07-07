@@ -7,7 +7,12 @@ import pytest
 
 from PIL import FliImagePlugin, Image, ImageFile
 
-from .helper import assert_image_equal, assert_image_equal_tofile, is_pypy
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    is_pypy,
+    timeout_unless_slower_valgrind,
+)
 
 # created as an export of a palette image from Gimp2.6
 # save as...-> hopper.fli, default options.
@@ -43,6 +48,7 @@ def test_sanity() -> None:
 def test_prefix_chunk(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
     with Image.open(animated_test_file_with_prefix_chunk) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
         assert im.mode == "P"
         assert im.size == (320, 200)
         assert im.format == "FLI"
@@ -50,6 +56,7 @@ def test_prefix_chunk(monkeypatch: pytest.MonkeyPatch) -> None:
         assert im.is_animated
 
         palette = im.getpalette()
+        assert palette is not None
         assert palette[3:6] == [255, 255, 255]
         assert palette[381:384] == [204, 204, 12]
         assert palette[765:] == [252, 0, 0]
@@ -189,7 +196,7 @@ def test_seek() -> None:
         "Tests/images/timeout-bff0a9dc7243a8e6ede2408d2ffa6a9964698b87.fli",
     ],
 )
-@pytest.mark.timeout(timeout=3)
+@timeout_unless_slower_valgrind(3)
 def test_timeouts(test_file: str) -> None:
     with open(test_file, "rb") as f:
         with Image.open(f) as im:

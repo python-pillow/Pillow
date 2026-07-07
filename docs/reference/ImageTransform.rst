@@ -2,7 +2,7 @@
 .. py:module:: PIL.ImageTransform
 .. py:currentmodule:: PIL.ImageTransform
 
-:py:mod:`~PIL.ImageTransform` Module
+:py:mod:`~PIL.ImageTransform` module
 ====================================
 
 The :py:mod:`~PIL.ImageTransform` module contains implementations of

@@ -212,34 +212,32 @@ cms_transform_dealloc(CmsTransformObject *self) {
 /* internal functions */
 
 static cmsUInt32Number
-findLCMStype(char *PILmode) {
-    if (strcmp(PILmode, "RGB") == 0 || strcmp(PILmode, "RGBA") == 0 ||
-        strcmp(PILmode, "RGBX") == 0) {
-        return TYPE_RGBA_8;
+findLCMStype(const char *const mode_name) {
+    const ModeID mode = findModeID(mode_name);
+    switch (mode) {
+        case IMAGING_MODE_RGB:
+        case IMAGING_MODE_RGBA:
+        case IMAGING_MODE_RGBX:
+            return TYPE_RGBA_8;
+        case IMAGING_MODE_CMYK:
+            return TYPE_CMYK_8;
+        case IMAGING_MODE_I_16:
+        case IMAGING_MODE_I_16L:
+            return TYPE_GRAY_16;
+        case IMAGING_MODE_I_16B:
+            return TYPE_GRAY_16_SE;
+        case IMAGING_MODE_YCbCr:
+            return TYPE_YCbCr_8;
+        case IMAGING_MODE_LAB:
+            // LabX equivalent like ALab, but not reversed -- no #define in lcms2
+            return (
+                COLORSPACE_SH(PT_LabV2) | CHANNELS_SH(3) | BYTES_SH(1) | EXTRA_SH(1)
+            );
+        default:
+            // This function only accepts a subset of the imaging modes Pillow has.
+            // presume "1" or "L" by default
+            return TYPE_GRAY_8;
     }
-    if (strcmp(PILmode, "RGBA;16B") == 0) {
-        return TYPE_RGBA_16;
-    }
-    if (strcmp(PILmode, "CMYK") == 0) {
-        return TYPE_CMYK_8;
-    }
-    if (strcmp(PILmode, "I;16") == 0 || strcmp(PILmode, "I;16L") == 0 ||
-        strcmp(PILmode, "L;16") == 0) {
-        return TYPE_GRAY_16;
-    }
-    if (strcmp(PILmode, "I;16B") == 0 || strcmp(PILmode, "L;16B") == 0) {
-        return TYPE_GRAY_16_SE;
-    }
-    if (strcmp(PILmode, "YCbCr") == 0 || strcmp(PILmode, "YCCA") == 0 ||
-        strcmp(PILmode, "YCC") == 0) {
-        return TYPE_YCbCr_8;
-    }
-    if (strcmp(PILmode, "LAB") == 0) {
-        // LabX equivalent like ALab, but not reversed -- no #define in lcms2
-        return (COLORSPACE_SH(PT_LabV2) | CHANNELS_SH(3) | BYTES_SH(1) | EXTRA_SH(1));
-    }
-    /* presume "1" or "L" by default */
-    return TYPE_GRAY_8;
 }
 
 #define Cms_Min(a, b) ((a) < (b) ? (a) : (b))
@@ -546,7 +544,13 @@ cms_transform_apply(CmsTransformObject *self, PyObject *args) {
     }
 
     im = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!im) {
+        return NULL;
+    }
     imOut = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
+    if (!imOut) {
+        return NULL;
+    }
 
     return Py_BuildValue("i", pyCMSdoTransform(im, imOut, self->transform));
 }
@@ -836,7 +840,7 @@ _profile_read_named_color_list(CmsProfileObject *self, cmsTagSignature info) {
     n = cmsNamedColorCount(ncl);
     result = PyList_New(n);
     if (!result) {
-        Py_RETURN_NONE;
+        return NULL;
     }
 
     for (i = 0; i < n; i++) {
@@ -845,7 +849,7 @@ _profile_read_named_color_list(CmsProfileObject *self, cmsTagSignature info) {
         str = PyUnicode_FromString(name);
         if (str == NULL) {
             Py_DECREF(result);
-            Py_RETURN_NONE;
+            return NULL;
         }
         PyList_SET_ITEM(result, i, str);
     }
@@ -912,7 +916,7 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
 
     result = PyDict_New();
     if (result == NULL) {
-        Py_RETURN_NONE;
+        return NULL;
     }
 
     n = cmsGetSupportedIntents(INTENTS, intent_ids, intent_descs);
@@ -942,7 +946,7 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
             Py_XDECREF(id);
             Py_XDECREF(entry);
             Py_XDECREF(result);
-            Py_RETURN_NONE;
+            return NULL;
         }
         PyDict_SetItem(result, id, entry);
         Py_DECREF(id);
@@ -1402,8 +1406,8 @@ static struct PyGetSetDef cms_profile_getsetters[] = {
     {"colorant_table_out", (getter)cms_profile_getattr_colorant_table_out},
     {"intent_supported", (getter)cms_profile_getattr_is_intent_supported},
     {"clut", (getter)cms_profile_getattr_is_clut},
-    {"icc_measurement_condition", (getter)cms_profile_getattr_icc_measurement_condition
-    },
+    {"icc_measurement_condition",
+     (getter)cms_profile_getattr_icc_measurement_condition},
     {"icc_viewing_condition", (getter)cms_profile_getattr_icc_viewing_condition},
 
     {NULL}
@@ -1435,14 +1439,16 @@ setup_module(PyObject *m) {
     int vn;
 
     /* Ready object types */
-    PyType_Ready(&CmsProfile_Type);
-    PyType_Ready(&CmsTransform_Type);
+    if (PyType_Ready(&CmsProfile_Type) < 0 || PyType_Ready(&CmsTransform_Type) < 0) {
+        return -1;
+    }
 
-    Py_INCREF(&CmsProfile_Type);
-    PyModule_AddObject(m, "CmsProfile", (PyObject *)&CmsProfile_Type);
+    if (PyModule_AddObjectRef(m, "CmsProfile", (PyObject *)&CmsProfile_Type) < 0 ||
+        PyModule_AddObjectRef(m, "CmsTransform", (PyObject *)&CmsTransform_Type) < 0) {
+        return -1;
+    }
 
-    Py_INCREF(&CmsTransform_Type);
-    PyModule_AddObject(m, "CmsTransform", (PyObject *)&CmsTransform_Type);
+    PyDateTime_IMPORT;
 
     d = PyModule_GetDict(m);
 
@@ -1457,34 +1463,31 @@ setup_module(PyObject *m) {
     } else {
         v = PyUnicode_FromFormat("%d.%d", vn / 1000, (vn / 10) % 100);
     }
-    PyDict_SetItemString(d, "littlecms_version", v ? v : Py_None);
-    Py_XDECREF(v);
+    if (!v) {
+        return -1;
+    }
+    PyDict_SetItemString(d, "littlecms_version", v);
+    Py_DECREF(v);
 
     return 0;
 }
 
+static PyModuleDef_Slot slots[] = {
+    {Py_mod_exec, setup_module},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
 PyMODINIT_FUNC
 PyInit__imagingcms(void) {
-    PyObject *m;
-
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_imagingcms",
-        .m_size = -1,
         .m_methods = pyCMSdll_methods,
+        .m_slots = slots
     };
 
-    m = PyModule_Create(&module_def);
-
-    if (setup_module(m) < 0) {
-        return NULL;
-    }
-
-    PyDateTime_IMPORT;
-
-#ifdef Py_GIL_DISABLED
-    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
-#endif
-
-    return m;
+    return PyModuleDef_Init(&module_def);
 }

@@ -53,7 +53,7 @@ The functions ``IptcImageFile.dump`` and ``IptcImageFile.i``, and the constant
 for internal use, so there is no replacement. They can each be replaced
 by a single line of code using builtin functions in Python.
 
-API Changes
+API changes
 ===========
 
 Zero or negative font size error
@@ -63,7 +63,7 @@ When creating a :py:class:`~PIL.ImageFont.FreeTypeFont` instance, either directl
 through :py:func:`~PIL.ImageFont.truetype`, if the font size is zero or less, a
 :py:exc:`ValueError` will now be raised.
 
-API Additions
+API additions
 =============
 
 Added DdsImagePlugin enums
@@ -95,7 +95,7 @@ JPEG tables-only streamtype
 When saving JPEG files, ``streamtype`` can now be set to 1, for tables-only. This will
 output only the quantization and Huffman tables for the image.
 
-Other Changes
+Other changes
 =============
 
 Added DDS BC4U and DX10 BC1 and BC4 reading

@@ -16,9 +16,11 @@
 ##
 from __future__ import annotations
 
-from typing import Callable
-
 from . import Image
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class Iterator:

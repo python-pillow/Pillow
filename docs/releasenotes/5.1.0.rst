@@ -1,7 +1,7 @@
 5.1.0
 -----
 
-API Changes
+API changes
 ===========
 
 Optional channels for TIFF files
@@ -12,22 +12,22 @@ and ``CMYK`` with up to 6 8-bit channels, discarding any extra
 channels if the content is tagged as UNSPECIFIED.  Pillow still does
 not store more than 4 8-bit channels of image data.
 
-API Additions
+API additions
 =============
 
-Append to PDF Files
+Append to PDF files
 ^^^^^^^^^^^^^^^^^^^
 
 Images can now be appended to PDF files in place by passing in
 ``append=True`` when saving the image.
 
-New BLP File Format
+New BLP file format
 ^^^^^^^^^^^^^^^^^^^
 
 Pillow now supports reading the BLP "Blizzard Mipmap" file format used
 for tiles in Blizzard's engine.
 
-Other Changes
+Other changes
 =============
 
 WebP memory leak

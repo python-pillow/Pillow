@@ -18,6 +18,7 @@ def test_path() -> None:
     assert p[0] == (0.0, 1.0)
     assert p[-1] == (8.0, 9.0)
     assert list(p[:1]) == [(0.0, 1.0)]
+    assert list(p[-1:]) == [(8.0, 9.0)]
     with pytest.raises(TypeError) as cm:
         p["foo"]
     assert str(cm.value) == "Path indices must be integers, not str"
@@ -51,6 +52,7 @@ def test_path() -> None:
         [0.0, 1.0],
         ((0, 1),),
         [(0, 1)],
+        [[0, 1]],
         ((0.0, 1.0),),
         [(0.0, 1.0)],
         array.array("f", [0, 1]),
@@ -66,6 +68,34 @@ def test_path_constructors(
 
     # Assert
     assert list(p) == [(0.0, 1.0)]
+
+
+@pytest.mark.parametrize(
+    "coords, expected",
+    (
+        ([[0, 1], [2, 3]], [(0.0, 1.0), (2.0, 3.0)]),
+        ([[0.0, 1.0], [2.0, 3.0]], [(0.0, 1.0), (2.0, 3.0)]),
+    ),
+)
+def test_path_list_of_lists(
+    coords: list[list[float]], expected: list[tuple[float, float]]
+) -> None:
+    p = ImagePath.Path(coords)
+    assert list(p) == expected
+
+
+@pytest.mark.parametrize(
+    "coords, message",
+    (
+        ([[1, 2, 3]], "coordinate list must contain exactly 2 coordinates"),
+        ([[1]], "coordinate list must contain exactly 2 coordinates"),
+        ([[[1, 2], [3, 4]]], "coordinate list must contain numbers"),
+        ([["a", "b"]], "coordinate list must contain numbers"),
+    ),
+)
+def test_invalid_list_coords(coords: list[list[object]], message: str) -> None:
+    with pytest.raises(ValueError, match=message):
+        ImagePath.Path(coords)
 
 
 def test_invalid_path_constructors() -> None:
@@ -173,10 +203,8 @@ def test_transform_with_wrap() -> None:
 
 
 def test_overflow_segfault() -> None:
-    # Some Pythons fail getting the argument as an integer, and it falls
-    # through to the sequence. Seeing this on 32-bit Windows.
-    with pytest.raises((TypeError, MemoryError)):
-        # post patch, this fails with a memory error
+    with pytest.raises((OverflowError, MemoryError)):
+        # post patch, this fails with a memory error on 64-bit
         x = Evil()
 
         # This fails due to the invalid malloc above,

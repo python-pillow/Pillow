@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageCms
 .. py:currentmodule:: PIL.ImageCms
 
-:py:mod:`~PIL.ImageCms` Module
+:py:mod:`~PIL.ImageCms` module
 ==============================
 
 The :py:mod:`~PIL.ImageCms` module provides color profile management
@@ -56,7 +56,6 @@ Functions
 .. autofunction:: get_display_profile
 .. autofunction:: isIntentSupported
 .. autofunction:: profileToProfile
-.. autofunction:: versions
 
 CmsProfile
 ----------

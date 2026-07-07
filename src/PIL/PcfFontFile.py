@@ -18,7 +18,6 @@
 from __future__ import annotations
 
 import io
-from typing import BinaryIO, Callable
 
 from . import FontFile, Image
 from ._binary import i8
@@ -26,6 +25,11 @@ from ._binary import i16be as b16
 from ._binary import i16le as l16
 from ._binary import i32be as b32
 from ._binary import i32le as l32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import BinaryIO
 
 # --------------------------------------------------------------------
 # declarations
@@ -154,32 +158,30 @@ class PcfFontFile(FontFile.FontFile):
 
         fp, format, i16, i32 = self._getformat(PCF_METRICS)
 
-        append = metrics.append
+        def append(
+            left: int,
+            right: int,
+            width: int,
+            ascent: int,
+            descent: int,
+            attributes: int = 0,
+        ) -> None:
+            xsize = right - left
+            ysize = ascent + descent
+            Image._decompression_bomb_check((xsize, ysize))
+            metrics.append(
+                (xsize, ysize, left, right, width, ascent, descent, attributes)
+            )
 
         if (format & 0xFF00) == 0x100:
             # "compressed" metrics
             for i in range(i16(fp.read(2))):
-                left = i8(fp.read(1)) - 128
-                right = i8(fp.read(1)) - 128
-                width = i8(fp.read(1)) - 128
-                ascent = i8(fp.read(1)) - 128
-                descent = i8(fp.read(1)) - 128
-                xsize = right - left
-                ysize = ascent + descent
-                append((xsize, ysize, left, right, width, ascent, descent, 0))
+                append(*(i8(fp.read(1)) - 128 for _ in range(5)))
 
         else:
             # "jumbo" metrics
             for i in range(i32(fp.read(4))):
-                left = i16(fp.read(2))
-                right = i16(fp.read(2))
-                width = i16(fp.read(2))
-                ascent = i16(fp.read(2))
-                descent = i16(fp.read(2))
-                attributes = i16(fp.read(2))
-                xsize = right - left
-                ysize = ascent + descent
-                append((xsize, ysize, left, right, width, ascent, descent, attributes))
+                append(*(i16(fp.read(2)) for _ in range(6)))
 
         return metrics
 
@@ -247,7 +249,7 @@ class PcfFontFile(FontFile.FontFile):
                 ]
                 if encoding_offset != 0xFFFF:
                     encoding[i] = encoding_offset
-            except UnicodeDecodeError:
+            except UnicodeDecodeError:  # noqa: PERF203
                 # character is not supported in selected encoding
                 pass
 

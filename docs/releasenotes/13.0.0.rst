@@ -1,0 +1,97 @@
+13.0.0
+------
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+Backwards incompatible changes
+==============================
+
+Saving I mode images as PNG
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In order to fit the 32 bits of I mode images into PNG, when PNG images can only contain
+at most 16 bits for a channel, Pillow has been clipping the values. Rather than quietly
+changing the data, this is now removed. Instead, the image can be converted to another
+mode before saving::
+
+    from PIL import Image
+    im = Image.new("I", (1, 1))
+    im.convert("I;16").save("out.png")
+
+Image.fromarray mode parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Using the ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` was deprecated in
+Pillow 11.3.0. In Pillow 12.0.0, this was partially reverted, and now the only
+functionality removed is when the mode changes data types. Since pixel values do not
+contain information about palettes or color spaces, the parameter can still be used to
+place grayscale L mode data within a P mode image, or read RGB data as YCbCr for
+example. If omitted, the mode will be automatically determined from the object's shape
+and type.
+
+Image.Image.get_child_images()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``Image.Image.get_child_images()`` has been moved to
+``ImageFile.ImageFile.get_child_images()``. The method uses an image's file pointer,
+and so child images could only be retrieved from an :py:class:`PIL.ImageFile.ImageFile`
+instance.
+
+Image._show
+~~~~~~~~~~~
+
+``Image._show`` has been removed. Use :py:meth:`~PIL.ImageShow.show` instead.
+
+ImageCms.ImageCmsProfile.product_name and .product_info
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``ImageCms.ImageCmsProfile.product_name`` and the corresponding
+``.product_info`` attributes have been removed. They were set to ``None`` since Pillow
+2.3.0.
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API additions
+=============
+
+TODO
+^^^^
+
+TODO
+
+Other changes
+=============
+
+Python 3.15
+^^^^^^^^^^^
+
+Pillow 12.3.0 had wheels built against Python 3.15 beta, available as a preview
+to help projects prepare for 3.15, and to ensure Pillow could be used
+immediately at the release of 3.15.0 final (2026-10-01, :pep:`790`).
+
+Pillow 13.0.0 now officially supports Python 3.15.

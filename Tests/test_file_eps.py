@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -15,6 +16,7 @@ from .helper import (
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
+    timeout_unless_slower_valgrind,
 )
 
 HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
@@ -196,6 +198,18 @@ def test_load_long_binary_data(prefix: bytes) -> None:
         assert img.format == "EPS"
 
 
+def test_begin_binary() -> None:
+    with open("Tests/images/eps/binary_preview_map.eps", "rb") as fp:
+        data = bytearray(fp.read())
+    data[76875 : 76875 + 11] = b"%" * 11
+    with Image.open(io.BytesIO(data)) as img:
+        assert img.size == (399, 480)
+
+    data[76867:76873] = b"    -1"
+    with pytest.raises(ValueError, match="BeginBinary bytecount cannot be negative"):
+        Image.open(io.BytesIO(data))
+
+
 @mark_if_feature_version(
     pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
 )
@@ -256,9 +270,9 @@ def test_bytesio_object() -> None:
         img.load()
 
         with Image.open(FILE1_COMPARE) as image1_scale1_compare:
-            image1_scale1_compare = image1_scale1_compare.convert("RGB")
-        image1_scale1_compare.load()
-        assert_image_similar(img, image1_scale1_compare, 5)
+            image1_scale1_compare_rgb = image1_scale1_compare.convert("RGB")
+        image1_scale1_compare_rgb.load()
+        assert_image_similar(img, image1_scale1_compare_rgb, 5)
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
@@ -272,6 +286,11 @@ def test_bytesio_object() -> None:
     ),
 )
 def test_1(filename: str) -> None:
+    gs_binary = EpsImagePlugin.gs_binary
+    assert isinstance(gs_binary, str)
+    if subprocess.check_output([gs_binary, "--version"]) == b"10.06.0\n":
+        pytest.skip("Fails with Ghostscript 10.06.0")
+
     with Image.open(filename) as im:
         assert_image_equal_tofile(im, "Tests/images/eps/1.bmp")
 
@@ -292,17 +311,17 @@ def test_render_scale1() -> None:
     with Image.open(FILE1) as image1_scale1:
         image1_scale1.load()
         with Image.open(FILE1_COMPARE) as image1_scale1_compare:
-            image1_scale1_compare = image1_scale1_compare.convert("RGB")
-        image1_scale1_compare.load()
-        assert_image_similar(image1_scale1, image1_scale1_compare, 5)
+            image1_scale1_compare_rgb = image1_scale1_compare.convert("RGB")
+        image1_scale1_compare_rgb.load()
+        assert_image_similar(image1_scale1, image1_scale1_compare_rgb, 5)
 
     # Non-zero bounding box
     with Image.open(FILE2) as image2_scale1:
         image2_scale1.load()
         with Image.open(FILE2_COMPARE) as image2_scale1_compare:
-            image2_scale1_compare = image2_scale1_compare.convert("RGB")
-        image2_scale1_compare.load()
-        assert_image_similar(image2_scale1, image2_scale1_compare, 10)
+            image2_scale1_compare_rgb = image2_scale1_compare.convert("RGB")
+        image2_scale1_compare_rgb.load()
+        assert_image_similar(image2_scale1, image2_scale1_compare_rgb, 10)
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
@@ -315,18 +334,16 @@ def test_render_scale2() -> None:
         assert isinstance(image1_scale2, EpsImagePlugin.EpsImageFile)
         image1_scale2.load(scale=2)
         with Image.open(FILE1_COMPARE_SCALE2) as image1_scale2_compare:
-            image1_scale2_compare = image1_scale2_compare.convert("RGB")
-        image1_scale2_compare.load()
-        assert_image_similar(image1_scale2, image1_scale2_compare, 5)
+            image1_scale2_compare_rgb = image1_scale2_compare.convert("RGB")
+        assert_image_similar(image1_scale2, image1_scale2_compare_rgb, 5)
 
     # Non-zero bounding box
     with Image.open(FILE2) as image2_scale2:
         assert isinstance(image2_scale2, EpsImagePlugin.EpsImageFile)
         image2_scale2.load(scale=2)
         with Image.open(FILE2_COMPARE_SCALE2) as image2_scale2_compare:
-            image2_scale2_compare = image2_scale2_compare.convert("RGB")
-        image2_scale2_compare.load()
-        assert_image_similar(image2_scale2, image2_scale2_compare, 10)
+            image2_scale2_compare_rgb = image2_scale2_compare.convert("RGB")
+        assert_image_similar(image2_scale2, image2_scale2_compare_rgb, 10)
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
@@ -336,8 +353,8 @@ def test_render_scale2() -> None:
 def test_resize(filename: str) -> None:
     with Image.open(filename) as im:
         new_size = (100, 100)
-        im = im.resize(new_size)
-        assert im.size == new_size
+        im_resized = im.resize(new_size)
+        assert im_resized.size == new_size
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
@@ -398,7 +415,7 @@ def test_emptyline() -> None:
     assert image.format == "EPS"
 
 
-@pytest.mark.timeout(timeout=5)
+@timeout_unless_slower_valgrind(5)
 @pytest.mark.parametrize(
     "test_file",
     ["Tests/images/eps/timeout-d675703545fee17acab56e5fec644c19979175de.eps"],

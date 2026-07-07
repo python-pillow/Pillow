@@ -118,7 +118,7 @@ class ImagePalette:
     ) -> int:
         if not isinstance(self.palette, bytearray):
             self._palette = bytearray(self.palette)
-        index = len(self.palette) // 3
+        index = len(self.palette) // len(self.mode)
         special_colors: tuple[int | tuple[int, ...] | None, ...] = ()
         if image:
             special_colors = (
@@ -168,11 +168,12 @@ class ImagePalette:
                 index = self._new_color_index(image, e)
                 assert isinstance(self._palette, bytearray)
                 self.colors[color] = index
-                if index * 3 < len(self.palette):
+                mode_len = len(self.mode)
+                if index * mode_len < len(self.palette):
                     self._palette = (
-                        self._palette[: index * 3]
+                        self._palette[: index * mode_len]
                         + bytes(color)
-                        + self._palette[index * 3 + 3 :]
+                        + self._palette[index * mode_len + mode_len :]
                     )
                 else:
                     self._palette += bytes(color)
@@ -190,19 +191,22 @@ class ImagePalette:
         if self.rawmode:
             msg = "palette contains raw palette data"
             raise ValueError(msg)
+        open_fp = False
         if isinstance(fp, str):
             fp = open(fp, "w")
-        fp.write("# Palette\n")
-        fp.write(f"# Mode: {self.mode}\n")
-        for i in range(256):
-            fp.write(f"{i}")
-            for j in range(i * len(self.mode), (i + 1) * len(self.mode)):
-                try:
-                    fp.write(f" {self.palette[j]}")
-                except IndexError:
-                    fp.write(" 0")
-            fp.write("\n")
-        fp.close()
+            open_fp = True
+        try:
+            fp.write("# Palette\n")
+            fp.write(f"# Mode: {self.mode}\n")
+            palette_len = len(self.palette)
+            for i in range(256):
+                fp.write(f"{i}")
+                for j in range(i * len(self.mode), (i + 1) * len(self.mode)):
+                    fp.write(f" {self.palette[j] if j < palette_len else 0}")
+                fp.write("\n")
+        finally:
+            if open_fp:
+                fp.close()
 
 
 # --------------------------------------------------------------------

@@ -13,7 +13,7 @@ Before Pillow 8.3.0, ``ImagePalette`` required palette data of particular length
 default, and the size parameter could be used to override that. Pillow 8.3.0 removed
 the default required length, also removing the need for the size parameter.
 
-API Additions
+API additions
 =============
 
 Added "transparency" argument for loading EPS images
@@ -33,7 +33,7 @@ Added WalImageFile class
 :py:class:`PIL.Image.Image` instance. It now returns a dedicated
 :py:class:`PIL.WalImageFile.WalImageFile` class.
 
-Other Changes
+Other changes
 =============
 
 Speed improvement when rotating square images

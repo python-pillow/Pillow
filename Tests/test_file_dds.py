@@ -57,7 +57,7 @@ TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA = "Tests/images/uncompressed_rgb.dds"
 def test_sanity_dxt1_bc1(image_path: str) -> None:
     """Check DXT1 and BC1 images can be opened"""
     with Image.open(TEST_FILE_DXT1.replace(".dds", ".png")) as target:
-        target = target.convert("RGBA")
+        target_rgba = target.convert("RGBA")
     with Image.open(image_path) as im:
         im.load()
 
@@ -65,7 +65,7 @@ def test_sanity_dxt1_bc1(image_path: str) -> None:
         assert im.mode == "RGBA"
         assert im.size == (256, 256)
 
-        assert_image_equal(im, target)
+        assert_image_equal(im, target_rgba)
 
 
 def test_sanity_dxt3() -> None:
@@ -380,21 +380,33 @@ def test_palette() -> None:
         assert_image_equal_tofile(im, "Tests/images/transparent.gif")
 
 
+def test_zero_mask_totals() -> None:
+    with Image.open("Tests/images/zero_mask_totals.dds") as im:
+        im.load()
+
+
+def test_unsupported_header_size() -> None:
+    with pytest.raises(OSError, match="Unsupported header size 0"):
+        with Image.open(BytesIO(b"DDS " + b"\x00" * 4)):
+            pass
+
+
 def test_unsupported_bitcount() -> None:
-    with pytest.raises(OSError):
+    with pytest.raises(OSError, match="Unsupported bitcount 24 for 131072"):
         with Image.open("Tests/images/unsupported_bitcount.dds"):
             pass
 
 
 @pytest.mark.parametrize(
-    "test_file",
+    "test_file, message",
     (
-        "Tests/images/unimplemented_dxgi_format.dds",
-        "Tests/images/unimplemented_pfflags.dds",
+        ("Tests/images/unimplemented_dxgi_format.dds", "Unimplemented DXGI format 93"),
+        ("Tests/images/unimplemented_pixel_format.dds", "Unimplemented pixel format 0"),
+        ("Tests/images/unimplemented_pfflags.dds", "Unknown pixel format flags 8"),
     ),
 )
-def test_not_implemented(test_file: str) -> None:
-    with pytest.raises(NotImplementedError):
+def test_not_implemented(test_file: str, message: str) -> None:
+    with pytest.raises(NotImplementedError, match=message):
         with Image.open(test_file):
             pass
 
@@ -508,6 +520,38 @@ def test_save_dx10_bc5(tmp_path: Path) -> None:
         im.save(out, pixel_format="BC5")
     assert_image_similar_tofile(im, out, 9.56)
 
-    im = hopper("L")
+    im_l = hopper("L")
     with pytest.raises(OSError, match="only RGB mode can be written as BC5"):
-        im.save(out, pixel_format="BC5")
+        im_l.save(out, pixel_format="BC5")
+
+
+@pytest.mark.parametrize(
+    "pixel_format, mode",
+    (
+        ("DXT1", "RGBA"),
+        ("DXT3", "RGBA"),
+        ("DXT5", "RGBA"),
+        ("BC2", "RGBA"),
+        ("BC3", "RGBA"),
+        ("BC5", "RGB"),
+    ),
+)
+def test_save_large_file(tmp_path: Path, pixel_format: str, mode: str) -> None:
+    im = hopper(mode).resize((440, 440))
+    # should not error in valgrind
+    im.save(tmp_path / "img.dds", pixel_format=pixel_format)
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        "Tests/images/timeout-041dd17dfde800360a47a172269df127af138c6b.dds",
+        "Tests/images/timeout-755a4d204f4208e3597ac3391edebee196462bd0.dds",
+        "Tests/images/timeout-52d106579505547091ef69b58341351a37c23e31.dds",
+        "Tests/images/timeout-c60a3d7314213624607bfb3e38d551a8b24a7435.dds",
+    ],
+)
+def test_not_enough_image_data(test_file: str) -> None:
+    with Image.open(test_file) as im:
+        with pytest.raises(ValueError, match="not enough image data"):
+            im.load()

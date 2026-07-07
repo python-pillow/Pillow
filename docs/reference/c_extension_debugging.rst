@@ -1,5 +1,5 @@
-C Extension debugging on Linux, with gbd/valgrind.
-==================================================
+C extension debugging on Linux, with GBD/Valgrind
+=================================================
 
 Install the tools
 -----------------
@@ -17,7 +17,7 @@ Then ``sudo apt-get install libtiff5-dbgsym``
 
 -  There's a bug with the ``python3-dbg`` package for at least Python 3.8 on
    Ubuntu 20.04, and you need to add a new link or two to make it autoload when
-   running python:
+   running Python:
 
 ::
 
@@ -49,7 +49,7 @@ Then ``sudo apt-get install libtiff5-dbgsym``
     source ~/vpy38-dbg/bin/activate
     cd ~/Pillow && make install
 
-Test Case
+Test case
 ---------
 
 Take your test image, and make a really simple harness.
@@ -64,7 +64,7 @@ Take your test image, and make a really simple harness.
 -  Run this through valgrind, but note that python triggers some issues
    on its own, so you're looking for items within the Pillow hierarchy
    that don't look like they're solely in the python call chain. In this
-   example, the ones we're interested are after the warnings, and have
+   example, the ones we're interested in are after the warnings, and have
    ``decode.c`` and ``TiffDecode.c`` in the call stack:
 
 ::
@@ -457,8 +457,8 @@ Caveats
    You probably won't have the capability to do that from within the
    docker container, as the trace capacity isn't allowed by default.
 
--  Variations of this are possible on the mac/windows, but the details
-   are going to be different.
+-  Variations of this are possible on macOS/Windows, but the details are
+   going to be different.
 
 -  IIRC, Fedora has the gdb bits working by default. Ubuntu has always
    been a bit of a battle to make it work.

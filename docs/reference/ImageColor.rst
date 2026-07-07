@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageColor
 .. py:currentmodule:: PIL.ImageColor
 
-:py:mod:`~PIL.ImageColor` Module
+:py:mod:`~PIL.ImageColor` module
 ================================
 
 The :py:mod:`~PIL.ImageColor` module contains color tables and converters from
@@ -11,7 +11,7 @@ others.
 
 .. _color-names:
 
-Color Names
+Color names
 -----------
 
 The ImageColor module supports the following string formats:
@@ -26,6 +26,10 @@ The ImageColor module supports the following string formats:
   integers in the range 0 to 255. Alternatively, the color values can be given
   as three percentages (0% to 100%). For example, ``rgb(255,0,0)`` and
   ``rgb(100%,0%,0%)`` both specify pure red.
+
+* RGBA functions, given as ``rgba(red, green, blue, alpha)`` where the color
+  values and the alpha value are integers in the range 0 to 255. For example,
+  ``rgba(255,0,0,128)`` specifies pure red with 50% opacity.
 
 * Hue-Saturation-Lightness (HSL) functions, given as ``hsl(hue, saturation%,
   lightness%)`` where hue is the color given as an angle between 0 and 360

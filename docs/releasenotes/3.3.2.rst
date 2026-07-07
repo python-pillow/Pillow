@@ -4,7 +4,7 @@
 Security
 ========
 
-Integer overflow in Map.c
+Integer overflow in map.c
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pillow prior to 3.3.2 may experience integer overflow errors in map.c
@@ -27,7 +27,7 @@ memory without duplicating the image first.
 
 This issue was found by Cris Neckar at Divergent Security.
 
-Sign Extension in Storage.c
+Sign extension in Storage.c
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pillow prior to 3.3.2 and PIL 1.1.7 (at least) do not check for

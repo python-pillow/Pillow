@@ -1,7 +1,7 @@
 4.1.1
 -----
 
-Fix Regression with reading DPI from EXIF data
+Fix regression with reading DPI from EXIF data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Some JPEG images don't contain DPI information in the image metadata,

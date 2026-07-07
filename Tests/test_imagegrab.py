@@ -9,7 +9,7 @@ import pytest
 
 from PIL import Image, ImageGrab
 
-from .helper import assert_image_equal_tofile, skip_unless_feature
+from .helper import assert_image_equal_tofile, on_ci, skip_unless_feature
 
 
 class TestImageGrab:
@@ -25,8 +25,15 @@ class TestImageGrab:
         ImageGrab.grab(include_layered_windows=True)
         ImageGrab.grab(all_screens=True)
 
-        im = ImageGrab.grab(bbox=(10, 20, 50, 80))
-        assert im.size == (40, 60)
+        if sys.platform == "darwin":
+            im = ImageGrab.grab(bbox=(10, 20, 50, 80))
+            assert im.size in ((40, 60), (80, 120))
+
+            im = ImageGrab.grab(bbox=(10, 20, 50, 80), scale_down=True)
+            assert im.size == (40, 60)
+        else:
+            im = ImageGrab.grab(bbox=(10, 20, 50, 80))
+            assert im.size == (40, 60)
 
     @skip_unless_feature("xcb")
     def test_grab_x11(self) -> None:
@@ -35,13 +42,16 @@ class TestImageGrab:
                 ImageGrab.grab()
 
             ImageGrab.grab(xdisplay="")
-        except OSError as e:
+        except (OSError, subprocess.CalledProcessError) as e:
             pytest.skip(str(e))
 
     @pytest.mark.skipif(Image.core.HAVE_XCB, reason="tests missing XCB")
     def test_grab_no_xcb(self) -> None:
-        if sys.platform not in ("win32", "darwin") and not shutil.which(
-            "gnome-screenshot"
+        if (
+            sys.platform not in ("win32", "darwin")
+            and not shutil.which("gnome-screenshot")
+            and not shutil.which("grim")
+            and not shutil.which("spectacle")
         ):
             with pytest.raises(OSError) as e:
                 ImageGrab.grab()
@@ -56,6 +66,45 @@ class TestImageGrab:
         with pytest.raises(OSError) as e:
             ImageGrab.grab(xdisplay="error.test:0.0")
         assert str(e.value).startswith("X connection failed")
+
+    @pytest.mark.skipif(
+        sys.platform != "darwin" or not on_ci(), reason="Only runs on macOS CI"
+    )
+    def test_grab_handle(self) -> None:
+        p = subprocess.Popen(
+            [
+                "osascript",
+                "-e",
+                'tell application "Finder"\n'
+                'open ("/" as POSIX file)\n'
+                "get id of front window\n"
+                "end tell",
+            ],
+            stdout=subprocess.PIPE,
+        )
+        stdout = p.stdout
+        assert stdout is not None
+        window = int(stdout.read())
+
+        ImageGrab.grab(window=window)
+
+        im = ImageGrab.grab((0, 0, 10, 10), window=window, scale_down=True)
+        assert im.size == (10, 10)
+
+    @pytest.mark.skipif(
+        sys.platform not in ("darwin", "win32"), reason="macOS and Windows only"
+    )
+    def test_grab_invalid_handle(self) -> None:
+        if sys.platform == "darwin":
+            with pytest.raises(subprocess.CalledProcessError):
+                ImageGrab.grab(window=-1)
+        else:
+            with pytest.raises(
+                OSError, match="unable to get device context for handle"
+            ):
+                ImageGrab.grab(window=-1)
+            with pytest.raises(OSError, match="screen grab failed"):
+                ImageGrab.grab(window=0)
 
     def test_grabclipboard(self) -> None:
         if sys.platform == "darwin":

@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 
 from PIL import BmpImagePlugin, Image, _binary
+from PIL._binary import o16le as o16
+from PIL._binary import o32le as o32
 
 from .helper import (
     assert_image_equal,
@@ -40,7 +42,7 @@ def test_fallback_if_mmap_errors() -> None:
     # This image has been truncated,
     # so that the buffer is not large enough when using mmap
     with Image.open("Tests/images/mmap_error.bmp") as im:
-        assert_image_equal_tofile(im, "Tests/images/pal8_offset.bmp")
+        assert_image_equal_tofile(im, "Tests/images/bmp/g/pal8.bmp")
 
 
 def test_save_to_bytes() -> None:
@@ -114,7 +116,7 @@ def test_save_float_dpi(tmp_path: Path) -> None:
 
 
 def test_load_dib() -> None:
-    # test for #1293, Imagegrab returning Unsupported Bitfields Format
+    # test for #1293, ImageGrab returning Unsupported Bitfields Format
     with Image.open("Tests/images/clipboard.dib") as im:
         assert im.format == "DIB"
         assert im.get_format_mimetype() == "image/bmp"
@@ -163,9 +165,9 @@ def test_rgba_bitfields() -> None:
     with Image.open("Tests/images/rgb32bf-rgba.bmp") as im:
         # So before the comparing the image, swap the channels
         b, g, r = im.split()[1:]
-        im = Image.merge("RGB", (r, g, b))
+        im_rgb = Image.merge("RGB", (r, g, b))
 
-    assert_image_equal_tofile(im, "Tests/images/bmp/q/rgb32bf-xbgr.bmp")
+    assert_image_equal_tofile(im_rgb, "Tests/images/bmp/q/rgb32bf-xbgr.bmp")
 
     # This test image has been manually hexedited
     # to change the bitfield compression in the header from XBGR to ABGR
@@ -190,14 +192,51 @@ def test_rle8() -> None:
     # Signal end of bitmap before the image is finished
     with open("Tests/images/bmp/g/pal8rle.bmp", "rb") as fp:
         data = fp.read(1063) + b"\x01"
-        with Image.open(io.BytesIO(data)) as im:
-            with pytest.raises(ValueError):
-                im.load()
+    with Image.open(io.BytesIO(data)) as im:
+        with pytest.raises(ValueError):
+            im.load()
 
 
 def test_rle4() -> None:
     with Image.open("Tests/images/bmp/g/pal4rle.bmp") as im:
         assert_image_similar_tofile(im, "Tests/images/bmp/g/pal4.bmp", 12)
+
+
+def test_rle4_absolute_odd() -> None:
+    # An RLE4 absolute run with an odd number of pixels is packed into
+    # ceil(count / 2) bytes, the final nibble being padding. Build a 3x1
+    # image whose single row is one absolute run of 3 pixels (indices 1, 2, 3).
+    palette = b"\x00" * 4
+    rle = (
+        b"\x00\x03"  # absolute mode, 3 pixels
+        b"\x12\x30"  # nibbles 1, 2, 3 and a padding nibble
+        b"\x00\x01"  # end of bitmap
+    )
+    header = (
+        o32(40)  # header size
+        + o32(3)  # width
+        + o32(1)  # height
+        + o16(1)  # planes
+        + o16(4)  # bits per pixel
+        + o32(2)  # BI_RLE4 compression
+        + o32(len(rle))  # image size
+        + o32(0) * 2  # pixels per meter
+        + o32(1)  # used colors
+        + o32(0)  # important colors
+    )
+    offset = 14 + len(header) + len(palette)
+    data = (
+        b"BM"
+        + o32(offset + len(rle))  # file size
+        + o32(0)  # reserved
+        + o32(offset)  # data offset
+        + header
+        + palette
+        + rle
+    )
+
+    with Image.open(io.BytesIO(data)) as im:
+        assert [im.getpixel((x, 0)) for x in range(im.width)] == [1, 2, 3]
 
 
 @pytest.mark.parametrize(
@@ -214,16 +253,43 @@ def test_rle4() -> None:
 def test_rle8_eof(file_name: str, length: int) -> None:
     with open(file_name, "rb") as fp:
         data = fp.read(length)
+    with Image.open(io.BytesIO(data)) as im:
+        with pytest.raises(ValueError):
+            im.load()
+
+
+def test_rle_delta() -> None:
+    with Image.open("Tests/images/bmp/q/pal8rletrns.bmp") as im:
+        assert_image_equal_tofile(im, "Tests/images/pal8rletrns.png")
+
+
+def test_unsupported_bmp_bitfields_layout() -> None:
+    fp = io.BytesIO(
+        o32(40)  # header size
+        + b"\x00" * 10
+        + o16(1)  # bits
+        + o32(3)  # BITFIELDS compression
+        + b"\x00" * 32
+    )
+    with pytest.raises(OSError, match="Unsupported BMP bitfields layout"):
+        Image.open(fp)
+
+
+@pytest.mark.parametrize(
+    "offset, path",
+    (
+        (26, "pal8os2.bmp"),
+        (54, "pal8.bmp"),
+    ),
+)
+def test_offset(offset: int, path: str) -> None:
+    image_path = "Tests/images/bmp/g/" + path
+    # Exclude the palette size from the pixel data offset
+    with open(image_path, "rb") as fp:
+        data = fp.read()
+        data = data[:10] + o32(offset) + data[14:]
         with Image.open(io.BytesIO(data)) as im:
-            with pytest.raises(ValueError):
-                im.load()
-
-
-def test_offset() -> None:
-    # This image has been hexedited
-    # to exclude the palette size from the pixel data offset
-    with Image.open("Tests/images/pal8_offset.bmp") as im:
-        assert_image_equal_tofile(im, "Tests/images/bmp/g/pal8.bmp")
+            assert_image_equal_tofile(im, image_path)
 
 
 def test_use_raw_alpha(monkeypatch: pytest.MonkeyPatch) -> None:

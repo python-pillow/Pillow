@@ -258,6 +258,7 @@ class BlpImageFile(ImageFile.ImageFile):
     format_description = "Blizzard Mipmap Format"
 
     def _open(self) -> None:
+        assert self.fp is not None
         self.magic = self.fp.read(4)
         if not _accept(self.magic):
             msg = f"Bad BLP magic {repr(self.magic)}"
@@ -294,7 +295,7 @@ class BlpImageFile(ImageFile.ImageFile):
 class _BLPBaseDecoder(abc.ABC, ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         try:
             self._read_header()
             self._load()

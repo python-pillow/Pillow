@@ -1,7 +1,7 @@
 7.0.0
 -----
 
-Backwards Incompatible Changes
+Backwards incompatible changes
 ==============================
 
 Python 2.7
@@ -78,7 +78,7 @@ bounds of resulting image. This may be useful in a subsequent
 .. _chain methods: https://en.wikipedia.org/wiki/Method_chaining
 
 
-API Additions
+API additions
 =============
 
 Custom unidentified image error
@@ -124,7 +124,7 @@ now also be loaded at another resolution::
     with Image.open("drawing.wmf") as im:
         im.load(dpi=144)
 
-Other Changes
+Other changes
 =============
 
 Image.__del__

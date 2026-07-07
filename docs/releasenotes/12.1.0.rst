@@ -1,0 +1,49 @@
+12.1.0
+------
+
+Deprecations
+============
+
+Image getdata()
+^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.getdata` has been deprecated.
+:py:meth:`~PIL.Image.Image.get_flattened_data` can be used instead. This new method is
+identical, except that it returns a tuple of pixel values, instead of an internal
+Pillow data type.
+
+API changes
+===========
+
+ImageMorph build_default_lut()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To match the behaviour of :py:meth:`~PIL.ImageMorph.LutBuilder.build_lut`,
+:py:meth:`~PIL.ImageMorph.LutBuilder.build_default_lut()` now returns the new LUT.
+
+API additions
+=============
+
+Image get_flattened_data()
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.get_flattened_data` is identical to the deprecated
+:py:meth:`~PIL.Image.Image.getdata`, except that the new method returns a tuple of
+pixel values, instead of an internal Pillow data type.
+
+Specify window in ImageGrab on macOS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When using :py:meth:`~PIL.ImageGrab.grab`, a specific window can now be selected on
+macOS in addition to Windows. On macOS, this is a CGWindowID::
+
+    from PIL import ImageGrab
+    ImageGrab.grab(window=cgwindowid)
+
+Other changes
+=============
+
+Added MorphOp support for 1 mode images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageMorph.MorphOp` now supports both 1 mode and L mode images.

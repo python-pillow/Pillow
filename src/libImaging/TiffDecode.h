@@ -40,6 +40,8 @@ ImagingLibTiffInit(ImagingCodecState state, int fp, uint32_t offset);
 extern int
 ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp);
 extern int
+ImagingLibTiffEncodeCleanup(ImagingCodecState state);
+extern int
 ImagingLibTiffMergeFieldInfo(
     ImagingCodecState state, TIFFDataType field_type, int key, int is_var_length
 );

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+import zlib
 
 import pytest
 
@@ -95,6 +96,16 @@ def test_parsing() -> None:
             assert time.strftime("%Y%m%d%H%M%S", getattr(d, name)) == value
 
 
+def test_pdfstream_flatedecode() -> None:
+    d = PdfDict({b"Filter": b"FlateDecode"})
+    buf = zlib.compress(b"test")
+    s = PdfStream(d, buf)
+    assert s.decode() == b"test"
+
+    with pytest.raises(ValueError, match="Decompressed data too large"):
+        s.decode(3)
+
+
 def test_pdf_repr() -> None:
     assert bytes(IndirectReference(1, 2)) == b"1 2 R"
     assert bytes(IndirectObjectDef(*IndirectReference(1, 2))) == b"1 2 obj"
@@ -125,3 +136,8 @@ def test_duplicate_xref_entry() -> None:
     pdf = PdfParser("Tests/images/duplicate_xref_entry.pdf")
     assert pdf.xref_table.existing_entries[6][0] == 1197
     pdf.close()
+
+
+def test_trailer_loop() -> None:
+    with pytest.raises(PdfFormatError, match="trailer loop found"):
+        PdfParser("Tests/images/trailer_loop.pdf")

@@ -4,15 +4,12 @@ on:
   push:
     branches:
       - "**"
-    paths:
+    paths: &paths
       - ".github/workflows/docs.yml"
       - "docs/**"
       - "src/PIL/**"
   pull_request:
-    paths:
-      - ".github/workflows/docs.yml"
-      - "docs/**"
-      - "src/PIL/**"
+    paths: *paths
   workflow_dispatch:
 
 permissions:
@@ -32,12 +29,12 @@ jobs:
     name: Docs
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         persist-credentials: false
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
       with:
         python-version: "3.x"
         cache: pip
@@ -48,19 +45,35 @@ jobs:
     - name: Build system information
       run: python3 .github/workflows/system-info.py
 
+    - name: Cache libavif
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      id: cache-libavif
+      with:
+        path: ~/cache-libavif
+        key: ${{ runner.os }}-libavif-${{ hashFiles('depends/install_libavif.sh') }}
+
     - name: Cache libimagequant
-      uses: actions/cache@v4
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       id: cache-libimagequant
       with:
         path: ~/cache-libimagequant
         key: ${{ runner.os }}-libimagequant-${{ hashFiles('depends/install_imagequant.sh') }}
+
+    - name: Cache libwebp
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      id: cache-libwebp
+      with:
+        path: ~/cache-libwebp
+        key: ${{ runner.os }}-libwebp-${{ hashFiles('depends/install_webp.sh') }}
 
     - name: Install Linux dependencies
       run: |
         .ci/install.sh
       env:
         GHA_PYTHON_VERSION: "3.x"
+        GHA_LIBAVIF_CACHE_HIT: ${{ steps.cache-libavif.outputs.cache-hit }}
         GHA_LIBIMAGEQUANT_CACHE_HIT: ${{ steps.cache-libimagequant.outputs.cache-hit }}
+        GHA_LIBWEBP_CACHE_HIT: ${{ steps.cache-libwebp.outputs.cache-hit }}
 
     - name: Build
       run: |

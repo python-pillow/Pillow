@@ -14,6 +14,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  FORCE_COLOR: 1
+
 jobs:
   update_release_draft:
     permissions:
@@ -23,6 +26,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Drafts your next release notes as pull requests are merged into "main"
-      - uses: release-drafter/release-drafter@v6
+      - uses: release-drafter/release-drafter@4d75298e00d9e34c483e5ff8c68d0ea1c1940c1e # v7.5.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

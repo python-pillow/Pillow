@@ -10,7 +10,6 @@ from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 
 from .helper import (
     assert_image_equal_tofile,
-    assert_image_similar_tofile,
     skip_unless_feature,
 )
 
@@ -85,7 +84,7 @@ def test_draw(request: pytest.FixtureRequest, tmp_path: Path, encoding: str) -> 
     draw = ImageDraw.Draw(im)
     message = charsets[encoding]["message"].encode(encoding)
     draw.text((0, 0), message, "black", font=font)
-    assert_image_similar_tofile(im, charsets[encoding]["image1"], 0)
+    assert_image_equal_tofile(im, charsets[encoding]["image1"])
 
 
 @pytest.mark.parametrize("encoding", ("iso8859-1", "iso8859-2", "cp1250"))
@@ -95,7 +94,7 @@ def test_textsize(
     tempname = save_font(request, tmp_path, encoding)
     font = ImageFont.load(tempname)
     for i in range(255):
-        (ox, oy, dx, dy) = font.getbbox(bytearray([i]))
+        ox, oy, dx, dy = font.getbbox(bytearray([i]))
         assert ox == 0
         assert oy == 0
         assert dy == 20

@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 import os
+from io import BytesIO
 from pathlib import Path
 from typing import AnyStr
 
 import pytest
 
-from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
+from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile, _binary
 
 from .helper import (
     assert_image_equal_tofile,
-    assert_image_similar_tofile,
     skip_unless_feature,
 )
 
@@ -73,14 +73,24 @@ def test_draw(request: pytest.FixtureRequest, tmp_path: Path) -> None:
     im = Image.new("L", (130, 30), "white")
     draw = ImageDraw.Draw(im)
     draw.text((0, 0), message, "black", font=font)
-    assert_image_similar_tofile(im, "Tests/images/test_draw_pbm_target.png", 0)
+    assert_image_equal_tofile(im, "Tests/images/test_draw_pbm_target.png")
+
+
+def test_to_imagefont() -> None:
+    with open(fontname, "rb") as test_file:
+        pcffont = PcfFontFile.PcfFontFile(test_file)
+    imagefont = pcffont.to_imagefont()
+    im = Image.new("L", (130, 30), "white")
+    draw = ImageDraw.Draw(im)
+    draw.text((0, 0), message, "black", font=imagefont)
+    assert_image_equal_tofile(im, "Tests/images/test_draw_pbm_target.png")
 
 
 def test_textsize(request: pytest.FixtureRequest, tmp_path: Path) -> None:
     tempname = save_font(request, tmp_path)
     font = ImageFont.load(tempname)
     for i in range(255):
-        (ox, oy, dx, dy) = font.getbbox(chr(i))
+        ox, oy, dx, dy = font.getbbox(chr(i))
         assert ox == 0
         assert oy == 0
         assert dy == 20
@@ -100,7 +110,7 @@ def _test_high_characters(
     im = Image.new("L", (750, 30), "white")
     draw = ImageDraw.Draw(im)
     draw.text((0, 0), message, "black", font=font)
-    assert_image_similar_tofile(im, "Tests/images/high_ascii_chars.png", 0)
+    assert_image_equal_tofile(im, "Tests/images/high_ascii_chars.png")
 
 
 def test_high_characters(request: pytest.FixtureRequest, tmp_path: Path) -> None:
@@ -108,3 +118,21 @@ def test_high_characters(request: pytest.FixtureRequest, tmp_path: Path) -> None
     _test_high_characters(request, tmp_path, message)
     # accept bytes instances.
     _test_high_characters(request, tmp_path, message.encode("latin1"))
+
+
+def test_decompression_bomb() -> None:
+    with open(fontname, "rb") as fp:
+        data = fp.read()
+    b = BytesIO(
+        data[:900]
+        + _binary.o32le(0)  # jumbo format
+        + _binary.o32le(1)  # number of metrics
+        + _binary.o16le(0)  # left
+        + _binary.o16le(65535)  # right
+        + _binary.o16le(0)  # width
+        + _binary.o16le(0)  # ascent
+        + _binary.o16le(65535)  # descent
+        + _binary.o16le(0)  # attributes
+    )
+    with pytest.raises(Image.DecompressionBombError):
+        PcfFontFile.PcfFontFile(b)

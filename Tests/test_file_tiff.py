@@ -14,7 +14,9 @@ from PIL import (
     ImageFile,
     JpegImagePlugin,
     TiffImagePlugin,
+    TiffTags,
     UnidentifiedImageError,
+    _binary,
 )
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
@@ -26,6 +28,7 @@ from .helper import (
     hopper,
     is_pypy,
     is_win32,
+    timeout_unless_slower_valgrind,
 )
 
 ElementTree: ModuleType | None
@@ -47,25 +50,10 @@ class TestFileTiff:
         assert im.size == (128, 128)
         assert im.format == "TIFF"
 
-        hopper("1").save(filename)
-        with Image.open(filename):
-            pass
-
-        hopper("L").save(filename)
-        with Image.open(filename):
-            pass
-
-        hopper("P").save(filename)
-        with Image.open(filename):
-            pass
-
-        hopper("RGB").save(filename)
-        with Image.open(filename):
-            pass
-
-        hopper("I").save(filename)
-        with Image.open(filename):
-            pass
+        for mode in ("1", "L", "P", "RGB", "I", "I;16", "I;16L"):
+            hopper(mode).save(filename)
+            with Image.open(filename):
+                pass
 
     @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
     def test_unclosed_file(self) -> None:
@@ -234,7 +222,7 @@ class TestFileTiff:
             assert isinstance(im, JpegImagePlugin.JpegImageFile)
 
             # Should not raise struct.error.
-            with pytest.warns(UserWarning):
+            with pytest.warns(UserWarning, match="Corrupt EXIF data"):
                 im._getexif()
 
     def test_save_rgba(self, tmp_path: Path) -> None:
@@ -694,16 +682,21 @@ class TestFileTiff:
             assert im.tag_v2[278] == 256
 
         im = hopper()
+        im.encoderinfo = {"tiffinfo": {278: 100}}
         im2 = Image.new("L", (128, 128))
-        im2.encoderinfo = {"tiffinfo": {278: 256}}
-        im.save(outfile, save_all=True, append_images=[im2])
+        im3 = im2.copy()
+        im3.encoderinfo = {"tiffinfo": {278: 300}}
+        im.save(outfile, save_all=True, tiffinfo={278: 200}, append_images=[im2, im3])
 
         with Image.open(outfile) as im:
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
-            assert im.tag_v2[278] == 128
+            assert im.tag_v2[278] == 100
 
             im.seek(1)
-            assert im.tag_v2[278] == 256
+            assert im.tag_v2[278] == 200
+
+            im.seek(2)
+            assert im.tag_v2[278] == 300
 
     def test_strip_raw(self) -> None:
         infile = "Tests/images/tiff_strip_raw.tif"
@@ -772,9 +765,9 @@ class TestFileTiff:
 
         # Test appending images
         mp = BytesIO()
-        im = Image.new("RGB", (100, 100), "#f00")
+        im_rgb = Image.new("RGB", (100, 100), "#f00")
         ims = [Image.new("RGB", (100, 100), color) for color in ["#0f0", "#00f"]]
-        im.copy().save(mp, format="TIFF", save_all=True, append_images=ims)
+        im_rgb.copy().save(mp, format="TIFF", save_all=True, append_images=ims)
 
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as reread:
@@ -786,7 +779,7 @@ class TestFileTiff:
             yield from ims
 
         mp = BytesIO()
-        im.save(mp, format="TIFF", save_all=True, append_images=im_generator(ims))
+        im_rgb.save(mp, format="TIFF", save_all=True, append_images=im_generator(ims))
 
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as reread:
@@ -899,6 +892,29 @@ class TestFileTiff:
                 assert description[0]["format"] == "image/tiff"
                 assert description[3]["BitsPerSample"]["Seq"]["li"] == ["8", "8", "8"]
 
+    def test_getxmp_undefined(self, tmp_path: Path) -> None:
+        tmpfile = tmp_path / "temp.tif"
+        im = Image.new("L", (1, 1))
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd.tagtype[700] = TiffTags.UNDEFINED
+        with Image.open("Tests/images/lab.tif") as im_xmp:
+            ifd[700] = im_xmp.info["xmp"]
+        im.save(tmpfile, tiffinfo=ifd)
+
+        with Image.open(tmpfile) as im_reloaded:
+            if ElementTree is None:
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
+                    assert im_reloaded.getxmp() == {}
+            else:
+                assert "xmp" in im_reloaded.info
+                xmp = im_reloaded.getxmp()
+
+                description = xmp["xmpmeta"]["RDF"]["Description"]
+                assert description[0]["format"] == "image/tiff"
+
     def test_get_photoshop_blocks(self) -> None:
         with Image.open("Tests/images/lab.tif") as im:
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
@@ -925,6 +941,15 @@ class TestFileTiff:
                 4000,
                 4001,
             ]
+
+    def test_truncated_photoshop_blocks(self) -> None:
+        with Image.open("Tests/images/hopper.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            im.tag_v2[34377] = b"8BIM"
+            assert im.get_photoshop_blocks() == {}
+
+            im.tag_v2[34377] = b"8BIM" + _binary.o16be(0) + _binary.o8(2) + b" " * 5
+            assert im.get_photoshop_blocks() == {}
 
     def test_tiff_chunks(self, tmp_path: Path) -> None:
         tmpfile = tmp_path / "temp.tif"
@@ -956,6 +981,7 @@ class TestFileTiff:
 
         im = Image.open(tmpfile)
         fp = im.fp
+        assert fp is not None
         assert not fp.closed
         im.load()
         assert fp.closed
@@ -969,6 +995,7 @@ class TestFileTiff:
         with open(tmpfile, "rb") as f:
             im = Image.open(f)
             fp = im.fp
+            assert fp is not None
             assert not fp.closed
             im.load()
             assert not fp.closed
@@ -988,7 +1015,7 @@ class TestFileTiff:
             with pytest.raises(OSError):
                 im.load()
 
-    @pytest.mark.timeout(6)
+    @timeout_unless_slower_valgrind(6)
     @pytest.mark.filterwarnings("ignore:Truncated File Read")
     def test_timeout(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/timeout-6646305047838720") as im:
@@ -1001,10 +1028,10 @@ class TestFileTiff:
             "Tests/images/oom-225817ca0f8c663be7ab4b9e717b02c661e66834.tif",
         ],
     )
-    @pytest.mark.timeout(2)
+    @timeout_unless_slower_valgrind(2)
     def test_oom(self, test_file: str) -> None:
         with pytest.raises(UnidentifiedImageError):
-            with pytest.warns(UserWarning):
+            with pytest.warns(UserWarning, match="Corrupt EXIF data"):
                 with Image.open(test_file):
                     pass
 
@@ -1019,8 +1046,9 @@ class TestFileTiffW32:
             im.save(tmpfile)
 
         im = Image.open(tmpfile)
+        assert im.fp is not None
+        assert not im.fp.closed
         fp = im.fp
-        assert not fp.closed
         with pytest.raises(OSError):
             os.remove(tmpfile)
         im.load()

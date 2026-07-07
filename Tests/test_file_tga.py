@@ -1,19 +1,18 @@
 from __future__ import annotations
 
 import os
+from io import BytesIO
 from pathlib import Path
 
 import pytest
 
-from PIL import Image, UnidentifiedImageError
+from PIL import Image, UnidentifiedImageError, _binary
 
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
 _TGA_DIR = os.path.join("Tests", "images", "tga")
 _TGA_DIR_COMMON = os.path.join(_TGA_DIR, "common")
 
-
-_ORIGINS = ("tl", "bl")
 
 _ORIGIN_TO_ORIENTATION = {"tl": 1, "bl": -1}
 
@@ -29,7 +28,7 @@ _ORIGIN_TO_ORIENTATION = {"tl": 1, "bl": -1}
         ("200x32", "RGBA"),
     ),
 )
-@pytest.mark.parametrize("origin", _ORIGINS)
+@pytest.mark.parametrize("origin", _ORIGIN_TO_ORIENTATION)
 @pytest.mark.parametrize("rle", (True, False))
 def test_sanity(
     size_mode: tuple[str, str], origin: str, rle: str, tmp_path: Path
@@ -92,6 +91,25 @@ def test_rgba_16() -> None:
 
         assert im.getpixel((0, 0)) == (172, 0, 255, 255)
         assert im.getpixel((1, 0)) == (0, 255, 82, 0)
+
+
+def test_v2_no_alpha() -> None:
+    test_file = "Tests/images/tga/common/200x32_rgba_tl_rle.tga"
+    with open(test_file, "rb") as fp:
+        data = fp.read()
+        data += (
+            b"\x00" * 495
+            + _binary.o32le(len(data))
+            + _binary.o32le(0)
+            + b"TRUEVISION-XFILE.\x00"
+        )
+    with Image.open(BytesIO(data)) as im:
+        with Image.open(test_file) as im2:
+            r, g, b = im2.split()[:3]
+        a = Image.new("L", im2.size, 255)
+        expected = Image.merge("RGBA", (r, g, b, a))
+
+        assert_image_equal(im, expected)
 
 
 def test_id_field() -> None:
@@ -161,8 +179,18 @@ def test_save_wrong_mode(tmp_path: Path) -> None:
     im = hopper("PA")
     out = tmp_path / "temp.tga"
 
-    with pytest.raises(OSError):
+    with pytest.raises(OSError, match="cannot write mode PA as TGA"):
         im.save(out)
+
+
+def test_save_1_mode_rle(tmp_path: Path) -> None:
+    im = Image.new("1", (1, 1))
+    out = tmp_path / "temp.tga"
+
+    with pytest.raises(
+        OSError, match="cannot write mode 1 as TGA with run-length encoding"
+    ):
+        im.save(out, compression="tga_rle")
 
 
 def test_save_mapdepth() -> None:
@@ -190,7 +218,9 @@ def test_save_id_section(tmp_path: Path) -> None:
 
     # Save with custom id section greater than 255 characters
     id_section = b"Test content" * 25
-    with pytest.warns(UserWarning):
+    with pytest.warns(
+        UserWarning, match="id_section has been trimmed to 255 characters"
+    ):
         im.save(out, id_section=id_section)
 
     with Image.open(out) as test_im:
@@ -220,12 +250,16 @@ def test_horizontal_orientations() -> None:
     with Image.open("Tests/images/rgb32rle_top_right.tga") as im:
         px = im.load()
         assert px is not None
-        assert px[90, 90][:3] == (0, 0, 0)
+        value = px[90, 90]
+        assert isinstance(value, tuple)
+        assert value[:3] == (0, 0, 0)
 
     with Image.open("Tests/images/rgb32rle_bottom_right.tga") as im:
         px = im.load()
         assert px is not None
-        assert px[90, 90][:3] == (0, 255, 0)
+        value = px[90, 90]
+        assert isinstance(value, tuple)
+        assert value[:3] == (0, 255, 0)
 
 
 def test_save_rle(tmp_path: Path) -> None:
@@ -268,13 +302,17 @@ def test_save_l_transparency(tmp_path: Path) -> None:
     in_file = "Tests/images/la.tga"
     with Image.open(in_file) as im:
         assert im.mode == "LA"
-        assert im.getchannel("A").getcolors()[0][0] == num_transparent
+        colors = im.getchannel("A").getcolors()
+        assert colors is not None
+        assert colors[0][0] == num_transparent
 
         out = tmp_path / "temp.tga"
         im.save(out)
 
     with Image.open(out) as test_im:
         assert test_im.mode == "LA"
-        assert test_im.getchannel("A").getcolors()[0][0] == num_transparent
+        colors = test_im.getchannel("A").getcolors()
+        assert colors is not None
+        assert colors[0][0] == num_transparent
 
         assert_image_equal(im, test_im)

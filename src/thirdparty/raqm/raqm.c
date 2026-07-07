@@ -30,7 +30,11 @@
 #include <string.h>
 
 #ifdef RAQM_SHEENBIDI
+#ifdef RAQM_SHEENBIDI_GT_2_9
+#include <SheenBidi/SheenBidi.h>
+#else
 #include <SheenBidi.h>
+#endif
 #else
 #ifdef HAVE_FRIBIDI_SYSTEM
 #include <fribidi.h>
@@ -50,7 +54,7 @@
  * @short_description: A library for complex text layout
  * @include: raqm.h
  *
- * Raqm is a light weight text layout library with strong emphasis on
+ * Raqm is a lightweight text layout library with strong emphasis on
  * supporting languages and writing systems that require complex text layout.
  *
  * The main object in Raqm API is #raqm_t, it stores all the states of the
@@ -334,6 +338,8 @@ _raqm_alloc_run (raqm_t *rq)
   else
   {
     run = malloc (sizeof (raqm_run_t));
+    if (!run)
+      return NULL;
     run->font = NULL;
     run->buffer = NULL;
   }
@@ -511,7 +517,7 @@ raqm_clear_contents (raqm_t *rq)
  * @len: the length of @text.
  *
  * Adds @text to @rq to be used for layout. It must be a valid UTF-32 text, any
- * invalid character will be replaced with U+FFFD. The text should typically
+ * invalid characters will be replaced with U+FFFD. The text should typically
  * represent a full paragraph, since doing the layout of chunks of text
  * separately can give improper output.
  *
@@ -546,34 +552,32 @@ raqm_set_text (raqm_t         *rq,
   return true;
 }
 
-static void *
-_raqm_get_utf8_codepoint (const void *str,
+static const char *
+_raqm_get_utf8_codepoint (const char *str,
                           uint32_t *out_codepoint)
 {
-  const char *s = (const char *)str;
-
-  if (0xf0 == (0xf8 & s[0]))
+  if (0xf0 == (0xf8 & str[0]))
   {
-    *out_codepoint = ((0x07 & s[0]) << 18) | ((0x3f & s[1]) << 12) | ((0x3f & s[2]) << 6) | (0x3f & s[3]);
-    s += 4;
+    *out_codepoint = ((0x07 & str[0]) << 18) | ((0x3f & str[1]) << 12) | ((0x3f & str[2]) << 6) | (0x3f & str[3]);
+    str += 4;
   }
-  else if (0xe0 == (0xf0 & s[0]))
+  else if (0xe0 == (0xf0 & str[0]))
   {
-    *out_codepoint = ((0x0f & s[0]) << 12) | ((0x3f & s[1]) << 6) | (0x3f & s[2]);
-    s += 3;
+    *out_codepoint = ((0x0f & str[0]) << 12) | ((0x3f & str[1]) << 6) | (0x3f & str[2]);
+    str += 3;
   }
-  else if (0xc0 == (0xe0 & s[0]))
+  else if (0xc0 == (0xe0 & str[0]))
   {
-    *out_codepoint = ((0x1f & s[0]) << 6) | (0x3f & s[1]);
-    s += 2;
+    *out_codepoint = ((0x1f & str[0]) << 6) | (0x3f & str[1]);
+    str += 2;
   }
   else
   {
-    *out_codepoint = s[0];
-    s += 1;
+    *out_codepoint = str[0];
+    str += 1;
   }
 
-  return (void *)s;
+  return str;
 }
 
 static size_t
@@ -585,42 +589,41 @@ _raqm_u8_to_u32 (const char *text, size_t len, uint32_t *unicode)
 
   while ((*in_utf8 != '\0') && (in_len < len))
   {
-    in_utf8 = _raqm_get_utf8_codepoint (in_utf8, out_utf32);
+    const char *out_utf8 = _raqm_get_utf8_codepoint (in_utf8, out_utf32);
+    in_len += out_utf8 - in_utf8;
+    in_utf8 = out_utf8;
     ++out_utf32;
-    ++in_len;
   }
 
   return (out_utf32 - unicode);
 }
 
-static void *
-_raqm_get_utf16_codepoint (const void *str,
-                          uint32_t *out_codepoint)
+static const uint16_t *
+_raqm_get_utf16_codepoint (const uint16_t *str,
+                           uint32_t *out_codepoint)
 {
-  const uint16_t *s = (const uint16_t *)str;
-
-  if (s[0] > 0xD800 && s[0] < 0xDBFF)
+  if (str[0] >= 0xD800 && str[0] <= 0xDBFF)
   {
-    if (s[1] > 0xDC00 && s[1] < 0xDFFF)
+    if (str[1] >= 0xDC00 && str[1] <= 0xDFFF)
     {
-      uint32_t X = ((s[0] & ((1 << 6) -1)) << 10) | (s[1] & ((1 << 10) -1));
-      uint32_t W = (s[0] >> 6) & ((1 << 5) - 1);
+      uint32_t X = ((str[0] & ((1 << 6) -1)) << 10) | (str[1] & ((1 << 10) -1));
+      uint32_t W = (str[0] >> 6) & ((1 << 5) - 1);
       *out_codepoint = (W+1) << 16 | X;
-      s += 2;
+      str += 2;
     }
     else
     {
       /* A single high surrogate, this is an error. */
-      *out_codepoint = s[0];
-      s += 1;
+      *out_codepoint = str[0];
+      str += 1;
     }
   }
   else
   {
-      *out_codepoint = s[0];
-      s += 1;
+      *out_codepoint = str[0];
+      str += 1;
   }
-  return (void *)s;
+  return str;
 }
 
 static size_t
@@ -632,9 +635,10 @@ _raqm_u16_to_u32 (const uint16_t *text, size_t len, uint32_t *unicode)
 
   while ((*in_utf16 != '\0') && (in_len < len))
   {
-    in_utf16 = _raqm_get_utf16_codepoint (in_utf16, out_utf32);
+    const uint16_t *out_utf16 = _raqm_get_utf16_codepoint (in_utf16, out_utf32);
+    in_len += (out_utf16 - in_utf16);
+    in_utf16 = out_utf16;
     ++out_utf32;
-    ++in_len;
   }
 
   return (out_utf32 - unicode);
@@ -763,13 +767,13 @@ raqm_set_par_direction (raqm_t          *rq,
  * raqm_set_language:
  * @rq: a #raqm_t.
  * @lang: a BCP47 language code.
- * @start: index of first character that should use @face.
+ * @start: index of the first character that should use @face.
  * @len: number of characters using @face.
  *
  * Sets a [BCP47 language
  * code](https://www.w3.org/International/articles/language-tags/) to be used
- * for @len-number of characters staring at @start.  The @start and @len are
- * input string array indices (i.e. counting bytes in UTF-8 and scaler values
+ * for @len-number of characters starting at @start.  The @start and @len are
+ * input string array indices (i.e. counting bytes in UTF-8 and scalar values
  * in UTF-32).
  *
  * This method can be used repeatedly to set different languages for different
@@ -949,7 +953,7 @@ raqm_set_freetype_face (raqm_t *rq,
  * raqm_set_freetype_face_range:
  * @rq: a #raqm_t.
  * @face: an #FT_Face.
- * @start: index of first character that should use @face from the input string.
+ * @start: index of the first character that should use @face from the input string.
  * @len: number of elements using @face.
  *
  * Sets an #FT_Face to be used for @len-number of characters staring at @start.
@@ -960,7 +964,7 @@ raqm_set_freetype_face (raqm_t *rq,
  *
  * This method can be used repeatedly to set different faces for different
  * parts of the text. It is the responsibility of the client to make sure that
- * face ranges cover the whole text, and is properly aligned.
+ * face ranges cover the whole text, and are properly aligned.
  *
  * See also raqm_set_freetype_face().
  *
@@ -1021,9 +1025,6 @@ _raqm_set_freetype_load_flags (raqm_t *rq,
  * Sets the load flags passed to FreeType when loading glyphs, should be the
  * same flags used by the client when rendering FreeType glyphs.
  *
- * This requires version of HarfBuzz that has hb_ft_font_set_load_flags(), for
- * older version the flags will be ignored.
- *
  * Return value:
  * `true` if no errors happened, `false` otherwise.
  *
@@ -1040,21 +1041,18 @@ raqm_set_freetype_load_flags (raqm_t *rq,
  * raqm_set_freetype_load_flags_range:
  * @rq: a #raqm_t.
  * @flags: FreeType load flags.
- * @start: index of first character that should use @flags.
+ * @start: index of the first character that should use @flags.
  * @len: number of characters using @flags.
  *
  * Sets the load flags passed to FreeType when loading glyphs for @len-number
  * of characters staring at @start. Flags should be the same as used by the
  * client when rendering corresponding FreeType glyphs. The @start and @len
- * are input string array indices (i.e. counting bytes in UTF-8 and scaler
+ * are input string array indices (i.e. counting bytes in UTF-8 and scalar
  * values in UTF-32).
  *
  * This method can be used repeatedly to set different flags for different
  * parts of the text. It is the responsibility of the client to make sure that
  * flag ranges cover the whole text.
- *
- * This requires version of HarfBuzz that has hb_ft_font_set_load_flags(), for
- * older version the flags will be ignored.
  *
  * See also raqm_set_freetype_load_flags().
  *
@@ -1114,12 +1112,12 @@ _raqm_set_spacing (raqm_t *rq,
       {
         if (_raqm_allowed_grapheme_boundary (rq->text[i], rq->text[i+1]))
         {
-          /* CSS word seperators, word spacing is only applied on these.*/
+          /* CSS word separators, word spacing is only applied on these.*/
           if (rq->text[i] == 0x0020  || /* Space */
               rq->text[i] == 0x00A0  || /* No Break Space */
               rq->text[i] == 0x1361  || /* Ethiopic Word Space */
-              rq->text[i] == 0x10100 || /* Aegean Word Seperator Line */
-              rq->text[i] == 0x10101 || /* Aegean Word Seperator Dot */
+              rq->text[i] == 0x10100 || /* Aegean Word Separator Line */
+              rq->text[i] == 0x10101 || /* Aegean Word Separator Dot */
               rq->text[i] == 0x1039F || /* Ugaric Word Divider */
               rq->text[i] == 0x1091F)   /* Phoenician Word Separator */
           {
@@ -1141,7 +1139,7 @@ _raqm_set_spacing (raqm_t *rq,
  * raqm_set_letter_spacing_range:
  * @rq: a #raqm_t.
  * @spacing: amount of spacing in Freetype Font Units (26.6 format).
- * @start: index of first character that should use @spacing.
+ * @start: index of the first character that should use @spacing.
  * @len: number of characters using @spacing.
  *
  * Set the letter spacing or tracking for a given range, the value
@@ -1198,12 +1196,12 @@ raqm_set_letter_spacing_range(raqm_t *rq,
  * raqm_set_word_spacing_range:
  * @rq: a #raqm_t.
  * @spacing: amount of spacing in Freetype Font Units (26.6 format).
- * @start: index of first character that should use @spacing.
+ * @start: index of the first character that should use @spacing.
  * @len: number of characters using @spacing.
  *
  * Set the word spacing for a given range. Word spacing will only be applied to
  * 'word separator' characters, such as 'space', 'no break space' and
- * Ethiopic word separator'.
+ * 'Ethiopic word separator'.
  * The value will be added onto the advance and offset for RTL, and the advance
  * for other directions.
  *
@@ -1237,7 +1235,7 @@ raqm_set_word_spacing_range(raqm_t *rq,
  * @rq: a #raqm_t.
  * @gid: glyph id to use for invisible glyphs.
  *
- * Sets the glyph id to be used for invisible glyhphs.
+ * Sets the glyph id to be used for invisible glyphs.
  *
  * If @gid is negative, invisible glyphs will be suppressed from the output.
  *
@@ -1627,6 +1625,11 @@ _raqm_reorder_runs (const FriBidiCharType *types,
   }
 
   runs = malloc (sizeof (_raqm_bidi_run) * count);
+  if (!runs)
+  {
+    *run_count = 0;
+    return NULL;
+  }
 
   while (run_start < len)
   {
@@ -2167,6 +2170,10 @@ _raqm_ft_transform (int      *x,
   *y = vector.y;
 }
 
+#if !HB_VERSION_ATLEAST (10, 4, 0)
+# define hb_ft_font_get_ft_face hb_ft_font_get_face
+#endif
+
 static bool
 _raqm_shape (raqm_t *rq)
 {
@@ -2199,7 +2206,7 @@ _raqm_shape (raqm_t *rq)
       hb_glyph_position_t *pos;
       unsigned int len;
 
-      FT_Get_Transform (hb_ft_font_get_face (run->font), &matrix, NULL);
+      FT_Get_Transform (hb_ft_font_get_ft_face (run->font), &matrix, NULL);
       pos = hb_buffer_get_glyph_positions (run->buffer, &len);
       info = hb_buffer_get_glyph_infos (run->buffer, &len);
 
@@ -2741,10 +2748,10 @@ raqm_version_string (void)
  * @minor: Library minor version component.
  * @micro: Library micro version component.
  *
- * Checks if library version is less than or equal the specified version.
+ * Checks if library version is less than or equal to the specified version.
  *
  * Return value:
- * `true` if library version is less than or equal the specified version,
+ * `true` if library version is less than or equal to the specified version,
  * `false` otherwise.
  *
  * Since: 0.7
@@ -2763,10 +2770,10 @@ raqm_version_atleast (unsigned int major,
  * @minor: Library minor version component.
  * @micro: Library micro version component.
  *
- * Checks if library version is less than or equal the specified version.
+ * Checks if library version is less than or equal to the specified version.
  *
  * Return value:
- * `true` if library version is less than or equal the specified version,
+ * `true` if library version is less than or equal to the specified version,
  * `false` otherwise.
  *
  * Since: 0.7

@@ -55,7 +55,7 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
 
     PyObject *target;
     Py_buffer view;
-    char *mode;
+    char *mode_name;
     char *codec;
     Py_ssize_t offset;
     int xsize, ysize;
@@ -70,7 +70,7 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
             &ysize,
             &codec,
             &offset,
-            &mode,
+            &mode_name,
             &stride,
             &ystep
         )) {
@@ -82,14 +82,18 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (stride <= 0) {
-        if (!strcmp(mode, "L") || !strcmp(mode, "P")) {
-            stride = xsize;
-        } else if (!strncmp(mode, "I;16", 4)) {
-            stride = xsize * 2;
-        } else {
-            stride = xsize * 4;
-        }
+    const ModeID mode = findModeID(mode_name);
+
+    int pixelsize;
+    if (mode == IMAGING_MODE_L || mode == IMAGING_MODE_P) {
+        pixelsize = 1;
+    } else if (isModeI16(mode)) {
+        pixelsize = 2;
+    } else {
+        pixelsize = 4;
+    }
+    if (stride <= xsize * pixelsize) {
+        stride = xsize * pixelsize;
     }
 
     if (stride > 0 && ysize > PY_SSIZE_T_MAX / stride) {
@@ -137,6 +141,7 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
         }
     }
 
+    im->read_only = view.readonly;
     im->destroy = mapping_destroy_buffer;
 
     Py_INCREF(target);

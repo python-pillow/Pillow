@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from PIL import ImageQt
 
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 pytestmark = pytest.mark.skipif(
     not ImageQt.qt_is_installed, reason="Qt bindings are not installed"
@@ -21,7 +23,7 @@ def test_sanity(mode: str, tmp_path: Path) -> None:
     src = hopper(mode)
     data = ImageQt.toqimage(src)
 
-    assert isinstance(data, QImage)  # type: ignore[arg-type, misc]
+    assert isinstance(data, QImage)
     assert not data.isNull()
 
     # reload directly from the qimage

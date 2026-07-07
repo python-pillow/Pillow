@@ -1,11 +1,14 @@
-mypy==1.15.0
+mypy==2.1.0
+arro3-compute
+arro3-core
 IceSpringPySideStubs-PyQt6
 IceSpringPySideStubs-PySide6
 ipython
-numpy
+numpy==2.4.6
 packaging
+pyarrow-stubs
+pybind11
 pytest
-sphinx
 types-atheris
 types-defusedxml
 types-olefile

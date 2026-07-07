@@ -18,7 +18,7 @@ def test_load_raw() -> None:
             # Currently, support for WMF/EMF is Windows-only
             im.load()
             # Compare to reference rendering
-            assert_image_similar_tofile(im, "Tests/images/drawing_emf_ref.png", 0)
+            assert_image_equal_tofile(im, "Tests/images/drawing_emf_ref.png")
 
     # Test basic WMF open and rendering
     with Image.open("Tests/images/drawing.wmf") as im:
@@ -42,6 +42,18 @@ def test_load_zero_inch() -> None:
     with pytest.raises(ValueError):
         with Image.open(b):
             pass
+
+
+def test_load_unsupported_wmf() -> None:
+    b = BytesIO(b"\xd7\xcd\xc6\x9a\x00\x00" + b"\x01" * 10)
+    with pytest.raises(SyntaxError, match="Unsupported WMF file format"):
+        WmfImagePlugin.WmfStubImageFile(b)
+
+
+def test_load_unsupported() -> None:
+    b = BytesIO(b"\x01\x00\x00\x00")
+    with pytest.raises(SyntaxError, match="Unsupported file format"):
+        WmfImagePlugin.WmfStubImageFile(b)
 
 
 def test_render() -> None:

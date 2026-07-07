@@ -6,11 +6,13 @@
 
 ## Python Imaging Library (Fork)
 
-Pillow is the friendly PIL fork by [Jeffrey A. Clark and
+Pillow is the friendly PIL fork by [Jeffrey 'Alex' Clark and
 contributors](https://github.com/python-pillow/Pillow/graphs/contributors).
 PIL is the Python Imaging Library by Fredrik Lundh and contributors.
-As of 2019, Pillow development is
-[supported by Tidelift](https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=readme&utm_campaign=enterprise).
+Development is supported by:
+- [Tidelift](https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=readme&utm_campaign=enterprise) (since 2018)
+- [Thanks.dev](https://thanks.dev) (since 2023)
+- [GitHub Sponsors](https://github.com/sponsors/python-pillow) (since 2026)
 
 <table>
     <tr>
@@ -36,9 +38,6 @@ As of 2019, Pillow development is
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-mingw.yml"><img
                 alt="GitHub Actions build status (Test MinGW)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20MinGW/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-cygwin.yml"><img
-                alt="GitHub Actions build status (Test Cygwin)"
-                src="https://github.com/python-pillow/Pillow/workflows/Test%20Cygwin/badge.svg"></a>
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-docker.yml"><img
                 alt="GitHub Actions build status (Test Docker)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg"></a>
@@ -95,7 +94,7 @@ This library provides extensive file format support, an efficient internal repre
 
 The core image library is designed for fast access to data stored in a few basic pixel formats. It should provide a solid foundation for a general image processing tool.
 
-## More Information
+## More information
 
 - [Documentation](https://pillow.readthedocs.io/)
   - [Installation](https://pillow.readthedocs.io/en/latest/installation/basic-installation.html)
@@ -107,6 +106,10 @@ The core image library is designed for fast access to data stored in a few basic
 - [Changelog](https://github.com/python-pillow/Pillow/releases)
   - [Pre-fork](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst#pre-fork)
 
-## Report a Vulnerability
+## Report a vulnerability
 
-To report a security vulnerability, please follow the procedure described in the [Tidelift security policy](https://tidelift.com/docs/security).
+To report sensitive vulnerability information, report it [privately on GitHub](https://github.com/python-pillow/Pillow/security/advisories/new).
+
+If you cannot use GitHub, use the [Tidelift security contact](https://tidelift.com/security). Tidelift will coordinate the fix and disclosure.
+
+DO NOT report sensitive vulnerability information in public.

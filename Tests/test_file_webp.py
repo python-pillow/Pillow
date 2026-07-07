@@ -33,8 +33,8 @@ class TestUnsupportedWebp:
             monkeypatch.setattr(WebPImagePlugin, "SUPPORTED", False)
 
         file_path = "Tests/images/hopper.webp"
-        with pytest.warns(UserWarning):
-            with pytest.raises(OSError):
+        with pytest.raises(OSError):
+            with pytest.warns(UserWarning, match="WEBP support not installed"):
                 with Image.open(file_path):
                     pass
 
@@ -49,6 +49,12 @@ class TestFileWebp:
         assert version is not None
         assert re.search(r"\d+\.\d+\.\d+$", version)
 
+    def test_invalid_file(self) -> None:
+        invalid_file = "Tests/images/flower.jpg"
+
+        with pytest.raises(SyntaxError):
+            WebPImagePlugin.WebPImageFile(invalid_file)
+
     def test_read_rgb(self) -> None:
         """
         Can we read a RGB mode WebP file without error?
@@ -60,7 +66,6 @@ class TestFileWebp:
             assert image.size == (128, 128)
             assert image.format == "WEBP"
             image.load()
-            image.getdata()
 
             # generated with:
             # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
@@ -77,7 +82,6 @@ class TestFileWebp:
             assert image.size == (128, 128)
             assert image.format == "WEBP"
             image.load()
-            image.getdata()
 
             if mode == self.rgb_mode:
                 # generated with: dwebp -ppm temp.webp -o hopper_webp_write.ppm
@@ -225,6 +229,7 @@ class TestFileWebp:
         # Save P mode GIF with background
         with Image.open("Tests/images/chi.gif") as im:
             original_value = im.convert("RGB").getpixel((1, 1))
+            assert isinstance(original_value, tuple)
 
             # Save as WEBP
             im.save(out_webp, save_all=True)
@@ -236,6 +241,7 @@ class TestFileWebp:
 
         with Image.open(out_gif) as reread:
             reread_value = reread.convert("RGB").getpixel((1, 1))
+        assert isinstance(reread_value, tuple)
         difference = sum(abs(original_value[i] - reread_value[i]) for i in range(3))
         assert difference < 5
 

@@ -1,13 +1,10 @@
 from __future__ import annotations
 
 import os.path
-from collections.abc import Sequence
-from typing import Callable
 
 import pytest
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont, features
-from PIL._typing import Coords
 
 from .helper import (
     assert_image_equal,
@@ -16,6 +13,12 @@ from .helper import (
     hopper,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+
+    from PIL._typing import Coords
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -65,10 +68,22 @@ def test_sanity() -> None:
     draw.rectangle(list(range(4)))
 
 
-def test_valueerror() -> None:
+def test_new_color() -> None:
     with Image.open("Tests/images/chi.gif") as im:
         draw = ImageDraw.Draw(im)
+        assert im.palette is not None
+        assert len(im.palette.colors) == 249
+
+        # Test drawing a new color onto the palette
         draw.line((0, 0), fill=(0, 0, 0))
+        assert im.palette is not None
+        assert len(im.palette.colors) == 250
+        assert im.palette.dirty
+
+        # Test drawing another new color, now that the palette is dirty
+        draw.point((0, 0), fill=(1, 0, 0))
+        assert len(im.palette.colors) == 251
+        assert im.convert("RGB").getpixel((0, 0)) == (1, 0, 0)
 
 
 def test_mode_mismatch() -> None:
@@ -195,10 +210,10 @@ def test_bitmap() -> None:
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
     with Image.open("Tests/images/pil123rgba.png") as small:
-        small = small.resize((50, 50), Image.Resampling.NEAREST)
+        small_resized = small.resize((50, 50), Image.Resampling.NEAREST)
 
         # Act
-        draw.bitmap((10, 10), small)
+        draw.bitmap((10, 10), small_resized)
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_bitmap.png")
@@ -783,9 +798,10 @@ def test_rectangle_I16(bbox: Coords) -> None:
     draw = ImageDraw.Draw(im)
 
     # Act
-    draw.rectangle(bbox, outline=0xFFFF)
+    draw.rectangle(bbox, outline=0xCDEF)
 
     # Assert
+    assert im.getpixel((X0, Y0)) == 0xCDEF
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_I.tiff")
 
 
@@ -879,6 +895,18 @@ def test_rounded_rectangle_joined_x_different_corners() -> None:
     )
 
 
+def test_rounded_rectangle_radius() -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im, "RGB")
+
+    # Act
+    draw.rounded_rectangle((25, 25, 75, 75), 24, fill="red", outline="green", width=5)
+
+    # Assert
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_rounded_rectangle_radius.png")
+
+
 @pytest.mark.parametrize(
     "xy, radius, type",
     [
@@ -915,6 +943,21 @@ def test_rounded_rectangle_zero_radius(bbox: Coords) -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_width_fill.png")
+
+
+@pytest.mark.parametrize("w, h", ((200, 100), (100, 200)))
+def test_rounded_rectangle_large_radius(w: int, h: int) -> None:
+    im = Image.new("RGB", (w, h))
+    draw = ImageDraw.Draw(im)
+    draw.rounded_rectangle(
+        (0, 0, w, h), 100, "red", corners=(True, False, False, False)
+    )
+
+    expected = Image.new("RGB", (w, h))
+    draw = ImageDraw.Draw(expected)
+    draw.rounded_rectangle((0, 0, w, h), 50, "red", corners=(True, False, False, False))
+
+    assert_image_equal(im, expected)
 
 
 @pytest.mark.parametrize(
@@ -1457,21 +1500,15 @@ def test_stroke_multiline() -> None:
 
 
 @skip_unless_feature("freetype2")
-def test_setting_default_font() -> None:
-    # Arrange
+def test_setting_default_font(monkeypatch: pytest.MonkeyPatch) -> None:
     im = Image.new("RGB", (100, 250))
     draw = ImageDraw.Draw(im)
+    assert isinstance(draw.getfont(), ImageFont.load_default().__class__)
+
+    draw = ImageDraw.Draw(im)
     font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
-
-    # Act
-    ImageDraw.ImageDraw.font = font
-
-    # Assert
-    try:
-        assert draw.getfont() == font
-    finally:
-        ImageDraw.ImageDraw.font = None
-        assert isinstance(draw.getfont(), ImageFont.load_default().__class__)
+    monkeypatch.setattr(ImageDraw.ImageDraw, "font", font)
+    assert draw.getfont() == font
 
 
 def test_default_font_size() -> None:
@@ -1490,7 +1527,9 @@ def test_default_font_size() -> None:
 
     def draw_text() -> None:
         draw.text((0, 0), text, font_size=16)
-        assert_image_equal_tofile(im, "Tests/images/imagedraw_default_font_size.png")
+        assert_image_similar_tofile(
+            im, "Tests/images/imagedraw_default_font_size.png", 1
+        )
 
     check(draw_text)
 
@@ -1509,7 +1548,9 @@ def test_default_font_size() -> None:
 
     def draw_multiline_text() -> None:
         draw.multiline_text((0, 0), text, font_size=16)
-        assert_image_equal_tofile(im, "Tests/images/imagedraw_default_font_size.png")
+        assert_image_similar_tofile(
+            im, "Tests/images/imagedraw_default_font_size.png", 1
+        )
 
     check(draw_multiline_text)
 
@@ -1731,8 +1772,3 @@ def test_incorrectly_ordered_coordinates(xy: tuple[int, int, int, int]) -> None:
         draw.rectangle(xy)
     with pytest.raises(ValueError):
         draw.rounded_rectangle(xy)
-
-
-def test_getdraw() -> None:
-    with pytest.warns(DeprecationWarning):
-        ImageDraw.getdraw(None, [])

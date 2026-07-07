@@ -61,6 +61,7 @@ class PsdImageFile(ImageFile.ImageFile):
     _close_exclusive_fp_after_loading = False
 
     def _open(self) -> None:
+        assert self.fp is not None
         read = self.fp.read
 
         #
@@ -174,6 +175,9 @@ class PsdImageFile(ImageFile.ImageFile):
             raise self._fp.ex
 
         # seek to given layer (1..max)
+        if layer > len(self.layers):
+            msg = "no more images in PSD file"
+            raise EOFError(msg)
         _, mode, _, tile = self.layers[layer - 1]
         self._mode = mode
         self.tile = tile
@@ -218,12 +222,14 @@ def _layerinfo(
             continue
 
         for _ in range(ct_types):
-            type = i16(read(2))
+            channel_id = i16(read(2))
 
-            if type == 65535:
+            if channel_id == 65535:
                 b = "A"
+            elif channel_id < 4:
+                b = "RGBA"[channel_id]
             else:
-                b = "RGBA"[type]
+                b = ""
 
             bands.append(b)
             read(4)  # size

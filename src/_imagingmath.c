@@ -187,8 +187,17 @@ _unop(PyObject *self, PyObject *args) {
     }
 
     unop = (void *)PyCapsule_GetPointer(op, MATH_FUNC_UNOP_MAGIC);
+    if (!unop) {
+        return NULL;
+    }
     out = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!out) {
+        return NULL;
+    }
     im1 = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
+    if (!im1) {
+        return NULL;
+    }
 
     unop(out, im1);
 
@@ -219,9 +228,21 @@ _binop(PyObject *self, PyObject *args) {
     }
 
     binop = (void *)PyCapsule_GetPointer(op, MATH_FUNC_BINOP_MAGIC);
+    if (!binop) {
+        return NULL;
+    }
     out = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!out) {
+        return NULL;
+    }
     im1 = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
+    if (!im1) {
+        return NULL;
+    }
     im2 = (Imaging)PyCapsule_GetPointer(i2, IMAGING_MAGIC);
+    if (!im2) {
+        return NULL;
+    }
 
     binop(out, im1, im2);
 
@@ -235,19 +256,19 @@ static PyMethodDef _functions[] = {
 static void
 install_unary(PyObject *d, char *name, void *func) {
     PyObject *v = PyCapsule_New(func, MATH_FUNC_UNOP_MAGIC, NULL);
-    if (!v || PyDict_SetItemString(d, name, v)) {
-        PyErr_Clear();
+    if (v) {
+        PyDict_SetItemString(d, name, v);
+        Py_DECREF(v);
     }
-    Py_XDECREF(v);
 }
 
 static void
 install_binary(PyObject *d, char *name, void *func) {
     PyObject *v = PyCapsule_New(func, MATH_FUNC_BINOP_MAGIC, NULL);
-    if (!v || PyDict_SetItemString(d, name, v)) {
-        PyErr_Clear();
+    if (v) {
+        PyDict_SetItemString(d, name, v);
+        Py_DECREF(v);
     }
-    Py_XDECREF(v);
 }
 
 static int
@@ -302,26 +323,22 @@ setup_module(PyObject *m) {
     return 0;
 }
 
+static PyModuleDef_Slot slots[] = {
+    {Py_mod_exec, setup_module},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
 PyMODINIT_FUNC
 PyInit__imagingmath(void) {
-    PyObject *m;
-
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_imagingmath",
-        .m_size = -1,
         .m_methods = _functions,
+        .m_slots = slots
     };
 
-    m = PyModule_Create(&module_def);
-
-    if (setup_module(m) < 0) {
-        return NULL;
-    }
-
-#ifdef Py_GIL_DISABLED
-    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
-#endif
-
-    return m;
+    return PyModuleDef_Init(&module_def);
 }

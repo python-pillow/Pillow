@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from typing import Callable
-
 from PIL import Image, ImageChops
 
 from .helper import assert_image_equal, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 BLACK = (0, 0, 0)
 BROWN = (127, 64, 0)

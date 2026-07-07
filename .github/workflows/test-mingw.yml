@@ -4,19 +4,14 @@ on:
   push:
     branches:
       - "**"
-    paths-ignore:
+    paths-ignore: &paths-ignore
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
       - "docs/**"
       - "wheels/**"
   pull_request:
-    paths-ignore:
-      - ".github/workflows/docs.yml"
-      - ".github/workflows/wheels*"
-      - ".gitmodules"
-      - "docs/**"
-      - "wheels/**"
+    paths-ignore: *paths-ignore
   workflow_dispatch:
 
 permissions:
@@ -27,7 +22,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COVERAGE_CORE: sysmon
+  FORCE_COLOR: 1
 
 jobs:
   build:
@@ -45,7 +40,7 @@ jobs:
 
     steps:
       - name: Checkout Pillow
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -60,6 +55,7 @@ jobs:
               mingw-w64-x86_64-gcc \
               mingw-w64-x86_64-ghostscript \
               mingw-w64-x86_64-lcms2 \
+              mingw-w64-x86_64-libavif \
               mingw-w64-x86_64-libimagequant \
               mingw-w64-x86_64-libjpeg-turbo \
               mingw-w64-x86_64-libraqm \
@@ -85,9 +81,8 @@ jobs:
           .ci/test.sh
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           files: ./coverage.xml
           flags: GHA_Windows
           name: "MSYS2 MinGW"
-          token: ${{ secrets.CODECOV_ORG_TOKEN }}

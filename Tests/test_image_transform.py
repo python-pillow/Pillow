@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import math
-from typing import Callable
 
 import pytest
 
 from PIL import Image, ImageTransform
 
 from .helper import assert_image_equal, assert_image_similar, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class TestImageTransform:
@@ -48,11 +51,12 @@ class TestImageTransform:
                 im.size, Image.Transform.AFFINE, [1, 0, 0, 0, 1, 0]
             )
             assert im.palette is not None
+            assert transformed.palette is not None
             assert im.palette.palette == transformed.palette.palette
 
     def test_extent(self) -> None:
         im = hopper("RGB")
-        (w, h) = im.size
+        w, h = im.size
         transformed = im.transform(
             im.size,
             Image.Transform.EXTENT,
@@ -68,7 +72,7 @@ class TestImageTransform:
     def test_quad(self) -> None:
         # one simple quad transform, equivalent to scale & crop upper left quad
         im = hopper("RGB")
-        (w, h) = im.size
+        w, h = im.size
         transformed = im.transform(
             im.size,
             Image.Transform.QUAD,
@@ -95,7 +99,7 @@ class TestImageTransform:
     )
     def test_fill(self, mode: str, expected_pixel: tuple[int, ...]) -> None:
         im = hopper(mode)
-        (w, h) = im.size
+        w, h = im.size
         transformed = im.transform(
             im.size,
             Image.Transform.EXTENT,
@@ -108,7 +112,7 @@ class TestImageTransform:
     def test_mesh(self) -> None:
         # this should be a checkerboard of halfsized hoppers in ul, lr
         im = hopper("RGBA")
-        (w, h) = im.size
+        w, h = im.size
         transformed = im.transform(
             im.size,
             Image.Transform.MESH,
@@ -170,7 +174,7 @@ class TestImageTransform:
 
     def test_alpha_premult_transform(self) -> None:
         def op(im: Image.Image, sz: tuple[int, int]) -> Image.Image:
-            (w, h) = im.size
+            w, h = im.size
             return im.transform(
                 sz, Image.Transform.EXTENT, (0, 0, w, h), Image.Resampling.BILINEAR
             )
@@ -212,7 +216,7 @@ class TestImageTransform:
     @pytest.mark.parametrize("mode", ("RGBA", "LA"))
     def test_nearest_transform(self, mode: str) -> None:
         def op(im: Image.Image, sz: tuple[int, int]) -> Image.Image:
-            (w, h) = im.size
+            w, h = im.size
             return im.transform(
                 sz, Image.Transform.EXTENT, (0, 0, w, h), Image.Resampling.NEAREST
             )
@@ -246,14 +250,14 @@ class TestImageTransform:
     def test_missing_method_data(self) -> None:
         with hopper() as im:
             with pytest.raises(ValueError):
-                im.transform((100, 100), None)
+                im.transform((100, 100), None)  # type: ignore[arg-type]
 
     @pytest.mark.parametrize("resample", (Image.Resampling.BOX, "unknown"))
     def test_unknown_resampling_filter(self, resample: Image.Resampling | str) -> None:
         with hopper() as im:
-            (w, h) = im.size
+            w, h = im.size
             with pytest.raises(ValueError):
-                im.transform((100, 100), Image.Transform.EXTENT, (0, 0, w, h), resample)
+                im.transform((100, 100), Image.Transform.EXTENT, (0, 0, w, h), resample)  # type: ignore[arg-type]
 
 
 class TestImageTransformAffine:

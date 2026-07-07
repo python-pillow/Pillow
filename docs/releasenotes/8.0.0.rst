@@ -1,7 +1,7 @@
 8.0.0
 -----
 
-Backwards Incompatible Changes
+Backwards incompatible changes
 ==============================
 
 Python 3.5
@@ -44,7 +44,7 @@ Removed                   Use instead
 ``product_model``         Unicode :py:attr:`~.CmsProfile.model`
 ========================  ===================================================
 
-API Changes
+API changes
 ===========
 
 ImageDraw.text: stroke_width
@@ -67,7 +67,7 @@ Add MIME type to PsdImagePlugin
 "image/vnd.adobe.photoshop" is now registered as the
 :py:class:`.PsdImagePlugin.PsdImageFile` MIME type.
 
-API Additions
+API additions
 =============
 
 Image.open: add formats parameter
@@ -135,7 +135,7 @@ and :py:meth:`.FreeTypeFont.getbbox` return the bounding box of rendered text.
 
 These functions accept an ``anchor`` parameter, see :ref:`text-anchors` for details.
 
-Other Changes
+Other changes
 =============
 
 Improved ellipse-drawing algorithm

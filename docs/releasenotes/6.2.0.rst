@@ -29,7 +29,7 @@ perform operations on it.
 The CVE is regarding DOS problems, such as consuming large amounts of memory,
 or taking a large amount of time to process an image.
 
-API Changes
+API changes
 ===========
 
 Image.getexif
@@ -48,7 +48,7 @@ There has been a longstanding warning that the defaults of ``Image.frombuffer``
 may change in the future for the "raw" decoder. The change will now take place
 in Pillow 7.0.
 
-API Additions
+API additions
 =============
 
 Text stroking
@@ -93,7 +93,7 @@ ImageGrab on multi-monitor Windows
 An ``all_screens`` argument has been added to ``ImageGrab.grab``. If ``True``,
 all monitors will be included in the created image.
 
-Other Changes
+Other changes
 =============
 
 Removed bdist_wininst .exe installers

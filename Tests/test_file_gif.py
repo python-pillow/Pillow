@@ -100,6 +100,18 @@ def test_l_mode_after_rgb() -> None:
         assert im.mode == "RGB"
 
 
+def test_l_mode_transparency_after_rgb() -> None:
+    with Image.open("Tests/images/no_palette_with_transparency_after_rgb.gif") as im:
+        expected = im.convert("RGB")
+        d = ImageDraw.Draw(expected)
+        d.rectangle([(0, 0), (64, 128)], fill="#000")
+
+        im.seek(1)
+        assert im.mode == "RGB"
+
+        assert_image_equal(im, expected)
+
+
 def test_palette_not_needed_for_second_frame() -> None:
     with Image.open("Tests/images/palette_not_needed_for_second_frame.gif") as im:
         im.seek(1)
@@ -224,6 +236,7 @@ def test_optimize_if_palette_can_be_reduced_by_half() -> None:
         out = BytesIO()
         im.save(out, "GIF", optimize=optimize)
         with Image.open(out) as reloaded:
+            assert reloaded.palette is not None
             assert len(reloaded.palette.palette) // 3 == colors
 
 
@@ -280,6 +293,7 @@ def test_roundtrip_save_all(tmp_path: Path) -> None:
         im.save(out, save_all=True)
 
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.n_frames == 5
 
 
@@ -294,6 +308,14 @@ def test_roundtrip_save_all_1(tmp_path: Path) -> None:
 
         reloaded.seek(1)
         assert reloaded.getpixel((0, 0)) == 255
+
+
+@pytest.mark.parametrize("size", ((0, 1), (1, 0), (0, 0)))
+def test_save_zero(size: tuple[int, int]) -> None:
+    b = BytesIO()
+    im = Image.new("RGB", size)
+    with pytest.raises(ValueError, match="cannot write empty image"):
+        im.save(b, "GIF")
 
 
 @pytest.mark.parametrize(
@@ -313,14 +335,13 @@ def test_loading_multiple_palettes(path: str, mode: str) -> None:
 
         im.seek(1)
         assert im.mode == mode
-        if mode == "RGBA":
-            im = im.convert("RGB")
+        im_rgb = im.convert("RGB") if mode == "RGBA" else im
 
         # Check a color only from the old palette
-        assert im.getpixel((0, 0)) == original_color
+        assert im_rgb.getpixel((0, 0)) == original_color
 
         # Check a color from the new palette
-        assert im.getpixel((24, 24)) not in first_frame_colors
+        assert im_rgb.getpixel((24, 24)) not in first_frame_colors
 
 
 def test_headers_saving_for_animated_gifs(tmp_path: Path) -> None:
@@ -340,16 +361,16 @@ def test_palette_handling(tmp_path: Path) -> None:
     # see https://github.com/python-pillow/Pillow/issues/513
 
     with Image.open(TEST_GIF) as im:
-        im = im.convert("RGB")
+        im_rgb = im.convert("RGB")
 
-        im = im.resize((100, 100), Image.Resampling.LANCZOS)
-        im2 = im.convert("P", palette=Image.Palette.ADAPTIVE, colors=256)
+    im_rgb = im_rgb.resize((100, 100), Image.Resampling.LANCZOS)
+    im_p = im_rgb.convert("P", palette=Image.Palette.ADAPTIVE, colors=256)
 
-        f = tmp_path / "temp.gif"
-        im2.save(f, optimize=True)
+    f = tmp_path / "temp.gif"
+    im_p.save(f, optimize=True)
 
     with Image.open(f) as reloaded:
-        assert_image_similar(im, reloaded.convert("RGB"), 10)
+        assert_image_similar(im_rgb, reloaded.convert("RGB"), 10)
 
 
 def test_palette_434(tmp_path: Path) -> None:
@@ -369,35 +390,36 @@ def test_palette_434(tmp_path: Path) -> None:
         with roundtrip(im, optimize=True) as reloaded:
             assert_image_similar(im, reloaded, 1)
 
-        im = im.convert("RGB")
-        # check automatic P conversion
-        with roundtrip(im) as reloaded:
-            reloaded = reloaded.convert("RGB")
-            assert_image_equal(im, reloaded)
+        im_rgb = im.convert("RGB")
+
+    # check automatic P conversion
+    with roundtrip(im_rgb) as reloaded:
+        reloaded = reloaded.convert("RGB")
+        assert_image_equal(im_rgb, reloaded)
 
 
 @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
 def test_save_netpbm_bmp_mode(tmp_path: Path) -> None:
     with Image.open(TEST_GIF) as img:
-        img = img.convert("RGB")
+        img_rgb = img.convert("RGB")
 
-        tempfile = str(tmp_path / "temp.gif")
-        b = BytesIO()
-        GifImagePlugin._save_netpbm(img, b, tempfile)
-        with Image.open(tempfile) as reloaded:
-            assert_image_similar(img, reloaded.convert("RGB"), 0)
+    tempfile = str(tmp_path / "temp.gif")
+    b = BytesIO()
+    GifImagePlugin._save_netpbm(img_rgb, b, tempfile)
+    with Image.open(tempfile) as reloaded:
+        assert_image_equal(img_rgb, reloaded.convert("RGB"))
 
 
 @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
 def test_save_netpbm_l_mode(tmp_path: Path) -> None:
     with Image.open(TEST_GIF) as img:
-        img = img.convert("L")
+        img_l = img.convert("L")
 
         tempfile = str(tmp_path / "temp.gif")
         b = BytesIO()
-        GifImagePlugin._save_netpbm(img, b, tempfile)
+        GifImagePlugin._save_netpbm(img_l, b, tempfile)
         with Image.open(tempfile) as reloaded:
-            assert_image_similar(img, reloaded.convert("L"), 0)
+            assert_image_equal(img_l, reloaded.convert("L"))
 
 
 def test_seek() -> None:
@@ -540,7 +562,9 @@ def test_dispose_background_transparency() -> None:
         img.seek(2)
         px = img.load()
         assert px is not None
-        assert px[35, 30][3] == 0
+        value = px[35, 30]
+        assert isinstance(value, tuple)
+        assert value[3] == 0
 
 
 @pytest.mark.parametrize(
@@ -1022,9 +1046,9 @@ def test_webp_background(tmp_path: Path) -> None:
             im.save(out)
 
     # Test non-opaque WebP background
-    im = Image.new("L", (100, 100), "#000")
-    im.info["background"] = (0, 0, 0, 0)
-    im.save(out)
+    im2 = Image.new("L", (100, 100), "#000")
+    im2.info["background"] = (0, 0, 0, 0)
+    im2.save(out)
 
 
 def test_comment(tmp_path: Path) -> None:
@@ -1032,16 +1056,16 @@ def test_comment(tmp_path: Path) -> None:
         assert im.info["comment"] == b"File written by Adobe Photoshop\xa8 4.0"
 
     out = tmp_path / "temp.gif"
-    im = Image.new("L", (100, 100), "#000")
-    im.info["comment"] = b"Test comment text"
-    im.save(out)
+    im2 = Image.new("L", (100, 100), "#000")
+    im2.info["comment"] = b"Test comment text"
+    im2.save(out)
     with Image.open(out) as reread:
-        assert reread.info["comment"] == im.info["comment"]
+        assert reread.info["comment"] == im2.info["comment"]
 
-    im.info["comment"] = "Test comment text"
-    im.save(out)
+    im2.info["comment"] = "Test comment text"
+    im2.save(out)
     with Image.open(out) as reread:
-        assert reread.info["comment"] == im.info["comment"].encode()
+        assert reread.info["comment"] == im2.info["comment"].encode()
 
         # Test that GIF89a is used for comments
         assert reread.info["version"] == b"GIF89a"
@@ -1229,7 +1253,9 @@ def test_removed_transparency(tmp_path: Path) -> None:
         im.putpixel((x, 0), (x, 0, 0))
 
     im.info["transparency"] = (255, 255, 255)
-    with pytest.warns(UserWarning):
+    with pytest.warns(
+        UserWarning, match="Couldn't allocate palette entry for transparency"
+    ):
         im.save(out)
 
     with Image.open(out) as reloaded:
@@ -1251,7 +1277,7 @@ def test_rgb_transparency(tmp_path: Path) -> None:
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = b""
     ims = [Image.new("RGB", (1, 1))]
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="should be converted to RGBA images"):
         im.save(out, save_all=True, append_images=ims)
 
     with Image.open(out) as reloaded:
@@ -1357,8 +1383,10 @@ def test_palette_save_all_P(tmp_path: Path) -> None:
 
     with Image.open(out) as im:
         # Assert that the frames are correct, and each frame has the same palette
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         assert_image_equal(im.convert("RGB"), frames[0].convert("RGB"))
         assert im.palette is not None
+        assert im.global_palette is not None
         assert im.palette.palette == im.global_palette.palette
 
         im.seek(1)
@@ -1425,7 +1453,7 @@ def test_getdata(monkeypatch: pytest.MonkeyPatch) -> None:
     # with open('Tests/images/gif_header_data.pkl', 'wb') as f:
     #    pickle.dump((h, d), f, 1)
     with open("Tests/images/gif_header_data.pkl", "rb") as f:
-        (h_target, d_target) = pickle.load(f)
+        h_target, d_target = pickle.load(f)
 
     assert h == h_target
     assert d == d_target
@@ -1434,7 +1462,9 @@ def test_getdata(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_lzw_bits() -> None:
     # see https://github.com/python-pillow/Pillow/issues/2811
     with Image.open("Tests/images/issue_2811.gif") as im:
-        assert im.tile[0][3][0] == 11  # LZW bits
+        args = im.tile[0][3]
+        assert isinstance(args, tuple)
+        assert args[0] == 11  # LZW bits
         # codec error prepatch
         im.load()
 
@@ -1489,7 +1519,11 @@ def test_saving_rgba(tmp_path: Path) -> None:
 
     with Image.open(out) as reloaded:
         reloaded_rgba = reloaded.convert("RGBA")
-        assert reloaded_rgba.load()[0, 0][3] == 0
+        px = reloaded_rgba.load()
+        assert px is not None
+        value = px[0, 0]
+        assert isinstance(value, tuple)
+        assert value[3] == 0
 
 
 @pytest.mark.parametrize("params", ({}, {"disposal": 2, "optimize": False}))

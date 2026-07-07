@@ -52,3 +52,17 @@ def test_tiff_crashes(test_file: str) -> None:
         pytest.skip("test image not found")
     except OSError:
         pass
+
+
+def test_tiff_mmap() -> None:
+    try:
+        with Image.open("Tests/images/crash_mmap.tif") as im:
+            im.seek(1)
+            im.load()
+
+            im.seek(0)
+            im.load()
+    except FileNotFoundError:
+        if on_ci():
+            raise
+        pytest.skip("test image not found")

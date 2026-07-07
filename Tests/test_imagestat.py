@@ -57,3 +57,13 @@ def test_constant() -> None:
     assert st.rms[0] == 128
     assert st.var[0] == 0
     assert st.stddev[0] == 0
+
+
+def test_zero_count() -> None:
+    im = Image.new("L", (0, 0))
+
+    st = ImageStat.Stat(im)
+
+    assert st.mean == [0]
+    assert st.rms == [0]
+    assert st.var == [0]

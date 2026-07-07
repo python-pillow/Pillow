@@ -1,7 +1,7 @@
 4.3.0
 -----
 
-API Changes
+API changes
 ===========
 
 Deprecations
@@ -12,7 +12,7 @@ Several undocumented functions in ImageOps have been deprecated:
 ``box_blur``. Use the equivalent operations in ``ImageFilter``
 instead. These functions will be removed in a future release.
 
-TIFF Metadata Changes
+TIFF metadata changes
 ^^^^^^^^^^^^^^^^^^^^^
 
 * TIFF tags with unknown type/quantity now default to being bare
@@ -27,7 +27,7 @@ TIFF Metadata Changes
   items, as there can be multiple items, one for UTF-8, and one for
   UTF-16.
 
-Core Image API Changes
+Core Image API changes
 ^^^^^^^^^^^^^^^^^^^^^^
 
 These are internal functions that should not have been used by user
@@ -44,10 +44,10 @@ The ``PIL.Image.core.getcount`` methods have been removed, use
 ``PIL.Image.core.get_stats()['new_count']`` property instead.
 
 
-API Additions
+API additions
 =============
 
-Get One Channel From Image
+Get one channel from image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A new method :py:meth:`PIL.Image.Image.getchannel` has been added to
@@ -56,14 +56,14 @@ return a single channel by index or name. For example,
 ``getchannel`` should work up to 6 times faster than
 ``image.split()[0]`` in previous Pillow versions.
 
-Box Blur
+Box blur
 ^^^^^^^^
 
 A new filter, :py:class:`PIL.ImageFilter.BoxBlur`, has been
 added. This is a filter with similar results to a Gaussian blur, but
 is much faster.
 
-Partial Resampling
+Partial resampling
 ^^^^^^^^^^^^^^^^^^
 
 Added new argument ``box`` for :py:meth:`PIL.Image.Image.resize`. This
@@ -71,14 +71,14 @@ argument defines a source rectangle from within the source image to be
 resized.  This is very similar to the ``image.crop(box).resize(size)``
 sequence except that ``box`` can be specified with subpixel accuracy.
 
-New Transpose Operation
+New transpose operation
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``Image.TRANSVERSE`` operation has been added to
 :py:meth:`PIL.Image.Image.transpose`. This is equivalent to a transpose
 operation about the opposite diagonal.
 
-Multiband Filters
+Multiband filters
 ^^^^^^^^^^^^^^^^^
 
 There is a new :py:class:`PIL.ImageFilter.MultibandFilter` base class
@@ -87,10 +87,10 @@ operation. The original :py:class:`PIL.ImageFilter.Filter` class
 remains for image filters that can process only single band images, or
 require splitting of channels prior to filtering.
 
-Other Changes
+Other changes
 =============
 
-Loading 16-bit TIFF Images
+Loading 16-bit TIFF images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pillow now can read 16-bit multichannel TIFF files including files
@@ -101,7 +101,7 @@ Pillow now can read 16-bit signed integer single channel TIFF
 files. The image data is promoted to 32-bit for storage and
 processing.
 
-SGI Images
+SGI images
 ^^^^^^^^^^
 
 Pillow can now read and write uncompressed 16-bit multichannel SGI
@@ -129,7 +129,7 @@ This release contains several performance improvements:
   falling back to an allocation for each scan line for images larger
   than the block size.
 
-CMYK Conversion
+CMYK conversion
 ^^^^^^^^^^^^^^^
 
 The basic CMYK->RGB conversion has been tweaked to match the formula

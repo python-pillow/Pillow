@@ -33,11 +33,7 @@ class BitStream:
 
     def peek(self, bits: int) -> int:
         while self.bits < bits:
-            c = self.next()
-            if c < 0:
-                self.bits = 0
-                continue
-            self.bitbuffer = (self.bitbuffer << 8) + c
+            self.bitbuffer = (self.bitbuffer << 8) + self.next()
             self.bits += 8
         return self.bitbuffer >> (self.bits - bits) & (1 << bits) - 1
 

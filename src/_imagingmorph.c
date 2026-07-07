@@ -53,7 +53,13 @@ apply(PyObject *self, PyObject *args) {
     }
 
     imgin = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!imgin) {
+        return NULL;
+    }
     imgout = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
+    if (!imgout) {
+        return NULL;
+    }
     width = imgin->xsize;
     height = imgin->ysize;
 
@@ -143,6 +149,9 @@ match(PyObject *self, PyObject *args) {
     }
 
     imgin = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!imgin) {
+        return NULL;
+    }
 
     if (imgin->type != IMAGING_TYPE_UINT8 || imgin->bands != 1) {
         PyErr_SetString(PyExc_RuntimeError, "Unsupported image type");
@@ -185,8 +194,16 @@ match(PyObject *self, PyObject *args) {
                  (b6 << 6) | (b7 << 7) | (b8 << 8));
             if (lut[lut_idx]) {
                 PyObject *coordObj = Py_BuildValue("(nn)", col_idx, row_idx);
-                PyList_Append(ret, coordObj);
-                Py_XDECREF(coordObj);
+                if (!coordObj) {
+                    Py_DECREF(ret);
+                    return NULL;
+                }
+                if (PyList_Append(ret, coordObj) == -1) {
+                    Py_DECREF(ret);
+                    Py_DECREF(coordObj);
+                    return NULL;
+                }
+                Py_DECREF(coordObj);
             }
         }
     }
@@ -216,6 +233,9 @@ get_on_pixels(PyObject *self, PyObject *args) {
     }
 
     img = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!img) {
+        return NULL;
+    }
     rows = img->image8;
     width = img->xsize;
     height = img->ysize;
@@ -230,8 +250,16 @@ get_on_pixels(PyObject *self, PyObject *args) {
         for (col_idx = 0; col_idx < width; col_idx++) {
             if (row[col_idx]) {
                 PyObject *coordObj = Py_BuildValue("(nn)", col_idx, row_idx);
-                PyList_Append(ret, coordObj);
-                Py_XDECREF(coordObj);
+                if (!coordObj) {
+                    Py_DECREF(ret);
+                    return NULL;
+                }
+                if (PyList_Append(ret, coordObj) == -1) {
+                    Py_DECREF(ret);
+                    Py_DECREF(coordObj);
+                    return NULL;
+                }
+                Py_DECREF(coordObj);
             }
         }
     }
@@ -246,23 +274,22 @@ static PyMethodDef functions[] = {
     {NULL, NULL, 0, NULL}
 };
 
+static PyModuleDef_Slot slots[] = {
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
 PyMODINIT_FUNC
 PyInit__imagingmorph(void) {
-    PyObject *m;
-
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_imagingmorph",
         .m_doc = "A module for doing image morphology",
-        .m_size = -1,
         .m_methods = functions,
+        .m_slots = slots
     };
 
-    m = PyModule_Create(&module_def);
-
-#ifdef Py_GIL_DISABLED
-    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
-#endif
-
-    return m;
+    return PyModuleDef_Init(&module_def);
 }

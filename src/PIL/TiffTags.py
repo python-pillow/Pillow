@@ -203,6 +203,11 @@ _tags_v2: dict[int, tuple[str, int, int] | tuple[str, int, int, dict[str, int]]]
     531: ("YCbCrPositioning", SHORT, 1),
     532: ("ReferenceBlackWhite", RATIONAL, 6),
     700: ("XMP", BYTE, 0),
+    # Four private SGI tags
+    32995: ("Matteing", SHORT, 1),
+    32996: ("DataType", SHORT, 0),
+    32997: ("ImageDepth", LONG, 1),
+    32998: ("TileDepth", LONG, 1),
     33432: ("Copyright", ASCII, 1),
     33723: ("IptcNaaInfo", UNDEFINED, 1),
     34377: ("PhotoshopInfo", BYTE, 0),
@@ -553,7 +558,6 @@ LIBTIFF_CORE = {
 LIBTIFF_CORE.remove(255)  # We don't have support for subfiletypes
 LIBTIFF_CORE.remove(322)  # We don't have support for writing tiled images with libtiff
 LIBTIFF_CORE.remove(323)  # Tiled images
-LIBTIFF_CORE.remove(333)  # Ink Names either
 
 # Note to advanced users: There may be combinations of these
 # parameters and values that when added properly, will work and

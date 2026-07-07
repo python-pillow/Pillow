@@ -16,10 +16,24 @@ import subprocess
 import sys
 import warnings
 from collections.abc import Iterator
-from typing import Any
 
+from pybind11.setup_helpers import ParallelCompile
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from setuptools import _BuildInfo
+
+configuration: dict[str, list[str]] = {}
+
+# parse configuration from _custom_build/backend.py
+while sys.argv[-1].startswith("--pillow-configuration="):
+    _, key, value = sys.argv.pop().split("=", 2)
+    configuration.setdefault(key, []).append(value)
+
+default = int(configuration.get("parallel", ["0"])[-1])
+ParallelCompile("MAX_CONCURRENCY", default).install()
 
 
 def get_version() -> str:
@@ -28,10 +42,8 @@ def get_version() -> str:
         return f.read().split('"')[1]
 
 
-configuration: dict[str, list[str]] = {}
-
-
 PILLOW_VERSION = get_version()
+AVIF_ROOT = None
 FREETYPE_ROOT = None
 HARFBUZZ_ROOT = None
 FRIBIDI_ROOT = None
@@ -45,7 +57,7 @@ WEBP_ROOT = None
 ZLIB_ROOT = None
 FUZZING_BUILD = "LIB_FUZZING_ENGINE" in os.environ
 
-if sys.platform == "win32" and sys.version_info >= (3, 14):
+if sys.platform == "win32" and sys.version_info >= (3, 16):
     import atexit
 
     atexit.register(
@@ -64,6 +76,7 @@ _IMAGING = ("decode", "encode", "map", "display", "outline", "path")
 _LIB_IMAGING = (
     "Access",
     "AlphaComposite",
+    "Arrow",
     "Resample",
     "Reduce",
     "Bands",
@@ -81,7 +94,6 @@ _LIB_IMAGING = (
     "Draw",
     "Effects",
     "EpsEncode",
-    "File",
     "Fill",
     "Filter",
     "FliDecode",
@@ -146,7 +158,7 @@ class RequiredDependencyException(Exception):
 PLATFORM_MINGW = os.name == "nt" and "GCC" in sys.version
 
 
-def _dbg(s: str, tp: Any = None) -> None:
+def _dbg(s: str, tp: str | tuple[str, ...] | None = None) -> None:
     if DEBUG:
         if tp:
             print(s % tp)
@@ -161,7 +173,7 @@ def _find_library_dirs_ldconfig() -> list[str]:
     args: list[str]
     env: dict[str, str]
     expr: str
-    if sys.platform.startswith("linux") or sys.platform.startswith("gnu"):
+    if sys.platform.startswith(("linux", "gnu")):
         if struct.calcsize("l") == 4:
             machine = os.uname()[4] + "-32"
         else:
@@ -222,13 +234,14 @@ def _add_directory(
         path.insert(where, subdir)
 
 
-def _find_include_file(self: pil_build_ext, include: str) -> int:
+def _find_include_file(self: pil_build_ext, include: str) -> str | None:
     for directory in self.compiler.include_dirs:
         _dbg("Checking for include file %s in %s", (include, directory))
-        if os.path.isfile(os.path.join(directory, include)):
+        path = os.path.join(directory, include)
+        if os.path.isfile(path):
             _dbg("Found %s", include)
-            return 1
-    return 0
+            return path
+    return None
 
 
 def _find_library_file(self: pil_build_ext, library: str) -> str | None:
@@ -288,7 +301,7 @@ def _pkg_config(name: str) -> tuple[list[str], list[str]] | None:
                 subprocess.check_output(command_cflags).decode("utf8").strip(),
             )[::2][1:]
             return libs, cflags
-        except Exception:
+        except Exception:  # noqa: PERF203
             pass
     return None
 
@@ -306,6 +319,7 @@ class pil_build_ext(build_ext):
             "jpeg2000",
             "imagequant",
             "xcb",
+            "avif",
         ]
 
         required = {"jpeg", "zlib"}
@@ -348,7 +362,6 @@ class pil_build_ext(build_ext):
             ("disable-platform-guessing", None, "Disable platform guessing"),
             ("debug", None, "Debug logging"),
         ]
-        + [("add-imaging-libs=", None, "Add libs to _imaging build")]
     )
 
     @staticmethod
@@ -359,7 +372,6 @@ class pil_build_ext(build_ext):
         self.disable_platform_guessing = self.check_configuration(
             "platform-guessing", "disable"
         )
-        self.add_imaging_libs = ""
         build_ext.initialize_options(self)
         for x in self.feature:
             setattr(self, f"disable_{x}", self.check_configuration(x, "disable"))
@@ -383,9 +395,7 @@ class pil_build_ext(build_ext):
             cpu_count = os.cpu_count()
             if cpu_count is not None:
                 try:
-                    self.parallel = int(
-                        os.environ.get("MAX_CONCURRENCY", min(4, cpu_count))
-                    )
+                    self.parallel = int(os.environ.get("MAX_CONCURRENCY", cpu_count))
                 except TypeError:
                     pass
         for x in self.feature:
@@ -470,6 +480,19 @@ class pil_build_ext(build_ext):
                 sdk_path = commandlinetools_sdk_path
         return sdk_path
 
+    def get_ios_sdk_path(self) -> str:
+        try:
+            sdk = sys.implementation._multiarch.split("-")[-1]
+            _dbg("Using %s SDK", sdk)
+            return (
+                subprocess.check_output(["xcrun", "--show-sdk-path", "--sdk", sdk])
+                .strip()
+                .decode("latin1")
+            )
+        except Exception:
+            msg = "Unable to identify location of iOS SDK."
+            raise ValueError(msg)
+
     def build_extensions(self) -> None:
         library_dirs: list[str] = []
         include_dirs: list[str] = []
@@ -481,6 +504,7 @@ class pil_build_ext(build_ext):
         #
         # add configured kits
         for root_name, lib_name in {
+            "AVIF_ROOT": "avif",
             "JPEG_ROOT": "libjpeg",
             "JPEG2K_ROOT": "libopenjp2",
             "TIFF_ROOT": ("libtiff-5", "libtiff-4"),
@@ -503,15 +527,12 @@ class pil_build_ext(build_ext):
                 )
 
             if root is None and pkg_config:
-                if isinstance(lib_name, str):
-                    _dbg(f"Looking for `{lib_name}` using pkg-config.")
-                    root = pkg_config(lib_name)
-                else:
-                    for lib_name2 in lib_name:
-                        _dbg(f"Looking for `{lib_name2}` using pkg-config.")
-                        root = pkg_config(lib_name2)
-                        if root:
-                            break
+                for lib_name2 in (
+                    [lib_name] if isinstance(lib_name, str) else lib_name
+                ):
+                    _dbg("Looking for `%s` using pkg-config.", lib_name2)
+                    if root := pkg_config(lib_name2):
+                        break
 
             if isinstance(root, tuple):
                 lib_root, include_root = root
@@ -618,11 +639,19 @@ class pil_build_ext(build_ext):
 
                 for extension in self.extensions:
                     extension.extra_compile_args = ["-Wno-nullability-completeness"]
-        elif (
-            sys.platform.startswith("linux")
-            or sys.platform.startswith("gnu")
-            or sys.platform.startswith("freebsd")
-        ):
+
+        elif sys.platform == "ios":
+            # Add the iOS SDK path.
+            sdk_path = self.get_ios_sdk_path()
+
+            # Add the iOS SDK path.
+            _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
+            _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
+
+            for extension in self.extensions:
+                extension.extra_compile_args = ["-Wno-nullability-completeness"]
+
+        elif sys.platform.startswith(("linux", "gnu", "freebsd")):
             for dirname in _find_library_dirs_ldconfig():
                 _add_directory(library_dirs, dirname)
             if sys.platform.startswith("linux") and os.environ.get("ANDROID_ROOT"):
@@ -731,7 +760,7 @@ class pil_build_ext(build_ext):
                             best_path = os.path.join(directory, name)
                             _dbg(
                                 "Best openjpeg version %s so far in %s",
-                                (best_version, best_path),
+                                (str(best_version), best_path),
                             )
 
             if best_version and _find_library_file(self, "openjp2"):
@@ -753,12 +782,12 @@ class pil_build_ext(build_ext):
         if feature.want("tiff"):
             _dbg("Looking for tiff")
             if _find_include_file(self, "tiff.h"):
-                if _find_library_file(self, "tiff"):
-                    feature.set("tiff", "tiff")
                 if sys.platform in ["win32", "darwin"] and _find_library_file(
                     self, "libtiff"
                 ):
                     feature.set("tiff", "libtiff")
+                elif _find_library_file(self, "tiff"):
+                    feature.set("tiff", "tiff")
 
         if feature.want("freetype"):
             _dbg("Looking for freetype")
@@ -846,6 +875,16 @@ class pil_build_ext(build_ext):
                 if _find_library_file(self, "xcb"):
                     feature.set("xcb", "xcb")
 
+        if feature.want("avif"):
+            _dbg("Looking for avif")
+            if avif_h := _find_include_file(self, "avif/avif.h"):
+                with open(avif_h, "rb") as fp:
+                    major_version = int(
+                        fp.read().split(b"#define AVIF_VERSION_MAJOR ")[1].split()[0]
+                    )
+                    if major_version >= 1 and _find_library_file(self, "avif"):
+                        feature.set("avif", "avif")
+
         for f in feature:
             if not feature.get(f) and feature.require(f):
                 if f in ("jpeg", "zlib"):
@@ -856,7 +895,6 @@ class pil_build_ext(build_ext):
         # core library
 
         libs: list[str | bool | None] = []
-        libs.extend(self.add_imaging_libs.split())
         defs: list[tuple[str, str | None]] = []
         if feature.get("tiff"):
             libs.append(feature.get("tiff"))
@@ -867,6 +905,9 @@ class pil_build_ext(build_ext):
                 # so we have to guess; by default it is defined in all Windows builds.
                 # See #4237, #5243, #5359 for more information.
                 defs.append(("USE_WIN32_FILEIO", None))
+            elif sys.platform == "ios":
+                # Ensure transitive dependencies are linked.
+                libs.append("lzma")
         if feature.get("jpeg"):
             libs.append(feature.get("jpeg"))
             defs.append(("HAVE_LIBJPEG", None))
@@ -883,6 +924,9 @@ class pil_build_ext(build_ext):
             defs.append(("HAVE_LIBIMAGEQUANT", None))
         if feature.get("xcb"):
             libs.append(feature.get("xcb"))
+            if sys.platform == "ios":
+                # Ensure transitive dependencies are linked.
+                libs.append("Xau")
             defs.append(("HAVE_XCB", None))
         if sys.platform == "win32":
             libs.extend(["kernel32", "user32", "gdi32"])
@@ -914,6 +958,11 @@ class pil_build_ext(build_ext):
                         libs.append(feature.get("fribidi"))
                     else:  # building FriBiDi shim from src/thirdparty
                         srcs.append("src/thirdparty/fribidi-shim/fribidi.c")
+
+            if sys.platform == "ios":
+                # Ensure transitive dependencies are linked.
+                libs.extend(["z", "bz2", "brotlicommon", "brotlidec", "png"])
+
             self._update_extension("PIL._imagingft", libs, defs, srcs)
 
         else:
@@ -930,9 +979,20 @@ class pil_build_ext(build_ext):
         webp = feature.get("webp")
         if isinstance(webp, str):
             libs = [webp, webp + "mux", webp + "demux"]
+            if sys.platform == "ios":
+                # Ensure transitive dependencies are linked.
+                libs.append("sharpyuv")
             self._update_extension("PIL._webp", libs)
         else:
             self._remove_extension("PIL._webp")
+
+        if feature.get("avif"):
+            libs = [feature.get("avif")]
+            if sys.platform == "win32":
+                libs.extend(["ntdll", "userenv", "ws2_32", "bcrypt"])
+            self._update_extension("PIL._avif", libs)
+        else:
+            self._remove_extension("PIL._avif")
 
         tk_libs = ["psapi"] if sys.platform in ("win32", "cygwin") else []
         self._update_extension("PIL._imagingtk", tk_libs)
@@ -976,6 +1036,7 @@ class pil_build_ext(build_ext):
             (feature.get("lcms"), "LITTLECMS2"),
             (feature.get("webp"), "WEBP"),
             (feature.get("xcb"), "XCB (X protocol)"),
+            (feature.get("avif"), "LIBAVIF"),
         ]
 
         all = 1
@@ -1004,36 +1065,36 @@ class pil_build_ext(build_ext):
         print("")
 
 
-def debug_build() -> bool:
-    return hasattr(sys, "gettotalrefcount") or FUZZING_BUILD
-
+libraries: list[tuple[str, _BuildInfo]] = [
+    ("pil_imaging_mode", {"sources": ["src/libImaging/Mode.c"]}),
+]
 
 files: list[str | os.PathLike[str]] = ["src/_imaging.c"]
-for src_file in _IMAGING:
-    files.append("src/" + src_file + ".c")
-for src_file in _LIB_IMAGING:
-    files.append(os.path.join("src/libImaging", src_file + ".c"))
+files.extend("src/" + src_file + ".c" for src_file in _IMAGING)
+files.extend(
+    os.path.join("src/libImaging", src_file + ".c") for src_file in _LIB_IMAGING
+)
 ext_modules = [
     Extension("PIL._imaging", files),
     Extension("PIL._imagingft", ["src/_imagingft.c"]),
     Extension("PIL._imagingcms", ["src/_imagingcms.c"]),
     Extension("PIL._webp", ["src/_webp.c"]),
+    Extension("PIL._avif", ["src/_avif.c"]),
     Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),
-    Extension("PIL._imagingmath", ["src/_imagingmath.c"]),
+    Extension(
+        "PIL._imagingmath",
+        ["src/_imagingmath.c"],
+        libraries=None if sys.platform == "win32" else ["m"],
+    ),
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
 ]
 
-
-# parse configuration from _custom_build/backend.py
-while sys.argv[-1].startswith("--pillow-configuration="):
-    _, key, value = sys.argv.pop().split("=", 2)
-    configuration.setdefault(key, []).append(value)
 
 try:
     setup(
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=ext_modules,
-        zip_safe=not (debug_build() or PLATFORM_MINGW),
+        libraries=libraries,
     )
 except RequiredDependencyException as err:
     msg = f"""

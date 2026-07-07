@@ -56,7 +56,7 @@ def test_questionable() -> None:
                 im.load()
             if os.path.basename(f) not in supported:
                 print(f"Please add {f} to the partially supported bmp specs.")
-        except Exception:  # as msg:
+        except Exception:  # noqa: PERF203
             if os.path.basename(f) in supported:
                 raise
 
@@ -72,7 +72,7 @@ def test_good() -> None:
         "pal8-0.bmp": "pal8.png",
         "pal8rle.bmp": "pal8.png",
         "pal8topdown.bmp": "pal8.png",
-        "pal8nonsquare.bmp": "pal8nonsquare-v.png",
+        "pal8nonsquare.bmp": "pal8nonsquare-e.png",
         "pal8os2.bmp": "pal8.png",
         "pal8os2sp.bmp": "pal8.png",
         "pal8os2v2.bmp": "pal8.png",
@@ -95,18 +95,18 @@ def test_good() -> None:
     for f in get_files("g"):
         try:
             with Image.open(f) as im:
-                im.load()
                 with Image.open(get_compare(f)) as compare:
-                    compare.load()
-                    if im.mode == "P":
-                        # assert image similar doesn't really work
-                        # with paletized image, since the palette might
-                        # be differently ordered for an equivalent image.
-                        im = im.convert("RGBA")
-                        compare = im.convert("RGBA")
-                    assert_image_similar(im, compare, 5)
+                    # assert image similar doesn't really work
+                    # with paletized image, since the palette might
+                    # be differently ordered for an equivalent image.
+                    im_converted = im.convert("RGBA") if im.mode == "P" else im
+                    compare_converted = (
+                        compare.convert("RGBA") if im.mode == "P" else compare
+                    )
 
-        except Exception as msg:
+                    assert_image_similar(im_converted, compare_converted, 5)
+
+        except Exception as msg:  # noqa: PERF203
             # there are three here that are unsupported:
             unsupported = (
                 os.path.join(base, "g", "rgb32bf.bmp"),

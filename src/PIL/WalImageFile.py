@@ -22,6 +22,7 @@ and has been tested with a few sample files found using google.
     is not registered for use with :py:func:`PIL.Image.open()`.
     To open a WAL file, use the :py:func:`PIL.WalImageFile.open()` function instead.
 """
+
 from __future__ import annotations
 
 from typing import IO
@@ -39,6 +40,7 @@ class WalImageFile(ImageFile.ImageFile):
         self._mode = "P"
 
         # read header fields
+        assert self.fp is not None
         header = self.fp.read(32 + 24 + 32 + 12)
         self._size = i32(header, 32), i32(header, 36)
         Image._decompression_bomb_check(self.size)
@@ -49,12 +51,12 @@ class WalImageFile(ImageFile.ImageFile):
 
         # strings are null-terminated
         self.info["name"] = header[:32].split(b"\0", 1)[0]
-        next_name = header[56 : 56 + 32].split(b"\0", 1)[0]
-        if next_name:
+        if next_name := header[56 : 56 + 32].split(b"\0", 1)[0]:
             self.info["next_name"] = next_name
 
     def load(self) -> Image.core.PixelAccess | None:
         if self._im is None:
+            assert self.fp is not None
             self.im = Image.core.new(self.mode, self.size)
             self.frombytes(self.fp.read(self.size[0] * self.size[1]))
             self.putpalette(quake2palette)

@@ -1,10 +1,10 @@
 .. py:module:: PIL.ImageShow
 .. py:currentmodule:: PIL.ImageShow
 
-:py:mod:`~PIL.ImageShow` Module
+:py:mod:`~PIL.ImageShow` module
 ===============================
 
-The :py:mod:`~PIL.ImageShow` Module is used to display images.
+The :py:mod:`~PIL.ImageShow` module is used to display images.
 All default viewers convert the image to be shown to PNG format.
 
 .. autofunction:: PIL.ImageShow.show

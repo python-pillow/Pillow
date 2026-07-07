@@ -1,6 +1,6 @@
 .. _image-plugins:
 
-Writing Your Own Image Plugin
+Writing your own image plugin
 =============================
 
 Pillow uses a plugin model which allows you to add your own
@@ -329,7 +329,7 @@ The fields are used as follows:
 
 .. _file-codecs:
 
-Writing Your Own File Codec in C
+Writing your own file codec in C
 ================================
 
 There are 3 stages in a file codec's lifetime:
@@ -393,7 +393,7 @@ state structure, and a buffer of data to be transformed.
 It is the codec's responsibility to pull as much data as possible out of the
 buffer and return the number of bytes consumed. The next call to the codec will
 include the previous unconsumed tail. The codec function will be called
-multiple times as the data processed.
+multiple times as the data is processed.
 
 Alternatively, if ``pulls_fd`` or ``pushes_fd`` is set, then the decode or
 encode function is called once, with an empty buffer. It is the codec's
@@ -414,7 +414,7 @@ memory and release any resources from external libraries.
 
 .. _file-codecs-py:
 
-Writing Your Own File Codec in Python
+Writing your own file codec in Python
 =====================================
 
 Python file decoders and encoders should derive from
@@ -446,7 +446,7 @@ Python-based file codec:
    is complete. This can be used to clean up any resources used by the codec.
 
    If you set ``_pulls_fd`` or ``_pushes_fd`` to ``True`` however, then you
-   probably chose to perform any cleanup tasks  at the end of ``decode`` or
+   probably chose to perform any cleanup tasks at the end of ``decode`` or
    ``encode``.
 
 For an example :py:class:`PIL.ImageFile.PyDecoder`, see `DdsImagePlugin

@@ -4,13 +4,13 @@ from collections.abc import Generator
 from pathlib import Path
 
 import pytest
-from packaging.version import parse as parse_version
 
-from PIL import GifImagePlugin, Image, WebPImagePlugin, features
+from PIL import GifImagePlugin, Image, WebPImagePlugin
 
 from .helper import (
     assert_image_equal,
     assert_image_similar,
+    has_feature_version,
     is_big_endian,
     skip_unless_feature,
 )
@@ -53,11 +53,8 @@ def test_write_animation_L(tmp_path: Path) -> None:
             im.load()
             assert_image_similar(im, orig.convert("RGBA"), 32.9)
 
-            if is_big_endian():
-                version = features.version_module("webp")
-                assert version is not None
-                if parse_version(version) < parse_version("1.2.2"):
-                    pytest.skip("Fails with libwebp earlier than 1.2.2")
+            if is_big_endian() and not has_feature_version("webp", "1.2.2"):
+                pytest.skip("Fails with libwebp earlier than 1.2.2")
             orig.seek(orig.n_frames - 1)
             im.seek(im.n_frames - 1)
             orig.load()
@@ -81,11 +78,8 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
             assert_image_equal(im, frame1.convert("RGBA"))
 
             # Compare second frame to original
-            if is_big_endian():
-                version = features.version_module("webp")
-                assert version is not None
-                if parse_version(version) < parse_version("1.2.2"):
-                    pytest.skip("Fails with libwebp earlier than 1.2.2")
+            if is_big_endian() and not has_feature_version("webp", "1.2.2"):
+                pytest.skip("Fails with libwebp earlier than 1.2.2")
             im.seek(1)
             im.load()
             assert_image_equal(im, frame2.convert("RGBA"))

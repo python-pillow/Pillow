@@ -1,7 +1,7 @@
 10.1.0
 ------
 
-API Changes
+API changes
 ===========
 
 Setting image mode
@@ -35,7 +35,7 @@ to be specified, rather than a single number for both dimensions. ::
     ImageFilter.BoxBlur((2, 5))
     ImageFilter.GaussianBlur((2, 5))
 
-API Additions
+API additions
 =============
 
 EpsImagePlugin.gs_binary
@@ -71,7 +71,7 @@ size and font_size arguments when using default font
 
 Pillow has had a "better than nothing" default font, which can only be drawn at
 one font size. Now, if FreeType support is available, a version of
-`Aileron Regular <https://dotcolon.net/font/aileron>`_ is loaded, which can be
+`Aileron Regular <https://dotcolon.net/fonts/aileron>`_ is loaded, which can be
 drawn at chosen font sizes.
 
 The following ``size`` and ``font_size`` arguments can now be used to specify a
@@ -84,7 +84,7 @@ font size for this new builtin font::
     draw.multiline_text((0, 0), "test", font_size=24)
     draw.multiline_textbbox((0, 0), "test", font_size=24)
 
-Other Changes
+Other changes
 =============
 
 Python 3.12

@@ -8,4 +8,5 @@ Appendices
 
   image-file-formats
   text-anchors
+  third-party-plugins
   writing-your-own-image-plugin

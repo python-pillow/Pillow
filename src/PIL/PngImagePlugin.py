@@ -38,9 +38,9 @@ import re
 import struct
 import warnings
 import zlib
-from collections.abc import Callable
 from enum import IntEnum
-from typing import IO, Any, NamedTuple, NoReturn, cast
+from fractions import Fraction
+from typing import IO, NamedTuple, cast
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i16be as i16
@@ -52,6 +52,9 @@ from ._util import DeferredError
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import Any, NoReturn
+
     from . import _imaging
 
 logger = logging.getLogger(__name__)
@@ -396,6 +399,9 @@ class PngStream(ChunkStream):
 
         self.text_memory = 0
 
+    def __enter__(self) -> PngStream:
+        return self
+
     def check_text_memory(self, chunklen: int) -> None:
         self.text_memory += chunklen
         if self.text_memory > MAX_TEXT_MEMORY:
@@ -457,7 +463,7 @@ class PngStream(ChunkStream):
         self.im_size = i32(s, 0), i32(s, 4)
         try:
             self.im_mode, self.im_rawmode = _MODES[(s[8], s[9])]
-        except Exception:
+        except KeyError:
             pass
         if s[12]:
             self.im_info["interlace"] = 1
@@ -506,7 +512,9 @@ class PngStream(ChunkStream):
                 # otherwise, we have a byte string with one alpha value
                 # for each palette entry
                 self.im_info["transparency"] = s
-        elif self.im_mode in ("1", "L", "I;16"):
+        elif self.im_mode == "1":
+            self.im_info["transparency"] = 255 if i16(s) else 0
+        elif self.im_mode in ("L", "I;16"):
             self.im_info["transparency"] = i16(s)
         elif self.im_mode == "RGB":
             self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
@@ -754,6 +762,7 @@ class PngImageFile(ImageFile.ImageFile):
     format_description = "Portable network graphics"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(8)):
             msg = "not a PNG file"
             raise SyntaxError(msg)
@@ -850,9 +859,7 @@ class PngImageFile(ImageFile.ImageFile):
         self.png.verify()
         self.png.close()
 
-        if self._exclusive_fp:
-            self.fp.close()
-        self.fp = None
+        super().verify()
 
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
@@ -861,13 +868,13 @@ class PngImageFile(ImageFile.ImageFile):
             self._seek(0, True)
 
         last_frame = self.__frame
-        for f in range(self.__frame + 1, frame + 1):
-            try:
+        try:
+            for f in range(self.__frame + 1, frame + 1):
                 self._seek(f)
-            except EOFError as e:
-                self.seek(last_frame)
-                msg = "no more images in APNG file"
-                raise EOFError(msg) from e
+        except EOFError as e:
+            self.seek(last_frame)
+            msg = "no more images in APNG file"
+            raise EOFError(msg) from e
 
     def _seek(self, frame: int, rewind: bool = False) -> None:
         assert self.png is not None
@@ -985,6 +992,7 @@ class PngImageFile(ImageFile.ImageFile):
         """internal: read more image data"""
 
         assert self.png is not None
+        assert self.fp is not None
         while self.__idat == 0:
             # end of chunk, skip forward to next one
 
@@ -1018,6 +1026,7 @@ class PngImageFile(ImageFile.ImageFile):
     def load_end(self) -> None:
         """internal: finished reading image data"""
         assert self.png is not None
+        assert self.fp is not None
         if self.__idat != 0:
             self.fp.read(self.__idat)
         while True:
@@ -1102,7 +1111,6 @@ _OUTMODES = {
     "L;4": ("L;4", b"\x04", b"\x00"),
     "L": ("L", b"\x08", b"\x00"),
     "LA": ("LA", b"\x08", b"\x04"),
-    "I": ("I;16B", b"\x10", b"\x00"),
     "I;16": ("I;16B", b"\x10", b"\x00"),
     "I;16B": ("I;16B", b"\x10", b"\x00"),
     "P;1": ("P;1", b"\x01", b"\x03"),
@@ -1147,6 +1155,15 @@ class _fdat:
     def write(self, data: bytes) -> None:
         self.chunk(self.fp, b"fdAT", o32(self.seq_num), data)
         self.seq_num += 1
+
+
+def _apply_encoderinfo(im: Image.Image, encoderinfo: dict[str, Any]) -> None:
+    im.encoderconfig = (
+        encoderinfo.get("optimize", False),
+        encoderinfo.get("compress_level", -1),
+        encoderinfo.get("compress_type", -1),
+        encoderinfo.get("dictionary", b""),
+    )
 
 
 class _Frame(NamedTuple):
@@ -1242,10 +1259,10 @@ def _write_multiple_frames(
 
     # default image IDAT (if it exists)
     if default_image:
-        if im.mode != mode:
-            im = im.convert(mode)
+        default_im = im if im.mode == mode else im.convert(mode)
+        _apply_encoderinfo(default_im, im.encoderinfo)
         ImageFile._save(
-            im,
+            default_im,
             cast(IO[bytes], _idat(fp, chunk)),
             [ImageFile._Tile("zip", (0, 0) + im.size, 0, rawmode)],
         )
@@ -1260,7 +1277,11 @@ def _write_multiple_frames(
             im_frame = im_frame.crop(bbox)
         size = im_frame.size
         encoderinfo = frame_data.encoderinfo
-        frame_duration = int(round(encoderinfo.get("duration", 0)))
+        frame_duration = encoderinfo.get("duration", 0)
+        delay = Fraction(frame_duration / 1000).limit_denominator(65535)
+        if delay.numerator > 65535:
+            msg = "cannot write duration"
+            raise ValueError(msg)
         frame_disposal = encoderinfo.get("disposal", disposal)
         frame_blend = encoderinfo.get("blend", blend)
         # frame control
@@ -1272,13 +1293,14 @@ def _write_multiple_frames(
             o32(size[1]),  # height
             o32(bbox[0]),  # x_offset
             o32(bbox[1]),  # y_offset
-            o16(frame_duration),  # delay_numerator
-            o16(1000),  # delay_denominator
+            o16(delay.numerator),  # delay_numerator
+            o16(delay.denominator),  # delay_denominator
             o8(frame_disposal),  # dispose_op
             o8(frame_blend),  # blend_op
         )
         seq_num += 1
         # frame data
+        _apply_encoderinfo(im_frame, im.encoderinfo)
         if frame == 0 and not default_image:
             # first frame must be in IDAT chunks for backwards compatibility
             ImageFile._save(
@@ -1332,6 +1354,9 @@ def _save(
         mode = im.mode
 
     outmode = mode
+    palette = []
+    if im.palette:
+        palette = im.getpalette() or []
     if mode == "P":
         #
         # attempt to minimize storage requirements for palette images
@@ -1341,7 +1366,7 @@ def _save(
         else:
             # check palette contents
             if im.palette:
-                colors = max(min(len(im.palette.getdata()[1]) // 3, 256), 1)
+                colors = max(min(len(palette) // 3, 256), 1)
             else:
                 colors = 256
 
@@ -1353,14 +1378,6 @@ def _save(
             else:
                 bits = 4
             outmode += f";{bits}"
-
-    # encoder options
-    im.encoderconfig = (
-        im.encoderinfo.get("optimize", False),
-        im.encoderinfo.get("compress_level", -1),
-        im.encoderinfo.get("compress_type", -1),
-        im.encoderinfo.get("dictionary", b""),
-    )
 
     # get the corresponding PNG mode
     try:
@@ -1388,8 +1405,7 @@ def _save(
 
     chunks = [b"cHRM", b"cICP", b"gAMA", b"sBIT", b"sRGB", b"tIME"]
 
-    icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
-    if icc:
+    if icc := im.encoderinfo.get("icc_profile", im.info.get("icc_profile")):
         # ICC profile
         # according to PNG spec, the iCCP chunk contains:
         # Profile name  1-79 bytes (character string)
@@ -1404,8 +1420,7 @@ def _save(
         # Disallow sRGB chunks when an iCCP-chunk has been emitted.
         chunks.remove(b"sRGB")
 
-    info = im.encoderinfo.get("pnginfo")
-    if info:
+    if info := im.encoderinfo.get("pnginfo"):
         chunks_multiple_allowed = [b"sPLT", b"iTXt", b"tEXt", b"zTXt"]
         for info_chunk in info.chunks:
             cid, data = info_chunk[:2]
@@ -1422,43 +1437,54 @@ def _save(
 
     if im.mode == "P":
         palette_byte_number = colors * 3
-        palette_bytes = im.im.getpalette("RGB")[:palette_byte_number]
+        palette_bytes = bytes(palette[:palette_byte_number])
         while len(palette_bytes) < palette_byte_number:
             palette_bytes += b"\0"
         chunk(fp, b"PLTE", palette_bytes)
 
-    transparency = im.encoderinfo.get("transparency", im.info.get("transparency", None))
+    transparency = im.encoderinfo.get("transparency", im.info.get("transparency"))
 
-    if transparency or transparency == 0:
+    if transparency is not None:
         if im.mode == "P":
             # limit to actual palette size
             alpha_bytes = colors
             if isinstance(transparency, bytes):
                 chunk(fp, b"tRNS", transparency[:alpha_bytes])
-            else:
+            elif isinstance(transparency, int):
                 transparency = max(0, min(255, transparency))
                 alpha = b"\xff" * transparency + b"\0"
                 chunk(fp, b"tRNS", alpha[:alpha_bytes])
+            else:
+                msg = "transparency for P must be an integer or bytes"
+                raise ValueError(msg)
         elif im.mode in ("1", "L", "I", "I;16"):
-            transparency = max(0, min(65535, transparency))
-            chunk(fp, b"tRNS", o16(transparency))
+            if isinstance(transparency, int):
+                transparency = max(0, min(65535, transparency))
+                chunk(fp, b"tRNS", o16(transparency))
+            else:
+                msg = f"transparency for {im.mode} must be an integer"
+                raise ValueError(msg)
         elif im.mode == "RGB":
-            red, green, blue = transparency
-            chunk(fp, b"tRNS", o16(red) + o16(green) + o16(blue))
-        else:
-            if "transparency" in im.encoderinfo:
-                # don't bother with transparency if it's an RGBA
-                # and it's in the info dict. It's probably just stale.
-                msg = "cannot use transparency for this mode"
-                raise OSError(msg)
-    else:
-        if im.mode == "P" and im.im.getpalettemode() == "RGBA":
-            alpha = im.im.getpalette("RGBA", "A")
-            alpha_bytes = colors
-            chunk(fp, b"tRNS", alpha[:alpha_bytes])
+            if not isinstance(transparency, (list, tuple)):
+                msg = "transparency for RGB must be list or tuple"
+                raise ValueError(msg)
+            elif len(transparency) != 3:
+                msg = "transparency for RGB must have length 3"
+                raise ValueError(msg)
+            else:
+                red, green, blue = transparency
+                chunk(fp, b"tRNS", o16(red) + o16(green) + o16(blue))
+        elif im.encoderinfo.get("transparency") is not None:
+            # don't bother with transparency if it's an RGBA
+            # and it's in the info dict. It's probably just stale.
+            msg = "cannot use transparency for this mode"
+            raise OSError(msg)
+    elif im.mode == "P" and im.im.getpalettemode() == "RGBA":
+        alpha = im.im.getpalette("RGBA", "A")
+        alpha_bytes = colors
+        chunk(fp, b"tRNS", alpha[:alpha_bytes])
 
-    dpi = im.encoderinfo.get("dpi")
-    if dpi:
+    if dpi := im.encoderinfo.get("dpi"):
         chunk(
             fp,
             b"pHYs",
@@ -1475,8 +1501,7 @@ def _save(
                 chunks.remove(cid)
                 chunk(fp, cid, data)
 
-    exif = im.encoderinfo.get("exif")
-    if exif:
+    if exif := im.encoderinfo.get("exif"):
         if isinstance(exif, Image.Exif):
             exif = exif.tobytes(8)
         if exif.startswith(b"Exif\x00\x00"):
@@ -1489,6 +1514,7 @@ def _save(
             im, fp, chunk, mode, rawmode, default_image, append_images
         )
     if single_im:
+        _apply_encoderinfo(single_im, im.encoderinfo)
         ImageFile._save(
             single_im,
             cast(IO[bytes], _idat(fp, chunk)),
@@ -1537,7 +1563,7 @@ def getchunks(im: Image.Image, **params: Any) -> list[tuple[bytes, bytes, bytes]
 
 
 def _supported_modes() -> list[str]:
-    return ["RGB", "RGBA", "P", "I", "LA", "L", "1"]
+    return ["RGB", "RGBA", "P", "I;16", "I;16B", "LA", "L", "1"]
 
 
 # --------------------------------------------------------------------

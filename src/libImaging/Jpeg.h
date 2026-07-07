@@ -28,12 +28,12 @@ typedef struct {
 typedef struct {
     /* CONFIGURATION */
 
-    /* Jpeg file mode (empty if not known) */
-    char jpegmode[8 + 1];
+    /* Jpeg file mode */
+    RawModeID jpegmode;
 
-    /* Converter output mode (input to the shuffler).  If empty,
-       convert conversions are disabled */
-    char rawmode[8 + 1];
+    /* Converter output mode (input to the shuffler) */
+    /* If not a valid mode, convert conversions are disabled */
+    RawModeID rawmode;
 
     /* If set, trade quality for speed */
     int draft;
@@ -91,7 +91,7 @@ typedef struct {
     unsigned int restart_marker_rows;
 
     /* Converter input mode (input to the shuffler) */
-    char rawmode[8 + 1];
+    RawModeID rawmode;
 
     /* Custom quantization tables () */
     unsigned int *qtables;

@@ -6,7 +6,14 @@ from typing import Any
 
 import pytest
 
-from PIL import Image, ImageFile, JpegImagePlugin, MpoImagePlugin
+from PIL import (
+    Image,
+    ImageFile,
+    JpegImagePlugin,
+    MpoImagePlugin,
+    TiffImagePlugin,
+    _binary,
+)
 
 from .helper import (
     assert_image_equal,
@@ -104,25 +111,27 @@ def test_exif(test_file: str) -> None:
 
 
 def test_frame_size() -> None:
-    # This image has been hexedited to contain a different size
-    # in the SOF marker of the second frame
-    with Image.open("Tests/images/sugarshack_frame_size.mpo") as im:
-        assert im.size == (640, 480)
+    with Image.open("Tests/images/frame_size.mpo") as im:
+        assert im.size == (56, 70)
+        im.load()
 
         im.seek(1)
-        assert im.size == (680, 480)
+        assert im.size == (349, 434)
+        im.load()
 
         im.seek(0)
-        assert im.size == (640, 480)
+        assert im.size == (56, 70)
 
 
 def test_ignore_frame_size() -> None:
     # Ignore the different size of the second frame
     # since this is not a "Large Thumbnail" image
     with Image.open("Tests/images/ignore_frame_size.mpo") as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         assert im.size == (64, 64)
 
         im.seek(1)
+        assert im.mpinfo is not None
         assert (
             im.mpinfo[0xB002][1]["Attribute"]["MPType"]
             == "Multi-Frame Image: (Disparity)"
@@ -143,6 +152,32 @@ def test_parallax() -> None:
         assert exif.get_ifd(0x927C)[0xB211] == -3.125
 
 
+def test_truncated_makernote() -> None:
+    def check(ifd: TiffImagePlugin.ImageFileDirectory_v2) -> None:
+        fp = BytesIO()
+        ifd.save(fp)
+
+        e = Image.Exif()
+        e.load(fp.getvalue())
+        assert e.get_ifd(37500) == {}
+
+    # Nintendo
+    ifd = TiffImagePlugin.ImageFileDirectory_v2()
+    ifd[271] = "Nintendo"
+    ifd[34665] = {37500: b" "}
+    check(ifd)
+
+    # Fujifilm
+    for data in (
+        b"FUJIFILM",
+        b"FUJIFILM" + _binary.o32le(50),
+        b"FUJIFILM" + _binary.o32le(0),
+    ):
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[34665] = {37500: data}
+        check(ifd)
+
+
 def test_reload_exif_after_seek() -> None:
     with Image.open("Tests/images/sugarshack.mpo") as im:
         exif = im.getexif()
@@ -155,7 +190,9 @@ def test_reload_exif_after_seek() -> None:
 @pytest.mark.parametrize("test_file", test_files)
 def test_mp(test_file: str) -> None:
     with Image.open(test_file) as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         mpinfo = im._getmp()
+        assert mpinfo is not None
         assert mpinfo[45056] == b"0100"
         assert mpinfo[45057] == 2
 
@@ -164,7 +201,9 @@ def test_mp_offset() -> None:
     # This image has been manually hexedited to have an IFD offset of 10
     # in APP2 data, in contrast to normal 8
     with Image.open("Tests/images/sugarshack_ifd_offset.mpo") as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         mpinfo = im._getmp()
+        assert mpinfo is not None
         assert mpinfo[45056] == b"0100"
         assert mpinfo[45057] == 2
 
@@ -180,7 +219,9 @@ def test_mp_no_data() -> None:
 @pytest.mark.parametrize("test_file", test_files)
 def test_mp_attribute(test_file: str) -> None:
     with Image.open(test_file) as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         mpinfo = im._getmp()
+    assert mpinfo is not None
     for frame_number, mpentry in enumerate(mpinfo[0xB002]):
         mpattr = mpentry["Attribute"]
         if frame_number:
@@ -292,30 +333,46 @@ def test_save_all() -> None:
             im_reloaded.seek(1)
             assert_image_similar(im, im_reloaded, 30)
 
-    im = Image.new("RGB", (1, 1))
-    im2 = Image.new("RGB", (1, 1), "#f00")
-    im_reloaded = roundtrip(im, save_all=True, append_images=[im2])
+    im_rgb = Image.new("RGB", (1, 1))
+    for colors in (("#f00",), ("#f00", "#0f0")):
+        append_images = [Image.new("RGB", (1, 1), color) for color in colors]
+        im_reloaded = roundtrip(im_rgb, save_all=True, append_images=append_images)
 
-    assert_image_equal(im, im_reloaded)
-    assert isinstance(im_reloaded, MpoImagePlugin.MpoImageFile)
-    assert im_reloaded.mpinfo is not None
-    assert im_reloaded.mpinfo[45056] == b"0100"
+        assert_image_equal(im_rgb, im_reloaded)
+        assert isinstance(im_reloaded, MpoImagePlugin.MpoImageFile)
+        assert im_reloaded.mpinfo is not None
+        assert im_reloaded.mpinfo[45056] == b"0100"
 
-    im_reloaded.seek(1)
-    assert_image_similar(im2, im_reloaded, 1)
+        for im_expected in append_images:
+            im_reloaded.seek(im_reloaded.tell() + 1)
+            assert_image_similar(im_reloaded, im_expected, 1)
 
     # Test that a single frame image will not be saved as an MPO
-    jpg = roundtrip(im, save_all=True)
+    jpg = roundtrip(im_rgb, save_all=True)
     assert "mp" not in jpg.info
 
 
 def test_save_xmp() -> None:
     im = Image.new("RGB", (1, 1))
     im2 = Image.new("RGB", (1, 1), "#f00")
+
+    def roundtrip_xmp() -> list[Any]:
+        im_reloaded = roundtrip(im, xmp=b"Default", save_all=True, append_images=[im2])
+        xmp = [im_reloaded.info["xmp"]]
+        im_reloaded.seek(1)
+        return xmp + [im_reloaded.info["xmp"]]
+
+    # Use the save parameters for all frames by default
+    assert roundtrip_xmp() == [b"Default", b"Default"]
+
+    # Specify a value for the first frame
+    im.encoderinfo = {"xmp": b"First frame"}
+    assert roundtrip_xmp() == [b"First frame", b"Default"]
+    del im.encoderinfo
+
+    # Specify value for the second frame
     im2.encoderinfo = {"xmp": b"Second frame"}
-    im_reloaded = roundtrip(im, xmp=b"First frame", save_all=True, append_images=[im2])
+    assert roundtrip_xmp() == [b"Default", b"Second frame"]
 
-    assert im_reloaded.info["xmp"] == b"First frame"
-
-    im_reloaded.seek(1)
-    assert im_reloaded.info["xmp"] == b"Second frame"
+    # Test that encoderinfo is unchanged
+    assert im2.encoderinfo == {"xmp": b"Second frame"}

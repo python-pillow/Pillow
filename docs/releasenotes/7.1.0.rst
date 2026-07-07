@@ -35,7 +35,7 @@ out-of-bounds reads via a crafted JP2 file.
 In ``libImaging/SgiRleDecode.c`` in Pillow through 7.0.0, a number of out-of-bounds
 reads exist in the parsing of SGI image files, a different issue than :cve:`2020-5311`.
 
-API Changes
+API changes
 ===========
 
 Allow saving of zero quality JPEG images
@@ -50,7 +50,7 @@ been resolved. ::
     im = Image.open("hopper.jpg")
     im.save("out.jpg", quality=0)
 
-API Additions
+API additions
 =============
 
 New channel operations
@@ -101,7 +101,7 @@ Passing a different value on Windows or macOS will force taking a snapshot
 using the selected X server; pass an empty string to use the default X server.
 XCB support is not included in pre-compiled wheels for Windows and macOS.
 
-Other Changes
+Other changes
 =============
 
 If present, only use alpha channel for bounding box

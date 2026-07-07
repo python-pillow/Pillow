@@ -18,7 +18,7 @@ been added to all :py:class:`~PIL.ImageShow` viewers.
 Deprecations
 ============
 
-BGR;15, BGR 16 and BGR;24
+BGR;15, BGR;16 and BGR;24
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The experimental BGR;15, BGR;16 and BGR;24 modes have been deprecated.
@@ -41,7 +41,7 @@ ImageDraw.getdraw hints parameter
 
 The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been deprecated.
 
-API Additions
+API additions
 =============
 
 ImageDraw.circle
@@ -51,7 +51,7 @@ Added :py:meth:`~PIL.ImageDraw.ImageDraw.circle`. It provides the same functiona
 :py:meth:`~PIL.ImageDraw.ImageDraw.ellipse`, but instead of taking a bounding box, it
 takes a center point and radius.
 
-Other Changes
+Other changes
 =============
 
 Python 3.13 beta
