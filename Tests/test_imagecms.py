@@ -197,6 +197,10 @@ def test_exceptions() -> None:
     pLab = ImageCms.createProfile("LAB")
     t = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
     with pytest.raises(ValueError, match="mode mismatch"):
+        t.apply(hopper("RGBA"))
+    with pytest.raises(ValueError, match="mode mismatch"):
+        t.apply(hopper("LAB"), hopper("RGBA"))
+    with pytest.raises(ValueError, match="mode mismatch"):
         t.apply_in_place(hopper("RGBA"))
 
     # the procedural pyCMS API uses PyCMSError for all sorts of errors
@@ -694,17 +698,3 @@ def test_cmyk_lab() -> None:
     im = Image.new("CMYK", (1, 1))
     converted_im = im.convert("LAB")
     assert converted_im.getpixel((0, 0)) == (255, 128, 128)
-
-
-def test_deprecation() -> None:
-    profile = ImageCmsProfile(ImageCms.createProfile("sRGB"))
-    with pytest.warns(
-        DeprecationWarning, match="ImageCms.ImageCmsProfile.product_name"
-    ):
-        profile.product_name
-    with pytest.warns(
-        DeprecationWarning, match="ImageCms.ImageCmsProfile.product_info"
-    ):
-        profile.product_info
-    with pytest.raises(AttributeError):
-        profile.this_attribute_does_not_exist

@@ -1115,6 +1115,9 @@ _expand_image(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
+    if (m == 0) {
+        return PyImagingNew(ImagingCopy(self->image));
+    }
     return PyImagingNew(ImagingExpand(self->image, m));
 }
 
@@ -1634,6 +1637,10 @@ _putdata(ImagingObject *self, PyObject *args) {
         return NULL;                                                    \
     } else {                                                            \
         value = PyFloat_AsDouble(op);                                   \
+        if (value == -1.0 && PyErr_Occurred()) {                        \
+            Py_DECREF(seq);                                             \
+            return NULL;                                                \
+        }                                                               \
     }
     if (image->image8) {
         if (PyBytes_Check(data)) {
@@ -1693,7 +1700,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                     x = 0, y++;
                 }
             }
-            PyErr_Clear(); /* Avoid weird exceptions */
         }
     } else {
         /* 32-bit images */
@@ -1712,7 +1718,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                         x = 0, y++;
                     }
                 }
-                PyErr_Clear(); /* Avoid weird exceptions */
                 break;
             case IMAGING_TYPE_FLOAT32:
                 for (i = x = y = 0; i < n; i++) {
@@ -1724,7 +1729,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                         x = 0, y++;
                     }
                 }
-                PyErr_Clear(); /* Avoid weird exceptions */
                 break;
             default:
                 for (i = x = y = 0; i < n; i++) {
@@ -1746,7 +1750,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                         x = 0, y++;
                     }
                 }
-                PyErr_Clear(); /* Avoid weird exceptions */
                 break;
         }
     }
@@ -2801,7 +2804,12 @@ textwidth(ImagingFontObject *self, const unsigned char *text) {
     int xsize;
 
     for (xsize = 0; *text; text++) {
-        xsize += self->glyphs[*text].dx;
+        int dx = self->glyphs[*text].dx;
+        if (dx > 0 && xsize > INT_MAX - dx) {
+            PyErr_SetString(PyExc_OverflowError, "Width too large");
+            return -1;
+        }
+        xsize += dx;
     }
 
     if (xsize < 0) {
@@ -2866,14 +2874,16 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
         return NULL;
     }
 
-    im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize);
+    int xsize = textwidth(self, text);
+    if (xsize == -1) {
+        free(text);
+        return NULL;
+    }
+    im = ImagingNew(self->bitmap->mode, xsize, self->ysize);
     if (!im) {
         free(text);
         return ImagingError_MemoryError();
     }
-
-    b = 0;
-    (void)ImagingFill(im, &b);
 
     b = self->baseline;
     for (x = 0; text[i]; i++) {
@@ -2928,8 +2938,12 @@ _font_getsize(ImagingFontObject *self, PyObject *args) {
         return NULL;
     }
 
-    val = Py_BuildValue("ii", textwidth(self, text), self->ysize);
+    int xsize = textwidth(self, text);
     free(text);
+    if (xsize == -1) {
+        return NULL;
+    }
+    val = Py_BuildValue("ii", xsize, self->ysize);
     return val;
 }
 
@@ -4319,8 +4333,11 @@ setup_module(PyObject *m) {
     {
         extern const char *ImagingJpegVersion(void);
         PyObject *v = PyUnicode_FromString(ImagingJpegVersion());
-        PyDict_SetItemString(d, "jpeglib_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "jpeglib_version", v);
+        Py_DECREF(v);
     }
 #endif
 
@@ -4328,8 +4345,11 @@ setup_module(PyObject *m) {
     {
         extern const char *ImagingJpeg2KVersion(void);
         PyObject *v = PyUnicode_FromString(ImagingJpeg2KVersion());
-        PyDict_SetItemString(d, "jp2klib_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "jp2klib_version", v);
+        Py_DECREF(v);
     }
 #endif
 
@@ -4340,8 +4360,11 @@ setup_module(PyObject *m) {
 #define tostr1(a) #a
 #define tostr(a) tostr1(a)
         PyObject *v = PyUnicode_FromString(tostr(LIBJPEG_TURBO_VERSION));
-        PyDict_SetItemString(d, "libjpeg_turbo_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "libjpeg_turbo_version", v);
+        Py_DECREF(v);
 #undef tostr
 #undef tostr1
     }
@@ -4368,8 +4391,11 @@ setup_module(PyObject *m) {
     {
         extern const char *ImagingImageQuantVersion(void);
         PyObject *v = PyUnicode_FromString(ImagingImageQuantVersion());
-        PyDict_SetItemString(d, "imagequant_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "imagequant_version", v);
+        Py_DECREF(v);
     }
 #else
     have_libimagequant = Py_False;
@@ -4388,8 +4414,11 @@ setup_module(PyObject *m) {
     {
         extern const char *ImagingZipVersion(void);
         PyObject *v = PyUnicode_FromString(ImagingZipVersion());
-        PyDict_SetItemString(d, "zlib_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "zlib_version", v);
+        Py_DECREF(v);
     }
 #endif
 
@@ -4398,8 +4427,11 @@ setup_module(PyObject *m) {
     have_zlibng = Py_True;
     {
         PyObject *v = PyUnicode_FromString(ZLIBNG_VERSION);
-        PyDict_SetItemString(d, "zlib_ng_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "zlib_ng_version", v);
+        Py_DECREF(v);
     }
 #else
     have_zlibng = Py_False;
@@ -4412,8 +4444,11 @@ setup_module(PyObject *m) {
     {
         extern const char *ImagingTiffVersion(void);
         PyObject *v = PyUnicode_FromString(ImagingTiffVersion());
-        PyDict_SetItemString(d, "libtiff_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "libtiff_version", v);
+        Py_DECREF(v);
     }
 #endif
 
@@ -4428,10 +4463,11 @@ setup_module(PyObject *m) {
     }
 
     PyObject *pillow_version = PyUnicode_FromString(version);
-    PyDict_SetItemString(
-        d, "PILLOW_VERSION", pillow_version ? pillow_version : Py_None
-    );
-    Py_XDECREF(pillow_version);
+    if (!pillow_version) {
+        return -1;
+    }
+    PyDict_SetItemString(d, "PILLOW_VERSION", pillow_version);
+    Py_DECREF(pillow_version);
 
     return 0;
 }

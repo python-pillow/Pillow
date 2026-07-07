@@ -168,6 +168,7 @@ class PcfFontFile(FontFile.FontFile):
         ) -> None:
             xsize = right - left
             ysize = ascent + descent
+            Image._decompression_bomb_check((xsize, ysize))
             metrics.append(
                 (xsize, ysize, left, right, width, ascent, descent, attributes)
             )

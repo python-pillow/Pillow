@@ -1,15 +1,17 @@
-name: Docs
+name: Benchmark
 
 on:
   push:
     branches:
       - "**"
-    paths: &paths
+    paths-ignore: &paths-ignore
       - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
       - "docs/**"
-      - "src/PIL/**"
+      - "wheels/**"
   pull_request:
-    paths: *paths
+    paths-ignore: *paths-ignore
   workflow_dispatch:
 
 permissions:
@@ -21,29 +23,39 @@ concurrency:
 
 env:
   FORCE_COLOR: 1
+  PIP_DISABLE_PIP_VERSION_CHECK: 1
 
 jobs:
-  build:
+  benchmark:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [
+          # NB: Codspeed doesn't seem to support multiple runs of the same benchmark:
+          #     > At least one benchmark was run multiple times in your benchmarking workflow.
+          #     > This could be because you used a matrix that runs your benchmarks multiple times.
+          #     Hence, this list should only ever have exactly one version.
+          "3.14",
+        ]
 
     runs-on: ubuntu-latest
-    name: Docs
+    name: Benchmark Python ${{ matrix.python-version }}
 
     steps:
     - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         persist-credentials: false
 
-    - name: Set up Python
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
       with:
-        python-version: "3.x"
+        python-version: ${{ matrix.python-version }}
+        allow-prereleases: true
         cache: pip
         cache-dependency-path: |
           ".ci/*.sh"
           "pyproject.toml"
-
-    - name: Build system information
-      run: python3 .github/workflows/system-info.py
 
     - name: Cache libavif
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -70,15 +82,15 @@ jobs:
       run: |
         .ci/install.sh
       env:
-        GHA_PYTHON_VERSION: "3.x"
+        GHA_PYTHON_VERSION: ${{ matrix.python-version }}
         GHA_LIBAVIF_CACHE_HIT: ${{ steps.cache-libavif.outputs.cache-hit }}
         GHA_LIBIMAGEQUANT_CACHE_HIT: ${{ steps.cache-libimagequant.outputs.cache-hit }}
         GHA_LIBWEBP_CACHE_HIT: ${{ steps.cache-libwebp.outputs.cache-hit }}
 
-    - name: Build
-      run: |
-        .ci/build.sh
-
-    - name: Docs
-      run: |
-        make doccheck
+    - name: Run CodSpeed benchmarks
+      uses: CodSpeedHQ/action@a4a36bb07c0638b0b4ca52bf1f3dad1b4289e52f # v4.18.1
+      with:
+        mode: simulation
+        run: |
+          python3 -m pip install -e . pytest-codspeed
+          pytest -vv --codspeed Tests/benchmarks.py

@@ -256,19 +256,19 @@ static PyMethodDef _functions[] = {
 static void
 install_unary(PyObject *d, char *name, void *func) {
     PyObject *v = PyCapsule_New(func, MATH_FUNC_UNOP_MAGIC, NULL);
-    if (!v || PyDict_SetItemString(d, name, v)) {
-        PyErr_Clear();
+    if (v) {
+        PyDict_SetItemString(d, name, v);
+        Py_DECREF(v);
     }
-    Py_XDECREF(v);
 }
 
 static void
 install_binary(PyObject *d, char *name, void *func) {
     PyObject *v = PyCapsule_New(func, MATH_FUNC_BINOP_MAGIC, NULL);
-    if (!v || PyDict_SetItemString(d, name, v)) {
-        PyErr_Clear();
+    if (v) {
+        PyDict_SetItemString(d, name, v);
+        Py_DECREF(v);
     }
-    Py_XDECREF(v);
 }
 
 static int

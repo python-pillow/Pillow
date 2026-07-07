@@ -307,7 +307,7 @@ def unsafe_eval(expression: str, **kw: Any) -> Any:
                 raise ValueError(msg)
 
     scan(compiled_code)
-    out = builtins.eval(expression, {"__builtins": {"abs": abs}}, args)
+    out = builtins.eval(expression, None, args)
     try:
         return out.im
     except AttributeError:

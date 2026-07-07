@@ -1043,10 +1043,6 @@ class pil_build_ext(build_ext):
         print("")
 
 
-def debug_build() -> bool:
-    return hasattr(sys, "gettotalrefcount") or FUZZING_BUILD
-
-
 def run() -> None:
     while sys.argv and sys.argv[-1].startswith("--pillow-configuration="):
         _, key, value = sys.argv.pop().split("=", 2)
@@ -1097,7 +1093,6 @@ def run() -> None:
             cmdclass={"build_ext": pil_build_ext},
             ext_modules=ext_modules,
             libraries=libraries,
-            zip_safe=not (debug_build() or PLATFORM_MINGW),
         )
     except RequiredDependencyException as err:
         msg = f"""

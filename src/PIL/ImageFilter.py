@@ -42,6 +42,7 @@ class MultibandFilter(Filter):
 
 
 class BuiltinFilter(MultibandFilter):
+    name: str
     filterargs: tuple[Any, ...]
 
     def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:

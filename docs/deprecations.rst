@@ -20,59 +20,6 @@ ExifTags.IFD.Makernote
 ``ExifTags.IFD.Makernote`` has been deprecated. Instead, use
 ``ExifTags.IFD.MakerNote``.
 
-Image.Image.get_child_images()
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 11.2.1
-
-``Image.Image.get_child_images()`` has been deprecated, and will be removed in Pillow
-13 (2026-10-15). It will be moved to ``ImageFile.ImageFile.get_child_images()``. The
-method uses an image's file pointer, and so child images could only be retrieved from
-an :py:class:`PIL.ImageFile.ImageFile` instance.
-
-Image.fromarray mode parameter
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 11.3.0
-
-Using the ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` was deprecated in
-Pillow 11.3.0. In Pillow 12.0.0, this was partially reverted, and it is now only
-deprecated when changing data types. Since pixel values do not contain information
-about palettes or color spaces, the parameter can still be used to place grayscale L
-mode data within a P mode image, or read RGB data as YCbCr for example. If omitted, the
-mode will be automatically determined from the object's shape and type.
-
-Saving I mode images as PNG
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 11.3.0
-
-In order to fit the 32 bits of I mode images into PNG, when PNG images can only contain
-at most 16 bits for a channel, Pillow has been clipping the values. Rather than quietly
-changing the data, this is now deprecated. Instead, the image can be converted to
-another mode before saving::
-
-    from PIL import Image
-    im = Image.new("I", (1, 1))
-    im.convert("I;16").save("out.png")
-
-ImageCms.ImageCmsProfile.product_name and .product_info
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 12.0.0
-
-``ImageCms.ImageCmsProfile.product_name`` and the corresponding
-``.product_info`` attributes have been deprecated, and will be removed in
-Pillow 13 (2026-10-15). They have been set to ``None`` since Pillow 2.3.0.
-
-Image._show
-~~~~~~~~~~~
-
-.. deprecated:: 12.0.0
-
-``Image._show`` has been deprecated, and will be removed in Pillow 13 (2026-10-15).
-Use :py:meth:`~PIL.ImageShow.show` instead.
-
 Image getdata()
 ~~~~~~~~~~~~~~~
 
@@ -88,6 +35,64 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+Image._show
+^^^^^^^^^^^
+
+.. deprecated:: 12.0.0
+.. versionremoved:: 13.0.0
+
+``Image._show`` has been removed. Use :py:meth:`~PIL.ImageShow.show` instead.
+
+ImageCms.ImageCmsProfile.product_name and .product_info
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 12.0.0
+.. versionremoved:: 13.0.0
+
+``ImageCms.ImageCmsProfile.product_name`` and the corresponding
+``.product_info`` attributes have been removed. They were set to ``None`` since Pillow
+2.3.0.
+
+Saving I mode images as PNG
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.3.0
+.. versionremoved:: 13.0.0
+
+In order to fit the 32 bits of I mode images into PNG, when PNG images can only contain
+at most 16 bits for a channel, Pillow has been clipping the values. Rather than quietly
+changing the data, this is now removed. Instead, the image can be converted to another
+mode before saving::
+
+    from PIL import Image
+    im = Image.new("I", (1, 1))
+    im.convert("I;16").save("out.png")
+
+Image.fromarray mode parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.3.0
+.. versionremoved:: 13.0.0
+
+Using the ``mode`` parameter in :py:meth:`~PIL.Image.fromarray()` was deprecated in
+Pillow 11.3.0. In Pillow 12.0.0, this was partially reverted, and now the only
+functionality removed is when the mode changes data types. Since pixel values do not
+contain information about palettes or color spaces, the parameter can still be used to
+place grayscale L mode data within a P mode image, or read RGB data as YCbCr for
+example. If omitted, the mode will be automatically determined from the object's shape
+and type.
+
+Image.Image.get_child_images()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.2.1
+.. versionremoved:: 13.0.0
+
+``Image.Image.get_child_images()`` has been moved to
+``ImageFile.ImageFile.get_child_images()``. The method uses an image's file pointer,
+and so child images could only be retrieved from an :py:class:`PIL.ImageFile.ImageFile`
+instance.
 
 ImageFile.raise_oserror
 ^^^^^^^^^^^^^^^^^^^^^^^
