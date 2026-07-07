@@ -87,7 +87,11 @@ TODO
 Other changes
 =============
 
-TODO
-^^^^
+Python 3.15
+^^^^^^^^^^^
 
-TODO
+Pillow 12.3.0 had wheels built against Python 3.15 beta, available as a preview
+to help projects prepare for 3.15, and to ensure Pillow could be used
+immediately at the release of 3.15.0 final (2026-10-01, :pep:`790`).
+
+Pillow 13.0.0 now officially supports Python 3.15.
