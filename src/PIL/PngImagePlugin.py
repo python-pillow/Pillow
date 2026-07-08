@@ -1106,9 +1106,6 @@ class PngImageFile(ImageFile.ImageFile):
 _OUTMODES = {
     # supported PIL modes, and corresponding rawmode, bit depth and color type
     "1": ("1", b"\x01", b"\x00"),
-    "L;1": ("L;1", b"\x01", b"\x00"),
-    "L;2": ("L;2", b"\x02", b"\x00"),
-    "L;4": ("L;4", b"\x04", b"\x00"),
     "L": ("L", b"\x08", b"\x00"),
     "LA": ("LA", b"\x08", b"\x04"),
     "I;16": ("I;16B", b"\x10", b"\x00"),
