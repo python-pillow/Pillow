@@ -114,7 +114,7 @@ kernel_i16(int size, UINT8 *in0, int x, const float *kernel, int bigendian) {
     for (i = 0; i < size; i++) {
         int x1 = x + i - half_size;
         result += (float)(in0[x1 * 2 + (bigendian ? 1 : 0)] +
-                          (in0[x1 * 2 + (bigendian ? 0 : 1)] >> 8)) *
+                          (in0[x1 * 2 + (bigendian ? 0 : 1)] << 8)) *
                   kernel[i];
     }
     return result;

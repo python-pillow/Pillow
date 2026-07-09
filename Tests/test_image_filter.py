@@ -210,6 +210,16 @@ def test_consistency_5x5(mode: str) -> None:
             assert_image_equal(source.filter(kernel), reference)
 
 
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_consistency_i16_high_byte(mode: str) -> None:
+    # Exercise filters with a 16bpc image that has content in the high byte, too.
+    im = Image.new(mode, (8, 8), 1000)
+    pixel = im.filter(ImageFilter.SMOOTH).getpixel((4, 4))
+    assert isinstance(pixel, (int, float))
+    # Allow for kernel rounding errors.
+    assert abs(pixel - 1000) <= 1
+
+
 @pytest.mark.parametrize(
     "radius",
     (
