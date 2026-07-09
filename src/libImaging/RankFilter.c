@@ -68,8 +68,11 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
         return (Imaging)ImagingError_ValueError(NULL);
     }
 
-    if (im->bands != 1 || im->type == IMAGING_TYPE_I16) {
-        return (Imaging)ImagingError_ModeError(NULL);
+    if (im->bands != 1) {
+        return (Imaging)ImagingError_ModeError("image must have exactly 1 band");
+    }
+    if (im->type == IMAGING_TYPE_I16) {
+        return (Imaging)ImagingError_NotSupportedError("mode I;16 not supported");
     }
 
     if (!(size & 1)) {
