@@ -19,13 +19,16 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xr;
 
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError(NULL);
+    if (!imOut || !imIn) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+    if (imIn->mode != imOut->mode) {
+        return (Imaging)ImagingError_ModeError("images must have the same mode");
     }
 
     int xsize = imIn->xsize, ysize = imIn->ysize;
     if (xsize != imOut->xsize || ysize != imOut->ysize) {
-        return (Imaging)ImagingError_Mismatch(NULL);
+        return (Imaging)ImagingError_Mismatch("images must have the same size");
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -64,13 +67,16 @@ ImagingFlipTopBottom(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int y, yr;
 
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError(NULL);
+    if (!imOut || !imIn) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+    if (imIn->mode != imOut->mode) {
+        return (Imaging)ImagingError_ModeError("images must have the same mode");
     }
 
     int ysize = imIn->ysize;
     if (imIn->xsize != imOut->xsize || ysize != imOut->ysize) {
-        return (Imaging)ImagingError_Mismatch(NULL);
+        return (Imaging)ImagingError_Mismatch("images must have the same size");
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -93,13 +99,18 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
     int x, y, xx, yy, xr, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
 
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError(NULL);
+    if (!imOut || !imIn) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+    if (imIn->mode != imOut->mode) {
+        return (Imaging)ImagingError_ModeError("images must have the same mode");
     }
 
     int xsize = imIn->xsize, ysize = imIn->ysize;
     if (xsize != imOut->ysize || ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch(NULL);
+        return (Imaging)ImagingError_Mismatch(
+            "output size must be the transpose of the input size"
+        );
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -155,13 +166,18 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
     int x, y, xx, yy, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
 
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError(NULL);
+    if (!imOut || !imIn) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+    if (imIn->mode != imOut->mode) {
+        return (Imaging)ImagingError_ModeError("images must have the same mode");
     }
 
     int xsize = imIn->xsize, ysize = imIn->ysize;
     if (xsize != imOut->ysize || ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch(NULL);
+        return (Imaging)ImagingError_Mismatch(
+            "output size must be the transpose of the input size"
+        );
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -216,13 +232,18 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
     int x, y, xr, yr, xx, yy, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
 
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError(NULL);
+    if (!imOut || !imIn) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+    if (imIn->mode != imOut->mode) {
+        return (Imaging)ImagingError_ModeError("images must have the same mode");
     }
 
     int xsize = imIn->xsize, ysize = imIn->ysize;
     if (xsize != imOut->ysize || ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch(NULL);
+        return (Imaging)ImagingError_Mismatch(
+            "output size must be the transpose of the input size"
+        );
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -278,13 +299,16 @@ ImagingRotate180(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xr, yr;
 
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError(NULL);
+    if (!imOut || !imIn) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+    if (imIn->mode != imOut->mode) {
+        return (Imaging)ImagingError_ModeError("images must have the same mode");
     }
 
     int xsize = imIn->xsize, ysize = imIn->ysize;
     if (xsize != imOut->xsize || ysize != imOut->ysize) {
-        return (Imaging)ImagingError_Mismatch(NULL);
+        return (Imaging)ImagingError_Mismatch("images must have the same size");
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -325,13 +349,18 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
     int x, y, xx, yy, yr, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
 
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError(NULL);
+    if (!imOut || !imIn) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+    if (imIn->mode != imOut->mode) {
+        return (Imaging)ImagingError_ModeError("images must have the same mode");
     }
 
     int xsize = imIn->xsize, ysize = imIn->ysize;
     if (xsize != imOut->ysize || ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch(NULL);
+        return (Imaging)ImagingError_Mismatch(
+            "output size must be the transpose of the input size"
+        );
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -800,8 +829,11 @@ ImagingGenericTransform(
     char *out;
     double xx, yy;
 
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError(NULL);
+    if (!imOut || !imIn) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+    if (imIn->mode != imOut->mode) {
+        return (Imaging)ImagingError_ModeError("images must have the same mode");
     }
 
     ImagingTransformFilter filter = getfilter(imIn, filterid);
@@ -857,8 +889,11 @@ ImagingScaleAffine(
     int xmin, xmax;
     int *xintab;
 
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError(NULL);
+    if (!imOut || !imIn) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+    if (imIn->mode != imOut->mode) {
+        return (Imaging)ImagingError_ModeError("images must have the same mode");
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -1047,8 +1082,11 @@ ImagingTransformAffine(
     double xx, yy;
     double xo, yo;
 
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError(NULL);
+    if (!imOut || !imIn) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+    if (imIn->mode != imOut->mode) {
+        return (Imaging)ImagingError_ModeError("images must have the same mode");
     }
 
     if (filterid || imIn->type == IMAGING_TYPE_I16) {

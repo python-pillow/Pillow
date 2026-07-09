@@ -52,13 +52,13 @@ def test_histogram_masked() -> None:
 @pytest.mark.parametrize("mode", ("I", "F"))
 def test_histogram_masked_unsupported_mode(mode: str) -> None:
     mask = Image.new("1", (128, 128))
-    with pytest.raises(ValueError, match="image has wrong mode"):
+    with pytest.raises(ValueError, match="image must have 8-bit data"):
         hopper(mode).histogram(mask)
 
 
 def test_histogram_mask_size_mismatch() -> None:
     mask = Image.new("1", (1, 1))
-    with pytest.raises(ValueError, match="images do not match"):
+    with pytest.raises(ValueError, match="mask and image size must match"):
         hopper("L").histogram(mask)
 
 

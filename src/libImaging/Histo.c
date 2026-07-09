@@ -77,7 +77,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
     if (imMask) {
         /* Validate mask */
         if (xsize != imMask->xsize || ysize != imMask->ysize) {
-            return ImagingError_Mismatch(NULL);
+            return ImagingError_Mismatch("mask and image size must match");
         }
         if (imMask->mode != IMAGING_MODE_1 && imMask->mode != IMAGING_MODE_L) {
             return ImagingError_ValueError("bad transparency mask");
@@ -112,7 +112,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
         } else { /* yes, we need the braces. C isn't Python! */
             if (im->type != IMAGING_TYPE_UINT8) {
                 ImagingHistogramDelete(h);
-                return ImagingError_ModeError(NULL);
+                return ImagingError_ModeError("image must have 8-bit data");
             }
             ImagingSectionEnter(&cookie);
             for (int y = 0; y < ysize; y++) {
