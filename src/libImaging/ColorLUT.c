@@ -87,14 +87,23 @@ ImagingColorLUT3D_linear(
         return NULL;
     }
 
-    if (imIn->type != IMAGING_TYPE_UINT8 || imOut->type != IMAGING_TYPE_UINT8 ||
-        imIn->bands < 3 || imOut->bands < table_channels) {
-        return (Imaging)ImagingError_ModeError(NULL);
+    if (imIn->type != IMAGING_TYPE_UINT8 || imOut->type != IMAGING_TYPE_UINT8) {
+        return (Imaging)ImagingError_NotSupportedError(
+            "only uint8 images are supported"
+        );
     }
-
-    /* In case we have one extra band in imOut and don't have in imIn.*/
+    if (imIn->bands < 3) {
+        return (Imaging)ImagingError_ModeError("input image needs at least 3 bands");
+    }
+    if (imOut->bands < table_channels) {
+        return (Imaging)ImagingError_ValueError(
+            "output image needs at least as many bands as the table"
+        );
+    }
     if (imOut->bands > table_channels && imOut->bands > imIn->bands) {
-        return (Imaging)ImagingError_ModeError(NULL);
+        return (Imaging)ImagingError_ModeError(
+            "output image has more bands than input image and table"
+        );
     }
 
     ImagingSectionEnter(&cookie);

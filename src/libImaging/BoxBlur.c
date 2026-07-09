@@ -251,18 +251,20 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n)
     if (imIn->mode != imOut->mode || imIn->type != imOut->type ||
         imIn->bands != imOut->bands || imIn->xsize != imOut->xsize ||
         imIn->ysize != imOut->ysize) {
-        return ImagingError_Mismatch(NULL);
+        return ImagingError_Mismatch("image mode, type, bands and size must match");
     }
 
     if (imIn->type != IMAGING_TYPE_UINT8) {
-        return ImagingError_ModeError(NULL);
+        return ImagingError_NotSupportedError("non-uint8 images not supported");
     }
 
     if (imIn->mode != IMAGING_MODE_RGB && imIn->mode != IMAGING_MODE_RGBA &&
         imIn->mode != IMAGING_MODE_RGBa && imIn->mode != IMAGING_MODE_RGBX &&
         imIn->mode != IMAGING_MODE_CMYK && imIn->mode != IMAGING_MODE_L &&
         imIn->mode != IMAGING_MODE_LA && imIn->mode != IMAGING_MODE_La) {
-        return ImagingError_ModeError(NULL);
+        return ImagingError_NotSupportedError(
+            "BoxBlur operation not supported in this mode"
+        );
     }
 
     /* Apply blur in one dimension.

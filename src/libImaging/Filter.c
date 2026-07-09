@@ -481,7 +481,9 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 o
 
     if (im->type == IMAGING_TYPE_FLOAT32 ||
         (im->type == IMAGING_TYPE_SPECIAL && im->bands != 1)) {
-        return (Imaging)ImagingError_ModeError(NULL);
+        return (Imaging)ImagingError_ModeError(
+            "32-bpc or special multiband image types not supported"
+        );
     }
 
     if (im->xsize < xsize || im->ysize < ysize) {

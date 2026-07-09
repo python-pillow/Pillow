@@ -31,7 +31,7 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
 
     if (imIn1->type != imIn2->type || imIn1->bands != imIn2->bands ||
         imIn1->xsize != imIn2->xsize || imIn1->ysize != imIn2->ysize) {
-        return ImagingError_Mismatch(NULL);
+        return ImagingError_Mismatch("image types, band count and sizes must match");
     }
 
     /* Shortcuts */
