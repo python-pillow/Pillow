@@ -1602,7 +1602,7 @@ ImagingConvert(
     if (mode == IMAGING_MODE_UNKNOWN) {
         /* Map palette image to full depth */
         if (!imIn->palette) {
-            return (Imaging)ImagingError_ModeError(NULL);
+            return (Imaging)ImagingError_ModeError("image has no palette");
         }
         mode = imIn->palette->mode;
     } else {
