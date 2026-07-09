@@ -24,7 +24,7 @@ ImagingGetBand(Imaging imIn, int band) {
 
     /* Check arguments */
     if (!imIn || imIn->type != IMAGING_TYPE_UINT8) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     if (band < 0 || band >= imIn->bands) {
@@ -74,7 +74,7 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
 
     /* Check arguments */
     if (!imIn || imIn->type != IMAGING_TYPE_UINT8) {
-        (void)ImagingError_ModeError();
+        (void)ImagingError_ModeError(NULL);
         return 0;
     }
 
@@ -179,7 +179,7 @@ ImagingPutBand(Imaging imOut, Imaging imIn, int band) {
 
     /* Check arguments */
     if (!imIn || imIn->bands != 1 || !imOut) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     if (band < 0 || band >= imOut->bands) {
@@ -188,7 +188,7 @@ ImagingPutBand(Imaging imOut, Imaging imIn, int band) {
 
     if (imIn->type != imOut->type || imIn->xsize != imOut->xsize ||
         imIn->ysize != imOut->ysize) {
-        return (Imaging)ImagingError_Mismatch();
+        return (Imaging)ImagingError_Mismatch(NULL);
     }
 
     /* Shortcuts */
@@ -225,7 +225,7 @@ ImagingFillBand(Imaging imOut, int band, int color) {
 
     /* Check arguments */
     if (!imOut || imOut->type != IMAGING_TYPE_UINT8) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     if (band < 0 || band >= imOut->bands) {
@@ -270,11 +270,11 @@ ImagingMerge(const ModeID mode, Imaging bands[4]) {
             break;
         }
         if (bands[i]->bands != 1) {
-            return (Imaging)ImagingError_ModeError();
+            return (Imaging)ImagingError_ModeError(NULL);
         }
         if (bands[i]->xsize != firstBand->xsize ||
             bands[i]->ysize != firstBand->ysize) {
-            return (Imaging)ImagingError_Mismatch();
+            return (Imaging)ImagingError_Mismatch(NULL);
         }
     }
     bandsCount = i;

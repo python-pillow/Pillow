@@ -370,14 +370,18 @@ ImagingError_MemoryError(void) {
 }
 
 void *
-ImagingError_Mismatch(void) {
-    PyErr_SetString(PyExc_ValueError, "images do not match");
+ImagingError_Mismatch(const char *message) {
+    PyErr_SetString(
+        PyExc_ValueError, (message) ? (char *)message : "images do not match"
+    );
     return NULL;
 }
 
 void *
-ImagingError_ModeError(void) {
-    PyErr_SetString(PyExc_ValueError, "image has wrong mode");
+ImagingError_ModeError(const char *message) {
+    PyErr_SetString(
+        PyExc_ValueError, (message) ? (char *)message : "image has wrong mode"
+    );
     return NULL;
 }
 
@@ -2069,7 +2073,7 @@ im_setalpha(ImagingObject *self, PyObject *args) {
     /* attempt to modify the mode of an image in place */
     Imaging im = self->image;
     if (im->mode != IMAGING_MODE_RGB && im->mode != IMAGING_MODE_RGBX) {
-        return ImagingError_ModeError();
+        return ImagingError_ModeError("only RGB/RGBX modes supported");
     }
     im->mode = IMAGING_MODE_RGBA;
     im->bands = 4;

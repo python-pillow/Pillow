@@ -480,7 +480,7 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 o
     ImagingSectionCookie cookie;
 
     if (im->type == IMAGING_TYPE_FLOAT32) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     if (im->xsize < xsize || im->ysize < ysize) {
