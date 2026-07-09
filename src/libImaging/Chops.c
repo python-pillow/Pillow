@@ -68,8 +68,11 @@
 static Imaging
 create(Imaging im1, Imaging im2, const ModeID mode) {
     int xsize, ysize;
+    if (!im1 || !im2) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
 
-    if (!im1 || !im2 || im1->type != IMAGING_TYPE_UINT8 ||
+    if (im1->type != IMAGING_TYPE_UINT8 ||
         (mode != IMAGING_MODE_UNKNOWN &&
          (im1->mode != IMAGING_MODE_1 || im2->mode != IMAGING_MODE_1))) {
         return (Imaging)ImagingError_ModeError(NULL);

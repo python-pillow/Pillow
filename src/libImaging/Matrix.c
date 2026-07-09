@@ -24,7 +24,7 @@ ImagingConvertMatrix(Imaging im, const ModeID mode, const float m[12]) {
 
     /* Assume there's enough data in the buffer */
     if (!im) {
-        return (Imaging)ImagingError_ModeError(NULL);
+        return (Imaging)ImagingError_ValueError(NULL);
     }
     if (im->bands != 3) {
         return (Imaging)ImagingError_ModeError("image must have exactly 3 bands");

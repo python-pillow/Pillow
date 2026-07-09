@@ -65,7 +65,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
     FLOAT32 fmin, fmax, scale;
 
     if (!im) {
-        return ImagingError_ModeError(NULL);
+        return ImagingError_ValueError(NULL);
     }
 
     if (imMask) {
