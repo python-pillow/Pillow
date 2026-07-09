@@ -63,7 +63,11 @@ ImagingRankFilter(Imaging im, int size, int rank) {
     ImagingSectionCookie cookie;
     int margin, size2;
 
-    if (!im || im->bands != 1) {
+    if (!im) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+
+    if (im->bands != 1 || im->type == IMAGING_TYPE_I16) {
         return (Imaging)ImagingError_ModeError(NULL);
     }
 
