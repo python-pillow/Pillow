@@ -78,7 +78,7 @@ ImagingFillLinearGradient(const ModeID mode) {
 
     if (mode != IMAGING_MODE_1 && mode != IMAGING_MODE_F && mode != IMAGING_MODE_I &&
         mode != IMAGING_MODE_L && mode != IMAGING_MODE_P) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     im = ImagingNewDirty(mode, 256, 256);
@@ -117,7 +117,7 @@ ImagingFillRadialGradient(const ModeID mode) {
 
     if (mode != IMAGING_MODE_1 && mode != IMAGING_MODE_F && mode != IMAGING_MODE_I &&
         mode != IMAGING_MODE_L && mode != IMAGING_MODE_P) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     im = ImagingNewDirty(mode, 256, 256);

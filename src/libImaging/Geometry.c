@@ -20,10 +20,10 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     int x, y, xr;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
     if (imIn->xsize != imOut->xsize || imIn->ysize != imOut->ysize) {
-        return (Imaging)ImagingError_Mismatch();
+        return (Imaging)ImagingError_Mismatch(NULL);
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -63,10 +63,10 @@ ImagingFlipTopBottom(Imaging imOut, Imaging imIn) {
     int y, yr;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
     if (imIn->xsize != imOut->xsize || imIn->ysize != imOut->ysize) {
-        return (Imaging)ImagingError_Mismatch();
+        return (Imaging)ImagingError_Mismatch(NULL);
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -90,10 +90,10 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
     int xxx, yyy, xxxsize, yyysize;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch();
+        return (Imaging)ImagingError_Mismatch(NULL);
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -150,10 +150,10 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
     int xxx, yyy, xxxsize, yyysize;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch();
+        return (Imaging)ImagingError_Mismatch(NULL);
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -209,10 +209,10 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
     int xxx, yyy, xxxsize, yyysize;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch();
+        return (Imaging)ImagingError_Mismatch(NULL);
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -269,10 +269,10 @@ ImagingRotate180(Imaging imOut, Imaging imIn) {
     int x, y, xr, yr;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
     if (imIn->xsize != imOut->xsize || imIn->ysize != imOut->ysize) {
-        return (Imaging)ImagingError_Mismatch();
+        return (Imaging)ImagingError_Mismatch(NULL);
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -314,10 +314,10 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
     int xxx, yyy, xxxsize, yyysize;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch();
+        return (Imaging)ImagingError_Mismatch(NULL);
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -785,7 +785,7 @@ ImagingGenericTransform(
     double xx, yy;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     ImagingTransformFilter filter = getfilter(imIn, filterid);
@@ -842,7 +842,7 @@ ImagingScaleAffine(
     int *xintab;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -1029,7 +1029,7 @@ ImagingTransformAffine(
     double xo, yo;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     if (filterid || imIn->type == IMAGING_TYPE_SPECIAL) {

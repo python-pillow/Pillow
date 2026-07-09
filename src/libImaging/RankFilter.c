@@ -65,7 +65,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
     int i, margin, size2;
 
     if (!im || im->bands != 1 || im->type == IMAGING_TYPE_SPECIAL) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     if (!(size & 1)) {
@@ -121,7 +121,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
     } else {
         /* safety net (we shouldn't end up here) */
         ImagingDelete(imOut);
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     ImagingCopyPalette(imOut, im);

@@ -1581,13 +1581,13 @@ convert(Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int di
     ImagingShuffler convert;
 
     if (!imIn) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     if (mode == IMAGING_MODE_UNKNOWN) {
         /* Map palette image to full depth */
         if (!imIn->palette) {
-            return (Imaging)ImagingError_ModeError();
+            return (Imaging)ImagingError_ModeError(NULL);
         }
         mode = imIn->palette->mode;
     } else {
@@ -1673,7 +1673,7 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
     int y;
 
     if (!imIn) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     if (imIn->mode == IMAGING_MODE_RGB &&
@@ -1747,7 +1747,7 @@ ImagingConvertInPlace(Imaging imIn, const ModeID mode) {
     } else if (imIn->mode == IMAGING_MODE_1 && mode == IMAGING_MODE_L) {
         convert = bit2l;
     } else {
-        return ImagingError_ModeError();
+        return ImagingError_ModeError(NULL);
     }
 
     ImagingSectionEnter(&cookie);

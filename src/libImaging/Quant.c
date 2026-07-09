@@ -1678,7 +1678,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     ImagingSectionCookie cookie;
 
     if (!im) {
-        return ImagingError_ModeError();
+        return ImagingError_ModeError(NULL);
     }
     if (colors < 1 || colors > 256) {
         /* FIXME: for colors > 256, consider returning an RGB image
@@ -1688,12 +1688,12 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
 
     if (im->mode != IMAGING_MODE_L && im->mode != IMAGING_MODE_P &&
         im->mode != IMAGING_MODE_RGB && im->mode != IMAGING_MODE_RGBA) {
-        return ImagingError_ModeError();
+        return ImagingError_ModeError(NULL);
     }
 
     /* only octree and imagequant supports RGBA */
     if (im->mode == IMAGING_MODE_RGBA && mode != 2 && mode != 3) {
-        return ImagingError_ModeError();
+        return ImagingError_ModeError(NULL);
     }
 
     // Hoisted here as these are invariant over the loops below.

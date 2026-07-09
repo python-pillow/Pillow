@@ -65,13 +65,13 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
     FLOAT32 fmin, fmax, scale;
 
     if (!im) {
-        return ImagingError_ModeError();
+        return ImagingError_ModeError(NULL);
     }
 
     if (imMask) {
         /* Validate mask */
         if (im->xsize != imMask->xsize || im->ysize != imMask->ysize) {
-            return ImagingError_Mismatch();
+            return ImagingError_Mismatch(NULL);
         }
         if (imMask->mode != IMAGING_MODE_1 && imMask->mode != IMAGING_MODE_L) {
             return ImagingError_ValueError("bad transparency mask");
@@ -98,7 +98,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
         } else { /* yes, we need the braces. C isn't Python! */
             if (im->type != IMAGING_TYPE_UINT8) {
                 ImagingHistogramDelete(h);
-                return ImagingError_ModeError();
+                return ImagingError_ModeError(NULL);
             }
             ImagingSectionEnter(&cookie);
             for (y = 0; y < im->ysize; y++) {

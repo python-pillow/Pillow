@@ -89,12 +89,12 @@ ImagingColorLUT3D_linear(
 
     if (imIn->type != IMAGING_TYPE_UINT8 || imOut->type != IMAGING_TYPE_UINT8 ||
         imIn->bands < 3 || imOut->bands < table_channels) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     /* In case we have one extra band in imOut and don't have in imIn.*/
     if (imOut->bands > table_channels && imOut->bands > imIn->bands) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     ImagingSectionEnter(&cookie);

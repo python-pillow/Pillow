@@ -24,7 +24,7 @@ ImagingConvertMatrix(Imaging im, const ModeID mode, const float m[12]) {
 
     /* Assume there's enough data in the buffer */
     if (!im || im->bands != 3) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     if (mode == IMAGING_MODE_L) {
@@ -77,7 +77,7 @@ ImagingConvertMatrix(Imaging im, const ModeID mode, const float m[12]) {
             ImagingSectionLeave(&cookie);
         }
     } else {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     return imOut;
