@@ -69,7 +69,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
     }
 
     if (im->bands != 1 || im->type == IMAGING_TYPE_I16) {
-        return (Imaging)ImagingError_ModeError(NULL);
+        return (Imaging)ImagingError_ModeError("image must be 1-band, 8-bpc");
     }
 
     if (!(size & 1)) {
