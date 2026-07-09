@@ -75,7 +75,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
     if (imMask) {
         /* Validate mask */
         if (xsize != imMask->xsize || ysize != imMask->ysize) {
-            return ImagingError_Mismatch(NULL);
+            return ImagingError_Mismatch("mask must have the same size as the image");
         }
         if (imMask->mode != IMAGING_MODE_1 && imMask->mode != IMAGING_MODE_L) {
             return ImagingError_ValueError("bad transparency mask");
@@ -97,7 +97,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
         /* mask */
         if (im->type != IMAGING_TYPE_UINT8) {
             ImagingHistogramDelete(h);
-            return ImagingError_ModeError(NULL);
+            return ImagingError_NotSupportedError("only 8-bit images supported");
         }
         ImagingSectionEnter(&cookie);
         MUTEX_LOCK(&im->mutex);

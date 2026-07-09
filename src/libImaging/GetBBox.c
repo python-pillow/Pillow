@@ -289,7 +289,7 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             }
             /* FALL THROUGH */
         default:
-            (void)ImagingError_ModeError(NULL);
+            (void)ImagingError_NotSupportedError("mode not supported");
             return -1;
     }
     return 1; /* ok */
@@ -387,7 +387,7 @@ getcolors32(Imaging im, int maxcolors, int *size) {
     }
 
     if (!im->image32) {
-        return ImagingError_ModeError(NULL);
+        return ImagingError_ModeError("image must have 32-bit data");
     }
 
     table = calloc(code_size + 1, sizeof(ImagingColorItem));

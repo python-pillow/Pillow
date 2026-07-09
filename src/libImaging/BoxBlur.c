@@ -354,7 +354,7 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n)
     if (imIn->mode != imOut->mode || imIn->type != imOut->type ||
         imIn->bands != imOut->bands || imIn->xsize != imOut->xsize ||
         imIn->ysize != imOut->ysize) {
-        return ImagingError_Mismatch(NULL);
+        return ImagingError_Mismatch("images must have the same mode and size");
     }
 
     if (!(imIn->type == IMAGING_TYPE_UINT8 &&
@@ -363,7 +363,9 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n)
            imIn->mode == IMAGING_MODE_CMYK || imIn->mode == IMAGING_MODE_L ||
            imIn->mode == IMAGING_MODE_LA || imIn->mode == IMAGING_MODE_La)) &&
         imIn->type != IMAGING_TYPE_I16) {
-        return ImagingError_ModeError(NULL);
+        return ImagingError_NotSupportedError(
+            "only modes RGB/RGBA/RGBa/RGBX/CMYK/L/LA/La and I;16 supported"
+        );
     }
 
     /* Apply blur in one dimension.
