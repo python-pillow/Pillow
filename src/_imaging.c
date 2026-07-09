@@ -2056,8 +2056,7 @@ _putpalette_impl(ImagingObject *self, PyObject *args) {
 
     if (self->image->mode != IMAGING_MODE_L && self->image->mode != IMAGING_MODE_LA &&
         self->image->mode != IMAGING_MODE_P && self->image->mode != IMAGING_MODE_PA) {
-        PyErr_SetString(PyExc_ValueError, wrong_mode);
-        return NULL;
+        return ImagingError_ModeError("image must have mode L, LA, P or PA");
     }
 
     const ModeID palette_mode = findModeID(palette_mode_name);
@@ -2390,7 +2389,7 @@ static PyObject *
 im_setalpha_impl(ImagingObject *self, PyObject *args) {
     Imaging im = self->image;
     if (im->mode != IMAGING_MODE_RGB && im->mode != IMAGING_MODE_RGBX) {
-        return ImagingError_ModeError("only RGB/RGBX modes supported");
+        return ImagingError_NotSupportedError("only modes RGB/RGBX supported");
     }
     im->mode = IMAGING_MODE_RGBA;
     im->bands = 4;

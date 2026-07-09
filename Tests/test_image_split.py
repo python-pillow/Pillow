@@ -65,7 +65,7 @@ def test_split_open(tmp_path: Path) -> None:
 
 
 def test_merge_single_band_mode_mismatch() -> None:
-    with pytest.raises(ValueError, match="images do not match"):
+    with pytest.raises(ValueError, match="images must have the same mode and size"):
         Image.merge("F", [Image.new("L", (1, 1))])
 
 

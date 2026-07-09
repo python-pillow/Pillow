@@ -32,12 +32,14 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
     if (!imIn1 || !imIn2 ||
         (imIn1->type != IMAGING_TYPE_UINT8 && imIn1->type != IMAGING_TYPE_I16) ||
         imIn1->palette || imIn1->mode == IMAGING_MODE_1) {
-        return ImagingError_ModeError(NULL);
+        return ImagingError_ModeError(
+            "images must have 8-bit data and must not use mode P or 1"
+        );
     }
 
     if (imIn1->mode != imIn2->mode || imIn1->xsize != imIn2->xsize ||
         imIn1->ysize != imIn2->ysize) {
-        return ImagingError_Mismatch(NULL);
+        return ImagingError_Mismatch("image types, band count and sizes must match");
     }
 
     /* Shortcuts */
