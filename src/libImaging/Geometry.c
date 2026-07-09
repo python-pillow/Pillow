@@ -746,8 +746,13 @@ ImagingGenericTransform(
     char *out;
     double xx, yy;
 
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        ImagingError_ModeError(NULL);
+    if (!imOut || !imIn) {
+        ImagingError_ValueError(NULL);
+        return -1;
+    }
+
+    if (imIn->mode != imOut->mode) {
+        ImagingError_ModeError("images must have the same mode");
         return -1;
     }
 
@@ -807,8 +812,13 @@ ImagingScaleAffine(
     int xmin, xmax;
     int *xintab;
 
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        ImagingError_ModeError(NULL);
+    if (!imOut || !imIn) {
+        ImagingError_ValueError(NULL);
+        return -1;
+    }
+
+    if (imIn->mode != imOut->mode) {
+        ImagingError_ModeError("images must have the same mode");
         return -1;
     }
 
@@ -1002,8 +1012,13 @@ ImagingTransformAffine(
     double xx, yy;
     double xo, yo;
 
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        ImagingError_ModeError(NULL);
+    if (!imOut || !imIn) {
+        ImagingError_ValueError(NULL);
+        return -1;
+    }
+
+    if (imIn->mode != imOut->mode) {
+        ImagingError_ModeError("images must have the same mode");
         return -1;
     }
 

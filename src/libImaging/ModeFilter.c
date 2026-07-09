@@ -24,8 +24,14 @@ ImagingModeFilter(Imaging im, int size) {
     UINT8 maxpixel;
     int histogram[256];
 
-    if (!im || im->bands != 1 || im->type != IMAGING_TYPE_UINT8) {
+    if (!im) {
         return (Imaging)ImagingError_ModeError(NULL);
+    }
+    if (im->bands != 1) {
+        return (Imaging)ImagingError_ModeError("image must have exactly 1 band");
+    }
+    if (im->type != IMAGING_TYPE_UINT8) {
+        return (Imaging)ImagingError_NotSupportedError("only 8-bit images supported");
     }
 
     imOut = ImagingNewDirty(im->mode, im->xsize, im->ysize);
