@@ -747,7 +747,7 @@ ImagingGenericTransform(
     double xx, yy;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        ImagingError_ModeError();
+        ImagingError_ModeError(NULL);
         return -1;
     }
 
@@ -808,7 +808,7 @@ ImagingScaleAffine(
     int *xintab;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        ImagingError_ModeError();
+        ImagingError_ModeError(NULL);
         return -1;
     }
 
@@ -1003,7 +1003,7 @@ ImagingTransformAffine(
     double xo, yo;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        ImagingError_ModeError();
+        ImagingError_ModeError(NULL);
         return -1;
     }
 
