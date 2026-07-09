@@ -64,7 +64,7 @@ ImagingRankFilter(Imaging im, int size, int rank) {
     int margin, size2;
 
     if (!im || im->bands != 1) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     if (!(size & 1)) {
@@ -140,7 +140,7 @@ ImagingRankFilter(Imaging im, int size, int rank) {
     } else {
         /* safety net (we shouldn't end up here) */
         ImagingDelete(imOut);
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     ImagingCopyPalette(imOut, im);

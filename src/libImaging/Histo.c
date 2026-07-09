@@ -68,14 +68,14 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
     ImagingHistogram h;
 
     if (!im) {
-        return ImagingError_ModeError();
+        return ImagingError_ModeError(NULL);
     }
 
     int xsize = im->xsize, ysize = im->ysize;
     if (imMask) {
         /* Validate mask */
         if (xsize != imMask->xsize || ysize != imMask->ysize) {
-            return ImagingError_Mismatch();
+            return ImagingError_Mismatch(NULL);
         }
         if (imMask->mode != IMAGING_MODE_1 && imMask->mode != IMAGING_MODE_L) {
             return ImagingError_ValueError("bad transparency mask");
@@ -97,7 +97,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
         /* mask */
         if (im->type != IMAGING_TYPE_UINT8) {
             ImagingHistogramDelete(h);
-            return ImagingError_ModeError();
+            return ImagingError_ModeError(NULL);
         }
         ImagingSectionEnter(&cookie);
         MUTEX_LOCK(&im->mutex);

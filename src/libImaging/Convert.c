@@ -1709,13 +1709,13 @@ ImagingConvertUsingAllocator(
     Imaging imOut;
 
     if (!imIn) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     if (mode == IMAGING_MODE_UNKNOWN) {
         /* Map palette image to full depth */
         if (!imIn->palette) {
-            return (Imaging)ImagingError_ModeError();
+            return (Imaging)ImagingError_ModeError(NULL);
         }
         mode = imIn->palette->mode;
     } else {
@@ -1791,7 +1791,7 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
     int y;
 
     if (!imIn) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     if (imIn->mode == IMAGING_MODE_RGB &&
