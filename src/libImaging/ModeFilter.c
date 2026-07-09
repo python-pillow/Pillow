@@ -25,7 +25,7 @@ ImagingModeFilter(Imaging im, int size) {
     int histogram[256];
 
     if (!im) {
-        return (Imaging)ImagingError_ModeError(NULL);
+        return (Imaging)ImagingError_ValueError(NULL);
     }
     if (im->bands != 1 || im->type != IMAGING_TYPE_UINT8) {
         return (Imaging)ImagingError_ModeError("image must have 8-bit data in 1 band");
