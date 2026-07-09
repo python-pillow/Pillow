@@ -135,7 +135,7 @@ _paste(ImagingDisplayObject *display, PyObject *args) {
     if (xy[2] <= xy[0]) {
         xy[2] = xy[0] + im->xsize;
     } else if (xy[2] - xy[0] != im->xsize) {
-        return ImagingError_Mismatch();
+        return ImagingError_Mismatch("box must match image size");
     }
     if (xy[0] < 0) {
         PyErr_SetString(PyExc_ValueError, "left box co-ordinate cannot be negative");
@@ -148,7 +148,7 @@ _paste(ImagingDisplayObject *display, PyObject *args) {
     if (xy[3] <= xy[1]) {
         xy[3] = xy[1] + im->ysize;
     } else if (xy[3] - xy[1] != im->ysize) {
-        return ImagingError_Mismatch();
+        return ImagingError_Mismatch("box must match image size");
     }
     if (xy[1] < 0) {
         PyErr_SetString(PyExc_ValueError, "upper box co-ordinate cannot be negative");

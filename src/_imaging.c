@@ -2126,7 +2126,7 @@ im_setalpha(ImagingObject *self, PyObject *args) {
     /* attempt to modify the mode of an image in place */
     Imaging im = self->image;
     if (im->mode != IMAGING_MODE_RGB && im->mode != IMAGING_MODE_RGBX) {
-        return ImagingError_ModeError("only RGB/RGBX modes supported");
+        return ImagingError_NotSupportedError("only modes RGB/RGBX supported");
     }
     im->mode = IMAGING_MODE_RGBA;
     im->bands = 4;

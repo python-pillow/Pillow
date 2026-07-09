@@ -746,7 +746,7 @@ ImagingNew2Dirty(const ModeID mode, Imaging imOut, Imaging imIn) {
         /* make sure images match */
         if (imOut->mode != mode || imOut->xsize != imIn->xsize ||
             imOut->ysize != imIn->ysize) {
-            return ImagingError_Mismatch(NULL);
+            return ImagingError_Mismatch("images must have the same mode and size");
         }
     } else {
         /* create new image */

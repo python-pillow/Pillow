@@ -510,7 +510,7 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 o
     ImagingSectionCookie cookie;
 
     if (im->type == IMAGING_TYPE_FLOAT32) {
-        return (Imaging)ImagingError_ModeError(NULL);
+        return (Imaging)ImagingError_NotSupportedError("mode F not supported");
     }
 
     if (im->xsize < xsize || im->ysize < ysize) {
