@@ -786,7 +786,7 @@ ImagingResample(
     ResampleFunction ResampleVertical;
 
     if (imIn->mode == IMAGING_MODE_P || imIn->mode == IMAGING_MODE_1) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     if (imIn->type == IMAGING_TYPE_I16) {
@@ -807,7 +807,7 @@ ImagingResample(
                 ResampleVertical = _ImagingResampleVertical_32bpc;
                 break;
             default:
-                return (Imaging)ImagingError_ModeError();
+                return (Imaging)ImagingError_ModeError(NULL);
         }
     }
 

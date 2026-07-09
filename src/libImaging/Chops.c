@@ -72,10 +72,10 @@ create(Imaging im1, Imaging im2, const ModeID mode) {
     if (!im1 || !im2 || im1->type != IMAGING_TYPE_UINT8 ||
         (mode != IMAGING_MODE_UNKNOWN &&
          (im1->mode != IMAGING_MODE_1 || im2->mode != IMAGING_MODE_1))) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
     if (im1->type != im2->type || im1->bands != im2->bands) {
-        return (Imaging)ImagingError_Mismatch();
+        return (Imaging)ImagingError_Mismatch(NULL);
     }
 
     xsize = (im1->xsize < im2->xsize) ? im1->xsize : im2->xsize;
