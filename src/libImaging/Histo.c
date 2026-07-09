@@ -68,7 +68,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
     ImagingHistogram h;
 
     if (!im) {
-        return ImagingError_ModeError(NULL);
+        return ImagingError_ValueError(NULL);
     }
 
     int xsize = im->xsize, ysize = im->ysize;

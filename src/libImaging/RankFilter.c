@@ -67,8 +67,8 @@ ImagingRankFilter(Imaging im, int size, int rank) {
         return (Imaging)ImagingError_ValueError(NULL);
     }
 
-    if (im->bands != 1 || im->type == IMAGING_TYPE_I16) {
-        return (Imaging)ImagingError_ModeError(NULL);
+    if (im->bands != 1) {
+        return (Imaging)ImagingError_ModeError("image must have exactly 1 band");
     }
 
     if (!(size & 1)) {
