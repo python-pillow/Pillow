@@ -1688,12 +1688,11 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
 
     if (im->mode != IMAGING_MODE_L && im->mode != IMAGING_MODE_P &&
         im->mode != IMAGING_MODE_RGB && im->mode != IMAGING_MODE_RGBA) {
-        return ImagingError_ModeError(NULL);
+        return ImagingError_NotSupportedError("only modes L/P/RGB/RGBA supported");
     }
 
-    /* only octree and imagequant supports RGBA */
     if (im->mode == IMAGING_MODE_RGBA && mode != 2 && mode != 3) {
-        return ImagingError_ModeError(NULL);
+        return ImagingError_ModeError("only octree and imagequant support RGBA");
     }
 
     // Hoisted here as these are invariant over the loops below.
