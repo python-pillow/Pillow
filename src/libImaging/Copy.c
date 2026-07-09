@@ -77,7 +77,7 @@ Imaging
 ImagingCopyInto(Imaging imOut, Imaging imIn) {
     if (imOut->mode != imIn->mode || imOut->xsize != imIn->xsize ||
         imOut->ysize != imIn->ysize) {
-        return ImagingError_Mismatch();
+        return ImagingError_Mismatch(NULL);
     }
 
     _copy(imOut, imIn);
