@@ -1646,7 +1646,7 @@ ImagingConvert(
     ImagingShuffler convert;
 
     if (!imIn) {
-        return (Imaging)ImagingError_ModeError(NULL);
+        return (Imaging)ImagingError_ValueError(NULL);
     }
 
     if (mode == IMAGING_MODE_UNKNOWN) {
@@ -1723,7 +1723,7 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
     int y;
 
     if (!imIn) {
-        return (Imaging)ImagingError_ModeError(NULL);
+        return (Imaging)ImagingError_ValueError(NULL);
     }
 
     if (imIn->mode == IMAGING_MODE_RGB &&

@@ -28,8 +28,12 @@ ImagingGetBand(Imaging imIn, int band) {
     int x, y;
 
     /* Check arguments */
-    if (!imIn || imIn->type != IMAGING_TYPE_UINT8) {
-        return (Imaging)ImagingError_NotSupportedError(NULL);
+    if (!imIn) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+
+    if (imIn->type != IMAGING_TYPE_UINT8) {
+        return (Imaging)ImagingError_NotSupportedError("only 8-bit images supported");
     }
 
     if (band < 0 || band >= imIn->bands) {
@@ -89,8 +93,13 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
     int i, j, x, y;
 
     /* Check arguments */
-    if (!imIn || imIn->type != IMAGING_TYPE_UINT8) {
-        (void)ImagingError_NotSupportedError(NULL);
+    if (!imIn) {
+        (void)ImagingError_ValueError(NULL);
+        return -1;
+    }
+
+    if (imIn->type != IMAGING_TYPE_UINT8) {
+        (void)ImagingError_NotSupportedError("only 8-bit images supported");
         return -1;
     }
 
@@ -200,7 +209,7 @@ ImagingPutBand(Imaging imOut, Imaging imIn, int band) {
 
     /* Check arguments */
     if (!imIn || !imOut) {
-        return (Imaging)ImagingError_ModeError(NULL);
+        return (Imaging)ImagingError_ValueError(NULL);
     }
     if (imIn->bands != 1) {
         return (Imaging)ImagingError_ModeError("source image must have exactly 1 band");
