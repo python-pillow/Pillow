@@ -71,7 +71,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
     if (imMask) {
         /* Validate mask */
         if (im->xsize != imMask->xsize || im->ysize != imMask->ysize) {
-            return ImagingError_Mismatch(NULL);
+            return ImagingError_Mismatch("mask and image size must match");
         }
         if (imMask->mode != IMAGING_MODE_1 && imMask->mode != IMAGING_MODE_L) {
             return ImagingError_ValueError("bad transparency mask");

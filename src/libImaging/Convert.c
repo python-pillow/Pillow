@@ -1747,7 +1747,9 @@ ImagingConvertInPlace(Imaging imIn, const ModeID mode) {
     } else if (imIn->mode == IMAGING_MODE_1 && mode == IMAGING_MODE_L) {
         convert = bit2l;
     } else {
-        return ImagingError_ModeError(NULL);
+        return ImagingError_NotSupportedError(
+            "in-place conversion not supported between these formats"
+        );
     }
 
     ImagingSectionEnter(&cookie);
