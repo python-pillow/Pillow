@@ -210,9 +210,12 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
     Imaging imOut;
     int x, y;
 
-    if (!imIn || (imIn->mode != IMAGING_MODE_I && imIn->mode != IMAGING_MODE_I_16 &&
-                  imIn->mode != IMAGING_MODE_F)) {
+    if (!imIn) {
         return (Imaging)ImagingError_ModeError(NULL);
+    }
+    if (imIn->mode != IMAGING_MODE_I && imIn->mode != IMAGING_MODE_I_16 &&
+        imIn->mode != IMAGING_MODE_F) {
+        return (Imaging)ImagingError_NotSupportedError("only modes I/I;16/F supported");
     }
 
     imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);

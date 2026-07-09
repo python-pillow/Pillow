@@ -290,12 +290,12 @@ ImagingPaste(
     ysize = (int64_t)dy1 - dy0;
 
     if (xsize != imIn->xsize || ysize != imIn->ysize || pixelsize != imIn->pixelsize) {
-        (void)ImagingError_Mismatch(NULL);
+        (void)ImagingError_Mismatch("image dimensions and pixel size must match");
         return -1;
     }
 
     if (imMask && (xsize != imMask->xsize || ysize != imMask->ysize)) {
-        (void)ImagingError_Mismatch(NULL);
+        (void)ImagingError_Mismatch("mask size must match image size");
         return -1;
     }
 
@@ -613,7 +613,7 @@ ImagingFill2(
     ysize = (int64_t)dy1 - dy0;
 
     if (imMask && (xsize != imMask->xsize || ysize != imMask->ysize)) {
-        (void)ImagingError_Mismatch(NULL);
+        (void)ImagingError_Mismatch("mask size must match image size");
         return -1;
     }
 

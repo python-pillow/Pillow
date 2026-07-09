@@ -75,7 +75,7 @@ create(Imaging im1, Imaging im2, const ModeID mode) {
         return (Imaging)ImagingError_ModeError(NULL);
     }
     if (im1->type != im2->type || im1->bands != im2->bands) {
-        return (Imaging)ImagingError_Mismatch(NULL);
+        return (Imaging)ImagingError_Mismatch("image types and band count must match");
     }
 
     xsize = (im1->xsize < im2->xsize) ? im1->xsize : im2->xsize;

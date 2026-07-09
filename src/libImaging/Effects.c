@@ -33,7 +33,9 @@ ImagingEffectMandelbrot(int xsize, int ysize, double extent[4], int quality) {
     width = extent[2] - extent[0];
     height = extent[3] - extent[1];
     if (width < 0.0 || height < 0.0 || quality < 2) {
-        return (Imaging)ImagingError_ValueError(NULL);
+        return (Imaging)ImagingError_ValueError(
+            "width and height must be positive and quality >= 2"
+        );
     }
 
     im = ImagingNewDirty(IMAGING_MODE_L, xsize, ysize);
