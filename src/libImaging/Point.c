@@ -137,7 +137,7 @@ ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
     void (*point)(Imaging imIn, Imaging imOut, im_point_context *context);
 
     if (!imIn) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     if (mode == IMAGING_MODE_UNKNOWN) {
@@ -212,7 +212,7 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
 
     if (!imIn || (imIn->mode != IMAGING_MODE_I && imIn->mode != IMAGING_MODE_I_16 &&
                   imIn->mode != IMAGING_MODE_F)) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
