@@ -280,7 +280,7 @@ ImagingPaste(
     ImagingSectionCookie cookie;
 
     if (!imOut || !imIn) {
-        (void)ImagingError_ModeError(NULL);
+        (void)ImagingError_ValueError(NULL);
         return -1;
     }
 
@@ -603,7 +603,7 @@ ImagingFill2(
     int sx0, sy0;
 
     if (!imOut || !ink) {
-        (void)ImagingError_ModeError(NULL);
+        (void)ImagingError_ValueError(NULL);
         return -1;
     }
 

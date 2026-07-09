@@ -1678,7 +1678,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     ImagingSectionCookie cookie;
 
     if (!im) {
-        return ImagingError_ModeError(NULL);
+        return ImagingError_ValueError(NULL);
     }
     if (colors < 1 || colors > 256) {
         /* FIXME: for colors > 256, consider returning an RGB image
