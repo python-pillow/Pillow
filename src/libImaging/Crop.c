@@ -25,7 +25,7 @@ ImagingCrop(Imaging imIn, int sx0, int sy0, int sx1, int sy1) {
     INT32 zero = 0;
 
     if (!imIn) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     xsize = sx1 - sx0;

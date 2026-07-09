@@ -26,12 +26,12 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
     /* Check arguments */
     if (!imDst || !imSrc ||
         (imDst->mode != IMAGING_MODE_RGBA && imDst->mode != IMAGING_MODE_LA)) {
-        return ImagingError_ModeError();
+        return ImagingError_ModeError(NULL);
     }
 
     if (imDst->mode != imSrc->mode || imDst->xsize != imSrc->xsize ||
         imDst->ysize != imSrc->ysize) {
-        return ImagingError_Mismatch();
+        return ImagingError_Mismatch(NULL);
     }
 
     imOut = ImagingNewDirty(imDst->mode, imDst->xsize, imDst->ysize);

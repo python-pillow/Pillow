@@ -370,14 +370,18 @@ ImagingError_MemoryError(void) {
 }
 
 void *
-ImagingError_Mismatch(void) {
-    PyErr_SetString(PyExc_ValueError, "images do not match");
+ImagingError_Mismatch(const char *message) {
+    PyErr_SetString(
+        PyExc_ValueError, (message) ? (char *)message : "images do not match"
+    );
     return NULL;
 }
 
 void *
-ImagingError_ModeError(void) {
-    PyErr_SetString(PyExc_ValueError, "image has wrong mode");
+ImagingError_ModeError(const char *message) {
+    PyErr_SetString(
+        PyExc_ValueError, (message) ? (char *)message : "image has wrong mode"
+    );
     return NULL;
 }
 

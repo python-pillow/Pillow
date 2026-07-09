@@ -25,7 +25,7 @@ ImagingModeFilter(Imaging im, int size) {
     int histogram[256];
 
     if (!im || im->bands != 1 || im->type != IMAGING_TYPE_UINT8) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     imOut = ImagingNewDirty(im->mode, im->xsize, im->ysize);

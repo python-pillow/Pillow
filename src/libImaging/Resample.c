@@ -714,7 +714,7 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]) {
     ResampleFunction ResampleVertical;
 
     if (imIn->mode == IMAGING_MODE_P || imIn->mode == IMAGING_MODE_1) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     if (imIn->type == IMAGING_TYPE_SPECIAL) {
@@ -722,7 +722,7 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]) {
             ResampleHorizontal = _ImagingResampleHorizontal_16bpc;
             ResampleVertical = _ImagingResampleVertical_16bpc;
         } else {
-            return (Imaging)ImagingError_ModeError();
+            return (Imaging)ImagingError_ModeError(NULL);
         }
     } else if (imIn->image8) {
         ResampleHorizontal = _ImagingResampleHorizontal_8bpc;
@@ -739,7 +739,7 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]) {
                 ResampleVertical = _ImagingResampleVertical_32bpc;
                 break;
             default:
-                return (Imaging)ImagingError_ModeError();
+                return (Imaging)ImagingError_ModeError(NULL);
         }
     }
 
