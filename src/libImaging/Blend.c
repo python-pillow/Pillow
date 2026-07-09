@@ -29,17 +29,19 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
     int x, y;
 
     /* Check arguments */
-    if (!imIn1 || !imIn2 ||
-        (imIn1->type != IMAGING_TYPE_UINT8 && imIn1->type != IMAGING_TYPE_I16) ||
-        imIn1->palette || imIn1->mode == IMAGING_MODE_1) {
-        return ImagingError_ModeError(
-            "images must have 8-bit data and must not use mode P or 1"
-        );
+    if (!imIn1 || !imIn2) {
+        return ImagingError_ValueError(NULL);
+    }
+    if (imIn1->type != IMAGING_TYPE_UINT8 && imIn1->type != IMAGING_TYPE_I16) {
+        return ImagingError_NotSupportedError("only 8-bit and I;16 images supported");
+    }
+    if (imIn1->palette || imIn1->mode == IMAGING_MODE_1) {
+        return ImagingError_NotSupportedError("modes P, PA and 1 not supported");
     }
 
     if (imIn1->mode != imIn2->mode || imIn1->xsize != imIn2->xsize ||
         imIn1->ysize != imIn2->ysize) {
-        return ImagingError_Mismatch("image types, band count and sizes must match");
+        return ImagingError_Mismatch("images must have the same mode and size");
     }
 
     /* Shortcuts */

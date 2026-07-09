@@ -173,7 +173,7 @@ ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
     im_point_context context;
 
     if (!imIn) {
-        return (Imaging)ImagingError_ModeError(NULL);
+        return (Imaging)ImagingError_ValueError(NULL);
     }
 
     if (imIn->type == IMAGING_TYPE_UINT8) {
@@ -253,7 +253,7 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
     Imaging imOut;
 
     if (!imIn) {
-        return (Imaging)ImagingError_ModeError(NULL);
+        return (Imaging)ImagingError_ValueError(NULL);
     }
     if (imIn->mode != IMAGING_MODE_I && imIn->type != IMAGING_TYPE_I16 &&
         imIn->mode != IMAGING_MODE_F) {
