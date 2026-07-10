@@ -67,7 +67,7 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
     from types import ModuleType
-    from typing import Any, Literal
+    from typing import Any, Literal, Self
 
 logger = logging.getLogger(__name__)
 
@@ -691,7 +691,7 @@ class Image:
         return new
 
     # Context manager support
-    def __enter__(self) -> Image:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:

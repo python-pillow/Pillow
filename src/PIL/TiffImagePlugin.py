@@ -62,7 +62,7 @@ from .TiffTags import TYPES
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Iterator
-    from typing import NoReturn
+    from typing import NoReturn, Self
 
     from ._typing import Buffer, IntegralLike, StrOrBytesPath
 
@@ -2117,7 +2117,7 @@ class AppendingTiffWriter(io.BytesIO):
         self.finalize()
         self.setup()
 
-    def __enter__(self) -> AppendingTiffWriter:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
