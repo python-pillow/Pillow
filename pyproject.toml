@@ -168,7 +168,6 @@ lint.ignore = [
   "PT011",  # pytest-raises-too-broad
   "PT012",  # pytest-raises-with-multiple-statements
   "PT017",  # pytest-assert-in-except
-  "PYI034", # flake8-pyi: typing.Self added in Python 3.11
 ]
 lint.per-file-ignores."Tests/oss-fuzz/fuzz_font.py" = [
   "I002",
