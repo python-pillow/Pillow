@@ -18,8 +18,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-// Vendored from https://arrow.apache.org/docs/format/CDataInterface.html#structure-definitions
-// Only the Arrow C Data Interface structs and flags are included.
+// Vendored from
+// https://arrow.apache.org/docs/format/CDataInterface.html#structure-definitions Only
+// the Arrow C Data Interface structs and flags are included.
 
 #ifndef ARROW_C_DATA_INTERFACE
 #define ARROW_C_DATA_INTERFACE
