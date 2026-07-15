@@ -1,9 +1,39 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+/// \file Arrow.h Arrow C Data Interface
+///
+/// The Arrow C Data interface defines a very small, stable set
+/// of C definitions which can be easily copied into any project's
+/// source code and vendored to be used for columnar data interchange
+/// in the Arrow format. For non-C/C++ languages and runtimes,
+/// it should be almost as easy to translate the C definitions into
+/// the corresponding C FFI declarations.
+///
+/// Applications and libraries can therefore work with Arrow memory
+/// without necessarily using the Arrow libraries or reinventing
+/// the wheel. Developers can choose between tight integration
+/// with the Arrow software project or minimal integration with
+/// the Arrow format only.
+
 #include <stdint.h>
 #include <assert.h>
 
-// Apache License 2.0.
-// Source apache arrow project
-// https://arrow.apache.org/docs/format/CDataInterface.html
+// Spec and documentation: https://arrow.apache.org/docs/format/CDataInterface.html
 
 #ifndef ARROW_C_DATA_INTERFACE
 #define ARROW_C_DATA_INTERFACE
