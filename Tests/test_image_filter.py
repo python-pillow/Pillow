@@ -214,10 +214,11 @@ def test_consistency_5x5(mode: str) -> None:
 def test_consistency_i16_high_byte(mode: str) -> None:
     # Exercise filters with a 16bpc image that has content in the high byte, too.
     im = Image.new(mode, (8, 8), 1000)
-    pixel = im.filter(ImageFilter.SMOOTH).getpixel((4, 4))
-    assert isinstance(pixel, (int, float))
-    # Allow for kernel rounding errors.
-    assert abs(pixel - 1000) <= 1
+    # Ensure repeated smoothing retains the exact same color value,
+    # rather than drifting due to rounding errors.
+    for _ in range(5):
+        im = im.filter(ImageFilter.SMOOTH)
+        assert im.getpixel((4, 4)) == 1000
 
 
 @pytest.mark.parametrize(

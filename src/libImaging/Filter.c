@@ -27,7 +27,6 @@
 #include <stdint.h>
 #include "Imaging.h"
 
-#define ROUND_UP(f) ((int)((f) >= 0.0 ? (f) + 0.5F : (f) - 0.5F))
 #define INT32_MAX_F 2147483647.0F
 
 static inline UINT8
@@ -36,6 +35,14 @@ clip8(float in) {
     in = in < 0.0f ? 0.0f : in;
     in = in > 255.0f ? 255.0f : in;
     return (UINT8)in;
+}
+
+static inline int
+clip16(float in) {
+    // Branchless clamp to [0, 65535].
+    in = in < 0.0f ? 0.0f : in;
+    in = in > 65535.0f ? 65535.0f : in;
+    return (int)in;
 }
 
 static inline INT32
@@ -182,9 +189,10 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
                         ss += kernel_i16(3, in1, x, &kernel[0], bigendian);
                         ss += kernel_i16(3, in0, x, &kernel[3], bigendian);
                         ss += kernel_i16(3, in_1, x, &kernel[6], bigendian);
-                        int ss_int = ROUND_UP(ss);
-                        out[x * 2 + (bigendian ? 1 : 0)] = clip8(ss_int % 256);
-                        out[x * 2 + (bigendian ? 0 : 1)] = clip8(ss_int >> 8);
+                        // NOT rounding here because `offset` already has a +0.5 bias.
+                        int ss_int = clip16(ss);
+                        out[x * 2 + (bigendian ? 1 : 0)] = (UINT8)(ss_int & 0xff);
+                        out[x * 2 + (bigendian ? 0 : 1)] = (UINT8)(ss_int >> 8);
                     } else {
                         ss += KERNEL1x3(in1, x, &kernel[0], 1);
                         ss += KERNEL1x3(in0, x, &kernel[3], 1);
@@ -348,9 +356,10 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                         ss += kernel_i16(5, in0, x, &kernel[10], bigendian);
                         ss += kernel_i16(5, in_1, x, &kernel[15], bigendian);
                         ss += kernel_i16(5, in_2, x, &kernel[20], bigendian);
-                        int ss_int = ROUND_UP(ss);
-                        out[x * 2 + (bigendian ? 1 : 0)] = clip8(ss_int % 256);
-                        out[x * 2 + (bigendian ? 0 : 1)] = clip8(ss_int >> 8);
+                        // NOT rounding here because `offset` already has a +0.5 bias.
+                        int ss_int = clip16(ss);
+                        out[x * 2 + (bigendian ? 1 : 0)] = (UINT8)(ss_int & 0xff);
+                        out[x * 2 + (bigendian ? 0 : 1)] = (UINT8)(ss_int >> 8);
                     } else {
                         ss += KERNEL1x5(in2, x, &kernel[0], 1);
                         ss += KERNEL1x5(in1, x, &kernel[5], 1);
