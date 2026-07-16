@@ -182,6 +182,8 @@ cms_profile_dealloc(CmsProfileObject *self) {
 
 typedef struct {
     PyObject_HEAD cmsHTRANSFORM transform;
+    ModeID in_mode;
+    ModeID out_mode;
 } CmsTransformObject;
 
 static PyTypeObject CmsTransform_Type;
@@ -189,7 +191,7 @@ static PyTypeObject CmsTransform_Type;
 #define CmsTransform_Check(op) (Py_TYPE(op) == &CmsTransform_Type)
 
 static PyObject *
-cms_transform_new(cmsHTRANSFORM transform) {
+cms_transform_new(cmsHTRANSFORM transform, ModeID in_mode, ModeID out_mode) {
     CmsTransformObject *self;
 
     self = PyObject_New(CmsTransformObject, &CmsTransform_Type);
@@ -198,6 +200,8 @@ cms_transform_new(cmsHTRANSFORM transform) {
     }
 
     self->transform = transform;
+    self->in_mode = in_mode;
+    self->out_mode = out_mode;
 
     return (PyObject *)self;
 }
@@ -475,7 +479,7 @@ buildTransform(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    return cms_transform_new(transform);
+    return cms_transform_new(transform, findModeID(sInMode), findModeID(sOutMode));
 }
 
 static PyObject *
@@ -524,7 +528,7 @@ buildProofTransform(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    return cms_transform_new(transform);
+    return cms_transform_new(transform, findModeID(sInMode), findModeID(sOutMode));
 }
 
 static PyObject *
@@ -549,6 +553,11 @@ cms_transform_apply(CmsTransformObject *self, PyObject *args) {
     }
     imOut = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
     if (!imOut) {
+        return NULL;
+    }
+
+    if (self->in_mode != im->mode || self->out_mode != imOut->mode) {
+        PyErr_SetString(PyExc_ValueError, "mode mismatch");
         return NULL;
     }
 
