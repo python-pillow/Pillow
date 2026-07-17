@@ -256,6 +256,24 @@ def test_expand_palette(border: int | tuple[int, int, int, int]) -> None:
         assert_image_equal(im_cropped, im)
 
 
+def test_pad_palette() -> None:
+    with Image.open("Tests/images/p_16.tga") as im:
+        im_padded = ImageOps.pad(im, (im.width * 2, im.height), color=(255, 0, 0))
+
+        px = im_padded.convert("RGB").load()
+        assert px is not None
+        # The source is centred, so the outer quarters are padding.
+        for y in range(im_padded.height):
+            for x in range(im.width // 2):
+                assert px[x, y] == (255, 0, 0)
+                assert px[im_padded.width - 1 - x, y] == (255, 0, 0)
+
+        im_cropped = im_padded.crop(
+            (im.width // 2, 0, im.width // 2 + im.width, im.height)
+        )
+        assert_image_equal(im_cropped, im)
+
+
 @pytest.mark.parametrize("border", ((1,), (1, 2, 3), (1, 2, 3, 4, 5)))
 def test_expand_invalid_border(border: tuple[int, ...]) -> None:
     im = Image.new("1", (1, 1))
