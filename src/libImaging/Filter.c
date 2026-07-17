@@ -470,8 +470,7 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 o
     Imaging imOut;
     ImagingSectionCookie cookie;
 
-    if (im->type == IMAGING_TYPE_FLOAT32 ||
-        (im->type == IMAGING_TYPE_I16 && im->bands != 1)) {
+    if (im->type == IMAGING_TYPE_FLOAT32) {
         return (Imaging)ImagingError_ModeError();
     }
 
