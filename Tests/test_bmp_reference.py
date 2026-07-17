@@ -21,9 +21,7 @@ def test_bad() -> None:
     either"""
     for f in get_files("b"):
         # Assert that there is no unclosed file warning
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-
+        with warnings.catch_warnings(action="error"):
             try:
                 with Image.open(f) as im:
                     im.load()
@@ -56,7 +54,7 @@ def test_questionable() -> None:
                 im.load()
             if os.path.basename(f) not in supported:
                 print(f"Please add {f} to the partially supported bmp specs.")
-        except Exception:  # noqa: PERF203
+        except Exception:
             if os.path.basename(f) in supported:
                 raise
 
@@ -106,7 +104,7 @@ def test_good() -> None:
 
                     assert_image_similar(im_converted, compare_converted, 5)
 
-        except Exception as msg:  # noqa: PERF203
+        except Exception as msg:
             # there are three here that are unsupported:
             unsupported = (
                 os.path.join(base, "g", "rgb32bf.bmp"),

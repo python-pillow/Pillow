@@ -17,6 +17,12 @@ TODO
 Backwards incompatible changes
 ==============================
 
+Python 3.10
+^^^^^^^^^^^
+
+Pillow has dropped support for Python 3.10,
+which reached end-of-life in October 2026.
+
 Saving I mode images as PNG
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

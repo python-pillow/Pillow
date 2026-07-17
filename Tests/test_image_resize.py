@@ -179,7 +179,7 @@ class TestImagingCoreResize:
 
 
 @pytest.fixture
-def gradients_image() -> Generator[ImageFile.ImageFile, None, None]:
+def gradients_image() -> Generator[ImageFile.ImageFile]:
     with Image.open("Tests/images/radial_gradients.png") as im:
         im.load()
     try:

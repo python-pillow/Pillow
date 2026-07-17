@@ -24,7 +24,7 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable
     from types import CodeType
-    from typing import Any
+    from typing import Any, Self
 
 
 class _Operand:
@@ -104,7 +104,7 @@ class _Operand:
     def __abs__(self) -> _Operand:
         return self.apply("abs", self)
 
-    def __pos__(self) -> _Operand:
+    def __pos__(self) -> Self:
         return self
 
     def __neg__(self) -> _Operand:

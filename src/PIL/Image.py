@@ -67,7 +67,7 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
     from types import ModuleType
-    from typing import Any, Literal
+    from typing import Any, Literal, Self
 
 logger = logging.getLogger(__name__)
 
@@ -488,7 +488,7 @@ def init() -> bool:
         try:
             logger.debug("Importing %s", plugin)
             __import__(f"{__spec__.parent}.{plugin}", globals(), locals(), [])
-        except ImportError as e:  # noqa: PERF203
+        except ImportError as e:
             logger.debug("Image: failed to import %s: %s", plugin, e)
 
     if OPEN or SAVE:
@@ -691,7 +691,7 @@ class Image:
         return new
 
     # Context manager support
-    def __enter__(self) -> Image:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -3359,8 +3359,8 @@ class SupportsArrowArrayInterface(Protocol):
     """
 
     def __arrow_c_array__(
-        self, requested_schema: "PyCapsule" = None  # type: ignore[name-defined]  # noqa: F821, UP037
-    ) -> tuple["PyCapsule", "PyCapsule"]:  # type: ignore[name-defined]  # noqa: F821, UP037
+        self, requested_schema: PyCapsule = None  # type: ignore[name-defined]  # noqa: F821
+    ) -> tuple[PyCapsule, PyCapsule]:  # type: ignore[name-defined]  # noqa: F821
         raise NotImplementedError()
 
 

@@ -372,7 +372,7 @@ class TestCoreResampleAlphaCorrect:
 
 class TestCoreResamplePasses:
     @contextmanager
-    def count(self, diff: int) -> Generator[None, None, None]:
+    def count(self, diff: int) -> Generator[None]:
         count = Image.core.get_stats()["new_count"]
         yield
         assert Image.core.get_stats()["new_count"] - count == diff
@@ -485,9 +485,7 @@ class TestCoreResampleBox:
     def resize_tiled(
         self, im: Image.Image, dst_size: tuple[int, int], xtiles: int, ytiles: int
     ) -> Image.Image:
-        def split_range(
-            size: int, tiles: int
-        ) -> Generator[tuple[int, int], None, None]:
+        def split_range(size: int, tiles: int) -> Generator[tuple[int, int]]:
             scale = size / tiles
             for i in range(tiles):
                 yield int(round(scale * i)), int(round(scale * (i + 1)))
