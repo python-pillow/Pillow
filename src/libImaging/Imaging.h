@@ -70,7 +70,7 @@ typedef struct ImagingPaletteInstance *ImagingPalette;
 #define IMAGING_TYPE_UINT8 0
 #define IMAGING_TYPE_INT32 1
 #define IMAGING_TYPE_FLOAT32 2
-#define IMAGING_TYPE_SPECIAL 3 /* check mode for details */
+#define IMAGING_TYPE_I16 3
 
 typedef struct {
     char *ptr;

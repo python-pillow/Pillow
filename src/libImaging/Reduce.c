@@ -1456,7 +1456,7 @@ ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (imIn->type == IMAGING_TYPE_SPECIAL) {
+    if (imIn->type == IMAGING_TYPE_I16) {
         return (Imaging)ImagingError_ModeError();
     }
 

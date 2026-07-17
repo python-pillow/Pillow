@@ -156,7 +156,7 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
             }
         } else {
             int bigendian = 0;
-            if (im->type == IMAGING_TYPE_SPECIAL) {
+            if (im->type == IMAGING_TYPE_I16) {
                 if (
                     im->mode == IMAGING_MODE_I_16B
 #ifdef WORDS_BIGENDIAN
@@ -173,12 +173,12 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 UINT8 *restrict out = (UINT8 *)imOut->image[y];
 
                 out[0] = in0[0];
-                if (im->type == IMAGING_TYPE_SPECIAL) {
+                if (im->type == IMAGING_TYPE_I16) {
                     out[1] = in0[1];
                 }
                 for (x = 1; x < xsize - 1; x++) {
                     float ss = offset;
-                    if (im->type == IMAGING_TYPE_SPECIAL) {
+                    if (im->type == IMAGING_TYPE_I16) {
                         ss += kernel_i16(3, in1, x, &kernel[0], bigendian);
                         ss += kernel_i16(3, in0, x, &kernel[3], bigendian);
                         ss += kernel_i16(3, in_1, x, &kernel[6], bigendian);
@@ -192,7 +192,7 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
                         out[x] = clip8(ss);
                     }
                 }
-                if (im->type == IMAGING_TYPE_SPECIAL) {
+                if (im->type == IMAGING_TYPE_I16) {
                     out[x * 2] = in0[x * 2];
                     out[x * 2 + 1] = in0[x * 2 + 1];
                 } else {
@@ -316,7 +316,7 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
             }
         } else {
             int bigendian = 0;
-            if (im->type == IMAGING_TYPE_SPECIAL) {
+            if (im->type == IMAGING_TYPE_I16) {
                 if (
                     im->mode == IMAGING_MODE_I_16B
 #ifdef WORDS_BIGENDIAN
@@ -336,13 +336,13 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
 
                 out[0] = in0[0];
                 out[1] = in0[1];
-                if (im->type == IMAGING_TYPE_SPECIAL) {
+                if (im->type == IMAGING_TYPE_I16) {
                     out[2] = in0[2];
                     out[3] = in0[3];
                 }
                 for (x = 2; x < xsize - 2; x++) {
                     float ss = offset;
-                    if (im->type == IMAGING_TYPE_SPECIAL) {
+                    if (im->type == IMAGING_TYPE_I16) {
                         ss += kernel_i16(5, in2, x, &kernel[0], bigendian);
                         ss += kernel_i16(5, in1, x, &kernel[5], bigendian);
                         ss += kernel_i16(5, in0, x, &kernel[10], bigendian);
@@ -360,7 +360,7 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                         out[x] = clip8(ss);
                     }
                 }
-                if (im->type == IMAGING_TYPE_SPECIAL) {
+                if (im->type == IMAGING_TYPE_I16) {
                     out[x * 2 + 0] = in0[x * 2 + 0];
                     out[x * 2 + 1] = in0[x * 2 + 1];
                     out[x * 2 + 2] = in0[x * 2 + 2];
@@ -471,7 +471,7 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 o
     ImagingSectionCookie cookie;
 
     if (im->type == IMAGING_TYPE_FLOAT32 ||
-        (im->type == IMAGING_TYPE_SPECIAL && im->bands != 1)) {
+        (im->type == IMAGING_TYPE_I16 && im->bands != 1)) {
         return (Imaging)ImagingError_ModeError();
     }
 
