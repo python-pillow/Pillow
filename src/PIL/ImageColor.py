@@ -159,10 +159,19 @@ def getcolor(color: str, mode: str) -> int | tuple[int, ...]:
         graylevel = (r * 19595 + g * 38470 + b * 7471 + 0x8000) >> 16
         if mode[-1] == "A":
             return graylevel, alpha
+        if mode[-1] == "a":
+            return _premultiply(graylevel, alpha), alpha
         return graylevel
     elif mode[-1] == "A":
         return rgb + (alpha,)
+    elif mode[-1] == "a":
+        return tuple(_premultiply(band, alpha) for band in rgb) + (alpha,)
     return rgb
+
+
+def _premultiply(band: int, alpha: int) -> int:
+    # Rounded, to match convert()'s premultiplication.
+    return (band * alpha + 127) // 255
 
 
 colormap: dict[str, str | tuple[int, int, int]] = {
