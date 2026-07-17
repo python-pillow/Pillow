@@ -44,7 +44,9 @@ def _border(border: int | tuple[int, ...]) -> tuple[int, int, int, int]:
     return left, top, right, bottom
 
 
-def _color(color: str | int | tuple[int, ...], mode: str) -> int | tuple[int, ...]:
+def _color(
+    color: str | int | tuple[int, ...] | None, mode: str
+) -> int | tuple[int, ...] | None:
     if isinstance(color, str):
         from . import ImageColor
 
@@ -331,6 +333,23 @@ def cover(
     return image.resize(size, resample=method)
 
 
+def _new_with_fill(
+    image: Image.Image, size: tuple[int, int], fill: str | int | tuple[int, ...] | None
+) -> Image.Image:
+    color = _color(fill, image.mode)
+    if image.palette:
+        mode = image.palette.mode
+        palette = ImagePalette.ImagePalette(mode, image.getpalette(mode))
+        if isinstance(color, tuple) and len(color) in (3, 4):
+            color = palette.getcolor(color)
+    else:
+        palette = None
+    out = Image.new(image.mode, size, color)
+    if palette:
+        out.putpalette(palette.palette, mode)
+    return out
+
+
 def pad(
     image: Image.Image,
     size: tuple[int, int],
@@ -363,21 +382,7 @@ def pad(
     if resized.size == size:
         out = resized
     else:
-        if resized.palette:
-            # Resolve the fill against the source palette before allocating, as
-            # expand() does. Image.new() would put it in a fresh palette, and
-            # putpalette() below then replaces that palette under the pixels.
-            palette_mode = resized.palette.mode
-            palette = ImagePalette.ImagePalette(
-                palette_mode, resized.getpalette(palette_mode)
-            )
-            index = _color(color, image.mode)
-            if isinstance(index, tuple) and len(index) in (3, 4):
-                index = palette.getcolor(index)
-            out = Image.new(image.mode, size, index)
-            out.putpalette(palette.palette, palette_mode)
-        else:
-            out = Image.new(image.mode, size, color)
+        out = _new_with_fill(resized, size, color)
         if resized.width != size[0]:
             x = round((size[0] - resized.width) * max(0, min(centering[0], 1)))
             out.paste(resized, (x, 0))
@@ -510,17 +515,7 @@ def expand(
     left, top, right, bottom = _border(border)
     width = left + image.size[0] + right
     height = top + image.size[1] + bottom
-    color = _color(fill, image.mode)
-    if image.palette:
-        mode = image.palette.mode
-        palette = ImagePalette.ImagePalette(mode, image.getpalette(mode))
-        if isinstance(color, tuple) and (len(color) == 3 or len(color) == 4):
-            color = palette.getcolor(color)
-    else:
-        palette = None
-    out = Image.new(image.mode, (width, height), color)
-    if palette:
-        out.putpalette(palette.palette, mode)
+    out = _new_with_fill(image, (width, height), fill)
     out.paste(image, (left, top))
     return out
 
