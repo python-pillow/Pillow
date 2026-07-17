@@ -171,6 +171,23 @@ def test_pad_round() -> None:
     assert new_im.getpixel((0, 2)) == 1
 
 
+def test_pad_palette() -> None:
+    with Image.open("Tests/images/p_16.tga") as im:
+        im_padded = ImageOps.pad(im, (im.width * 2, im.height), color=(255, 0, 0))
+        im_rgb = im_padded.convert("RGB")
+
+        # Verify that the left and right sides are now red
+        px = im_rgb.load()
+        assert px is not None
+        for y in range(im_rgb.height):
+            for x in range(im.width // 2):
+                assert px[x, y] == (255, 0, 0)
+                assert px[im_rgb.width - 1 - x, y] == (255, 0, 0)
+
+        im_cropped = im_rgb.crop((im.width * 0.5, 0, im.width * 1.5, im.height))
+        assert_image_equal(im_cropped, im.convert("RGB"))
+
+
 @pytest.mark.parametrize("mode", ("P", "PA"))
 def test_palette(mode: str) -> None:
     im = hopper(mode)
@@ -252,24 +269,6 @@ def test_expand_palette(border: int | tuple[int, int, int, int]) -> None:
 
         im_cropped = im_expanded.crop(
             (left, top, im_expanded.width - right, im_expanded.height - bottom)
-        )
-        assert_image_equal(im_cropped, im)
-
-
-def test_pad_palette() -> None:
-    with Image.open("Tests/images/p_16.tga") as im:
-        im_padded = ImageOps.pad(im, (im.width * 2, im.height), color=(255, 0, 0))
-
-        px = im_padded.convert("RGB").load()
-        assert px is not None
-        # The source is centred, so the outer quarters are padding.
-        for y in range(im_padded.height):
-            for x in range(im.width // 2):
-                assert px[x, y] == (255, 0, 0)
-                assert px[im_padded.width - 1 - x, y] == (255, 0, 0)
-
-        im_cropped = im_padded.crop(
-            (im.width // 2, 0, im.width // 2 + im.width, im.height)
         )
         assert_image_equal(im_cropped, im)
 
