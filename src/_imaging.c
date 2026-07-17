@@ -108,7 +108,7 @@
 #define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
 
 /* -------------------------------------------------------------------- */
-/* OBJECT ADMINISTRATION                        */
+/* OBJECT ADMINISTRATION                                                */
 /* -------------------------------------------------------------------- */
 
 typedef struct {
@@ -272,7 +272,15 @@ ExportArrowSchemaPyCapsule(ImagingObject *self) {
     }
     int err = export_imaging_schema(self->image, schema);
     if (err == 0) {
-        return PyCapsule_New(schema, "arrow_schema", ReleaseArrowSchemaPyCapsule);
+        PyObject *capsule =
+            PyCapsule_New(schema, "arrow_schema", ReleaseArrowSchemaPyCapsule);
+        if (capsule == NULL) {
+            if (schema->release != NULL) {
+                schema->release(schema);
+            }
+            free(schema);
+        }
+        return capsule;
     }
     free(schema);
     return ArrowError(err);
@@ -300,7 +308,15 @@ ExportArrowArrayPyCapsule(ImagingObject *self) {
     }
     int err = export_imaging_array(self->image, array);
     if (err == 0) {
-        return PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
+        PyObject *capsule =
+            PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
+        if (capsule == NULL) {
+            if (array->release != NULL) {
+                array->release(array);
+            }
+            free(array);
+        }
+        return capsule;
     }
     free(array);
     return ArrowError(err);
@@ -312,7 +328,6 @@ _new_arrow(PyObject *self, PyObject *args) {
     ModeID mode_id;
     int xsize, ysize;
     PyObject *schema_capsule, *array_capsule;
-    PyObject *ret;
 
     if (!PyArg_ParseTuple(
             args, "s(ii)OO", &mode, &xsize, &ysize, &schema_capsule, &array_capsule
@@ -323,13 +338,9 @@ _new_arrow(PyObject *self, PyObject *args) {
     mode_id = findModeID(mode);
 
     // ImagingBorrowArrow is responsible for retaining the array_capsule
-    ret = PyImagingNew(
+    return PyImagingNew(
         ImagingNewArrow(mode_id, xsize, ysize, schema_capsule, array_capsule)
     );
-    if (!ret) {
-        return ImagingError_ValueError("Invalid Arrow array mode or size mismatch");
-    }
-    return ret;
 }
 
 /* -------------------------------------------------------------------- */
@@ -379,7 +390,7 @@ ImagingError_ValueError(const char *message) {
 }
 
 /* -------------------------------------------------------------------- */
-/* HELPERS                                */
+/* HELPERS                                                              */
 /* -------------------------------------------------------------------- */
 
 static int
@@ -683,7 +694,7 @@ getink(PyObject *color, Imaging im, char *ink) {
 }
 
 /* -------------------------------------------------------------------- */
-/* FACTORIES                                */
+/* FACTORIES                                                            */
 /* -------------------------------------------------------------------- */
 
 static PyObject *
@@ -846,7 +857,9 @@ _prepare_lut_table(PyObject *table, Py_ssize_t table_size) {
                     }
                 }
             }
-            PyBuffer_Release(&buffer_info);
+            if (!table_data) {
+                PyBuffer_Release(&buffer_info);
+            }
         }
     }
 
@@ -863,6 +876,8 @@ _prepare_lut_table(PyObject *table, Py_ssize_t table_size) {
     if (!prepared) {
         if (free_table_data) {
             free(table_data);
+        } else {
+            PyBuffer_Release(&buffer_info);
         }
         return (INT16 *)ImagingError_MemoryError();
     }
@@ -905,6 +920,8 @@ _prepare_lut_table(PyObject *table, Py_ssize_t table_size) {
 #undef PRECISION_BITS
     if (free_table_data) {
         free(table_data);
+    } else {
+        PyBuffer_Release(&buffer_info);
     }
     return prepared;
 }
@@ -1092,12 +1109,15 @@ _crop(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _expand_image(ImagingObject *self, PyObject *args) {
-    int x, y;
-    if (!PyArg_ParseTuple(args, "ii", &x, &y)) {
+    int m;
+    if (!PyArg_ParseTuple(args, "i", &m)) {
         return NULL;
     }
 
-    return PyImagingNew(ImagingExpand(self->image, x, y));
+    if (m == 0) {
+        return PyImagingNew(ImagingCopy(self->image));
+    }
+    return PyImagingNew(ImagingExpand(self->image, m));
 }
 
 static PyObject *
@@ -1202,7 +1222,7 @@ _getpalette(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_getpalettemode(ImagingObject *self) {
+_getpalettemode(ImagingObject *self, PyObject *args) {
     if (!self->image->palette) {
         PyErr_SetString(PyExc_ValueError, no_palette);
         return NULL;
@@ -1611,10 +1631,15 @@ _putdata(ImagingObject *self, PyObject *args) {
 #define set_value_to_item(seq, i)                                       \
     op = PySequence_Fast_GET_ITEM(seq, i);                              \
     if (PySequence_Check(op)) {                                         \
+        Py_DECREF(seq);                                                 \
         PyErr_SetString(PyExc_TypeError, "sequence must be flattened"); \
         return NULL;                                                    \
     } else {                                                            \
         value = PyFloat_AsDouble(op);                                   \
+        if (value == -1.0 && PyErr_Occurred()) {                        \
+            Py_DECREF(seq);                                             \
+            return NULL;                                                \
+        }                                                               \
     }
     if (image->image8) {
         if (PyBytes_Check(data)) {
@@ -1674,7 +1699,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                     x = 0, y++;
                 }
             }
-            PyErr_Clear(); /* Avoid weird exceptions */
         }
     } else {
         /* 32-bit images */
@@ -1693,7 +1717,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                         x = 0, y++;
                     }
                 }
-                PyErr_Clear(); /* Avoid weird exceptions */
                 break;
             case IMAGING_TYPE_FLOAT32:
                 for (i = x = y = 0; i < n; i++) {
@@ -1705,7 +1728,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                         x = 0, y++;
                     }
                 }
-                PyErr_Clear(); /* Avoid weird exceptions */
                 break;
             default:
                 for (i = x = y = 0; i < n; i++) {
@@ -1727,7 +1749,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                         x = 0, y++;
                     }
                 }
-                PyErr_Clear(); /* Avoid weird exceptions */
                 break;
         }
     }
@@ -2250,7 +2271,7 @@ _box_blur(ImagingObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 static PyObject *
-_isblock(ImagingObject *self) {
+_isblock(ImagingObject *self, PyObject *args) {
     return PyBool_FromLong(self->image->block != NULL);
 }
 
@@ -2315,7 +2336,7 @@ _getcolors(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_getextrema(ImagingObject *self) {
+_getextrema(ImagingObject *self, PyObject *args) {
     union {
         UINT8 u[2];
         INT32 i[2];
@@ -2348,7 +2369,7 @@ _getextrema(ImagingObject *self) {
 }
 
 static PyObject *
-_getprojection(ImagingObject *self) {
+_getprojection(ImagingObject *self, PyObject *args) {
     unsigned char *xprofile;
     unsigned char *yprofile;
     PyObject *result;
@@ -2474,7 +2495,7 @@ _merge(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_split(ImagingObject *self) {
+_split(ImagingObject *self, PyObject *args) {
     Py_ssize_t i;
     PyObject *list;
     PyObject *imaging_object;
@@ -2486,11 +2507,17 @@ _split(ImagingObject *self) {
 
     list = PyTuple_New(self->image->bands);
     if (!list) {
+        for (int j = 0; j < self->image->bands; j++) {
+            ImagingDelete(bands[j]);
+        }
         return NULL;
     }
     for (i = 0; i < self->image->bands; i++) {
         imaging_object = PyImagingNew(bands[i]);
         if (!imaging_object) {
+            for (int j = 0; j < self->image->bands; j++) {
+                ImagingDelete(bands[j]);
+            }
             Py_DECREF(list);
             list = NULL;
             break;
@@ -2503,7 +2530,7 @@ _split(ImagingObject *self) {
 /* Channel operations (ImageChops) ------------------------------------ */
 
 static PyObject *
-_chop_invert(ImagingObject *self) {
+_chop_invert(ImagingObject *self, PyObject *args) {
     return PyImagingNew(ImagingNegative(self->image));
 }
 
@@ -2776,9 +2803,17 @@ textwidth(ImagingFontObject *self, const unsigned char *text) {
     int xsize;
 
     for (xsize = 0; *text; text++) {
-        xsize += self->glyphs[*text].dx;
+        int dx = self->glyphs[*text].dx;
+        if (dx > 0 && xsize > INT_MAX - dx) {
+            PyErr_SetString(PyExc_OverflowError, "Width too large");
+            return -1;
+        }
+        xsize += dx;
     }
 
+    if (xsize < 0) {
+        return 0;
+    }
     return xsize;
 }
 
@@ -2838,14 +2873,16 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
         return NULL;
     }
 
-    im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize);
+    int xsize = textwidth(self, text);
+    if (xsize == -1) {
+        free(text);
+        return NULL;
+    }
+    im = ImagingNew(self->bitmap->mode, xsize, self->ysize);
     if (!im) {
         free(text);
         return ImagingError_MemoryError();
     }
-
-    b = 0;
-    (void)ImagingFill(im, &b);
 
     b = self->baseline;
     for (x = 0; text[i]; i++) {
@@ -2900,8 +2937,12 @@ _font_getsize(ImagingFontObject *self, PyObject *args) {
         return NULL;
     }
 
-    val = Py_BuildValue("ii", textwidth(self, text), self->ysize);
+    int xsize = textwidth(self, text);
     free(text);
+    if (xsize == -1) {
+        return NULL;
+    }
+    val = Py_BuildValue("ii", xsize, self->ysize);
     return val;
 }
 
@@ -3611,7 +3652,7 @@ _effect_spread(ImagingObject *self, PyObject *args) {
 }
 
 /* -------------------------------------------------------------------- */
-/* UTILITIES                                */
+/* UTILITIES                                                            */
 /* -------------------------------------------------------------------- */
 
 static PyObject *
@@ -3644,25 +3685,6 @@ _getcodecstatus(PyObject *self, PyObject *args) {
     }
 
     return PyUnicode_FromString(msg);
-}
-
-/* -------------------------------------------------------------------- */
-/* DEBUGGING HELPERS                            */
-/* -------------------------------------------------------------------- */
-
-static PyObject *
-_save_ppm(ImagingObject *self, PyObject *args) {
-    char *filename;
-
-    if (!PyArg_ParseTuple(args, "s", &filename)) {
-        return NULL;
-    }
-
-    if (!ImagingSavePPM(self->image, filename)) {
-        return NULL;
-    }
-
-    Py_RETURN_NONE;
 }
 
 /* -------------------------------------------------------------------- */
@@ -3747,9 +3769,6 @@ static struct PyMethodDef methods[] = {
 
     /* Special effects */
     {"effect_spread", (PyCFunction)_effect_spread, METH_VARARGS},
-
-    /* Misc. */
-    {"save_ppm", (PyCFunction)_save_ppm, METH_VARARGS},
 
     /* arrow */
     {"__arrow_c_schema__", (PyCFunction)ExportArrowSchemaPyCapsule, METH_VARARGS},
@@ -4313,8 +4332,11 @@ setup_module(PyObject *m) {
     {
         extern const char *ImagingJpegVersion(void);
         PyObject *v = PyUnicode_FromString(ImagingJpegVersion());
-        PyDict_SetItemString(d, "jpeglib_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "jpeglib_version", v);
+        Py_DECREF(v);
     }
 #endif
 
@@ -4322,8 +4344,11 @@ setup_module(PyObject *m) {
     {
         extern const char *ImagingJpeg2KVersion(void);
         PyObject *v = PyUnicode_FromString(ImagingJpeg2KVersion());
-        PyDict_SetItemString(d, "jp2klib_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "jp2klib_version", v);
+        Py_DECREF(v);
     }
 #endif
 
@@ -4334,8 +4359,11 @@ setup_module(PyObject *m) {
 #define tostr1(a) #a
 #define tostr(a) tostr1(a)
         PyObject *v = PyUnicode_FromString(tostr(LIBJPEG_TURBO_VERSION));
-        PyDict_SetItemString(d, "libjpeg_turbo_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "libjpeg_turbo_version", v);
+        Py_DECREF(v);
 #undef tostr
 #undef tostr1
     }
@@ -4362,8 +4390,11 @@ setup_module(PyObject *m) {
     {
         extern const char *ImagingImageQuantVersion(void);
         PyObject *v = PyUnicode_FromString(ImagingImageQuantVersion());
-        PyDict_SetItemString(d, "imagequant_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "imagequant_version", v);
+        Py_DECREF(v);
     }
 #else
     have_libimagequant = Py_False;
@@ -4382,8 +4413,11 @@ setup_module(PyObject *m) {
     {
         extern const char *ImagingZipVersion(void);
         PyObject *v = PyUnicode_FromString(ImagingZipVersion());
-        PyDict_SetItemString(d, "zlib_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "zlib_version", v);
+        Py_DECREF(v);
     }
 #endif
 
@@ -4392,8 +4426,11 @@ setup_module(PyObject *m) {
     have_zlibng = Py_True;
     {
         PyObject *v = PyUnicode_FromString(ZLIBNG_VERSION);
-        PyDict_SetItemString(d, "zlib_ng_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "zlib_ng_version", v);
+        Py_DECREF(v);
     }
 #else
     have_zlibng = Py_False;
@@ -4406,8 +4443,11 @@ setup_module(PyObject *m) {
     {
         extern const char *ImagingTiffVersion(void);
         PyObject *v = PyUnicode_FromString(ImagingTiffVersion());
-        PyDict_SetItemString(d, "libtiff_version", v ? v : Py_None);
-        Py_XDECREF(v);
+        if (!v) {
+            return -1;
+        }
+        PyDict_SetItemString(d, "libtiff_version", v);
+        Py_DECREF(v);
     }
 #endif
 
@@ -4422,10 +4462,11 @@ setup_module(PyObject *m) {
     }
 
     PyObject *pillow_version = PyUnicode_FromString(version);
-    PyDict_SetItemString(
-        d, "PILLOW_VERSION", pillow_version ? pillow_version : Py_None
-    );
-    Py_XDECREF(pillow_version);
+    if (!pillow_version) {
+        return -1;
+    }
+    PyDict_SetItemString(d, "PILLOW_VERSION", pillow_version);
+    Py_DECREF(pillow_version);
 
     return 0;
 }

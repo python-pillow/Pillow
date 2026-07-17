@@ -51,7 +51,7 @@ class QoiDecoder(ImageFile.PyDecoder):
         hash_value = (r * 3 + g * 5 + b * 7 + a * 11) % 64
         self._previously_seen_pixels[hash_value] = value
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         assert self.fd is not None
 
         self._previously_seen_pixels = {}
@@ -224,7 +224,7 @@ class QoiEncoder(ImageFile.PyEncoder):
             data += self._write_run()
         data += bytes((0, 0, 0, 0, 0, 0, 0, 1))  # padding
 
-        return len(data), 0, data
+        return len(data), 0, bytes(data)
 
 
 Image.register_open(QoiImageFile.format, QoiImageFile, _accept)

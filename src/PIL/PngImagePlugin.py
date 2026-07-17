@@ -48,13 +48,12 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
-from ._deprecate import deprecate
 from ._util import DeferredError
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from typing import Any, NoReturn
+    from typing import Any, NoReturn, Self
 
     from . import _imaging
 
@@ -185,7 +184,7 @@ class ChunkStream:
 
         return cid, pos, length
 
-    def __enter__(self) -> ChunkStream:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -266,7 +265,7 @@ class iTXt(str):
     @staticmethod
     def __new__(
         cls, text: str, lang: str | None = None, tkey: str | None = None
-    ) -> iTXt:
+    ) -> Self:
         """
         :param cls: the class to use when creating the instance
         :param text: value for this key
@@ -461,7 +460,7 @@ class PngStream(ChunkStream):
         self.im_size = i32(s, 0), i32(s, 4)
         try:
             self.im_mode, self.im_rawmode = _MODES[(s[8], s[9])]
-        except Exception:
+        except KeyError:
             pass
         if s[12]:
             self.im_info["interlace"] = 1
@@ -1104,12 +1103,8 @@ class PngImageFile(ImageFile.ImageFile):
 _OUTMODES = {
     # supported PIL modes, and corresponding rawmode, bit depth and color type
     "1": ("1", b"\x01", b"\x00"),
-    "L;1": ("L;1", b"\x01", b"\x00"),
-    "L;2": ("L;2", b"\x02", b"\x00"),
-    "L;4": ("L;4", b"\x04", b"\x00"),
     "L": ("L", b"\x08", b"\x00"),
     "LA": ("LA", b"\x08", b"\x04"),
-    "I": ("I;16B", b"\x10", b"\x00"),
     "I;16": ("I;16B", b"\x10", b"\x00"),
     "I;16B": ("I;16B", b"\x10", b"\x00"),
     "P;1": ("P;1", b"\x01", b"\x03"),
@@ -1384,8 +1379,6 @@ def _save(
     except KeyError as e:
         msg = f"cannot write mode {mode} as PNG"
         raise OSError(msg) from e
-    if outmode == "I":
-        deprecate("Saving I mode images as PNG", 13, stacklevel=4)
 
     #
     # write minimal PNG file

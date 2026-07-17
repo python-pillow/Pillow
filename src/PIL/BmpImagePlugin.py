@@ -324,7 +324,7 @@ class BmpImageFile(ImageFile.ImageFile):
 class BmpRleDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         assert self.fd is not None
         rle4 = self.args[1]
         data = bytearray()
@@ -372,12 +372,13 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                 else:
                     # absolute mode
                     if rle4:
-                        # 2 pixels per byte
-                        byte_count = byte[0] // 2
+                        # 2 pixels per byte, padded up to a whole byte
+                        byte_count = (byte[0] + 1) // 2
                         bytes_read = self.fd.read(byte_count)
-                        for byte_read in bytes_read:
+                        for i, byte_read in enumerate(bytes_read):
                             data += o8(byte_read >> 4)
-                            data += o8(byte_read & 0x0F)
+                            if 2 * i + 1 < byte[0]:
+                                data += o8(byte_read & 0x0F)
                     else:
                         byte_count = byte[0]
                         bytes_read = self.fd.read(byte_count)

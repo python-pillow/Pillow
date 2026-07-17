@@ -27,6 +27,7 @@
 
 from __future__ import annotations
 
+import abc
 import base64
 import os
 import sys
@@ -34,7 +35,7 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from types import ModuleType
-from typing import IO, Any, BinaryIO, TypedDict, cast
+from typing import IO, Any, BinaryIO, NotRequired, TypedDict, cast
 
 from . import Image
 from ._typing import StrOrBytesPath
@@ -51,7 +52,7 @@ class Axis(TypedDict):
     minimum: int | None
     default: int | None
     maximum: int | None
-    name: bytes | None
+    name: NotRequired[bytes]
 
 
 class Layout(IntEnum):
@@ -91,7 +92,27 @@ def _string_length_check(text: str | bytes | bytearray) -> None:
 # --------------------------------------------------------------------
 
 
-class ImageFont:
+class BaseImageFont(abc.ABC):
+    """Used by ImageDraw and ImageText"""
+
+    @abc.abstractmethod
+    def getbbox(
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+    ) -> tuple[float, float, float, float]:
+        pass
+
+    @abc.abstractmethod
+    def getmask(
+        self, text: str | bytes, mode: str = "", *args: Any, **kwargs: Any
+    ) -> Image.core.ImagingCore:
+        pass
+
+    @abc.abstractmethod
+    def getlength(self, text: str | bytes, *args: Any, **kwargs: Any) -> float:
+        pass
+
+
+class ImageFont(BaseImageFont):
     """PIL font wrapper"""
 
     font: ImagingFont
@@ -215,7 +236,7 @@ class ImageFont:
 # <b>truetype</b> factory function to create font objects.
 
 
-class FreeTypeFont:
+class FreeTypeFont(BaseImageFont):
     """FreeType font wrapper (requires _imagingft service)"""
 
     font: Font
@@ -383,7 +404,7 @@ class FreeTypeFont:
 
     def getbbox(
         self,
-        text: str | bytes,
+        text: str | bytes | bytearray,
         mode: str = "",
         direction: str | None = None,
         features: list[str] | None = None,
@@ -711,7 +732,7 @@ class FreeTypeFont:
         """
         axes = self.font.getvaraxes()
         for axis in axes:
-            if axis["name"]:
+            if "name" in axis:
                 axis["name"] = axis["name"].replace(b"\x00", b"")
         return axes
 
@@ -723,7 +744,7 @@ class FreeTypeFont:
         self.font.setvaraxes(axes)
 
 
-class TransposedFont:
+class TransposedFont(BaseImageFont):
     """Wrapper for writing rotated or mirrored text"""
 
     def __init__(
@@ -751,7 +772,7 @@ class TransposedFont:
         return im
 
     def getbbox(
-        self, text: str | bytes, *args: Any, **kwargs: Any
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
     ) -> tuple[int, int, float, float]:
         # TransposedFont doesn't support getmask2, move top-left point to (0, 0)
         # this has no effect on ImageFont and simulates anchor="lt" for FreeTypeFont
@@ -930,7 +951,7 @@ def load_path(filename: str | bytes) -> ImageFont:
     for directory in sys.path:
         try:
             return load(os.path.join(directory, filename))
-        except OSError:  # noqa: PERF203
+        except OSError:
             pass
     msg = f'cannot find font file "{filename}" in sys.path'
     if os.path.exists(filename):

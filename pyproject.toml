@@ -20,15 +20,15 @@ license-files = [ "LICENSE" ]
 authors = [
   { name = "Jeffrey 'Alex' Clark", email = "aclark@aclark.net" },
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
   "Development Status :: 6 - Mature",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
   "Topic :: Multimedia :: Graphics",
@@ -63,17 +63,16 @@ optional-dependencies.test-arrow = [
   "pyarrow",
 ]
 optional-dependencies.tests = [
-  "check-manifest",
   "coverage>=7.4.2",
   "defusedxml",
   "markdown2",
   "olefile",
   "packaging",
-  "pyroma>=5",
   "pytest",
   "pytest-cov",
   "pytest-timeout",
   "pytest-xdist",
+  "setuptools",
   "trove-classifiers>=2024.10.12",
 ]
 optional-dependencies.xmp = [
@@ -129,6 +128,8 @@ overrides = [
   # iOS simulator environment is isolated by cibuildwheel, but needs the dependencies
   { select = "*_iphonesimulator", environment.PATH = "$(pwd)/build/deps/iphonesimulator/bin:$PATH" },
   { select = "*-win32", test-requires = [] },
+  # NumPy does not yet support Python 3.15
+  { select = "cp315*-win_amd64", test-requires = [] },
 ]
 xbuild-tools = []
 
@@ -167,7 +168,6 @@ lint.ignore = [
   "PT011",  # pytest-raises-too-broad
   "PT012",  # pytest-raises-with-multiple-statements
   "PT017",  # pytest-assert-in-except
-  "PYI034", # flake8-pyi: typing.Self added in Python 3.11
 ]
 lint.per-file-ignores."Tests/oss-fuzz/fuzz_font.py" = [
   "I002",
@@ -184,7 +184,7 @@ lint.isort.required-imports = [
 ]
 
 [tool.pyproject-fmt]
-max_supported_python = "3.14"
+max_supported_python = "3.15"
 
 [tool.mypy]
 follow_imports = "silent"
@@ -201,4 +201,23 @@ pretty = true
 addopts = [ "-ra", "--color=auto" ]
 testpaths = [
   "Tests",
+]
+
+[tool.coverage]
+run.core = "sysmon"  # default for 3.14+, available for 3.12+
+run.disable_warnings = [ "no-sysmon" ]  # 3.11
+run.omit = [
+  "checks/*.py",
+  "Tests/benchmarks.py",
+  "Tests/createfontdatachunk.py",
+]
+report.exclude_also = [
+  "@abc.abstractmethod",
+  # Empty bodies in protocols or abstract methods
+  "^\\s*def [a-zA-Z0-9_]+\\(.*\\)(\\s*->.*)?:\\s*\\.\\.\\.(\\s*#.*)?$",
+  # Don't complain about compatibility code for missing optional dependencies
+  "except ImportError",
+  "if __name__ == .__main__.:",
+  # Don't complain about debug code
+  "if DEBUG:",
 ]

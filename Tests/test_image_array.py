@@ -60,6 +60,9 @@ def test_fromarray() -> None:
             self.img = img
             self.__array_interface__ = arr_params
 
+        def __len__(self) -> int:
+            return len(self.img.tobytes())
+
         def tobytes(self) -> bytes:
             return self.img.tobytes()
 
@@ -100,6 +103,9 @@ def test_fromarray_strides_without_tobytes() -> None:
         def __init__(self, arr_params: dict[str, Any]) -> None:
             self.__array_interface__ = arr_params
 
+        def __len__(self) -> int:
+            return 1
+
     with pytest.raises(ValueError):
         wrapped = Wrapper({"shape": (1, 1), "strides": (1, 1), "typestr": "|u1"})
         Image.fromarray(wrapped, "L")
@@ -116,11 +122,3 @@ def test_fromarray_palette() -> None:
     # Assert that the Python and C palettes match
     assert out.palette is not None
     assert len(out.palette.colors) == len(out.im.getpalette()) / 3
-
-
-def test_deprecation() -> None:
-    a = numpy.array(im.convert("L"))
-    with pytest.warns(
-        DeprecationWarning, match="'mode' parameter for changing data types"
-    ):
-        Image.fromarray(a, "1")
