@@ -19,7 +19,6 @@ from PIL import (
     ImageDraw,
     ImageFile,
     ImagePalette,
-    ImageShow,
     UnidentifiedImageError,
     features,
 )
@@ -753,9 +752,7 @@ class TestImage:
 
         # Act/Assert
         with Image.open(test_file) as im:
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 im.save(temp_file)
 
     def test_no_new_file_on_error(self, tmp_path: Path) -> None:
@@ -1023,18 +1020,6 @@ class TestImage:
                 assert im.getxmp() == {}
         else:
             assert im.getxmp() == {"xmpmeta": None}
-
-    def test_get_child_images(self) -> None:
-        im = Image.new("RGB", (1, 1))
-        with pytest.warns(DeprecationWarning, match="Image.Image.get_child_images"):
-            assert im.get_child_images() == []
-
-    def test_show(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(ImageShow, "_viewers", [])
-
-        im = Image.new("RGB", (1, 1))
-        with pytest.warns(DeprecationWarning, match="Image._show"):
-            Image._show(im)
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size: tuple[int, int]) -> None:

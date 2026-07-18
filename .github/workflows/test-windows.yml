@@ -22,7 +22,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COVERAGE_CORE: sysmon
   FORCE_COLOR: 1
 
 jobs:
@@ -31,12 +30,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.11", "3.11", "3.12", "3.13", "3.14", "3.15"]
+        python-version: ["pypy3.11", "3.12", "3.13", "3.14", "3.15"]
         architecture: ["x64"]
         os: ["windows-latest"]
         include:
             # Test the oldest Python on 32-bit
-            - { python-version: "3.10", architecture: "x86", os: "windows-2022" }
+            - { python-version: "3.11", architecture: "x86", os: "windows-2022" }
 
     timeout-minutes: 45
 
@@ -44,19 +43,19 @@ jobs:
 
     steps:
     - name: Checkout Pillow
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         persist-credentials: false
 
     - name: Checkout cached dependencies
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         persist-credentials: false
         repository: python-pillow/pillow-depends
         path: winbuild\depends
 
     - name: Checkout extra test images
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         persist-credentials: false
         repository: python-pillow/test-images
@@ -64,7 +63,7 @@ jobs:
 
     # sets env: pythonLocation
     - name: Set up Python
-      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
@@ -108,7 +107,7 @@ jobs:
 
     - name: Cache build
       id: build-cache
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: winbuild\build
         key:
@@ -224,7 +223,7 @@ jobs:
       shell: pwsh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6.0.1
+      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
       with:
         files: ./coverage.xml
         flags: GHA_Windows

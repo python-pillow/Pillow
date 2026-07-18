@@ -33,7 +33,7 @@ pytestmark = skip_unless_feature("jpg_2000")
 
 
 @pytest.fixture
-def card() -> Generator[ImageFile.ImageFile, None, None]:
+def card() -> Generator[ImageFile.ImageFile]:
     with Image.open("Tests/images/test-card.png") as im:
         im.load()
     try:

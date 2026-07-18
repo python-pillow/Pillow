@@ -43,6 +43,8 @@ from ._util import DeferredError, is_path
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from typing import Self
+
     from ._typing import StrOrBytesPath
 
 logger = logging.getLogger(__name__)
@@ -175,10 +177,6 @@ class ImageFile(Image.Image):
     def _open(self) -> None:
         pass
 
-    # Context manager support
-    def __enter__(self) -> ImageFile:
-        return self
-
     def _close_fp(self) -> None:
         if getattr(self, "_fp", False) and not isinstance(self._fp, DeferredError):
             if self._fp != self.fp:
@@ -187,6 +185,7 @@ class ImageFile(Image.Image):
         if self.fp:
             self.fp.close()
 
+    # Context manager support
     def __exit__(self, *args: object) -> None:
         if getattr(self, "_exclusive_fp", False):
             self._close_fp()
@@ -603,7 +602,7 @@ class Parser:
 
                 self.image = im
 
-    def __enter__(self) -> Parser:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:

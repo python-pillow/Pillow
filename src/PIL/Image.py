@@ -70,7 +70,7 @@ from ._util import DeferredError, is_path
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
-    from typing import Any, Literal
+    from typing import Any, Literal, Self
 
 logger = logging.getLogger(__name__)
 
@@ -491,7 +491,7 @@ def init() -> bool:
         try:
             logger.debug("Importing %s", plugin)
             __import__(f"{__spec__.parent}.{plugin}", globals(), locals(), [])
-        except ImportError as e:  # noqa: PERF203
+        except ImportError as e:
             logger.debug("Image: failed to import %s: %s", plugin, e)
 
     if OPEN or SAVE:
@@ -694,7 +694,7 @@ class Image:
         return new
 
     # Context manager support
-    def __enter__(self) -> Image:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -983,7 +983,6 @@ class Image:
         operations. See :ref:`file-handling` for more information.
 
         :returns: An image access object.
-        :rtype: :py:class:`.PixelAccess`
         """
         if self._im is not None and self.palette and self.palette.dirty:
             # realize palette
@@ -1067,7 +1066,6 @@ class Image:
            :data:`Palette.ADAPTIVE`.
         :param colors: Number of colors to use for the :data:`Palette.ADAPTIVE`
            palette. Defaults to 256.
-        :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
@@ -1363,7 +1361,6 @@ class Image:
         Copies this image. Use this method if you wish to paste things
         into an image, but still retain the original.
 
-        :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
         self.load()
@@ -1380,7 +1377,6 @@ class Image:
         Note: Prior to Pillow 3.4.0, this was a lazy operation.
 
         :param box: The crop rectangle, as a (left, upper, right, lower)-tuple.
-        :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
@@ -1477,7 +1473,6 @@ class Image:
         For example, ``getbands`` on an RGB image returns ("R", "G", "B").
 
         :returns: A tuple containing band names.
-        :rtype: tuple
         """
         return ImageMode.getmode(self.mode).bands
 
@@ -1671,12 +1666,6 @@ class Image:
             return
         self._exif._loaded = False
         self.getexif()
-
-    def get_child_images(self) -> list[ImageFile.ImageFile]:
-        from . import ImageFile
-
-        deprecate("Image.Image.get_child_images", 13)
-        return ImageFile.ImageFile.get_child_images(self)  # type: ignore[arg-type]
 
     def getim(self) -> CapsuleType:
         """
@@ -3377,8 +3366,8 @@ class SupportsArrowArrayInterface(Protocol):
     """
 
     def __arrow_c_array__(
-        self, requested_schema: "PyCapsule" = None  # type: ignore[name-defined]  # noqa: F821, UP037
-    ) -> tuple["PyCapsule", "PyCapsule"]:  # type: ignore[name-defined]  # noqa: F821, UP037
+        self, requested_schema: PyCapsule = None  # type: ignore[name-defined]  # noqa: F821
+    ) -> tuple[PyCapsule, PyCapsule]:  # type: ignore[name-defined]  # noqa: F821
         raise NotImplementedError()
 
 
@@ -3442,7 +3431,8 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
             raise TypeError(msg) from e
     if mode is not None:
         if mode != typemode and mode not in color_modes:
-            deprecate("'mode' parameter for changing data types", 13)
+            msg = "Invalid mode for data type"
+            raise ValueError(msg)
         rawmode = mode
     else:
         mode = typemode
@@ -3948,17 +3938,6 @@ def register_encoder(name: str, encoder: type[ImageFile.PyEncoder]) -> None:
     .. versionadded:: 4.1.0
     """
     ENCODERS[name] = encoder
-
-
-# --------------------------------------------------------------------
-# Simple display support.
-
-
-def _show(image: Image, **options: Any) -> None:
-    from . import ImageShow
-
-    deprecate("Image._show", 13, "ImageShow.show")
-    ImageShow.show(image, **options)
 
 
 # --------------------------------------------------------------------

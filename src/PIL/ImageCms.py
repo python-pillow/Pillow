@@ -25,10 +25,9 @@ import operator
 import sys
 from enum import IntEnum, IntFlag
 from functools import reduce
-from typing import Any, Literal, SupportsFloat, SupportsInt, Union
+from typing import Literal, SupportsFloat, SupportsInt, Union
 
 from . import Image
-from ._deprecate import deprecate
 from ._typing import SupportsRead
 
 try:
@@ -256,13 +255,6 @@ class ImageCmsProfile:
         else:
             msg = "Invalid type for Profile"  # type: ignore[unreachable]
             raise TypeError(msg)
-
-    def __getattr__(self, name: str) -> Any:
-        if name in ("product_name", "product_info"):
-            deprecate(f"ImageCms.ImageCmsProfile.{name}", 13)
-            return None
-        msg = f"'{self.__class__.__name__}' object has no attribute '{name}'"
-        raise AttributeError(msg)
 
     def tobytes(self) -> bytes:
         """

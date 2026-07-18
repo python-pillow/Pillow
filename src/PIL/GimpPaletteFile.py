@@ -22,7 +22,7 @@ from io import BytesIO
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from typing import IO
+    from typing import IO, Self
 
 
 class GimpPaletteFile:
@@ -68,7 +68,7 @@ class GimpPaletteFile:
         self._read(fp)
 
     @classmethod
-    def frombytes(cls, data: bytes) -> GimpPaletteFile:
+    def frombytes(cls, data: bytes) -> Self:
         self = cls.__new__(cls)
         self._read(BytesIO(data), False)
         return self
