@@ -53,7 +53,7 @@ from ._util import DeferredError
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from typing import Any, NoReturn
+    from typing import Any, NoReturn, Self
 
     from . import _imaging
 
@@ -184,7 +184,7 @@ class ChunkStream:
 
         return cid, pos, length
 
-    def __enter__(self) -> ChunkStream:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -265,7 +265,7 @@ class iTXt(str):
     @staticmethod
     def __new__(
         cls, text: str, lang: str | None = None, tkey: str | None = None
-    ) -> iTXt:
+    ) -> Self:
         """
         :param cls: the class to use when creating the instance
         :param text: value for this key
@@ -398,9 +398,6 @@ class PngStream(ChunkStream):
         self.rewind_state = _RewindState({}, [], None)
 
         self.text_memory = 0
-
-    def __enter__(self) -> PngStream:
-        return self
 
     def check_text_memory(self, chunklen: int) -> None:
         self.text_memory += chunklen
@@ -1106,9 +1103,6 @@ class PngImageFile(ImageFile.ImageFile):
 _OUTMODES = {
     # supported PIL modes, and corresponding rawmode, bit depth and color type
     "1": ("1", b"\x01", b"\x00"),
-    "L;1": ("L;1", b"\x01", b"\x00"),
-    "L;2": ("L;2", b"\x02", b"\x00"),
-    "L;4": ("L;4", b"\x04", b"\x00"),
     "L": ("L", b"\x08", b"\x00"),
     "LA": ("LA", b"\x08", b"\x04"),
     "I;16": ("I;16B", b"\x10", b"\x00"),

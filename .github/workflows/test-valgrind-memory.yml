@@ -38,11 +38,12 @@ jobs:
       fail-fast: false
       matrix:
         docker: [
-          ubuntu-22.04-jammy-amd64-valgrind,
+          ubuntu-24.04-noble-amd64-valgrind,
         ]
         dockerTag: [main]
+        split: [1, 2, 3, 4]
 
-    name: ${{ matrix.docker }}
+    name: ${{ matrix.docker }} ${{ matrix.split }}
 
     steps:
     - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -60,5 +61,5 @@ jobs:
       run: |
         # The Pillow user in the docker container is UID 1001
         sudo chown -R 1001 $GITHUB_WORKSPACE
-        docker run --name pillow_container -e "PILLOW_VALGRIND_TEST=true" -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }} /Pillow/depends/docker-test-valgrind-memory.sh
+        docker run --name pillow_container -e "PILLOW_VALGRIND_TEST=true" -e "SPLIT_COUNT=4" -e "SPLIT_INDEX=${{ matrix.split }}" -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }} /Pillow/depends/docker-test-valgrind-memory.sh
         sudo chown -R runner $GITHUB_WORKSPACE

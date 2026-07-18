@@ -19,6 +19,10 @@ import io
 from collections.abc import Iterable
 from typing import IO, AnyStr, NoReturn
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import Self
+
 
 class ContainerIO(IO[AnyStr]):
     """
@@ -147,13 +151,13 @@ class ContainerIO(IO[AnyStr]):
     def truncate(self, size: int | None = None) -> int:
         raise NotImplementedError()
 
-    def __enter__(self) -> ContainerIO[AnyStr]:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
         self.close()
 
-    def __iter__(self) -> ContainerIO[AnyStr]:
+    def __iter__(self) -> Self:
         return self
 
     def __next__(self) -> AnyStr:

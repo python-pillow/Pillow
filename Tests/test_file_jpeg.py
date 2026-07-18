@@ -880,9 +880,7 @@ class TestFileJpeg:
             assert exif[282] == 180
 
             out = tmp_path / "out.jpg"
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 im.save(out, exif=exif)
 
         with Image.open(out) as reloaded:

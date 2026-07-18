@@ -14,7 +14,7 @@ from . import ImageFile
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from typing import IO
+    from typing import IO, Self
 
     _DictBase = collections.UserDict[str | bytes, Any]
 else:
@@ -427,7 +427,7 @@ class PdfParser:
         if f:
             self.seek_end()
 
-    def __enter__(self) -> PdfParser:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
