@@ -18,6 +18,7 @@ def test_path() -> None:
     assert p[0] == (0.0, 1.0)
     assert p[-1] == (8.0, 9.0)
     assert list(p[:1]) == [(0.0, 1.0)]
+    assert list(p[-1:]) == [(8.0, 9.0)]
     with pytest.raises(TypeError) as cm:
         p["foo"]
     assert str(cm.value) == "Path indices must be integers, not str"
@@ -202,10 +203,8 @@ def test_transform_with_wrap() -> None:
 
 
 def test_overflow_segfault() -> None:
-    # Some Pythons fail getting the argument as an integer, and it falls
-    # through to the sequence. Seeing this on 32-bit Windows.
-    with pytest.raises((TypeError, MemoryError)):
-        # post patch, this fails with a memory error
+    with pytest.raises((OverflowError, MemoryError)):
+        # post patch, this fails with a memory error on 64-bit
         x = Evil()
 
         # This fails due to the invalid malloc above,

@@ -20,6 +20,10 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import Self
+
 
 class _TagInfo(NamedTuple):
     value: int | None
@@ -39,7 +43,7 @@ class TagInfo(_TagInfo):
         type: int | None = None,
         length: int | None = None,
         enum: dict[str, int] | None = None,
-    ) -> TagInfo:
+    ) -> Self:
         return super().__new__(cls, value, name, type, length, enum or {})
 
     def cvt_enum(self, value: str) -> int | str:

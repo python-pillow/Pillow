@@ -136,10 +136,28 @@ def test_rankfilter_error(filter: ImageFilter.RankFilter) -> None:
 
 
 def test_rankfilter_properties() -> None:
-    rankfilter = ImageFilter.RankFilter(1, 2)
+    rankfilter = ImageFilter.RankFilter(3, 2)
 
-    assert rankfilter.size == 1
+    assert rankfilter.size == 3
     assert rankfilter.rank == 2
+
+    with pytest.raises(ValueError, match="bad filter size"):
+        ImageFilter.RankFilter(2, 1)
+    with pytest.raises(ValueError, match="bad filter size"):
+        ImageFilter.MaxFilter(2)
+    with pytest.raises(ValueError, match="bad filter size"):
+        ImageFilter.MedianFilter(2)
+    with pytest.raises(ValueError, match="bad filter size"):
+        ImageFilter.MinFilter(2)
+
+    with pytest.raises(ValueError, match="filter size too large"):
+        ImageFilter.RankFilter(23171, 1)
+    im = Image.new("1", (1, 1))
+    with pytest.raises(ValueError, match="filter size too large"):
+        im.im.expand(23171)
+
+    with pytest.raises(ValueError, match="bad rank value"):
+        ImageFilter.RankFilter(1, 1)
 
 
 def test_builtinfilter_p() -> None:
@@ -192,6 +210,17 @@ def test_consistency_5x5(mode: str) -> None:
             assert_image_equal(source.filter(kernel), reference)
 
 
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_consistency_i16_high_byte(mode: str) -> None:
+    # Exercise filters with a 16bpc image that has content in the high byte, too.
+    im = Image.new(mode, (8, 8), 1000)
+    # Ensure repeated smoothing retains the exact same color value,
+    # rather than drifting due to rounding errors.
+    for _ in range(5):
+        im = im.filter(ImageFilter.SMOOTH)
+        assert im.getpixel((4, 4)) == 1000
+
+
 @pytest.mark.parametrize(
     "radius",
     (
@@ -210,3 +239,13 @@ def test_invalid_box_blur_filter(radius: int | tuple[int, int]) -> None:
     box_blur_filter.radius = radius
     with pytest.raises(ValueError):
         im.filter(box_blur_filter)
+
+
+def test_rankfilter_size_1() -> None:
+    im = Image.new("L", (3, 3), 128)
+
+    # Size 1 should not crash (margin is 0)
+    assert im.filter(ImageFilter.MinFilter(1)).getpixel((1, 1)) == 128
+    assert im.filter(ImageFilter.MaxFilter(1)).getpixel((1, 1)) == 128
+    assert im.filter(ImageFilter.MedianFilter(1)).getpixel((1, 1)) == 128
+    assert im.filter(ImageFilter.RankFilter(1, 0)).getpixel((1, 1)) == 128

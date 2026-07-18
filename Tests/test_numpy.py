@@ -24,14 +24,14 @@ def test_numpy_to_image() -> None:
         if bands == 1:
             if boolean:
                 data = (0, 255) * 50
-            a = numpy.array(data, dtype=dtype)
-            a.shape = TEST_IMAGE_SIZE
+            a = numpy.array(data, dtype=dtype).reshape(TEST_IMAGE_SIZE)
             i = Image.fromarray(a)
             assert i.get_flattened_data() == data
         else:
-            a = numpy.array([[x] * bands for x in data], dtype=dtype)
-            a.shape = TEST_IMAGE_SIZE[0], TEST_IMAGE_SIZE[1], bands
-            i = Image.fromarray(a)
+            a2 = numpy.array([[x] * bands for x in data], dtype=dtype).reshape(
+                TEST_IMAGE_SIZE[0], TEST_IMAGE_SIZE[1], bands
+            )
+            i = Image.fromarray(a2)
             assert i.get_flattened_data(0) == tuple(range(100))
         return i
 
@@ -133,8 +133,7 @@ def test_save_tiff_uint16() -> None:
     pixel_value = 0x1234
     a = numpy.array(
         [pixel_value] * TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1], dtype=numpy.uint16
-    )
-    a.shape = TEST_IMAGE_SIZE
+    ).reshape(TEST_IMAGE_SIZE)
     img = Image.fromarray(a)
 
     assert img.getpixel((0, 0)) == pixel_value
@@ -257,7 +256,5 @@ def test_no_resource_warning_for_numpy_array() -> None:
     test_file = "Tests/images/hopper.png"
     with Image.open(test_file) as im:
         # Act/Assert
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-
+        with warnings.catch_warnings(action="error"):
             array(im)

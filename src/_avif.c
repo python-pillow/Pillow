@@ -585,7 +585,7 @@ end:
 }
 
 PyObject *
-_encoder_finish(AvifEncoderObject *self) {
+_encoder_finish(AvifEncoderObject *self, PyObject *args) {
     avifEncoder *encoder = self->encoder;
 
     avifRWData raw = AVIF_DATA_EMPTY;
@@ -701,7 +701,7 @@ _decoder_dealloc(AvifDecoderObject *self) {
 }
 
 PyObject *
-_decoder_get_info(AvifDecoderObject *self) {
+_decoder_get_info(AvifDecoderObject *self, PyObject *args) {
     avifDecoder *decoder = self->decoder;
     avifImage *image = decoder->image;
 
@@ -914,8 +914,11 @@ setup_module(PyObject *m) {
 
     PyObject *d = PyModule_GetDict(m);
     PyObject *v = PyUnicode_FromString(avifVersion());
-    PyDict_SetItemString(d, "libavif_version", v ? v : Py_None);
-    Py_XDECREF(v);
+    if (!v) {
+        return -1;
+    }
+    PyDict_SetItemString(d, "libavif_version", v);
+    Py_DECREF(v);
 
     return 0;
 }

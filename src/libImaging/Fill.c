@@ -21,7 +21,6 @@
 
 Imaging
 ImagingFill(Imaging im, const void *colour) {
-    int x, y;
     ImagingSectionCookie cookie;
 
     /* 0-width or 0-height image. No need to do anything */
@@ -29,19 +28,23 @@ ImagingFill(Imaging im, const void *colour) {
         return im;
     }
 
+    // xsize and ysize are invariant during the loops below.
+    int xsize = im->xsize;
+    int ysize = im->ysize;
+
     if (im->type == IMAGING_TYPE_SPECIAL) {
         /* use generic API */
         ImagingAccess access = ImagingAccessNew(im);
         if (access) {
-            for (y = 0; y < im->ysize; y++) {
-                for (x = 0; x < im->xsize; x++) {
+            for (int y = 0; y < ysize; y++) {
+                for (int x = 0; x < xsize; x++) {
                     access->put_pixel(im, x, y, colour);
                 }
             }
             ImagingAccessDelete(im, access);
         } else {
             /* wipe the image */
-            for (y = 0; y < im->ysize; y++) {
+            for (int y = 0; y < ysize; y++) {
                 memset(im->image[y], 0, im->linesize);
             }
         }
@@ -50,14 +53,16 @@ ImagingFill(Imaging im, const void *colour) {
         ImagingSectionEnter(&cookie);
         memcpy(&c, colour, im->pixelsize);
         if (im->image32 && c != 0L) {
-            for (y = 0; y < im->ysize; y++) {
-                for (x = 0; x < im->xsize; x++) {
-                    im->image32[y][x] = c;
+            for (int y = 0; y < ysize; y++) {
+                // Restrict safe: sole owner of image data here.
+                INT32 *restrict row = im->image32[y];
+                for (int x = 0; x < xsize; x++) {
+                    row[x] = c;
                 }
             }
         } else {
             unsigned char cc = (unsigned char)*(UINT8 *)colour;
-            for (y = 0; y < im->ysize; y++) {
+            for (int y = 0; y < ysize; y++) {
                 memset(im->image[y], cc, im->linesize);
             }
         }
@@ -70,7 +75,6 @@ ImagingFill(Imaging im, const void *colour) {
 Imaging
 ImagingFillLinearGradient(const ModeID mode) {
     Imaging im;
-    int y;
 
     if (mode != IMAGING_MODE_1 && mode != IMAGING_MODE_F && mode != IMAGING_MODE_I &&
         mode != IMAGING_MODE_L && mode != IMAGING_MODE_P) {
@@ -82,19 +86,24 @@ ImagingFillLinearGradient(const ModeID mode) {
         return NULL;
     }
 
+    // Branch on pixel type outside the loops so the compiler can tighten them.
+    // Restrict safe: sole owner of the freshly-allocated image data here.
     if (im->image8) {
-        for (y = 0; y < 256; y++) {
+        for (int y = 0; y < 256; y++) {
             memset(im->image8[y], (unsigned char)y, 256);
         }
+    } else if (im->type == IMAGING_TYPE_FLOAT32) {
+        for (int y = 0; y < 256; y++) {
+            FLOAT32 *restrict row = (FLOAT32 *)im->image32[y];
+            for (int x = 0; x < 256; x++) {
+                row[x] = y;
+            }
+        }
     } else {
-        int x;
-        for (y = 0; y < 256; y++) {
-            for (x = 0; x < 256; x++) {
-                if (im->type == IMAGING_TYPE_FLOAT32) {
-                    IMAGING_PIXEL_FLOAT32(im, x, y) = y;
-                } else {
-                    IMAGING_PIXEL_INT32(im, x, y) = y;
-                }
+        for (int y = 0; y < 256; y++) {
+            INT32 *restrict row = im->image32[y];
+            for (int x = 0; x < 256; x++) {
+                row[x] = y;
             }
         }
     }
@@ -105,8 +114,6 @@ ImagingFillLinearGradient(const ModeID mode) {
 Imaging
 ImagingFillRadialGradient(const ModeID mode) {
     Imaging im;
-    int x, y;
-    int d;
 
     if (mode != IMAGING_MODE_1 && mode != IMAGING_MODE_F && mode != IMAGING_MODE_I &&
         mode != IMAGING_MODE_L && mode != IMAGING_MODE_P) {
@@ -118,25 +125,32 @@ ImagingFillRadialGradient(const ModeID mode) {
         return NULL;
     }
 
-    for (y = 0; y < 256; y++) {
-        for (x = 0; x < 256; x++) {
-            d = (int)sqrt(
-                (double)((x - 128) * (x - 128) + (y - 128) * (y - 128)) * 2.0
-            );
-            if (d >= 255) {
-                d = 255;
-            }
-            if (im->image8) {
-                im->image8[y][x] = d;
-            } else {
-                if (im->type == IMAGING_TYPE_FLOAT32) {
-                    IMAGING_PIXEL_FLOAT32(im, x, y) = d;
-                } else {
-                    IMAGING_PIXEL_INT32(im, x, y) = d;
-                }
-            }
+#define ASSIGN_ROW(row, y)                                                            \
+    for (int x = 0; x < 256; x++) {                                                   \
+        int d =                                                                       \
+            (int)sqrt((double)((x - 128) * (x - 128) + (y - 128) * (y - 128)) * 2.0); \
+        row[x] = d >= 255 ? 255 : d;                                                  \
+    }
+
+    // Branch on pixel type outside the loops so the compiler can tighten them.
+    // Restrict safe: sole owner of the freshly-allocated image data here.
+    if (im->image8) {
+        for (int y = 0; y < 256; y++) {
+            UINT8 *restrict row = im->image8[y];
+            ASSIGN_ROW(row, y);
+        }
+    } else if (im->type == IMAGING_TYPE_FLOAT32) {
+        for (int y = 0; y < 256; y++) {
+            FLOAT32 *restrict row = (FLOAT32 *)im->image32[y];
+            ASSIGN_ROW(row, y);
+        }
+    } else {
+        for (int y = 0; y < 256; y++) {
+            INT32 *restrict row = im->image32[y];
+            ASSIGN_ROW(row, y);
         }
     }
+#undef ASSIGN_ROW
 
     return im;
 }
