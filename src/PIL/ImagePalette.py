@@ -125,7 +125,11 @@ class ImagePalette:
                 image.info.get("background"),
                 image.info.get("transparency"),
             )
+            assert isinstance(self._palette, bytearray)
             while index in special_colors:
+                # Background or transparency index points past the end of the palette.
+                # Set it to black, so that the new color can be written afterwards.
+                self._palette += bytearray(len(self.mode))
                 index += 1
         if index >= 256:
             if image:
@@ -176,10 +180,6 @@ class ImagePalette:
                         + self._palette[index * mode_len + mode_len :]
                     )
                 else:
-                    # ``index`` may have been advanced past the tail to skip a
-                    # reserved background/transparency slot; pad those slots so
-                    # the color is stored at the index that is returned.
-                    self._palette += bytes(index * mode_len - len(self._palette))
                     self._palette += bytes(color)
                 self.dirty = 1
                 return index
