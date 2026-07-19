@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import filecmp
+import io
 import warnings
 from pathlib import Path
 
@@ -8,7 +9,7 @@ import pytest
 
 from PIL import Image, ImImagePlugin
 
-from .helper import assert_image_equal_tofile, hopper, is_pypy
+from .helper import assert_image_equal, assert_image_equal_tofile, hopper, is_pypy
 
 # sample im
 TEST_IM = "Tests/images/hopper.im"
@@ -81,6 +82,41 @@ def test_eoferror() -> None:
 
         # Test that seeking to the last frame does not raise an error
         im.seek(n_frames - 1)
+
+
+@pytest.mark.parametrize(
+    "image_type, rawmode, mode",
+    (
+        ("L 16", "I;16", "I;16"),
+        ("L 32S", "I;32S", "I"),
+        ("L 32F", "F;32F", "F"),
+        ("YCC", "YCbCr;L", "YCbCr"),
+    ),
+)
+def test_seek_non_8bit(image_type: str, rawmode: str, mode: str) -> None:
+    # The frame stride must be derived from the actual bytes per pixel, not
+    # from the length of the mode name (which only matches for 8-bit bands).
+    w, h = 4, 4
+    frames = []
+    for base in (0, 1000):
+        frame = Image.new(mode, (w, h))
+        for y in range(h):
+            for x in range(w):
+                frame.putpixel((x, y), base + y * w + x)
+        frames.append(frame)
+
+    header = (
+        f"Image type: {image_type} image\r\n"
+        f"Image size (x*y): {w}*{h}\r\n"
+        f"File size (no of images): {len(frames)}\r\n"
+    ).encode("ascii")
+    header += b"\x00" * (511 - len(header)) + b"\x1a"
+    data = b"".join(frame.tobytes("raw", rawmode, 0, -1) for frame in frames)
+
+    with Image.open(io.BytesIO(header + data)) as im:
+        for index, frame in enumerate(frames):
+            im.seek(index)
+            assert_image_equal(im, frame)
 
 
 @pytest.mark.parametrize("mode", ("RGB", "P", "PA"))
