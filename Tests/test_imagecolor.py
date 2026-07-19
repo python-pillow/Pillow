@@ -200,13 +200,13 @@ def test_color_hsv() -> None:
 
 
 @pytest.mark.parametrize("mode, premultiplied_mode", (("LA", "La"), ("RGBA", "RGBa")))
-@pytest.mark.parametrize("color", ("red", "#ff000080"))
-def test_color_premultiplied(mode: str, premultiplied_mode: str, color: str) -> None:
-    # The premultiplied modes are spelled with a lowercase "a", so an
-    # uppercase-only check drops their alpha. Compare against convert().
-    expected = (
-        Image.new(mode, (1, 1), color).convert(premultiplied_mode).getpixel((0, 0))
-    )
+@pytest.mark.parametrize("color", ("#f00", "#ff000080"))
+def test_color_premultiplied_alpha(
+    mode: str, premultiplied_mode: str, color: str
+) -> None:
+    im = Image.new(mode, (1, 1), color)
+    im_premultiplied = im.convert(premultiplied_mode)
+    expected = im_premultiplied.getpixel((0, 0))
 
     assert ImageColor.getcolor(color, premultiplied_mode) == expected
 
