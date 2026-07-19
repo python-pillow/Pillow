@@ -176,6 +176,10 @@ class ImagePalette:
                         + self._palette[index * mode_len + mode_len :]
                     )
                 else:
+                    # ``index`` may have been advanced past the tail to skip a
+                    # reserved background/transparency slot; pad those slots so
+                    # the color is stored at the index that is returned.
+                    self._palette += bytes(index * mode_len - len(self._palette))
                     self._palette += bytes(color)
                 self.dirty = 1
                 return index
