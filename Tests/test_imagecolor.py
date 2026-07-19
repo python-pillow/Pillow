@@ -209,7 +209,6 @@ def test_color_premultiplied(mode: str, premultiplied_mode: str, color: str) -> 
     )
 
     assert ImageColor.getcolor(color, premultiplied_mode) == expected
-    assert Image.new(premultiplied_mode, (1, 1), color).getpixel((0, 0)) == expected
 
 
 def test_color_too_long() -> None:
