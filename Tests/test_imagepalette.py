@@ -87,38 +87,17 @@ def test_getcolor_not_special(index: int, palette: ImagePalette.ImagePalette) ->
 
     # Do not use transparency index as a new color
     im.info["transparency"] = index
-    index1 = palette.getcolor((0, 0, 0), im)
+    index1 = palette.getcolor((0, 0, 1), im)
     assert index1 != index
+    roundtripped_palette = ImagePalette.ImagePalette(palette=palette.palette)
+    assert roundtripped_palette.colors[(0, 0, 1)] == index1
 
     # Do not use background index as a new color
     im.info["background"] = index1
-    index2 = palette.getcolor((0, 0, 1), im)
+    index2 = palette.getcolor((0, 0, 2), im)
     assert index2 not in (index, index1)
-
-
-@pytest.mark.parametrize(
-    "index, palette",
-    [
-        (0, ImagePalette.ImagePalette()),
-        (255, ImagePalette.ImagePalette("RGB", list(range(256)) * 3)),
-    ],
-)
-def test_getcolor_not_special_stores_color(
-    index: int, palette: ImagePalette.ImagePalette
-) -> None:
-    im = Image.new("P", (1, 1))
-    im.info["transparency"] = index
-
-    color = (1, 2, 3)
-    returned = palette.getcolor(color, im)
-    assert returned != index
-
-    # The returned index must actually address the stored color, not a slot
-    # that was skipped to avoid the transparency/background index.
-    mode_len = len(palette.mode)
-    palette_bytes = bytes(palette.palette)
-    stored = tuple(palette_bytes[returned * mode_len : returned * mode_len + mode_len])
-    assert stored == color
+    roundtripped_palette = ImagePalette.ImagePalette(palette=palette.palette)
+    assert roundtripped_palette.colors[(0, 0, 2)] == index2
 
 
 def test_file(tmp_path: Path) -> None:
