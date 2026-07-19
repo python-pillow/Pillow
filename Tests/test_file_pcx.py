@@ -118,6 +118,14 @@ def test_1px_width(tmp_path: Path) -> None:
     _roundtrip(tmp_path, im)
 
 
+def test_rgb_odd_width(tmp_path: Path) -> None:
+    # An RGB (multi-plane) width whose even-padded stride differs from the
+    # width must still separate the colour planes correctly. Distinct channel
+    # values expose a misaligned split.
+    im = Image.new("RGB", (3, 3), (0x11, 0x22, 0x33))
+    _roundtrip(tmp_path, im)
+
+
 def test_large_count(tmp_path: Path) -> None:
     im = Image.new("L", (256, 1))
     px = im.load()
