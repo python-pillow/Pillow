@@ -94,7 +94,7 @@ class TestImageTransform:
         (
             ("RGB", (255, 0, 0)),
             ("RGBA", (255, 0, 0, 255)),
-            ("LA", (76, 0)),
+            ("LA", (76, 255)),
         ),
     )
     def test_fill(self, mode: str, expected_pixel: tuple[int, ...]) -> None:
