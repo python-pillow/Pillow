@@ -192,7 +192,6 @@ exclude = [
   "^Tests/images/picins/",
   "^Tests/images/sunraster/",
 ]
-python_version = "3.11"
 disallow_subclassing_any = false
 disallow_untyped_calls = false
 warn_return_any = false
@@ -200,8 +199,8 @@ warn_unreachable = true
 enable_error_code = "ignore-without-code"
 strict = true
 pretty = true
-num_workers = 4
 no_implicit_reexport = false
+num_workers = 4
 
 [tool.pytest]
 addopts = [ "-ra", "--color=auto" ]
