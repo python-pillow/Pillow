@@ -187,7 +187,6 @@ lint.isort.required-imports = [
 max_supported_python = "3.15"
 
 [tool.mypy]
-python_version = "3.11"
 disallow_subclassing_any = false
 disallow_untyped_calls = false
 warn_return_any = false
