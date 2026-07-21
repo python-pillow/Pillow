@@ -18,14 +18,6 @@
 #error Sorry, this library requires ANSI header files.
 #endif
 
-#if defined(PIL_NO_INLINE)
-#define inline
-#else
-#if defined(_MSC_VER) && !defined(__GNUC__)
-#define inline __inline
-#endif
-#endif
-
 #if defined(_WIN32) || defined(__CYGWIN__) /* WIN */
 
 #define WIN32_LEAN_AND_MEAN
