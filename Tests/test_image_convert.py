@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from itertools import chain
 from pathlib import Path
 
 import pytest
@@ -88,6 +89,15 @@ def test_16bit() -> None:
 def test_16bit_workaround() -> None:
     with Image.open("Tests/images/16bit.cropped.tif") as im:
         _test_float_conversion(im.convert("I"))
+
+
+def test_i_to_l_saturation() -> None:
+    # Conversion from I (signed 32-bit integer pixels) to L (unsigned 8-bit)
+    # must saturate (clip) the values.
+    values = [-(2**19), -1, 0, 1, 127, 254, 255, 256, 2**19]
+    im = Image.new("I", (len(values), 1))
+    im.putdata(values)
+    assert list(im.convert("L").getdata()) == [0, 0, 0, 1, 127, 254, 255, 255, 255]
 
 
 def test_opaque() -> None:
@@ -288,6 +298,35 @@ def test_p2pa_palette() -> None:
     with Image.open("Tests/images/tiny.png") as im:
         im_pa = im.convert("PA")
     assert im_pa.getpalette() == im.getpalette()
+
+
+def test_p_to_rgb_exact() -> None:
+    # Arrange
+    rgba = [(i, (i * 3) % 256, (i * 7) % 256, (i * 11) % 256) for i in range(256)]
+    rgb = tuple(v[:3] for v in rgba)
+    rgb_bytes = bytes(b for i in range(256) for b in rgb[i])  # Flatten `rgb`
+
+    # Act (1)
+    im = Image.frombytes("P", (16, 16), bytes(range(256)))
+    im.putpalette(tuple(chain.from_iterable(rgba)), rawmode="RGBA")
+
+    # Assert (1)
+    # When converting P-with-Alpha-Palette to RGB, the palette is ignored.
+    assert im.convert("RGB").tobytes() == rgb_bytes
+    # When converting P-with-Alpha-Palette to RGBA, the alpha from the palette is used.
+    assert im.convert("RGBA").get_flattened_data(3) == tuple(v[3] for v in rgba)
+
+    # Act (2)
+    # Replace the alpha with an inverted version
+    new_alpha = tuple(255 - i for i in range(256))
+    im.putalpha(Image.frombytes("L", (16, 16), bytes(new_alpha)))
+
+    # Assert (2)
+    assert im.mode == "PA"
+    # The RGB bytes should be the same still, nothing has changed
+    assert im.convert("RGB").tobytes() == rgb_bytes
+    # The alpha channel should have been replaced with the inverted version though
+    assert im.convert("RGBA").get_flattened_data(3) == new_alpha
 
 
 def test_matrix_illegal_conversion() -> None:
