@@ -200,7 +200,7 @@ def test_color_hsv() -> None:
 
 
 @pytest.mark.parametrize("mode, premultiplied_mode", (("LA", "La"), ("RGBA", "RGBa")))
-@pytest.mark.parametrize("color", ("#f00", "#ff000080"))
+@pytest.mark.parametrize("color", ("#f00", "#ff000080", "#ff000050"))
 def test_color_premultiplied_alpha(
     mode: str, premultiplied_mode: str, color: str
 ) -> None:

@@ -161,8 +161,7 @@ def getcolor(color: str, mode: str) -> int | tuple[int, ...]:
     else:
         value = rgb
     if mode[-1] == "a":
-        # Rounded, to match convert()'s premultiplication.
-        value = tuple((band * alpha + 127) // 255 for band in value)
+        value = tuple(round(band * alpha / 255) for band in value)
     if mode[-1] in ("A", "a"):
         return value + (alpha,)
     return value[0] if len(value) == 1 else value
