@@ -16,6 +16,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"typing"}
+
 import sys
 from typing import IO
 

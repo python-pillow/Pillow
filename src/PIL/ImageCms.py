@@ -19,6 +19,8 @@
 # below for the original description.
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._deprecate"}
+
 import operator
 import sys
 from enum import IntEnum, IntFlag

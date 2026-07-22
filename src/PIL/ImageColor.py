@@ -18,6 +18,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"re"}
+
 import re
 from functools import lru_cache
 

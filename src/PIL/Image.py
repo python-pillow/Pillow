@@ -26,6 +26,17 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL._binary",
+    "PIL._deprecate",
+    "PIL._util",
+    "io",
+    "math",
+    "os",
+    "re",
+    "struct",
+}
+
 import abc
 import atexit
 import builtins
@@ -36,7 +47,6 @@ import os
 import re
 import struct
 import sys
-import tempfile
 import warnings
 from collections.abc import MutableMapping
 from enum import IntEnum
@@ -57,16 +67,9 @@ from ._binary import i32le, o32be, o32le
 from ._deprecate import deprecate
 from ._util import DeferredError, is_path
 
-ElementTree: ModuleType | None
-try:
-    from defusedxml import ElementTree
-except ImportError:
-    ElementTree = None
-
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
-    from types import ModuleType
     from typing import Any, Literal, Self
 
 logger = logging.getLogger(__name__)
@@ -738,6 +741,8 @@ class Image:
             if not filename.endswith(suffix):
                 filename += suffix
         else:
+            import tempfile
+
             f, filename = tempfile.mkstemp(suffix)
             os.close(f)
 
@@ -1579,6 +1584,11 @@ class Image:
 
         :returns: XMP tags in a dictionary.
         """
+        try:
+            from defusedxml import ElementTree
+        except ImportError:
+            warnings.warn("XMP data cannot be read without defusedxml dependency")
+            return {}
 
         def get_name(tag: str) -> str:
             return re.sub("^{[^}]+}", "", tag)
@@ -1603,9 +1613,6 @@ class Image:
                 return element.text
             return value
 
-        if ElementTree is None:
-            warnings.warn("XMP data cannot be read without defusedxml dependency")
-            return {}
         if "xmp" not in self.info:
             return {}
         root = ElementTree.fromstring(self.info["xmp"].rstrip(b"\x00 "))

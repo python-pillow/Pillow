@@ -15,6 +15,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 import re
 
 from . import Image, ImageFile, ImagePalette

@@ -32,6 +32,17 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL._binary",
+    "PIL._deprecate",
+    "PIL._util",
+    "fractions",
+    "itertools",
+    "struct",
+    "warnings",
+    "zlib",
+}
+
 import itertools
 import logging
 import re

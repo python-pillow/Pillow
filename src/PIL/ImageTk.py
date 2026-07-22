@@ -26,6 +26,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "tkinter", "typing"}
+
 import tkinter
 from io import BytesIO
 from typing import Any

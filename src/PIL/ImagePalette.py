@@ -17,6 +17,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"array", "collections.abc", "typing"}
+
 import array
 from collections.abc import Sequence
 from typing import IO
