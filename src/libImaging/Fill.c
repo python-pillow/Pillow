@@ -19,6 +19,9 @@
 
 #include "math.h"
 
+/**
+ * Fill an entire image with a constant colour, in place.
+ */
 Imaging
 ImagingFill(Imaging im, const void *colour) {
     ImagingSectionCookie cookie;
