@@ -370,14 +370,31 @@ ImagingError_MemoryError(void) {
 }
 
 void *
-ImagingError_Mismatch(void) {
-    PyErr_SetString(PyExc_ValueError, "images do not match");
+ImagingError_Mismatch(const char *message) {
+    PyErr_SetString(
+        PyExc_ValueError, (message) ? (char *)message : "images do not match"
+    );
     return NULL;
 }
 
 void *
-ImagingError_ModeError(void) {
-    PyErr_SetString(PyExc_ValueError, "image has wrong mode");
+ImagingError_ModeError(const char *message) {
+    PyErr_SetString(
+        PyExc_ValueError, (message) ? (char *)message : "image has wrong mode"
+    );
+    return NULL;
+}
+
+// Derives from both NotImplementedError and ValueError
+// (as the functions above raise ValueErrors).
+static PyObject *ImagingNotSupportedError = NULL;
+
+void *
+ImagingError_NotSupportedError(const char *message) {
+    PyErr_SetString(
+        ImagingNotSupportedError ? ImagingNotSupportedError : PyExc_NotImplementedError,
+        (message) ? (char *)message : "operation not supported"
+    );
     return NULL;
 }
 
@@ -4325,6 +4342,24 @@ setup_module(PyObject *m) {
         return -1;
     }
     if (PyType_Ready(&PixelAccess_Type) < 0) {
+        return -1;
+    }
+
+    if (ImagingNotSupportedError == NULL) {
+        // NotSupportedError derives from both NotImplementedError and ValueError,
+        // for compatibility with `except ValueError`.
+        PyObject *bases = PyTuple_Pack(2, PyExc_NotImplementedError, PyExc_ValueError);
+        if (bases == NULL) {
+            return -1;
+        }
+        ImagingNotSupportedError =
+            PyErr_NewException("PIL._imaging.NotSupportedError", bases, NULL);
+        Py_DECREF(bases);
+        if (ImagingNotSupportedError == NULL) {
+            return -1;
+        }
+    }
+    if (PyModule_AddObjectRef(m, "NotSupportedError", ImagingNotSupportedError) < 0) {
         return -1;
     }
 

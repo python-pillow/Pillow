@@ -68,14 +68,17 @@
 static Imaging
 create(Imaging im1, Imaging im2, const ModeID mode) {
     int xsize, ysize;
+    if (!im1 || !im2) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
 
-    if (!im1 || !im2 || im1->type != IMAGING_TYPE_UINT8 ||
+    if (im1->type != IMAGING_TYPE_UINT8 ||
         (mode != IMAGING_MODE_UNKNOWN &&
          (im1->mode != IMAGING_MODE_1 || im2->mode != IMAGING_MODE_1))) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
     if (im1->type != im2->type || im1->bands != im2->bands) {
-        return (Imaging)ImagingError_Mismatch();
+        return (Imaging)ImagingError_Mismatch("image types and band count must match");
     }
 
     xsize = (im1->xsize < im2->xsize) ? im1->xsize : im2->xsize;
