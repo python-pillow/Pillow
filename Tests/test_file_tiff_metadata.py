@@ -485,6 +485,18 @@ def test_too_many_entries() -> None:
         assert ifd[277] == 4
 
 
+def test_tag_offset() -> None:
+    ifd = TiffImagePlugin.ImageFileDirectory_v2(b"II\x2b\x00" + b"\x00" * 12)
+
+    tag_count = struct.pack("Q", 1)
+    tag = struct.pack("<HHQQ", 0, 1, 9, 2**63)
+    next_offset = struct.pack("Q", 0)
+
+    f = io.BytesIO(tag_count + tag + next_offset)
+    with pytest.warns(UserWarning, match="Tag offset too large"):
+        ifd.load(f)
+
+
 def test_tag_group_data() -> None:
     base_ifd = TiffImagePlugin.ImageFileDirectory_v2()
     interop_ifd = TiffImagePlugin.ImageFileDirectory_v2(group=40965)
