@@ -1376,6 +1376,36 @@ WebP
 
 Pillow reads and writes WebP files. Requires libwebp v0.5.0 or later.
 
+Opening
+~~~~~~~
+
+The :py:meth:`~PIL.Image.open` method sets the following
+:py:attr:`~PIL.Image.Image.info` properties:
+
+**background**
+    Background color of the canvas, as an RGBA tuple with values in
+    the range of (0-255).
+
+**loop**
+    The number of times the WEBP should loop. 0 means that it will loop forever.
+
+**icc_profile**
+    May not be present. The ICC color profile for the image.
+
+**exif**
+    May not be present. Raw EXIF data from the image.
+
+**xmp**
+    May not be present. Raw XMP data from the image.
+
+**duration**
+    Only present after the current frame is loaded. The time to display the current
+    frame of the WEBP, in milliseconds.
+
+**timestamp**
+    Only present after the current frame is loaded. The total duration of all previous
+    frames of the WEBP, in milliseconds.
+
 .. _webp-saving:
 
 Saving
