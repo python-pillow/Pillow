@@ -431,6 +431,15 @@ def test_offset(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> No
     bench(ImageChops.offset, im, 123, 45)
 
 
+@pytest.mark.benchmark(group="extrema")
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_getextrema(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> None:
+    im = make_pillow_image(mode, size)
+    bench.extra_info["label"] = [f"extrema {mode}"]
+    bench(im.getextrema)
+
+
 @pytest.mark.benchmark(group="histogram")
 @pytest.mark.parametrize("mode", MODES)
 @pytest.mark.parametrize("size", SIZES, ids=_format_size)

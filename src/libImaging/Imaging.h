@@ -354,6 +354,8 @@ ImagingGetColors(Imaging im, int maxcolors, int *colors);
 extern int
 ImagingGetExtrema(Imaging im, void *extrema);
 extern int
+ImagingGetExtremaMultiband(Imaging im, UINT8 extrema[8]);
+extern int
 ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj);
 extern ImagingHistogram
 ImagingGetHistogram(Imaging im, Imaging mask, void *extrema);
