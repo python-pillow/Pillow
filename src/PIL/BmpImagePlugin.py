@@ -451,6 +451,13 @@ def _save(
     elif im.mode == "P":
         palette = im.im.getpalette("RGB", "BGRX")
         colors = len(palette) // 4
+        if colors == 0:
+            # An empty palette is written as biClrUsed=0, which a reader treats
+            # as 256 entries, leaving the pixel offset past a color table that
+            # was never written (the file then fails to reopen). Write a full
+            # table so the image round-trips, as the "L" branch above does.
+            palette = b"\x00" * (256 * 4)
+            colors = 256
     else:
         palette = None
 
