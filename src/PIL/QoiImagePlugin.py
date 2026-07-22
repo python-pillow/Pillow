@@ -61,12 +61,23 @@ class QoiDecoder(ImageFile.PyDecoder):
         bands = Image.getmodebands(self.mode)
         dest_length = self.state.xsize * self.state.ysize * bands
         while len(data) < dest_length:
-            byte = self.fd.read(1)[0]
+            byte_data = self.fd.read(1)
+            if not byte_data:
+                msg = "image file is truncated"
+                raise OSError(msg)
+            byte = byte_data[0]
             value: bytes | bytearray
             if byte == 0b11111110 and self._previous_pixel:  # QOI_OP_RGB
-                value = bytearray(self.fd.read(3)) + self._previous_pixel[3:]
+                rgb_data = self.fd.read(3)
+                if len(rgb_data) < 3:
+                    msg = "image file is truncated"
+                    raise OSError(msg)
+                value = bytearray(rgb_data) + self._previous_pixel[3:]
             elif byte == 0b11111111:  # QOI_OP_RGBA
                 value = self.fd.read(4)
+                if len(value) < 4:
+                    msg = "image file is truncated"
+                    raise OSError(msg)
             else:
                 op = byte >> 6
                 if op == 0:  # QOI_OP_INDEX
@@ -86,7 +97,11 @@ class QoiDecoder(ImageFile.PyDecoder):
                         )
                     )
                 elif op == 2 and self._previous_pixel:  # QOI_OP_LUMA
-                    second_byte = self.fd.read(1)[0]
+                    second_byte_data = self.fd.read(1)
+                    if not second_byte_data:
+                        msg = "image file is truncated"
+                        raise OSError(msg)
+                    second_byte = second_byte_data[0]
                     diff_green = (byte & 0b00111111) - 32
                     diff_red = ((second_byte & 0b11110000) >> 4) - 8
                     diff_blue = (second_byte & 0b00001111) - 8
