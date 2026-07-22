@@ -83,7 +83,7 @@ class FtexImageFile(ImageFile.ImageFile):
         # Only support single-format files.
         # I don't know of any multi-format file.
         if format_count != 1:
-            msg = f"Unsupported number of formats: {format_count}"
+            msg = f"Unsupported number of texture formats: {format_count}"
             raise ValueError(msg)
 
         format, where = struct.unpack("<2i", self.fp.read(8))
