@@ -69,10 +69,12 @@ ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
                 stride = state->bytes / state->bits;
             } else {
                 xsize = state->xsize;
-                bands = state->bytes / state->xsize;
-                if (bands != 0) {
-                    stride = state->bytes / bands;
-                }
+                // state->bytes is planes * stride; derive the stride from the
+                // known band count rather than guessing it from state->xsize,
+                // which picks the wrong split when xsize != stride (e.g. an
+                // odd-width RGB line padded to an even stride).
+                bands = im->bands;
+                stride = state->bytes / bands;
             }
             if (stride > xsize) {
                 int i;
