@@ -6,6 +6,8 @@ from PIL import Image, ImageFilter
 
 from .helper import assert_image_equal, hopper
 
+MODES = ("L", "LA", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
+
 
 @pytest.mark.parametrize(
     "filter_to_apply",
@@ -35,9 +37,7 @@ from .helper import assert_image_equal, hopper
         ImageFilter.UnsharpMask(10),
     ),
 )
-@pytest.mark.parametrize(
-    "mode", ("L", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
-)
+@pytest.mark.parametrize("mode", MODES)
 def test_sanity(
     filter_to_apply: ImageFilter.Filter | type[ImageFilter.Filter], mode: str
 ) -> None:
@@ -51,20 +51,18 @@ def test_sanity(
         assert out.size == im.size
 
 
-@pytest.mark.parametrize(
-    "mode", ("L", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
-)
+@pytest.mark.parametrize("mode", MODES)
 def test_sanity_error(mode: str) -> None:
     im = hopper(mode)
     with pytest.raises(TypeError):
         im.filter("hello")  # type: ignore[arg-type]
 
 
-# crashes on small images
 @pytest.mark.parametrize("size", ((1, 1), (2, 2), (3, 3)))
-def test_crash(size: tuple[int, int]) -> None:
+def test_noop_on_small_images(size: tuple[int, int]) -> None:
+    # If image is smaller than kernel size, return it as-is
     im = Image.new("RGB", size)
-    im.filter(ImageFilter.SMOOTH)
+    assert_image_equal(im, im.filter(ImageFilter.SMOOTH))
 
 
 @pytest.mark.parametrize(
@@ -172,42 +170,72 @@ def test_kernel_not_enough_coefficients() -> None:
         ImageFilter.Kernel((3, 3), (0, 0))
 
 
-@pytest.mark.parametrize(
-    "mode", ("L", "LA", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
+# fmt: off
+EMBOSS_3x3 = (
+    -1, -1,  0,
+    -1,  0,  1,
+     0,  1,  1,
 )
-def test_consistency_3x3(mode: str) -> None:
-    with Image.open("Tests/images/hopper.bmp") as source:
-        with Image.open("Tests/images/hopper_emboss.bmp") as reference:
-            kernel = ImageFilter.Kernel(
-                (3, 3),
-                # fmt: off
-                (-1, -1,  0,
-                 -1,  0,  1,
-                 0,   1,  1),
-                # fmt: on
-                0.3,
-            )
-            assert_image_equal(source.filter(kernel), reference)
+EMBOSS_5x5 = (
+    -1, -1, -1, -1,  0,
+    -1, -1, -1,  0,  1,
+    -1, -1,  0,  1,  1,
+    -1,  0,  1,  1,  1,
+     0,  1,  1,  1,  1,
+)
+# fmt: on
 
 
 @pytest.mark.parametrize(
-    "mode", ("L", "LA", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
+    "size, weights, expected",
+    [
+        pytest.param(
+            (3, 3),
+            EMBOSS_3x3,
+            "Tests/images/hopper_emboss.bmp",
+            id="3x3",
+        ),
+        pytest.param(
+            (5, 5), EMBOSS_5x5, "Tests/images/hopper_emboss_more.bmp", id="5x5"
+        ),
+    ],
 )
-def test_consistency_5x5(mode: str) -> None:
+def test_consistency(
+    size: tuple[int, int], weights: tuple[int, ...], expected: str
+) -> None:
     with Image.open("Tests/images/hopper.bmp") as source:
-        with Image.open("Tests/images/hopper_emboss_more.bmp") as reference:
-            kernel = ImageFilter.Kernel(
-                (5, 5),
-                # fmt: off
-                (-1, -1, -1, -1,  0,
-                 -1, -1, -1,  0,  1,
-                 -1, -1,  0,  1,  1,
-                 -1,  0,  1,  1,  1,
-                 0,   1,  1,  1,  1),
-                # fmt: on
-                0.3,
+        with Image.open(expected) as reference:
+            kernel = ImageFilter.Kernel(size, weights, 0.3)
+            result = source.filter(kernel)
+            assert_image_equal(result, reference)
+
+
+@pytest.mark.parametrize(
+    "size, weights",
+    [
+        pytest.param((3, 3), EMBOSS_3x3, id="3x3"),
+        pytest.param((5, 5), EMBOSS_5x5, id="5x5"),
+    ],
+)
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_consistency_i16(
+    size: tuple[int, int], weights: tuple[int, ...], mode: str
+) -> None:
+    kernel = ImageFilter.Kernel(size, weights, 0.3)
+    reference = hopper("I").filter(kernel)
+    result = hopper(mode).filter(kernel)
+    assert result.mode == mode
+    assert result.size == reference.size
+    # Compare logical pixel values.
+    assert (
+        max(
+            abs(a - b)  # type: ignore[operator]
+            for a, b in zip(
+                reference.get_flattened_data(), result.get_flattened_data(), strict=True
             )
-            assert_image_equal(source.filter(kernel), reference)
+        )
+        <= 1
+    )
 
 
 @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
