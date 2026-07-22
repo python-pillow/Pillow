@@ -163,10 +163,38 @@ def test_alpha_composite(
 @pytest.mark.parametrize(
     "mode_from, mode_to",
     [
+        # bilevel <-> greyscale (in-place path: l2bit / bit2l)
+        ("L", "1"),
+        ("1", "L"),
+        # greyscale <-> colour (pack / expand)
         ("RGB", "L"),
+        ("L", "RGB"),
+        ("RGB", "1"),
+        ("LA", "RGBA"),
+        # channel add / drop / premultiply
+        ("RGB", "RGBA"),
+        ("RGBA", "RGB"),
         ("RGBA", "LA"),
         ("RGBa", "RGBA"),
         ("RGBA", "RGBa"),
+        # palette expansion (p2rgb / p2rgba / pa2rgb / pa2rgba)
+        ("P", "RGB"),
+        ("P", "RGBA"),
+        ("PA", "RGB"),
+        ("PA", "RGBA"),
+        # colourspace conversions
+        ("RGB", "YCbCr"),
+        ("YCbCr", "RGB"),
+        ("RGB", "HSV"),
+        ("HSV", "RGB"),
+        ("RGB", "CMYK"),
+        ("CMYK", "RGB"),
+        # integer / float modes
+        ("L", "I"),
+        ("I", "L"),
+        ("L", "F"),
+        ("F", "L"),
+        ("RGB", "I;16"),
     ],
 )
 @pytest.mark.parametrize("size", SIZES, ids=_format_size)
