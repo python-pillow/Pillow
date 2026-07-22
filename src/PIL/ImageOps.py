@@ -292,11 +292,11 @@ def contain(
 
     if im_ratio != dest_ratio:
         if im_ratio > dest_ratio:
-            new_height = round(image.height / image.width * size[0])
+            new_height = max(1, round(image.height / image.width * size[0]))
             if new_height != size[1]:
                 size = (size[0], new_height)
         else:
-            new_width = round(image.width / image.height * size[1])
+            new_width = max(1, round(image.width / image.height * size[1]))
             if new_width != size[0]:
                 size = (new_width, size[1])
     return image.resize(size, resample=method)
