@@ -1016,7 +1016,7 @@ class Image:
     def convert(
         self,
         mode: str | None = None,
-        matrix: tuple[float, ...] | None = None,
+        matrix: list[float] | tuple[float, ...] | None = None,
         dither: Dither | None = None,
         palette: Palette = Palette.WEB,
         colors: int = 256,
@@ -1051,7 +1051,7 @@ class Image:
 
         :param mode: The requested mode. See: :ref:`concept-modes`.
         :param matrix: An optional conversion matrix.  If given, this
-           should be 4- or 12-tuple containing floating point values.
+           should be 4- or 12-sequence containing floating point values.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
@@ -1089,7 +1089,7 @@ class Image:
                 transparency = new_im.info["transparency"]
 
                 def convert_transparency(
-                    m: tuple[float, ...], v: tuple[int, int, int]
+                    m: list[float] | tuple[float, ...], v: tuple[int, int, int]
                 ) -> int:
                     value = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3] * 0.5
                     return max(0, min(255, int(value)))
