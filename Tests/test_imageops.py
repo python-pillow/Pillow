@@ -128,6 +128,16 @@ def test_contain_round() -> None:
     assert new_im.height == 5
 
 
+def test_contain_zero() -> None:
+    im = Image.new("1", (1, 10))
+    new_im = ImageOps.contain(im, (5, 5))
+    assert new_im.width == 0
+
+    im = Image.new("1", (10, 1))
+    new_im = ImageOps.contain(im, (5, 5))
+    assert new_im.height == 0
+
+
 @pytest.mark.parametrize(
     "image_name, expected_size",
     (

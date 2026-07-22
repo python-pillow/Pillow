@@ -299,6 +299,8 @@ def contain(
             new_width = round(image.width / image.height * size[1])
             if new_width != size[0]:
                 size = (new_width, size[1])
+    if min(size) == 0:
+        return Image.new(image.mode, size)
     return image.resize(size, resample=method)
 
 
