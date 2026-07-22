@@ -2189,30 +2189,40 @@ _transpose(ImagingObject *self, PyObject *args) {
             return NULL;
     }
 
-    if (imOut) {
-        switch (op) {
-            case 0:
-                (void)ImagingFlipLeftRight(imOut, imIn);
-                break;
-            case 1:
-                (void)ImagingFlipTopBottom(imOut, imIn);
-                break;
-            case 2:
-                (void)ImagingRotate90(imOut, imIn);
-                break;
-            case 3:
-                (void)ImagingRotate180(imOut, imIn);
-                break;
-            case 4:
-                (void)ImagingRotate270(imOut, imIn);
-                break;
-            case 5:
-                (void)ImagingTranspose(imOut, imIn);
-                break;
-            case 6:
-                (void)ImagingTransverse(imOut, imIn);
-                break;
-        }
+    if (!imOut) {
+        return NULL;
+    }
+
+    Imaging imTemp = NULL;  // will be either NULL or imOut after the operation finishes
+    switch (op) {
+        case 0:
+            imTemp = ImagingFlipLeftRight(imOut, imIn);
+            break;
+        case 1:
+            imTemp = ImagingFlipTopBottom(imOut, imIn);
+            break;
+        case 2:
+            imTemp = ImagingRotate90(imOut, imIn);
+            break;
+        case 3:
+            imTemp = ImagingRotate180(imOut, imIn);
+            break;
+        case 4:
+            imTemp = ImagingRotate270(imOut, imIn);
+            break;
+        case 5:
+            imTemp = ImagingTranspose(imOut, imIn);
+            break;
+        case 6:
+            imTemp = ImagingTransverse(imOut, imIn);
+            break;
+        default:
+            PyErr_SetString(PyExc_ValueError, "No such transpose operation");
+            return NULL;
+    }
+    if (!imTemp) {  // operation failed and will have set an exception
+        ImagingDelete(imOut);
+        return NULL;
     }
 
     return PyImagingNew(imOut);
