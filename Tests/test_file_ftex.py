@@ -38,3 +38,13 @@ def test_invalid_texture() -> None:
     with pytest.raises(ValueError, match="Invalid texture compression format: 2"):
         with Image.open(io.BytesIO(data)):
             pass
+
+
+def test_unsupported_texture_format_count() -> None:
+    with open("Tests/images/ftex_dxt1.ftc", "rb") as fp:
+        # Change the format count to an unsupported value
+        data = fp.read(20) + struct.pack("<i", 2)
+
+    with pytest.raises(ValueError, match="Unsupported number of texture formats: 2"):
+        with Image.open(io.BytesIO(data)):
+            pass
