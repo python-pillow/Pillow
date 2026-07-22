@@ -64,7 +64,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
     int x, y;
     int i, margin, size2;
 
-    if (!im || im->bands != 1 || im->type == IMAGING_TYPE_SPECIAL) {
+    if (!im || im->bands != 1 || im->type == IMAGING_TYPE_I16) {
         return (Imaging)ImagingError_ModeError();
     }
 

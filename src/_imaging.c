@@ -565,7 +565,7 @@ getpixel(Imaging im, ImagingAccess access, int x, int y) {
             return PyLong_FromLong(pixel.i);
         case IMAGING_TYPE_FLOAT32:
             return PyFloat_FromDouble(pixel.f);
-        case IMAGING_TYPE_SPECIAL:
+        case IMAGING_TYPE_I16:
             return PyLong_FromLong(pixel.h);
     }
 
@@ -594,7 +594,7 @@ getink(PyObject *color, Imaging im, char *ink) {
         color = PyTuple_GetItem(color, 0);
     }
     if (im->type == IMAGING_TYPE_UINT8 || im->type == IMAGING_TYPE_INT32 ||
-        im->type == IMAGING_TYPE_SPECIAL) {
+        im->type == IMAGING_TYPE_I16) {
         if (PyLong_Check(color)) {
             r = PyLong_AsLongLong(color);
             if (r == -1 && PyErr_Occurred()) {
@@ -682,7 +682,7 @@ getink(PyObject *color, Imaging im, char *ink) {
             ftmp = f;
             memcpy(ink, &ftmp, sizeof(ftmp));
             return ink;
-        case IMAGING_TYPE_SPECIAL:
+        case IMAGING_TYPE_I16:
             ink[0] = (UINT8)r;
             ink[1] = (UINT8)(r >> 8);
             ink[2] = ink[3] = 0;
@@ -1671,7 +1671,7 @@ _putdata(ImagingObject *self, PyObject *args) {
             }
             double value;
             int bigendian = 0;
-            if (image->type == IMAGING_TYPE_SPECIAL) {
+            if (image->type == IMAGING_TYPE_I16) {
                 // I;16*
                 if (
                     image->mode == IMAGING_MODE_I_16B
@@ -1687,7 +1687,7 @@ _putdata(ImagingObject *self, PyObject *args) {
                 if (scale != 1.0 || offset != 0.0) {
                     value = value * scale + offset;
                 }
-                if (image->type == IMAGING_TYPE_SPECIAL) {
+                if (image->type == IMAGING_TYPE_I16) {
                     image->image8[y][x * 2 + (bigendian ? 1 : 0)] =
                         CLIP8((int)value % 256);
                     image->image8[y][x * 2 + (bigendian ? 0 : 1)] =
@@ -2358,7 +2358,7 @@ _getextrema(ImagingObject *self, PyObject *args) {
                 return Py_BuildValue("ii", extrema.i[0], extrema.i[1]);
             case IMAGING_TYPE_FLOAT32:
                 return Py_BuildValue("dd", extrema.f[0], extrema.f[1]);
-            case IMAGING_TYPE_SPECIAL:
+            case IMAGING_TYPE_I16:
                 if (self->image->mode == IMAGING_MODE_I_16) {
                     return Py_BuildValue("HH", extrema.s[0], extrema.s[1]);
                 }

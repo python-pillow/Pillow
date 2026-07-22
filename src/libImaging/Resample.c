@@ -717,13 +717,9 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (imIn->type == IMAGING_TYPE_SPECIAL) {
-        if (isModeI16(imIn->mode)) {
-            ResampleHorizontal = _ImagingResampleHorizontal_16bpc;
-            ResampleVertical = _ImagingResampleVertical_16bpc;
-        } else {
-            return (Imaging)ImagingError_ModeError();
-        }
+    if (imIn->type == IMAGING_TYPE_I16) {
+        ResampleHorizontal = _ImagingResampleHorizontal_16bpc;
+        ResampleVertical = _ImagingResampleVertical_16bpc;
     } else if (imIn->image8) {
         ResampleHorizontal = _ImagingResampleHorizontal_8bpc;
         ResampleVertical = _ImagingResampleVertical_8bpc;
