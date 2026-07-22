@@ -32,6 +32,7 @@
 
 #include "Imaging.h"
 #include "Convert.h"
+#include "PcxDecode.h"
 
 #define R 0
 #define G 1
@@ -545,37 +546,6 @@ unpackP4(UINT8 *out, const UINT8 *in, int pixels) {
                 *out++ = (byte >> 4) & 15;
         }
         pixels -= 2;
-    }
-}
-
-static void
-unpackP2L(UINT8 *out, const UINT8 *in, int pixels) {
-    int i, j, m, s;
-    /* bit layers */
-    m = 128;
-    s = (pixels + 7) / 8;
-    for (i = j = 0; i < pixels; i++) {
-        out[i] = ((in[j] & m) ? 1 : 0) + ((in[j + s] & m) ? 2 : 0);
-        if ((m >>= 1) == 0) {
-            m = 128;
-            j++;
-        }
-    }
-}
-
-static void
-unpackP4L(UINT8 *out, const UINT8 *in, int pixels) {
-    int i, j, m, s;
-    /* bit layers (trust the optimizer ;-) */
-    m = 128;
-    s = (pixels + 7) / 8;
-    for (i = j = 0; i < pixels; i++) {
-        out[i] = ((in[j] & m) ? 1 : 0) + ((in[j + s] & m) ? 2 : 0) +
-                 ((in[j + 2 * s] & m) ? 4 : 0) + ((in[j + 3 * s] & m) ? 8 : 0);
-        if ((m >>= 1) == 0) {
-            m = 128;
-            j++;
-        }
     }
 }
 
