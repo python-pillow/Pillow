@@ -10,7 +10,7 @@ FREE_THREADED_BUILD = bool(sysconfig.get_config_var("Py_GIL_DISABLED"))
 
 gil_enabled_at_start = True
 if FREE_THREADED_BUILD:
-    gil_enabled_at_start = sys._is_gil_enabled()  # type: ignore[attr-defined]
+    gil_enabled_at_start = sys._is_gil_enabled()  # type: ignore[attr-defined,unused-ignore]
 
 
 def pytest_report_header(config: pytest.Config) -> str:
@@ -28,7 +28,7 @@ def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter) -> None:
     if (
         FREE_THREADED_BUILD
         and not gil_enabled_at_start
-        and sys._is_gil_enabled()  # type: ignore[attr-defined]
+        and sys._is_gil_enabled()  # type: ignore[attr-defined,unused-ignore]
     ):
         tr = terminalreporter
         tr.ensure_newline()

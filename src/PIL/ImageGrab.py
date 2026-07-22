@@ -79,7 +79,7 @@ def grab(
                         scale = 1 if scale_down else 2
                         im_cropped = im.resize(
                             ((right - left) * scale, (bottom - top) * scale),
-                            box=tuple(coord * 2 for coord in bbox),
+                            box=(left * 2, top * 2, right * 2, bottom * 2),
                         )
                     else:
                         im_cropped = im.crop(bbox)
