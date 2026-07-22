@@ -9,7 +9,7 @@ import tempfile
 import warnings
 from pathlib import Path
 from types import ModuleType
-from typing import IO, Any
+from typing import IO
 
 import pytest
 
@@ -196,17 +196,6 @@ class TestImage:
 
         class FP(io.BytesIO):
             name: Path
-
-            if sys.version_info >= (3, 12):
-                from collections.abc import Buffer
-
-                def write(self, data: Buffer) -> int:
-                    return len(bytes(data))
-
-            else:
-
-                def write(self, data: Any) -> int:
-                    return len(data)
 
         fp = FP()
         fp.name = temp_file
