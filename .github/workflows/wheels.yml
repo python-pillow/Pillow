@@ -19,7 +19,7 @@ on:
       - ".github/generate-sbom.py"
       - ".github/workflows/wheels*"
       - "pyproject.toml"
-      - "setup.py"
+      - "_custom_build/pillow_ext.py"
       - "wheels/*"
       - "winbuild/build_prepare.py"
       - "winbuild/fribidi.cmake"
