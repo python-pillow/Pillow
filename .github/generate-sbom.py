@@ -162,7 +162,7 @@ def generate(version: str) -> dict:
             "bom-ref": f"{purl}#thirdparty/raqm",
             "type": "library",
             "name": "raqm",
-            "version": "0.10.5",
+            "version": "0.11.0",
             "description": "Complex text layout library "
             "(vendored in src/thirdparty/raqm/)",
             "licenses": [{"license": {"id": "MIT"}}],
@@ -175,15 +175,15 @@ def generate(version: str) -> dict:
             "pedigree": {
                 "ancestors": [
                     {
-                        "bom-ref": "pkg:github/HOST-Oman/libraqm@0.10.5#upstream",
+                        "bom-ref": "pkg:github/HOST-Oman/libraqm@0.11.0#upstream",
                         "type": "library",
                         "name": "raqm",
-                        "version": "0.10.5",
-                        "purl": "pkg:github/HOST-Oman/libraqm@0.10.5",
+                        "version": "0.11.0",
+                        "purl": "pkg:github/HOST-Oman/libraqm@0.11.0",
                         "externalReferences": [
                             {
                                 "type": "distribution",
-                                "url": "https://github.com/HOST-Oman/libraqm/releases/tag/v0.10.5",
+                                "url": "https://github.com/HOST-Oman/libraqm/releases/tag/v0.11.0",
                             }
                         ],
                     }
@@ -195,10 +195,10 @@ def generate(version: str) -> dict:
                             "text": {
                                 # raqm-version.h.in → raqm-version.h:
                                 # template @RAQM_VERSION_*@ placeholders replaced
-                                # with literal 0.10.5 values; filename changed to
-                                # drop the .in suffix; minor indentation fix.
+                                # with literal 0.11.0 values; filename changed to
+                                # drop the .in suffix.
                                 "content": upstream_diff_b64(
-                                    "https://raw.githubusercontent.com/HOST-Oman/libraqm/v0.10.5/src/raqm-version.h.in",
+                                    "https://raw.githubusercontent.com/HOST-Oman/libraqm/v0.11.0/src/raqm-version.h.in",
                                     b"src/raqm-version.h.in",
                                     thirdparty / "raqm" / "raqm-version.h",
                                     b"src/raqm-version.h",
@@ -216,7 +216,7 @@ def generate(version: str) -> dict:
                                 # building without a system FriBiDi Pillow's own
                                 # fribidi-shim is used instead.
                                 "content": upstream_diff_b64(
-                                    "https://raw.githubusercontent.com/HOST-Oman/libraqm/v0.10.5/src/raqm.c",
+                                    "https://raw.githubusercontent.com/HOST-Oman/libraqm/v0.11.0/src/raqm.c",
                                     b"src/raqm.c",
                                     thirdparty / "raqm" / "raqm.c",
                                     b"src/raqm.c",
@@ -227,7 +227,7 @@ def generate(version: str) -> dict:
                     },
                 ],
                 "notes": (
-                    "Vendored from upstream HOST-Oman/libraqm v0.10.5 with two "
+                    "Vendored from upstream HOST-Oman/libraqm v0.11.0 with two "
                     "Pillow-specific modifications: (1) raqm-version.h.in was "
                     "pre-processed into raqm-version.h with version placeholders "
                     "replaced by literal values; (2) raqm.c wraps the <fribidi.h> "
