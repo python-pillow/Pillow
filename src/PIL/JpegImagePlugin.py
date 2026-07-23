@@ -878,6 +878,10 @@ def jpeg_factory(
     return im
 
 
+def _supported_modes() -> list[str]:
+    return ["RGB", "CMYK", "YCbCr", "RGBX", "L", "1"]
+
+
 # ---------------------------------------------------------------------
 # Registry stuff
 

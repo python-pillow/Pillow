@@ -1556,6 +1556,10 @@ def getchunks(im: Image.Image, **params: Any) -> list[tuple[bytes, bytes, bytes]
     return chunks
 
 
+def _supported_modes() -> list[str]:
+    return ["RGB", "RGBA", "P", "I;16", "I;16B", "LA", "L", "1"]
+
+
 # --------------------------------------------------------------------
 # Registry
 
