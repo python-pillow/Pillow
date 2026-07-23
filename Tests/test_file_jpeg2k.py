@@ -230,16 +230,14 @@ def test_header_errors() -> None:
 
 
 def test_oversized_box_length() -> None:
-    # A box declaring a 64-bit length that ends beyond the maximum seekable
-    # position must be rejected instead of raising OverflowError from seek()
+    # Do not raise an OverflowError() when seeking to the end of a box
     data = (
         b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a"  # JP2 signature box
-        + struct.pack(">I4s", 1, b"\x00\x00\x00\x00")  # box with 64-bit length
-        + struct.pack(">Q", 0xFFFFFFFFFF000004)  # length beyond the seek range
+        + struct.pack(">I4s", 1, b"")  # box with 64-bit length
+        + struct.pack(">Q", 16 + 2**63)  # length beyond the seek range
     )
-    with pytest.raises(UnidentifiedImageError):
-        with Image.open(BytesIO(data)):
-            pass
+    with pytest.raises(SyntaxError, match="Box length too large"):
+        Jpeg2KImagePlugin.Jpeg2KImageFile(BytesIO(data))
 
 
 def test_layers_type(card: ImageFile.ImageFile, tmp_path: Path) -> None:
