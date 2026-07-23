@@ -234,7 +234,7 @@ def test_oversized_box_length() -> None:
     data = (
         b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a"  # JP2 signature box
         + struct.pack(">I4s", 1, b"")  # box with 64-bit length
-        + struct.pack(">Q", 16 + 2**63)  # length beyond the seek range
+        + struct.pack(">Q", 2**63 - 12)  # length beyond the seek range
     )
     with pytest.raises(SyntaxError, match="Box length too large"):
         Jpeg2KImagePlugin.Jpeg2KImageFile(BytesIO(data))
