@@ -98,6 +98,11 @@ class BoxReader:
             msg = "Invalid header length"
             raise SyntaxError(msg)
 
+        # Reject a box whose contents end beyond the maximum seekable position
+        if self.fp.tell() + lbox - hlen >= 2**63:
+            msg = "Invalid box length"
+            raise SyntaxError(msg)
+
         self.remaining_in_box = lbox - hlen
         return tbox
 

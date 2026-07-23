@@ -229,6 +229,19 @@ def test_header_errors() -> None:
             pass
 
 
+def test_oversized_box_length() -> None:
+    # A box declaring a 64-bit length that ends beyond the maximum seekable
+    # position must be rejected instead of raising OverflowError from seek()
+    data = (
+        b"\x00\x00\x00\x0cjP  \r\n\x87\n"  # JP2 signature box
+        + struct.pack(">I4s", 1, b"\x00\x00\x00\x00")  # box with 64-bit length
+        + struct.pack(">Q", 0xFFFFFFFFFF000004)  # length beyond the seek range
+    )
+    with pytest.raises(UnidentifiedImageError):
+        with Image.open(BytesIO(data)):
+            pass
+
+
 def test_layers_type(card: ImageFile.ImageFile, tmp_path: Path) -> None:
     outfile = tmp_path / "temp_layers.jp2"
     for quality_layers in [[100, 50, 10], (100, 50, 10), None]:
