@@ -83,7 +83,7 @@ class BoxReader:
     def next_box_type(self) -> bytes:
         # Skip the rest of the box if it has not been read
         if self.remaining_in_box > 0:
-            if self.remaining_in_box >= 2**63:
+            if self.fp.tell() + self.remaining_in_box >= 2**63:
                 msg = "Box length too large"
                 raise SyntaxError(msg)
             self.fp.seek(self.remaining_in_box, os.SEEK_CUR)
