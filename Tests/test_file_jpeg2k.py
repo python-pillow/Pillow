@@ -240,6 +240,17 @@ def test_oversized_box_length() -> None:
         Jpeg2KImagePlugin.Jpeg2KImageFile(BytesIO(data))
 
 
+def test_oversized_box_length_when_reading() -> None:
+    # Do not raise an OverflowError() when reading the contents of a box
+    data = (
+        b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a"  # JP2 signature box
+        + struct.pack(">I4s", 1, b"jp2h")  # box read into with a 64-bit length
+        + struct.pack(">Q", 16 + 2**63)  # length whose contents overflow fp.read()
+    )
+    with pytest.raises(SyntaxError, match="Box length too large"):
+        Jpeg2KImagePlugin.Jpeg2KImageFile(BytesIO(data))
+
+
 def test_layers_type(card: ImageFile.ImageFile, tmp_path: Path) -> None:
     outfile = tmp_path / "temp_layers.jp2"
     for quality_layers in [[100, 50, 10], (100, 50, 10), None]:

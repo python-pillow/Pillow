@@ -83,9 +83,6 @@ class BoxReader:
     def next_box_type(self) -> bytes:
         # Skip the rest of the box if it has not been read
         if self.remaining_in_box > 0:
-            if self.fp.tell() + self.remaining_in_box >= 2**63:
-                msg = "Box length too large"
-                raise SyntaxError(msg)
             self.fp.seek(self.remaining_in_box, os.SEEK_CUR)
         self.remaining_in_box = -1
 
@@ -99,6 +96,12 @@ class BoxReader:
 
         if lbox < hlen or not self._can_read(lbox - hlen):
             msg = "Invalid header length"
+            raise SyntaxError(msg)
+
+        # Reject a box whose contents would extend beyond the maximum position
+        # that can be sought or read, before it is stored and later consumed
+        if self.fp.tell() + lbox - hlen >= 2**63:
+            msg = "Box length too large"
             raise SyntaxError(msg)
 
         self.remaining_in_box = lbox - hlen
