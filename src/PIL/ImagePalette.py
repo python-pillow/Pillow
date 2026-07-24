@@ -62,10 +62,18 @@ class ImagePalette:
     @property
     def colors(self) -> dict[tuple[int, ...], int]:
         if self._colors is None:
+            palette = self.palette
+            if self.rawmode:
+                from . import Image
+
+                im = Image.core.new("P", (0, 0))
+                im.putpalette(self.mode, self.rawmode, palette)
+                palette = im.getpalette(self.mode, self.mode)
+
             mode_len = len(self.mode)
             self._colors = {}
-            for i in range(0, len(self.palette), mode_len):
-                color = tuple(self.palette[i : i + mode_len])
+            for i in range(0, len(palette), mode_len):
+                color = tuple(palette[i : i + mode_len])
                 if color in self._colors:
                     continue
                 self._colors[color] = i // mode_len

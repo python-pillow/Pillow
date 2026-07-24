@@ -15,6 +15,20 @@ def test_sanity() -> None:
     assert len(palette.colors) == 256
 
 
+def test_colors_rawmode() -> None:
+    palette = ImagePalette.raw(
+        "BGRX",
+        bytes.fromhex("00000000ffffff000000ff0000ff0000ff000000"),
+    )
+    assert palette.colors == {
+        (0, 0, 0): 0,
+        (255, 255, 255): 1,
+        (255, 0, 0): 2,
+        (0, 255, 0): 3,
+        (0, 0, 255): 4,
+    }
+
+
 def test_reload() -> None:
     with Image.open("Tests/images/hopper.gif") as im:
         original = im.copy()
