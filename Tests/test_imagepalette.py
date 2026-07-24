@@ -18,7 +18,7 @@ def test_sanity() -> None:
 def test_colors_rawmode() -> None:
     palette = ImagePalette.raw(
         "BGRX",
-        bytes.fromhex("00000000ffffff000000ff0000ff0000ff000000"),
+        (0, 0, 0, 0, 255, 255, 255, 0, 0, 0, 255, 0, 0, 255, 0, 0, 255, 0, 0, 0),
     )
     assert palette.colors == {
         (0, 0, 0): 0,
