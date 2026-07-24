@@ -66,11 +66,9 @@ class ImagePalette:
             if self.rawmode:
                 from . import Image
 
-                image = Image.new("P", (1, 1))
-                image.putpalette(palette, self.rawmode)
-                converted_palette = image.getpalette(self.mode)
-                assert converted_palette is not None
-                palette = converted_palette
+                im = Image.core.new("P", (0, 0))
+                im.putpalette(self.mode, self.rawmode, palette)
+                palette = im.getpalette(self.mode, self.mode)
 
             mode_len = len(self.mode)
             self._colors = {}
