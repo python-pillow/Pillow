@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import struct
 import tempfile
 import warnings
 from io import BytesIO
@@ -177,3 +178,22 @@ def test_odd_size() -> None:
     data.seek(0)
     with Image.open(data) as im2:
         assert_image_equal(im, im2)
+
+
+def test_seek_decompression_bomb() -> None:
+    with open(TEST_FILE, "rb") as fp:
+        data = fp.read()
+    # istack
+    first_frame = data[: 23 * 4] + struct.pack("<f", 1) + data[24 * 4 :]
+    # frame count
+    first_frame = first_frame[: 25 * 4] + struct.pack("<f", 2) + first_frame[26 * 4 :]
+
+    # width
+    second_frame = data[: 11 * 4] + struct.pack("<f", 65535) + data[12 * 4 :]
+    # height
+    second_frame = (
+        second_frame[: 1 * 4] + struct.pack("<f", 65535) + second_frame[2 * 4 :]
+    )
+    with Image.open(BytesIO(first_frame + b"\x00" * 1024 + second_frame)) as im:
+        with pytest.raises(Image.DecompressionBombError):
+            im.seek(1)
