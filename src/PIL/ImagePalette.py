@@ -63,7 +63,7 @@ class ImagePalette:
     def colors(self) -> dict[tuple[int, ...], int]:
         if self._colors is None:
             palette = self.palette
-            if self.rawmode:
+            if self.rawmode and self.rawmode != self.mode:
                 from . import Image
 
                 im = Image.core.new("P", (0, 0))
