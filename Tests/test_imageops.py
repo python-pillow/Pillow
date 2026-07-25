@@ -423,6 +423,32 @@ def test_colorize_3color_offset() -> None:
     )
 
 
+def test_colorize_invalid_mode() -> None:
+    with pytest.raises(ValueError, match="mode must be L, not RGB"):
+        ImageOps.colorize(hopper("RGB"), "black", "white")
+
+
+@pytest.mark.parametrize(("blackpoint", "whitepoint"), ((-1, 255), (0, 256), (200, 50)))
+def test_colorize_invalid_points(blackpoint: int, whitepoint: int) -> None:
+    with pytest.raises(ValueError, match="blackpoint and whitepoint must satisfy"):
+        ImageOps.colorize(
+            hopper("L"), "black", "white", blackpoint=blackpoint, whitepoint=whitepoint
+        )
+
+
+def test_colorize_invalid_midpoint() -> None:
+    with pytest.raises(ValueError, match="midpoint must satisfy"):
+        ImageOps.colorize(
+            hopper("L"),
+            "black",
+            "white",
+            mid="blue",
+            blackpoint=0,
+            midpoint=200,
+            whitepoint=100,
+        )
+
+
 def test_exif_transpose() -> None:
     exts = [".jpg"]
     if features.check("webp"):
