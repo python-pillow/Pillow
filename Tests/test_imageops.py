@@ -428,7 +428,7 @@ def test_colorize_invalid_mode() -> None:
         ImageOps.colorize(hopper("RGB"), "black", "white")
 
 
-@pytest.mark.parametrize(("blackpoint", "whitepoint"), ((-1, 255), (0, 256), (200, 50)))
+@pytest.mark.parametrize("blackpoint, whitepoint", ((-1, 255), (0, 256), (200, 50)))
 def test_colorize_invalid_points(blackpoint: int, whitepoint: int) -> None:
     with pytest.raises(ValueError, match="blackpoint and whitepoint must satisfy"):
         ImageOps.colorize(
