@@ -430,22 +430,23 @@ def test_colorize_invalid_mode() -> None:
 
 @pytest.mark.parametrize("blackpoint, whitepoint", ((-1, 255), (0, 256), (200, 50)))
 def test_colorize_invalid_points(blackpoint: int, whitepoint: int) -> None:
-    with pytest.raises(ValueError, match="blackpoint and whitepoint must satisfy"):
+    with pytest.raises(ValueError, match="blackpoint and whitepoint must each be"):
         ImageOps.colorize(
             hopper("L"), "black", "white", blackpoint=blackpoint, whitepoint=whitepoint
         )
 
 
-def test_colorize_invalid_midpoint() -> None:
-    with pytest.raises(ValueError, match="midpoint must satisfy"):
+@pytest.mark.parametrize("midpoint", (100, 200))
+def test_colorize_invalid_midpoint(midpoint: int) -> None:
+    with pytest.raises(ValueError, match="midpoint must be between"):
         ImageOps.colorize(
             hopper("L"),
             "black",
             "white",
             mid="blue",
-            blackpoint=0,
-            midpoint=200,
-            whitepoint=100,
+            blackpoint=125,
+            midpoint=midpoint,
+            whitepoint=175,
         )
 
 

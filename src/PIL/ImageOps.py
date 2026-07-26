@@ -205,12 +205,12 @@ def colorize(
         raise ValueError(msg)
     if not 0 <= blackpoint <= whitepoint <= 255:
         msg = (
-            "blackpoint and whitepoint must satisfy"
-            " 0 <= blackpoint <= whitepoint <= 255"
+            "blackpoint and whitepoint must each be between 0 and 255, "
+            "with blackpoint less than or equal to whitepoint"
         )
         raise ValueError(msg)
     if mid is not None and not blackpoint <= midpoint <= whitepoint:
-        msg = "midpoint must satisfy blackpoint <= midpoint <= whitepoint"
+        msg = "midpoint must be between blackpoint and whitepoint"
         raise ValueError(msg)
 
     # Define colors from arguments
