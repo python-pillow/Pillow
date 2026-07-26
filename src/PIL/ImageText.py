@@ -5,7 +5,10 @@ import re
 from typing import AnyStr, Generic, NamedTuple
 
 from . import ImageFont
-from ._typing import _Ink
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from ._typing import _Ink
 
 
 class _Line(NamedTuple):

@@ -4,8 +4,6 @@ import os
 import re
 import warnings
 from io import BytesIO
-from pathlib import Path
-from types import ModuleType
 from typing import Any, cast
 
 import pytest
@@ -34,6 +32,11 @@ from .helper import (
     timeout_unless_slower_valgrind,
 )
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from types import ModuleType
+
 ElementTree: ModuleType | None
 try:
     from defusedxml import ElementTree
@@ -52,7 +55,7 @@ class TestFileJpeg:
         im.save(out, "JPEG", **options)
         test_bytes = out.tell()
         out.seek(0)
-        reloaded = cast(JpegImagePlugin.JpegImageFile, Image.open(out))
+        reloaded = cast("JpegImagePlugin.JpegImageFile", Image.open(out))
         return reloaded, test_bytes
 
     def roundtrip(

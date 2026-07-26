@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import io
-from pathlib import Path
 
 import pytest
 
@@ -15,6 +14,10 @@ from .helper import (
     assert_image_similar_tofile,
     hopper,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))

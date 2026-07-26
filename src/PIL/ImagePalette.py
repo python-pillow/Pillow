@@ -18,13 +18,14 @@
 from __future__ import annotations
 
 import array
-from collections.abc import Sequence
-from typing import IO
 
 from . import GimpGradientFile, GimpPaletteFile, ImageColor, PaletteFile
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import IO
+
     from . import Image
 
 

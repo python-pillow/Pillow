@@ -28,12 +28,15 @@ from __future__ import annotations
 
 import io
 import logging
-from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
 from ._binary import o8
 from ._binary import o16le as o16
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 logger = logging.getLogger(__name__)
 
