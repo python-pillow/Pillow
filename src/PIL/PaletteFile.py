@@ -14,9 +14,11 @@
 #
 from __future__ import annotations
 
-from typing import IO
-
 from ._binary import o8
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 
 class PaletteFile:

@@ -2,10 +2,7 @@ from __future__ import annotations
 
 import os
 import warnings
-from collections.abc import Generator
 from io import BytesIO
-from pathlib import Path
-from types import ModuleType
 
 import pytest
 
@@ -30,6 +27,12 @@ from .helper import (
     is_win32,
     timeout_unless_slower_valgrind,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
+    from types import ModuleType
 
 ElementTree: ModuleType | None
 try:

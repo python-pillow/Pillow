@@ -7,7 +7,7 @@ from typing import Any, Protocol, TypeVar
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from numbers import _IntegralLike as IntegralLike
+    from numbers import _IntegralLike as IntegralLike  # noqa: TC004
 
     try:
         import numpy.typing as npt

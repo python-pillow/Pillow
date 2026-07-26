@@ -23,9 +23,11 @@ Parse X Bitmap Distribution Format (BDF)
 
 from __future__ import annotations
 
-from typing import BinaryIO
-
 from . import FontFile, Image
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import BinaryIO
 
 
 def bdf_char(

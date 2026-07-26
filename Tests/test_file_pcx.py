@@ -9,6 +9,10 @@ from PIL import Image, ImageFile, PcxImagePlugin
 
 from .helper import assert_image_equal, hopper
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 def _roundtrip(tmp_path: Path, im: Image.Image) -> None:
     f = tmp_path / "temp.pcx"
