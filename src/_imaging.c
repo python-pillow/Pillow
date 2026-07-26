@@ -1189,9 +1189,12 @@ _getpalette(ImagingObject *self, PyObject *args) {
     ImagingShuffler pack;
 
     char *mode_name = "RGB";
-    char *rawmode_name = "RGB";
+    char *rawmode_name = NULL;
     if (!PyArg_ParseTuple(args, "|ss", &mode_name, &rawmode_name)) {
         return NULL;
+    }
+    if (rawmode_name == NULL) {
+        rawmode_name = mode_name;
     }
 
     if (!self->image->palette) {
