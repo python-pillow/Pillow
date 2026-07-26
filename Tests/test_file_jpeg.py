@@ -773,7 +773,7 @@ class TestFileJpeg:
             data = fp.read()
 
         # Change the number of images to three, without adding a third MP entry
-        data = data[:6048] + struct.pack(">I", 3) + data[6052:]
+        data = data[:6048] + struct.pack(">L", 3) + data[6052:]
 
         with pytest.warns(UserWarning, match="malformed MPO file"):
             with Image.open(BytesIO(data)) as im:
