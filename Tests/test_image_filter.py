@@ -210,6 +210,17 @@ def test_consistency_5x5(mode: str) -> None:
             assert_image_equal(source.filter(kernel), reference)
 
 
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_consistency_i16_high_byte(mode: str) -> None:
+    # Exercise filters with a 16bpc image that has content in the high byte, too.
+    im = Image.new(mode, (8, 8), 1000)
+    # Ensure repeated smoothing retains the exact same color value,
+    # rather than drifting due to rounding errors.
+    for _ in range(5):
+        im = im.filter(ImageFilter.SMOOTH)
+        assert im.getpixel((4, 4)) == 1000
+
+
 @pytest.mark.parametrize(
     "radius",
     (

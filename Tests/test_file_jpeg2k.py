@@ -33,7 +33,7 @@ pytestmark = skip_unless_feature("jpg_2000")
 
 
 @pytest.fixture
-def card() -> Generator[ImageFile.ImageFile, None, None]:
+def card() -> Generator[ImageFile.ImageFile]:
     with Image.open("Tests/images/test-card.png") as im:
         im.load()
     try:
@@ -227,6 +227,19 @@ def test_header_errors() -> None:
     with pytest.raises(OSError):
         with Image.open("Tests/images/expected_to_read.jp2"):
             pass
+
+
+@pytest.mark.parametrize("tbox", (b"", b"jp2h"))
+def test_oversized_box_length(tbox: bytes) -> None:
+    # Do not raise an OverflowError() when seeking to the end of a box,
+    # or when reading the contents of a box
+    data = (
+        b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a"  # JP2 signature box
+        + struct.pack(">I4s", 1, tbox)  # box with 64-bit length
+        + struct.pack(">Q", 2**63 - 12)  # oversized length
+    )
+    with pytest.raises(SyntaxError, match="Box length too large"):
+        Jpeg2KImagePlugin.Jpeg2KImageFile(BytesIO(data))
 
 
 def test_layers_type(card: ImageFile.ImageFile, tmp_path: Path) -> None:
