@@ -68,7 +68,7 @@ class ImagePalette:
 
                 im = Image.core.new("P", (0, 0))
                 im.putpalette(self.mode, self.rawmode, bytes(palette))
-                palette = im.getpalette(self.mode, self.mode)
+                palette = im.getpalette(self.mode)
 
             mode_len = len(self.mode)
             self._colors = {}
