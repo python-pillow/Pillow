@@ -449,13 +449,9 @@ def _save(
     elif im.mode == "L":
         palette = b"".join(o8(i) * 3 + b"\x00" for i in range(256))
     elif im.mode == "P":
-        palette = im.im.getpalette("RGB", "BGRX")
+        # Colors used should not be zero, as that is treated as the maximum
+        palette = im.im.getpalette("RGB", "BGRX") or b"\x00\x00\x00\x00"
         colors = len(palette) // 4
-        if colors == 0:
-            # biClrUsed=0 reads as 256 entries, skipping the offset past a table
-            # that was never written
-            palette = b"\x00\x00\x00\x00"
-            colors = 1
     else:
         palette = None
 
