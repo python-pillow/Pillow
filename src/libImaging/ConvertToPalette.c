@@ -117,7 +117,8 @@ topalette_colour_floyd_steinberg(
     Imaging imOut, Imaging imIn, ImagingPalette palette, ExactColorHash ech
 ) {
     int alpha = imOut->mode == IMAGING_MODE_PA;
-    int *errors = calloc(imIn->xsize + 1, sizeof(int) * 3);
+    int xsize = imIn->xsize, ysize = imIn->ysize;
+    int *errors = calloc(xsize + 1, sizeof(int) * 3);
     if (!errors) {
         ImagingError_MemoryError();  // Sets the exception
         return 1;
@@ -127,19 +128,20 @@ topalette_colour_floyd_steinberg(
 
     ImagingSectionCookie cookie;
     ImagingSectionEnter(&cookie);
-    for (int y = 0; y < imIn->ysize; y++) {
+    for (int y = 0; y < ysize; y++) {
         int r, r0, r1, r2;
         int g, g0, g1, g2;
         int b, b0, b1, b2;
-        UINT8 *in = (UINT8 *)imIn->image[y];
-        UINT8 *out = alpha ? (UINT8 *)imOut->image32[y] : imOut->image8[y];
+        // Restrict safe: we know imOut and imIn to be different images
+        UINT8 *restrict in = (UINT8 *)imIn->image[y];
+        UINT8 *restrict out = alpha ? (UINT8 *)imOut->image32[y] : imOut->image8[y];
         int *e = errors;
 
         r = r0 = r1 = 0;
         g = g0 = g1 = 0;
         b = b0 = b1 = b2 = 0;
 
-        for (int x = 0; x < imIn->xsize; x++, in += 4) {
+        for (int x = 0; x < xsize; x++, in += 4) {
             int d2;
 
             r = CLIP8(in[0] + (r + e[3 + 0]) / 16);
@@ -156,8 +158,9 @@ topalette_colour_floyd_steinberg(
                 palette_index = cache[0];
             }
             if (alpha) {
-                out[x * 4] = out[x * 4 + 1] = out[x * 4 + 2] = (UINT8)palette_index;
-                out[x * 4 + 3] = 255;
+                UINT32 v =
+                    MAKE_UINT32(palette_index, palette_index, palette_index, 255);
+                memcpy(out + x * 4, &v, sizeof(v));
             } else {
                 out[x] = (UINT8)palette_index;
             }
@@ -215,11 +218,13 @@ topalette_colour_closest(
     int alpha = imOut->mode == IMAGING_MODE_PA;
     ImagingSectionCookie cookie;
     ImagingSectionEnter(&cookie);
-    for (int y = 0; y < imIn->ysize; y++) {
-        UINT8 *in = (UINT8 *)imIn->image[y];
-        UINT8 *out = alpha ? (UINT8 *)imOut->image32[y] : imOut->image8[y];
+    int xsize = imIn->xsize, ysize = imIn->ysize;
+    for (int y = 0; y < ysize; y++) {
+        // Restrict safe: we know imOut and imIn to be different images
+        UINT8 *restrict in = (UINT8 *)imIn->image[y];
+        UINT8 *restrict out = alpha ? (UINT8 *)imOut->image32[y] : imOut->image8[y];
 
-        for (int x = 0; x < imIn->xsize; x++, in += 4) {
+        for (int x = 0; x < xsize; x++, in += 4) {
             int r = in[0], g = in[1], b = in[2];
             int palette_index = find_exact_color(ech, r, g, b);
             if (palette_index < 0) {
@@ -231,8 +236,9 @@ topalette_colour_closest(
                 palette_index = cache[0];
             }
             if (alpha) {
-                out[x * 4] = out[x * 4 + 1] = out[x * 4 + 2] = (UINT8)palette_index;
-                out[x * 4 + 3] = 255;
+                UINT32 v =
+                    MAKE_UINT32(palette_index, palette_index, palette_index, 255);
+                memcpy(out + x * 4, &v, sizeof(v));
             } else {
                 out[x] = (UINT8)palette_index;
             }
