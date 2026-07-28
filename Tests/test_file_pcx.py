@@ -80,13 +80,14 @@ def test_invalid_file() -> None:
 
 
 @pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
-def test_odd(tmp_path: Path, mode: str) -> None:
+@pytest.mark.parametrize("size", (3, 511))
+def test_odd(tmp_path: Path, mode: str, size: int) -> None:
     # See issue #523, odd sized images should have a stride that's even.
     # Not that ImageMagick or GIMP write PCX that way.
     # We were not handling properly.
     # larger, odd sized images are better here to ensure that
     # we handle interrupted scan lines properly.
-    _roundtrip(tmp_path, hopper(mode).resize((511, 511)))
+    _roundtrip(tmp_path, hopper(mode).resize((size, size)))
 
 
 def test_odd_read() -> None:
@@ -115,14 +116,6 @@ def test_1px_width(tmp_path: Path) -> None:
     assert px is not None
     for y in range(256):
         px[0, y] = y
-    _roundtrip(tmp_path, im)
-
-
-def test_rgb_odd_width(tmp_path: Path) -> None:
-    # An RGB (multi-plane) width whose even-padded stride differs from the
-    # width must still separate the colour planes correctly. Distinct channel
-    # values expose a misaligned split.
-    im = Image.new("RGB", (3, 3), (0x11, 0x22, 0x33))
     _roundtrip(tmp_path, im)
 
 
