@@ -40,7 +40,7 @@ ImagingPaletteNew(const ModeID mode) {
     palette->mode = mode;
 
     palette->size = 0;
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < IMAGING_PALETTE_MAX_ENTRIES; i++) {
         palette->palette[i * 4 + 3] = 255; /* opaque */
     }
 
@@ -153,7 +153,7 @@ ImagingPaletteDelete(ImagingPalette palette) {
 void
 ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b) {
     int i, j;
-    unsigned int dmin[256], dmax;
+    unsigned int dmin[IMAGING_PALETTE_MAX_ENTRIES], dmax;
     int r0, g0, b0;
     int r1, g1, b1;
     int rc, gc, bc;
