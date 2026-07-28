@@ -912,6 +912,9 @@ class ImageFileDirectory_v2(_IFDv2Base):
                     here = fp.tell()
                     (offset,) = self._unpack("Q" if self._bigtiff else "L", data)
                     msg += f" Tag Location: {here} - Data Location: {offset}"
+                    if offset >= 2**63:
+                        warnings.warn("Tag offset too large")
+                        continue
                     fp.seek(offset)
                     data = ImageFile._safe_read(fp, size)
                     fp.seek(here)

@@ -204,12 +204,18 @@ def colorize(
     :return: An image.
     """
 
-    # Initial asserts
-    assert image.mode == "L"
-    if mid is None:
-        assert 0 <= blackpoint <= whitepoint <= 255
-    else:
-        assert 0 <= blackpoint <= midpoint <= whitepoint <= 255
+    if image.mode != "L":
+        msg = f"mode must be L, not {image.mode}"
+        raise ValueError(msg)
+    if not 0 <= blackpoint <= whitepoint <= 255:
+        msg = (
+            "blackpoint and whitepoint must each be between or equal to 0 and 255, "
+            "with blackpoint less than or equal to whitepoint"
+        )
+        raise ValueError(msg)
+    if mid is not None and not blackpoint <= midpoint <= whitepoint:
+        msg = "midpoint must be between or equal to blackpoint and whitepoint"
+        raise ValueError(msg)
 
     # Define colors from arguments
     rgb_black = cast("Sequence[int]", _color(black, "RGB"))

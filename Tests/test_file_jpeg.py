@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import re
+import struct
 import warnings
 from io import BytesIO
 from typing import Any, cast
@@ -768,6 +769,18 @@ class TestFileJpeg:
         assert im.format == "JPEG"
 
         im.close()
+
+    def test_mp_entry_count_too_high(self) -> None:
+        """Treat an MPO with fewer MP entries than images as JPEG"""
+        with open("Tests/images/sugarshack.mpo", "rb") as fp:
+            data = fp.read()
+
+        # Change the number of images to three, without adding a third MP entry
+        data = data[:6048] + struct.pack(">L", 3) + data[6052:]
+
+        with pytest.warns(UserWarning, match="malformed MPO file"):
+            with Image.open(BytesIO(data)) as im:
+                assert im.format == "JPEG"
 
     @pytest.mark.parametrize("mode", ("1", "L", "RGB", "RGBX", "CMYK", "YCbCr"))
     def test_save_correct_modes(self, mode: str) -> None:
