@@ -195,6 +195,9 @@ topalette(
         /* FIXME: make user configurable */
         if (imIn->bands == 1) {
             palette = ImagingPaletteNew(IMAGING_MODE_RGB);
+            if (!palette) {  // Exception has been set by ImagingPaletteNew
+                return NULL;
+            }
 
             palette->size = 256;
             for (int i = 0; i < 256; i++) {
@@ -220,6 +223,9 @@ topalette(
 
     ImagingPaletteDelete(imOut->palette);
     imOut->palette = ImagingPaletteDuplicate(palette);
+    if (!imOut->palette) {  // Exception has been set by ImagingPaletteDuplicate
+        goto done;
+    }
 
     if (imIn->bands == 1) {
         topalette_grayscale(imOut, imIn);
