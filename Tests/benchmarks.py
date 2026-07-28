@@ -634,5 +634,6 @@ def test_quantize_to_palette(
     else:
         result = bench(lambda: im._new(im.im.convert(output_mode, dither, palette.im)))
     assert result.mode == output_mode
-
+    if palette_type == "exact":
+        assert result.convert("RGB").tobytes() == im.tobytes()
     benchmark_save(result)
