@@ -536,3 +536,75 @@ def test_quantize(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> 
     bench.extra_info["label"] = [f"quantize {mode}"]
     result = bench(im.quantize, 256)
     assert result.mode == "P"
+
+
+@pytest.mark.benchmark(group="quantize")
+@pytest.mark.parametrize("output_mode", ["P", "PA"])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_quantize_grayscale_to_palette(
+    bench: BenchmarkFixture,
+    output_mode: str,
+    size: tuple[int, int],
+) -> None:
+    im = make_pillow_image("L", size)
+    bench.extra_info["label"] = [f"quantize L to {output_mode}"]
+    result = bench(im.convert, output_mode)
+    assert result.mode == output_mode
+    assert result.convert("L").tobytes() == im.tobytes()
+
+
+@pytest.mark.benchmark(group="quantize")
+@pytest.mark.parametrize(
+    "dither",
+    [Image.Dither.NONE, Image.Dither.FLOYDSTEINBERG],
+    ids=["none", "floyd-steinberg"],
+)
+@pytest.mark.parametrize("output_mode", ["P", "PA"])
+@pytest.mark.parametrize(
+    "source_type",
+    [
+        "synthetic",
+        *(pytest.param(image, id=f"{image.stem}") for image in PATHS),
+    ],
+)
+@pytest.mark.parametrize("palette_type", ["exact", "grayscale", "web"])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_quantize_to_palette(
+    bench: BenchmarkFixture,
+    benchmark_save: BenchmarkSave,
+    dither: Image.Dither,
+    output_mode: str,
+    source_type: str | pathlib.Path,
+    palette_type: str,
+    size: tuple[int, int],
+) -> None:
+    if isinstance(source_type, pathlib.Path):
+        im = Image.open(source_type).convert("RGB").resize(size)
+    elif source_type == "synthetic":
+        im = make_pillow_image("RGB", size)
+    if palette_type == "exact":
+        palette = im.quantize(256)
+        im = palette.convert("RGB")
+    elif palette_type == "web":
+        palette = Image.new("RGB", (1, 1)).convert(
+            "P",
+            palette=Image.Palette.WEB,
+            dither=Image.Dither.NONE,
+        )
+    else:
+        palette = Image.new("P", (1, 1))
+        palette.putpalette(tuple(channel for i in range(256) for channel in (i, i, i)))
+
+    bench.extra_info["label"] = [
+        (
+            f"{source_type} RGB to {output_mode}, "
+            f"{palette_type} palette, "
+            f"{dither.name.lower()} dither"
+        ),
+    ]
+    if output_mode == "P":
+        result = bench(im.quantize, palette=palette, dither=dither)
+    else:
+        result = bench(lambda: im._new(im.im.convert(output_mode, dither, palette.im)))
+    assert result.mode == output_mode
+    benchmark_save(result)
