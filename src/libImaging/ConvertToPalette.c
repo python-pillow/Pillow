@@ -11,6 +11,64 @@
 
 #include "Imaging.h"
 
+// The hash will always have up to 50% fill factor.
+#define EXACT_COLOR_HASH_SIZE (IMAGING_PALETTE_MAX_ENTRIES * 2)
+
+struct ExactColorHashInstance {
+    UINT32 keys[EXACT_COLOR_HASH_SIZE];
+    UINT8 values[EXACT_COLOR_HASH_SIZE];
+};
+typedef struct ExactColorHashInstance *ExactColorHash;
+
+static UINT32
+exact_color_key(int r, int g, int b) {
+    UINT32 key = ((UINT32)r << 16) | ((UINT32)g << 8) | (UINT32)b;
+    // Zero will mean "empty slot", so increment all keys by 1.
+    return key + 1;
+}
+
+static UINT32
+exact_color_hash(UINT32 key) {
+    // Fibonacci hashing distributes the 25-bit keys across the 512-entry table.
+    return (key * 2654435761U) >> 23;
+}
+
+static void
+prepare_exact_color_hash(ImagingPalette palette, ExactColorHash ech) {
+    memset(ech->keys, 0, EXACT_COLOR_HASH_SIZE * sizeof(UINT32));
+    for (int i = 0; i < palette->size; i++) {
+        UINT32 key = exact_color_key(
+            palette->palette[i * 4],
+            palette->palette[i * 4 + 1],
+            palette->palette[i * 4 + 2]
+        );
+        UINT32 hash = exact_color_hash(key);
+        // Linear probe for an empty slot.
+        // Given the guarantee of at most 50% fill factor (see EXACT_COLOR_HASH_SIZE),
+        // this will always terminate.
+        while (ech->keys[hash] != 0 && ech->keys[hash] != key) {
+            hash = (hash + 1) % EXACT_COLOR_HASH_SIZE;
+        }
+        if (ech->keys[hash] == 0) {
+            ech->keys[hash] = key;
+            ech->values[hash] = (UINT8)i;
+        }
+    }
+}
+
+static int
+find_exact_color(const ExactColorHash ech, int r, int g, int b) {
+    UINT32 key = exact_color_key(r, g, b);
+    UINT32 hash = exact_color_hash(key);
+    while (ech->keys[hash] != 0) {
+        if (ech->keys[hash] == key) {
+            return ech->values[hash];
+        }
+        hash = (hash + 1) % EXACT_COLOR_HASH_SIZE;
+    }
+    return -1;
+}
+
 #if defined(_MSC_VER)
 #pragma optimize("", off)
 #endif
@@ -55,7 +113,9 @@ topalette_grayscale(Imaging imOut, Imaging imIn) {
  * @return 0 on success, 1 on memory allocation failure (PyErr is set).
  */
 static int
-topalette_colour_floyd_steinberg(Imaging imOut, Imaging imIn, ImagingPalette palette) {
+topalette_colour_floyd_steinberg(
+    Imaging imOut, Imaging imIn, ImagingPalette palette, ExactColorHash ech
+) {
     int alpha = imOut->mode == IMAGING_MODE_PA;
     int *errors = calloc(imIn->xsize + 1, sizeof(int) * 3);
     if (!errors) {
@@ -81,27 +141,30 @@ topalette_colour_floyd_steinberg(Imaging imOut, Imaging imIn, ImagingPalette pal
 
         for (int x = 0; x < imIn->xsize; x++, in += 4) {
             int d2;
-            INT16 *cache;
 
             r = CLIP8(in[0] + (r + e[3 + 0]) / 16);
             g = CLIP8(in[1] + (g + e[3 + 1]) / 16);
             b = CLIP8(in[2] + (b + e[3 + 2]) / 16);
 
-            /* get closest colour */
-            cache = &ImagingPaletteCache(palette, r, g, b);
-            if (cache[0] == 0x100) {
-                ImagingPaletteCacheUpdate(palette, r, g, b);
+            int palette_index = find_exact_color(ech, r, g, b);
+            if (palette_index < 0) {
+                /* get closest colour */
+                INT16 *cache = &ImagingPaletteCache(palette, r, g, b);
+                if (cache[0] == 0x100) {
+                    ImagingPaletteCacheUpdate(palette, r, g, b);
+                }
+                palette_index = cache[0];
             }
             if (alpha) {
-                out[x * 4] = out[x * 4 + 1] = out[x * 4 + 2] = (UINT8)cache[0];
+                out[x * 4] = out[x * 4 + 1] = out[x * 4 + 2] = (UINT8)palette_index;
                 out[x * 4 + 3] = 255;
             } else {
-                out[x] = (UINT8)cache[0];
+                out[x] = (UINT8)palette_index;
             }
 
-            r -= (int)palette->palette[cache[0] * 4];
-            g -= (int)palette->palette[cache[0] * 4 + 1];
-            b -= (int)palette->palette[cache[0] * 4 + 2];
+            r -= (int)palette->palette[palette_index * 4];
+            g -= (int)palette->palette[palette_index * 4 + 1];
+            b -= (int)palette->palette[palette_index * 4 + 2];
 
             /* propagate errors (don't ask ;-) */
             r2 = r;
@@ -146,32 +209,32 @@ topalette_colour_floyd_steinberg(Imaging imOut, Imaging imIn, ImagingPalette pal
  * colour. imOut and imIn MUST be different images.
  */
 static void
-topalette_colour_closest(Imaging imOut, Imaging imIn, ImagingPalette palette) {
+topalette_colour_closest(
+    Imaging imOut, Imaging imIn, ImagingPalette palette, ExactColorHash ech
+) {
     int alpha = imOut->mode == IMAGING_MODE_PA;
     ImagingSectionCookie cookie;
     ImagingSectionEnter(&cookie);
     for (int y = 0; y < imIn->ysize; y++) {
-        int r, g, b;
         UINT8 *in = (UINT8 *)imIn->image[y];
         UINT8 *out = alpha ? (UINT8 *)imOut->image32[y] : imOut->image8[y];
 
         for (int x = 0; x < imIn->xsize; x++, in += 4) {
-            INT16 *cache;
-
-            r = in[0];
-            g = in[1];
-            b = in[2];
-
-            /* get closest colour */
-            cache = &ImagingPaletteCache(palette, r, g, b);
-            if (cache[0] == 0x100) {
-                ImagingPaletteCacheUpdate(palette, r, g, b);
+            int r = in[0], g = in[1], b = in[2];
+            int palette_index = find_exact_color(ech, r, g, b);
+            if (palette_index < 0) {
+                /* get closest colour */
+                INT16 *cache = &ImagingPaletteCache(palette, r, g, b);
+                if (cache[0] == 0x100) {
+                    ImagingPaletteCacheUpdate(palette, r, g, b);
+                }
+                palette_index = cache[0];
             }
             if (alpha) {
-                out[x * 4] = out[x * 4 + 1] = out[x * 4 + 2] = (UINT8)cache[0];
+                out[x * 4] = out[x * 4 + 1] = out[x * 4 + 2] = (UINT8)palette_index;
                 out[x * 4 + 3] = 255;
             } else {
-                out[x] = (UINT8)cache[0];
+                out[x] = (UINT8)palette_index;
             }
         }
     }
@@ -182,6 +245,7 @@ Imaging
 topalette(
     Imaging imOut, Imaging imIn, const ModeID mode, ImagingPalette inpalette, int dither
 ) {
+    int palette_is_temporary = inpalette == NULL;
     ImagingPalette palette = inpalette;
 
     /* Map L or RGB/RGBX/RGBA/RGBa to palette image */
@@ -215,10 +279,7 @@ topalette(
 
     imOut = ImagingNew2Dirty(mode, imOut, imIn);
     if (!imOut) {
-        if (palette != inpalette) {
-            ImagingPaletteDelete(palette);
-        }
-        return NULL;
+        goto done;
     }
 
     ImagingPaletteDelete(imOut->palette);
@@ -232,31 +293,34 @@ topalette(
     } else {
         /* colour image */
 
-        /* Create mapping cache */
+        // An ECH instance is only about 3 KiB; should be safe to allocate on the stack.
+        struct ExactColorHashInstance exact_color_hash;
+        prepare_exact_color_hash(palette, &exact_color_hash);
+
         if (ImagingPaletteCachePrepare(palette) < 0) {
+            // Failed allocation for cache
             ImagingDelete(imOut);
-            if (palette != inpalette) {
-                ImagingPaletteDelete(palette);
-            }
-            return NULL;
+            imOut = NULL;
+            goto done;
         }
 
         if (dither) {
-            if (topalette_colour_floyd_steinberg(imOut, imIn, palette) != 0) {
+            if (topalette_colour_floyd_steinberg(
+                    imOut, imIn, palette, &exact_color_hash
+                ) != 0) {
                 // Exception will have been set by the work function
                 ImagingDelete(imOut);
-                return NULL;
+                imOut = NULL;
+                goto done;
             }
         } else {
-            topalette_colour_closest(imOut, imIn, palette);
-        }
-        if (inpalette != palette) {
-            // If we created a temporary palette, delete the cache to free memory
-            ImagingPaletteCacheDelete(palette);
+            topalette_colour_closest(imOut, imIn, palette, &exact_color_hash);
         }
     }
 
-    if (inpalette != palette) {
+done:
+
+    if (palette_is_temporary) {
         // If we created a temporary palette, delete it to free memory
         ImagingPaletteDelete(palette);
     }
