@@ -550,13 +550,11 @@ def assert_aux_channel_preserved(
 ) -> None:
     def create_test_image() -> Image.Image:
         # set up test image with something interesting in the tested aux channel.
-        # fmt: off
         nine_grid_deltas = [
             (-1, -1), (-1, 0), (-1, 1),
             (0,  -1),  (0, 0),  (0, 1),
             (1,  -1),  (1, 0),  (1, 1),
-        ]
-        # fmt: on
+        ]  # fmt: skip
         chans = []
         bands = ImageMode.getmode(mode).bands
         for band_ndx in range(len(bands)):
