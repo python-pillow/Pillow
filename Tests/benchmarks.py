@@ -14,7 +14,7 @@ from io import BytesIO
 import pytest
 
 from PIL import Image, ImageChops, ImageFilter
-from PIL.Image import Resampling, Transpose
+from PIL.Image import Resampling, Transform, Transpose
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -345,6 +345,36 @@ def test_lut(
 
     bench.extra_info["label"] = [f"{table_size}³ table to {channels}D"]
     bench(im.filter, lut)
+
+
+@pytest.mark.benchmark(group="transform")
+@pytest.mark.parametrize(
+    "method, data",
+    [
+        (Transform.AFFINE, (1.1, 0.1, -20, 0.05, 0.95, -10)),
+        (Transform.PERSPECTIVE, (1.0, 0.1, -20, 0.05, 1.0, -10, 0.0002, 0.0001)),
+        (Transform.QUAD, (10, 20, 5, 1000, 1010, 1005, 1005, 8)),
+    ],
+    ids=["AFFINE", "PERSPECTIVE", "QUAD"],
+)
+@pytest.mark.parametrize(
+    "resample",
+    [Resampling.NEAREST, Resampling.BILINEAR, Resampling.BICUBIC],
+    ids=lambda r: r.name,
+)
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_transform(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+    method: Transform,
+    data: tuple[float, ...],
+    resample: Resampling,
+) -> None:
+    im = make_pillow_image(mode, size)
+    bench.extra_info["label"] = [method.name, resample.name]
+    bench(im.transform, size, method, data, resample)
 
 
 @pytest.mark.benchmark(group="rotate_right")
