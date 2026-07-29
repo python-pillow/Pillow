@@ -4,6 +4,7 @@ pytest-benchmark tests for Pillow features.
 
 from __future__ import annotations
 
+import hashlib
 import pathlib
 from importlib.util import find_spec
 from io import BytesIO
@@ -78,12 +79,40 @@ def bench(
 def make_pillow_image(
     mode: str,
     size: tuple[int, int],
-    pattern_offset: int = 0,
+    seed: int = 0,
 ) -> Image.Image:
-    im = Image.new("RGB", size)
-    n = im.width * im.height * 3
-    period = bytes((i + pattern_offset) % 256 for i in range(256))
-    im.frombytes((period * (n // 256 + 1))[:n])
+    """
+    Generate a synthetic test image with the given mode and size.
+    Different seeds give different final images.
+    """
+    width, height = size
+    vertical = Image.linear_gradient("L")
+    horizontal = vertical.transpose(Transpose.ROTATE_90)
+    radial = Image.radial_gradient("L")
+    base = Image.merge("RGB", (horizontal, vertical, radial)).resize(
+        size, Resampling.BILINEAR
+    )
+    # SHAKE128 gives us a predictable noise pattern.
+    noise_bytes = hashlib.shake_128(f"pillow-benchmark-{seed}".encode()).digest(
+        width * height * 3
+    )
+    noise = Image.frombytes("RGB", size, noise_bytes)
+
+    def centered_box(area_fraction: float) -> tuple[int, int, int, int]:
+        inset = (1 - area_fraction**0.5) / 2
+        return (
+            round(width * inset),
+            round(height * inset),
+            round(width * (1 - inset)),
+            round(height * (1 - inset)),
+        )
+
+    im = base
+    noise_box = centered_box(1 / 2)
+    im.paste(noise.crop(noise_box), noise_box)  # Noise in the middle
+    im.paste(tuple(noise_bytes[:3]), centered_box(1 / 6))  # Solid center
+    if seed:
+        im = ImageChops.offset(im, seed * 383, seed * 271)
     return im.convert(mode)
 
 
@@ -96,7 +125,7 @@ def test_blend(
     size: tuple[int, int],
 ) -> None:
     im1 = make_pillow_image(mode, size)
-    im2 = make_pillow_image(mode, size, pattern_offset=1024)
+    im2 = make_pillow_image(mode, size, seed=1)
     result = bench(Image.blend, im1, im2, 0.5)
     assert result.size == im1.size
 
@@ -145,7 +174,7 @@ def test_alpha_composite(
     alpha: str,
 ) -> None:
     im1 = make_pillow_image(mode, size)
-    im2 = make_pillow_image(mode, size, pattern_offset=1024)
+    im2 = make_pillow_image(mode, size, seed=1)
     if alpha == "opaque":
         im2.putalpha(255)
     elif alpha == "transparent":
@@ -407,7 +436,7 @@ def test_chops(
     op: Callable[[Image.Image, Image.Image], Image.Image],
 ) -> None:
     im1 = make_pillow_image(mode, size)
-    im2 = make_pillow_image(mode, size, pattern_offset=1024)
+    im2 = make_pillow_image(mode, size, seed=1)
     bench.extra_info["label"] = [op.__name__]
     result = bench(op, im1, im2)
     assert result.size == im1.size
