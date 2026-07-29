@@ -289,6 +289,29 @@ def test_filter(
     bench(im.filter, filter)
 
 
+@pytest.mark.benchmark(group="filter")
+@pytest.mark.parametrize(
+    "rank_filter",
+    [
+        ImageFilter.MedianFilter(3),
+        ImageFilter.MedianFilter(5),
+        ImageFilter.MinFilter(3),
+    ],
+    ids=lambda f: f"{f.name}{f.size}",
+)
+@pytest.mark.parametrize("mode", ["L", "I", "F"])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_rank_filter(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+    rank_filter: ImageFilter.RankFilter,
+) -> None:
+    im = make_pillow_image(mode, size)
+    bench.extra_info["label"] = [f"{rank_filter.name}{rank_filter.size}"]
+    bench(im.filter, rank_filter)
+
+
 @pytest.mark.benchmark(group="lut")
 @pytest.mark.parametrize(
     "channels, table_size",
