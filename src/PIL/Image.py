@@ -1252,8 +1252,8 @@ class Image:
             if new_im.mode == "P" and new_im.palette:
                 try:
                     new_im.info["transparency"] = new_im.palette.getcolor(
-                        cast("tuple[int, ...]", trns),
-                        new_im,  # trns was converted to RGB
+                        cast("tuple[int, ...]", trns),  # trns was converted to RGB
+                        new_im,
                     )
                 except ValueError as e:
                     del new_im.info["transparency"]
