@@ -419,6 +419,24 @@ def test_draw_rectangle_blend(bench: BenchmarkFixture, size: tuple[int, int]) ->
     bench(lambda: draw.rectangle((0, 0, w - 1, h - 1), fill=(200, 50, 25, 127)))
 
 
+@pytest.mark.benchmark(group="draw")
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_draw_polygon(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+) -> None:
+    # Exercise the polygon scanline filler, which is not the rectangle fast path.
+    im = Image.new(mode, size)
+    draw = ImageDraw.Draw(im)
+    nbands = len(im.getbands())
+    ink = (200, 50, 25, 255)[:nbands] if nbands > 1 else 200
+    w, h = size
+    xy = [(0, 0), (w - 1, 30), (w - 20, h - 1), (10, h - 20)]
+    bench(lambda: draw.polygon(xy, fill=ink))
+
+
 def _zigzag(size: tuple[int, int], segments: int = 16) -> list[tuple[int, int]]:
     w, h = size
     return [
