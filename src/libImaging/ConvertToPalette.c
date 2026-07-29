@@ -1,7 +1,7 @@
 /*
  * The Python Imaging Library
  *
- * See Convert.c for legacy history of this file.
+ * See Convert.c and Palette.c for legacy history of this file.
  *
  * Copyright (c) 1997-2005 by Secret Labs AB.
  * Copyright (c) 1995-1997 by Fredrik Lundh.
@@ -10,6 +10,174 @@
  */
 
 #include "Imaging.h"
+
+/*
+ * The coarse colour mapping is loosely based on the corresponding code in
+ * the IJG JPEG library by Thomas G. Lane.  Original algorithms by
+ * Paul Heckbert and Spencer W. Thomas.
+ */
+
+#define DIST(a, b, s) (a - b) * (a - b) * s
+
+#define RSCALE 1
+#define GSCALE 1
+#define BSCALE 1
+
+#define RDIST(a, b) DIST(a, b, RSCALE *RSCALE)
+#define GDIST(a, b) DIST(a, b, GSCALE *GSCALE)
+#define BDIST(a, b) DIST(a, b, BSCALE *BSCALE)
+
+#define RSTEP (4 * RSCALE)
+#define GSTEP (4 * GSCALE)
+#define BSTEP (4 * BSCALE)
+
+#define BOX 8
+#define BOXVOLUME (BOX * BOX * BOX)
+
+static INT16 *
+palette_cache(ImagingPalette palette, int r, int g, int b) {
+    return &palette->cache[(r >> 2) + (g >> 2) * 64 + (b >> 2) * 64 * 64];
+}
+
+static void
+palette_cache_update(ImagingPalette palette, int r, int g, int b) {
+    int i, j;
+    unsigned int dmin[IMAGING_PALETTE_MAX_ENTRIES], dmax;
+    int r0, g0, b0;
+    int r1, g1, b1;
+    int rc, gc, bc;
+    unsigned int d[BOXVOLUME];
+    UINT8 c[BOXVOLUME];
+
+    /* Get box boundaries for the given (r,g,b)-triplet.  Each box
+       covers eight cache slots (32 colour values, that is). */
+
+    r0 = r & 0xe0;
+    r1 = r0 + 0x1f;
+    rc = (r0 + r1) / 2;
+    g0 = g & 0xe0;
+    g1 = g0 + 0x1f;
+    gc = (g0 + g1) / 2;
+    b0 = b & 0xe0;
+    b1 = b0 + 0x1f;
+    bc = (b0 + b1) / 2;
+
+    /* Step 1 -- Select relevant palette entries (after Heckbert) */
+
+    /* For each palette entry, calculate the min and max distances to
+     * any position in the box given by the colour we're looking for. */
+
+    dmax = (unsigned int)~0;
+
+    for (i = 0; i < palette->size; i++) {
+        int r, g, b;
+        unsigned int tmin, tmax;
+
+        /* Find min and max distances to any point in the box */
+        r = palette->palette[i * 4 + 0];
+        tmin = (r < r0) ? RDIST(r, r0) : (r > r1) ? RDIST(r, r1) : 0;
+        tmax = (r <= rc) ? RDIST(r, r1) : RDIST(r, r0);
+
+        g = palette->palette[i * 4 + 1];
+        tmin += (g < g0) ? GDIST(g, g0) : (g > g1) ? GDIST(g, g1) : 0;
+        tmax += (g <= gc) ? GDIST(g, g1) : GDIST(g, g0);
+
+        b = palette->palette[i * 4 + 2];
+        tmin += (b < b0) ? BDIST(b, b0) : (b > b1) ? BDIST(b, b1) : 0;
+        tmax += (b <= bc) ? BDIST(b, b1) : BDIST(b, b0);
+
+        dmin[i] = tmin;
+        if (tmax < dmax) {
+            dmax = tmax; /* keep the smallest max distance only */
+        }
+    }
+
+    /* Step 2 -- Incrementally update cache slot (after Thomas) */
+
+    /* Find the box containing the nearest palette entry, and update
+     * all slots in that box.  We only check boxes for which the min
+     * distance is less than or equal the smallest max distance */
+
+    for (i = 0; i < BOXVOLUME; i++) {
+        d[i] = (unsigned int)~0;
+    }
+
+    for (i = 0; i < palette->size; i++) {
+        if (dmin[i] <= dmax) {
+            int rd, gd, bd;
+            int ri, gi, bi;
+            int rx, gx, bx;
+
+            ri = (r0 - palette->palette[i * 4 + 0]) * RSCALE;
+            gi = (g0 - palette->palette[i * 4 + 1]) * GSCALE;
+            bi = (b0 - palette->palette[i * 4 + 2]) * BSCALE;
+
+            rd = ri * ri + gi * gi + bi * bi;
+
+            ri = ri * (2 * RSTEP) + RSTEP * RSTEP;
+            gi = gi * (2 * GSTEP) + GSTEP * GSTEP;
+            bi = bi * (2 * BSTEP) + BSTEP * BSTEP;
+
+            rx = ri;
+            for (r = j = 0; r < BOX; r++) {
+                gd = rd;
+                gx = gi;
+                for (g = 0; g < BOX; g++) {
+                    bd = gd;
+                    bx = bi;
+                    for (b = 0; b < BOX; b++) {
+                        if ((unsigned int)bd < d[j]) {
+                            d[j] = bd;
+                            c[j] = (UINT8)i;
+                        }
+                        bd += bx;
+                        bx += 2 * BSTEP * BSTEP;
+                        j++;
+                    }
+                    gd += gx;
+                    gx += 2 * GSTEP * GSTEP;
+                }
+                rd += rx;
+                rx += 2 * RSTEP * RSTEP;
+            }
+        }
+    }
+
+    /* Step 3 -- Update cache */
+
+    /* The c array now contains the closest match for each
+     * cache slot in the box.  Update the cache. */
+
+    j = 0;
+    for (r = r0; r < r1; r += 4) {
+        for (g = g0; g < g1; g += 4) {
+            for (b = b0; b < b1; b += 4) {
+                *palette_cache(palette, r, g, b) = c[j++];
+            }
+        }
+    }
+}
+
+static int
+palette_cache_prepare(ImagingPalette palette) {
+    int entries = 64 * 64 * 64;
+
+    if (palette->cache == NULL) {
+        /* malloc check ok, small constant allocation */
+        palette->cache = (INT16 *)malloc(entries * sizeof(INT16));
+        if (!palette->cache) {
+            (void)ImagingError_MemoryError();
+            return -1;
+        }
+
+        /* Mark all entries as empty */
+        for (int i = 0; i < entries; i++) {
+            palette->cache[i] = 0x100;
+        }
+    }
+
+    return 0;
+}
 
 // The hash will always have up to 50% fill factor.
 #define EXACT_COLOR_HASH_SIZE (IMAGING_PALETTE_MAX_ENTRIES * 2)
@@ -151,9 +319,9 @@ topalette_colour_floyd_steinberg(
             int palette_index = find_exact_color(ech, r, g, b);
             if (palette_index < 0) {
                 /* get closest colour */
-                INT16 *cache = &ImagingPaletteCache(palette, r, g, b);
+                INT16 *cache = palette_cache(palette, r, g, b);
                 if (cache[0] == 0x100) {
-                    ImagingPaletteCacheUpdate(palette, r, g, b);
+                    palette_cache_update(palette, r, g, b);
                 }
                 palette_index = cache[0];
             }
@@ -229,9 +397,9 @@ topalette_colour_closest(
             int palette_index = find_exact_color(ech, r, g, b);
             if (palette_index < 0) {
                 /* get closest colour */
-                INT16 *cache = &ImagingPaletteCache(palette, r, g, b);
+                INT16 *cache = palette_cache(palette, r, g, b);
                 if (cache[0] == 0x100) {
-                    ImagingPaletteCacheUpdate(palette, r, g, b);
+                    palette_cache_update(palette, r, g, b);
                 }
                 palette_index = cache[0];
             }
@@ -303,7 +471,7 @@ topalette(
         struct ExactColorHashInstance exact_color_hash;
         prepare_exact_color_hash(palette, &exact_color_hash);
 
-        if (ImagingPaletteCachePrepare(palette) < 0) {
+        if (palette_cache_prepare(palette) < 0) {
             // Failed allocation for cache
             ImagingDelete(imOut);
             imOut = NULL;
