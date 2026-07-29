@@ -182,7 +182,7 @@ def test_alpha_composite(
         ("P", "RGBA"),
         ("PA", "RGB"),
         ("PA", "RGBA"),
-        # colourspace conversions
+        # colorspace conversions
         ("RGB", "YCbCr"),
         ("YCbCr", "RGB"),
         ("RGB", "HSV"),
