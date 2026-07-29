@@ -4,7 +4,10 @@ pytest-benchmark tests for Pillow features.
 
 from __future__ import annotations
 
+import os
 import pathlib
+import re
+import warnings
 from importlib.util import find_spec
 from io import BytesIO
 
@@ -17,12 +20,17 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    BenchmarkSave = Callable[[Image.Image], None]
+
     from pytest_benchmark.fixture import (  # type: ignore[unused-ignore, import-not-found]
         BenchmarkFixture,
     )
 
 if not (find_spec("pytest_benchmark") or find_spec("pytest_codspeed")):
     pytest.skip("pytest-benchmark or pytest-codspeed required", allow_module_level=True)
+
+_save_results = os.environ.get("PILLOW_BENCHMARK_SAVE_RESULTS_PATH")
+SAVE_RESULTS_PATH = pathlib.Path(_save_results) if _save_results else None
 
 # These can be adjusted to add more modes to benchmark
 # (however all features benchmarked might not support all PIL modes).
@@ -73,6 +81,28 @@ def bench(
     except LookupError:
         pass
     return benchmark
+
+
+@pytest.fixture
+def benchmark_save(request: pytest.FixtureRequest) -> BenchmarkSave:
+    """
+    Fixture to save a benchmark image, if so configured.
+    """
+
+    def save(im: Image.Image) -> None:
+        if SAVE_RESULTS_PATH:
+            safe_name = re.sub("[^-a-zA-Z0-9]", "_", str(request.node.name))
+            name = (SAVE_RESULTS_PATH / safe_name).with_suffix(".png")
+            try:
+                SAVE_RESULTS_PATH.mkdir(parents=True, exist_ok=True)
+                im.save(name)
+            except Exception as e:
+                warnings.warn(
+                    f"Failed to save benchmark result to {name}: {e}",
+                    stacklevel=2,
+                )
+
+    return save
 
 
 def make_pillow_image(
