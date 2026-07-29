@@ -893,3 +893,43 @@ class TestTruncatedPngPLeaks(PillowLeakTestCase):
                 im.load()
 
         self._test_leak(core)
+
+
+@skip_unless_feature("zlib")
+class TestFilePngPA:
+    @pytest.mark.parametrize("palette_rawmode", ("RGB", "RGBA"))
+    def test_save_pa(self, tmp_path: Path, palette_rawmode: str) -> None:
+        test_file = tmp_path / "temp.png"
+        image = Image.new("PA", (64, 64))
+        palette: list[int] = []
+        for color in ((255, 0, 0), (0, 255, 0), (0, 0, 255), (128, 128, 128)):
+            palette += color
+            if palette_rawmode == "RGBA":
+                # This value is ignored for PA mode,
+                # but we'll want to test palette rawmode RGBA too
+                palette.append(42)
+        image.putpalette(palette, palette_rawmode)
+        px = image.load()
+        assert px is not None
+        for y in range(64):
+            for x in range(64):
+                index = (x // 16 + y // 16) % 4
+                px[x, y] = (index, (255, 128, 64, 0)[index])
+        image.save(test_file)
+        with Image.open(test_file) as reloaded:
+            # The image is loaded as P with an RGBA palette
+            # (because there is no PA mode in PNG),
+            # so we need to convert it back to PA for comparison.
+            assert_image_equal(image, reloaded.convert("PA"))
+
+    def test_save_pa_incompatible_alpha(self, tmp_path: Path) -> None:
+        # PA images can only be saved as PNG
+        # if each palette index is used with a single alpha value
+        image = Image.new("PA", (2, 1))
+        image.putpalette([255, 0, 0])
+        px = image.load()
+        assert px is not None
+        px[0, 0] = (0, 255)
+        px[1, 0] = (0, 128)  # same palette index, different alpha - this won't fly
+        with pytest.raises(OSError, match="multiple alpha values"):
+            image.save(tmp_path / "temp.png")
