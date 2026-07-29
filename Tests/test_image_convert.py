@@ -357,3 +357,16 @@ def test_matrix_identity() -> None:
     # Assert
     # No change
     assert_image_equal(converted_im, im)
+
+
+@pytest.mark.xfail(reason="zombie colors from palette shouldn't reappear")
+def test_pa2p_truly_drops_alpha() -> None:
+    im = Image.frombytes("P", (2, 1), bytes([0, 1])).convert("PA")
+    im.putpalette(bytes([255, 0, 0, 7, 0, 255, 0, 9]), "RGBA")
+    im.putalpha(Image.frombytes("L", (2, 1), bytes([240, 220])))
+    assert im.get_flattened_data() == ((0, 240), (1, 220))  # Matches the alpha band
+    im_p = im.convert("P")
+    assert im_p.palette is not None
+    assert im_p.im.getpalettemode() == im_p.palette.mode == "RGB"
+    rgba_data = im_p.convert("RGBA").get_flattened_data()
+    assert rgba_data == ((255, 0, 0, 255), (0, 255, 0, 255))
