@@ -290,7 +290,6 @@ def test_p2pa_palette() -> None:
     assert im_pa.getpalette() == im.getpalette()
 
 
-@pytest.mark.xfail(reason="zombie colors from palette shouldn't reappear")
 def test_pa2p_truly_drops_alpha() -> None:
     im = Image.frombytes("P", (2, 1), bytes([0, 1])).convert("PA")
     im.putpalette(bytes([255, 0, 0, 7, 0, 255, 0, 9]), "RGBA")
