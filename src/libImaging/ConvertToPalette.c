@@ -11,6 +11,17 @@
 
 #include "Imaging.h"
 
+#if defined(_MSC_VER)
+#define NOINLINE __declspec(noinline)
+#define FORCE_INLINE __forceinline
+#elif defined(__GNUC__)
+#define NOINLINE __attribute__((noinline))
+#define FORCE_INLINE inline __attribute__((always_inline))
+#else
+#define NOINLINE
+#define FORCE_INLINE inline
+#endif
+
 /*
  * The coarse colour mapping is loosely based on the corresponding code in
  * the IJG JPEG library by Thomas G. Lane.  Original algorithms by
@@ -34,12 +45,19 @@
 #define BOX 8
 #define BOXVOLUME (BOX * BOX * BOX)
 
+// PIL palettes may contain up to 256 entries.
+#define PALETTE_CACHE_INDEX_MASK 0xff
+// Cache entry is empty.
+#define PALETTE_CACHE_EMPTY 0x100
+// The box described by this cache entry may contain an exact palette color.
+#define PALETTE_CACHE_HAS_EXACT 0x200
+
 static INT16 *
 palette_cache(ImagingPalette palette, int r, int g, int b) {
     return &palette->cache[(r >> 2) + (g >> 2) * 64 + (b >> 2) * 64 * 64];
 }
 
-static void
+static NOINLINE void
 palette_cache_update(ImagingPalette palette, int r, int g, int b) {
     int i, j;
     unsigned int dmin[IMAGING_PALETTE_MAX_ENTRIES], dmax;
@@ -152,7 +170,8 @@ palette_cache_update(ImagingPalette palette, int r, int g, int b) {
     for (r = r0; r < r1; r += 4) {
         for (g = g0; g < g1; g += 4) {
             for (b = b0; b < b1; b += 4) {
-                *palette_cache(palette, r, g, b) = c[j++];
+                INT16 *cache = palette_cache(palette, r, g, b);
+                *cache = c[j++] | (*cache & PALETTE_CACHE_HAS_EXACT);
             }
         }
     }
@@ -172,7 +191,17 @@ palette_cache_prepare(ImagingPalette palette) {
 
         /* Mark all entries as empty */
         for (int i = 0; i < entries; i++) {
-            palette->cache[i] = 0x100;
+            palette->cache[i] = PALETTE_CACHE_EMPTY;
+        }
+
+        /* Mark cells that might contain an exact palette colour. */
+        for (int i = 0; i < palette->size; i++) {
+            *palette_cache(
+                palette,
+                palette->palette[i * 4],
+                palette->palette[i * 4 + 1],
+                palette->palette[i * 4 + 2]
+            ) |= PALETTE_CACHE_HAS_EXACT;
         }
     }
 
@@ -224,7 +253,7 @@ prepare_exact_color_hash(ImagingPalette palette, ExactColorHash ech) {
     }
 }
 
-static int
+static FORCE_INLINE int
 find_exact_color(const ExactColorHash ech, int r, int g, int b) {
     UINT32 key = exact_color_key(r, g, b);
     UINT32 hash = exact_color_hash(key);
@@ -235,6 +264,45 @@ find_exact_color(const ExactColorHash ech, int r, int g, int b) {
         hash = (hash + 1) % EXACT_COLOR_HASH_SIZE;
     }
     return -1;
+}
+
+static FORCE_INLINE int
+find_palette_color(
+    ImagingPalette palette, const ExactColorHash ech, int r, int g, int b
+) {
+    INT16 *cache = palette_cache(palette, r, g, b);
+    INT16 cached = *cache;
+
+    if (cached <= PALETTE_CACHE_INDEX_MASK) {
+        // Filled, and there is no possibility
+        // for an exact color in this box,
+        // so return the cached index.
+        return cached;
+    }
+
+    if (cached & PALETTE_CACHE_EMPTY) {
+        palette_cache_update(palette, r, g, b);
+        cached = *cache;
+        if (cached <= PALETTE_CACHE_INDEX_MASK) {
+            return cached;
+        }
+    }
+
+    // PALETTE_CACHE_HAS_EXACT is set: this box may contain an exact match.
+    // The cached nearest entry might be that match, so let's check that
+    // before probing the exact-color hash.
+    int idx = cached & PALETTE_CACHE_INDEX_MASK;
+    const UINT8 *entry = &palette->palette[idx * 4];
+    if (entry[0] == r && entry[1] == g && entry[2] == b) {
+        return idx;
+    }
+
+    int palette_index = find_exact_color(ech, r, g, b);
+    if (palette_index >= 0) {
+        return palette_index;
+    }
+
+    return idx;
 }
 
 #if defined(_MSC_VER)
@@ -316,15 +384,7 @@ topalette_colour_floyd_steinberg(
             g = CLIP8(in[1] + (g + e[3 + 1]) / 16);
             b = CLIP8(in[2] + (b + e[3 + 2]) / 16);
 
-            int palette_index = find_exact_color(ech, r, g, b);
-            if (palette_index < 0) {
-                /* get closest colour */
-                INT16 *cache = palette_cache(palette, r, g, b);
-                if (cache[0] == 0x100) {
-                    palette_cache_update(palette, r, g, b);
-                }
-                palette_index = cache[0];
-            }
+            int palette_index = find_palette_color(palette, ech, r, g, b);
             if (alpha) {
                 UINT32 v =
                     MAKE_UINT32(palette_index, palette_index, palette_index, 255);
@@ -394,15 +454,7 @@ topalette_colour_closest(
 
         for (int x = 0; x < xsize; x++, in += 4) {
             int r = in[0], g = in[1], b = in[2];
-            int palette_index = find_exact_color(ech, r, g, b);
-            if (palette_index < 0) {
-                /* get closest colour */
-                INT16 *cache = palette_cache(palette, r, g, b);
-                if (cache[0] == 0x100) {
-                    palette_cache_update(palette, r, g, b);
-                }
-                palette_index = cache[0];
-            }
+            int palette_index = find_palette_color(palette, ech, r, g, b);
             if (alpha) {
                 UINT32 v =
                     MAKE_UINT32(palette_index, palette_index, palette_index, 255);
