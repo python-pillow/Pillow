@@ -74,7 +74,7 @@ def generate(version: str) -> dict:
         "licenses": [{"license": {"id": "MIT-CMU"}}],
         "purl": purl,
         "externalReferences": [
-            {"type": "website", "url": "https://python-pillow.github.io"},
+            {"type": "website", "url": "https://python-pillow.org"},
             {"type": "vcs", "url": "https://github.com/python-pillow/Pillow"},
             {"type": "documentation", "url": "https://pillow.readthedocs.io"},
             {
