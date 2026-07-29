@@ -13,6 +13,7 @@ only work on L and RGB images.
 .. autofunction:: autocontrast
 .. autofunction:: colorize
 .. autofunction:: crop
+.. autofunction:: dither_primary
 .. autofunction:: scale
 .. autoclass:: SupportsGetMesh
     :show-inheritance:
