@@ -240,16 +240,6 @@ ImagingPaletteDuplicate(ImagingPalette palette);
 extern void
 ImagingPaletteDelete(ImagingPalette palette);
 
-extern int
-ImagingPaletteCachePrepare(ImagingPalette palette);
-extern void
-ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b);
-extern void
-ImagingPaletteCacheDelete(ImagingPalette palette);
-
-#define ImagingPaletteCache(p, r, g, b) \
-    p->cache[(r >> 2) + (g >> 2) * 64 + (b >> 2) * 64 * 64]
-
 extern Imaging
 ImagingQuantize(Imaging im, int colours, int mode, int kmeans);
 
