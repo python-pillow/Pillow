@@ -46,7 +46,7 @@ Memory allocator
 
 Pillow's default memory allocator, the :ref:`block_allocator`,
 allocates up to a 16 MB block for images by default. Larger images
-overflow into additional blocks. Arrow requires a single continuous
+overflow into additional blocks. Arrow requires a single contiguous
 memory allocation, so images allocated in multiple blocks cannot be
 exported in the Arrow format.
 

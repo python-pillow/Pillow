@@ -47,8 +47,8 @@ method:
 
     Adjust image color balance.
 
-    This class can be used to adjust the colour balance of an image, in a
-    manner similar to the controls on a colour TV set. An
+    This class can be used to adjust the color balance of an image, in a
+    manner similar to the controls on a color TV set. An
     :ref:`enhancement factor <enhancement-factor>` of 0.0 gives a black and
     white image. A factor of 1.0 gives the original image.
 
