@@ -40,7 +40,8 @@ def helper_save_as_pdf(tmp_path: Path, mode: str, **kwargs: Any) -> str:
     with open(outfile, "rb") as fp:
         contents = fp.read()
     size = tuple(
-        float(d) for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
+        int(float(d))
+        for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
     )
     assert im.size == size
 
@@ -163,7 +164,7 @@ def test_save_all(tmp_path: Path) -> None:
         assert os.path.getsize(outfile) > 0
 
         # Test appending using a generator
-        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image, None, None]:
+        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image]:
             yield from ims
 
         im.save(outfile, save_all=True, append_images=im_generator(ims))

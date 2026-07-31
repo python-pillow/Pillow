@@ -23,10 +23,9 @@ import operator
 import sys
 from enum import IntEnum, IntFlag
 from functools import reduce
-from typing import Any, Literal, SupportsFloat, SupportsInt, Union
+from typing import Literal, SupportsFloat, SupportsInt, Union
 
 from . import Image
-from ._deprecate import deprecate
 from ._typing import SupportsRead
 
 try:
@@ -255,13 +254,6 @@ class ImageCmsProfile:
             msg = "Invalid type for Profile"  # type: ignore[unreachable]
             raise TypeError(msg)
 
-    def __getattr__(self, name: str) -> Any:
-        if name in ("product_name", "product_info"):
-            deprecate(f"ImageCms.ImageCmsProfile.{name}", 13)
-            return None
-        msg = f"'{self.__class__.__name__}' object has no attribute '{name}'"
-        raise AttributeError(msg)
-
     def tobytes(self) -> bytes:
         """
         Returns the profile in a format suitable for embedding in
@@ -317,19 +309,21 @@ class ImageCmsTransform(Image.ImagePointHandler):
         return self.apply(im)
 
     def apply(self, im: Image.Image, imOut: Image.Image | None = None) -> Image.Image:
-        if imOut is None:
+        if im.mode != self.input_mode:
+            msg = "mode mismatch"
+            raise ValueError(msg)
+        if imOut is not None:
+            if imOut.mode != self.output_mode:
+                msg = "mode mismatch"
+                raise ValueError(msg)
+        else:
             imOut = Image.new(self.output_mode, im.size, None)
         self.transform.apply(im.getim(), imOut.getim())
         imOut.info["icc_profile"] = self.output_profile.tobytes()
         return imOut
 
     def apply_in_place(self, im: Image.Image) -> Image.Image:
-        if im.mode != self.output_mode:
-            msg = "mode mismatch"
-            raise ValueError(msg)  # wrong output mode
-        self.transform.apply(im.getim(), im.getim())
-        im.info["icc_profile"] = self.output_profile.tobytes()
-        return im
+        return self.apply(im, im)
 
 
 def get_display_profile(handle: SupportsInt | None = None) -> ImageCmsProfile | None:

@@ -124,6 +124,14 @@ class TestFilePng:
             with Image.open(test_file):
                 pass
 
+    def test_ihdr_unknown_mode(self) -> None:
+        fp = BytesIO(chunk(b"IHDR", b"\x00" * 13))
+        with PngImagePlugin.PngStream(fp) as png:
+            cid, pos, length = png.read()
+            png.call(cid, pos, length)
+
+            assert png.im_mode == ""
+
     def test_bad_text(self) -> None:
         # Make sure PIL can read malformed tEXt chunks (@PIL152)
 
@@ -359,9 +367,7 @@ class TestFilePng:
 
         with Image.open(TEST_PNG_FILE) as im:
             # Assert that there is no unclosed file warning
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 im.verify()
 
         with Image.open(TEST_PNG_FILE) as im:
@@ -527,11 +533,6 @@ class TestFilePng:
             with pytest.raises(
                 ValueError, match=f"transparency for {mode} must be an integer"
             ):
-                im.save(out, transparency="invalid")
-
-        im = Image.new("I", (1, 1))
-        with pytest.warns(DeprecationWarning, match="Saving I mode images as PNG"):
-            with pytest.raises(ValueError):
                 im.save(out, transparency="invalid")
 
         im = Image.new("P", (1, 1))
@@ -871,16 +872,6 @@ class TestFilePng:
         monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
         with Image.open("Tests/images/truncated_end_chunk.png") as im:
             assert_image_equal_tofile(im, "Tests/images/hopper.png")
-
-    def test_deprecation(self, tmp_path: Path) -> None:
-        test_file = tmp_path / "out.png"
-
-        im = hopper("I")
-        with pytest.warns(DeprecationWarning, match="Saving I mode images as PNG"):
-            im.save(test_file)
-
-        with Image.open(test_file) as reloaded:
-            assert_image_equal(im, reloaded.convert("I"))
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")

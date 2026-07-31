@@ -205,6 +205,10 @@ def test_begin_binary() -> None:
     with Image.open(io.BytesIO(data)) as img:
         assert img.size == (399, 480)
 
+    data[76867:76873] = b"    -1"
+    with pytest.raises(ValueError, match="BeginBinary bytecount cannot be negative"):
+        Image.open(io.BytesIO(data))
+
 
 @mark_if_feature_version(
     pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"

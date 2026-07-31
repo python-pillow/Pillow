@@ -376,6 +376,8 @@ Protocols
     :show-inheritance:
 .. autoclass:: SupportsGetData
     :show-inheritance:
+.. autoclass:: DecoderInput
+    :show-inheritance:
 
 Constants
 ---------

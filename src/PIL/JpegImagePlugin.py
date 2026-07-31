@@ -605,7 +605,7 @@ def _getmp(self: JpegImageFile) -> dict[int, Any] | None:
             mpentry["Attribute"] = mpentryattr
             mpentries.append(mpentry)
         mp[0xB002] = mpentries
-    except KeyError as e:
+    except (KeyError, struct.error) as e:
         msg = "malformed MP Index (bad MP Entry)"
         raise SyntaxError(msg) from e
     # Next we should try and parse the individual image unique ID list;

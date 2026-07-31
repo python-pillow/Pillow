@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import os
+from io import BytesIO
 from pathlib import Path
 from typing import AnyStr
 
 import pytest
 
-from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
+from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile, _binary
 
 from .helper import (
     assert_image_equal_tofile,
@@ -117,3 +118,21 @@ def test_high_characters(request: pytest.FixtureRequest, tmp_path: Path) -> None
     _test_high_characters(request, tmp_path, message)
     # accept bytes instances.
     _test_high_characters(request, tmp_path, message.encode("latin1"))
+
+
+def test_decompression_bomb() -> None:
+    with open(fontname, "rb") as fp:
+        data = fp.read()
+    b = BytesIO(
+        data[:900]
+        + _binary.o32le(0)  # jumbo format
+        + _binary.o32le(1)  # number of metrics
+        + _binary.o16le(0)  # left
+        + _binary.o16le(65535)  # right
+        + _binary.o16le(0)  # width
+        + _binary.o16le(0)  # ascent
+        + _binary.o16le(65535)  # descent
+        + _binary.o16le(0)  # attributes
+    )
+    with pytest.raises(Image.DecompressionBombError):
+        PcfFontFile.PcfFontFile(b)

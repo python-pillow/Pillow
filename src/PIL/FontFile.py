@@ -74,7 +74,7 @@ class FontFile:
             if glyph:
                 d, dst, src, im = glyph
                 h = max(h, src[3] - src[1])
-                w = w + (src[2] - src[0])
+                w += src[2] - src[0]
                 if w > WIDTH:
                     lines += 1
                     w = src[2] - src[0]
@@ -89,6 +89,7 @@ class FontFile:
         self.ysize = h
 
         # paste glyphs into bitmap
+        Image._decompression_bomb_check((xsize, ysize))
         self.bitmap = Image.new("1", (xsize, ysize))
         self.metrics: list[
             tuple[tuple[int, int], tuple[int, int, int, int], tuple[int, int, int, int]]

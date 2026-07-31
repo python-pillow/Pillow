@@ -202,6 +202,43 @@ def test_rle4() -> None:
         assert_image_similar_tofile(im, "Tests/images/bmp/g/pal4.bmp", 12)
 
 
+def test_rle4_absolute_odd() -> None:
+    # An RLE4 absolute run with an odd number of pixels is packed into
+    # ceil(count / 2) bytes, the final nibble being padding. Build a 3x1
+    # image whose single row is one absolute run of 3 pixels (indices 1, 2, 3).
+    palette = b"\x00" * 4
+    rle = (
+        b"\x00\x03"  # absolute mode, 3 pixels
+        b"\x12\x30"  # nibbles 1, 2, 3 and a padding nibble
+        b"\x00\x01"  # end of bitmap
+    )
+    header = (
+        o32(40)  # header size
+        + o32(3)  # width
+        + o32(1)  # height
+        + o16(1)  # planes
+        + o16(4)  # bits per pixel
+        + o32(2)  # BI_RLE4 compression
+        + o32(len(rle))  # image size
+        + o32(0) * 2  # pixels per meter
+        + o32(1)  # used colors
+        + o32(0)  # important colors
+    )
+    offset = 14 + len(header) + len(palette)
+    data = (
+        b"BM"
+        + o32(offset + len(rle))  # file size
+        + o32(0)  # reserved
+        + o32(offset)  # data offset
+        + header
+        + palette
+        + rle
+    )
+
+    with Image.open(io.BytesIO(data)) as im:
+        assert [im.getpixel((x, 0)) for x in range(im.width)] == [1, 2, 3]
+
+
 @pytest.mark.parametrize(
     "file_name,length",
     (

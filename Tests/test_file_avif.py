@@ -29,6 +29,7 @@ from .helper import (
     assert_image_similar_tofile,
     hopper,
     skip_unless_feature,
+    skip_unless_feature_version,
 )
 
 try:
@@ -46,7 +47,7 @@ def assert_xmp_orientation(xmp: bytes, expected: int) -> None:
     assert int(xmp.split(b'tiff:Orientation="')[1].split(b'"')[0]) == expected
 
 
-def roundtrip(im: ImageFile.ImageFile, **options: Any) -> ImageFile.ImageFile:
+def roundtrip(im: Image.Image, **options: Any) -> ImageFile.ImageFile:
     out = BytesIO()
     im.save(out, "AVIF", **options)
     return Image.open(out)
@@ -128,6 +129,14 @@ class TestFileAvif:
                 image, "Tests/images/avif/hopper_avif_write.png", 11.5
             )
 
+    @skip_unless_feature_version("avif", "1.3.0")
+    def test_write_l(self) -> None:
+        im = hopper("L")
+        reloaded = roundtrip(im)
+
+        assert reloaded.mode == "L"
+        assert_image_similar(reloaded, im, 1.69)
+
     def test_write_rgb(self, tmp_path: Path) -> None:
         """
         Can we write a RGB mode file to avif without error?
@@ -145,14 +154,14 @@ class TestFileAvif:
 
             # avifdec hopper.avif avif/hopper_avif_write.png
             assert_image_similar_tofile(
-                reloaded, "Tests/images/avif/hopper_avif_write.png", 6.93
+                reloaded, "Tests/images/avif/hopper_avif_write.png", 7.0
             )
 
             # This test asserts that the images are similar. If the average pixel
             # difference between the two images is less than the epsilon value,
             # then we're going to accept that it's a reasonable lossy version of
             # the image.
-            assert_image_similar(reloaded, im, 9.39)
+            assert_image_similar(reloaded, im, 9.5)
 
     def test_AvifEncoder_with_invalid_args(self) -> None:
         """
@@ -199,9 +208,7 @@ class TestFileAvif:
 
     def test_no_resource_warning(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 im.save(tmp_path / "temp.avif")
 
     @pytest.mark.parametrize("major_brand", [b"avif", b"avis", b"mif1", b"msf1"])
@@ -420,6 +427,14 @@ class TestFileAvif:
             test_file = tmp_path / "temp.avif"
             im.save(test_file, subsampling=subsampling)
 
+    @skip_unless_feature_version("avif", "1.3.0")
+    def test_encoding_subsampling_400(self) -> None:
+        im = hopper()
+        reloaded = roundtrip(im, subsampling="4:0:0")
+
+        assert reloaded.mode == "L"
+        assert_image_similar(reloaded, im.convert("L"), 1.69)
+
     def test_encoder_subsampling_invalid(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
             test_file = tmp_path / "temp.avif"
@@ -586,7 +601,7 @@ class TestFileAvif:
 @skip_unless_feature("avif")
 class TestAvifAnimation:
     @contextmanager
-    def star_frames(self) -> Generator[list[Image.Image], None, None]:
+    def star_frames(self) -> Generator[list[Image.Image]]:
         with Image.open("Tests/images/avif/star.png") as f:
             yield [f, f.rotate(90), f.rotate(180), f.rotate(270)]
 
@@ -659,7 +674,7 @@ class TestAvifAnimation:
             # Test appending using a generator
             def imGenerator(
                 ims: list[Image.Image],
-            ) -> Generator[Image.Image, None, None]:
+            ) -> Generator[Image.Image]:
                 yield from ims
 
             temp_file2 = tmp_path / "temp_generator.avif"

@@ -307,13 +307,13 @@ ImagingConvert(Imaging im, ModeID mode, ImagingPalette palette, int dither);
 extern Imaging
 ImagingConvertInPlace(Imaging im, ModeID mode);
 extern Imaging
-ImagingConvertMatrix(Imaging im, ModeID mode, float m[]);
+ImagingConvertMatrix(Imaging im, ModeID mode, const float m[12]);
 extern Imaging
 ImagingConvertTransparent(Imaging im, ModeID mode, int r, int g, int b);
 extern Imaging
 ImagingCrop(Imaging im, int x0, int y0, int x1, int y1);
 extern Imaging
-ImagingExpand(Imaging im, int x, int y);
+ImagingExpand(Imaging im, int m);
 extern Imaging
 ImagingFill(Imaging im, const void *ink);
 extern int

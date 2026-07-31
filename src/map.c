@@ -84,14 +84,16 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
 
     const ModeID mode = findModeID(mode_name);
 
-    if (stride <= 0) {
-        if (mode == IMAGING_MODE_L || mode == IMAGING_MODE_P) {
-            stride = xsize;
-        } else if (isModeI16(mode)) {
-            stride = xsize * 2;
-        } else {
-            stride = xsize * 4;
-        }
+    int pixelsize;
+    if (mode == IMAGING_MODE_L || mode == IMAGING_MODE_P) {
+        pixelsize = 1;
+    } else if (isModeI16(mode)) {
+        pixelsize = 2;
+    } else {
+        pixelsize = 4;
+    }
+    if (stride <= xsize * pixelsize) {
+        stride = xsize * pixelsize;
     }
 
     if (stride > 0 && ysize > PY_SSIZE_T_MAX / stride) {

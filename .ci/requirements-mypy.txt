@@ -1,10 +1,10 @@
-mypy==1.20.2
+mypy==2.1.0
 arro3-compute
 arro3-core
 IceSpringPySideStubs-PyQt6
 IceSpringPySideStubs-PySide6
 ipython
-numpy
+numpy==2.4.6
 packaging
 pyarrow-stubs
 pybind11

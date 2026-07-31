@@ -449,7 +449,7 @@ _anim_decoder_dealloc(PyObject *self) {
 }
 
 PyObject *
-_anim_decoder_get_info(PyObject *self) {
+_anim_decoder_get_info(PyObject *self, PyObject *args) {
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
     WebPAnimInfo *info = &(decp->info);
 
@@ -488,7 +488,7 @@ _anim_decoder_get_chunk(PyObject *self, PyObject *args) {
 }
 
 PyObject *
-_anim_decoder_get_next(PyObject *self) {
+_anim_decoder_get_next(PyObject *self, PyObject *args) {
     uint8_t *buf;
     int timestamp;
     int ok;
@@ -519,7 +519,7 @@ _anim_decoder_get_next(PyObject *self) {
 }
 
 PyObject *
-_anim_decoder_reset(PyObject *self) {
+_anim_decoder_reset(PyObject *self, PyObject *args) {
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
     WebPAnimDecoderReset(decp->dec);
     Py_RETURN_NONE;
@@ -691,6 +691,10 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
                             // and value 0 indicates data will NOT be copied.
 
         WebPMux *mux = WebPMuxNew();
+        if (mux == NULL) {
+            PyErr_SetString(PyExc_RuntimeError, "could not create mux object");
+            return NULL;
+        }
         WebPMuxSetImage(mux, &image, copy_data);
 
         if (dbg) {
@@ -785,8 +789,11 @@ setup_module(PyObject *m) {
 
     PyObject *d = PyModule_GetDict(m);
     PyObject *v = PyUnicode_FromString(WebPDecoderVersion_str());
-    PyDict_SetItemString(d, "webpdecoder_version", v ? v : Py_None);
-    Py_XDECREF(v);
+    if (!v) {
+        return -1;
+    }
+    PyDict_SetItemString(d, "webpdecoder_version", v);
+    Py_DECREF(v);
 
     return 0;
 }
