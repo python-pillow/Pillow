@@ -43,12 +43,12 @@ jobs:
     name: Benchmark Python ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
@@ -88,7 +88,7 @@ jobs:
         GHA_LIBWEBP_CACHE_HIT: ${{ steps.cache-libwebp.outputs.cache-hit }}
 
     - name: Run CodSpeed benchmarks
-      uses: CodSpeedHQ/action@a4a36bb07c0638b0b4ca52bf1f3dad1b4289e52f # v4.18.1
+      uses: CodSpeedHQ/action@9c498abf90f466ace8338cd5505d6ab277e1f9a3 # v4.19.0
       with:
         mode: simulation
         run: |
