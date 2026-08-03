@@ -171,6 +171,11 @@
             "groupName": "github-actions",
             "matchManagers": ["github-actions"],
             "separateMajorMinor": false
+        },
+        {
+            "matchManagers": ["github-actions"],
+            "matchPackageNames": ["google/oss-fuzz"],
+            "minimumReleaseAge": "0 days"
         }
     ]
 }

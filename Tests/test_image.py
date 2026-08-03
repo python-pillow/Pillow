@@ -9,7 +9,7 @@ import tempfile
 import warnings
 from pathlib import Path
 from types import ModuleType
-from typing import IO, Any
+from typing import IO
 
 import pytest
 
@@ -196,17 +196,6 @@ class TestImage:
 
         class FP(io.BytesIO):
             name: Path
-
-            if sys.version_info >= (3, 12):
-                from collections.abc import Buffer
-
-                def write(self, data: Buffer) -> int:
-                    return len(data)
-
-            else:
-
-                def write(self, data: Any) -> int:
-                    return len(data)
 
         fp = FP()
         fp.name = temp_file
@@ -752,9 +741,7 @@ class TestImage:
 
         # Act/Assert
         with Image.open(test_file) as im:
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 im.save(temp_file)
 
     def test_no_new_file_on_error(self, tmp_path: Path) -> None:

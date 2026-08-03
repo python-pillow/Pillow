@@ -171,6 +171,23 @@ def test_pad_round() -> None:
     assert new_im.getpixel((0, 2)) == 1
 
 
+def test_pad_palette() -> None:
+    with Image.open("Tests/images/p_16.tga") as im:
+        im_padded = ImageOps.pad(im, (im.width * 2, im.height), color=(255, 0, 0))
+        im_rgb = im_padded.convert("RGB")
+
+        # Verify that the left and right sides are now red
+        px = im_rgb.load()
+        assert px is not None
+        for y in range(im_rgb.height):
+            for x in range(im.width // 2):
+                assert px[x, y] == (255, 0, 0)
+                assert px[im_rgb.width - 1 - x, y] == (255, 0, 0)
+
+        im_cropped = im_rgb.crop((im.width * 0.5, 0, im.width * 1.5, im.height))
+        assert_image_equal(im_cropped, im.convert("RGB"))
+
+
 @pytest.mark.parametrize("mode", ("P", "PA"))
 def test_palette(mode: str) -> None:
     im = hopper(mode)
@@ -404,6 +421,33 @@ def test_colorize_3color_offset() -> None:
         threshold=1,
         msg="white test pixel incorrect",
     )
+
+
+def test_colorize_invalid_mode() -> None:
+    with pytest.raises(ValueError, match="mode must be L, not RGB"):
+        ImageOps.colorize(hopper("RGB"), "black", "white")
+
+
+@pytest.mark.parametrize("blackpoint, whitepoint", ((-1, 255), (0, 256), (200, 50)))
+def test_colorize_invalid_points(blackpoint: int, whitepoint: int) -> None:
+    with pytest.raises(ValueError, match="blackpoint and whitepoint must each be"):
+        ImageOps.colorize(
+            hopper("L"), "black", "white", blackpoint=blackpoint, whitepoint=whitepoint
+        )
+
+
+@pytest.mark.parametrize("midpoint", (100, 200))
+def test_colorize_invalid_midpoint(midpoint: int) -> None:
+    with pytest.raises(ValueError, match="midpoint must be between or equal to"):
+        ImageOps.colorize(
+            hopper("L"),
+            "black",
+            "white",
+            mid="blue",
+            blackpoint=125,
+            midpoint=midpoint,
+            whitepoint=175,
+        )
 
 
 def test_exif_transpose() -> None:

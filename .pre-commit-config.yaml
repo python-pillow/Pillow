@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.15
+    rev: v0.15.20
     hooks:
       - id: ruff-check
         args: [--exit-non-zero-on-fix]
@@ -54,14 +54,14 @@ repos:
         exclude: ^\.github/.*TEMPLATE|^Tests/(fonts|images)/|\.patch$
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.2
+    rev: 0.37.4
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
       - id: check-renovate
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.25.2
+    rev: v1.26.1
     hooks:
       - id: zizmor
 
@@ -71,7 +71,7 @@ repos:
       - id: sphinx-lint
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.23.0
+    rev: v2.25.1
     hooks:
       - id: pyproject-fmt
 
@@ -87,7 +87,7 @@ repos:
       - id: tox-ini-fmt
 
   - repo: https://github.com/regebro/pyroma
-    rev: 5.0.1
+    rev: 5.1b1
     hooks:
       - id: pyroma
         additional_dependencies: [check-manifest]
