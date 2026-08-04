@@ -1257,7 +1257,7 @@ def _write_multiple_frames(
         _apply_encoderinfo(default_im, im.encoderinfo)
         ImageFile._save(
             default_im,
-            cast(IO[bytes], _idat(fp, chunk)),
+            cast("IO[bytes]", _idat(fp, chunk)),
             [ImageFile._Tile("zip", (0, 0) + im.size, 0, rawmode)],
         )
 
@@ -1299,14 +1299,14 @@ def _write_multiple_frames(
             # first frame must be in IDAT chunks for backwards compatibility
             ImageFile._save(
                 im_frame,
-                cast(IO[bytes], _idat(fp, chunk)),
+                cast("IO[bytes]", _idat(fp, chunk)),
                 [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
         else:
             fdat_chunks = _fdat(fp, chunk, seq_num)
             ImageFile._save(
                 im_frame,
-                cast(IO[bytes], fdat_chunks),
+                cast("IO[bytes]", fdat_chunks),
                 [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
             seq_num = fdat_chunks.seq_num
@@ -1511,7 +1511,7 @@ def _save(
         _apply_encoderinfo(single_im, im.encoderinfo)
         ImageFile._save(
             single_im,
-            cast(IO[bytes], _idat(fp, chunk)),
+            cast("IO[bytes]", _idat(fp, chunk)),
             [ImageFile._Tile("zip", (0, 0) + single_im.size, 0, rawmode)],
         )
 

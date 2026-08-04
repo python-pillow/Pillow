@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import subprocess
-from pathlib import Path
 
 import pytest
 
@@ -18,6 +17,10 @@ from .helper import (
     skip_unless_feature,
     timeout_unless_slower_valgrind,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
 

@@ -16,9 +16,12 @@
 from __future__ import annotations
 
 import os
-from typing import BinaryIO
 
 from . import Image, ImageFont, _binary
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import BinaryIO
 
 WIDTH = 800
 

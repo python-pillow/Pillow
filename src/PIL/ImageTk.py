@@ -28,12 +28,13 @@ from __future__ import annotations
 
 import tkinter
 from io import BytesIO
-from typing import Any
 
 from . import Image, ImageFile
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from typing import Any
+
     from ._typing import CapsuleType
 
 # --------------------------------------------------------------------

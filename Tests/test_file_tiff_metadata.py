@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import struct
-from pathlib import Path
 
 import pytest
 
@@ -10,6 +9,10 @@ from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import IFDRational
 
 from .helper import assert_deep_equal, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TAG_IDS: dict[str, int] = {
     info.name: info.value

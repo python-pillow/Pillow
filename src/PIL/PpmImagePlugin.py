@@ -16,12 +16,15 @@
 from __future__ import annotations
 
 import math
-from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import o8
 from ._binary import o32le as o32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 #
 # --------------------------------------------------------------------

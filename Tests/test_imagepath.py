@@ -3,11 +3,14 @@ from __future__ import annotations
 import array
 import math
 import struct
-from collections.abc import Sequence
 
 import pytest
 
 from PIL import Image, ImagePath
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 def test_path() -> None:

@@ -33,14 +33,13 @@ from __future__ import annotations
 
 import math
 import struct
-from collections.abc import Sequence
 from typing import cast
 
 from . import Image, ImageColor, ImageFont, ImageText
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Sequence
     from types import ModuleType
     from typing import Any, AnyStr
 
@@ -237,10 +236,10 @@ class ImageDraw:
             if joint == "curve" and width > 4:
                 points: Sequence[Sequence[float]]
                 if isinstance(xy[0], (list, tuple)):
-                    points = cast(Sequence[Sequence[float]], xy)
+                    points = cast("Sequence[Sequence[float]]", xy)
                 else:
                     points = [
-                        cast(Sequence[float], tuple(xy[i : i + 2]))
+                        cast("Sequence[float]", tuple(xy[i : i + 2]))
                         for i in range(0, len(xy), 2)
                     ]
                 for i in range(1, len(points) - 1):
@@ -399,9 +398,9 @@ class ImageDraw:
     ) -> None:
         """Draw a rounded rectangle."""
         if isinstance(xy[0], (list, tuple)):
-            (x0, y0), (x1, y1) = cast(Sequence[Sequence[float]], xy)
+            (x0, y0), (x1, y1) = cast("Sequence[Sequence[float]]", xy)
         else:
-            x0, y0, x1, y1 = cast(Sequence[float], xy)
+            x0, y0, x1, y1 = cast("Sequence[float]", xy)
         if x1 < x0:
             msg = "x1 must be greater than or equal to x0"
             raise ValueError(msg)
@@ -920,7 +919,7 @@ def _compute_regular_polygon_vertices(
             msg = "bounding_circle should only contain numeric data"
             raise ValueError(msg)
 
-        *centroid, polygon_radius = cast(list[float], list(bounding_circle))
+        *centroid, polygon_radius = cast("list[float]", list(bounding_circle))
     elif len(bounding_circle) == 2 and isinstance(bounding_circle[0], (list, tuple)):
         if not all(
             isinstance(i, (int, float)) for i in bounding_circle[0]
@@ -932,8 +931,8 @@ def _compute_regular_polygon_vertices(
             msg = "bounding_circle centre should contain 2D coordinates (e.g. (x, y))"
             raise ValueError(msg)
 
-        centroid = cast(list[float], list(bounding_circle[0]))
-        polygon_radius = cast(float, bounding_circle[1])
+        centroid = cast("list[float]", list(bounding_circle[0]))
+        polygon_radius = cast("float", bounding_circle[1])
     else:
         msg = (
             "bounding_circle should contain 2D coordinates "

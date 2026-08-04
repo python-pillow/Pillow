@@ -8,8 +8,6 @@ import sys
 import tempfile
 import warnings
 from pathlib import Path
-from types import ModuleType
-from typing import IO
 
 import pytest
 
@@ -35,6 +33,11 @@ from .helper import (
     skip_unless_feature,
     timeout_unless_slower_valgrind,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from types import ModuleType
+    from typing import IO
 
 ElementTree: ModuleType | None
 try:

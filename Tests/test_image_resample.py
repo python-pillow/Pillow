@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Generator
 from contextlib import contextmanager
 
 import pytest
@@ -13,6 +12,10 @@ from .helper import (
     hopper,
     mark_if_feature_version,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 class TestImagingResampleVulnerability:
