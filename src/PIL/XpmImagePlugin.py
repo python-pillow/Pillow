@@ -61,6 +61,7 @@ class XpmImageFile(ImageFile.ImageFile):
         # load palette description
 
         palette = {}
+        transparent_key = None
 
         for _ in range(palette_length):
             line = self.fp.readline().rstrip()
@@ -73,7 +74,8 @@ class XpmImageFile(ImageFile.ImageFile):
                     # process colour key
                     rgb = s[i + 1]
                     if rgb == b"None":
-                        self.info["transparency"] = c
+                        transparent_key = c
+                        palette[c] = b"\0\0\0"
                     elif rgb.startswith(b"#"):
                         rgb_int = int(rgb[1:], 16)
                         palette[c] = (
@@ -96,10 +98,15 @@ class XpmImageFile(ImageFile.ImageFile):
         if palette_length > 256:
             self._mode = "RGB"
             args = (bpp, palette)
+            if transparent_key is not None:
+                self.info["transparency"] = (0, 0, 0)
         else:
             self._mode = "P"
             self.palette = ImagePalette.raw("RGB", b"".join(palette.values()))
-            args = (bpp, tuple(palette.keys()))
+            palette_keys = tuple(palette.keys())
+            args = (bpp, palette_keys)
+            if transparent_key is not None:
+                self.info["transparency"] = palette_keys.index(transparent_key)
 
         self.tile = [ImageFile._Tile("xpm", (0, 0) + self.size, self.fp.tell(), args)]
 

@@ -33,6 +33,47 @@ def test_rgb() -> None:
         assert_image_similar(im, hopper(), 16)
 
 
+def test_transparency() -> None:
+    data = b"""/* XPM */
+static char *test[] = {
+"2 2 3 1",
+" \tc None",
+"r\tc #FF0000",
+"b\tc #0000FF",
+" r",
+"b "};
+"""
+    with Image.open(BytesIO(data)) as im:
+        assert im.mode == "P"
+        assert im.info["transparency"] == 0
+
+        converted = im.convert("RGBA")
+        assert converted.getpixel((0, 0)) == (0, 0, 0, 0)
+        assert converted.getpixel((1, 0)) == (255, 0, 0, 255)
+        assert converted.getpixel((0, 1)) == (0, 0, 255, 255)
+
+
+def test_transparency_rgb() -> None:
+    # With more than 256 colours, the image is opened as RGB
+    chars = "0123456789abcdefghijklmnopqrstuvwxy"
+    colours = [
+        b'"%s\tc #%06x",' % ((chars[i // 35] + chars[i % 35]).encode(), i + 1)
+        for i in range(300)
+    ]
+    colours.append(b'"zz\tc None",')
+    data = (
+        b'/* XPM */\nstatic char *test[] = {\n"2 1 301 2",\n'
+        + b"\n".join(colours)
+        + b'\n"00zz"};\n'
+    )
+    with Image.open(BytesIO(data)) as im:
+        assert im.mode == "RGB"
+        assert im.info["transparency"] == (0, 0, 0)
+
+        assert im.getpixel((0, 0)) == (0, 0, 1)
+        assert im.getpixel((1, 0)) == (0, 0, 0)
+
+
 def test_truncated_header() -> None:
     data = b"/* XPM */"
     with pytest.raises(SyntaxError, match="broken XPM file"):
