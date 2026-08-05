@@ -97,6 +97,8 @@
 
 #include "libImaging/Imaging.h"
 
+#include "thirdparty/pythoncapi_compat.h"
+
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <stddef.h>
@@ -461,7 +463,17 @@ getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
         return NULL;
     }
 
-    for (i = 0; i < n; i++) {
+    // On a free-threaded build PySequence_Fast returns the list itself for a list
+    // input, so the walk below aliases the caller's list. Hold a critical section on
+    // it and clamp to its current length, so a concurrent resize cannot make
+    // PySequence_Fast_GET_ITEM read out of bounds (#9852). `n` was read before this
+    // point and may be stale.
+    Py_BEGIN_CRITICAL_SECTION(seq);
+    Py_ssize_t count = PySequence_Fast_GET_SIZE(seq);
+    if (count > n) {
+        count = n;
+    }
+    for (i = 0; i < count; i++) {
         op = PySequence_Fast_GET_ITEM(seq, i);
         // DRY, branch prediction is going to work _really_ well
         // on this switch. And 3 fewer loops to copy/paste.
@@ -484,6 +496,7 @@ getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
                 break;
         }
     }
+    Py_END_CRITICAL_SECTION();
 
     Py_DECREF(seq);
 
