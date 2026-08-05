@@ -1673,6 +1673,8 @@ class TiffImageFile(ImageFile.ImageFile):
         if self.mode in ["P", "PA"]:
             palette = [o8(b // 256) for b in self.tag_v2[COLORMAP]]
             self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
+        else:
+            self.palette = None
 
 
 #
