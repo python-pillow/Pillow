@@ -292,7 +292,6 @@ class TestColorLut3DCoreAPI:
             -1, -1,  2,   2, -1,  2,
             -1,  2,  2,   2,  2,  2,
         ]  # fmt: skip
-
         transformed = im._new(
             im.im.color_lut_3d("RGB", Image.Resampling.BILINEAR, 3, (2, 2, 2), table)
         ).load()
