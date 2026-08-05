@@ -53,8 +53,9 @@ static char *test[] = {
         assert converted.getpixel((0, 1)) == (0, 0, 255, 255)
 
 
-def test_transparency_rgb() -> None:
-    # With more than 256 colours, the image is opened as RGB
+def test_transparency_rgba() -> None:
+    # With more than 256 colours and a transparent colour,
+    # the image is opened as RGBA
     chars = "0123456789abcdefghijklmnopqrstuvwxy"
     colours = [
         b'"%s\tc #%06x",' % ((chars[i // 35] + chars[i % 35]).encode(), i + 1)
@@ -67,11 +68,11 @@ def test_transparency_rgb() -> None:
         + b'\n"00zz"};\n'
     )
     with Image.open(BytesIO(data)) as im:
-        assert im.mode == "RGB"
-        assert im.info["transparency"] == (0, 0, 0)
+        assert im.mode == "RGBA"
+        assert "transparency" not in im.info
 
-        assert im.getpixel((0, 0)) == (0, 0, 1)
-        assert im.getpixel((1, 0)) == (0, 0, 0)
+        assert im.getpixel((0, 0)) == (0, 0, 1, 255)
+        assert im.getpixel((1, 0)) == (0, 0, 0, 0)
 
 
 def test_truncated_header() -> None:
