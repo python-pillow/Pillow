@@ -12,16 +12,8 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a :py:exc:`DeprecationWarning` is issued.
 
-ExifTags.IFD.Makernote
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 11.1.0
-
-``ExifTags.IFD.Makernote`` has been deprecated. Instead, use
-``ExifTags.IFD.MakerNote``.
-
 Image getdata()
-~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
 .. deprecated:: 12.1.0
 
@@ -105,6 +97,14 @@ Image.Image.get_child_images()
 ``ImageFile.ImageFile.get_child_images()``. The method uses an image's file pointer,
 and so child images could only be retrieved from an :py:class:`PIL.ImageFile.ImageFile`
 instance.
+
+ExifTags.IFD.Makernote
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.1.0
+.. versionremoved:: 13.0.0
+
+``ExifTags.IFD.Makernote`` has been removed. Instead, use ``ExifTags.IFD.MakerNote``.
 
 ImageFile.raise_oserror
 ^^^^^^^^^^^^^^^^^^^^^^^
