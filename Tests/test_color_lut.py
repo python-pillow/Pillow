@@ -497,7 +497,7 @@ class TestGenerateColorLut3D:
         assert lut.name == "Color 3D LUT"
         assert lut.table[:24] == [
             0.0, 0.0, 0.0, 0.0,  0.0, 0.25, 0.0, 0.125,  0.0, 0.5, 0.0, 0.25,
-            0.0, 0.75, 0.0, 0.375,  0.0, 1.0, 0.0, 0.5,  0.0, 0.0, 0.25, 0.125
+            0.0, 0.75, 0.0, 0.375,  0.0, 1.0, 0.0, 0.5,  0.0, 0.0, 0.25, 0.125,
         ]  # fmt: skip
 
     def test_apply(self) -> None:
