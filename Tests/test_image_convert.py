@@ -310,7 +310,6 @@ def test_matrix_illegal_conversion() -> None:
 def test_matrix_wrong_mode() -> None:
     # Arrange
     im = hopper("L")
-
     assert im.mode == "L"
 
     # Act / Assert
