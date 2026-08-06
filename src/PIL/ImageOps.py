@@ -18,6 +18,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"collections.abc", "functools", "operator", "re"}
+
 import functools
 import operator
 import re

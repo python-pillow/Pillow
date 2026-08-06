@@ -23,6 +23,8 @@ Parse X Bitmap Distribution Format (BDF)
 
 from __future__ import annotations
 
+__lazy_modules__ = {"typing"}
+
 from typing import BinaryIO
 
 from . import FontFile, Image

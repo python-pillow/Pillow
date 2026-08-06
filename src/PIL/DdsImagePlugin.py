@@ -12,6 +12,8 @@ https://creativecommons.org/publicdomain/zero/1.0/
 
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "struct", "typing"}
+
 import struct
 import sys
 from enum import IntEnum, IntFlag

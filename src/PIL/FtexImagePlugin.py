@@ -53,6 +53,8 @@ Note: All data is stored in little-Endian (Intel) byte order.
 
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "struct"}
+
 import struct
 from enum import IntEnum
 from io import BytesIO

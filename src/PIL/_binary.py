@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {"struct"}
+
 from struct import pack, unpack_from
 
 

@@ -22,6 +22,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"functools", "math"}
+
 import math
 from functools import cached_property
 

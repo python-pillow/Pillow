@@ -27,6 +27,8 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._typing", "base64", "io", "os", "types", "warnings"}
+
 import abc
 import base64
 import os

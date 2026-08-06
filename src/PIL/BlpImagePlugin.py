@@ -31,6 +31,8 @@ BLP files come in many different flavours:
 
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "os", "struct", "typing"}
+
 import abc
 import os
 import struct

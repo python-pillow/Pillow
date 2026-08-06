@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"os"}
+
 import os
 
 TYPE_CHECKING = False
