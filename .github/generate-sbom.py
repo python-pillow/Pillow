@@ -88,8 +88,10 @@ def generate(version: str) -> dict:
         ("PIL._avif", "AVIF image format extension"),
         (
             "PIL._imaging",
-            "Core image processing extension "
-            "(decode, encode, map, display, outline, path, libImaging)",
+            (
+                "Core image processing extension "
+                "(decode, encode, map, display, outline, path, libImaging)"
+            ),
         ),
         ("PIL._imagingcms", "LittleCMS2 colour management extension"),
         ("PIL._imagingft", "FreeType font rendering extension"),
