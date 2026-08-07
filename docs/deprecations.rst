@@ -30,6 +30,15 @@ Image getdata()
 identical, except that it returns a tuple of pixel values, instead of an internal
 Pillow data type.
 
+Reading "P;2L" and "P;4L" raw mode data directly
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 13.0.0
+
+Using :py:func:`.Image.frombuffer()`, :py:func:`.Image.frombytes()` or
+:py:meth:`~PIL.Image.Image.frombytes()` to read "P;2L" or "P;4L" raw mode data has been
+deprecated.
+
 Removed features
 ----------------
 
