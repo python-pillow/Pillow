@@ -51,6 +51,9 @@ def test_save(tmp_path: Path) -> None:
 
 
 def test_handler(tmp_path: Path) -> None:
+    if GribStubImagePlugin._handler is not None:
+        return
+
     class TestHandler(ImageFile.StubHandler):
         opened = False
         loaded = False
