@@ -226,6 +226,14 @@ class TestFileTiff:
         outfile = tmp_path / "temp.tif"
         im.save(outfile)
 
+    def test_save_ycbcr(self, tmp_path: Path) -> None:
+        im = hopper("YCbCr")
+        outfile = tmp_path / "temp.tif"
+        im.save(outfile)
+
+        with Image.open(outfile) as reloaded:
+            assert_image_equal(im, reloaded)
+
     def test_save_unsupported_mode(self, tmp_path: Path) -> None:
         im = hopper("HSV")
         outfile = tmp_path / "temp.tif"
