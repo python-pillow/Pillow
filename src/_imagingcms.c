@@ -1034,7 +1034,13 @@ cms_profile_getattr_creation_date(CmsProfileObject *self, void *closure) {
     }
 
     return PyDateTime_FromDateAndTime(
-        1900 + ct.tm_year, ct.tm_mon, ct.tm_mday, ct.tm_hour, ct.tm_min, ct.tm_sec, 0
+        1900 + ct.tm_year,
+        ct.tm_mon + 1,
+        ct.tm_mday,
+        ct.tm_hour,
+        ct.tm_min,
+        ct.tm_sec,
+        0
     );
 }
 
