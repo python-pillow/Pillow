@@ -452,8 +452,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **sizes**
     A list of sizes included in this ico file; these are a 2-tuple,
     ``(width, height)``; Default to ``[(16, 16), (24, 24), (32, 32), (48, 48),
-    (64, 64), (128, 128), (256, 256)]``. Any sizes bigger than the original
-    size or 256 will be ignored.
+    (64, 64), (128, 128), (256, 256)]``, or if it is smaller, only the image size.
+    Any sizes bigger than the original size or 256 will be ignored.
 
 The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
 
