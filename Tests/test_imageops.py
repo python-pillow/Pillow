@@ -129,6 +129,18 @@ def test_contain_round() -> None:
 
 
 @pytest.mark.parametrize(
+    "operation", (ImageOps.contain, ImageOps.cover, ImageOps.pad, ImageOps.fit)
+)
+@pytest.mark.parametrize("size", ((0, 10), (10, 0), (-1, 10), (10, -1)))
+def test_size_must_be_positive(operation, size: tuple[int, int]) -> None:
+    # A zero or negative dimension must raise a clear ValueError, not a
+    # ZeroDivisionError (or silently return a wrong-sized image).
+    with Image.new("RGB", (100, 50)) as im:
+        with pytest.raises(ValueError, match="height and width must be > 0"):
+            operation(im, size)
+
+
+@pytest.mark.parametrize(
     "image_name, expected_size",
     (
         ("colr_bungee.png", (1024, 256)),  # landscape

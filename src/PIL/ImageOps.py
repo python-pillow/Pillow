@@ -277,6 +277,12 @@ def colorize(
     return _lut(image, red + green + blue)
 
 
+def _check_size(size: tuple[int, int]) -> None:
+    if size[0] <= 0 or size[1] <= 0:
+        msg = "height and width must be > 0"
+        raise ValueError(msg)
+
+
 def contain(
     image: Image.Image, size: tuple[int, int], method: int = Image.Resampling.BICUBIC
 ) -> Image.Image:
@@ -292,6 +298,8 @@ def contain(
                    See :ref:`concept-filters`.
     :return: An image.
     """
+
+    _check_size(size)
 
     im_ratio = image.width / image.height
     dest_ratio = size[0] / size[1]
@@ -323,6 +331,8 @@ def cover(
                    See :ref:`concept-filters`.
     :return: An image.
     """
+
+    _check_size(size)
 
     im_ratio = image.width / image.height
     dest_ratio = size[0] / size[1]
@@ -561,6 +571,8 @@ def fit(
                       none from the top, and therefore all off the bottom).
     :return: An image.
     """
+
+    _check_size(size)
 
     # by Kevin Cazabon, Feb 17/2000
     # kevin@cazabon.com
