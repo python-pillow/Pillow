@@ -30,6 +30,14 @@ Image getdata()
 identical, except that it returns a tuple of pixel values, instead of an internal
 Pillow data type.
 
+Image.putpixel 'value' lists
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 13.0.0
+
+Passing lists to the ``value`` parameter of :py:meth:`~PIL.Image.Image.putpixel` have
+been deprecated. Use tuples instead.
+
 Removed features
 ----------------
 
