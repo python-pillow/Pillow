@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+import zlib
 
 import pytest
 
@@ -61,7 +62,7 @@ def test_parsing() -> None:
     assert PdfParser.get_value(b"(\\53a)", 0) == (b"\x2ba", 6)
     assert PdfParser.get_value(b"(\\1111)", 0) == (b"\x491", 7)
     assert PdfParser.get_value(b" 123 (", 0) == (123, 4)
-    assert round(abs(PdfParser.get_value(b" 123.4 %", 0)[0] - 123.4), 7) == 0
+    assert PdfParser.get_value(b" 123.4 %", 0)[0] == pytest.approx(123.4)
     assert PdfParser.get_value(b" 123.4 %", 0)[1] == 6
     with pytest.raises(PdfFormatError):
         PdfParser.get_value(b"]", 0)
@@ -93,6 +94,16 @@ def test_parsing() -> None:
             b = b"<</" + name.encode() + b" (" + date + b")>>"
             d = PdfParser.get_value(b, 0)[0]
             assert time.strftime("%Y%m%d%H%M%S", getattr(d, name)) == value
+
+
+def test_pdfstream_flatedecode() -> None:
+    d = PdfDict({b"Filter": b"FlateDecode"})
+    buf = zlib.compress(b"test")
+    s = PdfStream(d, buf)
+    assert s.decode() == b"test"
+
+    with pytest.raises(ValueError, match="Decompressed data too large"):
+        s.decode(3)
 
 
 def test_pdf_repr() -> None:

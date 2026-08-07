@@ -35,7 +35,7 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from types import ModuleType
-from typing import IO, Any, BinaryIO, TypedDict, cast
+from typing import IO, Any, BinaryIO, NotRequired, TypedDict, cast
 
 from . import Image
 from ._typing import StrOrBytesPath
@@ -52,7 +52,7 @@ class Axis(TypedDict):
     minimum: int | None
     default: int | None
     maximum: int | None
-    name: bytes | None
+    name: NotRequired[bytes]
 
 
 class Layout(IntEnum):
@@ -732,7 +732,7 @@ class FreeTypeFont(BaseImageFont):
         """
         axes = self.font.getvaraxes()
         for axis in axes:
-            if axis["name"]:
+            if "name" in axis:
                 axis["name"] = axis["name"].replace(b"\x00", b"")
         return axes
 
@@ -951,7 +951,7 @@ def load_path(filename: str | bytes) -> ImageFont:
     for directory in sys.path:
         try:
             return load(os.path.join(directory, filename))
-        except OSError:  # noqa: PERF203
+        except OSError:
             pass
     msg = f'cannot find font file "{filename}" in sys.path'
     if os.path.exists(filename):

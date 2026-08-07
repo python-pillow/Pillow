@@ -176,17 +176,14 @@ def test_kernel_not_enough_coefficients() -> None:
     "mode", ("L", "LA", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
 )
 def test_consistency_3x3(mode: str) -> None:
+    matrix = (
+        -1, -1,  0,
+        -1,  0,  1,
+         0,  1,  1,
+    )  # fmt: skip
     with Image.open("Tests/images/hopper.bmp") as source:
         with Image.open("Tests/images/hopper_emboss.bmp") as reference:
-            kernel = ImageFilter.Kernel(
-                (3, 3),
-                # fmt: off
-                (-1, -1,  0,
-                 -1,  0,  1,
-                 0,   1,  1),
-                # fmt: on
-                0.3,
-            )
+            kernel = ImageFilter.Kernel((3, 3), matrix, 0.3)
             assert_image_equal(source.filter(kernel), reference)
 
 
@@ -194,20 +191,28 @@ def test_consistency_3x3(mode: str) -> None:
     "mode", ("L", "LA", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
 )
 def test_consistency_5x5(mode: str) -> None:
+    matrix = (
+        -1, -1, -1, -1,  0,
+        -1, -1, -1,  0,  1,
+        -1, -1,  0,  1,  1,
+        -1,  0,  1,  1,  1,
+         0,  1,  1,  1,  1,
+    )  # fmt: skip
     with Image.open("Tests/images/hopper.bmp") as source:
         with Image.open("Tests/images/hopper_emboss_more.bmp") as reference:
-            kernel = ImageFilter.Kernel(
-                (5, 5),
-                # fmt: off
-                (-1, -1, -1, -1,  0,
-                 -1, -1, -1,  0,  1,
-                 -1, -1,  0,  1,  1,
-                 -1,  0,  1,  1,  1,
-                 0,   1,  1,  1,  1),
-                # fmt: on
-                0.3,
-            )
+            kernel = ImageFilter.Kernel((5, 5), matrix, 0.3)
             assert_image_equal(source.filter(kernel), reference)
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_consistency_i16_high_byte(mode: str) -> None:
+    # Exercise filters with a 16bpc image that has content in the high byte, too.
+    im = Image.new(mode, (8, 8), 1000)
+    # Ensure repeated smoothing retains the exact same color value,
+    # rather than drifting due to rounding errors.
+    for _ in range(5):
+        im = im.filter(ImageFilter.SMOOTH)
+        assert im.getpixel((4, 4)) == 1000
 
 
 @pytest.mark.parametrize(
@@ -228,3 +233,13 @@ def test_invalid_box_blur_filter(radius: int | tuple[int, int]) -> None:
     box_blur_filter.radius = radius
     with pytest.raises(ValueError):
         im.filter(box_blur_filter)
+
+
+def test_rankfilter_size_1() -> None:
+    im = Image.new("L", (3, 3), 128)
+
+    # Size 1 should not crash (margin is 0)
+    assert im.filter(ImageFilter.MinFilter(1)).getpixel((1, 1)) == 128
+    assert im.filter(ImageFilter.MaxFilter(1)).getpixel((1, 1)) == 128
+    assert im.filter(ImageFilter.MedianFilter(1)).getpixel((1, 1)) == 128
+    assert im.filter(ImageFilter.RankFilter(1, 0)).getpixel((1, 1)) == 128

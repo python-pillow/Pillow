@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from PIL import GimpGradientFile, ImagePalette
 
 
@@ -84,7 +86,7 @@ def test_sphere_increasing() -> None:
     ret = GimpGradientFile.sphere_increasing(middle, pos)
 
     # Assert
-    assert round(abs(ret - 0.9682458365518543), 7) == 0
+    assert ret == pytest.approx(0.9682458365518543)
 
 
 def test_sphere_decreasing() -> None:

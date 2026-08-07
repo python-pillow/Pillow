@@ -9,7 +9,7 @@ import tempfile
 import warnings
 from pathlib import Path
 from types import ModuleType
-from typing import IO, Any
+from typing import IO
 
 import pytest
 
@@ -19,7 +19,6 @@ from PIL import (
     ImageDraw,
     ImageFile,
     ImagePalette,
-    ImageShow,
     UnidentifiedImageError,
     features,
 )
@@ -197,17 +196,6 @@ class TestImage:
 
         class FP(io.BytesIO):
             name: Path
-
-            if sys.version_info >= (3, 12):
-                from collections.abc import Buffer
-
-                def write(self, data: Buffer) -> int:
-                    return len(data)
-
-            else:
-
-                def write(self, data: Any) -> int:
-                    return len(data)
 
         fp = FP()
         fp.name = temp_file
@@ -753,9 +741,7 @@ class TestImage:
 
         # Act/Assert
         with Image.open(test_file) as im:
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 im.save(temp_file)
 
     def test_no_new_file_on_error(self, tmp_path: Path) -> None:
@@ -1024,18 +1010,6 @@ class TestImage:
         else:
             assert im.getxmp() == {"xmpmeta": None}
 
-    def test_get_child_images(self) -> None:
-        im = Image.new("RGB", (1, 1))
-        with pytest.warns(DeprecationWarning, match="Image.Image.get_child_images"):
-            assert im.get_child_images() == []
-
-    def test_show(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(ImageShow, "_viewers", [])
-
-        im = Image.new("RGB", (1, 1))
-        with pytest.warns(DeprecationWarning, match="Image._show"):
-            Image._show(im)
-
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size: tuple[int, int]) -> None:
         im = Image.new("RGB", size)
@@ -1124,6 +1098,14 @@ class TestImage:
         ):
             for name in enum.__members__:
                 assert getattr(Image, name) == enum[name]
+
+    def test_decoder_setimage_once(self) -> None:
+        im = Image.new("L", (1, 1))
+        decoder = Image._getdecoder("L", "raw", "L")
+
+        decoder.setimage(im.im, None)
+        with pytest.raises(ValueError, match="decoder already has an image"):
+            decoder.setimage(im.im, None)
 
     @pytest.mark.parametrize(
         "path",

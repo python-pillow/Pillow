@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-from packaging.version import parse as parse_version
 
 from PIL import Image
 
@@ -44,12 +43,8 @@ def test_toarray() -> None:
     test_with_dtype(numpy.uint8)
 
     with Image.open("Tests/images/truncated_jpeg.jpg") as im_truncated:
-        if parse_version(numpy.__version__) >= parse_version("1.23"):
-            with pytest.raises(OSError):
-                numpy.array(im_truncated)
-        else:
-            with pytest.warns(DeprecationWarning, match="__array_interface__"):
-                numpy.array(im_truncated)
+        with pytest.raises(OSError):
+            numpy.array(im_truncated)
 
 
 def test_fromarray() -> None:
@@ -122,11 +117,3 @@ def test_fromarray_palette() -> None:
     # Assert that the Python and C palettes match
     assert out.palette is not None
     assert len(out.palette.colors) == len(out.im.getpalette()) / 3
-
-
-def test_deprecation() -> None:
-    a = numpy.array(im.convert("L"))
-    with pytest.warns(
-        DeprecationWarning, match="'mode' parameter for changing data types"
-    ):
-        Image.fromarray(a, "1")
