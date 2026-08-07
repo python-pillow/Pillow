@@ -215,6 +215,10 @@ def _save(
             )
             raise ValueError(msg)
 
+    total = 0
+    for ims in [im] + append_images:
+        total += getattr(ims, "n_frames", 1)
+
     # Setup the AVIF encoder
     enc = _avif.AvifEncoder(
         im.size,
@@ -239,9 +243,10 @@ def _save(
     frame_idx = 0
     frame_duration = 0
     cur_idx = im.tell()
-    is_single_frame = not append_images and not getattr(im, "is_animated", False)
+    is_single_frame = total == 1
+    progress = info.get("progress")
     try:
-        for ims in [im] + append_images:
+        for i, ims in enumerate([im] + append_images):
             for frame in ImageSequence.Iterator(ims):
                 # Make sure image mode is supported
                 rawmode = frame.mode
@@ -271,6 +276,7 @@ def _save(
 
                 # Update frame index
                 frame_idx += 1
+                im._save_all_progress(progress, ims, i, frame_idx, total)
 
                 if not save_all:
                     break
