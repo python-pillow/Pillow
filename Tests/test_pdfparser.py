@@ -62,7 +62,7 @@ def test_parsing() -> None:
     assert PdfParser.get_value(b"(\\53a)", 0) == (b"\x2ba", 6)
     assert PdfParser.get_value(b"(\\1111)", 0) == (b"\x491", 7)
     assert PdfParser.get_value(b" 123 (", 0) == (123, 4)
-    assert round(abs(PdfParser.get_value(b" 123.4 %", 0)[0] - 123.4), 7) == 0
+    assert PdfParser.get_value(b" 123.4 %", 0)[0] == pytest.approx(123.4)
     assert PdfParser.get_value(b" 123.4 %", 0)[1] == 6
     with pytest.raises(PdfFormatError):
         PdfParser.get_value(b"]", 0)

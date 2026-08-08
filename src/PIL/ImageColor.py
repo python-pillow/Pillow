@@ -152,17 +152,19 @@ def getcolor(color: str, mode: str) -> int | tuple[int, ...]:
         r, g, b = rgb
         h, s, v = rgb_to_hsv(r / 255, g / 255, b / 255)
         return int(h * 255), int(s * 255), int(v * 255)
-    elif Image.getmodebase(mode) == "L":
+    if Image.getmodebase(mode) == "L":
         r, g, b = rgb
         # ITU-R Recommendation 601-2 for nonlinear RGB
         # scaled to 24 bits to match the convert's implementation.
         graylevel = (r * 19595 + g * 38470 + b * 7471 + 0x8000) >> 16
-        if mode[-1] == "A":
-            return graylevel, alpha
-        return graylevel
-    elif mode[-1] == "A":
-        return rgb + (alpha,)
-    return rgb
+        value: tuple[int, ...] = (graylevel,)
+    else:
+        value = rgb
+    if mode[-1] == "a":
+        value = tuple(round(band * alpha / 255) for band in value)
+    if mode[-1] in ("A", "a"):
+        return value + (alpha,)
+    return value[0] if len(value) == 1 else value
 
 
 colormap: dict[str, str | tuple[int, int, int]] = {

@@ -85,6 +85,7 @@ int load_fribidi(void) {
     LOAD_FUNCTION(fribidi_unicode_to_charset);
     LOAD_FUNCTION(fribidi_charset_to_unicode);
     LOAD_FUNCTION(fribidi_get_bidi_types);
+    LOAD_FUNCTION(fribidi_get_par_direction);
     LOAD_FUNCTION(fribidi_get_par_embedding_levels);
 
 #ifndef _WIN32

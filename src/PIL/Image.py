@@ -994,9 +994,7 @@ class Image:
             elif self.palette.mode != mode:
                 # If the palette rawmode is different to the mode,
                 # then update the Python palette data
-                self.palette.palette = self.im.getpalette(
-                    self.palette.mode, self.palette.mode
-                )
+                self.palette.palette = self.im.getpalette(self.palette.mode)
 
         if self._im is not None:
             return self.im.pixel_access(self.readonly)
@@ -1346,7 +1344,7 @@ class Image:
         from . import ImagePalette
 
         mode = im.im.getpalettemode()
-        palette_data = im.im.getpalette(mode, mode)[: colors * len(mode)]
+        palette_data = im.im.getpalette(mode)[: colors * len(mode)]
         im.palette = ImagePalette.ImagePalette(mode, palette_data)
 
         return im
@@ -2230,7 +2228,7 @@ class Image:
                 palette_mode = self.im.getpalettemode()
                 if palette_mode == "RGBA":
                     bands = 4
-                source_palette = self.im.getpalette(palette_mode, palette_mode)
+                source_palette = self.im.getpalette(palette_mode)
             else:  # L-mode
                 source_palette = bytearray(i // 3 for i in range(768))
         elif len(source_palette) > 768:
