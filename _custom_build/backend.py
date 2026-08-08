@@ -17,7 +17,9 @@ class _CustomBuildMetaBackend(backend_class):
                 for value in values:
                     sys.argv.append(f"--pillow-configuration={key}={value}")
 
-        return super().run_setup(setup_script)
+        import pillow_ext
+
+        pillow_ext.run()
 
     def build_wheel(
         self, wheel_directory, config_settings=None, metadata_directory=None
