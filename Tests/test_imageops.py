@@ -112,6 +112,10 @@ def test_fit_same_ratio() -> None:
 
 
 def test_fit_zero() -> None:
+    im = Image.new("1", (5, 5))
+    new_im = ImageOps.fit(im, (0, 5))
+    assert new_im.width == 0
+
     im = Image.new("1", (5, 0))
     new_im = ImageOps.fit(im, (5, 5))
     assert new_im.size == (5, 5)

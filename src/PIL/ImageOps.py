@@ -576,7 +576,7 @@ def fit(
     # kevin@cazabon.com
     # https://www.cazabon.com
 
-    if size[1] == 0:
+    if min(size) == 0:
         return Image.new(image.mode, size)
     centering_x, centering_y = centering
 
