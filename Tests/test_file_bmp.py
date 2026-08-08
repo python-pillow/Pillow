@@ -69,6 +69,16 @@ def test_small_palette(tmp_path: Path) -> None:
         assert reloaded.getpalette() == colors
 
 
+def test_empty_palette(tmp_path: Path) -> None:
+    im = Image.new("P", (8, 8))
+
+    out = tmp_path / "temp.bmp"
+    im.save(out)
+
+    with Image.open(out) as reloaded:
+        assert_image_equal(im.convert("L"), reloaded)
+
+
 def test_save_too_large(tmp_path: Path) -> None:
     outfile = tmp_path / "temp.bmp"
     with Image.new("RGB", (1, 1)) as im:
