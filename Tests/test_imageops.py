@@ -111,6 +111,16 @@ def test_fit_same_ratio() -> None:
         assert new_im.size == (1000, 755)
 
 
+def test_fit_zero() -> None:
+    im = Image.new("1", (5, 0))
+    new_im = ImageOps.fit(im, (5, 5))
+    assert new_im.size == (5, 5)
+
+    im = Image.new("1", (5, 5))
+    new_im = ImageOps.fit(im, (10, 0))
+    assert new_im.size == (10, 0)
+
+
 @pytest.mark.parametrize("new_size", ((256, 256), (512, 256), (256, 512)))
 def test_contain(new_size: tuple[int, int]) -> None:
     im = hopper()
@@ -137,6 +147,14 @@ def test_contain_zero() -> None:
     new_im = ImageOps.contain(im, (5, 5))
     assert new_im.height == 0
 
+    im = Image.new("1", (10, 0))
+    new_im = ImageOps.contain(im, (5, 5))
+    assert new_im.size == (5, 0)
+
+    im = Image.new("1", (5, 5))
+    new_im = ImageOps.contain(im, (2, 0))
+    assert new_im.size == (0, 0)
+
 
 @pytest.mark.parametrize(
     "image_name, expected_size",
@@ -150,6 +168,16 @@ def test_cover(image_name: str, expected_size: tuple[int, int]) -> None:
     with Image.open("Tests/images/" + image_name) as im:
         new_im = ImageOps.cover(im, (256, 256))
         assert new_im.size == expected_size
+
+
+def test_cover_zero() -> None:
+    im = Image.new("1", (10, 0))
+    new_im = ImageOps.cover(im, (5, 5))
+    assert new_im.size == (5, 0)
+
+    im = Image.new("1", (5, 5))
+    new_im = ImageOps.cover(im, (2, 0))
+    assert new_im.size == (0, 0)
 
 
 def test_pad() -> None:
