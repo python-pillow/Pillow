@@ -73,6 +73,7 @@
 
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
+#include "thirdparty/pythoncapi_compat.h"
 
 #ifdef HAVE_LIBJPEG
 #include "jconfig.h"
@@ -418,7 +419,7 @@ getbands(const ModeID mode) {
 #define TYPE_DOUBLE (0x400 | sizeof(double))
 
 static void *
-getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
+getlist_impl(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
     /* - allocates and returns a c array of the items in the
           python sequence arg.
        - the size of the returned array is in length
@@ -497,6 +498,15 @@ getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
     }
 
     return list;
+}
+
+static void *
+getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
+    void *result;
+    Py_BEGIN_CRITICAL_SECTION(arg);
+    result = getlist_impl(arg, length, wrong_length, type);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 FLOAT32
