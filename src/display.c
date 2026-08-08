@@ -134,9 +134,13 @@ _paste(ImagingDisplayObject *display, PyObject *args) {
 
     if (xy[2] <= xy[0]) {
         xy[2] = xy[0] + im->xsize;
+    } else if (xy[2] - xy[0] != im->xsize) {
+        return ImagingError_Mismatch();
     }
     if (xy[3] <= xy[1]) {
         xy[3] = xy[1] + im->ysize;
+    } else if (xy[3] - xy[1] != im->ysize) {
+        return ImagingError_Mismatch();
     }
 
     ImagingPasteDIB(display->dib, im, xy);

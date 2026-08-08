@@ -235,23 +235,9 @@ findLCMStype(const char *const mode_name) {
             );
         default:
             // This function only accepts a subset of the imaging modes Pillow has.
-            break;
+            // presume "1" or "L" by default
+            return TYPE_GRAY_8;
     }
-    // The following modes are not valid PIL Image modes.
-    if (strcmp(mode_name, "RGBA;16B") == 0) {
-        return TYPE_RGBA_16;
-    }
-    if (strcmp(mode_name, "L;16") == 0) {
-        return TYPE_GRAY_16;
-    }
-    if (strcmp(mode_name, "L;16B") == 0) {
-        return TYPE_GRAY_16_SE;
-    }
-    if (strcmp(mode_name, "YCCA") == 0 || strcmp(mode_name, "YCC") == 0) {
-        return TYPE_YCbCr_8;
-    }
-    /* presume "1" or "L" by default */
-    return TYPE_GRAY_8;
 }
 
 #define Cms_Min(a, b) ((a) < (b) ? (a) : (b))

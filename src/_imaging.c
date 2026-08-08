@@ -328,7 +328,6 @@ _new_arrow(PyObject *self, PyObject *args) {
     ModeID mode_id;
     int xsize, ysize;
     PyObject *schema_capsule, *array_capsule;
-    PyObject *ret;
 
     if (!PyArg_ParseTuple(
             args, "s(ii)OO", &mode, &xsize, &ysize, &schema_capsule, &array_capsule
@@ -1115,6 +1114,9 @@ _expand_image(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
+    if (m == 0) {
+        return PyImagingNew(ImagingCopy(self->image));
+    }
     return PyImagingNew(ImagingExpand(self->image, m));
 }
 
@@ -1187,9 +1189,12 @@ _getpalette(ImagingObject *self, PyObject *args) {
     ImagingShuffler pack;
 
     char *mode_name = "RGB";
-    char *rawmode_name = "RGB";
+    char *rawmode_name = NULL;
     if (!PyArg_ParseTuple(args, "|ss", &mode_name, &rawmode_name)) {
         return NULL;
+    }
+    if (rawmode_name == NULL) {
+        rawmode_name = mode_name;
     }
 
     if (!self->image->palette) {
@@ -1634,6 +1639,10 @@ _putdata(ImagingObject *self, PyObject *args) {
         return NULL;                                                    \
     } else {                                                            \
         value = PyFloat_AsDouble(op);                                   \
+        if (value == -1.0 && PyErr_Occurred()) {                        \
+            Py_DECREF(seq);                                             \
+            return NULL;                                                \
+        }                                                               \
     }
     if (image->image8) {
         if (PyBytes_Check(data)) {
@@ -1693,7 +1702,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                     x = 0, y++;
                 }
             }
-            PyErr_Clear(); /* Avoid weird exceptions */
         }
     } else {
         /* 32-bit images */
@@ -1712,7 +1720,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                         x = 0, y++;
                     }
                 }
-                PyErr_Clear(); /* Avoid weird exceptions */
                 break;
             case IMAGING_TYPE_FLOAT32:
                 for (i = x = y = 0; i < n; i++) {
@@ -1724,7 +1731,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                         x = 0, y++;
                     }
                 }
-                PyErr_Clear(); /* Avoid weird exceptions */
                 break;
             default:
                 for (i = x = y = 0; i < n; i++) {
@@ -1746,7 +1752,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                         x = 0, y++;
                     }
                 }
-                PyErr_Clear(); /* Avoid weird exceptions */
                 break;
         }
     }
@@ -2881,9 +2886,6 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
         free(text);
         return ImagingError_MemoryError();
     }
-
-    b = 0;
-    (void)ImagingFill(im, &b);
 
     b = self->baseline;
     for (x = 0; text[i]; i++) {

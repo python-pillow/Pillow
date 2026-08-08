@@ -302,7 +302,7 @@ def _pkg_config(name: str) -> tuple[list[str], list[str]] | None:
                 subprocess.check_output(command_cflags).decode("utf8").strip(),
             )[::2][1:]
             return libs, cflags
-        except Exception:  # noqa: PERF203
+        except Exception:
             pass
     return None
 
@@ -1093,10 +1093,6 @@ class pil_build_ext(build_ext):
         print("")
 
 
-def debug_build() -> bool:
-    return hasattr(sys, "gettotalrefcount") or FUZZING_BUILD
-
-
 libraries: list[tuple[str, _BuildInfo]] = [
     ("pil_imaging_mode", {"sources": ["src/libImaging/Mode.c"]}),
 ]
@@ -1128,7 +1124,6 @@ try:
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=ext_modules,
         libraries=libraries,
-        zip_safe=not (debug_build() or PLATFORM_MINGW),
     )
 except RequiredDependencyException as err:
     msg = f"""

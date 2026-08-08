@@ -204,6 +204,10 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
         return NULL;
     }
 
+    if (decoder->im != NULL) {
+        PyErr_SetString(PyExc_ValueError, "decoder already has an image");
+        return NULL;
+    }
     decoder->im = im;
 
     state = &decoder->state;
