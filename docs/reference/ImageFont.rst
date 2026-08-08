@@ -6,12 +6,17 @@
 
 The :py:mod:`~PIL.ImageFont` module defines a class with the same name. Instances of
 this class store bitmap fonts, and are used with the
-:py:meth:`PIL.ImageDraw.ImageDraw.text` method.
+:py:meth:`PIL.ImageDraw.ImageDraw.text` method or the :py:class:`PIL.ImageText.Text`
+class.
 
-PIL uses its own font file format to store bitmap fonts, limited to 256 characters. You can use
-`pilfont.py <https://github.com/python-pillow/pillow-scripts/blob/main/Scripts/pilfont.py>`_
-from :pypi:`pillow-scripts` to convert BDF and
-PCF font descriptors (X window font formats) to this format.
+Pillow uses its own font file format to store bitmap fonts, limited to 256 characters. You
+can use :py:meth:`~PIL.FontFile.FontFile.to_imagefont` to convert BDF and PCF font
+descriptors (X Window font formats) to this format::
+
+    from PIL import PcfFontFile
+    with open("Tests/fonts/10x20-ISO8859-1.pcf", "rb") as fp:
+        font = PcfFontFile.PcfFontFile(fp)
+        imagefont = font.to_imagefont()
 
 Starting with version 1.1.4, PIL can be configured to support TrueType and
 OpenType fonts (as well as other font formats supported by the FreeType
@@ -61,15 +66,21 @@ Functions
 Methods
 -------
 
+.. autoclass:: PIL.ImageFont.BaseImageFont
+    :members:
+
 .. autoclass:: PIL.ImageFont.ImageFont
     :members:
+    :show-inheritance:
 
 .. autoclass:: PIL.ImageFont.FreeTypeFont
     :members:
+    :show-inheritance:
 
 .. autoclass:: PIL.ImageFont.TransposedFont
     :members:
     :undoc-members:
+    :show-inheritance:
 
 Constants
 ---------

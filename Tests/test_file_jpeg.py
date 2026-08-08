@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import re
+import struct
 import warnings
 from io import BytesIO
 from pathlib import Path
@@ -85,7 +86,7 @@ class TestFileJpeg:
     def test_zero(self, size: tuple[int, int], tmp_path: Path) -> None:
         f = tmp_path / "temp.jpg"
         im = Image.new("RGB", size)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="cannot write empty image"):
             im.save(f)
 
     def test_app(self) -> None:
@@ -590,9 +591,7 @@ class TestFileJpeg:
             assert im2.quantization == {0: bounds_qtable}
 
             # values from wizard.txt in jpeg9-a src package.
-            standard_l_qtable = [
-                int(s)
-                for s in """
+            standard_l_qtable = [int(s) for s in """
                 16  11  10  16  24  40  51  61
                 12  12  14  19  26  58  60  55
                 14  13  16  24  40  57  69  56
@@ -601,14 +600,9 @@ class TestFileJpeg:
                 24  35  55  64  81 104 113  92
                 49  64  78  87 103 121 120 101
                 72  92  95  98 112 100 103  99
-                """.split(
-                    None
-                )
-            ]
+                """.split(None)]
 
-            standard_chrominance_qtable = [
-                int(s)
-                for s in """
+            standard_chrominance_qtable = [int(s) for s in """
                 17  18  24  47  99  99  99  99
                 18  21  26  66  99  99  99  99
                 24  26  56  99  99  99  99  99
@@ -617,10 +611,7 @@ class TestFileJpeg:
                 99  99  99  99  99  99  99  99
                 99  99  99  99  99  99  99  99
                 99  99  99  99  99  99  99  99
-                """.split(
-                    None
-                )
-            ]
+                """.split(None)]
 
             for quality in range(101):
                 qtable_from_qtable_quality = self.roundtrip(
@@ -776,6 +767,18 @@ class TestFileJpeg:
 
         im.close()
 
+    def test_mp_entry_count_too_high(self) -> None:
+        """Treat an MPO with fewer MP entries than images as JPEG"""
+        with open("Tests/images/sugarshack.mpo", "rb") as fp:
+            data = fp.read()
+
+        # Change the number of images to three, without adding a third MP entry
+        data = data[:6048] + struct.pack(">L", 3) + data[6052:]
+
+        with pytest.warns(UserWarning, match="malformed MPO file"):
+            with Image.open(BytesIO(data)) as im:
+                assert im.format == "JPEG"
+
     @pytest.mark.parametrize("mode", ("1", "L", "RGB", "RGBX", "CMYK", "YCbCr"))
     def test_save_correct_modes(self, mode: str) -> None:
         out = BytesIO()
@@ -890,9 +893,7 @@ class TestFileJpeg:
             assert exif[282] == 180
 
             out = tmp_path / "out.jpg"
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 im.save(out, exif=exif)
 
         with Image.open(out) as reloaded:
@@ -1063,9 +1064,7 @@ class TestFileJpeg:
         # Even though this decoder never says that it is finished
         # the image should still end when there is no new data
         class InfiniteMockPyDecoder(ImageFile.PyDecoder):
-            def decode(
-                self, buffer: bytes | Image.SupportsArrayInterface
-            ) -> tuple[int, int]:
+            def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
                 return 0, 0
 
         Image.register_decoder("INFINITE", InfiniteMockPyDecoder)
@@ -1133,8 +1132,9 @@ class TestFileCloseW32:
             im.save(tmpfile)
 
         im = Image.open(tmpfile)
+        assert im.fp is not None
+        assert not im.fp.closed
         fp = im.fp
-        assert not fp.closed
         with pytest.raises(OSError):
             os.remove(tmpfile)
         im.load()

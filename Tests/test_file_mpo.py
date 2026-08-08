@@ -6,7 +6,14 @@ from typing import Any
 
 import pytest
 
-from PIL import Image, ImageFile, JpegImagePlugin, MpoImagePlugin
+from PIL import (
+    Image,
+    ImageFile,
+    JpegImagePlugin,
+    MpoImagePlugin,
+    TiffImagePlugin,
+    _binary,
+)
 
 from .helper import (
     assert_image_equal,
@@ -52,9 +59,7 @@ def test_unclosed_file() -> None:
 
 
 def test_closed_file() -> None:
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-
+    with warnings.catch_warnings(action="error"):
         im = Image.open(test_files[0])
         im.load()
         im.close()
@@ -69,9 +74,7 @@ def test_seek_after_close() -> None:
 
 
 def test_context_manager() -> None:
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-
+    with warnings.catch_warnings(action="error"):
         with Image.open(test_files[0]) as im:
             im.load()
 
@@ -143,6 +146,32 @@ def test_parallax() -> None:
         im.seek(1)
         exif = im.getexif()
         assert exif.get_ifd(0x927C)[0xB211] == -3.125
+
+
+def test_truncated_makernote() -> None:
+    def check(ifd: TiffImagePlugin.ImageFileDirectory_v2) -> None:
+        fp = BytesIO()
+        ifd.save(fp)
+
+        e = Image.Exif()
+        e.load(fp.getvalue())
+        assert e.get_ifd(37500) == {}
+
+    # Nintendo
+    ifd = TiffImagePlugin.ImageFileDirectory_v2()
+    ifd[271] = "Nintendo"
+    ifd[34665] = {37500: b" "}
+    check(ifd)
+
+    # Fujifilm
+    for data in (
+        b"FUJIFILM",
+        b"FUJIFILM" + _binary.o32le(50),
+        b"FUJIFILM" + _binary.o32le(0),
+    ):
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[34665] = {37500: data}
+        check(ifd)
 
 
 def test_reload_exif_after_seek() -> None:

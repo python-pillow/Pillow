@@ -171,6 +171,23 @@ def test_pad_round() -> None:
     assert new_im.getpixel((0, 2)) == 1
 
 
+def test_pad_palette() -> None:
+    with Image.open("Tests/images/p_16.tga") as im:
+        im_padded = ImageOps.pad(im, (im.width * 2, im.height), color=(255, 0, 0))
+        im_rgb = im_padded.convert("RGB")
+
+        # Verify that the left and right sides are now red
+        px = im_rgb.load()
+        assert px is not None
+        for y in range(im_rgb.height):
+            for x in range(im.width // 2):
+                assert px[x, y] == (255, 0, 0)
+                assert px[im_rgb.width - 1 - x, y] == (255, 0, 0)
+
+        im_cropped = im_rgb.crop((im.width * 0.5, 0, im.width * 1.5, im.height))
+        assert_image_equal(im_cropped, im.convert("RGB"))
+
+
 @pytest.mark.parametrize("mode", ("P", "PA"))
 def test_palette(mode: str) -> None:
     im = hopper(mode)
@@ -254,6 +271,13 @@ def test_expand_palette(border: int | tuple[int, int, int, int]) -> None:
             (left, top, im_expanded.width - right, im_expanded.height - bottom)
         )
         assert_image_equal(im_cropped, im)
+
+
+@pytest.mark.parametrize("border", ((1,), (1, 2, 3), (1, 2, 3, 4, 5)))
+def test_expand_invalid_border(border: tuple[int, ...]) -> None:
+    im = Image.new("1", (1, 1))
+    with pytest.raises(ValueError):
+        ImageOps.expand(im, border)
 
 
 def test_colorize_2color() -> None:
@@ -399,6 +423,33 @@ def test_colorize_3color_offset() -> None:
     )
 
 
+def test_colorize_invalid_mode() -> None:
+    with pytest.raises(ValueError, match="mode must be L, not RGB"):
+        ImageOps.colorize(hopper("RGB"), "black", "white")
+
+
+@pytest.mark.parametrize("blackpoint, whitepoint", ((-1, 255), (0, 256), (200, 50)))
+def test_colorize_invalid_points(blackpoint: int, whitepoint: int) -> None:
+    with pytest.raises(ValueError, match="blackpoint and whitepoint must each be"):
+        ImageOps.colorize(
+            hopper("L"), "black", "white", blackpoint=blackpoint, whitepoint=whitepoint
+        )
+
+
+@pytest.mark.parametrize("midpoint", (100, 200))
+def test_colorize_invalid_midpoint(midpoint: int) -> None:
+    with pytest.raises(ValueError, match="midpoint must be between or equal to"):
+        ImageOps.colorize(
+            hopper("L"),
+            "black",
+            "white",
+            mid="blue",
+            blackpoint=125,
+            midpoint=midpoint,
+            whitepoint=175,
+        )
+
+
 def test_exif_transpose() -> None:
     exts = [".jpg"]
     if features.check("webp"):
@@ -457,9 +508,9 @@ def test_exif_transpose() -> None:
         assert 0x0112 not in transposed_im.getexif()
 
     # Orientation set directly on Image.Exif
-    im = hopper()
-    im.getexif()[0x0112] = 3
-    transposed_im = ImageOps.exif_transpose(im)
+    im1 = hopper()
+    im1.getexif()[0x0112] = 3
+    transposed_im = ImageOps.exif_transpose(im1)
     assert 0x0112 not in transposed_im.getexif()
 
 

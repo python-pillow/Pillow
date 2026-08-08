@@ -54,6 +54,9 @@ class BoxReader:
         if not self._can_read(num_bytes):
             msg = "Not enough data in header"
             raise SyntaxError(msg)
+        if self.fp.tell() + num_bytes >= 2**63:
+            msg = "Box length too large"
+            raise SyntaxError(msg)
 
         data = self.fp.read(num_bytes)
         if len(data) < num_bytes:
@@ -83,6 +86,9 @@ class BoxReader:
     def next_box_type(self) -> bytes:
         # Skip the rest of the box if it has not been read
         if self.remaining_in_box > 0:
+            if self.fp.tell() + self.remaining_in_box >= 2**63:
+                msg = "Box length too large"
+                raise SyntaxError(msg)
             self.fp.seek(self.remaining_in_box, os.SEEK_CUR)
         self.remaining_in_box = -1
 
@@ -108,6 +114,9 @@ def _parse_codestream(fp: IO[bytes]) -> tuple[tuple[int, int], str]:
 
     hdr = fp.read(2)
     lsiz = _binary.i16be(hdr)
+    if lsiz < 38:
+        msg = "SIZ marker length must be at least 38"
+        raise ValueError(msg)
     siz = hdr + fp.read(lsiz - 2)
     lsiz, rsiz, xsiz, ysiz, xosiz, yosiz, _, _, _, _, csiz = struct.unpack_from(
         ">HHIIIIIIIIH", siz
@@ -176,6 +185,7 @@ def _parse_jp2_header(
     nc = None
     dpi = None  # 2-tuple of DPI info, or None
     palette = None
+    colr = None
 
     while header.has_next_box():
         tbox = header.next_box_type()
@@ -196,11 +206,18 @@ def _parse_jp2_header(
                 mode = "RGB"
             elif nc == 4:
                 mode = "RGBA"
-        elif tbox == b"colr" and nc == 4:
+        elif tbox == b"colr":
             meth, _, _, enumcs = header.read_fields(">BBBI")
-            if meth == 1 and enumcs == 12:
-                mode = "CMYK"
-        elif tbox == b"pclr" and mode in ("L", "LA"):
+            if meth == 1:
+                if enumcs in (0, 15):
+                    colr = "1"
+                elif enumcs == 12:
+                    colr = "CMYK"
+                    if nc == 4:
+                        mode = "CMYK"
+                elif enumcs == 17:
+                    colr = "L"
+        elif tbox == b"pclr" and mode in ("L", "LA") and colr not in ("1", "L"):
             ne, npc = header.read_fields(">HB")
             assert isinstance(ne, int)
             assert isinstance(npc, int)
@@ -210,7 +227,11 @@ def _parse_jp2_header(
                 if bitdepth > max_bitdepth:
                     max_bitdepth = bitdepth
             if max_bitdepth <= 8:
-                palette = ImagePalette.ImagePalette("RGBA" if npc == 4 else "RGB")
+                if npc == 4:
+                    palette_mode = "CMYK" if colr == "CMYK" else "RGBA"
+                else:
+                    palette_mode = "RGB"
+                palette = ImagePalette.ImagePalette(palette_mode)
                 for i in range(ne):
                     color: list[int] = []
                     for value in header.read_fields(">" + ("B" * npc)):
@@ -252,6 +273,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
     format_description = "JPEG 2000 (ISO 15444)"
 
     def _open(self) -> None:
+        assert self.fp is not None
         sig = self.fp.read(4)
         if sig == b"\xff\x4f\xff\x51":
             self.codec = "j2k"
@@ -304,6 +326,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         ]
 
     def _parse_comment(self) -> None:
+        assert self.fp is not None
         while True:
             marker = self.fp.read(2)
             if not marker:
@@ -314,6 +337,9 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 break
             hdr = self.fp.read(2)
             length = _binary.i16be(hdr)
+            if length < 2:
+                msg = "Marker length too small"
+                raise ValueError(msg)
             if typ == 0x64:
                 # Comment
                 self.info["comment"] = self.fp.read(length - 2)[2:]

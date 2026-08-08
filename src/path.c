@@ -118,14 +118,27 @@ assign_item_to_array(double *xy, Py_ssize_t j, PyObject *op) {
     } else if (PyNumber_Check(op)) {
         xy[j++] = PyFloat_AsDouble(op);
     } else if (PyList_Check(op)) {
+        if (PyList_GET_SIZE(op) != 2) {
+            PyErr_SetString(
+                PyExc_ValueError, "coordinate list must contain exactly 2 coordinates"
+            );
+            return -1;
+        }
         for (int k = 0; k < 2; k++) {
             PyObject *op1 = PyList_GetItemRef(op, k);
             if (op1 == NULL) {
                 return -1;
             }
-            j = assign_item_to_array(xy, j, op1);
+            if (PyFloat_Check(op1) || PyLong_Check(op1) || PyNumber_Check(op1)) {
+                j = assign_item_to_array(xy, j, op1);
+            } else {
+                j = -1;
+            }
             Py_DECREF(op1);
             if (j == -1) {
+                PyErr_SetString(
+                    PyExc_ValueError, "coordinate list must contain numbers"
+                );
                 return -1;
             }
         }
@@ -167,6 +180,7 @@ PyPath_Flatten(PyObject *data, double **pxy) {
             n = buffer.len / (2 * sizeof(float));
             xy = alloc_array(n);
             if (!xy) {
+                PyBuffer_Release(&buffer);
                 return -1;
             }
             for (i = 0; i < n + n; i++) {
@@ -176,7 +190,12 @@ PyPath_Flatten(PyObject *data, double **pxy) {
             PyBuffer_Release(&buffer);
             return n;
         }
-        PyErr_Clear();
+        if (PyErr_Occurred()) {
+            if (!PyErr_ExceptionMatches(PyExc_BufferError)) {
+                return -1;
+            }
+            PyErr_Clear();
+        }
     }
 
     if (!PySequence_Check(data)) {
@@ -263,8 +282,16 @@ PyPath_Create(PyObject *self, PyObject *args) {
     Py_ssize_t count;
     double *xy;
 
-    if (PyArg_ParseTuple(args, "n:Path", &count)) {
+    if (!PyArg_ParseTuple(args, "O", &data)) {
+        return NULL;
+    }
+    if (PyLong_Check(data)) {
         /* number of vertices */
+        count = PyLong_AsSsize_t(data);
+        if (PyErr_Occurred()) {
+            return NULL;
+        }
+
         xy = alloc_array(count);
         if (!xy) {
             return NULL;
@@ -272,11 +299,6 @@ PyPath_Create(PyObject *self, PyObject *args) {
 
     } else {
         /* sequence or other path */
-        PyErr_Clear();
-        if (!PyArg_ParseTuple(args, "O", &data)) {
-            return NULL;
-        }
-
         count = PyPath_Flatten(data, &xy);
         if (count < 0) {
             return NULL;
@@ -321,11 +343,14 @@ path_compact(PyPathObject *self, PyObject *args) {
     }
 
     i = self->count - j;
-    self->count = j;
 
     /* shrink coordinate array */
-    /* malloc check ok, self->count is smaller than it was before */
-    self->xy = realloc(self->xy, 2 * self->count * sizeof(double));
+    double *new_xy = realloc(self->xy, 2 * j * sizeof(double));
+    if (!new_xy) {
+        return ImagingError_MemoryError();
+    }
+    self->xy = new_xy;
+    self->count = j;
 
     return Py_BuildValue("i", i); /* number of removed vertices */
 }
@@ -579,7 +604,7 @@ path_subscript(PyPathObject *self, PyObject *item) {
         return path_getitem(self, i);
     }
     if (PySlice_Check(item)) {
-        int len = 4;
+        int len = self->count;
         Py_ssize_t start, stop, step, slicelength;
 
         if (PySlice_GetIndicesEx(item, len, &start, &stop, &step, &slicelength) < 0) {

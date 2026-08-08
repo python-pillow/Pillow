@@ -57,7 +57,7 @@ TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA = "Tests/images/uncompressed_rgb.dds"
 def test_sanity_dxt1_bc1(image_path: str) -> None:
     """Check DXT1 and BC1 images can be opened"""
     with Image.open(TEST_FILE_DXT1.replace(".dds", ".png")) as target:
-        target = target.convert("RGBA")
+        target_rgba = target.convert("RGBA")
     with Image.open(image_path) as im:
         im.load()
 
@@ -65,7 +65,7 @@ def test_sanity_dxt1_bc1(image_path: str) -> None:
         assert im.mode == "RGBA"
         assert im.size == (256, 256)
 
-        assert_image_equal(im, target)
+        assert_image_equal(im, target_rgba)
 
 
 def test_sanity_dxt3() -> None:
@@ -520,9 +520,9 @@ def test_save_dx10_bc5(tmp_path: Path) -> None:
         im.save(out, pixel_format="BC5")
     assert_image_similar_tofile(im, out, 9.56)
 
-    im = hopper("L")
+    im_l = hopper("L")
     with pytest.raises(OSError, match="only RGB mode can be written as BC5"):
-        im.save(out, pixel_format="BC5")
+        im_l.save(out, pixel_format="BC5")
 
 
 @pytest.mark.parametrize(
@@ -540,3 +540,18 @@ def test_save_large_file(tmp_path: Path, pixel_format: str, mode: str) -> None:
     im = hopper(mode).resize((440, 440))
     # should not error in valgrind
     im.save(tmp_path / "img.dds", pixel_format=pixel_format)
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        "Tests/images/timeout-041dd17dfde800360a47a172269df127af138c6b.dds",
+        "Tests/images/timeout-755a4d204f4208e3597ac3391edebee196462bd0.dds",
+        "Tests/images/timeout-52d106579505547091ef69b58341351a37c23e31.dds",
+        "Tests/images/timeout-c60a3d7314213624607bfb3e38d551a8b24a7435.dds",
+    ],
+)
+def test_not_enough_image_data(test_file: str) -> None:
+    with Image.open(test_file) as im:
+        with pytest.raises(ValueError, match="not enough image data"):
+            im.load()

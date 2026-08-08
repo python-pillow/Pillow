@@ -27,7 +27,8 @@ ImagingPaletteNew(const ModeID mode) {
     int i;
     ImagingPalette palette;
 
-    if (mode != IMAGING_MODE_RGB && mode != IMAGING_MODE_RGBA) {
+    if (mode != IMAGING_MODE_RGB && mode != IMAGING_MODE_RGBA &&
+        mode != IMAGING_MODE_CMYK) {
         return (ImagingPalette)ImagingError_ModeError();
     }
 

@@ -68,7 +68,7 @@ def test_multiblock_l_image() -> None:
     img = Image.new("L", size, 128)
 
     with pytest.raises(ValueError):
-        (schema, arr) = img.__arrow_c_array__()
+        schema, arr = img.__arrow_c_array__()
 
 
 def test_multiblock_rgba_image() -> None:
@@ -79,7 +79,7 @@ def test_multiblock_rgba_image() -> None:
     img = Image.new("RGBA", size, (128, 127, 126, 125))
 
     with pytest.raises(ValueError):
-        (schema, arr) = img.__arrow_c_array__()
+        schema, arr = img.__arrow_c_array__()
 
 
 def test_multiblock_l_schema() -> None:
@@ -114,7 +114,7 @@ def test_singleblock_l_image() -> None:
     img = Image.new("L", size, 128)
     assert img.im.isblock()
 
-    (schema, arr) = img.__arrow_c_array__()
+    schema, arr = img.__arrow_c_array__()
     assert schema
     assert arr
 
@@ -130,7 +130,7 @@ def test_singleblock_rgba_image() -> None:
     img = Image.new("RGBA", size, (128, 127, 126, 125))
     assert img.im.isblock()
 
-    (schema, arr) = img.__arrow_c_array__()
+    schema, arr = img.__arrow_c_array__()
     assert schema
     assert arr
     Image.core.set_use_block_allocator(0)

@@ -235,23 +235,9 @@ findLCMStype(const char *const mode_name) {
             );
         default:
             // This function only accepts a subset of the imaging modes Pillow has.
-            break;
+            // presume "1" or "L" by default
+            return TYPE_GRAY_8;
     }
-    // The following modes are not valid PIL Image modes.
-    if (strcmp(mode_name, "RGBA;16B") == 0) {
-        return TYPE_RGBA_16;
-    }
-    if (strcmp(mode_name, "L;16") == 0) {
-        return TYPE_GRAY_16;
-    }
-    if (strcmp(mode_name, "L;16B") == 0) {
-        return TYPE_GRAY_16_SE;
-    }
-    if (strcmp(mode_name, "YCCA") == 0 || strcmp(mode_name, "YCC") == 0) {
-        return TYPE_YCbCr_8;
-    }
-    /* presume "1" or "L" by default */
-    return TYPE_GRAY_8;
 }
 
 #define Cms_Min(a, b) ((a) < (b) ? (a) : (b))
@@ -558,7 +544,13 @@ cms_transform_apply(CmsTransformObject *self, PyObject *args) {
     }
 
     im = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!im) {
+        return NULL;
+    }
     imOut = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
+    if (!imOut) {
+        return NULL;
+    }
 
     return Py_BuildValue("i", pyCMSdoTransform(im, imOut, self->transform));
 }
@@ -848,7 +840,7 @@ _profile_read_named_color_list(CmsProfileObject *self, cmsTagSignature info) {
     n = cmsNamedColorCount(ncl);
     result = PyList_New(n);
     if (!result) {
-        Py_RETURN_NONE;
+        return NULL;
     }
 
     for (i = 0; i < n; i++) {
@@ -857,7 +849,7 @@ _profile_read_named_color_list(CmsProfileObject *self, cmsTagSignature info) {
         str = PyUnicode_FromString(name);
         if (str == NULL) {
             Py_DECREF(result);
-            Py_RETURN_NONE;
+            return NULL;
         }
         PyList_SET_ITEM(result, i, str);
     }
@@ -924,7 +916,7 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
 
     result = PyDict_New();
     if (result == NULL) {
-        Py_RETURN_NONE;
+        return NULL;
     }
 
     n = cmsGetSupportedIntents(INTENTS, intent_ids, intent_descs);
@@ -954,7 +946,7 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
             Py_XDECREF(id);
             Py_XDECREF(entry);
             Py_XDECREF(result);
-            Py_RETURN_NONE;
+            return NULL;
         }
         PyDict_SetItem(result, id, entry);
         Py_DECREF(id);
@@ -1447,14 +1439,16 @@ setup_module(PyObject *m) {
     int vn;
 
     /* Ready object types */
-    PyType_Ready(&CmsProfile_Type);
-    PyType_Ready(&CmsTransform_Type);
+    if (PyType_Ready(&CmsProfile_Type) < 0 || PyType_Ready(&CmsTransform_Type) < 0) {
+        return -1;
+    }
 
-    Py_INCREF(&CmsProfile_Type);
-    PyModule_AddObject(m, "CmsProfile", (PyObject *)&CmsProfile_Type);
+    if (PyModule_AddObjectRef(m, "CmsProfile", (PyObject *)&CmsProfile_Type) < 0 ||
+        PyModule_AddObjectRef(m, "CmsTransform", (PyObject *)&CmsTransform_Type) < 0) {
+        return -1;
+    }
 
-    Py_INCREF(&CmsTransform_Type);
-    PyModule_AddObject(m, "CmsTransform", (PyObject *)&CmsTransform_Type);
+    PyDateTime_IMPORT;
 
     d = PyModule_GetDict(m);
 
@@ -1469,8 +1463,11 @@ setup_module(PyObject *m) {
     } else {
         v = PyUnicode_FromFormat("%d.%d", vn / 1000, (vn / 10) % 100);
     }
-    PyDict_SetItemString(d, "littlecms_version", v ? v : Py_None);
-    Py_XDECREF(v);
+    if (!v) {
+        return -1;
+    }
+    PyDict_SetItemString(d, "littlecms_version", v);
+    Py_DECREF(v);
 
     return 0;
 }
@@ -1485,8 +1482,6 @@ static PyModuleDef_Slot slots[] = {
 
 PyMODINIT_FUNC
 PyInit__imagingcms(void) {
-    PyDateTime_IMPORT;
-
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_imagingcms",

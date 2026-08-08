@@ -27,6 +27,7 @@
 
 from __future__ import annotations
 
+import abc
 import base64
 import os
 import sys
@@ -34,7 +35,7 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from types import ModuleType
-from typing import IO, Any, BinaryIO, TypedDict, cast
+from typing import IO, Any, BinaryIO, NotRequired, TypedDict, cast
 
 from . import Image
 from ._typing import StrOrBytesPath
@@ -51,7 +52,7 @@ class Axis(TypedDict):
     minimum: int | None
     default: int | None
     maximum: int | None
-    name: bytes | None
+    name: NotRequired[bytes]
 
 
 class Layout(IntEnum):
@@ -91,7 +92,27 @@ def _string_length_check(text: str | bytes | bytearray) -> None:
 # --------------------------------------------------------------------
 
 
-class ImageFont:
+class BaseImageFont(abc.ABC):
+    """Used by ImageDraw and ImageText"""
+
+    @abc.abstractmethod
+    def getbbox(
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+    ) -> tuple[float, float, float, float]:
+        pass
+
+    @abc.abstractmethod
+    def getmask(
+        self, text: str | bytes, mode: str = "", *args: Any, **kwargs: Any
+    ) -> Image.core.ImagingCore:
+        pass
+
+    @abc.abstractmethod
+    def getlength(self, text: str | bytes, *args: Any, **kwargs: Any) -> float:
+        pass
+
+
+class ImageFont(BaseImageFont):
     """PIL font wrapper"""
 
     font: ImagingFont
@@ -110,7 +131,7 @@ class ImageFont:
                 except Exception:
                     pass
                 else:
-                    if image and image.mode in ("1", "L"):
+                    if image.mode in ("1", "L"):
                         break
             else:
                 if image:
@@ -149,6 +170,9 @@ class ImageFont:
         # read PILfont metrics
         data = file.read(256 * 20)
 
+        self._load(image, data)
+
+    def _load(self, image: Image.Image, data: bytes) -> None:
         image.load()
 
         self.font = Image.core.font(image.im, data)
@@ -212,7 +236,7 @@ class ImageFont:
 # <b>truetype</b> factory function to create font objects.
 
 
-class FreeTypeFont:
+class FreeTypeFont(BaseImageFont):
     """FreeType font wrapper (requires _imagingft service)"""
 
     font: Font
@@ -380,7 +404,7 @@ class FreeTypeFont:
 
     def getbbox(
         self,
-        text: str | bytes,
+        text: str | bytes | bytearray,
         mode: str = "",
         direction: str | None = None,
         features: list[str] | None = None,
@@ -675,8 +699,12 @@ class FreeTypeFont:
         :returns: A list of the named styles in a variation font.
         :exception OSError: If the font is not a variation font.
         """
-        names = self.font.getvarnames()
-        return [name.replace(b"\x00", b"") for name in names]
+        names = []
+        for name in self.font.getvarnames():
+            name = name.replace(b"\x00", b"")
+            if name not in names:
+                names.append(name)
+        return names
 
     def set_variation_by_name(self, name: str | bytes) -> None:
         """
@@ -704,7 +732,7 @@ class FreeTypeFont:
         """
         axes = self.font.getvaraxes()
         for axis in axes:
-            if axis["name"]:
+            if "name" in axis:
                 axis["name"] = axis["name"].replace(b"\x00", b"")
         return axes
 
@@ -716,7 +744,7 @@ class FreeTypeFont:
         self.font.setvaraxes(axes)
 
 
-class TransposedFont:
+class TransposedFont(BaseImageFont):
     """Wrapper for writing rotated or mirrored text"""
 
     def __init__(
@@ -744,7 +772,7 @@ class TransposedFont:
         return im
 
     def getbbox(
-        self, text: str | bytes, *args: Any, **kwargs: Any
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
     ) -> tuple[int, int, float, float]:
         # TransposedFont doesn't support getmask2, move top-left point to (0, 0)
         # this has no effect on ImageFont and simulates anchor="lt" for FreeTypeFont
@@ -936,9 +964,7 @@ def load_default_imagefont() -> ImageFont:
     f = ImageFont()
     f._load_pilfont_data(
         # courB08
-        BytesIO(
-            base64.b64decode(
-                b"""
+        BytesIO(base64.b64decode(b"""
 UElMZm9udAo7Ozs7OzsxMDsKREFUQQoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -1030,13 +1056,8 @@ AJsAEQAGAAAAAP/6AAX//wCbAAoAoAAPAAYAAAAA//oABQABAKAACgClABEABgAA////+AAGAAAA
 pQAKAKwAEgAGAAD////4AAYAAACsAAoAswASAAYAAP////gABgAAALMACgC6ABIABgAA////+QAG
 AAAAugAKAMEAEQAGAAD////4AAYAAgDBAAoAyAAUAAYAAP////kABQACAMgACgDOABMABgAA////
 +QAGAAIAzgAKANUAEw==
-"""
-            )
-        ),
-        Image.open(
-            BytesIO(
-                base64.b64decode(
-                    b"""
+""")),
+        Image.open(BytesIO(base64.b64decode(b"""
 iVBORw0KGgoAAAANSUhEUgAAAx4AAAAUAQAAAAArMtZoAAAEwElEQVR4nABlAJr/AHVE4czCI/4u
 Mc4b7vuds/xzjz5/3/7u/n9vMe7vnfH/9++vPn/xyf5zhxzjt8GHw8+2d83u8x27199/nxuQ6Od9
 M43/5z2I+9n9ZtmDBwMQECDRQw/eQIQohJXxpBCNVE6QCCAAAAD//wBlAJr/AgALyj1t/wINwq0g
@@ -1060,10 +1081,7 @@ evta/58PTEWzr21hufPjA8N+qlnBwAAAAAD//2JiWLci5v1+HmFXDqcnULE/MxgYGBj+f6CaJQAA
 AAD//2Ji2FrkY3iYpYC5qDeGgeEMAwPDvwQBBoYvcTwOVLMEAAAA//9isDBgkP///0EOg9z35v//
 Gc/eeW7BwPj5+QGZhANUswMAAAD//2JgqGBgYGBgqEMXlvhMPUsAAAAA//8iYDd1AAAAAP//AwDR
 w7IkEbzhVQAAAABJRU5ErkJggg==
-"""
-                )
-            )
-        ),
+"""))),
     )
     return f
 
@@ -1084,9 +1102,7 @@ def load_default(size: float | None = None) -> FreeTypeFont | ImageFont:
     """
     if isinstance(core, ModuleType) or size is not None:
         return truetype(
-            BytesIO(
-                base64.b64decode(
-                    b"""
+            BytesIO(base64.b64decode(b"""
 AAEAAAAPAIAAAwBwRkZUTYwDlUAAADFoAAAAHEdERUYAqADnAAAo8AAAACRHUE9ThhmITwAAKfgAA
 AduR1NVQnHxefoAACkUAAAA4k9TLzJovoHLAAABeAAAAGBjbWFw5lFQMQAAA6gAAAGqZ2FzcP//AA
 MAACjoAAAACGdseWYmRXoPAAAGQAAAHfhoZWFkE18ayQAAAPwAAAA2aGhlYQboArEAAAE0AAAAJGh
@@ -1307,9 +1323,7 @@ ABUADgAPAAAACwAQAAAAAAAAAAAAAAAAAAUAGAACAAIAAgAAAAIAGAAXAAAAGAAAABYAFgACABYAA
 gAWAAAAEQADAAoAFAAMAA0ABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASAAAAEgAGAAEAHgAkAC
 YAJwApACoALQAuAC8AMgAzADcAOAA5ADoAPAA9AEUASABOAE8AUgBTAFUAVwBZAFoAWwBcAF0AcwA
 AAAAAAQAAAADa3tfFAAAAANAan9kAAAAA4QodoQ==
-"""
-                )
-            ),
+""")),
             10 if size is None else size,
             layout_engine=Layout.BASIC,
         )

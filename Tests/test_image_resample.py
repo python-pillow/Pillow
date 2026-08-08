@@ -111,10 +111,8 @@ class TestImagingCoreResampleAccuracy:
     def test_reduce_box(self, mode: str) -> None:
         case = self.make_case(mode, (8, 8), 0xE1)
         case = case.resize((4, 4), Image.Resampling.BOX)
-        # fmt: off
         data = ("e1 e1"
-                "e1 e1")
-        # fmt: on
+                "e1 e1")  # fmt: skip
         for channel in case.split():
             self.check_case(channel, self.make_sample(data, (4, 4)))
 
@@ -122,10 +120,8 @@ class TestImagingCoreResampleAccuracy:
     def test_reduce_bilinear(self, mode: str) -> None:
         case = self.make_case(mode, (8, 8), 0xE1)
         case = case.resize((4, 4), Image.Resampling.BILINEAR)
-        # fmt: off
         data = ("e1 c9"
-                "c9 b7")
-        # fmt: on
+                "c9 b7")  # fmt: skip
         for channel in case.split():
             self.check_case(channel, self.make_sample(data, (4, 4)))
 
@@ -133,10 +129,8 @@ class TestImagingCoreResampleAccuracy:
     def test_reduce_hamming(self, mode: str) -> None:
         case = self.make_case(mode, (8, 8), 0xE1)
         case = case.resize((4, 4), Image.Resampling.HAMMING)
-        # fmt: off
         data = ("e1 da"
-                "da d3")
-        # fmt: on
+                "da d3")  # fmt: skip
         for channel in case.split():
             self.check_case(channel, self.make_sample(data, (4, 4)))
 
@@ -144,11 +138,9 @@ class TestImagingCoreResampleAccuracy:
     def test_reduce_bicubic(self, mode: str) -> None:
         case = self.make_case(mode, (12, 12), 0xE1)
         case = case.resize((6, 6), Image.Resampling.BICUBIC)
-        # fmt: off
         data = ("e1 e3 d4"
                 "e3 e5 d6"
-                "d4 d6 c9")
-        # fmt: on
+                "d4 d6 c9")  # fmt: skip
         for channel in case.split():
             self.check_case(channel, self.make_sample(data, (6, 6)))
 
@@ -156,12 +148,10 @@ class TestImagingCoreResampleAccuracy:
     def test_reduce_lanczos(self, mode: str) -> None:
         case = self.make_case(mode, (16, 16), 0xE1)
         case = case.resize((8, 8), Image.Resampling.LANCZOS)
-        # fmt: off
         data = ("e1 e0 e4 d7"
                 "e0 df e3 d6"
                 "e4 e3 e7 da"
-                "d7 d6 d9 ce")
-        # fmt: on
+                "d7 d6 d9 ce")  # fmt: skip
         for channel in case.split():
             self.check_case(channel, self.make_sample(data, (8, 8)))
 
@@ -169,10 +159,8 @@ class TestImagingCoreResampleAccuracy:
     def test_enlarge_box(self, mode: str) -> None:
         case = self.make_case(mode, (2, 2), 0xE1)
         case = case.resize((4, 4), Image.Resampling.BOX)
-        # fmt: off
         data = ("e1 e1"
-                "e1 e1")
-        # fmt: on
+                "e1 e1")  # fmt: skip
         for channel in case.split():
             self.check_case(channel, self.make_sample(data, (4, 4)))
 
@@ -180,10 +168,8 @@ class TestImagingCoreResampleAccuracy:
     def test_enlarge_bilinear(self, mode: str) -> None:
         case = self.make_case(mode, (2, 2), 0xE1)
         case = case.resize((4, 4), Image.Resampling.BILINEAR)
-        # fmt: off
         data = ("e1 b0"
-                "b0 98")
-        # fmt: on
+                "b0 98")  # fmt: skip
         for channel in case.split():
             self.check_case(channel, self.make_sample(data, (4, 4)))
 
@@ -191,10 +177,8 @@ class TestImagingCoreResampleAccuracy:
     def test_enlarge_hamming(self, mode: str) -> None:
         case = self.make_case(mode, (2, 2), 0xE1)
         case = case.resize((4, 4), Image.Resampling.HAMMING)
-        # fmt: off
         data = ("e1 d2"
-                "d2 c5")
-        # fmt: on
+                "d2 c5")  # fmt: skip
         for channel in case.split():
             self.check_case(channel, self.make_sample(data, (4, 4)))
 
@@ -202,12 +186,10 @@ class TestImagingCoreResampleAccuracy:
     def test_enlarge_bicubic(self, mode: str) -> None:
         case = self.make_case(mode, (4, 4), 0xE1)
         case = case.resize((8, 8), Image.Resampling.BICUBIC)
-        # fmt: off
         data = ("e1 e5 ee b9"
                 "e5 e9 f3 bc"
                 "ee f3 fd c1"
-                "b9 bc c1 a2")
-        # fmt: on
+                "b9 bc c1 a2")  # fmt: skip
         for channel in case.split():
             self.check_case(channel, self.make_sample(data, (8, 8)))
 
@@ -372,7 +354,7 @@ class TestCoreResampleAlphaCorrect:
 
 class TestCoreResamplePasses:
     @contextmanager
-    def count(self, diff: int) -> Generator[None, None, None]:
+    def count(self, diff: int) -> Generator[None]:
         count = Image.core.get_stats()["new_count"]
         yield
         assert Image.core.get_stats()["new_count"] - count == diff
@@ -485,9 +467,7 @@ class TestCoreResampleBox:
     def resize_tiled(
         self, im: Image.Image, dst_size: tuple[int, int], xtiles: int, ytiles: int
     ) -> Image.Image:
-        def split_range(
-            size: int, tiles: int
-        ) -> Generator[tuple[int, int], None, None]:
+        def split_range(size: int, tiles: int) -> Generator[tuple[int, int]]:
             scale = size / tiles
             for i in range(tiles):
                 yield int(round(scale * i)), int(round(scale * (i + 1)))
@@ -627,3 +607,37 @@ class TestCoreResampleBox:
                 0.4,
                 f">>> {size} {box} {flt}",
             )
+
+
+class TestCoreResample16bpc:
+    # Lanczos weighting during downsampling can push accumulated float sums
+    @pytest.mark.parametrize(
+        "offset",
+        (
+            # below 0. These must be clamped to 0, not corrupted byte-by-byte.
+            0,  # Left half = 65535, right half = 0
+            # above 65535. These must be clamped to 65535, not corrupted byte-by-byte.
+            50,  # # Left half = 0, right half = 65535
+        ),
+    )
+    def test_resampling_clamp_overflow(self, offset: int) -> None:
+        ims = {}
+        width, height = 100, 10
+        for mode in ("I;16", "F"):
+            im = Image.new(mode, (width, height))
+            im.paste(65535, (offset, 0, offset + width // 2, height))
+
+            # 5x downsampling with Lanczos
+            # creates ~8.7% overshoot or undershoot at the step edge
+            ims[mode] = im.resize((20, height), Image.Resampling.LANCZOS)
+
+        for y in range(height):
+            for x in range(20):
+                v = ims["F"].getpixel((x, y))
+                assert isinstance(v, float)
+                expected = max(0, min(65535, round(v)))
+
+                value = ims["I;16"].getpixel((x, y))
+                assert (
+                    value == expected
+                ), f"Pixel ({x}, {y}): expected {expected}, got {value}"

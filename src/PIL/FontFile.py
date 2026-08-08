@@ -18,7 +18,7 @@ from __future__ import annotations
 import os
 from typing import BinaryIO
 
-from . import Image, _binary
+from . import Image, ImageFont, _binary
 
 WIDTH = 800
 
@@ -74,7 +74,7 @@ class FontFile:
             if glyph:
                 d, dst, src, im = glyph
                 h = max(h, src[3] - src[1])
-                w = w + (src[2] - src[0])
+                w += src[2] - src[0]
                 if w > WIDTH:
                     lines += 1
                     w = src[2] - src[0]
@@ -89,6 +89,7 @@ class FontFile:
         self.ysize = h
 
         # paste glyphs into bitmap
+        Image._decompression_bomb_check((xsize, ysize))
         self.bitmap = Image.new("1", (xsize, ysize))
         self.metrics: list[
             tuple[tuple[int, int], tuple[int, int, int, int], tuple[int, int, int, int]]
@@ -110,6 +111,22 @@ class FontFile:
                 self.bitmap.paste(im.crop(src), s)
                 self.metrics[i] = d, dst, s
 
+    def _encode_metrics(self) -> bytes:
+        values: list[int] = []
+        for i in range(256):
+            m = self.metrics[i]
+            if m:
+                values.extend(m[0] + m[1] + m[2])
+            else:
+                values.extend((0,) * 10)
+
+        data = bytearray()
+        for v in values:
+            if v < 0:
+                v += 65536
+            data += _binary.o16be(v)
+        return bytes(data)
+
     def save(self, filename: str) -> None:
         """Save font"""
 
@@ -126,9 +143,18 @@ class FontFile:
             fp.write(b"PILfont\n")
             fp.write(f";;;;;;{self.ysize};\n".encode("ascii"))  # HACK!!!
             fp.write(b"DATA\n")
-            for id in range(256):
-                m = self.metrics[id]
-                if not m:
-                    puti16(fp, (0,) * 10)
-                else:
-                    puti16(fp, m[0] + m[1] + m[2])
+            fp.write(self._encode_metrics())
+
+    def to_imagefont(self) -> ImageFont.ImageFont:
+        """Convert to ImageFont"""
+
+        self.compile()
+
+        # font data
+        if not self.bitmap:
+            msg = "No bitmap created"
+            raise ValueError(msg)
+
+        imagefont = ImageFont.ImageFont()
+        imagefont._load(self.bitmap, self._encode_metrics())
+        return imagefont

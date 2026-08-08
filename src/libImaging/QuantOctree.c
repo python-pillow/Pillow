@@ -86,7 +86,8 @@ new_color_cube(int r, int g, int b, int a) {
     cube->aOffset = 0;
 
     /* the number of color buckets */
-    cube->size = cube->rWidth * cube->gWidth * cube->bWidth * cube->aWidth;
+    cube->size = (unsigned long)cube->rWidth * cube->gWidth *
+                 (unsigned long)cube->bWidth * cube->aWidth;
     /* malloc check ok, overflow checked above */
     cube->buckets = calloc(cube->size, sizeof(struct _ColorBucket));
 

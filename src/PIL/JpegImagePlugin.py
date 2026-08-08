@@ -61,6 +61,7 @@ if TYPE_CHECKING:
 
 
 def Skip(self: JpegImageFile, marker: int) -> None:
+    assert self.fp is not None
     n = i16(self.fp.read(2)) - 2
     ImageFile._safe_read(self.fp, n)
 
@@ -70,6 +71,7 @@ def APP(self: JpegImageFile, marker: int) -> None:
     # Application marker.  Store these in the APP dictionary.
     # Also look for well-known application markers.
 
+    assert self.fp is not None
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
 
@@ -125,8 +127,8 @@ def APP(self: JpegImageFile, marker: int) -> None:
         # parse the image resource block
         offset = 14
         photoshop = self.info.setdefault("photoshop", {})
-        while s[offset : offset + 4] == b"8BIM":
-            try:
+        try:
+            while s[offset : offset + 4] == b"8BIM":
                 offset += 4
                 # resource code
                 code = i16(s, offset)
@@ -151,8 +153,8 @@ def APP(self: JpegImageFile, marker: int) -> None:
                     photoshop[code] = data
                 offset += size
                 offset += offset & 1  # align
-            except struct.error:
-                break  # insufficient data
+        except struct.error:
+            pass  # insufficient data
 
     elif marker == 0xFFEE and s.startswith(b"Adobe"):
         self.info["adobe"] = i16(s, 5)
@@ -174,6 +176,7 @@ def APP(self: JpegImageFile, marker: int) -> None:
 def COM(self: JpegImageFile, marker: int) -> None:
     #
     # Comment marker.  Store these in the APP dictionary.
+    assert self.fp is not None
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
 
@@ -190,6 +193,7 @@ def SOF(self: JpegImageFile, marker: int) -> None:
     # mode.  Note that this could be made a bit brighter, by
     # looking for JFIF and Adobe APP markers.
 
+    assert self.fp is not None
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
     self._size = i16(s, 3), i16(s, 1)
@@ -240,6 +244,7 @@ def DQT(self: JpegImageFile, marker: int) -> None:
     # FIXME: The quantization tables can be used to estimate the
     # compression quality.
 
+    assert self.fp is not None
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
     while len(s):
@@ -340,6 +345,7 @@ class JpegImageFile(ImageFile.ImageFile):
     format_description = "JPEG (ISO 10918)"
 
     def _open(self) -> None:
+        assert self.fp is not None
         s = self.fp.read(3)
 
         if not _accept(s):
@@ -408,6 +414,7 @@ class JpegImageFile(ImageFile.ImageFile):
         For premature EOF and LOAD_TRUNCATED_IMAGES adds EOI marker
         so libjpeg can finish decoding
         """
+        assert self.fp is not None
         s = self.fp.read(read_bytes)
 
         if not s and ImageFile.LOAD_TRUNCATED_IMAGES and not hasattr(self, "_ended"):
@@ -598,7 +605,7 @@ def _getmp(self: JpegImageFile) -> dict[int, Any] | None:
             mpentry["Attribute"] = mpentryattr
             mpentries.append(mpentry)
         mp[0xB002] = mpentries
-    except KeyError as e:
+    except (KeyError, struct.error) as e:
         msg = "malformed MP Index (bad MP Entry)"
         raise SyntaxError(msg) from e
     # Next we should try and parse the individual image unique ID list;
@@ -619,7 +626,6 @@ RAWMODE = {
     "YCbCr": "YCbCr",
 }
 
-# fmt: off
 zigzag_index = (
     0,  1,  5,  6, 14, 15, 27, 28,
     2,  4,  7, 13, 16, 26, 29, 42,
@@ -629,14 +635,13 @@ zigzag_index = (
     20, 22, 33, 38, 46, 51, 55, 60,
     21, 34, 37, 47, 50, 56, 59, 61,
     35, 36, 48, 49, 57, 58, 62, 63,
-)
+)  # fmt: skip
 
 samplings = {
     (1, 1, 1, 1, 1, 1): 0,
     (2, 1, 1, 1, 1, 1): 1,
     (2, 2, 1, 1, 1, 1): 2,
 }
-# fmt: on
 
 
 def get_sampling(im: Image.Image) -> int:
@@ -654,10 +659,6 @@ def get_sampling(im: Image.Image) -> int:
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    if im.width == 0 or im.height == 0:
-        msg = "cannot write empty image as JPEG"
-        raise ValueError(msg)
-
     try:
         rawmode = RAWMODE[im.mode]
     except KeyError as e:
@@ -735,17 +736,15 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             if not (0 < len(qtables) < 5):
                 msg = "None or too many quantization tables"
                 raise ValueError(msg)
-            for idx, table in enumerate(qtables):
-                try:
+            try:
+                for idx, table in enumerate(qtables):
                     if len(table) != 64:
                         msg = "Invalid quantization table"
                         raise TypeError(msg)
-                    table_array = array.array("H", table)
-                except TypeError as e:
-                    msg = "Invalid quantization table"
-                    raise ValueError(msg) from e
-                else:
-                    qtables[idx] = list(table_array)
+                    qtables[idx] = list(array.array("H", table))
+            except TypeError as e:
+                msg = "Invalid quantization table"
+                raise ValueError(msg) from e
             return qtables
 
     if qtables == "keep":

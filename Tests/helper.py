@@ -55,8 +55,8 @@ def convert_to_comparable(
     if a.mode == "P":
         new_a = Image.new("L", a.size)
         new_b = Image.new("L", b.size)
-        new_a.putdata(a.getdata())
-        new_b.putdata(b.getdata())
+        new_a.putdata(a.get_flattened_data())
+        new_b.putdata(b.get_flattened_data())
     elif a.mode == "I;16":
         new_a = a.convert("I")
         new_b = b.convert("I")
@@ -104,10 +104,9 @@ def assert_image_equal_tofile(
     msg: str | None = None,
     mode: str | None = None,
 ) -> None:
-    with Image.open(filename) as img:
-        if mode:
-            img = img.convert(mode)
-        assert_image_equal(a, img, msg)
+    with Image.open(filename) as im:
+        converted_im = im.convert(mode) if mode else im
+        assert_image_equal(a, converted_im, msg)
 
 
 def assert_image_similar(

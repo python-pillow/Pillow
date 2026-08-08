@@ -18,7 +18,7 @@ def test_load_raw() -> None:
             # Currently, support for WMF/EMF is Windows-only
             im.load()
             # Compare to reference rendering
-            assert_image_similar_tofile(im, "Tests/images/drawing_emf_ref.png", 0)
+            assert_image_equal_tofile(im, "Tests/images/drawing_emf_ref.png")
 
     # Test basic WMF open and rendering
     with Image.open("Tests/images/drawing.wmf") as im:

@@ -365,7 +365,7 @@ def test_rotated_transposed_font(
         bbox_b[2] - bbox_b[0],
     )
 
-    # Check top left co-ordinates are correct
+    # Check top left coordinates are correct
     assert bbox_b[:2] == (20, 20)
 
     # text length is undefined for vertical text
@@ -410,7 +410,7 @@ def test_unrotated_transposed_font(
         bbox_b[3] - bbox_b[1],
     )
 
-    # Check top left co-ordinates are correct
+    # Check top left coordinates are correct
     assert bbox_b[:2] == (20, 20)
 
     assert length_a == length_b
@@ -702,7 +702,7 @@ def test_variation_get(font: ImageFont.FreeTypeFont) -> None:
         font.get_variation_axes()
 
     font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf")
-    assert font.get_variation_names(), [
+    assert font.get_variation_names() == [
         b"ExtraLight",
         b"Light",
         b"Regular",
@@ -739,6 +739,21 @@ def test_variation_get(font: ImageFont.FreeTypeFont) -> None:
     ]
     assert font.get_variation_axes() == [
         {"name": b"Size", "minimum": 0, "maximum": 300, "default": 0}
+    ]
+
+
+def test_variation_duplicates() -> None:
+    font = ImageFont.truetype("Tests/fonts/AdobeVFPrototypeDuplicates.ttf")
+    assert font.get_variation_names() == [
+        b"ExtraLight",
+        b"Light",
+        b"Regular",
+        b"Semibold",
+        b"Bold",
+        b"Black",
+        b"Black Medium Contrast",
+        b"Black High Contrast",
+        b"Default",
     ]
 
 
@@ -806,7 +821,7 @@ def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
     ids=("ls", "ms", "rs", "ma", "mt", "mm", "mb", "md"),
 )
 def test_anchor(
-    layout_engine: ImageFont.Layout, anchor: str, left: int, top: int
+    layout_engine: ImageFont.Layout, anchor: str, left: float, top: float
 ) -> None:
     name, text = "quick", "Quick"
     path = f"Tests/images/test_anchor_{name}_{anchor}.png"

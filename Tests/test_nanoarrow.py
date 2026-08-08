@@ -208,7 +208,7 @@ INT32 = DataShape(
     ),
 )
 def test_fromarray(mode: str, data_tp: DataShape, mask: list[int] | None) -> None:
-    (dtype, elt, elts_per_pixel) = data_tp
+    dtype, elt, elts_per_pixel = data_tp
 
     ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
     if dtype == fl_uint8_4_type:
@@ -241,7 +241,7 @@ def test_fromarray(mode: str, data_tp: DataShape, mask: list[int] | None) -> Non
 )
 @pytest.mark.parametrize("data_tp", (UINT32, INT32))
 def test_from_int32array(mode: str, mask: list[int] | None, data_tp: DataShape) -> None:
-    (dtype, elt, elts_per_pixel) = data_tp
+    dtype, elt, elts_per_pixel = data_tp
 
     ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
     arr = nanoarrow.Array(

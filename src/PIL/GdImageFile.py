@@ -25,11 +25,12 @@
     implementation is provided for convenience and demonstrational
     purposes only.
 """
+
 from __future__ import annotations
 
 from typing import IO
 
-from . import ImageFile, ImagePalette, UnidentifiedImageError
+from . import Image, ImageFile, ImagePalette, UnidentifiedImageError
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._typing import StrOrBytesPath
@@ -58,6 +59,7 @@ class GdImageFile(ImageFile.ImageFile):
 
         self._mode = "P"
         self._size = i16(s, 2), i16(s, 4)
+        Image._decompression_bomb_check(self.size)
 
         true_color = s[6]
         true_color_offset = 2 if true_color else 0

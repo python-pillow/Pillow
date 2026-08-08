@@ -29,7 +29,6 @@ def test_read_rgba() -> None:
         assert image.size == (200, 150)
         assert image.format == "WEBP"
         image.load()
-        image.getdata()
 
         image.tobytes()
 
@@ -60,7 +59,6 @@ def test_write_lossless_rgb(tmp_path: Path) -> None:
         assert image.size == pil_image.size
         assert image.format == "WEBP"
         image.load()
-        image.getdata()
 
         assert_image_equal(image, pil_image)
 
@@ -83,7 +81,6 @@ def test_write_rgba(tmp_path: Path) -> None:
         assert image.size == (10, 10)
         assert image.format == "WEBP"
         image.load()
-        image.getdata()
 
         assert_image_similar(image, pil_image, 1.0)
 
@@ -133,7 +130,6 @@ def test_write_unsupported_mode_PA(tmp_path: Path) -> None:
         assert image.format == "WEBP"
 
         image.load()
-        image.getdata()
         with Image.open(file_path) as im:
             target = im.convert("RGBA")
 

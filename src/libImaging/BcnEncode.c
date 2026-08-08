@@ -257,9 +257,9 @@ ImagingBcnEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
 
     UINT8 *dst = buf;
 
+    int will_write = (n == 2 || n == 3 || n == 5) ? 16 : 8;
     for (;;) {
-        // Loop writes a max of 16 bytes per iteration
-        if (dst + 16 >= bytes + buf) {
+        if (dst + will_write >= bytes + buf) {
             break;
         }
         if (n == 5) {

@@ -81,8 +81,6 @@ release-test:
 	python3 -m pytest Tests
 	python3 -m pip install .
 	python3 -m pytest -qq
-	python3 -m check_manifest
-	python3 -m pyroma .
 	$(MAKE) readme
 
 .PHONY: sdist
@@ -116,7 +114,7 @@ valgrind-leak:
 	PILLOW_VALGRIND_TEST=true PYTHONMALLOC=malloc valgrind --suppressions=Tests/oss-fuzz/python.supp \
 	    --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite \
             --log-file=/tmp/valgrind-output \
-            python3 -m pytest -vv --valgrind --valgrind-log=/tmp/valgrind-output
+            python3 -m pytest -vv --valgrind --valgrind-log=/tmp/valgrind-output $(PYTEST_ARGS)
 
 .PHONY: readme
 readme:

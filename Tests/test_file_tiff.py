@@ -16,6 +16,7 @@ from PIL import (
     TiffImagePlugin,
     TiffTags,
     UnidentifiedImageError,
+    _binary,
 )
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
@@ -64,9 +65,7 @@ class TestFileTiff:
             open_test_image()
 
     def test_closed_file(self) -> None:
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-
+        with warnings.catch_warnings(action="error"):
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
             im.close()
@@ -82,9 +81,7 @@ class TestFileTiff:
             im.seek(1)
 
     def test_context_manager(self) -> None:
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-
+        with warnings.catch_warnings(action="error"):
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 
@@ -774,7 +771,7 @@ class TestFileTiff:
             assert reread.n_frames == 3
 
         # Test appending using a generator
-        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image, None, None]:
+        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image]:
             yield from ims
 
         mp = BytesIO()
@@ -941,6 +938,15 @@ class TestFileTiff:
                 4001,
             ]
 
+    def test_truncated_photoshop_blocks(self) -> None:
+        with Image.open("Tests/images/hopper.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            im.tag_v2[34377] = b"8BIM"
+            assert im.get_photoshop_blocks() == {}
+
+            im.tag_v2[34377] = b"8BIM" + _binary.o16be(0) + _binary.o8(2) + b" " * 5
+            assert im.get_photoshop_blocks() == {}
+
     def test_tiff_chunks(self, tmp_path: Path) -> None:
         tmpfile = tmp_path / "temp.tif"
 
@@ -971,6 +977,7 @@ class TestFileTiff:
 
         im = Image.open(tmpfile)
         fp = im.fp
+        assert fp is not None
         assert not fp.closed
         im.load()
         assert fp.closed
@@ -984,6 +991,7 @@ class TestFileTiff:
         with open(tmpfile, "rb") as f:
             im = Image.open(f)
             fp = im.fp
+            assert fp is not None
             assert not fp.closed
             im.load()
             assert not fp.closed
@@ -1034,8 +1042,9 @@ class TestFileTiffW32:
             im.save(tmpfile)
 
         im = Image.open(tmpfile)
+        assert im.fp is not None
+        assert not im.fp.closed
         fp = im.fp
-        assert not fp.closed
         with pytest.raises(OSError):
             os.remove(tmpfile)
         im.load()

@@ -38,20 +38,18 @@ def test_invalid_mode() -> None:
             font._load_pilfont_data(fp, im)
 
 
-def test_without_freetype() -> None:
-    original_core = ImageFont.core
+def test_without_freetype(monkeypatch: pytest.MonkeyPatch) -> None:
     if features.check_module("freetype2"):
-        ImageFont.core = _util.DeferredError(ImportError("Disabled for testing"))
-    try:
-        with pytest.raises(ImportError):
-            ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+        monkeypatch.setattr(
+            ImageFont, "core", _util.DeferredError(ImportError("Disabled for testing"))
+        )
+    with pytest.raises(ImportError):
+        ImageFont.truetype("Tests/fonts/FreeMono.ttf")
 
-        assert isinstance(ImageFont.load_default(), ImageFont.ImageFont)
+    assert isinstance(ImageFont.load_default(), ImageFont.ImageFont)
 
-        with pytest.raises(ImportError):
-            ImageFont.load_default(size=14)
-    finally:
-        ImageFont.core = original_core
+    with pytest.raises(ImportError):
+        ImageFont.load_default(size=14)
 
 
 @pytest.mark.parametrize("font", fonts)
@@ -68,6 +66,25 @@ def test_textbbox(font: ImageFont.ImageFont) -> None:
     d = ImageDraw.Draw(im)
     assert d.textlength("test", font=font) == 24
     assert d.textbbox((0, 0), "test", font=font) == (0, 0, 24, 11)
+
+
+def test_negative_dx() -> None:
+    glyph = struct.pack(">hhhhhhhhhh", -1, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    fp = BytesIO(b"PILfont\n\nDATA\n" + glyph * 256)
+
+    font = ImageFont.ImageFont()
+    font._load_pilfont_data(fp, Image.new("L", (1, 1)))
+    assert font.getlength("A") == 0
+
+
+def test_width_overflow() -> None:
+    glyph = struct.pack(">hhhhhhhhhh", 32767, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    fp = BytesIO(b"PILfont\n\nDATA\n" + glyph * 256)
+
+    font = ImageFont.ImageFont()
+    font._load_pilfont_data(fp, Image.new("L", (1, 1)))
+    with pytest.raises(OverflowError, match="Width too large"):
+        font.getlength("A" * 100_000)
 
 
 def test_decompression_bomb() -> None:

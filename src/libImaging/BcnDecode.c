@@ -663,7 +663,7 @@ half_to_float(UINT16 h) {
     if (o.f >= m.f) {
         o.u |= 255 << 23;
     }
-    o.u |= (h & 0x8000) << 16;
+    o.u |= (UINT32)(h & 0x8000) << 16;
     return o.f;
 }
 

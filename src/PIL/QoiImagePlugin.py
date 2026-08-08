@@ -25,6 +25,7 @@ class QoiImageFile(ImageFile.ImageFile):
     format_description = "Quite OK Image"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(4)):
             msg = "not a QOI file"
             raise SyntaxError(msg)
@@ -50,7 +51,7 @@ class QoiDecoder(ImageFile.PyDecoder):
         hash_value = (r * 3 + g * 5 + b * 7 + a * 11) % 64
         self._previously_seen_pixels[hash_value] = value
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         assert self.fd is not None
 
         self._previously_seen_pixels = {}
@@ -60,12 +61,20 @@ class QoiDecoder(ImageFile.PyDecoder):
         bands = Image.getmodebands(self.mode)
         dest_length = self.state.xsize * self.state.ysize * bands
         while len(data) < dest_length:
-            byte = self.fd.read(1)[0]
+            byte_data = self.fd.read(1)
+            if not byte_data:
+                break
+            byte = byte_data[0]
             value: bytes | bytearray
             if byte == 0b11111110 and self._previous_pixel:  # QOI_OP_RGB
-                value = bytearray(self.fd.read(3)) + self._previous_pixel[3:]
+                rgb_data = self.fd.read(3)
+                if len(rgb_data) < 3:
+                    break
+                value = bytearray(rgb_data) + self._previous_pixel[3:]
             elif byte == 0b11111111:  # QOI_OP_RGBA
                 value = self.fd.read(4)
+                if len(value) < 4:
+                    break
             else:
                 op = byte >> 6
                 if op == 0:  # QOI_OP_INDEX
@@ -85,7 +94,10 @@ class QoiDecoder(ImageFile.PyDecoder):
                         )
                     )
                 elif op == 2 and self._previous_pixel:  # QOI_OP_LUMA
-                    second_byte = self.fd.read(1)[0]
+                    second_byte_data = self.fd.read(1)
+                    if not second_byte_data:
+                        break
+                    second_byte = second_byte_data[0]
                     diff_green = (byte & 0b00111111) - 32
                     diff_red = ((second_byte & 0b11110000) >> 4) - 8
                     diff_blue = (second_byte & 0b00001111) - 8
@@ -223,7 +235,7 @@ class QoiEncoder(ImageFile.PyEncoder):
             data += self._write_run()
         data += bytes((0, 0, 0, 0, 0, 0, 0, 1))  # padding
 
-        return len(data), 0, data
+        return len(data), 0, bytes(data)
 
 
 Image.register_open(QoiImageFile.format, QoiImageFile, _accept)

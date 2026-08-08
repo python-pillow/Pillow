@@ -112,7 +112,7 @@ class MspDecoder(ImageFile.PyDecoder):
 
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         assert self.fd is not None
 
         img = io.BytesIO()
@@ -140,7 +140,7 @@ class MspDecoder(ImageFile.PyDecoder):
                     runtype = row[idx]
                     idx += 1
                     if runtype == 0:
-                        (runcount, runval) = struct.unpack_from("Bc", row, idx)
+                        runcount, runval = struct.unpack_from("Bc", row, idx)
                         img.write(runval * runcount)
                         idx += 2
                     else:

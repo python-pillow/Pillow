@@ -62,7 +62,7 @@ from .TiffTags import TYPES
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Iterator
-    from typing import NoReturn
+    from typing import NoReturn, Self
 
     from ._typing import Buffer, IntegralLike, StrOrBytesPath
 
@@ -318,8 +318,8 @@ def _limit_signed_rational(
 ##
 # Wrapper for TIFF IFDs.
 
-_load_dispatch = {}
-_write_dispatch = {}
+_load_dispatch: dict[int, tuple[int, _LoaderFunc]] = {}
+_write_dispatch: dict[int, Callable[..., Any]] = {}
 
 
 def _delegate(op: str) -> Any:
@@ -464,9 +464,8 @@ class IFDRational(Rational):
     __ceil__ = _delegate("__ceil__")
     __floor__ = _delegate("__floor__")
     __round__ = _delegate("__round__")
-    # Python >= 3.11
-    if hasattr(Fraction, "__int__"):
-        __int__ = _delegate("__int__")
+    __float__ = _delegate("__float__")
+    __int__ = _delegate("__int__")
 
 
 _LoaderFunc = Callable[["ImageFileDirectory_v2", bytes, bool], Any]
@@ -913,6 +912,9 @@ class ImageFileDirectory_v2(_IFDv2Base):
                     here = fp.tell()
                     (offset,) = self._unpack("Q" if self._bigtiff else "L", data)
                     msg += f" Tag Location: {here} - Data Location: {offset}"
+                    if offset >= 2**63:
+                        warnings.warn("Tag offset too large")
+                        continue
                     fp.seek(offset)
                     data = ImageFile._safe_read(fp, size)
                     fp.seek(here)
@@ -1287,10 +1289,13 @@ class TiffImageFile(ImageFile.ImageFile):
         blocks = {}
         val = self.tag_v2.get(ExifTags.Base.ImageResources)
         if val:
-            while val.startswith(b"8BIM"):
+            while val.startswith(b"8BIM") and len(val) >= 12:
                 id = i16(val[4:6])
                 n = math.ceil((val[6] + 1) / 2) * 2
-                size = i32(val[6 + n : 10 + n])
+                try:
+                    size = i32(val[6 + n : 10 + n])
+                except struct.error:
+                    break
                 data = val[10 + n : 10 + n + size]
                 blocks[id] = {"data": data}
 
@@ -1470,28 +1475,34 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("- size: %s", self.size)
 
         sample_format = self.tag_v2.get(SAMPLEFORMAT, (1,))
-        if len(sample_format) > 1 and max(sample_format) == min(sample_format) == 1:
+        if len(sample_format) > 1 and max(sample_format) == min(sample_format):
             # SAMPLEFORMAT is properly per band, so an RGB image will
             # be (1,1,1).  But, we don't support per band pixel types,
             # and anything more than one band is a uint8. So, just
             # take the first element. Revisit this if adding support
             # for more exotic images.
-            sample_format = (1,)
+            sample_format = (sample_format[0],)
 
         bps_tuple = self.tag_v2.get(BITSPERSAMPLE, (1,))
         extra_tuple = self.tag_v2.get(EXTRASAMPLES, ())
+        samples_per_pixel = self.tag_v2.get(
+            SAMPLESPERPIXEL,
+            3 if self._compression == "tiff_jpeg" and photo in (2, 6) else 1,
+        )
         if photo in (2, 6, 8):  # RGB, YCbCr, LAB
             bps_count = 3
         elif photo == 5:  # CMYK
             bps_count = 4
         else:
             bps_count = 1
+        if self._planar_configuration == 2 and extra_tuple and max(extra_tuple) == 0:
+            # If components are stored separately,
+            # then unspecified extra components at the end can be ignored
+            bps_tuple = bps_tuple[: -len(extra_tuple)]
+            samples_per_pixel -= len(extra_tuple)
+            extra_tuple = ()
         bps_count += len(extra_tuple)
         bps_actual_count = len(bps_tuple)
-        samples_per_pixel = self.tag_v2.get(
-            SAMPLESPERPIXEL,
-            3 if self._compression == "tiff_jpeg" and photo in (2, 6) else 1,
-        )
 
         if samples_per_pixel > MAX_SAMPLESPERPIXEL:
             # DOS check, samples_per_pixel can be a Long, and we extend the tuple below
@@ -1759,6 +1770,12 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         legacy_ifd = im.tag.to_v2()
 
     supplied_tags = {**legacy_ifd, **getattr(im, "tag_v2", {})}
+    if supplied_tags.get(PLANAR_CONFIGURATION) == 2 and EXTRASAMPLES in supplied_tags:
+        # If the image used separate component planes,
+        # then EXTRASAMPLES should be ignored when saving contiguously
+        if SAMPLESPERPIXEL in supplied_tags:
+            supplied_tags[SAMPLESPERPIXEL] -= len(supplied_tags[EXTRASAMPLES])
+        del supplied_tags[EXTRASAMPLES]
     for tag in (
         # IFD offset that may not be correct in the saved image
         EXIFIFD,
@@ -2103,7 +2120,7 @@ class AppendingTiffWriter(io.BytesIO):
         self.finalize()
         self.setup()
 
-    def __enter__(self) -> AppendingTiffWriter:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:

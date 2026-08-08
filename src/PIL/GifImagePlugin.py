@@ -87,6 +87,7 @@ class GifImageFile(ImageFile.ImageFile):
     global_palette = None
 
     def data(self) -> bytes | None:
+        assert self.fp is not None
         s = self.fp.read(1)
         if s and s[0]:
             return self.fp.read(s[0])
@@ -100,6 +101,7 @@ class GifImageFile(ImageFile.ImageFile):
 
     def _open(self) -> None:
         # Screen
+        assert self.fp is not None
         s = self.fp.read(13)
         if not _accept(s):
             msg = "not a GIF file"
@@ -162,13 +164,13 @@ class GifImageFile(ImageFile.ImageFile):
             self._seek(0)
 
         last_frame = self.__frame
-        for f in range(self.__frame + 1, frame + 1):
-            try:
+        try:
+            for f in range(self.__frame + 1, frame + 1):
                 self._seek(f)
-            except EOFError as e:
-                self.seek(last_frame)
-                msg = "no more images in GIF file"
-                raise EOFError(msg) from e
+        except EOFError as e:
+            self.seek(last_frame)
+            msg = "no more images in GIF file"
+            raise EOFError(msg) from e
 
     def _seek(self, frame: int, update_image: bool = True) -> None:
         if isinstance(self._fp, DeferredError):
@@ -751,7 +753,7 @@ def _write_multiple_frames(
                             if delta.mode == "P":
                                 # Convert to L without considering palette
                                 delta_l = Image.new("L", delta.size)
-                                delta_l.putdata(delta.getdata())
+                                delta_l.putdata(delta.get_flattened_data())
                                 delta = delta_l
                             mask = ImageMath.lambda_eval(
                                 lambda args: args["convert"](args["im"] * 255, "1"),
@@ -935,7 +937,13 @@ def _get_optimize(im: Image.Image, info: dict[str, Any]) -> list[int] | None:
     :param info: encoderinfo
     :returns: list of indexes of palette entries in use, or None
     """
-    if im.mode in ("P", "L") and info and info.get("optimize"):
+    if (
+        im.mode in ("P", "L")
+        and info
+        and info.get("optimize")
+        and im.width != 0
+        and im.height != 0
+    ):
         # Potentially expensive operation.
 
         # The palette saves 3 bytes per color not used, but palette

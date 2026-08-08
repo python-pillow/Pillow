@@ -20,6 +20,7 @@
 """
 Parse X Bitmap Distribution Format (BDF)
 """
+
 from __future__ import annotations
 
 from typing import BinaryIO
@@ -69,6 +70,7 @@ def bdf_char(
     # and x and y displacement (BBxoff0, BByoff0)
     # of the lower left corner from the origin of the character.
     width, height, x_disp, y_disp = (int(p) for p in props["BBX"].split())
+    Image._decompression_bomb_check((width, height))
 
     # The word DWIDTH
     # followed by the width in x and y of the character in device pixels.

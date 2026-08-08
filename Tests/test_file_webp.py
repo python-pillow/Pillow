@@ -49,6 +49,12 @@ class TestFileWebp:
         assert version is not None
         assert re.search(r"\d+\.\d+\.\d+$", version)
 
+    def test_invalid_file(self) -> None:
+        invalid_file = "Tests/images/flower.jpg"
+
+        with pytest.raises(SyntaxError):
+            WebPImagePlugin.WebPImageFile(invalid_file)
+
     def test_read_rgb(self) -> None:
         """
         Can we read a RGB mode WebP file without error?
@@ -60,7 +66,6 @@ class TestFileWebp:
             assert image.size == (128, 128)
             assert image.format == "WEBP"
             image.load()
-            image.getdata()
 
             # generated with:
             # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
@@ -77,7 +82,6 @@ class TestFileWebp:
             assert image.size == (128, 128)
             assert image.format == "WEBP"
             image.load()
-            image.getdata()
 
             if mode == self.rgb_mode:
                 # generated with: dwebp -ppm temp.webp -o hopper_webp_write.ppm
@@ -186,9 +190,7 @@ class TestFileWebp:
     def test_no_resource_warning(self, tmp_path: Path) -> None:
         file_path = "Tests/images/hopper.webp"
         with Image.open(file_path) as image:
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 image.save(tmp_path / "temp.webp")
 
     def test_file_pointer_could_be_reused(self) -> None:

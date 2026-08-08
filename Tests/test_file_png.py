@@ -4,7 +4,7 @@ import re
 import sys
 import warnings
 import zlib
-from io import BytesIO
+from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from types import ModuleType
 from typing import Any, cast
@@ -101,12 +101,13 @@ class TestFilePng:
             assert im.get_format_mimetype() == "image/png"
 
         for mode in ["1", "L", "P", "RGB", "I;16", "I;16B"]:
-            im = hopper(mode)
-            im.save(test_file)
+            im1 = hopper(mode)
+            im1.save(test_file)
             with Image.open(test_file) as reloaded:
-                if mode == "I;16B":
-                    reloaded = reloaded.convert(mode)
-                assert_image_equal(reloaded, im)
+                converted_reloaded = (
+                    reloaded.convert(mode) if mode == "I;16B" else reloaded
+                )
+                assert_image_equal(converted_reloaded, im1)
 
     def test_invalid_file(self) -> None:
         invalid_file = "Tests/images/flower.jpg"
@@ -122,6 +123,14 @@ class TestFilePng:
         with pytest.raises(OSError):
             with Image.open(test_file):
                 pass
+
+    def test_ihdr_unknown_mode(self) -> None:
+        fp = BytesIO(chunk(b"IHDR", b"\x00" * 13))
+        with PngImagePlugin.PngStream(fp) as png:
+            cid, pos, length = png.read()
+            png.call(cid, pos, length)
+
+            assert png.im_mode == ""
 
     def test_bad_text(self) -> None:
         # Make sure PIL can read malformed tEXt chunks (@PIL152)
@@ -225,11 +234,11 @@ class TestFilePng:
         test_file = "Tests/images/pil123p.png"
         with Image.open(test_file) as im:
             assert_image(im, "P", (162, 150))
-            im = im.convert("RGBA")
-        assert_image(im, "RGBA", (162, 150))
+            im_rgba = im.convert("RGBA")
+        assert_image(im_rgba, "RGBA", (162, 150))
 
         # image has 124 unique alpha values
-        colors = im.getchannel("A").getcolors()
+        colors = im_rgba.getchannel("A").getcolors()
         assert colors is not None
         assert len(colors) == 124
 
@@ -239,11 +248,11 @@ class TestFilePng:
             assert im.info["transparency"] == (0, 255, 52)
 
             assert_image(im, "RGB", (64, 64))
-            im = im.convert("RGBA")
-        assert_image(im, "RGBA", (64, 64))
+            im_rgba = im.convert("RGBA")
+        assert_image(im_rgba, "RGBA", (64, 64))
 
         # image has 876 transparent pixels
-        colors = im.getchannel("A").getcolors()
+        colors = im_rgba.getchannel("A").getcolors()
         assert colors is not None
         assert colors[0][0] == 876
 
@@ -262,11 +271,11 @@ class TestFilePng:
             assert len(im.info["transparency"]) == 256
 
             assert_image(im, "P", (162, 150))
-            im = im.convert("RGBA")
-        assert_image(im, "RGBA", (162, 150))
+            im_rgba = im.convert("RGBA")
+        assert_image(im_rgba, "RGBA", (162, 150))
 
         # image has 124 unique alpha values
-        colors = im.getchannel("A").getcolors()
+        colors = im_rgba.getchannel("A").getcolors()
         assert colors is not None
         assert len(colors) == 124
 
@@ -285,13 +294,13 @@ class TestFilePng:
             assert im.info["transparency"] == 164
             assert im.getpixel((31, 31)) == 164
             assert_image(im, "P", (64, 64))
-            im = im.convert("RGBA")
-        assert_image(im, "RGBA", (64, 64))
+            im_rgba = im.convert("RGBA")
+        assert_image(im_rgba, "RGBA", (64, 64))
 
-        assert im.getpixel((31, 31)) == (0, 255, 52, 0)
+        assert im_rgba.getpixel((31, 31)) == (0, 255, 52, 0)
 
         # image has 876 transparent pixels
-        colors = im.getchannel("A").getcolors()
+        colors = im_rgba.getchannel("A").getcolors()
         assert colors is not None
         assert colors[0][0] == 876
 
@@ -358,9 +367,7 @@ class TestFilePng:
 
         with Image.open(TEST_PNG_FILE) as im:
             # Assert that there is no unclosed file warning
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 im.verify()
 
         with Image.open(TEST_PNG_FILE) as im:
@@ -501,8 +508,9 @@ class TestFilePng:
             im = roundtrip(im)
         assert im.info["transparency"] == (248, 248, 248)
 
-        im = roundtrip(im, transparency=(0, 1, 2))
-        assert im.info["transparency"] == (0, 1, 2)
+        for transparency in ((0, 1, 2), [0, 1, 2]):
+            im = roundtrip(im, transparency=transparency)
+            assert im.info["transparency"] == (0, 1, 2)
 
     def test_trns_p(self, tmp_path: Path) -> None:
         # Check writing a transparency of 0, issue #528
@@ -516,6 +524,31 @@ class TestFilePng:
             assert "transparency" in im2.info
 
             assert_image_equal(im2.convert("RGBA"), im.convert("RGBA"))
+
+    def test_trns_invalid(self, tmp_path: Path) -> None:
+        out = tmp_path / "temp.png"
+
+        for mode in ("1", "L", "I;16"):
+            im = Image.new(mode, (1, 1))
+            with pytest.raises(
+                ValueError, match=f"transparency for {mode} must be an integer"
+            ):
+                im.save(out, transparency="invalid")
+
+        im = Image.new("P", (1, 1))
+        with pytest.raises(
+            ValueError, match="transparency for P must be an integer or bytes"
+        ):
+            im.save(out, transparency="invalid")
+
+        im = Image.new("RGB", (1, 1))
+        with pytest.raises(
+            ValueError, match="transparency for RGB must be list or tuple"
+        ):
+            im.save(out, transparency="invalid")
+
+        with pytest.raises(ValueError, match="transparency for RGB must have length 3"):
+            im.save(out, transparency=(1, 2))
 
     def test_trns_null(self) -> None:
         # Check reading images with null tRNS value, issue #1239
@@ -653,20 +686,16 @@ class TestFilePng:
         with pytest.raises(SyntaxError, match="Unknown compression method"):
             PngImagePlugin.PngImageFile("Tests/images/unknown_compression_method.png")
 
-    def test_padded_idat(self) -> None:
+    def test_padded_idat(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # This image has been manually hexedited
         # so that the IDAT chunk has padding at the end
         # Set MAXBLOCK to the length of the actual data
         # so that the decoder finishes reading before the chunk ends
-        MAXBLOCK = ImageFile.MAXBLOCK
-        ImageFile.MAXBLOCK = 45
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        monkeypatch.setattr(ImageFile, "MAXBLOCK", 45)
+        monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
 
         with Image.open("Tests/images/padded_idat.png") as im:
             im.load()
-
-            ImageFile.MAXBLOCK = MAXBLOCK
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
             assert_image_equal_tofile(im, "Tests/images/bw_gradient.png")
 
@@ -709,6 +738,16 @@ class TestFilePng:
             assert reloaded.png is not None
             assert reloaded.png.im_palette is not None
             assert len(reloaded.png.im_palette[1]) == 3
+
+    def test_plte_cmyk(self, tmp_path: Path) -> None:
+        im = Image.new("P", (1, 1))
+        im.putpalette((0, 100, 150, 200), "CMYK")
+
+        out = tmp_path / "temp.png"
+        im.save(out)
+
+        with Image.open(out) as reloaded:
+            assert reloaded.convert("CMYK").getpixel((0, 0)) == (200, 222, 232, 0)
 
     def test_getxmp(self) -> None:
         with Image.open("Tests/images/color_snakes.png") as im:
@@ -814,19 +853,15 @@ class TestFilePng:
     @pytest.mark.parametrize("buffer", (True, False))
     def test_save_stdout(self, buffer: bool, monkeypatch: pytest.MonkeyPatch) -> None:
 
-        class MyStdOut:
-            buffer = BytesIO()
-
-        mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
+        fp = BytesIO()
+        mystdout = TextIOWrapper(fp) if buffer else fp
 
         monkeypatch.setattr(sys, "stdout", mystdout)
 
         with Image.open(TEST_PNG_FILE) as im:
-            im.save(sys.stdout, "PNG")
+            im.save(sys.stdout, "PNG")  # type: ignore[arg-type]
 
-        if isinstance(mystdout, MyStdOut):
-            mystdout = mystdout.buffer
-        with Image.open(mystdout) as reloaded:
+        with Image.open(fp) as reloaded:
             assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
 
     def test_truncated_end_chunk(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -837,16 +872,6 @@ class TestFilePng:
         monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
         with Image.open("Tests/images/truncated_end_chunk.png") as im:
             assert_image_equal_tofile(im, "Tests/images/hopper.png")
-
-    def test_deprecation(self, tmp_path: Path) -> None:
-        test_file = tmp_path / "out.png"
-
-        im = hopper("I")
-        with pytest.warns(DeprecationWarning, match="Saving I mode images as PNG"):
-            im.save(test_file)
-
-        with Image.open(test_file) as reloaded:
-            assert_image_equal(im, reloaded.convert("I"))
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")
