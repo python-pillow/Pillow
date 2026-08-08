@@ -52,7 +52,8 @@ class TestImageFile:
         assert_image_equal(*roundtrip("BMP"))
         im1, im2 = roundtrip("GIF")
         assert_image_similar(im1.convert("P"), im2, 1)
-        assert_image_equal(*roundtrip("IM"))
+        with pytest.warns(DeprecationWarning, match="IM image format"):
+            assert_image_equal(*roundtrip("IM"))
         assert_image_equal(*roundtrip("MSP"))
         if features.check("zlib"):
             # force multiple blocks in PNG driver
