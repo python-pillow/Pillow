@@ -488,7 +488,7 @@ def test_point_lut(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) ->
 
 
 @pytest.mark.benchmark(group="point")
-@pytest.mark.parametrize("mode", ["I", "F"])
+@pytest.mark.parametrize("mode", ["I", "F", "LA", "RGBA"])
 @pytest.mark.parametrize("size", SIZES, ids=_format_size)
 def test_point_transform(
     bench: BenchmarkFixture, mode: str, size: tuple[int, int]
