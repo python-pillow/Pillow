@@ -17,7 +17,7 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from pytest_benchmark.fixture import (  # type: ignore[import-not-found]
+    from pytest_benchmark.fixture import (  # type: ignore[unused-ignore, import-not-found]
         BenchmarkFixture,
     )
 
