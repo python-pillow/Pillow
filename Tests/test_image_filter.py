@@ -170,20 +170,18 @@ def test_kernel_not_enough_coefficients() -> None:
         ImageFilter.Kernel((3, 3), (0, 0))
 
 
-# fmt: off
 EMBOSS_3x3 = (
     -1, -1,  0,
     -1,  0,  1,
      0,  1,  1,
-)
+)  # fmt: skip
 EMBOSS_5x5 = (
     -1, -1, -1, -1,  0,
     -1, -1, -1,  0,  1,
     -1, -1,  0,  1,  1,
     -1,  0,  1,  1,  1,
      0,  1,  1,  1,  1,
-)
-# fmt: on
+)  # fmt: skip
 
 
 @pytest.mark.parametrize(
