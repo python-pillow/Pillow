@@ -59,7 +59,9 @@ ImagingNewDIB(const ModeID mode, int xsize, int ysize) {
 
     /* Check mode */
     if (mode != IMAGING_MODE_1 && mode != IMAGING_MODE_L && mode != IMAGING_MODE_RGB) {
-        return (ImagingDIB)ImagingError_ModeError();
+        return (ImagingDIB)ImagingError_NotSupportedError(
+            "only modes I/L/RGB supported"
+        );
     }
 
     const int pixelsize = mode == IMAGING_MODE_RGB ? 3 : 1;

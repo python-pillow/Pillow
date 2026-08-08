@@ -29,7 +29,9 @@ ImagingPaletteNew(const ModeID mode) {
 
     if (mode != IMAGING_MODE_RGB && mode != IMAGING_MODE_RGBA &&
         mode != IMAGING_MODE_CMYK) {
-        return (ImagingPalette)ImagingError_ModeError();
+        return (ImagingPalette)ImagingError_ModeError(
+            "only RGB/RGBA/CMYK images supported"
+        );
     }
 
     palette = calloc(1, sizeof(struct ImagingPaletteInstance));

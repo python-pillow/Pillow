@@ -137,7 +137,7 @@ class TestColorLut3DCoreAPI:
     def test_wrong_mode(
         self, image_mode: str, lut_mode: str, table_channels: int, table_size: int
     ) -> None:
-        with pytest.raises(ValueError, match="wrong mode"):
+        with pytest.raises(ValueError, match="bands"):
             im = Image.new(image_mode, (10, 10), 0)
             im.im.color_lut_3d(
                 lut_mode,
