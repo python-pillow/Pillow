@@ -10,7 +10,7 @@ from io import BytesIO
 
 import pytest
 
-from PIL import Image, ImageChops, ImageFilter
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 from PIL.Image import Resampling, Transpose
 
 TYPE_CHECKING = False
@@ -279,6 +279,70 @@ def test_rotate_right(
     im = make_pillow_image(mode, size)
     bench.extra_info["label"] = [op.name]
     bench(im.transpose, op)
+
+
+@pytest.mark.benchmark(group="draw")
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_draw_rectangle(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+) -> None:
+    # Exercise various fill functions.
+    im = Image.new(mode, size)
+    draw = ImageDraw.Draw(im)
+    nbands = len(im.getbands())
+    ink = (200, 50, 25, 255)[:nbands] if nbands > 1 else 200
+    w, h = size
+    bench(lambda: draw.rectangle((0, 0, w - 1, h - 1), fill=ink))
+
+
+@pytest.mark.benchmark(group="draw")
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_draw_rectangle_blend(bench: BenchmarkFixture, size: tuple[int, int]) -> None:
+    # Exercise fill functions with blending.
+    im = Image.new("RGB", size)
+    draw = ImageDraw.Draw(im, "RGBA")
+    w, h = size
+    bench(lambda: draw.rectangle((0, 0, w - 1, h - 1), fill=(200, 50, 25, 127)))
+
+
+def _zigzag(size: tuple[int, int], segments: int = 16) -> list[tuple[int, int]]:
+    w, h = size
+    return [
+        (0 if i % 2 == 0 else w - 1, i * (h - 1) // segments)
+        for i in range(segments + 1)
+    ]
+
+
+@pytest.mark.benchmark(group="draw")
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_draw_lines(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> None:
+    # Exercise point-by-point line drawing (a polyline is a single C call).
+    im = Image.new(mode, size)
+    draw = ImageDraw.Draw(im)
+    nbands = len(im.getbands())
+    ink = (200, 50, 25, 255)[:nbands] if nbands > 1 else 200
+    xy = _zigzag(size)
+    bench(lambda: draw.line(xy, fill=ink))
+
+
+@pytest.mark.benchmark(group="draw")
+@pytest.mark.parametrize("alpha", [0, 127, 255])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_draw_lines_blend(
+    bench: BenchmarkFixture,
+    size: tuple[int, int],
+    alpha: int,
+) -> None:
+    # Exercise line drawing with blending; alpha 0 and 255 have fast paths.
+    im = Image.new("RGB", size)
+    draw = ImageDraw.Draw(im, "RGBA")
+    xy = _zigzag(size)
+    bench.extra_info["label"] = [f"alpha={alpha}"]
+    bench(lambda: draw.line(xy, fill=(200, 50, 25, alpha)))
 
 
 @pytest.mark.benchmark(group="load")
