@@ -30,7 +30,7 @@ import os
 import re
 from typing import IO, Any
 
-from . import Image, ImageFile, ImagePalette
+from . import Image, ImageFile, ImageMode, ImagePalette
 from ._util import DeferredError
 
 # --------------------------------------------------------------------
@@ -300,7 +300,8 @@ class ImImageFile(ImageFile.ImageFile):
         if self.mode == "1":
             bits = 1
         else:
-            bits = 8 * len(self.mode)
+            mode = ImageMode.getmode(self.mode)
+            bits = 8 * len(mode.bands) * int(mode.typestr[-1])
 
         size = ((self.size[0] * bits + 7) // 8) * self.size[1]
         offs = self.__offset + frame * size
