@@ -87,6 +87,35 @@ def make_pillow_image(
     return im.convert(mode)
 
 
+BBOX_SCENARIOS: dict[str, tuple[float, str] | None] = {
+    "half-centered": (0.5, "center"),
+    "small-centered": (0.1, "center"),
+    "half-corner": (0.5, "corner"),
+    "empty": None,
+}
+
+
+def make_bbox_image(
+    mode: str,
+    size: tuple[int, int],
+    region: tuple[float, str] | None,
+) -> Image.Image:
+    im = Image.new(mode, size, 0)
+    if region is None:
+        return im
+    fraction, placement = region
+    w, h = size
+    bw, bh = max(1, round(w * fraction)), max(1, round(h * fraction))
+    if placement == "center":
+        left, top = (w - bw) // 2, (h - bh) // 2
+    else:
+        left, top = w - bw, h - bh
+    nbands = len(im.getbands())
+    color = (255, 128, 64, 255)[:nbands] if nbands > 1 else 255
+    im.paste(color, (left, top, left + bw - 1, top + bh - 1))
+    return im
+
+
 @pytest.mark.benchmark(group="composition")
 @pytest.mark.parametrize("mode", MODES)
 @pytest.mark.parametrize("size", SIZES, ids=_format_size)
@@ -429,6 +458,21 @@ def test_offset(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> No
     im = make_pillow_image(mode, size)
     bench.extra_info["label"] = ["offset"]
     bench(ImageChops.offset, im, 123, 45)
+
+
+@pytest.mark.benchmark(group="bbox")
+@pytest.mark.parametrize("scenario", list(BBOX_SCENARIOS))
+@pytest.mark.parametrize("mode", ["L", "LA", "I;16", "RGB", "RGBA"])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_getbbox(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+    scenario: str,
+) -> None:
+    im = make_bbox_image(mode, size, BBOX_SCENARIOS[scenario])
+    bench.extra_info["label"] = [scenario]
+    bench(im.getbbox)
 
 
 @pytest.mark.benchmark(group="histogram")
