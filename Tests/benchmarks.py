@@ -4,7 +4,11 @@ pytest-benchmark tests for Pillow features.
 
 from __future__ import annotations
 
+import hashlib
+import os
 import pathlib
+import re
+import warnings
 from importlib.util import find_spec
 from io import BytesIO
 
@@ -17,12 +21,17 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    BenchmarkSave = Callable[[Image.Image], None]
+
     from pytest_benchmark.fixture import (  # type: ignore[import-not-found]
         BenchmarkFixture,
     )
 
 if not (find_spec("pytest_benchmark") or find_spec("pytest_codspeed")):
     pytest.skip("pytest-benchmark or pytest-codspeed required", allow_module_level=True)
+
+_save_results = os.environ.get("PILLOW_BENCHMARK_SAVE_RESULTS_PATH")
+SAVE_RESULTS_PATH = pathlib.Path(_save_results) if _save_results else None
 
 # These can be adjusted to add more modes to benchmark
 # (however all features benchmarked might not support all PIL modes).
@@ -75,15 +84,65 @@ def bench(
     return benchmark
 
 
+@pytest.fixture
+def benchmark_save(request: pytest.FixtureRequest) -> BenchmarkSave:
+    """
+    Fixture to save a benchmark image, if so configured.
+    """
+
+    def save(im: Image.Image) -> None:
+        if SAVE_RESULTS_PATH:
+            safe_name = re.sub("[^-a-zA-Z0-9]", "_", str(request.node.name))
+            name = (SAVE_RESULTS_PATH / safe_name).with_suffix(".png")
+            try:
+                SAVE_RESULTS_PATH.mkdir(parents=True, exist_ok=True)
+                im.save(name)
+            except Exception as e:
+                warnings.warn(
+                    f"Failed to save benchmark result to {name}: {e}",
+                    stacklevel=2,
+                )
+
+    return save
+
+
 def make_pillow_image(
     mode: str,
     size: tuple[int, int],
-    pattern_offset: int = 0,
+    seed: int = 0,
 ) -> Image.Image:
-    im = Image.new("RGB", size)
-    n = im.width * im.height * 3
-    period = bytes((i + pattern_offset) % 256 for i in range(256))
-    im.frombytes((period * (n // 256 + 1))[:n])
+    """
+    Generate a synthetic test image with the given mode and size.
+    Different seeds give different final images.
+    """
+    width, height = size
+    vertical = Image.linear_gradient("L")
+    horizontal = vertical.transpose(Transpose.ROTATE_90)
+    radial = Image.radial_gradient("L")
+    base = Image.merge("RGB", (horizontal, vertical, radial)).resize(
+        size, Resampling.BILINEAR
+    )
+    # SHAKE128 gives us a predictable noise pattern.
+    noise_bytes = hashlib.shake_128(f"pillow-benchmark-{seed}".encode()).digest(
+        width * height * 3
+    )
+    noise = Image.frombytes("RGB", size, noise_bytes)
+
+    def centered_box(area_fraction: float) -> tuple[int, int, int, int]:
+        inset = (1 - area_fraction**0.5) / 2
+        return (
+            round(width * inset),
+            round(height * inset),
+            round(width * (1 - inset)),
+            round(height * (1 - inset)),
+        )
+
+    im = base
+    noise_box = centered_box(1 / 2)
+    im.paste(noise.crop(noise_box), noise_box)  # Noise in the middle
+    im.paste(tuple(noise_bytes[:3]), centered_box(1 / 6))  # Solid center
+    if seed:
+        im = ImageChops.offset(im, seed * 383, seed * 271)
     return im.convert(mode)
 
 
@@ -96,7 +155,7 @@ def test_blend(
     size: tuple[int, int],
 ) -> None:
     im1 = make_pillow_image(mode, size)
-    im2 = make_pillow_image(mode, size, pattern_offset=1024)
+    im2 = make_pillow_image(mode, size, seed=1)
     result = bench(Image.blend, im1, im2, 0.5)
     assert result.size == im1.size
 
@@ -145,7 +204,7 @@ def test_alpha_composite(
     alpha: str,
 ) -> None:
     im1 = make_pillow_image(mode, size)
-    im2 = make_pillow_image(mode, size, pattern_offset=1024)
+    im2 = make_pillow_image(mode, size, seed=1)
     if alpha == "opaque":
         im2.putalpha(255)
     elif alpha == "transparent":
@@ -407,7 +466,7 @@ def test_chops(
     op: Callable[[Image.Image, Image.Image], Image.Image],
 ) -> None:
     im1 = make_pillow_image(mode, size)
-    im2 = make_pillow_image(mode, size, pattern_offset=1024)
+    im2 = make_pillow_image(mode, size, seed=1)
     bench.extra_info["label"] = [op.__name__]
     result = bench(op, im1, im2)
     assert result.size == im1.size
@@ -506,3 +565,75 @@ def test_quantize(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> 
     bench.extra_info["label"] = [f"quantize {mode}"]
     result = bench(im.quantize, 256)
     assert result.mode == "P"
+
+
+@pytest.mark.benchmark(group="quantize")
+@pytest.mark.parametrize("output_mode", ["P", "PA"])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_quantize_grayscale_to_palette(
+    bench: BenchmarkFixture,
+    output_mode: str,
+    size: tuple[int, int],
+) -> None:
+    im = make_pillow_image("L", size)
+    bench.extra_info["label"] = [f"quantize L to {output_mode}"]
+    result = bench(im.convert, output_mode)
+    assert result.mode == output_mode
+    assert result.convert("L").tobytes() == im.tobytes()
+
+
+@pytest.mark.benchmark(group="quantize")
+@pytest.mark.parametrize(
+    "dither",
+    [Image.Dither.NONE, Image.Dither.FLOYDSTEINBERG],
+    ids=["none", "floyd-steinberg"],
+)
+@pytest.mark.parametrize("output_mode", ["P", "PA"])
+@pytest.mark.parametrize(
+    "source_type",
+    [
+        "synthetic",
+        *(pytest.param(image, id=f"{image.stem}") for image in PATHS),
+    ],
+)
+@pytest.mark.parametrize("palette_type", ["exact", "grayscale", "web"])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_quantize_to_palette(
+    bench: BenchmarkFixture,
+    benchmark_save: BenchmarkSave,
+    dither: Image.Dither,
+    output_mode: str,
+    source_type: str | pathlib.Path,
+    palette_type: str,
+    size: tuple[int, int],
+) -> None:
+    if isinstance(source_type, pathlib.Path):
+        im = Image.open(source_type).convert("RGB").resize(size)
+    elif source_type == "synthetic":
+        im = make_pillow_image("RGB", size)
+    if palette_type == "exact":
+        palette = im.quantize(256)
+        im = palette.convert("RGB")
+    elif palette_type == "web":
+        palette = Image.new("RGB", (1, 1)).convert(
+            "P",
+            palette=Image.Palette.WEB,
+            dither=Image.Dither.NONE,
+        )
+    else:
+        palette = Image.new("P", (1, 1))
+        palette.putpalette(tuple(channel for i in range(256) for channel in (i, i, i)))
+
+    bench.extra_info["label"] = [
+        f"{source_type} RGB to {output_mode}, "
+        f"{palette_type} palette, "
+        f"{dither.name.lower()} dither",
+    ]
+    if output_mode == "P":
+        result = bench(im.quantize, palette=palette, dither=dither)
+    else:
+        result = bench(lambda: im._new(im.im.convert(output_mode, dither, palette.im)))
+    assert result.mode == output_mode
+    if palette_type == "exact":
+        assert result.convert("RGB").tobytes() == im.tobytes()
+    benchmark_save(result)
