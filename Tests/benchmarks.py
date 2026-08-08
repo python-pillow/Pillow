@@ -218,7 +218,7 @@ def test_crop(
     ],
     ids=lambda f: f.name,
 )
-@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("mode", [*MODES, "I;16"])
 @pytest.mark.parametrize("size", SIZES, ids=_format_size)
 def test_filter(
     bench: BenchmarkFixture,
