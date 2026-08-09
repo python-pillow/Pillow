@@ -188,6 +188,29 @@ def test_trns_l(tmp_path: Path) -> None:
     im_p.save(f)
 
 
+def test_p_from_rgb_convert_adaptive_dither() -> None:
+    # https://github.com/python-pillow/Pillow/issues/5836
+    # dither was being silently ignored when converting to an ADAPTIVE
+    # palette, since self.im.quantize() (used internally) doesn't support
+    # dithering without an explicit reference palette.
+    im = hopper("RGB")
+
+    no_dither = im.convert(
+        "P", palette=Image.Palette.ADAPTIVE, colors=4, dither=Image.Dither.NONE
+    )
+    dither = im.convert(
+        "P",
+        palette=Image.Palette.ADAPTIVE,
+        colors=4,
+        dither=Image.Dither.FLOYDSTEINBERG,
+    )
+    default = im.convert("P", palette=Image.Palette.ADAPTIVE, colors=4)
+
+    assert dither.tobytes() != no_dither.tobytes()
+    # unspecified dither must remain backwards compatible with no dithering
+    assert default.tobytes() == no_dither.tobytes()
+
+
 def test_trns_RGB(tmp_path: Path) -> None:
     im = hopper("RGB")
     im.info["transparency"] = im.getpixel((0, 0))
