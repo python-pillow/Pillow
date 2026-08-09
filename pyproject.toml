@@ -202,6 +202,7 @@ warn_unreachable = true
 enable_error_code = "ignore-without-code"
 extra_checks = true
 pretty = true
+num_workers = 4
 
 [tool.pytest]
 addopts = [ "-ra", "--color=auto" ]
