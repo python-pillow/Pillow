@@ -118,9 +118,7 @@ def autocontrast(
             if not isinstance(cutoff, tuple):
                 cutoff = (cutoff, cutoff)
             # get number of pixels
-            n = 0
-            for ix in range(256):
-                n = n + h[ix]
+            n = sum(h)
             # remove cutoff% pixels from the low end
             cut = int(n * cutoff[0] // 100)
             for lo in range(256):
