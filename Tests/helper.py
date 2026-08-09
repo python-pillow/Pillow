@@ -345,12 +345,3 @@ def is_win32() -> bool:
 
 def is_pypy() -> bool:
     return hasattr(sys, "pypy_translation_info")
-
-
-class CachedProperty:
-    def __init__(self, func: Callable[[Any], Any]) -> None:
-        self.func = func
-
-    def __get__(self, instance: Any, cls: type[Any] | None = None) -> Any:
-        result = instance.__dict__[self.func.__name__] = self.func(instance)
-        return result
