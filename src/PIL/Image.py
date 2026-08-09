@@ -40,7 +40,6 @@ import abc
 import atexit
 import builtins
 import io
-import logging
 import math
 import os
 import re
@@ -70,8 +69,6 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
     from typing import Any, Literal, Self
-
-logger = logging.getLogger(__name__)
 
 
 class DecompressionBombWarning(RuntimeWarning):
@@ -424,11 +421,9 @@ def _import_plugin_for_extension(ext: str | bytes) -> bool:
         return False
 
     try:
-        logger.debug("Importing %s", plugin)
         __import__(f"{__spec__.parent}.{plugin}", globals(), locals(), [])
         return True
-    except ImportError as e:
-        logger.debug("Image: failed to import %s: %s", plugin, e)
+    except ImportError:
         return False
 
 
@@ -492,10 +487,9 @@ def init() -> bool:
 
     for plugin in _plugins:
         try:
-            logger.debug("Importing %s", plugin)
             __import__(f"{__spec__.parent}.{plugin}", globals(), locals(), [])
-        except ImportError as e:
-            logger.debug("Image: failed to import %s: %s", plugin, e)
+        except ImportError:
+            pass
 
     if OPEN or SAVE:
         _initialized = 2
