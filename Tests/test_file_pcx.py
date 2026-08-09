@@ -80,13 +80,14 @@ def test_invalid_file() -> None:
 
 
 @pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
-def test_odd(tmp_path: Path, mode: str) -> None:
+@pytest.mark.parametrize("size", (3, 511))
+def test_odd(tmp_path: Path, mode: str, size: int) -> None:
     # See issue #523, odd sized images should have a stride that's even.
     # Not that ImageMagick or GIMP write PCX that way.
     # We were not handling properly.
     # larger, odd sized images are better here to ensure that
     # we handle interrupted scan lines properly.
-    _roundtrip(tmp_path, hopper(mode).resize((511, 511)))
+    _roundtrip(tmp_path, hopper(mode).resize((size, size)))
 
 
 def test_odd_read() -> None:

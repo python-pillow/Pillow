@@ -422,12 +422,11 @@ def test_seek() -> None:
     with Image.open("Tests/images/dispose_none.gif") as img:
         assert isinstance(img, GifImagePlugin.GifImageFile)
         frame_count = 0
-        try:
+        with pytest.raises(EOFError):
             while True:
                 frame_count += 1
                 img.seek(img.tell() + 1)
-        except EOFError:
-            assert frame_count == 5
+        assert frame_count == 5
 
         img.seek(0)
         with pytest.raises(ValueError, match="cannot seek to frame 2"):
