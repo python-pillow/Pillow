@@ -33,7 +33,7 @@ MODES = ["RGB", "RGBA", "L", "LA"]
 # Note that adjusting this will naturally change how long operations take.
 # The `bench` fixture takes care of saving this information in the extra info
 # for the benchmark run, so that throughput (Mpx/s) can be recomputed in the future.
-SIZES = [(1024, 1024)]
+SIZES = [(1237, 811)]  # Primes, non-power-of-two, asymmetric, approximately 1024x1024
 
 # For benchmarks that act on test fixture files, these are the paths loaded.
 IMAGES_PATH = pathlib.Path(__file__).parent / "images"
