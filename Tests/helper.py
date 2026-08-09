@@ -154,15 +154,6 @@ def assert_not_all_same(items: Sequence[Any], msg: str | None = None) -> None:
     assert items.count(items[0]) != len(items), msg
 
 
-def assert_tuple_approx_equal(
-    actuals: Sequence[int], targets: tuple[int, ...], threshold: int, msg: str
-) -> None:
-    """Tests if actuals has values within threshold from targets"""
-    for i, target in enumerate(targets):
-        if not (target - threshold <= actuals[i] <= target + threshold):
-            pytest.fail(msg + ": " + repr(actuals) + " != " + repr(targets))
-
-
 def timeout_unless_slower_valgrind(timeout: float) -> pytest.MarkDecorator:
     if "PILLOW_VALGRIND_TEST" in os.environ:
         return pytest.mark.pil_noop_mark()

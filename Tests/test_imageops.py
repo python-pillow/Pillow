@@ -8,7 +8,6 @@ from .helper import (
     assert_image_equal,
     assert_image_similar,
     assert_image_similar_tofile,
-    assert_tuple_approx_equal,
     hopper,
 )
 
@@ -296,28 +295,13 @@ def test_colorize_2color() -> None:
     right = (255, 1)
     value = im_test.getpixel(left)
     assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (255, 0, 0),
-        threshold=1,
-        msg="black test pixel incorrect",
-    )
+    assert value == pytest.approx((255, 0, 0), abs=1), "black test pixel incorrect"
     value = im_test.getpixel(middle)
     assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (127, 63, 0),
-        threshold=1,
-        msg="mid test pixel incorrect",
-    )
+    assert value == pytest.approx((127, 63, 0), abs=1), "mid test pixel incorrect"
     value = im_test.getpixel(right)
     assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (0, 127, 0),
-        threshold=1,
-        msg="white test pixel incorrect",
-    )
+    assert value == pytest.approx((0, 127, 0), abs=1), "white test pixel incorrect"
 
 
 def test_colorize_2color_offset() -> None:
@@ -338,28 +322,13 @@ def test_colorize_2color_offset() -> None:
     right = (125, 1)
     value = im_test.getpixel(left)
     assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (255, 0, 0),
-        threshold=1,
-        msg="black test pixel incorrect",
-    )
+    assert value == pytest.approx((255, 0, 0), abs=1), "black test pixel incorrect"
     value = im_test.getpixel(middle)
     assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (127, 63, 0),
-        threshold=1,
-        msg="mid test pixel incorrect",
-    )
+    assert value == pytest.approx((127, 63, 0), abs=1), "mid test pixel incorrect"
     value = im_test.getpixel(right)
     assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (0, 127, 0),
-        threshold=1,
-        msg="white test pixel incorrect",
-    )
+    assert value == pytest.approx((0, 127, 0), abs=1), "white test pixel incorrect"
 
 
 def test_colorize_3color_offset() -> None:
@@ -388,39 +357,19 @@ def test_colorize_3color_offset() -> None:
     right = (225, 1)
     value = im_test.getpixel(left)
     assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (255, 0, 0),
-        threshold=1,
-        msg="black test pixel incorrect",
-    )
+    assert value == pytest.approx((255, 0, 0), abs=1), "black test pixel incorrect"
     value = im_test.getpixel(left_middle)
     assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (127, 0, 127),
-        threshold=1,
-        msg="low-mid test pixel incorrect",
-    )
+    assert value == pytest.approx((127, 0, 127), abs=1), "low-mid test pixel incorrect"
     value = im_test.getpixel(middle)
     assert isinstance(value, tuple)
-    assert_tuple_approx_equal(value, (0, 0, 255), threshold=1, msg="mid incorrect")
+    assert value == pytest.approx((0, 0, 255), abs=1), "mid incorrect"
     value = im_test.getpixel(right_middle)
     assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (0, 63, 127),
-        threshold=1,
-        msg="high-mid test pixel incorrect",
-    )
+    assert value == pytest.approx((0, 63, 127), abs=1), "high-mid test pixel incorrect"
     value = im_test.getpixel(right)
     assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (0, 127, 0),
-        threshold=1,
-        msg="white test pixel incorrect",
-    )
+    assert value == pytest.approx((0, 127, 0), abs=1), "white test pixel incorrect"
 
 
 def test_colorize_invalid_mode() -> None:
@@ -594,18 +543,12 @@ def test_autocontrast_mask_real_input() -> None:
         result_nomask = ImageOps.autocontrast(img)
 
         assert result_nomask != result
-        assert_tuple_approx_equal(
-            ImageStat.Stat(result, mask=rect_mask).median,
-            (195, 202, 184),
-            threshold=2,
-            msg="autocontrast with mask pixel incorrect",
-        )
-        assert_tuple_approx_equal(
-            ImageStat.Stat(result_nomask).median,
-            (119, 106, 79),
-            threshold=2,
-            msg="autocontrast without mask pixel incorrect",
-        )
+        assert ImageStat.Stat(result, mask=rect_mask).median == pytest.approx(
+            (195, 202, 184), abs=2
+        ), "autocontrast with mask pixel incorrect"
+        assert ImageStat.Stat(result_nomask).median == pytest.approx(
+            (119, 106, 79), abs=2
+        ), "autocontrast without mask pixel incorrect"
 
 
 def test_autocontrast_preserve_tone() -> None:
