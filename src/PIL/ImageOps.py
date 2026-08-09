@@ -18,8 +18,6 @@
 #
 from __future__ import annotations
 
-import functools
-import operator
 import re
 from collections.abc import Sequence
 from typing import Literal, Protocol, cast, overload
@@ -494,7 +492,7 @@ def equalize(image: Image.Image, mask: Image.Image | None = None) -> Image.Image
         if len(histo) <= 1:
             lut.extend(list(range(256)))
         else:
-            step = (functools.reduce(operator.add, histo) - histo[-1]) // 255
+            step = (sum(histo) - histo[-1]) // 255
             if not step:
                 lut.extend(list(range(256)))
             else:
