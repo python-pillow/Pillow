@@ -335,4 +335,4 @@ def is_win32() -> bool:
 
 
 def is_pypy() -> bool:
-    return hasattr(sys, "pypy_translation_info")
+    return sys.implementation.name == "pypy"
