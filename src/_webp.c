@@ -41,44 +41,30 @@ static const char *const kErrorMessages[-WEBP_MUX_NOT_ENOUGH_DATA + 1] = {
 
 PyObject *
 HandleMuxError(WebPMuxError err, char *chunk) {
-    char message[100];
-    int message_len;
     assert(err <= WEBP_MUX_NOT_FOUND && err >= WEBP_MUX_NOT_ENOUGH_DATA);
 
-    // Check for a memory error first
-    if (err == WEBP_MUX_MEMORY_ERROR) {
-        return PyErr_NoMemory();
-    }
-
-    // Create the error message
-    if (chunk == NULL) {
-        message_len =
-            sprintf(message, "could not assemble chunks: %s", kErrorMessages[-err]);
-    } else {
-        message_len = sprintf(
-            message, "could not set %.4s chunk: %s", chunk, kErrorMessages[-err]
-        );
-    }
-    if (message_len < 0) {
-        PyErr_SetString(PyExc_RuntimeError, "failed to construct error message");
-        return NULL;
-    }
-
-    // Set the proper error type
+    PyObject *err_type = PyExc_RuntimeError;
     switch (err) {
+        case WEBP_MUX_MEMORY_ERROR:
+            return PyErr_NoMemory();
+
         case WEBP_MUX_NOT_FOUND:
         case WEBP_MUX_INVALID_ARGUMENT:
-            PyErr_SetString(PyExc_ValueError, message);
+            err_type = PyExc_ValueError;
             break;
 
         case WEBP_MUX_BAD_DATA:
         case WEBP_MUX_NOT_ENOUGH_DATA:
-            PyErr_SetString(PyExc_OSError, message);
+            err_type = PyExc_OSError;
             break;
+    }
 
-        default:
-            PyErr_SetString(PyExc_RuntimeError, message);
-            break;
+    if (chunk == NULL) {
+        PyErr_Format(err_type, "could not assemble chunks: %s", kErrorMessages[-err]);
+    } else {
+        PyErr_Format(
+            err_type, "could not set %.4s chunk: %s", chunk, kErrorMessages[-err]
+        );
     }
     return NULL;
 }
