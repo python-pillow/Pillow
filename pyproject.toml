@@ -1,11 +1,16 @@
 [build-system]
 build-backend = "backend"
 requires = [
-  "pybind11",
   "setuptools>=77",
 ]
 backend-path = [
   "_custom_build",
+]
+
+[dependency-groups]
+# Optional; enables parallel C extension compilation (see setup.py).
+build = [
+  "pybind11",
 ]
 
 [project]

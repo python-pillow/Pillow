@@ -17,7 +17,6 @@ import sys
 import warnings
 from collections.abc import Iterator
 
-from pybind11.setup_helpers import ParallelCompile
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
@@ -33,7 +32,12 @@ while sys.argv[-1].startswith("--pillow-configuration="):
     configuration.setdefault(key, []).append(value)
 
 default = int(configuration.get("parallel", ["0"])[-1])
-ParallelCompile("MAX_CONCURRENCY", default).install()
+try:
+    from pybind11.setup_helpers import ParallelCompile
+
+    ParallelCompile("MAX_CONCURRENCY", default).install()
+except ImportError:
+    pass
 
 
 def get_version() -> str:
