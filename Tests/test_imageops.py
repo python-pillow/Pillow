@@ -290,18 +290,15 @@ def test_colorize_2color() -> None:
     im_test = ImageOps.colorize(im_l, "red", "green")
 
     # Test output image (2-color)
-    left = (0, 1)
-    middle = (127, 1)
-    right = (255, 1)
-    value = im_test.getpixel(left)
-    assert isinstance(value, tuple)
-    assert value == pytest.approx((255, 0, 0), abs=1), "black test pixel incorrect"
-    value = im_test.getpixel(middle)
-    assert isinstance(value, tuple)
-    assert value == pytest.approx((127, 63, 0), abs=1), "mid test pixel incorrect"
-    value = im_test.getpixel(right)
-    assert isinstance(value, tuple)
-    assert value == pytest.approx((0, 127, 0), abs=1), "white test pixel incorrect"
+    assert im_test.getpixel((0, 1)) == pytest.approx(
+        (255, 0, 0), abs=1
+    ), "black test pixel incorrect"
+    assert im_test.getpixel((127, 1)) == pytest.approx(
+        (127, 63, 0), abs=1
+    ), "mid test pixel incorrect"
+    assert im_test.getpixel((255, 1)) == pytest.approx(
+        (0, 127, 0), abs=1
+    ), "white test pixel incorrect"
 
 
 def test_colorize_2color_offset() -> None:
@@ -317,18 +314,15 @@ def test_colorize_2color_offset() -> None:
     )
 
     # Test output image (2-color) with offsets
-    left = (25, 1)
-    middle = (75, 1)
-    right = (125, 1)
-    value = im_test.getpixel(left)
-    assert isinstance(value, tuple)
-    assert value == pytest.approx((255, 0, 0), abs=1), "black test pixel incorrect"
-    value = im_test.getpixel(middle)
-    assert isinstance(value, tuple)
-    assert value == pytest.approx((127, 63, 0), abs=1), "mid test pixel incorrect"
-    value = im_test.getpixel(right)
-    assert isinstance(value, tuple)
-    assert value == pytest.approx((0, 127, 0), abs=1), "white test pixel incorrect"
+    assert im_test.getpixel((25, 1)) == pytest.approx(
+        (255, 0, 0), abs=1
+    ), "black test pixel incorrect"
+    assert im_test.getpixel((75, 1)) == pytest.approx(
+        (127, 63, 0), abs=1
+    ), "mid test pixel incorrect"
+    assert im_test.getpixel((125, 1)) == pytest.approx(
+        (0, 127, 0), abs=1
+    ), "white test pixel incorrect"
 
 
 def test_colorize_3color_offset() -> None:
@@ -350,26 +344,21 @@ def test_colorize_3color_offset() -> None:
     )
 
     # Test output image (3-color) with offsets
-    left = (25, 1)
-    left_middle = (75, 1)
-    middle = (100, 1)
-    right_middle = (150, 1)
-    right = (225, 1)
-    value = im_test.getpixel(left)
-    assert isinstance(value, tuple)
-    assert value == pytest.approx((255, 0, 0), abs=1), "black test pixel incorrect"
-    value = im_test.getpixel(left_middle)
-    assert isinstance(value, tuple)
-    assert value == pytest.approx((127, 0, 127), abs=1), "low-mid test pixel incorrect"
-    value = im_test.getpixel(middle)
-    assert isinstance(value, tuple)
-    assert value == pytest.approx((0, 0, 255), abs=1), "mid incorrect"
-    value = im_test.getpixel(right_middle)
-    assert isinstance(value, tuple)
-    assert value == pytest.approx((0, 63, 127), abs=1), "high-mid test pixel incorrect"
-    value = im_test.getpixel(right)
-    assert isinstance(value, tuple)
-    assert value == pytest.approx((0, 127, 0), abs=1), "white test pixel incorrect"
+    assert im_test.getpixel((25, 1)) == pytest.approx(
+        (255, 0, 0), abs=1
+    ), "black test pixel incorrect"
+    assert im_test.getpixel((75, 1)) == pytest.approx(
+        (127, 0, 127), abs=1
+    ), "low-mid test pixel incorrect"
+    assert im_test.getpixel((100, 1)) == pytest.approx(
+        (0, 0, 255), abs=1
+    ), "mid incorrect"
+    assert im_test.getpixel((150, 1)) == pytest.approx(
+        (0, 63, 127), abs=1
+    ), "high-mid test pixel incorrect"
+    assert im_test.getpixel((225, 1)) == pytest.approx(
+        (0, 127, 0), abs=1
+    ), "white test pixel incorrect"
 
 
 def test_colorize_invalid_mode() -> None:
