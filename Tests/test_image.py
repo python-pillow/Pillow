@@ -674,6 +674,29 @@ class TestImage:
             with pytest.raises(ValueError):
                 im_hopper.remap_palette([])
 
+    @pytest.mark.parametrize(
+        "bands, palette_mode", ((3, "RGB"), (4, "RGBA")), ids=("RGB", "RGBA")
+    )
+    def test_remap_palette_source_palette(self, bands: int, palette_mode: str) -> None:
+        # When source_palette is passed explicitly its mode is inferred from its
+        # length, so a full 256-entry RGB palette (exactly 768 bytes) must stay
+        # RGB while a 256-entry RGBA one (1024 bytes) is detected as RGBA.
+        source_palette = bytes(
+            (entry + channel * 17) % 256
+            for entry in range(256)
+            for channel in range(bands)
+        )
+        assert len(source_palette) == 256 * bands
+
+        im = Image.new("P", (256, 1))
+        for x in range(256):
+            im.putpixel((x, 0), x)
+
+        im_remapped = im.remap_palette(list(range(256)), source_palette)
+        assert im_remapped.palette is not None
+        assert im_remapped.palette.mode == palette_mode
+        assert im_remapped.palette.palette == source_palette
+
     def test_remap_palette_transparency(self) -> None:
         im = Image.new("P", (1, 2), (0, 0, 0))
         im.putpixel((0, 1), (255, 0, 0))
