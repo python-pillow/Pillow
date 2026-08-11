@@ -868,7 +868,8 @@ def test_quantize_to_palette(
     size: tuple[int, int],
 ) -> None:
     if isinstance(source_type, pathlib.Path):
-        im = Image.open(source_type).convert("RGB").resize(size)
+        with Image.open(source_type) as source_im:
+            im = source_im.convert("RGB").resize(size)
     elif source_type == "synthetic":
         im = make_pillow_image("RGB", size)
     if palette_type == "exact":
