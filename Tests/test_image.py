@@ -674,13 +674,12 @@ class TestImage:
             with pytest.raises(ValueError):
                 im_hopper.remap_palette([])
 
-    @pytest.mark.parametrize(
-        "bands, palette_mode", ((3, "RGB"), (4, "RGBA")), ids=("RGB", "RGBA")
-    )
-    def test_remap_palette_source_palette(self, bands: int, palette_mode: str) -> None:
+    @pytest.mark.parametrize("palette_mode", ("RGB", "RGBA"))
+    def test_remap_palette_source_palette(self, palette_mode: str) -> None:
         # When source_palette is passed explicitly its mode is inferred from its
         # length, so a full 256-entry RGB palette (exactly 768 bytes) must stay
         # RGB while a 256-entry RGBA one (1024 bytes) is detected as RGBA.
+        bands = len(palette_mode)
         source_palette = bytes(
             (entry + channel * 17) % 256
             for entry in range(256)
