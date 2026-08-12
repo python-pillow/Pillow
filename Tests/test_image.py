@@ -679,22 +679,18 @@ class TestImage:
         # When source_palette is passed explicitly its mode is inferred from its
         # length, so a full 256-entry RGB palette (exactly 768 bytes) must stay
         # RGB while a 256-entry RGBA one (1024 bytes) is detected as RGBA.
-        bands = len(palette_mode)
         source_palette = bytes(
             (entry + channel * 17) % 256
             for entry in range(256)
-            for channel in range(bands)
+            for channel in range(len(palette_mode))
         )
-        assert len(source_palette) == 256 * bands
-
         im = Image.new("P", (256, 1))
-        for x in range(256):
-            im.putpixel((x, 0), x)
-
         im_remapped = im.remap_palette(list(range(256)), source_palette)
-        assert im_remapped.palette is not None
-        assert im_remapped.palette.mode == palette_mode
-        assert im_remapped.palette.palette == source_palette
+
+        palette = im_remapped.palette
+        assert palette is not None
+        assert palette.mode == palette_mode
+        assert palette.palette == source_palette
 
     def test_remap_palette_transparency(self) -> None:
         im = Image.new("P", (1, 2), (0, 0, 0))
