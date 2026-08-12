@@ -32,8 +32,8 @@ while sys.argv[-1].startswith("--pillow-configuration="):
     _, key, value = sys.argv.pop().split("=", 2)
     configuration.setdefault(key, []).append(value)
 
-default = int(configuration.get("parallel", ["0"])[-1])
-ParallelCompile("MAX_CONCURRENCY", default).install()
+parallel_default = int(configuration.get("parallel", ["0"])[-1])
+ParallelCompile("MAX_CONCURRENCY", parallel_default).install()
 
 
 def get_version() -> str:
@@ -380,8 +380,8 @@ class pil_build_ext(build_ext):
             setattr(self, f"vendor_{x}", self.check_configuration(x, "vendor"))
         if self.check_configuration("debug", "true"):
             self.debug = True
-        if "parallel" in configuration:
-            self.parallel = int(configuration["parallel"][-1])
+        if parallel_default:
+            self.parallel = parallel_default
 
     def finalize_options(self) -> None:
         build_ext.finalize_options(self)
