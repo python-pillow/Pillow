@@ -380,7 +380,8 @@ class pil_build_ext(build_ext):
             setattr(self, f"vendor_{x}", self.check_configuration(x, "vendor"))
         if self.check_configuration("debug", "true"):
             self.debug = True
-        self.parallel = configuration.get("parallel", [None])[-1]
+        if "parallel" in configuration:
+            self.parallel = int(configuration["parallel"][-1])
 
     def finalize_options(self) -> None:
         build_ext.finalize_options(self)
