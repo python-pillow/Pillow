@@ -43,7 +43,7 @@ PyObject *
 HandleMuxError(WebPMuxError err, char *chunk) {
     assert(err <= WEBP_MUX_NOT_FOUND && err >= WEBP_MUX_NOT_ENOUGH_DATA);
 
-    PyObject *err_type = PyExc_RuntimeError;
+    PyObject *err_type;
     switch (err) {
         case WEBP_MUX_MEMORY_ERROR:
             return PyErr_NoMemory();
@@ -56,6 +56,10 @@ HandleMuxError(WebPMuxError err, char *chunk) {
         case WEBP_MUX_BAD_DATA:
         case WEBP_MUX_NOT_ENOUGH_DATA:
             err_type = PyExc_OSError;
+            break;
+
+        default:
+            err_type = PyExc_RuntimeError;
             break;
     }
 
