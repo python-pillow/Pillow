@@ -765,6 +765,40 @@ def test_seek_after_close() -> None:
         im.seek(0)
 
 
+def test_apng_save_p_frames_with_different_palettes(tmp_path: Path) -> None:
+    """APNG has one PLTE; differing P palettes must not share the first frame's."""
+    test_file = tmp_path / "temp.png"
+    red = Image.new("RGB", (1, 1), (255, 0, 0)).quantize(colors=2)
+    green = Image.new("RGB", (1, 1), (0, 255, 0)).quantize(colors=2)
+    assert red.mode == "P" and green.mode == "P"
+    assert red.getpalette() != green.getpalette()
+
+    red.save(test_file, save_all=True, append_images=[green])
+
+    with Image.open(test_file) as reloaded:
+        assert reloaded.convert("RGB").getpixel((0, 0)) == (255, 0, 0)
+        reloaded.seek(1)
+        assert reloaded.convert("RGB").getpixel((0, 0)) == (0, 255, 0)
+
+
+def test_apng_save_p_frames_with_same_palette(tmp_path: Path) -> None:
+    """Identical palettes can stay indexed."""
+    test_file = tmp_path / "temp.png"
+    first = Image.new("P", (1, 1))
+    first.putpalette([255, 0, 0, 0, 255, 0] + [0] * 762)
+    first.putpixel((0, 0), 0)
+    second = first.copy()
+    second.putpixel((0, 0), 1)
+
+    first.save(test_file, save_all=True, append_images=[second])
+
+    with Image.open(test_file) as reloaded:
+        assert reloaded.mode == "P"
+        assert reloaded.convert("RGB").getpixel((0, 0)) == (255, 0, 0)
+        reloaded.seek(1)
+        assert reloaded.convert("RGB").getpixel((0, 0)) == (0, 255, 0)
+
+
 @pytest.mark.parametrize("mode", ("RGBA", "RGB", "P"))
 @pytest.mark.parametrize("default_image", (True, False))
 @pytest.mark.parametrize("duplicate", (True, False))

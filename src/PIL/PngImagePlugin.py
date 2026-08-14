@@ -1332,16 +1332,23 @@ def _save(
         )
         modes = set()
         sizes = set()
+        palettes: set[tuple[int, ...]] = set()
         append_images = im.encoderinfo.get("append_images", [])
         for im_seq in itertools.chain([im], append_images):
             for im_frame in ImageSequence.Iterator(im_seq):
                 modes.add(im_frame.mode)
                 sizes.add(im_frame.size)
+                if im_frame.mode == "P":
+                    palettes.add(tuple(im_frame.getpalette() or []))
         for mode in ("RGBA", "RGB", "P"):
             if mode in modes:
                 break
         else:
             mode = modes.pop()
+        if mode == "P" and len(palettes) > 1:
+            # APNG has a single PLTE. Differing frame palettes would
+            # otherwise all render with the first frame's colors (#9868).
+            mode = "RGB"
         size = tuple(max(frame_size[i] for frame_size in sizes) for i in range(2))
     else:
         size = im.size
@@ -1429,7 +1436,7 @@ def _save(
                 if not after_idat:
                     chunk(fp, cid, data)
 
-    if im.mode == "P":
+    if mode == "P":
         palette_byte_number = colors * 3
         palette_bytes = bytes(palette[:palette_byte_number])
         while len(palette_bytes) < palette_byte_number:
@@ -1439,7 +1446,7 @@ def _save(
     transparency = im.encoderinfo.get("transparency", im.info.get("transparency"))
 
     if transparency is not None:
-        if im.mode == "P":
+        if mode == "P":
             # limit to actual palette size
             alpha_bytes = colors
             if isinstance(transparency, bytes):
@@ -1473,7 +1480,7 @@ def _save(
             # and it's in the info dict. It's probably just stale.
             msg = "cannot use transparency for this mode"
             raise OSError(msg)
-    elif im.mode == "P" and im.im.getpalettemode() == "RGBA":
+    elif mode == "P" and im.mode == "P" and im.im.getpalettemode() == "RGBA":
         alpha = im.im.getpalette("RGBA", "A")
         alpha_bytes = colors
         chunk(fp, b"tRNS", alpha[:alpha_bytes])
