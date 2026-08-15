@@ -190,9 +190,9 @@ EMBOSS_MATRIX = {
 
 @pytest.mark.parametrize("size", (3, 5))
 def test_consistency(size: int) -> None:
+    kernel = ImageFilter.Kernel((size, size), EMBOSS_MATRIX[size], 0.3)
     with Image.open("Tests/images/hopper.bmp") as source:
         with Image.open(f"Tests/images/hopper_emboss_{size}x{size}.bmp") as reference:
-            kernel = ImageFilter.Kernel((size, size), EMBOSS_MATRIX[size], 0.3)
             assert_image_equal(source.filter(kernel), reference)
 
 
