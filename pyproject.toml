@@ -188,6 +188,11 @@ lint.isort.required-imports = [
 max_supported_python = "3.15"
 
 [tool.mypy]
+exclude = [
+  "^Tests/images/msp/",
+  "^Tests/images/picins/",
+  "^Tests/images/sunraster/",
+]
 follow_imports = "silent"
 python_version = "3.11"
 disallow_any_generics = true
@@ -198,6 +203,7 @@ warn_unreachable = true
 enable_error_code = "ignore-without-code"
 extra_checks = true
 pretty = true
+num_workers = 4
 
 [tool.pytest]
 addopts = [ "-ra", "--color=auto" ]
