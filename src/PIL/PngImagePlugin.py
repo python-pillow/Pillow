@@ -1332,20 +1332,26 @@ def _save(
         )
         modes = set()
         sizes = set()
-        palettes: set[tuple[int, ...]] = set()
+        last_palette = None
+        different_palette = False
         append_images = im.encoderinfo.get("append_images", [])
         for im_seq in itertools.chain([im], append_images):
             for im_frame in ImageSequence.Iterator(im_seq):
                 modes.add(im_frame.mode)
                 sizes.add(im_frame.size)
-                if im_frame.mode == "P":
-                    palettes.add(tuple(im_frame.getpalette() or []))
+                if im_frame.mode == "P" and not different_palette:
+                    frame_palette = im_frame.getpalette() or []
+                    if last_palette is not None:
+                        if frame_palette != last_palette:
+                            different_palette = True
+                    else:
+                        last_palette = frame_palette
         for mode in ("RGBA", "RGB", "P"):
             if mode in modes:
                 break
         else:
             mode = modes.pop()
-        if mode == "P" and len(palettes) > 1:
+        if mode == "P" and different_palette:
             # APNG has a single PLTE. Differing frame palettes would
             # otherwise all render with the first frame's colors (#9868).
             mode = "RGB"
