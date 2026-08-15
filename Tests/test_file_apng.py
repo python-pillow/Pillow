@@ -770,7 +770,8 @@ def test_apng_save_p_frames_with_different_palettes(tmp_path: Path) -> None:
     test_file = tmp_path / "temp.png"
     red = Image.new("RGB", (1, 1), (255, 0, 0)).quantize(colors=2)
     green = Image.new("RGB", (1, 1), (0, 255, 0)).quantize(colors=2)
-    assert red.mode == "P" and green.mode == "P"
+    assert red.mode == "P"
+    assert green.mode == "P"
     assert red.getpalette() != green.getpalette()
 
     red.save(test_file, save_all=True, append_images=[green])
