@@ -204,16 +204,9 @@ def test_consistency_i16(size: int, mode: str) -> None:
     result = hopper(mode).filter(kernel)
     assert result.mode == mode
     assert result.size == reference.size
-    # Compare logical pixel values.
-    assert (
-        max(
-            abs(a - b)  # type: ignore[operator]
-            for a, b in zip(
-                reference.get_flattened_data(), result.get_flattened_data(), strict=True
-            )
-        )
-        <= 1
-    )
+    for x in range(size):
+        for y in range(size):
+            assert result.getpixel((x, y)) == reference.getpixel((x, y))
 
 
 @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
