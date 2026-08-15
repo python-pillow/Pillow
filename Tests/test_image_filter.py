@@ -188,43 +188,29 @@ EMBOSS_5x5 = (
 
 
 @pytest.mark.parametrize(
-    "size, matrix, expected",
-    [
-        pytest.param(
-            (3, 3),
-            EMBOSS_3x3,
-            "Tests/images/hopper_emboss.bmp",
-            id="3x3",
-        ),
-        pytest.param(
-            (5, 5),
-            EMBOSS_5x5,
-            "Tests/images/hopper_emboss_more.bmp",
-            id="5x5",
-        ),
-    ],
+    "size, matrix",
+    (
+        pytest.param(3, EMBOSS_3x3, id="3x3"),
+        pytest.param(5, EMBOSS_5x5, id="5x5"),
+    ),
 )
-def test_consistency(
-    size: tuple[int, int], matrix: tuple[int, ...], expected: str
-) -> None:
+def test_consistency(size: int, matrix: tuple[int, ...]) -> None:
     with Image.open("Tests/images/hopper.bmp") as source:
-        with Image.open(expected) as reference:
-            kernel = ImageFilter.Kernel(size, matrix, 0.3)
+        with Image.open(f"Tests/images/hopper_emboss_{size}x{size}.bmp") as reference:
+            kernel = ImageFilter.Kernel((size, size), matrix, 0.3)
             assert_image_equal(source.filter(kernel), reference)
 
 
 @pytest.mark.parametrize(
     "size, matrix",
-    [
-        pytest.param((3, 3), EMBOSS_3x3, id="3x3"),
-        pytest.param((5, 5), EMBOSS_5x5, id="5x5"),
-    ],
+    (
+        pytest.param(3, EMBOSS_3x3, id="3x3"),
+        pytest.param(5, EMBOSS_5x5, id="5x5"),
+    ),
 )
 @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
-def test_consistency_i16(
-    size: tuple[int, int], matrix: tuple[int, ...], mode: str
-) -> None:
-    kernel = ImageFilter.Kernel(size, matrix, 0.3)
+def test_consistency_i16(size: int, matrix: tuple[int, ...], mode: str) -> None:
+    kernel = ImageFilter.Kernel((size, size), matrix, 0.3)
     reference = hopper("I").filter(kernel)
     result = hopper(mode).filter(kernel)
     assert result.mode == mode
