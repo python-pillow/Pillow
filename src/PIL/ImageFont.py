@@ -35,14 +35,14 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from types import ModuleType
-from typing import IO, NotRequired, TypedDict, cast
+from typing import TypedDict, cast
 
 from . import Image
 from ._util import DeferredError, is_path
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from typing import Any, BinaryIO
+    from typing import IO, Any, BinaryIO, NotRequired
 
     from . import ImageFile
     from ._imaging import ImagingFont
