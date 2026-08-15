@@ -62,9 +62,9 @@ def test_sanity_error(mode: str) -> None:
 
 @pytest.mark.parametrize("size", ((1, 1), (2, 2), (3, 3)))
 def test_noop_on_small_images(size: tuple[int, int]) -> None:
-    # If image is smaller than kernel size, return it as-is
+    # If image is not larger than the kernel size, return it as-is
     im = Image.new("RGB", size)
-    assert_image_equal(im, im.filter(ImageFilter.SMOOTH))
+    assert_image_equal(im.filter(ImageFilter.SMOOTH), im)
 
 
 @pytest.mark.parametrize(
@@ -202,18 +202,7 @@ def test_consistency_i16(size: int, mode: str) -> None:
     kernel = ImageFilter.Kernel((size, size), EMBOSS_MATRIX[size], 0.3)
     reference = hopper("I").filter(kernel)
     result = hopper(mode).filter(kernel)
-    assert result.mode == mode
-    assert result.size == reference.size
-    # Compare logical pixel values.
-    assert (
-        max(
-            abs(a - b)  # type: ignore[operator]
-            for a, b in zip(
-                reference.get_flattened_data(), result.get_flattened_data(), strict=True
-            )
-        )
-        <= 1
-    )
+    assert_image_equal(result.convert("I"), reference)
 
 
 @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
