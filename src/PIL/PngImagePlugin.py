@@ -1332,7 +1332,7 @@ def _save(
         )
         modes = set()
         sizes = set()
-        last_palette = None
+        palette = None
         different_palette = None
         append_images = im.encoderinfo.get("append_images", [])
         for im_seq in itertools.chain([im], append_images):
@@ -1342,11 +1342,11 @@ def _save(
                 if im_frame.mode == "P":
                     if different_palette is None:
                         frame_palette = im_frame.getpalette() or []
-                        if last_palette is not None:
-                            if frame_palette != last_palette:
+                        if palette is not None:
+                            if frame_palette != palette:
                                 different_palette = True
                         else:
-                            last_palette = frame_palette
+                            palette = frame_palette
                 elif im_frame.mode in ("RGBA", "RGBA"):
                     different_palette = False
         if different_palette:
@@ -1362,11 +1362,10 @@ def _save(
     else:
         size = im.size
         mode = im.mode
+        if mode == "P":
+            palette = im.getpalette() or []
 
     outmode = mode
-    palette = []
-    if im.palette:
-        palette = im.getpalette() or []
     if mode == "P":
         #
         # attempt to minimize storage requirements for palette images
@@ -1375,7 +1374,7 @@ def _save(
             colors = min(1 << im.encoderinfo["bits"], 256)
         else:
             # check palette contents
-            if im.palette:
+            if palette:
                 colors = max(min(len(palette) // 3, 256), 1)
             else:
                 colors = 256
