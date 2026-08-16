@@ -18,6 +18,7 @@
 
 #include "Imaging.h"
 
+// restrict safety: imIn1/imIn2 are read-only, and imOut is always freshly allocated
 #define CHOP(operation)                                 \
     int x, y;                                           \
     Imaging imOut;                                      \
@@ -25,11 +26,13 @@
     if (!imOut) {                                       \
         return NULL;                                    \
     }                                                   \
-    for (y = 0; y < imOut->ysize; y++) {                \
-        UINT8 *out = (UINT8 *)imOut->image[y];          \
-        UINT8 *in1 = (UINT8 *)imIn1->image[y];          \
-        UINT8 *in2 = (UINT8 *)imIn2->image[y];          \
-        for (x = 0; x < imOut->linesize; x++) {         \
+    int ysize = imOut->ysize;                           \
+    int linesize = imOut->linesize;                     \
+    for (y = 0; y < ysize; y++) {                       \
+        UINT8 *restrict out = (UINT8 *)imOut->image[y]; \
+        UINT8 *restrict in1 = (UINT8 *)imIn1->image[y]; \
+        UINT8 *restrict in2 = (UINT8 *)imIn2->image[y]; \
+        for (x = 0; x < linesize; x++) {                \
             int temp = operation;                       \
             if (temp <= 0) {                            \
                 out[x] = 0;                             \
@@ -42,21 +45,24 @@
     }                                                   \
     return imOut;
 
-#define CHOP2(operation, mode)                  \
-    int x, y;                                   \
-    Imaging imOut;                              \
-    imOut = create(imIn1, imIn2, mode);         \
-    if (!imOut) {                               \
-        return NULL;                            \
-    }                                           \
-    for (y = 0; y < imOut->ysize; y++) {        \
-        UINT8 *out = (UINT8 *)imOut->image[y];  \
-        UINT8 *in1 = (UINT8 *)imIn1->image[y];  \
-        UINT8 *in2 = (UINT8 *)imIn2->image[y];  \
-        for (x = 0; x < imOut->linesize; x++) { \
-            out[x] = operation;                 \
-        }                                       \
-    }                                           \
+// restrict safety: imIn1/imIn2 are read-only, and imOut is always freshly allocated
+#define CHOP2(operation, mode)                          \
+    int x, y;                                           \
+    Imaging imOut;                                      \
+    imOut = create(imIn1, imIn2, mode);                 \
+    if (!imOut) {                                       \
+        return NULL;                                    \
+    }                                                   \
+    int ysize = imOut->ysize;                           \
+    int linesize = imOut->linesize;                     \
+    for (y = 0; y < ysize; y++) {                       \
+        UINT8 *restrict out = (UINT8 *)imOut->image[y]; \
+        UINT8 *restrict in1 = (UINT8 *)imIn1->image[y]; \
+        UINT8 *restrict in2 = (UINT8 *)imIn2->image[y]; \
+        for (x = 0; x < linesize; x++) {                \
+            out[x] = operation;                         \
+        }                                               \
+    }                                                   \
     return imOut;
 
 static Imaging

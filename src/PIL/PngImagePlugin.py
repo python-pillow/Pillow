@@ -48,13 +48,12 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
-from ._deprecate import deprecate
 from ._util import DeferredError
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from typing import Any, NoReturn
+    from typing import Any, NoReturn, Self
 
     from . import _imaging
 
@@ -185,7 +184,7 @@ class ChunkStream:
 
         return cid, pos, length
 
-    def __enter__(self) -> ChunkStream:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -266,7 +265,7 @@ class iTXt(str):
     @staticmethod
     def __new__(
         cls, text: str, lang: str | None = None, tkey: str | None = None
-    ) -> iTXt:
+    ) -> Self:
         """
         :param cls: the class to use when creating the instance
         :param text: value for this key
@@ -461,7 +460,7 @@ class PngStream(ChunkStream):
         self.im_size = i32(s, 0), i32(s, 4)
         try:
             self.im_mode, self.im_rawmode = _MODES[(s[8], s[9])]
-        except Exception:
+        except KeyError:
             pass
         if s[12]:
             self.im_info["interlace"] = 1
@@ -1104,12 +1103,8 @@ class PngImageFile(ImageFile.ImageFile):
 _OUTMODES = {
     # supported PIL modes, and corresponding rawmode, bit depth and color type
     "1": ("1", b"\x01", b"\x00"),
-    "L;1": ("L;1", b"\x01", b"\x00"),
-    "L;2": ("L;2", b"\x02", b"\x00"),
-    "L;4": ("L;4", b"\x04", b"\x00"),
     "L": ("L", b"\x08", b"\x00"),
     "LA": ("LA", b"\x08", b"\x04"),
-    "I": ("I;16B", b"\x10", b"\x00"),
     "I;16": ("I;16B", b"\x10", b"\x00"),
     "I;16B": ("I;16B", b"\x10", b"\x00"),
     "P;1": ("P;1", b"\x01", b"\x03"),
@@ -1384,8 +1379,6 @@ def _save(
     except KeyError as e:
         msg = f"cannot write mode {mode} as PNG"
         raise OSError(msg) from e
-    if outmode == "I":
-        deprecate("Saving I mode images as PNG", 13, stacklevel=4)
 
     #
     # write minimal PNG file
@@ -1443,35 +1436,47 @@ def _save(
             palette_bytes += b"\0"
         chunk(fp, b"PLTE", palette_bytes)
 
-    transparency = im.encoderinfo.get("transparency", im.info.get("transparency", None))
+    transparency = im.encoderinfo.get("transparency", im.info.get("transparency"))
 
-    if transparency or transparency == 0:
+    if transparency is not None:
         if im.mode == "P":
             # limit to actual palette size
             alpha_bytes = colors
             if isinstance(transparency, bytes):
                 chunk(fp, b"tRNS", transparency[:alpha_bytes])
-            else:
+            elif isinstance(transparency, int):
                 transparency = max(0, min(255, transparency))
                 alpha = b"\xff" * transparency + b"\0"
                 chunk(fp, b"tRNS", alpha[:alpha_bytes])
+            else:
+                msg = "transparency for P must be an integer or bytes"
+                raise ValueError(msg)
         elif im.mode in ("1", "L", "I", "I;16"):
-            transparency = max(0, min(65535, transparency))
-            chunk(fp, b"tRNS", o16(transparency))
+            if isinstance(transparency, int):
+                transparency = max(0, min(65535, transparency))
+                chunk(fp, b"tRNS", o16(transparency))
+            else:
+                msg = f"transparency for {im.mode} must be an integer"
+                raise ValueError(msg)
         elif im.mode == "RGB":
-            red, green, blue = transparency
-            chunk(fp, b"tRNS", o16(red) + o16(green) + o16(blue))
-        else:
-            if "transparency" in im.encoderinfo:
-                # don't bother with transparency if it's an RGBA
-                # and it's in the info dict. It's probably just stale.
-                msg = "cannot use transparency for this mode"
-                raise OSError(msg)
-    else:
-        if im.mode == "P" and im.im.getpalettemode() == "RGBA":
-            alpha = im.im.getpalette("RGBA", "A")
-            alpha_bytes = colors
-            chunk(fp, b"tRNS", alpha[:alpha_bytes])
+            if not isinstance(transparency, (list, tuple)):
+                msg = "transparency for RGB must be list or tuple"
+                raise ValueError(msg)
+            elif len(transparency) != 3:
+                msg = "transparency for RGB must have length 3"
+                raise ValueError(msg)
+            else:
+                red, green, blue = transparency
+                chunk(fp, b"tRNS", o16(red) + o16(green) + o16(blue))
+        elif im.encoderinfo.get("transparency") is not None:
+            # don't bother with transparency if it's an RGBA
+            # and it's in the info dict. It's probably just stale.
+            msg = "cannot use transparency for this mode"
+            raise OSError(msg)
+    elif im.mode == "P" and im.im.getpalettemode() == "RGBA":
+        alpha = im.im.getpalette("RGBA", "A")
+        alpha_bytes = colors
+        chunk(fp, b"tRNS", alpha[:alpha_bytes])
 
     if dpi := im.encoderinfo.get("dpi"):
         chunk(

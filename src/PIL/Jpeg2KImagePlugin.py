@@ -54,6 +54,9 @@ class BoxReader:
         if not self._can_read(num_bytes):
             msg = "Not enough data in header"
             raise SyntaxError(msg)
+        if self.fp.tell() + num_bytes >= 2**63:
+            msg = "Box length too large"
+            raise SyntaxError(msg)
 
         data = self.fp.read(num_bytes)
         if len(data) < num_bytes:
@@ -83,6 +86,9 @@ class BoxReader:
     def next_box_type(self) -> bytes:
         # Skip the rest of the box if it has not been read
         if self.remaining_in_box > 0:
+            if self.fp.tell() + self.remaining_in_box >= 2**63:
+                msg = "Box length too large"
+                raise SyntaxError(msg)
             self.fp.seek(self.remaining_in_box, os.SEEK_CUR)
         self.remaining_in_box = -1
 
@@ -108,6 +114,9 @@ def _parse_codestream(fp: IO[bytes]) -> tuple[tuple[int, int], str]:
 
     hdr = fp.read(2)
     lsiz = _binary.i16be(hdr)
+    if lsiz < 38:
+        msg = "SIZ marker length must be at least 38"
+        raise ValueError(msg)
     siz = hdr + fp.read(lsiz - 2)
     lsiz, rsiz, xsiz, ysiz, xosiz, yosiz, _, _, _, _, csiz = struct.unpack_from(
         ">HHIIIIIIIIH", siz
@@ -328,6 +337,9 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 break
             hdr = self.fp.read(2)
             length = _binary.i16be(hdr)
+            if length < 2:
+                msg = "Marker length too small"
+                raise ValueError(msg)
             if typ == 0x64:
                 # Comment
                 self.info["comment"] = self.fp.read(length - 2)[2:]

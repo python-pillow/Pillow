@@ -25,8 +25,15 @@ class TestImageGrab:
         ImageGrab.grab(include_layered_windows=True)
         ImageGrab.grab(all_screens=True)
 
-        im = ImageGrab.grab(bbox=(10, 20, 50, 80))
-        assert im.size == (40, 60)
+        if sys.platform == "darwin":
+            im = ImageGrab.grab(bbox=(10, 20, 50, 80))
+            assert im.size in ((40, 60), (80, 120))
+
+            im = ImageGrab.grab(bbox=(10, 20, 50, 80), scale_down=True)
+            assert im.size == (40, 60)
+        else:
+            im = ImageGrab.grab(bbox=(10, 20, 50, 80))
+            assert im.size == (40, 60)
 
     @skip_unless_feature("xcb")
     def test_grab_x11(self) -> None:
@@ -35,7 +42,7 @@ class TestImageGrab:
                 ImageGrab.grab()
 
             ImageGrab.grab(xdisplay="")
-        except OSError as e:
+        except (OSError, subprocess.CalledProcessError) as e:
             pytest.skip(str(e))
 
     @pytest.mark.skipif(Image.core.HAVE_XCB, reason="tests missing XCB")
@@ -68,10 +75,12 @@ class TestImageGrab:
             [
                 "osascript",
                 "-e",
-                'tell application "Finder"\n'
-                'open ("/" as POSIX file)\n'
-                "get id of front window\n"
-                "end tell",
+                (
+                    'tell application "Finder"\n'
+                    'open ("/" as POSIX file)\n'
+                    "get id of front window\n"
+                    "end tell"
+                ),
             ],
             stdout=subprocess.PIPE,
         )
@@ -81,7 +90,7 @@ class TestImageGrab:
 
         ImageGrab.grab(window=window)
 
-        im = ImageGrab.grab((0, 0, 10, 10), window=window)
+        im = ImageGrab.grab((0, 0, 10, 10), window=window, scale_down=True)
         assert im.size == (10, 10)
 
     @pytest.mark.skipif(

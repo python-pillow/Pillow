@@ -153,7 +153,7 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
 }
 
 static PyObject *
-_encode_to_pyfd(ImagingEncoderObject *encoder) {
+_encode_to_pyfd(ImagingEncoderObject *encoder, PyObject *args) {
     PyObject *result;
     int status;
 
@@ -774,7 +774,6 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         key = PyTuple_GET_ITEM(item, 0);
         key_int = (int)PyLong_AsLong(key);
         value = PyTuple_GET_ITEM(item, 1);
-        Py_DECREF(item);
 
         status = 0;
         is_core_tag = 0;
@@ -792,6 +791,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             PyObject *tag_type;
             if (PyDict_GetItemRef(types, key, &tag_type) < 0) {
                 Py_DECREF(encoder);
+                Py_DECREF(item);
                 return NULL;  // Exception has been already set
             }
             if (tag_type) {
@@ -799,6 +799,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 if (type_int >= TIFF_BYTE && type_int <= TIFF_LONG8) {
                     type = (TIFFDataType)type_int;
                 }
+                Py_DECREF(tag_type);
             }
         }
 
@@ -849,6 +850,12 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
 
         if (type == TIFF_BYTE || type == TIFF_UNDEFINED ||
             key_int == TIFFTAG_INKNAMES) {
+            if (!PyBytes_Check(value)) {
+                Py_DECREF(encoder);
+                Py_DECREF(item);
+                PyErr_SetString(PyExc_ValueError, "Incorrect tag value type");
+                return NULL;
+            }
             status = ImagingLibTiffSetField(
                 &encoder->state,
                 (ttag_t)key_int,
@@ -864,6 +871,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 int stride = 256;
                 if (len != 768) {
                     Py_DECREF(encoder);
+                    Py_DECREF(item);
                     PyErr_SetString(
                         PyExc_ValueError, "Requiring 768 items for Colormap"
                     );
@@ -1022,6 +1030,12 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                     &encoder->state, (ttag_t)key_int, (INT8)PyLong_AsLong(value)
                 );
             } else if (type == TIFF_ASCII) {
+                if (!PyBytes_Check(value)) {
+                    Py_DECREF(encoder);
+                    Py_DECREF(item);
+                    PyErr_SetString(PyExc_ValueError, "Incorrect tag value type");
+                    return NULL;
+                }
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, PyBytes_AsString(value)
                 );
@@ -1043,6 +1057,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 );
             }
         }
+        Py_DECREF(item);
         if (!status) {
             TRACE(("Error setting Field\n"));
             Py_DECREF(encoder);

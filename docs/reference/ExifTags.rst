@@ -38,7 +38,7 @@ EXIF tags.
     >>> IFD.Exif.value
     34665
     >>> IFD(34665).name
-    'Exif
+    'Exif'
 
 .. py:data:: LightSource
 

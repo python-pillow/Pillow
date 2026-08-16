@@ -357,6 +357,9 @@ class EpsImageFile(ImageFile.ImageFile):
                 trailer_reached = True
             elif bytes_mv[:14] == b"%%BeginBinary:":
                 bytecount = int(byte_arr[14:bytes_read])
+                if bytecount < 0:
+                    msg = "BeginBinary bytecount cannot be negative"
+                    raise ValueError(msg)
                 self.fp.seek(bytecount, os.SEEK_CUR)
             bytes_read = 0
 

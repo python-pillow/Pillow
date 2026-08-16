@@ -19,6 +19,7 @@ Released as needed for security, installation or critical bug fixes.
   git checkout -t remotes/origin/5.2.x
   ```
 * [ ] Cherry pick individual commits from `main` branch to release branch e.g. `5.2.x`, then `git push`.
+* [ ] If this is a security fix: amend commits to include the CVE identifier in the commit message.
 * [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions) to confirm passing tests in release branch e.g. `5.2.x`.
 * [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/), update version identifier in `src/PIL/_version.py`
 * [ ] Run pre-release check via `make release-test`.
@@ -38,6 +39,7 @@ Released as needed for security, installation or critical bug fixes.
   ```bash
   git push
   ```
+* [ ] If this is a security fix: publish the [GitHub Security Advisory or Advisories](https://github.com/python-pillow/Pillow/security/advisories).
 
 ## Embargoed release
 

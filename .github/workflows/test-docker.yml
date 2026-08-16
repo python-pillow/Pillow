@@ -4,19 +4,14 @@ on:
   push:
     branches:
       - "**"
-    paths-ignore:
+    paths-ignore: &paths-ignore
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
       - "docs/**"
       - "wheels/**"
   pull_request:
-    paths-ignore:
-      - ".github/workflows/docs.yml"
-      - ".github/workflows/wheels*"
-      - ".gitmodules"
-      - "docs/**"
-      - "wheels/**"
+    paths-ignore: *paths-ignore
   workflow_dispatch:
 
 permissions:
@@ -39,8 +34,8 @@ jobs:
         os: ["ubuntu-latest"]
         docker: [
           # Run slower jobs first to give them a headstart and reduce waiting time
-          ubuntu-24.04-noble-ppc64le,
-          ubuntu-24.04-noble-s390x,
+          ubuntu-26.04-resolute-ppc64le,
+          ubuntu-26.04-resolute-s390x,
           # Then run the remainder
           alpine,
           amazon-2023-amd64,
@@ -50,24 +45,25 @@ jobs:
           debian-13-trixie-x86,
           debian-13-trixie-amd64,
           fedora-43-amd64,
+          fedora-44-amd64,
           gentoo,
-          ubuntu-22.04-jammy-amd64,
           ubuntu-24.04-noble-amd64,
+          ubuntu-26.04-resolute-amd64,
         ]
         dockerTag: [main]
         include:
-          - docker: "ubuntu-24.04-noble-ppc64le"
+          - docker: "ubuntu-26.04-resolute-ppc64le"
             qemu-arch: "ppc64le"
-          - docker: "ubuntu-24.04-noble-s390x"
+          - docker: "ubuntu-26.04-resolute-s390x"
             qemu-arch: "s390x"
-          - docker: "ubuntu-24.04-noble-arm64v8"
+          - docker: "ubuntu-26.04-resolute-arm64v8"
             os: "ubuntu-24.04-arm"
             dockerTag: main
 
     name: ${{ matrix.docker }}
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
 
@@ -76,7 +72,7 @@ jobs:
 
     - name: Set up QEMU
       if: "matrix.qemu-arch"
-      uses: docker/setup-qemu-action@v4
+      uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
       with:
         platforms: ${{ matrix.qemu-arch }}
 
@@ -104,11 +100,10 @@ jobs:
         .ci/after_success.sh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v6
+      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
       with:
         flags: GHA_Docker
         name: ${{ matrix.docker }}
-        token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:
     permissions:

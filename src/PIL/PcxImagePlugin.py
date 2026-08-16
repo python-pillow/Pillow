@@ -210,7 +210,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode == "P":
         # colour palette
         fp.write(o8(12))
-        palette = im.im.getpalette("RGB", "RGB")
+        palette = im.im.getpalette("RGB")
         palette += b"\x00" * (768 - len(palette))
         fp.write(palette)  # 768 bytes
     elif im.mode == "L":

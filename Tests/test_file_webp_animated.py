@@ -95,7 +95,7 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
             # Tests appending using a generator
             def im_generator(
                 ims: list[Image.Image],
-            ) -> Generator[Image.Image, None, None]:
+            ) -> Generator[Image.Image]:
                 yield from ims
 
             temp_file2 = tmp_path / "temp_generator.webp"

@@ -19,6 +19,7 @@ function check_cibw_archs {
 # potential cross-build platforms before native platforms to ensure that we pick
 # up the cross environment.
 PROJECTDIR=$(pwd)
+PATCH_DIR=$(pwd)/patches
 if [[ "$CIBW_PLATFORM" == "ios" ]]; then
     check_cibw_archs
     # On iOS, CIBW_ARCHS is actually a multi-arch - arm64_iphoneos,
@@ -89,22 +90,23 @@ fi
 
 ARCHIVE_SDIR=pillow-depends-main
 
-# Package versions for fresh source builds.
-FREETYPE_VERSION=2.14.3
-HARFBUZZ_VERSION=13.2.1
-LIBPNG_VERSION=1.6.56
-JPEGTURBO_VERSION=3.1.4.1
-OPENJPEG_VERSION=2.5.4
-XZ_VERSION=5.8.3
-ZSTD_VERSION=1.5.7
-TIFF_VERSION=4.7.1
-LCMS2_VERSION=2.18
-ZLIB_NG_VERSION=2.3.3
-LIBWEBP_VERSION=1.6.0
-BZIP2_VERSION=1.0.8
-LIBXCB_VERSION=1.17.0
-BROTLI_VERSION=1.2.0
-LIBAVIF_VERSION=1.4.1
+VERSIONS_FILE="$PROJECTDIR/.github/dependencies.json"
+_get_ver() { python3 -c "import json; print(json.load(open('$VERSIONS_FILE'))['$1'])"; }
+FREETYPE_VERSION=$(_get_ver freetype)
+HARFBUZZ_VERSION=$(_get_ver harfbuzz)
+LIBPNG_VERSION=$(_get_ver libpng)
+JPEGTURBO_VERSION=$(_get_ver jpegturbo)
+OPENJPEG_VERSION=$(_get_ver openjpeg)
+XZ_VERSION=$(_get_ver xz)
+ZSTD_VERSION=$(_get_ver zstd)
+TIFF_VERSION=$(_get_ver tiff)
+LCMS2_VERSION=$(_get_ver lcms2)
+ZLIB_NG_VERSION=$(_get_ver zlib-ng)
+LIBWEBP_VERSION=$(_get_ver libwebp)
+BZIP2_VERSION=$(_get_ver bzip2)
+LIBXCB_VERSION=$(_get_ver libxcb)
+BROTLI_VERSION=$(_get_ver brotli)
+LIBAVIF_VERSION=$(_get_ver libavif)
 
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
@@ -175,7 +177,7 @@ function build_libavif {
     python3 -m pip install meson ninja
 
     if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IOS_SDK" ]]) || [ -n "$SANITIZER" ]; then
-        build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
+        build_simple nasm 3.02 https://www.nasm.us/pub/nasm/releasebuilds/3.02
     fi
 
     local build_shared=ON
@@ -267,7 +269,9 @@ function build {
     fi
     build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
 
-    build_libjpeg_turbo
+    # -DCMAKE_POSITION_INDEPENDENT_CODE=1 is a workaround from https://github.com/libjpeg-turbo/libjpeg-turbo/issues/898
+    HOST_CMAKE_FLAGS="-DCMAKE_POSITION_INDEPENDENT_CODE=1 $HOST_CMAKE_FLAGS" build_libjpeg_turbo
+
     if [[ -n "$IS_MACOS" ]]; then
         # Custom tiff build to include jpeg; by default, configure won't include
         # headers/libs in the custom macOS/iOS prefix. Explicitly disable webp,
