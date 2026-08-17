@@ -4,7 +4,8 @@ arro3-core
 IceSpringPySideStubs-PyQt6
 IceSpringPySideStubs-PySide6
 ipython
-numpy==2.4.6
+numpy==2.4.6;python_version=="3.11"
+numpy;python_version>="3.12"
 packaging
 pyarrow-stubs
 pybind11
