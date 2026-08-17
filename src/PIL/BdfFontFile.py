@@ -82,11 +82,7 @@ def bdf_char(
         (0, 0, width, height),
     )
 
-    try:
-        im = Image.frombytes("1", (width, height), bitmap, "hex", "1")
-    except ValueError:
-        # deal with zero-width characters
-        im = Image.new("1", (width, height))
+    im = Image.frombytes("1", (width, height), bitmap, "hex", "1")
 
     return id, int(props["ENCODING"]), bbox, im
 
