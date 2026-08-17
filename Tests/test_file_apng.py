@@ -315,6 +315,13 @@ def test_apng_save_different_palettes(tmp_path: Path) -> None:
         assert reloaded.mode == "RGB"
         assert reloaded.getpixel((0, 0)) == (0, 255, 0)
 
+    # Test that RGBA palettes result in an RGBA image
+    green = Image.new("L", (1, 1))
+    green.putpalette([], "RGBA")
+    red.save(test_file, save_all=True, append_images=[green])
+    with Image.open(test_file) as reloaded:
+        assert reloaded.mode == "RGBA"
+
 
 def test_apng_chunk_errors() -> None:
     with Image.open("Tests/images/apng/chunk_no_actl.png") as im:
