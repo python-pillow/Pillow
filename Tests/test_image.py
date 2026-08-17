@@ -679,7 +679,7 @@ class TestImage:
         # When source_palette is provided, mode is inferred from length.
         # 768 entries should be detected as a 256-entry RGB palette
         # 1024 entries should be detected as a 256-entry RGBA palette
-        im = Image.new("P", (256, 1))
+        im = Image.new("P", (1, 1))
         source_palette = bytes(
             entry for entry in range(256) for channel in range(len(palette_mode))
         )
