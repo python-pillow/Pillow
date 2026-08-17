@@ -676,19 +676,18 @@ class TestImage:
 
     @pytest.mark.parametrize("palette_mode", ("RGB", "RGBA"))
     def test_remap_palette_source_palette(self, palette_mode: str) -> None:
-        # When source_palette is passed explicitly its mode is inferred from its
-        # length, so a full 256-entry RGB palette (exactly 768 bytes) must stay
-        # RGB while a 256-entry RGBA one (1024 bytes) is detected as RGBA.
-        source_palette = bytes(
-            (entry + channel * 17) % 256
-            for entry in range(256)
-            for channel in range(len(palette_mode))
-        )
+        # When source_palette is provided, mode is inferred from length.
+        # 768 entries should be detected as a 256-entry RGB palette
+        # 1024 entries should be detected as a 256-entry RGBA palette
         im = Image.new("P", (256, 1))
+        source_palette = bytes(
+            entry for entry in range(256) for channel in range(len(palette_mode))
+        )
         im_remapped = im.remap_palette(list(range(256)), source_palette)
 
         palette = im_remapped.palette
         assert palette is not None
+        assert len(palette.colors) == 256
         assert palette.mode == palette_mode
         assert palette.palette == source_palette
 
