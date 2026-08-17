@@ -16,7 +16,7 @@
 #
 from __future__ import annotations
 
-__lazy_modules__ = {"collections.abc", "functools", "typing"}
+__lazy_modules__ = {"collections.abc", "typing"}
 
 import abc
 from collections.abc import Sequence
