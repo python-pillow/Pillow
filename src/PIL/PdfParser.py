@@ -177,7 +177,7 @@ class XrefTable:
 
     def write(self, f: IO[bytes]) -> int:
         keys = sorted(set(self.new_entries.keys()) | set(self.deleted_entries.keys()))
-        deleted_keys = sorted(set(self.deleted_entries.keys()))
+        deleted_keys = sorted(self.deleted_entries)
         startxref = f.tell()
         f.write(b"xref\n")
         while keys:

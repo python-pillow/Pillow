@@ -708,7 +708,7 @@ class Image:
         more information.
         """
         if getattr(self, "map", None):
-            if sys.platform == "win32" and hasattr(sys, "pypy_version_info"):
+            if sys.platform == "win32" and sys.implementation.name == "pypy":
                 self.map.close()
             self.map: mmap.mmap | None = None
 
