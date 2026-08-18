@@ -53,7 +53,6 @@ class GribStubImageFile(ImageFile.StubImageFile):
 
         # make something up
         self._mode = "F"
-        self._size = 1, 1
 
     def _load(self) -> ImageFile.StubHandler | None:
         return _handler
