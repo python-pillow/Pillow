@@ -51,9 +51,6 @@ class HDF5StubImageFile(ImageFile.StubImageFile):
         # make something up
         self._mode = "F"
 
-    def _load(self) -> ImageFile.StubHandler | None:
-        return self._handler
-
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if HDF5StubImageFile._handler is None or not hasattr(
