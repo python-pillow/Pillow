@@ -471,6 +471,7 @@ class ImageFile(Image.Image):
 
 
 class StubHandler(abc.ABC):
+    @abc.abstractmethod
     def open(self, im: StubImageFile) -> None:
         pass
 
