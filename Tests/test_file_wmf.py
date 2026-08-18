@@ -76,7 +76,7 @@ def test_register_handler(tmp_path: Path) -> None:
             self.methodCalled = True
 
     handler = TestHandler()
-    original_handler = WmfImagePlugin._handler
+    original_handler = WmfImagePlugin.WmfStubImageFile._handler
     WmfImagePlugin.register_handler(handler)
 
     im = hopper()
