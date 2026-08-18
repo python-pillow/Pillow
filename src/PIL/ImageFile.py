@@ -488,6 +488,8 @@ class StubImageFile(ImageFile, metaclass=abc.ABCMeta):
     certain format, but relies on external code to load the file.
     """
 
+    _handler: StubHandler | None = None
+
     @abc.abstractmethod
     def _open(self) -> None:
         pass

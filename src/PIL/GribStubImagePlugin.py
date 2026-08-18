@@ -18,8 +18,6 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from typing import IO
 
-_handler = None
-
 
 def register_handler(handler: ImageFile.StubHandler | None) -> None:
     """
@@ -27,8 +25,7 @@ def register_handler(handler: ImageFile.StubHandler | None) -> None:
 
     :param handler: Handler object.
     """
-    global _handler
-    _handler = handler
+    GribStubImageFile._handler = handler
 
 
 # --------------------------------------------------------------------
@@ -55,14 +52,16 @@ class GribStubImageFile(ImageFile.StubImageFile):
         self._mode = "F"
 
     def _load(self) -> ImageFile.StubHandler | None:
-        return _handler
+        return self._handler
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    if _handler is None or not hasattr(_handler, "save"):
+    if GribStubImageFile._handler is None or not hasattr(
+        GribStubImageFile._handler, "save"
+    ):
         msg = "GRIB save handler not installed"
         raise OSError(msg)
-    _handler.save(im, fp, filename)
+    GribStubImageFile._handler.save(im, fp, filename)
 
 
 # --------------------------------------------------------------------
