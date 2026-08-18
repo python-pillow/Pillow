@@ -63,6 +63,7 @@ def test_handler(tmp_path: Path) -> None:
 
         def open(self, im: Image.Image) -> None:
             self.opened = True
+            im._size = (1, 1)
 
         def load(self, im: ImageFile.ImageFile) -> Image.Image:
             self.loaded = True

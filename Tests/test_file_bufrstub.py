@@ -61,6 +61,7 @@ def test_handler(tmp_path: Path) -> None:
 
         def open(self, im: ImageFile.StubImageFile) -> None:
             self.opened = True
+            im._size = (1, 1)
 
         def load(self, im: ImageFile.StubImageFile) -> Image.Image:
             self.loaded = True
