@@ -112,9 +112,6 @@ class WmfStubImageFile(ImageFile.StubImageFile):
         self._mode = "RGB"
         self._size = size
 
-    def _load(self) -> ImageFile.StubHandler | None:
-        return self._handler
-
     def load(
         self, dpi: float | tuple[float, float] | None = None
     ) -> Image.core.PixelAccess | None:
