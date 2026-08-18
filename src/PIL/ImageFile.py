@@ -165,7 +165,7 @@ class ImageFile(Image.Image):
 
             if not self.mode or (
                 min(self.size) < 0
-                if isinstance(self, StubImageFile)
+                if isinstance(self, StubImageFile) and self._handler is None
                 else min(self.size) <= 0
             ):
                 msg = "not identified by this driver"
