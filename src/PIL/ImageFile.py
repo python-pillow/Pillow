@@ -163,7 +163,11 @@ class ImageFile(Image.Image):
             ) as v:
                 raise SyntaxError(v) from v
 
-            if not self.mode or self.size[0] <= 0 or self.size[1] <= 0:
+            if not self.mode or (
+                min(self.size) < 0
+                if isinstance(self, StubImageFile)
+                else min(self.size) <= 0
+            ):
                 msg = "not identified by this driver"
                 raise SyntaxError(msg)
         except BaseException:
