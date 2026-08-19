@@ -2085,11 +2085,6 @@ im_setmode(ImagingObject *self, PyObject *args) {
         if (mode == IMAGING_MODE_RGBA) {
             (void)ImagingFillBand(im, 3, 255);
         }
-    } else {
-        /* trying doing an in-place conversion */
-        if (!ImagingConvertInPlace(im, mode)) {
-            return NULL;
-        }
     }
 
     if (self->access) {
