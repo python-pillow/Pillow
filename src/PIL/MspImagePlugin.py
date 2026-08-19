@@ -24,7 +24,6 @@
 # See also: https://www.fileformat.info/format/mspaint/egff.htm
 from __future__ import annotations
 
-import io
 import struct
 from typing import IO
 
@@ -115,7 +114,7 @@ class MspDecoder(ImageFile.PyDecoder):
     def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         assert self.fd is not None
 
-        img = io.BytesIO()
+        data = bytearray()
         blank_line = bytearray((0xFF,) * ((self.state.xsize + 7) // 8))
         try:
             self.fd.seek(32)
@@ -129,7 +128,7 @@ class MspDecoder(ImageFile.PyDecoder):
         for y, rowlen in enumerate(rowmap):
             try:
                 if rowlen == 0:
-                    img.write(blank_line)
+                    data += blank_line
                     continue
                 row = self.fd.read(rowlen)
                 if len(row) != rowlen:
@@ -141,18 +140,18 @@ class MspDecoder(ImageFile.PyDecoder):
                     idx += 1
                     if runtype == 0:
                         runcount, runval = struct.unpack_from("Bc", row, idx)
-                        img.write(runval * runcount)
+                        data += runval * runcount
                         idx += 2
                     else:
                         runcount = runtype
-                        img.write(row[idx : idx + runcount])
+                        data += row[idx : idx + runcount]
                         idx += runcount
 
             except struct.error as e:
                 msg = f"Corrupted MSP file in row {y}"
                 raise OSError(msg) from e
 
-        self.set_as_raw(img.getvalue(), "1")
+        self.set_as_raw(bytes(data), "1")
 
         return -1, 0
 
