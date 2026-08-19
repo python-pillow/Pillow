@@ -126,14 +126,14 @@ class MspDecoder(ImageFile.PyDecoder):
             msg = "Truncated MSP file in row map"
             raise OSError(msg) from e
 
-        for x, rowlen in enumerate(rowmap):
+        for y, rowlen in enumerate(rowmap):
             try:
                 if rowlen == 0:
                     img.write(blank_line)
                     continue
                 row = self.fd.read(rowlen)
                 if len(row) != rowlen:
-                    msg = f"Truncated MSP file, expected {rowlen} bytes on row {x}"
+                    msg = f"Truncated MSP file, expected {rowlen} bytes on row {y}"
                     raise OSError(msg)
                 idx = 0
                 while idx < rowlen:
@@ -149,7 +149,7 @@ class MspDecoder(ImageFile.PyDecoder):
                         idx += runcount
 
             except struct.error as e:
-                msg = f"Corrupted MSP file in row {x}"
+                msg = f"Corrupted MSP file in row {y}"
                 raise OSError(msg) from e
 
         self.set_as_raw(img.getvalue(), "1")
