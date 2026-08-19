@@ -65,3 +65,17 @@ def test_contextmanager() -> None:
     with warnings.catch_warnings(action="error"):
         with TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg"):
             pass
+
+
+@pytest.mark.parametrize("size", (b"-1", b"0"))
+def test_odd(tmp_path: Path, size: bytes) -> None:
+    with open(TEST_TAR_FILE, "rb") as f:
+        data = bytearray(f.read())
+
+    data[124:135] = size.rjust(11)
+
+    tmpfile = tmp_path / "temp.tar"
+    tmpfile.write_bytes(data)
+
+    with pytest.raises(ValueError, match="offset must be positive"):
+        TarIO.TarIO(str(tmpfile), "test")
