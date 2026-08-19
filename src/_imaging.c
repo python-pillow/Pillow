@@ -2053,45 +2053,20 @@ _reduce(ImagingObject *self, PyObject *args) {
     return PyImagingNew(imOut);
 }
 
-static int
-isRGB(const ModeID mode) {
-    return mode == IMAGING_MODE_RGB || mode == IMAGING_MODE_RGBA ||
-           mode == IMAGING_MODE_RGBX;
-}
-
 static PyObject *
-im_setmode(ImagingObject *self, PyObject *args) {
+im_setalpha(ImagingObject *self, PyObject *args) {
     /* attempt to modify the mode of an image in place */
+    Imaging im = self->image;
+    if (im->mode == IMAGING_MODE_RGB || im->mode == IMAGING_MODE_RGBX) {
+        im->mode = IMAGING_MODE_RGBA;
+        im->bands = 4;
+        (void)ImagingFillBand(im, 3, 255);
 
-    Imaging im;
-
-    char *mode_name;
-    Py_ssize_t modelen;
-    if (!PyArg_ParseTuple(args, "s#:setmode", &mode_name, &modelen)) {
-        return NULL;
-    }
-
-    const ModeID mode = findModeID(mode_name);
-
-    im = self->image;
-
-    /* move all logic in here to the libImaging primitive */
-
-    if (im->mode == mode) {
-        ; /* same mode; always succeeds */
-    } else if (isRGB(im->mode) && isRGB(mode)) {
-        /* color to color */
-        im->mode = mode;
-        im->bands = modelen;
-        if (mode == IMAGING_MODE_RGBA) {
-            (void)ImagingFillBand(im, 3, 255);
+        if (self->access) {
+            ImagingAccessDelete(im, self->access);
         }
+        self->access = ImagingAccessNew(im);
     }
-
-    if (self->access) {
-        ImagingAccessDelete(im, self->access);
-    }
-    self->access = ImagingAccessNew(im);
 
     Py_RETURN_NONE;
 }
@@ -3735,7 +3710,7 @@ static struct PyMethodDef methods[] = {
     {"split", (PyCFunction)_split, METH_NOARGS},
     {"fillband", (PyCFunction)_fillband, METH_VARARGS},
 
-    {"setmode", (PyCFunction)im_setmode, METH_VARARGS},
+    {"setalpha", (PyCFunction)im_setalpha, METH_NOARGS},
 
     {"getpalette", (PyCFunction)_getpalette, METH_VARARGS},
     {"getpalettemode", (PyCFunction)_getpalettemode, METH_NOARGS},
