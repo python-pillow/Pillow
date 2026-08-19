@@ -2044,19 +2044,19 @@ class Image:
 
         self._ensure_mutable()
 
-        if self.mode not in ("LA", "PA", "RGBA"):
-            # attempt to promote self to a matching alpha mode
+        if self.mode in ("RGB", "RGBX"):
+            # promote self to RGBA
+            self.im.setalpha()
+            self._mode = "RGBA"
+        elif self.mode not in ("LA", "PA", "RGBA"):
             try:
+                # do things the hard way
                 mode = getmodebase(self.mode) + "A"
-                try:
-                    self.im.setmode(mode)
-                except (AttributeError, ValueError) as e:
-                    # do things the hard way
-                    im = self.im.convert(mode)
-                    if im.mode not in ("LA", "PA", "RGBA"):
-                        msg = "alpha channel could not be added"
-                        raise ValueError(msg) from e  # sanity check
-                    self.im = im
+                im = self.im.convert(mode)
+                if im.mode not in ("LA", "PA", "RGBA"):
+                    msg = "alpha channel could not be added"
+                    raise ValueError(msg)  # sanity check
+                self.im = im
                 self._mode = self.im.mode
             except KeyError as e:
                 msg = "illegal image mode"
