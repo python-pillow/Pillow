@@ -521,6 +521,11 @@ class PngStream(ChunkStream):
         # gamma setting
         assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
+        if length < 4:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                return s
+            msg = "Truncated gAMA chunk"
+            raise ValueError(msg)
         self.im_info["gamma"] = i32(s) / 100000.0
         return s
 

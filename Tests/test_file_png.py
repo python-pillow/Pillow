@@ -700,7 +700,7 @@ class TestFilePng:
             assert_image_equal_tofile(im, "Tests/images/bw_gradient.png")
 
     @pytest.mark.parametrize(
-        "cid", (b"IHDR", b"sRGB", b"pHYs", b"acTL", b"fcTL", b"fdAT")
+        "cid", (b"IHDR", b"gAMA", b"sRGB", b"pHYs", b"acTL", b"fcTL", b"fdAT")
     )
     def test_truncated_chunks(
         self, cid: bytes, monkeypatch: pytest.MonkeyPatch
