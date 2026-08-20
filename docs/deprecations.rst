@@ -20,15 +20,6 @@ ExifTags.IFD.Makernote
 ``ExifTags.IFD.Makernote`` has been deprecated. Instead, use
 ``ExifTags.IFD.MakerNote``.
 
-Image getdata()
-~~~~~~~~~~~~~~~
-
-.. deprecated:: 12.1.0
-
-:py:meth:`~PIL.Image.Image.getdata` has been deprecated.
-:py:meth:`~PIL.Image.Image.get_flattened_data` can be used instead. This new method is
-identical, except that it returns a tuple of pixel values, instead of an internal
-Pillow data type.
 
 Removed features
 ----------------

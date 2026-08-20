@@ -151,6 +151,21 @@ typedef struct {
 
 static PyTypeObject PixelAccess_Type;
 
+typedef struct {
+    PyObject_HEAD ImagingObject *image;
+} ImageLinearAccessObject;
+
+static PyTypeObject ImageLinearAccess_Type;
+
+typedef struct {
+    PyObject_HEAD ImagingObject *image;  // NULL once exhausted
+    Py_ssize_t index;
+    Py_ssize_t count;
+    int x, y;
+} ImageLinearAccessIterObject;
+
+static PyTypeObject ImageLinearAccessIter_Type;
+
 PyObject *
 PyImagingNew(Imaging imOut) {
     ImagingObject *imagep;
@@ -3600,6 +3615,174 @@ pixel_access_setitem(PixelAccessObject *self, PyObject *xy, PyObject *color) {
 }
 
 /* -------------------------------------------------------------------- */
+/* LINEAR ACCESS                                                        */
+/* -------------------------------------------------------------------- */
+
+static PyObject *
+linear_access_new(ImagingObject *imagep, PyObject *args) {
+    ImageLinearAccessObject *self =
+        PyObject_New(ImageLinearAccessObject, &ImageLinearAccess_Type);
+    if (self == NULL) {
+        return NULL;
+    }
+
+    /* keep a reference to the image object */
+    Py_INCREF(imagep);
+    self->image = imagep;
+
+    return (PyObject *)self;
+}
+
+static void
+linear_access_dealloc(ImageLinearAccessObject *self) {
+    Py_XDECREF(self->image);
+    PyObject_Del(self);
+}
+
+static Py_ssize_t
+linear_access_length(ImageLinearAccessObject *self) {
+    Imaging im = self->image->image;
+    return (Py_ssize_t)im->xsize * im->ysize;
+}
+
+static PyObject *
+image_item(ImagingObject *self, Py_ssize_t i);
+
+static PyObject *
+linear_access_item(ImageLinearAccessObject *self, Py_ssize_t i) {
+    Imaging im = self->image->image;
+    // PySequence_GetItem() and friends will have dealt with wrapping negative indices
+    // for us.
+    if (i < 0 || i >= (Py_ssize_t)im->xsize * im->ysize) {
+        PyErr_SetString(PyExc_IndexError, outside_image);
+        return NULL;
+    }
+    return image_item(self->image, i);
+}
+
+static PyObject *
+linear_access_subscript(ImageLinearAccessObject *self, PyObject *key) {
+    Py_ssize_t i = PyNumber_AsSsize_t(key, PyExc_IndexError);
+    if (i == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
+    Imaging im = self->image->image;
+    Py_ssize_t count = (Py_ssize_t)im->xsize * im->ysize;
+    if (i < 0) {
+        i += count;
+    }
+    if (i < 0 || i >= count) {
+        PyErr_SetString(PyExc_IndexError, outside_image);
+        return NULL;
+    }
+    return image_item(self->image, i);
+}
+
+static PyObject *
+linear_access_iter(ImageLinearAccessObject *self) {
+    Imaging im = self->image->image;
+
+    ImageLinearAccessIterObject *it =
+        PyObject_New(ImageLinearAccessIterObject, &ImageLinearAccessIter_Type);
+    if (it == NULL) {
+        return NULL;
+    }
+
+    Py_INCREF(self->image);
+    it->image = self->image;
+
+    // Keep track of both x and y (because getpixel needs them anyhow)
+    // and index/count (so we don't need to recompute it->count)
+    // on every iteration.
+    it->index = 0;
+    it->count = (Py_ssize_t)im->xsize * im->ysize;
+    it->x = 0;
+    it->y = 0;
+
+    return (PyObject *)it;
+}
+
+static PySequenceMethods linear_access_as_sequence = {
+    (lenfunc)linear_access_length,    /*sq_length*/
+    (binaryfunc)NULL,                 /*sq_concat*/
+    (ssizeargfunc)NULL,               /*sq_repeat*/
+    (ssizeargfunc)linear_access_item, /*sq_item*/
+    (ssizessizeargfunc)NULL,          /*sq_slice*/
+    (ssizeobjargproc)NULL,            /*sq_ass_item*/
+    (ssizessizeobjargproc)NULL,       /*sq_ass_slice*/
+};
+
+static PyMappingMethods linear_access_as_mapping = {
+    (lenfunc)linear_access_length,       /*mp_length*/
+    (binaryfunc)linear_access_subscript, /*mp_subscript*/
+    (objobjargproc)NULL,                 /*mp_ass_subscript*/
+};
+
+static PyTypeObject ImageLinearAccess_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImageLinearAccess",
+    .tp_basicsize = sizeof(ImageLinearAccessObject),
+    .tp_dealloc = (destructor)linear_access_dealloc,
+    .tp_as_sequence = &linear_access_as_sequence,
+    .tp_as_mapping = &linear_access_as_mapping,
+    .tp_iter = (getiterfunc)linear_access_iter,
+};
+
+static PyObject *
+linear_access_iter_next(ImageLinearAccessIterObject *self) {
+    if (self->image == NULL) {
+        return NULL;
+    }
+
+    if (self->index >= self->count) {
+#ifndef Py_GIL_DISABLED
+        // On free-threading builds, calls to this function may be concurrent
+        // and one invocation could have `Py_CLEAR()`ed `self->image` and the
+        // other might try and deref it below, leading to a crash.
+        // On regular builds, we clear here to get rid of one reference
+        // to the image a little more eagerly.
+        Py_CLEAR(self->image);
+#endif
+        return NULL;
+    }
+
+    Imaging im = self->image->image;
+    PyObject *value = getpixel(im, self->image->access, self->x, self->y);
+
+    self->index++;
+    if (++self->x >= im->xsize) {
+        self->x = 0;
+        self->y++;
+    }
+
+    return value;
+}
+
+static void
+linear_access_iter_dealloc(ImageLinearAccessIterObject *self) {
+    Py_XDECREF(self->image);
+    PyObject_Del(self);
+}
+
+static PyObject *
+linear_access_iter_length_hint(ImageLinearAccessIterObject *self, PyObject *args) {
+    return PyLong_FromSsize_t(self->image == NULL ? 0 : self->count - self->index);
+}
+
+static struct PyMethodDef linear_access_iter_methods[] = {
+    {"__length_hint__", (PyCFunction)linear_access_iter_length_hint, METH_NOARGS},
+    {NULL, NULL} /* sentinel */
+};
+
+static PyTypeObject ImageLinearAccessIter_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImageLinearAccessIterator",
+    .tp_basicsize = sizeof(ImageLinearAccessIterObject),
+    .tp_dealloc = (destructor)linear_access_iter_dealloc,
+    .tp_iter = (getiterfunc)PyObject_SelfIter,
+    .tp_iternext = (iternextfunc)linear_access_iter_next,
+    .tp_methods = linear_access_iter_methods,
+};
+
+/* -------------------------------------------------------------------- */
 /* EFFECTS (experimental)                                               */
 /* -------------------------------------------------------------------- */
 
@@ -3701,6 +3884,7 @@ static struct PyMethodDef methods[] = {
     {"putpixel", (PyCFunction)_putpixel, METH_VARARGS},
 
     {"pixel_access", (PyCFunction)pixel_access_new, METH_VARARGS},
+    {"linear_access", (PyCFunction)linear_access_new, METH_NOARGS},
 
     /* Standard processing methods (Image) */
     {"color_lut_3d", (PyCFunction)_color_lut_3d, METH_VARARGS},
@@ -3837,6 +4021,7 @@ image_length(ImagingObject *self) {
     return (Py_ssize_t)im->xsize * im->ysize;
 }
 
+// Reused by ImageLinearAccess
 static PyObject *
 image_item(ImagingObject *self, Py_ssize_t i) {
     int x, y;
@@ -4328,6 +4513,12 @@ setup_module(PyObject *m) {
         return -1;
     }
     if (PyType_Ready(&PixelAccess_Type) < 0) {
+        return -1;
+    }
+    if (PyType_Ready(&ImageLinearAccess_Type) < 0) {
+        return -1;
+    }
+    if (PyType_Ready(&ImageLinearAccessIter_Type) < 0) {
         return -1;
     }
 
