@@ -136,7 +136,7 @@ class XpmDecoder(ImageFile.PyDecoder):
         data = bytearray()
         bpp, palette = self.args
         dest_length = self.state.xsize * self.state.ysize
-        if self.mode in ("RGB", "RGBA"):
+        if self.mode in {"RGB", "RGBA"}:
             dest_length *= len(self.mode)
         pixel_header = False
         while len(data) < dest_length:
@@ -149,7 +149,7 @@ class XpmDecoder(ImageFile.PyDecoder):
             line = b'"'.join(line.split(b'"')[1:-1])
             for i in range(0, len(line), bpp):
                 key = line[i : i + bpp]
-                if self.mode in ("RGB", "RGBA"):
+                if self.mode in {"RGB", "RGBA"}:
                     data += palette[key]
                 else:
                     data += o8(palette.index(key))
