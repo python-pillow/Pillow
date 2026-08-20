@@ -99,7 +99,7 @@ class XpmImageFile(ImageFile.ImageFile):
             if transparent_key is not None:
                 self._mode = "RGBA"
                 palette = {
-                    c: rgb + (b"\0" if c == transparent_key else b"\xff")
+                    c: rgb + (b"\x00" if c == transparent_key else b"\xff")
                     for c, rgb in palette.items()
                 }
             else:
