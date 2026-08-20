@@ -1012,6 +1012,7 @@ class TestImage:
                 xmp = im.getxmp()
             assert xmp == {}
 
+    @pytest.mark.skipif(ElementTree is None, reason="defusedxml is not installed")
     def test_getxmp_strip_namespaces(self) -> None:
         im = Image.new("RGB", (1, 1))
         im.info["xmp"] = (
@@ -1027,8 +1028,6 @@ class TestImage:
             b"</rdf:RDF>"
             b'</x:xmpmeta>\n<?xpacket end="w"?>'
         )
-        if ElementTree is None:
-            pytest.skip("defusedxml is not installed")
 
         stripped = im.getxmp()
         desc = stripped["xmpmeta"]["RDF"]["Description"]
