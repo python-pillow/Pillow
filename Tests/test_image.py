@@ -1025,7 +1025,7 @@ class TestImage:
             b"<b:id>from-b</b:id>"
             b"</rdf:Description>"
             b"</rdf:RDF>"
-            b'</x:xmpmeta>\n<?xpacket end="w"?>\x00\x00 '
+            b'</x:xmpmeta>\n<?xpacket end="w"?>'
         )
         if ElementTree is None:
             pytest.skip("defusedxml is not installed")
