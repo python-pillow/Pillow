@@ -2056,16 +2056,17 @@ static PyObject *
 im_setalpha(ImagingObject *self, PyObject *args) {
     /* attempt to modify the mode of an image in place */
     Imaging im = self->image;
-    if (im->mode == IMAGING_MODE_RGB || im->mode == IMAGING_MODE_RGBX) {
-        im->mode = IMAGING_MODE_RGBA;
-        im->bands = 4;
-        (void)ImagingFillBand(im, 3, 255);
-
-        if (self->access) {
-            ImagingAccessDelete(im, self->access);
-        }
-        self->access = ImagingAccessNew(im);
+    if (im->mode != IMAGING_MODE_RGB && im->mode != IMAGING_MODE_RGBX) {
+        return ImagingError_ModeError();
     }
+    im->mode = IMAGING_MODE_RGBA;
+    im->bands = 4;
+    (void)ImagingFillBand(im, 3, 255);
+
+    if (self->access) {
+        ImagingAccessDelete(im, self->access);
+    }
+    self->access = ImagingAccessNew(im);
 
     Py_RETURN_NONE;
 }
