@@ -36,12 +36,11 @@ def test_rgb() -> None:
 def test_transparency() -> None:
     data = b"""/* XPM */
 static char *test[] = {
-"2 2 3 1",
+"3 1 3 1",
 " \tc None",
 "r\tc #FF0000",
 "b\tc #0000FF",
-" r",
-"b "};
+" rb"};
 """
     with Image.open(BytesIO(data)) as im:
         assert im.mode == "P"
@@ -50,7 +49,7 @@ static char *test[] = {
         converted = im.convert("RGBA")
     assert converted.getpixel((0, 0)) == (0, 0, 0, 0)
     assert converted.getpixel((1, 0)) == (255, 0, 0, 255)
-    assert converted.getpixel((0, 1)) == (0, 0, 255, 255)
+    assert converted.getpixel((2, 0)) == (0, 0, 255, 255)
 
 
 def test_transparency_rgba() -> None:
