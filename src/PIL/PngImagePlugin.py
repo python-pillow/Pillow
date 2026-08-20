@@ -521,6 +521,11 @@ class PngStream(ChunkStream):
         # gamma setting
         assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
+        if length < 4:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                return s
+            msg = "Truncated gAMA chunk"
+            raise ValueError(msg)
         self.im_info["gamma"] = i32(s) / 100000.0
         return s
 
@@ -530,7 +535,12 @@ class PngStream(ChunkStream):
 
         assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
-        raw_vals = struct.unpack(f">{len(s) // 4}I", s)
+        if length < 32:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                return s
+            msg = "Truncated cHRM chunk"
+            raise ValueError(msg)
+        raw_vals = struct.unpack(">8I", s[:32])
         self.im_info["chromaticity"] = tuple(elt / 100000.0 for elt in raw_vals)
         return s
 
