@@ -1581,8 +1581,15 @@ class Image:
         :returns: XMP tags in a dictionary.
         """
 
-        def get_name(tag: str) -> str:
-            return re.sub("^{[^}]+}", "", tag) if strip_namespaces else tag
+        if strip_namespaces:
+
+            def get_name(tag: str) -> str:
+                return re.sub("^{[^}]+}", "", tag)
+
+        else:
+
+            def get_name(tag: str) -> str:
+                return tag
 
         def get_value(element: Element) -> str | dict[str, Any] | None:
             value: dict[str, Any] = {get_name(k): v for k, v in element.attrib.items()}
