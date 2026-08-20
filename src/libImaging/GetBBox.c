@@ -111,7 +111,7 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
 
     if (im->image8) {
         if (isModeI16(im->mode)) {
-            // In I16 modes, image8 is two-byte pixels, so scan as UINT16.
+            // In I;16 modes, image8 is two-byte pixels, so scan as UINT16.
             // Since we're looking for zeroes, endianness doesn't matter.
             GETBBOX(image8, 0xffff, UINT16);
         } else {
