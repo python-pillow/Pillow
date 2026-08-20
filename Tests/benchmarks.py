@@ -898,3 +898,15 @@ def test_quantize_to_palette(
         result = bench(lambda: im._new(im.im.convert(output_mode, dither, palette.im)))
     assert result.mode == output_mode
     benchmark_save(result)
+
+
+@pytest.mark.benchmark
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_get_flattened_data(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+) -> None:
+    im = make_pillow_image(mode, size)
+    bench(im.get_flattened_data)
