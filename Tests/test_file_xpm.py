@@ -48,9 +48,9 @@ static char *test[] = {
         assert im.info["transparency"] == 0
 
         converted = im.convert("RGBA")
-        assert converted.getpixel((0, 0)) == (0, 0, 0, 0)
-        assert converted.getpixel((1, 0)) == (255, 0, 0, 255)
-        assert converted.getpixel((0, 1)) == (0, 0, 255, 255)
+    assert converted.getpixel((0, 0)) == (0, 0, 0, 0)
+    assert converted.getpixel((1, 0)) == (255, 0, 0, 255)
+    assert converted.getpixel((0, 1)) == (0, 0, 255, 255)
 
 
 def test_transparency_rgba() -> None:
