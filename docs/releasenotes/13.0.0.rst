@@ -85,10 +85,14 @@ TODO
 API additions
 =============
 
-TODO
-^^^^
+Added ``strip_namespaces`` argument to ``Image.getxmp()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+:py:meth:`~PIL.Image.Image.getxmp` now accepts an optional keyword argument of
+``strip_namespaces``. By default, this remains ``True``, stripping each tag's XML
+namespace prefix as before. If set to ``False``, each tag's full
+``{namespace-uri}local-name`` form is kept instead, avoiding collisions between tags
+that share a local name across different namespaces.
 
 Other changes
 =============

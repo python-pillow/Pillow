@@ -1570,16 +1570,19 @@ class Image:
             return tuple(self.im.getband(i).getextrema() for i in range(self.im.bands))
         return self.im.getextrema()
 
-    def getxmp(self) -> dict[str, Any]:
+    def getxmp(self, strip_namespaces: bool = True) -> dict[str, Any]:
         """
         Returns a dictionary containing the XMP tags.
         Requires defusedxml to be installed.
 
+        :param strip_namespaces: If ``False``, keep each tag's full
+            ``{namespace-uri}local-name`` form instead of stripping the
+            namespace prefix.
         :returns: XMP tags in a dictionary.
         """
 
         def get_name(tag: str) -> str:
-            return re.sub("^{[^}]+}", "", tag)
+            return re.sub("^{[^}]+}", "", tag) if strip_namespaces else tag
 
         def get_value(element: Element) -> str | dict[str, Any] | None:
             value: dict[str, Any] = {get_name(k): v for k, v in element.attrib.items()}

@@ -1012,6 +1012,37 @@ class TestImage:
                 xmp = im.getxmp()
             assert xmp == {}
 
+    def test_getxmp_strip_namespaces(self) -> None:
+        im = Image.new("RGB", (1, 1))
+        im.info["xmp"] = (
+            b'<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
+            b'<x:xmpmeta xmlns:x="adobe:ns:meta/">'
+            b'<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+            b'<rdf:Description rdf:about=""'
+            b' xmlns:a="http://example.com/ns/a/"'
+            b' xmlns:b="http://example.com/ns/b/">'
+            b"<a:id>from-a</a:id>"
+            b"<b:id>from-b</b:id>"
+            b"</rdf:Description>"
+            b"</rdf:RDF>"
+            b'</x:xmpmeta>\n<?xpacket end="w"?>\x00\x00 '
+        )
+        if ElementTree is None:
+            pytest.skip("defusedxml is not installed")
+
+        stripped = im.getxmp()
+        desc = stripped["xmpmeta"]["RDF"]["Description"]
+        assert desc["id"] == ["from-a", "from-b"]
+
+        a_namespace = "http://example.com/ns/a/"
+        b_namespace = "http://example.com/ns/b/"
+        full = im.getxmp(strip_namespaces=False)
+        desc_full = full["{adobe:ns:meta/}xmpmeta"][
+            "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF"
+        ]["{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description"]
+        assert desc_full[f"{{{a_namespace}}}id"] == "from-a"
+        assert desc_full[f"{{{b_namespace}}}id"] == "from-b"
+
     def test_getxmp_padded(self) -> None:
         im = Image.new("RGB", (1, 1))
         im.info["xmp"] = (
