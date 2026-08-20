@@ -55,16 +55,12 @@ static char *test[] = {
 def test_transparency_rgba() -> None:
     # With more than 256 colours and a transparent colour,
     # the image is opened as RGBA
-    chars = "0123456789abcdefghijklmnopqrstuvwxy"
-    colours = [
-        b'"%s\tc #%06x",' % ((chars[i // 35] + chars[i % 35]).encode(), i + 1)
-        for i in range(300)
-    ]
-    colours.append(b'"zz\tc None",')
+    colours = [b'"%03d\tc #%06x",' % (i, i + 1) for i in range(300)]
+    colours.append(b'"   \tc None",')
     data = (
-        b'/* XPM */\nstatic char *test[] = {\n"2 1 301 2",\n'
+        b'/* XPM */\nstatic char *test[] = {\n"2 1 301 3",\n'
         + b"\n".join(colours)
-        + b'\n"00zz"};\n'
+        + b'\n"000   "};\n'
     )
     with Image.open(BytesIO(data)) as im:
         assert im.mode == "RGBA"
