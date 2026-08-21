@@ -1033,14 +1033,12 @@ class TestImage:
         desc = stripped["xmpmeta"]["RDF"]["Description"]
         assert desc["id"] == ["from-a", "from-b"]
 
-        a_namespace = "http://example.com/ns/a/"
-        b_namespace = "http://example.com/ns/b/"
         full = im.getxmp(strip_namespaces=False)
         desc_full = full["{adobe:ns:meta/}xmpmeta"][
             "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF"
         ]["{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description"]
-        assert desc_full[f"{{{a_namespace}}}id"] == "from-a"
-        assert desc_full[f"{{{b_namespace}}}id"] == "from-b"
+        assert desc_full["{http://example.com/ns/a/}id"] == "from-a"
+        assert desc_full["{http://example.com/ns/b/}id"] == "from-b"
 
     def test_getxmp_padded(self) -> None:
         im = Image.new("RGB", (1, 1))
