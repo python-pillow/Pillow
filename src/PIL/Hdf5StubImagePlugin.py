@@ -15,8 +15,6 @@ from typing import IO
 
 from . import Image, ImageFile
 
-_handler = None
-
 
 def register_handler(handler: ImageFile.StubHandler | None) -> None:
     """
@@ -24,8 +22,7 @@ def register_handler(handler: ImageFile.StubHandler | None) -> None:
 
     :param handler: Handler object.
     """
-    global _handler
-    _handler = handler
+    HDF5StubImageFile._handler = handler
 
 
 # --------------------------------------------------------------------
@@ -50,17 +47,15 @@ class HDF5StubImageFile(ImageFile.StubImageFile):
 
         # make something up
         self._mode = "F"
-        self._size = 1, 1
-
-    def _load(self) -> ImageFile.StubHandler | None:
-        return _handler
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    if _handler is None or not hasattr(_handler, "save"):
+    if HDF5StubImageFile._handler is None or not hasattr(
+        HDF5StubImageFile._handler, "save"
+    ):
         msg = "HDF5 save handler not installed"
         raise OSError(msg)
-    _handler.save(im, fp, filename)
+    HDF5StubImageFile._handler.save(im, fp, filename)
 
 
 # --------------------------------------------------------------------

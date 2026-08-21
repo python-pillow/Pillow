@@ -69,6 +69,9 @@ def test_register_handler(tmp_path: Path) -> None:
     class TestHandler(ImageFile.StubHandler):
         methodCalled = False
 
+        def open(self, im: ImageFile.StubImageFile) -> None:
+            im._size = (1, 1)
+
         def load(self, im: ImageFile.StubImageFile) -> Image.Image:
             return Image.new("RGB", (1, 1))
 
@@ -76,7 +79,7 @@ def test_register_handler(tmp_path: Path) -> None:
             self.methodCalled = True
 
     handler = TestHandler()
-    original_handler = WmfImagePlugin._handler
+    original_handler = WmfImagePlugin.WmfStubImageFile._handler
     WmfImagePlugin.register_handler(handler)
 
     im = hopper()
