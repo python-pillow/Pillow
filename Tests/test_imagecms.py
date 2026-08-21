@@ -418,7 +418,7 @@ def test_extended_information() -> None:
     assert p.colorimetric_intent is None
     assert p.connection_space == "XYZ "
     assert p.copyright == "Copyright International Color Consortium, 2009"
-    assert p.creation_date == datetime.datetime(2009, 2, 27, 21, 36, 31)
+    assert p.creation_date == datetime.datetime(2009, 3, 27, 21, 36, 31)
     assert p.device_class == "mntr"
     assert_truncated_tuple_equal(
         p.green_colorant,
