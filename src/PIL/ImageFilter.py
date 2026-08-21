@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 import abc
-import functools
 from collections.abc import Sequence
 from typing import cast
 
@@ -79,7 +78,7 @@ class Kernel(BuiltinFilter):
     ) -> None:
         if scale is None:
             # default scale is sum of kernel
-            scale = functools.reduce(lambda a, b: a + b, kernel)
+            scale = sum(kernel)
         if size[0] * size[1] != len(kernel):
             msg = "not enough coefficients in kernel"
             raise ValueError(msg)
@@ -268,116 +267,96 @@ class UnsharpMask(MultibandFilter):
 
 class BLUR(BuiltinFilter):
     name = "Blur"
-    # fmt: off
     filterargs = (5, 5), 16, 0, (
         1, 1, 1, 1, 1,
         1, 0, 0, 0, 1,
         1, 0, 0, 0, 1,
         1, 0, 0, 0, 1,
         1, 1, 1, 1, 1,
-    )
-    # fmt: on
+    )  # fmt: skip
 
 
 class CONTOUR(BuiltinFilter):
     name = "Contour"
-    # fmt: off
     filterargs = (3, 3), 1, 255, (
         -1, -1, -1,
         -1,  8, -1,
         -1, -1, -1,
-    )
-    # fmt: on
+    )  # fmt: skip
 
 
 class DETAIL(BuiltinFilter):
     name = "Detail"
-    # fmt: off
     filterargs = (3, 3), 6, 0, (
         0,  -1,  0,
         -1, 10, -1,
         0,  -1,  0,
-    )
-    # fmt: on
+    )  # fmt: skip
 
 
 class EDGE_ENHANCE(BuiltinFilter):
     name = "Edge-enhance"
-    # fmt: off
     filterargs = (3, 3), 2, 0, (
         -1, -1, -1,
         -1, 10, -1,
         -1, -1, -1,
-    )
-    # fmt: on
+    )  # fmt: skip
 
 
 class EDGE_ENHANCE_MORE(BuiltinFilter):
     name = "Edge-enhance More"
-    # fmt: off
     filterargs = (3, 3), 1, 0, (
         -1, -1, -1,
         -1,  9, -1,
         -1, -1, -1,
-    )
-    # fmt: on
+    )  # fmt: skip
 
 
 class EMBOSS(BuiltinFilter):
     name = "Emboss"
-    # fmt: off
     filterargs = (3, 3), 1, 128, (
         -1, 0, 0,
         0,  1, 0,
         0,  0, 0,
-    )
-    # fmt: on
+    )  # fmt: skip
 
 
 class FIND_EDGES(BuiltinFilter):
     name = "Find Edges"
-    # fmt: off
     filterargs = (3, 3), 1, 0, (
         -1, -1, -1,
         -1,  8, -1,
         -1, -1, -1,
-    )
-    # fmt: on
+    )  # fmt: skip
 
 
 class SHARPEN(BuiltinFilter):
     name = "Sharpen"
-    # fmt: off
     filterargs = (3, 3), 16, 0, (
         -2, -2, -2,
         -2, 32, -2,
         -2, -2, -2,
-    )
-    # fmt: on
+    )  # fmt: skip
 
 
 class SMOOTH(BuiltinFilter):
     name = "Smooth"
-    # fmt: off
     filterargs = (3, 3), 13, 0, (
         1, 1, 1,
         1, 5, 1,
         1, 1, 1,
-    )
-    # fmt: on
+    )  # fmt: skip
 
 
 class SMOOTH_MORE(BuiltinFilter):
     name = "Smooth More"
-    # fmt: off
     filterargs = (5, 5), 100, 0, (
         1, 1,  1, 1, 1,
         1, 5,  5, 5, 1,
         1, 5, 44, 5, 1,
         1, 5,  5, 5, 1,
         1, 1,  1, 1, 1,
-    )
-    # fmt: on
+    )  # fmt: skip
 
 
 class Color3DLUT(MultibandFilter):
