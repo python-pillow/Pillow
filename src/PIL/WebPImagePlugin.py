@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"io"}
+
 from io import BytesIO
 
 from . import Image, ImageFile

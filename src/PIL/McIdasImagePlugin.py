@@ -17,6 +17,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"struct"}
+
 import struct
 
 from . import Image, ImageFile

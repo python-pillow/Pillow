@@ -18,6 +18,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"collections.abc", "re"}
+
 import re
 from collections.abc import Sequence
 from typing import Literal, Protocol, cast, overload
