@@ -89,8 +89,8 @@ Added ``strip_namespaces`` argument to ``Image.getxmp()``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :py:meth:`~PIL.Image.Image.getxmp` now accepts an optional keyword argument of
-``strip_namespaces``. By default, this remains ``True``, stripping each tag's XML
-namespace prefix as before. If set to ``False``, each tag's full
+``strip_namespaces``. It is set to ``True`` by default, stripping each tag's XML
+namespace URI prefix as before. If set to ``False``, each tag's full
 ``{namespace-uri}local-name`` form is kept instead, avoiding collisions between tags
 that share a local name across different namespaces.
 
