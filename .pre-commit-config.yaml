@@ -50,6 +50,8 @@ repos:
         exclude: ^Tests/images/|\.patch$
       - id: file-contents-sorter
         files: .github/workflows/Brewfile
+      - id: mixed-line-ending
+        args: [--fix=lf]
       - id: trailing-whitespace
         exclude: ^\.github/.*TEMPLATE|^Tests/(fonts|images)/|\.patch$
 
