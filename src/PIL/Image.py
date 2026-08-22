@@ -1293,8 +1293,9 @@ class Image:
                        and :data:`Quantize.MAXCOVERAGE` do not support RGBA images, so
                        :data:`Quantize.FASTOCTREE` is used by default instead.
         :param kmeans: Integer greater than or equal to zero.
-        :param palette: Quantize to the palette of given
-                        :py:class:`PIL.Image.Image`.
+        :param palette: Quantize to the palette of given :py:class:`PIL.Image.Image`.
+                        The `colors`, `method` and `kmeans` parameters are ignored
+                        if a reference palette is used.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`

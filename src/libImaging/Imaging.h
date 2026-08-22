@@ -151,16 +151,17 @@ struct ImagingHistogramInstance {
     long *histogram; /* Histogram (bands*256 longs) */
 };
 
+#define IMAGING_PALETTE_MAX_ENTRIES 256
+
 struct ImagingPaletteInstance {
     /* Format */
-    ModeID mode;
+    ModeID mode; /* RGB/RGBA/CMYK */
 
     /* Data */
     int size;
-    UINT8 palette[1024]; /* Palette data (same format as image data) */
+    UINT8 palette[IMAGING_PALETTE_MAX_ENTRIES * 4]; /* Palette data (see mode) */
 
-    INT16 *cache;   /* Palette cache (used for predefined palettes) */
-    int keep_cache; /* This palette will be reused; keep cache */
+    INT16 *cache; /* Palette cache (used for predefined palettes) */
 };
 
 typedef struct ImagingMemoryArena {
@@ -238,16 +239,6 @@ extern ImagingPalette
 ImagingPaletteDuplicate(ImagingPalette palette);
 extern void
 ImagingPaletteDelete(ImagingPalette palette);
-
-extern int
-ImagingPaletteCachePrepare(ImagingPalette palette);
-extern void
-ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b);
-extern void
-ImagingPaletteCacheDelete(ImagingPalette palette);
-
-#define ImagingPaletteCache(p, r, g, b) \
-    p->cache[(r >> 2) + (g >> 2) * 64 + (b >> 2) * 64 * 64]
 
 extern Imaging
 ImagingQuantize(Imaging im, int colours, int mode, int kmeans);
