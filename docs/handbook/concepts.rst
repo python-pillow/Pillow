@@ -217,6 +217,23 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 
     .. versionadded:: 1.1.3
 
+.. data:: Resampling.MKS2013
+    :noindex:
+
+    Calculate the output pixel value using the Magic Kernel Sharp 2013 filter
+    (a quadratic B-spline composed with a sharpening kernel) on all pixels that
+    may contribute to the output value. This filter can only be used with the
+    :py:meth:`~PIL.Image.Image.resize` and :py:meth:`~PIL.Image.Image.thumbnail`
+    methods.
+
+.. data:: Resampling.MKS2021
+    :noindex:
+
+    Calculate the output pixel value using the Magic Kernel Sharp 2021 filter
+    (a quadratic B-spline composed with a sharpening kernel) on all pixels that
+    may contribute to the output value. This filter can only be used with the
+    :py:meth:`~PIL.Image.Image.resize` and :py:meth:`~PIL.Image.Image.thumbnail`
+    methods.
 
 Filters comparison table
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -236,4 +253,8 @@ Filters comparison table
 |:data:`Resampling.BICUBIC` | ⭐⭐⭐      | ⭐⭐⭐    | ⭐⭐        |
 +---------------------------+-------------+-----------+-------------+
 |:data:`Resampling.LANCZOS` | ⭐⭐⭐⭐    | ⭐⭐⭐⭐  | ⭐          |
++---------------------------+-------------+-----------+-------------+
+|:data:`Resampling.MKS2013` | ⭐⭐⭐⭐    | ⭐⭐⭐⭐  | ⭐          |
++---------------------------+-------------+-----------+-------------+
+|:data:`Resampling.MKS2021` | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐| ⭐          |
 +---------------------------+-------------+-----------+-------------+
