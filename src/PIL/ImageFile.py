@@ -34,14 +34,14 @@ import itertools
 import logging
 import os
 import struct
-from typing import IO, Any, NamedTuple, cast
+from typing import NamedTuple, cast
 
 from . import ExifTags, Image
 from ._util import DeferredError, is_path
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from typing import Self
+    from typing import IO, Any, Self
 
     from ._typing import StrOrBytesPath
 
@@ -142,7 +142,7 @@ class ImageFile(Image.Image):
             self._exclusive_fp = True
         else:
             # stream
-            self.fp = cast(IO[bytes], fp)
+            self.fp = cast("IO[bytes]", fp)
             self.filename = filename if filename is not None else ""
             # can be overridden
             self._exclusive_fp = False

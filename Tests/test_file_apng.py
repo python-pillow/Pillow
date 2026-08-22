@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 
 import pytest
 
 from PIL import Image, ImageSequence, PngImagePlugin
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 # APNG browser support tests and fixtures via:

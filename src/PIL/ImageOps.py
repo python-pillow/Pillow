@@ -19,10 +19,14 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Sequence
-from typing import Literal, Protocol, cast, overload
+from typing import Protocol, cast, overload
 
 from . import ExifTags, Image, ImagePalette
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Literal
 
 #
 # helpers
@@ -210,9 +214,9 @@ def colorize(
         raise ValueError(msg)
 
     # Define colors from arguments
-    rgb_black = cast(Sequence[int], _color(black, "RGB"))
-    rgb_white = cast(Sequence[int], _color(white, "RGB"))
-    rgb_mid = cast(Sequence[int], _color(mid, "RGB")) if mid is not None else None
+    rgb_black = cast("Sequence[int]", _color(black, "RGB"))
+    rgb_white = cast("Sequence[int]", _color(white, "RGB"))
+    rgb_mid = cast("Sequence[int]", _color(mid, "RGB")) if mid is not None else None
 
     # Empty lists for the mapping
     red = []
