@@ -1663,6 +1663,12 @@ error_1:
     return 0;
 }
 
+/**
+ * Quantize `im` down to at most `colors` palette entries,
+ * returning a newly allocated result.
+ *
+ * Contract: im is read-only.
+ */
 Imaging
 ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     int i, j;
