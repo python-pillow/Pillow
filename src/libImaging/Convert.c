@@ -1724,27 +1724,3 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
 
     return imOut;
 }
-
-Imaging
-ImagingConvertInPlace(Imaging imIn, const ModeID mode) {
-    ImagingSectionCookie cookie;
-    ImagingShuffler convert;
-    int y;
-
-    /* limited support for inplace conversion */
-    if (imIn->mode == IMAGING_MODE_L && mode == IMAGING_MODE_1) {
-        convert = l2bit;
-    } else if (imIn->mode == IMAGING_MODE_1 && mode == IMAGING_MODE_L) {
-        convert = bit2l;
-    } else {
-        return ImagingError_ModeError();
-    }
-
-    ImagingSectionEnter(&cookie);
-    for (y = 0; y < imIn->ysize; y++) {
-        (*convert)((UINT8 *)imIn->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
-    }
-    ImagingSectionLeave(&cookie);
-
-    return imIn;
-}
