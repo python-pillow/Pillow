@@ -943,11 +943,14 @@ class Image:
             # may pass tuple instead of argument list
             decoder_args = decoder_args[0]
 
-        if decoder_args and decoder_args[0] in {"P;2L", "P;4L"}:
-            multiple = 4 if decoder_args[0] == "P;2L" else 8
-            if len(data) % multiple:
-                msg = "not enough image data"
-                raise ValueError(msg)
+        if decoder_args:
+            raw_mode = decoder_args[0]
+            if raw_mode in {"P;2L", "P;4L"}:
+                deprecate(raw_mode, 14)
+                multiple = 4 if raw_mode == "P;2L" else 8
+                if len(data) % multiple:
+                    msg = "not enough image data"
+                    raise ValueError(msg)
 
         # default format
         if decoder_name == "raw" and decoder_args == ():
