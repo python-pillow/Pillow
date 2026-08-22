@@ -69,10 +69,13 @@ ImageCms.ImageCmsProfile.product_name and .product_info
 Deprecations
 ============
 
-TODO
-^^^^
+IM image format
+^^^^^^^^^^^^^^^
 
-TODO
+.. deprecated:: 13.0.0
+
+The IM image format has been deprecated. If you are using this format and would like
+to continue doing so, please provide a report about what other software uses it.
 
 API changes
 ===========
