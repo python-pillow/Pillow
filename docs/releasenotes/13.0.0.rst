@@ -93,6 +93,16 @@ TODO
 Other changes
 =============
 
+Dithering with an adaptive palette
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, the ``dither`` argument was silently ignored when converting or
+quantizing to a palette computed from the image itself, e.g.
+``im.convert("P", palette=Image.Palette.ADAPTIVE, dither=Image.Dither.FLOYDSTEINBERG)``
+or ``im.quantize(dither=Image.Dither.FLOYDSTEINBERG)`` without a reference
+``palette``. Dithering is now applied in these cases as well, matching the
+documented behavior. Calls that don't specify ``dither`` are unaffected.
+
 Python 3.15
 ^^^^^^^^^^^
 
