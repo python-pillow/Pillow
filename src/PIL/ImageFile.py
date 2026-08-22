@@ -113,7 +113,7 @@ class _Tile(NamedTuple):
 # ImageFile base class
 
 
-class ImageFile(Image.Image):
+class ImageFile(Image.Image, metaclass=abc.ABCMeta):
     """Base class for image file format handlers."""
 
     def __init__(
@@ -172,6 +172,7 @@ class ImageFile(Image.Image):
                 self.fp.close()
             raise
 
+    @abc.abstractmethod
     def _open(self) -> None:
         pass
 
@@ -483,10 +484,6 @@ class StubImageFile(ImageFile, metaclass=abc.ABCMeta):
     A stub loader is an image loader that can identify files of a
     certain format, but relies on external code to load the file.
     """
-
-    @abc.abstractmethod
-    def _open(self) -> None:
-        pass
 
     def load(self) -> Image.core.PixelAccess | None:
         loader = self._load()
