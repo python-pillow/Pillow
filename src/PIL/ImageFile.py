@@ -34,14 +34,14 @@ import itertools
 import logging
 import os
 import struct
-from typing import IO, NamedTuple, cast
+from typing import NamedTuple, cast
 
 from . import ExifTags, Image
 from ._util import DeferredError, is_path
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from typing import Any, Self
+    from typing import IO, Any, Self
 
     from ._typing import StrOrBytesPath
 

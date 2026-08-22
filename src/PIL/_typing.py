@@ -3,12 +3,11 @@ from __future__ import annotations
 import os
 import sys
 from collections.abc import Sequence
+from numbers import _IntegralLike as IntegralLike
 from typing import Any, Protocol, TypeVar
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from numbers import _IntegralLike as IntegralLike  # noqa: TC004
-
     try:
         import numpy.typing as npt
 
