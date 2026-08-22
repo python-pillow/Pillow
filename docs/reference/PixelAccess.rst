@@ -49,7 +49,7 @@ Access using negative indexes is also possible. ::
   .. method:: __getitem__(self, xy: tuple[int, int]) -> float | tuple[int, ...]
 
         Returns the pixel at x,y. The pixel is returned as a single
-        value for single band images or a tuple for multi-band images.
+        value for single band images or a tuple for multiband images.
 
         :param xy: The pixel coordinate, given as (x, y).
         :returns: a pixel value for single band images, a tuple of
