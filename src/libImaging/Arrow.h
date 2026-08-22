@@ -1,9 +1,18 @@
+// Arrow C Data Interface structure definitions.
+//
+// These free-standing definitions are published by the Apache Arrow project
+// for copying into third-party projects, under the Apache License 2.0:
+// https://arrow.apache.org/docs/format/CDataInterface.html#structure-definitions
+//
+// Copyright The Apache Software Foundation.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Per the specification, the ARROW_C_DATA_INTERFACE guard below is kept exactly
+// as-is to avoid duplicate definitions when multiple projects vendor these
+// declarations.
+
 #include <stdint.h>
 #include <assert.h>
-
-// Apache License 2.0.
-// Source apache arrow project
-// https://arrow.apache.org/docs/format/CDataInterface.html
 
 #ifndef ARROW_C_DATA_INTERFACE
 #define ARROW_C_DATA_INTERFACE
