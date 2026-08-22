@@ -19,6 +19,7 @@ modules = {
     "littlecms2": ("PIL._imagingcms", "littlecms_version"),
     "webp": ("PIL._webp", "webpdecoder_version"),
     "avif": ("PIL._avif", "libavif_version"),
+    "jpegxl": ("PIL._jpegxl", "libjxl_version"),
 }
 
 
@@ -274,6 +275,7 @@ def pilinfo(out: IO[str] | None = None, supported_formats: bool = True) -> None:
         ("littlecms2", "LITTLECMS2"),
         ("webp", "WEBP"),
         ("avif", "AVIF"),
+        ("jpegxl", "JPEG XL"),
         ("jpg", "JPEG"),
         ("jpg_2000", "OPENJPEG (JPEG2000)"),
         ("zlib", "ZLIB (PNG/ZIP)"),
