@@ -23,8 +23,11 @@ ImagingConvertMatrix(Imaging im, const ModeID mode, const float m[12]) {
     ImagingSectionCookie cookie;
 
     /* Assume there's enough data in the buffer */
-    if (!im || im->bands != 3) {
-        return (Imaging)ImagingError_ModeError();
+    if (!im) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+    if (im->bands != 3) {
+        return (Imaging)ImagingError_ModeError("image must have exactly 3 bands");
     }
 
     if (mode == IMAGING_MODE_L) {
@@ -77,7 +80,7 @@ ImagingConvertMatrix(Imaging im, const ModeID mode, const float m[12]) {
             ImagingSectionLeave(&cookie);
         }
     } else {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_NotSupportedError(NULL);
     }
 
     return imOut;
