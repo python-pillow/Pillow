@@ -46,7 +46,7 @@ def test_index_out_of_range() -> None:
     hopper_data = hopper().getdata()
     for index in (128 * 128, -128 * 128 - 1, 1 << 40):
         with pytest.raises(IndexError):
-            _ = hopper_data[index]
+            hopper_data[index]
 
 
 def test_iteration_matches_indexing() -> None:
@@ -103,7 +103,7 @@ def test_empty_image(size: tuple[int, int]) -> None:
     assert len(data) == 0
     assert list(data) == []
     with pytest.raises(IndexError):
-        _ = data[0]
+        data[0]
 
 
 def test_outlives_the_image() -> None:
