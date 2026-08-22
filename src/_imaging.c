@@ -1048,8 +1048,15 @@ static PyObject *
 _convert_matrix(ImagingObject *self, PyObject *args) {
     char *mode_name;
     float m[12];
-    if (!PyArg_ParseTuple(args, "s(ffff)", &mode_name, m + 0, m + 1, m + 2, m + 3)) {
-        PyErr_Clear();
+    PyObject *matrix;
+    if (!PyArg_ParseTuple(args, "sO", &mode_name, &matrix)) {
+        return NULL;
+    }
+    Py_ssize_t size = PySequence_Size(matrix);
+    if (size == -1) {
+        return NULL;
+    }
+    if (size == 12) {
         if (!PyArg_ParseTuple(
                 args,
                 "s(ffffffffffff)",
@@ -1069,27 +1076,35 @@ _convert_matrix(ImagingObject *self, PyObject *args) {
             )) {
             return NULL;
         }
+    } else if (!PyArg_ParseTuple(
+                   args, "s(ffff)", &mode_name, m + 0, m + 1, m + 2, m + 3
+               )) {
+        return NULL;
     }
 
     const ModeID mode = findModeID(mode_name);
-
     return PyImagingNew(ImagingConvertMatrix(self->image, mode, m));
 }
 
 static PyObject *
 _convert_transparent(ImagingObject *self, PyObject *args) {
     char *mode_name;
-    int r, g, b;
-    if (PyArg_ParseTuple(args, "s(iii)", &mode_name, &r, &g, &b)) {
-        const ModeID mode = findModeID(mode_name);
-        return PyImagingNew(ImagingConvertTransparent(self->image, mode, r, g, b));
+    int r, g = 0, b = 0;
+    PyObject *transparency;
+    if (!PyArg_ParseTuple(args, "sO", &mode_name, &transparency)) {
+        return NULL;
     }
-    PyErr_Clear();
-    if (PyArg_ParseTuple(args, "si", &mode_name, &r)) {
-        const ModeID mode = findModeID(mode_name);
-        return PyImagingNew(ImagingConvertTransparent(self->image, mode, r, 0, 0));
+
+    if (PySequence_Check(transparency)) {
+        if (!PyArg_ParseTuple(args, "s(iii)", &mode_name, &r, &g, &b)) {
+            return NULL;
+        }
+    } else if (!PyArg_ParseTuple(args, "si", &mode_name, &r)) {
+        return NULL;
     }
-    return NULL;
+
+    const ModeID mode = findModeID(mode_name);
+    return PyImagingNew(ImagingConvertTransparent(self->image, mode, r, g, b));
 }
 
 static PyObject *
