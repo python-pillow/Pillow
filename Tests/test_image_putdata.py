@@ -99,6 +99,24 @@ def test_array_F() -> None:
     assert len(im.get_flattened_data()) == len(arr)
 
 
+def test_overstated_length() -> None:
+    # shouldn't segfault
+    # see https://github.com/python-pillow/Pillow/issues/9892
+
+    class OverstatedLengthSequence:
+        def __len__(self) -> int:
+            return 16
+
+        def __getitem__(self, index: int) -> float:
+            if index >= 2:
+                raise IndexError
+            return float(index + 1)
+
+    im = Image.new("L", (4, 4))
+    im.putdata(OverstatedLengthSequence())
+    assert im.get_flattened_data()[:2] == (1, 2)
+
+
 def test_not_flattened() -> None:
     im = Image.new("L", (1, 1))
     with pytest.raises(TypeError):

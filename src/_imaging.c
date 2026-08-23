@@ -442,9 +442,15 @@ getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
         return NULL;
     }
 
-    n = PySequence_Size(arg);
+    seq = PySequence_Fast(arg, must_be_sequence);
+    if (!seq) {
+        return NULL;
+    }
+
+    n = PySequence_Fast_GET_SIZE(seq);
     if (length && wrong_length && n != *length) {
         PyErr_SetString(PyExc_ValueError, wrong_length);
+        Py_DECREF(seq);
         return NULL;
     }
 
@@ -452,13 +458,8 @@ getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
        calloc checks for overflow */
     list = calloc(n, type & 0xff);
     if (!list) {
+        Py_DECREF(seq);
         return ImagingError_MemoryError();
-    }
-
-    seq = PySequence_Fast(arg, must_be_sequence);
-    if (!seq) {
-        free(list);
-        return NULL;
     }
 
     for (i = 0; i < n; i++) {
@@ -1625,8 +1626,18 @@ _putdata(ImagingObject *self, PyObject *args) {
 
     image = self->image;
 
-    n = PyObject_Length(data);
+    if (image->image8 && PyBytes_Check(data)) {
+        n = PyBytes_GET_SIZE(data);
+    } else {
+        seq = PySequence_Fast(data, must_be_sequence);
+        if (!seq) {
+            PyErr_SetString(PyExc_TypeError, must_be_sequence);
+            return NULL;
+        }
+        n = PySequence_Fast_GET_SIZE(seq);
+    }
     if (n > (Py_ssize_t)image->xsize * (Py_ssize_t)image->ysize) {
+        Py_XDECREF(seq);
         PyErr_SetString(PyExc_TypeError, "too many data entries");
         return NULL;
     }
@@ -1667,11 +1678,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                 }
             }
         } else {
-            seq = PySequence_Fast(data, must_be_sequence);
-            if (!seq) {
-                PyErr_SetString(PyExc_TypeError, must_be_sequence);
-                return NULL;
-            }
             double value;
             int bigendian = 0;
             if (image->type == IMAGING_TYPE_SPECIAL) {
@@ -1705,11 +1711,6 @@ _putdata(ImagingObject *self, PyObject *args) {
         }
     } else {
         /* 32-bit images */
-        seq = PySequence_Fast(data, must_be_sequence);
-        if (!seq) {
-            PyErr_SetString(PyExc_TypeError, must_be_sequence);
-            return NULL;
-        }
         switch (image->type) {
             case IMAGING_TYPE_INT32:
                 for (i = x = y = 0; i < n; i++) {
