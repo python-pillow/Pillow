@@ -113,7 +113,7 @@ def test_overstated_length() -> None:
             return float(index + 1)
 
     im = Image.new("L", (4, 4))
-    im.putdata(OverstatedLengthSequence())
+    im.putdata(OverstatedLengthSequence())  # type: ignore[arg-type]
     assert im.get_flattened_data()[:2] == (1, 2)
 
 

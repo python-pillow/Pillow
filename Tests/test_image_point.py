@@ -81,4 +81,4 @@ def test_overstated_length() -> None:
 
     im = Image.new("L", (4, 4))
     with pytest.raises(ValueError):
-        im.point(OverstatedLengthSequence(), "F")
+        im.point(OverstatedLengthSequence(), "F")  # type: ignore[arg-type]
