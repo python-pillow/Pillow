@@ -221,6 +221,26 @@ def test_fromarray(mode: str, data_tp: DataShape, mask: list[int] | None) -> Non
 @pytest.mark.parametrize(
     "mode, data_tp, mask",
     (
+        ("L", DataShape(pyarrow.uint8(), 3, 1), None),
+        ("RGBA", UINT_ARR, None),
+    ),
+)
+def test_fromarray_to_array(
+    mode: str, data_tp: DataShape, mask: list[int] | None
+) -> None:
+    dtype, elt, elts_per_pixel = data_tp
+
+    ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
+    arr = pyarrow.array([elt] * (ct_pixels * elts_per_pixel), type=dtype)
+    img = Image.fromarrow(arr, mode, TEST_IMAGE_SIZE)
+
+    exported = pyarrow.array(img)  # type: ignore[call-overload]
+    _test_img_equals_pyarray(img, exported, mask, elts_per_pixel)
+
+
+@pytest.mark.parametrize(
+    "mode, data_tp, mask",
+    (
         ("LA", UINT32, [0, 3]),
         ("RGB", UINT32, [0, 1, 2]),
         ("RGBA", UINT32, None),
