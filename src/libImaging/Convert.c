@@ -144,18 +144,6 @@ la2lA(UINT8 *out, const UINT8 *in, int xsize) {
 }
 
 static void
-l2la(UINT8 *out, const UINT8 *in, int xsize) {
-    int x;
-    for (x = 0; x < xsize; x++) {
-        UINT8 v = *in++;
-        *out++ = v;
-        *out++ = v;
-        *out++ = v;
-        *out++ = 255;
-    }
-}
-
-static void
 l2rgb(UINT8 *out, const UINT8 *in, int xsize) {
     int x;
     for (x = 0; x < xsize; x++) {
@@ -1212,7 +1200,7 @@ topalette(
         ImagingSectionEnter(&cookie);
         for (y = 0; y < imIn->ysize; y++) {
             if (alpha) {
-                l2la((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
+                l2rgb((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
             } else {
                 memcpy(imOut->image[y], imIn->image[y], imIn->linesize);
             }
@@ -1462,6 +1450,7 @@ static struct {
     {IMAGING_MODE_1, IMAGING_MODE_L, bit2l},
     {IMAGING_MODE_1, IMAGING_MODE_I, bit2i},
     {IMAGING_MODE_1, IMAGING_MODE_F, bit2f},
+    {IMAGING_MODE_1, IMAGING_MODE_LA, bit2rgb},
     {IMAGING_MODE_1, IMAGING_MODE_RGB, bit2rgb},
     {IMAGING_MODE_1, IMAGING_MODE_RGBA, bit2rgb},
     {IMAGING_MODE_1, IMAGING_MODE_RGBX, bit2rgb},
@@ -1470,7 +1459,7 @@ static struct {
     {IMAGING_MODE_1, IMAGING_MODE_HSV, bit2hsv},
 
     {IMAGING_MODE_L, IMAGING_MODE_1, l2bit},
-    {IMAGING_MODE_L, IMAGING_MODE_LA, l2la},
+    {IMAGING_MODE_L, IMAGING_MODE_LA, l2rgb},
     {IMAGING_MODE_L, IMAGING_MODE_I, l2i},
     {IMAGING_MODE_L, IMAGING_MODE_F, l2f},
     {IMAGING_MODE_L, IMAGING_MODE_RGB, l2rgb},
@@ -1633,19 +1622,12 @@ convert(Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int di
     }
 
     if (!convert) {
-#ifdef notdef
-        return (Imaging)ImagingError_ValueError("conversion not supported");
-#else
-        static char buf[100];
-        snprintf(
-            buf,
-            100,
+        return (Imaging)PyErr_Format(
+            PyExc_ValueError,
             "conversion from %.10s to %.10s not supported",
             getModeData(imIn->mode)->name,
             getModeData(mode)->name
         );
-        return (Imaging)ImagingError_ValueError(buf);
-#endif
     }
 
     imOut = ImagingNew2Dirty(mode, imOut, imIn);
@@ -1718,15 +1700,12 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
         }
         g = b = r;
     } else {
-        static char buf[100];
-        snprintf(
-            buf,
-            100,
+        return (Imaging)PyErr_Format(
+            PyExc_ValueError,
             "conversion from %.10s to %.10s not supported in convert_transparent",
             getModeData(imIn->mode)->name,
             getModeData(mode)->name
         );
-        return (Imaging)ImagingError_ValueError(buf);
     }
 
     imOut = ImagingNew2Dirty(mode, imOut, imIn);

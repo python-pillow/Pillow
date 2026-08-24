@@ -37,6 +37,10 @@ on some Python versions.
 
     Typing alias.
 
+.. py:class:: Coords
+
+    Typing alias.
+
 .. py:class:: IntegralLike
 
     Typing alias.

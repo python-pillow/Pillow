@@ -38,7 +38,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     quality, 100 the largest size and best quality.
 
 **subsampling**
-    If present, sets the subsampling for the encoder. Defaults to ``4:2:0``.
+    If present, sets the subsampling for the encoder. If absent, and all frames are in
+    grayscale mode without alpha, ``4:0:0`` is used. Otherwise defaults to ``4:2:0``.
     Options include:
 
     * ``4:0:0``
@@ -449,7 +450,7 @@ Saving
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **sizes**
-    A list of sizes including in this ico file; these are a 2-tuple,
+    A list of sizes included in this ico file; these are a 2-tuple,
     ``(width, height)``; Default to ``[(16, 16), (24, 24), (32, 32), (48, 48),
     (64, 64), (128, 128), (256, 256)]``. Any sizes bigger than the original
     size or 256 will be ignored.

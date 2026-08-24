@@ -4,13 +4,16 @@ import os
 import subprocess
 import sys
 import sysconfig
-from types import ModuleType
 
 import pytest
 
 from PIL import Image
 
 from .helper import assert_image_equal, hopper, is_win32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from types import ModuleType
 
 numpy: ModuleType | None
 try:
@@ -260,6 +263,7 @@ class TestEmbeddable:
     @pytest.mark.xfail(not (sys.version_info >= (3, 13)), reason="failing test")
     @pytest.mark.skipif(not is_win32(), reason="requires Windows")
     def test_embeddable(self) -> None:
+        pytest.importorskip("setuptools", reason="setuptools not installed")
         import ctypes
 
         from setuptools.command import build_ext

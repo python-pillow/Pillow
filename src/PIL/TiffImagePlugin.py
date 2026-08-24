@@ -62,7 +62,7 @@ from .TiffTags import TYPES
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Iterator
-    from typing import NoReturn
+    from typing import NoReturn, Self
 
     from ._typing import Buffer, IntegralLike, StrOrBytesPath
 
@@ -318,8 +318,8 @@ def _limit_signed_rational(
 ##
 # Wrapper for TIFF IFDs.
 
-_load_dispatch = {}
-_write_dispatch = {}
+_load_dispatch: dict[int, tuple[int, _LoaderFunc]] = {}
+_write_dispatch: dict[int, Callable[..., Any]] = {}
 
 
 def _delegate(op: str) -> Any:
@@ -365,7 +365,7 @@ class IFDRational(Rational):
             self._denominator = value.denominator
         else:
             if TYPE_CHECKING:
-                self._numerator = cast(IntegralLike, value)
+                self._numerator = cast("IntegralLike", value)
             else:
                 self._numerator = value
             self._denominator = denominator
@@ -424,7 +424,7 @@ class IFDRational(Rational):
         assert isinstance(_val, (float, Fraction))
         self._val = _val
         if TYPE_CHECKING:
-            self._numerator = cast(IntegralLike, _numerator)
+            self._numerator = cast("IntegralLike", _numerator)
         else:
             self._numerator = _numerator
         assert isinstance(_denominator, int)
@@ -464,9 +464,8 @@ class IFDRational(Rational):
     __ceil__ = _delegate("__ceil__")
     __floor__ = _delegate("__floor__")
     __round__ = _delegate("__round__")
-    # Python >= 3.11
-    if hasattr(Fraction, "__int__"):
-        __int__ = _delegate("__int__")
+    __float__ = _delegate("__float__")
+    __int__ = _delegate("__int__")
 
 
 _LoaderFunc = Callable[["ImageFileDirectory_v2", bytes, bool], Any]
@@ -913,6 +912,9 @@ class ImageFileDirectory_v2(_IFDv2Base):
                     here = fp.tell()
                     (offset,) = self._unpack("Q" if self._bigtiff else "L", data)
                     msg += f" Tag Location: {here} - Data Location: {offset}"
+                    if offset >= 2**63:
+                        warnings.warn("Tag offset too large")
+                        continue
                     fp.seek(offset)
                     data = ImageFile._safe_read(fp, size)
                     fp.seek(here)
@@ -2056,7 +2058,7 @@ class AppendingTiffWriter(io.BytesIO):
             except OSError:
                 self.f = open(fn, "w+b")
         else:
-            self.f = cast(IO[bytes], fn)
+            self.f = cast("IO[bytes]", fn)
             self.close_fp = False
         self.beginning = self.f.tell()
         self.setup()
@@ -2118,7 +2120,7 @@ class AppendingTiffWriter(io.BytesIO):
         self.finalize()
         self.setup()
 
-    def __enter__(self) -> AppendingTiffWriter:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:

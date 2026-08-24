@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from PIL import Image
 
 from .helper import assert_image, assert_image_equal, assert_image_similar, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_sanity() -> None:
@@ -290,36 +292,31 @@ def test_p2pa_palette() -> None:
     assert im_pa.getpalette() == im.getpalette()
 
 
+rgb2xyz_matrix = (
+    0.412453, 0.357580, 0.180423, 0,
+    0.212671, 0.715160, 0.072169, 0,
+    0.019334, 0.119193, 0.950227, 0,
+)  # fmt: skip
+
+
 def test_matrix_illegal_conversion() -> None:
     # Arrange
     im = hopper("CMYK")
-    # fmt: off
-    matrix = (
-        0.412453, 0.357580, 0.180423, 0,
-        0.212671, 0.715160, 0.072169, 0,
-        0.019334, 0.119193, 0.950227, 0)
-    # fmt: on
     assert im.mode != "RGB"
 
     # Act / Assert
     with pytest.raises(ValueError):
-        im.convert(mode="CMYK", matrix=matrix)
+        im.convert(mode="CMYK", matrix=rgb2xyz_matrix)
 
 
 def test_matrix_wrong_mode() -> None:
     # Arrange
     im = hopper("L")
-    # fmt: off
-    matrix = (
-        0.412453, 0.357580, 0.180423, 0,
-        0.212671, 0.715160, 0.072169, 0,
-        0.019334, 0.119193, 0.950227, 0)
-    # fmt: on
     assert im.mode == "L"
 
     # Act / Assert
     with pytest.raises(ValueError):
-        im.convert(mode="L", matrix=matrix)
+        im.convert(mode="L", matrix=rgb2xyz_matrix)
 
 
 @pytest.mark.parametrize("mode", ("RGB", "L"))
@@ -327,17 +324,11 @@ def test_matrix_xyz(mode: str) -> None:
     # Arrange
     im = hopper("RGB")
     im.info["transparency"] = (255, 0, 0)
-    # fmt: off
-    matrix = (
-        0.412453, 0.357580, 0.180423, 0,
-        0.212671, 0.715160, 0.072169, 0,
-        0.019334, 0.119193, 0.950227, 0)
-    # fmt: on
     assert im.mode == "RGB"
 
     # Act
     # Convert an RGB image to the CIE XYZ colour space
-    converted_im = im.convert(mode=mode, matrix=matrix)
+    converted_im = im.convert(mode=mode, matrix=rgb2xyz_matrix)
 
     # Assert
     assert converted_im.mode == mode
@@ -354,12 +345,11 @@ def test_matrix_xyz(mode: str) -> None:
 def test_matrix_identity() -> None:
     # Arrange
     im = hopper("RGB")
-    # fmt: off
     identity_matrix = (
         1, 0, 0, 0,
         0, 1, 0, 0,
-        0, 0, 1, 0)
-    # fmt: on
+        0, 0, 1, 0,
+    )  # fmt: skip
     assert im.mode == "RGB"
 
     # Act

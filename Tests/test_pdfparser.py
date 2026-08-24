@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import time
+import zlib
+from io import BytesIO
 
 import pytest
 
@@ -61,7 +63,7 @@ def test_parsing() -> None:
     assert PdfParser.get_value(b"(\\53a)", 0) == (b"\x2ba", 6)
     assert PdfParser.get_value(b"(\\1111)", 0) == (b"\x491", 7)
     assert PdfParser.get_value(b" 123 (", 0) == (123, 4)
-    assert round(abs(PdfParser.get_value(b" 123.4 %", 0)[0] - 123.4), 7) == 0
+    assert PdfParser.get_value(b" 123.4 %", 0)[0] == pytest.approx(123.4)
     assert PdfParser.get_value(b" 123.4 %", 0)[1] == 6
     with pytest.raises(PdfFormatError):
         PdfParser.get_value(b"]", 0)
@@ -95,6 +97,16 @@ def test_parsing() -> None:
             assert time.strftime("%Y%m%d%H%M%S", getattr(d, name)) == value
 
 
+def test_pdfstream_flatedecode() -> None:
+    d = PdfDict({b"Filter": b"FlateDecode"})
+    buf = zlib.compress(b"test")
+    s = PdfStream(d, buf)
+    assert s.decode() == b"test"
+
+    with pytest.raises(ValueError, match="Decompressed data too large"):
+        s.decode(3)
+
+
 def test_pdf_repr() -> None:
     assert bytes(IndirectReference(1, 2)) == b"1 2 R"
     assert bytes(IndirectObjectDef(*IndirectReference(1, 2))) == b"1 2 obj"
@@ -119,6 +131,31 @@ def test_pdf_repr() -> None:
     assert pdf_repr(b"a)/b\\(c") == rb"(a\)/b\\\(c)"
     assert pdf_repr([123, True, {"a": PdfName(b"b")}]) == b"[ 123 true <<\n/a /b\n>> ]"
     assert pdf_repr(PdfBinary(b"\x90\x1f\xa0")) == b"<901FA0>"
+
+
+def test_linearize_page_tree() -> None:
+    b = BytesIO()
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        pages_id = pdf.next_object_id(0)
+        page_ids = [pdf.next_object_id(0) for _ in range(3)]
+        for page_id in page_ids:
+            pdf.write_page(page_id)
+        pdf.write_obj(
+            pages_id,
+            Type=PdfName(b"Pages"),
+            Count=2,
+            Kids=[page_ids[0], page_ids[1]],
+        )
+
+        pdf.pages = [pages_id, page_ids[2]]
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
+
+    with PdfParser(f=b) as pdf:
+        assert pdf.linearize_page_tree() == page_ids
 
 
 def test_duplicate_xref_entry() -> None:

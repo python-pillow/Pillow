@@ -4,9 +4,7 @@ Tests for resize functionality.
 
 from __future__ import annotations
 
-from collections.abc import Generator
 from itertools import permutations
-from pathlib import Path
 
 import pytest
 
@@ -19,6 +17,11 @@ from .helper import (
     hopper,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
 
 
 class TestImagingCoreResize:
@@ -179,7 +182,7 @@ class TestImagingCoreResize:
 
 
 @pytest.fixture
-def gradients_image() -> Generator[ImageFile.ImageFile, None, None]:
+def gradients_image() -> Generator[ImageFile.ImageFile]:
     with Image.open("Tests/images/radial_gradients.png") as im:
         im.load()
     try:

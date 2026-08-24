@@ -24,11 +24,14 @@ from __future__ import annotations
 
 import os
 import struct
-from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import o8
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 
 def _accept(prefix: bytes) -> bool:
@@ -198,7 +201,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 class SGI16Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         assert self.fd is not None
         assert self.im is not None
 

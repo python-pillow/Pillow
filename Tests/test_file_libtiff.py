@@ -6,8 +6,7 @@ import itertools
 import os
 import re
 import sys
-from pathlib import Path
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 import pytest
 
@@ -31,6 +30,11 @@ from .helper import (
     mark_if_feature_version,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from typing import Any
 
 
 @skip_unless_feature("libtiff")
@@ -321,7 +325,7 @@ class TestFileLibTiff(LibTiffTestCase):
                         and libtiff
                     ):
                         # libtiff does not support real RATIONALS
-                        assert round(abs(float(reloaded_value) - float(value)), 7) == 0
+                        assert reloaded_value == pytest.approx(value)
                         continue
 
                     assert reloaded_value == value
@@ -376,6 +380,21 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(out) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2[37000] == 100
+
+    @pytest.mark.parametrize("tagtype", (TiffTags.BYTE, TiffTags.ASCII))
+    def test_non_bytes(
+        self, tagtype: int, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[37000] = 100
+        ifd.tagtype[37000] = tagtype
+
+        out = tmp_path / "temp.tif"
+        im = Image.new("L", (1, 1))
+        with pytest.raises(ValueError, match="Incorrect tag value type"):
+            im.save(out, tiffinfo=ifd)
 
     def test_inknames_tag(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
