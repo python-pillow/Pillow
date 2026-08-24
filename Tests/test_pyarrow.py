@@ -219,23 +219,35 @@ def test_fromarray(mode: str, data_tp: DataShape, mask: list[int] | None) -> Non
 
 
 @pytest.mark.parametrize(
-    "mode, data_tp, mask",
+    "mode, dtype, mask",
     (
-        ("L", DataShape(pyarrow.uint8(), 3, 1), None),
-        ("RGBA", UINT_ARR, None),
+        ("L", pyarrow.uint8(), None),
+        ("I", pyarrow.int32(), None),
+        ("F", pyarrow.float32(), None),
+        ("LA", fl_uint8_4_type, [0, 3]),
+        ("RGB", fl_uint8_4_type, [0, 1, 2]),
+        ("RGBA", fl_uint8_4_type, None),
     ),
 )
 def test_fromarray_to_array(
-    mode: str, data_tp: DataShape, mask: list[int] | None
+    mode: str, dtype: pyarrow.DataType, mask: list[int] | None
 ) -> None:
-    dtype, elt, elts_per_pixel = data_tp
+    img = hopper(mode)
 
-    ct_pixels = TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1]
-    arr = pyarrow.array([elt] * (ct_pixels * elts_per_pixel), type=dtype)
-    img = Image.fromarrow(arr, mode, TEST_IMAGE_SIZE)
+    borrowed = Image.fromarrow(pyarrow.array(img), mode, img.size)  # type: ignore[call-overload]
 
-    exported = pyarrow.array(img)  # type: ignore[call-overload]
-    _test_img_equals_pyarray(img, exported, mask, elts_per_pixel)
+    arr = pyarrow.array(borrowed)  # type: ignore[call-overload]
+    _test_img_equals_pyarray(img, arr, mask)
+    assert arr.type == dtype
+
+
+def test_fromarray_interleaved_to_array() -> None:
+    img = hopper("RGBA")
+
+    arr = pyarrow.array(list(img.tobytes()), type=pyarrow.uint8())
+    borrowed = Image.fromarrow(arr, "RGBA", img.size)
+
+    _test_img_equals_pyarray(img, pyarrow.array(borrowed), None)  # type: ignore[call-overload]
 
 
 @pytest.mark.parametrize(
