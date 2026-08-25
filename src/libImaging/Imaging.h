@@ -498,7 +498,17 @@ ImagingDrawEllipse(
     int op
 );
 extern int
-ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void *ink, int op);
+ImagingDrawLine(
+    Imaging im,
+    int x0,
+    int y0,
+    int x1,
+    int y1,
+    const void *ink,
+    int op,
+    PyObject *dash,
+    int *dash_offset
+);
 extern int
 ImagingDrawWideLine(
     Imaging im,
@@ -536,7 +546,8 @@ ImagingDrawPolygon(
     int fill,
     int width,
     int op,
-    Imaging mask
+    Imaging mask,
+    PyObject *dash
 );
 extern int
 ImagingDrawRectangle(

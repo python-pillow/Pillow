@@ -1782,8 +1782,8 @@ def test_dash_line() -> None:
     draw = ImageDraw.Draw(im)
 
     # Act
-    draw.line([(10, 90), (90, 90)], "green", 2, dash=(10, 5))
-    draw.line([(10, 10), (50, 50), (90, 10)], "green", 2, dash=(8, 4))
+    draw.line([(10, 90), (90, 90)], "green", dash=(10, 5))
+    draw.line([(10, 10), (50, 50), (90, 10)], "green", dash=(8, 4))
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_dash_line.png")
@@ -1798,14 +1798,12 @@ def test_dash_polygon() -> None:
     draw.polygon(
         [(10, 10), (90, 10), (10, 90)],
         outline="green",
-        width=1,
         dash=(10, 5),
     )
     draw.polygon(
         [(20, 20), (60, 20), (20, 60)],
         fill="red",
         outline="green",
-        width=1,
         dash=(10, 5),
     )
 
@@ -1819,8 +1817,8 @@ def test_dash_rectangle() -> None:
     draw = ImageDraw.Draw(im)
 
     # Act
-    draw.rectangle([10, 10, 90, 90], outline="green", width=1, dash=(10, 5))
-    draw.rectangle([30, 30, 70, 70], fill="red", outline="green", width=1, dash=(10, 5))
+    draw.rectangle([10, 10, 90, 90], outline="green", dash=(10, 5))
+    draw.rectangle([30, 30, 70, 70], fill="red", outline="green", dash=(10, 5))
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_dash_rectangle.png")

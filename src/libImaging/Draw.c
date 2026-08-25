@@ -205,8 +205,44 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
     }
 }
 
+static inline int
+should_draw_dash(int i, int *dash_offset, PyObject *dash) {
+    if (dash == NULL) {
+        return 1;
+    }
+    i += *dash_offset;
+    int total = 0;
+    int tuple_index = -1;
+    int tuple_size = PyTuple_GET_SIZE(dash);
+    while (total <= i) {
+        tuple_index += 1;
+        if (tuple_index == tuple_size) {
+            tuple_index = 0;
+        }
+        PyObject *value = PyTuple_GetItem(dash, tuple_index);
+        if (!PyLong_Check(value)) {
+            return 0;
+        }
+        int v = PyLong_AsLongLong(value);
+        if (v == -1 && PyErr_Occurred()) {
+            return 0;
+        }
+        total += v;
+    }
+    return tuple_index % 2 == 0;
+}
+
 static inline void
-line8(Imaging im, int x0, int y0, int x1, int y1, int ink) {
+line8(
+    Imaging im,
+    int x0,
+    int y0,
+    int x1,
+    int y1,
+    int ink,
+    PyObject *dash,
+    int *dash_offset
+) {
     int i, n, e;
     int dx, dy;
     int xs, ys;
@@ -230,15 +266,25 @@ line8(Imaging im, int x0, int y0, int x1, int y1, int ink) {
     if (dx == 0) {
         /* vertical */
         for (i = 0; i < dy; i++) {
-            point8(im, x0, y0, ink);
+            if (should_draw_dash(i, dash_offset, dash)) {
+                point8(im, x0, y0, ink);
+            }
             y0 += ys;
+        }
+        if (dash != NULL) {
+            *dash_offset += dy;
         }
 
     } else if (dy == 0) {
         /* horizontal */
         for (i = 0; i < dx; i++) {
-            point8(im, x0, y0, ink);
+            if (should_draw_dash(i, dash_offset, dash)) {
+                point8(im, x0, y0, ink);
+            }
             x0 += xs;
+        }
+        if (dash != NULL) {
+            *dash_offset += dx;
         }
 
     } else if (dx > dy) {
@@ -249,13 +295,18 @@ line8(Imaging im, int x0, int y0, int x1, int y1, int ink) {
         dx += dx;
 
         for (i = 0; i < n; i++) {
-            point8(im, x0, y0, ink);
+            if (should_draw_dash(i, dash_offset, dash)) {
+                point8(im, x0, y0, ink);
+            }
             if (e >= 0) {
                 y0 += ys;
                 e -= dx;
             }
             e += dy;
             x0 += xs;
+        }
+        if (dash != NULL) {
+            *dash_offset += n;
         }
 
     } else {
@@ -266,19 +317,33 @@ line8(Imaging im, int x0, int y0, int x1, int y1, int ink) {
         dy += dy;
 
         for (i = 0; i < n; i++) {
-            point8(im, x0, y0, ink);
+            if (should_draw_dash(i, dash_offset, dash)) {
+                point8(im, x0, y0, ink);
+            }
             if (e >= 0) {
                 x0 += xs;
                 e -= dy;
             }
             e += dx;
             y0 += ys;
+        }
+        if (dash != NULL) {
+            *dash_offset += n;
         }
     }
 }
 
 static inline void
-line32(Imaging im, int x0, int y0, int x1, int y1, int ink) {
+line32(
+    Imaging im,
+    int x0,
+    int y0,
+    int x1,
+    int y1,
+    int ink,
+    PyObject *dash,
+    int *dash_offset
+) {
     int i, n, e;
     int dx, dy;
     int xs, ys;
@@ -302,15 +367,25 @@ line32(Imaging im, int x0, int y0, int x1, int y1, int ink) {
     if (dx == 0) {
         /* vertical */
         for (i = 0; i < dy; i++) {
-            point32(im, x0, y0, ink);
+            if (should_draw_dash(i, dash_offset, dash)) {
+                point32(im, x0, y0, ink);
+            }
             y0 += ys;
+        }
+        if (dash != NULL) {
+            *dash_offset += dy;
         }
 
     } else if (dy == 0) {
         /* horizontal */
         for (i = 0; i < dx; i++) {
-            point32(im, x0, y0, ink);
+            if (should_draw_dash(i, dash_offset, dash)) {
+                point32(im, x0, y0, ink);
+            }
             x0 += xs;
+        }
+        if (dash != NULL) {
+            *dash_offset += dx;
         }
 
     } else if (dx > dy) {
@@ -321,13 +396,18 @@ line32(Imaging im, int x0, int y0, int x1, int y1, int ink) {
         dx += dx;
 
         for (i = 0; i < n; i++) {
-            point32(im, x0, y0, ink);
+            if (should_draw_dash(i, dash_offset, dash)) {
+                point32(im, x0, y0, ink);
+            }
             if (e >= 0) {
                 y0 += ys;
                 e -= dx;
             }
             e += dy;
             x0 += xs;
+        }
+        if (dash != NULL) {
+            *dash_offset += n;
         }
 
     } else {
@@ -338,19 +418,33 @@ line32(Imaging im, int x0, int y0, int x1, int y1, int ink) {
         dy += dy;
 
         for (i = 0; i < n; i++) {
-            point32(im, x0, y0, ink);
+            if (should_draw_dash(i, dash_offset, dash)) {
+                point32(im, x0, y0, ink);
+            }
             if (e >= 0) {
                 x0 += xs;
                 e -= dy;
             }
             e += dx;
             y0 += ys;
+        }
+        if (dash != NULL) {
+            *dash_offset += n;
         }
     }
 }
 
 static inline void
-line32rgba(Imaging im, int x0, int y0, int x1, int y1, int ink) {
+line32rgba(
+    Imaging im,
+    int x0,
+    int y0,
+    int x1,
+    int y1,
+    int ink,
+    PyObject *dash,
+    int *dash_offset
+) {
     int i, n, e;
     int dx, dy;
     int xs, ys;
@@ -374,15 +468,25 @@ line32rgba(Imaging im, int x0, int y0, int x1, int y1, int ink) {
     if (dx == 0) {
         /* vertical */
         for (i = 0; i < dy; i++) {
-            point32rgba(im, x0, y0, ink);
+            if (should_draw_dash(i, dash_offset, dash)) {
+                point32rgba(im, x0, y0, ink);
+            }
             y0 += ys;
+        }
+        if (dash != NULL) {
+            *dash_offset += dy;
         }
 
     } else if (dy == 0) {
         /* horizontal */
         for (i = 0; i < dx; i++) {
-            point32rgba(im, x0, y0, ink);
+            if (should_draw_dash(i, dash_offset, dash)) {
+                point32rgba(im, x0, y0, ink);
+            }
             x0 += xs;
+        }
+        if (dash != NULL) {
+            *dash_offset += dx;
         }
 
     } else if (dx > dy) {
@@ -393,13 +497,18 @@ line32rgba(Imaging im, int x0, int y0, int x1, int y1, int ink) {
         dx += dx;
 
         for (i = 0; i < n; i++) {
-            point32rgba(im, x0, y0, ink);
+            if (should_draw_dash(i, dash_offset, dash)) {
+                point32rgba(im, x0, y0, ink);
+            }
             if (e >= 0) {
                 y0 += ys;
                 e -= dx;
             }
             e += dy;
             x0 += xs;
+        }
+        if (dash != NULL) {
+            *dash_offset += n;
         }
 
     } else {
@@ -410,13 +519,18 @@ line32rgba(Imaging im, int x0, int y0, int x1, int y1, int ink) {
         dy += dy;
 
         for (i = 0; i < n; i++) {
-            point32rgba(im, x0, y0, ink);
+            if (should_draw_dash(i, dash_offset, dash)) {
+                point32rgba(im, x0, y0, ink);
+            }
             if (e >= 0) {
                 x0 += xs;
                 e -= dy;
             }
             e += dx;
             y0 += ys;
+        }
+        if (dash != NULL) {
+            *dash_offset += n;
         }
     }
 }
@@ -664,7 +778,16 @@ add_edge(Edge *e, int x0, int y0, int x1, int y1) {
 typedef struct {
     void (*point)(Imaging im, int x, int y, int ink);
     void (*hline)(Imaging im, int x0, int y0, int x1, int ink, Imaging mask);
-    void (*line)(Imaging im, int x0, int y0, int x1, int y1, int ink);
+    void (*line)(
+        Imaging im,
+        int x0,
+        int y0,
+        int x1,
+        int y1,
+        int ink,
+        PyObject *dash,
+        int *dash_offset
+    );
 } DRAW;
 
 DRAW draw8 = {point8, hline8, line8};
@@ -701,13 +824,23 @@ ImagingDrawPoint(Imaging im, int x0, int y0, const void *ink_, int op) {
 }
 
 int
-ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void *ink_, int op) {
+ImagingDrawLine(
+    Imaging im,
+    int x0,
+    int y0,
+    int x1,
+    int y1,
+    const void *ink_,
+    int op,
+    PyObject *dash,
+    int *dash_offset
+) {
     DRAW *draw;
     INT32 ink;
 
     DRAWINIT();
 
-    draw->line(im, x0, y0, x1, y1, ink);
+    draw->line(im, x0, y0, x1, y1, ink, dash, dash_offset);
 
     return 0;
 }
@@ -816,8 +949,8 @@ ImagingDrawRectangle(
         for (i = 0; i < width; i++) {
             draw->hline(im, x0, y0 + i, x1, ink, NULL);
             draw->hline(im, x0, y1 - i, x1, ink, NULL);
-            draw->line(im, x1 - i, y0 + width, x1 - i, y1 - width + 1, ink);
-            draw->line(im, x0 + i, y0 + width, x0 + i, y1 - width + 1, ink);
+            draw->line(im, x1 - i, y0 + width, x1 - i, y1 - width + 1, ink, NULL, NULL);
+            draw->line(im, x0 + i, y0 + width, x0 + i, y1 - width + 1, ink, NULL, NULL);
         }
     }
 
@@ -833,7 +966,8 @@ ImagingDrawPolygon(
     int fill,
     int width,
     int op,
-    Imaging mask
+    Imaging mask,
+    PyObject *dash
 ) {
     int i, n, x0, y0, x1, y1;
     DRAW *draw;
@@ -883,12 +1017,22 @@ ImagingDrawPolygon(
     } else {
         /* Outline */
         if (width == 1) {
+            int dash_offset = 0;
             for (i = 0; i < count - 1; i++) {
                 draw->line(
-                    im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink
+                    im,
+                    xy[i * 2],
+                    xy[i * 2 + 1],
+                    xy[i * 2 + 2],
+                    xy[i * 2 + 3],
+                    ink,
+                    dash,
+                    &dash_offset
                 );
             }
-            draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink);
+            draw->line(
+                im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink, dash, &dash_offset
+            );
         } else {
             for (i = 0; i < count - 1; i++) {
                 ImagingDrawWideLine(

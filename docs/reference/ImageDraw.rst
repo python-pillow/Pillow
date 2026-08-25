@@ -307,10 +307,10 @@ Methods
         The dash pattern specifies the lengths of alternating drawn and blank segments
         (e.g. ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd number of
         values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
-        skips 2, draws 3, skips 1, draws 2, and so on). When ``dash`` is set, ``joint``
-        is ignored.
+        skips 2, draws 3, skips 1, draws 2, and so on). When ``dash`` is set, ``width``
+        and ``joint`` are ignored.
 
-        .. versionadded:: 12.3.0
+        .. versionadded:: 13.0.0
 
 .. py:method:: ImageDraw.pieslice(xy, start, end, fill=None, outline=None, width=1)
 
@@ -354,9 +354,10 @@ Methods
         The dash pattern specifies the lengths of alternating drawn and blank segments
         (e.g. ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd number of
         values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
-        skips 2, draws 3, skips 1, draws 2, and so on).
+        skips 2, draws 3, skips 1, draws 2, and so on). When ``dash`` is set, ``width``
+        is ignored.
 
-        .. versionadded:: 12.3.0
+        .. versionadded:: 13.0.0
 
 
 .. py:method:: ImageDraw.regular_polygon(bounding_circle, n_sides, rotation=0, fill=None, outline=None, width=1)
@@ -393,9 +394,10 @@ Methods
         The dash pattern specifies the lengths of alternating drawn and blank segments
         (e.g. ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd number of
         values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
-        skips 2, draws 3, skips 1, draws 2, and so on).
+        skips 2, draws 3, skips 1, draws 2, and so on). When ``dash`` is set, ``width``
+        is ignored.
 
-        .. versionadded:: 12.3.0
+        .. versionadded:: 13.0.0
 
 .. py:method:: ImageDraw.rounded_rectangle(xy, radius=0, fill=None, outline=None, width=1, corners=None)
 
