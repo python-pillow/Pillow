@@ -207,9 +207,6 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
 
 static inline int
 should_draw_dash(int i, int *dash_offset, PyObject *dash) {
-    if (dash == NULL) {
-        return 1;
-    }
     i += *dash_offset;
     int total = 0;
     int tuple_index = -1;
@@ -265,26 +262,36 @@ line8(
 
     if (dx == 0) {
         /* vertical */
-        for (i = 0; i < dy; i++) {
-            if (should_draw_dash(i, dash_offset, dash)) {
-                point8(im, x0, y0, ink);
-            }
-            y0 += ys;
-        }
         if (dash != NULL) {
+            for (i = 0; i < dy; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point8(im, x0, y0, ink);
+                }
+                y0 += ys;
+            }
             *dash_offset += dy;
+        } else {
+            for (i = 0; i < dy; i++) {
+                point8(im, x0, y0, ink);
+                y0 += ys;
+            }
         }
 
     } else if (dy == 0) {
         /* horizontal */
-        for (i = 0; i < dx; i++) {
-            if (should_draw_dash(i, dash_offset, dash)) {
-                point8(im, x0, y0, ink);
-            }
-            x0 += xs;
-        }
         if (dash != NULL) {
+            for (i = 0; i < dx; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point8(im, x0, y0, ink);
+                }
+                x0 += xs;
+            }
             *dash_offset += dx;
+        } else {
+            for (i = 0; i < dx; i++) {
+                point8(im, x0, y0, ink);
+                x0 += xs;
+            }
         }
 
     } else if (dx > dy) {
@@ -294,19 +301,29 @@ line8(
         e = dy - dx;
         dx += dx;
 
-        for (i = 0; i < n; i++) {
-            if (should_draw_dash(i, dash_offset, dash)) {
-                point8(im, x0, y0, ink);
-            }
-            if (e >= 0) {
-                y0 += ys;
-                e -= dx;
-            }
-            e += dy;
-            x0 += xs;
-        }
         if (dash != NULL) {
+            for (i = 0; i < n; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point8(im, x0, y0, ink);
+                }
+                if (e >= 0) {
+                    y0 += ys;
+                    e -= dx;
+                }
+                e += dy;
+                x0 += xs;
+            }
             *dash_offset += n;
+        } else {
+            for (i = 0; i < n; i++) {
+                point8(im, x0, y0, ink);
+                if (e >= 0) {
+                    y0 += ys;
+                    e -= dx;
+                }
+                e += dy;
+                x0 += xs;
+            }
         }
 
     } else {
@@ -316,19 +333,29 @@ line8(
         e = dx - dy;
         dy += dy;
 
-        for (i = 0; i < n; i++) {
-            if (should_draw_dash(i, dash_offset, dash)) {
-                point8(im, x0, y0, ink);
-            }
-            if (e >= 0) {
-                x0 += xs;
-                e -= dy;
-            }
-            e += dx;
-            y0 += ys;
-        }
         if (dash != NULL) {
+            for (i = 0; i < n; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point8(im, x0, y0, ink);
+                }
+                if (e >= 0) {
+                    x0 += xs;
+                    e -= dy;
+                }
+                e += dx;
+                y0 += ys;
+            }
             *dash_offset += n;
+        } else {
+            for (i = 0; i < n; i++) {
+                point8(im, x0, y0, ink);
+                if (e >= 0) {
+                    x0 += xs;
+                    e -= dy;
+                }
+                e += dx;
+                y0 += ys;
+            }
         }
     }
 }
@@ -366,26 +393,36 @@ line32(
 
     if (dx == 0) {
         /* vertical */
-        for (i = 0; i < dy; i++) {
-            if (should_draw_dash(i, dash_offset, dash)) {
-                point32(im, x0, y0, ink);
-            }
-            y0 += ys;
-        }
         if (dash != NULL) {
+            for (i = 0; i < dy; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point32(im, x0, y0, ink);
+                }
+                y0 += ys;
+            }
             *dash_offset += dy;
+        } else {
+            for (i = 0; i < dy; i++) {
+                point32(im, x0, y0, ink);
+                y0 += ys;
+            }
         }
 
     } else if (dy == 0) {
         /* horizontal */
-        for (i = 0; i < dx; i++) {
-            if (should_draw_dash(i, dash_offset, dash)) {
-                point32(im, x0, y0, ink);
-            }
-            x0 += xs;
-        }
         if (dash != NULL) {
+            for (i = 0; i < dx; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point32(im, x0, y0, ink);
+                }
+                x0 += xs;
+            }
             *dash_offset += dx;
+        } else {
+            for (i = 0; i < dx; i++) {
+                point32(im, x0, y0, ink);
+                x0 += xs;
+            }
         }
 
     } else if (dx > dy) {
@@ -395,19 +432,29 @@ line32(
         e = dy - dx;
         dx += dx;
 
-        for (i = 0; i < n; i++) {
-            if (should_draw_dash(i, dash_offset, dash)) {
-                point32(im, x0, y0, ink);
-            }
-            if (e >= 0) {
-                y0 += ys;
-                e -= dx;
-            }
-            e += dy;
-            x0 += xs;
-        }
         if (dash != NULL) {
+            for (i = 0; i < n; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point32(im, x0, y0, ink);
+                }
+                if (e >= 0) {
+                    y0 += ys;
+                    e -= dx;
+                }
+                e += dy;
+                x0 += xs;
+            }
             *dash_offset += n;
+        } else {
+            for (i = 0; i < n; i++) {
+                point32(im, x0, y0, ink);
+                if (e >= 0) {
+                    y0 += ys;
+                    e -= dx;
+                }
+                e += dy;
+                x0 += xs;
+            }
         }
 
     } else {
@@ -417,19 +464,29 @@ line32(
         e = dx - dy;
         dy += dy;
 
-        for (i = 0; i < n; i++) {
-            if (should_draw_dash(i, dash_offset, dash)) {
-                point32(im, x0, y0, ink);
-            }
-            if (e >= 0) {
-                x0 += xs;
-                e -= dy;
-            }
-            e += dx;
-            y0 += ys;
-        }
         if (dash != NULL) {
+            for (i = 0; i < n; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point32(im, x0, y0, ink);
+                }
+                if (e >= 0) {
+                    x0 += xs;
+                    e -= dy;
+                }
+                e += dx;
+                y0 += ys;
+            }
             *dash_offset += n;
+        } else {
+            for (i = 0; i < n; i++) {
+                point32(im, x0, y0, ink);
+                if (e >= 0) {
+                    x0 += xs;
+                    e -= dy;
+                }
+                e += dx;
+                y0 += ys;
+            }
         }
     }
 }
@@ -467,26 +524,36 @@ line32rgba(
 
     if (dx == 0) {
         /* vertical */
-        for (i = 0; i < dy; i++) {
-            if (should_draw_dash(i, dash_offset, dash)) {
-                point32rgba(im, x0, y0, ink);
-            }
-            y0 += ys;
-        }
         if (dash != NULL) {
+            for (i = 0; i < dy; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point32rgba(im, x0, y0, ink);
+                }
+                y0 += ys;
+            }
             *dash_offset += dy;
+        } else {
+            for (i = 0; i < dy; i++) {
+                point32rgba(im, x0, y0, ink);
+                y0 += ys;
+            }
         }
 
     } else if (dy == 0) {
         /* horizontal */
-        for (i = 0; i < dx; i++) {
-            if (should_draw_dash(i, dash_offset, dash)) {
-                point32rgba(im, x0, y0, ink);
-            }
-            x0 += xs;
-        }
         if (dash != NULL) {
+            for (i = 0; i < dx; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point32rgba(im, x0, y0, ink);
+                }
+                x0 += xs;
+            }
             *dash_offset += dx;
+        } else {
+            for (i = 0; i < dx; i++) {
+                point32rgba(im, x0, y0, ink);
+                x0 += xs;
+            }
         }
 
     } else if (dx > dy) {
@@ -496,19 +563,29 @@ line32rgba(
         e = dy - dx;
         dx += dx;
 
-        for (i = 0; i < n; i++) {
-            if (should_draw_dash(i, dash_offset, dash)) {
-                point32rgba(im, x0, y0, ink);
-            }
-            if (e >= 0) {
-                y0 += ys;
-                e -= dx;
-            }
-            e += dy;
-            x0 += xs;
-        }
         if (dash != NULL) {
+            for (i = 0; i < n; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point32rgba(im, x0, y0, ink);
+                }
+                if (e >= 0) {
+                    y0 += ys;
+                    e -= dx;
+                }
+                e += dy;
+                x0 += xs;
+            }
             *dash_offset += n;
+        } else {
+            for (i = 0; i < n; i++) {
+                point32rgba(im, x0, y0, ink);
+                if (e >= 0) {
+                    y0 += ys;
+                    e -= dx;
+                }
+                e += dy;
+                x0 += xs;
+            }
         }
 
     } else {
@@ -518,19 +595,29 @@ line32rgba(
         e = dx - dy;
         dy += dy;
 
-        for (i = 0; i < n; i++) {
-            if (should_draw_dash(i, dash_offset, dash)) {
-                point32rgba(im, x0, y0, ink);
-            }
-            if (e >= 0) {
-                x0 += xs;
-                e -= dy;
-            }
-            e += dx;
-            y0 += ys;
-        }
         if (dash != NULL) {
+            for (i = 0; i < n; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point32rgba(im, x0, y0, ink);
+                }
+                if (e >= 0) {
+                    x0 += xs;
+                    e -= dy;
+                }
+                e += dx;
+                y0 += ys;
+            }
             *dash_offset += n;
+        } else {
+            for (i = 0; i < n; i++) {
+                point32rgba(im, x0, y0, ink);
+                if (e >= 0) {
+                    x0 += xs;
+                    e -= dy;
+                }
+                e += dx;
+                y0 += ys;
+            }
         }
     }
 }
