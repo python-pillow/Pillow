@@ -869,6 +869,15 @@ class TestFileLibTiff(LibTiffTestCase):
             assert im.size == (10, 10)
             im.load()
 
+    def test_seek_remove_palette(self) -> None:
+        with Image.open("Tests/images/no_rows_per_strip.tif") as im:
+            assert im.mode == "P"
+            assert im.palette is not None
+
+            im.seek(1)
+            assert im.mode == "F"
+            assert im.palette is None
+
     def test_save_tiff_with_jpegtables(self, tmp_path: Path) -> None:
         # Arrange
         outfile = tmp_path / "temp.tif"
