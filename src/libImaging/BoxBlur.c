@@ -244,8 +244,11 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n)
     if (n < 1) {
         return ImagingError_ValueError("number of passes must be greater than zero");
     }
-    if (xradius < 0 || yradius < 0) {
+    if (!(xradius >= 0) || !(yradius >= 0)) {
         return ImagingError_ValueError("radius must be >= 0");
+    }
+    if (xradius >= INT_MAX || yradius >= INT_MAX) {
+        return ImagingError_ValueError("radius is too large");
     }
 
     if (imIn->mode != imOut->mode || imIn->type != imOut->type ||
