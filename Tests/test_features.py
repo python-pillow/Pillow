@@ -87,6 +87,23 @@ def test_supported_modules() -> None:
     assert isinstance(features.get_supported(), list)
 
 
+@skip_unless_feature("freetype2")
+def test_supported_freetype_features() -> None:
+    supported = features.get_supported_freetype_features()
+    for feature in supported:
+        assert features.check_freetype_feature(feature)
+
+
+@skip_unless_feature("freetype2")
+def test_freetype_gpos_kerning_matches_probe() -> None:
+    from PIL import ImageFont
+
+    # the built-in font has pair kerning in GPOS and no legacy 'kern' table,
+    # so FreeType reports kerning data for it only when built to read GPOS
+    font = ImageFont.load_default()
+    assert features.check_freetype_feature("gpos_kerning") == font.font.has_kerning
+
+
 def test_unsupported_codec() -> None:
     # Arrange
     codec = "unsupported_codec"

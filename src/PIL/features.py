@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import collections
+import functools
 import os
 import sys
 import warnings
@@ -121,6 +122,68 @@ def get_supported_codecs() -> list[str]:
     return [f for f in codecs if check_codec(f)]
 
 
+@functools.cache
+def _enabled_freetype_features() -> frozenset[str]:
+    """Get the compiled-in FreeType features that affect Pillow."""
+    if not check_module("freetype2"):
+        return frozenset()
+
+    from PIL import _imagingft
+
+    return frozenset(getattr(_imagingft, "freetype2_features", "").split())
+
+
+@functools.cache
+def _freetype_reads_gpos_kerning() -> bool | None:
+    """
+    Ask the loaded FreeType whether it can read kerning out of ``GPOS``.
+
+    Pillow's built-in font has pair kerning in ``GPOS`` and no legacy ``kern``
+    table, so FreeType only reports kerning data for it when it was built with
+    ``TT_CONFIG_OPTION_GPOS_KERNING``.
+
+    :returns: ``True`` or ``False``, or ``None`` if the probe could not be run.
+    """
+    if not check_module("freetype2"):
+        return None
+
+    from . import ImageFont
+
+    try:
+        font = ImageFont.load_default()
+        return bool(font.font.has_kerning)
+    except (AttributeError, OSError):
+        return None
+
+
+def check_freetype_feature(feature: str) -> bool:
+    """
+    Checks whether a FreeType feature that affects Pillow is enabled.
+
+    :param feature: The feature to check for.
+    :returns: ``True`` if enabled, ``False`` otherwise.
+    """
+    if feature == "gpos_kerning":
+        # This requires loading the embedded font.
+        probed = _freetype_reads_gpos_kerning()
+        if probed is not None:
+            return probed
+
+    return feature in _enabled_freetype_features()
+
+
+def get_supported_freetype_features() -> list[str]:
+    """
+    :returns: A sorted list of all enabled FreeType build features.
+    """
+    supported = set(_enabled_freetype_features())
+    if check_freetype_feature("gpos_kerning"):
+        supported.add("gpos_kerning")
+    else:
+        supported.discard("gpos_kerning")
+    return sorted(supported)
+
+
 features: dict[str, tuple[str, str, str | None]] = {
     "raqm": ("PIL._imagingft", "HAVE_RAQM", "raqm_version"),
     "fribidi": ("PIL._imagingft", "HAVE_FRIBIDI", "fribidi_version"),
@@ -226,6 +289,19 @@ def get_supported() -> list[str]:
     return ret
 
 
+def _print_freetype_build(out: IO[str]) -> None:
+    """Report how the loaded FreeType was built, for bug reports."""
+    from PIL import _imagingft
+
+    interpreter_version = getattr(_imagingft, "freetype2_interpreter_version", None)
+    if interpreter_version is not None:
+        print(f"      TrueType interpreter version {interpreter_version}", file=out)
+
+    enabled = get_supported_freetype_features()
+    if enabled:
+        print("      FreeType built with", ", ".join(enabled), file=out)
+
+
 def pilinfo(out: IO[str] | None = None, supported_formats: bool = True) -> None:
     """
     Prints information about this installation of Pillow.
@@ -309,6 +385,8 @@ def pilinfo(out: IO[str] | None = None, supported_formats: bool = True) -> None:
                 print("---", feature, "support ok,", t, v, file=out)
             else:
                 print("---", feature, "support ok", file=out)
+            if name == "freetype2":
+                _print_freetype_build(out)
         else:
             print("***", feature, "support not installed", file=out)
     print("-" * 68, file=out)

@@ -64,3 +64,30 @@ Support for the following features can be checked:
 .. autofunction:: PIL.features.check_feature
 .. autofunction:: PIL.features.version_feature
 .. autofunction:: PIL.features.get_supported_features
+
+FreeType build options
+----------------------
+
+FreeType is highly configurable, and several of its build options change what Pillow can do with a font.
+
+The following build options are mapped to the ``get_supported_freetype_features`` function:
+
+* ``gpos_kerning``: Basic pair kerning from the ``GPOS`` table.
+  Without it, :py:attr:`PIL.ImageFont.Layout.BASIC` can only kern fonts that carry a legacy ``kern`` table,
+  which most modern fonts do not. Checked at runtime. Matches ``TT_CONFIG_OPTION_GPOS_KERNING``.
+* ``bytecode_interpreter``: If the TrueType bytecode interpreter is enabled, i.e. whether a font's own hinting instructions are used.
+  Matches ``TT_CONFIG_OPTION_BYTECODE_INTERPRETER``.
+* ``subpixel_hinting``: Whether subpixel-hinting TrueType interpreter modes (versions 38 and 40) are available.
+  Which one the loaded FreeType actually defaults to is reported by :py:func:`~PIL.features.pilinfo`.
+  Matches ``TT_CONFIG_OPTION_SUBPIXEL_HINTING``.
+* ``color_layers``: If ``COLR``/``CPAL`` colour fonts are read. Matches ``TT_CONFIG_OPTION_COLOR_LAYERS``.
+* ``svg``: If OpenType ``SVG`` glyphs are supported. Matches ``FT_CONFIG_OPTION_SVG``.
+* ``png``: If PNG-compressed colour bitmap glyphs (``CBDT``, ``sbix``) are supported. Matches ``FT_CONFIG_OPTION_USE_PNG``.
+* ``brotli``: If WOFF2 fonts can be loaded. Matches ``FT_CONFIG_OPTION_USE_BROTLI``.
+* ``harfbuzz_autohinter``: If FreeType's auto-hinter can use HarfBuzz. Matches ``FT_CONFIG_OPTION_USE_HARFBUZZ``.
+* ``zlib``, ``bzip2``, ``lzw``: If compressed font data such as gzipped PCF is supported.
+  Matches ``FT_CONFIG_OPTION_USE_ZLIB``, ``FT_CONFIG_OPTION_USE_BZIP2`` and ``FT_CONFIG_OPTION_USE_LZW``.
+* ``mac_fonts``: If Mac resource fork fonts are supported. Matches ``FT_CONFIG_OPTION_MAC_FONTS``.
+
+.. autofunction:: PIL.features.check_freetype_feature
+.. autofunction:: PIL.features.get_supported_freetype_features
