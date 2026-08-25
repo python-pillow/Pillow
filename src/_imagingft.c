@@ -464,7 +464,7 @@ text_layout_fallback(
     }
     for (i = 0; i < count; i++) {
         if (buffer) {
-            ch = buffer[i];
+            ch = (unsigned char)buffer[i];
         } else {
             ch = PyUnicode_READ_CHAR(string, i);
         }
