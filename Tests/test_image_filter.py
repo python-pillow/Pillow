@@ -235,6 +235,20 @@ def test_invalid_box_blur_filter(radius: int | tuple[int, int]) -> None:
         im.filter(box_blur_filter)
 
 
+@pytest.mark.parametrize(
+    "radius",
+    (
+        float("nan"),
+        float("inf"),
+        (float("nan"), 2),
+        (2, float("inf")),
+    ),
+)
+def test_box_blur_non_finite_radius(radius: float | tuple[float, float]) -> None:
+    with pytest.raises(ValueError):
+        ImageFilter.BoxBlur(radius)
+
+
 def test_rankfilter_size_1() -> None:
     im = Image.new("L", (3, 3), 128)
 
