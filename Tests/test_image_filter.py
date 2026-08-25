@@ -275,9 +275,9 @@ def test_box_blur_non_finite_radius(radius: float | tuple[float, float]) -> None
 @pytest.mark.parametrize("radius", (float("nan"), float("inf"), 2**31))
 def test_out_of_range_blur_filter_radius(radius: float) -> None:
     im = hopper()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="radius"):
         im.filter(ImageFilter.BoxBlur(radius))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="radius"):
         im.filter(ImageFilter.GaussianBlur(radius))
 
 
