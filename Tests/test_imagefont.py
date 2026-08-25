@@ -830,6 +830,17 @@ def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
     _check_text(font, "Tests/images/variation_tiny_name.png", 40)
 
 
+def test_truetype_bytes() -> None:
+    """Ensure bytestrings with the high bit set do not cause sign extension."""
+    font = ImageFont.truetype(
+        "Tests/fonts/FreeMono.ttf",
+        20,
+        # Have to use BASIC as RAQM would parse `b"\xe9"` as invalid Unicode
+        layout_engine=ImageFont.Layout.BASIC,
+    )
+    assert font.getbbox(b"\xe9") == font.getbbox("\u00e9")
+
+
 def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
     with pytest.raises(OSError):
         font.set_variation_by_axes([500, 50])
