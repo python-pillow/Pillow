@@ -4,7 +4,7 @@ import os.path
 
 import pytest
 
-from PIL import Image, ImageDraw, ImageDraw2, features
+from PIL import Image, ImageDraw, ImageDraw2
 
 from .helper import (
     assert_image_equal,
@@ -244,8 +244,7 @@ def test_textbbox() -> None:
     bbox = draw.textbbox((0, 0), "ImageDraw2", font)
 
     # Assert
-    right = 72 if features.check_feature("raqm") else 70
-    assert bbox == (0, 2, right, 12)
+    assert bbox == (0, 2, 72, 12)
 
 
 @skip_unless_feature("freetype2")
