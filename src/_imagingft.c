@@ -71,10 +71,10 @@ static int have_raqm = 0;
 // Coordinate units are 26.6 fixed-point precision.
 typedef struct {
     unsigned int index;    // the index of the glyph in the font file
-    int x_offset;          // horizontal movement of the glyph from current point
-    int x_advance;         // glyph advance width in horizontal text
-    int y_offset;          // vertical movement of the glyph from current point
-    int y_advance;         // glyph advance height in vertical text
+    FT_F26Dot6 x_offset;   // horizontal movement of the glyph from current point
+    FT_F26Dot6 x_advance;  // glyph advance width in horizontal text
+    FT_F26Dot6 y_offset;   // vertical movement of the glyph from current point
+    FT_F26Dot6 y_advance;  // glyph advance height in vertical text
     unsigned int cluster;  // character index in original text
 } GlyphInfo;
 
@@ -552,7 +552,7 @@ text_layout(
  */
 static PyObject *
 font_getlength_impl(FontObject *self, PyObject *args) {
-    int length;                   /* length along primary axis, in 26.6 precision */
+    FT_F26Dot6 length;            /* length along primary axis */
     GlyphInfo *glyph_info = NULL; /* computed text layout */
     size_t i, count;              /* glyph_info index and length */
     int horizontal_dir;           /* is primary axis horizontal? */
@@ -620,9 +620,9 @@ bounding_box_and_anchors(
     int *x_offset,
     int *y_offset
 ) {
-    long position; /* pen position along primary axis, in 26.6 precision */
-    long advanced; /* pen position along primary axis, in pixels */
-    int px, py;    /* position of current glyph, in pixels */
+    FT_F26Dot6 position;            /* pen position along primary axis */
+    long advanced;                  /* pen position along primary axis, in pixels */
+    int px, py;                     /* position of current glyph, in pixels */
     int x_min, x_max, y_min, y_max; /* text bounding box, in pixels */
     int x_anchor, y_anchor;         /* offset of point drawn at (0, 0), in pixels */
     int error;
@@ -901,7 +901,7 @@ font_getsize(FontObject *self, PyObject *args) {
  */
 static PyObject *
 font_render_impl(FontObject *self, PyObject *args) {
-    int x, y;         /* pen position, in 26.6 precision */
+    FT_F26Dot6 x, y;  /* pen position */
     int px, py;       /* position of current glyph, in pixels */
     int x_min, y_max; /* text offset in 26.6 precision */
     int load_flags;   /* FreeType load_flags parameter */
@@ -1051,10 +1051,10 @@ font_render_impl(FontObject *self, PyObject *args) {
 
         FT_Stroker_Set(
             stroker,
-            (FT_Fixed)round(stroke_width * 64),
+            (FT_F26Dot6)roundf(PIXEL_TO_FIXED(stroke_width)),
             FT_STROKER_LINECAP_ROUND,
             FT_STROKER_LINEJOIN_ROUND,
-            0
+            0  // 16.16 units
         );
     }
 
@@ -1089,8 +1089,8 @@ font_render_impl(FontObject *self, PyObject *args) {
     }
 
     /* set pen position to text origin */
-    x = round((-x_min + stroke_width + x_start) * 64);
-    y = round((-y_max + (-stroke_width) - y_start) * 64);
+    x = roundf(PIXEL_TO_FIXED(-x_min + stroke_width + x_start));
+    y = roundf(PIXEL_TO_FIXED(-y_max + (-stroke_width) - y_start));
 
     if (stroker == NULL) {
         load_flags |= FT_LOAD_RENDER;
