@@ -116,6 +116,15 @@ Two new filters are available for :py:meth:`~PIL.Image.Image.resize` and
 :py:meth:`~PIL.Image.Image.thumbnail`: ``Image.Resampling.MKS2013`` and
 ``Image.Resampling.MKS2021``. These are versions of the Magic Kernel Sharp filter.
 
+Bugfixes
+========
+
+Fractional variation axis values
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageFont.FreeTypeFont.set_variation_by_axes` truncated each value to a
+whole number before applying it. Fractional values are now used as given.
+
 Other changes
 =============
 

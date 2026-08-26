@@ -1504,7 +1504,7 @@ font_setvaraxes_impl(FontObject *self, PyObject *args) {
     PyObject *axes, *item;
     Py_ssize_t i, num_coords;
     FT_Fixed *coords;
-    FT_Fixed coord;
+    double coord;
     if (!PyArg_ParseTuple(args, "O", &axes)) {
         return NULL;
     }
@@ -1529,7 +1529,7 @@ font_setvaraxes_impl(FontObject *self, PyObject *args) {
         if (PyFloat_Check(item)) {
             coord = PyFloat_AS_DOUBLE(item);
         } else if (PyLong_Check(item)) {
-            coord = (float)PyLong_AS_LONG(item);
+            coord = (double)PyLong_AS_LONG(item);
         } else if (PyNumber_Check(item)) {
             coord = PyFloat_AsDouble(item);
         } else {
@@ -1539,7 +1539,7 @@ font_setvaraxes_impl(FontObject *self, PyObject *args) {
             return NULL;
         }
         Py_DECREF(item);
-        coords[i] = coord * 65536;
+        coords[i] = (FT_Fixed)round(coord * 65536); /* 16.16 fixed point */
     }
 
     error = FT_Set_Var_Design_Coordinates(self->face, num_coords, coords);
