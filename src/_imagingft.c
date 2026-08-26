@@ -112,6 +112,8 @@ static PyTypeObject Font_Type;
 #define PIXEL_FRAC(x) ((x) & 63)
 /* convert from pixels to 26.6 fixed-point */
 #define PIXEL_TO_FIXED(x) ((x) * 64)
+/* round a 16.16 fixed-point value (e.g. FT_Fixed) to 26.6 */
+#define FIXED_16_16_TO_26_6(x) (((x) + (1 << 9)) >> 10)
 
 static PyObject *
 geterror(int code) {
@@ -485,13 +487,21 @@ text_layout_fallback(
         glyph = self->face->glyph;
         (*glyph_info)[i].x_offset = 0;
         (*glyph_info)[i].y_offset = 0;
+
+        // Use non-grid-fitted metrics when eventual rendering will honour them.
+        // Grid-fitted metrics will make spacing between glyphs drift away
+        // from the font's design over longer spans.
+        // Monochrome and bitmap glyphs retain grid-fitted metrics so they render
+        // with suitable crispness.
+        int unfitted = !mask && glyph->format == FT_GLYPH_FORMAT_OUTLINE;
+
         if (kerning && last_index && (*glyph_info)[i].index) {
             FT_Vector delta;
             if (FT_Get_Kerning(
                     self->face,
                     last_index,
                     (*glyph_info)[i].index,
-                    ft_kerning_default,
+                    unfitted ? FT_KERNING_UNFITTED : FT_KERNING_DEFAULT,
                     &delta
                 ) == 0) {
                 (*glyph_info)[i - 1].x_advance += delta.x;
@@ -499,7 +509,12 @@ text_layout_fallback(
             }
         }
 
-        (*glyph_info)[i].x_advance = glyph->metrics.horiAdvance;
+        // linearHoriAdvance is the unhinted advance, in 16.16 (IOW, 1/65536 of a px)
+        // (see https://freetype.org/freetype2/docs/tutorial/step2.html)
+        // and metrics.horiAdvance is in 26.6 (1/64 of a px).
+        (*glyph_info)[i].x_advance = unfitted
+                                         ? FIXED_16_16_TO_26_6(glyph->linearHoriAdvance)
+                                         : glyph->metrics.horiAdvance;
         // y_advance is only used in ttb, which is not supported by basic layout
         (*glyph_info)[i].y_advance = 0;
         last_index = (*glyph_info)[i].index;

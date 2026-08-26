@@ -181,12 +181,12 @@ def test_textbbox_equal(font: ImageFont.FreeTypeFont) -> None:
         # basic test
         ("text", "L", "FreeMono.ttf", 15, 36, 36),
         ("text", "1", "FreeMono.ttf", 15, 36, 36),
-        # issue 4177
-        ("rrr", "L", "DejaVuSans/DejaVuSans.ttf", 18, 21, 22.21875),
+        # issue 4177; mode "1" is placed on whole pixels, so it still differs
+        ("rrr", "L", "DejaVuSans/DejaVuSans.ttf", 18, 22.21875, 22.21875),
         ("rrr", "1", "DejaVuSans/DejaVuSans.ttf", 18, 24, 22.21875),
         # test 'l' not including extra margin
         # using exact value 2047 / 64 for raqm, checked with debugger
-        ("ill", "L", "OpenSansCondensed-LightItalic.ttf", 63, 33, 31.984375),
+        ("ill", "L", "OpenSansCondensed-LightItalic.ttf", 63, 31.984375, 31.984375),
         ("ill", "1", "OpenSansCondensed-LightItalic.ttf", 63, 33, 31.984375),
     ),
 )
@@ -196,7 +196,7 @@ def test_getlength(
     fontname: str,
     size: int,
     layout_engine: ImageFont.Layout,
-    length_basic: int,
+    length_basic: float,
     length_raqm: float,
 ) -> None:
     f = ImageFont.truetype("Tests/fonts/" + fontname, size, layout_engine=layout_engine)
@@ -887,10 +887,7 @@ def test_anchor(
     name, text = "quick", "Quick"
     path = f"Tests/images/test_anchor_{name}_{anchor}.png"
 
-    if layout_engine == ImageFont.Layout.RAQM:
-        width, height = (129, 44)
-    else:
-        width, height = (128, 44)
+    width, height = (129, 44)
 
     bbox_expected = (left, top, left + width, top + height)
 
@@ -945,7 +942,9 @@ def test_anchor_multiline(
     d.line(((300, 0), (300, 400)), "gray")
     d.multiline_text((300, 200), text, fill="black", anchor=anchor, font=f, align=align)
 
-    assert_image_similar_tofile(im, target, 4)
+    # the reference is shared between the layout engines, and they no longer
+    # differ by more than the GPOS kerning that basic layout cannot apply
+    assert_image_similar_tofile(im, target, 6)
 
 
 def test_anchor_invalid(font: ImageFont.FreeTypeFont) -> None:

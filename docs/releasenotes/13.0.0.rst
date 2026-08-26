@@ -121,6 +121,17 @@ before they are rasterized, so they land where the font's metrics say they shoul
 This affects anti-aliased horizontal text. Vertical text, 1-bit text and text drawn with
 a bitmap font are unchanged, since none of them can represent a sub-pixel shift.
 
+Spacing in the basic layout engine
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The basic layout engine now uses more precise (non-grid-fitted) metrics,
+so error accumulates less with longer strings.
+
+Text measured with :py:meth:`~PIL.ImageFont.FreeTypeFont.getlength` may now be narrower,
+and is no longer necessarily a whole number of pixels.
+
+1-bit text and text drawn with a bitmap font keep the grid-fitted metrics.
+
 Python 3.15
 ^^^^^^^^^^^
 

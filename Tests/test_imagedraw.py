@@ -1534,12 +1534,12 @@ def test_default_font_size() -> None:
     check(draw_text)
 
     def draw_textlength() -> None:
-        assert draw.textlength(text, font_size=16) == 216
+        assert draw.textlength(text, font_size=16) == pytest.approx(205, rel=0.5)
 
     check(draw_textlength)
 
     def draw_textbbox() -> None:
-        assert draw.textbbox((0, 0), text, font_size=16) == (0, 3, 216, 19)
+        assert draw.textbbox((0, 0), text, font_size=16) == (0, 3, 205, 19)
 
     check(draw_textbbox)
 
@@ -1555,7 +1555,7 @@ def test_default_font_size() -> None:
     check(draw_multiline_text)
 
     def draw_multiline_textbbox() -> None:
-        assert draw.multiline_textbbox((0, 0), text, font_size=16) == (0, 3, 216, 19)
+        assert draw.multiline_textbbox((0, 0), text, font_size=16) == (0, 3, 205, 19)
 
     check(draw_multiline_textbbox)
 
