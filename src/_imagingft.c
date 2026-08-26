@@ -524,6 +524,24 @@ text_layout(
     return count;
 }
 
+/** Calculate how far the pen advances over a given string.
+ *
+ * This is the sum of the glyph advances, which is not the width of the inked
+ * area that font_getsize_impl() reports: it includes side bearings and any
+ * trailing whitespace.
+ *
+ * Python parameters:
+ *   - string: the text to measure
+ *   - mode_name: imaging mode string
+ *   - dir: text direction string
+ *   - features: font features sequence
+ *   - lang: language string
+ *
+ * Python return value:
+ *   - length: advance along the primary axis, 26.6 precision integer.
+ *     Unlike the other methods here this is not in pixels;
+ *     ImageFont.FreeTypeFont.getlength() divides by 64.
+ */
 static PyObject *
 font_getlength_impl(FontObject *self, PyObject *args) {
     int length;                   /* length along primary axis, in 26.6 precision */
@@ -537,8 +555,6 @@ font_getlength_impl(FontObject *self, PyObject *args) {
     const char *lang = NULL;
     PyObject *features = Py_None;
     PyObject *string;
-
-    /* calculate size and bearing for a given string */
 
     if (!PyArg_ParseTuple(
             args, "O|zzOz:getlength", &string, &mode_name, &dir, &features, &lang
