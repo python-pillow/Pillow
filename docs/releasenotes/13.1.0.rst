@@ -196,3 +196,9 @@ Memory leak when merging a single band with a mismatched mode
 requested mode, such as ``Image.merge("F", [l_image])``, raised
 :py:exc:`ValueError` but leaked the memory allocated for the output image. This
 has been fixed.
+
+Fractional variation axis values
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageFont.FreeTypeFont.set_variation_by_axes` truncated each value to a
+whole number before applying it. Fractional values are now used as given.
