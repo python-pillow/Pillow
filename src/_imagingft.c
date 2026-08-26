@@ -903,7 +903,7 @@ static PyObject *
 font_render_impl(FontObject *self, PyObject *args) {
     FT_F26Dot6 x, y;  /* pen position */
     int px, py;       /* position of current glyph, in pixels */
-    int x_min, y_max; /* text offset in 26.6 precision */
+    int x_min, y_max; /* text offset, in pixels */
     int load_flags;   /* FreeType load_flags parameter */
     int error;
     FT_Glyph glyph;
