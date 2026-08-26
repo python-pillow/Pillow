@@ -1309,7 +1309,7 @@ class Image:
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
-           (default). Prior to this, dithering was silently ignored when no
+           (default). Prior to 13.0.0, dithering was silently ignored when no
            ``palette`` argument was given (e.g. when quantizing to an adaptive
            palette); it is now applied in that case too when requested.
         :returns: A new image
