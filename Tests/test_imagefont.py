@@ -854,6 +854,17 @@ def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
     _check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
 
 
+def test_variation_set_by_fractional_axes() -> None:
+    font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 200)
+
+    def mask(weight: float) -> bytes:
+        font.set_variation_by_axes([weight, 0])
+        return bytes(font.getmask("Hg", mode="L"))
+
+    # a fractional value must not be truncated or rounded
+    assert mask(600) != mask(600.5) != mask(601)
+
+
 @pytest.mark.parametrize(
     "anchor, left, top",
     (

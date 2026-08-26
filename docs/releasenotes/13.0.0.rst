@@ -90,6 +90,15 @@ TODO
 
 TODO
 
+Bugfixes
+========
+
+Fractional variation axis values
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageFont.FreeTypeFont.set_variation_by_axes` truncated each value to a
+whole number before applying it. Fractional values are now used as given.
+
 Other changes
 =============
 
