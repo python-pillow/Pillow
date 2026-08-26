@@ -297,9 +297,7 @@ class FreeTypeFont(BaseImageFont):
                     with open(font, "rb") as f:
                         load_from_bytes(f)
                     return
-            self.font = core.getfont(
-                font, size, index, encoding, layout_engine=layout_engine
-            )
+            self.font = core.getfont(font, size, index, encoding, b"", layout_engine)
         else:
             load_from_bytes(cast("IO[bytes]", font))
 
