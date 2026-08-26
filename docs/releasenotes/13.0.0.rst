@@ -109,6 +109,18 @@ The full kerning value is now applied even when libraqm is not available.
 Other changes
 =============
 
+Text is placed at sub-pixel horizontal positions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When drawing horizontal text, each glyph was previously snapped to a whole pixel
+independently of its neighbours. Since a glyph's advance is rarely a whole number of
+pixels, the distance between two glyphs could be off by up to a full pixel, which reads
+as uneven kerning. Glyphs are now shifted by the fractional part of their pen position
+before they are rasterized, so they land where the font's metrics say they should.
+
+This affects anti-aliased horizontal text. Vertical text, 1-bit text and text drawn with
+a bitmap font are unchanged, since none of them can represent a sub-pixel shift.
+
 Python 3.15
 ^^^^^^^^^^^
 
