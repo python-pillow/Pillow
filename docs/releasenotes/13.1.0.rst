@@ -117,3 +117,9 @@ WebP encoding errors now include a description
 
 When libwebp fails to encode an image, the raised :py:exc:`ValueError` now
 consistently describes the error rather than only reporting a numeric code.
+
+Fractional variation axis values
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageFont.FreeTypeFont.set_variation_by_axes` truncated each value to a
+whole number before applying it. Fractional values are now used as given.
