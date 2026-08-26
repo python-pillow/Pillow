@@ -134,8 +134,8 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     FT_Long width;
     Py_ssize_t index = 0;
     Py_ssize_t layout_engine = 0;
-    unsigned char *encoding;
-    unsigned char *font_bytes;
+    unsigned char *encoding = NULL;
+    unsigned char *font_bytes = NULL;
     Py_ssize_t font_bytes_size = 0;
     static char *kwlist[] = {
         "filename", "size", "index", "encoding", "font_bytes", "layout_engine", NULL
@@ -152,7 +152,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     if (!PyArg_ParseTupleAndKeywords(
             args,
             kw,
-            "etf|nsy#n",
+            "etfnsy#n",
             kwlist,
             config.filesystem_encoding,
             &filename,
@@ -171,7 +171,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     if (!PyArg_ParseTupleAndKeywords(
             args,
             kw,
-            "etf|nsy#n",
+            "etfnsy#n",
             kwlist,
             Py_FileSystemDefaultEncoding,
             &filename,
