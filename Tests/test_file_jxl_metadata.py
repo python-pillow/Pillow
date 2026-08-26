@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from types import ModuleType
-
 import pytest
 
 from PIL import Image, JpegXlImagePlugin
@@ -9,6 +7,10 @@ from PIL import Image, JpegXlImagePlugin
 from .helper import skip_unless_feature
 
 pytestmark = skip_unless_feature("jpegxl")
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from types import ModuleType
 
 ElementTree: ModuleType | None
 try:
