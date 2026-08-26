@@ -66,9 +66,16 @@ static int have_raqm = 0;
 #define LAYOUT_FALLBACK 0
 #define LAYOUT_RAQM 1
 
+// These mirror raqm_glyph_t, which in turn mirrors harfbuzz's hb_glyph_info_t,
+// with the addition of y_advance and y_offset for vertical text layout.
+// Coordinate units are 26.6 fixed-point precision.
 typedef struct {
-    int index, x_offset, x_advance, y_offset, y_advance;
-    unsigned int cluster;
+    unsigned int index;    // the index of the glyph in the font file
+    int x_offset;          // horizontal movement of the glyph from current point
+    int x_advance;         // glyph advance width in horizontal text
+    int y_offset;          // vertical movement of the glyph from current point
+    int y_advance;         // glyph advance height in vertical text
+    unsigned int cluster;  // character index in original text
 } GlyphInfo;
 
 struct {
