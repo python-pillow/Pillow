@@ -571,6 +571,24 @@ def test_getbbox_empty(font: ImageFont.FreeTypeFont) -> None:
     assert (0, 0, 0, 0) == font.getbbox("")
 
 
+def test_bytearray_not_supported(font: ImageFont.FreeTypeFont) -> None:
+    # The C text layout only accepts str and bytes, so bytearray is rejected
+    # even though these methods used to be annotated as taking one.
+    for op in (font.getlength, font.getbbox, font.getmask):
+        assert op(b"A") is not None
+        with pytest.raises(TypeError, match="expected string or bytes"):
+            op(bytearray(b"A"))  # type: ignore[arg-type]
+
+
+def test_core_font_arguments_are_optional(font: ImageFont.FreeTypeFont) -> None:
+    # Every argument after the leading string is optional at the C level,
+    # and the mode argument additionally accepts None.
+    assert font.font.getlength("A") == font.font.getlength("A", "", None, None, None)
+    assert font.font.getlength("A", None) == font.font.getlength("A", "")
+    assert font.font.getsize("A") == font.font.getsize("A", "", None, None, None, None)
+    assert font.font.getsize("A", None) == font.font.getsize("A", "")
+
+
 def test_render_empty(font: ImageFont.FreeTypeFont) -> None:
     # issue 2666
     im = Image.new(mode="RGB", size=(300, 100))
