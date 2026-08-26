@@ -61,3 +61,9 @@ Blurring I;16 images
 
 :py:class:`~PIL.ImageFilter.GaussianBlur` and :py:class:`~PIL.ImageFilter.BoxBlur`
 now support I;16, I;16L, I;16B and I;16N images.
+
+Fractional variation axis values
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageFont.FreeTypeFont.set_variation_by_axes` truncated each value to a
+whole number before applying it. Fractional values are now used as given.
