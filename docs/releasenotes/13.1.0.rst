@@ -233,3 +233,9 @@ rectangle. Previously, if ``width`` was more than the size of the rectangle, the
 outline could extend outside it, drawing a larger rectangle than requested. The
 rectangle is now filled with the outline color instead. Wide outlines are also drawn
 faster.
+
+Fractional variation axis values
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageFont.FreeTypeFont.set_variation_by_axes` truncated each value to a
+whole number before applying it. Fractional values are now used as given.
