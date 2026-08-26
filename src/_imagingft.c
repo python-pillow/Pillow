@@ -105,6 +105,12 @@ static PyTypeObject Font_Type;
 #define PIXEL(x) ((((x) + 32) & -64) >> 6)
 /* convert from pixels to 26.6 fixed-point */
 #define PIXEL_TO_FIXED(x) ((x) * 64)
+/* round a 26.6 pixel coordinate down to integer */
+#define PIXEL_FLOOR(x) ((x) >> 6)
+/* round a 26.6 pixel coordinate up to integer */
+#define PIXEL_CEIL(x) (((x) + 63) >> 6)
+/* the sub-pixel part of a 26.6 pixel coordinate */
+#define PIXEL_FRAC(x) ((x) & 63)
 
 static PyObject *
 geterror(int code) {
@@ -224,7 +230,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     }
 
     if (!error) {
-        width = size * 64;
+        width = PIXEL_TO_FIXED(size);
         req.type = FT_SIZE_REQUEST_TYPE_NOMINAL;
         req.width = width;
         req.height = width;
