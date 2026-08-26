@@ -99,6 +99,13 @@ Fractional variation axis values
 :py:meth:`~PIL.ImageFont.FreeTypeFont.set_variation_by_axes` truncated each value to a
 whole number before applying it. Fractional values are now used as given.
 
+Kerning in the basic layout engine
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When libraqm is not available, kerning was applied at 1/64th of its intended size,
+because a value in pixels was added to an advance in 26.6 fixed point precision.
+The full kerning value is now applied even when libraqm is not available.
+
 Other changes
 =============
 

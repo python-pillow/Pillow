@@ -493,8 +493,8 @@ text_layout_fallback(
                     ft_kerning_default,
                     &delta
                 ) == 0) {
-                (*glyph_info)[i - 1].x_advance += PIXEL(delta.x);
-                (*glyph_info)[i - 1].y_advance += PIXEL(delta.y);
+                (*glyph_info)[i - 1].x_advance += delta.x;
+                (*glyph_info)[i - 1].y_advance += delta.y;
             }
         }
 
