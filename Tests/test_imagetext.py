@@ -193,15 +193,15 @@ def test_wrap_shrink() -> None:
     assert text.font.size == 10
 
     with pytest.raises(ValueError, match="Text could not be scaled"):
-        text.wrap(50, 15, ("shrink", 9))
+        text.wrap(50, 15, ("shrink", 10))
 
     assert text.wrap(50, 15, "shrink") is None
-    assert text.font.size == 8
+    assert text.font.size == 9
 
     text = ImageText.Text("Hello World!")
     assert text.wrap(50, 15, ("shrink", 7)) is None
     assert isinstance(text.font, ImageFont.FreeTypeFont)
-    assert text.font.size == 8
+    assert text.font.size == 9
 
 
 @skip_unless_feature("freetype2")
