@@ -5,8 +5,6 @@ import sys
 import warnings
 import zlib
 from io import BytesIO, TextIOWrapper
-from pathlib import Path
-from types import ModuleType
 from typing import Any, cast
 
 import pytest
@@ -23,6 +21,11 @@ from .helper import (
     mark_if_feature_version,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from types import ModuleType
 
 ElementTree: ModuleType | None
 try:
@@ -63,7 +66,7 @@ def roundtrip(im: Image.Image, **options: Any) -> PngImagePlugin.PngImageFile:
     out = BytesIO()
     im.save(out, "PNG", **options)
     out.seek(0)
-    return cast(PngImagePlugin.PngImageFile, Image.open(out))
+    return cast("PngImagePlugin.PngImageFile", Image.open(out))
 
 
 @skip_unless_feature("zlib")
@@ -700,7 +703,8 @@ class TestFilePng:
             assert_image_equal_tofile(im, "Tests/images/bw_gradient.png")
 
     @pytest.mark.parametrize(
-        "cid", (b"IHDR", b"sRGB", b"pHYs", b"acTL", b"fcTL", b"fdAT")
+        "cid",
+        (b"IHDR", b"gAMA", b"cHRM", b"sRGB", b"pHYs", b"acTL", b"fcTL", b"fdAT"),
     )
     def test_truncated_chunks(
         self, cid: bytes, monkeypatch: pytest.MonkeyPatch

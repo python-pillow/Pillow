@@ -24,11 +24,14 @@ from __future__ import annotations
 
 import os
 import struct
-from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import o8
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 
 def _accept(prefix: bytes) -> bool:

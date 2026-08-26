@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 from typing import IO
 
 import pytest
 
 from PIL import Hdf5StubImagePlugin, Image, ImageFile
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_FILE = "Tests/images/hdf5.h5"
 

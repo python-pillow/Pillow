@@ -13,7 +13,6 @@ from typing import Any, BinaryIO
 import pytest
 
 from PIL import Image, ImageDraw, ImageFont, features
-from PIL._typing import StrOrBytesPath
 
 from .helper import (
     assert_image_equal,
@@ -24,6 +23,10 @@ from .helper import (
     skip_unless_feature,
     skip_unless_feature_version,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from PIL._typing import StrOrBytesPath
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 FONT_SIZE = 20

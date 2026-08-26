@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import IO
 
 import pytest
@@ -8,6 +7,10 @@ import pytest
 from PIL import GribStubImagePlugin, Image, ImageFile
 
 from .helper import hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_FILE = "Tests/images/WAlaska.wind.7days.grb"
 
