@@ -12,7 +12,7 @@ from typing import Any, BinaryIO
 
 import pytest
 
-from PIL import Image, ImageDraw, ImageFont, features
+from PIL import Image, ImageDraw, ImageFont, ImageText, features
 
 from .helper import (
     assert_image_equal,
@@ -211,6 +211,24 @@ def test_getlength(
         # disable kerning, kerning metrics changed
         length = d.textlength(text, f, features=["-kern"])
         assert length == length_raqm
+
+
+def test_size_ladder(layout_engine: ImageFont.Layout) -> None:
+    # See https://github.com/python-pillow/Pillow/issues/9898
+    image = Image.new("RGBA", (220, 140), "#fff")
+    draw = ImageDraw.Draw(image)
+
+    y = 5
+    for size in (12, 13, 14, 15, 16, 20, 24):
+        font = ImageFont.truetype(
+            "Tests/fonts/NotoSans-Regular.ttf", size, layout_engine=layout_engine
+        )
+        text = ImageText.Text(f"Power bolt ({size}px)", font)
+        draw.text((5, y), text, anchor="la", fill="#000")
+        y += size
+
+    name = "basic" if layout_engine == ImageFont.Layout.BASIC else "raqm"
+    assert_image_similar_tofile(image, f"Tests/images/text_size_ladder_{name}.png", 4)
 
 
 def test_float_size(layout_engine: ImageFont.Layout) -> None:
