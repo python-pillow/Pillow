@@ -761,6 +761,19 @@ bad_anchor:
     return 1;
 }
 
+/** Calculate size and bearing for a given string.
+ *
+ * Python parameters:
+ *   - string: the text to measure
+ *   - mode_name: imaging mode string
+ *   - dir: text direction string
+ *   - features: font features sequence
+ *   - lang: language string
+ *   - anchor: anchor string
+ *
+ * Python return value:
+ *   - ((width, height), (x_offset, y_offset)): size and bearing of the text, in pixels
+ */
 static PyObject *
 font_getsize_impl(FontObject *self, PyObject *args) {
     int64_t width, height;
@@ -778,8 +791,6 @@ font_getsize_impl(FontObject *self, PyObject *args) {
     const char *anchor = NULL;
     PyObject *features = Py_None;
     PyObject *string;
-
-    /* calculate size and bearing for a given string */
 
     if (!PyArg_ParseTuple(
             args,
@@ -845,6 +856,25 @@ font_getsize(FontObject *self, PyObject *args) {
     return result;
 }
 
+/**
+ * Rasterize a string into an image buffer.
+ *
+ * Python parameters:
+ * - string: the text to render
+ * - fill: Python function to create a core image object at a specified width and height
+ * - mode_name: imaging mode string
+ * - dir: text direction string
+ * - features: font features sequence
+ * - lang: language string
+ * - stroke_width: stroke width in pixels
+ * - stroke_filled: bool: omit inner stroke border, to stroke outside + fill inside
+ * - anchor: anchor string
+ * - foreground_ink_long: foreground color as a long integer
+ * - x_start: starting x position of the pen in pixels
+ * - y_start: starting y position of the pen in pixels
+ *
+ * Returns: a new image object containing the rendered text.
+ */
 static PyObject *
 font_render_impl(FontObject *self, PyObject *args) {
     int x, y;         /* pen position, in 26.6 precision */
