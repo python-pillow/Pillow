@@ -1,0 +1,56 @@
+13.1.0
+------
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+Backwards incompatible changes
+==============================
+
+TODO
+^^^^
+
+TODO
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API additions
+=============
+
+TODO
+^^^^
+
+TODO
+
+Other changes
+=============
+
+Fractional variation axis values
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageFont.FreeTypeFont.set_variation_by_axes` truncated each value to a
+whole number before applying it. Fractional values are now used as given.
