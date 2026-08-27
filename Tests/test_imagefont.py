@@ -1043,17 +1043,14 @@ def test_float_coord(layout_engine: ImageFont.Layout, fontmode: str) -> None:
     if fontmode == "1":
         d.fontmode = "1"
 
-    embedded_color = fontmode == "RGBA"
-    d.text((9.5, 9.5), txt, font=ttf, fill="#fa6", embedded_color=embedded_color)
-    try:
-        assert_image_similar_tofile(im, "Tests/images/text_float_coord.png", 3.9)
-    except AssertionError:
-        if fontmode == "1" and layout_engine == ImageFont.Layout.BASIC:
-            assert_image_similar_tofile(
-                im, "Tests/images/text_float_coord_1_alt.png", 1
-            )
-        else:
-            raise
+    d.text((9.5, 9.5), txt, font=ttf, fill="#fa6", embedded_color=(fontmode == "RGBA"))
+    assert_image_similar_tofile(
+        im,
+        f"Tests/images/text_float_coord_{fontmode}_{layout_engine.name}.png",
+        epsilon=(
+            1 if fontmode == "1" and layout_engine == ImageFont.Layout.BASIC else 3.9
+        ),
+    )
 
 
 def test_cbdt(layout_engine: ImageFont.Layout) -> None:
