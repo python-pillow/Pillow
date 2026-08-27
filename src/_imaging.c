@@ -1029,15 +1029,12 @@ _convert(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _convert2(ImagingObject *self, PyObject *args) {
-    ImagingObject *imagep1;
-    ImagingObject *imagep2;
-    if (!PyArg_ParseTuple(
-            args, "O!O!", &Imaging_Type, &imagep1, &Imaging_Type, &imagep2
-        )) {
+    ImagingObject *imagep;
+    if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
         return NULL;
     }
 
-    if (!ImagingConvert2(imagep1->image, imagep2->image)) {
+    if (!ImagingConvert2(imagep->image, self->image)) {
         return NULL;
     }
 
