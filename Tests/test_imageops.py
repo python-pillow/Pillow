@@ -615,9 +615,7 @@ def test_dither_primary(size: int) -> None:
     assert_image_equal(out, expected)
 
 
-def test_dither_primary_non_rgb() -> None:
-    im = Image.new("L", (2, 2), 100)
-    out = ImageOps.dither_primary(im)
-
-    expected = Image.new("RGB", (2, 2))
-    assert_image_equal(out, expected)
+def test_dither_primary_invalid_mode() -> None:
+    im = Image.new("L", (1, 1))
+    with pytest.raises(ValueError, match="mode must be RGB, not L"):
+        ImageOps.dither_primary(im)
