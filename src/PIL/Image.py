@@ -1052,8 +1052,12 @@ class Image:
            should be 4- or 12-tuple containing floating point values.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
-           Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
-           (default). Note that this is not used when ``matrix`` is supplied.
+           Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`.
+           :data:`Dither.FLOYDSTEINBERG` is used by default, except when converting
+           to an adaptive ``palette``: there, for backwards compatibility with
+           versions prior to 13.0.0, the default remains :data:`Dither.NONE`; pass
+           ``dither=Dither.FLOYDSTEINBERG`` explicitly to enable dithering in that
+           case too. Note that ``dither`` is not used when ``matrix`` is supplied.
         :param palette: Palette to use when converting from mode "RGB"
            to "P".  Available palettes are :data:`Palette.WEB` or
            :data:`Palette.ADAPTIVE`.
@@ -1308,10 +1312,13 @@ class Image:
                         :py:class:`PIL.Image.Image`.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
-           Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
-           (default). Prior to 13.0.0, dithering was silently ignored when no
-           ``palette`` argument was given (e.g. when quantizing to an adaptive
-           palette); it is now applied in that case too when requested.
+           Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`.
+           When a reference ``palette`` is supplied, :data:`Dither.FLOYDSTEINBERG`
+           is used by default. When no ``palette`` is given (e.g. quantizing to a
+           new adaptive palette), the default remains :data:`Dither.NONE`, for
+           backwards compatibility with versions prior to 13.0.0; pass
+           ``dither=Dither.FLOYDSTEINBERG`` explicitly to enable dithering in that
+           case too.
         :returns: A new image
         """
 
