@@ -1645,13 +1645,10 @@ convert(Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int di
 }
 
 Imaging
-ImagingConvert(Imaging imIn, const ModeID mode, ImagingPalette palette, int dither) {
-    return convert(NULL, imIn, mode, palette, dither);
-}
-
-Imaging
-ImagingConvert2(Imaging imOut, Imaging imIn) {
-    return convert(imOut, imIn, imOut->mode, NULL, 0);
+ImagingConvert(
+    Imaging imOut, Imaging imIn, const ModeID mode, ImagingPalette palette, int dither
+) {
+    return convert(imOut, imIn, mode, palette, dither);
 }
 
 Imaging

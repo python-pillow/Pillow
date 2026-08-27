@@ -1023,7 +1023,11 @@ _convert(ImagingObject *self, PyObject *args) {
     const ModeID mode = findModeID(mode_name);
 
     return PyImagingNew(ImagingConvert(
-        self->image, mode, paletteimage ? paletteimage->image->palette : NULL, dither
+        NULL,
+        self->image,
+        mode,
+        paletteimage ? paletteimage->image->palette : NULL,
+        dither
     ));
 }
 
@@ -1034,7 +1038,7 @@ _convert2(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (!ImagingConvert2(imagep->image, self->image)) {
+    if (!ImagingConvert(imagep->image, self->image, imagep->image->mode, NULL, 0)) {
         return NULL;
     }
 
