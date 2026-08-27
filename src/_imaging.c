@@ -72,21 +72,21 @@
  */
 
 #define PY_SSIZE_T_CLEAN
-#include "Python.h"
+#include <Python.h>
 
 #ifdef HAVE_LIBJPEG
-#include "jconfig.h"
+#include <jconfig.h>
 #ifdef LIBJPEG_TURBO_VERSION
 #define JCONFIG_INCLUDED
 #ifdef __CYGWIN__
 #define _BASETSD_H
 #endif
-#include "jpeglib.h"
+#include <jpeglib.h>
 #endif
 #endif
 
 #ifdef HAVE_LIBZ
-#include "zlib.h"
+#include <zlib.h>
 #endif
 
 #ifdef HAVE_LIBTIFF

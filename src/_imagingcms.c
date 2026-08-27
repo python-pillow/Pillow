@@ -27,11 +27,11 @@ https://www.cazabon.com\n\
 "
 
 #define PY_SSIZE_T_CLEAN
-#include "Python.h"  // Include before wchar.h so _GNU_SOURCE is set
-#include "wchar.h"
-#include "datetime.h"
+#include <Python.h>  // Include before wchar.h so _GNU_SOURCE is set
+#include <wchar.h>
+#include <datetime.h>
 
-#include "lcms2.h"
+#include <lcms2.h>
 #include "libImaging/Imaging.h"
 
 #define PYCMSVERSION "1.0.0 pil"

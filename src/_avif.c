@@ -1,7 +1,7 @@
 #define PY_SSIZE_T_CLEAN
 
 #include <Python.h>
-#include "avif/avif.h"
+#include <avif/avif.h>
 
 // Encoder type
 typedef struct {
