@@ -399,6 +399,15 @@ Methods
 
     Draw a shape.
 
+.. note::
+
+    When libraqm is available, Pillow performs complex text layout, including
+    shaping and bidirectional text handling, itself. Do not pre-process text
+    with ``arabic_reshaper`` and ``python-bidi`` in this case, as applying the
+    same processing twice produces incorrect results. Use
+    :py:func:`PIL.features.check` with ``"raqm"`` to determine whether
+    libraqm is available before deciding whether pre-processing is needed.
+
 .. py:method:: ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, stroke_fill=None, embedded_color=False, font_size=None)
 
     Draws the string at the given position.
