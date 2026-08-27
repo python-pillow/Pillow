@@ -4218,9 +4218,6 @@ static PyMethodDef functions[] = {
     {"new_arrow", (PyCFunction)_new_arrow, METH_VARARGS},
     {"merge", (PyCFunction)_merge, METH_VARARGS},
 
-    /* Functions */
-    {"convert", (PyCFunction)_convert2, METH_VARARGS},
-
     /* Codecs */
     {"bcn_decoder", (PyCFunction)PyImaging_BcnDecoderNew, METH_VARARGS},
     {"bcn_encoder", (PyCFunction)PyImaging_BcnEncoderNew, METH_VARARGS},
