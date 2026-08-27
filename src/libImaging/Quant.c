@@ -21,17 +21,13 @@
 #include "Imaging.h"
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "QuantTypes.h"
 #include "QuantOctree.h"
 #include "QuantPngQuant.h"
 #include "QuantHash.h"
 #include "QuantHeap.h"
-
-/* MSVC9.0 */
-#ifndef UINT32_MAX
-#define UINT32_MAX 0xffffffff
-#endif
 
 typedef struct {
     uint32_t scale;
