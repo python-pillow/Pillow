@@ -1032,7 +1032,7 @@ _convert(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_convert2(ImagingObject *self, PyObject *args) {
+_convert_into(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
     if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
         return NULL;
@@ -3706,7 +3706,7 @@ static struct PyMethodDef methods[] = {
     /* Standard processing methods (Image) */
     {"color_lut_3d", (PyCFunction)_color_lut_3d, METH_VARARGS},
     {"convert", (PyCFunction)_convert, METH_VARARGS},
-    {"convert2", (PyCFunction)_convert2, METH_VARARGS},
+    {"convert_into", (PyCFunction)_convert_into, METH_VARARGS},
     {"convert_matrix", (PyCFunction)_convert_matrix, METH_VARARGS},
     {"convert_transparent", (PyCFunction)_convert_transparent, METH_VARARGS},
     {"copy", (PyCFunction)_copy, METH_VARARGS},
