@@ -97,6 +97,25 @@ that share a local name across different namespaces.
 Other changes
 =============
 
+Wheels now use HarfBuzz for hinting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+FreeType can use HarfBuzz to work out which glyphs a script covers,
+so that its autofitter can derive hinting "Blue Zones" for scripts such as Arabic.
+
+Only the Windows wheels were actually built with this support.
+The macOS wheels disabled HarfBuzz intreop outright,
+and the Linux wheels left it up to FreeType's ``configure``,
+which in turn fell back to loading HarfBuzz by its unversioned name at
+runtime.
+
+Since the bundled copy of HarfBuzz is renamed when the wheel is audited and repaired
+for distribution, that lookup only succeeded if a separate copy happened to be
+installed on the system with the expected name (e.g. ``libharfbuzz.so.0``).
+
+All wheels are now linked against the HarfBuzz that Pillow ships,
+which may slightly change how text is rendered in scripts that rely on the autofitter.
+
 Python 3.15
 ^^^^^^^^^^^
 
