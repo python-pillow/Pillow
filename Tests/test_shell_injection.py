@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import shutil
 from io import BytesIO
 
 import pytest
 
-from PIL import GifImagePlugin, Image, JpegImagePlugin
+from PIL import GifImagePlugin, Image
 
-from .helper import djpeg_available, is_win32, netpbm_available
+from .helper import is_win32, netpbm_available
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -35,16 +34,6 @@ class TestShellInjection:
             # If file can't be opened, shell injection probably occurred
             with Image.open(dest_file) as im:
                 im.load()
-
-    @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
-    def test_load_djpeg_filename(self, tmp_path: Path) -> None:
-        for filename in test_filenames:
-            src_file = tmp_path / filename
-            shutil.copy(TEST_JPG, src_file)
-
-            with Image.open(src_file) as im:
-                assert isinstance(im, JpegImagePlugin.JpegImageFile)
-                im.load_djpeg()
 
     @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
     def test_save_netpbm_filename_bmp_mode(self, tmp_path: Path) -> None:

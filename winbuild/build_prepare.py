@@ -138,17 +138,16 @@ DEPS: dict[str, dict[str, Any]] = {
         },
         "build": [
             *cmds_cmake(
-                ("jpeg-static", "djpeg-static"),
+                ("jpeg-static",),
                 "-DENABLE_SHARED:BOOL=FALSE",
                 "-DWITH_JPEG8:BOOL=TRUE",
                 "-DWITH_CRT_DLL:BOOL=TRUE",
             ),
             cmd_copy("jpeg-static.lib", "libjpeg.lib"),
-            cmd_copy("djpeg-static.exe", "djpeg.exe"),
         ],
         "headers": ["jconfig.h", r"src\j*.h"],
         "libs": ["libjpeg.lib"],
-        "bins": ["djpeg.exe"],
+        "bins": [],
     },
     "zlib": {
         "url": f"https://github.com/zlib-ng/zlib-ng/archive/refs/tags/{V['zlib-ng']}.tar.gz",

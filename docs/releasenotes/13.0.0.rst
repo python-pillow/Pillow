@@ -66,6 +66,32 @@ ImageCms.ImageCmsProfile.product_name and .product_info
 ``.product_info`` attributes have been removed. They were set to ``None`` since Pillow
 2.3.0.
 
+JpegImageFile.load_djpeg()
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``JpegImageFile.load_djpeg()`` has been removed.
+
+It was undocumented, and delegated JPEG decoding to the external IJG ``djpeg``
+command line utility, requiring the image to be present as a file on disk.
+
+Pillow decodes JPEG images with libjpeg directly,
+so :py:meth:`~PIL.Image.Image.load()` can be used instead::
+
+    from PIL import Image
+    with Image.open("hopper.jpg") as im:
+        im.load()
+
+If ``djpeg`` is still desired, it can be invoked directly.
+It writes PPM to standard output, which Pillow can read::
+
+    import subprocess
+    from io import BytesIO
+    from PIL import Image
+
+    data = subprocess.check_output(["djpeg", "hopper.jpg"])
+    with Image.open(BytesIO(data)) as im:
+        im.load()
+
 Deprecations
 ============
 

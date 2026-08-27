@@ -25,7 +25,6 @@ from .helper import (
     assert_image_equal_tofile,
     assert_image_similar,
     assert_image_similar_tofile,
-    djpeg_available,
     hopper,
     is_win32,
     mark_if_feature_version,
@@ -729,13 +728,6 @@ class TestFileJpeg:
             subsampling=0,
         )
         assert len(re.findall(b"\xff[\xd0-\xd7]", out.getvalue())) == markers
-
-    @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
-    def test_load_djpeg(self) -> None:
-        with Image.open(TEST_FILE) as img:
-            assert isinstance(img, JpegImagePlugin.JpegImageFile)
-            img.load_djpeg()
-            assert_image_similar_tofile(img, TEST_FILE, 5)
 
     def test_no_duplicate_0x1001_tag(self) -> None:
         # Arrange

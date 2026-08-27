@@ -7,7 +7,6 @@ from __future__ import annotations
 import logging
 import os
 import shutil
-import subprocess
 import sys
 import tempfile
 from functools import lru_cache
@@ -280,16 +279,6 @@ def _cached_hopper(mode: str) -> Image.Image:
         else:
             raise
     return im
-
-
-def djpeg_available() -> bool:
-    if shutil.which("djpeg"):
-        try:
-            subprocess.check_call(["djpeg", "-version"])
-            return True
-        except subprocess.CalledProcessError:  # pragma: no cover
-            return False
-    return False
 
 
 def netpbm_available() -> bool:
