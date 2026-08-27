@@ -473,7 +473,8 @@ median_cut(PixelList *hl[3], uint32_t imPixelCount, int nPixels) {
             }
         } while (compute_box_volume(thisNode) == 1);
         if (!split(thisNode)) {
-            exit(1);
+            ImagingQuantHeapFree(h);
+            return NULL;
         }
         ImagingQuantHeapAdd(h, (void *)(thisNode->l));
         ImagingQuantHeapAdd(h, (void *)(thisNode->r));
