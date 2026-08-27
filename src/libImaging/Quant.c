@@ -33,8 +33,6 @@
 #define UINT32_MAX 0xffffffff
 #endif
 
-// #define TEST_NEAREST_NEIGHBOUR
-
 typedef struct {
     uint32_t scale;
 } PixelHashData;
@@ -1092,55 +1090,6 @@ quantize(
         goto error_7;
     }
 
-#ifdef TEST_NEAREST_NEIGHBOUR
-#include <math.h>
-    {
-        uint32_t bestmatch, bestdist, dist;
-        HashTable *h2;
-        printf("nearest neighbour search (full search)...");
-        fflush(stdout);
-        timer = clock();
-        h2 = hashtable_new(unshifted_pixel_hash, unshifted_pixel_cmp);
-        for (i = 0; i < nPixels; i++) {
-            if (hashtable_lookup(h2, pixelData[i], &paletteEntry)) {
-                bestmatch = paletteEntry;
-            } else {
-                bestmatch = 0;
-                bestdist = _SQR(pixelData[i].c.r - p[0].c.r) +
-                           _SQR(pixelData[i].c.g - p[0].c.g) +
-                           _SQR(pixelData[i].c.b - p[0].c.b);
-                for (j = 1; j < nPaletteEntries; j++) {
-                    dist = _SQR(pixelData[i].c.r - p[j].c.r) +
-                           _SQR(pixelData[i].c.g - p[j].c.g) +
-                           _SQR(pixelData[i].c.b - p[j].c.b);
-                    if (dist == bestdist && j == qp[i]) {
-                        bestmatch = j;
-                    }
-                    if (dist < bestdist) {
-                        bestdist = dist;
-                        bestmatch = j;
-                    }
-                }
-                hashtable_insert(h2, pixelData[i], bestmatch);
-            }
-            if (qp[i] != bestmatch) {
-                printf(
-                    "discrepancy in matching algorithms pixel %d [%d %d] %f %f\n",
-                    i,
-                    qp[i],
-                    bestmatch,
-                    sqrt((double)(_SQR(pixelData[i].c.r - p[qp[i]].c.r) +
-                                  _SQR(pixelData[i].c.g - p[qp[i]].c.g) +
-                                  _SQR(pixelData[i].c.b - p[qp[i]].c.b))),
-                    sqrt((double)(_SQR(pixelData[i].c.r - p[bestmatch].c.r) +
-                                  _SQR(pixelData[i].c.g - p[bestmatch].c.g) +
-                                  _SQR(pixelData[i].c.b - p[bestmatch].c.b)))
-                );
-            }
-        }
-        hashtable_free(h2);
-    }
-#endif
     if (kmeans > 0) {
         k_means(pixelData, nPixels, p, nPaletteEntries, qp, kmeans - 1);
     }
