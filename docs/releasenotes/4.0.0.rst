@@ -1,7 +1,7 @@
 4.0.0
 -----
 
-Python 2.6 and 3.2 Dropped
+Python 2.6 and 3.2 dropped
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pillow 4.0 no longer supports Python 2.6 and 3.2. We will not be

@@ -13,6 +13,7 @@
 This module provides constants and clear-text names for various
 well-known EXIF tags.
 """
+
 from __future__ import annotations
 
 from enum import IntEnum
@@ -288,6 +289,7 @@ class Base(IntEnum):
     OpcodeList2 = 0xC741
     OpcodeList3 = 0xC74E
     NoiseProfile = 0xC761
+    FrameRate = 0xC764
 
 
 """Maps EXIF tags to tag names."""
@@ -353,6 +355,7 @@ class IFD(IntEnum):
     Exif = 0x8769
     GPSInfo = 0x8825
     MakerNote = 0x927C
+    Makernote = 0x927C  # Deprecated
     Interop = 0xA005
     IFD1 = -1
 

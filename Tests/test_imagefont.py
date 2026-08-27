@@ -11,19 +11,22 @@ from pathlib import Path
 from typing import Any, BinaryIO
 
 import pytest
-from packaging.version import parse as parse_version
 
 from PIL import Image, ImageDraw, ImageFont, features
-from PIL._typing import StrOrBytesPath
 
 from .helper import (
     assert_image_equal,
     assert_image_equal_tofile,
     assert_image_similar_tofile,
+    has_feature_version,
     is_win32,
     skip_unless_feature,
     skip_unless_feature_version,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from PIL._typing import StrOrBytesPath
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 FONT_SIZE = 20
@@ -124,7 +127,7 @@ def test_render_equal(layout_engine: ImageFont.Layout) -> None:
 
 
 def test_non_ascii_path(tmp_path: Path, layout_engine: ImageFont.Layout) -> None:
-    tempfile = str(tmp_path / ("temp_" + chr(128) + ".ttf"))
+    tempfile = tmp_path / ("temp_" + chr(128) + ".ttf")
     try:
         shutil.copy(FONT_PATH, tempfile)
     except UnicodeEncodeError:
@@ -254,7 +257,8 @@ def test_render_multiline_text(font: ImageFont.FreeTypeFont) -> None:
 
 
 @pytest.mark.parametrize(
-    "align, ext", (("left", ""), ("center", "_center"), ("right", "_right"))
+    "align, ext",
+    (("left", ""), ("center", "_center"), ("right", "_right"), ("justify", "_justify")),
 )
 def test_render_multiline_text_align(
     font: ImageFont.FreeTypeFont, align: str, ext: str
@@ -264,6 +268,23 @@ def test_render_multiline_text_align(
     draw.multiline_text((0, 0), TEST_TEXT, font=font, align=align)
 
     assert_image_similar_tofile(im, f"Tests/images/multiline_text{ext}.png", 0.01)
+
+
+def test_render_multiline_text_justify_anchor(
+    font: ImageFont.FreeTypeFont,
+) -> None:
+    im = Image.new("RGB", (280, 240))
+    draw = ImageDraw.Draw(im)
+    for xy, anchor in (((0, 0), "la"), ((140, 80), "ma"), ((280, 160), "ra")):
+        draw.multiline_text(
+            xy,
+            "hey you you are awesome\nthis looks awkward\nthis\nlooks awkward",
+            font=font,
+            anchor=anchor,
+            align="justify",
+        )
+
+    assert_image_equal_tofile(im, "Tests/images/multiline_text_justify_anchor.png")
 
 
 def test_unknown_align(font: ImageFont.FreeTypeFont) -> None:
@@ -347,7 +368,7 @@ def test_rotated_transposed_font(
         bbox_b[2] - bbox_b[0],
     )
 
-    # Check top left co-ordinates are correct
+    # Check top left coordinates are correct
     assert bbox_b[:2] == (20, 20)
 
     # text length is undefined for vertical text
@@ -392,7 +413,7 @@ def test_unrotated_transposed_font(
         bbox_b[3] - bbox_b[1],
     )
 
-    # Check top left co-ordinates are correct
+    # Check top left coordinates are correct
     assert bbox_b[:2] == (20, 20)
 
     assert length_a == length_b
@@ -461,6 +482,25 @@ def test_free_type_font_get_mask(font: ImageFont.FreeTypeFont) -> None:
     assert mask.size == (108, 13)
 
 
+def test_stroke_mask() -> None:
+    # Arrange
+    text = "i"
+
+    # Act
+    font = ImageFont.truetype(FONT_PATH, 128)
+    mask = font.getmask(text, stroke_width=2)
+
+    # Assert
+    assert mask.getpixel((34, 5)) == 255
+    assert mask.getpixel((38, 5)) == 0
+    assert mask.getpixel((42, 5)) == 255
+
+
+def test_load_invalid_file() -> None:
+    with pytest.raises(SyntaxError, match="Not a PILfont file"):
+        ImageFont.load("Tests/images/1_trns.png")
+
+
 def test_load_when_image_not_found() -> None:
     with tempfile.NamedTemporaryFile(delete=False) as tmp:
         pass
@@ -518,7 +558,7 @@ def test_default_font() -> None:
     draw.text((10, 60), txt, font=larger_default_font)
 
     # Assert
-    assert_image_equal_tofile(im, "Tests/images/default_font_freetype.png")
+    assert_image_similar_tofile(im, "Tests/images/default_font_freetype.png", 0.13)
 
 
 @pytest.mark.parametrize("mode", ("", "1", "RGBA"))
@@ -543,7 +583,7 @@ def test_render_empty(font: ImageFont.FreeTypeFont) -> None:
 
 def test_unicode_extended(layout_engine: ImageFont.Layout) -> None:
     # issue #3777
-    text = "A\u278A\U0001F12B"
+    text = "A\u278a\U0001f12b"
     target = "Tests/images/unicode_extended.png"
 
     ttf = ImageFont.truetype(
@@ -659,23 +699,13 @@ def test_complex_font_settings() -> None:
 
 
 def test_variation_get(font: ImageFont.FreeTypeFont) -> None:
-    version = features.version_module("freetype2")
-    assert version is not None
-    freetype = parse_version(version)
-    if freetype < parse_version("2.9.1"):
-        with pytest.raises(NotImplementedError):
-            font.get_variation_names()
-        with pytest.raises(NotImplementedError):
-            font.get_variation_axes()
-        return
-
     with pytest.raises(OSError):
         font.get_variation_names()
     with pytest.raises(OSError):
         font.get_variation_axes()
 
     font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf")
-    assert font.get_variation_names(), [
+    assert font.get_variation_names() == [
         b"ExtraLight",
         b"Light",
         b"Regular",
@@ -715,6 +745,21 @@ def test_variation_get(font: ImageFont.FreeTypeFont) -> None:
     ]
 
 
+def test_variation_duplicates() -> None:
+    font = ImageFont.truetype("Tests/fonts/AdobeVFPrototypeDuplicates.ttf")
+    assert font.get_variation_names() == [
+        b"ExtraLight",
+        b"Light",
+        b"Regular",
+        b"Semibold",
+        b"Bold",
+        b"Black",
+        b"Black Medium Contrast",
+        b"Black High Contrast",
+        b"Default",
+    ]
+
+
 def _check_text(font: ImageFont.FreeTypeFont, path: str, epsilon: float) -> None:
     im = Image.new("RGB", (100, 75), "white")
     d = ImageDraw.Draw(im)
@@ -731,14 +776,6 @@ def _check_text(font: ImageFont.FreeTypeFont, path: str, epsilon: float) -> None
 
 
 def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
-    version = features.version_module("freetype2")
-    assert version is not None
-    freetype = parse_version(version)
-    if freetype < parse_version("2.9.1"):
-        with pytest.raises(NotImplementedError):
-            font.set_variation_by_name("Bold")
-        return
-
     with pytest.raises(OSError):
         font.set_variation_by_name("Bold")
 
@@ -758,14 +795,6 @@ def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
 
 
 def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
-    version = features.version_module("freetype2")
-    assert version is not None
-    freetype = parse_version(version)
-    if freetype < parse_version("2.9.1"):
-        with pytest.raises(NotImplementedError):
-            font.set_variation_by_axes([100])
-        return
-
     with pytest.raises(OSError):
         font.set_variation_by_axes([500, 50])
 
@@ -795,7 +824,7 @@ def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
     ids=("ls", "ms", "rs", "ma", "mt", "mm", "mb", "md"),
 )
 def test_anchor(
-    layout_engine: ImageFont.Layout, anchor: str, left: int, top: int
+    layout_engine: ImageFont.Layout, anchor: str, left: float, top: float
 ) -> None:
     name, text = "quick", "Quick"
     path = f"Tests/images/test_anchor_{name}_{anchor}.png"
@@ -1012,7 +1041,7 @@ def test_sbix(layout_engine: ImageFont.Layout) -> None:
         im = Image.new("RGB", (400, 400), "white")
         d = ImageDraw.Draw(im)
 
-        d.text((50, 50), "\uE901", font=font, embedded_color=True)
+        d.text((50, 50), "\ue901", font=font, embedded_color=True)
 
         assert_image_similar_tofile(im, "Tests/images/chromacheck-sbix.png", 1)
     except OSError as e:  # pragma: no cover
@@ -1029,7 +1058,7 @@ def test_sbix_mask(layout_engine: ImageFont.Layout) -> None:
         im = Image.new("RGB", (400, 400), "white")
         d = ImageDraw.Draw(im)
 
-        d.text((50, 50), "\uE901", (100, 0, 0), font=font)
+        d.text((50, 50), "\ue901", (100, 0, 0), font=font)
 
         assert_image_similar_tofile(im, "Tests/images/chromacheck-sbix_mask.png", 1)
     except OSError as e:  # pragma: no cover
@@ -1050,7 +1079,10 @@ def test_colr(layout_engine: ImageFont.Layout) -> None:
 
     d.text((15, 5), "Bungee", font=font, embedded_color=True)
 
-    assert_image_similar_tofile(im, "Tests/images/colr_bungee.png", 21)
+    if has_feature_version("freetype2", "2.14.0"):
+        assert_image_similar_tofile(im, "Tests/images/colr_bungee.png", 6.1)
+    else:
+        assert_image_similar_tofile(im, "Tests/images/colr_bungee_older.png", 21)
 
 
 @skip_unless_feature_version("freetype2", "2.10.0")
@@ -1066,7 +1098,7 @@ def test_colr_mask(layout_engine: ImageFont.Layout) -> None:
 
     d.text((15, 5), "Bungee", "black", font=font)
 
-    assert_image_similar_tofile(im, "Tests/images/colr_bungee_mask.png", 22)
+    assert_image_similar_tofile(im, "Tests/images/colr_bungee_mask.png", 14.1)
 
 
 def test_woff2(layout_engine: ImageFont.Layout) -> None:
@@ -1160,15 +1192,15 @@ def test_oom(test_file: str) -> None:
 
 def test_raqm_missing_warning(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(ImageFont.core, "HAVE_RAQM", False)
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(
+        UserWarning,
+        match="Raqm layout was requested, but Raqm is not available. "
+        "Falling back to basic layout.",
+    ):
         font = ImageFont.truetype(
             FONT_PATH, FONT_SIZE, layout_engine=ImageFont.Layout.RAQM
         )
     assert font.layout_engine == ImageFont.Layout.BASIC
-    assert str(record[-1].message) == (
-        "Raqm layout was requested, but Raqm is not available. "
-        "Falling back to basic layout."
-    )
 
 
 @pytest.mark.parametrize("size", [-1, 0])
@@ -1177,15 +1209,3 @@ def test_invalid_truetype_sizes_raise_valueerror(
 ) -> None:
     with pytest.raises(ValueError):
         ImageFont.truetype(FONT_PATH, size, layout_engine=layout_engine)
-
-
-def test_freetype_deprecation(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Arrange: mock features.version_module to return fake FreeType version
-    def fake_version_module(module: str) -> str:
-        return "2.9.0"
-
-    monkeypatch.setattr(features, "version_module", fake_version_module)
-
-    # Act / Assert
-    with pytest.warns(DeprecationWarning):
-        ImageFont.truetype(FONT_PATH, FONT_SIZE)

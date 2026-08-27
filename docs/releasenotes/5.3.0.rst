@@ -1,7 +1,7 @@
 5.3.0
 -----
 
-API Changes
+API changes
 ===========
 
 Image size
@@ -20,7 +20,7 @@ The exceptions to this are:
   as direct image size setting was previously necessary to work around an issue with tile extents.
 
 
-API Additions
+API additions
 =============
 
 Added line width parameter to rectangle and ellipse-based shapes
@@ -59,7 +59,7 @@ and size, new method ``ImageOps.pad`` pads images to fill a requested aspect
 ratio and size, filling new space with a provided ``color`` and positioning the
 image within the new area through a ``centering`` argument.
 
-Other Changes
+Other changes
 =============
 
 Added support for reading tiled TIFF images through LibTIFF. Compressed TIFF

@@ -159,9 +159,9 @@ def test_reducing_gap_for_DCT_scaling() -> None:
     with Image.open("Tests/images/hopper.jpg") as ref:
         # thumbnail should call draft with reducing_gap scale
         ref.draft(None, (18 * 3, 18 * 3))
-        ref = ref.resize((18, 18), Image.Resampling.BICUBIC)
+        im_ref = ref.resize((18, 18), Image.Resampling.BICUBIC)
 
         with Image.open("Tests/images/hopper.jpg") as im:
             im.thumbnail((18, 18), Image.Resampling.BICUBIC, reducing_gap=3.0)
 
-            assert_image_similar(ref, im, 1.4)
+            assert_image_similar(im_ref, im, 1.4)

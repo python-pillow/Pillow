@@ -28,7 +28,7 @@ from ._binary import i16le as i16
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"\200\350\000\000"
+    return prefix.startswith(b"\200\350\000\000")
 
 
 ##

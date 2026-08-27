@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pathlib import Path
+import io
 
 import pytest
 
@@ -8,9 +8,13 @@ from PIL import Image, ImageFile, PcxImagePlugin
 
 from .helper import assert_image_equal, hopper
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 def _roundtrip(tmp_path: Path, im: Image.Image) -> None:
-    f = str(tmp_path / "temp.pcx")
+    f = tmp_path / "temp.pcx"
     im.save(f)
     with Image.open(f) as im2:
         assert im2.mode == im.mode
@@ -30,10 +34,45 @@ def test_sanity(tmp_path: Path) -> None:
     _roundtrip(tmp_path, im)
 
     # Test an unsupported mode
-    f = str(tmp_path / "temp.pcx")
+    f = tmp_path / "temp.pcx"
     im = hopper("RGBA")
     with pytest.raises(ValueError):
         im.save(f)
+
+
+@pytest.mark.parametrize("size", ((0, 1), (1, 0), (0, 0)))
+def test_save_zero(size: tuple[int, int]) -> None:
+    b = io.BytesIO()
+    im = Image.new("1", size)
+    with pytest.raises(ValueError):
+        im.save(b, "PCX")
+
+
+def test_p_4_planes() -> None:
+    with Image.open("Tests/images/p_4_planes.pcx") as im:
+        assert im.getpixel((0, 0)) == 3
+
+
+def test_bad_image_size() -> None:
+    with open("Tests/images/pil184.pcx", "rb") as fp:
+        data = fp.read()
+    data = data[:4] + b"\xff\xff" + data[6:]
+
+    b = io.BytesIO(data)
+    with pytest.raises(SyntaxError, match="bad PCX image size"):
+        with PcxImagePlugin.PcxImageFile(b):
+            pass
+
+
+def test_unknown_mode() -> None:
+    with open("Tests/images/pil184.pcx", "rb") as fp:
+        data = fp.read()
+    data = data[:3] + b"\xff" + data[4:]
+
+    b = io.BytesIO(data)
+    with pytest.raises(OSError, match="unknown PCX mode"):
+        with Image.open(b):
+            pass
 
 
 def test_invalid_file() -> None:
@@ -44,13 +83,14 @@ def test_invalid_file() -> None:
 
 
 @pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
-def test_odd(tmp_path: Path, mode: str) -> None:
+@pytest.mark.parametrize("size", (3, 511))
+def test_odd(tmp_path: Path, mode: str, size: int) -> None:
     # See issue #523, odd sized images should have a stride that's even.
     # Not that ImageMagick or GIMP write PCX that way.
     # We were not handling properly.
     # larger, odd sized images are better here to ensure that
     # we handle interrupted scan lines properly.
-    _roundtrip(tmp_path, hopper(mode).resize((511, 511)))
+    _roundtrip(tmp_path, hopper(mode).resize((size, size)))
 
 
 def test_odd_read() -> None:
@@ -91,36 +131,36 @@ def test_large_count(tmp_path: Path) -> None:
     _roundtrip(tmp_path, im)
 
 
-def _test_buffer_overflow(tmp_path: Path, im: Image.Image, size: int = 1024) -> None:
-    _last = ImageFile.MAXBLOCK
-    ImageFile.MAXBLOCK = size
-    try:
-        _roundtrip(tmp_path, im)
-    finally:
-        ImageFile.MAXBLOCK = _last
+def _test_buffer_overflow(
+    tmp_path: Path, im: Image.Image, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(ImageFile, "MAXBLOCK", 1024)
+    _roundtrip(tmp_path, im)
 
 
-def test_break_in_count_overflow(tmp_path: Path) -> None:
+def test_break_in_count_overflow(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     assert px is not None
     for y in range(4):
         for x in range(256):
             px[x, y] = x % 128
-    _test_buffer_overflow(tmp_path, im)
+    _test_buffer_overflow(tmp_path, im, monkeypatch)
 
 
-def test_break_one_in_loop(tmp_path: Path) -> None:
+def test_break_one_in_loop(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     assert px is not None
     for y in range(5):
         for x in range(256):
             px[x, y] = x % 128
-    _test_buffer_overflow(tmp_path, im)
+    _test_buffer_overflow(tmp_path, im, monkeypatch)
 
 
-def test_break_many_in_loop(tmp_path: Path) -> None:
+def test_break_many_in_loop(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     assert px is not None
@@ -129,10 +169,10 @@ def test_break_many_in_loop(tmp_path: Path) -> None:
             px[x, y] = x % 128
     for x in range(8):
         px[x, 4] = 16
-    _test_buffer_overflow(tmp_path, im)
+    _test_buffer_overflow(tmp_path, im, monkeypatch)
 
 
-def test_break_one_at_end(tmp_path: Path) -> None:
+def test_break_one_at_end(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     assert px is not None
@@ -140,10 +180,10 @@ def test_break_one_at_end(tmp_path: Path) -> None:
         for x in range(256):
             px[x, y] = x % 128
     px[0, 3] = 128 + 64
-    _test_buffer_overflow(tmp_path, im)
+    _test_buffer_overflow(tmp_path, im, monkeypatch)
 
 
-def test_break_many_at_end(tmp_path: Path) -> None:
+def test_break_many_at_end(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     assert px is not None
@@ -153,10 +193,10 @@ def test_break_many_at_end(tmp_path: Path) -> None:
     for x in range(4):
         px[x * 2, 3] = 128 + 64
         px[x + 256 - 4, 3] = 0
-    _test_buffer_overflow(tmp_path, im)
+    _test_buffer_overflow(tmp_path, im, monkeypatch)
 
 
-def test_break_padding(tmp_path: Path) -> None:
+def test_break_padding(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     im = Image.new("L", (257, 5))
     px = im.load()
     assert px is not None
@@ -165,4 +205,17 @@ def test_break_padding(tmp_path: Path) -> None:
             px[x, y] = x % 128
     for x in range(5):
         px[x, 3] = 0
-    _test_buffer_overflow(tmp_path, im)
+    _test_buffer_overflow(tmp_path, im, monkeypatch)
+
+
+@pytest.mark.parametrize(
+    "data_len, rawmode",
+    (
+        (5, "P;4L"),
+        (3, "P;2L"),
+    ),
+)
+def test_truncated(data_len: int, rawmode: str) -> None:
+    data = b"\x00" * data_len
+    with pytest.raises(ValueError, match="not enough image data"):
+        Image.frombuffer("P", (9, 1), data, "raw", rawmode, 0, 1)

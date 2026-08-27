@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import os
 import re
-from collections.abc import Generator
+import struct
 from io import BytesIO
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -26,13 +25,18 @@ from .helper import (
     skip_unless_feature_version,
 )
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
+
 EXTRA_DIR = "Tests/images/jpeg2000"
 
 pytestmark = skip_unless_feature("jpg_2000")
 
 
 @pytest.fixture
-def card() -> Generator[ImageFile.ImageFile, None, None]:
+def card() -> Generator[ImageFile.ImageFile]:
     with Image.open("Tests/images/test-card.png") as im:
         im.load()
     try:
@@ -63,6 +67,7 @@ def test_sanity() -> None:
 
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         px = im.load()
+        assert px is not None
         assert px[0, 0] == (0, 0, 0)
         assert im.mode == "RGB"
         assert im.size == (640, 480)
@@ -98,7 +103,7 @@ def test_bytesio(card: ImageFile.ImageFile) -> None:
 def test_lossless(card: ImageFile.ImageFile, tmp_path: Path) -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         im.load()
-        outfile = str(tmp_path / "temp_test-card.png")
+        outfile = tmp_path / "temp_test-card.png"
         im.save(outfile)
     assert_image_similar(im, card, 1.0e-3)
 
@@ -147,6 +152,22 @@ def test_prog_res_rt(card: ImageFile.ImageFile) -> None:
     assert_image_equal(im, card)
 
 
+def test_unknown_progression(tmp_path: Path) -> None:
+    outfile = tmp_path / "temp.jp2"
+
+    im = Image.new("1", (1, 1))
+    with pytest.raises(ValueError, match="unknown progression"):
+        im.save(outfile, progression="invalid")
+
+
+def test_unknown_cinema_mode(tmp_path: Path) -> None:
+    outfile = tmp_path / "temp.jp2"
+
+    im = Image.new("1", (1, 1))
+    with pytest.raises(ValueError, match="unknown cinema mode"):
+        im.save(outfile, cinema_mode="invalid")
+
+
 @pytest.mark.parametrize("num_resolutions", range(2, 6))
 def test_default_num_resolutions(
     card: ImageFile.ImageFile, num_resolutions: int
@@ -161,7 +182,7 @@ def test_default_num_resolutions(
 
 def test_reduce() -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
-        assert callable(im.reduce)
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
 
         im.reduce = 2
         assert im.reduce == 2
@@ -181,14 +202,11 @@ def test_load_dpi() -> None:
         assert "dpi" not in im.info
 
 
-def test_restricted_icc_profile() -> None:
-    ImageFile.LOAD_TRUNCATED_IMAGES = True
-    try:
-        # JPEG2000 image with a restricted ICC profile and a known colorspace
-        with Image.open("Tests/images/balloon_eciRGBv2_aware.jp2") as im:
-            assert im.mode == "RGB"
-    finally:
-        ImageFile.LOAD_TRUNCATED_IMAGES = False
+def test_restricted_icc_profile(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+    # JPEG2000 image with a restricted ICC profile and a known colorspace
+    with Image.open("Tests/images/balloon_eciRGBv2_aware.jp2") as im:
+        assert im.mode == "RGB"
 
 
 @pytest.mark.skipif(
@@ -214,8 +232,21 @@ def test_header_errors() -> None:
             pass
 
 
+@pytest.mark.parametrize("tbox", (b"", b"jp2h"))
+def test_oversized_box_length(tbox: bytes) -> None:
+    # Do not raise an OverflowError() when seeking to the end of a box,
+    # or when reading the contents of a box
+    data = (
+        b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a"  # JP2 signature box
+        + struct.pack(">I4s", 1, tbox)  # box with 64-bit length
+        + struct.pack(">Q", 2**63 - 12)  # oversized length
+    )
+    with pytest.raises(SyntaxError, match="Box length too large"):
+        Jpeg2KImagePlugin.Jpeg2KImageFile(BytesIO(data))
+
+
 def test_layers_type(card: ImageFile.ImageFile, tmp_path: Path) -> None:
-    outfile = str(tmp_path / "temp_layers.jp2")
+    outfile = tmp_path / "temp_layers.jp2"
     for quality_layers in [[100, 50, 10], (100, 50, 10), None]:
         card.save(outfile, quality_layers=quality_layers)
 
@@ -230,12 +261,14 @@ def test_layers(card: ImageFile.ImageFile) -> None:
     out.seek(0)
 
     with Image.open(out) as im:
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
         im.layers = 1
         im.load()
         assert_image_similar(im, card, 13)
 
     out.seek(0)
     with Image.open(out) as im:
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
         im.layers = 3
         im.load()
         assert_image_similar(im, card, 0.4)
@@ -291,7 +324,7 @@ def test_mct(card: ImageFile.ImageFile) -> None:
 
 
 def test_sgnd(tmp_path: Path) -> None:
-    outfile = str(tmp_path / "temp.jp2")
+    outfile = tmp_path / "temp.jp2"
 
     im = Image.new("L", (1, 1))
     im.save(outfile)
@@ -312,6 +345,18 @@ def test_rgba(ext: str) -> None:
         im.load()
 
         # Assert
+        assert im.mode == "RGBA"
+
+
+def test_grayscale_four_channels() -> None:
+    with open("Tests/images/rgb_trns_ycbc.jp2", "rb") as fp:
+        data = fp.read()
+
+    # Change color space to OPJ_CLRSPC_GRAY
+    data = data[:76] + b"\x11" + data[77:]
+
+    with Image.open(BytesIO(data)) as im:
+        im.load()
         assert im.mode == "RGBA"
 
 
@@ -424,13 +469,23 @@ def test_subsampling_decode(name: str) -> None:
 def test_pclr() -> None:
     with Image.open(f"{EXTRA_DIR}/issue104_jpxstream.jp2") as im:
         assert im.mode == "P"
+        assert im.palette is not None
         assert len(im.palette.colors) == 256
         assert im.palette.colors[(255, 255, 255)] == 0
+
+    for enumcs in (0, 15, 17):
+        with open(f"{EXTRA_DIR}/issue104_jpxstream.jp2", "rb") as fp:
+            data = bytearray(fp.read())
+        data[114:115] = bytes([enumcs])
+        with Image.open(BytesIO(data)) as im:
+            assert im.mode == "L"
 
     with Image.open(
         f"{EXTRA_DIR}/147af3f1083de4393666b7d99b01b58b_signal_sigsegv_130c531_6155_5136.jp2"
     ) as im:
         assert im.mode == "P"
+        assert im.palette is not None
+        assert im.palette.mode == "CMYK"
         assert len(im.palette.colors) == 139
         assert im.palette.colors[(0, 0, 0, 0)] == 0
 
@@ -443,8 +498,8 @@ def test_comment() -> None:
     # Test an image that is truncated partway through a codestream
     with open("Tests/images/comment.jp2", "rb") as fp:
         b = BytesIO(fp.read(130))
-        with Image.open(b) as im:
-            pass
+    with Image.open(b) as im:
+        pass
 
 
 def test_save_comment(card: ImageFile.ImageFile) -> None:
@@ -492,8 +547,7 @@ def test_plt_marker(card: ImageFile.ImageFile) -> None:
     out.seek(0)
     while True:
         marker = out.read(2)
-        if not marker:
-            pytest.fail("End of stream without PLT")
+        assert marker, "End of stream without PLT"
 
         jp2_boxid = _binary.i16be(marker)
         if jp2_boxid == 0xFF4F:
@@ -508,6 +562,18 @@ def test_plt_marker(card: ImageFile.ImageFile) -> None:
         hdr = out.read(2)
         length = _binary.i16be(hdr)
         out.seek(length - 2, os.SEEK_CUR)
+
+
+def test_marker_length() -> None:
+    magic = b"\xff\x4f\xff\x51"
+    b = BytesIO(magic + b"\x00\x00")
+    with pytest.raises(ValueError, match="SIZ marker length must be at least 38"):
+        Image.open(b)
+
+    siz_marker = _binary.o16be(38) + b"\x00" * 34 + struct.pack(">H", 2)
+    b = BytesIO(magic + siz_marker + b"\x00" * 4)
+    with pytest.raises(ValueError, match="Marker length too small"):
+        Image.open(b)
 
 
 def test_9bit() -> None:

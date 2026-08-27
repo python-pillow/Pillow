@@ -1,13 +1,10 @@
 from __future__ import annotations
 
 import os.path
-from collections.abc import Sequence
-from typing import Callable
 
 import pytest
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont, features
-from PIL._typing import Coords
 
 from .helper import (
     assert_image_equal,
@@ -16,6 +13,12 @@ from .helper import (
     hopper,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+
+    from PIL._typing import Coords
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -39,6 +42,8 @@ BBOX = (((X0, Y0), (X1, Y1)), [(X0, Y0), (X1, Y1)], (X0, Y0, X1, Y1), [X0, Y0, X
 POINTS = (
     ((10, 10), (20, 40), (30, 30)),
     [(10, 10), (20, 40), (30, 30)],
+    ([10, 10], [20, 40], [30, 30]),
+    [[10, 10], [20, 40], [30, 30]],
     (10, 10, 20, 40, 30, 30),
     [10, 10, 20, 40, 30, 30],
 )
@@ -46,6 +51,8 @@ POINTS = (
 KITE_POINTS = (
     ((10, 50), (70, 10), (90, 50), (70, 90), (10, 50)),
     [(10, 50), (70, 10), (90, 50), (70, 90), (10, 50)],
+    ([10, 50], [70, 10], [90, 50], [70, 90], [10, 50]),
+    [[10, 50], [70, 10], [90, 50], [70, 90], [10, 50]],
 )
 
 
@@ -61,10 +68,22 @@ def test_sanity() -> None:
     draw.rectangle(list(range(4)))
 
 
-def test_valueerror() -> None:
+def test_new_color() -> None:
     with Image.open("Tests/images/chi.gif") as im:
         draw = ImageDraw.Draw(im)
+        assert im.palette is not None
+        assert len(im.palette.colors) == 249
+
+        # Test drawing a new color onto the palette
         draw.line((0, 0), fill=(0, 0, 0))
+        assert im.palette is not None
+        assert len(im.palette.colors) == 250
+        assert im.palette.dirty
+
+        # Test drawing another new color, now that the palette is dirty
+        draw.point((0, 0), fill=(1, 0, 0))
+        assert len(im.palette.colors) == 251
+        assert im.convert("RGB").getpixel((0, 0)) == (1, 0, 0)
 
 
 def test_mode_mismatch() -> None:
@@ -191,10 +210,10 @@ def test_bitmap() -> None:
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
     with Image.open("Tests/images/pil123rgba.png") as small:
-        small = small.resize((50, 50), Image.Resampling.NEAREST)
+        small_resized = small.resize((50, 50), Image.Resampling.NEAREST)
 
         # Act
-        draw.bitmap((10, 10), small)
+        draw.bitmap((10, 10), small_resized)
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_bitmap.png")
@@ -448,7 +467,6 @@ def test_shape1() -> None:
     x3, y3 = 95, 5
 
     # Act
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.move(x0, y0)
     s.curve(x1, y1, x2, y2, x3, y3)
@@ -470,7 +488,6 @@ def test_shape2() -> None:
     x3, y3 = 5, 95
 
     # Act
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.move(x0, y0)
     s.curve(x1, y1, x2, y2, x3, y3)
@@ -489,7 +506,6 @@ def test_transform() -> None:
     draw = ImageDraw.Draw(im)
 
     # Act
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.line(0, 0)
     s.transform((0, 0, 0, 0, 0, 0))
@@ -782,9 +798,10 @@ def test_rectangle_I16(bbox: Coords) -> None:
     draw = ImageDraw.Draw(im)
 
     # Act
-    draw.rectangle(bbox, outline=0xFFFF)
+    draw.rectangle(bbox, outline=0xCDEF)
 
     # Assert
+    assert im.getpixel((X0, Y0)) == 0xCDEF
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_I.tiff")
 
 
@@ -812,7 +829,7 @@ def test_rounded_rectangle(
         tuple[int, int, int, int]
         | tuple[list[int]]
         | tuple[tuple[int, int], tuple[int, int]]
-    )
+    ),
 ) -> None:
     # Arrange
     im = Image.new("RGB", (200, 200))
@@ -878,6 +895,18 @@ def test_rounded_rectangle_joined_x_different_corners() -> None:
     )
 
 
+def test_rounded_rectangle_radius() -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im, "RGB")
+
+    # Act
+    draw.rounded_rectangle((25, 25, 75, 75), 24, fill="red", outline="green", width=5)
+
+    # Assert
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_rounded_rectangle_radius.png")
+
+
 @pytest.mark.parametrize(
     "xy, radius, type",
     [
@@ -914,6 +943,21 @@ def test_rounded_rectangle_zero_radius(bbox: Coords) -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_width_fill.png")
+
+
+@pytest.mark.parametrize("w, h", ((200, 100), (100, 200)))
+def test_rounded_rectangle_large_radius(w: int, h: int) -> None:
+    im = Image.new("RGB", (w, h))
+    draw = ImageDraw.Draw(im)
+    draw.rounded_rectangle(
+        (0, 0, w, h), 100, "red", corners=(True, False, False, False)
+    )
+
+    expected = Image.new("RGB", (w, h))
+    draw = ImageDraw.Draw(expected)
+    draw.rounded_rectangle((0, 0, w, h), 50, "red", corners=(True, False, False, False))
+
+    assert_image_equal(im, expected)
 
 
 @pytest.mark.parametrize(
@@ -1047,8 +1091,8 @@ def create_base_image_draw(
     background2: tuple[int, int, int] = GRAY,
 ) -> tuple[Image.Image, ImageDraw.ImageDraw]:
     img = Image.new(mode, size, background1)
-    for x in range(0, size[0]):
-        for y in range(0, size[1]):
+    for x in range(size[0]):
+        for y in range(size[1]):
             if (x + y) % 2 == 0:
                 img.putpixel((x, y), background2)
     return img, ImageDraw.Draw(img)
@@ -1397,6 +1441,28 @@ def test_stroke_descender() -> None:
 
 
 @skip_unless_feature("freetype2")
+def test_stroke_inside_gap() -> None:
+    # Arrange
+    im = Image.new("RGB", (120, 130))
+    draw = ImageDraw.Draw(im)
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
+
+    # Act
+    draw.text((12, 12), "i", "#f00", font, stroke_width=20)
+
+    # Assert
+    for y in range(im.height):
+        glyph = ""
+        for x in range(im.width):
+            if im.getpixel((x, y)) == (0, 0, 0):
+                if glyph == "started":
+                    glyph = "ended"
+            else:
+                assert glyph != "ended", "Gap inside stroked glyph"
+                glyph = "started"
+
+
+@skip_unless_feature("freetype2")
 def test_split_word() -> None:
     # Arrange
     im = Image.new("RGB", (230, 55))
@@ -1434,21 +1500,15 @@ def test_stroke_multiline() -> None:
 
 
 @skip_unless_feature("freetype2")
-def test_setting_default_font() -> None:
-    # Arrange
+def test_setting_default_font(monkeypatch: pytest.MonkeyPatch) -> None:
     im = Image.new("RGB", (100, 250))
     draw = ImageDraw.Draw(im)
+    assert isinstance(draw.getfont(), ImageFont.load_default().__class__)
+
+    draw = ImageDraw.Draw(im)
     font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
-
-    # Act
-    ImageDraw.ImageDraw.font = font
-
-    # Assert
-    try:
-        assert draw.getfont() == font
-    finally:
-        ImageDraw.ImageDraw.font = None
-        assert isinstance(draw.getfont(), ImageFont.load_default().__class__)
+    monkeypatch.setattr(ImageDraw.ImageDraw, "font", font)
+    assert draw.getfont() == font
 
 
 def test_default_font_size() -> None:
@@ -1467,7 +1527,9 @@ def test_default_font_size() -> None:
 
     def draw_text() -> None:
         draw.text((0, 0), text, font_size=16)
-        assert_image_equal_tofile(im, "Tests/images/imagedraw_default_font_size.png")
+        assert_image_similar_tofile(
+            im, "Tests/images/imagedraw_default_font_size.png", 1
+        )
 
     check(draw_text)
 
@@ -1486,7 +1548,9 @@ def test_default_font_size() -> None:
 
     def draw_multiline_text() -> None:
         draw.multiline_text((0, 0), text, font_size=16)
-        assert_image_equal_tofile(im, "Tests/images/imagedraw_default_font_size.png")
+        assert_image_similar_tofile(
+            im, "Tests/images/imagedraw_default_font_size.png", 1
+        )
 
     check(draw_multiline_text)
 
@@ -1504,7 +1568,6 @@ def test_same_color_outline(bbox: Coords) -> None:
     x2, y2 = 95, 50
     x3, y3 = 95, 5
 
-    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.move(x0, y0)
     s.curve(x1, y1, x2, y2, x3, y3)
@@ -1607,8 +1670,10 @@ def test_compute_regular_polygon_vertices(
             (50, 50, 100, 100),
             0,
             ValueError,
-            "bounding_circle should contain 2D coordinates "
-            "and a radius (e.g. (x, y, r) or ((x, y), r) )",
+            (
+                "bounding_circle should contain 2D coordinates "
+                r"and a radius \(e.g. \(x, y, r\) or \(\(x, y\), r\) \)"
+            ),
         ),
         (
             3,
@@ -1622,7 +1687,7 @@ def test_compute_regular_polygon_vertices(
             ((50, 50, 50), 25),
             0,
             ValueError,
-            "bounding_circle centre should contain 2D coordinates (e.g. (x, y))",
+            r"bounding_circle centre should contain 2D coordinates \(e.g. \(x, y\)\)",
         ),
         (
             3,
@@ -1647,9 +1712,8 @@ def test_compute_regular_polygon_vertices_input_error_handling(
     expected_error: type[Exception],
     error_message: str,
 ) -> None:
-    with pytest.raises(expected_error) as e:
+    with pytest.raises(expected_error, match=error_message):
         ImageDraw._compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)  # type: ignore[arg-type]
-    assert str(e.value) == error_message
 
 
 def test_continuous_horizontal_edges_polygon() -> None:
@@ -1683,7 +1747,7 @@ def test_discontiguous_corners_polygon() -> None:
         BLACK,
     )
     expected = os.path.join(IMAGES_PATH, "discontiguous_corners_polygon.png")
-    assert_image_similar_tofile(img, expected, 1)
+    assert_image_equal_tofile(img, expected)
 
 
 def test_polygon2() -> None:
@@ -1710,8 +1774,3 @@ def test_incorrectly_ordered_coordinates(xy: tuple[int, int, int, int]) -> None:
         draw.rectangle(xy)
     with pytest.raises(ValueError):
         draw.rounded_rectangle(xy)
-
-
-def test_getdraw() -> None:
-    with pytest.warns(DeprecationWarning):
-        ImageDraw.getdraw(None, [])

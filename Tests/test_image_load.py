@@ -38,6 +38,7 @@ def test_close_after_load(caplog: pytest.LogCaptureFixture) -> None:
 def test_contextmanager() -> None:
     fn = None
     with Image.open("Tests/images/hopper.gif") as im:
+        assert im.fp is not None
         fn = im.fp.fileno()
         os.fstat(fn)
 

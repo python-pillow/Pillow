@@ -12,19 +12,16 @@ ORIGINAL_LIMIT = Image.MAX_IMAGE_PIXELS
 
 
 class TestDecompressionBomb:
-    def teardown_method(self) -> None:
-        Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
-
     def test_no_warning_small_file(self) -> None:
         # Implicit assert: no warning.
         # A warning would cause a failure.
         with Image.open(TEST_FILE):
             pass
 
-    def test_no_warning_no_limit(self) -> None:
+    def test_no_warning_no_limit(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # Arrange
         # Turn limit off
-        Image.MAX_IMAGE_PIXELS = None
+        monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", None)
         assert Image.MAX_IMAGE_PIXELS is None
 
         # Act / Assert
@@ -33,18 +30,18 @@ class TestDecompressionBomb:
         with Image.open(TEST_FILE):
             pass
 
-    def test_warning(self) -> None:
+    def test_warning(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # Set limit to trigger warning on the test file
-        Image.MAX_IMAGE_PIXELS = 128 * 128 - 1
+        monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 128 * 128 - 1)
         assert Image.MAX_IMAGE_PIXELS == 128 * 128 - 1
 
         with pytest.warns(Image.DecompressionBombWarning):
             with Image.open(TEST_FILE):
                 pass
 
-    def test_exception(self) -> None:
+    def test_exception(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # Set limit to trigger exception on the test file
-        Image.MAX_IMAGE_PIXELS = 64 * 128 - 1
+        monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 64 * 128 - 1)
         assert Image.MAX_IMAGE_PIXELS == 64 * 128 - 1
 
         with pytest.raises(Image.DecompressionBombError):
@@ -66,9 +63,9 @@ class TestDecompressionBomb:
             with pytest.raises(Image.DecompressionBombError):
                 im.seek(1)
 
-    def test_exception_gif_zero_width(self) -> None:
+    def test_exception_gif_zero_width(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # Set limit to trigger exception on the test file
-        Image.MAX_IMAGE_PIXELS = 4 * 64 * 128
+        monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 4 * 64 * 128)
         assert Image.MAX_IMAGE_PIXELS == 4 * 64 * 128
 
         with pytest.raises(Image.DecompressionBombError):

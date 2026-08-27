@@ -1,6 +1,6 @@
 """Pillow (Fork of the Python Imaging Library)
 
-Pillow is the friendly PIL fork by Jeffrey A. Clark and contributors.
+Pillow is the friendly PIL fork by Jeffrey 'Alex' Clark and contributors.
     https://github.com/python-pillow/Pillow/
 
 Pillow is forked from PIL 1.1.7.
@@ -25,6 +25,7 @@ del _version
 
 
 _plugins = [
+    "AvifImagePlugin",
     "BlpImagePlugin",
     "BmpImagePlugin",
     "BufrStubImagePlugin",

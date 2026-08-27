@@ -7,11 +7,12 @@ import fuzzers
 import packaging
 import pytest
 
-from PIL import Image, UnidentifiedImageError, features
+from PIL import Image, features
 from Tests.helper import skip_unless_feature
 
-if sys.platform.startswith("win32"):
-    pytest.skip("Fuzzer is linux only", allow_module_level=True)
+if sys.platform.startswith("win32") or sys.platform == "ios":
+    pytest.skip("Fuzzer doesn't run on Windows or iOS", allow_module_level=True)
+
 libjpeg_turbo_version = features.version("libjpeg_turbo")
 if libjpeg_turbo_version is not None:
     version = packaging.version.parse(libjpeg_turbo_version)
@@ -32,21 +33,17 @@ def test_fuzz_images(path: str) -> None:
             fuzzers.fuzz_image(f.read())
             assert True
     except (
+        # Known exceptions from Pillow
         OSError,
         SyntaxError,
         MemoryError,
         ValueError,
         NotImplementedError,
         OverflowError,
-    ):
-        # Known exceptions that are through from Pillow
-        assert True
-    except (
+        # Known Image.* exceptions
         Image.DecompressionBombError,
         Image.DecompressionBombWarning,
-        UnidentifiedImageError,
     ):
-        # Known Image.* exceptions
         assert True
     finally:
         fuzzers.disable_decompressionbomb_error()

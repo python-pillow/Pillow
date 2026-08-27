@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageFile
 .. py:currentmodule:: PIL.ImageFile
 
-:py:mod:`~PIL.ImageFile` Module
+:py:mod:`~PIL.ImageFile` module
 ===============================
 
 The :py:mod:`~PIL.ImageFile` module provides support functions for the image open
@@ -74,5 +74,6 @@ Constants
 ---------
 
 .. autodata:: PIL.ImageFile.LOAD_TRUNCATED_IMAGES
+.. autodata:: PIL.ImageFile.MAXBLOCK
 .. autodata:: PIL.ImageFile.ERRORS
     :annotation:

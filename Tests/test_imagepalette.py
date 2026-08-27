@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-from pathlib import Path
+import io
 
 import pytest
 
-from PIL import Image, ImagePalette
+from PIL import Image, ImagePalette, PaletteFile
 
 from .helper import assert_image_equal, assert_image_equal_tofile
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_sanity() -> None:
@@ -14,11 +18,32 @@ def test_sanity() -> None:
     assert len(palette.colors) == 256
 
 
+def test_colors_rawmode() -> None:
+    palette = ImagePalette.raw(
+        "BGRX", (0, 0, 0, 0, 255, 255, 255, 0, 0, 0, 255, 0, 0, 255, 0, 0, 255, 0, 0, 0)
+    )
+    assert palette.colors == {
+        (0, 0, 0): 0,
+        (255, 255, 255): 1,
+        (255, 0, 0): 2,
+        (0, 255, 0): 3,
+        (0, 0, 255): 4,
+    }
+
+
 def test_reload() -> None:
     with Image.open("Tests/images/hopper.gif") as im:
         original = im.copy()
+        assert im.palette is not None
         im.palette.dirty = 1
         assert_image_equal(im.convert("RGB"), original.convert("RGB"))
+
+
+def test_save_fp() -> None:
+    palette = ImagePalette.ImagePalette()
+    with io.StringIO() as fp:
+        palette.save(fp)
+        assert not fp.closed
 
 
 def test_getcolor() -> None:
@@ -48,6 +73,12 @@ def test_getcolor() -> None:
         palette.getcolor("unknown")  # type: ignore[arg-type]
 
 
+def test_getcolor_rgba() -> None:
+    palette = ImagePalette.ImagePalette("RGBA", (1, 2, 3, 4))
+    palette.getcolor((5, 6, 7, 8))
+    assert palette.palette == b"\x01\x02\x03\x04\x05\x06\x07\x08"
+
+
 def test_getcolor_rgba_color_rgb_palette() -> None:
     palette = ImagePalette.ImagePalette("RGB")
 
@@ -72,13 +103,17 @@ def test_getcolor_not_special(index: int, palette: ImagePalette.ImagePalette) ->
 
     # Do not use transparency index as a new color
     im.info["transparency"] = index
-    index1 = palette.getcolor((0, 0, 0), im)
+    index1 = palette.getcolor((0, 0, 1), im)
     assert index1 != index
+    roundtripped_palette = ImagePalette.ImagePalette(palette=palette.palette)
+    assert roundtripped_palette.colors[(0, 0, 1)] == index1
 
     # Do not use background index as a new color
     im.info["background"] = index1
-    index2 = palette.getcolor((0, 0, 1), im)
+    index2 = palette.getcolor((0, 0, 2), im)
     assert index2 not in (index, index1)
+    roundtripped_palette = ImagePalette.ImagePalette(palette=palette.palette)
+    assert roundtripped_palette.colors[(0, 0, 2)] == index2
 
 
 def test_file(tmp_path: Path) -> None:
@@ -111,7 +146,7 @@ def test_make_linear_lut() -> None:
     assert isinstance(lut, list)
     assert len(lut) == 256
     # Check values
-    for i in range(0, len(lut)):
+    for i in range(len(lut)):
         assert lut[i] == i
 
 
@@ -189,12 +224,25 @@ def test_2bit_palette(tmp_path: Path) -> None:
 
     rgb = b"\x00" * 2 + b"\x01" * 2 + b"\x02" * 2
     img = Image.frombytes("P", (6, 1), rgb)
-    img.putpalette(b"\xFF\x00\x00\x00\xFF\x00\x00\x00\xFF")  # RGB
+    img.putpalette(b"\xff\x00\x00\x00\xff\x00\x00\x00\xff")  # RGB
     img.save(outfile, format="PNG")
 
     assert_image_equal_tofile(img, outfile)
 
 
+def test_getpalette() -> None:
+    b = io.BytesIO(b"0 1\n1 2 3 4")
+    p = PaletteFile.PaletteFile(b)
+
+    palette, rawmode = p.getpalette()
+    assert palette[:6] == b"\x01\x01\x01\x02\x03\x04"
+    assert rawmode == "RGB"
+
+
 def test_invalid_palette() -> None:
     with pytest.raises(OSError):
         ImagePalette.load("Tests/images/hopper.jpg")
+
+    b = io.BytesIO(b"1" * 101)
+    with pytest.raises(SyntaxError, match="bad palette file"):
+        PaletteFile.PaletteFile(b)

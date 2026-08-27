@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 from typing import IO
 
 import pytest
 
 from PIL import Hdf5StubImagePlugin, Image, ImageFile
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_FILE = "Tests/images/hdf5.h5"
 
@@ -43,7 +46,7 @@ def test_save() -> None:
     # Arrange
     with Image.open(TEST_FILE) as im:
         dummy_fp = BytesIO()
-        dummy_filename = "dummy.filename"
+        dummy_filename = "dummy.h5"
 
         # Act / Assert: stub cannot save without an implemented handler
         with pytest.raises(OSError):
@@ -61,8 +64,9 @@ def test_handler(tmp_path: Path) -> None:
         def open(self, im: Image.Image) -> None:
             self.opened = True
 
-        def load(self, im: Image.Image) -> Image.Image:
+        def load(self, im: ImageFile.ImageFile) -> Image.Image:
             self.loaded = True
+            assert im.fp is not None
             im.fp.close()
             return Image.new("RGB", (1, 1))
 
@@ -81,7 +85,7 @@ def test_handler(tmp_path: Path) -> None:
         im.load()
         assert handler.is_loaded()
 
-        temp_file = str(tmp_path / "temp.h5")
+        temp_file = tmp_path / "temp.h5"
         im.save(temp_file)
         assert handler.saved
 

@@ -1,17 +1,19 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING
 
 import pytest
 
-from PIL import Image, _typing
+from PIL import Image
 
 from .helper import assert_deep_equal, assert_image, hopper, skip_unless_feature
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     import numpy
     import numpy.typing as npt
+
+    from PIL import _typing
 else:
     numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 
@@ -20,23 +22,19 @@ TEST_IMAGE_SIZE = (10, 10)
 
 def test_numpy_to_image() -> None:
     def to_image(dtype: npt.DTypeLike, bands: int = 1, boolean: int = 0) -> Image.Image:
+        data = tuple(range(100))
         if bands == 1:
             if boolean:
-                data = [0, 255] * 50
-            else:
-                data = list(range(100))
-            a = numpy.array(data, dtype=dtype)
-            a.shape = TEST_IMAGE_SIZE
+                data = (0, 255) * 50
+            a = numpy.array(data, dtype=dtype).reshape(TEST_IMAGE_SIZE)
             i = Image.fromarray(a)
-            if list(i.getdata()) != data:
-                print("data mismatch for", dtype)
+            assert i.get_flattened_data() == data
         else:
-            data = list(range(100))
-            a = numpy.array([[x] * bands for x in data], dtype=dtype)
-            a.shape = TEST_IMAGE_SIZE[0], TEST_IMAGE_SIZE[1], bands
-            i = Image.fromarray(a)
-            if list(i.getchannel(0).getdata()) != list(range(100)):
-                print("data mismatch for", dtype)
+            a2 = numpy.array([[x] * bands for x in data], dtype=dtype).reshape(
+                TEST_IMAGE_SIZE[0], TEST_IMAGE_SIZE[1], bands
+            )
+            i = Image.fromarray(a2)
+            assert i.get_flattened_data(0) == tuple(range(100))
         return i
 
     # Check supported 1-bit integer formats
@@ -137,13 +135,10 @@ def test_save_tiff_uint16() -> None:
     pixel_value = 0x1234
     a = numpy.array(
         [pixel_value] * TEST_IMAGE_SIZE[0] * TEST_IMAGE_SIZE[1], dtype=numpy.uint16
-    )
-    a.shape = TEST_IMAGE_SIZE
+    ).reshape(TEST_IMAGE_SIZE)
     img = Image.fromarray(a)
 
-    img_px = img.load()
-    assert img_px is not None
-    assert img_px[0, 0] == pixel_value
+    assert img.getpixel((0, 0)) == pixel_value
 
 
 @pytest.mark.parametrize(
@@ -195,7 +190,7 @@ def test_putdata() -> None:
     arr = numpy.zeros((15000,), numpy.float32)
     im.putdata(arr)
 
-    assert len(im.getdata()) == len(arr)
+    assert len(im.get_flattened_data()) == len(arr)
 
 
 def test_resize() -> None:
@@ -252,7 +247,7 @@ def test_bool() -> None:
     a[0][0] = True
 
     im2 = Image.fromarray(a)
-    assert im2.getdata()[0] == 255
+    assert im2.getpixel((0, 0)) == 255
 
 
 def test_no_resource_warning_for_numpy_array() -> None:
@@ -263,7 +258,5 @@ def test_no_resource_warning_for_numpy_array() -> None:
     test_file = "Tests/images/hopper.png"
     with Image.open(test_file) as im:
         # Act/Assert
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-
+        with warnings.catch_warnings(action="error"):
             array(im)

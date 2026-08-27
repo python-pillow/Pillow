@@ -1,5 +1,6 @@
 # A clang-format style that approximates Python's PEP 7
 # Useful for IDE integration
+Language: C
 BasedOnStyle: Google
 AlwaysBreakAfterReturnType: All
 AllowShortIfStatementsOnASingleLine: false
@@ -11,7 +12,26 @@ ColumnLimit: 88
 DerivePointerAlignment: false
 IndentGotoLabels: false
 IndentWidth: 4
+PointerAlignment: Right
+ReflowComments: true
+SortIncludes: false
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+TabWidth: 4
+UseTab: Never
+---
 Language: Cpp
+BasedOnStyle: Google
+AlwaysBreakAfterReturnType: All
+AllowShortIfStatementsOnASingleLine: false
+AlignAfterOpenBracket: BlockIndent
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBraces: Attach
+ColumnLimit: 88
+DerivePointerAlignment: false
+IndentGotoLabels: false
+IndentWidth: 4
 PointerAlignment: Right
 ReflowComments: true
 SortIncludes: false

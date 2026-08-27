@@ -1,5 +1,5 @@
 """
-A Pillow loader for .dds files (S3TC-compressed aka DXTC)
+A Pillow plugin for .dds files (S3TC-compressed aka DXTC)
 Jerome Leclanche <jerome@leclan.ch>
 
 Documentation:
@@ -12,16 +12,18 @@ https://creativecommons.org/publicdomain/zero/1.0/
 
 from __future__ import annotations
 
-import io
 import struct
 import sys
 from enum import IntEnum, IntFlag
-from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i32le as i32
 from ._binary import o8
 from ._binary import o32le as o32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 # Magic ("DDS ")
 DDS_MAGIC = 0x20534444
@@ -333,6 +335,7 @@ class DdsImageFile(ImageFile.ImageFile):
     format_description = "DirectDraw Surface"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(4)):
             msg = "not a DDS file"
             raise SyntaxError(msg)
@@ -340,21 +343,20 @@ class DdsImageFile(ImageFile.ImageFile):
         if header_size != 124:
             msg = f"Unsupported header size {repr(header_size)}"
             raise OSError(msg)
-        header_bytes = self.fp.read(header_size - 4)
-        if len(header_bytes) != 120:
-            msg = f"Incomplete header: {len(header_bytes)} bytes"
+        header = self.fp.read(header_size - 4)
+        if len(header) != 120:
+            msg = f"Incomplete header: {len(header)} bytes"
             raise OSError(msg)
-        header = io.BytesIO(header_bytes)
 
-        flags, height, width = struct.unpack("<3I", header.read(12))
+        flags, height, width = struct.unpack("<3I", header[:12])
         self._size = (width, height)
         extents = (0, 0) + self.size
 
-        pitch, depth, mipmaps = struct.unpack("<3I", header.read(12))
-        struct.unpack("<11I", header.read(44))  # reserved
+        pitch, depth, mipmaps = struct.unpack("<3I", header[12:24])
+        struct.unpack("<11I", header[24:68])  # reserved
 
         # pixel format
-        pfsize, pfflags, fourcc, bitcount = struct.unpack("<4I", header.read(16))
+        pfsize, pfflags, fourcc, bitcount = struct.unpack("<4I", header[68:84])
         n = 0
         rawmode = None
         if pfflags & DDPF.RGB:
@@ -366,7 +368,7 @@ class DdsImageFile(ImageFile.ImageFile):
                 self._mode = "RGB"
                 mask_count = 3
 
-            masks = struct.unpack(f"<{mask_count}I", header.read(mask_count * 4))
+            masks = struct.unpack(f"<{mask_count}I", header[84 : 84 + mask_count * 4])
             self.tile = [ImageFile._Tile("dds_rgb", extents, 0, (bitcount, masks))]
             return
         elif pfflags & DDPF.LUMINANCE:
@@ -419,6 +421,14 @@ class DdsImageFile(ImageFile.ImageFile):
                     self._mode = "RGBA"
                     self.pixel_format = "BC1"
                     n = 1
+                elif dxgi_format in (DXGI_FORMAT.BC2_TYPELESS, DXGI_FORMAT.BC2_UNORM):
+                    self._mode = "RGBA"
+                    self.pixel_format = "BC2"
+                    n = 2
+                elif dxgi_format in (DXGI_FORMAT.BC3_TYPELESS, DXGI_FORMAT.BC3_UNORM):
+                    self._mode = "RGBA"
+                    self.pixel_format = "BC3"
+                    n = 3
                 elif dxgi_format in (DXGI_FORMAT.BC4_TYPELESS, DXGI_FORMAT.BC4_UNORM):
                     self._mode = "L"
                     self.pixel_format = "BC4"
@@ -481,9 +491,14 @@ class DdsImageFile(ImageFile.ImageFile):
 class DdsRgbDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
-        assert self.fd is not None
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         bitcount, masks = self.args
+
+        data = bytearray()
+        bytecount = bitcount // 8
+        if not bytecount:
+            self.set_as_raw(data)
+            return -1, 0
 
         # Some masks will be padded with zeros, e.g. R 0b11 G 0b1100
         # Calculate how many zeros each mask is padded with
@@ -498,16 +513,20 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
             mask_offsets.append(offset)
             mask_totals.append(mask >> offset)
 
-        data = bytearray()
-        bytecount = bitcount // 8
+        assert self.fd is not None
         dest_length = self.state.xsize * self.state.ysize * len(masks)
         while len(data) < dest_length:
-            value = int.from_bytes(self.fd.read(bytecount), "little")
+            bytes_read = self.fd.read(bytecount)
+            if len(bytes_read) < bytecount:
+                break
+            value = int.from_bytes(bytes_read, "little")
             for i, mask in enumerate(masks):
                 masked_value = value & mask
                 # Remove the zero padding, and scale it to 8 bits
                 data += o8(
                     int(((masked_value >> mask_offsets[i]) / mask_totals[i]) * 255)
+                    if mask_totals[i]
+                    else 0
                 )
         self.set_as_raw(data)
         return -1, 0
@@ -518,30 +537,68 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         msg = f"cannot write mode {im.mode} as DDS"
         raise OSError(msg)
 
-    alpha = im.mode[-1] == "A"
-    if im.mode[0] == "L":
-        pixel_flags = DDPF.LUMINANCE
-        rawmode = im.mode
-        if alpha:
-            rgba_mask = [0x000000FF, 0x000000FF, 0x000000FF]
-        else:
-            rgba_mask = [0xFF000000, 0xFF000000, 0xFF000000]
-    else:
-        pixel_flags = DDPF.RGB
-        rawmode = im.mode[::-1]
-        rgba_mask = [0x00FF0000, 0x0000FF00, 0x000000FF]
-
-        if alpha:
-            r, g, b, a = im.split()
-            im = Image.merge("RGBA", (a, r, g, b))
-    if alpha:
-        pixel_flags |= DDPF.ALPHAPIXELS
-    rgba_mask.append(0xFF000000 if alpha else 0)
-
-    flags = DDSD.CAPS | DDSD.HEIGHT | DDSD.WIDTH | DDSD.PITCH | DDSD.PIXELFORMAT
+    flags = DDSD.CAPS | DDSD.HEIGHT | DDSD.WIDTH | DDSD.PIXELFORMAT
     bitcount = len(im.getbands()) * 8
-    pitch = (im.width * bitcount + 7) // 8
+    pixel_format = im.encoderinfo.get("pixel_format")
+    args: tuple[int] | str
+    if pixel_format:
+        codec_name = "bcn"
+        flags |= DDSD.LINEARSIZE
+        pitch = (im.width + 3) * 4
+        rgba_mask = [0, 0, 0, 0]
+        pixel_flags = DDPF.FOURCC
+        if pixel_format == "DXT1":
+            fourcc = D3DFMT.DXT1
+            args = (1,)
+        elif pixel_format == "DXT3":
+            fourcc = D3DFMT.DXT3
+            args = (2,)
+        elif pixel_format == "DXT5":
+            fourcc = D3DFMT.DXT5
+            args = (3,)
+        else:
+            fourcc = D3DFMT.DX10
+            if pixel_format == "BC2":
+                args = (2,)
+                dxgi_format = DXGI_FORMAT.BC2_TYPELESS
+            elif pixel_format == "BC3":
+                args = (3,)
+                dxgi_format = DXGI_FORMAT.BC3_TYPELESS
+            elif pixel_format == "BC5":
+                args = (5,)
+                dxgi_format = DXGI_FORMAT.BC5_TYPELESS
+                if im.mode != "RGB":
+                    msg = "only RGB mode can be written as BC5"
+                    raise OSError(msg)
+            else:
+                msg = f"cannot write pixel format {pixel_format}"
+                raise OSError(msg)
+    else:
+        codec_name = "raw"
+        flags |= DDSD.PITCH
+        pitch = (im.width * bitcount + 7) // 8
 
+        alpha = im.mode[-1] == "A"
+        if im.mode[0] == "L":
+            pixel_flags = DDPF.LUMINANCE
+            args = im.mode
+            if alpha:
+                rgba_mask = [0x000000FF, 0x000000FF, 0x000000FF]
+            else:
+                rgba_mask = [0xFF000000, 0xFF000000, 0xFF000000]
+        else:
+            pixel_flags = DDPF.RGB
+            args = im.mode[::-1]
+            rgba_mask = [0x00FF0000, 0x0000FF00, 0x000000FF]
+
+            if alpha:
+                r, g, b, a = im.split()
+                im = Image.merge("RGBA", (a, r, g, b))
+        if alpha:
+            pixel_flags |= DDPF.ALPHAPIXELS
+        rgba_mask.append(0xFF000000 if alpha else 0)
+
+        fourcc = D3DFMT.UNKNOWN
     fp.write(
         o32(DDS_MAGIC)
         + struct.pack(
@@ -556,15 +613,20 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         )
         + struct.pack("11I", *((0,) * 11))  # reserved
         # pfsize, pfflags, fourcc, bitcount
-        + struct.pack("<4I", 32, pixel_flags, 0, bitcount)
+        + struct.pack("<4I", 32, pixel_flags, fourcc, bitcount)
         + struct.pack("<4I", *rgba_mask)  # dwRGBABitMask
         + struct.pack("<5I", DDSCAPS.TEXTURE, 0, 0, 0, 0)
     )
-    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, rawmode)])
+    if fourcc == D3DFMT.DX10:
+        fp.write(
+            # dxgi_format, 2D resource, misc, array size, straight alpha
+            struct.pack("<5I", dxgi_format, 3, 0, 0, 1)
+        )
+    ImageFile._save(im, fp, [ImageFile._Tile(codec_name, (0, 0) + im.size, 0, args)])
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"DDS "
+    return prefix.startswith(b"DDS ")
 
 
 Image.register_open(DdsImageFile.format, DdsImageFile, _accept)

@@ -13,6 +13,9 @@ include LICENSE
 include Makefile
 include tox.ini
 graft Tests
+graft Tests/images
+graft checks
+graft patches
 graft src
 graft depends
 graft winbuild
@@ -20,15 +23,25 @@ graft docs
 graft _custom_build
 
 # build/src control detritus
-exclude .appveyor.yml
 exclude .clang-format
 exclude .coveragerc
 exclude .editorconfig
 exclude .readthedocs.yml
 exclude codecov.yml
 exclude renovate.json
+exclude Tests/images/README.md
+exclude Tests/images/crash*.tif
+exclude Tests/images/string_dimension.tiff
 global-exclude .git*
 global-exclude *.pyc
 global-exclude *.so
 prune .ci
 prune wheels
+prune winbuild/build
+prune winbuild/depends
+prune Tests/errors
+prune Tests/images/jpeg2000
+prune Tests/images/msp
+prune Tests/images/picins
+prune Tests/images/sunraster
+prune Tests/test-images

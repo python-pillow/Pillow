@@ -55,7 +55,7 @@ class ImtImageFile(ImageFile.ImageFile):
             if not s:
                 break
 
-            if s == b"\x0C":
+            if s == b"\x0c":
                 # image data begins
                 self.tile = [
                     ImageFile._Tile(

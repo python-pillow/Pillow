@@ -10,9 +10,13 @@
 #
 from __future__ import annotations
 
-from typing import IO
+import os
 
 from . import Image, ImageFile
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 _handler = None
 
@@ -32,7 +36,7 @@ def register_handler(handler: ImageFile.StubHandler | None) -> None:
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"BUFR" or prefix[:4] == b"ZCZC"
+    return prefix.startswith((b"BUFR", b"ZCZC"))
 
 
 class BufrStubImageFile(ImageFile.StubImageFile):
@@ -40,21 +44,16 @@ class BufrStubImageFile(ImageFile.StubImageFile):
     format_description = "BUFR"
 
     def _open(self) -> None:
-        offset = self.fp.tell()
-
+        assert self.fp is not None
         if not _accept(self.fp.read(4)):
             msg = "Not a BUFR file"
             raise SyntaxError(msg)
 
-        self.fp.seek(offset)
+        self.fp.seek(-4, os.SEEK_CUR)
 
         # make something up
         self._mode = "F"
         self._size = 1, 1
-
-        loader = self._load()
-        if loader:
-            loader.open(self)
 
     def _load(self) -> ImageFile.StubHandler | None:
         return _handler

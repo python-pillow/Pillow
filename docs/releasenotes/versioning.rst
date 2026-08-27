@@ -17,8 +17,8 @@ prior three months.
 
 A quarterly release bumps the MAJOR version when incompatible API changes are
 made, such as removing deprecated APIs or dropping an EOL Python version. In practice,
-these occur every 12-18 months, guided by
-`Python's EOL schedule <https://devguide.python.org/#status-of-python-branches>`_, and
+these occur every October, guided by
+`Python's EOL schedule <https://devguide.python.org/versions/>`__, and
 any APIs that have been deprecated for at least a year are removed at the same time.
 
 PATCH versions ("`Point Release <https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#user-content-point-release>`_"

@@ -5,15 +5,23 @@ import os
 import os.path
 import tempfile
 import time
-from collections.abc import Generator
-from pathlib import Path
 from typing import Any
 
 import pytest
 
 from PIL import Image, PdfParser, features
 
-from .helper import hopper, mark_if_feature_version, skip_unless_feature
+from .helper import (
+    hopper,
+    mark_if_feature_version,
+    skip_unless_feature,
+    timeout_unless_slower_valgrind,
+)
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
 
 
 def helper_save_as_pdf(tmp_path: Path, mode: str, **kwargs: Any) -> str:
@@ -35,7 +43,8 @@ def helper_save_as_pdf(tmp_path: Path, mode: str, **kwargs: Any) -> str:
     with open(outfile, "rb") as fp:
         contents = fp.read()
     size = tuple(
-        float(d) for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
+        int(float(d))
+        for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
     )
     assert im.size == size
 
@@ -55,7 +64,7 @@ def test_save_alpha(tmp_path: Path, mode: str) -> None:
 
 def test_p_alpha(tmp_path: Path) -> None:
     # Arrange
-    outfile = str(tmp_path / "temp.pdf")
+    outfile = tmp_path / "temp.pdf"
     with Image.open("Tests/images/pil123p.png") as im:
         assert im.mode == "P"
         assert isinstance(im.info["transparency"], bytes)
@@ -80,7 +89,7 @@ def test_monochrome(tmp_path: Path) -> None:
 
 def test_unsupported_mode(tmp_path: Path) -> None:
     im = hopper("PA")
-    outfile = str(tmp_path / "temp_PA.pdf")
+    outfile = tmp_path / "temp_PA.pdf"
 
     with pytest.raises(ValueError):
         im.save(outfile)
@@ -89,7 +98,7 @@ def test_unsupported_mode(tmp_path: Path) -> None:
 def test_resolution(tmp_path: Path) -> None:
     im = hopper()
 
-    outfile = str(tmp_path / "temp.pdf")
+    outfile = tmp_path / "temp.pdf"
     im.save(outfile, resolution=150)
 
     with open(outfile, "rb") as fp:
@@ -117,7 +126,7 @@ def test_resolution(tmp_path: Path) -> None:
 def test_dpi(params: dict[str, int | tuple[int, int]], tmp_path: Path) -> None:
     im = hopper()
 
-    outfile = str(tmp_path / "temp.pdf")
+    outfile = tmp_path / "temp.pdf"
     im.save(outfile, "PDF", **params)
 
     with open(outfile, "rb") as fp:
@@ -144,7 +153,7 @@ def test_save_all(tmp_path: Path) -> None:
 
     # Multiframe image
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
-        outfile = str(tmp_path / "temp.pdf")
+        outfile = tmp_path / "temp.pdf"
         im.save(outfile, save_all=True)
 
         assert os.path.isfile(outfile)
@@ -158,7 +167,7 @@ def test_save_all(tmp_path: Path) -> None:
         assert os.path.getsize(outfile) > 0
 
         # Test appending using a generator
-        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image, None, None]:
+        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image]:
             yield from ims
 
         im.save(outfile, save_all=True, append_images=im_generator(ims))
@@ -177,7 +186,7 @@ def test_save_all(tmp_path: Path) -> None:
 def test_multiframe_normal_save(tmp_path: Path) -> None:
     # Test saving a multiframe image without save_all
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
-        outfile = str(tmp_path / "temp.pdf")
+        outfile = tmp_path / "temp.pdf"
         im.save(outfile)
 
     assert os.path.isfile(outfile)
@@ -264,7 +273,7 @@ def test_pdf_append(tmp_path: Path) -> None:
         # append some info
         pdf.info.Title = "abc"
         pdf.info.Author = "def"
-        pdf.info.Subject = "ghi\uABCD"
+        pdf.info.Subject = "ghi\uabcd"
         pdf.info.Keywords = "qw)e\\r(ty"
         pdf.info.Creator = "hopper()"
         pdf.start_writing()
@@ -292,7 +301,7 @@ def test_pdf_append(tmp_path: Path) -> None:
         assert pdf.info.Title == "abc"
         assert pdf.info.Producer == "PdfParser"
         assert pdf.info.Keywords == "qw)e\\r(ty"
-        assert pdf.info.Subject == "ghi\uABCD"
+        assert pdf.info.Subject == "ghi\uabcd"
         assert b"CreationDate" in pdf.info
         assert b"ModDate" in pdf.info
         check_pdf_pages_consistency(pdf)
@@ -339,8 +348,7 @@ def test_pdf_append_to_bytesio() -> None:
     assert len(f.getvalue()) > initial_size
 
 
-@pytest.mark.timeout(1)
-@pytest.mark.skipif("PILLOW_VALGRIND_TEST" in os.environ, reason="Valgrind is slower")
+@timeout_unless_slower_valgrind(1)
 @pytest.mark.parametrize("newline", (b"\r", b"\n"))
 def test_redos(newline: bytes) -> None:
     malicious = b" trailer<<>>" + newline * 3456

@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from PIL import Image
 
 from .helper import hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 original = hopper().resize((32, 32)).convert("I")
 
@@ -44,7 +46,7 @@ def test_basic(tmp_path: Path, mode: str) -> None:
     im_out = im_in.transform((w, h), Image.Transform.EXTENT, (0, 0, w, h))
     verify(im_out)  # transform
 
-    filename = str(tmp_path / "temp.im")
+    filename = tmp_path / "temp.im"
     im_in.save(filename)
 
     with Image.open(filename) as im_out:

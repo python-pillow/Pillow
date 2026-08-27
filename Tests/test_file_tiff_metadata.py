@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import struct
-from pathlib import Path
 
 import pytest
 
@@ -10,6 +9,10 @@ from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import IFDRational
 
 from .helper import assert_deep_equal, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TAG_IDS: dict[str, int] = {
     info.name: info.value
@@ -56,11 +59,12 @@ def test_rt_metadata(tmp_path: Path) -> None:
 
     info[ImageDescription] = text_data
 
-    f = str(tmp_path / "temp.tif")
+    f = tmp_path / "temp.tif"
 
     img.save(f, tiffinfo=info)
 
     with Image.open(f) as loaded:
+        assert isinstance(loaded, TiffImagePlugin.TiffImageFile)
         assert loaded.tag[ImageJMetaDataByteCounts] == (len(bin_data),)
         assert loaded.tag_v2[ImageJMetaDataByteCounts] == (len(bin_data),)
 
@@ -71,21 +75,23 @@ def test_rt_metadata(tmp_path: Path) -> None:
         assert loaded.tag_v2[ImageDescription] == reloaded_text_data
 
         loaded_float = loaded.tag[TAG_IDS["RollAngle"]][0]
-        assert round(abs(loaded_float - float_data), 5) == 0
+        assert loaded_float == pytest.approx(float_data)
         loaded_double = loaded.tag[TAG_IDS["YawAngle"]][0]
-        assert round(abs(loaded_double - double_data), 7) == 0
+        assert loaded_double == pytest.approx(double_data)
 
     # check with 2 element ImageJMetaDataByteCounts, issue #2006
 
     info[ImageJMetaDataByteCounts] = (8, len(bin_data) - 8)
     img.save(f, tiffinfo=info)
     with Image.open(f) as loaded:
+        assert isinstance(loaded, TiffImagePlugin.TiffImageFile)
         assert loaded.tag[ImageJMetaDataByteCounts] == (8, len(bin_data) - 8)
         assert loaded.tag_v2[ImageJMetaDataByteCounts] == (8, len(bin_data) - 8)
 
 
 def test_read_metadata() -> None:
     with Image.open("Tests/images/hopper_g4.tif") as img:
+        assert isinstance(img, TiffImagePlugin.TiffImageFile)
         assert {
             "YResolution": IFDRational(4294967295, 113653537),
             "PlanarConfiguration": 1,
@@ -128,13 +134,15 @@ def test_read_metadata() -> None:
 def test_write_metadata(tmp_path: Path) -> None:
     """Test metadata writing through the python code"""
     with Image.open("Tests/images/hopper.tif") as img:
-        f = str(tmp_path / "temp.tiff")
+        assert isinstance(img, TiffImagePlugin.TiffImageFile)
+        f = tmp_path / "temp.tiff"
         del img.tag[278]
         img.save(f, tiffinfo=img.tag)
 
         original = img.tag_v2.named()
 
     with Image.open(f) as loaded:
+        assert isinstance(loaded, TiffImagePlugin.TiffImageFile)
         reloaded = loaded.tag_v2.named()
 
     ignored = ["StripByteCounts", "RowsPerStrip", "PageNumber", "StripOffsets"]
@@ -163,21 +171,23 @@ def test_write_metadata(tmp_path: Path) -> None:
 
 
 def test_change_stripbytecounts_tag_type(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     with Image.open("Tests/images/hopper.tif") as im:
+        assert isinstance(im, TiffImagePlugin.TiffImageFile)
         info = im.tag_v2
         del info[278]
 
         # Resize the image so that STRIPBYTECOUNTS will be larger than a SHORT
-        im = im.resize((500, 500))
-        info[TiffImagePlugin.IMAGEWIDTH] = im.width
+        im_resized = im.resize((500, 500))
+        info[TiffImagePlugin.IMAGEWIDTH] = im_resized.width
 
         # STRIPBYTECOUNTS can be a SHORT or a LONG
         info.tagtype[TiffImagePlugin.STRIPBYTECOUNTS] = TiffTags.SHORT
 
-        im.save(out, tiffinfo=info)
+        im_resized.save(out, tiffinfo=info)
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert reloaded.tag_v2.tagtype[TiffImagePlugin.STRIPBYTECOUNTS] == TiffTags.LONG
 
 
@@ -210,7 +220,7 @@ def test_no_duplicate_50741_tag() -> None:
 
 
 def test_iptc(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     with Image.open("Tests/images/hopper.Lab.tif") as im:
         im.save(out)
 
@@ -227,10 +237,11 @@ def test_writing_other_types_to_ascii(
     info[271] = value
 
     im = hopper()
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info)
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert reloaded.tag_v2[271] == expected
 
 
@@ -244,10 +255,11 @@ def test_writing_other_types_to_bytes(value: int | IFDRational, tmp_path: Path) 
 
     info[700] = value
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info)
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert reloaded.tag_v2[700] == b"\x01"
 
 
@@ -263,10 +275,11 @@ def test_writing_other_types_to_undefined(
 
     info[33723] = value
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info)
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert reloaded.tag_v2[33723] == b"1"
 
 
@@ -290,13 +303,13 @@ def test_empty_metadata() -> None:
     head = f.read(8)
     info = TiffImagePlugin.ImageFileDirectory(head)
     # Should not raise struct.error.
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="Corrupt EXIF data"):
         info.load(f)
 
 
 def test_iccprofile(tmp_path: Path) -> None:
     # https://github.com/python-pillow/Pillow/issues/1462
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     with Image.open("Tests/images/hopper.iccprofile.tif") as im:
         im.save(out)
 
@@ -311,19 +324,20 @@ def test_iccprofile_binary() -> None:
     # but probably won't be able to save it.
 
     with Image.open("Tests/images/hopper.iccprofile_binary.tif") as im:
+        assert isinstance(im, TiffImagePlugin.TiffImageFile)
         assert im.tag_v2.tagtype[34675] == 1
         assert im.info["icc_profile"]
 
 
 def test_iccprofile_save_png(tmp_path: Path) -> None:
     with Image.open("Tests/images/hopper.iccprofile.tif") as im:
-        outfile = str(tmp_path / "temp.png")
+        outfile = tmp_path / "temp.png"
         im.save(outfile)
 
 
 def test_iccprofile_binary_save_png(tmp_path: Path) -> None:
     with Image.open("Tests/images/hopper.iccprofile_binary.tif") as im:
-        outfile = str(tmp_path / "temp.png")
+        outfile = tmp_path / "temp.png"
         im.save(outfile)
 
 
@@ -332,10 +346,11 @@ def test_exif_div_zero(tmp_path: Path) -> None:
     info = TiffImagePlugin.ImageFileDirectory_v2()
     info[41988] = TiffImagePlugin.IFDRational(0, 0)
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert 0 == reloaded.tag_v2[41988].numerator
         assert 0 == reloaded.tag_v2[41988].denominator
 
@@ -351,10 +366,11 @@ def test_ifd_unsigned_rational(tmp_path: Path) -> None:
 
     info[41493] = TiffImagePlugin.IFDRational(numerator, 1)
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert max_long == reloaded.tag_v2[41493].numerator
         assert 1 == reloaded.tag_v2[41493].denominator
 
@@ -363,10 +379,11 @@ def test_ifd_unsigned_rational(tmp_path: Path) -> None:
 
     info[41493] = TiffImagePlugin.IFDRational(numerator, 1)
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert max_long == reloaded.tag_v2[41493].numerator
         assert 1 == reloaded.tag_v2[41493].denominator
 
@@ -381,10 +398,11 @@ def test_ifd_signed_rational(tmp_path: Path) -> None:
 
     info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert numerator == reloaded.tag_v2[37380].numerator
         assert denominator == reloaded.tag_v2[37380].denominator
 
@@ -393,10 +411,11 @@ def test_ifd_signed_rational(tmp_path: Path) -> None:
 
     info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert numerator == reloaded.tag_v2[37380].numerator
         assert denominator == reloaded.tag_v2[37380].denominator
 
@@ -406,10 +425,11 @@ def test_ifd_signed_rational(tmp_path: Path) -> None:
 
     info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert 2**31 - 1 == reloaded.tag_v2[37380].numerator
         assert -1 == reloaded.tag_v2[37380].denominator
 
@@ -420,10 +440,11 @@ def test_ifd_signed_long(tmp_path: Path) -> None:
 
     info[37000] = -60000
 
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert reloaded.tag_v2[37000] == -60000
 
 
@@ -444,11 +465,13 @@ def test_empty_values() -> None:
 
 def test_photoshop_info(tmp_path: Path) -> None:
     with Image.open("Tests/images/issue_2278.tif") as im:
+        assert isinstance(im, TiffImagePlugin.TiffImageFile)
         assert len(im.tag_v2[34377]) == 70
         assert isinstance(im.tag_v2[34377], bytes)
-        out = str(tmp_path / "temp.tiff")
+        out = tmp_path / "temp.tiff"
         im.save(out)
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert len(reloaded.tag_v2[34377]) == 70
         assert isinstance(reloaded.tag_v2[34377], bytes)
 
@@ -461,8 +484,20 @@ def test_too_many_entries() -> None:
     ifd.tagtype[277] = TiffTags.SHORT
 
     # Should not raise ValueError.
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="Metadata Warning"):
         assert ifd[277] == 4
+
+
+def test_tag_offset() -> None:
+    ifd = TiffImagePlugin.ImageFileDirectory_v2(b"II\x2b\x00" + b"\x00" * 12)
+
+    tag_count = struct.pack("Q", 1)
+    tag = struct.pack("<HHQQ", 0, 1, 9, 2**63)
+    next_offset = struct.pack("Q", 0)
+
+    f = io.BytesIO(tag_count + tag + next_offset)
+    with pytest.warns(UserWarning, match="Tag offset too large"):
+        ifd.load(f)
 
 
 def test_tag_group_data() -> None:
@@ -480,7 +515,7 @@ def test_tag_group_data() -> None:
 
 
 def test_empty_subifd(tmp_path: Path) -> None:
-    out = str(tmp_path / "temp.jpg")
+    out = tmp_path / "temp.jpg"
 
     im = hopper()
     exif = im.getexif()

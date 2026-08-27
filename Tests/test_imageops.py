@@ -8,7 +8,6 @@ from .helper import (
     assert_image_equal,
     assert_image_similar,
     assert_image_similar_tofile,
-    assert_tuple_approx_equal,
     hopper,
 )
 
@@ -165,14 +164,27 @@ def test_pad() -> None:
 def test_pad_round() -> None:
     im = Image.new("1", (1, 1), 1)
     new_im = ImageOps.pad(im, (4, 1))
-    px = new_im.load()
-    assert px is not None
-    assert px[2, 0] == 1
+    assert new_im.getpixel((2, 0)) == 1
 
     new_im = ImageOps.pad(im, (1, 4))
-    px = new_im.load()
-    assert px is not None
-    assert px[0, 2] == 1
+    assert new_im.getpixel((0, 2)) == 1
+
+
+def test_pad_palette() -> None:
+    with Image.open("Tests/images/p_16.tga") as im:
+        im_padded = ImageOps.pad(im, (im.width * 2, im.height), color=(255, 0, 0))
+        im_rgb = im_padded.convert("RGB")
+
+        # Verify that the left and right sides are now red
+        px = im_rgb.load()
+        assert px is not None
+        for y in range(im_rgb.height):
+            for x in range(im.width // 2):
+                assert px[x, y] == (255, 0, 0)
+                assert px[im_rgb.width - 1 - x, y] == (255, 0, 0)
+
+        im_cropped = im_rgb.crop((im.width * 0.5, 0, im.width * 1.5, im.height))
+        assert_image_equal(im_cropped, im.convert("RGB"))
 
 
 @pytest.mark.parametrize("mode", ("P", "PA"))
@@ -188,6 +200,21 @@ def test_palette(mode: str) -> None:
     assert_image_equal(
         im.convert("RGB"), padded_im.convert("RGB").crop((0, 0, 128, 128))
     )
+
+
+def test_rgba_palette() -> None:
+    im = Image.new("P", (1, 1))
+
+    red = (255, 0, 0, 255)
+    translucent_black = (0, 0, 0, 127)
+    im.putpalette(red + translucent_black, "RGBA")
+
+    expanded_im = ImageOps.expand(im, 1, 1)
+
+    palette = expanded_im.palette
+    assert palette is not None
+    assert palette.mode == "RGBA"
+    assert expanded_im.convert("RGBA").getpixel((0, 0)) == translucent_black
 
 
 def test_pil163() -> None:
@@ -245,44 +272,33 @@ def test_expand_palette(border: int | tuple[int, int, int, int]) -> None:
         assert_image_equal(im_cropped, im)
 
 
+@pytest.mark.parametrize("border", ((1,), (1, 2, 3), (1, 2, 3, 4, 5)))
+def test_expand_invalid_border(border: tuple[int, ...]) -> None:
+    im = Image.new("1", (1, 1))
+    with pytest.raises(ValueError):
+        ImageOps.expand(im, border)
+
+
 def test_colorize_2color() -> None:
     # Test the colorizing function with 2-color functionality
 
     # Open test image (256px by 10px, black to white)
     with Image.open("Tests/images/bw_gradient.png") as im:
-        im = im.convert("L")
+        im_l = im.convert("L")
 
     # Create image with original 2-color functionality
-    im_test = ImageOps.colorize(im, "red", "green")
+    im_test = ImageOps.colorize(im_l, "red", "green")
 
     # Test output image (2-color)
-    left = (0, 1)
-    middle = (127, 1)
-    right = (255, 1)
-    value = im_test.getpixel(left)
-    assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (255, 0, 0),
-        threshold=1,
-        msg="black test pixel incorrect",
-    )
-    value = im_test.getpixel(middle)
-    assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (127, 63, 0),
-        threshold=1,
-        msg="mid test pixel incorrect",
-    )
-    value = im_test.getpixel(right)
-    assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (0, 127, 0),
-        threshold=1,
-        msg="white test pixel incorrect",
-    )
+    assert im_test.getpixel((0, 1)) == pytest.approx(
+        (255, 0, 0), abs=1
+    ), "black test pixel incorrect"
+    assert im_test.getpixel((127, 1)) == pytest.approx(
+        (127, 63, 0), abs=1
+    ), "mid test pixel incorrect"
+    assert im_test.getpixel((255, 1)) == pytest.approx(
+        (0, 127, 0), abs=1
+    ), "white test pixel incorrect"
 
 
 def test_colorize_2color_offset() -> None:
@@ -290,41 +306,23 @@ def test_colorize_2color_offset() -> None:
 
     # Open test image (256px by 10px, black to white)
     with Image.open("Tests/images/bw_gradient.png") as im:
-        im = im.convert("L")
+        im_l = im.convert("L")
 
     # Create image with original 2-color functionality with offsets
     im_test = ImageOps.colorize(
-        im, black="red", white="green", blackpoint=50, whitepoint=100
+        im_l, black="red", white="green", blackpoint=50, whitepoint=100
     )
 
     # Test output image (2-color) with offsets
-    left = (25, 1)
-    middle = (75, 1)
-    right = (125, 1)
-    value = im_test.getpixel(left)
-    assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (255, 0, 0),
-        threshold=1,
-        msg="black test pixel incorrect",
-    )
-    value = im_test.getpixel(middle)
-    assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (127, 63, 0),
-        threshold=1,
-        msg="mid test pixel incorrect",
-    )
-    value = im_test.getpixel(right)
-    assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (0, 127, 0),
-        threshold=1,
-        msg="white test pixel incorrect",
-    )
+    assert im_test.getpixel((25, 1)) == pytest.approx(
+        (255, 0, 0), abs=1
+    ), "black test pixel incorrect"
+    assert im_test.getpixel((75, 1)) == pytest.approx(
+        (127, 63, 0), abs=1
+    ), "mid test pixel incorrect"
+    assert im_test.getpixel((125, 1)) == pytest.approx(
+        (0, 127, 0), abs=1
+    ), "white test pixel incorrect"
 
 
 def test_colorize_3color_offset() -> None:
@@ -332,11 +330,11 @@ def test_colorize_3color_offset() -> None:
 
     # Open test image (256px by 10px, black to white)
     with Image.open("Tests/images/bw_gradient.png") as im:
-        im = im.convert("L")
+        im_l = im.convert("L")
 
     # Create image with new three color functionality with offsets
     im_test = ImageOps.colorize(
-        im,
+        im_l,
         black="red",
         white="green",
         mid="blue",
@@ -346,46 +344,48 @@ def test_colorize_3color_offset() -> None:
     )
 
     # Test output image (3-color) with offsets
-    left = (25, 1)
-    left_middle = (75, 1)
-    middle = (100, 1)
-    right_middle = (150, 1)
-    right = (225, 1)
-    value = im_test.getpixel(left)
-    assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (255, 0, 0),
-        threshold=1,
-        msg="black test pixel incorrect",
-    )
-    value = im_test.getpixel(left_middle)
-    assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (127, 0, 127),
-        threshold=1,
-        msg="low-mid test pixel incorrect",
-    )
-    value = im_test.getpixel(middle)
-    assert isinstance(value, tuple)
-    assert_tuple_approx_equal(value, (0, 0, 255), threshold=1, msg="mid incorrect")
-    value = im_test.getpixel(right_middle)
-    assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (0, 63, 127),
-        threshold=1,
-        msg="high-mid test pixel incorrect",
-    )
-    value = im_test.getpixel(right)
-    assert isinstance(value, tuple)
-    assert_tuple_approx_equal(
-        value,
-        (0, 127, 0),
-        threshold=1,
-        msg="white test pixel incorrect",
-    )
+    assert im_test.getpixel((25, 1)) == pytest.approx(
+        (255, 0, 0), abs=1
+    ), "black test pixel incorrect"
+    assert im_test.getpixel((75, 1)) == pytest.approx(
+        (127, 0, 127), abs=1
+    ), "low-mid test pixel incorrect"
+    assert im_test.getpixel((100, 1)) == pytest.approx(
+        (0, 0, 255), abs=1
+    ), "mid incorrect"
+    assert im_test.getpixel((150, 1)) == pytest.approx(
+        (0, 63, 127), abs=1
+    ), "high-mid test pixel incorrect"
+    assert im_test.getpixel((225, 1)) == pytest.approx(
+        (0, 127, 0), abs=1
+    ), "white test pixel incorrect"
+
+
+def test_colorize_invalid_mode() -> None:
+    with pytest.raises(ValueError, match="mode must be L, not RGB"):
+        ImageOps.colorize(hopper("RGB"), "black", "white")
+
+
+@pytest.mark.parametrize("blackpoint, whitepoint", ((-1, 255), (0, 256), (200, 50)))
+def test_colorize_invalid_points(blackpoint: int, whitepoint: int) -> None:
+    with pytest.raises(ValueError, match="blackpoint and whitepoint must each be"):
+        ImageOps.colorize(
+            hopper("L"), "black", "white", blackpoint=blackpoint, whitepoint=whitepoint
+        )
+
+
+@pytest.mark.parametrize("midpoint", (100, 200))
+def test_colorize_invalid_midpoint(midpoint: int) -> None:
+    with pytest.raises(ValueError, match="midpoint must be between or equal to"):
+        ImageOps.colorize(
+            hopper("L"),
+            "black",
+            "white",
+            mid="blue",
+            blackpoint=125,
+            midpoint=midpoint,
+            whitepoint=175,
+        )
 
 
 def test_exif_transpose() -> None:
@@ -405,7 +405,6 @@ def test_exif_transpose() -> None:
                     else:
                         original_exif = im.info["exif"]
                     transposed_im = ImageOps.exif_transpose(im)
-                    assert transposed_im is not None
                     assert_image_similar(base_im, transposed_im, 17)
                     if orientation_im is base_im:
                         assert "exif" not in im.info
@@ -417,7 +416,6 @@ def test_exif_transpose() -> None:
 
                     # Repeat the operation to test that it does not keep transposing
                     transposed_im2 = ImageOps.exif_transpose(transposed_im)
-                    assert transposed_im2 is not None
                     assert_image_equal(transposed_im2, transposed_im)
 
             check(base_im)
@@ -433,7 +431,6 @@ def test_exif_transpose() -> None:
             assert im.getexif()[0x0112] == 3
 
             transposed_im = ImageOps.exif_transpose(im)
-            assert transposed_im is not None
             assert 0x0112 not in transposed_im.getexif()
 
             transposed_im._reload_exif()
@@ -446,15 +443,22 @@ def test_exif_transpose() -> None:
         assert im.getexif()[0x0112] == 3
 
         transposed_im = ImageOps.exif_transpose(im)
-        assert transposed_im is not None
         assert 0x0112 not in transposed_im.getexif()
 
     # Orientation set directly on Image.Exif
-    im = hopper()
-    im.getexif()[0x0112] = 3
-    transposed_im = ImageOps.exif_transpose(im)
-    assert transposed_im is not None
+    im1 = hopper()
+    im1.getexif()[0x0112] = 3
+    transposed_im = ImageOps.exif_transpose(im1)
     assert 0x0112 not in transposed_im.getexif()
+
+
+def test_exif_transpose_with_xmp_tuple() -> None:
+    with Image.open("Tests/images/xmp_tags_orientation.png") as im:
+        assert im.getexif()[0x0112] == 3
+
+        im.info["xmp"] = (b"test",)
+        transposed_im = ImageOps.exif_transpose(im)
+        assert 0x0112 not in transposed_im.getexif()
 
 
 def test_exif_transpose_xml_without_xmp() -> None:
@@ -464,7 +468,6 @@ def test_exif_transpose_xml_without_xmp() -> None:
 
         del im.info["xmp"]
         transposed_im = ImageOps.exif_transpose(im)
-        assert transposed_im is not None
         assert 0x0112 not in transposed_im.getexif()
 
 
@@ -529,18 +532,12 @@ def test_autocontrast_mask_real_input() -> None:
         result_nomask = ImageOps.autocontrast(img)
 
         assert result_nomask != result
-        assert_tuple_approx_equal(
-            ImageStat.Stat(result, mask=rect_mask).median,
-            (195, 202, 184),
-            threshold=2,
-            msg="autocontrast with mask pixel incorrect",
-        )
-        assert_tuple_approx_equal(
-            ImageStat.Stat(result_nomask).median,
-            (119, 106, 79),
-            threshold=2,
-            msg="autocontrast without mask pixel incorrect",
-        )
+        assert ImageStat.Stat(result, mask=rect_mask).median == pytest.approx(
+            (195, 202, 184), abs=2
+        ), "autocontrast with mask pixel incorrect"
+        assert ImageStat.Stat(result_nomask).median == pytest.approx(
+            (119, 106, 79), abs=2
+        ), "autocontrast without mask pixel incorrect"
 
 
 def test_autocontrast_preserve_tone() -> None:

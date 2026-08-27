@@ -19,11 +19,14 @@ import shutil
 import subprocess
 import sys
 from shlex import quote
-from typing import Any
 
 from . import Image
 
-_viewers = []
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import Any
+
+_viewers: list[Viewer] = []
 
 
 def register(viewer: type[Viewer] | Viewer, order: int = 1) -> None:
@@ -120,6 +123,20 @@ class Viewer:
         os.system(self.get_command(path, **options))  # nosec
         return 1
 
+    def _remove_path_after_delay(self, path: str) -> None:
+        pyinstaller = getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
+        executable = (not pyinstaller and sys.executable) or shutil.which("python3")
+
+        if executable:
+            subprocess.Popen(
+                [
+                    executable,
+                    "-c",
+                    "import os, sys, time; time.sleep(20); os.remove(sys.argv[1])",
+                    path,
+                ]
+            )
+
 
 # --------------------------------------------------------------------
 
@@ -131,6 +148,10 @@ class WindowsViewer(Viewer):
     options = {"compress_level": 1, "save_all": True}
 
     def get_command(self, file: str, **options: Any) -> str:
+        if '"' in file:
+            msg = "Windows filenames cannot contain double quotes"
+            raise ValueError(msg)
+        file = file.replace("%", '"%"')
         return (
             f'start "Pillow" /WAIT "{file}" '
             "&& ping -n 4 127.0.0.1 >NUL "
@@ -143,11 +164,9 @@ class WindowsViewer(Viewer):
         """
         if not os.path.exists(path):
             raise FileNotFoundError
-        subprocess.Popen(
-            self.get_command(path, **options),
-            shell=True,
-            creationflags=getattr(subprocess, "CREATE_NO_WINDOW"),
-        )  # nosec
+        if sys.platform == "win32":
+            os.startfile(path)
+        self._remove_path_after_delay(path)
         return 1
 
 
@@ -175,16 +194,7 @@ class MacViewer(Viewer):
         if not os.path.exists(path):
             raise FileNotFoundError
         subprocess.call(["open", "-a", "Preview.app", path])
-        executable = sys.executable or shutil.which("python3")
-        if executable:
-            subprocess.Popen(
-                [
-                    executable,
-                    "-c",
-                    "import os, sys, time; time.sleep(20); os.remove(sys.argv[1])",
-                    path,
-                ]
-            )
+        self._remove_path_after_delay(path)
         return 1
 
 
@@ -192,7 +202,7 @@ if sys.platform == "darwin":
     register(MacViewer)
 
 
-class UnixViewer(Viewer):
+class UnixViewer(abc.ABC, Viewer):
     format = "PNG"
     options = {"compress_level": 1, "save_all": True}
 

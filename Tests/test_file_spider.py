@@ -3,13 +3,16 @@ from __future__ import annotations
 import tempfile
 import warnings
 from io import BytesIO
-from pathlib import Path
 
 import pytest
 
-from PIL import Image, ImageSequence, SpiderImagePlugin
+from PIL import Image, SpiderImagePlugin
 
 from .helper import assert_image_equal, hopper, is_pypy
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_FILE = "Tests/images/hopper.spider"
 
@@ -24,34 +27,30 @@ def test_sanity() -> None:
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
 def test_unclosed_file() -> None:
-    def open() -> None:
+    def open_test_image() -> None:
         im = Image.open(TEST_FILE)
         im.load()
 
     with pytest.warns(ResourceWarning):
-        open()
+        open_test_image()
 
 
 def test_closed_file() -> None:
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-
+    with warnings.catch_warnings(action="error"):
         im = Image.open(TEST_FILE)
         im.load()
         im.close()
 
 
 def test_context_manager() -> None:
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-
+    with warnings.catch_warnings(action="error"):
         with Image.open(TEST_FILE) as im:
             im.load()
 
 
 def test_save(tmp_path: Path) -> None:
     # Arrange
-    temp = str(tmp_path / "temp.spider")
+    temp = tmp_path / "temp.spider"
     im = hopper()
 
     # Act
@@ -62,6 +61,16 @@ def test_save(tmp_path: Path) -> None:
         assert im2.mode == "F"
         assert im2.size == (128, 128)
         assert im2.format == "SPIDER"
+
+    del Image.EXTENSION[".spider"]
+
+
+@pytest.mark.parametrize("size", ((0, 1), (1, 0), (0, 0)))
+def test_save_zero(size: tuple[int, int]) -> None:
+    b = BytesIO()
+    im = Image.new("1", size)
+    with pytest.raises(ValueError, match="cannot write empty image"):
+        im.save(b, "SPIDER")
 
 
 def test_tempfile() -> None:
@@ -96,6 +105,7 @@ def test_tell() -> None:
 
 def test_n_frames() -> None:
     with Image.open(TEST_FILE) as im:
+        assert isinstance(im, SpiderImagePlugin.SpiderImageFile)
         assert im.n_frames == 1
         assert not im.is_animated
 
@@ -153,8 +163,8 @@ def test_nonstack_file() -> None:
 
 def test_nonstack_dos() -> None:
     with Image.open(TEST_FILE) as im:
-        for i, frame in enumerate(ImageSequence.Iterator(im)):
-            assert i <= 1, "Non-stack DOS file test failed"
+        with pytest.raises(EOFError):
+            im.seek(0)
 
 
 # for issue #4093

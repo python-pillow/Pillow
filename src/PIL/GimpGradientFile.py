@@ -18,12 +18,17 @@ Stuff to translate curve segments to palette values (derived from
 the corresponding code in GIMP, written by Federico Mena Quintero.
 See the GIMP distribution for more information.)
 """
+
 from __future__ import annotations
 
 from math import log, pi, sin, sqrt
-from typing import IO, Callable
 
 from ._binary import o8
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import IO
 
 EPSILON = 1e-10
 """"""  # Enable auto-doc for data member
@@ -116,7 +121,7 @@ class GimpGradientFile(GradientFile):
     """File handler for GIMP's gradient format."""
 
     def __init__(self, fp: IO[bytes]) -> None:
-        if fp.readline()[:13] != b"GIMP Gradient":
+        if not fp.readline().startswith(b"GIMP Gradient"):
             msg = "not a GIMP gradient file"
             raise SyntaxError(msg)
 

@@ -188,5 +188,5 @@ class TestEnvVars:
         ),
     )
     def test_warnings(self, var: dict[str, str]) -> None:
-        with pytest.warns(UserWarning):
+        with pytest.warns(UserWarning, match=list(var)[0]):
             Image._apply_env_variables(var)

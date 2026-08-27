@@ -14,10 +14,12 @@
 #
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import Any
-
 from . import Image
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Any
 
 
 class Transform(Image.ImageTransformHandler):
@@ -48,9 +50,9 @@ class AffineTransform(Transform):
     Define an affine image transform.
 
     This function takes a 6-tuple (a, b, c, d, e, f) which contain the first
-    two rows from an affine transform matrix. For each pixel (x, y) in the
-    output image, the new value is taken from a position (a x + b y + c,
-    d x + e y + f) in the input image, rounded to nearest pixel.
+    two rows from the inverse of an affine transform matrix. For each pixel
+    (x, y) in the output image, the new value is taken from a position (a x +
+    b y + c, d x + e y + f) in the input image, rounded to nearest pixel.
 
     This function can be used to scale, translate, rotate, and shear the
     original image.
@@ -58,7 +60,7 @@ class AffineTransform(Transform):
     See :py:meth:`.Image.transform`
 
     :param matrix: A 6-tuple (a, b, c, d, e, f) containing the first two rows
-        from an affine transform matrix.
+        from the inverse of an affine transform matrix.
     """
 
     method = Image.Transform.AFFINE

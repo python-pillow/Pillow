@@ -17,6 +17,20 @@
 # <casadebender@gmail.com>.
 # https://code.google.com/archive/p/casadebender/wikis/Win32IconImagePlugin.wiki
 #
+# Copyright 2008 Bryan Davis
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # Icon format references:
 #   * https://en.wikipedia.org/wiki/ICO_(file_format)
 #   * https://msdn.microsoft.com/en-us/library/ms997538.aspx
@@ -25,7 +39,7 @@ from __future__ import annotations
 import warnings
 from io import BytesIO
 from math import ceil, log
-from typing import IO, NamedTuple
+from typing import NamedTuple
 
 from . import BmpImagePlugin, Image, ImageFile, PngImagePlugin
 from ._binary import i16le as i16
@@ -33,6 +47,10 @@ from ._binary import i32le as i32
 from ._binary import o8
 from ._binary import o16le as o16
 from ._binary import o32le as o32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 #
 # --------------------------------------------------------------------
@@ -118,7 +136,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == _MAGIC
+    return prefix.startswith(_MAGIC)
 
 
 class IconHeader(NamedTuple):
@@ -326,6 +344,7 @@ class IcoImageFile(ImageFile.ImageFile):
     format_description = "Windows Icon"
 
     def _open(self) -> None:
+        assert self.fp is not None
         self.ico = IcoFile(self.fp)
         self.info["sizes"] = self.ico.sizes()
         self.size = self.ico.entry[0].dim
@@ -362,7 +381,7 @@ class IcoImageFile(ImageFile.ImageFile):
             self.info["sizes"] = set(sizes)
 
             self.size = im.size
-        return None
+        return Image.Image.load(self)
 
     def load_seek(self, pos: int) -> None:
         # Flag the ImageFile.Parser so that it

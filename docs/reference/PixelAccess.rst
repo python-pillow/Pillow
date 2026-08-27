@@ -1,6 +1,6 @@
 .. _PixelAccess:
 
-:py:class:`PixelAccess` Class
+:py:class:`PixelAccess` class
 =============================
 
 The PixelAccess class provides read and write access to
@@ -40,7 +40,7 @@ Access using negative indexes is also possible. ::
 
 
 
-:py:class:`PixelAccess` Class
+:py:class:`PixelAccess` class
 -----------------------------
 
 .. class:: PixelAccess
@@ -59,7 +59,7 @@ Access using negative indexes is also possible. ::
 
         Modifies the pixel at x,y. The color is given as a single
         numerical value for single band images, and a tuple for
-        multi-band images.
+        multi-band images. See :ref:`colors` for more information.
 
         :param xy: The pixel coordinate, given as (x, y).
         :param color: The pixel value according to its mode,

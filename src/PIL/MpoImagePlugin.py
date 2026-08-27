@@ -19,10 +19,9 @@
 #
 from __future__ import annotations
 
-import itertools
 import os
 import struct
-from typing import IO, Any, cast
+from typing import cast
 
 from . import (
     Image,
@@ -32,6 +31,11 @@ from . import (
     TiffImagePlugin,
 )
 from ._binary import o32le
+from ._util import DeferredError
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
@@ -46,24 +50,31 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     mpf_offset = 28
     offsets: list[int] = []
-    for imSequence in itertools.chain([im], append_images):
-        for im_frame in ImageSequence.Iterator(imSequence):
+    im_sequences = [im, *append_images]
+    total = sum(getattr(seq, "n_frames", 1) for seq in im_sequences)
+    for im_sequence in im_sequences:
+        for im_frame in ImageSequence.Iterator(im_sequence):
             if not offsets:
                 # APP2 marker
+                ifd_length = 66 + 16 * total
                 im_frame.encoderinfo["extra"] = (
-                    b"\xFF\xE2" + struct.pack(">H", 6 + 82) + b"MPF\0" + b" " * 82
+                    b"\xff\xe2"
+                    + struct.pack(">H", 6 + ifd_length)
+                    + b"MPF\0"
+                    + b" " * ifd_length
                 )
-                exif = im_frame.encoderinfo.get("exif")
-                if isinstance(exif, Image.Exif):
-                    exif = exif.tobytes()
-                    im_frame.encoderinfo["exif"] = exif
-                if exif:
+                if exif := im_frame.encoderinfo.get("exif"):
+                    if isinstance(exif, Image.Exif):
+                        exif = exif.tobytes()
+                        im_frame.encoderinfo["exif"] = exif
                     mpf_offset += 4 + len(exif)
 
                 JpegImagePlugin._save(im_frame, fp, filename)
                 offsets.append(fp.tell())
             else:
+                encoderinfo = im_frame._attach_default_encoderinfo(im)
                 im_frame.save(fp, "JPEG")
+                im_frame.encoderinfo = encoderinfo
                 offsets.append(fp.tell() - offsets[-1])
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
@@ -84,7 +95,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     ifd[0xB002] = mpentries
 
     fp.seek(mpf_offset)
-    fp.write(b"II\x2A\x00" + o32le(8) + ifd.tobytes(8))
+    fp.write(b"II\x2a\x00" + o32le(8) + ifd.tobytes(8))
     fp.seek(0, os.SEEK_END)
 
 
@@ -98,6 +109,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     _close_exclusive_fp_after_loading = False
 
     def _open(self) -> None:
+        assert self.fp is not None
         self.fp.seek(0)  # prep the fp in order to pass the JPEG test
         JpegImagePlugin.JpegImageFile._open(self)
         self._after_jpeg_open()
@@ -117,6 +129,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         assert self.n_frames == len(self.__mpoffsets)
         del self.info["mpoffset"]  # no longer needed
         self.is_animated = self.n_frames > 1
+        assert self.fp is not None
         self._fp = self.fp  # FIXME: hack
         self._fp.seek(self.__mpoffsets[0])  # get ready to read first frame
         self.__frame = 0
@@ -125,11 +138,15 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.readonly = 1
 
     def load_seek(self, pos: int) -> None:
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self._fp.seek(pos)
 
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self.fp = self._fp
         self.offset = self.__mpoffsets[frame]
 
@@ -170,7 +187,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         double call to _open.
         """
         jpeg_instance.__class__ = MpoImageFile
-        mpo_instance = cast(MpoImageFile, jpeg_instance)
+        mpo_instance = cast("MpoImageFile", jpeg_instance)
         mpo_instance._after_jpeg_open(mpheader)
         return mpo_instance
 

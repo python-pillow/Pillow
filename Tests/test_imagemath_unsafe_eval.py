@@ -35,16 +35,6 @@ def test_sanity() -> None:
     assert pixel(ImageMath.unsafe_eval("int(float(A)+B)", **images)) == "I 3"
 
 
-def test_eval_deprecated() -> None:
-    with pytest.warns(DeprecationWarning):
-        assert ImageMath.eval("1") == 1
-
-
-def test_options_deprecated() -> None:
-    with pytest.warns(DeprecationWarning):
-        assert ImageMath.unsafe_eval("1", images) == 1
-
-
 def test_ops() -> None:
     assert pixel(ImageMath.unsafe_eval("-A", **images)) == "I -1"
     assert pixel(ImageMath.unsafe_eval("+B", **images)) == "L 2"

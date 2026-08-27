@@ -89,7 +89,7 @@ class TestImageWinDib:
     def test_dib_paste_bbox(self) -> None:
         # Arrange
         im = hopper()
-        bbox = (0, 0, 10, 10)
+        bbox = (0, 0, 128, 128)
 
         mode = "RGBA"
         size = (128, 128)
@@ -100,6 +100,9 @@ class TestImageWinDib:
 
         # Assert
         assert dib.size == (128, 128)
+
+        with pytest.raises(ValueError, match="images do not match"):
+            dib.paste(im, (0, 0, 1, 1))
 
     def test_dib_frombytes_tobytes_roundtrip(self) -> None:
         # Arrange
@@ -116,7 +119,7 @@ class TestImageWinDib:
 
         # Act
         # Make one the same as the using tobytes()/frombytes()
-        test_buffer = dib1.tobytes()
+        test_buffer: bytes | memoryview = dib1.tobytes()
         for datatype in ("bytes", "memoryview"):
             if datatype == "memoryview":
                 test_buffer = memoryview(test_buffer)

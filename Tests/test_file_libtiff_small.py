@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 
 from PIL import Image
 
 from .test_file_libtiff import LibTiffTestCase
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestFileLibTiffSmall(LibTiffTestCase):
@@ -32,7 +35,7 @@ class TestFileLibTiffSmall(LibTiffTestCase):
         s = BytesIO()
         with open(test_file, "rb") as f:
             s.write(f.read())
-            s.seek(0)
+        s.seek(0)
         with Image.open(s) as im:
             assert im.size == (128, 128)
             self._assert_noerr(tmp_path, im)

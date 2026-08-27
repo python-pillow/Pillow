@@ -1,4 +1,5 @@
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from . import ImageFont, _imaging
 
@@ -28,10 +29,10 @@ class Font:
         features: list[str] | None,
         lang: str | None,
         stroke_width: float,
+        stroke_filled: bool,
         anchor: str | None,
         foreground_ink_long: int,
-        x_start: float,
-        y_start: float,
+        start: tuple[float, float],
         /,
     ) -> tuple[_imaging.ImagingCore, tuple[int, int]]: ...
     def getsize(

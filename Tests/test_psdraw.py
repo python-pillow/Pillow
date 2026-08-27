@@ -3,9 +3,14 @@ from __future__ import annotations
 import os
 import sys
 from io import BytesIO
-from pathlib import Path
 
 from PIL import Image, PSDraw
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    import pytest
 
 
 def _create_document(ps: PSDraw.PSDraw) -> None:
@@ -35,7 +40,7 @@ def test_draw_postscript(tmp_path: Path) -> None:
     # https://pillow.readthedocs.io/en/latest/handbook/tutorial.html#drawing-postscript
 
     # Arrange
-    tempfile = str(tmp_path / "temp.ps")
+    tempfile = tmp_path / "temp.ps"
     with open(tempfile, "wb") as fp:
         # Act
         ps = PSDraw.PSDraw(fp)
@@ -47,21 +52,16 @@ def test_draw_postscript(tmp_path: Path) -> None:
     assert os.path.getsize(tempfile) > 0
 
 
-def test_stdout() -> None:
+def test_stdout(monkeypatch: pytest.MonkeyPatch) -> None:
     # Temporarily redirect stdout
-    old_stdout = sys.stdout
-
     class MyStdOut:
         buffer = BytesIO()
 
     mystdout = MyStdOut()
 
-    sys.stdout = mystdout
+    monkeypatch.setattr(sys, "stdout", mystdout)
 
     ps = PSDraw.PSDraw()
     _create_document(ps)
-
-    # Reset stdout
-    sys.stdout = old_stdout
 
     assert mystdout.buffer.getvalue() != b""

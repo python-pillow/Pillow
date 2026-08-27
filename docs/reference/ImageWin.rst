@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageWin
 .. py:currentmodule:: PIL.ImageWin
 
-:py:mod:`~PIL.ImageWin` Module (Windows-only)
+:py:mod:`~PIL.ImageWin` module (Windows-only)
 =============================================
 
 The :py:mod:`~PIL.ImageWin` module contains support to create and display images on

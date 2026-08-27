@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+import math
 from fractions import Fraction
-from pathlib import Path
 
 import pytest
 
@@ -9,6 +9,10 @@ from PIL import Image, TiffImagePlugin
 from PIL.TiffImagePlugin import IFDRational
 
 from .helper import hopper, skip_unless_feature
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _test_equal(
@@ -38,6 +42,18 @@ def test_sanity() -> None:
     _test_equal(7, 5, 1.4)
 
 
+def test_float() -> None:
+    # float() must agree with ==, int() and repr(), which all use the
+    # normalized fraction
+    r = IFDRational(1.5, 3)
+    assert r == 0.5
+    assert float(r) == 0.5
+
+    # Integer numerator and 0/0 (nan) cases
+    assert float(IFDRational(4, 2)) == 2.0
+    assert math.isnan(float(IFDRational(0, 0)))
+
+
 def test_ranges() -> None:
     for num in range(1, 10):
         for denom in range(1, 10):
@@ -65,11 +81,12 @@ def test_ifd_rational_save(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, libtiff: bool
 ) -> None:
     im = hopper()
-    out = str(tmp_path / "temp.tiff")
+    out = tmp_path / "temp.tiff"
     res = IFDRational(301, 1)
 
     monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", libtiff)
     im.save(out, dpi=(res, res), compression="raw")
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
         assert float(IFDRational(301, 1)) == float(reloaded.tag_v2[282])

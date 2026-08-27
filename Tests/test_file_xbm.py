@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 
 import pytest
 
 from PIL import Image, XbmImagePlugin
 
 from .helper import hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 PIL151 = b"""
 #define basic_width 32
@@ -73,7 +76,7 @@ def test_invalid_file() -> None:
 
 def test_save_wrong_mode(tmp_path: Path) -> None:
     im = hopper()
-    out = str(tmp_path / "temp.xbm")
+    out = tmp_path / "temp.xbm"
 
     with pytest.raises(OSError):
         im.save(out)
@@ -81,7 +84,7 @@ def test_save_wrong_mode(tmp_path: Path) -> None:
 
 def test_hotspot(tmp_path: Path) -> None:
     im = hopper("1")
-    out = str(tmp_path / "temp.xbm")
+    out = tmp_path / "temp.xbm"
 
     hotspot = (0, 7)
     im.save(out, hotspot=hotspot)

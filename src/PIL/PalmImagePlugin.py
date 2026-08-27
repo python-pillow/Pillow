@@ -8,13 +8,14 @@
 ##
 from __future__ import annotations
 
-from typing import IO
-
 from . import Image, ImageFile
 from ._binary import o8
 from ._binary import o16be as o16b
 
-# fmt: off
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
+
 _Palm8BitColormapValues = (
     (255, 255, 255), (255, 204, 255), (255, 153, 255), (255, 102, 255),
     (255,  51, 255), (255,   0, 255), (255, 255, 204), (255, 204, 204),
@@ -79,8 +80,8 @@ _Palm8BitColormapValues = (
     (0,     0,   0), (0,     0,   0), (0,     0,   0), (0,     0,   0),
     (0,     0,   0), (0,     0,   0), (0,     0,   0), (0,     0,   0),
     (0,     0,   0), (0,     0,   0), (0,     0,   0), (0,     0,   0),
-    (0,     0,   0), (0,     0,   0), (0,     0,   0), (0,     0,   0))
-# fmt: on
+    (0,     0,   0), (0,     0,   0), (0,     0,   0), (0,     0,   0),
+)  # fmt: skip
 
 
 # so build a prototype image to be used for palette resampling
@@ -116,9 +117,6 @@ _COMPRESSION_TYPES = {"none": 0xFF, "rle": 0x01, "scanline": 0x00}
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode == "P":
-        # we assume this is a color Palm image with the standard colormap,
-        # unless the "info" dict has a "custom-colormap" field
-
         rawmode = "P"
         bpp = 8
         version = 1
@@ -172,12 +170,11 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     compression_type = _COMPRESSION_TYPES["none"]
 
     flags = 0
-    if im.mode == "P" and "custom-colormap" in im.info:
-        assert im.palette is not None
-        flags = flags & _FLAGS["custom-colormap"]
-        colormapsize = 4 * 256 + 2
-        colormapmode = im.palette.mode
-        colormap = im.getdata().getpalette()
+    if im.mode == "P":
+        flags |= _FLAGS["custom-colormap"]
+        colormap = im.im.getpalette()
+        colors = len(colormap) // 3
+        colormapsize = 4 * colors + 2
     else:
         colormapsize = 0
 
@@ -196,22 +193,11 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     # now write colormap if necessary
 
-    if colormapsize > 0:
-        fp.write(o16b(256))
-        for i in range(256):
+    if colormapsize:
+        fp.write(o16b(colors))
+        for i in range(colors):
             fp.write(o8(i))
-            if colormapmode == "RGB":
-                fp.write(
-                    o8(colormap[3 * i])
-                    + o8(colormap[3 * i + 1])
-                    + o8(colormap[3 * i + 2])
-                )
-            elif colormapmode == "RGBA":
-                fp.write(
-                    o8(colormap[4 * i])
-                    + o8(colormap[4 * i + 1])
-                    + o8(colormap[4 * i + 2])
-                )
+            fp.write(colormap[3 * i : 3 * i + 3])
 
     # now convert data to raw form
     ImageFile._save(
@@ -225,8 +211,8 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 #
 # --------------------------------------------------------------------
 
-Image.register_save("Palm", _save)
+Image.register_save("PALM", _save)
 
-Image.register_extension("Palm", ".palm")
+Image.register_extension("PALM", ".palm")
 
-Image.register_mime("Palm", "image/palm")
+Image.register_mime("PALM", "image/palm")

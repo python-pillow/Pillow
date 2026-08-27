@@ -23,7 +23,7 @@ Use instead::
     with Image.open("hopper.png") as im:
         im.save("out.jpg")
 
-API Additions
+API additions
 =============
 
 Image.entropy
@@ -61,7 +61,7 @@ file. ``ImageFont.FreeTypeFont`` has four new methods,
 instead. An :py:exc:`IOError` will be raised if the font is not a variation font. FreeType
 2.9.1 or greater is required.
 
-Other Changes
+Other changes
 =============
 
 ImageTk.getimage

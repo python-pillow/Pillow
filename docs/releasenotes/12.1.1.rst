@@ -1,0 +1,24 @@
+12.1.1
+------
+
+Security
+========
+
+:cve:`2026-25990`: Fix OOB write with invalid tile extents
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Check that tile extents do not use negative x or y offsets when decoding or encoding,
+and raise an error if they do, rather than allowing an OOB write.
+
+An out-of-bounds write may be triggered when opening a specially crafted PSD image.
+This only affects Pillow >= 10.3.0. Reported by
+`Yarden Porat <https://github.com/yardenporat353>`__.
+
+Other changes
+=============
+
+Patch libavif for svt-av1 4.0 compatibility
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A patch has been added to ``depends/install_libavif.sh``, to allow libavif 1.3.0 to be
+compatible with the recently released svt-av1 4.0.0.

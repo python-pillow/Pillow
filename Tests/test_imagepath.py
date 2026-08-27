@@ -3,11 +3,14 @@ from __future__ import annotations
 import array
 import math
 import struct
-from collections.abc import Sequence
 
 import pytest
 
 from PIL import Image, ImagePath
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 def test_path() -> None:
@@ -18,6 +21,7 @@ def test_path() -> None:
     assert p[0] == (0.0, 1.0)
     assert p[-1] == (8.0, 9.0)
     assert list(p[:1]) == [(0.0, 1.0)]
+    assert list(p[-1:]) == [(8.0, 9.0)]
     with pytest.raises(TypeError) as cm:
         p["foo"]
     assert str(cm.value) == "Path indices must be integers, not str"
@@ -51,6 +55,7 @@ def test_path() -> None:
         [0.0, 1.0],
         ((0, 1),),
         [(0, 1)],
+        [[0, 1]],
         ((0.0, 1.0),),
         [(0.0, 1.0)],
         array.array("f", [0, 1]),
@@ -69,24 +74,37 @@ def test_path_constructors(
 
 
 @pytest.mark.parametrize(
-    "coords",
+    "coords, expected",
     (
-        ("a", "b"),
-        ([0, 1],),
-        [[0, 1]],
-        ([0.0, 1.0],),
-        [[0.0, 1.0]],
+        ([[0, 1], [2, 3]], [(0.0, 1.0), (2.0, 3.0)]),
+        ([[0.0, 1.0], [2.0, 3.0]], [(0.0, 1.0), (2.0, 3.0)]),
     ),
 )
-def test_invalid_path_constructors(
-    coords: tuple[str, str] | Sequence[Sequence[int]]
+def test_path_list_of_lists(
+    coords: list[list[float]], expected: list[tuple[float, float]]
 ) -> None:
-    # Act
-    with pytest.raises(ValueError) as e:
+    p = ImagePath.Path(coords)
+    assert list(p) == expected
+
+
+@pytest.mark.parametrize(
+    "coords, message",
+    (
+        ([[1, 2, 3]], "coordinate list must contain exactly 2 coordinates"),
+        ([[1]], "coordinate list must contain exactly 2 coordinates"),
+        ([[[1, 2], [3, 4]]], "coordinate list must contain numbers"),
+        ([["a", "b"]], "coordinate list must contain numbers"),
+    ),
+)
+def test_invalid_list_coords(coords: list[list[object]], message: str) -> None:
+    with pytest.raises(ValueError, match=message):
         ImagePath.Path(coords)
 
-    # Assert
-    assert str(e.value) == "incorrect coordinate type"
+
+def test_invalid_path_constructors() -> None:
+    # Arrange / Act
+    with pytest.raises(ValueError, match="incorrect coordinate type"):
+        ImagePath.Path(("a", "b"))
 
 
 @pytest.mark.parametrize(
@@ -99,12 +117,8 @@ def test_invalid_path_constructors(
     ),
 )
 def test_path_odd_number_of_coordinates(coords: Sequence[int]) -> None:
-    # Act
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match="wrong number of coordinates"):
         ImagePath.Path(coords)
-
-    # Assert
-    assert str(e.value) == "wrong number of coordinates"
 
 
 @pytest.mark.parametrize(
@@ -192,10 +206,8 @@ def test_transform_with_wrap() -> None:
 
 
 def test_overflow_segfault() -> None:
-    # Some Pythons fail getting the argument as an integer, and it falls
-    # through to the sequence. Seeing this on 32-bit Windows.
-    with pytest.raises((TypeError, MemoryError)):
-        # post patch, this fails with a memory error
+    with pytest.raises((OverflowError, MemoryError)):
+        # post patch, this fails with a memory error on 64-bit
         x = Evil()
 
         # This fails due to the invalid malloc above,

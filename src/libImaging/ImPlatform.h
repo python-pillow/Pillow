@@ -21,10 +21,6 @@
 #error Sorry, this library requires ANSI header files.
 #endif
 
-#if defined(_MSC_VER) && !defined(__GNUC__)
-#define inline __inline
-#endif
-
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -33,7 +29,12 @@
 #else
 #define F_HANDLE "k"
 #endif
-#endif /* _WIN32 */
+
+#else /* not WIN */
+/* For System that are not Windows, we'll need to define these. */
+/* We have to define them instead of using typedef because the JPEG lib also
+   defines their own types with the same names, so we need to be able to undef
+   ours before including the JPEG code. */
 
 #include <stdint.h>
 
@@ -46,6 +47,8 @@
 #define UINT16 uint16_t
 #define INT32 int32_t
 #define UINT32 uint32_t
+
+#endif /* not WIN */
 
 /* assume IEEE; tweak if necessary (patches are welcome) */
 #define FLOAT16 UINT16

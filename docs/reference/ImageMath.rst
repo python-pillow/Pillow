@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageMath
 .. py:currentmodule:: PIL.ImageMath
 
-:py:mod:`~PIL.ImageMath` Module
+:py:mod:`~PIL.ImageMath` module
 ===============================
 
 The :py:mod:`~PIL.ImageMath` module can be used to evaluate “image expressions”, that
@@ -86,7 +86,7 @@ Expression syntax
   It is not recommended to process expressions without considering this.
   :py:meth:`lambda_eval` is a more secure alternative.
 
-Standard Operators
+Standard operators
 ^^^^^^^^^^^^^^^^^^
 
 You can use standard arithmetical operators for addition (+), subtraction (-),
@@ -102,7 +102,7 @@ an 8-bit image, the result will be a 32-bit floating point image.
 You can force conversion using the ``convert()``, ``float()``, and ``int()``
 functions described below.
 
-Bitwise Operators
+Bitwise operators
 ^^^^^^^^^^^^^^^^^
 
 The module also provides operations that operate on individual bits. This
@@ -116,7 +116,7 @@ mask off unwanted bits.
 
 Bitwise operators don’t work on floating point images.
 
-Logical Operators
+Logical operators
 ^^^^^^^^^^^^^^^^^
 
 Logical operators like ``and``, ``or``, and ``not`` work
@@ -128,7 +128,7 @@ treated as true.
 Note that ``and`` and ``or`` return the last evaluated operand,
 while not always returns a boolean value.
 
-Built-in Functions
+Built-in functions
 ^^^^^^^^^^^^^^^^^^
 
 These functions are applied to each individual pixel.

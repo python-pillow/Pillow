@@ -43,8 +43,8 @@ def test_angle(angle: int) -> None:
     with Image.open("Tests/images/test-card.png") as im:
         rotate(im, im.mode, angle)
 
-    im = hopper()
-    assert_image_equal(im.rotate(angle), im.rotate(angle, expand=1))
+    im_hopper = hopper()
+    assert_image_equal(im_hopper.rotate(angle), im_hopper.rotate(angle, expand=1))
 
 
 @pytest.mark.parametrize("angle", (0, 45, 90, 180, 270))
@@ -76,9 +76,9 @@ def test_center_0() -> None:
 
     with Image.open("Tests/images/hopper_45.png") as target:
         target_origin = target.size[1] / 2
-        target = target.crop((0, target_origin, 128, target_origin + 128))
+        im_target = target.crop((0, target_origin, 128, target_origin + 128))
 
-    assert_image_similar(im, target, 15)
+    assert_image_similar(im, im_target, 15)
 
 
 def test_center_14() -> None:
@@ -87,22 +87,22 @@ def test_center_14() -> None:
 
     with Image.open("Tests/images/hopper_45.png") as target:
         target_origin = target.size[1] / 2 - 14
-        target = target.crop((6, target_origin, 128 + 6, target_origin + 128))
+        im_target = target.crop((6, target_origin, 128 + 6, target_origin + 128))
 
-        assert_image_similar(im, target, 10)
+        assert_image_similar(im, im_target, 10)
 
 
 def test_translate() -> None:
     im = hopper()
     with Image.open("Tests/images/hopper_45.png") as target:
         target_origin = (target.size[1] / 2 - 64) - 5
-        target = target.crop(
+        im_target = target.crop(
             (target_origin, target_origin, target_origin + 128, target_origin + 128)
         )
 
     im = im.rotate(45, translate=(5, 5), resample=Image.Resampling.BICUBIC)
 
-    assert_image_similar(im, target, 1)
+    assert_image_similar(im, im_target, 1)
 
 
 def test_fastpath_center() -> None:

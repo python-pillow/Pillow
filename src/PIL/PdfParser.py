@@ -8,7 +8,17 @@ import os
 import re
 import time
 import zlib
-from typing import IO, TYPE_CHECKING, Any, NamedTuple, Union
+from typing import Any, NamedTuple
+
+from . import ImageFile
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Self
+
+    _DictBase = collections.UserDict[str | bytes, Any]
+else:
+    _DictBase = collections.UserDict
 
 
 # see 7.9.2.2 Text String Type on page 86 and D.3 PDFDocEncoding Character Set
@@ -19,14 +29,14 @@ def encode_text(s: str) -> bytes:
 
 PDFDocEncoding = {
     0x16: "\u0017",
-    0x18: "\u02D8",
-    0x19: "\u02C7",
-    0x1A: "\u02C6",
-    0x1B: "\u02D9",
-    0x1C: "\u02DD",
-    0x1D: "\u02DB",
-    0x1E: "\u02DA",
-    0x1F: "\u02DC",
+    0x18: "\u02d8",
+    0x19: "\u02c7",
+    0x1A: "\u02c6",
+    0x1B: "\u02d9",
+    0x1C: "\u02dd",
+    0x1D: "\u02db",
+    0x1E: "\u02da",
+    0x1F: "\u02dc",
     0x80: "\u2022",
     0x81: "\u2020",
     0x82: "\u2021",
@@ -36,29 +46,29 @@ PDFDocEncoding = {
     0x86: "\u0192",
     0x87: "\u2044",
     0x88: "\u2039",
-    0x89: "\u203A",
+    0x89: "\u203a",
     0x8A: "\u2212",
     0x8B: "\u2030",
-    0x8C: "\u201E",
-    0x8D: "\u201C",
-    0x8E: "\u201D",
+    0x8C: "\u201e",
+    0x8D: "\u201c",
+    0x8E: "\u201d",
     0x8F: "\u2018",
     0x90: "\u2019",
-    0x91: "\u201A",
+    0x91: "\u201a",
     0x92: "\u2122",
-    0x93: "\uFB01",
-    0x94: "\uFB02",
+    0x93: "\ufb01",
+    0x94: "\ufb02",
     0x95: "\u0141",
     0x96: "\u0152",
     0x97: "\u0160",
     0x98: "\u0178",
-    0x99: "\u017D",
+    0x99: "\u017d",
     0x9A: "\u0131",
     0x9B: "\u0142",
     0x9C: "\u0153",
     0x9D: "\u0161",
-    0x9E: "\u017E",
-    0xA0: "\u20AC",
+    0x9E: "\u017e",
+    0xA0: "\u20ac",
 }
 
 
@@ -167,7 +177,7 @@ class XrefTable:
 
     def write(self, f: IO[bytes]) -> int:
         keys = sorted(set(self.new_entries.keys()) | set(self.deleted_entries.keys()))
-        deleted_keys = sorted(set(self.deleted_entries.keys()))
+        deleted_keys = sorted(self.deleted_entries)
         startxref = f.tell()
         f.write(b"xref\n")
         while keys:
@@ -251,12 +261,6 @@ class PdfArray(list[Any]):
         return b"[ " + b" ".join(pdf_repr(x) for x in self) + b" ]"
 
 
-if TYPE_CHECKING:
-    _DictBase = collections.UserDict[Union[str, bytes], Any]
-else:
-    _DictBase = collections.UserDict
-
-
 class PdfDict(_DictBase):
     def __setattr__(self, key: str, value: Any) -> None:
         if key == "data":
@@ -318,17 +322,18 @@ class PdfStream:
         self.dictionary = dictionary
         self.buf = buf
 
-    def decode(self) -> bytes:
+    def decode(self, max_length: int = ImageFile.SAFEBLOCK) -> bytes:
         try:
             filter = self.dictionary[b"Filter"]
         except KeyError:
             return self.buf
         if filter == b"FlateDecode":
-            try:
-                expected_length = self.dictionary[b"DL"]
-            except KeyError:
-                expected_length = self.dictionary[b"Length"]
-            return zlib.decompress(self.buf, bufsize=int(expected_length))
+            dobj = zlib.decompressobj()
+            plaintext = dobj.decompress(self.buf, max_length)
+            if dobj.unconsumed_tail:
+                msg = "Decompressed data too large"
+                raise ValueError(msg)
+            return plaintext
         else:
             msg = f"stream filter {repr(filter)} unknown/unsupported"
             raise NotImplementedError(msg)
@@ -381,7 +386,7 @@ class PdfParser:
             msg = "specify buf or f or filename, but not both buf and f"
             raise RuntimeError(msg)
         self.filename = filename
-        self.buf: bytes | bytearray | mmap.mmap | None = buf
+        self.buf: bytes | bytearray | memoryview | mmap.mmap | None = buf
         self.f = f
         self.start_offset = start_offset
         self.should_close_buf = False
@@ -400,7 +405,11 @@ class PdfParser:
         self.pages_ref: IndirectReference | None
         self.last_xref_section_offset: int | None
         if self.buf:
-            self.read_pdf_info()
+            try:
+                self.read_pdf_info()
+            except PdfFormatError:
+                self.close()
+                raise
         else:
             self.file_size_total = self.file_size_this = 0
             self.root = PdfDict()
@@ -418,7 +427,7 @@ class PdfParser:
         if f:
             self.seek_end()
 
-    def __enter__(self) -> PdfParser:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -429,7 +438,9 @@ class PdfParser:
         self.seek_end()
 
     def close_buf(self) -> None:
-        if isinstance(self.buf, mmap.mmap):
+        if isinstance(self.buf, memoryview):
+            self.buf.release()
+        elif isinstance(self.buf, mmap.mmap):
             self.buf.close()
         self.buf = None
 
@@ -683,7 +694,9 @@ class PdfParser:
         if b"Prev" in self.trailer_dict:
             self.read_prev_trailer(self.trailer_dict[b"Prev"])
 
-    def read_prev_trailer(self, xref_section_offset: int) -> None:
+    def read_prev_trailer(
+        self, xref_section_offset: int, processed_offsets: list[int] | None = None
+    ) -> None:
         assert self.buf is not None
         trailer_offset = self.read_xref_table(xref_section_offset=xref_section_offset)
         m = self.re_trailer_prev.search(
@@ -698,7 +711,13 @@ class PdfParser:
         )
         trailer_dict = self.interpret_trailer(trailer_data)
         if b"Prev" in trailer_dict:
-            self.read_prev_trailer(trailer_dict[b"Prev"])
+            if processed_offsets is None:
+                processed_offsets = []
+            processed_offsets.append(xref_section_offset)
+            check_format_condition(
+                trailer_dict[b"Prev"] not in processed_offsets, "trailer loop found"
+            )
+            self.read_prev_trailer(trailer_dict[b"Prev"], processed_offsets)
 
     re_whitespace_optional = re.compile(whitespace_optional)
     re_name = re.compile(
@@ -808,7 +827,7 @@ class PdfParser:
     @classmethod
     def get_value(
         cls,
-        data: bytes | bytearray | mmap.mmap,
+        data: bytes | bytearray | memoryview | mmap.mmap,
         offset: int,
         expect_indirect: IndirectReference | None = None,
         max_nesting: int = -1,
@@ -886,7 +905,7 @@ class PdfParser:
                 if stream_len is None or not isinstance(stream_len, int):
                     msg = f"bad or missing Length in stream dict ({stream_len})"
                     raise PdfFormatError(msg)
-                stream_data = data[m.end() : m.end() + stream_len]
+                stream_data = bytes(data[m.end() : m.end() + stream_len])
                 m = cls.re_stream_end.match(data, m.end() + stream_len)
                 check_format_condition(m is not None, "stream end not found")
                 assert m is not None
@@ -969,7 +988,7 @@ class PdfParser:
 
     @classmethod
     def get_literal_string(
-        cls, data: bytes | bytearray | mmap.mmap, offset: int
+        cls, data: bytes | bytearray | memoryview | mmap.mmap, offset: int
     ) -> tuple[bytes, int]:
         nesting_depth = 0
         result = bytearray()

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 
 import pytest
 
@@ -9,13 +8,17 @@ from PIL import Image, MspImagePlugin
 
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+
 TEST_FILE = "Tests/images/hopper.msp"
 EXTRA_DIR = "Tests/images/picins"
 YA_EXTRA_DIR = "Tests/images/msp"
 
 
 def test_sanity(tmp_path: Path) -> None:
-    test_file = str(tmp_path / "temp.msp")
+    test_file = tmp_path / "temp.msp"
 
     hopper("1").save(test_file)
 
@@ -84,7 +87,7 @@ def test_msp_v2() -> None:
 def test_cannot_save_wrong_mode(tmp_path: Path) -> None:
     # Arrange
     im = hopper()
-    filename = str(tmp_path / "temp.msp")
+    filename = tmp_path / "temp.msp"
 
     # Act/Assert
     with pytest.raises(OSError):

@@ -4,7 +4,6 @@ import io
 import re
 import sys
 import warnings
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -19,6 +18,10 @@ from .helper import (
     skip_unless_feature,
 )
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+
 try:
     from PIL import _webp
 
@@ -28,18 +31,15 @@ except ImportError:
 
 
 class TestUnsupportedWebp:
-    def test_unsupported(self) -> None:
+    def test_unsupported(self, monkeypatch: pytest.MonkeyPatch) -> None:
         if HAVE_WEBP:
-            WebPImagePlugin.SUPPORTED = False
+            monkeypatch.setattr(WebPImagePlugin, "SUPPORTED", False)
 
         file_path = "Tests/images/hopper.webp"
-        with pytest.warns(UserWarning):
-            with pytest.raises(OSError):
+        with pytest.raises(OSError):
+            with pytest.warns(UserWarning, match="WEBP support not installed"):
                 with Image.open(file_path):
                     pass
-
-        if HAVE_WEBP:
-            WebPImagePlugin.SUPPORTED = True
 
 
 @skip_unless_feature("webp")
@@ -52,6 +52,12 @@ class TestFileWebp:
         assert version is not None
         assert re.search(r"\d+\.\d+\.\d+$", version)
 
+    def test_invalid_file(self) -> None:
+        invalid_file = "Tests/images/flower.jpg"
+
+        with pytest.raises(SyntaxError):
+            WebPImagePlugin.WebPImageFile(invalid_file)
+
     def test_read_rgb(self) -> None:
         """
         Can we read a RGB mode WebP file without error?
@@ -63,7 +69,6 @@ class TestFileWebp:
             assert image.size == (128, 128)
             assert image.format == "WEBP"
             image.load()
-            image.getdata()
 
             # generated with:
             # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
@@ -80,7 +85,6 @@ class TestFileWebp:
             assert image.size == (128, 128)
             assert image.format == "WEBP"
             image.load()
-            image.getdata()
 
             if mode == self.rgb_mode:
                 # generated with: dwebp -ppm temp.webp -o hopper_webp_write.ppm
@@ -157,9 +161,8 @@ class TestFileWebp:
     @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
     def test_write_encoding_error_message(self, tmp_path: Path) -> None:
         im = Image.new("RGB", (15000, 15000))
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match="encoding error 6"):
             im.save(tmp_path / "temp.webp", method=0)
-        assert str(e.value) == "encoding error 6"
 
     @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
     def test_write_encoding_error_bad_dimension(self, tmp_path: Path) -> None:
@@ -190,9 +193,7 @@ class TestFileWebp:
     def test_no_resource_warning(self, tmp_path: Path) -> None:
         file_path = "Tests/images/hopper.webp"
         with Image.open(file_path) as image:
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 image.save(tmp_path / "temp.webp")
 
     def test_file_pointer_could_be_reused(self) -> None:
@@ -223,6 +224,7 @@ class TestFileWebp:
         # Save P mode GIF with background
         with Image.open("Tests/images/chi.gif") as im:
             original_value = im.convert("RGB").getpixel((1, 1))
+            assert isinstance(original_value, tuple)
 
             # Save as WEBP
             im.save(out_webp, save_all=True)
@@ -234,7 +236,8 @@ class TestFileWebp:
 
         with Image.open(out_gif) as reread:
             reread_value = reread.convert("RGB").getpixel((1, 1))
-        difference = sum(abs(original_value[i] - reread_value[i]) for i in range(0, 3))
+        assert isinstance(reread_value, tuple)
+        difference = sum(abs(original_value[i] - reread_value[i]) for i in range(3))
         assert difference < 5
 
     def test_duration(self, tmp_path: Path) -> None:

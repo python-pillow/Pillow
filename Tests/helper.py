@@ -9,17 +9,20 @@ import os
 import shutil
 import subprocess
 import sys
-import sysconfig
 import tempfile
-from collections.abc import Sequence
 from functools import lru_cache
 from io import BytesIO
-from typing import Any, Callable
 
 import pytest
 from packaging.version import parse as parse_version
 
 from PIL import Image, ImageFile, ImageMath, features
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+    from pathlib import Path
+    from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +55,8 @@ def convert_to_comparable(
     if a.mode == "P":
         new_a = Image.new("L", a.size)
         new_b = Image.new("L", b.size)
-        new_a.putdata(a.getdata())
-        new_b.putdata(b.getdata())
+        new_a.putdata(a.get_flattened_data())
+        new_b.putdata(b.get_flattened_data())
     elif a.mode == "I;16":
         new_a = a.convert("I")
         new_b = b.convert("I")
@@ -96,12 +99,14 @@ def assert_image_equal(a: Image.Image, b: Image.Image, msg: str | None = None) -
 
 
 def assert_image_equal_tofile(
-    a: Image.Image, filename: str, msg: str | None = None, mode: str | None = None
+    a: Image.Image,
+    filename: str | Path,
+    msg: str | None = None,
+    mode: str | None = None,
 ) -> None:
-    with Image.open(filename) as img:
-        if mode:
-            img = img.convert(mode)
-        assert_image_equal(a, img, msg)
+    with Image.open(filename) as im:
+        converted_im = im.convert(mode) if mode else im
+        assert_image_equal(a, converted_im, msg)
 
 
 def assert_image_similar(
@@ -137,37 +142,35 @@ def assert_image_similar(
 
 def assert_image_similar_tofile(
     a: Image.Image,
-    filename: str,
+    filename: str | Path,
     epsilon: float,
     msg: str | None = None,
-    mode: str | None = None,
 ) -> None:
     with Image.open(filename) as img:
-        if mode:
-            img = img.convert(mode)
         assert_image_similar(a, img, epsilon, msg)
-
-
-def assert_all_same(items: Sequence[Any], msg: str | None = None) -> None:
-    assert items.count(items[0]) == len(items), msg
 
 
 def assert_not_all_same(items: Sequence[Any], msg: str | None = None) -> None:
     assert items.count(items[0]) != len(items), msg
 
 
-def assert_tuple_approx_equal(
-    actuals: Sequence[int], targets: tuple[int, ...], threshold: int, msg: str
-) -> None:
-    """Tests if actuals has values within threshold from targets"""
-    for i, target in enumerate(targets):
-        if not (target - threshold <= actuals[i] <= target + threshold):
-            pytest.fail(msg + ": " + repr(actuals) + " != " + repr(targets))
+def timeout_unless_slower_valgrind(timeout: float) -> pytest.MarkDecorator:
+    if "PILLOW_VALGRIND_TEST" in os.environ:
+        return pytest.mark.pil_noop_mark()
+    return pytest.mark.timeout(timeout)
 
 
 def skip_unless_feature(feature: str) -> pytest.MarkDecorator:
     reason = f"{feature} not available"
     return pytest.mark.skipif(not features.check(feature), reason=reason)
+
+
+def has_feature_version(feature: str, required: str) -> bool:
+    version = features.version(feature)
+    assert version is not None
+    version_required = parse_version(required)
+    version_available = parse_version(version)
+    return version_available >= version_required
 
 
 def skip_unless_feature_version(
@@ -269,17 +272,13 @@ def _cached_hopper(mode: str) -> Image.Image:
         im = hopper("L")
     else:
         im = hopper()
-    if mode.startswith("BGR;"):
-        with pytest.warns(DeprecationWarning):
-            im = im.convert(mode)
-    else:
-        try:
-            im = im.convert(mode)
-        except ImportError:
-            if mode == "LAB":
-                im = Image.open("Tests/images/hopper.Lab.tif")
-            else:
-                raise
+    try:
+        im = im.convert(mode)
+    except ImportError:
+        if mode == "LAB":
+            im = Image.open("Tests/images/hopper.Lab.tif")
+        else:
+            raise
     return im
 
 
@@ -287,16 +286,6 @@ def djpeg_available() -> bool:
     if shutil.which("djpeg"):
         try:
             subprocess.check_call(["djpeg", "-version"])
-            return True
-        except subprocess.CalledProcessError:  # pragma: no cover
-            return False
-    return False
-
-
-def cjpeg_available() -> bool:
-    if shutil.which("cjpeg"):
-        try:
-            subprocess.check_call(["cjpeg", "-version"])
             return True
         except subprocess.CalledProcessError:  # pragma: no cover
             return False
@@ -327,16 +316,7 @@ def magick_command() -> list[str] | None:
     return None
 
 
-def on_appveyor() -> bool:
-    return "APPVEYOR" in os.environ
-
-
-def on_github_actions() -> bool:
-    return "GITHUB_ACTIONS" in os.environ
-
-
 def on_ci() -> bool:
-    # GitHub Actions and AppVeyor have "CI"
     return "CI" in os.environ
 
 
@@ -355,17 +335,4 @@ def is_win32() -> bool:
 
 
 def is_pypy() -> bool:
-    return hasattr(sys, "pypy_translation_info")
-
-
-def is_mingw() -> bool:
-    return sysconfig.get_platform() == "mingw"
-
-
-class CachedProperty:
-    def __init__(self, func: Callable[[Any], Any]) -> None:
-        self.func = func
-
-    def __get__(self, instance: Any, cls: type[Any] | None = None) -> Any:
-        result = instance.__dict__[self.func.__name__] = self.func(instance)
-        return result
+    return sys.implementation.name == "pypy"
