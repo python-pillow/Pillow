@@ -1644,6 +1644,22 @@ convert(Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int di
     return imOut;
 }
 
+/**
+ * Convert imIn to `mode`.
+ * If imIn is already in `mode`, this performs a copy into imOut
+ * (or a newly allocated image if imOut is NULL).
+ *
+ * @param imOut   Existing image to write into
+ *                (must already be in `mode` and the same size as imIn),
+ *                or NULL to allocate a new image for the result.
+ * @param imIn    Source image to convert.
+ * @param mode    Target mode.
+ * @param palette Target palette for conversions to "P"/"PA";
+ *                NULL to use/generate a default palette.
+ * @param dither  Nonzero to dither when converting to "P"/"PA" or "1".
+ * @return        The resulting Imaging object,
+ *                or NULL with a Python exception set on failure.
+ */
 Imaging
 ImagingConvert(
     Imaging imOut, Imaging imIn, const ModeID mode, ImagingPalette palette, int dither
