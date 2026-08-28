@@ -34,8 +34,6 @@ https://www.cazabon.com\n\
 #include <lcms2.h>
 #include "libImaging/Imaging.h"
 
-#define PYCMSVERSION "1.0.0 pil"
-
 /* version history */
 
 /*

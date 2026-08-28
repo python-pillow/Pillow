@@ -34,9 +34,6 @@
 
 #include "Imaging.h"
 
-#define MAX(a, b) (a) > (b) ? (a) : (b)
-#define MIN(a, b) (a) < (b) ? (a) : (b)
-
 /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
 #define L(rgb) ((INT32)(rgb)[0] * 299 + (INT32)(rgb)[1] * 587 + (INT32)(rgb)[2] * 114)
 #define L24(rgb) ((rgb)[0] * 19595 + (rgb)[1] * 38470 + (rgb)[2] * 7471 + 0x8000)

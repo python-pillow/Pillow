@@ -787,7 +787,7 @@ _radial_gradient(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_alpha_composite(ImagingObject *self, PyObject *args) {
+_alpha_composite(PyObject *self, PyObject *args) {
     ImagingObject *imagep1;
     ImagingObject *imagep2;
 
@@ -801,7 +801,7 @@ _alpha_composite(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_blend(ImagingObject *self, PyObject *args) {
+_blend(PyObject *self, PyObject *args) {
     ImagingObject *imagep1;
     ImagingObject *imagep2;
     double alpha;
@@ -1670,7 +1670,6 @@ _putdata(ImagingObject *self, PyObject *args) {
         } else {
             seq = PySequence_Fast(data, must_be_sequence);
             if (!seq) {
-                PyErr_SetString(PyExc_TypeError, must_be_sequence);
                 return NULL;
             }
             double value;
@@ -1708,7 +1707,6 @@ _putdata(ImagingObject *self, PyObject *args) {
         /* 32-bit images */
         seq = PySequence_Fast(data, must_be_sequence);
         if (!seq) {
-            PyErr_SetString(PyExc_TypeError, must_be_sequence);
             return NULL;
         }
         switch (image->type) {
