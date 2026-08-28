@@ -689,19 +689,37 @@ class TestFileJpeg:
 
     def test_qtables_iteration_error(self) -> None:
         class FailOnSecondIteration(list[list[int]]):
-            def __init__(self, values: list[list[int]]) -> None:
-                super().__init__(values)
-                self.iterations = 0
+            iterated = False
 
             def __iter__(self) -> Iterator[list[int]]:
-                self.iterations += 1
-                if self.iterations > 1:
+                if self.iterated:
                     raise RuntimeError
+                self.iterated = True
                 return super().__iter__()
 
         with Image.open(TEST_FILE) as im:
             with pytest.raises(RuntimeError):
                 self.roundtrip(im, qtables=FailOnSecondIteration([[1] * 64]))
+
+    def test_qtables_inconsistent_length(self) -> None:
+        class LongerLen(list[list[int]]):
+            def __len__(self) -> int:
+                return 4
+
+        class ShorterTable(list[int]):
+            def __len__(self) -> int:
+                return 64
+
+        class SwappedTable(list[list[int]]):
+            def __iter__(self) -> Iterator[list[int]]:
+                return iter([ShorterTable([1])])
+
+        with Image.open(TEST_FILE) as im:
+            im2 = self.roundtrip(im, qtables=LongerLen([[1] * 64]))
+            assert len(im2.quantization) == 1
+
+            with pytest.raises(ValueError):
+                self.roundtrip(im, qtables=SwappedTable([[1] * 64]))
 
     def test_load_16bit_qtables(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
