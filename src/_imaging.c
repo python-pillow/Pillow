@@ -1670,7 +1670,6 @@ _putdata(ImagingObject *self, PyObject *args) {
         } else {
             seq = PySequence_Fast(data, must_be_sequence);
             if (!seq) {
-                PyErr_SetString(PyExc_TypeError, must_be_sequence);
                 return NULL;
             }
             double value;
@@ -1708,7 +1707,6 @@ _putdata(ImagingObject *self, PyObject *args) {
         /* 32-bit images */
         seq = PySequence_Fast(data, must_be_sequence);
         if (!seq) {
-            PyErr_SetString(PyExc_TypeError, must_be_sequence);
             return NULL;
         }
         switch (image->type) {
