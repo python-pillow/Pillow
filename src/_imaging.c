@@ -445,6 +445,9 @@ getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
     if (length && wrong_length) {
         Py_ssize_t reported = PySequence_Size(arg);
         if (reported < 0) {
+            if (!PyErr_ExceptionMatches(PyExc_TypeError)) {
+                return NULL;
+            }
             PyErr_Clear();
         } else if (reported != *length) {
             PyErr_SetString(PyExc_ValueError, wrong_length);
@@ -1641,6 +1644,9 @@ _putdata(ImagingObject *self, PyObject *args) {
     } else {
         Py_ssize_t reported = PySequence_Size(data);
         if (reported < 0) {
+            if (!PyErr_ExceptionMatches(PyExc_TypeError)) {
+                return NULL;
+            }
             PyErr_Clear();
         } else if (reported > (Py_ssize_t)image->xsize * (Py_ssize_t)image->ysize) {
             PyErr_SetString(PyExc_TypeError, "too many data entries");

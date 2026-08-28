@@ -140,6 +140,29 @@ def test_unsized_sequence() -> None:
     assert im.get_flattened_data() == (0, 1, 2, 3)
 
 
+def test_raising_length() -> None:
+    # only the TypeError from an unsized sequence may be swallowed by the
+    # pre-check; any other error from __len__ has to reach the caller
+    class RaisingLengthSequence:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def __len__(self) -> int:
+            self.calls += 1
+            if self.calls == 1:
+                raise RuntimeError
+            return 4
+
+        def __getitem__(self, index: int) -> int:
+            if index >= 4:
+                raise IndexError
+            return index
+
+    im = Image.new("L", (2, 2))
+    with pytest.raises(RuntimeError):
+        im.putdata(RaisingLengthSequence())  # type: ignore[arg-type]
+
+
 def test_not_flattened() -> None:
     im = Image.new("L", (1, 1))
     with pytest.raises(TypeError):

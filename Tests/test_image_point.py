@@ -97,3 +97,26 @@ def test_unsized_sequence() -> None:
     im = Image.new("L", (4, 4))
     out = im.point(UnsizedSequence(), "F")  # type: ignore[arg-type]
     assert_image_equal(out, im.point(list(range(256)), "F"))
+
+
+def test_raising_length() -> None:
+    # only the TypeError from an unsized sequence may be swallowed by the
+    # pre-check; any other error from __len__ has to reach the caller
+    class RaisingLengthSequence:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def __len__(self) -> int:
+            self.calls += 1
+            if self.calls == 1:
+                raise RuntimeError
+            return 256
+
+        def __getitem__(self, index: int) -> float:
+            if index >= 256:
+                raise IndexError
+            return float(index)
+
+    im = Image.new("L", (4, 4))
+    with pytest.raises(RuntimeError):
+        im.point(RaisingLengthSequence(), "F")  # type: ignore[arg-type]
