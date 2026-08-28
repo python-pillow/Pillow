@@ -35,6 +35,7 @@ from .helper import (
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from collections.abc import Iterator
     from pathlib import Path
     from types import ModuleType
 
@@ -685,6 +686,22 @@ class TestFileJpeg:
             # qtable entry has wrong number of items
             with pytest.raises(ValueError):
                 self.roundtrip(im, qtables=[[1, 2, 3, 4]])
+
+    def test_qtables_iteration_error(self) -> None:
+        class FailOnSecondIteration(list[list[int]]):
+            def __init__(self, values: list[list[int]]) -> None:
+                super().__init__(values)
+                self.iterations = 0
+
+            def __iter__(self) -> Iterator[list[int]]:
+                self.iterations += 1
+                if self.iterations > 1:
+                    raise RuntimeError
+                return super().__iter__()
+
+        with Image.open(TEST_FILE) as im:
+            with pytest.raises(RuntimeError):
+                self.roundtrip(im, qtables=FailOnSecondIteration([[1] * 64]))
 
     def test_load_16bit_qtables(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
