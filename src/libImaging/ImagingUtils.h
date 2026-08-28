@@ -14,8 +14,8 @@
 #define MASK_UINT32_CHANNEL_3 0xff000000
 #endif
 
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#define MAX(a, b) (a > b ? a : b)
+#define MIN(a, b) (a < b ? a : b)
 
 #define SHIFTFORDIV255(a) ((((a) >> 8) + a) >> 8)
 
