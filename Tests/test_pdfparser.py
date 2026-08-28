@@ -67,6 +67,8 @@ def test_parsing() -> None:
     assert PdfParser.get_value(b" 123.4 %", 0)[1] == 6
     with pytest.raises(PdfFormatError):
         PdfParser.get_value(b"]", 0)
+    with pytest.raises(PdfFormatError, match="key must be a name"):
+        PdfParser.get_value(b"<<true[]>>", 0)
     d = PdfParser.get_value(b"<</Name (value) /N /V>>", 0)[0]
     assert isinstance(d, PdfDict)
     assert len(d) == 2
