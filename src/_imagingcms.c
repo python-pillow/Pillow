@@ -26,7 +26,7 @@ kevin@cazabon.com\n\
 https://www.cazabon.com\n\
 "
 
-#include "libImaging/Imaging.h"  // Set _GNU_SOURCE in Python.h before wchar.h
+#include "libImaging/Imaging.h"
 
 #include <wchar.h>
 #include <datetime.h>

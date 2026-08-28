@@ -86,6 +86,9 @@ on some Python versions.
 An internal interface module previously known as :mod:`~PIL._imaging`,
 implemented in :file:`_imaging.c`.
 
+Pillow is a Python library, and the C interfaces within are for internal use only.
+They may change without a deprecation period or a mention in the release notes.
+
 .. py:class:: ImagingCore
 
     A representation of the image data.
