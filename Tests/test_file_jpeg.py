@@ -723,6 +723,29 @@ class TestFileJpeg:
             with pytest.raises(ValueError):
                 self.roundtrip(im, qtables=SwappedTable([[1] * 64]))
 
+    def test_qtables_cleared_while_reading(self) -> None:
+        class ClearsTable:
+            table: list[Any] = []
+
+            def __index__(self) -> int:
+                self.table.clear()
+                return 1
+
+        class SwappedTable(list[list[int]]):
+            iterated = False
+
+            def __iter__(self) -> Iterator[Any]:
+                if self.iterated:
+                    value = ClearsTable()
+                    value.table = [value] + [1] * 63
+                    return iter([value.table])
+                self.iterated = True
+                return super().__iter__()
+
+        with Image.open(TEST_FILE) as im:
+            im2 = self.roundtrip(im, qtables=SwappedTable([[1] * 64]))
+            assert len(im2.quantization) == 1
+
     def test_load_16bit_qtables(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
             assert isinstance(im, JpegImagePlugin.JpegImageFile)
