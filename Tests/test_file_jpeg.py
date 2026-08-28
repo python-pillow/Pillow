@@ -27,6 +27,7 @@ from .helper import (
     assert_image_similar_tofile,
     djpeg_available,
     hopper,
+    is_pypy,
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
@@ -687,6 +688,7 @@ class TestFileJpeg:
             with pytest.raises(ValueError):
                 self.roundtrip(im, qtables=[[1, 2, 3, 4]])
 
+    @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
     def test_qtables_iteration_error(self) -> None:
         class FailOnSecondIteration(list[list[int]]):
             iterated = False
