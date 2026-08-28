@@ -11,9 +11,12 @@
 from __future__ import annotations
 
 import os
-from typing import IO
 
 from . import Image, ImageFile
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 _handler = None
 

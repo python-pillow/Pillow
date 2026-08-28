@@ -8,8 +8,6 @@ import sys
 import tempfile
 import warnings
 from pathlib import Path
-from types import ModuleType
-from typing import IO
 
 import pytest
 
@@ -35,6 +33,11 @@ from .helper import (
     skip_unless_feature,
     timeout_unless_slower,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from types import ModuleType
+    from typing import IO
 
 ElementTree: ModuleType | None
 try:
@@ -673,6 +676,23 @@ class TestImage:
         with hopper() as im_hopper:
             with pytest.raises(ValueError):
                 im_hopper.remap_palette([])
+
+    @pytest.mark.parametrize("palette_mode", ("RGB", "RGBA"))
+    def test_remap_palette_source_palette(self, palette_mode: str) -> None:
+        # When source_palette is provided, mode is inferred from length.
+        # 768 entries should be detected as a 256-entry RGB palette
+        # 1024 entries should be detected as a 256-entry RGBA palette
+        im = Image.new("P", (1, 1))
+        source_palette = bytes(
+            entry for entry in range(256) for channel in range(len(palette_mode))
+        )
+        im_remapped = im.remap_palette(list(range(256)), source_palette)
+
+        palette = im_remapped.palette
+        assert palette is not None
+        assert len(palette.colors) == 256
+        assert palette.mode == palette_mode
+        assert palette.palette == source_palette
 
     def test_remap_palette_transparency(self) -> None:
         im = Image.new("P", (1, 2), (0, 0, 0))

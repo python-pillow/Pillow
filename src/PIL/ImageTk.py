@@ -28,12 +28,13 @@ from __future__ import annotations
 
 import tkinter
 from io import BytesIO
-from typing import Any
 
 from . import Image, ImageFile
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from typing import Any
+
     from ._typing import CapsuleType
 
 # --------------------------------------------------------------------
@@ -182,7 +183,7 @@ class PhotoImage:
         image = im.im
         if not image.isblock() or im.mode != self.__mode:
             block = Image.core.new_block(self.__mode, im.size)
-            image.convert2(block, image)  # convert directly between buffers
+            image.convert2(block)  # convert directly between buffers
             ptr = block.ptr
 
         _pyimagingtkcall("PyImagingPhoto", self.__photo, ptr)

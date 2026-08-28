@@ -154,15 +154,6 @@ def assert_not_all_same(items: Sequence[Any], msg: str | None = None) -> None:
     assert items.count(items[0]) != len(items), msg
 
 
-def assert_tuple_approx_equal(
-    actuals: Sequence[int], targets: tuple[int, ...], threshold: int, msg: str
-) -> None:
-    """Tests if actuals has values within threshold from targets"""
-    for i, target in enumerate(targets):
-        if not (target - threshold <= actuals[i] <= target + threshold):
-            pytest.fail(msg + ": " + repr(actuals) + " != " + repr(targets))
-
-
 def timeout_unless_slower(timeout: float) -> pytest.MarkDecorator:
     if (
         "PILLOW_VALGRIND_TEST" in os.environ
@@ -347,13 +338,4 @@ def is_win32() -> bool:
 
 
 def is_pypy() -> bool:
-    return hasattr(sys, "pypy_translation_info")
-
-
-class CachedProperty:
-    def __init__(self, func: Callable[[Any], Any]) -> None:
-        self.func = func
-
-    def __get__(self, instance: Any, cls: type[Any] | None = None) -> Any:
-        result = instance.__dict__[self.func.__name__] = self.func(instance)
-        return result
+    return sys.implementation.name == "pypy"

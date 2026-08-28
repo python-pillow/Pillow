@@ -121,15 +121,15 @@ the user, rather than always being calculated by Pillow.
 Optimized ImageColor.getrgb and getcolor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The color calculations of :py:attr:`~PIL.ImageColor.getrgb` and
-:py:attr:`~PIL.ImageColor.getcolor` are now cached using
+The color calculations of :py:func:`~PIL.ImageColor.getrgb` and
+:py:func:`~PIL.ImageColor.getcolor` are now cached using
 :py:func:`functools.lru_cache`. Cached calls of ``getrgb`` are 3.1 - 91.4 times
 as fast and ``getcolor`` are 5.1 - 19.6 times as fast.
 
 Optimized ImageMode.getmode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The lookups made by :py:attr:`~PIL.ImageMode.getmode` are now cached using
+The lookups made by :py:func:`~PIL.ImageMode.getmode` are now cached using
 :py:func:`functools.lru_cache` instead of a custom cache. Cached calls are 1.2 times as
 fast.
 

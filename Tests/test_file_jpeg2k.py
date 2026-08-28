@@ -3,9 +3,7 @@ from __future__ import annotations
 import os
 import re
 import struct
-from collections.abc import Generator
 from io import BytesIO
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -26,6 +24,11 @@ from .helper import (
     skip_unless_feature,
     skip_unless_feature_version,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
 
 EXTRA_DIR = "Tests/images/jpeg2000"
 

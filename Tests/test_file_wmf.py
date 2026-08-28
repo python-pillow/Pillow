@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 from typing import IO
 
 import pytest
@@ -9,6 +8,10 @@ import pytest
 from PIL import Image, ImageFile, WmfImagePlugin
 
 from .helper import assert_image_equal_tofile, assert_image_similar_tofile, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_load_raw() -> None:

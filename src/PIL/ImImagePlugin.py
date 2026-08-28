@@ -28,10 +28,14 @@ from __future__ import annotations
 
 import os
 import re
-from typing import IO, Any
 
 from . import Image, ImageFile, ImagePalette
 from ._util import DeferredError
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
+
 
 # --------------------------------------------------------------------
 # Standard tags

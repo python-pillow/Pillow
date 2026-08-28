@@ -62,15 +62,12 @@ def getrgb(color: str) -> tuple[int, int, int] | tuple[int, int, int, int]:
         )
 
     if re.match("#[a-f0-9]{6}$", color):
-        return int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
+        r, g, b = bytes.fromhex(color[1:])
+        return r, g, b
 
     if re.match("#[a-f0-9]{8}$", color):
-        return (
-            int(color[1:3], 16),
-            int(color[3:5], 16),
-            int(color[5:7], 16),
-            int(color[7:9], 16),
-        )
+        r, g, b, a = bytes.fromhex(color[1:])
+        return r, g, b, a
 
     m = re.match(r"rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
     if m:

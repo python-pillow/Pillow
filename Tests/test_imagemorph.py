@@ -1,13 +1,15 @@
 # Test the ImageMorphology functionality
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from PIL import Image, ImageMorph, _imagingmorph
 
 from .helper import assert_image_equal_tofile, hopper, timeout_unless_slower
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def string_to_img(image_string: str) -> Image.Image:
