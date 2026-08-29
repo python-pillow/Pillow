@@ -24,7 +24,7 @@ TEST_IMAGE_SIZE = (10, 10)
 
 
 def _test_img_equals_pyarray(
-    img: Image.Image, arr: Any, mask: list[int] | None, elts_per_pixel: int = 1
+    img: Image.Image, arr: Any, mask: list[int] | None = None, elts_per_pixel: int = 1
 ) -> None:
     assert img.height * img.width * elts_per_pixel == len(arr)
     px = img.load()
@@ -237,7 +237,7 @@ def test_fromarray_interleaved_to_array() -> None:
     arr = pyarrow.array(list(img.tobytes()), type=pyarrow.uint8())
     borrowed = Image.fromarrow(arr, "RGBA", img.size)
 
-    _test_img_equals_pyarray(img, pyarrow.array(borrowed), None)  # type: ignore[call-overload]
+    _test_img_equals_pyarray(img, pyarrow.array(borrowed))  # type: ignore[call-overload]
 
 
 @pytest.mark.parametrize(
