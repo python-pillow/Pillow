@@ -44,15 +44,6 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"fribidi\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
-            "depNameTemplate": "fribidi",
-            "packageNameTemplate": "fribidi/fribidi",
-            "datasourceTemplate": "github-releases",
-            "extractVersionTemplate": "^v(?<version>.+)$"
-        },
-        {
-            "customType": "regex",
-            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
             "matchStrings": ["\"harfbuzz\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "harfbuzz",
             "packageNameTemplate": "harfbuzz/harfbuzz",
