@@ -283,7 +283,7 @@ class TestEmbeddable:
         with open("embed_pil.c", "w", encoding="utf-8") as fh:
             home = sys.prefix.replace("\\", "\\\\")
             fh.write(f"""
-#include "Python.h"
+#include <Python.h>
 
 int main(int argc, char* argv[])
 {{

@@ -7,7 +7,7 @@
  * Copyright (c) Fredrik Lundh 1996.
  */
 
-#include "zlib.h"
+#include <zlib.h>
 
 /* modes */
 #define ZIP_PNG 0            /* continuous, filtered image data */

@@ -23,7 +23,7 @@
 /* FIXME: make these pluggable! */
 
 #define PY_SSIZE_T_CLEAN
-#include "Python.h"
+#include <Python.h>
 
 #include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
@@ -750,7 +750,6 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     const RawModeID rawmode = findRawModeID(rawmode_name);
 
     if (get_packer(encoder, mode, rawmode) < 0) {
-        Py_DECREF(encoder);
         return NULL;
     }
 
@@ -822,6 +821,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             is_var_length = 1;
 
             if (!len) {
+                Py_DECREF(item);
                 continue;
             }
 
@@ -844,6 +844,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             if (ImagingLibTiffMergeFieldInfo(
                     &encoder->state, type, key_int, is_var_length
                 )) {
+                Py_DECREF(item);
                 continue;
             }
         }
@@ -1248,7 +1249,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
         /* malloc check ok, length is from python parsearg */
         char *p = malloc(comment_size);  // Freed in JpegEncode, Case 6
         if (!p) {
-            return ImagingError_MemoryError();
+            goto memory_error;
         }
         memcpy(p, comment, comment_size);
         comment = p;
@@ -1260,10 +1261,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
         /* malloc check ok, length is from python parsearg */
         char *p = malloc(extra_size);  // Freed in JpegEncode, Case 6
         if (!p) {
-            if (comment) {
-                free(comment);
-            }
-            return ImagingError_MemoryError();
+            goto memory_error;
         }
         memcpy(p, extra, extra_size);
         extra = p;
@@ -1275,13 +1273,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
         /* malloc check ok, length is from python parsearg */
         char *pp = malloc(rawExifLen);  // Freed in JpegEncode, Case 6
         if (!pp) {
-            if (comment) {
-                free(comment);
-            }
-            if (extra) {
-                free(extra);
-            }
-            return ImagingError_MemoryError();
+            goto memory_error;
         }
         memcpy(pp, rawExif, rawExifLen);
         rawExif = pp;
@@ -1314,6 +1306,19 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     jpeg_encoder_state->rawExifLen = rawExifLen;
 
     return (PyObject *)encoder;
+
+memory_error:
+    Py_DECREF(encoder);
+    if (qarrays) {
+        free(qarrays);
+    }
+    if (comment) {
+        free(comment);
+    }
+    if (extra) {
+        free(extra);
+    }
+    return ImagingError_MemoryError();
 }
 
 #endif
