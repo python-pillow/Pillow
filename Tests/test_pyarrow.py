@@ -237,7 +237,8 @@ def test_fromarray_interleaved_to_array() -> None:
     arr = pyarrow.array(list(img.tobytes()), type=pyarrow.uint8())
     borrowed = Image.fromarrow(arr, "RGBA", img.size)
 
-    _test_img_equals_pyarray(img, pyarrow.array(borrowed))  # type: ignore[call-overload]
+    arr = pyarrow.array(borrowed)  # type: ignore[call-overload]
+    _test_img_equals_pyarray(img, arr)
 
 
 @pytest.mark.parametrize(
