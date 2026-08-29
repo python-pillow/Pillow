@@ -43,7 +43,7 @@ Run ``build_prepare.py`` to configure the build::
     usage: winbuild\build_prepare.py [-h] [-v] [-d PILLOW_BUILD]
                                      [--depends PILLOW_DEPS]
                                      [--architecture {x86,AMD64,ARM64}] [--nmake]
-                                     [--no-imagequant] [--no-fribidi]
+                                     [--no-imagequant] [--no-raqm]
 
     Download and generate build scripts for Pillow dependencies.
 
@@ -59,8 +59,8 @@ Run ``build_prepare.py`` to configure the build::
                             build architecture (default: same as host Python)
       --nmake               build dependencies using NMake instead of Ninja
       --no-imagequant       skip GPL-licensed optional dependency libimagequant
-      --no-fribidi, --no-raqm
-                            skip LGPL-licensed optional dependency FriBiDi
+      --no-raqm             skip optional dependency Raqm and its SheenBidi
+                            dependency
       --no-avif             skip optional dependency libavif
 
     Arguments can also be supplied using the environment variables PILLOW_BUILD,
