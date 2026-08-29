@@ -2475,7 +2475,7 @@ class Image:
         copy of this image, rotated the given number of degrees counter
         clockwise around its centre.
 
-        :param angle: In degrees counter clockwise.
+        :param angle: In degrees counterclockwise.
         :param resample: An optional resampling filter.  This can be
            one of :py:data:`Resampling.NEAREST` (use nearest neighbour),
            :py:data:`Resampling.BILINEAR` (linear interpolation in a 2x2
