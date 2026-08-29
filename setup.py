@@ -894,8 +894,11 @@ class pil_build_ext(build_ext):
                 defs.append(("HAVE_RAQM", None))
                 libs.append(feature.get("raqm"))
 
-            if feature.get("raqm") and sys.platform == "win32":
-                # Raqm is linked statically on Windows, so link what it needs.
+            if (
+                feature.get("raqm")
+                and sys.platform in ["ios", "win32"]
+                and _find_library_file(self, "SheenBidi")
+            ):
                 libs.extend(["harfbuzz", "SheenBidi"])
 
             if sys.platform == "ios":

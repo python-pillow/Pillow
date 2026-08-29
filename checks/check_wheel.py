@@ -45,8 +45,5 @@ def test_wheel_features() -> None:
 
     if sys.platform == "win32":
         expected_features.remove("xcb")
-    elif sys.platform == "ios":
-        # TODO: raqm is not built for iOS
-        expected_features.remove("raqm")
 
     assert set(features.get_supported_features()) == expected_features
