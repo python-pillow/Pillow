@@ -672,7 +672,7 @@ def mirror(image: Image.Image) -> Image.Image:
 def moire(image: Image.Image) -> Image.Image:
     """
     Generate a synthetic Moire image.
-    :param image:
+    :param image: The image to transform.
     :return: An image.
     """
     if image.mode != "RGB":
