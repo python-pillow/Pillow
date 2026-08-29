@@ -821,6 +821,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             is_var_length = 1;
 
             if (!len) {
+                Py_DECREF(item);
                 continue;
             }
 
@@ -843,6 +844,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             if (ImagingLibTiffMergeFieldInfo(
                     &encoder->state, type, key_int, is_var_length
                 )) {
+                Py_DECREF(item);
                 continue;
             }
         }
