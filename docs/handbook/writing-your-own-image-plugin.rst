@@ -377,7 +377,7 @@ The setup function needs to call ``PyImaging_DecoderNew`` or
 
 **pulls_fd**/**pushes_fd**
   If the decoder has ``pulls_fd`` or the encoder has ``pushes_fd`` set to 1,
-  ``state->fd`` will be a pointer to the Python file like object. The codec may
+  ``state->fd`` will be a pointer to the Python file-like object. The codec may
   use the functions in ``codec_fd.c`` to read or write directly with the file
   like object rather than have the data pushed through a buffer.
 

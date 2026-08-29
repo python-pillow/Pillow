@@ -303,17 +303,17 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha);
 extern Imaging
 ImagingCopy(Imaging im);
 extern Imaging
-ImagingConvert(Imaging im, ModeID mode, ImagingPalette palette, int dither);
+ImagingConvert(
+    Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int dither
+);
 extern Imaging
-ImagingConvertInPlace(Imaging im, ModeID mode);
-extern Imaging
-ImagingConvertMatrix(Imaging im, ModeID mode, float m[]);
+ImagingConvertMatrix(Imaging im, ModeID mode, const float m[12]);
 extern Imaging
 ImagingConvertTransparent(Imaging im, ModeID mode, int r, int g, int b);
 extern Imaging
 ImagingCrop(Imaging im, int x0, int y0, int x1, int y1);
 extern Imaging
-ImagingExpand(Imaging im, int x, int y);
+ImagingExpand(Imaging im, int m);
 extern Imaging
 ImagingFill(Imaging im, const void *ink);
 extern int
@@ -417,8 +417,6 @@ ImagingColorLUT3D_linear(
 
 extern Imaging
 ImagingCopy2(Imaging imOut, Imaging imIn);
-extern Imaging
-ImagingConvert2(Imaging imOut, Imaging imIn);
 
 /* Channel operations */
 /* any mode, except "F" */

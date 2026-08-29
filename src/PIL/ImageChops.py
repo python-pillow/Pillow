@@ -21,19 +21,13 @@ from . import Image
 
 
 def constant(image: Image.Image, value: int) -> Image.Image:
-    """Fill a channel with a given gray level.
-
-    :rtype: :py:class:`~PIL.Image.Image`
-    """
+    """Fill a channel with a given gray level."""
 
     return Image.new("L", image.size, value)
 
 
 def duplicate(image: Image.Image) -> Image.Image:
-    """Copy a channel. Alias for :py:meth:`PIL.Image.Image.copy`.
-
-    :rtype: :py:class:`~PIL.Image.Image`
-    """
+    """Copy a channel. Alias for :py:meth:`PIL.Image.Image.copy`."""
 
     return image.copy()
 
@@ -43,8 +37,6 @@ def invert(image: Image.Image) -> Image.Image:
     Invert an image (channel). ::
 
         out = MAX - image
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image.load()
@@ -57,8 +49,6 @@ def lighter(image1: Image.Image, image2: Image.Image) -> Image.Image:
     the lighter values. ::
 
         out = max(image1, image2)
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image1.load()
@@ -72,8 +62,6 @@ def darker(image1: Image.Image, image2: Image.Image) -> Image.Image:
     the darker values. ::
 
         out = min(image1, image2)
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image1.load()
@@ -87,8 +75,6 @@ def difference(image1: Image.Image, image2: Image.Image) -> Image.Image:
     images. ::
 
         out = abs(image1 - image2)
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image1.load()
@@ -104,8 +90,6 @@ def multiply(image1: Image.Image, image2: Image.Image) -> Image.Image:
     you multiply with a solid white image, the image is unaffected. ::
 
         out = image1 * image2 / MAX
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image1.load()
@@ -118,8 +102,6 @@ def screen(image1: Image.Image, image2: Image.Image) -> Image.Image:
     Superimposes two inverted images on top of each other. ::
 
         out = MAX - ((MAX - image1) * (MAX - image2) / MAX)
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image1.load()
@@ -130,8 +112,6 @@ def screen(image1: Image.Image, image2: Image.Image) -> Image.Image:
 def soft_light(image1: Image.Image, image2: Image.Image) -> Image.Image:
     """
     Superimposes two images on top of each other using the Soft Light algorithm
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image1.load()
@@ -142,8 +122,6 @@ def soft_light(image1: Image.Image, image2: Image.Image) -> Image.Image:
 def hard_light(image1: Image.Image, image2: Image.Image) -> Image.Image:
     """
     Superimposes two images on top of each other using the Hard Light algorithm
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image1.load()
@@ -154,8 +132,6 @@ def hard_light(image1: Image.Image, image2: Image.Image) -> Image.Image:
 def overlay(image1: Image.Image, image2: Image.Image) -> Image.Image:
     """
     Superimposes two images on top of each other using the Overlay algorithm
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image1.load()
@@ -168,11 +144,11 @@ def add(
 ) -> Image.Image:
     """
     Adds two images, dividing the result by scale and adding the
-    offset. If omitted, scale defaults to 1.0, and offset to 0.0. ::
+    offset. If omitted, scale defaults to 1.0, and offset to 0.0.
+
+    ::
 
         out = ((image1 + image2) / scale + offset)
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image1.load()
@@ -185,11 +161,11 @@ def subtract(
 ) -> Image.Image:
     """
     Subtracts two images, dividing the result by scale and adding the offset.
-    If omitted, scale defaults to 1.0, and offset to 0.0. ::
+    If omitted, scale defaults to 1.0, and offset to 0.0.
+
+    ::
 
         out = ((image1 - image2) / scale + offset)
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image1.load()
@@ -198,11 +174,11 @@ def subtract(
 
 
 def add_modulo(image1: Image.Image, image2: Image.Image) -> Image.Image:
-    """Add two images, without clipping the result. ::
+    """Add two images, without clipping the result.
+
+    ::
 
         out = ((image1 + image2) % MAX)
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image1.load()
@@ -211,11 +187,11 @@ def add_modulo(image1: Image.Image, image2: Image.Image) -> Image.Image:
 
 
 def subtract_modulo(image1: Image.Image, image2: Image.Image) -> Image.Image:
-    """Subtract two images, without clipping the result. ::
+    """Subtract two images, without clipping the result.
+
+    ::
 
         out = ((image1 - image2) % MAX)
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image1.load()
@@ -232,8 +208,6 @@ def logical_and(image1: Image.Image, image2: Image.Image) -> Image.Image:
     as the second image. ::
 
         out = ((image1 and image2) % MAX)
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image1.load()
@@ -247,8 +221,6 @@ def logical_or(image1: Image.Image, image2: Image.Image) -> Image.Image:
     Both of the images must have mode "1". ::
 
         out = ((image1 or image2) % MAX)
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image1.load()
@@ -262,8 +234,6 @@ def logical_xor(image1: Image.Image, image2: Image.Image) -> Image.Image:
     Both of the images must have mode "1". ::
 
         out = ((bool(image1) != bool(image2)) % MAX)
-
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     image1.load()
@@ -272,10 +242,9 @@ def logical_xor(image1: Image.Image, image2: Image.Image) -> Image.Image:
 
 
 def blend(image1: Image.Image, image2: Image.Image, alpha: float) -> Image.Image:
-    """Blend images using constant transparency weight. Alias for
-    :py:func:`PIL.Image.blend`.
+    """Blend images using constant transparency weight.
 
-    :rtype: :py:class:`~PIL.Image.Image`
+    Alias for :py:func:`PIL.Image.blend`.
     """
 
     return Image.blend(image1, image2, alpha)
@@ -284,10 +253,9 @@ def blend(image1: Image.Image, image2: Image.Image, alpha: float) -> Image.Image
 def composite(
     image1: Image.Image, image2: Image.Image, mask: Image.Image
 ) -> Image.Image:
-    """Create composite using transparency mask. Alias for
-    :py:func:`PIL.Image.composite`.
+    """Create composite using transparency mask.
 
-    :rtype: :py:class:`~PIL.Image.Image`
+    Alias for :py:func:`PIL.Image.composite`.
     """
 
     return Image.composite(image1, image2, mask)
@@ -302,7 +270,6 @@ def offset(image: Image.Image, xoffset: int, yoffset: int | None = None) -> Imag
     :param xoffset: The horizontal distance.
     :param yoffset: The vertical distance.  If omitted, both
         distances are set to the same value.
-    :rtype: :py:class:`~PIL.Image.Image`
     """
 
     if yoffset is None:

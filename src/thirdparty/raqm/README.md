@@ -70,13 +70,6 @@ Projects using Raqm
 5. [mplcairo](https://github.com/anntzer/mplcairo)
 6. [CEGUI](https://github.com/cegui/cegui)
 
-The following projects have patches to support complex text layout using Raqm:
-
-2. SDL_ttf: https://bugzilla.libsdl.org/show_bug.cgi?id=3211
-3. Pygame: https://bitbucket.org/pygame/pygame/pull-requests/52
-4. Blender: https://developer.blender.org/D1809
-
-
 
 [1]: https://github.com/fribidi/fribidi
 [2]: https://github.com/Tehreer/SheenBidi

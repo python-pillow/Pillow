@@ -20,12 +20,14 @@
 # http://wvware.sourceforge.net/caolan/ora-wmf.html
 from __future__ import annotations
 
-from typing import IO
-
 from . import Image, ImageFile
 from ._binary import i16le as word
 from ._binary import si16le as short
 from ._binary import si32le as _long
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 _handler = None
 

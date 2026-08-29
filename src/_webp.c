@@ -41,44 +41,34 @@ static const char *const kErrorMessages[-WEBP_MUX_NOT_ENOUGH_DATA + 1] = {
 
 PyObject *
 HandleMuxError(WebPMuxError err, char *chunk) {
-    char message[100];
-    int message_len;
     assert(err <= WEBP_MUX_NOT_FOUND && err >= WEBP_MUX_NOT_ENOUGH_DATA);
 
-    // Check for a memory error first
-    if (err == WEBP_MUX_MEMORY_ERROR) {
-        return PyErr_NoMemory();
-    }
-
-    // Create the error message
-    if (chunk == NULL) {
-        message_len =
-            sprintf(message, "could not assemble chunks: %s", kErrorMessages[-err]);
-    } else {
-        message_len = sprintf(
-            message, "could not set %.4s chunk: %s", chunk, kErrorMessages[-err]
-        );
-    }
-    if (message_len < 0) {
-        PyErr_SetString(PyExc_RuntimeError, "failed to construct error message");
-        return NULL;
-    }
-
-    // Set the proper error type
+    PyObject *err_type;
     switch (err) {
+        case WEBP_MUX_MEMORY_ERROR:
+            return PyErr_NoMemory();
+
         case WEBP_MUX_NOT_FOUND:
         case WEBP_MUX_INVALID_ARGUMENT:
-            PyErr_SetString(PyExc_ValueError, message);
+            err_type = PyExc_ValueError;
             break;
 
         case WEBP_MUX_BAD_DATA:
         case WEBP_MUX_NOT_ENOUGH_DATA:
-            PyErr_SetString(PyExc_OSError, message);
+            err_type = PyExc_OSError;
             break;
 
         default:
-            PyErr_SetString(PyExc_RuntimeError, message);
+            err_type = PyExc_RuntimeError;
             break;
+    }
+
+    if (chunk == NULL) {
+        PyErr_Format(err_type, "could not assemble chunks: %s", kErrorMessages[-err]);
+    } else {
+        PyErr_Format(
+            err_type, "could not set %.4s chunk: %s", chunk, kErrorMessages[-err]
+        );
     }
     return NULL;
 }
@@ -449,7 +439,7 @@ _anim_decoder_dealloc(PyObject *self) {
 }
 
 PyObject *
-_anim_decoder_get_info(PyObject *self) {
+_anim_decoder_get_info(PyObject *self, PyObject *args) {
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
     WebPAnimInfo *info = &(decp->info);
 
@@ -488,7 +478,7 @@ _anim_decoder_get_chunk(PyObject *self, PyObject *args) {
 }
 
 PyObject *
-_anim_decoder_get_next(PyObject *self) {
+_anim_decoder_get_next(PyObject *self, PyObject *args) {
     uint8_t *buf;
     int timestamp;
     int ok;
@@ -519,7 +509,7 @@ _anim_decoder_get_next(PyObject *self) {
 }
 
 PyObject *
-_anim_decoder_reset(PyObject *self) {
+_anim_decoder_reset(PyObject *self, PyObject *args) {
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
     WebPAnimDecoderReset(decp->dec);
     Py_RETURN_NONE;
@@ -691,6 +681,10 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
                             // and value 0 indicates data will NOT be copied.
 
         WebPMux *mux = WebPMuxNew();
+        if (mux == NULL) {
+            PyErr_SetString(PyExc_RuntimeError, "could not create mux object");
+            return NULL;
+        }
         WebPMuxSetImage(mux, &image, copy_data);
 
         if (dbg) {
@@ -785,8 +779,11 @@ setup_module(PyObject *m) {
 
     PyObject *d = PyModule_GetDict(m);
     PyObject *v = PyUnicode_FromString(WebPDecoderVersion_str());
-    PyDict_SetItemString(d, "webpdecoder_version", v ? v : Py_None);
-    Py_XDECREF(v);
+    if (!v) {
+        return -1;
+    }
+    PyDict_SetItemString(d, "webpdecoder_version", v);
+    Py_DECREF(v);
 
     return 0;
 }
