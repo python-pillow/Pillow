@@ -22,7 +22,7 @@ def _lcd_resampling(img: Image.Image) -> Image.Image:
     for y in range(h):
         num = 1
         for x in range(w):
-            r, g, b = cast(tuple[int, int, int], img.getpixel((x, y)))
+            r, g, b = cast("tuple[int, int, int]", img.getpixel((x, y)))
             if num % 3 == 0:
                 resampled_img.putpixel((x, y), (0, 0, b))
             elif num % 3 == 1:
@@ -82,7 +82,7 @@ def _radial_distortion(img: Image.Image, k: float = -1e-7) -> Image.Image:
 
     for y in range(h):
         for x in range(w):
-            r, g, b = cast(tuple[int, int, int], img.getpixel((x, y)))
+            r, g, b = cast("tuple[int, int, int]", img.getpixel((x, y)))
             xc = x - cx
             yc = y - cy
             radius2 = xc**2 + yc**2
@@ -162,7 +162,7 @@ def _bayer_resampling(img: Image.Image) -> Image.Image:
 
     for y in range(img.height):
         for x in range(img.width):
-            r, g, b = cast(tuple[int, int, int], img.getpixel((x, y)))
+            r, g, b = cast("tuple[int, int, int]", img.getpixel((x, y)))
             if y % 2 == 0:
                 if x % 2 == 0:
                     resample.putpixel((x, y), (0, g, 0))
@@ -187,7 +187,7 @@ def _add_noise(img: Image.Image) -> Image.Image:
     noisy = Image.new("RGB", img.size)
     for y in range(img.height):
         for x in range(img.width):
-            r, g, b = cast(tuple[int, int, int], img.getpixel((x, y)))
+            r, g, b = cast("tuple[int, int, int]", img.getpixel((x, y)))
             nr = int(r + random.gauss(0, 1))
             ng = int(g + random.gauss(0, 1))
             nb = int(b + random.gauss(0, 1))
@@ -203,7 +203,7 @@ def _clamp(v: int, lo: int, hi: int) -> int:
 def _get_channel(img: Image.Image, x: int, y: int, ch: int, w: int, h: int) -> int:
     x = _clamp(x, 0, w - 1)
     y = _clamp(y, 0, h - 1)
-    return cast(tuple[int, int, int], img.getpixel((x, y)))[ch]
+    return cast("tuple[int, int, int]", img.getpixel((x, y)))[ch]
 
 
 def _demosaic_bilinear(img: Image.Image) -> Image.Image:
@@ -219,7 +219,7 @@ def _demosaic_bilinear(img: Image.Image) -> Image.Image:
 
     for y in range(h):
         for x in range(w):
-            pixel = cast(tuple[int, int, int], img.getpixel((x, y)))
+            pixel = cast("tuple[int, int, int]", img.getpixel((x, y)))
 
             if y % 2 == 0 and x % 2 == 0:
                 new_r = (
