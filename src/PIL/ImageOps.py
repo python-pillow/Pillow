@@ -672,19 +672,20 @@ def mirror(image: Image.Image) -> Image.Image:
 def moire(image: Image.Image) -> Image.Image:
     """
     Generate a synthetic Moire image.
-    :param image:
+    :param image: The image to transform.
     :return: An image.
     """
-    if len(image.getbands()) == 1:
-        image = image.convert("RGB")
+    if image.mode != "RGB":
+        msg = f"mode must be RGB, not {image.mode}"
+        raise ValueError(msg)
 
     resampled_img = _lcd_resampling(image)
     projective_transform = _projective_transformation(resampled_img)
     distorted_img = _radial_distortion(projective_transform)
     filtered_img = _flat_top_filtering(distorted_img)
-    Bayer = _bayer_resampling(filtered_img)
-    Bayer_noise = _add_noise(Bayer)
-    rgb_img = _demosaic_bilinear(Bayer_noise)
+    bayer = _bayer_resampling(filtered_img)
+    bayer_noise = _add_noise(bayer)
+    rgb_img = _demosaic_bilinear(bayer_noise)
     rgb_denoised = _denoise(rgb_img)
     compressed_img = _jpeg_compression(rgb_denoised)
 

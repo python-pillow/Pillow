@@ -42,7 +42,6 @@ def _projective_transformation(img: Image.Image) -> Image.Image:
     :param img:
     :return: An image.
     """
-    w, h = img.size
     theta = math.radians(random.uniform(-1, 1))
 
     # rotation
@@ -52,8 +51,8 @@ def _projective_transformation(img: Image.Image) -> Image.Image:
     e = math.cos(theta)
 
     # Translation
-    c = random.uniform(-0.01 * w, 0.01 * w)
-    f = random.uniform(-0.01 * h, 0.01 * h)
+    c = random.uniform(-0.01 * img.width, 0.01 * img.width)
+    f = random.uniform(-0.01 * img.height, 0.01 * img.height)
 
     # Perspective distortion
     g = random.uniform(-1e-5, 1e-5)
@@ -63,7 +62,7 @@ def _projective_transformation(img: Image.Image) -> Image.Image:
     coeffs = (a, b, c, d, e, f, g, h_p)
 
     return img.transform(
-        (w, h), Image.Transform.PERSPECTIVE, coeffs, resample=Image.Resampling.BICUBIC
+        img.size, Image.Transform.PERSPECTIVE, coeffs, resample=Image.Resampling.BICUBIC
     )
 
 
@@ -159,11 +158,10 @@ def _bayer_resampling(img: Image.Image) -> Image.Image:
     :param img:
     :return: An image
     """
-    w, h = img.size
-    resample = Image.new("RGB", (w, h))
+    resample = Image.new("RGB", img.size)
 
-    for y in range(h):
-        for x in range(w):
+    for y in range(img.height):
+        for x in range(img.width):
             r, g, b = cast(tuple[int, int, int], img.getpixel((x, y)))
             if y % 2 == 0:
                 if x % 2 == 0:
@@ -186,10 +184,9 @@ def _add_noise(img: Image.Image) -> Image.Image:
     :param img:
     :return: An image
     """
-    w, h = img.size
-    noisy = Image.new("RGB", (w, h))
-    for y in range(h):
-        for x in range(w):
+    noisy = Image.new("RGB", img.size)
+    for y in range(img.height):
+        for x in range(img.width):
             r, g, b = cast(tuple[int, int, int], img.getpixel((x, y)))
             nr = int(r + random.gauss(0, 1))
             ng = int(g + random.gauss(0, 1))
