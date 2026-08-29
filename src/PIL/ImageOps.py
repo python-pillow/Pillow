@@ -675,8 +675,9 @@ def moire(image: Image.Image) -> Image.Image:
     :param image:
     :return: An image.
     """
-    if len(image.getbands()) == 1:
-        image = image.convert("RGB")
+    if image.mode != "RGB":
+        msg = f"mode must be RGB, not {image.mode}"
+        raise ValueError(msg)
 
     resampled_img = _lcd_resampling(image)
     projective_transform = _projective_transformation(resampled_img)
