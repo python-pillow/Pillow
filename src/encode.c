@@ -750,7 +750,6 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     const RawModeID rawmode = findRawModeID(rawmode_name);
 
     if (get_packer(encoder, mode, rawmode) < 0) {
-        Py_DECREF(encoder);
         return NULL;
     }
 
