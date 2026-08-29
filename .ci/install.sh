@@ -22,7 +22,6 @@ packages=(
     ghostscript
     imagemagick  # ImageMagick is used by Tests/test_file_palm.py
     libfreetype6-dev
-    libfribidi-dev
     libharfbuzz-dev
     libjpeg-turbo8-dev
     liblcms2-dev
@@ -57,7 +56,7 @@ pushd depends && ./install_webp.sh && popd
 pushd depends && ./install_imagequant.sh && popd
 
 # raqm
-pushd depends && sudo ./install_raqm.sh && popd
+pushd depends && sudo ./install_sheenbidi.sh && sudo ./install_raqm.sh && popd
 
 # libavif
 pushd depends && ./install_libavif.sh && popd
