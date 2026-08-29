@@ -176,9 +176,13 @@ jobs:
       run: "& winbuild\\build\\build_dep_harfbuzz.cmd"
 
     # Raqm dependencies
-    - name: Build dependencies / FriBidi
+    - name: Build dependencies / SheenBidi
       if: steps.build-cache.outputs.cache-hit != 'true'
-      run: "& winbuild\\build\\build_dep_fribidi.cmd"
+      run: "& winbuild\\build\\build_dep_sheenbidi.cmd"
+
+    - name: Build dependencies / Raqm
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_raqm.cmd"
 
     # trim ~150MB for each job
     - name: Optimize build cache
@@ -189,7 +193,7 @@ jobs:
 
     - name: Build Pillow
       run: |
-        $FLAGS="-C raqm=vendor -C fribidi=vendor"
+        $FLAGS="-C raqm=enable"
         cmd /c "winbuild\build\build_env.cmd && $env:pythonLocation\python.exe -m pip install -v $FLAGS .[tests]"
         & $env:pythonLocation\python.exe selftest.py --installed
       shell: pwsh

@@ -8,9 +8,11 @@ import warnings
 import PIL
 
 from . import Image
+from ._deprecate import deprecate
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from types import FrameType
     from typing import IO
 modules = {
     "pil": ("PIL._imaging", "PILLOW_VERSION"),
@@ -123,8 +125,8 @@ def get_supported_codecs() -> list[str]:
 
 features: dict[str, tuple[str, str, str | None]] = {
     "raqm": ("PIL._imagingft", "HAVE_RAQM", "raqm_version"),
-    "fribidi": ("PIL._imagingft", "HAVE_FRIBIDI", "fribidi_version"),
-    "harfbuzz": ("PIL._imagingft", "HAVE_HARFBUZZ", "harfbuzz_version"),
+    "fribidi": ("PIL._imagingft", "HAVE_RAQM", None),
+    "harfbuzz": ("PIL._imagingft", "HAVE_RAQM", None),
     "libjpeg_turbo": ("PIL._imaging", "HAVE_LIBJPEGTURBO", "libjpeg_turbo_version"),
     "mozjpeg": ("PIL._imaging", "HAVE_MOZJPEG", "libjpeg_turbo_version"),
     "zlib_ng": ("PIL._imaging", "HAVE_ZLIBNG", "zlib_ng_version"),
@@ -132,15 +134,33 @@ features: dict[str, tuple[str, str, str | None]] = {
     "xcb": ("PIL._imaging", "HAVE_XCB", None),
 }
 
+# Raqm chooses its own bidi and shaping libraries, so Pillow cannot reliably
+# report them.
+deprecated_features = {"fribidi": "raqm", "harfbuzz": "raqm"}
 
-def check_feature(feature: str) -> bool | None:
-    """
-    Checks if a feature is available.
 
-    :param feature: The feature to check for.
-    :returns: ``True`` if available, ``False`` if unavailable, ``None`` if unknown.
-    :raises ValueError: If the feature is not defined in this version of Pillow.
-    """
+def _deprecate_feature(feature: str) -> None:
+    if feature not in deprecated_features:
+        return
+
+    # Report against the first frame outside this module, so that the warning
+    # points at the caller whichever entry point it used
+    stacklevel = 2
+    frame: FrameType | None = sys._getframe()
+    while frame is not None and frame.f_globals.get("__name__") == __name__:
+        stacklevel += 1
+        frame = frame.f_back
+
+    replacement = deprecated_features[feature]
+    deprecate(
+        f'features.check("{feature}")',
+        None,
+        f'check("{replacement}")',
+        stacklevel=stacklevel,
+    )
+
+
+def _feature_available(feature: str) -> bool | None:
     if feature not in features:
         msg = f"Unknown feature {feature}"
         raise ValueError(msg)
@@ -157,13 +177,28 @@ def check_feature(feature: str) -> bool | None:
         return None
 
 
+def check_feature(feature: str) -> bool | None:
+    """
+    Checks if a feature is available.
+
+    :param feature: The feature to check for.
+    :returns: ``True`` if available, ``False`` if unavailable, ``None`` if unknown.
+    :raises ValueError: If the feature is not defined in this version of Pillow.
+    """
+    available = _feature_available(feature)
+    _deprecate_feature(feature)
+    return available
+
+
 def version_feature(feature: str) -> str | None:
     """
     :param feature: The feature to check for.
     :returns: The version number as a string, or ``None`` if not available.
     :raises ValueError: If the feature is not defined in this version of Pillow.
     """
-    if not check_feature(feature):
+    available = _feature_available(feature)
+    _deprecate_feature(feature)
+    if not available:
         return None
 
     module, flag, ver = features[feature]
@@ -178,7 +213,9 @@ def get_supported_features() -> list[str]:
     """
     :returns: A list of all supported features.
     """
-    return [f for f in features if check_feature(f)]
+    return [
+        f for f in features if f not in deprecated_features and _feature_available(f)
+    ]
 
 
 def check(feature: str) -> bool | None:
@@ -301,11 +338,6 @@ def pilinfo(out: IO[str] | None = None, supported_formats: bool = True) -> None:
                     zlib_ng_version = version_feature("zlib_ng")
                     if zlib_ng_version is not None:
                         v += ", compiled for zlib-ng " + zlib_ng_version
-                elif name == "raqm":
-                    for f in ("fribidi", "harfbuzz"):
-                        v2 = version_feature(f)
-                        if v2 is not None:
-                            v += f", {f} {v2}"
                 print("---", feature, "support ok,", t, v, file=out)
             else:
                 print("---", feature, "support ok", file=out)
