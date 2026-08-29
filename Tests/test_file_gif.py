@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import os
 import warnings
-from collections.abc import Generator
 from io import BytesIO
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -19,6 +17,11 @@ from .helper import (
     is_pypy,
     netpbm_available,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
 
 # sample gif stream
 TEST_GIF = "Tests/images/hopper.gif"
@@ -44,9 +47,7 @@ def test_unclosed_file() -> None:
 
 
 def test_closed_file() -> None:
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-
+    with warnings.catch_warnings(action="error"):
         im = Image.open(TEST_GIF)
         im.load()
         im.close()
@@ -67,9 +68,7 @@ def test_seek_after_close() -> None:
 
 
 def test_context_manager() -> None:
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-
+    with warnings.catch_warnings(action="error"):
         with Image.open(TEST_GIF) as im:
             im.load()
 
@@ -474,12 +473,11 @@ def test_seek() -> None:
     with Image.open("Tests/images/dispose_none.gif") as img:
         assert isinstance(img, GifImagePlugin.GifImageFile)
         frame_count = 0
-        try:
+        with pytest.raises(EOFError):
             while True:
                 frame_count += 1
                 img.seek(img.tell() + 1)
-        except EOFError:
-            assert frame_count == 5
+        assert frame_count == 5
 
         img.seek(0)
         with pytest.raises(ValueError, match="cannot seek to frame 2"):
@@ -1239,7 +1237,7 @@ def test_append_images(tmp_path: Path) -> None:
         assert reread.n_frames == 3
 
     # Tests appending using a generator
-    def im_generator(ims: list[Image.Image]) -> Generator[Image.Image, None, None]:
+    def im_generator(ims: list[Image.Image]) -> Generator[Image.Image]:
         yield from ims
 
     im.save(out, save_all=True, append_images=im_generator(ims))

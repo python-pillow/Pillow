@@ -3,11 +3,14 @@ from __future__ import annotations
 import os
 import sys
 from io import BytesIO
-from pathlib import Path
-
-import pytest
 
 from PIL import Image, PSDraw
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    import pytest
 
 
 def _create_document(ps: PSDraw.PSDraw) -> None:

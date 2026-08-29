@@ -62,7 +62,7 @@ from .TiffTags import TYPES
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Iterator
-    from typing import NoReturn
+    from typing import NoReturn, Self
 
     from ._typing import Buffer, IntegralLike, StrOrBytesPath
 
@@ -267,10 +267,8 @@ OPEN_INFO = {
     (MM, 5, (1,), 1, (16, 16, 16, 16), ()): ("CMYK", "CMYK;16B"),
     (II, 6, (1,), 1, (8,), ()): ("L", "L"),
     (MM, 6, (1,), 1, (8,), ()): ("L", "L"),
-    # JPEG compressed images handled by LibTiff and auto-converted to RGBX
-    # Minimal Baseline TIFF requires YCbCr images to have 3 SamplesPerPixel
-    (II, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGBX"),
-    (MM, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGBX"),
+    (II, 6, (1,), 1, (8, 8, 8), ()): ("YCbCr", "YCbCr"),
+    (MM, 6, (1,), 1, (8, 8, 8), ()): ("YCbCr", "YCbCr"),
     (II, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
 }
@@ -318,8 +316,8 @@ def _limit_signed_rational(
 ##
 # Wrapper for TIFF IFDs.
 
-_load_dispatch = {}
-_write_dispatch = {}
+_load_dispatch: dict[int, tuple[int, _LoaderFunc]] = {}
+_write_dispatch: dict[int, Callable[..., Any]] = {}
 
 
 def _delegate(op: str) -> Any:
@@ -365,7 +363,7 @@ class IFDRational(Rational):
             self._denominator = value.denominator
         else:
             if TYPE_CHECKING:
-                self._numerator = cast(IntegralLike, value)
+                self._numerator = cast("IntegralLike", value)
             else:
                 self._numerator = value
             self._denominator = denominator
@@ -424,7 +422,7 @@ class IFDRational(Rational):
         assert isinstance(_val, (float, Fraction))
         self._val = _val
         if TYPE_CHECKING:
-            self._numerator = cast(IntegralLike, _numerator)
+            self._numerator = cast("IntegralLike", _numerator)
         else:
             self._numerator = _numerator
         assert isinstance(_denominator, int)
@@ -464,9 +462,8 @@ class IFDRational(Rational):
     __ceil__ = _delegate("__ceil__")
     __floor__ = _delegate("__floor__")
     __round__ = _delegate("__round__")
-    # Python >= 3.11
-    if hasattr(Fraction, "__int__"):
-        __int__ = _delegate("__int__")
+    __float__ = _delegate("__float__")
+    __int__ = _delegate("__int__")
 
 
 _LoaderFunc = Callable[["ImageFileDirectory_v2", bytes, bool], Any]
@@ -913,6 +910,9 @@ class ImageFileDirectory_v2(_IFDv2Base):
                     here = fp.tell()
                     (offset,) = self._unpack("Q" if self._bigtiff else "L", data)
                     msg += f" Tag Location: {here} - Data Location: {offset}"
+                    if offset >= 2**63:
+                        warnings.warn("Tag offset too large")
+                        continue
                     fp.seek(offset)
                     data = ImageFile._safe_read(fp, size)
                     fp.seek(here)
@@ -1587,14 +1587,14 @@ class TiffImageFile(ImageFile.ImageFile):
                 # fillorder==2 modes have a corresponding
                 # fillorder=1 mode
                 self._mode, rawmode = OPEN_INFO[key]
-            # YCbCr images with new jpeg compression with pixels in one plane
-            # unpacked straight into RGB values
-            if (
-                photo == 6
-                and self._compression == "jpeg"
-                and self._planar_configuration == 1
-            ):
-                rawmode = "RGB"
+            if photo == 6:
+                self._mode = "RGB"
+                if self._compression in "jpeg" and self._planar_configuration == 1:
+                    # YCbCr images with new jpeg compression with pixels in one plane
+                    # unpacked straight into RGB values
+                    rawmode = "RGB"
+                else:
+                    rawmode = "RGBX"
             # libtiff always returns the bytes in native order.
             # we're expecting image byte order. So, if the rawmode
             # contains I;16, we need to convert from native to image
@@ -1671,6 +1671,8 @@ class TiffImageFile(ImageFile.ImageFile):
         if self.mode in ["P", "PA"]:
             palette = [o8(b // 256) for b in self.tag_v2[COLORMAP]]
             self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
+        else:
+            self.palette = None
 
 
 #
@@ -2056,7 +2058,7 @@ class AppendingTiffWriter(io.BytesIO):
             except OSError:
                 self.f = open(fn, "w+b")
         else:
-            self.f = cast(IO[bytes], fn)
+            self.f = cast("IO[bytes]", fn)
             self.close_fp = False
         self.beginning = self.f.tell()
         self.setup()
@@ -2118,7 +2120,7 @@ class AppendingTiffWriter(io.BytesIO):
         self.finalize()
         self.setup()
 
-    def __enter__(self) -> AppendingTiffWriter:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:

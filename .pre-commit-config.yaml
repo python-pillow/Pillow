@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.15
+    rev: v0.16.1
     hooks:
       - id: ruff-check
         args: [--exit-non-zero-on-fix]
@@ -24,7 +24,7 @@ repos:
         exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.gd$|\.opt$|\.patch$)
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v22.1.5
+    rev: v22.1.8
     hooks:
       - id: clang-format
         types: [c]
@@ -50,18 +50,21 @@ repos:
         exclude: ^Tests/images/|\.patch$
       - id: file-contents-sorter
         files: .github/workflows/Brewfile
+      - id: mixed-line-ending
+        args: [--fix=lf]
+        exclude: ^Tests/images/
       - id: trailing-whitespace
         exclude: ^\.github/.*TEMPLATE|^Tests/(fonts|images)/|\.patch$
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.2
+    rev: 0.37.4
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
       - id: check-renovate
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.25.2
+    rev: v1.29.0
     hooks:
       - id: zizmor
 
@@ -71,7 +74,7 @@ repos:
       - id: sphinx-lint
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.23.0
+    rev: v2.26.0
     hooks:
       - id: pyproject-fmt
 
@@ -82,9 +85,16 @@ repos:
         additional_dependencies: [trove-classifiers>=2024.10.12]
 
   - repo: https://github.com/tox-dev/tox-ini-fmt
-    rev: 1.7.1
+    rev: 1.8.1
     hooks:
       - id: tox-ini-fmt
+
+  - repo: https://github.com/regebro/pyroma
+    rev: 5.1b1
+    hooks:
+      - id: pyroma
+        additional_dependencies: [check-manifest]
+        stages: [manual]
 
   - repo: meta
     hooks:

@@ -19,13 +19,16 @@ from __future__ import annotations
 
 import os
 import warnings
-from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
 from ._binary import i32le as i32
 from ._binary import o8
 from ._binary import o16le as o16
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 #
 # --------------------------------------------------------------------
@@ -205,6 +208,10 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         compression = im.encoderinfo.get("compression", im.info.get("compression"))
         rle = compression == "tga_rle"
     if rle:
+        if im.mode == "1":
+            msg = f"cannot write mode {im.mode} as TGA with run-length encoding"
+            raise OSError(msg)
+
         imagetype += 8
 
     id_section = im.encoderinfo.get("id_section", im.info.get("id_section", ""))

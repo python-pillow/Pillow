@@ -945,6 +945,21 @@ def test_rounded_rectangle_zero_radius(bbox: Coords) -> None:
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_width_fill.png")
 
 
+@pytest.mark.parametrize("w, h", ((200, 100), (100, 200)))
+def test_rounded_rectangle_large_radius(w: int, h: int) -> None:
+    im = Image.new("RGB", (w, h))
+    draw = ImageDraw.Draw(im)
+    draw.rounded_rectangle(
+        (0, 0, w, h), 100, "red", corners=(True, False, False, False)
+    )
+
+    expected = Image.new("RGB", (w, h))
+    draw = ImageDraw.Draw(expected)
+    draw.rounded_rectangle((0, 0, w, h), 50, "red", corners=(True, False, False, False))
+
+    assert_image_equal(im, expected)
+
+
 @pytest.mark.parametrize(
     "xy, suffix",
     [
@@ -1655,8 +1670,10 @@ def test_compute_regular_polygon_vertices(
             (50, 50, 100, 100),
             0,
             ValueError,
-            "bounding_circle should contain 2D coordinates "
-            r"and a radius \(e.g. \(x, y, r\) or \(\(x, y\), r\) \)",
+            (
+                "bounding_circle should contain 2D coordinates "
+                r"and a radius \(e.g. \(x, y, r\) or \(\(x, y\), r\) \)"
+            ),
         ),
         (
             3,

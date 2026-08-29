@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import os
 import re
+import struct
 import warnings
 from io import BytesIO
-from pathlib import Path
-from types import ModuleType
 from typing import Any, cast
 
 import pytest
@@ -34,6 +33,11 @@ from .helper import (
     timeout_unless_slower_valgrind,
 )
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from types import ModuleType
+
 ElementTree: ModuleType | None
 try:
     from defusedxml import ElementTree
@@ -52,7 +56,7 @@ class TestFileJpeg:
         im.save(out, "JPEG", **options)
         test_bytes = out.tell()
         out.seek(0)
-        reloaded = cast(JpegImagePlugin.JpegImageFile, Image.open(out))
+        reloaded = cast("JpegImagePlugin.JpegImageFile", Image.open(out))
         return reloaded, test_bytes
 
     def roundtrip(
@@ -766,6 +770,18 @@ class TestFileJpeg:
 
         im.close()
 
+    def test_mp_entry_count_too_high(self) -> None:
+        """Treat an MPO with fewer MP entries than images as JPEG"""
+        with open("Tests/images/sugarshack.mpo", "rb") as fp:
+            data = fp.read()
+
+        # Change the number of images to three, without adding a third MP entry
+        data = data[:6048] + struct.pack(">L", 3) + data[6052:]
+
+        with pytest.warns(UserWarning, match="malformed MPO file"):
+            with Image.open(BytesIO(data)) as im:
+                assert im.format == "JPEG"
+
     @pytest.mark.parametrize("mode", ("1", "L", "RGB", "RGBX", "CMYK", "YCbCr"))
     def test_save_correct_modes(self, mode: str) -> None:
         out = BytesIO()
@@ -880,9 +896,7 @@ class TestFileJpeg:
             assert exif[282] == 180
 
             out = tmp_path / "out.jpg"
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 im.save(out, exif=exif)
 
         with Image.open(out) as reloaded:
@@ -1053,9 +1067,7 @@ class TestFileJpeg:
         # Even though this decoder never says that it is finished
         # the image should still end when there is no new data
         class InfiniteMockPyDecoder(ImageFile.PyDecoder):
-            def decode(
-                self, buffer: bytes | Image.SupportsArrayInterface
-            ) -> tuple[int, int]:
+            def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
                 return 0, 0
 
         Image.register_decoder("INFINITE", InfiniteMockPyDecoder)

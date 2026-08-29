@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import sys
 from io import BytesIO, TextIOWrapper
-from pathlib import Path
 
 import pytest
 
@@ -14,6 +13,10 @@ from .helper import (
     assert_image_similar,
     hopper,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # sample ppm stream
 TEST_FILE = "Tests/images/hopper.ppm"
@@ -59,8 +62,10 @@ def test_sanity() -> None:
         ),
         # P6 with maxval > 255
         (
-            b"P6 3 1 257 \x00\x00\x00\x01\x00\x02"
-            b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xff\xff",
+            (
+                b"P6 3 1 257 \x00\x00\x00\x01\x00\x02"
+                b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xff\xff"
+            ),
             "RGB",
             (
                 (0, 1, 2),

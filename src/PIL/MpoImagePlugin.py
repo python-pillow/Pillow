@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import os
 import struct
-from typing import IO, Any, cast
+from typing import cast
 
 from . import (
     Image,
@@ -32,6 +32,10 @@ from . import (
 )
 from ._binary import o32le
 from ._util import DeferredError
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
@@ -190,7 +194,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         double call to _open.
         """
         jpeg_instance.__class__ = MpoImageFile
-        mpo_instance = cast(MpoImageFile, jpeg_instance)
+        mpo_instance = cast("MpoImageFile", jpeg_instance)
         mpo_instance._after_jpeg_open(mpheader)
         return mpo_instance
 

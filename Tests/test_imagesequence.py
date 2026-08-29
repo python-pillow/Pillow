@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from PIL import Image, ImageSequence, PsdImagePlugin, TiffImagePlugin
 
 from .helper import assert_image_equal, hopper, skip_unless_feature
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_sanity(tmp_path: Path) -> None:

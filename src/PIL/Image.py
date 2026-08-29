@@ -67,7 +67,7 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
     from types import ModuleType
-    from typing import Any, Literal
+    from typing import Any, Literal, Self
 
 logger = logging.getLogger(__name__)
 
@@ -495,7 +495,7 @@ def init() -> bool:
         try:
             logger.debug("Importing %s", plugin)
             __import__(f"{__spec__.parent}.{plugin}", globals(), locals(), [])
-        except ImportError as e:  # noqa: PERF203
+        except ImportError as e:
             logger.debug("Image: failed to import %s: %s", plugin, e)
 
     if OPEN or SAVE:
@@ -698,7 +698,7 @@ class Image:
         return new
 
     # Context manager support
-    def __enter__(self) -> Image:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -715,7 +715,7 @@ class Image:
         more information.
         """
         if getattr(self, "map", None):
-            if sys.platform == "win32" and hasattr(sys, "pypy_version_info"):
+            if sys.platform == "win32" and sys.implementation.name == "pypy":
                 self.map.close()
             self.map: mmap.mmap | None = None
 
@@ -738,24 +738,17 @@ class Image:
     def _dump(
         self, file: str | None = None, format: str | None = None, **options: Any
     ) -> str:
-        suffix = ""
-        if format:
-            suffix = f".{format}"
+        suffix = f".{format}" if format else ""
 
-        if not file:
-            f, filename = tempfile.mkstemp(suffix)
-            os.close(f)
-        else:
+        if file:
             filename = file
             if not filename.endswith(suffix):
-                filename = filename + suffix
-
-        self.load()
-
-        if not format or format == "PPM":
-            self.im.save_ppm(filename)
+                filename += suffix
         else:
-            self.save(filename, format, **options)
+            f, filename = tempfile.mkstemp(suffix)
+            os.close(f)
+
+        self.save(filename, format or "PPM", **options)
 
         return filename
 
@@ -938,7 +931,7 @@ class Image:
 
     def frombytes(
         self,
-        data: bytes | bytearray | SupportsArrayInterface,
+        data: DecoderInput,
         decoder_name: str = "raw",
         *args: Any,
     ) -> None:
@@ -956,6 +949,12 @@ class Image:
         if len(decoder_args) == 1 and isinstance(decoder_args[0], tuple):
             # may pass tuple instead of argument list
             decoder_args = decoder_args[0]
+
+        if decoder_args and decoder_args[0] in {"P;2L", "P;4L"}:
+            multiple = 4 if decoder_args[0] == "P;2L" else 8
+            if len(data) % multiple:
+                msg = "not enough image data"
+                raise ValueError(msg)
 
         # default format
         if decoder_name == "raw" and decoder_args == ():
@@ -986,7 +985,6 @@ class Image:
         operations. See :ref:`file-handling` for more information.
 
         :returns: An image access object.
-        :rtype: :py:class:`.PixelAccess`
         """
         if self._im is not None and self.palette and self.palette.dirty:
             # realize palette
@@ -1003,9 +1001,7 @@ class Image:
             elif self.palette.mode != mode:
                 # If the palette rawmode is different to the mode,
                 # then update the Python palette data
-                self.palette.palette = self.im.getpalette(
-                    self.palette.mode, self.palette.mode
-                )
+                self.palette.palette = self.im.getpalette(self.palette.mode)
 
         if self._im is not None:
             return self.im.pixel_access(self.readonly)
@@ -1070,7 +1066,6 @@ class Image:
            :data:`Palette.ADAPTIVE`.
         :param colors: Number of colors to use for the :data:`Palette.ADAPTIVE`
            palette. Defaults to 256.
-        :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
@@ -1205,7 +1200,7 @@ class Image:
             if trns is not None:
                 try:
                     new_im.info["transparency"] = new_im.palette.getcolor(
-                        cast(tuple[int, ...], trns),  # trns was converted to RGB
+                        cast("tuple[int, ...]", trns),  # trns was converted to RGB
                         new_im,
                     )
                 except Exception:
@@ -1264,7 +1259,8 @@ class Image:
             if new_im.mode == "P" and new_im.palette:
                 try:
                     new_im.info["transparency"] = new_im.palette.getcolor(
-                        cast(tuple[int, ...], trns), new_im  # trns was converted to RGB
+                        cast("tuple[int, ...]", trns),  # trns was converted to RGB
+                        new_im,
                     )
                 except ValueError as e:
                     del new_im.info["transparency"]
@@ -1356,7 +1352,7 @@ class Image:
         from . import ImagePalette
 
         mode = im.im.getpalettemode()
-        palette_data = im.im.getpalette(mode, mode)[: colors * len(mode)]
+        palette_data = im.im.getpalette(mode)[: colors * len(mode)]
         im.palette = ImagePalette.ImagePalette(mode, palette_data)
 
         return im
@@ -1366,7 +1362,6 @@ class Image:
         Copies this image. Use this method if you wish to paste things
         into an image, but still retain the original.
 
-        :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
         self.load()
@@ -1383,7 +1378,6 @@ class Image:
         Note: Prior to Pillow 3.4.0, this was a lazy operation.
 
         :param box: The crop rectangle, as a (left, upper, right, lower)-tuple.
-        :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
@@ -1480,7 +1474,6 @@ class Image:
         For example, ``getbands`` on an RGB image returns ("R", "G", "B").
 
         :returns: A tuple containing band names.
-        :rtype: tuple
         """
         return ImageMode.getmode(self.mode).bands
 
@@ -1672,12 +1665,6 @@ class Image:
             return
         self._exif._loaded = False
         self.getexif()
-
-    def get_child_images(self) -> list[ImageFile.ImageFile]:
-        from . import ImageFile
-
-        deprecate("Image.Image.get_child_images", 13)
-        return ImageFile.ImageFile.get_child_images(self)  # type: ignore[arg-type]
 
     def getim(self) -> CapsuleType:
         """
@@ -2065,19 +2052,19 @@ class Image:
 
         self._ensure_mutable()
 
-        if self.mode not in ("LA", "PA", "RGBA"):
-            # attempt to promote self to a matching alpha mode
+        if self.mode in ("RGB", "RGBX"):
+            # promote self to RGBA
+            self.im.setalpha()
+            self._mode = "RGBA"
+        elif self.mode not in ("LA", "PA", "RGBA"):
             try:
+                # do things the hard way
                 mode = getmodebase(self.mode) + "A"
-                try:
-                    self.im.setmode(mode)
-                except (AttributeError, ValueError) as e:
-                    # do things the hard way
-                    im = self.im.convert(mode)
-                    if im.mode not in ("LA", "PA", "RGBA"):
-                        msg = "alpha channel could not be added"
-                        raise ValueError(msg) from e  # sanity check
-                    self.im = im
+                im = self.im.convert(mode)
+                if im.mode not in ("LA", "PA", "RGBA"):
+                    msg = "alpha channel could not be added"
+                    raise ValueError(msg)  # sanity check
+                self.im = im
                 self._mode = self.im.mode
             except KeyError as e:
                 msg = "illegal image mode"
@@ -2181,7 +2168,9 @@ class Image:
         self.load()  # install new palette
 
     def putpixel(
-        self, xy: tuple[int, int], value: float | tuple[int, ...] | list[int]
+        self,
+        xy: tuple[int, int] | list[int],
+        value: float | tuple[int, ...] | list[int],
     ) -> None:
         """
         Modifies the pixel at the given position. The color is given as
@@ -2247,7 +2236,7 @@ class Image:
                 palette_mode = self.im.getpalettemode()
                 if palette_mode == "RGBA":
                     bands = 4
-                source_palette = self.im.getpalette(palette_mode, palette_mode)
+                source_palette = self.im.getpalette(palette_mode)
             else:  # L-mode
                 source_palette = bytearray(i // 3 for i in range(768))
         elif len(source_palette) > 768:
@@ -2421,7 +2410,7 @@ class Image:
             factor_x = int((box[2] - box[0]) / size[0] / reducing_gap) or 1
             factor_y = int((box[3] - box[1]) / size[1] / reducing_gap) or 1
             if factor_x > 1 or factor_y > 1:
-                reduce_box = self._get_safe_box(size, cast(Resampling, resample), box)
+                reduce_box = self._get_safe_box(size, cast("Resampling", resample), box)
                 factor = (factor_x, factor_y)
                 self = (
                     self.reduce(factor, box=reduce_box)
@@ -2493,7 +2482,7 @@ class Image:
         copy of this image, rotated the given number of degrees counter
         clockwise around its centre.
 
-        :param angle: In degrees counter clockwise.
+        :param angle: In degrees counterclockwise.
         :param resample: An optional resampling filter.  This can be
            one of :py:data:`Resampling.NEAREST` (use nearest neighbour),
            :py:data:`Resampling.BILINEAR` (linear interpolation in a 2x2
@@ -2711,7 +2700,7 @@ class Image:
             else:
                 fp = builtins.open(filename, "w+b")
         else:
-            fp = cast(IO[bytes], fp)
+            fp = cast("IO[bytes]", fp)
 
         try:
             save_handler(self, fp, filename)
@@ -3255,7 +3244,7 @@ def new(
         and isinstance(color, (list, tuple))
         and all(isinstance(i, int) for i in color)
     ):
-        color_ints: tuple[int, ...] = cast(tuple[int, ...], tuple(color))
+        color_ints: tuple[int, ...] = cast("tuple[int, ...]", tuple(color))
         if len(color_ints) == 3 or len(color_ints) == 4:
             # RGB or RGBA value for a P image
             from . import ImagePalette
@@ -3268,7 +3257,7 @@ def new(
 def frombytes(
     mode: str,
     size: tuple[int, int],
-    data: bytes | bytearray | SupportsArrayInterface,
+    data: DecoderInput,
     decoder_name: str = "raw",
     *args: Any,
 ) -> Image:
@@ -3382,6 +3371,12 @@ class SupportsArrayInterface(Protocol):
     def __array_interface__(self) -> dict[str, Any]:
         raise NotImplementedError()
 
+    def __len__(self) -> int:
+        raise NotImplementedError()
+
+
+DecoderInput = bytes | bytearray | memoryview | SupportsArrayInterface
+
 
 class SupportsArrowArrayInterface(Protocol):
     """
@@ -3390,8 +3385,8 @@ class SupportsArrowArrayInterface(Protocol):
     """
 
     def __arrow_c_array__(
-        self, requested_schema: "PyCapsule" = None  # type: ignore[name-defined]  # noqa: F821, UP037
-    ) -> tuple["PyCapsule", "PyCapsule"]:  # type: ignore[name-defined]  # noqa: F821, UP037
+        self, requested_schema: PyCapsule = None  # type: ignore[name-defined]  # noqa: F821
+    ) -> tuple[PyCapsule, PyCapsule]:  # type: ignore[name-defined]  # noqa: F821
         raise NotImplementedError()
 
 
@@ -3455,7 +3450,8 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
             raise TypeError(msg) from e
     if mode is not None:
         if mode != typemode and mode not in color_modes:
-            deprecate("'mode' parameter for changing data types", 13)
+            msg = "Invalid mode for data type"
+            raise ValueError(msg)
         rawmode = mode
     else:
         mode = typemode
@@ -3659,7 +3655,7 @@ def open(
         fp = builtins.open(filename, "rb")
         exclusive_fp = True
     else:
-        fp = cast(IO[bytes], fp)
+        fp = cast("IO[bytes]", fp)
 
     try:
         fp.seek(0)
@@ -3961,17 +3957,6 @@ def register_encoder(name: str, encoder: type[ImageFile.PyEncoder]) -> None:
     .. versionadded:: 4.1.0
     """
     ENCODERS[name] = encoder
-
-
-# --------------------------------------------------------------------
-# Simple display support.
-
-
-def _show(image: Image, **options: Any) -> None:
-    from . import ImageShow
-
-    deprecate("Image._show", 13, "ImageShow.show")
-    ImageShow.show(image, **options)
 
 
 # --------------------------------------------------------------------
