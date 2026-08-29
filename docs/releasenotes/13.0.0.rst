@@ -66,6 +66,14 @@ ImageCms.ImageCmsProfile.product_name and .product_info
 ``.product_info`` attributes have been removed. They were set to ``None`` since Pillow
 2.3.0.
 
+Raqm is no longer bundled
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow used to compile a bundled copy of libraqm, together with a shim that loaded
+libfribidi at runtime, because FriBiDi is LGPL-licensed and could not be linked into
+Pillow's wheels. libraqm is now linked like any other dependency, so building Pillow
+with text layout support requires libraqm to be installed.
+
 Deprecations
 ============
 
@@ -77,6 +85,19 @@ JpegImageFile.load_djpeg
 
 Use the built-in JPEG decoder instead, or call ``djpeg`` directly and decode the
 resulting image with Pillow.
+
+fribidi and harfbuzz features
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``fribidi`` and ``harfbuzz`` are now deprecated aliases of ``raqm``. Raqm selects its
+own bidirectional text and shaping libraries when it is built, so Pillow cannot
+reliably report which ones are in use.
+
+raqm=vendor and fribidi=vendor config settings
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``-C raqm=vendor`` and ``-C fribidi=vendor`` build config settings are deprecated
+and ignored. Raqm is no longer bundled, so there is nothing to vendor.
 
 API changes
 ===========
@@ -107,6 +128,21 @@ Two new filters are available for :py:meth:`~PIL.Image.Image.resize` and
 
 Other changes
 =============
+
+Wheels no longer need FriBiDi at runtime
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Wheels bundle Raqm built against SheenBidi, which is Apache-2.0-licensed and so can
+be shipped. Text layout works out of the box, where it previously required a system
+copy of libfribidi that the bundled shim could load at import time. On Windows this
+means ``fribidi.dll`` no longer has to be installed separately.
+
+iOS wheels now support Raqm
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Raqm was disabled in iOS wheels because FriBiDi could not be shipped and iOS cannot
+load a system copy at runtime. iOS wheels now support text layout like every other
+platform.
 
 Python 3.15
 ^^^^^^^^^^^

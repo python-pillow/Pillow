@@ -30,7 +30,6 @@ Image getdata()
 identical, except that it returns a tuple of pixel values, instead of an internal
 Pillow data type.
 
-
 JpegImageFile.load_djpeg
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -41,6 +40,15 @@ JpegImageFile.load_djpeg
 
 Use the built-in JPEG decoder instead, or call ``djpeg`` directly and decode the
 resulting image with Pillow.
+
+fribidi and harfbuzz features
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 13.0.0
+
+``fribidi`` and ``harfbuzz`` are deprecated aliases of ``raqm``. Raqm selects its
+own bidirectional text and shaping libraries when it is built, so Pillow cannot
+reliably report which ones are in use.
 
 Removed features
 ----------------
