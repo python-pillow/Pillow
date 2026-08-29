@@ -1113,6 +1113,9 @@ get_qtables_arrays(PyObject *qtables, int *qtablesLen) {
     }
 
     tables = PySequence_Fast(qtables, "expected a sequence");
+    if (!tables) {
+        return NULL;
+    }
     num_tables = PySequence_Size(qtables);
     if (num_tables < 1 || num_tables > NUM_QUANT_TBLS) {
         PyErr_SetString(
@@ -1139,6 +1142,9 @@ get_qtables_arrays(PyObject *qtables, int *qtablesLen) {
             goto JPEG_QTABLES_ERR;
         }
         table_data = PySequence_Fast(table, "expected a sequence");
+        if (!table_data) {
+            goto JPEG_QTABLES_ERR;
+        }
         for (j = 0; j < DCTSIZE2; j++) {
             qarrays[i * DCTSIZE2 + j] =
                 PyLong_AS_LONG(PySequence_Fast_GET_ITEM(table_data, j));
@@ -1233,12 +1239,16 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     // Freed in JpegEncode, Case 6
     qarrays = get_qtables_arrays(qtables, &qtablesLen);
+    if (!qarrays && PyErr_Occurred()) {
+        Py_DECREF(encoder);
+        return NULL;
+    }
 
     if (comment && comment_size > 0) {
         /* malloc check ok, length is from python parsearg */
         char *p = malloc(comment_size);  // Freed in JpegEncode, Case 6
         if (!p) {
-            return ImagingError_MemoryError();
+            goto memory_error;
         }
         memcpy(p, comment, comment_size);
         comment = p;
@@ -1250,10 +1260,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
         /* malloc check ok, length is from python parsearg */
         char *p = malloc(extra_size);  // Freed in JpegEncode, Case 6
         if (!p) {
-            if (comment) {
-                free(comment);
-            }
-            return ImagingError_MemoryError();
+            goto memory_error;
         }
         memcpy(p, extra, extra_size);
         extra = p;
@@ -1265,13 +1272,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
         /* malloc check ok, length is from python parsearg */
         char *pp = malloc(rawExifLen);  // Freed in JpegEncode, Case 6
         if (!pp) {
-            if (comment) {
-                free(comment);
-            }
-            if (extra) {
-                free(extra);
-            }
-            return ImagingError_MemoryError();
+            goto memory_error;
         }
         memcpy(pp, rawExif, rawExifLen);
         rawExif = pp;
@@ -1304,6 +1305,19 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     jpeg_encoder_state->rawExifLen = rawExifLen;
 
     return (PyObject *)encoder;
+
+memory_error:
+    Py_DECREF(encoder);
+    if (qarrays) {
+        free(qarrays);
+    }
+    if (comment) {
+        free(comment);
+    }
+    if (extra) {
+        free(extra);
+    }
+    return ImagingError_MemoryError();
 }
 
 #endif
