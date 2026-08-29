@@ -11,12 +11,9 @@ Output defaults to pillow-{version}.cdx.json in the current directory.
 from __future__ import annotations
 
 import argparse
-import base64
 import datetime as dt
-import difflib
 import hashlib
 import json
-import urllib.request
 import uuid
 from pathlib import Path
 
@@ -33,28 +30,6 @@ def load_dep_versions() -> dict[str, str]:
 
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def upstream_diff_b64(
-    upstream_url: str,
-    upstream_display: bytes,
-    local_path: Path,
-    local_display: bytes,
-) -> str:
-    """
-    Fetch an upstream file and return a base64-encoded unified diff vs the local copy.
-    """
-    with urllib.request.urlopen(upstream_url) as resp:
-        upstream_text = resp.read()
-    local_text = local_path.read_bytes()
-    diff_lines = difflib.diff_bytes(
-        difflib.unified_diff,
-        upstream_text.splitlines(keepends=True),
-        local_text.splitlines(keepends=True),
-        fromfile=b"a/" + upstream_display,
-        tofile=b"b/" + local_display,
-    )
-    return base64.b64encode(b"".join(diff_lines)).decode()
 
 
 def generate(version: str) -> dict:
@@ -116,28 +91,6 @@ def generate(version: str) -> dict:
 
     vendored_components = [
         {
-            "bom-ref": f"{purl}#thirdparty/fribidi-shim",
-            "type": "library",
-            "name": "fribidi-shim",
-            "version": "1.x",
-            "description": "FriBiDi runtime-loading shim "
-            "(vendored in src/thirdparty/fribidi-shim/); "
-            "loads libfribidi dynamically",
-            "licenses": [{"license": {"id": "LGPL-2.1-or-later"}}],
-            "hashes": [
-                {
-                    "alg": "SHA-256",
-                    "content": sha256_file(thirdparty / "fribidi-shim" / "fribidi.c"),
-                }
-            ],
-            "pedigree": {
-                "notes": "Pillow-authored shim; not taken from an upstream project."
-            },
-            "externalReferences": [
-                {"type": "website", "url": "https://github.com/fribidi/fribidi"},
-            ],
-        },
-        {
             "bom-ref": "pkg:github/python/pythoncapi-compat",
             "type": "library",
             "name": "pythoncapi_compat",
@@ -160,90 +113,6 @@ def generate(version: str) -> dict:
                 },
             ],
         },
-        {
-            "bom-ref": f"{purl}#thirdparty/raqm",
-            "type": "library",
-            "name": "raqm",
-            "version": "0.11.0",
-            "description": "Complex text layout library "
-            "(vendored in src/thirdparty/raqm/)",
-            "licenses": [{"license": {"id": "MIT"}}],
-            "hashes": [
-                {
-                    "alg": "SHA-256",
-                    "content": sha256_file(thirdparty / "raqm" / "raqm.c"),
-                }
-            ],
-            "pedigree": {
-                "ancestors": [
-                    {
-                        "bom-ref": "pkg:github/HOST-Oman/libraqm@0.11.0#upstream",
-                        "type": "library",
-                        "name": "raqm",
-                        "version": "0.11.0",
-                        "purl": "pkg:github/HOST-Oman/libraqm@0.11.0",
-                        "externalReferences": [
-                            {
-                                "type": "distribution",
-                                "url": "https://github.com/HOST-Oman/libraqm/releases/tag/v0.11.0",
-                            }
-                        ],
-                    }
-                ],
-                "patches": [
-                    {
-                        "type": "unofficial",
-                        "diff": {
-                            "text": {
-                                # raqm-version.h.in → raqm-version.h:
-                                # template @RAQM_VERSION_*@ placeholders replaced
-                                # with literal 0.11.0 values; filename changed to
-                                # drop the .in suffix.
-                                "content": upstream_diff_b64(
-                                    "https://raw.githubusercontent.com/HOST-Oman/libraqm/v0.11.0/src/raqm-version.h.in",
-                                    b"src/raqm-version.h.in",
-                                    thirdparty / "raqm" / "raqm-version.h",
-                                    b"src/raqm-version.h",
-                                ),
-                                "encoding": "base64",
-                            }
-                        },
-                    },
-                    {
-                        "type": "unofficial",
-                        "diff": {
-                            "text": {
-                                # raqm.c: wrap the <fribidi.h> include in an
-                                # #ifdef HAVE_FRIBIDI_SYSTEM guard so that when
-                                # building without a system FriBiDi Pillow's own
-                                # fribidi-shim is used instead.
-                                "content": upstream_diff_b64(
-                                    "https://raw.githubusercontent.com/HOST-Oman/libraqm/v0.11.0/src/raqm.c",
-                                    b"src/raqm.c",
-                                    thirdparty / "raqm" / "raqm.c",
-                                    b"src/raqm.c",
-                                ),
-                                "encoding": "base64",
-                            }
-                        },
-                    },
-                ],
-                "notes": (
-                    "Vendored from upstream HOST-Oman/libraqm v0.11.0 with two "
-                    "Pillow-specific modifications: (1) raqm-version.h.in was "
-                    "pre-processed into raqm-version.h with version placeholders "
-                    "replaced by literal values; (2) raqm.c wraps the <fribidi.h> "
-                    "include in an #ifdef HAVE_FRIBIDI_SYSTEM guard so Pillow's "
-                    "bundled fribidi-shim is used when a system FriBiDi is absent."
-                ),
-            },
-            "externalReferences": [
-                {
-                    "type": "vcs",
-                    "url": "https://github.com/python-pillow/Pillow/tree/main/src/thirdparty/raqm",
-                },
-            ],
-        },
     ]
 
     native_deps = [
@@ -261,23 +130,6 @@ def generate(version: str) -> dict:
                 {
                     "type": "distribution",
                     "url": "https://download.savannah.gnu.org/releases/freetype/",
-                },
-            ],
-        },
-        {
-            "bom-ref": "pkg:generic/fribidi",
-            "type": "library",
-            "name": "FriBiDi",
-            "version": versions["fribidi"],
-            "scope": "optional",
-            "description": "Unicode bidi algorithm library (optional, "
-            "loaded at runtime by fribidi-shim).",
-            "licenses": [{"license": {"id": "LGPL-2.1-or-later"}}],
-            "externalReferences": [
-                {"type": "website", "url": "https://github.com/fribidi/fribidi"},
-                {
-                    "type": "distribution",
-                    "url": "https://github.com/fribidi/fribidi/releases",
                 },
             ],
         },
@@ -435,6 +287,39 @@ def generate(version: str) -> dict:
             ],
         },
         {
+            "bom-ref": "pkg:generic/raqm",
+            "type": "library",
+            "name": "Raqm",
+            "version": versions["raqm"],
+            "scope": "optional",
+            "description": "Complex text layout (optional, used by PIL._imagingft).",
+            "licenses": [{"license": {"id": "MIT"}}],
+            "externalReferences": [
+                {"type": "website", "url": "https://github.com/HOST-Oman/libraqm"},
+                {
+                    "type": "distribution",
+                    "url": "https://github.com/HOST-Oman/libraqm/releases",
+                },
+            ],
+        },
+        {
+            "bom-ref": "pkg:generic/sheenbidi",
+            "type": "library",
+            "name": "SheenBidi",
+            "version": versions["sheenbidi"],
+            "scope": "optional",
+            "description": "Unicode bidirectional algorithm (optional, required "
+            "by libraqm for bidirectional text).",
+            "licenses": [{"license": {"id": "Apache-2.0"}}],
+            "externalReferences": [
+                {"type": "website", "url": "https://github.com/Tehreer/SheenBidi"},
+                {
+                    "type": "distribution",
+                    "url": "https://github.com/Tehreer/SheenBidi/releases",
+                },
+            ],
+        },
+        {
             "bom-ref": "pkg:pypi/pybind11",
             "type": "library",
             "name": "pybind11",
@@ -492,10 +377,7 @@ def generate(version: str) -> dict:
             "ref": f"{purl}#c-ext/PIL._imagingft",
             "dependsOn": [
                 "pkg:generic/freetype2",
-                "pkg:generic/fribidi",
-                "pkg:generic/harfbuzz",
-                f"{purl}#thirdparty/fribidi-shim",
-                f"{purl}#thirdparty/raqm",
+                "pkg:generic/raqm",
             ],
         },
         {
@@ -503,10 +385,11 @@ def generate(version: str) -> dict:
             "dependsOn": ["pkg:generic/libwebp"],
         },
         {
-            "ref": f"{purl}#thirdparty/raqm",
+            "ref": "pkg:generic/raqm",
             "dependsOn": [
+                "pkg:generic/freetype2",
                 "pkg:generic/harfbuzz",
-                f"{purl}#thirdparty/fribidi-shim",
+                "pkg:generic/sheenbidi",
             ],
         },
     ]

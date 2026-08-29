@@ -352,8 +352,7 @@ function build {
     build_freetype
 
     if [[ -z "$IOS_SDK" ]]; then
-        # On iOS, there's no vendor-provided raqm, and we can't ship it due to
-        # licensing, so there's no point building harfbuzz.
+        # TODO: raqm is not built for iOS
         build_harfbuzz
 
         # Now that HarfBuzz exists, build FreeType again against it.
