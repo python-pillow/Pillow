@@ -167,7 +167,7 @@ function build_harfbuzz {
 
     local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/harfbuzz-$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
     (cd $out_dir \
-        && meson setup build --prefix=$BUILD_PREFIX --libdir=$BUILD_PREFIX/lib --buildtype=minsize -Dfreetype=enabled -Dglib=disabled -Dtests=disabled $HOST_MESON_FLAGS)
+        && meson setup build --prefix=$BUILD_PREFIX --libdir=$BUILD_PREFIX/lib --buildtype=minsize -Dfreetype=enabled -Dglib=disabled -Dtests=disabled -Dutilities=disabled $HOST_MESON_FLAGS)
     (cd $out_dir/build \
         && meson install)
     touch harfbuzz-stamp
@@ -337,12 +337,9 @@ function build {
         build_freetype
     fi
 
-    if [[ -z "$IOS_SDK" ]]; then
-        # TODO: raqm is not built for iOS
-        build_harfbuzz
-        build_sheenbidi
-        build_raqm
-    fi
+    build_harfbuzz
+    build_sheenbidi
+    build_raqm
 }
 
 function create_meson_cross_config {

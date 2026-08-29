@@ -108,8 +108,7 @@ macos.config-settings = "raqm=enable imagequant=disable platform-guessing=disabl
 # Isolate macOS build environment from Homebrew etc.
 macos.environment.PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
 # Disable platform guessing on iOS
-# TODO: raqm is not built for iOS
-ios.config-settings = "raqm=disable imagequant=disable platform-guessing=disable"
+ios.config-settings = "raqm=enable imagequant=disable platform-guessing=disable"
 # iOS needs to be given a specific pytest invocation and list of test sources.
 ios.test-command = [
   "python -m selftest",
