@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import struct
-from pathlib import Path
 
 import pytest
 
@@ -10,6 +9,10 @@ from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import IFDRational
 
 from .helper import assert_deep_equal, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TAG_IDS: dict[str, int] = {
     info.name: info.value
@@ -72,9 +75,9 @@ def test_rt_metadata(tmp_path: Path) -> None:
         assert loaded.tag_v2[ImageDescription] == reloaded_text_data
 
         loaded_float = loaded.tag[TAG_IDS["RollAngle"]][0]
-        assert round(abs(loaded_float - float_data), 5) == 0
+        assert loaded_float == pytest.approx(float_data)
         loaded_double = loaded.tag[TAG_IDS["YawAngle"]][0]
-        assert round(abs(loaded_double - double_data), 7) == 0
+        assert loaded_double == pytest.approx(double_data)
 
     # check with 2 element ImageJMetaDataByteCounts, issue #2006
 

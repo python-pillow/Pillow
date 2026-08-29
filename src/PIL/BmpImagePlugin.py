@@ -25,7 +25,6 @@
 from __future__ import annotations
 
 import os
-from typing import IO, Any
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
@@ -33,6 +32,10 @@ from ._binary import i32le as i32
 from ._binary import o8
 from ._binary import o16le as o16
 from ._binary import o32le as o32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
 
 #
 # --------------------------------------------------------------------
@@ -280,7 +283,7 @@ class BmpImageFile(ImageFile.ImageFile):
 
                 # ------- If all colors are gray, white or black, ditch palette
                 if grayscale:
-                    self._mode = "1" if file_info["colors"] == 2 else "L"
+                    self._mode = "1" if file_info["colors"] <= 2 else "L"
                     raw_mode = self.mode
                 else:
                     self._mode = "P"
@@ -391,7 +394,7 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     # align to 16-bit word boundary
                     if self.fd.tell() % 2 != 0:
                         self.fd.seek(1, os.SEEK_CUR)
-        rawmode = "L" if self.mode == "L" else "P"
+        rawmode = "L" if self.mode in {"1", "L"} else "P"
         self.set_as_raw(bytes(data), rawmode, (0, self.args[-1]))
         return -1, 0
 
@@ -450,7 +453,8 @@ def _save(
     elif im.mode == "L":
         palette = b"".join(o8(i) * 3 + b"\x00" for i in range(256))
     elif im.mode == "P":
-        palette = im.im.getpalette("RGB", "BGRX")
+        # Colors used should not be zero, as that is treated as the maximum
+        palette = im.im.getpalette("RGB", "BGRX") or b"\x00\x00\x00\x00"
         colors = len(palette) // 4
     else:
         palette = None
