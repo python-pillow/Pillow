@@ -132,6 +132,24 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
+            "matchStrings": ["\"raqm\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
+            "depNameTemplate": "raqm",
+            "packageNameTemplate": "HOST-Oman/libraqm",
+            "datasourceTemplate": "github-releases",
+            "extractVersionTemplate": "^v(?<version>.+)$"
+        },
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
+            "matchStrings": ["\"sheenbidi\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
+            "depNameTemplate": "sheenbidi",
+            "packageNameTemplate": "Tehreer/SheenBidi",
+            "datasourceTemplate": "github-releases",
+            "extractVersionTemplate": "^v(?<version>.+)$"
+        },
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
             "matchStrings": ["\"tiff\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "tiff",
             "packageNameTemplate": "libtiff/libtiff",
