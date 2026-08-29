@@ -86,24 +86,24 @@ Once the dependencies are built, make sure the required environment variables
 are set by running ``winbuild\build\build_env.cmd`` and install Pillow with pip::
 
     winbuild\build\build_env.cmd
-    python.exe -m pip install -v -C raqm=vendor -C fribidi=vendor .
+    python.exe -m pip install -v -C raqm=enable .
 
 You can also install Pillow in `editable mode`_::
 
     winbuild\build\build_env.cmd
-    python.exe -m pip install -v -C raqm=vendor -C fribidi=vendor -e .
+    python.exe -m pip install -v -C raqm=enable -e .
 
 To build a binary wheel instead, run::
 
     winbuild\build\build_env.cmd
-    python.exe -m pip wheel -v -C raqm=vendor -C fribidi=vendor .
+    python.exe -m pip wheel -v -C raqm=enable .
 
 .. _editable mode: https://setuptools.pypa.io/en/stable/userguide/development_mode.html
 
 Testing Pillow
 --------------
 
-Some binary dependencies (e.g. ``fribidi.dll``) will be stored in the
+Some binary dependencies (e.g. ``djpeg.exe``) will be stored in the
 ``winbuild\build\bin`` directory; this directory should be added to ``PATH``
 before running tests.
 
@@ -121,8 +121,8 @@ Here's an example script to build on Windows::
     build\build_dep_all.cmd
     build\build_env.cmd
     cd ..
-    %PYTHON%\python.exe -m pip install -v -C raqm=vendor -C fribidi=vendor .
+    %PYTHON%\python.exe -m pip install -v -C raqm=enable .
     path C:\Pillow\winbuild\build\bin;%PATH%
     %PYTHON%\python.exe selftest.py
     %PYTHON%\python.exe -m pytest -vv -x --cov PIL --cov Tests --cov-report term --cov-report xml Tests
-    %PYTHON%\python.exe -m pip wheel -v -C raqm=vendor -C fribidi=vendor .
+    %PYTHON%\python.exe -m pip wheel -v -C raqm=enable .

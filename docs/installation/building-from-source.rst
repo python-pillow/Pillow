@@ -295,12 +295,6 @@ Build options
   an exception if the libraries are not found. Tcl and Tk must be used
   together.
 
-* Config settings: ``-C raqm=vendor``, ``-C fribidi=vendor``.
-  These flags are used to compile a modified version of libraqm and
-  a shim that dynamically loads libfribidi at runtime. These are
-  used to compile the standard Pillow wheels. Compiling libraqm requires
-  a C99-compliant compiler.
-
 * Config setting: ``-C platform-guessing=disable``. Skips all of the
   platform dependent guessing of include and library directories for
   automated build systems that configure the proper paths in the
