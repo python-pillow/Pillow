@@ -364,6 +364,28 @@ DEPS: dict[str, dict[str, Any]] = {
         ],
         "bins": [r"*.dll"],
     },
+    "sheenbidi": {
+        "url": f"https://github.com/Tehreer/SheenBidi/archive/v{V['sheenbidi']}.tar.gz",
+        "filename": f"SheenBidi-{V['sheenbidi']}.tar.gz",
+        "license": "LICENSE",
+        "build": [
+            *cmds_cmake("SheenBidi"),
+            cmd_mkdir(r"{inc_dir}\SheenBidi"),
+            cmd_xcopy(r"Headers\SheenBidi", r"{inc_dir}\SheenBidi"),
+        ],
+        "libs": [r"*.lib"],
+    },
+    "raqm": {
+        "url": f"https://github.com/HOST-Oman/libraqm/releases/download/v{V['raqm']}/FILENAME",
+        "filename": f"raqm-{V['raqm']}.tar.xz",
+        "license": "COPYING",
+        "build": [
+            cmd_copy(r"{winbuild_dir}\raqm.cmake", r"CMakeLists.txt"),
+            *cmds_cmake("raqm", f"-DRAQM_VERSION={V['raqm']}"),
+        ],
+        "headers": [r"src\raqm.h", r"src\raqm-version.h"],
+        "libs": [r"*.lib"],
+    },
     "libavif": {
         "url": f"https://github.com/AOMediaCodec/libavif/archive/v{V['libavif']}.tar.gz",
         "filename": f"libavif-{V['libavif']}.tar.gz",
