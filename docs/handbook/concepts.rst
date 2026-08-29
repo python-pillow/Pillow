@@ -175,7 +175,7 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 
     Each pixel of the source image contributes to one pixel of the
     destination image with identical weights.
-    For upscaling, it is equivalent to :data:`Resampling.NEAREST`.
+    For upscaling, this is equivalent to :data:`Resampling.NEAREST`.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
     and :py:meth:`~PIL.Image.Image.thumbnail` methods.
 
