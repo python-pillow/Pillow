@@ -3790,7 +3790,7 @@ def merge(mode: str, bands: Sequence[Image]) -> Image:
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
-    if getmodebands(mode) != len(bands) or "*" in mode:
+    if getmodebands(mode) != len(bands):
         msg = "wrong number of bands"
         raise ValueError(msg)
     for band in bands[1:]:
