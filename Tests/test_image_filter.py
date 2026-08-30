@@ -244,6 +244,16 @@ def test_out_of_range_blur_filter_radius(radius: float) -> None:
         im.filter(ImageFilter.GaussianBlur(radius))
 
 
+@pytest.mark.parametrize("radius", (2**24, 2**30))
+def test_large_blur_filter_radius(radius: int) -> None:
+    # A radius this large overflows the accumulators unless they stay unsigned
+    im = Image.new("L", (3, 3), 128)
+    assert im.filter(ImageFilter.BoxBlur(radius)).getpixel((1, 1)) == 128
+
+    im = Image.new("RGB", (3, 3), (128, 128, 128))
+    assert im.filter(ImageFilter.BoxBlur(radius)).getpixel((1, 1)) == (128, 128, 128)
+
+
 def test_rankfilter_size_1() -> None:
     im = Image.new("L", (3, 3), 128)
 

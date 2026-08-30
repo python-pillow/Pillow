@@ -40,10 +40,10 @@ void static inline ImagingLineBoxBlur32(
     /* Compute acc for -1 pixel (outside of image):
        From "-radius-1" to "-1" get first pixel,
        then from "0" to "radius-1". */
-    acc[0] = lineIn[0][0] * (radius + 1);
-    acc[1] = lineIn[0][1] * (radius + 1);
-    acc[2] = lineIn[0][2] * (radius + 1);
-    acc[3] = lineIn[0][3] * (radius + 1);
+    acc[0] = lineIn[0][0] * (UINT32)(radius + 1);
+    acc[1] = lineIn[0][1] * (UINT32)(radius + 1);
+    acc[2] = lineIn[0][2] * (UINT32)(radius + 1);
+    acc[3] = lineIn[0][3] * (UINT32)(radius + 1);
     /* As radius can be bigger than xsize, iterate to edgeA -1. */
     for (x = 0; x < edgeA - 1; x++) {
         acc[0] += lineIn[x][0];
@@ -52,10 +52,10 @@ void static inline ImagingLineBoxBlur32(
         acc[3] += lineIn[x][3];
     }
     /* Then multiply remainder to last x. */
-    acc[0] += lineIn[lastx][0] * (radius - edgeA + 1);
-    acc[1] += lineIn[lastx][1] * (radius - edgeA + 1);
-    acc[2] += lineIn[lastx][2] * (radius - edgeA + 1);
-    acc[3] += lineIn[lastx][3] * (radius - edgeA + 1);
+    acc[0] += lineIn[lastx][0] * (UINT32)(radius - edgeA + 1);
+    acc[1] += lineIn[lastx][1] * (UINT32)(radius - edgeA + 1);
+    acc[2] += lineIn[lastx][2] * (UINT32)(radius - edgeA + 1);
+    acc[3] += lineIn[lastx][3] * (UINT32)(radius - edgeA + 1);
 
     if (edgeA <= edgeB) {
         /* Subtract pixel from left ("0").
@@ -123,11 +123,11 @@ void static inline ImagingLineBoxBlur8(
 
 #define SAVE(x, bulk) lineOut[x] = (UINT8)((bulk + (1 << 23)) >> 24)
 
-    acc = lineIn[0] * (radius + 1);
+    acc = lineIn[0] * (UINT32)(radius + 1);
     for (x = 0; x < edgeA - 1; x++) {
         acc += lineIn[x];
     }
-    acc += lineIn[lastx] * (radius - edgeA + 1);
+    acc += lineIn[lastx] * (UINT32)(radius - edgeA + 1);
 
     if (edgeA <= edgeB) {
         for (x = 0; x < edgeA; x++) {
@@ -176,7 +176,7 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
 
     int radius = (int)floatRadius;
     UINT32 ww = (UINT32)(1 << 24) / (floatRadius * 2 + 1);
-    UINT32 fw = ((1 << 24) - (radius * 2 + 1) * ww) / 2;
+    UINT32 fw = ((1 << 24) - ((UINT32)radius * 2 + 1) * ww) / 2;
 
     int edgeA = MIN(radius + 1, imIn->xsize);
     int edgeB = MAX(imIn->xsize - radius - 1, 0);
