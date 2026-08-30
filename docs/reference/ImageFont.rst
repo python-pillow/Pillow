@@ -107,9 +107,10 @@ Constants
         is correct **only** for :py:attr:`PIL.ImageFont.Layout.BASIC`, which does no
         shaping of its own.
 
-        Under :py:attr:`PIL.ImageFont.Layout.RAQM`, Pillow shapes and reorders the text itself, so a
-        pre-shaped string is shaped a second time. The result still renders — it
-        is simply wrong, which is what makes the failure easy to miss.
+        Under :py:attr:`PIL.ImageFont.Layout.RAQM`, Pillow shapes and reorders
+        the text itself, so a pre-shaped string is shaped a second time. The
+        result still renders, it is simply wrong, which is what makes the
+        failure easy to miss.
 
         Which engine is used depends on how Pillow was built, so the same code
         can be correct on one machine and wrong on another. Check at run time
@@ -121,12 +122,6 @@ Constants
                 draw.text(xy, arabic_text, font=font)
             else:
                 draw.text(xy, reshaped_bidi_text, font=font)
-
-        The damage is not confined to the image. Applications routinely store
-        the reshaped string, so the corruption is written to the database and
-        outlives any later fix. It also cannot be undone by mapping the
-        presentation forms back, because lam-alef ligatures collapse two
-        characters into one glyph.
 
 .. data:: MAX_STRING_LENGTH
 
