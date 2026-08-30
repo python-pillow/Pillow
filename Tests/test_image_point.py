@@ -82,3 +82,18 @@ def test_overstated_length() -> None:
     im = Image.new("L", (4, 4))
     with pytest.raises(ValueError):
         im.point(OverstatedLengthSequence(), "F")  # type: ignore[arg-type]
+
+
+def test_unsized_sequence() -> None:
+    # a table that only implements __getitem__ (no __len__) is a common shape
+    # for custom point tables; PySequence_Size() fails for it, so the cheap
+    # pre-check must fall back to materializing instead of erroring out
+    class UnsizedSequence:
+        def __getitem__(self, index: int) -> float:
+            if index >= 256:
+                raise IndexError
+            return float(index)
+
+    im = Image.new("L", (4, 4))
+    out = im.point(UnsizedSequence(), "F")  # type: ignore[arg-type]
+    assert_image_equal(out, im.point(list(range(256)), "F"))

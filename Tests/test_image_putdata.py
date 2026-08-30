@@ -117,6 +117,29 @@ def test_overstated_length() -> None:
     assert im.get_flattened_data()[:2] == (1, 2)
 
 
+def test_too_many_entries() -> None:
+    # an honest, correctly-reported sequence that is simply longer than the
+    # image still has to be rejected, before or after materialization
+    im = Image.new("L", (4, 4))
+    with pytest.raises(TypeError):
+        im.putdata(list(range(17)))
+
+
+def test_unsized_sequence() -> None:
+    # a sequence that only implements __getitem__ (no __len__) is common for
+    # custom point-table-like objects; PySequence_Size() fails for it, so the
+    # cheap pre-check must fall back to materializing instead of erroring out
+    class UnsizedSequence:
+        def __getitem__(self, index: int) -> int:
+            if index >= 4:
+                raise IndexError
+            return index
+
+    im = Image.new("L", (2, 2))
+    im.putdata(UnsizedSequence())  # type: ignore[arg-type]
+    assert im.get_flattened_data() == (0, 1, 2, 3)
+
+
 def test_not_flattened() -> None:
     im = Image.new("L", (1, 1))
     with pytest.raises(TypeError):
