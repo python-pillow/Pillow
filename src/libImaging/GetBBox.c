@@ -209,7 +209,7 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             memcpy(extrema, &fmin, sizeof(fmin));
             memcpy(((char *)extrema) + sizeof(fmin), &fmax, sizeof(fmax));
             break;
-        case IMAGING_TYPE_SPECIAL:
+        case IMAGING_TYPE_I16:
             if (im->mode == IMAGING_MODE_I_16) {
                 UINT16 v;
                 UINT8 *pixel = *im->image8;
