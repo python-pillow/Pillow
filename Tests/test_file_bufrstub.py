@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import IO
 
 import pytest
@@ -8,6 +7,10 @@ import pytest
 from PIL import BufrStubImagePlugin, Image, ImageFile
 
 from .helper import hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_FILE = "Tests/images/gfs.t06z.rassda.tm00.bufr_d"
 
@@ -20,7 +23,7 @@ def test_open() -> None:
 
         # Dummy data from the stub
         assert im.mode == "F"
-        assert im.size == (1, 1)
+        assert im.size == (0, 0)
 
 
 def test_invalid_file() -> None:
@@ -51,7 +54,7 @@ def test_save(tmp_path: Path) -> None:
 
 
 def test_handler(tmp_path: Path) -> None:
-    if BufrStubImagePlugin._handler is not None:
+    if BufrStubImagePlugin.BufrStubImageFile._handler is not None:
         return
 
     class TestHandler(ImageFile.StubHandler):
@@ -61,9 +64,11 @@ def test_handler(tmp_path: Path) -> None:
 
         def open(self, im: ImageFile.StubImageFile) -> None:
             self.opened = True
+            im._size = (1, 1)
 
         def load(self, im: ImageFile.StubImageFile) -> Image.Image:
             self.loaded = True
+            assert im.fp is not None
             im.fp.close()
             return Image.new("RGB", (1, 1))
 

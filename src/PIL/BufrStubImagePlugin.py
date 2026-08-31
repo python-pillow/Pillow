@@ -11,11 +11,12 @@
 from __future__ import annotations
 
 import os
-from typing import IO
 
 from . import Image, ImageFile
 
-_handler = None
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 
 def register_handler(handler: ImageFile.StubHandler | None) -> None:
@@ -24,8 +25,7 @@ def register_handler(handler: ImageFile.StubHandler | None) -> None:
 
     :param handler: Handler object.
     """
-    global _handler
-    _handler = handler
+    BufrStubImageFile._handler = handler
 
 
 # --------------------------------------------------------------------
@@ -41,6 +41,7 @@ class BufrStubImageFile(ImageFile.StubImageFile):
     format_description = "BUFR"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(4)):
             msg = "Not a BUFR file"
             raise SyntaxError(msg)
@@ -49,21 +50,15 @@ class BufrStubImageFile(ImageFile.StubImageFile):
 
         # make something up
         self._mode = "F"
-        self._size = 1, 1
-
-        loader = self._load()
-        if loader:
-            loader.open(self)
-
-    def _load(self) -> ImageFile.StubHandler | None:
-        return _handler
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    if _handler is None or not hasattr(_handler, "save"):
+    if BufrStubImageFile._handler is None or not hasattr(
+        BufrStubImageFile._handler, "save"
+    ):
         msg = "BUFR save handler not installed"
         raise OSError(msg)
-    _handler.save(im, fp, filename)
+    BufrStubImageFile._handler.save(im, fp, filename)
 
 
 # --------------------------------------------------------------------

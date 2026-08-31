@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import struct
-from pathlib import Path
 
 import pytest
 
@@ -10,6 +9,10 @@ from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import IFDRational
 
 from .helper import assert_deep_equal, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TAG_IDS: dict[str, int] = {
     info.name: info.value
@@ -72,9 +75,9 @@ def test_rt_metadata(tmp_path: Path) -> None:
         assert loaded.tag_v2[ImageDescription] == reloaded_text_data
 
         loaded_float = loaded.tag[TAG_IDS["RollAngle"]][0]
-        assert round(abs(loaded_float - float_data), 5) == 0
+        assert loaded_float == pytest.approx(float_data)
         loaded_double = loaded.tag[TAG_IDS["YawAngle"]][0]
-        assert round(abs(loaded_double - double_data), 7) == 0
+        assert loaded_double == pytest.approx(double_data)
 
     # check with 2 element ImageJMetaDataByteCounts, issue #2006
 
@@ -175,13 +178,13 @@ def test_change_stripbytecounts_tag_type(tmp_path: Path) -> None:
         del info[278]
 
         # Resize the image so that STRIPBYTECOUNTS will be larger than a SHORT
-        im = im.resize((500, 500))
-        info[TiffImagePlugin.IMAGEWIDTH] = im.width
+        im_resized = im.resize((500, 500))
+        info[TiffImagePlugin.IMAGEWIDTH] = im_resized.width
 
         # STRIPBYTECOUNTS can be a SHORT or a LONG
         info.tagtype[TiffImagePlugin.STRIPBYTECOUNTS] = TiffTags.SHORT
 
-        im.save(out, tiffinfo=info)
+        im_resized.save(out, tiffinfo=info)
 
     with Image.open(out) as reloaded:
         assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
@@ -300,7 +303,7 @@ def test_empty_metadata() -> None:
     head = f.read(8)
     info = TiffImagePlugin.ImageFileDirectory(head)
     # Should not raise struct.error.
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="Corrupt EXIF data"):
         info.load(f)
 
 
@@ -481,8 +484,20 @@ def test_too_many_entries() -> None:
     ifd.tagtype[277] = TiffTags.SHORT
 
     # Should not raise ValueError.
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="Metadata Warning"):
         assert ifd[277] == 4
+
+
+def test_tag_offset() -> None:
+    ifd = TiffImagePlugin.ImageFileDirectory_v2(b"II\x2b\x00" + b"\x00" * 12)
+
+    tag_count = struct.pack("Q", 1)
+    tag = struct.pack("<HHQQ", 0, 1, 9, 2**63)
+    next_offset = struct.pack("Q", 0)
+
+    f = io.BytesIO(tag_count + tag + next_offset)
+    with pytest.warns(UserWarning, match="Tag offset too large"):
+        ifd.load(f)
 
 
 def test_tag_group_data() -> None:

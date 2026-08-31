@@ -71,7 +71,7 @@ typedef void (*j2k_unpacker_t)(
 );
 
 struct j2k_decode_unpacker {
-    const char *mode;
+    const ModeID mode;
     OPJ_COLOR_SPACE color_space;
     unsigned components;
     /* bool indicating if unpacker supports subsampling */
@@ -599,26 +599,27 @@ j2ku_sycca_rgba(
 }
 
 static const struct j2k_decode_unpacker j2k_unpackers[] = {
-    {"L", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_l},
-    {"P", OPJ_CLRSPC_SRGB, 1, 0, j2ku_gray_l},
-    {"PA", OPJ_CLRSPC_SRGB, 2, 0, j2ku_graya_la},
-    {"I;16", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i},
-    {"I;16B", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i},
-    {"LA", OPJ_CLRSPC_GRAY, 2, 0, j2ku_graya_la},
-    {"RGB", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_rgb},
-    {"RGB", OPJ_CLRSPC_GRAY, 2, 0, j2ku_gray_rgb},
-    {"RGB", OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb},
-    {"RGB", OPJ_CLRSPC_SYCC, 3, 1, j2ku_sycc_rgb},
-    {"RGB", OPJ_CLRSPC_SRGB, 4, 1, j2ku_srgb_rgb},
-    {"RGB", OPJ_CLRSPC_SYCC, 4, 1, j2ku_sycc_rgb},
-    {"RGBA", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_rgb},
-    {"RGBA", OPJ_CLRSPC_GRAY, 2, 0, j2ku_graya_la},
-    {"RGBA", OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb},
-    {"RGBA", OPJ_CLRSPC_SYCC, 3, 1, j2ku_sycc_rgb},
-    {"RGBA", OPJ_CLRSPC_GRAY, 4, 1, j2ku_srgba_rgba},
-    {"RGBA", OPJ_CLRSPC_SRGB, 4, 1, j2ku_srgba_rgba},
-    {"RGBA", OPJ_CLRSPC_SYCC, 4, 1, j2ku_sycca_rgba},
-    {"CMYK", OPJ_CLRSPC_CMYK, 4, 1, j2ku_srgba_rgba},
+    {IMAGING_MODE_L, OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_l},
+    {IMAGING_MODE_P, OPJ_CLRSPC_SRGB, 1, 0, j2ku_gray_l},
+    {IMAGING_MODE_P, OPJ_CLRSPC_CMYK, 1, 0, j2ku_gray_l},
+    {IMAGING_MODE_PA, OPJ_CLRSPC_SRGB, 2, 0, j2ku_graya_la},
+    {IMAGING_MODE_I_16, OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i},
+    {IMAGING_MODE_I_16B, OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i},
+    {IMAGING_MODE_LA, OPJ_CLRSPC_GRAY, 2, 0, j2ku_graya_la},
+    {IMAGING_MODE_RGB, OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_rgb},
+    {IMAGING_MODE_RGB, OPJ_CLRSPC_GRAY, 2, 0, j2ku_gray_rgb},
+    {IMAGING_MODE_RGB, OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb},
+    {IMAGING_MODE_RGB, OPJ_CLRSPC_SYCC, 3, 1, j2ku_sycc_rgb},
+    {IMAGING_MODE_RGB, OPJ_CLRSPC_SRGB, 4, 1, j2ku_srgb_rgb},
+    {IMAGING_MODE_RGB, OPJ_CLRSPC_SYCC, 4, 1, j2ku_sycc_rgb},
+    {IMAGING_MODE_RGBA, OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_rgb},
+    {IMAGING_MODE_RGBA, OPJ_CLRSPC_GRAY, 2, 0, j2ku_graya_la},
+    {IMAGING_MODE_RGBA, OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb},
+    {IMAGING_MODE_RGBA, OPJ_CLRSPC_SYCC, 3, 1, j2ku_sycc_rgb},
+    {IMAGING_MODE_RGBA, OPJ_CLRSPC_GRAY, 4, 1, j2ku_srgba_rgba},
+    {IMAGING_MODE_RGBA, OPJ_CLRSPC_SRGB, 4, 1, j2ku_srgba_rgba},
+    {IMAGING_MODE_RGBA, OPJ_CLRSPC_SYCC, 4, 1, j2ku_sycca_rgba},
+    {IMAGING_MODE_CMYK, OPJ_CLRSPC_CMYK, 4, 1, j2ku_srgba_rgba},
 };
 
 /* -------------------------------------------------------------------- */
@@ -644,7 +645,6 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
     size_t tile_bytes = 0;
     unsigned n, tile_height, tile_width;
     int subsampling;
-    int total_component_width = 0;
 
     stream = opj_stream_create(BUFFER_SIZE, OPJ_TRUE);
 
@@ -771,7 +771,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
         if (color_space == j2k_unpackers[n].color_space &&
             image->numcomps == j2k_unpackers[n].components &&
             (j2k_unpackers[n].subsampling || (subsampling == -1)) &&
-            strcmp(im->mode, j2k_unpackers[n].mode) == 0) {
+            im->mode == j2k_unpackers[n].mode) {
             unpack = j2k_unpackers[n].unpacker;
             break;
         }
@@ -811,7 +811,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
             break;
         }
 
-        /* Adjust the tile co-ordinates based on the reduction (OpenJPEG
+        /* Adjust the tile coordinates based on the reduction (OpenJPEG
            doesn't do this for us) */
         tile_info.x0 = (tile_info.x0 + correction) >> context->reduce;
         tile_info.y0 = (tile_info.y0 + correction) >> context->reduce;
@@ -850,6 +850,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
          a, and then a malicious file could have a smaller tile_bytes
         */
 
+        int total_component_width = 0;
         for (n = 0; n < tile_info.nb_comps; n++) {
             // see csize /acsize calcs
             int csize = (image->comps[n].prec + 7) >> 3;

@@ -1,7 +1,7 @@
 3.2.0
 -----
 
-New DDS and FTEX Image Plugins
+New DDS and FTEX image plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``DdsImagePlugin`` reading DXT1 and DXT5 encoded ``.dds`` images was
@@ -18,7 +18,7 @@ Updates to the GbrImagePlugin
 The ``GbrImagePlugin`` (GIMP brush format) has been updated to fix
 support for version 1 files and add support for version 2 files.
 
-Passthrough Parameters for ImageDraw.text
+Passthrough parameters for ImageDraw.text
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``ImageDraw.multiline_text`` and ``ImageDraw.multiline_size`` take extra

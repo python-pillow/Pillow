@@ -4,13 +4,16 @@ import os
 import subprocess
 import sys
 import sysconfig
-from types import ModuleType
 
 import pytest
 
 from PIL import Image
 
 from .helper import assert_image_equal, hopper, is_win32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from types import ModuleType
 
 numpy: ModuleType | None
 try:
@@ -123,10 +126,6 @@ class TestImageGetPixel:
         bands = Image.getmodebands(mode)
         if bands == 1:
             return 1
-        if mode in ("BGR;15", "BGR;16"):
-            # These modes have less than 8 bits per band,
-            # so (1, 2, 3) cannot be roundtripped.
-            return (16, 32, 49)
         return tuple(range(1, bands + 1))
 
     def check(self, mode: str, expected_color_int: int | None = None) -> None:
@@ -191,11 +190,6 @@ class TestImageGetPixel:
     def test_basic(self, mode: str) -> None:
         self.check(mode)
 
-    @pytest.mark.parametrize("mode", ("BGR;15", "BGR;16", "BGR;24"))
-    def test_deprecated(self, mode: str) -> None:
-        with pytest.warns(DeprecationWarning):
-            self.check(mode)
-
     def test_list(self) -> None:
         im = hopper()
         assert im.getpixel([0, 0]) == (20, 20, 70)
@@ -218,7 +212,7 @@ class TestImageGetPixel:
 
 
 class TestImagePutPixelError:
-    IMAGE_MODES1 = ["LA", "RGB", "RGBA", "BGR;15"]
+    IMAGE_MODES1 = ["LA", "RGB", "RGBA"]
     IMAGE_MODES2 = ["L", "I", "I;16"]
     INVALID_TYPES = ["foo", 1.0, None]
 
@@ -234,11 +228,6 @@ class TestImagePutPixelError:
         (
             ("L", (0, 2), "color must be int or single-element tuple"),
             ("LA", (0, 3), "color must be int, or tuple of one or two elements"),
-            (
-                "BGR;15",
-                (0, 2),
-                "color must be int, or tuple of one or three elements",
-            ),
             (
                 "RGB",
                 (0, 2, 5),
@@ -274,6 +263,7 @@ class TestEmbeddable:
     @pytest.mark.xfail(not (sys.version_info >= (3, 13)), reason="failing test")
     @pytest.mark.skipif(not is_win32(), reason="requires Windows")
     def test_embeddable(self) -> None:
+        pytest.importorskip("setuptools", reason="setuptools not installed")
         import ctypes
 
         from setuptools.command import build_ext
@@ -292,9 +282,8 @@ class TestEmbeddable:
 
         with open("embed_pil.c", "w", encoding="utf-8") as fh:
             home = sys.prefix.replace("\\", "\\\\")
-            fh.write(
-                f"""
-#include "Python.h"
+            fh.write(f"""
+#include <Python.h>
 
 int main(int argc, char* argv[])
 {{
@@ -314,8 +303,7 @@ int main(int argc, char* argv[])
 
     return 0;
 }}
-        """
-            )
+        """)
 
         objects = compiler.compile(["embed_pil.c"])
         compiler.link_executable(objects, "embed_pil")
@@ -329,3 +317,10 @@ int main(int argc, char* argv[])
         process = subprocess.Popen(["embed_pil.exe"], env=env)
         process.communicate()
         assert process.returncode == 0
+
+    def teardown_method(self) -> None:
+        try:
+            os.remove("embed_pil.c")
+        except FileNotFoundError:
+            # If the test was skipped or failed, the file won't exist
+            pass

@@ -28,10 +28,14 @@ from __future__ import annotations
 
 import os
 import re
-from typing import IO, Any
 
 from . import Image, ImageFile, ImagePalette
 from ._util import DeferredError
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
+
 
 # --------------------------------------------------------------------
 # Standard tags
@@ -125,6 +129,7 @@ class ImImageFile(ImageFile.ImageFile):
         # Quick rejection: if there's not an LF among the first
         # 100 bytes, this is (probably) not a text header.
 
+        assert self.fp is not None
         if b"\n" not in self.fp.read(100):
             msg = "not an IM file"
             raise SyntaxError(msg)

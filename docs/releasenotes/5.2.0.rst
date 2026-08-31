@@ -1,7 +1,7 @@
 5.2.0
 -----
 
-API Changes
+API changes
 ===========
 
 Deprecations
@@ -17,7 +17,7 @@ Pillow 6.0.0, and ``PILLOW_VERSION`` will be removed after that.
 
 Use ``PIL.__version__`` instead.
 
-API Additions
+API additions
 =============
 
 3D color lookup tables
@@ -75,7 +75,7 @@ TGA file format
 Pillow can now read and write LA data (in addition to L, P, RGB and RGBA), and
 write RLE data (in addition to uncompressed).
 
-Other Changes
+Other changes
 =============
 
 Support added for Python 3.7

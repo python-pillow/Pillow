@@ -13,7 +13,7 @@ processing tool.
 
 Let’s look at a few possible uses of this library.
 
-Image Archives
+Image archives
 --------------
 
 The Python Imaging Library is ideal for image archival and batch processing
@@ -24,7 +24,7 @@ The current version identifies and reads a large number of formats. Write
 support is intentionally restricted to the most commonly used interchange and
 presentation formats.
 
-Image Display
+Image display
 -------------
 
 The current release includes Tk :py:class:`~PIL.ImageTk.PhotoImage` and
@@ -36,7 +36,7 @@ support.
 For debugging, there’s also a :py:meth:`~PIL.Image.Image.show` method which saves an image to
 disk, and calls an external display utility.
 
-Image Processing
+Image processing
 ----------------
 
 The library contains basic image processing functionality, including point operations, filtering with a set of built-in convolution kernels, and colour space conversions.

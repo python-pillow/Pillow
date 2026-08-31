@@ -20,7 +20,7 @@ Pillow attempted to dereference a null pointer in ``ImageFont``, leading to a
 crash. An error is now raised instead. This has been present since
 Pillow 8.0.0.
 
-API Additions
+API additions
 =============
 
 Added start position for getmask and getmask2
@@ -88,7 +88,7 @@ When saving a JPEG image, a comment can now be written from
 
     im.save(out, comment="Test comment")
 
-Other Changes
+Other changes
 =============
 
 Added support for DDS L and LA images

@@ -1,6 +1,6 @@
 .. _file-handling:
 
-File Handling in Pillow
+File handling in Pillow
 =======================
 
 When opening a file as an image, Pillow requires a filename, ``os.PathLike``
@@ -36,7 +36,7 @@ have multiple frames.
 Pillow cannot in general close and reopen a file, so any access to
 that file needs to be prior to the close.
 
-Image Lifecycle
+Image lifecycle
 ---------------
 
 * ``Image.open()`` Filenames and ``Path`` objects are opened as a file.
@@ -97,7 +97,7 @@ Complications
     im6.load()  # FAILS, closed file
 
 
-Proposed File Handling
+Proposed file handling
 ----------------------
 
 * ``Image.Image.load()`` should close the image file, unless there are

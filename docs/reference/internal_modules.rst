@@ -1,7 +1,7 @@
-Internal Modules
+Internal modules
 ================
 
-:mod:`~PIL._binary` Module
+:mod:`~PIL._binary` module
 --------------------------
 
 .. automodule:: PIL._binary
@@ -9,7 +9,7 @@ Internal Modules
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL._deprecate` Module
+:mod:`~PIL._deprecate` module
 -----------------------------
 
 .. automodule:: PIL._deprecate
@@ -17,7 +17,7 @@ Internal Modules
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL._tkinter_finder` Module
+:mod:`~PIL._tkinter_finder` module
 ----------------------------------
 
 .. automodule:: PIL._tkinter_finder
@@ -25,7 +25,7 @@ Internal Modules
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL._typing` Module
+:mod:`~PIL._typing` module
 --------------------------
 
 .. module:: PIL._typing
@@ -34,6 +34,10 @@ Provides a convenient way to import type hints that are not available
 on some Python versions.
 
 .. py:class:: Buffer
+
+    Typing alias.
+
+.. py:class:: Coords
 
     Typing alias.
 
@@ -53,12 +57,7 @@ on some Python versions.
 
     An object that supports the read method.
 
-.. py:data:: TypeGuard
-    :value: typing.TypeGuard
-
-    See :py:obj:`typing.TypeGuard`.
-
-:mod:`~PIL._util` Module
+:mod:`~PIL._util` module
 ------------------------
 
 .. automodule:: PIL._util
@@ -66,7 +65,7 @@ on some Python versions.
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL._version` Module
+:mod:`~PIL._version` module
 ---------------------------
 
 .. module:: PIL._version
@@ -78,7 +77,7 @@ on some Python versions.
     This is the master version number for Pillow,
     all other uses reference this module.
 
-:mod:`PIL.Image.core` Module
+:mod:`PIL.Image.core` module
 ----------------------------
 
 .. module:: PIL._imaging
@@ -86,6 +85,9 @@ on some Python versions.
 
 An internal interface module previously known as :mod:`~PIL._imaging`,
 implemented in :file:`_imaging.c`.
+
+Pillow is a Python library, and the C interfaces within are for internal use only.
+They may change without a deprecation period or a mention in the release notes.
 
 .. py:class:: ImagingCore
 

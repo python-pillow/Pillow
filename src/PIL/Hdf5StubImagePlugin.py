@@ -11,11 +11,12 @@
 from __future__ import annotations
 
 import os
-from typing import IO
 
 from . import Image, ImageFile
 
-_handler = None
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 
 def register_handler(handler: ImageFile.StubHandler | None) -> None:
@@ -24,8 +25,7 @@ def register_handler(handler: ImageFile.StubHandler | None) -> None:
 
     :param handler: Handler object.
     """
-    global _handler
-    _handler = handler
+    HDF5StubImageFile._handler = handler
 
 
 # --------------------------------------------------------------------
@@ -41,6 +41,7 @@ class HDF5StubImageFile(ImageFile.StubImageFile):
     format_description = "HDF5"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(8)):
             msg = "Not an HDF file"
             raise SyntaxError(msg)
@@ -49,21 +50,15 @@ class HDF5StubImageFile(ImageFile.StubImageFile):
 
         # make something up
         self._mode = "F"
-        self._size = 1, 1
-
-        loader = self._load()
-        if loader:
-            loader.open(self)
-
-    def _load(self) -> ImageFile.StubHandler | None:
-        return _handler
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    if _handler is None or not hasattr(_handler, "save"):
+    if HDF5StubImageFile._handler is None or not hasattr(
+        HDF5StubImageFile._handler, "save"
+    ):
         msg = "HDF5 save handler not installed"
         raise OSError(msg)
-    _handler.save(im, fp, filename)
+    HDF5StubImageFile._handler.save(im, fp, filename)
 
 
 # --------------------------------------------------------------------

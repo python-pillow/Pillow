@@ -1,0 +1,135 @@
+12.3.0
+------
+
+Security
+========
+
+:cve:`2026-59200`: Prevent decompression bomb when parsing PDF
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When parsing a PDF, ``PdfStream.decode()`` attempts to decompress data without any
+limit. A default maximum of ``ImageFile.SAFEBLOCK`` has been added. ``PdfParser`` was
+added in Pillow 5.1.0. Reported by `redyank <https://github.com/redyank>`__.
+
+:cve:`2026-55798`: WindowsViewer.get_command injection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If an attacker has control over the path passed to
+``ImageShow.WindowsViewer.get_command()``, and the result is executed by the user, the
+attacker may be able to execute arbitrary shell commands. Reported by Bin Luo,
+University of Electronic Science and Technology of China (luob87709@gmail.com).
+
+:cve:`2026-59203`: EPS image infinite loop
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If a negative byte count is specified for the BeginBinary byte count, an infinite loop
+is possible as Pillow seeks repeatedly backwards. This value will now be validated.
+BeginBinary parsing was only added in Pillow 12.0.0. Reported by
+`jiagongzheng-stack <https://github.com/jiagongzheng-stack>`__.
+
+:cve:`2026-59204`: JPEG2000 image memory usage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The total component width was incorrectly accumulated across tiles within a JPEG2000
+image, potentially leading to excessive memory use. This was introduced as part of an
+earlier security fix in Pillow 8.2.0, but has now been fixed. Reported by Fr3v1.
+
+:cve:`2026-54058`: McIdas out-of-bounds (OOB) read
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+McIdas images can specify the stride, and if incorrectly set, may cause an OOB read.
+This has been fixed. Reported by Devansh Shah, RUDRA Cybersecurity Pvt. Ltd.
+
+:cve:`2026-59198`: Out-of-bounds (OOB) read when saving 1 mode TGA images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Saving 1 mode images as TGA with run-length encoding can trigger an OOB read. This was
+added in Pillow 5.2.0, but the functionality is not possible under the TGA
+specification, so it has been removed. Reported by
+`Seratov <https://github.com/Seratov>`__.
+
+:cve:`2026-59197`: Out-of-bounds (OOB) write from large RankFilter sizes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageFilter.RankFilter`, and its subclasses, can potentially write
+out-of-bounds if given a large size. This has been fixed. Reported by
+`Seratov <https://github.com/Seratov>`__.
+
+:cve:`2026-59199`: Out-of-bounds (OOB) write from ``Image.paste()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Large paste box dimensions can cause an OOB write in ``Image.crop()``,
+``Image.paste()`` and ``Image.alpha_composite()``. This has been fixed. Reported by
+`Seratov <https://github.com/Seratov>`__.
+
+:cve:`2026-59205`: Out-of-bounds (OOB) write in ``ImageCmsTransform``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Apply a transform mode to a different image mode can trigger an OOB write in
+``ImageCmsTransform``. Errors are now raised if the mode does not match. Reported by
+`Seratov <https://github.com/Seratov>`__.
+
+:cve:`2026-54059`, :cve:`2026-54060`, :cve:`2026-55379`: Prevent FontFile decompression bomb
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Decompression bomb checks have now been added to :py:class:`~PIL.FontFile.FontFile`,
+and its subclasses, checking the width and height of characters. Reported by Rahul
+Singh and Dinesh.
+
+:cve:`2026-55380`: Prevent GD decompression bomb
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A decompression bomb check has been added to :py:class:`~PIL.GdImageFile.GdImageFile`.
+This is format must be explicitly called though, rather than being accessible from
+``Image.open()``. Reported by Rahul Singh.
+
+API additions
+=============
+
+Added ``scale_down`` argument to ``ImageGrab.grab()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageGrab.grab` now accepts an optional keyword argument of
+``scale_down``. This affects macOS screenshots with a ``bbox`` on a Retina screen. By
+default, images will be captured at 2x. If ``scale_down`` is ``True``, they will be at
+1x.
+
+Previously, macOS screenshots with a ``bbox`` were captured at 1x by default.
+
+Added ``max_length`` argument to ``PdfStream.decode()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When calling ``PdfStream.decode()``, the maximum length of data to decode can now be
+specified. This will default to ``ImageFile.SAFEBLOCK``.
+
+Other changes
+=============
+
+Python 3.15 beta
+^^^^^^^^^^^^^^^^
+
+To help other projects prepare for Python 3.15, wheels are now built for the 3.15 beta
+as a preview. This is not official support for Python 3.15, but rather an opportunity
+for you to test how Pillow works with the beta and report any problems.
+
+SBOM in wheels
+^^^^^^^^^^^^^^
+
+Following :pep:`770`, the Software Bill-of-Materials (SBOM) has now been embedded into
+Pillow's wheels.
+
+Removed Python 3.13 free-threaded wheels
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Python 3.13 added an experimental free-threaded mode, and Pillow 11.0.0 added
+corresponding wheels. Now that Python 3.14 includes official support for it, Pillow has
+removed wheels for Python 3.13 free-threaded mode.
+
+Performance improvements
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+A number of changes have been made to optimize the use of C when manipulating images.
+This improves performance by up to 5.6 times of ``Image``'s
+``alpha_composite``, ``fill``, ``filter``, ``getchannel``, ``linear_gradient``,
+``matrix``, ``merge``, ``negative``, ``putalpha``, ``quantize``,
+``radial_gradient``, ``resample``, ``split``, and ``ImageChops`` operations.

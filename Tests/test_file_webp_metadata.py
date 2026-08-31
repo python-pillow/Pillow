@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
-from types import ModuleType
 
 import pytest
 
 from PIL import Image, WebPImagePlugin
 
 from .helper import mark_if_feature_version, skip_unless_feature
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from types import ModuleType
 
 pytestmark = skip_unless_feature("webp")
 
@@ -22,11 +25,13 @@ except ImportError:
 def test_read_exif_metadata() -> None:
     file_path = "Tests/images/flower.webp"
     with Image.open(file_path) as image:
+        assert isinstance(image, WebPImagePlugin.WebPImageFile)
         assert image.format == "WEBP"
         exif_data = image.info.get("exif", None)
         assert exif_data
 
         exif = image._getexif()
+        assert exif is not None
 
         # Camera make
         assert exif[271] == "Canon"

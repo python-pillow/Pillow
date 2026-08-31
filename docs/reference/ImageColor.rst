@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImageColor
 .. py:currentmodule:: PIL.ImageColor
 
-:py:mod:`~PIL.ImageColor` Module
+:py:mod:`~PIL.ImageColor` module
 ================================
 
 The :py:mod:`~PIL.ImageColor` module contains color tables and converters from
@@ -11,7 +11,7 @@ others.
 
 .. _color-names:
 
-Color Names
+Color names
 -----------
 
 The ImageColor module supports the following string formats:
@@ -26,6 +26,10 @@ The ImageColor module supports the following string formats:
   integers in the range 0 to 255. Alternatively, the color values can be given
   as three percentages (0% to 100%). For example, ``rgb(255,0,0)`` and
   ``rgb(100%,0%,0%)`` both specify pure red.
+
+* RGBA functions, given as ``rgba(red, green, blue, alpha)`` where the color
+  values and the alpha value are integers in the range 0 to 255. For example,
+  ``rgba(255,0,0,128)`` specifies pure red with 50% opacity.
 
 * Hue-Saturation-Lightness (HSL) functions, given as ``hsl(hue, saturation%,
   lightness%)`` where hue is the color given as an angle between 0 and 360
@@ -43,20 +47,20 @@ The ImageColor module supports the following string formats:
 
 * Common HTML color names. The :py:mod:`~PIL.ImageColor` module provides some
   140 standard color names, based on the colors supported by the X Window
-  system and most web browsers. color names are case insensitive. For example,
+  system and most web browsers. Color names are case insensitive. For example,
   ``red`` and ``Red`` both specify pure red.
 
 Functions
 ---------
 
-.. py:method:: getrgb(color)
+.. py:function:: getrgb(color)
 
     Convert a color string to an RGB tuple. If the string cannot be parsed,
     this function raises a :py:exc:`ValueError` exception.
 
     .. versionadded:: 1.1.4
 
-.. py:method:: getcolor(color, mode)
+.. py:function:: getcolor(color, mode)
 
     Same as :py:func:`~PIL.ImageColor.getrgb`, but converts the RGB value to a
     grayscale value if the mode is not color or a palette image. If the string

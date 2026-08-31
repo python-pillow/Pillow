@@ -41,22 +41,25 @@ ImagingGetBand(Imaging imIn, int band) {
         band = 3;
     }
 
-    imOut = ImagingNewDirty("L", imIn->xsize, imIn->ysize);
+    imOut = ImagingNewDirty(IMAGING_MODE_L, imIn->xsize, imIn->ysize);
     if (!imOut) {
         return NULL;
     }
 
     /* Extract band from image */
-    for (y = 0; y < imIn->ysize; y++) {
-        UINT8 *in = (UINT8 *)imIn->image[y] + band;
-        UINT8 *out = imOut->image8[y];
+    // restrict safe: imIn is read-only, imOut is a fresh allocation.
+    int xsize = imIn->xsize;
+    int ysize = imIn->ysize;
+    for (y = 0; y < ysize; y++) {
+        UINT8 *restrict in = (UINT8 *)imIn->image[y] + band;
+        UINT8 *restrict out = imOut->image8[y];
         x = 0;
-        for (; x < imIn->xsize - 3; x += 4) {
+        for (; x < xsize - 3; x += 4) {
             UINT32 v = MAKE_UINT32(in[0], in[4], in[8], in[12]);
             memcpy(out + x, &v, sizeof(v));
             in += 16;
         }
-        for (; x < imIn->xsize; x++) {
+        for (; x < xsize; x++) {
             out[x] = *in;
             in += 4;
         }
@@ -82,7 +85,7 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
     }
 
     for (i = 0; i < imIn->bands; i++) {
-        bands[i] = ImagingNewDirty("L", imIn->xsize, imIn->ysize);
+        bands[i] = ImagingNewDirty(IMAGING_MODE_L, imIn->xsize, imIn->ysize);
         if (!bands[i]) {
             for (j = 0; j < i; ++j) {
                 ImagingDelete(bands[j]);
@@ -92,33 +95,37 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
     }
 
     /* Extract bands from image */
+    // restrict safe: imIn is read-only and each band is a distinct fresh
+    // allocation, so none of in/out0..out3 alias each other.
+    int xsize = imIn->xsize;
+    int ysize = imIn->ysize;
     if (imIn->bands == 2) {
-        for (y = 0; y < imIn->ysize; y++) {
-            UINT8 *in = (UINT8 *)imIn->image[y];
-            UINT8 *out0 = bands[0]->image8[y];
-            UINT8 *out1 = bands[1]->image8[y];
+        for (y = 0; y < ysize; y++) {
+            UINT8 *restrict in = (UINT8 *)imIn->image[y];
+            UINT8 *restrict out0 = bands[0]->image8[y];
+            UINT8 *restrict out1 = bands[1]->image8[y];
             x = 0;
-            for (; x < imIn->xsize - 3; x += 4) {
+            for (; x < xsize - 3; x += 4) {
                 UINT32 v = MAKE_UINT32(in[0], in[4], in[8], in[12]);
                 memcpy(out0 + x, &v, sizeof(v));
                 v = MAKE_UINT32(in[0 + 3], in[4 + 3], in[8 + 3], in[12 + 3]);
                 memcpy(out1 + x, &v, sizeof(v));
                 in += 16;
             }
-            for (; x < imIn->xsize; x++) {
+            for (; x < xsize; x++) {
                 out0[x] = in[0];
                 out1[x] = in[3];
                 in += 4;
             }
         }
     } else if (imIn->bands == 3) {
-        for (y = 0; y < imIn->ysize; y++) {
-            UINT8 *in = (UINT8 *)imIn->image[y];
-            UINT8 *out0 = bands[0]->image8[y];
-            UINT8 *out1 = bands[1]->image8[y];
-            UINT8 *out2 = bands[2]->image8[y];
+        for (y = 0; y < ysize; y++) {
+            UINT8 *restrict in = (UINT8 *)imIn->image[y];
+            UINT8 *restrict out0 = bands[0]->image8[y];
+            UINT8 *restrict out1 = bands[1]->image8[y];
+            UINT8 *restrict out2 = bands[2]->image8[y];
             x = 0;
-            for (; x < imIn->xsize - 3; x += 4) {
+            for (; x < xsize - 3; x += 4) {
                 UINT32 v = MAKE_UINT32(in[0], in[4], in[8], in[12]);
                 memcpy(out0 + x, &v, sizeof(v));
                 v = MAKE_UINT32(in[0 + 1], in[4 + 1], in[8 + 1], in[12 + 1]);
@@ -127,7 +134,7 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
                 memcpy(out2 + x, &v, sizeof(v));
                 in += 16;
             }
-            for (; x < imIn->xsize; x++) {
+            for (; x < xsize; x++) {
                 out0[x] = in[0];
                 out1[x] = in[1];
                 out2[x] = in[2];
@@ -135,14 +142,14 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
             }
         }
     } else {
-        for (y = 0; y < imIn->ysize; y++) {
-            UINT8 *in = (UINT8 *)imIn->image[y];
-            UINT8 *out0 = bands[0]->image8[y];
-            UINT8 *out1 = bands[1]->image8[y];
-            UINT8 *out2 = bands[2]->image8[y];
-            UINT8 *out3 = bands[3]->image8[y];
+        for (y = 0; y < ysize; y++) {
+            UINT8 *restrict in = (UINT8 *)imIn->image[y];
+            UINT8 *restrict out0 = bands[0]->image8[y];
+            UINT8 *restrict out1 = bands[1]->image8[y];
+            UINT8 *restrict out2 = bands[2]->image8[y];
+            UINT8 *restrict out3 = bands[3]->image8[y];
             x = 0;
-            for (; x < imIn->xsize - 3; x += 4) {
+            for (; x < xsize - 3; x += 4) {
                 UINT32 v = MAKE_UINT32(in[0], in[4], in[8], in[12]);
                 memcpy(out0 + x, &v, sizeof(v));
                 v = MAKE_UINT32(in[0 + 1], in[4 + 1], in[8 + 1], in[12 + 1]);
@@ -153,7 +160,7 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
                 memcpy(out3 + x, &v, sizeof(v));
                 in += 16;
             }
-            for (; x < imIn->xsize; x++) {
+            for (; x < xsize; x++) {
                 out0[x] = in[0];
                 out1[x] = in[1];
                 out2[x] = in[2];
@@ -195,10 +202,15 @@ ImagingPutBand(Imaging imOut, Imaging imIn, int band) {
     }
 
     /* Insert band into image */
-    for (y = 0; y < imIn->ysize; y++) {
-        UINT8 *in = imIn->image8[y];
-        UINT8 *out = (UINT8 *)imOut->image[y] + band;
-        for (x = 0; x < imIn->xsize; x++) {
+    // restrict safe: imIn is single-band (bands verified 1),
+    // imOut must be multi-band or we would have shortcut out above,
+    // so they're distinct images with disparate buffers.
+    int xsize = imIn->xsize;
+    int ysize = imIn->ysize;
+    for (y = 0; y < ysize; y++) {
+        UINT8 *restrict in = imIn->image8[y];
+        UINT8 *restrict out = (UINT8 *)imOut->image[y] + band;
+        for (x = 0; x < xsize; x++) {
             *out = in[x];
             out += 4;
         }
@@ -228,9 +240,11 @@ ImagingFillBand(Imaging imOut, int band, int color) {
     color = CLIP8(color);
 
     /* Insert color into image */
-    for (y = 0; y < imOut->ysize; y++) {
-        UINT8 *out = (UINT8 *)imOut->image[y] + band;
-        for (x = 0; x < imOut->xsize; x++) {
+    int xsize = imOut->xsize;
+    int ysize = imOut->ysize;
+    for (y = 0; y < ysize; y++) {
+        UINT8 *restrict out = (UINT8 *)imOut->image[y] + band;
+        for (x = 0; x < xsize; x++) {
             *out = (UINT8)color;
             out += 4;
         }
@@ -240,7 +254,7 @@ ImagingFillBand(Imaging imOut, int band, int color) {
 }
 
 Imaging
-ImagingMerge(const char *mode, Imaging bands[4]) {
+ImagingMerge(const ModeID mode, Imaging bands[4]) {
     int i, x, y;
     int bandsCount = 0;
     Imaging imOut;
@@ -279,33 +293,37 @@ ImagingMerge(const char *mode, Imaging bands[4]) {
         return ImagingCopy2(imOut, firstBand);
     }
 
+    // restrict safe: the input bands are read-only and imOut is a fresh
+    // allocation, so none of in0..in3/out alias each other.
+    int xsize = imOut->xsize;
+    int ysize = imOut->ysize;
     if (imOut->bands == 2) {
-        for (y = 0; y < imOut->ysize; y++) {
-            UINT8 *in0 = bands[0]->image8[y];
-            UINT8 *in1 = bands[1]->image8[y];
-            UINT32 *out = (UINT32 *)imOut->image32[y];
-            for (x = 0; x < imOut->xsize; x++) {
+        for (y = 0; y < ysize; y++) {
+            UINT8 *restrict in0 = bands[0]->image8[y];
+            UINT8 *restrict in1 = bands[1]->image8[y];
+            UINT32 *restrict out = (UINT32 *)imOut->image32[y];
+            for (x = 0; x < xsize; x++) {
                 out[x] = MAKE_UINT32(in0[x], 0, 0, in1[x]);
             }
         }
     } else if (imOut->bands == 3) {
-        for (y = 0; y < imOut->ysize; y++) {
-            UINT8 *in0 = bands[0]->image8[y];
-            UINT8 *in1 = bands[1]->image8[y];
-            UINT8 *in2 = bands[2]->image8[y];
-            UINT32 *out = (UINT32 *)imOut->image32[y];
-            for (x = 0; x < imOut->xsize; x++) {
+        for (y = 0; y < ysize; y++) {
+            UINT8 *restrict in0 = bands[0]->image8[y];
+            UINT8 *restrict in1 = bands[1]->image8[y];
+            UINT8 *restrict in2 = bands[2]->image8[y];
+            UINT32 *restrict out = (UINT32 *)imOut->image32[y];
+            for (x = 0; x < xsize; x++) {
                 out[x] = MAKE_UINT32(in0[x], in1[x], in2[x], 0);
             }
         }
     } else if (imOut->bands == 4) {
-        for (y = 0; y < imOut->ysize; y++) {
-            UINT8 *in0 = bands[0]->image8[y];
-            UINT8 *in1 = bands[1]->image8[y];
-            UINT8 *in2 = bands[2]->image8[y];
-            UINT8 *in3 = bands[3]->image8[y];
-            UINT32 *out = (UINT32 *)imOut->image32[y];
-            for (x = 0; x < imOut->xsize; x++) {
+        for (y = 0; y < ysize; y++) {
+            UINT8 *restrict in0 = bands[0]->image8[y];
+            UINT8 *restrict in1 = bands[1]->image8[y];
+            UINT8 *restrict in2 = bands[2]->image8[y];
+            UINT8 *restrict in3 = bands[3]->image8[y];
+            UINT32 *restrict out = (UINT32 *)imOut->image32[y];
+            for (x = 0; x < xsize; x++) {
                 out[x] = MAKE_UINT32(in0[x], in1[x], in2[x], in3[x]);
             }
         }

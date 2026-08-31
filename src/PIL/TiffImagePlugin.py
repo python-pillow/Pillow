@@ -47,22 +47,24 @@ import math
 import os
 import struct
 import warnings
-from collections.abc import Iterator, MutableMapping
+from collections.abc import Callable, MutableMapping
 from fractions import Fraction
 from numbers import Number, Rational
-from typing import IO, TYPE_CHECKING, Any, Callable, NoReturn, cast
+from typing import IO, Any, cast
 
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
-from ._deprecate import deprecate
-from ._typing import StrOrBytesPath
 from ._util import DeferredError, is_path
 from .TiffTags import TYPES
 
+TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from ._typing import Buffer, IntegralLike
+    from collections.abc import Iterator
+    from typing import NoReturn, Self
+
+    from ._typing import Buffer, IntegralLike, StrOrBytesPath
 
 logger = logging.getLogger(__name__)
 
@@ -250,6 +252,7 @@ OPEN_INFO = {
     (II, 3, (1,), 1, (8,), ()): ("P", "P"),
     (MM, 3, (1,), 1, (8,), ()): ("P", "P"),
     (II, 3, (1,), 1, (8, 8), (0,)): ("P", "PX"),
+    (MM, 3, (1,), 1, (8, 8), (0,)): ("P", "PX"),
     (II, 3, (1,), 1, (8, 8), (2,)): ("PA", "PA"),
     (MM, 3, (1,), 1, (8, 8), (2,)): ("PA", "PA"),
     (II, 3, (1,), 2, (8,), ()): ("P", "P;R"),
@@ -264,10 +267,8 @@ OPEN_INFO = {
     (MM, 5, (1,), 1, (16, 16, 16, 16), ()): ("CMYK", "CMYK;16B"),
     (II, 6, (1,), 1, (8,), ()): ("L", "L"),
     (MM, 6, (1,), 1, (8,), ()): ("L", "L"),
-    # JPEG compressed images handled by LibTiff and auto-converted to RGBX
-    # Minimal Baseline TIFF requires YCbCr images to have 3 SamplesPerPixel
-    (II, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGBX"),
-    (MM, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGBX"),
+    (II, 6, (1,), 1, (8, 8, 8), ()): ("YCbCr", "YCbCr"),
+    (MM, 6, (1,), 1, (8, 8, 8), ()): ("YCbCr", "YCbCr"),
     (II, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
 }
@@ -282,9 +283,6 @@ PREFIXES = [
     b"MM\x00\x2b",  # BigTIFF with big-endian byte order
     b"II\x2b\x00",  # BigTIFF with little-endian byte order
 ]
-
-if not getattr(Image.core, "libtiff_support_custom_tags", True):
-    deprecate("Support for LibTIFF earlier than version 4", 12)
 
 
 def _accept(prefix: bytes) -> bool:
@@ -318,8 +316,8 @@ def _limit_signed_rational(
 ##
 # Wrapper for TIFF IFDs.
 
-_load_dispatch = {}
-_write_dispatch = {}
+_load_dispatch: dict[int, tuple[int, _LoaderFunc]] = {}
+_write_dispatch: dict[int, Callable[..., Any]] = {}
 
 
 def _delegate(op: str) -> Any:
@@ -365,7 +363,7 @@ class IFDRational(Rational):
             self._denominator = value.denominator
         else:
             if TYPE_CHECKING:
-                self._numerator = cast(IntegralLike, value)
+                self._numerator = cast("IntegralLike", value)
             else:
                 self._numerator = value
             self._denominator = denominator
@@ -424,7 +422,7 @@ class IFDRational(Rational):
         assert isinstance(_val, (float, Fraction))
         self._val = _val
         if TYPE_CHECKING:
-            self._numerator = cast(IntegralLike, _numerator)
+            self._numerator = cast("IntegralLike", _numerator)
         else:
             self._numerator = _numerator
         assert isinstance(_denominator, int)
@@ -464,9 +462,8 @@ class IFDRational(Rational):
     __ceil__ = _delegate("__ceil__")
     __floor__ = _delegate("__floor__")
     __round__ = _delegate("__round__")
-    # Python >= 3.11
-    if hasattr(Fraction, "__int__"):
-        __int__ = _delegate("__int__")
+    __float__ = _delegate("__float__")
+    __int__ = _delegate("__int__")
 
 
 _LoaderFunc = Callable[["ImageFileDirectory_v2", bytes, bool], Any]
@@ -913,6 +910,9 @@ class ImageFileDirectory_v2(_IFDv2Base):
                     here = fp.tell()
                     (offset,) = self._unpack("Q" if self._bigtiff else "L", data)
                     msg += f" Tag Location: {here} - Data Location: {offset}"
+                    if offset >= 2**63:
+                        warnings.warn("Tag offset too large")
+                        continue
                     fp.seek(offset)
                     data = ImageFile._safe_read(fp, size)
                     fp.seek(here)
@@ -1178,6 +1178,7 @@ class TiffImageFile(ImageFile.ImageFile):
         """Open the first image in a TIFF file"""
 
         # Header
+        assert self.fp is not None
         ifh = self.fp.read(8)
         if ifh[2] == 43:
             ifh += self.fp.read(8)
@@ -1216,9 +1217,10 @@ class TiffImageFile(ImageFile.ImageFile):
             return
         self._seek(frame)
         if self._im is not None and (
-            self.im.size != self._tile_size or self.im.mode != self.mode
+            self.im.size != self._tile_size
+            or self.im.mode != self.mode
+            or self.readonly
         ):
-            # The core image will no longer be used
             self._im = None
 
     def _seek(self, frame: int) -> None:
@@ -1258,7 +1260,10 @@ class TiffImageFile(ImageFile.ImageFile):
         self.fp.seek(self._frame_pos[frame])
         self.tag_v2.load(self.fp)
         if XMP in self.tag_v2:
-            self.info["xmp"] = self.tag_v2[XMP]
+            xmp = self.tag_v2[XMP]
+            if isinstance(xmp, tuple) and len(xmp) == 1:
+                xmp = xmp[0]
+            self.info["xmp"] = xmp
         elif "xmp" in self.info:
             del self.info["xmp"]
         self._reload_exif()
@@ -1282,10 +1287,13 @@ class TiffImageFile(ImageFile.ImageFile):
         blocks = {}
         val = self.tag_v2.get(ExifTags.Base.ImageResources)
         if val:
-            while val.startswith(b"8BIM"):
+            while val.startswith(b"8BIM") and len(val) >= 12:
                 id = i16(val[4:6])
                 n = math.ceil((val[6] + 1) / 2) * 2
-                size = i32(val[6 + n : 10 + n])
+                try:
+                    size = i32(val[6 + n : 10 + n])
+                except struct.error:
+                    break
                 data = val[10 + n : 10 + n + size]
                 blocks[id] = {"data": data}
 
@@ -1340,6 +1348,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # To be nice on memory footprint, if there's a
         # file descriptor, use that instead of reading
         # into a string in python.
+        assert self.fp is not None
         try:
             fp = hasattr(self.fp, "fileno") and self.fp.fileno()
             # flush the file descriptor, prevents error on pypy 2.4+
@@ -1464,28 +1473,34 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("- size: %s", self.size)
 
         sample_format = self.tag_v2.get(SAMPLEFORMAT, (1,))
-        if len(sample_format) > 1 and max(sample_format) == min(sample_format) == 1:
+        if len(sample_format) > 1 and max(sample_format) == min(sample_format):
             # SAMPLEFORMAT is properly per band, so an RGB image will
             # be (1,1,1).  But, we don't support per band pixel types,
             # and anything more than one band is a uint8. So, just
             # take the first element. Revisit this if adding support
             # for more exotic images.
-            sample_format = (1,)
+            sample_format = (sample_format[0],)
 
         bps_tuple = self.tag_v2.get(BITSPERSAMPLE, (1,))
         extra_tuple = self.tag_v2.get(EXTRASAMPLES, ())
+        samples_per_pixel = self.tag_v2.get(
+            SAMPLESPERPIXEL,
+            3 if self._compression == "tiff_jpeg" and photo in (2, 6) else 1,
+        )
         if photo in (2, 6, 8):  # RGB, YCbCr, LAB
             bps_count = 3
         elif photo == 5:  # CMYK
             bps_count = 4
         else:
             bps_count = 1
+        if self._planar_configuration == 2 and extra_tuple and max(extra_tuple) == 0:
+            # If components are stored separately,
+            # then unspecified extra components at the end can be ignored
+            bps_tuple = bps_tuple[: -len(extra_tuple)]
+            samples_per_pixel -= len(extra_tuple)
+            extra_tuple = ()
         bps_count += len(extra_tuple)
         bps_actual_count = len(bps_tuple)
-        samples_per_pixel = self.tag_v2.get(
-            SAMPLESPERPIXEL,
-            3 if self._compression == "tiff_jpeg" and photo in (2, 6) else 1,
-        )
 
         if samples_per_pixel > MAX_SAMPLESPERPIXEL:
             # DOS check, samples_per_pixel can be a Long, and we extend the tuple below
@@ -1572,14 +1587,14 @@ class TiffImageFile(ImageFile.ImageFile):
                 # fillorder==2 modes have a corresponding
                 # fillorder=1 mode
                 self._mode, rawmode = OPEN_INFO[key]
-            # YCbCr images with new jpeg compression with pixels in one plane
-            # unpacked straight into RGB values
-            if (
-                photo == 6
-                and self._compression == "jpeg"
-                and self._planar_configuration == 1
-            ):
-                rawmode = "RGB"
+            if photo == 6:
+                self._mode = "RGB"
+                if self._compression in "jpeg" and self._planar_configuration == 1:
+                    # YCbCr images with new jpeg compression with pixels in one plane
+                    # unpacked straight into RGB values
+                    rawmode = "RGB"
+                else:
+                    rawmode = "RGBX"
             # libtiff always returns the bytes in native order.
             # we're expecting image byte order. So, if the rawmode
             # contains I;16, we need to convert from native to image
@@ -1656,6 +1671,8 @@ class TiffImageFile(ImageFile.ImageFile):
         if self.mode in ["P", "PA"]:
             palette = [o8(b // 256) for b in self.tag_v2[COLORMAP]]
             self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
+        else:
+            self.palette = None
 
 
 #
@@ -1675,7 +1692,7 @@ SAVE_INFO = {
     "PA": ("PA", II, 3, 1, (8, 8), 2),
     "I": ("I;32S", II, 1, 2, (32,), None),
     "I;16": ("I;16", II, 1, 1, (16,), None),
-    "I;16S": ("I;16S", II, 1, 2, (16,), None),
+    "I;16L": ("I;16L", II, 1, 1, (16,), None),
     "F": ("F;32F", II, 1, 3, (32,), None),
     "RGB": ("RGB", II, 2, 1, (8, 8, 8), None),
     "RGBX": ("RGBX", II, 2, 1, (8, 8, 8, 8), 0),
@@ -1683,10 +1700,7 @@ SAVE_INFO = {
     "CMYK": ("CMYK", II, 5, 1, (8, 8, 8, 8), None),
     "YCbCr": ("YCbCr", II, 6, 1, (8, 8, 8), None),
     "LAB": ("LAB", II, 8, 1, (8, 8, 8), None),
-    "I;32BS": ("I;32BS", MM, 1, 2, (32,), None),
     "I;16B": ("I;16B", MM, 1, 1, (16,), None),
-    "I;16BS": ("I;16BS", MM, 1, 2, (16,), None),
-    "F;32BF": ("F;32BF", MM, 1, 3, (32,), None),
 }
 
 
@@ -1756,6 +1770,12 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         legacy_ifd = im.tag.to_v2()
 
     supplied_tags = {**legacy_ifd, **getattr(im, "tag_v2", {})}
+    if supplied_tags.get(PLANAR_CONFIGURATION) == 2 and EXTRASAMPLES in supplied_tags:
+        # If the image used separate component planes,
+        # then EXTRASAMPLES should be ignored when saving contiguously
+        if SAMPLESPERPIXEL in supplied_tags:
+            supplied_tags[SAMPLESPERPIXEL] -= len(supplied_tags[EXTRASAMPLES])
+        del supplied_tags[EXTRASAMPLES]
     for tag in (
         # IFD offset that may not be correct in the saved image
         EXIFIFD,
@@ -1932,16 +1952,14 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             # Custom items are supported for int, float, unicode, string and byte
             # values. Other types and tuples require a tagtype.
             if tag not in TiffTags.LIBTIFF_CORE:
-                if not getattr(Image.core, "libtiff_support_custom_tags", False):
-                    continue
-
                 if tag in TiffTags.TAGS_V2_GROUPS:
                     types[tag] = TiffTags.LONG8
                 elif tag in ifd.tagtype:
                     types[tag] = ifd.tagtype[tag]
-                elif not (isinstance(value, (int, float, str, bytes))):
-                    continue
-                else:
+                elif isinstance(value, (int, float, str, bytes)) or (
+                    isinstance(value, tuple)
+                    and all(isinstance(v, (int, float, IFDRational)) for v in value)
+                ):
                     type = TiffTags.lookup(tag).type
                     if type:
                         types[tag] = type
@@ -1962,7 +1980,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # we're storing image byte order. So, if the rawmode
         # contains I;16, we need to convert from native to image
         # byte order.
-        if im.mode in ("I;16B", "I;16"):
+        if im.mode in ("I;16", "I;16B", "I;16L"):
             rawmode = "I;16N"
 
         # Pass tags as sorted list so that the tags are set in a fixed order.
@@ -2040,7 +2058,7 @@ class AppendingTiffWriter(io.BytesIO):
             except OSError:
                 self.f = open(fn, "w+b")
         else:
-            self.f = cast(IO[bytes], fn)
+            self.f = cast("IO[bytes]", fn)
             self.close_fp = False
         self.beginning = self.f.tell()
         self.setup()
@@ -2102,7 +2120,7 @@ class AppendingTiffWriter(io.BytesIO):
         self.finalize()
         self.setup()
 
-    def __enter__(self) -> AppendingTiffWriter:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -2309,8 +2327,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         with AppendingTiffWriter(fp) as tf:
             for ims in [im] + append_images:
-                if not hasattr(ims, "encoderinfo"):
-                    ims.encoderinfo = {}
+                encoderinfo = ims._attach_default_encoderinfo(im)
                 if not hasattr(ims, "encoderconfig"):
                     ims.encoderconfig = ()
                 nfr = getattr(ims, "n_frames", 1)
@@ -2320,6 +2337,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                     ims.load()
                     _save(ims, tf, filename)
                     tf.newFrame()
+                ims.encoderinfo = encoderinfo
     finally:
         im.seek(cur_idx)
 

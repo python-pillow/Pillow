@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 from typing import IO
 
 import pytest
 
 from PIL import Hdf5StubImagePlugin, Image, ImageFile
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_FILE = "Tests/images/hdf5.h5"
 
@@ -19,7 +22,7 @@ def test_open() -> None:
 
         # Dummy data from the stub
         assert im.mode == "F"
-        assert im.size == (1, 1)
+        assert im.size == (0, 0)
 
 
 def test_invalid_file() -> None:
@@ -53,7 +56,7 @@ def test_save() -> None:
 
 
 def test_handler(tmp_path: Path) -> None:
-    if Hdf5StubImagePlugin._handler is not None:
+    if Hdf5StubImagePlugin.HDF5StubImageFile._handler is not None:
         return
 
     class TestHandler(ImageFile.StubHandler):
@@ -63,9 +66,11 @@ def test_handler(tmp_path: Path) -> None:
 
         def open(self, im: Image.Image) -> None:
             self.opened = True
+            im._size = (1, 1)
 
-        def load(self, im: Image.Image) -> Image.Image:
+        def load(self, im: ImageFile.ImageFile) -> Image.Image:
             self.loaded = True
+            assert im.fp is not None
             im.fp.close()
             return Image.new("RGB", (1, 1))
 

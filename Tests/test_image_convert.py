@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from PIL import Image
 
 from .helper import assert_image, assert_image_equal, assert_image_similar, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_sanity() -> None:
@@ -80,8 +82,8 @@ def test_16bit() -> None:
         _test_float_conversion(im)
 
     for color in (65535, 65536):
-        im = Image.new("I", (1, 1), color)
-        im_i16 = im.convert("I;16")
+        im_i = Image.new("I", (1, 1), color)
+        im_i16 = im_i.convert("I;16")
         assert im_i16.getpixel((0, 0)) == 65535
 
 
@@ -97,6 +99,13 @@ def test_opaque() -> None:
     assert_image_equal(alpha, solid)
 
 
+def test_rgba() -> None:
+    with Image.open("Tests/images/transparent.png") as im:
+        assert im.mode == "RGBA"
+
+        assert_image_similar(im.convert("RGBa").convert("RGB"), im.convert("RGB"), 1.5)
+
+
 def test_rgba_p() -> None:
     im = hopper("RGBA")
     im.putalpha(hopper("L"))
@@ -107,11 +116,19 @@ def test_rgba_p() -> None:
     assert_image_similar(im, comparable, 20)
 
 
-def test_rgba() -> None:
-    with Image.open("Tests/images/transparent.png") as im:
-        assert im.mode == "RGBA"
+def test_rgba_pa() -> None:
+    im = hopper("RGBA").convert("PA").convert("RGB")
+    expected = hopper("RGB")
 
-        assert_image_similar(im.convert("RGBa").convert("RGB"), im.convert("RGB"), 1.5)
+    assert_image_similar(im, expected, 9.3)
+
+
+def test_pa() -> None:
+    im = hopper().convert("PA")
+
+    palette = im.palette
+    assert palette is not None
+    assert palette.colors != {}
 
 
 def test_trns_p(tmp_path: Path) -> None:
@@ -203,7 +220,10 @@ def test_trns_RGB(tmp_path: Path) -> None:
     assert "transparency" not in im_rgba.info
     assert im_rgba.getpixel((0, 0)) == (0, 0, 0, 0)
 
-    im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.Palette.ADAPTIVE)
+    with pytest.warns(
+        UserWarning, match="Couldn't allocate palette entry for transparency"
+    ):
+        im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
     assert "transparency" not in im_p.info
     im_p.save(f)
 
@@ -272,36 +292,31 @@ def test_p2pa_palette() -> None:
     assert im_pa.getpalette() == im.getpalette()
 
 
+rgb2xyz_matrix = (
+    0.412453, 0.357580, 0.180423, 0,
+    0.212671, 0.715160, 0.072169, 0,
+    0.019334, 0.119193, 0.950227, 0,
+)  # fmt: skip
+
+
 def test_matrix_illegal_conversion() -> None:
     # Arrange
     im = hopper("CMYK")
-    # fmt: off
-    matrix = (
-        0.412453, 0.357580, 0.180423, 0,
-        0.212671, 0.715160, 0.072169, 0,
-        0.019334, 0.119193, 0.950227, 0)
-    # fmt: on
     assert im.mode != "RGB"
 
     # Act / Assert
     with pytest.raises(ValueError):
-        im.convert(mode="CMYK", matrix=matrix)
+        im.convert(mode="CMYK", matrix=rgb2xyz_matrix)
 
 
 def test_matrix_wrong_mode() -> None:
     # Arrange
     im = hopper("L")
-    # fmt: off
-    matrix = (
-        0.412453, 0.357580, 0.180423, 0,
-        0.212671, 0.715160, 0.072169, 0,
-        0.019334, 0.119193, 0.950227, 0)
-    # fmt: on
     assert im.mode == "L"
 
     # Act / Assert
     with pytest.raises(ValueError):
-        im.convert(mode="L", matrix=matrix)
+        im.convert(mode="L", matrix=rgb2xyz_matrix)
 
 
 @pytest.mark.parametrize("mode", ("RGB", "L"))
@@ -309,17 +324,11 @@ def test_matrix_xyz(mode: str) -> None:
     # Arrange
     im = hopper("RGB")
     im.info["transparency"] = (255, 0, 0)
-    # fmt: off
-    matrix = (
-        0.412453, 0.357580, 0.180423, 0,
-        0.212671, 0.715160, 0.072169, 0,
-        0.019334, 0.119193, 0.950227, 0)
-    # fmt: on
     assert im.mode == "RGB"
 
     # Act
     # Convert an RGB image to the CIE XYZ colour space
-    converted_im = im.convert(mode=mode, matrix=matrix)
+    converted_im = im.convert(mode=mode, matrix=rgb2xyz_matrix)
 
     # Assert
     assert converted_im.mode == mode
@@ -336,12 +345,11 @@ def test_matrix_xyz(mode: str) -> None:
 def test_matrix_identity() -> None:
     # Arrange
     im = hopper("RGB")
-    # fmt: off
     identity_matrix = (
         1, 0, 0, 0,
         0, 1, 0, 0,
-        0, 0, 1, 0)
-    # fmt: on
+        0, 0, 1, 0,
+    )  # fmt: skip
     assert im.mode == "RGB"
 
     # Act

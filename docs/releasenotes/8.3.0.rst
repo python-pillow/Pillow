@@ -33,7 +33,7 @@ dictionary. The ``convert_dict_qtables`` method no longer
 performs any operations on the data given to it, has been deprecated and will be
 removed in Pillow 10.0.0 (2023-07-01).
 
-API Changes
+API changes
 ===========
 
 Changed WebP default "method" value when saving
@@ -73,7 +73,7 @@ through :py:meth:`~PIL.Image.Image.getexif`. This also provides access to the GP
 EXIF IFDs, through ``im.getexif().get_ifd(0x8825)`` and
 ``im.getexif().get_ifd(0x8769)`` respectively.
 
-API Additions
+API additions
 =============
 
 ImageOps.contain
@@ -100,7 +100,7 @@ format, through the new ``bitmap_format`` argument::
 
     im.save("out.ico", bitmap_format="bmp")
 
-Other Changes
+Other changes
 =============
 
 Added DDS BC5 reading and uncompressed saving

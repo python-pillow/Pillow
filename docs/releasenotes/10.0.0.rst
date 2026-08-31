@@ -28,7 +28,7 @@ This threshold can be changed by setting
 :py:data:`PIL.ImageFont.MAX_STRING_LENGTH`. It can be disabled by setting
 ``ImageFont.MAX_STRING_LENGTH = None``.
 
-Backwards Incompatible Changes
+Backwards incompatible changes
 ==============================
 
 Categories
@@ -164,7 +164,7 @@ Since Pillow's C API is now faster than PyAccess on PyPy,
 ``Image.USE_CFFI_ACCESS``, for switching from the C API to PyAccess, is
 similarly deprecated.
 
-API Changes
+API changes
 ===========
 
 Added line width parameter to ImageDraw regular_polygon
@@ -173,7 +173,7 @@ Added line width parameter to ImageDraw regular_polygon
 An optional line ``width`` parameter has been added to
 ``ImageDraw.Draw.regular_polygon``.
 
-API Additions
+API additions
 =============
 
 Added ``alpha_only`` argument to ``getbbox()``
@@ -184,7 +184,7 @@ Added ``alpha_only`` argument to ``getbbox()``
 and the image has an alpha channel, trim transparent pixels. Otherwise, trim
 pixels when all channels are zero.
 
-Other Changes
+Other changes
 =============
 
 32-bit wheels

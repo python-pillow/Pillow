@@ -36,9 +36,12 @@ import os
 import struct
 from enum import IntEnum
 from io import BytesIO
-from typing import IO
 
 from . import Image, ImageFile
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 
 class Format(IntEnum):
@@ -258,6 +261,7 @@ class BlpImageFile(ImageFile.ImageFile):
     format_description = "Blizzard Mipmap Format"
 
     def _open(self) -> None:
+        assert self.fp is not None
         self.magic = self.fp.read(4)
         if not _accept(self.magic):
             msg = f"Bad BLP magic {repr(self.magic)}"
@@ -294,7 +298,7 @@ class BlpImageFile(ImageFile.ImageFile):
 class _BLPBaseDecoder(abc.ABC, ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         try:
             self._read_header()
             self._load()
@@ -434,7 +438,7 @@ class BLPEncoder(ImageFile.PyEncoder):
     def _write_palette(self) -> bytes:
         data = b""
         assert self.im is not None
-        palette = self.im.getpalette("RGBA", "RGBA")
+        palette = self.im.getpalette("RGBA")
         for i in range(len(palette) // 4):
             r, g, b, a = palette[i * 4 : (i + 1) * 4]
             data += struct.pack("<4B", b, g, r, a)

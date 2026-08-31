@@ -12,17 +12,20 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  FORCE_COLOR: 1
+
 jobs:
   stale:
-    if: github.repository_owner == 'python-pillow'
+    if: github.event.repository.fork == false
     permissions:
       issues: write
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
 
     steps:
     - name: "Check issues"
-      uses: actions/stale@v9
+      uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         only-labels: "Awaiting OP Action"

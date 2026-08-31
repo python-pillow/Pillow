@@ -1,7 +1,7 @@
 .. py:module:: PIL.Image
 .. py:currentmodule:: PIL.Image
 
-:py:mod:`~PIL.Image` Module
+:py:mod:`~PIL.Image` module
 ===========================
 
 The :py:mod:`~PIL.Image` module provides a class with the same name which is
@@ -79,6 +79,7 @@ Constructing images
 
 .. autofunction:: new
 .. autofunction:: fromarray
+.. autofunction:: fromarrow
 .. autofunction:: frombytes
 .. autofunction:: frombuffer
 
@@ -112,7 +113,7 @@ Registering plugins
 .. autofunction:: register_decoder
 .. autofunction:: register_encoder
 
-The Image Class
+The Image class
 ---------------
 
 .. autoclass:: PIL.Image.Image
@@ -190,6 +191,7 @@ This helps to get the bounding box coordinates of the input image::
 .. automethod:: PIL.Image.Image.getchannel
 .. automethod:: PIL.Image.Image.getcolors
 .. automethod:: PIL.Image.Image.getdata
+.. automethod:: PIL.Image.Image.get_flattened_data
 .. automethod:: PIL.Image.Image.getexif
 .. automethod:: PIL.Image.Image.getextrema
 .. automethod:: PIL.Image.Image.getpalette
@@ -220,15 +222,15 @@ This resizes the given image from ``(width, height)`` to ``(width/2, height/2)``
 
 .. automethod:: PIL.Image.Image.rotate
 
-This rotates the input image by ``theta`` degrees counter clockwise::
+This rotates the input image by ``theta`` degrees counterclockwise::
 
     from PIL import Image
 
     with Image.open("hopper.jpg") as im:
 
-        # Rotate the image by 60 degrees counter clockwise
+        # Rotate the image by 60 degrees counterclockwise
         theta = 60
-        # Angle is in degrees counter clockwise
+        # Angle is in degrees counterclockwise
         im_rotated = im.rotate(angle=theta)
 
 .. automethod:: PIL.Image.Image.save
@@ -260,7 +262,7 @@ method. ::
 .. automethod:: PIL.Image.Image.load
 .. automethod:: PIL.Image.Image.close
 
-Image Attributes
+Image attributes
 ----------------
 
 Instances of the :py:class:`Image` class have the following attributes:
@@ -270,7 +272,7 @@ Instances of the :py:class:`Image` class have the following attributes:
 
     The filename or path of the source file. Only images created with the
     factory function ``open`` have a filename attribute. If the input is a
-    file like object, the filename attribute is set to an empty string.
+    file-like object, the filename attribute is set to an empty string.
 
 .. py:attribute:: Image.format
     :type: Optional[str]
@@ -331,7 +333,7 @@ Instances of the :py:class:`Image` class have the following attributes:
     Plugins may leave this attribute undefined if they don't support loading
     animated images, even if the given format supports animated images.
 
-    Given that this attribute is not present for all images use
+    Given that this attribute is not present for all images, use
     ``getattr(image, "is_animated", False)`` to check if Pillow is aware of multiple
     frames in an image regardless of its format.
 
@@ -346,7 +348,7 @@ Instances of the :py:class:`Image` class have the following attributes:
     Plugins may leave this attribute undefined if they don't support loading
     animated images, even if the given format supports animated images.
 
-    Given that this attribute is not present for all images use
+    Given that this attribute is not present for all images, use
     ``getattr(image, "n_frames", 1)`` to check the number of frames that Pillow is
     aware of in an image regardless of its format.
 
@@ -370,7 +372,11 @@ Protocols
 
 .. autoclass:: SupportsArrayInterface
     :show-inheritance:
+.. autoclass:: SupportsArrowArrayInterface
+    :show-inheritance:
 .. autoclass:: SupportsGetData
+    :show-inheritance:
+.. autoclass:: DecoderInput
     :show-inheritance:
 
 Constants

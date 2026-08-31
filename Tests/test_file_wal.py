@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from io import BytesIO
+
 from PIL import WalImageFile
 
 from .helper import assert_image_equal_tofile
@@ -13,10 +15,20 @@ def test_open() -> None:
         assert im.format_description == "Quake2 Texture"
         assert im.mode == "P"
         assert im.size == (128, 128)
+        assert "next_name" not in im.info
 
         assert isinstance(im, WalImageFile.WalImageFile)
 
         assert_image_equal_tofile(im, "Tests/images/hopper_wal.png")
+
+
+def test_next_name() -> None:
+    with open(TEST_FILE, "rb") as fp:
+        data = bytearray(fp.read())
+    data[56:60] = b"Test"
+    f = BytesIO(data)
+    with WalImageFile.open(f) as im:
+        assert im.info["next_name"] == b"Test"
 
 
 def test_load() -> None:

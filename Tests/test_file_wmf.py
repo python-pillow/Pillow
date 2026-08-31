@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 from typing import IO
 
 import pytest
@@ -9,6 +8,10 @@ import pytest
 from PIL import Image, ImageFile, WmfImagePlugin
 
 from .helper import assert_image_equal_tofile, assert_image_similar_tofile, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_load_raw() -> None:
@@ -18,7 +21,7 @@ def test_load_raw() -> None:
             # Currently, support for WMF/EMF is Windows-only
             im.load()
             # Compare to reference rendering
-            assert_image_similar_tofile(im, "Tests/images/drawing_emf_ref.png", 0)
+            assert_image_equal_tofile(im, "Tests/images/drawing_emf_ref.png")
 
     # Test basic WMF open and rendering
     with Image.open("Tests/images/drawing.wmf") as im:
@@ -44,6 +47,18 @@ def test_load_zero_inch() -> None:
             pass
 
 
+def test_load_unsupported_wmf() -> None:
+    b = BytesIO(b"\xd7\xcd\xc6\x9a\x00\x00" + b"\x01" * 10)
+    with pytest.raises(SyntaxError, match="Unsupported WMF file format"):
+        WmfImagePlugin.WmfStubImageFile(b)
+
+
+def test_load_unsupported() -> None:
+    b = BytesIO(b"\x01\x00\x00\x00")
+    with pytest.raises(SyntaxError, match="Unsupported file format"):
+        WmfImagePlugin.WmfStubImageFile(b)
+
+
 def test_render() -> None:
     with open("Tests/images/drawing.emf", "rb") as fp:
         data = fp.read()
@@ -56,6 +71,9 @@ def test_render() -> None:
 class TestHandler(ImageFile.StubHandler):
     methodCalled = False
 
+    def open(self, im: ImageFile.StubImageFile) -> None:
+        im._size = (1, 1)
+
     def load(self, im: ImageFile.StubImageFile) -> Image.Image:
         return Image.new("RGB", (1, 1))
 
@@ -64,11 +82,11 @@ class TestHandler(ImageFile.StubHandler):
 
 
 def test_register_handler(tmp_path: Path) -> None:
-    if isinstance(WmfImagePlugin._handler, TestHandler):
+    if isinstance(WmfImagePlugin.WmfStubImageFile._handler, TestHandler):
         return
 
     handler = TestHandler()
-    original_handler = WmfImagePlugin._handler
+    original_handler = WmfImagePlugin.WmfStubImageFile._handler
     WmfImagePlugin.register_handler(handler)
 
     im = hopper()

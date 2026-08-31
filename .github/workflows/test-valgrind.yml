@@ -6,15 +6,12 @@ on:
   push:
     branches:
       - "**"
-    paths:
+    paths: &paths
       - ".github/workflows/test-valgrind.yml"
       - "**.c"
       - "**.h"
   pull_request:
-    paths:
-      - ".github/workflows/test-valgrind.yml"
-      - "**.c"
-      - "**.h"
+    paths: *paths
   workflow_dispatch:
 
 permissions:
@@ -24,6 +21,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  FORCE_COLOR: 1
+
 jobs:
   build:
 
@@ -32,14 +32,15 @@ jobs:
       fail-fast: false
       matrix:
         docker: [
-          ubuntu-22.04-jammy-amd64-valgrind,
+          ubuntu-24.04-noble-amd64-valgrind,
         ]
         dockerTag: [main]
+        split: [1, 2, 3, 4]
 
-    name: ${{ matrix.docker }}
+    name: ${{ matrix.docker }} ${{ matrix.split }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
 
@@ -54,5 +55,5 @@ jobs:
       run: |
         # The Pillow user in the docker container is UID 1001
         sudo chown -R 1001 $GITHUB_WORKSPACE
-        docker run --name pillow_container -e "PILLOW_VALGRIND_TEST=true" -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
+        docker run --name pillow_container -e "PILLOW_VALGRIND_TEST=true" -e "SPLIT_COUNT=4" -e "SPLIT_INDEX=${{ matrix.split }}" -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
         sudo chown -R runner $GITHUB_WORKSPACE

@@ -1,7 +1,7 @@
 .. py:module:: PIL.ImagePath
 .. py:currentmodule:: PIL.ImagePath
 
-:py:mod:`~PIL.ImagePath` Module
+:py:mod:`~PIL.ImagePath` module
 ===============================
 
 The :py:mod:`~PIL.ImagePath` module is used to store and manipulate 2-dimensional

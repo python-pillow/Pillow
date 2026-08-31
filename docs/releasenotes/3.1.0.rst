@@ -22,7 +22,7 @@ not the absolute height of each line.
 
 There is also now a default spacing of 4px between lines.
 
-Exif, Jpeg and Tiff Metadata
+EXIF, JPEG and TIFF metadata
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There were major changes in the TIFF ImageFileDirectory support in
@@ -63,7 +63,7 @@ single item tuples have been unwrapped and return a bare element.
 The format returned by Pillow 3.0 has been abandoned. A more fully
 featured interface for EXIF is anticipated in a future release.
 
-Out of Spec Metadata
+Out of spec metadata
 ++++++++++++++++++++
 
 In Pillow 3.0 and 3.1, images that contain metadata that is internally

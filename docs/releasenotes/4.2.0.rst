@@ -1,7 +1,7 @@
 4.2.0
 -----
 
-Backwards Incompatible Changes
+Backwards incompatible changes
 ==============================
 
 Several deprecated items have been removed
@@ -17,17 +17,17 @@ Several deprecated items have been removed
   was shown. From Pillow 4.2.0, the deprecation warning is removed and
   an :py:exc:`IOError` is raised.
 
-Removed Core Image Function
+Removed core Image function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The unused function ``Image.core.new_array`` was removed. This is an
 internal function that should not have been used by user code, but it
 was accessible from the python layer.
 
-Other Changes
+Other changes
 =============
 
-Added Complex Text Rendering
+Added complex text rendering
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pillow now supports complex text rendering for scripts requiring glyph
@@ -36,7 +36,7 @@ dependencies: harfbuzz, fribidi, and raqm. See the :doc:`install documentation
 <../installation>` for further details. This feature is tested and works on
 Unix and Mac, but has not yet been built on Windows platforms.
 
-New Optional Parameters
+New optional parameters
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 * :py:meth:`PIL.ImageDraw.floodfill` has a new optional parameter:
@@ -47,7 +47,7 @@ New Optional Parameters
   optional parameter for specifying additional images to create
   multipage outputs.
 
-New DecompressionBomb Warning
+New DecompressionBomb warning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :py:meth:`PIL.Image.Image.crop` now may raise a DecompressionBomb

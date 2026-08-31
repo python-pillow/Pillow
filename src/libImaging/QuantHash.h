@@ -20,8 +20,12 @@ typedef uint32_t HashVal_t;
 
 typedef uint32_t (*HashFunc)(const HashTable *, const HashKey_t);
 typedef int (*HashCmpFunc)(const HashTable *, const HashKey_t, const HashKey_t);
-typedef void (*IteratorFunc)(const HashTable *, const HashKey_t, const HashVal_t, void *);
-typedef void (*IteratorUpdateFunc)(const HashTable *, const HashKey_t, HashVal_t *, void *);
+typedef void (*IteratorFunc)(
+    const HashTable *, const HashKey_t, const HashVal_t, void *
+);
+typedef void (*IteratorUpdateFunc)(
+    const HashTable *, const HashKey_t, HashVal_t *, void *
+);
 typedef void (*ComputeFunc)(const HashTable *, const HashKey_t, HashVal_t *);
 typedef void (*CollisionFunc)(
     const HashTable *, HashKey_t *, HashVal_t *, HashKey_t, HashVal_t
