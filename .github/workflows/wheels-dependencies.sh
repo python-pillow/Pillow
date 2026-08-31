@@ -177,7 +177,7 @@ function build_libavif {
     python3 -m pip install meson ninja
 
     if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IOS_SDK" ]]) || [ -n "$SANITIZER" ]; then
-        build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
+        build_simple nasm 3.02 https://www.nasm.us/pub/nasm/releasebuilds/3.02
     fi
 
     local build_shared=ON

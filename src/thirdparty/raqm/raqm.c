@@ -47,6 +47,7 @@
 #include <hb-ft.h>
 
 #include "raqm.h"
+#include "grapheme-data.h"
 
 /**
  * SECTION:raqm
@@ -158,12 +159,14 @@
 
 #ifdef RAQM_TESTING
 # define RAQM_TEST(...) printf (__VA_ARGS__)
+# define RAQM_STATIC
 # define SCRIPT_TO_STRING(script) \
     char buff[5]; \
     hb_tag_to_string (hb_script_to_iso15924_tag (script), buff); \
     buff[4] = '\0';
 #else
 # define RAQM_TEST(...)
+# define RAQM_STATIC static
 #endif
 
 #define RAQM_BIDI_LEVEL_IS_RTL(level) \
@@ -229,10 +232,6 @@ struct _raqm_run
 static size_t
 _raqm_encoding_to_u32_index (raqm_t *rq,
                              size_t  index);
-
-static bool
-_raqm_allowed_grapheme_boundary (hb_codepoint_t l_char,
-                                hb_codepoint_t r_char);
 
 static void
 _raqm_init_text_info (raqm_t *rq)
@@ -517,9 +516,12 @@ raqm_clear_contents (raqm_t *rq)
  * @len: the length of @text.
  *
  * Adds @text to @rq to be used for layout. It must be a valid UTF-32 text, any
- * invalid characters will be replaced with U+FFFD. The text should typically
- * represent a full paragraph, since doing the layout of chunks of text
+ * invalid characters will be replaced with U+FFFD. The text must
+ * represent a single full paragraph, since doing the layout of chunks of text
  * separately can give improper output.
+ *
+ * The text must be set before any of the functions that assign attributes to
+ * it, e.g. raqm_set_freetype_face(), raqm_set_language(), etc.
  *
  * Return value:
  * `true` if no errors happened, `false` otherwise.
@@ -552,31 +554,65 @@ raqm_set_text (raqm_t         *rq,
   return true;
 }
 
+/* Ported from HarfBuzz’s hb_utf8_t::next(). */
 static const char *
 _raqm_get_utf8_codepoint (const char *str,
+                          const char *end,
                           uint32_t *out_codepoint)
 {
-  if (0xf0 == (0xf8 & str[0]))
+  uint32_t c = (unsigned char) *str++;
+
+  if (c > 0x7Fu)
   {
-    *out_codepoint = ((0x07 & str[0]) << 18) | ((0x3f & str[1]) << 12) | ((0x3f & str[2]) << 6) | (0x3f & str[3]);
-    str += 4;
-  }
-  else if (0xe0 == (0xf0 & str[0]))
-  {
-    *out_codepoint = ((0x0f & str[0]) << 12) | ((0x3f & str[1]) << 6) | (0x3f & str[2]);
-    str += 3;
-  }
-  else if (0xc0 == (0xe0 & str[0]))
-  {
-    *out_codepoint = ((0x1f & str[0]) << 6) | (0x3f & str[1]);
-    str += 2;
-  }
-  else
-  {
-    *out_codepoint = str[0];
-    str += 1;
+    if (c >= 0xC2u && c <= 0xDFu) /* Two-byte */
+    {
+      unsigned int t1;
+      if (str < end && (t1 = (unsigned char) str[0] - 0x80u) <= 0x3Fu)
+      {
+        c = ((c & 0x1Fu) << 6) | t1;
+        str += 1;
+      }
+      else
+        c = 0xFFFDu;
+    }
+    else if (c >= 0xE0u && c <= 0xEFu) /* Three-byte */
+    {
+      unsigned int t1, t2;
+      if (end - str >= 2 &&
+          (t1 = (unsigned char) str[0] - 0x80u) <= 0x3Fu &&
+          (t2 = (unsigned char) str[1] - 0x80u) <= 0x3Fu)
+      {
+        c = ((c & 0x0Fu) << 12) | (t1 << 6) | t2;
+        if (c < 0x0800u || (c >= 0xD800u && c <= 0xDFFFu))
+          c = 0xFFFDu;
+        else
+          str += 2;
+      }
+      else
+        c = 0xFFFDu;
+    }
+    else if (c >= 0xF0u && c <= 0xF4u) /* Four-byte */
+    {
+      unsigned int t1, t2, t3;
+      if (end - str >= 3 &&
+          (t1 = (unsigned char) str[0] - 0x80u) <= 0x3Fu &&
+          (t2 = (unsigned char) str[1] - 0x80u) <= 0x3Fu &&
+          (t3 = (unsigned char) str[2] - 0x80u) <= 0x3Fu)
+      {
+        c = ((c & 0x07u) << 18) | (t1 << 12) | (t2 << 6) | t3;
+        if (c < 0x10000u || c > 0x10FFFFu)
+          c = 0xFFFDu;
+        else
+          str += 3;
+      }
+      else
+        c = 0xFFFDu;
+    }
+    else
+      c = 0xFFFDu;
   }
 
+  *out_codepoint = c;
   return str;
 }
 
@@ -586,10 +622,11 @@ _raqm_u8_to_u32 (const char *text, size_t len, uint32_t *unicode)
   size_t in_len = 0;
   uint32_t *out_utf32 = unicode;
   const char *in_utf8 = text;
+  const char *end = text + len;
 
-  while ((*in_utf8 != '\0') && (in_len < len))
+  while ((in_len < len) && (*in_utf8 != '\0'))
   {
-    const char *out_utf8 = _raqm_get_utf8_codepoint (in_utf8, out_utf32);
+    const char *out_utf8 = _raqm_get_utf8_codepoint (in_utf8, end, out_utf32);
     in_len += out_utf8 - in_utf8;
     in_utf8 = out_utf8;
     ++out_utf32;
@@ -598,31 +635,35 @@ _raqm_u8_to_u32 (const char *text, size_t len, uint32_t *unicode)
   return (out_utf32 - unicode);
 }
 
+/* Ported from HarfBuzz’s hb_utf16_xe_t::next(). */
 static const uint16_t *
 _raqm_get_utf16_codepoint (const uint16_t *str,
+                           const uint16_t *end,
                            uint32_t *out_codepoint)
 {
-  if (str[0] >= 0xD800 && str[0] <= 0xDBFF)
+  uint32_t c = *str++;
+
+  if (c < 0xD800u || c > 0xDFFFu)
   {
-    if (str[1] >= 0xDC00 && str[1] <= 0xDFFF)
+    *out_codepoint = c;
+    return str;
+  }
+
+  if (c <= 0xDBFFu && str < end)
+  {
+    /* High-surrogate in c */
+    uint32_t l = *str;
+    if (l >= 0xDC00u && l <= 0xDFFFu)
     {
-      uint32_t X = ((str[0] & ((1 << 6) -1)) << 10) | (str[1] & ((1 << 10) -1));
-      uint32_t W = (str[0] >> 6) & ((1 << 5) - 1);
-      *out_codepoint = (W+1) << 16 | X;
-      str += 2;
-    }
-    else
-    {
-      /* A single high surrogate, this is an error. */
-      *out_codepoint = str[0];
+      /* Low-surrogate in l */
+      *out_codepoint = (c << 10) + l - ((0xD800u << 10) - 0x10000u + 0xDC00u);
       str += 1;
+      return str;
     }
   }
-  else
-  {
-      *out_codepoint = str[0];
-      str += 1;
-  }
+
+  /* Lonely / out-of-order surrogate. */
+  *out_codepoint = 0xFFFDu;
   return str;
 }
 
@@ -632,10 +673,11 @@ _raqm_u16_to_u32 (const uint16_t *text, size_t len, uint32_t *unicode)
   size_t in_len = 0;
   uint32_t *out_utf32 = unicode;
   const uint16_t *in_utf16 = text;
+  const uint16_t *end = text + len;
 
-  while ((*in_utf16 != '\0') && (in_len < len))
+  while ((in_len < len) && (*in_utf16 != '\0'))
   {
-    const uint16_t *out_utf16 = _raqm_get_utf16_codepoint (in_utf16, out_utf32);
+    const uint16_t *out_utf16 = _raqm_get_utf16_codepoint (in_utf16, end, out_utf32);
     in_len += (out_utf16 - in_utf16);
     in_utf16 = out_utf16;
     ++out_utf32;
@@ -935,6 +977,9 @@ _raqm_set_freetype_face (raqm_t *rq,
  *
  * Sets an #FT_Face to be used for all characters in @rq.
  *
+ * The text must be set with raqm_set_text() or one of its variants before
+ * calling this function.
+ *
  * See also raqm_set_freetype_face_range().
  *
  * Return value:
@@ -1104,13 +1149,13 @@ _raqm_set_spacing (raqm_t *rq,
   {
     bool set_spacing = i == 0;
     if (!set_spacing)
-      set_spacing = _raqm_allowed_grapheme_boundary (rq->text[i-1], rq->text[i]);
+      set_spacing = raqm_allowed_grapheme_boundary (rq, i - 1);
 
     if (set_spacing)
     {
       if (word_spacing)
       {
-        if (_raqm_allowed_grapheme_boundary (rq->text[i], rq->text[i+1]))
+        if (raqm_allowed_grapheme_boundary (rq, i))
         {
           /* CSS word separators, word spacing is only applied on these.*/
           if (rq->text[i] == 0x0020  || /* Space */
@@ -1265,6 +1310,15 @@ _raqm_itemize (raqm_t *rq);
 static bool
 _raqm_shape (raqm_t *rq);
 
+static bool
+_raqm_is_paragraph_separator (uint32_t ch)
+{
+  /* Unicode characters with Bidi class B (Paragraph_Separator). */
+  return ch == 0x000A || ch == 0x000D ||
+         ch == 0x001C || ch == 0x001D || ch == 0x001E ||
+         ch == 0x0085 || ch == 0x2029;
+}
+
 /**
  * raqm_layout:
  * @rq: a #raqm_t.
@@ -1274,7 +1328,8 @@ _raqm_shape (raqm_t *rq);
  * text shaping, and any other part of the layout process.
  *
  * Return value:
- * `true` if the layout process was successful, `false` otherwise.
+ * `true` if the layout process was successful, `false` otherwise. It also fails
+ * if the text is not a single paragraph (see raqm_set_text()).
  *
  * Since: 0.1
  */
@@ -1293,6 +1348,10 @@ raqm_layout (raqm_t *rq)
   for (size_t i = 0; i < rq->text_len; i++)
   {
       if (!rq->text_info[i].ftface)
+          return false;
+
+      /* The text must be a single paragraph. */
+      if (_raqm_is_paragraph_separator (rq->text[i]))
           return false;
   }
 
@@ -1439,6 +1498,37 @@ raqm_get_par_resolved_direction (raqm_t *rq)
   return rq->resolved_dir;
 }
 
+static raqm_direction_t
+_raqm_detect_direction (raqm_t *rq);
+
+/**
+ * raqm_get_par_detected_direction:
+ * @rq: a #raqm_t.
+ *
+ * Gets the natural direction of the text as detected from its content
+ * following the Unicode Bidirectional Algorithm, regardless of the base
+ * direction set with raqm_set_par_direction(). Unlike
+ * raqm_get_par_resolved_direction(), this does not require raqm_layout() to
+ * have been called, and can report that the text is direction neutral.
+ *
+ * Return value:
+ * #RAQM_DIRECTION_LTR or #RAQM_DIRECTION_RTL if the text has a strong
+ * direction, or #RAQM_DIRECTION_DEFAULT if the text is direction neutral (has
+ * no strong characters) or no text has been set. #RAQM_DIRECTION_TTB is never
+ * returned, as vertical direction is a layout property, not a property of the
+ * text content.
+ *
+ * Since: 0.11
+ */
+raqm_direction_t
+raqm_get_par_detected_direction (raqm_t *rq)
+{
+  if (!rq || !rq->text || rq->text_len == 0)
+    return RAQM_DIRECTION_DEFAULT;
+
+  return _raqm_detect_direction (rq);
+}
+
 /**
  * raqm_get_direction_at_index:
  * @rq: a #raqm_t.
@@ -1558,6 +1648,31 @@ _raqm_bidi_itemize (raqm_t *rq, size_t *run_count)
   SBAlgorithmRelease (bidi);
 
   return runs;
+}
+
+static raqm_direction_t
+_raqm_detect_direction (raqm_t *rq)
+{
+  raqm_direction_t dir = RAQM_DIRECTION_DEFAULT;
+  size_t isolate = 0;
+
+  /* UBA: P2 and P3. */
+  for (size_t i = 0; i < rq->text_len; i++)
+  {
+    SBBidiType type = SBCodepointGetBidiType (rq->text[i]);
+
+    if (type == SBBidiTypeLRI || type == SBBidiTypeRLI || type == SBBidiTypeFSI)
+      isolate++;
+    else if (type == SBBidiTypePDI && isolate > 0)
+      isolate--;
+    else if (isolate == 0 && SBBidiTypeIsStrong (type))
+    {
+      dir = (type == SBBidiTypeL) ? RAQM_DIRECTION_LTR : RAQM_DIRECTION_RTL;
+      break;
+    }
+  }
+
+  return dir;
 }
 #else
 static void
@@ -1711,6 +1826,30 @@ done:
   free (btypes);
 
   return runs;
+}
+
+static raqm_direction_t
+_raqm_detect_direction (raqm_t *rq)
+{
+  raqm_direction_t dir = RAQM_DIRECTION_DEFAULT;
+  FriBidiParType par_type;
+  FriBidiCharType *types;
+
+  types = calloc (rq->text_len, sizeof (FriBidiCharType));
+  if (types)
+  {
+    fribidi_get_bidi_types (rq->text, rq->text_len, types);
+    par_type = fribidi_get_par_direction (types, rq->text_len);
+
+    if (par_type == FRIBIDI_PAR_LTR)
+      dir = RAQM_DIRECTION_LTR;
+    else if (par_type == FRIBIDI_PAR_RTL)
+      dir = RAQM_DIRECTION_RTL;
+
+    free (types);
+  }
+
+  return dir;
 }
 #endif
 
@@ -2365,9 +2504,6 @@ _raqm_encoding_to_u32_index (raqm_t *rq,
   return index;
 }
 
-static bool
-_raqm_in_hangul_syllable (hb_codepoint_t ch);
-
 /**
  * raqm_index_to_position:
  * @rq: a #raqm_t.
@@ -2406,7 +2542,7 @@ raqm_index_to_position (raqm_t *rq,
 
   while (*index < rq->text_len)
   {
-    if (_raqm_allowed_grapheme_boundary (rq->text[*index], rq->text[*index + 1]))
+    if (raqm_allowed_grapheme_boundary (rq, *index))
       break;
 
     ++*index;
@@ -2539,7 +2675,7 @@ raqm_position_to_index (raqm_t *rq,
 
           *index = next_cluster;
         }
-        if (_raqm_allowed_grapheme_boundary (rq->text[*index],rq->text[*index + 1]))
+        if (raqm_allowed_grapheme_boundary (rq, *index))
         {
           RAQM_TEST ("The start-index is %zu  at position %d \n", *index, x);
             return true;
@@ -2547,8 +2683,7 @@ raqm_position_to_index (raqm_t *rq,
 
         while (*index < (unsigned)run->pos + run->len)
         {
-          if (_raqm_allowed_grapheme_boundary (rq->text[*index],
-                                               rq->text[*index + 1]))
+          if (raqm_allowed_grapheme_boundary (rq, *index))
           {
             *index += 1;
             break;
@@ -2574,137 +2709,140 @@ raqm_position_to_index (raqm_t *rq,
   return true;
 }
 
-typedef enum
+/**
+ * raqm_allowed_grapheme_boundary:
+ * @rq: a #raqm_t.
+ * @index: the index of the boundary to check.
+ *
+ * Checks whether a grapheme cluster boundary is allowed between the characters
+ * at @index and @index + 1, according to the Unicode Standard Annex #29 rules.
+ *
+ * The @rq must have had text set on it using raqm_set_text().
+ *
+ * Returns: `true` if a boundary is allowed, `false` otherwise.
+ *
+ * Since: 0.11
+ **/
+RAQM_API bool
+raqm_allowed_grapheme_boundary (raqm_t *rq,
+                                size_t  index)
 {
-  RAQM_GRAPHEM_CR,
-  RAQM_GRAPHEM_LF,
-  RAQM_GRAPHEM_CONTROL,
-  RAQM_GRAPHEM_EXTEND,
-  RAQM_GRAPHEM_REGIONAL_INDICATOR,
-  RAQM_GRAPHEM_PREPEND,
-  RAQM_GRAPHEM_SPACING_MARK,
-  RAQM_GRAPHEM_HANGUL_SYLLABLE,
-  RAQM_GRAPHEM_OTHER
-} _raqm_grapheme_t;
+  if (!rq)
+    return true;
 
-static _raqm_grapheme_t
-_raqm_get_grapheme_break (hb_codepoint_t ch,
-                          hb_unicode_general_category_t category);
+  /* GB1/GB2: break at start and end of text */
+  if (index >= rq->text_len - 1)
+    return true;
 
-static bool
-_raqm_allowed_grapheme_boundary (hb_codepoint_t l_char,
-                                 hb_codepoint_t r_char)
-{
-  hb_unicode_general_category_t l_category;
-  hb_unicode_general_category_t r_category;
-  _raqm_grapheme_t l_grapheme, r_grapheme;
-  hb_unicode_funcs_t* unicode_funcs = hb_unicode_funcs_get_default ();
+  uint32_t l_char = rq->text[index];
+  uint32_t r_char = rq->text[index + 1];
+  _raqm_grapheme_t l = _raqm_get_grapheme_break (l_char);
+  _raqm_grapheme_t r = _raqm_get_grapheme_break (r_char);
 
-  l_category = hb_unicode_general_category (unicode_funcs, l_char);
-  r_category = hb_unicode_general_category (unicode_funcs, r_char);
-  l_grapheme = _raqm_get_grapheme_break (l_char, l_category);
-  r_grapheme = _raqm_get_grapheme_break (r_char, r_category);
-
-  if (l_grapheme == RAQM_GRAPHEM_CR && r_grapheme == RAQM_GRAPHEM_LF)
-    return false; /*Do not break between a CR and LF GB3*/
-  if (l_grapheme == RAQM_GRAPHEM_CONTROL || l_grapheme == RAQM_GRAPHEM_CR ||
-      l_grapheme == RAQM_GRAPHEM_LF || r_grapheme == RAQM_GRAPHEM_CONTROL ||
-      r_grapheme == RAQM_GRAPHEM_CR || r_grapheme == RAQM_GRAPHEM_LF)
-    return true; /*Break before and after CONTROL GB4, GB5*/
-  if (r_grapheme == RAQM_GRAPHEM_HANGUL_SYLLABLE)
-    return false; /*Do not break Hangul syllable sequences. GB6, GB7, GB8*/
-  if (l_grapheme == RAQM_GRAPHEM_REGIONAL_INDICATOR &&
-      r_grapheme == RAQM_GRAPHEM_REGIONAL_INDICATOR)
-    return false; /*Do not break between regional indicator symbols. GB8a*/
-  if (r_grapheme == RAQM_GRAPHEM_EXTEND)
-    return false; /*Do not break before extending characters. GB9*/
-  /*Do not break before SpacingMarks, or after Prepend characters.GB9a, GB9b*/
-  if (l_grapheme == RAQM_GRAPHEM_PREPEND)
+  /* GB3: CR × LF */
+  if (l == RAQM_GRAPHEME_CR && r == RAQM_GRAPHEME_LF)
     return false;
-  if (r_grapheme == RAQM_GRAPHEM_SPACING_MARK)
+
+  /* GB4: (Control|CR|LF) ÷ */
+  if (l == RAQM_GRAPHEME_CONTROL || l == RAQM_GRAPHEME_CR ||
+      l == RAQM_GRAPHEME_LF)
+    return true;
+
+  /* GB5: ÷ (Control|CR|LF) */
+  if (r == RAQM_GRAPHEME_CONTROL || r == RAQM_GRAPHEME_CR ||
+      r == RAQM_GRAPHEME_LF)
+    return true;
+
+  /* GB6: L × (L|V|LV|LVT) */
+  if (l == RAQM_GRAPHEME_L &&
+      (r == RAQM_GRAPHEME_L || r == RAQM_GRAPHEME_V ||
+       r == RAQM_GRAPHEME_LV || r == RAQM_GRAPHEME_LVT))
     return false;
-  return true; /*Otherwise, break everywhere. GB1, GB2, GB10*/
-}
 
-static _raqm_grapheme_t
-_raqm_get_grapheme_break (hb_codepoint_t ch,
-                          hb_unicode_general_category_t category)
-{
-  _raqm_grapheme_t gb_type;
+  /* GB7: (LV|V) × (V|T) */
+  if ((l == RAQM_GRAPHEME_LV || l == RAQM_GRAPHEME_V) &&
+      (r == RAQM_GRAPHEME_V || r == RAQM_GRAPHEME_T))
+    return false;
 
-  gb_type = RAQM_GRAPHEM_OTHER;
-  switch ((int)category)
+  /* GB8: (LVT|T) × T */
+  if ((l == RAQM_GRAPHEME_LVT || l == RAQM_GRAPHEME_T) &&
+      r == RAQM_GRAPHEME_T)
+    return false;
+
+  /* GB9: × (Extend|ZWJ) */
+  if (r == RAQM_GRAPHEME_EXTEND || r == RAQM_GRAPHEME_ZWJ)
+    return false;
+
+  /* GB9a: × SpacingMark */
+  if (r == RAQM_GRAPHEME_SPACING_MARK)
+    return false;
+
+  /* GB9b: Prepend × */
+  if (l == RAQM_GRAPHEME_PREPEND)
+    return false;
+
+  /* GB9c: \p{InCB=Consonant} [\p{InCB=Extend}\p{InCB=Linker}]*
+   *        \p{InCB=Linker} [\p{InCB=Extend}\p{InCB=Linker}]* × \p{InCB=Consonant}
+   *
+   * If r_char is InCB=Consonant, look back for the required pattern. */
+  if (_raqm_get_incb (r_char) == RAQM_INCB_CONSONANT)
   {
-    case HB_UNICODE_GENERAL_CATEGORY_FORMAT:
-      if (ch == 0x200C || ch == 0x200D)
-        gb_type = RAQM_GRAPHEM_EXTEND;
+    bool found_linker = false;
+    size_t j = index + 1;
+    while (j > 0)
+    {
+      j--;
+      _raqm_incb_t incb = _raqm_get_incb (rq->text[j]);
+      if (incb == RAQM_INCB_LINKER)
+        found_linker = true;
+      else if (incb == RAQM_INCB_EXTEND)
+        ; /* Continue looking back through Extend characters */
+      else if (incb == RAQM_INCB_CONSONANT)
+      {
+        if (found_linker)
+          return false;
+        break;
+      }
       else
-        gb_type = RAQM_GRAPHEM_CONTROL;
-      break;
-
-    case HB_UNICODE_GENERAL_CATEGORY_CONTROL:
-      if (ch == 0x000D)
-        gb_type = RAQM_GRAPHEM_CR;
-      else if (ch == 0x000A)
-        gb_type = RAQM_GRAPHEM_LF;
-      else
-        gb_type = RAQM_GRAPHEM_CONTROL;
-      break;
-
-    case HB_UNICODE_GENERAL_CATEGORY_SURROGATE:
-    case HB_UNICODE_GENERAL_CATEGORY_LINE_SEPARATOR:
-    case HB_UNICODE_GENERAL_CATEGORY_PARAGRAPH_SEPARATOR:
-    case HB_UNICODE_GENERAL_CATEGORY_UNASSIGNED:
-      if ((ch >= 0xFFF0 && ch <= 0xFFF8) ||
-          (ch >= 0xE0000 && ch <= 0xE0FFF))
-        gb_type = RAQM_GRAPHEM_CONTROL;
-      break;
-
-    case HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK:
-    case HB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK:
-    case HB_UNICODE_GENERAL_CATEGORY_SPACING_MARK:
-      if (ch != 0x102B && ch != 0x102C && ch != 0x1038 &&
-          (ch < 0x1062 || ch > 0x1064) && (ch < 0x1067 || ch > 0x106D) &&
-          ch != 0x1083 && (ch < 0x1087 || ch > 0x108C) && ch != 0x108F &&
-          (ch < 0x109A || ch > 0x109C) && ch != 0x1A61 && ch != 0x1A63 &&
-          ch != 0x1A64 && ch != 0xAA7B && ch != 0xAA70 && ch != 0x11720 &&
-          ch != 0x11721) /**/
-        gb_type = RAQM_GRAPHEM_SPACING_MARK;
-
-      else if (ch == 0x09BE || ch == 0x09D7 ||
-          ch == 0x0B3E || ch == 0x0B57 || ch == 0x0BBE || ch == 0x0BD7 ||
-          ch == 0x0CC2 || ch == 0x0CD5 || ch == 0x0CD6 ||
-          ch == 0x0D3E || ch == 0x0D57 || ch == 0x0DCF || ch == 0x0DDF ||
-          ch == 0x1D165 || (ch >= 0x1D16E && ch <= 0x1D172))
-        gb_type = RAQM_GRAPHEM_EXTEND;
-      break;
-
-    case HB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER:
-      if (ch == 0x0E33 || ch == 0x0EB3)
-        gb_type = RAQM_GRAPHEM_SPACING_MARK;
-      break;
-
-    case HB_UNICODE_GENERAL_CATEGORY_OTHER_SYMBOL:
-      if (ch >= 0x1F1E6 && ch <= 0x1F1FF)
-        gb_type = RAQM_GRAPHEM_REGIONAL_INDICATOR;
-      break;
-
-    default:
-      gb_type = RAQM_GRAPHEM_OTHER;
-      break;
+        break;
+    }
   }
 
-  if (_raqm_in_hangul_syllable (ch))
-    gb_type = RAQM_GRAPHEM_HANGUL_SYLLABLE;
+  /* GB11: ExtPict Extend* ZWJ × ExtPict */
+  if (l == RAQM_GRAPHEME_ZWJ &&
+      r == RAQM_GRAPHEME_EXTENDED_PICTOGRAPHIC)
+  {
+    /* Look back past the ZWJ at index for Extend* ExtPict */
+    for (size_t j = index; j > 0; j--)
+    {
+      _raqm_grapheme_t g = _raqm_get_grapheme_break (rq->text[j - 1]);
+      if (g == RAQM_GRAPHEME_EXTEND)
+        continue;
+      if (g == RAQM_GRAPHEME_EXTENDED_PICTOGRAPHIC)
+        return false;
+      break;
+    }
+  }
 
-  return gb_type;
-}
+  /* GB12/GB13: Do not break between regional indicator symbols if there is
+   * an odd number of RI characters before the break point. */
+  if (l == RAQM_GRAPHEME_REGIONAL_INDICATOR &&
+      r == RAQM_GRAPHEME_REGIONAL_INDICATOR)
+  {
+    size_t ri_count = 0;
+    for (size_t j = index + 1; j > 0; j--)
+    {
+      if (_raqm_get_grapheme_break (rq->text[j - 1]) != RAQM_GRAPHEME_REGIONAL_INDICATOR)
+        break;
+      ri_count++;
+    }
+    /* If odd number of RI before the break, don't break (they pair up) */
+    if (ri_count % 2 == 1)
+      return false;
+  }
 
-static bool
-_raqm_in_hangul_syllable (hb_codepoint_t ch)
-{
-  (void)ch;
-  return false;
+  /* GB999: Otherwise, break everywhere. */
+  return true;
 }
 
 /**

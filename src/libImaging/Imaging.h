@@ -70,7 +70,7 @@ typedef struct ImagingPaletteInstance *ImagingPalette;
 #define IMAGING_TYPE_UINT8 0
 #define IMAGING_TYPE_INT32 1
 #define IMAGING_TYPE_FLOAT32 2
-#define IMAGING_TYPE_SPECIAL 3 /* check mode for details */
+#define IMAGING_TYPE_I16 3
 
 typedef struct {
     char *ptr;
@@ -303,9 +303,9 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha);
 extern Imaging
 ImagingCopy(Imaging im);
 extern Imaging
-ImagingConvert(Imaging im, ModeID mode, ImagingPalette palette, int dither);
-extern Imaging
-ImagingConvertInPlace(Imaging im, ModeID mode);
+ImagingConvert(
+    Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int dither
+);
 extern Imaging
 ImagingConvertMatrix(Imaging im, ModeID mode, const float m[12]);
 extern Imaging
@@ -417,8 +417,6 @@ ImagingColorLUT3D_linear(
 
 extern Imaging
 ImagingCopy2(Imaging imOut, Imaging imIn);
-extern Imaging
-ImagingConvert2(Imaging imOut, Imaging imIn);
 
 /* Channel operations */
 /* any mode, except "F" */
