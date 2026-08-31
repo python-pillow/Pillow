@@ -72,12 +72,11 @@ Deprecations
 JpegImageFile.load_djpeg
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-``JpegImageFile.load_djpeg`` has been deprecated,
-and will be removed in Pillow 14 (2027-10-15).
+``JpegImageFile.load_djpeg`` has been deprecated, and will be removed in Pillow 14
+(2027-10-15).
 
-Use the built-in JPEG decoder instead, or call ``djpeg`` directly and
-decode the resulting image with Pillow.
-
+Use the built-in JPEG decoder instead, or call ``djpeg`` directly and decode the
+resulting image with Pillow.
 
 API changes
 ===========
