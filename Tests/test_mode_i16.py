@@ -104,7 +104,6 @@ def test_convert() -> None:
 
 @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
 def test_convert_i_f(mode: str) -> None:
-    # Converting to "I" or "F" must not clip 16-bit values to 8 bits
     im = Image.new(mode, (1, 1), 4660)
     assert im.convert("I").getpixel((0, 0)) == 4660
     assert im.convert("F").getpixel((0, 0)) == 4660.0
