@@ -76,7 +76,7 @@ JpegImageFile.load_djpeg
 and will be removed in Pillow 14 (2027-10-15).
 
 Use the built-in JPEG decoder instead, or call ``djpeg`` directly and
-decode the resulting PNM output with Pillow.
+decode the resulting image with Pillow.
 
 
 API changes
