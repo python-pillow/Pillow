@@ -79,8 +79,6 @@ Use the built-in JPEG decoder instead, or call ``djpeg`` directly and
 decode the resulting PNM output with Pillow.
 
 
-TODO
-
 API changes
 ===========
 
