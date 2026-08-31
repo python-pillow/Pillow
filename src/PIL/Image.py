@@ -1578,6 +1578,9 @@ class Image:
         :param strip_namespaces: If ``False``, keep each tag's full
             ``{namespace-uri}local-name`` form instead of stripping the namespace
             prefix.
+
+            .. versionadded:: 13.0.0
+
         :returns: XMP tags in a dictionary.
         """
 
