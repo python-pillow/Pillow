@@ -214,12 +214,19 @@ def mark_if_feature_version(
     return pytest.mark.pil_noop_mark()
 
 
+def is_pypy() -> bool:
+    return sys.implementation.name == "pypy"
+
+
 @pytest.mark.isolated
 @pytest.mark.skipif(psutil is None, reason="psutil not installed")
 @pytest.mark.skipif(
     sys.platform.startswith("win32"),
     reason="Leak limits are not calibrated for Windows",
 )
+# Per https://stackoverflow.com/a/29007723/51685, due to JIT compilation,
+# RSS utilization is known to grow so measuring it doesn't make that much sense.
+@pytest.mark.skipif(is_pypy(), reason="RSS utilization is not stable on PyPy")
 class PillowLeakTestCase:
     iterations = 100  # count
     mem_limit = 512  # k
@@ -340,7 +347,3 @@ def is_ppc64le() -> bool:
 
 def is_win32() -> bool:
     return sys.platform.startswith("win32")
-
-
-def is_pypy() -> bool:
-    return sys.implementation.name == "pypy"
