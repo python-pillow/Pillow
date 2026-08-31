@@ -23,7 +23,7 @@ def test_open() -> None:
 
         # Dummy data from the stub
         assert im.mode == "F"
-        assert im.size == (1, 1)
+        assert im.size == (0, 0)
 
 
 def test_invalid_file() -> None:
@@ -61,6 +61,7 @@ def test_handler(tmp_path: Path) -> None:
 
         def open(self, im: Image.Image) -> None:
             self.opened = True
+            im._size = (1, 1)
 
         def load(self, im: ImageFile.ImageFile) -> Image.Image:
             self.loaded = True
