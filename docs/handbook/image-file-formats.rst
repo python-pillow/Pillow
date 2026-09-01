@@ -1374,7 +1374,7 @@ using the general tags available through tiffinfo.
 WebP
 ^^^^
 
-Pillow reads and writes WebP files. Requires libwebp v0.5.0 or later.
+Pillow reads and writes WebP files. Requires libwebp v1.2.0 or later.
 
 .. _webp-saving:
 
