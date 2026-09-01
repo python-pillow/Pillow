@@ -4,6 +4,10 @@ import pytest
 
 from PIL import Image
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import Any
+
 
 @pytest.mark.parametrize(
     "mode",
@@ -38,3 +42,50 @@ def test_encoder_optimal_bufsize_unknown() -> None:
     encoder = Image._getencoder("1", "xbm", "1")
     encoder.setimage(im.im, (0, 0) + im.size)
     assert encoder.optimal_bufsize == 0
+
+
+class EncoderSpy:
+    def __init__(self, encoder: Any, *, bufsizes: list[int]) -> None:
+        self._encoder = encoder
+        self.bufsizes = bufsizes
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._encoder, name)
+
+    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
+        self.bufsizes.append(bufsize)
+        return self._encoder.encode(bufsize)
+
+
+@pytest.mark.parametrize("mode", ("L", "RGB"))
+@pytest.mark.parametrize(
+    "size",
+    (
+        (20000, 1),
+        (1, 20000),
+        (3, 3),
+        (500, 500),
+    ),
+)
+def test_tobytes_exact_buffer_and_single_pass(
+    mode: str,
+    size: tuple[int, int],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """
+    Test that the raw encoder gets asked exactly the correct size,
+    and ends up doing its work in a single pass.
+    """
+    bufsizes: list[int] = []
+    get_encoder = Image._getencoder
+    monkeypatch.setattr(
+        Image,
+        "_getencoder",
+        lambda *args: EncoderSpy(get_encoder(*args), bufsizes=bufsizes),
+    )
+
+    im = Image.new(mode, size)
+    n_bands = len(im.getbands())
+    expected_size = size[0] * size[1] * n_bands
+    assert len(im.tobytes()) == expected_size
+    assert bufsizes == [expected_size]
