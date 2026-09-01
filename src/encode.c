@@ -43,6 +43,7 @@ typedef struct {
         Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes
     );
     int (*cleanup)(ImagingCodecState state);
+    Py_ssize_t (*optimal_bufsize)(ImagingCodecState state);
     struct ImagingCodecStateInstance state;
     Imaging im;
     PyObject *lock;
@@ -83,8 +84,9 @@ PyImaging_EncoderNew(int contextsize) {
     /* Initialize encoder context */
     encoder->state.context = context;
 
-    /* Most encoders don't need this */
+    /* Most encoders don't need these */
     encoder->cleanup = NULL;
+    encoder->optimal_bufsize = NULL;
 
     /* Target image */
     encoder->lock = NULL;
@@ -337,11 +339,30 @@ static struct PyMethodDef methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
+/* The buffer size that would let this encoder consume the whole tile in a
+   single call, or 0 if that size cannot be known up front (basically all
+   non-raw formats). Only meaningful once setimage() has been called. */
+static PyObject *
+_get_optimal_bufsize(ImagingEncoderObject *encoder, void *closure) {
+    Py_ssize_t bufsize = 0;
+
+    if (encoder->optimal_bufsize && encoder->im) {
+        bufsize = encoder->optimal_bufsize(&encoder->state);
+    }
+
+    return PyLong_FromSsize_t(bufsize);
+}
+
 static struct PyGetSetDef getseters[] = {
     {"pushes_fd",
      (getter)_get_pushes_fd,
      NULL,
      "True if this decoder expects to push directly to self.fd",
+     NULL},
+    {"optimal_bufsize",
+     (getter)_get_optimal_bufsize,
+     NULL,
+     "Buffer size that encodes the entire tile in one call, or 0 if unknown",
      NULL},
     {NULL, NULL, NULL, NULL, NULL} /* sentinel */
 };
