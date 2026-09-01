@@ -204,6 +204,8 @@ pixel, the Python Imaging Library provides different resampling *filters*.
     :py:meth:`~PIL.Image.Image.resize` and :py:meth:`~PIL.Image.Image.thumbnail`
     methods.
 
+    .. versionadded:: 13.0.0
+
 .. data:: Resampling.MKS2021
     :noindex:
 
@@ -212,6 +214,8 @@ pixel, the Python Imaging Library provides different resampling *filters*.
     may contribute to the output value. This filter can only be used with the
     :py:meth:`~PIL.Image.Image.resize` and :py:meth:`~PIL.Image.Image.thumbnail`
     methods.
+
+    .. versionadded:: 13.0.0
 
 Filters comparison table
 ~~~~~~~~~~~~~~~~~~~~~~~~
