@@ -394,6 +394,7 @@ _EXTENSION_PLUGIN: dict[str, str] = {
     ".vst": "TgaImagePlugin",
     ".tif": "TiffImagePlugin",
     ".tiff": "TiffImagePlugin",
+    ".vtf": "VtfImagePlugin",
     ".webp": "WebPImagePlugin",
     ".wmf": "WmfImagePlugin",
     ".emf": "WmfImagePlugin",
