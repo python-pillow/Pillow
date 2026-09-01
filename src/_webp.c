@@ -200,6 +200,18 @@ config_setup(WebPConfig *config, PyObject *options) {
 /* Frame import                                                         */
 /* -------------------------------------------------------------------- */
 
+#ifdef WORDS_BIGENDIAN
+#define ARGB_A 0
+#define ARGB_R 1
+#define ARGB_G 2
+#define ARGB_B 3
+#else
+#define ARGB_B 0
+#define ARGB_G 1
+#define ARGB_R 2
+#define ARGB_A 3
+#endif
+
 static int
 import_frame_libwebp(WebPPicture *frame, Imaging im) {
     if (im->mode != IMAGING_MODE_RGBA && im->mode != IMAGING_MODE_RGB &&
@@ -208,8 +220,10 @@ import_frame_libwebp(WebPPicture *frame, Imaging im) {
         return -1;
     }
 
-    frame->width = im->xsize;
-    frame->height = im->ysize;
+    int xsize = im->xsize, ysize = im->ysize;
+
+    frame->width = xsize;
+    frame->height = ysize;
     frame->use_argb = 1;  // Don't convert RGB pixels to YUV
 
     if (!WebPPictureAlloc(frame)) {
@@ -217,21 +231,25 @@ import_frame_libwebp(WebPPicture *frame, Imaging im) {
         return -2;
     }
 
+    // restrict safe: imIn is read-only,
+    // frame is a fresh allocation from libwebp.
     int ignore_fourth_channel = im->mode != IMAGING_MODE_RGBA;
-    for (int y = 0; y < im->ysize; ++y) {
-        UINT8 *src = (UINT8 *)im->image32[y];
-        UINT32 *dst = frame->argb + frame->argb_stride * y;
+    for (int y = 0; y < ysize; ++y) {
+        const UINT8 *restrict src = (const UINT8 *)im->image32[y];
+        UINT8 *restrict dst = (UINT8 *)(frame->argb + frame->argb_stride * y);
         if (ignore_fourth_channel) {
-            for (int x = 0; x < im->xsize; ++x) {
-                dst[x] =
-                    ((UINT32)(src[x * 4 + 2]) | ((UINT32)(src[x * 4 + 1]) << 8) |
-                     ((UINT32)(src[x * 4]) << 16) | (0xff << 24));
+            for (int x = 0; x < xsize; x++, src += 4, dst += 4) {
+                dst[ARGB_R] = src[0];
+                dst[ARGB_G] = src[1];
+                dst[ARGB_B] = src[2];
+                dst[ARGB_A] = 0xff;
             }
         } else {
-            for (int x = 0; x < im->xsize; ++x) {
-                dst[x] =
-                    ((UINT32)(src[x * 4 + 2]) | ((UINT32)(src[x * 4 + 1]) << 8) |
-                     ((UINT32)(src[x * 4]) << 16) | ((UINT32)(src[x * 4 + 3]) << 24));
+            for (int x = 0; x < xsize; x++, src += 4, dst += 4) {
+                dst[ARGB_R] = src[0];
+                dst[ARGB_G] = src[1];
+                dst[ARGB_B] = src[2];
+                dst[ARGB_A] = src[3];
             }
         }
     }
