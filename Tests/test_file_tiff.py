@@ -2,10 +2,7 @@ from __future__ import annotations
 
 import os
 import warnings
-from collections.abc import Generator
 from io import BytesIO
-from pathlib import Path
-from types import ModuleType
 
 import pytest
 
@@ -30,6 +27,12 @@ from .helper import (
     is_win32,
     timeout_unless_slower_valgrind,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
+    from types import ModuleType
 
 ElementTree: ModuleType | None
 try:
@@ -65,9 +68,7 @@ class TestFileTiff:
             open_test_image()
 
     def test_closed_file(self) -> None:
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-
+        with warnings.catch_warnings(action="error"):
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
             im.close()
@@ -83,9 +84,7 @@ class TestFileTiff:
             im.seek(1)
 
     def test_context_manager(self) -> None:
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-
+        with warnings.catch_warnings(action="error"):
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 
@@ -229,6 +228,14 @@ class TestFileTiff:
         im = hopper("RGBA")
         outfile = tmp_path / "temp.tif"
         im.save(outfile)
+
+    def test_save_ycbcr(self, tmp_path: Path) -> None:
+        im = hopper("YCbCr")
+        outfile = tmp_path / "temp.tif"
+        im.save(outfile)
+
+        with Image.open(outfile) as reloaded:
+            assert_image_equal(im, reloaded)
 
     def test_save_unsupported_mode(self, tmp_path: Path) -> None:
         im = hopper("HSV")
@@ -775,7 +782,7 @@ class TestFileTiff:
             assert reread.n_frames == 3
 
         # Test appending using a generator
-        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image, None, None]:
+        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image]:
             yield from ims
 
         mp = BytesIO()

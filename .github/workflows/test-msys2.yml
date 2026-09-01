@@ -22,7 +22,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COVERAGE_CORE: sysmon
   FORCE_COLOR: 1
 
 jobs:
@@ -49,7 +48,7 @@ jobs:
 
     steps:
       - name: Checkout Pillow
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -94,7 +93,7 @@ jobs:
         run: .ci/after_success.sh
 
       - name: Upload coverage
-        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6.0.1
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           files: ./coverage.xml
           flags: GHA_Windows

@@ -1452,11 +1452,8 @@ ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]) {
     ImagingSectionCookie cookie;
     Imaging imOut = NULL;
 
-    if (imIn->mode == IMAGING_MODE_P || imIn->mode == IMAGING_MODE_1) {
-        return (Imaging)ImagingError_ModeError();
-    }
-
-    if (imIn->type == IMAGING_TYPE_SPECIAL) {
+    if (imIn->mode == IMAGING_MODE_P || imIn->mode == IMAGING_MODE_1 ||
+        imIn->type == IMAGING_TYPE_I16) {
         return (Imaging)ImagingError_ModeError();
     }
 

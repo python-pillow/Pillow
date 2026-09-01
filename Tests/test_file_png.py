@@ -5,8 +5,6 @@ import sys
 import warnings
 import zlib
 from io import BytesIO, TextIOWrapper
-from pathlib import Path
-from types import ModuleType
 from typing import Any, cast
 
 import pytest
@@ -23,6 +21,11 @@ from .helper import (
     mark_if_feature_version,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from types import ModuleType
 
 ElementTree: ModuleType | None
 try:
@@ -63,7 +66,7 @@ def roundtrip(im: Image.Image, **options: Any) -> PngImagePlugin.PngImageFile:
     out = BytesIO()
     im.save(out, "PNG", **options)
     out.seek(0)
-    return cast(PngImagePlugin.PngImageFile, Image.open(out))
+    return cast("PngImagePlugin.PngImageFile", Image.open(out))
 
 
 @skip_unless_feature("zlib")
@@ -123,6 +126,14 @@ class TestFilePng:
         with pytest.raises(OSError):
             with Image.open(test_file):
                 pass
+
+    def test_ihdr_unknown_mode(self) -> None:
+        fp = BytesIO(chunk(b"IHDR", b"\x00" * 13))
+        with PngImagePlugin.PngStream(fp) as png:
+            cid, pos, length = png.read()
+            png.call(cid, pos, length)
+
+            assert png.im_mode == ""
 
     def test_bad_text(self) -> None:
         # Make sure PIL can read malformed tEXt chunks (@PIL152)
@@ -359,9 +370,7 @@ class TestFilePng:
 
         with Image.open(TEST_PNG_FILE) as im:
             # Assert that there is no unclosed file warning
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 im.verify()
 
         with Image.open(TEST_PNG_FILE) as im:
@@ -529,11 +538,6 @@ class TestFilePng:
             ):
                 im.save(out, transparency="invalid")
 
-        im = Image.new("I", (1, 1))
-        with pytest.warns(DeprecationWarning, match="Saving I mode images as PNG"):
-            with pytest.raises(ValueError):
-                im.save(out, transparency="invalid")
-
         im = Image.new("P", (1, 1))
         with pytest.raises(
             ValueError, match="transparency for P must be an integer or bytes"
@@ -699,7 +703,8 @@ class TestFilePng:
             assert_image_equal_tofile(im, "Tests/images/bw_gradient.png")
 
     @pytest.mark.parametrize(
-        "cid", (b"IHDR", b"sRGB", b"pHYs", b"acTL", b"fcTL", b"fdAT")
+        "cid",
+        (b"IHDR", b"gAMA", b"cHRM", b"sRGB", b"pHYs", b"acTL", b"fcTL", b"fdAT"),
     )
     def test_truncated_chunks(
         self, cid: bytes, monkeypatch: pytest.MonkeyPatch
@@ -871,16 +876,6 @@ class TestFilePng:
         monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
         with Image.open("Tests/images/truncated_end_chunk.png") as im:
             assert_image_equal_tofile(im, "Tests/images/hopper.png")
-
-    def test_deprecation(self, tmp_path: Path) -> None:
-        test_file = tmp_path / "out.png"
-
-        im = hopper("I")
-        with pytest.warns(DeprecationWarning, match="Saving I mode images as PNG"):
-            im.save(test_file)
-
-        with Image.open(test_file) as reloaded:
-            assert_image_equal(im, reloaded.convert("I"))
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")

@@ -133,7 +133,7 @@ DEPS: dict[str, dict[str, Any]] = {
         "patch": {
             r"CMakeLists.txt": {
                 # libjpeg-turbo does not detect MSVC x86_arm64 cross-compiler correctly
-                'if(MSVC_IDE AND CMAKE_GENERATOR_PLATFORM MATCHES "arm64")': "if({architecture} STREQUAL ARM64)",  # noqa: E501
+                'elseif(CMAKE_GENERATOR_PLATFORM_LC MATCHES "arm64")': "elseif({architecture} STREQUAL ARM64)",  # noqa: E501
             },
         },
         "build": [
@@ -212,10 +212,6 @@ DEPS: dict[str, dict[str, Any]] = {
             r"libtiff\tif_webp.c": {
                 # link against libwebp.lib
                 "#ifdef WEBP_SUPPORT": '#ifdef WEBP_SUPPORT\n#pragma comment(lib, "libwebp.lib")',  # noqa: E501
-            },
-            r"libtiff\tif_getimage.c": {
-                "int32_t incr = 3 * w + 4 * toskew;": "const tmsize_t incr = 3 * (tmsize_t)w + 4 * (tmsize_t)toskew;",  # noqa: E501
-                "int32_t incr = 2 * toskew + w;": "const tmsize_t incr = 2 * (tmsize_t)toskew + w;",  # noqa: E501
             },
         },
         "build": [

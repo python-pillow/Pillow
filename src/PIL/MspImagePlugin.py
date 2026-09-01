@@ -26,12 +26,14 @@ from __future__ import annotations
 
 import io
 import struct
-from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i16le as i16
 from ._binary import o16le as o16
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 #
 # read MSP files
 
@@ -112,7 +114,7 @@ class MspDecoder(ImageFile.PyDecoder):
 
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         assert self.fd is not None
 
         img = io.BytesIO()

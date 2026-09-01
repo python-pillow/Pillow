@@ -27,10 +27,13 @@ import re
 import subprocess
 import sys
 import tempfile
-from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i32le as i32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 # --------------------------------------------------------------------
 
@@ -357,6 +360,9 @@ class EpsImageFile(ImageFile.ImageFile):
                 trailer_reached = True
             elif bytes_mv[:14] == b"%%BeginBinary:":
                 bytecount = int(byte_arr[14:bytes_read])
+                if bytecount < 0:
+                    msg = "BeginBinary bytecount cannot be negative"
+                    raise ValueError(msg)
                 self.fp.seek(bytecount, os.SEEK_CUR)
             bytes_read = 0
 

@@ -16,11 +16,12 @@
 ##
 from __future__ import annotations
 
-from . import Image
-
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from typing import Self
+
+    from . import Image
 
 
 class Iterator:
@@ -50,7 +51,7 @@ class Iterator:
             msg = "end of sequence"
             raise IndexError(msg) from e
 
-    def __iter__(self) -> Iterator:
+    def __iter__(self) -> Self:
         return self
 
     def __next__(self) -> Image.Image:

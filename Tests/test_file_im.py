@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import filecmp
 import warnings
-from pathlib import Path
 
 import pytest
 
 from PIL import Image, ImImagePlugin
 
 from .helper import assert_image_equal_tofile, hopper, is_pypy
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # sample im
 TEST_IM = "Tests/images/hopper.im"
@@ -40,18 +43,14 @@ def test_unclosed_file() -> None:
 
 
 def test_closed_file() -> None:
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-
+    with warnings.catch_warnings(action="error"):
         im = Image.open(TEST_IM)
         im.load()
         im.close()
 
 
 def test_context_manager() -> None:
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-
+    with warnings.catch_warnings(action="error"):
         with Image.open(TEST_IM) as im:
             im.load()
 

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import subprocess
-from pathlib import Path
 
 import pytest
 
@@ -18,6 +17,10 @@ from .helper import (
     skip_unless_feature,
     timeout_unless_slower_valgrind,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
 
@@ -204,6 +207,10 @@ def test_begin_binary() -> None:
     data[76875 : 76875 + 11] = b"%" * 11
     with Image.open(io.BytesIO(data)) as img:
         assert img.size == (399, 480)
+
+    data[76867:76873] = b"    -1"
+    with pytest.raises(ValueError, match="BeginBinary bytecount cannot be negative"):
+        Image.open(io.BytesIO(data))
 
 
 @mark_if_feature_version(

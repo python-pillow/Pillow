@@ -13,7 +13,6 @@ from typing import Any, BinaryIO
 import pytest
 
 from PIL import Image, ImageDraw, ImageFont, features
-from PIL._typing import StrOrBytesPath
 
 from .helper import (
     assert_image_equal,
@@ -24,6 +23,10 @@ from .helper import (
     skip_unless_feature,
     skip_unless_feature_version,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from PIL._typing import StrOrBytesPath
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 FONT_SIZE = 20
@@ -821,7 +824,7 @@ def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
     ids=("ls", "ms", "rs", "ma", "mt", "mm", "mb", "md"),
 )
 def test_anchor(
-    layout_engine: ImageFont.Layout, anchor: str, left: int, top: int
+    layout_engine: ImageFont.Layout, anchor: str, left: float, top: float
 ) -> None:
     name, text = "quick", "Quick"
     path = f"Tests/images/test_anchor_{name}_{anchor}.png"

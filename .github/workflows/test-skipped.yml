@@ -1,0 +1,49 @@
+# Report success for required status checks when the real test workflows are
+# skipped by their paths-ignore filters, so that, for example, PRs only touching
+# docs can still be merged under a ruleset requiring these checks. See
+# https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks#handling-skipped-but-required-checks
+#
+# Keep the paths below in sync with the paths-ignore lists in test.yml,
+# test-docker.yml, test-mingw.yml and test-windows.yml.
+
+name: Test skipped
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - "docs/**"
+      - "wheels/**"
+
+permissions: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-slim
+    name: Test Successful
+    steps:
+      - name: Success
+        run: echo Tests not required for this change
+
+  test-docker:
+    runs-on: ubuntu-slim
+    name: Docker Test Successful
+    steps:
+      - name: Success
+        run: echo Tests not required for this change
+
+  test-mingw:
+    runs-on: ubuntu-slim
+    name: MSYS2
+    steps:
+      - name: Success
+        run: echo Tests not required for this change
+
+  test-windows:
+    runs-on: ubuntu-slim
+    name: Windows Test Successful
+    steps:
+      - name: Success
+        run: echo Tests not required for this change
