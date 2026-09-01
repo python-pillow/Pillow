@@ -119,20 +119,74 @@ class TestFileWebp:
         hopper().save(buffer_method, format="WEBP", method=6)
         assert buffer_no_args.getbuffer() != buffer_method.getbuffer()
 
-    @pytest.mark.parametrize("image_hint", ("default", "picture", "photo", "graph"))
-    def test_image_hint(self, image_hint: str) -> None:
+    @pytest.mark.parametrize(
+        "options",
+        (
+            {"alpha_compression": 0},
+            {"alpha_filtering": 2},
+            {"autofilter": True},
+            {"emulate_jpeg_size": True},
+            {"filter_sharpness": 7},
+            {"filter_strength": 0},
+            {"filter_type": 0},
+            {"low_memory": True},
+            {"partition_limit": 100},
+            {"partitions": 3},
+            {"preprocessing": 1},
+            {"segments": 1},
+            {"sns_strength": 0},
+            {"thread_level": 1},
+            # Options that do nothing without `pass` == 1
+            {"target_psnr": 40.0, "pass": 10},
+            {"target_size": 2000, "pass": 10},
+        ),
+    )
+    def test_advanced_options(self, options: dict[str, Any]) -> None:
         buffer = io.BytesIO()
-        hopper().save(buffer, format="WEBP", lossless=True, image_hint=image_hint)
+        hopper().save(buffer, format="WEBP", **options)
 
         with Image.open(buffer) as reloaded:
             assert reloaded.size == (128, 128)
             reloaded.load()
 
-    def test_save_all(self, tmp_path: Path) -> None:
+    def test_advanced_options_change_output(self) -> None:
+        buffer_no_args = io.BytesIO()
+        hopper().save(buffer_no_args, format="WEBP")
+
+        buffer_args = io.BytesIO()
+        hopper().save(buffer_args, format="WEBP", sns_strength=0, filter_strength=0)
+
+        assert buffer_no_args.getbuffer() != buffer_args.getbuffer()
+
+    @pytest.mark.parametrize("preset", sorted(WebPImagePlugin._PRESETS))
+    def test_preset(self, preset: str) -> None:
+        buffer = io.BytesIO()
+        hopper().save(buffer, format="WEBP", preset=preset)
+
+        with Image.open(buffer) as reloaded:
+            assert reloaded.size == (128, 128)
+            reloaded.load()
+
+    def test_invalid(self) -> None:
+        with pytest.raises(ValueError, match="Unknown preset"):
+            hopper().save(io.BytesIO(), format="WEBP", preset="invalid")
+
+        with pytest.raises(ValueError, match="WebP configuration validation failed"):
+            hopper().save(io.BytesIO(), format="WEBP", segments=99)
+
+        with pytest.raises(TypeError):
+            hopper().save(io.BytesIO(), format="WEBP", sns_strength="invalid")
+
+    @pytest.mark.parametrize(
+        "options",
+        [{}, {"preset": "photo", "sns_strength": 0}],
+        ids=["no-options", "advanced-options"],
+    )
+    def test_save_all(self, tmp_path: Path, options: dict[str, Any]) -> None:
         temp_file = tmp_path / "temp.webp"
         im = Image.new("RGB", (1, 1))
         im2 = Image.new("RGB", (1, 1), "#f00")
-        im.save(temp_file, save_all=True, append_images=[im2])
+        im.save(temp_file, save_all=True, append_images=[im2], **options)
 
         with Image.open(temp_file) as reloaded:
             assert_image_equal(im, reloaded)
@@ -143,7 +197,7 @@ class TestFileWebp:
     def test_unsupported_image_mode(self) -> None:
         im = Image.new("1", (1, 1))
         with pytest.raises(ValueError):
-            _webp.WebPEncode(im.getim(), False, 0, 0, "", 4, 0, b"", "")
+            _webp.WebPEncode(im.getim(), "", b"", "", {})
 
     def test_icc_profile(self, tmp_path: Path) -> None:
         self._roundtrip(tmp_path, self.rgb_mode, 12.5, {"icc_profile": None})
