@@ -119,6 +119,15 @@ class TestFileWebp:
         hopper().save(buffer_method, format="WEBP", method=6)
         assert buffer_no_args.getbuffer() != buffer_method.getbuffer()
 
+    @pytest.mark.parametrize("image_hint", ("default", "picture", "photo", "graph"))
+    def test_image_hint(self, image_hint: str) -> None:
+        buffer = io.BytesIO()
+        hopper().save(buffer, format="WEBP", lossless=True, image_hint=image_hint)
+
+        with Image.open(buffer) as reloaded:
+            assert reloaded.size == (128, 128)
+            reloaded.load()
+
     def test_save_all(self, tmp_path: Path) -> None:
         temp_file = tmp_path / "temp.webp"
         im = Image.new("RGB", (1, 1))
