@@ -104,6 +104,33 @@ Two new filters are available for :py:meth:`~PIL.Image.Image.resize` and
 Other changes
 =============
 
+Reduced memory use in Image.tobytes() in raw mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Encoders may now report the "optimal" buffer size that they will need to encode the
+entire image into their output format.
+
+In general, :py:meth:`~PIL.Image.Image.tobytes` collects encoded data in
+``ImageFile.MAXBLOCK`` sized chunks and join them into the output byte buffer
+afterwards. For raw uncompressed output, this would need, momentarily, roughly
+twice the memory of the returned data. The raw encoder now reports the buffer size
+that encodes the whole image in a single call, so no copy of the result is made.
+
+Encoders that cannot know their output size in advance, such as the compressed
+encoders, are unaffected and keep using :py:data:`~PIL.ImageFile.MAXBLOCK`;
+for many applications, it may be beneficial to adjust that value for improved
+performance and reduced peak memory use.
+
+This also reduces peak memory use in other operations in Pillow that use this
+path for encoding, including but not limited to:
+
+* AVIF and SGI encoding
+* BLP JPEG decoding
+* Image equivalence comparisons
+* NumPy array interface support
+* Pickling of images
+* Qt interop
+
 Python 3.15
 ^^^^^^^^^^^
 
