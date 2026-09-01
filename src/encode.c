@@ -518,6 +518,23 @@ PyImaging_PcxEncoderNew(PyObject *self, PyObject *args) {
 /* RAW                                                                  */
 /* -------------------------------------------------------------------- */
 
+static Py_ssize_t
+_raw_optimal_bufsize(ImagingCodecState state) {
+    // ImagingRawEncode writes one row at a time into a buffer of at least `bytes`.
+    // Before the first `encode()` call, `bytes` is the packed row size, and `count`
+    // is the stride (or zero). After the first call, the two get swapped...
+    // The larger is the row size.
+    Py_ssize_t row = MAX(state->bytes, state->count);
+    Py_ssize_t bufsize = row * state->ysize;
+    // Cap the size to the whole number of rows that fits an `int`.
+    // TODO: this needs to be changed when encoders' buffer sizes become `ssize_t`,
+    //       like decoders did in ca1cf5925.
+    if (bufsize > INT_MAX) {
+        bufsize = INT_MAX - (INT_MAX % row);
+    }
+    return bufsize;
+}
+
 /**
  * Instantiate a raw, uncompressed encoder.
  *
@@ -561,6 +578,7 @@ PyImaging_RawEncoderNew(PyObject *self, PyObject *args) {
     }
 
     encoder->encode = ImagingRawEncode;
+    encoder->optimal_bufsize = _raw_optimal_bufsize;
 
     encoder->state.ystep = ystep;
     encoder->state.count = stride;
