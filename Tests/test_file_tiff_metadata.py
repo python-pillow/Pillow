@@ -514,6 +514,25 @@ def test_tag_group_data() -> None:
     assert base_ifd.tagtype[2] != interop_ifd.tagtype[256]
 
 
+# Exif 2.32 table 15: GPSDOP (11) and GPSHPositioningError (31) are both
+# RATIONAL with a count of 1.
+@pytest.mark.parametrize("tag", (11, 31))
+@pytest.mark.parametrize("value", (5.5, 5))
+def test_gps_rational_tag_type(tag: int, value: float, tmp_path: Path) -> None:
+    gps_ifd = TiffImagePlugin.ImageFileDirectory_v2(group=34853)
+    gps_ifd[tag] = value
+    assert gps_ifd.tagtype[tag] == TiffTags.RATIONAL
+
+    out = tmp_path / "temp.jpg"
+    im = hopper()
+    exif = im.getexif()
+    exif.get_ifd(34853)[tag] = value
+    im.save(out, exif=exif)
+
+    with Image.open(out) as reloaded:
+        assert isinstance(reloaded.getexif().get_ifd(34853)[tag], IFDRational)
+
+
 def test_empty_subifd(tmp_path: Path) -> None:
     out = tmp_path / "temp.jpg"
 
