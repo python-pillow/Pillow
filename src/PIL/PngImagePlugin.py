@@ -498,6 +498,15 @@ class PngStream(ChunkStream):
         # transparency
         assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
+        if self.im_mode in ("1", "L", "I;16", "RGB"):
+            # 2 bytes for greyscale, 6 for truecolour.
+            # For "P" the chunk holds one byte per palette entry, so it has
+            # no fixed length.
+            if length < (6 if self.im_mode == "RGB" else 2):
+                if ImageFile.LOAD_TRUNCATED_IMAGES:
+                    return s
+                msg = "Truncated tRNS chunk"
+                raise ValueError(msg)
         if self.im_mode == "P":
             if _simple_palette.match(s):
                 # tRNS contains only one full-transparent entry,
