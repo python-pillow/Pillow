@@ -522,8 +522,6 @@ PyImaging_LibTiffDecoderNew(PyObject *self, PyObject *args) {
     const ModeID mode = findModeID(mode_name);
     const RawModeID rawmode = findRawModeID(rawmode_name);
 
-    TRACE(("new tiff decoder %s\n", compname));
-
     decoder = PyImaging_DecoderNew(sizeof(TIFFSTATE));
     if (decoder == NULL) {
         return NULL;
