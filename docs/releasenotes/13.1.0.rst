@@ -64,6 +64,13 @@ Two new image processing operations are available in ImageOps.
 * :py:meth:`~PIL.ImageOps.neon`: apply a neon glow effect, with arguments for color and
   alpha
 
+Encoder optimal buffer size
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Encoders now have an ``optimal_bufsize`` property: the buffer size needed to
+encode the whole tile in a single ``encode()`` call, or 0 if that is not known
+in advance. :py:class:`~PIL.ImageFile.PyEncoder` subclasses can override it.
+
 Other changes
 =============
 
@@ -166,3 +173,28 @@ Kerning in the basic layout engine
 When libraqm is not available, kerning was applied at 1/64th of its intended size,
 because a value in pixels was added to an advance in 26.6 fixed point precision.
 The full kerning value is now applied even when libraqm is not available.
+
+Reduced memory use in Image.tobytes() in raw mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In general, :py:meth:`~PIL.Image.Image.tobytes` collects encoded data in
+``ImageFile.MAXBLOCK`` sized chunks and joins them into the output byte buffer
+afterwards. For raw uncompressed output, this would need, momentarily, roughly
+twice the memory of the returned data. The raw encoder now reports the buffer size
+that encodes the whole image in a single call (see "Encoder optimal buffer size"
+in API additions), so no copy of the result is made.
+
+Encoders that cannot know their output size in advance, such as the compressed
+encoders, are unaffected and keep using :py:data:`~PIL.ImageFile.MAXBLOCK`;
+for many applications, it may be beneficial to adjust that value for improved
+performance and reduced peak memory use.
+
+This also reduces peak memory use in other operations in Pillow that use this
+path for encoding, including but not limited to:
+
+* AVIF and SGI encoding
+* BLP JPEG decoding
+* Image equivalence comparisons
+* NumPy array interface support
+* Pickling of images
+* Qt interop
