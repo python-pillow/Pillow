@@ -55,7 +55,7 @@ and so child images could only be retrieved from an :py:class:`PIL.ImageFile.Ima
 instance.
 
 Image._show
-~~~~~~~~~~~
+^^^^^^^^^^^
 
 ``Image._show`` has been removed. Use :py:meth:`~PIL.ImageShow.show` instead.
 
@@ -93,6 +93,13 @@ Added ``strip_namespaces`` argument to ``Image.getxmp()``
 namespace URI prefix as before. If set to ``False``, each tag's full
 ``{namespace-uri}local-name`` form is kept instead, avoiding collisions between tags
 that share a local name across different namespaces.
+
+New resizing filters
+^^^^^^^^^^^^^^^^^^^^
+
+Two new filters are available for :py:meth:`~PIL.Image.Image.resize` and
+:py:meth:`~PIL.Image.Image.thumbnail`: ``Image.Resampling.MKS2013`` and
+``Image.Resampling.MKS2021``. These are versions of the Magic Kernel Sharp filter.
 
 Other changes
 =============
