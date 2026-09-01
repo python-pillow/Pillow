@@ -724,7 +724,7 @@ class TestFilePng:
         fp = BytesIO()
         with PngImagePlugin.PngStream(fp) as png:
             png.im_mode = mode
-            with pytest.raises(ValueError):
+            with pytest.raises(ValueError, match="Truncated tRNS chunk"):
                 png.call(b"tRNS", 0, 0)
 
             monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
@@ -736,7 +736,7 @@ class TestFilePng:
         # HEAD declares a truecolour image, so tRNS must carry 6 bytes
         data = HEAD + chunk(b"tRNS", bytes(4)) + TAIL
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Truncated tRNS chunk"):
             with Image.open(BytesIO(data)):
                 pass
 
