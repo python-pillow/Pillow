@@ -1408,7 +1408,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     smallest size and 100 is lossless.
 
 **method**
-    Quality/speed trade-off (0=fast, 6=slower-better). Defaults to 4.
+    Quality/speed trade-off (0=fast, 6=slower-better).
+    Defaults to 4 for single images, 0 for animated WebPs.
 
 **exact**
     If true, preserve the transparent RGB values. Otherwise, discard
