@@ -518,6 +518,23 @@ PyImaging_PcxEncoderNew(PyObject *self, PyObject *args) {
 /* RAW                                                                  */
 /* -------------------------------------------------------------------- */
 
+/**
+ * Instantiate a raw, uncompressed encoder.
+ *
+ * Python arguments:
+ * - mode (str): The mode name for finding a pixel packer.
+ * - rawmode (str): The rawmode name for finding a pixel packer.
+ * - stride (int, optional): The number of bytes each row occupies in the output stream,
+ *                           >= the packed pixel size. Each row is explicitly
+ *                           zero-padded to this size. If unset, the true packed size
+ *                           is used.
+ * - ystep (int, optional): If set to a negative value, the encoder will write rows in
+ *                          reverse order. The only effective values are -1 and +1;
+ *                          this does not have the encoder skip rows.
+ * @param self Unused.
+ * @param args Python arguments, see above.
+ * @return A Python object representing an encoder.
+ */
 PyObject *
 PyImaging_RawEncoderNew(PyObject *self, PyObject *args) {
     ImagingEncoderObject *encoder;
