@@ -1383,6 +1383,17 @@ Saving
 
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
+**preset**
+    A predefined set of encoding parameters for a type of source picture.
+    It is applied before any of the other options here. One of:
+
+    * ``"default"`` - the default preset
+    * ``"picture"`` - digital picture, like portrait, inner shot
+    * ``"photo"`` - outdoor photograph, with natural lighting
+    * ``"drawing"`` - hand or line drawing, with high-contrast details
+    * ``"icon"`` - small-sized colorful images
+    * ``"text"`` - text-like
+
 **lossless**
     If present and true, instructs the WebP writer to use lossless compression.
 
@@ -1411,6 +1422,97 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **xmp**
     The XMP data to include in the saved file.
+
+.. _webp-advanced-saving:
+
+Advanced saving options
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The following options correspond to `libwebp's encoder
+configuration <https://github.com/webmproject/libwebp/blob/main/src/webp/encode.h>`_.
+The names, ranges and defaults below follow its ``WebPConfig`` struct,
+which is the authoritative description of what these do.
+Values outside the range accepted by libwebp raise :py:exc:`ValueError`.
+
+**target_size**
+    If non-zero, the desired target size in bytes. Takes precedence over ``quality``.
+    This has no effect unless ``pass`` is greater than 1.
+
+**target_psnr**
+    If non-zero, the minimal distortion to try to achieve, in dB.
+    Takes precedence over ``target_size``. Defaults to 0.
+    This has no effect unless ``pass`` is greater than 1.
+
+**segments**
+    Maximum number of segments to use, in [1..4]. Defaults to 4.
+
+**sns_strength**
+    Spatial noise shaping: 0 is off, 100 is maximum. Defaults to 50.
+
+**filter_strength**
+    Range 0 (off) to 100 (strongest). Defaults to 60.
+
+**filter_sharpness**
+    Range 0 (off) to 7 (least sharp). Defaults to 0.
+
+**filter_type**
+    Filtering type: 0 for simple, 1 for strong.
+    Only used if ``filter_strength`` is greater than 0 or ``autofilter`` is on.
+    Defaults to 1.
+
+**autofilter**
+    If true, automatically adjust the filter's strength. Defaults to false.
+
+**alpha_compression**
+    Algorithm for encoding the alpha plane:
+    0 for none, 1 for compressed with WebP lossless. Defaults to 1.
+
+**alpha_filtering**
+    Predictive filtering method for the alpha plane:
+    0 for none, 1 for fast, 2 for best. Defaults to 1.
+
+**pass**
+    Number of entropy-analysis passes, in [1..10]. Defaults to 1.
+    Note that some options only have an effect when this is set to a value greater than 1.
+
+**preprocessing**
+    Preprocessing filter:
+    0 for none, 1 for segment-smooth, 2 for pseudo-random dithering.
+    Defaults to 0.
+
+**partitions**
+    Log2 of the number of token partitions, in [0..3].
+    Defaults to 0, for easier progressive decoding.
+
+**partition_limit**
+    Quality degradation allowed to fit the 512k limit on prediction modes coding:
+    0 for no degradation, 100 for maximum possible degradation.
+    Defaults to 0.
+
+**emulate_jpeg_size**
+    If true, compression parameters will be remapped to better match the
+    expected output size from JPEG compression.
+    Generally the output size will be similar, but the degradation will be lower.
+    Defaults to false.
+
+**thread_level**
+    If non-zero, try and use multi-threaded encoding. Defaults to 0.
+
+**low_memory**
+    If true, reduce memory usage, at the cost of higher CPU use.
+    Defaults to false.
+
+**near_lossless**
+    Near-lossless encoding, from 0 (maximum loss) to 100 (off).
+    Only used for lossless encoding. Defaults to 100.
+
+**use_sharp_yuv**
+    If true, use sharp (and slow) RGB to YUV conversion,
+    which only affects lossy encoding. Defaults to false.
+
+**qmin**, **qmax**
+    The minimum and maximum permissible quality factor, clamping ``quality``.
+    Default to 0 and 100 respectively.
 
 Saving sequences
 ~~~~~~~~~~~~~~~~

@@ -73,6 +73,130 @@ HandleMuxError(WebPMuxError err, char *chunk) {
 }
 
 /* -------------------------------------------------------------------- */
+/* Encoder configuration                                                */
+/* -------------------------------------------------------------------- */
+
+typedef struct {
+    const char *name;
+    size_t offset;
+    int is_float;
+} WebPConfigOption;
+
+static const WebPConfigOption webp_config_options[] = {
+    // clang-format off
+    {.name = "alpha_compression", .offset = offsetof(WebPConfig, alpha_compression), .is_float = 0},
+    {.name = "alpha_filtering", .offset = offsetof(WebPConfig, alpha_filtering), .is_float = 0},
+    {.name = "alpha_quality", .offset = offsetof(WebPConfig, alpha_quality), .is_float = 0},
+    {.name = "autofilter", .offset = offsetof(WebPConfig, autofilter), .is_float = 0},
+    {.name = "emulate_jpeg_size", .offset = offsetof(WebPConfig, emulate_jpeg_size), .is_float = 0},
+    {.name = "exact", .offset = offsetof(WebPConfig, exact), .is_float = 0},
+    {.name = "filter_sharpness", .offset = offsetof(WebPConfig, filter_sharpness), .is_float = 0},
+    {.name = "filter_strength", .offset = offsetof(WebPConfig, filter_strength), .is_float = 0},
+    {.name = "filter_type", .offset = offsetof(WebPConfig, filter_type), .is_float = 0},
+    {.name = "lossless", .offset = offsetof(WebPConfig, lossless), .is_float = 0},
+    {.name = "low_memory", .offset = offsetof(WebPConfig, low_memory), .is_float = 0},
+    {.name = "method", .offset = offsetof(WebPConfig, method), .is_float = 0},
+    {.name = "near_lossless", .offset = offsetof(WebPConfig, near_lossless), .is_float = 0},
+    {.name = "partition_limit", .offset = offsetof(WebPConfig, partition_limit), .is_float = 0},
+    {.name = "partitions", .offset = offsetof(WebPConfig, partitions), .is_float = 0},
+    {.name = "pass", .offset = offsetof(WebPConfig, pass), .is_float = 0},
+    {.name = "preprocessing", .offset = offsetof(WebPConfig, preprocessing), .is_float = 0},
+    {.name = "qmax", .offset = offsetof(WebPConfig, qmax), .is_float = 0},
+    {.name = "qmin", .offset = offsetof(WebPConfig, qmin), .is_float = 0},
+    {.name = "quality", .offset = offsetof(WebPConfig, quality), .is_float = 1},
+    {.name = "segments", .offset = offsetof(WebPConfig, segments), .is_float = 0},
+    {.name = "sns_strength", .offset = offsetof(WebPConfig, sns_strength), .is_float = 0},
+    {.name = "target_psnr", .offset = offsetof(WebPConfig, target_PSNR), .is_float = 1},
+    {.name = "target_size", .offset = offsetof(WebPConfig, target_size), .is_float = 0},
+    {.name = "thread_level", .offset = offsetof(WebPConfig, thread_level), .is_float = 0},
+    {.name = "use_sharp_yuv", .offset = offsetof(WebPConfig, use_sharp_yuv), .is_float = 0},
+    // clang-format on
+
+    // show_compressed, use_delta_palette, and image_hint, while defined in WebPConfig,
+    // are deliberately not exposed since they're either useless or reserved-internal.
+};
+
+/**
+ * Cast a float value from a dict of encoder options.
+ * @param options Options dict.
+ * @param name Name of option.
+ * @param out Pointer to float to write to. MUST be non-NULL.
+ * @return 0 on success, -1 on failure (with a Python exception set).
+ */
+static int
+config_get_float(PyObject *options, const char *name, float *out) {
+    PyObject *value = PyDict_GetItemString(options, name);
+    if (value == NULL) {
+        return 0;
+    }
+    double f = PyFloat_AsDouble(value);
+    if (f == -1.0 && PyErr_Occurred()) {
+        return -1;
+    }
+    *out = (float)f;
+    return 0;
+}
+
+/**
+ * Initialize and validate a WebPConfig from a dict of encoder options.
+ * @param config Pointer to WebPConfig to initialize.
+ * @param options Dict of encoder options to read from.
+ * @return 0 on success, -1 on failure (with a Python exception set).
+ */
+static int
+config_setup(WebPConfig *config, PyObject *options) {
+    if (!WebPConfigInit(config)) {
+        PyErr_SetString(PyExc_RuntimeError, "failed to initialize config!");
+        return -1;
+    }
+
+    // Preset + quality needs to be set first, as it will override other options.
+    PyObject *preset = PyDict_GetItemString(options, "preset");
+    if (preset != NULL) {
+        long preset_value = PyLong_AsLong(preset);
+        if (preset_value == -1 && PyErr_Occurred()) {
+            return -1;
+        }
+        float quality = config->quality;
+        if (config_get_float(options, "quality", &quality)) {
+            return -1;
+        }
+        if (!WebPConfigPreset(config, (WebPPreset)preset_value, quality)) {
+            PyErr_SetString(PyExc_ValueError, "invalid preset");
+            return -1;
+        }
+    }
+
+    for (size_t i = 0; i < sizeof(webp_config_options) / sizeof(webp_config_options[0]);
+         i++) {
+        const WebPConfigOption *option = &webp_config_options[i];
+        char *field = (char *)config + option->offset;
+        if (option->is_float) {
+            if (config_get_float(options, option->name, (float *)field)) {
+                return -1;
+            }
+        } else {
+            PyObject *value = PyDict_GetItemString(options, option->name);
+            if (value == NULL) {
+                continue;
+            }
+            long i_value = PyLong_AsLong(value);
+            if (i_value == -1 && PyErr_Occurred()) {
+                return -1;
+            }
+            *(int *)field = (int)i_value;
+        }
+    }
+
+    if (!WebPValidateConfig(config)) {
+        PyErr_SetString(PyExc_ValueError, "WebP configuration validation failed");
+        return -1;
+    }
+
+    return 0;
+}
+
+/* -------------------------------------------------------------------- */
 /* Frame import                                                         */
 /* -------------------------------------------------------------------- */
 
@@ -216,26 +340,14 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
     PyObject *i0;
     Imaging im;
     int timestamp;
-    int lossless;
-    float quality_factor;
-    float alpha_quality_factor;
-    int method;
+    PyObject *options;
     ImagingSectionCookie cookie;
     WebPConfig config;
     WebPAnimEncoderObject *encp = (WebPAnimEncoderObject *)self;
     WebPAnimEncoder *enc = encp->enc;
     WebPPicture *frame = &(encp->frame);
 
-    if (!PyArg_ParseTuple(
-            args,
-            "Oiiffi",
-            &i0,
-            &timestamp,
-            &lossless,
-            &quality_factor,
-            &alpha_quality_factor,
-            &method
-        )) {
+    if (!PyArg_ParseTuple(args, "OiO!", &i0, &timestamp, &PyDict_Type, &options)) {
         return NULL;
     }
 
@@ -255,19 +367,7 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    // Setup config for this frame
-    if (!WebPConfigInit(&config)) {
-        PyErr_SetString(PyExc_RuntimeError, "failed to initialize config!");
-        return NULL;
-    }
-    config.lossless = lossless;
-    config.quality = quality_factor;
-    config.alpha_quality = alpha_quality_factor;
-    config.method = method;
-
-    // Validate the config
-    if (!WebPValidateConfig(&config)) {
-        PyErr_SetString(PyExc_ValueError, "invalid configuration");
+    if (config_setup(&config, options)) {
         return NULL;
     }
 
@@ -556,13 +656,9 @@ static PyTypeObject WebPAnimDecoder_Type = {
 
 PyObject *
 WebPEncode_wrapper(PyObject *self, PyObject *args) {
-    int lossless;
-    float quality_factor;
-    float alpha_quality_factor;
-    int method;
-    int exact;
     Imaging im;
     PyObject *i0;
+    PyObject *options;
     uint8_t *icc_bytes;
     uint8_t *exif_bytes;
     uint8_t *xmp_bytes;
@@ -579,19 +675,16 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "Oiffs#iis#s#",
+            "Os#s#s#O!",
             &i0,
-            &lossless,
-            &quality_factor,
-            &alpha_quality_factor,
             &icc_bytes,
             &icc_size,
-            &method,
-            &exact,
             &exif_bytes,
             &exif_size,
             &xmp_bytes,
-            &xmp_size
+            &xmp_size,
+            &PyDict_Type,
+            &options
         )) {
         return NULL;
     }
@@ -606,20 +699,7 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    // Setup config for this frame
-    if (!WebPConfigInit(&config)) {
-        PyErr_SetString(PyExc_RuntimeError, "failed to initialize config!");
-        return NULL;
-    }
-    config.lossless = lossless;
-    config.quality = quality_factor;
-    config.alpha_quality = alpha_quality_factor;
-    config.method = method;
-    config.exact = exact;
-
-    // Validate the config
-    if (!WebPValidateConfig(&config)) {
-        PyErr_SetString(PyExc_ValueError, "invalid configuration");
+    if (config_setup(&config, options)) {
         return NULL;
     }
 
