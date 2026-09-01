@@ -235,3 +235,30 @@ Fixed reading PSD layers at the wrong file offset
 When seeking to a layer of a PSD image, the pixel data was read from the wrong
 position in the file, so :py:meth:`~PIL.Image.Image.seek` returned unrelated
 bytes reinterpreted as image data instead of that layer's actual content.
+
+Reduced memory use in Image.tobytes() in raw mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Encoders may now report the "optimal" buffer size that they will need to encode the
+entire image into their output format.
+
+In general, :py:meth:`~PIL.Image.Image.tobytes` collects encoded data in
+``ImageFile.MAXBLOCK`` sized chunks and join them into the output byte buffer
+afterwards. For raw uncompressed output, this would need, momentarily, roughly
+twice the memory of the returned data. The raw encoder now reports the buffer size
+that encodes the whole image in a single call, so no copy of the result is made.
+
+Encoders that cannot know their output size in advance, such as the compressed
+encoders, are unaffected and keep using :py:data:`~PIL.ImageFile.MAXBLOCK`;
+for many applications, it may be beneficial to adjust that value for improved
+performance and reduced peak memory use.
+
+This also reduces peak memory use in other operations in Pillow that use this
+path for encoding, including but not limited to:
+
+* AVIF and SGI encoding
+* BLP JPEG decoding
+* Image equivalence comparisons
+* NumPy array interface support
+* Pickling of images
+* Qt interop
