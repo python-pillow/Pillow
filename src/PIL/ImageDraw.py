@@ -222,6 +222,16 @@ class ImageDraw:
         ellipse_xy = (xy[0] - radius, xy[1] - radius, xy[0] + radius, xy[1] + radius)
         self.ellipse(ellipse_xy, fill, outline, width)
 
+    def _normalize_coords(self, xy: Coords) -> Sequence[Sequence[float]]:
+        """Normalize 1 or 2 dimensional coord sequence into 2d sequence."""
+        if isinstance(xy[0], (list, tuple)):
+            return cast("Sequence[Sequence[float]]", xy)
+        else:
+            return [
+                cast("Sequence[float]", tuple(xy[i : i + 2]))
+                for i in range(0, len(xy), 2)
+            ]
+
     def line(
         self,
         xy: Coords,
@@ -234,14 +244,7 @@ class ImageDraw:
         if ink is not None and width != 0:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
-                points: Sequence[Sequence[float]]
-                if isinstance(xy[0], (list, tuple)):
-                    points = cast("Sequence[Sequence[float]]", xy)
-                else:
-                    points = [
-                        cast("Sequence[float]", tuple(xy[i : i + 2]))
-                        for i in range(0, len(xy), 2)
-                    ]
+                points = self._normalize_coords(xy)
                 for i in range(1, len(points) - 1):
                     point = points[i]
                     angles = [
@@ -397,10 +400,7 @@ class ImageDraw:
         corners: tuple[bool, bool, bool, bool] | None = None,
     ) -> None:
         """Draw a rounded rectangle."""
-        if isinstance(xy[0], (list, tuple)):
-            (x0, y0), (x1, y1) = cast("Sequence[Sequence[float]]", xy)
-        else:
-            x0, y0, x1, y1 = cast("Sequence[float]", xy)
+        (x0, y0), (x1, y1) = self._normalize_coords(xy)
         if x1 < x0:
             msg = "x1 must be greater than or equal to x0"
             raise ValueError(msg)
