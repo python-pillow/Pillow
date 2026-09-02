@@ -97,9 +97,9 @@ test:
 
 .PHONY: test-p
 test-p:
-	python3 -c "import xdist" > /dev/null 2>&1 || python3 -m pip install pytest-xdist
-	python3 -m pytest -qq -n auto
-
+	python3 -c "import xdist" > /dev/null 2>&1 || python3 -m pip install pytest-xdist psutil
+	python3 -m pytest -qq -m "isolated"
+	python3 -m pytest -qq -m "not isolated" --numprocesses=logical --dist=worksteal
 
 .PHONY: valgrind
 valgrind:
