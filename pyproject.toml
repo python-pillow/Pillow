@@ -68,6 +68,9 @@ optional-dependencies.tests = [
   "markdown2",
   "olefile",
   "packaging",
+  # Only used by the leak tests, which only run on Linux and macOS.
+  # psutil does not support iOS at all, and ships no wheels for Android.
+  "psutil; sys_platform=='linux' or sys_platform=='darwin'",
   "pytest",
   "pytest-cov",
   "pytest-timeout",
