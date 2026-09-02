@@ -509,12 +509,19 @@ class PngStream(ChunkStream):
                 # otherwise, we have a byte string with one alpha value
                 # for each palette entry
                 self.im_info["transparency"] = s
-        elif self.im_mode == "1":
-            self.im_info["transparency"] = 255 if i16(s) else 0
-        elif self.im_mode in ("L", "I;16"):
-            self.im_info["transparency"] = i16(s)
-        elif self.im_mode == "RGB":
-            self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
+        elif self.im_mode in ("1", "L", "I;16", "RGB"):
+            # 2 bytes for greyscale, 6 for truecolour
+            if length < (6 if self.im_mode == "RGB" else 2):
+                if ImageFile.LOAD_TRUNCATED_IMAGES:
+                    return s
+                msg = "Truncated tRNS chunk"
+                raise ValueError(msg)
+            if self.im_mode == "1":
+                self.im_info["transparency"] = 255 if i16(s) else 0
+            elif self.im_mode in ("L", "I;16"):
+                self.im_info["transparency"] = i16(s)
+            elif self.im_mode == "RGB":
+                self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
         return s
 
     def chunk_gAMA(self, pos: int, length: int) -> bytes:
