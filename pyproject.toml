@@ -62,6 +62,9 @@ optional-dependencies.test-arrow = [
   "nanoarrow",
   "pyarrow",
 ]
+optional-dependencies.test-leaks = [
+  "psutil",
+]
 optional-dependencies.test-xdist = [
   "psutil",
   "pytest-xdist",
