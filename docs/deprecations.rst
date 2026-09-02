@@ -30,6 +30,18 @@ Image getdata()
 identical, except that it returns a tuple of pixel values, instead of an internal
 Pillow data type.
 
+
+JpegImageFile.load_djpeg
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 13.0.0
+
+``JpegImageFile.load_djpeg`` has been deprecated, and will be removed in Pillow 14
+(2027-10-15).
+
+Use the built-in JPEG decoder instead, or call ``djpeg`` directly and decode the
+resulting image with Pillow.
+
 Removed features
 ----------------
 
