@@ -4,7 +4,9 @@ from io import BytesIO
 
 import pytest
 
-from PIL import Image, ImageSequence, PngImagePlugin
+from PIL import Image, ImageFile, ImageSequence, PngImagePlugin
+
+from .helper import hopper
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -459,20 +461,23 @@ def test_apng_save_alpha(tmp_path: Path) -> None:
         assert reloaded.getpixel((0, 0)) == (255, 0, 0, 127)
 
 
-def test_apng_save_split_fdat(tmp_path: Path) -> None:
+def test_apng_save_split_fdat(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     # test to make sure we do not generate sequence errors when writing
     # frames with image data spanning multiple fdAT chunks (in this case
     # both the default image and first animation frame will span multiple
-    # data chunks)
+    # data chunks). A small block size lets a small image satisfy that premise,
+    # rather than needing a large image and the time spent compressing it.
+    monkeypatch.setattr(ImageFile, "MAXBLOCK", 1024)
     test_file = tmp_path / "temp.png"
-    with Image.open("Tests/images/old-style-jpeg-compression.png") as im:
-        frames = [im.copy(), Image.new("RGBA", im.size, (255, 0, 0, 255))]
-        im.save(
-            test_file,
-            save_all=True,
-            default_image=True,
-            append_images=frames,
-        )
+    im = hopper("RGBA")
+    frames = [im.copy(), Image.new("RGBA", im.size, (255, 0, 0, 255))]
+    im.save(
+        test_file,
+        save_all=True,
+        default_image=True,
+        append_images=frames,
+    )
+    assert test_file.read_bytes().count(b"fdAT") > 2
     with Image.open(test_file) as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         im.seek(im.n_frames - 1)
