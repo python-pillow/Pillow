@@ -3,7 +3,7 @@ name: Test
 on:
   push:
     branches:
-      - "**"
+      - main
     paths-ignore: &paths-ignore
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"

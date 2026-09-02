@@ -3,7 +3,7 @@ name: CIFuzz
 on:
   push:
     branches:
-      - "**"
+      - main
     paths: &paths
       - ".github/dependencies.json"
       - ".github/workflows/cifuzz.yml"

@@ -5,7 +5,7 @@ name: Test Valgrind
 on:
   push:
     branches:
-      - "**"
+      - main
     paths: &paths
       - ".github/workflows/test-valgrind.yml"
       - "**.c"
