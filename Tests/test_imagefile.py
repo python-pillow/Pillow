@@ -26,10 +26,6 @@ from .helper import (
     tostring,
 )
 
-# save original block sizes
-MAXBLOCK = ImageFile.MAXBLOCK
-SAFEBLOCK = ImageFile.SAFEBLOCK
-
 
 class TestImageFile:
     def test_parser(self, monkeypatch: pytest.MonkeyPatch) -> None:
