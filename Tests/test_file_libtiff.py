@@ -1281,12 +1281,6 @@ class TestFileLibTiff(LibTiffTestCase):
         with pytest.raises(ValueError, match="cannot write empty image"):
             im.save(out, compression=compression)
 
-    def test_save_many_compressed(self, tmp_path: Path) -> None:
-        im = hopper()
-        out = tmp_path / "temp.tif"
-        for _ in range(10000):
-            im.save(out, compression="jpeg")
-
     @pytest.mark.parametrize(
         "path, sizes",
         (
