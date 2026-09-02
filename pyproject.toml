@@ -210,6 +210,9 @@ num_workers = 4
 
 [tool.pytest]
 addopts = [ "-ra", "--color=auto" ]
+markers = [
+  "isolated: tests that are not compatible with pytest-xdist (deselect with '-m \"not isolated\"')",
+]
 testpaths = [
   "Tests",
 ]
