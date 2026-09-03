@@ -17,10 +17,17 @@ aptget_update || aptget_update retry || aptget_update retry
 
 set -e
 
-sudo apt-get -qq install libfreetype6-dev liblcms2-dev libtiff-dev python3-tk\
-                         ghostscript libjpeg-turbo8-dev libopenjp2-7-dev\
-                         cmake meson imagemagick libharfbuzz-dev libfribidi-dev\
-                         sway wl-clipboard libopenblas-dev nasm
+packages=(libfreetype6-dev liblcms2-dev libtiff-dev python3-tk
+          ghostscript libjpeg-turbo8-dev libopenjp2-7-dev
+          cmake meson imagemagick libharfbuzz-dev libfribidi-dev
+          sway wl-clipboard libopenblas-dev nasm)
+
+# PyQt6 doesn't support PyPy3
+if [[ $GHA_PYTHON_VERSION == 3.* ]]; then
+    packages+=(libegl1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1
+               libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxkbcommon-x11-0)
+fi
+sudo apt-get -qq install "${packages[@]}"
 
 python3 -m pip install --upgrade pip
 python3 -m pip install --upgrade wheel
