@@ -473,6 +473,8 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 IM
 ^^
 
+.. deprecated:: 13.0.0
+
 IM is a format used by LabEye and other applications based on the IFUNC image
 processing library. The library reads and writes most uncompressed interchange
 versions of this format.

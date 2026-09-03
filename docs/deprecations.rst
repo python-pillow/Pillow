@@ -21,7 +21,7 @@ ExifTags.IFD.Makernote
 ``ExifTags.IFD.MakerNote``.
 
 Image getdata()
-~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
 .. deprecated:: 12.1.0
 
@@ -30,9 +30,15 @@ Image getdata()
 identical, except that it returns a tuple of pixel values, instead of an internal
 Pillow data type.
 
+IM image format
+^^^^^^^^^^^^^^^
+
+.. deprecated:: 13.0.0
+
+The IM image format has been deprecated.
 
 JpegImageFile.load_djpeg
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 13.0.0
 
