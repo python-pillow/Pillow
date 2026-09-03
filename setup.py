@@ -896,7 +896,7 @@ class pil_build_ext(build_ext):
 
             if (
                 feature.get("raqm")
-                and sys.platform in ["ios", "win32"]
+                and sys.platform in {"ios", "win32"}
                 and _find_library_file(self, "SheenBidi")
             ):
                 libs.extend(["harfbuzz", "SheenBidi"])
