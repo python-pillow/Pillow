@@ -71,21 +71,13 @@ Many of Pillow's features require external libraries:
 
 * **libraqm** provides complex text layout support.
 
-  * libraqm provides bidirectional text support (using FriBiDi),
+  * libraqm provides bidirectional text support (using SheenBidi or FriBiDi),
     shaping (using HarfBuzz), and proper script itemization. As a
     result, Raqm can support most writing systems covered by Unicode.
-  * libraqm depends on the following libraries: FreeType, HarfBuzz,
-    FriBiDi, make sure that you install them before installing libraqm
-    if not available as package in your system.
+  * libraqm depends on the following libraries: FreeType, HarfBuzz, and either
+    SheenBidi or FriBiDi. Make sure that you install them before installing
+    libraqm if not available as package in your system.
   * Setting text direction or font features is not supported without libraqm.
-  * Pillow wheels since version 8.2.0 include a modified version of libraqm that
-    loads libfribidi at runtime if it is installed.
-    On Windows this requires compiling FriBiDi and installing ``fribidi.dll``
-    into a directory listed in the `Dynamic-link library search order (Microsoft Learn)
-    <https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order#search-order-for-unpackaged-apps>`_
-    (``fribidi-0.dll`` or ``libfribidi-0.dll`` are also detected).
-    See `Build Options`_ to see how to build this version.
-  * Previous versions of Pillow (5.0.0 to 8.1.2) linked libraqm dynamically at runtime.
 
 * **libxcb** provides X11 screengrab support.
 
@@ -120,10 +112,10 @@ Many of Pillow's features require external libraries:
 
         sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
             libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
-            libharfbuzz-dev libfribidi-dev libxcb1-dev
+            libharfbuzz-dev libxcb1-dev
 
     To install libraqm, ``sudo apt-get install meson`` and then see
-    ``depends/install_raqm.sh``.
+    ``depends/install_sheenbidi.sh`` and ``depends/install_raqm.sh``.
 
     Build prerequisites for libavif on Ubuntu are installed with::
 
@@ -135,7 +127,7 @@ Many of Pillow's features require external libraries:
 
         sudo dnf install libtiff-devel libjpeg-devel openjpeg2-devel zlib-devel \
             freetype-devel lcms2-devel libwebp-devel tcl-devel tk-devel \
-            harfbuzz-devel fribidi-devel libraqm-devel libimagequant-devel libxcb-devel
+            libraqm-devel libimagequant-devel libxcb-devel
 
     Note that the package manager may be yum or DNF, depending on the
     exact distribution.
@@ -143,7 +135,7 @@ Many of Pillow's features require external libraries:
     Prerequisites are installed for **Alpine** with::
 
         sudo apk add tiff-dev jpeg-dev openjpeg-dev zlib-dev freetype-dev lcms2-dev \
-            libwebp-dev tcl-dev tk-dev harfbuzz-dev fribidi-dev libimagequant-dev \
+            libwebp-dev tcl-dev tk-dev libraqm-dev libimagequant-dev \
             libxcb-dev libpng-dev
 
     See also the ``Dockerfile``\s in the Test Infrastructure repo
@@ -222,7 +214,7 @@ Many of Pillow's features require external libraries:
 
     Prerequisites are installed on **FreeBSD 15.1** with::
 
-        sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi libxcb libavif libraqm libimagequant
+        sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg libxcb libavif libraqm libimagequant
 
 .. tab:: Android
 
@@ -294,12 +286,6 @@ Build options
   Require that the corresponding feature is built. The build will raise
   an exception if the libraries are not found. Tcl and Tk must be used
   together.
-
-* Config settings: ``-C raqm=vendor``, ``-C fribidi=vendor``.
-  These flags are used to compile a modified version of libraqm and
-  a shim that dynamically loads libfribidi at runtime. These are
-  used to compile the standard Pillow wheels. Compiling libraqm requires
-  a C99-compliant compiler.
 
 * Config setting: ``-C platform-guessing=disable``. Skips all of the
   platform dependent guessing of include and library directories for

@@ -44,15 +44,6 @@
         {
             "customType": "regex",
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
-            "matchStrings": ["\"fribidi\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
-            "depNameTemplate": "fribidi",
-            "packageNameTemplate": "fribidi/fribidi",
-            "datasourceTemplate": "github-releases",
-            "extractVersionTemplate": "^v(?<version>.+)$"
-        },
-        {
-            "customType": "regex",
-            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
             "matchStrings": ["\"harfbuzz\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "harfbuzz",
             "packageNameTemplate": "harfbuzz/harfbuzz",
@@ -126,6 +117,24 @@
             "matchStrings": ["\"openjpeg\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "openjpeg",
             "packageNameTemplate": "uclouvain/openjpeg",
+            "datasourceTemplate": "github-releases",
+            "extractVersionTemplate": "^v(?<version>.+)$"
+        },
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
+            "matchStrings": ["\"raqm\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
+            "depNameTemplate": "raqm",
+            "packageNameTemplate": "HOST-Oman/libraqm",
+            "datasourceTemplate": "github-releases",
+            "extractVersionTemplate": "^v(?<version>.+)$"
+        },
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
+            "matchStrings": ["\"sheenbidi\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
+            "depNameTemplate": "sheenbidi",
+            "packageNameTemplate": "Tehreer/SheenBidi",
             "datasourceTemplate": "github-releases",
             "extractVersionTemplate": "^v(?<version>.+)$"
         },

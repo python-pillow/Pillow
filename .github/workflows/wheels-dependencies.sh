@@ -107,6 +107,8 @@ BZIP2_VERSION=$(_get_ver bzip2)
 LIBXCB_VERSION=$(_get_ver libxcb)
 BROTLI_VERSION=$(_get_ver brotli)
 LIBAVIF_VERSION=$(_get_ver libavif)
+RAQM_VERSION=$(_get_ver raqm)
+SHEENBIDI_VERSION=$(_get_ver sheenbidi)
 
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
@@ -165,10 +167,34 @@ function build_harfbuzz {
 
     local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/harfbuzz-$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
     (cd $out_dir \
-        && meson setup build --prefix=$BUILD_PREFIX --libdir=$BUILD_PREFIX/lib --buildtype=minsize -Dfreetype=enabled -Dglib=disabled -Dtests=disabled $HOST_MESON_FLAGS)
+        && meson setup build --prefix=$BUILD_PREFIX --libdir=$BUILD_PREFIX/lib --buildtype=minsize -Dfreetype=enabled -Dglib=disabled -Dtests=disabled -Dutilities=disabled $HOST_MESON_FLAGS)
     (cd $out_dir/build \
         && meson install)
     touch harfbuzz-stamp
+}
+
+function build_sheenbidi {
+    if [ -e sheenbidi-stamp ]; then return; fi
+    python3 -m pip install meson ninja
+
+    local out_dir=$(fetch_unpack https://github.com/Tehreer/SheenBidi/archive/v$SHEENBIDI_VERSION.tar.gz SheenBidi-$SHEENBIDI_VERSION.tar.gz)
+    (cd $out_dir \
+        && meson setup build --prefix=$BUILD_PREFIX --libdir=$BUILD_PREFIX/lib --buildtype=minsize $HOST_MESON_FLAGS)
+    (cd $out_dir/build \
+        && meson install)
+    touch sheenbidi-stamp
+}
+
+function build_raqm {
+    if [ -e raqm-stamp ]; then return; fi
+    python3 -m pip install meson ninja
+
+    local out_dir=$(fetch_unpack https://github.com/HOST-Oman/libraqm/releases/download/v$RAQM_VERSION/raqm-$RAQM_VERSION.tar.xz raqm-$RAQM_VERSION.tar.xz)
+    (cd $out_dir \
+        && meson setup build --prefix=$BUILD_PREFIX --libdir=$BUILD_PREFIX/lib --buildtype=minsize -Dsheenbidi=true -Ddocs=false -Dtests=false $HOST_MESON_FLAGS)
+    (cd $out_dir/build \
+        && meson install)
+    touch raqm-stamp
 }
 
 function build_libavif {
@@ -311,11 +337,9 @@ function build {
         build_freetype
     fi
 
-    if [[ -z "$IOS_SDK" ]]; then
-        # On iOS, there's no vendor-provided raqm, and we can't ship it due to
-        # licensing, so there's no point building harfbuzz.
-        build_harfbuzz
-    fi
+    build_harfbuzz
+    build_sheenbidi
+    build_raqm
 }
 
 function create_meson_cross_config {

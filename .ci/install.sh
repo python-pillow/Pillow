@@ -19,7 +19,7 @@ set -e
 
 sudo apt-get -qq install libfreetype6-dev liblcms2-dev libtiff-dev python3-tk\
                          ghostscript libjpeg-turbo8-dev libopenjp2-7-dev\
-                         cmake meson imagemagick libharfbuzz-dev libfribidi-dev\
+                         cmake meson imagemagick libharfbuzz-dev\
                          sway wl-clipboard libopenblas-dev nasm
 
 python3 -m pip install --upgrade pip
@@ -49,7 +49,7 @@ pushd depends && ./install_webp.sh && popd
 pushd depends && ./install_imagequant.sh && popd
 
 # raqm
-pushd depends && sudo ./install_raqm.sh && popd
+pushd depends && sudo ./install_sheenbidi.sh && sudo ./install_raqm.sh && popd
 
 # libavif
 pushd depends && ./install_libavif.sh && popd

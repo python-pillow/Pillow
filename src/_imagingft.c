@@ -48,17 +48,7 @@
     ;
 
 #ifdef HAVE_RAQM
-#ifdef HAVE_RAQM_SYSTEM
 #include <raqm.h>
-#else
-#include "thirdparty/raqm/raqm.h"
-#ifdef HAVE_FRIBIDI_SYSTEM
-#include <fribidi.h>
-#else
-#include "thirdparty/fribidi-shim/fribidi.h"
-#include <hb.h>
-#endif
-#endif
 #endif
 
 static int have_raqm = 0;
@@ -1665,21 +1655,11 @@ setup_module(PyObject *m) {
     Py_DECREF(v);
 
 #ifdef HAVE_RAQM
-#if defined(HAVE_RAQM_SYSTEM) || defined(HAVE_FRIBIDI_SYSTEM)
     have_raqm = 1;
-#else
-    load_fribidi();
-    have_raqm = !!p_fribidi;
-#endif
-#else
-    have_raqm = 0;
 #endif
 
-    /* if we have Raqm, we have all three (but possibly no version info) */
     v = PyBool_FromLong(have_raqm);
     PyDict_SetItemString(d, "HAVE_RAQM", v);
-    PyDict_SetItemString(d, "HAVE_FRIBIDI", v);
-    PyDict_SetItemString(d, "HAVE_HARFBUZZ", v);
     Py_DECREF(v);
     if (have_raqm) {
         v = NULL;
@@ -1690,32 +1670,6 @@ setup_module(PyObject *m) {
         }
 #endif
         PyDict_SetItemString(d, "raqm_version", v ? v : Py_None);
-        Py_XDECREF(v);
-
-        v = NULL;
-#ifdef FRIBIDI_MAJOR_VERSION
-        {
-            const char *a = strchr(fribidi_version_info, ')');
-            const char *b = strchr(fribidi_version_info, '\n');
-            if (a && b && a + 2 < b) {
-                v = PyUnicode_FromStringAndSize(a + 2, b - (a + 2));
-                if (!v) {
-                    return -1;
-                }
-            }
-        }
-#endif
-        PyDict_SetItemString(d, "fribidi_version", v ? v : Py_None);
-        Py_XDECREF(v);
-
-        v = NULL;
-#ifdef HB_VERSION_STRING
-        v = PyUnicode_FromString(hb_version_string());
-        if (!v) {
-            return -1;
-        }
-#endif
-        PyDict_SetItemString(d, "harfbuzz_version", v ? v : Py_None);
         Py_XDECREF(v);
     }
 
