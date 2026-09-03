@@ -249,7 +249,7 @@ def test_invalid_box_blur_filter(radius: int | tuple[int, int]) -> None:
     ),
 )
 def test_box_blur_non_finite_radius(radius: float | tuple[float, float]) -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="radius must be a finite number >= 0"):
         ImageFilter.BoxBlur(radius)
 
 
