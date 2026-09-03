@@ -19,15 +19,19 @@ set -e
 
 packages=(libfreetype6-dev liblcms2-dev libtiff-dev python3-tk
           ghostscript libjpeg-turbo8-dev libopenjp2-7-dev
-          cmake meson imagemagick libharfbuzz-dev libfribidi-dev
-          sway wl-clipboard libopenblas-dev nasm)
+          cmake meson libharfbuzz-dev libfribidi-dev
+          sway wl-clipboard nasm
+          # ImageMagick is used by Tests/test_file_palm.py
+          imagemagick
+          # netpbm provides ppmquant and ppmtogif for GifImagePlugin._save_netpbm
+          netpbm)
 
 # PyQt6 doesn't support PyPy3
 if [[ $GHA_PYTHON_VERSION == 3.* ]]; then
     packages+=(libegl1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1
                libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxkbcommon-x11-0)
 fi
-sudo apt-get -qq install "${packages[@]}"
+sudo apt-get -qq install --no-install-recommends "${packages[@]}"
 
 python3 -m pip install --upgrade pip
 python3 -m pip install --upgrade wheel
