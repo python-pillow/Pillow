@@ -274,6 +274,29 @@ class TestImagingCoreResampleAccuracy:
         ref = Image.new("RGB", (100, 100), "#1688ff")
         assert_image_equal(im, ref)
 
+    def test_box_downscale_includes_boundary_pixels(self) -> None:
+        # 13→6 places source x=6 on a bin edge; old range rounding dropped it.
+        # See #9939 (2755→688 dropped the central column for the same reason).
+        im = Image.new("L", (13, 1), 255)
+        im.putpixel((6, 0), 0)
+        out = im.resize((6, 1), Image.Resampling.BOX)
+        assert list(out.getdata()) == [255, 255, 170, 255, 255, 255]
+
+        im = Image.new("L", (1, 13), 255)
+        im.putpixel((0, 6), 0)
+        out = im.resize((1, 6), Image.Resampling.BOX)
+        assert list(out.getdata()) == [255, 255, 170, 255, 255, 255]
+
+        im = Image.new("L", (2755, 1), 255)
+        im.putpixel((1377, 0), 0)
+        out = im.resize((688, 1), Image.Resampling.BOX)
+        assert min(out.getdata()) < 255
+
+        im = Image.new("L", (1, 1837), 255)
+        im.putpixel((0, 918), 0)
+        out = im.resize((1, 306), Image.Resampling.BOX)
+        assert min(out.getdata()) < 255
+
 
 class TestCoreResampleConsistency:
     def make_case(
