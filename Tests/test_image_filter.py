@@ -255,6 +255,7 @@ def test_large_blur_filter_radius(radius: int) -> None:
     im = Image.new("RGB", (3, 3), (128, 128, 128))
     assert im.filter(ImageFilter.BoxBlur(radius)).getpixel((1, 1)) == (128, 128, 128)
 
+
 @pytest.mark.parametrize(
     "radius",
     (
