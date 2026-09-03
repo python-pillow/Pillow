@@ -290,12 +290,12 @@ class TestImagingCoreResampleAccuracy:
         im = Image.new("L", (2755, 1), 255)
         im.putpixel((1377, 0), 0)
         out = im.resize((688, 1), Image.Resampling.BOX)
-        assert min(out.get_flattened_data()) < 255
+        assert not all(value == 255 for value in out.get_flattened_data())
 
         im = Image.new("L", (1, 1837), 255)
         im.putpixel((0, 918), 0)
         out = im.resize((1, 306), Image.Resampling.BOX)
-        assert min(out.get_flattened_data()) < 255
+        assert not all(value == 255 for value in out.get_flattened_data())
 
 
 class TestCoreResampleConsistency:
