@@ -3,7 +3,6 @@
 set -e
 
 brew bundle --file=.github/workflows/Brewfile
-export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig"
 
 python3 -m pip install coverage
 python3 -m pip install defusedxml
