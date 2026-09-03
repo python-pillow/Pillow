@@ -25,11 +25,14 @@ and has been tested with a few sample files found using google.
 
 from __future__ import annotations
 
-from typing import IO
-
 from . import Image, ImageFile
 from ._binary import i32le as i32
-from ._typing import StrOrBytesPath
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
+
+    from ._typing import StrOrBytesPath
 
 
 class WalImageFile(ImageFile.ImageFile):

@@ -63,7 +63,7 @@ def test_mode_i(mode: str) -> None:
     im = Image.new(mode, src.size, 0)
     im.putdata(data, 2, 256)
 
-    target = tuple(2 * elt + 256 for elt in cast(tuple[int, ...], data))
+    target = tuple(2 * elt + 256 for elt in cast("tuple[int, ...]", data))
     assert im.get_flattened_data() == target
 
 
@@ -73,7 +73,7 @@ def test_mode_F() -> None:
     im = Image.new("F", src.size, 0)
     im.putdata(data, 2.0, 256.0)
 
-    target = tuple(2.0 * float(elt) + 256.0 for elt in cast(tuple[int, ...], data))
+    target = tuple(2.0 * float(elt) + 256.0 for elt in cast("tuple[int, ...]", data))
     assert im.get_flattened_data() == target
 
 

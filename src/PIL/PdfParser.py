@@ -177,7 +177,7 @@ class XrefTable:
 
     def write(self, f: IO[bytes]) -> int:
         keys = sorted(set(self.new_entries.keys()) | set(self.deleted_entries.keys()))
-        deleted_keys = sorted(set(self.deleted_entries.keys()))
+        deleted_keys = sorted(self.deleted_entries)
         startxref = f.tell()
         f.write(b"xref\n")
         while keys:
@@ -886,13 +886,13 @@ class PdfParser:
             current_offset: int | None = offset
             while not m:
                 assert current_offset is not None
-                key, current_offset = cls.get_value(
-                    data, current_offset, max_nesting=max_nesting - 1
-                )
-                if current_offset is None:
-                    return result, None
+                m = cls.re_name.match(data, current_offset)
+                if not m:
+                    msg = "key must be a name"
+                    raise PdfFormatError(msg)
+                key = PdfName(cls.interpret_name(m.group(1)))
                 value, current_offset = cls.get_value(
-                    data, current_offset, max_nesting=max_nesting - 1
+                    data, m.end(), max_nesting=max_nesting - 1
                 )
                 result[key] = value
                 if current_offset is None:

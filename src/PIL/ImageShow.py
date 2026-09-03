@@ -19,9 +19,12 @@ import shutil
 import subprocess
 import sys
 from shlex import quote
-from typing import Any
 
 from . import Image
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import Any
 
 _viewers: list[Viewer] = []
 

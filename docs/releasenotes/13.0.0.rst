@@ -55,7 +55,7 @@ and so child images could only be retrieved from an :py:class:`PIL.ImageFile.Ima
 instance.
 
 Image._show
-~~~~~~~~~~~
+^^^^^^^^^^^
 
 ``Image._show`` has been removed. Use :py:meth:`~PIL.ImageShow.show` instead.
 
@@ -69,10 +69,14 @@ ImageCms.ImageCmsProfile.product_name and .product_info
 Deprecations
 ============
 
-TODO
-^^^^
+JpegImageFile.load_djpeg
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+``JpegImageFile.load_djpeg`` has been deprecated, and will be removed in Pillow 14
+(2027-10-15).
+
+Use the built-in JPEG decoder instead, or call ``djpeg`` directly and decode the
+resulting image with Pillow.
 
 API changes
 ===========
@@ -85,10 +89,21 @@ TODO
 API additions
 =============
 
-TODO
-^^^^
+Added ``strip_namespaces`` argument to ``Image.getxmp()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+:py:meth:`~PIL.Image.Image.getxmp` now accepts an optional keyword argument of
+``strip_namespaces``. It is set to ``True`` by default, stripping each tag's XML
+namespace URI prefix as before. If set to ``False``, each tag's full
+``{namespace-uri}local-name`` form is kept instead, avoiding collisions between tags
+that share a local name across different namespaces.
+
+New resizing filters
+^^^^^^^^^^^^^^^^^^^^
+
+Two new filters are available for :py:meth:`~PIL.Image.Image.resize` and
+:py:meth:`~PIL.Image.Image.thumbnail`: ``Image.Resampling.MKS2013`` and
+``Image.Resampling.MKS2021``. These are versions of the Magic Kernel Sharp filter.
 
 Other changes
 =============

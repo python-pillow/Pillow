@@ -21,9 +21,12 @@
 from __future__ import annotations
 
 import re
-from typing import IO
 
 from . import Image, ImageFile
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 # XBM header
 xbm_head = re.compile(

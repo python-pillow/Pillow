@@ -93,9 +93,9 @@ class BoxReader:
         self.remaining_in_box = -1
 
         # Read the length and type of the next box
-        lbox, tbox = cast(tuple[int, bytes], self.read_fields(">I4s"))
+        lbox, tbox = cast("tuple[int, bytes]", self.read_fields(">I4s"))
         if lbox == 1:
-            lbox = cast(int, self.read_fields(">Q")[0])
+            lbox = cast("int", self.read_fields(">Q")[0])
             hlen = 16
         else:
             hlen = 8

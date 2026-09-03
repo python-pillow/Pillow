@@ -8,7 +8,7 @@
  */
 
 #define PY_SSIZE_T_CLEAN
-#include "Python.h"
+#include <Python.h>
 
 /* Check that we have an ANSI compliant compiler */
 #ifndef HAVE_PROTOTYPES

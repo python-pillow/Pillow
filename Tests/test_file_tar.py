@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import warnings
-from pathlib import Path
 
 import pytest
 
 from PIL import Image, TarIO, features
 
 from .helper import is_pypy
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # Sample tar archive
 TEST_TAR_FILE = "Tests/images/hopper.tar"

@@ -27,7 +27,7 @@ Pillow decodes files in two stages:
 
 An image plugin should contain a format handler derived from the
 :py:class:`PIL.ImageFile.ImageFile` base class. This class should provide an
-``_open`` method, which reads the file header and set at least the internal
+``_open`` method, which reads the file header and sets at least the internal
 ``_size`` and ``_mode`` attributes so that :py:attr:`~PIL.Image.Image.mode` and
 :py:attr:`~PIL.Image.Image.size` are populated. To be able to load the file,
 the method must also create a list of ``tile`` descriptors, which contain a
@@ -377,7 +377,7 @@ The setup function needs to call ``PyImaging_DecoderNew`` or
 
 **pulls_fd**/**pushes_fd**
   If the decoder has ``pulls_fd`` or the encoder has ``pushes_fd`` set to 1,
-  ``state->fd`` will be a pointer to the Python file like object. The codec may
+  ``state->fd`` will be a pointer to the Python file-like object. The codec may
   use the functions in ``codec_fd.c`` to read or write directly with the file
   like object rather than have the data pushed through a buffer.
 
@@ -436,7 +436,7 @@ Python-based file codec:
    ``_pushes_fd`` property) is set to ``True``, then ``decode`` and ``encode``
    will only be called once. In the decoder, ``self.fd`` can be used to access
    the file-like object. Using this will provide a codec with more freedom, but
-   that freedom may mean increased memory usage if entire file is held in
+   that freedom may mean increased memory usage if the entire file is held in
    memory at once by the codec.
 
    In ``decode``, once the data has been interpreted, ``set_as_raw`` can be
