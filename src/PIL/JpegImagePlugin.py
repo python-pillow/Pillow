@@ -386,7 +386,7 @@ class JpegImageFile(ImageFile.ImageFile):
                     if self.mode == "CMYK":
                         rawmode = "CMYK;I"  # assume adobe conventions
                     self.tile = [
-                        ImageFile._Tile("jpeg", (0, 0) + self.size, 0, (rawmode, ""))
+                        ImageFile._Tile("jpeg", (0, 0, *self.size), 0, (rawmode, ""))
                     ]
                     # self.__offset = self.fp.tell()
                     break
@@ -849,7 +849,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         bufsize = max(len(exif) + 5, len(extra) + 1)
 
     ImageFile._save(
-        im, fp, [ImageFile._Tile("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize
+        im, fp, [ImageFile._Tile("jpeg", (0, 0, *im.size), 0, rawmode)], bufsize
     )
 
 

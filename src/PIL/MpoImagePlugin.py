@@ -164,7 +164,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
             self._reload_exif()
 
         self.tile = [
-            ImageFile._Tile("jpeg", (0, 0) + self.size, self.offset, self.tile[0][-1])
+            ImageFile._Tile("jpeg", (0, 0, *self.size), self.offset, self.tile[0][-1])
         ]
         self.__frame = frame
 
