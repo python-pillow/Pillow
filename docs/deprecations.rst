@@ -38,9 +38,8 @@ ImageQt align8to32()
 ``ImageQt.align8to32()`` has been deprecated. This was an undocumented helper function
 intended for internal use, so there is no replacement.
 
-
 JpegImageFile.load_djpeg
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 13.0.0
 
