@@ -74,6 +74,8 @@ def test_sanity() -> None:
     ImageOps.invert(hopper("L"))
     ImageOps.invert(hopper("RGB"))
 
+    ImageOps.moire(hopper("RGB"))
+
     ImageOps.mirror(hopper("L"))
     ImageOps.mirror(hopper("RGB"))
 
@@ -587,3 +589,9 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
         img, cutoff=10, preserve_tone=True
     )  # single color 10 cutoff
     assert_image_equal(img, out)
+
+
+def test_moire_unsupported_mode() -> None:
+    im = Image.new("L", (1, 1))
+    with pytest.raises(ValueError, match="mode must be RGB, not L"):
+        ImageOps.moire(im)
