@@ -23,6 +23,7 @@ import sys
 from io import BytesIO
 
 from . import Image
+from ._deprecate import deprecate
 from ._util import is_path
 
 TYPE_CHECKING = False
@@ -109,6 +110,7 @@ def align8to32(bytes: bytes, width: int, mode: str) -> bytes:
     """
     converts each scanline of data from 8 bit to 32 bit aligned
     """
+    deprecate("ImageQt.align8to32", 14)
 
     bits_per_pixel = {"1": 1, "L": 8, "P": 8, "I;16": 16}[mode]
 
@@ -176,10 +178,16 @@ def _toqclass_helper(im: Image.Image | str | QByteArray) -> dict[str, Any]:
         raise ValueError(msg)
 
     size = im.size
-    __data = data or align8to32(im.tobytes(), size[0], im.mode)
+    if data is None:
+        # Compute the stride (scanline size) in bytes when aligned
+        # to Qt's requirement that scanlines be aligned to 32 bits.
+        bpp = {"1": 1, "L": 8, "P": 8, "I;16": 16}[im.mode]
+        stride = (bpp * size[0] + 31) // 32 * (32 // 8)
+
+        data = im.tobytes("raw", im.mode, stride)
     if exclusive_fp:
         im.close()
-    return {"data": __data, "size": size, "format": format, "colortable": colortable}
+    return {"data": data, "size": size, "format": format, "colortable": colortable}
 
 
 if qt_is_installed:

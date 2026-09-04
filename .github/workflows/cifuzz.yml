@@ -30,14 +30,14 @@ jobs:
     steps:
     - name: Build Fuzzers
       id: build
-      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@95272c1a23cb2d796afb1b3be0c2644bbab787f4 # master
+      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@404549db4c8a840ed40cb2a485c218b93c17af61 # master
       with:
         oss-fuzz-project-name: 'pillow'
         language: python
         dry-run: false
     - name: Run Fuzzers
       id: run
-      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@95272c1a23cb2d796afb1b3be0c2644bbab787f4 # master
+      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@404549db4c8a840ed40cb2a485c218b93c17af61 # master
       with:
         oss-fuzz-project-name: 'pillow'
         fuzz-seconds: 600
