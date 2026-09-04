@@ -154,8 +154,11 @@ def assert_not_all_same(items: Sequence[Any], msg: str | None = None) -> None:
     assert items.count(items[0]) != len(items), msg
 
 
-def timeout_unless_slower_valgrind(timeout: float) -> pytest.MarkDecorator:
-    if "PILLOW_VALGRIND_TEST" in os.environ:
+def timeout_unless_slower(timeout: float) -> pytest.MarkDecorator:
+    if (
+        "PILLOW_VALGRIND_TEST" in os.environ
+        or os.environ.get("AUDITWHEEL_ARCH") == "riscv64"
+    ):
         return pytest.mark.pil_noop_mark()
     return pytest.mark.timeout(timeout)
 
