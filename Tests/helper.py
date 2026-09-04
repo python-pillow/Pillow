@@ -292,10 +292,6 @@ def djpeg_available() -> bool:
     return False
 
 
-def netpbm_available() -> bool:
-    return bool(shutil.which("ppmquant") and shutil.which("ppmtogif"))
-
-
 def magick_command() -> list[str] | None:
     if sys.platform == "win32":
         magickhome = os.environ.get("MAGICK_HOME")
