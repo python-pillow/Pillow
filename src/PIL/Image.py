@@ -1378,7 +1378,7 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if box is None:
+        if box is None or box == (0, 0) + self.size:
             return self.copy()
 
         if box[2] < box[0]:
