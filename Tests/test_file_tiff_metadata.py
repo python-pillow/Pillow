@@ -514,7 +514,7 @@ def test_tag_group_data() -> None:
     assert base_ifd.tagtype[2] != interop_ifd.tagtype[256]
 
 
-# Exif 2.32 table 15: GPSDOP (11) and GPSHPositioningError (31) are both
+# Exif 2.31 table 15: GPSDOP (11) and GPSHPositioningError (31) are both
 # RATIONAL with a count of 1.
 @pytest.mark.parametrize("tag", (11, 31))
 @pytest.mark.parametrize("value", (4.5, 4))
