@@ -3231,7 +3231,7 @@ def new(
 
     _check_size(size)
 
-    if color is None or min(size) == 0:
+    if color in {0, None} or min(size) == 0:
         # don't initialize
         return Image()._new(core.new(mode, size))
 
