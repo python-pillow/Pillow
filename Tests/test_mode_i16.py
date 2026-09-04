@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from PIL import Image
 
 from .helper import hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 original = hopper().resize((32, 32)).convert("I")
 
@@ -98,3 +100,13 @@ def test_convert() -> None:
         verify(im.convert(mode))
         verify(im.convert(mode).convert("L"))
         verify(im.convert(mode).convert("I"))
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_convert_i_f(mode: str) -> None:
+    im = Image.new(mode, (1, 1), 4660)
+    assert im.convert("I").getpixel((0, 0)) == 4660
+    assert im.convert("F").getpixel((0, 0)) == 4660.0
+
+    im = Image.new("I", (1, 1), 4660)
+    assert im.convert(mode).getpixel((0, 0)) == 4660

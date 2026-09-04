@@ -27,10 +27,13 @@ import re
 import subprocess
 import sys
 import tempfile
-from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i32le as i32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 # --------------------------------------------------------------------
 

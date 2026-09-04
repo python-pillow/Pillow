@@ -232,9 +232,12 @@ jobs:
   success:
     permissions:
       contents: none
+    if: always()
     needs: build
     runs-on: ubuntu-latest
     name: Windows Test Successful
     steps:
       - name: Success
-        run: echo Windows Test Successful
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: test "$BUILD_RESULT" = "success"

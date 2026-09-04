@@ -8,7 +8,7 @@ Security
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Avoid a potential ReDoS (regular expression denial of service) in :py:class:`~PIL.ImageColor`'s
-:py:meth:`~PIL.ImageColor.getrgb` by raising :py:exc:`ValueError` if the color specifier is
+:py:func:`~PIL.ImageColor.getrgb` by raising :py:exc:`ValueError` if the color specifier is
 too long. Present since Pillow 5.2.0.
 
 Fix 6-byte out-of-bounds (OOB) read

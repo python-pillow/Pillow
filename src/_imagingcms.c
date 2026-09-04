@@ -27,14 +27,12 @@ https://www.cazabon.com\n\
 "
 
 #define PY_SSIZE_T_CLEAN
-#include "Python.h"  // Include before wchar.h so _GNU_SOURCE is set
-#include "wchar.h"
-#include "datetime.h"
+#include <Python.h>  // Include before wchar.h so _GNU_SOURCE is set
+#include <wchar.h>
+#include <datetime.h>
 
-#include "lcms2.h"
+#include <lcms2.h>
 #include "libImaging/Imaging.h"
-
-#define PYCMSVERSION "1.0.0 pil"
 
 /* version history */
 
@@ -1043,7 +1041,13 @@ cms_profile_getattr_creation_date(CmsProfileObject *self, void *closure) {
     }
 
     return PyDateTime_FromDateAndTime(
-        1900 + ct.tm_year, ct.tm_mon, ct.tm_mday, ct.tm_hour, ct.tm_min, ct.tm_sec, 0
+        1900 + ct.tm_year,
+        ct.tm_mon + 1,
+        ct.tm_mday,
+        ct.tm_hour,
+        ct.tm_min,
+        ct.tm_sec,
+        0
     );
 }
 

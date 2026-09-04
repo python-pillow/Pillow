@@ -1564,6 +1564,7 @@ static struct {
     {IMAGING_MODE_1, IMAGING_RAWMODE_1_R, 1, unpack1R},
     {IMAGING_MODE_1, IMAGING_RAWMODE_1_IR, 1, unpack1IR},
     {IMAGING_MODE_1, IMAGING_RAWMODE_1_8, 8, unpack18},
+    {IMAGING_MODE_1, IMAGING_RAWMODE_L, 8, unpack18},
 
     /* grayscale */
     {IMAGING_MODE_L, IMAGING_RAWMODE_L_2, 2, unpackL2},

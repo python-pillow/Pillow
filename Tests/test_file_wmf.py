@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 from typing import IO
 
 import pytest
@@ -9,6 +8,10 @@ import pytest
 from PIL import Image, ImageFile, WmfImagePlugin
 
 from .helper import assert_image_equal_tofile, assert_image_similar_tofile, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_load_raw() -> None:
@@ -69,6 +72,9 @@ def test_register_handler(tmp_path: Path) -> None:
     class TestHandler(ImageFile.StubHandler):
         methodCalled = False
 
+        def open(self, im: ImageFile.StubImageFile) -> None:
+            im._size = (1, 1)
+
         def load(self, im: ImageFile.StubImageFile) -> Image.Image:
             return Image.new("RGB", (1, 1))
 
@@ -76,7 +82,7 @@ def test_register_handler(tmp_path: Path) -> None:
             self.methodCalled = True
 
     handler = TestHandler()
-    original_handler = WmfImagePlugin._handler
+    original_handler = WmfImagePlugin.WmfStubImageFile._handler
     WmfImagePlugin.register_handler(handler)
 
     im = hopper()

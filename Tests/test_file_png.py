@@ -5,8 +5,6 @@ import sys
 import warnings
 import zlib
 from io import BytesIO, TextIOWrapper
-from pathlib import Path
-from types import ModuleType
 from typing import Any, cast
 
 import pytest
@@ -23,6 +21,11 @@ from .helper import (
     mark_if_feature_version,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from types import ModuleType
 
 ElementTree: ModuleType | None
 try:
@@ -63,7 +66,7 @@ def roundtrip(im: Image.Image, **options: Any) -> PngImagePlugin.PngImageFile:
     out = BytesIO()
     im.save(out, "PNG", **options)
     out.seek(0)
-    return cast(PngImagePlugin.PngImageFile, Image.open(out))
+    return cast("PngImagePlugin.PngImageFile", Image.open(out))
 
 
 @skip_unless_feature("zlib")
@@ -700,7 +703,8 @@ class TestFilePng:
             assert_image_equal_tofile(im, "Tests/images/bw_gradient.png")
 
     @pytest.mark.parametrize(
-        "cid", (b"IHDR", b"sRGB", b"pHYs", b"acTL", b"fcTL", b"fdAT")
+        "cid",
+        (b"IHDR", b"gAMA", b"cHRM", b"sRGB", b"pHYs", b"acTL", b"fcTL", b"fdAT"),
     )
     def test_truncated_chunks(
         self, cid: bytes, monkeypatch: pytest.MonkeyPatch
@@ -712,6 +716,34 @@ class TestFilePng:
 
             monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
             png.call(cid, 0, 0)
+
+    @pytest.mark.parametrize("mode", ("1", "L", "I;16", "RGB"))
+    def test_truncated_trns_chunk(
+        self, mode: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        fp = BytesIO()
+        with PngImagePlugin.PngStream(fp) as png:
+            png.im_mode = mode
+            with pytest.raises(ValueError, match="Truncated tRNS chunk"):
+                png.call(b"tRNS", 0, 0)
+
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+            png.call(b"tRNS", 0, 0)
+
+    def test_truncated_trns_chunk_in_file(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # HEAD declares a truecolour image, so tRNS must carry 6 bytes
+        data = HEAD + chunk(b"tRNS", bytes(4)) + TAIL
+
+        with pytest.raises(ValueError, match="Truncated tRNS chunk"):
+            with Image.open(BytesIO(data)):
+                pass
+
+        monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+        with Image.open(BytesIO(data)) as im:
+            assert im.mode == "RGB"
+            assert "transparency" not in im.info
 
     @pytest.mark.parametrize("save_all", (True, False))
     def test_specify_bits(self, save_all: bool, tmp_path: Path) -> None:

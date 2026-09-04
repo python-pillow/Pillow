@@ -6,7 +6,6 @@ import re
 import shutil
 import sys
 from io import BytesIO
-from pathlib import Path
 from typing import Literal, cast
 
 import pytest
@@ -22,6 +21,11 @@ from .helper import (
     is_pypy,
 )
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from typing import Any
+
 try:
     from PIL import ImageCms
     from PIL.ImageCms import ImageCmsProfile
@@ -30,10 +34,6 @@ try:
 except ImportError:
     # Skipped via setup_module()
     pass
-
-TYPE_CHECKING = False
-if TYPE_CHECKING:
-    from typing import Any
 
 SRGB = "Tests/icc/sRGB_IEC61966-2-1_black_scaled.icc"
 HAVE_PROFILE = os.path.exists(SRGB)
@@ -418,7 +418,7 @@ def test_extended_information() -> None:
     assert p.colorimetric_intent is None
     assert p.connection_space == "XYZ "
     assert p.copyright == "Copyright International Color Consortium, 2009"
-    assert p.creation_date == datetime.datetime(2009, 2, 27, 21, 36, 31)
+    assert p.creation_date == datetime.datetime(2009, 3, 27, 21, 36, 31)
     assert p.device_class == "mntr"
     assert_truncated_tuple_equal(
         p.green_colorant,
@@ -642,9 +642,9 @@ def test_auxiliary_channels_isolated() -> None:
                     continue
 
                 # convert with and without AUX data, test colors are equal
-                src_colorSpace = cast(Literal["LAB", "XYZ", "sRGB"], src_format[1])
+                src_colorSpace = cast("Literal['LAB', 'XYZ', 'sRGB']", src_format[1])
                 source_profile = ImageCms.createProfile(src_colorSpace)
-                dst_colorSpace = cast(Literal["LAB", "XYZ", "sRGB"], dst_format[1])
+                dst_colorSpace = cast("Literal['LAB', 'XYZ', 'sRGB']", dst_format[1])
                 destination_profile = ImageCms.createProfile(dst_colorSpace)
                 source_image = src_format[3]
                 test_transform = ImageCms.buildTransform(

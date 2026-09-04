@@ -8,8 +8,6 @@ import sys
 import tempfile
 import warnings
 from pathlib import Path
-from types import ModuleType
-from typing import IO
 
 import pytest
 
@@ -35,6 +33,11 @@ from .helper import (
     skip_unless_feature,
     timeout_unless_slower_valgrind,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from types import ModuleType
+    from typing import IO
 
 ElementTree: ModuleType | None
 try:
@@ -1011,6 +1014,34 @@ class TestImage:
             else:
                 xmp = im.getxmp()
             assert xmp == {}
+
+    @pytest.mark.skipif(ElementTree is None, reason="defusedxml is not installed")
+    def test_getxmp_strip_namespaces(self) -> None:
+        im = Image.new("RGB", (1, 1))
+        im.info["xmp"] = (
+            b'<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
+            b'<x:xmpmeta xmlns:x="adobe:ns:meta/">'
+            b'<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+            b'<rdf:Description rdf:about=""'
+            b' xmlns:a="http://example.com/ns/a/"'
+            b' xmlns:b="http://example.com/ns/b/">'
+            b"<a:id>from-a</a:id>"
+            b"<b:id>from-b</b:id>"
+            b"</rdf:Description>"
+            b"</rdf:RDF>"
+            b'</x:xmpmeta>\n<?xpacket end="w"?>'
+        )
+
+        stripped = im.getxmp()
+        desc = stripped["xmpmeta"]["RDF"]["Description"]
+        assert desc["id"] == ["from-a", "from-b"]
+
+        full = im.getxmp(strip_namespaces=False)
+        desc_full = full["{adobe:ns:meta/}xmpmeta"][
+            "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF"
+        ]["{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description"]
+        assert desc_full["{http://example.com/ns/a/}id"] == "from-a"
+        assert desc_full["{http://example.com/ns/b/}id"] == "from-b"
 
     def test_getxmp_padded(self) -> None:
         im = Image.new("RGB", (1, 1))

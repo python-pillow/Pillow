@@ -17,12 +17,12 @@
 from __future__ import annotations
 
 import abc
-from collections.abc import Sequence
+import math
 from typing import cast
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Sequence
     from types import ModuleType
     from typing import Any
 
@@ -223,8 +223,8 @@ class BoxBlur(MultibandFilter):
 
     def __init__(self, radius: float | Sequence[float]) -> None:
         xy = radius if isinstance(radius, (tuple, list)) else (radius, radius)
-        if xy[0] < 0 or xy[1] < 0:
-            msg = "radius must be >= 0"
+        if not all(math.isfinite(value) and value >= 0 for value in xy):
+            msg = "radius must be a finite number >= 0"
             raise ValueError(msg)
         self.radius = radius
 
@@ -434,7 +434,7 @@ class Color3DLUT(MultibandFilter):
 
             # Convert to a flat list
             if table and isinstance(table[0], (list, tuple)):
-                raw_table = cast(Sequence[Sequence[int]], table)
+                raw_table = cast("Sequence[Sequence[int]]", table)
                 flat_table: list[int] = []
                 for pixel in raw_table:
                     if len(pixel) != channels:

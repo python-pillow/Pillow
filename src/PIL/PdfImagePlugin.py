@@ -25,9 +25,12 @@ import io
 import math
 import os
 import time
-from typing import IO, Any
 
 from . import Image, ImageFile, ImageSequence, PdfParser, features
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
 
 #
 # --------------------------------------------------------------------

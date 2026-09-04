@@ -48,6 +48,7 @@ from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
+from ._deprecate import deprecate
 from .JpegPresets import presets
 
 TYPE_CHECKING = False
@@ -467,6 +468,11 @@ class JpegImageFile(ImageFile.ImageFile):
 
     def load_djpeg(self) -> None:
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
+        deprecate(
+            "load_djpeg",
+            14,
+            action="Use the built-in JPEG decoder instead, or call djpeg yourself.",
+        )
 
         f, path = tempfile.mkstemp()
         os.close(f)
