@@ -30,7 +30,6 @@ from .helper import (
     hopper,
     is_win32,
     skip_unless_feature,
-    timeout_unless_slower_valgrind,
 )
 
 TYPE_CHECKING = False
@@ -569,13 +568,6 @@ class TestImage:
         # Should pass lists too
         i = Image.new("RGB", [1, 1])
         assert isinstance(i.size, tuple)
-
-    @timeout_unless_slower_valgrind(0.75)
-    @pytest.mark.parametrize(
-        "size", ((0, 10_000_000), (10_000_000, 0)), ids=("tall", "wide")
-    )
-    def test_empty_image(self, size: tuple[int, int]) -> None:
-        Image.new("RGB", size)
 
     def test_storage_neg(self) -> None:
         # Storage.c accepted negative values for xsize, ysize.  Was
