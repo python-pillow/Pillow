@@ -27,6 +27,7 @@
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 #include FT_BITMAP_H
+#include FT_OUTLINE_H
 #include FT_STROKER_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_SFNT_NAMES_H
@@ -66,9 +67,16 @@ static int have_raqm = 0;
 #define LAYOUT_FALLBACK 0
 #define LAYOUT_RAQM 1
 
+// These mirror raqm_glyph_t, which in turn mirrors harfbuzz's hb_glyph_info_t,
+// with the addition of y_advance and y_offset for vertical text layout.
+// Coordinate units are 26.6 fixed-point precision.
 typedef struct {
-    int index, x_offset, x_advance, y_offset, y_advance;
-    unsigned int cluster;
+    unsigned int index;    // the index of the glyph in the font file
+    FT_F26Dot6 x_offset;   // horizontal movement of the glyph from current point
+    FT_F26Dot6 x_advance;  // glyph advance width in horizontal text
+    FT_F26Dot6 y_offset;   // vertical movement of the glyph from current point
+    FT_F26Dot6 y_advance;  // glyph advance height in vertical text
+    unsigned int cluster;  // character index in original text
 } GlyphInfo;
 
 struct {
@@ -96,6 +104,16 @@ static PyTypeObject Font_Type;
 
 /* round a 26.6 pixel coordinate to the nearest integer */
 #define PIXEL(x) ((((x) + 32) & -64) >> 6)
+/* round a 26.6 pixel coordinate down to integer */
+#define PIXEL_FLOOR(x) ((x) >> 6)
+/* round a 26.6 pixel coordinate up to integer */
+#define PIXEL_CEIL(x) (((x) + 63) >> 6)
+/* the sub-pixel part of a 26.6 pixel coordinate */
+#define PIXEL_FRAC(x) ((x) & 63)
+/* convert from pixels to 26.6 fixed-point */
+#define PIXEL_TO_FIXED(x) ((x) * 64)
+/* round a 16.16 fixed-point value (e.g. FT_Fixed) to 26.6 */
+#define FIXED_16_16_TO_26_6(x) (((x) + (1 << 9)) >> 10)
 
 static PyObject *
 geterror(int code) {
@@ -125,8 +143,8 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     FT_Long width;
     Py_ssize_t index = 0;
     Py_ssize_t layout_engine = 0;
-    unsigned char *encoding;
-    unsigned char *font_bytes;
+    unsigned char *encoding = NULL;
+    unsigned char *font_bytes = NULL;
     Py_ssize_t font_bytes_size = 0;
     static char *kwlist[] = {
         "filename", "size", "index", "encoding", "font_bytes", "layout_engine", NULL
@@ -143,7 +161,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     if (!PyArg_ParseTupleAndKeywords(
             args,
             kw,
-            "etf|nsy#n",
+            "etfnsy#n",
             kwlist,
             config.filesystem_encoding,
             &filename,
@@ -162,7 +180,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     if (!PyArg_ParseTupleAndKeywords(
             args,
             kw,
-            "etf|nsy#n",
+            "etfnsy#n",
             kwlist,
             Py_FileSystemDefaultEncoding,
             &filename,
@@ -215,7 +233,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     }
 
     if (!error) {
-        width = size * 64;
+        width = PIXEL_TO_FIXED(size);
         req.type = FT_SIZE_REQUEST_TYPE_NOMINAL;
         req.width = width;
         req.height = width;
@@ -456,7 +474,7 @@ text_layout_fallback(
     }
     for (i = 0; i < count; i++) {
         if (buffer) {
-            ch = buffer[i];
+            ch = (unsigned char)buffer[i];
         } else {
             ch = PyUnicode_READ_CHAR(string, i);
         }
@@ -469,21 +487,34 @@ text_layout_fallback(
         glyph = self->face->glyph;
         (*glyph_info)[i].x_offset = 0;
         (*glyph_info)[i].y_offset = 0;
+
+        // Use non-grid-fitted metrics when eventual rendering will honour them.
+        // Grid-fitted metrics will make spacing between glyphs drift away
+        // from the font's design over longer spans.
+        // Monochrome and bitmap glyphs retain grid-fitted metrics so they render
+        // with suitable crispness.
+        int unfitted = !mask && glyph->format == FT_GLYPH_FORMAT_OUTLINE;
+
         if (kerning && last_index && (*glyph_info)[i].index) {
             FT_Vector delta;
             if (FT_Get_Kerning(
                     self->face,
                     last_index,
                     (*glyph_info)[i].index,
-                    ft_kerning_default,
+                    unfitted ? FT_KERNING_UNFITTED : FT_KERNING_DEFAULT,
                     &delta
                 ) == 0) {
-                (*glyph_info)[i - 1].x_advance += PIXEL(delta.x);
-                (*glyph_info)[i - 1].y_advance += PIXEL(delta.y);
+                (*glyph_info)[i - 1].x_advance += delta.x;
+                (*glyph_info)[i - 1].y_advance += delta.y;
             }
         }
 
-        (*glyph_info)[i].x_advance = glyph->metrics.horiAdvance;
+        // linearHoriAdvance is the unhinted advance, in 16.16 (IOW, 1/65536 of a px)
+        // (see https://freetype.org/freetype2/docs/tutorial/step2.html)
+        // and metrics.horiAdvance is in 26.6 (1/64 of a px).
+        (*glyph_info)[i].x_advance = unfitted
+                                         ? FIXED_16_16_TO_26_6(glyph->linearHoriAdvance)
+                                         : glyph->metrics.horiAdvance;
         // y_advance is only used in ttb, which is not supported by basic layout
         (*glyph_info)[i].y_advance = 0;
         last_index = (*glyph_info)[i].index;
@@ -517,21 +548,43 @@ text_layout(
     return count;
 }
 
+/**
+ * Parse the possibly NULL `dir` direction string
+ * and return whether it means horizontal or vertical text layout.
+ */
+static int
+is_horizontal_direction(const char *dir) {
+    return dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
+}
+
+/** Calculate how far the pen advances over a given string.
+ *
+ * This is the sum of the glyph advances, which is not the width of the inked
+ * area that font_getsize_impl() reports: it includes side bearings and any
+ * trailing whitespace.
+ *
+ * Python parameters:
+ *   - string: the text to measure
+ *   - mode_name: imaging mode string
+ *   - dir: text direction string
+ *   - features: font features sequence
+ *   - lang: language string
+ *
+ * Python return value:
+ *   - length: advance along the primary axis, 26.6 precision integer.
+ *     Unlike the other methods here this is not in pixels;
+ *     ImageFont.FreeTypeFont.getlength() divides by 64.
+ */
 static PyObject *
 font_getlength_impl(FontObject *self, PyObject *args) {
-    int length;                   /* length along primary axis, in 26.6 precision */
+    FT_F26Dot6 length = 0;        /* length along primary axis */
     GlyphInfo *glyph_info = NULL; /* computed text layout */
-    size_t i, count;              /* glyph_info index and length */
-    int horizontal_dir;           /* is primary axis horizontal? */
-    int mask = 0;                 /* is FT_LOAD_TARGET_MONO enabled? */
-    int color = 0;                /* is FT_LOAD_COLOR enabled? */
+    size_t count;                 /* glyph_info length */
     const char *mode_name = NULL;
     const char *dir = NULL;
     const char *lang = NULL;
     PyObject *features = Py_None;
     PyObject *string;
-
-    /* calculate size and bearing for a given string */
 
     if (!PyArg_ParseTuple(
             args, "O|zzOz:getlength", &string, &mode_name, &dir, &features, &lang
@@ -539,19 +592,17 @@ font_getlength_impl(FontObject *self, PyObject *args) {
         return NULL;
     }
 
-    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
-
     const ModeID mode = findModeID(mode_name);
-    mask = mode == IMAGING_MODE_1;
-    color = mode == IMAGING_MODE_RGBA;
+    int horizontal_dir = is_horizontal_direction(dir);  // Drawing horizontally?
+    int mask = mode == IMAGING_MODE_1;      // draw in monochrome (FT_LOAD_TARGET_MONO)?
+    int color = mode == IMAGING_MODE_RGBA;  // can draw colored glyphs (FT_LOAD_COLOR)?
 
     count = text_layout(string, self, dir, features, lang, &glyph_info, mask, color);
     if (PyErr_Occurred()) {
         return NULL;
     }
 
-    length = 0;
-    for (i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         if (horizontal_dir) {
             length += glyph_info[i].x_advance;
         } else {
@@ -576,11 +627,61 @@ font_getlength(FontObject *self, PyObject *args) {
     return result;
 }
 
+/*
+ * Load a single glyph and place it at pen position `x_pen`.
+ *
+ * FreeType returns glyph bitmaps at integer-pixel offsets.
+ * To preserve a fractional pen position, this translates a scalable glyph’s
+ * outline by the pen’s fractional remainder before rasterizing it.
+ * Otherwise, independently rounding glyph origin can introduce error
+ * in the spacing between neighbouring glyphs.
+ *
+ * Embedded bitmap glyphs cannot be translated this way,
+ * and monochrome output cannot represent fractional coverage smoothly,
+ * so bitmap glyphs and mode "1" text use rounded pen positions.
+ *
+ * `*px` receives the whole-pixel x position of the resulting glyph bitmap.
+ */
+static int
+load_glyph(
+    FT_Face face,
+    FT_UInt index,
+    FT_Int32 load_flags,
+    int subpixel,      // translate the outline for subpixel positioning?
+    int monochrome,    // render in monochrome mode?
+    int render,        // invoke rendering, or just translate?
+    FT_F26Dot6 x_pen,  // pen position along primary axis
+    int *px            // output whole-pixel X position (must be non-NULL)
+) {
+    int error = FT_Load_Glyph(face, index, load_flags);
+    if (error) {
+        return error;
+    }
+
+    if (subpixel && face->glyph->format == FT_GLYPH_FORMAT_OUTLINE) {
+        *px = (int)PIXEL_FLOOR(x_pen);
+        int frac = (int)(x_pen - PIXEL_TO_FIXED(*px));
+        if (frac) {
+            FT_Outline_Translate(&face->glyph->outline, frac, 0);
+        }
+    } else {
+        *px = (int)PIXEL(x_pen);
+    }
+
+    if (render) {
+        error = FT_Render_Glyph(
+            face->glyph, monochrome ? FT_RENDER_MODE_MONO : FT_RENDER_MODE_NORMAL
+        );
+    }
+    return error;
+}
+
 static int
 bounding_box_and_anchors(
     FT_Face face,
     const char *anchor,
     int horizontal_dir,
+    int subpixel,
     GlyphInfo *glyph_info,
     size_t count,
     int load_flags,
@@ -589,47 +690,52 @@ bounding_box_and_anchors(
     int *x_offset,
     int *y_offset
 ) {
-    long position; /* pen position along primary axis, in 26.6 precision */
-    long advanced; /* pen position along primary axis, in pixels */
-    int px, py;    /* position of current glyph, in pixels */
+    FT_F26Dot6 position;            /* pen position along primary axis */
+    FT_F26Dot6 x_pen;               /* horizontal position of current glyph */
+    int py;                         /* vertical position of current glyph, in pixels */
     int x_min, x_max, y_min, y_max; /* text bounding box, in pixels */
     int x_anchor, y_anchor;         /* offset of point drawn at (0, 0), in pixels */
-    int error;
     FT_Glyph glyph;
     FT_BBox bbox; /* glyph bounding box */
-    size_t i;     /* glyph_info index */
     /*
      * text bounds are given by:
      *   - bounding boxes of individual glyphs
-     *   - pen line, i.e. 0 to `advanced` along primary axis
+     *   - pen line, i.e. 0 to final position along primary axis
      *     this means point (0, 0) is part of the text bounding box
      */
     position = x_min = x_max = y_min = y_max = 0;
-    for (i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         if (horizontal_dir) {
-            px = PIXEL(position + glyph_info[i].x_offset);
+            x_pen = position + glyph_info[i].x_offset;
             py = PIXEL(glyph_info[i].y_offset);
 
             position += glyph_info[i].x_advance;
-            advanced = PIXEL(position);
-            if (advanced > x_max) {
-                x_max = advanced;
+            int position_x = PIXEL(position);
+            if (position_x > x_max) {
+                x_max = position_x;
             }
         } else {
-            px = PIXEL(glyph_info[i].x_offset);
+            x_pen = glyph_info[i].x_offset;
             py = PIXEL(position + glyph_info[i].y_offset);
 
             position += glyph_info[i].y_advance;
-            advanced = PIXEL(position);
-            if (advanced < y_min) {
-                y_min = advanced;
+            int position_y = PIXEL(position);
+            if (position_y < y_min) {
+                y_min = position_y;
             }
         }
 
-        error = FT_Load_Glyph(face, glyph_info[i].index, load_flags);
+        int error = FT_Load_Glyph(face, glyph_info[i].index, load_flags);
         if (error) {
             geterror(error);
             return 1;
+        }
+
+        if (!subpixel || face->glyph->format != FT_GLYPH_FORMAT_OUTLINE) {
+            // in non-subpixel-vector mode, the glyph will be drawn
+            // on a whole pixel by load_glyph(), so account for it here
+            // by truncating to whole pixels before summing into the bounding box
+            x_pen = PIXEL_TO_FIXED(PIXEL(x_pen));
         }
 
         error = FT_Get_Glyph(face->glyph, &glyph);
@@ -638,22 +744,25 @@ bounding_box_and_anchors(
             return 1;
         }
 
-        FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_PIXELS, &bbox);
-        bbox.xMax += px;
-        if (bbox.xMax > x_max) {
-            x_max = bbox.xMax;
+        FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_GRIDFIT, &bbox);
+        // x_pen is in 26.6 format, so sum precisely before rounding
+        int glyph_x_min = (int)PIXEL_FLOOR(bbox.xMin + x_pen);
+        int glyph_x_max = (int)PIXEL_CEIL(bbox.xMax + x_pen);
+        // py is already whole pixels
+        int glyph_y_min = (int)PIXEL_FLOOR(bbox.yMin) + py;
+        int glyph_y_max = (int)PIXEL_CEIL(bbox.yMax) + py;
+
+        if (glyph_x_min < x_min) {
+            x_min = glyph_x_min;
         }
-        bbox.xMin += px;
-        if (bbox.xMin < x_min) {
-            x_min = bbox.xMin;
+        if (glyph_x_max > x_max) {
+            x_max = glyph_x_max;
         }
-        bbox.yMax += py;
-        if (bbox.yMax > y_max) {
-            y_max = bbox.yMax;
+        if (glyph_y_min < y_min) {
+            y_min = glyph_y_min;
         }
-        bbox.yMin += py;
-        if (bbox.yMin < y_min) {
-            y_min = bbox.yMin;
+        if (glyph_y_max > y_max) {
+            y_max = glyph_y_max;
         }
 
         FT_Done_Glyph(glyph);
@@ -754,25 +863,31 @@ bad_anchor:
     return 1;
 }
 
+/** Calculate size and bearing for a given string.
+ *
+ * Python parameters:
+ *   - string: the text to measure
+ *   - mode_name: imaging mode string
+ *   - dir: text direction string
+ *   - features: font features sequence
+ *   - lang: language string
+ *   - anchor: anchor string
+ *
+ * Python return value:
+ *   - ((width, height), (x_offset, y_offset)): size and bearing of the text, in pixels
+ */
 static PyObject *
 font_getsize_impl(FontObject *self, PyObject *args) {
-    int64_t width, height;
-    int x_offset, y_offset;
-    int load_flags; /* FreeType load_flags parameter */
-    int error;
+    int64_t width, height;        /* pixels */
+    int x_offset, y_offset;       /* pixels */
     GlyphInfo *glyph_info = NULL; /* computed text layout */
     size_t count;                 /* glyph_info length */
-    int horizontal_dir;           /* is primary axis horizontal? */
-    int mask = 0;                 /* is FT_LOAD_TARGET_MONO enabled? */
-    int color = 0;                /* is FT_LOAD_COLOR enabled? */
     const char *mode_name = NULL;
     const char *dir = NULL;
     const char *lang = NULL;
     const char *anchor = NULL;
     PyObject *features = Py_None;
     PyObject *string;
-
-    /* calculate size and bearing for a given string */
 
     if (!PyArg_ParseTuple(
             args,
@@ -787,18 +902,22 @@ font_getsize_impl(FontObject *self, PyObject *args) {
         return NULL;
     }
 
-    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
-
     const ModeID mode = findModeID(mode_name);
-    mask = mode == IMAGING_MODE_1;
-    color = mode == IMAGING_MODE_RGBA;
+    int horizontal_dir = is_horizontal_direction(dir);  // Drawing horizontally?
+    int mask = mode == IMAGING_MODE_1;      // draw in monochrome (FT_LOAD_TARGET_MONO)?
+    int color = mode == IMAGING_MODE_RGBA;  // can draw colored glyphs (FT_LOAD_COLOR)?
+    // Only do subpixel layout for horizontal text in non-1-bit modes.
+    // Vertical text is elided for now since FT glyphs are loaded
+    // in a mode that grid-fits horizontal features; doing subpixel
+    // layout in the vertical axis would likely blur those features.
+    int subpixel = !mask && horizontal_dir;
 
     count = text_layout(string, self, dir, features, lang, &glyph_info, mask, color);
     if (PyErr_Occurred()) {
         return NULL;
     }
 
-    load_flags = FT_LOAD_DEFAULT;
+    int load_flags = FT_LOAD_DEFAULT;
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
@@ -806,10 +925,11 @@ font_getsize_impl(FontObject *self, PyObject *args) {
         load_flags |= FT_LOAD_COLOR;
     }
 
-    error = bounding_box_and_anchors(
+    int error = bounding_box_and_anchors(
         self->face,
         anchor,
         horizontal_dir,
+        subpixel,
         glyph_info,
         count,
         load_flags,
@@ -838,11 +958,29 @@ font_getsize(FontObject *self, PyObject *args) {
     return result;
 }
 
+/**
+ * Rasterize a string into an image buffer.
+ *
+ * Python parameters:
+ * - string: the text to render
+ * - fill: ???
+ * - mode_name: imaging mode string
+ * - dir: text direction string
+ * - features: font features sequence
+ * - lang: language string
+ * - stroke_width: stroke width in pixels
+ * - stroke_filled: ???
+ * - anchor: anchor string
+ * - foreground_ink_long: foreground color as a long integer
+ * - x_start: starting x position of the pen in pixels
+ * - y_start: starting y position of the pen in pixels
+ *
+ * Returns: a new image object containing the rendered text.
+ */
 static PyObject *
 font_render_impl(FontObject *self, PyObject *args) {
-    int x, y;         /* pen position, in 26.6 precision */
-    int px, py;       /* position of current glyph, in pixels */
-    int x_min, y_max; /* text offset in 26.6 precision */
+    FT_F26Dot6 x, y;  /* pen position */
+    int x_min, y_max; /* text offset, in pixels */
     int load_flags;   /* FreeType load_flags parameter */
     int error;
     FT_Glyph glyph;
@@ -853,7 +991,7 @@ font_render_impl(FontObject *self, PyObject *args) {
     FT_Stroker stroker = NULL;
     int bitmap_converted_ready = 0; /* has bitmap_converted been initialized */
     GlyphInfo *glyph_info = NULL;   /* computed text layout */
-    size_t i, count;                /* glyph_info index and length */
+    size_t count;                   /* glyph_info length */
     int xx, yy;                     /* pixel offset of current glyph bitmap */
     int x0, x1;                     /* horizontal bounds of glyph bitmap to copy */
     unsigned int bitmap_y;          /* glyph bitmap y index */
@@ -861,9 +999,7 @@ font_render_impl(FontObject *self, PyObject *args) {
     unsigned char convert_scale;    /* scale factor for non-8bpp bitmaps */
     PyObject *image;
     Imaging im;
-    int mask = 0;  /* is FT_LOAD_TARGET_MONO enabled? */
-    int color = 0; /* is FT_LOAD_COLOR enabled? */
-    float stroke_width = 0;
+    float stroke_width = 0; /* stroke width, in possibly non-integer px */
     int stroke_filled = 0;
     PY_LONG_LONG foreground_ink_long = 0;
     unsigned int foreground_ink;
@@ -874,11 +1010,10 @@ font_render_impl(FontObject *self, PyObject *args) {
     PyObject *features = Py_None;
     PyObject *string;
     PyObject *fill;
-    float x_start = 0;
-    float y_start = 0;
+    float x_start = 0; /* starting position of the pen, in possibly non-integer px */
+    float y_start = 0; /* starting position of the pen, in possibly non-integer px */
     int64_t width, height;
     int x_offset, y_offset;
-    int horizontal_dir; /* is primary axis horizontal? */
 
     /* render string into given buffer (the buffer *must* have
        the right size, or this will crash) */
@@ -903,8 +1038,14 @@ font_render_impl(FontObject *self, PyObject *args) {
     }
 
     const ModeID mode = findModeID(mode_name);
-    mask = mode == IMAGING_MODE_1;
-    color = mode == IMAGING_MODE_RGBA;
+    int horizontal_dir = is_horizontal_direction(dir);  // Drawing horizontally?
+    int mask = mode == IMAGING_MODE_1;      // draw in monochrome (FT_LOAD_TARGET_MONO)?
+    int color = mode == IMAGING_MODE_RGBA;  // can draw colored glyphs (FT_LOAD_COLOR)?
+    // Only do subpixel layout for horizontal text in non-1-bit modes.
+    // Vertical text is elided for now since FT glyphs are loaded
+    // in a mode that grid-fits horizontal features; doing subpixel
+    // layout in the vertical axis would likely blur those features.
+    int subpixel = !mask && horizontal_dir;
 
     foreground_ink = foreground_ink_long;
 
@@ -933,13 +1074,11 @@ font_render_impl(FontObject *self, PyObject *args) {
     if (color) {
         load_flags |= FT_LOAD_COLOR;
     }
-
-    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
-
     error = bounding_box_and_anchors(
         self->face,
         anchor,
         horizontal_dir,
+        subpixel,
         glyph_info,
         count,
         load_flags,
@@ -990,10 +1129,10 @@ font_render_impl(FontObject *self, PyObject *args) {
 
         FT_Stroker_Set(
             stroker,
-            (FT_Fixed)round(stroke_width * 64),
+            (FT_F26Dot6)roundf(PIXEL_TO_FIXED(stroke_width)),
             FT_STROKER_LINECAP_ROUND,
             FT_STROKER_LINEJOIN_ROUND,
-            0
+            0  // 16.16 units
         );
     }
 
@@ -1001,20 +1140,28 @@ font_render_impl(FontObject *self, PyObject *args) {
      * calculate x_min and y_max
      * must match font_getsize or there may be clipping!
      */
-    x = y = x_min = y_max = 0;
-    for (i = 0; i < count; i++) {
-        px = PIXEL(x + glyph_info[i].x_offset);
-        py = PIXEL(y + glyph_info[i].y_offset);
+    x = PIXEL_FRAC((int)roundf(PIXEL_TO_FIXED(stroke_width + x_start)));
+    y = x_min = y_max = 0;
+    for (size_t i = 0; i < count; i++) {
+        int px;
+        int py = PIXEL(y + glyph_info[i].y_offset);
 
-        error =
-            FT_Load_Glyph(self->face, glyph_info[i].index, load_flags | FT_LOAD_RENDER);
+        error = load_glyph(
+            self->face,
+            glyph_info[i].index,
+            load_flags,
+            subpixel,
+            mask,
+            1,
+            x + glyph_info[i].x_offset,
+            &px
+        );
         if (error) {
             geterror(error);
             goto glyph_error;
         }
 
         glyph_slot = self->face->glyph;
-        bitmap = glyph_slot->bitmap;
 
         if (glyph_slot->bitmap_top + py > y_max) {
             y_max = glyph_slot->bitmap_top + py;
@@ -1028,18 +1175,23 @@ font_render_impl(FontObject *self, PyObject *args) {
     }
 
     /* set pen position to text origin */
-    x = round((-x_min + stroke_width + x_start) * 64);
-    y = round((-y_max + (-stroke_width) - y_start) * 64);
+    x = roundf(PIXEL_TO_FIXED(-x_min + stroke_width + x_start));
+    y = roundf(PIXEL_TO_FIXED(-y_max + (-stroke_width) - y_start));
 
-    if (stroker == NULL) {
-        load_flags |= FT_LOAD_RENDER;
-    }
+    for (size_t i = 0; i < count; i++) {
+        int px;
+        int py = PIXEL(y + glyph_info[i].y_offset);
 
-    for (i = 0; i < count; i++) {
-        px = PIXEL(x + glyph_info[i].x_offset);
-        py = PIXEL(y + glyph_info[i].y_offset);
-
-        error = FT_Load_Glyph(self->face, glyph_info[i].index, load_flags);
+        error = load_glyph(
+            self->face,
+            glyph_info[i].index,
+            load_flags,
+            subpixel,
+            mask,
+            stroker == NULL,
+            x + glyph_info[i].x_offset,
+            &px
+        );
         if (error) {
             geterror(error);
             goto glyph_error;
@@ -1443,7 +1595,7 @@ font_setvaraxes_impl(FontObject *self, PyObject *args) {
     PyObject *axes, *item;
     Py_ssize_t i, num_coords;
     FT_Fixed *coords;
-    FT_Fixed coord;
+    double coord;
     if (!PyArg_ParseTuple(args, "O", &axes)) {
         return NULL;
     }
@@ -1468,7 +1620,7 @@ font_setvaraxes_impl(FontObject *self, PyObject *args) {
         if (PyFloat_Check(item)) {
             coord = PyFloat_AS_DOUBLE(item);
         } else if (PyLong_Check(item)) {
-            coord = (float)PyLong_AS_LONG(item);
+            coord = (double)PyLong_AS_LONG(item);
         } else if (PyNumber_Check(item)) {
             coord = PyFloat_AsDouble(item);
         } else {
@@ -1478,7 +1630,7 @@ font_setvaraxes_impl(FontObject *self, PyObject *args) {
             return NULL;
         }
         Py_DECREF(item);
-        coords[i] = coord * 65536;
+        coords[i] = (FT_Fixed)round(coord * 65536); /* 16.16 fixed point */
     }
 
     error = FT_Set_Var_Design_Coordinates(self->face, num_coords, coords);

@@ -149,7 +149,7 @@ def test_reducing_gap_values() -> None:
 
     ref = hopper()
     ref.thumbnail((18, 18), Image.Resampling.BICUBIC, reducing_gap=None)
-    with pytest.raises(pytest.fail.Exception):
+    with pytest.raises(AssertionError):
         assert_image_equal(ref, im)
 
     assert_image_similar(ref, im, 3.5)

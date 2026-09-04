@@ -12,7 +12,7 @@ from typing import Any, BinaryIO
 
 import pytest
 
-from PIL import Image, ImageDraw, ImageFont, features
+from PIL import Image, ImageDraw, ImageFont, ImageText, features
 
 from .helper import (
     assert_image_equal,
@@ -181,12 +181,12 @@ def test_textbbox_equal(font: ImageFont.FreeTypeFont) -> None:
         # basic test
         ("text", "L", "FreeMono.ttf", 15, 36, 36),
         ("text", "1", "FreeMono.ttf", 15, 36, 36),
-        # issue 4177
-        ("rrr", "L", "DejaVuSans/DejaVuSans.ttf", 18, 21, 22.21875),
+        # issue 4177; mode "1" is placed on whole pixels, so it still differs
+        ("rrr", "L", "DejaVuSans/DejaVuSans.ttf", 18, 22.21875, 22.21875),
         ("rrr", "1", "DejaVuSans/DejaVuSans.ttf", 18, 24, 22.21875),
         # test 'l' not including extra margin
         # using exact value 2047 / 64 for raqm, checked with debugger
-        ("ill", "L", "OpenSansCondensed-LightItalic.ttf", 63, 33, 31.984375),
+        ("ill", "L", "OpenSansCondensed-LightItalic.ttf", 63, 31.984375, 31.984375),
         ("ill", "1", "OpenSansCondensed-LightItalic.ttf", 63, 33, 31.984375),
     ),
 )
@@ -196,7 +196,7 @@ def test_getlength(
     fontname: str,
     size: int,
     layout_engine: ImageFont.Layout,
-    length_basic: int,
+    length_basic: float,
     length_raqm: float,
 ) -> None:
     f = ImageFont.truetype("Tests/fonts/" + fontname, size, layout_engine=layout_engine)
@@ -211,6 +211,24 @@ def test_getlength(
         # disable kerning, kerning metrics changed
         length = d.textlength(text, f, features=["-kern"])
         assert length == length_raqm
+
+
+def test_size_ladder(layout_engine: ImageFont.Layout) -> None:
+    # See https://github.com/python-pillow/Pillow/issues/9898
+    image = Image.new("RGBA", (220, 140), "#fff")
+    draw = ImageDraw.Draw(image)
+
+    y = 5
+    for size in (12, 13, 14, 15, 16, 20, 24):
+        font = ImageFont.truetype(
+            "Tests/fonts/NotoSans-Regular.ttf", size, layout_engine=layout_engine
+        )
+        text = ImageText.Text(f"Power bolt ({size}px)", font)
+        draw.text((5, y), text, anchor="la", fill="#000")
+        y += size
+
+    name = "basic" if layout_engine == ImageFont.Layout.BASIC else "raqm"
+    assert_image_similar_tofile(image, f"Tests/images/text_size_ladder_{name}.png", 4)
 
 
 def test_float_size(layout_engine: ImageFont.Layout) -> None:
@@ -571,6 +589,24 @@ def test_getbbox_empty(font: ImageFont.FreeTypeFont) -> None:
     assert (0, 0, 0, 0) == font.getbbox("")
 
 
+def test_bytearray_not_supported(font: ImageFont.FreeTypeFont) -> None:
+    # The C text layout only accepts str and bytes, so bytearray is rejected
+    # even though these methods used to be annotated as taking one.
+    for op in (font.getlength, font.getbbox, font.getmask):
+        assert op(b"A") is not None
+        with pytest.raises(TypeError, match="expected string or bytes"):
+            op(bytearray(b"A"))  # type: ignore[arg-type]
+
+
+def test_core_font_arguments_are_optional(font: ImageFont.FreeTypeFont) -> None:
+    # Every argument after the leading string is optional at the C level,
+    # and the mode argument additionally accepts None.
+    assert font.font.getlength("A") == font.font.getlength("A", "", None, None, None)
+    assert font.font.getlength("A", None) == font.font.getlength("A", "")
+    assert font.font.getsize("A") == font.font.getsize("A", "", None, None, None, None)
+    assert font.font.getsize("A", None) == font.font.getsize("A", "")
+
+
 def test_render_empty(font: ImageFont.FreeTypeFont) -> None:
     # issue 2666
     im = Image.new(mode="RGB", size=(300, 100))
@@ -794,6 +830,17 @@ def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
     _check_text(font, "Tests/images/variation_tiny_name.png", 40)
 
 
+def test_truetype_bytes() -> None:
+    """Ensure bytestrings with the high bit set do not cause sign extension."""
+    font = ImageFont.truetype(
+        "Tests/fonts/FreeMono.ttf",
+        20,
+        # Have to use BASIC as RAQM would parse `b"\xe9"` as invalid Unicode
+        layout_engine=ImageFont.Layout.BASIC,
+    )
+    assert font.getbbox(b"\xe9") == font.getbbox("\u00e9")
+
+
 def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
     with pytest.raises(OSError):
         font.set_variation_by_axes([500, 50])
@@ -805,6 +852,17 @@ def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
     font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
     font.set_variation_by_axes([100])
     _check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
+
+
+def test_variation_set_by_fractional_axes() -> None:
+    font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 200)
+
+    def mask(weight: float) -> bytes:
+        font.set_variation_by_axes([weight, 0])
+        return bytes(font.getmask("Hg", mode="L"))
+
+    # a fractional value must not be truncated or rounded
+    assert mask(600) != mask(600.5) != mask(601)
 
 
 @pytest.mark.parametrize(
@@ -829,10 +887,7 @@ def test_anchor(
     name, text = "quick", "Quick"
     path = f"Tests/images/test_anchor_{name}_{anchor}.png"
 
-    if layout_engine == ImageFont.Layout.RAQM:
-        width, height = (129, 44)
-    else:
-        width, height = (128, 44)
+    width, height = (129, 44)
 
     bbox_expected = (left, top, left + width, top + height)
 
@@ -887,7 +942,9 @@ def test_anchor_multiline(
     d.line(((300, 0), (300, 400)), "gray")
     d.multiline_text((300, 200), text, fill="black", anchor=anchor, font=f, align=align)
 
-    assert_image_similar_tofile(im, target, 4)
+    # the reference is shared between the layout engines, and they no longer
+    # differ by more than the GPOS kerning that basic layout cannot apply
+    assert_image_similar_tofile(im, target, 6)
 
 
 def test_anchor_invalid(font: ImageFont.FreeTypeFont) -> None:
@@ -985,17 +1042,14 @@ def test_float_coord(layout_engine: ImageFont.Layout, fontmode: str) -> None:
     if fontmode == "1":
         d.fontmode = "1"
 
-    embedded_color = fontmode == "RGBA"
-    d.text((9.5, 9.5), txt, font=ttf, fill="#fa6", embedded_color=embedded_color)
-    try:
-        assert_image_similar_tofile(im, "Tests/images/text_float_coord.png", 3.9)
-    except AssertionError:
-        if fontmode == "1" and layout_engine == ImageFont.Layout.BASIC:
-            assert_image_similar_tofile(
-                im, "Tests/images/text_float_coord_1_alt.png", 1
-            )
-        else:
-            raise
+    d.text((9.5, 9.5), txt, font=ttf, fill="#fa6", embedded_color=(fontmode == "RGBA"))
+    assert_image_similar_tofile(
+        im,
+        f"Tests/images/text_float_coord_{fontmode}_{layout_engine.name}.png",
+        epsilon=(
+            1 if fontmode == "1" and layout_engine == ImageFont.Layout.BASIC else 3.9
+        ),
+    )
 
 
 def test_cbdt(layout_engine: ImageFont.Layout) -> None:

@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from enum import IntEnum
 from functools import lru_cache
 from io import BytesIO
 
@@ -31,6 +32,21 @@ if os.environ.get("SHOW_ERRORS"):
     uploader = "show"
 elif "GITHUB_ACTIONS" in os.environ:
     uploader = "github_actions"
+
+
+class SnapshotsMode(IntEnum):
+    NONE = 0  # no creation
+    CREATE = 1  # create if doesn't exist
+    UPDATE = 2  # create or update ("this is the new expected result")
+    OVERWRITE = 3  # always overwrite ("this is the new expected result")
+
+
+try:
+    snapshots_mode = SnapshotsMode[
+        os.environ.get("PILLOW_TEST_SNAPSHOTS", "NONE").upper()
+    ]
+except ValueError as ve:
+    pytest.fail(f"Invalid value for PILLOW_TEST_SNAPSHOTS: {ve}")
 
 
 def upload(a: Image.Image, b: Image.Image) -> str | None:
@@ -95,7 +111,7 @@ def assert_image_equal(a: Image.Image, b: Image.Image, msg: str | None = None) -
         except Exception:
             pass
 
-        pytest.fail(msg or "got different content")
+        raise AssertionError(msg or "got different content")
 
 
 def assert_image_equal_tofile(
@@ -104,9 +120,19 @@ def assert_image_equal_tofile(
     msg: str | None = None,
     mode: str | None = None,
 ) -> None:
+    if snapshots_mode == SnapshotsMode.OVERWRITE or (
+        snapshots_mode and not os.path.isfile(filename)
+    ):
+        a.save(filename)
     with Image.open(filename) as im:
         converted_im = im.convert(mode) if mode else im
-        assert_image_equal(a, converted_im, msg)
+        try:
+            assert_image_equal(a, converted_im, msg)
+        except AssertionError:
+            if snapshots_mode == SnapshotsMode.UPDATE:
+                a.save(filename)
+            else:
+                raise
 
 
 def assert_image_similar(
@@ -146,8 +172,18 @@ def assert_image_similar_tofile(
     epsilon: float,
     msg: str | None = None,
 ) -> None:
+    if snapshots_mode == SnapshotsMode.OVERWRITE or (
+        snapshots_mode and not os.path.isfile(filename)
+    ):
+        a.save(filename)
     with Image.open(filename) as img:
-        assert_image_similar(a, img, epsilon, msg)
+        try:
+            assert_image_similar(a, img, epsilon, msg)
+        except AssertionError:
+            if snapshots_mode == SnapshotsMode.UPDATE:
+                a.save(filename)
+            else:
+                raise
 
 
 def assert_not_all_same(items: Sequence[Any], msg: str | None = None) -> None:
