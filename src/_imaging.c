@@ -72,21 +72,22 @@
  */
 
 #define PY_SSIZE_T_CLEAN
-#include "Python.h"
+#include <Python.h>
+#include "thirdparty/pythoncapi_compat.h"
 
 #ifdef HAVE_LIBJPEG
-#include "jconfig.h"
+#include <jconfig.h>
 #ifdef LIBJPEG_TURBO_VERSION
 #define JCONFIG_INCLUDED
 #ifdef __CYGWIN__
 #define _BASETSD_H
 #endif
-#include "jpeglib.h"
+#include <jpeglib.h>
 #endif
 #endif
 
 #ifdef HAVE_LIBZ
-#include "zlib.h"
+#include <zlib.h>
 #endif
 
 #ifdef HAVE_LIBTIFF
@@ -418,7 +419,7 @@ getbands(const ModeID mode) {
 #define TYPE_DOUBLE (0x400 | sizeof(double))
 
 static void *
-getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
+getlist_impl(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
     /* - allocates and returns a c array of the items in the
           python sequence arg.
        - the size of the returned array is in length
@@ -513,6 +514,15 @@ getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
     return list;
 }
 
+static void *
+getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
+    void *result;
+    Py_BEGIN_CRITICAL_SECTION(arg);
+    result = getlist_impl(arg, length, wrong_length, type);
+    Py_END_CRITICAL_SECTION();
+    return result;
+}
+
 FLOAT32
 float16tofloat32(const FLOAT16 in) {
     UINT32 t1;
@@ -579,7 +589,7 @@ getpixel(Imaging im, ImagingAccess access, int x, int y) {
             return PyLong_FromLong(pixel.i);
         case IMAGING_TYPE_FLOAT32:
             return PyFloat_FromDouble(pixel.f);
-        case IMAGING_TYPE_SPECIAL:
+        case IMAGING_TYPE_I16:
             return PyLong_FromLong(pixel.h);
     }
 
@@ -608,7 +618,7 @@ getink(PyObject *color, Imaging im, char *ink) {
         color = PyTuple_GetItem(color, 0);
     }
     if (im->type == IMAGING_TYPE_UINT8 || im->type == IMAGING_TYPE_INT32 ||
-        im->type == IMAGING_TYPE_SPECIAL) {
+        im->type == IMAGING_TYPE_I16) {
         if (PyLong_Check(color)) {
             r = PyLong_AsLongLong(color);
             if (r == -1 && PyErr_Occurred()) {
@@ -696,7 +706,7 @@ getink(PyObject *color, Imaging im, char *ink) {
             ftmp = f;
             memcpy(ink, &ftmp, sizeof(ftmp));
             return ink;
-        case IMAGING_TYPE_SPECIAL:
+        case IMAGING_TYPE_I16:
             ink[0] = (UINT8)r;
             ink[1] = (UINT8)(r >> 8);
             ink[2] = ink[3] = 0;
@@ -801,7 +811,7 @@ _radial_gradient(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_alpha_composite(ImagingObject *self, PyObject *args) {
+_alpha_composite(PyObject *self, PyObject *args) {
     ImagingObject *imagep1;
     ImagingObject *imagep2;
 
@@ -815,7 +825,7 @@ _alpha_composite(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_blend(ImagingObject *self, PyObject *args) {
+_blend(PyObject *self, PyObject *args) {
     ImagingObject *imagep1;
     ImagingObject *imagep2;
     double alpha;
@@ -1037,21 +1047,22 @@ _convert(ImagingObject *self, PyObject *args) {
     const ModeID mode = findModeID(mode_name);
 
     return PyImagingNew(ImagingConvert(
-        self->image, mode, paletteimage ? paletteimage->image->palette : NULL, dither
+        NULL,
+        self->image,
+        mode,
+        paletteimage ? paletteimage->image->palette : NULL,
+        dither
     ));
 }
 
 static PyObject *
-_convert2(ImagingObject *self, PyObject *args) {
-    ImagingObject *imagep1;
-    ImagingObject *imagep2;
-    if (!PyArg_ParseTuple(
-            args, "O!O!", &Imaging_Type, &imagep1, &Imaging_Type, &imagep2
-        )) {
+_convert_into(ImagingObject *self, PyObject *args) {
+    ImagingObject *imagep;
+    if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
         return NULL;
     }
 
-    if (!ImagingConvert2(imagep1->image, imagep2->image)) {
+    if (!ImagingConvert(imagep->image, self->image, imagep->image->mode, NULL, 0)) {
         return NULL;
     }
 
@@ -1655,7 +1666,6 @@ _putdata(ImagingObject *self, PyObject *args) {
 
         seq = PySequence_Fast(data, must_be_sequence);
         if (!seq) {
-            PyErr_SetString(PyExc_TypeError, must_be_sequence);
             return NULL;
         }
         n = PySequence_Fast_GET_SIZE(seq);
@@ -1704,7 +1714,7 @@ _putdata(ImagingObject *self, PyObject *args) {
         } else {
             double value;
             int bigendian = 0;
-            if (image->type == IMAGING_TYPE_SPECIAL) {
+            if (image->type == IMAGING_TYPE_I16) {
                 // I;16*
                 if (
                     image->mode == IMAGING_MODE_I_16B
@@ -1720,7 +1730,7 @@ _putdata(ImagingObject *self, PyObject *args) {
                 if (scale != 1.0 || offset != 0.0) {
                     value = value * scale + offset;
                 }
-                if (image->type == IMAGING_TYPE_SPECIAL) {
+                if (image->type == IMAGING_TYPE_I16) {
                     image->image8[y][x * 2 + (bigendian ? 1 : 0)] =
                         CLIP8((int)value % 256);
                     image->image8[y][x * 2 + (bigendian ? 0 : 1)] =
@@ -2077,45 +2087,16 @@ _reduce(ImagingObject *self, PyObject *args) {
     return PyImagingNew(imOut);
 }
 
-static int
-isRGB(const ModeID mode) {
-    return mode == IMAGING_MODE_RGB || mode == IMAGING_MODE_RGBA ||
-           mode == IMAGING_MODE_RGBX;
-}
-
 static PyObject *
-im_setmode(ImagingObject *self, PyObject *args) {
+im_setalpha(ImagingObject *self, PyObject *args) {
     /* attempt to modify the mode of an image in place */
-
-    Imaging im;
-
-    char *mode_name;
-    Py_ssize_t modelen;
-    if (!PyArg_ParseTuple(args, "s#:setmode", &mode_name, &modelen)) {
-        return NULL;
+    Imaging im = self->image;
+    if (im->mode != IMAGING_MODE_RGB && im->mode != IMAGING_MODE_RGBX) {
+        return ImagingError_ModeError();
     }
-
-    const ModeID mode = findModeID(mode_name);
-
-    im = self->image;
-
-    /* move all logic in here to the libImaging primitive */
-
-    if (im->mode == mode) {
-        ; /* same mode; always succeeds */
-    } else if (isRGB(im->mode) && isRGB(mode)) {
-        /* color to color */
-        im->mode = mode;
-        im->bands = modelen;
-        if (mode == IMAGING_MODE_RGBA) {
-            (void)ImagingFillBand(im, 3, 255);
-        }
-    } else {
-        /* trying doing an in-place conversion */
-        if (!ImagingConvertInPlace(im, mode)) {
-            return NULL;
-        }
-    }
+    im->mode = IMAGING_MODE_RGBA;
+    im->bands = 4;
+    (void)ImagingFillBand(im, 3, 255);
 
     if (self->access) {
         ImagingAccessDelete(im, self->access);
@@ -2386,7 +2367,7 @@ _getextrema(ImagingObject *self, PyObject *args) {
                 return Py_BuildValue("ii", extrema.i[0], extrema.i[1]);
             case IMAGING_TYPE_FLOAT32:
                 return Py_BuildValue("dd", extrema.f[0], extrema.f[1]);
-            case IMAGING_TYPE_SPECIAL:
+            case IMAGING_TYPE_I16:
                 if (self->image->mode == IMAGING_MODE_I_16) {
                     return Py_BuildValue("HH", extrema.s[0], extrema.s[1]);
                 }
@@ -3730,7 +3711,7 @@ static struct PyMethodDef methods[] = {
     /* Standard processing methods (Image) */
     {"color_lut_3d", (PyCFunction)_color_lut_3d, METH_VARARGS},
     {"convert", (PyCFunction)_convert, METH_VARARGS},
-    {"convert2", (PyCFunction)_convert2, METH_VARARGS},
+    {"convert_into", (PyCFunction)_convert_into, METH_VARARGS},
     {"convert_matrix", (PyCFunction)_convert_matrix, METH_VARARGS},
     {"convert_transparent", (PyCFunction)_convert_transparent, METH_VARARGS},
     {"copy", (PyCFunction)_copy, METH_VARARGS},
@@ -3764,7 +3745,7 @@ static struct PyMethodDef methods[] = {
     {"split", (PyCFunction)_split, METH_NOARGS},
     {"fillband", (PyCFunction)_fillband, METH_VARARGS},
 
-    {"setmode", (PyCFunction)im_setmode, METH_VARARGS},
+    {"setalpha", (PyCFunction)im_setalpha, METH_NOARGS},
 
     {"getpalette", (PyCFunction)_getpalette, METH_VARARGS},
     {"getpalettemode", (PyCFunction)_getpalettemode, METH_NOARGS},
@@ -4242,9 +4223,6 @@ static PyMethodDef functions[] = {
     {"new_block", (PyCFunction)_new_block, METH_VARARGS},
     {"new_arrow", (PyCFunction)_new_arrow, METH_VARARGS},
     {"merge", (PyCFunction)_merge, METH_VARARGS},
-
-    /* Functions */
-    {"convert", (PyCFunction)_convert2, METH_VARARGS},
 
     /* Codecs */
     {"bcn_decoder", (PyCFunction)PyImaging_BcnDecoderNew, METH_VARARGS},

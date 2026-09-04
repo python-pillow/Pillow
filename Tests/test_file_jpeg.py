@@ -734,7 +734,8 @@ class TestFileJpeg:
     def test_load_djpeg(self) -> None:
         with Image.open(TEST_FILE) as img:
             assert isinstance(img, JpegImagePlugin.JpegImageFile)
-            img.load_djpeg()
+            with pytest.warns(DeprecationWarning, match="load_djpeg"):
+                img.load_djpeg()
             assert_image_similar_tofile(img, TEST_FILE, 5)
 
     def test_no_duplicate_0x1001_tag(self) -> None:
