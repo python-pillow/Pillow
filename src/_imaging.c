@@ -1068,6 +1068,7 @@ _convert_matrix(ImagingObject *self, PyObject *args) {
                 m + 10,
                 m + 11
             )) {
+            PyErr_SetString(PyExc_TypeError, "matrix must be tuple of length 4 or 12");
             return NULL;
         }
     }
