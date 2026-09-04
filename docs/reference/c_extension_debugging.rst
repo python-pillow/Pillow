@@ -1,4 +1,4 @@
-C extension debugging on Linux, with GBD/Valgrind
+C extension debugging on Linux, with GDB/Valgrind
 =================================================
 
 Install the tools
