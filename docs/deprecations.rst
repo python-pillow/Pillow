@@ -30,6 +30,14 @@ Image getdata()
 identical, except that it returns a tuple of pixel values, instead of an internal
 Pillow data type.
 
+ImageQt align8to32()
+^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 13.0.0
+
+``ImageQt.align8to32()`` has been deprecated. This was an undocumented helper function
+intended for internal use, so there is no replacement.
+
 JpegImageFile.load_djpeg
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
