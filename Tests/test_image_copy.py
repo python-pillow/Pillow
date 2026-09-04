@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from io import BytesIO
 
 import pytest
 
@@ -53,3 +54,47 @@ def test_deepcopy() -> None:
 
         out = copy.deepcopy(im)
     assert out.size == (590, 88)
+
+
+def test_copy_list_info_im() -> None:
+    im = Image.new("L", (4, 4), 128)
+    buf = BytesIO()
+    im.save(buf, format="IM")
+    raw = buf.getvalue()
+
+    header = (
+        b"Image type: Greyscale image\r\n"
+        b"Image size (x*y): 4*4\r\n"
+        b"File size (no of images): 1\r\n"
+        b"Comment: first comment\r\n"
+        b"Comment: second comment\r\n"
+    )
+    header += b"\x00" * (511 - len(header)) + b"\x1a"
+
+    with Image.open(BytesIO(header + raw[512:])) as loaded:
+        out = loaded.copy()
+        assert out.info["Comment"] is not loaded.info["Comment"]
+
+        out.info["Comment"].append("added only to the copy")
+        assert loaded.info["Comment"] == ["first comment", "second comment"]
+
+
+def test_copy_list_info_iptc() -> None:
+    def field(tag: tuple[int, int], value: bytes) -> bytes:
+        return bytes((0x1C,) + tag + (0, len(value))) + value
+
+    data = field((3, 60), bytes((1, 0)))
+    data += field((3, 120), bytes((1,)))
+    data += field((2, 105), b"first title")
+    data += field((2, 105), b"second title")
+    data += field((3, 20), b"\x01")
+    data += field((3, 30), b"\x01")
+    data += field((8, 10), bytes((0,)))
+    f = BytesIO(data)
+
+    with Image.open(f) as loaded:
+        out = loaded.copy()
+        assert out.info[(2, 105)] is not loaded.info[(2, 105)]
+
+        out.info[(2, 105)].append(b"added only to the copy")
+        assert loaded.info[(2, 105)] == [b"first title", b"second title"]

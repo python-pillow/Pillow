@@ -691,7 +691,9 @@ class Image:
                 from . import ImagePalette
 
                 new.palette = ImagePalette.ImagePalette()
-        new.info = self.info.copy()
+        new.info = {
+            k: v.copy() if isinstance(v, list) else v for k, v in self.info.items()
+        }
         return new
 
     # Context manager support
