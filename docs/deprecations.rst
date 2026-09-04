@@ -37,6 +37,14 @@ IM image format
 
 The IM image format has been deprecated.
 
+ImageQt align8to32()
+^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 13.0.0
+
+``ImageQt.align8to32()`` has been deprecated. This was an undocumented helper function
+intended for internal use, so there is no replacement.
+
 JpegImageFile.load_djpeg
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
