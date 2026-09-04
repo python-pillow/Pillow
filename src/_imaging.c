@@ -181,10 +181,6 @@ _dealloc(ImagingObject *imagep) {
 #ifdef VERBOSE
     printf("imaging %p deleted\n", imagep);
 #endif
-
-    if (imagep->access) {
-        ImagingAccessDelete(imagep->image, imagep->access);
-    }
     ImagingDelete(imagep->image);
     PyObject_Del(imagep);
 }
@@ -2072,9 +2068,6 @@ im_setalpha(ImagingObject *self, PyObject *args) {
     im->bands = 4;
     (void)ImagingFillBand(im, 3, 255);
 
-    if (self->access) {
-        ImagingAccessDelete(im, self->access);
-    }
     self->access = ImagingAccessNew(im);
 
     Py_RETURN_NONE;
