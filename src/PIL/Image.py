@@ -2468,11 +2468,11 @@ class Image:
         if not isinstance(factor, (list, tuple)):
             factor = (factor, factor)
 
+        if factor == (1, 1):
+            return self.crop(box)
+
         if box is None:
             box = (0, 0) + self.size
-
-        if factor == (1, 1) and box == (0, 0) + self.size:
-            return self.copy()
 
         if self.mode in ["LA", "RGBA"]:
             im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
