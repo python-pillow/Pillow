@@ -279,10 +279,10 @@ precompute_coeffs(
         return 0;
     }
 
-    /* BOX maps each source pixel to exactly one output (docs: identical
-       weights). When downscaling, (int)(center ± support + 0.5) and the
-       discontinuous box kernel can both miss a pixel whose center lands
-       on a bin edge (issue #9939). Tile bins as (left, right] instead. */
+    /* BOX maps each source pixel to exactly one output with equal weights.
+       When downscaling, (int)(center ± support + 0.5) and the discontinuous
+       box kernel can both miss a pixel whose center lands on a bin edge
+       (issue #9939). Tile bins as (left, right] instead. */
     int box_downscale = (filterp == &BOX && scale > 1.0);
 
     double inv_filterscale = 1.0 / filterscale;  // invariant over the loop
