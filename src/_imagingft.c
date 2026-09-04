@@ -28,6 +28,7 @@
 #include FT_GLYPH_H
 #include FT_BITMAP_H
 #include FT_STROKER_H
+#include FT_MODULE_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_SFNT_NAMES_H
 #ifdef FT_COLOR_H
@@ -1614,6 +1615,17 @@ font_getattr_glyphs(FontObject *self, void *closure) {
     return PyLong_FromLong(self->face->num_glyphs);
 }
 
+static PyObject *
+font_getattr_has_kerning(FontObject *self, void *closure) {
+    /*
+     * whether FreeType can extract kerning for this face, i.e. whether the basic
+     * layout engine will kern it at all. This covers the legacy 'kern' table, and
+     * pair kerning from GPOS only if FreeType was built with
+     * TT_CONFIG_OPTION_GPOS_KERNING.
+     */
+    return PyBool_FromLong(FT_HAS_KERNING(self->face));
+}
+
 static struct PyGetSetDef font_getsetters[] = {
     {"family", (getter)font_getattr_family},
     {"style", (getter)font_getattr_style},
@@ -1623,6 +1635,7 @@ static struct PyGetSetDef font_getsetters[] = {
     {"x_ppem", (getter)font_getattr_x_ppem},
     {"y_ppem", (getter)font_getattr_y_ppem},
     {"glyphs", (getter)font_getattr_glyphs},
+    {"has_kerning", (getter)font_getattr_has_kerning},
     {NULL}
 };
 
@@ -1637,6 +1650,55 @@ static PyTypeObject Font_Type = {
 static PyMethodDef _functions[] = {
     {"getfont", (PyCFunction)getfont, METH_VARARGS | METH_KEYWORDS}, {NULL, NULL}
 };
+
+/*
+ * FreeType build options that change what Pillow can do with a font, as a space
+ * separated list of the names used by PIL.features.
+ *
+ * These are read from the ftoption.h that Pillow was compiled against. FreeType's
+ * build system writes the options it was configured with into the header it
+ * installs, so this normally describes the library that gets loaded as well, but
+ * it cannot see an option that was enabled with a compiler flag alone.
+ */
+static const char *freetype2_features =
+    ""
+#ifdef TT_CONFIG_OPTION_GPOS_KERNING
+    "gpos_kerning "
+#endif
+#ifdef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+    "bytecode_interpreter "
+#endif
+#ifdef TT_CONFIG_OPTION_SUBPIXEL_HINTING
+    "subpixel_hinting "
+#endif
+#ifdef TT_CONFIG_OPTION_COLOR_LAYERS
+    "color_layers "
+#endif
+#ifdef FT_CONFIG_OPTION_SVG
+    "svg "
+#endif
+#ifdef FT_CONFIG_OPTION_USE_PNG
+    "png "
+#endif
+#ifdef FT_CONFIG_OPTION_USE_BROTLI
+    "brotli "
+#endif
+#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
+    "harfbuzz_autohinter "
+#endif
+#ifdef FT_CONFIG_OPTION_USE_ZLIB
+    "zlib "
+#endif
+#ifdef FT_CONFIG_OPTION_USE_BZIP2
+    "bzip2 "
+#endif
+#ifdef FT_CONFIG_OPTION_USE_LZW
+    "lzw "
+#endif
+#ifdef FT_CONFIG_OPTION_MAC_FONTS
+    "mac_fonts "
+#endif
+    ;
 
 static int
 setup_module(PyObject *m) {
@@ -1663,6 +1725,26 @@ setup_module(PyObject *m) {
     }
     PyDict_SetItemString(d, "freetype2_version", v);
     Py_DECREF(v);
+
+    v = PyUnicode_FromString(freetype2_features);
+    if (!v) {
+        return -1;
+    }
+    PyDict_SetItemString(d, "freetype2_features", v);
+    Py_DECREF(v);
+
+    FT_UInt interpreter_version = 0;
+    v = NULL;
+    if (FT_Property_Get(
+            library, "truetype", "interpreter-version", &interpreter_version
+        ) == 0) {
+        v = PyLong_FromUnsignedLong(interpreter_version);
+        if (!v) {
+            return -1;
+        }
+    }
+    PyDict_SetItemString(d, "freetype2_interpreter_version", v ? v : Py_None);
+    Py_XDECREF(v);
 
 #ifdef HAVE_RAQM
 #if defined(HAVE_RAQM_SYSTEM) || defined(HAVE_FRIBIDI_SYSTEM)

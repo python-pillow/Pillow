@@ -20,6 +20,8 @@ class Font:
     def y_ppem(self) -> int: ...
     @property
     def glyphs(self) -> int: ...
+    @property
+    def has_kerning(self) -> bool: ...
     def render(
         self,
         string: str | bytes,
@@ -67,4 +69,9 @@ def getfont(
     font_bytes: bytes,
     layout_engine: int,
 ) -> Font: ...
+
+freetype2_version: str
+freetype2_features: str
+freetype2_interpreter_version: int | None
+
 def __getattr__(name: str) -> Any: ...
