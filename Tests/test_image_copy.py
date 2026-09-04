@@ -56,7 +56,7 @@ def test_deepcopy() -> None:
     assert out.size == (590, 88)
 
 
-def test_copy_list_info_im() -> None:
+def im_with_comments() -> BytesIO:
     im = Image.new("L", (4, 4), 128)
     buf = BytesIO()
     im.save(buf, format="IM")
@@ -71,11 +71,24 @@ def test_copy_list_info_im() -> None:
     )
     header += b"\x00" * (511 - len(header)) + b"\x1a"
 
-    with Image.open(BytesIO(header + raw[512:])) as loaded:
+    return BytesIO(header + raw[512:])
+
+
+def test_copy_list_info_im() -> None:
+    with Image.open(im_with_comments()) as loaded:
         out = loaded.copy()
         assert out.info["Comment"] is not loaded.info["Comment"]
 
         out.info["Comment"].append("added only to the copy")
+        assert loaded.info["Comment"] == ["first comment", "second comment"]
+
+
+def test_transform_list_info_im() -> None:
+    with Image.open(im_with_comments()) as loaded:
+        out = loaded.rotate(45)
+        assert out.info["Comment"] is not loaded.info["Comment"]
+
+        out.info["Comment"].append("added only to the rotated copy")
         assert loaded.info["Comment"] == ["first comment", "second comment"]
 
 
