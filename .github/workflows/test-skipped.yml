@@ -36,7 +36,7 @@ jobs:
 
   test-mingw:
     runs-on: ubuntu-slim
-    name: MinGW
+    name: MSYS2
     steps:
       - name: Success
         run: echo Tests not required for this change
