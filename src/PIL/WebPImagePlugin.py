@@ -21,6 +21,41 @@ _VP8_MODES_BY_IDENTIFIER = {
     b"VP8L": "RGBA",  # lossless
 }
 
+# Advanced encoder settings passed through to WebPConfig
+_ADVANCED_OPTIONS = (
+    "alpha_compression",
+    "alpha_filtering",
+    "autofilter",
+    "emulate_jpeg_size",
+    "filter_sharpness",
+    "filter_strength",
+    "filter_type",
+    "low_memory",
+    "near_lossless",
+    "partition_limit",
+    "partitions",
+    "pass",
+    "preprocessing",
+    "qmax",
+    "qmin",
+    "segments",
+    "sns_strength",
+    "target_psnr",
+    "target_size",
+    "thread_level",
+    "use_sharp_yuv",
+)
+
+# Per https://github.com/webmproject/libwebp/blob/9c4a699e5/src/webp/encode.h#L158-L167
+_PRESETS = {
+    "default": 0,
+    "picture": 1,
+    "photo": 2,
+    "drawing": 3,
+    "icon": 4,
+    "text": 5,
+}
+
 
 def _accept(prefix: bytes) -> bool | str:
     is_riff_file_format = prefix.startswith(b"RIFF")
@@ -156,6 +191,31 @@ def _convert_frame(im: Image.Image) -> Image.Image:
     return im
 
 
+def _get_encoder_options(
+    encoderinfo: dict[str, Any], *, default_method: int
+) -> dict[str, Any]:
+    options: dict[str, Any] = {
+        "lossless": encoderinfo.get("lossless", False),
+        "quality": float(encoderinfo.get("quality", 80)),
+        "alpha_quality": int(encoderinfo.get("alpha_quality", 100)),
+        "method": encoderinfo.get("method", default_method),
+        "exact": 1 if encoderinfo.get("exact") else 0,
+    }
+    options.update(
+        {name: encoderinfo[name] for name in _ADVANCED_OPTIONS if name in encoderinfo}
+    )
+
+    preset = encoderinfo.get("preset")
+    if preset is not None:
+        try:
+            options["preset"] = _PRESETS[preset]
+        except KeyError:
+            msg = f"Unknown preset {preset!r}, expected one of {sorted(_PRESETS)}"
+            raise ValueError(msg) from None
+
+    return options
+
+
 def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     encoderinfo = im.encoderinfo.copy()
     append_images = list(encoderinfo.get("append_images", []))
@@ -191,17 +251,15 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     kmax = im.encoderinfo.get("kmax", None)
     allow_mixed = im.encoderinfo.get("allow_mixed", False)
     verbose = False
-    lossless = im.encoderinfo.get("lossless", False)
-    quality = im.encoderinfo.get("quality", 80)
-    alpha_quality = im.encoderinfo.get("alpha_quality", 100)
-    method = im.encoderinfo.get("method", 0)
+    options = _get_encoder_options(im.encoderinfo, default_method=0)
     icc_profile = im.encoderinfo.get("icc_profile") or ""
     exif = im.encoderinfo.get("exif", "")
     if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
     xmp = im.encoderinfo.get("xmp", "")
     if allow_mixed:
-        lossless = False
+        options["lossless"] = False
+    lossless = options["lossless"]
 
     # Sensible keyframe defaults are from gif2webp.c script
     if kmin is None:
@@ -249,14 +307,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 frame = _convert_frame(ims)
 
                 # Append the frame to the animation encoder
-                enc.add(
-                    frame.getim(),
-                    round(timestamp),
-                    lossless,
-                    quality,
-                    alpha_quality,
-                    method,
-                )
+                enc.add(frame.getim(), round(timestamp), options)
 
                 # Update timestamp and frame index
                 if isinstance(duration, (list, tuple)):
@@ -269,7 +320,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         im.seek(cur_idx)
 
     # Force encoder to flush frames
-    enc.add(None, round(timestamp), lossless, quality, alpha_quality, 0)
+    enc.add(None, round(timestamp), options)
 
     # Get the final output from the encoder
     data = enc.assemble(icc_profile, exif, xmp)
@@ -281,9 +332,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    lossless = im.encoderinfo.get("lossless", False)
-    quality = im.encoderinfo.get("quality", 80)
-    alpha_quality = im.encoderinfo.get("alpha_quality", 100)
+    options = _get_encoder_options(im.encoderinfo, default_method=4)
     icc_profile = im.encoderinfo.get("icc_profile") or ""
     exif = im.encoderinfo.get("exif", b"")
     if isinstance(exif, Image.Exif):
@@ -291,22 +340,10 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if exif.startswith(b"Exif\x00\x00"):
         exif = exif[6:]
     xmp = im.encoderinfo.get("xmp", "")
-    method = im.encoderinfo.get("method", 4)
-    exact = 1 if im.encoderinfo.get("exact") else 0
 
     im = _convert_frame(im)
 
-    data = _webp.WebPEncode(
-        im.getim(),
-        lossless,
-        float(quality),
-        float(alpha_quality),
-        icc_profile,
-        method,
-        exact,
-        exif,
-        xmp,
-    )
+    data = _webp.WebPEncode(im.getim(), icc_profile, exif, xmp, options)
     if data is None:
         msg = "cannot write file as WebP (encoder returned None)"
         raise OSError(msg)
