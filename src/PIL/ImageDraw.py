@@ -238,10 +238,19 @@ class ImageDraw:
         fill: _Ink | None = None,
         width: int = 1,
         joint: str | None = None,
+        dash: tuple[int, ...] | None = None,
     ) -> None:
         """Draw a line, or a connected sequence of line segments."""
         ink = self._getink(fill)[0]
-        if ink is not None and width != 0:
+        if ink is None or width == 0:
+            return
+
+        if dash is not None:
+            if len(dash) == 0 or any(not isinstance(v, int) for v in dash):
+                msg = "dash must be a non-empty tuple of ints"
+                raise ValueError(msg)
+            self.draw.draw_lines(xy, ink, 1, dash)
+        else:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
                 points = self._normalize_coords(xy)
@@ -344,23 +353,31 @@ class ImageDraw:
         fill: _Ink | None = None,
         outline: _Ink | None = None,
         width: int = 1,
+        dash: tuple[int, ...] | None = None,
     ) -> None:
         """Draw a polygon."""
         ink, fill_ink = self._getink(outline, fill)
         if fill_ink is not None:
             self.draw.draw_polygon(xy, fill_ink, 1)
-        if ink is not None and ink != fill_ink and width != 0:
-            if width == 1:
-                self.draw.draw_polygon(xy, ink, 0, width)
-            elif self.im is not None:
-                # To avoid expanding the polygon outwards,
-                # use the fill as a mask
-                mask = Image.new("1", self.im.size)
-                mask_ink = self._getink(1)[0]
-                draw = Draw(mask)
-                draw.draw.draw_polygon(xy, mask_ink, 1)
+        if ink is None or ink == fill_ink or width == 0:
+            return
 
-                self.draw.draw_polygon(xy, ink, 0, width * 2 - 1, mask.im)
+        if dash is not None:
+            if len(dash) == 0 or any(not isinstance(v, int) for v in dash):
+                msg = "dash must be a non-empty tuple of ints"
+                raise ValueError(msg)
+            self.draw.draw_polygon(xy, ink, 0, 1, dash)
+        elif width == 1:
+            self.draw.draw_polygon(xy, ink, 0, width)
+        elif self.im is not None:
+            # To avoid expanding the polygon outwards,
+            # use the fill as a mask
+            mask = Image.new("1", self.im.size)
+            mask_ink = self._getink(1)[0]
+            draw = Draw(mask)
+            draw.draw.draw_polygon(xy, mask_ink, 1)
+
+            self.draw.draw_polygon(xy, ink, 0, width * 2 - 1, None, mask.im)
 
     def regular_polygon(
         self,
@@ -381,12 +398,32 @@ class ImageDraw:
         fill: _Ink | None = None,
         outline: _Ink | None = None,
         width: int = 1,
+        dash: tuple[int, ...] | None = None,
     ) -> None:
         """Draw a rectangle."""
         ink, fill_ink = self._getink(outline, fill)
         if fill_ink is not None:
             self.draw.draw_rectangle(xy, fill_ink, 1)
-        if ink is not None and ink != fill_ink and width != 0:
+        if ink is None or ink == fill_ink or width == 0:
+            return
+
+        if dash is not None:
+            if len(dash) == 0 or any(not isinstance(v, int) for v in dash):
+                msg = "dash must be a non-empty tuple of ints"
+                raise ValueError(msg)
+            self.draw.draw_lines(
+                [
+                    (xy[0], xy[1]),
+                    (xy[2], xy[1]),
+                    (xy[2], xy[3]),
+                    (xy[0], xy[3]),
+                    (xy[0], xy[1]),
+                ],
+                ink,
+                1,
+                dash,
+            )
+        else:
             self.draw.draw_rectangle(xy, ink, 0, width)
 
     def rounded_rectangle(
