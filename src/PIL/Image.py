@@ -3225,14 +3225,14 @@ def new(
        modes, and a tuple for multi-band modes (one value per band). When
        creating RGB or HSV images, you can also use color strings as supported
        by the ImageColor module. See :ref:`colors` for more information. If the
-       color is None, the image is not initialised.
+       color is None, the image is filled with zeroes.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
     _check_size(size)
 
     if color is None:
-        # don't initialize
+        # core.new() returns zeroed memory, so there is nothing to fill
         return Image()._new(core.new(mode, size))
 
     if isinstance(color, str):
