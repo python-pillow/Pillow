@@ -290,6 +290,7 @@ _tags_v2_groups = {
         28: ("GPSAreaInformation", UNDEFINED, 0),
         29: ("GPSDateStamp", ASCII, 11),
         30: ("GPSDifferential", SHORT, 1),
+        31: ("GPSHPositioningError", RATIONAL, 1),
     },
     # InteroperabilityIFD
     40965: {1: ("InteropIndex", ASCII, 1), 2: ("InteropVersion", UNDEFINED, 1)},
