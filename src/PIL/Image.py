@@ -889,7 +889,24 @@ class Image:
 
         from . import ImageFile
 
-        bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
+        # Figure out an optimal buffer size. A buffer size that's too small
+        # to hold all of a given image's encoded bytes will result in `output`
+        # having a bunch of small chunks, and returning the actual bytes for
+        # them will then require a second contiguous allocation for the result,
+        # leading to double-plus-then-some peak memory allocation.
+        #
+        # CPython optimizes the case `b"".join([x])` for a simple `x` to be
+        # a reference increase of `x` and a return instead of any extra allocations;
+        # this has been the case since approximately 2004 (commit 05eba1fdc80).
+        #
+        # * e.optimal_bufsize will be nonzero for encoders that can compute it.
+        # * The heuristic `self.size[0] * 4` for the buffer size matches the widest
+        #   possible row of pixels in a RGBA image; conveniently, this is also slightly
+        #   larger than what is required for a single row in XbmEncode.c,
+        #   which in itself is unable to cope with a too-small buffer.
+        # * MAXBLOCK can be tuned by the user; for the aforementioned reasons,
+        #   we need to use the larger of that and the heuristic.
+        bufsize = e.optimal_bufsize or max(ImageFile.MAXBLOCK, self.size[0] * 4)
 
         output = []
         while True:
