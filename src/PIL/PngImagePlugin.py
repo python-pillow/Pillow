@@ -1334,6 +1334,58 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     _save(im, fp, filename, save_all=True)
 
 
+def _pa_to_p(im: Image.Image) -> Image.Image:
+    """
+    Try to fold a `PA` image's alpha band into an RGBA palette.
+
+    :param im: A `PA` mode image.
+    :return: A `P` mode image with an RGBA palette.
+    """
+
+    # PNG has no palette+alpha mode like Pillow's PA mode.
+    # However, palette entries may carry alpha via the tRNS chunk:
+    # > For color type 3 (indexed-color), the tRNS chunk contains
+    # > a series of one-byte alpha values, corresponding to entries
+    # > in the PLTE chunk.
+    # > Each entry indicates that pixels of the corresponding palette
+    # > index shall be treated as having the specified alpha value.
+    # - https://www.w3.org/TR/png-3/#11tRNS
+    #
+    # This means that in some lucky cases of PA images,
+    # if every palette index is used with exactly a single alpha value,
+    # we can fold the alpha band into an RGBA palette, and save the image
+    # as P, so the RGBA palette gets split back to PLTE + tRNS.
+
+    assert im.mode == "PA"
+    indexes, alpha = im.split()
+    index_alpha: dict[int, int] = {}
+    for index, alpha_value in set(zip(indexes.tobytes(), alpha.tobytes())):
+        if index_alpha.setdefault(index, alpha_value) != alpha_value:
+            msg = (
+                "cannot write mode PA as PNG: "
+                "a palette entry is used with multiple alpha values"
+            )
+            raise OSError(msg)
+
+    # If the palette happened to be RGBA, we deliberately drop its alpha here,
+    # because the alpha we care about will be in the `alpha` band.
+    palette = im.getpalette("RGB") or []
+    colors = max(len(palette) // 3, max(index_alpha, default=-1) + 1, 1)
+    rgba_palette = bytearray()
+    for i in range(colors):
+        # The raster could (unfortunately) be using palette indexes
+        # that don't have entries, hence the fallback to black.
+        rgba_palette += bytes(palette[i * 3 : i * 3 + 3] or (0, 0, 0))
+        # Palette entries not referenced by any pixel stay opaque.
+        rgba_palette.append(index_alpha.get(i, 255))
+
+    indexes.putpalette(rgba_palette, "RGBA")
+    indexes.load()  # sync the palette to the core image for the tRNS check
+    indexes.encoderinfo = im.encoderinfo
+    indexes.info = {k: v for k, v in im.info.items() if k != "transparency"}
+    return indexes
+
+
 def _save(
     im: Image.Image,
     fp: IO[bytes],
@@ -1342,6 +1394,9 @@ def _save(
     save_all: bool = False,
 ) -> None:
     # save an image to disk (called by the save method)
+
+    if im.mode == "PA" and not save_all:
+        im = _pa_to_p(im)
 
     if save_all:
         default_image = im.encoderinfo.get(
