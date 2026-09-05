@@ -94,6 +94,43 @@ def test_quantize_no_dither2() -> None:
         assert px[x, 0] == (0 if x < 5 else 1)
 
 
+@pytest.mark.parametrize("dither", (Image.Dither.NONE, Image.Dither.FLOYDSTEINBERG))
+def test_quantize_exact_palette_matches(dither: Image.Dither) -> None:
+    # These colors share a slot in the nearest-color cache.
+    colors = ((252, 252, 252), (255, 255, 255))
+    im = Image.new("RGB", (2, 1))
+    im.putdata(colors)
+
+    palette = Image.new("P", (1, 1))
+    palette.putpalette(tuple(channel for color in colors for channel in color))
+    quantized = im.quantize(palette=palette, dither=dither)
+
+    assert quantized.tobytes() == b"\x00\x01"
+    assert quantized.convert("RGB").tobytes() == im.tobytes()
+
+
+def test_quantize_exact_palette_matches_maximum_colors() -> None:
+    colors = tuple((r, 0, 0) for r in range(256))
+    im = Image.new("RGB", (256, 1))
+    im.putdata(colors)
+
+    palette = Image.new("P", (1, 1))
+    palette.putpalette(tuple(channel for color in colors for channel in color))
+    quantized = im.quantize(palette=palette, dither=Image.Dither.NONE)
+
+    assert quantized.tobytes() == bytes(range(256))
+    assert quantized.convert("RGB").tobytes() == im.tobytes()
+
+
+def test_quantize_duplicate_exact_palette_color_uses_first_index() -> None:
+    color = (17, 34, 51)
+    palette = Image.new("P", (1, 1))
+    palette.putpalette(color * 2)
+
+    im = Image.new("RGB", (1, 1), color)
+    assert im.quantize(palette=palette, dither=Image.Dither.NONE).getpixel((0, 0)) == 0
+
+
 def test_quantize_dither_diff() -> None:
     image = hopper()
     with Image.open("Tests/images/caption_6_33_22.png") as palette:
