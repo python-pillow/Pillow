@@ -587,3 +587,18 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
         img, cutoff=10, preserve_tone=True
     )  # single color 10 cutoff
     assert_image_equal(img, out)
+
+
+@pytest.mark.parametrize("size", (2, 4))
+def test_dither_primary(size: int) -> None:
+    im = Image.new("RGB", (size, size), (200, 100, 50))
+    out = ImageOps.dither_primary(im)
+
+    expected = Image.new("RGB", (size, size), (255, 0, 0))
+    assert_image_equal(out, expected)
+
+
+def test_dither_primary_invalid_mode() -> None:
+    im = Image.new("L", (1, 1))
+    with pytest.raises(ValueError, match="mode must be RGB, not L"):
+        ImageOps.dither_primary(im)
