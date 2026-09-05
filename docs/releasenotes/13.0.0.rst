@@ -66,6 +66,11 @@ ImageCms.ImageCmsProfile.product_name and .product_info
 ``.product_info`` attributes have been removed. They were set to ``None`` since Pillow
 2.3.0.
 
+ExifTags.IFD.Makernote
+^^^^^^^^^^^^^^^^^^^^^^
+
+``ExifTags.IFD.Makernote`` has been removed. Instead, use ``ExifTags.IFD.MakerNote``.
+
 Deprecations
 ============
 
