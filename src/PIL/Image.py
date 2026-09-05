@@ -1056,8 +1056,12 @@ class Image:
            should be 4- or 12-tuple containing floating point values.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
-           Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
-           (default). Note that this is not used when ``matrix`` is supplied.
+           Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`.
+           :data:`Dither.FLOYDSTEINBERG` is used by default, except when converting
+           to an adaptive ``palette``: there, for backwards compatibility with
+           versions prior to 13.0.0, the default remains :data:`Dither.NONE`; pass
+           ``dither=Dither.FLOYDSTEINBERG`` explicitly to enable dithering in that
+           case too. Note that ``dither`` is not used when ``matrix`` is supplied.
         :param palette: Palette to use when converting from mode "RGB"
            to "P".  Available palettes are :data:`Palette.WEB` or
            :data:`Palette.ADAPTIVE`.
@@ -1190,6 +1194,18 @@ class Image:
             new_im.palette = ImagePalette.ImagePalette(
                 "RGB", new_im.im.getpalette("RGB")
             )
+            if dither == Dither.FLOYDSTEINBERG:
+                # self.im.quantize() above has no dithering support, so the
+                # requested dither was silently dropped. Now that an adaptive
+                # palette has been computed, re-convert through it so the
+                # dithering actually takes effect.
+                # See https://github.com/python-pillow/Pillow/issues/5836
+                im = self.im.convert("P", dither, new_im.im)
+                new_im = self._new(im)
+                new_im.palette = ImagePalette.ImagePalette(
+                    "RGB", new_im.im.getpalette("RGB")
+                )
+            assert new_im.palette is not None
             if delete_trns:
                 # This could possibly happen if we requantize to fewer colors.
                 # The transparency would be totally off in that case.
@@ -1277,7 +1293,7 @@ class Image:
         method: int | None = None,
         kmeans: int = 0,
         palette: Image | None = None,
-        dither: Dither = Dither.FLOYDSTEINBERG,
+        dither: Dither | None = None,
     ) -> Image:
         """
         Convert the image to 'P' mode with the specified number
@@ -1301,8 +1317,13 @@ class Image:
                         :py:class:`PIL.Image.Image`.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
-           Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
-           (default).
+           Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`.
+           When a reference ``palette`` is supplied, :data:`Dither.FLOYDSTEINBERG`
+           is used by default. When no ``palette`` is given (e.g. quantizing to a
+           new adaptive palette), the default remains :data:`Dither.NONE`, for
+           backwards compatibility with versions prior to 13.0.0; pass
+           ``dither=Dither.FLOYDSTEINBERG`` explicitly to enable dithering in that
+           case too.
         :returns: A new image
         """
 
@@ -1334,7 +1355,9 @@ class Image:
             if self.mode not in {"RGB", "L"}:
                 msg = "only RGB or L mode images can be quantized to a palette"
                 raise ValueError(msg)
-            im = self.im.convert("P", dither, palette.im)
+            im = self.im.convert(
+                "P", Dither.FLOYDSTEINBERG if dither is None else dither, palette.im
+            )
             new_im = self._new(im)
             assert palette.palette is not None
             new_im.palette = palette.palette.copy()
@@ -1351,6 +1374,16 @@ class Image:
         mode = im.im.getpalettemode()
         palette_data = im.im.getpalette(mode)[: colors * len(mode)]
         im.palette = ImagePalette.ImagePalette(mode, palette_data)
+
+        if dither == Dither.FLOYDSTEINBERG:
+            # self.im.quantize() above has no dithering support, so the
+            # requested dither was silently dropped. Now that a palette has
+            # been computed, re-convert through it so the requested
+            # dithering is actually applied.
+            # See https://github.com/python-pillow/Pillow/issues/5836
+            dithered = self._new(self.im.convert("P", dither, im.im))
+            dithered.palette = im.palette
+            return dithered
 
         return im
 
