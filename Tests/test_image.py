@@ -30,8 +30,8 @@ from .helper import (
     hopper,
     is_win32,
     mark_if_feature_version,
+    measure_cpu_seconds,
     skip_unless_feature,
-    timeout_unless_slower_valgrind,
 )
 
 TYPE_CHECKING = False
@@ -571,10 +571,18 @@ class TestImage:
         i = Image.new("RGB", [1, 1])
         assert isinstance(i.size, tuple)
 
-    @timeout_unless_slower_valgrind(0.75)
-    @pytest.mark.parametrize("size", ((0, 100000000), (100000000, 0)))
+    @pytest.mark.parametrize(
+        "size", ((0, 100_000_000), (100_000_000, 0)), ids=("tall", "wide")
+    )
     def test_empty_image(self, size: tuple[int, int]) -> None:
-        Image.new("RGB", size)
+        # Test that initializing an empty image does not do
+        # extra work to try and fill the image.
+        # Allocating a tall image can still take a while
+        # since the internal row pointers are necessarily allocated,
+        # so measure the difference between doing that work and not doing it.
+        unfilled = measure_cpu_seconds(lambda: Image.new("RGB", size, None))
+        filled = measure_cpu_seconds(lambda: Image.new("RGB", size, 0))
+        assert filled - unfilled < 0.1
 
     def test_storage_neg(self) -> None:
         # Storage.c accepted negative values for xsize, ysize.  Was

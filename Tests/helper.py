@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from functools import lru_cache
 from io import BytesIO
 
@@ -336,3 +337,17 @@ def is_win32() -> bool:
 
 def is_pypy() -> bool:
     return sys.implementation.name == "pypy"
+
+
+def measure_cpu_seconds(f: Callable[[], Any], times: int = 3) -> float:
+    """
+    Measure the execution time of a function.
+    """
+    best = float("inf")
+    for _ in range(times):
+        # `process_time` is the sum of the system and user CPU time
+        # of the current process, not wallclock time.
+        start = time.process_time()
+        f()
+        best = min(best, time.process_time() - start)
+    return best
