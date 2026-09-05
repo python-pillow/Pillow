@@ -276,6 +276,11 @@ Plugin reference
     :undoc-members:
     :show-inheritance:
 
+.. autoclass:: PIL.PsdImagePlugin._Layer()
+    :member-order: bysource
+    :members:
+    :show-inheritance:
+
 :mod:`~PIL.SgiImagePlugin` module
 ---------------------------------
 
