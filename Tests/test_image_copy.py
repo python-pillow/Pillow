@@ -96,18 +96,18 @@ def test_copy_list_info_iptc() -> None:
     def field(tag: tuple[int, int], value: bytes) -> bytes:
         return bytes((0x1C,) + tag + (0, len(value))) + value
 
-    data = field((3, 60), bytes((1, 0)))
-    data += field((3, 120), bytes((1,)))
-    data += field((2, 105), b"first title")
-    data += field((2, 105), b"second title")
-    data += field((3, 20), b"\x01")
-    data += field((3, 30), b"\x01")
+    data = field((2, 25), b"Keyword1")
+    data += field((2, 25), b"Keyword2")
+    data += field((3, 60), bytes((1, 0)))  # layers, component
+    data += field((3, 120), bytes((1,)))  # compression
+    data += field((3, 20), b"\x01")  # width
+    data += field((3, 30), b"\x01")  # height
     data += field((8, 10), bytes((0,)))
     f = BytesIO(data)
 
-    with Image.open(f) as loaded:
-        out = loaded.copy()
-        assert out.info[(2, 105)] is not loaded.info[(2, 105)]
+    with Image.open(f) as im:
+        im2 = im.copy()
+        assert im2.info[(2, 25)] is not im.info[(2, 25)]
 
-        out.info[(2, 105)].append(b"added only to the copy")
-        assert loaded.info[(2, 105)] == [b"first title", b"second title"]
+        im2.info[(2, 25)].append(b"KeywordForCopy")
+        assert im.info[(2, 25)] == [b"Keyword1", b"Keyword2"]
