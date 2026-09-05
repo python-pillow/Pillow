@@ -69,6 +69,12 @@ ImageCms.ImageCmsProfile.product_name and .product_info
 Deprecations
 ============
 
+IM image format
+^^^^^^^^^^^^^^^
+
+The IM image format has been deprecated. If you are using this format and would like
+to continue doing so, please provide a report about what other software uses it.
+
 JpegImageFile.load_djpeg
 ^^^^^^^^^^^^^^^^^^^^^^^^
 

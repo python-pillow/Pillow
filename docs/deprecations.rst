@@ -30,6 +30,13 @@ Image getdata()
 identical, except that it returns a tuple of pixel values, instead of an internal
 Pillow data type.
 
+IM image format
+^^^^^^^^^^^^^^^
+
+.. deprecated:: 13.0.0
+
+The IM image format has been deprecated.
+
 ImageQt align8to32()
 ^^^^^^^^^^^^^^^^^^^^
 
