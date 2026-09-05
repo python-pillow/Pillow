@@ -20,14 +20,14 @@ class TestImageTransform:
         for transform in (
             ImageTransform.AffineTransform((1, 0, 0, 0, 1, 0)),
             ImageTransform.PerspectiveTransform((1, 0, 0, 0, 1, 0, 0, 0)),
-            ImageTransform.ExtentTransform((0, 0) + im.size),
+            ImageTransform.ExtentTransform((0, 0, *im.size)),
             ImageTransform.QuadTransform(
                 (0, 0, 0, im.height, im.width, im.height, im.width, 0)
             ),
             ImageTransform.MeshTransform(
                 [
                     (
-                        (0, 0) + im.size,
+                        (0, 0, *im.size),
                         (0, 0, 0, im.height, im.width, im.height, im.width, 0),
                     )
                 ]

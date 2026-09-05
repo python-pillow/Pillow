@@ -140,7 +140,7 @@ class PsdImageFile(ImageFile.ImageFile):
         #
         # image descriptor
 
-        self.tile = _maketile(self.fp, mode, (0, 0) + self.size, channels)
+        self.tile = _maketile(self.fp, mode, (0, 0, *self.size), channels)
 
         # keep the file open
         self._fp = self.fp

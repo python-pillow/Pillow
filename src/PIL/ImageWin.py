@@ -124,7 +124,7 @@ class Dib:
         necessary.
         """
         if src is None:
-            src = (0, 0) + self.size
+            src = (0, 0, *self.size)
         handle_int = int(handle)
         if isinstance(handle, HWND):
             dc = self.image.getdc(handle_int)
