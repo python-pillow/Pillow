@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from PIL import Image
 
 from .helper import assert_image, assert_image_equal, assert_image_similar, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_sanity() -> None:
@@ -44,7 +46,7 @@ def test_sanity() -> None:
 
 def test_unsupported_conversion() -> None:
     im = hopper()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="image has wrong mode"):
         im.convert("INVALID")
 
 
@@ -307,18 +309,26 @@ def test_matrix_illegal_conversion() -> None:
     assert im.mode != "RGB"
 
     # Act / Assert
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="illegal conversion"):
         im.convert(mode="CMYK", matrix=rgb2xyz_matrix)
 
 
 def test_matrix_wrong_mode() -> None:
     # Arrange
     im = hopper("L")
-    assert im.mode == "L"
 
     # Act / Assert
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="image has wrong mode"):
         im.convert(mode="L", matrix=rgb2xyz_matrix)
+
+
+def test_matrix_truncated() -> None:
+    # Arrange
+    im = hopper()
+
+    # Act / Assert
+    with pytest.raises(TypeError, match="matrix must be tuple of length 4 or 12"):
+        im.convert(mode="L", matrix=(0,))
 
 
 @pytest.mark.parametrize("mode", ("RGB", "L"))
@@ -326,7 +336,6 @@ def test_matrix_xyz(mode: str) -> None:
     # Arrange
     im = hopper("RGB")
     im.info["transparency"] = (255, 0, 0)
-    assert im.mode == "RGB"
 
     # Act
     # Convert an RGB image to the CIE XYZ colour space

@@ -8,11 +8,13 @@
 ##
 from __future__ import annotations
 
-from typing import IO
-
 from . import Image, ImageFile
 from ._binary import o8
 from ._binary import o16be as o16b
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 _Palm8BitColormapValues = (
     (255, 255, 255), (255, 204, 255), (255, 153, 255), (255, 102, 255),
