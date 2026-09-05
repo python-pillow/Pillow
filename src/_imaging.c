@@ -443,9 +443,28 @@ getlist_impl(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int ty
         return NULL;
     }
 
-    n = PySequence_Size(arg);
+    if (length && wrong_length) {
+        Py_ssize_t reported = PySequence_Size(arg);
+        if (reported < 0) {
+            if (!PyErr_ExceptionMatches(PyExc_TypeError)) {
+                return NULL;
+            }
+            PyErr_Clear();
+        } else if (reported != *length) {
+            PyErr_SetString(PyExc_ValueError, wrong_length);
+            return NULL;
+        }
+    }
+
+    seq = PySequence_Fast(arg, must_be_sequence);
+    if (!seq) {
+        return NULL;
+    }
+
+    n = PySequence_Fast_GET_SIZE(seq);
     if (length && wrong_length && n != *length) {
         PyErr_SetString(PyExc_ValueError, wrong_length);
+        Py_DECREF(seq);
         return NULL;
     }
 
@@ -453,13 +472,8 @@ getlist_impl(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int ty
        calloc checks for overflow */
     list = calloc(n, type & 0xff);
     if (!list) {
+        Py_DECREF(seq);
         return ImagingError_MemoryError();
-    }
-
-    seq = PySequence_Fast(arg, must_be_sequence);
-    if (!seq) {
-        free(list);
-        return NULL;
     }
 
     for (i = 0; i < n; i++) {
@@ -1636,8 +1650,28 @@ _putdata(ImagingObject *self, PyObject *args) {
 
     image = self->image;
 
-    n = PyObject_Length(data);
+    if (image->image8 && PyBytes_Check(data)) {
+        n = PyBytes_GET_SIZE(data);
+    } else {
+        Py_ssize_t reported = PySequence_Size(data);
+        if (reported < 0) {
+            if (!PyErr_ExceptionMatches(PyExc_TypeError)) {
+                return NULL;
+            }
+            PyErr_Clear();
+        } else if (reported > (Py_ssize_t)image->xsize * (Py_ssize_t)image->ysize) {
+            PyErr_SetString(PyExc_TypeError, "too many data entries");
+            return NULL;
+        }
+
+        seq = PySequence_Fast(data, must_be_sequence);
+        if (!seq) {
+            return NULL;
+        }
+        n = PySequence_Fast_GET_SIZE(seq);
+    }
     if (n > (Py_ssize_t)image->xsize * (Py_ssize_t)image->ysize) {
+        Py_XDECREF(seq);
         PyErr_SetString(PyExc_TypeError, "too many data entries");
         return NULL;
     }
@@ -1678,10 +1712,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                 }
             }
         } else {
-            seq = PySequence_Fast(data, must_be_sequence);
-            if (!seq) {
-                return NULL;
-            }
             double value;
             int bigendian = 0;
             if (image->type == IMAGING_TYPE_I16) {
@@ -1715,10 +1745,6 @@ _putdata(ImagingObject *self, PyObject *args) {
         }
     } else {
         /* 32-bit images */
-        seq = PySequence_Fast(data, must_be_sequence);
-        if (!seq) {
-            return NULL;
-        }
         switch (image->type) {
             case IMAGING_TYPE_INT32:
                 for (i = x = y = 0; i < n; i++) {
