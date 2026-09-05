@@ -56,43 +56,8 @@ def test_deepcopy() -> None:
     assert out.size == (590, 88)
 
 
-def im_with_comments() -> BytesIO:
-    im = Image.new("L", (4, 4), 128)
-    buf = BytesIO()
-    im.save(buf, format="IM")
-    raw = buf.getvalue()
-
-    header = (
-        b"Image type: Greyscale image\r\n"
-        b"Image size (x*y): 4*4\r\n"
-        b"File size (no of images): 1\r\n"
-        b"Comment: first comment\r\n"
-        b"Comment: second comment\r\n"
-    )
-    header += b"\x00" * (511 - len(header)) + b"\x1a"
-
-    return BytesIO(header + raw[512:])
-
-
-def test_copy_list_info_im() -> None:
-    with Image.open(im_with_comments()) as loaded:
-        out = loaded.copy()
-        assert out.info["Comment"] is not loaded.info["Comment"]
-
-        out.info["Comment"].append("added only to the copy")
-        assert loaded.info["Comment"] == ["first comment", "second comment"]
-
-
-def test_transform_list_info_im() -> None:
-    with Image.open(im_with_comments()) as loaded:
-        out = loaded.transform(loaded.size, Image.Transform.AFFINE, [1, 0, 0, 0, 1, 0])
-        assert out.info["Comment"] is not loaded.info["Comment"]
-
-        out.info["Comment"].append("added only to the rotated copy")
-        assert loaded.info["Comment"] == ["first comment", "second comment"]
-
-
-def test_copy_list_info_iptc() -> None:
+def test_copy_info_list() -> None:
+    # Construct IPTC image
     def field(tag: tuple[int, int], value: bytes) -> bytes:
         return bytes((0x1C,) + tag + (0, len(value))) + value
 
@@ -106,8 +71,16 @@ def test_copy_list_info_iptc() -> None:
     f = BytesIO(data)
 
     with Image.open(f) as im:
-        im2 = im.copy()
-        assert im2.info[(2, 25)] is not im.info[(2, 25)]
+        # Copy
+        im_copy = im.copy()
+        assert im_copy.info[(2, 25)] is not im.info[(2, 25)]
 
-        im2.info[(2, 25)].append(b"KeywordForCopy")
+        im_copy.info[(2, 25)].append(b"KeywordForCopy")
+        assert im.info[(2, 25)] == [b"Keyword1", b"Keyword2"]
+
+        # Transform
+        im_transform = im.transform(im.size, Image.Transform.AFFINE, [1, 0, 0, 0, 1, 0])
+        assert im_transform.info[(2, 25)] is not im.info[(2, 25)]
+
+        im_transform.info[(2, 25)].append(b"KeywordForTransform")
         assert im.info[(2, 25)] == [b"Keyword1", b"Keyword2"]
