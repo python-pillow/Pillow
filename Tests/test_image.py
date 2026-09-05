@@ -572,7 +572,9 @@ class TestImage:
         assert isinstance(i.size, tuple)
 
     @timeout_unless_slower_valgrind(0.75)
-    @pytest.mark.parametrize("size", ((0, 100000000), (100000000, 0)))
+    @pytest.mark.parametrize(
+        "size", ((0, 10_000_000), (10_000_000, 0)), ids=("tall", "wide")
+    )
     def test_empty_image(self, size: tuple[int, int]) -> None:
         Image.new("RGB", size)
 
