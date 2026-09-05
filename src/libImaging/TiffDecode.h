@@ -43,16 +43,4 @@ ImagingLibTiffMergeFieldInfo(
 extern int
 ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 
-/*
-   Trace debugging
-   legacy, don't enable for Python 3.x, unicode issues.
-*/
-
-/*
-#define VA_ARGS(...)   __VA_ARGS__
-#define TRACE(args)    fprintf(stderr, VA_ARGS args)
-*/
-
-#define TRACE(args)
-
 #endif
