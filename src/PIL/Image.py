@@ -3602,7 +3602,7 @@ def open(
        To exclude a format, start the format with "!", for example,
        ``("!EPS", "!PSD")``.
 
-       Pass ``None`` to try all supported formats.
+       Pass ``None`` to try all supported formats. This is the default behaviour.
 
        You can print the set of available formats by running ``python3 -m PIL`` or
        using the :py:func:`PIL.features.pilinfo` function.
