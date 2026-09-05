@@ -55,18 +55,18 @@ def test_args_factor(size: int | tuple[int, int], expected: tuple[int, int]) -> 
 
 @pytest.mark.parametrize("mode", ("L", "I", "F"))
 @pytest.mark.parametrize(
-    "size, expected",
+    "factor, expected",
     (
         (2**31 - 1, (1, 1)),
         ((2**31 - 1, 1), (1, 10)),
         ((1, 2**31 - 1), (10, 1)),
     ),
 )
-def test_args_factor_large(
-    size: int | tuple[int, int], expected: tuple[int, int], mode: str
+def test_large_factor(
+    factor: int | tuple[int, int], expected: tuple[int, int], mode: str
 ) -> None:
     im = Image.new(mode, (10, 10))
-    assert im.reduce(size).size == expected
+    assert im.reduce(factor).size == expected
 
 
 @pytest.mark.parametrize(
