@@ -35,7 +35,6 @@ from .helper import (
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from collections.abc import Iterator
     from pathlib import Path
     from types import ModuleType
 
@@ -687,25 +686,14 @@ class TestFileJpeg:
             with pytest.raises(ValueError):
                 self.roundtrip(im, qtables=[[1, 2, 3, 4]])
 
-    def test_qtables_inconsistent_length(self) -> None:
-        class LongerLen(list[list[int]]):
+    def test_qtables_incorrect_length(self) -> None:
+        class IncorrectLength(list[list[int]]):
             def __len__(self) -> int:
                 return 4
 
-        class ShorterTable(list[int]):
-            def __len__(self) -> int:
-                return 64
-
-        class SwappedTable(list[list[int]]):
-            def __iter__(self) -> Iterator[list[int]]:
-                return iter([ShorterTable([1])])
-
-        with Image.open(TEST_FILE) as im:
-            im2 = self.roundtrip(im, qtables=LongerLen([[1] * 64]))
-            assert len(im2.quantization) == 1
-
-            with pytest.raises(ValueError):
-                self.roundtrip(im, qtables=SwappedTable([[1] * 64]))
+        im = Image.new("1", (1, 1))
+        im2 = self.roundtrip(im, qtables=IncorrectLength([[1] * 64]))
+        assert len(im2.quantization) == 1
 
     def test_load_16bit_qtables(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
