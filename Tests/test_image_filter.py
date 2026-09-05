@@ -217,33 +217,17 @@ def test_consistency_i16_high_byte(mode: str) -> None:
         assert im.getpixel((4, 4)) == 1000
 
 
-@pytest.mark.parametrize(
-    "radius",
-    (
-        -2,
-        (-2, -2),
-        (-2, 2),
-        (2, -2),
-    ),
-)
-def test_invalid_box_blur_filter(radius: int | tuple[int, int]) -> None:
-    with pytest.raises(ValueError):
-        ImageFilter.BoxBlur(radius)
+@pytest.mark.parametrize("size", (-1, math.nan, math.inf, 2**31))
+def test_invalid_box_blur_filter(size: int) -> None:
+    for radius in (size, (size, size), (size, 1), (1, size)):
+        with pytest.raises(ValueError, match="radius"):
+            ImageFilter.BoxBlur(radius)
 
-    im = hopper()
-    box_blur_filter = ImageFilter.BoxBlur(2)
-    box_blur_filter.radius = radius
-    with pytest.raises(ValueError):
-        im.filter(box_blur_filter)
-
-
-@pytest.mark.parametrize("radius", (float("nan"), float("inf"), 2**31))
-def test_out_of_range_blur_filter_radius(radius: float) -> None:
-    im = hopper()
-    with pytest.raises(ValueError, match="radius"):
-        im.filter(ImageFilter.BoxBlur(radius))
-    with pytest.raises(ValueError, match="radius"):
-        im.filter(ImageFilter.GaussianBlur(radius))
+        im = hopper()
+        box_blur_filter = ImageFilter.BoxBlur(2)
+        box_blur_filter.radius = radius
+        with pytest.raises(ValueError, match="radius"):
+            im.filter(box_blur_filter)
 
 
 @pytest.mark.parametrize("radius", (2**24, 2**30))
@@ -256,20 +240,11 @@ def test_large_blur_filter_radius(radius: int) -> None:
     assert im.filter(ImageFilter.BoxBlur(radius)).getpixel((1, 1)) == (128, 128, 128)
 
 
-@pytest.mark.parametrize(
-    "radius",
-    (
-        math.nan,
-        (math.nan, 1),
-        (1, math.nan),
-        math.inf,
-        (1, math.inf),
-        (math.inf, 1),
-    ),
-)
-def test_box_blur_non_finite_radius(radius: float | tuple[float, float]) -> None:
-    with pytest.raises(ValueError, match="radius must be a finite number >= 0"):
-        ImageFilter.BoxBlur(radius)
+@pytest.mark.parametrize("radius", (math.nan, math.inf, 2**31))
+def test_invalid_gaussian_blur_filter(radius: int) -> None:
+    im = hopper()
+    with pytest.raises(ValueError, match="radius"):
+        im.filter(ImageFilter.GaussianBlur(radius))
 
 
 def test_rankfilter_size_1() -> None:
