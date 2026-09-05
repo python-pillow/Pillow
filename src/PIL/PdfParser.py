@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"calendar", "mmap", "zlib"}
+
 import calendar
 import codecs
 import collections

@@ -13,6 +13,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"shlex", "subprocess"}
+
 import abc
 import os
 import shutil

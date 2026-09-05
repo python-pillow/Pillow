@@ -25,6 +25,14 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL._binary",
+    "PIL._util",
+    "itertools",
+    "math",
+    "subprocess",
+}
+
 import itertools
 import math
 import os
