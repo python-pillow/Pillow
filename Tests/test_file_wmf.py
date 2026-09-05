@@ -68,18 +68,22 @@ def test_render() -> None:
             assert_image_equal_tofile(im, "Tests/images/drawing.emf")
 
 
+class TestHandler(ImageFile.StubHandler):
+    methodCalled = False
+
+    def open(self, im: ImageFile.StubImageFile) -> None:
+        im._size = (1, 1)
+
+    def load(self, im: ImageFile.StubImageFile) -> Image.Image:
+        return Image.new("RGB", (1, 1))
+
+    def save(self, im: Image.Image, fp: IO[bytes], filename: str) -> None:
+        self.methodCalled = True
+
+
 def test_register_handler(tmp_path: Path) -> None:
-    class TestHandler(ImageFile.StubHandler):
-        methodCalled = False
-
-        def open(self, im: ImageFile.StubImageFile) -> None:
-            im._size = (1, 1)
-
-        def load(self, im: ImageFile.StubImageFile) -> Image.Image:
-            return Image.new("RGB", (1, 1))
-
-        def save(self, im: Image.Image, fp: IO[bytes], filename: str) -> None:
-            self.methodCalled = True
+    if isinstance(WmfImagePlugin.WmfStubImageFile._handler, TestHandler):
+        return
 
     handler = TestHandler()
     original_handler = WmfImagePlugin.WmfStubImageFile._handler
