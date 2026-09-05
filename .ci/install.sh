@@ -25,12 +25,6 @@ packages=(libfreetype6-dev liblcms2-dev libtiff-dev python3-tk
           imagemagick
           # netpbm provides ppmquant and ppmtogif for GifImagePlugin._save_netpbm
           netpbm)
-
-# PyQt6 doesn't support PyPy3
-if [[ $GHA_PYTHON_VERSION == 3.* ]]; then
-    packages+=(libegl1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1
-               libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxkbcommon-x11-0)
-fi
 sudo apt-get -qq install --no-install-recommends "${packages[@]}"
 
 python3 -m pip install --upgrade pip
