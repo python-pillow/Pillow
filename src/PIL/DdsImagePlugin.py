@@ -18,7 +18,6 @@ from enum import IntEnum, IntFlag
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i32le as i32
-from ._binary import o8
 from ._binary import o32le as o32
 
 TYPE_CHECKING = False
@@ -514,20 +513,38 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
             mask_totals.append(mask >> offset)
 
         assert self.fd is not None
-        dest_length = self.state.xsize * self.state.ysize * len(masks)
-        while len(data) < dest_length:
-            bytes_read = self.fd.read(bytecount)
-            if len(bytes_read) < bytecount:
+        pixel_count = self.state.xsize * self.state.ysize
+
+        src = bytearray()
+        needed = pixel_count * bytecount
+        while len(src) < needed:
+            chunk = self.fd.read(min(needed - len(src), ImageFile.SAFEBLOCK))
+            if not chunk:
                 break
-            value = int.from_bytes(bytes_read, "little")
-            for i, mask in enumerate(masks):
-                masked_value = value & mask
+            src += chunk
+        pixel_count = min(pixel_count, len(src) // bytecount)
+        src_length = pixel_count * bytecount
+        del src[src_length:]
+
+        nmasks = len(masks)
+        data = bytearray(pixel_count * nmasks)
+        for i, (mask, offset, total) in enumerate(
+            zip(masks, mask_offsets, mask_totals)
+        ):
+            if not total:  # Nothing to do here
+                continue
+            if total == 0xFF and offset % 8 == 0:  # Whole byte, fast path
+                data[i::nmasks] = src[offset // 8 :: bytecount]
+                continue
+            values = (
+                int.from_bytes(src[p : p + bytecount], "little")
+                for p in range(0, src_length, bytecount)
+            )
+            data[i::nmasks] = bytes(
                 # Remove the zero padding, and scale it to 8 bits
-                data += o8(
-                    int(((masked_value >> mask_offsets[i]) / mask_totals[i]) * 255)
-                    if mask_totals[i]
-                    else 0
-                )
+                int((((value & mask) >> offset) / total) * 255)
+                for value in values
+            )
         self.set_as_raw(data)
         return -1, 0
 
