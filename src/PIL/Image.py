@@ -3220,22 +3220,21 @@ def new(
     """
     Creates a new image with the given mode and size.
 
-    :param mode: The mode to use for the new image. See:
-       :ref:`concept-modes`.
+    :param mode: The mode to use for the new image. See: :ref:`concept-modes`.
     :param size: A 2-tuple, containing (width, height) in pixels.
-    :param color: What color to use for the image. Default is black. If given,
-       this should be a single integer or floating point value for single-band
-       modes, and a tuple for multi-band modes (one value per band). When
-       creating RGB or HSV images, you can also use color strings as supported
-       by the ImageColor module. See :ref:`colors` for more information. If the
-       color is None, the image is not initialised.
+    :param color: What color to use for the image. If given, this should be a single
+       integer or floating point value for single-band modes, and a tuple for
+       multi-band modes (one value per band). When creating RGB or HSV images, you can
+       also use color strings as supported by the ImageColor module. See :ref:`colors`
+       for more information. The default color is zero, which appears as black in
+       single band or RGB-based images. ``None`` is also treated as zero.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
     _check_size(size)
 
     if color is None:
-        # don't initialize
+        # core.new() returns zeroed memory, so there is nothing to fill
         return Image()._new(core.new(mode, size))
 
     if isinstance(color, str):
