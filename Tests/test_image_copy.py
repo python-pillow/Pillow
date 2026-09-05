@@ -85,7 +85,7 @@ def test_copy_list_info_im() -> None:
 
 def test_transform_list_info_im() -> None:
     with Image.open(im_with_comments()) as loaded:
-        out = loaded.rotate(45)
+        out = loaded.transform(loaded.size, Image.Transform.AFFINE, [1, 0, 0, 0, 1, 0])
         assert out.info["Comment"] is not loaded.info["Comment"]
 
         out.info["Comment"].append("added only to the rotated copy")
