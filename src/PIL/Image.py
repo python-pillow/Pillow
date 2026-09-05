@@ -3003,7 +3003,7 @@ class Image:
             raise ValueError(msg)
 
         im = new(self.mode, size, fillcolor)
-        if self.mode == "P" and self.palette:
+        if self.mode in ("P", "PA") and self.palette:
             im.palette = self.palette.copy()
         im.info = self.info.copy()
         if method == Transform.MESH:
