@@ -679,6 +679,9 @@ class Image:
     def readonly(self, readonly: int) -> None:
         self._readonly = readonly
 
+    def _copy_info(self) -> dict[str | tuple[int, int], Any]:
+        return {k: v.copy() if isinstance(v, list) else v for k, v in self.info.items()}
+
     def _new(self, im: core.ImagingCore) -> Image:
         new = Image()
         new.im = im
@@ -691,7 +694,7 @@ class Image:
                 from . import ImagePalette
 
                 new.palette = ImagePalette.ImagePalette()
-        new.info = self.info.copy()
+        new.info = self._copy_info()
         return new
 
     # Context manager support
@@ -3005,7 +3008,7 @@ class Image:
         im = new(self.mode, size, fillcolor)
         if self.mode == "P" and self.palette:
             im.palette = self.palette.copy()
-        im.info = self.info.copy()
+        im.info = self._copy_info()
         if method == Transform.MESH:
             # list of quads
             for box, quad in data:
