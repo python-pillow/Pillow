@@ -27,7 +27,6 @@ from .helper import (
     assert_image_similar_tofile,
     djpeg_available,
     hopper,
-    is_pypy,
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
@@ -688,8 +687,7 @@ class TestFileJpeg:
             with pytest.raises(ValueError):
                 self.roundtrip(im, qtables=[[1, 2, 3, 4]])
 
-    @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
-    def test_qtables_iteration_error(self) -> None:
+    def test_qtables_read_once(self) -> None:
         class FailOnSecondIteration(list[list[int]]):
             iterated = False
 
@@ -700,8 +698,8 @@ class TestFileJpeg:
                 return super().__iter__()
 
         with Image.open(TEST_FILE) as im:
-            with pytest.raises(RuntimeError):
-                self.roundtrip(im, qtables=FailOnSecondIteration([[1] * 64]))
+            im2 = self.roundtrip(im, qtables=FailOnSecondIteration([[1] * 64]))
+            assert len(im2.quantization) == 1
 
     def test_qtables_inconsistent_length(self) -> None:
         class LongerLen(list[list[int]]):

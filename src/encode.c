@@ -1112,12 +1112,11 @@ get_qtables_arrays(PyObject *qtables, int *qtablesLen) {
         return NULL;
     }
 
-    /* Copy the sequence, so that it cannot be changed while it is read */
-    tables = PySequence_List(qtables);
+    tables = PySequence_Fast(qtables, "expected a sequence");
     if (tables == NULL) {
         return NULL;
     }
-    num_tables = PyList_GET_SIZE(tables);
+    num_tables = PySequence_Fast_GET_SIZE(tables);
     if (num_tables < 1 || num_tables > NUM_QUANT_TBLS) {
         PyErr_SetString(
             PyExc_ValueError,
@@ -1133,22 +1132,23 @@ get_qtables_arrays(PyObject *qtables, int *qtablesLen) {
         return ImagingError_MemoryError();
     }
     for (i = 0; i < num_tables; i++) {
-        table = PyList_GET_ITEM(tables, i);
+        table = PySequence_Fast_GET_ITEM(tables, i);
         if (!PySequence_Check(table)) {
             PyErr_SetString(PyExc_ValueError, "Invalid quantization tables");
             goto JPEG_QTABLES_ERR;
         }
-        table_data = PySequence_List(table);
+        table_data = PySequence_Fast(table, "expected a sequence");
         if (table_data == NULL) {
             goto JPEG_QTABLES_ERR;
         }
-        if (PyList_GET_SIZE(table_data) != DCTSIZE2) {
+        if (PySequence_Fast_GET_SIZE(table_data) != DCTSIZE2) {
             Py_DECREF(table_data);
             PyErr_SetString(PyExc_ValueError, "Invalid quantization table size");
             goto JPEG_QTABLES_ERR;
         }
         for (j = 0; j < DCTSIZE2; j++) {
-            qarrays[i * DCTSIZE2 + j] = PyLong_AS_LONG(PyList_GET_ITEM(table_data, j));
+            qarrays[i * DCTSIZE2 + j] =
+                PyLong_AS_LONG(PySequence_Fast_GET_ITEM(table_data, j));
         }
         Py_DECREF(table_data);
     }
