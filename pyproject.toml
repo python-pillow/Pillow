@@ -62,6 +62,13 @@ optional-dependencies.test-arrow = [
   "nanoarrow",
   "pyarrow",
 ]
+optional-dependencies.test-leaks = [
+  "psutil",
+]
+optional-dependencies.test-xdist = [
+  "psutil",
+  "pytest-xdist",
+]
 optional-dependencies.tests = [
   "coverage>=7.4.2",
   "defusedxml",
@@ -71,7 +78,6 @@ optional-dependencies.tests = [
   "pytest",
   "pytest-cov",
   "pytest-timeout",
-  "pytest-xdist",
   "setuptools",
   "trove-classifiers>=2024.10.12",
 ]
@@ -207,6 +213,9 @@ num_workers = 4
 
 [tool.pytest]
 addopts = [ "-ra", "--color=auto" ]
+markers = [
+  "isolated: tests that are not compatible with pytest-xdist (deselect with '-m \"not isolated\"')",
+]
 testpaths = [
   "Tests",
 ]

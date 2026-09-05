@@ -46,7 +46,7 @@ jobs:
           "3.11",
         ]
         include:
-        - { python-version: "3.13", PYTHONOPTIMIZE: 1, REVERSE: "--reverse" }
+        - { python-version: "3.13", PYTHONOPTIMIZE: 1 }
         - { python-version: "3.12", PYTHONOPTIMIZE: 2 }
         # Intel
         - { os: "macos-26-intel", python-version: "3.11" }
@@ -125,9 +125,6 @@ jobs:
 
     - name: Test
       run: |
-        if [ $REVERSE ]; then
-          python3 -m pip install pytest-reverse
-        fi
         if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
           xvfb-run -s '-screen 0 1024x768x24' sway&
           export WAYLAND_DISPLAY=wayland-1
@@ -137,7 +134,6 @@ jobs:
         fi
       env:
         PYTHONOPTIMIZE: ${{ matrix.PYTHONOPTIMIZE }}
-        REVERSE: ${{ matrix.REVERSE }}
 
     - name: Prepare to upload errors
       if: failure()

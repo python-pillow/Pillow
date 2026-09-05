@@ -22,7 +22,14 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
     from pathlib import Path
+    from types import ModuleType
     from typing import Any
+
+psutil: ModuleType | None
+try:
+    import psutil
+except ImportError:
+    psutil = None
 
 logger = logging.getLogger(__name__)
 
@@ -207,30 +214,38 @@ def mark_if_feature_version(
     return pytest.mark.pil_noop_mark()
 
 
-@pytest.mark.skipif(sys.platform.startswith("win32"), reason="Requires Unix or macOS")
+def is_pypy() -> bool:
+    return sys.implementation.name == "pypy"
+
+
+@pytest.mark.isolated
+@pytest.mark.skipif(psutil is None, reason="psutil not installed")
+@pytest.mark.skipif(
+    sys.platform.startswith("win32"),
+    reason="Leak limits are not calibrated for Windows",
+)
+# Per https://stackoverflow.com/a/29007723/51685, due to JIT compilation,
+# RSS utilization is known to grow so measuring it doesn't make that much sense.
+@pytest.mark.skipif(is_pypy(), reason="RSS utilization is not stable on PyPy")
 class PillowLeakTestCase:
-    # requires unix/macOS
     iterations = 100  # count
     mem_limit = 512  # k
 
     def _get_mem_usage(self) -> float:
         """
-        Gets the RUSAGE memory usage, returns in K. Encapsulates the difference
-        between macOS and Linux rss reporting
+        Gets the resident set size currently used by this process.
 
         :returns: memory usage in kilobytes
         """
 
-        from resource import RUSAGE_SELF, getrusage
-
-        mem = getrusage(RUSAGE_SELF).ru_maxrss
-        # man 2 getrusage:
-        #     ru_maxrss
-        # This is the maximum resident set size utilized
-        # in bytes on macOS, in kilobytes on Linux
-        return mem / 1024 if sys.platform == "darwin" else mem
+        assert psutil is not None
+        return psutil.Process().memory_info().rss / 1024
 
     def _test_leak(self, core: Callable[[], None]) -> None:
+        # Warm up so allocator arenas, caches, etc. are allocated,
+        # before taking the baseline measurement.
+        core()
+
         start_mem = self._get_mem_usage()
         for cycle in range(self.iterations):
             core()
@@ -332,7 +347,3 @@ def is_ppc64le() -> bool:
 
 def is_win32() -> bool:
     return sys.platform.startswith("win32")
-
-
-def is_pypy() -> bool:
-    return sys.implementation.name == "pypy"

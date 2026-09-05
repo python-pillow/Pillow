@@ -65,6 +65,7 @@ jobs:
               mingw-w64-x86_64-python-numpy \
               mingw-w64-x86_64-python-olefile \
               mingw-w64-x86_64-python-pip \
+              mingw-w64-x86_64-python-psutil \
               mingw-w64-x86_64-python-pytest \
               mingw-w64-x86_64-python-pytest-cov \
               mingw-w64-x86_64-python-pytest-timeout \
@@ -73,7 +74,7 @@ jobs:
           pushd depends && ./install_extra_test_images.sh && popd
 
       - name: Build Pillow
-        run: CFLAGS="-coverage" python3 -m pip install .
+        run: CFLAGS="-coverage" python3 -m pip install .[tests,test-xdist]
 
       - name: Test Pillow
         run: |
