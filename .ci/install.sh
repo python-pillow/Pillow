@@ -17,20 +17,19 @@ aptget_update || aptget_update retry || aptget_update retry
 
 set -e
 
-sudo apt-get -qq install libfreetype6-dev liblcms2-dev libtiff-dev python3-tk\
-                         ghostscript libjpeg-turbo8-dev libopenjp2-7-dev\
-                         cmake meson imagemagick libharfbuzz-dev libfribidi-dev\
-                         sway wl-clipboard libopenblas-dev nasm
+packages=(libfreetype6-dev liblcms2-dev libtiff-dev python3-tk
+          ghostscript libjpeg-turbo8-dev libopenjp2-7-dev
+          cmake meson libharfbuzz-dev libfribidi-dev
+          sway wl-clipboard nasm
+          # ImageMagick is used by Tests/test_file_palm.py
+          imagemagick
+          # netpbm provides ppmquant and ppmtogif for GifImagePlugin._save_netpbm
+          netpbm)
+sudo apt-get -qq install --no-install-recommends "${packages[@]}"
 
 python3 -m pip install --upgrade pip
-python3 -m pip install --upgrade wheel
-python3 -m pip install coverage
-python3 -m pip install defusedxml
-python3 -m pip install ipython
-python3 -m pip install olefile
-python3 -m pip install -U pytest
-python3 -m pip install -U pytest-cov
-python3 -m pip install -U pytest-timeout
+python3 -m pip install --upgrade coverage defusedxml ipython olefile pytest pytest-cov pytest-timeout
+
 # optional test dependencies, only install if there's a binary package.
 python3 -m pip install --only-binary=:all: numpy || true
 python3 -m pip install --only-binary=:all: pyarrow || true
