@@ -37,6 +37,10 @@ on some Python versions.
 
     Typing alias.
 
+.. py:class:: Coords
+
+    Typing alias.
+
 .. py:class:: IntegralLike
 
     Typing alias.
@@ -52,11 +56,6 @@ on some Python versions.
 .. py:class:: SupportsRead
 
     An object that supports the read method.
-
-.. py:data:: TypeGuard
-    :value: typing.TypeGuard
-
-    See :py:obj:`typing.TypeGuard`.
 
 :mod:`~PIL._util` module
 ------------------------
@@ -86,6 +85,9 @@ on some Python versions.
 
 An internal interface module previously known as :mod:`~PIL._imaging`,
 implemented in :file:`_imaging.c`.
+
+Pillow is a Python library, and the C interfaces within are for internal use only.
+They may change without a deprecation period or a mention in the release notes.
 
 .. py:class:: ImagingCore
 

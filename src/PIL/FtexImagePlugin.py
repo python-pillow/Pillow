@@ -72,6 +72,7 @@ class FtexImageFile(ImageFile.ImageFile):
     format_description = "Texture File Format (IW2:EOC)"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(4)):
             msg = "not an FTEX file"
             raise SyntaxError(msg)
@@ -81,7 +82,9 @@ class FtexImageFile(ImageFile.ImageFile):
 
         # Only support single-format files.
         # I don't know of any multi-format file.
-        assert format_count == 1
+        if format_count != 1:
+            msg = f"Unsupported number of texture formats: {format_count}"
+            raise ValueError(msg)
 
         format, where = struct.unpack("<2i", self.fp.read(8))
         self.fp.seek(where)

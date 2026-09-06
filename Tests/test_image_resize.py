@@ -4,9 +4,7 @@ Tests for resize functionality.
 
 from __future__ import annotations
 
-from collections.abc import Generator
 from itertools import permutations
-from pathlib import Path
 
 import pytest
 
@@ -19,6 +17,11 @@ from .helper import (
     hopper,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
 
 
 class TestImagingCoreResize:
@@ -72,6 +75,8 @@ class TestImagingCoreResize:
             Image.Resampling.HAMMING,
             Image.Resampling.BICUBIC,
             Image.Resampling.LANCZOS,
+            Image.Resampling.MKS2013,
+            Image.Resampling.MKS2021,
         ),
     )
     def test_reduce_filters(self, resample: Image.Resampling) -> None:
@@ -88,6 +93,8 @@ class TestImagingCoreResize:
             Image.Resampling.HAMMING,
             Image.Resampling.BICUBIC,
             Image.Resampling.LANCZOS,
+            Image.Resampling.MKS2013,
+            Image.Resampling.MKS2021,
         ),
     )
     def test_enlarge_filters(self, resample: Image.Resampling) -> None:
@@ -104,6 +111,8 @@ class TestImagingCoreResize:
             Image.Resampling.HAMMING,
             Image.Resampling.BICUBIC,
             Image.Resampling.LANCZOS,
+            Image.Resampling.MKS2013,
+            Image.Resampling.MKS2021,
         ),
     )
     @pytest.mark.parametrize(
@@ -154,13 +163,15 @@ class TestImagingCoreResize:
             Image.Resampling.HAMMING,
             Image.Resampling.BICUBIC,
             Image.Resampling.LANCZOS,
+            Image.Resampling.MKS2013,
+            Image.Resampling.MKS2021,
         ),
     )
     def test_enlarge_zero(self, resample: Image.Resampling) -> None:
         r = self.resize(Image.new("RGB", (0, 0), "white"), (212, 195), resample)
         assert r.mode == "RGB"
         assert r.size == (212, 195)
-        assert r.getdata()[0] == (0, 0, 0)
+        assert r.getpixel((0, 0)) == (0, 0, 0)
 
     def test_unknown_filter(self) -> None:
         with pytest.raises(ValueError):
@@ -179,7 +190,7 @@ class TestImagingCoreResize:
 
 
 @pytest.fixture
-def gradients_image() -> Generator[ImageFile.ImageFile, None, None]:
+def gradients_image() -> Generator[ImageFile.ImageFile]:
     with Image.open("Tests/images/radial_gradients.png") as im:
         im.load()
     try:
@@ -314,8 +325,8 @@ class TestImageResize:
     @skip_unless_feature("libtiff")
     def test_transposed(self) -> None:
         with Image.open("Tests/images/g4_orientation_5.tif") as im:
-            im = im.resize((64, 64))
-            assert im.size == (64, 64)
+            im_resized = im.resize((64, 64))
+            assert im_resized.size == (64, 64)
 
     @pytest.mark.parametrize(
         "mode", ("L", "RGB", "I", "I;16", "I;16L", "I;16B", "I;16N", "F")
@@ -324,7 +335,7 @@ class TestImageResize:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.BICUBIC) == im.resize((20, 20))
 
-    @pytest.mark.parametrize("mode", ("1", "P", "BGR;15", "BGR;16"))
+    @pytest.mark.parametrize("mode", ("1", "P"))
     def test_default_filter_nearest(self, mode: str) -> None:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.NEAREST) == im.resize((20, 20))

@@ -21,9 +21,7 @@ with any Arrow provider or consumer in the Python ecosystem.
 Data formats
 ============
 
-Pillow currently supports exporting Arrow images in all modes
-**except** for ``BGR;15``, ``BGR;16`` and ``BGR;24``. This is due to
-line-length packing in these modes making for non-continuous memory.
+Pillow currently supports exporting Arrow images in all modes.
 
 For single-band images, the exported array is width*height elements,
 with each pixel corresponding to the appropriate Arrow type.

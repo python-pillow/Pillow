@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import io
 import os
-from pathlib import Path
 
 import pytest
 
 from PIL import IcoImagePlugin, Image, ImageDraw, ImageFile
 
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_ICO_FILE = "Tests/images/hopper.ico"
 
@@ -99,6 +102,7 @@ def test_getpixel(tmp_path: Path) -> None:
         reloaded.load()
         reloaded.size = (32, 32)
 
+        assert reloaded.load() is not None
         assert reloaded.getpixel((0, 0)) == (18, 20, 62)
 
 
@@ -233,7 +237,7 @@ def test_save_append_images(tmp_path: Path) -> None:
 def test_unexpected_size() -> None:
     # This image has been manually hexedited to state that it is 16x32
     # while the image within is still 16x16
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="Image was not the expected size"):
         with Image.open("Tests/images/hopper_unexpected.ico") as im:
             assert im.size == (16, 16)
 

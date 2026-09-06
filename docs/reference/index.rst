@@ -24,6 +24,7 @@ Reference
    ImageSequence
    ImageShow
    ImageStat
+   ImageText
    ImageTk
    ImageTransform
    ImageWin

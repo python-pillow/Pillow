@@ -179,9 +179,7 @@ def test_iter(bytesmode: bool) -> None:
         container = ContainerIO.ContainerIO(fh, 0, 120)
 
         # Act
-        data = []
-        for line in container:
-            data.append(line)
+        data = list(container)
 
         # Assert
         if bytesmode:

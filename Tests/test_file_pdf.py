@@ -5,15 +5,23 @@ import os
 import os.path
 import tempfile
 import time
-from collections.abc import Generator
-from pathlib import Path
 from typing import Any
 
 import pytest
 
 from PIL import Image, PdfParser, features
 
-from .helper import hopper, mark_if_feature_version, skip_unless_feature
+from .helper import (
+    hopper,
+    mark_if_feature_version,
+    skip_unless_feature,
+    timeout_unless_slower_valgrind,
+)
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
 
 
 def helper_save_as_pdf(tmp_path: Path, mode: str, **kwargs: Any) -> str:
@@ -35,7 +43,8 @@ def helper_save_as_pdf(tmp_path: Path, mode: str, **kwargs: Any) -> str:
     with open(outfile, "rb") as fp:
         contents = fp.read()
     size = tuple(
-        float(d) for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
+        int(float(d))
+        for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
     )
     assert im.size == size
 
@@ -158,7 +167,7 @@ def test_save_all(tmp_path: Path) -> None:
         assert os.path.getsize(outfile) > 0
 
         # Test appending using a generator
-        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image, None, None]:
+        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image]:
             yield from ims
 
         im.save(outfile, save_all=True, append_images=im_generator(ims))
@@ -339,8 +348,7 @@ def test_pdf_append_to_bytesio() -> None:
     assert len(f.getvalue()) > initial_size
 
 
-@pytest.mark.timeout(1)
-@pytest.mark.skipif("PILLOW_VALGRIND_TEST" in os.environ, reason="Valgrind is slower")
+@timeout_unless_slower_valgrind(1)
 @pytest.mark.parametrize("newline", (b"\r", b"\n"))
 def test_redos(newline: bytes) -> None:
     malicious = b" trailer<<>>" + newline * 3456

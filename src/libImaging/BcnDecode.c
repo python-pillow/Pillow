@@ -603,7 +603,7 @@ static void
 bc6_sign_extend(UINT16 *v, int prec) {
     int x = *v;
     if (x & (1 << (prec - 1))) {
-        x |= -1 << prec;
+        x |= -(1 << prec);
     }
     *v = (UINT16)x;
 }
@@ -663,7 +663,7 @@ half_to_float(UINT16 h) {
     if (o.f >= m.f) {
         o.u |= 255 << 23;
     }
-    o.u |= (h & 0x8000) << 16;
+    o.u |= (UINT32)(h & 0x8000) << 16;
     return o.f;
 }
 

@@ -13,11 +13,6 @@
 #include <tiff.h>
 #endif
 
-#ifndef min
-#define min(x, y) ((x > y) ? y : x)
-#define max(x, y) ((x < y) ? y : x)
-#endif
-
 #ifndef _PIL_LIBTIFF_
 #define _PIL_LIBTIFF_
 
@@ -39,6 +34,8 @@ extern int
 ImagingLibTiffInit(ImagingCodecState state, int fp, uint32_t offset);
 extern int
 ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp);
+extern int
+ImagingLibTiffEncodeCleanup(ImagingCodecState state);
 extern int
 ImagingLibTiffMergeFieldInfo(
     ImagingCodecState state, TIFFDataType field_type, int key, int is_var_length

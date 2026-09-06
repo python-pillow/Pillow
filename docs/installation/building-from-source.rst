@@ -44,27 +44,27 @@ Many of Pillow's features require external libraries:
 
 * **libtiff** provides compressed TIFF functionality
 
-  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.7.0**
+  * Pillow has been tested with libtiff versions **4.0-4.7.1**
 
 * **libfreetype** provides type related services
 
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.17**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.19.1**.
 
 * **libwebp** provides the WebP format.
 
 * **openjpeg** provides JPEG 2000 functionality.
 
   * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1**,
-    **2.4.0**, **2.5.0**, **2.5.2** and **2.5.3**.
+    **2.4.0**, **2.5.0**, **2.5.2**, **2.5.3** and **2.5.4**.
   * Pillow does **not** support the earlier **1.5** series which ships
     with Debian Jessie.
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.3.4**
+  * Pillow has been tested with libimagequant **2.6-4.4.1**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -116,7 +116,7 @@ Many of Pillow's features require external libraries:
 
     .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
-    Prerequisites for **Ubuntu 16.04 LTS - 22.04 LTS** are installed with::
+    Prerequisites for **Ubuntu 16.04 LTS - 26.04 LTS** are installed with::
 
         sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
             libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
@@ -194,9 +194,9 @@ Many of Pillow's features require external libraries:
 
         pacman -S \
             mingw-w64-x86_64-gcc \
-            mingw-w64-x86_64-python3 \
-            mingw-w64-x86_64-python3-pip \
-            mingw-w64-x86_64-python3-setuptools
+            mingw-w64-x86_64-python \
+            mingw-w64-x86_64-python-pip \
+            mingw-w64-x86_64-python-setuptools
 
     Prerequisites are installed on **MSYS2 MinGW 64-bit** with::
 
@@ -214,17 +214,15 @@ Many of Pillow's features require external libraries:
 
 .. tab:: FreeBSD
 
-    .. Note:: Only FreeBSD 10 and 11 tested
+    .. Note:: Only FreeBSD 15.1 tested
 
     Make sure you have Python's development libraries installed::
 
         sudo pkg install python3
 
-    Prerequisites are installed on **FreeBSD 10 or 11** with::
+    Prerequisites are installed on **FreeBSD 15.1** with::
 
-        sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi libxcb libavif
-
-    Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
+        sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi libxcb libavif libraqm libimagequant
 
 .. tab:: Android
 
@@ -276,10 +274,9 @@ Build options
 
 * Config setting: ``-C parallel=n``. Can also be given
   with environment variable: ``MAX_CONCURRENCY=n``. Pillow can use
-  multiprocessing to build the extension. Setting ``-C parallel=n``
+  multiprocessing to build the extensions. Setting ``-C parallel=n``
   sets the number of CPUs to use to ``n``, or can disable parallel building by
-  using a setting of 1. By default, it uses 4 CPUs, or if 4 are not
-  available, as many as are present.
+  using a setting of 1. By default, it uses as many CPUs as are present.
 
 * Config settings: ``-C zlib=disable``, ``-C jpeg=disable``,
   ``-C tiff=disable``, ``-C freetype=disable``, ``-C raqm=disable``,

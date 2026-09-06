@@ -78,13 +78,13 @@ def test_crop_crash() -> None:
     extents = (1, 1, 10, 10)
     # works prepatch
     with Image.open(test_img) as img:
-        img2 = img.crop(extents)
-    img2.load()
+        img1 = img.crop(extents)
+    img1.load()
 
     # fail prepatch
     with Image.open(test_img) as img:
-        img = img.crop(extents)
-    img.load()
+        img2 = img.crop(extents)
+    img2.load()
 
 
 def test_crop_zero() -> None:
@@ -95,10 +95,10 @@ def test_crop_zero() -> None:
 
     cropped = im.crop((10, 10, 20, 20))
     assert cropped.size == (10, 10)
-    assert cropped.getdata()[0] == (0, 0, 0)
+    assert cropped.getpixel((0, 0)) == (0, 0, 0)
 
     im = Image.new("RGB", (0, 0))
 
     cropped = im.crop((10, 10, 20, 20))
     assert cropped.size == (10, 10)
-    assert cropped.getdata()[2] == (0, 0, 0)
+    assert cropped.getpixel((2, 0)) == (0, 0, 0)

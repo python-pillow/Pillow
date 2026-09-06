@@ -18,13 +18,15 @@
 #
 from __future__ import annotations
 
-import functools
-import operator
 import re
-from collections.abc import Sequence
-from typing import Literal, Protocol, cast, overload
+from typing import Protocol, cast, overload
 
 from . import ExifTags, Image, ImagePalette
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Literal
 
 #
 # helpers
@@ -36,12 +38,17 @@ def _border(border: int | tuple[int, ...]) -> tuple[int, int, int, int]:
             left, top = right, bottom = border
         elif len(border) == 4:
             left, top, right, bottom = border
+        else:
+            msg = "border must be an integer, or a tuple of two or four elements"
+            raise ValueError(msg)
     else:
         left = top = right = bottom = border
     return left, top, right, bottom
 
 
-def _color(color: str | int | tuple[int, ...], mode: str) -> int | tuple[int, ...]:
+def _color(
+    color: str | int | tuple[int, ...] | None, mode: str
+) -> int | tuple[int, ...] | None:
     if isinstance(color, str):
         from . import ImageColor
 
@@ -115,9 +122,7 @@ def autocontrast(
             if not isinstance(cutoff, tuple):
                 cutoff = (cutoff, cutoff)
             # get number of pixels
-            n = 0
-            for ix in range(256):
-                n = n + h[ix]
+            n = sum(h)
             # remove cutoff% pixels from the low end
             cut = int(n * cutoff[0] // 100)
             for lo in range(256):
@@ -195,17 +200,23 @@ def colorize(
     :return: An image.
     """
 
-    # Initial asserts
-    assert image.mode == "L"
-    if mid is None:
-        assert 0 <= blackpoint <= whitepoint <= 255
-    else:
-        assert 0 <= blackpoint <= midpoint <= whitepoint <= 255
+    if image.mode != "L":
+        msg = f"mode must be L, not {image.mode}"
+        raise ValueError(msg)
+    if not 0 <= blackpoint <= whitepoint <= 255:
+        msg = (
+            "blackpoint and whitepoint must each be between or equal to 0 and 255, "
+            "with blackpoint less than or equal to whitepoint"
+        )
+        raise ValueError(msg)
+    if mid is not None and not blackpoint <= midpoint <= whitepoint:
+        msg = "midpoint must be between or equal to blackpoint and whitepoint"
+        raise ValueError(msg)
 
     # Define colors from arguments
-    rgb_black = cast(Sequence[int], _color(black, "RGB"))
-    rgb_white = cast(Sequence[int], _color(white, "RGB"))
-    rgb_mid = cast(Sequence[int], _color(mid, "RGB")) if mid is not None else None
+    rgb_black = cast("Sequence[int]", _color(black, "RGB"))
+    rgb_white = cast("Sequence[int]", _color(white, "RGB"))
+    rgb_mid = cast("Sequence[int]", _color(mid, "RGB")) if mid is not None else None
 
     # Empty lists for the mapping
     red = []
@@ -328,6 +339,23 @@ def cover(
     return image.resize(size, resample=method)
 
 
+def _new_with_fill(
+    image: Image.Image, size: tuple[int, int], fill: str | int | tuple[int, ...] | None
+) -> Image.Image:
+    color = _color(fill, image.mode)
+    if image.palette:
+        mode = image.palette.mode
+        palette = ImagePalette.ImagePalette(mode, image.getpalette(mode))
+        if isinstance(color, tuple) and len(color) in (3, 4):
+            color = palette.getcolor(color)
+    else:
+        palette = None
+    out = Image.new(image.mode, size, color)
+    if palette:
+        out.putpalette(palette.palette, mode)
+    return out
+
+
 def pad(
     image: Image.Image,
     size: tuple[int, int],
@@ -360,11 +388,7 @@ def pad(
     if resized.size == size:
         out = resized
     else:
-        out = Image.new(image.mode, size, color)
-        if resized.palette:
-            palette = resized.getpalette()
-            if palette is not None:
-                out.putpalette(palette)
+        out = _new_with_fill(resized, size, color)
         if resized.width != size[0]:
             x = round((size[0] - resized.width) * max(0, min(centering[0], 1)))
             out.paste(resized, (x, 0))
@@ -470,7 +494,7 @@ def equalize(image: Image.Image, mask: Image.Image | None = None) -> Image.Image
         if len(histo) <= 1:
             lut.extend(list(range(256)))
         else:
-            step = (functools.reduce(operator.add, histo) - histo[-1]) // 255
+            step = (sum(histo) - histo[-1]) // 255
             if not step:
                 lut.extend(list(range(256)))
             else:
@@ -497,16 +521,7 @@ def expand(
     left, top, right, bottom = _border(border)
     width = left + image.size[0] + right
     height = top + image.size[1] + bottom
-    color = _color(fill, image.mode)
-    if image.palette:
-        palette = ImagePalette.ImagePalette(palette=image.getpalette())
-        if isinstance(color, tuple) and (len(color) == 3 or len(color) == 4):
-            color = palette.getcolor(color)
-    else:
-        palette = None
-    out = Image.new(image.mode, (width, height), color)
-    if palette:
-        out.putpalette(palette.palette)
+    out = _new_with_fill(image, (width, height), fill)
     out.paste(image, (left, top))
     return out
 

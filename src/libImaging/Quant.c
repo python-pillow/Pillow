@@ -1375,7 +1375,9 @@ quantize(
     fflush(stdout);
     timer = clock();
 #endif
-    annotate_hash_table(root, h, &nPaletteEntries);
+    if (!annotate_hash_table(root, h, &nPaletteEntries)) {
+        goto error_3;
+    }
 #ifdef DEBUG
     printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
 #endif
@@ -1684,21 +1686,24 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
         return (Imaging)ImagingError_ValueError("bad number of colors");
     }
 
-    if (strcmp(im->mode, "L") != 0 && strcmp(im->mode, "P") != 0 &&
-        strcmp(im->mode, "RGB") != 0 && strcmp(im->mode, "RGBA") != 0) {
+    if (im->mode != IMAGING_MODE_L && im->mode != IMAGING_MODE_P &&
+        im->mode != IMAGING_MODE_RGB && im->mode != IMAGING_MODE_RGBA) {
         return ImagingError_ModeError();
     }
 
     /* only octree and imagequant supports RGBA */
-    if (!strcmp(im->mode, "RGBA") && mode != 2 && mode != 3) {
+    if (im->mode == IMAGING_MODE_RGBA && mode != 2 && mode != 3) {
         return ImagingError_ModeError();
     }
 
-    if (im->xsize > INT_MAX / im->ysize) {
+    // Hoisted here as these are invariant over the loops below.
+    int xsize = im->xsize, ysize = im->ysize;
+
+    if (xsize > INT_MAX / ysize) {
         return ImagingError_MemoryError();
     }
     /* malloc check ok, using calloc for final overflow, x*y above */
-    p = calloc(im->xsize * im->ysize, sizeof(Pixel));
+    p = calloc(xsize * ysize, sizeof(Pixel));
     if (!p) {
         return ImagingError_MemoryError();
     }
@@ -1708,27 +1713,29 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     /* FIXME: maybe we could load the hash tables directly from the
        image data? */
 
-    if (!strcmp(im->mode, "L")) {
+    if (im->mode == IMAGING_MODE_L) {
         /* grayscale */
 
         /* FIXME: converting a "L" image to "P" with 256 colors
            should be done by a simple copy... */
 
-        for (i = y = 0; y < im->ysize; y++) {
-            for (x = 0; x < im->xsize; x++, i++) {
-                p[i].c.r = p[i].c.g = p[i].c.b = im->image8[y][x];
+        for (i = y = 0; y < ysize; y++) {
+            UINT8 *in = im->image8[y];
+            for (x = 0; x < xsize; x++, i++) {
+                p[i].c.r = p[i].c.g = p[i].c.b = in[x];
                 p[i].c.a = 255;
             }
         }
 
-    } else if (!strcmp(im->mode, "P")) {
+    } else if (im->mode == IMAGING_MODE_P) {
         /* palette */
 
         pp = im->palette->palette;
 
-        for (i = y = 0; y < im->ysize; y++) {
-            for (x = 0; x < im->xsize; x++, i++) {
-                v = im->image8[y][x];
+        for (i = y = 0; y < ysize; y++) {
+            UINT8 *in = im->image8[y];
+            for (x = 0; x < xsize; x++, i++) {
+                v = in[x];
                 p[i].c.r = pp[v * 4 + 0];
                 p[i].c.g = pp[v * 4 + 1];
                 p[i].c.b = pp[v * 4 + 2];
@@ -1736,28 +1743,33 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
             }
         }
 
-    } else if (!strcmp(im->mode, "RGB") || !strcmp(im->mode, "RGBA")) {
+    } else if (im->mode == IMAGING_MODE_RGB || im->mode == IMAGING_MODE_RGBA) {
         /* true colour */
 
-        withAlpha = !strcmp(im->mode, "RGBA");
+        withAlpha = im->mode == IMAGING_MODE_RGBA;
         int transparency = 0;
         unsigned char r = 0, g = 0, b = 0;
-        for (i = y = 0; y < im->ysize; y++) {
-            for (x = 0; x < im->xsize; x++, i++) {
-                p[i].v = im->image32[y][x];
-                if (withAlpha && p[i].c.a == 0) {
-                    if (transparency == 0) {
-                        transparency = 1;
-                        r = p[i].c.r;
-                        g = p[i].c.g;
-                        b = p[i].c.b;
-                    } else {
-                        /* Set all subsequent transparent pixels
-                        to the same colour as the first */
-                        p[i].c.r = r;
-                        p[i].c.g = g;
-                        p[i].c.b = b;
+        for (i = y = 0; y < ysize; y++) {
+            INT32 *in = im->image32[y];
+            for (x = 0; x < xsize; x++, i++) {
+                p[i].v = in[x];
+                if (withAlpha) {
+                    if (p[i].c.a == 0) {
+                        if (transparency == 0) {
+                            transparency = 1;
+                            r = p[i].c.r;
+                            g = p[i].c.g;
+                            b = p[i].c.b;
+                        } else {
+                            /* Set all subsequent transparent pixels
+                            to the same colour as the first */
+                            p[i].c.r = r;
+                            p[i].c.g = g;
+                            p[i].c.b = b;
+                        }
                     }
+                } else {
+                    p[i].c.a = 255;
                 }
             }
         }
@@ -1773,49 +1785,24 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
         case 0:
             /* median cut */
             result = quantize(
-                p,
-                im->xsize * im->ysize,
-                colors,
-                &palette,
-                &paletteLength,
-                &newData,
-                kmeans
+                p, xsize * ysize, colors, &palette, &paletteLength, &newData, kmeans
             );
             break;
         case 1:
             /* maximum coverage */
             result = quantize2(
-                p,
-                im->xsize * im->ysize,
-                colors,
-                &palette,
-                &paletteLength,
-                &newData,
-                kmeans
+                p, xsize * ysize, colors, &palette, &paletteLength, &newData, kmeans
             );
             break;
         case 2:
             result = quantize_octree(
-                p,
-                im->xsize * im->ysize,
-                colors,
-                &palette,
-                &paletteLength,
-                &newData,
-                withAlpha
+                p, xsize * ysize, colors, &palette, &paletteLength, &newData, withAlpha
             );
             break;
         case 3:
 #ifdef HAVE_LIBIMAGEQUANT
             result = quantize_pngquant(
-                p,
-                im->xsize,
-                im->ysize,
-                colors,
-                &palette,
-                &paletteLength,
-                &newData,
-                withAlpha
+                p, xsize, ysize, colors, &palette, &paletteLength, &newData, withAlpha
             );
 #else
             result = -1;
@@ -1830,11 +1817,16 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     ImagingSectionLeave(&cookie);
 
     if (result > 0) {
-        imOut = ImagingNewDirty("P", im->xsize, im->ysize);
+        imOut = ImagingNewDirty(IMAGING_MODE_P, xsize, ysize);
+        if (!imOut) {
+            free(newData);
+            free(palette);
+            return NULL;
+        }
         ImagingSectionEnter(&cookie);
 
-        for (i = y = 0; y < im->ysize; y++) {
-            for (x = 0; x < im->xsize; x++) {
+        for (i = y = 0; y < ysize; y++) {
+            for (x = 0; x < xsize; x++) {
                 imOut->image8[y][x] = (unsigned char)newData[i++];
             }
         }
@@ -1855,7 +1847,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
         }
 
         if (withAlpha) {
-            strcpy(imOut->palette->mode, "RGBA");
+            imOut->palette->mode = IMAGING_MODE_RGBA;
         }
 
         free(palette);

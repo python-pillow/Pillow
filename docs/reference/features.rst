@@ -60,9 +60,6 @@ Support for the following features can be checked:
 * ``raqm``: Raqm library, required for ``ImageFont.Layout.RAQM`` in :py:func:`PIL.ImageFont.truetype`. Run-time version number is available for Raqm 0.7.0 or newer.
 * ``libimagequant``: (compile time) ImageQuant quantization support in :py:func:`PIL.Image.Image.quantize`. Run-time version number is available.
 * ``xcb``: (compile time) Support for X11 in :py:func:`PIL.ImageGrab.grab` via the XCB library.
-* ``transp_webp``: Deprecated. Always ``True`` if WebP module is installed.
-* ``webp_mux``: Deprecated. Always ``True`` if WebP module is installed.
-* ``webp_anim``: Deprecated. Always ``True`` if WebP module is installed.
 
 .. autofunction:: PIL.features.check_feature
 .. autofunction:: PIL.features.version_feature

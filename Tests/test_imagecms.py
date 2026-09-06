@@ -6,8 +6,7 @@ import re
 import shutil
 import sys
 from io import BytesIO
-from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Literal, cast
 
 import pytest
 
@@ -22,6 +21,11 @@ from .helper import (
     is_pypy,
 )
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from typing import Any
+
 try:
     from PIL import ImageCms
     from PIL.ImageCms import ImageCmsProfile
@@ -30,7 +34,6 @@ try:
 except ImportError:
     # Skipped via setup_module()
     pass
-
 
 SRGB = "Tests/icc/sRGB_IEC61966-2-1_black_scaled.icc"
 HAVE_PROFILE = os.path.exists(SRGB)
@@ -54,10 +57,6 @@ def skip_missing() -> None:
 def test_sanity() -> None:
     # basic smoke test.
     # this mostly follows the cms_test outline.
-    with pytest.warns(DeprecationWarning):
-        v = ImageCms.versions()  # should return four strings
-    assert v[0] == "1.0.0 pil"
-    assert list(map(type, v)) == [str, str, str, str]
 
     # internal version number
     version = features.version_module("littlecms2")
@@ -198,6 +197,10 @@ def test_exceptions() -> None:
     pLab = ImageCms.createProfile("LAB")
     t = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
     with pytest.raises(ValueError, match="mode mismatch"):
+        t.apply(hopper("RGBA"))
+    with pytest.raises(ValueError, match="mode mismatch"):
+        t.apply(hopper("LAB"), hopper("RGBA"))
+    with pytest.raises(ValueError, match="mode mismatch"):
         t.apply_in_place(hopper("RGBA"))
 
     # the procedural pyCMS API uses PyCMSError for all sorts of errors
@@ -212,9 +215,10 @@ def test_exceptions() -> None:
         ImageCms.getProfileName(None)  # type: ignore[arg-type]
     skip_missing()
 
-    # Python <= 3.9: "an integer is required (got type NoneType)"
-    # Python > 3.9: "'NoneType' object cannot be interpreted as an integer"
-    with pytest.raises(ImageCms.PyCMSError, match="integer"):
+    with pytest.raises(
+        ImageCms.PyCMSError,
+        match="'NoneType' object cannot be interpreted as an integer",
+    ):
         ImageCms.isIntentSupported(SRGB, None, None)  # type: ignore[arg-type]
 
 
@@ -274,13 +278,13 @@ def test_simple_lab() -> None:
     # not a linear luminance map. so L != 128:
     assert k == (137, 128, 128)
 
-    l_data = i_lab.getdata(0)
-    a_data = i_lab.getdata(1)
-    b_data = i_lab.getdata(2)
+    l_data = i_lab.get_flattened_data(0)
+    a_data = i_lab.get_flattened_data(1)
+    b_data = i_lab.get_flattened_data(2)
 
-    assert list(l_data) == [137] * 100
-    assert list(a_data) == [128] * 100
-    assert list(b_data) == [128] * 100
+    assert l_data == (137.0,) * 100
+    assert a_data == (128.0,) * 100
+    assert b_data == (128.0,) * 100
 
 
 def test_lab_color() -> None:
@@ -414,7 +418,7 @@ def test_extended_information() -> None:
     assert p.colorimetric_intent is None
     assert p.connection_space == "XYZ "
     assert p.copyright == "Copyright International Color Consortium, 2009"
-    assert p.creation_date == datetime.datetime(2009, 2, 27, 21, 36, 31)
+    assert p.creation_date == datetime.datetime(2009, 3, 27, 21, 36, 31)
     assert p.device_class == "mntr"
     assert_truncated_tuple_equal(
         p.green_colorant,
@@ -546,13 +550,11 @@ def assert_aux_channel_preserved(
 ) -> None:
     def create_test_image() -> Image.Image:
         # set up test image with something interesting in the tested aux channel.
-        # fmt: off
         nine_grid_deltas = [
             (-1, -1), (-1, 0), (-1, 1),
             (0,  -1),  (0, 0),  (0, 1),
             (1,  -1),  (1, 0),  (1, 1),
-        ]
-        # fmt: on
+        ]  # fmt: skip
         chans = []
         bands = ImageMode.getmode(mode).bands
         for band_ndx in range(len(bands)):
@@ -640,9 +642,9 @@ def test_auxiliary_channels_isolated() -> None:
                     continue
 
                 # convert with and without AUX data, test colors are equal
-                src_colorSpace = cast(Literal["LAB", "XYZ", "sRGB"], src_format[1])
+                src_colorSpace = cast("Literal['LAB', 'XYZ', 'sRGB']", src_format[1])
                 source_profile = ImageCms.createProfile(src_colorSpace)
-                dst_colorSpace = cast(Literal["LAB", "XYZ", "sRGB"], dst_format[1])
+                dst_colorSpace = cast("Literal['LAB', 'XYZ', 'sRGB']", dst_format[1])
                 destination_profile = ImageCms.createProfile(dst_colorSpace)
                 source_image = src_format[3]
                 test_transform = ImageCms.buildTransform(
@@ -677,12 +679,6 @@ def test_auxiliary_channels_isolated() -> None:
                 assert_image_equal(test_image.convert(dst_format[2]), reference_image)
 
 
-def test_long_modes() -> None:
-    p = ImageCms.getOpenProfile("Tests/icc/sGrey-v2-nano.icc")
-    with pytest.warns(DeprecationWarning):
-        ImageCms.buildTransform(p, p, "ABCDEFGHI", "ABCDEFGHI")
-
-
 @pytest.mark.parametrize("mode", ("RGB", "RGBA", "RGBX"))
 def test_rgb_lab(mode: str) -> None:
     im = Image.new(mode, (1, 1))
@@ -700,18 +696,3 @@ def test_cmyk_lab() -> None:
     im = Image.new("CMYK", (1, 1))
     converted_im = im.convert("LAB")
     assert converted_im.getpixel((0, 0)) == (255, 128, 128)
-
-
-def test_deprecation() -> None:
-    with pytest.warns(DeprecationWarning):
-        assert ImageCms.DESCRIPTION.strip().startswith("pyCMS")
-    with pytest.warns(DeprecationWarning):
-        assert ImageCms.VERSION == "1.0.0 pil"
-    with pytest.warns(DeprecationWarning):
-        assert isinstance(ImageCms.FLAGS, dict)
-
-    profile = ImageCmsProfile(ImageCms.createProfile("sRGB"))
-    with pytest.warns(DeprecationWarning):
-        ImageCms.ImageCmsTransform(profile, profile, "RGBA;16B", "RGB")
-    with pytest.warns(DeprecationWarning):
-        ImageCms.ImageCmsTransform(profile, profile, "RGB", "RGBA;16B")

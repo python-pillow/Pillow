@@ -1,7 +1,7 @@
 Pillow
 ======
 
-Pillow is the friendly PIL fork by `Jeffrey A. Clark and contributors <https://github.com/python-pillow/Pillow/graphs/contributors>`_. PIL is the Python Imaging Library by Fredrik Lundh and contributors.
+Pillow is the friendly PIL fork by `Jeffrey 'Alex' Clark and contributors <https://github.com/python-pillow/Pillow/graphs/contributors>`_. PIL is the Python Imaging Library by Fredrik Lundh and contributors.
 
 Pillow for enterprise is available via the Tidelift Subscription. `Learn more <https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=docs&utm_campaign=enterprise>`_.
 
@@ -28,10 +28,6 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
 .. image:: https://github.com/python-pillow/Pillow/workflows/Test%20MinGW/badge.svg
    :target: https://github.com/python-pillow/Pillow/actions/workflows/test-mingw.yml
    :alt: GitHub Actions build status (Test MinGW)
-
-.. image:: https://github.com/python-pillow/Pillow/workflows/Test%20Cygwin/badge.svg
-   :target: https://github.com/python-pillow/Pillow/actions/workflows/test-cygwin.yml
-   :alt: GitHub Actions build status (Test Cygwin)
 
 .. image:: https://github.com/python-pillow/Pillow/workflows/Wheels/badge.svg
    :target: https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml

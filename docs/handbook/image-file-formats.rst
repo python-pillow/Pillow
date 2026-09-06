@@ -38,7 +38,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     quality, 100 the largest size and best quality.
 
 **subsampling**
-    If present, sets the subsampling for the encoder. Defaults to ``4:2:0``.
+    If present, sets the subsampling for the encoder. If absent, and all frames are in
+    grayscale mode without alpha, ``4:0:0`` is used. Otherwise defaults to ``4:2:0``.
     Options include:
 
     * ``4:0:0``
@@ -236,7 +237,7 @@ images. Seeking to later frames in a ``P`` image will change the image to
 ``P`` mode images are changed to ``RGB`` because each frame of a GIF may contain
 its own individual palette of up to 256 colors. When a new frame is placed onto a
 previous frame, those colors may combine to exceed the ``P`` mode limit of 256
-colors. Instead, the image is converted to ``RGB`` handle this.
+colors. Instead, the image is converted to ``RGB`` to handle this.
 
 If you would prefer the first ``P`` image frame to be ``RGB`` as well, so that
 every ``P`` frame is converted to ``RGB`` or ``RGBA`` mode, there is a setting
@@ -345,7 +346,7 @@ following options are available::
 **palette**
     Use the specified palette for the saved image. The palette should
     be a bytes or bytearray object containing the palette entries in
-    RGBRGB... form. It should be no more than 768 bytes. Alternately,
+    RGBRGB... form. It should be no more than 768 bytes. Alternatively,
     the palette can be passed in as an
     :py:class:`PIL.ImagePalette.ImagePalette` object.
 
@@ -449,7 +450,7 @@ Saving
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **sizes**
-    A list of sizes including in this ico file; these are a 2-tuple,
+    A list of sizes included in this ico file; these are a 2-tuple,
     ``(width, height)``; Default to ``[(16, 16), (24, 24), (32, 32), (48, 48),
     (64, 64), (128, 128), (256, 256)]``. Any sizes bigger than the original
     size or 256 will be ignored.
@@ -557,6 +558,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     hardly any gain in image quality. The value ``keep`` is only valid for JPEG
     files and will retain the original image quality level, subsampling, and
     qtables.
+    For more information on how qtables are modified based on the quality parameter,
+    see the qtables section.
 
 **optimize**
     If present and true, indicates that the encoder should make an extra pass
@@ -621,6 +624,11 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     *  a list, tuple, or dictionary (with integer keys =
        range(len(keys))) of lists of 64 integers. There must be
        between 2 and 4 tables.
+
+    If a quality parameter is provided, the qtables will be adjusted accordingly.
+    By default, the qtables are based on a standard JPEG table with a quality of 50.
+    The qtable values will be reduced if the quality is higher than 50 and increased
+    if the quality is lower than 50.
 
     .. versionadded:: 2.5.0
 
@@ -821,16 +829,6 @@ PCX
 
 Pillow reads and writes PCX files containing ``1``, ``L``, ``P``, or ``RGB`` data.
 
-PFM
-^^^
-
-.. versionadded:: 10.3.0
-
-Pillow reads and writes grayscale (Pf format) Portable FloatMap (PFM) files
-containing ``F`` data.
-
-Color (PF format) PFM files are not supported.
-
 Opening
 ~~~~~~~
 
@@ -992,7 +990,7 @@ where applicable:
     The number of times to loop this APNG, 0 indicates infinite looping.
 
 **duration**
-    The time to display this APNG frame (in milliseconds).
+    The time to display this APNG frame (in milliseconds), given as a float.
 
 .. note::
 
@@ -1034,9 +1032,8 @@ following parameters can also be set:
     Defaults to 0.
 
 **duration**
-    Integer (or list or tuple of integers) length of time to display this APNG frame
-    (in milliseconds).
-    Defaults to 0.
+    The length of time (or list or tuple of lengths of time) to display this APNG frame
+    (in milliseconds). Defaults to 0.
 
 **disposal**
     An integer (or list or tuple of integers) specifying the APNG disposal
@@ -1075,12 +1072,39 @@ following parameters can also be set:
 PPM
 ^^^
 
-Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L``, ``I`` or
-``RGB`` data.
+Pillow reads and writes PBM, PGM, PPM, PNM and PFM files containing ``1``, ``L``, ``I``,
+``RGB`` or ``F`` data.
 
 "Raw" (P4 to P6) formats can be read, and are used when writing.
 
-Since Pillow 9.2.0, "plain" (P1 to P3) formats can be read as well.
+.. versionadded:: 9.2.0
+   "Plain" (P1 to P3) formats can be read.
+
+.. versionadded:: 10.3.0
+   Grayscale (Pf format) Portable FloatMap (PFM) files containing
+   ``F`` data can be read and used when writing.
+
+Color (PF format) PFM files are not supported.
+
+QOI
+^^^
+
+.. versionadded:: 9.5.0
+
+Pillow reads and writes images in Quite OK Image format using a Python codec. If you
+wish to write code specifically for this format, :pypi:`qoi` is an alternative library
+that uses C to decode the image and interfaces with NumPy.
+
+.. _qoi-saving:
+
+Saving
+~~~~~~
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**colorspace**
+    If set to "sRGB", the colorspace will be written as sRGB with linear alpha, instead
+    of all channels being linear.
 
 SGI
 ^^^
@@ -1283,7 +1307,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     .. versionadded:: 6.1.0
 
     Added support for signed types (e.g. ``TIFF_SIGNED_LONG``) and multiple values.
-    Multiple values for a single tag must be to
+    Multiple values for a single tag must be passed to
     :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2` as a tuple and
     require a matching type in
     :py:attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype` tagtype.
@@ -1578,15 +1602,6 @@ PSD
 
 Pillow identifies and reads PSD files written by Adobe Photoshop 2.5 and 3.0.
 
-QOI
-^^^
-
-.. versionadded:: 9.5.0
-
-Pillow reads images in Quite OK Image format using a Python decoder. If you wish to
-write code specifically for this format, :pypi:`qoi` is an alternative library that
-uses C to decode the image and interfaces with NumPy.
-
 SUN
 ^^^
 
@@ -1650,7 +1665,8 @@ handler. ::
 XPM
 ^^^
 
-Pillow reads X pixmap files (mode ``P``) with 256 colors or less.
+Pillow reads X pixmap files as P mode images if there are 256 colors or less, and as
+RGB images otherwise.
 
 .. _xpm-opening:
 

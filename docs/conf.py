@@ -55,9 +55,9 @@ master_doc = "index"
 project = "Pillow (PIL Fork)"
 copyright = (
     "1995-2011 Fredrik Lundh and contributors, "
-    "2010 Jeffrey A. Clark and contributors."
+    "2010 Jeffrey 'Alex' Clark and contributors."
 )
-author = "Fredrik Lundh (PIL), Jeffrey A. Clark (Pillow)"
+author = "Fredrik Lundh (PIL), Jeffrey 'Alex' Clark (Pillow)"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -121,7 +121,11 @@ nitpicky = True
 # generating warnings in “nitpicky mode”. Note that type should include the domain name
 # if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
-nitpick_ignore = [("py:class", "_CmsProfileCompatible")]
+nitpick_ignore = [
+    ("py:class", "_CmsProfileCompatible"),
+    ("py:class", "_Ink"),
+    ("py:class", "_Palette"),
+]
 
 
 # -- Options for HTML output ----------------------------------------------

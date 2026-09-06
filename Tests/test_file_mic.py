@@ -22,10 +22,10 @@ def test_sanity() -> None:
 
         # Adjust for the gamma of 2.2 encoded into the file
         lut = ImagePalette.make_gamma_lut(1 / 2.2)
-        im = Image.merge("RGBA", [chan.point(lut) for chan in im.split()])
+        im1 = Image.merge("RGBA", [chan.point(lut) for chan in im.split()])
 
         im2 = hopper("RGBA")
-        assert_image_similar(im, im2, 10)
+        assert_image_similar(im1, im2, 10)
 
 
 def test_n_frames() -> None:

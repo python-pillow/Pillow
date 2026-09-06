@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from PIL import Image
 
 from .helper import assert_image_equal, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 pytest.importorskip("PIL._webp", reason="WebP support not installed")
 RGB_MODE = "RGB"
@@ -24,6 +26,5 @@ def test_write_lossless_rgb(tmp_path: Path) -> None:
         assert image.size == (128, 128)
         assert image.format == "WEBP"
         image.load()
-        image.getdata()
 
         assert_image_equal(image, hopper(RGB_MODE))

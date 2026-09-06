@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import sys
-from io import BytesIO
-from pathlib import Path
+from io import BytesIO, TextIOWrapper
 
 import pytest
 
@@ -14,6 +13,10 @@ from .helper import (
     assert_image_similar,
     hopper,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # sample ppm stream
 TEST_FILE = "Tests/images/hopper.ppm"
@@ -59,8 +62,10 @@ def test_sanity() -> None:
         ),
         # P6 with maxval > 255
         (
-            b"P6 3 1 257 \x00\x00\x00\x01\x00\x02"
-            b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xff\xff",
+            (
+                b"P6 3 1 257 \x00\x00\x00\x01\x00\x02"
+                b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xff\xff"
+            ),
             "RGB",
             (
                 (0, 1, 2),
@@ -90,6 +95,13 @@ def test_16bit_pgm() -> None:
         assert im.get_format_mimetype() == "image/x-portable-graymap"
 
         assert_image_equal_tofile(im, "Tests/images/16_bit_binary_pgm.tiff")
+
+
+def test_p4_save(tmp_path: Path) -> None:
+    with Image.open("Tests/images/hopper_1bit.pbm") as im:
+        filename = tmp_path / "temp.pbm"
+        im.save(filename)
+        assert_image_equal_tofile(im, filename)
 
 
 def test_16bit_pgm_write(tmp_path: Path) -> None:
@@ -132,6 +144,12 @@ def test_pfm_big_endian(tmp_path: Path) -> None:
         im.save(filename)
 
         assert_image_equal_tofile(im, filename)
+
+
+def test_save_unsupported_mode(tmp_path: Path) -> None:
+    im = hopper("P")
+    with pytest.raises(OSError, match="cannot write mode P as PPM"):
+        im.save(tmp_path / "out.ppm")
 
 
 @pytest.mark.parametrize(
@@ -288,14 +306,16 @@ def test_non_integer_token(tmp_path: Path) -> None:
             pass
 
 
-def test_header_token_too_long(tmp_path: Path) -> None:
+@pytest.mark.parametrize("data", (b"P3\x0cAAAAAAAAAA\xee", b"P6\n 01234567890"))
+def test_header_token_too_long(tmp_path: Path, data: bytes) -> None:
     path = tmp_path / "temp.ppm"
     with open(path, "wb") as f:
-        f.write(b"P6\n 01234567890")
+        f.write(data)
 
-    with pytest.raises(ValueError, match="Token too long in file header: 01234567890"):
+    with pytest.raises(ValueError) as e:
         with Image.open(path):
             pass
+    assert "Token too long in file header: " in repr(e)
 
 
 def test_truncated_file(tmp_path: Path) -> None:
@@ -366,17 +386,13 @@ def test_mimetypes(tmp_path: Path) -> None:
 @pytest.mark.parametrize("buffer", (True, False))
 def test_save_stdout(buffer: bool, monkeypatch: pytest.MonkeyPatch) -> None:
 
-    class MyStdOut:
-        buffer = BytesIO()
-
-    mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
+    fp = BytesIO()
+    mystdout = TextIOWrapper(fp) if buffer else fp
 
     monkeypatch.setattr(sys, "stdout", mystdout)
 
     with Image.open(TEST_FILE) as im:
-        im.save(sys.stdout, "PPM")
+        im.save(sys.stdout, "PPM")  # type: ignore[arg-type]
 
-    if isinstance(mystdout, MyStdOut):
-        mystdout = mystdout.buffer
-    with Image.open(mystdout) as reloaded:
+    with Image.open(fp) as reloaded:
         assert_image_equal_tofile(reloaded, TEST_FILE)

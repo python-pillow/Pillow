@@ -4,13 +4,14 @@ import collections
 import os
 import sys
 import warnings
-from typing import IO
 
 import PIL
 
 from . import Image
-from ._deprecate import deprecate
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 modules = {
     "pil": ("PIL._imaging", "PILLOW_VERSION"),
     "tkinter": ("PIL._tkinter_finder", "tk_version"),
@@ -120,10 +121,7 @@ def get_supported_codecs() -> list[str]:
     return [f for f in codecs if check_codec(f)]
 
 
-features: dict[str, tuple[str, str | bool, str | None]] = {
-    "webp_anim": ("PIL._webp", True, None),
-    "webp_mux": ("PIL._webp", True, None),
-    "transp_webp": ("PIL._webp", True, None),
+features: dict[str, tuple[str, str, str | None]] = {
     "raqm": ("PIL._imagingft", "HAVE_RAQM", "raqm_version"),
     "fribidi": ("PIL._imagingft", "HAVE_FRIBIDI", "fribidi_version"),
     "harfbuzz": ("PIL._imagingft", "HAVE_HARFBUZZ", "harfbuzz_version"),
@@ -149,12 +147,8 @@ def check_feature(feature: str) -> bool | None:
 
     module, flag, ver = features[feature]
 
-    if isinstance(flag, bool):
-        deprecate(f'check_feature("{feature}")', 12)
     try:
         imported_module = __import__(module, fromlist=["PIL"])
-        if isinstance(flag, bool):
-            return flag
         return getattr(imported_module, flag)
     except ModuleNotFoundError:
         return None
@@ -184,17 +178,7 @@ def get_supported_features() -> list[str]:
     """
     :returns: A list of all supported features.
     """
-    supported_features = []
-    for f, (module, flag, _) in features.items():
-        if flag is True:
-            for feature, (feature_module, _) in modules.items():
-                if feature_module == module:
-                    if check_module(feature):
-                        supported_features.append(f)
-                    break
-        elif check_feature(f):
-            supported_features.append(f)
-    return supported_features
+    return [f for f in features if check_feature(f)]
 
 
 def check(feature: str) -> bool | None:
