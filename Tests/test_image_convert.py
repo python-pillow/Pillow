@@ -356,7 +356,6 @@ def test_matrix_xyz(mode: str) -> None:
 def test_matrix_identity() -> None:
     # Arrange
     im = hopper("RGB")
-
     identity_matrix = (
         1, 0, 0, 0,
         0, 1, 0, 0,
