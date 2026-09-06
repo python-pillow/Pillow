@@ -16,7 +16,10 @@ from __future__ import annotations
 
 from . import Image, ImageFile
 from ._binary import i8
-from ._typing import SupportsRead
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from ._typing import SupportsRead
 
 #
 # Bitstream parser

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import io
-from pathlib import Path
 
 import pytest
 
@@ -9,10 +8,27 @@ from PIL import Image, ImagePalette, PaletteFile
 
 from .helper import assert_image_equal, assert_image_equal_tofile
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 def test_sanity() -> None:
     palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
     assert len(palette.colors) == 256
+
+
+def test_colors_rawmode() -> None:
+    palette = ImagePalette.raw(
+        "BGRX", (0, 0, 0, 0, 255, 255, 255, 0, 0, 0, 255, 0, 0, 255, 0, 0, 255, 0, 0, 0)
+    )
+    assert palette.colors == {
+        (0, 0, 0): 0,
+        (255, 255, 255): 1,
+        (255, 0, 0): 2,
+        (0, 255, 0): 3,
+        (0, 0, 255): 4,
+    }
 
 
 def test_reload() -> None:
@@ -87,13 +103,17 @@ def test_getcolor_not_special(index: int, palette: ImagePalette.ImagePalette) ->
 
     # Do not use transparency index as a new color
     im.info["transparency"] = index
-    index1 = palette.getcolor((0, 0, 0), im)
+    index1 = palette.getcolor((0, 0, 1), im)
     assert index1 != index
+    roundtripped_palette = ImagePalette.ImagePalette(palette=palette.palette)
+    assert roundtripped_palette.colors[(0, 0, 1)] == index1
 
     # Do not use background index as a new color
     im.info["background"] = index1
-    index2 = palette.getcolor((0, 0, 1), im)
+    index2 = palette.getcolor((0, 0, 2), im)
     assert index2 not in (index, index1)
+    roundtripped_palette = ImagePalette.ImagePalette(palette=palette.palette)
+    assert roundtripped_palette.colors[(0, 0, 2)] == index2
 
 
 def test_file(tmp_path: Path) -> None:

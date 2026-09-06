@@ -249,7 +249,7 @@ class PcfFontFile(FontFile.FontFile):
                 ]
                 if encoding_offset != 0xFFFF:
                     encoding[i] = encoding_offset
-            except UnicodeDecodeError:  # noqa: PERF203
+            except UnicodeDecodeError:
                 # character is not supported in selected encoding
                 pass
 

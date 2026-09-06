@@ -54,6 +54,9 @@ class BoxReader:
         if not self._can_read(num_bytes):
             msg = "Not enough data in header"
             raise SyntaxError(msg)
+        if self.fp.tell() + num_bytes >= 2**63:
+            msg = "Box length too large"
+            raise SyntaxError(msg)
 
         data = self.fp.read(num_bytes)
         if len(data) < num_bytes:
@@ -83,13 +86,16 @@ class BoxReader:
     def next_box_type(self) -> bytes:
         # Skip the rest of the box if it has not been read
         if self.remaining_in_box > 0:
+            if self.fp.tell() + self.remaining_in_box >= 2**63:
+                msg = "Box length too large"
+                raise SyntaxError(msg)
             self.fp.seek(self.remaining_in_box, os.SEEK_CUR)
         self.remaining_in_box = -1
 
         # Read the length and type of the next box
-        lbox, tbox = cast(tuple[int, bytes], self.read_fields(">I4s"))
+        lbox, tbox = cast("tuple[int, bytes]", self.read_fields(">I4s"))
         if lbox == 1:
-            lbox = cast(int, self.read_fields(">Q")[0])
+            lbox = cast("int", self.read_fields(">Q")[0])
             hlen = 16
         else:
             hlen = 8

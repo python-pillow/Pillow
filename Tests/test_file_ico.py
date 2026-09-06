@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import io
 import os
-from pathlib import Path
 
 import pytest
 
 from PIL import IcoImagePlugin, Image, ImageDraw, ImageFile
 
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_ICO_FILE = "Tests/images/hopper.ico"
 

@@ -15,12 +15,15 @@ from __future__ import annotations
 import struct
 import sys
 from enum import IntEnum, IntFlag
-from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i32le as i32
 from ._binary import o8
 from ._binary import o32le as o32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 # Magic ("DDS ")
 DDS_MAGIC = 0x20534444

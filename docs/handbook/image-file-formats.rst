@@ -237,7 +237,7 @@ images. Seeking to later frames in a ``P`` image will change the image to
 ``P`` mode images are changed to ``RGB`` because each frame of a GIF may contain
 its own individual palette of up to 256 colors. When a new frame is placed onto a
 previous frame, those colors may combine to exceed the ``P`` mode limit of 256
-colors. Instead, the image is converted to ``RGB`` handle this.
+colors. Instead, the image is converted to ``RGB`` to handle this.
 
 If you would prefer the first ``P`` image frame to be ``RGB`` as well, so that
 every ``P`` frame is converted to ``RGB`` or ``RGBA`` mode, there is a setting
@@ -346,7 +346,7 @@ following options are available::
 **palette**
     Use the specified palette for the saved image. The palette should
     be a bytes or bytearray object containing the palette entries in
-    RGBRGB... form. It should be no more than 768 bytes. Alternately,
+    RGBRGB... form. It should be no more than 768 bytes. Alternatively,
     the palette can be passed in as an
     :py:class:`PIL.ImagePalette.ImagePalette` object.
 
@@ -1307,7 +1307,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     .. versionadded:: 6.1.0
 
     Added support for signed types (e.g. ``TIFF_SIGNED_LONG``) and multiple values.
-    Multiple values for a single tag must be to
+    Multiple values for a single tag must be passed to
     :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2` as a tuple and
     require a matching type in
     :py:attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype` tagtype.

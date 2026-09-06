@@ -3,13 +3,16 @@ from __future__ import annotations
 import io
 import os
 import warnings
-from pathlib import Path
 
 import pytest
 
 from PIL import IcnsImagePlugin, Image, _binary
 
 from .helper import assert_image_equal, assert_image_similar_tofile, skip_unless_feature
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # sample icon file
 TEST_FILE = "Tests/images/pillow.icns"
@@ -20,9 +23,7 @@ def test_sanity() -> None:
     # (512x512@2x) being loaded
     with Image.open(TEST_FILE) as im:
         # Assert that there is no unclosed file warning
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-
+        with warnings.catch_warnings(action="error"):
             im.load()
 
         assert im.mode == "RGBA"

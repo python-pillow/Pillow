@@ -35,7 +35,6 @@ class _Enhance:
                        lower factors mean less color (brightness, contrast,
                        etc), and higher values more. There are no restrictions
                        on this value.
-        :rtype: :py:class:`~PIL.Image.Image`
         """
         return Image.blend(self.degenerate, self.image, factor)
 

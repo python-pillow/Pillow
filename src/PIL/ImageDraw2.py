@@ -25,10 +25,13 @@
 
 from __future__ import annotations
 
-from typing import Any, AnyStr, BinaryIO
-
 from . import Image, ImageColor, ImageDraw, ImageFont, ImagePath
-from ._typing import Coords, StrOrBytesPath
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import Any, AnyStr, BinaryIO
+
+    from ._typing import Coords, StrOrBytesPath
 
 
 class Pen:

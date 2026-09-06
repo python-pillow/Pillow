@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Generator
-from pathlib import Path
-
 import pytest
 
 from PIL import GifImagePlugin, Image, WebPImagePlugin
@@ -14,6 +11,11 @@ from .helper import (
     is_big_endian,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
 
 pytestmark = skip_unless_feature("webp")
 
@@ -95,7 +97,7 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
             # Tests appending using a generator
             def im_generator(
                 ims: list[Image.Image],
-            ) -> Generator[Image.Image, None, None]:
+            ) -> Generator[Image.Image]:
                 yield from ims
 
             temp_file2 = tmp_path / "temp_generator.webp"

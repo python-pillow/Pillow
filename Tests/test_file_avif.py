@@ -4,10 +4,8 @@ import gc
 import os
 import re
 import warnings
-from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from io import BytesIO
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -31,6 +29,11 @@ from .helper import (
     skip_unless_feature,
     skip_unless_feature_version,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator, Sequence
+    from pathlib import Path
 
 try:
     from PIL import _avif
@@ -208,9 +211,7 @@ class TestFileAvif:
 
     def test_no_resource_warning(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 im.save(tmp_path / "temp.avif")
 
     @pytest.mark.parametrize("major_brand", [b"avif", b"avis", b"mif1", b"msf1"])
@@ -603,7 +604,7 @@ class TestFileAvif:
 @skip_unless_feature("avif")
 class TestAvifAnimation:
     @contextmanager
-    def star_frames(self) -> Generator[list[Image.Image], None, None]:
+    def star_frames(self) -> Generator[list[Image.Image]]:
         with Image.open("Tests/images/avif/star.png") as f:
             yield [f, f.rotate(90), f.rotate(180), f.rotate(270)]
 
@@ -676,7 +677,7 @@ class TestAvifAnimation:
             # Test appending using a generator
             def imGenerator(
                 ims: list[Image.Image],
-            ) -> Generator[Image.Image, None, None]:
+            ) -> Generator[Image.Image]:
                 yield from ims
 
             temp_file2 = tmp_path / "temp_generator.avif"

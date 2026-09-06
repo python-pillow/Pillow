@@ -38,14 +38,15 @@ jobs:
       fail-fast: false
       matrix:
         docker: [
-          ubuntu-22.04-jammy-amd64-valgrind,
+          ubuntu-24.04-noble-amd64-valgrind,
         ]
         dockerTag: [main]
+        split: [1, 2, 3, 4]
 
-    name: ${{ matrix.docker }}
+    name: ${{ matrix.docker }} ${{ matrix.split }}
 
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
 
@@ -62,6 +63,8 @@ jobs:
         sudo chown -R 1001 $GITHUB_WORKSPACE
         docker run --name pillow_container \
           -e "PILLOW_VALGRIND_TEST=true" \
+          -e "SPLIT_COUNT=4" \
+          -e "SPLIT_INDEX=${{ matrix.split }}" \
           -e "PYTEST_ADDOPTS=-n0" \
           -v $GITHUB_WORKSPACE:/Pillow \
           pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }} \

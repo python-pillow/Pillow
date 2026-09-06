@@ -32,9 +32,15 @@ ImagingNegative(Imaging im) {
         return NULL;
     }
 
-    for (y = 0; y < im->ysize; y++) {
-        for (x = 0; x < im->linesize; x++) {
-            imOut->image[y][x] = ~im->image[y][x];
+    // ysize and linesize are loop-invariant.
+    int ysize = im->ysize, linesize = im->linesize;
+
+    for (y = 0; y < ysize; y++) {
+        // restrict safe: im is read-only, imOut is a fresh allocation.
+        UINT8 *restrict in = (UINT8 *)im->image[y];
+        UINT8 *restrict out = (UINT8 *)imOut->image[y];
+        for (x = 0; x < linesize; x++) {
+            out[x] = ~in[x];
         }
     }
 

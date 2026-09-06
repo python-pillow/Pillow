@@ -12,18 +12,16 @@ from . import Image, _imagingmorph
 
 LUT_SIZE = 1 << 9
 
-# fmt: off
 ROTATION_MATRIX = [
     6, 3, 0,
     7, 4, 1,
     8, 5, 2,
-]
+]  # fmt: skip
 MIRROR_MATRIX = [
     2, 1, 0,
     5, 4, 3,
     8, 7, 6,
-]
-# fmt: on
+]  # fmt: skip
 
 
 class LutBuilder:

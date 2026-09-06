@@ -14,10 +14,12 @@
 #
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import Any
-
 from . import Image
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Any
 
 
 class Transform(Image.ImageTransformHandler):

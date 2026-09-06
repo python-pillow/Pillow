@@ -184,6 +184,9 @@ RAQM_API raqm_direction_t
 raqm_get_par_resolved_direction (raqm_t *rq);
 
 RAQM_API raqm_direction_t
+raqm_get_par_detected_direction (raqm_t *rq);
+
+RAQM_API raqm_direction_t
 raqm_get_direction_at_index (raqm_t *rq,
                              size_t index);
 
@@ -206,6 +209,10 @@ raqm_version (unsigned int *major,
 
 RAQM_API const char *
 raqm_version_string (void);
+
+RAQM_API bool
+raqm_allowed_grapheme_boundary (raqm_t *rq,
+                                size_t  index);
 
 RAQM_API bool
 raqm_version_atleast (unsigned int major,

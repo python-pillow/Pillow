@@ -31,7 +31,7 @@ import os
 import subprocess
 from enum import IntEnum
 from functools import cached_property
-from typing import Any, NamedTuple, cast
+from typing import NamedTuple, cast
 
 from . import (
     Image,
@@ -49,7 +49,7 @@ from ._util import DeferredError
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from typing import IO, Literal
+    from typing import IO, Any, Literal
 
     from . import _imaging
     from ._typing import Buffer
@@ -355,7 +355,7 @@ class GifImageFile(ImageFile.ImageFile):
                 if color * 3 + 3 > len(self._frame_palette.palette):
                     color = 0
                 return cast(
-                    tuple[int, int, int],
+                    "tuple[int, int, int]",
                     tuple(self._frame_palette.palette[color * 3 : color * 3 + 3]),
                 )
             else:

@@ -17,7 +17,7 @@
  * See the README file for information on usage and redistribution.
  */
 
-#include "Python.h"
+#include <Python.h>
 
 #include "libImaging/Imaging.h"
 

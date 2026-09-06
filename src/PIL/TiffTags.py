@@ -20,6 +20,10 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import Self
+
 
 class _TagInfo(NamedTuple):
     value: int | None
@@ -39,7 +43,7 @@ class TagInfo(_TagInfo):
         type: int | None = None,
         length: int | None = None,
         enum: dict[str, int] | None = None,
-    ) -> TagInfo:
+    ) -> Self:
         return super().__new__(cls, value, name, type, length, enum or {})
 
     def cvt_enum(self, value: str) -> int | str:
@@ -286,6 +290,7 @@ _tags_v2_groups = {
         28: ("GPSAreaInformation", UNDEFINED, 0),
         29: ("GPSDateStamp", ASCII, 11),
         30: ("GPSDifferential", SHORT, 1),
+        31: ("GPSHPositioningError", RATIONAL, 1),
     },
     # InteroperabilityIFD
     40965: {1: ("InteropIndex", ASCII, 1), 2: ("InteropVersion", UNDEFINED, 1)},

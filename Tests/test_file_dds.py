@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 
 import pytest
 
@@ -16,6 +15,10 @@ from .helper import (
     assert_image_similar_tofile,
     hopper,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_FILE_DXT1 = "Tests/images/dxt1-rgb-4bbp-noalpha_MipMaps-1.dds"
 TEST_FILE_DXT3 = "Tests/images/dxt3-argb-8bbp-explicitalpha_MipMaps-1.dds"

@@ -48,6 +48,7 @@ from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
+from ._deprecate import deprecate
 from .JpegPresets import presets
 
 TYPE_CHECKING = False
@@ -467,6 +468,11 @@ class JpegImageFile(ImageFile.ImageFile):
 
     def load_djpeg(self) -> None:
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
+        deprecate(
+            "load_djpeg",
+            14,
+            action="Use the built-in JPEG decoder instead, or call djpeg yourself.",
+        )
 
         f, path = tempfile.mkstemp()
         os.close(f)
@@ -605,7 +611,7 @@ def _getmp(self: JpegImageFile) -> dict[int, Any] | None:
             mpentry["Attribute"] = mpentryattr
             mpentries.append(mpentry)
         mp[0xB002] = mpentries
-    except KeyError as e:
+    except (KeyError, struct.error) as e:
         msg = "malformed MP Index (bad MP Entry)"
         raise SyntaxError(msg) from e
     # Next we should try and parse the individual image unique ID list;
@@ -626,7 +632,6 @@ RAWMODE = {
     "YCbCr": "YCbCr",
 }
 
-# fmt: off
 zigzag_index = (
     0,  1,  5,  6, 14, 15, 27, 28,
     2,  4,  7, 13, 16, 26, 29, 42,
@@ -636,14 +641,13 @@ zigzag_index = (
     20, 22, 33, 38, 46, 51, 55, 60,
     21, 34, 37, 47, 50, 56, 59, 61,
     35, 36, 48, 49, 57, 58, 62, 63,
-)
+)  # fmt: skip
 
 samplings = {
     (1, 1, 1, 1, 1, 1): 0,
     (2, 1, 1, 1, 1, 1): 1,
     (2, 2, 1, 1, 1, 1): 2,
 }
-# fmt: on
 
 
 def get_sampling(im: Image.Image) -> int:
@@ -733,7 +737,8 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 qtables = [
                     qtables[key] for key in range(len(qtables)) if key in qtables
                 ]
-            elif isinstance(qtables, tuple):
+            else:
+                # Copy the sequence, so that it cannot be changed while it is read
                 qtables = list(qtables)
             if not (0 < len(qtables) < 5):
                 msg = "None or too many quantization tables"
