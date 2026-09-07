@@ -39,19 +39,20 @@ def test_invalid_file() -> None:
 
 
 def test_unsupported_number_of_bits() -> None:
-    image_data = b"".join(
-        data.ljust(80, b" ")
-        for data in [
-            b"SIMPLE  = T",
-            b"BITPIX  = 128",
-            b"NAXIS   = 1",
-            b"NAXIS1  = 0",
-            b"END",
-        ]
+    b = BytesIO(
+        b"".join(
+            data.ljust(80, b" ")
+            for data in [
+                b"SIMPLE  = T",
+                b"BITPIX  = 128",
+                b"NAXIS   = 1",
+                b"NAXIS1  = 0",
+                b"END",
+            ]
+        )
     )
     with pytest.raises(OSError, match="Unsupported number of bits"):
-        with Image.open(BytesIO(image_data)):
-            pass
+        Image.open(b)
 
 
 def test_truncated_fits() -> None:
@@ -62,12 +63,13 @@ def test_truncated_fits() -> None:
 
 
 def test_naxis_zero() -> None:
-    image_data = b"".join(
-        data.ljust(80, b" ") for data in [b"SIMPLE  = T", b"NAXIS   = 0", b"END"]
-    ).ljust(2881)
+    b = BytesIO(
+        b"".join(
+            data.ljust(80, b" ") for data in [b"SIMPLE  = T", b"NAXIS   = 0", b"END"]
+        ).ljust(2881)
+    )
     with pytest.raises(ValueError, match="No image data"):
-        with Image.open(BytesIO(image_data)):
-            pass
+        Image.open(b)
 
 
 def test_comment() -> None:
