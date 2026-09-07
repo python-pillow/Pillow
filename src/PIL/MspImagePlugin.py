@@ -71,9 +71,9 @@ class MspImageFile(ImageFile.ImageFile):
         self._size = i16(s, 4), i16(s, 6)
 
         if s.startswith(b"DanM"):
-            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 32, "1")]
+            self.tile = [ImageFile._Tile("raw", (0, 0, *self.size), 32, "1")]
         else:
-            self.tile = [ImageFile._Tile("MSP", (0, 0) + self.size, 32)]
+            self.tile = [ImageFile._Tile("MSP", (0, 0, *self.size), 32)]
 
 
 class MspDecoder(ImageFile.PyDecoder):
@@ -189,7 +189,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         fp.write(o16(h))
 
     # image body
-    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 32, "1")])
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 32, "1")])
 
 
 #

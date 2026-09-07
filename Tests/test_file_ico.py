@@ -247,7 +247,7 @@ def test_draw_reloaded(tmp_path: Path) -> None:
         outfile = tmp_path / "temp_saved_hopper_draw.ico"
 
         draw = ImageDraw.Draw(im)
-        draw.line((0, 0) + im.size, "#f00")
+        draw.line((0, 0, *im.size), "#f00")
         im.save(outfile)
 
     with Image.open(outfile) as im:

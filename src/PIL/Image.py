@@ -885,7 +885,7 @@ class Image:
 
         # unpack data
         e = _getencoder(self.mode, encoder_name, encoder_args)
-        e.setimage(self.im, (0, 0) + self.size)
+        e.setimage(self.im, (0, 0, *self.size))
 
         from . import ImageFile
 
@@ -962,7 +962,7 @@ class Image:
 
         # unpack data
         d = _getdecoder(self.mode, decoder_name, decoder_args)
-        d.setimage(self.im, (0, 0) + self.size)
+        d.setimage(self.im, (0, 0, *self.size))
         s = d.decode(data)
 
         if s[0] >= 0:
@@ -1381,7 +1381,7 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if box is None:
+        if box is None or box == (0, 0, *self.size):
             return self.copy()
 
         if box[2] < box[0]:
@@ -1976,7 +1976,7 @@ class Image:
             raise ValueError(msg)
 
         # over image, crop if it's not the whole image.
-        if overlay_crop_box == (0, 0) + im.size:
+        if overlay_crop_box == (0, 0, *im.size):
             overlay = im
         else:
             overlay = im.crop(overlay_crop_box)
@@ -1985,7 +1985,7 @@ class Image:
         box = tuple(dest) + (dest[0] + overlay.width, dest[1] + overlay.height)
 
         # destination image. don't copy if we're using the whole image.
-        if box == (0, 0) + self.size:
+        if box == (0, 0, *self.size):
             background = self
         else:
             background = self.crop(box)
@@ -2408,10 +2408,10 @@ class Image:
             raise ValueError(msg)
 
         if box is None:
-            box = (0, 0) + self.size
+            box = (0, 0, *self.size)
 
         size = tuple(size)
-        if self.size == size and box == (0, 0) + self.size:
+        if self.size == size and box == (0, 0, *self.size):
             return self.copy()
 
         if self.mode in ("1", "P"):
@@ -2471,11 +2471,11 @@ class Image:
         if not isinstance(factor, (list, tuple)):
             factor = (factor, factor)
 
-        if box is None:
-            box = (0, 0) + self.size
+        if factor == (1, 1):
+            return self.crop(box)
 
-        if factor == (1, 1) and box == (0, 0) + self.size:
-            return self.copy()
+        if box is None:
+            box = (0, 0, *self.size)
 
         if self.mode in ["LA", "RGBA"]:
             im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
@@ -3017,7 +3017,7 @@ class Image:
                 )
         else:
             im.__transformer(
-                (0, 0) + size, self, method, data, resample, fillcolor is None
+                (0, 0, *size), self, method, data, resample, fillcolor is None
             )
 
         return im

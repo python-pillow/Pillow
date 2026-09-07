@@ -117,7 +117,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 ImageFile._save(
                     and_mask,
                     image_io,
-                    [ImageFile._Tile("raw", (0, 0) + size, 0, ("1", 0, -1))],
+                    [ImageFile._Tile("raw", (0, 0, *size), 0, ("1", 0, -1))],
                 )
         else:
             frame.save(image_io, "png")
@@ -246,7 +246,7 @@ class IcoFile:
             # change tile dimension to only encompass XOR image
             im._size = (im.size[0], int(im.size[1] / 2))
             d, e, o, a = im.tile[0]
-            im.tile[0] = ImageFile._Tile(d, (0, 0) + im.size, o, a)
+            im.tile[0] = ImageFile._Tile(d, (0, 0, *im.size), o, a)
 
             # figure out where AND mask image starts
             if header.bpp == 32:

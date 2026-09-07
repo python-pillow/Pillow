@@ -66,7 +66,7 @@ class McIdasImageFile(ImageFile.ImageFile):
         stride = w[15] + w[10] * w[11] * w[14]
 
         self.tile = [
-            ImageFile._Tile("raw", (0, 0) + self.size, offset, (rawmode, stride, 1))
+            ImageFile._Tile("raw", (0, 0, *self.size), offset, (rawmode, stride, 1))
         ]
 
 

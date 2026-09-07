@@ -113,7 +113,7 @@ class XpmImageFile(ImageFile.ImageFile):
             if transparent_key is not None:
                 self.info["transparency"] = palette_keys.index(transparent_key)
 
-        self.tile = [ImageFile._Tile("xpm", (0, 0) + self.size, self.fp.tell(), args)]
+        self.tile = [ImageFile._Tile("xpm", (0, 0, *self.size), self.fp.tell(), args)]
 
     def load_read(self, read_bytes: int) -> bytes:
         #

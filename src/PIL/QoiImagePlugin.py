@@ -36,7 +36,7 @@ class QoiImageFile(ImageFile.ImageFile):
         self._mode = "RGB" if channels == 3 else "RGBA"
 
         self.fp.seek(1, os.SEEK_CUR)  # colorspace
-        self.tile = [ImageFile._Tile("qoi", (0, 0) + self._size, self.fp.tell())]
+        self.tile = [ImageFile._Tile("qoi", (0, 0, *self._size), self.fp.tell())]
 
 
 class QoiDecoder(ImageFile.PyDecoder):
@@ -142,7 +142,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.write(o8(channels))
     fp.write(o8(colorspace))
 
-    ImageFile._save(im, fp, [ImageFile._Tile("qoi", (0, 0) + im.size)])
+    ImageFile._save(im, fp, [ImageFile._Tile("qoi", (0, 0, *im.size))])
 
 
 class QoiEncoder(ImageFile.PyEncoder):

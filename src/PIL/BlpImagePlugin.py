@@ -292,7 +292,7 @@ class BlpImageFile(ImageFile.ImageFile):
         decoder = self.magic.decode()
 
         self._mode = "RGBA" if alpha else "RGB"
-        self.tile = [ImageFile._Tile(decoder, (0, 0) + self.size, offset, args)]
+        self.tile = [ImageFile._Tile(decoder, (0, 0, *self.size), offset, args)]
 
 
 class _BLPBaseDecoder(abc.ABC, ImageFile.PyDecoder):
@@ -489,7 +489,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         fp.write(struct.pack("<i", 5))
         fp.write(struct.pack("<i", 0))
 
-    ImageFile._save(im, fp, [ImageFile._Tile("BLP", (0, 0) + im.size, 0, im.mode)])
+    ImageFile._save(im, fp, [ImageFile._Tile("BLP", (0, 0, *im.size), 0, im.mode)])
 
 
 Image.register_open(BlpImageFile.format, BlpImageFile, _accept)
