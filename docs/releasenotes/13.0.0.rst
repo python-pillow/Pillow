@@ -87,6 +87,17 @@ intended for internal use, so there is no replacement.
 API changes
 ===========
 
+Image getdata()
+^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.getdata` had been marked deprecated since 12.1.0,
+to be removed in Pillow 14, as it returned a poorly specified internal Pillow data type.
+
+:py:meth:`~PIL.Image.Image.getdata` now returns an ``ImageLinearAccess`` object,
+a read-only, lazy view onto the image, supporting the same operations that had been
+documented for the old return value (``len()``, indexing and iteration).
+
+
 TODO
 ^^^^
 

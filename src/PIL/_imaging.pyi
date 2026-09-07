@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from typing import Any
 
 class ImagingCore:
@@ -15,6 +16,11 @@ class PixelAccess:
     def __setitem__(
         self, xy: tuple[int, int], color: float | tuple[int, ...]
     ) -> None: ...
+
+class ImageLinearAccess:
+    def __len__(self) -> int: ...
+    def __getitem__(self, index: int) -> float | tuple[int, ...]: ...
+    def __iter__(self) -> Iterator[float | tuple[int, ...]]: ...
 
 class ImagingDecoder:
     def __getattr__(self, name: str) -> Any: ...
