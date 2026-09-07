@@ -829,6 +829,9 @@ ImagingResampleInner(
     second_pass = imTemp != NULL;                       \
     imTemp = ImagingNewDirty(imIn->mode, w, h);         \
     if (!imTemp) {                                      \
+        if (second_pass) {                              \
+            ImagingDelete(imIn);                        \
+        }                                               \
         error = 1;                                      \
         goto end;                                       \
     }                                                   \
