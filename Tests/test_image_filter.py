@@ -74,11 +74,17 @@ def test_sanity_error(mode: str) -> None:
         im.filter("hello")  # type: ignore[arg-type]
 
 
-@pytest.mark.parametrize("size", ((1, 1), (2, 2), (3, 3)))
-def test_noop_on_small_images(size: tuple[int, int]) -> None:
-    # If image is not larger than the kernel size, return it as-is
-    im = Image.new("RGB", size)
-    assert_image_equal(im.filter(ImageFilter.SMOOTH), im)
+def test_noop_on_small_images() -> None:
+    # If image is smaller than the kernel size, return it as-is.
+    kernel_size: tuple[int, int] = ImageFilter.SMOOTH_MORE.filterargs[0]
+    kernel_w, kernel_h = kernel_size
+    for w in range(1, kernel_w - 1):
+        for h in range(1, kernel_h - 1):
+            im = hopper("RGB").resize((w, h))
+            # Precondition for the below equality test:
+            # filter is larger or equal to image.
+            assert im.size < kernel_size
+            assert_image_equal(im.filter(ImageFilter.SMOOTH_MORE), im)
 
 
 @pytest.mark.parametrize(
