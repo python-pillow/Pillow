@@ -5,9 +5,9 @@ from io import BytesIO
 
 import pytest
 
-from PIL import GifImagePlugin, Image, JpegImagePlugin
+from PIL import Image, JpegImagePlugin
 
-from .helper import djpeg_available, is_win32, netpbm_available
+from .helper import djpeg_available, is_win32
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -16,7 +16,6 @@ if TYPE_CHECKING:
     from typing import IO
 
 TEST_JPG = "Tests/images/hopper.jpg"
-TEST_GIF = "Tests/images/hopper.gif"
 
 test_filenames = ("temp_';", 'temp_";', "temp_'\"|", "temp_'\"||", "temp_'\"&&")
 
@@ -46,17 +45,3 @@ class TestShellInjection:
                 assert isinstance(im, JpegImagePlugin.JpegImageFile)
                 with pytest.warns(DeprecationWarning, match="load_djpeg"):
                     im.load_djpeg()
-
-    @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
-    def test_save_netpbm_filename_bmp_mode(self, tmp_path: Path) -> None:
-        with Image.open(TEST_GIF) as im:
-            im_rgb = im.convert("RGB")
-            self.assert_save_filename_check(
-                tmp_path, im_rgb, GifImagePlugin._save_netpbm
-            )
-
-    @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
-    def test_save_netpbm_filename_l_mode(self, tmp_path: Path) -> None:
-        with Image.open(TEST_GIF) as im:
-            im_l = im.convert("L")
-            self.assert_save_filename_check(tmp_path, im_l, GifImagePlugin._save_netpbm)
