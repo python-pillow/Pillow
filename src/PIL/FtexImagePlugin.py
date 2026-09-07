@@ -82,7 +82,9 @@ class FtexImageFile(ImageFile.ImageFile):
 
         # Only support single-format files.
         # I don't know of any multi-format file.
-        assert format_count == 1
+        if format_count != 1:
+            msg = f"Unsupported number of texture formats: {format_count}"
+            raise ValueError(msg)
 
         format, where = struct.unpack("<2i", self.fp.read(8))
         self.fp.seek(where)
@@ -92,10 +94,10 @@ class FtexImageFile(ImageFile.ImageFile):
 
         if format == Format.DXT1:
             self._mode = "RGBA"
-            self.tile = [ImageFile._Tile("bcn", (0, 0) + self.size, 0, (1,))]
+            self.tile = [ImageFile._Tile("bcn", (0, 0, *self.size), 0, (1,))]
         elif format == Format.UNCOMPRESSED:
             self._mode = "RGB"
-            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, "RGB")]
+            self.tile = [ImageFile._Tile("raw", (0, 0, *self.size), 0, "RGB")]
         else:
             msg = f"Invalid texture compression format: {repr(format)}"
             raise ValueError(msg)

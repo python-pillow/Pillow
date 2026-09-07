@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import sys
-from collections.abc import Callable
 from typing import Any
 
 import pytest
 
 from PIL import Image
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 min_iterations = 100
 max_iterations = 10000

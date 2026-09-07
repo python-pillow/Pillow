@@ -6,8 +6,7 @@ import pytest
 
 from PIL import Image
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", category=DeprecationWarning)
+with warnings.catch_warnings(action="ignore", category=DeprecationWarning):
     from PIL import ImageQt
 
 from .helper import assert_image_equal, hopper

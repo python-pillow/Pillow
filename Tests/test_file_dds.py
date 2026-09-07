@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 
 import pytest
 
@@ -16,6 +15,10 @@ from .helper import (
     assert_image_similar_tofile,
     hopper,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_FILE_DXT1 = "Tests/images/dxt1-rgb-4bbp-noalpha_MipMaps-1.dds"
 TEST_FILE_DXT3 = "Tests/images/dxt3-argb-8bbp-explicitalpha_MipMaps-1.dds"
@@ -540,3 +543,18 @@ def test_save_large_file(tmp_path: Path, pixel_format: str, mode: str) -> None:
     im = hopper(mode).resize((440, 440))
     # should not error in valgrind
     im.save(tmp_path / "img.dds", pixel_format=pixel_format)
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        "Tests/images/timeout-041dd17dfde800360a47a172269df127af138c6b.dds",
+        "Tests/images/timeout-755a4d204f4208e3597ac3391edebee196462bd0.dds",
+        "Tests/images/timeout-52d106579505547091ef69b58341351a37c23e31.dds",
+        "Tests/images/timeout-c60a3d7314213624607bfb3e38d551a8b24a7435.dds",
+    ],
+)
+def test_not_enough_image_data(test_file: str) -> None:
+    with Image.open(test_file) as im:
+        with pytest.raises(ValueError, match="not enough image data"):
+            im.load()

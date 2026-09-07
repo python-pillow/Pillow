@@ -27,10 +27,13 @@ import re
 import subprocess
 import sys
 import tempfile
-from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i32le as i32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 # --------------------------------------------------------------------
 
@@ -357,6 +360,9 @@ class EpsImageFile(ImageFile.ImageFile):
                 trailer_reached = True
             elif bytes_mv[:14] == b"%%BeginBinary:":
                 bytecount = int(byte_arr[14:bytes_read])
+                if bytecount < 0:
+                    msg = "BeginBinary bytecount cannot be negative"
+                    raise ValueError(msg)
                 self.fp.seek(bytecount, os.SEEK_CUR)
             bytes_read = 0
 
@@ -373,7 +379,7 @@ class EpsImageFile(ImageFile.ImageFile):
         )
 
         self.tile = [
-            ImageFile._Tile("eps", (0, 0) + self.size, offset, (length, bounding_box))
+            ImageFile._Tile("eps", (0, 0, *self.size), offset, (length, bounding_box))
         ]
 
     def _find_offset(self, fp: IO[bytes]) -> tuple[int, int]:
@@ -461,7 +467,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes, eps: int = 1) -
     if hasattr(fp, "flush"):
         fp.flush()
 
-    ImageFile._save(im, fp, [ImageFile._Tile("eps", (0, 0) + im.size)])
+    ImageFile._save(im, fp, [ImageFile._Tile("eps", (0, 0, *im.size))])
 
     fp.write(b"\n%%%%EndBinary\n")
     fp.write(b"grestore end\n")

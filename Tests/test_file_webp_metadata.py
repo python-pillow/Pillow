@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
-from types import ModuleType
 
 import pytest
 
 from PIL import Image, WebPImagePlugin
 
 from .helper import mark_if_feature_version, skip_unless_feature
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from types import ModuleType
 
 pytestmark = skip_unless_feature("webp")
 

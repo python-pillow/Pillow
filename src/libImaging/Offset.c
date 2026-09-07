@@ -33,6 +33,9 @@ ImagingOffset(Imaging im, int xoffset, int yoffset) {
     ImagingCopyPalette(imOut, im);
 
     /* make offsets positive to avoid negative coordinates */
+    if (im->xsize == 0 || im->ysize == 0) {
+        return imOut;
+    }
     xoffset %= im->xsize;
     xoffset = im->xsize - xoffset;
     if (xoffset < 0) {

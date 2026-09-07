@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from functools import cached_property
+
 import pytest
 
 from PIL import Image
 
-from .helper import CachedProperty, assert_image_equal
+from .helper import assert_image_equal
 
 
 class TestImagingPaste:
@@ -45,7 +47,7 @@ class TestImagingPaste:
         im.paste(im2, mask)
         self.assert_9points_image(im, expected)
 
-    @CachedProperty
+    @cached_property
     def mask_1(self) -> Image.Image:
         mask = Image.new("1", (self.size, self.size))
         px = mask.load()
@@ -55,11 +57,11 @@ class TestImagingPaste:
                 px[y, x] = (x + y) % 2
         return mask
 
-    @CachedProperty
+    @cached_property
     def mask_L(self) -> Image.Image:
         return self.gradient_L.transpose(Image.Transpose.ROTATE_270)
 
-    @CachedProperty
+    @cached_property
     def gradient_L(self) -> Image.Image:
         gradient = Image.new("L", (self.size, self.size))
         px = gradient.load()
@@ -69,7 +71,7 @@ class TestImagingPaste:
                 px[y, x] = (x + y) % 255
         return gradient
 
-    @CachedProperty
+    @cached_property
     def gradient_RGB(self) -> Image.Image:
         return Image.merge(
             "RGB",
@@ -80,7 +82,7 @@ class TestImagingPaste:
             ],
         )
 
-    @CachedProperty
+    @cached_property
     def gradient_LA(self) -> Image.Image:
         return Image.merge(
             "LA",
@@ -90,7 +92,7 @@ class TestImagingPaste:
             ],
         )
 
-    @CachedProperty
+    @cached_property
     def gradient_RGBA(self) -> Image.Image:
         return Image.merge(
             "RGBA",
@@ -102,7 +104,7 @@ class TestImagingPaste:
             ],
         )
 
-    @CachedProperty
+    @cached_property
     def gradient_RGBa(self) -> Image.Image:
         return Image.merge(
             "RGBa",
@@ -356,6 +358,20 @@ class TestImagingPaste:
 
         im.copy().paste(im2)
         im.copy().paste(im2, (0, 0))
+
+    @pytest.mark.parametrize(
+        "box",
+        (
+            (2**31 - 1, 0, -(2**31), 1),
+            (0, 2**31 - 1, 1, -(2**31)),
+        ),
+    )
+    def test_overflow(self, box: tuple[int, int, int, int]) -> None:
+        im = Image.new("1", (1, 1))
+        im.paste(1, box)
+
+        with pytest.raises(ValueError, match="images do not match"):
+            im.paste(im.copy(), box)
 
     def test_incorrect_abbreviated_form(self) -> None:
         im = Image.new("L", (1, 1))

@@ -39,7 +39,7 @@ from __future__ import annotations
 import warnings
 from io import BytesIO
 from math import ceil, log
-from typing import IO, NamedTuple
+from typing import NamedTuple
 
 from . import BmpImagePlugin, Image, ImageFile, PngImagePlugin
 from ._binary import i16le as i16
@@ -47,6 +47,10 @@ from ._binary import i32le as i32
 from ._binary import o8
 from ._binary import o16le as o16
 from ._binary import o32le as o32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 #
 # --------------------------------------------------------------------
@@ -57,15 +61,18 @@ _MAGIC = b"\0\0\1\0"
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.write(_MAGIC)  # (2+2)
     bmp = im.encoderinfo.get("bitmap_format") == "bmp"
-    sizes = im.encoderinfo.get(
-        "sizes",
-        [(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
-    )
+    if "sizes" in im.encoderinfo:
+        sizes = sorted(set(im.encoderinfo["sizes"]))
+    else:
+        sizes = (
+            [im.size]
+            if min(im.size) < 16
+            else [(d, d) for d in (16, 24, 32, 48, 64, 128, 256)]
+        )
     frames = []
     provided_ims = [im] + im.encoderinfo.get("append_images", [])
-    width, height = im.size
-    for size in sorted(set(sizes)):
-        if size[0] > width or size[1] > height or size[0] > 256 or size[1] > 256:
+    for size in sizes:
+        if size[0] > min(256, im.width) or size[1] > min(256, im.height):
             continue
 
         for provided_im in provided_ims:
@@ -90,6 +97,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             frame = provided_im.copy()
             frame.thumbnail(size, Image.Resampling.LANCZOS, reducing_gap=None)
             frames.append(frame)
+    if not frames:
+        msg = "All sizes too large for image"
+        raise ValueError(msg)
     fp.write(o16(len(frames)))  # idCount(2)
     offset = fp.tell() + len(frames) * 16
     for frame in frames:
@@ -113,7 +123,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 ImageFile._save(
                     and_mask,
                     image_io,
-                    [ImageFile._Tile("raw", (0, 0) + size, 0, ("1", 0, -1))],
+                    [ImageFile._Tile("raw", (0, 0, *size), 0, ("1", 0, -1))],
                 )
         else:
             frame.save(image_io, "png")
@@ -242,7 +252,7 @@ class IcoFile:
             # change tile dimension to only encompass XOR image
             im._size = (im.size[0], int(im.size[1] / 2))
             d, e, o, a = im.tile[0]
-            im.tile[0] = ImageFile._Tile(d, (0, 0) + im.size, o, a)
+            im.tile[0] = ImageFile._Tile(d, (0, 0, *im.size), o, a)
 
             # figure out where AND mask image starts
             if header.bpp == 32:

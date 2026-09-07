@@ -17,30 +17,37 @@ aptget_update || aptget_update retry || aptget_update retry
 
 set -e
 
-sudo apt-get -qq install libfreetype6-dev liblcms2-dev libtiff-dev python3-tk\
-                         ghostscript libjpeg-turbo8-dev libopenjp2-7-dev\
-                         cmake meson imagemagick libharfbuzz-dev libfribidi-dev\
-                         sway wl-clipboard libopenblas-dev nasm
+packages=(
+    cmake
+    ghostscript
+    imagemagick  # ImageMagick is used by Tests/test_file_palm.py
+    libfreetype6-dev
+    libfribidi-dev
+    libharfbuzz-dev
+    libjpeg-turbo8-dev
+    liblcms2-dev
+    libopenjp2-7-dev
+    libtiff-dev
+    meson
+    nasm
+    netpbm  # netpbm provides ppmquant and ppmtogif for GifImagePlugin._save_netpbm
+    python3-tk
+    sway
+    wl-clipboard
+)
+sudo apt-get -qq install --no-install-recommends "${packages[@]}"
 
 python3 -m pip install --upgrade pip
-python3 -m pip install --upgrade wheel
-python3 -m pip install coverage
-python3 -m pip install defusedxml
-python3 -m pip install ipython
-python3 -m pip install olefile
-python3 -m pip install -U pytest
-python3 -m pip install -U pytest-cov
-python3 -m pip install -U pytest-timeout
-python3 -m pip install pyroma
+python3 -m pip install --upgrade coverage defusedxml ipython olefile pytest pytest-cov pytest-timeout
+
 # optional test dependencies, only install if there's a binary package.
 python3 -m pip install --only-binary=:all: numpy || true
 python3 -m pip install --only-binary=:all: pyarrow || true
 
 # PyQt6 doesn't support PyPy3
 if [[ $GHA_PYTHON_VERSION == 3.* ]]; then
-    sudo apt-get -qq install libegl1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxkbcommon-x11-0
-    # TODO Update condition when pyqt6 supports free-threading
-    if ! [[ "$PYTHON_GIL" == "0" ]]; then python3 -m pip install pyqt6 ; fi
+    # pyqt6 doesn't yet support free-threading; only install if a wheel is available
+    python3 -m pip install --only-binary=:all: pyqt6 || true
 fi
 
 # webp

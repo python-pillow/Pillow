@@ -36,9 +36,12 @@ import os
 import struct
 from enum import IntEnum
 from io import BytesIO
-from typing import IO
 
 from . import Image, ImageFile
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 
 class Format(IntEnum):
@@ -289,13 +292,13 @@ class BlpImageFile(ImageFile.ImageFile):
         decoder = self.magic.decode()
 
         self._mode = "RGBA" if alpha else "RGB"
-        self.tile = [ImageFile._Tile(decoder, (0, 0) + self.size, offset, args)]
+        self.tile = [ImageFile._Tile(decoder, (0, 0, *self.size), offset, args)]
 
 
 class _BLPBaseDecoder(abc.ABC, ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         try:
             self._read_header()
             self._load()
@@ -435,7 +438,7 @@ class BLPEncoder(ImageFile.PyEncoder):
     def _write_palette(self) -> bytes:
         data = b""
         assert self.im is not None
-        palette = self.im.getpalette("RGBA", "RGBA")
+        palette = self.im.getpalette("RGBA")
         for i in range(len(palette) // 4):
             r, g, b, a = palette[i * 4 : (i + 1) * 4]
             data += struct.pack("<4B", b, g, r, a)
@@ -486,7 +489,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         fp.write(struct.pack("<i", 5))
         fp.write(struct.pack("<i", 0))
 
-    ImageFile._save(im, fp, [ImageFile._Tile("BLP", (0, 0) + im.size, 0, im.mode)])
+    ImageFile._save(im, fp, [ImageFile._Tile("BLP", (0, 0, *im.size), 0, im.mode)])
 
 
 Image.register_open(BlpImageFile.format, BlpImageFile, _accept)

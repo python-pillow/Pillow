@@ -645,7 +645,6 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
     size_t tile_bytes = 0;
     unsigned n, tile_height, tile_width;
     int subsampling;
-    int total_component_width = 0;
 
     stream = opj_stream_create(BUFFER_SIZE, OPJ_TRUE);
 
@@ -812,7 +811,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
             break;
         }
 
-        /* Adjust the tile co-ordinates based on the reduction (OpenJPEG
+        /* Adjust the tile coordinates based on the reduction (OpenJPEG
            doesn't do this for us) */
         tile_info.x0 = (tile_info.x0 + correction) >> context->reduce;
         tile_info.y0 = (tile_info.y0 + correction) >> context->reduce;
@@ -851,6 +850,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
          a, and then a malicious file could have a smaller tile_bytes
         */
 
+        int total_component_width = 0;
         for (n = 0; n < tile_info.nb_comps; n++) {
             // see csize /acsize calcs
             int csize = (image->comps[n].prec + 7) >> 3;
