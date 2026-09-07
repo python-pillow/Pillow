@@ -8,7 +8,21 @@ from PIL import Image, ImageFilter
 
 from .helper import assert_image_equal, hopper
 
-MODES = ("L", "LA", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
+MODES = (
+    "L",
+    "LA",
+    "La",
+    "I",
+    "I;16",
+    "I;16B",
+    "I;16L",
+    "I;16N",
+    "RGB",
+    "RGBA",
+    "RGBa",
+    "RGBX",
+    "CMYK",
+)
 
 
 @pytest.mark.parametrize(
