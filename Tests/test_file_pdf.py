@@ -5,8 +5,6 @@ import os
 import os.path
 import tempfile
 import time
-from collections.abc import Generator
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -19,6 +17,11 @@ from .helper import (
     skip_unless_feature,
     timeout_unless_slower_valgrind,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
 
 
 def helper_save_as_pdf(tmp_path: Path, mode: str, **kwargs: Any) -> str:

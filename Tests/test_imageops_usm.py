@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from collections.abc import Generator
-
 import pytest
 
 from PIL import Image, ImageFile, ImageFilter
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 @pytest.fixture

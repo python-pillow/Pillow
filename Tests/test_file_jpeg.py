@@ -5,8 +5,6 @@ import re
 import struct
 import warnings
 from io import BytesIO
-from pathlib import Path
-from types import ModuleType
 from typing import Any, cast
 
 import pytest
@@ -35,6 +33,11 @@ from .helper import (
     timeout_unless_slower_valgrind,
 )
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from types import ModuleType
+
 ElementTree: ModuleType | None
 try:
     from defusedxml import ElementTree
@@ -53,7 +56,7 @@ class TestFileJpeg:
         im.save(out, "JPEG", **options)
         test_bytes = out.tell()
         out.seek(0)
-        reloaded = cast(JpegImagePlugin.JpegImageFile, Image.open(out))
+        reloaded = cast("JpegImagePlugin.JpegImageFile", Image.open(out))
         return reloaded, test_bytes
 
     def roundtrip(
@@ -683,6 +686,15 @@ class TestFileJpeg:
             with pytest.raises(ValueError):
                 self.roundtrip(im, qtables=[[1, 2, 3, 4]])
 
+    def test_qtables_incorrect_length(self) -> None:
+        class IncorrectLength(list[list[int]]):
+            def __len__(self) -> int:
+                return 4
+
+        im = Image.new("1", (1, 1))
+        im2 = self.roundtrip(im, qtables=IncorrectLength([[1] * 64]))
+        assert len(im2.quantization) == 1
+
     def test_load_16bit_qtables(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
             assert isinstance(im, JpegImagePlugin.JpegImageFile)
@@ -731,7 +743,8 @@ class TestFileJpeg:
     def test_load_djpeg(self) -> None:
         with Image.open(TEST_FILE) as img:
             assert isinstance(img, JpegImagePlugin.JpegImageFile)
-            img.load_djpeg()
+            with pytest.warns(DeprecationWarning, match="load_djpeg"):
+                img.load_djpeg()
             assert_image_similar_tofile(img, TEST_FILE, 5)
 
     def test_no_duplicate_0x1001_tag(self) -> None:

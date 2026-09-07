@@ -4,10 +4,8 @@ import gc
 import os
 import re
 import warnings
-from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from io import BytesIO
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -31,6 +29,11 @@ from .helper import (
     skip_unless_feature,
     skip_unless_feature_version,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator, Sequence
+    from pathlib import Path
 
 try:
     from PIL import _avif

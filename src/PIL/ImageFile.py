@@ -34,14 +34,14 @@ import itertools
 import logging
 import os
 import struct
-from typing import IO, Any, NamedTuple, cast
+from typing import NamedTuple, cast
 
 from . import ExifTags, Image
 from ._util import DeferredError, is_path
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from typing import Self
+    from typing import IO, Any, Self
 
     from ._typing import StrOrBytesPath
 
@@ -142,7 +142,7 @@ class ImageFile(Image.Image):
             self._exclusive_fp = True
         else:
             # stream
-            self.fp = cast(IO[bytes], fp)
+            self.fp = cast("IO[bytes]", fp)
             self.filename = filename if filename is not None else ""
             # can be overridden
             self._exclusive_fp = False
@@ -151,9 +151,8 @@ class ImageFile(Image.Image):
             try:
                 self._open()
 
-                if isinstance(self, StubImageFile):
-                    if loader := self._load():
-                        loader.open(self)
+                if isinstance(self, StubImageFile) and self._handler:
+                    self._handler.open(self)
             except (
                 IndexError,  # end of data
                 TypeError,  # end of data (ord)
@@ -163,7 +162,11 @@ class ImageFile(Image.Image):
             ) as v:
                 raise SyntaxError(v) from v
 
-            if not self.mode or self.size[0] <= 0 or self.size[1] <= 0:
+            if not self.mode or (
+                min(self.size) < 0
+                if isinstance(self, StubImageFile) and self._handler is None
+                else min(self.size) <= 0
+            ):
                 msg = "not identified by this driver"
                 raise SyntaxError(msg)
         except BaseException:
@@ -468,6 +471,7 @@ class ImageFile(Image.Image):
 
 
 class StubHandler(abc.ABC):
+    @abc.abstractmethod
     def open(self, im: StubImageFile) -> None:
         pass
 
@@ -484,26 +488,22 @@ class StubImageFile(ImageFile, metaclass=abc.ABCMeta):
     certain format, but relies on external code to load the file.
     """
 
+    _handler: StubHandler | None = None
+
     @abc.abstractmethod
     def _open(self) -> None:
         pass
 
     def load(self) -> Image.core.PixelAccess | None:
-        loader = self._load()
-        if loader is None:
+        if self._handler is None:
             msg = f"cannot find loader for this {self.format} file"
             raise OSError(msg)
-        image = loader.load(self)
+        image = self._handler.load(self)
         assert image is not None
         # become the other object (!)
         self.__class__ = image.__class__  # type: ignore[assignment]
         self.__dict__ = image.__dict__
         return image.load()
-
-    @abc.abstractmethod
-    def _load(self) -> StubHandler | None:
-        """(Hook) Find actual image loader."""
-        pass
 
 
 class Parser:

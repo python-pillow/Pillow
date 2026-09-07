@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import io
-from pathlib import Path
 
 import pytest
 
 from PIL import Image, ImagePalette, PaletteFile
 
 from .helper import assert_image_equal, assert_image_equal_tofile
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_sanity() -> None:

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import sys
 from io import BytesIO, TextIOWrapper
-from pathlib import Path
 
 import pytest
 
@@ -14,6 +13,10 @@ from .helper import (
     assert_image_similar,
     hopper,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # sample ppm stream
 TEST_FILE = "Tests/images/hopper.ppm"

@@ -151,6 +151,8 @@ class Resampling(IntEnum):
     HAMMING = 5
     BICUBIC = 3
     LANCZOS = 1
+    MKS2013 = 6
+    MKS2021 = 7
 
 
 _filters_support = {
@@ -159,6 +161,8 @@ _filters_support = {
     Resampling.HAMMING: 1.0,
     Resampling.BICUBIC: 2.0,
     Resampling.LANCZOS: 3.0,
+    Resampling.MKS2013: 2.5,
+    Resampling.MKS2021: 4.5,
 }
 
 
@@ -675,6 +679,9 @@ class Image:
     def readonly(self, readonly: int) -> None:
         self._readonly = readonly
 
+    def _copy_info(self) -> dict[str | tuple[int, int], Any]:
+        return {k: v.copy() if isinstance(v, list) else v for k, v in self.info.items()}
+
     def _new(self, im: core.ImagingCore) -> Image:
         new = Image()
         new.im = im
@@ -687,7 +694,7 @@ class Image:
                 from . import ImagePalette
 
                 new.palette = ImagePalette.ImagePalette()
-        new.info = self.info.copy()
+        new.info = self._copy_info()
         return new
 
     # Context manager support
@@ -708,7 +715,7 @@ class Image:
         more information.
         """
         if getattr(self, "map", None):
-            if sys.platform == "win32" and hasattr(sys, "pypy_version_info"):
+            if sys.platform == "win32" and sys.implementation.name == "pypy":
                 self.map.close()
             self.map: mmap.mmap | None = None
 
@@ -878,7 +885,7 @@ class Image:
 
         # unpack data
         e = _getencoder(self.mode, encoder_name, encoder_args)
-        e.setimage(self.im, (0, 0) + self.size)
+        e.setimage(self.im, (0, 0, *self.size))
 
         from . import ImageFile
 
@@ -955,7 +962,7 @@ class Image:
 
         # unpack data
         d = _getdecoder(self.mode, decoder_name, decoder_args)
-        d.setimage(self.im, (0, 0) + self.size)
+        d.setimage(self.im, (0, 0, *self.size))
         s = d.decode(data)
 
         if s[0] >= 0:
@@ -1014,7 +1021,7 @@ class Image:
     def convert(
         self,
         mode: str | None = None,
-        matrix: tuple[float, ...] | None = None,
+        matrix: list[float] | tuple[float, ...] | None = None,
         dither: Dither | None = None,
         palette: Palette = Palette.WEB,
         colors: int = 256,
@@ -1049,7 +1056,7 @@ class Image:
 
         :param mode: The requested mode. See: :ref:`concept-modes`.
         :param matrix: An optional conversion matrix.  If given, this
-           should be 4- or 12-tuple containing floating point values.
+           should be 4- or 12-sequence containing floating point values.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
@@ -1087,7 +1094,7 @@ class Image:
                 transparency = new_im.info["transparency"]
 
                 def convert_transparency(
-                    m: tuple[float, ...], v: tuple[int, int, int]
+                    m: list[float] | tuple[float, ...], v: tuple[int, int, int]
                 ) -> int:
                     value = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3] * 0.5
                     return max(0, min(255, int(value)))
@@ -1193,7 +1200,7 @@ class Image:
             if trns is not None:
                 try:
                     new_im.info["transparency"] = new_im.palette.getcolor(
-                        cast(tuple[int, ...], trns),  # trns was converted to RGB
+                        cast("tuple[int, ...]", trns),  # trns was converted to RGB
                         new_im,
                     )
                 except Exception:
@@ -1252,7 +1259,8 @@ class Image:
             if new_im.mode == "P" and new_im.palette:
                 try:
                     new_im.info["transparency"] = new_im.palette.getcolor(
-                        cast(tuple[int, ...], trns), new_im  # trns was converted to RGB
+                        cast("tuple[int, ...]", trns),  # trns was converted to RGB
+                        new_im,
                     )
                 except ValueError as e:
                     del new_im.info["transparency"]
@@ -1373,7 +1381,7 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if box is None:
+        if box is None or box == (0, 0, *self.size):
             return self.copy()
 
         if box[2] < box[0]:
@@ -1570,16 +1578,29 @@ class Image:
             return tuple(self.im.getband(i).getextrema() for i in range(self.im.bands))
         return self.im.getextrema()
 
-    def getxmp(self) -> dict[str, Any]:
+    def getxmp(self, *, strip_namespaces: bool = True) -> dict[str, Any]:
         """
         Returns a dictionary containing the XMP tags.
         Requires defusedxml to be installed.
 
+        :param strip_namespaces: If ``False``, keep each tag's full
+            ``{namespace-uri}local-name`` form instead of stripping the namespace
+            prefix.
+
+            .. versionadded:: 13.0.0
+
         :returns: XMP tags in a dictionary.
         """
 
-        def get_name(tag: str) -> str:
-            return re.sub("^{[^}]+}", "", tag)
+        if strip_namespaces:
+
+            def get_name(tag: str) -> str:
+                return re.sub("^{[^}]+}", "", tag)
+
+        else:
+
+            def get_name(tag: str) -> str:
+                return tag
 
         def get_value(element: Element) -> str | dict[str, Any] | None:
             value: dict[str, Any] = {get_name(k): v for k, v in element.attrib.items()}
@@ -1955,7 +1976,7 @@ class Image:
             raise ValueError(msg)
 
         # over image, crop if it's not the whole image.
-        if overlay_crop_box == (0, 0) + im.size:
+        if overlay_crop_box == (0, 0, *im.size):
             overlay = im
         else:
             overlay = im.crop(overlay_crop_box)
@@ -1964,7 +1985,7 @@ class Image:
         box = tuple(dest) + (dest[0] + overlay.width, dest[1] + overlay.height)
 
         # destination image. don't copy if we're using the whole image.
-        if box == (0, 0) + self.size:
+        if box == (0, 0, *self.size):
             background = self
         else:
             background = self.crop(box)
@@ -2044,19 +2065,19 @@ class Image:
 
         self._ensure_mutable()
 
-        if self.mode not in ("LA", "PA", "RGBA"):
-            # attempt to promote self to a matching alpha mode
+        if self.mode in ("RGB", "RGBX"):
+            # promote self to RGBA
+            self.im.setalpha()
+            self._mode = "RGBA"
+        elif self.mode not in ("LA", "PA", "RGBA"):
             try:
+                # do things the hard way
                 mode = getmodebase(self.mode) + "A"
-                try:
-                    self.im.setmode(mode)
-                except (AttributeError, ValueError) as e:
-                    # do things the hard way
-                    im = self.im.convert(mode)
-                    if im.mode not in ("LA", "PA", "RGBA"):
-                        msg = "alpha channel could not be added"
-                        raise ValueError(msg) from e  # sanity check
-                    self.im = im
+                im = self.im.convert(mode)
+                if im.mode not in ("LA", "PA", "RGBA"):
+                    msg = "alpha channel could not be added"
+                    raise ValueError(msg)  # sanity check
+                self.im = im
                 self._mode = self.im.mode
             except KeyError as e:
                 msg = "illegal image mode"
@@ -2328,7 +2349,8 @@ class Image:
         :param resample: An optional resampling filter.  This can be
            one of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
-           :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
+           :py:data:`Resampling.BICUBIC`, :py:data:`Resampling.LANCZOS`,
+           :py:data:`Resampling.MKS2013`, or :py:data:`Resampling.MKS2021`.
            If the image has mode "1" or "P", it is always set to
            :py:data:`Resampling.NEAREST`. Otherwise, the default filter is
            :py:data:`Resampling.BICUBIC`. See: :ref:`concept-filters`.
@@ -2360,6 +2382,8 @@ class Image:
             Resampling.LANCZOS,
             Resampling.BOX,
             Resampling.HAMMING,
+            Resampling.MKS2013,
+            Resampling.MKS2021,
         ):
             msg = f"Unknown resampling filter ({resample})."
 
@@ -2372,6 +2396,8 @@ class Image:
                     (Resampling.BICUBIC, "Image.Resampling.BICUBIC"),
                     (Resampling.BOX, "Image.Resampling.BOX"),
                     (Resampling.HAMMING, "Image.Resampling.HAMMING"),
+                    (Resampling.MKS2013, "Image.Resampling.MKS2013"),
+                    (Resampling.MKS2021, "Image.Resampling.MKS2021"),
                 )
             ]
             msg += f" Use {', '.join(filters[:-1])} or {filters[-1]}"
@@ -2382,10 +2408,10 @@ class Image:
             raise ValueError(msg)
 
         if box is None:
-            box = (0, 0) + self.size
+            box = (0, 0, *self.size)
 
         size = tuple(size)
-        if self.size == size and box == (0, 0) + self.size:
+        if self.size == size and box == (0, 0, *self.size):
             return self.copy()
 
         if self.mode in ("1", "P"):
@@ -2402,7 +2428,7 @@ class Image:
             factor_x = int((box[2] - box[0]) / size[0] / reducing_gap) or 1
             factor_y = int((box[3] - box[1]) / size[1] / reducing_gap) or 1
             if factor_x > 1 or factor_y > 1:
-                reduce_box = self._get_safe_box(size, cast(Resampling, resample), box)
+                reduce_box = self._get_safe_box(size, cast("Resampling", resample), box)
                 factor = (factor_x, factor_y)
                 self = (
                     self.reduce(factor, box=reduce_box)
@@ -2438,11 +2464,11 @@ class Image:
         if not isinstance(factor, (list, tuple)):
             factor = (factor, factor)
 
-        if box is None:
-            box = (0, 0) + self.size
+        if factor == (1, 1):
+            return self.crop(box)
 
-        if factor == (1, 1) and box == (0, 0) + self.size:
-            return self.copy()
+        if box is None:
+            box = (0, 0, *self.size)
 
         if self.mode in ["LA", "RGBA"]:
             im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
@@ -2467,7 +2493,7 @@ class Image:
         copy of this image, rotated the given number of degrees counter
         clockwise around its centre.
 
-        :param angle: In degrees counter clockwise.
+        :param angle: In degrees counterclockwise.
         :param resample: An optional resampling filter.  This can be
            one of :py:data:`Resampling.NEAREST` (use nearest neighbour),
            :py:data:`Resampling.BILINEAR` (linear interpolation in a 2x2
@@ -2685,7 +2711,7 @@ class Image:
             else:
                 fp = builtins.open(filename, "w+b")
         else:
-            fp = cast(IO[bytes], fp)
+            fp = cast("IO[bytes]", fp)
 
         try:
             save_handler(self, fp, filename)
@@ -2830,7 +2856,8 @@ class Image:
         :param resample: Optional resampling filter.  This can be one
            of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
-           :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
+           :py:data:`Resampling.BICUBIC`, :py:data:`Resampling.LANCZOS`,
+           :py:data:`Resampling.MKS2013`, or :py:data:`Resampling.MKS2021`.
            If omitted, it defaults to :py:data:`Resampling.BICUBIC`.
            (was :py:data:`Resampling.NEAREST` prior to version 2.5.0).
            See: :ref:`concept-filters`.
@@ -2972,9 +2999,9 @@ class Image:
             raise ValueError(msg)
 
         im = new(self.mode, size, fillcolor)
-        if self.mode == "P" and self.palette:
+        if self.mode in ("P", "PA") and self.palette:
             im.palette = self.palette.copy()
-        im.info = self.info.copy()
+        im.info = self._copy_info()
         if method == Transform.MESH:
             # list of quads
             for box, quad in data:
@@ -2983,7 +3010,7 @@ class Image:
                 )
         else:
             im.__transformer(
-                (0, 0) + size, self, method, data, resample, fillcolor is None
+                (0, 0, *size), self, method, data, resample, fillcolor is None
             )
 
         return im
@@ -3044,11 +3071,19 @@ class Image:
             Resampling.BILINEAR,
             Resampling.BICUBIC,
         ):
-            if resample in (Resampling.BOX, Resampling.HAMMING, Resampling.LANCZOS):
+            if resample in (
+                Resampling.BOX,
+                Resampling.HAMMING,
+                Resampling.LANCZOS,
+                Resampling.MKS2013,
+                Resampling.MKS2021,
+            ):
                 unusable: dict[int, str] = {
                     Resampling.BOX: "Image.Resampling.BOX",
                     Resampling.HAMMING: "Image.Resampling.HAMMING",
                     Resampling.LANCZOS: "Image.Resampling.LANCZOS",
+                    Resampling.MKS2013: "Image.Resampling.MKS2013",
+                    Resampling.MKS2021: "Image.Resampling.MKS2021",
                 }
                 msg = unusable[resample] + f" ({resample}) cannot be used."
             else:
@@ -3178,22 +3213,21 @@ def new(
     """
     Creates a new image with the given mode and size.
 
-    :param mode: The mode to use for the new image. See:
-       :ref:`concept-modes`.
+    :param mode: The mode to use for the new image. See: :ref:`concept-modes`.
     :param size: A 2-tuple, containing (width, height) in pixels.
-    :param color: What color to use for the image. Default is black. If given,
-       this should be a single integer or floating point value for single-band
-       modes, and a tuple for multi-band modes (one value per band). When
-       creating RGB or HSV images, you can also use color strings as supported
-       by the ImageColor module. See :ref:`colors` for more information. If the
-       color is None, the image is not initialised.
+    :param color: What color to use for the image. If given, this should be a single
+       integer or floating point value for single-band modes, and a tuple for
+       multi-band modes (one value per band). When creating RGB or HSV images, you can
+       also use color strings as supported by the ImageColor module. See :ref:`colors`
+       for more information. The default color is zero, which appears as black in
+       single band or RGB-based images. ``None`` is also treated as zero.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
     _check_size(size)
 
     if color is None:
-        # don't initialize
+        # core.new() returns zeroed memory, so there is nothing to fill
         return Image()._new(core.new(mode, size))
 
     if isinstance(color, str):
@@ -3209,7 +3243,7 @@ def new(
         and isinstance(color, (list, tuple))
         and all(isinstance(i, int) for i in color)
     ):
-        color_ints: tuple[int, ...] = cast(tuple[int, ...], tuple(color))
+        color_ints: tuple[int, ...] = cast("tuple[int, ...]", tuple(color))
         if len(color_ints) == 3 or len(color_ints) == 4:
             # RGB or RGBA value for a P image
             from . import ImagePalette
@@ -3620,7 +3654,7 @@ def open(
         fp = builtins.open(filename, "rb")
         exclusive_fp = True
     else:
-        fp = cast(IO[bytes], fp)
+        fp = cast("IO[bytes]", fp)
 
     try:
         fp.seek(0)
@@ -3782,7 +3816,7 @@ def merge(mode: str, bands: Sequence[Image]) -> Image:
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
-    if getmodebands(mode) != len(bands) or "*" in mode:
+    if getmodebands(mode) != len(bands):
         msg = "wrong number of bands"
         raise ValueError(msg)
     for band in bands[1:]:

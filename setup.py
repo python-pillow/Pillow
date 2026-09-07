@@ -15,7 +15,6 @@ import struct
 import subprocess
 import sys
 import warnings
-from collections.abc import Iterator
 
 from pybind11.setup_helpers import ParallelCompile
 from setuptools import Extension, setup
@@ -23,6 +22,8 @@ from setuptools.command.build_ext import build_ext
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from setuptools import _BuildInfo
 
 configuration: dict[str, list[str]] = {}

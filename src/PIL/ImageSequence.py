@@ -16,12 +16,12 @@
 ##
 from __future__ import annotations
 
-from . import Image
-
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Self
+
+    from . import Image
 
 
 class Iterator:

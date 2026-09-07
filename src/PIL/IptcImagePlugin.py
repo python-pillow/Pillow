@@ -124,7 +124,7 @@ class IptcImageFile(ImageFile.ImageFile):
         # tile
         if tag == (8, 10):
             self.tile = [
-                ImageFile._Tile("iptc", (0, 0) + self.size, offset, (compression, band))
+                ImageFile._Tile("iptc", (0, 0, *self.size), offset, (compression, band))
             ]
 
     def load(self) -> Image.core.PixelAccess | None:
@@ -212,7 +212,7 @@ def getiptcinfo(
 
     fake_im = FakeImage()
     fake_im.__class__ = IptcImageFile  # type: ignore[assignment]
-    iptc_im = cast(IptcImageFile, fake_im)
+    iptc_im = cast("IptcImageFile", fake_im)
 
     # parse the IPTC information chunk
     iptc_im.info = {}

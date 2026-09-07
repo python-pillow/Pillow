@@ -3,9 +3,11 @@ from __future__ import annotations
 import zlib
 from io import BytesIO
 
-import pytest
-
 from PIL import Image, ImageFile, PngImagePlugin
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    import pytest
 
 TEST_FILE = "Tests/images/png_decompression_dos.png"
 

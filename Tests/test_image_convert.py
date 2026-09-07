@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from PIL import Image
 
 from .helper import assert_image, assert_image_equal, assert_image_similar, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_sanity() -> None:
@@ -44,7 +46,7 @@ def test_sanity() -> None:
 
 def test_unsupported_conversion() -> None:
     im = hopper()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="image has wrong mode"):
         im.convert("INVALID")
 
 
@@ -225,6 +227,10 @@ def test_trns_RGB(tmp_path: Path) -> None:
     assert "transparency" not in im_p.info
     im_p.save(f)
 
+    im.info["transparency"] = list(im.info["transparency"])
+    im_rgba = im.convert("RGBA")
+    assert "transparency" not in im_rgba.info
+
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = im.getpixel((0, 0))
     im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
@@ -303,18 +309,26 @@ def test_matrix_illegal_conversion() -> None:
     assert im.mode != "RGB"
 
     # Act / Assert
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="illegal conversion"):
         im.convert(mode="CMYK", matrix=rgb2xyz_matrix)
 
 
 def test_matrix_wrong_mode() -> None:
     # Arrange
     im = hopper("L")
-    assert im.mode == "L"
 
     # Act / Assert
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="image has wrong mode"):
         im.convert(mode="L", matrix=rgb2xyz_matrix)
+
+
+def test_matrix_truncated() -> None:
+    # Arrange
+    im = hopper()
+
+    # Act / Assert
+    with pytest.raises(TypeError, match="matrix must be tuple of length 4 or 12"):
+        im.convert(mode="L", matrix=(0,))
 
 
 @pytest.mark.parametrize("mode", ("RGB", "L"))
@@ -322,7 +336,6 @@ def test_matrix_xyz(mode: str) -> None:
     # Arrange
     im = hopper("RGB")
     im.info["transparency"] = (255, 0, 0)
-    assert im.mode == "RGB"
 
     # Act
     # Convert an RGB image to the CIE XYZ colour space
@@ -348,12 +361,15 @@ def test_matrix_identity() -> None:
         0, 1, 0, 0,
         0, 0, 1, 0,
     )  # fmt: skip
-    assert im.mode == "RGB"
 
     # Act
     # Convert with an identity matrix
-    converted_im = im.convert(mode="RGB", matrix=identity_matrix)
+    converted_im = im.convert("RGB", identity_matrix)
 
     # Assert
     # No change
+    assert_image_equal(converted_im, im)
+
+    # Test list
+    converted_im = im.convert("RGB", list(identity_matrix))
     assert_image_equal(converted_im, im)

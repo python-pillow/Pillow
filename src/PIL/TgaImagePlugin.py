@@ -19,13 +19,16 @@ from __future__ import annotations
 
 import os
 import warnings
-from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
 from ._binary import i32le as i32
 from ._binary import o8
 from ._binary import o16le as o16
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 #
 # --------------------------------------------------------------------
@@ -141,7 +144,7 @@ class TgaImageFile(ImageFile.ImageFile):
                 self.tile = [
                     ImageFile._Tile(
                         "tga_rle",
-                        (0, 0) + self.size,
+                        (0, 0, *self.size),
                         self.fp.tell(),
                         (rawmode, orientation, depth),
                     )
@@ -150,7 +153,7 @@ class TgaImageFile(ImageFile.ImageFile):
                 self.tile = [
                     ImageFile._Tile(
                         "raw",
-                        (0, 0) + self.size,
+                        (0, 0, *self.size),
                         self.fp.tell(),
                         (rawmode, 0, orientation),
                     )
@@ -258,13 +261,13 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         ImageFile._save(
             im,
             fp,
-            [ImageFile._Tile("tga_rle", (0, 0) + im.size, 0, (rawmode, orientation))],
+            [ImageFile._Tile("tga_rle", (0, 0, *im.size), 0, (rawmode, orientation))],
         )
     else:
         ImageFile._save(
             im,
             fp,
-            [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))],
+            [ImageFile._Tile("raw", (0, 0, *im.size), 0, (rawmode, 0, orientation))],
         )
 
     # write targa version 2 footer

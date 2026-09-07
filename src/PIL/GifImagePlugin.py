@@ -31,7 +31,7 @@ import os
 import subprocess
 from enum import IntEnum
 from functools import cached_property
-from typing import Any, NamedTuple, cast
+from typing import NamedTuple, cast
 
 from . import (
     Image,
@@ -49,7 +49,7 @@ from ._util import DeferredError
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from typing import IO, Literal
+    from typing import IO, Any, Literal
 
     from . import _imaging
     from ._typing import Buffer
@@ -355,7 +355,7 @@ class GifImageFile(ImageFile.ImageFile):
                 if color * 3 + 3 > len(self._frame_palette.palette):
                     color = 0
                 return cast(
-                    tuple[int, int, int],
+                    "tuple[int, int, int]",
                     tuple(self._frame_palette.palette[color * 3 : color * 3 + 3]),
                 )
             else:
@@ -452,7 +452,7 @@ class GifImageFile(ImageFile.ImageFile):
             expanded_im = Image.core.fill(self.im.mode, self.size)
             if self._frame_palette:
                 expanded_im.putpalette("RGB", *self._frame_palette.getdata())
-            expanded_im.paste(self.im, (0, 0) + self.im.size)
+            expanded_im.paste(self.im, (0, 0, *self.im.size))
 
             self.im = expanded_im
         self._mode = temp_mode
@@ -479,7 +479,7 @@ class GifImageFile(ImageFile.ImageFile):
                 expanded_im = Image.core.fill("P", self.size)
                 expanded_im.putpalette("RGB", "RGB", self.im.getpalette())
                 expanded_im = expanded_im.convert("RGB")
-            expanded_im.paste(self._prev_im, (0, 0) + self._prev_im.size)
+            expanded_im.paste(self._prev_im, (0, 0, *self._prev_im.size))
 
             self._prev_im = expanded_im
             assert self._prev_im is not None
@@ -635,7 +635,7 @@ def _write_single_frame(
 
     im_out.encoderconfig = (8, get_interlace(im))
     ImageFile._save(
-        im_out, fp, [ImageFile._Tile("gif", (0, 0) + im.size, 0, RAWMODE[im_out.mode])]
+        im_out, fp, [ImageFile._Tile("gif", (0, 0, *im.size), 0, RAWMODE[im_out.mode])]
     )
 
     fp.write(b"\0")  # end of image data
@@ -717,7 +717,7 @@ def _write_multiple_frames(
                             background_im.putpalette(first_palette, first_palette.mode)
                         bbox = _getbbox(background_im, im_frame)[1]
                     else:
-                        bbox = (0, 0) + im_frame.size
+                        bbox = (0, 0, *im_frame.size)
                 elif encoderinfo.get("optimize") and im_frame.mode != "1":
                     if "transparency" not in encoderinfo:
                         assert im_frame.palette is not None
@@ -783,7 +783,7 @@ def _write_multiple_frames(
             if not palette:
                 frame_data.encoderinfo["include_color_table"] = True
 
-            if frame_data.bbox != (0, 0) + im_frame.size:
+            if frame_data.bbox != (0, 0, *im_frame.size):
                 im_frame = im_frame.crop(frame_data.bbox)
             offset = frame_data.bbox[:2]
         _write_frame_data(fp, im_frame, offset, frame_data.encoderinfo)
@@ -1128,7 +1128,7 @@ def _write_frame_data(
         ImageFile._save(
             im_frame,
             fp,
-            [ImageFile._Tile("gif", (0, 0) + im_frame.size, 0, RAWMODE[im_frame.mode])],
+            [ImageFile._Tile("gif", (0, 0, *im_frame.size), 0, RAWMODE[im_frame.mode])],
         )
 
         fp.write(b"\0")  # end of image data

@@ -16,12 +16,15 @@
 from __future__ import annotations
 
 import math
-from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import o8
 from ._binary import o32le as o32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 #
 # --------------------------------------------------------------------
@@ -152,7 +155,7 @@ class PpmImageFile(ImageFile.ImageFile):
 
             args = rawmode if decoder_name == "raw" else (rawmode, maxval)
         self.tile = [
-            ImageFile._Tile(decoder_name, (0, 0) + self.size, self.fp.tell(), args)
+            ImageFile._Tile(decoder_name, (0, 0, *self.size), self.fp.tell(), args)
         ]
 
 
@@ -356,7 +359,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         fp.write(b"-1.0\n")
     row_order = -1 if im.mode == "F" else 1
     ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, row_order))]
+        im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, (rawmode, 0, row_order))]
     )
 
 

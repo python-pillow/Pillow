@@ -4,7 +4,6 @@ import io
 import re
 import sys
 import warnings
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -18,6 +17,10 @@ from .helper import (
     hopper,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 try:
     from PIL import _webp

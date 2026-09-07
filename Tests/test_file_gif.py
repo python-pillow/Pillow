@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import warnings
-from collections.abc import Generator
 from io import BytesIO
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -18,6 +16,11 @@ from .helper import (
     is_pypy,
     netpbm_available,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
 
 # sample gif stream
 TEST_GIF = "Tests/images/hopper.gif"

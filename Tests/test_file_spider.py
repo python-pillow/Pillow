@@ -3,13 +3,16 @@ from __future__ import annotations
 import tempfile
 import warnings
 from io import BytesIO
-from pathlib import Path
 
 import pytest
 
 from PIL import Image, SpiderImagePlugin
 
 from .helper import assert_image_equal, hopper, is_pypy
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_FILE = "Tests/images/hopper.spider"
 

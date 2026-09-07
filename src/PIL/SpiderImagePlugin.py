@@ -37,12 +37,13 @@ from __future__ import annotations
 import os
 import struct
 import sys
-from typing import IO, Any
 
 from . import Image, ImageFile
 from ._util import DeferredError
 
 TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
 
 
 def isInt(f: Any) -> int:
@@ -159,7 +160,7 @@ class SpiderImageFile(ImageFile.ImageFile):
             self.rawmode = "F;32F"
         self._mode = "F"
 
-        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, offset, self.rawmode)]
+        self.tile = [ImageFile._Tile("raw", (0, 0, *self.size), offset, self.rawmode)]
         self._fp = self.fp  # FIXME: hack
 
     # 1st image index is zero (although SPIDER imgnumber starts at 1)
@@ -278,7 +279,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.writelines(hdr)
 
     rawmode = "F;32NF"  # 32-bit native floating point
-    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, rawmode)])
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, rawmode)])
 
 
 def _save_spider(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:

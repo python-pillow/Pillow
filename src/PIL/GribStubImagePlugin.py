@@ -11,11 +11,12 @@
 from __future__ import annotations
 
 import os
-from typing import IO
 
 from . import Image, ImageFile
 
-_handler = None
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 
 def register_handler(handler: ImageFile.StubHandler | None) -> None:
@@ -24,8 +25,7 @@ def register_handler(handler: ImageFile.StubHandler | None) -> None:
 
     :param handler: Handler object.
     """
-    global _handler
-    _handler = handler
+    GribStubImageFile._handler = handler
 
 
 # --------------------------------------------------------------------
@@ -50,17 +50,15 @@ class GribStubImageFile(ImageFile.StubImageFile):
 
         # make something up
         self._mode = "F"
-        self._size = 1, 1
-
-    def _load(self) -> ImageFile.StubHandler | None:
-        return _handler
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    if _handler is None or not hasattr(_handler, "save"):
+    if GribStubImageFile._handler is None or not hasattr(
+        GribStubImageFile._handler, "save"
+    ):
         msg = "GRIB save handler not installed"
         raise OSError(msg)
-    _handler.save(im, fp, filename)
+    GribStubImageFile._handler.save(im, fp, filename)
 
 
 # --------------------------------------------------------------------

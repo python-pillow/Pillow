@@ -3,13 +3,16 @@ from __future__ import annotations
 import io
 import os
 import warnings
-from pathlib import Path
 
 import pytest
 
 from PIL import IcnsImagePlugin, Image, _binary
 
 from .helper import assert_image_equal, assert_image_similar_tofile, skip_unless_feature
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # sample icon file
 TEST_FILE = "Tests/images/pillow.icns"

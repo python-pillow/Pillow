@@ -16,12 +16,12 @@
 from __future__ import annotations
 
 import io
-from collections.abc import Iterable
-from typing import IO, AnyStr, NoReturn
+from typing import IO, AnyStr
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from typing import Self
+    from collections.abc import Iterable
+    from typing import NoReturn, Self
 
 
 class ContainerIO(IO[AnyStr]):
