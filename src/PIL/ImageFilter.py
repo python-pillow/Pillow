@@ -40,6 +40,7 @@ class MultibandFilter(Filter):
     pass
 
 
+# Arguments passed to the core filter method
 class _FilterArgs(NamedTuple):
     size: tuple[int, int]
     scale: float
