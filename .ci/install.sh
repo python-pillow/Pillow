@@ -17,14 +17,24 @@ aptget_update || aptget_update retry || aptget_update retry
 
 set -e
 
-packages=(libfreetype6-dev liblcms2-dev libtiff-dev python3-tk
-          ghostscript libjpeg-turbo8-dev libopenjp2-7-dev
-          cmake meson libharfbuzz-dev libfribidi-dev
-          sway wl-clipboard nasm
-          # ImageMagick is used by Tests/test_file_palm.py
-          imagemagick
-          # netpbm provides ppmquant and ppmtogif for GifImagePlugin._save_netpbm
-          netpbm)
+packages=(
+    cmake
+    ghostscript
+    imagemagick  # ImageMagick is used by Tests/test_file_palm.py
+    libfreetype6-dev
+    libfribidi-dev
+    libharfbuzz-dev
+    libjpeg-turbo8-dev
+    liblcms2-dev
+    libopenjp2-7-dev
+    libtiff-dev
+    meson
+    nasm
+    netpbm  # netpbm provides ppmquant and ppmtogif for GifImagePlugin._save_netpbm
+    python3-tk
+    sway
+    wl-clipboard
+)
 sudo apt-get -qq install --no-install-recommends "${packages[@]}"
 
 python3 -m pip install --upgrade pip
