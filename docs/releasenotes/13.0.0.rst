@@ -78,6 +78,12 @@ JpegImageFile.load_djpeg
 Use the built-in JPEG decoder instead, or call ``djpeg`` directly and decode the
 resulting image with Pillow.
 
+ImageQt align8to32()
+^^^^^^^^^^^^^^^^^^^^
+
+``ImageQt.align8to32()`` has been deprecated. This was an undocumented helper function
+intended for internal use, so there is no replacement.
+
 API changes
 ===========
 

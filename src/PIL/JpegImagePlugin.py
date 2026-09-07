@@ -737,7 +737,8 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 qtables = [
                     qtables[key] for key in range(len(qtables)) if key in qtables
                 ]
-            elif isinstance(qtables, tuple):
+            else:
+                # Copy the sequence, so that it cannot be changed while it is read
                 qtables = list(qtables)
             if not (0 < len(qtables) < 5):
                 msg = "None or too many quantization tables"
