@@ -365,9 +365,9 @@ topalette_colour_floyd_steinberg(
     ImagingSectionCookie cookie;
     ImagingSectionEnter(&cookie);
     for (int y = 0; y < ysize; y++) {
-        int r, r0, r1, r2;
-        int g, g0, g1, g2;
-        int b, b0, b1, b2;
+        int r, r0, r1;
+        int g, g0, g1;
+        int b, b0, b1;
         // Restrict safe: we know imOut and imIn to be different images
         UINT8 *restrict in = (UINT8 *)imIn->image[y];
         UINT8 *restrict out = alpha ? (UINT8 *)imOut->image32[y] : imOut->image8[y];
@@ -375,11 +375,9 @@ topalette_colour_floyd_steinberg(
 
         r = r0 = r1 = 0;
         g = g0 = g1 = 0;
-        b = b0 = b1 = b2 = 0;
+        b = b0 = b1 = 0;
 
         for (int x = 0; x < xsize; x++, in += 4) {
-            int d2;
-
             r = CLIP8(in[0] + (r + e[3 + 0]) / 16);
             g = CLIP8(in[1] + (g + e[3 + 1]) / 16);
             b = CLIP8(in[2] + (b + e[3 + 2]) / 16);
@@ -397,38 +395,28 @@ topalette_colour_floyd_steinberg(
             g -= (int)palette->palette[palette_index * 4 + 1];
             b -= (int)palette->palette[palette_index * 4 + 2];
 
-            /* propagate errors (don't ask ;-) */
-            r2 = r;
-            d2 = r + r;
-            r += d2;
-            e[0] = r + r0;
-            r += d2;
-            r0 = r + r1;
-            r1 = r2;
-            r += d2;
-            g2 = g;
-            d2 = g + g;
-            g += d2;
-            e[1] = g + g0;
-            g += d2;
-            g0 = g + g1;
-            g1 = g2;
-            g += d2;
-            b2 = b;
-            d2 = b + b;
-            b += d2;
-            e[2] = b + b0;
-            b += d2;
-            b0 = b + b1;
-            b1 = b2;
-            b += d2;
+            /* propagate errors */
+            e[0] = 3 * r + r0;
+            r0 = 5 * r + r1;
+            r1 = r;
+            r = 7 * r;
+
+            e[1] = 3 * g + g0;
+            g0 = 5 * g + g1;
+            g1 = g;
+            g = 7 * g;
+
+            e[2] = 3 * b + b0;
+            b0 = 5 * b + b1;
+            b1 = b;
+            b = 7 * b;
 
             e += 3;
         }
 
-        e[0] = b0;
-        e[1] = b1;
-        e[2] = b2;
+        e[0] = r0;
+        e[1] = g0;
+        e[2] = b0;
     }
     ImagingSectionLeave(&cookie);
     free(errors);
