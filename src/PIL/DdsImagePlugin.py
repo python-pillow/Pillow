@@ -528,21 +528,21 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
         src_length = pixel_count * bytecount
         del src[src_length:]
 
-        nmasks = len(masks)
-        data = bytearray(pixel_count * nmasks)
+        mask_count = len(masks)
+        data = bytearray(pixel_count * mask_count)
         for i, (mask, offset, total) in enumerate(
             zip(masks, mask_offsets, mask_totals)
         ):
             if not total:  # Nothing to do here
                 continue
             if total == 0xFF and offset % 8 == 0:  # Whole byte, fast path
-                data[i::nmasks] = src[offset // 8 :: bytecount]
+                data[i::mask_count] = src[offset // 8 :: bytecount]
                 continue
             values = (
                 int.from_bytes(src[p : p + bytecount], "little")
                 for p in range(0, src_length, bytecount)
             )
-            data[i::nmasks] = bytes(
+            data[i::mask_count] = bytes(
                 # Remove the zero padding, and scale it to 8 bits
                 int((((value & mask) >> offset) / total) * 255)
                 for value in values
