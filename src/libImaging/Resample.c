@@ -859,8 +859,10 @@ ImagingResampleInner(
             ybox_last = bounds_vert[ysize * 2 - 2] + bounds_vert[ysize * 2 - 1];
 
             // Shift bounds for vertical pass
-            for (i = 0; i < ysize; i++) {
-                bounds_vert[i * 2] -= ybox_first;
+            if (ybox_first != 0) {
+                for (i = 0; i < ysize; i++) {
+                    bounds_vert[i * 2] -= ybox_first;
+                }
             }
         }
 
