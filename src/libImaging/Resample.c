@@ -837,9 +837,11 @@ ImagingResampleInner(
     need_horizontal = xsize != imIn->xsize || box[0] || box[2] != xsize;
     need_vertical = ysize != imIn->ysize || box[1] || box[3] != ysize;
 
-    // If height is being scaled down, but not width,
-    // then run the vertical pass first, to make the horizontal pass faster
-    int horizontal_first = !(xsize >= (box[2] - box[0]) && ysize < (box[3] - box[1]));
+    // If height is being scaled down more than twice the amount the width is,
+    // run the vertical pass first, to make the horizontal pass faster
+    int horizontal_first =
+        !((imIn->ysize - ysize) > 0 &&
+          (imIn->ysize - ysize) > (imIn->xsize - xsize) * 2);
 
     if ((need_horizontal && horizontal_first) || need_vertical) {
         ksize_vert = precompute_coeffs(
