@@ -1147,7 +1147,7 @@ tobilevel(Imaging imOut, Imaging imIn) {
         /* map each pixel to black or white, using error diffusion */
         ImagingSectionEnter(&cookie);
         for (y = 0; y < imIn->ysize; y++) {
-            int l, l0, l1, l2, d2;
+            int l, l0, l1;
             UINT8 *in = (UINT8 *)imIn->image[y];
             UINT8 *out = imOut->image8[y];
 
@@ -1160,14 +1160,10 @@ tobilevel(Imaging imOut, Imaging imIn) {
 
                 /* propagate errors */
                 l -= (int)out[x];
-                l2 = l;
-                d2 = l + l;
-                l += d2;
-                errors[x] = l + l0;
-                l += d2;
-                l0 = l + l1;
-                l1 = l2;
-                l += d2;
+                errors[x] = 3 * l + l0;
+                l0 = 5 * l + l1;
+                l1 = l;
+                l = 7 * l;
             }
 
             errors[x] = l0;
@@ -1178,7 +1174,7 @@ tobilevel(Imaging imOut, Imaging imIn) {
         /* map each pixel to black or white, using error diffusion */
         ImagingSectionEnter(&cookie);
         for (y = 0; y < imIn->ysize; y++) {
-            int l, l0, l1, l2, d2;
+            int l, l0, l1;
             UINT8 *in = (UINT8 *)imIn->image[y];
             UINT8 *out = imOut->image8[y];
 
@@ -1191,14 +1187,10 @@ tobilevel(Imaging imOut, Imaging imIn) {
 
                 /* propagate errors */
                 l -= (int)out[x];
-                l2 = l;
-                d2 = l + l;
-                l += d2;
-                errors[x] = l + l0;
-                l += d2;
-                l0 = l + l1;
-                l1 = l2;
-                l += d2;
+                errors[x] = 3 * l + l0;
+                l0 = 5 * l + l1;
+                l1 = l;
+                l = 7 * l;
             }
 
             errors[x] = l0;
