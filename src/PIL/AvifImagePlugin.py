@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "typing"}
+
 import os
 from io import BytesIO
 from typing import IO
@@ -116,7 +118,7 @@ class AvifImageFile(ImageFile.ImageFile):
 
         # Set tile
         self.__frame = frame
-        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.mode)]
+        self.tile = [ImageFile._Tile("raw", (0, 0, *self.size), 0, self.mode)]
 
     def load(self) -> Image.core.PixelAccess | None:
         if self.tile:

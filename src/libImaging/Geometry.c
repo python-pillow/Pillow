@@ -713,7 +713,7 @@ getfilter(Imaging im, int filterid) {
                 switch (im->type) {
                     case IMAGING_TYPE_UINT8:
                         return nearest_filter8;
-                    case IMAGING_TYPE_SPECIAL:
+                    case IMAGING_TYPE_I16:
                         return nearest_filter16;
                 }
             } else {
@@ -1032,7 +1032,7 @@ ImagingTransformAffine(
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (filterid || imIn->type == IMAGING_TYPE_SPECIAL) {
+    if (filterid || imIn->type == IMAGING_TYPE_I16) {
         return ImagingGenericTransform(
             imOut, imIn, x0, y0, x1, y1, affine_transform, a, filterid, fill
         );

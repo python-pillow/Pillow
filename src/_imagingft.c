@@ -19,7 +19,7 @@
  */
 
 #define PY_SSIZE_T_CLEAN
-#include "Python.h"
+#include <Python.h>
 #include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
 

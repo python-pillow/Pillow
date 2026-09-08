@@ -24,6 +24,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 import os
 
 from . import Image, ImageFile, ImagePalette
@@ -494,7 +496,7 @@ def _save(
         fp.write(palette)
 
     ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, stride, -1))]
+        im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, (rawmode, stride, -1))]
     )
 
 

@@ -717,6 +717,34 @@ class TestFilePng:
             monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
             png.call(cid, 0, 0)
 
+    @pytest.mark.parametrize("mode", ("1", "L", "I;16", "RGB"))
+    def test_truncated_trns_chunk(
+        self, mode: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        fp = BytesIO()
+        with PngImagePlugin.PngStream(fp) as png:
+            png.im_mode = mode
+            with pytest.raises(ValueError, match="Truncated tRNS chunk"):
+                png.call(b"tRNS", 0, 0)
+
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+            png.call(b"tRNS", 0, 0)
+
+    def test_truncated_trns_chunk_in_file(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # HEAD declares a truecolour image, so tRNS must carry 6 bytes
+        data = HEAD + chunk(b"tRNS", bytes(4)) + TAIL
+
+        with pytest.raises(ValueError, match="Truncated tRNS chunk"):
+            with Image.open(BytesIO(data)):
+                pass
+
+        monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+        with Image.open(BytesIO(data)) as im:
+            assert im.mode == "RGB"
+            assert "transparency" not in im.info
+
     @pytest.mark.parametrize("save_all", (True, False))
     def test_specify_bits(self, save_all: bool, tmp_path: Path) -> None:
         im = hopper("P")

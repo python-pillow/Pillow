@@ -34,9 +34,6 @@
 
 #include "Imaging.h"
 
-#define MAX(a, b) (a) > (b) ? (a) : (b)
-#define MIN(a, b) (a) < (b) ? (a) : (b)
-
 /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
 #define L(rgb) ((INT32)(rgb)[0] * 299 + (INT32)(rgb)[1] * 587 + (INT32)(rgb)[2] * 114)
 #define L24(rgb) ((rgb)[0] * 19595 + (rgb)[1] * 38470 + (rgb)[2] * 7471 + 0x8000)
@@ -1557,6 +1554,13 @@ static struct {
     {IMAGING_MODE_I_16L, IMAGING_MODE_I, I16L_I},
     {IMAGING_MODE_I, IMAGING_MODE_I_16B, I_I16B},
     {IMAGING_MODE_I_16B, IMAGING_MODE_I, I16B_I},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_I, IMAGING_MODE_I_16N, I_I16B},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I, I16B_I},
+#else
+    {IMAGING_MODE_I, IMAGING_MODE_I_16N, I_I16L},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I, I16L_I},
+#endif
 
     {IMAGING_MODE_L, IMAGING_MODE_I_16L, L_I16L},
     {IMAGING_MODE_I_16L, IMAGING_MODE_L, I16L_L},
@@ -1572,11 +1576,34 @@ static struct {
 
     {IMAGING_MODE_I_16, IMAGING_MODE_F, I16L_F},
     {IMAGING_MODE_I_16L, IMAGING_MODE_F, I16L_F},
-    {IMAGING_MODE_I_16B, IMAGING_MODE_F, I16B_F}
+    {IMAGING_MODE_I_16B, IMAGING_MODE_F, I16B_F},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16B_F}
+#else
+    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16L_F}
+#endif
 };
 
-static Imaging
-convert(Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int dither) {
+/**
+ * Convert imIn to `mode`.
+ * If imIn is already in `mode`, this performs a copy into imOut
+ * (or a newly allocated image if imOut is NULL).
+ *
+ * @param imOut   Existing image to write into
+ *                (must already be in `mode` and the same size as imIn),
+ *                or NULL to allocate a new image for the result.
+ * @param imIn    Source image to convert.
+ * @param mode    Target mode.
+ * @param palette Target palette for conversions to "P" or "PA";
+ *                NULL to use a default palette.
+ * @param dither  Nonzero to dither when converting to "P", "PA" or "1".
+ * @return        The resulting Imaging object,
+ *                or NULL with a Python exception set on failure.
+ */
+Imaging
+ImagingConvert(
+    Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int dither
+) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
 
@@ -1642,16 +1669,6 @@ convert(Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int di
     ImagingSectionLeave(&cookie);
 
     return imOut;
-}
-
-Imaging
-ImagingConvert(Imaging imIn, const ModeID mode, ImagingPalette palette, int dither) {
-    return convert(NULL, imIn, mode, palette, dither);
-}
-
-Imaging
-ImagingConvert2(Imaging imOut, Imaging imIn) {
-    return convert(imOut, imIn, imOut->mode, NULL, 0);
 }
 
 Imaging
@@ -1723,28 +1740,4 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
     ImagingSectionLeave(&cookie);
 
     return imOut;
-}
-
-Imaging
-ImagingConvertInPlace(Imaging imIn, const ModeID mode) {
-    ImagingSectionCookie cookie;
-    ImagingShuffler convert;
-    int y;
-
-    /* limited support for inplace conversion */
-    if (imIn->mode == IMAGING_MODE_L && mode == IMAGING_MODE_1) {
-        convert = l2bit;
-    } else if (imIn->mode == IMAGING_MODE_1 && mode == IMAGING_MODE_L) {
-        convert = bit2l;
-    } else {
-        return ImagingError_ModeError();
-    }
-
-    ImagingSectionEnter(&cookie);
-    for (y = 0; y < imIn->ysize; y++) {
-        (*convert)((UINT8 *)imIn->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
-    }
-    ImagingSectionLeave(&cookie);
-
-    return imIn;
 }
