@@ -8,6 +8,8 @@
 ##
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 from . import Image, ImageFile
 from ._binary import o8
 from ._binary import o16be as o16b

@@ -21,6 +21,8 @@
 ##
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "math"}
+
 import io
 import math
 import os

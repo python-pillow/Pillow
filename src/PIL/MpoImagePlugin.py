@@ -19,6 +19,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "PIL._util", "struct"}
+
 import os
 import struct
 from typing import cast
