@@ -163,6 +163,15 @@
             "packageNameTemplate": "facebook/zstd",
             "datasourceTemplate": "github-releases",
             "extractVersionTemplate": "^v(?<version>.+)$"
+        },
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/^\\.github/workflows/test-windows\\.yml$/"],
+            "matchStrings": ["\\$gs = \"(?<currentValue>\\d+[^\"]*)\""],
+            "depNameTemplate": "ghostscript",
+            "packageNameTemplate": "ghostscript",
+            "datasourceTemplate": "nuget",
+            "registryUrlTemplate": "https://community.chocolatey.org/api/v2/"
         }
     ],
     "ignoreDeps": ["numpy"],
