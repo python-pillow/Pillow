@@ -656,15 +656,17 @@ def _dither_saturation(value: float, quadrant: int) -> int:
     return 0
 
 
-def dither_primary(image: Image.Image) -> Image.Image:
+def primary(image: Image.Image, dither: bool = True) -> Image.Image:
     """
-    Reduce RGB image to primary colors and apply ordered dithering.
+    Reduce RGB image to primary colors, and optionally apply ordered dithering.
 
     This operation first reduces each RGB channel to its primary values
     (0 or 255), then applies a 2x2 ordered dithering pattern based on the
     average color intensity.
 
     :param image: The image to process.
+    :param dither: Optional flag, defaulting to ``True``. If ``False``, do not apply
+        dithering.
     :return: An image.
 
     .. versionadded:: 13.0.0
@@ -675,11 +677,13 @@ def dither_primary(image: Image.Image) -> Image.Image:
         raise ValueError(msg)
     bands = []
     for band in image.split():
-        # Step 1: primary color reduction
+        # Primary color reduction
         band = band.point(lambda x: 255 if x > 127 else 0)
         bands.append(band)
+        if not dither:
+            continue
 
-        # Step 2: ordered dithering (2x2 blocks)
+        # Ordered dithering (2x2 blocks)
         px = band.load()
         assert px is not None
         for x in range(0, band.width - 1, 2):

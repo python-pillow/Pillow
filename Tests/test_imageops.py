@@ -607,15 +607,15 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
 
 
 @pytest.mark.parametrize("size", (2, 4))
-def test_dither_primary(size: int) -> None:
+def test_primary(size: int) -> None:
     im = Image.new("RGB", (size, size), (200, 100, 50))
-    out = ImageOps.dither_primary(im)
+    out = ImageOps.primary(im)
 
     expected = Image.new("RGB", (size, size), (255, 0, 0))
     assert_image_equal(out, expected)
 
 
-def test_dither_primary_invalid_mode() -> None:
+def test_primary_invalid_mode() -> None:
     im = Image.new("L", (1, 1))
     with pytest.raises(ValueError, match="mode must be RGB, not L"):
-        ImageOps.dither_primary(im)
+        ImageOps.primary(im)

@@ -13,7 +13,6 @@ only work on L and RGB images.
 .. autofunction:: autocontrast
 .. autofunction:: colorize
 .. autofunction:: crop
-.. autofunction:: dither_primary
 .. autofunction:: scale
 .. autoclass:: SupportsGetMesh
     :show-inheritance:
@@ -24,6 +23,7 @@ only work on L and RGB images.
 .. autofunction:: grayscale
 .. autofunction:: invert
 .. autofunction:: mirror
+.. autofunction:: primary
 .. autofunction:: posterize
 .. autofunction:: solarize
 .. autofunction:: exif_transpose
