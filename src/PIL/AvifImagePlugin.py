@@ -115,7 +115,6 @@ class AvifImageFile(ImageFile.ImageFile):
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
-
         self.info.pop("timestamp", None)
         self.info.pop("duration", None)
 

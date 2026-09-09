@@ -46,13 +46,13 @@ The :py:meth:`~PIL.Image.open` method sets the following
 **xmp**
     May not be present. Raw XMP data from the image.
 
-**timestamp**
-    Only present after the current frame is loaded. The time of the current frame
-    within the AVIF sequence, in milliseconds.
-
 **duration**
     Only present after the current frame is loaded. The time to display the current
     frame of the AVIF sequence, in milliseconds.
+
+**timestamp**
+    Only present after the current frame is loaded. The time of the current frame
+    within the AVIF sequence, in milliseconds.
 
 Saving
 ~~~~~~
