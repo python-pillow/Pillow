@@ -20,24 +20,14 @@
 
 #include "Imaging.h"
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <memory.h>
-#include <time.h>
+#include <stdint.h>
 
 #include "QuantTypes.h"
 #include "QuantOctree.h"
 #include "QuantPngQuant.h"
 #include "QuantHash.h"
 #include "QuantHeap.h"
-
-/* MSVC9.0 */
-#ifndef UINT32_MAX
-#define UINT32_MAX 0xffffffff
-#endif
-
-// #define DEBUG
-// #define TEST_NEAREST_NEIGHBOUR
 
 typedef struct {
     uint32_t scale;
@@ -145,9 +135,6 @@ create_pixel_hash(Pixel *pixelData, uint32_t nPixels) {
     PixelHashData *d;
     HashTable *hash;
     uint32_t i;
-#ifdef DEBUG
-    uint32_t timer, timer2, timer3;
-#endif
 
     /* malloc check ok, small constant allocation */
     d = malloc(sizeof(PixelHashData));
@@ -157,9 +144,6 @@ create_pixel_hash(Pixel *pixelData, uint32_t nPixels) {
     hash = hashtable_new(pixel_hash, pixel_cmp);
     hashtable_set_user_data(hash, d);
     d->scale = 0;
-#ifdef DEBUG
-    timer = timer3 = clock();
-#endif
     for (i = 0; i < nPixels; i++) {
         if (!hashtable_insert_or_update_computed(
                 hash, pixelData[i], new_count_func, exists_count_func
@@ -168,24 +152,9 @@ create_pixel_hash(Pixel *pixelData, uint32_t nPixels) {
         }
         while (hashtable_get_count(hash) > MAX_HASH_ENTRIES) {
             d->scale++;
-#ifdef DEBUG
-            printf("rehashing - new scale: %d\n", (int)d->scale);
-            timer2 = clock();
-#endif
             hashtable_rehash_compute(hash, rehash_collide);
-#ifdef DEBUG
-            timer2 = clock() - timer2;
-            printf("rehash took %f sec\n", timer2 / (double)CLOCKS_PER_SEC);
-            timer += timer2;
-#endif
         }
     }
-#ifdef DEBUG
-    printf("inserts took %f sec\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
-#endif
-#ifdef DEBUG
-    printf("total        %f sec\n", (clock() - timer3) / (double)CLOCKS_PER_SEC);
-#endif
     return hash;
 }
 
@@ -305,25 +274,6 @@ mergesort_pixels(PixelList *head, int i) {
     return head;
 }
 
-#ifdef DEBUG
-static int
-test_sorted(PixelList *pl[3]) {
-    int i, l;
-    PixelList *t;
-
-    for (i = 0; i < 3; i++) {
-        l = 256;
-        for (t = pl[i]; t; t = t->next[i]) {
-            if (l < t->p.a.v[i]) {
-                return 0;
-            }
-            l = t->p.a.v[i];
-        }
-    }
-    return 1;
-}
-#endif
-
 static int
 box_heap_cmp(const Heap *h, const void *A, const void *B) {
     BoxNode *a = (BoxNode *)A;
@@ -348,71 +298,14 @@ splitlists(
     PixelList *l, *r, *c, *n;
     int i;
     int nRight;
-#ifdef DEBUG
-    int nLeft;
-#endif
     int splitColourVal;
 
-#ifdef DEBUG
-    {
-        PixelList *_prevTest, *_nextTest;
-        int _i, _nextCount[3], _prevCount[3];
-        for (_i = 0; _i < 3; _i++) {
-            for (_nextCount[_i] = 0, _nextTest = h[_i];
-                 _nextTest && _nextTest->next[_i];
-                 _nextTest = _nextTest->next[_i], _nextCount[_i]++);
-            for (_prevCount[_i] = 0, _prevTest = t[_i];
-                 _prevTest && _prevTest->prev[_i];
-                 _prevTest = _prevTest->prev[_i], _prevCount[_i]++);
-            if (_nextTest != t[_i]) {
-                printf("next-list of axis %d does not end at tail\n", _i);
-                exit(1);
-            }
-            if (_prevTest != h[_i]) {
-                printf("prev-list of axis %d does not end at head\n", _i);
-                exit(1);
-            }
-            for (; _nextTest && _nextTest->prev[_i]; _nextTest = _nextTest->prev[_i]);
-            for (; _prevTest && _prevTest->next[_i]; _prevTest = _prevTest->next[_i]);
-            if (_nextTest != h[_i]) {
-                printf("next-list of axis %d does not loop back to head\n", _i);
-                exit(1);
-            }
-            if (_prevTest != t[_i]) {
-                printf("prev-list of axis %d does not loop back to tail\n", _i);
-                exit(1);
-            }
-        }
-        for (_i = 1; _i < 3; _i++) {
-            if (_prevCount[_i] != _prevCount[_i - 1] ||
-                _nextCount[_i] != _nextCount[_i - 1] ||
-                _prevCount[_i] != _nextCount[_i]) {
-                printf(
-                    "{%d %d %d} {%d %d %d}\n",
-                    _prevCount[0],
-                    _prevCount[1],
-                    _prevCount[2],
-                    _nextCount[0],
-                    _nextCount[1],
-                    _nextCount[2]
-                );
-                exit(1);
-            }
-        }
-    }
-#endif
     nCount[0] = nCount[1] = 0;
     nRight = 0;
-#ifdef DEBUG
-    nLeft = 0;
-#endif
     for (left = 0, c = h[axis]; c;) {
         left = left + c->count;
         nCount[0] += c->count;
         c->flag = 0;
-#ifdef DEBUG
-        nLeft++;
-#endif
         c = c->next[axis];
         if (left * 2 > pixelCount) {
             break;
@@ -425,9 +318,6 @@ splitlists(
                 break;
             }
             c->flag = 0;
-#ifdef DEBUG
-            nLeft++;
-#endif
             nCount[0] += c->count;
         }
     }
@@ -443,21 +333,10 @@ splitlists(
             }
             c->flag = 1;
             nRight++;
-#ifdef DEBUG
-            nLeft--;
-#endif
             nCount[0] -= c->count;
             nCount[1] += c->count;
         }
     }
-#ifdef DEBUG
-    if (!nLeft) {
-        for (c = h[axis]; c; c = c->next[axis]) {
-            printf("[%d %d %d]\n", c->p.c.r, c->p.c.g, c->p.c.b);
-        }
-        printf("warning... trivial split\n");
-    }
-#endif
 
     for (i = 0; i < 3; i++) {
         l = r = NULL;
@@ -512,9 +391,6 @@ split(BoxNode *node) {
     gl = node->tail[1]->p.c.g;
     bh = node->head[2]->p.c.b;
     bl = node->tail[2]->p.c.b;
-#ifdef DEBUG
-    printf("splitting node [%d %d %d] [%d %d %d] ", rl, gl, bl, rh, gh, bh);
-#endif
     f[0] = (rh - rl) * 77;
     f[1] = (gh - gl) * 150;
     f[2] = (bh - bl) * 29;
@@ -527,84 +403,12 @@ split(BoxNode *node) {
             axis = i;
         }
     }
-#ifdef DEBUG
-    printf("along axis %d\n", axis + 1);
-    {
-        PixelList *_prevTest, *_nextTest;
-        int _i, _nextCount[3], _prevCount[3];
-        for (_i = 0; _i < 3; _i++) {
-            if (node->tail[_i]->next[_i]) {
-                printf("tail is not tail\n");
-                printf(
-                    "node->tail[%d]->next[%d]=%p\n", _i, _i, node->tail[_i]->next[_i]
-                );
-            }
-            if (node->head[_i]->prev[_i]) {
-                printf("head is not head\n");
-                printf(
-                    "node->head[%d]->prev[%d]=%p\n", _i, _i, node->head[_i]->prev[_i]
-                );
-            }
-        }
-
-        for (_i = 0; _i < 3; _i++) {
-            for (_nextCount[_i] = 0, _nextTest = node->head[_i];
-                 _nextTest && _nextTest->next[_i];
-                 _nextTest = _nextTest->next[_i], _nextCount[_i]++);
-            for (_prevCount[_i] = 0, _prevTest = node->tail[_i];
-                 _prevTest && _prevTest->prev[_i];
-                 _prevTest = _prevTest->prev[_i], _prevCount[_i]++);
-            if (_nextTest != node->tail[_i]) {
-                printf("next-list of axis %d does not end at tail\n", _i);
-            }
-            if (_prevTest != node->head[_i]) {
-                printf("prev-list of axis %d does not end at head\n", _i);
-            }
-            for (; _nextTest && _nextTest->prev[_i]; _nextTest = _nextTest->prev[_i]);
-            for (; _prevTest && _prevTest->next[_i]; _prevTest = _prevTest->next[_i]);
-            if (_nextTest != node->head[_i]) {
-                printf("next-list of axis %d does not loop back to head\n", _i);
-            }
-            if (_prevTest != node->tail[_i]) {
-                printf("prev-list of axis %d does not loop back to tail\n", _i);
-            }
-        }
-        for (_i = 1; _i < 3; _i++) {
-            if (_prevCount[_i] != _prevCount[_i - 1] ||
-                _nextCount[_i] != _nextCount[_i - 1] ||
-                _prevCount[_i] != _nextCount[_i]) {
-                printf(
-                    "{%d %d %d} {%d %d %d}\n",
-                    _prevCount[0],
-                    _prevCount[1],
-                    _prevCount[2],
-                    _nextCount[0],
-                    _nextCount[1],
-                    _nextCount[2]
-                );
-            }
-        }
-    }
-#endif
     node->axis = axis;
     if (!splitlists(
             node->head, node->tail, heads, tails, newCounts, axis, node->pixelCount
         )) {
-#ifdef DEBUG
-        printf("list split failed.\n");
-#endif
         return 0;
     }
-#ifdef DEBUG
-    if (!test_sorted(heads[0])) {
-        printf("bug in split");
-        exit(1);
-    }
-    if (!test_sorted(heads[1])) {
-        printf("bug in split");
-        exit(1);
-    }
-#endif
     /* malloc check ok, small constant allocation */
     left = malloc(sizeof(BoxNode));
     right = malloc(sizeof(BoxNode));
@@ -621,26 +425,6 @@ split(BoxNode *node) {
         node->head[i] = NULL;
         node->tail[i] = NULL;
     }
-#ifdef DEBUG
-    if (left->head[0]) {
-        rh = left->head[0]->p.c.r;
-        rl = left->tail[0]->p.c.r;
-        gh = left->head[1]->p.c.g;
-        gl = left->tail[1]->p.c.g;
-        bh = left->head[2]->p.c.b;
-        bl = left->tail[2]->p.c.b;
-        printf("   left node  [%3d %3d %3d] [%3d %3d %3d]\n", rl, gl, bl, rh, gh, bh);
-    }
-    if (right->head[0]) {
-        rh = right->head[0]->p.c.r;
-        rl = right->tail[0]->p.c.r;
-        gh = right->head[1]->p.c.g;
-        gl = right->tail[1]->p.c.g;
-        bh = right->head[2]->p.c.b;
-        bl = right->tail[2]->p.c.b;
-        printf("   right node [%3d %3d %3d] [%3d %3d %3d]\n", rl, gl, bl, rh, gh, bh);
-    }
-#endif
     left->l = left->r = NULL;
     right->l = right->r = NULL;
     left->axis = right->axis = -1;
@@ -685,10 +469,8 @@ median_cut(PixelList *hl[3], uint32_t imPixelCount, int nPixels) {
             }
         } while (compute_box_volume(thisNode) == 1);
         if (!split(thisNode)) {
-#ifdef DEBUG
-            printf("Oops, split failed...\n");
-#endif
-            exit(1);
+            ImagingQuantHeapFree(h);
+            return NULL;
         }
         ImagingQuantHeapAdd(h, (void *)(thisNode->l));
         ImagingQuantHeapAdd(h, (void *)(thisNode->r));
@@ -714,25 +496,6 @@ free_box_tree(BoxNode *n) {
     free(n);
 }
 
-#ifdef DEBUG
-static int
-checkContained(BoxNode *n, Pixel *pp) {
-    if (n->l && n->r) {
-        return checkContained(n->l, pp) + checkContained(n->r, pp);
-    }
-    if (n->l || n->r) {
-        printf("box tree is dead\n");
-        return 0;
-    }
-    if (pp->c.r <= n->head[0]->p.c.r && pp->c.r >= n->tail[0]->p.c.r &&
-        pp->c.g <= n->head[1]->p.c.g && pp->c.g >= n->tail[1]->p.c.g &&
-        pp->c.b <= n->head[2]->p.c.b && pp->c.b >= n->tail[2]->p.c.b) {
-        return 1;
-    }
-    return 0;
-}
-#endif
-
 static int
 annotate_hash_table(BoxNode *n, HashTable *h, uint32_t *box) {
     PixelList *p;
@@ -742,17 +505,11 @@ annotate_hash_table(BoxNode *n, HashTable *h, uint32_t *box) {
         return annotate_hash_table(n->l, h, box) && annotate_hash_table(n->r, h, box);
     }
     if (n->l || n->r) {
-#ifdef DEBUG
-        printf("box tree is dead\n");
-#endif
         return 0;
     }
     for (p = n->head[0]; p; p = p->next[0]) {
         PIXEL_UNSCALE(&(p->p), &q, d->scale);
         if (!hashtable_insert(h, q, *box)) {
-#ifdef DEBUG
-            printf("hashtable insert failed\n");
-#endif
             return 0;
         }
     }
@@ -974,9 +731,6 @@ map_image_pixels_from_median_box(
             continue;
         }
         if (!hashtable_lookup(medianBoxHash, pixelData[i], &pixelVal)) {
-#ifdef DEBUG
-            printf("pixel lookup failed\n");
-#endif
             return 0;
         }
         initialdist = _DISTSQR(paletteData + pixelVal, pixelData + i);
@@ -1040,24 +794,7 @@ compute_palette_from_median_cut(
         }
     }
     for (i = 0; i < nPixels; i++) {
-#ifdef DEBUG
-        if (!(i % 100)) {
-            printf("%05d\r", i);
-            fflush(stdout);
-        }
-        if (checkContained(root, pixelData + i) > 1) {
-            printf("pixel in two boxes\n");
-            for (i = 0; i < 3; i++) {
-                free(avg[i]);
-            }
-            free(count);
-            return 0;
-        }
-#endif
         if (!hashtable_lookup(medianBoxHash, pixelData[i], &paletteEntry)) {
-#ifdef DEBUG
-            printf("pixel lookup failed\n");
-#endif
             for (i = 0; i < 3; i++) {
                 free(avg[i]);
             }
@@ -1065,13 +802,6 @@ compute_palette_from_median_cut(
             return 0;
         }
         if (paletteEntry >= nPaletteEntries) {
-#ifdef DEBUG
-            printf(
-                "panic - paletteEntry>=nPaletteEntries (%d>=%d)\n",
-                (int)paletteEntry,
-                (int)nPaletteEntries
-            );
-#endif
             for (i = 0; i < 3; i++) {
                 free(avg[i]);
             }
@@ -1137,9 +867,6 @@ compute_palette_from_quantized_pixels(
     }
     for (i = 0; i < nPixels; i++) {
         if (qp[i] >= nPaletteEntries) {
-#ifdef DEBUG
-            printf("scream\n");
-#endif
             return 0;
         }
         avg[0][qp[i]] += pixelData[i].c.r;
@@ -1205,10 +932,6 @@ k_means(
         goto error_2;
     }
 
-#ifdef DEBUG
-    printf("[");
-    fflush(stdout);
-#endif
     while (1) {
         if (!built) {
             compute_palette_from_quantized_pixels(
@@ -1240,17 +963,10 @@ k_means(
         if (changes < 0) {
             goto error_3;
         }
-#ifdef DEBUG
-        printf(".(%d)", changes);
-        fflush(stdout);
-#endif
         if (changes <= threshold) {
             break;
         }
     }
-#ifdef DEBUG
-    printf("]\n");
-#endif
     if (avgDistSortKey) {
         free(avgDistSortKey);
     }
@@ -1308,92 +1024,34 @@ quantize(
     uint32_t **avgDistSortKey;
     Pixel *p;
 
-#ifdef DEBUG
-    uint32_t timer, timer2;
-#endif
-
-#ifdef DEBUG
-    timer2 = clock();
-    printf("create hash table...");
-    fflush(stdout);
-    timer = clock();
-#endif
     h = create_pixel_hash(pixelData, nPixels);
-#ifdef DEBUG
-    printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
-#endif
     if (!h) {
         goto error_0;
     }
 
-#ifdef DEBUG
-    printf("create lists from hash table...");
-    fflush(stdout);
-    timer = clock();
-#endif
     hl[0] = hl[1] = hl[2] = NULL;
     hashtable_foreach(h, hash_to_list, hl);
-#ifdef DEBUG
-    printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
-#endif
 
     if (!hl[0]) {
         goto error_1;
     }
 
-#ifdef DEBUG
-    printf("mergesort lists...");
-    fflush(stdout);
-    timer = clock();
-#endif
     for (i = 0; i < 3; i++) {
         hl[i] = mergesort_pixels(hl[i], i);
     }
-#ifdef DEBUG
-    if (!test_sorted(hl)) {
-        printf("bug in mergesort\n");
-        goto error_1;
-    }
-    printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
-#endif
-
-#ifdef DEBUG
-    printf("median cut...");
-    fflush(stdout);
-    timer = clock();
-#endif
     root = median_cut(hl, nPixels, nQuantPixels);
-#ifdef DEBUG
-    printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
-#endif
     if (!root) {
         goto error_1;
     }
     nPaletteEntries = 0;
-#ifdef DEBUG
-    printf("median cut tree to hash table...");
-    fflush(stdout);
-    timer = clock();
-#endif
     if (!annotate_hash_table(root, h, &nPaletteEntries)) {
         goto error_3;
     }
-#ifdef DEBUG
-    printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
-#endif
-#ifdef DEBUG
-    printf("compute palette...\n");
-    fflush(stdout);
-    timer = clock();
-#endif
     if (!compute_palette_from_median_cut(
             pixelData, nPixels, h, &p, nPaletteEntries, root
         )) {
         goto error_3;
     }
-#ifdef DEBUG
-    printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
-#endif
 
     free_box_tree(root);
     root = NULL;
@@ -1429,76 +1087,14 @@ quantize(
         goto error_7;
     }
 
-#ifdef TEST_NEAREST_NEIGHBOUR
-#include <math.h>
-    {
-        uint32_t bestmatch, bestdist, dist;
-        HashTable *h2;
-        printf("nearest neighbour search (full search)...");
-        fflush(stdout);
-        timer = clock();
-        h2 = hashtable_new(unshifted_pixel_hash, unshifted_pixel_cmp);
-        for (i = 0; i < nPixels; i++) {
-            if (hashtable_lookup(h2, pixelData[i], &paletteEntry)) {
-                bestmatch = paletteEntry;
-            } else {
-                bestmatch = 0;
-                bestdist = _SQR(pixelData[i].c.r - p[0].c.r) +
-                           _SQR(pixelData[i].c.g - p[0].c.g) +
-                           _SQR(pixelData[i].c.b - p[0].c.b);
-                for (j = 1; j < nPaletteEntries; j++) {
-                    dist = _SQR(pixelData[i].c.r - p[j].c.r) +
-                           _SQR(pixelData[i].c.g - p[j].c.g) +
-                           _SQR(pixelData[i].c.b - p[j].c.b);
-                    if (dist == bestdist && j == qp[i]) {
-                        bestmatch = j;
-                    }
-                    if (dist < bestdist) {
-                        bestdist = dist;
-                        bestmatch = j;
-                    }
-                }
-                hashtable_insert(h2, pixelData[i], bestmatch);
-            }
-            if (qp[i] != bestmatch) {
-                printf(
-                    "discrepancy in matching algorithms pixel %d [%d %d] %f %f\n",
-                    i,
-                    qp[i],
-                    bestmatch,
-                    sqrt((double)(_SQR(pixelData[i].c.r - p[qp[i]].c.r) +
-                                  _SQR(pixelData[i].c.g - p[qp[i]].c.g) +
-                                  _SQR(pixelData[i].c.b - p[qp[i]].c.b))),
-                    sqrt((double)(_SQR(pixelData[i].c.r - p[bestmatch].c.r) +
-                                  _SQR(pixelData[i].c.g - p[bestmatch].c.g) +
-                                  _SQR(pixelData[i].c.b - p[bestmatch].c.b)))
-                );
-            }
-        }
-        hashtable_free(h2);
-    }
-#endif
-#ifdef DEBUG
-    printf("k means...\n");
-    fflush(stdout);
-    timer = clock();
-#endif
     if (kmeans > 0) {
         k_means(pixelData, nPixels, p, nPaletteEntries, qp, kmeans - 1);
     }
-#ifdef DEBUG
-    printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
-#endif
 
     *quantizedPixels = qp;
     *palette = p;
     *paletteLength = nPaletteEntries;
 
-#ifdef DEBUG
-    printf("cleanup...");
-    fflush(stdout);
-    timer = clock();
-#endif
     if (avgDist) {
         free(avgDist);
     }
@@ -1506,10 +1102,6 @@ quantize(
         free(avgDistSortKey);
     }
     destroy_pixel_hash(h);
-#ifdef DEBUG
-    printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
-    printf("-----\ntotal time %f\n", (clock() - timer2) / (double)CLOCKS_PER_SEC);
-#endif
     return 1;
 
 error_7:

@@ -166,10 +166,6 @@ PyImagingNew(Imaging imOut) {
         return NULL;
     }
 
-#ifdef VERBOSE
-    printf("imaging %p allocated\n", imagep);
-#endif
-
     imagep->image = imOut;
     imagep->access = ImagingAccessNew(imOut);
 
@@ -178,10 +174,6 @@ PyImagingNew(Imaging imOut) {
 
 static void
 _dealloc(ImagingObject *imagep) {
-#ifdef VERBOSE
-    printf("imaging %p deleted\n", imagep);
-#endif
-
     if (imagep->access) {
         ImagingAccessDelete(imagep->image, imagep->access);
     }
