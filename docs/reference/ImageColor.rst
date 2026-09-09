@@ -47,20 +47,20 @@ The ImageColor module supports the following string formats:
 
 * Common HTML color names. The :py:mod:`~PIL.ImageColor` module provides some
   140 standard color names, based on the colors supported by the X Window
-  system and most web browsers. color names are case insensitive. For example,
+  system and most web browsers. Color names are case insensitive. For example,
   ``red`` and ``Red`` both specify pure red.
 
 Functions
 ---------
 
-.. py:method:: getrgb(color)
+.. py:function:: getrgb(color)
 
     Convert a color string to an RGB tuple. If the string cannot be parsed,
     this function raises a :py:exc:`ValueError` exception.
 
     .. versionadded:: 1.1.4
 
-.. py:method:: getcolor(color, mode)
+.. py:function:: getcolor(color, mode)
 
     Same as :py:func:`~PIL.ImageColor.getrgb`, but converts the RGB value to a
     grayscale value if the mode is not color or a palette image. If the string

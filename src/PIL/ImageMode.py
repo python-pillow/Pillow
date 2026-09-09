@@ -40,27 +40,27 @@ def getmode(mode: str) -> ModeDescriptor:
     modes = {
         # core modes
         # Bits need to be extended to bytes
-        "1": ("L", "L", ("1",), "|b1"),
-        "L": ("L", "L", ("L",), "|u1"),
-        "I": ("L", "I", ("I",), f"{endian}i4"),
-        "F": ("L", "F", ("F",), f"{endian}f4"),
-        "P": ("P", "L", ("P",), "|u1"),
-        "RGB": ("RGB", "L", ("R", "G", "B"), "|u1"),
-        "RGBX": ("RGB", "L", ("R", "G", "B", "X"), "|u1"),
-        "RGBA": ("RGB", "L", ("R", "G", "B", "A"), "|u1"),
-        "CMYK": ("RGB", "L", ("C", "M", "Y", "K"), "|u1"),
-        "YCbCr": ("RGB", "L", ("Y", "Cb", "Cr"), "|u1"),
+        "1": (("1",), "L", "L", "|b1"),
+        "L": (("L",), "L", "L", "|u1"),
+        "I": (("I",), "L", "I", f"{endian}i4"),
+        "F": (("F",), "L", "F", f"{endian}f4"),
+        "P": (("P",), "P", "L", "|u1"),
+        "RGB": (("R", "G", "B"), "RGB", "L", "|u1"),
+        "RGBX": (("R", "G", "B", "X"), "RGB", "L", "|u1"),
+        "RGBA": (("R", "G", "B", "A"), "RGB", "L", "|u1"),
+        "CMYK": (("C", "M", "Y", "K"), "RGB", "L", "|u1"),
+        "YCbCr": (("Y", "Cb", "Cr"), "RGB", "L", "|u1"),
         # UNDONE - unsigned |u1i1i1
-        "LAB": ("RGB", "L", ("L", "A", "B"), "|u1"),
-        "HSV": ("RGB", "L", ("H", "S", "V"), "|u1"),
+        "LAB": (("L", "A", "B"), "RGB", "L", "|u1"),
+        "HSV": (("H", "S", "V"), "RGB", "L", "|u1"),
         # extra experimental modes
-        "RGBa": ("RGB", "L", ("R", "G", "B", "a"), "|u1"),
-        "LA": ("L", "L", ("L", "A"), "|u1"),
-        "La": ("L", "L", ("L", "a"), "|u1"),
-        "PA": ("RGB", "L", ("P", "A"), "|u1"),
+        "RGBa": (("R", "G", "B", "a"), "RGB", "L", "|u1"),
+        "LA": (("L", "A"), "L", "L", "|u1"),
+        "La": (("L", "a"), "L", "L", "|u1"),
+        "PA": (("P", "A"), "RGB", "L", "|u1"),
     }
     if mode in modes:
-        base_mode, base_type, bands, type_str = modes[mode]
+        bands, base_mode, base_type, type_str = modes[mode]
         return ModeDescriptor(mode, bands, base_mode, base_type, type_str)
 
     mapping_modes = {

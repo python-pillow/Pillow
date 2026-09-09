@@ -23,7 +23,7 @@
 /* FIXME: make these pluggable! */
 
 #define PY_SSIZE_T_CLEAN
-#include "Python.h"
+#include <Python.h>
 
 #include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
@@ -750,7 +750,6 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     const RawModeID rawmode = findRawModeID(rawmode_name);
 
     if (get_packer(encoder, mode, rawmode) < 0) {
-        Py_DECREF(encoder);
         return NULL;
     }
 
@@ -774,7 +773,6 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         key = PyTuple_GET_ITEM(item, 0);
         key_int = (int)PyLong_AsLong(key);
         value = PyTuple_GET_ITEM(item, 1);
-        Py_DECREF(item);
 
         status = 0;
         is_core_tag = 0;
@@ -792,6 +790,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             PyObject *tag_type;
             if (PyDict_GetItemRef(types, key, &tag_type) < 0) {
                 Py_DECREF(encoder);
+                Py_DECREF(item);
                 return NULL;  // Exception has been already set
             }
             if (tag_type) {
@@ -822,6 +821,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             is_var_length = 1;
 
             if (!len) {
+                Py_DECREF(item);
                 continue;
             }
 
@@ -844,6 +844,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             if (ImagingLibTiffMergeFieldInfo(
                     &encoder->state, type, key_int, is_var_length
                 )) {
+                Py_DECREF(item);
                 continue;
             }
         }
@@ -852,6 +853,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             key_int == TIFFTAG_INKNAMES) {
             if (!PyBytes_Check(value)) {
                 Py_DECREF(encoder);
+                Py_DECREF(item);
                 PyErr_SetString(PyExc_ValueError, "Incorrect tag value type");
                 return NULL;
             }
@@ -870,6 +872,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 int stride = 256;
                 if (len != 768) {
                     Py_DECREF(encoder);
+                    Py_DECREF(item);
                     PyErr_SetString(
                         PyExc_ValueError, "Requiring 768 items for Colormap"
                     );
@@ -1030,6 +1033,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             } else if (type == TIFF_ASCII) {
                 if (!PyBytes_Check(value)) {
                     Py_DECREF(encoder);
+                    Py_DECREF(item);
                     PyErr_SetString(PyExc_ValueError, "Incorrect tag value type");
                     return NULL;
                 }
@@ -1054,6 +1058,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 );
             }
         }
+        Py_DECREF(item);
         if (!status) {
             TRACE(("Error setting Field\n"));
             Py_DECREF(encoder);
@@ -1108,7 +1113,10 @@ get_qtables_arrays(PyObject *qtables, int *qtablesLen) {
     }
 
     tables = PySequence_Fast(qtables, "expected a sequence");
-    num_tables = PySequence_Size(qtables);
+    if (tables == NULL) {
+        return NULL;
+    }
+    num_tables = PySequence_Fast_GET_SIZE(tables);
     if (num_tables < 1 || num_tables > NUM_QUANT_TBLS) {
         PyErr_SetString(
             PyExc_ValueError,
@@ -1129,11 +1137,15 @@ get_qtables_arrays(PyObject *qtables, int *qtablesLen) {
             PyErr_SetString(PyExc_ValueError, "Invalid quantization tables");
             goto JPEG_QTABLES_ERR;
         }
-        if (PySequence_Size(table) != DCTSIZE2) {
+        table_data = PySequence_Fast(table, "expected a sequence");
+        if (table_data == NULL) {
+            goto JPEG_QTABLES_ERR;
+        }
+        if (PySequence_Fast_GET_SIZE(table_data) != DCTSIZE2) {
+            Py_DECREF(table_data);
             PyErr_SetString(PyExc_ValueError, "Invalid quantization table size");
             goto JPEG_QTABLES_ERR;
         }
-        table_data = PySequence_Fast(table, "expected a sequence");
         for (j = 0; j < DCTSIZE2; j++) {
             qarrays[i * DCTSIZE2 + j] =
                 PyLong_AS_LONG(PySequence_Fast_GET_ITEM(table_data, j));
@@ -1228,12 +1240,16 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     // Freed in JpegEncode, Case 6
     qarrays = get_qtables_arrays(qtables, &qtablesLen);
+    if (qarrays == NULL && PyErr_Occurred()) {
+        Py_DECREF(encoder);
+        return NULL;
+    }
 
     if (comment && comment_size > 0) {
         /* malloc check ok, length is from python parsearg */
         char *p = malloc(comment_size);  // Freed in JpegEncode, Case 6
         if (!p) {
-            return ImagingError_MemoryError();
+            goto memory_error;
         }
         memcpy(p, comment, comment_size);
         comment = p;
@@ -1245,10 +1261,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
         /* malloc check ok, length is from python parsearg */
         char *p = malloc(extra_size);  // Freed in JpegEncode, Case 6
         if (!p) {
-            if (comment) {
-                free(comment);
-            }
-            return ImagingError_MemoryError();
+            goto memory_error;
         }
         memcpy(p, extra, extra_size);
         extra = p;
@@ -1260,13 +1273,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
         /* malloc check ok, length is from python parsearg */
         char *pp = malloc(rawExifLen);  // Freed in JpegEncode, Case 6
         if (!pp) {
-            if (comment) {
-                free(comment);
-            }
-            if (extra) {
-                free(extra);
-            }
-            return ImagingError_MemoryError();
+            goto memory_error;
         }
         memcpy(pp, rawExif, rawExifLen);
         rawExif = pp;
@@ -1299,6 +1306,19 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     jpeg_encoder_state->rawExifLen = rawExifLen;
 
     return (PyObject *)encoder;
+
+memory_error:
+    Py_DECREF(encoder);
+    if (qarrays) {
+        free(qarrays);
+    }
+    if (comment) {
+        free(comment);
+    }
+    if (extra) {
+        free(extra);
+    }
+    return ImagingError_MemoryError();
 }
 
 #endif

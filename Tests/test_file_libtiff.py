@@ -6,8 +6,7 @@ import itertools
 import os
 import re
 import sys
-from pathlib import Path
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 import pytest
 
@@ -31,6 +30,11 @@ from .helper import (
     mark_if_feature_version,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from typing import Any
 
 
 @skip_unless_feature("libtiff")
@@ -321,7 +325,7 @@ class TestFileLibTiff(LibTiffTestCase):
                         and libtiff
                     ):
                         # libtiff does not support real RATIONALS
-                        assert round(abs(float(reloaded_value) - float(value)), 7) == 0
+                        assert reloaded_value == pytest.approx(value)
                         continue
 
                     assert reloaded_value == value
@@ -864,6 +868,15 @@ class TestFileLibTiff(LibTiffTestCase):
             assert im._compression == "tiff_ccitt"
             assert im.size == (10, 10)
             im.load()
+
+    def test_seek_remove_palette(self) -> None:
+        with Image.open("Tests/images/no_rows_per_strip.tif") as im:
+            assert im.mode == "P"
+            assert im.palette is not None
+
+            im.seek(1)
+            assert im.mode == "F"
+            assert im.palette is None
 
     def test_save_tiff_with_jpegtables(self, tmp_path: Path) -> None:
         # Arrange

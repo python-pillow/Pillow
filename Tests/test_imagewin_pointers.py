@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 
 from PIL import Image, ImageWin
 
 from .helper import hopper, is_win32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # see https://github.com/python-pillow/Pillow/pull/1431#issuecomment-144692652
 

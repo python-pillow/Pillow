@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"collections", "warnings"}
+
 import collections
 import os
 import sys
 import warnings
-from typing import IO
 
 import PIL
 
 from . import Image
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 modules = {
     "pil": ("PIL._imaging", "PILLOW_VERSION"),
     "tkinter": ("PIL._tkinter_finder", "tk_version"),

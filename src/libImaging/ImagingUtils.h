@@ -14,6 +14,9 @@
 #define MASK_UINT32_CHANNEL_3 0xff000000
 #endif
 
+#define MAX(a, b) (a > b ? a : b)
+#define MIN(a, b) (a < b ? a : b)
+
 #define SHIFTFORDIV255(a) ((((a) >> 8) + a) >> 8)
 
 /* like (a * b + 127) / 255), but much faster on most platforms */
@@ -28,17 +31,3 @@
 #define CLIP8(v) ((v) <= 0 ? 0 : (v) < 256 ? (v) : 255)
 
 #define CLIP16(v) ((v) <= 0 ? 0 : (v) < 65536 ? (v) : 65535)
-
-/* This is to work around a bug in GCC prior 4.9 in 64 bit mode.
-   GCC generates code with partial dependency which is 3 times slower.
-   See: https://stackoverflow.com/a/26588074/253146 */
-#if defined(__x86_64__) && defined(__SSE__) && !defined(__NO_INLINE__) && \
-    !defined(__clang__) && defined(GCC_VERSION) && (GCC_VERSION < 40900)
-static float __attribute__((always_inline)) inline _i2f(int v) {
-    float x;
-    __asm__("xorps %0, %0; cvtsi2ss %1, %0" : "=x"(x) : "r"(v));
-    return x;
-}
-#else
-static float inline _i2f(int v) { return (float)v; }
-#endif

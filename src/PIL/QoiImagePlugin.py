@@ -7,6 +7,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "typing"}
+
 import os
 from typing import IO
 
@@ -36,7 +38,7 @@ class QoiImageFile(ImageFile.ImageFile):
         self._mode = "RGB" if channels == 3 else "RGBA"
 
         self.fp.seek(1, os.SEEK_CUR)  # colorspace
-        self.tile = [ImageFile._Tile("qoi", (0, 0) + self._size, self.fp.tell())]
+        self.tile = [ImageFile._Tile("qoi", (0, 0, *self._size), self.fp.tell())]
 
 
 class QoiDecoder(ImageFile.PyDecoder):
@@ -61,12 +63,20 @@ class QoiDecoder(ImageFile.PyDecoder):
         bands = Image.getmodebands(self.mode)
         dest_length = self.state.xsize * self.state.ysize * bands
         while len(data) < dest_length:
-            byte = self.fd.read(1)[0]
+            byte_data = self.fd.read(1)
+            if not byte_data:
+                break
+            byte = byte_data[0]
             value: bytes | bytearray
             if byte == 0b11111110 and self._previous_pixel:  # QOI_OP_RGB
-                value = bytearray(self.fd.read(3)) + self._previous_pixel[3:]
+                rgb_data = self.fd.read(3)
+                if len(rgb_data) < 3:
+                    break
+                value = bytearray(rgb_data) + self._previous_pixel[3:]
             elif byte == 0b11111111:  # QOI_OP_RGBA
                 value = self.fd.read(4)
+                if len(value) < 4:
+                    break
             else:
                 op = byte >> 6
                 if op == 0:  # QOI_OP_INDEX
@@ -86,7 +96,10 @@ class QoiDecoder(ImageFile.PyDecoder):
                         )
                     )
                 elif op == 2 and self._previous_pixel:  # QOI_OP_LUMA
-                    second_byte = self.fd.read(1)[0]
+                    second_byte_data = self.fd.read(1)
+                    if not second_byte_data:
+                        break
+                    second_byte = second_byte_data[0]
                     diff_green = (byte & 0b00111111) - 32
                     diff_red = ((second_byte & 0b11110000) >> 4) - 8
                     diff_blue = (second_byte & 0b00001111) - 8
@@ -131,7 +144,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.write(o8(channels))
     fp.write(o8(colorspace))
 
-    ImageFile._save(im, fp, [ImageFile._Tile("qoi", (0, 0) + im.size)])
+    ImageFile._save(im, fp, [ImageFile._Tile("qoi", (0, 0, *im.size))])
 
 
 class QoiEncoder(ImageFile.PyEncoder):

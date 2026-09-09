@@ -3,11 +3,14 @@ from __future__ import annotations
 import array
 import math
 import struct
-from collections.abc import Sequence
 
 import pytest
 
 from PIL import Image, ImagePath
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 def test_path() -> None:
@@ -203,10 +206,8 @@ def test_transform_with_wrap() -> None:
 
 
 def test_overflow_segfault() -> None:
-    # Some Pythons fail getting the argument as an integer, and it falls
-    # through to the sequence. Seeing this on 32-bit Windows.
-    with pytest.raises((TypeError, MemoryError)):
-        # post patch, this fails with a memory error
+    with pytest.raises((OverflowError, MemoryError)):
+        # post patch, this fails with a memory error on 64-bit
         x = Evil()
 
         # This fails due to the invalid malloc above,

@@ -27,6 +27,8 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {"base64", "io", "types", "warnings"}
+
 import abc
 import base64
 import os
@@ -35,24 +37,26 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from types import ModuleType
-from typing import IO, Any, BinaryIO, TypedDict, cast
+from typing import TypedDict, cast
 
 from . import Image
-from ._typing import StrOrBytesPath
 from ._util import DeferredError, is_path
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from typing import IO, Any, BinaryIO, NotRequired
+
     from . import ImageFile
     from ._imaging import ImagingFont
     from ._imagingft import Font
+    from ._typing import StrOrBytesPath
 
 
 class Axis(TypedDict):
     minimum: int | None
     default: int | None
     maximum: int | None
-    name: bytes | None
+    name: NotRequired[bytes]
 
 
 class Layout(IntEnum):
@@ -299,7 +303,7 @@ class FreeTypeFont(BaseImageFont):
                 font, size, index, encoding, layout_engine=layout_engine
             )
         else:
-            load_from_bytes(cast(IO[bytes], font))
+            load_from_bytes(cast("IO[bytes]", font))
 
     def __getstate__(self) -> list[Any]:
         return [self.path, self.size, self.index, self.encoding, self.layout_engine]
@@ -732,7 +736,7 @@ class FreeTypeFont(BaseImageFont):
         """
         axes = self.font.getvaraxes()
         for axis in axes:
-            if axis["name"]:
+            if "name" in axis:
                 axis["name"] = axis["name"].replace(b"\x00", b"")
         return axes
 
@@ -951,7 +955,7 @@ def load_path(filename: str | bytes) -> ImageFont:
     for directory in sys.path:
         try:
             return load(os.path.join(directory, filename))
-        except OSError:  # noqa: PERF203
+        except OSError:
             pass
     msg = f'cannot find font file "{filename}" in sys.path'
     if os.path.exists(filename):

@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-import pytest
-
 from PIL import Image, ImageDraw, ImageFont, _util
 
 from .helper import PillowLeakTestCase, features, skip_unless_feature
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    import pytest
 
 original_core = ImageFont.core
 

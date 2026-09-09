@@ -1670,8 +1670,10 @@ def test_compute_regular_polygon_vertices(
             (50, 50, 100, 100),
             0,
             ValueError,
-            "bounding_circle should contain 2D coordinates "
-            r"and a radius \(e.g. \(x, y, r\) or \(\(x, y\), r\) \)",
+            (
+                "bounding_circle should contain 2D coordinates "
+                r"and a radius \(e.g. \(x, y, r\) or \(\(x, y\), r\) \)"
+            ),
         ),
         (
             3,

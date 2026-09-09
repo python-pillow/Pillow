@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 
 import pytest
 
 from PIL import FontFile, Image
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_puti16() -> None:
@@ -28,6 +31,13 @@ def test_compile() -> None:
 
     # Assert that compiling again did not change anything
     assert font.ysize == 2
+
+
+def test_decompression_bomb() -> None:
+    font = FontFile.FontFile()
+    font.glyph[0] = ((0, 0), (0, 0, 0, 0), (0, 0, 10000, 10000), Image.new("L", (0, 0)))
+    with pytest.raises(Image.DecompressionBombError):
+        font.compile()
 
 
 def test_save(tmp_path: Path) -> None:

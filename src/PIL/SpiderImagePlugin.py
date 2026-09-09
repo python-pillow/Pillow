@@ -34,15 +34,18 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._util", "struct"}
+
 import os
 import struct
 import sys
-from typing import IO, Any
 
 from . import Image, ImageFile
 from ._util import DeferredError
 
 TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
 
 
 def isInt(f: Any) -> int:
@@ -132,15 +135,15 @@ class SpiderImageFile(ImageFile.ImageFile):
         self.istack = int(h[24])
         self.imgnumber = int(h[27])
 
+        self.n_frames = 1
         if self.istack == 0 and self.imgnumber == 0:
             # stk=0, img=0: a regular 2D image
             offset = hdrlen
-            self._nimages = 1
         elif self.istack > 0 and self.imgnumber == 0:
             # stk>0, img=0: Opening the stack for the first time
             self.imgbytes = int(h[12]) * int(h[2]) * 4
             self.hdrlen = hdrlen
-            self._nimages = int(h[26])
+            self.n_frames = int(h[26])
             # Point to the first image in the stack
             offset = hdrlen * 2
             self.imgnumber = 1
@@ -151,6 +154,7 @@ class SpiderImageFile(ImageFile.ImageFile):
         else:
             msg = "inconsistent stack header values"
             raise SyntaxError(msg)
+        self.is_animated = self.n_frames > 1
 
         if self.bigendian:
             self.rawmode = "F;32BF"
@@ -158,16 +162,8 @@ class SpiderImageFile(ImageFile.ImageFile):
             self.rawmode = "F;32F"
         self._mode = "F"
 
-        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, offset, self.rawmode)]
+        self.tile = [ImageFile._Tile("raw", (0, 0, *self.size), offset, self.rawmode)]
         self._fp = self.fp  # FIXME: hack
-
-    @property
-    def n_frames(self) -> int:
-        return self._nimages
-
-    @property
-    def is_animated(self) -> bool:
-        return self._nimages > 1
 
     # 1st image index is zero (although SPIDER imgnumber starts at 1)
     def tell(self) -> int:
@@ -285,7 +281,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.writelines(hdr)
 
     rawmode = "F;32NF"  # 32-bit native floating point
-    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, rawmode)])
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, rawmode)])
 
 
 def _save_spider(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:

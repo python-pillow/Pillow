@@ -28,12 +28,17 @@
 
 from __future__ import annotations
 
-from typing import IO
+__lazy_modules__ = {"PIL._binary"}
 
 from . import Image, ImageFile, ImagePalette, UnidentifiedImageError
 from ._binary import i16be as i16
 from ._binary import i32be as i32
-from ._typing import StrOrBytesPath
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
+
+    from ._typing import StrOrBytesPath
 
 
 class GdImageFile(ImageFile.ImageFile):
@@ -76,7 +81,7 @@ class GdImageFile(ImageFile.ImageFile):
         self.tile = [
             ImageFile._Tile(
                 "raw",
-                (0, 0) + self.size,
+                (0, 0, *self.size),
                 7 + true_color_offset + 6 + 256 * 4,
                 "L",
             )

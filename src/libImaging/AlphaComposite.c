@@ -22,7 +22,6 @@ typedef struct {
 Imaging
 ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
     Imaging imOut;
-    int x, y;
 
     /* Check arguments */
     if (!imDst || !imSrc ||
@@ -40,12 +39,17 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
         return NULL;
     }
 
-    for (y = 0; y < imDst->ysize; y++) {
-        rgba8 *dst = (rgba8 *)imDst->image[y];
-        rgba8 *src = (rgba8 *)imSrc->image[y];
-        rgba8 *out = (rgba8 *)imOut->image[y];
+    // Invariant over the loop.
+    int xsize = imDst->xsize;
+    int ysize = imDst->ysize;
 
-        for (x = 0; x < imDst->xsize; x++) {
+    for (int y = 0; y < ysize; y++) {
+        // restrict safe: imDst/imSrc are read-only, imOut is a fresh allocation.
+        rgba8 *restrict dst = (rgba8 *)imDst->image[y];
+        rgba8 *restrict src = (rgba8 *)imSrc->image[y];
+        rgba8 *restrict out = (rgba8 *)imOut->image[y];
+
+        for (int x = 0; x < xsize; x++) {
             if (src->a == 0) {
                 // Copy 4 bytes at once.
                 *out = *dst;

@@ -17,6 +17,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "io"}
+
 import io
 
 from . import FontFile, Image
@@ -168,6 +170,7 @@ class PcfFontFile(FontFile.FontFile):
         ) -> None:
             xsize = right - left
             ysize = ascent + descent
+            Image._decompression_bomb_check((xsize, ysize))
             metrics.append(
                 (xsize, ysize, left, right, width, ascent, descent, attributes)
             )
@@ -248,7 +251,7 @@ class PcfFontFile(FontFile.FontFile):
                 ]
                 if encoding_offset != 0xFFFF:
                     encoding[i] = encoding_offset
-            except UnicodeDecodeError:  # noqa: PERF203
+            except UnicodeDecodeError:
                 # character is not supported in selected encoding
                 pass
 

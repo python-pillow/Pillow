@@ -114,7 +114,7 @@ valgrind-leak:
 	PILLOW_VALGRIND_TEST=true PYTHONMALLOC=malloc valgrind --suppressions=Tests/oss-fuzz/python.supp \
 	    --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite \
             --log-file=/tmp/valgrind-output \
-            python3 -m pytest -vv --valgrind --valgrind-log=/tmp/valgrind-output
+            python3 -m pytest -vv --valgrind --valgrind-log=/tmp/valgrind-output $(PYTEST_ARGS)
 
 .PHONY: readme
 readme:

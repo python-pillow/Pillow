@@ -44,7 +44,8 @@ class TestShellInjection:
 
             with Image.open(src_file) as im:
                 assert isinstance(im, JpegImagePlugin.JpegImageFile)
-                im.load_djpeg()
+                with pytest.warns(DeprecationWarning, match="load_djpeg"):
+                    im.load_djpeg()
 
     @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
     def test_save_netpbm_filename_bmp_mode(self, tmp_path: Path) -> None:

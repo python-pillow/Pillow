@@ -32,6 +32,16 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL._binary",
+    "PIL._util",
+    "fractions",
+    "itertools",
+    "struct",
+    "warnings",
+    "zlib",
+}
+
 import itertools
 import logging
 import re
@@ -48,13 +58,12 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
-from ._deprecate import deprecate
 from ._util import DeferredError
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from typing import Any, NoReturn
+    from typing import Any, NoReturn, Self
 
     from . import _imaging
 
@@ -185,7 +194,7 @@ class ChunkStream:
 
         return cid, pos, length
 
-    def __enter__(self) -> ChunkStream:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -266,7 +275,7 @@ class iTXt(str):
     @staticmethod
     def __new__(
         cls, text: str, lang: str | None = None, tkey: str | None = None
-    ) -> iTXt:
+    ) -> Self:
         """
         :param cls: the class to use when creating the instance
         :param text: value for this key
@@ -400,9 +409,6 @@ class PngStream(ChunkStream):
 
         self.text_memory = 0
 
-    def __enter__(self) -> PngStream:
-        return self
-
     def check_text_memory(self, chunklen: int) -> None:
         self.text_memory += chunklen
         if self.text_memory > MAX_TEXT_MEMORY:
@@ -480,7 +486,7 @@ class PngStream(ChunkStream):
         else:
             if self.im_n_frames is not None:
                 self.im_info["default_image"] = True
-            tile = [ImageFile._Tile("zip", (0, 0) + self.im_size, pos, self.im_rawmode)]
+            tile = [ImageFile._Tile("zip", (0, 0, *self.im_size), pos, self.im_rawmode)]
         self.im_tile = tile
         self.im_idat = length
         msg = "image data found"
@@ -513,18 +519,30 @@ class PngStream(ChunkStream):
                 # otherwise, we have a byte string with one alpha value
                 # for each palette entry
                 self.im_info["transparency"] = s
-        elif self.im_mode == "1":
-            self.im_info["transparency"] = 255 if i16(s) else 0
-        elif self.im_mode in ("L", "I;16"):
-            self.im_info["transparency"] = i16(s)
-        elif self.im_mode == "RGB":
-            self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
+        elif self.im_mode in ("1", "L", "I;16", "RGB"):
+            # 2 bytes for greyscale, 6 for truecolour
+            if length < (6 if self.im_mode == "RGB" else 2):
+                if ImageFile.LOAD_TRUNCATED_IMAGES:
+                    return s
+                msg = "Truncated tRNS chunk"
+                raise ValueError(msg)
+            if self.im_mode == "1":
+                self.im_info["transparency"] = 255 if i16(s) else 0
+            elif self.im_mode in ("L", "I;16"):
+                self.im_info["transparency"] = i16(s)
+            elif self.im_mode == "RGB":
+                self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
         return s
 
     def chunk_gAMA(self, pos: int, length: int) -> bytes:
         # gamma setting
         assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
+        if length < 4:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                return s
+            msg = "Truncated gAMA chunk"
+            raise ValueError(msg)
         self.im_info["gamma"] = i32(s) / 100000.0
         return s
 
@@ -534,7 +552,12 @@ class PngStream(ChunkStream):
 
         assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
-        raw_vals = struct.unpack(f">{len(s) // 4}I", s)
+        if length < 32:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                return s
+            msg = "Truncated cHRM chunk"
+            raise ValueError(msg)
+        raw_vals = struct.unpack(">8I", s[:32])
         self.im_info["chromaticity"] = tuple(elt / 100000.0 for elt in raw_vals)
         return s
 
@@ -1107,12 +1130,8 @@ class PngImageFile(ImageFile.ImageFile):
 _OUTMODES = {
     # supported PIL modes, and corresponding rawmode, bit depth and color type
     "1": ("1", b"\x01", b"\x00"),
-    "L;1": ("L;1", b"\x01", b"\x00"),
-    "L;2": ("L;2", b"\x02", b"\x00"),
-    "L;4": ("L;4", b"\x04", b"\x00"),
     "L": ("L", b"\x08", b"\x00"),
     "LA": ("LA", b"\x08", b"\x04"),
-    "I": ("I;16B", b"\x10", b"\x00"),
     "I;16": ("I;16B", b"\x10", b"\x00"),
     "I;16B": ("I;16B", b"\x10", b"\x00"),
     "P;1": ("P;1", b"\x01", b"\x03"),
@@ -1226,7 +1245,7 @@ def _write_multiple_frames(
                     if bbox:
                         dispose = dispose.crop(bbox)
                     else:
-                        bbox = (0, 0) + im.size
+                        bbox = (0, 0, *im.size)
                     base_im.paste(dispose, bbox)
                 elif prev_disposal == Disposal.OP_PREVIOUS:
                     base_im = im_frames[-2].im
@@ -1265,15 +1284,15 @@ def _write_multiple_frames(
         _apply_encoderinfo(default_im, im.encoderinfo)
         ImageFile._save(
             default_im,
-            cast(IO[bytes], _idat(fp, chunk)),
-            [ImageFile._Tile("zip", (0, 0) + im.size, 0, rawmode)],
+            cast("IO[bytes]", _idat(fp, chunk)),
+            [ImageFile._Tile("zip", (0, 0, *im.size), 0, rawmode)],
         )
 
     seq_num = 0
     for frame, frame_data in enumerate(im_frames):
         im_frame = frame_data.im
         if not frame_data.bbox:
-            bbox = (0, 0) + im_frame.size
+            bbox = (0, 0, *im_frame.size)
         else:
             bbox = frame_data.bbox
             im_frame = im_frame.crop(bbox)
@@ -1307,15 +1326,15 @@ def _write_multiple_frames(
             # first frame must be in IDAT chunks for backwards compatibility
             ImageFile._save(
                 im_frame,
-                cast(IO[bytes], _idat(fp, chunk)),
-                [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                cast("IO[bytes]", _idat(fp, chunk)),
+                [ImageFile._Tile("zip", (0, 0, *im_frame.size), 0, rawmode)],
             )
         else:
             fdat_chunks = _fdat(fp, chunk, seq_num)
             ImageFile._save(
                 im_frame,
-                cast(IO[bytes], fdat_chunks),
-                [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                cast("IO[bytes]", fdat_chunks),
+                [ImageFile._Tile("zip", (0, 0, *im_frame.size), 0, rawmode)],
             )
             seq_num = fdat_chunks.seq_num
     return None
@@ -1340,25 +1359,44 @@ def _save(
         )
         modes = set()
         sizes = set()
+        palette = None
+        palette_frame_with_alpha = None
+        different_palette = None
         append_images = im.encoderinfo.get("append_images", [])
         for im_seq in itertools.chain([im], append_images):
             for im_frame in ImageSequence.Iterator(im_seq):
                 modes.add(im_frame.mode)
                 sizes.add(im_frame.size)
-        for mode in ("RGBA", "RGB", "P"):
-            if mode in modes:
-                break
+                if im_frame.mode == "P":
+                    if im_frame.palette and im_frame.palette.mode == "RGBA":
+                        palette_frame_with_alpha = im_frame
+                    if different_palette is None:
+                        frame_palette = im_frame.getpalette() or []
+                        if palette is not None:
+                            if frame_palette != palette:
+                                different_palette = True
+                        else:
+                            palette = frame_palette
+                elif im_frame.mode in ("RGBA", "RGBA"):
+                    different_palette = False
+        if different_palette:
+            # APNG can only contain a single PLTE, so use another mode.
+            mode = "RGBA" if palette_frame_with_alpha else "RGB"
         else:
-            mode = modes.pop()
+            for mode in ("RGBA", "RGB", "P"):
+                if mode in modes:
+                    break
+            else:
+                mode = modes.pop()
         size = tuple(max(frame_size[i] for frame_size in sizes) for i in range(2))
     else:
         size = im.size
         mode = im.mode
+        if mode == "P" and im.palette:
+            palette = im.getpalette() or []
+            palette_frame_with_alpha = im if im.palette.mode == "RGBA" else None
 
     outmode = mode
-    palette = []
-    if im.palette:
-        palette = im.getpalette() or []
     if mode == "P":
         #
         # attempt to minimize storage requirements for palette images
@@ -1367,7 +1405,7 @@ def _save(
             colors = min(1 << im.encoderinfo["bits"], 256)
         else:
             # check palette contents
-            if im.palette:
+            if palette:
                 colors = max(min(len(palette) // 3, 256), 1)
             else:
                 colors = 256
@@ -1387,8 +1425,6 @@ def _save(
     except KeyError as e:
         msg = f"cannot write mode {mode} as PNG"
         raise OSError(msg) from e
-    if outmode == "I":
-        deprecate("Saving I mode images as PNG", 13, stacklevel=4)
 
     #
     # write minimal PNG file
@@ -1439,7 +1475,7 @@ def _save(
                 if not after_idat:
                     chunk(fp, cid, data)
 
-    if im.mode == "P":
+    if mode == "P" and palette is not None:
         palette_byte_number = colors * 3
         palette_bytes = bytes(palette[:palette_byte_number])
         while len(palette_bytes) < palette_byte_number:
@@ -1449,7 +1485,7 @@ def _save(
     transparency = im.encoderinfo.get("transparency", im.info.get("transparency"))
 
     if transparency is not None:
-        if im.mode == "P":
+        if mode == "P":
             # limit to actual palette size
             alpha_bytes = colors
             if isinstance(transparency, bytes):
@@ -1483,8 +1519,8 @@ def _save(
             # and it's in the info dict. It's probably just stale.
             msg = "cannot use transparency for this mode"
             raise OSError(msg)
-    elif im.mode == "P" and im.im.getpalettemode() == "RGBA":
-        alpha = im.im.getpalette("RGBA", "A")
+    elif mode == "P" and palette_frame_with_alpha:
+        alpha = palette_frame_with_alpha.im.getpalette("RGBA", "A")
         alpha_bytes = colors
         chunk(fp, b"tRNS", alpha[:alpha_bytes])
 
@@ -1521,8 +1557,8 @@ def _save(
         _apply_encoderinfo(single_im, im.encoderinfo)
         ImageFile._save(
             single_im,
-            cast(IO[bytes], _idat(fp, chunk)),
-            [ImageFile._Tile("zip", (0, 0) + single_im.size, 0, rawmode)],
+            cast("IO[bytes]", _idat(fp, chunk)),
+            [ImageFile._Tile("zip", (0, 0, *single_im.size), 0, rawmode)],
         )
 
     if info:
