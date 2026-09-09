@@ -338,7 +338,7 @@ def _pkg_config_static(
                 else:
                     extra_link_args.append(arg)
             return libs, library_dirs, extra_link_args
-        except Exception:  # noqa: PERF203
+        except Exception:
             pass
     return None
 
