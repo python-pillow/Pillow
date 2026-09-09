@@ -158,7 +158,11 @@ function build_zlib_ng {
     ORIGINAL_HOST_CONFIGURE_FLAGS=$HOST_CONFIGURE_FLAGS
     unset HOST_CONFIGURE_FLAGS
 
-    build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --installnamedir=$BUILD_PREFIX/lib --zlib-compat
+    local out_dir=$(fetch_unpack https://github.com/zlib-ng/zlib-ng/archive/$ZLIB_NG_VERSION.tar.gz zlib-ng-$ZLIB_NG_VERSION.tar.gz)
+    (cd $out_dir \
+        && ./configure --prefix=$BUILD_PREFIX $HOST_CONFIGURE_FLAGS --installnamedir=$BUILD_PREFIX/lib --zlib-compat \
+        && make -j4 \
+        && make install)
 
     HOST_CONFIGURE_FLAGS=$ORIGINAL_HOST_CONFIGURE_FLAGS
     touch zlib-stamp
@@ -260,6 +264,20 @@ function build_zstd {
     (cd $out_dir \
         && make -j4 install)
     touch zstd-stamp
+}
+
+function build_openjpeg {
+    if [ -e openjpeg-stamp ]; then return; fi
+    build_zlib
+    build_libpng
+    build_tiff
+    build_lcms2
+    local cmake=$(get_modern_cmake)
+    local out_dir=$(fetch_unpack https://github.com/uclouvain/openjpeg/archive/v$OPENJPEG_VERSION.tar.gz openjpeg-$OPENJPEG_VERSION.tar.gz)
+    (cd $out_dir \
+        && $cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib $HOST_CMAKE_FLAGS . \
+        && make -j4 install)
+    touch openjpeg-stamp
 }
 
 function build {
