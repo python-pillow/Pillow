@@ -18,6 +18,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"re"}
+
 import re
 from typing import Protocol, cast, overload
 

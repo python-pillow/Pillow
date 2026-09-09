@@ -782,7 +782,9 @@ _decoder_get_frame(AvifDecoderObject *self, PyObject *args) {
         return NULL;
     }
 
+    Py_BEGIN_ALLOW_THREADS;
     result = avifDecoderNthImage(decoder, frame_index);
+    Py_END_ALLOW_THREADS;
     if (result != AVIF_RESULT_OK) {
         PyErr_Format(
             exc_type_for_avif_result(result),

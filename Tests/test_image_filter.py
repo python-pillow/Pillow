@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from PIL import Image, ImageFilter
@@ -233,6 +235,22 @@ def test_invalid_box_blur_filter(radius: int | tuple[int, int]) -> None:
     box_blur_filter.radius = radius
     with pytest.raises(ValueError):
         im.filter(box_blur_filter)
+
+
+@pytest.mark.parametrize(
+    "radius",
+    (
+        math.nan,
+        (math.nan, 1),
+        (1, math.nan),
+        math.inf,
+        (1, math.inf),
+        (math.inf, 1),
+    ),
+)
+def test_box_blur_non_finite_radius(radius: float | tuple[float, float]) -> None:
+    with pytest.raises(ValueError, match="radius must be a finite number >= 0"):
+        ImageFilter.BoxBlur(radius)
 
 
 def test_rankfilter_size_1() -> None:

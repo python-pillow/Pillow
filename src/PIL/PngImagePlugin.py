@@ -32,6 +32,16 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL._binary",
+    "PIL._util",
+    "fractions",
+    "itertools",
+    "struct",
+    "warnings",
+    "zlib",
+}
+
 import itertools
 import logging
 import re
@@ -476,7 +486,7 @@ class PngStream(ChunkStream):
         else:
             if self.im_n_frames is not None:
                 self.im_info["default_image"] = True
-            tile = [ImageFile._Tile("zip", (0, 0) + self.im_size, pos, self.im_rawmode)]
+            tile = [ImageFile._Tile("zip", (0, 0, *self.im_size), pos, self.im_rawmode)]
         self.im_tile = tile
         self.im_idat = length
         msg = "image data found"
@@ -509,12 +519,19 @@ class PngStream(ChunkStream):
                 # otherwise, we have a byte string with one alpha value
                 # for each palette entry
                 self.im_info["transparency"] = s
-        elif self.im_mode == "1":
-            self.im_info["transparency"] = 255 if i16(s) else 0
-        elif self.im_mode in ("L", "I;16"):
-            self.im_info["transparency"] = i16(s)
-        elif self.im_mode == "RGB":
-            self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
+        elif self.im_mode in ("1", "L", "I;16", "RGB"):
+            # 2 bytes for greyscale, 6 for truecolour
+            if length < (6 if self.im_mode == "RGB" else 2):
+                if ImageFile.LOAD_TRUNCATED_IMAGES:
+                    return s
+                msg = "Truncated tRNS chunk"
+                raise ValueError(msg)
+            if self.im_mode == "1":
+                self.im_info["transparency"] = 255 if i16(s) else 0
+            elif self.im_mode in ("L", "I;16"):
+                self.im_info["transparency"] = i16(s)
+            elif self.im_mode == "RGB":
+                self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
         return s
 
     def chunk_gAMA(self, pos: int, length: int) -> bytes:
@@ -1228,7 +1245,7 @@ def _write_multiple_frames(
                     if bbox:
                         dispose = dispose.crop(bbox)
                     else:
-                        bbox = (0, 0) + im.size
+                        bbox = (0, 0, *im.size)
                     base_im.paste(dispose, bbox)
                 elif prev_disposal == Disposal.OP_PREVIOUS:
                     base_im = im_frames[-2].im
@@ -1268,14 +1285,14 @@ def _write_multiple_frames(
         ImageFile._save(
             default_im,
             cast("IO[bytes]", _idat(fp, chunk)),
-            [ImageFile._Tile("zip", (0, 0) + im.size, 0, rawmode)],
+            [ImageFile._Tile("zip", (0, 0, *im.size), 0, rawmode)],
         )
 
     seq_num = 0
     for frame, frame_data in enumerate(im_frames):
         im_frame = frame_data.im
         if not frame_data.bbox:
-            bbox = (0, 0) + im_frame.size
+            bbox = (0, 0, *im_frame.size)
         else:
             bbox = frame_data.bbox
             im_frame = im_frame.crop(bbox)
@@ -1310,14 +1327,14 @@ def _write_multiple_frames(
             ImageFile._save(
                 im_frame,
                 cast("IO[bytes]", _idat(fp, chunk)),
-                [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                [ImageFile._Tile("zip", (0, 0, *im_frame.size), 0, rawmode)],
             )
         else:
             fdat_chunks = _fdat(fp, chunk, seq_num)
             ImageFile._save(
                 im_frame,
                 cast("IO[bytes]", fdat_chunks),
-                [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                [ImageFile._Tile("zip", (0, 0, *im_frame.size), 0, rawmode)],
             )
             seq_num = fdat_chunks.seq_num
     return None
@@ -1541,7 +1558,7 @@ def _save(
         ImageFile._save(
             single_im,
             cast("IO[bytes]", _idat(fp, chunk)),
-            [ImageFile._Tile("zip", (0, 0) + single_im.size, 0, rawmode)],
+            [ImageFile._Tile("zip", (0, 0, *single_im.size), 0, rawmode)],
         )
 
     if info:
