@@ -89,6 +89,20 @@ if [[ -z "$IS_MACOS" ]]; then
 fi
 
 ARCHIVE_SDIR=pillow-depends-main
+MISSING_DEPENDS_FILE=$(mktemp)
+
+# Redeclare fetch_unpack as multibuild_fetch_unpack so we can still call it
+eval "$(declare -f fetch_unpack | sed '1s/^fetch_unpack/multibuild_fetch_unpack/')"
+
+function fetch_unpack {
+    local url=$1
+    local archive_fname=${2:-$(basename $url)}
+    if [[ ! -f "${ARCHIVE_SDIR}/${archive_fname}" ]]; then
+        echo "::warning title=Dependency missing from pillow-depends::$archive_fname is not in pillow-depends; downloading it from $url" >&2
+        echo "  $archive_fname (from $url)" >> "$MISSING_DEPENDS_FILE"
+    fi
+    multibuild_fetch_unpack "$@"
+}
 
 VERSIONS_FILE="$PROJECTDIR/.github/dependencies.json"
 _get_ver() { python3 -c "import json; print(json.load(open('$VERSIONS_FILE'))['$1'])"; }
@@ -397,6 +411,15 @@ if [[ -n "$IS_MACOS" ]]; then
 fi
 
 wrap_wheel_builder build
+
+if [[ -f $MISSING_DEPENDS_FILE ]]; then
+    (
+        echo "# The following archives were not found in pillow-depends and were downloaded from upstream instead:"
+        echo '```'
+        cat "$MISSING_DEPENDS_FILE"
+        echo '```'
+    ) >> "${GITHUB_STEP_SUMMARY:-/dev/null}"
+fi
 
 # A safety catch for iOS. iOS can't use dynamic libraries, but clang will prefer
 # to link dynamic libraries to static libraries. The only way to reliably
