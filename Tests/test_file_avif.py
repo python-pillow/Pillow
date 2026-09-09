@@ -773,6 +773,25 @@ class TestAvifAnimation:
                 assert im.info["timestamp"] == timestamp
                 timestamp -= duration
 
+    def test_seek_removes_frame_info(self) -> None:
+        """
+        timestamp and duration describe the loaded frame, so they must not
+        survive a seek to a frame that has not been loaded yet.
+        """
+
+        with Image.open("Tests/images/avif/star.avifs") as im:
+            im.load()
+            assert im.info["timestamp"] == 0
+            duration = im.info["duration"]
+
+            for frame in range(1, im.n_frames):
+                im.seek(frame)
+                assert "duration" not in im.info
+                assert "timestamp" not in im.info
+
+                im.load()
+                assert im.info["timestamp"] == duration * frame
+
     def test_seek_errors(self) -> None:
         with Image.open("Tests/images/avif/star.avifs") as im:
             with pytest.raises(EOFError):

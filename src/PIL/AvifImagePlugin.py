@@ -116,6 +116,9 @@ class AvifImageFile(ImageFile.ImageFile):
         if not self._seek_check(frame):
             return
 
+        self.info.pop("timestamp", None)
+        self.info.pop("duration", None)
+
         # Set tile
         self.__frame = frame
         self.tile = [ImageFile._Tile("raw", (0, 0, *self.size), 0, self.mode)]
