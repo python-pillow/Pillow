@@ -780,6 +780,7 @@ class TestAvifAnimation:
         """
 
         with Image.open("Tests/images/avif/star.avifs") as im:
+            assert isinstance(im, AvifImagePlugin.AvifImageFile)
             im.load()
             assert im.info["timestamp"] == 0
             duration = im.info["duration"]
