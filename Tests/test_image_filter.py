@@ -78,8 +78,8 @@ def test_noop_on_small_images() -> None:
     # If image is smaller than the kernel size, return it as-is.
     kernel_size: tuple[int, int] = ImageFilter.SMOOTH_MORE.filterargs[0]
     kernel_w, kernel_h = kernel_size
-    for w in range(1, kernel_w - 1):
-        for h in range(1, kernel_h - 1):
+    for w in range(1, kernel_w):
+        for h in range(1, kernel_h):
             im = hopper("RGB").resize((w, h))
             # Precondition for the below equality test:
             # filter is larger or equal to image.
