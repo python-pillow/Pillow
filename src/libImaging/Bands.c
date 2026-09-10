@@ -23,8 +23,12 @@ ImagingGetBand(Imaging imIn, int band) {
     int x, y;
 
     /* Check arguments */
-    if (!imIn || imIn->type != IMAGING_TYPE_UINT8) {
-        return (Imaging)ImagingError_ModeError();
+    if (!imIn) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+
+    if (imIn->type != IMAGING_TYPE_UINT8) {
+        return (Imaging)ImagingError_NotSupportedError("only 8-bit images supported");
     }
 
     if (band < 0 || band >= imIn->bands) {
@@ -73,8 +77,13 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
     int i, j, x, y;
 
     /* Check arguments */
-    if (!imIn || imIn->type != IMAGING_TYPE_UINT8) {
-        (void)ImagingError_ModeError();
+    if (!imIn) {
+        (void)ImagingError_ValueError(NULL);
+        return 0;
+    }
+
+    if (imIn->type != IMAGING_TYPE_UINT8) {
+        (void)ImagingError_NotSupportedError("only 8-bit images supported");
         return 0;
     }
 
@@ -178,8 +187,11 @@ ImagingPutBand(Imaging imOut, Imaging imIn, int band) {
     int x, y;
 
     /* Check arguments */
-    if (!imIn || imIn->bands != 1 || !imOut) {
-        return (Imaging)ImagingError_ModeError();
+    if (!imIn || !imOut) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+    if (imIn->bands != 1) {
+        return (Imaging)ImagingError_ModeError("source image must have exactly 1 band");
     }
 
     if (band < 0 || band >= imOut->bands) {
@@ -188,7 +200,7 @@ ImagingPutBand(Imaging imOut, Imaging imIn, int band) {
 
     if (imIn->type != imOut->type || imIn->xsize != imOut->xsize ||
         imIn->ysize != imOut->ysize) {
-        return (Imaging)ImagingError_Mismatch();
+        return (Imaging)ImagingError_Mismatch("image types and sizes must match");
     }
 
     /* Shortcuts */
@@ -224,8 +236,16 @@ ImagingFillBand(Imaging imOut, int band, int color) {
     int x, y;
 
     /* Check arguments */
-    if (!imOut || imOut->type != IMAGING_TYPE_UINT8) {
-        return (Imaging)ImagingError_ModeError();
+    if (!imOut) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+
+    if (!imOut) {
+        return (Imaging)ImagingError_ValueError("only 8-bit images supported");
+    }
+
+    if (imOut->type != IMAGING_TYPE_UINT8) {
+        return (Imaging)ImagingError_NotSupportedError("only 8-bit images supported");
     }
 
     if (band < 0 || band >= imOut->bands) {
@@ -270,11 +290,13 @@ ImagingMerge(const ModeID mode, Imaging bands[4]) {
             break;
         }
         if (bands[i]->bands != 1) {
-            return (Imaging)ImagingError_ModeError();
+            return (Imaging)ImagingError_ModeError(
+                "source image must have exactly 1 band"
+            );
         }
         if (bands[i]->xsize != firstBand->xsize ||
             bands[i]->ysize != firstBand->ysize) {
-            return (Imaging)ImagingError_Mismatch();
+            return (Imaging)ImagingError_Mismatch("image sizes must match");
         }
     }
     bandsCount = i;

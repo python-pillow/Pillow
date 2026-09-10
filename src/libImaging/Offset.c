@@ -25,7 +25,7 @@
 Imaging
 ImagingOffset(Imaging im, int xoffset, int yoffset) {
     if (!im) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ValueError(NULL);
     }
 
     int xsize = im->xsize, ysize = im->ysize;
