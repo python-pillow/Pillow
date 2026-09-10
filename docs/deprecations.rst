@@ -35,7 +35,9 @@ IM image format
 
 .. deprecated:: 13.0.0
 
-The IM image format has been deprecated.
+The IM image format has been deprecated and removal is planned in Pillow 15.0.0
+(2028-10-15). If you are using this format and would like to continue doing so,
+open an issue about what other software uses it.
 
 ImageQt align8to32()
 ^^^^^^^^^^^^^^^^^^^^
