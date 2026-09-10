@@ -1,0 +1,563 @@
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+#include "libImaging/Imaging.h"
+
+#include <jxl/decode.h>
+#include <jxl/thread_parallel_runner.h>
+
+#define _JXL_CHECK(call_name)              \
+    if (decp->status != JXL_DEC_SUCCESS) { \
+        jxl_call_name = call_name;         \
+        goto end;                          \
+    }
+
+void
+_jxl_get_pixel_format(JxlPixelFormat *pf, const JxlBasicInfo *bi) {
+    pf->num_channels = bi->num_color_channels + bi->num_extra_channels;
+    pf->data_type = bi->bits_per_sample > 8 ? JXL_TYPE_UINT16 : JXL_TYPE_UINT8;
+    pf->align = 0;
+}
+
+char *
+_jxl_get_mode(const JxlBasicInfo *bi) {
+    if (bi->num_color_channels == 1 && !bi->alpha_bits) {
+        if (bi->bits_per_sample == 1) {
+            return "1";
+        }
+        if (bi->bits_per_sample == 16) {
+            return "I;16";
+        }
+    }
+
+    if (bi->bits_per_sample == 8) {
+        if (bi->alpha_bits) {
+            // image has transparency
+            if (bi->num_color_channels == 3) {
+                return bi->alpha_premultiplied ? "RGBa" : "RGBA";
+            }
+        } else {
+            // image has no transparency
+            if (bi->num_color_channels == 3) {
+                return "RGB";
+            }
+            if (bi->num_color_channels == 1) {
+                return "L";
+            }
+        }
+    }
+
+    // could not recognize mode
+    return NULL;
+}
+
+// Decoder type
+typedef struct {
+    PyObject_HEAD JxlDecoder *decoder;
+    void *runner;
+
+    uint8_t *jxl_data;        // input jxl bitstream
+    Py_ssize_t jxl_data_len;  // length of input jxl bitstream
+
+    uint8_t *output_buffer;
+    size_t output_buffer_len;
+
+    uint8_t *jxl_icc;
+    size_t jxl_icc_len;
+    uint8_t *jxl_exif;
+    Py_ssize_t jxl_exif_len;
+    uint8_t *jxl_xmp;
+    Py_ssize_t jxl_xmp_len;
+
+    JxlDecoderStatus status;
+    JxlBasicInfo basic_info;
+    JxlPixelFormat pixel_format;
+
+    char *mode;
+} JpegXlDecoderObject;
+
+static PyTypeObject JpegXlDecoder_Type;
+
+void
+_jxl_decoder_dealloc(PyObject *self) {
+    JpegXlDecoderObject *decp = (JpegXlDecoderObject *)self;
+
+    if (decp->jxl_data) {
+        free(decp->jxl_data);
+        decp->jxl_data = NULL;
+        decp->jxl_data_len = 0;
+    }
+    if (decp->output_buffer) {
+        free(decp->output_buffer);
+        decp->output_buffer = NULL;
+        decp->output_buffer_len = 0;
+    }
+    if (decp->jxl_icc) {
+        free(decp->jxl_icc);
+        decp->jxl_icc = NULL;
+        decp->jxl_icc_len = 0;
+    }
+    if (decp->jxl_exif) {
+        free(decp->jxl_exif);
+        decp->jxl_exif = NULL;
+        decp->jxl_exif_len = 0;
+    }
+    if (decp->jxl_xmp) {
+        free(decp->jxl_xmp);
+        decp->jxl_xmp = NULL;
+        decp->jxl_xmp_len = 0;
+    }
+
+    if (decp->decoder) {
+        JxlDecoderDestroy(decp->decoder);
+        decp->decoder = NULL;
+    }
+
+    if (decp->runner) {
+        JxlThreadParallelRunnerDestroy(decp->runner);
+        decp->runner = NULL;
+    }
+}
+
+// sets input jxl bitstream loaded into jxl_data
+void
+_jxl_decoder_set_input(PyObject *self) {
+    JpegXlDecoderObject *decp = (JpegXlDecoderObject *)self;
+
+    decp->status =
+        JxlDecoderSetInput(decp->decoder, decp->jxl_data, decp->jxl_data_len);
+
+    // the input contains the whole jxl bitstream so it can be closed
+    JxlDecoderCloseInput(decp->decoder);
+}
+
+PyObject *
+_jxl_decoder_rewind(PyObject *self) {
+    JpegXlDecoderObject *decp = (JpegXlDecoderObject *)self;
+    JxlDecoderRewind(decp->decoder);
+    Py_RETURN_NONE;
+}
+
+PyObject *
+_jxl_decoder_get_frames_left(PyObject *self) {
+    int frames_left = 0;
+
+    // count all JXL_DEC_NEED_IMAGE_OUT_BUFFER events
+    JpegXlDecoderObject *decp = (JpegXlDecoderObject *)self;
+    while (decp->status != JXL_DEC_SUCCESS) {
+        decp->status = JxlDecoderProcessInput(decp->decoder);
+
+        if (decp->status == JXL_DEC_NEED_IMAGE_OUT_BUFFER) {
+            if (JxlDecoderSkipCurrentFrame(decp->decoder) != JXL_DEC_SUCCESS) {
+                PyErr_SetString(PyExc_OSError, "Error when counting frames");
+                break;
+            }
+            frames_left++;
+        }
+    }
+    JxlDecoderRewind(decp->decoder);
+
+    return Py_BuildValue("i", frames_left);
+}
+
+PyObject *
+_jxl_decoder_new(PyObject *self, PyObject *args) {
+    PyBytesObject *jxl_string;
+
+    // parse one argument which is a string with jxl data
+    if (!PyArg_ParseTuple(args, "O", &jxl_string)) {
+        return NULL;
+    }
+
+    JpegXlDecoderObject *decp = NULL;
+    decp = PyObject_New(JpegXlDecoderObject, &JpegXlDecoder_Type);
+    decp->jxl_data = NULL;
+    decp->jxl_data_len = 0;
+    decp->output_buffer = NULL;
+    decp->output_buffer_len = 0;
+    decp->jxl_icc = NULL;
+    decp->jxl_icc_len = 0;
+    decp->jxl_exif = NULL;
+    decp->jxl_exif_len = 0;
+    decp->jxl_xmp = NULL;
+    decp->jxl_xmp_len = 0;
+    decp->mode = NULL;
+
+    // used for printing more detailed error messages
+    char *jxl_call_name;
+
+    // this data needs to be copied to JpegXlDecoderObject
+    // so that input bitstream is preserved across calls
+    const uint8_t *_tmp_jxl_data;
+    Py_ssize_t _tmp_jxl_data_len;
+
+    // convert jxl data string to C uint8_t pointer
+    PyBytes_AsStringAndSize(
+        (PyObject *)jxl_string, (char **)&_tmp_jxl_data, &_tmp_jxl_data_len
+    );
+
+    decp->jxl_data = malloc(_tmp_jxl_data_len);
+    memcpy(decp->jxl_data, _tmp_jxl_data, _tmp_jxl_data_len);
+    decp->jxl_data_len = _tmp_jxl_data_len;
+
+    size_t suggested_num_threads = JxlThreadParallelRunnerDefaultNumWorkerThreads();
+    decp->runner = JxlThreadParallelRunnerCreate(NULL, suggested_num_threads);
+    decp->decoder = JxlDecoderCreate(NULL);
+
+    decp->status = JxlDecoderSetParallelRunner(
+        decp->decoder, JxlThreadParallelRunner, decp->runner
+    );
+    _JXL_CHECK("JxlDecoderSetParallelRunner")
+
+    decp->status = JxlDecoderSubscribeEvents(
+        decp->decoder,
+        JXL_DEC_BASIC_INFO | JXL_DEC_COLOR_ENCODING | JXL_DEC_FRAME | JXL_DEC_BOX |
+            JXL_DEC_FULL_IMAGE
+    );
+    _JXL_CHECK("JxlDecoderSubscribeEvents")
+
+    // tell libjxl to decompress boxes (for example Exif is usually compressed)
+    decp->status = JxlDecoderSetDecompressBoxes(decp->decoder, JXL_TRUE);
+    _JXL_CHECK("JxlDecoderSetDecompressBoxes")
+
+    _jxl_decoder_set_input((PyObject *)decp);
+    _JXL_CHECK("JxlDecoderSetInput")
+
+    // decode everything up to the first frame
+    do {
+        decp->status = JxlDecoderProcessInput(decp->decoder);
+
+decoder_loop_skip_process:
+
+        if (decp->status == JXL_DEC_ERROR) {
+            jxl_call_name = "JxlDecoderProcessInput";
+            goto end;
+        }
+
+        if (decp->status == JXL_DEC_BASIC_INFO) {
+            decp->status = JxlDecoderGetBasicInfo(decp->decoder, &decp->basic_info);
+            _JXL_CHECK("JxlDecoderGetBasicInfo");
+
+            _jxl_get_pixel_format(&decp->pixel_format, &decp->basic_info);
+            decp->mode = _jxl_get_mode(&decp->basic_info);
+        } else if (decp->status == JXL_DEC_COLOR_ENCODING) {
+            decp->status = JxlDecoderGetICCProfileSize(
+                decp->decoder, JXL_COLOR_PROFILE_TARGET_DATA, &decp->jxl_icc_len
+            );
+            _JXL_CHECK("JxlDecoderGetICCProfileSize");
+
+            decp->jxl_icc = malloc(decp->jxl_icc_len);
+            if (!decp->jxl_icc) {
+                PyErr_SetString(PyExc_OSError, "jxl_icc malloc failed");
+                goto end_with_custom_error;
+            }
+
+            decp->status = JxlDecoderGetColorAsICCProfile(
+                decp->decoder,
+                JXL_COLOR_PROFILE_TARGET_DATA,
+                decp->jxl_icc,
+                decp->jxl_icc_len
+            );
+            _JXL_CHECK("JxlDecoderGetColorAsICCProfile");
+        } else if (decp->status == JXL_DEC_BOX) {
+            char box_type[4];
+            decp->status = JxlDecoderGetBoxType(decp->decoder, box_type, JXL_TRUE);
+            _JXL_CHECK("JxlDecoderGetBoxType");
+
+            int is_box_exif = !memcmp(box_type, "Exif", 4);
+            int is_box_xmp = is_box_exif ? 0 : !memcmp(box_type, "xml ", 4);
+            if (!is_box_exif && !is_box_xmp) {
+                // not exif/xmp box so continue
+                continue;
+            }
+
+            uint64_t compressed_box_size;
+            decp->status = JxlDecoderGetBoxSizeRaw(decp->decoder, &compressed_box_size);
+            _JXL_CHECK("JxlDecoderGetBoxSizeRaw");
+
+            uint8_t *final_jxl_buf = NULL;
+            Py_ssize_t final_jxl_buf_len = 0;
+
+            do {
+                uint8_t *_new_jxl_buf =
+                    realloc(final_jxl_buf, final_jxl_buf_len + compressed_box_size);
+                if (!_new_jxl_buf) {
+                    PyErr_SetString(PyExc_OSError, "failed to allocate final_jxl_buf");
+                    goto end_with_custom_error;
+                }
+                final_jxl_buf = _new_jxl_buf;
+
+                decp->status = JxlDecoderSetBoxBuffer(
+                    decp->decoder,
+                    final_jxl_buf + final_jxl_buf_len,
+                    compressed_box_size
+                );
+                _JXL_CHECK("JxlDecoderSetBoxBuffer");
+
+                decp->status = JxlDecoderProcessInput(decp->decoder);
+
+                size_t remaining = JxlDecoderReleaseBoxBuffer(decp->decoder);
+                final_jxl_buf_len += compressed_box_size - remaining;
+            } while (decp->status == JXL_DEC_BOX_NEED_MORE_OUTPUT);
+
+            if (is_box_exif) {
+                decp->jxl_exif = final_jxl_buf;
+                decp->jxl_exif_len = final_jxl_buf_len;
+            } else {
+                decp->jxl_xmp = final_jxl_buf;
+                decp->jxl_xmp_len = final_jxl_buf_len;
+            }
+
+            // dirty hack: skip first step of decoding loop since
+            // we already did it in do...while above
+            goto decoder_loop_skip_process;
+        }
+
+    } while (decp->status != JXL_DEC_FRAME);
+
+    return (PyObject *)decp;
+
+    // on success we should never reach here
+
+    // set error message
+    char err_msg[128];
+
+end:
+    snprintf(
+        err_msg,
+        128,
+        "could not create decoder object. libjxl call: %s returned: %d",
+        jxl_call_name,
+        decp->status
+    );
+    PyErr_SetString(PyExc_OSError, err_msg);
+
+end_with_custom_error:
+
+    // deallocate
+    _jxl_decoder_dealloc((PyObject *)decp);
+    PyObject_Del(decp);
+
+    return NULL;
+}
+
+PyObject *
+_jxl_decoder_get_info(PyObject *self) {
+    JpegXlDecoderObject *decp = (JpegXlDecoderObject *)self;
+    JxlFrameHeader fhdr = {};
+    if (JxlDecoderGetFrameHeader(decp->decoder, &fhdr) != JXL_DEC_SUCCESS) {
+        PyErr_SetString(PyExc_OSError, "Error determining duration");
+        return NULL;
+    }
+    return Py_BuildValue(
+        "(II)sOIIII",
+        decp->basic_info.xsize,
+        decp->basic_info.ysize,
+        decp->mode,
+        decp->basic_info.have_animation ? Py_True : Py_False,
+        decp->basic_info.animation.tps_numerator,
+        decp->basic_info.animation.tps_denominator,
+        decp->basic_info.animation.num_loops,
+        fhdr.duration
+    );
+}
+
+PyObject *
+_jxl_decoder_get_next(PyObject *self) {
+    JpegXlDecoderObject *decp = (JpegXlDecoderObject *)self;
+    PyObject *bytes;
+    PyObject *ret;
+    JxlFrameHeader fhdr = {};
+
+    char *jxl_call_name;
+
+    // process events until next frame output is ready
+    if (decp->status == JXL_DEC_FRAME) {
+        decp->status = JxlDecoderGetFrameHeader(decp->decoder, &fhdr);
+        _JXL_CHECK("JxlDecoderGetFrameHeader");
+    }
+    while (decp->status != JXL_DEC_NEED_IMAGE_OUT_BUFFER) {
+        decp->status = JxlDecoderProcessInput(decp->decoder);
+
+        if (decp->status == JXL_DEC_NEED_MORE_INPUT) {
+            // this should only occur after rewind
+            _jxl_decoder_set_input((PyObject *)decp);
+            _JXL_CHECK("JxlDecoderSetInput")
+        } else if (decp->status == JXL_DEC_FRAME) {
+            // decode frame header
+            decp->status = JxlDecoderGetFrameHeader(decp->decoder, &fhdr);
+            _JXL_CHECK("JxlDecoderGetFrameHeader");
+        }
+    }
+
+    size_t new_output_buffer_len;
+    decp->status = JxlDecoderImageOutBufferSize(
+        decp->decoder, &decp->pixel_format, &new_output_buffer_len
+    );
+    _JXL_CHECK("JxlDecoderImageOutBufferSize");
+
+    // only allocate memory when current buffer is too small
+    if (decp->output_buffer_len < new_output_buffer_len) {
+        decp->output_buffer_len = new_output_buffer_len;
+        uint8_t *new_output_buffer =
+            realloc(decp->output_buffer, decp->output_buffer_len);
+        if (!new_output_buffer) {
+            PyErr_SetString(PyExc_OSError, "failed to allocate buffer");
+            return NULL;
+        }
+        decp->output_buffer = new_output_buffer;
+    }
+
+    decp->status = JxlDecoderSetImageOutBuffer(
+        decp->decoder, &decp->pixel_format, decp->output_buffer, decp->output_buffer_len
+    );
+    _JXL_CHECK("JxlDecoderSetImageOutBuffer");
+
+    // decode image into output buffer
+    decp->status = JxlDecoderProcessInput(decp->decoder);
+
+    if (decp->status != JXL_DEC_FULL_IMAGE) {
+        PyErr_SetString(PyExc_OSError, "failed to read next frame");
+        return NULL;
+    }
+
+    bytes = PyBytes_FromStringAndSize(
+        (char *)(decp->output_buffer), decp->output_buffer_len
+    );
+
+    ret = Py_BuildValue("SIi", bytes, fhdr.duration, fhdr.is_last);
+
+    Py_DECREF(bytes);
+    return ret;
+
+    // we also shouldn't reach here if frame read was ok
+
+    // set error message
+    char err_msg[128];
+
+end:
+    snprintf(
+        err_msg,
+        128,
+        "could not read frame. libjxl call: %s returned: %d",
+        jxl_call_name,
+        decp->status
+    );
+    PyErr_SetString(PyExc_OSError, err_msg);
+    return NULL;
+}
+
+PyObject *
+_jxl_decoder_get_icc(PyObject *self) {
+    JpegXlDecoderObject *decp = (JpegXlDecoderObject *)self;
+
+    if (!decp->jxl_icc) {
+        Py_RETURN_NONE;
+    }
+
+    return PyBytes_FromStringAndSize((const char *)decp->jxl_icc, decp->jxl_icc_len);
+}
+
+PyObject *
+_jxl_decoder_get_exif(PyObject *self) {
+    JpegXlDecoderObject *decp = (JpegXlDecoderObject *)self;
+
+    if (!decp->jxl_exif) {
+        Py_RETURN_NONE;
+    }
+
+    return PyBytes_FromStringAndSize((const char *)decp->jxl_exif, decp->jxl_exif_len);
+}
+
+PyObject *
+_jxl_decoder_get_xmp(PyObject *self) {
+    JpegXlDecoderObject *decp = (JpegXlDecoderObject *)self;
+
+    if (!decp->jxl_xmp) {
+        Py_RETURN_NONE;
+    }
+
+    return PyBytes_FromStringAndSize((const char *)decp->jxl_xmp, decp->jxl_xmp_len);
+}
+
+// Version as string
+const char *
+JpegXlDecoderVersion_str(void) {
+    static char version[20];
+    sprintf(
+        version,
+        "%d.%d.%d",
+        JPEGXL_MAJOR_VERSION,
+        JPEGXL_MINOR_VERSION,
+        JPEGXL_PATCH_VERSION
+    );
+    return version;
+}
+
+/* -------------------------------------------------------------------- */
+/* Type Definitions                                                     */
+/* -------------------------------------------------------------------- */
+
+// JpegXlDecoder methods
+static struct PyMethodDef _jpegxl_decoder_methods[] = {
+    {"get_info", (PyCFunction)_jxl_decoder_get_info, METH_NOARGS, "get_info"},
+    {"get_next", (PyCFunction)_jxl_decoder_get_next, METH_NOARGS, "get_next"},
+    {"get_icc", (PyCFunction)_jxl_decoder_get_icc, METH_NOARGS, "get_icc"},
+    {"get_exif", (PyCFunction)_jxl_decoder_get_exif, METH_NOARGS, "get_exif"},
+    {"get_xmp", (PyCFunction)_jxl_decoder_get_xmp, METH_NOARGS, "get_xmp"},
+    {"get_frames_left",
+     (PyCFunction)_jxl_decoder_get_frames_left,
+     METH_NOARGS,
+     "get_frames_left"},
+    {"rewind", (PyCFunction)_jxl_decoder_rewind, METH_NOARGS, "rewind"},
+    {NULL, NULL} /* sentinel */
+};
+
+// JpegXlDecoder type definition
+static PyTypeObject JpegXlDecoder_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "JpegXlDecoder",
+    .tp_basicsize = sizeof(JpegXlDecoderObject),
+    .tp_dealloc = (destructor)_jxl_decoder_dealloc,
+    .tp_methods = _jpegxl_decoder_methods,
+};
+
+/* -------------------------------------------------------------------- */
+/* Module Setup                                                         */
+/* -------------------------------------------------------------------- */
+
+static PyMethodDef jpegxlMethods[] = {
+    {"JpegXlDecoder", _jxl_decoder_new, METH_VARARGS, "JpegXlDecoder"}, {NULL, NULL}
+};
+
+static int
+setup_module(PyObject *m) {
+    if (PyType_Ready(&JpegXlDecoder_Type) < 0) {
+        return -1;
+    }
+
+    PyObject *d = PyModule_GetDict(m);
+    PyObject *v = PyUnicode_FromString(JpegXlDecoderVersion_str());
+    PyDict_SetItemString(d, "libjxl_version", v ? v : Py_None);
+    Py_XDECREF(v);
+
+    return 0;
+}
+
+static PyModuleDef_Slot slots[] = {
+    {Py_mod_exec, setup_module},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, NULL}
+};
+
+PyMODINIT_FUNC
+PyInit__jpegxl(void) {
+    static PyModuleDef module_def = {
+        PyModuleDef_HEAD_INIT,
+        .m_name = "_jpegxl",
+        .m_methods = jpegxlMethods,
+        .m_slots = slots
+    };
+
+    return PyModuleDef_Init(&module_def);
+}
