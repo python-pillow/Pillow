@@ -162,7 +162,6 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 out[x] = in0[x];
             }
         } else if (im->type == IMAGING_TYPE_I16) {
-            // Check for I;16 mode once, not per pixel
             int bigendian = 0;
             if (
                 im->mode == IMAGING_MODE_I_16B
@@ -326,7 +325,6 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 out[x + 1] = in0[x + 1];
             }
         } else if (im->type == IMAGING_TYPE_I16) {
-            // Check for I;16 mode once, not per pixel
             int bigendian = 0;
             if (
                 im->mode == IMAGING_MODE_I_16B
