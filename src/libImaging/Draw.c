@@ -41,7 +41,36 @@
 #define FLOOR(v) ((v) >= 0.0 ? (int)(v) : (int)floor(v))
 
 #define INK8(ink) (*(UINT8 *)ink)
-#define INK16(ink) (*(UINT16 *)ink)
+
+// True when the given I;16 mode stores its pixels most significant byte first.
+static inline int
+isModeI16BigEndian(const ModeID mode) {
+    return mode == IMAGING_MODE_I_16B
+#ifdef WORDS_BIGENDIAN
+           || mode == IMAGING_MODE_I_16N
+#endif
+        ;
+}
+
+// Convert getink()'s ink value into the image's storage order
+// and return in the native order so the drawing functions don't
+// need to care about it.
+static inline INT32
+ink16(Imaging im, const void *ink_) {
+    const UINT8 *in = ink_;
+    UINT8 out[2];
+    UINT16 ink;
+
+    if (isModeI16BigEndian(im->mode)) {
+        out[0] = in[1];
+        out[1] = in[0];
+    } else {
+        out[0] = in[0];
+        out[1] = in[1];
+    }
+    memcpy(&ink, out, sizeof(ink));
+    return ink;
+}
 
 /*
  * Rounds around zero (up=away from zero, down=towards zero)
@@ -68,17 +97,14 @@ typedef void (*hline_handler)(Imaging, int, int, int, int, Imaging);
 static inline void
 point8(Imaging im, int x, int y, int ink) {
     if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize) {
-        if (isModeI16(im->mode)) {
-#ifdef WORDS_BIGENDIAN
-            im->image8[y][x * 2] = (UINT8)(ink >> 8);
-            im->image8[y][x * 2 + 1] = (UINT8)ink;
-#else
-            im->image8[y][x * 2] = (UINT8)ink;
-            im->image8[y][x * 2 + 1] = (UINT8)(ink >> 8);
-#endif
-        } else {
-            im->image8[y][x] = (UINT8)ink;
-        }
+        im->image8[y][x] = (UINT8)ink;
+    }
+}
+
+static inline void
+point16(Imaging im, int x, int y, int ink) {
+    if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize) {
+        ((UINT16 *)im->image8[y])[x] = (UINT16)ink;
     }
 }
 
@@ -116,33 +142,46 @@ hline8(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
             x1 = im->xsize - 1;
         }
         if (x0 <= x1) {
-            int bigendian = -1;
-            if (isModeI16(im->mode)) {
-                bigendian =
-                    (
-#ifdef WORDS_BIGENDIAN
-                        im->mode == IMAGING_MODE_I_16 || im->mode == IMAGING_MODE_I_16L
-#else
-                        im->mode == IMAGING_MODE_I_16B
-#endif
-                    )
-                        ? 1
-                        : 0;
-            }
-            if (mask == NULL && bigendian == -1) {
-                memset(im->image8[y0] + x0, (UINT8)ink, (x1 - x0 + 1));
+            UINT8 *p = im->image8[y0];
+            if (mask == NULL) {
+                memset(p + x0, (UINT8)ink, (x1 - x0 + 1));
             } else {
-                UINT8 *p = im->image8[y0];
-                while (x0 <= x1) {
-                    if (mask == NULL || mask->image8[y0][x0]) {
-                        if (bigendian == -1) {
-                            p[x0] = ink;
-                        } else {
-                            p[x0 * 2 + (bigendian ? 1 : 0)] = ink;
-                            p[x0 * 2 + (bigendian ? 0 : 1)] = ink >> 8;
-                        }
+                UINT8 *mask_row = mask->image8[y0];
+                for (; x0 <= x1; x0++) {
+                    if (mask_row[x0]) {
+                        p[x0] = (UINT8)ink;
                     }
-                    x0++;
+                }
+            }
+        }
+    }
+}
+
+static inline void
+hline16(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
+    if (y0 >= 0 && y0 < im->ysize) {
+        if (x0 < 0) {
+            x0 = 0;
+        } else if (x0 >= im->xsize) {
+            return;
+        }
+        if (x1 < 0) {
+            return;
+        } else if (x1 >= im->xsize) {
+            x1 = im->xsize - 1;
+        }
+        if (x0 <= x1) {
+            UINT16 *p = (UINT16 *)im->image8[y0];
+            if (mask == NULL) {
+                for (; x0 <= x1; x0++) {
+                    p[x0] = (UINT16)ink;
+                }
+            } else {
+                UINT8 *mask_row = mask->image8[y0];
+                for (; x0 <= x1; x0++) {
+                    if (mask_row[x0]) {
+                        p[x0] = (UINT16)ink;
+                    }
                 }
             }
         }
@@ -273,6 +312,11 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
 static inline void
 line8(Imaging im, int x0, int y0, int x1, int y1, int ink) {
     GEN_LINE(point8, hline8);
+}
+
+static inline void
+line16(Imaging im, int x0, int y0, int x1, int y1, int ink) {
+    GEN_LINE(point16, hline16);
 }
 
 static inline void
@@ -533,6 +577,7 @@ typedef struct {
 } DRAW;
 
 DRAW draw8 = {point8, hline8, line8};
+DRAW draw16 = {point16, hline16, line16};
 DRAW draw32 = {point32, hline32, line32};
 DRAW draw32rgba = {point32rgba, hline32rgba, line32rgba};
 
@@ -542,10 +587,11 @@ DRAW draw32rgba = {point32rgba, hline32rgba, line32rgba};
 
 #define DRAWINIT()                           \
     if (im->image8) {                        \
-        draw = &draw8;                       \
         if (isModeI16(im->mode)) {           \
-            ink = INK16(ink_);               \
+            draw = &draw16;                  \
+            ink = ink16(im, ink_);           \
         } else {                             \
+            draw = &draw8;                   \
             ink = INK8(ink_);                \
         }                                    \
     } else {                                 \
