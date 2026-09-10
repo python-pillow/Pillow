@@ -68,6 +68,9 @@ optional-dependencies.tests = [
   "markdown2",
   "olefile",
   "packaging",
+  # Only used by the leak tests, which only run on Linux and macOS.
+  # psutil does not support iOS at all, and ships no wheels for Android.
+  "psutil; sys_platform=='linux' or sys_platform=='darwin'",
   "pytest",
   "pytest-cov",
   "pytest-timeout",
@@ -84,6 +87,7 @@ urls.Documentation = "https://pillow.readthedocs.io"
 urls.Funding = "https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=pypi"
 urls.Homepage = "https://python-pillow.org"
 urls.Mastodon = "https://fosstodon.org/@pillow"
+urls.Security = "https://pillow.readthedocs.io/en/stable/handbook/security.html"
 urls.Source = "https://github.com/python-pillow/Pillow"
 
 [tool.setuptools]

@@ -31,6 +31,32 @@ Pillow reads and writes AVIF files, including AVIF sequence images.
 It is only possible to save 8-bit AVIF images, and all AVIF images are decoded
 as 8-bit RGB(A).
 
+Opening
+~~~~~~~
+
+The :py:meth:`~PIL.Image.open` method sets the following
+:py:attr:`~PIL.Image.Image.info` properties:
+
+**icc_profile**
+    May not be present. The ICC color profile for the image.
+
+**exif**
+    May not be present. Raw EXIF data from the image.
+
+**xmp**
+    May not be present. Raw XMP data from the image.
+
+**duration**
+    Only present after the current frame is loaded. The time to display the current
+    frame of the AVIF sequence, in milliseconds.
+
+**timestamp**
+    Only present after the current frame is loaded. The time of the current frame
+    within the AVIF sequence, in milliseconds.
+
+Saving
+~~~~~~
+
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **quality**
