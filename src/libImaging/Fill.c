@@ -32,7 +32,7 @@ ImagingFill(Imaging im, const void *colour) {
     int xsize = im->xsize;
     int ysize = im->ysize;
 
-    if (im->type == IMAGING_TYPE_SPECIAL) {
+    if (im->type == IMAGING_TYPE_I16) {
         /* use generic API */
         ImagingAccess access = ImagingAccessNew(im);
         if (access) {

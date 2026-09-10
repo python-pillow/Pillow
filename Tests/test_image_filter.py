@@ -1,10 +1,28 @@
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from PIL import Image, ImageFilter
 
 from .helper import assert_image_equal, hopper
+
+MODES = (
+    "L",
+    "LA",
+    "La",
+    "I",
+    "I;16",
+    "I;16B",
+    "I;16L",
+    "I;16N",
+    "RGB",
+    "RGBA",
+    "RGBa",
+    "RGBX",
+    "CMYK",
+)
 
 
 @pytest.mark.parametrize(
@@ -35,9 +53,7 @@ from .helper import assert_image_equal, hopper
         ImageFilter.UnsharpMask(10),
     ),
 )
-@pytest.mark.parametrize(
-    "mode", ("L", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
-)
+@pytest.mark.parametrize("mode", MODES)
 def test_sanity(
     filter_to_apply: ImageFilter.Filter | type[ImageFilter.Filter], mode: str
 ) -> None:
@@ -51,20 +67,24 @@ def test_sanity(
         assert out.size == im.size
 
 
-@pytest.mark.parametrize(
-    "mode", ("L", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
-)
+@pytest.mark.parametrize("mode", MODES)
 def test_sanity_error(mode: str) -> None:
     im = hopper(mode)
     with pytest.raises(TypeError):
         im.filter("hello")  # type: ignore[arg-type]
 
 
-# crashes on small images
-@pytest.mark.parametrize("size", ((1, 1), (2, 2), (3, 3)))
-def test_crash(size: tuple[int, int]) -> None:
-    im = Image.new("RGB", size)
-    im.filter(ImageFilter.SMOOTH)
+def test_noop_on_small_images() -> None:
+    # If image is smaller than the kernel size, return it as-is.
+    kernel_size: tuple[int, int] = ImageFilter.SMOOTH_MORE.filterargs[0]
+    kernel_w, kernel_h = kernel_size
+    for w in range(1, kernel_w):
+        for h in range(1, kernel_h):
+            im = hopper("RGB").resize((w, h))
+            # Precondition for the below equality test:
+            # filter is larger or equal to image.
+            assert im.size < kernel_size
+            assert_image_equal(im.filter(ImageFilter.SMOOTH_MORE), im)
 
 
 @pytest.mark.parametrize(
@@ -172,36 +192,37 @@ def test_kernel_not_enough_coefficients() -> None:
         ImageFilter.Kernel((3, 3), (0, 0))
 
 
-@pytest.mark.parametrize(
-    "mode", ("L", "LA", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
-)
-def test_consistency_3x3(mode: str) -> None:
-    matrix = (
+EMBOSS_MATRIX = {
+    3: (
         -1, -1,  0,
         -1,  0,  1,
          0,  1,  1,
-    )  # fmt: skip
-    with Image.open("Tests/images/hopper.bmp") as source:
-        with Image.open("Tests/images/hopper_emboss.bmp") as reference:
-            kernel = ImageFilter.Kernel((3, 3), matrix, 0.3)
-            assert_image_equal(source.filter(kernel), reference)
-
-
-@pytest.mark.parametrize(
-    "mode", ("L", "LA", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
-)
-def test_consistency_5x5(mode: str) -> None:
-    matrix = (
+    ),
+    5: (
         -1, -1, -1, -1,  0,
         -1, -1, -1,  0,  1,
         -1, -1,  0,  1,  1,
         -1,  0,  1,  1,  1,
          0,  1,  1,  1,  1,
-    )  # fmt: skip
+    ),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("size", (3, 5))
+def test_consistency(size: int) -> None:
+    kernel = ImageFilter.Kernel((size, size), EMBOSS_MATRIX[size], 0.3)
     with Image.open("Tests/images/hopper.bmp") as source:
-        with Image.open("Tests/images/hopper_emboss_more.bmp") as reference:
-            kernel = ImageFilter.Kernel((5, 5), matrix, 0.3)
+        with Image.open(f"Tests/images/hopper_emboss_{size}x{size}.bmp") as reference:
             assert_image_equal(source.filter(kernel), reference)
+
+
+@pytest.mark.parametrize("size", (3, 5))
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_consistency_i16(size: int, mode: str) -> None:
+    kernel = ImageFilter.Kernel((size, size), EMBOSS_MATRIX[size], 0.3)
+    reference = hopper("I").filter(kernel)
+    result = hopper(mode).filter(kernel)
+    assert_image_equal(result.convert("I"), reference)
 
 
 @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
@@ -233,6 +254,22 @@ def test_invalid_box_blur_filter(radius: int | tuple[int, int]) -> None:
     box_blur_filter.radius = radius
     with pytest.raises(ValueError):
         im.filter(box_blur_filter)
+
+
+@pytest.mark.parametrize(
+    "radius",
+    (
+        math.nan,
+        (math.nan, 1),
+        (1, math.nan),
+        math.inf,
+        (1, math.inf),
+        (math.inf, 1),
+    ),
+)
+def test_box_blur_non_finite_radius(radius: float | tuple[float, float]) -> None:
+    with pytest.raises(ValueError, match="radius must be a finite number >= 0"):
+        ImageFilter.BoxBlur(radius)
 
 
 def test_rankfilter_size_1() -> None:

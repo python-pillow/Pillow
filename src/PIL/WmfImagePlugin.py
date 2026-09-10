@@ -20,6 +20,8 @@
 # http://wvware.sourceforge.net/caolan/ora-wmf.html
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 from . import Image, ImageFile
 from ._binary import i16le as word
 from ._binary import si16le as short
@@ -28,41 +30,6 @@ from ._binary import si32le as _long
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from typing import IO
-
-_handler = None
-
-
-def register_handler(handler: ImageFile.StubHandler | None) -> None:
-    """
-    Install application-specific WMF image handler.
-
-    :param handler: Handler object.
-    """
-    global _handler
-    _handler = handler
-
-
-if hasattr(Image.core, "drawwmf"):
-    # install default handler (windows only)
-
-    class WmfHandler(ImageFile.StubHandler):
-        def open(self, im: ImageFile.StubImageFile) -> None:
-            self.bbox = im.info["wmf_bbox"]
-
-        def load(self, im: ImageFile.StubImageFile) -> Image.Image:
-            assert im.fp is not None
-            im.fp.seek(0)  # rewind
-            return Image.frombytes(
-                "RGB",
-                im.size,
-                Image.core.drawwmf(im.fp.read(), im.size, self.bbox),
-                "raw",
-                "BGR",
-                (im.size[0] * 3 + 3) & -4,
-                -1,
-            )
-
-    register_handler(WmfHandler())
 
 #
 # --------------------------------------------------------------------
@@ -149,9 +116,6 @@ class WmfStubImageFile(ImageFile.StubImageFile):
         self._mode = "RGB"
         self._size = size
 
-    def _load(self) -> ImageFile.StubHandler | None:
-        return _handler
-
     def load(
         self, dpi: float | tuple[float, float] | None = None
     ) -> Image.core.PixelAccess | None:
@@ -168,10 +132,44 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    if _handler is None or not hasattr(_handler, "save"):
+    if WmfStubImageFile._handler is None or not hasattr(
+        WmfStubImageFile._handler, "save"
+    ):
         msg = "WMF save handler not installed"
         raise OSError(msg)
-    _handler.save(im, fp, filename)
+    WmfStubImageFile._handler.save(im, fp, filename)
+
+
+def register_handler(handler: ImageFile.StubHandler | None) -> None:
+    """
+    Install application-specific WMF image handler.
+
+    :param handler: Handler object.
+    """
+    WmfStubImageFile._handler = handler
+
+
+if hasattr(Image.core, "drawwmf"):
+    # install default handler (windows only)
+
+    class WmfHandler(ImageFile.StubHandler):
+        def open(self, im: ImageFile.StubImageFile) -> None:
+            self.bbox = im.info["wmf_bbox"]
+
+        def load(self, im: ImageFile.StubImageFile) -> Image.Image:
+            assert im.fp is not None
+            im.fp.seek(0)  # rewind
+            return Image.frombytes(
+                "RGB",
+                im.size,
+                Image.core.drawwmf(im.fp.read(), im.size, self.bbox),
+                "raw",
+                "BGR",
+                (im.size[0] * 3 + 3) & -4,
+                -1,
+            )
+
+    register_handler(WmfHandler())
 
 
 #

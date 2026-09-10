@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import abc
+import math
 from typing import cast
 
 TYPE_CHECKING = False
@@ -52,10 +53,8 @@ class BuiltinFilter(MultibandFilter):
 
 class Kernel(BuiltinFilter):
     """
-    Create a convolution kernel. This only supports 3x3 and 5x5 integer and floating
-    point kernels.
-
-    Kernels can only be applied to "L" and "RGB" images.
+    Create a convolution kernel.
+    This only supports 3x3 and 5x5 integer and floating point kernels.
 
     :param size: Kernel size, given as (width, height). This must be (3,3) or (5,5).
     :param kernel: A sequence containing kernel weights. The kernel will be flipped
@@ -222,8 +221,8 @@ class BoxBlur(MultibandFilter):
 
     def __init__(self, radius: float | Sequence[float]) -> None:
         xy = radius if isinstance(radius, (tuple, list)) else (radius, radius)
-        if xy[0] < 0 or xy[1] < 0:
-            msg = "radius must be >= 0"
+        if not all(math.isfinite(value) and value >= 0 for value in xy):
+            msg = "radius must be a finite number >= 0"
             raise ValueError(msg)
         self.radius = radius
 

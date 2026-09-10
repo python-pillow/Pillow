@@ -16,12 +16,13 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "shutil", "subprocess"}
+
 import io
 import os
 import shutil
 import subprocess
 import sys
-import tempfile
 
 from . import Image
 
@@ -40,6 +41,8 @@ def grab(
     scale_down: bool = False,
 ) -> Image.Image:
     im: Image.Image
+    import tempfile
+
     if xdisplay is None:
         if sys.platform == "darwin":
             fh, filepath = tempfile.mkstemp(".png")
@@ -79,7 +82,7 @@ def grab(
                         scale = 1 if scale_down else 2
                         im_cropped = im.resize(
                             ((right - left) * scale, (bottom - top) * scale),
-                            box=tuple(coord * 2 for coord in bbox),
+                            box=(left * 2, top * 2, right * 2, bottom * 2),
                         )
                     else:
                         im_cropped = im.crop(bbox)
