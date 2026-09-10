@@ -290,8 +290,8 @@ def test_offset_modes(mode: str) -> None:
     im = hopper(mode)
     assert_image_equal(ImageChops.offset(im, 0, 0), im)  # check no-op
 
-    xoffset = 42
-    yoffset = 67
+    xoffset = 45
+    yoffset = 20
 
     # Act
     new = ImageChops.offset(im, xoffset, yoffset)
