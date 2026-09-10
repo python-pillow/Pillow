@@ -15,6 +15,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 import re
 
 from . import Image, ImageFile, ImagePalette
@@ -113,7 +115,7 @@ class XpmImageFile(ImageFile.ImageFile):
             if transparent_key is not None:
                 self.info["transparency"] = palette_keys.index(transparent_key)
 
-        self.tile = [ImageFile._Tile("xpm", (0, 0) + self.size, self.fp.tell(), args)]
+        self.tile = [ImageFile._Tile("xpm", (0, 0, *self.size), self.fp.tell(), args)]
 
     def load_read(self, read_bytes: int) -> bytes:
         #

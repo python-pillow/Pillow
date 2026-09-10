@@ -20,14 +20,14 @@ class TestImageTransform:
         for transform in (
             ImageTransform.AffineTransform((1, 0, 0, 0, 1, 0)),
             ImageTransform.PerspectiveTransform((1, 0, 0, 0, 1, 0, 0, 0)),
-            ImageTransform.ExtentTransform((0, 0) + im.size),
+            ImageTransform.ExtentTransform((0, 0, *im.size)),
             ImageTransform.QuadTransform(
                 (0, 0, 0, im.height, im.width, im.height, im.width, 0)
             ),
             ImageTransform.MeshTransform(
                 [
                     (
-                        (0, 0) + im.size,
+                        (0, 0, *im.size),
                         (0, 0, 0, im.height, im.width, im.height, im.width, 0),
                     )
                 ]
@@ -45,14 +45,13 @@ class TestImageTransform:
             new_im = im.transform((100, 100), transform)
         assert new_im.info["comment"] == comment
 
-    def test_palette(self) -> None:
-        with Image.open("Tests/images/hopper.gif") as im:
-            transformed = im.transform(
-                im.size, Image.Transform.AFFINE, [1, 0, 0, 0, 1, 0]
-            )
-            assert im.palette is not None
-            assert transformed.palette is not None
-            assert im.palette.palette == transformed.palette.palette
+    @pytest.mark.parametrize("mode", ("P", "PA"))
+    def test_palette(self, mode: str) -> None:
+        im = hopper(mode)
+        transformed = im.transform(im.size, Image.Transform.AFFINE, [1, 0, 0, 0, 1, 0])
+        assert im.palette is not None
+        assert transformed.palette is not None
+        assert im.palette.palette == transformed.palette.palette
 
     def test_extent(self) -> None:
         im = hopper("RGB")

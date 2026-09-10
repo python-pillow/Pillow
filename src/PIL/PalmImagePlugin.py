@@ -8,6 +8,8 @@
 ##
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 from . import Image, ImageFile
 from ._binary import o8
 from ._binary import o16be as o16b
@@ -201,7 +203,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     # now convert data to raw form
     ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, rowbytes, 1))]
+        im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, (rawmode, rowbytes, 1))]
     )
 
     if hasattr(fp, "flush"):

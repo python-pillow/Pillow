@@ -34,7 +34,7 @@ jobs:
       - name: Success
         run: echo Tests not required for this change
 
-  test-mingw:
+  test-msys2:
     runs-on: ubuntu-slim
     name: MSYS2
     steps:

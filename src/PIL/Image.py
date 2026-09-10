@@ -26,17 +26,25 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL._binary",
+    "PIL._deprecate",
+    "PIL._util",
+    "io",
+    "math",
+    "re",
+    "struct",
+}
+
 import abc
 import atexit
 import builtins
 import io
-import logging
 import math
 import os
 import re
 import struct
 import sys
-import tempfile
 import warnings
 from collections.abc import MutableMapping
 from enum import IntEnum
@@ -57,19 +65,10 @@ from ._binary import i32le, o32be, o32le
 from ._deprecate import deprecate
 from ._util import DeferredError, is_path
 
-ElementTree: ModuleType | None
-try:
-    from defusedxml import ElementTree
-except ImportError:
-    ElementTree = None
-
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
-    from types import ModuleType
     from typing import Any, Literal, Self
-
-logger = logging.getLogger(__name__)
 
 
 class DecompressionBombWarning(RuntimeWarning):
@@ -422,11 +421,9 @@ def _import_plugin_for_extension(ext: str | bytes) -> bool:
         return False
 
     try:
-        logger.debug("Importing %s", plugin)
         __import__(f"{__spec__.parent}.{plugin}", globals(), locals(), [])
         return True
-    except ImportError as e:
-        logger.debug("Image: failed to import %s: %s", plugin, e)
+    except ImportError:
         return False
 
 
@@ -490,10 +487,9 @@ def init() -> bool:
 
     for plugin in _plugins:
         try:
-            logger.debug("Importing %s", plugin)
             __import__(f"{__spec__.parent}.{plugin}", globals(), locals(), [])
-        except ImportError as e:
-            logger.debug("Image: failed to import %s: %s", plugin, e)
+        except ImportError:
+            pass
 
     if OPEN or SAVE:
         _initialized = 2
@@ -679,6 +675,9 @@ class Image:
     def readonly(self, readonly: int) -> None:
         self._readonly = readonly
 
+    def _copy_info(self) -> dict[str | tuple[int, int], Any]:
+        return {k: v.copy() if isinstance(v, list) else v for k, v in self.info.items()}
+
     def _new(self, im: core.ImagingCore) -> Image:
         new = Image()
         new.im = im
@@ -691,7 +690,7 @@ class Image:
                 from . import ImagePalette
 
                 new.palette = ImagePalette.ImagePalette()
-        new.info = self.info.copy()
+        new.info = self._copy_info()
         return new
 
     # Context manager support
@@ -742,6 +741,8 @@ class Image:
             if not filename.endswith(suffix):
                 filename += suffix
         else:
+            import tempfile
+
             f, filename = tempfile.mkstemp(suffix)
             os.close(f)
 
@@ -882,7 +883,7 @@ class Image:
 
         # unpack data
         e = _getencoder(self.mode, encoder_name, encoder_args)
-        e.setimage(self.im, (0, 0) + self.size)
+        e.setimage(self.im, (0, 0, *self.size))
 
         from . import ImageFile
 
@@ -959,7 +960,7 @@ class Image:
 
         # unpack data
         d = _getdecoder(self.mode, decoder_name, decoder_args)
-        d.setimage(self.im, (0, 0) + self.size)
+        d.setimage(self.im, (0, 0, *self.size))
         s = d.decode(data)
 
         if s[0] >= 0:
@@ -1018,7 +1019,7 @@ class Image:
     def convert(
         self,
         mode: str | None = None,
-        matrix: tuple[float, ...] | None = None,
+        matrix: list[float] | tuple[float, ...] | None = None,
         dither: Dither | None = None,
         palette: Palette = Palette.WEB,
         colors: int = 256,
@@ -1053,7 +1054,7 @@ class Image:
 
         :param mode: The requested mode. See: :ref:`concept-modes`.
         :param matrix: An optional conversion matrix.  If given, this
-           should be 4- or 12-tuple containing floating point values.
+           should be 4- or 12-sequence containing floating point values.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
@@ -1091,7 +1092,7 @@ class Image:
                 transparency = new_im.info["transparency"]
 
                 def convert_transparency(
-                    m: tuple[float, ...], v: tuple[int, int, int]
+                    m: list[float] | tuple[float, ...], v: tuple[int, int, int]
                 ) -> int:
                     value = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3] * 0.5
                     return max(0, min(255, int(value)))
@@ -1378,7 +1379,7 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if box is None:
+        if box is None or box == (0, 0, *self.size):
             return self.copy()
 
         if box[2] < box[0]:
@@ -1588,6 +1589,11 @@ class Image:
 
         :returns: XMP tags in a dictionary.
         """
+        try:
+            from defusedxml import ElementTree
+        except ImportError:
+            warnings.warn("XMP data cannot be read without defusedxml dependency")
+            return {}
 
         if strip_namespaces:
 
@@ -1619,9 +1625,6 @@ class Image:
                 return element.text
             return value
 
-        if ElementTree is None:
-            warnings.warn("XMP data cannot be read without defusedxml dependency")
-            return {}
         if "xmp" not in self.info:
             return {}
         root = ElementTree.fromstring(self.info["xmp"].rstrip(b"\x00 "))
@@ -1973,7 +1976,7 @@ class Image:
             raise ValueError(msg)
 
         # over image, crop if it's not the whole image.
-        if overlay_crop_box == (0, 0) + im.size:
+        if overlay_crop_box == (0, 0, *im.size):
             overlay = im
         else:
             overlay = im.crop(overlay_crop_box)
@@ -1982,7 +1985,7 @@ class Image:
         box = tuple(dest) + (dest[0] + overlay.width, dest[1] + overlay.height)
 
         # destination image. don't copy if we're using the whole image.
-        if box == (0, 0) + self.size:
+        if box == (0, 0, *self.size):
             background = self
         else:
             background = self.crop(box)
@@ -2405,10 +2408,10 @@ class Image:
             raise ValueError(msg)
 
         if box is None:
-            box = (0, 0) + self.size
+            box = (0, 0, *self.size)
 
         size = tuple(size)
-        if self.size == size and box == (0, 0) + self.size:
+        if self.size == size and box == (0, 0, *self.size):
             return self.copy()
 
         if self.mode in ("1", "P"):
@@ -2468,11 +2471,11 @@ class Image:
         if not isinstance(factor, (list, tuple)):
             factor = (factor, factor)
 
-        if box is None:
-            box = (0, 0) + self.size
+        if factor == (1, 1):
+            return self.crop(box)
 
-        if factor == (1, 1) and box == (0, 0) + self.size:
-            return self.copy()
+        if box is None:
+            box = (0, 0, *self.size)
 
         if self.mode in ["LA", "RGBA"]:
             im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
@@ -3003,9 +3006,9 @@ class Image:
             raise ValueError(msg)
 
         im = new(self.mode, size, fillcolor)
-        if self.mode == "P" and self.palette:
+        if self.mode in ("P", "PA") and self.palette:
             im.palette = self.palette.copy()
-        im.info = self.info.copy()
+        im.info = self._copy_info()
         if method == Transform.MESH:
             # list of quads
             for box, quad in data:
@@ -3014,7 +3017,7 @@ class Image:
                 )
         else:
             im.__transformer(
-                (0, 0) + size, self, method, data, resample, fillcolor is None
+                (0, 0, *size), self, method, data, resample, fillcolor is None
             )
 
         return im
@@ -3217,22 +3220,21 @@ def new(
     """
     Creates a new image with the given mode and size.
 
-    :param mode: The mode to use for the new image. See:
-       :ref:`concept-modes`.
+    :param mode: The mode to use for the new image. See: :ref:`concept-modes`.
     :param size: A 2-tuple, containing (width, height) in pixels.
-    :param color: What color to use for the image. Default is black. If given,
-       this should be a single integer or floating point value for single-band
-       modes, and a tuple for multi-band modes (one value per band). When
-       creating RGB or HSV images, you can also use color strings as supported
-       by the ImageColor module. See :ref:`colors` for more information. If the
-       color is None, the image is not initialised.
+    :param color: What color to use for the image. If given, this should be a single
+       integer or floating point value for single-band modes, and a tuple for
+       multi-band modes (one value per band). When creating RGB or HSV images, you can
+       also use color strings as supported by the ImageColor module. See :ref:`colors`
+       for more information. The default color is zero, which appears as black in
+       single band or RGB-based images. ``None`` is also treated as zero.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
     _check_size(size)
 
     if color is None:
-        # don't initialize
+        # core.new() returns zeroed memory, so there is nothing to fill
         return Image()._new(core.new(mode, size))
 
     if isinstance(color, str):
