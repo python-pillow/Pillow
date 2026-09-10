@@ -127,3 +127,8 @@ to help projects prepare for 3.15, and to ensure Pillow could be used
 immediately at the release of 3.15.0 final (2026-10-01, :pep:`790`).
 
 Pillow 13.0.0 now officially supports Python 3.15.
+
+Fixed ImageChops.offset() for 16-bit images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageChops.offset` now works correctly for 16-bit-per-channel images.
