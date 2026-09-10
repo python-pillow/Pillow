@@ -226,9 +226,6 @@ ImagingHistogramDelete(ImagingHistogram histogram);
 
 extern ImagingAccess
 ImagingAccessNew(Imaging im);
-extern void
-_ImagingAccessDelete(Imaging im, ImagingAccess access);
-#define ImagingAccessDelete(im, access) /* nop, for now */
 
 extern ImagingPalette
 ImagingPaletteNew(ModeID mode);

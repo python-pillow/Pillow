@@ -60,7 +60,7 @@ ReleaseExportedSchema(struct ArrowSchema *array) {
     array->release = NULL;
 }
 
-char *
+static char *
 image_band_json(Imaging im) {
     char *format = "{\"bands\": [\"%s\", \"%s\", \"%s\", \"%s\"]}";
     char *json;
@@ -89,7 +89,7 @@ image_band_json(Imaging im) {
     return json;
 }
 
-char *
+static char *
 single_band_json(Imaging im) {
     char *format = "{\"bands\": [\"%s\"]}";
     char *json;
@@ -110,7 +110,7 @@ single_band_json(Imaging im) {
     return json;
 }
 
-char *
+static char *
 assemble_metadata(const char *band_json) {
     /* format is
        int32: number of key/value pairs (noted N below)
@@ -153,7 +153,7 @@ assemble_metadata(const char *band_json) {
     return buf;
 }
 
-int
+static int
 export_named_type(struct ArrowSchema *schema, char *format, const char *name) {
     char *formatp;
     char *namep;
@@ -283,7 +283,7 @@ release_const_array(struct ArrowArray *array) {
     array->release = NULL;
 }
 
-int
+static int
 export_single_channel_array(Imaging im, struct ArrowArray *array) {
     int length = im->xsize * im->ysize;
 
@@ -330,7 +330,7 @@ export_single_channel_array(Imaging im, struct ArrowArray *array) {
     return 0;
 }
 
-int
+static int
 export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
     int length = im->xsize * im->ysize;
 

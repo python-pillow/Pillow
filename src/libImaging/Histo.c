@@ -34,7 +34,7 @@ ImagingHistogramDelete(ImagingHistogram h) {
     }
 }
 
-ImagingHistogram
+static ImagingHistogram
 ImagingHistogramNew(Imaging im) {
     ImagingHistogram h;
 

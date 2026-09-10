@@ -137,7 +137,7 @@ static struct filter MKS2021 = {mks_2021_filter, 4.5};
 #define PRECISION_BITS (32 - 8 - 2)
 
 /* Handles values form -640 to 639. */
-UINT8 _clip8_lookups[1280] = {
+static UINT8 _clip8_lookups[1280] = {
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
