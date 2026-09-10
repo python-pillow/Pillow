@@ -686,6 +686,15 @@ class TestFileJpeg:
             with pytest.raises(ValueError):
                 self.roundtrip(im, qtables=[[1, 2, 3, 4]])
 
+    def test_qtables_incorrect_length(self) -> None:
+        class IncorrectLength(list[list[int]]):
+            def __len__(self) -> int:
+                return 4
+
+        im = Image.new("1", (1, 1))
+        im2 = self.roundtrip(im, qtables=IncorrectLength([[1] * 64]))
+        assert len(im2.quantization) == 1
+
     def test_load_16bit_qtables(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
             assert isinstance(im, JpegImagePlugin.JpegImageFile)

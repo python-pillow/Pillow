@@ -12,14 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a :py:exc:`DeprecationWarning` is issued.
 
-ExifTags.IFD.Makernote
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 11.1.0
-
-``ExifTags.IFD.Makernote`` has been deprecated. Instead, use
-``ExifTags.IFD.MakerNote``.
-
 Image getdata()
 ^^^^^^^^^^^^^^^
 
@@ -29,6 +21,15 @@ Image getdata()
 :py:meth:`~PIL.Image.Image.get_flattened_data` can be used instead. This new method is
 identical, except that it returns a tuple of pixel values, instead of an internal
 Pillow data type.
+
+IM image format
+^^^^^^^^^^^^^^^
+
+.. deprecated:: 13.0.0
+
+The IM image format has been deprecated and removal is planned in Pillow 15.0.0
+(2028-10-15). If you are using this format and would like to continue doing so,
+open an issue about what other software uses it.
 
 Image.putpixel 'value' lists
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -120,6 +121,14 @@ Image.Image.get_child_images()
 ``ImageFile.ImageFile.get_child_images()``. The method uses an image's file pointer,
 and so child images could only be retrieved from an :py:class:`PIL.ImageFile.ImageFile`
 instance.
+
+ExifTags.IFD.Makernote
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.1.0
+.. versionremoved:: 13.0.0
+
+``ExifTags.IFD.Makernote`` has been removed. Instead, use ``ExifTags.IFD.MakerNote``.
 
 ImageFile.raise_oserror
 ^^^^^^^^^^^^^^^^^^^^^^^

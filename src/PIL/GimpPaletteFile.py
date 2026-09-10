@@ -15,6 +15,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "re"}
+
 import re
 from io import BytesIO
 
