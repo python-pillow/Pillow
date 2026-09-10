@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import abc
 import math
-from typing import cast
+from typing import NamedTuple, cast
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -40,9 +40,16 @@ class MultibandFilter(Filter):
     pass
 
 
+class _FilterArgs(NamedTuple):
+    size: tuple[int, int]
+    scale: float
+    offset: float
+    kernel: Sequence[float]
+
+
 class BuiltinFilter(MultibandFilter):
     name: str
-    filterargs: tuple[Any, ...]
+    filterargs: _FilterArgs
 
     def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         if image.mode == "P":
@@ -80,7 +87,7 @@ class Kernel(BuiltinFilter):
         if size[0] * size[1] != len(kernel):
             msg = "not enough coefficients in kernel"
             raise ValueError(msg)
-        self.filterargs = size, scale, offset, kernel
+        self.filterargs = _FilterArgs(size, scale, offset, kernel)
 
 
 class RankFilter(Filter):
@@ -265,96 +272,96 @@ class UnsharpMask(MultibandFilter):
 
 class BLUR(BuiltinFilter):
     name = "Blur"
-    filterargs = (5, 5), 16, 0, (
+    filterargs = _FilterArgs(size=(5, 5), scale=16, offset=0, kernel=(
         1, 1, 1, 1, 1,
         1, 0, 0, 0, 1,
         1, 0, 0, 0, 1,
         1, 0, 0, 0, 1,
         1, 1, 1, 1, 1,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class CONTOUR(BuiltinFilter):
     name = "Contour"
-    filterargs = (3, 3), 1, 255, (
+    filterargs = _FilterArgs(size=(3, 3), scale=1, offset=255, kernel=(
         -1, -1, -1,
         -1,  8, -1,
         -1, -1, -1,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class DETAIL(BuiltinFilter):
     name = "Detail"
-    filterargs = (3, 3), 6, 0, (
+    filterargs = _FilterArgs(size=(3, 3), scale=6, offset=0, kernel=(
         0,  -1,  0,
         -1, 10, -1,
         0,  -1,  0,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class EDGE_ENHANCE(BuiltinFilter):
     name = "Edge-enhance"
-    filterargs = (3, 3), 2, 0, (
+    filterargs = _FilterArgs(size=(3, 3), scale=2, offset=0, kernel=(
         -1, -1, -1,
         -1, 10, -1,
         -1, -1, -1,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class EDGE_ENHANCE_MORE(BuiltinFilter):
     name = "Edge-enhance More"
-    filterargs = (3, 3), 1, 0, (
+    filterargs = _FilterArgs(size=(3, 3), scale=1, offset=0, kernel=(
         -1, -1, -1,
         -1,  9, -1,
         -1, -1, -1,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class EMBOSS(BuiltinFilter):
     name = "Emboss"
-    filterargs = (3, 3), 1, 128, (
+    filterargs = _FilterArgs(size=(3, 3), scale=1, offset=128, kernel=(
         -1, 0, 0,
         0,  1, 0,
         0,  0, 0,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class FIND_EDGES(BuiltinFilter):
     name = "Find Edges"
-    filterargs = (3, 3), 1, 0, (
+    filterargs = _FilterArgs(size=(3, 3), scale=1, offset=0, kernel=(
         -1, -1, -1,
         -1,  8, -1,
         -1, -1, -1,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class SHARPEN(BuiltinFilter):
     name = "Sharpen"
-    filterargs = (3, 3), 16, 0, (
+    filterargs = _FilterArgs(size=(3, 3), scale=16, offset=0, kernel=(
         -2, -2, -2,
         -2, 32, -2,
         -2, -2, -2,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class SMOOTH(BuiltinFilter):
     name = "Smooth"
-    filterargs = (3, 3), 13, 0, (
+    filterargs = _FilterArgs(size=(3, 3), scale=13, offset=0, kernel=(
         1, 1, 1,
         1, 5, 1,
         1, 1, 1,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class SMOOTH_MORE(BuiltinFilter):
     name = "Smooth More"
-    filterargs = (5, 5), 100, 0, (
+    filterargs = _FilterArgs(size=(5, 5), scale=100, offset=0, kernel=(
         1, 1,  1, 1, 1,
         1, 5,  5, 5, 1,
         1, 5, 44, 5, 1,
         1, 5,  5, 5, 1,
         1, 1,  1, 1, 1,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class Color3DLUT(MultibandFilter):
