@@ -159,6 +159,12 @@ function build_brotli {
     touch brotli-stamp
 }
 
+function build_freetype {  # overrides multibuild's function so we can add "$@" args
+    build_libpng
+    build_bzip2
+    build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz "$@"
+}
+
 function build_harfbuzz {
     if [ -e harfbuzz-stamp ]; then return; fi
     python3 -m pip install meson ninja
@@ -304,17 +310,19 @@ function build {
 
     build_brotli
 
-    if [[ -n "$IS_MACOS" ]]; then
-        # Custom freetype build
-        build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no
-    else
-        build_freetype
-    fi
+    # FreeType and HarfBuzz each want the other:
+    # HarfBuzz reads font data through FreeType, and FreeType's autofitter asks HarfBuzz which glyphs a script covers.
+    # Break the cycle by building FreeType twice, so that the FreeType we ship is linked against the HarfBuzz we ship.
+    build_freetype --with-harfbuzz=no
 
     if [[ -z "$IOS_SDK" ]]; then
         # On iOS, there's no vendor-provided raqm, and we can't ship it due to
         # licensing, so there's no point building harfbuzz.
         build_harfbuzz
+
+        # Now that HarfBuzz exists, build FreeType again against it.
+        rm -rf freetype-$FREETYPE_VERSION freetype-stamp
+        build_freetype --with-harfbuzz=yes
     fi
 }
 
