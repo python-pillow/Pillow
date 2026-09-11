@@ -126,9 +126,9 @@ def test_too_many_entries() -> None:
 
 
 def test_unsized_sequence() -> None:
-    # a sequence that only implements __getitem__ (no __len__) is common for
-    # custom point-table-like objects; PySequence_Size() fails for it, so the
-    # cheap pre-check must fall back to materializing instead of erroring out
+    # CPython's classic sequence protocol only requires __getitem__, so
+    # PySequence_Size() raises for an object without __len__; the cheap
+    # pre-check must fall back to materializing instead of erroring out
     class UnsizedSequence:
         def __getitem__(self, index: int) -> int:
             if index >= 4:

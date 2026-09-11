@@ -85,8 +85,8 @@ def test_overstated_length() -> None:
 
 
 def test_unsized_sequence() -> None:
-    # a table that only implements __getitem__ (no __len__) is a common shape
-    # for custom point tables; PySequence_Size() fails for it, so the cheap
+    # CPython's classic sequence protocol only requires __getitem__, so
+    # PySequence_Size() raises for an object without __len__; the cheap
     # pre-check must fall back to materializing instead of erroring out
     class UnsizedSequence:
         def __getitem__(self, index: int) -> float:
