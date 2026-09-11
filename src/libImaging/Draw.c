@@ -88,6 +88,7 @@ typedef void (*point_handler)(Imaging, int, int, int);
 
 /* Type used in "polygon*" functions */
 typedef void (*hline_handler)(Imaging, int, int, int, int, Imaging);
+typedef void (*vline_handler)(Imaging, int, int, int, int);
 
 static inline void
 point8(Imaging im, int x, int y, int ink) {
@@ -295,6 +296,88 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
 }
 
 static inline void
+vline8(Imaging im, int x0, int y0, int y1, int ink) {
+    int ysize = im->ysize;
+
+    if (x0 < 0 || x0 >= im->xsize || y0 >= ysize || y1 < 0) {
+        return;
+    }
+    y0 = y0 < 0 ? 0 : y0;
+    y1 = y1 >= ysize ? ysize - 1 : y1;
+
+    UINT8 **rows = im->image8;
+    for (; y0 <= y1; y0++) {
+        rows[y0][x0] = (UINT8)ink;
+    }
+}
+
+static inline void
+vline16(Imaging im, int x0, int y0, int y1, int ink) {
+    int ysize = im->ysize;
+
+    if (x0 < 0 || x0 >= im->xsize || y0 >= ysize || y1 < 0) {
+        return;
+    }
+    y0 = y0 < 0 ? 0 : y0;
+    y1 = y1 >= ysize ? ysize - 1 : y1;
+
+    UINT8 **rows = im->image8;
+    for (; y0 <= y1; y0++) {
+        ((UINT16 *)rows[y0])[x0] = (UINT16)ink;
+    }
+}
+
+static inline void
+vline32(Imaging im, int x0, int y0, int y1, int ink) {
+    int ysize = im->ysize;
+
+    if (x0 < 0 || x0 >= im->xsize || y0 >= ysize || y1 < 0) {
+        return;
+    }
+    y0 = y0 < 0 ? 0 : y0;
+    y1 = y1 >= ysize ? ysize - 1 : y1;
+
+    INT32 **rows = im->image32;
+    for (; y0 <= y1; y0++) {
+        rows[y0][x0] = ink;
+    }
+}
+
+static inline void
+vline32rgba(Imaging im, int x0, int y0, int y1, int ink) {
+    unsigned int tmp;
+    UINT8 *in = (UINT8 *)&ink;
+    UINT8 r = in[0], g = in[1], b = in[2], a = in[3];
+    int ysize = im->ysize;
+
+    if (a == 0) {  // Transparent ink. Nothing to paint.
+        return;
+    }
+    if (x0 < 0 || x0 >= im->xsize || y0 >= ysize || y1 < 0) {
+        return;
+    }
+    y0 = y0 < 0 ? 0 : y0;
+    y1 = y1 >= ysize ? ysize - 1 : y1;
+
+    char **rows = im->image;
+    if (a == 255) {  // Solid ink, no need to blend.
+        for (; y0 <= y1; y0++) {
+            UINT8 *out = (UINT8 *)rows[y0] + x0 * 4;
+            out[0] = r;
+            out[1] = g;
+            out[2] = b;
+        }
+    } else {
+        for (; y0 <= y1; y0++) {
+            UINT8 *out = (UINT8 *)rows[y0] + x0 * 4;
+            out[0] = BLEND(a, out[0], r, tmp);
+            out[1] = BLEND(a, out[1], g, tmp);
+            out[2] = BLEND(a, out[2], b, tmp);
+        }
+    }
+}
+
+static inline void
 line_generic(
     Imaging im,
     int x0,
@@ -303,7 +386,8 @@ line_generic(
     int y1,
     int ink,
     point_handler point,
-    hline_handler hline
+    hline_handler hline,
+    vline_handler vline
 ) {
     int i, n, e, dx, dy, xs, ys;
 
@@ -332,11 +416,13 @@ line_generic(
     n = (dx > dy) ? dx : dy;
 
     if (dx == 0) {
-        /* vertical */
-        for (i = 0; i < dy; i++) {
-            point(im, x0, y0, ink);
-            y0 += ys;
+        /* vertical, exclude endpoint */
+        if (ys > 0) {
+            vline(im, x0, y0, y0 + dy - 1, ink);
+        } else {
+            vline(im, x0, y0 - dy + 1, y0, ink);
         }
+        return;
 
     } else if (dx > dy) {
         /* bresenham, horizontal slope */
@@ -612,26 +698,27 @@ add_edge(Edge *e, int x0, int y0, int x1, int y1) {
     e->y0 = y0;
 }
 
-#define DEFINE_LINE(name, point, hline)                                     \
+#define DEFINE_LINE(name, point, hline, vline)                              \
     static void name(Imaging im, int x0, int y0, int x1, int y1, int ink) { \
-        line_generic(im, x0, y0, x1, y1, ink, point, hline);                \
+        line_generic(im, x0, y0, x1, y1, ink, point, hline, vline);         \
     }
 
-DEFINE_LINE(line8, point8, hline8)
-DEFINE_LINE(line16, point16, hline16)
-DEFINE_LINE(line32, point32, hline32)
-DEFINE_LINE(line32rgba, point32rgba, hline32rgba)
+DEFINE_LINE(line8, point8, hline8, vline8)
+DEFINE_LINE(line16, point16, hline16, vline16)
+DEFINE_LINE(line32, point32, hline32, vline32)
+DEFINE_LINE(line32rgba, point32rgba, hline32rgba, vline32rgba)
 
 typedef struct {
     void (*point)(Imaging im, int x, int y, int ink);
     void (*hline)(Imaging im, int x0, int y0, int x1, int ink, Imaging mask);
+    void (*vline)(Imaging im, int x0, int y0, int y1, int ink);
     void (*line)(Imaging im, int x0, int y0, int x1, int y1, int ink);
 } DRAW;
 
-DRAW draw8 = {point8, hline8, line8};
-DRAW draw16 = {point16, hline16, line16};
-DRAW draw32 = {point32, hline32, line32};
-DRAW draw32rgba = {point32rgba, hline32rgba, line32rgba};
+DRAW draw8 = {point8, hline8, vline8, line8};
+DRAW draw16 = {point16, hline16, vline16, line16};
+DRAW draw32 = {point32, hline32, vline32, line32};
+DRAW draw32rgba = {point32rgba, hline32rgba, vline32rgba, line32rgba};
 
 /* -------------------------------------------------------------------- */
 /* Interface                                                            */
@@ -742,8 +829,6 @@ ImagingDrawRectangle(
     int width,
     int op
 ) {
-    int i;
-    int y;
     int tmp;
     DRAW *draw;
     INT32 ink;
@@ -767,7 +852,7 @@ ImagingDrawRectangle(
             y1 = im->ysize;
         }
 
-        for (y = y0; y <= y1; y++) {
+        for (int y = y0; y <= y1; y++) {
             draw->hline(im, x0, y, x1, ink, NULL);
         }
 
@@ -776,11 +861,18 @@ ImagingDrawRectangle(
         if (width == 0) {
             width = 1;
         }
-        for (i = 0; i < width; i++) {
+        // Adjust side edges to avoid overlapping (matters with blends)
+        int ya = y0 + width, yb = y1 - width + 1, va = 0, vb = -1;
+        if (ya < yb) {
+            va = ya, vb = yb - 1;
+        } else if (ya > yb) {
+            va = yb + 1, vb = ya;
+        }
+        for (int i = 0; i < width; i++) {
             draw->hline(im, x0, y0 + i, x1, ink, NULL);
             draw->hline(im, x0, y1 - i, x1, ink, NULL);
-            draw->line(im, x1 - i, y0 + width, x1 - i, y1 - width + 1, ink);
-            draw->line(im, x0 + i, y0 + width, x0 + i, y1 - width + 1, ink);
+            draw->vline(im, x1 - i, va, vb, ink);
+            draw->vline(im, x0 + i, va, vb, ink);
         }
     }
 
