@@ -249,9 +249,3 @@ getRawModeData(const RawModeID id) {
     }
     return &RAWMODES[id];
 }
-
-int
-isModeI16(const ModeID mode) {
-    return mode == IMAGING_MODE_I_16 || mode == IMAGING_MODE_I_16L ||
-           mode == IMAGING_MODE_I_16B || mode == IMAGING_MODE_I_16N;
-}
