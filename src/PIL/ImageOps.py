@@ -660,6 +660,69 @@ def mirror(image: Image.Image) -> Image.Image:
     return image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
 
+def _dither_saturation(value: float, quadrant: int) -> int:
+    if value > 233:
+        return 255
+    if value > 159:
+        return 255 if quadrant != 1 else 0
+    if value > 95:
+        return 255 if quadrant in (0, 3) else 0
+    if value > 32:
+        return 255 if quadrant == 1 else 0
+    return 0
+
+
+def primary(image: Image.Image, dither: bool = True) -> Image.Image:
+    """
+    Reduce RGB image to primary colors, and optionally apply ordered dithering.
+
+    This operation first reduces each RGB channel to its primary values
+    (0 or 255), then applies a 2x2 ordered dithering pattern based on the
+    average color intensity.
+
+    :param image: The image to process.
+    :param dither: Optional flag, defaulting to ``True``. If ``False``, do not apply
+        dithering.
+    :return: An image.
+
+    .. versionadded:: 13.0.0
+    """
+
+    if image.mode != "RGB":
+        msg = f"mode must be RGB, not {image.mode}"
+        raise ValueError(msg)
+    bands = []
+    for band in image.split():
+        # Primary color reduction
+        band = band.point(lambda x: 255 if x > 127 else 0)
+        bands.append(band)
+        if not dither:
+            continue
+
+        # Ordered dithering (2x2 blocks)
+        px = band.load()
+        assert px is not None
+        for x in range(0, band.width - 1, 2):
+            for y in range(0, band.height - 1, 2):
+                p1 = px[x, y]
+                p2 = px[x, y + 1]
+                p3 = px[x + 1, y]
+                p4 = px[x + 1, y + 1]
+
+                assert isinstance(p1, (int, float))
+                assert isinstance(p2, (int, float))
+                assert isinstance(p3, (int, float))
+                assert isinstance(p4, (int, float))
+
+                value = (p1 + p2 + p3 + p4) / 4
+
+                px[x, y] = _dither_saturation(value, 0)
+                px[x, y + 1] = _dither_saturation(value, 1)
+                px[x + 1, y] = _dither_saturation(value, 2)
+                px[x + 1, y + 1] = _dither_saturation(value, 3)
+    return Image.merge("RGB", bands)
+
+
 def posterize(image: Image.Image, bits: int) -> Image.Image:
     """
     Reduce the number of bits for each color channel.
