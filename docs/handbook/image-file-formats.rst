@@ -1410,6 +1410,10 @@ Opening
 The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
 
+**lossless**
+    ``True`` if every coded frame in the file uses VP8L (lossless)
+    compression, ``False`` otherwise.
+
 **background**
     Background color of the canvas, as an RGBA tuple with values in
     the range of (0-255).

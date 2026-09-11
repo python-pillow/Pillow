@@ -28,3 +28,14 @@ def test_write_lossless_rgb(tmp_path: Path) -> None:
         image.load()
 
         assert_image_equal(image, hopper(RGB_MODE))
+
+
+def test_lossless(tmp_path: Path) -> None:
+    lossless_file = tmp_path / "lossless.webp"
+    for lossless in (True, False):
+        hopper(RGB_MODE).save(lossless_file, lossless=lossless)
+        with Image.open(lossless_file) as image:
+            assert image.info["lossless"] is lossless
+
+    with Image.open("Tests/images/hopper.webp") as image:
+        assert image.info["lossless"] is False
