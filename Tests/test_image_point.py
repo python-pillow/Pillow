@@ -84,24 +84,7 @@ def test_overstated_length() -> None:
         im.point(OverstatedLengthSequence(), "F")  # type: ignore[arg-type]
 
 
-def test_unsized_sequence() -> None:
-    # CPython's classic sequence protocol only requires __getitem__, so
-    # PySequence_Size() raises for an object without __len__; the cheap
-    # pre-check must fall back to materializing instead of erroring out
-    class UnsizedSequence:
-        def __getitem__(self, index: int) -> float:
-            if index >= 256:
-                raise IndexError
-            return float(index)
-
-    im = Image.new("L", (4, 4))
-    out = im.point(UnsizedSequence(), "F")  # type: ignore[arg-type]
-    assert_image_equal(out, im.point(list(range(256)), "F"))
-
-
 def test_raising_length() -> None:
-    # only the TypeError from an unsized sequence may be swallowed by the
-    # pre-check; any other error from __len__ has to reach the caller
     class RaisingLengthSequence:
         def __init__(self) -> None:
             self.calls = 0

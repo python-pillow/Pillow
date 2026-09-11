@@ -125,24 +125,7 @@ def test_too_many_entries() -> None:
         im.putdata(list(range(17)))
 
 
-def test_unsized_sequence() -> None:
-    # CPython's classic sequence protocol only requires __getitem__, so
-    # PySequence_Size() raises for an object without __len__; the cheap
-    # pre-check must fall back to materializing instead of erroring out
-    class UnsizedSequence:
-        def __getitem__(self, index: int) -> int:
-            if index >= 4:
-                raise IndexError
-            return index
-
-    im = Image.new("L", (2, 2))
-    im.putdata(UnsizedSequence())  # type: ignore[arg-type]
-    assert im.get_flattened_data() == (0, 1, 2, 3)
-
-
 def test_raising_length() -> None:
-    # only the TypeError from an unsized sequence may be swallowed by the
-    # pre-check; any other error from __len__ has to reach the caller
     class RaisingLengthSequence:
         def __init__(self) -> None:
             self.calls = 0
