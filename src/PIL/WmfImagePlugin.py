@@ -128,6 +128,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
                 int((x1 - x0) * dpi[0] / self._inch[0]),
                 int((y1 - y0) * dpi[1] / self._inch[1]),
             )
+            Image._decompression_bomb_check(self.size)
         return super().load()
 
 
