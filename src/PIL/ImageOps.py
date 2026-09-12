@@ -408,9 +408,10 @@ def crop(image: Image.Image, border: int | tuple[int, ...] = 0) -> Image.Image:
 
     :param image: The image to crop.
     :param border: The number of pixels to remove. An integer removes the same
-        number of pixels from all four sides. A 2-tuple specifies the horizontal
-        and vertical borders. A 4-tuple specifies the left, top, right and bottom
-        borders.
+                   number of pixels from all four sides. A 2-tuple specifies
+                   the number of pixels to remove horizontally and vertically.
+                   A 4-tuple specifies the number of pixels to remove from the
+                   left, top, right and bottom of the image.
     :return: An image.
     """
     left, top, right, bottom = _border(border)
@@ -519,8 +520,9 @@ def expand(
 
     :param image: The image to expand.
     :param border: Border width, in pixels. An integer adds the same width to
-        all four sides. A 2-tuple specifies the horizontal and vertical borders.
-        A 4-tuple specifies the left, top, right and bottom borders.
+                   all four sides. A 2-tuple specifies the horizontal and
+                   vertical border widths. A 4-tuple specifies the widths of
+                   the left, top, right and bottom borders.
     :param fill: Pixel fill value (a color value).  Default is 0 (black).
     :return: An image.
     """
