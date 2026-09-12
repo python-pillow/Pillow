@@ -215,7 +215,9 @@ def test_rawmode_getdata() -> None:
 
     # Assert
     assert rawmode == "RGB"
-    assert data_in == data_out
+    assert data_out == bytes(data_in)
+    im = Image.new("P", (1, 1))
+    im.im.putpalette("RGB", rawmode, data_out)
 
 
 def test_2bit_palette(tmp_path: Path) -> None:
