@@ -745,8 +745,7 @@ class pil_build_ext(build_ext):
                             )
 
             if best_version:
-                lib_jpeg2k = _find_library_file(self, "openjp2")
-                if lib_jpeg2k is not None:
+                if lib_jpeg2k := _find_library_file(self, "openjp2"):
                     # Add the directory to the include path so we can include
                     # <openjpeg.h> rather than having to cope with the versioned
                     # include path
@@ -776,8 +775,7 @@ class pil_build_ext(build_ext):
 
         if feature.want("freetype"):
             _dbg("Looking for freetype")
-            lib_freetype = _find_library_file(self, "freetype")
-            if lib_freetype is not None:
+            if lib_freetype := _find_library_file(self, "freetype"):
                 # look for freetype2 include files
                 freetype_version = 0
                 for subdir in self.compiler.include_dirs:
@@ -814,8 +812,7 @@ class pil_build_ext(build_ext):
                 if hb_dir:
                     if isinstance(hb_dir, str):
                         _add_directory(self.compiler.include_dirs, hb_dir, 0)
-                    lib_harfbuzz = _find_library_file(self, "harfbuzz")
-                    if lib_harfbuzz is not None:
+                    if lib_harfbuzz := _find_library_file(self, "harfbuzz"):
                         feature.set("harfbuzz", lib_harfbuzz)
                 if feature.get("harfbuzz"):
                     if not feature.want_vendor("fribidi"):  # want system FriBiDi
@@ -827,8 +824,7 @@ class pil_build_ext(build_ext):
                                 _add_directory(
                                     self.compiler.include_dirs, fribidi_dir, 0
                                 )
-                            lib_fribidi = _find_library_file(self, "fribidi")
-                            if lib_fribidi is not None:
+                            if lib_fribidi := _find_library_file(self, "fribidi"):
                                 feature.set("fribidi", lib_fribidi)
                                 feature.set("raqm", True)
                     else:  # want to build FriBiDi shim from src/thirdparty
@@ -861,8 +857,7 @@ class pil_build_ext(build_ext):
         if feature.want("xcb"):
             _dbg("Looking for xcb")
             if _find_include_file(self, "xcb/xcb.h"):
-                lib_xcb = _find_library_file(self, "xcb")
-                if lib_xcb is not None:
+                if lib_xcb := _find_library_file(self, "xcb"):
                     feature.set("xcb", lib_xcb)
 
         if feature.want("avif"):
@@ -873,8 +868,7 @@ class pil_build_ext(build_ext):
                         fp.read().split(b"#define AVIF_VERSION_MAJOR ")[1].split()[0]
                     )
                     if major_version >= 1:
-                        lib_avif = _find_library_file(self, "avif")
-                        if lib_avif is not None:
+                        if lib_avif := _find_library_file(self, "avif"):
                             feature.set("avif", lib_avif)
 
         for f in feature:
