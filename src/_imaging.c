@@ -419,14 +419,11 @@ getbands(const ModeID mode) {
 #define TYPE_DOUBLE (0x400 | sizeof(double))
 
 static void *
-getlist_impl(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
-    /* - allocates and returns a c array of the items in the
-          python sequence arg.
+getlist_impl(PyObject *arg, Py_ssize_t length, const char *wrong_length, int type) {
+    /* - allocates and returns a c array of the items in the Python sequence arg.
        - the size of the returned array is in length
-       - all of the arg items must be numeric items of the type
-          specified in type
-       - sequence length is checked against the length parameter IF
-          an error parameter is passed in wrong_length
+       - all of the arg items must be numeric items of the type specified in type
+       - sequence length is checked against the length parameter
        - caller is responsible for freeing the memory
     */
 
@@ -444,7 +441,7 @@ getlist_impl(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int ty
     }
 
     n = PySequence_Size(arg);
-    if (length && wrong_length && n != *length) {
+    if (n != length) {
         PyErr_SetString(PyExc_ValueError, wrong_length);
         return NULL;
     }
@@ -493,15 +490,11 @@ getlist_impl(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int ty
         return NULL;
     }
 
-    if (length) {
-        *length = n;
-    }
-
     return list;
 }
 
 static void *
-getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
+getlist(PyObject *arg, Py_ssize_t length, const char *wrong_length, int type) {
     void *result;
     Py_BEGIN_CRITICAL_SECTION(arg);
     result = getlist_impl(arg, length, wrong_length, type);
@@ -875,7 +868,7 @@ _prepare_lut_table(PyObject *table, Py_ssize_t table_size) {
 
     if (!table_data) {
         free_table_data = 1;
-        table_data = getlist(table, &table_size, wrong_size, TYPE_FLOAT32);
+        table_data = getlist(table, table_size, wrong_size, TYPE_FLOAT32);
         if (!table_data) {
             return NULL;
         }
@@ -1153,8 +1146,9 @@ _expand_image(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _filter(ImagingObject *self, PyObject *args) {
+    static const char *wrong_length = "bad kernel size";
+
     PyObject *imOut;
-    Py_ssize_t kernelsize;
     FLOAT32 *kerneldata;
 
     int xsize, ysize, i;
@@ -1167,13 +1161,10 @@ _filter(ImagingObject *self, PyObject *args) {
     }
 
     /* get user-defined kernel */
-    kerneldata = getlist(kernel, &kernelsize, NULL, TYPE_FLOAT32);
+    Py_ssize_t kernelsize = (Py_ssize_t)xsize * (Py_ssize_t)ysize;
+    kerneldata = getlist(kernel, kernelsize, wrong_length, TYPE_FLOAT32);
     if (!kerneldata) {
         return NULL;
-    }
-    if (kernelsize != (Py_ssize_t)xsize * (Py_ssize_t)ysize) {
-        free(kerneldata);
-        return ImagingError_ValueError("bad kernel size");
     }
 
     for (i = 0; i < kernelsize; ++i) {
@@ -1540,7 +1531,7 @@ _paste(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _point(ImagingObject *self, PyObject *args) {
-    static const char *wrong_number = "wrong number of lut entries";
+    static const char *wrong_length = "wrong number of lut entries";
 
     Py_ssize_t n;
     int i, bands;
@@ -1559,7 +1550,7 @@ _point(ImagingObject *self, PyObject *args) {
 
         /* map from 8-bit data to floating point */
         n = 256;
-        data = getlist(list, &n, wrong_number, TYPE_FLOAT32);
+        data = getlist(list, n, wrong_length, TYPE_FLOAT32);
         if (!data) {
             return NULL;
         }
@@ -1571,7 +1562,7 @@ _point(ImagingObject *self, PyObject *args) {
         /* map from 16-bit subset of 32-bit data to 8-bit */
         /* FIXME: support arbitrary number of entries (requires API change) */
         n = 65536;
-        data = getlist(list, &n, wrong_number, TYPE_UINT8);
+        data = getlist(list, n, wrong_length, TYPE_UINT8);
         if (!data) {
             return NULL;
         }
@@ -1592,7 +1583,7 @@ _point(ImagingObject *self, PyObject *args) {
 
         /* map to integer data */
         n = 256 * bands;
-        data = getlist(list, &n, wrong_number, TYPE_INT32);
+        data = getlist(list, n, wrong_length, TYPE_INT32);
         if (!data) {
             return NULL;
         }
@@ -2102,7 +2093,7 @@ im_setalpha(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _transform(ImagingObject *self, PyObject *args) {
-    static const char *wrong_number = "wrong number of matrix entries";
+    static const char *wrong_length = "wrong number of matrix entries";
 
     Imaging imOut;
     Py_ssize_t n;
@@ -2145,7 +2136,7 @@ _transform(ImagingObject *self, PyObject *args) {
             n = -1; /* force error */
     }
 
-    a = getlist(data, &n, wrong_number, TYPE_DOUBLE);
+    a = getlist(data, n, wrong_length, TYPE_DOUBLE);
     if (!a) {
         return NULL;
     }
