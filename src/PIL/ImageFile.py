@@ -115,7 +115,7 @@ class _Tile(NamedTuple):
 # ImageFile base class
 
 
-class ImageFile(Image.Image):
+class ImageFile(Image.Image, metaclass=abc.ABCMeta):
     """Base class for image file format handlers."""
 
     def __init__(
@@ -177,6 +177,7 @@ class ImageFile(Image.Image):
                 self.fp.close()
             raise
 
+    @abc.abstractmethod
     def _open(self) -> None:
         pass
 
@@ -482,7 +483,7 @@ class StubHandler(abc.ABC):
         pass
 
 
-class StubImageFile(ImageFile, metaclass=abc.ABCMeta):
+class StubImageFile(ImageFile):
     """
     Base class for stub image loaders.
 
@@ -491,10 +492,6 @@ class StubImageFile(ImageFile, metaclass=abc.ABCMeta):
     """
 
     _handler: StubHandler | None = None
-
-    @abc.abstractmethod
-    def _open(self) -> None:
-        pass
 
     def load(self) -> Image.core.PixelAccess | None:
         if self._handler is None:
