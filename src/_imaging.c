@@ -1146,7 +1146,7 @@ _expand_image(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _filter(ImagingObject *self, PyObject *args) {
-    static const char *wrong_number = "bad kernel size";
+    static const char *wrong_length = "bad kernel size";
 
     PyObject *imOut;
     FLOAT32 *kerneldata;
@@ -1162,7 +1162,7 @@ _filter(ImagingObject *self, PyObject *args) {
 
     /* get user-defined kernel */
     Py_ssize_t kernelsize = (Py_ssize_t)xsize * (Py_ssize_t)ysize;
-    kerneldata = getlist(kernel, kernelsize, wrong_number, TYPE_FLOAT32);
+    kerneldata = getlist(kernel, kernelsize, wrong_length, TYPE_FLOAT32);
     if (!kerneldata) {
         return NULL;
     }
@@ -1531,7 +1531,7 @@ _paste(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _point(ImagingObject *self, PyObject *args) {
-    static const char *wrong_number = "wrong number of lut entries";
+    static const char *wrong_length = "wrong number of lut entries";
 
     Py_ssize_t n;
     int i, bands;
@@ -1550,7 +1550,7 @@ _point(ImagingObject *self, PyObject *args) {
 
         /* map from 8-bit data to floating point */
         n = 256;
-        data = getlist(list, n, wrong_number, TYPE_FLOAT32);
+        data = getlist(list, n, wrong_length, TYPE_FLOAT32);
         if (!data) {
             return NULL;
         }
@@ -1562,7 +1562,7 @@ _point(ImagingObject *self, PyObject *args) {
         /* map from 16-bit subset of 32-bit data to 8-bit */
         /* FIXME: support arbitrary number of entries (requires API change) */
         n = 65536;
-        data = getlist(list, n, wrong_number, TYPE_UINT8);
+        data = getlist(list, n, wrong_length, TYPE_UINT8);
         if (!data) {
             return NULL;
         }
@@ -1583,7 +1583,7 @@ _point(ImagingObject *self, PyObject *args) {
 
         /* map to integer data */
         n = 256 * bands;
-        data = getlist(list, n, wrong_number, TYPE_INT32);
+        data = getlist(list, n, wrong_length, TYPE_INT32);
         if (!data) {
             return NULL;
         }
@@ -2093,7 +2093,7 @@ im_setalpha(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _transform(ImagingObject *self, PyObject *args) {
-    static const char *wrong_number = "wrong number of matrix entries";
+    static const char *wrong_length = "wrong number of matrix entries";
 
     Imaging imOut;
     Py_ssize_t n;
@@ -2136,7 +2136,7 @@ _transform(ImagingObject *self, PyObject *args) {
             n = -1; /* force error */
     }
 
-    a = getlist(data, n, wrong_number, TYPE_DOUBLE);
+    a = getlist(data, n, wrong_length, TYPE_DOUBLE);
     if (!a) {
         return NULL;
     }
