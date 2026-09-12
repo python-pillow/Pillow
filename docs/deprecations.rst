@@ -41,14 +41,15 @@ JpegImageFile.load_djpeg
 Use the built-in JPEG decoder instead, or call ``djpeg`` directly and decode the
 resulting image with Pillow.
 
-fribidi and harfbuzz features
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fribidi and harfbuzz feature checking
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 13.0.0
 
-``fribidi`` and ``harfbuzz`` are deprecated aliases of ``raqm``. Raqm selects its
-own bidirectional text and shaping libraries when it is built, so Pillow cannot
-reliably report which ones are in use.
+When checking for features with ``from PIL import features``, ``fribidi`` and
+``harfbuzz`` are deprecated aliases of ``raqm``. Raqm selects its own bidirectional
+text and shaping libraries when it is built, so Pillow cannot reliably report which
+ones are in use.
 
 Removed features
 ----------------
