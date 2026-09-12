@@ -579,17 +579,11 @@ getpixel(Imaging im, ImagingAccess access, int x, int y) {
 
     switch (im->type) {
         case IMAGING_TYPE_UINT8:
-            switch (im->bands) {
-                case 1:
-                    return PyLong_FromLong(pixel.b[0]);
-                case 2:
-                    return make_pixel_tuple(pixel.b, 2);
-                case 3:
-                    return make_pixel_tuple(pixel.b, 3);
-                case 4:
-                    return make_pixel_tuple(pixel.b, 4);
+            if (im->bands == 1) {
+                return PyLong_FromLong(pixel.b[0]);
+            } else {
+                return make_pixel_tuple(pixel.b, im->bands);
             }
-            break;
         case IMAGING_TYPE_INT32:
             return PyLong_FromLong(pixel.i);
         case IMAGING_TYPE_FLOAT32:
