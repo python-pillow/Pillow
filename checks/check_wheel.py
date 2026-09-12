@@ -38,8 +38,6 @@ def test_wheel_codecs() -> None:
 def test_wheel_features() -> None:
     expected_features = {
         "raqm",
-        "fribidi",
-        "harfbuzz",
         "libjpeg_turbo",
         "zlib_ng",
         "xcb",
@@ -47,9 +45,5 @@ def test_wheel_features() -> None:
 
     if sys.platform == "win32":
         expected_features.remove("xcb")
-    elif sys.platform == "ios":
-        # Can't distribute raqm due to licensing, and there's no system version;
-        # fribidi and harfbuzz won't be available if raqm isn't available.
-        expected_features -= {"raqm", "fribidi", "harfbuzz"}
 
     assert set(features.get_supported_features()) == expected_features

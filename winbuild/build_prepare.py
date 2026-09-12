@@ -346,23 +346,27 @@ DEPS: dict[str, dict[str, Any]] = {
         "headers": [r"src\*.h"],
         "libs": [r"*.lib"],
     },
-    "fribidi": {
-        "url": f"https://github.com/fribidi/fribidi/archive/v{V['fribidi']}.zip",
-        "filename": f"fribidi-{V['fribidi']}.zip",
+    "sheenbidi": {
+        "url": f"https://github.com/Tehreer/SheenBidi/archive/v{V['sheenbidi']}.tar.gz",
+        "filename": f"SheenBidi-{V['sheenbidi']}.tar.gz",
+        "license": "LICENSE",
+        "build": [
+            *cmds_cmake("SheenBidi"),
+            cmd_mkdir(r"{inc_dir}\SheenBidi"),
+            cmd_xcopy(r"Headers\SheenBidi", r"{inc_dir}\SheenBidi"),
+        ],
+        "libs": [r"*.lib"],
+    },
+    "raqm": {
+        "url": f"https://github.com/HOST-Oman/libraqm/releases/download/v{V['raqm']}/FILENAME",
+        "filename": f"raqm-{V['raqm']}.tar.xz",
         "license": "COPYING",
         "build": [
-            cmd_copy(r"COPYING", rf"{{bin_dir}}\fribidi-{V['fribidi']}-COPYING"),
-            cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
-            # generated tab.i files cannot be cross-compiled
-            " ^&^& ".join(
-                [
-                    "if {architecture}==ARM64 cmd /c call {vcvarsall} x86",
-                    *cmds_cmake("fribidi-gen", "-DARCH=x86", build_dir="build_x86"),
-                ]
-            ),
-            *cmds_cmake("fribidi", "-DARCH={architecture}"),
+            cmd_copy(r"{winbuild_dir}\raqm.cmake", r"CMakeLists.txt"),
+            *cmds_cmake("raqm", f"-DRAQM_VERSION={V['raqm']}"),
         ],
-        "bins": [r"*.dll"],
+        "headers": [r"src\raqm.h", r"src\raqm-version.h"],
+        "libs": [r"*.lib"],
     },
     "libavif": {
         "url": f"https://github.com/AOMediaCodec/libavif/archive/v{V['libavif']}.tar.gz",
@@ -684,10 +688,9 @@ def main() -> None:
         help="skip GPL-licensed optional dependency libimagequant",
     )
     parser.add_argument(
-        "--no-fribidi",
         "--no-raqm",
         action="store_true",
-        help="skip LGPL-licensed optional dependency FriBiDi",
+        help="skip optional dependency Raqm and its SheenBidi dependency",
     )
     parser.add_argument(
         "--no-avif",
@@ -732,8 +735,8 @@ def main() -> None:
     disabled = []
     if args.no_imagequant:
         disabled += ["libimagequant"]
-    if args.no_fribidi:
-        disabled += ["fribidi"]
+    if args.no_raqm:
+        disabled += ["sheenbidi", "raqm"]
     if args.no_avif or args.architecture == "ARM64":
         disabled += ["libavif"]
 

@@ -61,6 +61,8 @@ Support for the following features can be checked:
 * ``libimagequant``: (compile time) ImageQuant quantization support in :py:func:`PIL.Image.Image.quantize`. Run-time version number is available.
 * ``xcb``: (compile time) Support for X11 in :py:func:`PIL.ImageGrab.grab` via the XCB library.
 
+``fribidi`` and ``harfbuzz`` are deprecated aliases of ``raqm``. Raqm selects its own bidirectional text and shaping libraries when it is built, so Pillow cannot reliably report which ones are in use.
+
 .. autofunction:: PIL.features.check_feature
 .. autofunction:: PIL.features.version_feature
 .. autofunction:: PIL.features.get_supported_features
