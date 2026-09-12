@@ -365,6 +365,10 @@ static const char *no_palette = "image has no palette";
 static const char *readonly = "image is readonly";
 /* static const char* no_content = "image has no content"; */
 
+/**
+ * Set a MemoryError exception and return NULL.
+ * @return Always NULL.
+ */
 void *
 ImagingError_MemoryError(void) {
     return PyErr_NoMemory();
