@@ -126,14 +126,6 @@ Two new filters are available for :py:meth:`~PIL.Image.Image.resize` and
 Other changes
 =============
 
-ImageOps.crop border type annotation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The ``border`` type annotation for :py:func:`~PIL.ImageOps.crop` now includes
-tuples, matching its existing support for two or four border widths. The tuple
-ordering is also documented for :py:func:`~PIL.ImageOps.crop` and
-:py:func:`~PIL.ImageOps.expand`.
-
 Python 3.15
 ^^^^^^^^^^^
 
