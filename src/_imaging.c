@@ -2504,7 +2504,7 @@ _split(ImagingObject *self, PyObject *args) {
     PyObject *imaging_object;
     Imaging bands[4] = {NULL, NULL, NULL, NULL};
 
-    if (!ImagingSplit(self->image, bands)) {
+    if (ImagingSplit(self->image, bands)) {
         return NULL;
     }
 
