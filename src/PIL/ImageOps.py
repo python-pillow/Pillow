@@ -400,15 +400,18 @@ def pad(
     return out
 
 
-def crop(image: Image.Image, border: int = 0) -> Image.Image:
+def crop(image: Image.Image, border: int | tuple[int, ...] = 0) -> Image.Image:
     """
-    Remove border from image.  The same amount of pixels are removed
-    from all four sides.  This function works on all image modes.
+    Remove border from image. This function works on all image modes.
 
     .. seealso:: :py:meth:`~PIL.Image.Image.crop`
 
     :param image: The image to crop.
-    :param border: The number of pixels to remove.
+    :param border: The number of pixels to remove. An integer removes the same
+                   number of pixels from all four sides. A 2-tuple specifies
+                   the number of pixels to remove horizontally and vertically.
+                   A 4-tuple specifies the number of pixels to remove from the
+                   left, top, right and bottom of the image.
     :return: An image.
     """
     left, top, right, bottom = _border(border)
@@ -516,7 +519,10 @@ def expand(
     Add border to the image
 
     :param image: The image to expand.
-    :param border: Border width, in pixels.
+    :param border: Border width, in pixels. An integer adds the same width to
+                   all four sides. A 2-tuple specifies the horizontal and
+                   vertical border widths. A 4-tuple specifies the widths of
+                   the left, top, right and bottom borders.
     :param fill: Pixel fill value (a color value).  Default is 0 (black).
     :return: An image.
     """
