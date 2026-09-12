@@ -77,6 +77,9 @@ typedef struct {
     /* Disable automatic conversion of RGB images to YCbCr if non-zero */
     int keep_rgb;
 
+    /* Disable default application segments if non-zero */
+    int no_default_app_segments;
+
     /* Stream type (0=full, 1=tables only, 2=image only) */
     int streamtype;
 
