@@ -4,13 +4,13 @@ import os
 import sys
 from io import BytesIO
 
+import pytest
+
 from PIL import Image, PSDraw
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from pathlib import Path
-
-    import pytest
 
 
 def _create_document(ps: PSDraw.PSDraw) -> None:
@@ -65,3 +65,23 @@ def test_stdout(monkeypatch: pytest.MonkeyPatch) -> None:
     _create_document(ps)
 
     assert mystdout.buffer.getvalue() != b""
+
+
+@pytest.mark.parametrize(
+    "text, expected",
+    (
+        (r"C:\temp\new", rb"C:\\temp\\new"),
+        ("\\", rb"\\"),
+        (r"\(", rb"\\\("),
+        (r"\)", rb"\\\)"),
+        (r"\\server\share", rb"\\\\server\\share"),
+        ("a(b)c", rb"a\(b\)c"),
+        ("café", b"caf\xe9"),
+        ("", b""),
+    ),
+)
+def test_text_escaping(text: str, expected: bytes) -> None:
+    with BytesIO() as buffer:
+        ps = PSDraw.PSDraw(buffer)
+        ps.text((10, 20), text)
+        assert buffer.getvalue() == b"10 20 M (" + expected + b") S\n"
