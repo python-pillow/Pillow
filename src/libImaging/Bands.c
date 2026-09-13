@@ -74,9 +74,10 @@ ImagingGetBand(Imaging imIn, int band) {
 
 /**
  * Split imIn into its component bands.
- * The caller must provide an array of 4 Imaging pointers,
- * which will be allocated and filled with the individual bands.
- * The number of bands returned is the number of bands in imIn.
+ * The caller must provide an array of 4 null Imaging pointers.
+ * Some of these will be allocated and filled with the individual bands,
+ * up to the number of bands in imIn.
+ * The number returned is the number of bands in imIn.
  *
  * Contract: imIn is read-only.
  */
@@ -188,7 +189,7 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
 /**
  * Insert single-band imIn into `band` of imOut, in place.
  *
- * Contract: imIn and imOut MUST be distinct images and not alias.
+ * Contract: imIn and imOut MUST be distinct images and not alias each other.
  */
 Imaging
 ImagingPutBand(Imaging imOut, Imaging imIn, int band) {
