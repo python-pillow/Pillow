@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from PIL import Image, ImageStat
@@ -82,8 +84,11 @@ def test_variance_roundoff(mode: str, use_mask: bool) -> None:
         mask.paste(255, (0, 0, 919, 405))
 
     for st in (ImageStat.Stat(im, mask), ImageStat.Stat(im.histogram(mask))):
-        assert st.var == [0] * len(im.getbands())
-        assert st.stddev == [0] * len(im.getbands())
+        # Different platforms can round toward either side of zero. Allow a
+        # few ULPs at the squared pixel scale, but reject any negative variance.
+        tolerance = 4 * math.ulp(255**2)
+        assert all(0 <= value <= tolerance for value in st.var)
+        assert all(0 <= value <= math.sqrt(tolerance) for value in st.stddev)
 
 
 def test_nonzero_variance() -> None:
