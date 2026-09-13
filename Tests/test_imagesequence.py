@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 def test_sanity(tmp_path: Path) -> None:
-    test_file = tmp_path / "temp.im"
+    test_file = tmp_path / "temp.tiff"
 
     im = hopper("RGB")
     im.save(test_file)

@@ -32,6 +32,7 @@ import os
 import re
 
 from . import Image, ImageFile, ImagePalette
+from ._deprecate import deprecate
 from ._util import DeferredError
 
 TYPE_CHECKING = False
@@ -112,6 +113,7 @@ split = re.compile(rb"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
 
 
 def number(s: Any) -> float:
+    deprecate("IM image format", 15)
     try:
         return int(s)
     except ValueError:
@@ -211,6 +213,8 @@ class ImImageFile(ImageFile.ImageFile):
         if not n:
             msg = "Not an IM file"
             raise SyntaxError(msg)
+
+        deprecate("IM image format", 15)
 
         # Basic attributes
         self._size = self.info[SIZE]
@@ -347,6 +351,7 @@ SAVE = {
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
+    deprecate("IM image format", 15)
     try:
         image_type, rawmode = SAVE[im.mode]
     except KeyError as e:
