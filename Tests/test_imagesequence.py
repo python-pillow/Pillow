@@ -110,3 +110,25 @@ def test_all_frames() -> None:
         for i, im_frame in enumerate(ims):
             im.seek(i)
             assert_image_equal(im.rotate(90), im_frame)
+
+
+def test_all_frames_restores_position_after_copy_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    error = RuntimeError("copy failed")
+    original_copy = Image.Image.copy
+
+    def copy(frame: Image.Image) -> Image.Image:
+        if frame.tell() == 1:
+            raise error
+        return original_copy(frame)
+
+    with Image.open("Tests/images/multipage.tiff") as im:
+        im.seek(2)
+        monkeypatch.setattr(Image.Image, "copy", copy)
+
+        with pytest.raises(RuntimeError) as exc_info:
+            ImageSequence.all_frames(im)
+
+        assert exc_info.value is error
+        assert im.tell() == 2
