@@ -67,3 +67,27 @@ def test_zero_count() -> None:
     assert st.mean == [0]
     assert st.rms == [0]
     assert st.var == [0]
+
+
+@pytest.mark.parametrize("mode", ("L", "RGB"))
+@pytest.mark.parametrize("use_mask", (False, True))
+def test_variance_roundoff(mode: str, use_mask: bool) -> None:
+    im = Image.new(
+        mode, (919, 810 if use_mask else 405), 255 if mode == "L" else (255, 128, 0)
+    )
+    mask = None
+    if use_mask:
+        im.paste(0, (0, 405, 919, 810))
+        mask = Image.new("L", im.size)
+        mask.paste(255, (0, 0, 919, 405))
+
+    for st in (ImageStat.Stat(im, mask), ImageStat.Stat(im.histogram(mask))):
+        assert st.var == [0] * len(im.getbands())
+        assert st.stddev == [0] * len(im.getbands())
+
+
+def test_nonzero_variance() -> None:
+    im = Image.frombytes("L", (2, 1), b"\x00\xff")
+    st = ImageStat.Stat(im)
+    assert st.var == [16256.25]
+    assert st.stddev == [127.5]

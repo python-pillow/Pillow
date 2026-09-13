@@ -151,9 +151,14 @@ class Stat:
     @cached_property
     def var(self) -> list[float]:
         """Variance for each band in the image."""
+        # Roundoff can produce a negative variance for a constant image.
         return [
             (
-                (self.sum2[i] - (self.sum[i] ** 2.0) / self.count[i]) / self.count[i]
+                max(
+                    0.0,
+                    (self.sum2[i] - (self.sum[i] ** 2.0) / self.count[i])
+                    / self.count[i],
+                )
                 if self.count[i]
                 else 0
             )
