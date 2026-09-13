@@ -116,6 +116,29 @@ def test_getcolor_not_special(index: int, palette: ImagePalette.ImagePalette) ->
     assert roundtripped_palette.colors[(0, 0, 2)] == index2
 
 
+@pytest.mark.parametrize(
+    "palette_size, transparency, expected_index",
+    ((1, b"\xff\x00\x80\xff", 3), (256, b"\xff" * 254 + b"\x00\x80", 253)),
+    ids=("partial-palette", "full-palette"),
+)
+def test_getcolor_transparency_table(
+    palette_size: int, transparency: bytes, expected_index: int
+) -> None:
+    im = Image.new("P", (1, 1))
+    im.info["transparency"] = transparency
+    palette = ImagePalette.ImagePalette("RGB", [0, 0, 0] * palette_size)
+    assert palette.getcolor((255, 0, 0), im) == expected_index
+    assert im.info["transparency"] == transparency
+
+
+def test_getcolor_transparency_table_full() -> None:
+    im = Image.new("P", (1, 1))
+    im.info["transparency"] = b"\x00" * 256
+    palette = ImagePalette.ImagePalette("RGB", [0, 0, 0] * 256)
+    with pytest.raises(ValueError, match="cannot allocate more than 256 colors"):
+        palette.getcolor((255, 0, 0), im)
+
+
 def test_file(tmp_path: Path) -> None:
     palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
 

@@ -349,12 +349,14 @@ def _new_with_fill(
         mode = image.palette.mode
         palette = ImagePalette.ImagePalette(mode, image.getpalette(mode))
         if isinstance(color, tuple) and len(color) in (3, 4):
-            color = palette.getcolor(color)
+            color = palette.getcolor(color, image)
     else:
         palette = None
     out = Image.new(image.mode, size, color)
     if palette:
         out.putpalette(palette.palette, mode)
+    if "transparency" in image.info:
+        out.info["transparency"] = image.info["transparency"]
     return out
 
 
