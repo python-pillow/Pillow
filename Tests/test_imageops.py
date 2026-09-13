@@ -132,6 +132,20 @@ def test_contain(new_size: tuple[int, int]) -> None:
     assert new_im.size == (256, 256)
 
 
+@pytest.mark.parametrize("source_size", ((100, 1), (1, 100), (20, 1), (1, 20)))
+def test_contain_minimum_dimension(source_size: tuple[int, int]) -> None:
+    im = Image.new("RGB", source_size, "red")
+    result = ImageOps.contain(im, (10, 10))
+    expected_size = (10, 1) if source_size[0] > source_size[1] else (1, 10)
+    assert result.size == expected_size
+    assert result.getpixel((0, 0)) == (255, 0, 0)
+
+    padded = ImageOps.pad(im, (10, 10), color="blue")
+    assert padded.size == (10, 10)
+    assert padded.getpixel((4, 4)) == (255, 0, 0)
+    assert padded.getpixel((0, 0)) == (0, 0, 255)
+
+
 def test_contain_round() -> None:
     im = Image.new("1", (43, 63), 1)
     new_im = ImageOps.contain(im, (5, 7))
