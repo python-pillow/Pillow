@@ -25,7 +25,7 @@ def test_bbox() -> None:
         im.paste(fill_color, (-10, -10, 110, 110))
         assert im.getbbox() == (0, 0, 100, 100)
 
-    for mode in ("1", "L", "I", "P", "I;16", "I;16L", "I;16B"):
+    for mode in ("1", "L", "I", "P", "I;16", "I;16L", "I;16B", "I;16N"):
         im = Image.new(mode, (100, 100), 0)
         check(im, 255)
 
@@ -45,7 +45,7 @@ def test_bbox() -> None:
 
 
 @pytest.mark.parametrize(
-    "mode", ("L", "RGB", "RGBA", "I", "F", "I;16", "I;16L", "I;16B")
+    "mode", ("L", "RGB", "RGBA", "I", "F", "I;16", "I;16L", "I;16B", "I;16N")
 )
 @pytest.mark.parametrize(
     "box",
