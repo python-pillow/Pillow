@@ -96,14 +96,22 @@ class PSDraw:
         """
         self.fp.write(b"%d %d M 0 %d %d Vr\n" % box)
 
-    def text(self, xy: tuple[int, int], text: str) -> None:
+    def text(self, xy: tuple[int, int], text: str, *, escape: bool = False) -> None:
         """
         Draws text at the given position. You must use
         :py:meth:`~PIL.PSDraw.PSDraw.setfont` before calling this method.
+
+        :param xy: The position, in PostScript point coordinates.
+        :param text: The text to draw, encoded as Latin-1.
+        :param escape: Whether to escape backslashes in the text. This keyword-only
+           boolean defaults to ``False``, preserving PostScript escape sequences.
+           Parentheses are always escaped.
         """
         # The font is loaded as ISOLatin1Encoding, so use latin-1 here.
         text_bytes = bytes(text, "latin-1")
-        for char in (b"\\", b"(", b")"):
+        if escape:
+            text_bytes = text_bytes.replace(b"\\", b"\\\\")
+        for char in (b"(", b")"):
             text_bytes = text_bytes.replace(char, b"\\" + char)
         self.fp.write(b"%d %d M (%s) S\n" % (xy + (text_bytes,)))
 
