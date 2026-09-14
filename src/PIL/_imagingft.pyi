@@ -29,7 +29,7 @@ class Font:
         features: list[str] | None = None,
         lang: str | None = None,
         stroke_width: float = 0,
-        stroke_filled: bool = 0,
+        stroke_filled: bool = ...,
         anchor: str | None = None,
         foreground_ink_long: int = 0,
         start: tuple[float, float] = (0, 0),
