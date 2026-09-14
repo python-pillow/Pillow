@@ -96,12 +96,12 @@ class Stat:
         return [sum(self.h[i : i + 256]) for i in range(0, len(self.h), 256)]
 
     @cached_property
-    def sum(self) -> list[float]:
+    def sum(self) -> list[int]:
         """Sum of all pixels for each band in the image."""
 
         v = []
         for i in range(0, len(self.h), 256):
-            layer_sum = 0.0
+            layer_sum = 0
             for j in range(256):
                 layer_sum += j * self.h[i + j]
             v.append(layer_sum)
@@ -151,14 +151,9 @@ class Stat:
     @cached_property
     def var(self) -> list[float]:
         """Variance for each band in the image."""
-        # Roundoff can produce a negative variance for a constant image.
         return [
             (
-                max(
-                    0.0,
-                    (self.sum2[i] - (self.sum[i] ** 2.0) / self.count[i])
-                    / self.count[i],
-                )
+                (self.sum2[i] - (self.sum[i] ** 2) / self.count[i]) / self.count[i]
                 if self.count[i]
                 else 0
             )

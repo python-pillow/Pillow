@@ -143,5 +143,5 @@ Fixed ImageChops.offset() for 16-bit images
 Fixed ImageStat variance rounding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:py:attr:`~PIL.ImageStat.Stat.var` now returns zero when floating-point rounding
-would otherwise produce a negative variance.
+Fixed a floating-point rounding error that may have produced a negative variance in
+:py:attr:`~PIL.ImageStat.Stat.var`.
