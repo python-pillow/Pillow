@@ -145,3 +145,9 @@ Fixed ImageChops.offset() for 16-bit images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :py:meth:`~PIL.ImageChops.offset` now works correctly for 16-bit-per-channel images.
+
+Fixed ImageStat variance rounding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Fixed a floating-point rounding error that may have produced a negative variance in
+:py:attr:`~PIL.ImageStat.Stat.var`.
