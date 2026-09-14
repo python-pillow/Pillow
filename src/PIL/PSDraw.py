@@ -104,8 +104,10 @@ class PSDraw:
         :param xy: The position, in PostScript point coordinates.
         :param text: The text to draw, encoded as Latin-1.
         :param escape: Whether to escape backslashes in the text. This keyword-only
-           boolean defaults to ``False``, preserving PostScript escape sequences.
-           Parentheses are always escaped.
+            boolean defaults to ``False``, leaving backslashes unchanged for backwards
+            compatibility. Parentheses are always escaped.
+
+            .. versionadded:: 13.0.0
         """
         # The font is loaded as ISOLatin1Encoding, so use latin-1 here.
         text_bytes = bytes(text, "latin-1")
