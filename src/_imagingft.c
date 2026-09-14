@@ -122,7 +122,7 @@ geterror(int code) {
 }
 
 static PyObject *
-getfont(PyObject *self_, PyObject *args, PyObject *kw) {
+getfont(PyObject *self_, PyObject *args) {
     /* create a font object from a file name and a size (in pixels) */
 
     FontObject *self;
@@ -137,9 +137,6 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     unsigned char *encoding = NULL;
     unsigned char *font_bytes = NULL;
     Py_ssize_t font_bytes_size = 0;
-    static char *kwlist[] = {
-        "filename", "size", "index", "encoding", "font_bytes", "layout_engine", NULL
-    };
 
     if (!library) {
         PyErr_SetString(PyExc_OSError, "failed to initialize FreeType library");
@@ -149,38 +146,34 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
 #if PY_MAJOR_VERSION > 3 || PY_MINOR_VERSION > 11
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
-    if (!PyArg_ParseTupleAndKeywords(
+    if (!PyArg_ParseTuple(
             args,
-            kw,
-            "etfnsy#n",
-            kwlist,
+            "etfnsn|y#",
             config.filesystem_encoding,
             &filename,
             &size,
             &index,
             &encoding,
+            &layout_engine,
             &font_bytes,
-            &font_bytes_size,
-            &layout_engine
+            &font_bytes_size
         )) {
         PyConfig_Clear(&config);
         return NULL;
     }
     PyConfig_Clear(&config);
 #else
-    if (!PyArg_ParseTupleAndKeywords(
+    if (!PyArg_ParseTuple(
             args,
-            kw,
-            "etfnsy#n",
-            kwlist,
+            "etfnsn|y#",
             Py_FileSystemDefaultEncoding,
             &filename,
             &size,
             &index,
             &encoding,
+            &layout_engine,
             &font_bytes,
-            &font_bytes_size,
-            &layout_engine
+            &font_bytes_size
         )) {
         return NULL;
     }
@@ -1690,7 +1683,7 @@ static PyTypeObject Font_Type = {
 };
 
 static PyMethodDef _functions[] = {
-    {"getfont", (PyCFunction)getfont, METH_VARARGS | METH_KEYWORDS}, {NULL, NULL}
+    {"getfont", (PyCFunction)getfont, METH_VARARGS}, {NULL, NULL}
 };
 
 static int
