@@ -126,14 +126,14 @@ Two new filters are available for :py:meth:`~PIL.Image.Image.resize` and
 Other changes
 =============
 
-Preserved transparency when padding or expanding images
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Preserved transparency when padding or expanding images in ImageOps
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :py:func:`~PIL.ImageOps.pad` and :py:func:`~PIL.ImageOps.expand` now preserve the
 ``transparency`` value from the source image's ``info`` dictionary. Transparent
 pixels in P, L and RGB images previously became opaque when a border was added.
 New palette colors are allocated without using reserved transparency entries,
-including entries in transparency tables.
+including entries marked as non-opaque by transparency bytes in PNG images.
 
 Python 3.15
 ^^^^^^^^^^^
