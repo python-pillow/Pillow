@@ -69,6 +69,13 @@ ImagingGetBand(Imaging imIn, int band) {
 }
 
 int
+/**
+ * Splits an image into its component bands.
+ * @param imIn The input image.
+ * @param bands An array of pointers to the output band images.
+ * @return -1 in case of an error, 0 otherwise.
+ */
+int
 ImagingSplit(Imaging imIn, Imaging bands[4]) {
     int i, j, x, y;
 
