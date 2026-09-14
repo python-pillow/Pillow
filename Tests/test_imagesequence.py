@@ -112,23 +112,22 @@ def test_all_frames() -> None:
             assert_image_equal(im.rotate(90), im_frame)
 
 
-def test_all_frames_restores_position_after_copy_error(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    error = RuntimeError("copy failed")
-    original_copy = Image.Image.copy
+def test_all_frames_restores_position_after_seek_error() -> None:
+    class CustomImage(Image.Image):
+        def seek(self, frame: int) -> None:
+            if frame == 3:
+                msg = "seek failed"
+                raise ValueError(msg)
+            self.__frame = frame
+            self.im = Image.core.new("1", (1, 1))
 
-    def copy(frame: Image.Image) -> Image.Image:
-        if frame.tell() == 1:
-            raise error
-        return original_copy(frame)
+        def tell(self) -> int:
+            return self.__frame
 
-    with Image.open("Tests/images/multipage.tiff") as im:
-        im.seek(2)
-        monkeypatch.setattr(Image.Image, "copy", copy)
+    with CustomImage() as im:
+        im.seek(1)
 
-        with pytest.raises(RuntimeError) as exc_info:
+        with pytest.raises(ValueError, match="seek failed"):
             ImageSequence.all_frames(im)
 
-        assert exc_info.value is error
-        assert im.tell() == 2
+        assert im.tell() == 1
