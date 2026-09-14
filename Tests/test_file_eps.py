@@ -14,7 +14,7 @@ from .helper import (
     hopper,
     is_win32,
     skip_unless_feature,
-    timeout_unless_slower_valgrind,
+    timeout_unless_slower,
 )
 
 TYPE_CHECKING = False
@@ -414,7 +414,7 @@ def test_emptyline() -> None:
     assert image.format == "EPS"
 
 
-@timeout_unless_slower_valgrind(5)
+@timeout_unless_slower(5)
 @pytest.mark.parametrize(
     "test_file",
     ["Tests/images/eps/timeout-d675703545fee17acab56e5fec644c19979175de.eps"],

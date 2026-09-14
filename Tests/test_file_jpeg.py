@@ -29,7 +29,7 @@ from .helper import (
     hopper,
     is_win32,
     skip_unless_feature,
-    timeout_unless_slower_valgrind,
+    timeout_unless_slower,
 )
 
 TYPE_CHECKING = False
@@ -1053,7 +1053,7 @@ class TestFileJpeg:
         with pytest.raises(ValueError):
             im.save(f, xmp=b"1" * 65505)
 
-    @timeout_unless_slower_valgrind(1)
+    @timeout_unless_slower(1)
     def test_eof(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # Even though this decoder never says that it is finished
         # the image should still end when there is no new data
