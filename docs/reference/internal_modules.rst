@@ -92,3 +92,9 @@ They may change without a deprecation period or a mention in the release notes.
 .. py:class:: ImagingCore
 
     A representation of the image data.
+
+.. class:: ImageLinearAccess
+    :canonical: PIL.Image.core.ImageLinearAccess
+
+    A flattened, read-only sequence of pixel values, as returned by
+    :py:meth:`~PIL.Image.Image.getdata`.
