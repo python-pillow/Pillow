@@ -71,6 +71,24 @@ ExifTags.IFD.Makernote
 
 ``ExifTags.IFD.Makernote`` has been removed. Instead, use ``ExifTags.IFD.MakerNote``.
 
+GifImagePlugin._save_netpbm()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``GifImagePlugin._save_netpbm()`` has been removed.
+
+It was never registered as a save handler by default and delegated GIF compression
+and RGB quantization to the external NetPBM ``ppmquant`` and ``ppmtogif`` utilities.
+
+Pillow's own GIF encoder writes LZW-compressed data since Pillow 8.2.0 (2021).
+Saving an ``RGB`` image as GIF converts it automatically using an adaptive 256-color
+palette since Pillow 2.4.0 (2014).
+
+To control quantization yourself, convert the image to ``P`` mode first,
+e.g. with :py:meth:`~PIL.Image.Image.quantize()`::
+
+    im.quantize(colors=256).save("out.gif")
+
+
 Deprecations
 ============
 
