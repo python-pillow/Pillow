@@ -248,7 +248,6 @@ ImagingGetExtrema(Imaging im, void *extrema) {
     return 1; /* ok */
 }
 
-/* static ImagingColorItem* getcolors8(Imaging im, int maxcolors, int* size);*/
 static ImagingColorItem *
 getcolors32(Imaging im, int maxcolors, int *size);
 
