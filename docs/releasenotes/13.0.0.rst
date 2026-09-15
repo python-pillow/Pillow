@@ -128,8 +128,8 @@ Added ``escape`` argument to ``PSDraw.text()``
 
 :py:meth:`~PIL.PSDraw.PSDraw.text` now accepts a keyword-only boolean argument,
 ``escape``. Set it to ``True`` to escape backslashes, for example in Windows paths.
-The default, ``False``, preserves the existing handling of PostScript escape
-sequences and parentheses.
+The default, ``False``, preserves the existing handling of backslashes and PostScript
+escape sequences.
 
 Other changes
 =============
