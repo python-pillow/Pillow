@@ -165,7 +165,7 @@ void static inline ImagingLineBoxBlur8(
 #undef SAVE
 }
 
-Imaging
+static Imaging
 ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
     ImagingSectionCookie cookie;
 

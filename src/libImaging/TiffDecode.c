@@ -36,7 +36,7 @@
 #define fd_to_tiff_fd(fd) ((int)_get_osfhandle(fd))
 #endif
 
-void
+static void
 dump_state(const TIFFSTATE *state) {
     TRACE(
         ("State: Location %u size %d eof %d data: %p ifd: %d\n",
@@ -52,7 +52,7 @@ dump_state(const TIFFSTATE *state) {
   procs for TIFFOpenClient
 */
 
-tsize_t
+static tsize_t
 _tiffReadProc(thandle_t hdata, tdata_t buf, tsize_t size) {
     TIFFSTATE *state = (TIFFSTATE *)hdata;
     tsize_t to_read;
@@ -79,7 +79,7 @@ _tiffReadProc(thandle_t hdata, tdata_t buf, tsize_t size) {
     return to_read;
 }
 
-tsize_t
+static tsize_t
 _tiffWriteProc(thandle_t hdata, tdata_t buf, tsize_t size) {
     TIFFSTATE *state = (TIFFSTATE *)hdata;
     tsize_t to_write;
@@ -120,7 +120,7 @@ _tiffWriteProc(thandle_t hdata, tdata_t buf, tsize_t size) {
     return to_write;
 }
 
-toff_t
+static toff_t
 _tiffSeekProc(thandle_t hdata, toff_t off, int whence) {
     TIFFSTATE *state = (TIFFSTATE *)hdata;
 
@@ -141,7 +141,7 @@ _tiffSeekProc(thandle_t hdata, toff_t off, int whence) {
     return state->loc;
 }
 
-int
+static int
 _tiffCloseProc(thandle_t hdata) {
     TIFFSTATE *state = (TIFFSTATE *)hdata;
 
@@ -151,7 +151,7 @@ _tiffCloseProc(thandle_t hdata) {
     return 0;
 }
 
-toff_t
+static toff_t
 _tiffSizeProc(thandle_t hdata) {
     TIFFSTATE *state = (TIFFSTATE *)hdata;
 
@@ -161,7 +161,7 @@ _tiffSizeProc(thandle_t hdata) {
     return (toff_t)state->size;
 }
 
-int
+static int
 _tiffMapProc(thandle_t hdata, tdata_t *pbase, toff_t *psize) {
     TIFFSTATE *state = (TIFFSTATE *)hdata;
 
@@ -174,7 +174,7 @@ _tiffMapProc(thandle_t hdata, tdata_t *pbase, toff_t *psize) {
     return (1);
 }
 
-int
+static int
 _tiffNullMapProc(thandle_t hdata, tdata_t *pbase, toff_t *psize) {
     (void)hdata;
     (void)pbase;
@@ -182,7 +182,7 @@ _tiffNullMapProc(thandle_t hdata, tdata_t *pbase, toff_t *psize) {
     return (0);
 }
 
-void
+static void
 _tiffUnmapProc(thandle_t hdata, tdata_t base, toff_t size) {
     TRACE(("_tiffUnMapProc\n"));
     (void)hdata;
@@ -224,7 +224,7 @@ ImagingLibTiffInit(ImagingCodecState state, int fp, uint32_t offset) {
     return 1;
 }
 
-int
+static int
 _pickUnpackers(
     Imaging im,
     ImagingCodecState state,
@@ -275,7 +275,7 @@ _pickUnpackers(
     }
 }
 
-int
+static int
 _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
     // To avoid dealing with YCbCr subsampling and other complications, let libtiff
     // handle it Use a TIFFRGBAImage wrapping the tiff image, and let libtiff handle all
@@ -387,7 +387,7 @@ decodergba_err:
     return 0;
 }
 
-int
+static int
 _decodeTile(
     Imaging im,
     ImagingCodecState state,
@@ -493,7 +493,7 @@ _decodeTile(
     return 0;
 }
 
-int
+static int
 _decodeStrip(
     Imaging im,
     ImagingCodecState state,
