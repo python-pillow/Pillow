@@ -73,13 +73,15 @@ ImagingGetBand(Imaging imIn, int band) {
 }
 
 /**
- * Split imIn into its component bands.
- * The caller must provide an array of 4 null Imaging pointers.
- * Some of these will be allocated and filled with the individual bands,
- * up to the number of bands in imIn.
- * The number returned is the number of bands in imIn.
+ * Splits imIn into its component bands.
+ * The provided null Imaging pointers will be allocated
+ * and filled with the individual bands, up to the number of bands in imIn.
  *
  * Contract: imIn is read-only.
+ *
+ * @param imIn  The input image.
+ * @param bands An array of null pointers to the output band images.
+ * @return      -1 in case of an error, 0 otherwise.
  */
 int
 ImagingSplit(Imaging imIn, Imaging bands[4]) {
@@ -88,13 +90,13 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
     /* Check arguments */
     if (!imIn || imIn->type != IMAGING_TYPE_UINT8) {
         (void)ImagingError_ModeError();
-        return 0;
+        return -1;
     }
 
     /* Shortcuts */
     if (imIn->bands == 1) {
         bands[0] = ImagingCopy(imIn);
-        return imIn->bands;
+        return 0;
     }
 
     for (i = 0; i < imIn->bands; i++) {
@@ -103,7 +105,7 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
             for (j = 0; j < i; ++j) {
                 ImagingDelete(bands[j]);
             }
-            return 0;
+            return -1;
         }
     }
 
@@ -183,7 +185,7 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
         }
     }
 
-    return imIn->bands;
+    return 0;
 }
 
 /**

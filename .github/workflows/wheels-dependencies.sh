@@ -277,9 +277,25 @@ function build {
         # headers/libs in the custom macOS/iOS prefix. Explicitly disable webp,
         # libdeflate and zstd, because on x86_64 macs, it will pick up the
         # Homebrew versions of those libraries from /usr/local.
+        tiff_configure_args=(
+            --disable-contrib
+            --disable-cxx
+            --disable-dependency-tracking
+            --disable-docs
+            --disable-libdeflate
+            --disable-tests
+            --disable-tools
+            --disable-webp
+            --disable-zstd
+            --with-jpeg-include-dir=$BUILD_PREFIX/include
+            --with-jpeg-lib-dir=$BUILD_PREFIX/lib
+        )
+        if [[ -z "$IOS_SDK" ]]; then
+            # iOS links libtiff statically, but otherwise we need the dylib.
+            tiff_configure_args+=(--disable-static)
+        fi
         build_simple tiff $TIFF_VERSION https://download.osgeo.org/libtiff tar.gz \
-            --with-jpeg-include-dir=$BUILD_PREFIX/include --with-jpeg-lib-dir=$BUILD_PREFIX/lib \
-            --disable-webp --disable-libdeflate --disable-zstd
+            "${tiff_configure_args[@]}"
     else
         build_zstd
         build_tiff
