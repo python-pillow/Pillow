@@ -101,7 +101,7 @@ class TestImageWinDib:
         # Assert
         assert dib.size == (128, 128)
 
-        with pytest.raises(ValueError, match="images do not match"):
+        with pytest.raises(ValueError, match="box must match image size"):
             dib.paste(im, (0, 0, 1, 1))
 
     def test_dib_frombytes_tobytes_roundtrip(self) -> None:

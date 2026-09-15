@@ -487,7 +487,9 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 o
     ImagingSectionCookie cookie;
 
     if (im->type == IMAGING_TYPE_FLOAT32) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(
+            "32-bit floating point image types not supported"
+        );
     }
 
     if (im->xsize < xsize || im->ysize < ysize) {

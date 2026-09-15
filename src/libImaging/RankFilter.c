@@ -64,8 +64,16 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
     int x, y;
     int i, margin, size2;
 
-    if (!im || im->bands != 1 || im->type == IMAGING_TYPE_I16) {
-        return (Imaging)ImagingError_ModeError();
+    if (!im) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+
+    if (!im) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+
+    if (im->bands != 1 || im->type == IMAGING_TYPE_I16) {
+        return (Imaging)ImagingError_ModeError("image must be 1-band, 8-bpc");
     }
 
     if (!(size & 1)) {
@@ -121,7 +129,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
     } else {
         /* safety net (we shouldn't end up here) */
         ImagingDelete(imOut);
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     ImagingCopyPalette(imOut, im);
