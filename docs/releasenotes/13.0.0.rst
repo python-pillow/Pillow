@@ -123,6 +123,14 @@ Two new filters are available for :py:meth:`~PIL.Image.Image.resize` and
 :py:meth:`~PIL.Image.Image.thumbnail`: ``Image.Resampling.MKS2013`` and
 ``Image.Resampling.MKS2021``. These are versions of the Magic Kernel Sharp filter.
 
+Added ``escape`` argument to ``PSDraw.text()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.PSDraw.PSDraw.text` now accepts a keyword-only boolean argument,
+``escape``. Set it to ``True`` to escape backslashes, for example in Windows paths.
+The default, ``False``, preserves the existing handling of PostScript escape
+sequences and parentheses.
+
 Other changes
 =============
 
