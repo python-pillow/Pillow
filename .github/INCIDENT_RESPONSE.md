@@ -241,7 +241,7 @@ require a Pillow point release even if Pillow's own code is unchanged.
 | [lcms2](https://www.littlecms.com/) | ICC color management | [GitHub](https://github.com/mm2/Little-CMS/security) |
 | [harfbuzz](https://harfbuzz.github.io/) | Text shaping (via raqm) | [GitHub](https://github.com/harfbuzz/harfbuzz/security) |
 | [raqm](https://github.com/HOST-Oman/libraqm) | Complex text layout | [GitHub](https://github.com/HOST-Oman/libraqm) |
-| [fribidi](https://github.com/fribidi/fribidi) | Unicode bidi (via raqm) | [GitHub](https://github.com/fribidi/fribidi) |
+| [sheenbidi](https://github.com/Tehreer/SheenBidi) | Unicode bidi (via raqm) | [GitHub](https://github.com/Tehreer/SheenBidi) |
 | [zlib](https://zlib.net/) | Deflate compression | [zlib.net](https://zlib.net/) |
 | [liblzma / xz-utils](https://tukaani.org/xz/) | XZ/LZMA compression | [GitHub](https://github.com/tukaani-project/xz/security) |
 | [bzip2](https://gitlab.com/bzip2/bzip2) | BZ2 compression | [GitLab](https://gitlab.com/bzip2/bzip2/-/work_items) |

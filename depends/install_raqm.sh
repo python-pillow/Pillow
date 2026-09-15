@@ -8,6 +8,6 @@ archive=libraqm-0.11.0
 
 pushd $archive
 
-meson build --prefix=/usr && ninja -C build install
+meson build --prefix=/usr -Dsheenbidi=true && ninja -C build install
 
 popd
