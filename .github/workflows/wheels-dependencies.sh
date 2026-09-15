@@ -304,17 +304,19 @@ function build {
 
     build_brotli
 
-    if [[ -n "$IS_MACOS" ]]; then
-        # Custom freetype build
-        build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no
-    else
-        build_freetype
-    fi
+    # FreeType and HarfBuzz each want the other:
+    # HarfBuzz reads font data through FreeType, and FreeType's autofitter asks HarfBuzz which glyphs a script covers.
+    # Break the cycle by building FreeType twice, so that the FreeType we ship is linked against the HarfBuzz we ship.
+    build_freetype
 
     if [[ -z "$IOS_SDK" ]]; then
         # On iOS, there's no vendor-provided raqm, and we can't ship it due to
         # licensing, so there's no point building harfbuzz.
         build_harfbuzz
+
+        # Now that HarfBuzz exists, build FreeType again against it.
+        rm -rf freetype-$FREETYPE_VERSION freetype-stamp
+        CFLAGS="$CFLAGS -DFT_CONFIG_OPTION_USE_HARFBUZZ" build_freetype
     fi
 }
 
