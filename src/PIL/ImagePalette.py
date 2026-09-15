@@ -233,7 +233,8 @@ class ImagePalette:
 
 def raw(rawmode: str, data: Sequence[int] | bytes | bytearray) -> ImagePalette:
     palette = ImagePalette()
-    palette.rawmode = rawmode
+    if rawmode != "RGB":
+        palette.rawmode = rawmode
     palette.palette = data
     palette.dirty = 1
     return palette

@@ -179,17 +179,23 @@ def test_make_gamma_lut() -> None:
     assert lut[255] == 255
 
 
-def test_rawmode_valueerrors(tmp_path: Path) -> None:
+def test_raw() -> None:
+    data = list(range(256)) * 3
+    palette = ImagePalette.raw("RGB", data)
+    assert palette.tobytes() == bytes(data)
+
+
+def test_raw_valueerrors(tmp_path: Path) -> None:
     # Arrange
-    palette = ImagePalette.raw("RGB", list(range(256)) * 3)
+    palette = ImagePalette.raw("BGR", list(range(256)) * 3)
 
     # Act / Assert
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="palette contains raw palette data"):
         palette.tobytes()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="palette contains raw palette data"):
         palette.getcolor((1, 2, 3))
     f = str(tmp_path / "temp.lut")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="palette contains raw palette data"):
         palette.save(f)
 
 
