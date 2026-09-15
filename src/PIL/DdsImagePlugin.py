@@ -370,8 +370,11 @@ class DdsImageFile(ImageFile.ImageFile):
                 mask_count = 3
 
             masks = struct.unpack(f"<{mask_count}I", header[84 : 84 + mask_count * 4])
-            self.tile = [ImageFile._Tile("dds_rgb", extents, 0, (bitcount, masks))]
-            return
+            if masks == (0xFF0000, 0x00FF00, 0x0000FF):
+                rawmode = "BGR"
+            else:
+                self.tile = [ImageFile._Tile("dds_rgb", extents, 0, (bitcount, masks))]
+                return
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:
                 self._mode = "L"
