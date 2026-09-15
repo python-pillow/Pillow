@@ -87,6 +87,21 @@ def test_sanity() -> None:
     ImageOps.exif_transpose(hopper("RGB"))
 
 
+@pytest.mark.parametrize(
+    "border, expected_box",
+    (
+        (1, (1, 1, 127, 127)),
+        ((1, 2), (1, 2, 127, 126)),
+        ((1, 2, 3, 4), (1, 2, 125, 124)),
+    ),
+)
+def test_crop(
+    border: int | tuple[int, ...], expected_box: tuple[int, int, int, int]
+) -> None:
+    im = hopper()
+    assert_image_equal(ImageOps.crop(im, border), im.crop(expected_box))
+
+
 def test_1pxfit() -> None:
     # Division by zero in equalize if image is 1 pixel high
     newimg = ImageOps.fit(hopper("RGB").resize((1, 1)), (35, 35))

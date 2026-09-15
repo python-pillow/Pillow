@@ -93,4 +93,4 @@ jobs:
         mode: simulation
         run: |
           python3 -m pip install -e . pytest-codspeed
-          pytest -vv --codspeed Tests/benchmarks.py
+          python3 -m pytest -vv --codspeed Tests/benchmarks.py

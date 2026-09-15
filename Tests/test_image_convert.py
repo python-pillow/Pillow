@@ -227,6 +227,10 @@ def test_trns_RGB(tmp_path: Path) -> None:
     assert "transparency" not in im_p.info
     im_p.save(f)
 
+    im.info["transparency"] = list(im.info["transparency"])
+    im_rgba = im.convert("RGBA")
+    assert "transparency" not in im_rgba.info
+
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = im.getpixel((0, 0))
     im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
@@ -360,8 +364,12 @@ def test_matrix_identity() -> None:
 
     # Act
     # Convert with an identity matrix
-    converted_im = im.convert(mode="RGB", matrix=identity_matrix)
+    converted_im = im.convert("RGB", identity_matrix)
 
     # Assert
     # No change
+    assert_image_equal(converted_im, im)
+
+    # Test list
+    converted_im = im.convert("RGB", list(identity_matrix))
     assert_image_equal(converted_im, im)
