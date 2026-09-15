@@ -143,7 +143,19 @@ Preserved transparency when padding or expanding images in ImageOps
 pixels in L, P and RGB images previously became opaque when a border was added.
 New palette colors are allocated without using reserved transparency entries.
 
+Restore image position if ImageSequence.all_frames() fails
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If processing a frame in :py:func:`~PIL.ImageSequence.all_frames` raises an exception,
+the given image will now seek back to its original frame.
+
 Fixed ImageChops.offset() for 16-bit images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :py:meth:`~PIL.ImageChops.offset` now works correctly for 16-bit-per-channel images.
+
+Fixed ImageStat variance rounding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Fixed a floating-point rounding error that may have produced a negative variance in
+:py:attr:`~PIL.ImageStat.Stat.var`.
