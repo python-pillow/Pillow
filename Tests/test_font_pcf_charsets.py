@@ -97,12 +97,12 @@ def test_textsize(
     tempname = save_font(request, tmp_path, encoding)
     font = ImageFont.load(tempname)
     for i in range(255):
-        ox, oy, dx, dy = font.getbbox(bytearray([i]))
+        ox, oy, dx, dy = font.getbbox(bytes([i]))
         assert ox == 0
         assert oy == 0
         assert dy == 20
         assert dx in (0, 10)
-        assert font.getlength(bytearray([i])) == dx
+        assert font.getlength(bytes([i])) == dx
     message = charsets[encoding]["message"].encode(encoding)
     for i in range(len(message)):
         msg = message[: i + 1]
