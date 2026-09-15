@@ -55,6 +55,12 @@ table_index3D(int index1D, int index2D, int index3D, int size1D, int size1D_2D) 
     Each element is signed 16-bit int where 0 is lowest output value
     and 255 << PRECISION_BITS (16320) is highest value.
 */
+/**
+ * Apply a 3D colour lookup table to imIn, writing the result to imOut.
+ *
+ * Contract: unlike the other point-style loops in libImaging,
+ * imIn and imOut MAY be the same image to support running in place.
+ */
 Imaging
 ImagingColorLUT3D_linear(
     Imaging imOut,
