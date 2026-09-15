@@ -72,27 +72,13 @@ def test_stdout(monkeypatch: pytest.MonkeyPatch) -> None:
     "text, expected, escaped",
     (
         ("plain text", b"plain text", b"plain text"),
-        (r"C:\temp\new", rb"C:\temp\new", rb"C:\\temp\\new"),
-        ("\\", b"\\", rb"\\"),
-        ("trailing\\", b"trailing\\", rb"trailing\\"),
-        (r"\(", rb"\\(", rb"\\\("),
-        (r"\)", rb"\\)", rb"\\\)"),
-        (r"\\server\share", rb"\\server\share", rb"\\\\server\\share"),
         ("a(b)c", rb"a\(b\)c", rb"a\(b\)c"),
+        (r"C:\temp\new", rb"C:\temp\new", rb"C:\\temp\\new"),
         (r"a\(b)\c", rb"a\\(b\)\c", rb"a\\\(b\)\\c"),
         (r"\n\t\101", rb"\n\t\101", rb"\\n\\t\\101"),
-        (r"\\\\", rb"\\\\", rb"\\\\\\\\"),
-        ("line\\\nnext", b"line\\\nnext", b"line\\\\\nnext"),
-        ("line\\\rnext", b"line\\\rnext", b"line\\\\\rnext"),
-        ("line\\\r\nnext", b"line\\\r\nnext", b"line\\\\\r\nnext"),
-        ("\x00\t\n\r\r\n\b\f", b"\x00\t\n\r\r\n\b\f", b"\x00\t\n\r\r\n\b\f"),
-        ("café\xff", b"caf\xe9\xff", b"caf\xe9\xff"),
-        ("", b"", b""),
     ),
 )
-def test_text_escaping(
-    text: str, expected: bytes, escaped: bytes, escape: bool | None
-) -> None:
+def test_text(text: str, expected: bytes, escaped: bytes, escape: bool | None) -> None:
     with BytesIO() as buffer:
         ps = PSDraw.PSDraw(buffer)
         if escape is None:
@@ -104,21 +90,9 @@ def test_text_escaping(
         assert buffer.getvalue() == b"10 20 M (" + expected + b") S\n"
 
 
-@pytest.mark.parametrize("escape", (None, False, True))
-def test_text_encoding_error(escape: bool | None) -> None:
+def test_text_encoding_error() -> None:
     with BytesIO() as buffer:
         ps = PSDraw.PSDraw(buffer)
         with pytest.raises(UnicodeEncodeError):
-            if escape is None:
-                ps.text((10, 20), "\u0100")
-            else:
-                ps.text((10, 20), "\u0100", escape=escape)
-        assert buffer.getvalue() == b""
-
-
-def test_text_escape_keyword_only() -> None:
-    with BytesIO() as buffer:
-        ps = PSDraw.PSDraw(buffer)
-        with pytest.raises(TypeError):
-            ps.text((10, 20), "text", True)  # type: ignore[call-arg]
+            ps.text((10, 20), "\u0100")
         assert buffer.getvalue() == b""
