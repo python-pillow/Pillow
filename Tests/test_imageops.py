@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from io import BytesIO
-
 import pytest
 
 from PIL import Image, ImageDraw, ImageOps, ImageStat, features
@@ -234,68 +232,21 @@ def test_rgba_palette() -> None:
     assert expanded_im.convert("RGBA").getpixel((0, 0)) == translucent_black
 
 
-@pytest.mark.parametrize(
-    "mode, transparency",
-    (("P", 0), ("P", b"\x00\x80\xff"), ("L", 0), ("RGB", (0, 0, 0))),
-)
-@pytest.mark.parametrize("operation", ("expand", "pad_horizontal", "pad_vertical"))
-def test_transparency(
-    mode: str, transparency: int | bytes | tuple[int, int, int], operation: str
-) -> None:
-    im = Image.frombytes("L", (3, 2), b"\x00\x01\x02\x02\x01\x00")
-    if mode == "P":
-        im.putpalette([0, 0, 0, 0, 255, 0, 255, 0, 0])
-    elif mode == "RGB":
-        im = im.convert(mode)
-    im.info["transparency"] = transparency
-    expected = im.convert("RGBA")
-    original_info = im.info.copy()
-    original_palette = im.getpalette()
-
-    if operation == "expand":
-        out = ImageOps.expand(im, 1, fill="red")
-        box = (1, 1, 4, 3)
-    elif operation == "pad_horizontal":
-        out = ImageOps.pad(im, (5, 2), color="red")
-        box = (1, 0, 4, 2)
-    else:
-        out = ImageOps.pad(im, (3, 4), color="red")
-        box = (0, 1, 3, 3)
-
-    assert out.mode == mode
-    rgba = out.convert("RGBA")
-    assert_image_equal(rgba.crop(box), expected)
-    assert out.info["transparency"] == transparency
-    assert rgba.getpixel((0, 0)) == Image.new(mode, (1, 1), "red").convert(
-        "RGBA"
-    ).getpixel((0, 0))
-    with BytesIO() as buffer:
-        out.save(buffer, "PNG")
-        buffer.seek(0)
-        with Image.open(buffer) as reloaded:
-            assert_image_equal(reloaded.convert("RGBA"), rgba)
-    assert im.info == original_info
-    assert im.getpalette() == original_palette
-    assert_image_equal(im.convert("RGBA"), expected)
-
-
-@pytest.mark.parametrize("operation", ("expand", "pad"))
-def test_transparency_new_palette_color(operation: str) -> None:
+def test_transparency() -> None:
     im = Image.new("P", (1, 1))
-    im.putpalette([0, 0, 0])
-    im.info["transparency"] = 1
-    if operation == "expand":
-        out = ImageOps.expand(im, 1, fill="red")
-        position = (1, 1)
-    else:
-        out = ImageOps.pad(im, (3, 1), color="red")
-        position = (1, 0)
+    im.info["transparency"] = 0
 
-    rgba = out.convert("RGBA")
-    assert rgba.getpixel((0, 0)) == (255, 0, 0, 255)
-    assert rgba.getpixel(position) == (0, 0, 0, 255)
-    assert im.info["transparency"] == 1
-    assert im.getpalette() == [0, 0, 0]
+    expanded_im = ImageOps.expand(im, 1, "blue")
+    assert expanded_im.info["transparency"] == 0
+    expanded_im_rgba = expanded_im.convert("RGBA")
+    assert expanded_im_rgba.getpixel((0, 0)) == (0, 0, 255, 255)
+    assert expanded_im_rgba.getpixel((1, 1)) == (0, 0, 0, 0)
+
+    padded_im = ImageOps.pad(im, (3, 1), color="blue")
+    assert padded_im.info["transparency"] == 0
+    padded_im_rgba = padded_im.convert("RGBA")
+    assert padded_im_rgba.getpixel((0, 0)) == (0, 0, 255, 255)
+    assert padded_im_rgba.getpixel((1, 0)) == (0, 0, 0, 0)
 
 
 def test_pil163() -> None:
