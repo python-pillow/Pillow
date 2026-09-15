@@ -68,6 +68,13 @@ ImagingGetBand(Imaging imIn, int band) {
     return imOut;
 }
 
+/**
+ * Splits an image into its component bands.
+ *
+ * @param imIn  The input image.
+ * @param bands An array of null pointers to the output band images.
+ * @return      -1 in case of an error, 0 otherwise.
+ */
 int
 ImagingSplit(Imaging imIn, Imaging bands[4]) {
     int i, j, x, y;
@@ -75,13 +82,13 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
     /* Check arguments */
     if (!imIn || imIn->type != IMAGING_TYPE_UINT8) {
         (void)ImagingError_ModeError();
-        return 0;
+        return -1;
     }
 
     /* Shortcuts */
     if (imIn->bands == 1) {
         bands[0] = ImagingCopy(imIn);
-        return imIn->bands;
+        return 0;
     }
 
     for (i = 0; i < imIn->bands; i++) {
@@ -90,7 +97,7 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
             for (j = 0; j < i; ++j) {
                 ImagingDelete(bands[j]);
             }
-            return 0;
+            return -1;
         }
     }
 
@@ -170,7 +177,7 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
         }
     }
 
-    return imIn->bands;
+    return 0;
 }
 
 Imaging
