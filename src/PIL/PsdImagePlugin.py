@@ -21,6 +21,7 @@ __lazy_modules__ = {"PIL._binary", "PIL._util", "io"}
 
 import io
 from functools import cached_property
+from typing import NamedTuple
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8
@@ -46,6 +47,13 @@ MODES = {
     (8, 8): ("L", 1),  # duotone
     (9, 8): ("LAB", 3),
 }
+
+
+class _Layer(NamedTuple):
+    name: str
+    mode: str
+    box: tuple[int, int, int, int]
+    tile: list[ImageFile._Tile]
 
 
 # --------------------------------------------------------------------.
@@ -150,9 +158,7 @@ class PsdImageFile(ImageFile.ImageFile):
         self._min_frame = 1
 
     @cached_property
-    def layers(
-        self,
-    ) -> list[tuple[str, str, tuple[int, int, int, int], list[ImageFile._Tile]]]:
+    def layers(self) -> list[_Layer]:
         layers = []
         if self._layers_position is not None:
             if isinstance(self._fp, DeferredError):
@@ -183,9 +189,9 @@ class PsdImageFile(ImageFile.ImageFile):
         if layer > len(self.layers):
             msg = "no more images in PSD file"
             raise EOFError(msg)
-        _, mode, _, tile = self.layers[layer - 1]
-        self._mode = mode
-        self.tile = tile
+        current_layer = self.layers[layer - 1]
+        self._mode = current_layer.mode
+        self.tile = current_layer.tile
         self.frame = layer
         self.fp = self._fp
 
@@ -194,9 +200,7 @@ class PsdImageFile(ImageFile.ImageFile):
         return self.frame
 
 
-def _layerinfo(
-    fp: IO[bytes], ct_bytes: int
-) -> list[tuple[str, str, tuple[int, int, int, int], list[ImageFile._Tile]]]:
+def _layerinfo(fp: IO[bytes], ct_bytes: int) -> list[_Layer]:
     # read layerinfo block
     layers = []
 
@@ -282,7 +286,7 @@ def _layerinfo(
             t = _maketile(fp, m, bbox, 1)
             if t:
                 tile.extend(t)
-        layerinfo.append((name, mode, bbox, tile))
+        layerinfo.append(_Layer(name, mode, bbox, tile))
 
     return layerinfo
 
@@ -308,7 +312,7 @@ def _maketile(
             if mode == "CMYK":
                 layer += ";I"
             tiles.append(ImageFile._Tile("raw", bbox, offset, layer))
-            offset = offset + xsize * ysize
+            offset += xsize * ysize
 
     elif compression == 1:
         #
@@ -322,7 +326,7 @@ def _maketile(
                 layer += ";I"
             tiles.append(ImageFile._Tile("packbits", bbox, offset, layer))
             for y in range(ysize):
-                offset = offset + i16(bytecount, i)
+                offset += i16(bytecount, i)
                 i += 2
 
     file.seek(offset)
