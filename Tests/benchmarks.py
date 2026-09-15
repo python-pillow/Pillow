@@ -666,6 +666,18 @@ def test_radial_gradient(bench: BenchmarkFixture, mode: str) -> None:
     assert result.mode == mode
 
 
+@pytest.mark.benchmark(group="allocate")
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_get_flattened_data(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+) -> None:
+    im = make_pillow_image(mode, size)
+    bench(im.get_flattened_data)
+
+
 CHOPS_OPS = [
     ImageChops.add,
     ImageChops.subtract,

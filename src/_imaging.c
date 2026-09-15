@@ -527,6 +527,27 @@ float16tofloat32(const FLOAT16 in) {
 }
 
 static inline PyObject *
+make_pixel_tuple(const UINT8 *b, Py_ssize_t bands) {
+    PyObject *tuple = PyTuple_New(bands);
+    if (tuple == NULL) {
+        return NULL;
+    }
+    for (Py_ssize_t i = 0; i < bands; i++) {
+        PyObject *v = PyLong_FromLong(b[i]);
+        if (v == NULL) {
+            Py_DECREF(tuple);
+            return NULL;
+        }
+        PyTuple_SET_ITEM(tuple, i, v);
+    }
+    // We know these tuples will only have small integers,
+    // so we can tell the garbage collector to not look inside
+    // for cycles.
+    PyObject_GC_UnTrack(tuple);
+    return tuple;
+}
+
+static inline PyObject *
 getpixel(Imaging im, ImagingAccess access, int x, int y) {
     union {
         UINT8 b[4];
@@ -551,19 +572,11 @@ getpixel(Imaging im, ImagingAccess access, int x, int y) {
 
     switch (im->type) {
         case IMAGING_TYPE_UINT8:
-            switch (im->bands) {
-                case 1:
-                    return PyLong_FromLong(pixel.b[0]);
-                case 2:
-                    return Py_BuildValue("BB", pixel.b[0], pixel.b[1]);
-                case 3:
-                    return Py_BuildValue("BBB", pixel.b[0], pixel.b[1], pixel.b[2]);
-                case 4:
-                    return Py_BuildValue(
-                        "BBBB", pixel.b[0], pixel.b[1], pixel.b[2], pixel.b[3]
-                    );
+            if (im->bands == 1) {
+                return PyLong_FromLong(pixel.b[0]);
+            } else {
+                return make_pixel_tuple(pixel.b, im->bands);
             }
-            break;
         case IMAGING_TYPE_INT32:
             return PyLong_FromLong(pixel.i);
         case IMAGING_TYPE_FLOAT32:
