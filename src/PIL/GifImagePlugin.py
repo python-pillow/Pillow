@@ -1203,8 +1203,9 @@ def getdata(
         data = []
 
         def write(self, data: Buffer) -> int:
-            self.data.append(data)
-            return len(data)
+            data_bytes = bytes(data)
+            self.data.append(data_bytes)
+            return len(data_bytes)
 
     im.load()  # make sure raster data is available
 
