@@ -45,8 +45,12 @@ SIZES = [(1237, 811)]  # Primes, non-power-of-two, asymmetric, approximately 102
 
 # For benchmarks that act on test fixture files, these are the paths loaded.
 IMAGES_PATH = pathlib.Path(__file__).parent / "images"
-PATHS = [
+SAVE_PATHS = [
     IMAGES_PATH / "flower2.jpg",
+]
+LOAD_PATHS = [
+    *SAVE_PATHS,
+    IMAGES_PATH / "uncompressed_rgb.dds",
 ]
 
 # These are derived from the other configuration, above.
@@ -567,7 +571,7 @@ def test_draw_lines_blend(
 
 
 @pytest.mark.benchmark(group="load")
-@pytest.mark.parametrize("path", PATHS, ids=_format_path)
+@pytest.mark.parametrize("path", LOAD_PATHS, ids=_format_path)
 def test_load(bench: BenchmarkFixture, path: pathlib.Path) -> None:
     def run() -> None:
         with Image.open(path) as im:
@@ -577,7 +581,7 @@ def test_load(bench: BenchmarkFixture, path: pathlib.Path) -> None:
 
 
 @pytest.mark.benchmark(group="save")
-@pytest.mark.parametrize("path", PATHS, ids=_format_path)
+@pytest.mark.parametrize("path", SAVE_PATHS, ids=_format_path)
 def test_save_jpeg(bench: BenchmarkFixture, path: pathlib.Path) -> None:
     with Image.open(path) as im:
         im.load()
@@ -853,7 +857,7 @@ def test_quantize_grayscale_to_palette(
     "source_type",
     [
         "synthetic",
-        *(pytest.param(image, id=f"{image.stem}") for image in PATHS),
+        *(pytest.param(image, id=f"{image.stem}") for image in LOAD_PATHS),
     ],
 )
 @pytest.mark.parametrize("palette_type", ["exact", "grayscale", "web"])
