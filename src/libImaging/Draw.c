@@ -631,8 +631,6 @@ polygon_generic(
 
 static inline void
 add_edge(Edge *e, int x0, int y0, int x1, int y1) {
-    /* printf("edge %d %d %d %d\n", x0, y0, x1, y1); */
-
     if (x0 <= x1) {
         e->xmin = x0, e->xmax = x1;
     } else {

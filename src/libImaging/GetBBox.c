@@ -296,9 +296,6 @@ getcolors32(Imaging im, int maxcolors, int *size) {
         }
     }
 
-    /* printf("code_size=%d\n", code_size); */
-    /* printf("code_poly=%d\n", code_poly); */
-
     if (!code_size) {
         return ImagingError_MemoryError(); /* just give up */
     }

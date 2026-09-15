@@ -183,8 +183,6 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
         return ImagingError_MemoryError();
     }
 
-    // printf(">>> %d %d %d\n", radius, ww, fw);
-
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
