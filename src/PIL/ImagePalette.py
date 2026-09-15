@@ -132,14 +132,10 @@ class ImagePalette:
         index = len(self.palette) // len(self.mode)
         special_colors: tuple[int | tuple[int, ...] | None, ...] = ()
         if image:
-            special_colors = (image.info.get("background"),)
-            transparency = image.info.get("transparency")
-            if isinstance(transparency, bytes):
-                special_colors += tuple(
-                    i for i, alpha in enumerate(transparency) if alpha != 255
-                )
-            else:
-                special_colors += (transparency,)
+            special_colors = (
+                image.info.get("background"),
+                image.info.get("transparency"),
+            )
             assert isinstance(self._palette, bytearray)
             while index in special_colors:
                 # Background or transparency index points past the end of the palette.

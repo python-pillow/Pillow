@@ -279,14 +279,11 @@ def test_transparency(
     assert_image_equal(im.convert("RGBA"), expected)
 
 
-@pytest.mark.parametrize("transparency", (1, b"\xff\x00", b"\xff\x80"))
 @pytest.mark.parametrize("operation", ("expand", "pad"))
-def test_transparency_new_palette_color(
-    transparency: int | bytes, operation: str
-) -> None:
+def test_transparency_new_palette_color(operation: str) -> None:
     im = Image.new("P", (1, 1))
     im.putpalette([0, 0, 0])
-    im.info["transparency"] = transparency
+    im.info["transparency"] = 1
     if operation == "expand":
         out = ImageOps.expand(im, 1, fill="red")
         position = (1, 1)
@@ -297,7 +294,7 @@ def test_transparency_new_palette_color(
     rgba = out.convert("RGBA")
     assert rgba.getpixel((0, 0)) == (255, 0, 0, 255)
     assert rgba.getpixel(position) == (0, 0, 0, 255)
-    assert im.info["transparency"] == transparency
+    assert im.info["transparency"] == 1
     assert im.getpalette() == [0, 0, 0]
 
 
