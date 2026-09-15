@@ -3,11 +3,6 @@
 #include "Imaging.h"
 #include <string.h>
 
-/* struct ArrowSchema* */
-/* _arrow_schema_channel(char* channel, char* format) { */
-
-/* } */
-
 static void
 ReleaseExportedSchema(struct ArrowSchema *array) {
     // TODO here: release and/or deallocate all data directly owned by
@@ -368,7 +363,6 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
     if (!array->buffers) {
         goto err;
     }
-    // assert(array->buffers != NULL);
     array->buffers[0] = NULL;  // no nulls, null bitmap can be omitted
 
     // if it's not 1 band, it's an int32 at the moment. 4 uint8 bands.
