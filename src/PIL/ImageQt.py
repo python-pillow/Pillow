@@ -17,6 +17,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._util", "io"}
+
 import sys
 from io import BytesIO
 

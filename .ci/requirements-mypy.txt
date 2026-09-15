@@ -12,4 +12,5 @@ pytest
 types-atheris
 types-defusedxml
 types-olefile
+types-psutil
 types-setuptools

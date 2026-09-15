@@ -27,7 +27,6 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
-    mark_if_feature_version,
     skip_unless_feature,
 )
 
@@ -1006,17 +1005,11 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_strip_ycbcr_jpeg_2x2_sampling(self) -> None:
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/flower.jpg", 1.2)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_strip_ycbcr_jpeg_1x1_sampling(self) -> None:
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
@@ -1027,17 +1020,11 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_tiled_ycbcr_jpeg_1x1_sampling(self) -> None:
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/flower2.jpg", 0.01)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_tiled_ycbcr_jpeg_2x2_sampling(self) -> None:
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:

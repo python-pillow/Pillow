@@ -28,6 +28,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._util", "io", "itertools", "struct"}
+
 import abc
 import io
 import itertools

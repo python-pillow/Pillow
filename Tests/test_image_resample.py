@@ -10,7 +10,6 @@ from .helper import (
     assert_image_equal,
     assert_image_similar,
     hopper,
-    mark_if_feature_version,
 )
 
 TYPE_CHECKING = False
@@ -555,9 +554,6 @@ class TestCoreResampleBox:
                 tiled.paste(tile, (x0, y0))
         return tiled
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_tiles(self) -> None:
         with Image.open("Tests/images/flower.jpg") as im:
             assert im.size == (480, 360)
@@ -568,9 +564,6 @@ class TestCoreResampleBox:
                 tiled = self.resize_tiled(im, dst_size, *tiles)
                 assert_image_similar(reference, tiled, 0.01)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_subsample(self) -> None:
         # This test shows advantages of the subpixel resizing
         # after supersampling (e.g. during JPEG decoding).

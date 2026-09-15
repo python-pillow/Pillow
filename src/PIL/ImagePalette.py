@@ -17,6 +17,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"array"}
+
 import array
 
 from . import GimpGradientFile, GimpPaletteFile, ImageColor, PaletteFile
@@ -95,7 +97,13 @@ class ImagePalette:
 
         return new
 
-    def getdata(self) -> tuple[str, Sequence[int] | bytes | bytearray]:
+    def _tobytes(self) -> bytes:
+        if isinstance(self.palette, bytes):
+            return self.palette
+        arr = array.array("B", self.palette)
+        return arr.tobytes()
+
+    def getdata(self) -> tuple[str, bytes]:
         """
         Get palette contents in format suitable for the low-level
         ``im.putpalette`` primitive.
@@ -103,7 +111,7 @@ class ImagePalette:
         .. warning:: This method is experimental.
         """
         if self.rawmode:
-            return self.rawmode, self.palette
+            return self.rawmode, self._tobytes()
         return self.mode, self.tobytes()
 
     def tobytes(self) -> bytes:
@@ -114,10 +122,7 @@ class ImagePalette:
         if self.rawmode:
             msg = "palette contains raw palette data"
             raise ValueError(msg)
-        if isinstance(self.palette, bytes):
-            return self.palette
-        arr = array.array("B", self.palette)
-        return arr.tobytes()
+        return self._tobytes()
 
     # Declare tostring as an alias for tobytes
     tostring = tobytes
