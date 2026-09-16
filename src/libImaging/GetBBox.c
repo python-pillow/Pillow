@@ -184,7 +184,7 @@ ImagingGetExtrema(Imaging im, void *extrema) {
     FLOAT32 fmin, fmax;
 
     if (im->bands != 1) {
-        (void)ImagingError_ModeError();
+        (void)ImagingError_ModeError("image must have exactly 1 band");
         return -1; /* mismatch */
     }
 
@@ -274,7 +274,7 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             }
             /* FALL THROUGH */
         default:
-            (void)ImagingError_ModeError();
+            (void)ImagingError_NotSupportedError("mode not supported");
             return -1;
     }
     return 1; /* ok */
@@ -336,7 +336,7 @@ getcolors32(Imaging im, int maxcolors, int *size) {
     }
 
     if (!im->image32) {
-        return ImagingError_ModeError();
+        return ImagingError_ModeError("image must have 32-bit data");
     }
 
     table = calloc(code_size + 1, sizeof(ImagingColorItem));
