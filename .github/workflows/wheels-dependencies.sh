@@ -305,7 +305,7 @@ function build {
     build_brotli
 
     # FreeType and HarfBuzz each want the other:
-    # HarfBuzz reads font data through FreeType, and FreeType's autofitter asks HarfBuzz which glyphs a script covers.
+    # HarfBuzz reads font data through FreeType, and FreeType's auto-hinter asks HarfBuzz which glyphs a script covers.
     # Break the cycle by building FreeType twice, so that the FreeType we ship is linked against the HarfBuzz we ship.
     build_freetype
 
