@@ -86,6 +86,7 @@ create(Imaging im1, Imaging im2, const ModeID mode) {
 
 /**
  * Return a newly allocated image containing the lighter pixels of the two images.
+ *
  * Contract: imIn1 and imIn2 are read-only and may alias each other.
  */
 Imaging
@@ -95,6 +96,7 @@ ImagingChopLighter(Imaging imIn1, Imaging imIn2) {
 
 /**
  * Return a newly allocated image containing the darker pixels of the two images.
+ *
  * Contract: imIn1 and imIn2 are read-only and may alias each other.
  */
 Imaging
@@ -105,6 +107,7 @@ ImagingChopDarker(Imaging imIn1, Imaging imIn2) {
 /**
  * Return a newly allocated image containing the absolute per-pixel difference of the
  * two images.
+ *
  * Contract: imIn1 and imIn2 are read-only and may alias each other.
  */
 Imaging
@@ -115,6 +118,7 @@ ImagingChopDifference(Imaging imIn1, Imaging imIn2) {
 /**
  * Return a newly allocated image containing the per-pixel product (scaled to 0-255) of
  * the two images.
+ *
  * Contract: imIn1 and imIn2 are read-only and may alias each other.
  */
 Imaging
@@ -124,6 +128,7 @@ ImagingChopMultiply(Imaging imIn1, Imaging imIn2) {
 
 /**
  * Return a newly allocated image containing the screen blend of the two images.
+ *
  * Contract: imIn1 and imIn2 are read-only and may alias each other.
  */
 Imaging
@@ -134,6 +139,7 @@ ImagingChopScreen(Imaging imIn1, Imaging imIn2) {
 /**
  * Return a newly allocated image containing the per-pixel sum, divided by `scale` and
  * shifted by `offset`, clipped to 0-255.
+ *
  * Contract: imIn1 and imIn2 are read-only and may alias each other.
  */
 Imaging
@@ -144,6 +150,7 @@ ImagingChopAdd(Imaging imIn1, Imaging imIn2, float scale, int offset) {
 /**
  * Return a newly allocated image containing the per-pixel difference, divided by
  * `scale` and shifted by `offset`, clipped to 0-255.
+ *
  * Contract: imIn1 and imIn2 are read-only and may alias each other.
  */
 Imaging
@@ -153,6 +160,7 @@ ImagingChopSubtract(Imaging imIn1, Imaging imIn2, float scale, int offset) {
 
 /**
  * Return a newly allocated "1" image that is the logical AND of the two images.
+ *
  * Contract: imIn1 and imIn2 are read-only and may alias each other.
  */
 Imaging
@@ -162,6 +170,7 @@ ImagingChopAnd(Imaging imIn1, Imaging imIn2) {
 
 /**
  * Return a newly allocated "1" image that is the logical OR of the two images.
+ *
  * Contract: imIn1 and imIn2 are read-only and may alias each other.
  */
 Imaging
@@ -171,6 +180,7 @@ ImagingChopOr(Imaging imIn1, Imaging imIn2) {
 
 /**
  * Return a newly allocated "1" image that is the logical XOR of the two images.
+ *
  * Contract: imIn1 and imIn2 are read-only and may alias each other.
  */
 Imaging
@@ -181,6 +191,7 @@ ImagingChopXor(Imaging imIn1, Imaging imIn2) {
 /**
  * Return a newly allocated image containing the per-pixel sum of the two images,
  * wrapping on overflow (no clipping).
+ *
  * Contract: imIn1 and imIn2 are read-only and may alias each other.
  */
 Imaging
@@ -191,6 +202,7 @@ ImagingChopAddModulo(Imaging imIn1, Imaging imIn2) {
 /**
  * Return a newly allocated image containing the per-pixel difference of the two images,
  * wrapping on underflow (no clipping).
+ *
  * Contract: imIn1 and imIn2 are read-only and may alias each other.
  */
 Imaging
@@ -200,6 +212,7 @@ ImagingChopSubtractModulo(Imaging imIn1, Imaging imIn2) {
 
 /**
  * Return a newly allocated image containing the soft-light blend of the two images.
+ *
  * Contract: imIn1 and imIn2 are read-only and may alias each other.
  */
 Imaging
@@ -213,6 +226,7 @@ ImagingChopSoftLight(Imaging imIn1, Imaging imIn2) {
 
 /**
  * Return a newly allocated image containing the hard-light blend of the two images.
+ *
  * Contract: imIn1 and imIn2 are read-only and may alias each other.
  */
 Imaging
@@ -226,6 +240,7 @@ ImagingChopHardLight(Imaging imIn1, Imaging imIn2) {
 
 /**
  * Return a newly allocated image containing the overlay blend of the two images.
+ *
  * Contract: imIn1 and imIn2 are read-only and may alias each other.
  */
 Imaging

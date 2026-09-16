@@ -19,7 +19,8 @@
 
 /**
  * Extract a single band from imIn into a newly allocated single-band image.
- * Contract: imIn is read-only and the returned image is a distinct allocation.
+ *
+ * Contract: imIn is read-only and the returned image is a newly allocated result.
  */
 Imaging
 ImagingGetBand(Imaging imIn, int band) {
@@ -279,7 +280,7 @@ ImagingFillBand(Imaging imOut, int band, int color) {
 /**
  * Merge the caller-supplied bands[] into a newly allocated multi-band image.
  *
- * Contract: the bands[] inputs are read-only, and the output is new.
+ * Contract: the bands[] inputs are read-only, and the output is newly allocated.
  */
 Imaging
 ImagingMerge(const ModeID mode, Imaging bands[4]) {
