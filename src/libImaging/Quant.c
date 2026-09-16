@@ -1831,10 +1831,15 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
         }
         ImagingSectionEnter(&cookie);
 
+        // restrict safe: imOut is a fresh allocation and
+        //                newData was just allocated by the quantizer.
         for (i = y = 0; y < ysize; y++) {
+            UINT8 *restrict out = imOut->image8[y];
+            const uint32_t *restrict in = newData + i;
             for (x = 0; x < xsize; x++) {
-                imOut->image8[y][x] = (unsigned char)newData[i++];
+                out[x] = (UINT8)in[x];
             }
+            i += xsize;
         }
 
         free(newData);
