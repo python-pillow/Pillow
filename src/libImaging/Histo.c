@@ -56,6 +56,12 @@ ImagingHistogramNew(Imaging im) {
     return h;
 }
 
+/**
+ * Compute a histogram of `im`'s value distribution,
+ * optionally restricted to imMask.
+ *
+ * Contract: Both im and imMask are read-only.
+ */
 ImagingHistogram
 ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
     ImagingSectionCookie cookie;
