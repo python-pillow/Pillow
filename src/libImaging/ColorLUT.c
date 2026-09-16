@@ -83,7 +83,7 @@ ImagingColorLUT3D_linear(
     ImagingSectionCookie cookie;
 
     if (table_channels < 3 || table_channels > 4) {
-        PyErr_SetString(PyExc_ValueError, "table_channels could be 3 or 4");
+        PyErr_SetString(PyExc_ValueError, "table_channels should be 3 or 4");
         return NULL;
     }
 
