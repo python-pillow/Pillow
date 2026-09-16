@@ -159,3 +159,10 @@ Fixed ImageStat variance rounding
 
 Fixed a floating-point rounding error that may have produced a negative variance in
 :py:attr:`~PIL.ImageStat.Stat.var`.
+
+Fixed masked histograms for LA, La and PA images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When :py:meth:`~PIL.Image.Image.histogram` was given a mask, the second band of a
+two-band image was read from the wrong byte, so LA, La and PA images reported a
+copy of the first band rather than the alpha channel.

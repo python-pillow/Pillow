@@ -112,14 +112,16 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
             for (int y = 0; y < ysize; y++) {
                 UINT8 *restrict in = (UINT8 *)im->image32[y];
                 UINT8 *restrict mask = imMask->image8[y];
-                for (int x = 0; x < xsize; x++) {
+                for (int x = 0; x < xsize; x++, in += 4) {
                     if (mask[x] != 0) {
-                        histogram[(*in++)]++;
-                        histogram[(*in++) + 256]++;
-                        histogram[(*in++) + 512]++;
-                        histogram[(*in++) + 768]++;
-                    } else {
-                        in += 4;
+                        histogram[*in]++;
+                        if (im->bands == 2) {
+                            histogram[*(in + 3) + 256]++;
+                        } else {
+                            histogram[*(in + 1) + 256]++;
+                            histogram[*(in + 2) + 512]++;
+                            histogram[*(in + 3) + 768]++;
+                        }
                     }
                 }
             }
