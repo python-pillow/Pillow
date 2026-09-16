@@ -18,13 +18,17 @@
 #
 from __future__ import annotations
 
-import functools
-import operator
+__lazy_modules__ = {"re"}
+
 import re
-from collections.abc import Sequence
-from typing import Literal, Protocol, cast, overload
+from typing import Protocol, cast, overload
 
 from . import ExifTags, Image, ImagePalette
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Literal
 
 #
 # helpers
@@ -120,9 +124,7 @@ def autocontrast(
             if not isinstance(cutoff, tuple):
                 cutoff = (cutoff, cutoff)
             # get number of pixels
-            n = 0
-            for ix in range(256):
-                n = n + h[ix]
+            n = sum(h)
             # remove cutoff% pixels from the low end
             cut = int(n * cutoff[0] // 100)
             for lo in range(256):
@@ -214,9 +216,9 @@ def colorize(
         raise ValueError(msg)
 
     # Define colors from arguments
-    rgb_black = cast(Sequence[int], _color(black, "RGB"))
-    rgb_white = cast(Sequence[int], _color(white, "RGB"))
-    rgb_mid = cast(Sequence[int], _color(mid, "RGB")) if mid is not None else None
+    rgb_black = cast("Sequence[int]", _color(black, "RGB"))
+    rgb_white = cast("Sequence[int]", _color(white, "RGB"))
+    rgb_mid = cast("Sequence[int]", _color(mid, "RGB")) if mid is not None else None
 
     # Empty lists for the mapping
     red = []
@@ -347,12 +349,14 @@ def _new_with_fill(
         mode = image.palette.mode
         palette = ImagePalette.ImagePalette(mode, image.getpalette(mode))
         if isinstance(color, tuple) and len(color) in (3, 4):
-            color = palette.getcolor(color)
+            color = palette.getcolor(color, image)
     else:
         palette = None
     out = Image.new(image.mode, size, color)
     if palette:
         out.putpalette(palette.palette, mode)
+    if "transparency" in image.info:
+        out.info["transparency"] = image.info["transparency"]
     return out
 
 
@@ -398,15 +402,18 @@ def pad(
     return out
 
 
-def crop(image: Image.Image, border: int = 0) -> Image.Image:
+def crop(image: Image.Image, border: int | tuple[int, ...] = 0) -> Image.Image:
     """
-    Remove border from image.  The same amount of pixels are removed
-    from all four sides.  This function works on all image modes.
+    Remove border from image. This function works on all image modes.
 
     .. seealso:: :py:meth:`~PIL.Image.Image.crop`
 
     :param image: The image to crop.
-    :param border: The number of pixels to remove.
+    :param border: The number of pixels to remove. An integer removes the same
+                   number of pixels from all four sides. A 2-tuple specifies
+                   the number of pixels to remove horizontally and vertically.
+                   A 4-tuple specifies the number of pixels to remove from the
+                   left, top, right and bottom of the image.
     :return: An image.
     """
     left, top, right, bottom = _border(border)
@@ -494,7 +501,7 @@ def equalize(image: Image.Image, mask: Image.Image | None = None) -> Image.Image
         if len(histo) <= 1:
             lut.extend(list(range(256)))
         else:
-            step = (functools.reduce(operator.add, histo) - histo[-1]) // 255
+            step = (sum(histo) - histo[-1]) // 255
             if not step:
                 lut.extend(list(range(256)))
             else:
@@ -514,7 +521,10 @@ def expand(
     Add border to the image
 
     :param image: The image to expand.
-    :param border: Border width, in pixels.
+    :param border: Border width, in pixels. An integer adds the same width to
+                   all four sides. A 2-tuple specifies the horizontal and
+                   vertical border widths. A 4-tuple specifies the widths of
+                   the left, top, right and bottom borders.
     :param fill: Pixel fill value (a color value).  Default is 0 (black).
     :return: An image.
     """

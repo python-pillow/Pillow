@@ -17,13 +17,11 @@
 from __future__ import annotations
 
 import abc
-import functools
-from collections.abc import Sequence
 from typing import cast
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Sequence
     from types import ModuleType
     from typing import Any
 
@@ -54,10 +52,8 @@ class BuiltinFilter(MultibandFilter):
 
 class Kernel(BuiltinFilter):
     """
-    Create a convolution kernel. This only supports 3x3 and 5x5 integer and floating
-    point kernels.
-
-    Kernels can only be applied to "L" and "RGB" images.
+    Create a convolution kernel.
+    This only supports 3x3 and 5x5 integer and floating point kernels.
 
     :param size: Kernel size, given as (width, height). This must be (3,3) or (5,5).
     :param kernel: A sequence containing kernel weights. The kernel will be flipped
@@ -79,7 +75,7 @@ class Kernel(BuiltinFilter):
     ) -> None:
         if scale is None:
             # default scale is sum of kernel
-            scale = functools.reduce(lambda a, b: a + b, kernel)
+            scale = sum(kernel)
         if size[0] * size[1] != len(kernel):
             msg = "not enough coefficients in kernel"
             raise ValueError(msg)
@@ -224,8 +220,11 @@ class BoxBlur(MultibandFilter):
 
     def __init__(self, radius: float | Sequence[float]) -> None:
         xy = radius if isinstance(radius, (tuple, list)) else (radius, radius)
-        if xy[0] < 0 or xy[1] < 0:
+        if not all(value >= 0 for value in xy):
             msg = "radius must be >= 0"
+            raise ValueError(msg)
+        if any(value >= 2**31 for value in xy):
+            msg = "radius too large"
             raise ValueError(msg)
         self.radius = radius
 
@@ -378,7 +377,7 @@ class Color3DLUT(MultibandFilter):
                   tuples with floats. Channels are changed first,
                   then first dimension, then second, then third.
                   Value 0.0 corresponds lowest value of output, 1.0 highest.
-    :param channels: Number of channels in the table. Could be 3 or 4.
+    :param channels: Number of channels in the table. Should be 3 or 4.
                      Default is 3.
     :param target_mode: A mode for the result image. Should have not less
                         than ``channels`` channels. Default is ``None``,
@@ -435,7 +434,7 @@ class Color3DLUT(MultibandFilter):
 
             # Convert to a flat list
             if table and isinstance(table[0], (list, tuple)):
-                raw_table = cast(Sequence[Sequence[int]], table)
+                raw_table = cast("Sequence[Sequence[int]]", table)
                 flat_table: list[int] = []
                 for pixel in raw_table:
                     if len(pixel) != channels:

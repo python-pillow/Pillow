@@ -127,7 +127,7 @@ ImagingNewPrologueSubtype(const ModeID mode, int xsize, int ysize, int size) {
         /* 16-bit raw integer images */
         im->bands = 1;
         im->pixelsize = 2;
-        im->type = IMAGING_TYPE_SPECIAL;
+        im->type = IMAGING_TYPE_I16;
         strcpy(im->arrow_band_format, "s");
         strcpy(im->band_names[0], "I");
 

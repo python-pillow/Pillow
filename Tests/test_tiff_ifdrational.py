@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 from fractions import Fraction
-from pathlib import Path
 
 import pytest
 
@@ -10,6 +9,10 @@ from PIL import Image, TiffImagePlugin
 from PIL.TiffImagePlugin import IFDRational
 
 from .helper import hopper, skip_unless_feature
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _test_equal(

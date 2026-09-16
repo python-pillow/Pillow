@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 
 import pytest
 
 from PIL import Image, MspImagePlugin
 
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_FILE = "Tests/images/hopper.msp"
 EXTRA_DIR = "Tests/images/picins"

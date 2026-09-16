@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import io
-from pathlib import Path
 
 import pytest
 
 from PIL import Image, ImageFile, PcxImagePlugin
 
 from .helper import assert_image_equal, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _roundtrip(tmp_path: Path, im: Image.Image) -> None:

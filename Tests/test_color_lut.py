@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from array import array
-from types import ModuleType
 
 import pytest
 
 from PIL import Image, ImageFilter
 
 from .helper import assert_image_equal
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from types import ModuleType
 
 numpy: ModuleType | None
 try:

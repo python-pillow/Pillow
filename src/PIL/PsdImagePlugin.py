@@ -17,9 +17,10 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "PIL._util", "io"}
+
 import io
 from functools import cached_property
-from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8
@@ -28,6 +29,10 @@ from ._binary import i32be as i32
 from ._binary import si16be as si16
 from ._binary import si32be as si32
 from ._util import DeferredError
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 MODES = {
     # (photoshop mode, bits) -> (pil mode, required channels)
@@ -137,7 +142,7 @@ class PsdImageFile(ImageFile.ImageFile):
         #
         # image descriptor
 
-        self.tile = _maketile(self.fp, mode, (0, 0) + self.size, channels)
+        self.tile = _maketile(self.fp, mode, (0, 0, *self.size), channels)
 
         # keep the file open
         self._fp = self.fp

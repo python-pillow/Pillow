@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import os.path
 import subprocess
-from pathlib import Path
 
 import pytest
 
 from PIL import Image
 
 from .helper import assert_image_equal, hopper, magick_command
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def helper_save_as_palm(tmp_path: Path, mode: str) -> None:

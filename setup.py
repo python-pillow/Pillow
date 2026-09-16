@@ -14,8 +14,8 @@ import shutil
 import struct
 import subprocess
 import sys
+import sysconfig
 import warnings
-from collections.abc import Iterator
 
 from pybind11.setup_helpers import ParallelCompile
 from setuptools import Extension, setup
@@ -23,6 +23,8 @@ from setuptools.command.build_ext import build_ext
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from setuptools import _BuildInfo
 
 configuration: dict[str, list[str]] = {}
@@ -32,8 +34,8 @@ while sys.argv[-1].startswith("--pillow-configuration="):
     _, key, value = sys.argv.pop().split("=", 2)
     configuration.setdefault(key, []).append(value)
 
-default = int(configuration.get("parallel", ["0"])[-1])
-ParallelCompile("MAX_CONCURRENCY", default).install()
+parallel_default = int(configuration.get("parallel", ["0"])[-1])
+ParallelCompile("MAX_CONCURRENCY", parallel_default).install()
 
 
 def get_version() -> str:
@@ -380,7 +382,8 @@ class pil_build_ext(build_ext):
             setattr(self, f"vendor_{x}", self.check_configuration(x, "vendor"))
         if self.check_configuration("debug", "true"):
             self.debug = True
-        self.parallel = configuration.get("parallel", [None])[-1]
+        if parallel_default:
+            self.parallel = parallel_default
 
     def finalize_options(self) -> None:
         build_ext.finalize_options(self)
@@ -569,8 +572,16 @@ class pil_build_ext(build_ext):
                 for d in os.environ[k].split(os.path.pathsep):
                     _add_directory(library_dirs, d)
 
-        _add_directory(library_dirs, os.path.join(sys.prefix, "lib"))
-        _add_directory(include_dirs, os.path.join(sys.prefix, "include"))
+        _add_directory(
+            library_dirs,
+            (sys.prefix == sys.base_prefix and sysconfig.get_config_var("LIBDIR"))
+            or os.path.join(sys.prefix, "lib"),
+        )
+        _add_directory(
+            include_dirs,
+            (sys.prefix == sys.base_prefix and sysconfig.get_config_var("INCLUDEDIR"))
+            or os.path.join(sys.prefix, "include"),
+        )
 
         #
         # add platform directories

@@ -244,7 +244,7 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
             }
             ImagingSectionLeave(&cookie);
             break;
-        case IMAGING_TYPE_SPECIAL:
+        case IMAGING_TYPE_I16:
             if (imIn->mode == IMAGING_MODE_I_16) {
                 ImagingSectionEnter(&cookie);
                 for (y = 0; y < imIn->ysize; y++) {

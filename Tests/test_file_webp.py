@@ -4,7 +4,6 @@ import io
 import re
 import sys
 import warnings
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -18,6 +17,10 @@ from .helper import (
     hopper,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 try:
     from PIL import _webp
@@ -163,7 +166,7 @@ class TestFileWebp:
 
     @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
     def test_write_encoding_error_bad_dimension(self, tmp_path: Path) -> None:
-        im = Image.new("L", (16384, 16384))
+        im = Image.new("L", (16384, 1))
         with pytest.raises(ValueError) as e:
             im.save(tmp_path / "temp.webp")
         assert (

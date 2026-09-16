@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import io
-from pathlib import Path
 
 import pytest
 
 from PIL import Image, ImagePalette, PaletteFile
 
 from .helper import assert_image_equal, assert_image_equal_tofile
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_sanity() -> None:
@@ -212,7 +215,9 @@ def test_rawmode_getdata() -> None:
 
     # Assert
     assert rawmode == "RGB"
-    assert data_in == data_out
+    assert data_out == bytes(data_in)
+    im = Image.new("P", (1, 1))
+    im.im.putpalette("RGB", rawmode, data_out)
 
 
 def test_2bit_palette(tmp_path: Path) -> None:

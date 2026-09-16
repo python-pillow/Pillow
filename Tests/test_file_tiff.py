@@ -2,10 +2,7 @@ from __future__ import annotations
 
 import os
 import warnings
-from collections.abc import Generator
 from io import BytesIO
-from pathlib import Path
-from types import ModuleType
 
 import pytest
 
@@ -30,6 +27,12 @@ from .helper import (
     is_win32,
     timeout_unless_slower_valgrind,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
+    from types import ModuleType
 
 ElementTree: ModuleType | None
 try:
@@ -225,6 +228,14 @@ class TestFileTiff:
         im = hopper("RGBA")
         outfile = tmp_path / "temp.tif"
         im.save(outfile)
+
+    def test_save_ycbcr(self, tmp_path: Path) -> None:
+        im = hopper("YCbCr")
+        outfile = tmp_path / "temp.tif"
+        im.save(outfile)
+
+        with Image.open(outfile) as reloaded:
+            assert_image_equal(im, reloaded)
 
     def test_save_unsupported_mode(self, tmp_path: Path) -> None:
         im = hopper("HSV")

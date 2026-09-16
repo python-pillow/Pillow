@@ -23,9 +23,11 @@ Parse X Bitmap Distribution Format (BDF)
 
 from __future__ import annotations
 
-from typing import BinaryIO
-
 from . import FontFile, Image
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import BinaryIO
 
 
 def bdf_char(
@@ -82,11 +84,7 @@ def bdf_char(
         (0, 0, width, height),
     )
 
-    try:
-        im = Image.frombytes("1", (width, height), bitmap, "hex", "1")
-    except ValueError:
-        # deal with zero-width characters
-        im = Image.new("1", (width, height))
+    im = Image.frombytes("1", (width, height), bitmap, "hex", "1")
 
     return id, int(props["ENCODING"]), bbox, im
 

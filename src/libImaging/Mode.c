@@ -42,7 +42,7 @@ findModeID(const char *const name) {
 
 const ModeData *const
 getModeData(const ModeID id) {
-    if (id < 0 || id > sizeof(MODES) / sizeof(*MODES)) {
+    if (id < 0 || id >= sizeof(MODES) / sizeof(*MODES)) {
         return &MODES[IMAGING_MODE_UNKNOWN];
     }
     return &MODES[id];
@@ -244,7 +244,7 @@ findRawModeID(const char *const name) {
 
 const RawModeData *const
 getRawModeData(const RawModeID id) {
-    if (id < 0 || id > sizeof(RAWMODES) / sizeof(*RAWMODES)) {
+    if (id < 0 || id >= sizeof(RAWMODES) / sizeof(*RAWMODES)) {
         return &RAWMODES[IMAGING_RAWMODE_UNKNOWN];
     }
     return &RAWMODES[id];

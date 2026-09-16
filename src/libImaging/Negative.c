@@ -18,6 +18,11 @@
 
 #include "Imaging.h"
 
+/**
+ * Invert every byte of `im`, returning a newly allocated result.
+ *
+ * Contract: im is read-only.
+ */
 Imaging
 ImagingNegative(Imaging im) {
     Imaging imOut;

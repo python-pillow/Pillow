@@ -121,7 +121,11 @@ nitpicky = True
 # generating warnings in “nitpicky mode”. Note that type should include the domain name
 # if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
-nitpick_ignore = [("py:class", "_CmsProfileCompatible")]
+nitpick_ignore = [
+    ("py:class", "_CmsProfileCompatible"),
+    ("py:class", "_Ink"),
+    ("py:class", "_Palette"),
+]
 
 
 # -- Options for HTML output ----------------------------------------------

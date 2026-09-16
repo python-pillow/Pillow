@@ -4,10 +4,8 @@ import gc
 import os
 import re
 import warnings
-from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from io import BytesIO
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -31,6 +29,11 @@ from .helper import (
     skip_unless_feature,
     skip_unless_feature_version,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator, Sequence
+    from pathlib import Path
 
 try:
     from PIL import _avif
@@ -765,6 +768,9 @@ class TestAvifAnimation:
             timestamp = duration * (im.n_frames - 1)
             for frame in reversed(range(im.n_frames)):
                 im.seek(frame)
+                assert "duration" not in im.info
+                assert "timestamp" not in im.info
+
                 im.load()
                 assert im.info["duration"] == duration
                 assert im.info["timestamp"] == timestamp

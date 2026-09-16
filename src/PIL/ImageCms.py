@@ -23,17 +23,17 @@ import operator
 import sys
 from enum import IntEnum, IntFlag
 from functools import reduce
-from typing import Literal, SupportsFloat, SupportsInt, Union
 
 from . import Image
-from ._typing import SupportsRead
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import Literal, SupportsFloat, SupportsInt
+
+    from ._typing import SupportsRead
 
 try:
     from . import _imagingcms as core
-
-    _CmsProfileCompatible = Union[
-        str, SupportsRead[bytes], core.CmsProfile, "ImageCmsProfile"
-    ]
 except ImportError as ex:
     # Allow error import for doc purposes, but error out when accessing
     # anything in core.
@@ -229,7 +229,7 @@ class ImageCmsProfile:
     def __init__(self, profile: str | SupportsRead[bytes] | core.CmsProfile) -> None:
         """
         :param profile: Either a string representing a filename,
-            a file like object containing a profile or a
+            a file-like object containing a profile or a
             low-level profile object
 
         """
@@ -263,6 +263,12 @@ class ImageCmsProfile:
         """
 
         return core.profile_tobytes(self.profile)
+
+
+if TYPE_CHECKING:
+    _CmsProfileCompatible = (
+        str | SupportsRead[bytes] | core.CmsProfile | ImageCmsProfile
+    )
 
 
 class ImageCmsTransform(Image.ImagePointHandler):
@@ -309,15 +315,8 @@ class ImageCmsTransform(Image.ImagePointHandler):
         return self.apply(im)
 
     def apply(self, im: Image.Image, imOut: Image.Image | None = None) -> Image.Image:
-        if im.mode != self.input_mode:
-            msg = "mode mismatch"
-            raise ValueError(msg)
-        if imOut is not None:
-            if imOut.mode != self.output_mode:
-                msg = "mode mismatch"
-                raise ValueError(msg)
-        else:
-            imOut = Image.new(self.output_mode, im.size, None)
+        if imOut is None:
+            imOut = Image.new(self.output_mode, im.size)
         self.transform.apply(im.getim(), imOut.getim())
         imOut.info["icc_profile"] = self.output_profile.tobytes()
         return imOut

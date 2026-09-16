@@ -4,7 +4,7 @@ import warnings
 
 import pytest
 
-from PIL import Image, _typing
+from PIL import Image
 
 from .helper import assert_deep_equal, assert_image, hopper, skip_unless_feature
 
@@ -12,6 +12,8 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     import numpy
     import numpy.typing as npt
+
+    from PIL import _typing
 else:
     numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 

@@ -1,16 +1,18 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from PIL import Image, ImageSequence, PsdImagePlugin, TiffImagePlugin
 
 from .helper import assert_image_equal, hopper, skip_unless_feature
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 def test_sanity(tmp_path: Path) -> None:
-    test_file = tmp_path / "temp.im"
+    test_file = tmp_path / "temp.tiff"
 
     im = hopper("RGB")
     im.save(test_file)
@@ -108,3 +110,24 @@ def test_all_frames() -> None:
         for i, im_frame in enumerate(ims):
             im.seek(i)
             assert_image_equal(im.rotate(90), im_frame)
+
+
+def test_all_frames_restores_position_after_seek_error() -> None:
+    class CustomImage(Image.Image):
+        def seek(self, frame: int) -> None:
+            if frame == 3:
+                msg = "seek failed"
+                raise ValueError(msg)
+            self.__frame = frame
+            self.im = Image.core.new("1", (1, 1))
+
+        def tell(self) -> int:
+            return self.__frame
+
+    with CustomImage() as im:
+        im.seek(1)
+
+        with pytest.raises(ValueError, match="seek failed"):
+            ImageSequence.all_frames(im)
+
+        assert im.tell() == 1

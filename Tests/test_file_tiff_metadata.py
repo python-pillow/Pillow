@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import struct
-from pathlib import Path
 
 import pytest
 
@@ -10,6 +9,10 @@ from PIL import Image, TiffImagePlugin, TiffTags
 from PIL.TiffImagePlugin import IFDRational
 
 from .helper import assert_deep_equal, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TAG_IDS: dict[str, int] = {
     info.name: info.value
@@ -509,6 +512,29 @@ def test_tag_group_data() -> None:
 
     assert interop_ifd.tagtype[2] == 7
     assert base_ifd.tagtype[2] != interop_ifd.tagtype[256]
+
+
+# Exif 2.31 table 15: GPSDOP (11) and GPSHPositioningError (31) are both
+# RATIONAL with a count of 1.
+@pytest.mark.parametrize("tag", (11, 31))
+@pytest.mark.parametrize("value", (4.5, 4))
+def test_gps_rational_tag_type(tag: int, value: float, tmp_path: Path) -> None:
+    gps_ifd = TiffImagePlugin.ImageFileDirectory_v2(group=34853)
+    gps_ifd[tag] = value
+    assert gps_ifd.tagtype[tag] == TiffTags.RATIONAL
+    assert gps_ifd[tag] == value
+
+    out = tmp_path / "temp.jpg"
+    im = hopper()
+    exif = im.getexif()
+    exif.get_ifd(34853)[tag] = value
+    im.save(out, exif=exif)
+
+    with Image.open(out) as reloaded:
+        exif = reloaded.getexif()
+        gps = exif.get_ifd(34853)
+        assert isinstance(gps[tag], IFDRational)
+        assert gps[tag] == value
 
 
 def test_empty_subifd(tmp_path: Path) -> None:
