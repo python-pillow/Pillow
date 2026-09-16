@@ -57,7 +57,8 @@ ImagingHistogramNew(Imaging im) {
 }
 
 /**
- * Accumulate a histogram over `im`, optionally restricted to imMask.
+ * Compute a histogram of `im`'s value distribution,
+ * optionally restricted to imMask.
  *
  * Contract: Both im and imMask are read-only.
  */
