@@ -1250,6 +1250,7 @@ class Image:
             from . import ImagePalette
 
             new_im.palette = ImagePalette.ImagePalette("RGB", im.getpalette("RGB"))
+            new_im.palette.dirty = 1
         if delete_trns:
             # crash fail if we leave a bytes transparency in an rgb/l mode.
             del new_im.info["transparency"]
