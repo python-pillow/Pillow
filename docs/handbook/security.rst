@@ -260,14 +260,14 @@ disclosure.
 
 Additionally:
 
-* Please ensure that your issue is reproducable in **main**. We only
+* Ensure that your issue is reproducible in **main**. We only
   support the latest version. The one exception -- if your issue is
   exploitable in the latest public release, but not in ``main``, and the
   pull request does not mention a security implication this may be an
-  unknown security issue that was inadvertely fixed.
-* Demonstrating a memory overflow is enough. Please do not weaponize
+  unknown security issue that was inadvertently fixed.
+* Demonstrating a memory overflow is enough. Do not weaponize
   the reproducer to do remote code execution.
-* Please do not report unexpected Python exceptions as a DoS or a
+* Do not report unexpected Python exceptions as a DoS or a
   memory safety bug.  An issue that raises a Python exception in a
   library is unlikely to be considered a security issue. This may or
   may not be an ordinary bug depending on the context.
