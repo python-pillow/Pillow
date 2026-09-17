@@ -9,6 +9,10 @@ from PIL import Image, ImagePalette
 
 from .helper import assert_image_similar, hopper, skip_unless_feature
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+
 MicImagePlugin = pytest.importorskip(
     "PIL.MicImagePlugin", reason="olefile not installed"
 )
@@ -58,8 +62,9 @@ def test_seek() -> None:
         assert im.tell() == 0
 
 
-def test_seek_decompression_bomb(tmp_path) -> None:
+def test_seek_decompression_bomb(tmp_path: Path) -> None:
     with Image.open(TEST_FILE) as im:
+        assert isinstance(im, MicImagePlugin.MicImageFile)
         im._n_frames = 2
         im.images = [im.images[0], im.images[0]]
 
