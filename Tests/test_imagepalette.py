@@ -31,6 +31,14 @@ def test_colors_rawmode() -> None:
     }
 
 
+def test_load_wrong_mode() -> None:
+    im = Image.new("L", (1, 1))
+    im.palette = ImagePalette.ImagePalette("L")
+    im.palette.dirty = 1
+    with pytest.raises(ValueError, match="image has wrong mode"):
+        im.load()
+
+
 def test_reload() -> None:
     with Image.open("Tests/images/hopper.gif") as im:
         original = im.copy()

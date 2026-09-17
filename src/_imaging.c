@@ -1856,7 +1856,14 @@ _putpalette(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
+    ImagingPalette new_palette = ImagingPaletteNew(palette_mode);
+    if (!new_palette) {
+        return NULL;
+    }
+
     ImagingPaletteDelete(self->image->palette);
+
+    self->image->palette = new_palette;
 
     if (self->image->mode == IMAGING_MODE_LA) {
         self->image->mode = IMAGING_MODE_PA;
@@ -1865,8 +1872,6 @@ _putpalette(ImagingObject *self, PyObject *args) {
     } else {
         // The image already has a palette mode so we don't need to change it.
     }
-
-    self->image->palette = ImagingPaletteNew(palette_mode);
 
     self->image->palette->size = palettesize * 8 / bits;
     unpack(self->image->palette->palette, palette, self->image->palette->size);
