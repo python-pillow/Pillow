@@ -274,6 +274,21 @@ What to include and how to structure a vulnerability report?
   reporter must verify the factual validity (such as whether APIs have
   been hallucinated) of the content in all reports prior to submission.
 
+* Check published `security advisories
+  <https://github.com/python-pillow/Pillow/security/advisories>`__ and the
+  `issue tracker <https://github.com/python-pillow/Pillow/issues>`__ for an
+  existing report before submitting. Advisories still under triage are not
+  public, so not every duplicate will be visible to you.
+
+* Validate the issue against the :ref:`threat model <security-threat-model>`
+  and state which category it falls under. Behaviour already documented
+  as an accepted risk is not a vulnerability and will be closed.
+
+* When submitting a batch, deduplicate within it, report one issue per
+  distinct defect rather than one per trigger, and note any relationships
+  between your reports. Large batches may be triaged as a batch rather
+  than individually, and may take longer to process.
+
 * Ideally, include a minimal patch with the mitigation for the report.
 
 * Always include the Pillow versions that were tested, and indicate which
