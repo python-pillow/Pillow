@@ -2815,6 +2815,10 @@ textwidth(ImagingFontObject *self, const unsigned char *text) {
             PyErr_SetString(PyExc_OverflowError, "Width too large");
             return -1;
         }
+        if (dx < 0 && xsize < INT_MIN - dx) {
+            PyErr_SetString(PyExc_OverflowError, "Width too small");
+            return -1;
+        }
         xsize += dx;
     }
 
