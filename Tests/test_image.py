@@ -663,7 +663,7 @@ class TestImage:
         assert_image_equal(im_p, im_remapped)
         assert im_p.palette is not None
         assert im_remapped.palette is not None
-        assert im_p.palette.palette == im_remapped.palette.palette
+        assert bytes(im_p.palette.palette) == im_remapped.palette.palette
 
         # Test illegal image mode
         with hopper() as im_hopper:
