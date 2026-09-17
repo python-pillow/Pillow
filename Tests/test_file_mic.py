@@ -1,10 +1,17 @@
 from __future__ import annotations
 
+from io import BytesIO
+
+import olefile
 import pytest
 
 from PIL import Image, ImagePalette
 
 from .helper import assert_image_similar, hopper, skip_unless_feature
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 MicImagePlugin = pytest.importorskip(
     "PIL.MicImagePlugin", reason="olefile not installed"
@@ -53,6 +60,25 @@ def test_seek() -> None:
         with pytest.raises(EOFError):
             im.seek(99)
         assert im.tell() == 0
+
+
+def test_seek_decompression_bomb(tmp_path: Path) -> None:
+    with Image.open(TEST_FILE) as im:
+        assert isinstance(im, MicImagePlugin.MicImageFile)
+        im._n_frames = 2
+        im.images = [im.images[0], im.images[0]]
+
+        with im.ole.openstream(im.images[0]) as fp:
+            tiff_data = fp.read()
+        tiff_data = tiff_data[:35132] + b"\xff\xff\xff\xff" + tiff_data[35136:]
+        tiff_data = tiff_data[:35144] + b"\xff\xff\xff\xff" + tiff_data[35148:]
+        with open(TEST_FILE, "rb") as fp:
+            b = BytesIO(fp.read())
+        im.ole = olefile.OleFileIO(b, write_mode=True)
+        im.ole.write_stream(im.images[0], tiff_data)
+
+        with pytest.raises(Image.DecompressionBombError):
+            im.seek(1)
 
 
 def test_close() -> None:
