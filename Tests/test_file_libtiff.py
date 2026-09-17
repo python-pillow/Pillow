@@ -1268,6 +1268,7 @@ class TestFileLibTiff(LibTiffTestCase):
         with pytest.raises(ValueError, match="cannot write empty image"):
             im.save(out, compression=compression)
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Checks a Windows handle limit")
     def test_save_many_compressed(self, tmp_path: Path) -> None:
         im = hopper()
         out = tmp_path / "temp.tif"
