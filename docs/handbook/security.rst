@@ -276,6 +276,8 @@ Additionally:
   were found to be vulnerable. For issues in C code, also include the
   versions of the relevant bundled libraries, such as libjpeg, libtiff or
   libwebp.
+* Prefer a script that generates any input files over attaching them. If a
+  file must be attached, use the smallest one that reproduces the issue.
 * Proof-of-concept scripts longer than a few lines should be wrapped with a
   collapsed section using ``<details></details>`` for better readability.
 * Ensure that your issue is reproducible in **main**. We only
