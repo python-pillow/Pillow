@@ -258,7 +258,6 @@ disclosure.
 
 **Do not report sensitive vulnerability information in public.**
 
-What to include and how to structure a vulnerability report?
 What to include and how to structure a vulnerability report
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
