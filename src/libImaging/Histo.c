@@ -85,7 +85,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
 
     // restrict safe: im and imMask are both read-only here
     //                (they may even be the same image).
-    //                histogram is a fresh allocation from just above.
+    //                histogram is a fresh allocation from ImagingHistogramNew
 
     long *restrict histogram = h->histogram;
 

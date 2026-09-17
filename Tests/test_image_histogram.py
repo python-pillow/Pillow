@@ -51,18 +51,20 @@ def test_histogram_masked() -> None:
 
 @pytest.mark.parametrize("mode", ("I", "F"))
 def test_histogram_masked_unsupported_mode(mode: str) -> None:
-    mask = Image.new("1", (128, 128), 1)
+    mask = Image.new("1", (128, 128))
     with pytest.raises(ValueError, match="image has wrong mode"):
         hopper(mode).histogram(mask)
 
 
 def test_histogram_mask_size_mismatch() -> None:
-    mask = Image.new("1", (64, 64), 1)
+    mask = Image.new("1", (1, 1))
     with pytest.raises(ValueError, match="images do not match"):
         hopper("L").histogram(mask)
 
 
-@pytest.mark.parametrize("mode", ("P", "I", "F", "RGB", "RGBA"))
+@pytest.mark.parametrize(
+    "mode", ("LA", "La", "I", "F", "P", "PA", "RGB", "RGBA", "CMYK", "YCbCr")
+)
 def test_histogram_bad_mask_mode(mode: str) -> None:
     mask = Image.new(mode, (128, 128))
     with pytest.raises(ValueError, match="bad transparency mask"):
