@@ -279,7 +279,7 @@ What to include and how to structure a vulnerability report
   <https://github.com/python-pillow/Pillow/security/advisories>`__ and the
   `issue tracker <https://github.com/python-pillow/Pillow/issues>`__ for an
   existing report before submitting. Advisories still under triage are not
-  public, so not every duplicate will be visible to you.
+  public, so not every report will be visible to you.
 
 * Validate the issue against the :ref:`threat model <security-threat-model>`
   and state which category it falls under. Behaviour already documented
