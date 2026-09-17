@@ -259,7 +259,8 @@ disclosure.
 **Do not report sensitive vulnerability information in public.**
 
 What to include and how to structure a vulnerability report?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+What to include and how to structure a vulnerability report
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * For the initial report and follow-up communications, avoid overly
   long, verbose, or excessive structure (such as headers or tables).
