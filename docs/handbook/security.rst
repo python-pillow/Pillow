@@ -260,6 +260,24 @@ disclosure.
 
 Additionally:
 
+* For the initial report and follow-up communications, avoid overly
+  long, verbose, or excessive structure (such as headers or tables).
+  Reports should be a few sentences describing the vulnerability.
+  Ideally include a proof-of-concept script that reproduces the issue
+  and provides a clear indication of whether the vulnerability is still
+  present (such as exiting with ``1`` if vulnerable and ``0`` if not
+  vulnerable).
+* When reporting large numbers or "batches" of vulnerabilities, or
+  searching for potential vulnerabilities using an LLM, you as a
+  reporter must verify the factual validity (such as whether APIs have
+  been hallucinated) of the content in all reports prior to submission.
+* Ideally, include a minimal patch with the mitigation for the report.
+* Always include the Pillow versions that were tested, and indicate which
+  were found to be vulnerable. For issues in C code, also include the
+  versions of the relevant bundled libraries, such as libjpeg, libtiff or
+  libwebp.
+* Proof-of-concept scripts longer than a few lines should be wrapped with a
+  collapsed section using ``<details></details>`` for better readability.
 * Ensure that your issue is reproducible in **main**. We only
   support the latest version. The one exception -- if your issue is
   exploitable in the latest public release, but not in ``main``, and the
@@ -271,3 +289,6 @@ Additionally:
   memory safety bug.  An issue that raises a Python exception in a
   library is unlikely to be considered a security issue. This may or
   may not be an ordinary bug depending on the context.
+* Reports that do not contain a potential security vulnerability (such as
+  spam or requesting compliance or due-diligence work) will be discarded
+  without a reply.
