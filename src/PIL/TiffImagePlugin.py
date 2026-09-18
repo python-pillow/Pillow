@@ -895,6 +895,9 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def load(self, fp: IO[bytes]) -> None:
         self.reset()
         self._offset = fp.tell()
+        fp.seek(0, io.SEEK_END)
+        file_size = fp.tell()
+        fp.seek(self._offset)
 
         try:
             tag_count = (
@@ -902,6 +905,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 if self._bigtiff
                 else self._unpack("H", self._ensure_read(fp, 2))
             )[0]
+            total_size = 0
             for i in range(tag_count):
                 tag, typ, count, data = (
                     self._unpack("HHQ8s", self._ensure_read(fp, 20))
@@ -927,6 +931,12 @@ class ImageFileDirectory_v2(_IFDv2Base):
                     msg += f" Tag Location: {here} - Data Location: {offset}"
                     if offset >= 2**63:
                         warnings.warn("Tag offset too large")
+                        continue
+                    # Well-formed IFD values should fit within the stream they
+                    # are read from, even before accounting for overlaps.
+                    total_size += size
+                    if total_size > file_size:
+                        warnings.warn(f"Tag data larger than file. Skipping tag {tag}")
                         continue
                     fp.seek(offset)
                     data = ImageFile._safe_read(fp, size)

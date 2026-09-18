@@ -484,6 +484,21 @@ def test_tag_offset() -> None:
         ifd.load(f)
 
 
+def test_tag_data_larger_than_file() -> None:
+    ifd = TiffImagePlugin.ImageFileDirectory_v2()
+
+    # Two BYTE tags that both claim the whole 30 byte IFD as their value.
+    tag_count = struct.pack("<H", 2)
+    tags = struct.pack("<HHLL", 0, 1, 30, 0) + struct.pack("<HHLL", 1, 1, 30, 0)
+    next_offset = struct.pack("<L", 0)
+
+    f = io.BytesIO(tag_count + tags + next_offset)
+    with pytest.warns(UserWarning, match="Tag data larger than file"):
+        ifd.load(f)
+    assert len(ifd[0]) == 30
+    assert 1 not in ifd
+
+
 def test_tag_group_data() -> None:
     base_ifd = TiffImagePlugin.ImageFileDirectory_v2()
     interop_ifd = TiffImagePlugin.ImageFileDirectory_v2(group=40965)
