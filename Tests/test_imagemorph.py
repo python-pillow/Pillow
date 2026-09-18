@@ -1,13 +1,20 @@
 # Test the ImageMorphology functionality
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from PIL import Image, ImageMorph, _imagingmorph
 
-from .helper import assert_image_equal_tofile, hopper, timeout_unless_slower_valgrind
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    hopper,
+    timeout_unless_slower_valgrind,
+)
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def string_to_img(image_string: str) -> Image.Image:
@@ -22,8 +29,7 @@ def string_to_img(image_string: str) -> Image.Image:
     return im
 
 
-A = string_to_img(
-    """
+A = string_to_img("""
     .......
     .......
     ..111..
@@ -31,8 +37,7 @@ A = string_to_img(
     ..111..
     .......
     .......
-    """
-)
+    """)
 
 
 def img_to_string(im: Image.Image) -> str:
@@ -83,6 +88,13 @@ def test_no_operator_loaded() -> None:
         mop.match(im)
     with pytest.raises(Exception, match="No operator loaded"):
         mop.save_lut("")
+
+
+def test_zero_width() -> None:
+    im = Image.new("L", (0, 1))
+    mop = ImageMorph.MorphOp(op_name="erosion8")
+    count, out = mop.apply(im)
+    assert_image_equal(im, out)
 
 
 # Test the named patterns

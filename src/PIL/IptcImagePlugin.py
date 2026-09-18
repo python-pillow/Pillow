@@ -16,6 +16,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "io", "typing"}
+
 from io import BytesIO
 from typing import cast
 
@@ -124,7 +126,7 @@ class IptcImageFile(ImageFile.ImageFile):
         # tile
         if tag == (8, 10):
             self.tile = [
-                ImageFile._Tile("iptc", (0, 0) + self.size, offset, (compression, band))
+                ImageFile._Tile("iptc", (0, 0, *self.size), offset, (compression, band))
             ]
 
     def load(self) -> Image.core.PixelAccess | None:
@@ -185,13 +187,9 @@ def getiptcinfo(
 
     data = None
 
-    info: dict[tuple[int, int], bytes | list[bytes]] = {}
     if isinstance(im, IptcImageFile):
         # return info dictionary right away
-        for k, v in im.info.items():
-            if isinstance(k, tuple):
-                info[k] = v
-        return info
+        return {k: v for k, v in im.info.items() if isinstance(k, tuple)}
 
     elif isinstance(im, JpegImagePlugin.JpegImageFile):
         # extract the IPTC/NAA resource
@@ -216,7 +214,7 @@ def getiptcinfo(
 
     fake_im = FakeImage()
     fake_im.__class__ = IptcImageFile  # type: ignore[assignment]
-    iptc_im = cast(IptcImageFile, fake_im)
+    iptc_im = cast("IptcImageFile", fake_im)
 
     # parse the IPTC information chunk
     iptc_im.info = {}
@@ -227,7 +225,4 @@ def getiptcinfo(
     except (IndexError, KeyError):
         pass  # expected failure
 
-    for k, v in iptc_im.info.items():
-        if isinstance(k, tuple):
-            info[k] = v
-    return info
+    return {k: v for k, v in iptc_im.info.items() if isinstance(k, tuple)}

@@ -23,7 +23,7 @@ Internal limits
 * Individual memory mapped segments are limited to 2GB in map.c based
   on the overflow checks. This requires that any memory mapped image
   is smaller than 2GB, as calculated by ``y*stride`` (so 2Gpx for 'L'
-  images, and .5Gpx for 'RGB'
+  images, and .5Gpx for 'RGB')
 
 Format size limits
 ==================

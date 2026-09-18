@@ -8,3 +8,4 @@ Handbook
   tutorial
   concepts
   appendices
+  security

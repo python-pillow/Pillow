@@ -24,7 +24,7 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable
     from types import CodeType
-    from typing import Any
+    from typing import Any, Self
 
 
 class _Operand:
@@ -84,9 +84,9 @@ class _Operand:
                     min(im_1.size[1], im_2.size[1]),
                 )
                 if im_1.size != size:
-                    im_1 = im_1.crop((0, 0) + size)
+                    im_1 = im_1.crop((0, 0, *size))
                 if im_2.size != size:
-                    im_2 = im_2.crop((0, 0) + size)
+                    im_2 = im_2.crop((0, 0, *size))
             out = Image.new(mode or im_1.mode, im_1.size, None)
             try:
                 op = getattr(_imagingmath, f"{op}_{im_1.mode}")
@@ -104,7 +104,7 @@ class _Operand:
     def __abs__(self) -> _Operand:
         return self.apply("abs", self)
 
-    def __pos__(self) -> _Operand:
+    def __pos__(self) -> Self:
         return self
 
     def __neg__(self) -> _Operand:
@@ -307,7 +307,7 @@ def unsafe_eval(expression: str, **kw: Any) -> Any:
                 raise ValueError(msg)
 
     scan(compiled_code)
-    out = builtins.eval(expression, {"__builtins": {"abs": abs}}, args)
+    out = builtins.eval(expression, None, args)
     try:
         return out.im
     except AttributeError:

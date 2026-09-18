@@ -31,6 +31,32 @@ Pillow reads and writes AVIF files, including AVIF sequence images.
 It is only possible to save 8-bit AVIF images, and all AVIF images are decoded
 as 8-bit RGB(A).
 
+Opening
+~~~~~~~
+
+The :py:meth:`~PIL.Image.open` method sets the following
+:py:attr:`~PIL.Image.Image.info` properties:
+
+**icc_profile**
+    May not be present. The ICC color profile for the image.
+
+**exif**
+    May not be present. Raw EXIF data from the image.
+
+**xmp**
+    May not be present. Raw XMP data from the image.
+
+**duration**
+    Only present after the current frame is loaded. The time to display the current
+    frame of the AVIF sequence, in milliseconds.
+
+**timestamp**
+    Only present after the current frame is loaded. The time of the current frame
+    within the AVIF sequence, in milliseconds.
+
+Saving
+~~~~~~
+
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **quality**
@@ -38,7 +64,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     quality, 100 the largest size and best quality.
 
 **subsampling**
-    If present, sets the subsampling for the encoder. Defaults to ``4:2:0``.
+    If present, sets the subsampling for the encoder. If absent, and all frames are in
+    grayscale mode without alpha, ``4:0:0`` is used. Otherwise defaults to ``4:2:0``.
     Options include:
 
     * ``4:0:0``
@@ -236,7 +263,7 @@ images. Seeking to later frames in a ``P`` image will change the image to
 ``P`` mode images are changed to ``RGB`` because each frame of a GIF may contain
 its own individual palette of up to 256 colors. When a new frame is placed onto a
 previous frame, those colors may combine to exceed the ``P`` mode limit of 256
-colors. Instead, the image is converted to ``RGB`` handle this.
+colors. Instead, the image is converted to ``RGB`` to handle this.
 
 If you would prefer the first ``P`` image frame to be ``RGB`` as well, so that
 every ``P`` frame is converted to ``RGB`` or ``RGBA`` mode, there is a setting
@@ -345,7 +372,7 @@ following options are available::
 **palette**
     Use the specified palette for the saved image. The palette should
     be a bytes or bytearray object containing the palette entries in
-    RGBRGB... form. It should be no more than 768 bytes. Alternately,
+    RGBRGB... form. It should be no more than 768 bytes. Alternatively,
     the palette can be passed in as an
     :py:class:`PIL.ImagePalette.ImagePalette` object.
 
@@ -449,10 +476,10 @@ Saving
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **sizes**
-    A list of sizes including in this ico file; these are a 2-tuple,
+    A list of sizes included in this ico file; these are a 2-tuple,
     ``(width, height)``; Default to ``[(16, 16), (24, 24), (32, 32), (48, 48),
-    (64, 64), (128, 128), (256, 256)]``. Any sizes bigger than the original
-    size or 256 will be ignored.
+    (64, 64), (128, 128), (256, 256)]``, or if it is smaller, only the image size.
+    Any sizes bigger than the original size or 256 will be ignored.
 
 The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
 
@@ -471,6 +498,8 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
 IM
 ^^
+
+.. deprecated:: 13.0.0
 
 IM is a format used by LabEye and other applications based on the IFUNC image
 processing library. The library reads and writes most uncompressed interchange
@@ -828,16 +857,6 @@ PCX
 
 Pillow reads and writes PCX files containing ``1``, ``L``, ``P``, or ``RGB`` data.
 
-PFM
-^^^
-
-.. versionadded:: 10.3.0
-
-Pillow reads and writes grayscale (Pf format) Portable FloatMap (PFM) files
-containing ``F`` data.
-
-Color (PF format) PFM files are not supported.
-
 Opening
 ~~~~~~~
 
@@ -1081,12 +1100,19 @@ following parameters can also be set:
 PPM
 ^^^
 
-Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L``, ``I`` or
-``RGB`` data.
+Pillow reads and writes PBM, PGM, PPM, PNM and PFM files containing ``1``, ``L``, ``I``,
+``RGB`` or ``F`` data.
 
 "Raw" (P4 to P6) formats can be read, and are used when writing.
 
-Since Pillow 9.2.0, "plain" (P1 to P3) formats can be read as well.
+.. versionadded:: 9.2.0
+   "Plain" (P1 to P3) formats can be read.
+
+.. versionadded:: 10.3.0
+   Grayscale (Pf format) Portable FloatMap (PFM) files containing
+   ``F`` data can be read and used when writing.
+
+Color (PF format) PFM files are not supported.
 
 QOI
 ^^^
@@ -1309,7 +1335,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     .. versionadded:: 6.1.0
 
     Added support for signed types (e.g. ``TIFF_SIGNED_LONG``) and multiple values.
-    Multiple values for a single tag must be to
+    Multiple values for a single tag must be passed to
     :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2` as a tuple and
     require a matching type in
     :py:attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype` tagtype.
@@ -1377,6 +1403,36 @@ WebP
 ^^^^
 
 Pillow reads and writes WebP files. Requires libwebp v0.5.0 or later.
+
+Opening
+~~~~~~~
+
+The :py:meth:`~PIL.Image.open` method sets the following
+:py:attr:`~PIL.Image.Image.info` properties:
+
+**background**
+    Background color of the canvas, as an RGBA tuple with values in
+    the range of (0-255).
+
+**loop**
+    The number of times the WEBP should loop. 0 means that it will loop forever.
+
+**icc_profile**
+    May not be present. The ICC color profile for the image.
+
+**exif**
+    May not be present. Raw EXIF data from the image.
+
+**xmp**
+    May not be present. Raw XMP data from the image.
+
+**duration**
+    Only present after the current frame is loaded. The time to display the current
+    frame of the WEBP, in milliseconds.
+
+**timestamp**
+    Only present after the current frame is loaded. The total duration of all previous
+    frames of the WEBP, in milliseconds.
 
 .. _webp-saving:
 

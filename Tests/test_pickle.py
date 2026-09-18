@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import pickle
-from pathlib import Path
 
 import pytest
 
 from PIL import Image, ImageDraw, ImageFont
 
 from .helper import assert_image_equal, skip_unless_feature
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 FONT_SIZE = 20
 FONT_PATH = "Tests/fonts/DejaVuSans/DejaVuSans.ttf"

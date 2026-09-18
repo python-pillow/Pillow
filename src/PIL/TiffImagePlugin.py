@@ -40,6 +40,16 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL._binary",
+    "PIL._util",
+    "fractions",
+    "itertools",
+    "math",
+    "struct",
+    "warnings",
+}
+
 import io
 import itertools
 import logging
@@ -55,14 +65,13 @@ from typing import IO, Any, cast
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
-from ._binary import o8
 from ._util import DeferredError, is_path
 from .TiffTags import TYPES
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Iterator
-    from typing import NoReturn
+    from typing import NoReturn, Self
 
     from ._typing import Buffer, IntegralLike, StrOrBytesPath
 
@@ -267,10 +276,8 @@ OPEN_INFO = {
     (MM, 5, (1,), 1, (16, 16, 16, 16), ()): ("CMYK", "CMYK;16B"),
     (II, 6, (1,), 1, (8,), ()): ("L", "L"),
     (MM, 6, (1,), 1, (8,), ()): ("L", "L"),
-    # JPEG compressed images handled by LibTiff and auto-converted to RGBX
-    # Minimal Baseline TIFF requires YCbCr images to have 3 SamplesPerPixel
-    (II, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGBX"),
-    (MM, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGBX"),
+    (II, 6, (1,), 1, (8, 8, 8), ()): ("YCbCr", "YCbCr"),
+    (MM, 6, (1,), 1, (8, 8, 8), ()): ("YCbCr", "YCbCr"),
     (II, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
 }
@@ -318,8 +325,8 @@ def _limit_signed_rational(
 ##
 # Wrapper for TIFF IFDs.
 
-_load_dispatch = {}
-_write_dispatch = {}
+_load_dispatch: dict[int, tuple[int, _LoaderFunc]] = {}
+_write_dispatch: dict[int, Callable[..., Any]] = {}
 
 
 def _delegate(op: str) -> Any:
@@ -365,7 +372,7 @@ class IFDRational(Rational):
             self._denominator = value.denominator
         else:
             if TYPE_CHECKING:
-                self._numerator = cast(IntegralLike, value)
+                self._numerator = cast("IntegralLike", value)
             else:
                 self._numerator = value
             self._denominator = denominator
@@ -424,7 +431,7 @@ class IFDRational(Rational):
         assert isinstance(_val, (float, Fraction))
         self._val = _val
         if TYPE_CHECKING:
-            self._numerator = cast(IntegralLike, _numerator)
+            self._numerator = cast("IntegralLike", _numerator)
         else:
             self._numerator = _numerator
         assert isinstance(_denominator, int)
@@ -464,9 +471,8 @@ class IFDRational(Rational):
     __ceil__ = _delegate("__ceil__")
     __floor__ = _delegate("__floor__")
     __round__ = _delegate("__round__")
-    # Python >= 3.11
-    if hasattr(Fraction, "__int__"):
-        __int__ = _delegate("__int__")
+    __float__ = _delegate("__float__")
+    __int__ = _delegate("__int__")
 
 
 _LoaderFunc = Callable[["ImageFileDirectory_v2", bytes, bool], Any]
@@ -686,8 +692,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 self.tagtype[tag] = TiffTags.UNDEFINED
                 if all(isinstance(v, IFDRational) for v in values):
                     for v in values:
-                        assert isinstance(v, IFDRational)
-                        if v < 0:
+                        if v < IFDRational(0):
                             self.tagtype[tag] = TiffTags.SIGNED_RATIONAL
                             break
                     else:
@@ -913,6 +918,9 @@ class ImageFileDirectory_v2(_IFDv2Base):
                     here = fp.tell()
                     (offset,) = self._unpack("Q" if self._bigtiff else "L", data)
                     msg += f" Tag Location: {here} - Data Location: {offset}"
+                    if offset >= 2**63:
+                        warnings.warn("Tag offset too large")
+                        continue
                     fp.seek(offset)
                     data = ImageFile._safe_read(fp, size)
                     fp.seek(here)
@@ -1287,10 +1295,13 @@ class TiffImageFile(ImageFile.ImageFile):
         blocks = {}
         val = self.tag_v2.get(ExifTags.Base.ImageResources)
         if val:
-            while val.startswith(b"8BIM"):
+            while val.startswith(b"8BIM") and len(val) >= 12:
                 id = i16(val[4:6])
                 n = math.ceil((val[6] + 1) / 2) * 2
-                size = i32(val[6 + n : 10 + n])
+                try:
+                    size = i32(val[6 + n : 10 + n])
+                except struct.error:
+                    break
                 data = val[10 + n : 10 + n + size]
                 blocks[id] = {"data": data}
 
@@ -1470,28 +1481,34 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("- size: %s", self.size)
 
         sample_format = self.tag_v2.get(SAMPLEFORMAT, (1,))
-        if len(sample_format) > 1 and max(sample_format) == min(sample_format) == 1:
+        if len(sample_format) > 1 and max(sample_format) == min(sample_format):
             # SAMPLEFORMAT is properly per band, so an RGB image will
             # be (1,1,1).  But, we don't support per band pixel types,
             # and anything more than one band is a uint8. So, just
             # take the first element. Revisit this if adding support
             # for more exotic images.
-            sample_format = (1,)
+            sample_format = (sample_format[0],)
 
         bps_tuple = self.tag_v2.get(BITSPERSAMPLE, (1,))
         extra_tuple = self.tag_v2.get(EXTRASAMPLES, ())
+        samples_per_pixel = self.tag_v2.get(
+            SAMPLESPERPIXEL,
+            3 if self._compression == "tiff_jpeg" and photo in (2, 6) else 1,
+        )
         if photo in (2, 6, 8):  # RGB, YCbCr, LAB
             bps_count = 3
         elif photo == 5:  # CMYK
             bps_count = 4
         else:
             bps_count = 1
+        if self._planar_configuration == 2 and extra_tuple and max(extra_tuple) == 0:
+            # If components are stored separately,
+            # then unspecified extra components at the end can be ignored
+            bps_tuple = bps_tuple[: -len(extra_tuple)]
+            samples_per_pixel -= len(extra_tuple)
+            extra_tuple = ()
         bps_count += len(extra_tuple)
         bps_actual_count = len(bps_tuple)
-        samples_per_pixel = self.tag_v2.get(
-            SAMPLESPERPIXEL,
-            3 if self._compression == "tiff_jpeg" and photo in (2, 6) else 1,
-        )
 
         if samples_per_pixel > MAX_SAMPLESPERPIXEL:
             # DOS check, samples_per_pixel can be a Long, and we extend the tuple below
@@ -1578,14 +1595,14 @@ class TiffImageFile(ImageFile.ImageFile):
                 # fillorder==2 modes have a corresponding
                 # fillorder=1 mode
                 self._mode, rawmode = OPEN_INFO[key]
-            # YCbCr images with new jpeg compression with pixels in one plane
-            # unpacked straight into RGB values
-            if (
-                photo == 6
-                and self._compression == "jpeg"
-                and self._planar_configuration == 1
-            ):
-                rawmode = "RGB"
+            if photo == 6:
+                self._mode = "RGB"
+                if self._compression in "jpeg" and self._planar_configuration == 1:
+                    # YCbCr images with new jpeg compression with pixels in one plane
+                    # unpacked straight into RGB values
+                    rawmode = "RGB"
+                else:
+                    rawmode = "RGBX"
             # libtiff always returns the bytes in native order.
             # we're expecting image byte order. So, if the rawmode
             # contains I;16, we need to convert from native to image
@@ -1660,8 +1677,10 @@ class TiffImageFile(ImageFile.ImageFile):
         # fixup palette descriptor
 
         if self.mode in ["P", "PA"]:
-            palette = [o8(b // 256) for b in self.tag_v2[COLORMAP]]
-            self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
+            palette = tuple(b // 256 for b in self.tag_v2[COLORMAP])
+            self.palette = ImagePalette.raw("RGB;L", palette)
+        else:
+            self.palette = None
 
 
 #
@@ -1759,6 +1778,12 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         legacy_ifd = im.tag.to_v2()
 
     supplied_tags = {**legacy_ifd, **getattr(im, "tag_v2", {})}
+    if supplied_tags.get(PLANAR_CONFIGURATION) == 2 and EXTRASAMPLES in supplied_tags:
+        # If the image used separate component planes,
+        # then EXTRASAMPLES should be ignored when saving contiguously
+        if SAMPLESPERPIXEL in supplied_tags:
+            supplied_tags[SAMPLESPERPIXEL] -= len(supplied_tags[EXTRASAMPLES])
+        del supplied_tags[EXTRASAMPLES]
     for tag in (
         # IFD offset that may not be correct in the saved image
         EXIFIFD,
@@ -1973,7 +1998,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         tags.sort()
         a = (rawmode, compression, _fp, filename, tags, types)
         encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
-        encoder.setimage(im.im, (0, 0) + im.size)
+        encoder.setimage(im.im, (0, 0, *im.size))
         while True:
             errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
             if not _fp:
@@ -1992,7 +2017,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         ImageFile._save(
             im,
             fp,
-            [ImageFile._Tile("raw", (0, 0) + im.size, offset, (rawmode, stride, 1))],
+            [ImageFile._Tile("raw", (0, 0, *im.size), offset, (rawmode, stride, 1))],
         )
 
     # -- helper for multi-page save --
@@ -2041,7 +2066,7 @@ class AppendingTiffWriter(io.BytesIO):
             except OSError:
                 self.f = open(fn, "w+b")
         else:
-            self.f = cast(IO[bytes], fn)
+            self.f = cast("IO[bytes]", fn)
             self.close_fp = False
         self.beginning = self.f.tell()
         self.setup()
@@ -2103,7 +2128,7 @@ class AppendingTiffWriter(io.BytesIO):
         self.finalize()
         self.setup()
 
-    def __enter__(self) -> AppendingTiffWriter:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:

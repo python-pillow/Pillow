@@ -66,7 +66,7 @@ ImageMath eval()
 ``ImageMath.eval()`` has been removed. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
 :py:meth:`~PIL.ImageMath.unsafe_eval` instead.
 
-BGR;15, BGR 16 and BGR;24
+BGR;15, BGR;16 and BGR;24
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The experimental BGR;15, BGR;16 and BGR;24 modes have been removed.

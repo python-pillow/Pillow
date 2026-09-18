@@ -2,10 +2,7 @@ from __future__ import annotations
 
 import os
 import warnings
-from collections.abc import Generator
 from io import BytesIO
-from pathlib import Path
-from types import ModuleType
 
 import pytest
 
@@ -16,6 +13,7 @@ from PIL import (
     TiffImagePlugin,
     TiffTags,
     UnidentifiedImageError,
+    _binary,
 )
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
@@ -29,6 +27,12 @@ from .helper import (
     is_win32,
     timeout_unless_slower_valgrind,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
+    from types import ModuleType
 
 ElementTree: ModuleType | None
 try:
@@ -64,9 +68,7 @@ class TestFileTiff:
             open_test_image()
 
     def test_closed_file(self) -> None:
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-
+        with warnings.catch_warnings(action="error"):
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
             im.close()
@@ -82,9 +84,7 @@ class TestFileTiff:
             im.seek(1)
 
     def test_context_manager(self) -> None:
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-
+        with warnings.catch_warnings(action="error"):
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 
@@ -228,6 +228,14 @@ class TestFileTiff:
         im = hopper("RGBA")
         outfile = tmp_path / "temp.tif"
         im.save(outfile)
+
+    def test_save_ycbcr(self, tmp_path: Path) -> None:
+        im = hopper("YCbCr")
+        outfile = tmp_path / "temp.tif"
+        im.save(outfile)
+
+        with Image.open(outfile) as reloaded:
+            assert_image_equal(im, reloaded)
 
     def test_save_unsupported_mode(self, tmp_path: Path) -> None:
         im = hopper("HSV")
@@ -774,7 +782,7 @@ class TestFileTiff:
             assert reread.n_frames == 3
 
         # Test appending using a generator
-        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image, None, None]:
+        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image]:
             yield from ims
 
         mp = BytesIO()
@@ -940,6 +948,15 @@ class TestFileTiff:
                 4000,
                 4001,
             ]
+
+    def test_truncated_photoshop_blocks(self) -> None:
+        with Image.open("Tests/images/hopper.tif") as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            im.tag_v2[34377] = b"8BIM"
+            assert im.get_photoshop_blocks() == {}
+
+            im.tag_v2[34377] = b"8BIM" + _binary.o16be(0) + _binary.o8(2) + b" " * 5
+            assert im.get_photoshop_blocks() == {}
 
     def test_tiff_chunks(self, tmp_path: Path) -> None:
         tmpfile = tmp_path / "temp.tif"

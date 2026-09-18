@@ -26,17 +26,25 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL._binary",
+    "PIL._deprecate",
+    "PIL._util",
+    "io",
+    "math",
+    "re",
+    "struct",
+}
+
 import abc
 import atexit
 import builtins
 import io
-import logging
 import math
 import os
 import re
 import struct
 import sys
-import tempfile
 import warnings
 from collections.abc import MutableMapping
 from enum import IntEnum
@@ -57,19 +65,10 @@ from ._binary import i32le, o32be, o32le
 from ._deprecate import deprecate
 from ._util import DeferredError, is_path
 
-ElementTree: ModuleType | None
-try:
-    from defusedxml import ElementTree
-except ImportError:
-    ElementTree = None
-
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
-    from types import ModuleType
-    from typing import Any, Literal
-
-logger = logging.getLogger(__name__)
+    from typing import Any, Literal, Self
 
 
 class DecompressionBombWarning(RuntimeWarning):
@@ -151,6 +150,8 @@ class Resampling(IntEnum):
     HAMMING = 5
     BICUBIC = 3
     LANCZOS = 1
+    MKS2013 = 6
+    MKS2021 = 7
 
 
 _filters_support = {
@@ -159,6 +160,8 @@ _filters_support = {
     Resampling.HAMMING: 1.0,
     Resampling.BICUBIC: 2.0,
     Resampling.LANCZOS: 3.0,
+    Resampling.MKS2013: 2.5,
+    Resampling.MKS2021: 4.5,
 }
 
 
@@ -323,10 +326,110 @@ def getmodebands(mode: str) -> int:
 
 _initialized = 0
 
+# Mapping from file extension to plugin module name for lazy importing
+_EXTENSION_PLUGIN: dict[str, str] = {
+    # Common formats (preinit)
+    ".bmp": "BmpImagePlugin",
+    ".dib": "BmpImagePlugin",
+    ".gif": "GifImagePlugin",
+    ".jfif": "JpegImagePlugin",
+    ".jpe": "JpegImagePlugin",
+    ".jpg": "JpegImagePlugin",
+    ".jpeg": "JpegImagePlugin",
+    ".pbm": "PpmImagePlugin",
+    ".pgm": "PpmImagePlugin",
+    ".pnm": "PpmImagePlugin",
+    ".ppm": "PpmImagePlugin",
+    ".pfm": "PpmImagePlugin",
+    ".png": "PngImagePlugin",
+    ".apng": "PngImagePlugin",
+    # Less common formats (init)
+    ".avif": "AvifImagePlugin",
+    ".avifs": "AvifImagePlugin",
+    ".blp": "BlpImagePlugin",
+    ".bufr": "BufrStubImagePlugin",
+    ".cur": "CurImagePlugin",
+    ".dcx": "DcxImagePlugin",
+    ".dds": "DdsImagePlugin",
+    ".ps": "EpsImagePlugin",
+    ".eps": "EpsImagePlugin",
+    ".fit": "FitsImagePlugin",
+    ".fits": "FitsImagePlugin",
+    ".fli": "FliImagePlugin",
+    ".flc": "FliImagePlugin",
+    ".fpx": "FpxImagePlugin",
+    ".ftc": "FtexImagePlugin",
+    ".ftu": "FtexImagePlugin",
+    ".gbr": "GbrImagePlugin",
+    ".grib": "GribStubImagePlugin",
+    ".h5": "Hdf5StubImagePlugin",
+    ".hdf": "Hdf5StubImagePlugin",
+    ".icns": "IcnsImagePlugin",
+    ".ico": "IcoImagePlugin",
+    ".im": "ImImagePlugin",
+    ".iim": "IptcImagePlugin",
+    ".jp2": "Jpeg2KImagePlugin",
+    ".j2k": "Jpeg2KImagePlugin",
+    ".jpc": "Jpeg2KImagePlugin",
+    ".jpf": "Jpeg2KImagePlugin",
+    ".jpx": "Jpeg2KImagePlugin",
+    ".j2c": "Jpeg2KImagePlugin",
+    ".mic": "MicImagePlugin",
+    ".mpg": "MpegImagePlugin",
+    ".mpeg": "MpegImagePlugin",
+    ".mpo": "MpoImagePlugin",
+    ".msp": "MspImagePlugin",
+    ".palm": "PalmImagePlugin",
+    ".pcd": "PcdImagePlugin",
+    ".pcx": "PcxImagePlugin",
+    ".pdf": "PdfImagePlugin",
+    ".pxr": "PixarImagePlugin",
+    ".psd": "PsdImagePlugin",
+    ".qoi": "QoiImagePlugin",
+    ".bw": "SgiImagePlugin",
+    ".rgb": "SgiImagePlugin",
+    ".rgba": "SgiImagePlugin",
+    ".sgi": "SgiImagePlugin",
+    ".ras": "SunImagePlugin",
+    ".tga": "TgaImagePlugin",
+    ".icb": "TgaImagePlugin",
+    ".vda": "TgaImagePlugin",
+    ".vst": "TgaImagePlugin",
+    ".tif": "TiffImagePlugin",
+    ".tiff": "TiffImagePlugin",
+    ".webp": "WebPImagePlugin",
+    ".wmf": "WmfImagePlugin",
+    ".emf": "WmfImagePlugin",
+    ".xbm": "XbmImagePlugin",
+    ".xpm": "XpmImagePlugin",
+}
+
+
+def _import_plugin_for_extension(ext: str | bytes) -> bool:
+    """Import only the plugin needed for a specific file extension."""
+    if not ext:
+        return False
+
+    if isinstance(ext, bytes):
+        ext = ext.decode()
+    ext = ext.lower()
+    if ext in EXTENSION:
+        return True
+
+    plugin = _EXTENSION_PLUGIN.get(ext)
+    if plugin is None:
+        return False
+
+    try:
+        __import__(f"{__spec__.parent}.{plugin}", globals(), locals(), [])
+        return True
+    except ImportError:
+        return False
+
 
 def preinit() -> None:
     """
-    Explicitly loads BMP, GIF, JPEG, PPM and PPM file format drivers.
+    Explicitly loads BMP, GIF, JPEG, PPM and PNG file format drivers.
 
     It is called when opening or saving images.
     """
@@ -382,13 +485,11 @@ def init() -> bool:
     if _initialized >= 2:
         return False
 
-    parent_name = __name__.rpartition(".")[0]
     for plugin in _plugins:
         try:
-            logger.debug("Importing %s", plugin)
-            __import__(f"{parent_name}.{plugin}", globals(), locals(), [])
-        except ImportError as e:
-            logger.debug("Image: failed to import %s: %s", plugin, e)
+            __import__(f"{__spec__.parent}.{plugin}", globals(), locals(), [])
+        except ImportError:
+            pass
 
     if OPEN or SAVE:
         _initialized = 2
@@ -574,6 +675,9 @@ class Image:
     def readonly(self, readonly: int) -> None:
         self._readonly = readonly
 
+    def _copy_info(self) -> dict[str | tuple[int, int], Any]:
+        return {k: v.copy() if isinstance(v, list) else v for k, v in self.info.items()}
+
     def _new(self, im: core.ImagingCore) -> Image:
         new = Image()
         new.im = im
@@ -586,11 +690,11 @@ class Image:
                 from . import ImagePalette
 
                 new.palette = ImagePalette.ImagePalette()
-        new.info = self.info.copy()
+        new.info = self._copy_info()
         return new
 
     # Context manager support
-    def __enter__(self) -> Image:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -607,7 +711,7 @@ class Image:
         more information.
         """
         if getattr(self, "map", None):
-            if sys.platform == "win32" and hasattr(sys, "pypy_version_info"):
+            if sys.platform == "win32" and sys.implementation.name == "pypy":
                 self.map.close()
             self.map: mmap.mmap | None = None
 
@@ -630,24 +734,19 @@ class Image:
     def _dump(
         self, file: str | None = None, format: str | None = None, **options: Any
     ) -> str:
-        suffix = ""
-        if format:
-            suffix = f".{format}"
+        suffix = f".{format}" if format else ""
 
-        if not file:
-            f, filename = tempfile.mkstemp(suffix)
-            os.close(f)
-        else:
+        if file:
             filename = file
             if not filename.endswith(suffix):
-                filename = filename + suffix
-
-        self.load()
-
-        if not format or format == "PPM":
-            self.im.save_ppm(filename)
+                filename += suffix
         else:
-            self.save(filename, format, **options)
+            import tempfile
+
+            f, filename = tempfile.mkstemp(suffix)
+            os.close(f)
+
+        self.save(filename, format or "PPM", **options)
 
         return filename
 
@@ -788,7 +887,7 @@ class Image:
 
         # unpack data
         e = _getencoder(self.mode, encoder_name, encoder_args)
-        e.setimage(self.im)
+        e.setimage(self.im, (0, 0, *self.size))
 
         from . import ImageFile
 
@@ -834,7 +933,7 @@ class Image:
 
     def frombytes(
         self,
-        data: bytes | bytearray | SupportsArrayInterface,
+        data: DecoderInput,
         decoder_name: str = "raw",
         *args: Any,
     ) -> None:
@@ -853,13 +952,19 @@ class Image:
             # may pass tuple instead of argument list
             decoder_args = decoder_args[0]
 
+        if decoder_args and decoder_args[0] in {"P;2L", "P;4L"}:
+            multiple = 4 if decoder_args[0] == "P;2L" else 8
+            if len(data) % multiple:
+                msg = "not enough image data"
+                raise ValueError(msg)
+
         # default format
         if decoder_name == "raw" and decoder_args == ():
             decoder_args = self.mode
 
         # unpack data
         d = _getdecoder(self.mode, decoder_name, decoder_args)
-        d.setimage(self.im)
+        d.setimage(self.im, (0, 0, *self.size))
         s = d.decode(data)
 
         if s[0] >= 0:
@@ -882,7 +987,6 @@ class Image:
         operations. See :ref:`file-handling` for more information.
 
         :returns: An image access object.
-        :rtype: :py:class:`.PixelAccess`
         """
         if self._im is not None and self.palette and self.palette.dirty:
             # realize palette
@@ -896,10 +1000,10 @@ class Image:
                 else:
                     self.im.putpalettealphas(self.info["transparency"])
                 self.palette.mode = "RGBA"
-            else:
-                self.palette.palette = self.im.getpalette(
-                    self.palette.mode, self.palette.mode
-                )
+            elif self.palette.mode != mode:
+                # If the palette rawmode is different to the mode,
+                # then update the Python palette data
+                self.palette.palette = self.im.getpalette(self.palette.mode)
 
         if self._im is not None:
             return self.im.pixel_access(self.readonly)
@@ -919,7 +1023,7 @@ class Image:
     def convert(
         self,
         mode: str | None = None,
-        matrix: tuple[float, ...] | None = None,
+        matrix: list[float] | tuple[float, ...] | None = None,
         dither: Dither | None = None,
         palette: Palette = Palette.WEB,
         colors: int = 256,
@@ -954,7 +1058,7 @@ class Image:
 
         :param mode: The requested mode. See: :ref:`concept-modes`.
         :param matrix: An optional conversion matrix.  If given, this
-           should be 4- or 12-tuple containing floating point values.
+           should be 4- or 12-sequence containing floating point values.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
@@ -964,7 +1068,6 @@ class Image:
            :data:`Palette.ADAPTIVE`.
         :param colors: Number of colors to use for the :data:`Palette.ADAPTIVE`
            palette. Defaults to 256.
-        :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
@@ -993,7 +1096,7 @@ class Image:
                 transparency = new_im.info["transparency"]
 
                 def convert_transparency(
-                    m: tuple[float, ...], v: tuple[int, int, int]
+                    m: list[float] | tuple[float, ...], v: tuple[int, int, int]
                 ) -> int:
                     value = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3] * 0.5
                     return max(0, min(255, int(value)))
@@ -1099,7 +1202,7 @@ class Image:
             if trns is not None:
                 try:
                     new_im.info["transparency"] = new_im.palette.getcolor(
-                        cast(tuple[int, ...], trns),  # trns was converted to RGB
+                        cast("tuple[int, ...]", trns),  # trns was converted to RGB
                         new_im,
                     )
                 except Exception:
@@ -1158,7 +1261,8 @@ class Image:
             if new_im.mode == "P" and new_im.palette:
                 try:
                     new_im.info["transparency"] = new_im.palette.getcolor(
-                        cast(tuple[int, ...], trns), new_im  # trns was converted to RGB
+                        cast("tuple[int, ...]", trns),  # trns was converted to RGB
+                        new_im,
                     )
                 except ValueError as e:
                     del new_im.info["transparency"]
@@ -1250,7 +1354,7 @@ class Image:
         from . import ImagePalette
 
         mode = im.im.getpalettemode()
-        palette_data = im.im.getpalette(mode, mode)[: colors * len(mode)]
+        palette_data = im.im.getpalette(mode)[: colors * len(mode)]
         im.palette = ImagePalette.ImagePalette(mode, palette_data)
 
         return im
@@ -1260,7 +1364,6 @@ class Image:
         Copies this image. Use this method if you wish to paste things
         into an image, but still retain the original.
 
-        :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
         self.load()
@@ -1277,11 +1380,10 @@ class Image:
         Note: Prior to Pillow 3.4.0, this was a lazy operation.
 
         :param box: The crop rectangle, as a (left, upper, right, lower)-tuple.
-        :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if box is None:
+        if box is None or box == (0, 0, *self.size):
             return self.copy()
 
         if box[2] < box[0]:
@@ -1374,7 +1476,6 @@ class Image:
         For example, ``getbands`` on an RGB image returns ("R", "G", "B").
 
         :returns: A tuple containing band names.
-        :rtype: tuple
         """
         return ImageMode.getmode(self.mode).bands
 
@@ -1479,16 +1580,34 @@ class Image:
             return tuple(self.im.getband(i).getextrema() for i in range(self.im.bands))
         return self.im.getextrema()
 
-    def getxmp(self) -> dict[str, Any]:
+    def getxmp(self, *, strip_namespaces: bool = True) -> dict[str, Any]:
         """
         Returns a dictionary containing the XMP tags.
         Requires defusedxml to be installed.
 
+        :param strip_namespaces: If ``False``, keep each tag's full
+            ``{namespace-uri}local-name`` form instead of stripping the namespace
+            prefix.
+
+            .. versionadded:: 13.0.0
+
         :returns: XMP tags in a dictionary.
         """
+        try:
+            from defusedxml import ElementTree
+        except ImportError:
+            warnings.warn("XMP data cannot be read without defusedxml dependency")
+            return {}
 
-        def get_name(tag: str) -> str:
-            return re.sub("^{[^}]+}", "", tag)
+        if strip_namespaces:
+
+            def get_name(tag: str) -> str:
+                return re.sub("^{[^}]+}", "", tag)
+
+        else:
+
+            def get_name(tag: str) -> str:
+                return tag
 
         def get_value(element: Element) -> str | dict[str, Any] | None:
             value: dict[str, Any] = {get_name(k): v for k, v in element.attrib.items()}
@@ -1510,9 +1629,6 @@ class Image:
                 return element.text
             return value
 
-        if ElementTree is None:
-            warnings.warn("XMP data cannot be read without defusedxml dependency")
-            return {}
         if "xmp" not in self.info:
             return {}
         root = ElementTree.fromstring(self.info["xmp"].rstrip(b"\x00 "))
@@ -1566,12 +1682,6 @@ class Image:
             return
         self._exif._loaded = False
         self.getexif()
-
-    def get_child_images(self) -> list[ImageFile.ImageFile]:
-        from . import ImageFile
-
-        deprecate("Image.Image.get_child_images", 13)
-        return ImageFile.ImageFile.get_child_images(self)  # type: ignore[arg-type]
 
     def getim(self) -> CapsuleType:
         """
@@ -1870,7 +1980,7 @@ class Image:
             raise ValueError(msg)
 
         # over image, crop if it's not the whole image.
-        if overlay_crop_box == (0, 0) + im.size:
+        if overlay_crop_box == (0, 0, *im.size):
             overlay = im
         else:
             overlay = im.crop(overlay_crop_box)
@@ -1879,7 +1989,7 @@ class Image:
         box = tuple(dest) + (dest[0] + overlay.width, dest[1] + overlay.height)
 
         # destination image. don't copy if we're using the whole image.
-        if box == (0, 0) + self.size:
+        if box == (0, 0, *self.size):
             background = self
         else:
             background = self.crop(box)
@@ -1959,19 +2069,19 @@ class Image:
 
         self._ensure_mutable()
 
-        if self.mode not in ("LA", "PA", "RGBA"):
-            # attempt to promote self to a matching alpha mode
+        if self.mode in ("RGB", "RGBX"):
+            # promote self to RGBA
+            self.im.setalpha()
+            self._mode = "RGBA"
+        elif self.mode not in ("LA", "PA", "RGBA"):
             try:
+                # do things the hard way
                 mode = getmodebase(self.mode) + "A"
-                try:
-                    self.im.setmode(mode)
-                except (AttributeError, ValueError) as e:
-                    # do things the hard way
-                    im = self.im.convert(mode)
-                    if im.mode not in ("LA", "PA", "RGBA"):
-                        msg = "alpha channel could not be added"
-                        raise ValueError(msg) from e  # sanity check
-                    self.im = im
+                im = self.im.convert(mode)
+                if im.mode not in ("LA", "PA", "RGBA"):
+                    msg = "alpha channel could not be added"
+                    raise ValueError(msg)  # sanity check
+                self.im = im
                 self._mode = self.im.mode
             except KeyError as e:
                 msg = "illegal image mode"
@@ -2046,8 +2156,8 @@ class Image:
         Alternatively, an 8-bit string may be used instead of an integer sequence.
 
         :param data: A palette sequence (either a list or a string).
-        :param rawmode: The raw mode of the palette. Either "RGB", "RGBA", or a mode
-           that can be transformed to "RGB" or "RGBA" (e.g. "R", "BGR;15", "RGBA;L").
+        :param rawmode: The raw mode of the palette. Either "RGB", "RGBA", "CMYK", or a
+           mode that can be transformed to one of those modes (e.g. "R", "RGBA;L").
         """
         from . import ImagePalette
 
@@ -2061,16 +2171,19 @@ class Image:
                 palette = ImagePalette.ImagePalette(palette=data.palette)
                 palette.dirty = 1
         else:
-            if not isinstance(data, bytes):
-                data = bytes(data)
             palette = ImagePalette.raw(rawmode, data)
         self._mode = "PA" if "A" in self.mode else "P"
         self.palette = palette
-        self.palette.mode = "RGBA" if "A" in rawmode else "RGB"
+        if rawmode.startswith("CMYK"):
+            self.palette.mode = "CMYK"
+        elif "A" in rawmode:
+            self.palette.mode = "RGBA"
         self.load()  # install new palette
 
     def putpixel(
-        self, xy: tuple[int, int], value: float | tuple[int, ...] | list[int]
+        self,
+        xy: tuple[int, int] | list[int],
+        value: float | tuple[int, ...] | list[int],
     ) -> None:
         """
         Modifies the pixel at the given position. The color is given as
@@ -2136,7 +2249,7 @@ class Image:
                 palette_mode = self.im.getpalettemode()
                 if palette_mode == "RGBA":
                     bands = 4
-                source_palette = self.im.getpalette(palette_mode, palette_mode)
+                source_palette = self.im.getpalette(palette_mode)
             else:  # L-mode
                 source_palette = bytearray(i // 3 for i in range(768))
         elif len(source_palette) > 768:
@@ -2236,7 +2349,8 @@ class Image:
         :param resample: An optional resampling filter.  This can be
            one of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
-           :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
+           :py:data:`Resampling.BICUBIC`, :py:data:`Resampling.LANCZOS`,
+           :py:data:`Resampling.MKS2013`, or :py:data:`Resampling.MKS2021`.
            If the image has mode "1" or "P", it is always set to
            :py:data:`Resampling.NEAREST`. Otherwise, the default filter is
            :py:data:`Resampling.BICUBIC`. See: :ref:`concept-filters`.
@@ -2268,6 +2382,8 @@ class Image:
             Resampling.LANCZOS,
             Resampling.BOX,
             Resampling.HAMMING,
+            Resampling.MKS2013,
+            Resampling.MKS2021,
         ):
             msg = f"Unknown resampling filter ({resample})."
 
@@ -2280,6 +2396,8 @@ class Image:
                     (Resampling.BICUBIC, "Image.Resampling.BICUBIC"),
                     (Resampling.BOX, "Image.Resampling.BOX"),
                     (Resampling.HAMMING, "Image.Resampling.HAMMING"),
+                    (Resampling.MKS2013, "Image.Resampling.MKS2013"),
+                    (Resampling.MKS2021, "Image.Resampling.MKS2021"),
                 )
             ]
             msg += f" Use {', '.join(filters[:-1])} or {filters[-1]}"
@@ -2290,10 +2408,10 @@ class Image:
             raise ValueError(msg)
 
         if box is None:
-            box = (0, 0) + self.size
+            box = (0, 0, *self.size)
 
         size = tuple(size)
-        if self.size == size and box == (0, 0) + self.size:
+        if self.size == size and box == (0, 0, *self.size):
             return self.copy()
 
         if self.mode in ("1", "P"):
@@ -2310,7 +2428,7 @@ class Image:
             factor_x = int((box[2] - box[0]) / size[0] / reducing_gap) or 1
             factor_y = int((box[3] - box[1]) / size[1] / reducing_gap) or 1
             if factor_x > 1 or factor_y > 1:
-                reduce_box = self._get_safe_box(size, cast(Resampling, resample), box)
+                reduce_box = self._get_safe_box(size, cast("Resampling", resample), box)
                 factor = (factor_x, factor_y)
                 self = (
                     self.reduce(factor, box=reduce_box)
@@ -2346,11 +2464,11 @@ class Image:
         if not isinstance(factor, (list, tuple)):
             factor = (factor, factor)
 
-        if box is None:
-            box = (0, 0) + self.size
+        if factor == (1, 1):
+            return self.crop(box)
 
-        if factor == (1, 1) and box == (0, 0) + self.size:
-            return self.copy()
+        if box is None:
+            box = (0, 0, *self.size)
 
         if self.mode in ["LA", "RGBA"]:
             im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
@@ -2375,7 +2493,7 @@ class Image:
         copy of this image, rotated the given number of degrees counter
         clockwise around its centre.
 
-        :param angle: In degrees counter clockwise.
+        :param angle: In degrees counterclockwise.
         :param resample: An optional resampling filter.  This can be
            one of :py:data:`Resampling.NEAREST` (use nearest neighbour),
            :py:data:`Resampling.BILINEAR` (linear interpolation in a 2x2
@@ -2447,7 +2565,7 @@ class Image:
         ]
 
         def transform(x: float, y: float, matrix: list[float]) -> tuple[float, float]:
-            (a, b, c, d, e, f) = matrix
+            a, b, c, d, e, f = matrix
             return a * x + b * y + c, d * x + e * y + f
 
         matrix[2], matrix[5] = transform(
@@ -2528,21 +2646,26 @@ class Image:
         if is_path(fp):
             filename = os.fspath(fp)
             open_fp = True
-        elif fp == sys.stdout:
-            try:
-                fp = sys.stdout.buffer
-            except AttributeError:
-                pass
+        elif fp == sys.stdout and isinstance(sys.stdout, io.TextIOWrapper):
+            fp = sys.stdout.buffer
         if not filename and hasattr(fp, "name") and is_path(fp.name):
             # only set the name for metadata purposes
             filename = os.fspath(fp.name)
 
-        preinit()
+        if format:
+            preinit()
+        else:
+            filename_ext = os.path.splitext(filename)[1].lower()
+            ext = (
+                filename_ext.decode()
+                if isinstance(filename_ext, bytes)
+                else filename_ext
+            )
 
-        filename_ext = os.path.splitext(filename)[1].lower()
-        ext = filename_ext.decode() if isinstance(filename_ext, bytes) else filename_ext
+            # Try importing only the plugin for this extension first
+            if not _import_plugin_for_extension(ext):
+                preinit()
 
-        if not format:
             if ext not in EXTENSION:
                 init()
             try:
@@ -2588,7 +2711,7 @@ class Image:
             else:
                 fp = builtins.open(filename, "w+b")
         else:
-            fp = cast(IO[bytes], fp)
+            fp = cast("IO[bytes]", fp)
 
         try:
             save_handler(self, fp, filename)
@@ -2733,7 +2856,8 @@ class Image:
         :param resample: Optional resampling filter.  This can be one
            of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
-           :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
+           :py:data:`Resampling.BICUBIC`, :py:data:`Resampling.LANCZOS`,
+           :py:data:`Resampling.MKS2013`, or :py:data:`Resampling.MKS2021`.
            If omitted, it defaults to :py:data:`Resampling.BICUBIC`.
            (was :py:data:`Resampling.NEAREST` prior to version 2.5.0).
            See: :ref:`concept-filters`.
@@ -2875,9 +2999,9 @@ class Image:
             raise ValueError(msg)
 
         im = new(self.mode, size, fillcolor)
-        if self.mode == "P" and self.palette:
+        if self.mode in ("P", "PA") and self.palette:
             im.palette = self.palette.copy()
-        im.info = self.info.copy()
+        im.info = self._copy_info()
         if method == Transform.MESH:
             # list of quads
             for box, quad in data:
@@ -2886,7 +3010,7 @@ class Image:
                 )
         else:
             im.__transformer(
-                (0, 0) + size, self, method, data, resample, fillcolor is None
+                (0, 0, *size), self, method, data, resample, fillcolor is None
             )
 
         return im
@@ -2947,11 +3071,19 @@ class Image:
             Resampling.BILINEAR,
             Resampling.BICUBIC,
         ):
-            if resample in (Resampling.BOX, Resampling.HAMMING, Resampling.LANCZOS):
+            if resample in (
+                Resampling.BOX,
+                Resampling.HAMMING,
+                Resampling.LANCZOS,
+                Resampling.MKS2013,
+                Resampling.MKS2021,
+            ):
                 unusable: dict[int, str] = {
                     Resampling.BOX: "Image.Resampling.BOX",
                     Resampling.HAMMING: "Image.Resampling.HAMMING",
                     Resampling.LANCZOS: "Image.Resampling.LANCZOS",
+                    Resampling.MKS2013: "Image.Resampling.MKS2013",
+                    Resampling.MKS2021: "Image.Resampling.MKS2021",
                 }
                 msg = unusable[resample] + f" ({resample}) cannot be used."
             else:
@@ -3081,22 +3213,21 @@ def new(
     """
     Creates a new image with the given mode and size.
 
-    :param mode: The mode to use for the new image. See:
-       :ref:`concept-modes`.
+    :param mode: The mode to use for the new image. See: :ref:`concept-modes`.
     :param size: A 2-tuple, containing (width, height) in pixels.
-    :param color: What color to use for the image. Default is black. If given,
-       this should be a single integer or floating point value for single-band
-       modes, and a tuple for multi-band modes (one value per band). When
-       creating RGB or HSV images, you can also use color strings as supported
-       by the ImageColor module. See :ref:`colors` for more information. If the
-       color is None, the image is not initialised.
+    :param color: What color to use for the image. If given, this should be a single
+       integer or floating point value for single-band modes, and a tuple for
+       multi-band modes (one value per band). When creating RGB or HSV images, you can
+       also use color strings as supported by the ImageColor module. See :ref:`colors`
+       for more information. The default color is zero, which appears as black in
+       single band or RGB-based images. ``None`` is also treated as zero.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
     _check_size(size)
 
     if color is None:
-        # don't initialize
+        # core.new() returns zeroed memory, so there is nothing to fill
         return Image()._new(core.new(mode, size))
 
     if isinstance(color, str):
@@ -3112,7 +3243,7 @@ def new(
         and isinstance(color, (list, tuple))
         and all(isinstance(i, int) for i in color)
     ):
-        color_ints: tuple[int, ...] = cast(tuple[int, ...], tuple(color))
+        color_ints: tuple[int, ...] = cast("tuple[int, ...]", tuple(color))
         if len(color_ints) == 3 or len(color_ints) == 4:
             # RGB or RGBA value for a P image
             from . import ImagePalette
@@ -3125,7 +3256,7 @@ def new(
 def frombytes(
     mode: str,
     size: tuple[int, int],
-    data: bytes | bytearray | SupportsArrayInterface,
+    data: DecoderInput,
     decoder_name: str = "raw",
     *args: Any,
 ) -> Image:
@@ -3239,6 +3370,12 @@ class SupportsArrayInterface(Protocol):
     def __array_interface__(self) -> dict[str, Any]:
         raise NotImplementedError()
 
+    def __len__(self) -> int:
+        raise NotImplementedError()
+
+
+DecoderInput = bytes | bytearray | memoryview | SupportsArrayInterface
+
 
 class SupportsArrowArrayInterface(Protocol):
     """
@@ -3247,8 +3384,8 @@ class SupportsArrowArrayInterface(Protocol):
     """
 
     def __arrow_c_array__(
-        self, requested_schema: "PyCapsule" = None  # type: ignore[name-defined]  # noqa: F821, UP037
-    ) -> tuple["PyCapsule", "PyCapsule"]:  # type: ignore[name-defined]  # noqa: F821, UP037
+        self, requested_schema: PyCapsule = None  # type: ignore[name-defined]  # noqa: F821
+    ) -> tuple[PyCapsule, PyCapsule]:  # type: ignore[name-defined]  # noqa: F821
         raise NotImplementedError()
 
 
@@ -3312,7 +3449,8 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
             raise TypeError(msg) from e
     if mode is not None:
         if mode != typemode and mode not in color_modes:
-            deprecate("'mode' parameter for changing data types", 13)
+            msg = "Invalid mode for data type"
+            raise ValueError(msg)
         rawmode = mode
     else:
         mode = typemode
@@ -3382,7 +3520,7 @@ def fromarrow(
         msg = "arrow_c_array interface not found"
         raise ValueError(msg)
 
-    (schema_capsule, array_capsule) = obj.__arrow_c_array__()
+    schema_capsule, array_capsule = obj.__arrow_c_array__()
     _im = core.new_arrow(mode, size, schema_capsule, array_capsule)
     if _im:
         return Image()._new(_im)
@@ -3516,7 +3654,7 @@ def open(
         fp = builtins.open(filename, "rb")
         exclusive_fp = True
     else:
-        fp = cast(IO[bytes], fp)
+        fp = cast("IO[bytes]", fp)
 
     try:
         fp.seek(0)
@@ -3526,7 +3664,11 @@ def open(
 
     prefix = fp.read(16)
 
-    preinit()
+    # Try to import just the plugin needed for this file extension
+    # before falling back to preinit() which imports common plugins
+    ext = os.path.splitext(filename)[1] if filename else ""
+    if not _import_plugin_for_extension(ext):
+        preinit()
 
     warning_messages: list[str] = []
 
@@ -3562,14 +3704,19 @@ def open(
     im = _open_core(fp, filename, prefix, formats)
 
     if im is None and formats is ID:
-        checked_formats = ID.copy()
-        if init():
-            im = _open_core(
-                fp,
-                filename,
-                prefix,
-                tuple(format for format in formats if format not in checked_formats),
-            )
+        # Try preinit (few common plugins) then init (all plugins)
+        for loader in (preinit, init):
+            checked_formats = ID.copy()
+            loader()
+            if formats != checked_formats:
+                im = _open_core(
+                    fp,
+                    filename,
+                    prefix,
+                    tuple(f for f in formats if f not in checked_formats),
+                )
+                if im is not None:
+                    break
 
     if im:
         im._exclusive_fp = exclusive_fp
@@ -3669,7 +3816,7 @@ def merge(mode: str, bands: Sequence[Image]) -> Image:
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
-    if getmodebands(mode) != len(bands) or "*" in mode:
+    if getmodebands(mode) != len(bands):
         msg = "wrong number of bands"
         raise ValueError(msg)
     for band in bands[1:]:
@@ -3809,17 +3956,6 @@ def register_encoder(name: str, encoder: type[ImageFile.PyEncoder]) -> None:
     .. versionadded:: 4.1.0
     """
     ENCODERS[name] = encoder
-
-
-# --------------------------------------------------------------------
-# Simple display support.
-
-
-def _show(image: Image, **options: Any) -> None:
-    from . import ImageShow
-
-    deprecate("Image._show", 13, "ImageShow.show")
-    ImageShow.show(image, **options)
 
 
 # --------------------------------------------------------------------
@@ -4113,80 +4249,83 @@ class Exif(_ExifBase):
                 if tag == ExifTags.IFD.MakerNote:
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
-                    if tag_data.startswith(b"FUJIFILM"):
-                        ifd_offset = i32le(tag_data, 8)
-                        ifd_data = tag_data[ifd_offset:]
+                    try:
+                        if tag_data.startswith(b"FUJIFILM"):
+                            ifd_offset = i32le(tag_data, 8)
+                            ifd_data = tag_data[ifd_offset:]
 
-                        makernote = {}
-                        for i in range(struct.unpack("<H", ifd_data[:2])[0]):
-                            ifd_tag, typ, count, data = struct.unpack(
-                                "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
-                            )
-                            try:
-                                (
-                                    unit_size,
-                                    handler,
-                                ) = ImageFileDirectory_v2._load_dispatch[typ]
-                            except KeyError:
-                                continue
-                            size = count * unit_size
-                            if size > 4:
-                                (offset,) = struct.unpack("<L", data)
-                                data = ifd_data[offset - 12 : offset + size - 12]
-                            else:
-                                data = data[:size]
-
-                            if len(data) != size:
-                                warnings.warn(
-                                    "Possibly corrupt EXIF MakerNote data.  "
-                                    f"Expecting to read {size} bytes but only got "
-                                    f"{len(data)}. Skipping tag {ifd_tag}"
+                            makernote = {}
+                            for i in range(struct.unpack("<H", ifd_data[:2])[0]):
+                                ifd_tag, typ, count, data = struct.unpack(
+                                    "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
                                 )
-                                continue
+                                try:
+                                    (
+                                        unit_size,
+                                        handler,
+                                    ) = ImageFileDirectory_v2._load_dispatch[typ]
+                                except KeyError:
+                                    continue
+                                size = count * unit_size
+                                if size > 4:
+                                    (offset,) = struct.unpack("<L", data)
+                                    data = ifd_data[offset - 12 : offset + size - 12]
+                                else:
+                                    data = data[:size]
 
-                            if not data:
-                                continue
+                                if len(data) != size:
+                                    warnings.warn(
+                                        "Possibly corrupt EXIF MakerNote data.  "
+                                        f"Expecting to read {size} bytes but only got "
+                                        f"{len(data)}. Skipping tag {ifd_tag}"
+                                    )
+                                    continue
 
-                            makernote[ifd_tag] = handler(
-                                ImageFileDirectory_v2(), data, False
-                            )
-                        self._ifds[tag] = dict(self._fixup_dict(makernote))
-                    elif self.get(0x010F) == "Nintendo":
-                        makernote = {}
-                        for i in range(struct.unpack(">H", tag_data[:2])[0]):
-                            ifd_tag, typ, count, data = struct.unpack(
-                                ">HHL4s", tag_data[i * 12 + 2 : (i + 1) * 12 + 2]
-                            )
-                            if ifd_tag == 0x1101:
-                                # CameraInfo
-                                (offset,) = struct.unpack(">L", data)
-                                self.fp.seek(offset)
+                                if not data:
+                                    continue
 
-                                camerainfo: dict[str, int | bytes] = {
-                                    "ModelID": self.fp.read(4)
-                                }
+                                makernote[ifd_tag] = handler(
+                                    ImageFileDirectory_v2(), data, False
+                                )
+                            self._ifds[tag] = dict(self._fixup_dict(makernote))
+                        elif self.get(0x010F) == "Nintendo":
+                            makernote = {}
+                            for i in range(struct.unpack(">H", tag_data[:2])[0]):
+                                ifd_tag, typ, count, data = struct.unpack(
+                                    ">HHL4s", tag_data[i * 12 + 2 : (i + 1) * 12 + 2]
+                                )
+                                if ifd_tag == 0x1101:
+                                    # CameraInfo
+                                    (offset,) = struct.unpack(">L", data)
+                                    self.fp.seek(offset)
 
-                                self.fp.read(4)
-                                # Seconds since 2000
-                                camerainfo["TimeStamp"] = i32le(self.fp.read(12))
+                                    camerainfo: dict[str, int | bytes] = {
+                                        "ModelID": self.fp.read(4)
+                                    }
 
-                                self.fp.read(4)
-                                camerainfo["InternalSerialNumber"] = self.fp.read(4)
+                                    self.fp.read(4)
+                                    # Seconds since 2000
+                                    camerainfo["TimeStamp"] = i32le(self.fp.read(12))
 
-                                self.fp.read(12)
-                                parallax = self.fp.read(4)
-                                handler = ImageFileDirectory_v2._load_dispatch[
-                                    TiffTags.FLOAT
-                                ][1]
-                                camerainfo["Parallax"] = handler(
-                                    ImageFileDirectory_v2(), parallax, False
-                                )[0]
+                                    self.fp.read(4)
+                                    camerainfo["InternalSerialNumber"] = self.fp.read(4)
 
-                                self.fp.read(4)
-                                camerainfo["Category"] = self.fp.read(2)
+                                    self.fp.read(12)
+                                    parallax = self.fp.read(4)
+                                    handler = ImageFileDirectory_v2._load_dispatch[
+                                        TiffTags.FLOAT
+                                    ][1]
+                                    camerainfo["Parallax"] = handler(
+                                        ImageFileDirectory_v2(), parallax, False
+                                    )[0]
 
-                                makernote = {0x1101: camerainfo}
-                        self._ifds[tag] = makernote
+                                    self.fp.read(4)
+                                    camerainfo["Category"] = self.fp.read(2)
+
+                                    makernote = {0x1101: camerainfo}
+                            self._ifds[tag] = makernote
+                    except struct.error:
+                        pass
                 else:
                     # Interop
                     ifd = self._get_ifd_dict(tag_data, tag)

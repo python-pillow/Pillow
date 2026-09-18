@@ -1,14 +1,15 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"numbers", "types"}
+
 import os
 import sys
 from collections.abc import Sequence
+from numbers import _IntegralLike as IntegralLike
 from typing import Any, Protocol, TypeVar
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from numbers import _IntegralLike as IntegralLike
-
     try:
         import numpy.typing as npt
 

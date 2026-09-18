@@ -326,6 +326,19 @@ ImagingPackXBGR(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 void
+ImagingPackCMYK2RGB(UINT8 *out, const UINT8 *in, int xsize) {
+    int x, nk, tmp;
+    for (x = 0; x < xsize; x++) {
+        nk = 255 - in[3];
+        out[0] = CLIP8(nk - MULDIV255(in[0], nk, tmp));
+        out[1] = CLIP8(nk - MULDIV255(in[1], nk, tmp));
+        out[2] = CLIP8(nk - MULDIV255(in[2], nk, tmp));
+        out += 3;
+        in += 4;
+    }
+}
+
+void
 ImagingPackBGRA(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* BGRA, reversed bytes with right alpha */
@@ -605,6 +618,7 @@ static struct {
     {IMAGING_MODE_CMYK, IMAGING_RAWMODE_M, 8, band1},
     {IMAGING_MODE_CMYK, IMAGING_RAWMODE_Y, 8, band2},
     {IMAGING_MODE_CMYK, IMAGING_RAWMODE_K, 8, band3},
+    {IMAGING_MODE_CMYK, IMAGING_RAWMODE_RGB, 24, ImagingPackCMYK2RGB},
 
     /* video (YCbCr) */
     {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_YCbCr, 24, ImagingPackRGB},

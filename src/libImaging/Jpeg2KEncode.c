@@ -330,8 +330,10 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         components = 4;
         color_space = OPJ_CLRSPC_SRGB;
         pack = j2k_pack_rgba;
-#if ((OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR == 5 && OPJ_VERSION_BUILD >= 3) || \
-     (OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR > 5) || OPJ_VERSION_MAJOR > 2)
+#if (                                                                               \
+    (OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR == 5 && OPJ_VERSION_BUILD >= 3) || \
+    (OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR > 5) || OPJ_VERSION_MAJOR > 2      \
+)
     } else if (im->mode == IMAGING_MODE_CMYK) {
         components = 4;
         color_space = OPJ_CLRSPC_CMYK;

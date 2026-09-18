@@ -19,9 +19,11 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "PIL._util", "struct"}
+
 import os
 import struct
-from typing import IO, Any, cast
+from typing import cast
 
 from . import (
     Image,
@@ -32,6 +34,10 @@ from . import (
 )
 from ._binary import o32le
 from ._util import DeferredError
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
@@ -59,11 +65,10 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                     + b"MPF\0"
                     + b" " * ifd_length
                 )
-                exif = im_frame.encoderinfo.get("exif")
-                if isinstance(exif, Image.Exif):
-                    exif = exif.tobytes()
-                    im_frame.encoderinfo["exif"] = exif
-                if exif:
+                if exif := im_frame.encoderinfo.get("exif"):
+                    if isinstance(exif, Image.Exif):
+                        exif = exif.tobytes()
+                        im_frame.encoderinfo["exif"] = exif
                     mpf_offset += 4 + len(exif)
 
                 JpegImagePlugin._save(im_frame, fp, filename)
@@ -157,11 +162,12 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
             raise ValueError(msg)
         self.fp.seek(self.offset)
         JpegImagePlugin.JpegImageFile._open(self)
+        Image._decompression_bomb_check(self.size)
         if self.info.get("exif") != original_exif:
             self._reload_exif()
 
         self.tile = [
-            ImageFile._Tile("jpeg", (0, 0) + self.size, self.offset, self.tile[0][-1])
+            ImageFile._Tile("jpeg", (0, 0, *self.size), self.offset, self.tile[0][-1])
         ]
         self.__frame = frame
 
@@ -184,7 +190,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         double call to _open.
         """
         jpeg_instance.__class__ = MpoImageFile
-        mpo_instance = cast(MpoImageFile, jpeg_instance)
+        mpo_instance = cast("MpoImageFile", jpeg_instance)
         mpo_instance._after_jpeg_open(mpheader)
         return mpo_instance
 

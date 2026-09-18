@@ -4,7 +4,6 @@ import io
 import re
 import sys
 import warnings
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -18,6 +17,10 @@ from .helper import (
     hopper,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 try:
     from PIL import _webp
@@ -48,6 +51,12 @@ class TestFileWebp:
         version = features.version_module("webp")
         assert version is not None
         assert re.search(r"\d+\.\d+\.\d+$", version)
+
+    def test_invalid_file(self) -> None:
+        invalid_file = "Tests/images/flower.jpg"
+
+        with pytest.raises(SyntaxError):
+            WebPImagePlugin.WebPImageFile(invalid_file)
 
     def test_read_rgb(self) -> None:
         """
@@ -157,7 +166,7 @@ class TestFileWebp:
 
     @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
     def test_write_encoding_error_bad_dimension(self, tmp_path: Path) -> None:
-        im = Image.new("L", (16384, 16384))
+        im = Image.new("L", (16384, 1))
         with pytest.raises(ValueError) as e:
             im.save(tmp_path / "temp.webp")
         assert (
@@ -184,9 +193,7 @@ class TestFileWebp:
     def test_no_resource_warning(self, tmp_path: Path) -> None:
         file_path = "Tests/images/hopper.webp"
         with Image.open(file_path) as image:
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 image.save(tmp_path / "temp.webp")
 
     def test_file_pointer_could_be_reused(self) -> None:

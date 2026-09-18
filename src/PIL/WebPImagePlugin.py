@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"io"}
+
 from io import BytesIO
 
 from . import Image, ImageFile
@@ -43,10 +45,15 @@ class WebPImageFile(ImageFile.ImageFile):
     __logical_frame = 0
 
     def _open(self) -> None:
+        assert self.fp is not None
+        s = self.fp.read()
+        if not _accept(s):
+            msg = "not a WEBP file"
+            raise SyntaxError(msg)
+
         # Use the newer AnimDecoder API to parse the (possibly) animated file,
         # and access muxed chunks like ICC/EXIF/XMP.
-        assert self.fp is not None
-        self._decoder = _webp.WebPAnimDecoder(self.fp.read())
+        self._decoder = _webp.WebPAnimDecoder(s)
 
         # Get info from decoder
         self._size, self.info["loop"], bgcolor, self.n_frames, self.rawmode = (
@@ -81,6 +88,8 @@ class WebPImageFile(ImageFile.ImageFile):
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
+        self.info.pop("timestamp", None)
+        self.info.pop("duration", None)
 
         # Set logical frame to requested position
         self.__logical_frame = frame
@@ -133,7 +142,7 @@ class WebPImageFile(ImageFile.ImageFile):
             if self.fp and self._exclusive_fp:
                 self.fp.close()
             self.fp = BytesIO(data)
-            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.rawmode)]
+            self.tile = [ImageFile._Tile("raw", (0, 0, *self.size), 0, self.rawmode)]
 
         return super().load()
 

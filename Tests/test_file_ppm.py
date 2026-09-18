@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import sys
-from io import BytesIO
-from pathlib import Path
+from io import BytesIO, TextIOWrapper
 
 import pytest
 
@@ -14,6 +13,10 @@ from .helper import (
     assert_image_similar,
     hopper,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # sample ppm stream
 TEST_FILE = "Tests/images/hopper.ppm"
@@ -59,8 +62,10 @@ def test_sanity() -> None:
         ),
         # P6 with maxval > 255
         (
-            b"P6 3 1 257 \x00\x00\x00\x01\x00\x02"
-            b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xff\xff",
+            (
+                b"P6 3 1 257 \x00\x00\x00\x01\x00\x02"
+                b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xff\xff"
+            ),
             "RGB",
             (
                 (0, 1, 2),
@@ -381,17 +386,13 @@ def test_mimetypes(tmp_path: Path) -> None:
 @pytest.mark.parametrize("buffer", (True, False))
 def test_save_stdout(buffer: bool, monkeypatch: pytest.MonkeyPatch) -> None:
 
-    class MyStdOut:
-        buffer = BytesIO()
-
-    mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
+    fp = BytesIO()
+    mystdout = TextIOWrapper(fp) if buffer else fp
 
     monkeypatch.setattr(sys, "stdout", mystdout)
 
     with Image.open(TEST_FILE) as im:
         im.save(sys.stdout, "PPM")  # type: ignore[arg-type]
 
-    if isinstance(mystdout, MyStdOut):
-        mystdout = mystdout.buffer
-    with Image.open(mystdout) as reloaded:
+    with Image.open(fp) as reloaded:
         assert_image_equal_tofile(reloaded, TEST_FILE)

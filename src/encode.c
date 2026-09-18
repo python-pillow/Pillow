@@ -23,7 +23,7 @@
 /* FIXME: make these pluggable! */
 
 #define PY_SSIZE_T_CLEAN
-#include "Python.h"
+#include <Python.h>
 
 #include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
@@ -153,7 +153,7 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
 }
 
 static PyObject *
-_encode_to_pyfd(ImagingEncoderObject *encoder) {
+_encode_to_pyfd(ImagingEncoderObject *encoder, PyObject *args) {
     PyObject *result;
     int status;
 
@@ -222,21 +222,55 @@ PyImaging_AsImaging(PyObject *op);
 
 static PyObject *
 _setimage(ImagingEncoderObject *encoder, PyObject *args) {
-    PyObject *op;
+    PyObject *op, *extents;
     Imaging im;
     ImagingCodecState state;
     Py_ssize_t x0, y0, x1, y1;
 
-    /* Define where image data should be stored */
-
-    x0 = y0 = x1 = y1 = 0;
-
     /* FIXME: should publish the ImagingType descriptor */
-    if (!PyArg_ParseTuple(args, "O|(nnnn)", &op, &x0, &y0, &x1, &y1)) {
+    if (!PyArg_ParseTuple(args, "OO", &op, &extents)) {
         return NULL;
     }
     im = PyImaging_AsImaging(op);
     if (!im) {
+        return NULL;
+    }
+    if (extents == Py_None) {
+        x0 = 0;
+        y0 = 0;
+        x1 = im->xsize;
+        y1 = im->ysize;
+    } else {
+        if (!PyTuple_Check(extents) || PyTuple_GET_SIZE(extents) != 4) {
+            PyErr_SetString(PyExc_ValueError, "invalid extents");
+            return NULL;
+        }
+        for (int i = 0; i < 4; i++) {
+            PyObject *extent = PyTuple_GetItem(extents, i);
+            if (!PyLong_Check(extent)) {
+                PyErr_SetString(PyExc_ValueError, "invalid extents");
+                return NULL;
+            }
+            Py_ssize_t e = (Py_ssize_t)PyLong_AsLong(extent);
+
+            if (i == 0) {
+                x0 = e;
+            } else if (i == 1) {
+                y0 = e;
+            } else if (i == 2) {
+                x1 = e;
+            } else {
+                y1 = e;
+            }
+        }
+    }
+    if (im->xsize == 0 || im->ysize == 0) {
+        PyErr_SetString(PyExc_ValueError, "cannot write empty image");
+        return NULL;
+    }
+
+    if (x0 < 0 || y0 < 0 || x1 <= x0 || y1 <= y0 || x1 > im->xsize || y1 > im->ysize) {
+        PyErr_SetString(PyExc_SystemError, "tile cannot extend outside image");
         return NULL;
     }
 
@@ -244,21 +278,10 @@ _setimage(ImagingEncoderObject *encoder, PyObject *args) {
 
     state = &encoder->state;
 
-    if (x0 == 0 && x1 == 0) {
-        state->xsize = im->xsize;
-        state->ysize = im->ysize;
-    } else {
-        state->xoff = x0;
-        state->yoff = y0;
-        state->xsize = x1 - x0;
-        state->ysize = y1 - y0;
-    }
-
-    if (state->xsize <= 0 || state->xsize + state->xoff > im->xsize ||
-        state->ysize <= 0 || state->ysize + state->yoff > im->ysize) {
-        PyErr_SetString(PyExc_SystemError, "tile cannot extend outside image");
-        return NULL;
-    }
+    state->xoff = x0;
+    state->yoff = y0;
+    state->xsize = x1 - x0;
+    state->ysize = y1 - y0;
 
     /* Allocate memory buffer (if bits field is set) */
     if (state->bits > 0) {
@@ -742,6 +765,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     for (pos = 0; pos < tags_size; pos++) {
         item = PyList_GetItemRef(tags, pos);
         if (item == NULL) {
+            Py_DECREF(encoder);
             return NULL;
         }
 
@@ -749,7 +773,6 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         key = PyTuple_GET_ITEM(item, 0);
         key_int = (int)PyLong_AsLong(key);
         value = PyTuple_GET_ITEM(item, 1);
-        Py_DECREF(item);
 
         status = 0;
         is_core_tag = 0;
@@ -766,6 +789,8 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         if (!is_core_tag) {
             PyObject *tag_type;
             if (PyDict_GetItemRef(types, key, &tag_type) < 0) {
+                Py_DECREF(encoder);
+                Py_DECREF(item);
                 return NULL;  // Exception has been already set
             }
             if (tag_type) {
@@ -773,6 +798,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 if (type_int >= TIFF_BYTE && type_int <= TIFF_LONG8) {
                     type = (TIFFDataType)type_int;
                 }
+                Py_DECREF(tag_type);
             }
         }
 
@@ -795,6 +821,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             is_var_length = 1;
 
             if (!len) {
+                Py_DECREF(item);
                 continue;
             }
 
@@ -817,12 +844,19 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             if (ImagingLibTiffMergeFieldInfo(
                     &encoder->state, type, key_int, is_var_length
                 )) {
+                Py_DECREF(item);
                 continue;
             }
         }
 
         if (type == TIFF_BYTE || type == TIFF_UNDEFINED ||
             key_int == TIFFTAG_INKNAMES) {
+            if (!PyBytes_Check(value)) {
+                Py_DECREF(encoder);
+                Py_DECREF(item);
+                PyErr_SetString(PyExc_ValueError, "Incorrect tag value type");
+                return NULL;
+            }
             status = ImagingLibTiffSetField(
                 &encoder->state,
                 (ttag_t)key_int,
@@ -837,6 +871,8 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             if (key_int == TIFFTAG_COLORMAP) {
                 int stride = 256;
                 if (len != 768) {
+                    Py_DECREF(encoder);
+                    Py_DECREF(item);
                     PyErr_SetString(
                         PyExc_ValueError, "Requiring 768 items for Colormap"
                     );
@@ -995,11 +1031,18 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                     &encoder->state, (ttag_t)key_int, (INT8)PyLong_AsLong(value)
                 );
             } else if (type == TIFF_ASCII) {
+                if (!PyBytes_Check(value)) {
+                    Py_DECREF(encoder);
+                    Py_DECREF(item);
+                    PyErr_SetString(PyExc_ValueError, "Incorrect tag value type");
+                    return NULL;
+                }
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, PyBytes_AsString(value)
                 );
-            } else if (type == TIFF_DOUBLE || type == TIFF_SRATIONAL ||
-                       type == TIFF_RATIONAL) {
+            } else if (
+                type == TIFF_DOUBLE || type == TIFF_SRATIONAL || type == TIFF_RATIONAL
+            ) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (FLOAT64)PyFloat_AsDouble(value)
                 );
@@ -1015,6 +1058,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 );
             }
         }
+        Py_DECREF(item);
         if (!status) {
             TRACE(("Error setting Field\n"));
             Py_DECREF(encoder);
@@ -1069,7 +1113,10 @@ get_qtables_arrays(PyObject *qtables, int *qtablesLen) {
     }
 
     tables = PySequence_Fast(qtables, "expected a sequence");
-    num_tables = PySequence_Size(qtables);
+    if (tables == NULL) {
+        return NULL;
+    }
+    num_tables = PySequence_Fast_GET_SIZE(tables);
     if (num_tables < 1 || num_tables > NUM_QUANT_TBLS) {
         PyErr_SetString(
             PyExc_ValueError,
@@ -1090,11 +1137,15 @@ get_qtables_arrays(PyObject *qtables, int *qtablesLen) {
             PyErr_SetString(PyExc_ValueError, "Invalid quantization tables");
             goto JPEG_QTABLES_ERR;
         }
-        if (PySequence_Size(table) != DCTSIZE2) {
+        table_data = PySequence_Fast(table, "expected a sequence");
+        if (table_data == NULL) {
+            goto JPEG_QTABLES_ERR;
+        }
+        if (PySequence_Fast_GET_SIZE(table_data) != DCTSIZE2) {
+            Py_DECREF(table_data);
             PyErr_SetString(PyExc_ValueError, "Invalid quantization table size");
             goto JPEG_QTABLES_ERR;
         }
-        table_data = PySequence_Fast(table, "expected a sequence");
         for (j = 0; j < DCTSIZE2; j++) {
             qarrays[i * DCTSIZE2 + j] =
                 PyLong_AS_LONG(PySequence_Fast_GET_ITEM(table_data, j));
@@ -1189,12 +1240,16 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     // Freed in JpegEncode, Case 6
     qarrays = get_qtables_arrays(qtables, &qtablesLen);
+    if (qarrays == NULL && PyErr_Occurred()) {
+        Py_DECREF(encoder);
+        return NULL;
+    }
 
     if (comment && comment_size > 0) {
         /* malloc check ok, length is from python parsearg */
         char *p = malloc(comment_size);  // Freed in JpegEncode, Case 6
         if (!p) {
-            return ImagingError_MemoryError();
+            goto memory_error;
         }
         memcpy(p, comment, comment_size);
         comment = p;
@@ -1206,10 +1261,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
         /* malloc check ok, length is from python parsearg */
         char *p = malloc(extra_size);  // Freed in JpegEncode, Case 6
         if (!p) {
-            if (comment) {
-                free(comment);
-            }
-            return ImagingError_MemoryError();
+            goto memory_error;
         }
         memcpy(p, extra, extra_size);
         extra = p;
@@ -1221,13 +1273,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
         /* malloc check ok, length is from python parsearg */
         char *pp = malloc(rawExifLen);  // Freed in JpegEncode, Case 6
         if (!pp) {
-            if (comment) {
-                free(comment);
-            }
-            if (extra) {
-                free(extra);
-            }
-            return ImagingError_MemoryError();
+            goto memory_error;
         }
         memcpy(pp, rawExif, rawExifLen);
         rawExif = pp;
@@ -1260,6 +1306,19 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     jpeg_encoder_state->rawExifLen = rawExifLen;
 
     return (PyObject *)encoder;
+
+memory_error:
+    Py_DECREF(encoder);
+    if (qarrays) {
+        free(qarrays);
+    }
+    if (comment) {
+        free(comment);
+    }
+    if (extra) {
+        free(extra);
+    }
+    return ImagingError_MemoryError();
 }
 
 #endif
@@ -1342,11 +1401,10 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
 
     if (strcmp(format, "j2k") == 0) {
         codec_format = OPJ_CODEC_J2K;
-    } else if (strcmp(format, "jpt") == 0) {
-        codec_format = OPJ_CODEC_JPT;
     } else if (strcmp(format, "jp2") == 0) {
         codec_format = OPJ_CODEC_JP2;
     } else {
+        PyErr_SetString(PyExc_ValueError, "unknown codec format");
         return NULL;
     }
 
@@ -1361,6 +1419,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     } else if (strcmp(progression, "CPRL") == 0) {
         prog_order = OPJ_CPRL;
     } else {
+        PyErr_SetString(PyExc_ValueError, "unknown progression");
         return NULL;
     }
 
@@ -1373,6 +1432,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     } else if (strcmp(cinema_mode, "cinema4k-24") == 0) {
         cine_mode = OPJ_CINEMA4K_24;
     } else {
+        PyErr_SetString(PyExc_ValueError, "unknown cinema mode");
         return NULL;
     }
 

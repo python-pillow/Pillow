@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 from typing import IO
 
 import pytest
@@ -9,6 +8,10 @@ import pytest
 from PIL import Image, ImageFile, WmfImagePlugin
 
 from .helper import assert_image_equal_tofile, assert_image_similar_tofile, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_load_raw() -> None:
@@ -18,7 +21,7 @@ def test_load_raw() -> None:
             # Currently, support for WMF/EMF is Windows-only
             im.load()
             # Compare to reference rendering
-            assert_image_similar_tofile(im, "Tests/images/drawing_emf_ref.png", 0)
+            assert_image_equal_tofile(im, "Tests/images/drawing_emf_ref.png")
 
     # Test basic WMF open and rendering
     with Image.open("Tests/images/drawing.wmf") as im:
@@ -69,6 +72,9 @@ def test_register_handler(tmp_path: Path) -> None:
     class TestHandler(ImageFile.StubHandler):
         methodCalled = False
 
+        def open(self, im: ImageFile.StubImageFile) -> None:
+            im._size = (1, 1)
+
         def load(self, im: ImageFile.StubImageFile) -> Image.Image:
             return Image.new("RGB", (1, 1))
 
@@ -76,7 +82,7 @@ def test_register_handler(tmp_path: Path) -> None:
             self.methodCalled = True
 
     handler = TestHandler()
-    original_handler = WmfImagePlugin._handler
+    original_handler = WmfImagePlugin.WmfStubImageFile._handler
     WmfImagePlugin.register_handler(handler)
 
     im = hopper()
@@ -112,9 +118,13 @@ def test_load_set_dpi() -> None:
 
     with Image.open("Tests/images/drawing.emf") as im:
         assert im.size == (1625, 1625)
+        assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
+        with pytest.raises(Image.DecompressionBombError):
+            im.load(20000)
 
-        if not hasattr(Image.core, "drawwmf"):
-            return
+    if not hasattr(Image.core, "drawwmf"):
+        return
+    with Image.open("Tests/images/drawing.emf") as im:
         assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
         im.load(im.info["dpi"])
         assert im.size == (1625, 1625)

@@ -6,8 +6,7 @@ import itertools
 import os
 import re
 import sys
-from pathlib import Path
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 import pytest
 
@@ -28,9 +27,13 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
-    mark_if_feature_version,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from typing import Any
 
 
 @skip_unless_feature("libtiff")
@@ -224,10 +227,7 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/hopper_g4.tif") as im:
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
             for tag in im.tag_v2:
-                try:
-                    del core_items[tag]
-                except KeyError:
-                    pass
+                core_items.pop(tag, None)
             del core_items[320]  # colormap is special, tested below
 
             # Type codes:
@@ -324,7 +324,7 @@ class TestFileLibTiff(LibTiffTestCase):
                         and libtiff
                     ):
                         # libtiff does not support real RATIONALS
-                        assert round(abs(float(reloaded_value) - float(value)), 7) == 0
+                        assert reloaded_value == pytest.approx(value)
                         continue
 
                     assert reloaded_value == value
@@ -379,6 +379,21 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(out) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2[37000] == 100
+
+    @pytest.mark.parametrize("tagtype", (TiffTags.BYTE, TiffTags.ASCII))
+    def test_non_bytes(
+        self, tagtype: int, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[37000] = 100
+        ifd.tagtype[37000] = tagtype
+
+        out = tmp_path / "temp.tif"
+        im = Image.new("L", (1, 1))
+        with pytest.raises(ValueError, match="Incorrect tag value type"):
+            im.save(out, tiffinfo=ifd)
 
     def test_inknames_tag(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
@@ -738,7 +753,7 @@ class TestFileLibTiff(LibTiffTestCase):
             buffer_io.seek(0)
 
             with Image.open(buffer_io) as saved_im:
-                assert_image_similar(pilim, saved_im, 0)
+                assert_image_equal(pilim, saved_im)
 
         save_bytesio()
         save_bytesio("raw")
@@ -852,6 +867,15 @@ class TestFileLibTiff(LibTiffTestCase):
             assert im._compression == "tiff_ccitt"
             assert im.size == (10, 10)
             im.load()
+
+    def test_seek_remove_palette(self) -> None:
+        with Image.open("Tests/images/no_rows_per_strip.tif") as im:
+            assert im.mode == "P"
+            assert im.palette is not None
+
+            im.seek(1)
+            assert im.mode == "F"
+            assert im.palette is None
 
     def test_save_tiff_with_jpegtables(self, tmp_path: Path) -> None:
         # Arrange
@@ -981,17 +1005,11 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_strip_ycbcr_jpeg_2x2_sampling(self) -> None:
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/flower.jpg", 1.2)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_strip_ycbcr_jpeg_1x1_sampling(self) -> None:
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
@@ -1002,17 +1020,11 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_tiled_ycbcr_jpeg_1x1_sampling(self) -> None:
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/flower2.jpg", 0.01)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_tiled_ycbcr_jpeg_2x2_sampling(self) -> None:
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
@@ -1057,6 +1069,15 @@ class TestFileLibTiff(LibTiffTestCase):
         # tiff_16bit_RGBa.tiff tiff_strip_planar_16bit_RGBa.tiff
         with Image.open("Tests/images/tiff_strip_planar_16bit_RGBa.tiff") as im:
             assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
+
+    def test_separate_planar_extra_samples(self, tmp_path: Path) -> None:
+        out = tmp_path / "temp.tif"
+        with Image.open("Tests/images/separate_planar_extra_samples.tiff") as im:
+            assert im.mode == "L"
+
+            im.save(out)
+        with Image.open(out) as reloaded:
+            assert reloaded.mode == "L"
 
     @pytest.mark.parametrize("compression", (None, "jpeg"))
     def test_block_tile_tags(self, compression: str | None, tmp_path: Path) -> None:
@@ -1244,9 +1265,10 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_save_zero(self, compression: str | None, tmp_path: Path) -> None:
         im = Image.new("RGB", (0, 0))
         out = tmp_path / "temp.tif"
-        with pytest.raises(SystemError):
+        with pytest.raises(ValueError, match="cannot write empty image"):
             im.save(out, compression=compression)
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Checks a Windows handle limit")
     def test_save_many_compressed(self, tmp_path: Path) -> None:
         im = hopper()
         out = tmp_path / "temp.tif"

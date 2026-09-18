@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import os
 import re
+import struct
 import warnings
 from io import BytesIO
-from pathlib import Path
-from types import ModuleType
 from typing import Any, cast
 
 import pytest
@@ -29,10 +28,14 @@ from .helper import (
     djpeg_available,
     hopper,
     is_win32,
-    mark_if_feature_version,
     skip_unless_feature,
     timeout_unless_slower_valgrind,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from types import ModuleType
 
 ElementTree: ModuleType | None
 try:
@@ -52,7 +55,7 @@ class TestFileJpeg:
         im.save(out, "JPEG", **options)
         test_bytes = out.tell()
         out.seek(0)
-        reloaded = cast(JpegImagePlugin.JpegImageFile, Image.open(out))
+        reloaded = cast("JpegImagePlugin.JpegImageFile", Image.open(out))
         return reloaded, test_bytes
 
     def roundtrip(
@@ -85,7 +88,7 @@ class TestFileJpeg:
     def test_zero(self, size: tuple[int, int], tmp_path: Path) -> None:
         f = tmp_path / "temp.jpg"
         im = Image.new("RGB", size)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="cannot write empty image"):
             im.save(f)
 
     def test_app(self) -> None:
@@ -182,9 +185,6 @@ class TestFileJpeg:
         with Image.open("Tests/images/jfif_unit_cm.jpg") as im:
             assert im.info["dpi"] == (2.54, 5.08)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_icc(self, tmp_path: Path) -> None:
         # Test ICC support
         with Image.open("Tests/images/rgb.jpg") as im1:
@@ -227,9 +227,6 @@ class TestFileJpeg:
         im1 = self.roundtrip(hopper(), icc_profile=icc_profile)
         assert im1.info.get("icc_profile") == (icc_profile or None)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_large_icc_meta(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/148
         # Sometimes the meta data on the icc_profile block is bigger than
@@ -538,9 +535,6 @@ class TestFileJpeg:
         with Image.open(filename):
             pass
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_truncated_jpeg_should_read_all_the_data(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
@@ -560,9 +554,6 @@ class TestFileJpeg:
             with pytest.raises(OSError):
                 im.load()
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_qtables(self) -> None:
         def _n_qtables_helper(n: int, test_file: str) -> None:
             b = BytesIO()
@@ -590,9 +581,7 @@ class TestFileJpeg:
             assert im2.quantization == {0: bounds_qtable}
 
             # values from wizard.txt in jpeg9-a src package.
-            standard_l_qtable = [
-                int(s)
-                for s in """
+            standard_l_qtable = [int(s) for s in """
                 16  11  10  16  24  40  51  61
                 12  12  14  19  26  58  60  55
                 14  13  16  24  40  57  69  56
@@ -601,14 +590,9 @@ class TestFileJpeg:
                 24  35  55  64  81 104 113  92
                 49  64  78  87 103 121 120 101
                 72  92  95  98 112 100 103  99
-                """.split(
-                    None
-                )
-            ]
+                """.split(None)]
 
-            standard_chrominance_qtable = [
-                int(s)
-                for s in """
+            standard_chrominance_qtable = [int(s) for s in """
                 17  18  24  47  99  99  99  99
                 18  21  26  66  99  99  99  99
                 24  26  56  99  99  99  99  99
@@ -617,10 +601,7 @@ class TestFileJpeg:
                 99  99  99  99  99  99  99  99
                 99  99  99  99  99  99  99  99
                 99  99  99  99  99  99  99  99
-                """.split(
-                    None
-                )
-            ]
+                """.split(None)]
 
             for quality in range(101):
                 qtable_from_qtable_quality = self.roundtrip(
@@ -692,6 +673,15 @@ class TestFileJpeg:
             with pytest.raises(ValueError):
                 self.roundtrip(im, qtables=[[1, 2, 3, 4]])
 
+    def test_qtables_incorrect_length(self) -> None:
+        class IncorrectLength(list[list[int]]):
+            def __len__(self) -> int:
+                return 4
+
+        im = Image.new("1", (1, 1))
+        im2 = self.roundtrip(im, qtables=IncorrectLength([[1] * 64]))
+        assert len(im2.quantization) == 1
+
     def test_load_16bit_qtables(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
             assert isinstance(im, JpegImagePlugin.JpegImageFile)
@@ -740,7 +730,8 @@ class TestFileJpeg:
     def test_load_djpeg(self) -> None:
         with Image.open(TEST_FILE) as img:
             assert isinstance(img, JpegImagePlugin.JpegImageFile)
-            img.load_djpeg()
+            with pytest.warns(DeprecationWarning, match="load_djpeg"):
+                img.load_djpeg()
             assert_image_similar_tofile(img, TEST_FILE, 5)
 
     def test_no_duplicate_0x1001_tag(self) -> None:
@@ -775,6 +766,18 @@ class TestFileJpeg:
         assert im.format == "JPEG"
 
         im.close()
+
+    def test_mp_entry_count_too_high(self) -> None:
+        """Treat an MPO with fewer MP entries than images as JPEG"""
+        with open("Tests/images/sugarshack.mpo", "rb") as fp:
+            data = fp.read()
+
+        # Change the number of images to three, without adding a third MP entry
+        data = data[:6048] + struct.pack(">L", 3) + data[6052:]
+
+        with pytest.warns(UserWarning, match="malformed MPO file"):
+            with Image.open(BytesIO(data)) as im:
+                assert im.format == "JPEG"
 
     @pytest.mark.parametrize("mode", ("1", "L", "RGB", "RGBX", "CMYK", "YCbCr"))
     def test_save_correct_modes(self, mode: str) -> None:
@@ -881,18 +884,13 @@ class TestFileJpeg:
             # OSError for unidentified image.
             assert im.info.get("dpi") == (72, 72)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_exif_x_resolution(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/flower.jpg") as im:
             exif = im.getexif()
             assert exif[282] == 180
 
             out = tmp_path / "out.jpg"
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 im.save(out, exif=exif)
 
         with Image.open(out) as reloaded:
@@ -920,9 +918,6 @@ class TestFileJpeg:
         with Image.open("Tests/images/multiple_exif.jpg") as im:
             assert im.getexif()[270] == "firstsecond"
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_photoshop(self) -> None:
         with Image.open("Tests/images/photoshop-200dpi.jpg") as im:
             assert im.info["photoshop"][0x03ED] == {
@@ -1063,9 +1058,7 @@ class TestFileJpeg:
         # Even though this decoder never says that it is finished
         # the image should still end when there is no new data
         class InfiniteMockPyDecoder(ImageFile.PyDecoder):
-            def decode(
-                self, buffer: bytes | Image.SupportsArrayInterface
-            ) -> tuple[int, int]:
+            def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
                 return 0, 0
 
         Image.register_decoder("INFINITE", InfiniteMockPyDecoder)

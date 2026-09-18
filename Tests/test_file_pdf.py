@@ -5,8 +5,6 @@ import os
 import os.path
 import tempfile
 import time
-from collections.abc import Generator
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -15,10 +13,14 @@ from PIL import Image, PdfParser, features
 
 from .helper import (
     hopper,
-    mark_if_feature_version,
     skip_unless_feature,
     timeout_unless_slower_valgrind,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
 
 
 def helper_save_as_pdf(tmp_path: Path, mode: str, **kwargs: Any) -> str:
@@ -40,7 +42,8 @@ def helper_save_as_pdf(tmp_path: Path, mode: str, **kwargs: Any) -> str:
     with open(outfile, "rb") as fp:
         contents = fp.read()
     size = tuple(
-        float(d) for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
+        int(float(d))
+        for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
     )
     assert im.size == size
 
@@ -140,9 +143,6 @@ def test_dpi(params: dict[str, int | tuple[int, int]], tmp_path: Path) -> None:
     assert size == (122.88, 61.44)
 
 
-@mark_if_feature_version(
-    pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-)
 def test_save_all(tmp_path: Path) -> None:
     # Single frame image
     helper_save_as_pdf(tmp_path, "RGB", save_all=True)
@@ -163,7 +163,7 @@ def test_save_all(tmp_path: Path) -> None:
         assert os.path.getsize(outfile) > 0
 
         # Test appending using a generator
-        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image, None, None]:
+        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image]:
             yield from ims
 
         im.save(outfile, save_all=True, append_images=im_generator(ims))

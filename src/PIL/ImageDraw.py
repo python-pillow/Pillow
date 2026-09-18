@@ -31,20 +31,21 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"math", "struct"}
+
 import math
 import struct
-from collections.abc import Sequence
 from typing import cast
 
-from . import Image, ImageColor, ImageText
+from . import Image, ImageColor, ImageFont, ImageText
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Sequence
     from types import ModuleType
     from typing import Any, AnyStr
 
-    from . import ImageDraw2, ImageFont
+    from . import ImageDraw2
     from ._typing import Coords, _Ink
 
 # experimental access to the outline API
@@ -59,9 +60,7 @@ directly.
 
 
 class ImageDraw:
-    font: (
-        ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont | None
-    ) = None
+    font: ImageFont.BaseImageFont | None = None
 
     def __init__(self, im: Image.Image, mode: str | None = None) -> None:
         """
@@ -105,7 +104,7 @@ class ImageDraw:
 
     def getfont(
         self,
-    ) -> ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont:
+    ) -> ImageFont.BaseImageFont:
         """
         Get the current default font.
 
@@ -125,17 +124,11 @@ class ImageDraw:
         :returns: An image font."""
         if not self.font:
             # FIXME: should add a font repository
-            from . import ImageFont
-
             self.font = ImageFont.load_default()
         return self.font
 
-    def _getfont(
-        self, font_size: float | None
-    ) -> ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont:
+    def _getfont(self, font_size: float | None) -> ImageFont.BaseImageFont:
         if font_size is not None:
-            from . import ImageFont
-
             return ImageFont.load_default(font_size)
         else:
             return self.getfont()
@@ -175,7 +168,7 @@ class ImageDraw:
     ) -> None:
         """Draw an arc."""
         ink, fill = self._getink(fill)
-        if ink is not None:
+        if ink is not None and width != 0:
             self.draw.draw_arc(xy, start, end, ink, width)
 
     def bitmap(
@@ -231,26 +224,29 @@ class ImageDraw:
         ellipse_xy = (xy[0] - radius, xy[1] - radius, xy[0] + radius, xy[1] + radius)
         self.ellipse(ellipse_xy, fill, outline, width)
 
+    def _normalize_coords(self, xy: Coords) -> Sequence[Sequence[float]]:
+        """Normalize 1 or 2 dimensional coord sequence into 2d sequence."""
+        if isinstance(xy[0], (list, tuple)):
+            return cast("Sequence[Sequence[float]]", xy)
+        else:
+            return [
+                cast("Sequence[float]", tuple(xy[i : i + 2]))
+                for i in range(0, len(xy), 2)
+            ]
+
     def line(
         self,
         xy: Coords,
         fill: _Ink | None = None,
-        width: int = 0,
+        width: int = 1,
         joint: str | None = None,
     ) -> None:
         """Draw a line, or a connected sequence of line segments."""
         ink = self._getink(fill)[0]
-        if ink is not None:
+        if ink is not None and width != 0:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
-                points: Sequence[Sequence[float]]
-                if isinstance(xy[0], (list, tuple)):
-                    points = cast(Sequence[Sequence[float]], xy)
-                else:
-                    points = [
-                        cast(Sequence[float], tuple(xy[i : i + 2]))
-                        for i in range(0, len(xy), 2)
-                    ]
+                points = self._normalize_coords(xy)
                 for i in range(1, len(points) - 1):
                     point = points[i]
                     angles = [
@@ -406,10 +402,7 @@ class ImageDraw:
         corners: tuple[bool, bool, bool, bool] | None = None,
     ) -> None:
         """Draw a rounded rectangle."""
-        if isinstance(xy[0], (list, tuple)):
-            (x0, y0), (x1, y1) = cast(Sequence[Sequence[float]], xy)
-        else:
-            x0, y0, x1, y1 = cast(Sequence[float], xy)
+        (x0, y0), (x1, y1) = self._normalize_coords(xy)
         if x1 < x0:
             msg = "x1 must be greater than or equal to x0"
             raise ValueError(msg)
@@ -419,7 +412,7 @@ class ImageDraw:
         if corners is None:
             corners = (True, True, True, True)
 
-        d = radius * 2
+        d = min(x1 - x0, y1 - y0, radius * 2)
 
         x0 = round(x0)
         y0 = round(y0)
@@ -487,7 +480,7 @@ class ImageDraw:
 
             if full_x:
                 self.draw.draw_rectangle((x0, y0 + r + 1, x1, y1 - r - 1), fill_ink, 1)
-            elif x1 - r - 1 > x0 + r + 1:
+            elif x1 - r - 1 >= x0 + r + 1:
                 self.draw.draw_rectangle((x0 + r + 1, y0, x1 - r - 1, y1), fill_ink, 1)
             if not full_x and not full_y:
                 left = [x0, y0, x0 + r, y1]
@@ -538,14 +531,9 @@ class ImageDraw:
     def text(
         self,
         xy: tuple[float, float],
-        text: AnyStr | ImageText.Text,
+        text: AnyStr | ImageText.Text[AnyStr],
         fill: _Ink | None = None,
-        font: (
-            ImageFont.ImageFont
-            | ImageFont.FreeTypeFont
-            | ImageFont.TransposedFont
-            | None
-        ) = None,
+        font: ImageFont.BaseImageFont | None = None,
         anchor: str | None = None,
         spacing: float = 4,
         align: str = "left",
@@ -591,49 +579,49 @@ class ImageDraw:
                 else ink
             )
 
-        for xy, anchor, line in image_text._split(xy, anchor, align):
+        for line in image_text._split(xy, anchor, align):
 
             def draw_text(ink: int, stroke_width: float = 0) -> None:
                 mode = self.fontmode
                 if stroke_width == 0 and embedded_color:
                     mode = "RGBA"
-                coord = []
-                for i in range(2):
-                    coord.append(int(xy[i]))
-                start = (math.modf(xy[0])[0], math.modf(xy[1])[0])
-                try:
-                    mask, offset = image_text.font.getmask2(  # type: ignore[union-attr,misc]
-                        line,
+                x = int(line.x)
+                y = int(line.y)
+                start = (math.modf(line.x)[0], math.modf(line.y)[0])
+                if isinstance(image_text.font, ImageFont.FreeTypeFont):
+                    mask, offset = image_text.font.getmask2(
+                        line.text,
                         mode,
-                        direction=direction,
-                        features=features,
-                        language=language,
-                        stroke_width=stroke_width,
+                        direction,
+                        features,
+                        language,
+                        stroke_width,
+                        line.anchor,
+                        ink,
+                        start,
                         stroke_filled=True,
-                        anchor=anchor,
-                        ink=ink,
-                        start=start,
                         *args,
                         **kwargs,
                     )
-                    coord = [coord[0] + offset[0], coord[1] + offset[1]]
-                except AttributeError:
+                    x += offset[0]
+                    y += offset[1]
+                else:
                     try:
-                        mask = image_text.font.getmask(  # type: ignore[misc]
-                            line,
+                        mask = image_text.font.getmask(
+                            line.text,
                             mode,
                             direction,
                             features,
                             language,
                             stroke_width,
-                            anchor,
+                            line.anchor,
                             ink,
                             start=start,
                             *args,
                             **kwargs,
                         )
                     except TypeError:
-                        mask = image_text.font.getmask(line)
+                        mask = image_text.font.getmask(line.text)
                 if mode == "RGBA":
                     # image_text.font.getmask2(mode="RGBA")
                     # returns color in RGB bands and mask in A
@@ -641,13 +629,12 @@ class ImageDraw:
                     color, mask = mask, mask.getband(3)
                     ink_alpha = struct.pack("i", ink)[3]
                     color.fillband(3, ink_alpha)
-                    x, y = coord
                     if self.im is not None:
                         self.im.paste(
                             color, (x, y, x + mask.size[0], y + mask.size[1]), mask
                         )
                 else:
-                    self.draw.draw_bitmap(coord, mask, ink)
+                    self.draw.draw_bitmap((x, y), mask, ink)
 
             if stroke_ink is not None:
                 # Draw stroked text
@@ -665,12 +652,7 @@ class ImageDraw:
         xy: tuple[float, float],
         text: AnyStr,
         fill: _Ink | None = None,
-        font: (
-            ImageFont.ImageFont
-            | ImageFont.FreeTypeFont
-            | ImageFont.TransposedFont
-            | None
-        ) = None,
+        font: ImageFont.BaseImageFont | None = None,
         anchor: str | None = None,
         spacing: float = 4,
         align: str = "left",
@@ -703,12 +685,7 @@ class ImageDraw:
     def textlength(
         self,
         text: AnyStr,
-        font: (
-            ImageFont.ImageFont
-            | ImageFont.FreeTypeFont
-            | ImageFont.TransposedFont
-            | None
-        ) = None,
+        font: ImageFont.BaseImageFont | None = None,
         direction: str | None = None,
         features: list[str] | None = None,
         language: str | None = None,
@@ -735,12 +712,7 @@ class ImageDraw:
         self,
         xy: tuple[float, float],
         text: AnyStr,
-        font: (
-            ImageFont.ImageFont
-            | ImageFont.FreeTypeFont
-            | ImageFont.TransposedFont
-            | None
-        ) = None,
+        font: ImageFont.BaseImageFont | None = None,
         anchor: str | None = None,
         spacing: float = 4,
         align: str = "left",
@@ -768,12 +740,7 @@ class ImageDraw:
         self,
         xy: tuple[float, float],
         text: AnyStr,
-        font: (
-            ImageFont.ImageFont
-            | ImageFont.FreeTypeFont
-            | ImageFont.TransposedFont
-            | None
-        ) = None,
+        font: ImageFont.BaseImageFont | None = None,
         anchor: str | None = None,
         spacing: float = 4,
         align: str = "left",
@@ -954,7 +921,7 @@ def _compute_regular_polygon_vertices(
             msg = "bounding_circle should only contain numeric data"
             raise ValueError(msg)
 
-        *centroid, polygon_radius = cast(list[float], list(bounding_circle))
+        *centroid, polygon_radius = cast("list[float]", list(bounding_circle))
     elif len(bounding_circle) == 2 and isinstance(bounding_circle[0], (list, tuple)):
         if not all(
             isinstance(i, (int, float)) for i in bounding_circle[0]
@@ -966,8 +933,8 @@ def _compute_regular_polygon_vertices(
             msg = "bounding_circle centre should contain 2D coordinates (e.g. (x, y))"
             raise ValueError(msg)
 
-        centroid = cast(list[float], list(bounding_circle[0]))
-        polygon_radius = cast(float, bounding_circle[1])
+        centroid = cast("list[float]", list(bounding_circle[0]))
+        polygon_radius = cast("float", bounding_circle[1])
     else:
         msg = (
             "bounding_circle should contain 2D coordinates "

@@ -5,7 +5,6 @@ import os.path
 import pytest
 
 from PIL import Image, ImageDraw, ImageDraw2, features
-from PIL._typing import Coords
 
 from .helper import (
     assert_image_equal,
@@ -14,6 +13,10 @@ from .helper import (
     hopper,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from PIL._typing import Coords
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)

@@ -18,13 +18,18 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "struct"}
+
 import io
 import os
 import struct
 import sys
-from typing import IO
 
 from . import Image, ImageFile, PngImagePlugin, features
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 enable_jpeg2k = features.check_codec("jpg_2000")
 if enable_jpeg2k:
@@ -42,7 +47,7 @@ def read_32t(
     fobj: IO[bytes], start_length: tuple[int, int], size: tuple[int, int, int]
 ) -> dict[str, Image.Image]:
     # The 128x128 icon seems to have an extra header for some reason.
-    (start, length) = start_length
+    start, length = start_length
     fobj.seek(start)
     sig = fobj.read(4)
     if sig != b"\x00\x00\x00\x00":
@@ -58,7 +63,7 @@ def read_32(
     Read a 32bit RGB icon resource.  Seems to be either uncompressed or
     an RLE packbits-like scheme.
     """
-    (start, length) = start_length
+    start, length = start_length
     fobj.seek(start)
     pixel_size = (size[0] * size[2], size[1] * size[2])
     sizesq = pixel_size[0] * pixel_size[1]
@@ -80,8 +85,7 @@ def read_32(
                 if byte_int & 0x80:
                     blocksize = byte_int - 125
                     byte = fobj.read(1)
-                    for i in range(blocksize):
-                        data.append(byte)
+                    data.extend([byte] * blocksize)
                 else:
                     blocksize = byte_int + 1
                     data.append(fobj.read(blocksize))
@@ -111,7 +115,7 @@ def read_mk(
 def read_png_or_jpeg2000(
     fobj: IO[bytes], start_length: tuple[int, int], size: tuple[int, int, int]
 ) -> dict[str, Image.Image]:
-    (start, length) = start_length
+    start, length = start_length
     fobj.seek(start)
     sig = fobj.read(12)
 

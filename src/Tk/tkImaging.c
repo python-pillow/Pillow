@@ -124,8 +124,10 @@ PyImagingPhotoPut(
     if (im->mode == IMAGING_MODE_1 || im->mode == IMAGING_MODE_L) {
         block.pixelSize = 1;
         block.offset[0] = block.offset[1] = block.offset[2] = block.offset[3] = 0;
-    } else if (im->mode == IMAGING_MODE_RGB || im->mode == IMAGING_MODE_RGBA ||
-               im->mode == IMAGING_MODE_RGBX || im->mode == IMAGING_MODE_RGBa) {
+    } else if (
+        im->mode == IMAGING_MODE_RGB || im->mode == IMAGING_MODE_RGBA ||
+        im->mode == IMAGING_MODE_RGBX || im->mode == IMAGING_MODE_RGBa
+    ) {
         block.pixelSize = 4;
         block.offset[0] = 0;
         block.offset[1] = 1;
@@ -245,12 +247,9 @@ _dfunc(HMODULE lib_handle, const char *func_name) {
      * Returns function pointer or NULL if not present.
      */
 
-    char message[100];
-
     FARPROC func = GetProcAddress(lib_handle, func_name);
     if (func == NULL) {
-        sprintf(message, "Cannot load function %s", func_name);
-        PyErr_SetString(PyExc_RuntimeError, message);
+        PyErr_Format(PyExc_RuntimeError, "Cannot load function %s", func_name);
     }
     return func;
 }

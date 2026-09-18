@@ -16,6 +16,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "olefile"}
+
 import olefile
 
 from . import Image, ImageFile
@@ -141,7 +143,11 @@ class FpxImageFile(ImageFile.ImageFile):
 
         size = i32(s, 4), i32(s, 8)
         # tilecount = i32(s, 12)
-        tilesize = i32(s, 16), i32(s, 20)
+        xtile, ytile = i32(s, 16), i32(s, 20)
+        if xtile != 64 or ytile != 64:
+            msg = "Tile must be 64 pixels by 64 pixels"
+            raise ValueError(msg)
+
         # channels = i32(s, 24)
         offset = i32(s, 28)
         length = i32(s, 32)
@@ -156,7 +162,6 @@ class FpxImageFile(ImageFile.ImageFile):
 
         x = y = 0
         xsize, ysize = size
-        xtile, ytile = tilesize
         self.tile = []
 
         for i in range(0, len(s), length):
@@ -224,7 +229,7 @@ class FpxImageFile(ImageFile.ImageFile):
                 msg = "unknown/invalid compression"
                 raise OSError(msg)
 
-            x = x + xtile
+            x += xtile
             if x >= xsize:
                 x, y = 0, y + ytile
                 if y >= ysize:

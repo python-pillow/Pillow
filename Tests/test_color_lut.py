@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from array import array
-from types import ModuleType
 
 import pytest
 
 from PIL import Image, ImageFilter
 
 from .helper import assert_image_equal
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from types import ModuleType
 
 numpy: ModuleType | None
 try:
@@ -258,18 +261,21 @@ class TestColorLut3DCoreAPI:
         )
 
         # Reverse channels by splitting and using table
-        # fmt: off
-        assert_image_equal(
-            Image.merge('RGB', im.split()[::-1]),
-            im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,
-                    3, (2, 2, 2), [
-                        0, 0, 0,  0, 0, 1,
-                        0, 1, 0,  0, 1, 1,
+        table = [
+            0, 0, 0,  0, 0, 1,
+            0, 1, 0,  0, 1, 1,
 
-                        1, 0, 0,  1, 0, 1,
-                        1, 1, 0,  1, 1, 1,
-                    ])))
-        # fmt: on
+            1, 0, 0,  1, 0, 1,
+            1, 1, 0,  1, 1, 1,
+        ]  # fmt: skip
+        assert_image_equal(
+            Image.merge("RGB", im.split()[::-1]),
+            im._new(
+                im.im.color_lut_3d(
+                    "RGB", Image.Resampling.BILINEAR, 3, (2, 2, 2), table
+                )
+            ),
+        )
 
     def test_overflow(self) -> None:
         g = Image.linear_gradient("L")
@@ -282,17 +288,16 @@ class TestColorLut3DCoreAPI:
             ],
         )
 
-        # fmt: off
-        transformed = im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,
-                              3, (2, 2, 2),
-                              [
-                                  -1, -1, -1,   2, -1, -1,
-                                  -1,  2, -1,   2,  2, -1,
+        table = [
+            -1, -1, -1,   2, -1, -1,
+            -1,  2, -1,   2,  2, -1,
 
-                                  -1, -1,  2,   2, -1,  2,
-                                  -1,  2,  2,   2,  2,  2,
-                              ])).load()
-        # fmt: on
+            -1, -1,  2,   2, -1,  2,
+            -1,  2,  2,   2,  2,  2,
+        ]  # fmt: skip
+        transformed = im._new(
+            im.im.color_lut_3d("RGB", Image.Resampling.BILINEAR, 3, (2, 2, 2), table)
+        ).load()
         assert transformed is not None
         assert transformed[0, 0] == (0, 0, 255)
         assert transformed[50, 50] == (0, 0, 255)
@@ -303,17 +308,16 @@ class TestColorLut3DCoreAPI:
         assert transformed[255, 255] == (255, 255, 0)
         assert transformed[205, 205] == (255, 255, 0)
 
-        # fmt: off
-        transformed = im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,
-                              3, (2, 2, 2),
-                              [
-                                  -3, -3, -3,   5, -3, -3,
-                                  -3,  5, -3,   5,  5, -3,
+        table = [
+            -3, -3, -3,   5, -3, -3,
+            -3,  5, -3,   5,  5, -3,
 
-                                  -3, -3,  5,   5, -3,  5,
-                                  -3,  5,  5,   5,  5,  5,
-                              ])).load()
-        # fmt: on
+            -3, -3,  5,   5, -3,  5,
+            -3,  5,  5,   5,  5,  5,
+        ]  # fmt: skip
+        transformed = im._new(
+            im.im.color_lut_3d("RGB", Image.Resampling.BILINEAR, 3, (2, 2, 2), table)
+        ).load()
         assert transformed is not None
         assert transformed[0, 0] == (0, 0, 255)
         assert transformed[50, 50] == (0, 0, 255)
@@ -359,11 +363,10 @@ class TestColorLut3DFilter:
         assert tuple(lut.size) == (2, 2, 2)
         assert lut.name == "Color 3D LUT"
 
-        # fmt: off
         lut = ImageFilter.Color3DLUT((2, 2, 2), [
             (0, 1, 2), (3, 4, 5), (6, 7, 8), (9, 10, 11),
-            (12, 13, 14), (15, 16, 17), (18, 19, 20), (21, 22, 23)])
-        # fmt: on
+            (12, 13, 14), (15, 16, 17), (18, 19, 20), (21, 22, 23),
+        ])  # fmt: skip
         assert tuple(lut.size) == (2, 2, 2)
         assert lut.table == list(range(24))
 
@@ -484,11 +487,10 @@ class TestGenerateColorLut3D:
         lut = ImageFilter.Color3DLUT.generate(5, lambda r, g, b: (r, g, b))
         assert tuple(lut.size) == (5, 5, 5)
         assert lut.name == "Color 3D LUT"
-        # fmt: off
         assert lut.table[:24] == [
             0.0, 0.0, 0.0,  0.25, 0.0, 0.0,  0.5, 0.0, 0.0,  0.75, 0.0, 0.0,
-            1.0, 0.0, 0.0,  0.0, 0.25, 0.0,  0.25, 0.25, 0.0,  0.5, 0.25, 0.0]
-        # fmt: on
+            1.0, 0.0, 0.0,  0.0, 0.25, 0.0,  0.25, 0.25, 0.0,  0.5, 0.25, 0.0,
+        ]  # fmt: skip
 
     def test_4_channels(self) -> None:
         lut = ImageFilter.Color3DLUT.generate(
@@ -496,12 +498,10 @@ class TestGenerateColorLut3D:
         )
         assert tuple(lut.size) == (5, 5, 5)
         assert lut.name == "Color 3D LUT"
-        # fmt: off
         assert lut.table[:24] == [
             0.0, 0.0, 0.0, 0.0,  0.0, 0.25, 0.0, 0.125,  0.0, 0.5, 0.0, 0.25,
-            0.0, 0.75, 0.0, 0.375,  0.0, 1.0, 0.0, 0.5,  0.0, 0.0, 0.25, 0.125
-        ]
-        # fmt: on
+            0.0, 0.75, 0.0, 0.375,  0.0, 1.0, 0.0, 0.5,  0.0, 0.0, 0.25, 0.125,
+        ]  # fmt: skip
 
     def test_apply(self) -> None:
         lut = ImageFilter.Color3DLUT.generate(5, lambda r, g, b: (r, g, b))
@@ -559,11 +559,10 @@ class TestTransformColorLut3D:
         assert tuple(lut.size) == tuple(source.size)
         assert len(lut.table) != len(source.table)
         assert lut.table != source.table
-        # fmt: off
         assert lut.table[:16] == [
-            0.0, 0.0, 0.0, 1,  0.2**2, 0.0, 0.0, 1,
-            0.4**2, 0.0, 0.0, 1,  0.6**2, 0.0, 0.0, 1]
-        # fmt: on
+            0.0,    0.0, 0.0, 1,  0.2**2, 0.0, 0.0, 1,
+            0.4**2, 0.0, 0.0, 1,  0.6**2, 0.0, 0.0, 1,
+        ]  # fmt: skip
 
     def test_4_to_3_channels(self) -> None:
         source = ImageFilter.Color3DLUT.generate(
@@ -575,11 +574,10 @@ class TestTransformColorLut3D:
         assert tuple(lut.size) == tuple(source.size)
         assert len(lut.table) != len(source.table)
         assert lut.table != source.table
-        # fmt: off
         assert lut.table[:18] == [
-            1.0, 1.0, 1.0,  0.75, 1.0, 1.0,  0.0, 1.0, 1.0,
-            1.0, 0.96, 1.0,  0.75, 0.96, 1.0,  0.0, 0.96, 1.0]
-        # fmt: on
+            1.0, 1.0,  1.0,  0.75, 1.0,  1.0,  0.0, 1.0, 1.0,
+            1.0, 0.96, 1.0,  0.75, 0.96, 1.0,  0.0, 0.96, 1.0,
+        ]  # fmt: skip
 
     def test_4_to_4_channels(self) -> None:
         source = ImageFilter.Color3DLUT.generate(
@@ -589,11 +587,10 @@ class TestTransformColorLut3D:
         assert tuple(lut.size) == tuple(source.size)
         assert len(lut.table) == len(source.table)
         assert lut.table != source.table
-        # fmt: off
         assert lut.table[:16] == [
-            0.0, 0.0, 0.0, 0.5,  0.2**2, 0.0, 0.0, 0.5,
-            0.4**2, 0.0, 0.0, 0.5,  0.6**2, 0.0, 0.0, 0.5]
-        # fmt: on
+            0.0,    0.0, 0.0, 0.5,  0.2**2, 0.0, 0.0, 0.5,
+            0.4**2, 0.0, 0.0, 0.5,  0.6**2, 0.0, 0.0, 0.5,
+        ]  # fmt: skip
 
     def test_with_normals_3_channels(self) -> None:
         source = ImageFilter.Color3DLUT.generate(
@@ -605,11 +602,10 @@ class TestTransformColorLut3D:
         assert tuple(lut.size) == tuple(source.size)
         assert len(lut.table) == len(source.table)
         assert lut.table != source.table
-        # fmt: off
         assert lut.table[:18] == [
             0.0, 0.0, 0.0,  0.16, 0.0, 0.0,  0.24, 0.0, 0.0,
-            0.24, 0.0, 0.0,  0.8 - (0.8**2), 0, 0,  0, 0, 0]
-        # fmt: on
+            0.24, 0.0, 0.0,  0.8 - (0.8**2), 0, 0,  0, 0, 0,
+        ]  # fmt: skip
 
     def test_with_normals_4_channels(self) -> None:
         source = ImageFilter.Color3DLUT.generate(
@@ -622,8 +618,7 @@ class TestTransformColorLut3D:
         assert tuple(lut.size) == tuple(source.size)
         assert len(lut.table) == len(source.table)
         assert lut.table != source.table
-        # fmt: off
         assert lut.table[:16] == [
             0.0, 0.0, 0.0, 0.5,  0.25, 0.0, 0.0, 0.5,
-            0.0, 0.0, 0.0, 0.5,  0.0, 0.16, 0.0, 0.5]
-        # fmt: on
+            0.0, 0.0, 0.0, 0.5,  0.0, 0.16, 0.0, 0.5,
+        ]  # fmt: skip

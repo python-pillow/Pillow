@@ -22,12 +22,16 @@
 
 .. seealso:: :py:mod:`PIL.ImageDraw`
 """
+
 from __future__ import annotations
 
-from typing import Any, AnyStr, BinaryIO
-
 from . import Image, ImageColor, ImageDraw, ImageFont, ImagePath
-from ._typing import Coords, StrOrBytesPath
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import Any, AnyStr, BinaryIO
+
+    from ._typing import Coords, StrOrBytesPath
 
 
 class Pen:
@@ -117,7 +121,7 @@ class Draw:
 
     def settransform(self, offset: tuple[float, float]) -> None:
         """Sets a transformation offset."""
-        (xoffset, yoffset) = offset
+        xoffset, yoffset = offset
         self.transform = (1, 0, xoffset, 0, 1, yoffset)
 
     def arc(
