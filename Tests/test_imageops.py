@@ -87,6 +87,21 @@ def test_sanity() -> None:
     ImageOps.exif_transpose(hopper("RGB"))
 
 
+@pytest.mark.parametrize(
+    "border, expected_box",
+    (
+        (1, (1, 1, 127, 127)),
+        ((1, 2), (1, 2, 127, 126)),
+        ((1, 2, 3, 4), (1, 2, 125, 124)),
+    ),
+)
+def test_crop(
+    border: int | tuple[int, ...], expected_box: tuple[int, int, int, int]
+) -> None:
+    im = hopper()
+    assert_image_equal(ImageOps.crop(im, border), im.crop(expected_box))
+
+
 def test_1pxfit() -> None:
     # Division by zero in equalize if image is 1 pixel high
     newimg = ImageOps.fit(hopper("RGB").resize((1, 1)), (35, 35))
@@ -215,6 +230,23 @@ def test_rgba_palette() -> None:
     assert palette is not None
     assert palette.mode == "RGBA"
     assert expanded_im.convert("RGBA").getpixel((0, 0)) == translucent_black
+
+
+def test_transparency() -> None:
+    im = Image.new("P", (1, 1))
+    im.info["transparency"] = 0
+
+    expanded_im = ImageOps.expand(im, 1, "blue")
+    assert expanded_im.info["transparency"] == 0
+    expanded_im_rgba = expanded_im.convert("RGBA")
+    assert expanded_im_rgba.getpixel((0, 0)) == (0, 0, 255, 255)
+    assert expanded_im_rgba.getpixel((1, 1)) == (0, 0, 0, 0)
+
+    padded_im = ImageOps.pad(im, (3, 1), color="blue")
+    assert padded_im.info["transparency"] == 0
+    padded_im_rgba = padded_im.convert("RGBA")
+    assert padded_im_rgba.getpixel((0, 0)) == (0, 0, 255, 255)
+    assert padded_im_rgba.getpixel((1, 0)) == (0, 0, 0, 0)
 
 
 def test_pil163() -> None:

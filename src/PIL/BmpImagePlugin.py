@@ -24,6 +24,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 import os
 
 from . import Image, ImageFile, ImagePalette
@@ -370,7 +372,9 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     if len(bytes_read) < 2:
                         break
                     right, up = bytes_read
-                    data += b"\x00" * (right + up * self.state.xsize)
+                    data += b"\x00" * min(
+                        dest_length - len(data), right + up * self.state.xsize
+                    )
                     x = len(data) % self.state.xsize
                 else:
                     # absolute mode
@@ -494,7 +498,7 @@ def _save(
         fp.write(palette)
 
     ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, stride, -1))]
+        im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, (rawmode, stride, -1))]
     )
 
 

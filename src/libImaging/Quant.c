@@ -1663,6 +1663,12 @@ error_1:
     return 0;
 }
 
+/**
+ * Quantize `im` down to at most `colors` palette entries,
+ * returning a newly allocated result.
+ *
+ * Contract: im is read-only.
+ */
 Imaging
 ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     int i, j;
@@ -1703,7 +1709,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
         return ImagingError_MemoryError();
     }
     /* malloc check ok, using calloc for final overflow, x*y above */
-    p = calloc(xsize * ysize, sizeof(Pixel));
+    p = calloc((size_t)xsize * ysize, sizeof(Pixel));
     if (!p) {
         return ImagingError_MemoryError();
     }
@@ -1825,10 +1831,15 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
         }
         ImagingSectionEnter(&cookie);
 
+        // restrict safe: imOut is a fresh allocation and
+        //                newData was just allocated by the quantizer.
         for (i = y = 0; y < ysize; y++) {
+            UINT8 *restrict out = imOut->image8[y];
+            const uint32_t *restrict in = newData + i;
             for (x = 0; x < xsize; x++) {
-                imOut->image8[y][x] = (unsigned char)newData[i++];
+                out[x] = (UINT8)in[x];
             }
+            i += xsize;
         }
 
         free(newData);

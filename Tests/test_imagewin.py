@@ -69,7 +69,7 @@ class TestImageWinDib:
         hwnd = ImageWin.HWND(wnd)
 
         dib.expose(hwnd)
-        dib.draw(hwnd, (0, 0) + size)
+        dib.draw(hwnd, (0, 0, *size))
         assert isinstance(dib.query_palette(hwnd), int)
 
     def test_dib_paste(self) -> None:
