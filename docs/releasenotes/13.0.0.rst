@@ -193,3 +193,14 @@ Fixed histograms for masked LA, La and PA images
 When :py:meth:`~PIL.Image.Image.histogram` was given a mask for a two-band image (LA,
 La or PA), the second band was incorrectly derived from the first band of the input
 image, rather than the alpha band.
+
+Fixed exporting Arrow arrays from images with non-contiguous rows
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Exporting an image as an Arrow array assumed that its rows were stored back to back.
+Images whose rows were padded to an alignment returned incorrect data, and empty images,
+images created by :py:func:`~PIL.Image.frombuffer` and images memory-mapped from
+uncompressed files crashed.
+
+Images with rows that are not stored back to back now raise a :py:exc:`ValueError`,
+and the others are exported correctly.

@@ -79,3 +79,16 @@ def enable_block_allocator() -> Generator[None]:
         yield
     finally:
         Image.core.set_use_block_allocator(0)
+
+
+@pytest.fixture
+def aligned_arena() -> Generator[None]:
+    """
+    Configure the global image allocator to use a 64-byte alignment.
+    """
+    alignment = Image.core.get_alignment()
+    Image.core.set_alignment(64)
+    try:
+        yield
+    finally:
+        Image.core.set_alignment(alignment)

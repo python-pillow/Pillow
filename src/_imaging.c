@@ -245,7 +245,8 @@ ArrowError(int err) {
     }
     if (err == IMAGING_ARROW_MEMORY_LAYOUT) {
         return ImagingError_ValueError(
-            "Image is in multiple array blocks, use imaging_new_block for zero copy"
+            "Image rows are not contiguous in memory, "
+            "use imaging_new_block for zero copy"
         );
     }
     return ImagingError_ValueError("Unknown error");
