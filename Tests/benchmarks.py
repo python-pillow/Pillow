@@ -666,6 +666,18 @@ def test_radial_gradient(bench: BenchmarkFixture, mode: str) -> None:
     assert result.mode == mode
 
 
+@pytest.mark.benchmark(group="allocate")
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_get_flattened_data(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+) -> None:
+    im = make_pillow_image(mode, size)
+    bench(im.get_flattened_data)
+
+
 CHOPS_OPS = [
     ImageChops.add,
     ImageChops.subtract,
@@ -818,12 +830,27 @@ def test_font_getmask(bench: BenchmarkFixture, mode: str) -> None:
 
 
 @pytest.mark.benchmark(group="quantize")
-@pytest.mark.parametrize("mode", [m for m in MODES if m in ("L", "RGB", "RGBA")])
+@pytest.mark.parametrize(
+    "mode, method",
+    [
+        ("L", Image.Quantize.MEDIANCUT),
+        ("L", Image.Quantize.MAXCOVERAGE),
+        ("RGB", Image.Quantize.MEDIANCUT),
+        ("RGB", Image.Quantize.MAXCOVERAGE),
+        ("RGBA", Image.Quantize.FASTOCTREE),
+    ],
+    ids=lambda p: getattr(p, "name", p),
+)
 @pytest.mark.parametrize("size", SIZES, ids=_format_size)
-def test_quantize(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> None:
+def test_quantize(
+    bench: BenchmarkFixture,
+    mode: str,
+    method: Image.Quantize,
+    size: tuple[int, int],
+) -> None:
     im = make_pillow_image(mode, size)
-    bench.extra_info["label"] = [f"quantize {mode}"]
-    result = bench(im.quantize, 256)
+    bench.extra_info["label"] = [f"quantize {mode} {method.name}"]
+    result = bench(im.quantize, 256, method=method)
     assert result.mode == "P"
 
 

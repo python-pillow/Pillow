@@ -20,6 +20,8 @@
 # http://wvware.sourceforge.net/caolan/ora-wmf.html
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 from . import Image, ImageFile
 from ._binary import i16le as word
 from ._binary import si16le as short
@@ -126,6 +128,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
                 int((x1 - x0) * dpi[0] / self._inch[0]),
                 int((y1 - y0) * dpi[1] / self._inch[1]),
             )
+            Image._decompression_bomb_check(self.size)
         return super().load()
 
 

@@ -17,6 +17,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"array"}
+
 import array
 
 from . import GimpGradientFile, GimpPaletteFile, ImageColor, PaletteFile
@@ -34,7 +36,7 @@ class ImagePalette:
     Color palette for palette mapped images
 
     :param mode: The mode to use for the palette. See:
-        :ref:`concept-modes`. Defaults to "RGB"
+        :ref:`concept-modes`. Must be "RGB", "RGBA" or "CMYK". Defaults to "RGB"
     :param palette: An optional palette. If given, it must be a bytearray,
         an array or a list of ints between 0-255. The list must consist of
         all channels for one color followed by the next color (e.g. RGBRGBRGB).
@@ -46,6 +48,10 @@ class ImagePalette:
         mode: str = "RGB",
         palette: Sequence[int] | bytes | bytearray | None = None,
     ) -> None:
+        if mode not in {"RGB", "RGBA", "CMYK"}:
+            msg = "unsupported palette mode"
+            raise ValueError(msg)
+
         self.mode = mode
         self.rawmode: str | None = None  # if set, palette contains raw data
         self.palette = palette or bytearray()
@@ -95,7 +101,13 @@ class ImagePalette:
 
         return new
 
-    def getdata(self) -> tuple[str, Sequence[int] | bytes | bytearray]:
+    def _tobytes(self) -> bytes:
+        if isinstance(self.palette, bytes):
+            return self.palette
+        arr = array.array("B", self.palette)
+        return arr.tobytes()
+
+    def getdata(self) -> tuple[str, bytes]:
         """
         Get palette contents in format suitable for the low-level
         ``im.putpalette`` primitive.
@@ -103,7 +115,7 @@ class ImagePalette:
         .. warning:: This method is experimental.
         """
         if self.rawmode:
-            return self.rawmode, self.palette
+            return self.rawmode, self._tobytes()
         return self.mode, self.tobytes()
 
     def tobytes(self) -> bytes:
@@ -114,10 +126,7 @@ class ImagePalette:
         if self.rawmode:
             msg = "palette contains raw palette data"
             raise ValueError(msg)
-        if isinstance(self.palette, bytes):
-            return self.palette
-        arr = array.array("B", self.palette)
-        return arr.tobytes()
+        return self._tobytes()
 
     # Declare tostring as an alias for tobytes
     tostring = tobytes

@@ -26,6 +26,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "io"}
+
 import io
 import logging
 
@@ -129,7 +131,7 @@ class PcxImageFile(ImageFile.ImageFile):
         if provided_stride != stride:
             stride += stride % 2
 
-        bbox = (0, 0) + self.size
+        bbox = (0, 0, *self.size)
         logger.debug("size: %sx%s", *self.size)
 
         self.tile = [ImageFile._Tile("pcx", bbox, offset, (rawmode, planes * stride))]
@@ -207,7 +209,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     assert fp.tell() == 128
 
     ImageFile._save(
-        im, fp, [ImageFile._Tile("pcx", (0, 0) + im.size, 0, (rawmode, bits * planes))]
+        im, fp, [ImageFile._Tile("pcx", (0, 0, *im.size), 0, (rawmode, bits * planes))]
     )
 
     if im.mode == "P":

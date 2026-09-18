@@ -31,6 +31,18 @@ def test_colors_rawmode() -> None:
     }
 
 
+def test_wrong_mode() -> None:
+    with pytest.raises(ValueError, match="unsupported palette mode"):
+        ImagePalette.ImagePalette("L")
+
+    im = Image.new("L", (1, 1))
+    im.palette = ImagePalette.ImagePalette()
+    im.palette.mode = "L"
+    im.palette.dirty = 1
+    with pytest.raises(ValueError, match="image has wrong mode"):
+        im.load()
+
+
 def test_reload() -> None:
     with Image.open("Tests/images/hopper.gif") as im:
         original = im.copy()
@@ -215,7 +227,9 @@ def test_rawmode_getdata() -> None:
 
     # Assert
     assert rawmode == "RGB"
-    assert data_in == data_out
+    assert data_out == bytes(data_in)
+    im = Image.new("P", (1, 1))
+    im.im.putpalette("RGB", rawmode, data_out)
 
 
 def test_2bit_palette(tmp_path: Path) -> None:

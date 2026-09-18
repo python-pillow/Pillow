@@ -40,6 +40,16 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL._binary",
+    "PIL._util",
+    "fractions",
+    "itertools",
+    "math",
+    "struct",
+    "warnings",
+}
+
 import io
 import itertools
 import logging
@@ -55,7 +65,6 @@ from typing import IO, Any, cast
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
-from ._binary import o8
 from ._util import DeferredError, is_path
 from .TiffTags import TYPES
 
@@ -683,8 +692,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 self.tagtype[tag] = TiffTags.UNDEFINED
                 if all(isinstance(v, IFDRational) for v in values):
                     for v in values:
-                        assert isinstance(v, IFDRational)
-                        if v < 0:
+                        if v < IFDRational(0):
                             self.tagtype[tag] = TiffTags.SIGNED_RATIONAL
                             break
                     else:
@@ -1669,8 +1677,8 @@ class TiffImageFile(ImageFile.ImageFile):
         # fixup palette descriptor
 
         if self.mode in ["P", "PA"]:
-            palette = [o8(b // 256) for b in self.tag_v2[COLORMAP]]
-            self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
+            palette = tuple(b // 256 for b in self.tag_v2[COLORMAP])
+            self.palette = ImagePalette.raw("RGB;L", palette)
         else:
             self.palette = None
 
@@ -1990,7 +1998,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         tags.sort()
         a = (rawmode, compression, _fp, filename, tags, types)
         encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
-        encoder.setimage(im.im, (0, 0) + im.size)
+        encoder.setimage(im.im, (0, 0, *im.size))
         while True:
             errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
             if not _fp:
@@ -2009,7 +2017,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         ImageFile._save(
             im,
             fp,
-            [ImageFile._Tile("raw", (0, 0) + im.size, offset, (rawmode, stride, 1))],
+            [ImageFile._Tile("raw", (0, 0, *im.size), offset, (rawmode, stride, 1))],
         )
 
     # -- helper for multi-page save --

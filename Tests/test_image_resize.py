@@ -230,10 +230,8 @@ class TestReducingGapResize:
             (52, 34), Image.Resampling.BICUBIC, box=box, reducing_gap=1.0
         )
 
-        with pytest.raises(pytest.fail.Exception):
-            assert_image_equal(ref, im)
-
         assert_image_similar(ref, im, epsilon)
+        assert ref.tobytes() != im.tobytes()
 
     @pytest.mark.parametrize(
         "box, epsilon",
@@ -250,9 +248,7 @@ class TestReducingGapResize:
             (52, 34), Image.Resampling.BICUBIC, box=box, reducing_gap=2.0
         )
 
-        with pytest.raises(pytest.fail.Exception):
-            assert_image_equal(ref, im)
-
+        assert ref.tobytes() != im.tobytes()
         assert_image_similar(ref, im, epsilon)
 
     @pytest.mark.parametrize(
@@ -270,9 +266,7 @@ class TestReducingGapResize:
             (52, 34), Image.Resampling.BICUBIC, box=box, reducing_gap=3.0
         )
 
-        with pytest.raises(pytest.fail.Exception):
-            assert_image_equal(ref, im)
-
+        assert ref.tobytes() != im.tobytes()
         assert_image_similar(ref, im, epsilon)
 
     @pytest.mark.parametrize("box", (None, (1.1, 2.2, 510.8, 510.9), (3, 10, 410, 256)))

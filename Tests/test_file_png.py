@@ -18,7 +18,6 @@ from .helper import (
     assert_image_equal_tofile,
     hopper,
     is_win32,
-    mark_if_feature_version,
     skip_unless_feature,
 )
 
@@ -849,9 +848,6 @@ class TestFilePng:
         assert exif_data is not None
         assert exif_data[274] == 1
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_exif_from_jpg(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
             test_file = tmp_path / "temp.png"

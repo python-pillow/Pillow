@@ -31,6 +31,32 @@ Pillow reads and writes AVIF files, including AVIF sequence images.
 It is only possible to save 8-bit AVIF images, and all AVIF images are decoded
 as 8-bit RGB(A).
 
+Opening
+~~~~~~~
+
+The :py:meth:`~PIL.Image.open` method sets the following
+:py:attr:`~PIL.Image.Image.info` properties:
+
+**icc_profile**
+    May not be present. The ICC color profile for the image.
+
+**exif**
+    May not be present. Raw EXIF data from the image.
+
+**xmp**
+    May not be present. Raw XMP data from the image.
+
+**duration**
+    Only present after the current frame is loaded. The time to display the current
+    frame of the AVIF sequence, in milliseconds.
+
+**timestamp**
+    Only present after the current frame is loaded. The time of the current frame
+    within the AVIF sequence, in milliseconds.
+
+Saving
+~~~~~~
+
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **quality**
@@ -452,8 +478,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **sizes**
     A list of sizes included in this ico file; these are a 2-tuple,
     ``(width, height)``; Default to ``[(16, 16), (24, 24), (32, 32), (48, 48),
-    (64, 64), (128, 128), (256, 256)]``. Any sizes bigger than the original
-    size or 256 will be ignored.
+    (64, 64), (128, 128), (256, 256)]``, or if it is smaller, only the image size.
+    Any sizes bigger than the original size or 256 will be ignored.
 
 The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
 
@@ -472,6 +498,8 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
 IM
 ^^
+
+.. deprecated:: 13.0.0
 
 IM is a format used by LabEye and other applications based on the IFUNC image
 processing library. The library reads and writes most uncompressed interchange
@@ -1375,6 +1403,36 @@ WebP
 ^^^^
 
 Pillow reads and writes WebP files. Requires libwebp v0.5.0 or later.
+
+Opening
+~~~~~~~
+
+The :py:meth:`~PIL.Image.open` method sets the following
+:py:attr:`~PIL.Image.Image.info` properties:
+
+**background**
+    Background color of the canvas, as an RGBA tuple with values in
+    the range of (0-255).
+
+**loop**
+    The number of times the WEBP should loop. 0 means that it will loop forever.
+
+**icc_profile**
+    May not be present. The ICC color profile for the image.
+
+**exif**
+    May not be present. Raw EXIF data from the image.
+
+**xmp**
+    May not be present. Raw XMP data from the image.
+
+**duration**
+    Only present after the current frame is loaded. The time to display the current
+    frame of the WEBP, in milliseconds.
+
+**timestamp**
+    Only present after the current frame is loaded. The total duration of all previous
+    frames of the WEBP, in milliseconds.
 
 .. _webp-saving:
 
