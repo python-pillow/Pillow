@@ -845,7 +845,7 @@ font_render_impl(FontObject *self, PyObject *args) {
     int x_min, y_max; /* text offset in 26.6 precision */
     int load_flags;   /* FreeType load_flags parameter */
     int error;
-    FT_Glyph glyph;
+    FT_Glyph glyph = NULL;
     FT_GlyphSlot glyph_slot;
     FT_Bitmap bitmap;
     FT_Bitmap bitmap_converted; /* initialized lazily, for non-8bpp fonts */
@@ -1240,6 +1240,7 @@ font_render_impl(FontObject *self, PyObject *args) {
         y += glyph_info[i].y_advance;
         if (stroker != NULL) {
             FT_Done_Glyph(glyph);
+            glyph = NULL;
         }
     }
 
@@ -1252,7 +1253,7 @@ font_render_impl(FontObject *self, PyObject *args) {
 
 glyph_error:
     Py_DECREF(image);
-    if (stroker != NULL) {
+    if (glyph != NULL) {
         FT_Done_Glyph(glyph);
     }
     if (bitmap_converted_ready) {
