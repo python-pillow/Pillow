@@ -219,18 +219,16 @@ class Text(Generic[AnyStr]):
             font = self.font
             wrap = _Wrap(self, width, height, font)
             if scaling == "shrink":
-                if not wrap.remaining_text:
-                    return None
-
-                size = math.ceil(font.size)
-                while wrap.remaining_text:
-                    if size == max(limit, 1):
-                        msg = "Text could not be scaled"
-                        raise ValueError(msg)
-                    size -= 1
-                    font = self.font.font_variant(size=size)
-                    wrap = _Wrap(self, width, height, font)
-                self.font = font
+                if wrap.remaining_text:
+                    size = math.ceil(font.size)
+                    while wrap.remaining_text:
+                        if size == max(limit, 1):
+                            msg = "Text could not be scaled"
+                            raise ValueError(msg)
+                        size -= 1
+                        font = self.font.font_variant(size=size)
+                        wrap = _Wrap(self, width, height, font)
+                    self.font = font
             else:
                 if wrap.remaining_text:
                     msg = "Text could not be scaled"

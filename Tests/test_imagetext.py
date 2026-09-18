@@ -191,11 +191,14 @@ def test_wrap_shrink() -> None:
     assert text.wrap(50, 50, "shrink") is None
     assert isinstance(text.font, ImageFont.FreeTypeFont)
     assert text.font.size == 10
+    assert text.text == "Hello\nWorld!"
 
+    text = ImageText.Text("Hello World!")
     with pytest.raises(ValueError, match="Text could not be scaled"):
         text.wrap(50, 15, ("shrink", 9))
 
     assert text.wrap(50, 15, "shrink") is None
+    assert isinstance(text.font, ImageFont.FreeTypeFont)
     assert text.font.size == 8
 
     text = ImageText.Text("Hello World!")
