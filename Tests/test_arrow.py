@@ -104,9 +104,8 @@ def test_multiblock_rgba_schema() -> None:
         img.__arrow_c_schema__()
 
 
+@pytest.mark.usefixtures("enable_block_allocator")
 def test_singleblock_l_image() -> None:
-    Image.core.set_use_block_allocator(1)
-
     block_size = Image.core.get_block_size()
 
     # check a 2 block image in 4 channel mode
@@ -118,11 +117,9 @@ def test_singleblock_l_image() -> None:
     assert schema
     assert arr
 
-    Image.core.set_use_block_allocator(0)
 
-
+@pytest.mark.usefixtures("enable_block_allocator")
 def test_singleblock_rgba_image() -> None:
-    Image.core.set_use_block_allocator(1)
     block_size = Image.core.get_block_size()
 
     # check a 2 block image in 4 channel mode
@@ -133,11 +130,10 @@ def test_singleblock_rgba_image() -> None:
     schema, arr = img.__arrow_c_array__()
     assert schema
     assert arr
-    Image.core.set_use_block_allocator(0)
 
 
+@pytest.mark.usefixtures("enable_block_allocator")
 def test_singleblock_l_schema() -> None:
-    Image.core.set_use_block_allocator(1)
     block_size = Image.core.get_block_size()
 
     # check a 2 block image in single channel mode
@@ -147,11 +143,10 @@ def test_singleblock_l_schema() -> None:
 
     schema = img.__arrow_c_schema__()
     assert schema
-    Image.core.set_use_block_allocator(0)
 
 
+@pytest.mark.usefixtures("enable_block_allocator")
 def test_singleblock_rgba_schema() -> None:
-    Image.core.set_use_block_allocator(1)
     block_size = Image.core.get_block_size()
 
     # check a 2 block image in 4 channel mode
@@ -161,4 +156,3 @@ def test_singleblock_rgba_schema() -> None:
 
     schema = img.__arrow_c_schema__()
     assert schema
-    Image.core.set_use_block_allocator(0)
