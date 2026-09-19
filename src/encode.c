@@ -718,7 +718,6 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         return NULL;
     } else {
         tags_size = PyList_Size(tags);
-        TRACE(("tags size: %d\n", (int)tags_size));
         for (pos = 0; pos < tags_size; pos++) {
             item = PyList_GetItemRef(tags, pos);
             if (item == NULL) {
@@ -738,8 +737,6 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         PyErr_SetString(PyExc_ValueError, "Invalid types dictionary");
         return NULL;
     }
-
-    TRACE(("new tiff encoder %s fp: %d, filename: %s \n", compname, fp, filename));
 
     encoder = PyImaging_EncoderNew(sizeof(TIFFSTATE));
     if (encoder == NULL) {
@@ -865,7 +862,6 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             );
         } else if (is_var_length) {
             Py_ssize_t len, i;
-            TRACE(("Setting from Tuple: %d \n", key_int));
             len = PyTuple_Size(value);
 
             if (key_int == TIFFTAG_COLORMAP) {
@@ -1050,17 +1046,10 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (uint64_t)PyLong_AsLongLong(value)
                 );
-            } else {
-                TRACE(
-                    ("Unhandled type for key %d : %s \n",
-                     key_int,
-                     PyBytes_AsString(PyObject_Str(value)))
-                );
             }
         }
         Py_DECREF(item);
         if (!status) {
-            TRACE(("Error setting Field\n"));
             Py_DECREF(encoder);
             PyErr_SetString(PyExc_RuntimeError, "Error setting from dictionary");
             return NULL;
