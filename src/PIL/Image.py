@@ -754,13 +754,21 @@ class Image:
         if self.__class__ is not other.__class__:
             return False
         assert isinstance(other, Image)
-        return (
+        if self is other:
+            return True
+        # Early-out before realizing palettes.
+        # ImagingCore does check for mode and size.
+        if not (
             self.mode == other.mode
             and self.size == other.size
             and self.info == other.info
-            and self.getpalette() == other.getpalette()
-            and self.tobytes() == other.tobytes()
-        )
+        ):
+            return False
+        # Realize dirty palettes, if any.
+        # ImagingCore's compare function checks for palette equality.
+        self.load()
+        other.load()
+        return self.im == other.im
 
     def __repr__(self) -> str:
         return (

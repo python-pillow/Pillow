@@ -193,3 +193,8 @@ Fixed histograms for masked LA, La and PA images
 When :py:meth:`~PIL.Image.Image.histogram` was given a mask for a two-band image (LA,
 La or PA), the second band was incorrectly derived from the first band of the input
 image, rather than the alpha band.
+
+Faster image comparison
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Comparing two images with ``==`` no longer copies both images out to ``bytes`` first.

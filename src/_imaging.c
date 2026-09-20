@@ -3875,6 +3875,144 @@ static PySequenceMethods image_as_sequence = {
     (ssizessizeobjargproc)NULL, /*sq_ass_slice*/
 };
 
+/**
+ * Compare two pixel arrays in the given mode for equality.
+ *
+ * @param mode The mode of the pixel arrays.
+ * @param ysize The number of rows in the pixel arrays.
+ * @param linesize The number of bytes in each row of the pixel arrays.
+ * @param pixels_a Pointer to the first array of pixel row arrays.
+ * @param pixels_b Pointer to the second array of pixel row arrays.
+ * @return 0 if the pixel arrays are equal, 1 if they are not equal.
+ */
+static int
+_compare_pixels(
+    const ModeID mode,
+    const int ysize,
+    const int linesize,
+    const char *const *pixels_a,
+    const char *const *pixels_b
+) {
+    if (ysize <= 0 || linesize <= 0) {
+        // Pixel arrays without size are always equal.
+        // Since rows may not have been allocated at all,
+        // early-out now.
+        return 0;
+    }
+
+    // Fortunately, all of the modes that have extra bytes in their pixels
+    // use four bytes for their pixels. RGBX is deliberately not one of them:
+    // its fourth byte is compared just like Image.tobytes() includes it.
+    UINT32 mask = 0xffffffff;
+    switch (mode) {
+        case IMAGING_MODE_RGB:
+        case IMAGING_MODE_YCbCr:
+        case IMAGING_MODE_HSV:
+        case IMAGING_MODE_LAB:
+            // These modes have three channels in four bytes,
+            // so we have to ignore the last byte.
+#ifdef WORDS_BIGENDIAN
+            mask = 0xffffff00;
+#else
+            mask = 0x00ffffff;
+#endif
+            break;
+        case IMAGING_MODE_LA:
+        case IMAGING_MODE_La:
+        case IMAGING_MODE_PA:
+            // These modes have two channels in four bytes,
+            // so we have to ignore the middle two bytes.
+            mask = 0xff0000ff;
+            break;
+        default:
+            break;
+    }
+
+    if (mask == 0xffffffff) {
+        // If we aren't masking anything we can use memcmp.
+        for (int y = 0; y < ysize; y++) {
+            if (memcmp(pixels_a[y], pixels_b[y], linesize)) {
+                return 1;
+            }
+        }
+    } else {
+        const int xsize = linesize / 4;
+        for (int y = 0; y < ysize; y++) {
+            const UINT32 *line_a = (const UINT32 *)pixels_a[y];
+            const UINT32 *line_b = (const UINT32 *)pixels_b[y];
+            for (int x = 0; x < xsize; x++, line_a++, line_b++) {
+                if ((*line_a & mask) != (*line_b & mask)) {
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+/**
+ * Compare two palettes for equality.
+ *
+ * @param palette_a Pointer to the first palette. May be NULL.
+ * @param palette_b Pointer to the second palette. May be NULL.
+ * @return 0 if the palettes are equal, 1 if they are not equal.
+ */
+static int
+_compare_palette(const ImagingPalette palette_a, const ImagingPalette palette_b) {
+    if (palette_a == NULL && palette_b == NULL) {
+        return 0;
+    }
+    if (palette_a == NULL || palette_b == NULL) {
+        return 1;
+    }
+    if (palette_a->size != palette_b->size || palette_a->mode != palette_b->mode) {
+        return 1;
+    }
+
+    const char *palette_a_data = (const char *)palette_a->palette;
+    const char *palette_b_data = (const char *)palette_b->palette;
+    // 1024 is the hard-coded maximum size of a palette
+    int linesize = MIN(palette_a->size * 4, 1024);
+    return _compare_pixels(
+        palette_a->mode, 1, linesize, &palette_a_data, &palette_b_data
+    );
+}
+
+static PyObject *
+image_richcompare(PyObject *self, PyObject *other, int op) {
+    if (op != Py_EQ && op != Py_NE) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+
+    if (!PyImaging_Check(other)) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+
+    const Imaging img_a = ((ImagingObject *)self)->image;
+    const Imaging img_b = ((ImagingObject *)other)->image;
+
+    if (img_a == NULL || img_b == NULL) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+
+    const int equal =
+        // Mode and size comparison (cheap)
+        img_a->mode == img_b->mode && img_a->xsize == img_b->xsize &&
+        img_a->ysize == img_b->ysize &&
+        // Palette comparison
+        _compare_palette(img_a->palette, img_b->palette) == 0 &&
+        // Pixel comparison
+        _compare_pixels(
+            img_a->mode,
+            img_a->ysize,
+            img_a->linesize,
+            (const char *const *)img_a->image,
+            (const char *const *)img_b->image
+        ) == 0;
+
+    return PyBool_FromLong(op == Py_EQ ? equal : !equal);
+}
+
 /* type description */
 
 static PyTypeObject Imaging_Type = {
@@ -3882,6 +4020,7 @@ static PyTypeObject Imaging_Type = {
     .tp_basicsize = sizeof(ImagingObject),
     .tp_dealloc = (destructor)_dealloc,
     .tp_as_sequence = &image_as_sequence,
+    .tp_richcompare = image_richcompare,
     .tp_methods = methods,
     .tp_getset = getsetters,
 };
