@@ -131,6 +131,15 @@ Added ``escape`` argument to ``PSDraw.text()``
 The default, ``False``, preserves the existing handling of backslashes and PostScript
 escape sequences.
 
+Added ``palette_padding`` argument when saving PNG images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving a ``P`` mode image as a PNG with the ``bits`` argument, Pillow has always
+padded the ``PLTE`` chunk with zeroes up to ``2 ** bits`` entries. A new
+``palette_padding`` argument can now be set to ``False`` to skip this padding, so that
+the ``PLTE`` chunk only contains as many entries as the image's palette actually has.
+It defaults to ``True``, preserving the existing behavior.
+
 Other changes
 =============
 

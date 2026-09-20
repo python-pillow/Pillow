@@ -757,6 +757,31 @@ class TestFilePng:
             assert reloaded.png.im_palette is not None
             assert len(reloaded.png.im_palette[1]) == 48
 
+    @pytest.mark.parametrize(
+        "palette_padding, expected_length", ((None, 48), (True, 48), (False, 15))
+    )
+    def test_specify_bits_palette_padding(
+        self, palette_padding: bool | None, expected_length: int, tmp_path: Path
+    ) -> None:
+        im = Image.new("P", (10, 10))
+        im.putpalette((0, 0, 0, 10, 10, 10, 20, 20, 20, 30, 30, 30, 40, 40, 40))
+        im.putdata([0, 1, 2, 3, 4] * 20)
+
+        out = tmp_path / "temp.png"
+        kwargs = {} if palette_padding is None else {"palette_padding": palette_padding}
+        im.save(out, bits=4, **kwargs)
+
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+            assert reloaded.png is not None
+            assert reloaded.png.im_palette is not None
+            # With padding (the default), the PLTE chunk is padded out to
+            # 2 ** 4 == 16 entries. Without it, only the 5 actual palette
+            # entries are written.
+            assert len(reloaded.png.im_palette[1]) == expected_length
+
+            assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
+
     def test_plte_length(self, tmp_path: Path) -> None:
         im = Image.new("P", (1, 1))
         im.putpalette((1, 1, 1))
