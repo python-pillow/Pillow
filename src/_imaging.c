@@ -3936,14 +3936,30 @@ _compare_pixels(
             }
         }
     } else {
+        // All modes where we use a mask store four bytes per pixel.
         const int xsize = linesize / 4;
         for (int y = 0; y < ysize; y++) {
             const UINT32 *line_a = (const UINT32 *)pixels_a[y];
             const UINT32 *line_b = (const UINT32 *)pixels_b[y];
-            for (int x = 0; x < xsize; x++, line_a++, line_b++) {
-                if ((*line_a & mask) != (*line_b & mask)) {
-                    return 1;
-                }
+            // Check the first pixel separately; if it's different,
+            // we don't need to enter the loop at all.
+            if ((line_a[0] ^ line_b[0]) & mask) {
+                return 1;
+            }
+            // Autovectorizable form: compute one row at a time,
+            // and OR together all the differences in that row,
+            // then see if we saw any differences at all.
+            // This loop will not bail out in the middle of a row
+            // (the common case of "entirely different images,
+            // same size and mode" will have been taken care of
+            // above in the first-pixel check), but it measures
+            // to be faster anyhow on modern CPUs.
+            UINT32 diff = 0;
+            for (int x = 0; x < xsize; x++) {
+                diff |= (line_a[x] ^ line_b[x]) & mask;
+            }
+            if (diff) {
+                return 1;
             }
         }
     }
