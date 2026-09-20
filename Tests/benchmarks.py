@@ -5,6 +5,7 @@ pytest-benchmark tests for Pillow features.
 from __future__ import annotations
 
 import hashlib
+import operator
 import os
 import pathlib
 import re
@@ -726,6 +727,37 @@ def test_offset(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> No
     im = make_pillow_image(mode, size)
     bench.extra_info["label"] = ["offset"]
     bench(ImageChops.offset, im, 123, 45)
+
+
+@pytest.mark.benchmark(group="compare")
+@pytest.mark.parametrize("scenario", ["equal", "one-pixel", "inverted"])
+@pytest.mark.parametrize("mode", [*MODES, "I;16"])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_equality(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+    scenario: str,
+) -> None:
+    im1 = make_pillow_image(mode, size)
+    if scenario == "inverted":  # Differs in almost every pixel
+        im2 = ImageChops.invert(im1)
+    elif scenario == "one-pixel":
+        # Differs in a single pixel halfway through the image in raster order
+        xy = ((im1.width * im1.height // 2) % im1.width, im1.height // 2)
+        im2 = im1.copy()
+        value = im2.getpixel(xy)
+        assert value is not None
+        if isinstance(value, tuple):
+            value = tuple(255 - v for v in value)
+        else:
+            value = 255 - value
+        im2.putpixel(xy, value)
+    else:  # Equal
+        im2 = im1.copy()
+    bench.extra_info["label"] = [scenario]
+    result = bench(operator.eq, im1, im2)
+    assert result is (scenario == "equal")
 
 
 @pytest.mark.benchmark(group="extrema")
