@@ -768,8 +768,10 @@ class TestFilePng:
         im.putdata([0, 1, 2, 3, 4] * 20)
 
         out = tmp_path / "temp.png"
-        kwargs = {} if palette_padding is None else {"palette_padding": palette_padding}
-        im.save(out, bits=4, **kwargs)
+        if palette_padding is None:
+            im.save(out, bits=4)
+        else:
+            im.save(out, bits=4, palette_padding=palette_padding)
 
         with Image.open(out) as reloaded:
             assert isinstance(reloaded, PngImagePlugin.PngImageFile)

@@ -1489,6 +1489,7 @@ def _save(
                     chunk(fp, cid, data)
 
     if mode == "P" and palette is not None:
+        assert palette_colors is not None
         palette_byte_number = palette_colors * 3
         palette_bytes = bytes(palette[:palette_byte_number])
         while len(palette_bytes) < palette_byte_number:
