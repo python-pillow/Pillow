@@ -2293,7 +2293,6 @@ class Image:
         m_im = m_im.convert("L")
 
         m_im.putpalette(palette_bytes, palette_mode)
-        m_im.palette = ImagePalette.ImagePalette(palette_mode, palette=palette_bytes)
 
         if "transparency" in self.info:
             try:
