@@ -1405,7 +1405,7 @@ def _save(
             # number of bits specified by user
             colors = min(1 << im.encoderinfo["bits"], 256)
 
-            if palette and not im.encoderinfo.get("palette_padding", True):
+            if palette:
                 # write only as many PLTE entries as the palette actually
                 # contains, rather than padding out to the full 2**bits
                 palette_colors = max(min(len(palette) // 3, colors), 1)
@@ -1426,10 +1426,9 @@ def _save(
             outmode += f";{bits}"
 
     if palette_colors is None:
-        # palette_colors was not set above by an explicit "bits" argument
-        # combined with palette_padding=False, so fall back to the number of
-        # colors used to determine the bit depth (which pads the PLTE and
-        # tRNS chunks up to the full 2**bits entries)
+        # no palette was available above to trim the PLTE/tRNS chunks to
+        # actual content, so fall back to the number of colors used to
+        # determine the bit depth
         palette_colors = colors if mode == "P" else None
 
     # get the corresponding PNG mode
