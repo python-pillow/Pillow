@@ -1397,25 +1397,17 @@ def _save(
             palette_frame_with_alpha = im if im.palette.mode == "RGBA" else None
 
     outmode = mode
-    palette_colors = None
     if mode == "P":
-        #
-        # attempt to minimize storage requirements for palette images
-        if "bits" in im.encoderinfo:
-            # number of bits specified by user
-            colors = min(1 << im.encoderinfo["bits"], 256)
-
-            if palette:
-                # write only as many PLTE entries as the palette actually
-                # contains, rather than padding out to the full 2**bits
-                palette_colors = max(min(len(palette) // 3, colors), 1)
-        else:
-            # check palette contents
-            if palette:
-                colors = max(min(len(palette) // 3, 256), 1)
-            else:
-                colors = 256
-
+        colors = max(
+            1,
+            min(
+                # number of bits specified by user
+                1 << im.encoderinfo.get("bits", 8),
+                # write only as many PLTE entries as the palette actually contains
+                len(palette) // 3 if palette else 0,
+                256,
+            ),
+        )
         if colors <= 16:
             if colors <= 2:
                 bits = 1
@@ -1424,12 +1416,6 @@ def _save(
             else:
                 bits = 4
             outmode += f";{bits}"
-
-    if palette_colors is None:
-        # no palette was available above to trim the PLTE/tRNS chunks to
-        # actual content, so fall back to the number of colors used to
-        # determine the bit depth
-        palette_colors = colors if mode == "P" else None
 
     # get the corresponding PNG mode
     try:
@@ -1487,12 +1473,8 @@ def _save(
                 if not after_idat:
                     chunk(fp, cid, data)
 
-    if mode == "P" and palette is not None:
-        assert palette_colors is not None
-        palette_byte_number = palette_colors * 3
-        palette_bytes = bytes(palette[:palette_byte_number])
-        while len(palette_bytes) < palette_byte_number:
-            palette_bytes += b"\0"
+    if mode == "P":
+        palette_bytes = (palette and bytes(palette[: colors * 3])) or b"\x00\x00\x00"
         chunk(fp, b"PLTE", palette_bytes)
 
     transparency = im.encoderinfo.get("transparency", im.info.get("transparency"))
@@ -1500,7 +1482,7 @@ def _save(
     if transparency is not None:
         if mode == "P":
             # limit to actual palette size
-            alpha_bytes = palette_colors
+            alpha_bytes = colors
             if isinstance(transparency, bytes):
                 chunk(fp, b"tRNS", transparency[:alpha_bytes])
             elif isinstance(transparency, int):
@@ -1534,7 +1516,7 @@ def _save(
             raise OSError(msg)
     elif mode == "P" and palette_frame_with_alpha:
         alpha = palette_frame_with_alpha.im.getpalette("RGBA", "A")
-        alpha_bytes = palette_colors
+        alpha_bytes = colors
         chunk(fp, b"tRNS", alpha[:alpha_bytes])
 
     if dpi := im.encoderinfo.get("dpi"):

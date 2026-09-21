@@ -135,7 +135,7 @@ Other changes
 =============
 
 PNG palettes are no longer padded when saving with the ``bits`` argument
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When saving a ``P`` mode image as a PNG with the ``bits`` argument, Pillow used to pad
 the ``PLTE`` chunk with zeroes up to ``2 ** bits`` entries. The ``PLTE`` chunk now only

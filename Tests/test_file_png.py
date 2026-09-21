@@ -758,20 +758,18 @@ class TestFilePng:
             assert len(reloaded.png.im_palette[1]) == 48
 
     def test_specify_bits_fewer_palette_entries(self, tmp_path: Path) -> None:
-        im = Image.new("P", (10, 10))
-        im.putpalette((0, 0, 0, 10, 10, 10, 20, 20, 20, 30, 30, 30, 40, 40, 40))
-        im.putdata([0, 1, 2, 3, 4] * 20)
+        im = Image.new("P", (1, 1))
+        data = (0, 0, 0, 10, 10, 10, 20, 20, 20, 30, 30, 30, 40, 40, 40)
+        im.putpalette(data)
 
         out = tmp_path / "temp.png"
         im.save(out, bits=4)
 
         with Image.open(out) as reloaded:
-            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
-            assert reloaded.png is not None
-            assert reloaded.png.im_palette is not None
-            # Only the 5 actual palette entries are written, rather than
-            # padding the PLTE chunk out to 2 ** 4 == 16 entries.
-            assert len(reloaded.png.im_palette[1]) == 15
+            # Only the 5 actual palette entries are written,
+            # rather than padding the PLTE chunk out to 16 entries (1 << 4).
+            assert reloaded.palette is not None
+            assert reloaded.palette.palette == bytes(data)
 
             assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
