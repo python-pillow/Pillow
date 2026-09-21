@@ -11,6 +11,9 @@ def test_putpalette() -> None:
     def palette(mode: str) -> str | tuple[str, list[int]]:
         im = hopper(mode).copy()
         im.putpalette(list(range(256)) * 3)
+        assert im.palette is not None
+        assert im.palette.dirty
+
         p = im.getpalette()
         if p:
             return im.mode, p[:10]
