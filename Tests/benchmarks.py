@@ -5,7 +5,6 @@ pytest-benchmark tests for Pillow features.
 from __future__ import annotations
 
 import hashlib
-import operator
 import os
 import pathlib
 import re
@@ -756,7 +755,7 @@ def test_equality(
     else:  # Equal
         im2 = im1.copy()
     bench.extra_info["label"] = [scenario]
-    result = bench(operator.eq, im1, im2)
+    result = bench(lambda: im1 == im2)
     assert result is (scenario == "equal")
 
 
