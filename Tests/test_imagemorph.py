@@ -278,7 +278,11 @@ def test_unknown_pattern() -> None:
 
 
 @pytest.mark.parametrize(
-    "pattern", ("a pattern with a syntax error", "4:(" + "X" * 30000)
+    "pattern",
+    (
+        pytest.param("a pattern with a syntax error", id="syntax-error"),
+        pytest.param("4:(" + "X" * 30000, id="long-pattern"),
+    ),
 )
 @timeout_unless_slower_valgrind(1)
 def test_pattern_syntax_error(pattern: str) -> None:
