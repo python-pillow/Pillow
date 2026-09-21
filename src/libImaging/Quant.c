@@ -1709,7 +1709,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
         return ImagingError_MemoryError();
     }
     /* malloc check ok, using calloc for final overflow, x*y above */
-    p = calloc(xsize * ysize, sizeof(Pixel));
+    p = calloc((size_t)xsize * ysize, sizeof(Pixel));
     if (!p) {
         return ImagingError_MemoryError();
     }

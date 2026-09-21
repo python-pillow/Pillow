@@ -380,6 +380,9 @@ def test_dxt5_colorblock_alpha_issue_4142() -> None:
 
 def test_palette() -> None:
     with Image.open("Tests/images/palette.dds") as im:
+        assert im.palette is not None
+        assert len(im.palette.tobytes()) == 1024
+
         assert_image_equal_tofile(im, "Tests/images/transparent.gif")
 
 

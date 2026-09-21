@@ -2162,14 +2162,8 @@ class Image:
             msg = "illegal image mode"
             raise ValueError(msg)
         if isinstance(data, ImagePalette.ImagePalette):
-            if data.rawmode is not None:
-                palette = ImagePalette.raw(data.rawmode, data.palette)
-            else:
-                palette = ImagePalette.ImagePalette(palette=data.palette)
-                palette.dirty = 1
+            palette = ImagePalette.raw(data.rawmode or "RGB", data.palette)
         else:
-            if not isinstance(data, bytes):
-                data = bytes(data)
             palette = ImagePalette.raw(rawmode, data)
         self._mode = "PA" if "A" in self.mode else "P"
         self.palette = palette
@@ -2177,8 +2171,6 @@ class Image:
             self.palette.mode = "CMYK"
         elif "A" in rawmode:
             self.palette.mode = "RGBA"
-        else:
-            self.palette.mode = "RGB"
         self.load()  # install new palette
 
     def putpixel(

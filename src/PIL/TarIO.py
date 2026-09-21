@@ -53,11 +53,16 @@ class TarIO(ContainerIO.ContainerIO[bytes]):
                 name = name[:i]
 
             size = int(s[124:135], 8)
+            if size < 0:
+                self.fh.close()
+                msg = "size must not be negative"
+                raise ValueError(msg)
 
             if file == name:
                 break
 
-            self.fh.seek((size + 511) & (~511), io.SEEK_CUR)
+            offset = (size + 511) & ~511
+            self.fh.seek(offset, io.SEEK_CUR)
 
         # Open region
         super().__init__(self.fh, self.fh.tell(), size)
