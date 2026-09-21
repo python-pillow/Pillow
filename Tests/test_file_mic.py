@@ -31,8 +31,8 @@ def test_sanity() -> None:
         lut = ImagePalette.make_gamma_lut(1 / 2.2)
         im1 = Image.merge("RGBA", [chan.point(lut) for chan in im.split()])
 
-        im2 = hopper("RGBA")
-        assert_image_similar(im1, im2, 10)
+    im2 = hopper("RGBA")
+    assert_image_similar(im1, im2, 10)
 
 
 def test_n_frames() -> None:
