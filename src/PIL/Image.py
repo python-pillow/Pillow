@@ -756,16 +756,14 @@ class Image:
         assert isinstance(other, Image)
         if self is other:
             return True
-        # Early-out before realizing palettes.
+        # Early-out before loading.
         # ImagingCore does check for mode and size.
-        if not (
-            self.mode == other.mode
-            and self.size == other.size
-            and self.info == other.info
+        if (
+            self.mode != other.mode
+            or self.size != other.size
+            or self.info != other.info
         ):
             return False
-        # Realize dirty palettes, if any.
-        # ImagingCore's compare function checks for palette equality.
         self.load()
         other.load()
         return self.im == other.im
