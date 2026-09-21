@@ -143,6 +143,27 @@ def test_contain_round() -> None:
 
 
 @pytest.mark.parametrize(
+    "size, expected_size",
+    (
+        ((100, 1), (10, 1)),
+        ((1, 100), (1, 10)),
+        ((20, 1), (10, 1)),
+        ((1, 20), (1, 10)),
+    ),
+)
+def test_contain_round_to_zero(
+    size: tuple[int, int], expected_size: tuple[int, int]
+) -> None:
+    im = Image.new("1", size, 1)
+
+    new_im = ImageOps.contain(im, (10, 10))
+    assert new_im.size == expected_size
+
+    new_im = ImageOps.pad(im, (10, 10))
+    assert new_im.size == (10, 10)
+
+
+@pytest.mark.parametrize(
     "image_name, expected_size",
     (
         ("colr_bungee.png", (1024, 256)),  # landscape
