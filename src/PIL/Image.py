@@ -4143,8 +4143,7 @@ class Exif(_ExifBase):
         self._data.clear()
         self._hidden_data.clear()
         self._ifds.clear()
-        while data and data.startswith(b"Exif\x00\x00"):
-            data = data[6:]
+        data = re.sub(b"^(Exif\x00\x00){1,2}", b"", data)
         if not data:
             self._info = None
             return
