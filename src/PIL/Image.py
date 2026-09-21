@@ -2170,6 +2170,8 @@ class Image:
             self.palette.mode = "CMYK"
         elif "A" in rawmode:
             self.palette.mode = "RGBA"
+        if self.palette.mode == self.palette.rawmode:
+            self.palette.rawmode = None
         if self.palette.rawmode:
             self.load()  # decode raw palette data
 

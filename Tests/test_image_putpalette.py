@@ -89,6 +89,8 @@ def test_putpalette_with_alpha_values() -> None:
 def test_rgba_palette(mode: str, palette: tuple[int, ...]) -> None:
     im = Image.new("P", (1, 1))
     im.putpalette(palette, mode)
+    assert im.palette is not None
+    assert im.palette.dirty == (1 if mode == "RGBA" else 0)
     assert im.getpalette() == [1, 2, 3]
     assert im.palette is not None
     assert im.palette.colors == {(1, 2, 3, 4): 0}
@@ -104,6 +106,8 @@ def test_rgba_palette(mode: str, palette: tuple[int, ...]) -> None:
 def test_cmyk_palette(mode: str, palette: tuple[int, ...]) -> None:
     im = Image.new("P", (1, 1))
     im.putpalette(palette, mode)
+    assert im.palette is not None
+    assert im.palette.dirty == (1 if mode == "CMYK" else 0)
     assert im.getpalette() == [250, 249, 248]
     assert im.palette is not None
     assert im.palette.colors == {(1, 2, 3, 4): 0}
