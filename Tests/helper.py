@@ -16,7 +16,7 @@ from io import BytesIO
 import pytest
 from packaging.version import parse as parse_version
 
-from PIL import Image, ImageFile, ImageMath, features
+from PIL import Image, ImageChops, ImageFile, ImageMath, features
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -122,12 +122,16 @@ def assert_image_similar(
 
     a, b = convert_to_comparable(a, b)
 
-    diff = 0
-    for ach, bch in zip(a.split(), b.split()):
-        chdiff = ImageMath.lambda_eval(
-            lambda args: abs(args["a"] - args["b"]), a=ach, b=bch
+    if a.mode in ("I", "F"):
+        # ImageChops.difference only supports 8bpc images,
+        # so this needs to be done by hand.
+        diff_im = ImageMath.lambda_eval(
+            lambda args: abs(args["a"] - args["b"]), a=a, b=b
         ).convert("L")
-        diff += sum(i * num for i, num in enumerate(chdiff.histogram()))
+    else:
+        diff_im = ImageChops.difference(a, b)
+
+    diff = sum((i % 256) * count for i, count in enumerate(diff_im.histogram()))
 
     ave_diff = diff / (a.size[0] * a.size[1])
     try:
