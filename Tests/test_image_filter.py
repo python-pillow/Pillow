@@ -180,6 +180,18 @@ def test_rankfilter_properties() -> None:
         ImageFilter.RankFilter(1, 1)
 
 
+def test_rankfilter_overflow() -> None:
+    # Large margins used to overflow the ImagingExpand overflow guard itself (SIGFPE),
+    # by mutating RankFilter.size after construction, bypassing __init__'s validation.
+    im = Image.new("L", (16, 16))
+    rankfilter = ImageFilter.RankFilter(3, 0)
+
+    for size in (2**31, 2**32 - 1):  # margins of 2**30 and INT_MAX
+        rankfilter.size = size
+        with pytest.raises(ValueError, match="filter size too large"):
+            im.filter(rankfilter)
+
+
 def test_builtinfilter_p() -> None:
     builtin_filter = ImageFilter.BuiltinFilter()
 
