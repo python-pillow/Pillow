@@ -1276,8 +1276,9 @@ class TestFileLibTiff(LibTiffTestCase):
                     output, format="TIFF", compression="tiff_adobe_deflate"
                 )
 
-            # The traceback retains the encoder. Its eventual destruction must
-            # not seek or write through a file descriptor that may be reused.
+            # The traceback keeps the encoder alive. Collecting it used to move
+            # the file position, corrupting unrelated reads if the fd was reused.
+            # Cleanup must happen during save, not later during GC.
             output.seek(1234)
             del exc
             gc.collect()
