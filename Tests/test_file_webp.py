@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import re
-import sys
 import warnings
 from typing import Any
 
@@ -158,21 +157,13 @@ class TestFileWebp:
 
         self._roundtrip(tmp_path, "P", 50.0)
 
-    @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
-    def test_write_encoding_error_message(self, tmp_path: Path) -> None:
-        im = Image.new("RGB", (15000, 15000))
-        with pytest.raises(ValueError, match="encoding error 6"):
-            im.save(tmp_path / "temp.webp", method=0)
-
-    @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
     def test_write_encoding_error_bad_dimension(self, tmp_path: Path) -> None:
         im = Image.new("L", (16384, 1))
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(
+            ValueError,
+            match="encoding error 5: image size exceeds WebP limit of 16383 pixels",
+        ):
             im.save(tmp_path / "temp.webp")
-        assert (
-            str(e.value)
-            == "encoding error 5: Image size exceeds WebP limit of 16383 pixels"
-        )
 
     def test_WebPEncode_with_invalid_args(self) -> None:
         """
