@@ -13,6 +13,7 @@
  */
 
 #include "Imaging.h"
+#include "Python.h"
 
 /* Fast rank algorithm (due to Wirth), based on public domain code
    by Nicolas Devillard, available at http://ndevilla.free.fr */
@@ -97,6 +98,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
         if (!buf) {                                                               \
             goto nomemory;                                                        \
         }                                                                         \
+        Py_BEGIN_ALLOW_THREADS                                                    \
         for (y = 0; y < imOut->ysize; y++) {                                      \
             for (x = 0; x < imOut->xsize; x++) {                                  \
                 for (i = 0; i < size; i++) {                                      \
@@ -109,6 +111,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
                 IMAGING_PIXEL_##type(imOut, x, y) = Rank##type(buf, size2, rank); \
             }                                                                     \
         }                                                                         \
+        Py_END_ALLOW_THREADS                                                      \
         free(buf);                                                                \
     } while (0)
 
