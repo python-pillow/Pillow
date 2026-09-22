@@ -132,10 +132,6 @@ struct ImagingMemoryInstance {
 #define IMAGING_PIXEL_CMYK(im, x, y) ((im)->image[(y)][(x) * 4])
 #define IMAGING_PIXEL_YCbCr(im, x, y) ((im)->image[(y)][(x) * 4])
 
-#define IMAGING_PIXEL_UINT8(im, x, y) ((im)->image8[(y)][(x)])
-#define IMAGING_PIXEL_INT32(im, x, y) ((im)->image32[(y)][(x)])
-#define IMAGING_PIXEL_FLOAT32(im, x, y) (((FLOAT32 *)(im)->image32[y])[x])
-
 struct ImagingAccessInstance {
     ModeID mode;
     void (*get_pixel)(Imaging im, int x, int y, void *pixel);
