@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from PIL import Image
 
 
@@ -38,6 +40,9 @@ def test_promote() -> None:
     im.putalpha(4)
     assert im.mode == "RGBA"
     assert im.getpixel((0, 0)) == (1, 2, 3, 4)
+
+    with pytest.raises(ValueError, match="image has wrong mode"):
+        im.im.setalpha()
 
 
 def test_readonly() -> None:

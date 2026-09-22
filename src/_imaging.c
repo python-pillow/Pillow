@@ -72,21 +72,22 @@
  */
 
 #define PY_SSIZE_T_CLEAN
-#include "Python.h"
+#include <Python.h>
+#include "thirdparty/pythoncapi_compat.h"
 
 #ifdef HAVE_LIBJPEG
-#include "jconfig.h"
+#include <jconfig.h>
 #ifdef LIBJPEG_TURBO_VERSION
 #define JCONFIG_INCLUDED
 #ifdef __CYGWIN__
 #define _BASETSD_H
 #endif
-#include "jpeglib.h"
+#include <jpeglib.h>
 #endif
 #endif
 
 #ifdef HAVE_LIBZ
-#include "zlib.h"
+#include <zlib.h>
 #endif
 
 #ifdef HAVE_LIBTIFF
@@ -418,14 +419,11 @@ getbands(const ModeID mode) {
 #define TYPE_DOUBLE (0x400 | sizeof(double))
 
 static void *
-getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
-    /* - allocates and returns a c array of the items in the
-          python sequence arg.
+getlist_impl(PyObject *arg, Py_ssize_t length, const char *wrong_length, int type) {
+    /* - allocates and returns a c array of the items in the Python sequence arg.
        - the size of the returned array is in length
-       - all of the arg items must be numeric items of the type
-          specified in type
-       - sequence length is checked against the length parameter IF
-          an error parameter is passed in wrong_length
+       - all of the arg items must be numeric items of the type specified in type
+       - sequence length is checked against the length parameter
        - caller is responsible for freeing the memory
     */
 
@@ -443,7 +441,7 @@ getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
     }
 
     n = PySequence_Size(arg);
-    if (length && wrong_length && n != *length) {
+    if (n != length) {
         PyErr_SetString(PyExc_ValueError, wrong_length);
         return NULL;
     }
@@ -492,11 +490,16 @@ getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
         return NULL;
     }
 
-    if (length) {
-        *length = n;
-    }
-
     return list;
+}
+
+static void *
+getlist(PyObject *arg, Py_ssize_t length, const char *wrong_length, int type) {
+    void *result;
+    Py_BEGIN_CRITICAL_SECTION(arg);
+    result = getlist_impl(arg, length, wrong_length, type);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 FLOAT32
@@ -524,6 +527,27 @@ float16tofloat32(const FLOAT16 in) {
 }
 
 static inline PyObject *
+make_pixel_tuple(const UINT8 *b, Py_ssize_t bands) {
+    PyObject *tuple = PyTuple_New(bands);
+    if (tuple == NULL) {
+        return NULL;
+    }
+    for (Py_ssize_t i = 0; i < bands; i++) {
+        PyObject *v = PyLong_FromLong(b[i]);
+        if (v == NULL) {
+            Py_DECREF(tuple);
+            return NULL;
+        }
+        PyTuple_SET_ITEM(tuple, i, v);
+    }
+    // We know these tuples will only have small integers,
+    // so we can tell the garbage collector to not look inside
+    // for cycles.
+    PyObject_GC_UnTrack(tuple);
+    return tuple;
+}
+
+static inline PyObject *
 getpixel(Imaging im, ImagingAccess access, int x, int y) {
     union {
         UINT8 b[4];
@@ -548,24 +572,16 @@ getpixel(Imaging im, ImagingAccess access, int x, int y) {
 
     switch (im->type) {
         case IMAGING_TYPE_UINT8:
-            switch (im->bands) {
-                case 1:
-                    return PyLong_FromLong(pixel.b[0]);
-                case 2:
-                    return Py_BuildValue("BB", pixel.b[0], pixel.b[1]);
-                case 3:
-                    return Py_BuildValue("BBB", pixel.b[0], pixel.b[1], pixel.b[2]);
-                case 4:
-                    return Py_BuildValue(
-                        "BBBB", pixel.b[0], pixel.b[1], pixel.b[2], pixel.b[3]
-                    );
+            if (im->bands == 1) {
+                return PyLong_FromLong(pixel.b[0]);
+            } else {
+                return make_pixel_tuple(pixel.b, im->bands);
             }
-            break;
         case IMAGING_TYPE_INT32:
             return PyLong_FromLong(pixel.i);
         case IMAGING_TYPE_FLOAT32:
             return PyFloat_FromDouble(pixel.f);
-        case IMAGING_TYPE_SPECIAL:
+        case IMAGING_TYPE_I16:
             return PyLong_FromLong(pixel.h);
     }
 
@@ -594,7 +610,7 @@ getink(PyObject *color, Imaging im, char *ink) {
         color = PyTuple_GetItem(color, 0);
     }
     if (im->type == IMAGING_TYPE_UINT8 || im->type == IMAGING_TYPE_INT32 ||
-        im->type == IMAGING_TYPE_SPECIAL) {
+        im->type == IMAGING_TYPE_I16) {
         if (PyLong_Check(color)) {
             r = PyLong_AsLongLong(color);
             if (r == -1 && PyErr_Occurred()) {
@@ -682,7 +698,7 @@ getink(PyObject *color, Imaging im, char *ink) {
             ftmp = f;
             memcpy(ink, &ftmp, sizeof(ftmp));
             return ink;
-        case IMAGING_TYPE_SPECIAL:
+        case IMAGING_TYPE_I16:
             ink[0] = (UINT8)r;
             ink[1] = (UINT8)(r >> 8);
             ink[2] = ink[3] = 0;
@@ -787,7 +803,7 @@ _radial_gradient(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_alpha_composite(ImagingObject *self, PyObject *args) {
+_alpha_composite(PyObject *self, PyObject *args) {
     ImagingObject *imagep1;
     ImagingObject *imagep2;
 
@@ -801,7 +817,7 @@ _alpha_composite(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_blend(ImagingObject *self, PyObject *args) {
+_blend(PyObject *self, PyObject *args) {
     ImagingObject *imagep1;
     ImagingObject *imagep2;
     double alpha;
@@ -865,7 +881,7 @@ _prepare_lut_table(PyObject *table, Py_ssize_t table_size) {
 
     if (!table_data) {
         free_table_data = 1;
-        table_data = getlist(table, &table_size, wrong_size, TYPE_FLOAT32);
+        table_data = getlist(table, table_size, wrong_size, TYPE_FLOAT32);
         if (!table_data) {
             return NULL;
         }
@@ -1023,21 +1039,22 @@ _convert(ImagingObject *self, PyObject *args) {
     const ModeID mode = findModeID(mode_name);
 
     return PyImagingNew(ImagingConvert(
-        self->image, mode, paletteimage ? paletteimage->image->palette : NULL, dither
+        NULL,
+        self->image,
+        mode,
+        paletteimage ? paletteimage->image->palette : NULL,
+        dither
     ));
 }
 
 static PyObject *
-_convert2(ImagingObject *self, PyObject *args) {
-    ImagingObject *imagep1;
-    ImagingObject *imagep2;
-    if (!PyArg_ParseTuple(
-            args, "O!O!", &Imaging_Type, &imagep1, &Imaging_Type, &imagep2
-        )) {
+_convert_into(ImagingObject *self, PyObject *args) {
+    ImagingObject *imagep;
+    if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
         return NULL;
     }
 
-    if (!ImagingConvert2(imagep1->image, imagep2->image)) {
+    if (!ImagingConvert(imagep->image, self->image, imagep->image->mode, NULL, 0)) {
         return NULL;
     }
 
@@ -1048,8 +1065,15 @@ static PyObject *
 _convert_matrix(ImagingObject *self, PyObject *args) {
     char *mode_name;
     float m[12];
-    if (!PyArg_ParseTuple(args, "s(ffff)", &mode_name, m + 0, m + 1, m + 2, m + 3)) {
-        PyErr_Clear();
+    PyObject *matrix;
+    if (!PyArg_ParseTuple(args, "sO", &mode_name, &matrix)) {
+        return NULL;
+    }
+    Py_ssize_t size = PySequence_Size(matrix);
+    if (size == -1) {
+        return NULL;
+    }
+    if (size == 12) {
         if (!PyArg_ParseTuple(
                 args,
                 "s(ffffffffffff)",
@@ -1069,27 +1093,40 @@ _convert_matrix(ImagingObject *self, PyObject *args) {
             )) {
             return NULL;
         }
+    } else if (size == 4) {
+        if (!PyArg_ParseTuple(
+                args, "s(ffff)", &mode_name, m + 0, m + 1, m + 2, m + 3
+            )) {
+            return NULL;
+        }
+    } else {
+        PyErr_SetString(PyExc_TypeError, "matrix must be tuple of length 4 or 12");
+        return NULL;
     }
 
     const ModeID mode = findModeID(mode_name);
-
     return PyImagingNew(ImagingConvertMatrix(self->image, mode, m));
 }
 
 static PyObject *
 _convert_transparent(ImagingObject *self, PyObject *args) {
     char *mode_name;
-    int r, g, b;
-    if (PyArg_ParseTuple(args, "s(iii)", &mode_name, &r, &g, &b)) {
-        const ModeID mode = findModeID(mode_name);
-        return PyImagingNew(ImagingConvertTransparent(self->image, mode, r, g, b));
+    int r, g = 0, b = 0;
+    PyObject *transparency;
+    if (!PyArg_ParseTuple(args, "sO", &mode_name, &transparency)) {
+        return NULL;
     }
-    PyErr_Clear();
-    if (PyArg_ParseTuple(args, "si", &mode_name, &r)) {
-        const ModeID mode = findModeID(mode_name);
-        return PyImagingNew(ImagingConvertTransparent(self->image, mode, r, 0, 0));
+
+    if (PySequence_Check(transparency)) {
+        if (!PyArg_ParseTuple(args, "s(iii)", &mode_name, &r, &g, &b)) {
+            return NULL;
+        }
+    } else if (!PyArg_ParseTuple(args, "si", &mode_name, &r)) {
+        return NULL;
     }
-    return NULL;
+
+    const ModeID mode = findModeID(mode_name);
+    return PyImagingNew(ImagingConvertTransparent(self->image, mode, r, g, b));
 }
 
 static PyObject *
@@ -1122,8 +1159,9 @@ _expand_image(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _filter(ImagingObject *self, PyObject *args) {
+    static const char *wrong_length = "bad kernel size";
+
     PyObject *imOut;
-    Py_ssize_t kernelsize;
     FLOAT32 *kerneldata;
 
     int xsize, ysize, i;
@@ -1136,13 +1174,10 @@ _filter(ImagingObject *self, PyObject *args) {
     }
 
     /* get user-defined kernel */
-    kerneldata = getlist(kernel, &kernelsize, NULL, TYPE_FLOAT32);
+    Py_ssize_t kernelsize = (Py_ssize_t)xsize * (Py_ssize_t)ysize;
+    kerneldata = getlist(kernel, kernelsize, wrong_length, TYPE_FLOAT32);
     if (!kerneldata) {
         return NULL;
-    }
-    if (kernelsize != (Py_ssize_t)xsize * (Py_ssize_t)ysize) {
-        free(kerneldata);
-        return ImagingError_ValueError("bad kernel size");
     }
 
     for (i = 0; i < kernelsize; ++i) {
@@ -1509,7 +1544,7 @@ _paste(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _point(ImagingObject *self, PyObject *args) {
-    static const char *wrong_number = "wrong number of lut entries";
+    static const char *wrong_length = "wrong number of lut entries";
 
     Py_ssize_t n;
     int i, bands;
@@ -1528,7 +1563,7 @@ _point(ImagingObject *self, PyObject *args) {
 
         /* map from 8-bit data to floating point */
         n = 256;
-        data = getlist(list, &n, wrong_number, TYPE_FLOAT32);
+        data = getlist(list, n, wrong_length, TYPE_FLOAT32);
         if (!data) {
             return NULL;
         }
@@ -1540,7 +1575,7 @@ _point(ImagingObject *self, PyObject *args) {
         /* map from 16-bit subset of 32-bit data to 8-bit */
         /* FIXME: support arbitrary number of entries (requires API change) */
         n = 65536;
-        data = getlist(list, &n, wrong_number, TYPE_UINT8);
+        data = getlist(list, n, wrong_length, TYPE_UINT8);
         if (!data) {
             return NULL;
         }
@@ -1561,7 +1596,7 @@ _point(ImagingObject *self, PyObject *args) {
 
         /* map to integer data */
         n = 256 * bands;
-        data = getlist(list, &n, wrong_number, TYPE_INT32);
+        data = getlist(list, n, wrong_length, TYPE_INT32);
         if (!data) {
             return NULL;
         }
@@ -1669,12 +1704,11 @@ _putdata(ImagingObject *self, PyObject *args) {
         } else {
             seq = PySequence_Fast(data, must_be_sequence);
             if (!seq) {
-                PyErr_SetString(PyExc_TypeError, must_be_sequence);
                 return NULL;
             }
             double value;
             int bigendian = 0;
-            if (image->type == IMAGING_TYPE_SPECIAL) {
+            if (image->type == IMAGING_TYPE_I16) {
                 // I;16*
                 if (
                     image->mode == IMAGING_MODE_I_16B
@@ -1690,7 +1724,7 @@ _putdata(ImagingObject *self, PyObject *args) {
                 if (scale != 1.0 || offset != 0.0) {
                     value = value * scale + offset;
                 }
-                if (image->type == IMAGING_TYPE_SPECIAL) {
+                if (image->type == IMAGING_TYPE_I16) {
                     image->image8[y][x * 2 + (bigendian ? 1 : 0)] =
                         CLIP8((int)value % 256);
                     image->image8[y][x * 2 + (bigendian ? 0 : 1)] =
@@ -1707,7 +1741,6 @@ _putdata(ImagingObject *self, PyObject *args) {
         /* 32-bit images */
         seq = PySequence_Fast(data, must_be_sequence);
         if (!seq) {
-            PyErr_SetString(PyExc_TypeError, must_be_sequence);
             return NULL;
         }
         switch (image->type) {
@@ -1823,7 +1856,14 @@ _putpalette(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
+    ImagingPalette new_palette = ImagingPaletteNew(palette_mode);
+    if (!new_palette) {
+        return NULL;
+    }
+
     ImagingPaletteDelete(self->image->palette);
+
+    self->image->palette = new_palette;
 
     if (self->image->mode == IMAGING_MODE_LA) {
         self->image->mode = IMAGING_MODE_PA;
@@ -1832,8 +1872,6 @@ _putpalette(ImagingObject *self, PyObject *args) {
     } else {
         // The image already has a palette mode so we don't need to change it.
     }
-
-    self->image->palette = ImagingPaletteNew(palette_mode);
 
     self->image->palette->size = palettesize * 8 / bits;
     unpack(self->image->palette->palette, palette, self->image->palette->size);
@@ -2052,45 +2090,16 @@ _reduce(ImagingObject *self, PyObject *args) {
     return PyImagingNew(imOut);
 }
 
-static int
-isRGB(const ModeID mode) {
-    return mode == IMAGING_MODE_RGB || mode == IMAGING_MODE_RGBA ||
-           mode == IMAGING_MODE_RGBX;
-}
-
 static PyObject *
-im_setmode(ImagingObject *self, PyObject *args) {
+im_setalpha(ImagingObject *self, PyObject *args) {
     /* attempt to modify the mode of an image in place */
-
-    Imaging im;
-
-    char *mode_name;
-    Py_ssize_t modelen;
-    if (!PyArg_ParseTuple(args, "s#:setmode", &mode_name, &modelen)) {
-        return NULL;
+    Imaging im = self->image;
+    if (im->mode != IMAGING_MODE_RGB && im->mode != IMAGING_MODE_RGBX) {
+        return ImagingError_ModeError();
     }
-
-    const ModeID mode = findModeID(mode_name);
-
-    im = self->image;
-
-    /* move all logic in here to the libImaging primitive */
-
-    if (im->mode == mode) {
-        ; /* same mode; always succeeds */
-    } else if (isRGB(im->mode) && isRGB(mode)) {
-        /* color to color */
-        im->mode = mode;
-        im->bands = modelen;
-        if (mode == IMAGING_MODE_RGBA) {
-            (void)ImagingFillBand(im, 3, 255);
-        }
-    } else {
-        /* trying doing an in-place conversion */
-        if (!ImagingConvertInPlace(im, mode)) {
-            return NULL;
-        }
-    }
+    im->mode = IMAGING_MODE_RGBA;
+    im->bands = 4;
+    (void)ImagingFillBand(im, 3, 255);
 
     if (self->access) {
         ImagingAccessDelete(im, self->access);
@@ -2102,7 +2111,7 @@ im_setmode(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _transform(ImagingObject *self, PyObject *args) {
-    static const char *wrong_number = "wrong number of matrix entries";
+    static const char *wrong_length = "wrong number of matrix entries";
 
     Imaging imOut;
     Py_ssize_t n;
@@ -2145,7 +2154,7 @@ _transform(ImagingObject *self, PyObject *args) {
             n = -1; /* force error */
     }
 
-    a = getlist(data, &n, wrong_number, TYPE_DOUBLE);
+    a = getlist(data, n, wrong_length, TYPE_DOUBLE);
     if (!a) {
         return NULL;
     }
@@ -2361,7 +2370,7 @@ _getextrema(ImagingObject *self, PyObject *args) {
                 return Py_BuildValue("ii", extrema.i[0], extrema.i[1]);
             case IMAGING_TYPE_FLOAT32:
                 return Py_BuildValue("dd", extrema.f[0], extrema.f[1]);
-            case IMAGING_TYPE_SPECIAL:
+            case IMAGING_TYPE_I16:
                 if (self->image->mode == IMAGING_MODE_I_16) {
                     return Py_BuildValue("HH", extrema.s[0], extrema.s[1]);
                 }
@@ -2504,7 +2513,7 @@ _split(ImagingObject *self, PyObject *args) {
     PyObject *imaging_object;
     Imaging bands[4] = {NULL, NULL, NULL, NULL};
 
-    if (!ImagingSplit(self->image, bands)) {
+    if (ImagingSplit(self->image, bands)) {
         return NULL;
     }
 
@@ -2809,6 +2818,10 @@ textwidth(ImagingFontObject *self, const unsigned char *text) {
         int dx = self->glyphs[*text].dx;
         if (dx > 0 && xsize > INT_MAX - dx) {
             PyErr_SetString(PyExc_OverflowError, "Width too large");
+            return -1;
+        }
+        if (dx < 0 && xsize < INT_MIN - dx) {
+            PyErr_SetString(PyExc_OverflowError, "Width too small");
             return -1;
         }
         xsize += dx;
@@ -3705,7 +3718,7 @@ static struct PyMethodDef methods[] = {
     /* Standard processing methods (Image) */
     {"color_lut_3d", (PyCFunction)_color_lut_3d, METH_VARARGS},
     {"convert", (PyCFunction)_convert, METH_VARARGS},
-    {"convert2", (PyCFunction)_convert2, METH_VARARGS},
+    {"convert_into", (PyCFunction)_convert_into, METH_VARARGS},
     {"convert_matrix", (PyCFunction)_convert_matrix, METH_VARARGS},
     {"convert_transparent", (PyCFunction)_convert_transparent, METH_VARARGS},
     {"copy", (PyCFunction)_copy, METH_VARARGS},
@@ -3739,7 +3752,7 @@ static struct PyMethodDef methods[] = {
     {"split", (PyCFunction)_split, METH_NOARGS},
     {"fillband", (PyCFunction)_fillband, METH_VARARGS},
 
-    {"setmode", (PyCFunction)im_setmode, METH_VARARGS},
+    {"setalpha", (PyCFunction)im_setalpha, METH_NOARGS},
 
     {"getpalette", (PyCFunction)_getpalette, METH_VARARGS},
     {"getpalettemode", (PyCFunction)_getpalettemode, METH_NOARGS},
@@ -4217,9 +4230,6 @@ static PyMethodDef functions[] = {
     {"new_block", (PyCFunction)_new_block, METH_VARARGS},
     {"new_arrow", (PyCFunction)_new_arrow, METH_VARARGS},
     {"merge", (PyCFunction)_merge, METH_VARARGS},
-
-    /* Functions */
-    {"convert", (PyCFunction)_convert2, METH_VARARGS},
 
     /* Codecs */
     {"bcn_decoder", (PyCFunction)PyImaging_BcnDecoderNew, METH_VARARGS},

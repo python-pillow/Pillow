@@ -26,6 +26,6 @@ jobs:
     runs-on: ubuntu-slim
     steps:
       # Drafts your next release notes as pull requests are merged into "main"
-      - uses: release-drafter/release-drafter@eada3c96a64734dd381cfbda23511034e328ddb0 # v7.6.0
+      - uses: release-drafter/release-drafter@34d80673e067bdc0c24568d3af899c216adcfaa9 # v7.7.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

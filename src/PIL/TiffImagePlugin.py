@@ -40,6 +40,16 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL._binary",
+    "PIL._util",
+    "fractions",
+    "itertools",
+    "math",
+    "struct",
+    "warnings",
+}
+
 import io
 import itertools
 import logging
@@ -55,7 +65,6 @@ from typing import IO, Any, cast
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
-from ._binary import o8
 from ._util import DeferredError, is_path
 from .TiffTags import TYPES
 
@@ -267,10 +276,8 @@ OPEN_INFO = {
     (MM, 5, (1,), 1, (16, 16, 16, 16), ()): ("CMYK", "CMYK;16B"),
     (II, 6, (1,), 1, (8,), ()): ("L", "L"),
     (MM, 6, (1,), 1, (8,), ()): ("L", "L"),
-    # JPEG compressed images handled by LibTiff and auto-converted to RGBX
-    # Minimal Baseline TIFF requires YCbCr images to have 3 SamplesPerPixel
-    (II, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGBX"),
-    (MM, 6, (1,), 1, (8, 8, 8), ()): ("RGB", "RGBX"),
+    (II, 6, (1,), 1, (8, 8, 8), ()): ("YCbCr", "YCbCr"),
+    (MM, 6, (1,), 1, (8, 8, 8), ()): ("YCbCr", "YCbCr"),
     (II, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
 }
@@ -685,8 +692,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 self.tagtype[tag] = TiffTags.UNDEFINED
                 if all(isinstance(v, IFDRational) for v in values):
                     for v in values:
-                        assert isinstance(v, IFDRational)
-                        if v < 0:
+                        if v < IFDRational(0):
                             self.tagtype[tag] = TiffTags.SIGNED_RATIONAL
                             break
                     else:
@@ -1589,14 +1595,14 @@ class TiffImageFile(ImageFile.ImageFile):
                 # fillorder==2 modes have a corresponding
                 # fillorder=1 mode
                 self._mode, rawmode = OPEN_INFO[key]
-            # YCbCr images with new jpeg compression with pixels in one plane
-            # unpacked straight into RGB values
-            if (
-                photo == 6
-                and self._compression == "jpeg"
-                and self._planar_configuration == 1
-            ):
-                rawmode = "RGB"
+            if photo == 6:
+                self._mode = "RGB"
+                if self._compression in "jpeg" and self._planar_configuration == 1:
+                    # YCbCr images with new jpeg compression with pixels in one plane
+                    # unpacked straight into RGB values
+                    rawmode = "RGB"
+                else:
+                    rawmode = "RGBX"
             # libtiff always returns the bytes in native order.
             # we're expecting image byte order. So, if the rawmode
             # contains I;16, we need to convert from native to image
@@ -1671,8 +1677,10 @@ class TiffImageFile(ImageFile.ImageFile):
         # fixup palette descriptor
 
         if self.mode in ["P", "PA"]:
-            palette = [o8(b // 256) for b in self.tag_v2[COLORMAP]]
-            self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
+            palette = tuple(b // 256 for b in self.tag_v2[COLORMAP])
+            self.palette = ImagePalette.raw("RGB;L", palette)
+        else:
+            self.palette = None
 
 
 #
@@ -1990,7 +1998,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         tags.sort()
         a = (rawmode, compression, _fp, filename, tags, types)
         encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
-        encoder.setimage(im.im, (0, 0) + im.size)
+        encoder.setimage(im.im, (0, 0, *im.size))
         while True:
             errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
             if not _fp:
@@ -2009,7 +2017,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         ImageFile._save(
             im,
             fp,
-            [ImageFile._Tile("raw", (0, 0) + im.size, offset, (rawmode, stride, 1))],
+            [ImageFile._Tile("raw", (0, 0, *im.size), offset, (rawmode, stride, 1))],
         )
 
     # -- helper for multi-page save --

@@ -18,7 +18,6 @@ from .helper import (
     assert_image_equal_tofile,
     hopper,
     is_win32,
-    mark_if_feature_version,
     skip_unless_feature,
 )
 
@@ -717,6 +716,34 @@ class TestFilePng:
             monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
             png.call(cid, 0, 0)
 
+    @pytest.mark.parametrize("mode", ("1", "L", "I;16", "RGB"))
+    def test_truncated_trns_chunk(
+        self, mode: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        fp = BytesIO()
+        with PngImagePlugin.PngStream(fp) as png:
+            png.im_mode = mode
+            with pytest.raises(ValueError, match="Truncated tRNS chunk"):
+                png.call(b"tRNS", 0, 0)
+
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+            png.call(b"tRNS", 0, 0)
+
+    def test_truncated_trns_chunk_in_file(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # HEAD declares a truecolour image, so tRNS must carry 6 bytes
+        data = HEAD + chunk(b"tRNS", bytes(4)) + TAIL
+
+        with pytest.raises(ValueError, match="Truncated tRNS chunk"):
+            with Image.open(BytesIO(data)):
+                pass
+
+        monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+        with Image.open(BytesIO(data)) as im:
+            assert im.mode == "RGB"
+            assert "transparency" not in im.info
+
     @pytest.mark.parametrize("save_all", (True, False))
     def test_specify_bits(self, save_all: bool, tmp_path: Path) -> None:
         im = hopper("P")
@@ -729,6 +756,22 @@ class TestFilePng:
             assert reloaded.png is not None
             assert reloaded.png.im_palette is not None
             assert len(reloaded.png.im_palette[1]) == 48
+
+    def test_specify_bits_fewer_palette_entries(self, tmp_path: Path) -> None:
+        im = Image.new("P", (1, 1))
+        data = (0, 0, 0, 10, 10, 10, 20, 20, 20, 30, 30, 30, 40, 40, 40)
+        im.putpalette(data)
+
+        out = tmp_path / "temp.png"
+        im.save(out, bits=4)
+
+        with Image.open(out) as reloaded:
+            # Only the 5 actual palette entries are written,
+            # rather than padding the PLTE chunk out to 16 entries (1 << 4).
+            assert reloaded.palette is not None
+            assert reloaded.palette.palette == bytes(data)
+
+            assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
     def test_plte_length(self, tmp_path: Path) -> None:
         im = Image.new("P", (1, 1))
@@ -821,9 +864,6 @@ class TestFilePng:
         assert exif_data is not None
         assert exif_data[274] == 1
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_exif_from_jpg(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
             test_file = tmp_path / "temp.png"

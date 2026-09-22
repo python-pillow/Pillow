@@ -6,7 +6,7 @@ import pytest
 
 from PIL import Image, WebPImagePlugin
 
-from .helper import mark_if_feature_version, skip_unless_feature
+from .helper import skip_unless_feature
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -51,9 +51,6 @@ def test_read_exif_metadata_without_prefix() -> None:
         assert exif[305] == "Adobe Photoshop CS6 (Macintosh)"
 
 
-@mark_if_feature_version(
-    pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-)
 def test_write_exif_metadata() -> None:
     file_path = "Tests/images/flower.jpg"
     test_buffer = BytesIO()
@@ -82,9 +79,6 @@ def test_read_icc_profile() -> None:
             assert icc == expected_icc
 
 
-@mark_if_feature_version(
-    pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-)
 def test_write_icc_metadata() -> None:
     file_path = "Tests/images/flower2.jpg"
     test_buffer = BytesIO()
@@ -102,9 +96,6 @@ def test_write_icc_metadata() -> None:
         assert webp_icc_profile == expected_icc_profile, "Webp ICC didn't match"
 
 
-@mark_if_feature_version(
-    pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-)
 def test_read_no_exif() -> None:
     file_path = "Tests/images/flower.jpg"
     test_buffer = BytesIO()

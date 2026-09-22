@@ -16,51 +16,54 @@
 
 #include "Imaging.h"
 
+/**
+ * Copy `im` into a newly allocated image,
+ * wrapping every pixel by (xoffset, yoffset) modulo the image size.
+ *
+ * Contract: im is read-only.
+ */
 Imaging
 ImagingOffset(Imaging im, int xoffset, int yoffset) {
-    int x, y;
-    Imaging imOut;
-
     if (!im) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    imOut = ImagingNewDirty(im->mode, im->xsize, im->ysize);
+    int xsize = im->xsize, ysize = im->ysize;
+
+    Imaging imOut = ImagingNewDirty(im->mode, xsize, ysize);
     if (!imOut) {
         return NULL;
     }
 
     ImagingCopyPalette(imOut, im);
 
-    /* make offsets positive to avoid negative coordinates */
-    if (im->xsize == 0 || im->ysize == 0) {
+    if (xsize == 0 || ysize == 0) {
         return imOut;
     }
-    xoffset %= im->xsize;
-    xoffset = im->xsize - xoffset;
+
+    xoffset %= xsize;
     if (xoffset < 0) {
-        xoffset += im->xsize;
+        xoffset += xsize;
     }
 
-    yoffset %= im->ysize;
-    yoffset = im->ysize - yoffset;
+    yoffset %= ysize;
     if (yoffset < 0) {
-        yoffset += im->ysize;
+        yoffset += ysize;
     }
 
-#define OFFSET(image)                               \
-    for (y = 0; y < im->ysize; y++) {               \
-        for (x = 0; x < im->xsize; x++) {           \
-            int yi = (y + yoffset) % im->ysize;     \
-            int xi = (x + xoffset) % im->xsize;     \
-            imOut->image[y][x] = im->image[yi][xi]; \
-        }                                           \
-    }
+    int head = xoffset * im->pixelsize;
+    int tail = im->linesize - head;
 
-    if (im->image8) {
-        OFFSET(image8)
-    } else {
-        OFFSET(image32)
+    // Restrict safe: im is read-only, imOut is write-only and a new allocation.
+    for (int y = 0; y < ysize; y++) {
+        int yi = y - yoffset;
+        if (yi < 0) {
+            yi += ysize;
+        }
+        const char *restrict in = im->image[yi];
+        char *restrict out = imOut->image[y];
+        memcpy(out, in + tail, head);
+        memcpy(out + head, in, tail);
     }
 
     return imOut;

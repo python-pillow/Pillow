@@ -15,6 +15,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 import re
 
 from . import Image, ImageFile, ImagePalette
@@ -61,6 +63,7 @@ class XpmImageFile(ImageFile.ImageFile):
         # load palette description
 
         palette = {}
+        transparent_key = None
 
         for _ in range(palette_length):
             line = self.fp.readline().rstrip()
@@ -73,7 +76,8 @@ class XpmImageFile(ImageFile.ImageFile):
                     # process colour key
                     rgb = s[i + 1]
                     if rgb == b"None":
-                        self.info["transparency"] = c
+                        transparent_key = c
+                        palette[c] = b"\0\0\0"
                     elif rgb.startswith(b"#"):
                         rgb_int = int(rgb[1:], 16)
                         palette[c] = (
@@ -94,14 +98,24 @@ class XpmImageFile(ImageFile.ImageFile):
 
         args: tuple[int, dict[bytes, bytes] | tuple[bytes, ...]]
         if palette_length > 256:
-            self._mode = "RGB"
+            if transparent_key is not None:
+                self._mode = "RGBA"
+                palette = {
+                    c: rgb + (b"\x00" if c == transparent_key else b"\xff")
+                    for c, rgb in palette.items()
+                }
+            else:
+                self._mode = "RGB"
             args = (bpp, palette)
         else:
             self._mode = "P"
             self.palette = ImagePalette.raw("RGB", b"".join(palette.values()))
-            args = (bpp, tuple(palette.keys()))
+            palette_keys = tuple(palette.keys())
+            args = (bpp, palette_keys)
+            if transparent_key is not None:
+                self.info["transparency"] = palette_keys.index(transparent_key)
 
-        self.tile = [ImageFile._Tile("xpm", (0, 0) + self.size, self.fp.tell(), args)]
+        self.tile = [ImageFile._Tile("xpm", (0, 0, *self.size), self.fp.tell(), args)]
 
     def load_read(self, read_bytes: int) -> bytes:
         #
@@ -124,8 +138,8 @@ class XpmDecoder(ImageFile.PyDecoder):
         data = bytearray()
         bpp, palette = self.args
         dest_length = self.state.xsize * self.state.ysize
-        if self.mode == "RGB":
-            dest_length *= 3
+        if self.mode in {"RGB", "RGBA"}:
+            dest_length *= len(self.mode)
         pixel_header = False
         while len(data) < dest_length:
             line = self.fd.readline()
@@ -137,7 +151,7 @@ class XpmDecoder(ImageFile.PyDecoder):
             line = b'"'.join(line.split(b'"')[1:-1])
             for i in range(0, len(line), bpp):
                 key = line[i : i + bpp]
-                if self.mode == "RGB":
+                if self.mode in {"RGB", "RGBA"}:
                     data += palette[key]
                 else:
                     data += o8(palette.index(key))

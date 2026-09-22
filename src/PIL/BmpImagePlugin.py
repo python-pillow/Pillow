@@ -24,6 +24,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 import os
 
 from . import Image, ImageFile, ImagePalette
@@ -283,7 +285,7 @@ class BmpImageFile(ImageFile.ImageFile):
 
                 # ------- If all colors are gray, white or black, ditch palette
                 if grayscale:
-                    self._mode = "1" if file_info["colors"] == 2 else "L"
+                    self._mode = "1" if file_info["colors"] <= 2 else "L"
                     raw_mode = self.mode
                 else:
                     self._mode = "P"
@@ -370,7 +372,9 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     if len(bytes_read) < 2:
                         break
                     right, up = bytes_read
-                    data += b"\x00" * (right + up * self.state.xsize)
+                    data += b"\x00" * min(
+                        dest_length - len(data), right + up * self.state.xsize
+                    )
                     x = len(data) % self.state.xsize
                 else:
                     # absolute mode
@@ -394,7 +398,7 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     # align to 16-bit word boundary
                     if self.fd.tell() % 2 != 0:
                         self.fd.seek(1, os.SEEK_CUR)
-        rawmode = "L" if self.mode == "L" else "P"
+        rawmode = "L" if self.mode in {"1", "L"} else "P"
         self.set_as_raw(bytes(data), rawmode, (0, self.args[-1]))
         return -1, 0
 
@@ -494,7 +498,7 @@ def _save(
         fp.write(palette)
 
     ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, stride, -1))]
+        im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, (rawmode, stride, -1))]
     )
 
 

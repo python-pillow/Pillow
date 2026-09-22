@@ -28,6 +28,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._util", "io", "itertools", "struct"}
+
 import abc
 import io
 import itertools
@@ -113,7 +115,7 @@ class _Tile(NamedTuple):
 # ImageFile base class
 
 
-class ImageFile(Image.Image):
+class ImageFile(Image.Image, metaclass=abc.ABCMeta):
     """Base class for image file format handlers."""
 
     def __init__(
@@ -151,9 +153,8 @@ class ImageFile(Image.Image):
             try:
                 self._open()
 
-                if isinstance(self, StubImageFile):
-                    if loader := self._load():
-                        loader.open(self)
+                if isinstance(self, StubImageFile) and self._handler:
+                    self._handler.open(self)
             except (
                 IndexError,  # end of data
                 TypeError,  # end of data (ord)
@@ -163,7 +164,11 @@ class ImageFile(Image.Image):
             ) as v:
                 raise SyntaxError(v) from v
 
-            if not self.mode or self.size[0] <= 0 or self.size[1] <= 0:
+            if not self.mode or (
+                min(self.size) < 0
+                if isinstance(self, StubImageFile) and self._handler is None
+                else min(self.size) <= 0
+            ):
                 msg = "not identified by this driver"
                 raise SyntaxError(msg)
         except BaseException:
@@ -172,6 +177,7 @@ class ImageFile(Image.Image):
                 self.fp.close()
             raise
 
+    @abc.abstractmethod
     def _open(self) -> None:
         pass
 
@@ -468,6 +474,7 @@ class ImageFile(Image.Image):
 
 
 class StubHandler(abc.ABC):
+    @abc.abstractmethod
     def open(self, im: StubImageFile) -> None:
         pass
 
@@ -476,7 +483,7 @@ class StubHandler(abc.ABC):
         pass
 
 
-class StubImageFile(ImageFile, metaclass=abc.ABCMeta):
+class StubImageFile(ImageFile):
     """
     Base class for stub image loaders.
 
@@ -484,26 +491,18 @@ class StubImageFile(ImageFile, metaclass=abc.ABCMeta):
     certain format, but relies on external code to load the file.
     """
 
-    @abc.abstractmethod
-    def _open(self) -> None:
-        pass
+    _handler: StubHandler | None = None
 
     def load(self) -> Image.core.PixelAccess | None:
-        loader = self._load()
-        if loader is None:
+        if self._handler is None:
             msg = f"cannot find loader for this {self.format} file"
             raise OSError(msg)
-        image = loader.load(self)
+        image = self._handler.load(self)
         assert image is not None
         # become the other object (!)
         self.__class__ = image.__class__  # type: ignore[assignment]
         self.__dict__ = image.__dict__
         return image.load()
-
-    @abc.abstractmethod
-    def _load(self) -> StubHandler | None:
-        """(Hook) Find actual image loader."""
-        pass
 
 
 class Parser:

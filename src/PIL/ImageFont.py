@@ -27,6 +27,8 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {"base64", "io", "types", "warnings"}
+
 import abc
 import base64
 import os

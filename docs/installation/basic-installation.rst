@@ -88,7 +88,7 @@ and :pypi:`olefile` for Pillow to read FPX and MIC images::
 
     **Packages**::
 
-        pkg install py38-pillow
+        pkg install py312-pillow
 
     .. note::
 

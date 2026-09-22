@@ -17,8 +17,11 @@
 
 #include "Imaging.h"
 
-#include "math.h"
+#include <math.h>
 
+/**
+ * Fill an entire image with a constant colour, in place.
+ */
 Imaging
 ImagingFill(Imaging im, const void *colour) {
     ImagingSectionCookie cookie;
@@ -32,7 +35,7 @@ ImagingFill(Imaging im, const void *colour) {
     int xsize = im->xsize;
     int ysize = im->ysize;
 
-    if (im->type == IMAGING_TYPE_SPECIAL) {
+    if (im->type == IMAGING_TYPE_I16) {
         /* use generic API */
         ImagingAccess access = ImagingAccessNew(im);
         if (access) {

@@ -30,7 +30,7 @@
 /* FIXME: make these pluggable! */
 
 #define PY_SSIZE_T_CLEAN
-#include "Python.h"
+#include <Python.h>
 
 #include "libImaging/Imaging.h"
 
