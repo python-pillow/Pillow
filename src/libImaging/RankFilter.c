@@ -98,8 +98,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
         if (!buf) {                                                               \
             goto nomemory;                                                        \
         }                                                                         \
-        Py_BEGIN_ALLOW_THREADS                                                    \
-        for (y = 0; y < imOut->ysize; y++) {                                      \
+        Py_BEGIN_ALLOW_THREADS for (y = 0; y < imOut->ysize; y++) {               \
             for (x = 0; x < imOut->xsize; x++) {                                  \
                 for (i = 0; i < size; i++) {                                      \
                     memcpy(                                                       \
@@ -111,8 +110,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
                 IMAGING_PIXEL_##type(imOut, x, y) = Rank##type(buf, size2, rank); \
             }                                                                     \
         }                                                                         \
-        Py_END_ALLOW_THREADS                                                      \
-        free(buf);                                                                \
+        Py_END_ALLOW_THREADS free(buf);                                           \
     } while (0)
 
     if (im->image8) {
