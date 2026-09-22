@@ -135,7 +135,7 @@ Other changes
 =============
 
 Clean up TIFF encoders before closing their output files
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 TIFF saving now explicitly cleans up the libtiff encoder, including when saving
 raises an exception. Previously, delayed encoder destruction could access a closed
