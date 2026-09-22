@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"calendar", "mmap", "zlib"}
+
 import calendar
 import codecs
 import collections
@@ -698,26 +700,31 @@ class PdfParser:
         self, xref_section_offset: int, processed_offsets: list[int] | None = None
     ) -> None:
         assert self.buf is not None
-        trailer_offset = self.read_xref_table(xref_section_offset=xref_section_offset)
-        m = self.re_trailer_prev.search(
-            self.buf[trailer_offset : trailer_offset + 16384]
-        )
-        check_format_condition(m is not None, "previous trailer not found")
-        assert m is not None
-        trailer_data = m.group(1)
-        check_format_condition(
-            int(m.group(2)) == xref_section_offset,
-            "xref section offset in previous trailer doesn't match what was expected",
-        )
-        trailer_dict = self.interpret_trailer(trailer_data)
-        if b"Prev" in trailer_dict:
-            if processed_offsets is None:
-                processed_offsets = []
-            processed_offsets.append(xref_section_offset)
+        if processed_offsets is None:
+            processed_offsets = []
+        while True:
             check_format_condition(
-                trailer_dict[b"Prev"] not in processed_offsets, "trailer loop found"
+                xref_section_offset not in processed_offsets, "trailer loop found"
             )
-            self.read_prev_trailer(trailer_dict[b"Prev"], processed_offsets)
+            trailer_offset = self.read_xref_table(
+                xref_section_offset=xref_section_offset
+            )
+            m = self.re_trailer_prev.search(
+                self.buf[trailer_offset : trailer_offset + 16384]
+            )
+            check_format_condition(m is not None, "previous trailer not found")
+            assert m is not None
+            trailer_data = m.group(1)
+            check_format_condition(
+                int(m.group(2)) == xref_section_offset,
+                "xref section offset in previous trailer "
+                "doesn't match what was expected",
+            )
+            trailer_dict = self.interpret_trailer(trailer_data)
+            if b"Prev" not in trailer_dict:
+                break
+            processed_offsets.append(xref_section_offset)
+            xref_section_offset = trailer_dict[b"Prev"]
 
     re_whitespace_optional = re.compile(whitespace_optional)
     re_name = re.compile(

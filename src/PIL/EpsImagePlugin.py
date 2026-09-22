@@ -21,12 +21,13 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "io", "subprocess"}
+
 import io
 import os
 import re
 import subprocess
 import sys
-import tempfile
 
 from . import Image, ImageFile
 from ._binary import i32le as i32
@@ -94,6 +95,8 @@ def Ghostscript(
     # resolution is dependent on bbox and size
     res_x = 72.0 * width / (bbox[2] - bbox[0])
     res_y = 72.0 * height / (bbox[3] - bbox[1])
+
+    import tempfile
 
     out_fd, outfile = tempfile.mkstemp()
     os.close(out_fd)
@@ -379,7 +382,7 @@ class EpsImageFile(ImageFile.ImageFile):
         )
 
         self.tile = [
-            ImageFile._Tile("eps", (0, 0) + self.size, offset, (length, bounding_box))
+            ImageFile._Tile("eps", (0, 0, *self.size), offset, (length, bounding_box))
         ]
 
     def _find_offset(self, fp: IO[bytes]) -> tuple[int, int]:
@@ -467,7 +470,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes, eps: int = 1) -
     if hasattr(fp, "flush"):
         fp.flush()
 
-    ImageFile._save(im, fp, [ImageFile._Tile("eps", (0, 0) + im.size)])
+    ImageFile._save(im, fp, [ImageFile._Tile("eps", (0, 0, *im.size))])
 
     fp.write(b"\n%%%%EndBinary\n")
     fp.write(b"grestore end\n")

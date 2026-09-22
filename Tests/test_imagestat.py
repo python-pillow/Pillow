@@ -67,3 +67,9 @@ def test_zero_count() -> None:
     assert st.mean == [0]
     assert st.rms == [0]
     assert st.var == [0]
+
+
+def test_variance_rounding() -> None:
+    im = Image.new("L", (919, 405), 255)
+    st = ImageStat.Stat(im)
+    assert st.var == [0.0]

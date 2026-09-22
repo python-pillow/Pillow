@@ -84,9 +84,9 @@ class _Operand:
                     min(im_1.size[1], im_2.size[1]),
                 )
                 if im_1.size != size:
-                    im_1 = im_1.crop((0, 0) + size)
+                    im_1 = im_1.crop((0, 0, *size))
                 if im_2.size != size:
-                    im_2 = im_2.crop((0, 0) + size)
+                    im_2 = im_2.crop((0, 0, *size))
             out = Image.new(mode or im_1.mode, im_1.size, None)
             try:
                 op = getattr(_imagingmath, f"{op}_{im_1.mode}")

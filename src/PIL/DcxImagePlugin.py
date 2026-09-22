@@ -22,6 +22,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "PIL._util"}
+
 from . import Image
 from ._binary import i32le as i32
 from ._util import DeferredError
@@ -74,6 +76,7 @@ class DcxImageFile(PcxImageFile):
         self.fp = self._fp
         self.fp.seek(self._offset[frame])
         PcxImageFile._open(self)
+        Image._decompression_bomb_check(self.size)
 
     def tell(self) -> int:
         return self.frame

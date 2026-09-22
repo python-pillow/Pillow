@@ -12,6 +12,8 @@ https://creativecommons.org/publicdomain/zero/1.0/
 
 from __future__ import annotations
 
+__lazy_modules__ = {"struct"}
+
 import struct
 import sys
 from enum import IntEnum, IntFlag
@@ -350,7 +352,7 @@ class DdsImageFile(ImageFile.ImageFile):
 
         flags, height, width = struct.unpack("<3I", header[:12])
         self._size = (width, height)
-        extents = (0, 0) + self.size
+        extents = (0, 0, *self.size)
 
         pitch, depth, mipmaps = struct.unpack("<3I", header[12:24])
         struct.unpack("<11I", header[24:68])  # reserved
@@ -381,8 +383,8 @@ class DdsImageFile(ImageFile.ImageFile):
                 raise OSError(msg)
         elif pfflags & DDPF.PALETTEINDEXED8:
             self._mode = "P"
-            self.palette = ImagePalette.raw("RGBA", self.fp.read(1024))
-            self.palette.mode = "RGBA"
+            self.palette = ImagePalette.ImagePalette("RGBA", self.fp.read(1024))
+            self.palette.dirty = 1
         elif pfflags & DDPF.FOURCC:
             offset = header_size + 4
             if fourcc == D3DFMT.DXT1:
@@ -622,7 +624,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             # dxgi_format, 2D resource, misc, array size, straight alpha
             struct.pack("<5I", dxgi_format, 3, 0, 0, 1)
         )
-    ImageFile._save(im, fp, [ImageFile._Tile(codec_name, (0, 0) + im.size, 0, args)])
+    ImageFile._save(im, fp, [ImageFile._Tile(codec_name, (0, 0, *im.size), 0, args)])
 
 
 def _accept(prefix: bytes) -> bool:
