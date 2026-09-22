@@ -137,7 +137,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
         return NULL;
     }
 
-#if PY_MAJOR_VERSION > 3 || PY_MINOR_VERSION > 11
+#if (PY_MAJOR_VERSION > 3 || PY_MINOR_VERSION > 11) && !defined(PYPY_VERSION)
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
     if (!PyArg_ParseTupleAndKeywords(
