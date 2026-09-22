@@ -74,6 +74,36 @@ HandleMuxError(WebPMuxError err, char *chunk) {
 }
 
 /* -------------------------------------------------------------------- */
+/* WebP Encoder Error Handling                                          */
+/* -------------------------------------------------------------------- */
+
+#define WEBP_STR_HELPER(x) #x
+#define WEBP_STR(x) WEBP_STR_HELPER(x)
+
+static const char *const kEncoderErrorMessages[VP8_ENC_ERROR_LAST] = {
+    "ok",
+    "out of memory allocating objects",
+    "out of memory re-allocating byte buffer",
+    "NULL parameter passed to function",
+    "configuration is invalid",
+    "image size exceeds WebP limit of " WEBP_STR(WEBP_MAX_DIMENSION) " pixels",
+    "partition #0 is bigger than 512K",
+    "partition is bigger than 16M",
+    "picture writer returned an I/O error",
+    "file would be bigger than 4G",
+    "encoding aborted by user"
+};
+
+static PyObject *
+HandleEncoderError(WebPEncodingError error_code) {
+    const char *message = error_code > VP8_ENC_OK && error_code < VP8_ENC_ERROR_LAST
+                              ? kEncoderErrorMessages[error_code]
+                              : "unknown error";
+    PyErr_Format(PyExc_ValueError, "encoding error %d: %s", error_code, message);
+    return NULL;
+}
+
+/* -------------------------------------------------------------------- */
 /* Frame import                                                         */
 /* -------------------------------------------------------------------- */
 
@@ -647,18 +677,8 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     ret_size = writer.size;
 
     if (!ok) {
-        int error_code = (&pic)->error_code;
-        char message[50] = "";
-        if (error_code == VP8_ENC_ERROR_BAD_DIMENSION) {
-            sprintf(
-                message,
-                ": Image size exceeds WebP limit of %d pixels",
-                WEBP_MAX_DIMENSION
-            );
-        }
-        PyErr_Format(PyExc_ValueError, "encoding error %d%s", error_code, message);
         free(output);
-        return NULL;
+        return HandleEncoderError(pic.error_code);
     }
 
     {
