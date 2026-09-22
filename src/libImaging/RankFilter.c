@@ -17,52 +17,58 @@
 /* Fast rank algorithm (due to Wirth), based on public domain code
    by Nicolas Devillard, available at http://ndevilla.free.fr */
 
-#define SWAP(type, a, b)       \
-    {                          \
-        register type t = (a); \
-        (a) = (b);             \
-        (b) = t;               \
-    }
+#define RANK_INNER_BODY(type)  \
+    int i, j, l, m;            \
+    type x;                    \
+    l = 0;                     \
+    m = n - 1;                 \
+    while (l < m) {            \
+        x = a[k];              \
+        i = l;                 \
+        j = m;                 \
+        do {                   \
+            while (a[i] < x) { \
+                i++;           \
+            }                  \
+            while (x < a[j]) { \
+                j--;           \
+            }                  \
+            if (i <= j) {      \
+                type t = a[i]; \
+                a[i] = a[j];   \
+                a[j] = t;      \
+                i++;           \
+                j--;           \
+            }                  \
+        } while (i <= j);      \
+        if (j < k) {           \
+            l = i;             \
+        }                      \
+        if (k < i) {           \
+            m = j;             \
+        }                      \
+    }                          \
+    return a[k]
 
-#define MakeRankFunction(type)                       \
-    static type Rank##type(type a[], int n, int k) { \
-        register int i, j, l, m;                     \
-        register type x;                             \
-        l = 0;                                       \
-        m = n - 1;                                   \
-        while (l < m) {                              \
-            x = a[k];                                \
-            i = l;                                   \
-            j = m;                                   \
-            do {                                     \
-                while (a[i] < x) {                   \
-                    i++;                             \
-                }                                    \
-                while (x < a[j]) {                   \
-                    j--;                             \
-                }                                    \
-                if (i <= j) {                        \
-                    SWAP(type, a[i], a[j]);          \
-                    i++;                             \
-                    j--;                             \
-                }                                    \
-            } while (i <= j);                        \
-            if (j < k) {                             \
-                l = i;                               \
-            }                                        \
-            if (k < i) {                             \
-                m = j;                               \
-            }                                        \
-        }                                            \
-        return a[k];                                 \
-    }
+static UINT8
+RankUINT8(UINT8 a[], int n, int k) {
+    RANK_INNER_BODY(UINT8);
+}
 
-MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
+static INT32
+RankINT32(INT32 a[], int n, int k) {
+    RANK_INNER_BODY(INT32);
+}
 
-    Imaging ImagingRankFilter(Imaging im, int size, int rank) {
+static FLOAT32
+RankFLOAT32(FLOAT32 a[], int n, int k) {
+    RANK_INNER_BODY(FLOAT32);
+}
+
+Imaging
+ImagingRankFilter(Imaging im, int size, int rank) {
     Imaging imOut = NULL;
-    int x, y;
-    int i, margin, size2;
+    int margin, size2;
 
     if (!im || im->bands != 1 || im->type == IMAGING_TYPE_I16) {
         return (Imaging)ImagingError_ModeError();
@@ -89,27 +95,30 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
     if (!imOut) {
         return NULL;
     }
+    int xsize = imOut->xsize, ysize = imOut->ysize;
 
     /* malloc check ok, checked above */
-#define RANK_BODY(type)                                                           \
-    do {                                                                          \
-        type *buf = malloc(size2 * sizeof(type));                                 \
-        if (!buf) {                                                               \
-            goto nomemory;                                                        \
-        }                                                                         \
-        for (y = 0; y < imOut->ysize; y++) {                                      \
-            for (x = 0; x < imOut->xsize; x++) {                                  \
-                for (i = 0; i < size; i++) {                                      \
-                    memcpy(                                                       \
-                        buf + i * size,                                           \
-                        &IMAGING_PIXEL_##type(im, x, y + i),                      \
-                        size * sizeof(type)                                       \
-                    );                                                            \
-                }                                                                 \
-                IMAGING_PIXEL_##type(imOut, x, y) = Rank##type(buf, size2, rank); \
-            }                                                                     \
-        }                                                                         \
-        free(buf);                                                                \
+    // restrict safe: buf is a private allocation, imOut is a fresh allocation.
+#define RANK_BODY(type)                                                   \
+    do {                                                                  \
+        type *restrict buf = malloc(size2 * sizeof(type));                \
+        if (!buf) {                                                       \
+            goto nomemory;                                                \
+        }                                                                 \
+        for (int y = 0; y < ysize; y++) {                                 \
+            type *restrict out = (type *)imOut->image[y];                 \
+            for (int x = 0; x < xsize; x++) {                             \
+                type *restrict p = buf;                                   \
+                for (int i = 0; i < size; i++) {                          \
+                    const type *row = (const type *)im->image[y + i] + x; \
+                    for (int k = 0; k < size; k++) {                      \
+                        *p++ = row[k];                                    \
+                    }                                                     \
+                }                                                         \
+                out[x] = Rank##type(buf, size2, rank);                    \
+            }                                                             \
+        }                                                                 \
+        free(buf);                                                        \
     } while (0)
 
     if (im->image8) {
