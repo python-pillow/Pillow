@@ -142,6 +142,9 @@ raises an exception. Previously, delayed encoder destruction could access a clos
 file descriptor after it had been reused for another file, disturbing that file's
 position or contents.
 
+:py:meth:`~PIL.Image.Image.tobytes` also now explicitly cleans up its encoder on
+both success and failure, rather than relying on object destruction.
+
 PNG palettes are no longer padded when saving with the ``bits`` argument
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
