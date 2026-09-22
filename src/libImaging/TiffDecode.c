@@ -954,6 +954,7 @@ ImagingLibTiffEncodeCleanup(ImagingCodecState state) {
         // that is fine, as it does not close the file
         TIFFClose(tiff);
     }
+    clientstate->tiff = NULL;
     return 0;
 }
 

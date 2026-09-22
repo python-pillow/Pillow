@@ -1998,16 +1998,19 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         tags.sort()
         a = (rawmode, compression, _fp, filename, tags, types)
         encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
-        encoder.setimage(im.im, (0, 0, *im.size))
-        while True:
-            errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
-            if not _fp:
-                fp.write(data)
-            if errcode:
-                break
-        if errcode < 0:
-            msg = f"encoder error {errcode} when writing image file"
-            raise OSError(msg)
+        try:
+            encoder.setimage(im.im, (0, 0, *im.size))
+            while True:
+                errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
+                if not _fp:
+                    fp.write(data)
+                if errcode:
+                    break
+            if errcode < 0:
+                msg = f"encoder error {errcode} when writing image file"
+                raise OSError(msg)
+        finally:
+            encoder.cleanup()
 
     else:
         for tag in blocklist:

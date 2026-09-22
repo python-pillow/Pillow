@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import gc
 import io
 import itertools
 import os
@@ -1267,6 +1268,20 @@ class TestFileLibTiff(LibTiffTestCase):
         out = tmp_path / "temp.tif"
         with pytest.raises(ValueError, match="cannot write empty image"):
             im.save(out, compression=compression)
+
+    def test_save_error_cleanup(self, tmp_path: Path) -> None:
+        with (tmp_path / "temp.tif").open("w+b", buffering=0) as output:
+            with pytest.raises(ValueError, match="cannot write empty image") as exc:
+                Image.new("RGB", (0, 0)).save(
+                    output, format="TIFF", compression="tiff_adobe_deflate"
+                )
+
+            # The traceback retains the encoder. Its eventual destruction must
+            # not seek or write through a file descriptor that may be reused.
+            output.seek(1234)
+            del exc
+            gc.collect()
+            assert output.tell() == 1234
 
     @pytest.mark.skipif(sys.platform != "win32", reason="Checks a Windows handle limit")
     def test_save_many_compressed(self, tmp_path: Path) -> None:
