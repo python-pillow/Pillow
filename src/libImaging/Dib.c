@@ -208,9 +208,6 @@ ImagingNewDIB(const ModeID mode, int xsize, int ysize) {
 void
 ImagingPasteDIB(ImagingDIB dib, Imaging im, int xy[4]) {
     /* Paste image data into a bitmap */
-
-    /* FIXME: check size! */
-
     int y;
     for (y = 0; y < im->ysize; y++) {
         dib->pack(
