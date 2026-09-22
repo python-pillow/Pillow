@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import tarfile
 import warnings
 
 import pytest
@@ -67,7 +68,7 @@ def test_contextmanager() -> None:
             pass
 
 
-@pytest.mark.parametrize("size", (b"-1", b"0"))
+@pytest.mark.parametrize("size", (b"-1", b"-512"))
 def test_odd(tmp_path: Path, size: bytes) -> None:
     with open(TEST_TAR_FILE, "rb") as f:
         data = bytearray(f.read())
@@ -77,5 +78,18 @@ def test_odd(tmp_path: Path, size: bytes) -> None:
     tmpfile = tmp_path / "temp.tar"
     tmpfile.write_bytes(data)
 
-    with pytest.raises(ValueError, match="offset must be positive"):
+    with pytest.raises(ValueError, match="size must not be negative"):
         TarIO.TarIO(str(tmpfile), "test")
+
+
+def test_zero_length_member(tmp_path: Path) -> None:
+    # A zero-length member is legal: members stored after it must still be found
+    tmpfile = tmp_path / "temp.tar"
+    with tarfile.open(tmpfile, "w") as tar:
+        tar.addfile(tarfile.TarInfo("empty.txt"))
+        tar.add("Tests/images/hopper.jpg", "hopper.jpg")
+
+    with TarIO.TarIO(str(tmpfile), "hopper.jpg") as tar:
+        with Image.open(tar) as im:
+            im.load()
+            assert im.size == (128, 128)

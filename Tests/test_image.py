@@ -1125,6 +1125,12 @@ class TestImage:
         pa = Image.merge("PA", (p, a))
         assert p.getpalette() == pa.getpalette()
 
+    def test_merge_i(self) -> None:
+        i = Image.new("I", (1, 1))
+        a = Image.new("L", (1, 1))
+        with pytest.raises(ValueError, match="image has wrong mode"):
+            Image.merge("PA", (i, a))
+
     def test_constants(self) -> None:
         for enum in (
             Image.Transpose,

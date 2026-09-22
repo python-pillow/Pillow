@@ -134,6 +134,14 @@ escape sequences.
 Other changes
 =============
 
+PNG palettes are no longer padded when saving with the ``bits`` argument
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving a ``P`` mode image as a PNG with the ``bits`` argument, Pillow used to pad
+the ``PLTE`` chunk with zeroes up to ``2 ** bits`` entries. The ``PLTE`` chunk now only
+contains as many entries as the image's palette actually has, matching the behavior
+already used when ``bits`` is not specified.
+
 BOX downscale includes boundary source pixels
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
