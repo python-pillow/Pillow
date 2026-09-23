@@ -224,7 +224,8 @@ def test_fromarray_to_array(
 ) -> None:
     img = hopper(mode)
 
-    borrowed = Image.fromarrow(pyarrow.array(img), mode, img.size)  # type: ignore[call-overload]
+    arr = pyarrow.array(img)  # type: ignore[call-overload]
+    borrowed = Image.fromarrow(arr, mode, img.size)
 
     arr = pyarrow.array(borrowed)  # type: ignore[call-overload]
     _test_img_equals_pyarray(img, arr, mask)
