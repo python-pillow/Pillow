@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from unittest.mock import Mock
-
 import pytest
 
 from PIL import Image, ImageFile
@@ -16,20 +14,39 @@ def test_sanity() -> None:
 
 @pytest.mark.parametrize("failure", (None, "setimage", "encode", "status"))
 def test_encoder_cleanup(failure: str | None, monkeypatch: pytest.MonkeyPatch) -> None:
-    encoder = Mock(spec=ImageFile.PyEncoder)
-    encoder.encode.return_value = (6, 1, b"pixels")
-    monkeypatch.setattr(Image, "_getencoder", lambda *args: encoder)
+    cleanup_called = False
+
+    class TestPyEncoder(ImageFile.PyEncoder):
+        def encode(self, bufsize: int) -> tuple[int, int, bytes]:
+            if failure == "encode":
+                raise ValueError(failure)
+            if failure == "status":
+                return (0, -2, b"")
+            return (6, 1, b"pixels")
+
+        def setimage(
+            self,
+            im: Image.core.ImagingCore,
+            extents: tuple[int, int, int, int] | None = None,
+        ) -> None:
+            if failure == "setimage":
+                raise ValueError(failure)
+            return super().setimage(im, extents)
+
+        def cleanup(self) -> None:
+            nonlocal cleanup_called
+            cleanup_called = True
+
     im = Image.new("RGB", (1, 1))
 
+    monkeypatch.setattr(Image, "ENCODERS", {"raw": TestPyEncoder})
     if failure in ("setimage", "encode"):
-        getattr(encoder, failure).side_effect = ValueError(failure)
         with pytest.raises(ValueError, match=failure):
             im.tobytes()
     elif failure == "status":
-        encoder.encode.return_value = (0, -2, b"")
         with pytest.raises(RuntimeError, match="encoder error -2 in tobytes"):
             im.tobytes()
     else:
         assert im.tobytes() == b"pixels"
 
-    encoder.cleanup.assert_called_once_with()
+    assert cleanup_called
