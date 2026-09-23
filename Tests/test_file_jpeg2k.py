@@ -21,6 +21,7 @@ from .helper import (
     assert_image_equal,
     assert_image_similar,
     assert_image_similar_tofile,
+    hopper,
     skip_unless_feature,
     skip_unless_feature_version,
 )
@@ -358,6 +359,126 @@ def test_grayscale_four_channels() -> None:
     with Image.open(BytesIO(data)) as im:
         im.load()
         assert im.mode == "RGBA"
+
+
+def _set_channel_definitions(
+    data: bytes, channels: tuple[tuple[int, int, int], ...], enumcs: int | None = None
+) -> bytes:
+    # Replace any channel definition box in the JP2 header box,
+    # and optionally change the enumerated color space
+    header = data.index(b"jp2h") - 4
+    header_length = _binary.i32be(data, header)
+    boxes = b""
+    offset = header + 8
+    while offset < header + header_length:
+        length = _binary.i32be(data, offset)
+        box = data[offset : offset + length]
+        if box[4:8] == b"colr" and enumcs is not None:
+            box = box[:-4] + struct.pack(">I", enumcs)
+        if box[4:8] != b"cdef":
+            boxes += box
+        offset += length
+    cdef = struct.pack(">H", len(channels))
+    for channel in channels:
+        cdef += struct.pack(">HHH", *channel)
+    boxes += struct.pack(">I4s", 8 + len(cdef), b"cdef") + cdef
+    return (
+        data[:header]
+        + struct.pack(">I4s", 8 + len(boxes), b"jp2h")
+        + boxes
+        + data[header + header_length :]
+    )
+
+
+@pytest.mark.parametrize(
+    "mode, order, channels",
+    (
+        ("RGB", (2, 1, 0), ((0, 0, 3), (1, 0, 2), (2, 0, 1))),
+        ("RGB", (1, 2, 0), ((0, 0, 2), (1, 0, 3), (2, 0, 1))),
+        ("RGBA", (3, 0, 1, 2), ((0, 1, 0), (1, 0, 1), (2, 0, 2), (3, 0, 3))),
+        ("RGBA", (2, 1, 0, 3), ((0, 0, 3), (1, 0, 2), (2, 0, 1), (3, 2, 0))),
+        ("LA", (1, 0), ((0, 1, 0), (1, 0, 1))),
+    ),
+)
+@pytest.mark.parametrize("tile_size", (None, (48, 48)))
+def test_channel_definitions(
+    mode: str,
+    order: tuple[int, ...],
+    channels: tuple[tuple[int, int, int], ...],
+    tile_size: tuple[int, int] | None,
+) -> None:
+    im = hopper(mode)
+    stored = Image.merge(mode, [im.getchannel(i) for i in order])
+    out = BytesIO()
+    stored.save(out, "JPEG2000", tile_size=tile_size)
+    data = _set_channel_definitions(out.getvalue(), channels)
+
+    with Image.open(BytesIO(data)) as reloaded:
+        assert_image_equal(reloaded, im)
+
+    # The components are also reordered when reducing
+    with Image.open(BytesIO(out.getvalue())) as unordered:
+        assert isinstance(unordered, Jpeg2KImagePlugin.Jpeg2KImageFile)
+        unordered.reduce = 1
+        unordered.load()
+        expected = Image.merge(
+            mode, [unordered.getchannel(order.index(i)) for i in range(len(order))]
+        )
+    with Image.open(BytesIO(data)) as reloaded:
+        assert isinstance(reloaded, Jpeg2KImagePlugin.Jpeg2KImageFile)
+        reloaded.reduce = 1
+        reloaded.load()
+        assert_image_equal(reloaded, expected)
+
+
+def test_channel_definitions_sycc() -> None:
+    # The components are reordered before the conversion from YCbCr to RGB
+    im = hopper("YCbCr")
+    stored = Image.merge("RGB", [im.getchannel(i) for i in (2, 1, 0)])
+    out = BytesIO()
+    stored.save(out, "JPEG2000", mct=0)
+    data = _set_channel_definitions(
+        out.getvalue(), ((0, 0, 3), (1, 0, 2), (2, 0, 1)), enumcs=18
+    )
+
+    with Image.open(BytesIO(data)) as reloaded:
+        assert_image_equal(reloaded, im.convert("RGB"))
+
+
+@pytest.mark.parametrize(
+    "channels",
+    (
+        # Already in order
+        ((0, 0, 1), (1, 0, 2), (2, 0, 3)),
+        # Unspecified channel type
+        ((0, 0, 3), (1, 0, 2), (2, 65535, 65535)),
+        # Color channel associated with the whole image
+        ((0, 0, 0), (1, 0, 2), (2, 0, 1)),
+        # Association beyond the number of components
+        ((0, 0, 4), (1, 0, 2), (2, 0, 1)),
+        # Two channels with the same association
+        ((0, 0, 3), (1, 0, 3), (2, 0, 1)),
+        # Component index beyond the number of components
+        ((3, 0, 3), (1, 0, 2), (2, 0, 1)),
+        # Not every component described
+        ((0, 0, 3), (2, 0, 1)),
+    ),
+)
+def test_channel_definitions_ignored(
+    channels: tuple[tuple[int, int, int], ...],
+) -> None:
+    im = hopper("RGB")
+    out = BytesIO()
+    im.save(out, "JPEG2000")
+    data = _set_channel_definitions(out.getvalue(), channels)
+
+    with Image.open(BytesIO(data)) as reloaded:
+        assert_image_equal(reloaded, im)
+
+
+def test_channel_order_decoder_args() -> None:
+    with pytest.raises(ValueError, match="too many channels"):
+        Image.core.jpeg2k_decoder("RGB", "jp2", 0, 0, -1, -1, bytes(5))
 
 
 @pytest.mark.skipif(

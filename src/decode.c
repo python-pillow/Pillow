@@ -923,10 +923,26 @@ PyImaging_Jpeg2KDecoderNew(PyObject *self, PyObject *args) {
     int layers = 0;
     int fd = -1;
     PY_LONG_LONG length = -1;
+    const char *channel_order = NULL;
+    Py_ssize_t channel_order_length = 0;
 
     if (!PyArg_ParseTuple(
-            args, "ss|iiiL", &mode, &format, &reduce, &layers, &fd, &length
+            args,
+            "ss|iiiLy#",
+            &mode,
+            &format,
+            &reduce,
+            &layers,
+            &fd,
+            &length,
+            &channel_order,
+            &channel_order_length
         )) {
+        return NULL;
+    }
+
+    if (channel_order_length > 4) {
+        PyErr_SetString(PyExc_ValueError, "too many channels");
         return NULL;
     }
 
@@ -955,6 +971,10 @@ PyImaging_Jpeg2KDecoderNew(PyObject *self, PyObject *args) {
     context->format = codec_format;
     context->reduce = reduce;
     context->layers = layers;
+    context->channel_order_length = (int)channel_order_length;
+    if (channel_order_length) {
+        memcpy(context->channel_order, channel_order, channel_order_length);
+    }
 
     return (PyObject *)decoder;
 }
