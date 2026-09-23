@@ -74,7 +74,7 @@ HandleMuxError(WebPMuxError err, char *chunk) {
 }
 
 /* -------------------------------------------------------------------- */
-/* WebP Encoder Error Handling                                          */
+/* WebP Encoder Error Mapping                                           */
 /* -------------------------------------------------------------------- */
 
 #define WEBP_STR_HELPER(x) #x
@@ -94,14 +94,8 @@ static const char *const kEncoderErrorMessages[VP8_ENC_ERROR_LAST] = {
     "encoding aborted by user"
 };
 
-static PyObject *
-HandleEncoderError(WebPEncodingError error_code) {
-    const char *message = error_code > VP8_ENC_OK && error_code < VP8_ENC_ERROR_LAST
-                              ? kEncoderErrorMessages[error_code]
-                              : "unknown error";
-    PyErr_Format(PyExc_ValueError, "encoding error %d: %s", error_code, message);
-    return NULL;
-}
+#undef WEBP_STR
+#undef WEBP_STR_HELPER
 
 /* -------------------------------------------------------------------- */
 /* Frame import                                                         */
@@ -678,7 +672,12 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
 
     if (!ok) {
         free(output);
-        return HandleEncoderError(pic.error_code);
+        WebPEncodingError error_code = pic.error_code;
+        const char *message = error_code > VP8_ENC_OK && error_code < VP8_ENC_ERROR_LAST
+                                  ? kEncoderErrorMessages[error_code]
+                                  : "unknown error";
+        PyErr_Format(PyExc_ValueError, "encoding error %d: %s", error_code, message);
+        return NULL;
     }
 
     {
