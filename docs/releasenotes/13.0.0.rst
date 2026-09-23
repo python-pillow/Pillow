@@ -138,7 +138,7 @@ WebP encoding errors now include a description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When libwebp fails to encode an image, the raised :py:exc:`ValueError` now
-describes the error rather than only reporting a numeric code.
+consistently describes the error rather than only reporting a numeric code.
 
 PNG palettes are no longer padded when saving with the ``bits`` argument
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
