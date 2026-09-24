@@ -44,6 +44,7 @@ Run ``build_prepare.py`` to configure the build::
                                      [--depends PILLOW_DEPS]
                                      [--architecture {x86,AMD64,ARM64}] [--nmake]
                                      [--no-imagequant] [--no-fribidi]
+                                     [--no-avif]
 
     Download and generate build scripts for Pillow dependencies.
 
