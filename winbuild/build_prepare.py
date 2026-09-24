@@ -371,15 +371,19 @@ DEPS: dict[str, dict[str, Any]] = {
         "libs": [r"bin\*.lib"],
     },
     "libimagequant": {
-        "url": "https://github.com/ImageOptim/libimagequant/archive/{V['libimagequant']}.tar.gz",
+        "url": f"https://github.com/ImageOptim/libimagequant/archive/{V['libimagequant']}.tar.gz",
         "filename": f"libimagequant-{V['libimagequant']}.tar.gz",
         "license": "COPYRIGHT",
         "build": [
             cmd_cd("imagequant-sys"),
             "cargo build --release {cargo_target}",
+            cmd_copy(
+                r"..\target\{cargo_dir}release\imagequant_sys.lib",
+                "imagequant.lib",
+            ),
         ],
         "headers": ["libimagequant.h"],
-        "libs": [r"..\target\{cargo_dir}release\imagequant_sys.lib"],
+        "libs": ["imagequant.lib"],
     },
     "harfbuzz": {
         "url": f"https://github.com/harfbuzz/harfbuzz/releases/download/{V['harfbuzz']}/FILENAME",

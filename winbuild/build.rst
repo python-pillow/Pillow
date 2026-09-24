@@ -29,6 +29,9 @@ Download and install:
 
 * x86/AMD64: `Netwide Assembler (NASM) <https://www.nasm.us/pub/nasm/releasebuilds/?C=M;O=D>`_
 
+* libimagequant: `Rust <https://rustup.rs>`_
+  (optional, use ``--no-imagequant`` if not available)
+
 Any version of Visual Studio 2017 or newer should be supported,
 including Visual Studio 2017 Community, or Build Tools for Visual Studio 2019.
 
