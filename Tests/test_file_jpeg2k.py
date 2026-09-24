@@ -431,6 +431,9 @@ def test_channel_definitions(
         assert_image_equal(reloaded, expected)
 
 
+@skip_unless_feature_version(
+    "jpg_2000", "2.5.1", "sYCC is only identified from the header since OpenJPEG 2.5.1"
+)
 def test_channel_definitions_sycc() -> None:
     # The components are reordered before the conversion from YCbCr to RGB
     im = hopper("YCbCr")
