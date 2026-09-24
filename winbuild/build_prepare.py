@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 import argparse
+import glob
 import json
 import os
 import platform
 import re
 import shutil
-import struct
 import subprocess
 import sys
+import sysconfig
 from pathlib import Path
 from typing import Any
 
@@ -63,6 +64,7 @@ def cmds_cmake(
     *params: str,
     build_dir: str = ".",
     build_type: str = "Release",
+    cmake_system: str = "{cmake_system}",
 ) -> list[str]:
     if not isinstance(target, str):
         target = " ".join(target)
@@ -71,6 +73,7 @@ def cmds_cmake(
         " ".join(
             [
                 "{cmake}",
+                cmake_system,
                 f"-DCMAKE_BUILD_TYPE={build_type}",
                 "-DCMAKE_VERBOSE_MAKEFILE=ON",
                 "-DCMAKE_RULE_MESSAGES:BOOL=OFF",  # for NMake
@@ -109,10 +112,56 @@ def cmd_msbuild(
 SF_PROJECTS = "https://sourceforge.net/projects"
 
 ARCHITECTURES = {
-    "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
-    "AMD64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64"},
-    "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64"},
+    "x86": {"msbuild_arch": "Win32"},
+    "AMD64": {"msbuild_arch": "x64"},
+    "ARM64": {"msbuild_arch": "ARM64"},
 }
+
+VCVARS_ARCHITECTURES = {
+    "x86": "x86",
+    "AMD64": "amd64",
+    "ARM64": "arm64",
+}
+
+MSVC_HOST_DIRS = {
+    "x86": "Hostx86",
+    "AMD64": "Hostx64",
+    "ARM64": "Hostarm64",
+}
+
+MSVC_TARGET_DIRS = {
+    "x86": "x86",
+    "AMD64": "x64",
+    "ARM64": "arm64",
+}
+
+HOST_ARCHITECTURES = {
+    "x86": ["x86"],
+    "AMD64": ["AMD64", "x86"],
+    "ARM64": ["ARM64", "AMD64", "x86"],
+}
+
+CARGO_TARGETS = {
+    "x86": "i686-pc-windows-msvc",
+    "AMD64": "x86_64-pc-windows-msvc",
+    "ARM64": "aarch64-pc-windows-msvc",
+}
+
+PYTHON_ARCHITECTURES = {
+    "win32": "x86",
+    "win-amd64": "AMD64",
+    "win-arm64": "ARM64",
+}
+
+
+def get_host_architecture() -> str:
+    machine = platform.machine()
+    return machine if machine in HOST_ARCHITECTURES else "AMD64"
+
+
+def get_python_architecture() -> str:
+    return PYTHON_ARCHITECTURES[sysconfig.get_platform()]
+
 
 V = json.loads(
     (Path(__file__).parents[1] / ".github" / "dependencies.json").read_text()
@@ -327,10 +376,10 @@ DEPS: dict[str, dict[str, Any]] = {
         "license": "COPYRIGHT",
         "build": [
             cmd_cd("imagequant-sys"),
-            "cargo build --release",
+            "cargo build --release {cargo_target}",
         ],
         "headers": ["libimagequant.h"],
-        "libs": [r"..\target\release\imagequant_sys.lib"],
+        "libs": [r"..\target\{cargo_dir}release\imagequant_sys.lib"],
     },
     "harfbuzz": {
         "url": f"https://github.com/harfbuzz/harfbuzz/releases/download/{V['harfbuzz']}/FILENAME",
@@ -356,11 +405,16 @@ DEPS: dict[str, dict[str, Any]] = {
             # generated tab.i files cannot be cross-compiled
             " ^&^& ".join(
                 [
-                    "if {architecture}==ARM64 cmd /c call {vcvarsall} x86",
-                    *cmds_cmake("fribidi-gen", "-DARCH=x86", build_dir="build_x86"),
+                    "if {fribidi_gen}==FALSE cmd /c call {vcvarsall} {vcvars_host_arch}",  # noqa: E501
+                    *cmds_cmake(
+                        "fribidi-gen",
+                        "-DGEN=TRUE",
+                        build_dir="build_host",
+                        cmake_system="",
+                    ),
                 ]
             ),
-            *cmds_cmake("fribidi", "-DARCH={architecture}"),
+            *cmds_cmake("fribidi", "-DGEN={fribidi_gen}", cmake_system=""),
         ],
         "bins": [r"*.dll"],
     },
@@ -391,7 +445,7 @@ DEPS: dict[str, dict[str, Any]] = {
 
 
 # based on distutils._msvccompiler from CPython 3.7.4
-def find_msvs(architecture: str) -> dict[str, str] | None:
+def find_msvs(architecture: str, host_architecture: str) -> dict[str, str] | None:
     root = os.environ.get("ProgramFiles(x86)") or os.environ.get("ProgramFiles")
     if not root:
         print("Program Files not found")
@@ -442,10 +496,37 @@ def find_msvs(architecture: str) -> dict[str, str] | None:
         print("Visual Studio vcvarsall not found")
         return None
 
+    # Prefer compilers that run natively on this machine,
+    # and fall back to ones that only run under emulation.
+    for host in HOST_ARCHITECTURES[host_architecture]:
+        if glob.glob(
+            os.path.join(
+                vspath,
+                "VC",
+                "Tools",
+                "MSVC",
+                "*",
+                "bin",
+                MSVC_HOST_DIRS[host],
+                MSVC_TARGET_DIRS[architecture],
+                "cl.exe",
+            )
+        ):
+            break
+    else:
+        print(f"Visual Studio has no compiler targeting {architecture}")
+        return None
+
+    vcvars_arch = VCVARS_ARCHITECTURES[architecture]
+    if host != architecture:
+        vcvars_arch = f"{VCVARS_ARCHITECTURES[host]}_{vcvars_arch}"
+
     return {
         "vs_dir": vspath,
         "msbuild": f'"{msbuild}"',
         "vcvarsall": f'"{vcvarsall}"',
+        "vcvars_arch": vcvars_arch,
+        "vcvars_host_arch": VCVARS_ARCHITECTURES[host],
         "nmake": "nmake.exe",  # nmake selected by vcvarsall
     }
 
@@ -660,14 +741,7 @@ def main() -> None:
     parser.add_argument(
         "--architecture",
         choices=ARCHITECTURES,
-        default=os.environ.get(
-            "ARCHITECTURE",
-            (
-                "ARM64"
-                if platform.machine() == "ARM64"
-                else ("x86" if struct.calcsize("P") == 4 else "AMD64")
-            ),
-        ),
+        default=os.environ.get("ARCHITECTURE", get_python_architecture()),
         help="build architecture (default: same as host Python)",
     )
     parser.add_argument(
@@ -697,13 +771,16 @@ def main() -> None:
     args = parser.parse_args()
 
     arch_prefs = ARCHITECTURES[args.architecture]
+    host_architecture = get_host_architecture()
+    print("Host architecture:", host_architecture)
     print("Target architecture:", args.architecture)
 
-    msvs = find_msvs(args.architecture)
+    msvs = find_msvs(args.architecture, host_architecture)
     if msvs is None:
         msg = "Visual Studio not found. Please install Visual Studio 2017 or newer."
         raise RuntimeError(msg)
     print("Found Visual Studio at:", msvs["vs_dir"])
+    print("Using compilers:", msvs["vcvars_arch"])
 
     # dependency cache directory
     args.depends_dir = os.path.abspath(args.depends_dir)
@@ -737,8 +814,22 @@ def main() -> None:
     if args.no_avif or args.architecture == "ARM64":
         disabled += ["libavif"]
 
+    cmake_system = cargo_target = cargo_dir = ""
+    if host_architecture != args.architecture:
+        cmake_system = (
+            f"-DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR={args.architecture}"
+        )
+        cargo_target = f"--target {CARGO_TARGETS[args.architecture]}"
+        cargo_dir = CARGO_TARGETS[args.architecture] + "\\"
+
+    runnable = args.architecture in HOST_ARCHITECTURES[host_architecture]
+
     prefs = {
         "architecture": args.architecture,
+        "cmake_system": cmake_system,
+        "cargo_target": cargo_target,
+        "cargo_dir": cargo_dir,
+        "fribidi_gen": "TRUE" if runnable else "FALSE",
         **arch_prefs,
         # Pillow paths
         "winbuild_dir": winbuild_dir,
