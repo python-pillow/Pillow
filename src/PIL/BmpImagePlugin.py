@@ -372,7 +372,9 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     if len(bytes_read) < 2:
                         break
                     right, up = bytes_read
-                    data += b"\x00" * (right + up * self.state.xsize)
+                    data += b"\x00" * min(
+                        dest_length - len(data), right + up * self.state.xsize
+                    )
                     x = len(data) % self.state.xsize
                 else:
                     # absolute mode

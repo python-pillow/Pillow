@@ -666,6 +666,18 @@ def test_radial_gradient(bench: BenchmarkFixture, mode: str) -> None:
     assert result.mode == mode
 
 
+@pytest.mark.benchmark(group="allocate")
+@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_get_flattened_data(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+) -> None:
+    im = make_pillow_image(mode, size)
+    bench(im.get_flattened_data)
+
+
 CHOPS_OPS = [
     ImageChops.add,
     ImageChops.subtract,
@@ -714,6 +726,37 @@ def test_offset(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> No
     im = make_pillow_image(mode, size)
     bench.extra_info["label"] = ["offset"]
     bench(ImageChops.offset, im, 123, 45)
+
+
+@pytest.mark.benchmark(group="compare")
+@pytest.mark.parametrize("scenario", ["equal", "one-pixel", "inverted"])
+@pytest.mark.parametrize("mode", [*MODES, "I;16"])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_equality(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+    scenario: str,
+) -> None:
+    im1 = make_pillow_image(mode, size)
+    if scenario == "inverted":  # Differs in almost every pixel
+        im2 = ImageChops.invert(im1)
+    elif scenario == "one-pixel":
+        # Differs in a single pixel halfway through the image in raster order
+        xy = ((im1.width * im1.height // 2) % im1.width, im1.height // 2)
+        im2 = im1.copy()
+        value = im2.getpixel(xy)
+        assert value is not None
+        if isinstance(value, tuple):
+            value = tuple(255 - v for v in value)
+        else:
+            value = 255 - value
+        im2.putpixel(xy, value)
+    else:  # Equal
+        im2 = im1.copy()
+    bench.extra_info["label"] = [scenario]
+    result = bench(lambda: im1 == im2)
+    assert result is (scenario == "equal")
 
 
 @pytest.mark.benchmark(group="extrema")
@@ -818,12 +861,27 @@ def test_font_getmask(bench: BenchmarkFixture, mode: str) -> None:
 
 
 @pytest.mark.benchmark(group="quantize")
-@pytest.mark.parametrize("mode", [m for m in MODES if m in ("L", "RGB", "RGBA")])
+@pytest.mark.parametrize(
+    "mode, method",
+    [
+        ("L", Image.Quantize.MEDIANCUT),
+        ("L", Image.Quantize.MAXCOVERAGE),
+        ("RGB", Image.Quantize.MEDIANCUT),
+        ("RGB", Image.Quantize.MAXCOVERAGE),
+        ("RGBA", Image.Quantize.FASTOCTREE),
+    ],
+    ids=lambda p: getattr(p, "name", p),
+)
 @pytest.mark.parametrize("size", SIZES, ids=_format_size)
-def test_quantize(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> None:
+def test_quantize(
+    bench: BenchmarkFixture,
+    mode: str,
+    method: Image.Quantize,
+    size: tuple[int, int],
+) -> None:
     im = make_pillow_image(mode, size)
-    bench.extra_info["label"] = [f"quantize {mode}"]
-    result = bench(im.quantize, 256)
+    bench.extra_info["label"] = [f"quantize {mode} {method.name}"]
+    result = bench(im.quantize, 256, method=method)
     assert result.mode == "P"
 
 

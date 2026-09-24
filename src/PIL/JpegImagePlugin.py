@@ -841,7 +841,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     # if we optimize, libjpeg needs a buffer big enough to hold the whole image
     # in a shot. Guessing on the size, at im.size bytes. (raw pixel size is
-    # channels*size, this is a value that's been used in a django patch.
+    # channels*size, this is a value that's been used in a Django patch.
     # https://github.com/matthewwithanm/django-imagekit/issues/50
     if optimize or progressive:
         # CMYK can be bigger
@@ -855,11 +855,12 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         if exif:
             bufsize += len(exif) + 5
         if extra:
-            bufsize += len(extra) + 1
+            bufsize += len(extra)
     else:
-        # The EXIF info needs to be written as one block, + APP1, + one spare byte.
+        # The EXIF info needs to be written as one block, + APP1, + one spare byte,
+        # as libjpeg without suspension requires one byte left after writing a marker.
         # Ensure that our buffer is big enough. Same with the icc_profile block.
-        bufsize = max(len(exif) + 5, len(extra) + 1)
+        bufsize = max(len(exif) + 5, len(extra))
 
     ImageFile._save(
         im, fp, [ImageFile._Tile("jpeg", (0, 0, *im.size), 0, rawmode)], bufsize

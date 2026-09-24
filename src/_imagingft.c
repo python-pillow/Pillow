@@ -128,7 +128,7 @@ getfont(PyObject *self_, PyObject *args) {
     FontObject *self;
     int error = 0;
 
-    char *filename = NULL;
+    PyBytesObject *filename_bytes = NULL;
     float size;
     FT_Size_RequestRec req;
     FT_Long width;
@@ -143,31 +143,11 @@ getfont(PyObject *self_, PyObject *args) {
         return NULL;
     }
 
-#if PY_MAJOR_VERSION > 3 || PY_MINOR_VERSION > 11
-    PyConfig config;
-    PyConfig_InitPythonConfig(&config);
     if (!PyArg_ParseTuple(
             args,
-            "etfnsn|y#",
-            config.filesystem_encoding,
-            &filename,
-            &size,
-            &index,
-            &encoding,
-            &layout_engine,
-            &font_bytes,
-            &font_bytes_size
-        )) {
-        PyConfig_Clear(&config);
-        return NULL;
-    }
-    PyConfig_Clear(&config);
-#else
-    if (!PyArg_ParseTuple(
-            args,
-            "etfnsn|y#",
-            Py_FileSystemDefaultEncoding,
-            &filename,
+            "O&fnsn|y#",
+            PyUnicode_FSConverter,
+            &filename_bytes,
             &size,
             &index,
             &encoding,
@@ -177,13 +157,11 @@ getfont(PyObject *self_, PyObject *args) {
         )) {
         return NULL;
     }
-#endif
+    const char *filename = PyBytes_AS_STRING(filename_bytes);
 
     self = PyObject_New(FontObject, &Font_Type);
     if (!self) {
-        if (filename) {
-            PyMem_Free(filename);
-        }
+        Py_DECREF(filename_bytes);
         return NULL;
     }
 
@@ -231,19 +209,18 @@ getfont(PyObject *self_, PyObject *args) {
             FT_MAKE_TAG(encoding[0], encoding[1], encoding[2], encoding[3]);
         error = FT_Select_Charmap(self->face, encoding_tag);
     }
-    if (filename) {
-        PyMem_Free(filename);
-    }
 
     if (error) {
         if (self->font_bytes) {
             PyMem_Free(self->font_bytes);
             self->font_bytes = NULL;
         }
+        Py_DECREF(filename_bytes);
         Py_DECREF(self);
         return geterror(error);
     }
 
+    Py_DECREF(filename_bytes);
     return (PyObject *)self;
 }
 
@@ -605,7 +582,7 @@ bounding_box_and_anchors(
     int64_t *width,
     int64_t *height,
     int *x_offset,
-    int *y_offset
+    int64_t *y_offset
 ) {
     FT_F26Dot6 position;            /* pen position along primary axis */
     long advanced;                  /* pen position along primary axis, in pixels */
@@ -764,7 +741,7 @@ bounding_box_and_anchors(
     *width = (int64_t)x_max - x_min;
     *height = (int64_t)y_max - y_min;
     *x_offset = -x_anchor + x_min;
-    *y_offset = -(-y_anchor + y_max);
+    *y_offset = (int64_t)y_anchor - y_max;
     return 0;
 
 bad_anchor:
@@ -787,8 +764,8 @@ bad_anchor:
  */
 static PyObject *
 font_getsize_impl(FontObject *self, PyObject *args) {
-    int64_t width, height;
-    int x_offset, y_offset;
+    int64_t width, height, y_offset;
+    int x_offset;
     int load_flags; /* FreeType load_flags parameter */
     int error;
     GlyphInfo *glyph_info = NULL; /* computed text layout */
@@ -855,7 +832,7 @@ font_getsize_impl(FontObject *self, PyObject *args) {
         return NULL;
     }
 
-    return Py_BuildValue("(LL)(ii)", width, height, x_offset, y_offset);
+    return Py_BuildValue("(LL)(iL)", width, height, x_offset, y_offset);
 }
 
 static PyObject *
@@ -893,7 +870,7 @@ font_render_impl(FontObject *self, PyObject *args) {
     int x_min, y_max; /* text offset, in pixels */
     int load_flags;   /* FreeType load_flags parameter */
     int error;
-    FT_Glyph glyph;
+    FT_Glyph glyph = NULL;
     FT_GlyphSlot glyph_slot;
     FT_Bitmap bitmap;
     FT_Bitmap bitmap_converted; /* initialized lazily, for non-8bpp fonts */
@@ -924,8 +901,8 @@ font_render_impl(FontObject *self, PyObject *args) {
     PyObject *fill;
     float x_start = 0;
     float y_start = 0;
-    int64_t width, height;
-    int x_offset, y_offset;
+    int64_t width, height, y_offset;
+    int x_offset;
     int horizontal_dir; /* is primary axis horizontal? */
 
     /* render string into given buffer (the buffer *must* have
@@ -1026,7 +1003,7 @@ font_render_impl(FontObject *self, PyObject *args) {
     y_offset = round(y_offset - stroke_width);
     if (count == 0 || width == 0 || height == 0) {
         PyMem_Del(glyph_info);
-        return Py_BuildValue("N(ii)", image, x_offset, y_offset);
+        return Py_BuildValue("N(iL)", image, x_offset, y_offset);
     }
 
     if (stroke_width) {
@@ -1288,6 +1265,7 @@ font_render_impl(FontObject *self, PyObject *args) {
         y += glyph_info[i].y_advance;
         if (stroker != NULL) {
             FT_Done_Glyph(glyph);
+            glyph = NULL;
         }
     }
 
@@ -1296,11 +1274,11 @@ font_render_impl(FontObject *self, PyObject *args) {
     }
     FT_Stroker_Done(stroker);
     PyMem_Del(glyph_info);
-    return Py_BuildValue("N(ii)", image, x_offset, y_offset);
+    return Py_BuildValue("N(iL)", image, x_offset, y_offset);
 
 glyph_error:
     Py_DECREF(image);
-    if (stroker != NULL) {
+    if (glyph != NULL) {
         FT_Done_Glyph(glyph);
     }
     if (bitmap_converted_ready) {

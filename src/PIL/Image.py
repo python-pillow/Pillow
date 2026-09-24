@@ -2161,14 +2161,8 @@ class Image:
             msg = "illegal image mode"
             raise ValueError(msg)
         if isinstance(data, ImagePalette.ImagePalette):
-            if data.rawmode is not None:
-                palette = ImagePalette.raw(data.rawmode, data.palette)
-            else:
-                palette = ImagePalette.ImagePalette(palette=data.palette)
-                palette.dirty = 1
+            palette = ImagePalette.raw(data.rawmode or "RGB", data.palette)
         else:
-            if not isinstance(data, bytes):
-                data = bytes(data)
             palette = ImagePalette.raw(rawmode, data)
         self._mode = "PA" if "A" in self.mode else "P"
         self.palette = palette
@@ -2176,8 +2170,6 @@ class Image:
             self.palette.mode = "CMYK"
         elif "A" in rawmode:
             self.palette.mode = "RGBA"
-        else:
-            self.palette.mode = "RGB"
         self.load()  # install new palette
 
     def putpixel(
@@ -2301,7 +2293,6 @@ class Image:
         m_im = m_im.convert("L")
 
         m_im.putpalette(palette_bytes, palette_mode)
-        m_im.palette = ImagePalette.ImagePalette(palette_mode, palette=palette_bytes)
 
         if "transparency" in self.info:
             try:
@@ -2442,14 +2433,7 @@ class Image:
                     (box[3] - reduce_box[1]) / factor_y,
                 )
 
-        if self.size[1] > self.size[0] * 100 and size[1] < self.size[1]:
-            im = self.im.resize(
-                (self.size[0], size[1]), resample, (0, box[1], self.size[0], box[3])
-            )
-            im = im.resize(size, resample, (box[0], 0, box[2], size[1]))
-        else:
-            im = self.im.resize(size, resample, box)
-        return self._new(im)
+        return self._new(self.im.resize(size, resample, box))
 
     def reduce(
         self,

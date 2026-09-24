@@ -36,6 +36,7 @@ jobs:
           "ubuntu-latest",
         ]
         python-version: [
+          "pypy3.12",
           "pypy3.11",
           "3.15t",
           "3.15",

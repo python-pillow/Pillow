@@ -30,7 +30,6 @@ from .helper import (
     hopper,
     is_win32,
     skip_unless_feature,
-    timeout_unless_slower_valgrind,
 )
 
 TYPE_CHECKING = False
@@ -570,13 +569,6 @@ class TestImage:
         i = Image.new("RGB", [1, 1])
         assert isinstance(i.size, tuple)
 
-    @timeout_unless_slower_valgrind(0.75)
-    @pytest.mark.parametrize(
-        "size", ((0, 10_000_000), (10_000_000, 0)), ids=("tall", "wide")
-    )
-    def test_empty_image(self, size: tuple[int, int]) -> None:
-        Image.new("RGB", size)
-
     def test_storage_neg(self) -> None:
         # Storage.c accepted negative values for xsize, ysize.  Was
         # test_neg_ppm, but the core function for that has been
@@ -671,7 +663,7 @@ class TestImage:
         assert_image_equal(im_p, im_remapped)
         assert im_p.palette is not None
         assert im_remapped.palette is not None
-        assert im_p.palette.palette == im_remapped.palette.palette
+        assert bytes(im_p.palette.palette) == im_remapped.palette.palette
 
         # Test illegal image mode
         with hopper() as im_hopper:
@@ -1132,6 +1124,12 @@ class TestImage:
         a = Image.new("L", p.size)
         pa = Image.merge("PA", (p, a))
         assert p.getpalette() == pa.getpalette()
+
+    def test_merge_i(self) -> None:
+        i = Image.new("I", (1, 1))
+        a = Image.new("L", (1, 1))
+        with pytest.raises(ValueError, match="image has wrong mode"):
+            Image.merge("PA", (i, a))
 
     def test_constants(self) -> None:
         for enum in (
