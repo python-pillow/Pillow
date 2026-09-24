@@ -11,6 +11,7 @@ For more extensive info, see the [Windows build instructions](build.rst).
 * Requires Microsoft Visual Studio 2017 or newer with C++ component.
 * Requires NASM for libjpeg-turbo, a required dependency when using this script.
 * Requires CMake 3.15 or newer (available as Visual Studio component).
+* Requires Rust for libimagequant; skip it with `--no-imagequant`.
 * Tested on Windows Server 2025 and 2022 with Visual Studio 2022 Enterprise (GitHub
   Actions).
 
