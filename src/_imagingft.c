@@ -119,7 +119,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     FontObject *self;
     int error = 0;
 
-    char *filename = NULL;
+    PyBytesObject *filename_bytes = NULL;
     float size;
     FT_Size_RequestRec req;
     FT_Long width;
@@ -137,35 +137,13 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
         return NULL;
     }
 
-#if PY_MAJOR_VERSION > 3 || PY_MINOR_VERSION > 11
-    PyConfig config;
-    PyConfig_InitPythonConfig(&config);
     if (!PyArg_ParseTupleAndKeywords(
             args,
             kw,
-            "etf|nsy#n",
+            "O&f|nsy#n",
             kwlist,
-            config.filesystem_encoding,
-            &filename,
-            &size,
-            &index,
-            &encoding,
-            &font_bytes,
-            &font_bytes_size,
-            &layout_engine
-        )) {
-        PyConfig_Clear(&config);
-        return NULL;
-    }
-    PyConfig_Clear(&config);
-#else
-    if (!PyArg_ParseTupleAndKeywords(
-            args,
-            kw,
-            "etf|nsy#n",
-            kwlist,
-            Py_FileSystemDefaultEncoding,
-            &filename,
+            PyUnicode_FSConverter,
+            &filename_bytes,
             &size,
             &index,
             &encoding,
@@ -175,13 +153,11 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
         )) {
         return NULL;
     }
-#endif
+    const char *filename = PyBytes_AS_STRING(filename_bytes);
 
     self = PyObject_New(FontObject, &Font_Type);
     if (!self) {
-        if (filename) {
-            PyMem_Free(filename);
-        }
+        Py_DECREF(filename_bytes);
         return NULL;
     }
 
@@ -229,19 +205,18 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
             FT_MAKE_TAG(encoding[0], encoding[1], encoding[2], encoding[3]);
         error = FT_Select_Charmap(self->face, encoding_tag);
     }
-    if (filename) {
-        PyMem_Free(filename);
-    }
 
     if (error) {
         if (self->font_bytes) {
             PyMem_Free(self->font_bytes);
             self->font_bytes = NULL;
         }
+        Py_DECREF(filename_bytes);
         Py_DECREF(self);
         return geterror(error);
     }
 
+    Py_DECREF(filename_bytes);
     return (PyObject *)self;
 }
 
