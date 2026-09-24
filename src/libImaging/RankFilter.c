@@ -65,6 +65,26 @@ RankFLOAT32(FLOAT32 a[], int n, int k) {
     RANK_INNER_BODY(FLOAT32);
 }
 
+#define RANK_MIN(a, b) ((a) < (b) ? (a) : (b))
+#define RANK_MAX(a, b) ((a) < (b) ? (b) : (a))
+
+#define MINMAX_BODY(type, op)                                     \
+    do {                                                          \
+        for (int y = 0; y < ysize; y++) {                         \
+            type *out = (type *)imOut->image[y];                  \
+            memcpy(out, im->image[y], xsize * sizeof(type));      \
+            for (int i = 0; i < size; i++) {                      \
+                const type *row = (const type *)im->image[y + i]; \
+                for (int k = (i == 0); k < size; k++) {           \
+                    const type *in = row + k;                     \
+                    for (int x = 0; x < xsize; x++) {             \
+                        out[x] = op(out[x], in[x]);               \
+                    }                                             \
+                }                                                 \
+            }                                                     \
+        }                                                         \
+    } while (0)
+
 Imaging
 ImagingRankFilter(Imaging im, int size, int rank) {
     Imaging imOut = NULL;
@@ -99,7 +119,7 @@ ImagingRankFilter(Imaging im, int size, int rank) {
 
     /* malloc check ok, checked above */
     // restrict safe: buf is a private allocation, imOut is a fresh allocation.
-#define RANK_BODY(type)                                                   \
+#define RANK_BODY(type, rank_fn)                                          \
     do {                                                                  \
         type *restrict buf = malloc(size2 * sizeof(type));                \
         if (!buf) {                                                       \
@@ -115,18 +135,29 @@ ImagingRankFilter(Imaging im, int size, int rank) {
                         *p++ = row[k];                                    \
                     }                                                     \
                 }                                                         \
-                out[x] = Rank##type(buf, size2, rank);                    \
+                out[x] = rank_fn(buf, size2, rank);                       \
             }                                                             \
         }                                                                 \
         free(buf);                                                        \
     } while (0)
 
+#define RANK_DISPATCH(type)              \
+    do {                                 \
+        if (rank == 0) {                 \
+            MINMAX_BODY(type, RANK_MIN); \
+        } else if (rank == size2 - 1) {  \
+            MINMAX_BODY(type, RANK_MAX); \
+        } else {                         \
+            RANK_BODY(type, Rank##type); \
+        }                                \
+    } while (0)
+
     if (im->image8) {
-        RANK_BODY(UINT8);
+        RANK_DISPATCH(UINT8);
     } else if (im->type == IMAGING_TYPE_INT32) {
-        RANK_BODY(INT32);
+        RANK_DISPATCH(INT32);
     } else if (im->type == IMAGING_TYPE_FLOAT32) {
-        RANK_BODY(FLOAT32);
+        RANK_DISPATCH(FLOAT32);
     } else {
         /* safety net (we shouldn't end up here) */
         ImagingDelete(imOut);
