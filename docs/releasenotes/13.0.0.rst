@@ -197,4 +197,4 @@ image, rather than the alpha band.
 Faster image comparison
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Comparing two images with ``==`` no longer copies both images out to ``bytes`` first.
+Comparing two images with ``==`` was made faster by reducing data copying.
