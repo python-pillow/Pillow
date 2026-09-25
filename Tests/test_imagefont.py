@@ -521,6 +521,21 @@ def test_load_when_image_not_found() -> None:
     assert str(e.value) == f"cannot find glyph data file {root}.{{gif|pbm|png}}"
 
 
+@pytest.mark.parametrize("filename", ("10x20.pil", b"10x20.pil", Path("10x20.pil")))
+def test_load_path(
+    monkeypatch: pytest.MonkeyPatch, filename: str | bytes | Path
+) -> None:
+    # Arrange
+    monkeypatch.syspath_prepend("Tests/fonts")
+
+    # Act
+    font = ImageFont.load_path(filename)
+
+    # Assert
+    assert isinstance(font, ImageFont.ImageFont)
+    assert font.getlength("hello") == 50
+
+
 def test_load_path_not_found() -> None:
     # Arrange
     filename = "somefilenamethatdoesntexist.ttf"

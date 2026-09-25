@@ -941,7 +941,7 @@ def truetype(
         raise
 
 
-def load_path(filename: str | bytes) -> ImageFont:
+def load_path(filename: StrOrBytesPath) -> ImageFont:
     """
     Load font file. Same as :py:func:`~PIL.ImageFont.load`, but searches for a
     bitmap font along the Python path.
@@ -950,8 +950,7 @@ def load_path(filename: str | bytes) -> ImageFont:
     :return: A font object.
     :exception OSError: If the file could not be read.
     """
-    if not isinstance(filename, str):
-        filename = filename.decode("utf-8")
+    filename = os.fsdecode(filename)
     for directory in sys.path:
         try:
             return load(os.path.join(directory, filename))
