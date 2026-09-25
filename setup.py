@@ -89,6 +89,7 @@ _LIB_IMAGING = (
     "Chops",
     "ColorLUT",
     "Convert",
+    "ConvertToPalette",
     "ConvertYCbCr",
     "Copy",
     "Crop",
