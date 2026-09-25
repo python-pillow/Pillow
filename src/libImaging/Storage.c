@@ -342,7 +342,7 @@ ImagingMemoryClearCache(ImagingMemoryArena arena, int new_size) {
     }
 }
 
-ImagingMemoryBlock
+static ImagingMemoryBlock
 memory_get_block(ImagingMemoryArena arena, int requested_size, int dirty) {
     ImagingMemoryBlock block = {NULL, 0};
 
@@ -379,7 +379,7 @@ memory_get_block(ImagingMemoryArena arena, int requested_size, int dirty) {
     return block;
 }
 
-void
+static void
 memory_return_block(ImagingMemoryArena arena, ImagingMemoryBlock block) {
     if (arena->blocks_cached < arena->blocks_max) {
         // Reduce block size
@@ -413,7 +413,7 @@ ImagingDestroyArray(Imaging im) {
     }
 }
 
-Imaging
+static Imaging
 ImagingAllocateArray(Imaging im, ImagingMemoryArena arena, int dirty, int block_size) {
     int y, line_in_block, current_block;
     ImagingMemoryBlock block = {NULL, 0};
@@ -490,7 +490,7 @@ ImagingDestroyBlock(Imaging im) {
     }
 }
 
-Imaging
+static Imaging
 ImagingAllocateBlock(Imaging im) {
     Py_ssize_t y, i;
 
@@ -536,7 +536,7 @@ ImagingDestroyArrow(Imaging im) {
     }
 }
 
-int
+static int
 ImagingBorrowArrow(
     Imaging im,
     struct ArrowArray *external_array,
@@ -579,7 +579,7 @@ ImagingBorrowArrow(
  * Create a new, internally allocated, image.
  */
 
-Imaging
+static Imaging
 ImagingNewInternal(const ModeID mode, int xsize, int ysize, int dirty) {
     Imaging im;
 
