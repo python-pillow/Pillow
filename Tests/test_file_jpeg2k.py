@@ -448,6 +448,51 @@ def test_channel_definitions_sycc() -> None:
         assert_image_equal(reloaded, im.convert("RGB"))
 
 
+@skip_unless_feature_version(
+    "jpg_2000", "2.5.1", "sYCC is only identified from the header since OpenJPEG 2.5.1"
+)
+@pytest.mark.parametrize(
+    "order, channels",
+    (
+        ((0, 1, 2, 3), ((0, 0, 1), (1, 0, 2), (2, 0, 3), (3, 1, 0))),
+        ((3, 0, 1, 2), ((0, 1, 0), (1, 0, 1), (2, 0, 2), (3, 0, 3))),
+    ),
+)
+def test_channel_definitions_sycc_alpha(
+    order: tuple[int, ...], channels: tuple[tuple[int, int, int], ...]
+) -> None:
+    im = hopper("RGBA")
+    alpha = im.getchannel("A").point(lambda value: value * 7 % 256)
+    ycbcr = im.convert("RGB").convert("YCbCr")
+    bands = (*ycbcr.split(), alpha)
+    stored = Image.merge("RGBA", [bands[i] for i in order])
+    out = BytesIO()
+    stored.save(out, "JPEG2000", mct=0)
+    data = _set_channel_definitions(out.getvalue(), channels, enumcs=18)
+
+    with Image.open(BytesIO(data)) as reloaded:
+        assert reloaded.mode == "RGBA"
+        assert_image_equal(reloaded.getchannel("A"), alpha)
+        assert_image_equal(reloaded.convert("RGB"), ycbcr.convert("RGB"))
+
+
+def test_subsampled_ycbcr_codestream() -> None:
+    # A J2K codestream has no color space, so components with subsampled chroma
+    # are decoded as YCbCr. The chroma of this image is subsampled horizontally.
+    im = hopper("YCbCr").resize((64, 64), Image.Resampling.BOX)
+    y, cb, cr = im.split()
+    chroma = [
+        band.resize((32, 64), Image.Resampling.BOX).resize(
+            (64, 64), Image.Resampling.NEAREST
+        )
+        for band in (cb, cr)
+    ]
+    expected = Image.merge("YCbCr", (y, *chroma)).convert("RGB")
+
+    with Image.open("Tests/images/ycbcr_422.j2k") as reloaded:
+        assert_image_equal(reloaded, expected)
+
+
 @pytest.mark.parametrize(
     "channels",
     (
