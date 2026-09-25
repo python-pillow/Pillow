@@ -248,6 +248,22 @@ def test_save_append_images(tmp_path: Path) -> None:
         assert_image_equal(reread, provided_im)
 
 
+def test_save_append_images_unmatched_size(tmp_path: Path) -> None:
+    # A size without a matching image in append_images should be scaled down
+    # from the original image, not from one of the appended images
+    im = hopper("RGBA")
+    provided_im = Image.new("RGBA", (32, 32), (255, 0, 0))
+    outfile = tmp_path / "temp_saved_multi_icon.ico"
+    im.save(outfile, sizes=[(16, 16), (32, 32)], append_images=[provided_im])
+
+    expected = hopper("RGBA")
+    expected.thumbnail((16, 16), Image.Resampling.LANCZOS, reducing_gap=None)
+    with Image.open(outfile) as reread:
+        assert isinstance(reread, IcoImagePlugin.IcoImageFile)
+        reread.size = (16, 16)
+        assert_image_equal(reread, expected)
+
+
 def test_unexpected_size() -> None:
     # This image has been manually hexedited to state that it is 16x32
     # while the image within is still 16x16

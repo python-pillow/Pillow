@@ -96,7 +96,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             break
         else:
             # TODO: invent a more convenient method for proportional scalings
-            frame = provided_im.copy()
+            frame = im.copy()
             frame.thumbnail(size, Image.Resampling.LANCZOS, reducing_gap=None)
             frames.append(frame)
     if not frames:
