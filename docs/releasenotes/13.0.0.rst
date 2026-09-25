@@ -178,6 +178,12 @@ Preserved transparency when padding or expanding images in ImageOps
 pixels in L, P and RGB images previously became opaque when a border was added.
 New palette colors are allocated without using reserved transparency entries.
 
+Drawing on I;16B images
+^^^^^^^^^^^^^^^^^^^^^^^
+
+When drawing on an ``I;16B`` image, some drawing methods wrote in the wrong byte order.
+All drawing operations now use the byte order of the image mode.
+
 Restore image position if ImageSequence.all_frames() fails
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
