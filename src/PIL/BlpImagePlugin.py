@@ -351,21 +351,21 @@ class _BLPBaseDecoder(abc.ABC, ImageFile.PyDecoder):
 
 class BLP1Decoder(_BLPBaseDecoder):
     def _load(self) -> None:
-        self._compression, self._encoding, alpha = self.args
+        _compression, _encoding, alpha = self.args
 
-        if self._compression == Format.JPEG:
+        if _compression == Format.JPEG:
             self._decode_jpeg_stream()
 
-        elif self._compression == 1:
-            if self._encoding in (4, 5):
+        elif _compression == 1:
+            if _encoding in (4, 5):
                 palette = self._read_palette()
                 data = self._read_bgra(palette, alpha)
                 self.set_as_raw(data)
             else:
-                msg = f"Unsupported BLP encoding {repr(self._encoding)}"
+                msg = f"Unsupported BLP encoding {repr(_encoding)}"
                 raise BLPFormatError(msg)
         else:
-            msg = f"Unsupported BLP compression {repr(self._encoding)}"
+            msg = f"Unsupported BLP compression {repr(_encoding)}"
             raise BLPFormatError(msg)
 
     def _decode_jpeg_stream(self) -> None:
@@ -388,47 +388,47 @@ class BLP1Decoder(_BLPBaseDecoder):
 
 class BLP2Decoder(_BLPBaseDecoder):
     def _load(self) -> None:
-        self._compression, self._encoding, alpha, self._alpha_encoding = self.args
+        _compression, _encoding, alpha, _alpha_encoding = self.args
 
         palette = self._read_palette()
 
         assert self.fd is not None
         self.fd.seek(self._offsets[0])
 
-        if self._compression == 1:
+        if _compression == 1:
             # Uncompressed or DirectX compression
 
-            if self._encoding == Encoding.UNCOMPRESSED:
+            if _encoding == Encoding.UNCOMPRESSED:
                 data = self._read_bgra(palette, alpha)
 
-            elif self._encoding == Encoding.DXT:
+            elif _encoding == Encoding.DXT:
                 data = bytearray()
-                if self._alpha_encoding == AlphaEncoding.DXT1:
+                if _alpha_encoding == AlphaEncoding.DXT1:
                     linesize = (self.state.xsize + 3) // 4 * 8
                     for yb in range((self.state.ysize + 3) // 4):
                         for d in decode_dxt1(self._safe_read(linesize), alpha):
                             data += d
 
-                elif self._alpha_encoding == AlphaEncoding.DXT3:
+                elif _alpha_encoding == AlphaEncoding.DXT3:
                     linesize = (self.state.xsize + 3) // 4 * 16
                     for yb in range((self.state.ysize + 3) // 4):
                         for d in decode_dxt3(self._safe_read(linesize)):
                             data += d
 
-                elif self._alpha_encoding == AlphaEncoding.DXT5:
+                elif _alpha_encoding == AlphaEncoding.DXT5:
                     linesize = (self.state.xsize + 3) // 4 * 16
                     for yb in range((self.state.ysize + 3) // 4):
                         for d in decode_dxt5(self._safe_read(linesize)):
                             data += d
                 else:
-                    msg = f"Unsupported alpha encoding {repr(self._alpha_encoding)}"
+                    msg = f"Unsupported alpha encoding {repr(_alpha_encoding)}"
                     raise BLPFormatError(msg)
             else:
-                msg = f"Unknown BLP encoding {repr(self._encoding)}"
+                msg = f"Unknown BLP encoding {repr(_encoding)}"
                 raise BLPFormatError(msg)
 
         else:
-            msg = f"Unknown BLP compression {repr(self._compression)}"
+            msg = f"Unknown BLP compression {repr(_compression)}"
             raise BLPFormatError(msg)
 
         self.set_as_raw(data)
