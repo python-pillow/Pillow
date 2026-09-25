@@ -1348,10 +1348,8 @@ class TiffImageFile(ImageFile.ImageFile):
             msg = "Not exactly one tile"
             raise OSError(msg)
 
-        # (self._compression, (extents tuple),
-        #   0, (rawmode, self._compression, fp))
-        extents = self.tile[0][1]
-        args = self.tile[0][3]
+        extents = self.tile[0].extents
+        args = self.tile[0].args
 
         # To be nice on memory footprint, if there's a
         # file descriptor, use that instead of reading
@@ -1372,7 +1370,7 @@ class TiffImageFile(ImageFile.ImageFile):
         if fp:
             assert isinstance(args, tuple)
             args_list = list(args)
-            args_list[2] = fp
+            args_list[1] = fp
             args = tuple(args_list)
 
         decoder = Image._getdecoder(self.mode, "libtiff", args, self.decoderconfig)
@@ -1614,7 +1612,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
             # Offset in the tile tuple is 0, we go from 0,0 to
             # w,h, and we only do this once -- eds
-            a = (rawmode, self._compression, False, self.tag_v2.offset)
+            a = (rawmode, False, self.tag_v2.offset)
             self.tile.append(ImageFile._Tile("libtiff", (0, 0, xsize, ysize), 0, a))
 
         elif STRIPOFFSETS in self.tag_v2 or TILEOFFSETS in self.tag_v2:
@@ -1996,7 +1994,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # pseudo tag requires that the COMPRESS tag was already set.
         tags = list(atts.items())
         tags.sort()
-        a = (rawmode, compression, _fp, filename, tags, types)
+        a = (rawmode, _fp, filename, tags, types)
         encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
         encoder.setimage(im.im, (0, 0, *im.size))
         while True:

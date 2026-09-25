@@ -249,7 +249,6 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
                 break; /* ignored */
             default:
                 /* unknown chunk */
-                /* printf("unknown FLI/FLC chunk: %d\n", I16(ptr+4)); */
                 state->errcode = IMAGING_CODEC_UNKNOWN;
                 return -1;
         }

@@ -102,8 +102,6 @@
 #include <math.h>
 #include <stddef.h>
 
-#undef VERBOSE
-
 #define B16(p, i) ((((int)p[(i)]) << 8) + p[(i) + 1])
 #define L16(p, i) ((((int)p[(i) + 1]) << 8) + p[(i)])
 #define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
@@ -166,10 +164,6 @@ PyImagingNew(Imaging imOut) {
         return NULL;
     }
 
-#ifdef VERBOSE
-    printf("imaging %p allocated\n", imagep);
-#endif
-
     imagep->image = imOut;
     imagep->access = ImagingAccessNew(imOut);
 
@@ -178,10 +172,6 @@ PyImagingNew(Imaging imOut) {
 
 static void
 _dealloc(ImagingObject *imagep) {
-#ifdef VERBOSE
-    printf("imaging %p deleted\n", imagep);
-#endif
-
     if (imagep->access) {
         ImagingAccessDelete(imagep->image, imagep->access);
     }
