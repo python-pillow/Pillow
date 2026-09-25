@@ -923,9 +923,7 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(filename) as im:
             assert im.mode == "RGB"
             assert im.size == (256, 256)
-            assert im.tile == [
-                ("libtiff", (0, 0, 256, 256), 0, ("RGB", "jpeg", False, 5122))
-            ]
+            assert im.tile == [("libtiff", (0, 0, 256, 256), 0, ("RGB", False, 5122))]
             im.load()
 
             assert_image_equal_tofile(im, "Tests/images/pil168.png")
@@ -1138,7 +1136,7 @@ class TestFileLibTiff(LibTiffTestCase):
                 "tiff_wrong_bits_per_sample_3.tiff",
                 "RGBA",
                 (512, 256),
-                [("libtiff", (0, 0, 512, 256), 0, ("RGBA", "tiff_lzw", False, 48782))],
+                [("libtiff", (0, 0, 512, 256), 0, ("RGBA", False, 48782))],
             ),
         ],
     )
