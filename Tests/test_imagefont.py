@@ -496,6 +496,14 @@ def test_stroke_mask() -> None:
     assert mask.getpixel((42, 5)) == 255
 
 
+@pytest.mark.parametrize("filename_type", (str, Path))
+def test_load(filename_type: type[str | Path]) -> None:
+    font = ImageFont.load(filename_type("Tests/fonts/10x20.pil"))
+
+    assert isinstance(font, ImageFont.ImageFont)
+    assert font.getlength("hello") == 50
+
+
 def test_load_invalid_file() -> None:
     with pytest.raises(SyntaxError, match="Not a PILfont file"):
         ImageFont.load("Tests/images/1_trns.png")

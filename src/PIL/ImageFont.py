@@ -121,7 +121,7 @@ class ImageFont(BaseImageFont):
 
     font: ImagingFont
 
-    def _load_pilfont(self, filename: str) -> None:
+    def _load_pilfont(self, filename: str | os.PathLike[str]) -> None:
         with open(filename, "rb") as fp:
             image: ImageFile.ImageFile | None = None
             root = os.path.splitext(filename)[0]
@@ -794,7 +794,7 @@ class TransposedFont(BaseImageFont):
         return self.font.getlength(text, *args, **kwargs)
 
 
-def load(filename: str) -> ImageFont:
+def load(filename: str | os.PathLike[str]) -> ImageFont:
     """
     Load a font file. This function loads a font object from the given
     bitmap font file, and returns the corresponding font object. For loading TrueType
