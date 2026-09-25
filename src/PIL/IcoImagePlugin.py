@@ -95,8 +95,18 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                         bits_used.append(bits)
             break
         else:
+            # Scale down from the smallest provided image that still covers this size
+            source = min(
+                (
+                    provided_im
+                    for provided_im in provided_ims
+                    if provided_im.width >= size[0] and provided_im.height >= size[1]
+                ),
+                key=lambda provided_im: provided_im.width * provided_im.height,
+                default=im,
+            )
             # TODO: invent a more convenient method for proportional scalings
-            frame = provided_im.copy()
+            frame = source.copy()
             frame.thumbnail(size, Image.Resampling.LANCZOS, reducing_gap=None)
             frames.append(frame)
     if not frames:
