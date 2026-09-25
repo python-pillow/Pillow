@@ -76,7 +76,7 @@ def test_sanity_error(mode: str) -> None:
 
 def test_noop_on_small_images() -> None:
     # If image is smaller than the kernel size, return it as-is.
-    kernel_size: tuple[int, int] = ImageFilter.SMOOTH_MORE.filterargs[0]
+    kernel_size: tuple[int, int] = ImageFilter.SMOOTH_MORE.filterargs.size
     kernel_w, kernel_h = kernel_size
     for w in range(1, kernel_w):
         for h in range(1, kernel_h):
