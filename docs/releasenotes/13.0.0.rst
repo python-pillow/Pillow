@@ -240,4 +240,4 @@ bytes reinterpreted as image data instead of that layer's actual content.
 Faster image comparison
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Comparing two images with ``==`` no longer copies both images out to ``bytes`` first.
+Comparing two images with ``==`` was made faster by reducing data copying.
