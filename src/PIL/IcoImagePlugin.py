@@ -95,8 +95,21 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                         bits_used.append(bits)
             break
         else:
+            # Scale down from the smallest provided image that still covers this
+            # size, so that an icon drawn for a nearby size is preferred over
+            # shrinking a much larger one. The original image always qualifies,
+            # since sizes larger than it are skipped above.
+            source = min(
+                (
+                    candidate
+                    for candidate in provided_ims
+                    if candidate.width >= size[0] and candidate.height >= size[1]
+                ),
+                key=lambda candidate: candidate.width * candidate.height,
+                default=im,
+            )
             # TODO: invent a more convenient method for proportional scalings
-            frame = im.copy()
+            frame = source.copy()
             frame.thumbnail(size, Image.Resampling.LANCZOS, reducing_gap=None)
             frames.append(frame)
     if not frames:

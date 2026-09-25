@@ -249,12 +249,31 @@ def test_save_append_images(tmp_path: Path) -> None:
 
 
 def test_save_append_images_unmatched_size(tmp_path: Path) -> None:
-    # A size without a matching image in append_images should be scaled down
-    # from the original image, not from one of the appended images
+    # A size without a matching image is scaled down from the smallest provided
+    # image that still covers it, whichever order the images are given in
     im = hopper("RGBA")
-    provided_im = Image.new("RGBA", (32, 32), (255, 0, 0))
+    red = Image.new("RGBA", (32, 32), (255, 0, 0))
+    blue = Image.new("RGBA", (64, 64), (0, 0, 255))
+
+    expected = red.copy()
+    expected.thumbnail((16, 16), Image.Resampling.LANCZOS, reducing_gap=None)
+
+    for append_images in ([red, blue], [blue, red]):
+        outfile = tmp_path / "temp_saved_multi_icon.ico"
+        im.save(outfile, sizes=[(16, 16), (32, 32)], append_images=append_images)
+
+        with Image.open(outfile) as reread:
+            assert isinstance(reread, IcoImagePlugin.IcoImageFile)
+            reread.size = (16, 16)
+            assert_image_equal(reread, expected)
+
+
+def test_save_append_images_none_large_enough(tmp_path: Path) -> None:
+    # The original image is used when no appended image covers the size
+    im = hopper("RGBA")
+    provided_im = Image.new("RGBA", (8, 8), (255, 0, 0))
     outfile = tmp_path / "temp_saved_multi_icon.ico"
-    im.save(outfile, sizes=[(16, 16), (32, 32)], append_images=[provided_im])
+    im.save(outfile, sizes=[(16, 16)], append_images=[provided_im])
 
     expected = hopper("RGBA")
     expected.thumbnail((16, 16), Image.Resampling.LANCZOS, reducing_gap=None)
