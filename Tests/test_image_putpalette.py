@@ -56,6 +56,11 @@ def test_imagepalette() -> None:
     im.putpalette(ImagePalette.wedge())
     assert_image_equal_tofile(im.convert("RGB"), "Tests/images/palette_wedge.png")
 
+    # Check that rawmode is ignored
+    im.putpalette(ImagePalette.wedge(), "RGBA")
+    assert im.palette is not None
+    assert im.palette.mode == "RGB"
+
 
 def test_putpalette_with_alpha_values() -> None:
     with Image.open("Tests/images/transparent.gif") as im:

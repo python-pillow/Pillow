@@ -1145,7 +1145,7 @@ class Image:
                     trns_im = new(self.mode, (1, 1))
                     if self.mode == "P":
                         assert self.palette is not None
-                        trns_im.putpalette(self.palette, self.palette.mode)
+                        trns_im.putpalette(self.palette)
                         if isinstance(t, tuple):
                             err = "Couldn't allocate a palette color for transparency"
                             assert trns_im.palette is not None
@@ -2151,9 +2151,10 @@ class Image:
 
         Alternatively, an 8-bit string may be used instead of an integer sequence.
 
-        :param data: A palette sequence (either a list or a string).
+        :param data: A palette sequence (either a list or a string) or an ImagePalette.
         :param rawmode: The raw mode of the palette. Either "RGB", "RGBA", "CMYK", or a
            mode that can be transformed to one of those modes (e.g. "R", "RGBA;L").
+           Ignored if ``data`` is an ImagePalette.
         """
         from . import ImagePalette
 
@@ -2161,15 +2162,16 @@ class Image:
             msg = "illegal image mode"
             raise ValueError(msg)
         if isinstance(data, ImagePalette.ImagePalette):
-            palette = ImagePalette.raw(data.rawmode or "RGB", data.palette)
+            palette = data.copy()
+            palette.dirty = 1
         else:
             palette = ImagePalette.raw(rawmode, data)
+            if rawmode.startswith("CMYK"):
+                palette.mode = "CMYK"
+            elif "A" in rawmode:
+                palette.mode = "RGBA"
         self._mode = "PA" if "A" in self.mode else "P"
         self.palette = palette
-        if rawmode.startswith("CMYK"):
-            self.palette.mode = "CMYK"
-        elif "A" in rawmode:
-            self.palette.mode = "RGBA"
         self.load()  # install new palette
 
     def putpixel(
