@@ -408,6 +408,37 @@ getbands(const ModeID mode) {
 #define TYPE_FLOAT32 (0x300 | sizeof(FLOAT32))
 #define TYPE_DOUBLE (0x400 | sizeof(double))
 
+/**
+ * Get item i of a PySequence_Fast view `seq`,
+ * safely if the sequence is mutated by re-entrant user code.
+ *
+ * Coercing an exact int or float cannot run user code,
+ * so those are returned (and `owned` is set to zero).
+ *
+ * Anything else is returned as a new reference (*owned = 1)
+ * so it survives the sequence being mutated while the caller coerces it.
+ *
+ * For free-threading builds, the caller must hold a critical section on the
+ * sequence originally passed to PySequence_Fast().
+ *
+ * @return The item, or NULL with RuntimeError set if the sequence has shrunk
+ *         to i items or fewer.
+ */
+static PyObject *
+fast_sequence_item(PyObject *seq, Py_ssize_t i, int *owned) {
+    if (i >= PySequence_Fast_GET_SIZE(seq)) {
+        PyErr_SetString(PyExc_RuntimeError, "sequence changed size during iteration");
+        return NULL;
+    }
+    PyObject *op = PySequence_Fast_GET_ITEM(seq, i);
+    if (PyFloat_CheckExact(op) || PyLong_CheckExact(op)) {
+        *owned = 0;
+        return op;
+    }
+    *owned = 1;
+    return Py_NewRef(op);
+}
+
 static void *
 getlist_impl(PyObject *arg, Py_ssize_t length, const char *wrong_length, int type) {
     /* - allocates and returns a c array of the items in the Python sequence arg.
@@ -459,7 +490,11 @@ getlist_impl(PyObject *arg, Py_ssize_t length, const char *wrong_length, int typ
     }
 
     for (i = 0; i < n; i++) {
-        op = PySequence_Fast_GET_ITEM(seq, i);
+        int owned;
+        op = fast_sequence_item(seq, i, &owned);
+        if (op == NULL) {
+            break;  // PyErr_Occurred() will have been set
+        }
         // DRY, branch prediction is going to work _really_ well
         // on this switch. And 3 fewer loops to copy/paste.
         switch (type) {
@@ -479,6 +514,12 @@ getlist_impl(PyObject *arg, Py_ssize_t length, const char *wrong_length, int typ
                 dtemp = PyFloat_AsDouble(op);
                 memcpy(list + i * sizeof(dtemp), &dtemp, sizeof(dtemp));
                 break;
+        }
+        if (owned) {
+            Py_DECREF(op);
+        }
+        if (PyErr_Occurred()) {
+            break;
         }
     }
 
@@ -1651,28 +1692,53 @@ _point_transform(ImagingObject *self, PyObject *args) {
     return PyImagingNew(ImagingPointTransform(self->image, scale, offset));
 }
 
+/**
+ * Fetch item i of a PySequence_Fast view `seq` as a scalar value for _putdata().
+ *
+ * The caller must hold a critical section on the original sequence.
+ *
+ * @return 0 on success (storing the coerced value in *value),
+ *         -1 on error with a Python exception set.
+ */
+static int
+putdata_value(PyObject *seq, Py_ssize_t i, double *value) {
+    int owned;
+    PyObject *op = fast_sequence_item(seq, i, &owned);
+    if (op == NULL) {
+        return -1;
+    }
+    if (owned) {  // Not a built-in float or int
+        if (PySequence_Check(op)) {
+            Py_DECREF(op);
+            PyErr_SetString(PyExc_TypeError, "sequence must be flattened");
+            return -1;
+        }
+        // User code like `__float__` may run here
+        *value = PyFloat_AsDouble(op);
+        Py_DECREF(op);
+    } else if (PyFloat_CheckExact(op)) {  // Exact float
+        *value = PyFloat_AS_DOUBLE(op);
+        return 0;
+    } else {  // Exact int
+        *value = PyLong_AsDouble(op);
+    }
+    if (*value == -1.0 && PyErr_Occurred()) {
+        return -1;
+    }
+    return 0;
+}
+
 static PyObject *
-_putdata(ImagingObject *self, PyObject *args) {
-    Imaging image;
+_putdata_impl(Imaging image, PyObject *data, double scale, double offset) {
     // i & n are # pixels, require py_ssize_t. x can be as large as n. y, just because.
     Py_ssize_t n, i, x, y;
 
-    PyObject *data;
     PyObject *seq = NULL;
-    PyObject *op;
-    double scale = 1.0;
-    double offset = 0.0;
-
-    if (!PyArg_ParseTuple(args, "O|dd", &data, &scale, &offset)) {
-        return NULL;
-    }
 
     if (!PySequence_Check(data)) {
         PyErr_SetString(PyExc_TypeError, must_be_sequence);
         return NULL;
     }
-
-    image = self->image;
 
     if (image->image8 && PyBytes_Check(data)) {
         n = PyBytes_GET_SIZE(data);
@@ -1697,19 +1763,6 @@ _putdata(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-#define set_value_to_item(seq, i)                                       \
-    op = PySequence_Fast_GET_ITEM(seq, i);                              \
-    if (PySequence_Check(op)) {                                         \
-        Py_DECREF(seq);                                                 \
-        PyErr_SetString(PyExc_TypeError, "sequence must be flattened"); \
-        return NULL;                                                    \
-    } else {                                                            \
-        value = PyFloat_AsDouble(op);                                   \
-        if (value == -1.0 && PyErr_Occurred()) {                        \
-            Py_DECREF(seq);                                             \
-            return NULL;                                                \
-        }                                                               \
-    }
     if (image->image8) {
         if (PyBytes_Check(data)) {
             unsigned char *p;
@@ -1747,7 +1800,10 @@ _putdata(ImagingObject *self, PyObject *args) {
                 }
             }
             for (i = x = y = 0; i < n; i++) {
-                set_value_to_item(seq, i);
+                if (putdata_value(seq, i, &value) < 0) {
+                    Py_DECREF(seq);
+                    return NULL;
+                }
                 if (scale != 1.0 || offset != 0.0) {
                     value = value * scale + offset;
                 }
@@ -1770,7 +1826,10 @@ _putdata(ImagingObject *self, PyObject *args) {
             case IMAGING_TYPE_INT32:
                 for (i = x = y = 0; i < n; i++) {
                     double value;
-                    set_value_to_item(seq, i);
+                    if (putdata_value(seq, i, &value) < 0) {
+                        Py_DECREF(seq);
+                        return NULL;
+                    }
                     IMAGING_PIXEL_INT32(image, x, y) = (INT32)(value * scale + offset);
                     if (++x >= (int)image->xsize) {
                         x = 0, y++;
@@ -1780,7 +1839,10 @@ _putdata(ImagingObject *self, PyObject *args) {
             case IMAGING_TYPE_FLOAT32:
                 for (i = x = y = 0; i < n; i++) {
                     double value;
-                    set_value_to_item(seq, i);
+                    if (putdata_value(seq, i, &value) < 0) {
+                        Py_DECREF(seq);
+                        return NULL;
+                    }
                     IMAGING_PIXEL_FLOAT32(image, x, y) =
                         (FLOAT32)(value * scale + offset);
                     if (++x >= (int)image->xsize) {
@@ -1797,8 +1859,21 @@ _putdata(ImagingObject *self, PyObject *args) {
 
                     u.inkint = 0;
 
-                    op = PySequence_Fast_GET_ITEM(seq, i);
-                    if (!op || !getink(op, image, u.ink)) {
+                    int owned;
+                    PyObject *op = fast_sequence_item(seq, i, &owned);
+                    if (op == NULL) {
+                        Py_DECREF(seq);
+                        return NULL;
+                    }
+                    // `getink()` may run user code (e.g. `__index__`) on tuple
+                    // elements, which is why `fast_sequence_item()` returns those
+                    // as new references. Borrowed exact int/float items cannot
+                    // trigger user code in `getink()`.
+                    char *ink_ok = getink(op, image, u.ink);
+                    if (owned) {
+                        Py_DECREF(op);
+                    }
+                    if (!ink_ok) {
                         Py_DECREF(seq);
                         return NULL;
                     }
@@ -1815,6 +1890,23 @@ _putdata(ImagingObject *self, PyObject *args) {
     Py_XDECREF(seq);
 
     Py_RETURN_NONE;
+}
+
+static PyObject *
+_putdata(ImagingObject *self, PyObject *args) {
+    PyObject *data;
+    double scale = 1.0;
+    double offset = 0.0;
+
+    if (!PyArg_ParseTuple(args, "O|dd", &data, &scale, &offset)) {
+        return NULL;
+    }
+
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(data);
+    result = _putdata_impl(self->image, data, scale, offset);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 static PyObject *
