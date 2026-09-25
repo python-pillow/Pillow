@@ -95,17 +95,14 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                         bits_used.append(bits)
             break
         else:
-            # Scale down from the smallest provided image that still covers this
-            # size, so that an icon drawn for a nearby size is preferred over
-            # shrinking a much larger one. The original image always qualifies,
-            # since sizes larger than it are skipped above.
+            # Scale down from the smallest provided image that still covers this size
             source = min(
                 (
-                    candidate
-                    for candidate in provided_ims
-                    if candidate.width >= size[0] and candidate.height >= size[1]
+                    provided_im
+                    for provided_im in provided_ims
+                    if provided_im.width >= size[0] and provided_im.height >= size[1]
                 ),
-                key=lambda candidate: candidate.width * candidate.height,
+                key=lambda provided_im: provided_im.width * provided_im.height,
                 default=im,
             )
             # TODO: invent a more convenient method for proportional scalings
