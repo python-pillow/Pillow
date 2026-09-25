@@ -681,7 +681,6 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
 
     char *mode_name;
     char *rawmode_name;
-    char *compname;
     char *filename;
     Py_ssize_t fp;
 
@@ -700,15 +699,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     PyObject *item;
 
     if (!PyArg_ParseTuple(
-            args,
-            "sssnsOO",
-            &mode_name,
-            &rawmode_name,
-            &compname,
-            &fp,
-            &filename,
-            &tags,
-            &types
+            args, "ssnsOO", &mode_name, &rawmode_name, &fp, &filename, &tags, &types
         )) {
         return NULL;
     }

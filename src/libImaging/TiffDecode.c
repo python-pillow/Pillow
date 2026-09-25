@@ -523,6 +523,7 @@ ImagingLibTiffDecode(
         lseek(clientstate->fp, 0, SEEK_SET);  // Sometimes, I get it set to the end.
         tiff = TIFFFdOpen(fd_to_tiff_fd(clientstate->fp), filename, mode);
     } else {
+        // Open from string
         tiff = TIFFClientOpen(
             filename,
             mode,
@@ -657,11 +658,13 @@ ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp) {
     state->state = 0;
 
     if (fp) {
+        // Open using fd for writing
         clientstate->tiff = TIFFFdOpen(fd_to_tiff_fd(clientstate->fp), filename, mode);
     } else {
+        // Open a buffer for writing
         // calloc a buffer to write the tif, we're going to need to realloc or something
         // if we need bigger.
-        /* calloc check ok, small constant allocation */
+        // calloc check ok, small constant allocation
         clientstate->data = calloc(bufsize, 1);
         clientstate->size = bufsize;
         clientstate->flrealloc = 1;
@@ -772,6 +775,7 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
     TIFF *tiff = clientstate->tiff;
 
     if (state->state == 0) {
+        // Encoding line by line
         while (state->y < state->ysize) {
             state->shuffle(
                 state->buffer,

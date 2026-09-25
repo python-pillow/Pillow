@@ -509,13 +509,10 @@ PyImaging_LibTiffDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
     char *mode_name;
     char *rawmode_name;
-    char *compname;
     int fp;
     uint32_t ifdoffset;
 
-    if (!PyArg_ParseTuple(
-            args, "sssiI", &mode_name, &rawmode_name, &compname, &fp, &ifdoffset
-        )) {
+    if (!PyArg_ParseTuple(args, "ssiI", &mode_name, &rawmode_name, &fp, &ifdoffset)) {
         return NULL;
     }
 
