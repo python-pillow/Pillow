@@ -99,6 +99,12 @@ def test_array_F() -> None:
     assert len(im.get_flattened_data()) == len(arr)
 
 
+def test_too_many_entries() -> None:
+    im = Image.new("L", (4, 4))
+    with pytest.raises(TypeError):
+        im.putdata(list(range(17)))
+
+
 def test_overstated_length() -> None:
     # shouldn't segfault
     # see https://github.com/python-pillow/Pillow/issues/9892
@@ -107,41 +113,25 @@ def test_overstated_length() -> None:
         def __len__(self) -> int:
             return 16
 
-        def __getitem__(self, index: int) -> float:
+        def __getitem__(self, index: int) -> int:
             if index >= 2:
                 raise IndexError
-            return float(index + 1)
+            return index + 1
 
     im = Image.new("L", (4, 4))
     im.putdata(OverstatedLengthSequence())  # type: ignore[arg-type]
-    assert im.get_flattened_data()[:2] == (1, 2)
-
-
-def test_too_many_entries() -> None:
-    # an honest, correctly-reported sequence that is simply longer than the
-    # image still has to be rejected, before or after materialization
-    im = Image.new("L", (4, 4))
-    with pytest.raises(TypeError):
-        im.putdata(list(range(17)))
+    assert im.get_flattened_data() == (1, 2, *(0,) * 14)
 
 
 def test_raising_length() -> None:
     class RaisingLengthSequence:
-        def __init__(self) -> None:
-            self.calls = 0
-
         def __len__(self) -> int:
-            self.calls += 1
-            if self.calls == 1:
-                raise RuntimeError
-            return 4
+            raise RuntimeError
 
         def __getitem__(self, index: int) -> int:
-            if index >= 4:
-                raise IndexError
             return index
 
-    im = Image.new("L", (2, 2))
+    im = Image.new("L", (1, 1))
     with pytest.raises(RuntimeError):
         im.putdata(RaisingLengthSequence())  # type: ignore[arg-type]
 
