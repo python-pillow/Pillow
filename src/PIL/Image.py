@@ -2110,7 +2110,7 @@ class Image:
 
     def putdata(
         self,
-        data: Sequence[float] | Sequence[Sequence[int]] | core.ImagingCore | NumpyArray,
+        data: Sequence[float] | Sequence[Sequence[int]] | NumpyArray,
         scale: float = 1.0,
         offset: float = 0.0,
     ) -> None:
