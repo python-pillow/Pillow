@@ -588,6 +588,21 @@ getpixel(Imaging im, ImagingAccess access, int x, int y) {
     Py_RETURN_NONE;
 }
 
+/**
+ * Convert a Python object to an ink value for the given image.
+ *
+ * @param color The Python object representing the color.
+ *              Depending on the mode of the image,
+ *              various data types are accepted.
+ *              The caller must keep it alive throughout this call, including
+ *              while conversions invoke Python code. A borrowed reference is
+ *              safe if its owner retains the object for that duration.
+ * @param im The Imaging object representing the image.
+ * @param ink A pointer to a buffer where the ink value will be stored.
+ *            Must be non-NULL, provided by the caller.
+ * @return A pointer to the ink buffer, or NULL on error.
+ *         On error, a Python exception will be set.
+ */
 static char *
 getink(PyObject *color, Imaging im, char *ink) {
     int g = 0, b = 0, a = 0;
