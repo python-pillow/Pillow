@@ -293,7 +293,7 @@ def test_p2pa_alpha() -> None:
 def test_p2pa_palette() -> None:
     with Image.open("Tests/images/tiny.png") as im:
         im_pa = im.convert("PA")
-    assert im_pa.getpalette() == im.getpalette()
+    assert im_pa.getpalette(None) == im.getpalette()
 
 
 rgb2xyz_matrix = (
