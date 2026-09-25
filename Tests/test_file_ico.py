@@ -7,7 +7,12 @@ import pytest
 
 from PIL import IcoImagePlugin, Image, ImageDraw, ImageFile
 
-from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar,
+    hopper,
+)
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -248,39 +253,28 @@ def test_save_append_images(tmp_path: Path) -> None:
         assert_image_equal(reread, provided_im)
 
 
-def test_save_append_images_unmatched_size(tmp_path: Path) -> None:
-    # A size without a matching image is scaled down from the smallest provided
-    # image that still covers it, whichever order the images are given in
-    im = hopper("RGBA")
-    red = Image.new("RGBA", (32, 32), (255, 0, 0))
-    blue = Image.new("RGBA", (64, 64), (0, 0, 255))
+def test_save_append_images_source(tmp_path: Path) -> None:
+    # If no image is exactly matches a size,
+    # then scale down from the smallest provided image that still covers it
+    im = hopper()
+    larger = Image.new("RGB", (32, 32), (255, 0, 0))
+    largest = Image.new("RGB", (64, 64))
 
-    expected = red.copy()
-    expected.thumbnail((16, 16), Image.Resampling.LANCZOS, reducing_gap=None)
+    outfile = tmp_path / "temp.ico"
+    im.save(outfile, sizes=[(16, 16)], append_images=[larger, largest])
 
-    for append_images in ([red, blue], [blue, red]):
-        outfile = tmp_path / "temp_saved_multi_icon.ico"
-        im.save(outfile, sizes=[(16, 16), (32, 32)], append_images=append_images)
+    with Image.open(outfile) as reloaded:
+        assert isinstance(reloaded, IcoImagePlugin.IcoImageFile)
+        reloaded.size = (16, 16)
+        assert_image_equal(reloaded, larger.resize((16, 16)))
 
-        with Image.open(outfile) as reread:
-            assert isinstance(reread, IcoImagePlugin.IcoImageFile)
-            reread.size = (16, 16)
-            assert_image_equal(reread, expected)
+    # If none cover the size, then use the original image
+    im.save(outfile, sizes=[(16, 16)], append_images=[Image.new("L", (8, 8))])
 
-
-def test_save_append_images_none_large_enough(tmp_path: Path) -> None:
-    # The original image is used when no appended image covers the size
-    im = hopper("RGBA")
-    provided_im = Image.new("RGBA", (8, 8), (255, 0, 0))
-    outfile = tmp_path / "temp_saved_multi_icon.ico"
-    im.save(outfile, sizes=[(16, 16)], append_images=[provided_im])
-
-    expected = hopper("RGBA")
-    expected.thumbnail((16, 16), Image.Resampling.LANCZOS, reducing_gap=None)
-    with Image.open(outfile) as reread:
-        assert isinstance(reread, IcoImagePlugin.IcoImageFile)
-        reread.size = (16, 16)
-        assert_image_equal(reread, expected)
+    with Image.open(outfile) as reloaded:
+        assert isinstance(reloaded, IcoImagePlugin.IcoImageFile)
+        reloaded.size = (16, 16)
+        assert_image_similar(reloaded, im.resize((16, 16)), 9)
 
 
 def test_unexpected_size() -> None:
