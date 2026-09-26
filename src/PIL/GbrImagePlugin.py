@@ -56,10 +56,10 @@ class GbrImageFile(ImageFile.ImageFile):
 
         width = i32(self.fp.read(4))
         height = i32(self.fp.read(4))
-        color_depth = i32(self.fp.read(4))
         if width == 0 or height == 0:
             msg = "not a GIMP brush"
             raise SyntaxError(msg)
+        color_depth = i32(self.fp.read(4))
         if color_depth not in (1, 4):
             msg = f"Unsupported GIMP brush color depth: {color_depth}"
             raise SyntaxError(msg)
@@ -76,24 +76,20 @@ class GbrImageFile(ImageFile.ImageFile):
 
         self.info["comment"] = self.fp.read(comment_length)[:-1]
 
-        if color_depth == 1:
-            self._mode = "L"
-        else:
-            self._mode = "RGBA"
-
+        self._mode = "L" if color_depth == 1 else "RGBA"
         self._size = width, height
 
         # Image might not be small
         Image._decompression_bomb_check(self.size)
 
-        # Data is an uncompressed block of w * h * bytes/pixel
-        self._data_size = width * height * color_depth
-
     def load(self) -> Image.core.PixelAccess | None:
         if self._im is None:
             assert self.fp is not None
             self.im = Image.core.new(self.mode, self.size)
-            self.frombytes(self.fp.read(self._data_size))
+
+            # Data is an uncompressed block of w * h * bytes/pixel
+            data_size = self.width * self.height * Image.getmodebands(self.mode)
+            self.frombytes(self.fp.read(data_size))
         return Image.Image.load(self)
 
 
