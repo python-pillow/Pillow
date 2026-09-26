@@ -1128,7 +1128,7 @@ class TestImage:
     def test_merge_i(self) -> None:
         i = Image.new("I", (1, 1))
         a = Image.new("L", (1, 1))
-        with pytest.raises(ValueError, match="image has wrong mode"):
+        with pytest.raises(ValueError, match="source image must have exactly 1 band"):
             Image.merge("PA", (i, a))
 
     def test_constants(self) -> None:

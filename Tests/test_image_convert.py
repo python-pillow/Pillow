@@ -46,7 +46,7 @@ def test_sanity() -> None:
 
 def test_unsupported_conversion() -> None:
     im = hopper()
-    with pytest.raises(ValueError, match="image has wrong mode"):
+    with pytest.raises(ValueError):
         im.convert("INVALID")
 
 
@@ -318,7 +318,7 @@ def test_matrix_wrong_mode() -> None:
     im = hopper("L")
 
     # Act / Assert
-    with pytest.raises(ValueError, match="image has wrong mode"):
+    with pytest.raises(ValueError, match="image must have exactly 3 bands"):
         im.convert(mode="L", matrix=rgb2xyz_matrix)
 
 

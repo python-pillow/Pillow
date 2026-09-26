@@ -268,11 +268,15 @@ ImagingSectionLeave(ImagingSectionCookie *cookie);
 extern void *
 ImagingError_MemoryError(void);
 extern void *
-ImagingError_ModeError(void); /* maps to ValueError by default */
+ImagingError_ModeError(const char *message); /* maps to ValueError by default */
 extern void *
-ImagingError_Mismatch(void); /* maps to ValueError by default */
+ImagingError_Mismatch(const char *message); /* maps to ValueError by default */
 extern void *
 ImagingError_ValueError(const char *message);
+extern void *
+ImagingError_NotSupportedError(
+    const char *message
+); /* derives from NotImplementedError and ValueError */
 
 /* Transform callbacks */
 /* ------------------- */
