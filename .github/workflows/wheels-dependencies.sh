@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export CFLAGS="-O2 $CFLAGS"
+export CXXFLAGS="-O2 $CXXFLAGS"
+
 # Safety check - Pillow builds require that CIBW_ARCHS is set, and that it only
 # contains a single value (even though cibuildwheel allows multiple values in
 # CIBW_ARCHS). This check doesn't work on Linux because of how the CIBW_ARCHS
