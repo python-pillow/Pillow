@@ -306,7 +306,15 @@ int main(int argc, char* argv[])
         """)
 
         objects = compiler.compile(["embed_pil.c"])
-        compiler.link_executable(objects, "embed_pil")
+        libraries = []
+        if compiler.compiler_type == "mingw32":
+            # MSVC links the Python library automatically via a pragma in
+            # pyconfig.h, but MinGW needs it to be passed explicitly
+            libraries.append(
+                f"python{sys.version_info.major}.{sys.version_info.minor}"
+                + getattr(sys, "abiflags", "")
+            )
+        compiler.link_executable(objects, "embed_pil", libraries=libraries)
 
         env = os.environ.copy()
         env["PATH"] = sys.prefix + ";" + env["PATH"]
