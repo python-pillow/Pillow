@@ -686,6 +686,25 @@ def test_apng_save_disposal_previous(tmp_path: Path) -> None:
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
+@pytest.mark.parametrize(
+    "disposal",
+    (PngImagePlugin.Disposal.OP_BACKGROUND, PngImagePlugin.Disposal.OP_PREVIOUS),
+)
+def test_apng_save_info_disposal(tmp_path: Path, disposal: int) -> None:
+    test_file = tmp_path / "temp.png"
+    red = Image.new("RGBA", (128, 64), (255, 0, 0, 255))
+    red_green = red.copy()
+    red_green.paste((0, 255, 0, 255), (0, 0, 10, 10))
+
+    # disposal from info should give the same result as disposal as an argument
+    red.info["disposal"] = disposal
+    red.save(test_file, save_all=True, append_images=[red_green])
+    with Image.open(test_file) as im:
+        im.seek(1)
+        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
+        assert im.getpixel((64, 32)) == (255, 0, 0, 255)
+
+
 def test_apng_save_blend(tmp_path: Path) -> None:
     test_file = tmp_path / "temp.png"
     size = (128, 64)

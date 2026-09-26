@@ -1233,8 +1233,8 @@ def _write_multiple_frames(
 
             if im_frames:
                 previous = im_frames[-1]
-                prev_disposal = previous.encoderinfo.get("disposal")
-                prev_blend = previous.encoderinfo.get("blend")
+                prev_disposal = previous.encoderinfo.get("disposal", disposal)
+                prev_blend = previous.encoderinfo.get("blend", blend)
                 if prev_disposal == Disposal.OP_PREVIOUS and len(im_frames) < 2:
                     prev_disposal = Disposal.OP_BACKGROUND
 
@@ -1257,8 +1257,8 @@ def _write_multiple_frames(
                 bbox = delta.getbbox(alpha_only=False)
                 if (
                     not bbox
-                    and prev_disposal == encoderinfo.get("disposal")
-                    and prev_blend == encoderinfo.get("blend")
+                    and prev_disposal == encoderinfo.get("disposal", disposal)
+                    and prev_blend == encoderinfo.get("blend", blend)
                     and "duration" in encoderinfo
                 ):
                     previous.encoderinfo["duration"] += encoderinfo["duration"]
