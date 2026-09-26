@@ -14,24 +14,16 @@
 /* -------------------------------------------------------------------- */
 /* Transpose operations                                                 */
 
-Imaging
+void
 ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xr;
-
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
-    }
-
-    int xsize = imIn->xsize, ysize = imIn->ysize;
-    if (xsize != imOut->xsize || ysize != imOut->ysize) {
-        return (Imaging)ImagingError_Mismatch();
-    }
+    int xsize = imIn->xsize;
 
     ImagingCopyPalette(imOut, imIn);
 
 #define FLIP_LEFT_RIGHT(INT, image)         \
-    for (y = 0; y < ysize; y++) {           \
+    for (y = 0; y < imIn->ysize; y++) {     \
         INT *in = (INT *)imIn->image[y];    \
         INT *out = (INT *)imOut->image[y];  \
         xr = xsize - 1;                     \
@@ -55,23 +47,13 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     ImagingSectionLeave(&cookie);
 
 #undef FLIP_LEFT_RIGHT
-
-    return imOut;
 }
 
-Imaging
+void
 ImagingFlipTopBottom(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int y, yr;
-
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
-    }
-
     int ysize = imIn->ysize;
-    if (imIn->xsize != imOut->xsize || ysize != imOut->ysize) {
-        return (Imaging)ImagingError_Mismatch();
-    }
 
     ImagingCopyPalette(imOut, imIn);
 
@@ -83,24 +65,14 @@ ImagingFlipTopBottom(Imaging imOut, Imaging imIn) {
     }
 
     ImagingSectionLeave(&cookie);
-
-    return imOut;
 }
 
-Imaging
+void
 ImagingRotate90(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xx, yy, xr, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
-
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
-    }
-
     int xsize = imIn->xsize, ysize = imIn->ysize;
-    if (xsize != imOut->ysize || ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch();
-    }
 
     ImagingCopyPalette(imOut, imIn);
 
@@ -145,24 +117,14 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
     ImagingSectionLeave(&cookie);
 
 #undef ROTATE_90
-
-    return imOut;
 }
 
-Imaging
+void
 ImagingTranspose(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xx, yy, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
-
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
-    }
-
     int xsize = imIn->xsize, ysize = imIn->ysize;
-    if (xsize != imOut->ysize || ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch();
-    }
 
     ImagingCopyPalette(imOut, imIn);
 
@@ -206,24 +168,14 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
     ImagingSectionLeave(&cookie);
 
 #undef TRANSPOSE
-
-    return imOut;
 }
 
-Imaging
+void
 ImagingTransverse(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xr, yr, xx, yy, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
-
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
-    }
-
     int xsize = imIn->xsize, ysize = imIn->ysize;
-    if (xsize != imOut->ysize || ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch();
-    }
 
     ImagingCopyPalette(imOut, imIn);
 
@@ -269,23 +221,13 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
     ImagingSectionLeave(&cookie);
 
 #undef TRANSVERSE
-
-    return imOut;
 }
 
-Imaging
+void
 ImagingRotate180(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xr, yr;
-
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
-    }
-
     int xsize = imIn->xsize, ysize = imIn->ysize;
-    if (xsize != imOut->xsize || ysize != imOut->ysize) {
-        return (Imaging)ImagingError_Mismatch();
-    }
 
     ImagingCopyPalette(imOut, imIn);
 
@@ -315,24 +257,14 @@ ImagingRotate180(Imaging imOut, Imaging imIn) {
     ImagingSectionLeave(&cookie);
 
 #undef ROTATE_180
-
-    return imOut;
 }
 
-Imaging
+void
 ImagingRotate270(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xx, yy, yr, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
-
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
-    }
-
     int xsize = imIn->xsize, ysize = imIn->ysize;
-    if (xsize != imOut->ysize || ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch();
-    }
 
     ImagingCopyPalette(imOut, imIn);
 
@@ -377,8 +309,6 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
     ImagingSectionLeave(&cookie);
 
 #undef ROTATE_270
-
-    return imOut;
 }
 
 /* -------------------------------------------------------------------- */
