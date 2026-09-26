@@ -134,6 +134,17 @@ escape sequences.
 Other changes
 =============
 
+Clean up TIFF encoders before closing their output files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TIFF saving now explicitly cleans up the libtiff encoder, including when saving
+raises an exception. Previously, delayed encoder destruction could access a closed
+file descriptor after it had been reused for another file, disturbing that file's
+position or contents.
+
+:py:meth:`~PIL.Image.Image.tobytes` also now explicitly cleans up its encoder on
+both success and failure, rather than relying on object destruction.
+
 PNG palettes are no longer padded when saving with the ``bits`` argument
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

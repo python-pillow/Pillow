@@ -883,21 +883,24 @@ class Image:
 
         # unpack data
         e = _getencoder(self.mode, encoder_name, encoder_args)
-        e.setimage(self.im, (0, 0, *self.size))
+        try:
+            e.setimage(self.im, (0, 0, *self.size))
 
-        from . import ImageFile
+            from . import ImageFile
 
-        bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
+            bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
 
-        output = []
-        while True:
-            bytes_consumed, errcode, data = e.encode(bufsize)
-            output.append(data)
-            if errcode:
-                break
-        if errcode < 0:
-            msg = f"encoder error {errcode} in tobytes"
-            raise RuntimeError(msg)
+            output = []
+            while True:
+                bytes_consumed, errcode, data = e.encode(bufsize)
+                output.append(data)
+                if errcode:
+                    break
+            if errcode < 0:
+                msg = f"encoder error {errcode} in tobytes"
+                raise RuntimeError(msg)
+        finally:
+            e.cleanup()
 
         return b"".join(output)
 
