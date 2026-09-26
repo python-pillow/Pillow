@@ -750,8 +750,8 @@ def exif_transpose(image: Image.Image, *, in_place: bool = False) -> Image.Image
             for key in ("XML:com.adobe.xmp", "xmp"):
                 if key in exif_image.info:
                     for pattern in (
-                        r'tiff:Orientation="([0-9])"',
-                        r"<tiff:Orientation>([0-9])</tiff:Orientation>",
+                        r"tiff:Orientation\s*=\s*([\"'])\s*[0-9]\s*\1",
+                        r"<tiff:Orientation\s*>\s*[0-9]\s*</tiff:Orientation\s*>",
                     ):
                         value = exif_image.info[key]
                         if isinstance(value, str):

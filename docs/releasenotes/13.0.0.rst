@@ -99,6 +99,15 @@ intended for internal use, so there is no replacement.
 API changes
 ===========
 
+XMP orientation whitespace and quotation marks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.getexif` now reads XMP orientation attributes
+with single quotes or whitespace around the equals sign and orientation value.
+Whitespace around an orientation element's value is also supported.
+:py:func:`~PIL.ImageOps.exif_transpose` removes these forms after transposition,
+so reloading the metadata does not cause the image to be transposed again.
+
 TODO
 ^^^^
 
