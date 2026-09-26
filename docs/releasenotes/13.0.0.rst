@@ -195,6 +195,13 @@ Restore image position if ImageSequence.all_frames() fails
 If processing a frame in :py:func:`~PIL.ImageSequence.all_frames` raises an exception,
 the given image will now seek back to its original frame.
 
+JPEG 2000 channel definitions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When a JP2 image has a channel definition box that places its components in a
+different order, such as blue, green, red, Pillow now reorders them when decoding.
+Previously, the box was ignored, and the channels were swapped.
+
 Fixed ImageChops.offset() for 16-bit images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
