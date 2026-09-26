@@ -153,6 +153,14 @@ the ``PLTE`` chunk with zeroes up to ``2 ** bits`` entries. The ``PLTE`` chunk n
 contains as many entries as the image's palette actually has, matching the behavior
 already used when ``bits`` is not specified.
 
+BOX downscale includes boundary source pixels
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:data:`PIL.Image.Resampling.BOX` downscaling could skip a source pixel whose
+center landed on an output bin edge, due to range rounding and the discontinuous
+box kernel. Those pixels are now assigned to exactly one output pixel, matching
+the documented "each source pixel contributes to one destination pixel" behavior.
+
 Wheels now use HarfBuzz for hinting
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
