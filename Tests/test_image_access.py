@@ -310,10 +310,7 @@ int main(int argc, char* argv[])
         if compiler.compiler_type == "mingw32":
             # MSVC links the Python library automatically via a pragma in
             # pyconfig.h, but MinGW needs it to be passed explicitly
-            libraries.append(
-                f"python{sys.version_info.major}.{sys.version_info.minor}"
-                + getattr(sys, "abiflags", "")
-            )
+            libraries.append("python3")
         compiler.link_executable(objects, "embed_pil", libraries=libraries)
 
         env = os.environ.copy()
