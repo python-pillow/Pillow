@@ -1266,6 +1266,19 @@ class TestFileLibTiff(LibTiffTestCase):
         with pytest.raises(ValueError, match="cannot write empty image"):
             im.save(out, compression=compression)
 
+    def test_save_error_cleanup(self, tmp_path: Path) -> None:
+        with open(tmp_path / "temp.tif", "wb") as fp:
+            im = Image.new("RGB", (0, 0))
+            with pytest.raises(ValueError, match="cannot write empty image") as exc:
+                im.save(fp, compression="jpeg")
+
+            # The traceback keeps the encoder alive. Collecting it used to move
+            # the file position, corrupting unrelated reads if the fd was reused.
+            # Cleanup must happen during save, not later during GC.
+            fp.seek(1234)
+            del exc
+            assert fp.tell() == 1234
+
     @pytest.mark.skipif(sys.platform != "win32", reason="Checks a Windows handle limit")
     def test_save_many_compressed(self, tmp_path: Path) -> None:
         im = hopper()

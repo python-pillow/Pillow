@@ -15,14 +15,14 @@ def test_sanity() -> None:
     im1 = hopper()
     for data in (im1.get_flattened_data(), im1.im):
         im2 = Image.new(im1.mode, im1.size, 0)
-        im2.putdata(data)
+        im2.putdata(data)  # type: ignore[arg-type]
 
         assert_image_equal(im1, im2)
 
         # readonly
         im2 = Image.new(im1.mode, im2.size, 0)
         im2.readonly = 1
-        im2.putdata(data)
+        im2.putdata(data)  # type: ignore[arg-type]
 
         assert not im2.readonly
         assert_image_equal(im1, im2)
