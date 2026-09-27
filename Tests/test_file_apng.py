@@ -563,6 +563,7 @@ def test_apng_save_large_duration(tmp_path: Path) -> None:
     # consecutive identical frames (#10063)
     im.save(test_file, save_all=True, append_images=[im2], duration=65536000)
     with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
         durations = []
         for i in range(reloaded.n_frames):
             reloaded.seek(i)
@@ -583,6 +584,7 @@ def test_apng_save_split_duration_from_merged_frames(tmp_path: Path) -> None:
         duration=[100, 32768, 32769],
     )
     with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
         durations = []
         for i in range(reloaded.n_frames):
             reloaded.seek(i)
@@ -596,6 +598,7 @@ def test_apng_save_split_duration_exact_remainder(tmp_path: Path) -> None:
     im2 = Image.new("1", (1, 1), 1)
     im.save(test_file, save_all=True, append_images=[im2], duration=[100, 65537])
     with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
         durations = []
         for i in range(reloaded.n_frames):
             reloaded.seek(i)
@@ -609,6 +612,7 @@ def test_apng_save_duration_fits_without_split(tmp_path: Path) -> None:
     im2 = Image.new("1", (1, 1), 1)
     im.save(test_file, save_all=True, append_images=[im2], duration=[100, 70000])
     with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
         assert reloaded.n_frames == 2
         reloaded.seek(1)
         assert reloaded.info["duration"] == 70000.0
