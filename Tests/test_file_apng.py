@@ -559,8 +559,59 @@ def test_apng_save_large_duration(tmp_path: Path) -> None:
     test_file = tmp_path / "temp.png"
     im = Image.new("1", (1, 1))
     im2 = Image.new("1", (1, 1), 1)
-    with pytest.raises(ValueError, match="cannot write duration"):
-        im.save(test_file, save_all=True, append_images=[im2], duration=65536000)
+    # A duration too large for a single fcTL delay is split across
+    # consecutive identical frames (#10063)
+    im.save(test_file, save_all=True, append_images=[im2], duration=65536000)
+    with Image.open(test_file) as reloaded:
+        durations = []
+        for i in range(reloaded.n_frames):
+            reloaded.seek(i)
+            durations.append(reloaded.info["duration"])
+        assert sum(durations) == 2 * 65536000
+
+
+def test_apng_save_split_duration_from_merged_frames(tmp_path: Path) -> None:
+    # From the issue: two identical frames merge into one, and the merged
+    # duration (32768 + 32769 = 65537 ms) no longer fits a single fcTL delay
+    test_file = tmp_path / "temp.png"
+    frame_a = Image.new("RGB", (1, 1), "green")
+    frame_b = Image.new("RGB", (1, 1), "red")
+    frame_a.save(
+        test_file,
+        save_all=True,
+        append_images=[frame_b, frame_b],
+        duration=[100, 32768, 32769],
+    )
+    with Image.open(test_file) as reloaded:
+        durations = []
+        for i in range(reloaded.n_frames):
+            reloaded.seek(i)
+            durations.append(reloaded.info["duration"])
+        assert durations == [100.0, 65535.0, 2.0]
+
+
+def test_apng_save_split_duration_exact_remainder(tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    im = Image.new("1", (1, 1))
+    im2 = Image.new("1", (1, 1), 1)
+    im.save(test_file, save_all=True, append_images=[im2], duration=[100, 65537])
+    with Image.open(test_file) as reloaded:
+        durations = []
+        for i in range(reloaded.n_frames):
+            reloaded.seek(i)
+            durations.append(reloaded.info["duration"])
+        assert durations == [100.0, 65535.0, 2.0]
+
+
+def test_apng_save_duration_fits_without_split(tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    im = Image.new("1", (1, 1))
+    im2 = Image.new("1", (1, 1), 1)
+    im.save(test_file, save_all=True, append_images=[im2], duration=[100, 70000])
+    with Image.open(test_file) as reloaded:
+        assert reloaded.n_frames == 2
+        reloaded.seek(1)
+        assert reloaded.info["duration"] == 70000.0
 
 
 def test_apng_save_disposal(tmp_path: Path) -> None:

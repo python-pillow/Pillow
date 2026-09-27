@@ -134,6 +134,15 @@ escape sequences.
 Other changes
 =============
 
+Split APNG frame durations that are too large for a single fcTL chunk
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving an APNG, a frame duration whose fractional delay does not fit the
+16-bit numerator of a fcTL chunk used to raise ``ValueError: cannot write
+duration``. The duration is now split across consecutive identical frames,
+each with a delay that fits, so that the animation still replays the full
+duration (#10063).
+
 Clean up TIFF encoders before closing their output files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

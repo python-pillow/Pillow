@@ -1193,6 +1193,25 @@ class _Frame(NamedTuple):
     encoderinfo: dict[str, Any]
 
 
+def _apng_frame_delays(frame_duration: float) -> list[Fraction]:
+    """Split a frame duration into delays that fit a fcTL chunk.
+
+    The delay numerator of a fcTL chunk is 16 bits, so a duration whose
+    fractional delay has a numerator over 65535 cannot be written as a
+    single chunk. Such a duration is split into consecutive delays, each
+    fitting the limit, so that consecutive identical frames replay the
+    full duration (#10063).
+    """
+    delay = Fraction(frame_duration / 1000).limit_denominator(65535)
+    if delay.numerator <= 65535:
+        return [delay]
+    whole, remainder = divmod(delay.numerator, 65535)
+    delays = [Fraction(65535, delay.denominator)] * whole
+    if remainder:
+        delays.append(Fraction(remainder, delay.denominator))
+    return delays
+
+
 def _write_multiple_frames(
     im: Image.Image,
     fp: IO[bytes],
@@ -1274,8 +1293,16 @@ def _write_multiple_frames(
     chunk(
         fp,
         b"acTL",
-        o32(len(im_frames)),  # 0: num_frames
-        o32(loop),  # 4: num_plays
+        # 0: num_frames. A duration too large for a single fcTL delay is
+        # written as several consecutive identical frames, so count the
+        # pieces, not just the collected frames.
+        o32(
+            sum(
+                len(_apng_frame_delays(frame_data.encoderinfo.get("duration", 0)))
+                for frame_data in im_frames
+            )
+        ),  # 4: num_plays
+        o32(loop),
     )
 
     # default image IDAT (if it exists)
@@ -1299,44 +1326,42 @@ def _write_multiple_frames(
         size = im_frame.size
         encoderinfo = frame_data.encoderinfo
         frame_duration = encoderinfo.get("duration", 0)
-        delay = Fraction(frame_duration / 1000).limit_denominator(65535)
-        if delay.numerator > 65535:
-            msg = "cannot write duration"
-            raise ValueError(msg)
+        delays = _apng_frame_delays(frame_duration)
         frame_disposal = encoderinfo.get("disposal", disposal)
         frame_blend = encoderinfo.get("blend", blend)
-        # frame control
-        chunk(
-            fp,
-            b"fcTL",
-            o32(seq_num),  # sequence_number
-            o32(size[0]),  # width
-            o32(size[1]),  # height
-            o32(bbox[0]),  # x_offset
-            o32(bbox[1]),  # y_offset
-            o16(delay.numerator),  # delay_numerator
-            o16(delay.denominator),  # delay_denominator
-            o8(frame_disposal),  # dispose_op
-            o8(frame_blend),  # blend_op
-        )
-        seq_num += 1
-        # frame data
-        _apply_encoderinfo(im_frame, im.encoderinfo)
-        if frame == 0 and not default_image:
-            # first frame must be in IDAT chunks for backwards compatibility
-            ImageFile._save(
-                im_frame,
-                cast("IO[bytes]", _idat(fp, chunk)),
-                [ImageFile._Tile("zip", (0, 0, *im_frame.size), 0, rawmode)],
+        for delay_index, delay in enumerate(delays):
+            # frame control
+            chunk(
+                fp,
+                b"fcTL",
+                o32(seq_num),  # sequence_number
+                o32(size[0]),  # width
+                o32(size[1]),  # height
+                o32(bbox[0]),  # x_offset
+                o32(bbox[1]),  # y_offset
+                o16(delay.numerator),  # delay_numerator
+                o16(delay.denominator),  # delay_denominator
+                o8(frame_disposal),  # dispose_op
+                o8(frame_blend),  # blend_op
             )
-        else:
-            fdat_chunks = _fdat(fp, chunk, seq_num)
-            ImageFile._save(
-                im_frame,
-                cast("IO[bytes]", fdat_chunks),
-                [ImageFile._Tile("zip", (0, 0, *im_frame.size), 0, rawmode)],
-            )
-            seq_num = fdat_chunks.seq_num
+            seq_num += 1
+            # frame data
+            _apply_encoderinfo(im_frame, im.encoderinfo)
+            if frame == 0 and delay_index == 0 and not default_image:
+                # first frame must be in IDAT chunks for backwards compatibility
+                ImageFile._save(
+                    im_frame,
+                    cast("IO[bytes]", _idat(fp, chunk)),
+                    [ImageFile._Tile("zip", (0, 0, *im_frame.size), 0, rawmode)],
+                )
+            else:
+                fdat_chunks = _fdat(fp, chunk, seq_num)
+                ImageFile._save(
+                    im_frame,
+                    cast("IO[bytes]", fdat_chunks),
+                    [ImageFile._Tile("zip", (0, 0, *im_frame.size), 0, rawmode)],
+                )
+                seq_num = fdat_chunks.seq_num
     return None
 
 
