@@ -19,6 +19,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "PIL._util", "struct"}
+
 import os
 import struct
 from typing import cast
@@ -160,11 +162,12 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
             raise ValueError(msg)
         self.fp.seek(self.offset)
         JpegImagePlugin.JpegImageFile._open(self)
+        Image._decompression_bomb_check(self.size)
         if self.info.get("exif") != original_exif:
             self._reload_exif()
 
         self.tile = [
-            ImageFile._Tile("jpeg", (0, 0) + self.size, self.offset, self.tile[0][-1])
+            ImageFile._Tile("jpeg", (0, 0, *self.size), self.offset, self.tile[0][-1])
         ]
         self.__frame = frame
 

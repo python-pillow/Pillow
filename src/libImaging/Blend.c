@@ -17,6 +17,12 @@
 
 #include "Imaging.h"
 
+/**
+ * Interpolate (or, for alpha outside [0, 1], extrapolate) between imIn1 and
+ * imIn2 by `alpha`, returning a newly allocated result.
+ *
+ * Contract: imIn1 and imIn2 are read-only and may alias each other.
+ */
 Imaging
 ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
     Imaging imOut;

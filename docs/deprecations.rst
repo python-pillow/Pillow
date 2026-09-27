@@ -12,16 +12,8 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a :py:exc:`DeprecationWarning` is issued.
 
-ExifTags.IFD.Makernote
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. deprecated:: 11.1.0
-
-``ExifTags.IFD.Makernote`` has been deprecated. Instead, use
-``ExifTags.IFD.MakerNote``.
-
 Image getdata()
-~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
 .. deprecated:: 12.1.0
 
@@ -29,6 +21,34 @@ Image getdata()
 :py:meth:`~PIL.Image.Image.get_flattened_data` can be used instead. This new method is
 identical, except that it returns a tuple of pixel values, instead of an internal
 Pillow data type.
+
+IM image format
+^^^^^^^^^^^^^^^
+
+.. deprecated:: 13.0.0
+
+The IM image format has been deprecated and removal is planned in Pillow 15.0.0
+(2028-10-15). If you are using this format and would like to continue doing so,
+open an issue about what other software uses it.
+
+ImageQt align8to32()
+^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 13.0.0
+
+``ImageQt.align8to32()`` has been deprecated. This was an undocumented helper function
+intended for internal use, so there is no replacement.
+
+JpegImageFile.load_djpeg
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 13.0.0
+
+``JpegImageFile.load_djpeg`` has been deprecated, and will be removed in Pillow 14
+(2027-10-15).
+
+Use the built-in JPEG decoder instead, or call ``djpeg`` directly and decode the
+resulting image with Pillow.
 
 Removed features
 ----------------
@@ -93,6 +113,14 @@ Image.Image.get_child_images()
 ``ImageFile.ImageFile.get_child_images()``. The method uses an image's file pointer,
 and so child images could only be retrieved from an :py:class:`PIL.ImageFile.ImageFile`
 instance.
+
+ExifTags.IFD.Makernote
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.1.0
+.. versionremoved:: 13.0.0
+
+``ExifTags.IFD.Makernote`` has been removed. Instead, use ``ExifTags.IFD.MakerNote``.
 
 ImageFile.raise_oserror
 ^^^^^^^^^^^^^^^^^^^^^^^

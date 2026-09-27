@@ -7,7 +7,12 @@ import pytest
 
 from PIL import IcoImagePlugin, Image, ImageDraw, ImageFile
 
-from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar,
+    hopper,
+)
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -190,6 +195,15 @@ def test_incorrect_size() -> None:
             im.size = (1, 1)
 
 
+def test_save_1x2(tmp_path: Path) -> None:
+    im = Image.new("1", (1, 2))
+    outfile = tmp_path / "temp.ico"
+    im.save(outfile)
+
+    with Image.open(outfile) as reloaded:
+        assert_image_equal(im, reloaded)
+
+
 def test_save_256x256(tmp_path: Path) -> None:
     """Issue #2264 https://github.com/python-pillow/Pillow/issues/2264"""
     # Arrange
@@ -198,9 +212,9 @@ def test_save_256x256(tmp_path: Path) -> None:
 
         # Act
         im.save(outfile)
-    with Image.open(outfile) as im_saved:
+    with Image.open(outfile) as reloaded:
         # Assert
-        assert im_saved.size == (256, 256)
+        assert reloaded.size == (256, 256)
 
 
 def test_only_save_relevant_sizes(tmp_path: Path) -> None:
@@ -214,9 +228,14 @@ def test_only_save_relevant_sizes(tmp_path: Path) -> None:
         # Act
         im.save(outfile)
 
-    with Image.open(outfile) as im_saved:
+    with Image.open(outfile) as reloaded:
         # Assert
-        assert im_saved.info["sizes"] == {(16, 16), (24, 24), (32, 32), (48, 48)}
+        assert reloaded.info["sizes"] == {(16, 16), (24, 24), (32, 32), (48, 48)}
+
+    im2 = Image.new("1", (1, 1))
+    outfile = tmp_path / "temp.ico"
+    with pytest.raises(ValueError, match="All sizes too large for image"):
+        im2.save(outfile, sizes=[(2, 2)])
 
 
 def test_save_append_images(tmp_path: Path) -> None:
@@ -234,6 +253,30 @@ def test_save_append_images(tmp_path: Path) -> None:
         assert_image_equal(reread, provided_im)
 
 
+def test_save_append_images_source(tmp_path: Path) -> None:
+    # If no image is exactly matches a size,
+    # then scale down from the smallest provided image that still covers it
+    im = hopper()
+    larger = Image.new("RGB", (32, 32), (255, 0, 0))
+    largest = Image.new("RGB", (64, 64))
+
+    outfile = tmp_path / "temp.ico"
+    im.save(outfile, sizes=[(16, 16)], append_images=[larger, largest])
+
+    with Image.open(outfile) as reloaded:
+        assert isinstance(reloaded, IcoImagePlugin.IcoImageFile)
+        reloaded.size = (16, 16)
+        assert_image_equal(reloaded, larger.resize((16, 16)))
+
+    # If none cover the size, then use the original image
+    im.save(outfile, sizes=[(16, 16)], append_images=[Image.new("L", (8, 8))])
+
+    with Image.open(outfile) as reloaded:
+        assert isinstance(reloaded, IcoImagePlugin.IcoImageFile)
+        reloaded.size = (16, 16)
+        assert_image_similar(reloaded, im.resize((16, 16)), 9)
+
+
 def test_unexpected_size() -> None:
     # This image has been manually hexedited to state that it is 16x32
     # while the image within is still 16x16
@@ -247,7 +290,7 @@ def test_draw_reloaded(tmp_path: Path) -> None:
         outfile = tmp_path / "temp_saved_hopper_draw.ico"
 
         draw = ImageDraw.Draw(im)
-        draw.line((0, 0) + im.size, "#f00")
+        draw.line((0, 0, *im.size), "#f00")
         im.save(outfile)
 
     with Image.open(outfile) as im:

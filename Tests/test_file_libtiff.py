@@ -27,7 +27,6 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
-    mark_if_feature_version,
     skip_unless_feature,
 )
 
@@ -869,6 +868,15 @@ class TestFileLibTiff(LibTiffTestCase):
             assert im.size == (10, 10)
             im.load()
 
+    def test_seek_remove_palette(self) -> None:
+        with Image.open("Tests/images/no_rows_per_strip.tif") as im:
+            assert im.mode == "P"
+            assert im.palette is not None
+
+            im.seek(1)
+            assert im.mode == "F"
+            assert im.palette is None
+
     def test_save_tiff_with_jpegtables(self, tmp_path: Path) -> None:
         # Arrange
         outfile = tmp_path / "temp.tif"
@@ -915,9 +923,7 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(filename) as im:
             assert im.mode == "RGB"
             assert im.size == (256, 256)
-            assert im.tile == [
-                ("libtiff", (0, 0, 256, 256), 0, ("RGB", "jpeg", False, 5122))
-            ]
+            assert im.tile == [("libtiff", (0, 0, 256, 256), 0, ("RGB", False, 5122))]
             im.load()
 
             assert_image_equal_tofile(im, "Tests/images/pil168.png")
@@ -997,17 +1003,11 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_strip_ycbcr_jpeg_2x2_sampling(self) -> None:
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/flower.jpg", 1.2)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_strip_ycbcr_jpeg_1x1_sampling(self) -> None:
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
@@ -1018,17 +1018,11 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/pil_sample_cmyk.jpg", 0.5)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_tiled_ycbcr_jpeg_1x1_sampling(self) -> None:
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/flower2.jpg", 0.01)
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_tiled_ycbcr_jpeg_2x2_sampling(self) -> None:
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
@@ -1142,7 +1136,7 @@ class TestFileLibTiff(LibTiffTestCase):
                 "tiff_wrong_bits_per_sample_3.tiff",
                 "RGBA",
                 (512, 256),
-                [("libtiff", (0, 0, 512, 256), 0, ("RGBA", "tiff_lzw", False, 48782))],
+                [("libtiff", (0, 0, 512, 256), 0, ("RGBA", False, 48782))],
             ),
         ],
     )
@@ -1272,6 +1266,20 @@ class TestFileLibTiff(LibTiffTestCase):
         with pytest.raises(ValueError, match="cannot write empty image"):
             im.save(out, compression=compression)
 
+    def test_save_error_cleanup(self, tmp_path: Path) -> None:
+        with open(tmp_path / "temp.tif", "wb") as fp:
+            im = Image.new("RGB", (0, 0))
+            with pytest.raises(ValueError, match="cannot write empty image") as exc:
+                im.save(fp, compression="jpeg")
+
+            # The traceback keeps the encoder alive. Collecting it used to move
+            # the file position, corrupting unrelated reads if the fd was reused.
+            # Cleanup must happen during save, not later during GC.
+            fp.seek(1234)
+            del exc
+            assert fp.tell() == 1234
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="Checks a Windows handle limit")
     def test_save_many_compressed(self, tmp_path: Path) -> None:
         im = hopper()
         out = tmp_path / "temp.tif"

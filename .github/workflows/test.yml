@@ -36,6 +36,7 @@ jobs:
           "ubuntu-latest",
         ]
         python-version: [
+          "pypy3.12",
           "pypy3.11",
           "3.15t",
           "3.15",
@@ -46,7 +47,7 @@ jobs:
           "3.11",
         ]
         include:
-        - { python-version: "3.13", PYTHONOPTIMIZE: 1, REVERSE: "--reverse" }
+        - { python-version: "3.13", PYTHONOPTIMIZE: 1 }
         - { python-version: "3.12", PYTHONOPTIMIZE: 2 }
         # Intel
         - { os: "macos-26-intel", python-version: "3.11" }
@@ -125,9 +126,6 @@ jobs:
 
     - name: Test
       run: |
-        if [ $REVERSE ]; then
-          python3 -m pip install pytest-reverse
-        fi
         if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
           xvfb-run -s '-screen 0 1024x768x24' sway&
           export WAYLAND_DISPLAY=wayland-1
@@ -137,7 +135,6 @@ jobs:
         fi
       env:
         PYTHONOPTIMIZE: ${{ matrix.PYTHONOPTIMIZE }}
-        REVERSE: ${{ matrix.REVERSE }}
 
     - name: Prepare to upload errors
       if: failure()
@@ -151,10 +148,6 @@ jobs:
         name: errors
         path: Tests/errors
 
-    - name: After success
-      run: |
-        .ci/after_success.sh
-
     - name: Upload coverage
       uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
       with:
@@ -164,9 +157,12 @@ jobs:
   success:
     permissions:
       contents: none
+    if: always()
     needs: build
     runs-on: ubuntu-latest
     name: Test Successful
     steps:
       - name: Success
-        run: echo Test Successful
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: test "$BUILD_RESULT" = "success"

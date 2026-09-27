@@ -33,6 +33,17 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL.JpegPresets",
+    "PIL._binary",
+    "array",
+    "io",
+    "math",
+    "struct",
+    "subprocess",
+    "warnings",
+}
+
 import array
 import io
 import math
@@ -40,7 +51,6 @@ import os
 import struct
 import subprocess
 import sys
-import tempfile
 import warnings
 
 from . import Image, ImageFile
@@ -48,6 +58,7 @@ from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
+from ._deprecate import deprecate
 from .JpegPresets import presets
 
 TYPE_CHECKING = False
@@ -385,7 +396,7 @@ class JpegImageFile(ImageFile.ImageFile):
                     if self.mode == "CMYK":
                         rawmode = "CMYK;I"  # assume adobe conventions
                     self.tile = [
-                        ImageFile._Tile("jpeg", (0, 0) + self.size, 0, (rawmode, ""))
+                        ImageFile._Tile("jpeg", (0, 0, *self.size), 0, (rawmode, ""))
                     ]
                     # self.__offset = self.fp.tell()
                     break
@@ -467,6 +478,13 @@ class JpegImageFile(ImageFile.ImageFile):
 
     def load_djpeg(self) -> None:
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
+        import tempfile
+
+        deprecate(
+            "load_djpeg",
+            14,
+            action="Use the built-in JPEG decoder instead, or call djpeg yourself.",
+        )
 
         f, path = tempfile.mkstemp()
         os.close(f)
@@ -731,7 +749,8 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 qtables = [
                     qtables[key] for key in range(len(qtables)) if key in qtables
                 ]
-            elif isinstance(qtables, tuple):
+            else:
+                # Copy the sequence, so that it cannot be changed while it is read
                 qtables = list(qtables)
             if not (0 < len(qtables) < 5):
                 msg = "None or too many quantization tables"
@@ -822,7 +841,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     # if we optimize, libjpeg needs a buffer big enough to hold the whole image
     # in a shot. Guessing on the size, at im.size bytes. (raw pixel size is
-    # channels*size, this is a value that's been used in a django patch.
+    # channels*size, this is a value that's been used in a Django patch.
     # https://github.com/matthewwithanm/django-imagekit/issues/50
     if optimize or progressive:
         # CMYK can be bigger
@@ -836,14 +855,15 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         if exif:
             bufsize += len(exif) + 5
         if extra:
-            bufsize += len(extra) + 1
+            bufsize += len(extra)
     else:
-        # The EXIF info needs to be written as one block, + APP1, + one spare byte.
+        # The EXIF info needs to be written as one block, + APP1, + one spare byte,
+        # as libjpeg without suspension requires one byte left after writing a marker.
         # Ensure that our buffer is big enough. Same with the icc_profile block.
-        bufsize = max(len(exif) + 5, len(extra) + 1)
+        bufsize = max(len(exif) + 5, len(extra))
 
     ImageFile._save(
-        im, fp, [ImageFile._Tile("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize
+        im, fp, [ImageFile._Tile("jpeg", (0, 0, *im.size), 0, rawmode)], bufsize
     )
 
 

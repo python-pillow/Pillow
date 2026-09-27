@@ -221,7 +221,7 @@ Methods
 
     :returns: An image font.
 
-.. py:method:: ImageDraw.arc(xy, start, end, fill=None, width=0)
+.. py:method:: ImageDraw.arc(xy, start, end, fill=None, width=1)
 
     Draws an arc (a portion of a circle outline) between the start and end
     angles, inside the given bounding box.
@@ -287,7 +287,7 @@ Methods
 
         .. versionadded:: 5.3.0
 
-.. py:method:: ImageDraw.line(xy, fill=None, width=0, joint=None, dash=None)
+.. py:method:: ImageDraw.line(xy, fill=None, width=1, joint=None, dash=None)
 
     Draws a line between the coordinates in the ``xy`` list.
     The coordinate pixels are included in the drawn line.
@@ -756,7 +756,7 @@ Methods
 
     :return: ``(left, top, right, bottom)`` bounding box
 
-.. py:method:: getdraw(im=None, hints=None)
+.. py:method:: getdraw(im=None)
 
     .. warning:: This method is experimental.
 
@@ -764,7 +764,6 @@ Methods
     based on the WCK interface.
 
     :param im: The image to draw in.
-    :param hints: An optional list of hints.
     :returns: A (drawing context, drawing resource factory) tuple.
 
 .. autofunction:: PIL.ImageDraw.floodfill

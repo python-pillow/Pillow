@@ -13,7 +13,6 @@ from .helper import (
     assert_image_similar_tofile,
     hopper,
     is_win32,
-    mark_if_feature_version,
     skip_unless_feature,
     timeout_unless_slower_valgrind,
 )
@@ -213,9 +212,6 @@ def test_begin_binary() -> None:
         Image.open(io.BytesIO(data))
 
 
-@mark_if_feature_version(
-    pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-)
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_cmyk() -> None:
     with Image.open("Tests/images/eps/pil_sample_cmyk.eps") as cmyk_image:

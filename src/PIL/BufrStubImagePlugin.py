@@ -18,8 +18,6 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from typing import IO
 
-_handler = None
-
 
 def register_handler(handler: ImageFile.StubHandler | None) -> None:
     """
@@ -27,8 +25,7 @@ def register_handler(handler: ImageFile.StubHandler | None) -> None:
 
     :param handler: Handler object.
     """
-    global _handler
-    _handler = handler
+    BufrStubImageFile._handler = handler
 
 
 # --------------------------------------------------------------------
@@ -53,17 +50,15 @@ class BufrStubImageFile(ImageFile.StubImageFile):
 
         # make something up
         self._mode = "F"
-        self._size = 1, 1
-
-    def _load(self) -> ImageFile.StubHandler | None:
-        return _handler
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    if _handler is None or not hasattr(_handler, "save"):
+    if BufrStubImageFile._handler is None or not hasattr(
+        BufrStubImageFile._handler, "save"
+    ):
         msg = "BUFR save handler not installed"
         raise OSError(msg)
-    _handler.save(im, fp, filename)
+    BufrStubImageFile._handler.save(im, fp, filename)
 
 
 # --------------------------------------------------------------------

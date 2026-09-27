@@ -17,6 +17,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "PIL._util", "io"}
+
 import io
 from functools import cached_property
 
@@ -140,7 +142,7 @@ class PsdImageFile(ImageFile.ImageFile):
         #
         # image descriptor
 
-        self.tile = _maketile(self.fp, mode, (0, 0) + self.size, channels)
+        self.tile = _maketile(self.fp, mode, (0, 0, *self.size), channels)
 
         # keep the file open
         self._fp = self.fp
@@ -181,9 +183,7 @@ class PsdImageFile(ImageFile.ImageFile):
         if layer > len(self.layers):
             msg = "no more images in PSD file"
             raise EOFError(msg)
-        _, mode, _, tile = self.layers[layer - 1]
-        self._mode = mode
-        self.tile = tile
+        _, self._mode, _, self.tile = self.layers[layer - 1]
         self.frame = layer
         self.fp = self._fp
 

@@ -5,7 +5,12 @@ import pytest
 
 from PIL import Image, ImageMorph, _imagingmorph
 
-from .helper import assert_image_equal_tofile, hopper, timeout_unless_slower_valgrind
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    hopper,
+    timeout_unless_slower_valgrind,
+)
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -83,6 +88,13 @@ def test_no_operator_loaded() -> None:
         mop.match(im)
     with pytest.raises(Exception, match="No operator loaded"):
         mop.save_lut("")
+
+
+def test_zero_width() -> None:
+    im = Image.new("L", (0, 1))
+    mop = ImageMorph.MorphOp(op_name="erosion8")
+    count, out = mop.apply(im)
+    assert_image_equal(im, out)
 
 
 # Test the named patterns
@@ -266,7 +278,11 @@ def test_unknown_pattern() -> None:
 
 
 @pytest.mark.parametrize(
-    "pattern", ("a pattern with a syntax error", "4:(" + "X" * 30000)
+    "pattern",
+    (
+        pytest.param("a pattern with a syntax error", id="syntax-error"),
+        pytest.param("4:(" + "X" * 30000, id="long-operation"),
+    ),
 )
 @timeout_unless_slower_valgrind(1)
 def test_pattern_syntax_error(pattern: str) -> None:

@@ -72,6 +72,9 @@ def test_register_handler(tmp_path: Path) -> None:
     class TestHandler(ImageFile.StubHandler):
         methodCalled = False
 
+        def open(self, im: ImageFile.StubImageFile) -> None:
+            im._size = (1, 1)
+
         def load(self, im: ImageFile.StubImageFile) -> Image.Image:
             return Image.new("RGB", (1, 1))
 
@@ -79,7 +82,7 @@ def test_register_handler(tmp_path: Path) -> None:
             self.methodCalled = True
 
     handler = TestHandler()
-    original_handler = WmfImagePlugin._handler
+    original_handler = WmfImagePlugin.WmfStubImageFile._handler
     WmfImagePlugin.register_handler(handler)
 
     im = hopper()
@@ -115,9 +118,13 @@ def test_load_set_dpi() -> None:
 
     with Image.open("Tests/images/drawing.emf") as im:
         assert im.size == (1625, 1625)
+        assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
+        with pytest.raises(Image.DecompressionBombError):
+            im.load(20000)
 
-        if not hasattr(Image.core, "drawwmf"):
-            return
+    if not hasattr(Image.core, "drawwmf"):
+        return
+    with Image.open("Tests/images/drawing.emf") as im:
         assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
         im.load(im.info["dpi"])
         assert im.size == (1625, 1625)

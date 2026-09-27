@@ -127,7 +127,7 @@ ImagingNewPrologueSubtype(const ModeID mode, int xsize, int ysize, int size) {
         /* 16-bit raw integer images */
         im->bands = 1;
         im->pixelsize = 2;
-        im->type = IMAGING_TYPE_SPECIAL;
+        im->type = IMAGING_TYPE_I16;
         strcpy(im->arrow_band_format, "s");
         strcpy(im->band_names[0], "I");
 
@@ -432,8 +432,6 @@ ImagingAllocateArray(Imaging im, ImagingMemoryArena arena, int dirty, int block_
     }
     im->lines_per_block = lines_per_block;
     blocks_count = (im->ysize + lines_per_block - 1) / lines_per_block;
-    // printf("NEW size: %dx%d, ls: %d, lpb: %d, blocks: %d\n",
-    //        im->xsize, im->ysize, aligned_linesize, lines_per_block, blocks_count);
 
     /* One extra pointer is always NULL */
     im->blocks_count = blocks_count;

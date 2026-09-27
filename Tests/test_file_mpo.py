@@ -256,6 +256,15 @@ def test_seek(test_file: str) -> None:
         assert im.tell() == 0
 
 
+def test_seek_decompression_bomb() -> None:
+    with open("Tests/images/frozenpond.mpo", "rb") as fp:
+        data = fp.read()
+    data = data[:89957] + b"\xff\xff\xff\xff" + data[89961:]
+    im = MpoImagePlugin.MpoImageFile(BytesIO(data))
+    with pytest.raises(Image.DecompressionBombError):
+        im.seek(1)
+
+
 def test_n_frames() -> None:
     with Image.open("Tests/images/sugarshack.mpo") as im:
         assert isinstance(im, MpoImagePlugin.MpoImageFile)

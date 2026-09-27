@@ -22,6 +22,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"math"}
+
 import math
 from functools import cached_property
 
@@ -94,26 +96,26 @@ class Stat:
         return [sum(self.h[i : i + 256]) for i in range(0, len(self.h), 256)]
 
     @cached_property
-    def sum(self) -> list[float]:
+    def sum(self) -> list[int]:
         """Sum of all pixels for each band in the image."""
 
         v = []
         for i in range(0, len(self.h), 256):
-            layer_sum = 0.0
+            layer_sum = 0
             for j in range(256):
                 layer_sum += j * self.h[i + j]
             v.append(layer_sum)
         return v
 
     @cached_property
-    def sum2(self) -> list[float]:
+    def sum2(self) -> list[int]:
         """Squared sum of all pixels for each band in the image."""
 
         v = []
         for i in range(0, len(self.h), 256):
-            sum2 = 0.0
+            sum2 = 0
             for j in range(256):
-                sum2 += (j**2) * float(self.h[i + j])
+                sum2 += (j**2) * self.h[i + j]
             v.append(sum2)
         return v
 
@@ -151,7 +153,7 @@ class Stat:
         """Variance for each band in the image."""
         return [
             (
-                (self.sum2[i] - (self.sum[i] ** 2.0) / self.count[i]) / self.count[i]
+                (self.sum2[i] - (self.sum[i] ** 2) / self.count[i]) / self.count[i]
                 if self.count[i]
                 else 0
             )

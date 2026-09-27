@@ -77,13 +77,16 @@ def test_negative_dx() -> None:
     assert font.getlength("A") == 0
 
 
-def test_width_overflow() -> None:
-    glyph = struct.pack(">hhhhhhhhhh", 32767, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+@pytest.mark.parametrize(
+    "dx, expected", ((32767, "Width too large"), (-32767, "Width too small"))
+)
+def test_width_overflow(dx: int, expected: str) -> None:
+    glyph = struct.pack(">10h", dx, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     fp = BytesIO(b"PILfont\n\nDATA\n" + glyph * 256)
 
     font = ImageFont.ImageFont()
     font._load_pilfont_data(fp, Image.new("L", (1, 1)))
-    with pytest.raises(OverflowError, match="Width too large"):
+    with pytest.raises(OverflowError, match=expected):
         font.getlength("A" * 100_000)
 
 

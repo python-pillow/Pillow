@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"numbers", "types"}
+
 import os
 import sys
 from collections.abc import Sequence

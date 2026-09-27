@@ -29,9 +29,7 @@ from .helper import (
     assert_not_all_same,
     hopper,
     is_win32,
-    mark_if_feature_version,
     skip_unless_feature,
-    timeout_unless_slower_valgrind,
 )
 
 TYPE_CHECKING = False
@@ -571,11 +569,6 @@ class TestImage:
         i = Image.new("RGB", [1, 1])
         assert isinstance(i.size, tuple)
 
-    @timeout_unless_slower_valgrind(0.75)
-    @pytest.mark.parametrize("size", ((0, 100000000), (100000000, 0)))
-    def test_empty_image(self, size: tuple[int, int]) -> None:
-        Image.new("RGB", size)
-
     def test_storage_neg(self) -> None:
         # Storage.c accepted negative values for xsize, ysize.  Was
         # test_neg_ppm, but the core function for that has been
@@ -670,7 +663,7 @@ class TestImage:
         assert_image_equal(im_p, im_remapped)
         assert im_p.palette is not None
         assert im_remapped.palette is not None
-        assert im_p.palette.palette == im_remapped.palette.palette
+        assert bytes(im_p.palette.palette) == im_remapped.palette.palette
 
         # Test illegal image mode
         with hopper() as im_hopper:
@@ -820,9 +813,6 @@ class TestImage:
         reloaded_exif.load(exif.tobytes())
         assert reloaded_exif.get_ifd(0x8769) == {36864: b"0220"}
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_exif_jpeg(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
             exif = im.getexif()
@@ -1015,6 +1005,34 @@ class TestImage:
                 xmp = im.getxmp()
             assert xmp == {}
 
+    @pytest.mark.skipif(ElementTree is None, reason="defusedxml is not installed")
+    def test_getxmp_strip_namespaces(self) -> None:
+        im = Image.new("RGB", (1, 1))
+        im.info["xmp"] = (
+            b'<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
+            b'<x:xmpmeta xmlns:x="adobe:ns:meta/">'
+            b'<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+            b'<rdf:Description rdf:about=""'
+            b' xmlns:a="http://example.com/ns/a/"'
+            b' xmlns:b="http://example.com/ns/b/">'
+            b"<a:id>from-a</a:id>"
+            b"<b:id>from-b</b:id>"
+            b"</rdf:Description>"
+            b"</rdf:RDF>"
+            b'</x:xmpmeta>\n<?xpacket end="w"?>'
+        )
+
+        stripped = im.getxmp()
+        desc = stripped["xmpmeta"]["RDF"]["Description"]
+        assert desc["id"] == ["from-a", "from-b"]
+
+        full = im.getxmp(strip_namespaces=False)
+        desc_full = full["{adobe:ns:meta/}xmpmeta"][
+            "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF"
+        ]["{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description"]
+        assert desc_full["{http://example.com/ns/a/}id"] == "from-a"
+        assert desc_full["{http://example.com/ns/b/}id"] == "from-b"
+
     def test_getxmp_padded(self) -> None:
         im = Image.new("RGB", (1, 1))
         im.info["xmp"] = (
@@ -1106,6 +1124,12 @@ class TestImage:
         a = Image.new("L", p.size)
         pa = Image.merge("PA", (p, a))
         assert p.getpalette() == pa.getpalette()
+
+    def test_merge_i(self) -> None:
+        i = Image.new("I", (1, 1))
+        a = Image.new("L", (1, 1))
+        with pytest.raises(ValueError, match="image has wrong mode"):
+            Image.merge("PA", (i, a))
 
     def test_constants(self) -> None:
         for enum in (

@@ -20,6 +20,10 @@ from PIL.PdfParser import (
     pdf_repr,
 )
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 def test_text_encode_decode() -> None:
     assert encode_text("abc") == b"\xfe\xff\x00a\x00b\x00c"
@@ -67,6 +71,8 @@ def test_parsing() -> None:
     assert PdfParser.get_value(b" 123.4 %", 0)[1] == 6
     with pytest.raises(PdfFormatError):
         PdfParser.get_value(b"]", 0)
+    with pytest.raises(PdfFormatError, match="key must be a name"):
+        PdfParser.get_value(b"<<true[]>>", 0)
     d = PdfParser.get_value(b"<</Name (value) /N /V>>", 0)[0]
     assert isinstance(d, PdfDict)
     assert len(d) == 2
@@ -167,3 +173,18 @@ def test_duplicate_xref_entry() -> None:
 def test_trailer_loop() -> None:
     with pytest.raises(PdfFormatError, match="trailer loop found"):
         PdfParser("Tests/images/trailer_loop.pdf")
+
+
+def test_long_trailer_chain(tmp_path: Path) -> None:
+    b = BytesIO()
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        pdf.write_catalog()
+        for _ in range(1000):
+            pdf.write_xref_and_trailer()
+        pdf.write_xref_and_trailer()
+
+    with PdfParser(f=b) as pdf:
+        pass

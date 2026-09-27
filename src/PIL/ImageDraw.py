@@ -31,6 +31,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"math", "struct"}
+
 import math
 import struct
 from typing import cast

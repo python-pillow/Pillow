@@ -46,7 +46,7 @@ def test_basic(tmp_path: Path, mode: str) -> None:
     im_out = im_in.transform((w, h), Image.Transform.EXTENT, (0, 0, w, h))
     verify(im_out)  # transform
 
-    filename = tmp_path / "temp.im"
+    filename = tmp_path / "temp.tiff"
     im_in.save(filename)
 
     with Image.open(filename) as im_out:
@@ -100,3 +100,13 @@ def test_convert() -> None:
         verify(im.convert(mode))
         verify(im.convert(mode).convert("L"))
         verify(im.convert(mode).convert("I"))
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_convert_i_f(mode: str) -> None:
+    im = Image.new(mode, (1, 1), 4660)
+    assert im.convert("I").getpixel((0, 0)) == 4660
+    assert im.convert("F").getpixel((0, 0)) == 4660.0
+
+    im = Image.new("I", (1, 1), 4660)
+    assert im.convert(mode).getpixel((0, 0)) == 4660

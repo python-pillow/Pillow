@@ -49,8 +49,6 @@ typedef struct _ColorCube {
     ColorBucket buckets;
 } *ColorCube;
 
-#define MAX(a, b) (a) > (b) ? (a) : (b)
-
 static ColorCube
 new_color_cube(int r, int g, int b, int a) {
     ColorCube cube;

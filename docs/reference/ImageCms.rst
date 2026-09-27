@@ -221,10 +221,10 @@ can be easily displayed in a chromaticity diagram, for example).
 
         The value is in the format ``((x, y, Y), (x, y, Y), (x, y, Y))``, if available.
 
-    .. py:attribute:: chromatic_adaption
+    .. py:attribute:: chromatic_adaptation
         :type: tuple[tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]], tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]] | None
 
-        The chromatic adaption matrix converts a color measured using the
+        The chromatic adaptation matrix converts a color measured using the
         actual illumination conditions and relative to the actual adopted
         white, to a color relative to the PCS adopted white, with
         complete adaptation from the actual adopted white chromaticity to
@@ -316,21 +316,21 @@ can be easily displayed in a chromaticity diagram, for example).
     .. py:attribute:: red_primary
         :type: tuple[tuple[float, float, float], tuple[float, float, float]] | None
 
-        The XYZ-transformed of the RGB primary color red (1, 0, 0).
+        The XYZ-transform of the RGB primary color red (1, 0, 0).
 
         The value is in the format ``((X, Y, Z), (x, y, Y))``, if available.
 
     .. py:attribute:: green_primary
         :type: tuple[tuple[float, float, float], tuple[float, float, float]] | None
 
-        The XYZ-transformed of the RGB primary color green (0, 1, 0).
+        The XYZ-transform of the RGB primary color green (0, 1, 0).
 
         The value is in the format ``((X, Y, Z), (x, y, Y))``, if available.
 
     .. py:attribute:: blue_primary
         :type: tuple[tuple[float, float, float], tuple[float, float, float]] | None
 
-        The XYZ-transformed of the RGB primary color blue (0, 0, 1).
+        The XYZ-transform of the RGB primary color blue (0, 0, 1).
 
         The value is in the format ``((X, Y, Z), (x, y, Y))``, if available.
 
