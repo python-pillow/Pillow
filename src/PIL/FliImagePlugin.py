@@ -23,7 +23,6 @@ import os
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
 from ._binary import i32le as i32
-from ._binary import o8
 from ._util import DeferredError
 
 #
@@ -104,9 +103,7 @@ class FliImageFile(ImageFile.ImageFile):
                 if not chunk_size:
                     break
 
-        self.palette = ImagePalette.raw(
-            "RGB", b"".join(o8(r) + o8(g) + o8(b) for (r, g, b) in palette)
-        )
+        self.palette = ImagePalette.raw("RGB", tuple(v for rgb in palette for v in rgb))
 
         # set things up to decode first frame
         self.__frame = -1

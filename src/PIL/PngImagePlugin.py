@@ -1398,18 +1398,16 @@ def _save(
 
     outmode = mode
     if mode == "P":
-        #
-        # attempt to minimize storage requirements for palette images
-        if "bits" in im.encoderinfo:
-            # number of bits specified by user
-            colors = min(1 << im.encoderinfo["bits"], 256)
-        else:
-            # check palette contents
-            if palette:
-                colors = max(min(len(palette) // 3, 256), 1)
-            else:
-                colors = 256
-
+        colors = max(
+            1,
+            min(
+                # number of bits specified by user
+                1 << im.encoderinfo.get("bits", 8),
+                # write only as many PLTE entries as the palette actually contains
+                len(palette) // 3 if palette else 0,
+                256,
+            ),
+        )
         if colors <= 16:
             if colors <= 2:
                 bits = 1
@@ -1475,11 +1473,8 @@ def _save(
                 if not after_idat:
                     chunk(fp, cid, data)
 
-    if mode == "P" and palette is not None:
-        palette_byte_number = colors * 3
-        palette_bytes = bytes(palette[:palette_byte_number])
-        while len(palette_bytes) < palette_byte_number:
-            palette_bytes += b"\0"
+    if mode == "P":
+        palette_bytes = (palette and bytes(palette[: colors * 3])) or b"\x00\x00\x00"
         chunk(fp, b"PLTE", palette_bytes)
 
     transparency = im.encoderinfo.get("transparency", im.info.get("transparency"))

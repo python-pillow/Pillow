@@ -102,8 +102,6 @@
 #include <math.h>
 #include <stddef.h>
 
-#undef VERBOSE
-
 #define B16(p, i) ((((int)p[(i)]) << 8) + p[(i) + 1])
 #define L16(p, i) ((((int)p[(i) + 1]) << 8) + p[(i)])
 #define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
@@ -181,10 +179,6 @@ PyImagingNew(Imaging imOut) {
         return NULL;
     }
 
-#ifdef VERBOSE
-    printf("imaging %p allocated\n", imagep);
-#endif
-
     imagep->image = imOut;
     imagep->access = ImagingAccessNew(imOut);
 
@@ -193,10 +187,6 @@ PyImagingNew(Imaging imOut) {
 
 static void
 _dealloc(ImagingObject *imagep) {
-#ifdef VERBOSE
-    printf("imaging %p deleted\n", imagep);
-#endif
-
     if (imagep->access) {
         ImagingAccessDelete(imagep->image, imagep->access);
     }
@@ -434,14 +424,11 @@ getbands(const ModeID mode) {
 #define TYPE_DOUBLE (0x400 | sizeof(double))
 
 static void *
-getlist_impl(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
-    /* - allocates and returns a c array of the items in the
-          python sequence arg.
+getlist_impl(PyObject *arg, Py_ssize_t length, const char *wrong_length, int type) {
+    /* - allocates and returns a c array of the items in the Python sequence arg.
        - the size of the returned array is in length
-       - all of the arg items must be numeric items of the type
-          specified in type
-       - sequence length is checked against the length parameter IF
-          an error parameter is passed in wrong_length
+       - all of the arg items must be numeric items of the type specified in type
+       - sequence length is checked against the length parameter
        - caller is responsible for freeing the memory
     */
 
@@ -458,9 +445,23 @@ getlist_impl(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int ty
         return NULL;
     }
 
-    n = PySequence_Size(arg);
-    if (length && wrong_length && n != *length) {
+    Py_ssize_t reported = PySequence_Size(arg);
+    if (reported < 0) {
+        return NULL;
+    } else if (reported != length) {
         PyErr_SetString(PyExc_ValueError, wrong_length);
+        return NULL;
+    }
+
+    seq = PySequence_Fast(arg, must_be_sequence);
+    if (!seq) {
+        return NULL;
+    }
+
+    n = PySequence_Fast_GET_SIZE(seq);
+    if (n != length) {
+        PyErr_SetString(PyExc_ValueError, wrong_length);
+        Py_DECREF(seq);
         return NULL;
     }
 
@@ -468,13 +469,8 @@ getlist_impl(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int ty
        calloc checks for overflow */
     list = calloc(n, type & 0xff);
     if (!list) {
+        Py_DECREF(seq);
         return ImagingError_MemoryError();
-    }
-
-    seq = PySequence_Fast(arg, must_be_sequence);
-    if (!seq) {
-        free(list);
-        return NULL;
     }
 
     for (i = 0; i < n; i++) {
@@ -508,15 +504,11 @@ getlist_impl(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int ty
         return NULL;
     }
 
-    if (length) {
-        *length = n;
-    }
-
     return list;
 }
 
 static void *
-getlist(PyObject *arg, Py_ssize_t *length, const char *wrong_length, int type) {
+getlist(PyObject *arg, Py_ssize_t length, const char *wrong_length, int type) {
     void *result;
     Py_BEGIN_CRITICAL_SECTION(arg);
     result = getlist_impl(arg, length, wrong_length, type);
@@ -549,6 +541,27 @@ float16tofloat32(const FLOAT16 in) {
 }
 
 static inline PyObject *
+make_pixel_tuple(const UINT8 *b, Py_ssize_t bands) {
+    PyObject *tuple = PyTuple_New(bands);
+    if (tuple == NULL) {
+        return NULL;
+    }
+    for (Py_ssize_t i = 0; i < bands; i++) {
+        PyObject *v = PyLong_FromLong(b[i]);
+        if (v == NULL) {
+            Py_DECREF(tuple);
+            return NULL;
+        }
+        PyTuple_SET_ITEM(tuple, i, v);
+    }
+    // We know these tuples will only have small integers,
+    // so we can tell the garbage collector to not look inside
+    // for cycles.
+    PyObject_GC_UnTrack(tuple);
+    return tuple;
+}
+
+static inline PyObject *
 getpixel(Imaging im, ImagingAccess access, int x, int y) {
     union {
         UINT8 b[4];
@@ -573,19 +586,11 @@ getpixel(Imaging im, ImagingAccess access, int x, int y) {
 
     switch (im->type) {
         case IMAGING_TYPE_UINT8:
-            switch (im->bands) {
-                case 1:
-                    return PyLong_FromLong(pixel.b[0]);
-                case 2:
-                    return Py_BuildValue("BB", pixel.b[0], pixel.b[1]);
-                case 3:
-                    return Py_BuildValue("BBB", pixel.b[0], pixel.b[1], pixel.b[2]);
-                case 4:
-                    return Py_BuildValue(
-                        "BBBB", pixel.b[0], pixel.b[1], pixel.b[2], pixel.b[3]
-                    );
+            if (im->bands == 1) {
+                return PyLong_FromLong(pixel.b[0]);
+            } else {
+                return make_pixel_tuple(pixel.b, im->bands);
             }
-            break;
         case IMAGING_TYPE_INT32:
             return PyLong_FromLong(pixel.i);
         case IMAGING_TYPE_FLOAT32:
@@ -890,7 +895,7 @@ _prepare_lut_table(PyObject *table, Py_ssize_t table_size) {
 
     if (!table_data) {
         free_table_data = 1;
-        table_data = getlist(table, &table_size, wrong_size, TYPE_FLOAT32);
+        table_data = getlist(table, table_size, wrong_size, TYPE_FLOAT32);
         if (!table_data) {
             return NULL;
         }
@@ -1168,8 +1173,9 @@ _expand_image(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _filter(ImagingObject *self, PyObject *args) {
+    static const char *wrong_length = "bad kernel size";
+
     PyObject *imOut;
-    Py_ssize_t kernelsize;
     FLOAT32 *kerneldata;
 
     int xsize, ysize, i;
@@ -1182,13 +1188,10 @@ _filter(ImagingObject *self, PyObject *args) {
     }
 
     /* get user-defined kernel */
-    kerneldata = getlist(kernel, &kernelsize, NULL, TYPE_FLOAT32);
+    Py_ssize_t kernelsize = (Py_ssize_t)xsize * (Py_ssize_t)ysize;
+    kerneldata = getlist(kernel, kernelsize, wrong_length, TYPE_FLOAT32);
     if (!kerneldata) {
         return NULL;
-    }
-    if (kernelsize != (Py_ssize_t)xsize * (Py_ssize_t)ysize) {
-        free(kerneldata);
-        return ImagingError_ValueError("bad kernel size");
     }
 
     for (i = 0; i < kernelsize; ++i) {
@@ -1555,7 +1558,7 @@ _paste(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _point(ImagingObject *self, PyObject *args) {
-    static const char *wrong_number = "wrong number of lut entries";
+    static const char *wrong_length = "wrong number of lut entries";
 
     Py_ssize_t n;
     int i, bands;
@@ -1574,7 +1577,7 @@ _point(ImagingObject *self, PyObject *args) {
 
         /* map from 8-bit data to floating point */
         n = 256;
-        data = getlist(list, &n, wrong_number, TYPE_FLOAT32);
+        data = getlist(list, n, wrong_length, TYPE_FLOAT32);
         if (!data) {
             return NULL;
         }
@@ -1586,7 +1589,7 @@ _point(ImagingObject *self, PyObject *args) {
         /* map from 16-bit subset of 32-bit data to 8-bit */
         /* FIXME: support arbitrary number of entries (requires API change) */
         n = 65536;
-        data = getlist(list, &n, wrong_number, TYPE_UINT8);
+        data = getlist(list, n, wrong_length, TYPE_UINT8);
         if (!data) {
             return NULL;
         }
@@ -1607,7 +1610,7 @@ _point(ImagingObject *self, PyObject *args) {
 
         /* map to integer data */
         n = 256 * bands;
-        data = getlist(list, &n, wrong_number, TYPE_INT32);
+        data = getlist(list, n, wrong_length, TYPE_INT32);
         if (!data) {
             return NULL;
         }
@@ -1671,8 +1674,25 @@ _putdata(ImagingObject *self, PyObject *args) {
 
     image = self->image;
 
-    n = PyObject_Length(data);
+    if (image->image8 && PyBytes_Check(data)) {
+        n = PyBytes_GET_SIZE(data);
+    } else {
+        Py_ssize_t reported = PySequence_Size(data);
+        if (reported < 0) {
+            return NULL;
+        } else if (reported > (Py_ssize_t)image->xsize * (Py_ssize_t)image->ysize) {
+            PyErr_SetString(PyExc_TypeError, "too many data entries");
+            return NULL;
+        }
+
+        seq = PySequence_Fast(data, must_be_sequence);
+        if (!seq) {
+            return NULL;
+        }
+        n = PySequence_Fast_GET_SIZE(seq);
+    }
     if (n > (Py_ssize_t)image->xsize * (Py_ssize_t)image->ysize) {
+        Py_XDECREF(seq);
         PyErr_SetString(PyExc_TypeError, "too many data entries");
         return NULL;
     }
@@ -1713,10 +1733,6 @@ _putdata(ImagingObject *self, PyObject *args) {
                 }
             }
         } else {
-            seq = PySequence_Fast(data, must_be_sequence);
-            if (!seq) {
-                return NULL;
-            }
             double value;
             int bigendian = 0;
             if (image->type == IMAGING_TYPE_I16) {
@@ -1750,10 +1766,6 @@ _putdata(ImagingObject *self, PyObject *args) {
         }
     } else {
         /* 32-bit images */
-        seq = PySequence_Fast(data, must_be_sequence);
-        if (!seq) {
-            return NULL;
-        }
         switch (image->type) {
             case IMAGING_TYPE_INT32:
                 for (i = x = y = 0; i < n; i++) {
@@ -1867,7 +1879,14 @@ _putpalette(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
+    ImagingPalette new_palette = ImagingPaletteNew(palette_mode);
+    if (!new_palette) {
+        return NULL;
+    }
+
     ImagingPaletteDelete(self->image->palette);
+
+    self->image->palette = new_palette;
 
     if (self->image->mode == IMAGING_MODE_LA) {
         self->image->mode = IMAGING_MODE_PA;
@@ -1876,8 +1895,6 @@ _putpalette(ImagingObject *self, PyObject *args) {
     } else {
         // The image already has a palette mode so we don't need to change it.
     }
-
-    self->image->palette = ImagingPaletteNew(palette_mode);
 
     self->image->palette->size = palettesize * 8 / bits;
     unpack(self->image->palette->palette, palette, self->image->palette->size);
@@ -2117,7 +2134,7 @@ im_setalpha(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _transform(ImagingObject *self, PyObject *args) {
-    static const char *wrong_number = "wrong number of matrix entries";
+    static const char *wrong_length = "wrong number of matrix entries";
 
     Imaging imOut;
     Py_ssize_t n;
@@ -2160,7 +2177,7 @@ _transform(ImagingObject *self, PyObject *args) {
             n = -1; /* force error */
     }
 
-    a = getlist(data, &n, wrong_number, TYPE_DOUBLE);
+    a = getlist(data, n, wrong_length, TYPE_DOUBLE);
     if (!a) {
         return NULL;
     }
@@ -2519,7 +2536,7 @@ _split(ImagingObject *self, PyObject *args) {
     PyObject *imaging_object;
     Imaging bands[4] = {NULL, NULL, NULL, NULL};
 
-    if (!ImagingSplit(self->image, bands)) {
+    if (ImagingSplit(self->image, bands)) {
         return NULL;
     }
 
@@ -2824,6 +2841,10 @@ textwidth(ImagingFontObject *self, const unsigned char *text) {
         int dx = self->glyphs[*text].dx;
         if (dx > 0 && xsize > INT_MAX - dx) {
             PyErr_SetString(PyExc_OverflowError, "Width too large");
+            return -1;
+        }
+        if (dx < 0 && xsize < INT_MIN - dx) {
+            PyErr_SetString(PyExc_OverflowError, "Width too small");
             return -1;
         }
         xsize += dx;

@@ -183,9 +183,7 @@ class PsdImageFile(ImageFile.ImageFile):
         if layer > len(self.layers):
             msg = "no more images in PSD file"
             raise EOFError(msg)
-        _, mode, _, tile = self.layers[layer - 1]
-        self._mode = mode
-        self.tile = tile
+        _, self._mode, _, self.tile = self.layers[layer - 1]
         self.frame = layer
         self.fp = self._fp
 

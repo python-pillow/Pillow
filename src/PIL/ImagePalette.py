@@ -36,7 +36,7 @@ class ImagePalette:
     Color palette for palette mapped images
 
     :param mode: The mode to use for the palette. See:
-        :ref:`concept-modes`. Defaults to "RGB"
+        :ref:`concept-modes`. Must be "RGB", "RGBA" or "CMYK". Defaults to "RGB"
     :param palette: An optional palette. If given, it must be a bytearray,
         an array or a list of ints between 0-255. The list must consist of
         all channels for one color followed by the next color (e.g. RGBRGBRGB).
@@ -48,6 +48,10 @@ class ImagePalette:
         mode: str = "RGB",
         palette: Sequence[int] | bytes | bytearray | None = None,
     ) -> None:
+        if mode not in {"RGB", "RGBA", "CMYK"}:
+            msg = "unsupported palette mode"
+            raise ValueError(msg)
+
         self.mode = mode
         self.rawmode: str | None = None  # if set, palette contains raw data
         self.palette = palette or bytearray()
@@ -233,7 +237,8 @@ class ImagePalette:
 
 def raw(rawmode: str, data: Sequence[int] | bytes | bytearray) -> ImagePalette:
     palette = ImagePalette()
-    palette.rawmode = rawmode
+    if rawmode != "RGB":
+        palette.rawmode = rawmode
     palette.palette = data
     palette.dirty = 1
     return palette

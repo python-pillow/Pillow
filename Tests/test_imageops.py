@@ -232,6 +232,23 @@ def test_rgba_palette() -> None:
     assert expanded_im.convert("RGBA").getpixel((0, 0)) == translucent_black
 
 
+def test_transparency() -> None:
+    im = Image.new("P", (1, 1))
+    im.info["transparency"] = 0
+
+    expanded_im = ImageOps.expand(im, 1, "blue")
+    assert expanded_im.info["transparency"] == 0
+    expanded_im_rgba = expanded_im.convert("RGBA")
+    assert expanded_im_rgba.getpixel((0, 0)) == (0, 0, 255, 255)
+    assert expanded_im_rgba.getpixel((1, 1)) == (0, 0, 0, 0)
+
+    padded_im = ImageOps.pad(im, (3, 1), color="blue")
+    assert padded_im.info["transparency"] == 0
+    padded_im_rgba = padded_im.convert("RGBA")
+    assert padded_im_rgba.getpixel((0, 0)) == (0, 0, 255, 255)
+    assert padded_im_rgba.getpixel((1, 0)) == (0, 0, 0, 0)
+
+
 def test_pil163() -> None:
     # Division by zero in equalize if < 255 pixels in image (@PIL163)
 

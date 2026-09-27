@@ -4,13 +4,13 @@ import os
 import sys
 from io import BytesIO
 
+import pytest
+
 from PIL import Image, PSDraw
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from pathlib import Path
-
-    import pytest
 
 
 def _create_document(ps: PSDraw.PSDraw) -> None:
@@ -65,3 +65,34 @@ def test_stdout(monkeypatch: pytest.MonkeyPatch) -> None:
     _create_document(ps)
 
     assert mystdout.buffer.getvalue() != b""
+
+
+@pytest.mark.parametrize("escape", (None, False, True))
+@pytest.mark.parametrize(
+    "text, expected, escaped",
+    (
+        ("plain text", b"plain text", b"plain text"),
+        ("a(b)c", rb"a\(b\)c", rb"a\(b\)c"),
+        (r"C:\temp\new", rb"C:\temp\new", rb"C:\\temp\\new"),
+        (r"a\(b)\c", rb"a\\(b\)\c", rb"a\\\(b\)\\c"),
+        (r"\n\t\101", rb"\n\t\101", rb"\\n\\t\\101"),
+    ),
+)
+def test_text(text: str, expected: bytes, escaped: bytes, escape: bool | None) -> None:
+    with BytesIO() as buffer:
+        ps = PSDraw.PSDraw(buffer)
+        if escape is None:
+            ps.text((10, 20), text)
+        else:
+            ps.text((10, 20), text, escape=escape)
+        if escape:
+            expected = escaped
+        assert buffer.getvalue() == b"10 20 M (" + expected + b") S\n"
+
+
+def test_text_encoding_error() -> None:
+    with BytesIO() as buffer:
+        ps = PSDraw.PSDraw(buffer)
+        with pytest.raises(UnicodeEncodeError):
+            ps.text((10, 20), "\u0100")
+        assert buffer.getvalue() == b""
