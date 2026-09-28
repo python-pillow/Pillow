@@ -43,8 +43,6 @@ from . import (
     Image,
     ImageChops,
     ImageFile,
-    ImageMath,
-    ImageOps,
     ImagePalette,
     ImageSequence,
 )
@@ -735,37 +733,18 @@ def _write_multiple_frames(
                             pass
                     if "transparency" in encoderinfo:
                         # When the delta is zero, fill the image with transparency
-                        diff_frame = im_frame.copy()
-                        fill = Image.new("P", delta.size, encoderinfo["transparency"])
                         if delta.mode == "RGBA":
+                            # Each pixel is unchanged only if all four bands are zero
                             r, g, b, a = delta.split()
-                            mask = ImageMath.lambda_eval(
-                                lambda args: args["convert"](
-                                    args["max"](
-                                        args["max"](
-                                            args["max"](args["r"], args["g"]), args["b"]
-                                        ),
-                                        args["a"],
-                                    )
-                                    * 255,
-                                    "1",
-                                ),
-                                r=r,
-                                g=g,
-                                b=b,
-                                a=a,
+                            delta = ImageChops.lighter(
+                                ImageChops.lighter(r, g),
+                                ImageChops.lighter(b, a),
                             )
-                        else:
-                            if delta.mode == "P":
-                                # Convert to L without considering palette
-                                delta_l = Image.new("L", delta.size)
-                                delta_l.putdata(delta.get_flattened_data())
-                                delta = delta_l
-                            mask = ImageMath.lambda_eval(
-                                lambda args: args["convert"](args["im"] * 255, "1"),
-                                im=delta,
-                            )
-                        diff_frame.paste(fill, mask=ImageOps.invert(mask))
+                        # Map zero pixels (palette indices, for "P")
+                        # to a "1" mask without consulting the palette.
+                        unchanged = delta.point([255, *(0,) * 255], "1")
+                        diff_frame = im_frame.copy()
+                        diff_frame.paste(encoderinfo["transparency"], mask=unchanged)
             else:
                 bbox = None
             previous_im = im_frame
