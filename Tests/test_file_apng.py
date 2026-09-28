@@ -478,6 +478,7 @@ def test_apng_save_split_fdat(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -
         append_images=frames,
     )
     assert test_file.read_bytes().count(b"fdAT") > 2
+    monkeypatch.undo()  # Let reading use default MAXBLOCK
     with Image.open(test_file) as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         im.seek(im.n_frames - 1)
