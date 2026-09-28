@@ -107,6 +107,13 @@ TODO
 API additions
 =============
 
+New resizing filters
+^^^^^^^^^^^^^^^^^^^^
+
+Two new filters are available for :py:meth:`~PIL.Image.Image.resize` and
+:py:meth:`~PIL.Image.Image.thumbnail`: ``Image.Resampling.MKS2013`` and
+``Image.Resampling.MKS2021``. These are versions of the Magic Kernel Sharp filter.
+
 Added ``strip_namespaces`` argument to ``Image.getxmp()``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -115,13 +122,6 @@ Added ``strip_namespaces`` argument to ``Image.getxmp()``
 namespace URI prefix as before. If set to ``False``, each tag's full
 ``{namespace-uri}local-name`` form is kept instead, avoiding collisions between tags
 that share a local name across different namespaces.
-
-New resizing filters
-^^^^^^^^^^^^^^^^^^^^
-
-Two new filters are available for :py:meth:`~PIL.Image.Image.resize` and
-:py:meth:`~PIL.Image.Image.thumbnail`: ``Image.Resampling.MKS2013`` and
-``Image.Resampling.MKS2021``. These are versions of the Magic Kernel Sharp filter.
 
 Added ``escape`` argument to ``PSDraw.text()``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -134,24 +134,30 @@ escape sequences.
 Other changes
 =============
 
-Clean up TIFF encoders before closing their output files
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Python 3.15
+^^^^^^^^^^^
 
-TIFF saving now explicitly cleans up the libtiff encoder, including when saving
-raises an exception. Previously, delayed encoder destruction could access a closed
-file descriptor after it had been reused for another file, disturbing that file's
-position or contents.
+Pillow 12.3.0 had wheels built against Python 3.15 beta, available as a preview
+to help projects prepare for 3.15, and to ensure Pillow could be used
+immediately at the release of 3.15.0 final (2026-10-01, :pep:`790`).
 
-:py:meth:`~PIL.Image.Image.tobytes` also now explicitly cleans up its encoder on
-both success and failure, rather than relying on object destruction.
+Pillow 13.0.0 now officially supports Python 3.15.
 
-PNG palettes are no longer padded when saving with the ``bits`` argument
+Faster JPEG 2000, TIFF, FreeType and LittleCMS in macOS and Linux wheels
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When saving a ``P`` mode image as a PNG with the ``bits`` argument, Pillow used to pad
-the ``PLTE`` chunk with zeroes up to ``2 ** bits`` entries. The ``PLTE`` chunk now only
-contains as many entries as the image's palette actually has, matching the behavior
-already used when ``bits`` is not specified.
+Several of the libraries bundled in the macOS and Linux wheels were built without
+compiler optimisation. The Windows wheels were not affected.
+
+These libraries are now compiled with ``-O2``. Compared to Pillow 12.3.0, the wheels
+
+* decode JPEG 2000 images 2 to 3 times faster and encode them about twice as fast,
+* LZW-compressed TIFF images are read and written about twice as fast,
+* text rendering with :py:mod:`~PIL.ImageFont` is up to 3 times faster, and
+* :py:mod:`~PIL.ImageCms` transforms are up to 3 times faster.
+
+PNG, JPEG, WebP and AVIF are unaffected, as those libraries were already built with
+optimisation.
 
 Wheels now use HarfBuzz for hinting
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -172,31 +178,6 @@ installed on the system with the expected name (e.g. ``libharfbuzz.so.0``).
 All wheels are now linked against the HarfBuzz that Pillow ships,
 which may slightly change how text is rendered in scripts that rely on the auto-hinter.
 
-Faster JPEG 2000, TIFF, FreeType and LittleCMS in macOS and Linux wheels
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Several of the libraries bundled in the macOS and Linux wheels were built without
-compiler optimisation. The Windows wheels were not affected.
-
-These libraries are now compiled with ``-O2``. Compared to Pillow 12.3.0, the wheels
-
-* decode JPEG 2000 images 2 to 3 times faster and encode them about twice as fast,
-* LZW-compressed TIFF images are read and written about twice as fast,
-* text rendering with :py:mod:`~PIL.ImageFont` is up to 3 times faster, and
-* :py:mod:`~PIL.ImageCms` transforms are up to 3 times faster.
-
-PNG, JPEG, WebP and AVIF are unaffected, as those libraries were already built with
-optimisation.
-
-Python 3.15
-^^^^^^^^^^^
-
-Pillow 12.3.0 had wheels built against Python 3.15 beta, available as a preview
-to help projects prepare for 3.15, and to ensure Pillow could be used
-immediately at the release of 3.15.0 final (2026-10-01, :pep:`790`).
-
-Pillow 13.0.0 now officially supports Python 3.15.
-
 Preserved transparency when padding or expanding images in ImageOps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -205,22 +186,16 @@ Preserved transparency when padding or expanding images in ImageOps
 pixels in L, P and RGB images previously became opaque when a border was added.
 New palette colors are allocated without using reserved transparency entries.
 
-Restore image position if ImageSequence.all_frames() fails
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If processing a frame in :py:func:`~PIL.ImageSequence.all_frames` raises an exception,
-the given image will now seek back to its original frame.
-
-Fixed ImageChops.offset() for 16-bit images
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-:py:meth:`~PIL.ImageChops.offset` now works correctly for 16-bit-per-channel images.
-
 Fixed ImageStat variance rounding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Fixed a floating-point rounding error that may have produced a negative variance in
 :py:attr:`~PIL.ImageStat.Stat.var`.
+
+Fixed ImageChops.offset() for 16-bit images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageChops.offset` now works correctly for 16-bit-per-channel images.
 
 Fixed histograms for masked LA, La and PA images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -228,3 +203,28 @@ Fixed histograms for masked LA, La and PA images
 When :py:meth:`~PIL.Image.Image.histogram` was given a mask for a two-band image (LA,
 La or PA), the second band was incorrectly derived from the first band of the input
 image, rather than the alpha band.
+
+PNG palettes are no longer padded when saving with the ``bits`` argument
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving a ``P`` mode image as a PNG with the ``bits`` argument, Pillow used to pad
+the ``PLTE`` chunk with zeroes up to ``2 ** bits`` entries. The ``PLTE`` chunk now only
+contains as many entries as the image's palette actually has, matching the behavior
+already used when ``bits`` is not specified.
+
+Restore image position if ImageSequence.all_frames() fails
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If processing a frame in :py:func:`~PIL.ImageSequence.all_frames` raises an exception,
+the given image will now seek back to its original frame.
+
+Clean up TIFF encoders before closing their output files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TIFF saving now explicitly cleans up the libtiff encoder, including when saving
+raises an exception. Previously, delayed encoder destruction could access a closed
+file descriptor after it had been reused for another file, disturbing that file's
+position or contents.
+
+:py:meth:`~PIL.Image.Image.tobytes` also now explicitly cleans up its encoder on
+both success and failure, rather than relying on object destruction.
