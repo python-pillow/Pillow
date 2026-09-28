@@ -54,6 +54,7 @@ static void
 im_point_2x8_2x8(Imaging imOut, Imaging imIn, im_point_context *context) {
     /* 2x8-bit source, 2x8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
+    UINT8 *table_256 = table + 256;
     // Invariant over the loop.
     int xsize = imIn->xsize, ysize = imIn->ysize;
     for (int y = 0; y < ysize; y++) {
@@ -64,7 +65,7 @@ im_point_2x8_2x8(Imaging imOut, Imaging imIn, im_point_context *context) {
             out[0] = table[in[0]];
             out[1] = 0;
             out[2] = 0;
-            out[3] = table[in[3] + 256];
+            out[3] = table_256[in[3]];
             in += 4;
             out += 4;
         }
@@ -78,6 +79,8 @@ static void
 im_point_3x8_3x8(Imaging imOut, Imaging imIn, im_point_context *context) {
     /* 3x8-bit source, 3x8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
+    UINT8 *table_256 = table + 256;
+    UINT8 *table_512 = table + 512;
     // Invariant over the loop.
     int xsize = imIn->xsize, ysize = imIn->ysize;
     for (int y = 0; y < ysize; y++) {
@@ -86,8 +89,8 @@ im_point_3x8_3x8(Imaging imOut, Imaging imIn, im_point_context *context) {
         UINT8 *restrict out = (UINT8 *)imOut->image[y];
         for (int x = 0; x < xsize; x++) {
             out[0] = table[in[0]];
-            out[1] = table[in[1] + 256];
-            out[2] = table[in[2] + 512];
+            out[1] = table_256[in[1]];
+            out[2] = table_512[in[2]];
             out[3] = 0;
             in += 4;
             out += 4;
@@ -102,6 +105,9 @@ static void
 im_point_4x8_4x8(Imaging imOut, Imaging imIn, im_point_context *context) {
     /* 4x8-bit source, 4x8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
+    UINT8 *table_256 = table + 256;
+    UINT8 *table_512 = table + 512;
+    UINT8 *table_768 = table + 768;
     // Invariant over the loop.
     int xsize = imIn->xsize, ysize = imIn->ysize;
     for (int y = 0; y < ysize; y++) {
@@ -110,9 +116,9 @@ im_point_4x8_4x8(Imaging imOut, Imaging imIn, im_point_context *context) {
         UINT8 *restrict out = (UINT8 *)imOut->image[y];
         for (int x = 0; x < xsize; x++) {
             out[0] = table[in[0]];
-            out[1] = table[in[1] + 256];
-            out[2] = table[in[2] + 512];
-            out[3] = table[in[3] + 768];
+            out[1] = table_256[in[1]];
+            out[2] = table_512[in[2]];
+            out[3] = table_768[in[3]];
             in += 4;
             out += 4;
         }
