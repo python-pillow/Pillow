@@ -143,6 +143,17 @@ escape sequences.
 Other changes
 =============
 
+Clean up TIFF encoders before closing their output files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TIFF saving now explicitly cleans up the libtiff encoder, including when saving
+raises an exception. Previously, delayed encoder destruction could access a closed
+file descriptor after it had been reused for another file, disturbing that file's
+position or contents.
+
+:py:meth:`~PIL.Image.Image.tobytes` also now explicitly cleans up its encoder on
+both success and failure, rather than relying on object destruction.
+
 PNG palettes are no longer padded when saving with the ``bits`` argument
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -169,6 +180,21 @@ installed on the system with the expected name (e.g. ``libharfbuzz.so.0``).
 
 All wheels are now linked against the HarfBuzz that Pillow ships,
 which may slightly change how text is rendered in scripts that rely on the auto-hinter.
+
+Faster JPEG 2000, TIFF, FreeType and LittleCMS in macOS and Linux wheels
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Several of the libraries bundled in the macOS and Linux wheels were built without
+compiler optimisation. The Windows wheels were not affected.
+
+These libraries are now compiled with ``-O2``. Compared to Pillow 12.3.0, the wheels
+- decode JPEG 2000 images 2 to 3 times faster and encode them about twice as fast,
+- LZW-compressed TIFF images are read and written about twice as fast,
+- text rendering with :py:mod:`~PIL.ImageFont` is up to 3 times faster, and
+- :py:mod:`~PIL.ImageCms` transforms are up to 3 times faster.
+
+PNG, JPEG, WebP and AVIF are unaffected, as those libraries were already built with
+optimisation.
 
 Python 3.15
 ^^^^^^^^^^^
