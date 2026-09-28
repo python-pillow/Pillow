@@ -779,7 +779,7 @@ getfilter(Imaging im, int filterid) {
 
 /* transformation engines */
 
-Imaging
+int
 ImagingGenericTransform(
     Imaging imOut,
     Imaging imIn,
@@ -801,12 +801,14 @@ ImagingGenericTransform(
     double xx, yy;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        ImagingError_ModeError();
+        return -1;
     }
 
     ImagingTransformFilter filter = getfilter(imIn, filterid);
     if (!filter) {
-        return (Imaging)ImagingError_ValueError("bad filter number");
+        ImagingError_ValueError("bad filter number");
+        return -1;
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -841,10 +843,10 @@ ImagingGenericTransform(
 
     ImagingSectionLeave(&cookie);
 
-    return imOut;
+    return 0;
 }
 
-static Imaging
+static int
 ImagingScaleAffine(
     Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, double a[6], int fill
 ) {
@@ -858,7 +860,8 @@ ImagingScaleAffine(
     int *xintab;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        ImagingError_ModeError();
+        return -1;
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -883,7 +886,8 @@ ImagingScaleAffine(
     xintab = (int *)calloc(out_xsize, sizeof(int));
     if (!xintab) {
         ImagingDelete(imOut);
-        return (Imaging)ImagingError_MemoryError();
+        ImagingError_MemoryError();
+        return -1;
     }
 
     xo = a[2] + a[0] * 0.5;
@@ -936,7 +940,7 @@ ImagingScaleAffine(
 
     free(xintab);
 
-    return imOut;
+    return 0;
 }
 
 static inline int
@@ -947,7 +951,7 @@ check_fixed(double a[6], int x, int y) {
     );
 }
 
-static inline Imaging
+static inline int
 affine_fixed(
     Imaging imOut,
     Imaging imIn,
@@ -1022,10 +1026,10 @@ affine_fixed(
 
 #undef AFFINE_TRANSFORM_FIXED
 
-    return imOut;
+    return 0;
 }
 
-Imaging
+int
 ImagingTransformAffine(
     Imaging imOut,
     Imaging imIn,
@@ -1048,7 +1052,8 @@ ImagingTransformAffine(
     double xo, yo;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        ImagingError_ModeError();
+        return -1;
     }
 
     if (filterid || imIn->type == IMAGING_TYPE_I16) {
@@ -1131,10 +1136,10 @@ ImagingTransformAffine(
 
 #undef AFFINE_TRANSFORM
 
-    return imOut;
+    return 0;
 }
 
-Imaging
+int
 ImagingTransform(
     Imaging imOut,
     Imaging imIn,
@@ -1162,7 +1167,8 @@ ImagingTransform(
             transform = quad_transform;
             break;
         default:
-            return (Imaging)ImagingError_ValueError("bad transform method");
+            ImagingError_ValueError("bad transform method");
+            return -1;
     }
 
     return ImagingGenericTransform(
