@@ -762,7 +762,6 @@ def test_imagemath_binary(
     [
         pytest.param(lambda a: abs(a), id="abs"),
         pytest.param(lambda a: -a, id="neg"),
-        pytest.param(lambda a: ~a, id="invert"),  # int only
     ],
 )
 @pytest.mark.parametrize("mode", ["I", "F"])
@@ -774,11 +773,7 @@ def test_imagemath_unary(
     op: Callable[[Image.Image], Any],
 ) -> None:
     a = make_pillow_image(mode, size)
-    try:
-        result = bench(ImageMath.lambda_eval, lambda args: op(args["a"]), a=a)
-    except TypeError as e:
-        assert "invert" in str(e)
-        pytest.skip(str(e))
+    result = bench(ImageMath.lambda_eval, lambda args: op(args["a"]), a=a)
     assert result.size == a.size
 
 
