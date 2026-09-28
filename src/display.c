@@ -137,10 +137,26 @@ _paste(ImagingDisplayObject *display, PyObject *args) {
     } else if (xy[2] - xy[0] != im->xsize) {
         return ImagingError_Mismatch();
     }
+    if (xy[0] < 0) {
+        PyErr_SetString(PyExc_ValueError, "left box co-ordinate cannot be negative");
+        return NULL;
+    }
+    if (xy[2] > display->dib->xsize) {
+        PyErr_SetString(PyExc_ValueError, "right box co-ordinate outside bitmap image");
+        return NULL;
+    }
     if (xy[3] <= xy[1]) {
         xy[3] = xy[1] + im->ysize;
     } else if (xy[3] - xy[1] != im->ysize) {
         return ImagingError_Mismatch();
+    }
+    if (xy[1] < 0) {
+        PyErr_SetString(PyExc_ValueError, "upper box co-ordinate cannot be negative");
+        return NULL;
+    }
+    if (xy[3] > display->dib->ysize) {
+        PyErr_SetString(PyExc_ValueError, "lower box co-ordinate outside bitmap image");
+        return NULL;
     }
 
     ImagingPasteDIB(display->dib, im, xy);

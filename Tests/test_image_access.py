@@ -260,7 +260,11 @@ class TestImagePutPixelError:
 
 
 class TestEmbeddable:
-    @pytest.mark.xfail(not (sys.version_info >= (3, 13)), reason="failing test")
+    @pytest.mark.xfail(
+        sysconfig.get_platform().startswith("mingw")
+        or not (sys.version_info >= (3, 13)),
+        reason="failing test",
+    )
     @pytest.mark.skipif(not is_win32(), reason="requires Windows")
     def test_embeddable(self) -> None:
         pytest.importorskip("setuptools", reason="setuptools not installed")

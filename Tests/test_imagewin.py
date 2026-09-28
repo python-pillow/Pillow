@@ -104,6 +104,21 @@ class TestImageWinDib:
         with pytest.raises(ValueError, match="images do not match"):
             dib.paste(im, (0, 0, 1, 1))
 
+        with pytest.raises(ValueError, match="left box co-ordinate cannot be negative"):
+            dib.paste(im, (-1, 0, 127, 128))
+        with pytest.raises(
+            ValueError, match="right box co-ordinate outside bitmap image"
+        ):
+            dib.paste(im, (128, 0, 256, 128))
+        with pytest.raises(
+            ValueError, match="upper box co-ordinate cannot be negative"
+        ):
+            dib.paste(im, (0, -1, 128, 127))
+        with pytest.raises(
+            ValueError, match="lower box co-ordinate outside bitmap image"
+        ):
+            dib.paste(im, (0, 128, 128, 256))
+
     def test_dib_frombytes_tobytes_roundtrip(self) -> None:
         # Arrange
         # Make two different DIB images
