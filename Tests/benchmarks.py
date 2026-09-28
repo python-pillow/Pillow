@@ -746,7 +746,7 @@ def test_imagemath_binary(
     bench: BenchmarkFixture,
     mode: str,
     size: tuple[int, int],
-    op: Callable[[Any, Any], Any],
+    op: Callable[[Image.Image, Image.Image], Any],
 ) -> None:
     a = make_pillow_image(mode, size)
     b = make_pillow_image(mode, size, seed=1)
@@ -768,7 +768,10 @@ def test_imagemath_binary(
 @pytest.mark.parametrize("mode", ["I", "F"])
 @pytest.mark.parametrize("size", SIZES, ids=_format_size)
 def test_imagemath_unary(
-    bench: BenchmarkFixture, mode: str, size: tuple[int, int], op: Callable[[Any], Any]
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+    op: Callable[[Image.Image], Any],
 ) -> None:
     a = make_pillow_image(mode, size)
     try:
