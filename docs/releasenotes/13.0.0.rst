@@ -235,3 +235,11 @@ Fixed reading PSD layers at the wrong file offset
 When seeking to a layer of a PSD image, the pixel data was read from the wrong
 position in the file, so :py:meth:`~PIL.Image.Image.seek` returned unrelated
 bytes reinterpreted as image data instead of that layer's actual content.
+
+Rejected zero-size TIFF frames
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Seeking to a TIFF frame with a zero width or height now raises a ``SyntaxError``,
+as opening such a frame as the first frame already did. Previously, when the image
+was opened from a filename and was uncompressed, the frame could be loaded as an
+image with no pixels.
