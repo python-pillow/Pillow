@@ -734,7 +734,7 @@ def _write_multiple_frames(
                     if "transparency" in encoderinfo:
                         # When the delta is zero, fill the image with transparency
                         if delta.mode == "RGBA":
-                            # A pixel is unchanged only if all four bands are zero
+                            # Each pixel is unchanged only if all four bands are zero
                             r, g, b, a = delta.split()
                             delta = ImageChops.lighter(
                                 ImageChops.lighter(r, g),
