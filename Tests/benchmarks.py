@@ -14,12 +14,13 @@ from io import BytesIO
 
 import pytest
 
-from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, ImageMath
 from PIL.Image import Resampling, Transform, Transpose
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from typing import Any
 
     BenchmarkSave = Callable[[Image.Image], None]
 
@@ -726,6 +727,66 @@ def test_offset(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> No
     im = make_pillow_image(mode, size)
     bench.extra_info["label"] = ["offset"]
     bench(ImageChops.offset, im, 123, 45)
+
+
+@pytest.mark.benchmark(group="imagemath")
+@pytest.mark.parametrize(
+    "op",
+    [
+        pytest.param(lambda a, b: a + b, id="add"),
+        pytest.param(lambda a, b: a * b, id="mul"),
+        pytest.param(lambda a, b: a / b, id="div"),
+        pytest.param(lambda a, b: ImageMath.imagemath_min(a, b), id="min"),
+        pytest.param(lambda a, b: a < b, id="lt"),
+    ],
+)
+@pytest.mark.parametrize("mode", ["I", "F"])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_imagemath_binary(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+    op: Callable[[Image.Image, Image.Image], Any],
+) -> None:
+    a = make_pillow_image(mode, size)
+    b = make_pillow_image(mode, size, seed=1)
+    result = bench(
+        ImageMath.lambda_eval, lambda args: op(args["a"], args["b"]), a=a, b=b
+    )
+    assert result.size == a.size
+
+
+@pytest.mark.benchmark(group="imagemath")
+@pytest.mark.parametrize(
+    "op",
+    [
+        pytest.param(lambda a: abs(a), id="abs"),
+        pytest.param(lambda a: -a, id="neg"),
+    ],
+)
+@pytest.mark.parametrize("mode", ["I", "F"])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_imagemath_unary(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+    op: Callable[[Image.Image], Any],
+) -> None:
+    a = make_pillow_image(mode, size)
+    result = bench(ImageMath.lambda_eval, lambda args: op(args["a"]), a=a)
+    assert result.size == a.size
+
+
+@pytest.mark.benchmark(group="imagemath")
+@pytest.mark.parametrize("mode", ["I", "F"])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_imagemath_scalar(
+    bench: BenchmarkFixture, mode: str, size: tuple[int, int]
+) -> None:
+    a = make_pillow_image(mode, size)
+    bench.extra_info["label"] = [f"scalar mul {mode}"]
+    result = bench(ImageMath.lambda_eval, lambda args: args["a"] * 2, a=a)
+    assert result.size == a.size
 
 
 @pytest.mark.benchmark(group="compare")
