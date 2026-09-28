@@ -26,34 +26,36 @@
 #define MATH_FUNC_UNOP_MAGIC "Pillow Math unary func"
 #define MATH_FUNC_BINOP_MAGIC "Pillow Math binary func"
 
-#define UNOP(name, op, type)                   \
-    void name(Imaging out, Imaging im1) {      \
-        int x, y;                              \
-        for (y = 0; y < out->ysize; y++) {     \
-            type *p0 = (type *)out->image[y];  \
-            type *p1 = (type *)im1->image[y];  \
-            for (x = 0; x < out->xsize; x++) { \
-                *p0 = op(type, *p1);           \
-                p0++;                          \
-                p1++;                          \
-            }                                  \
-        }                                      \
-    }
-
-#define BINOP(name, op, type)                          \
-    void name(Imaging out, Imaging im1, Imaging im2) { \
-        int x, y;                                      \
-        for (y = 0; y < out->ysize; y++) {             \
-            type *p0 = (type *)out->image[y];          \
-            type *p1 = (type *)im1->image[y];          \
-            type *p2 = (type *)im2->image[y];          \
-            for (x = 0; x < out->xsize; x++) {         \
-                *p0 = op(type, *p1, *p2);              \
+// Contract: `out` is the same size and type as `im1`,
+//           and a different image.
+#define UNOP(name, op, type)                           \
+    static void name(Imaging out, Imaging im1) {       \
+        int xsize = out->xsize, ysize = out->ysize;    \
+        for (int y = 0; y < ysize; y++) {              \
+            type *restrict p0 = (type *)out->image[y]; \
+            type *restrict p1 = (type *)im1->image[y]; \
+            for (int x = 0; x < xsize; x++) {          \
+                *p0 = op(type, *p1);                   \
                 p0++;                                  \
                 p1++;                                  \
-                p2++;                                  \
             }                                          \
         }                                              \
+    }
+
+#define BINOP(name, op, type)                                 \
+    static void name(Imaging out, Imaging im1, Imaging im2) { \
+        int xsize = out->xsize, ysize = out->ysize;           \
+        for (int y = 0; y < ysize; y++) {                     \
+            type *restrict p0 = (type *)out->image[y];        \
+            type *restrict p1 = (type *)im1->image[y];        \
+            type *restrict p2 = (type *)im2->image[y];        \
+            for (int x = 0; x < xsize; x++) {                 \
+                *p0 = op(type, *p1, *p2);                     \
+                p0++;                                         \
+                p1++;                                         \
+                p2++;                                         \
+            }                                                 \
+        }                                                     \
     }
 
 #define NEG(type, v1) -(v1)
@@ -165,6 +167,16 @@ BINOP(le_F, LE, FLOAT32)
 BINOP(gt_F, GT, FLOAT32)
 BINOP(ge_F, GE, FLOAT32)
 
+/**
+ * Apply an unary operation to the input image and store the result in the output image.
+ * The output image MUST be disparate from the input image,
+ * otherwise the result will be undefined.
+ *
+ * Python arguments:
+ * * op: A Capsule containing a pointer to the unary operation function.
+ * * i0: A Capsule containing a pointer to the output Imaging object.
+ * * i1: A Capsule containing a pointer to the input Imaging object.
+ */
 static PyObject *
 _unop(PyObject *self, PyObject *args) {
     Imaging out;
@@ -204,6 +216,18 @@ _unop(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
+/**
+ * Apply the given binary operation to the two input images and store the result in the
+ * output image.
+ * The output image MUST be disparate from the input images,
+ * otherwise the result will be undefined.
+ *
+ * Python arguments:
+ * * op: A Capsule containing a pointer to the binary operation function.
+ * * i0: A Capsule containing a pointer to the output Imaging object.
+ * * i1: A Capsule containing a pointer to the first input Imaging object.
+ * * i2: A Capsule containing a pointer to the second input Imaging object.
+ */
 static PyObject *
 _binop(PyObject *self, PyObject *args) {
     Imaging out;
