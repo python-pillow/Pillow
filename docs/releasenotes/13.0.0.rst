@@ -228,3 +228,10 @@ position or contents.
 
 :py:meth:`~PIL.Image.Image.tobytes` also now explicitly cleans up its encoder on
 both success and failure, rather than relying on object destruction.
+
+Fixed ImageOps.contain() for very thin images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.ImageOps.contain` and :py:func:`~PIL.ImageOps.pad` no longer raise
+``ValueError`` when a very thin image rounds the shorter side to zero pixels. The
+calculated dimension is now kept at least one pixel.

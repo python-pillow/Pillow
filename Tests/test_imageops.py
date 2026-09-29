@@ -142,6 +142,22 @@ def test_contain_round() -> None:
     assert new_im.height == 5
 
 
+def test_contain_narrow_image() -> None:
+    im = Image.new("RGB", (100, 1), "red")
+    new_im = ImageOps.contain(im, (10, 10))
+    assert new_im.size == (10, 1)
+
+    im = Image.new("RGB", (1, 100), "red")
+    new_im = ImageOps.contain(im, (10, 10))
+    assert new_im.size == (1, 10)
+
+
+def test_pad_narrow_image() -> None:
+    im = Image.new("RGB", (100, 1), "red")
+    new_im = ImageOps.pad(im, (10, 10))
+    assert new_im.size == (10, 10)
+
+
 @pytest.mark.parametrize(
     "image_name, expected_size",
     (
