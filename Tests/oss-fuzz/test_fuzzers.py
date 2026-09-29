@@ -37,7 +37,6 @@ def test_fuzz_images(path: pathlib.Path) -> None:
     fuzzers.enable_decompressionbomb_error()
     try:
         fuzzers.fuzz_image(path.read_bytes())
-        assert True
     except (
         # Known exceptions from Pillow
         OSError,
@@ -50,7 +49,7 @@ def test_fuzz_images(path: pathlib.Path) -> None:
         Image.DecompressionBombError,
         Image.DecompressionBombWarning,
     ):
-        assert True
+        pass
     finally:
         fuzzers.disable_decompressionbomb_error()
 
@@ -66,4 +65,3 @@ def test_fuzz_fonts(path: pathlib.Path) -> None:
         fuzzers.fuzz_font(path.read_bytes())
     except (Image.DecompressionBombError, Image.DecompressionBombWarning, OSError):
         pass
-    assert True
