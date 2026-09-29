@@ -700,6 +700,7 @@ def test_apng_save_disposal_background_mode(tmp_path: Path, mode: str) -> None:
         duration=100,
     )
     with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
         assert reloaded.n_frames == 2
 
 
