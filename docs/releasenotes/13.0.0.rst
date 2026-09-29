@@ -228,3 +228,11 @@ position or contents.
 
 :py:meth:`~PIL.Image.Image.tobytes` also now explicitly cleans up its encoder on
 both success and failure, rather than relying on object destruction.
+
+Rejected zero-size TIFF frames
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Seeking to a TIFF frame with a zero width or height now raises a ``SyntaxError``,
+as opening such a frame as the first frame already did. Previously, when the image
+was opened from a filename and was uncompressed, the frame could be loaded as an
+image with no pixels.
