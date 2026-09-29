@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import pathlib
 import sys
+from pathlib import Path
 
 import fuzzers
 import packaging
@@ -21,10 +21,10 @@ if libjpeg_turbo_version is not None:
             reason="Known failing with libjpeg_turbo 2.0"
         )
 
-tests_path = pathlib.Path(__file__).parent.parent
+tests_path = Path(__file__).parent.parent
 
 
-def find_files(subdir: str) -> list[pathlib.Path]:
+def find_files(subdir: str) -> list[Path]:
     return [path for path in tests_path.joinpath(subdir).rglob("*") if path.is_file()]
 
 
@@ -33,7 +33,7 @@ def find_files(subdir: str) -> list[pathlib.Path]:
     find_files("images"),
     ids=lambda p: str(p.relative_to(tests_path)),
 )
-def test_fuzz_images(path: pathlib.Path) -> None:
+def test_fuzz_images(path: Path) -> None:
     fuzzers.enable_decompressionbomb_error()
     try:
         fuzzers.fuzz_image(path.read_bytes())
@@ -60,7 +60,7 @@ def test_fuzz_images(path: pathlib.Path) -> None:
     find_files("fonts"),
     ids=lambda p: str(p.relative_to(tests_path)),
 )
-def test_fuzz_fonts(path: pathlib.Path) -> None:
+def test_fuzz_fonts(path: Path) -> None:
     try:
         fuzzers.fuzz_font(path.read_bytes())
     except (Image.DecompressionBombError, Image.DecompressionBombWarning, OSError):

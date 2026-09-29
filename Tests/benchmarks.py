@@ -6,11 +6,11 @@ from __future__ import annotations
 
 import hashlib
 import os
-import pathlib
 import re
 import warnings
 from importlib.util import find_spec
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
@@ -32,7 +32,7 @@ if not (find_spec("pytest_benchmark") or find_spec("pytest_codspeed")):
     pytest.skip("pytest-benchmark or pytest-codspeed required", allow_module_level=True)
 
 _save_results = os.environ.get("PILLOW_BENCHMARK_SAVE_RESULTS_PATH")
-SAVE_RESULTS_PATH = pathlib.Path(_save_results) if _save_results else None
+SAVE_RESULTS_PATH = Path(_save_results) if _save_results else None
 
 # These can be adjusted to add more modes to benchmark
 # (however all features benchmarked might not support all PIL modes).
@@ -45,7 +45,7 @@ MODES = ["RGB", "RGBA", "L", "LA"]
 SIZES = [(1237, 811)]  # Primes, non-power-of-two, asymmetric, approximately 1024x1024
 
 # For benchmarks that act on test fixture files, these are the paths loaded.
-IMAGES_PATH = pathlib.Path(__file__).parent / "images"
+IMAGES_PATH = Path(__file__).parent / "images"
 PATHS = [
     IMAGES_PATH / "flower2.jpg",
 ]
@@ -60,7 +60,7 @@ def _format_size(size: tuple[int, int]) -> str:
     return f"{size[0]}x{size[1]}"
 
 
-def _format_path(path: pathlib.Path) -> str:
+def _format_path(path: Path) -> str:
     return path.name
 
 
@@ -569,7 +569,7 @@ def test_draw_lines_blend(
 
 @pytest.mark.benchmark(group="load")
 @pytest.mark.parametrize("path", PATHS, ids=_format_path)
-def test_load(bench: BenchmarkFixture, path: pathlib.Path) -> None:
+def test_load(bench: BenchmarkFixture, path: Path) -> None:
     def run() -> None:
         with Image.open(path) as im:
             im.load()
@@ -579,7 +579,7 @@ def test_load(bench: BenchmarkFixture, path: pathlib.Path) -> None:
 
 @pytest.mark.benchmark(group="save")
 @pytest.mark.parametrize("path", PATHS, ids=_format_path)
-def test_save_jpeg(bench: BenchmarkFixture, path: pathlib.Path) -> None:
+def test_save_jpeg(bench: BenchmarkFixture, path: Path) -> None:
     with Image.open(path) as im:
         im.load()
     bench(lambda: im.save(BytesIO(), format="JPEG", quality=85))
@@ -982,11 +982,11 @@ def test_quantize_to_palette(
     benchmark_save: BenchmarkSave,
     dither: Image.Dither,
     output_mode: str,
-    source_type: str | pathlib.Path,
+    source_type: str | Path,
     palette_type: str,
     size: tuple[int, int],
 ) -> None:
-    if isinstance(source_type, pathlib.Path):
+    if isinstance(source_type, Path):
         with Image.open(source_type) as source_im:
             im = source_im.convert("RGB").resize(size)
     elif source_type == "synthetic":
