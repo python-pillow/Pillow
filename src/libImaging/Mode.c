@@ -1,7 +1,7 @@
 #include "Mode.h"
 #include <string.h>
 
-const ModeData MODES[] = {
+static const ModeData MODES[] = {
     [IMAGING_MODE_UNKNOWN] = {""},
 
     [IMAGING_MODE_1] = {"1"},         [IMAGING_MODE_CMYK] = {"CMYK"},
@@ -38,7 +38,7 @@ getModeData(const ModeID id) {
     return &MODES[id];
 }
 
-const RawModeData RAWMODES[] = {
+static const RawModeData RAWMODES[] = {
     [IMAGING_RAWMODE_UNKNOWN] = {""},
 
     [IMAGING_RAWMODE_1] = {"1"},
