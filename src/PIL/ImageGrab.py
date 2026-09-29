@@ -170,8 +170,8 @@ def grabclipboard() -> Image.Image | list[str] | None:
         data = io.BytesIO(binascii.unhexlify(p.stdout[11:-3]))
         return Image.open(data)
     elif sys.platform == "win32":
-        fmt, data = Image.core.grabclipboard_win32()
-        if fmt == "file":  # CF_HDROP
+        format_name, data = Image.core.grabclipboard_win32()
+        if format_name == "file":  # CF_HDROP
             import struct
 
             o = struct.unpack_from("I", data)[0]
@@ -180,16 +180,8 @@ def grabclipboard() -> Image.Image | list[str] | None:
             else:
                 files = data[o:].decode("utf-16le").split("\0")
             return files[: files.index("")]
-        if isinstance(data, bytes):
-            data = io.BytesIO(data)
-            if fmt == "png":
-                from . import PngImagePlugin
-
-                return PngImagePlugin.PngImageFile(data)
-            elif fmt == "DIB":
-                from . import BmpImagePlugin
-
-                return BmpImagePlugin.DibImageFile(data)
+        if format_name in {"DIB", "PNG"}:
+            return Image.open(io.BytesIO(data), formats=[format_name])
         return None
     else:
         if os.getenv("WAYLAND_DISPLAY"):

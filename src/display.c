@@ -461,8 +461,10 @@ PyImaging_GrabClipboardWin32(PyObject *self, PyObject *args) {
     void *data;
     PyObject *result;
     UINT format;
+    // Windows clipboard format identifiers
     UINT formats[] = {CF_DIB, CF_DIBV5, CF_HDROP, RegisterClipboardFormatA("PNG"), 0};
-    LPCSTR format_names[] = {"DIB", "DIB", "file", "png", NULL};
+    // For format_name in ImageGrab.py, in the same order as the formats above
+    LPCSTR format_names[] = {"DIB", "DIB", "file", "PNG", NULL};
 
     if (!OpenClipboard(NULL)) {
         // Maybe the clipboard is temporarily in use by another process.
