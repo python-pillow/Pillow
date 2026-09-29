@@ -24,7 +24,10 @@ Safe
 * **Reading a shared, loaded image.**
   Several threads may read the same image at once, as long as no thread modifies it.
   This includes operations that return a new image, such as resizing, cropping,
-  converting, filtering, saving, etc.
+  filtering, etc.
+  Saving is safe in most cases, but some encoders may concurrently modify an image's
+  ``encoderinfo``, causing issues. Conversions that do not involve palette quantization
+  are also safe between threads.
   However, take care to call :py:meth:`~PIL.Image.Image.load` from a single thread
   before sharing an image, because otherwise several threads may try to read from
   the same file object at once.
