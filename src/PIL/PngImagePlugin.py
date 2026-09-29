@@ -1225,16 +1225,20 @@ def _write_multiple_frames(
                 encoderinfo["duration"] = duration[frame_count]
             elif duration is None and "duration" in im_frame.info:
                 encoderinfo["duration"] = im_frame.info["duration"]
-            if isinstance(disposal, (list, tuple)):
-                encoderinfo["disposal"] = disposal[frame_count]
-            if isinstance(blend, (list, tuple)):
-                encoderinfo["blend"] = blend[frame_count]
+            encoderinfo["disposal"] = (
+                disposal[frame_count]
+                if isinstance(disposal, (list, tuple))
+                else disposal
+            )
+            encoderinfo["blend"] = (
+                blend[frame_count] if isinstance(blend, (list, tuple)) else blend
+            )
             frame_count += 1
 
             if im_frames:
                 previous = im_frames[-1]
-                prev_disposal = previous.encoderinfo.get("disposal", disposal)
-                prev_blend = previous.encoderinfo.get("blend", blend)
+                prev_disposal = previous.encoderinfo["disposal"]
+                prev_blend = previous.encoderinfo["blend"]
                 if prev_disposal == Disposal.OP_PREVIOUS and len(im_frames) < 2:
                     prev_disposal = Disposal.OP_BACKGROUND
 
@@ -1257,8 +1261,8 @@ def _write_multiple_frames(
                 bbox = delta.getbbox(alpha_only=False)
                 if (
                     not bbox
-                    and prev_disposal == encoderinfo.get("disposal", disposal)
-                    and prev_blend == encoderinfo.get("blend", blend)
+                    and prev_disposal == encoderinfo["disposal"]
+                    and prev_blend == encoderinfo["blend"]
                     and "duration" in encoderinfo
                 ):
                     previous.encoderinfo["duration"] += encoderinfo["duration"]
@@ -1303,8 +1307,8 @@ def _write_multiple_frames(
         if delay.numerator > 65535:
             msg = "cannot write duration"
             raise ValueError(msg)
-        frame_disposal = encoderinfo.get("disposal", disposal)
-        frame_blend = encoderinfo.get("blend", blend)
+        frame_disposal = encoderinfo["disposal"]
+        frame_blend = encoderinfo["blend"]
         # frame control
         chunk(
             fp,
