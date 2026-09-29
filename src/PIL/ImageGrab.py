@@ -180,16 +180,8 @@ def grabclipboard() -> Image.Image | list[str] | None:
             else:
                 files = data[o:].decode("utf-16le").split("\0")
             return files[: files.index("")]
-        if isinstance(data, bytes):
-            data = io.BytesIO(data)
-            if fmt == "png":
-                from . import PngImagePlugin
-
-                return PngImagePlugin.PngImageFile(data)
-            elif fmt == "DIB":
-                from . import BmpImagePlugin
-
-                return BmpImagePlugin.DibImageFile(data)
+        if fmt in {"DIB", "PNG"}:
+            return Image.open(io.BytesIO(data), formats=[fmt])
         return None
     else:
         if os.getenv("WAYLAND_DISPLAY"):
