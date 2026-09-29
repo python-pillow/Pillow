@@ -1454,7 +1454,9 @@ ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]) {
 
     if (imIn->mode == IMAGING_MODE_P || imIn->mode == IMAGING_MODE_1 ||
         imIn->type == IMAGING_TYPE_I16) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_NotSupportedError(
+            "mode P/mode I/16-bit images not supported"
+        );
     }
 
     /* Round the size up. Dividing before adding avoids overflowing for a

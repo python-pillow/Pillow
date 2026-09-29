@@ -39,7 +39,7 @@ def test_wrong_mode() -> None:
     im.palette = ImagePalette.ImagePalette()
     im.palette.mode = "L"
     im.palette.dirty = 1
-    with pytest.raises(ValueError, match="image has wrong mode"):
+    with pytest.raises(ValueError, match="only RGB/RGBA/CMYK images supported"):
         im.load()
 
 
