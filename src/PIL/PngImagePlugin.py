@@ -1243,7 +1243,7 @@ def _write_multiple_frames(
                     prev_disposal = Disposal.OP_BACKGROUND
 
                 if prev_disposal == Disposal.OP_BACKGROUND:
-                    base_im = previous.im.copy()
+                    base_im = previous.im.convert("RGBA")
                     dispose = Image.core.fill("RGBA", im.size, (0, 0, 0, 0))
                     bbox = previous.bbox
                     if bbox:
