@@ -160,6 +160,21 @@ class PsdImageFile(ImageFile.ImageFile):
             self._fp.seek(self._layers_position)
             _layer_data = io.BytesIO(ImageFile._safe_read(self._fp, self._layers_size))
             layers = _layerinfo(_layer_data, self._layers_size)
+            # _layerinfo() reads from a copy of the layer data starting at
+            # offset 0, but seek() reads tiles from the original file, so
+            # the tile offsets need to be shifted to be absolute.
+            layers = [
+                (
+                    name,
+                    mode,
+                    bbox,
+                    [
+                        tile._replace(offset=tile.offset + self._layers_position)
+                        for tile in tiles
+                    ],
+                )
+                for name, mode, bbox, tiles in layers
+            ]
         self._n_frames = len(layers)
         return layers
 

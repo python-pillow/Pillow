@@ -9,6 +9,7 @@ import pytest
 from PIL import Image, PsdImagePlugin
 
 from .helper import (
+    assert_image_equal,
     assert_image_equal_tofile,
     assert_image_similar,
     hopper,
@@ -109,6 +110,21 @@ def test_seek_tell() -> None:
         im.seek(2)
         layer_number = im.tell()
     assert layer_number == 2
+
+
+def test_seek_position_reads_correct_layer_data() -> None:
+    # The "Background" layer of this file is pixel-identical to the merged
+    # image that is loaded before any seek() call. Seeking away and back to
+    # that layer must decode the same data, not whatever bytes happen to sit
+    # at that offset in the layer info block.
+    with Image.open(test_file) as im:
+        merged = im.copy()
+
+        im.seek(2)
+        im.seek(1)
+        im.load()
+
+        assert_image_equal(im, merged)
 
 
 def test_seek_eoferror() -> None:
