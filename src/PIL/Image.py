@@ -3516,7 +3516,7 @@ def fromarrow(
 
     schema_capsule, array_capsule = obj.__arrow_c_array__()
     _im = core.new_arrow(mode, size, schema_capsule, array_capsule)
-    if _im:
+    if _im is not None:
         return Image()._new(_im)
 
     msg = "new_arrow returned None without an exception"
