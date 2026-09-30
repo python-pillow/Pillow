@@ -135,7 +135,7 @@ Other changes
 =============
 
 Fixed color lookup after reusing a palette entry
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When allocating a color in a full palette, Pillow can reuse an entry that is not
 used by the image. The color lookup is now updated when this happens. Previously,
