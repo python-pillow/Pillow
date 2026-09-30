@@ -93,16 +93,21 @@ def test_getcolor_reused_index(mode: str, duplicate: bool) -> None:
         colors[2] = colors[1]
     if mode == "RGBA":
         colors = [color + (255,) for color in colors]
-    im = Image.new("P", (255, 1))
-    im.putdata([0] + list(range(2, 256)))
+    im = Image.new("P", (256, 1))
+    im.putdata([0] + list(range(2, 256)) + [0])
     im.putpalette([channel for color in colors for channel in color], mode)
     assert im.palette is not None
 
     new_color = (255, 0, 0) if mode == "RGB" else (255, 0, 0, 255)
     assert im.palette.getcolor(new_color, im) == 1
+    im.putpixel((255, 0), new_color)
     assert im.palette.getcolor(new_color, im) == 1
     if duplicate:
-        assert im.palette.getcolor(colors[1], im) == 2
+        im.putpixel((0, 0), colors[1])
+        assert im.getpixel((0, 0)) == 2
+        expected_color = colors[1][:3]
+        assert im.convert("RGB").getpixel((0, 0)) == expected_color
+        assert im.convert("RGB").getpixel((255, 0)) == new_color[:3]
     else:
         with pytest.raises(ValueError, match="cannot allocate more than 256 colors"):
             im.palette.getcolor(colors[1])
