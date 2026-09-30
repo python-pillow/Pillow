@@ -283,3 +283,9 @@ def test_image_metadata(mode: str, metadata: list[str]) -> None:
 
     assert "bands" in parsed_metadata
     assert parsed_metadata["bands"] == metadata
+
+
+def test_zero_dimension() -> None:
+    array = pyarrow.array([], type=pyarrow.uint8())
+    assert Image.fromarrow(array, "L", (0, 7)).size == (0, 7)
+    assert Image.fromarrow(array, "L", (7, 0)).size == (7, 0)
