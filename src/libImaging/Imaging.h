@@ -389,7 +389,7 @@ extern Imaging
 ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]);
 extern Imaging
 ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]);
-extern Imaging
+extern int
 ImagingTransform(
     Imaging imOut,
     Imaging imIn,

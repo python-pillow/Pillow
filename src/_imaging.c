@@ -2041,10 +2041,16 @@ _resize(ImagingObject *self, PyObject *args) {
         a[5] = box[1];
 
         imOut = ImagingNewDirty(imIn->mode, xsize, ysize);
+        if (!imOut) {
+            return NULL;
+        }
 
-        imOut = ImagingTransform(
-            imOut, imIn, IMAGING_TRANSFORM_AFFINE, 0, 0, xsize, ysize, a, filter, 1
-        );
+        if (ImagingTransform(
+                imOut, imIn, IMAGING_TRANSFORM_AFFINE, 0, 0, xsize, ysize, a, filter, 1
+            )) {
+            ImagingDelete(imOut);
+            return NULL;
+        }
     } else {
         imOut = ImagingResample(imIn, xsize, ysize, filter, box);
     }
@@ -2167,13 +2173,13 @@ _transform(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    imOut = ImagingTransform(
+    int error = ImagingTransform(
         self->image, imagep->image, method, x0, y0, x1, y1, a, filter, fill
     );
 
     free(a);
 
-    if (!imOut) {
+    if (error) {
         return NULL;
     }
 
