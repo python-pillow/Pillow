@@ -179,6 +179,16 @@ def test_save_all(tmp_path: Path) -> None:
     assert os.path.getsize(outfile) > 0
 
 
+def test_save_all_p_transparency_first_frame(tmp_path: Path) -> None:
+    outfile = str(tmp_path / "temp.pdf")
+    with Image.open("Tests/images/transparent_dispose.gif") as im:
+        im.save(outfile, save_all=True)
+
+    with PdfParser.PdfParser(outfile) as pdf:
+        for object_id in pdf.xref_table.existing_entries:
+            pdf.read_indirect(PdfParser.IndirectReference(object_id, 0))
+
+
 def test_multiframe_normal_save(tmp_path: Path) -> None:
     # Test saving a multiframe image without save_all
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
