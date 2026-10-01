@@ -112,19 +112,15 @@ def test_seek_tell() -> None:
     assert layer_number == 2
 
 
-def test_seek_position_reads_correct_layer_data() -> None:
-    # The "Background" layer of this file is pixel-identical to the merged
-    # image that is loaded before any seek() call. Seeking away and back to
-    # that layer must decode the same data, not whatever bytes happen to sit
-    # at that offset in the layer info block.
+def test_seek_back_to_initial_frame() -> None:
+    # Seeking away from the initial frame and then back should produce the same image
     with Image.open(test_file) as im:
-        merged = im.copy()
+        initial_frame = im.copy()
 
         im.seek(2)
         im.seek(1)
-        im.load()
 
-        assert_image_equal(im, merged)
+        assert_image_equal(im, initial_frame)
 
 
 def test_seek_eoferror() -> None:
@@ -244,11 +240,5 @@ def test_bounds_crash_overflow() -> None:
     with Image.open("Tests/images/psd-oob-write-overflow.psd") as im:
         assert isinstance(im, PsdImagePlugin.PsdImageFile)
         im.load()
-        if sys.maxsize <= 2**32:
-            with pytest.raises(OverflowError):
-                im.seek(im.n_frames)
-        else:
+        with pytest.raises(OverflowError if sys.maxsize <= 2**32 else ValueError):
             im.seek(im.n_frames)
-
-            with pytest.raises(ValueError):
-                im.load()
