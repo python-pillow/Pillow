@@ -1138,6 +1138,21 @@ ImagingTransformAffine(
     return 0;
 }
 
+/**
+ * Runs a transformation over the data from imIn, placing the result in imOut.
+ *
+ * @param imOut     Existing image to write into
+ * @param imIn      Source image to transform
+ * @param method    Which method to use
+ * @param x0        The left co-ordinate of the area to transform
+ * @param y0        The upper co-ordinate of the area to transform
+ * @param x1        The right co-ordinate of the area to transform
+ * @param y1        The lower co-ordinate of the area to transform
+ * @param a         An array of extra data for the transformation method
+ * @param filterid  Which filter to use
+ * @param fill      1 to fill the area with zeros
+ * @return          -1 in case of an error, 0 otherwise
+ */
 int
 ImagingTransform(
     Imaging imOut,
