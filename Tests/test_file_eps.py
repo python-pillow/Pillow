@@ -302,6 +302,22 @@ def test_image_mode_not_supported(tmp_path: Path) -> None:
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
+def test_filename_not_parsed_as_ghostscript_argument(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Check that a filename starting with "-" is not passed to Ghostscript unmodified
+    # If it was, the help functionality would be triggered instead
+    monkeypatch.chdir(tmp_path)
+    name = "-h"
+    with open(name, "wb") as f:
+        f.write(b"\n".join(simple_eps_file))
+
+    with Image.open(name) as im:
+        im.load()
+        assert im.size == (100, 100)
+
+
+@pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 @skip_unless_feature("zlib")
 def test_render_scale1() -> None:
     # We need png support for these render test

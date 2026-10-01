@@ -103,7 +103,10 @@ def Ghostscript(
 
     infile_temp = None
     if hasattr(fp, "name") and os.path.exists(fp.name):
-        infile = fp.name
+        # Make the path absolute so that a filename beginning with "-" or "@"
+        # can never be interpreted by Ghostscript's argument parser
+        # as an option or an @-file token
+        infile = os.path.abspath(fp.name)
     else:
         in_fd, infile_temp = tempfile.mkstemp()
         os.close(in_fd)
