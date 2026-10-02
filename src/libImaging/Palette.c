@@ -20,10 +20,14 @@
 
 #include <math.h>
 
+/**
+ * Create a palette object in the given mode.
+ *
+ * @param mode The mode of the palette (RGB/RGBA/CMYK).
+ * @return A new palette object, or NULL on error with a Python exception set.
+ */
 ImagingPalette
 ImagingPaletteNew(const ModeID mode) {
-    /* Create a palette object */
-
     int i;
     ImagingPalette palette;
 
@@ -47,10 +51,13 @@ ImagingPaletteNew(const ModeID mode) {
     return palette;
 }
 
+/**
+ * Create a standard "browser" palette object in RGB mode.
+ *
+ * @return A new palette object, or NULL on error with a Python exception set.
+ */
 ImagingPalette
 ImagingPaletteNewBrowser(void) {
-    /* Create a standard "browser" palette object */
-
     int i, r, g, b;
     ImagingPalette palette;
 
@@ -80,10 +87,14 @@ ImagingPaletteNewBrowser(void) {
     return palette;
 }
 
+/**
+ * Duplicate a palette object.
+ *
+ * @param palette The palette to duplicate.
+ * @return A new palette object, or NULL on error with a Python exception set.
+ */
 ImagingPalette
 ImagingPaletteDuplicate(ImagingPalette palette) {
-    /* Duplicate palette descriptor */
-
     ImagingPalette new_palette;
 
     if (!palette) {
@@ -103,10 +114,14 @@ ImagingPaletteDuplicate(ImagingPalette palette) {
     return new_palette;
 }
 
+/**
+ * Destroy a palette object.
+ *
+ * @param palette The palette to destroy; may be NULL.
+ * @return Infallible. The passed-in palette pointer is invalid after this call.
+ */
 void
 ImagingPaletteDelete(ImagingPalette palette) {
-    /* Destroy palette object */
-
     if (palette) {
         if (palette->cache) {
             free(palette->cache);

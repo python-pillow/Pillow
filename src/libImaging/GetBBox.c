@@ -18,10 +18,19 @@
 
 #include "Imaging.h"
 
+/**
+ * Get the bounding box for any non-zero data in the image.
+ *
+ * @param im The image to analyze.
+ * @param bbox An array of four integers to store the bounding box coordinates:
+ *             [left, top, right, bottom].
+ *             Must have been allocated as such by the caller.
+ * @param alpha_only If non-zero, only consider the alpha channel for bounding box
+ *                   calculation.
+ * @return 1 if a bounding box was found, 0 if the image is empty (no non-zero pixels).
+ */
 int
 ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
-    /* Get the bounding box for any non-zero data in the image.*/
-
     int xsize = im->xsize, ysize = im->ysize;
 
     /* Initialize bounding box to max values */
@@ -139,10 +148,20 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
     return 1; /* ok */
 }
 
+/**
+ * Get projection arrays for non-zero data in the image.
+ * Projection arrays indicate the rows and columns in the image
+ * with non-zero data.
+ *
+ * @param im The image to analyze.
+ * @param xproj Projection array for columns.
+ *              Must be of size `im->xsize`, allocated by the caller.
+ * @param yproj Projection array for rows.
+ *              Must be of size `im->ysize`, allocated by the caller.
+ * @return Always 1.
+ */
 int
 ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj) {
-    /* Get projection arrays for non-zero data in the image.*/
-
     int x, y;
     int has_data;
 
