@@ -179,12 +179,13 @@ def test_save_all(tmp_path: Path) -> None:
     assert os.path.getsize(outfile) > 0
 
 
-def test_save_all_p_transparency_first_frame(tmp_path: Path) -> None:
+def test_save_all_object_ids(tmp_path: Path) -> None:
     outfile = str(tmp_path / "temp.pdf")
     with Image.open("Tests/images/transparent_dispose.gif") as im:
         im.save(outfile, save_all=True)
 
     with PdfParser.PdfParser(outfile) as pdf:
+        # Test that each object id was used
         for object_id in pdf.xref_table.existing_entries:
             pdf.read_indirect(PdfParser.IndirectReference(object_id, 0))
 
