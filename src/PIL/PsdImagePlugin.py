@@ -215,7 +215,7 @@ def _layerinfo(
         x1 = si32(read(4))
 
         # image info
-        bands = []
+        bands = set()
         ct_types = i16(read(2))
         if ct_types > 4:
             fp.seek(ct_types * 6 + 12, io.SEEK_CUR)
@@ -233,16 +233,15 @@ def _layerinfo(
             else:
                 b = ""
 
-            bands.append(b)
+            bands.add(b)
             read(4)  # size
 
         # figure out the image mode
-        bands.sort()
-        if bands == ["R"]:
+        if bands == {"R"}:
             mode = "L"
-        elif bands == ["B", "G", "R"]:
+        elif bands == {"R", "G", "B"}:
             mode = "RGB"
-        elif bands == ["A", "B", "G", "R"]:
+        elif bands == {"R", "G", "B", "A"}:
             mode = "RGBA"
         else:
             mode = ""  # unknown
