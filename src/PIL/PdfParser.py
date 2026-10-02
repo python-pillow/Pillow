@@ -617,7 +617,7 @@ class PdfParser:
         self.pages_ref = self.root[b"Pages"]
         assert self.pages_ref is not None
         self.page_tree_root = self.read_indirect(self.pages_ref)
-        self.pages = self.linearize_page_tree(self.page_tree_root)
+        self.pages = self.linearize_page_tree()
         # save the original list of page references
         # in case the user modifies, adds or deletes some pages
         # and we need to rewrite the pages and their list
@@ -1083,17 +1083,29 @@ class PdfParser:
         return value
 
     def linearize_page_tree(
-        self, node: PdfDict | None = None
+        self, node: PdfDict | None = None, processed_ids: set[int] | None = None
     ) -> list[IndirectReference]:
-        page_node = node if node is not None else self.page_tree_root
+        if processed_ids is None:
+            processed_ids = set()
+        if node is not None:
+            page_node = node
+        else:
+            page_node = self.page_tree_root
+            if self.pages_ref is not None:
+                processed_ids.add(self.pages_ref.object_id)
         check_format_condition(
             page_node[b"Type"] == b"Pages", "/Type of page tree node is not /Pages"
         )
         pages = []
         for kid in page_node[b"Kids"]:
+            check_format_condition(
+                kid.object_id not in processed_ids,
+                f"page tree contains a cyclic or duplicate reference to {kid}",
+            )
+            processed_ids.add(kid.object_id)
             kid_object = self.read_indirect(kid)
             if kid_object[b"Type"] == b"Page":
                 pages.append(kid)
             else:
-                pages.extend(self.linearize_page_tree(node=kid_object))
+                pages.extend(self.linearize_page_tree(kid_object, processed_ids))
         return pages
