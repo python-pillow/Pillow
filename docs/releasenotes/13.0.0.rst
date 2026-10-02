@@ -228,3 +228,9 @@ position or contents.
 
 :py:meth:`~PIL.Image.Image.tobytes` also now explicitly cleans up its encoder on
 both success and failure, rather than relying on object destruction.
+
+WebP encoding errors now include a description
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When libwebp fails to encode an image, the raised :py:exc:`ValueError` now
+consistently describes the error rather than only reporting a numeric code.
