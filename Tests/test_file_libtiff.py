@@ -1028,6 +1028,16 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/flower.jpg", 1.5)
 
+    def test_tiled_jpeg_oob_read(self) -> None:
+        # A tiled TIFF whose libtiff-decoded, JPEG-compressed tile storage
+        # (TIFFTileSize) is smaller than tile_length rows of the *unpacked*
+        # rawmode's bytes-per-pixel would require. Decoding must fail safely
+        # rather than let the row unpacker read past the tile buffer
+        infile = "Tests/images/tiff_tiled_jpeg_oob_read.tif"
+        with Image.open(infile) as im:
+            with pytest.raises(OSError):
+                im.load()
+
     def test_strip_planar_rgb(self) -> None:
         # gdal_translate -co TILED=no -co INTERLEAVE=BAND -co COMPRESS=LZW \
         # tiff_strip_raw.tif tiff_strip_planar_lzw.tiff
