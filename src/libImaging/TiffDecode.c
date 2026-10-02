@@ -740,13 +740,13 @@ ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...) {
     return status;
 }
 
-int
+void
 ImagingLibTiffEncodeCleanup(ImagingCodecState state) {
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
     TIFF *tiff = clientstate->tiff;
 
     if (!tiff) {
-        return 0;
+        return;
     }
     // TIFFClose in libtiff calls tif_closeproc and TIFFCleanup
     if (clientstate->fp) {
@@ -759,7 +759,6 @@ ImagingLibTiffEncodeCleanup(ImagingCodecState state) {
         TIFFClose(tiff);
     }
     clientstate->tiff = NULL;
-    return 0;
 }
 
 int
