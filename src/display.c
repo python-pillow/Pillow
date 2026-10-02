@@ -444,11 +444,11 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
     return Py_BuildValue("(ii)(ii)N", x, y, width, height, buffer);
 
 error:
+    Py_XDECREF(buffer);
     if (bitmap != NULL) {
         DeleteObject(bitmap);
     }
     DeleteDC(screen_copy);
-    Py_XDECREF(buffer);
     if (screens == -1) {
         ReleaseDC(wnd, screen);
     } else {
