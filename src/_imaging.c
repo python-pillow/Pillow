@@ -762,20 +762,6 @@ _new(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_new_block(PyObject *self, PyObject *args) {
-    char *mode_name;
-    int xsize, ysize;
-
-    if (!PyArg_ParseTuple(args, "s(ii)", &mode_name, &xsize, &ysize)) {
-        return NULL;
-    }
-
-    const ModeID mode = findModeID(mode_name);
-
-    return PyImagingNew(ImagingNewBlock(mode, xsize, ysize));
-}
-
-static PyObject *
 _linear_gradient(PyObject *self, PyObject *args) {
     char *mode_name;
 
@@ -4232,7 +4218,6 @@ static PyMethodDef functions[] = {
     {"blend", (PyCFunction)_blend, METH_VARARGS},
     {"fill", (PyCFunction)_fill, METH_VARARGS},
     {"new", (PyCFunction)_new, METH_VARARGS},
-    {"new_block", (PyCFunction)_new_block, METH_VARARGS},
     {"new_arrow", (PyCFunction)_new_arrow, METH_VARARGS},
     {"merge", (PyCFunction)_merge, METH_VARARGS},
 
