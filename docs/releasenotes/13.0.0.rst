@@ -228,3 +228,10 @@ position or contents.
 
 :py:meth:`~PIL.Image.Image.tobytes` also now explicitly cleans up its encoder on
 both success and failure, rather than relying on object destruction.
+
+Fixed reading PSD layers at the wrong file offset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When seeking to a layer of a PSD image, the pixel data was read from the wrong
+position in the file, so :py:meth:`~PIL.Image.Image.seek` returned unrelated
+bytes reinterpreted as image data instead of that layer's actual content.

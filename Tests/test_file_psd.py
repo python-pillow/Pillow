@@ -9,6 +9,7 @@ import pytest
 from PIL import Image, PsdImagePlugin
 
 from .helper import (
+    assert_image_equal,
     assert_image_equal_tofile,
     assert_image_similar,
     hopper,
@@ -109,6 +110,17 @@ def test_seek_tell() -> None:
         im.seek(2)
         layer_number = im.tell()
     assert layer_number == 2
+
+
+def test_seek_back_to_initial_frame() -> None:
+    # Seeking away from the initial frame and then back should produce the same image
+    with Image.open(test_file) as im:
+        initial_frame = im.copy()
+
+        im.seek(2)
+        im.seek(1)
+
+        assert_image_equal(im, initial_frame)
 
 
 def test_seek_eoferror() -> None:
@@ -228,11 +240,5 @@ def test_bounds_crash_overflow() -> None:
     with Image.open("Tests/images/psd-oob-write-overflow.psd") as im:
         assert isinstance(im, PsdImagePlugin.PsdImageFile)
         im.load()
-        if sys.maxsize <= 2**32:
-            with pytest.raises(OverflowError):
-                im.seek(im.n_frames)
-        else:
+        with pytest.raises(OverflowError if sys.maxsize <= 2**32 else ValueError):
             im.seek(im.n_frames)
-
-            with pytest.raises(ValueError):
-                im.load()
