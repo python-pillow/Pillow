@@ -294,7 +294,7 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n)
         ImagingDelete(imTransposed);
     }
     if (xradius == 0 && yradius == 0) {
-        if (!ImagingCopy2(imOut, imIn)) {
+        if (!ImagingCopyInto(imOut, imIn)) {
             return NULL;
         }
     }

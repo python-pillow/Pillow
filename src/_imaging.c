@@ -1038,26 +1038,18 @@ _convert(ImagingObject *self, PyObject *args) {
     const ModeID mode = findModeID(mode_name);
 
     return PyImagingNew(ImagingConvert(
-        NULL,
-        self->image,
-        mode,
-        paletteimage ? paletteimage->image->palette : NULL,
-        dither
+        self->image, mode, paletteimage ? paletteimage->image->palette : NULL, dither
     ));
 }
 
 static PyObject *
-_convert_into(ImagingObject *self, PyObject *args) {
-    ImagingObject *imagep;
-    if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
+_convert_block(ImagingObject *self, PyObject *args) {
+    char *mode_name;
+    if (!PyArg_ParseTuple(args, "s", &mode_name)) {
         return NULL;
     }
 
-    if (!ImagingConvert(imagep->image, self->image, imagep->image->mode, NULL, 0)) {
-        return NULL;
-    }
-
-    Py_RETURN_NONE;
+    return PyImagingNew(ImagingConvertBlock(self->image, findModeID(mode_name)));
 }
 
 static PyObject *
@@ -3731,7 +3723,7 @@ static struct PyMethodDef methods[] = {
     /* Standard processing methods (Image) */
     {"color_lut_3d", (PyCFunction)_color_lut_3d, METH_VARARGS},
     {"convert", (PyCFunction)_convert, METH_VARARGS},
-    {"convert_into", (PyCFunction)_convert_into, METH_VARARGS},
+    {"convert_block", (PyCFunction)_convert_block, METH_VARARGS},
     {"convert_matrix", (PyCFunction)_convert_matrix, METH_VARARGS},
     {"convert_transparent", (PyCFunction)_convert_transparent, METH_VARARGS},
     {"copy", (PyCFunction)_copy, METH_VARARGS},
