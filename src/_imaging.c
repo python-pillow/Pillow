@@ -1053,11 +1053,7 @@ _convert_impl(ImagingObject *self, PyObject *args) {
     const ModeID mode = findModeID(mode_name);
 
     return PyImagingNew(ImagingConvert(
-        NULL,
-        self->image,
-        mode,
-        paletteimage ? paletteimage->image->palette : NULL,
-        dither
+        self->image, mode, paletteimage ? paletteimage->image->palette : NULL, dither
     ));
 }
 
@@ -1071,24 +1067,18 @@ _convert(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_convert_into(ImagingObject *self, PyObject *args) {
-    ImagingObject *imagep;
+_convert_block(ImagingObject *self, PyObject *args) {
+    char *mode_name;
     Imaging result;
-    if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
+    if (!PyArg_ParseTuple(args, "s", &mode_name)) {
         return NULL;
     }
 
-    Py_BEGIN_CRITICAL_SECTION2(self, imagep);
-    result = ImagingConvert(
-        imagep->image, self->image, imagep->image->mode, NULL, IMAGING_DITHER_NONE
-    );
-    Py_END_CRITICAL_SECTION2();
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = ImagingConvertBlock(self->image, findModeID(mode_name));
+    Py_END_CRITICAL_SECTION();
 
-    if (!result) {
-        return NULL;
-    }
-
-    Py_RETURN_NONE;
+    return PyImagingNew(result);
 }
 
 static PyObject *
@@ -4249,7 +4239,7 @@ static struct PyMethodDef methods[] = {
     /* Standard processing methods (Image) */
     {"color_lut_3d", (PyCFunction)_color_lut_3d, METH_VARARGS},
     {"convert", (PyCFunction)_convert, METH_VARARGS},
-    {"convert_into", (PyCFunction)_convert_into, METH_VARARGS},
+    {"convert_block", (PyCFunction)_convert_block, METH_VARARGS},
     {"convert_matrix", (PyCFunction)_convert_matrix, METH_VARARGS},
     {"convert_transparent", (PyCFunction)_convert_transparent, METH_VARARGS},
     {"copy", (PyCFunction)_copy, METH_VARARGS},
