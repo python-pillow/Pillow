@@ -185,6 +185,10 @@ class PsdImageFile(ImageFile.ImageFile):
         _, self._mode, _, self.tile = self.layers[layer - 1]
         self.frame = layer
         self.fp = self._fp
+        if self._im is not None and (
+            self.im.size != self.size or self.im.mode != self.mode
+        ):
+            self._im = None
 
     def tell(self) -> int:
         # return layer number (0=image, 1..max=layers)

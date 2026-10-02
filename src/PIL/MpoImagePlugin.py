@@ -169,6 +169,10 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.tile = [
             ImageFile._Tile("jpeg", (0, 0, *self.size), self.offset, self.tile[0][-1])
         ]
+        if self._im is not None and (
+            self.im.size != self.size or self.im.mode != self.mode
+        ):
+            self._im = None
         self.__frame = frame
 
     def tell(self) -> int:

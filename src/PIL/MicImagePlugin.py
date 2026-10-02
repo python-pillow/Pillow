@@ -81,6 +81,10 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
         TiffImagePlugin.TiffImageFile._open(self)
         Image._decompression_bomb_check(self.size)
+        if self._im is not None and (
+            self.im.size != self.size or self.im.mode != self.mode
+        ):
+            self._im = None
 
         self.frame = frame
 

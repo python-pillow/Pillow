@@ -112,6 +112,24 @@ def test_seek_tell() -> None:
     assert layer_number == 2
 
 
+def test_seek_layer_with_different_mode() -> None:
+    # A layer may use a different mode and pixel size than the composite image,
+    # so the backing image must not be reused across the change.
+    with open(test_file, "rb") as fp:
+        data = bytearray(fp.read())
+    # Patch the header to report a single grayscale channel for the composite,
+    # while the RGB/RGBA layer records are left untouched.
+    data[12:14] = b"\x00\x01"  # channels
+    data[24:26] = b"\x00\x01"  # grayscale mode
+
+    with Image.open(io.BytesIO(data)) as im:
+        im.load()
+        assert im.mode == "L"
+        im.seek(im.n_frames)
+        im.load()
+        assert im.mode == "RGBA"
+
+
 def test_seek_back_to_initial_frame() -> None:
     # Seeking away from the initial frame and then back should produce the same image
     with Image.open(test_file) as im:

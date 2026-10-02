@@ -256,6 +256,22 @@ def test_seek(test_file: str) -> None:
         assert im.tell() == 0
 
 
+def test_seek_frame_with_different_mode() -> None:
+    # A frame may use a different mode and pixel size than the first,
+    # so the backing image must not be reused across the change.
+    out = BytesIO()
+    Image.new("L", (128, 128)).save(
+        out, "MPO", save_all=True, append_images=[Image.new("RGB", (128, 128))]
+    )
+    out.seek(0)
+    with Image.open(out) as im:
+        im.load()
+        assert im.mode == "L"
+        im.seek(1)
+        im.load()
+        assert im.mode == "RGB"
+
+
 def test_seek_decompression_bomb() -> None:
     with open("Tests/images/frozenpond.mpo", "rb") as fp:
         data = fp.read()

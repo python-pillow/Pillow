@@ -97,6 +97,37 @@ def test_seek_too_far() -> None:
         im.seek(frame)
 
 
+def test_seek_frame_with_different_mode() -> None:
+    # A later frame may use a different mode and pixel size than the first.
+    # The backing image must not be reused across such a change.
+    def pcx(bits: int, planes: int, w: int, h: int, body: bytes) -> bytes:
+        stride = (w * bits + 7) // 8
+        stride += stride % 2
+        header = bytes([10, 5, 1, bits])
+        header += o16(0) + o16(0) + o16(w - 1) + o16(h - 1) + o16(72) + o16(72)
+        header += bytes(48) + b"\0" + bytes([planes]) + o16(stride)
+        return header + bytes(128 - len(header)) + body
+
+    w = h = 128
+    first_frame = pcx(8, 1, w, h, b"\x41" * (w * h))
+    second_frame = pcx(8, 3, w, h, b"\x41" * (3 * w * h))
+    b = BytesIO(
+        o32(DcxImagePlugin.MAGIC)
+        + o32(16)
+        + o32(len(first_frame) + 16)
+        + o32(0)
+        + first_frame
+        + second_frame
+    )
+    with Image.open(b) as im:
+        im.load()
+        assert im.mode == "L"
+        im.seek(1)
+        im.load()
+        assert im.mode == "RGB"
+        assert im.getpixel((0, 0)) == (0x41, 0x41, 0x41)
+
+
 def test_seek_decompression_bomb() -> None:
     with open("Tests/images/pil184.pcx", "rb") as fp:
         first_frame = fp.read()

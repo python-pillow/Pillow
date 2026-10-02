@@ -77,6 +77,10 @@ class DcxImageFile(PcxImageFile):
         self.fp.seek(self._offset[frame])
         PcxImageFile._open(self)
         Image._decompression_bomb_check(self.size)
+        if self._im is not None and (
+            self.im.size != self.size or self.im.mode != self.mode
+        ):
+            self._im = None
 
     def tell(self) -> int:
         return self.frame
