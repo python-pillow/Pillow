@@ -42,7 +42,7 @@ typedef struct {
     PyObject_HEAD int (*encode)(
         Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes
     );
-    int (*cleanup)(ImagingCodecState state);
+    void (*cleanup)(ImagingCodecState state);
     struct ImagingCodecStateInstance state;
     Imaging im;
     PyObject *lock;
@@ -108,13 +108,11 @@ _dealloc(ImagingEncoderObject *encoder) {
 
 static PyObject *
 _encode_cleanup(ImagingEncoderObject *encoder, PyObject *args) {
-    int status = 0;
-
     if (encoder->cleanup) {
-        status = encoder->cleanup(&encoder->state);
+        encoder->cleanup(&encoder->state);
     }
 
-    return Py_BuildValue("i", status);
+    Py_RETURN_NONE;
 }
 
 static PyObject *

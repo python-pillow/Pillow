@@ -961,7 +961,7 @@ ImagingJpeg2KDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t 
 /* Cleanup                                                              */
 /* -------------------------------------------------------------------- */
 
-int
+void
 ImagingJpeg2KDecodeCleanup(ImagingCodecState state) {
     JPEG2KDECODESTATE *context = (JPEG2KDECODESTATE *)state->context;
 
@@ -970,8 +970,6 @@ ImagingJpeg2KDecodeCleanup(ImagingCodecState state) {
     }
 
     context->error_msg = NULL;
-
-    return -1;
 }
 
 const char *

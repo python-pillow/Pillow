@@ -2127,7 +2127,6 @@ static PyObject *
 _transform(ImagingObject *self, PyObject *args) {
     static const char *wrong_length = "wrong number of matrix entries";
 
-    Imaging imOut;
     Py_ssize_t n;
     double *a;
 
