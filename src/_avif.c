@@ -85,11 +85,15 @@ irot_imir_to_exif_orientation(const avifImage *image) {
     return 1;  // Default orientation ("top-left", no-op).
 }
 
+/**
+ * Map EXIF orientation to irot and imir boxes.
+ *
+ * EXIF orientations are defined in JEITA CP-3451C section 4.6.4.A Orientation.
+ * irot and imir boxes are defined in HEIF ISO/IEC 28002-12:2021 sections 6.5.10
+ * and 6.5.12.
+ */
 static void
 exif_orientation_to_irot_imir(avifImage *image, int orientation) {
-    // Mapping from Exif orientation as defined in JEITA CP-3451C section 4.6.4.A
-    // Orientation to irot and imir boxes as defined in HEIF ISO/IEC 28002-12:2021
-    // sections 6.5.10 and 6.5.12.
     switch (orientation) {
         case 2:  // The 0th row is at the visual top of the image, and the 0th column is
                  // the visual right-hand side.
