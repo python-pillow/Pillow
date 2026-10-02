@@ -932,5 +932,5 @@ class PyEncoder(PyCodec):
         while errcode == 0:
             status, errcode, buf = self.encode(bufsize)
             if status > 0:
-                os.write(fh, buf[status:])
+                os.write(fh, buf[:status])
         return errcode

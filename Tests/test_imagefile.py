@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import tempfile
 from io import BytesIO
 from typing import Any
 
@@ -275,7 +276,7 @@ class MockPyEncoder(ImageFile.PyEncoder):
         super().__init__(mode, *args)
 
     def encode(self, bufsize: int) -> tuple[int, int, bytes]:
-        return 1, 1, b""
+        return 1, 1, b"a"
 
     def cleanup(self) -> None:
         self.cleanup_called = True
@@ -436,6 +437,13 @@ class TestPyEncoder(CodecsTest):
 
         with pytest.raises(NotImplementedError):
             encoder.encode_to_file(0, 0)
+
+        mock_encoder = MockPyEncoder("")
+        with tempfile.TemporaryFile() as fp:
+            mock_encoder.encode_to_file(fp.fileno(), 5)
+
+            fp.seek(0)
+            assert fp.read() == b"a"
 
     def test_zero_height(self) -> None:
         with pytest.raises(UnidentifiedImageError):
