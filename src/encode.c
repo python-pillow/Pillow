@@ -119,7 +119,7 @@ static PyObject *
 _encode(ImagingEncoderObject *encoder, PyObject *args) {
     PyObject *buf;
     PyObject *result;
-    int status;
+    int bytes_consumed;
 
     /* Encode to a Python string (allocated by this method) */
 
@@ -134,16 +134,16 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
         return NULL;
     }
 
-    status = encoder->encode(
+    bytes_consumed = encoder->encode(
         encoder->im, &encoder->state, (UINT8 *)PyBytes_AsString(buf), bufsize
     );
 
     /* adjust string length to avoid slicing in encoder */
-    if (_PyBytes_Resize(&buf, (status > 0) ? status : 0) < 0) {
+    if (_PyBytes_Resize(&buf, (bytes_consumed > 0) ? bytes_consumed : 0) < 0) {
         return NULL;
     }
 
-    result = Py_BuildValue("iiO", status, encoder->state.errcode, buf);
+    result = Py_BuildValue("iiO", bytes_consumed, encoder->state.errcode, buf);
 
     Py_DECREF(buf); /* must release buffer!!! */
 
@@ -153,7 +153,7 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
 static PyObject *
 _encode_to_pyfd(ImagingEncoderObject *encoder, PyObject *args) {
     PyObject *result;
-    int status;
+    int bytes_consumed;
 
     if (!encoder->pushes_fd) {
         // UNDONE, appropriate errcode???
@@ -161,9 +161,9 @@ _encode_to_pyfd(ImagingEncoderObject *encoder, PyObject *args) {
         return result;
     }
 
-    status = encoder->encode(encoder->im, &encoder->state, (UINT8 *)NULL, 0);
+    bytes_consumed = encoder->encode(encoder->im, &encoder->state, (UINT8 *)NULL, 0);
 
-    result = Py_BuildValue("ii", status, encoder->state.errcode);
+    result = Py_BuildValue("ii", bytes_consumed, encoder->state.errcode);
 
     return result;
 }
@@ -171,7 +171,7 @@ _encode_to_pyfd(ImagingEncoderObject *encoder, PyObject *args) {
 static PyObject *
 _encode_to_file(ImagingEncoderObject *encoder, PyObject *args) {
     UINT8 *buf;
-    int status;
+    int bytes_consumed;
     ImagingSectionCookie cookie;
 
     /* Encode to a file handle */
@@ -196,10 +196,10 @@ _encode_to_file(ImagingEncoderObject *encoder, PyObject *args) {
         /* This replaces the inner loop in the ImageFile _save
            function. */
 
-        status = encoder->encode(encoder->im, &encoder->state, buf, bufsize);
+        bytes_consumed = encoder->encode(encoder->im, &encoder->state, buf, bufsize);
 
-        if (status > 0) {
-            if (write(fh, buf, status) < 0) {
+        if (bytes_consumed > 0) {
+            if (write(fh, buf, bytes_consumed) < 0) {
                 ImagingSectionLeave(&cookie);
                 free(buf);
                 return PyErr_SetFromErrno(PyExc_OSError);
