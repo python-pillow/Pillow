@@ -440,3 +440,34 @@ class TestPyEncoder(CodecsTest):
     def test_zero_height(self) -> None:
         with pytest.raises(UnidentifiedImageError):
             Image.open("Tests/images/zero_height.j2k")
+
+    def test_load_prepare(self) -> None:
+        class TestImageFile(ImageFile.ImageFile):
+            def _open(self) -> None:
+                self._mode = "1"
+                self._size = (1, 1)
+                self._frame = 0
+
+            def seek(self, frame: int) -> None:
+                self._mode = "L"
+                self._size = (2, 2)
+                self._frame = frame
+                super().seek(frame)
+
+            def tell(self) -> int:
+                return self._frame
+
+        fp = BytesIO()
+        im = TestImageFile(fp)
+        im.load_prepare()
+        before_seek = im._im
+        assert before_seek is not None
+
+        im.seek(1)
+        after_seek = im._im
+        assert after_seek is None
+
+        im.load_prepare()
+        assert im._im is not None
+        assert im._im.mode == im.mode
+        assert im._im.size == im.size
