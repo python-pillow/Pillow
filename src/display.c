@@ -311,12 +311,12 @@ PyObject *
 PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
     int x = 0, y = 0, width = -1, height;
     int includeLayeredWindows = 0, screens = 0;
-    HBITMAP bitmap;
+    HBITMAP bitmap = NULL;
     BITMAPCOREHEADER core;
     HDC screen, screen_copy;
     HWND wnd;
     DWORD rop;
-    PyObject *buffer;
+    PyObject *buffer = NULL;
     HANDLE dpiAwareness = NULL;
     HMODULE user32;
     Func_GetWindowDpiAwarenessContext GetWindowDpiAwarenessContext_function;
@@ -382,15 +382,18 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
     FreeLibrary(user32);
 
     if (width == -1) {
+        PyErr_SetString(PyExc_OSError, "screen grab failed");
         goto error;
     }
 
     bitmap = CreateCompatibleBitmap(screen, width, height);
     if (!bitmap) {
+        PyErr_SetString(PyExc_OSError, "screen grab failed");
         goto error;
     }
 
     if (!SelectObject(screen_copy, bitmap)) {
+        PyErr_SetString(PyExc_OSError, "screen grab failed");
         goto error;
     }
 
@@ -401,6 +404,7 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
         rop |= CAPTUREBLT;
     }
     if (!BitBlt(screen_copy, 0, 0, width, height, screen, x, y, rop)) {
+        PyErr_SetString(PyExc_OSError, "screen grab failed");
         goto error;
     }
 
@@ -408,7 +412,7 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
 
     buffer = PyBytes_FromStringAndSize(NULL, height * ((width * 3 + 3) & -4));
     if (!buffer) {
-        return NULL;
+        goto error;
     }
 
     core.bcSize = sizeof(core);
@@ -425,6 +429,7 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
             (BITMAPINFO *)&core,
             DIB_RGB_COLORS
         )) {
+        PyErr_SetString(PyExc_OSError, "screen grab failed");
         goto error;
     }
 
@@ -439,8 +444,10 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
     return Py_BuildValue("(ii)(ii)N", x, y, width, height, buffer);
 
 error:
-    PyErr_SetString(PyExc_OSError, "screen grab failed");
-
+    Py_XDECREF(buffer);
+    if (bitmap != NULL) {
+        DeleteObject(bitmap);
+    }
     DeleteDC(screen_copy);
     if (screens == -1) {
         ReleaseDC(wnd, screen);
