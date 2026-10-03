@@ -2173,7 +2173,10 @@ class Image:
             self.palette.mode = "CMYK"
         elif "A" in rawmode:
             self.palette.mode = "RGBA"
-        self.load()  # install new palette
+        if self.palette.mode == self.palette.rawmode:
+            self.palette.rawmode = None
+        if self.palette.rawmode:
+            self.load()  # decode raw palette data
 
     def putpixel(
         self,
