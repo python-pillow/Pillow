@@ -111,6 +111,24 @@ def test_load() -> None:
         assert px[0, 0] == (255, 255, 255)
 
 
+def test_load_scale_decompression_bomb(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    def failing_check_call(command: list[str], **kwargs: object) -> None:
+        pytest.fail("EPS size not checked before invoking Ghostscript")
+
+    monkeypatch.setattr(EpsImagePlugin, "has_ghostscript", lambda: True)
+    monkeypatch.setattr(EpsImagePlugin, "gs_binary", "")
+    monkeypatch.setattr(subprocess, "check_call", failing_check_call)
+
+    with Image.open(FILE1) as im:
+        assert isinstance(im, EpsImagePlugin.EpsImageFile)
+        monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", im.width * im.height)
+
+        with pytest.raises(Image.DecompressionBombError):
+            im.load(scale=2)
+
+
 def test_binary() -> None:
     if HAS_GHOSTSCRIPT:
         assert EpsImagePlugin.gs_binary is not None
