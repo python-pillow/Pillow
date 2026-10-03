@@ -159,6 +159,14 @@ These libraries are now compiled with ``-O2``. Compared to Pillow 12.3.0, the wh
 PNG, JPEG, WebP and AVIF are unaffected, as those libraries were already built with
 optimisation.
 
+BOX downscale includes boundary source pixels
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:data:`PIL.Image.Resampling.BOX` downscaling could skip a source pixel whose
+center landed on an output bin edge, due to range rounding and the discontinuous
+box kernel. Those pixels are now assigned to exactly one output pixel, matching
+the documented "each source pixel contributes to one destination pixel" behavior.
+
 Wheels now use HarfBuzz for hinting
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
