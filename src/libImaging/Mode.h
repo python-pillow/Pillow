@@ -223,7 +223,10 @@ findRawModeID(const char *const name);
 const RawModeData *const
 getRawModeData(const RawModeID id);
 
-int
-isModeI16(const ModeID mode);
+static inline int
+isModeI16(const ModeID mode) {
+    return mode == IMAGING_MODE_I_16 || mode == IMAGING_MODE_I_16L ||
+           mode == IMAGING_MODE_I_16B || mode == IMAGING_MODE_I_16N;
+}
 
 #endif  // __MODE_H__
