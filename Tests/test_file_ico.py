@@ -7,7 +7,12 @@ import pytest
 
 from PIL import IcoImagePlugin, Image, ImageDraw, ImageFile
 
-from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar,
+    hopper,
+)
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -246,6 +251,30 @@ def test_save_append_images(tmp_path: Path) -> None:
 
         reread.size = (32, 32)
         assert_image_equal(reread, provided_im)
+
+
+def test_save_append_images_source(tmp_path: Path) -> None:
+    # If no image is exactly matches a size,
+    # then scale down from the smallest provided image that still covers it
+    im = hopper()
+    larger = Image.new("RGB", (32, 32), (255, 0, 0))
+    largest = Image.new("RGB", (64, 64))
+
+    outfile = tmp_path / "temp.ico"
+    im.save(outfile, sizes=[(16, 16)], append_images=[larger, largest])
+
+    with Image.open(outfile) as reloaded:
+        assert isinstance(reloaded, IcoImagePlugin.IcoImageFile)
+        reloaded.size = (16, 16)
+        assert_image_equal(reloaded, larger.resize((16, 16)))
+
+    # If none cover the size, then use the original image
+    im.save(outfile, sizes=[(16, 16)], append_images=[Image.new("L", (8, 8))])
+
+    with Image.open(outfile) as reloaded:
+        assert isinstance(reloaded, IcoImagePlugin.IcoImageFile)
+        reloaded.size = (16, 16)
+        assert_image_similar(reloaded, im.resize((16, 16)), 9)
 
 
 def test_unexpected_size() -> None:

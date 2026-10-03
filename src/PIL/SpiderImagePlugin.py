@@ -184,6 +184,7 @@ class SpiderImageFile(ImageFile.ImageFile):
         self.fp = self._fp
         self.fp.seek(self.stkoffset)
         self._open()
+        Image._decompression_bomb_check(self.size)
 
     # returns a byte image after rescaling to 0..255
     def convert2byte(self, depth: int = 255) -> Image.Image:

@@ -930,7 +930,7 @@ class PyEncoder(PyCodec):
         """
         errcode = 0
         while errcode == 0:
-            status, errcode, buf = self.encode(bufsize)
-            if status > 0:
-                os.write(fh, buf[status:])
+            bytes_consumed, errcode, buf = self.encode(bufsize)
+            if bytes_consumed > 0:
+                os.write(fh, buf[:bytes_consumed])
         return errcode

@@ -617,7 +617,7 @@ class PdfParser:
         self.pages_ref = self.root[b"Pages"]
         assert self.pages_ref is not None
         self.page_tree_root = self.read_indirect(self.pages_ref)
-        self.pages = self.linearize_page_tree(self.page_tree_root)
+        self.pages = self.linearize_page_tree()
         # save the original list of page references
         # in case the user modifies, adds or deletes some pages
         # and we need to rewrite the pages and their list
@@ -700,26 +700,31 @@ class PdfParser:
         self, xref_section_offset: int, processed_offsets: list[int] | None = None
     ) -> None:
         assert self.buf is not None
-        trailer_offset = self.read_xref_table(xref_section_offset=xref_section_offset)
-        m = self.re_trailer_prev.search(
-            self.buf[trailer_offset : trailer_offset + 16384]
-        )
-        check_format_condition(m is not None, "previous trailer not found")
-        assert m is not None
-        trailer_data = m.group(1)
-        check_format_condition(
-            int(m.group(2)) == xref_section_offset,
-            "xref section offset in previous trailer doesn't match what was expected",
-        )
-        trailer_dict = self.interpret_trailer(trailer_data)
-        if b"Prev" in trailer_dict:
-            if processed_offsets is None:
-                processed_offsets = []
-            processed_offsets.append(xref_section_offset)
+        if processed_offsets is None:
+            processed_offsets = []
+        while True:
             check_format_condition(
-                trailer_dict[b"Prev"] not in processed_offsets, "trailer loop found"
+                xref_section_offset not in processed_offsets, "trailer loop found"
             )
-            self.read_prev_trailer(trailer_dict[b"Prev"], processed_offsets)
+            trailer_offset = self.read_xref_table(
+                xref_section_offset=xref_section_offset
+            )
+            m = self.re_trailer_prev.search(
+                self.buf[trailer_offset : trailer_offset + 16384]
+            )
+            check_format_condition(m is not None, "previous trailer not found")
+            assert m is not None
+            trailer_data = m.group(1)
+            check_format_condition(
+                int(m.group(2)) == xref_section_offset,
+                "xref section offset in previous trailer "
+                "doesn't match what was expected",
+            )
+            trailer_dict = self.interpret_trailer(trailer_data)
+            if b"Prev" not in trailer_dict:
+                break
+            processed_offsets.append(xref_section_offset)
+            xref_section_offset = trailer_dict[b"Prev"]
 
     re_whitespace_optional = re.compile(whitespace_optional)
     re_name = re.compile(
@@ -1078,17 +1083,29 @@ class PdfParser:
         return value
 
     def linearize_page_tree(
-        self, node: PdfDict | None = None
+        self, node: PdfDict | None = None, processed_ids: set[int] | None = None
     ) -> list[IndirectReference]:
-        page_node = node if node is not None else self.page_tree_root
+        if processed_ids is None:
+            processed_ids = set()
+        if node is not None:
+            page_node = node
+        else:
+            page_node = self.page_tree_root
+            if self.pages_ref is not None:
+                processed_ids.add(self.pages_ref.object_id)
         check_format_condition(
             page_node[b"Type"] == b"Pages", "/Type of page tree node is not /Pages"
         )
         pages = []
         for kid in page_node[b"Kids"]:
+            check_format_condition(
+                kid.object_id not in processed_ids,
+                f"page tree contains a cyclic or duplicate reference to {kid}",
+            )
+            processed_ids.add(kid.object_id)
             kid_object = self.read_indirect(kid)
             if kid_object[b"Type"] == b"Page":
                 pages.append(kid)
             else:
-                pages.extend(self.linearize_page_tree(node=kid_object))
+                pages.extend(self.linearize_page_tree(kid_object, processed_ids))
         return pages

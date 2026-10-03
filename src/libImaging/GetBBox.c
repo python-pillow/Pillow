@@ -280,7 +280,6 @@ ImagingGetExtrema(Imaging im, void *extrema) {
     return 1; /* ok */
 }
 
-/* static ImagingColorItem* getcolors8(Imaging im, int maxcolors, int* size);*/
 static ImagingColorItem *
 getcolors32(Imaging im, int maxcolors, int *size);
 
@@ -327,9 +326,6 @@ getcolors32(Imaging im, int maxcolors, int *size) {
             break;
         }
     }
-
-    /* printf("code_size=%d\n", code_size); */
-    /* printf("code_poly=%d\n", code_poly); */
 
     if (!code_size) {
         return ImagingError_MemoryError(); /* just give up */

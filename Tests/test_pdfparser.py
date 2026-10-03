@@ -20,6 +20,10 @@ from PIL.PdfParser import (
     pdf_repr,
 )
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 def test_text_encode_decode() -> None:
     assert encode_text("abc") == b"\xfe\xff\x00a\x00b\x00c"
@@ -160,6 +164,42 @@ def test_linearize_page_tree() -> None:
         assert pdf.linearize_page_tree() == page_ids
 
 
+def test_linearize_page_tree_duplicate_reference() -> None:
+    b = BytesIO()
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        pages_ids = [pdf.next_object_id(0) for _ in range(2)]
+        pdf.write_obj(
+            pages_ids[0], Type=PdfName(b"Pages"), Count=1, Kids=[pages_ids[1]]
+        )
+        pdf.write_obj(
+            pages_ids[1], Type=PdfName(b"Pages"), Count=1, Kids=[pages_ids[0]]
+        )
+
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
+
+    with PdfParser(f=b) as pdf:
+        with pytest.raises(PdfFormatError, match="cyclic or duplicate reference"):
+            pdf.linearize_page_tree(
+                PdfDict({b"Type": b"Pages", b"Kids": [pages_ids[0]]})
+            )
+
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
+
+    with PdfParser(f=b) as pdf:
+        pdf.page_tree_root[b"Kids"] = [pdf.pages_ref]
+        with pytest.raises(PdfFormatError, match="cyclic or duplicate reference"):
+            pdf.linearize_page_tree()
+
+
 def test_duplicate_xref_entry() -> None:
     pdf = PdfParser("Tests/images/duplicate_xref_entry.pdf")
     assert pdf.xref_table.existing_entries[6][0] == 1197
@@ -169,3 +209,18 @@ def test_duplicate_xref_entry() -> None:
 def test_trailer_loop() -> None:
     with pytest.raises(PdfFormatError, match="trailer loop found"):
         PdfParser("Tests/images/trailer_loop.pdf")
+
+
+def test_long_trailer_chain(tmp_path: Path) -> None:
+    b = BytesIO()
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        pdf.write_catalog()
+        for _ in range(1000):
+            pdf.write_xref_and_trailer()
+        pdf.write_xref_and_trailer()
+
+    with PdfParser(f=b) as pdf:
+        pass

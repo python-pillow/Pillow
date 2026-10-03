@@ -63,7 +63,10 @@ ImagingExpand(Imaging imIn, int margin) {
     if (margin < 0) {
         return (Imaging)ImagingError_ValueError("bad kernel size");
     }
-    if (margin > 0 && margin > INT_MAX / (margin * (int)sizeof(FLOAT32))) {
+    // Compute in int64_t via division, not squaring, so the check itself
+    // can't overflow or divide by zero for any valid int margin.
+    if (margin > 0 && (int64_t)margin > (int64_t)INT_MAX / ((int64_t)margin *
+                                                            (int64_t)sizeof(FLOAT32))) {
         return (Imaging)ImagingError_ValueError("filter size too large");
     }
 

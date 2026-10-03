@@ -31,8 +31,8 @@ def test_sanity() -> None:
         lut = ImagePalette.make_gamma_lut(1 / 2.2)
         im1 = Image.merge("RGBA", [chan.point(lut) for chan in im.split()])
 
-        im2 = hopper("RGBA")
-        assert_image_similar(im1, im2, 10)
+    im2 = hopper("RGBA")
+    assert_image_similar(im1, im2, 10)
 
 
 def test_n_frames() -> None:
@@ -60,6 +60,32 @@ def test_seek() -> None:
         with pytest.raises(EOFError):
             im.seek(99)
         assert im.tell() == 0
+
+
+def test_seek_mode_change() -> None:
+    with Image.open(TEST_FILE) as im:
+        assert isinstance(im, MicImagePlugin.MicImageFile)
+        im.load()
+        im.frame = -1
+        im._im = Image.new("RGB", im.size).im
+
+        # Assert that C image is cleared after mode change
+        im.seek(0)
+        assert im.mode == "RGBA"
+        assert im._im is None
+
+
+def test_seek_size_change() -> None:
+    with Image.open(TEST_FILE) as im:
+        assert isinstance(im, MicImagePlugin.MicImageFile)
+        im.load()
+        im.frame = -1
+        im._im = Image.new("RGBA", (1, 1)).im
+
+        # Assert that C image is cleared after size change
+        im.seek(0)
+        assert im.size == (128, 128)
+        assert im._im is None
 
 
 def test_seek_decompression_bomb(tmp_path: Path) -> None:

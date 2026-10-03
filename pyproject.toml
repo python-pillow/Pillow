@@ -84,7 +84,7 @@ optional-dependencies.xmp = [
 urls."Release notes" = "https://pillow.readthedocs.io/en/stable/releasenotes/index.html"
 urls.Changelog = "https://github.com/python-pillow/Pillow/releases"
 urls.Documentation = "https://pillow.readthedocs.io"
-urls.Funding = "https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=pypi"
+urls.Funding = "https://tidelift.com/lifter/search/pypi/pillow"
 urls.Homepage = "https://python-pillow.org"
 urls.Mastodon = "https://fosstodon.org/@pillow"
 urls.Security = "https://pillow.readthedocs.io/en/stable/handbook/security.html"
