@@ -484,6 +484,56 @@ def test_exif_transpose() -> None:
     assert 0x0112 not in transposed_im.getexif()
 
 
+@pytest.mark.parametrize("info_key", ["XML:com.adobe.xmp", "xmp"])
+@pytest.mark.parametrize("in_place", [False, True])
+@pytest.mark.parametrize(
+    "orientation",
+    [
+        'tiff:Orientation="6"',
+        "tiff:Orientation='6'",
+        'tiff:Orientation = "6"',
+        "tiff:Orientation\n=\t'6'",
+        'tiff:Orientation=" 6 "',
+        "<tiff:Orientation>6</tiff:Orientation>",
+        "<tiff:Orientation>\n 6\t</tiff:Orientation>",
+        "<tiff:Orientation >6</tiff:Orientation >",
+    ],
+)
+def test_exif_transpose_xmp_xml_syntax(
+    info_key: str, in_place: bool, orientation: str
+) -> None:
+    im = Image.new("RGB", (2, 1))
+    im.putpixel((0, 0), (255, 0, 0))
+    im.putpixel((1, 0), (0, 0, 255))
+    expected = im.transpose(Image.Transpose.ROTATE_270)
+    namespaces = (
+        'xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" '
+        'xmlns:tiff="http://ns.adobe.com/tiff/1.0/"'
+    )
+    if orientation.startswith("<"):
+        xmp = (
+            f"<rdf:RDF {namespaces}><rdf:Description>"
+            f"{orientation}</rdf:Description></rdf:RDF>"
+        )
+    else:
+        xmp = f"<rdf:RDF {namespaces}><rdf:Description {orientation}/></rdf:RDF>"
+    im.info[info_key] = xmp if info_key == "XML:com.adobe.xmp" else xmp.encode()
+
+    assert im.getexif()[0x0112] == 6
+    if in_place:
+        ImageOps.exif_transpose(im, in_place=True)
+        transposed = im
+    else:
+        transposed = ImageOps.exif_transpose(im)
+        assert im.size == (2, 1)
+        assert im.getexif()[0x0112] == 6
+    assert_image_equal(transposed, expected)
+    assert "tiff:Orientation" not in str(transposed.info[info_key])
+    transposed._reload_exif()
+    assert 0x0112 not in transposed.getexif()
+    assert_image_equal(ImageOps.exif_transpose(transposed), expected)
+
+
 def test_exif_transpose_with_xmp_tuple() -> None:
     with Image.open("Tests/images/xmp_tags_orientation.png") as im:
         assert im.getexif()[0x0112] == 3
