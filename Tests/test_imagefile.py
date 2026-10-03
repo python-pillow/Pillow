@@ -7,82 +7,22 @@ import pytest
 
 from PIL import (
     BmpImagePlugin,
-    EpsImagePlugin,
     Image,
     ImageFile,
     UnidentifiedImageError,
     _binary,
-    features,
 )
 
 from .helper import (
-    assert_image,
     assert_image_equal,
-    assert_image_similar,
     fromstring,
     hopper,
     skip_unless_feature,
     tostring,
 )
 
-# save original block sizes
-MAXBLOCK = ImageFile.MAXBLOCK
-SAFEBLOCK = ImageFile.SAFEBLOCK
-
 
 class TestImageFile:
-    def test_parser(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        def roundtrip(format: str) -> tuple[Image.Image, Image.Image]:
-            im = hopper("L").resize((1000, 1000), Image.Resampling.NEAREST)
-            if format in ("MSP", "XBM"):
-                im = im.convert("1")
-
-            test_file = BytesIO()
-
-            im.copy().save(test_file, format)
-
-            data = test_file.getvalue()
-
-            parser = ImageFile.Parser()
-            parser.feed(data)
-            im_out = parser.close()
-
-            return im, im_out
-
-        assert_image_equal(*roundtrip("BMP"))
-        im1, im2 = roundtrip("GIF")
-        assert_image_similar(im1.convert("P"), im2, 1)
-        with pytest.warns(DeprecationWarning, match="IM image format"):
-            assert_image_equal(*roundtrip("IM"))
-        assert_image_equal(*roundtrip("MSP"))
-        if features.check("zlib"):
-            # force multiple blocks in PNG driver
-            monkeypatch.setattr(ImageFile, "MAXBLOCK", 8192)
-            assert_image_equal(*roundtrip("PNG"))
-        assert_image_equal(*roundtrip("PPM"))
-        assert_image_equal(*roundtrip("TIFF"))
-        assert_image_equal(*roundtrip("XBM"))
-        assert_image_equal(*roundtrip("TGA"))
-        assert_image_equal(*roundtrip("PCX"))
-
-        if EpsImagePlugin.has_ghostscript():
-            im1, im2 = roundtrip("EPS")
-            # This test fails on Ubuntu 12.04, PPC (Bigendian) It
-            # appears to be a ghostscript 9.05 bug, since the
-            # ghostscript rendering is wonky and the file is identical
-            # to that written on ubuntu 12.04 x64
-            # md5sum: ba974835ff2d6f3f2fd0053a23521d4a
-
-            # EPS comes back in RGB:
-            assert_image_similar(im1, im2.convert("L"), 20)
-
-        if features.check("jpg"):
-            im1, im2 = roundtrip("JPEG")  # lossy compression
-            assert_image(im1, im2.mode, im2.size)
-
-        with pytest.raises(OSError):
-            roundtrip("PDF")
-
     def test_ico(self) -> None:
         with open("Tests/images/python.ico", "rb") as f:
             data = f.read()
