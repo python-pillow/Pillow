@@ -21,13 +21,18 @@
 ##
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "math"}
+
 import io
 import math
 import os
 import time
-from typing import IO, Any
 
 from . import Image, ImageFile, ImageSequence, PdfParser, features
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
 
 #
 # --------------------------------------------------------------------
@@ -138,7 +143,7 @@ def _write_image(
     op = io.BytesIO()
 
     if decode_filter == "ASCIIHexDecode":
-        ImageFile._save(im, op, [ImageFile._Tile("hex", (0, 0) + im.size, 0, im.mode)])
+        ImageFile._save(im, op, [ImageFile._Tile("hex", (0, 0, *im.size), 0, im.mode)])
     elif decode_filter == "CCITTFaxDecode":
         im.save(
             op,

@@ -15,7 +15,7 @@
 #include "QuantPngQuant.h"
 
 #ifdef HAVE_LIBIMAGEQUANT
-#include "libimagequant.h"
+#include <libimagequant.h>
 
 int
 quantize_pngquant(

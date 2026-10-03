@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-version=1.4.1
+version=1.4.2
 
 if [[ "$GHA_LIBAVIF_CACHE_HIT" == "true" ]]; then
 

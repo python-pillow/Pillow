@@ -16,6 +16,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "olefile"}
+
 import olefile
 
 from . import Image, ImageFile
@@ -142,6 +144,10 @@ class FpxImageFile(ImageFile.ImageFile):
         size = i32(s, 4), i32(s, 8)
         # tilecount = i32(s, 12)
         xtile, ytile = i32(s, 16), i32(s, 20)
+        if xtile != 64 or ytile != 64:
+            msg = "Tile must be 64 pixels by 64 pixels"
+            raise ValueError(msg)
+
         # channels = i32(s, 24)
         offset = i32(s, 28)
         length = i32(s, 32)

@@ -133,7 +133,7 @@ DEPS: dict[str, dict[str, Any]] = {
         "patch": {
             r"CMakeLists.txt": {
                 # libjpeg-turbo does not detect MSVC x86_arm64 cross-compiler correctly
-                'if(MSVC_IDE AND CMAKE_GENERATOR_PLATFORM MATCHES "arm64")': "if({architecture} STREQUAL ARM64)",  # noqa: E501
+                'elseif(CMAKE_GENERATOR_PLATFORM_LC MATCHES "arm64")': "elseif({architecture} STREQUAL ARM64)",  # noqa: E501
             },
         },
         "build": [

@@ -85,6 +85,9 @@ FRIBIDI_FUNC(FriBidiStrIndex, fribidi_charset_to_unicode,
 FRIBIDI_FUNC(void, fribidi_get_bidi_types,
     const FriBidiChar *, const FriBidiStrIndex, FriBidiCharType *);
 
+FRIBIDI_FUNC(FriBidiParType, fribidi_get_par_direction,
+    const FriBidiCharType *, const FriBidiStrIndex);
+
 FRIBIDI_FUNC(FriBidiLevel, fribidi_get_par_embedding_levels,
     const FriBidiCharType *, const FriBidiStrIndex, FriBidiParType *,
     FriBidiLevel *);

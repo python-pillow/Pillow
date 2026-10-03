@@ -52,7 +52,8 @@ class TestImageFile:
         assert_image_equal(*roundtrip("BMP"))
         im1, im2 = roundtrip("GIF")
         assert_image_similar(im1.convert("P"), im2, 1)
-        assert_image_equal(*roundtrip("IM"))
+        with pytest.warns(DeprecationWarning, match="IM image format"):
+            assert_image_equal(*roundtrip("IM"))
         assert_image_equal(*roundtrip("MSP"))
         if features.check("zlib"):
             # force multiple blocks in PNG driver
@@ -260,7 +261,7 @@ class MockPyDecoder(ImageFile.PyDecoder):
 
         super().__init__(mode, *args)
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         # eof
         return -1, 0
 

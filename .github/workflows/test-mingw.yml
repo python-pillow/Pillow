@@ -10,7 +10,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COVERAGE_CORE: sysmon
   FORCE_COLOR: 1
 
 jobs:
@@ -29,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout Pillow
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -54,6 +53,7 @@ jobs:
               mingw-w64-x86_64-python-numpy \
               mingw-w64-x86_64-python-olefile \
               mingw-w64-x86_64-python-pip \
+              mingw-w64-x86_64-python-psutil \
               mingw-w64-x86_64-python-pytest \
               mingw-w64-x86_64-python-pytest-cov \
               mingw-w64-x86_64-python-pytest-timeout \
@@ -62,7 +62,7 @@ jobs:
           pushd depends && ./install_extra_test_images.sh && popd
 
       - name: Build Pillow
-        run: CFLAGS="-coverage" python3 -m pip install .
+        run: CFLAGS="-coverage" python3 -m pip install .[tests]
 
       - name: Test Pillow
         run: |
@@ -70,7 +70,7 @@ jobs:
           .ci/test.sh
 
       - name: Upload coverage
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           files: ./coverage.xml
           flags: GHA_Windows

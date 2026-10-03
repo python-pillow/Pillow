@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import subprocess
-from pathlib import Path
 
 import pytest
 
@@ -14,10 +13,13 @@ from .helper import (
     assert_image_similar_tofile,
     hopper,
     is_win32,
-    mark_if_feature_version,
     skip_unless_feature,
     timeout_unless_slower_valgrind,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
 
@@ -205,10 +207,11 @@ def test_begin_binary() -> None:
     with Image.open(io.BytesIO(data)) as img:
         assert img.size == (399, 480)
 
+    data[76867:76873] = b"    -1"
+    with pytest.raises(ValueError, match="BeginBinary bytecount cannot be negative"):
+        Image.open(io.BytesIO(data))
 
-@mark_if_feature_version(
-    pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-)
+
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_cmyk() -> None:
     with Image.open("Tests/images/eps/pil_sample_cmyk.eps") as cmyk_image:

@@ -944,8 +944,8 @@ quarter_init(quarter_state *s, int32_t a, int32_t b) {
         s->cy = b % 2;
         s->ex = a % 2;
         s->ey = b;
-        s->a2 = a * a;
-        s->b2 = b * b;
+        s->a2 = (int64_t)a * a;
+        s->b2 = (int64_t)b * b;
         s->a2b2 = s->a2 * s->b2;
         s->finished = 0;
     }

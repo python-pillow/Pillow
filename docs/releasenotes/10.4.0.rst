@@ -18,7 +18,7 @@ been added to all :py:class:`~PIL.ImageShow` viewers.
 Deprecations
 ============
 
-BGR;15, BGR 16 and BGR;24
+BGR;15, BGR;16 and BGR;24
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The experimental BGR;15, BGR;16 and BGR;24 modes have been deprecated.

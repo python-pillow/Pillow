@@ -199,6 +199,18 @@ def test_color_hsv() -> None:
     assert (170, 255, 255) == ImageColor.getcolor("hsv(240, 100%, 100%)", "HSV")
 
 
+@pytest.mark.parametrize("mode, premultiplied_mode", (("LA", "La"), ("RGBA", "RGBa")))
+@pytest.mark.parametrize("color", ("#f00", "#ff000080", "#ff000050"))
+def test_color_premultiplied_alpha(
+    mode: str, premultiplied_mode: str, color: str
+) -> None:
+    im = Image.new(mode, (1, 1), color)
+    im_premultiplied = im.convert(premultiplied_mode)
+    expected = im_premultiplied.getpixel((0, 0))
+
+    assert ImageColor.getcolor(color, premultiplied_mode) == expected
+
+
 def test_color_too_long() -> None:
     # Arrange
     color_too_long = "hsl(" + "1" * 40 + "," + "1" * 40 + "%," + "1" * 40 + "%)"

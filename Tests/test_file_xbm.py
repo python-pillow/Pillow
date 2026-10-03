@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 
 import pytest
 
 from PIL import Image, XbmImagePlugin
 
 from .helper import hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 PIL151 = b"""
 #define basic_width 32

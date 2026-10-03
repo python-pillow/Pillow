@@ -25,7 +25,7 @@ these checks did not consider integer overflow. This has been corrected.
 
 When parsing a PDF, if a trailer refers to itself, or a more complex cyclic loop
 exists, then an infinite loop occurs. Pillow now keeps a record of which trailers it
-has already processed. PdfParser was added in Pillow 4.2.0.
+has already processed. PdfParser was added in Pillow 5.1.0.
 
 :cve:`2026-42308`: Integer overflow when processing fonts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

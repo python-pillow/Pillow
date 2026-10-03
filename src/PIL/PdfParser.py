@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"calendar", "mmap", "zlib"}
+
 import calendar
 import codecs
 import collections
@@ -10,9 +12,11 @@ import time
 import zlib
 from typing import Any, NamedTuple
 
+from . import ImageFile
+
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from typing import IO
+    from typing import IO, Self
 
     _DictBase = collections.UserDict[str | bytes, Any]
 else:
@@ -175,7 +179,7 @@ class XrefTable:
 
     def write(self, f: IO[bytes]) -> int:
         keys = sorted(set(self.new_entries.keys()) | set(self.deleted_entries.keys()))
-        deleted_keys = sorted(set(self.deleted_entries.keys()))
+        deleted_keys = sorted(self.deleted_entries)
         startxref = f.tell()
         f.write(b"xref\n")
         while keys:
@@ -320,17 +324,18 @@ class PdfStream:
         self.dictionary = dictionary
         self.buf = buf
 
-    def decode(self) -> bytes:
+    def decode(self, max_length: int = ImageFile.SAFEBLOCK) -> bytes:
         try:
             filter = self.dictionary[b"Filter"]
         except KeyError:
             return self.buf
         if filter == b"FlateDecode":
-            try:
-                expected_length = self.dictionary[b"DL"]
-            except KeyError:
-                expected_length = self.dictionary[b"Length"]
-            return zlib.decompress(self.buf, bufsize=int(expected_length))
+            dobj = zlib.decompressobj()
+            plaintext = dobj.decompress(self.buf, max_length)
+            if dobj.unconsumed_tail:
+                msg = "Decompressed data too large"
+                raise ValueError(msg)
+            return plaintext
         else:
             msg = f"stream filter {repr(filter)} unknown/unsupported"
             raise NotImplementedError(msg)
@@ -424,7 +429,7 @@ class PdfParser:
         if f:
             self.seek_end()
 
-    def __enter__(self) -> PdfParser:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -695,26 +700,31 @@ class PdfParser:
         self, xref_section_offset: int, processed_offsets: list[int] | None = None
     ) -> None:
         assert self.buf is not None
-        trailer_offset = self.read_xref_table(xref_section_offset=xref_section_offset)
-        m = self.re_trailer_prev.search(
-            self.buf[trailer_offset : trailer_offset + 16384]
-        )
-        check_format_condition(m is not None, "previous trailer not found")
-        assert m is not None
-        trailer_data = m.group(1)
-        check_format_condition(
-            int(m.group(2)) == xref_section_offset,
-            "xref section offset in previous trailer doesn't match what was expected",
-        )
-        trailer_dict = self.interpret_trailer(trailer_data)
-        if b"Prev" in trailer_dict:
-            if processed_offsets is None:
-                processed_offsets = []
-            processed_offsets.append(xref_section_offset)
+        if processed_offsets is None:
+            processed_offsets = []
+        while True:
             check_format_condition(
-                trailer_dict[b"Prev"] not in processed_offsets, "trailer loop found"
+                xref_section_offset not in processed_offsets, "trailer loop found"
             )
-            self.read_prev_trailer(trailer_dict[b"Prev"], processed_offsets)
+            trailer_offset = self.read_xref_table(
+                xref_section_offset=xref_section_offset
+            )
+            m = self.re_trailer_prev.search(
+                self.buf[trailer_offset : trailer_offset + 16384]
+            )
+            check_format_condition(m is not None, "previous trailer not found")
+            assert m is not None
+            trailer_data = m.group(1)
+            check_format_condition(
+                int(m.group(2)) == xref_section_offset,
+                "xref section offset in previous trailer "
+                "doesn't match what was expected",
+            )
+            trailer_dict = self.interpret_trailer(trailer_data)
+            if b"Prev" not in trailer_dict:
+                break
+            processed_offsets.append(xref_section_offset)
+            xref_section_offset = trailer_dict[b"Prev"]
 
     re_whitespace_optional = re.compile(whitespace_optional)
     re_name = re.compile(
@@ -824,7 +834,7 @@ class PdfParser:
     @classmethod
     def get_value(
         cls,
-        data: bytes | bytearray | mmap.mmap,
+        data: bytes | bytearray | memoryview | mmap.mmap,
         offset: int,
         expect_indirect: IndirectReference | None = None,
         max_nesting: int = -1,
@@ -883,13 +893,13 @@ class PdfParser:
             current_offset: int | None = offset
             while not m:
                 assert current_offset is not None
-                key, current_offset = cls.get_value(
-                    data, current_offset, max_nesting=max_nesting - 1
-                )
-                if current_offset is None:
-                    return result, None
+                m = cls.re_name.match(data, current_offset)
+                if not m:
+                    msg = "key must be a name"
+                    raise PdfFormatError(msg)
+                key = PdfName(cls.interpret_name(m.group(1)))
                 value, current_offset = cls.get_value(
-                    data, current_offset, max_nesting=max_nesting - 1
+                    data, m.end(), max_nesting=max_nesting - 1
                 )
                 result[key] = value
                 if current_offset is None:
@@ -902,7 +912,7 @@ class PdfParser:
                 if stream_len is None or not isinstance(stream_len, int):
                     msg = f"bad or missing Length in stream dict ({stream_len})"
                     raise PdfFormatError(msg)
-                stream_data = data[m.end() : m.end() + stream_len]
+                stream_data = bytes(data[m.end() : m.end() + stream_len])
                 m = cls.re_stream_end.match(data, m.end() + stream_len)
                 check_format_condition(m is not None, "stream end not found")
                 assert m is not None
@@ -985,7 +995,7 @@ class PdfParser:
 
     @classmethod
     def get_literal_string(
-        cls, data: bytes | bytearray | mmap.mmap, offset: int
+        cls, data: bytes | bytearray | memoryview | mmap.mmap, offset: int
     ) -> tuple[bytes, int]:
         nesting_depth = 0
         result = bytearray()

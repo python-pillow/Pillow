@@ -40,6 +40,22 @@ def test_largest_cursor() -> None:
         assert im.size == (8, 8)
 
 
+@pytest.mark.parametrize("mode", ("1", "L"))
+def test_mask(mode: str) -> None:
+    with Image.open("Tests/images/mask_" + mode + ".cur") as im:
+        assert im.mode == "LA"
+
+        for i, value in enumerate(
+            [
+                (0, 255),  # AND 0 XOR 0 is black
+                (255, 255),  # AND 0 XOR 1 is white
+                (0, 0),  # AND 1 XOR 0 is transparent
+                (0, 0),  # AND 1 XOR 1 is transparent
+            ]
+        ):
+            assert im.getpixel((0, i)) == value
+
+
 def test_invalid_file() -> None:
     invalid_file = "Tests/images/flower.jpg"
 

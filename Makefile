@@ -62,7 +62,7 @@ install:
 
 .PHONY: install-coverage
 install-coverage:
-	CFLAGS="-coverage -Werror=implicit-function-declaration" python3 -m pip -v install .
+	CFLAGS="-coverage -Werror=implicit-function-declaration" python3 -m pip -v install .[tests]
 	python3 selftest.py
 
 .PHONY: debug
@@ -81,8 +81,6 @@ release-test:
 	python3 -m pytest Tests
 	python3 -m pip install .
 	python3 -m pytest -qq
-	python3 -m check_manifest
-	python3 -m pyroma .
 	$(MAKE) readme
 
 .PHONY: sdist
@@ -100,8 +98,7 @@ test:
 .PHONY: test-p
 test-p:
 	python3 -c "import xdist" > /dev/null 2>&1 || python3 -m pip install pytest-xdist
-	python3 -m pytest -qq -n auto
-
+	python3 -m pytest -qq --numprocesses=logical --dist=worksteal
 
 .PHONY: valgrind
 valgrind:
@@ -116,7 +113,7 @@ valgrind-leak:
 	PILLOW_VALGRIND_TEST=true PYTHONMALLOC=malloc valgrind --suppressions=Tests/oss-fuzz/python.supp \
 	    --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite \
             --log-file=/tmp/valgrind-output \
-            python3 -m pytest -vv --valgrind --valgrind-log=/tmp/valgrind-output
+            python3 -m pytest -vv --valgrind --valgrind-log=/tmp/valgrind-output $(PYTEST_ARGS)
 
 .PHONY: readme
 readme:

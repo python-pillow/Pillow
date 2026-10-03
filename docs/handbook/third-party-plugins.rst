@@ -16,6 +16,7 @@ Here is a list of PyPI projects that offer additional plugins:
 * :pypi:`pillow-heif`: Python bindings to libheif for working with HEIF images.
 * :pypi:`pillow-jpls`: Plugin for the JPEG-LS codec, based on the Charls JPEG-LS implementation. Python bindings implemented using pybind11.
 * :pypi:`pillow-jxl-plugin`: Plugin for JPEG-XL, using Rust for bindings.
+* :pypi:`pillow-lunasvg`: SVG read support based on the LunaSVG C++ library. Wheels for Linux, macOS and Windows, no system libraries needed.
 * :pypi:`pillow-mbm`: Adds support for KSP's proprietary MBM texture format.
 * :pypi:`pillow-netpbm`: Adds .pam support, and loads images using `Netpbm <https://en.wikipedia.org/wiki/Netpbm>`__'s converter collection.
 * :pypi:`pillow-svg`: Implements basic SVG read support. Supports basic paths, shapes, and text.

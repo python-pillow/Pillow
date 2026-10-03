@@ -3,13 +3,16 @@ from __future__ import annotations
 import tempfile
 import warnings
 from io import BytesIO
-from pathlib import Path
 
 import pytest
 
 from PIL import Image, SpiderImagePlugin
 
 from .helper import assert_image_equal, hopper, is_pypy
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_FILE = "Tests/images/hopper.spider"
 
@@ -33,18 +36,14 @@ def test_unclosed_file() -> None:
 
 
 def test_closed_file() -> None:
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-
+    with warnings.catch_warnings(action="error"):
         im = Image.open(TEST_FILE)
         im.load()
         im.close()
 
 
 def test_context_manager() -> None:
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-
+    with warnings.catch_warnings(action="error"):
         with Image.open(TEST_FILE) as im:
             im.load()
 

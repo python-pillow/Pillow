@@ -13,11 +13,6 @@
 #include <tiff.h>
 #endif
 
-#ifndef min
-#define min(x, y) ((x > y) ? y : x)
-#define max(x, y) ((x < y) ? y : x)
-#endif
-
 #ifndef _PIL_LIBTIFF_
 #define _PIL_LIBTIFF_
 
