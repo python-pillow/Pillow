@@ -15,6 +15,37 @@
 
 #include "Imaging.h"
 
+void
+unpackP2L(UINT8 *out, const UINT8 *in, int pixels) {
+    int i, j, m, s;
+    /* bit layers */
+    m = 128;
+    s = (pixels + 7) / 8;
+    for (i = j = 0; i < pixels; i++) {
+        out[i] = ((in[j] & m) ? 1 : 0) + ((in[j + s] & m) ? 2 : 0);
+        if ((m >>= 1) == 0) {
+            m = 128;
+            j++;
+        }
+    }
+}
+
+void
+unpackP4L(UINT8 *out, const UINT8 *in, int pixels) {
+    int i, j, m, s;
+    /* bit layers (trust the optimizer ;-) */
+    m = 128;
+    s = (pixels + 7) / 8;
+    for (i = j = 0; i < pixels; i++) {
+        out[i] = ((in[j] & m) ? 1 : 0) + ((in[j + s] & m) ? 2 : 0) +
+                 ((in[j + 2 * s] & m) ? 4 : 0) + ((in[j + 3 * s] & m) ? 8 : 0);
+        if ((m >>= 1) == 0) {
+            m = 128;
+            j++;
+        }
+    }
+}
+
 int
 ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
     UINT8 n;
