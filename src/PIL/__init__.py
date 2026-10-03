@@ -72,6 +72,7 @@ _plugins = [
     "XbmImagePlugin",
     "XpmImagePlugin",
     "XVThumbImagePlugin",
+    "VtfImagePlugin",
 ]
 
 
