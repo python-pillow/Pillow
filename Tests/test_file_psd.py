@@ -123,6 +123,17 @@ def test_seek_back_to_initial_frame() -> None:
         assert_image_equal(im, initial_frame)
 
 
+def test_seek_mode_change() -> None:
+    with Image.open(test_file) as im:
+        im.load()
+        assert im.mode == "RGB"
+
+        # Assert that C image is cleared after mode change
+        im.seek(2)
+        assert im.mode == "RGBA"
+        assert im._im is None
+
+
 def test_seek_eoferror() -> None:
     with Image.open(test_file) as im:
         with pytest.raises(EOFError):
