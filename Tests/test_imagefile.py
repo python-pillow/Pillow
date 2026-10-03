@@ -440,7 +440,7 @@ class TestPyEncoder(CodecsTest):
 
         mock_encoder = MockPyEncoder("")
         with tempfile.TemporaryFile() as fp:
-            mock_encoder.encode_to_file(fp.fileno(), 5)
+            mock_encoder.encode_to_file(fp.fileno(), 1)
 
             fp.seek(0)
             assert fp.read() == b"a"
