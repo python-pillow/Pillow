@@ -39,6 +39,7 @@ __lazy_modules__ = {
 import abc
 import atexit
 import builtins
+import inspect
 import io
 import math
 import os
@@ -2949,7 +2950,7 @@ class Image:
           object::
 
             class Example(Image.ImageTransformHandler):
-                def transform(self, size, data, resample, fill=1):
+                def transform(self, size, data, resample, fill=1, fillcolor=None):
                     # Return result
 
           Implementations of :py:class:`~PIL.Image.ImageTransformHandler`
@@ -2977,6 +2978,11 @@ class Image:
           the arguments passed to it. Otherwise, it is unused.
         :param fillcolor: Optional fill color for the area outside the
            transform in the output image.
+           If ``method`` is an :py:class:`~PIL.Image.ImageTransformHandler`
+           object and ``fillcolor`` is not ``None``, it is passed to the
+           handler's ``transform`` method as a keyword argument if its
+           signature accepts it. Handlers without a compatible or inspectable
+           signature continue to ignore ``fillcolor``.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
@@ -2988,7 +2994,22 @@ class Image:
             )
 
         if isinstance(method, ImageTransformHandler):
-            return method.transform(size, self, resample=resample, fill=fill)
+            transform = method.transform
+            if fillcolor is not None:
+                try:
+                    signature = inspect.signature(transform, follow_wrapped=False)
+                    signature.bind(
+                        size, self, resample=resample, fill=fill, fillcolor=fillcolor
+                    )
+                except (TypeError, ValueError):
+                    # Preserve the old call if the signature is unavailable or
+                    # the fillcolor keyword cannot be added to these arguments.
+                    pass
+                else:
+                    return transform(
+                        size, self, resample=resample, fill=fill, fillcolor=fillcolor
+                    )
+            return transform(size, self, resample=resample, fill=fill)
 
         if hasattr(method, "getdata"):
             # compatibility w. old-style transform objects

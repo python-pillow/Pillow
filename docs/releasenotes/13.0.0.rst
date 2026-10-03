@@ -99,6 +99,23 @@ intended for internal use, so there is no replacement.
 API changes
 ===========
 
+ImageTransformHandler fillcolor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.transform` now passes a non-``None`` ``fillcolor``
+argument to :py:class:`~PIL.Image.ImageTransformHandler` objects when the
+handler's callable signature accepts the keyword, explicitly or through
+``**kwargs``. The built-in :py:mod:`~PIL.ImageTransform` classes now use the
+requested background color, instead of silently ignoring it.
+
+Legacy handlers without keyword support, and handlers whose signatures cannot
+be inspected, retain the previous behavior of ignoring ``fillcolor``. Calls
+that omit ``fillcolor`` or set it to ``None`` use the existing handler arguments.
+Signature inspection uses the callable itself rather than following its
+``__wrapped__`` attribute. Custom handlers are responsible for exposing an
+accurate signature and for handling any options that they accept.
+
+
 TODO
 ^^^^
 
