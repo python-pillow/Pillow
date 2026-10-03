@@ -62,7 +62,6 @@ from . import (
     _plugins,
 )
 from ._binary import i32le, o32be, o32le
-from ._deprecate import deprecate
 from ._util import DeferredError, is_path
 
 TYPE_CHECKING = False
@@ -1522,7 +1521,7 @@ class Image:
             return out
         return self.im.getcolors(maxcolors)
 
-    def getdata(self, band: int | None = None) -> core.ImagingCore:
+    def getdata(self, band: int | None = None) -> core.ImageLinearAccess:
         """
         Returns the contents of this image as a sequence object
         containing pixel values.  The sequence object is flattened, so
@@ -1539,12 +1538,11 @@ class Image:
            value (e.g. 0 to get the "R" band from an "RGB" image).
         :returns: A sequence-like object.
         """
-        deprecate("Image.Image.getdata", 14, "get_flattened_data")
 
         self.load()
         if band is not None:
-            return self.im.getband(band)
-        return self.im  # could be abused
+            return self.im.getband(band).linear_access()
+        return self.im.linear_access()
 
     def get_flattened_data(
         self, band: int | None = None
@@ -2113,7 +2111,12 @@ class Image:
 
     def putdata(
         self,
-        data: Sequence[float] | Sequence[Sequence[int]] | NumpyArray,
+        data: (
+            Sequence[float]
+            | Sequence[Sequence[int]]
+            | core.ImageLinearAccess
+            | NumpyArray
+        ),
         scale: float = 1.0,
         offset: float = 0.0,
     ) -> None:
