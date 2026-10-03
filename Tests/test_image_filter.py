@@ -180,6 +180,18 @@ def test_rankfilter_properties() -> None:
         ImageFilter.RankFilter(1, 1)
 
 
+def test_rankfilter_overflow() -> None:
+    # Large margins used to overflow the ImagingExpand overflow guard itself (SIGFPE),
+    # by mutating RankFilter.size after construction, bypassing __init__'s validation.
+    im = Image.new("L", (16, 16))
+    rankfilter = ImageFilter.RankFilter(3, 0)
+
+    for size in (2**31, 2**32 - 1):  # margins of 2**30 and INT_MAX
+        rankfilter.size = size
+        with pytest.raises(ValueError, match="filter size too large"):
+            im.filter(rankfilter)
+
+
 def test_builtinfilter_p() -> None:
     builtin_filter = ImageFilter.BuiltinFilter()
 
@@ -236,40 +248,24 @@ def test_consistency_i16_high_byte(mode: str) -> None:
         assert im.getpixel((4, 4)) == 1000
 
 
-@pytest.mark.parametrize(
-    "radius",
-    (
-        -2,
-        (-2, -2),
-        (-2, 2),
-        (2, -2),
-    ),
-)
-def test_invalid_box_blur_filter(radius: int | tuple[int, int]) -> None:
-    with pytest.raises(ValueError):
-        ImageFilter.BoxBlur(radius)
+@pytest.mark.parametrize("size", (-1, math.nan, math.inf, 2**31))
+def test_invalid_box_blur_filter(size: int) -> None:
+    for radius in (size, (size, size), (size, 1), (1, size)):
+        with pytest.raises(ValueError, match="radius"):
+            ImageFilter.BoxBlur(radius)
 
+        im = hopper()
+        box_blur_filter = ImageFilter.BoxBlur(2)
+        box_blur_filter.radius = radius
+        with pytest.raises(ValueError, match="radius"):
+            im.filter(box_blur_filter)
+
+
+@pytest.mark.parametrize("radius", (math.nan, math.inf, 2**31))
+def test_invalid_gaussian_blur_filter(radius: int) -> None:
     im = hopper()
-    box_blur_filter = ImageFilter.BoxBlur(2)
-    box_blur_filter.radius = radius
-    with pytest.raises(ValueError):
-        im.filter(box_blur_filter)
-
-
-@pytest.mark.parametrize(
-    "radius",
-    (
-        math.nan,
-        (math.nan, 1),
-        (1, math.nan),
-        math.inf,
-        (1, math.inf),
-        (math.inf, 1),
-    ),
-)
-def test_box_blur_non_finite_radius(radius: float | tuple[float, float]) -> None:
-    with pytest.raises(ValueError, match="radius must be a finite number >= 0"):
-        ImageFilter.BoxBlur(radius)
+    with pytest.raises(ValueError, match="radius"):
+        im.filter(ImageFilter.GaussianBlur(radius))
 
 
 def test_rankfilter_size_1() -> None:

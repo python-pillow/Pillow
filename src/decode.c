@@ -48,7 +48,7 @@ typedef struct {
     PyObject_HEAD int (*decode)(
         Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes
     );
-    int (*cleanup)(ImagingCodecState state);
+    void (*cleanup)(ImagingCodecState state);
     struct ImagingCodecStateInstance state;
     Imaging im;
     PyObject *lock;
@@ -141,13 +141,11 @@ _decode(ImagingDecoderObject *decoder, PyObject *args) {
 
 static PyObject *
 _decode_cleanup(ImagingDecoderObject *decoder, PyObject *args) {
-    int status = 0;
-
     if (decoder->cleanup) {
-        status = decoder->cleanup(&decoder->state);
+        decoder->cleanup(&decoder->state);
     }
 
-    return Py_BuildValue("i", status);
+    Py_RETURN_NONE;
 }
 
 extern Imaging
@@ -509,20 +507,15 @@ PyImaging_LibTiffDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
     char *mode_name;
     char *rawmode_name;
-    char *compname;
     int fp;
     uint32_t ifdoffset;
 
-    if (!PyArg_ParseTuple(
-            args, "sssiI", &mode_name, &rawmode_name, &compname, &fp, &ifdoffset
-        )) {
+    if (!PyArg_ParseTuple(args, "ssiI", &mode_name, &rawmode_name, &fp, &ifdoffset)) {
         return NULL;
     }
 
     const ModeID mode = findModeID(mode_name);
     const RawModeID rawmode = findRawModeID(rawmode_name);
-
-    TRACE(("new tiff decoder %s\n", compname));
 
     decoder = PyImaging_DecoderNew(sizeof(TIFFSTATE));
     if (decoder == NULL) {

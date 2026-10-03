@@ -35,8 +35,6 @@ __lazy_modules__ = {
 
 import itertools
 import math
-import os
-import subprocess
 from enum import IntEnum
 from functools import cached_property
 from typing import NamedTuple, cast
@@ -45,8 +43,6 @@ from . import (
     Image,
     ImageChops,
     ImageFile,
-    ImageMath,
-    ImageOps,
     ImagePalette,
     ImageSequence,
 )
@@ -737,37 +733,18 @@ def _write_multiple_frames(
                             pass
                     if "transparency" in encoderinfo:
                         # When the delta is zero, fill the image with transparency
-                        diff_frame = im_frame.copy()
-                        fill = Image.new("P", delta.size, encoderinfo["transparency"])
                         if delta.mode == "RGBA":
+                            # Each pixel is unchanged only if all four bands are zero
                             r, g, b, a = delta.split()
-                            mask = ImageMath.lambda_eval(
-                                lambda args: args["convert"](
-                                    args["max"](
-                                        args["max"](
-                                            args["max"](args["r"], args["g"]), args["b"]
-                                        ),
-                                        args["a"],
-                                    )
-                                    * 255,
-                                    "1",
-                                ),
-                                r=r,
-                                g=g,
-                                b=b,
-                                a=a,
+                            delta = ImageChops.lighter(
+                                ImageChops.lighter(r, g),
+                                ImageChops.lighter(b, a),
                             )
-                        else:
-                            if delta.mode == "P":
-                                # Convert to L without considering palette
-                                delta_l = Image.new("L", delta.size)
-                                delta_l.putdata(delta.get_flattened_data())
-                                delta = delta_l
-                            mask = ImageMath.lambda_eval(
-                                lambda args: args["convert"](args["im"] * 255, "1"),
-                                im=delta,
-                            )
-                        diff_frame.paste(fill, mask=ImageOps.invert(mask))
+                        # Map zero pixels (palette indices, for "P")
+                        # to a "1" mask without consulting the palette.
+                        unchanged = delta.point([255, *(0,) * 255], "1")
+                        diff_frame = im_frame.copy()
+                        diff_frame.paste(encoderinfo["transparency"], mask=unchanged)
             else:
                 bbox = None
             previous_im = im_frame
@@ -879,54 +856,6 @@ def _write_local_header(
     if include_color_table and color_table_size:
         fp.write(_get_header_palette(palette_bytes))
     fp.write(o8(8))  # bits
-
-
-def _save_netpbm(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    # Unused by default.
-    # To use, uncomment the register_save call at the end of the file.
-    #
-    # If you need real GIF compression and/or RGB quantization, you
-    # can use the external NETPBM/PBMPLUS utilities.  See comments
-    # below for information on how to enable this.
-    tempfile = im._dump()
-
-    try:
-        with open(filename, "wb") as f:
-            if im.mode != "RGB":
-                subprocess.check_call(
-                    ["ppmtogif", tempfile], stdout=f, stderr=subprocess.DEVNULL
-                )
-            else:
-                # Pipe ppmquant output into ppmtogif
-                # "ppmquant 256 %s | ppmtogif > %s" % (tempfile, filename)
-                quant_cmd = ["ppmquant", "256", tempfile]
-                togif_cmd = ["ppmtogif"]
-                quant_proc = subprocess.Popen(
-                    quant_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
-                )
-                togif_proc = subprocess.Popen(
-                    togif_cmd,
-                    stdin=quant_proc.stdout,
-                    stdout=f,
-                    stderr=subprocess.DEVNULL,
-                )
-
-                # Allow ppmquant to receive SIGPIPE if ppmtogif exits
-                assert quant_proc.stdout is not None
-                quant_proc.stdout.close()
-
-                retcode = quant_proc.wait()
-                if retcode:
-                    raise subprocess.CalledProcessError(retcode, quant_cmd)
-
-                retcode = togif_proc.wait()
-                if retcode:
-                    raise subprocess.CalledProcessError(retcode, togif_cmd)
-    finally:
-        try:
-            os.unlink(tempfile)
-        except OSError:
-            pass
 
 
 # Force optimization so that we can test performance against
@@ -1223,9 +1152,3 @@ Image.register_save(GifImageFile.format, _save)
 Image.register_save_all(GifImageFile.format, _save_all)
 Image.register_extension(GifImageFile.format, ".gif")
 Image.register_mime(GifImageFile.format, "image/gif")
-
-#
-# Uncomment the following line if you wish to use NETPBM/PBMPLUS
-# instead of the built-in "uncompressed" GIF encoder
-
-# Image.register_save(GifImageFile.format, _save_netpbm)

@@ -162,6 +162,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
             raise ValueError(msg)
         self.fp.seek(self.offset)
         JpegImagePlugin.JpegImageFile._open(self)
+        Image._decompression_bomb_check(self.size)
         if self.info.get("exif") != original_exif:
             self._reload_exif()
 
@@ -169,6 +170,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
             ImageFile._Tile("jpeg", (0, 0, *self.size), self.offset, self.tile[0][-1])
         ]
         self.__frame = frame
+        Image.Image.seek(self, frame)
 
     def tell(self) -> int:
         return self.__frame

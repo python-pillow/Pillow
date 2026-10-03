@@ -158,8 +158,7 @@ class PsdImageFile(ImageFile.ImageFile):
             if isinstance(self._fp, DeferredError):
                 raise self._fp.ex
             self._fp.seek(self._layers_position)
-            _layer_data = io.BytesIO(ImageFile._safe_read(self._fp, self._layers_size))
-            layers = _layerinfo(_layer_data, self._layers_size)
+            layers = _layerinfo(self._fp, self._layers_size)
         self._n_frames = len(layers)
         return layers
 
@@ -183,11 +182,10 @@ class PsdImageFile(ImageFile.ImageFile):
         if layer > len(self.layers):
             msg = "no more images in PSD file"
             raise EOFError(msg)
-        _, mode, _, tile = self.layers[layer - 1]
-        self._mode = mode
-        self.tile = tile
+        _, self._mode, _, self.tile = self.layers[layer - 1]
         self.frame = layer
         self.fp = self._fp
+        Image.Image.seek(self, layer)
 
     def tell(self) -> int:
         # return layer number (0=image, 1..max=layers)
@@ -218,7 +216,7 @@ def _layerinfo(
         x1 = si32(read(4))
 
         # image info
-        bands = []
+        bands = set()
         ct_types = i16(read(2))
         if ct_types > 4:
             fp.seek(ct_types * 6 + 12, io.SEEK_CUR)
@@ -236,16 +234,15 @@ def _layerinfo(
             else:
                 b = ""
 
-            bands.append(b)
+            bands.add(b)
             read(4)  # size
 
         # figure out the image mode
-        bands.sort()
-        if bands == ["R"]:
+        if bands == {"R"}:
             mode = "L"
-        elif bands == ["B", "G", "R"]:
+        elif bands == {"R", "G", "B"}:
             mode = "RGB"
-        elif bands == ["A", "B", "G", "R"]:
+        elif bands == {"R", "G", "B", "A"}:
             mode = "RGBA"
         else:
             mode = ""  # unknown

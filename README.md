@@ -10,7 +10,7 @@ Pillow is the friendly PIL fork by [Jeffrey 'Alex' Clark and
 contributors](https://github.com/python-pillow/Pillow/graphs/contributors).
 PIL is the Python Imaging Library by Fredrik Lundh and contributors.
 Development is supported by:
-- [Tidelift](https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=readme&utm_campaign=enterprise) (since 2018)
+- [Tidelift](https://tidelift.com/lifter/search/pypi/pillow) (since 2018)
 - [Thanks.dev](https://thanks.dev) (since 2023)
 - [GitHub Sponsors](https://github.com/sponsors/python-pillow) (since 2026)
 
@@ -58,7 +58,7 @@ Development is supported by:
             <a href="https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow"><img
                 alt="Zenodo"
                 src="https://zenodo.org/badge/17549/python-pillow/Pillow.svg"></a>
-            <a href="https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=badge"><img
+            <a href="https://tidelift.com/lifter/search/pypi/pillow"><img
                 alt="Tidelift"
                 src="https://tidelift.com/badges/package/pypi/pillow?style=flat"></a>
             <a href="https://pypi.org/project/pillow/"><img

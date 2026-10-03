@@ -65,7 +65,6 @@ from typing import IO, Any, cast
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
-from ._binary import o8
 from ._util import DeferredError, is_path
 from .TiffTags import TYPES
 
@@ -693,8 +692,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 self.tagtype[tag] = TiffTags.UNDEFINED
                 if all(isinstance(v, IFDRational) for v in values):
                     for v in values:
-                        assert isinstance(v, IFDRational)
-                        if v < 0:
+                        if v < IFDRational(0):
                             self.tagtype[tag] = TiffTags.SIGNED_RATIONAL
                             break
                     else:
@@ -1350,10 +1348,8 @@ class TiffImageFile(ImageFile.ImageFile):
             msg = "Not exactly one tile"
             raise OSError(msg)
 
-        # (self._compression, (extents tuple),
-        #   0, (rawmode, self._compression, fp))
-        extents = self.tile[0][1]
-        args = self.tile[0][3]
+        extents = self.tile[0].extents
+        args = self.tile[0].args
 
         # To be nice on memory footprint, if there's a
         # file descriptor, use that instead of reading
@@ -1374,7 +1370,7 @@ class TiffImageFile(ImageFile.ImageFile):
         if fp:
             assert isinstance(args, tuple)
             args_list = list(args)
-            args_list[2] = fp
+            args_list[1] = fp
             args = tuple(args_list)
 
         decoder = Image._getdecoder(self.mode, "libtiff", args, self.decoderconfig)
@@ -1616,7 +1612,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
             # Offset in the tile tuple is 0, we go from 0,0 to
             # w,h, and we only do this once -- eds
-            a = (rawmode, self._compression, False, self.tag_v2.offset)
+            a = (rawmode, False, self.tag_v2.offset)
             self.tile.append(ImageFile._Tile("libtiff", (0, 0, xsize, ysize), 0, a))
 
         elif STRIPOFFSETS in self.tag_v2 or TILEOFFSETS in self.tag_v2:
@@ -1679,8 +1675,8 @@ class TiffImageFile(ImageFile.ImageFile):
         # fixup palette descriptor
 
         if self.mode in ["P", "PA"]:
-            palette = [o8(b // 256) for b in self.tag_v2[COLORMAP]]
-            self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
+            palette = tuple(b // 256 for b in self.tag_v2[COLORMAP])
+            self.palette = ImagePalette.raw("RGB;L", palette)
         else:
             self.palette = None
 
@@ -1998,18 +1994,21 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # pseudo tag requires that the COMPRESS tag was already set.
         tags = list(atts.items())
         tags.sort()
-        a = (rawmode, compression, _fp, filename, tags, types)
+        a = (rawmode, _fp, filename, tags, types)
         encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
-        encoder.setimage(im.im, (0, 0, *im.size))
-        while True:
-            errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
-            if not _fp:
-                fp.write(data)
-            if errcode:
-                break
-        if errcode < 0:
-            msg = f"encoder error {errcode} when writing image file"
-            raise OSError(msg)
+        try:
+            encoder.setimage(im.im, (0, 0, *im.size))
+            while True:
+                errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
+                if not _fp:
+                    fp.write(data)
+                if errcode:
+                    break
+            if errcode < 0:
+                msg = f"encoder error {errcode} when writing image file"
+                raise OSError(msg)
+        finally:
+            encoder.cleanup()
 
     else:
         for tag in blocklist:

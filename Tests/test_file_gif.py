@@ -14,7 +14,6 @@ from .helper import (
     assert_image_similar,
     hopper,
     is_pypy,
-    netpbm_available,
 )
 
 TYPE_CHECKING = False
@@ -395,30 +394,6 @@ def test_palette_434(tmp_path: Path) -> None:
     with roundtrip(im_rgb) as reloaded:
         reloaded = reloaded.convert("RGB")
         assert_image_equal(im_rgb, reloaded)
-
-
-@pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
-def test_save_netpbm_bmp_mode(tmp_path: Path) -> None:
-    with Image.open(TEST_GIF) as img:
-        img_rgb = img.convert("RGB")
-
-    tempfile = str(tmp_path / "temp.gif")
-    b = BytesIO()
-    GifImagePlugin._save_netpbm(img_rgb, b, tempfile)
-    with Image.open(tempfile) as reloaded:
-        assert_image_equal(img_rgb, reloaded.convert("RGB"))
-
-
-@pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
-def test_save_netpbm_l_mode(tmp_path: Path) -> None:
-    with Image.open(TEST_GIF) as img:
-        img_l = img.convert("L")
-
-        tempfile = str(tmp_path / "temp.gif")
-        b = BytesIO()
-        GifImagePlugin._save_netpbm(img_l, b, tempfile)
-        with Image.open(tempfile) as reloaded:
-            assert_image_equal(img_l, reloaded.convert("L"))
 
 
 def test_seek() -> None:

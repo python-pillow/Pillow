@@ -80,8 +80,10 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         self.fp = self.ole.openstream(filename)
 
         TiffImagePlugin.TiffImageFile._open(self)
+        Image._decompression_bomb_check(self.size)
 
         self.frame = frame
+        Image.Image.seek(self, frame)
 
     def tell(self) -> int:
         return self.frame

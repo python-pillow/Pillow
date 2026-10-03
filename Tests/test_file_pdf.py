@@ -13,7 +13,6 @@ from PIL import Image, PdfParser, features
 
 from .helper import (
     hopper,
-    mark_if_feature_version,
     skip_unless_feature,
     timeout_unless_slower_valgrind,
 )
@@ -144,9 +143,6 @@ def test_dpi(params: dict[str, int | tuple[int, int]], tmp_path: Path) -> None:
     assert size == (122.88, 61.44)
 
 
-@mark_if_feature_version(
-    pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-)
 def test_save_all(tmp_path: Path) -> None:
     # Single frame image
     helper_save_as_pdf(tmp_path, "RGB", save_all=True)
@@ -181,6 +177,17 @@ def test_save_all(tmp_path: Path) -> None:
 
     assert os.path.isfile(outfile)
     assert os.path.getsize(outfile) > 0
+
+
+def test_save_all_object_ids(tmp_path: Path) -> None:
+    outfile = str(tmp_path / "temp.pdf")
+    with Image.open("Tests/images/transparent_dispose.gif") as im:
+        im.save(outfile, save_all=True)
+
+    with PdfParser.PdfParser(outfile) as pdf:
+        # Test that each object id was used
+        for object_id in pdf.xref_table.existing_entries:
+            pdf.read_indirect(PdfParser.IndirectReference(object_id, 0))
 
 
 def test_multiframe_normal_save(tmp_path: Path) -> None:

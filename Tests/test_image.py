@@ -29,9 +29,7 @@ from .helper import (
     assert_not_all_same,
     hopper,
     is_win32,
-    mark_if_feature_version,
     skip_unless_feature,
-    timeout_unless_slower_valgrind,
 )
 
 TYPE_CHECKING = False
@@ -571,13 +569,6 @@ class TestImage:
         i = Image.new("RGB", [1, 1])
         assert isinstance(i.size, tuple)
 
-    @timeout_unless_slower_valgrind(0.75)
-    @pytest.mark.parametrize(
-        "size", ((0, 10_000_000), (10_000_000, 0)), ids=("tall", "wide")
-    )
-    def test_empty_image(self, size: tuple[int, int]) -> None:
-        Image.new("RGB", size)
-
     def test_storage_neg(self) -> None:
         # Storage.c accepted negative values for xsize, ysize.  Was
         # test_neg_ppm, but the core function for that has been
@@ -672,7 +663,7 @@ class TestImage:
         assert_image_equal(im_p, im_remapped)
         assert im_p.palette is not None
         assert im_remapped.palette is not None
-        assert im_p.palette.palette == im_remapped.palette.palette
+        assert bytes(im_p.palette.palette) == im_remapped.palette.palette
 
         # Test illegal image mode
         with hopper() as im_hopper:
@@ -810,6 +801,12 @@ class TestImage:
             exif = im.getexif()
         assert exif[274] == 1
 
+        with Image.open("Tests/images/exif.png") as im:
+            im.load()
+            im.info["exif"] = b"Exif\x00\x00" * 2 + im.info["exif"]
+            with pytest.raises(SyntaxError):
+                im.getexif()
+
     def test_empty_get_ifd(self) -> None:
         exif = Image.Exif()
         ifd = exif.get_ifd(0x8769)
@@ -822,9 +819,6 @@ class TestImage:
         reloaded_exif.load(exif.tobytes())
         assert reloaded_exif.get_ifd(0x8769) == {36864: b"0220"}
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_exif_jpeg(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
             exif = im.getexif()
@@ -1136,6 +1130,12 @@ class TestImage:
         a = Image.new("L", p.size)
         pa = Image.merge("PA", (p, a))
         assert p.getpalette() == pa.getpalette()
+
+    def test_merge_i(self) -> None:
+        i = Image.new("I", (1, 1))
+        a = Image.new("L", (1, 1))
+        with pytest.raises(ValueError, match="image has wrong mode"):
+            Image.merge("PA", (i, a))
 
     def test_constants(self) -> None:
         for enum in (

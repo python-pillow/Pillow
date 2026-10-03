@@ -18,7 +18,6 @@ from .helper import (
     assert_image_equal_tofile,
     hopper,
     is_win32,
-    mark_if_feature_version,
     skip_unless_feature,
 )
 
@@ -758,6 +757,22 @@ class TestFilePng:
             assert reloaded.png.im_palette is not None
             assert len(reloaded.png.im_palette[1]) == 48
 
+    def test_specify_bits_fewer_palette_entries(self, tmp_path: Path) -> None:
+        im = Image.new("P", (1, 1))
+        data = (0, 0, 0, 10, 10, 10, 20, 20, 20, 30, 30, 30, 40, 40, 40)
+        im.putpalette(data)
+
+        out = tmp_path / "temp.png"
+        im.save(out, bits=4)
+
+        with Image.open(out) as reloaded:
+            # Only the 5 actual palette entries are written,
+            # rather than padding the PLTE chunk out to 16 entries (1 << 4).
+            assert reloaded.palette is not None
+            assert reloaded.palette.palette == bytes(data)
+
+            assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
+
     def test_plte_length(self, tmp_path: Path) -> None:
         im = Image.new("P", (1, 1))
         im.putpalette((1, 1, 1))
@@ -849,9 +864,6 @@ class TestFilePng:
         assert exif_data is not None
         assert exif_data[274] == 1
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
     def test_exif_from_jpg(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
             test_file = tmp_path / "temp.png"

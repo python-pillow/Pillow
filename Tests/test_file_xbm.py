@@ -6,7 +6,7 @@ import pytest
 
 from PIL import Image, XbmImagePlugin
 
-from .helper import hopper
+from .helper import hopper, timeout_unless_slower_valgrind
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -91,3 +91,15 @@ def test_hotspot(tmp_path: Path) -> None:
 
     with Image.open(out) as reloaded:
         assert reloaded.info["hotspot"] == hotspot
+
+
+@timeout_unless_slower_valgrind(1)
+def test_redos() -> None:
+    redos = b""
+    for prop in (b"width", b"height", b"x_hot", b"y_hot"):
+        redos += b"#define" + b" " * 60 + b"_" + prop + b" 1\r"
+    redos += b"\r" * 60 + b"_bits" + b"A" * 512
+
+    b = BytesIO(redos)
+    with pytest.raises(SyntaxError):
+        XbmImagePlugin.XbmImageFile(b)

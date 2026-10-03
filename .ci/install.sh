@@ -30,7 +30,6 @@ packages=(
     libtiff-dev
     meson
     nasm
-    netpbm  # netpbm provides ppmquant and ppmtogif for GifImagePlugin._save_netpbm
     python3-tk
     sway
     wl-clipboard

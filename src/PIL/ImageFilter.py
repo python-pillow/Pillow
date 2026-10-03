@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 import abc
-import math
 from typing import cast
 
 TYPE_CHECKING = False
@@ -221,8 +220,11 @@ class BoxBlur(MultibandFilter):
 
     def __init__(self, radius: float | Sequence[float]) -> None:
         xy = radius if isinstance(radius, (tuple, list)) else (radius, radius)
-        if not all(math.isfinite(value) and value >= 0 for value in xy):
-            msg = "radius must be a finite number >= 0"
+        if not all(value >= 0 for value in xy):
+            msg = "radius must be >= 0"
+            raise ValueError(msg)
+        if any(value >= 2**31 for value in xy):
+            msg = "radius too large"
             raise ValueError(msg)
         self.radius = radius
 
@@ -375,7 +377,7 @@ class Color3DLUT(MultibandFilter):
                   tuples with floats. Channels are changed first,
                   then first dimension, then second, then third.
                   Value 0.0 corresponds lowest value of output, 1.0 highest.
-    :param channels: Number of channels in the table. Could be 3 or 4.
+    :param channels: Number of channels in the table. Should be 3 or 4.
                      Default is 3.
     :param target_mode: A mode for the result image. Should have not less
                         than ``channels`` channels. Default is ``None``,
