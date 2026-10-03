@@ -192,6 +192,24 @@ def test_rankfilter_overflow() -> None:
             im.filter(rankfilter)
 
 
+@pytest.mark.parametrize(
+    "mode, fill",
+    (
+        ("L", 0x12),
+        ("I", 0x12345678),
+        ("I;16", 0x1234),
+        ("I;16B", 0x1234),
+        ("F", 1.5),
+        ("RGB", (0x12, 0x34, 0x56)),
+    ),
+)
+@pytest.mark.parametrize("margin", (0, 1, 3))
+def test_expand(mode: str, fill: float | tuple[int, ...], margin: int) -> None:
+    im = Image.new(mode, (5, 4), fill)
+    out = im._new(im.im.expand(margin))  # As done internally by RankFilter
+    assert_image_equal(out, Image.new(mode, (5 + 2 * margin, 4 + 2 * margin), fill))
+
+
 def test_builtinfilter_p() -> None:
     builtin_filter = ImageFilter.BuiltinFilter()
 

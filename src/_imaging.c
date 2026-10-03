@@ -1756,7 +1756,7 @@ _putdata(ImagingObject *self, PyObject *args) {
                 for (i = x = y = 0; i < n; i++) {
                     double value;
                     set_value_to_item(seq, i);
-                    IMAGING_PIXEL_INT32(image, x, y) = (INT32)(value * scale + offset);
+                    image->image32[y][x] = (INT32)(value * scale + offset);
                     if (++x >= (int)image->xsize) {
                         x = 0, y++;
                     }
@@ -1766,7 +1766,7 @@ _putdata(ImagingObject *self, PyObject *args) {
                 for (i = x = y = 0; i < n; i++) {
                     double value;
                     set_value_to_item(seq, i);
-                    IMAGING_PIXEL_FLOAT32(image, x, y) =
+                    ((FLOAT32 *)image->image32[y])[x] =
                         (FLOAT32)(value * scale + offset);
                     if (++x >= (int)image->xsize) {
                         x = 0, y++;
