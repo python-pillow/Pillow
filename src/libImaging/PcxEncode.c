@@ -172,13 +172,18 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                         ptr += 1;
                         bytes -= 1;
                     }
+                    /* this run has been written */
+                    state->count = 0;
                     /* reset for the next color plane. */
                     if (state->x < planes * bytes_per_line) {
                         state->count = 1;
                         state->LAST = state->buffer[state->x];
                         state->x += 1;
                     }
-                } while (state->x < planes * bytes_per_line);
+                    /* With a plane that is a single byte wide, the last plane
+                       has already been read by this point, but not yet
+                       written. */
+                } while (state->x < planes * bytes_per_line || state->count > 0);
 
                 /* read next line */
                 state->state = FETCH;
