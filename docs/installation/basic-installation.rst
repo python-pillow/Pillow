@@ -32,8 +32,7 @@ and :pypi:`olefile` for Pillow to read FPX and MIC images::
 
     We provide binaries for Linux for each of the supported Python
     versions in the manylinux wheel format. These include support for all
-    optional libraries except libimagequant. Raqm support requires
-    FriBiDi to be installed separately::
+    optional libraries except libimagequant::
 
         python3 -m pip install --upgrade pip
         python3 -m pip install --upgrade Pillow
@@ -47,8 +46,7 @@ and :pypi:`olefile` for Pillow to read FPX and MIC images::
 
     We provide binaries for macOS for each of the supported Python
     versions in the wheel format. These include support for all optional
-    libraries except libimagequant. Raqm support requires
-    FriBiDi to be installed separately::
+    libraries except libimagequant::
 
         python3 -m pip install --upgrade pip
         python3 -m pip install --upgrade Pillow
@@ -70,8 +68,7 @@ and :pypi:`olefile` for Pillow to read FPX and MIC images::
     We provide Pillow binaries for Windows compiled for the matrix of supported
     Pythons in the wheel format. These include x86, x86-64 and arm64 versions.
     These binaries include support
-    for all optional libraries except libimagequant and libxcb. Raqm support
-    requires FriBiDi to be installed separately::
+    for all optional libraries except libimagequant and libxcb::
 
         python3 -m pip install --upgrade pip
         python3 -m pip install --upgrade Pillow
