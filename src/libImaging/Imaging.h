@@ -330,9 +330,9 @@ extern Imaging
 ImagingFillRadialGradient(ModeID mode);
 extern Imaging
 ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 offset);
-extern Imaging
+extern void
 ImagingFlipLeftRight(Imaging imOut, Imaging imIn);
-extern Imaging
+extern void
 ImagingFlipTopBottom(Imaging imOut, Imaging imIn);
 extern Imaging
 ImagingGaussianBlur(
@@ -375,15 +375,15 @@ extern Imaging
 ImagingPutBand(Imaging im, Imaging imIn, int band);
 extern Imaging
 ImagingRankFilter(Imaging im, int size, int rank);
-extern Imaging
+extern void
 ImagingRotate90(Imaging imOut, Imaging imIn);
-extern Imaging
+extern void
 ImagingRotate180(Imaging imOut, Imaging imIn);
-extern Imaging
+extern void
 ImagingRotate270(Imaging imOut, Imaging imIn);
-extern Imaging
+extern void
 ImagingTranspose(Imaging imOut, Imaging imIn);
-extern Imaging
+extern void
 ImagingTransverse(Imaging imOut, Imaging imIn);
 extern Imaging
 ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]);
