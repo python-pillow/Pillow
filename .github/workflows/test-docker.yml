@@ -72,7 +72,7 @@ jobs:
 
     - name: Set up QEMU
       if: "matrix.qemu-arch"
-      uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+      uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
       with:
         platforms: ${{ matrix.qemu-arch }}
 
@@ -88,7 +88,7 @@ jobs:
         sudo chown -R runner $GITHUB_WORKSPACE
 
     - name: Upload coverage
-      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+      uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
       with:
         flags: GHA_Docker
         name: ${{ matrix.docker }}
