@@ -17,19 +17,17 @@
 
 #include "Imaging.h"
 
-static Imaging
+/**
+ * Copy imIn into imOut.
+ * This internal function requires that imOut matches imIn in mode and size.
+ *
+ * @param imOut Caller-owned image to copy into.
+ * @param imIn Image to copy from.
+ */
+static void
 _copy(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int y;
-
-    if (!imIn) {
-        return (Imaging)ImagingError_ValueError(NULL);
-    }
-
-    imOut = ImagingNew2Dirty(imIn->mode, imOut, imIn);
-    if (!imOut) {
-        return NULL;
-    }
 
     ImagingCopyPalette(imOut, imIn);
 
@@ -42,16 +40,49 @@ _copy(Imaging imOut, Imaging imIn) {
         }
     }
     ImagingSectionLeave(&cookie);
+}
 
+/**
+ * Create a new image by copying imIn. The caller owns the returned image.
+ *
+ * The new image is allocated with the current default allocation strategy.
+ *
+ * @param imIn Image to copy from.
+ * @return A new image on success, or NULL on error with a Python exception set.
+ */
+Imaging
+ImagingCopy(Imaging imIn) {
+    if (!imIn) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+
+    Imaging imOut = ImagingNewDirty(imIn->mode, imIn->xsize, imIn->ysize);
+    if (!imOut) {
+        return NULL;
+    }
+
+    _copy(imOut, imIn);
     return imOut;
 }
 
+/**
+ * Copy imIn into the caller-owned imOut, which must match it in mode and size.
+ *
+ * @param imOut Caller-owned image to copy into.
+ * @param imIn Image to copy from.
+ * @return imOut on success, or NULL on error with a Python exception set.
+ */
 Imaging
-ImagingCopy(Imaging imIn) {
-    return _copy(NULL, imIn);
-}
+ImagingCopyInto(Imaging imOut, Imaging imIn) {
+    if (!imIn || !imOut) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
 
-Imaging
-ImagingCopy2(Imaging imOut, Imaging imIn) {
-    return _copy(imOut, imIn);
+    if (imOut->mode != imIn->mode || imOut->xsize != imIn->xsize ||
+        imOut->ysize != imIn->ysize) {
+        return ImagingError_Mismatch();
+    }
+
+    _copy(imOut, imIn);
+    return imOut;
 }

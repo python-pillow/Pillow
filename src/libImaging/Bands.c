@@ -214,7 +214,7 @@ ImagingPutBand(Imaging imOut, Imaging imIn, int band) {
 
     /* Shortcuts */
     if (imOut->bands == 1) {
-        return ImagingCopy2(imOut, imIn);
+        return ImagingCopyInto(imOut, imIn);
     }
 
     /* Special case for LXXA etc */
@@ -320,7 +320,7 @@ ImagingMerge(const ModeID mode, Imaging bands[4]) {
     }
 
     if (bandsCount == 1) {
-        return ImagingCopy2(imOut, firstBand);
+        return ImagingCopyInto(imOut, firstBand);
     }
 
     // restrict safe: the input bands are read-only and imOut is a fresh
