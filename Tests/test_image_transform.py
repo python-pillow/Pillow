@@ -11,6 +11,7 @@ from .helper import assert_image_equal, assert_image_similar, hopper
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from typing import Any
 
 
 class TestImageTransform:
@@ -44,6 +45,153 @@ class TestImageTransform:
             transform = ImageTransform.ExtentTransform((0, 0, 0, 0))
             new_im = im.transform((100, 100), transform)
         assert new_im.info["comment"] == comment
+
+    @pytest.mark.parametrize("mode", ("L", "RGB", "RGBA", "LA"))
+    @pytest.mark.parametrize(
+        "resample",
+        (Image.Resampling.NEAREST, Image.Resampling.BILINEAR, Image.Resampling.BICUBIC),
+    )
+    @pytest.mark.parametrize(
+        "transform",
+        (
+            ImageTransform.AffineTransform((1, 0, -1, 0, 1, 0)),
+            ImageTransform.PerspectiveTransform((1, 0, -1, 0, 1, 0, 0, 0)),
+            ImageTransform.ExtentTransform((-1, 0, 1, 1)),
+            ImageTransform.QuadTransform((-1, 0, -1, 1, 1, 1, 1, 0)),
+            ImageTransform.MeshTransform([((0, 0, 2, 1), (-1, 0, -1, 1, 1, 1, 1, 0))]),
+        ),
+    )
+    def test_handler_fillcolor(
+        self, mode: str, resample: Image.Resampling, transform: ImageTransform.Transform
+    ) -> None:
+        im = Image.new(mode, (2, 1), "white")
+        transformed = im.transform(
+            im.size, transform, resample=resample, fillcolor="red"
+        )
+        method, data = transform.getdata()
+        expected = im.transform(
+            im.size, method, data, resample=resample, fillcolor="red"
+        )
+        assert transformed.getpixel((0, 0)) == Image.new(mode, (1, 1), "red").getpixel(
+            (0, 0)
+        )
+        assert_image_equal(transformed, expected)
+
+    @pytest.mark.parametrize("fillcolor", (None, 0, "red", (1, 2, 3)))
+    def test_handler_options(
+        self, fillcolor: int | str | tuple[int, ...] | None
+    ) -> None:
+        options_seen: dict[str, Any] = {}
+
+        class CustomTransform(ImageTransform.AffineTransform):
+            def transform(
+                self, size: tuple[int, int], image: Image.Image, **options: Any
+            ) -> Image.Image:
+                options_seen.update(options)
+                assert size == image.size
+                return image
+
+        im = Image.new("RGB", (2, 1))
+        transformed = im.transform(
+            im.size,
+            CustomTransform((1, 0, 0, 0, 1, 0)),
+            resample=Image.Resampling.BICUBIC,
+            fill=0,
+            fillcolor=fillcolor,
+        )
+        assert transformed is im
+        expected: dict[str, Any] = {"resample": Image.Resampling.BICUBIC, "fill": 0}
+        if fillcolor is not None:
+            expected["fillcolor"] = fillcolor
+        assert options_seen == expected
+
+    def test_legacy_handler_fillcolor(self) -> None:
+        class LegacyTransform(Image.ImageTransformHandler):
+            # Preserve the documented legacy signature without **options.
+            def transform(  # type: ignore[override]
+                self,
+                size: tuple[int, int],
+                image: Image.Image,
+                resample: int,
+                fill: int = 1,
+            ) -> Image.Image:
+                return image
+
+        im = Image.new("RGB", (2, 1))
+        transform = LegacyTransform()
+        assert im.transform(im.size, transform) is im
+        assert im.transform(im.size, transform, fillcolor=None) is im
+        assert im.transform(im.size, transform, fillcolor="red") is im
+
+    def test_handler_keyword_fillcolor(self) -> None:
+        class Handler(Image.ImageTransformHandler):
+            def transform(  # type: ignore[override]
+                self,
+                size: tuple[int, int],
+                image: Image.Image,
+                resample: int,
+                fill: int = 1,
+                *,
+                fillcolor: Any = None,
+            ) -> Image.Image:
+                assert fillcolor == "red"
+                return image
+
+        im = Image.new("RGB", (2, 1))
+        assert im.transform(im.size, Handler(), fillcolor="red") is im
+
+    def test_handler_none_does_not_inspect(self) -> None:
+        class Transform:
+            @property
+            def __signature__(self) -> None:
+                message = "default calls must not inspect signatures"
+                raise AssertionError(message)
+
+            def __call__(
+                self, size: tuple[int, int], image: Image.Image, **options: Any
+            ) -> Image.Image:
+                assert "fillcolor" not in options
+                return image
+
+        class Handler(Image.ImageTransformHandler):
+            transform = Transform()
+
+        im = Image.new("RGB", (2, 1))
+        assert im.transform(im.size, Handler()) is im
+        assert im.transform(im.size, Handler(), fillcolor=None) is im
+
+    def test_handler_fillcolor_positional_collision(self) -> None:
+        class Handler(Image.ImageTransformHandler):
+            # This legacy handler calls its positional image argument fillcolor.
+            def transform(  # type: ignore[override]
+                self,
+                size: tuple[int, int],
+                fillcolor: Image.Image,
+                resample: int = 0,
+                fill: int = 1,
+            ) -> Image.Image:
+                return fillcolor
+
+        im = Image.new("RGB", (2, 1))
+        assert im.transform(im.size, Handler(), fillcolor="red") is im
+
+    def test_handler_typeerror_not_retried(self) -> None:
+        calls: list[Any] = []
+        error = TypeError("error from inside the handler")
+
+        class Handler(Image.ImageTransformHandler):
+            def transform(
+                self, size: tuple[int, int], image: Image.Image, **options: Any
+            ) -> Image.Image:
+                calls.append(options)
+                raise error
+
+        im = Image.new("RGB", (2, 1))
+        with pytest.raises(TypeError) as raised:
+            im.transform(im.size, Handler(), fillcolor="red")
+        assert raised.value is error
+        assert len(calls) == 1
+        assert calls[0]["fillcolor"] == "red"
 
     @pytest.mark.parametrize("mode", ("P", "PA"))
     def test_palette(self, mode: str) -> None:
