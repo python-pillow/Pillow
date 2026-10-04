@@ -1015,7 +1015,7 @@ _color_lut_3d(ImagingObject *self, PyObject *args) {
 static PyObject *
 _convert(ImagingObject *self, PyObject *args) {
     char *mode_name;
-    int dither = 0;
+    int dither = IMAGING_DITHER_NONE;
     ImagingObject *paletteimage = NULL;
 
     if (!PyArg_ParseTuple(args, "s|iO", &mode_name, &dither, &paletteimage)) {
@@ -1053,7 +1053,9 @@ _convert_into(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (!ImagingConvert(imagep->image, self->image, imagep->image->mode, NULL, 0)) {
+    if (!ImagingConvert(
+            imagep->image, self->image, imagep->image->mode, NULL, IMAGING_DITHER_NONE
+        )) {
         return NULL;
     }
 
@@ -1805,7 +1807,7 @@ _putdata(ImagingObject *self, PyObject *args) {
 static PyObject *
 _quantize(ImagingObject *self, PyObject *args) {
     int colours = 256;
-    int method = 0;
+    int method = IMAGING_QUANTIZE_MEDIANCUT;
     int kmeans = 0;
     if (!PyArg_ParseTuple(args, "|iii", &colours, &method, &kmeans)) {
         return NULL;
