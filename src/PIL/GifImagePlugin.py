@@ -705,7 +705,10 @@ def _write_multiple_frames(
                 if not bbox:
                     # This frame is identical to the previous frame
                     if encoderinfo.get("duration"):
-                        im_frames[-1].encoderinfo["duration"] += encoderinfo["duration"]
+                        previous_duration = im_frames[-1].encoderinfo.get("duration", 0)
+                        im_frames[-1].encoderinfo["duration"] = (
+                            previous_duration + encoderinfo["duration"]
+                        )
                     continue
                 if im_frames[-1].encoderinfo.get("disposal") == 2:
                     # To appear correctly in viewers using a convention,
@@ -752,7 +755,7 @@ def _write_multiple_frames(
             im_frames.append(_Frame(diff_frame or im_frame, bbox, encoderinfo))
 
     if len(im_frames) == 1:
-        if "duration" in im.encoderinfo:
+        if "duration" in im_frames[0].encoderinfo:
             # Since multiple frames will not be written, use the combined duration
             im.encoderinfo["duration"] = im_frames[0].encoderinfo["duration"]
         return False

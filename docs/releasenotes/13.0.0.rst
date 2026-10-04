@@ -134,6 +134,13 @@ escape sequences.
 Other changes
 =============
 
+Fixed combining GIF frames with missing durations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Saving identical GIF frames no longer raises a ``KeyError`` when an earlier frame
+has no duration and a later frame does. The combined duration is also preserved
+when all of the frames are combined into a single frame.
+
 Python 3.15
 ^^^^^^^^^^^
 
