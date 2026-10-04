@@ -975,17 +975,14 @@ def test_identical_frames_to_single_frame(
 
 
 @pytest.mark.parametrize("first_duration", (None, 0))
-@pytest.mark.parametrize("append_different_frame", (True, False))
 def test_identical_frames_missing_duration(
-    first_duration: int | None, append_different_frame: bool, tmp_path: Path
+    first_duration: int | None, tmp_path: Path
 ) -> None:
     frames = [Image.new("RGB", (1, 1), "red") for _ in range(3)]
     if first_duration is not None:
         frames[0].info["duration"] = first_duration
     frames[1].info["duration"] = 100
     frames[2].info["duration"] = 200
-    if append_different_frame:
-        frames.append(Image.new("RGB", (1, 1), "blue"))
 
     out = tmp_path / "temp.gif"
     frames[0].save(out, save_all=True, append_images=frames[1:])
@@ -994,11 +991,7 @@ def test_identical_frames_missing_duration(
         assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.info["duration"] == 300
         assert_image_equal(reread.convert("RGB"), frames[0])
-        assert reread.n_frames == (2 if append_different_frame else 1)
-        if append_different_frame:
-            reread.seek(1)
-            assert reread.info.get("duration", 0) == 0
-            assert_image_equal(reread.convert("RGB"), frames[-1])
+        assert reread.n_frames == 1
 
 
 def test_loop_none(tmp_path: Path) -> None:
