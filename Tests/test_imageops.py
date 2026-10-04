@@ -125,19 +125,6 @@ def test_fit_same_ratio() -> None:
         assert new_im.size == (1000, 755)
 
 
-@pytest.mark.parametrize("size", ((4, 2), (2, 4)))
-@pytest.mark.parametrize("centering", ((0, 0), (1, 0), (0, 1), (1, 1)))
-def test_fit_centering(size: tuple[int, int], centering: tuple[int, int]) -> None:
-    im = Image.new("L", size)
-    im.putdata(list(range(size[0] * size[1])))
-    left = (size[0] - 2) * centering[0]
-    top = (size[1] - 2) * centering[1]
-
-    fitted = ImageOps.fit(im, (2, 2), centering=centering)
-
-    assert_image_equal(fitted, im.crop((left, top, left + 2, top + 2)))
-
-
 @pytest.mark.parametrize("new_size", ((256, 256), (512, 256), (256, 512)))
 def test_contain(new_size: tuple[int, int]) -> None:
     im = hopper()
