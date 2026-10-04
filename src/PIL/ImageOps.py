@@ -565,7 +565,7 @@ def fit(
                       (0.0, 0.0) will crop from the top left corner (i.e. if
                       cropping the width, take all of the crop off of the right
                       side, and if cropping the height, take all of it off the
-                      bottom).  (1.0, 0.0) will crop from the bottom left
+                      bottom).  (1.0, 0.0) will crop from the top right
                       corner, etc. (i.e. if cropping the width, take all of the
                       crop off the left side, and if cropping the height take
                       none from the top, and therefore all off the bottom).

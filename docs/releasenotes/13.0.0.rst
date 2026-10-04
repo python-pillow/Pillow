@@ -134,6 +134,13 @@ escape sequences.
 Other changes
 =============
 
+ImageOps.fit centering documentation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The documentation for :py:func:`~PIL.ImageOps.fit` now correctly describes
+``centering=(1.0, 0.0)`` as retaining the top right corner. The cropping behavior
+is unchanged.
+
 Python 3.15
 ^^^^^^^^^^^
 
