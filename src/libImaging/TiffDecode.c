@@ -745,20 +745,23 @@ ImagingLibTiffEncodeCleanup(ImagingCodecState state) {
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
     TIFF *tiff = clientstate->tiff;
 
-    if (!tiff) {
-        return;
+    if (tiff) {
+        // TIFFClose in libtiff calls tif_closeproc and TIFFCleanup
+        if (clientstate->fp) {
+            // Python will manage the closing of the file rather than libtiff
+            // So only call TIFFCleanup
+            TIFFCleanup(tiff);
+        } else {
+            // When tif_closeproc refers to our custom _tiffCloseProc though,
+            // that is fine, as it does not close the file
+            TIFFClose(tiff);
+        }
+        clientstate->tiff = NULL;
     }
-    // TIFFClose in libtiff calls tif_closeproc and TIFFCleanup
-    if (clientstate->fp) {
-        // Python will manage the closing of the file rather than libtiff
-        // So only call TIFFCleanup
-        TIFFCleanup(tiff);
-    } else {
-        // When tif_closeproc refers to our custom _tiffCloseProc though,
-        // that is fine, as it does not close the file
-        TIFFClose(tiff);
+    if (clientstate->data) {
+        free(clientstate->data);
+        clientstate->data = 0;
     }
-    clientstate->tiff = NULL;
 }
 
 int
@@ -789,13 +792,6 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
                     tiff, (tdata_t)(state->buffer), (uint32_t)state->y, 0
                 ) == -1) {
                 state->errcode = IMAGING_CODEC_BROKEN;
-
-                if (clientstate->fp) {
-                    TIFFCleanup(tiff);
-                    clientstate->tiff = NULL;
-                } else {
-                    free(clientstate->data);
-                }
                 return -1;
             }
             state->y++;
@@ -807,9 +803,6 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
             if (!TIFFFlush(tiff)) {
                 // likely reason is memory.
                 state->errcode = IMAGING_CODEC_MEMORY;
-                if (!clientstate->fp) {
-                    free(clientstate->data);
-                }
                 return -1;
             }
             // reset the clientstate metadata to use it to read out the buffer.
@@ -824,7 +817,6 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
 
         if (clientstate->loc == clientstate->eof) {
             state->errcode = IMAGING_CODEC_END;
-            free(clientstate->data);
         }
         return read;
     }
