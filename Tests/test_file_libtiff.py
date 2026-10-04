@@ -760,6 +760,21 @@ class TestFileLibTiff(LibTiffTestCase):
         save_bytesio("packbits")
         save_bytesio("tiff_lzw")
 
+    def test_save_bytesio_encoder_error(self) -> None:
+        # libtiff rejects a floating point predictor for integer sample data,
+        # so TIFFWriteScanline fails. The encoder must not free its in-memory
+        # buffer while the TIFF handle is still open, as closing the handle
+        # flushes buffered bytes back through the write callback.
+        im = hopper("L")
+        buffer_io = io.BytesIO()
+        with pytest.raises(OSError):
+            im.save(
+                buffer_io,
+                format="tiff",
+                compression="tiff_lzw",
+                tiffinfo={TiffImagePlugin.PREDICTOR: 3},
+            )
+
     def test_save_ycbcr(self, tmp_path: Path) -> None:
         im = hopper("YCbCr")
         outfile = tmp_path / "temp.tif"
