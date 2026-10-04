@@ -794,7 +794,7 @@ class TestAvifLeaks(PillowLeakTestCase):
     mem_limit = MAX_THREADS * 3 * 1024
     iterations = 100
 
-    @skip_if_tsan("TSAN Takes more memory")
+    @skip_if_tsan("TSAN takes more memory")
     @pytest.mark.skipif(
         is_docker_qemu(), reason="Skipping on cross-architecture containers"
     )
