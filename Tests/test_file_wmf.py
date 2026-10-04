@@ -59,6 +59,19 @@ def test_load_unsupported() -> None:
         WmfImagePlugin.WmfStubImageFile(b)
 
 
+@pytest.mark.skipif(not hasattr(Image.core, "drawwmf"), reason="requires Windows")
+def test_load_oversized_dimensions() -> None:
+    with Image.open("Tests/images/drawing.wmf") as im:
+        assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
+        assert im.size == (82, 82)
+
+        # (60000, 1) DPI produces a 68450x1 image
+        # width exceeds the 65535 limit of the 16-bit BITMAPCOREHEADER field
+        # in the native drawwmf handler, previously causing a heap over-read.
+        with pytest.raises(ValueError, match="invalid dimensions"):
+            im.load((60000, 1))
+
+
 def test_render() -> None:
     with open("Tests/images/drawing.emf", "rb") as fp:
         data = fp.read()
@@ -115,6 +128,17 @@ def test_load_set_dpi() -> None:
             assert im.size == (164, 164)
 
             assert_image_similar_tofile(im, "Tests/images/drawing_wmf_ref_144.png", 2.1)
+
+            for dpi in (0, (0, 0), (0, 1), (1, 0)):
+                with Image.open("Tests/images/drawing.wmf") as im:
+                    assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
+                    im.load(dpi)
+
+            for dpi in (-1, (-1, -1), (-1, 1), (1, -1)):
+                with Image.open("Tests/images/drawing.wmf") as im:
+                    assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
+                    with pytest.raises(ValueError, match="DPI must be non-negative"):
+                        im.load(dpi)
 
     with Image.open("Tests/images/drawing.emf") as im:
         assert im.size == (1625, 1625)
