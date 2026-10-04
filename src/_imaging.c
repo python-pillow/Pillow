@@ -1076,7 +1076,7 @@ _convert(ImagingObject *self, PyObject *args) {
 static PyObject *
 _convert_into(ImagingObject *self, PyObject *args) {
     ImagingObject *imagep;
-    Imaging  *result;
+    Imaging  result;
     if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
         return NULL;
     }
@@ -1086,7 +1086,7 @@ _convert_into(ImagingObject *self, PyObject *args) {
     Py_END_CRITICAL_SECTION2();
 
     if (!result) {
-      return null;
+      return NULL;
     }
 
     Py_RETURN_NONE;
@@ -2733,7 +2733,7 @@ static PyObject *
 _getprojection(ImagingObject *self, PyObject *args) {
     PyObject *result;
     Py_BEGIN_CRITICAL_SECTION(self);
-    result = _getprojection_impl(self, argsx);
+    result = _getprojection_impl(self, args);
     Py_END_CRITICAL_SECTION();
     return result;
 }
@@ -2902,7 +2902,7 @@ static PyObject *
 _chop_invert(ImagingObject *self, PyObject *args) {
     PyObject *result;
     Py_BEGIN_CRITICAL_SECTION(self);
-    result = _chop_invert_impl(self);
+    result = _chop_invert_impl(self, args);
     Py_END_CRITICAL_SECTION();
     return result;
 }
