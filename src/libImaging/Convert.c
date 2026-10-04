@@ -1121,7 +1121,11 @@ frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
 #endif
 static Imaging
 topalette(
-    Imaging imOut, Imaging imIn, const ModeID mode, ImagingPalette inpalette, int dither
+    Imaging imOut,
+    Imaging imIn,
+    const ModeID mode,
+    ImagingPalette inpalette,
+    ImagingDitherType dither
 ) {
     ImagingSectionCookie cookie;
     int alpha;
@@ -1198,7 +1202,7 @@ topalette(
             return NULL;
         }
 
-        if (dither) {
+        if (dither != IMAGING_DITHER_NONE) {
             /* floyd-steinberg dither */
 
             int *errors;
@@ -1578,13 +1582,18 @@ static struct {
  * @param mode    Target mode.
  * @param palette Target palette for conversions to "P" or "PA";
  *                NULL to use a default palette.
- * @param dither  Nonzero to dither when converting to "P", "PA" or "1".
+ * @param dither  Dither method when converting to "P", "PA" or "1".
+ *                Any value other than IMAGING_DITHER_NONE uses Floyd-Steinberg.
  * @return        The resulting Imaging object,
  *                or NULL with a Python exception set on failure.
  */
 Imaging
 ImagingConvert(
-    Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int dither
+    Imaging imOut,
+    Imaging imIn,
+    ModeID mode,
+    ImagingPalette palette,
+    ImagingDitherType dither
 ) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
@@ -1616,7 +1625,7 @@ ImagingConvert(
         return topalette(imOut, imIn, mode, palette, dither);
     }
 
-    if (dither && mode == IMAGING_MODE_1) {
+    if (dither != IMAGING_DITHER_NONE && mode == IMAGING_MODE_1) {
         return tobilevel(imOut, imIn);
     }
 
