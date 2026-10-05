@@ -105,6 +105,27 @@ def test_parsing() -> None:
             assert time.strftime("%Y%m%d%H%M%S", getattr(d, name)) == value
 
 
+def test_max_nesting() -> None:
+    data = b"<</Name" + b"[" * 1000 + b"]" * 1000 + b">>"
+
+    # Test get_value default
+    PdfParser.get_value(data, 0)
+
+    # Test read_indirect default
+    b = BytesIO()
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
+
+    ref = IndirectObjectDef(1, 0)
+    with PdfParser(f=b) as pdf:
+        pdf.buf = b" " * 9 + b"1 0 obj" + data + b"endobj"
+        pdf.read_indirect(ref)
+
+
 def test_pdfstream_flatedecode() -> None:
     d = PdfDict({b"Filter": b"FlateDecode"})
     buf = zlib.compress(b"test")
