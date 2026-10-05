@@ -65,6 +65,7 @@ install-coverage:
 	CFLAGS="-coverage -Werror=implicit-function-declaration" python3 -m pip -v install .[tests]
 	python3 selftest.py
 
+.PHONY: install-tsan
 install-tsan:
 	CFLAGS="-g -O2 -fsanitize=thread" python3 -m pip -v install .[tests]
 	python3 selftest.py
