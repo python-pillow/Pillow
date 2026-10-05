@@ -20,6 +20,8 @@ from PIL.PdfParser import (
     pdf_repr,
 )
 
+from .helper import timeout_unless_slower_valgrind
+
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from pathlib import Path
@@ -198,6 +200,27 @@ def test_linearize_page_tree_duplicate_reference() -> None:
         pdf.page_tree_root[b"Kids"] = [pdf.pages_ref]
         with pytest.raises(PdfFormatError, match="cyclic or duplicate reference"):
             pdf.linearize_page_tree()
+
+
+@timeout_unless_slower_valgrind(1)
+def test_write_catalog_loop() -> None:
+    b = BytesIO()
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        page_ids = [pdf.next_object_id(0) for _ in range(2)]
+        pdf.write_page(page_ids[0], Parent=page_ids[1])
+        pdf.write_page(page_ids[1], Parent=page_ids[0])
+
+        pdf.pages = [page_ids[0], page_ids[1]]
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
+
+    with PdfParser(f=b) as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+        pdf.write_catalog()
 
 
 def test_duplicate_xref_entry() -> None:
