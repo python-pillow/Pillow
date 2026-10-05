@@ -129,6 +129,14 @@ class TestFileJpeg:
                 with Image.open(out) as reloaded:
                     assert reloaded.info["comment"] == b"Test comment text"
 
+    def test_large_comment(self, tmp_path: Path) -> None:
+        f = tmp_path / "temp.jpg"
+        im = hopper()
+        im.save(f, "JPEG", comment=b"1" * 65533)
+
+        with pytest.raises(ValueError, match="Comment is too long"):
+            im.save(f, "JPEG", comment=b"1" * 65534)
+
     def test_cmyk(self) -> None:
         # Test CMYK handling.  Thanks to Tim and Charlie for test data,
         # Michael for getting me to look one more time.
@@ -226,6 +234,16 @@ class TestFileJpeg:
         assert len(icc_profile) == n  # sanity
         im1 = self.roundtrip(hopper(), icc_profile=icc_profile)
         assert im1.info.get("icc_profile") == (icc_profile or None)
+
+    def test_icc_big_comment(self) -> None:
+        # The ICC profile may fill the encoder buffer exactly, in which case the
+        # comment has to be written to the next buffer
+        comment = b"C" * 65533
+        for n in range(ImageFile.MAXBLOCK - 40, ImageFile.MAXBLOCK - 30):
+            icc_profile = b"I" * n
+            im = self.roundtrip(hopper(), icc_profile=icc_profile, comment=comment)
+            assert im.info["icc_profile"] == icc_profile
+            assert im.info["comment"] == comment
 
     def test_large_icc_meta(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/148
