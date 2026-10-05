@@ -161,6 +161,33 @@ def test_apng_dispose_op_background_p_mode() -> None:
         assert im.size == (128, 64)
 
 
+def test_apng_dispose_op_background_decompression_bomb() -> None:
+    o16 = PngImagePlugin.o16
+    o32 = PngImagePlugin.o32
+
+    b = BytesIO()
+    b.write(PngImagePlugin._MAGIC)
+    PngImagePlugin.putchunk(b, b"IHDR", o32(2**31 - 1), o32(1), b"\x08\x06\x00\x00\x00")
+    PngImagePlugin.putchunk(b, b"acTL", o32(2), o32(0))
+    PngImagePlugin.putchunk(
+        b,
+        b"fcTL",
+        o32(0),
+        o32(1),
+        o32(1),
+        o32(0),
+        o32(0),
+        o16(1),
+        o16(10),
+        bytes([PngImagePlugin.Disposal.OP_BACKGROUND, PngImagePlugin.Blend.OP_SOURCE]),
+    )
+    PngImagePlugin.putchunk(b, b"IDAT")
+    PngImagePlugin.putchunk(b, b"IEND")
+
+    with pytest.raises(Image.DecompressionBombError):
+        Image.open(b)
+
+
 def test_apng_blend() -> None:
     with Image.open("Tests/images/apng/blend_op_source_solid.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
