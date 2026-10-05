@@ -38,11 +38,6 @@ typedef struct {
     /* Set to limit the number of quality layers to decode (0 = all layers) */
     int layers;
 
-    /* Order in which to unpack the components, from the channel definition box
-       (a length of 0 keeps the codestream order) */
-    int channel_order_length;
-    UINT8 channel_order[4];
-
     /* PRIVATE CONTEXT (set by decoder) */
     const char *error_msg;
 

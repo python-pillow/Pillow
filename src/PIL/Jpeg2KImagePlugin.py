@@ -189,10 +189,12 @@ def _parse_jp2_header(
     tuple[float, float] | None,
     ImagePalette.ImagePalette | None,
     tuple[int, ...] | None,
+    str | None,
 ]:
     """Parse the JP2 header box to extract size, component count,
     color space information, and optionally DPI information and channel order,
-    returning a (size, mode, mimetype, dpi, palette, channel_order) tuple."""
+    returning a (size, mode, mimetype, dpi, palette, channel_order, decode_mode)
+    tuple."""
 
     # Find the JP2 header box
     reader = BoxReader(fp)
@@ -249,6 +251,8 @@ def _parse_jp2_header(
                         mode = "CMYK"
                 elif enumcs == 17:
                     colr = "L"
+                elif enumcs == 18:
+                    colr = "YCbCr"
         elif tbox == b"pclr" and mode in ("L", "LA") and colr not in ("1", "L"):
             ne, npc = header.read_fields(">HB")
             assert isinstance(ne, int)
@@ -304,11 +308,19 @@ def _parse_jp2_header(
         raise SyntaxError(msg)
 
     channel_order = None
+    decode_mode = None
     if channels and isinstance(nc, int) and nc > 1 and palette is None:
         # With a palette, the channel definitions describe the palette entries
         channel_order = _channel_order(channels, nc)
+        if channel_order is not None and colr == "YCbCr":
+            if nc == 3:
+                # Reorder the channels before converting them to RGB
+                decode_mode = "YCbCr"
+            else:
+                # There is no YCbCr mode with alpha to reorder them in
+                channel_order = None
 
-    return size, mode, mimetype, dpi, palette, channel_order
+    return size, mode, mimetype, dpi, palette, channel_order, decode_mode
 
 
 ##
@@ -322,6 +334,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
     def _open(self) -> None:
         assert self.fp is not None
         self._channel_order: tuple[int, ...] | None = None
+        self._decode_mode: str | None = None
         sig = self.fp.read(4)
         if sig == b"\xff\x4f\xff\x51":
             self.codec = "j2k"
@@ -340,6 +353,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                     dpi,
                     self.palette,
                     self._channel_order,
+                    self._decode_mode,
                 ) = header
                 if dpi is not None:
                     self.info["dpi"] = dpi
@@ -376,14 +390,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 "jpeg2k",
                 (0, 0, *self.size),
                 0,
-                (
-                    self.codec,
-                    self._reduce,
-                    self.layers,
-                    fd,
-                    length,
-                    bytes(self._channel_order or ()),
-                ),
+                (self.codec, self._reduce, self.layers, fd, length),
             )
         ]
 
@@ -437,10 +444,24 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             # Update the reduce and layers settings
             t = self.tile[0]
             assert isinstance(t[3], tuple)
-            t3 = (t[3][0], self._reduce, self.layers, *t[3][3:])
+            t3 = (t[3][0], self._reduce, self.layers, t[3][3], t[3][4])
             self.tile = [ImageFile._Tile(t[0], (0, 0, *self.size), t[2], t3)]
 
         return ImageFile.ImageFile.load(self)
+
+    def load_prepare(self) -> None:
+        if self._im is None and self._decode_mode is not None:
+            self.im = Image.core.new(self._decode_mode, self.size)
+        ImageFile.ImageFile.load_prepare(self)
+
+    def load_end(self) -> None:
+        if self._channel_order is not None:
+            # Reorder the channels as described by the channel definition box
+            self.im = Image.core.merge(
+                self.im.mode, *[self.im.getband(i) for i in self._channel_order]
+            )
+        if self.im.mode != self.mode:
+            self.im = self.im.convert(self.mode)
 
 
 def _accept(prefix: bytes) -> bool:

@@ -610,6 +610,11 @@ static const struct j2k_decode_unpacker j2k_unpackers[] = {
     {IMAGING_MODE_RGB, OPJ_CLRSPC_GRAY, 2, 0, j2ku_gray_rgb},
     {IMAGING_MODE_RGB, OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb},
     {IMAGING_MODE_RGB, OPJ_CLRSPC_SYCC, 3, 1, j2ku_sycc_rgb},
+    /* YCbCr components unpacked without conversion, so that they can be reordered
+       before conversion. Without the JP2 colour space, OpenJPEG < 2.5.1 reports
+       an image without subsampling as sRGB. */
+    {IMAGING_MODE_YCbCr, OPJ_CLRSPC_SYCC, 3, 1, j2ku_srgb_rgb},
+    {IMAGING_MODE_YCbCr, OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb},
     {IMAGING_MODE_RGB, OPJ_CLRSPC_SRGB, 4, 1, j2ku_srgb_rgb},
     {IMAGING_MODE_RGB, OPJ_CLRSPC_SYCC, 4, 1, j2ku_sycc_rgb},
     {IMAGING_MODE_RGBA, OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_rgb},
@@ -645,10 +650,6 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
     size_t tile_bytes = 0;
     unsigned n, tile_height, tile_width;
     int subsampling;
-    int reorder = 0;
-    opj_image_t reordered_image;
-    opj_image_comp_t reordered_comps[4];
-    UINT8 *reordered_buffer = NULL;
 
     stream = opj_stream_create(BUFFER_SIZE, OPJ_TRUE);
 
@@ -787,26 +788,6 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
         goto quick_exit;
     }
 
-    /* Unpack the components in the order given by the channel definition box.
-       Only done without subsampling, when each component in a tile has one
-       sample per pixel. */
-    if (context->channel_order_length == (int)image->numcomps && subsampling == -1) {
-        unsigned seen = 0;
-        reorder = 1;
-        for (n = 0; n < image->numcomps; n++) {
-            UINT8 c = context->channel_order[n];
-            if (c >= image->numcomps || seen & (1 << c)) {
-                /* Not a permutation of the components */
-                reorder = 0;
-                break;
-            }
-            seen |= 1 << c;
-            reordered_comps[n] = image->comps[c];
-        }
-        reordered_image = *image;
-        reordered_image.comps = reordered_comps;
-    }
-
     /* Decode the image tile-by-tile; this means we only need use as much
        memory as is required for one tile's worth of components. */
     for (;;) {
@@ -923,36 +904,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
             goto quick_exit;
         }
 
-        if (reorder) {
-            /* Each component's samples are contiguous in the tile data */
-            size_t offsets[4], sizes[4], offset = 0;
-            for (n = 0; n < image->numcomps; n++) {
-                int csize = (image->comps[n].prec + 7) >> 3;
-                csize = (csize == 3) ? 4 : csize;
-                sizes[n] = (size_t)csize * tile_width * tile_height;
-                offsets[n] = offset;
-                offset += sizes[n];
-            }
-
-            /* malloc check ok, tile_bytes is the sum of the sizes */
-            UINT8 *new = realloc(reordered_buffer, tile_bytes);
-            if (!new) {
-                state->errcode = IMAGING_CODEC_MEMORY;
-                state->state = J2K_STATE_FAILED;
-                goto quick_exit;
-            }
-            reordered_buffer = new;
-
-            offset = 0;
-            for (n = 0; n < image->numcomps; n++) {
-                UINT8 c = context->channel_order[n];
-                memcpy(reordered_buffer + offset, state->buffer + offsets[c], sizes[c]);
-                offset += sizes[c];
-            }
-            unpack(&reordered_image, &tile_info, reordered_buffer, im);
-        } else {
-            unpack(image, &tile_info, state->buffer, im);
-        }
+        unpack(image, &tile_info, state->buffer, im);
     }
 
     if (!opj_end_decompress(codec, stream)) {
@@ -971,7 +923,6 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
     }
 
 quick_exit:
-    free(reordered_buffer);
     if (codec) {
         opj_destroy_codec(codec);
     }

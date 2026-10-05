@@ -431,9 +431,6 @@ def test_channel_definitions(
         assert_image_equal(reloaded, expected)
 
 
-@skip_unless_feature_version(
-    "jpg_2000", "2.5.1", "sYCC is only identified from the header since OpenJPEG 2.5.1"
-)
 def test_channel_definitions_sycc() -> None:
     # The components are reordered before the conversion from YCbCr to RGB
     im = hopper("YCbCr")
@@ -451,29 +448,38 @@ def test_channel_definitions_sycc() -> None:
 @skip_unless_feature_version(
     "jpg_2000", "2.5.1", "sYCC is only identified from the header since OpenJPEG 2.5.1"
 )
-@pytest.mark.parametrize(
-    "order, channels",
-    (
-        ((0, 1, 2, 3), ((0, 0, 1), (1, 0, 2), (2, 0, 3), (3, 1, 0))),
-        ((3, 0, 1, 2), ((0, 1, 0), (1, 0, 1), (2, 0, 2), (3, 0, 3))),
-    ),
-)
-def test_channel_definitions_sycc_alpha(
-    order: tuple[int, ...], channels: tuple[tuple[int, int, int], ...]
-) -> None:
+def test_channel_definitions_sycc_alpha() -> None:
     im = hopper("RGBA")
     alpha = im.getchannel("A").point(lambda value: value * 7 % 256)
     ycbcr = im.convert("RGB").convert("YCbCr")
-    bands = (*ycbcr.split(), alpha)
-    stored = Image.merge("RGBA", [bands[i] for i in order])
     out = BytesIO()
-    stored.save(out, "JPEG2000", mct=0)
-    data = _set_channel_definitions(out.getvalue(), channels, enumcs=18)
+    Image.merge("RGBA", (*ycbcr.split(), alpha)).save(out, "JPEG2000", mct=0)
+    data = _set_channel_definitions(
+        out.getvalue(), ((0, 0, 1), (1, 0, 2), (2, 0, 3), (3, 1, 0)), enumcs=18
+    )
 
     with Image.open(BytesIO(data)) as reloaded:
         assert reloaded.mode == "RGBA"
         assert_image_equal(reloaded.getchannel("A"), alpha)
         assert_image_equal(reloaded.convert("RGB"), ycbcr.convert("RGB"))
+
+
+def test_channel_definitions_sycc_alpha_reordered() -> None:
+    # There is no YCbCr mode with alpha to reorder the channels in before they are
+    # converted to RGB, so the channel definitions are ignored
+    out = BytesIO()
+    hopper("RGBA").save(out, "JPEG2000", mct=0)
+    data = out.getvalue()
+    reordered = _set_channel_definitions(
+        data, ((0, 1, 0), (1, 0, 1), (2, 0, 2), (3, 0, 3)), enumcs=18
+    )
+    in_order = _set_channel_definitions(
+        data, ((0, 0, 1), (1, 0, 2), (2, 0, 3), (3, 1, 0)), enumcs=18
+    )
+
+    with Image.open(BytesIO(reordered)) as im:
+        with Image.open(BytesIO(in_order)) as expected:
+            assert_image_equal(im, expected)
 
 
 def test_subsampled_ycbcr_codestream() -> None:
@@ -522,11 +528,6 @@ def test_channel_definitions_ignored(
 
     with Image.open(BytesIO(data)) as reloaded:
         assert_image_equal(reloaded, im)
-
-
-def test_channel_order_decoder_args() -> None:
-    with pytest.raises(ValueError, match="too many channels"):
-        Image.core.jpeg2k_decoder("RGB", "jp2", 0, 0, -1, -1, bytes(5))
 
 
 @pytest.mark.skipif(
