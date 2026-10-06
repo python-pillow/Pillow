@@ -70,8 +70,18 @@ ImagingExpand(Imaging imIn, int margin) {
         return (Imaging)ImagingError_ValueError("filter size too large");
     }
 
-    imOut =
-        ImagingNewDirty(imIn->mode, imIn->xsize + 2 * margin, imIn->ysize + 2 * margin);
+    int xsize = imIn->xsize + 2 * margin;
+    int ysize = imIn->ysize + 2 * margin;
+    if (imIn->xsize == 0 || imIn->ysize == 0) {
+        imOut = ImagingNew(imIn->mode, xsize, ysize);
+        if (!imOut) {
+            return NULL;
+        }
+        ImagingCopyPalette(imOut, imIn);
+        return imOut;
+    }
+
+    imOut = ImagingNewDirty(imIn->mode, xsize, ysize);
     if (!imOut) {
         return NULL;
     }
