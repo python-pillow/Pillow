@@ -134,6 +134,13 @@ escape sequences.
 Other changes
 =============
 
+Faster histograms for three-channel images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.histogram` no longer counts the padding byte of
+three-channel images, which was discarded from the result. This makes the
+histogram of RGB, YCbCr, LAB and HSV images faster.
+
 Python 3.15
 ^^^^^^^^^^^
 
