@@ -133,12 +133,15 @@ class XrefTable:
         )  # object ID => (offset, generation)
         self.deleted_entries = {0: 65536}  # object ID => generation
         self.reading_finished = False
+        self._max_object_id = 0
 
     def __setitem__(self, key: int, value: tuple[int, int]) -> None:
         if self.reading_finished:
             self.new_entries[key] = value
         else:
             self.existing_entries[key] = value
+        if key > self._max_object_id:
+            self._max_object_id = key
         if key in self.deleted_entries:
             del self.deleted_entries[key]
 
@@ -626,11 +629,8 @@ class PdfParser:
         self.orig_pages = self.pages[:]
 
     def next_object_id(self, offset: int | None = None) -> IndirectReference:
-        try:
-            # TODO: support reuse of deleted objects
-            reference = IndirectReference(max(self.xref_table.keys()) + 1, 0)
-        except ValueError:
-            reference = IndirectReference(1, 0)
+        # TODO: support reuse of deleted objects
+        reference = IndirectReference(self.xref_table._max_object_id + 1, 0)
         if offset is not None:
             self.xref_table[reference.object_id] = (offset, 0)
         return reference
