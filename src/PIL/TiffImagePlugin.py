@@ -1180,6 +1180,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.tag: ImageFileDirectory_v1
         """ Legacy tag entries """
 
+        self._n_frames: int | None = None
         super().__init__(fp, filename)
 
     def _open(self) -> None:
@@ -1198,7 +1199,6 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__frame = -1
         self._fp = self.fp
         self._frame_pos: list[int] = []
-        self._n_frames: int | None = None
 
         logger.debug("*** TiffImageFile._open ***")
         logger.debug("- __first: %s", self.__first)
@@ -1260,9 +1260,9 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.__next = 0
             else:
                 self.__next = self.tag_v2.next
-            if self.__next == 0:
+            if self.__next == 0 and self._n_frames is None:
                 self._n_frames = frame + 1
-            if len(self._frame_pos) == 1:
+            if not hasattr(self, "is_animated"):
                 self.is_animated = self.__next != 0
             self.__frame += 1
         self.fp.seek(self._frame_pos[frame])
