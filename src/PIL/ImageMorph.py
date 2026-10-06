@@ -169,7 +169,9 @@ class LutBuilder:
 
         # Parse and create symmetries of the patterns strings
         for p in self.patterns:
-            m = re.search(r"(\w):?\s*\((.+?)\)\s*->\s*(\d)", p.replace("\n", ""))
+            m = re.fullmatch(
+                r"\s*(\w):?\s*\((.+?)\)\s*->\s*([01])\s*", p.replace("\n", "")
+            )
             if not m:
                 msg = 'Syntax error in pattern "' + p + '"'
                 raise Exception(msg)
