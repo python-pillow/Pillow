@@ -748,6 +748,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     encoder->cleanup = ImagingLibTiffEncodeCleanup;
 
     num_core_tags = sizeof(core_tags) / sizeof(int);
+    long bits_per_sample = 1;
     for (pos = 0; pos < tags_size; pos++) {
         item = PyList_GetItemRef(tags, pos);
         if (item == NULL) {
@@ -854,15 +855,6 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             len = PyTuple_Size(value);
 
             if (key_int == TIFFTAG_COLORMAP) {
-                int stride = 256;
-                if (len != 768) {
-                    Py_DECREF(encoder);
-                    Py_DECREF(item);
-                    PyErr_SetString(
-                        PyExc_ValueError, "Requiring 768 items for Colormap"
-                    );
-                    return NULL;
-                }
                 UINT16 *av;
                 /* malloc check ok, calloc checks for overflow */
                 av = calloc(len, sizeof(UINT16));
@@ -870,6 +862,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                     for (i = 0; i < len; i++) {
                         av[i] = (UINT16)PyLong_AsLong(PyTuple_GetItem(value, i));
                     }
+                    Py_ssize_t stride = (Py_ssize_t)1 << bits_per_sample;
                     status = ImagingLibTiffSetField(
                         &encoder->state,
                         (ttag_t)key_int,
@@ -992,6 +985,9 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             }
         } else {
             if (type == TIFF_SHORT) {
+                if (key_int == TIFFTAG_BITSPERSAMPLE) {
+                    bits_per_sample = PyLong_AsLong(value);
+                }
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (UINT16)PyLong_AsLong(value)
                 );
