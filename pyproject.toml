@@ -136,6 +136,8 @@ overrides = [
   { select = "*-win32", test-requires = [] },
   # NumPy does not yet support Python 3.15
   { select = "cp315*-win_amd64", test-requires = [] },
+  # NumPy does not yet have PyPy 3.12 wheels
+  { select = "pp312*", test-requires = [] },
 ]
 xbuild-tools = []
 
