@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import warnings
 from io import BytesIO
+from typing import Literal
 
 import pytest
 
@@ -436,6 +437,27 @@ class TestFileTiff:
                 284: (1,),
             }
             assert dict(im.tag) == legacy_tags
+
+    @pytest.mark.parametrize("extra_samples, mode", ((0, "LA"), (1, "La"), (2, "LA")))
+    def test_greyscale_extra_samples(self, extra_samples: int, mode: str) -> None:
+        out = BytesIO()
+        Image.new("LA", (8, 8), (128, 200)).save(out, "TIFF")
+        data = bytearray(out.getvalue())
+
+        # Change the ExtraSamples tag value in place
+        order: Literal["little", "big"] = "little" if data[:2] == b"II" else "big"
+        ifd = int.from_bytes(data[4:8], order)
+        count = int.from_bytes(data[ifd : ifd + 2], order)
+        for i in range(count):
+            entry = ifd + 2 + 12 * i
+            if int.from_bytes(data[entry : entry + 2], order) == 338:
+                data[entry + 8 : entry + 10] = extra_samples.to_bytes(2, order)
+                break
+
+        with Image.open(BytesIO(data)) as im:
+            assert im.mode == mode
+            im.load()
+            assert im.getpixel((0, 0)) == (128, 200)
 
     def test__delitem__(self) -> None:
         filename = "Tests/images/pil136.tiff"
