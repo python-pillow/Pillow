@@ -112,7 +112,8 @@ ImagingChopDarker(Imaging imIn1, Imaging imIn2) {
  */
 Imaging
 ImagingChopDifference(Imaging imIn1, Imaging imIn2) {
-    CHOP(abs((int)in1[x] - (int)in2[x]));
+    /* The absolute difference of two bytes is always within 0..255. */
+    CHOP2(abs((int)in1[x] - (int)in2[x]), IMAGING_MODE_UNKNOWN);
 }
 
 /**
