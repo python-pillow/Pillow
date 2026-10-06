@@ -383,12 +383,39 @@ hsv2rgb(UINT8 *out, const UINT8 *in, int xsize) {  // following colorsys.py
 static void
 rgb2rgba(UINT8 *out, const UINT8 *in, int xsize) {
     int x;
-    for (x = 0; x < xsize; x++) {
-        *out++ = *in++;
-        *out++ = *in++;
-        *out++ = *in++;
-        *out++ = 255;
-        in++;
+    int bulk = xsize - (xsize % 4); /* round down to a multiple of four pixels */
+    /* RGB-family pixels are stored as four bytes: three colour bytes and a
+       fourth byte set to 255. Process four pixels per iteration using 32-bit
+       loads and stores. */
+    for (x = 0; x < bulk; x += 4, in += 16, out += 16) {
+        UINT32 w0, w1, w2, w3;
+        memcpy(&w0, in, sizeof(w0));
+        memcpy(&w1, in + 4, sizeof(w1));
+        memcpy(&w2, in + 8, sizeof(w2));
+        memcpy(&w3, in + 12, sizeof(w3));
+#ifdef WORDS_BIGENDIAN
+        w0 = (w0 & 0xFFFFFF00) | 0x000000FF;
+        w1 = (w1 & 0xFFFFFF00) | 0x000000FF;
+        w2 = (w2 & 0xFFFFFF00) | 0x000000FF;
+        w3 = (w3 & 0xFFFFFF00) | 0x000000FF;
+#else
+        w0 = (w0 & 0x00FFFFFF) | 0xFF000000;
+        w1 = (w1 & 0x00FFFFFF) | 0xFF000000;
+        w2 = (w2 & 0x00FFFFFF) | 0xFF000000;
+        w3 = (w3 & 0x00FFFFFF) | 0xFF000000;
+#endif
+        memcpy(out, &w0, sizeof(w0));
+        memcpy(out + 4, &w1, sizeof(w1));
+        memcpy(out + 8, &w2, sizeof(w2));
+        memcpy(out + 12, &w3, sizeof(w3));
+    }
+    for (; x < xsize; x++) {
+        out[0] = in[0];
+        out[1] = in[1];
+        out[2] = in[2];
+        out[3] = 255;
+        in += 4;
+        out += 4;
     }
 }
 
@@ -404,14 +431,9 @@ rgba2la(UINT8 *out, const UINT8 *in, int xsize) {
 
 static void
 rgba2rgb(UINT8 *out, const UINT8 *in, int xsize) {
-    int x;
-    for (x = 0; x < xsize; x++) {
-        *out++ = *in++;
-        *out++ = *in++;
-        *out++ = *in++;
-        *out++ = 255;
-        in++;
-    }
+    /* The source alpha byte is dropped and the destination padding byte is
+       set to 255, so this is byte-identical to rgb2rgba. */
+    rgb2rgba(out, in, xsize);
 }
 
 static void

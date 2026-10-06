@@ -134,6 +134,12 @@ escape sequences.
 Other changes
 =============
 
+Faster RGB and RGBA conversions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Converting between ``RGB`` and ``RGBA`` modes, and the related conversions
+involving ``RGBa`` and ``RGBX``, is now faster.
+
 Python 3.15
 ^^^^^^^^^^^
 
