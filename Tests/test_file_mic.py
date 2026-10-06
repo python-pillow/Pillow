@@ -40,11 +40,23 @@ def test_n_frames() -> None:
         assert isinstance(im, MicImagePlugin.MicImageFile)
         assert im.n_frames == 1
 
+        # Once set, n_frames should not be changed
+        im._n_frames = 2
+        im.frame = -1
+        im.seek(0)
+        assert im.n_frames == 2
+
 
 def test_is_animated() -> None:
     with Image.open(TEST_FILE) as im:
         assert isinstance(im, MicImagePlugin.MicImageFile)
         assert not im.is_animated
+
+        # Once set, is_animated should not be changed
+        im.is_animated = True
+        im.frame = -1
+        im.seek(0)
+        assert im.is_animated
 
 
 def test_tell() -> None:
