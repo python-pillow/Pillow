@@ -143,7 +143,32 @@ la2lA(UINT8 *out, const UINT8 *in, int xsize) {
 static void
 l2rgb(UINT8 *out, const UINT8 *in, int xsize) {
     int x;
-    for (x = 0; x < xsize; x++) {
+    int bulk = xsize - (xsize % 4); /* round down to a multiple of four pixels */
+    /* Broadcast each source byte into the three colour channels and set the
+       fourth byte to 255, processing four pixels per iteration with 32-bit
+       stores. */
+    for (x = 0; x < bulk; x += 4, in += 4, out += 16) {
+        UINT32 w0 = ((UINT32)in[0] << 16) | ((UINT32)in[0] << 8) | in[0];
+        UINT32 w1 = ((UINT32)in[1] << 16) | ((UINT32)in[1] << 8) | in[1];
+        UINT32 w2 = ((UINT32)in[2] << 16) | ((UINT32)in[2] << 8) | in[2];
+        UINT32 w3 = ((UINT32)in[3] << 16) | ((UINT32)in[3] << 8) | in[3];
+#ifdef WORDS_BIGENDIAN
+        w0 = (w0 << 8) | 0xFF;
+        w1 = (w1 << 8) | 0xFF;
+        w2 = (w2 << 8) | 0xFF;
+        w3 = (w3 << 8) | 0xFF;
+#else
+        w0 = w0 | 0xFF000000;
+        w1 = w1 | 0xFF000000;
+        w2 = w2 | 0xFF000000;
+        w3 = w3 | 0xFF000000;
+#endif
+        memcpy(out, &w0, sizeof(w0));
+        memcpy(out + 4, &w1, sizeof(w1));
+        memcpy(out + 8, &w2, sizeof(w2));
+        memcpy(out + 12, &w3, sizeof(w3));
+    }
+    for (; x < xsize; x++) {
         UINT8 v = *in++;
         *out++ = v;
         *out++ = v;

@@ -134,6 +134,12 @@ escape sequences.
 Other changes
 =============
 
+Faster conversions from L mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Converting an image from ``L`` mode to ``RGB``, ``RGBA``, ``RGBX`` or ``LA``
+mode is now faster.
+
 Python 3.15
 ^^^^^^^^^^^
 
