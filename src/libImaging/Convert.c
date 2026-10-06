@@ -1149,7 +1149,11 @@ topalette(
 
     alpha = mode == IMAGING_MODE_PA;
 
-    if (palette == NULL) {
+    if (palette != NULL) {
+        if (palette->size == 0) {
+            return (Imaging)ImagingError_ValueError("empty palette");
+        }
+    } else {
         /* FIXME: make user configurable */
         if (imIn->bands == 1) {
             palette = ImagingPaletteNew(IMAGING_MODE_RGB);
