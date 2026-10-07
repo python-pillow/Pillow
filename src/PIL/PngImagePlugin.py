@@ -1258,8 +1258,13 @@ def _write_multiple_frames(
                     and prev_blend == encoderinfo.get("blend")
                     and "duration" in encoderinfo
                 ):
-                    previous.encoderinfo["duration"] += encoderinfo["duration"]
-                    continue
+                    new_duration = (
+                        previous.encoderinfo["duration"] + encoderinfo["duration"]
+                    )
+                    delay = Fraction(new_duration / 1000).limit_denominator(65535)
+                    if delay.numerator <= 65535:
+                        previous.encoderinfo["duration"] = new_duration
+                        continue
             else:
                 bbox = None
             im_frames.append(_Frame(im_frame, bbox, encoderinfo))

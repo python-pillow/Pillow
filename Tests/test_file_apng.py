@@ -589,6 +589,22 @@ def test_apng_save_large_duration(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="cannot write duration"):
         im.save(test_file, save_all=True, append_images=[im2], duration=65536000)
 
+    # Do not merge identical frames if the combined duration cannot be written
+    im.save(
+        test_file,
+        save_all=True,
+        append_images=[im.copy()],
+        duration=[32768000, 32768000],
+    )
+
+    with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+        assert reloaded.n_frames == 2
+        assert reloaded.info["duration"] == 32768000
+
+        reloaded.seek(1)
+        assert reloaded.info["duration"] == 32768000
+
 
 def test_apng_save_disposal(tmp_path: Path) -> None:
     test_file = tmp_path / "temp.png"
