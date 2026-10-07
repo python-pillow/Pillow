@@ -1014,6 +1014,7 @@ def test_quantize_to_palette(
     if output_mode == "P":
         result = bench(im.quantize, palette=palette, dither=dither)
     else:
+        palette.load()
         result = bench(lambda: im._new(im.im.convert(output_mode, dither, palette.im)))
     assert result.mode == output_mode
     benchmark_save(result)
