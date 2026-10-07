@@ -89,6 +89,11 @@ class TestFileJpeg:
         with pytest.raises(SyntaxError, match="unexpected end of file"):
             JpegImagePlugin.JpegImageFile(BytesIO(b"\xff\xd8\xff\xd8\x00"))
 
+    def test_eof_after_0xff_byte(self) -> None:
+        # Marker scan runs out of data reading the byte after 0xFF
+        with pytest.raises(SyntaxError, match="unexpected end of file"):
+            JpegImagePlugin.JpegImageFile(BytesIO(b"\xff\xd8\xff"))
+
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero(self, size: tuple[int, int], tmp_path: Path) -> None:
         f = tmp_path / "temp.jpg"
