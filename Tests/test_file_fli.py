@@ -111,6 +111,30 @@ def test_invalid_file() -> None:
         FliImagePlugin.FliImageFile(invalid_file)
 
 
+def test_palette_value_out_of_range() -> None:
+    # The FLI_COLOR chunk in the first frame of a.fli stores 6-bit palette
+    # values that are shifted left by 2. Patch the first color above that
+    # range so the shifted value no longer fits in a byte.
+    with open(animated_test_file, "rb") as f:
+        data = bytearray(f.read())
+    data[154] = 255
+
+    with pytest.raises(SyntaxError):
+        FliImagePlugin.FliImageFile(io.BytesIO(data))
+
+
+def test_palette_index_out_of_range() -> None:
+    # The palette packet skip count in a.fli is 0, covering entries 0-255.
+    # Patch it so the 256-entry packet would write past the end of the
+    # 256-entry palette.
+    with open(animated_test_file, "rb") as f:
+        data = bytearray(f.read())
+    data[152] = 1
+
+    with pytest.raises(SyntaxError):
+        FliImagePlugin.FliImageFile(io.BytesIO(data))
+
+
 def test_palette_chunk_second() -> None:
     with Image.open("Tests/images/hopper_palette_chunk_second.fli") as im:
         with Image.open(static_test_file) as expected:
