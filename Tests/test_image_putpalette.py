@@ -12,7 +12,7 @@ def test_putpalette() -> None:
         im = hopper(mode).copy()
         im.putpalette(list(range(256)) * 3)
         assert im.palette is not None
-        assert im.palette.dirty
+        assert im.palette.dirty == (0 if mode[0] == "L" else 1)
 
         p = im.getpalette()
         if p:
