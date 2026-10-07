@@ -1582,6 +1582,7 @@ static struct {
     {IMAGING_MODE_L, IMAGING_RAWMODE_L_R, 8, unpackLR},
     {IMAGING_MODE_L, IMAGING_RAWMODE_L_16, 16, unpackL16},
     {IMAGING_MODE_L, IMAGING_RAWMODE_L_16B, 16, unpackL16B},
+    {IMAGING_MODE_L, IMAGING_RAWMODE_LX, 16, unpackL16B},
 
     /* grayscale w. alpha */
     {IMAGING_MODE_LA, IMAGING_RAWMODE_LA, 16, unpackLA},
