@@ -356,7 +356,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                     # we might need to reload the palette data.
                     if self.palette:
                         self.palette.dirty = 1
-                except (AttributeError, OSError, ImportError):
+                except (AttributeError, OSError, ImportError, ValueError):
                     self.map = None
 
         self.load_prepare()
