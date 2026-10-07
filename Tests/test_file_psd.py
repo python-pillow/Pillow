@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import io
-import sys
 import warnings
 
 import pytest
@@ -264,5 +263,5 @@ def test_bounds_crash_overflow() -> None:
     with Image.open("Tests/images/psd-oob-write-overflow.psd") as im:
         assert isinstance(im, PsdImagePlugin.PsdImageFile)
         im.load()
-        with pytest.raises(OverflowError if sys.maxsize <= 2**32 else ValueError):
+        with pytest.raises(ValueError, match="negative image height"):
             im.seek(im.n_frames)
