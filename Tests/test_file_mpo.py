@@ -204,6 +204,14 @@ def test_mp_offset() -> None:
         assert mpinfo[45057] == 2
 
 
+def test_mp_junk_frame_offset() -> None:
+    # This image has been manually hexedited so that the second frame
+    # offset points at data that is not a JPEG stream
+    with Image.open("Tests/images/mpo_junk_frame.mpo") as im:
+        with pytest.raises(SyntaxError, match="unexpected end of file"):
+            im.seek(1)
+
+
 def test_mp_no_data() -> None:
     # This image has been manually hexedited to have the second frame
     # beyond the end of the file

@@ -376,9 +376,15 @@ class JpegImageFile(ImageFile.ImageFile):
         self.icclist: list[bytes] = []
 
         while True:
+            if not s:
+                msg = "unexpected end of file"
+                raise SyntaxError(msg)
             i = s[0]
             if i == 0xFF:
                 s = s + self.fp.read(1)
+                if len(s) < 2:
+                    msg = "unexpected end of file"
+                    raise SyntaxError(msg)
                 i = i16(s)
             else:
                 # Skip non-0xFF junk

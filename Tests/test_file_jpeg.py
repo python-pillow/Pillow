@@ -84,6 +84,11 @@ class TestFileJpeg:
             assert im.format == "JPEG"
             assert im.get_format_mimetype() == "image/jpeg"
 
+    def test_eof_while_skipping_junk(self) -> None:
+        # Marker scan runs out of data while skipping non-0xFF junk
+        with pytest.raises(SyntaxError, match="unexpected end of file"):
+            JpegImagePlugin.JpegImageFile(BytesIO(b"\xff\xd8\xff\xd8\x00"))
+
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero(self, size: tuple[int, int], tmp_path: Path) -> None:
         f = tmp_path / "temp.jpg"
