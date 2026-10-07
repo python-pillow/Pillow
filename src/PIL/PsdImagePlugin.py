@@ -310,8 +310,11 @@ def _maketile(
     elif compression == 1:
         #
         # packbits compression
+        if ysize < 0:
+            msg = "negative image height"
+            raise ValueError(msg)
         i = 0
-        bytecount = read(channels * ysize * 2)
+        bytecount = ImageFile._safe_read(file, channels * ysize * 2)
         offset = file.tell()
         for channel in range(channels):
             layer = mode[channel]

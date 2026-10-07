@@ -192,6 +192,14 @@ def test_unknown_channel_id() -> None:
         assert im.layers[0][1] == ""
 
 
+def test_huge_bytecounts() -> None:
+    # The declared height requires a packbits bytecounts table of ~26 GB.
+    # Reading it must fail cleanly instead of attempting a huge allocation.
+    with pytest.raises(OSError):
+        with Image.open("Tests/images/psd-huge-bytecounts.psd"):
+            pass
+
+
 def test_combined_larger_than_size() -> None:
     # The combined size of the individual parts is larger than the
     # declared 'size' of the extra data field, resulting in a backwards seek.
