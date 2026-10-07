@@ -153,6 +153,33 @@ def _res_to_dpi(num: int, denom: int, exp: int) -> float | None:
     return (254 * num * (10**exp)) / (10000 * denom)
 
 
+def _channel_order(
+    channels: list[tuple[int, int, int]], nc: int
+) -> tuple[int, ...] | None:
+    """Use the (component, type, association) entries of a JP2 channel
+    definition box to find the order of decoded components that puts the color
+    channels first, in their associated order, followed by any opacity channel.
+    Returns None if the components are already in that order, or if the box does
+    not describe a simple reordering of them."""
+    positions: dict[int, int] = {}
+    for cn, typ, asoc in channels:
+        if typ == 0 and 1 <= asoc <= nc:
+            # Color channel
+            position = asoc - 1
+        elif typ in (1, 2) and asoc == 0:
+            # Opacity or premultiplied opacity channel for the whole image
+            position = nc - 1
+        else:
+            return None
+        if position in positions:
+            return None
+        positions[position] = cn
+    order = tuple(positions.get(position, -1) for position in range(nc))
+    if sorted(order) != list(range(nc)) or order == tuple(range(nc)):
+        return None
+    return order
+
+
 def _parse_jp2_header(
     fp: IO[bytes],
 ) -> tuple[
@@ -161,10 +188,13 @@ def _parse_jp2_header(
     str | None,
     tuple[float, float] | None,
     ImagePalette.ImagePalette | None,
+    tuple[int, ...] | None,
+    str | None,
 ]:
     """Parse the JP2 header box to extract size, component count,
-    color space information, and optionally DPI information,
-    returning a (size, mode, mimetype, dpi) tuple."""
+    color space information, and optionally DPI information and channel order,
+    returning a (size, mode, mimetype, dpi, palette, channel_order, decode_mode)
+    tuple."""
 
     # Find the JP2 header box
     reader = BoxReader(fp)
@@ -188,6 +218,7 @@ def _parse_jp2_header(
     dpi = None  # 2-tuple of DPI info, or None
     palette = None
     colr = None
+    channels = None
 
     while header.has_next_box():
         tbox = header.next_box_type()
@@ -196,6 +227,7 @@ def _parse_jp2_header(
             height, width, nc, bpc = header.read_fields(">IIHB")
             assert isinstance(height, int)
             assert isinstance(width, int)
+            assert isinstance(nc, int)
             assert isinstance(bpc, int)
             size = (width, height)
             if nc == 1 and (bpc & 0x7F) > 8:
@@ -219,6 +251,8 @@ def _parse_jp2_header(
                         mode = "CMYK"
                 elif enumcs == 17:
                     colr = "L"
+                elif enumcs == 18:
+                    colr = "YCbCr"
         elif tbox == b"pclr" and mode in ("L", "LA") and colr not in ("1", "L"):
             ne, npc = header.read_fields(">HB")
             assert isinstance(ne, int)
@@ -241,6 +275,16 @@ def _parse_jp2_header(
                         color.append(value)
                     palette.getcolor(tuple(color))
                 mode = "P" if mode == "L" else "PA"
+        elif tbox == b"cdef":
+            (n,) = header.read_fields(">H")
+            assert isinstance(n, int)
+            channels = []
+            for _ in range(n):
+                cn, typ, asoc = header.read_fields(">HHH")
+                assert isinstance(cn, int)
+                assert isinstance(typ, int)
+                assert isinstance(asoc, int)
+                channels.append((cn, typ, asoc))
         elif tbox == b"res ":
             res = header.read_boxes()
             while res.has_next_box():
@@ -263,7 +307,20 @@ def _parse_jp2_header(
         msg = "Malformed JP2 header"
         raise SyntaxError(msg)
 
-    return size, mode, mimetype, dpi, palette
+    channel_order = None
+    decode_mode = None
+    if channels and isinstance(nc, int) and nc > 1 and palette is None:
+        # With a palette, the channel definitions describe the palette entries
+        channel_order = _channel_order(channels, nc)
+        if channel_order is not None and colr == "YCbCr":
+            if nc == 3:
+                # Reorder the channels before converting them to RGB
+                decode_mode = "YCbCr"
+            else:
+                # There is no YCbCr mode with alpha to reorder them in
+                channel_order = None
+
+    return size, mode, mimetype, dpi, palette, channel_order, decode_mode
 
 
 ##
@@ -276,6 +333,8 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
 
     def _open(self) -> None:
         assert self.fp is not None
+        self._channel_order: tuple[int, ...] | None = None
+        self._decode_mode: str | None = None
         sig = self.fp.read(4)
         if sig == b"\xff\x4f\xff\x51":
             self.codec = "j2k"
@@ -287,7 +346,15 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             if sig == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a":
                 self.codec = "jp2"
                 header = _parse_jp2_header(self.fp)
-                self._size, self._mode, self.custom_mimetype, dpi, self.palette = header
+                (
+                    self._size,
+                    self._mode,
+                    self.custom_mimetype,
+                    dpi,
+                    self.palette,
+                    self._channel_order,
+                    self._decode_mode,
+                ) = header
                 if dpi is not None:
                     self.info["dpi"] = dpi
                 if self.fp.read(12).endswith(b"jp2c\xff\x4f\xff\x51"):
@@ -381,6 +448,20 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             self.tile = [ImageFile._Tile(t[0], (0, 0, *self.size), t[2], t3)]
 
         return ImageFile.ImageFile.load(self)
+
+    def load_prepare(self) -> None:
+        if self._im is None and self._decode_mode is not None:
+            self.im = Image.core.new(self._decode_mode, self.size)
+        ImageFile.ImageFile.load_prepare(self)
+
+    def load_end(self) -> None:
+        if self._channel_order is not None:
+            # Reorder the channels as described by the channel definition box
+            self.im = Image.core.merge(
+                self.im.mode, *[self.im.getband(i) for i in self._channel_order]
+            )
+        if self.im.mode != self.mode:
+            self.im = self.im.convert(self.mode)
 
 
 def _accept(prefix: bytes) -> bool:

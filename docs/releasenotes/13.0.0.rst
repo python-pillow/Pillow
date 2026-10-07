@@ -191,6 +191,13 @@ Preserved transparency when padding or expanding images in ImageOps
 pixels in L, P and RGB images previously became opaque when a border was added.
 New palette colors are allocated without using reserved transparency entries.
 
+JPEG 2000 channel definitions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When a JP2 image has a channel definition box that places its components in a
+different order, such as blue, green, red, Pillow now reorders them when decoding.
+Previously, the box was ignored, and the channels were swapped.
+
 Fixed ImageStat variance rounding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
