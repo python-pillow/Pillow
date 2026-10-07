@@ -298,11 +298,10 @@ class TestLibUnpack:
     def test_P(self) -> None:
         self.assert_unpack("P", "P;1", b"\xe4", 1, 1, 1, 0, 0, 1, 0, 0)
         self.assert_unpack("P", "P;2", b"\xe4", 3, 2, 1, 0)
-        # erroneous?
-        # self.assert_unpack("P", "P;2L", b'\xe4', 1, 1, 1, 0)
+        # one bit plane per bit, each plane padded to a whole byte
+        self.assert_unpack("P", "P;2L", b"\xe4\x6c", 1, 3, 3, 0)
         self.assert_unpack("P", "P;4", b"\x02\xef", 0, 2, 14, 15)
-        # erroneous?
-        # self.assert_unpack("P", "P;4L", b'\x02\xef', 2, 10, 10, 0)
+        self.assert_unpack("P", "P;4L", b"\x90\x50\x30\x10", 1, 2, 4, 15)
         self.assert_unpack("P", "P", 1, 1, 2, 3, 4)
         self.assert_unpack("P", "P;R", 1, 128, 64, 192, 32)
 

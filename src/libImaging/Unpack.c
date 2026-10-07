@@ -1860,3 +1860,16 @@ ImagingFindUnpacker(const ModeID mode, const RawModeID rawmode, int *bits_out) {
 
     return NULL;
 }
+
+int
+ImagingUnpackerRowBytes(const RawModeID rawmode, int bits, int xsize) {
+    switch (rawmode) {
+        case IMAGING_RAWMODE_P_2L:
+        case IMAGING_RAWMODE_P_4L:
+            /* One bit plane per bit, each plane padded to a whole byte */
+            return bits * ((xsize + 7) / 8);
+        default:
+            /* Pixels packed continuously */
+            return (xsize * bits + 7) / 8;
+    }
+}

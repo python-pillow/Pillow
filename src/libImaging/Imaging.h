@@ -710,6 +710,8 @@ extern ImagingShuffler
 ImagingFindUnpacker(ModeID mode, RawModeID rawmode, int *bits_out);
 extern ImagingShuffler
 ImagingFindPacker(ModeID mode, RawModeID rawmode, int *bits_out);
+extern int
+ImagingUnpackerRowBytes(RawModeID rawmode, int bits, int xsize);
 
 struct ImagingCodecStateInstance {
     int count;
@@ -719,6 +721,7 @@ struct ImagingCodecStateInstance {
     int ystep;
     int xsize, ysize, xoff, yoff;
     ImagingShuffler shuffle;
+    RawModeID rawmode;
     int bits, bytes;
     UINT8 *buffer;
     void *context;
