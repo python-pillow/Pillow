@@ -97,6 +97,41 @@ def test_not_enough_image_data() -> None:
             im.load()
 
 
+def test_undefined_color_key() -> None:
+    # Pixel data references a color key that is not defined in the palette
+    data = b"\n".join(
+        [
+            b"/* XPM */",
+            b"static char *x[] = {",
+            b'"2 1 1 2"',
+            b'"aa c #ffffff"',
+            b'"zzaa"',
+            b"};",
+        ]
+    )
+    with Image.open(BytesIO(data)) as im:
+        with pytest.raises(ValueError, match="cannot read this XPM file"):
+            im.load()
+
+    # Same in RGB mode (more than 256 palette entries)
+    colors = [
+        b'"' + bytes((i // 26 + 97, i % 26 + 97)) + b' c #ffffff"' for i in range(257)
+    ]
+    data = b"\n".join(
+        [
+            b"/* XPM */",
+            b"static char *x[] = {",
+            b'"2 1 257 2"',
+            *colors,
+            b'"zzaa"',
+            b"};",
+        ]
+    )
+    with Image.open(BytesIO(data)) as im:
+        with pytest.raises(ValueError, match="cannot read this XPM file"):
+            im.load()
+
+
 def test_invalid_file() -> None:
     invalid_file = "Tests/images/flower.jpg"
 

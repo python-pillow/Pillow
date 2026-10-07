@@ -151,10 +151,14 @@ class XpmDecoder(ImageFile.PyDecoder):
             line = b'"'.join(line.split(b'"')[1:-1])
             for i in range(0, len(line), bpp):
                 key = line[i : i + bpp]
-                if self.mode in {"RGB", "RGBA"}:
-                    data += palette[key]
-                else:
-                    data += o8(palette.index(key))
+                try:
+                    if self.mode in {"RGB", "RGBA"}:
+                        data += palette[key]
+                    else:
+                        data += o8(palette.index(key))
+                except (KeyError, ValueError):
+                    msg = "cannot read this XPM file"
+                    raise ValueError(msg) from None
         self.set_as_raw(bytes(data))
         return -1, 0
 
