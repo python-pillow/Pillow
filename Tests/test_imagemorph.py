@@ -282,8 +282,8 @@ def test_unknown_pattern() -> None:
     (
         pytest.param("a pattern with a syntax error", id="syntax-error"),
         pytest.param("4:(" + "X" * 30000, id="long-operation"),
-        pytest.param("4M:(... .1. 111)->1", id="multiple-operations"),
-        pytest.param("4:(... .1. 111)->2", id="invalid-result"),
+        pytest.param("4M:(00. 01. ...)->1", id="multiple-operations"),
+        pytest.param("M:(00. 01. ...)->2", id="invalid-result"),
     ),
 )
 @timeout_unless_slower_valgrind(1)
