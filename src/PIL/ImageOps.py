@@ -746,7 +746,10 @@ def exif_transpose(image: Image.Image, *, in_place: bool = False) -> Image.Image
             if "exif" in exif_image.info:
                 exif_image.info["exif"] = exif.tobytes()
             elif "Raw profile type exif" in exif_image.info:
-                exif_image.info["Raw profile type exif"] = exif.tobytes().hex()
+                data = exif.tobytes()
+                exif_image.info["Raw profile type exif"] = (
+                    f"\nexif\n{len(data):8}\n{data.hex()}\n"
+                )
             for key in ("XML:com.adobe.xmp", "xmp"):
                 if key in exif_image.info:
                     for pattern in (

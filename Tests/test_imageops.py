@@ -494,6 +494,24 @@ def test_exif_transpose_xml_without_xmp() -> None:
         assert 0x0112 not in transposed_im.getexif()
 
 
+def test_exif_transpose_raw_profile() -> None:
+    exif = Image.Exif()
+    exif[0x0112] = 3
+    exif[0x010F] = "Pillow"
+    data = exif.tobytes()
+
+    im = hopper()
+    im.info["Raw profile type exif"] = f"\nexif\n{len(data):8}\n{data.hex()}\n"
+    assert im.getexif()[0x0112] == 3
+
+    transposed_im = ImageOps.exif_transpose(im)
+
+    # Assert that the updated info can still be parsed by a new image
+    transposed_exif = transposed_im.copy().getexif()
+    assert 0x0112 not in transposed_exif
+    assert transposed_exif[0x010F] == "Pillow"
+
+
 def test_exif_transpose_in_place() -> None:
     with Image.open("Tests/images/orientation_rectangle.jpg") as im:
         assert im.size == (2, 1)

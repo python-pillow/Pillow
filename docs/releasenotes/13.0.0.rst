@@ -191,6 +191,15 @@ Preserved transparency when padding or expanding images in ImageOps
 pixels in L, P and RGB images previously became opaque when a border was added.
 New palette colors are allocated without using reserved transparency entries.
 
+Kept ImageMagick EXIF data readable after ImageOps.exif_transpose()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When a PNG image stores its EXIF data in an ImageMagick "Raw profile type exif" text
+chunk, :py:func:`~PIL.ImageOps.exif_transpose` rewrote that ``info`` entry in a form
+that :py:meth:`~PIL.Image.Image.getexif` could not parse. Images derived from the
+result, such as with :py:meth:`~PIL.Image.Image.copy`, then reported no EXIF data at
+all. The entry is now written in the format that it was read in.
+
 Fixed ImageStat variance rounding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
