@@ -29,6 +29,21 @@ def test_gzip1() -> None:
         assert_image_equal_tofile(im, "Tests/images/m13.fits")
 
 
+@pytest.mark.parametrize("corrupt", (True, False))
+def test_gzip_truncated_or_corrupt(corrupt: bool) -> None:
+    with open("Tests/images/m13_gzip.fits", "rb") as fp:
+        data = bytearray(fp.read())
+    start = data.find(b"\x1f\x8b")
+    if corrupt:
+        data[start + 20] ^= 0xFF
+    else:
+        del data[start + 40 :]
+
+    with Image.open(BytesIO(data)) as im:
+        with pytest.raises(OSError, match="Truncated or corrupt FITS gzip data"):
+            im.load()
+
+
 def test_invalid_file() -> None:
     # Arrange
     invalid_file = "Tests/images/flower.jpg"

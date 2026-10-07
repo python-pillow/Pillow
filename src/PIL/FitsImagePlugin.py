@@ -10,10 +10,11 @@
 #
 from __future__ import annotations
 
-__lazy_modules__ = {"gzip", "math"}
+__lazy_modules__ = {"gzip", "math", "zlib"}
 
 import gzip
 import math
+import zlib
 
 from . import Image, ImageFile
 
@@ -137,7 +138,11 @@ class FitsGzipDecoder(ImageFile.PyDecoder):
     def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         assert self.fd is not None
         with gzip.open(self.fd) as fp:
-            value = fp.read(self.state.xsize * self.state.ysize * 4)
+            try:
+                value = fp.read(self.state.xsize * self.state.ysize * 4)
+            except (EOFError, zlib.error) as e:
+                msg = "Truncated or corrupt FITS gzip data"
+                raise OSError(msg) from e
 
             rows = []
             offset = 0
