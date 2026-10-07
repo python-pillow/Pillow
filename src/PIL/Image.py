@@ -1252,7 +1252,7 @@ class Image:
         if mode in ("P", "PA") and palette != Palette.ADAPTIVE:
             from . import ImagePalette
 
-            new_im.palette = ImagePalette.ImagePalette("RGB", im.getpalette("RGB"))
+            new_im.palette = ImagePalette.raw("RGB", im.getpalette("RGB"))
         if delete_trns:
             # crash fail if we leave a bytes transparency in an rgb/l mode.
             del new_im.info["transparency"]
@@ -2175,8 +2175,12 @@ class Image:
             self.palette.mode = "RGBA"
         if self.palette.mode == self.palette.rawmode:
             self.palette.rawmode = None
-        if self.palette.rawmode:
-            self.load()  # decode raw palette data
+        if self.palette.rawmode or (
+            self._im is not None and self._im.mode != self.mode
+        ):
+            # either raw palette data needs to be decoded,
+            # or the core image needs its mode updated
+            self.load()
 
     def putpixel(
         self,
