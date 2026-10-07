@@ -169,9 +169,7 @@ class LutBuilder:
 
         # Parse and create symmetries of the patterns strings
         for p in self.patterns:
-            m = re.fullmatch(
-                r"\s*(\w):?\s*\((.+?)\)\s*->\s*([01])\s*", p.replace("\n", "")
-            )
+            m = re.match(r"(\w):?\s*\((.+?)\)\s*->\s*([01])", p.replace("\n", ""))
             if not m:
                 msg = 'Syntax error in pattern "' + p + '"'
                 raise Exception(msg)
@@ -199,7 +197,7 @@ class LutBuilder:
 
             for pattern, r in compiled_patterns:
                 if pattern.match(bitpattern):
-                    self.lut[i] = [0, 1][r]
+                    self.lut[i] = r
 
         return self.lut
 
