@@ -192,6 +192,11 @@ def test_unknown_channel_id() -> None:
         assert im.layers[0][1] == ""
 
 
+def test_negative_height() -> None:
+    with pytest.raises(ValueError, match="negative image height"):
+        PsdImagePlugin._maketile(io.BytesIO(b"\x00\x01"), "RGB", (0, 1, 1, 0), 3)
+
+
 def test_huge_bytecounts() -> None:
     # The declared height requires a packbits bytecounts table of ~26 GB.
     # Reading it must fail cleanly instead of attempting a huge allocation.
