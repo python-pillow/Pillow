@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import io
+import os
 import sys
 import sysconfig
-import os
 
 import pytest
 
@@ -13,7 +13,8 @@ gil_enabled_at_start = True
 if FREE_THREADED_BUILD:
     gil_enabled_at_start = sys._is_gil_enabled()  # type: ignore[attr-defined]
 
-TSAN_ENABLED = os.environ.get('PILLOW_TSAN_TEST') == '1'
+TSAN_ENABLED = os.environ.get("PILLOW_TSAN_TEST") == "1"
+
 
 def pytest_report_header(config: pytest.Config) -> str:
     try:
@@ -63,6 +64,7 @@ def pytest_configure(config: pytest.Config) -> None:
         # valgrind is already installed
         pass
 
+
 @pytest.fixture(autouse=TSAN_ENABLED)
 def tsan_parse(capfd) -> None:
     # TSAN has two error modes, return a non-zero return code from the process
@@ -70,6 +72,6 @@ def tsan_parse(capfd) -> None:
     # process, so we're hacking around this by reading stderr and looking for the
     # TSAN Warning.
     yield
-    out,err = capfd.readouterr()
+    out, err = capfd.readouterr()
     if "WARNING: ThreadSanitizer" in err:
         raise Exception("ThreadSanitizer Warning")
