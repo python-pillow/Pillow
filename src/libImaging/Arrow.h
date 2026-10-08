@@ -15,6 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
+// Apache Arrow
+// Copyright 2016-2026 The Apache Software Foundation
+//
+// This product includes software developed at
+// The Apache Software Foundation (http://www.apache.org/).
+//
 // The Arrow C data interface structure definitions below are from the
 // Apache Arrow project:
 // https://arrow.apache.org/docs/format/CDataInterface.html
