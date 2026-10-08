@@ -750,6 +750,18 @@ class TestFileTiff:
         with pytest.raises(ValueError):
             Image.open(b)
 
+    @pytest.mark.parametrize(
+        "test_file",
+        (
+            "Tests/images/zero_width_frame.tif",
+            "Tests/images/zero_height_frame.tif",
+        ),
+    )
+    def test_zero_size_frame(self, test_file: str) -> None:
+        with Image.open(test_file) as im:
+            with pytest.raises(SyntaxError, match="Invalid dimensions"):
+                im.seek(1)
+
     @pytest.mark.parametrize("mode", ("P", "PA"))
     def test_palette(self, mode: str, tmp_path: Path) -> None:
         outfile = tmp_path / "temp.tif"

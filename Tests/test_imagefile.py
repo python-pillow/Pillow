@@ -253,6 +253,33 @@ class TestImageFile:
             monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
             im.load()
 
+    def test_mmap_partial_tile(self) -> None:
+        """
+        Test that partial tiles of a file won't be mmapped.
+        """
+        extent = (0, 0, 128, 64)
+
+        with Image.open("Tests/images/hopper_8bit.pgm") as im:
+            im.load()
+            # Test the premise: this file is regularly loaded with mmap
+            assert im.map is not None
+            expected = im.crop(extent)
+
+        with Image.open("Tests/images/hopper_8bit.pgm") as im:
+            im.tile = [im.tile[0]._replace(extents=extent)]
+            im.load()
+
+            assert im.map is None
+            assert_image_equal(im.crop(extent), expected)
+
+    @pytest.mark.parametrize("size", ((0, 128), (128, 0)))
+    def test_mmap_zero_size(self, size: tuple[int, int]) -> None:
+        with Image.open("Tests/images/hopper_8bit.pgm") as im:
+            im._size = size
+            im.tile = [im.tile[0]._replace(extents=(0, 0, *size))]
+            with pytest.raises(ValueError, match="tile cannot extend outside image"):
+                im.load()
+
 
 class MockPyDecoder(ImageFile.PyDecoder):
     last: MockPyDecoder
