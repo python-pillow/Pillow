@@ -58,12 +58,15 @@ def test_invalid_number_of_bands() -> None:
         with Image.open("Tests/images/input_bw_five_bands.fpx"):
             pass
 
-@pytest.mark.parametrize("img_path", [
-    "Tests/images/GHSA-5x8w-8jj5-q52h_oob64.fpx",
-    "Tests/images/GHSA-5x8w-8jj5-q52h_wide.fpx",
-    "Tests/images/oob_fpx_write_GHSA-5x8w-8jj5-q52h.fpx",
-])
-def test_fpx_oob_write(img_path) -> None:
-    with pytest.raises((OSError, ValueError)):
+
+def test_oob_write() -> None:
+    with pytest.raises(ValueError, match="Tile must be 64 pixels by 64 pixels"):
+        Image.open("Tests/images/GHSA-5x8w-8jj5-q52h_oob_fpx_write.fpx")
+
+    for img_path in (
+        "Tests/images/GHSA-5x8w-8jj5-q52h_oob64.fpx",
+        "Tests/images/GHSA-5x8w-8jj5-q52h_wide.fpx",
+    ):
         with Image.open(img_path) as im:
-            im.load()
+            with pytest.raises(OSError, match="broken data stream"):
+                im.load()
