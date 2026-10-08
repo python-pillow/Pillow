@@ -296,6 +296,18 @@ class TestImagingCoreResampleAccuracy:
         out = im.resize((1, 306), Image.Resampling.BOX)
         assert not all(value == 255 for value in out.get_flattened_data())
 
+    def test_box_downscale_counts_each_pixel_once(self) -> None:
+        # 15→14 used to count the central source pixel in two outputs.
+        im = Image.new("L", (15, 1))
+        im.putpixel((7, 0), 255)
+        out = im.resize((14, 1), Image.Resampling.BOX)
+        assert [value for value in out.get_flattened_data() if value] == [128]
+
+        im = Image.new("L", (1, 15))
+        im.putpixel((0, 7), 255)
+        out = im.resize((1, 14), Image.Resampling.BOX)
+        assert [value for value in out.get_flattened_data() if value] == [128]
+
 
 class TestCoreResampleConsistency:
     def make_case(
