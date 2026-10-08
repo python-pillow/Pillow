@@ -246,3 +246,10 @@ Fixed reading PSD layers at the wrong file offset
 When seeking to a layer of a PSD image, the pixel data was read from the wrong
 position in the file, so :py:meth:`~PIL.Image.Image.seek` returned unrelated
 bytes reinterpreted as image data instead of that layer's actual content.
+
+Fixed opening XBM images with leading comments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+XBM images that start with a C-style comment, either ``/* ... */`` or ``// ...``,
+could not be identified. Comments before and between the ``#define`` lines are now
+skipped.
