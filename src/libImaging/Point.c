@@ -127,10 +127,17 @@ im_point_32_8(Imaging imOut, Imaging imIn, im_point_context *context) {
     }
 }
 
+/**
+ * Apply a lookup table to an image.
+ *
+ * @param imIn The input image.
+ * @param mode The output mode.
+ * @param table The lookup table. No bounds checking is done for the table;
+ *              the caller must ensure that the table is valid for the image and mode.
+ * @return A new output image, or NULL on error with a Python exception set.
+ */
 Imaging
 ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
-    /* lookup table transform */
-
     ImagingSectionCookie cookie;
     Imaging imOut;
     im_point_context context;
@@ -208,10 +215,17 @@ mode_mismatch:
     );
 }
 
+/**
+ * Transform each pixel of the image with the given scale and offset.
+ * This can be read as a "multiply and add" operation.
+ *
+ * @param imIn The input image.
+ * @param scale The scale factor.
+ * @param offset The offset.
+ * @return A new output image, or NULL on error with a Python exception set.
+ */
 Imaging
 ImagingPointTransform(Imaging imIn, double scale, double offset) {
-    /* scale/offset transform */
-
     ImagingSectionCookie cookie;
     Imaging imOut;
     int x, y;

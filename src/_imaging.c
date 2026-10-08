@@ -408,15 +408,21 @@ getbands(const ModeID mode) {
 #define TYPE_FLOAT32 (0x300 | sizeof(FLOAT32))
 #define TYPE_DOUBLE (0x400 | sizeof(double))
 
+/**
+ * Allocates and returns a C array of the items in the Python sequence arg.
+ * The sequence's length is checked against the length parameter.
+ *
+ * @param arg The Python sequence to convert
+ * @param length The required number of items.
+ * @param wrong_length Error message to emit in exception if the sequence length does
+ *                     not match.
+ * @param type Type specifier (one of the TYPE_* constants above)
+ *
+ * @return A pointer to the allocated C array, or NULL on error. The caller is
+ *         responsible for freeing the memory.
+ */
 static void *
 getlist_impl(PyObject *arg, Py_ssize_t length, const char *wrong_length, int type) {
-    /* - allocates and returns a c array of the items in the Python sequence arg.
-       - the size of the returned array is in length
-       - all of the arg items must be numeric items of the type specified in type
-       - sequence length is checked against the length parameter
-       - caller is responsible for freeing the memory
-    */
-
     Py_ssize_t i, n;
     int itemp;
     double dtemp;
@@ -2104,9 +2110,13 @@ _reduce(ImagingObject *self, PyObject *args) {
     return PyImagingNew(imOut);
 }
 
+/**
+ * Convert the given RGB/RGBX image to RGBA in-place.
+ *
+ * @return None on success, with Python exception set on failure.
+ */
 static PyObject *
 im_setalpha(ImagingObject *self, PyObject *args) {
-    /* attempt to modify the mode of an image in place */
     Imaging im = self->image;
     if (im->mode != IMAGING_MODE_RGB && im->mode != IMAGING_MODE_RGBX) {
         return ImagingError_ModeError();
@@ -2846,10 +2856,18 @@ textwidth(ImagingFontObject *self, const unsigned char *text) {
     return xsize;
 }
 
+/**
+ * Convert the given Python string to a C Latin-1 string
+ * suitable for basic text rendering.
+ *
+ * @param encoded_string The Python string to convert. Can be a Unicode or bytes object.
+ * @param text Pointer to an unsigned char pointer that will be set to the allocated C
+ *             string. The caller is responsible for freeing the memory with `free`.
+ * @return Void, but a Python exception will be set if an error occurs (e.g., memory
+ *         allocation failure). `text` will not have been set in this case.
+ */
 void
 _font_text_asBytes(PyObject *encoded_string, unsigned char **text) {
-    /* Allocates *text, returns a 'new reference'. Caller is required to free */
-
     PyObject *bytes = NULL;
     Py_ssize_t len = 0;
     char *buffer;
@@ -2875,8 +2893,6 @@ _font_text_asBytes(PyObject *encoded_string, unsigned char **text) {
     if (bytes) {
         Py_DECREF(bytes);
     }
-
-    return;
 }
 
 static PyObject *
