@@ -41,7 +41,7 @@ xbm_head = re.compile(
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix.startswith((b"#define", b"\n#define"))
+    return prefix.startswith((b"#define", b"\n#define", b"/*", b"//"))
 
 
 ##
@@ -60,8 +60,28 @@ class XbmImageFile(ImageFile.ImageFile):
         x_hot = None
         offset = None
         starting = True
+        in_block_comment = False
         while True:
-            line = self.fp.readline(75).rstrip()
+            line = self.fp.readline(75)
+            if not line and in_block_comment:
+                break
+            ends_line = line.endswith(b"\n")
+            line = line.rstrip()
+            if in_block_comment:
+                if b"*/" in line:
+                    in_block_comment = False
+                continue
+            if line.startswith(b"/*"):
+                in_block_comment = b"*/" not in line
+                continue
+            if line.startswith(b"//"):
+                # Discard the rest of an overlong comment line
+                while not ends_line:
+                    chunk = self.fp.readline(75)
+                    if not chunk:
+                        break
+                    ends_line = chunk.endswith(b"\n")
+                continue
             if starting and not line:
                 starting = False
                 continue
