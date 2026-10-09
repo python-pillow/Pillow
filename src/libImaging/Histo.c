@@ -157,8 +157,6 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                             }
                         }
                     } else if (im->bands == 3) {
-                        /* Three colour bytes per pixel; the fourth (padding)
-                           byte is not part of the returned histogram. */
                         for (int y = 0; y < ysize; y++) {
                             UINT8 *restrict in = (UINT8 *)im->image[y];
                             for (int x = 0; x < xsize; x++, in += 4) {
