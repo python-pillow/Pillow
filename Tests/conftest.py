@@ -7,6 +7,10 @@ import sysconfig
 
 import pytest
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
 FREE_THREADED_BUILD = bool(sysconfig.get_config_var("Py_GIL_DISABLED"))
 
 gil_enabled_at_start = True
@@ -66,7 +70,7 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 @pytest.fixture(autouse=TSAN_ENABLED)
-def tsan_parse(capfd) -> None:
+def tsan_parse(capfd: pytest.CaptureFixture[str]) -> Generator[None]:
     # TSAN has two error modes, return a non-zero return code from the process
     # or stop on error. Neither of these are really useful for us in a longrunning
     # process, so we're hacking around this by reading stderr and looking for the
@@ -74,4 +78,5 @@ def tsan_parse(capfd) -> None:
     yield
     out, err = capfd.readouterr()
     if "WARNING: ThreadSanitizer" in err:
-        raise Exception("ThreadSanitizer Warning")
+        msg = "ThreadSanitizer Warning"
+        raise Exception(msg)
