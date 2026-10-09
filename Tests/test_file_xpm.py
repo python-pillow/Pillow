@@ -99,36 +99,25 @@ def test_not_enough_image_data() -> None:
 
 def test_undefined_color_key() -> None:
     # Pixel data references a color key that is not defined in the palette
-    data = b"\n".join(
-        [
-            b"/* XPM */",
-            b"static char *x[] = {",
-            b'"2 1 1 2"',
-            b'"aa c #ffffff"',
-            b'"zzaa"',
-            b"};",
-        ]
-    )
+    data = b"""/* XPM */
+static char *x[] = {"
+"1 1 1 1"
+"a\tc #000000"
+"b"};
+"""
     with Image.open(BytesIO(data)) as im:
-        with pytest.raises(ValueError, match="cannot read this XPM file"):
+        with pytest.raises(ValueError, match="unknown color"):
             im.load()
 
     # Same in RGB mode (more than 256 palette entries)
-    colors = [
-        b'"' + bytes((i // 26 + 97, i % 26 + 97)) + b' c #ffffff"' for i in range(257)
-    ]
-    data = b"\n".join(
-        [
-            b"/* XPM */",
-            b"static char *x[] = {",
-            b'"2 1 257 2"',
-            *colors,
-            b'"zzaa"',
-            b"};",
-        ]
+    colours = [b'"%03d\tc #%06x",' % (i, i + 1) for i in range(257)]
+    data = (
+        b'/* XPM */\nstatic char *test[] = {\n"1 1 257 3",\n'
+        + b"\n".join(colours)
+        + b'\n"zzz"};\n'
     )
     with Image.open(BytesIO(data)) as im:
-        with pytest.raises(ValueError, match="cannot read this XPM file"):
+        with pytest.raises(ValueError, match="unknown color"):
             im.load()
 
 

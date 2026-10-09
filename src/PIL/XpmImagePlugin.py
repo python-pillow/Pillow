@@ -157,7 +157,7 @@ class XpmDecoder(ImageFile.PyDecoder):
                     else:
                         data += o8(palette.index(key))
                 except (KeyError, ValueError):
-                    msg = "cannot read this XPM file"
+                    msg = "unknown color"
                     raise ValueError(msg) from None
         self.set_as_raw(bytes(data))
         return -1, 0
