@@ -33,7 +33,7 @@ _copy(Imaging imOut, Imaging imIn) {
 
     ImagingCopyPalette(imOut, imIn);
 
-    if (!imIn->linesize) {
+    if (!imIn->linesize || !imIn->ysize) {
         return imOut;
     }
 
