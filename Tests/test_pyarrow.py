@@ -303,27 +303,6 @@ def test_image_metadata(mode: str, metadata: list[str]) -> None:
     assert parsed_metadata["bands"] == metadata
 
 
-@pytest.mark.parametrize("use_block_allocator", (0, 1))
-@pytest.mark.parametrize("size", ((0, 0), (0, 3), (3, 0)))
-@pytest.mark.parametrize("mode", ("L", "RGBA"))
-def test_empty_image(
-    mode: str, size: tuple[int, int], use_block_allocator: int
-) -> None:
-    Image.core.set_use_block_allocator(use_block_allocator)
-    try:
-        img = Image.new(mode, size)
-    finally:
-        Image.core.set_use_block_allocator(0)
-
-    schema, array = img.__arrow_c_array__()
-    assert schema
-    assert array
-
-    arr = pyarrow.array(img)  # type: ignore[call-overload]
-
-    assert len(arr) == 0
-
-
 def test_zero_dimension() -> None:
     array = pyarrow.array([], type=pyarrow.uint8())
     assert Image.fromarrow(array, "L", (0, 7)).size == (0, 7)

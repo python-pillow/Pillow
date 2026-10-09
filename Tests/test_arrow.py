@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from PIL import Image
 
 from .helper import assert_image_equal, hopper
+
+TYPE_CHECKING = False
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.mark.parametrize(
@@ -246,7 +249,7 @@ def test_frombuffer_image(mode: str) -> None:
     assert img2.tobytes()
 
 
-def test_mapped_image(tmp_path: Path) -> None:
+def test_mapped_image_pgm(tmp_path: Path) -> None:
     # Trigger from GHSA-4fj2-qr5f-54hc
     # Fixed, no error from GHSA-654x-cwwv-5j9c
     path = tmp_path / "temp.pgm"
