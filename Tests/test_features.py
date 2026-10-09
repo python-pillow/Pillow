@@ -21,6 +21,8 @@ def test_check() -> None:
     for codec in features.codecs:
         assert features.check_codec(codec) == features.check(codec)
     for feature in features.features:
+        if feature in features.deprecated_features:
+            continue
         assert features.check_feature(feature) == features.check(feature)
 
 
@@ -47,7 +49,21 @@ def test_version() -> None:
     for codec in features.codecs:
         test(codec, features.version_codec)
     for feature in features.features:
+        if feature in features.deprecated_features:
+            continue
         test(feature, features.version_feature)
+
+
+@pytest.mark.parametrize("feature", features.deprecated_features)
+def test_deprecated_feature(feature: str) -> None:
+    match = f'features.check\\("{feature}"\\)'
+    with pytest.warns(DeprecationWarning, match=match):
+        assert features.check_feature(feature) == features.check_feature("raqm")
+
+    with pytest.warns(DeprecationWarning, match=match):
+        assert features.version_feature(feature) is None
+
+    assert feature not in features.get_supported_features()
 
 
 @skip_unless_feature("libjpeg_turbo")
