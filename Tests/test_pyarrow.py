@@ -135,7 +135,7 @@ def test_lifetime() -> None:
 
 def test_lifetime_mapped() -> None:
     # the array should keep the shared buffer alive after the image is deleted
-    img = Image.frombuffer("L", (3, 3), bytearray(range(9)), "raw", "L", 0, 1)
+    img = Image.frombuffer("L", (3, 3), bytearray(range(9)), "raw", "L", 0, 1) # type: ignore[arg-type]
 
     arr = pyarrow.array(img)  # type: ignore[call-overload]
     del img
