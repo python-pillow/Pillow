@@ -2,10 +2,6 @@
 #include "Imaging.h"
 #include <string.h>
 
-/* struct ArrowSchema* */
-/* _arrow_schema_channel(char* channel, char* format) { */
-
-/* } */
 
 /**
  * Verify the given image is stored contiguously.
@@ -344,6 +340,8 @@ export_single_channel_array(Imaging im, struct ArrowArray *array) {
 
     if (im->block) {
         array->buffers[1] = im->block;
+    } else if (im->arrow_array_capsule) {
+        array->buffers[1] = im->image[0];
     } else {
         array->buffers[1] = im->image[0];
     }
@@ -382,7 +380,6 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
     if (!array->buffers) {
         goto err;
     }
-    // assert(array->buffers != NULL);
     array->buffers[0] = NULL;  // no nulls, null bitmap can be omitted
 
     // if it's not 1 band, it's an int32 at the moment. 4 uint8 bands.
@@ -421,6 +418,8 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
 
     if (im->block) {
         array->children[0]->buffers[1] = im->block;
+    } else if (im->arrow_array_capsule) {
+        array->children[0]->buffers[1] = im->image[0];
     } else {
         array->children[0]->buffers[1] = im->image[0];
     }

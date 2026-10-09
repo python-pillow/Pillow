@@ -155,6 +155,23 @@ def test_rankfilter_error(filter: ImageFilter.RankFilter) -> None:
         im.filter(filter).getpixel((1, 1))
 
 
+@pytest.mark.parametrize(
+    "filter",
+    (
+        ImageFilter.MinFilter(1),
+        ImageFilter.MedianFilter(1),
+        ImageFilter.MaxFilter(1),
+        ImageFilter.RankFilter(3, 1),
+    ),
+)
+@pytest.mark.parametrize("size", ((0, 1), (1, 0), (0, 0)))
+def test_rankfilter_zero_dimension(
+    filter: ImageFilter.RankFilter, size: tuple[int, int]
+) -> None:
+    im = Image.new("L", size)
+    assert im.filter(filter).size == size
+
+
 def test_rankfilter_properties() -> None:
     rankfilter = ImageFilter.RankFilter(3, 2)
 
@@ -178,6 +195,18 @@ def test_rankfilter_properties() -> None:
 
     with pytest.raises(ValueError, match="bad rank value"):
         ImageFilter.RankFilter(1, 1)
+
+
+def test_rankfilter_overflow() -> None:
+    # Large margins used to overflow the ImagingExpand overflow guard itself (SIGFPE),
+    # by mutating RankFilter.size after construction, bypassing __init__'s validation.
+    im = Image.new("L", (16, 16))
+    rankfilter = ImageFilter.RankFilter(3, 0)
+
+    for size in (2**31, 2**32 - 1):  # margins of 2**30 and INT_MAX
+        rankfilter.size = size
+        with pytest.raises(ValueError, match="filter size too large"):
+            im.filter(rankfilter)
 
 
 def test_builtinfilter_p() -> None:

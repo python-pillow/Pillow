@@ -631,8 +631,6 @@ polygon_generic(
 
 static inline void
 add_edge(Edge *e, int x0, int y0, int x1, int y1) {
-    /* printf("edge %d %d %d %d\n", x0, y0, x1, y1); */
-
     if (x0 <= x1) {
         e->xmin = x0, e->xmax = x1;
     } else {
@@ -1266,31 +1264,6 @@ typedef void (*clip_ellipse_init)(
     clip_ellipse_state *, int32_t, int32_t, int32_t, float, float
 );
 
-void
-debug_clip_tree(clip_node *root, int space) {
-    if (root == NULL) {
-        return;
-    }
-    if (root->type == CT_CLIP) {
-        int t = space;
-        while (t--) {
-            fputc(' ', stderr);
-        }
-        fprintf(stderr, "clip %+fx%+fy%+f > 0\n", root->a, root->b, root->c);
-    } else {
-        debug_clip_tree(root->l, space + 2);
-        int t = space;
-        while (t--) {
-            fputc(' ', stderr);
-        }
-        fprintf(stderr, "%s\n", root->type == CT_AND ? "and" : "or");
-        debug_clip_tree(root->r, space + 2);
-    }
-    if (space == 0) {
-        fputc('\n', stderr);
-    }
-}
-
 // Resulting angles will satisfy 0 <= al < 360, al <= ar <= al + 360
 void
 normalize_angles(float *al, float *ar) {
@@ -1608,7 +1581,6 @@ clipEllipseNew(
 
     clip_ellipse_state st;
     init(&st, a, b, width, start, end);
-    // debug_clip_tree(st.root, 0);
     int32_t X0, Y, X1;
     int next_code;
     while ((next_code = clip_ellipse_next(&st, &X0, &Y, &X1)) >= 0) {

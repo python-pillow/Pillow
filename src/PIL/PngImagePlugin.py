@@ -905,7 +905,6 @@ class PngImageFile(ImageFile.ImageFile):
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
 
-        self.dispose: _imaging.ImagingCore | None
         dispose_extent = None
         if frame == 0:
             if rewind:
@@ -916,8 +915,7 @@ class PngImageFile(ImageFile.ImageFile):
                 self.info = self.png.im_info
                 self.tile = self.png.im_tile
                 self.fp = self._fp
-            self._prev_im = None
-            self.dispose = None
+            self._prev_im: _imaging.ImagingCore | None = None
             self.default_image = self.info.get("default_image", False)
             self.dispose_op = self.info.get("disposal")
             self.blend_op = self.info.get("blend")
@@ -928,11 +926,19 @@ class PngImageFile(ImageFile.ImageFile):
                 msg = f"cannot seek to frame {frame}"
                 raise ValueError(msg)
 
+            if self.dispose_op == Disposal.OP_BACKGROUND:
+                x0, y0, x1, y1 = self.dispose_extent
+                dispose = Image.core.fill(self.mode, (x1 - x0, y1 - y0))
+            elif self.dispose_op == Disposal.OP_PREVIOUS and self._prev_im is not None:
+                dispose = self._crop(self._prev_im.copy(), self.dispose_extent)
+            else:
+                dispose = None
+
             # ensure previous frame was loaded
             self.load()
 
-            if self.dispose:
-                self.im.paste(self.dispose, self.dispose_extent)
+            if dispose:
+                self.im.paste(dispose, self.dispose_extent)
             self._prev_im = self.im.copy()
 
             self.fp = self._fp
@@ -990,15 +996,6 @@ class PngImageFile(ImageFile.ImageFile):
         # setup frame disposal (actual disposal done when needed in the next _seek())
         if self._prev_im is None and self.dispose_op == Disposal.OP_PREVIOUS:
             self.dispose_op = Disposal.OP_BACKGROUND
-
-        self.dispose = None
-        if self.dispose_op == Disposal.OP_PREVIOUS:
-            if self._prev_im:
-                self.dispose = self._prev_im.copy()
-                self.dispose = self._crop(self.dispose, self.dispose_extent)
-        elif self.dispose_op == Disposal.OP_BACKGROUND:
-            self.dispose = Image.core.fill(self.mode, self.size)
-            self.dispose = self._crop(self.dispose, self.dispose_extent)
 
     def tell(self) -> int:
         return self.__frame
@@ -1261,8 +1258,13 @@ def _write_multiple_frames(
                     and prev_blend == encoderinfo.get("blend")
                     and "duration" in encoderinfo
                 ):
-                    previous.encoderinfo["duration"] += encoderinfo["duration"]
-                    continue
+                    new_duration = (
+                        previous.encoderinfo["duration"] + encoderinfo["duration"]
+                    )
+                    delay = Fraction(new_duration / 1000).limit_denominator(65535)
+                    if delay.numerator <= 65535:
+                        previous.encoderinfo["duration"] = new_duration
+                        continue
             else:
                 bbox = None
             im_frames.append(_Frame(im_frame, bbox, encoderinfo))
@@ -1398,18 +1400,16 @@ def _save(
 
     outmode = mode
     if mode == "P":
-        #
-        # attempt to minimize storage requirements for palette images
-        if "bits" in im.encoderinfo:
-            # number of bits specified by user
-            colors = min(1 << im.encoderinfo["bits"], 256)
-        else:
-            # check palette contents
-            if palette:
-                colors = max(min(len(palette) // 3, 256), 1)
-            else:
-                colors = 256
-
+        colors = max(
+            1,
+            min(
+                # number of bits specified by user
+                1 << im.encoderinfo.get("bits", 8),
+                # write only as many PLTE entries as the palette actually contains
+                len(palette) // 3 if palette else 0,
+                256,
+            ),
+        )
         if colors <= 16:
             if colors <= 2:
                 bits = 1
@@ -1475,11 +1475,8 @@ def _save(
                 if not after_idat:
                     chunk(fp, cid, data)
 
-    if mode == "P" and palette is not None:
-        palette_byte_number = colors * 3
-        palette_bytes = bytes(palette[:palette_byte_number])
-        while len(palette_bytes) < palette_byte_number:
-            palette_bytes += b"\0"
+    if mode == "P":
+        palette_bytes = (palette and bytes(palette[: colors * 3])) or b"\x00\x00\x00"
         chunk(fp, b"PLTE", palette_bytes)
 
     transparency = im.encoderinfo.get("transparency", im.info.get("transparency"))

@@ -622,10 +622,6 @@ cms_profile_is_intent_supported(CmsProfileObject *self, PyObject *args) {
     }
 
     result = cmsIsIntentSupported(self->profile, intent, direction);
-
-    /* printf("cmsIsIntentSupported(%p, %d, %d) => %d\n", self->profile, intent,
-     * direction, result); */
-
     return PyLong_FromLong(result != 0);
 }
 

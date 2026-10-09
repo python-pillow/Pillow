@@ -33,13 +33,6 @@ struct _Heap {
 
 #define INITIAL_SIZE 256
 
-// #define DEBUG
-
-#ifdef DEBUG
-static int
-_heap_test(Heap *);
-#endif
-
 void
 ImagingQuantHeapFree(Heap *h) {
     free(h->heap);
@@ -71,24 +64,6 @@ _heap_grow(Heap *h, unsigned int newsize) {
     return 1;
 }
 
-#ifdef DEBUG
-static int
-_heap_test(Heap *h) {
-    unsigned int k;
-    for (k = 1; k * 2 <= h->heapcount; k++) {
-        if (h->cf(h, h->heap[k], h->heap[k * 2]) < 0) {
-            printf("heap is bad\n");
-            return 0;
-        }
-        if (k * 2 + 1 <= h->heapcount && h->cf(h, h->heap[k], h->heap[k * 2 + 1]) < 0) {
-            printf("heap is bad\n");
-            return 0;
-        }
-    }
-    return 1;
-}
-#endif
-
 int
 ImagingQuantHeapRemove(Heap *h, void **r) {
     unsigned int k, l;
@@ -112,12 +87,6 @@ ImagingQuantHeapRemove(Heap *h, void **r) {
         h->heap[k] = h->heap[l];
     }
     h->heap[k] = v;
-#ifdef DEBUG
-    if (!_heap_test(h)) {
-        printf("oops - heap_remove messed up the heap\n");
-        exit(1);
-    }
-#endif
     return 1;
 }
 
@@ -136,12 +105,6 @@ ImagingQuantHeapAdd(Heap *h, void *val) {
         k >>= 1;
     }
     h->heap[k] = val;
-#ifdef DEBUG
-    if (!_heap_test(h)) {
-        printf("oops - heap_add messed up the heap\n");
-        exit(1);
-    }
-#endif
     return 1;
 }
 

@@ -33,6 +33,10 @@ _copy(Imaging imOut, Imaging imIn) {
 
     ImagingCopyPalette(imOut, imIn);
 
+    if (!imIn->linesize || !imIn->ysize) {
+        return imOut;
+    }
+
     ImagingSectionEnter(&cookie);
     if (imIn->block != NULL && imOut->block != NULL) {
         memcpy(imOut->block, imIn->block, (size_t)imIn->ysize * imIn->linesize);

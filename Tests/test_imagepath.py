@@ -216,6 +216,11 @@ def test_overflow_segfault() -> None:
             x[i] = b"0" * 16
 
 
+def test_compact_empty_path() -> None:
+    p = ImagePath.Path(0)
+    assert p.compact() == 0
+
+
 def test_compact_within_map() -> None:
     p = ImagePath.Path([0, 1])
 

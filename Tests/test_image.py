@@ -801,6 +801,12 @@ class TestImage:
             exif = im.getexif()
         assert exif[274] == 1
 
+        with Image.open("Tests/images/exif.png") as im:
+            im.load()
+            im.info["exif"] = b"Exif\x00\x00" * 2 + im.info["exif"]
+            with pytest.raises(SyntaxError):
+                im.getexif()
+
     def test_empty_get_ifd(self) -> None:
         exif = Image.Exif()
         ifd = exif.get_ifd(0x8769)

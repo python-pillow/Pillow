@@ -241,6 +241,17 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t by
                 break;
             }
 
+            /* The scanline buffer was sized from the tile extents and the
+               unpacker, not from the JPEG header, so make sure the lines
+               libjpeg is about to produce actually fit in it. */
+            if (context->cinfo.output_width > (JDIMENSION)state->xsize ||
+                (size_t)context->cinfo.output_components * context->cinfo.output_width >
+                    (size_t)state->bytes) {
+                jpeg_destroy_decompress(&context->cinfo);
+                state->errcode = IMAGING_CODEC_BROKEN;
+                return -1;
+            }
+
             state->state++;
             /* fall through */
 
@@ -291,7 +302,7 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t by
 /* Cleanup                                                              */
 /* -------------------------------------------------------------------- */
 
-int
+void
 ImagingJpegDecodeCleanup(ImagingCodecState state) {
     /* called to free the decompression engine when the decode terminates
        due to a corrupt or truncated image
@@ -300,7 +311,6 @@ ImagingJpegDecodeCleanup(ImagingCodecState state) {
 
     /* Clean up */
     jpeg_destroy_decompress(&context->cinfo);
-    return -1;
 }
 
 #endif

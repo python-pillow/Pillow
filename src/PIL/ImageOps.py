@@ -565,10 +565,10 @@ def fit(
                       (0.0, 0.0) will crop from the top left corner (i.e. if
                       cropping the width, take all of the crop off of the right
                       side, and if cropping the height, take all of it off the
-                      bottom).  (1.0, 0.0) will crop from the bottom left
+                      bottom). (1.0, 1.0) will crop from the bottom right
                       corner, etc. (i.e. if cropping the width, take all of the
                       crop off the left side, and if cropping the height take
-                      none from the top, and therefore all off the bottom).
+                      none from the bottom, and therefore all off the top).
     :return: An image.
     """
 
@@ -754,15 +754,11 @@ def exif_transpose(image: Image.Image, *, in_place: bool = False) -> Image.Image
                         r"<tiff:Orientation>([0-9])</tiff:Orientation>",
                     ):
                         value = exif_image.info[key]
-                        if isinstance(value, str):
-                            value = re.sub(pattern, "", value)
-                        elif isinstance(value, tuple):
-                            value = tuple(
-                                re.sub(pattern.encode(), b"", v) for v in value
-                            )
-                        else:
-                            value = re.sub(pattern.encode(), b"", value)
-                        exif_image.info[key] = value
+                        exif_image.info[key] = (
+                            re.sub(pattern, "", value)
+                            if isinstance(value, str)
+                            else re.sub(pattern.encode(), b"", value)
+                        )
         if not in_place:
             return transposed_image
     elif not in_place:

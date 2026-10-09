@@ -133,12 +133,15 @@ class XrefTable:
         )  # object ID => (offset, generation)
         self.deleted_entries = {0: 65536}  # object ID => generation
         self.reading_finished = False
+        self._max_object_id = 0
 
     def __setitem__(self, key: int, value: tuple[int, int]) -> None:
         if self.reading_finished:
             self.new_entries[key] = value
         else:
             self.existing_entries[key] = value
+        if key > self._max_object_id:
+            self._max_object_id = key
         if key in self.deleted_entries:
             del self.deleted_entries[key]
 
@@ -502,7 +505,9 @@ class PdfParser:
                     self.pages[j] = new_page_ref
         # delete redundant Pages tree nodes from xref table
         for pages_tree_node_ref in pages_tree_nodes_to_delete:
-            while pages_tree_node_ref:
+            processed_refs = []
+            while pages_tree_node_ref and pages_tree_node_ref not in processed_refs:
+                processed_refs.append(pages_tree_node_ref)
                 pages_tree_node = self.cached_objects[pages_tree_node_ref]
                 if pages_tree_node_ref.object_id in self.xref_table:
                     del self.xref_table[pages_tree_node_ref.object_id]
@@ -617,18 +622,15 @@ class PdfParser:
         self.pages_ref = self.root[b"Pages"]
         assert self.pages_ref is not None
         self.page_tree_root = self.read_indirect(self.pages_ref)
-        self.pages = self.linearize_page_tree(self.page_tree_root)
+        self.pages = self.linearize_page_tree()
         # save the original list of page references
         # in case the user modifies, adds or deletes some pages
         # and we need to rewrite the pages and their list
         self.orig_pages = self.pages[:]
 
     def next_object_id(self, offset: int | None = None) -> IndirectReference:
-        try:
-            # TODO: support reuse of deleted objects
-            reference = IndirectReference(max(self.xref_table.keys()) + 1, 0)
-        except ValueError:
-            reference = IndirectReference(1, 0)
+        # TODO: support reuse of deleted objects
+        reference = IndirectReference(self.xref_table._max_object_id + 1, 0)
         if offset is not None:
             self.xref_table[reference.object_id] = (offset, 0)
         return reference
@@ -837,7 +839,7 @@ class PdfParser:
         data: bytes | bytearray | memoryview | mmap.mmap,
         offset: int,
         expect_indirect: IndirectReference | None = None,
-        max_nesting: int = -1,
+        max_nesting: int = 900,
     ) -> tuple[Any, int | None]:
         if max_nesting == 0:
             return None, None
@@ -1065,7 +1067,7 @@ class PdfParser:
                         self.xref_table[i] = new_entry
         return offset
 
-    def read_indirect(self, ref: IndirectReference, max_nesting: int = -1) -> Any:
+    def read_indirect(self, ref: IndirectReference, max_nesting: int = 900) -> Any:
         offset, generation = self.xref_table[ref[0]]
         check_format_condition(
             generation == ref[1],
@@ -1083,17 +1085,29 @@ class PdfParser:
         return value
 
     def linearize_page_tree(
-        self, node: PdfDict | None = None
+        self, node: PdfDict | None = None, processed_ids: set[int] | None = None
     ) -> list[IndirectReference]:
-        page_node = node if node is not None else self.page_tree_root
+        if processed_ids is None:
+            processed_ids = set()
+        if node is not None:
+            page_node = node
+        else:
+            page_node = self.page_tree_root
+            if self.pages_ref is not None:
+                processed_ids.add(self.pages_ref.object_id)
         check_format_condition(
             page_node[b"Type"] == b"Pages", "/Type of page tree node is not /Pages"
         )
         pages = []
         for kid in page_node[b"Kids"]:
+            check_format_condition(
+                kid.object_id not in processed_ids,
+                f"page tree contains a cyclic or duplicate reference to {kid}",
+            )
+            processed_ids.add(kid.object_id)
             kid_object = self.read_indirect(kid)
             if kid_object[b"Type"] == b"Page":
                 pages.append(kid)
             else:
-                pages.extend(self.linearize_page_tree(node=kid_object))
+                pages.extend(self.linearize_page_tree(kid_object, processed_ids))
         return pages

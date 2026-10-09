@@ -42,7 +42,7 @@ typedef struct {
     PyObject_HEAD int (*encode)(
         Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes
     );
-    int (*cleanup)(ImagingCodecState state);
+    void (*cleanup)(ImagingCodecState state);
     struct ImagingCodecStateInstance state;
     Imaging im;
     PyObject *lock;
@@ -108,20 +108,18 @@ _dealloc(ImagingEncoderObject *encoder) {
 
 static PyObject *
 _encode_cleanup(ImagingEncoderObject *encoder, PyObject *args) {
-    int status = 0;
-
     if (encoder->cleanup) {
-        status = encoder->cleanup(&encoder->state);
+        encoder->cleanup(&encoder->state);
     }
 
-    return Py_BuildValue("i", status);
+    Py_RETURN_NONE;
 }
 
 static PyObject *
 _encode(ImagingEncoderObject *encoder, PyObject *args) {
     PyObject *buf;
     PyObject *result;
-    int status;
+    int bytes_consumed;
 
     /* Encode to a Python string (allocated by this method) */
 
@@ -136,16 +134,16 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
         return NULL;
     }
 
-    status = encoder->encode(
+    bytes_consumed = encoder->encode(
         encoder->im, &encoder->state, (UINT8 *)PyBytes_AsString(buf), bufsize
     );
 
     /* adjust string length to avoid slicing in encoder */
-    if (_PyBytes_Resize(&buf, (status > 0) ? status : 0) < 0) {
+    if (_PyBytes_Resize(&buf, (bytes_consumed > 0) ? bytes_consumed : 0) < 0) {
         return NULL;
     }
 
-    result = Py_BuildValue("iiO", status, encoder->state.errcode, buf);
+    result = Py_BuildValue("iiO", bytes_consumed, encoder->state.errcode, buf);
 
     Py_DECREF(buf); /* must release buffer!!! */
 
@@ -155,7 +153,7 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
 static PyObject *
 _encode_to_pyfd(ImagingEncoderObject *encoder, PyObject *args) {
     PyObject *result;
-    int status;
+    int bytes_consumed;
 
     if (!encoder->pushes_fd) {
         // UNDONE, appropriate errcode???
@@ -163,9 +161,9 @@ _encode_to_pyfd(ImagingEncoderObject *encoder, PyObject *args) {
         return result;
     }
 
-    status = encoder->encode(encoder->im, &encoder->state, (UINT8 *)NULL, 0);
+    bytes_consumed = encoder->encode(encoder->im, &encoder->state, (UINT8 *)NULL, 0);
 
-    result = Py_BuildValue("ii", status, encoder->state.errcode);
+    result = Py_BuildValue("ii", bytes_consumed, encoder->state.errcode);
 
     return result;
 }
@@ -173,7 +171,7 @@ _encode_to_pyfd(ImagingEncoderObject *encoder, PyObject *args) {
 static PyObject *
 _encode_to_file(ImagingEncoderObject *encoder, PyObject *args) {
     UINT8 *buf;
-    int status;
+    int bytes_consumed;
     ImagingSectionCookie cookie;
 
     /* Encode to a file handle */
@@ -198,10 +196,10 @@ _encode_to_file(ImagingEncoderObject *encoder, PyObject *args) {
         /* This replaces the inner loop in the ImageFile _save
            function. */
 
-        status = encoder->encode(encoder->im, &encoder->state, buf, bufsize);
+        bytes_consumed = encoder->encode(encoder->im, &encoder->state, buf, bufsize);
 
-        if (status > 0) {
-            if (write(fh, buf, status) < 0) {
+        if (bytes_consumed > 0) {
+            if (write(fh, buf, bytes_consumed) < 0) {
                 ImagingSectionLeave(&cookie);
                 free(buf);
                 return PyErr_SetFromErrno(PyExc_OSError);
@@ -681,7 +679,6 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
 
     char *mode_name;
     char *rawmode_name;
-    char *compname;
     char *filename;
     Py_ssize_t fp;
 
@@ -700,15 +697,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     PyObject *item;
 
     if (!PyArg_ParseTuple(
-            args,
-            "sssnsOO",
-            &mode_name,
-            &rawmode_name,
-            &compname,
-            &fp,
-            &filename,
-            &tags,
-            &types
+            args, "ssnsOO", &mode_name, &rawmode_name, &fp, &filename, &tags, &types
         )) {
         return NULL;
     }
@@ -718,7 +707,6 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         return NULL;
     } else {
         tags_size = PyList_Size(tags);
-        TRACE(("tags size: %d\n", (int)tags_size));
         for (pos = 0; pos < tags_size; pos++) {
             item = PyList_GetItemRef(tags, pos);
             if (item == NULL) {
@@ -738,8 +726,6 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         PyErr_SetString(PyExc_ValueError, "Invalid types dictionary");
         return NULL;
     }
-
-    TRACE(("new tiff encoder %s fp: %d, filename: %s \n", compname, fp, filename));
 
     encoder = PyImaging_EncoderNew(sizeof(TIFFSTATE));
     if (encoder == NULL) {
@@ -762,6 +748,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     encoder->cleanup = ImagingLibTiffEncodeCleanup;
 
     num_core_tags = sizeof(core_tags) / sizeof(int);
+    long bits_per_sample = 1;
     for (pos = 0; pos < tags_size; pos++) {
         item = PyList_GetItemRef(tags, pos);
         if (item == NULL) {
@@ -865,19 +852,9 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             );
         } else if (is_var_length) {
             Py_ssize_t len, i;
-            TRACE(("Setting from Tuple: %d \n", key_int));
             len = PyTuple_Size(value);
 
             if (key_int == TIFFTAG_COLORMAP) {
-                int stride = 256;
-                if (len != 768) {
-                    Py_DECREF(encoder);
-                    Py_DECREF(item);
-                    PyErr_SetString(
-                        PyExc_ValueError, "Requiring 768 items for Colormap"
-                    );
-                    return NULL;
-                }
                 UINT16 *av;
                 /* malloc check ok, calloc checks for overflow */
                 av = calloc(len, sizeof(UINT16));
@@ -885,6 +862,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                     for (i = 0; i < len; i++) {
                         av[i] = (UINT16)PyLong_AsLong(PyTuple_GetItem(value, i));
                     }
+                    Py_ssize_t stride = (Py_ssize_t)1 << bits_per_sample;
                     status = ImagingLibTiffSetField(
                         &encoder->state,
                         (ttag_t)key_int,
@@ -1007,6 +985,9 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             }
         } else {
             if (type == TIFF_SHORT) {
+                if (key_int == TIFFTAG_BITSPERSAMPLE) {
+                    bits_per_sample = PyLong_AsLong(value);
+                }
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (UINT16)PyLong_AsLong(value)
                 );
@@ -1050,17 +1031,10 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (uint64_t)PyLong_AsLongLong(value)
                 );
-            } else {
-                TRACE(
-                    ("Unhandled type for key %d : %s \n",
-                     key_int,
-                     PyBytes_AsString(PyObject_Str(value)))
-                );
             }
         }
         Py_DECREF(item);
         if (!status) {
-            TRACE(("Error setting Field\n"));
             Py_DECREF(encoder);
             PyErr_SetString(PyExc_RuntimeError, "Error setting from dictionary");
             return NULL;

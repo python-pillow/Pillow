@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import io
-import sys
 import warnings
 
 import pytest
@@ -9,6 +8,7 @@ import pytest
 from PIL import Image, PsdImagePlugin
 
 from .helper import (
+    assert_image_equal,
     assert_image_equal_tofile,
     assert_image_similar,
     hopper,
@@ -111,6 +111,28 @@ def test_seek_tell() -> None:
     assert layer_number == 2
 
 
+def test_seek_back_to_initial_frame() -> None:
+    # Seeking away from the initial frame and then back should produce the same image
+    with Image.open(test_file) as im:
+        initial_frame = im.copy()
+
+        im.seek(2)
+        im.seek(1)
+
+        assert_image_equal(im, initial_frame)
+
+
+def test_seek_mode_change() -> None:
+    with Image.open(test_file) as im:
+        im.load()
+        assert im.mode == "RGB"
+
+        # Assert that C image is cleared after mode change
+        im.seek(2)
+        assert im.mode == "RGBA"
+        assert im._im is None
+
+
 def test_seek_eoferror() -> None:
     with Image.open(test_file) as im:
         with pytest.raises(EOFError):
@@ -167,6 +189,20 @@ def test_unknown_channel_id() -> None:
 
         # unknown mode
         assert im.layers[0][1] == ""
+
+
+@pytest.mark.parametrize("bbox", ((1, 0, 0, 1), (0, 1, 1, 0)))
+def test_negative_tile_size(bbox: tuple[int, int, int, int]) -> None:
+    fp = io.BytesIO(b"\x00\x00")
+    with pytest.raises(ValueError, match="negative tile size"):
+        PsdImagePlugin._maketile(fp, "RGB", bbox, 3)
+
+
+def test_large_bytecounts() -> None:
+    # The declared height requires a packbits bytecounts table of ~26 GB.
+    # Reading it must fail cleanly instead of attempting a huge allocation.
+    with pytest.raises(OSError, match="Truncated File Read"):
+        Image.open("Tests/images/psd-large-bytecounts.psd")
 
 
 def test_combined_larger_than_size() -> None:
@@ -228,11 +264,5 @@ def test_bounds_crash_overflow() -> None:
     with Image.open("Tests/images/psd-oob-write-overflow.psd") as im:
         assert isinstance(im, PsdImagePlugin.PsdImageFile)
         im.load()
-        if sys.maxsize <= 2**32:
-            with pytest.raises(OverflowError):
-                im.seek(im.n_frames)
-        else:
+        with pytest.raises(ValueError, match="negative tile size"):
             im.seek(im.n_frames)
-
-            with pytest.raises(ValueError):
-                im.load()

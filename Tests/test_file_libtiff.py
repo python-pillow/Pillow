@@ -615,6 +615,32 @@ class TestFileLibTiff(LibTiffTestCase):
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert len(reloaded.tag_v2[320]) == 768
 
+    @pytest.mark.parametrize("libtiff", (True, False))
+    def test_colormap_size_mismatch(
+        self, monkeypatch: pytest.MonkeyPatch, libtiff: bool
+    ) -> None:
+        # The number of colormap entries per plane must match 1 << BitsPerSample.
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", libtiff)
+        im = Image.new("I;16", (1, 1))
+
+        with pytest.raises(ValueError, match="Requiring 196608 items for Colormap"):
+            im.save(
+                io.BytesIO(),
+                format="TIFF",
+                tiffinfo={TiffImagePlugin.COLORMAP: (0,)},
+            )
+
+        # A correctly sized Colormap for a 16-bit image is still accepted.
+        out = io.BytesIO()
+        im.save(
+            out,
+            format="TIFF",
+            tiffinfo={TiffImagePlugin.COLORMAP: (0,) * (1 << 16) * 3},
+        )
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert len(reloaded.tag_v2[TiffImagePlugin.COLORMAP]) == (1 << 16) * 3
+
     @pytest.mark.parametrize("compression", ("tiff_ccitt", "group3", "group4"))
     def test_bw_compression_w_rgb(self, compression: str, tmp_path: Path) -> None:
         im = hopper("RGB")
@@ -759,6 +785,21 @@ class TestFileLibTiff(LibTiffTestCase):
         save_bytesio("raw")
         save_bytesio("packbits")
         save_bytesio("tiff_lzw")
+
+    def test_save_bytesio_encoder_error(self) -> None:
+        # libtiff rejects a floating point predictor for integer sample data,
+        # so TIFFWriteScanline fails. The encoder must not free its in-memory
+        # buffer while the TIFF handle is still open, as closing the handle
+        # flushes buffered bytes back through the write callback.
+        im = hopper("L")
+        buffer_io = io.BytesIO()
+        with pytest.raises(OSError):
+            im.save(
+                buffer_io,
+                format="tiff",
+                compression="tiff_lzw",
+                tiffinfo={TiffImagePlugin.PREDICTOR: 3},
+            )
 
     def test_save_ycbcr(self, tmp_path: Path) -> None:
         im = hopper("YCbCr")
@@ -923,9 +964,7 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(filename) as im:
             assert im.mode == "RGB"
             assert im.size == (256, 256)
-            assert im.tile == [
-                ("libtiff", (0, 0, 256, 256), 0, ("RGB", "jpeg", False, 5122))
-            ]
+            assert im.tile == [("libtiff", (0, 0, 256, 256), 0, ("RGB", False, 5122))]
             im.load()
 
             assert_image_equal_tofile(im, "Tests/images/pil168.png")
@@ -1029,6 +1068,16 @@ class TestFileLibTiff(LibTiffTestCase):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
             assert_image_similar_tofile(im, "Tests/images/flower.jpg", 1.5)
+
+    def test_tiled_jpeg_oob_read(self) -> None:
+        # A tiled TIFF whose libtiff-decoded, JPEG-compressed tile storage
+        # (TIFFTileSize) is smaller than tile_length rows of the *unpacked*
+        # rawmode's bytes-per-pixel would require. Decoding must fail safely
+        # rather than let the row unpacker read past the tile buffer
+        infile = "Tests/images/tiff_tiled_jpeg_oob_read.tif"
+        with Image.open(infile) as im:
+            with pytest.raises(OSError):
+                im.load()
 
     def test_strip_planar_rgb(self) -> None:
         # gdal_translate -co TILED=no -co INTERLEAVE=BAND -co COMPRESS=LZW \
@@ -1138,7 +1187,7 @@ class TestFileLibTiff(LibTiffTestCase):
                 "tiff_wrong_bits_per_sample_3.tiff",
                 "RGBA",
                 (512, 256),
-                [("libtiff", (0, 0, 512, 256), 0, ("RGBA", "tiff_lzw", False, 48782))],
+                [("libtiff", (0, 0, 512, 256), 0, ("RGBA", False, 48782))],
             ),
         ],
     )
@@ -1267,6 +1316,19 @@ class TestFileLibTiff(LibTiffTestCase):
         out = tmp_path / "temp.tif"
         with pytest.raises(ValueError, match="cannot write empty image"):
             im.save(out, compression=compression)
+
+    def test_save_error_cleanup(self, tmp_path: Path) -> None:
+        with open(tmp_path / "temp.tif", "wb") as fp:
+            im = Image.new("RGB", (0, 0))
+            with pytest.raises(ValueError, match="cannot write empty image") as exc:
+                im.save(fp, compression="jpeg")
+
+            # The traceback keeps the encoder alive. Collecting it used to move
+            # the file position, corrupting unrelated reads if the fd was reused.
+            # Cleanup must happen during save, not later during GC.
+            fp.seek(1234)
+            del exc
+            assert fp.tell() == 1234
 
     @pytest.mark.skipif(sys.platform != "win32", reason="Checks a Windows handle limit")
     def test_save_many_compressed(self, tmp_path: Path) -> None:

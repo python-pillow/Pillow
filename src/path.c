@@ -326,6 +326,10 @@ path_compact(PyPathObject *self, PyObject *args) {
         PyErr_SetString(PyExc_ValueError, "Path compacted during mapping");
         return NULL;
     }
+    if (self->count == 0) {
+        // no points to remove
+        return Py_BuildValue("i", 0);
+    }
     if (!PyArg_ParseTuple(args, "|d:compact", &cityblock)) {
         return NULL;
     }

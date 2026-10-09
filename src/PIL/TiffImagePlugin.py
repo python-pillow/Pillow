@@ -208,6 +208,10 @@ OPEN_INFO = {
     (MM, 1, (2,), 1, (32,), ()): ("I", "I;32BS"),
     (II, 1, (3,), 1, (32,), ()): ("F", "F;32F"),
     (MM, 1, (3,), 1, (32,), ()): ("F", "F;32BF"),
+    (II, 1, (1,), 1, (8, 8), (0,)): ("L", "LX"),
+    (MM, 1, (1,), 1, (8, 8), (0,)): ("L", "LX"),
+    (II, 1, (1,), 1, (8, 8), (1,)): ("La", "La"),
+    (MM, 1, (1,), 1, (8, 8), (1,)): ("La", "La"),
     (II, 1, (1,), 1, (8, 8), (2,)): ("LA", "LA"),
     (MM, 1, (1,), 1, (8, 8), (2,)): ("LA", "LA"),
     (II, 2, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
@@ -1180,6 +1184,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.tag: ImageFileDirectory_v1
         """ Legacy tag entries """
 
+        self._n_frames: int | None = None
         super().__init__(fp, filename)
 
     def _open(self) -> None:
@@ -1198,7 +1203,6 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__frame = -1
         self._fp = self.fp
         self._frame_pos: list[int] = []
-        self._n_frames: int | None = None
 
         logger.debug("*** TiffImageFile._open ***")
         logger.debug("- __first: %s", self.__first)
@@ -1260,9 +1264,9 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.__next = 0
             else:
                 self.__next = self.tag_v2.next
-            if self.__next == 0:
+            if self.__next == 0 and self._n_frames is None:
                 self._n_frames = frame + 1
-            if len(self._frame_pos) == 1:
+            if not hasattr(self, "is_animated"):
                 self.is_animated = self.__next != 0
             self.__frame += 1
         self.fp.seek(self._frame_pos[frame])
@@ -1348,10 +1352,8 @@ class TiffImageFile(ImageFile.ImageFile):
             msg = "Not exactly one tile"
             raise OSError(msg)
 
-        # (self._compression, (extents tuple),
-        #   0, (rawmode, self._compression, fp))
-        extents = self.tile[0][1]
-        args = self.tile[0][3]
+        extents = self.tile[0].extents
+        args = self.tile[0].args
 
         # To be nice on memory footprint, if there's a
         # file descriptor, use that instead of reading
@@ -1372,7 +1374,7 @@ class TiffImageFile(ImageFile.ImageFile):
         if fp:
             assert isinstance(args, tuple)
             args_list = list(args)
-            args_list[2] = fp
+            args_list[1] = fp
             args = tuple(args_list)
 
         decoder = Image._getdecoder(self.mode, "libtiff", args, self.decoderconfig)
@@ -1614,7 +1616,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
             # Offset in the tile tuple is 0, we go from 0,0 to
             # w,h, and we only do this once -- eds
-            a = (rawmode, self._compression, False, self.tag_v2.offset)
+            a = (rawmode, False, self.tag_v2.offset)
             self.tile.append(ImageFile._Tile("libtiff", (0, 0, xsize, ysize), 0, a))
 
         elif STRIPOFFSETS in self.tag_v2 or TILEOFFSETS in self.tag_v2:
@@ -1710,6 +1712,17 @@ SAVE_INFO = {
     "LAB": ("LAB", II, 8, 1, (8, 8, 8), None),
     "I;16B": ("I;16B", MM, 1, 1, (16,), None),
 }
+
+
+def _validate_tags(tags: dict[int, Any]) -> None:
+    if COLORMAP in tags:
+        bps = tags.get(BITSPERSAMPLE, 1)
+        if isinstance(bps, tuple):
+            bps = bps[0]
+        expected = (1 << bps) * 3
+        if len(tags[COLORMAP]) != expected:
+            msg = f"Requiring {expected} items for Colormap"
+            raise ValueError(msg)
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
@@ -1981,6 +1994,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
         if SAMPLEFORMAT in atts and len(atts[SAMPLEFORMAT]) == 1:
             atts[SAMPLEFORMAT] = atts[SAMPLEFORMAT][0]
+        _validate_tags(atts)
 
         logger.debug("Converted items: %s", sorted(atts.items()))
 
@@ -1996,22 +2010,26 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # pseudo tag requires that the COMPRESS tag was already set.
         tags = list(atts.items())
         tags.sort()
-        a = (rawmode, compression, _fp, filename, tags, types)
+        a = (rawmode, _fp, filename, tags, types)
         encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
-        encoder.setimage(im.im, (0, 0, *im.size))
-        while True:
-            errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
-            if not _fp:
-                fp.write(data)
-            if errcode:
-                break
-        if errcode < 0:
-            msg = f"encoder error {errcode} when writing image file"
-            raise OSError(msg)
+        try:
+            encoder.setimage(im.im, (0, 0, *im.size))
+            while True:
+                errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
+                if not _fp:
+                    fp.write(data)
+                if errcode:
+                    break
+            if errcode < 0:
+                msg = f"encoder error {errcode} when writing image file"
+                raise OSError(msg)
+        finally:
+            encoder.cleanup()
 
     else:
         for tag in blocklist:
             del ifd[tag]
+        _validate_tags(ifd._tags_v2)
         offset = ifd.save(fp)
 
         ImageFile._save(

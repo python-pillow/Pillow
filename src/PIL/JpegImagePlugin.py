@@ -208,8 +208,6 @@ def SOF(self: JpegImageFile, marker: int) -> None:
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
     self._size = i16(s, 3), i16(s, 1)
-    if self._im is not None and self.size != self.im.size:
-        self._im = None
 
     self.bits = s[0]
     if self.bits != 8:
@@ -806,6 +804,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             i += 1
 
     comment = info.get("comment", im.info.get("comment"))
+    if comment and len(comment) > MAX_BYTES_IN_MARKER:
+        msg = "Comment is too long"
+        raise ValueError(msg)
 
     # "progressive" is the official name, but older documentation
     # says "progression"
@@ -841,7 +842,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     # if we optimize, libjpeg needs a buffer big enough to hold the whole image
     # in a shot. Guessing on the size, at im.size bytes. (raw pixel size is
-    # channels*size, this is a value that's been used in a django patch.
+    # channels*size, this is a value that's been used in a Django patch.
     # https://github.com/matthewwithanm/django-imagekit/issues/50
     if optimize or progressive:
         # CMYK can be bigger
@@ -855,11 +856,15 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         if exif:
             bufsize += len(exif) + 5
         if extra:
-            bufsize += len(extra) + 1
+            bufsize += len(extra)
+        if comment:
+            bufsize += len(comment) + 5
     else:
-        # The EXIF info needs to be written as one block, + APP1, + one spare byte.
-        # Ensure that our buffer is big enough. Same with the icc_profile block.
-        bufsize = max(len(exif) + 5, len(extra) + 1)
+        # The EXIF info needs to be written as one block, + APP1, + one spare byte,
+        # as libjpeg without suspension requires one byte left after writing a marker.
+        # Ensure that our buffer is big enough. Same with the icc_profile block
+        # and the comment (COM marker).
+        bufsize = max(len(exif) + 5, len(extra), len(comment or b"") + 5)
 
     ImageFile._save(
         im, fp, [ImageFile._Tile("jpeg", (0, 0, *im.size), 0, rawmode)], bufsize
