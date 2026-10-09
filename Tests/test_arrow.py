@@ -1,15 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image
 
 from .helper import assert_image_equal, hopper
-
-TYPE_CHECKING = False
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 
 @pytest.mark.parametrize(
@@ -235,3 +232,29 @@ def test_empty_image(
     schema, array = img.__arrow_c_array__()
     assert schema
     assert array
+
+
+@pytest.mark.parametrize("mode", ("L", "RGBA"))
+def test_frombuffer_image(mode: str) -> None:
+    # Trigger from GHSA-4fj2-qr5f-54hc
+    # Fixed, no error from GHSA-654x-cwwv-5j9c
+    size = (4, 4)
+    buffer = bytes(size[0] * size[1] * Image.getmodebands(mode))
+    img = Image.frombuffer(mode, size, buffer, "raw", mode, 0, 1)
+
+    img2 = Image.fromarrow(img, mode, img.size)
+    assert img2.tobytes()
+
+
+def test_mapped_image(tmp_path: Path) -> None:
+    # Trigger from GHSA-4fj2-qr5f-54hc
+    # Fixed, no error from GHSA-654x-cwwv-5j9c
+    path = tmp_path / "temp.pgm"
+    hopper("L").save(path)
+
+    with Image.open(path) as img:
+        img.load()
+        assert img.map is not None
+
+        img2 = Image.fromarrow(img, img.mode, img.size)
+        assert img2.tobytes()
