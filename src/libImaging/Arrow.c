@@ -2,7 +2,6 @@
 #include "Imaging.h"
 #include <string.h>
 
-
 /**
  * Verify the given image is stored contiguously.
  *
