@@ -111,28 +111,30 @@ def test_invalid_file() -> None:
         FliImagePlugin.FliImageFile(invalid_file)
 
 
-def test_palette_value_out_of_range() -> None:
-    # The FLI_COLOR chunk in the first frame of a.fli stores 6-bit palette
-    # values that are shifted left by 2. Patch the first color above that
-    # range so the shifted value no longer fits in a byte.
+def test_palette_data_out_of_range() -> None:
+    # The FLI_COLOR chunk in the first frame of a.fli
+    # stores 6-bit palette values that are shifted left by 2
+    # Patch the first color so the shifted value no longer fits in a byte
     with open(animated_test_file, "rb") as f:
         data = bytearray(f.read())
     data[154] = 255
+    b = io.BytesIO(data)
 
-    with pytest.raises(SyntaxError):
-        FliImagePlugin.FliImageFile(io.BytesIO(data))
+    with pytest.raises(ValueError, match="palette data out of range"):
+        FliImagePlugin.FliImageFile(b)
 
 
-def test_palette_index_out_of_range() -> None:
+def test_too_much_palette_data() -> None:
     # The palette packet skip count in a.fli is 0, covering entries 0-255.
     # Patch it so the 256-entry packet would write past the end of the
     # 256-entry palette.
     with open(animated_test_file, "rb") as f:
         data = bytearray(f.read())
     data[152] = 1
+    b = io.BytesIO(data)
 
-    with pytest.raises(SyntaxError):
-        FliImagePlugin.FliImageFile(io.BytesIO(data))
+    with pytest.raises(ValueError, match="too much palette data"):
+        FliImagePlugin.FliImageFile(b)
 
 
 def test_palette_chunk_second() -> None:
