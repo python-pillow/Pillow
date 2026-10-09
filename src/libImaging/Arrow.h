@@ -23,7 +23,7 @@
 //
 // The Arrow C data interface structure definitions below are from the
 // Apache Arrow project:
-// https://arrow.apache.org/docs/format/CDataInterface.html
+// https://arrow.apache.org/docs/format/CDataInterface.html#structure-definitions
 //
 // Changes made by Pillow: the definitions were reformatted, and the
 // <stdint.h> and <assert.h> includes were added.
