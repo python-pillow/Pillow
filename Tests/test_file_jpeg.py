@@ -84,6 +84,17 @@ class TestFileJpeg:
             assert im.format == "JPEG"
             assert im.get_format_mimetype() == "image/jpeg"
 
+    def test_truncated_header(self) -> None:
+        # EOF reading the byte after magic number
+        b = BytesIO(b"\xff\xd8\xff")
+        with pytest.raises(SyntaxError, match="not identified by this driver"):
+            JpegImagePlugin.JpegImageFile(b)
+
+        # EOF while reading extraneous data
+        b = BytesIO(b"\xff\xd8\xff\x00")
+        with pytest.raises(SyntaxError, match="not identified by this driver"):
+            JpegImagePlugin.JpegImageFile(b)
+
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero(self, size: tuple[int, int], tmp_path: Path) -> None:
         f = tmp_path / "temp.jpg"
