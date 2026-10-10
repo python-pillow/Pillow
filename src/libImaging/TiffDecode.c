@@ -242,7 +242,7 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
     // TiffRGBAImages are 32bits/pixel. If the unpacker reads more bits per pixel
     // than that, (at least) the last row of the block will have a read buffer
     // overflow.
-    if (state->bits > 32) {
+    if (state->bits != 32) {
         state->errcode = IMAGING_CODEC_BROKEN;
         return -1;
     }
