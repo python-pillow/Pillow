@@ -4,9 +4,9 @@ from io import BytesIO
 
 import pytest
 
-from PIL import Image, XbmImagePlugin
+from PIL import Image, UnidentifiedImageError, XbmImagePlugin
 
-from .helper import hopper, timeout_unless_slower_valgrind
+from .helper import assert_image_equal, hopper, timeout_unless_slower_valgrind
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -53,6 +53,30 @@ def test_open() -> None:
         # Assert
         assert im.mode == "1"
         assert im.size == (128, 128)
+
+
+@pytest.mark.parametrize(
+    "comment",
+    (
+        b"/* comment */\n",
+        b"/*\nThis is an example file\n*/\n",
+        b"// comment\n",
+        b"// " + b"A" * 200 + b"\n",
+        b"/* one */\n// two\n",
+    ),
+)
+def test_leading_comment(comment: bytes) -> None:
+    with Image.open(BytesIO(comment + PIL151)) as im:
+        assert im.format == "XBM"
+        assert im.size == (32, 32)
+
+        with Image.open(BytesIO(PIL151)) as expected:
+            assert_image_equal(im, expected)
+
+
+def test_unterminated_comment() -> None:
+    with pytest.raises(UnidentifiedImageError):
+        Image.open(BytesIO(b"/* unterminated\n" + PIL151))
 
 
 def test_open_filename_with_underscore() -> None:
