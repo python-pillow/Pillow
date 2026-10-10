@@ -345,7 +345,15 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
 
                     with open(self.filename) as fp:
                         self.map = mmap.mmap(fp.fileno(), 0, access=mmap.ACCESS_READ)
-                    if offset + self.size[1] * args[1] > self.map.size():
+
+                    if self.mode in {"L", "P"}:
+                        pixelsize = 1
+                    elif self.mode.startswith("I;16"):
+                        pixelsize = 2
+                    else:
+                        pixelsize = 4
+                    stride = max(args[1], self.size[0] * pixelsize)
+                    if offset + self.size[1] * stride > self.map.size():
                         msg = "buffer is not large enough"
                         raise OSError(msg)
                     self.im = Image.core.map_buffer(
