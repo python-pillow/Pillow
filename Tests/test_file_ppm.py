@@ -352,8 +352,8 @@ def test_truncated_raw_data(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> 
     with open(path, "wb") as f:
         f.write(data)
 
-    # Opening by filename tries mmap first, which should fall back to
-    # the decoder rather than raising a ValueError
+    # Opening by filename tries mmap first,
+    # and then falls back to the decoder on error
     with Image.open(path) as im:
         with pytest.raises(OSError, match="image file is truncated"):
             im.load()
