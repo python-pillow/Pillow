@@ -140,8 +140,11 @@ class FitsGzipDecoder(ImageFile.PyDecoder):
         with gzip.open(self.fd) as fp:
             try:
                 value = fp.read(self.state.xsize * self.state.ysize * 4)
-            except (EOFError, zlib.error) as e:
-                msg = "Truncated or corrupt FITS gzip data"
+            except EOFError as e:
+                msg = "Truncated FITS gzip data"
+                raise OSError(msg) from e
+            except zlib.error as e:
+                msg = "Corrupt FITS gzip data"
                 raise OSError(msg) from e
 
             rows = []

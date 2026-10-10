@@ -246,10 +246,3 @@ Fixed reading PSD layers at the wrong file offset
 When seeking to a layer of a PSD image, the pixel data was read from the wrong
 position in the file, so :py:meth:`~PIL.Image.Image.seek` returned unrelated
 bytes reinterpreted as image data instead of that layer's actual content.
-
-Raise OSError for corrupt gzip-compressed FITS data
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Loading a gzip-compressed FITS image with truncated or corrupt data now raises an
-:py:exc:`OSError`, instead of an :py:exc:`EOFError` or a ``zlib.error`` from the
-decompressor.
