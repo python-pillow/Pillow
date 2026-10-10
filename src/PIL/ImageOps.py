@@ -676,6 +676,9 @@ def posterize(image: Image.Image, bits: int) -> Image.Image:
     :param bits: The number of bits to keep for each channel (1-8).
     :return: An image.
     """
+    if not 1 <= bits <= 8:
+        msg = "bits must be between 1 and 8"
+        raise ValueError(msg)
     mask = ~(2 ** (8 - bits) - 1)
     lut = [i & mask for i in range(256)]
     return _lut(image, lut)

@@ -398,6 +398,12 @@ def test_colorize_invalid_mode() -> None:
         ImageOps.colorize(hopper("RGB"), "black", "white")
 
 
+@pytest.mark.parametrize("bits", (0, 9))
+def test_posterize_invalid_bits(bits: int) -> None:
+    with pytest.raises(ValueError, match="bits must be between 1 and 8"):
+        ImageOps.posterize(hopper("L"), bits)
+
+
 @pytest.mark.parametrize("blackpoint, whitepoint", ((-1, 255), (0, 256), (200, 50)))
 def test_colorize_invalid_points(blackpoint: int, whitepoint: int) -> None:
     with pytest.raises(ValueError, match="blackpoint and whitepoint must each be"):
