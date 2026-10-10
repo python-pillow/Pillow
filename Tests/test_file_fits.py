@@ -40,7 +40,7 @@ def test_gzip_decode() -> None:
         with pytest.raises(OSError, match="Corrupt FITS gzip data"):
             im.load()
 
-    data = data[:offset + 2]
+    data = data[: offset + 2]
     with Image.open(BytesIO(data)) as im:
         with pytest.raises(OSError, match="Truncated FITS gzip data"):
             im.load()
