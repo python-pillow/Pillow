@@ -12,7 +12,10 @@ struct filter {
 
 static inline double
 box_filter(double x) {
-    if (x > -0.5 && x <= 0.5) {
+    // The edges are shifted by a small tolerance so that a source pixel lying
+    // exactly on the boundary between two output pixels is assigned to one of
+    // them, rather than being dropped by floating point rounding.
+    if (x > -0.5 + 1e-9 && x <= 0.5 + 1e-9) {
         return 1.0;
     }
     return 0.0;
@@ -277,12 +280,12 @@ precompute_coeffs(
         double center = in0 + (xx + 0.5) * scale;
         double ww = 0.0;
         // Round the value
-        xmin = (int)(center - support + 0.5);
+        xmin = (int)(center - support + 0.5 - 1e-9);
         if (xmin < 0) {
             xmin = 0;
         }
         // Round the value
-        xmax = (int)(center + support + 0.5);
+        xmax = (int)(center + support + 0.5 + 1e-9);
         if (xmax > inSize) {
             xmax = inSize;
         }
