@@ -729,6 +729,38 @@ def test_apng_save_disposal_previous(tmp_path: Path) -> None:
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
+@pytest.mark.parametrize("mode", ("L", "RGB"))
+def test_apng_save_disposal_background_mode(tmp_path: Path, mode: str) -> None:
+    test_file = tmp_path / "temp.png"
+    im = Image.new(mode, (32, 32), 128)
+
+    # the black frame is different from the transparent background
+    im.save(
+        test_file,
+        save_all=True,
+        append_images=[Image.new(mode, (32, 32))],
+        disposal=PngImagePlugin.Disposal.OP_BACKGROUND,
+        duration=100,
+    )
+    with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+        assert reloaded.n_frames == 2
+
+
+def test_apng_save_info_disposal(tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    red = Image.new("RGBA", (32, 32), (255, 0, 0, 255))
+    red_green = red.copy()
+    red_green.paste((0, 255, 0, 255), (0, 0, 10, 10))
+
+    red.info["disposal"] = PngImagePlugin.Disposal.OP_PREVIOUS
+    red.save(test_file, save_all=True, append_images=[red_green])
+    with Image.open(test_file) as im:
+        im.seek(1)
+        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
+        assert im.getpixel((20, 20)) == (255, 0, 0, 255)
+
+
 def test_apng_save_blend(tmp_path: Path) -> None:
     test_file = tmp_path / "temp.png"
     size = (128, 64)
