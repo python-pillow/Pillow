@@ -1314,6 +1314,18 @@ class TestFileLibTiff(LibTiffTestCase):
                 b"8tXrN2/fvf/w8dPnL1+/ff/x89fvP3///WcY9f+I9j8AoGJ+kAgACAAIABAA"
                 b"EAAQAA=="
             ),
+            # 4x2 PackBits strip with duplicated BitsPerSample, Photometric
+            # Interpretation and SamplesPerPixel tags. libtiff keeps the first
+            # (8-bit YCbCr, read as 4 bytes/pixel RGBA) while Pillow keeps the last
+            # (6 channel RGB, rawmode RGBAXX, 6 bytes/pixel).
+            (
+                b"SUkqAAgAAAAPAAABBAABAAAABAAAAAEBBAABAAAAAgAAAAIBAwADAAAAwgAA"
+                b"AAIBAwAGAAAAyAAAAAMBAwABAAAABYAAAAYBAwABAAAABgAAAAYBAwABAAAA"
+                b"AgAAABEBBAABAAAA2gAAABUBAwABAAAAAwAAABUBAwABAAAABgAAABYBBAAB"
+                b"AAAAAgAAABcBBAABAAAAGQAAABwBAwABAAAAAQAAAFIBAwADAAAA1AAAABIC"
+                b"AwACAAAAAQABAAAAAAAIAAgACAAIAAgACAAIAAgACAACAAAAAAAXAAECAwQF"
+                b"BgcICQoLDA0ODxAREhMUFRYX"
+            ),
         ),
     )
     @pytest.mark.filterwarnings("ignore:Metadata Warning")
