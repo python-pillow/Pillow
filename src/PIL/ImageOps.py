@@ -58,11 +58,24 @@ def _color(
     return color
 
 
-def _lut(image: Image.Image, lut: list[int]) -> Image.Image:
+def _lut(image: Image.Image, lut: list[int], palette: bool = False) -> Image.Image:
     if image.mode == "P":
-        # FIXME: apply to lookup table, not image data
-        msg = "mode P support coming soon"
-        raise NotImplementedError(msg)
+        if not palette:
+            # The lookup table was built from the palette indexes, not colors
+            msg = "mode P support coming soon"
+            raise NotImplementedError(msg)
+        # A per-pixel operation can be applied to the palette colors instead
+        assert image.palette is not None
+        palette_mode = image.palette.mode
+        channels = len(palette_mode)
+        colors = image.getpalette(palette_mode)
+        assert colors is not None
+        im = image.copy()
+        im.putpalette(
+            [lut[v] if i % channels < 3 else v for i, v in enumerate(colors)],
+            palette_mode,
+        )
+        return im
     elif image.mode in ("L", "RGB"):
         if image.mode == "RGB" and len(lut) == 256:
             lut = lut + lut + lut
@@ -655,7 +668,7 @@ def invert(image: Image.Image) -> Image.Image:
     :return: An image.
     """
     lut = list(range(255, -1, -1))
-    return image.point(lut) if image.mode == "1" else _lut(image, lut)
+    return image.point(lut) if image.mode == "1" else _lut(image, lut, palette=True)
 
 
 def mirror(image: Image.Image) -> Image.Image:
@@ -678,7 +691,7 @@ def posterize(image: Image.Image, bits: int) -> Image.Image:
     """
     mask = ~(2 ** (8 - bits) - 1)
     lut = [i & mask for i in range(256)]
-    return _lut(image, lut)
+    return _lut(image, lut, palette=True)
 
 
 def solarize(image: Image.Image, threshold: int = 128) -> Image.Image:
@@ -695,7 +708,7 @@ def solarize(image: Image.Image, threshold: int = 128) -> Image.Image:
             lut.append(i)
         else:
             lut.append(255 - i)
-    return _lut(image, lut)
+    return _lut(image, lut, palette=True)
 
 
 @overload
