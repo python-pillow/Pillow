@@ -964,10 +964,10 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     .. versionadded:: 6.0.0
 
 **bits (experimental)**
-    For ``P`` images, this option controls how many bits to store. If omitted,
-    the PNG writer uses 8 bits (256 colors). The ``PLTE`` chunk only contains
-    as many entries as the image's palette actually has, rather than being
-    padded with zeroes up to ``2 ** bits``.
+    For ``L`` and ``P`` images, this option controls how many bits to store. If
+    omitted, the PNG writer uses 8 bits (256 colors). The ``PLTE`` chunk only contains
+    as many entries as the image's palette actually has, rather than being padded with
+    zeroes up to ``2 ** bits``.
 
 **dictionary (experimental)**
     Set the ZLIB encoder dictionary.
