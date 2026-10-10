@@ -84,15 +84,16 @@ class TestFileJpeg:
             assert im.format == "JPEG"
             assert im.get_format_mimetype() == "image/jpeg"
 
-    def test_eof_while_skipping_junk(self) -> None:
-        # Marker scan runs out of data while skipping non-0xFF junk
-        with pytest.raises(SyntaxError, match="unexpected end of file"):
-            JpegImagePlugin.JpegImageFile(BytesIO(b"\xff\xd8\xff\xd8\x00"))
+    def test_truncated_header(self) -> None:
+        # EOF reading the byte after magic number
+        b = BytesIO(b"\xff\xd8\xff")
+        with pytest.raises(SyntaxError, match="not identified by this driver"):
+            JpegImagePlugin.JpegImageFile(b)
 
-    def test_eof_after_0xff_byte(self) -> None:
-        # Marker scan runs out of data reading the byte after 0xFF
-        with pytest.raises(SyntaxError, match="unexpected end of file"):
-            JpegImagePlugin.JpegImageFile(BytesIO(b"\xff\xd8\xff"))
+        # EOF while reading extraneous data
+        b = BytesIO(b"\xff\xd8\xff\x00")
+        with pytest.raises(SyntaxError, match="not identified by this driver"):
+            JpegImagePlugin.JpegImageFile(b)
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero(self, size: tuple[int, int], tmp_path: Path) -> None:
