@@ -1,7 +1,34 @@
-
 #include "Arrow.h"
 #include "Imaging.h"
 #include <string.h>
+
+/**
+ * Verify the given image is stored contiguously.
+ *
+ * Arrow buffers are a single run of pixels, so image rows must be stored
+ * back to back.
+ *
+ * This isn't the case for e.g. multi-block or aligned arena images,
+ * or for buffer-mapped images with a stride or bottom-up rows.
+ *
+ * @param im The input image, read-only.
+ * @return 1 if the image appears contiguously stored, 0 otherwise.
+ */
+static int
+is_contiguous(Imaging im) {
+    int y;
+    // Separate blocks might happen to be adjacent, but don't rely on it
+    if (im->blocks_count > 1) {
+        return 0;
+    }
+    for (y = 1; y < im->ysize; y++) {
+        if ((uintptr_t)im->image[y] - (uintptr_t)im->image[y - 1] !=
+            (uintptr_t)im->linesize) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 static void
 ReleaseExportedSchema(struct ArrowSchema *array) {
@@ -194,8 +221,7 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
         return IMAGING_ARROW_INCOMPATIBLE_MODE;
     }
 
-    /* for now, single block images */
-    if (im->blocks_count > 1) {
+    if (!is_contiguous(im)) {
         return IMAGING_ARROW_MEMORY_LAYOUT;
     }
 
@@ -280,16 +306,10 @@ release_const_array(struct ArrowArray *array) {
 
 int
 export_single_channel_array(Imaging im, struct ArrowArray *array) {
-    int length = im->xsize * im->ysize;
-
-    /* for now, single block images */
-    if (im->blocks_count > 1) {
+    if (!is_contiguous(im)) {
         return IMAGING_ARROW_MEMORY_LAYOUT;
     }
-
-    if (im->lines_per_block && im->lines_per_block < im->ysize) {
-        length = im->xsize * im->lines_per_block;
-    }
+    int64_t length = (int64_t)im->xsize * im->ysize;
 
     MUTEX_LOCK(&im->mutex);
     im->refcount++;
@@ -319,26 +339,18 @@ export_single_channel_array(Imaging im, struct ArrowArray *array) {
 
     if (im->block) {
         array->buffers[1] = im->block;
-    } else if (im->arrow_array_capsule) {
-        array->buffers[1] = im->image[0];
     } else {
-        array->buffers[1] = im->blocks[0].ptr;
+        array->buffers[1] = im->image[0];
     }
     return 0;
 }
 
 int
 export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
-    int length = im->xsize * im->ysize;
-
-    /* for now, single block images */
-    if (im->blocks_count > 1) {
+    if (!is_contiguous(im)) {
         return IMAGING_ARROW_MEMORY_LAYOUT;
     }
-
-    if (im->lines_per_block && im->lines_per_block < im->ysize) {
-        length = im->xsize * im->lines_per_block;
-    }
+    int64_t length = (int64_t)im->xsize * im->ysize;
 
     MUTEX_LOCK(&im->mutex);
     im->refcount++;
@@ -403,10 +415,8 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
 
     if (im->block) {
         array->children[0]->buffers[1] = im->block;
-    } else if (im->arrow_array_capsule) {
-        array->children[0]->buffers[1] = im->image[0];
     } else {
-        array->children[0]->buffers[1] = im->blocks[0].ptr;
+        array->children[0]->buffers[1] = im->image[0];
     }
     return 0;
 

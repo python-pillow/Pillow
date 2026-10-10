@@ -57,6 +57,12 @@ To enable the single block allocator::
 
 Note that this is a global setting, not a per-image setting.
 
+The rows of the image must also be contiguous. Images are not
+exportable if the default allocator pads their rows to an alignment
+(``PILLOW_ALIGNMENT``), or if they were created by
+:py:func:`~PIL.Image.frombuffer` with a row stride or with bottom-up
+rows.
+
 Unsupported features
 ====================
 
