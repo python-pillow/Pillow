@@ -499,6 +499,41 @@ def test_tag_data_larger_than_file() -> None:
     assert 1 not in ifd
 
 
+def test_tag_data_larger_than_file_across_frames() -> None:
+    # Three 1x1 frames, each with a private BYTE tag that points to the same
+    # payload, which is more than half of the file.
+    payload_size = 400
+    ifd_size = 2 + 10 * 12 + 4
+    pixel_offset = 8 + payload_size
+    first_ifd = pixel_offset + 1
+
+    data = b"II*\x00" + struct.pack("<L", first_ifd)
+    data += b"Z" * payload_size + b"\x7f"
+    for i in range(3):
+        data += struct.pack("<H", 10)
+        for tag in (256, 257, 258, 259, 262, 277):
+            value = 8 if tag == 258 else 1
+            data += struct.pack("<HHLH2x", tag, 3, 1, value)
+        for tag, value in ((273, pixel_offset), (278, 1), (279, 1)):
+            data += struct.pack("<HHLL", tag, 4, 1, value)
+        data += struct.pack("<HHLL", 65000, 1, payload_size, 8)
+        data += struct.pack("<L", first_ifd + (i + 1) * ifd_size if i < 2 else 0)
+
+    with Image.open(io.BytesIO(data)) as im:
+        assert isinstance(im, TiffImagePlugin.TiffImageFile)
+        assert len(im.tag_v2[65000]) == payload_size
+
+        for frame in (1, 2):
+            with pytest.warns(UserWarning, match="Tag data larger than file"):
+                im.seek(frame)
+            assert 65000 not in im.tag_v2
+        assert im.n_frames == 3
+
+        # Reloading a frame gives the same tags as before
+        im.seek(0)
+        assert len(im.tag_v2[65000]) == payload_size
+
+
 def test_tag_group_data() -> None:
     base_ifd = TiffImagePlugin.ImageFileDirectory_v2()
     interop_ifd = TiffImagePlugin.ImageFileDirectory_v2(group=40965)
