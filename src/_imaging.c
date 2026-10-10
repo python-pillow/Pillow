@@ -1822,7 +1822,7 @@ _quantize(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_putpalette(ImagingObject *self, PyObject *args) {
+_putpalette_impl(ImagingObject *self, PyObject *args) {
     ImagingShuffler unpack;
     int bits;
 
@@ -1885,6 +1885,15 @@ _putpalette(ImagingObject *self, PyObject *args) {
     unpack(self->image->palette->palette, palette, self->image->palette->size);
 
     Py_RETURN_NONE;
+}
+
+static PyObject *
+_putpalette(ImagingObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = _putpalette_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 static PyObject *
