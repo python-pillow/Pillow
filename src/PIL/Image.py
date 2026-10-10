@@ -48,6 +48,7 @@ import sys
 import warnings
 from collections.abc import MutableMapping
 from enum import IntEnum
+from types import MethodType
 from typing import IO, Protocol, cast
 
 # VERSION was removed in Pillow 6.0.0.
@@ -2983,7 +2984,11 @@ class Image:
           :py:class:`~PIL.Image.ImageTransformHandler` object, this is one of
           the arguments passed to it. Otherwise, it is unused.
         :param fillcolor: Optional fill color for the area outside the
-           transform in the output image.
+           transform in the output image. This is passed to the built-in
+           :py:mod:`~PIL.ImageTransform` handlers and subclasses that inherit
+           their default ``transform`` implementation. Custom ``transform``
+           overrides retain the existing handler arguments, without
+           ``fillcolor``.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
@@ -2995,7 +3000,15 @@ class Image:
             )
 
         if isinstance(method, ImageTransformHandler):
-            return method.transform(size, self, resample=resample, fill=fill)
+            transform = method.transform
+            if fillcolor is not None and type(transform) is MethodType:
+                from . import ImageTransform
+
+                if transform.__func__ is ImageTransform.Transform.transform:
+                    return transform(
+                        size, self, resample=resample, fill=fill, fillcolor=fillcolor
+                    )
+            return transform(size, self, resample=resample, fill=fill)
 
         if hasattr(method, "getdata"):
             # compatibility w. old-style transform objects
