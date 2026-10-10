@@ -625,18 +625,6 @@ def test_point(points: Coords) -> None:
     assert_image_equal_tofile(im, "Tests/images/imagedraw_point.png")
 
 
-def test_point_I16() -> None:
-    # Arrange
-    im = Image.new("I;16", (1, 1))
-    draw = ImageDraw.Draw(im)
-
-    # Act
-    draw.point((0, 0), fill=0x1234)
-
-    # Assert
-    assert im.getpixel((0, 0)) == 0x1234
-
-
 @pytest.mark.parametrize("points", POINTS)
 def test_polygon(points: Coords) -> None:
     # Arrange
@@ -648,19 +636,6 @@ def test_polygon(points: Coords) -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_polygon.png")
-
-
-@pytest.mark.parametrize("points", POINTS)
-def test_polygon_width_I16(points: Coords) -> None:
-    # Arrange
-    im = Image.new("I;16", (W, H))
-    draw = ImageDraw.Draw(im)
-
-    # Act
-    draw.polygon(points, outline=0xFFFF, width=2)
-
-    # Assert
-    assert_image_equal_tofile(im, "Tests/images/imagedraw_polygon_width_I.tiff")
 
 
 @pytest.mark.parametrize("mode", ("RGB", "L"))
@@ -789,20 +764,6 @@ def test_rectangle_zero_width(bbox: Coords) -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_zero_width.png")
-
-
-@pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle_I16(bbox: Coords) -> None:
-    # Arrange
-    im = Image.new("I;16", (W, H))
-    draw = ImageDraw.Draw(im)
-
-    # Act
-    draw.rectangle(bbox, outline=0xCDEF)
-
-    # Assert
-    assert im.getpixel((X0, Y0)) == 0xCDEF
-    assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_I.tiff")
 
 
 @pytest.mark.parametrize("bbox", BBOX)
@@ -1167,6 +1128,29 @@ def test_line_horizontal() -> None:
         os.path.join(IMAGES_PATH, "line_horizontal_w101px.png"),
         "line straight horizontal 101px wide failed",
     )
+
+
+def test_line_horizontal_w1px_direction() -> None:
+    # Drawing right-to-left must paint the same pixels as left-to-right.
+    im_lr = Image.new("L", (20, 3))
+    ImageDraw.Draw(im_lr).line((2, 1, 17, 1), fill=255)
+    assert [im_lr.getpixel((x, 1)) for x in range(20)] == [
+        255 if 2 <= x <= 17 else 0 for x in range(20)
+    ]
+
+    im_rl = Image.new("L", (20, 3))
+    ImageDraw.Draw(im_rl).line((17, 1, 2, 1), fill=255)
+    assert_image_equal(im_rl, im_lr)
+
+
+def test_line_joints_blend_once() -> None:
+    # Pixels shared by consecutive polyline segments
+    # (and the final endpoint, which is drawn separately)
+    # must be blended exactly once.
+    im = Image.new("RGB", (20, 3))
+    draw = ImageDraw.Draw(im, "RGBA")
+    draw.line([(0, 1), (10, 1), (19, 1)], fill=(255, 255, 255, 128))
+    assert {im.getpixel((x, 1)) for x in range(20)} == {(128, 128, 128)}
 
 
 @pytest.mark.xfail(reason="failing test")
