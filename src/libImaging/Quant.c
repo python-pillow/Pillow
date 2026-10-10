@@ -1262,7 +1262,7 @@ error_1:
  * Contract: im is read-only.
  */
 Imaging
-ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
+ImagingQuantize(Imaging im, int colors, ImagingQuantizeMethod method, int kmeans) {
     int i, j;
     int x, y, v;
     UINT8 *pp;
@@ -1290,7 +1290,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     }
 
     /* only octree and imagequant supports RGBA */
-    if (im->mode == IMAGING_MODE_RGBA && mode != 2 && mode != 3) {
+    if (im->mode == IMAGING_MODE_RGBA && method != IMAGING_QUANTIZE_FASTOCTREE &&
+        method != IMAGING_QUANTIZE_LIBIMAGEQUANT) {
         return ImagingError_ModeError();
     }
 
@@ -1379,25 +1380,23 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
 
     ImagingSectionEnter(&cookie);
 
-    switch (mode) {
-        case 0:
-            /* median cut */
+    switch (method) {
+        case IMAGING_QUANTIZE_MEDIANCUT:
             result = quantize(
                 p, xsize * ysize, colors, &palette, &paletteLength, &newData, kmeans
             );
             break;
-        case 1:
-            /* maximum coverage */
+        case IMAGING_QUANTIZE_MAXCOVERAGE:
             result = quantize2(
                 p, xsize * ysize, colors, &palette, &paletteLength, &newData, kmeans
             );
             break;
-        case 2:
+        case IMAGING_QUANTIZE_FASTOCTREE:
             result = quantize_octree(
                 p, xsize * ysize, colors, &palette, &paletteLength, &newData, withAlpha
             );
             break;
-        case 3:
+        case IMAGING_QUANTIZE_LIBIMAGEQUANT:
 #ifdef HAVE_LIBIMAGEQUANT
             result = quantize_pngquant(
                 p, xsize, ysize, colors, &palette, &paletteLength, &newData, withAlpha
