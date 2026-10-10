@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from PIL import Image, ImageDraw, ImageOps, ImageStat, features
+from PIL import ExifTags, Image, ImageDraw, ImageOps, ImageStat, features
 
 from .helper import (
     assert_image_equal,
@@ -497,19 +497,18 @@ def test_exif_transpose_xml_without_xmp() -> None:
 def test_exif_transpose_raw_profile() -> None:
     exif = Image.Exif()
     exif[0x0112] = 3
-    exif[0x010F] = "Pillow"
+    exif[ExifTags.Base.UserComment] = "Pillow"
     data = exif.tobytes()
 
-    im = hopper()
+    im = Image.new("1", (1, 1))
     im.info["Raw profile type exif"] = f"\nexif\n{len(data):8}\n{data.hex()}\n"
     assert im.getexif()[0x0112] == 3
 
+    # Assert that the updated info is still present after transposing and copying
     transposed_im = ImageOps.exif_transpose(im)
-
-    # Assert that the updated info can still be parsed by a new image
     transposed_exif = transposed_im.copy().getexif()
     assert 0x0112 not in transposed_exif
-    assert transposed_exif[0x010F] == "Pillow"
+    assert transposed_exif[ExifTags.Base.UserComment] == "Pillow"
 
 
 def test_exif_transpose_in_place() -> None:
