@@ -39,7 +39,6 @@ __lazy_modules__ = {
 import abc
 import atexit
 import builtins
-import inspect
 import io
 import math
 import os
@@ -49,6 +48,7 @@ import sys
 import warnings
 from collections.abc import MutableMapping
 from enum import IntEnum
+from types import MethodType
 from typing import IO, Protocol, cast
 
 # VERSION was removed in Pillow 6.0.0.
@@ -2950,7 +2950,7 @@ class Image:
           object::
 
             class Example(Image.ImageTransformHandler):
-                def transform(self, size, data, resample, fill=1, fillcolor=None):
+                def transform(self, size, data, resample, fill=1):
                     # Return result
 
           Implementations of :py:class:`~PIL.Image.ImageTransformHandler`
@@ -2977,12 +2977,11 @@ class Image:
           :py:class:`~PIL.Image.ImageTransformHandler` object, this is one of
           the arguments passed to it. Otherwise, it is unused.
         :param fillcolor: Optional fill color for the area outside the
-           transform in the output image.
-           If ``method`` is an :py:class:`~PIL.Image.ImageTransformHandler`
-           object and ``fillcolor`` is not ``None``, it is passed to the
-           handler's ``transform`` method as a keyword argument if its
-           signature accepts it. Handlers without a compatible or inspectable
-           signature continue to ignore ``fillcolor``.
+           transform in the output image. This is passed to the built-in
+           :py:mod:`~PIL.ImageTransform` handlers and subclasses that inherit
+           their default ``transform`` implementation. Custom ``transform``
+           overrides retain the existing handler arguments, without
+           ``fillcolor``.
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
@@ -2995,17 +2994,10 @@ class Image:
 
         if isinstance(method, ImageTransformHandler):
             transform = method.transform
-            if fillcolor is not None:
-                try:
-                    signature = inspect.signature(transform, follow_wrapped=False)
-                    signature.bind(
-                        size, self, resample=resample, fill=fill, fillcolor=fillcolor
-                    )
-                except (TypeError, ValueError):
-                    # Preserve the old call if the signature is unavailable or
-                    # the fillcolor keyword cannot be added to these arguments.
-                    pass
-                else:
+            if fillcolor is not None and type(transform) is MethodType:
+                from . import ImageTransform
+
+                if transform.__func__ is ImageTransform.Transform.transform:
                     return transform(
                         size, self, resample=resample, fill=fill, fillcolor=fillcolor
                     )

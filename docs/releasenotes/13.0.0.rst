@@ -99,23 +99,6 @@ intended for internal use, so there is no replacement.
 API changes
 ===========
 
-ImageTransformHandler fillcolor
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-:py:meth:`~PIL.Image.Image.transform` now passes a non-``None`` ``fillcolor``
-argument to :py:class:`~PIL.Image.ImageTransformHandler` objects when the
-handler's callable signature accepts the keyword, explicitly or through
-``**kwargs``. The built-in :py:mod:`~PIL.ImageTransform` classes now use the
-requested background color, instead of silently ignoring it.
-
-Legacy handlers without keyword support, and handlers whose signatures cannot
-be inspected, retain the previous behavior of ignoring ``fillcolor``. Calls
-that omit ``fillcolor`` or set it to ``None`` use the existing handler arguments.
-Signature inspection uses the callable itself rather than following its
-``__wrapped__`` attribute. Custom handlers are responsible for exposing an
-accurate signature and for handling any options that they accept.
-
-
 TODO
 ^^^^
 
@@ -252,3 +235,16 @@ Fixed reading PSD layers at the wrong file offset
 When seeking to a layer of a PSD image, the pixel data was read from the wrong
 position in the file, so :py:meth:`~PIL.Image.Image.seek` returned unrelated
 bytes reinterpreted as image data instead of that layer's actual content.
+
+Fixed fill colors for built-in transform handlers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.transform` now passes a non-``None`` ``fillcolor``
+to built-in :py:mod:`~PIL.ImageTransform` handlers and subclasses that inherit
+``Transform.transform``. This also preserves overridden ``getdata`` methods.
+Previously, these handlers discarded the color, unlike the equivalent
+transform-enum and data call.
+
+Custom class or instance ``transform`` overrides keep their existing arguments,
+without ``fillcolor``, even if their signature accepts it. Omitted or ``None``
+colors retain the previous behavior.

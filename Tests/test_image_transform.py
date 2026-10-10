@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from functools import wraps
 
 import pytest
 
@@ -101,8 +102,6 @@ class TestImageTransform:
         )
         assert transformed is im
         expected: dict[str, Any] = {"resample": Image.Resampling.BICUBIC, "fill": 0}
-        if fillcolor is not None:
-            expected["fillcolor"] = fillcolor
         assert options_seen == expected
 
     def test_legacy_handler_fillcolor(self) -> None:
@@ -121,6 +120,7 @@ class TestImageTransform:
         transform = LegacyTransform()
         assert im.transform(im.size, transform) is im
         assert im.transform(im.size, transform, fillcolor=None) is im
+        assert im.transform(im.size, transform, fillcolor=0) is im
         assert im.transform(im.size, transform, fillcolor="red") is im
 
     def test_handler_keyword_fillcolor(self) -> None:
@@ -134,17 +134,23 @@ class TestImageTransform:
                 *,
                 fillcolor: Any = None,
             ) -> Image.Image:
-                assert fillcolor == "red"
+                assert fillcolor is None
                 return image
 
         im = Image.new("RGB", (2, 1))
         assert im.transform(im.size, Handler(), fillcolor="red") is im
 
-    def test_handler_none_does_not_inspect(self) -> None:
+    @pytest.mark.parametrize("fillcolor", (None, 0, "red"))
+    def test_handler_does_not_inspect(self, fillcolor: int | str | None) -> None:
         class Transform:
             @property
             def __signature__(self) -> None:
-                message = "default calls must not inspect signatures"
+                message = "custom calls must not inspect signatures"
+                raise AssertionError(message)
+
+            @property
+            def __func__(self) -> None:
+                message = "custom calls must not inspect method metadata"
                 raise AssertionError(message)
 
             def __call__(
@@ -158,7 +164,7 @@ class TestImageTransform:
 
         im = Image.new("RGB", (2, 1))
         assert im.transform(im.size, Handler()) is im
-        assert im.transform(im.size, Handler(), fillcolor=None) is im
+        assert im.transform(im.size, Handler(), fillcolor=fillcolor) is im
 
     def test_handler_fillcolor_positional_collision(self) -> None:
         class Handler(Image.ImageTransformHandler):
@@ -191,7 +197,123 @@ class TestImageTransform:
             im.transform(im.size, Handler(), fillcolor="red")
         assert raised.value is error
         assert len(calls) == 1
-        assert calls[0]["fillcolor"] == "red"
+        assert calls[0] == {"resample": Image.Resampling.NEAREST, "fill": 1}
+
+    @pytest.mark.parametrize("override_getdata", (False, True))
+    @pytest.mark.parametrize("fillcolor", (None, 0, "red"))
+    def test_inherited_handler_fillcolor(
+        self, override_getdata: bool, fillcolor: int | str | None
+    ) -> None:
+        data = (1, 0, -1, 0, 1, 0)
+        calls = []
+
+        class Inherited(ImageTransform.AffineTransform):
+            pass
+
+        class GetDataOverride(Inherited):
+            def getdata(self) -> tuple[Image.Transform, tuple[int, ...]]:
+                calls.append(True)
+                return Image.Transform.AFFINE, data
+
+        handler: ImageTransform.Transform = Inherited(data)
+        if override_getdata:
+            handler = GetDataOverride((1, 0, 0, 0, 1, 0))
+        im = Image.new("RGB", (2, 1), "white")
+        actual = im.transform(im.size, handler, fillcolor=fillcolor)
+        expected = im.transform(
+            im.size, Image.Transform.AFFINE, data, fillcolor=fillcolor
+        )
+        assert_image_equal(actual, expected)
+        assert calls == ([True] if override_getdata else [])
+
+    @pytest.mark.parametrize("fillcolor", (0, "red"))
+    def test_default_handler_forwards_fillcolor(
+        self, monkeypatch: pytest.MonkeyPatch, fillcolor: int | str
+    ) -> None:
+        im = Image.new("RGB", (2, 1), "white")
+        transform = im.transform
+        calls = []
+
+        def callback(
+            size: tuple[int, int], method: Image.Transform, data: Any, **options: Any
+        ) -> Image.Image:
+            calls.append(options)
+            return im
+
+        monkeypatch.setattr(im, "transform", callback)
+        handler = ImageTransform.AffineTransform((1, 0, -1, 0, 1, 0))
+        assert transform(im.size, handler, fillcolor=fillcolor) is im
+        assert calls == [
+            {"resample": Image.Resampling.NEAREST, "fill": 1, "fillcolor": fillcolor}
+        ]
+
+    def test_instance_handler_override(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        im = Image.new("RGB", (2, 1), "white")
+        output = Image.new("RGB", im.size, "blue")
+        calls = []
+
+        def override(
+            size: tuple[int, int], image: Image.Image, **options: Any
+        ) -> Image.Image:
+            calls.append(options)
+            return output
+
+        handler = ImageTransform.AffineTransform((1, 0, -1, 0, 1, 0))
+        monkeypatch.setattr(handler, "transform", override)
+        assert im.transform(im.size, handler, fillcolor="red") is output
+        assert calls == [{"resample": Image.Resampling.NEAREST, "fill": 1}]
+
+    @pytest.mark.parametrize("fillcolor", (None, 0, "red"))
+    def test_wrapped_legacy_handler(self, fillcolor: int | str | None) -> None:
+        calls = []
+
+        class Legacy(Image.ImageTransformHandler):
+            def transform(  # type: ignore[override]
+                self,
+                size: tuple[int, int],
+                image: Image.Image,
+                resample: int,
+                fill: int = 1,
+            ) -> Image.Image:
+                calls.append((resample, fill))
+                return image
+
+        class Wrapped(Legacy):
+            @wraps(Legacy.transform)
+            def transform(  # type: ignore[override]
+                self, *args: Any, **kwargs: Any
+            ) -> Image.Image:
+                return super().transform(*args, **kwargs)
+
+        im = Image.new("RGB", (2, 1), "white")
+        assert im.transform(im.size, Wrapped(), fillcolor=fillcolor) is im
+        assert calls == [(Image.Resampling.NEAREST, 1)]
+
+    def test_getdata_only_fillcolor(self) -> None:
+        calls = []
+        data = (1, 0, -1, 0, 1, 0)
+
+        class GetData:
+            def getdata(self) -> tuple[Image.Transform, tuple[int, ...]]:
+                calls.append(True)
+                return Image.Transform.AFFINE, data
+
+        im = Image.new("RGB", (2, 1), "white")
+        actual = im.transform(im.size, GetData(), fillcolor="red")
+        expected = im.transform(im.size, Image.Transform.AFFINE, data, fillcolor="red")
+        assert_image_equal(actual, expected)
+        assert calls == [True]
+
+    def test_transform_only_unsupported(self) -> None:
+        class TransformOnly:
+            def transform(
+                self, size: tuple[int, int], image: Image.Image, **options: Any
+            ) -> Image.Image:
+                pytest.fail("a non-handler transform must not be called")
+
+        im = Image.new("RGB", (2, 1), "white")
+        with pytest.raises(ValueError, match="missing method data"):
+            im.transform(im.size, TransformOnly(), fillcolor="red")  # type: ignore[arg-type]
 
     @pytest.mark.parametrize("mode", ("P", "PA"))
     def test_palette(self, mode: str) -> None:
