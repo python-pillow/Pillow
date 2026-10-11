@@ -366,6 +366,7 @@ def pdf_repr(x: Any) -> bytes:
     elif isinstance(x, bytes):
         # XXX escape more chars? handle binary garbage
         x = x.replace(b"\\", b"\\\\")
+        x = x.replace(b"\r", b"\\r")
         x = x.replace(b"(", b"\\(")
         x = x.replace(b")", b"\\)")
         return b"(" + x + b")"

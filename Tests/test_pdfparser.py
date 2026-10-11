@@ -136,6 +136,14 @@ def test_pdfstream_flatedecode() -> None:
         s.decode(3)
 
 
+@pytest.mark.parametrize(
+    "data", [b"\r", b"\r\n", b"one\rtwo", b"\r\r", encode_text("\u0d0a")]
+)
+def test_pdf_repr_preserves_carriage_returns(data: bytes) -> None:
+    encoded = pdf_repr(data)
+    assert PdfParser.get_value(encoded, 0) == (data, len(encoded))
+
+
 def test_pdf_repr() -> None:
     assert bytes(IndirectReference(1, 2)) == b"1 2 R"
     assert bytes(IndirectObjectDef(*IndirectReference(1, 2))) == b"1 2 obj"
