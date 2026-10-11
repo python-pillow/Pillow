@@ -45,6 +45,24 @@ def test_indirect_refs() -> None:
     assert IndirectObjectDef(1, 2) != (1, 2)
 
 
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        (rb"(\377)", b"\xff"),
+        (rb"(\400)", b"\x00"),
+        (rb"(\777)", b"\xff"),
+        (rb"(\1234)", b"S4"),
+        (rb"(\78)", b"\x078"),
+        (rb"(\8\9)", b"89"),
+        (rb"(\q\z)", b"qz"),
+        (rb"(\n\r\t\b\f\(\)\\)", b"\n\r\t\b\f()\\"),
+        (b"(part\\\r\nnext)", b"partnext"),
+    ],
+)
+def test_literal_string_escape_sequences(text: bytes, expected: bytes) -> None:
+    assert PdfParser.get_value(text, 0) == (expected, len(text))
+
+
 def test_parsing() -> None:
     assert PdfParser.interpret_name(b"Name#23Hash") == b"Name#Hash"
     assert PdfParser.interpret_name(b"Name#23Hash", as_text=True) == "Name#Hash"

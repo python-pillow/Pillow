@@ -974,7 +974,7 @@ class PdfParser:
         raise PdfFormatError(msg)
 
     re_lit_str_token = re.compile(
-        rb"(\\[nrtbf()\\])|(\\[0-9]{1,3})|(\\(\r\n|\r|\n))|(\r\n|\r|\n)|(\()|(\))"
+        rb"(\\[nrtbf()\\])|(\\[0-7]{1,3})|(\\(\r\n|\r|\n))|(\r\n|\r|\n)|(\()|(\))|(\\.)"
     )
     escaped_chars = {
         b"n": b"\n",
@@ -1006,7 +1006,7 @@ class PdfParser:
             if m.group(1):
                 result.extend(cls.escaped_chars[m.group(1)[1]])
             elif m.group(2):
-                result.append(int(m.group(2)[1:], 8))
+                result.append(int(m.group(2)[1:], 8) & 0xFF)
             elif m.group(3):
                 pass
             elif m.group(5):
@@ -1019,6 +1019,8 @@ class PdfParser:
                     return bytes(result), m.end()
                 result.extend(b")")
                 nesting_depth -= 1
+            elif m.group(8):
+                result.extend(m.group(8)[1:])
             offset = m.end()
         msg = "unfinished literal string"
         raise PdfFormatError(msg)

@@ -246,3 +246,10 @@ Fixed reading PSD layers at the wrong file offset
 When seeking to a layer of a PSD image, the pixel data was read from the wrong
 position in the file, so :py:meth:`~PIL.Image.Image.seek` returned unrelated
 bytes reinterpreted as image data instead of that layer's actual content.
+
+Fixed PDF literal string escapes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The PDF parser now ignores high-order overflow in octal escapes and removes the
+backslash before an unrecognized escape, as required by the PDF specification.
+Escapes containing digits 8 or 9 no longer raise ``ValueError``.
