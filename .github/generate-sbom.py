@@ -452,7 +452,7 @@ def generate(version: str) -> dict:
                                     (
                                         Path(__file__).parent.parent
                                         / "patches"
-                                        / "openjpeg-2.5.4.tar.gz.patch"
+                                        / "v2.5.4.tar.gz.patch"
                                     ).read_bytes()
                                 ).decode(),
                                 "encoding": "base64",

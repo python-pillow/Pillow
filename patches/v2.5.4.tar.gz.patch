@@ -6,8 +6,8 @@ Date:   Tue Feb 10 17:09:30 2026 +0000
 
 diff --git a/src/lib/openjp2/j2k.c b/src/lib/openjp2/j2k.c
 index a2014c89..ad76aca7 100644
---- a/src/lib/openjp2/j2k.c
-+++ b/src/lib/openjp2/j2k.c
+--- src/lib/openjp2/j2k.c
++++ src/lib/openjp2/j2k.c
 @@ -5082,12 +5082,14 @@ static OPJ_BOOL opj_j2k_read_sod(opj_j2k_t *p_j2k,
 
          OPJ_UINT32 l_current_tile_part =

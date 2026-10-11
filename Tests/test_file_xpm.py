@@ -97,6 +97,30 @@ def test_not_enough_image_data() -> None:
             im.load()
 
 
+def test_undefined_color_key() -> None:
+    # Pixel data references a color key that is not defined in the palette
+    data = b"""/* XPM */
+static char *x[] = {"
+"1 1 1 1"
+"a\tc #000000"
+"b"};
+"""
+    with Image.open(BytesIO(data)) as im:
+        with pytest.raises(ValueError, match="unknown color"):
+            im.load()
+
+    # Same in RGB mode (more than 256 palette entries)
+    colours = [b'"%03d\tc #%06x",' % (i, i + 1) for i in range(257)]
+    data = (
+        b'/* XPM */\nstatic char *test[] = {\n"1 1 257 3",\n'
+        + b"\n".join(colours)
+        + b'\n"zzz"};\n'
+    )
+    with Image.open(BytesIO(data)) as im:
+        with pytest.raises(ValueError, match="unknown color"):
+            im.load()
+
+
 def test_invalid_file() -> None:
     invalid_file = "Tests/images/flower.jpg"
 
