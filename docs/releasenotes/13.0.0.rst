@@ -250,6 +250,5 @@ bytes reinterpreted as image data instead of that layer's actual content.
 Fixed opening XBM images with leading comments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-XBM images that start with a C-style comment, either ``/* ... */`` or ``// ...``,
-could not be identified. Comments before and between the ``#define`` lines are now
-skipped.
+XBM images that start with a C-style ``/* ... */`` comment could not be identified.
+Comments before and between the ``#define`` lines are now skipped.

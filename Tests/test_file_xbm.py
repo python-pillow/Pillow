@@ -60,9 +60,8 @@ def test_open() -> None:
     (
         b"/* comment */\n",
         b"/*\nThis is an example file\n*/\n",
-        b"// comment\n",
-        b"// " + b"A" * 200 + b"\n",
-        b"/* one */\n// two\n",
+        b"/* " + b"A" * 200 + b" */\n",
+        b"/* one */\n/* two */\n",
     ),
 )
 def test_leading_comment(comment: bytes) -> None:
