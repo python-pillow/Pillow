@@ -984,10 +984,10 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 }
             }
         } else {
+            if (key_int == TIFFTAG_BITSPERSAMPLE && PyLong_Check(value)) {
+                bits_per_sample = PyLong_AsLong(value);
+            }
             if (type == TIFF_SHORT) {
-                if (key_int == TIFFTAG_BITSPERSAMPLE) {
-                    bits_per_sample = PyLong_AsLong(value);
-                }
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (UINT16)PyLong_AsLong(value)
                 );
