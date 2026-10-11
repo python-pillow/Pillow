@@ -198,12 +198,14 @@ def _save(
     else:
         existing_pdf = PdfParser.PdfParser(f=fp, filename=filename_str, mode="w+b")
 
+    resolution = im.encoderinfo.get("resolution", 72.0)
     dpi = im.encoderinfo.get("dpi")
     if dpi:
-        x_resolution = dpi[0]
-        y_resolution = dpi[1]
+        # A dpi of 0 is unknown, as read from a BMP that does not specify it
+        x_resolution = dpi[0] or resolution
+        y_resolution = dpi[1] or resolution
     else:
-        x_resolution = y_resolution = im.encoderinfo.get("resolution", 72.0)
+        x_resolution = y_resolution = resolution
 
     info = {
         "title": (

@@ -143,6 +143,42 @@ def test_dpi(params: dict[str, int | tuple[int, int]], tmp_path: Path) -> None:
     assert size == (122.88, 61.44)
 
 
+@pytest.mark.parametrize(
+    "params, expected",
+    (
+        ({"dpi": (0, 0)}, (128.0, 128.0)),
+        ({"dpi": (0, 0), "resolution": 200}, (46.08, 46.08)),
+        ({"dpi": (0, 150)}, (128.0, 61.44)),
+    ),
+)
+def test_dpi_zero(
+    params: dict[str, int | tuple[int, int]],
+    expected: tuple[float, float],
+    tmp_path: Path,
+) -> None:
+    im = hopper()
+
+    outfile = tmp_path / "temp.pdf"
+    im.save(outfile, "PDF", **params)
+
+    with open(outfile, "rb") as fp:
+        contents = fp.read()
+
+    size = tuple(
+        float(d) for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
+    )
+    assert size == expected
+
+
+def test_dpi_from_bmp(tmp_path: Path) -> None:
+    outfile = tmp_path / "temp.pdf"
+    with Image.open("Tests/images/hopper_rle8_grayscale.bmp") as im:
+        assert im.info["dpi"] == (0, 0)
+        im.save(outfile, dpi=im.info["dpi"])
+
+    assert os.path.isfile(outfile)
+
+
 def test_save_all(tmp_path: Path) -> None:
     # Single frame image
     helper_save_as_pdf(tmp_path, "RGB", save_all=True)
