@@ -4251,8 +4251,10 @@ class Exif(_ExifBase):
             elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.MakerNote]:
                 if ExifTags.IFD.Exif not in self._ifds:
                     self.get_ifd(ExifTags.IFD.Exif)
-                tag_data = self._ifds[ExifTags.IFD.Exif][tag]
-                if tag == ExifTags.IFD.MakerNote:
+                tag_data = self._ifds[ExifTags.IFD.Exif].get(tag)
+                if tag_data is None:
+                    pass
+                elif tag == ExifTags.IFD.MakerNote:
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
                     try:
