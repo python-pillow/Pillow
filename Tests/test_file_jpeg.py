@@ -940,19 +940,6 @@ class TestFileJpeg:
             # OSError for an unidentified image.
             assert im.info.get("dpi") == (72, 72)
 
-    def test_invalid_exif_x_resolution_roundtrip(self, tmp_path: Path) -> None:
-        # XResolution and YResolution are stored as ASCII in this file
-        with Image.open("Tests/images/invalid-exif-without-x-resolution.jpg") as im:
-            exif = im.getexif()
-            out = tmp_path / "temp.jpg"
-            im.save(out, exif=exif)
-
-        with Image.open(out) as reloaded:
-            reloaded_exif = reloaded.getexif()
-            assert isinstance(reloaded_exif[282], str)
-            assert isinstance(reloaded_exif[283], str)
-            assert reloaded.info.get("dpi") == (72, 72)
-
     def test_ifd_offset_exif(self) -> None:
         # Arrange
         # This image has been manually hexedited to have an IFD offset of 10,

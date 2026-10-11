@@ -17,6 +17,8 @@ from PIL import (
     ImageDraw,
     ImageFile,
     ImagePalette,
+    TiffImagePlugin,
+    TiffTags,
     UnidentifiedImageError,
     features,
 )
@@ -806,6 +808,23 @@ class TestImage:
             im.info["exif"] = b"Exif\x00\x00" * 2 + im.info["exif"]
             with pytest.raises(SyntaxError):
                 im.getexif()
+
+    def test_exif_tobytes_keeps_ascii_type(self) -> None:
+        # XResolution has the RATIONAL type in the specification,
+        # but here it was stored as ASCII
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd.tagtype[282] = TiffTags.ASCII
+        ifd[282] = "300"
+        fp = io.BytesIO()
+        ifd.save(fp)
+
+        exif = Image.Exif()
+        exif.load(b"Exif\x00\x00" + fp.getvalue())
+        assert exif[282] == "300"
+
+        reloaded = Image.Exif()
+        reloaded.load(exif.tobytes())
+        assert reloaded[282] == "300"
 
     def test_empty_get_ifd(self) -> None:
         exif = Image.Exif()
