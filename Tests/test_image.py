@@ -807,17 +807,6 @@ class TestImage:
             with pytest.raises(SyntaxError):
                 im.getexif()
 
-    @pytest.mark.parametrize("tag", (ExifTags.IFD.Interop, ExifTags.IFD.MakerNote))
-    def test_get_ifd_missing_from_exif_ifd(self, tag: int) -> None:
-        # Without an Exif IFD
-        assert Image.Exif().get_ifd(tag) == {}
-
-        # With an Exif IFD that does not reference this IFD
-        with Image.open("Tests/images/exif_gps.jpg") as im:
-            exif = im.getexif()
-            assert tag not in exif.get_ifd(ExifTags.IFD.Exif)
-            assert exif.get_ifd(tag) == {}
-
     def test_empty_get_ifd(self) -> None:
         exif = Image.Exif()
         ifd = exif.get_ifd(0x8769)
@@ -829,6 +818,20 @@ class TestImage:
         reloaded_exif = Image.Exif()
         reloaded_exif.load(exif.tobytes())
         assert reloaded_exif.get_ifd(0x8769) == {36864: b"0220"}
+
+    @pytest.mark.parametrize("tag", (ExifTags.IFD.Interop, ExifTags.IFD.MakerNote))
+    def test_get_ifd_missing_from_exif_ifd(self, tag: int) -> None:
+        # Without an Exif IFD
+        assert Image.Exif().get_ifd(tag) == {}
+
+        with Image.open("Tests/images/exif_gps.jpg") as im:
+            exif = im.getexif()
+
+            # With an Exif IFD that does not reference this IFD
+            assert ExifTags.IFD.Exif in exif
+            assert tag not in exif.get_ifd(ExifTags.IFD.Exif)
+
+            assert exif.get_ifd(tag) == {}
 
     def test_exif_jpeg(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian

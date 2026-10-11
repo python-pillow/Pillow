@@ -4253,7 +4253,6 @@ class Exif(_ExifBase):
                     self.get_ifd(ExifTags.IFD.Exif)
                 tag_data = self._ifds[ExifTags.IFD.Exif].get(tag)
                 if tag_data is None:
-                    # No such IFD: like a missing GPSInfo, this returns {}
                     pass
                 elif tag == ExifTags.IFD.MakerNote:
                     from .TiffImagePlugin import ImageFileDirectory_v2
