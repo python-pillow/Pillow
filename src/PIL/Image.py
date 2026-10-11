@@ -4232,6 +4232,15 @@ class Exif(_ExifBase):
                 ):
                     value = value.copy()
                     value[ExifTags.IFD.Interop] = self.get_ifd(ExifTags.IFD.Interop)
+            if (
+                isinstance(value, str)
+                and self._info is not None
+                and self._info.tagtype.get(tag) == TiffImagePlugin.TiffTags.ASCII
+            ):
+                # A string read from a tag that the file stored as ASCII, even if
+                # the specification gives the tag a numeric type, is written back
+                # as ASCII rather than failing to pack as a number
+                ifd.tagtype[tag] = TiffImagePlugin.TiffTags.ASCII
             ifd[tag] = value
         return b"Exif\x00\x00" + head + ifd.tobytes(offset)
 
