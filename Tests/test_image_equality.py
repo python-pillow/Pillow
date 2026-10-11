@@ -135,3 +135,48 @@ def test_equal_frombuffer_ystep() -> None:
     img_b = _frombuffer("L", (width, height), b"".join(reversed(rows)), ystep=-1)
     assert img_a.tobytes() == img_b.tobytes()
     assert img_a == img_b
+
+
+def _make_palette_image(mode: str, data: bytes, rawmode: str) -> Image.Image:
+    im = Image.new(mode, (2, 2))
+    im.putpalette(data, rawmode)
+    return im
+
+
+@pytest.mark.parametrize("mode", ("P", "PA"))
+def test_equal_rgba_palette(mode: str) -> None:
+    img_a = _make_palette_image(mode, b"\x01\x02\x03\x80" * 256, "RGBA")
+    img_b = _make_palette_image(mode, b"\x01\x02\x03\x80" * 256, "RGBA")
+    assert img_a == img_b
+
+
+@pytest.mark.parametrize("mode", ("P", "PA"))
+def test_not_equal_palette_alpha(mode: str) -> None:
+    # Palettes that differ only in alpha are not equal.
+    img_a = _make_palette_image(mode, b"\x01\x02\x03\xff" * 256, "RGBA")
+    img_b = _make_palette_image(mode, b"\x01\x02\x03\x00" * 256, "RGBA")
+    assert img_a.getpalette() == img_b.getpalette()  # implicitly mode=RGB, so same
+    assert img_a != img_b
+
+
+@pytest.mark.parametrize("mode", ("P", "PA"))
+def test_not_equal_palette_mode(mode: str) -> None:
+    # An RGB palette is not the same thing as an otherwise identical opaque
+    # RGBA palette, since they e.g. save differently.
+    img_a = _make_palette_image(mode, b"\x01\x02\x03" * 256, "RGB")
+    img_b = _make_palette_image(mode, b"\x01\x02\x03\xff" * 256, "RGBA")
+    assert img_a.getpalette() == img_b.getpalette()  # implicitly mode=RGB, so same
+    assert img_a != img_b
+
+
+@pytest.mark.parametrize("mode", ("P", "PA"))
+def test_equal_rgb_palette_padding(mode: str) -> None:
+    # For RGB palettes, the unused fourth byte is not part of the comparison.
+    img_a = _make_palette_image(mode, b"\x01\x02\x03\x00" * 256, "RGBX")
+    img_b = _make_palette_image(mode, b"\x01\x02\x03\xff" * 256, "RGBX")
+    palette_a = img_a.palette
+    palette_b = img_b.palette
+    assert palette_a
+    assert palette_b
+    assert palette_a.mode == palette_b.mode == "RGB"
+    assert img_a == img_b
