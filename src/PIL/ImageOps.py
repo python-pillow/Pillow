@@ -73,7 +73,10 @@ def _lut(image: Image.Image, lut: list[int], palette: bool = False) -> Image.Ima
         palette_mode = image.palette.mode
         channels = len(palette_mode)
         im.putpalette(
-            [lut[v] if i % channels < 3 else v for i, v in enumerate(colors)],
+            [
+                v if palette_mode[i % channels] == "A" else lut[v]
+                for i, v in enumerate(colors)
+            ],
             palette_mode,
         )
         return im
