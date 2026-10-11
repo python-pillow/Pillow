@@ -246,3 +246,11 @@ Fixed reading PSD layers at the wrong file offset
 When seeking to a layer of a PSD image, the pixel data was read from the wrong
 position in the file, so :py:meth:`~PIL.Image.Image.seek` returned unrelated
 bytes reinterpreted as image data instead of that layer's actual content.
+
+Fixed BOX resampling skipping source pixels
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When resizing with :py:data:`~PIL.Image.Resampling.BOX`, a source pixel lying exactly
+on the boundary between two output pixels could be dropped because of floating point
+rounding, leaving visible lines missing from the result. Every source pixel now
+contributes to exactly one output pixel.

@@ -273,6 +273,17 @@ class TestImagingCoreResampleAccuracy:
         ref = Image.new("RGB", (100, 100), "#1688ff")
         assert_image_equal(im, ref)
 
+    @pytest.mark.parametrize(
+        "size, new_size", ((2755, 688), (1837, 306), (1923, 480), (1001, 7))
+    )
+    def test_box_filter_uses_every_pixel(self, size: int, new_size: int) -> None:
+        # Each source pixel must contribute to an output pixel, including
+        # those lying exactly on the boundary between two output pixels
+        for x in range(size):
+            im = Image.new("L", (size, 1))
+            im.putpixel((x, 0), 255)
+            assert im.resize((new_size, 1), Image.Resampling.BOX).getbbox(), x
+
 
 class TestCoreResampleConsistency:
     def make_case(
