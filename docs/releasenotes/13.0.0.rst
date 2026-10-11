@@ -191,6 +191,13 @@ Preserved transparency when padding or expanding images in ImageOps
 pixels in L, P and RGB images previously became opaque when a border was added.
 New palette colors are allocated without using reserved transparency entries.
 
+Fixed PDF numbers in exponential notation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Floating-point PDF numbers are now written without exponent notation, which PDF
+does not support. The expanded representation preserves their value, including
+small page dimensions produced by high image resolutions.
+
 Fixed ImageStat variance rounding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

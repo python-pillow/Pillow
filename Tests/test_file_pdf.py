@@ -55,6 +55,16 @@ def test_save(tmp_path: Path, mode: str) -> None:
     helper_save_as_pdf(tmp_path, mode)
 
 
+def test_save_high_resolution() -> None:
+    output = io.BytesIO()
+    resolution = 1_000_000.0
+    Image.new("RGB", (1, 1)).save(output, "PDF", resolution=resolution)
+    output.seek(0)
+    with PdfParser.PdfParser(f=output) as pdf:
+        page = pdf.read_indirect(pdf.pages[0])
+        assert page[b"MediaBox"] == [0, 0, 72.0 / resolution, 72.0 / resolution]
+
+
 @skip_unless_feature("jpg_2000")
 @pytest.mark.parametrize("mode", ("LA", "RGBA"))
 def test_save_alpha(tmp_path: Path, mode: str) -> None:

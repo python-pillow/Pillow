@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 import time
 import zlib
 from io import BytesIO
@@ -134,6 +135,33 @@ def test_pdfstream_flatedecode() -> None:
 
     with pytest.raises(ValueError, match="Decompressed data too large"):
         s.decode(3)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        0.0,
+        -0.0,
+        1.5,
+        1.2345678901234567,
+        1e-5,
+        1e-20,
+        1e20,
+        -1e-20,
+        1.2345678901234567e18,
+        sys.float_info.min,
+        sys.float_info.max,
+        -sys.float_info.max,
+        5e-324,
+    ],
+)
+def test_pdf_repr_float_roundtrip(value: float) -> None:
+    encoded = pdf_repr(value)
+    assert b"e" not in encoded.lower()
+    decoded, offset = PdfParser.get_value(encoded + b" ", 0)
+    assert isinstance(decoded, float)
+    assert decoded.hex() == value.hex()
+    assert offset == len(encoded)
 
 
 def test_pdf_repr() -> None:

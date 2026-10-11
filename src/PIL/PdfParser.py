@@ -10,6 +10,7 @@ import os
 import re
 import time
 import zlib
+from decimal import Decimal
 from typing import Any, NamedTuple
 
 from . import ImageFile
@@ -353,7 +354,14 @@ def pdf_repr(x: Any) -> bytes:
         return b"null"
     elif isinstance(x, (PdfName, PdfDict, PdfArray, PdfBinary)):
         return bytes(x)
-    elif isinstance(x, (int, float)):
+    elif isinstance(x, float):
+        value = str(x)
+        if "e" in value:
+            value = format(Decimal(value), "f")
+            if "." not in value:
+                value += ".0"
+        return value.encode("us-ascii")
+    elif isinstance(x, int):
         return str(x).encode("us-ascii")
     elif isinstance(x, time.struct_time):
         return b"(D:" + time.strftime("%Y%m%d%H%M%SZ", x).encode("us-ascii") + b")"
