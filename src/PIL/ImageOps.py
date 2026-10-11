@@ -64,13 +64,14 @@ def _lut(image: Image.Image, lut: list[int], palette: bool = False) -> Image.Ima
             # The lookup table was built from the palette indexes, not colors
             msg = "mode P support coming soon"
             raise NotImplementedError(msg)
-        # A per-pixel operation can be applied to the palette colors instead
+        # A per-pixel operation can be applied to the palette colors
+        colors = image.getpalette(None)
+        assert colors is not None
+        im = image.copy()
+
         assert image.palette is not None
         palette_mode = image.palette.mode
         channels = len(palette_mode)
-        colors = image.getpalette(palette_mode)
-        assert colors is not None
-        im = image.copy()
         im.putpalette(
             [lut[v] if i % channels < 3 else v for i, v in enumerate(colors)],
             palette_mode,
