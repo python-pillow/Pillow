@@ -656,7 +656,9 @@ def test_palette_operation_keeps_alpha() -> None:
 
     result = ImageOps.invert(im)
 
-    assert result.getpalette("RGBA")[:8] == [255, 255, 255, 0, 0, 255, 255, 128]
+    palette = result.getpalette("RGBA")
+    assert palette is not None
+    assert palette[:8] == [255, 255, 255, 0, 0, 255, 255, 128]
 
 
 def test_palette_histogram_operation_not_supported() -> None:
