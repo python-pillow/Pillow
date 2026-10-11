@@ -30,7 +30,7 @@ boundary between untrusted image input and the Pillow API.
                     └──────────────┬───────────────────────────┘
                                    │ C extensions:
                                    │  _imaging · _imagingft · _imagingcms
-                                   │  _webp · _avif · _imagingtk
+                                   │  _jpegxl · _webp · _avif · _imagingtk
                                    │  _imagingmath · _imagingmorph
                                    ▼
                     ┌──────────────────────────────────────────┐
