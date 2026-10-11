@@ -41,7 +41,7 @@ xbm_head = re.compile(
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix.lstrip().startswith(b"#define")
+    return prefix.startswith((b"#define", b"\n#define"))
 
 
 ##
@@ -55,22 +55,38 @@ class XbmImageFile(ImageFile.ImageFile):
     def _open(self) -> None:
         assert self.fp is not None
 
-        m = xbm_head.match(self.fp.read(512))
-
-        if not m:
+        width = None
+        height = None
+        x_hot = None
+        offset = None
+        starting = True
+        while True:
+            line = self.fp.readline(75).rstrip()
+            if starting and not line:
+                starting = False
+                continue
+            if not line.startswith(b"#define "):
+                if line.endswith(b"_bits[] = {"):
+                    offset = self.fp.tell()
+                break
+            value = int(line.split().pop())
+            if b"width " in line:
+                width = value
+            elif b"height " in line:
+                height = value
+            elif b"_x_hot " in line:
+                x_hot = value
+            elif b"_y_hot " in line:
+                if x_hot is not None:
+                    self.info["hotspot"] = x_hot, value
+        if width is None or height is None or offset is None:
             msg = "not a XBM file"
             raise SyntaxError(msg)
 
-        xsize = int(m.group("width"))
-        ysize = int(m.group("height"))
-
-        if m.group("hotspot"):
-            self.info["hotspot"] = (int(m.group("xhot")), int(m.group("yhot")))
-
         self._mode = "1"
-        self._size = xsize, ysize
+        self._size = width, height
 
-        self.tile = [ImageFile._Tile("xbm", (0, 0, *self.size), m.end())]
+        self.tile = [ImageFile._Tile("xbm", (0, 0, *self.size), offset)]
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:

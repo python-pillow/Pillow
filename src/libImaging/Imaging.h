@@ -389,7 +389,7 @@ extern Imaging
 ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]);
 extern Imaging
 ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]);
-extern Imaging
+extern int
 ImagingTransform(
     Imaging imOut,
     Imaging imIn,
@@ -618,7 +618,7 @@ ImagingHexDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t 
 #ifdef HAVE_LIBJPEG
 extern int
 ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
-extern int
+extern void
 ImagingJpegDecodeCleanup(ImagingCodecState state);
 extern int
 ImagingJpegUseJCSExtensions(void);
@@ -631,11 +631,11 @@ extern int
 ImagingJpeg2KDecode(
     Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes
 );
-extern int
+extern void
 ImagingJpeg2KDecodeCleanup(ImagingCodecState state);
 extern int
 ImagingJpeg2KEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
-extern int
+extern void
 ImagingJpeg2KEncodeCleanup(ImagingCodecState state);
 #endif
 #ifdef HAVE_LIBTIFF
@@ -683,11 +683,11 @@ ImagingXbmEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
 #ifdef HAVE_LIBZ
 extern int
 ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
-extern int
+extern void
 ImagingZipDecodeCleanup(ImagingCodecState state);
 extern int
 ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
-extern int
+extern void
 ImagingZipEncodeCleanup(ImagingCodecState state);
 #endif
 

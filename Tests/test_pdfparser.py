@@ -20,6 +20,8 @@ from PIL.PdfParser import (
     pdf_repr,
 )
 
+from .helper import timeout_unless_slower_valgrind
+
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from pathlib import Path
@@ -103,6 +105,27 @@ def test_parsing() -> None:
             assert time.strftime("%Y%m%d%H%M%S", getattr(d, name)) == value
 
 
+def test_max_nesting() -> None:
+    data = b"<</Name" + b"[" * 1000 + b"]" * 1000 + b">>"
+
+    # Test get_value default
+    PdfParser.get_value(data, 0)
+
+    # Test read_indirect default
+    b = BytesIO()
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
+
+    ref = IndirectObjectDef(1, 0)
+    with PdfParser(f=b) as pdf:
+        pdf.buf = b" " * 9 + b"1 0 obj" + data + b"endobj"
+        pdf.read_indirect(ref)
+
+
 def test_pdfstream_flatedecode() -> None:
     d = PdfDict({b"Filter": b"FlateDecode"})
     buf = zlib.compress(b"test")
@@ -162,6 +185,63 @@ def test_linearize_page_tree() -> None:
 
     with PdfParser(f=b) as pdf:
         assert pdf.linearize_page_tree() == page_ids
+
+
+def test_linearize_page_tree_duplicate_reference() -> None:
+    b = BytesIO()
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        pages_ids = [pdf.next_object_id(0) for _ in range(2)]
+        pdf.write_obj(
+            pages_ids[0], Type=PdfName(b"Pages"), Count=1, Kids=[pages_ids[1]]
+        )
+        pdf.write_obj(
+            pages_ids[1], Type=PdfName(b"Pages"), Count=1, Kids=[pages_ids[0]]
+        )
+
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
+
+    with PdfParser(f=b) as pdf:
+        with pytest.raises(PdfFormatError, match="cyclic or duplicate reference"):
+            pdf.linearize_page_tree(
+                PdfDict({b"Type": b"Pages", b"Kids": [pages_ids[0]]})
+            )
+
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
+
+    with PdfParser(f=b) as pdf:
+        pdf.page_tree_root[b"Kids"] = [pdf.pages_ref]
+        with pytest.raises(PdfFormatError, match="cyclic or duplicate reference"):
+            pdf.linearize_page_tree()
+
+
+@timeout_unless_slower_valgrind(1)
+def test_write_catalog_loop() -> None:
+    b = BytesIO()
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        page_ids = [pdf.next_object_id(0) for _ in range(2)]
+        pdf.write_page(page_ids[0], Parent=page_ids[1])
+        pdf.write_page(page_ids[1], Parent=page_ids[0])
+
+        pdf.pages = [page_ids[0], page_ids[1]]
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
+
+    with PdfParser(f=b) as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+        pdf.write_catalog()
 
 
 def test_duplicate_xref_entry() -> None:
