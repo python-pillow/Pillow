@@ -400,7 +400,7 @@ def test_colorize_invalid_mode() -> None:
 
 @pytest.mark.parametrize("bits", (0, 9))
 def test_posterize_invalid_bits(bits: int) -> None:
-    with pytest.raises(ValueError, match="bits must be between 1 and 8"):
+    with pytest.raises(ValueError, match="bits must be between or equal to 1 and 8"):
         ImageOps.posterize(hopper("L"), bits)
 
 
