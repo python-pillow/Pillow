@@ -11,6 +11,10 @@ from .helper import (
     hopper,
 )
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 
 class Deformer(ImageOps.SupportsGetMesh):
     def getmesh(
@@ -627,3 +631,36 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
         img, cutoff=10, preserve_tone=True
     )  # single color 10 cutoff
     assert_image_equal(img, out)
+
+
+@pytest.mark.parametrize(
+    "operation",
+    (
+        ImageOps.invert,
+        lambda im: ImageOps.posterize(im, 3),
+        ImageOps.solarize,
+    ),
+)
+def test_palette_operation(operation: Callable[[Image.Image], Image.Image]) -> None:
+    im = hopper("P")
+    result = operation(im)
+
+    assert result.mode == "P"
+    assert_image_equal(result.convert("RGB"), operation(im.convert("RGB")))
+
+
+def test_palette_operation_keeps_alpha() -> None:
+    im = Image.new("P", (2, 1))
+    im.putpalette((0, 0, 0, 0, 255, 0, 0, 128), "RGBA")
+    im.putpixel((1, 0), 1)
+
+    result = ImageOps.invert(im)
+
+    palette = result.getpalette("RGBA")
+    assert palette is not None
+    assert palette[:8] == [255, 255, 255, 0, 0, 255, 255, 128]
+
+
+def test_palette_histogram_operation_not_supported() -> None:
+    with pytest.raises(NotImplementedError):
+        ImageOps.autocontrast(hopper("P"))
