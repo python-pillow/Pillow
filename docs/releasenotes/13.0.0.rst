@@ -240,6 +240,16 @@ position or contents.
 :py:meth:`~PIL.Image.Image.tobytes` also now explicitly cleans up its encoder on
 both success and failure, rather than relying on object destruction.
 
+Fixed row length of P;2L and P;4L raw data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``P;2L`` and ``P;4L`` raw modes store one bit plane per bit, each padded to a
+whole byte, so a row of ``width`` pixels occupies ``planes * ceil(width / 8)`` bytes.
+Pillow instead sized rows as ``ceil(width * planes / 8)``, which is smaller whenever
+the width is not a multiple of 8. The decoder now uses the correct row length, so
+:py:meth:`~PIL.Image.Image.frombytes` no longer reads past the end of the given data,
+and no longer rejects data of exactly the right length.
+
 Fixed reading PSD layers at the wrong file offset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

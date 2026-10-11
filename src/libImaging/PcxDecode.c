@@ -20,7 +20,8 @@ ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
     UINT8 n;
     UINT8 *ptr;
 
-    if ((state->xsize * state->bits + 7) / 8 > state->bytes) {
+    if (ImagingUnpackerRowBytes(state->rawmode, state->bits, state->xsize) >
+        state->bytes) {
         state->errcode = IMAGING_CODEC_OVERRUN;
         return -1;
     }

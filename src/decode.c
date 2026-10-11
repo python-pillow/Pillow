@@ -222,7 +222,8 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
             if (state->xsize > ((INT_MAX / state->bits) - 7)) {
                 return ImagingError_MemoryError();
             }
-            state->bytes = (state->bits * state->xsize + 7) / 8;
+            state->bytes =
+                ImagingUnpackerRowBytes(state->rawmode, state->bits, state->xsize);
         }
         /* malloc check ok, overflow checked above */
         state->buffer = (UINT8 *)calloc(1, state->bytes);
@@ -304,6 +305,7 @@ get_unpacker(
     }
 
     decoder->state.shuffle = unpack;
+    decoder->state.rawmode = rawmode;
     decoder->state.bits = bits;
 
     return 0;
