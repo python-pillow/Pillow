@@ -1085,10 +1085,9 @@ class PdfParser:
         return value
 
     def linearize_page_tree(
-        self, node: PdfDict | None = None, processed_ids: set[int] | None = None
+        self, node: PdfDict | None = None
     ) -> list[IndirectReference]:
-        if processed_ids is None:
-            processed_ids = set()
+        processed_ids = set()
         if node is not None:
             page_node = node
         else:
