@@ -90,6 +90,32 @@ def test_no_operator_loaded() -> None:
         mop.save_lut("")
 
 
+@pytest.mark.parametrize("mode", ("1", "L"))
+@pytest.mark.parametrize(
+    "pattern",
+    (
+        "4:(....0..1.)->1",
+        "4:(... .0. .1.)->1",
+        "4:(...\n.0.\n.1.)->1",
+        "4:(...\t.0.\t.1.)->1",
+        "4:(...\r\n.0.\r\n.1.)->1",
+        "\n    4:(...\n       .0.\n       .1.)->1\n",
+        " \t4 : ( ... .0. .1. ) -> 1 \t",
+        "4:(...\v.0.\f.1.)->1",
+        "4:(...\u00a0.0.\u2003.1.)->1",
+    ),
+)
+def test_pattern_whitespace(pattern: str, mode: str) -> None:
+    mop = ImageMorph.MorphOp(patterns=[pattern])
+    assert mop.lut == ImageMorph.LutBuilder(op_name="dilation4").build_lut()
+
+    im = Image.new(mode, (5, 5))
+    im.putpixel((2, 2), 1)
+    count, out = mop.apply(im)
+    assert count == 4
+    assert_img_equal_img_string(out, ".....\n..1..\n.111.\n..1..\n.....")
+
+
 def test_zero_width() -> None:
     im = Image.new("L", (0, 1))
     mop = ImageMorph.MorphOp(op_name="erosion8")

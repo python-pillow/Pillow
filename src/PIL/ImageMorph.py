@@ -169,16 +169,13 @@ class LutBuilder:
 
         # Parse and create symmetries of the patterns strings
         for p in self.patterns:
-            m = re.fullmatch(r"(\w):?\s*\((.+?)\)\s*->\s*([01])", p.replace("\n", ""))
+            m = re.fullmatch(r"(\w):?\((.+?)\)->([01])", "".join(p.split()))
             if not m:
                 msg = 'Syntax error in pattern "' + p + '"'
                 raise Exception(msg)
             options = m.group(1)
             pattern = m.group(2)
             result = int(m.group(3))
-
-            # Get rid of spaces
-            pattern = pattern.replace(" ", "").replace("\n", "")
 
             patterns += self._pattern_permute(pattern, options, result)
 
