@@ -73,9 +73,23 @@ def test_leading_comment(comment: bytes) -> None:
             assert_image_equal(im, expected)
 
 
+def test_comments_between_header_lines() -> None:
+    b = BytesIO(b"""
+#define basic_width 32
+/*single line comment*/
+#define basic_height 32
+/*multi line
+comment*/
+""" + PIL151.split(b"static")[1])
+    with Image.open(b) as im:
+        with Image.open(BytesIO(PIL151)) as expected:
+            assert_image_equal(im, expected)
+
+
 def test_unterminated_comment() -> None:
+    b = BytesIO(b"/* unterminated\n" + PIL151)
     with pytest.raises(UnidentifiedImageError):
-        Image.open(BytesIO(b"/* unterminated\n" + PIL151))
+        Image.open(b)
 
 
 def test_open_filename_with_underscore() -> None:

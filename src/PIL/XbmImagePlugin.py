@@ -67,11 +67,11 @@ class XbmImageFile(ImageFile.ImageFile):
                 break
             line = line.rstrip()
             if in_block_comment:
-                if b"*/" in line:
+                if line.endswith(b"*/"):
                     in_block_comment = False
                 continue
             if line.startswith(b"/*"):
-                in_block_comment = b"*/" not in line
+                in_block_comment = not line.endswith(b"*/")
                 continue
             if starting and not line:
                 starting = False
