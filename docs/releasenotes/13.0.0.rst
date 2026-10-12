@@ -268,3 +268,15 @@ Fixed opening XBM images with comments
 
 XBM images with C-style ``/* ... */`` comments in the header could not be identified.
 Comments on separate lines before the bits declaration are now skipped.
+
+Clarified FriBiDi shim license
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The SBOM published with Pillow 12.3.0 listed the vendored FriBiDi shim
+(``src/thirdparty/fribidi-shim/``) as LGPL-2.1-or-later. The shim was written for
+Pillow and is covered by Pillow's MIT-CMU license. Its header declares the parts of
+FriBiDi's public API needed to load FriBiDi at runtime, and contains no FriBiDi code.
+FriBiDi itself is not included in Pillow's wheels.
+
+The shim's source files now include SPDX license identifiers, and the SBOM has been
+corrected.
