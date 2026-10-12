@@ -1215,6 +1215,44 @@ class TestFileLibTiff(LibTiffTestCase):
             im.load()
         assert im.size == (950, 975)
 
+    @pytest.mark.parametrize("tiled", (False, True))
+    def test_jpeg_short_strip(self, tiled: bool) -> None:
+        # The JPEG data in the strip/tile only contains 8 of the 256 rows that
+        # RowsPerStrip/TileLength declare. libtiff decodes the rows that exist
+        # and still reports success, so the remaining rows must be cleared
+        # rather than left as uninitialised memory.
+        jpeg = io.BytesIO()
+        Image.new("L", (256, 8), 200).save(jpeg, "JPEG")
+        jpeg_data = jpeg.getvalue()
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[TiffImagePlugin.IMAGEWIDTH] = 256
+        ifd[TiffImagePlugin.IMAGELENGTH] = 256
+        ifd[TiffImagePlugin.BITSPERSAMPLE] = 8
+        ifd[TiffImagePlugin.COMPRESSION] = 7  # JPEG
+        ifd[TiffImagePlugin.PHOTOMETRIC_INTERPRETATION] = 1  # BlackIsZero
+        if tiled:
+            ifd[TiffImagePlugin.TILEWIDTH] = 256
+            ifd[TiffImagePlugin.TILELENGTH] = 256
+            ifd[TiffImagePlugin.TILEOFFSETS] = 0
+            ifd[TiffImagePlugin.TILEBYTECOUNTS] = len(jpeg_data)
+            # Point the tile data at the end of the IFD
+            ifd[TiffImagePlugin.TILEOFFSETS] = 8 + len(ifd.tobytes(8))
+        else:
+            ifd[TiffImagePlugin.ROWSPERSTRIP] = 256
+            # Strip offsets is updated by tobytes()
+            ifd[TiffImagePlugin.STRIPOFFSETS] = 0
+            ifd[TiffImagePlugin.STRIPBYTECOUNTS] = len(jpeg_data)
+
+        b = io.BytesIO()
+        ifd.save(b)
+        b.write(jpeg_data)
+
+        with Image.open(b) as im:
+            assert im.tile[0].codec_name == "libtiff"
+            assert im.crop((0, 0, 256, 8)).getextrema() == (200, 200)
+            assert im.crop((0, 8, 256, 256)).getextrema() == (0, 0)
+
     def test_orientation(self) -> None:
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
             for i in range(2, 9):
