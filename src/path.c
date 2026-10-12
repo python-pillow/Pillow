@@ -49,6 +49,14 @@ typedef struct {
 
 static PyTypeObject PyPathType;
 
+int
+path_setup(void) {
+    if (PyType_Ready(&PyPathType) < 0) {
+        return -1;
+    }
+    return 0;
+}
+
 static double *
 alloc_array(Py_ssize_t count) {
     double *xy;
@@ -77,11 +85,6 @@ path_new(Py_ssize_t count, double *xy, int duplicate) {
         }
         memcpy(p, xy, count * 2 * sizeof(double));
         xy = p;
-    }
-
-    if (PyType_Ready(&PyPathType) < 0) {
-        free(xy);
-        return NULL;
     }
 
     path = PyObject_New(PyPathObject, &PyPathType);

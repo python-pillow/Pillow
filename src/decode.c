@@ -57,14 +57,18 @@ typedef struct {
 
 static PyTypeObject ImagingDecoderType;
 
+int
+decode_setup(void) {
+    if (PyType_Ready(&ImagingDecoderType) < 0) {
+        return -1;
+    }
+    return 0;
+}
+
 static ImagingDecoderObject *
 PyImaging_DecoderNew(int contextsize) {
     ImagingDecoderObject *decoder;
     void *context;
-
-    if (PyType_Ready(&ImagingDecoderType) < 0) {
-        return NULL;
-    }
 
     decoder = PyObject_New(ImagingDecoderObject, &ImagingDecoderType);
     if (decoder == NULL) {

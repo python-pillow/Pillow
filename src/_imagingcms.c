@@ -530,7 +530,7 @@ buildProofTransform(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-cms_transform_apply(CmsTransformObject *self, PyObject *args) {
+cms_transform_apply_impl(CmsTransformObject *self, PyObject *args) {
     PyObject *i0, *i1;
     Imaging im;
     Imaging imOut;
@@ -560,6 +560,15 @@ cms_transform_apply(CmsTransformObject *self, PyObject *args) {
     }
 
     return Py_BuildValue("i", pyCMSdoTransform(im, imOut, self->transform));
+}
+
+static PyObject *
+cms_transform_apply(CmsTransformObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = cms_transform_apply_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 /* -------------------------------------------------------------------- */
