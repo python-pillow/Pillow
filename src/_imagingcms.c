@@ -28,6 +28,7 @@ https://www.cazabon.com\n\
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>  // Include before wchar.h so _GNU_SOURCE is set
+#include "thirdparty/pythoncapi_compat.h"
 #include <wchar.h>
 #include <datetime.h>
 
