@@ -163,6 +163,7 @@ def test_lifetime2() -> None:
     assert px  # make mypy happy
     assert isinstance(px[0, 0], int)
 
+
 @pytest.mark.parametrize("size", ((0, 0), (0, 3), (3, 0)))
 @pytest.mark.parametrize("mode", ("L", "RGBA"))
 def test_empty_image(mode: str, size: tuple[int, int]) -> None:
