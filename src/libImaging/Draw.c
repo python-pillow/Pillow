@@ -42,16 +42,6 @@
 
 #define INK8(ink) (*(UINT8 *)ink)
 
-// True when the given I;16 mode stores its pixels most significant byte first.
-static inline int
-isModeI16BigEndian(const ModeID mode) {
-    return mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-           || mode == IMAGING_MODE_I_16N
-#endif
-        ;
-}
-
 // Convert getink()'s ink value into the image's storage order
 // and return in the native order so the drawing functions don't
 // need to care about it.
@@ -61,7 +51,12 @@ ink16(Imaging im, const void *ink_) {
     UINT8 out[2];
     UINT16 ink;
 
-    if (isModeI16BigEndian(im->mode)) {
+    if (
+        mode == IMAGING_MODE_I_16B
+#ifdef WORDS_BIGENDIAN
+        || mode == IMAGING_MODE_I_16N
+#endif
+    ) {
         out[0] = in[1];
         out[1] = in[0];
     } else {
