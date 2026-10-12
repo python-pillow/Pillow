@@ -63,7 +63,7 @@ class XbmImageFile(ImageFile.ImageFile):
         in_block_comment = False
         while True:
             line = self.fp.readline(75)
-            if not line and in_block_comment:
+            if not line:
                 break
             line = line.rstrip()
             if in_block_comment:
