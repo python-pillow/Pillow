@@ -26,6 +26,7 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
+    skip_if_tsan,
     skip_unless_feature,
     skip_unless_feature_version,
 )
@@ -793,6 +794,7 @@ class TestAvifLeaks(PillowLeakTestCase):
     mem_limit = MAX_THREADS * 3 * 1024
     iterations = 100
 
+    @skip_if_tsan("TSAN takes more memory")
     @pytest.mark.skipif(
         is_docker_qemu(), reason="Skipping on cross-architecture containers"
     )

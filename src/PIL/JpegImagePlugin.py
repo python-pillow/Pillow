@@ -375,10 +375,12 @@ class JpegImageFile(ImageFile.ImageFile):
         self.applist: list[tuple[str, bytes]] = []
         self.icclist: list[bytes] = []
 
-        while True:
+        while s:
             i = s[0]
             if i == 0xFF:
-                s = s + self.fp.read(1)
+                s += self.fp.read(1)
+                if len(s) < 2:
+                    break
                 i = i16(s)
             else:
                 # Skip non-0xFF junk
@@ -804,6 +806,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             i += 1
 
     comment = info.get("comment", im.info.get("comment"))
+    if comment and len(comment) > MAX_BYTES_IN_MARKER:
+        msg = "Comment is too long"
+        raise ValueError(msg)
 
     # "progressive" is the official name, but older documentation
     # says "progression"
@@ -854,11 +859,14 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             bufsize += len(exif) + 5
         if extra:
             bufsize += len(extra)
+        if comment:
+            bufsize += len(comment) + 5
     else:
         # The EXIF info needs to be written as one block, + APP1, + one spare byte,
         # as libjpeg without suspension requires one byte left after writing a marker.
-        # Ensure that our buffer is big enough. Same with the icc_profile block.
-        bufsize = max(len(exif) + 5, len(extra))
+        # Ensure that our buffer is big enough. Same with the icc_profile block
+        # and the comment (COM marker).
+        bufsize = max(len(exif) + 5, len(extra), len(comment or b"") + 5)
 
     ImageFile._save(
         im, fp, [ImageFile._Tile("jpeg", (0, 0, *im.size), 0, rawmode)], bufsize

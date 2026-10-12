@@ -134,8 +134,10 @@ overrides = [
   # iOS simulator environment is isolated by cibuildwheel, but needs the dependencies
   { select = "*_iphonesimulator", environment.PATH = "$(pwd)/build/deps/iphonesimulator/bin:$PATH" },
   { select = "*-win32", test-requires = [] },
-  # NumPy does not yet support Python 3.15
-  { select = "cp315*-win_amd64", test-requires = [] },
+  # NumPy does not yet have PyPy 3.12 wheels
+  { select = "pp312*", test-requires = [] },
+  # NumPy's PyPy 3.11 wheels fail to import on PyPy 3.11 v8.0.0 for Windows
+  { select = "pp311-win_amd64", test-requires = [] },
 ]
 xbuild-tools = []
 

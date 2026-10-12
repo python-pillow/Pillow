@@ -792,6 +792,16 @@ PyImaging_DrawWmf(PyObject *self, PyObject *args) {
         return NULL;
     }
 
+    /* bcWidth/bcHeight in BITMAPCOREHEADER are 16-bit fields (WORD). If width
+     * or height do not fit, they would silently truncate when assigned below,
+     * while the later buffer read (PyBytes_FromStringAndSize) still uses the
+     * untruncated values, causing a heap buffer over-read. Reject anything
+     * that would not round-trip through a 16-bit unsigned field. */
+    if (width <= 0 || height <= 0 || width > 65535 || height > 65535) {
+        PyErr_SetString(PyExc_ValueError, "invalid dimensions");
+        return NULL;
+    }
+
     /* step 1: copy metafile contents into METAFILE object */
 
     if (datasize > 22 && GET32(data, 0) == 0x9ac6cdd7) {

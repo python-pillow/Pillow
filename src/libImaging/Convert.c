@@ -403,18 +403,6 @@ rgba2la(UINT8 *out, const UINT8 *in, int xsize) {
 }
 
 static void
-rgba2rgb(UINT8 *out, const UINT8 *in, int xsize) {
-    int x;
-    for (x = 0; x < xsize; x++) {
-        *out++ = *in++;
-        *out++ = *in++;
-        *out++ = *in++;
-        *out++ = 255;
-        in++;
-    }
-}
-
-static void
 rgbA2rgba(UINT8 *out, const UINT8 *in, int xsize) {
     int x;
     unsigned int alpha, tmp;
@@ -1149,7 +1137,11 @@ topalette(
 
     alpha = mode == IMAGING_MODE_PA;
 
-    if (palette == NULL) {
+    if (palette != NULL) {
+        if (palette->size == 0) {
+            return (Imaging)ImagingError_ValueError("empty palette");
+        }
+    } else {
         /* FIXME: make user configurable */
         if (imIn->bands == 1) {
             palette = ImagingPaletteNew(IMAGING_MODE_RGB);
@@ -1503,7 +1495,7 @@ static struct {
     {IMAGING_MODE_RGBA, IMAGING_MODE_LA, rgba2la},
     {IMAGING_MODE_RGBA, IMAGING_MODE_I, rgb2i},
     {IMAGING_MODE_RGBA, IMAGING_MODE_F, rgb2f},
-    {IMAGING_MODE_RGBA, IMAGING_MODE_RGB, rgba2rgb},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_RGB, rgb2rgba},
     {IMAGING_MODE_RGBA, IMAGING_MODE_RGBa, rgbA2rgba},
     {IMAGING_MODE_RGBA, IMAGING_MODE_RGBX, rgb2rgba},
     {IMAGING_MODE_RGBA, IMAGING_MODE_CMYK, rgb2cmyk},
@@ -1518,7 +1510,7 @@ static struct {
     {IMAGING_MODE_RGBX, IMAGING_MODE_LA, rgb2la},
     {IMAGING_MODE_RGBX, IMAGING_MODE_I, rgb2i},
     {IMAGING_MODE_RGBX, IMAGING_MODE_F, rgb2f},
-    {IMAGING_MODE_RGBX, IMAGING_MODE_RGB, rgba2rgb},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_RGB, rgb2rgba},
     {IMAGING_MODE_RGBX, IMAGING_MODE_CMYK, rgb2cmyk},
     {IMAGING_MODE_RGBX, IMAGING_MODE_YCbCr, ImagingConvertRGB2YCbCr},
     {IMAGING_MODE_RGBX, IMAGING_MODE_HSV, rgb2hsv},
