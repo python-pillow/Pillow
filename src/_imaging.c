@@ -4493,6 +4493,28 @@ _compare_pixels(
         return 0;
     }
 
+    if (mode == IMAGING_MODE_1) {
+        // Mode 1, special case: compare the truthiness of each value.
+        for (int y = 0; y < ysize; y++) {
+            const UINT8 *line_a = (const UINT8 *)pixels_a[y];
+            const UINT8 *line_b = (const UINT8 *)pixels_b[y];
+            // Check the first pixel separately; if it's different,
+            // we don't need to enter the loop at all.
+            if ((line_a[0] == 0) != (line_b[0] == 0)) {
+                return 1;
+            }
+            // Autovectorizable (see the masked loop below)
+            UINT8 diff = 0;
+            for (int x = 0; x < linesize; x++) {
+                diff |= (line_a[x] == 0) ^ (line_b[x] == 0);
+            }
+            if (diff) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+
     // Fortunately, all of the modes that have extra bytes in their pixels
     // use four bytes for their pixels. RGBX is deliberately not one of them:
     // its fourth byte is compared just like Image.tobytes() includes it.

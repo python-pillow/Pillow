@@ -47,6 +47,14 @@ def test_not_equal_mode_1() -> None:
         assert img_a != img_b
 
 
+def test_equal_mode_1_nonzero_values() -> None:
+    # Any nonzero byte is a set pixel in mode "1", so 1 and 255 are equal.
+    img_a = Image.new("1", (1, 1), 1)
+    img_b = Image.new("1", (1, 1), 255)
+    assert img_a.tobytes() == img_b.tobytes()
+    assert img_a == img_b
+
+
 @pytest.mark.parametrize("mode", [mode for mode in Image.MODES if mode != "1"])
 def test_not_equal(mode: str) -> None:
     num_img_bytes = len(Image.new(mode, (2, 2)).tobytes())
