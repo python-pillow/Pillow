@@ -193,7 +193,7 @@ def test_mapped_image(mode: str) -> None:
     img = Image.frombuffer(mode, expected.size, expected.tobytes(), "raw", mode, 0, 1)
 
     reloaded = Image.fromarrow(img, img.mode, img.size)
-    assert_image_equal(expected, reloaded)
+    assert_image_equal(reloaded, expected)
 
 
 @pytest.mark.parametrize(
@@ -205,11 +205,11 @@ def test_mapped_file(tmp_path: Path, mode: str, ext: str) -> None:
     filename = tmp_path / f"temp.{ext}"
     expected.save(filename)
 
-    with Image.open(filename) as im:
-        im.load()
-        assert im.map is not None  # memory-mapped
-        reloaded = Image.fromarrow(im, im.mode, im.size)
-        assert_image_equal(expected, reloaded)
+    with Image.open(filename) as img:
+        img.load()
+        assert img.map is not None  # memory-mapped
+        reloaded = Image.fromarrow(img, img.mode, img.size)
+        assert_image_equal(reloaded, expected)
 
 
 @pytest.mark.parametrize("stride, ystep", ((4, 1), (0, -1)))

@@ -16,12 +16,11 @@
  */
 static int
 is_contiguous(Imaging im) {
-    int y;
     // Separate blocks might happen to be adjacent, but don't rely on it
     if (im->blocks_count > 1) {
         return 0;
     }
-    for (y = 1; y < im->ysize; y++) {
+    for (int y = 1; y < im->ysize; y++) {
         if ((uintptr_t)im->image[y] - (uintptr_t)im->image[y - 1] !=
             (uintptr_t)im->linesize) {
             return 0;

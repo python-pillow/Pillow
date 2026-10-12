@@ -143,14 +143,6 @@ def test_lifetime_mapped() -> None:
     assert arr.to_pylist() == list(range(9))
 
 
-@pytest.mark.parametrize("size", ((0, 0), (0, 3), (3, 0)))
-@pytest.mark.parametrize("mode", ("L", "RGBA"))
-def test_empty_image(mode: str, size: tuple[int, int]) -> None:
-    arr = pyarrow.array(Image.new(mode, size))  # type: ignore[call-overload]
-    arr.validate(full=True)
-    assert len(arr) == 0
-
-
 def test_lifetime2() -> None:
     # valgrind shouldn't error out here.
     # img should remain after the arrays are collected.
@@ -170,6 +162,14 @@ def test_lifetime2() -> None:
     px = img2.load()
     assert px  # make mypy happy
     assert isinstance(px[0, 0], int)
+
+@pytest.mark.parametrize("size", ((0, 0), (0, 3), (3, 0)))
+@pytest.mark.parametrize("mode", ("L", "RGBA"))
+def test_empty_image(mode: str, size: tuple[int, int]) -> None:
+    img = Image.new(mode, size)
+    arr = pyarrow.array(img)  # type: ignore[call-overload]
+    arr.validate(full=True)
+    assert len(arr) == 0
 
 
 class DataShape(NamedTuple):
