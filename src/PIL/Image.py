@@ -3309,7 +3309,7 @@ def frombytes(
 def frombuffer(
     mode: str,
     size: tuple[int, int],
-    data: bytes | SupportsArrayInterface,
+    data: bytes | bytearray | SupportsArrayInterface,
     decoder_name: str = "raw",
     *args: Any,
 ) -> Image:
@@ -3583,7 +3583,9 @@ _fromarray_typemap = {
 }
 
 
-def _decompression_bomb_check(size: tuple[int, int]) -> None:
+def _decompression_bomb_check(
+    size: tuple[int, int], *, error_only: bool = False
+) -> None:
     if MAX_IMAGE_PIXELS is None:
         return
 
@@ -3596,7 +3598,7 @@ def _decompression_bomb_check(size: tuple[int, int]) -> None:
         )
         raise DecompressionBombError(msg)
 
-    if pixels > MAX_IMAGE_PIXELS:
+    if not error_only and pixels > MAX_IMAGE_PIXELS:
         warnings.warn(
             f"Image size ({pixels} pixels) exceeds limit of {MAX_IMAGE_PIXELS} pixels, "
             "could be decompression bomb DOS attack.",
@@ -4217,7 +4219,7 @@ class Exif(_ExifBase):
         head = self._get_head()
         ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
         for tag, ifd_dict in self._ifds.items():
-            if tag not in self:
+            if tag in {ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo} and tag not in self:
                 ifd[tag] = ifd_dict
         for tag, value in self.items():
             if tag in [
