@@ -3583,7 +3583,9 @@ _fromarray_typemap = {
 }
 
 
-def _decompression_bomb_check(size: tuple[int, int]) -> None:
+def _decompression_bomb_check(
+    size: tuple[int, int], *, error_only: bool = False
+) -> None:
     if MAX_IMAGE_PIXELS is None:
         return
 
@@ -3596,7 +3598,7 @@ def _decompression_bomb_check(size: tuple[int, int]) -> None:
         )
         raise DecompressionBombError(msg)
 
-    if pixels > MAX_IMAGE_PIXELS:
+    if not error_only and pixels > MAX_IMAGE_PIXELS:
         warnings.warn(
             f"Image size ({pixels} pixels) exceeds limit of {MAX_IMAGE_PIXELS} pixels, "
             "could be decompression bomb DOS attack.",
