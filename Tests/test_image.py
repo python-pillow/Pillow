@@ -933,6 +933,7 @@ class TestImage:
     def test_exif_ifd1(self) -> None:
         with Image.open("Tests/images/flower.jpg") as im:
             exif = im.getexif()
+            before_ifd1_read = exif.tobytes()
             assert exif.get_ifd(ExifTags.IFD.IFD1) == {
                 513: 2036,
                 514: 5448,
@@ -942,10 +943,8 @@ class TestImage:
                 283: 180.0,
             }
 
-            # Assert that reading IFD1 does not stop the data from being saved
-            reloaded_exif = Image.Exif()
-            reloaded_exif.load(exif.tobytes())
-            assert reloaded_exif[ExifTags.Base.Make] == "Canon"
+            # Assert that reading IFD1 does not change the data
+            assert exif.tobytes() == before_ifd1_read
 
     def test_exif_ifd(self) -> None:
         with Image.open("Tests/images/flower.jpg") as im:

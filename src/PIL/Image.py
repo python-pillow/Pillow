@@ -4217,7 +4217,7 @@ class Exif(_ExifBase):
         head = self._get_head()
         ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
         for tag, ifd_dict in self._ifds.items():
-            if tag not in self and tag != ExifTags.IFD.IFD1:
+            if tag in (ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo) and tag not in self:
                 ifd[tag] = ifd_dict
         for tag, value in self.items():
             if tag in [
