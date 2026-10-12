@@ -2424,8 +2424,9 @@ _transform(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
+    int error;
     Py_BEGIN_CRITICAL_SECTION2(self, imagep);
-    int error = ImagingTransform(
+    error = ImagingTransform(
         self->image, imagep->image, method, x0, y0, x1, y1, a, filter, fill
     );
     Py_END_CRITICAL_SECTION2();
