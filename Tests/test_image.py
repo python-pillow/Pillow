@@ -942,6 +942,11 @@ class TestImage:
                 283: 180.0,
             }
 
+            # Assert that reading IFD1 does not stop the data from being saved
+            reloaded_exif = Image.Exif()
+            reloaded_exif.load(exif.tobytes())
+            assert reloaded_exif[ExifTags.Base.Make] == "Canon"
+
     def test_exif_ifd(self) -> None:
         with Image.open("Tests/images/flower.jpg") as im:
             exif = im.getexif()
