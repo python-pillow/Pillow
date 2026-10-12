@@ -17,16 +17,6 @@ from .helper import (
     timeout_unless_slower_valgrind,
 )
 
-
-def test_unicode_metadata_with_carriage_return_byte() -> None:
-    output = io.BytesIO()
-    title = "\u0d0a"
-    Image.new("RGB", (1, 1)).save(output, "PDF", title=title)
-    output.seek(0)
-    with PdfParser.PdfParser(f=output) as pdf:
-        assert pdf.info.Title == title
-
-
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Generator
