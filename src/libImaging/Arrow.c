@@ -8,8 +8,8 @@
  * Arrow buffers are a single run of pixels, so image rows must be stored
  * back to back.
  *
- * This isn't the case for e.g. multi-block or aligned arena images,
- * or for buffer-mapped images with a stride or bottom-up rows.
+ * This isn't the case for all images, e.g. multi-block or aligned arena
+ * images, or for buffer-mapped images with a stride or bottom-up rows.
  *
  * @param im The input image, read-only.
  * @return 1 if the image appears contiguously stored, 0 otherwise.
