@@ -529,8 +529,8 @@ _raw_optimal_bufsize(ImagingCodecState state) {
     Py_ssize_t row = MAX(state->bytes, state->count);
     Py_ssize_t bufsize = row * state->ysize;
     // Cap the size to the whole number of rows that fits an `int`.
-    // TODO: this needs to be changed when encoders' buffer sizes become `ssize_t`,
-    //       like decoders did in ca1cf5925.
+    // If encoders' buffer sizes become `ssize_t`, like #3791,
+    // then this will need to be updated
     if (bufsize > INT_MAX) {
         bufsize = INT_MAX - (INT_MAX % row);
     }
