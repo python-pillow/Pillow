@@ -619,7 +619,6 @@ _ImagingResampleVertical_16bpc(
 
     ImagingSectionEnter(&cookie);
 
-
     for (yy = 0; yy < ysize; yy++) {
         // imOut is a fresh allocation, so its row can be hoisted/restrict.
         UINT8 *restrict lineOut = imOut->image8[yy];
