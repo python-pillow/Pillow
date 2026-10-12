@@ -5,7 +5,7 @@ Multiband and high bit depth images
 =====================================
 
 .. note:: This is a **design proposal**, not a description of current
-  behaviour. Nothing described here is implemented yet. Discussion
+  behavior. Nothing described here is implemented yet. Discussion
   happens on :issue:`1888` and on the pull request that adds this
   document.
 
@@ -28,7 +28,7 @@ are limited to at most four 8-bit bands. As a result:
   ``uint8`` values per pixel.
 
 This has been requested many times since :issue:`1888` was opened in
-2016, and many duplicates have been closed in its favour.
+2016, and many duplicates have been closed in its favor.
 
 Goals
 =====
@@ -45,7 +45,7 @@ Goals
 * Zero-copy exchange with NumPy and Arrow consumers.
 * Read and write TIFF and PNG data at full depth. Other formats can
   follow.
-* Leave existing modes, their memory layout and their behaviour
+* Leave existing modes, their memory layout and their behavior
   unchanged.
 
 Non-goals
@@ -132,8 +132,8 @@ Advantages:
 
 Costs:
 
-* Operations that mix bands (colour conversion, luminance, alpha
-  compositing, ``paste`` with a mask, colour management) need planar
+* Operations that mix bands (color conversion, luminance, alpha
+  compositing, ``paste`` with a mask, color management) need planar
   implementations.
 * Decoders and encoders that produce or consume interleaved data need
   to shuffle between interleaved and planar layouts.
@@ -148,10 +148,10 @@ Each band has:
 * a name, e.g. ``R``, ``G``, ``B``, ``A``, or a free-form name for
   extra bands;
 * a sample type: ``uint8``, ``uint16``, ``int32`` or ``float32``;
-* a role: colour, alpha, or extra. Extra bands are carried through
-  operations but ignored by colour-aware ones.
+* a role: color, alpha, or extra. Extra bands are carried through
+  operations but ignored by color-aware ones.
 
-The image as a whole records how its colour bands should be
+The image as a whole records how its color bands should be
 interpreted (e.g. RGB, CMYK, grayscale), so that a 16-bit RGBA image
 and an 8-bit RGBA image share the same interpretation and differ only
 in sample type.
@@ -187,7 +187,7 @@ Each phase can be released on its own.
    data, then PNG, then others such as JPEG 2000, WebP and AVIF.
 3. **Band-mixing operations.** Conversion to and from the existing
    modes (e.g. 16-bit RGB to ``RGB`` and back), grayscale conversion,
-   alpha compositing, ``paste``, and colour management.
+   alpha compositing, ``paste``, and color management.
 
 Alternatives considered
 =======================
