@@ -286,3 +286,8 @@ FriBiDi itself is not included in Pillow's wheels.
 
 The shim's source files now include SPDX license identifiers, and the SBOM has been
 corrected.
+
+Faster drawing
+^^^^^^^^^^^^^^
+
+Drawing rectangles, polygons and lines is faster, particularly with translucent ink.
