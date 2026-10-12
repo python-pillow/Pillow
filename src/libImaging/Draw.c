@@ -52,9 +52,9 @@ ink16(Imaging im, const void *ink_) {
     UINT16 ink;
 
     if (
-        mode == IMAGING_MODE_I_16B
+        im->mode == IMAGING_MODE_I_16B
 #ifdef WORDS_BIGENDIAN
-        || mode == IMAGING_MODE_I_16N
+        || im->mode == IMAGING_MODE_I_16N
 #endif
     ) {
         out[0] = in[1];
