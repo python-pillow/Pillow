@@ -111,3 +111,8 @@ WebP encoding errors now include a description
 
 When libwebp fails to encode an image, the raised :py:exc:`ValueError` now
 consistently describes the error rather than only reporting a numeric code.
+
+Faster drawing
+^^^^^^^^^^^^^^
+
+Drawing rectangles, polygons and lines is faster, particularly with translucent ink.
