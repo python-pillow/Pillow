@@ -236,6 +236,14 @@ Open questions
   build; C keeps memory safety checks and Arrow export in one place.
 * **Pixel access.** What do ``getpixel()``, ``putpixel()`` and
   ``getdata()`` return for planar images?
+* **Writable band access and drawing.** ``getband()`` returns a copy.
+  Since each plane is already a single-band image, should there be
+  read-write access to a single band, so that :py:mod:`~PIL.ImageDraw`
+  and other in-place operations can modify one band of a planar
+  image? If so, how are the lifetime of the view and changes to the
+  parent image's size or bands handled? Alternatively, should
+  :py:mod:`~PIL.ImageDraw` draw on all bands at once, given a value for
+  each band?
 * **Bit depth within a type.** How to record that a ``uint16`` band
   holds 10 or 12-bit data (AVIF, some TIFFs), so it can be saved
   without loss.
