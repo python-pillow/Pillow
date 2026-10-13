@@ -395,6 +395,28 @@ class TestFileLibTiff(LibTiffTestCase):
         with pytest.raises(ValueError, match="Incorrect tag value type"):
             im.save(out, tiffinfo=ifd)
 
+    @pytest.mark.parametrize(
+        "tiffinfo",
+        (
+            {TiffImagePlugin.IMAGEWIDTH: 1 << 27},
+            {TiffImagePlugin.IMAGELENGTH: 1 << 27},
+            {TiffImagePlugin.SAMPLESPERPIXEL: 3},
+            {TiffImagePlugin.PLANAR_CONFIGURATION: 2},
+        ),
+    )
+    def test_geometry_tags(
+        self, tiffinfo: dict[int, int], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        # The geometry of the image is used, not the geometry from tiffinfo.
+        # Otherwise libtiff would read past the end of the row buffer.
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        out = tmp_path / "temp.tif"
+        im = hopper("L")
+        im.save(out, tiffinfo=tiffinfo)
+
+        assert_image_equal_tofile(im, out)
+
     def test_inknames_tag(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:

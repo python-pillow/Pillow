@@ -792,6 +792,14 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
     TIFF *tiff = clientstate->tiff;
 
     if (state->state == 0) {
+        // state->buffer holds one row of the image, but TIFFWriteScanline reads
+        // a scanline of the size described by the IMAGEWIDTH, SAMPLESPERPIXEL
+        // and BITSPERSAMPLE tags, so these must not describe a larger row.
+        if (TIFFScanlineSize64(tiff) > (uint64_t)state->bytes) {
+            state->errcode = IMAGING_CODEC_CONFIG;
+            return -1;
+        }
+
         // Encoding line by line
         while (state->y < state->ysize) {
             state->shuffle(
