@@ -73,6 +73,46 @@ def test_n_frames() -> None:
         assert not im.is_animated
 
 
+def test_seek_mode_change() -> None:
+    with open("Tests/images/pil184.pcx", "rb") as fp:
+        mode_1 = fp.read()
+    with open("Tests/images/p_4_planes.pcx", "rb") as fp:
+        mode_P = fp.read()
+    b = BytesIO(
+        o32(DcxImagePlugin.MAGIC) + o32(12) + o32(12 + len(mode_1)) + mode_1 + mode_P
+    )
+    with Image.open(b) as im:
+        im.load()
+        assert im.mode == "1"
+
+        # Assert that C image is cleared after mode change
+        im.seek(1)
+        assert im.mode == "P"
+        assert im._im is None
+
+
+def test_seek_size_change() -> None:
+    b = BytesIO()
+    Image.new("1", (1, 1)).save(b, "PCX")
+    size_1 = b.getvalue()
+
+    b.seek(0)
+    Image.new("1", (1, 2)).save(b, "PCX")
+    size_2 = b.getvalue()
+
+    b = BytesIO(
+        o32(DcxImagePlugin.MAGIC) + o32(12) + o32(12 + len(size_1)) + size_1 + size_2
+    )
+    with Image.open(b) as im:
+        im.load()
+        assert im.size == (1, 1)
+
+        # Assert that C image is cleared after size change
+        im.seek(1)
+        assert im.size == (1, 2)
+        assert im._im is None
+
+
 def test_eoferror() -> None:
     with Image.open(TEST_FILE) as im:
         assert isinstance(im, DcxImagePlugin.DcxImageFile)

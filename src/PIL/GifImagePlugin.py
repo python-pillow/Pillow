@@ -43,8 +43,6 @@ from . import (
     Image,
     ImageChops,
     ImageFile,
-    ImageMath,
-    ImageOps,
     ImagePalette,
     ImageSequence,
 )
@@ -215,6 +213,7 @@ class GifImageFile(ImageFile.ImageFile):
         palette: ImagePalette.ImagePalette | Literal[False] | None = None
 
         info: dict[str, Any] = {}
+        comment_blocks: list[bytes] = []
         frame_transparency = None
         interlace = None
         frame_dispose_extent = None
@@ -252,18 +251,12 @@ class GifImageFile(ImageFile.ImageFile):
                     #
                     # comment extension
                     #
-                    comment = b""
-
-                    # Read this comment block
-                    while block:
-                        comment += block
-                        block = self.data()
-
-                    if "comment" in info:
+                    if block and comment_blocks:
                         # If multiple comment blocks in frame, separate with \n
-                        info["comment"] += b"\n" + comment
-                    else:
-                        info["comment"] = comment
+                        comment_blocks.append(b"\n")
+                    while block:
+                        comment_blocks.append(block)
+                        block = self.data()
                     s = b""
                     continue
                 elif s[0] == 255 and frame == 0 and block is not None:
@@ -288,8 +281,9 @@ class GifImageFile(ImageFile.ImageFile):
                 x0, y0 = i16(s, 0), i16(s, 2)
                 x1, y1 = x0 + i16(s, 4), y0 + i16(s, 6)
                 if (x1 > self.size[0] or y1 > self.size[1]) and update_image:
-                    self._size = max(x1, self.size[0]), max(y1, self.size[1])
-                    Image._decompression_bomb_check(self._size)
+                    size = max(x1, self.size[0]), max(y1, self.size[1])
+                    Image._decompression_bomb_check(size)
+                    self._size = size
                 frame_dispose_extent = x0, y0, x1, y1
                 flags = s[8]
 
@@ -431,8 +425,8 @@ class GifImageFile(ImageFile.ImageFile):
                 )
             ]
 
-        if info.get("comment"):
-            self.info["comment"] = info["comment"]
+        if comment_blocks:
+            self.info["comment"] = b"".join(comment_blocks)
         for k in ["duration", "extension"]:
             if k in info:
                 self.info[k] = info[k]
@@ -706,7 +700,10 @@ def _write_multiple_frames(
                 if not bbox:
                     # This frame is identical to the previous frame
                     if encoderinfo.get("duration"):
-                        im_frames[-1].encoderinfo["duration"] += encoderinfo["duration"]
+                        im_frames[-1].encoderinfo["duration"] = (
+                            im_frames[-1].encoderinfo.get("duration", 0)
+                            + encoderinfo["duration"]
+                        )
                     continue
                 if im_frames[-1].encoderinfo.get("disposal") == 2:
                     # To appear correctly in viewers using a convention,
@@ -735,44 +732,25 @@ def _write_multiple_frames(
                             pass
                     if "transparency" in encoderinfo:
                         # When the delta is zero, fill the image with transparency
-                        diff_frame = im_frame.copy()
-                        fill = Image.new("P", delta.size, encoderinfo["transparency"])
                         if delta.mode == "RGBA":
+                            # Each pixel is unchanged only if all four bands are zero
                             r, g, b, a = delta.split()
-                            mask = ImageMath.lambda_eval(
-                                lambda args: args["convert"](
-                                    args["max"](
-                                        args["max"](
-                                            args["max"](args["r"], args["g"]), args["b"]
-                                        ),
-                                        args["a"],
-                                    )
-                                    * 255,
-                                    "1",
-                                ),
-                                r=r,
-                                g=g,
-                                b=b,
-                                a=a,
+                            delta = ImageChops.lighter(
+                                ImageChops.lighter(r, g),
+                                ImageChops.lighter(b, a),
                             )
-                        else:
-                            if delta.mode == "P":
-                                # Convert to L without considering palette
-                                delta_l = Image.new("L", delta.size)
-                                delta_l.putdata(delta.get_flattened_data())
-                                delta = delta_l
-                            mask = ImageMath.lambda_eval(
-                                lambda args: args["convert"](args["im"] * 255, "1"),
-                                im=delta,
-                            )
-                        diff_frame.paste(fill, mask=ImageOps.invert(mask))
+                        # Map zero pixels (palette indices, for "P")
+                        # to a "1" mask without consulting the palette.
+                        unchanged = delta.point([255, *(0,) * 255], "1")
+                        diff_frame = im_frame.copy()
+                        diff_frame.paste(encoderinfo["transparency"], mask=unchanged)
             else:
                 bbox = None
             previous_im = im_frame
             im_frames.append(_Frame(diff_frame or im_frame, bbox, encoderinfo))
 
     if len(im_frames) == 1:
-        if "duration" in im.encoderinfo:
+        if "duration" in im_frames[0].encoderinfo:
             # Since multiple frames will not be written, use the combined duration
             im.encoderinfo["duration"] = im_frames[0].encoderinfo["duration"]
         return False
@@ -1057,17 +1035,16 @@ def _get_global_header(im: Image.Image, info: dict[str, Any]) -> list[bytes]:
             + o8(0)
         )
     if info.get("comment"):
-        comment_block = b"!" + o8(254)  # extension intro
+        header.append(b"!" + o8(254))  # extension intro
 
         comment = info["comment"]
         if isinstance(comment, str):
             comment = comment.encode()
         for i in range(0, len(comment), 255):
             subblock = comment[i : i + 255]
-            comment_block += o8(len(subblock)) + subblock
+            header.append(o8(len(subblock)) + subblock)
 
-        comment_block += o8(0)
-        header.append(comment_block)
+        header.append(o8(0))
     return header
 
 

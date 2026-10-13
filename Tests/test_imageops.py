@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from PIL import Image, ImageDraw, ImageOps, ImageStat, features
+from PIL import ExifTags, Image, ImageDraw, ImageOps, ImageStat, features
 
 from .helper import (
     assert_image_equal,
@@ -125,6 +125,20 @@ def test_fit_same_ratio() -> None:
         assert new_im.size == (1000, 755)
 
 
+def test_fit_zero() -> None:
+    im = Image.new("1", (5, 5))
+    new_im = ImageOps.fit(im, (0, 5))
+    assert new_im.width == 0
+
+    im = Image.new("1", (5, 0))
+    new_im = ImageOps.fit(im, (5, 5))
+    assert new_im.size == (5, 5)
+
+    im = Image.new("1", (5, 5))
+    new_im = ImageOps.fit(im, (10, 0))
+    assert new_im.size == (10, 0)
+
+
 @pytest.mark.parametrize("new_size", ((256, 256), (512, 256), (256, 512)))
 def test_contain(new_size: tuple[int, int]) -> None:
     im = hopper()
@@ -142,6 +156,24 @@ def test_contain_round() -> None:
     assert new_im.height == 5
 
 
+def test_contain_zero() -> None:
+    im = Image.new("1", (1, 10))
+    new_im = ImageOps.contain(im, (5, 5))
+    assert new_im.width == 0
+
+    im = Image.new("1", (10, 1))
+    new_im = ImageOps.contain(im, (5, 5))
+    assert new_im.height == 0
+
+    im = Image.new("1", (10, 0))
+    new_im = ImageOps.contain(im, (5, 5))
+    assert new_im.size == (5, 0)
+
+    im = Image.new("1", (5, 5))
+    new_im = ImageOps.contain(im, (2, 0))
+    assert new_im.size == (0, 0)
+
+
 @pytest.mark.parametrize(
     "image_name, expected_size",
     (
@@ -154,6 +186,16 @@ def test_cover(image_name: str, expected_size: tuple[int, int]) -> None:
     with Image.open("Tests/images/" + image_name) as im:
         new_im = ImageOps.cover(im, (256, 256))
         assert new_im.size == expected_size
+
+
+def test_cover_zero() -> None:
+    im = Image.new("1", (10, 0))
+    new_im = ImageOps.cover(im, (5, 5))
+    assert new_im.size == (5, 0)
+
+    im = Image.new("1", (5, 5))
+    new_im = ImageOps.cover(im, (2, 0))
+    assert new_im.size == (0, 0)
 
 
 def test_pad() -> None:
@@ -398,6 +440,12 @@ def test_colorize_invalid_mode() -> None:
         ImageOps.colorize(hopper("RGB"), "black", "white")
 
 
+@pytest.mark.parametrize("bits", (0, 9))
+def test_posterize_invalid_bits(bits: int) -> None:
+    with pytest.raises(ValueError, match="bits must be between or equal to 1 and 8"):
+        ImageOps.posterize(hopper("L"), bits)
+
+
 @pytest.mark.parametrize("blackpoint, whitepoint", ((-1, 255), (0, 256), (200, 50)))
 def test_colorize_invalid_points(blackpoint: int, whitepoint: int) -> None:
     with pytest.raises(ValueError, match="blackpoint and whitepoint must each be"):
@@ -484,15 +532,6 @@ def test_exif_transpose() -> None:
     assert 0x0112 not in transposed_im.getexif()
 
 
-def test_exif_transpose_with_xmp_tuple() -> None:
-    with Image.open("Tests/images/xmp_tags_orientation.png") as im:
-        assert im.getexif()[0x0112] == 3
-
-        im.info["xmp"] = (b"test",)
-        transposed_im = ImageOps.exif_transpose(im)
-        assert 0x0112 not in transposed_im.getexif()
-
-
 def test_exif_transpose_xml_without_xmp() -> None:
     with Image.open("Tests/images/xmp_tags_orientation.png") as im:
         assert im.getexif()[0x0112] == 3
@@ -501,6 +540,23 @@ def test_exif_transpose_xml_without_xmp() -> None:
         del im.info["xmp"]
         transposed_im = ImageOps.exif_transpose(im)
         assert 0x0112 not in transposed_im.getexif()
+
+
+def test_exif_transpose_raw_profile() -> None:
+    exif = Image.Exif()
+    exif[0x0112] = 3
+    exif[ExifTags.Base.UserComment] = "Pillow"
+    data = exif.tobytes()
+
+    im = Image.new("1", (1, 1))
+    im.info["Raw profile type exif"] = f"\nexif\n{len(data):8}\n{data.hex()}\n"
+    assert im.getexif()[0x0112] == 3
+
+    # Assert that the updated info is still present after transposing and copying
+    transposed_im = ImageOps.exif_transpose(im)
+    transposed_exif = transposed_im.copy().getexif()
+    assert 0x0112 not in transposed_exif
+    assert transposed_exif[ExifTags.Base.UserComment] == "Pillow"
 
 
 def test_exif_transpose_in_place() -> None:

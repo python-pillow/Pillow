@@ -155,6 +155,23 @@ def test_rankfilter_error(filter: ImageFilter.RankFilter) -> None:
         im.filter(filter).getpixel((1, 1))
 
 
+@pytest.mark.parametrize(
+    "filter",
+    (
+        ImageFilter.MinFilter(1),
+        ImageFilter.MedianFilter(1),
+        ImageFilter.MaxFilter(1),
+        ImageFilter.RankFilter(3, 1),
+    ),
+)
+@pytest.mark.parametrize("size", ((0, 1), (1, 0), (0, 0)))
+def test_rankfilter_zero_dimension(
+    filter: ImageFilter.RankFilter, size: tuple[int, int]
+) -> None:
+    im = Image.new("L", size)
+    assert im.filter(filter).size == size
+
+
 def test_rankfilter_properties() -> None:
     rankfilter = ImageFilter.RankFilter(3, 2)
 
