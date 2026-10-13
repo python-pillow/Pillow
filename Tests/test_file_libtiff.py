@@ -415,6 +415,101 @@ class TestFileLibTiff(LibTiffTestCase):
         with pytest.raises(OSError, match="encoder error -8"):
             im.save(out, tiffinfo=tiffinfo)
 
+    @pytest.mark.parametrize(
+        "tag, value",
+        (
+            # DNGPrivateData is a BYTE array with a count to libtiff
+            (50740, 4096),
+            # ActiveArea is a LONG array of four values to libtiff
+            (50829, 64),
+            (50829, (0, 0)),
+        ),
+    )
+    def test_libtiff_field_definition(
+        self, tag: int, value: Any, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[tag] = value
+        ifd.tagtype[tag] = TiffTags.LONG
+
+        out = tmp_path / "temp.tif"
+        im = Image.new("L", (1, 1))
+        with pytest.raises(ValueError, match="libtiff field definition"):
+            im.save(out, tiffinfo=ifd)
+
+        # Values that match the libtiff definition are written
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[50740] = b"private"
+        ifd.tagtype[50740] = TiffTags.BYTE
+        ifd[50829] = (0, 0, 1, 1)
+        ifd.tagtype[50829] = TiffTags.LONG
+        im.save(out, tiffinfo=ifd)
+
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2[50740] == b"private"
+            assert reloaded.tag_v2[50829] == (0, 0, 1, 1)
+
+    def test_transferfunction_not_saved(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        # TransferFunction is not supported by the libtiff encoder, so it is
+        # dropped rather than raising an error
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        out = tmp_path / "temp.tif"
+        im = Image.new("L", (1, 1))
+        im.save(out, tiffinfo={TiffImagePlugin.TRANSFERFUNCTION: tuple(range(256))})
+
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert TiffImagePlugin.TRANSFERFUNCTION not in reloaded.tag_v2
+
+    @pytest.mark.parametrize(
+        "tag, mode, value, invalid_value",
+        (
+            (320, "L", tuple((i % 256) * 256 for i in range(768)), (0, 0, 0)),
+            (530, "YCbCr", (1, 1), (1,)),
+            (532, "YCbCr", (0, 255, 128, 255, 128, 255), (0, 255)),
+        ),
+    )
+    def test_libtiff_core_field_definition(
+        self,
+        tag: int,
+        mode: str,
+        value: tuple[int, ...],
+        invalid_value: tuple[int, ...],
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+    ) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        out = tmp_path / "temp.tif"
+        im = Image.new(mode, (1, 1))
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[tag] = invalid_value
+        # The ColorMap length is checked in Python first
+        match = "Requiring 768 items" if tag == 320 else "libtiff field definition"
+        with pytest.raises(ValueError, match=match):
+            im.save(out, tiffinfo=ifd)
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[tag] = value
+
+        im.save(out, tiffinfo=ifd)
+
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            if tag == 532:
+                assert tuple(float(v) for v in reloaded.tag_v2[tag]) == pytest.approx(
+                    value
+                )
+            else:
+                assert tuple(reloaded.tag_v2[tag]) == value
+
     def test_inknames_tag(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:

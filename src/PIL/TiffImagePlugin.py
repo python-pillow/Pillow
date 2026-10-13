@@ -1981,13 +1981,10 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # STRIPOFFSETS and STRIPBYTECOUNTS are added by the library
         # based on the data in the strip.
         # OSUBFILETYPE is deprecated.
-        # The other tags expect arrays with a certain length (fixed or depending on
-        # BITSPERSAMPLE, etc), passing arrays with a different length will result in
-        # segfaults. Block these tags until we add extra validation.
+        # TRANSFERFUNCTION is not supported by the libtiff encoder.
         # SUBIFD may also cause a segfault.
         blocklist += [
             OSUBFILETYPE,
-            REFERENCEBLACKWHITE,
             STRIPBYTECOUNTS,
             STRIPOFFSETS,
             TRANSFERFUNCTION,
