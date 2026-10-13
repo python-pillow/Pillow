@@ -240,7 +240,7 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
 }
 
 static inline void
-line(
+line_generic(
     Imaging im,
     int x0,
     int y0,
@@ -557,15 +557,26 @@ add_edge(Edge *e, int x0, int y0, int x1, int y1) {
     e->y0 = y0;
 }
 
+#define DEFINE_LINE(name, point, hline)                                     \
+    static void name(Imaging im, int x0, int y0, int x1, int y1, int ink) { \
+        line_generic(im, x0, y0, x1, y1, ink, point, hline);                \
+    }
+
+DEFINE_LINE(line8, point8, hline8)
+DEFINE_LINE(line16, point16, hline16)
+DEFINE_LINE(line32, point32, hline32)
+DEFINE_LINE(line32rgba, point32rgba, hline32rgba)
+
 typedef struct {
     void (*point)(Imaging im, int x, int y, int ink);
     void (*hline)(Imaging im, int x0, int y0, int x1, int ink, Imaging mask);
+    void (*line)(Imaging im, int x0, int y0, int x1, int y1, int ink);
 } DRAW;
 
-DRAW draw8 = {point8, hline8};
-DRAW draw16 = {point16, hline16};
-DRAW draw32 = {point32, hline32};
-DRAW draw32rgba = {point32rgba, hline32rgba};
+DRAW draw8 = {point8, hline8, line8};
+DRAW draw16 = {point16, hline16, line16};
+DRAW draw32 = {point32, hline32, line32};
+DRAW draw32rgba = {point32rgba, hline32rgba, line32rgba};
 
 /* -------------------------------------------------------------------- */
 /* Interface                                                            */
@@ -604,7 +615,7 @@ ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void *ink_, in
 
     DRAWINIT();
 
-    line(im, x0, y0, x1, y1, ink, draw->point, draw->hline);
+    draw->line(im, x0, y0, x1, y1, ink);
 
     return 0;
 }
@@ -713,26 +724,8 @@ ImagingDrawRectangle(
         for (i = 0; i < width; i++) {
             draw->hline(im, x0, y0 + i, x1, ink, NULL);
             draw->hline(im, x0, y1 - i, x1, ink, NULL);
-            line(
-                im,
-                x1 - i,
-                y0 + width,
-                x1 - i,
-                y1 - width + 1,
-                ink,
-                draw->point,
-                draw->hline
-            );
-            line(
-                im,
-                x0 + i,
-                y0 + width,
-                x0 + i,
-                y1 - width + 1,
-                ink,
-                draw->point,
-                draw->hline
-            );
+            draw->line(im, x1 - i, y0 + width, x1 - i, y1 - width + 1, ink);
+            draw->line(im, x0 + i, y0 + width, x0 + i, y1 - width + 1, ink);
         }
     }
 
@@ -799,27 +792,11 @@ ImagingDrawPolygon(
         /* Outline */
         if (width == 1) {
             for (i = 0; i < count - 1; i++) {
-                line(
-                    im,
-                    xy[i * 2],
-                    xy[i * 2 + 1],
-                    xy[i * 2 + 2],
-                    xy[i * 2 + 3],
-                    ink,
-                    draw->point,
-                    draw->hline
+                draw->line(
+                    im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink
                 );
             }
-            line(
-                im,
-                xy[i * 2],
-                xy[i * 2 + 1],
-                xy[0],
-                xy[1],
-                ink,
-                draw->point,
-                draw->hline
-            );
+            draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink);
         } else {
             for (i = 0; i < count - 1; i++) {
                 ImagingDrawWideLine(
