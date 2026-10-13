@@ -47,24 +47,22 @@
 // need to care about it.
 static inline INT32
 ink16(Imaging im, const void *ink_) {
-    const UINT8 *in = ink_;
-    UINT8 out[2];
-    UINT16 ink;
-
     if (
         im->mode == IMAGING_MODE_I_16B
 #ifdef WORDS_BIGENDIAN
         || im->mode == IMAGING_MODE_I_16N
 #endif
     ) {
+        const UINT8 *in = ink_;
+        UINT8 out[2];
+        UINT16 ink;
         out[0] = in[1];
         out[1] = in[0];
+        memcpy(&ink, out, sizeof(ink));
+        return ink;
     } else {
-        out[0] = in[0];
-        out[1] = in[1];
+        return (*(UINT16 *)ink_);
     }
-    memcpy(&ink, out, sizeof(ink));
-    return ink;
 }
 
 /*
