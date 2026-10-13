@@ -101,6 +101,9 @@ def test_dpi() -> None:
     with Image.open(output) as reloaded:
         assert reloaded.info["dpi"] == (72.008961115161, 72.008961115161)
 
+    with Image.open("Tests/images/hopper_rle8_grayscale.bmp") as im:
+        assert "dpi" not in im.info
+
 
 def test_save_bmp_with_dpi(tmp_path: Path) -> None:
     # Test for #1301
