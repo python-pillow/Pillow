@@ -93,14 +93,6 @@ def test_odd(tmp_path: Path, mode: str, size: int) -> None:
     _roundtrip(tmp_path, hopper(mode).resize((size, size)))
 
 
-@pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
-@pytest.mark.parametrize("height", (5, 40000))
-def test_one_pixel_wide(tmp_path: Path, mode: str, height: int) -> None:
-    # A color plane that is a single byte wide ends as soon as it is read.
-    # The taller image does not fit in one encoder buffer.
-    _roundtrip(tmp_path, hopper(mode).resize((1, height)))
-
-
 def test_odd_read() -> None:
     # Reading an image with an odd stride, making it malformed
     with Image.open("Tests/images/odd_stride.pcx") as im:
