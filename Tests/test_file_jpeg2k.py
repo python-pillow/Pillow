@@ -529,6 +529,7 @@ def test_channel_definitions_ignored(
     with Image.open(BytesIO(data)) as reloaded:
         assert_image_equal(reloaded, im)
 
+
 def test_five_channels() -> None:
     with open("Tests/images/rgb_trns_ycbc.jp2", "rb") as fp:
         data = fp.read()
