@@ -134,12 +134,6 @@ escape sequences.
 Other changes
 =============
 
-Drawing on I;16B images
-^^^^^^^^^^^^^^^^^^^^^^^
-
-When drawing on an ``I;16B`` image, some drawing methods wrote in the wrong byte order.
-All drawing operations now use the byte order of the image mode.
-
 Python 3.15
 ^^^^^^^^^^^
 
@@ -207,6 +201,12 @@ Fixed ImageChops.offset() for 16-bit images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :py:meth:`~PIL.ImageChops.offset` now works correctly for 16-bit-per-channel images.
+
+Fixed drawing on I;16B images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When drawing on an ``I;16B`` image, some drawing methods wrote in the wrong byte order.
+All drawing operations now use the byte order of the image mode.
 
 Fixed histograms for masked LA, La and PA images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
