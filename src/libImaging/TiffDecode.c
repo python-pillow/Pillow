@@ -361,7 +361,7 @@ _decodeTile(
     }
 
     unpacker_row_byte_size = ((tsize_t)tile_width * state->bits / planes + 7) / 8;
-    if (tile_bytes_size != (unpacker_row_byte_size * tile_length)) {
+    if (tile_bytes_size != unpacker_row_byte_size * tile_length) {
         // If the tile size as expected by LibTiff isn't what we're expecting, abort.
         // man:   TIFFTileSize returns the equivalent size for a tile of data as it
         // would be returned in a call to TIFFReadTile ...
