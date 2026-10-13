@@ -3567,7 +3567,7 @@ _draw_bitmap_impl(ImagingDrawObject *self, PyObject *args) {
     // self is locked here, we need to lock self->image and bitmap
     ImagingObject *_image = self->image;
     int blend = self->blend;
-    // this unlocks self, so we've fopied the critical bits to local.
+    // this unlocks self, so we've copied the critical bits to local.
     Py_BEGIN_CRITICAL_SECTION2(_image, bitmap);
     n = ImagingDrawBitmap(
         _image->image, (int)xy[0], (int)xy[1], bitmap->image, &ink, blend
