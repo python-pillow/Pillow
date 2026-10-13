@@ -1583,7 +1583,9 @@ static struct {
  * @param palette Target palette for conversions to "P" or "PA";
  *                NULL to use a default palette.
  * @param dither  Dither method when converting to "P", "PA" or "1".
- *                Any value other than IMAGING_DITHER_NONE uses Floyd-Steinberg.
+ *                Currently, for historical PIL reasons,
+ *                any value other than IMAGING_DITHER_NONE uses Floyd-Steinberg
+ *                dithering.
  * @return        The resulting Imaging object,
  *                or NULL with a Python exception set on failure.
  */
