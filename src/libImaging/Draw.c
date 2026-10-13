@@ -86,6 +86,8 @@ typedef struct {
     float dx;
 } Edge;
 
+typedef void (*point_handler)(Imaging, int, int, int);
+
 /* Type used in "polygon*" functions */
 typedef void (*hline_handler)(Imaging, int, int, int, int, Imaging);
 
@@ -239,90 +241,85 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
     }
 }
 
-#define GEN_LINE(point, hline)                                   \
-    {                                                            \
-        int i, n, e, dx, dy, xs, ys;                             \
-        /* normalize coordinates */                              \
-        dy = y1 - y0;                                            \
-        if (dy < 0) {                                            \
-            dy = -dy, ys = -1;                                   \
-        } else if (dy == 0) { /* horizontal, exclude endpoint */ \
-            if (x1 > x0) {                                       \
-                hline(im, x0, y0, x1 - 1, ink, NULL);            \
-            } else if (x0 > x1) {                                \
-                hline(im, x1 + 1, y0, x0, ink, NULL);            \
-            }                                                    \
-            return;                                              \
-        } else {                                                 \
-            ys = 1;                                              \
-        }                                                        \
-        dx = x1 - x0;                                            \
-        if (dx < 0) {                                            \
-            dx = -dx, xs = -1;                                   \
-        } else {                                                 \
-            xs = 1;                                              \
-        }                                                        \
-                                                                 \
-        n = (dx > dy) ? dx : dy;                                 \
-                                                                 \
-        if (dx == 0) { /* vertical */                            \
-            for (i = 0; i < dy; i++) {                           \
-                point(im, x0, y0, ink);                          \
-                y0 += ys;                                        \
-            }                                                    \
-        } else if (dx > dy) { /* bresenham, horizontal slope */  \
-            n = dx;                                              \
-            dy += dy;                                            \
-            e = dy - dx;                                         \
-            dx += dx;                                            \
-                                                                 \
-            for (i = 0; i < n; i++) {                            \
-                point(im, x0, y0, ink);                          \
-                if (e >= 0) {                                    \
-                    y0 += ys;                                    \
-                    e -= dx;                                     \
-                }                                                \
-                e += dy;                                         \
-                x0 += xs;                                        \
-            }                                                    \
-        } else { /* bresenham, vertical slope */                 \
-            n = dy;                                              \
-            dx += dx;                                            \
-            e = dx - dy;                                         \
-            dy += dy;                                            \
-                                                                 \
-            for (i = 0; i < n; i++) {                            \
-                point(im, x0, y0, ink);                          \
-                if (e >= 0) {                                    \
-                    x0 += xs;                                    \
-                    e -= dy;                                     \
-                }                                                \
-                e += dx;                                         \
-                y0 += ys;                                        \
-            }                                                    \
-        }                                                        \
+static inline void
+line(
+    Imaging im,
+    int x0,
+    int y0,
+    int x1,
+    int y1,
+    int ink,
+    point_handler point,
+    hline_handler hline
+) {
+    int i, n, e, dx, dy, xs, ys;
+
+    /* normalize coordinates */
+    dy = y1 - y0;
+    if (dy < 0) {
+        dy = -dy, ys = -1;
+    } else if (dy == 0) {
+        /* horizontal */
+        if (x1 > x0) {
+            hline(im, x0, y0, x1 - 1, ink, NULL);
+        } else if (x0 > x1) {
+            hline(im, x1 + 1, y0, x0, ink, NULL);
+        }
+        return;
+    } else {
+        ys = 1;
+    }
+    dx = x1 - x0;
+    if (dx < 0) {
+        dx = -dx, xs = -1;
+    } else {
+        xs = 1;
     }
 
-static inline void
-line8(Imaging im, int x0, int y0, int x1, int y1, int ink) {
-    GEN_LINE(point8, hline8);
-}
+    n = (dx > dy) ? dx : dy;
 
-static inline void
-line16(Imaging im, int x0, int y0, int x1, int y1, int ink) {
-    GEN_LINE(point16, hline16);
-}
+    if (dx == 0) {
+        /* vertical */
+        for (i = 0; i < dy; i++) {
+            point(im, x0, y0, ink);
+            y0 += ys;
+        }
 
-static inline void
-line32(Imaging im, int x0, int y0, int x1, int y1, int ink) {
-    GEN_LINE(point32, hline32);
-}
+    } else if (dx > dy) {
+        /* bresenham, horizontal slope */
+        n = dx;
+        dy += dy;
+        e = dy - dx;
+        dx += dx;
 
-static inline void
-line32rgba(Imaging im, int x0, int y0, int x1, int y1, int ink) {
-    GEN_LINE(point32rgba, hline32rgba);
+        for (i = 0; i < n; i++) {
+            point(im, x0, y0, ink);
+            if (e >= 0) {
+                y0 += ys;
+                e -= dx;
+            }
+            e += dy;
+            x0 += xs;
+        }
+
+    } else {
+        /* bresenham, vertical slope */
+        n = dy;
+        dx += dx;
+        e = dx - dy;
+        dy += dy;
+
+        for (i = 0; i < n; i++) {
+            point(im, x0, y0, ink);
+            if (e >= 0) {
+                x0 += xs;
+                e -= dy;
+            }
+            e += dx;
+            y0 += ys;
+        }
+    }
 }
-#undef GEN_LINE
 
 static int
 x_cmp(const void *x0, const void *x1) {
@@ -565,13 +562,12 @@ add_edge(Edge *e, int x0, int y0, int x1, int y1) {
 typedef struct {
     void (*point)(Imaging im, int x, int y, int ink);
     void (*hline)(Imaging im, int x0, int y0, int x1, int ink, Imaging mask);
-    void (*line)(Imaging im, int x0, int y0, int x1, int y1, int ink);
 } DRAW;
 
-DRAW draw8 = {point8, hline8, line8};
-DRAW draw16 = {point16, hline16, line16};
-DRAW draw32 = {point32, hline32, line32};
-DRAW draw32rgba = {point32rgba, hline32rgba, line32rgba};
+DRAW draw8 = {point8, hline8};
+DRAW draw16 = {point16, hline16};
+DRAW draw32 = {point32, hline32};
+DRAW draw32rgba = {point32rgba, hline32rgba};
 
 /* -------------------------------------------------------------------- */
 /* Interface                                                            */
@@ -610,7 +606,7 @@ ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void *ink_, in
 
     DRAWINIT();
 
-    draw->line(im, x0, y0, x1, y1, ink);
+    line(im, x0, y0, x1, y1, ink, draw->point, draw->hline);
 
     return 0;
 }
@@ -719,8 +715,26 @@ ImagingDrawRectangle(
         for (i = 0; i < width; i++) {
             draw->hline(im, x0, y0 + i, x1, ink, NULL);
             draw->hline(im, x0, y1 - i, x1, ink, NULL);
-            draw->line(im, x1 - i, y0 + width, x1 - i, y1 - width + 1, ink);
-            draw->line(im, x0 + i, y0 + width, x0 + i, y1 - width + 1, ink);
+            line(
+                im,
+                x1 - i,
+                y0 + width,
+                x1 - i,
+                y1 - width + 1,
+                ink,
+                draw->point,
+                draw->hline
+            );
+            line(
+                im,
+                x0 + i,
+                y0 + width,
+                x0 + i,
+                y1 - width + 1,
+                ink,
+                draw->point,
+                draw->hline
+            );
         }
     }
 
@@ -787,11 +801,27 @@ ImagingDrawPolygon(
         /* Outline */
         if (width == 1) {
             for (i = 0; i < count - 1; i++) {
-                draw->line(
-                    im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink
+                line(
+                    im,
+                    xy[i * 2],
+                    xy[i * 2 + 1],
+                    xy[i * 2 + 2],
+                    xy[i * 2 + 3],
+                    ink,
+                    draw->point,
+                    draw->hline
                 );
             }
-            draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink);
+            line(
+                im,
+                xy[i * 2],
+                xy[i * 2 + 1],
+                xy[0],
+                xy[1],
+                ink,
+                draw->point,
+                draw->hline
+            );
         } else {
             for (i = 0; i < count - 1; i++) {
                 ImagingDrawWideLine(
