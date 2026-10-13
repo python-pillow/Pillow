@@ -234,9 +234,7 @@ ArrowError(int err) {
         return ImagingError_ValueError("Incompatible Pillow mode for Arrow array");
     }
     if (err == IMAGING_ARROW_MEMORY_LAYOUT) {
-        return ImagingError_ValueError(
-            "Image is in multiple array blocks, use imaging_new_block for zero copy"
-        );
+        return ImagingError_ValueError("Image rows are not contiguous in memory.");
     }
     return ImagingError_ValueError("Unknown error");
 }
@@ -2041,10 +2039,16 @@ _resize(ImagingObject *self, PyObject *args) {
         a[5] = box[1];
 
         imOut = ImagingNewDirty(imIn->mode, xsize, ysize);
+        if (!imOut) {
+            return NULL;
+        }
 
-        imOut = ImagingTransform(
-            imOut, imIn, IMAGING_TRANSFORM_AFFINE, 0, 0, xsize, ysize, a, filter, 1
-        );
+        if (ImagingTransform(
+                imOut, imIn, IMAGING_TRANSFORM_AFFINE, 0, 0, xsize, ysize, a, filter, 1
+            )) {
+            ImagingDelete(imOut);
+            return NULL;
+        }
     } else {
         imOut = ImagingResample(imIn, xsize, ysize, filter, box);
     }
@@ -2121,7 +2125,6 @@ static PyObject *
 _transform(ImagingObject *self, PyObject *args) {
     static const char *wrong_length = "wrong number of matrix entries";
 
-    Imaging imOut;
     Py_ssize_t n;
     double *a;
 
@@ -2167,13 +2170,13 @@ _transform(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    imOut = ImagingTransform(
+    int error = ImagingTransform(
         self->image, imagep->image, method, x0, y0, x1, y1, a, filter, fill
     );
 
     free(a);
 
-    if (!imOut) {
+    if (error) {
         return NULL;
     }
 

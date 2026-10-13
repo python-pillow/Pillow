@@ -143,6 +143,11 @@ immediately at the release of 3.15.0 final (2026-10-01, :pep:`790`).
 
 Pillow 13.0.0 now officially supports Python 3.15.
 
+PyPy 3.12
+^^^^^^^^^
+
+Wheels are now also built for PyPy 3.12, in addition to PyPy 3.11.
+
 Faster JPEG 2000, TIFF, FreeType and LittleCMS in macOS and Linux wheels
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -211,6 +216,28 @@ When :py:meth:`~PIL.Image.Image.histogram` was given a mask for a two-band image
 La or PA), the second band was incorrectly derived from the first band of the input
 image, rather than the alpha band.
 
+Fixed exporting Arrow arrays from images with non-contiguous rows
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Exporting an image as an Arrow array assumed that its rows were contiguous. However,
+this was not the case for
+
+* images whose rows were padded to an alignment returned incorrect data,
+* empty images,
+* images created by :py:func:`~PIL.Image.frombuffer`, and
+* images memory-mapped from uncompressed files.
+
+These images crashed instead.
+
+Images with rows that are not contiguous now raise a :py:exc:`ValueError`, and the
+others are exported correctly.
+
+Fixed combining GIF frames with missing durations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Saving identical consecutive GIF frames no longer raises a ``KeyError`` when an earlier
+frame has no duration and a later frame does.
+
 PNG palettes are no longer padded when saving with the ``bits`` argument
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -235,3 +262,16 @@ position or contents.
 
 :py:meth:`~PIL.Image.Image.tobytes` also now explicitly cleans up its encoder on
 both success and failure, rather than relying on object destruction.
+
+Fixed reading PSD layers at the wrong file offset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When seeking to a layer of a PSD image, the pixel data was read from the wrong
+position in the file, so :py:meth:`~PIL.Image.Image.seek` returned unrelated
+bytes reinterpreted as image data instead of that layer's actual content.
+
+Fixed opening XBM images with comments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+XBM images with C-style ``/* ... */`` comments in the header could not be identified.
+Comments on separate lines before the bits declaration are now skipped.

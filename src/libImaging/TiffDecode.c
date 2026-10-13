@@ -352,7 +352,8 @@ _decodeTile(
         return -1;
     }
 
-    if (tile_bytes_size > ((tile_length * state->bits / planes + 7) / 8) * tile_width) {
+    if (tile_bytes_size !=
+        ((tile_length * state->bits / planes + 7) / 8) * tile_width) {
         // If the tile size as expected by LibTiff isn't what we're expecting, abort.
         // man:   TIFFTileSize returns the equivalent size for a tile of data as it
         // would be returned in a call to TIFFReadTile ...
@@ -360,16 +361,23 @@ _decodeTile(
         return -1;
     }
 
-    state->bytes = tile_bytes_size;
-
     /* realloc to fit whole tile */
     /* malloc check above */
-    new_data = realloc(state->buffer, state->bytes);
+    new_data = realloc(state->buffer, tile_bytes_size);
     if (!new_data) {
         state->errcode = IMAGING_CODEC_MEMORY;
         return -1;
     }
     state->buffer = new_data;
+
+    if (tile_bytes_size > state->bytes) {
+        // Some codecs (e.g. JPEG, Group 4) succeed on a tile that decodes
+        // to fewer rows than the tile length, leaving the rest of the buffer untouched.
+        // Clear it so that uninitialised memory is not copied into the image.
+        memset(state->buffer + state->bytes, 0, tile_bytes_size - state->bytes);
+    }
+
+    state->bytes = tile_bytes_size;
 
     for (y = state->yoff; y < state->ysize; y += tile_length) {
         int plane;
@@ -437,8 +445,6 @@ _decodeStrip(
         return -1;
     }
 
-    state->bytes = strip_size;
-
     row_byte_size = TIFFScanlineSize(tiff);
 
     // if the unpacker calculated row size is > row byte size, (at least) the last
@@ -450,13 +456,21 @@ _decodeStrip(
 
     /* realloc to fit whole strip */
     /* malloc check above */
-    new_data = realloc(state->buffer, state->bytes);
+    new_data = realloc(state->buffer, strip_size);
     if (!new_data) {
         state->errcode = IMAGING_CODEC_MEMORY;
         return -1;
     }
-
     state->buffer = new_data;
+
+    if (strip_size > state->bytes) {
+        // Some codecs (e.g. JPEG, Group 4) succeed on a strip that decodes
+        // to fewer rows than RowsPerStrip, leaving the rest of the buffer untouched.
+        // Clear it so that uninitialised memory is not copied into the image.
+        memset(state->buffer + state->bytes, 0, strip_size - state->bytes);
+    }
+
+    state->bytes = strip_size;
 
     for (; state->y < state->ysize; state->y += rows_per_strip) {
         int plane;
@@ -739,26 +753,28 @@ ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...) {
     return status;
 }
 
-int
+void
 ImagingLibTiffEncodeCleanup(ImagingCodecState state) {
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
     TIFF *tiff = clientstate->tiff;
 
-    if (!tiff) {
-        return 0;
+    if (tiff) {
+        // TIFFClose in libtiff calls tif_closeproc and TIFFCleanup
+        if (clientstate->fp) {
+            // Python will manage the closing of the file rather than libtiff
+            // So only call TIFFCleanup
+            TIFFCleanup(tiff);
+        } else {
+            // When tif_closeproc refers to our custom _tiffCloseProc though,
+            // that is fine, as it does not close the file
+            TIFFClose(tiff);
+        }
+        clientstate->tiff = NULL;
     }
-    // TIFFClose in libtiff calls tif_closeproc and TIFFCleanup
-    if (clientstate->fp) {
-        // Python will manage the closing of the file rather than libtiff
-        // So only call TIFFCleanup
-        TIFFCleanup(tiff);
-    } else {
-        // When tif_closeproc refers to our custom _tiffCloseProc though,
-        // that is fine, as it does not close the file
-        TIFFClose(tiff);
+    if (clientstate->data) {
+        free(clientstate->data);
+        clientstate->data = 0;
     }
-    clientstate->tiff = NULL;
-    return 0;
 }
 
 int
@@ -789,13 +805,6 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
                     tiff, (tdata_t)(state->buffer), (uint32_t)state->y, 0
                 ) == -1) {
                 state->errcode = IMAGING_CODEC_BROKEN;
-
-                if (clientstate->fp) {
-                    TIFFCleanup(tiff);
-                    clientstate->tiff = NULL;
-                } else {
-                    free(clientstate->data);
-                }
                 return -1;
             }
             state->y++;
@@ -807,9 +816,6 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
             if (!TIFFFlush(tiff)) {
                 // likely reason is memory.
                 state->errcode = IMAGING_CODEC_MEMORY;
-                if (!clientstate->fp) {
-                    free(clientstate->data);
-                }
                 return -1;
             }
             // reset the clientstate metadata to use it to read out the buffer.
@@ -824,7 +830,6 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
 
         if (clientstate->loc == clientstate->eof) {
             state->errcode = IMAGING_CODEC_END;
-            free(clientstate->data);
         }
         return read;
     }

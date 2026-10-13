@@ -529,6 +529,15 @@ def test_channel_definitions_ignored(
     with Image.open(BytesIO(data)) as reloaded:
         assert_image_equal(reloaded, im)
 
+def test_five_channels() -> None:
+    with open("Tests/images/rgb_trns_ycbc.jp2", "rb") as fp:
+        data = fp.read()
+
+    data = data[:126] + b"\x05" + data[127:]
+
+    with pytest.raises(SyntaxError, match="unable to determine J2K image mode"):
+        Jpeg2KImagePlugin.Jpeg2KImageFile(BytesIO(data))
+
 
 @pytest.mark.skipif(
     not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"

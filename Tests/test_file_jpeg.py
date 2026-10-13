@@ -84,6 +84,17 @@ class TestFileJpeg:
             assert im.format == "JPEG"
             assert im.get_format_mimetype() == "image/jpeg"
 
+    def test_truncated_header(self) -> None:
+        # EOF reading the byte after magic number
+        b = BytesIO(b"\xff\xd8\xff")
+        with pytest.raises(SyntaxError, match="not identified by this driver"):
+            JpegImagePlugin.JpegImageFile(b)
+
+        # EOF while reading extraneous data
+        b = BytesIO(b"\xff\xd8\xff\x00")
+        with pytest.raises(SyntaxError, match="not identified by this driver"):
+            JpegImagePlugin.JpegImageFile(b)
+
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero(self, size: tuple[int, int], tmp_path: Path) -> None:
         f = tmp_path / "temp.jpg"
@@ -128,6 +139,14 @@ class TestFileJpeg:
                 im.save(out, format="JPEG", comment=comment)
                 with Image.open(out) as reloaded:
                     assert reloaded.info["comment"] == b"Test comment text"
+
+    def test_large_comment(self, tmp_path: Path) -> None:
+        f = tmp_path / "temp.jpg"
+        im = hopper()
+        im.save(f, "JPEG", comment=b"1" * 65533)
+
+        with pytest.raises(ValueError, match="Comment is too long"):
+            im.save(f, "JPEG", comment=b"1" * 65534)
 
     def test_cmyk(self) -> None:
         # Test CMYK handling.  Thanks to Tim and Charlie for test data,
@@ -226,6 +245,16 @@ class TestFileJpeg:
         assert len(icc_profile) == n  # sanity
         im1 = self.roundtrip(hopper(), icc_profile=icc_profile)
         assert im1.info.get("icc_profile") == (icc_profile or None)
+
+    def test_icc_big_comment(self) -> None:
+        # The ICC profile may fill the encoder buffer exactly, in which case the
+        # comment has to be written to the next buffer
+        comment = b"C" * 65533
+        for n in range(ImageFile.MAXBLOCK - 40, ImageFile.MAXBLOCK - 30):
+            icc_profile = b"I" * n
+            im = self.roundtrip(hopper(), icc_profile=icc_profile, comment=comment)
+            assert im.info["icc_profile"] == icc_profile
+            assert im.info["comment"] == comment
 
     def test_large_icc_meta(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/148
@@ -552,6 +581,14 @@ class TestFileJpeg:
 
             # Test that the error is raised if loaded a second time
             with pytest.raises(OSError):
+                im.load()
+
+    def test_wider_than_tile(self) -> None:
+        # The decoder's scanline buffer is sized from the tile extents,
+        # so a JPEG wider than its tile must be rejected
+        with Image.open(TEST_FILE) as im:
+            im.tile = [im.tile[0]._replace(extents=(0, 0, 64, 64))]
+            with pytest.raises(OSError, match="broken data stream"):
                 im.load()
 
     def test_qtables(self) -> None:

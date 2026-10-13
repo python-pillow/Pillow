@@ -637,7 +637,7 @@ ImagingJpeg2KEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) 
 /* Cleanup                                                              */
 /* -------------------------------------------------------------------- */
 
-int
+void
 ImagingJpeg2KEncodeCleanup(ImagingCodecState state) {
     JPEG2KENCODESTATE *context = (JPEG2KENCODESTATE *)state->context;
 
@@ -656,8 +656,6 @@ ImagingJpeg2KEncodeCleanup(ImagingCodecState state) {
 
     context->error_msg = NULL;
     context->comment = NULL;
-
-    return -1;
 }
 
 #endif /* HAVE_OPENJPEG */
