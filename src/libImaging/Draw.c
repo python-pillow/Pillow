@@ -259,7 +259,7 @@ should_draw_dash(int i, int *dash_offset, PyObject *dash) {
 }
 
 static inline void
-line(
+line_generic(
     Imaging im,
     int x0,
     int y0,
@@ -625,15 +625,44 @@ add_edge(Edge *e, int x0, int y0, int x1, int y1) {
     e->y0 = y0;
 }
 
+#define DEFINE_LINE(name, point, hline)                                         \
+    static void name(                                                           \
+        Imaging im,                                                             \
+        int x0,                                                                 \
+        int y0,                                                                 \
+        int x1,                                                                 \
+        int y1,                                                                 \
+        int ink,                                                                \
+        PyObject *dash,                                                         \
+        int *dash_offset                                                        \
+    ) {                                                                         \
+        line_generic(im, x0, y0, x1, y1, ink, point, hline, dash, dash_offset); \
+    }
+
+DEFINE_LINE(line8, point8, hline8)
+DEFINE_LINE(line16, point16, hline16)
+DEFINE_LINE(line32, point32, hline32)
+DEFINE_LINE(line32rgba, point32rgba, hline32rgba)
+
 typedef struct {
     void (*point)(Imaging im, int x, int y, int ink);
     void (*hline)(Imaging im, int x0, int y0, int x1, int ink, Imaging mask);
+    void (*line)(
+        Imaging im,
+        int x0,
+        int y0,
+        int x1,
+        int y1,
+        int ink,
+        PyObject *dash,
+        int *dash_offset
+    );
 } DRAW;
 
-DRAW draw8 = {point8, hline8};
-DRAW draw16 = {point16, hline16};
-DRAW draw32 = {point32, hline32};
-DRAW draw32rgba = {point32rgba, hline32rgba};
+DRAW draw8 = {point8, hline8, line8};
+DRAW draw16 = {point16, hline16, line16};
+DRAW draw32 = {point32, hline32, line32};
+DRAW draw32rgba = {point32rgba, hline32rgba, line32rgba};
 
 /* -------------------------------------------------------------------- */
 /* Interface                                                            */
@@ -682,7 +711,7 @@ ImagingDrawLine(
 
     DRAWINIT();
 
-    line(im, x0, y0, x1, y1, ink, draw->point, draw->hline, dash, dash_offset);
+    draw->line(im, x0, y0, x1, y1, ink, dash, dash_offset);
 
     return 0;
 }
@@ -791,30 +820,8 @@ ImagingDrawRectangle(
         for (i = 0; i < width; i++) {
             draw->hline(im, x0, y0 + i, x1, ink, NULL);
             draw->hline(im, x0, y1 - i, x1, ink, NULL);
-            line(
-                im,
-                x1 - i,
-                y0 + width,
-                x1 - i,
-                y1 - width + 1,
-                ink,
-                draw->point,
-                draw->hline,
-                NULL,
-                NULL
-            );
-            line(
-                im,
-                x0 + i,
-                y0 + width,
-                x0 + i,
-                y1 - width + 1,
-                ink,
-                draw->point,
-                draw->hline,
-                NULL,
-                NULL
-            );
+            draw->line(im, x1 - i, y0 + width, x1 - i, y1 - width + 1, ink, NULL, NULL);
+            draw->line(im, x0 + i, y0 + width, x0 + i, y1 - width + 1, ink, NULL, NULL);
         }
     }
 
@@ -883,30 +890,19 @@ ImagingDrawPolygon(
         if (width == 1) {
             int dash_offset = 0;
             for (i = 0; i < count - 1; i++) {
-                line(
+                draw->line(
                     im,
                     xy[i * 2],
                     xy[i * 2 + 1],
                     xy[i * 2 + 2],
                     xy[i * 2 + 3],
                     ink,
-                    draw->point,
-                    draw->hline,
                     dash,
                     &dash_offset
                 );
             }
-            line(
-                im,
-                xy[i * 2],
-                xy[i * 2 + 1],
-                xy[0],
-                xy[1],
-                ink,
-                draw->point,
-                draw->hline,
-                dash,
-                &dash_offset
+            draw->line(
+                im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink, dash, &dash_offset
             );
         } else {
             for (i = 0; i < count - 1; i++) {
