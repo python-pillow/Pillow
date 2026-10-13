@@ -19,10 +19,11 @@ from __future__ import annotations
 import abc
 from typing import cast
 
+from PIL import Image
+
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
-    from types import ModuleType
     from typing import Any
 
     from . import _imaging
@@ -73,6 +74,15 @@ class Kernel(BuiltinFilter):
         scale: float | None = None,
         offset: float = 0,
     ) -> None:
+        if type(kernel) in (list, tuple):
+            for value in kernel:
+                if type(value) not in (int, float):
+                    msg = "sequence must be flattened"
+                    raise TypeError(msg)
+        else:
+            msg = "argument must be a sequence"
+            raise TypeError(msg)
+
         if scale is None:
             # default scale is sum of kernel
             scale = sum(kernel)
@@ -407,15 +417,8 @@ class Color3DLUT(MultibandFilter):
         items = size[0] * size[1] * size[2]
         wrong_size = False
 
-        numpy: ModuleType | None = None
-        if hasattr(table, "shape"):
-            try:
-                import numpy
-            except ImportError:
-                pass
-
-        if numpy and isinstance(table, numpy.ndarray):
-            numpy_table: NumpyArray = table
+        if Image._is_numpy_array(table):
+            numpy_table = cast("NumpyArray", table)
             if copy_table:
                 numpy_table = numpy_table.copy()
 
