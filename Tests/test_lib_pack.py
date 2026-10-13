@@ -829,10 +829,10 @@ class TestLibUnpack:
     @pytest.mark.parametrize(
         "size, data_len, rawmode",
         (
-            ((9, 1), 4, "P;2L"),
-            ((9, 1), 8, "P;4L"),
             ((8, 1), 2, "P;2L"),
             ((8, 1), 4, "P;4L"),
+            ((9, 1), 4, "P;2L"),
+            ((9, 1), 8, "P;4L"),
             ((17, 4), 24, "P;2L"),
             ((17, 8), 96, "P;4L"),
         ),
