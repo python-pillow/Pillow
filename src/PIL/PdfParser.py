@@ -444,7 +444,10 @@ class PdfParser:
 
     def close_buf(self) -> None:
         if isinstance(self.buf, memoryview):
+            import gc
+
             self.buf.release()
+            gc.collect()
         elif isinstance(self.buf, mmap.mmap):
             self.buf.close()
         self.buf = None
