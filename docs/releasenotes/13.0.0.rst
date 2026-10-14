@@ -99,6 +99,14 @@ intended for internal use, so there is no replacement.
 API changes
 ===========
 
+Resizing images with alpha
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``reducing_gap`` argument to :py:meth:`~PIL.Image.Image.resize` is now
+applied to RGBA and LA images. Previously, these modes ignored the argument,
+including when called by :py:meth:`~PIL.Image.Image.thumbnail`, which uses
+``reducing_gap=2.0`` by default.
+
 TODO
 ^^^^
 

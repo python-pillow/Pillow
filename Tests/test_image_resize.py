@@ -200,6 +200,29 @@ def gradients_image() -> Generator[ImageFile.ImageFile]:
 
 
 class TestReducingGapResize:
+    @pytest.mark.parametrize(
+        "mode, opaque, transparent, expected",
+        (
+            ("RGBA", (255, 255, 255, 255), (255, 0, 0, 0), (255, 255, 255, 64)),
+            ("LA", (255, 255), (255, 0), (255, 64)),
+        ),
+    )
+    def test_reducing_gap_alpha(
+        self,
+        mode: str,
+        opaque: tuple[int, ...],
+        transparent: tuple[int, ...],
+        expected: tuple[int, ...],
+    ) -> None:
+        im = Image.new(mode, (16, 16), transparent)
+        for x in range(0, 16, 4):
+            im.paste(opaque, (x, 0, x + 1, 16))
+
+        # Each 4x4 block has four opaque white pixels and twelve transparent
+        # pixels. Integer reduction averages alpha to round(255 / 4) = 64.
+        resized = im.resize((4, 4), Image.Resampling.LANCZOS, reducing_gap=1.0)
+        assert_image_equal(resized, Image.new(mode, (4, 4), expected))
+
     def test_reducing_gap_values(self, gradients_image: ImageFile.ImageFile) -> None:
         ref = gradients_image.resize(
             (52, 34), Image.Resampling.BICUBIC, reducing_gap=None
