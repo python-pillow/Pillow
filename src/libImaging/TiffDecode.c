@@ -376,16 +376,23 @@ _decodeTile(
         return -1;
     }
 
-    state->bytes = tile_bytes_size;
-
     /* realloc to fit whole tile */
     /* malloc check above */
-    new_data = realloc(state->buffer, state->bytes);
+    new_data = realloc(state->buffer, tile_bytes_size);
     if (!new_data) {
         state->errcode = IMAGING_CODEC_MEMORY;
         return -1;
     }
     state->buffer = new_data;
+
+    if (tile_bytes_size > state->bytes) {
+        // Some codecs (e.g. JPEG, Group 4) succeed on a tile that decodes
+        // to fewer rows than the tile length, leaving the rest of the buffer untouched.
+        // Clear it so that uninitialised memory is not copied into the image.
+        memset(state->buffer + state->bytes, 0, tile_bytes_size - state->bytes);
+    }
+
+    state->bytes = tile_bytes_size;
 
     for (y = state->yoff; y < state->ysize; y += tile_length) {
         int plane;
@@ -453,8 +460,6 @@ _decodeStrip(
         return -1;
     }
 
-    state->bytes = strip_size;
-
     row_byte_size = TIFFScanlineSize(tiff);
 
     // if the unpacker calculated row size is > row byte size, (at least) the last
@@ -466,13 +471,21 @@ _decodeStrip(
 
     /* realloc to fit whole strip */
     /* malloc check above */
-    new_data = realloc(state->buffer, state->bytes);
+    new_data = realloc(state->buffer, strip_size);
     if (!new_data) {
         state->errcode = IMAGING_CODEC_MEMORY;
         return -1;
     }
-
     state->buffer = new_data;
+
+    if (strip_size > state->bytes) {
+        // Some codecs (e.g. JPEG, Group 4) succeed on a strip that decodes
+        // to fewer rows than RowsPerStrip, leaving the rest of the buffer untouched.
+        // Clear it so that uninitialised memory is not copied into the image.
+        memset(state->buffer + state->bytes, 0, strip_size - state->bytes);
+    }
+
+    state->bytes = strip_size;
 
     for (; state->y < state->ysize; state->y += rows_per_strip) {
         int plane;

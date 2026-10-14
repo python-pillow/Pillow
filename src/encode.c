@@ -51,14 +51,18 @@ typedef struct {
 
 static PyTypeObject ImagingEncoderType;
 
+int
+encode_setup(void) {
+    if (PyType_Ready(&ImagingEncoderType) < 0) {
+        return -1;
+    }
+    return 0;
+}
+
 static ImagingEncoderObject *
 PyImaging_EncoderNew(int contextsize) {
     ImagingEncoderObject *encoder;
     void *context;
-
-    if (PyType_Ready(&ImagingEncoderType) < 0) {
-        return NULL;
-    }
 
     encoder = PyObject_New(ImagingEncoderObject, &ImagingEncoderType);
     if (encoder == NULL) {
@@ -984,10 +988,10 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 }
             }
         } else {
+            if (key_int == TIFFTAG_BITSPERSAMPLE) {
+                bits_per_sample = PyLong_AsLong(value);
+            }
             if (type == TIFF_SHORT) {
-                if (key_int == TIFFTAG_BITSPERSAMPLE) {
-                    bits_per_sample = PyLong_AsLong(value);
-                }
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (UINT16)PyLong_AsLong(value)
                 );

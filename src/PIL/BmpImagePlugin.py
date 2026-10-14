@@ -135,7 +135,9 @@ class BmpImageFile(ImageFile.ImageFile):
             file_info["colors"] = i32(header_data, 28)
             file_info["palette_padding"] = 4
             assert isinstance(file_info["pixels_per_meter"], tuple)
-            self.info["dpi"] = tuple(x / 39.3701 for x in file_info["pixels_per_meter"])
+            dpi = tuple(x / 39.3701 for x in file_info["pixels_per_meter"])
+            if dpi != (0, 0):
+                self.info["dpi"] = dpi
             if file_info["compression"] == self.COMPRESSIONS["BITFIELDS"]:
                 masks = ["r_mask", "g_mask", "b_mask"]
                 if len(header_data) >= 48:

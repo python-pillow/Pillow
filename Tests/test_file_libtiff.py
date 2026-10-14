@@ -601,7 +601,9 @@ class TestFileLibTiff(LibTiffTestCase):
         im.save(out, compression="tiff_adobe_deflate")
         assert_image_equal_tofile(im, out)
 
-    @pytest.mark.parametrize("im", (hopper("P"), Image.new("P", (1, 1), "#000")))
+    @pytest.mark.parametrize(
+        "im", (hopper("P"), hopper("PA"), Image.new("P", (1, 1), "#000"))
+    )
     def test_palette_save(
         self, im: Image.Image, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
@@ -614,6 +616,7 @@ class TestFileLibTiff(LibTiffTestCase):
             # colormap/palette tag
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert len(reloaded.tag_v2[320]) == 768
+            assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
     @pytest.mark.parametrize("libtiff", (True, False))
     def test_colormap_size_mismatch(
@@ -631,15 +634,16 @@ class TestFileLibTiff(LibTiffTestCase):
             )
 
         # A correctly sized Colormap for a 16-bit image is still accepted.
+        colormap = tuple(range(1 << 16)) * 3
         out = io.BytesIO()
         im.save(
             out,
             format="TIFF",
-            tiffinfo={TiffImagePlugin.COLORMAP: (0,) * (1 << 16) * 3},
+            tiffinfo={TiffImagePlugin.COLORMAP: colormap},
         )
         with Image.open(out) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
-            assert len(reloaded.tag_v2[TiffImagePlugin.COLORMAP]) == (1 << 16) * 3
+            assert reloaded.tag_v2[TiffImagePlugin.COLORMAP] == colormap
 
     @pytest.mark.parametrize("compression", ("tiff_ccitt", "group3", "group4"))
     def test_bw_compression_w_rgb(self, compression: str, tmp_path: Path) -> None:
@@ -1210,6 +1214,44 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(infile) as im:
             im.load()
         assert im.size == (950, 975)
+
+    @pytest.mark.parametrize("tiled", (False, True))
+    def test_jpeg_short_strip(self, tiled: bool) -> None:
+        # The JPEG data in the strip/tile only contains 8 of the 256 rows that
+        # RowsPerStrip/TileLength declare. libtiff decodes the rows that exist
+        # and still reports success, so the remaining rows must be cleared
+        # rather than left as uninitialised memory.
+        jpeg = io.BytesIO()
+        Image.new("L", (256, 8), 200).save(jpeg, "JPEG")
+        jpeg_data = jpeg.getvalue()
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[TiffImagePlugin.IMAGEWIDTH] = 256
+        ifd[TiffImagePlugin.IMAGELENGTH] = 256
+        ifd[TiffImagePlugin.BITSPERSAMPLE] = 8
+        ifd[TiffImagePlugin.COMPRESSION] = 7  # JPEG
+        ifd[TiffImagePlugin.PHOTOMETRIC_INTERPRETATION] = 1  # BlackIsZero
+        if tiled:
+            ifd[TiffImagePlugin.TILEWIDTH] = 256
+            ifd[TiffImagePlugin.TILELENGTH] = 256
+            ifd[TiffImagePlugin.TILEOFFSETS] = 0
+            ifd[TiffImagePlugin.TILEBYTECOUNTS] = len(jpeg_data)
+            # Point the tile data at the end of the IFD
+            ifd[TiffImagePlugin.TILEOFFSETS] = 8 + len(ifd.tobytes(8))
+        else:
+            ifd[TiffImagePlugin.ROWSPERSTRIP] = 256
+            # Strip offsets is updated by tobytes()
+            ifd[TiffImagePlugin.STRIPOFFSETS] = 0
+            ifd[TiffImagePlugin.STRIPBYTECOUNTS] = len(jpeg_data)
+
+        b = io.BytesIO()
+        ifd.save(b)
+        b.write(jpeg_data)
+
+        with Image.open(b) as im:
+            assert im.tile[0].codec_name == "libtiff"
+            assert im.crop((0, 0, 256, 8)).getextrema() == (200, 200)
+            assert im.crop((0, 8, 256, 256)).getextrema() == (0, 0)
 
     def test_orientation(self) -> None:
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:

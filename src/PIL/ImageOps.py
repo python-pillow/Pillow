@@ -295,7 +295,11 @@ def contain(
     :return: An image.
     """
 
+    if image.height == 0:
+        return Image.new(image.mode, (size[0], 0))
     im_ratio = image.width / image.height
+    if size[1] == 0:
+        return Image.new(image.mode, (0, 0))
     dest_ratio = size[0] / size[1]
 
     if im_ratio != dest_ratio:
@@ -307,6 +311,8 @@ def contain(
             new_width = round(image.width / image.height * size[1])
             if new_width != size[0]:
                 size = (new_width, size[1])
+    if min(size) == 0:
+        return Image.new(image.mode, size)
     return image.resize(size, resample=method)
 
 
@@ -326,7 +332,11 @@ def cover(
     :return: An image.
     """
 
+    if image.height == 0:
+        return Image.new(image.mode, (size[0], 0))
     im_ratio = image.width / image.height
+    if size[1] == 0:
+        return Image.new(image.mode, (0, 0))
     dest_ratio = size[0] / size[1]
 
     if im_ratio != dest_ratio:
@@ -576,6 +586,8 @@ def fit(
     # kevin@cazabon.com
     # https://www.cazabon.com
 
+    if min(size) == 0:
+        return Image.new(image.mode, size)
     centering_x, centering_y = centering
 
     if not 0.0 <= centering_x <= 1.0:
@@ -598,6 +610,8 @@ def fit(
     )
 
     # calculate the aspect ratio of the live_size
+    if live_size[1] == 0:
+        return Image.new(image.mode, size)
     live_size_ratio = live_size[0] / live_size[1]
 
     # calculate the aspect ratio of the output image
@@ -676,6 +690,9 @@ def posterize(image: Image.Image, bits: int) -> Image.Image:
     :param bits: The number of bits to keep for each channel (1-8).
     :return: An image.
     """
+    if not 1 <= bits <= 8:
+        msg = "bits must be between or equal to 1 and 8"
+        raise ValueError(msg)
     mask = ~(2 ** (8 - bits) - 1)
     lut = [i & mask for i in range(256)]
     return _lut(image, lut)
