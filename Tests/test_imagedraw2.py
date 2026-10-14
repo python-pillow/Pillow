@@ -68,6 +68,58 @@ def test_mode() -> None:
         ImageDraw2.Draw("L")
 
 
+@pytest.mark.parametrize(
+    "operation", ("arc", "chord", "ellipse", "line", "pieslice", "polygon", "rectangle")
+)
+@pytest.mark.parametrize("width", (1, 4))
+@pytest.mark.parametrize("pen_as_brush", (False, True))
+def test_pen_width(operation: str, width: int, pen_as_brush: bool) -> None:
+    im = Image.new("RGB", (30, 30))
+    expected = im.copy()
+    draw = ImageDraw2.Draw(im)
+    pen = ImageDraw2.Pen("blue", width=width)
+    brush = ImageDraw2.Brush("red")
+    first, second = (brush, pen) if pen_as_brush else (pen, brush)
+    xy = (
+        ((5, 5), (24, 7), (12, 24))
+        if operation in ("line", "polygon")
+        else (5, 5, 24, 24)
+    )
+
+    if operation in ("arc", "chord", "pieslice"):
+        getattr(draw, operation)(xy, first, 30, 270, second)
+        angles = {"start": 30, "end": 270}
+    else:
+        getattr(draw, operation)(xy, first, second)
+        angles = {}
+
+    if operation in ("arc", "line"):
+        getattr(ImageDraw.Draw(expected), operation)(
+            xy, fill="blue", width=width, **angles
+        )
+    else:
+        getattr(ImageDraw.Draw(expected), operation)(
+            xy, fill="red", outline="blue", width=width, **angles
+        )
+    assert_image_equal(im, expected)
+
+
+def test_rectangle_pen_width() -> None:
+    im = Image.new("RGB", (20, 20))
+    ImageDraw2.Draw(im).rectangle((3, 3, 16, 16), ImageDraw2.Pen("white", width=4))
+    assert im.getpixel((5, 8)) == WHITE
+    assert im.getpixel((7, 8)) == BLACK
+
+
+def test_render_width_override() -> None:
+    im = Image.new("RGB", (20, 20))
+    ImageDraw2.Draw(im).render(
+        "rectangle", (3, 3, 16, 16), ImageDraw2.Pen("white", width=4), width=2
+    )
+    assert im.getpixel((4, 8)) == WHITE
+    assert im.getpixel((5, 8)) == BLACK
+
+
 @pytest.mark.parametrize("bbox", BBOX)
 @pytest.mark.parametrize("start, end", ((0, 180), (0.5, 180.4)))
 def test_arc(bbox: Coords, start: float, end: float) -> None:
@@ -103,7 +155,7 @@ def test_ellipse(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
-    pen = ImageDraw2.Pen("blue", width=2)
+    pen = ImageDraw2.Pen("blue")
     brush = ImageDraw2.Brush("green")
 
     # Act
@@ -177,7 +229,7 @@ def test_polygon(points: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
-    pen = ImageDraw2.Pen("blue", width=2)
+    pen = ImageDraw2.Pen("blue")
     brush = ImageDraw2.Brush("red")
 
     # Act
@@ -192,7 +244,7 @@ def test_rectangle(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
-    pen = ImageDraw2.Pen("green", width=2)
+    pen = ImageDraw2.Pen("green")
     brush = ImageDraw2.Brush("black")
 
     # Act
