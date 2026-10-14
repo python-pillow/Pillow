@@ -8,6 +8,7 @@ import collections
 import mmap
 import os
 import re
+import sys
 import time
 import zlib
 from typing import Any, NamedTuple
@@ -444,10 +445,12 @@ class PdfParser:
 
     def close_buf(self) -> None:
         if isinstance(self.buf, memoryview):
-            import gc
-
             self.buf.release()
-            gc.collect()
+            if sys.implementation.name == "pypy":
+                import gc
+
+                # See https://github.com/pypy/pypy/pull/5616
+                gc.collect()
         elif isinstance(self.buf, mmap.mmap):
             self.buf.close()
         self.buf = None
