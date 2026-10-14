@@ -239,6 +239,14 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
         rows_per_block = state->ysize;
     }
 
+    // TiffRGBAImages are 32bits/pixel. If the unpacker reads more bits per pixel
+    // than that, (at least) the last row of the block will have a read buffer
+    // overflow.
+    if (state->bits != 32) {
+        state->errcode = IMAGING_CODEC_BROKEN;
+        return -1;
+    }
+
     if (!(TIFFRGBAImageOK(tiff, emsg) && TIFFRGBAImageBegin(&img, tiff, 0, emsg))) {
         state->errcode = IMAGING_CODEC_BROKEN;
         // nothing to clean up, just return
@@ -320,7 +328,7 @@ _decodeTile(
 ) {
     INT32 x, y, tile_y, current_tile_length, current_tile_width;
     UINT32 tile_width, tile_length;
-    tsize_t tile_bytes_size, row_byte_size;
+    tsize_t tile_bytes_size, row_byte_size, unpacker_row_byte_size;
     UINT8 *new_data;
 
     tile_bytes_size = TIFFTileSize(tiff);
@@ -352,11 +360,18 @@ _decodeTile(
         return -1;
     }
 
-    if (tile_bytes_size !=
-        ((tile_length * state->bits / planes + 7) / 8) * tile_width) {
+    unpacker_row_byte_size = ((tsize_t)tile_width * state->bits / planes + 7) / 8;
+    if (tile_bytes_size != unpacker_row_byte_size * tile_length) {
         // If the tile size as expected by LibTiff isn't what we're expecting, abort.
         // man:   TIFFTileSize returns the equivalent size for a tile of data as it
         // would be returned in a call to TIFFReadTile ...
+        state->errcode = IMAGING_CODEC_BROKEN;
+        return -1;
+    }
+
+    // if the unpacker calculated row size is > row byte size, (at least) the last
+    // row of the tile will have a read buffer overflow.
+    if (unpacker_row_byte_size > row_byte_size) {
         state->errcode = IMAGING_CODEC_BROKEN;
         return -1;
     }
