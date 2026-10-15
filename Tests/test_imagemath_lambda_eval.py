@@ -55,6 +55,13 @@ def test_sanity() -> None:
     )
 
 
+@pytest.mark.parametrize("mode", ("1", "L", "I", "F"))
+def test_float_constant(mode: str) -> None:
+    im = Image.new(mode, (1, 1))
+    assert pixel(ImageMath.lambda_eval(lambda args: args["im"] + 0.5, im=im)) == "F 0.5"
+    assert pixel(ImageMath.lambda_eval(lambda args: 0.5 + args["im"], im=im)) == "F 0.5"
+
+
 def test_ops() -> None:
     assert pixel(ImageMath.lambda_eval(lambda args: args["A"] * -1, **images)) == "I -1"
 
