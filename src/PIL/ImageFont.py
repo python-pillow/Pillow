@@ -696,7 +696,7 @@ class FreeTypeFont(BaseImageFont):
             index=self.index if index is None else index,
             encoding=self.encoding if encoding is None else encoding,
             layout_engine=(
-                self.layout_engine if layout_engine is None else layout_engine
+                layout_engine if layout_engine is not None else self.layout_engine
             ),
         )
 

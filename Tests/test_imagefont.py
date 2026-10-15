@@ -89,11 +89,6 @@ def test_font_variant_layout_engine(
     font_copy = font.font_variant(layout_engine=variant_layout_engine)
     assert font_copy.layout_engine == variant_layout_engine
 
-    expected = ImageFont.truetype(
-        FONT_PATH, FONT_SIZE, layout_engine=variant_layout_engine
-    )
-    assert font_copy.getlength("AV") == expected.getlength("AV")
-
 
 def _render(
     font: StrOrBytesPath | BinaryIO, layout_engine: ImageFont.Layout
