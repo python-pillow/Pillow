@@ -134,6 +134,7 @@ class TgaImageFile(ImageFile.ImageFile):
                 self.palette = ImagePalette.raw(
                     "BGRA", bytes(4 * start) + self.fp.read(4 * size)
                 )
+                self.palette.mode = "RGBA"
             else:
                 msg = "unknown TGA map depth"
                 raise SyntaxError(msg)

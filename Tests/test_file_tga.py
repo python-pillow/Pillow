@@ -88,6 +88,26 @@ def test_palette_depth_16(tmp_path: Path) -> None:
             assert_image_equal_tofile(reloaded.convert("RGBA"), "Tests/images/p_16.png")
 
 
+def test_palette_depth_32() -> None:
+    data = (
+        bytes((0, 1, 1, 0, 0, 2, 0, 32, 0, 0, 0, 0))
+        + _binary.o16le(2)
+        + _binary.o16le(1)
+        + bytes((8, 0x28))
+        # BGRA colour map
+        + bytes((0, 0, 255, 255, 255, 0, 0, 0))
+        + bytes((0, 1))
+    )
+    with Image.open(BytesIO(data)) as im:
+        assert im.mode == "P"
+        assert im.palette is not None
+        assert im.palette.mode == "RGBA"
+
+        rgba = im.convert("RGBA")
+    assert rgba.getpixel((0, 0)) == (255, 0, 0, 255)
+    assert rgba.getpixel((1, 0)) == (0, 0, 255, 0)
+
+
 def test_rgba_16() -> None:
     with Image.open("Tests/images/rgba16.tga") as im:
         assert im.mode == "RGBA"
