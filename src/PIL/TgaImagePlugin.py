@@ -227,10 +227,10 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if colormaptype:
         assert im.palette is not None
         if im.palette.mode == "RGBA":
-            palette = im.im.getpalette("RGBA", "BGRA")
+            palette = im.im.getpalette("BGRA")
             colormaplength, colormapentry = len(palette) // 4, 32
         else:
-            palette = im.im.getpalette("RGB", "BGR")
+            palette = im.im.getpalette("BGR")
             colormaplength, colormapentry = len(palette) // 3, 24
     else:
         colormaplength, colormapentry = 0, 0
