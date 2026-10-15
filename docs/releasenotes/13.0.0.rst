@@ -286,11 +286,3 @@ FriBiDi itself is not included in Pillow's wheels.
 
 The shim's source files now include SPDX license identifiers, and the SBOM has been
 corrected.
-
-ImageDraw2 shape outline widths
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-``ImageDraw2.Draw`` now uses ``Pen.width`` for arc, chord, ellipse, pieslice,
-polygon and rectangle outlines. Previously, these outlines were always one
-pixel wide, even when a different pen width was requested. Line widths continue
-to use the pen width.
