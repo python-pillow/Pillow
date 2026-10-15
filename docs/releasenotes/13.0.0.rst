@@ -134,6 +134,15 @@ escape sequences.
 Other changes
 =============
 
+Fixed font_variant() layout engine override
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageFont.FreeTypeFont.font_variant` now respects an explicit
+:py:attr:`~PIL.ImageFont.Layout.BASIC` layout engine override when copying a font
+that uses :py:attr:`~PIL.ImageFont.Layout.RAQM`. Previously, the original layout
+engine was retained because ``BASIC`` has the value zero. Omitting the argument
+or passing ``None`` still retains the original layout engine.
+
 Python 3.15
 ^^^^^^^^^^^
 

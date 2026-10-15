@@ -695,7 +695,9 @@ class FreeTypeFont(BaseImageFont):
             size=self.size if size is None else size,
             index=self.index if index is None else index,
             encoding=self.encoding if encoding is None else encoding,
-            layout_engine=layout_engine or self.layout_engine,
+            layout_engine=(
+                self.layout_engine if layout_engine is None else layout_engine
+            ),
         )
 
     def get_variation_names(self) -> list[bytes]:

@@ -66,6 +66,7 @@ def test_font_properties(font: ImageFont.FreeTypeFont) -> None:
     font_copy = font.font_variant()
     assert font_copy.path == FONT_PATH
     assert font_copy.size == FONT_SIZE
+    assert font_copy.layout_engine == font.layout_engine
 
     font_copy = font.font_variant(size=FONT_SIZE + 1)
     assert font_copy.size == FONT_SIZE + 1
@@ -73,6 +74,25 @@ def test_font_properties(font: ImageFont.FreeTypeFont) -> None:
     second_font_path = "Tests/fonts/DejaVuSans/DejaVuSans.ttf"
     font_copy = font.font_variant(font=second_font_path)
     assert font_copy.path == second_font_path
+
+
+@pytest.mark.parametrize(
+    "variant_layout_engine",
+    (
+        ImageFont.Layout.BASIC,
+        pytest.param(ImageFont.Layout.RAQM, marks=skip_unless_feature("raqm")),
+    ),
+)
+def test_font_variant_layout_engine(
+    font: ImageFont.FreeTypeFont, variant_layout_engine: ImageFont.Layout
+) -> None:
+    font_copy = font.font_variant(layout_engine=variant_layout_engine)
+    assert font_copy.layout_engine == variant_layout_engine
+
+    expected = ImageFont.truetype(
+        FONT_PATH, FONT_SIZE, layout_engine=variant_layout_engine
+    )
+    assert font_copy.getlength("AV") == expected.getlength("AV")
 
 
 def _render(
