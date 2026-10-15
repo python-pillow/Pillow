@@ -135,7 +135,7 @@ Other changes
 =============
 
 Fixed font_variant() layout engine override
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :py:meth:`~PIL.ImageFont.FreeTypeFont.font_variant` now respects an explicit
 :py:attr:`~PIL.ImageFont.Layout.BASIC` layout engine override when copying a font
