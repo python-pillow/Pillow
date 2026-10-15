@@ -183,6 +183,14 @@ installed on the system with the expected name (e.g. ``libharfbuzz.so.0``).
 All wheels are now linked against the HarfBuzz that Pillow ships,
 which may slightly change how text is rendered in scripts that rely on the auto-hinter.
 
+Resizing images with alpha
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``reducing_gap`` argument to :py:meth:`~PIL.Image.Image.resize` is now
+applied to RGBA and LA images. Previously, these modes ignored the argument,
+including when called by :py:meth:`~PIL.Image.Image.thumbnail`, which uses
+``reducing_gap=2.0`` by default.
+
 Preserved transparency when padding or expanding images in ImageOps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
