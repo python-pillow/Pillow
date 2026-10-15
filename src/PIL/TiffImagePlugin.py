@@ -907,6 +907,8 @@ class ImageFileDirectory_v2(_IFDv2Base):
                     if self._bigtiff
                     else self._unpack("HHL4s", self._ensure_read(fp, 12))
                 )
+                if tag in self._tagdata:
+                    continue
 
                 tagname = TiffTags.lookup(tag, self.group).name
                 typname = TYPES.get(typ, "unknown")
