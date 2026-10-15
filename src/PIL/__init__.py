@@ -26,6 +26,7 @@ del _version
 
 _plugins = [
     "AvifImagePlugin",
+    "JxlImagePlugin",
     "BlpImagePlugin",
     "BmpImagePlugin",
     "BufrStubImagePlugin",
