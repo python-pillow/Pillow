@@ -26,7 +26,7 @@ _CONTAINER_MAGIC = b"\x00\x00\x00\x0cJXL \x0d\x0a\x87\x0a"
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix.startswith(_CODESTREAM_MAGIC) or prefix.startswith(_CONTAINER_MAGIC)
+    return prefix.startswith((_CODESTREAM_MAGIC, _CONTAINER_MAGIC))
 
 
 class JxlImageFile(ImageFile.ImageFile):
