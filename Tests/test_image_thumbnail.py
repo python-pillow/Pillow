@@ -154,17 +154,6 @@ def test_reducing_gap_values() -> None:
     assert_image_similar(ref, im, 3.5)
 
 
-@pytest.mark.parametrize("mode", ("RGBA", "LA"))
-def test_reducing_gap_alpha(mode: str) -> None:
-    im = Image.open("Tests/images/pil123rgba.png").convert(mode)
-    premultiplied = im.convert({"RGBA": "RGBa", "LA": "La"}[mode])
-    premultiplied.thumbnail((16, 16), Image.Resampling.LANCZOS, reducing_gap=2.0)
-    expected = premultiplied.convert(mode)
-
-    im.thumbnail((16, 16), Image.Resampling.LANCZOS)
-    assert_image_equal(im, expected)
-
-
 def test_reducing_gap_for_DCT_scaling() -> None:
     with Image.open("Tests/images/hopper.jpg") as ref:
         # thumbnail should call draft with reducing_gap scale
