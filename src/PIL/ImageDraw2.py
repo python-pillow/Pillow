@@ -38,7 +38,7 @@ class Pen:
     """Stores an outline color and width.
 
     :param color: The outline color.
-    :param width: The width in pixels, used for lines and shape outlines.
+    :param width: The line width, in pixels.
     """
 
     def __init__(self, color: str, width: int = 1, opacity: int = 255) -> None:
