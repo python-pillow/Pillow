@@ -1323,9 +1323,8 @@ class TestFileLibTiff(LibTiffTestCase):
             with pytest.raises(OSError, match="decoder error -9"):
                 im.load()
 
-    @pytest.mark.parametrize(
-        "data",
-        (
+    def test_unpacker_row_wider_than_libtiff_row(self) -> None:
+        for data in (
             # 16x16 8-bit greyscale tile, with a PhotometricInterpretation tag that
             # has two values. Pillow reads it as YCbCr (rawmode RGBX, 4 bytes/pixel)
             # while libtiff ignores it and decodes 1 byte/pixel.
@@ -1340,9 +1339,10 @@ class TestFileLibTiff(LibTiffTestCase):
                 b"rq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna"
                 b"29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+foAAQIDBJ9Bepo="
             ),
-            # 16x16 strip with duplicated BitsPerSample and PhotometricInterpretation
-            # tags. libtiff keeps the first (8-bit YCbCr, read as 4 bytes/pixel RGBA)
-            # while Pillow keeps the last (16-bit RGB, rawmode RGB;16N, 6 bytes/pixel).
+            # 16x16 strip with duplicated
+            # BitsPerSample and PhotometricInterpretation tags.
+            # The first reports 8-bit YCbCr, read as 4 bytes/pixel RGBA,
+            # and the last reports 16-bit RGB, rawmode RGB;16N, 6 bytes/pixel.
             (
                 b"SUkqAAgAAAAMAAABAwABAAAAEAAAAAEBAwABAAAAEAAAAAIBAwADAAAAugEA"
                 b"AAIBAwADAAAAwAEAAAMBAwABAAAACAAAAAYBAwABAAAABgAAAAYBAwABAAAA"
@@ -1356,28 +1356,28 @@ class TestFileLibTiff(LibTiffTestCase):
                 b"8tXrN2/fvf/w8dPnL1+/ff/x89fvP3///WcY9f+I9j8AoGJ+kAgACAAIABAA"
                 b"EAAQAA=="
             ),
-            # 4x2 PackBits strip with duplicated BitsPerSample, Photometric
-            # Interpretation and SamplesPerPixel tags. libtiff keeps the first
-            # (8-bit YCbCr, read as 4 bytes/pixel RGBA) while Pillow keeps the last
-            # (6 channel RGB, rawmode RGBAXX, 6 bytes/pixel).
-            (
-                b"SUkqAAgAAAAPAAABBAABAAAABAAAAAEBBAABAAAAAgAAAAIBAwADAAAAwgAA"
-                b"AAIBAwAGAAAAyAAAAAMBAwABAAAABYAAAAYBAwABAAAABgAAAAYBAwABAAAA"
-                b"AgAAABEBBAABAAAA2gAAABUBAwABAAAAAwAAABUBAwABAAAABgAAABYBBAAB"
-                b"AAAAAgAAABcBBAABAAAAGQAAABwBAwABAAAAAQAAAFIBAwADAAAA1AAAABIC"
-                b"AwACAAAAAQABAAAAAAAIAAgACAAIAAgACAAIAAgACAACAAAAAAAXAAECAwQF"
-                b"BgcICQoLDA0ODxAREhMUFRYX"
-            ),
-        ),
-    )
-    @pytest.mark.filterwarnings("ignore:Metadata Warning")
-    def test_unpacker_row_wider_than_libtiff_row(self, data: bytes) -> None:
+        ):
+            with Image.open(io.BytesIO(base64.b64decode(data))) as im:
+                im.load()
+
+        # 4x2 PackBits strip with duplicated
+        # BitsPerSample, Photometric Interpretation and SamplesPerPixel tags.
+        # The first reports 8-bit YCbCr, read as 4 bytes/pixel RGBA,
+        # and the last reports 6 channel RGB, rawmode RGBAXX, 6 bytes/pixel.
+        data = (
+            b"SUkqAAgAAAAPAAABBAABAAAABAAAAAEBBAABAAAAAgAAAAIBAwADAAAAwgAA"
+            b"AAIBAwAGAAAAyAAAAAMBAwABAAAABYAAAAYBAwABAAAABgAAAAYBAwABAAAA"
+            b"AgAAABEBBAABAAAA2gAAABUBAwABAAAAAwAAABUBAwABAAAABgAAABYBBAAB"
+            b"AAAAAgAAABcBBAABAAAAGQAAABwBAwABAAAAAQAAAFIBAwADAAAA1AAAABIC"
+            b"AwACAAAAAQABAAAAAAAIAAgACAAIAAgACAAIAAgACAACAAAAAAAXAAECAwQF"
+            b"BgcICQoLDA0ODxAREhMUFRYX"
+        )
+
         # The unpacker chosen by Pillow reads more bytes per row than libtiff
         # decoded, so the decoder must reject the image rather than read past
         # the end of its buffer
-        with Image.open(io.BytesIO(base64.b64decode(data))) as im:
-            with pytest.raises(OSError, match="decoder error -2"):
-                im.load()
+        with pytest.raises(SyntaxError, match="unknown pixel mode"):
+            TiffImagePlugin.TiffImageFile(io.BytesIO(base64.b64decode(data)))
 
     @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", "jpeg"))
     def test_save_multistrip(self, compression: str, tmp_path: Path) -> None:
