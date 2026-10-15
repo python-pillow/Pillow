@@ -83,7 +83,7 @@ def test_invalid_file() -> None:
 
 
 @pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
-@pytest.mark.parametrize("size", (3, 511))
+@pytest.mark.parametrize("size", (1, 3, 511))
 def test_odd(tmp_path: Path, mode: str, size: int) -> None:
     # See issue #523, odd sized images should have a stride that's even.
     # Not that ImageMagick or GIMP write PCX that way.

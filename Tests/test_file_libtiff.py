@@ -1323,6 +1323,62 @@ class TestFileLibTiff(LibTiffTestCase):
             with pytest.raises(OSError, match="decoder error -9"):
                 im.load()
 
+    @pytest.mark.parametrize(
+        "data",
+        (
+            # 16x16 8-bit greyscale tile, with a PhotometricInterpretation tag that
+            # has two values. Pillow reads it as YCbCr (rawmode RGBX, 4 bytes/pixel)
+            # while libtiff ignores it and decodes 1 byte/pixel.
+            (
+                b"SUkqAAgAAAAKAAABBAABAAAAEAAAAAEBBAABAAAAEAAAAAIBAwABAAAACAAA"
+                b"AAMBAwABAAAACAAAAAYBAwACAAAABgAGABUBAwABAAAAAQAAAEIBBAABAAAA"
+                b"EAAAAEMBBAABAAAAEAAAAEQBBAABAAAAhgAAAEUBBAABAAAACwEAAAAAAAB4"
+                b"nAEAAf/+AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUm"
+                b"JygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJT"
+                b"VFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+A"
+                b"gYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6yt"
+                b"rq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna"
+                b"29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+foAAQIDBJ9Bepo="
+            ),
+            # 16x16 strip with duplicated BitsPerSample and PhotometricInterpretation
+            # tags. libtiff keeps the first (8-bit YCbCr, read as 4 bytes/pixel RGBA)
+            # while Pillow keeps the last (16-bit RGB, rawmode RGB;16N, 6 bytes/pixel).
+            (
+                b"SUkqAAgAAAAMAAABAwABAAAAEAAAAAEBAwABAAAAEAAAAAIBAwADAAAAugEA"
+                b"AAIBAwADAAAAwAEAAAMBAwABAAAACAAAAAYBAwABAAAABgAAAAYBAwABAAAA"
+                b"AgAAABEBBAABAAAAngAAABUBAwABAAAAAwAAABYBAwABAAAAEAAAABcBBAAB"
+                b"AAAAHAEAABICAwACAAAAAQABAAAAAAB4nGNgZGJmYWVj5+Dk4ubh5eMXEBQS"
+                b"FhEVE5eQlJKWkZWTV1BUUlZRVVPX0NTS1tHV0zcwNDI2MTUzt7C0sraxtbN3"
+                b"cHRydnF1c/fw9PL28fXzDwgMCg4JDQuPiIyKjomNi09ITEpOSU1Lz8jMys7J"
+                b"zcsvKCwqLiktK6+orKquqa2rb2hsam5pbWvv6Ozq7unt658wcdLkKVOnTZ8x"
+                b"c9bsOXPnzV+wcNHiJUuXLV+xctXqNWvXrd+wcdPmLVu3bd+xc9fuPXv37T9w"
+                b"8NDhI0ePHT9x8tTpM2fPnb9w8dLlK1evXb9x89btO3fv3X/w8NHjJ0+fPX/x"
+                b"8tXrN2/fvf/w8dPnL1+/ff/x89fvP3///WcY9f+I9j8AoGJ+kAgACAAIABAA"
+                b"EAAQAA=="
+            ),
+            # 4x2 PackBits strip with duplicated BitsPerSample, Photometric
+            # Interpretation and SamplesPerPixel tags. libtiff keeps the first
+            # (8-bit YCbCr, read as 4 bytes/pixel RGBA) while Pillow keeps the last
+            # (6 channel RGB, rawmode RGBAXX, 6 bytes/pixel).
+            (
+                b"SUkqAAgAAAAPAAABBAABAAAABAAAAAEBBAABAAAAAgAAAAIBAwADAAAAwgAA"
+                b"AAIBAwAGAAAAyAAAAAMBAwABAAAABYAAAAYBAwABAAAABgAAAAYBAwABAAAA"
+                b"AgAAABEBBAABAAAA2gAAABUBAwABAAAAAwAAABUBAwABAAAABgAAABYBBAAB"
+                b"AAAAAgAAABcBBAABAAAAGQAAABwBAwABAAAAAQAAAFIBAwADAAAA1AAAABIC"
+                b"AwACAAAAAQABAAAAAAAIAAgACAAIAAgACAAIAAgACAACAAAAAAAXAAECAwQF"
+                b"BgcICQoLDA0ODxAREhMUFRYX"
+            ),
+        ),
+    )
+    @pytest.mark.filterwarnings("ignore:Metadata Warning")
+    def test_unpacker_row_wider_than_libtiff_row(self, data: bytes) -> None:
+        # The unpacker chosen by Pillow reads more bytes per row than libtiff
+        # decoded, so the decoder must reject the image rather than read past
+        # the end of its buffer
+        with Image.open(io.BytesIO(base64.b64decode(data))) as im:
+            with pytest.raises(OSError, match="decoder error -2"):
+                im.load()
+
     @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", "jpeg"))
     def test_save_multistrip(self, compression: str, tmp_path: Path) -> None:
         im = hopper("RGB").resize((256, 256))
