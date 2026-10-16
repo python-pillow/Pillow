@@ -622,6 +622,10 @@ class ImageFileDirectory_v2(_IFDv2Base):
         self.tagtype: dict[int, int] = {}
         """ Dictionary of tag types """
         self.reset()
+        # Maximum total out-of-line tag data that load() may read, as well
+        # as the size of the stream. Set by TiffImageFile so that
+        # all frames of a file share one budget.
+        self._tag_data_limit: int | None = None
         self.next = (
             self._unpack("Q", ifh[8:])[0]
             if self._bigtiff
@@ -895,6 +899,12 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def load(self, fp: IO[bytes]) -> None:
         self.reset()
         self._offset = fp.tell()
+        fp.seek(0, io.SEEK_END)
+        limit = fp.tell()
+        fp.seek(self._offset)
+        if self._tag_data_limit is not None:
+            limit = min(limit, self._tag_data_limit)
+        self._tag_data_size = 0
 
         try:
             tag_count = (
@@ -902,6 +912,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 if self._bigtiff
                 else self._unpack("H", self._ensure_read(fp, 2))
             )[0]
+            total_size = 0
             for i in range(tag_count):
                 tag, typ, count, data = (
                     self._unpack("HHQ8s", self._ensure_read(fp, 20))
@@ -928,6 +939,13 @@ class ImageFileDirectory_v2(_IFDv2Base):
                     if offset >= 2**63:
                         warnings.warn("Tag offset too large")
                         continue
+                    # Well-formed IFD values should fit within the stream they
+                    # are read from, even before accounting for overlaps.
+                    total_size += size
+                    if total_size > limit:
+                        warnings.warn(f"Tag data larger than file. Skipping tag {tag}")
+                        continue
+                    self._tag_data_size += size
                     fp.seek(offset)
                     data = ImageFile._safe_read(fp, size)
                     fp.seek(here)
@@ -1207,6 +1225,13 @@ class TiffImageFile(ImageFile.ImageFile):
         self._fp = self.fp
         self._frame_pos: list[int] = []
 
+        # Out-of-line tag data is budgeted across all frames, so that many
+        # frames cannot each read the same data. Each frame's limit is fixed
+        # when it is first loaded, so that reloading it gives the same tags.
+        self.fp.seek(0, io.SEEK_END)
+        self._tag_data_remaining = self.fp.tell()
+        self._tag_data_limits: list[int] = []
+
         logger.debug("*** TiffImageFile._open ***")
         logger.debug("- __first: %s", self.__first)
         logger.debug("- ifh: %s", repr(ifh))  # Use repr to avoid str(bytes)
@@ -1259,8 +1284,11 @@ class TiffImageFile(ImageFile.ImageFile):
                 raise ValueError(msg)
             self.fp.seek(self.__next)
             self._frame_pos.append(self.__next)
+            self._tag_data_limits.append(self._tag_data_remaining)
             logger.debug("Loading tags, location: %s", self.fp.tell())
+            self.tag_v2._tag_data_limit = self._tag_data_remaining
             self.tag_v2.load(self.fp)
+            self._tag_data_remaining -= self.tag_v2._tag_data_size
             if self.tag_v2.next in self._frame_pos:
                 # This IFD has already been processed
                 # Declare this to be the end of the image
@@ -1273,6 +1301,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.is_animated = self.__next != 0
             self.__frame += 1
         self.fp.seek(self._frame_pos[frame])
+        self.tag_v2._tag_data_limit = self._tag_data_limits[frame]
         self.tag_v2.load(self.fp)
         if XMP in self.tag_v2:
             xmp = self.tag_v2[XMP]
