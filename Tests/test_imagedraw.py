@@ -82,8 +82,10 @@ def test_new_color() -> None:
 
         # Test drawing another new color, now that the palette is dirty
         draw.point((0, 0), fill=(1, 0, 0))
-        assert len(im.palette.colors) == 251
         assert im.convert("RGB").getpixel((0, 0)) == (1, 0, 0)
+        # Since line() did not draw any pixels, the same palette index was re-used
+        assert len(im.palette.colors) == 250
+        assert (0, 0, 0) not in im.palette.colors
 
 
 def test_mode_mismatch() -> None:
