@@ -3751,7 +3751,11 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
         }
         if (p) { /* draw last point */
             ImagingDrawPoint(
-                self->image->image, IMAGING_FLOOR(p[2]), IMAGING_FLOOR(p[3]), &ink, self->blend
+                self->image->image,
+                IMAGING_FLOOR(p[2]),
+                IMAGING_FLOOR(p[3]),
+                &ink,
+                self->blend
             );
         }
     } else {
