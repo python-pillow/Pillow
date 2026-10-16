@@ -145,10 +145,26 @@ intended for internal use, so there is no replacement.
 API changes
 ===========
 
-TODO
-^^^^
+ImageColor.getcolor() with premultiplied alpha modes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+When ``mode`` is ``RGBa`` or ``La``, :py:func:`~PIL.ImageColor.getcolor` now returns
+color values premultiplied by the alpha channel, matching how pixels are stored in
+those modes. Previously, the unmultiplied values were returned.
+
+Duplicate TIFF tags
+^^^^^^^^^^^^^^^^^^^
+
+If a TIFF IFD contains the same tag more than once, the first value is now kept.
+Previously, the last value overwrote the earlier ones.
+
+Saving small ICO images
+^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving an image smaller than 16x16 pixels as an ICO without a ``sizes``
+argument, the image's own size is now used. Previously, none of the default sizes
+matched, and an ICO containing no images was written. If no size in ``sizes`` fits
+within the image, a :py:exc:`ValueError` is now raised.
 
 API additions
 =============
