@@ -395,6 +395,26 @@ class TestFileLibTiff(LibTiffTestCase):
         with pytest.raises(ValueError, match="Incorrect tag value type"):
             im.save(out, tiffinfo=ifd)
 
+    @pytest.mark.parametrize(
+        "tiffinfo",
+        (
+            {TiffImagePlugin.IMAGEWIDTH: 1 << 27},
+            {TiffImagePlugin.SAMPLESPERPIXEL: 3},
+        ),
+    )
+    def test_geometry_tags(
+        self, tiffinfo: dict[int, int], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        # libtiff reads a scanline of the size described by the IMAGEWIDTH,
+        # SAMPLESPERPIXEL and BITSPERSAMPLE tags from a buffer that only holds one
+        # row of the image, so a tag describing a larger row must be rejected.
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        out = tmp_path / "temp.tif"
+        im = hopper("L")
+        with pytest.raises(OSError, match="encoder error -8"):
+            im.save(out, tiffinfo=tiffinfo)
+
     def test_inknames_tag(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
