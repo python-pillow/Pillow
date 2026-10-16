@@ -110,6 +110,29 @@ To load an OpenType/TrueType font, use the truetype function in the
 :py:mod:`~PIL.ImageFont` module. Note that this function depends on third-party
 libraries, and may not be available in all PIL builds.
 
+Complex scripts and bidirectional text
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+With :py:attr:`PIL.ImageFont.Layout.RAQM`, Pillow performs text shaping and
+bidirectional layout. Pass Unicode text in logical order (the order in which
+it is typed or stored), rather than rearranging it into visual order first.
+For example, do not apply ``arabic_reshaper.reshape()`` and
+``bidi.algorithm.get_display()`` before drawing Arabic text with Raqm: the
+text would be processed again, which can produce incorrect output.
+
+You can check whether Raqm is available with
+``PIL.features.check_feature("raqm")``. :py:func:`PIL.ImageFont.truetype`
+selects Raqm by default when it is available, but callers can explicitly
+choose :py:attr:`PIL.ImageFont.Layout.BASIC`. Check the loaded
+:py:class:`~PIL.ImageFont.FreeTypeFont` object's ``layout_engine`` attribute
+to find out which engine it uses. Basic layout does not provide shaping or
+bidirectional layout; use a Raqm-enabled build and an appropriate font for
+complex scripts.
+
+The ``direction`` argument sets the paragraph's base direction (for example,
+``"rtl"``); it does not mean that the input should be reversed. The same
+logical-order text should be passed when measuring text and when drawing it.
+
 Example: Draw partial opacity text
 ----------------------------------
 
