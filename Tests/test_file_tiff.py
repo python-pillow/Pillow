@@ -556,6 +556,27 @@ class TestFileTiff:
             im.seek(1)
             assert im.getexif()[273] == (1408, 1907)
 
+    @pytest.mark.parametrize(
+        "orientation, method",
+        (
+            (5, Image.Transpose.TRANSPOSE),
+            (6, Image.Transpose.ROTATE_270),
+            (7, Image.Transpose.TRANSVERSE),
+            (8, Image.Transpose.ROTATE_90),
+        ),
+    )
+    def test_orientation_mmap(
+        self, orientation: int, method: Image.Transpose, tmp_path: Path
+    ) -> None:
+        im = hopper("L").crop((0, 0, 128, 64))
+        filename = tmp_path / "temp.tif"
+        im.save(filename, tiffinfo={274: orientation})
+
+        with Image.open(filename) as reloaded:
+            assert reloaded.size == (64, 128)
+            reloaded.load()
+            assert_image_equal(reloaded, im.transpose(method))
+
     @pytest.mark.parametrize("mode", ("1", "L"))
     def test_photometric(self, mode: str, tmp_path: Path) -> None:
         filename = tmp_path / "temp.tif"
