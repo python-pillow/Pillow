@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include "QuantPngQuant.h"
+#include "CheckedArithmetic.h"
 
 #ifdef HAVE_LIBIMAGEQUANT
 #include <libimagequant.h>
@@ -34,10 +35,15 @@ quantize_pngquant(
     liq_result *remap = NULL;
     unsigned char *charMatrix = NULL;
     unsigned char **charMatrixRows = NULL;
-    unsigned int i, y;
+    unsigned int y;
+    size_t i, nPixels;
     *palette = NULL;
     *paletteLength = 0;
     *quantizedPixels = NULL;
+
+    if (!ImagingCheckedMul(width, height, &nPixels)) {
+        goto err;
+    }
 
     /* configure pngquant */
     attr = liq_attr_create();
@@ -65,7 +71,7 @@ quantize_pngquant(
     /* write output palette */
     const liq_palette *l_palette = liq_get_palette(remap);
     *paletteLength = l_palette->count;
-    *palette = malloc(sizeof(Pixel) * l_palette->count);
+    *palette = calloc(l_palette->count, sizeof(Pixel));
     if (!*palette) {
         goto err;
     }
@@ -77,27 +83,27 @@ quantize_pngquant(
     }
 
     /* write output pixels (pngquant uses char array) */
-    charMatrix = malloc(width * height);
+    charMatrix = malloc(nPixels);
     if (!charMatrix) {
         goto err;
     }
-    charMatrixRows = malloc(height * sizeof(unsigned char *));
+    charMatrixRows = calloc(height, sizeof(unsigned char *));
     if (!charMatrixRows) {
         goto err;
     }
     for (y = 0; y < height; y++) {
-        charMatrixRows[y] = &charMatrix[y * width];
+        charMatrixRows[y] = &charMatrix[(size_t)y * width];
     }
     if (LIQ_OK != liq_write_remapped_image_rows(remap, image, charMatrixRows)) {
         goto err;
     }
 
     /* transcribe output pixels (pillow uses uint32_t array) */
-    *quantizedPixels = malloc(sizeof(uint32_t) * width * height);
+    *quantizedPixels = calloc(nPixels, sizeof(uint32_t));
     if (!*quantizedPixels) {
         goto err;
     }
-    for (i = 0; i < width * height; i++) {
+    for (i = 0; i < nPixels; i++) {
         (*quantizedPixels)[i] = charMatrix[i];
     }
 

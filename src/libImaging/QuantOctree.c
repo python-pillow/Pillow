@@ -30,6 +30,7 @@
 
 #include "ImagingUtils.h"
 #include "QuantOctree.h"
+#include "CheckedArithmetic.h"
 
 typedef struct _ColorBucket {
     /* contains palette index when used for look up cube */
@@ -173,15 +174,16 @@ compare_bucket_count(const ColorBucket a, const ColorBucket b) {
 static ColorBucket
 create_sorted_color_palette(const ColorCube cube) {
     ColorBucket buckets;
-    if (cube->size > LONG_MAX / sizeof(struct _ColorBucket)) {
+    size_t size;
+    if (!ImagingCheckedMul(cube->size, sizeof(struct _ColorBucket), &size)) {
         return NULL;
     }
-    /* malloc check ok, calloc + overflow check above for memcpy */
-    buckets = calloc(cube->size, sizeof(struct _ColorBucket));
+    /* malloc check ok, overflow checked above */
+    buckets = malloc(size);
     if (!buckets) {
         return NULL;
     }
-    memcpy(buckets, cube->buckets, sizeof(struct _ColorBucket) * cube->size);
+    memcpy(buckets, cube->buckets, size);
 
     qsort(
         buckets,
@@ -332,12 +334,12 @@ combined_palette(
     unsigned long nBucketsB
 ) {
     ColorBucket result;
-    if (nBucketsA > LONG_MAX - nBucketsB ||
-        (nBucketsA + nBucketsB) > LONG_MAX / sizeof(struct _ColorBucket)) {
+    size_t nBuckets;
+    if (!ImagingCheckedAdd(nBucketsA, nBucketsB, &nBuckets)) {
         return NULL;
     }
-    /* malloc check ok, overflow check above */
-    result = calloc(nBucketsA + nBucketsB, sizeof(struct _ColorBucket));
+    /* malloc check ok, using calloc for overflow, sum checked above */
+    result = calloc(nBuckets, sizeof(struct _ColorBucket));
     if (!result) {
         return NULL;
     }
@@ -508,7 +510,7 @@ quantize_octree(
 
     /* create result pixels and map palette indices */
     /* malloc check ok, calloc for overflow */
-    qp = calloc(nPixels, sizeof(Pixel));
+    qp = calloc(nPixels, sizeof(uint32_t));
     if (!qp) {
         goto error;
     }

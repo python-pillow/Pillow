@@ -28,6 +28,7 @@
 #include "QuantPngQuant.h"
 #include "QuantHash.h"
 #include "QuantHeap.h"
+#include "CheckedArithmetic.h"
 
 typedef struct {
     uint32_t scale;
@@ -564,6 +565,32 @@ resort_distance_tables(
     return 1;
 }
 
+/* The distance tables have nEntries * nEntries elements and are indexed with
+   uint32_t arithmetic, so that product has to fit in a uint32_t as well. */
+static int
+alloc_distance_tables(
+    uint32_t **avgDist, uint32_t ***avgDistSortKey, uint32_t nEntries
+) {
+    size_t n;
+
+    *avgDist = NULL;
+    *avgDistSortKey = NULL;
+    if (!ImagingCheckedMul(nEntries, nEntries, &n) || n > UINT32_MAX) {
+        return 0;
+    }
+    /* malloc check ok, using calloc for overflow */
+    *avgDist = calloc(n, sizeof(uint32_t));
+    *avgDistSortKey = calloc(n, sizeof(uint32_t *));
+    if (!*avgDist || !*avgDistSortKey) {
+        free(*avgDist);
+        free(*avgDistSortKey);
+        *avgDist = NULL;
+        *avgDistSortKey = NULL;
+        return 0;
+    }
+    return 1;
+}
+
 static int
 build_distance_tables(
     uint32_t *avgDist, uint32_t **avgDistSortKey, Pixel *p, uint32_t nEntries
@@ -899,9 +926,6 @@ k_means(
     int changes;
     int built = 0;
 
-    if (nPaletteEntries > UINT32_MAX / (sizeof(uint32_t))) {
-        return 0;
-    }
     /* malloc check ok, using calloc */
     if (!(count = calloc(nPaletteEntries, sizeof(uint32_t)))) {
         return 0;
@@ -916,20 +940,8 @@ k_means(
         }
     }
 
-    /* this is enough of a check, since the multiplication n*size is done above */
-    if (nPaletteEntries > UINT32_MAX / nPaletteEntries) {
+    if (!alloc_distance_tables(&avgDist, &avgDistSortKey, nPaletteEntries)) {
         goto error_1;
-    }
-    /* malloc check ok, using calloc, checking n*n above */
-    avgDist = calloc(nPaletteEntries * nPaletteEntries, sizeof(uint32_t));
-    if (!avgDist) {
-        goto error_1;
-    }
-
-    /* malloc check ok, using calloc, checking n*n above */
-    avgDistSortKey = calloc(nPaletteEntries * nPaletteEntries, sizeof(uint32_t *));
-    if (!avgDistSortKey) {
-        goto error_2;
     }
 
     while (1) {
@@ -987,7 +999,6 @@ error_3:
     if (avgDistSortKey) {
         free(avgDistSortKey);
     }
-error_2:
     if (avgDist) {
         free(avgDist);
     }
@@ -1062,19 +1073,8 @@ quantize(
         goto error_4;
     }
 
-    if (nPaletteEntries > UINT32_MAX / nPaletteEntries) {
+    if (!alloc_distance_tables(&avgDist, &avgDistSortKey, nPaletteEntries)) {
         goto error_5;
-    }
-    /* malloc check ok, using calloc for overflow, check of n*n above */
-    avgDist = calloc(nPaletteEntries * nPaletteEntries, sizeof(uint32_t));
-    if (!avgDist) {
-        goto error_5;
-    }
-
-    /* malloc check ok, using calloc for overflow, check of n*n above */
-    avgDistSortKey = calloc(nPaletteEntries * nPaletteEntries, sizeof(uint32_t *));
-    if (!avgDistSortKey) {
-        goto error_6;
     }
 
     if (!build_distance_tables(avgDist, avgDistSortKey, p, nPaletteEntries)) {
@@ -1108,7 +1108,6 @@ error_7:
     if (avgDistSortKey) {
         free(avgDistSortKey);
     }
-error_6:
     if (avgDist) {
         free(avgDist);
     }
@@ -1208,20 +1207,8 @@ quantize2(
         goto error_1;
     }
 
-    if (nQuantPixels > UINT32_MAX / nQuantPixels) {
+    if (!alloc_distance_tables(&avgDist, &avgDistSortKey, nQuantPixels)) {
         goto error_2;
-    }
-
-    /* malloc check ok, using calloc for overflow, check of n*n above */
-    avgDist = calloc(nQuantPixels * nQuantPixels, sizeof(uint32_t));
-    if (!avgDist) {
-        goto error_2;
-    }
-
-    /* malloc check ok, using calloc for overflow, check of n*n above */
-    avgDistSortKey = calloc(nQuantPixels * nQuantPixels, sizeof(uint32_t *));
-    if (!avgDistSortKey) {
-        goto error_3;
     }
 
     if (!build_distance_tables(avgDist, avgDistSortKey, p, nQuantPixels)) {
@@ -1246,7 +1233,6 @@ quantize2(
 
 error_4:
     free(avgDistSortKey);
-error_3:
     free(avgDist);
 error_2:
     free(qp);
@@ -1297,11 +1283,13 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     // Hoisted here as these are invariant over the loops below.
     int xsize = im->xsize, ysize = im->ysize;
 
-    if (xsize > INT_MAX / ysize) {
+    /* the pixel index below is an int, so the pixel count has to fit in one */
+    size_t nPixels;
+    if (!ImagingCheckedMul(xsize, ysize, &nPixels) || nPixels > INT_MAX) {
         return ImagingError_MemoryError();
     }
-    /* malloc check ok, using calloc for final overflow, x*y above */
-    p = calloc((size_t)xsize * ysize, sizeof(Pixel));
+    /* malloc check ok, using calloc for overflow */
+    p = calloc(nPixels, sizeof(Pixel));
     if (!p) {
         return ImagingError_MemoryError();
     }

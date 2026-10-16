@@ -56,12 +56,11 @@ hashtable_new(HashFunc hf, HashCmpFunc cf) {
     h->length = MIN_LENGTH;
     h->count = 0;
     h->userData = NULL;
-    h->table = malloc(sizeof(HashNode *) * h->length);
+    h->table = calloc(h->length, sizeof(HashNode *));
     if (!h->table) {
         free(h);
         return NULL;
     }
-    memset(h->table, 0, sizeof(HashNode *) * h->length);
     return h;
 }
 
@@ -94,14 +93,13 @@ _hashtable_rehash(HashTable *h, CollisionFunc cf, uint32_t newSize) {
     HashNode *n, *nn;
     uint32_t oldSize;
     oldSize = h->length;
-    h->table = malloc(sizeof(HashNode *) * newSize);
+    h->table = calloc(newSize, sizeof(HashNode *));
     if (!h->table) {
         h->table = oldTable;
         return;
     }
     h->length = newSize;
     h->count = 0;
-    memset(h->table, 0, sizeof(HashNode *) * h->length);
     for (i = 0; i < oldSize; i++) {
         for (n = oldTable[i]; n; n = nn) {
             nn = n->next;
