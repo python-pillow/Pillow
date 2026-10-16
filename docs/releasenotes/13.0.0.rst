@@ -211,6 +211,16 @@ such as :py:class:`pathlib.Path`, in addition to strings.
 Other changes
 =============
 
+Negative ImageDraw coordinates
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``ImageDraw`` coordinate conversion now uses floor rounding instead of
+truncation toward zero, and wide-line / polygon edge rounding is translation
+invariant across the origin. Drawing geometry that extends past the left or
+top edge of an image (for example when tiling) now matches a shifted-and-cropped
+render of the same geometry (:issue:`10228`).
+
+
 Python 3.15
 ^^^^^^^^^^^
 
