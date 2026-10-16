@@ -251,6 +251,7 @@ linkcheck_allowed_redirects = {
 # https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 _repo = "https://github.com/python-pillow/Pillow/"
 extlinks = {
+    "ghsa": (_repo + "security/advisories/GHSA-%s", "GHSA-%s"),
     "issue": (_repo + "issues/%s", "#%s"),
     "pr": (_repo + "pull/%s", "#%s"),
     "pypi": ("https://pypi.org/project/%s/", "%s"),
