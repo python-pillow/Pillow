@@ -650,17 +650,18 @@ def test_palette_operation(operation: Callable[[Image.Image], Image.Image]) -> N
 
 
 def test_palette_operation_keeps_alpha() -> None:
-    im = Image.new("P", (2, 1))
+    im = Image.new("P", (1, 2))
     im.putpalette((0, 0, 0, 0, 255, 0, 0, 128), "RGBA")
-    im.putpixel((1, 0), 1)
+    im.putpixel((0, 1), 1)
 
     result = ImageOps.invert(im)
 
     palette = result.getpalette("RGBA")
     assert palette is not None
-    assert palette[:8] == [255, 255, 255, 0, 0, 255, 255, 128]
+    assert palette == [255, 255, 255, 0, 0, 255, 255, 128]
 
 
 def test_palette_histogram_operation_not_supported() -> None:
-    with pytest.raises(NotImplementedError):
-        ImageOps.autocontrast(hopper("P"))
+    im = hopper("P")
+    with pytest.raises(NotImplementedError, match="mode P support coming soon"):
+        ImageOps.autocontrast(im)
