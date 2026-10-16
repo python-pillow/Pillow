@@ -208,6 +208,10 @@ OPEN_INFO = {
     (MM, 1, (2,), 1, (32,), ()): ("I", "I;32BS"),
     (II, 1, (3,), 1, (32,), ()): ("F", "F;32F"),
     (MM, 1, (3,), 1, (32,), ()): ("F", "F;32BF"),
+    (II, 1, (1,), 1, (8, 8), (0,)): ("L", "LX"),
+    (MM, 1, (1,), 1, (8, 8), (0,)): ("L", "LX"),
+    (II, 1, (1,), 1, (8, 8), (1,)): ("La", "La"),
+    (MM, 1, (1,), 1, (8, 8), (1,)): ("La", "La"),
     (II, 1, (1,), 1, (8, 8), (2,)): ("LA", "LA"),
     (MM, 1, (1,), 1, (8, 8), (2,)): ("LA", "LA"),
     (II, 2, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
@@ -761,11 +765,12 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 (dest[tag],) = values
             except ValueError:
                 # We've got a builtin tag with 1 expected entry
-                warnings.warn(
-                    f"Metadata Warning, tag {tag} had too many entries: "
-                    f"{len(values)}, expected 1"
-                )
-                dest[tag] = values[0]
+                if tag != PHOTOMETRIC_INTERPRETATION:
+                    warnings.warn(
+                        f"Metadata Warning, tag {tag} had too many entries: "
+                        f"{len(values)}, expected 1"
+                    )
+                    dest[tag] = values[0]
 
         else:
             # Spec'd length > 1 or undefined
@@ -903,6 +908,8 @@ class ImageFileDirectory_v2(_IFDv2Base):
                     if self._bigtiff
                     else self._unpack("HHL4s", self._ensure_read(fp, 12))
                 )
+                if tag in self._tagdata:
+                    continue
 
                 tagname = TiffTags.lookup(tag, self.group).name
                 typname = TYPES.get(typ, "unknown")
@@ -1180,6 +1187,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.tag: ImageFileDirectory_v1
         """ Legacy tag entries """
 
+        self._n_frames: int | None = None
         super().__init__(fp, filename)
 
     def _open(self) -> None:
@@ -1198,7 +1206,6 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__frame = -1
         self._fp = self.fp
         self._frame_pos: list[int] = []
-        self._n_frames: int | None = None
 
         logger.debug("*** TiffImageFile._open ***")
         logger.debug("- __first: %s", self.__first)
@@ -1260,9 +1267,9 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.__next = 0
             else:
                 self.__next = self.tag_v2.next
-            if self.__next == 0:
+            if self.__next == 0 and self._n_frames is None:
                 self._n_frames = frame + 1
-            if len(self._frame_pos) == 1:
+            if not hasattr(self, "is_animated"):
                 self.is_animated = self.__next != 0
             self.__frame += 1
         self.fp.seek(self._frame_pos[frame])
@@ -1710,6 +1717,17 @@ SAVE_INFO = {
 }
 
 
+def _validate_tags(tags: dict[int, Any]) -> None:
+    if COLORMAP in tags:
+        bps = tags.get(BITSPERSAMPLE, 1)
+        if isinstance(bps, tuple):
+            bps = bps[0]
+        expected = (1 << bps) * 3
+        if len(tags[COLORMAP]) != expected:
+            msg = f"Requiring {expected} items for Colormap"
+            raise ValueError(msg)
+
+
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
@@ -1979,6 +1997,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
         if SAMPLEFORMAT in atts and len(atts[SAMPLEFORMAT]) == 1:
             atts[SAMPLEFORMAT] = atts[SAMPLEFORMAT][0]
+        _validate_tags(atts)
 
         logger.debug("Converted items: %s", sorted(atts.items()))
 
@@ -2013,6 +2032,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     else:
         for tag in blocklist:
             del ifd[tag]
+        _validate_tags(ifd._tags_v2)
         offset = ifd.save(fp)
 
         ImageFile._save(

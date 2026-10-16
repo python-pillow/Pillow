@@ -1252,7 +1252,7 @@ class Image:
         if mode in ("P", "PA") and palette != Palette.ADAPTIVE:
             from . import ImagePalette
 
-            new_im.palette = ImagePalette.ImagePalette("RGB", im.getpalette("RGB"))
+            new_im.palette = ImagePalette.raw("RGB", im.getpalette("RGB"))
         if delete_trns:
             # crash fail if we leave a bytes transparency in an rgb/l mode.
             del new_im.info["transparency"]
@@ -2173,7 +2173,14 @@ class Image:
             self.palette.mode = "CMYK"
         elif "A" in rawmode:
             self.palette.mode = "RGBA"
-        self.load()  # install new palette
+        if self.palette.mode == self.palette.rawmode:
+            self.palette.rawmode = None
+        if self.palette.rawmode or (
+            self._im is not None and self._im.mode != self.mode
+        ):
+            # either raw palette data needs to be decoded,
+            # or the core image needs its mode updated
+            self.load()
 
     def putpixel(
         self,
@@ -2413,7 +2420,7 @@ class Image:
 
         if self.mode in ["LA", "RGBA"] and resample != Resampling.NEAREST:
             im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
-            im = im.resize(size, resample, box)
+            im = im.resize(size, resample, box, reducing_gap)
             return im.convert(self.mode)
 
         self.load()
@@ -2746,9 +2753,15 @@ class Image:
         """
 
         # overridden by file handlers
-        if frame != 0:
+        if frame != self.tell():
+            # The file handler likely did not override this method
             msg = "no more images in file"
             raise EOFError(msg)
+
+        if self._im is not None and (
+            self.im.size != self.size or self.im.mode != self.mode
+        ):
+            self._im = None
 
     def show(self, title: str | None = None) -> None:
         """
@@ -3296,7 +3309,7 @@ def frombytes(
 def frombuffer(
     mode: str,
     size: tuple[int, int],
-    data: bytes | SupportsArrayInterface,
+    data: bytes | bytearray | SupportsArrayInterface,
     decoder_name: str = "raw",
     *args: Any,
 ) -> Image:
@@ -3516,7 +3529,7 @@ def fromarrow(
 
     schema_capsule, array_capsule = obj.__arrow_c_array__()
     _im = core.new_arrow(mode, size, schema_capsule, array_capsule)
-    if _im:
+    if _im is not None:
         return Image()._new(_im)
 
     msg = "new_arrow returned None without an exception"
@@ -3570,7 +3583,9 @@ _fromarray_typemap = {
 }
 
 
-def _decompression_bomb_check(size: tuple[int, int]) -> None:
+def _decompression_bomb_check(
+    size: tuple[int, int], *, error_only: bool = False
+) -> None:
     if MAX_IMAGE_PIXELS is None:
         return
 
@@ -3583,7 +3598,7 @@ def _decompression_bomb_check(size: tuple[int, int]) -> None:
         )
         raise DecompressionBombError(msg)
 
-    if pixels > MAX_IMAGE_PIXELS:
+    if not error_only and pixels > MAX_IMAGE_PIXELS:
         warnings.warn(
             f"Image size ({pixels} pixels) exceeds limit of {MAX_IMAGE_PIXELS} pixels, "
             "could be decompression bomb DOS attack.",
@@ -4204,7 +4219,7 @@ class Exif(_ExifBase):
         head = self._get_head()
         ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
         for tag, ifd_dict in self._ifds.items():
-            if tag not in self:
+            if tag in {ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo} and tag not in self:
                 ifd[tag] = ifd_dict
         for tag, value in self.items():
             if tag in [
@@ -4238,8 +4253,10 @@ class Exif(_ExifBase):
             elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.MakerNote]:
                 if ExifTags.IFD.Exif not in self._ifds:
                     self.get_ifd(ExifTags.IFD.Exif)
-                tag_data = self._ifds[ExifTags.IFD.Exif][tag]
-                if tag == ExifTags.IFD.MakerNote:
+                tag_data = self._ifds[ExifTags.IFD.Exif].get(tag)
+                if tag_data is None:
+                    pass
+                elif tag == ExifTags.IFD.MakerNote:
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
                     try:

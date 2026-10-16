@@ -134,6 +134,7 @@ class TgaImageFile(ImageFile.ImageFile):
                 self.palette = ImagePalette.raw(
                     "BGRA", bytes(4 * start) + self.fp.read(4 * size)
                 )
+                self.palette.mode = "RGBA"
             else:
                 msg = "unknown TGA map depth"
                 raise SyntaxError(msg)
@@ -224,8 +225,13 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         warnings.warn("id_section has been trimmed to 255 characters")
 
     if colormaptype:
-        palette = im.im.getpalette("RGB", "BGR")
-        colormaplength, colormapentry = len(palette) // 3, 24
+        assert im.palette is not None
+        if im.palette.mode == "RGBA":
+            palette = im.im.getpalette("RGBA", "BGRA")
+            colormaplength, colormapentry = len(palette) // 4, 32
+        else:
+            palette = im.im.getpalette("RGB", "BGR")
+            colormaplength, colormapentry = len(palette) // 3, 24
     else:
         colormaplength, colormapentry = 0, 0
 

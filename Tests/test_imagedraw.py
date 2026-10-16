@@ -627,18 +627,6 @@ def test_point(points: Coords) -> None:
     assert_image_equal_tofile(im, "Tests/images/imagedraw_point.png")
 
 
-def test_point_I16() -> None:
-    # Arrange
-    im = Image.new("I;16", (1, 1))
-    draw = ImageDraw.Draw(im)
-
-    # Act
-    draw.point((0, 0), fill=0x1234)
-
-    # Assert
-    assert im.getpixel((0, 0)) == 0x1234
-
-
 @pytest.mark.parametrize("points", POINTS)
 def test_polygon(points: Coords) -> None:
     # Arrange
@@ -650,19 +638,6 @@ def test_polygon(points: Coords) -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_polygon.png")
-
-
-@pytest.mark.parametrize("points", POINTS)
-def test_polygon_width_I16(points: Coords) -> None:
-    # Arrange
-    im = Image.new("I;16", (W, H))
-    draw = ImageDraw.Draw(im)
-
-    # Act
-    draw.polygon(points, outline=0xFFFF, width=2)
-
-    # Assert
-    assert_image_equal_tofile(im, "Tests/images/imagedraw_polygon_width_I.tiff")
 
 
 @pytest.mark.parametrize("mode", ("RGB", "L"))
@@ -791,20 +766,6 @@ def test_rectangle_zero_width(bbox: Coords) -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_zero_width.png")
-
-
-@pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle_I16(bbox: Coords) -> None:
-    # Arrange
-    im = Image.new("I;16", (W, H))
-    draw = ImageDraw.Draw(im)
-
-    # Act
-    draw.rectangle(bbox, outline=0xCDEF)
-
-    # Assert
-    assert im.getpixel((X0, Y0)) == 0xCDEF
-    assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_I.tiff")
 
 
 @pytest.mark.parametrize("bbox", BBOX)

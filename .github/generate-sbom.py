@@ -123,7 +123,7 @@ def generate(version: str) -> dict:
             "description": "FriBiDi runtime-loading shim "
             "(vendored in src/thirdparty/fribidi-shim/); "
             "loads libfribidi dynamically",
-            "licenses": [{"license": {"id": "LGPL-2.1-or-later"}}],
+            "licenses": [{"license": {"id": "MIT-CMU"}}],
             "hashes": [
                 {
                     "alg": "SHA-256",
@@ -131,7 +131,10 @@ def generate(version: str) -> dict:
                 }
             ],
             "pedigree": {
-                "notes": "Pillow-authored shim; not taken from an upstream project."
+                "notes": "Pillow-authored shim; not taken from an upstream project. "
+                "fribidi.h declares the subset of FriBiDi's public API types, "
+                "constants and function signatures needed to load libfribidi "
+                "at runtime. No FriBiDi implementation code is included."
             },
             "externalReferences": [
                 {"type": "website", "url": "https://github.com/fribidi/fribidi"},
@@ -426,6 +429,45 @@ def generate(version: str) -> dict:
             "scope": "optional",
             "description": "JPEG 2000 codec (optional).",
             "licenses": [{"license": {"id": "BSD-2-Clause"}}],
+            "pedigree": {
+                "ancestors": [
+                    {
+                        "bom-ref": "pkg:generic/openjpeg@2.5.4#upstream",
+                        "type": "library",
+                        "name": "libtiff",
+                        "version": "2.5.4",
+                        "purl": "pkg:generic/openjpeg@2.5.4",
+                        "externalReferences": [
+                            {
+                                "type": "distribution",
+                                "url": "https://github.com/uclouvain/openjpeg/releases/tag/v2.5.4",
+                            }
+                        ],
+                    }
+                ],
+                "patches": [
+                    {
+                        "type": "cherry-pick",
+                        "diff": {
+                            "text": {
+                                # apply https://github.com/uclouvain/openjpeg/commit/91d08b11a72764f6d199f32fa0c1b1abd4edc2ad
+                                "content": base64.b64encode(
+                                    (
+                                        Path(__file__).parent.parent
+                                        / "patches"
+                                        / "v2.5.4.tar.gz.patch"
+                                    ).read_bytes()
+                                ).decode(),
+                                "encoding": "base64",
+                            }
+                        },
+                    },
+                ],
+                "notes": (
+                    "Vendored from upstream openjpeg 2.5.4 with a commit from master "
+                    "cherry-picked to fix OSV-2025-219."
+                ),
+            },
             "externalReferences": [
                 {"type": "website", "url": "https://www.openjpeg.org"},
                 {

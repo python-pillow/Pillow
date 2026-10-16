@@ -291,9 +291,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 if dpi is not None:
                     self.info["dpi"] = dpi
                 if self.fp.read(12).endswith(b"jp2c\xff\x4f\xff\x51"):
-                    hdr = self.fp.read(2)
-                    length = _binary.i16be(hdr)
-                    self.fp.seek(length - 2, os.SEEK_CUR)
+                    _parse_codestream(self.fp)
                     self._parse_comment()
             else:
                 msg = "not a JPEG 2000 file"
