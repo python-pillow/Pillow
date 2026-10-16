@@ -220,6 +220,16 @@ immediately at the release of 3.15.0 final (2026-10-01, :pep:`790`).
 
 Pillow 13.0.0 now officially supports Python 3.15.
 
+Faster import
+^^^^^^^^^^^^^
+
+Importing Pillow takes around half the time it did in Pillow 12.3.0. ``PIL.Image`` no
+longer imports ``logging``, modules that are only needed for some operations, such as
+``tempfile``, are now imported on first use, and on Python 3.15 Pillow also declares
+``__lazy_modules__`` to defer its remaining standard library imports (:pep:`810`). On an
+Apple Silicon Mac, ``from PIL import Image`` took 24 ms on Python 3.14 and 23 ms on
+Python 3.15 with Pillow 12.3.0, and now takes 12 ms and 10 ms.
+
 PyPy 3.12
 ^^^^^^^^^
 
@@ -241,6 +251,20 @@ These libraries are now compiled with ``-O2``. Compared to Pillow 12.3.0, the wh
 PNG, JPEG, WebP and AVIF are unaffected, as those libraries were already built with
 optimisation.
 
+Performance improvements
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Building on the optimizations in Pillow 12.3.0, more of the C code has been
+restructured so that compilers can vectorize it. Compared to Pillow 12.3.0,
+:py:func:`~PIL.ImageChops.offset` is up to 46 times faster,
+:py:meth:`~PIL.Image.Image.getbbox` up to 24 times faster,
+flipping and rotating by 180 degrees with
+:py:meth:`~PIL.Image.Image.transpose` up to 10 times faster,
+:py:meth:`~PIL.Image.Image.filter` up to 3.5 times faster,
+:py:func:`~PIL.ImageChops.difference` up to 3 times faster, and converting P and PA
+images to RGB and RGBA up to 2.5 times faster. Saving an optimized GIF with a shared
+palette is around 6 times faster and uses less memory.
+
 Wheels now use HarfBuzz for hinting
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -260,6 +284,13 @@ installed on the system with the expected name (e.g. ``libharfbuzz.so.0``).
 All wheels are now linked against the HarfBuzz that Pillow ships,
 which may slightly change how text is rendered in scripts that rely on the auto-hinter.
 
+Thread safety for free-threaded Python
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Critical sections now protect most operations on core image objects, such as
+conversion, pasting, filtering and pixel access, improving thread safety in the
+free-threaded build of Python. AVIF decoding also no longer blocks other threads.
+
 Resizing images with alpha
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -275,6 +306,27 @@ Preserved transparency when padding or expanding images in ImageOps
 ``transparency`` value from the source image's ``info`` dictionary. Transparent
 pixels in L, P and RGB images previously became opaque when a border was added.
 New palette colors are allocated without using reserved transparency entries.
+
+Fixed reading FITS images with more than 8 bits per pixel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+FITS data is big-endian, but Pillow was reading 16-bit and 32-bit integer data, and
+32-bit and 64-bit floating point data, in the native byte order. These images now
+load with the correct pixel values.
+
+Fixed accuracy of 16-bit image filters and conversions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Applying a kernel filter to an ``I;16`` image gave incorrect results for pixel values
+above 255, and converting an ``I;16N`` image to ``I`` or ``F`` clipped values to 255.
+Both now preserve the full 16-bit range.
+
+Saving APNG frames with different palettes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An APNG file can only contain a single palette. When saving P mode frames with
+different palettes, the image is now saved as RGB, or RGBA if any palette contains
+alpha, instead of writing the later frames with the wrong colors.
 
 Fixed ImageStat variance rounding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
