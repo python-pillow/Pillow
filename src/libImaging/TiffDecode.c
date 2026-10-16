@@ -67,11 +67,13 @@ _tiffWriteProc(thandle_t hdata, tdata_t buf, tsize_t size) {
     TIFFSTATE *state = (TIFFSTATE *)hdata;
     tsize_t to_write;
 
+    // libtiff may have seeked past the end of the buffer, e.g. when writing the
+    // directory, so the required size is based on the current location.
     to_write = MIN(size, state->size - (tsize_t)state->loc);
     if (state->flrealloc && size > to_write) {
         tdata_t new_data;
         tsize_t newsize = state->size;
-        while (newsize < (size + state->size)) {
+        while (newsize < (size + (tsize_t)state->loc)) {
             if (newsize > INT_MAX - 64 * 1024) {
                 return 0;
             }
@@ -84,9 +86,20 @@ _tiffWriteProc(thandle_t hdata, tdata_t buf, tsize_t size) {
             // fail out
             return 0;
         }
+        // zero the new space, so that any bytes libtiff seeks over without
+        // writing are 0 in the output, as they would be in a file
+        memset((UINT8 *)new_data + state->size, 0, newsize - state->size);
         state->data = new_data;
         state->size = newsize;
         to_write = size;
+    } else if (to_write < 0) {
+        TIFFError(
+            "_tiffWriteProc",
+            "Invalid Write at loc %" PRIu64 ", size: %" PRIu64,
+            state->loc,
+            (toff_t)state->size
+        );
+        return 0;
     }
 
     _TIFFmemcpy((UINT8 *)state->data + state->loc, buf, to_write);
