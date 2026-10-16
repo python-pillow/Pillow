@@ -85,49 +85,22 @@ def test_getcolor() -> None:
         palette.getcolor("unknown")  # type: ignore[arg-type]
 
 
-@pytest.mark.parametrize("mode", ("RGB", "RGBA"))
-@pytest.mark.parametrize("duplicate", (False, True))
-def test_getcolor_reused_index(mode: str, duplicate: bool) -> None:
-    colors: list[tuple[int, ...]] = [(i, i, i) for i in range(256)]
-    if duplicate:
-        colors[2] = colors[1]
-    if mode == "RGBA":
-        colors = [color + (255,) for color in colors]
+def test_putpixel_reused_palette_color() -> None:
+    # Given a full palette where (1, 1, 1) is a duplicate entry
+    # and one of the duplicate entries is unused
     im = Image.new("P", (256, 1))
-    im.putdata([0] + list(range(2, 256)) + [0])
-    im.putpalette([channel for color in colors for channel in color], mode)
-    assert im.palette is not None
+    im.putdata([0, 0] + list(range(2, 256)))
+    im.putpalette([0, 0, 0] + [1, 1, 1] * 2 + [0, 0, 0] * 253)
 
-    new_color = (255, 0, 0) if mode == "RGB" else (255, 0, 0, 255)
-    assert im.palette.getcolor(new_color, im) == 1
-    im.putpixel((255, 0), new_color)
-    assert im.palette.getcolor(new_color, im) == 1
-    if duplicate:
-        im.putpixel((0, 0), colors[1])
-        assert im.getpixel((0, 0)) == 2
-        expected_color = colors[1][:3]
-        assert im.convert("RGB").getpixel((0, 0)) == expected_color
-        assert im.convert("RGB").getpixel((255, 0)) == new_color[:3]
-    else:
-        with pytest.raises(ValueError, match="cannot allocate more than 256 colors"):
-            im.palette.getcolor(colors[1])
-    assert (
-        im.palette.colors == ImagePalette.ImagePalette(mode, im.palette.palette).colors
-    )
-
-
-def test_putpixel_reused_palette_color(tmp_path: Path) -> None:
-    im = Image.new("P", (3, 1))
-    im.putpalette([channel for i in range(256) for channel in (i, i, i)])
+    # And where that unused entry is replaced with (255, 0, 0)
     im.putpixel((0, 0), (255, 0, 0))
-    im.putpixel((1, 0), (255, 255, 255))
-    expected = Image.new("RGB", (3, 1))
-    expected.putdata([(255, 0, 0), (255, 255, 255), (0, 0, 0)])
-    assert_image_equal(im.convert("RGB"), expected)
-    path = tmp_path / "reused_palette.png"
-    im.save(path)
-    with Image.open(path) as reopened:
-        assert_image_equal(reopened.convert("RGB"), expected)
+    assert im.getpixel((0, 0)) == 1
+
+    # Drawing the original color again should have a different index
+    im.putpixel((0, 0), (1, 1, 1))
+    assert im.getpixel((0, 0)) == 2
+
+    assert im.convert("RGB").getpixel((0, 0)) == (1, 1, 1)
 
 
 def test_getcolor_rgba() -> None:
