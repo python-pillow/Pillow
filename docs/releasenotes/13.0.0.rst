@@ -193,6 +193,21 @@ Added ``escape`` argument to ``PSDraw.text()``
 The default, ``False``, preserves the existing handling of backslashes and PostScript
 escape sequences.
 
+ImageOps invert, posterize and solarize of P images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.ImageOps.invert`, :py:func:`~PIL.ImageOps.posterize` and
+:py:func:`~PIL.ImageOps.solarize` now support P mode images. The operation is applied
+to the palette colors, leaving any alpha values in the palette unchanged. Previously,
+these functions raised :py:exc:`NotImplementedError` for P mode.
+
+Path-like objects for font files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.ImageFont.load`, :py:func:`~PIL.ImageFont.load_path` and
+:py:meth:`~PIL.FontFile.FontFile.save` now accept :py:class:`os.PathLike` objects,
+such as :py:class:`pathlib.Path`, in addition to strings.
+
 Other changes
 =============
 
