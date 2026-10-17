@@ -105,6 +105,40 @@ def test_quantize_dither_diff() -> None:
     assert dither.tobytes() != nodither.tobytes()
 
 
+def test_quantize_adaptive_dither_diff() -> None:
+    # https://github.com/python-pillow/Pillow/issues/5836
+    # dither was being silently ignored when no reference palette was given
+    # (e.g. plain quantize(colors=N)), since self.im.quantize() doesn't
+    # support dithering directly.
+    image = hopper()
+
+    no_dither = image.quantize(colors=4, dither=Image.Dither.NONE)
+    dither = image.quantize(colors=4, dither=Image.Dither.FLOYDSTEINBERG)
+    default = image.quantize(colors=4)
+
+    assert dither.tobytes() != no_dither.tobytes()
+    # unspecified dither must remain backwards compatible with no dithering
+    assert default.tobytes() == no_dither.tobytes()
+
+
+def test_quantize_dither_reference_palette_default_unchanged() -> None:
+    # The reference-palette path already dithered by default; make sure
+    # changing the parameter default (Dither.FLOYDSTEINBERG -> None) didn't
+    # change that.
+    image = hopper()
+    with Image.open("Tests/images/caption_6_33_22.png") as palette:
+        palette_p = palette.convert("P")
+
+    default = image.quantize(palette=palette_p)
+    explicit_dither = image.quantize(
+        dither=Image.Dither.FLOYDSTEINBERG, palette=palette_p
+    )
+    no_dither = image.quantize(dither=Image.Dither.NONE, palette=palette_p)
+
+    assert default.tobytes() == explicit_dither.tobytes()
+    assert default.tobytes() != no_dither.tobytes()
+
+
 @pytest.mark.parametrize(
     "method", (Image.Quantize.MEDIANCUT, Image.Quantize.MAXCOVERAGE)
 )
