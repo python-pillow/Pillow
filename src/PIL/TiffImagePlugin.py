@@ -899,9 +899,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def load(self, fp: IO[bytes]) -> None:
         self.reset()
         self._offset = fp.tell()
-        fp.seek(0, io.SEEK_END)
-        limit = fp.tell()
-        fp.seek(self._offset)
+        limit = ImageFile._get_fp_length(fp)
         if self._tag_data_limit is not None:
             limit = min(limit, self._tag_data_limit)
         self._tag_data_size = 0
