@@ -265,6 +265,14 @@ flipping and rotating by 180 degrees with
 images to RGB and RGBA up to 2.5 times faster. Saving an optimized GIF with a shared
 palette is around 6 times faster and uses less memory.
 
+BOX downscale includes boundary source pixels
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:data:`PIL.Image.Resampling.BOX` downscaling could skip a source pixel whose
+center landed on an output bin edge, due to range rounding and the discontinuous
+box kernel. Those pixels are now assigned to exactly one output pixel, matching
+the documented "each source pixel contributes to one destination pixel" behavior.
+
 Wheels now use HarfBuzz for hinting
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
