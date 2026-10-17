@@ -2042,7 +2042,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         a = (rawmode, _fp, filename, tags, types)
         encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
         try:
-            encoder.setimage(im.im, (0, 0, *im.size))
+            encoder.setimage(im.im)
             while True:
                 errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
                 if not _fp:

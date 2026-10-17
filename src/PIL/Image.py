@@ -884,7 +884,7 @@ class Image:
         # unpack data
         e = _getencoder(self.mode, encoder_name, encoder_args)
         try:
-            e.setimage(self.im, (0, 0, *self.size))
+            e.setimage(self.im)
 
             from . import ImageFile
 
@@ -957,7 +957,7 @@ class Image:
 
         # unpack data
         d = _getdecoder(self.mode, decoder_name, decoder_args)
-        d.setimage(self.im, (0, 0, *self.size))
+        d.setimage(self.im)
         s = d.decode(data)
 
         if s[0] >= 0:
