@@ -51,6 +51,8 @@ def assert_blur(
     rgba = Image.merge("RGBA", (im, im, im, im))
     for band in box_blur(rgba, radius, passes).split():
         assert_image(band, data, delta)
+    for mode in ("I;16", "I;16L", "I;16B", "I;16N"):
+        assert_image(box_blur(im.convert(mode), radius, passes), data, delta)
 
 
 def test_color_modes() -> None:
@@ -61,6 +63,10 @@ def test_color_modes() -> None:
     box_blur(sample.convert("L"))
     box_blur(sample.convert("LA"))
     box_blur(sample.convert("LA").convert("La"))
+    box_blur(sample.convert("I;16"))
+    box_blur(sample.convert("I;16L"))
+    box_blur(sample.convert("I;16B"))
+    box_blur(sample.convert("I;16N"))
     with pytest.raises(ValueError):
         box_blur(sample.convert("I"))
     with pytest.raises(ValueError):
@@ -71,6 +77,44 @@ def test_color_modes() -> None:
     box_blur(sample.convert("CMYK"))
     with pytest.raises(ValueError):
         box_blur(sample.convert("YCbCr"))
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_i16_high_values(mode: str) -> None:
+    # Use the full 16-bit range, so that the high byte is exercised
+    values = []
+    for v in sample.get_flattened_data():
+        assert isinstance(v, int)
+        values.append(v * 257)
+    im = Image.new(mode, sample.size)
+    im.putdata(values)
+
+    # With a radius of 1, each pixel becomes the mean of the 3 x 3 pixels
+    # around it, with the edge pixels repeated
+    w, h = sample.size
+
+    def mean(x: int, y: int) -> float:
+        return (
+            sum(
+                values[min(max(y + dy, 0), h - 1) * w + min(max(x + dx, 0), w - 1)]
+                for dx in (-1, 0, 1)
+                for dy in (-1, 0, 1)
+            )
+            / 9
+        )
+
+    blurred = box_blur(im, 1).get_flattened_data()
+    for y in range(h):
+        for x in range(w):
+            value = blurred[y * w + x]
+            assert isinstance(value, int)
+            assert abs(value - mean(x, y)) <= 1
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_i16_max_value(mode: str) -> None:
+    im = Image.new(mode, (7, 5), 65535)
+    assert box_blur(im, 600, 3).get_flattened_data() == (65535,) * 35
 
 
 @pytest.mark.parametrize("size", ((0, 1), (1, 0)))
