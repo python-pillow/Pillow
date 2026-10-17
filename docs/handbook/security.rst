@@ -222,8 +222,10 @@ The following mitigations are listed in priority order.
 
 1. **Sandbox image processing** — run Pillow workers in a seccomp/AppArmor
    restricted subprocess, isolated from the main application process.
-2. **Block or sandbox EPS** — reject EPS at the application boundary, or run
-   Ghostscript in an isolated container.
+2. **Block or sandbox EPS** — reject EPS at the application boundary with
+   ``Image.open(..., formats=...)`` (Pillow identifies format through magic
+   bytes, so filename filtering is insufficient), or run Ghostscript in an
+   isolated container.
 3. **Never use** ``ImageMath.unsafe_eval()`` **with user input** — migrate all
    callers to :py:meth:`~PIL.ImageMath.lambda_eval`.
 4. **Keep all dependencies current** — Pillow and its C library dependencies
