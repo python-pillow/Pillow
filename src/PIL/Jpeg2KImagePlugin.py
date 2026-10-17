@@ -319,9 +319,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         self.tile = [
             ImageFile._Tile(
                 "jpeg2k",
-                None,
-                0,
-                (self.codec, self._reduce, self.layers, fd, length),
+                args=(self.codec, self._reduce, self.layers, fd, length),
             )
         ]
 
@@ -455,7 +453,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         plt,
     )
 
-    ImageFile._save(im, fp, [ImageFile._Tile("jpeg2k", None, 0, kind)])
+    ImageFile._save(im, fp, [ImageFile._Tile("jpeg2k", args=kind)])
 
 
 # ------------------------------------------------------------

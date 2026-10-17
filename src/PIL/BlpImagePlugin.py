@@ -491,7 +491,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         fp.write(struct.pack("<i", 5))
         fp.write(struct.pack("<i", 0))
 
-    ImageFile._save(im, fp, [ImageFile._Tile("BLP", None, 0, im.mode)])
+    ImageFile._save(im, fp, [ImageFile._Tile("BLP", args=im.mode)])
 
 
 Image.register_open(BlpImageFile.format, BlpImageFile, _accept)

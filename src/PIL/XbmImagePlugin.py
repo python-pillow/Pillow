@@ -115,7 +115,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     fp.write(b"static char im_bits[] = {\n")
 
-    ImageFile._save(im, fp, [ImageFile._Tile("xbm", None)])
+    ImageFile._save(im, fp, [ImageFile._Tile("xbm")])
 
     fp.write(b"};\n")
 

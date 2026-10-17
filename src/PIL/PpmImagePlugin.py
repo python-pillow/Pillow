@@ -358,7 +358,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     elif head == b"Pf":
         fp.write(b"-1.0\n")
     row_order = -1 if im.mode == "F" else 1
-    ImageFile._save(im, fp, [ImageFile._Tile("raw", None, 0, (rawmode, 0, row_order))])
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", args=(rawmode, 0, row_order))])
 
 
 #

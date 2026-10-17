@@ -207,7 +207,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     assert fp.tell() == 128
 
-    ImageFile._save(im, fp, [ImageFile._Tile("pcx", None, 0, (rawmode, bits * planes))])
+    ImageFile._save(im, fp, [ImageFile._Tile("pcx", args=(rawmode, bits * planes))])
 
     if im.mode == "P":
         # colour palette

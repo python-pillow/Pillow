@@ -377,7 +377,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             palette += im_palette[colors * i : colors * (i + 1)]
             palette += b"\x00" * (256 - colors)
         fp.write(palette)  # 768 bytes
-    ImageFile._save(im, fp, [ImageFile._Tile("raw", None, 0, (rawmode, 0, -1))])
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", args=(rawmode, 0, -1))])
 
 
 #

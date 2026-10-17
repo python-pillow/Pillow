@@ -395,7 +395,7 @@ class JpegImageFile(ImageFile.ImageFile):
                     rawmode = self.mode
                     if self.mode == "CMYK":
                         rawmode = "CMYK;I"  # assume adobe conventions
-                    self.tile = [ImageFile._Tile("jpeg", None, 0, (rawmode, ""))]
+                    self.tile = [ImageFile._Tile("jpeg", args=(rawmode, ""))]
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
@@ -865,7 +865,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # and the comment (COM marker).
         bufsize = max(len(exif) + 5, len(extra), len(comment or b"") + 5)
 
-    ImageFile._save(im, fp, [ImageFile._Tile("jpeg", None, 0, rawmode)], bufsize)
+    ImageFile._save(im, fp, [ImageFile._Tile("jpeg", args=rawmode)], bufsize)
 
 
 ##

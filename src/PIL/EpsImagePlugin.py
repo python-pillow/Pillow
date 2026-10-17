@@ -472,7 +472,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes, eps: int = 1) -
     if hasattr(fp, "flush"):
         fp.flush()
 
-    ImageFile._save(im, fp, [ImageFile._Tile("eps", None)])
+    ImageFile._save(im, fp, [ImageFile._Tile("eps")])
 
     fp.write(b"\n%%%%EndBinary\n")
     fp.write(b"grestore end\n")

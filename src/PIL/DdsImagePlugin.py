@@ -370,7 +370,7 @@ class DdsImageFile(ImageFile.ImageFile):
                 mask_count = 3
 
             masks = struct.unpack(f"<{mask_count}I", header[84 : 84 + mask_count * 4])
-            self.tile = [ImageFile._Tile("dds_rgb", None, 0, (bitcount, masks))]
+            self.tile = [ImageFile._Tile("dds_rgb", args=(bitcount, masks))]
             return
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:
@@ -481,7 +481,7 @@ class DdsImageFile(ImageFile.ImageFile):
         if n:
             self.tile = [ImageFile._Tile("bcn", None, offset, (n, self.pixel_format))]
         else:
-            self.tile = [ImageFile._Tile("raw", None, 0, rawmode or self.mode)]
+            self.tile = [ImageFile._Tile("raw", args=rawmode or self.mode)]
 
     def load_seek(self, pos: int) -> None:
         pass
@@ -621,7 +621,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             # dxgi_format, 2D resource, misc, array size, straight alpha
             struct.pack("<5I", dxgi_format, 3, 0, 0, 1)
         )
-    ImageFile._save(im, fp, [ImageFile._Tile(codec_name, None, 0, args)])
+    ImageFile._save(im, fp, [ImageFile._Tile(codec_name, args=args)])
 
 
 def _accept(prefix: bytes) -> bool:

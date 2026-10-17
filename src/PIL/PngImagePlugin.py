@@ -1290,7 +1290,7 @@ def _write_multiple_frames(
         ImageFile._save(
             default_im,
             cast("IO[bytes]", _idat(fp, chunk)),
-            [ImageFile._Tile("zip", None, 0, rawmode)],
+            [ImageFile._Tile("zip", args=rawmode)],
         )
 
     seq_num = 0
