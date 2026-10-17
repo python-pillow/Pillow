@@ -921,39 +921,34 @@ class TestFileLibTiff(LibTiffTestCase):
             )
 
     def test_save_bytesio_seek_past_end(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+
         # When writing the directory, libtiff seeks past the end of the data
         # written so far, and then writes the tag values there. Check that the
         # in-memory write buffer grows to fit, and that the bytes that are
         # skipped over are zero, as they would be when writing to a file.
+        def roundtrip(im: Image.Image, **kwargs: Any) -> None:
+            im.save(outfile, **kwargs)
+            buffer_io = io.BytesIO()
+            im.save(buffer_io, format="tiff", **kwargs)
+            assert buffer_io.getvalue() == outfile.read_bytes()
 
         # 7 distinct bytes per row: PackBits emits 8 bytes per row, so the strip
         # plus the header are exactly 64 KiB, the initial size of the buffer
         im = Image.new("L", (7, 8191))
         im.putdata([(i * 37) & 0xFF for i in range(7 * 8191)])
-        kwargs: dict[str, Any] = {
-            "compression": "packbits",
-            "description": "D" * 65535,
-        }
-
-        outfile = tmp_path / "temp.tif"
-        im.save(outfile, **kwargs)
-        buffer_io = io.BytesIO()
-        im.save(buffer_io, format="tiff", **kwargs)
-        assert buffer_io.getvalue() == outfile.read_bytes()
+        roundtrip(im, compression="packbits", description="D" * 65535)
 
         # odd-length tag values, so that libtiff pads between them. Large enough
         # that the buffer has to be reallocated
         im = hopper().resize((300, 300))
-        kwargs = {
-            "compression": "tiff_lzw",
-            "description": "abcdef",
-            "software": "xyz0",
-            "tiffinfo": {315: "artist", 33432: "copyright!"},
-        }
-        im.save(outfile, **kwargs)
-        buffer_io = io.BytesIO()
-        im.save(buffer_io, format="tiff", **kwargs)
-        assert buffer_io.getvalue() == outfile.read_bytes()
+        roundtrip(
+            im,
+            compression="tiff_lzw",
+            description="abcdef",
+            software="xyz0",
+            tiffinfo={315: "artist", 33432: "copyright!"},
+        )
 
     def test_save_ycbcr(self, tmp_path: Path) -> None:
         im = hopper("YCbCr")
