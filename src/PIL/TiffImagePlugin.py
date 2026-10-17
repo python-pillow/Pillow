@@ -1911,7 +1911,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             im = ImageOps.invert(im)
 
     if im.mode in ["P", "PA"]:
-        lut = im.im.getpalette("RGB", "RGB;L")
+        lut = im.im.getpalette("RGB;L")
         colormap = []
         colors = len(lut) // 3
         for i in range(3):

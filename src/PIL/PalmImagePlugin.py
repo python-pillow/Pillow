@@ -174,7 +174,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     flags = 0
     if im.mode == "P":
         flags |= _FLAGS["custom-colormap"]
-        colormap = im.im.getpalette()
+        colormap = im.im.getpalette("RGB")
         colors = len(colormap) // 3
         colormapsize = 4 * colors + 2
     else:
