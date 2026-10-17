@@ -374,9 +374,9 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
 
             # Update the reduce and layers settings
             t = self.tile[0]
-            assert isinstance(t[3], tuple)
-            t3 = (t[3][0], self._reduce, self.layers, t[3][3], t[3][4])
-            self.tile = [ImageFile._Tile(t[0], (0, 0, *self.size), t[2], t3)]
+            assert isinstance(t.args, tuple)
+            args = (t.args[0], self._reduce, self.layers, t.args[3], t.args[4])
+            self.tile = [t._replace(extents=(0, 0, *self.size), args=args)]
 
         return ImageFile.ImageFile.load(self)
 
