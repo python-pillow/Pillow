@@ -37,8 +37,7 @@ if [[ "$CIBW_PLATFORM" == "android" ]]; then
             exit 1
             ;;
     esac
-    HOST_CONFIGURE_FLAGS="--disable-shared --enable-static --host=$HOST_TRIPLE"
-    HOST_CMAKE_FLAGS="-DBUILD_SHARED_LIBS=NO -DENABLE_SHARED=NO"
+    HOST_CONFIGURE_FLAGS="--host=$HOST_TRIPLE"
 
     WORKDIR=$(pwd)/build/android_$CIBW_ARCHS
     BUILD_PREFIX=$(pwd)/build/deps/android_$CIBW_ARCHS
@@ -220,9 +219,6 @@ function build_libavif {
         fi
     else
         libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
-        if [ "$CIBW_PLATFORM" = "android"]; then
-            build_shared=OFF
-        fi
     fi
     if [[ -n "$IOS_SDK" ]] && [[ "$PLAT" == "x86_64" ]]; then
         libavif_cmake_flags+=(-DAOM_TARGET_CPU=generic)
@@ -442,13 +438,13 @@ fi
 
 wrap_wheel_builder build
 
-# A safety catch for mobile platforms. They can't use dynamic libraries, but the
-# linker will prefer dynamic libraries to static libraries. The only way to reliably
+# A safety catch for iOS. iOS can't use dynamic libraries, but clang will prefer
+# to link dynamic libraries to static libraries. The only way to reliably
 # prevent this is to not have dynamic libraries available in the first place.
 # The build process *shouldn't* generate any dylibs... but just in case, purge
 # any dylibs that *have* been installed into the build prefix directory.
-if [[ "$CIBW_PLATFORM" =~ ^(android|ios)$ ]]; then
-    find "$BUILD_PREFIX" -name "*.dylib" -or -name "*.so" -exec rm -rf {} \;
+if [[ -n "$IOS_SDK" ]]; then
+    find "$BUILD_PREFIX" -name "*.dylib" -exec rm -rf {} \;
 fi
 
 # Return to the project root to finish the build
