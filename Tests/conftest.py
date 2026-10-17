@@ -7,9 +7,12 @@ import sysconfig
 
 import pytest
 
+from PIL import Image
+
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Generator
+
 
 FREE_THREADED_BUILD = bool(sysconfig.get_config_var("Py_GIL_DISABLED"))
 
@@ -80,3 +83,28 @@ def tsan_parse(capfd: pytest.CaptureFixture[str]) -> Generator[None]:
     if "WARNING: ThreadSanitizer" in err:
         msg = "ThreadSanitizer Warning"
         raise Exception(msg)
+
+
+@pytest.fixture
+def enable_block_allocator() -> Generator[None]:
+    """
+    Enable the block allocator for image storage.
+    """
+    Image.core.set_use_block_allocator(1)
+    try:
+        yield
+    finally:
+        Image.core.set_use_block_allocator(0)
+
+
+@pytest.fixture
+def aligned_arena() -> Generator[None]:
+    """
+    Configure the global image allocator to use a 64-byte alignment.
+    """
+    alignment = Image.core.get_alignment()
+    Image.core.set_alignment(64)
+    try:
+        yield
+    finally:
+        Image.core.set_alignment(alignment)

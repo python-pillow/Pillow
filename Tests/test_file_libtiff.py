@@ -395,6 +395,121 @@ class TestFileLibTiff(LibTiffTestCase):
         with pytest.raises(ValueError, match="Incorrect tag value type"):
             im.save(out, tiffinfo=ifd)
 
+    @pytest.mark.parametrize(
+        "tiffinfo",
+        (
+            {TiffImagePlugin.IMAGEWIDTH: 1 << 27},
+            {TiffImagePlugin.SAMPLESPERPIXEL: 3},
+        ),
+    )
+    def test_geometry_tags(
+        self, tiffinfo: dict[int, int], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        # libtiff reads a scanline of the size described by the IMAGEWIDTH,
+        # SAMPLESPERPIXEL and BITSPERSAMPLE tags from a buffer that only holds one
+        # row of the image, so a tag describing a larger row must be rejected.
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        out = tmp_path / "temp.tif"
+        im = hopper("L")
+        with pytest.raises(OSError, match="encoder error -8"):
+            im.save(out, tiffinfo=tiffinfo)
+
+    @pytest.mark.parametrize(
+        "tag, value",
+        (
+            # DNGPrivateData is a BYTE array with a count to libtiff
+            (50740, 4096),
+            # ActiveArea is a LONG array of four values to libtiff
+            (50829, 64),
+            (50829, (0, 0)),
+        ),
+    )
+    def test_libtiff_field_definition(
+        self, tag: int, value: Any, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[tag] = value
+        ifd.tagtype[tag] = TiffTags.LONG
+
+        out = tmp_path / "temp.tif"
+        im = Image.new("L", (1, 1))
+        with pytest.raises(ValueError, match="libtiff field definition"):
+            im.save(out, tiffinfo=ifd)
+
+        # Values that match the libtiff definition are written
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[50740] = b"private"
+        ifd.tagtype[50740] = TiffTags.BYTE
+        ifd[50829] = (0, 0, 1, 1)
+        ifd.tagtype[50829] = TiffTags.LONG
+        im.save(out, tiffinfo=ifd)
+
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2[50740] == b"private"
+            assert reloaded.tag_v2[50829] == (0, 0, 1, 1)
+
+    def test_transferfunction_not_saved(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        # TransferFunction is not supported by the libtiff encoder, so it is
+        # dropped rather than raising an error
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        out = tmp_path / "temp.tif"
+        im = Image.new("L", (1, 1))
+        im.save(out, tiffinfo={TiffImagePlugin.TRANSFERFUNCTION: tuple(range(256))})
+
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert TiffImagePlugin.TRANSFERFUNCTION not in reloaded.tag_v2
+
+    @pytest.mark.parametrize(
+        "tag, mode, value, invalid_value",
+        (
+            (320, "L", tuple((i % 256) * 256 for i in range(768)), (0, 0, 0)),
+            (530, "YCbCr", (1, 1), (1,)),
+            (532, "YCbCr", (0, 255, 128, 255, 128, 255), (0, 255)),
+        ),
+    )
+    def test_libtiff_core_field_definition(
+        self,
+        tag: int,
+        mode: str,
+        value: tuple[int, ...],
+        invalid_value: tuple[int, ...],
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+    ) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+
+        out = tmp_path / "temp.tif"
+        im = Image.new(mode, (1, 1))
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[tag] = invalid_value
+        # The ColorMap length is checked in Python first
+        match = "Requiring 768 items" if tag == 320 else "libtiff field definition"
+        with pytest.raises(ValueError, match=match):
+            im.save(out, tiffinfo=ifd)
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[tag] = value
+
+        im.save(out, tiffinfo=ifd)
+
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            if tag == 532:
+                assert tuple(float(v) for v in reloaded.tag_v2[tag]) == pytest.approx(
+                    value
+                )
+            else:
+                assert tuple(reloaded.tag_v2[tag]) == value
+
     def test_inknames_tag(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
@@ -601,7 +716,9 @@ class TestFileLibTiff(LibTiffTestCase):
         im.save(out, compression="tiff_adobe_deflate")
         assert_image_equal_tofile(im, out)
 
-    @pytest.mark.parametrize("im", (hopper("P"), Image.new("P", (1, 1), "#000")))
+    @pytest.mark.parametrize(
+        "im", (hopper("P"), hopper("PA"), Image.new("P", (1, 1), "#000"))
+    )
     def test_palette_save(
         self, im: Image.Image, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
@@ -614,6 +731,7 @@ class TestFileLibTiff(LibTiffTestCase):
             # colormap/palette tag
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert len(reloaded.tag_v2[320]) == 768
+            assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
     @pytest.mark.parametrize("libtiff", (True, False))
     def test_colormap_size_mismatch(
@@ -631,15 +749,16 @@ class TestFileLibTiff(LibTiffTestCase):
             )
 
         # A correctly sized Colormap for a 16-bit image is still accepted.
+        colormap = tuple(range(1 << 16)) * 3
         out = io.BytesIO()
         im.save(
             out,
             format="TIFF",
-            tiffinfo={TiffImagePlugin.COLORMAP: (0,) * (1 << 16) * 3},
+            tiffinfo={TiffImagePlugin.COLORMAP: colormap},
         )
         with Image.open(out) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
-            assert len(reloaded.tag_v2[TiffImagePlugin.COLORMAP]) == (1 << 16) * 3
+            assert reloaded.tag_v2[TiffImagePlugin.COLORMAP] == colormap
 
     @pytest.mark.parametrize("compression", ("tiff_ccitt", "group3", "group4"))
     def test_bw_compression_w_rgb(self, compression: str, tmp_path: Path) -> None:
@@ -800,6 +919,41 @@ class TestFileLibTiff(LibTiffTestCase):
                 compression="tiff_lzw",
                 tiffinfo={TiffImagePlugin.PREDICTOR: 3},
             )
+
+    def test_save_bytesio_seek_past_end(self, tmp_path: Path) -> None:
+        # When writing the directory, libtiff seeks past the end of the data
+        # written so far, and then writes the tag values there. Check that the
+        # in-memory write buffer grows to fit, and that the bytes that are
+        # skipped over are zero, as they would be when writing to a file.
+
+        # 7 distinct bytes per row: PackBits emits 8 bytes per row, so the strip
+        # plus the header are exactly 64 KiB, the initial size of the buffer
+        im = Image.new("L", (7, 8191))
+        im.putdata([(i * 37) & 0xFF for i in range(7 * 8191)])
+        kwargs: dict[str, Any] = {
+            "compression": "packbits",
+            "description": "D" * 65535,
+        }
+
+        outfile = tmp_path / "temp.tif"
+        im.save(outfile, **kwargs)
+        buffer_io = io.BytesIO()
+        im.save(buffer_io, format="tiff", **kwargs)
+        assert buffer_io.getvalue() == outfile.read_bytes()
+
+        # odd-length tag values, so that libtiff pads between them. Large enough
+        # that the buffer has to be reallocated
+        im = hopper().resize((300, 300))
+        kwargs = {
+            "compression": "tiff_lzw",
+            "description": "abcdef",
+            "software": "xyz0",
+            "tiffinfo": {315: "artist", 33432: "copyright!"},
+        }
+        im.save(outfile, **kwargs)
+        buffer_io = io.BytesIO()
+        im.save(buffer_io, format="tiff", **kwargs)
+        assert buffer_io.getvalue() == outfile.read_bytes()
 
     def test_save_ycbcr(self, tmp_path: Path) -> None:
         im = hopper("YCbCr")
@@ -1211,6 +1365,44 @@ class TestFileLibTiff(LibTiffTestCase):
             im.load()
         assert im.size == (950, 975)
 
+    @pytest.mark.parametrize("tiled", (False, True))
+    def test_jpeg_short_strip(self, tiled: bool) -> None:
+        # The JPEG data in the strip/tile only contains 8 of the 256 rows that
+        # RowsPerStrip/TileLength declare. libtiff decodes the rows that exist
+        # and still reports success, so the remaining rows must be cleared
+        # rather than left as uninitialised memory.
+        jpeg = io.BytesIO()
+        Image.new("L", (256, 8), 200).save(jpeg, "JPEG")
+        jpeg_data = jpeg.getvalue()
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[TiffImagePlugin.IMAGEWIDTH] = 256
+        ifd[TiffImagePlugin.IMAGELENGTH] = 256
+        ifd[TiffImagePlugin.BITSPERSAMPLE] = 8
+        ifd[TiffImagePlugin.COMPRESSION] = 7  # JPEG
+        ifd[TiffImagePlugin.PHOTOMETRIC_INTERPRETATION] = 1  # BlackIsZero
+        if tiled:
+            ifd[TiffImagePlugin.TILEWIDTH] = 256
+            ifd[TiffImagePlugin.TILELENGTH] = 256
+            ifd[TiffImagePlugin.TILEOFFSETS] = 0
+            ifd[TiffImagePlugin.TILEBYTECOUNTS] = len(jpeg_data)
+            # Point the tile data at the end of the IFD
+            ifd[TiffImagePlugin.TILEOFFSETS] = 8 + len(ifd.tobytes(8))
+        else:
+            ifd[TiffImagePlugin.ROWSPERSTRIP] = 256
+            # Strip offsets is updated by tobytes()
+            ifd[TiffImagePlugin.STRIPOFFSETS] = 0
+            ifd[TiffImagePlugin.STRIPBYTECOUNTS] = len(jpeg_data)
+
+        b = io.BytesIO()
+        ifd.save(b)
+        b.write(jpeg_data)
+
+        with Image.open(b) as im:
+            assert im.tile[0].codec_name == "libtiff"
+            assert im.crop((0, 0, 256, 8)).getextrema() == (200, 200)
+            assert im.crop((0, 8, 256, 256)).getextrema() == (0, 0)
+
     def test_orientation(self) -> None:
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
             for i in range(2, 9):
@@ -1280,6 +1472,62 @@ class TestFileLibTiff(LibTiffTestCase):
             # Assert that the error code is IMAGING_CODEC_MEMORY
             with pytest.raises(OSError, match="decoder error -9"):
                 im.load()
+
+    def test_unpacker_row_wider_than_libtiff_row(self) -> None:
+        for data in (
+            # 16x16 8-bit greyscale tile, with a PhotometricInterpretation tag that
+            # has two values. Pillow reads it as YCbCr (rawmode RGBX, 4 bytes/pixel)
+            # while libtiff ignores it and decodes 1 byte/pixel.
+            (
+                b"SUkqAAgAAAAKAAABBAABAAAAEAAAAAEBBAABAAAAEAAAAAIBAwABAAAACAAA"
+                b"AAMBAwABAAAACAAAAAYBAwACAAAABgAGABUBAwABAAAAAQAAAEIBBAABAAAA"
+                b"EAAAAEMBBAABAAAAEAAAAEQBBAABAAAAhgAAAEUBBAABAAAACwEAAAAAAAB4"
+                b"nAEAAf/+AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUm"
+                b"JygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJT"
+                b"VFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+A"
+                b"gYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6yt"
+                b"rq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna"
+                b"29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+foAAQIDBJ9Bepo="
+            ),
+            # 16x16 strip with duplicated
+            # BitsPerSample and PhotometricInterpretation tags.
+            # The first reports 8-bit YCbCr, read as 4 bytes/pixel RGBA,
+            # and the last reports 16-bit RGB, rawmode RGB;16N, 6 bytes/pixel.
+            (
+                b"SUkqAAgAAAAMAAABAwABAAAAEAAAAAEBAwABAAAAEAAAAAIBAwADAAAAugEA"
+                b"AAIBAwADAAAAwAEAAAMBAwABAAAACAAAAAYBAwABAAAABgAAAAYBAwABAAAA"
+                b"AgAAABEBBAABAAAAngAAABUBAwABAAAAAwAAABYBAwABAAAAEAAAABcBBAAB"
+                b"AAAAHAEAABICAwACAAAAAQABAAAAAAB4nGNgZGJmYWVj5+Dk4ubh5eMXEBQS"
+                b"FhEVE5eQlJKWkZWTV1BUUlZRVVPX0NTS1tHV0zcwNDI2MTUzt7C0sraxtbN3"
+                b"cHRydnF1c/fw9PL28fXzDwgMCg4JDQuPiIyKjomNi09ITEpOSU1Lz8jMys7J"
+                b"zcsvKCwqLiktK6+orKquqa2rb2hsam5pbWvv6Ozq7unt658wcdLkKVOnTZ8x"
+                b"c9bsOXPnzV+wcNHiJUuXLV+xctXqNWvXrd+wcdPmLVu3bd+xc9fuPXv37T9w"
+                b"8NDhI0ePHT9x8tTpM2fPnb9w8dLlK1evXb9x89btO3fv3X/w8NHjJ0+fPX/x"
+                b"8tXrN2/fvf/w8dPnL1+/ff/x89fvP3///WcY9f+I9j8AoGJ+kAgACAAIABAA"
+                b"EAAQAA=="
+            ),
+        ):
+            with Image.open(io.BytesIO(base64.b64decode(data))) as im:
+                im.load()
+
+        # 4x2 PackBits strip with duplicated
+        # BitsPerSample, Photometric Interpretation and SamplesPerPixel tags.
+        # The first reports 8-bit YCbCr, read as 4 bytes/pixel RGBA,
+        # and the last reports 6 channel RGB, rawmode RGBAXX, 6 bytes/pixel.
+        data = (
+            b"SUkqAAgAAAAPAAABBAABAAAABAAAAAEBBAABAAAAAgAAAAIBAwADAAAAwgAA"
+            b"AAIBAwAGAAAAyAAAAAMBAwABAAAABYAAAAYBAwABAAAABgAAAAYBAwABAAAA"
+            b"AgAAABEBBAABAAAA2gAAABUBAwABAAAAAwAAABUBAwABAAAABgAAABYBBAAB"
+            b"AAAAAgAAABcBBAABAAAAGQAAABwBAwABAAAAAQAAAFIBAwADAAAA1AAAABIC"
+            b"AwACAAAAAQABAAAAAAAIAAgACAAIAAgACAAIAAgACAACAAAAAAAXAAECAwQF"
+            b"BgcICQoLDA0ODxAREhMUFRYX"
+        )
+
+        # The unpacker chosen by Pillow reads more bytes per row than libtiff
+        # decoded, so the decoder must reject the image rather than read past
+        # the end of its buffer
+        with pytest.raises(SyntaxError, match="unknown pixel mode"):
+            TiffImagePlugin.TiffImageFile(io.BytesIO(base64.b64decode(data)))
 
     @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", "jpeg"))
     def test_save_multistrip(self, compression: str, tmp_path: Path) -> None:

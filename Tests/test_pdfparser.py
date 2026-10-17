@@ -223,6 +223,28 @@ def test_linearize_page_tree_duplicate_reference() -> None:
             pdf.linearize_page_tree()
 
 
+def test_linearize_page_tree_deep() -> None:
+    # A deep, but acyclic, page tree should not exhaust the call stack
+    b = BytesIO()
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        pages_ids = [pdf.next_object_id(0) for _ in range(2000)]
+        page_id = pdf.next_object_id(0)
+        pdf.write_page(page_id)
+        for i, pages_id in enumerate(pages_ids):
+            kid = pages_ids[i + 1] if i + 1 < len(pages_ids) else page_id
+            pdf.write_obj(pages_id, Type=PdfName(b"Pages"), Count=1, Kids=[kid])
+
+        pdf.pages = [pages_ids[0]]
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
+
+    with PdfParser(f=b) as pdf:
+        assert pdf.pages == [page_id]
+
+
 @timeout_unless_slower_valgrind(1)
 def test_write_catalog_loop() -> None:
     b = BytesIO()

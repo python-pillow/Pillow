@@ -8,6 +8,7 @@ import collections
 import mmap
 import os
 import re
+import sys
 import time
 import zlib
 from typing import Any, NamedTuple
@@ -445,6 +446,11 @@ class PdfParser:
     def close_buf(self) -> None:
         if isinstance(self.buf, memoryview):
             self.buf.release()
+            if sys.implementation.name == "pypy":
+                import gc
+
+                # See https://github.com/pypy/pypy/pull/5616
+                gc.collect()
         elif isinstance(self.buf, mmap.mmap):
             self.buf.close()
         self.buf = None
@@ -1085,10 +1091,9 @@ class PdfParser:
         return value
 
     def linearize_page_tree(
-        self, node: PdfDict | None = None, processed_ids: set[int] | None = None
+        self, node: PdfDict | None = None
     ) -> list[IndirectReference]:
-        if processed_ids is None:
-            processed_ids = set()
+        processed_ids = set()
         if node is not None:
             page_node = node
         else:
@@ -1099,7 +1104,14 @@ class PdfParser:
             page_node[b"Type"] == b"Pages", "/Type of page tree node is not /Pages"
         )
         pages = []
-        for kid in page_node[b"Kids"]:
+        # Walk the tree with a stack of iterators rather than recursion,
+        # so that a deep page tree cannot exhaust the call stack
+        stack = [iter(page_node[b"Kids"])]
+        while stack:
+            kid = next(stack[-1], None)
+            if kid is None:
+                stack.pop()
+                continue
             check_format_condition(
                 kid.object_id not in processed_ids,
                 f"page tree contains a cyclic or duplicate reference to {kid}",
@@ -1109,5 +1121,9 @@ class PdfParser:
             if kid_object[b"Type"] == b"Page":
                 pages.append(kid)
             else:
-                pages.extend(self.linearize_page_tree(kid_object, processed_ids))
+                check_format_condition(
+                    kid_object[b"Type"] == b"Pages",
+                    "/Type of page tree node is not /Pages",
+                )
+                stack.append(iter(kid_object[b"Kids"]))
         return pages

@@ -951,12 +951,6 @@ class Image:
             # may pass tuple instead of argument list
             decoder_args = decoder_args[0]
 
-        if decoder_args and decoder_args[0] in {"P;2L", "P;4L"}:
-            multiple = 4 if decoder_args[0] == "P;2L" else 8
-            if len(data) % multiple:
-                msg = "not enough image data"
-                raise ValueError(msg)
-
         # default format
         if decoder_name == "raw" and decoder_args == ():
             decoder_args = self.mode
@@ -2420,7 +2414,7 @@ class Image:
 
         if self.mode in ["LA", "RGBA"] and resample != Resampling.NEAREST:
             im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
-            im = im.resize(size, resample, box)
+            im = im.resize(size, resample, box, reducing_gap)
             return im.convert(self.mode)
 
         self.load()
@@ -3309,7 +3303,7 @@ def frombytes(
 def frombuffer(
     mode: str,
     size: tuple[int, int],
-    data: bytes | SupportsArrayInterface,
+    data: bytes | bytearray | SupportsArrayInterface,
     decoder_name: str = "raw",
     *args: Any,
 ) -> Image:
@@ -3375,9 +3369,6 @@ class SupportsArrayInterface(Protocol):
 
     @property
     def __array_interface__(self) -> dict[str, Any]:
-        raise NotImplementedError()
-
-    def __len__(self) -> int:
         raise NotImplementedError()
 
 
@@ -3583,7 +3574,9 @@ _fromarray_typemap = {
 }
 
 
-def _decompression_bomb_check(size: tuple[int, int]) -> None:
+def _decompression_bomb_check(
+    size: tuple[int, int], *, error_only: bool = False
+) -> None:
     if MAX_IMAGE_PIXELS is None:
         return
 
@@ -3596,7 +3589,7 @@ def _decompression_bomb_check(size: tuple[int, int]) -> None:
         )
         raise DecompressionBombError(msg)
 
-    if pixels > MAX_IMAGE_PIXELS:
+    if not error_only and pixels > MAX_IMAGE_PIXELS:
         warnings.warn(
             f"Image size ({pixels} pixels) exceeds limit of {MAX_IMAGE_PIXELS} pixels, "
             "could be decompression bomb DOS attack.",
@@ -4217,7 +4210,7 @@ class Exif(_ExifBase):
         head = self._get_head()
         ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
         for tag, ifd_dict in self._ifds.items():
-            if tag not in self:
+            if tag in {ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo} and tag not in self:
                 ifd[tag] = ifd_dict
         for tag, value in self.items():
             if tag in [
@@ -4251,8 +4244,10 @@ class Exif(_ExifBase):
             elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.MakerNote]:
                 if ExifTags.IFD.Exif not in self._ifds:
                     self.get_ifd(ExifTags.IFD.Exif)
-                tag_data = self._ifds[ExifTags.IFD.Exif][tag]
-                if tag == ExifTags.IFD.MakerNote:
+                tag_data = self._ifds[ExifTags.IFD.Exif].get(tag)
+                if tag_data is None:
+                    pass
+                elif tag == ExifTags.IFD.MakerNote:
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
                     try:

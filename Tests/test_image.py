@@ -819,6 +819,20 @@ class TestImage:
         reloaded_exif.load(exif.tobytes())
         assert reloaded_exif.get_ifd(0x8769) == {36864: b"0220"}
 
+    @pytest.mark.parametrize("tag", (ExifTags.IFD.Interop, ExifTags.IFD.MakerNote))
+    def test_get_ifd_missing_from_exif_ifd(self, tag: int) -> None:
+        # Without an Exif IFD
+        assert Image.Exif().get_ifd(tag) == {}
+
+        with Image.open("Tests/images/exif_gps.jpg") as im:
+            exif = im.getexif()
+
+            # With an Exif IFD that does not reference this IFD
+            assert ExifTags.IFD.Exif in exif
+            assert tag not in exif.get_ifd(ExifTags.IFD.Exif)
+
+            assert exif.get_ifd(tag) == {}
+
     def test_exif_jpeg(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
             exif = im.getexif()
@@ -919,6 +933,7 @@ class TestImage:
     def test_exif_ifd1(self) -> None:
         with Image.open("Tests/images/flower.jpg") as im:
             exif = im.getexif()
+            before_ifd1_read = exif.tobytes()
             assert exif.get_ifd(ExifTags.IFD.IFD1) == {
                 513: 2036,
                 514: 5448,
@@ -927,6 +942,9 @@ class TestImage:
                 282: 180.0,
                 283: 180.0,
             }
+
+            # Assert that reading IFD1 does not change the data
+            assert exif.tobytes() == before_ifd1_read
 
     def test_exif_ifd(self) -> None:
         with Image.open("Tests/images/flower.jpg") as im:

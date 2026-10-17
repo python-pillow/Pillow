@@ -720,6 +720,8 @@ struct ImagingCodecStateInstance {
     int xsize, ysize, xoff, yoff;
     ImagingShuffler shuffle;
     int bits, bytes;
+    /* Number of bit planes per line (0=pixels are not stored as bit planes) */
+    int planes;
     UINT8 *buffer;
     void *context;
     PyObject *fd;
