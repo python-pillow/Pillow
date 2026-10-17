@@ -1023,6 +1023,8 @@ class TestFileTiff:
                 im.load()
 
     @timeout_unless_slower_valgrind(6)
+    @pytest.mark.filterwarnings("ignore:Corrupt EXIF data")
+    @pytest.mark.filterwarnings("ignore:Tag data larger than file")
     @pytest.mark.filterwarnings("ignore:Truncated File Read")
     def test_timeout(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/timeout-6646305047838720") as im:

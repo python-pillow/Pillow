@@ -199,10 +199,10 @@ class EpsImageFile(ImageFile.ImageFile):
     mode_map = {1: "L", 2: "LAB", 3: "RGB", 4: "CMYK"}
 
     def _open(self) -> None:
-        assert self.fp is not None
-        length, offset = self._find_offset(self.fp)
+        length, offset = self._find_offset()
 
         # go to offset - start of "%!PS"
+        assert self.fp is not None
         self.fp.seek(offset)
 
         self._mode = "RGB"
@@ -389,13 +389,13 @@ class EpsImageFile(ImageFile.ImageFile):
             ImageFile._Tile("eps", (0, 0, *self.size), offset, (length, bounding_box))
         ]
 
-    def _find_offset(self, fp: IO[bytes]) -> tuple[int, int]:
-        s = fp.read(4)
+    def _find_offset(self) -> tuple[int, int]:
+        assert self.fp is not None
+        s = self.fp.read(4)
 
         if s == b"%!PS":
             # for HEAD without binary preview
-            fp.seek(0, io.SEEK_END)
-            length = fp.tell()
+            length = self._get_fp_length()
             offset = 0
         elif i32(s) == 0xC6D3D0C5:
             # FIX for: Some EPS file not handled correctly / issue #302
@@ -403,7 +403,7 @@ class EpsImageFile(ImageFile.ImageFile):
             # or start directly with latin coding
             # more info see:
             # https://web.archive.org/web/20160528181353/http://partners.adobe.com/public/developer/en/ps/5002.EPSF_Spec.pdf
-            s = fp.read(8)
+            s = self.fp.read(8)
             offset = i32(s)
             length = i32(s, 4)
         else:

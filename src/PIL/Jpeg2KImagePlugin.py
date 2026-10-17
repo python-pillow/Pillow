@@ -300,28 +300,17 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         self._reduce = 0
         self.layers = 0
 
-        fd = -1
-        length = -1
-
         try:
             fd = self.fp.fileno()
-            length = os.fstat(fd).st_size
         except Exception:
             fd = -1
-            try:
-                pos = self.fp.tell()
-                self.fp.seek(0, io.SEEK_END)
-                length = self.fp.tell()
-                self.fp.seek(pos)
-            except Exception:
-                length = -1
 
         self.tile = [
             ImageFile._Tile(
                 "jpeg2k",
                 (0, 0, *self.size),
                 0,
-                (self.codec, self._reduce, self.layers, fd, length),
+                (self.codec, self._reduce, self.layers, fd, self._get_fp_length()),
             )
         ]
 

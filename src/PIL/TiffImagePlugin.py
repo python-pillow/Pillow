@@ -899,9 +899,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def load(self, fp: IO[bytes]) -> None:
         self.reset()
         self._offset = fp.tell()
-        fp.seek(0, io.SEEK_END)
-        limit = fp.tell()
-        fp.seek(self._offset)
+        limit = ImageFile._get_fp_length(fp)
         if self._tag_data_limit is not None:
             limit = min(limit, self._tag_data_limit)
         self._tag_data_size = 0
@@ -1228,8 +1226,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # Out-of-line tag data is budgeted across all frames, so that many
         # frames cannot each read the same data. Each frame's limit is fixed
         # when it is first loaded, so that reloading it gives the same tags.
-        self.fp.seek(0, io.SEEK_END)
-        self._tag_data_remaining = self.fp.tell()
+        self._tag_data_remaining = self._get_fp_length()
         self._tag_data_limits: list[int] = []
 
         logger.debug("*** TiffImageFile._open ***")
