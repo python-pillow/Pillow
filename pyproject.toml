@@ -113,33 +113,46 @@ macos.config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disab
 macos.environment.PATH = """\
   $(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin\
   """
-# Disable platform guessing on iOS, and disable raqm (since there won't be a
+
+# Settings for mobile platforms
+[[tool.cibuildwheel.overrides]]
+select = [ "*-android_*", "*-ios_*" ]
+# Disable platform guessing, and disable raqm (since there won't be a
 # vendor version, and we can't distribute it due to licensing)
-ios.config-settings = "raqm=disable imagequant=disable platform-guessing=disable"
-# iOS needs to be given a specific pytest invocation and list of test sources.
-ios.test-command = [
+config-settings = "raqm=disable imagequant=disable platform-guessing=disable"
+# Mobile platforms only support Python test-commands, not shell scripts.
+test-command = [
   "python -m selftest",
   "python -m pytest -vv -x -W always checks/check_wheel.py Tests",
 ]
-# There's no numpy wheel for iOS (yet...)
-ios.test-requires = []
-ios.test-sources = [
+test-sources = [
   "checks",
   "Tests",
   "selftest.py",
 ]
-overrides = [
-  # iOS environment is isolated by cibuildwheel, but needs the dependencies
-  { select = "*_iphoneos", environment.PATH = "$(pwd)/build/deps/iphoneos/bin:$PATH" },
-  # iOS simulator environment is isolated by cibuildwheel, but needs the dependencies
-  { select = "*_iphonesimulator", environment.PATH = "$(pwd)/build/deps/iphonesimulator/bin:$PATH" },
-  { select = "*-win32", test-requires = [] },
-  # NumPy does not yet have PyPy 3.12 wheels
-  { select = "pp312*", test-requires = [] },
-  # NumPy's PyPy 3.11 wheels fail to import on PyPy 3.11 v8.0.0 for Windows
-  { select = "pp311-win_amd64", test-requires = [] },
-]
 xbuild-tools = []
+
+# iOS environment is isolated by cibuildwheel, but needs the dependencies
+[[tool.cibuildwheel.overrides]]
+select = "*_iphoneos"
+environment.PATH = "$(pwd)/build/deps/iphoneos/bin:$PATH"
+
+# iOS simulator environment is isolated by cibuildwheel, but needs the dependencies
+[[tool.cibuildwheel.overrides]]
+select = "*_iphonesimulator"
+environment.PATH = "$(pwd)/build/deps/iphonesimulator/bin:$PATH"
+
+[[tool.cibuildwheel.overrides]]
+select = [
+  # NumPy does not have wheels for these platforms or Python versions.
+  "*-android_*",
+  "*-ios_*",
+  "*-win32",
+  "pp312*",
+  # NumPy's PyPy 3.11 wheels fail to import on PyPy 3.11 v8.0.0 for Windows
+  "pp311-win_amd64",
+]
+test-requires = []
 
 [tool.black]
 exclude = "wheels/multibuild"
