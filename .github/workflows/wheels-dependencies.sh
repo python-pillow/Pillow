@@ -130,34 +130,6 @@ LIBXCB_VERSION=$(_get_ver libxcb)
 BROTLI_VERSION=$(_get_ver brotli)
 LIBAVIF_VERSION=$(_get_ver libavif)
 
-function build_pkg_config {
-    if [ -e pkg-config-stamp ]; then return; fi
-    # This essentially duplicates the Homebrew recipe.
-    # When cross-compiling, we need a binary that can be executed on the build machine;
-    # but we can create a host-specific pc-path to store .pc files. To ensure a
-    # macOS-compatible build, we temporarily clear environment flags that set
-    # host-specific values.
-    if [[ "$CIBW_PLATFORM" =~ ^(android|ios)$ ]]; then
-        ORIGINAL_HOST_CONFIGURE_FLAGS=$HOST_CONFIGURE_FLAGS
-        ORIGINAL_IPHONEOS_DEPLOYMENT_TARGET=$IPHONEOS_DEPLOYMENT_TARGET
-        unset HOST_CONFIGURE_FLAGS
-        unset IPHONEOS_DEPLOYMENT_TARGET
-    fi
-
-    CFLAGS="$CFLAGS -Wno-int-conversion" CPPFLAGS="" build_simple pkg-config 0.29.2 https://pkg-config.freedesktop.org/releases tar.gz \
-        --disable-debug --disable-host-tool --with-internal-glib \
-        --with-pc-path=$BUILD_PREFIX/share/pkgconfig:$BUILD_PREFIX/lib/pkgconfig \
-        --with-system-include-path=$(xcrun --show-sdk-path --sdk macosx)/usr/include
-
-    if [[ "$CIBW_PLATFORM" =~ ^(android|ios)$ ]]; then
-        HOST_CONFIGURE_FLAGS=$ORIGINAL_HOST_CONFIGURE_FLAGS
-        IPHONEOS_DEPLOYMENT_TARGET=$ORIGINAL_IPHONEOS_DEPLOYMENT_TARGET
-    fi;
-
-    export PKG_CONFIG=$BUILD_PREFIX/bin/pkg-config
-    touch pkg-config-stamp
-}
-
 function build_zlib_ng {
     if [ -e zlib-stamp ]; then return; fi
     # zlib-ng uses a "configure" script, but it's not a GNU autotools script, so
@@ -183,7 +155,6 @@ function build_brotli {
 
 function build_harfbuzz {
     if [ -e harfbuzz-stamp ]; then return; fi
-    python3 -m pip install meson ninja
 
     local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/harfbuzz-$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
     (cd $out_dir \
@@ -195,8 +166,6 @@ function build_harfbuzz {
 
 function build_libavif {
     if [ -e libavif-stamp ]; then return; fi
-
-    python3 -m pip install meson ninja
 
     if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IOS_SDK" ]]) || [ -n "$SANITIZER" ]; then
         build_simple nasm 3.02 https://www.nasm.us/pub/nasm/releasebuilds/3.02
@@ -404,14 +373,7 @@ if [[ -n "$IS_MACOS" ]]; then
     mkdir -p "$BUILD_PREFIX/bin"
     mkdir -p "$BUILD_PREFIX/lib"
 
-    # Ensure pkg-config is available. This is done *before* setting CC, CFLAGS
-    # etc. to ensure that the build is *always* a macOS build, even when building
-    # for iOS.
-    build_pkg_config
-
-    # Ensure cmake is available, and that the default prefix used by CMake is
-    # the build prefix
-    python3 -m pip install cmake
+    # Ensure that the default prefix used by CMake is the build prefix
     export CMAKE_PREFIX_PATH=$BUILD_PREFIX
 
     if [[ -n "$IOS_SDK" ]]; then

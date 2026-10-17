@@ -1,6 +1,10 @@
 [build-system]
 build-backend = "backend"
 requires = [
+  "cmake",
+  "meson",
+  "ninja",
+  "pkgconf",
   "pybind11",
   "setuptools>=77",
 ]
@@ -101,7 +105,7 @@ dynamic.version = { attr = "PIL.__version__" }
 [tool.cibuildwheel]
 build-verbosity = 1
 config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable"
-before-all = ".github/workflows/wheels-dependencies.sh"
+before-build = ".github/workflows/wheels-dependencies.sh"
 test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-requires = [
   "numpy",
@@ -131,16 +135,6 @@ test-sources = [
   "selftest.py",
 ]
 xbuild-tools = []
-
-# iOS environment is isolated by cibuildwheel, but needs the dependencies
-[[tool.cibuildwheel.overrides]]
-select = "*_iphoneos"
-environment.PATH = "$(pwd)/build/deps/iphoneos/bin:$PATH"
-
-# iOS simulator environment is isolated by cibuildwheel, but needs the dependencies
-[[tool.cibuildwheel.overrides]]
-select = "*_iphonesimulator"
-environment.PATH = "$(pwd)/build/deps/iphonesimulator/bin:$PATH"
 
 [[tool.cibuildwheel.overrides]]
 select = [
