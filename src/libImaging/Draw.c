@@ -726,7 +726,7 @@ DRAW draw32rgba = {point32rgba, hline32rgba, vline32rgba, line32rgba};
 
 #define DRAWINIT()                           \
     if (im->image8) {                        \
-        if (isModeI16(im->mode)) {           \
+        if (im->type == IMAGING_TYPE_I16) {  \
             draw = &draw16;                  \
             ink = ink16(im, ink_);           \
         } else {                             \

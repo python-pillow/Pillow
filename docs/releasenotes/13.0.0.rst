@@ -4,15 +4,61 @@
 Security
 ========
 
-TODO
+CVE identifiers will be added to these entries as they are assigned.
+
+Critical
+^^^^^^^^
+
+* :cve:`2026-96639`, :ghsa:`v9pv-5gc8-w2m6`: Stale native image storage reused after mode transitions
+* :ghsa:`5x8w-8jj5-q52h`, :ghsa:`8g5g-8vmr-9782`: JPEG decoder buffer overflow from scanlines wider than tile extents
+
+High
 ^^^^
 
-TODO
+* :cve:`2026-96644`, :ghsa:`9v9v-9qvf-h2hj`: WMF/EMF heap out-of-bounds read from dimension truncation
+* :cve:`2026-96637`, :ghsa:`g842-9rc4-69pw`: SPIDER decompression bomb bypass via seek()
+* :cve:`2026-96643`, :ghsa:`g4qv-2jxx-769h`: Unbounded Exif header replacement loop
+* :cve:`2026-96778`, :ghsa:`g7cr-3p24-7wf7`: JPEG comment write after ICC profile fills encoder buffer
+* :ghsa:`462x-pgg6-55fp`, :ghsa:`c6hw-5grf-ff96`: TIFF tile and YCbCr decoding out-of-bounds read from undersized libtiff buffers
+* :ghsa:`p4wg-p73j-c528`: PDF parsing stack exhaustion from long trailer chains and deep or cyclic page trees
+* :cve:`2026-96640`, :ghsa:`mrfp-p49p-3hf2`: PDF append resource exhaustion from repeated page tree references
+* :ghsa:`pchr-8j38-3x4p`: TIFF encoder accepted an incorrectly sized Colormap for non-8-bit images
+* :ghsa:`332p-7hrc-92wf`: TIFF encoder heap buffer overflow when saving to a file object
+* :ghsa:`xcvg-w56q-r89m`: TIFF encoder heap buffer overflow when tags override the image size
+* :ghsa:`xvh5-g6gv-559v`: TIFF encoder memory disclosure and crash from mismatched tag values
+* :ghsa:`q45j-58j2-45rg`: TIFF decoding returned uninitialized memory for short JPEG strips
+* :ghsa:`78g4-xqwv-q3g8`: Bundled OpenJPEG heap buffer overflow when reading tile-part data
 
-:cve:`YYYY-XXXXX`: TODO
-^^^^^^^^^^^^^^^^^^^^^^^
+Medium
+^^^^^^
 
-TODO
+* :ghsa:`4rr5-89j8-mwwm`: TIFF encoder use-after-free write
+* :cve:`2026-96636`, :ghsa:`p8hx-v2p6-rp84`: MPO, DCX and MIC decompression bomb bypass via seek()
+* :ghsa:`f2g6-542v-9j58`: PDF page tree stack exhaustion via cyclic ``/Kids`` reference
+* :ghsa:`5xm2-6676-qcp9`: APNG decompression bomb bypass via delayed disposal-frame sizing
+* :cve:`2026-96642`, :ghsa:`3j72-p6qg-6xp7`: TarIO negative size field causes infinite CPU-spin loop
+* :cve:`2026-96638`, :ghsa:`24rc-8hj2-v98c`: BMP RLE decoder memory-amplification denial of service
+* :ghsa:`gg2r-wvfm-q9rx`: MSP RLE decoder expands a tiny file into unbounded memory
+* :ghsa:`wqgw-9xfh-qf2g`: TIFF and Exif IFD parsing memory and CPU amplification from shared tag data
+* :ghsa:`jg86-v3jv-hrpm`: Quadratic time when writing many objects to a PDF
+* :ghsa:`254f-3936-288h`: PdfParser unbounded recursion via deeply nested objects
+* :ghsa:`rfgq-q3w2-pmv2`: Image.quantize() crash from an empty target palette
+* :ghsa:`xgh8-jp6q-p5x8`: XBM header parsing regular expression denial of service
+* :ghsa:`22hg-r758-rrw9`, :ghsa:`74r2-7ff9-mjj2`, :ghsa:`fc9g-5qg7-mf45`: GIF comment handling quadratic-time blowup from repeated concatenation
+* :ghsa:`27h8-gf7j-v5hc`: Out-of-bounds read in rank-based filters for zero-dimension images
+* :cve:`2026-96641`, :ghsa:`4rm8-3hmm-39fg`: Integer underflow in PILfont text width calculation
+* :ghsa:`cp9v-662q-vvx9`: Image.merge() buffer overflow when merging 32-bit images as narrower bands
+* :ghsa:`j4m9-6w36-pw47`: Uninitialized glyph pointer freed on font rendering error path
+* :ghsa:`7mwm-ghpf-9vrm`: Double free in ``Image.transform()`` after an allocation failure
+* :ghsa:`4558-3h8r-v8xp`: ``P;2L`` and ``P;4L`` raw mode decoders read past the end of their input
+* :ghsa:`w889-685w-c8fh`: EPS filename argument injection into Ghostscript
+
+Low
+^^^
+
+* :ghsa:`65qm-jvmh-6pqg`: GIF decompression bomb check used a size discarded on failure
+* :ghsa:`vx6w-vv9f-6gvg`: EPS decompression bomb bypass via Ghostscript rendering
+* :ghsa:`58r4-6rv3-gfh8`: ImageMorph.MorphOp.apply() out-of-bounds write on zero-width images
 
 Backwards incompatible changes
 ==============================
@@ -99,10 +145,26 @@ intended for internal use, so there is no replacement.
 API changes
 ===========
 
-TODO
-^^^^
+ImageColor.getcolor() with premultiplied alpha modes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+When ``mode`` is ``RGBa`` or ``La``, :py:func:`~PIL.ImageColor.getcolor` now returns
+color values premultiplied by the alpha channel, matching how pixels are stored in
+those modes. Previously, the unmultiplied values were returned.
+
+Duplicate TIFF tags
+^^^^^^^^^^^^^^^^^^^
+
+If a TIFF IFD contains the same tag more than once, the first value is now kept.
+Previously, the last value overwrote the earlier ones.
+
+Saving small ICO images
+^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving an image smaller than 16x16 pixels as an ICO without a ``sizes``
+argument, the image's own size is now used. Previously, none of the default sizes
+matched, and an ICO containing no images was written. If no size in ``sizes`` fits
+within the image, a :py:exc:`ValueError` is now raised.
 
 API additions
 =============
@@ -131,6 +193,21 @@ Added ``escape`` argument to ``PSDraw.text()``
 The default, ``False``, preserves the existing handling of backslashes and PostScript
 escape sequences.
 
+ImageOps invert, posterize and solarize of P images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.ImageOps.invert`, :py:func:`~PIL.ImageOps.posterize` and
+:py:func:`~PIL.ImageOps.solarize` now support P mode images. The operation is applied
+to the palette colors, leaving any alpha values in the palette unchanged. Previously,
+these functions raised :py:exc:`NotImplementedError` for P mode.
+
+Path-like objects for font files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.ImageFont.load`, :py:func:`~PIL.ImageFont.load_path` and
+:py:meth:`~PIL.FontFile.FontFile.save` now accept :py:class:`os.PathLike` objects,
+such as :py:class:`pathlib.Path`, in addition to strings.
+
 Other changes
 =============
 
@@ -142,6 +219,16 @@ to help projects prepare for 3.15, and to ensure Pillow could be used
 immediately at the release of 3.15.0 final (2026-10-01, :pep:`790`).
 
 Pillow 13.0.0 now officially supports Python 3.15.
+
+Faster import
+^^^^^^^^^^^^^
+
+Importing Pillow takes around half the time it did in Pillow 12.3.0. ``PIL.Image`` no
+longer imports ``logging``, modules that are only needed for some operations, such as
+``tempfile``, are now imported on first use, and on Python 3.15 Pillow also declares
+``__lazy_modules__`` to defer its remaining standard library imports (:pep:`810`). On an
+Apple Silicon Mac, ``from PIL import Image`` took 24 ms on Python 3.14 and 23 ms on
+Python 3.15 with Pillow 12.3.0, and now takes 12 ms and 10 ms.
 
 PyPy 3.12
 ^^^^^^^^^
@@ -164,6 +251,20 @@ These libraries are now compiled with ``-O2``. Compared to Pillow 12.3.0, the wh
 PNG, JPEG, WebP and AVIF are unaffected, as those libraries were already built with
 optimisation.
 
+Performance improvements
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Building on the optimizations in Pillow 12.3.0, more of the C code has been
+restructured so that compilers can vectorize it. Compared to Pillow 12.3.0,
+:py:func:`~PIL.ImageChops.offset` is up to 46 times faster,
+:py:meth:`~PIL.Image.Image.getbbox` up to 24 times faster,
+flipping and rotating by 180 degrees with
+:py:meth:`~PIL.Image.Image.transpose` up to 10 times faster,
+:py:meth:`~PIL.Image.Image.filter` up to 3.5 times faster,
+:py:func:`~PIL.ImageChops.difference` up to 3 times faster, and converting P and PA
+images to RGB and RGBA up to 2.5 times faster. Saving an optimized GIF with a shared
+palette is around 6 times faster and uses less memory.
+
 Wheels now use HarfBuzz for hinting
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -183,6 +284,21 @@ installed on the system with the expected name (e.g. ``libharfbuzz.so.0``).
 All wheels are now linked against the HarfBuzz that Pillow ships,
 which may slightly change how text is rendered in scripts that rely on the auto-hinter.
 
+Thread safety for free-threaded Python
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Critical sections now protect most operations on core image objects, such as
+conversion, pasting, filtering and pixel access, improving thread safety in the
+free-threaded build of Python. AVIF decoding also no longer blocks other threads.
+
+Resizing images with alpha
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``reducing_gap`` argument to :py:meth:`~PIL.Image.Image.resize` is now
+applied to RGBA and LA images. Previously, these modes ignored the argument,
+including when called by :py:meth:`~PIL.Image.Image.thumbnail`, which uses
+``reducing_gap=2.0`` by default.
+
 Preserved transparency when padding or expanding images in ImageOps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -190,6 +306,27 @@ Preserved transparency when padding or expanding images in ImageOps
 ``transparency`` value from the source image's ``info`` dictionary. Transparent
 pixels in L, P and RGB images previously became opaque when a border was added.
 New palette colors are allocated without using reserved transparency entries.
+
+Fixed reading FITS images with more than 8 bits per pixel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+FITS data is big-endian, but Pillow was reading 16-bit and 32-bit integer data, and
+32-bit and 64-bit floating point data, in the native byte order. These images now
+load with the correct pixel values.
+
+Fixed accuracy of 16-bit image filters and conversions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Applying a kernel filter to an ``I;16`` image gave incorrect results for pixel values
+above 255, and converting an ``I;16N`` image to ``I`` or ``F`` clipped values to 255.
+Both now preserve the full 16-bit range.
+
+Saving APNG frames with different palettes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An APNG file can only contain a single palette. When saving P mode frames with
+different palettes, the image is now saved as RGB, or RGBA if any palette contains
+alpha, instead of writing the later frames with the wrong colors.
 
 Fixed ImageStat variance rounding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -287,7 +424,10 @@ FriBiDi itself is not included in Pillow's wheels.
 The shim's source files now include SPDX license identifiers, and the SBOM has been
 corrected.
 
-Faster drawing
-^^^^^^^^^^^^^^
+ImagePath.Path.compact() on an empty path
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Drawing rectangles, polygons and lines is faster, particularly with translucent ink.
+:py:meth:`~PIL.ImagePath.Path.compact` is documented to return the number of
+points removed. On a path with no points, it instead added a point whose
+y coordinate was read from uninitialized memory, and returned ``-1``.
+``compact()`` now leaves an empty path unchanged and returns ``0``.

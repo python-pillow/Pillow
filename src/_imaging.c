@@ -2040,6 +2040,12 @@ _putpalette_impl(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
+    // Planar palette rawmodes are not meaningful for palette data.
+    if (rawmode == IMAGING_RAWMODE_P_2L || rawmode == IMAGING_RAWMODE_P_4L) {
+        PyErr_SetString(PyExc_ValueError, wrong_raw_mode);
+        return NULL;
+    }
+
     unpack = ImagingFindUnpacker(palette_mode, rawmode, &bits);
     if (!unpack) {
         PyErr_SetString(PyExc_ValueError, wrong_raw_mode);
