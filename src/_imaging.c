@@ -3719,7 +3719,8 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
     PyObject *data;
     int ink;
     int width;
-    if (!PyArg_ParseTuple(args, "Oii", &data, &ink, &width)) {
+    PyObject *dash = NULL;
+    if (!PyArg_ParseTuple(args, "Oii|O", &data, &ink, &width, &dash)) {
         return NULL;
     }
 
@@ -3731,6 +3732,7 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
     Py_BEGIN_CRITICAL_SECTION2(self, self->image);
     if (width == 1) {
         double *p = NULL;
+        int dash_offset = 0;
         for (i = 0; i < n - 1; i++) {
             p = &xy[i + i];
             if (ImagingDrawLine(
@@ -3740,7 +3742,9 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
                     (int)p[2],
                     (int)p[3],
                     &ink,
-                    self->blend
+                    self->blend,
+                    dash,
+                    &dash_offset
                 ) < 0) {
                 free(xy);
                 return NULL;
@@ -3913,8 +3917,9 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
     int fill = 0;
     int width = 0;
     ImagingObject *maskp = NULL;
+    PyObject *dash = NULL;
     if (!PyArg_ParseTuple(
-            args, "Oi|iiO!", &data, &ink, &fill, &width, &Imaging_Type, &maskp
+            args, "Oi|iiOO!", &data, &ink, &fill, &width, &dash, &Imaging_Type, &maskp
         )) {
         return NULL;
     }
@@ -3955,7 +3960,8 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
         fill,
         width,
         self->blend,
-        maskp ? maskp->image : NULL
+        maskp ? maskp->image : NULL,
+        dash != Py_None ? dash : NULL
     );
     Py_END_CRITICAL_SECTION2();
 
@@ -3978,7 +3984,8 @@ _draw_rectangle(ImagingDrawObject *self, PyObject *args) {
     int ink;
     int fill = 0;
     int width = 0;
-    if (!PyArg_ParseTuple(args, "Oi|ii", &data, &ink, &fill, &width)) {
+    PyObject *dash = NULL;
+    if (!PyArg_ParseTuple(args, "Oi|iiO", &data, &ink, &fill, &width, &dash)) {
         return NULL;
     }
 
