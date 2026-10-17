@@ -98,6 +98,19 @@ def _get_oserror(error: int, *, encoder: bool) -> OSError:
     return OSError(msg)
 
 
+def _get_fp_length(fp: IO[bytes]) -> int:
+    if isinstance(fp, io.BytesIO):
+        return fp.getbuffer().nbytes
+    try:
+        return os.fstat(fp.fileno()).st_size
+    except Exception:
+        pos = fp.tell()
+        fp.seek(0, io.SEEK_END)
+        length = fp.tell()
+        fp.seek(pos)
+        return length
+
+
 def _tilesort(t: _Tile) -> int:
     # sort on offset
     return t[2]
@@ -464,6 +477,11 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
     # may be defined for blocked formats (e.g. PNG)
     # def load_read(self, read_bytes: int) -> bytes:
     #     pass
+
+    def _get_fp_length(self, fp: IO[bytes] | None = None) -> int:
+        if fp is None:
+            fp = self.fp
+        return _get_fp_length(fp)
 
     def _seek_check(self, frame: int) -> bool:
         if (
