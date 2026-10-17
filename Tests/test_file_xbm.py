@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 
 import pytest
 
-from PIL import Image, XbmImagePlugin
+from PIL import Image, UnidentifiedImageError, XbmImagePlugin
 
-from .helper import hopper
+from .helper import assert_image_equal, hopper, timeout_unless_slower_valgrind
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 PIL151 = b"""
 #define basic_width 32
@@ -52,6 +55,43 @@ def test_open() -> None:
         assert im.size == (128, 128)
 
 
+@pytest.mark.parametrize(
+    "comment",
+    (
+        b"/* comment */\n",
+        b"/*\nThis is an example file\n*/\n",
+        b"/* " + b"A" * 200 + b" */\n",
+        b"/* one */\n/* two */\n",
+    ),
+)
+def test_leading_comment(comment: bytes) -> None:
+    with Image.open(BytesIO(comment + PIL151)) as im:
+        assert im.format == "XBM"
+        assert im.size == (32, 32)
+
+        with Image.open(BytesIO(PIL151)) as expected:
+            assert_image_equal(im, expected)
+
+
+def test_comments_between_header_lines() -> None:
+    b = BytesIO(b"""
+#define basic_width 32
+/*single line comment*/
+#define basic_height 32
+/*multi line
+comment*/
+""" + PIL151.split(b"static")[1])
+    with Image.open(b) as im:
+        with Image.open(BytesIO(PIL151)) as expected:
+            assert_image_equal(im, expected)
+
+
+def test_unterminated_comment() -> None:
+    b = BytesIO(b"/* unterminated\n" + PIL151)
+    with pytest.raises(UnidentifiedImageError):
+        Image.open(b)
+
+
 def test_open_filename_with_underscore() -> None:
     # Arrange
     # Created with `convert hopper.png hopper_underscore.xbm`
@@ -88,3 +128,15 @@ def test_hotspot(tmp_path: Path) -> None:
 
     with Image.open(out) as reloaded:
         assert reloaded.info["hotspot"] == hotspot
+
+
+@timeout_unless_slower_valgrind(1)
+def test_redos() -> None:
+    redos = b""
+    for prop in (b"width", b"height", b"x_hot", b"y_hot"):
+        redos += b"#define" + b" " * 60 + b"_" + prop + b" 1\r"
+    redos += b"\r" * 60 + b"_bits" + b"A" * 512
+
+    b = BytesIO(redos)
+    with pytest.raises(SyntaxError):
+        XbmImagePlugin.XbmImageFile(b)

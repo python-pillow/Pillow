@@ -1,11 +1,6 @@
 #include "Mode.h"
 #include <string.h>
 
-#ifdef NDEBUG
-#include <stdio.h>
-#include <stdlib.h>
-#endif
-
 const ModeData MODES[] = {
     [IMAGING_MODE_UNKNOWN] = {""},
 
@@ -28,12 +23,7 @@ findModeID(const char *const name) {
         return IMAGING_MODE_UNKNOWN;
     }
     for (size_t i = 0; i < sizeof(MODES) / sizeof(*MODES); i++) {
-#ifdef NDEBUG
-        if (MODES[i].name == NULL) {
-            fprintf(stderr, "Mode ID %zu is not defined.\n", (size_t)i);
-        } else
-#endif
-            if (strcmp(MODES[i].name, name) == 0) {
+        if (strcmp(MODES[i].name, name) == 0) {
             return (ModeID)i;
         }
     }
@@ -42,7 +32,7 @@ findModeID(const char *const name) {
 
 const ModeData *const
 getModeData(const ModeID id) {
-    if (id < 0 || id > sizeof(MODES) / sizeof(*MODES)) {
+    if (id < 0 || id >= sizeof(MODES) / sizeof(*MODES)) {
         return &MODES[IMAGING_MODE_UNKNOWN];
     }
     return &MODES[id];
@@ -154,8 +144,10 @@ const RawModeData RAWMODES[] = {
     [IMAGING_RAWMODE_K_I] = {"K;I"},
     [IMAGING_RAWMODE_LA_16B] = {"LA;16B"},
     [IMAGING_RAWMODE_LA_L] = {"LA;L"},
+    [IMAGING_RAWMODE_LX] = {"LX"},
     [IMAGING_RAWMODE_L_16] = {"L;16"},
     [IMAGING_RAWMODE_L_16B] = {"L;16B"},
+    [IMAGING_RAWMODE_L_1] = {"L;1"},
     [IMAGING_RAWMODE_L_2] = {"L;2"},
     [IMAGING_RAWMODE_L_2I] = {"L;2I"},
     [IMAGING_RAWMODE_L_2IR] = {"L;2IR"},
@@ -230,12 +222,7 @@ findRawModeID(const char *const name) {
         return IMAGING_RAWMODE_UNKNOWN;
     }
     for (size_t i = 0; i < sizeof(RAWMODES) / sizeof(*RAWMODES); i++) {
-#ifdef NDEBUG
-        if (RAWMODES[i].name == NULL) {
-            fprintf(stderr, "Rawmode ID %zu is not defined.\n", (size_t)i);
-        } else
-#endif
-            if (strcmp(RAWMODES[i].name, name) == 0) {
+        if (strcmp(RAWMODES[i].name, name) == 0) {
             return (RawModeID)i;
         }
     }
@@ -244,7 +231,7 @@ findRawModeID(const char *const name) {
 
 const RawModeData *const
 getRawModeData(const RawModeID id) {
-    if (id < 0 || id > sizeof(RAWMODES) / sizeof(*RAWMODES)) {
+    if (id < 0 || id >= sizeof(RAWMODES) / sizeof(*RAWMODES)) {
         return &RAWMODES[IMAGING_RAWMODE_UNKNOWN];
     }
     return &RAWMODES[id];

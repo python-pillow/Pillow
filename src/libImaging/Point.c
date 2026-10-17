@@ -144,11 +144,17 @@ ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
         mode = imIn->mode;
     }
 
-    if (imIn->type != IMAGING_TYPE_UINT8) {
-        if (imIn->type != IMAGING_TYPE_INT32 || mode != IMAGING_MODE_L) {
+    if (imIn->type == IMAGING_TYPE_UINT8) {
+        if (imIn->mode != mode && !imIn->image8) {
             goto mode_mismatch;
         }
-    } else if (!imIn->image8 && imIn->mode != mode) {
+    } else if (imIn->type == IMAGING_TYPE_INT32) {
+        if (mode != IMAGING_MODE_L) {
+            // I images can only be used with L output mode
+            goto mode_mismatch;
+        }
+    } else {
+        // Reject F modes and modes based on I;16
         goto mode_mismatch;
     }
 
@@ -244,7 +250,7 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
             }
             ImagingSectionLeave(&cookie);
             break;
-        case IMAGING_TYPE_SPECIAL:
+        case IMAGING_TYPE_I16:
             if (imIn->mode == IMAGING_MODE_I_16) {
                 ImagingSectionEnter(&cookie);
                 for (y = 0; y < imIn->ysize; y++) {

@@ -36,18 +36,6 @@
 #define fd_to_tiff_fd(fd) ((int)_get_osfhandle(fd))
 #endif
 
-void
-dump_state(const TIFFSTATE *state) {
-    TRACE(
-        ("State: Location %u size %d eof %d data: %p ifd: %d\n",
-         (uint)state->loc,
-         (int)state->size,
-         (uint)state->eof,
-         state->data,
-         state->ifd)
-    );
-}
-
 /*
   procs for TIFFOpenClient
 */
@@ -56,9 +44,6 @@ tsize_t
 _tiffReadProc(thandle_t hdata, tdata_t buf, tsize_t size) {
     TIFFSTATE *state = (TIFFSTATE *)hdata;
     tsize_t to_read;
-
-    TRACE(("_tiffReadProc: %d \n", (int)size));
-    dump_state(state);
 
     if (state->loc > state->eof) {
         TIFFError(
@@ -69,13 +54,11 @@ _tiffReadProc(thandle_t hdata, tdata_t buf, tsize_t size) {
         );
         return 0;
     }
-    to_read = min(size, min(state->size, (tsize_t)state->eof) - (tsize_t)state->loc);
-    TRACE(("to_read: %d\n", (int)to_read));
+    to_read = MIN(size, MIN(state->size, (tsize_t)state->eof) - (tsize_t)state->loc);
 
     _TIFFmemcpy(buf, (UINT8 *)state->data + state->loc, to_read);
     state->loc += (toff_t)to_read;
 
-    TRACE(("location: %u\n", (uint)state->loc));
     return to_read;
 }
 
@@ -84,39 +67,45 @@ _tiffWriteProc(thandle_t hdata, tdata_t buf, tsize_t size) {
     TIFFSTATE *state = (TIFFSTATE *)hdata;
     tsize_t to_write;
 
-    TRACE(("_tiffWriteProc: %d \n", (int)size));
-    dump_state(state);
-
-    to_write = min(size, state->size - (tsize_t)state->loc);
+    // libtiff may have seeked past the end of the buffer, e.g. when writing the
+    // directory, so the required size is based on the current location.
+    to_write = MIN(size, state->size - (tsize_t)state->loc);
     if (state->flrealloc && size > to_write) {
         tdata_t new_data;
         tsize_t newsize = state->size;
-        while (newsize < (size + state->size)) {
+        while (newsize < (size + (tsize_t)state->loc)) {
             if (newsize > INT_MAX - 64 * 1024) {
                 return 0;
             }
             newsize += 64 * 1024;
             // newsize*=2; // UNDONE, by 64k chunks?
         }
-        TRACE(("Reallocing in write to %d bytes\n", (int)newsize));
         /* malloc check ok, overflow checked above */
         new_data = realloc(state->data, newsize);
         if (!new_data) {
             // fail out
             return 0;
         }
+        // zero the new space, so that any bytes libtiff seeks over without
+        // writing are 0 in the output, as they would be in a file
+        memset((UINT8 *)new_data + state->size, 0, newsize - state->size);
         state->data = new_data;
         state->size = newsize;
         to_write = size;
+    } else if (to_write < 0) {
+        TIFFError(
+            "_tiffWriteProc",
+            "Invalid Write at loc %" PRIu64 ", size: %" PRIu64,
+            state->loc,
+            (toff_t)state->size
+        );
+        return 0;
     }
-
-    TRACE(("to_write: %d\n", (int)to_write));
 
     _TIFFmemcpy((UINT8 *)state->data + state->loc, buf, to_write);
     state->loc += (toff_t)to_write;
-    state->eof = max(state->loc, state->eof);
+    state->eof = MAX(state->loc, state->eof);
 
-    dump_state(state);
     return to_write;
 }
 
@@ -124,8 +113,6 @@ toff_t
 _tiffSeekProc(thandle_t hdata, toff_t off, int whence) {
     TIFFSTATE *state = (TIFFSTATE *)hdata;
 
-    TRACE(("_tiffSeekProc: off: %u whence: %d \n", (uint)off, whence));
-    dump_state(state);
     switch (whence) {
         case 0:
             state->loc = off;
@@ -137,40 +124,25 @@ _tiffSeekProc(thandle_t hdata, toff_t off, int whence) {
             state->loc = state->eof + off;
             break;
     }
-    dump_state(state);
     return state->loc;
 }
 
 int
 _tiffCloseProc(thandle_t hdata) {
-    TIFFSTATE *state = (TIFFSTATE *)hdata;
-
-    TRACE(("_tiffCloseProc \n"));
-    dump_state(state);
-
     return 0;
 }
 
 toff_t
 _tiffSizeProc(thandle_t hdata) {
     TIFFSTATE *state = (TIFFSTATE *)hdata;
-
-    TRACE(("_tiffSizeProc \n"));
-    dump_state(state);
-
     return (toff_t)state->size;
 }
 
 int
 _tiffMapProc(thandle_t hdata, tdata_t *pbase, toff_t *psize) {
     TIFFSTATE *state = (TIFFSTATE *)hdata;
-
-    TRACE(("_tiffMapProc input size: %u, data: %p\n", (uint)*psize, *pbase));
-    dump_state(state);
-
     *pbase = state->data;
     *psize = state->size;
-    TRACE(("_tiffMapProc returning size: %u, data: %p\n", (uint)*psize, *pbase));
     return (1);
 }
 
@@ -184,7 +156,6 @@ _tiffNullMapProc(thandle_t hdata, tdata_t *pbase, toff_t *psize) {
 
 void
 _tiffUnmapProc(thandle_t hdata, tdata_t base, toff_t size) {
-    TRACE(("_tiffUnMapProc\n"));
     (void)hdata;
     (void)base;
     (void)size;
@@ -193,26 +164,6 @@ _tiffUnmapProc(thandle_t hdata, tdata_t base, toff_t size) {
 int
 ImagingLibTiffInit(ImagingCodecState state, int fp, uint32_t offset) {
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
-
-    TRACE(("initing libtiff\n"));
-    TRACE(("filepointer: %d \n", fp));
-    TRACE(
-        ("State: count %d, state %d, x %d, y %d, ystep %d\n",
-         state->count,
-         state->state,
-         state->x,
-         state->y,
-         state->ystep)
-    );
-    TRACE(
-        ("State: xsize %d, ysize %d, xoff %d, yoff %d \n",
-         state->xsize,
-         state->ysize,
-         state->xoff,
-         state->yoff)
-    );
-    TRACE(("State: bits %d, bytes %d \n", state->bits, state->bytes));
-    TRACE(("State: context %p \n", state->context));
 
     clientstate->loc = 0;
     clientstate->size = 0;
@@ -238,7 +189,6 @@ _pickUnpackers(
 
         TIFFGetFieldDefaulted(tiff, TIFFTAG_BITSPERSAMPLE, &bits_per_sample);
         if (bits_per_sample != 8 && bits_per_sample != 16) {
-            TRACE(("Invalid value for bits per sample: %d\n", bits_per_sample));
             state->errcode = IMAGING_CODEC_BROKEN;
             return -1;
         }
@@ -302,10 +252,15 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
         rows_per_block = state->ysize;
     }
 
-    TRACE(("RowsPerBlock: %u \n", rows_per_block));
+    // TiffRGBAImages are 32bits/pixel. If the unpacker reads more bits per pixel
+    // than that, (at least) the last row of the block will have a read buffer
+    // overflow.
+    if (state->bits != 32) {
+        state->errcode = IMAGING_CODEC_BROKEN;
+        return -1;
+    }
 
     if (!(TIFFRGBAImageOK(tiff, emsg) && TIFFRGBAImageBegin(&img, tiff, 0, emsg))) {
-        TRACE(("Decode error, msg: %s", emsg));
         state->errcode = IMAGING_CODEC_BROKEN;
         // nothing to clean up, just return
         return -1;
@@ -332,8 +287,6 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
 
     state->bytes = rows_per_block * row_byte_size;
 
-    TRACE(("BlockSize: %d \n", state->bytes));
-
     /* realloc to fit whole strip */
     /* malloc check above */
     new_data = realloc(state->buffer, state->bytes);
@@ -346,10 +299,9 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
 
     for (; state->y < state->ysize; state->y += rows_per_block) {
         img.row_offset = state->y;
-        rows_to_read = min(rows_per_block, img.height - state->y);
+        rows_to_read = MIN(rows_per_block, img.height - state->y);
 
         if (!TIFFRGBAImageGet(&img, (UINT32 *)state->buffer, img.width, rows_to_read)) {
-            TRACE(("Decode Error, y: %d\n", state->y));
             state->errcode = IMAGING_CODEC_BROKEN;
             goto decodergba_err;
         }
@@ -358,18 +310,10 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
         TIFFSwabArrayOfLong((UINT32 *)state->buffer, img.width * rows_to_read);
 #endif
 
-        TRACE(("Decoded strip for row %d \n", state->y));
-
         // iterate over each row in the strip and stuff data into image
         for (current_row = 0;
-             current_row < min((INT32)rows_per_block, state->ysize - state->y);
+             current_row < MIN((INT32)rows_per_block, state->ysize - state->y);
              current_row++) {
-            TRACE(("Writing data into line %d ; \n", state->y + current_row));
-
-            // UINT8 * bbb = state->buffer + current_row * (state->bytes /
-            // rows_per_block); TRACE(("chars: %x %x %x %x\n", ((UINT8 *)bbb)[0],
-            // ((UINT8 *)bbb)[1], ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
-
             state->shuffle(
                 (UINT8 *)im->image[state->y + state->yoff + current_row] +
                     state->xoff * im->pixelsize,
@@ -397,13 +341,12 @@ _decodeTile(
 ) {
     INT32 x, y, tile_y, current_tile_length, current_tile_width;
     UINT32 tile_width, tile_length;
-    tsize_t tile_bytes_size, row_byte_size;
+    tsize_t tile_bytes_size, row_byte_size, unpacker_row_byte_size;
     UINT8 *new_data;
 
     tile_bytes_size = TIFFTileSize(tiff);
 
     if (tile_bytes_size == 0) {
-        TRACE(("Decode Error, Can not calculate TileSize\n"));
         state->errcode = IMAGING_CODEC_BROKEN;
         return -1;
     }
@@ -411,7 +354,6 @@ _decodeTile(
     row_byte_size = TIFFTileRowSize(tiff);
 
     if (row_byte_size == 0 || row_byte_size > tile_bytes_size) {
-        TRACE(("Decode Error, Can not calculate TileRowSize\n"));
         state->errcode = IMAGING_CODEC_BROKEN;
         return -1;
     }
@@ -431,7 +373,8 @@ _decodeTile(
         return -1;
     }
 
-    if (tile_bytes_size > ((tile_length * state->bits / planes + 7) / 8) * tile_width) {
+    unpacker_row_byte_size = ((tsize_t)tile_width * state->bits / planes + 7) / 8;
+    if (tile_bytes_size != unpacker_row_byte_size * tile_length) {
         // If the tile size as expected by LibTiff isn't what we're expecting, abort.
         // man:   TIFFTileSize returns the equivalent size for a tile of data as it
         // would be returned in a call to TIFFReadTile ...
@@ -439,18 +382,30 @@ _decodeTile(
         return -1;
     }
 
-    state->bytes = tile_bytes_size;
-
-    TRACE(("TIFFTileSize: %d\n", state->bytes));
+    // if the unpacker calculated row size is > row byte size, (at least) the last
+    // row of the tile will have a read buffer overflow.
+    if (unpacker_row_byte_size > row_byte_size) {
+        state->errcode = IMAGING_CODEC_BROKEN;
+        return -1;
+    }
 
     /* realloc to fit whole tile */
     /* malloc check above */
-    new_data = realloc(state->buffer, state->bytes);
+    new_data = realloc(state->buffer, tile_bytes_size);
     if (!new_data) {
         state->errcode = IMAGING_CODEC_MEMORY;
         return -1;
     }
     state->buffer = new_data;
+
+    if (tile_bytes_size > state->bytes) {
+        // Some codecs (e.g. JPEG, Group 4) succeed on a tile that decodes
+        // to fewer rows than the tile length, leaving the rest of the buffer untouched.
+        // Clear it so that uninitialised memory is not copied into the image.
+        memset(state->buffer + state->bytes, 0, tile_bytes_size - state->bytes);
+    }
+
+    state->bytes = tile_bytes_size;
 
     for (y = state->yoff; y < state->ysize; y += tile_length) {
         int plane;
@@ -458,28 +413,14 @@ _decodeTile(
             ImagingShuffler shuffler = unpackers[plane];
             for (x = state->xoff; x < state->xsize; x += tile_width) {
                 if (TIFFReadTile(tiff, (tdata_t)state->buffer, x, y, 0, plane) == -1) {
-                    TRACE(("Decode Error, Tile at %dx%d\n", x, y));
                     state->errcode = IMAGING_CODEC_BROKEN;
                     return -1;
                 }
 
-                TRACE(("Read tile at %dx%d; \n\n", x, y));
-
-                current_tile_width = min((INT32)tile_width, state->xsize - x);
-                current_tile_length = min((INT32)tile_length, state->ysize - y);
+                current_tile_width = MIN((INT32)tile_width, state->xsize - x);
+                current_tile_length = MIN((INT32)tile_length, state->ysize - y);
                 // iterate over each line in the tile and stuff data into image
                 for (tile_y = 0; tile_y < current_tile_length; tile_y++) {
-                    TRACE(
-                        ("Writing tile data at %dx%d using tile_width: %d; \n",
-                         tile_y + y,
-                         x,
-                         current_tile_width)
-                    );
-
-                    // UINT8 * bbb = state->buffer + tile_y * row_byte_size;
-                    // TRACE(("chars: %x%x%x%x\n", ((UINT8 *)bbb)[0], ((UINT8 *)bbb)[1],
-                    // ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
-
                     shuffler(
                         (UINT8 *)im->image[tile_y + y] + x * im->pixelsize,
                         state->buffer + tile_y * row_byte_size,
@@ -517,8 +458,6 @@ _decodeStrip(
         return -1;
     }
 
-    TRACE(("RowsPerStrip: %u\n", rows_per_strip));
-
     strip_size = TIFFStripSize(tiff);
     if (strip_size > INT_MAX - 1) {
         state->errcode = IMAGING_CODEC_MEMORY;
@@ -534,10 +473,6 @@ _decodeStrip(
         return -1;
     }
 
-    state->bytes = strip_size;
-
-    TRACE(("StripSize: %d \n", state->bytes));
-
     row_byte_size = TIFFScanlineSize(tiff);
 
     // if the unpacker calculated row size is > row byte size, (at least) the last
@@ -547,17 +482,23 @@ _decodeStrip(
         return -1;
     }
 
-    TRACE(("RowsByteSize: %u \n", row_byte_size));
-
     /* realloc to fit whole strip */
     /* malloc check above */
-    new_data = realloc(state->buffer, state->bytes);
+    new_data = realloc(state->buffer, strip_size);
     if (!new_data) {
         state->errcode = IMAGING_CODEC_MEMORY;
         return -1;
     }
-
     state->buffer = new_data;
+
+    if (strip_size > state->bytes) {
+        // Some codecs (e.g. JPEG, Group 4) succeed on a strip that decodes
+        // to fewer rows than RowsPerStrip, leaving the rest of the buffer untouched.
+        // Clear it so that uninitialised memory is not copied into the image.
+        memset(state->buffer + state->bytes, 0, strip_size - state->bytes);
+    }
+
+    state->bytes = strip_size;
 
     for (; state->y < state->ysize; state->y += rows_per_strip) {
         int plane;
@@ -569,25 +510,14 @@ _decodeStrip(
                     (tdata_t)state->buffer,
                     strip_size
                 ) == -1) {
-                TRACE(
-                    ("Decode Error, strip %d\n", TIFFComputeStrip(tiff, state->y, 0))
-                );
                 state->errcode = IMAGING_CODEC_BROKEN;
                 return -1;
             }
 
-            TRACE(("Decoded strip for row %d \n", state->y));
-
             // iterate over each row in the strip and stuff data into image
             for (strip_row = 0;
-                 strip_row < min((INT32)rows_per_strip, state->ysize - state->y);
+                 strip_row < MIN((INT32)rows_per_strip, state->ysize - state->y);
                  strip_row++) {
-                TRACE(("Writing data into line %d ; \n", state->y + strip_row));
-
-                // UINT8 * bbb = state->buffer + strip_row * (state->bytes /
-                // rows_per_strip); TRACE(("chars: %x %x %x %x\n", ((UINT8 *)bbb)[0],
-                // ((UINT8 *)bbb)[1], ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
-
                 shuffler(
                     (UINT8 *)im->image[state->y + state->yoff + strip_row] +
                         state->xoff * im->pixelsize,
@@ -622,72 +552,20 @@ ImagingLibTiffDecode(
     /* buffer is the encoded file, bytes is the length of the encoded file */
     /*     it all ends up in state->buffer, which is a uint8* from Imaging.h */
 
-    TRACE(("in decoder: bytes %d\n", bytes));
-    TRACE(
-        ("State: count %d, state %d, x %d, y %d, ystep %d\n",
-         state->count,
-         state->state,
-         state->x,
-         state->y,
-         state->ystep)
-    );
-    TRACE(
-        ("State: xsize %d, ysize %d, xoff %d, yoff %d \n",
-         state->xsize,
-         state->ysize,
-         state->xoff,
-         state->yoff)
-    );
-    TRACE(("State: bits %d, bytes %d \n", state->bits, state->bytes));
-    TRACE(
-        ("Buffer: %p: %c%c%c%c\n",
-         buffer,
-         (char)buffer[0],
-         (char)buffer[1],
-         (char)buffer[2],
-         (char)buffer[3])
-    );
-    TRACE(
-        ("State->Buffer: %c%c%c%c\n",
-         (char)state->buffer[0],
-         (char)state->buffer[1],
-         (char)state->buffer[2],
-         (char)state->buffer[3])
-    );
-    TRACE(
-        ("Image: mode %s, type %d, bands: %d, xsize %d, ysize %d \n",
-         getModeData(im->mode)->name,
-         im->type,
-         im->bands,
-         im->xsize,
-         im->ysize)
-    );
-    TRACE(
-        ("Image: image8 %p, image32 %p, image %p, block %p \n",
-         im->image8,
-         im->image32,
-         im->image,
-         im->block)
-    );
-    TRACE(("Image: pixelsize: %d, linesize %d \n", im->pixelsize, im->linesize));
-
-    dump_state(clientstate);
     clientstate->size = bytes;
     clientstate->eof = clientstate->size;
     clientstate->loc = 0;
     clientstate->data = (tdata_t)buffer;
     clientstate->flrealloc = 0;
-    dump_state(clientstate);
 
     TIFFSetWarningHandler(NULL);
     TIFFSetWarningHandlerExt(NULL);
 
     if (clientstate->fp) {
-        TRACE(("Opening using fd: %d\n", clientstate->fp));
         lseek(clientstate->fp, 0, SEEK_SET);  // Sometimes, I get it set to the end.
         tiff = TIFFFdOpen(fd_to_tiff_fd(clientstate->fp), filename, mode);
     } else {
-        TRACE(("Opening from string\n"));
+        // Open from string
         tiff = TIFFClientOpen(
             filename,
             mode,
@@ -703,7 +581,6 @@ ImagingLibTiffDecode(
     }
 
     if (!tiff) {
-        TRACE(("Error, didn't get the tiff\n"));
         state->errcode = IMAGING_CODEC_BROKEN;
         return -1;
     }
@@ -711,10 +588,8 @@ ImagingLibTiffDecode(
     if (clientstate->ifd) {
         int rv;
         uint32_t ifdoffset = clientstate->ifd;
-        TRACE(("reading tiff ifd %u\n", ifdoffset));
         rv = TIFFSetSubDirectory(tiff, ifdoffset);
         if (!rv) {
-            TRACE(("error in TIFFSetSubDirectory"));
             goto decode_err;
         }
     }
@@ -723,13 +598,6 @@ ImagingLibTiffDecode(
     TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, &img_height);
 
     if (state->xsize != img_width || state->ysize != img_height) {
-        TRACE(
-            ("Inconsistent Image Error: %d =? %d, %d =? %d",
-             state->xsize,
-             img_width,
-             state->ysize,
-             img_height)
-        );
         state->errcode = IMAGING_CODEC_BROKEN;
         goto decode_err;
     }
@@ -804,7 +672,6 @@ decode_err:
         // that is fine, as it does not close the file
         TIFFClose(tiff);
     }
-    TRACE(("Done Decoding, Returning \n"));
     // Returning -1 here to force ImageFile.load to break, rather than
     // even think about looping back around.
     return -1;
@@ -823,26 +690,6 @@ ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp) {
     int bufsize = 64 * 1024;
     char *mode = "w";
 
-    TRACE(("initing libtiff\n"));
-    TRACE(("Filename %s, filepointer: %d \n", filename, fp));
-    TRACE(
-        ("State: count %d, state %d, x %d, y %d, ystep %d\n",
-         state->count,
-         state->state,
-         state->x,
-         state->y,
-         state->ystep)
-    );
-    TRACE(
-        ("State: xsize %d, ysize %d, xoff %d, yoff %d \n",
-         state->xsize,
-         state->ysize,
-         state->xoff,
-         state->yoff)
-    );
-    TRACE(("State: bits %d, bytes %d \n", state->bits, state->bytes));
-    TRACE(("State: context %p \n", state->context));
-
     clientstate->loc = 0;
     clientstate->size = 0;
     clientstate->eof = 0;
@@ -853,19 +700,18 @@ ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp) {
     state->state = 0;
 
     if (fp) {
-        TRACE(("Opening using fd: %d for writing \n", clientstate->fp));
+        // Open using fd for writing
         clientstate->tiff = TIFFFdOpen(fd_to_tiff_fd(clientstate->fp), filename, mode);
     } else {
+        // Open a buffer for writing
         // calloc a buffer to write the tif, we're going to need to realloc or something
         // if we need bigger.
-        TRACE(("Opening a buffer for writing \n"));
-        /* calloc check ok, small constant allocation */
+        // calloc check ok, small constant allocation
         clientstate->data = calloc(bufsize, 1);
         clientstate->size = bufsize;
         clientstate->flrealloc = 1;
 
         if (!clientstate->data) {
-            TRACE(("Error, couldn't allocate a buffer of size %d\n", bufsize));
             return 0;
         }
 
@@ -884,7 +730,6 @@ ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp) {
     }
 
     if (!clientstate->tiff) {
-        TRACE(("Error, couldn't open tiff file\n"));
         return 0;
     }
 
@@ -924,6 +769,29 @@ ImagingLibTiffMergeFieldInfo(
 }
 
 int
+ImagingLibTiffFindField(
+    ImagingCodecState state,
+    int key,
+    TIFFDataType *field_type,
+    int *passcount,
+    int *writecount
+) {
+    // Look up libtiff's own definition of a tag. TIFFMergeFieldInfo does not
+    // replace the definition of a tag that libtiff already knows, so this is
+    // what TIFFSetField will use for such tags.
+    TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
+    const TIFFField *fip = TIFFFindField(clientstate->tiff, (ttag_t)key, TIFF_ANY);
+
+    if (!fip) {
+        return 0;
+    }
+    *field_type = TIFFFieldDataType(fip);
+    *passcount = TIFFFieldPassCount(fip);
+    *writecount = TIFFFieldWriteCount(fip);
+    return 1;
+}
+
+int
 ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...) {
     // after tif_dir.c->TIFFSetField.
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
@@ -936,25 +804,28 @@ ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...) {
     return status;
 }
 
-int
+void
 ImagingLibTiffEncodeCleanup(ImagingCodecState state) {
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
     TIFF *tiff = clientstate->tiff;
 
-    if (!tiff) {
-        return 0;
+    if (tiff) {
+        // TIFFClose in libtiff calls tif_closeproc and TIFFCleanup
+        if (clientstate->fp) {
+            // Python will manage the closing of the file rather than libtiff
+            // So only call TIFFCleanup
+            TIFFCleanup(tiff);
+        } else {
+            // When tif_closeproc refers to our custom _tiffCloseProc though,
+            // that is fine, as it does not close the file
+            TIFFClose(tiff);
+        }
+        clientstate->tiff = NULL;
     }
-    // TIFFClose in libtiff calls tif_closeproc and TIFFCleanup
-    if (clientstate->fp) {
-        // Python will manage the closing of the file rather than libtiff
-        // So only call TIFFCleanup
-        TIFFCleanup(tiff);
-    } else {
-        // When tif_closeproc refers to our custom _tiffCloseProc though,
-        // that is fine, as it does not close the file
-        TIFFClose(tiff);
+    if (clientstate->data) {
+        free(clientstate->data);
+        clientstate->data = 0;
     }
-    return 0;
 }
 
 int
@@ -971,59 +842,16 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
     TIFF *tiff = clientstate->tiff;
 
-    TRACE(("in encoder: bytes %d\n", bytes));
-    TRACE(
-        ("State: count %d, state %d, x %d, y %d, ystep %d\n",
-         state->count,
-         state->state,
-         state->x,
-         state->y,
-         state->ystep)
-    );
-    TRACE(
-        ("State: xsize %d, ysize %d, xoff %d, yoff %d \n",
-         state->xsize,
-         state->ysize,
-         state->xoff,
-         state->yoff)
-    );
-    TRACE(("State: bits %d, bytes %d \n", state->bits, state->bytes));
-    TRACE(
-        ("Buffer: %p: %c%c%c%c\n",
-         buffer,
-         (char)buffer[0],
-         (char)buffer[1],
-         (char)buffer[2],
-         (char)buffer[3])
-    );
-    TRACE(
-        ("State->Buffer: %c%c%c%c\n",
-         (char)state->buffer[0],
-         (char)state->buffer[1],
-         (char)state->buffer[2],
-         (char)state->buffer[3])
-    );
-    TRACE(
-        ("Image: mode %s, type %d, bands: %d, xsize %d, ysize %d \n",
-         getModeData(im->mode)->name,
-         im->type,
-         im->bands,
-         im->xsize,
-         im->ysize)
-    );
-    TRACE(
-        ("Image: image8 %p, image32 %p, image %p, block %p \n",
-         im->image8,
-         im->image32,
-         im->image,
-         im->block)
-    );
-    TRACE(("Image: pixelsize: %d, linesize %d \n", im->pixelsize, im->linesize));
-
-    dump_state(clientstate);
-
     if (state->state == 0) {
-        TRACE(("Encoding line by line"));
+        // state->buffer holds one row of the image, but TIFFWriteScanline reads
+        // a scanline of the size described by the IMAGEWIDTH, SAMPLESPERPIXEL
+        // and BITSPERSAMPLE tags, so these must not describe a larger row.
+        if (TIFFScanlineSize64(tiff) > (uint64_t)state->bytes) {
+            state->errcode = IMAGING_CODEC_CONFIG;
+            return -1;
+        }
+
+        // Encoding line by line
         while (state->y < state->ysize) {
             state->shuffle(
                 state->buffer,
@@ -1035,15 +863,7 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
             if (TIFFWriteScanline(
                     tiff, (tdata_t)(state->buffer), (uint32_t)state->y, 0
                 ) == -1) {
-                TRACE(("Encode Error, row %d\n", state->y));
                 state->errcode = IMAGING_CODEC_BROKEN;
-
-                if (clientstate->fp) {
-                    TIFFCleanup(tiff);
-                    clientstate->tiff = NULL;
-                } else {
-                    free(clientstate->data);
-                }
                 return -1;
             }
             state->y++;
@@ -1052,14 +872,9 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
         if (state->y == state->ysize) {
             state->state = 1;
 
-            TRACE(("Flushing \n"));
             if (!TIFFFlush(tiff)) {
-                TRACE(("Error flushing the tiff"));
                 // likely reason is memory.
                 state->errcode = IMAGING_CODEC_MEMORY;
-                if (!clientstate->fp) {
-                    free(clientstate->data);
-                }
                 return -1;
             }
             // reset the clientstate metadata to use it to read out the buffer.
@@ -1071,18 +886,9 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
     if (state->state == 1 && !clientstate->fp) {
         int read =
             (int)_tiffReadProc((thandle_t)clientstate, (tdata_t)buffer, (tsize_t)bytes);
-        TRACE(
-            ("Buffer: %p: %c%c%c%c\n",
-             buffer,
-             (char)buffer[0],
-             (char)buffer[1],
-             (char)buffer[2],
-             (char)buffer[3])
-        );
+
         if (clientstate->loc == clientstate->eof) {
-            TRACE(("Hit EOF, calling an end, freeing data"));
             state->errcode = IMAGING_CODEC_END;
-            free(clientstate->data);
         }
         return read;
     }

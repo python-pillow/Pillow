@@ -26,14 +26,19 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "io"}
+
 import io
 import logging
-from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
 from ._binary import o8
 from ._binary import o16le as o16
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +131,7 @@ class PcxImageFile(ImageFile.ImageFile):
         if provided_stride != stride:
             stride += stride % 2
 
-        bbox = (0, 0) + self.size
+        bbox = (0, 0, *self.size)
         logger.debug("size: %sx%s", *self.size)
 
         self.tile = [ImageFile._Tile("pcx", bbox, offset, (rawmode, planes * stride))]
@@ -146,6 +151,10 @@ SAVE = {
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
+    if im.width == 0 or im.height == 0:
+        msg = "Cannot write empty image as PCX"
+        raise ValueError(msg)
+
     try:
         version, bits, planes, rawmode = SAVE[im.mode]
     except KeyError as e:
@@ -200,13 +209,13 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     assert fp.tell() == 128
 
     ImageFile._save(
-        im, fp, [ImageFile._Tile("pcx", (0, 0) + im.size, 0, (rawmode, bits * planes))]
+        im, fp, [ImageFile._Tile("pcx", (0, 0, *im.size), 0, (rawmode, bits * planes))]
     )
 
     if im.mode == "P":
         # colour palette
         fp.write(o8(12))
-        palette = im.im.getpalette("RGB", "RGB")
+        palette = im.im.getpalette("RGB")
         palette += b"\x00" * (768 - len(palette))
         fp.write(palette)  # 768 bytes
     elif im.mode == "L":

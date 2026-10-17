@@ -1,19 +1,21 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
+from io import BytesIO
 
 import pytest
 
-from PIL import Image, UnidentifiedImageError
+from PIL import Image, UnidentifiedImageError, _binary
 
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _TGA_DIR = os.path.join("Tests", "images", "tga")
 _TGA_DIR_COMMON = os.path.join(_TGA_DIR, "common")
 
-
-_ORIGINS = ("tl", "bl")
 
 _ORIGIN_TO_ORIENTATION = {"tl": 1, "bl": -1}
 
@@ -29,7 +31,7 @@ _ORIGIN_TO_ORIENTATION = {"tl": 1, "bl": -1}
         ("200x32", "RGBA"),
     ),
 )
-@pytest.mark.parametrize("origin", _ORIGINS)
+@pytest.mark.parametrize("origin", _ORIGIN_TO_ORIENTATION)
 @pytest.mark.parametrize("rle", (True, False))
 def test_sanity(
     size_mode: tuple[str, str], origin: str, rle: str, tmp_path: Path
@@ -86,12 +88,49 @@ def test_palette_depth_16(tmp_path: Path) -> None:
             assert_image_equal_tofile(reloaded.convert("RGBA"), "Tests/images/p_16.png")
 
 
+def test_palette_depth_32(tmp_path: Path) -> None:
+    im = Image.frombytes("L", (1, 2), bytes((0, 1)))
+    data = [255, 0, 0, 255, 0, 0, 255, 0]
+    im.putpalette(data, "RGBA")
+
+    out = tmp_path / "temp.tga"
+    im.save(out)
+
+    with Image.open(out) as reloaded:
+        assert reloaded.palette is not None
+        assert reloaded.palette.mode == "RGBA"
+        assert reloaded.getpalette(None) == data
+
+        reloaded_rgba = reloaded.convert("RGBA")
+    assert reloaded_rgba.getpixel((0, 0)) == (255, 0, 0, 255)
+    assert reloaded_rgba.getpixel((0, 1)) == (0, 0, 255, 0)
+
+
 def test_rgba_16() -> None:
     with Image.open("Tests/images/rgba16.tga") as im:
         assert im.mode == "RGBA"
 
         assert im.getpixel((0, 0)) == (172, 0, 255, 255)
         assert im.getpixel((1, 0)) == (0, 255, 82, 0)
+
+
+def test_v2_no_alpha() -> None:
+    test_file = "Tests/images/tga/common/200x32_rgba_tl_rle.tga"
+    with open(test_file, "rb") as fp:
+        data = fp.read()
+        data += (
+            b"\x00" * 495
+            + _binary.o32le(len(data))
+            + _binary.o32le(0)
+            + b"TRUEVISION-XFILE.\x00"
+        )
+    with Image.open(BytesIO(data)) as im:
+        with Image.open(test_file) as im2:
+            r, g, b = im2.split()[:3]
+        a = Image.new("L", im2.size, 255)
+        expected = Image.merge("RGBA", (r, g, b, a))
+
+        assert_image_equal(im, expected)
 
 
 def test_id_field() -> None:
@@ -161,8 +200,18 @@ def test_save_wrong_mode(tmp_path: Path) -> None:
     im = hopper("PA")
     out = tmp_path / "temp.tga"
 
-    with pytest.raises(OSError):
+    with pytest.raises(OSError, match="cannot write mode PA as TGA"):
         im.save(out)
+
+
+def test_save_1_mode_rle(tmp_path: Path) -> None:
+    im = Image.new("1", (1, 1))
+    out = tmp_path / "temp.tga"
+
+    with pytest.raises(
+        OSError, match="cannot write mode 1 as TGA with run-length encoding"
+    ):
+        im.save(out, compression="tga_rle")
 
 
 def test_save_mapdepth() -> None:

@@ -17,13 +17,20 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "warnings"}
+
+import os
 import warnings
-from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
+from ._binary import i32le as i32
 from ._binary import o8
 from ._binary import o16le as o16
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 #
 # --------------------------------------------------------------------
@@ -127,6 +134,7 @@ class TgaImageFile(ImageFile.ImageFile):
                 self.palette = ImagePalette.raw(
                     "BGRA", bytes(4 * start) + self.fp.read(4 * size)
                 )
+                self.palette.mode = "RGBA"
             else:
                 msg = "unknown TGA map depth"
                 raise SyntaxError(msg)
@@ -139,7 +147,7 @@ class TgaImageFile(ImageFile.ImageFile):
                 self.tile = [
                     ImageFile._Tile(
                         "tga_rle",
-                        (0, 0) + self.size,
+                        (0, 0, *self.size),
                         self.fp.tell(),
                         (rawmode, orientation, depth),
                     )
@@ -148,7 +156,7 @@ class TgaImageFile(ImageFile.ImageFile):
                 self.tile = [
                     ImageFile._Tile(
                         "raw",
-                        (0, 0) + self.size,
+                        (0, 0, *self.size),
                         self.fp.tell(),
                         (rawmode, 0, orientation),
                     )
@@ -157,6 +165,20 @@ class TgaImageFile(ImageFile.ImageFile):
             pass  # cannot decode
 
     def load_end(self) -> None:
+        if self.mode == "RGBA":
+            assert self.fp is not None
+            self.fp.seek(-26, os.SEEK_END)
+            footer = self.fp.read(26)
+            if footer.endswith(b"TRUEVISION-XFILE.\x00"):
+                # version 2
+                extension_offset = i32(footer)
+                if extension_offset:
+                    self.fp.seek(extension_offset + 494)
+                    attributes_type = self.fp.read(1)
+                    if attributes_type == b"\x00":
+                        # No alpha
+                        self.im.fillband(3, 255)
+
         if self._flip_horizontally:
             self.im = self.im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
@@ -189,6 +211,10 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         compression = im.encoderinfo.get("compression", im.info.get("compression"))
         rle = compression == "tga_rle"
     if rle:
+        if im.mode == "1":
+            msg = f"cannot write mode {im.mode} as TGA with run-length encoding"
+            raise OSError(msg)
+
         imagetype += 8
 
     id_section = im.encoderinfo.get("id_section", im.info.get("id_section", ""))
@@ -199,8 +225,13 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         warnings.warn("id_section has been trimmed to 255 characters")
 
     if colormaptype:
-        palette = im.im.getpalette("RGB", "BGR")
-        colormaplength, colormapentry = len(palette) // 3, 24
+        assert im.palette is not None
+        if im.palette.mode == "RGBA":
+            palette = im.im.getpalette("RGBA", "BGRA")
+            colormaplength, colormapentry = len(palette) // 4, 32
+        else:
+            palette = im.im.getpalette("RGB", "BGR")
+            colormaplength, colormapentry = len(palette) // 3, 24
     else:
         colormaplength, colormapentry = 0, 0
 
@@ -238,13 +269,13 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         ImageFile._save(
             im,
             fp,
-            [ImageFile._Tile("tga_rle", (0, 0) + im.size, 0, (rawmode, orientation))],
+            [ImageFile._Tile("tga_rle", (0, 0, *im.size), 0, (rawmode, orientation))],
         )
     else:
         ImageFile._save(
             im,
             fp,
-            [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))],
+            [ImageFile._Tile("raw", (0, 0, *im.size), 0, (rawmode, 0, orientation))],
         )
 
     # write targa version 2 footer

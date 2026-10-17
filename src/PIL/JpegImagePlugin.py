@@ -33,6 +33,17 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL.JpegPresets",
+    "PIL._binary",
+    "array",
+    "io",
+    "math",
+    "struct",
+    "subprocess",
+    "warnings",
+}
+
 import array
 import io
 import math
@@ -40,7 +51,6 @@ import os
 import struct
 import subprocess
 import sys
-import tempfile
 import warnings
 
 from . import Image, ImageFile
@@ -48,6 +58,7 @@ from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
+from ._deprecate import deprecate
 from .JpegPresets import presets
 
 TYPE_CHECKING = False
@@ -127,8 +138,8 @@ def APP(self: JpegImageFile, marker: int) -> None:
         # parse the image resource block
         offset = 14
         photoshop = self.info.setdefault("photoshop", {})
-        while s[offset : offset + 4] == b"8BIM":
-            try:
+        try:
+            while s[offset : offset + 4] == b"8BIM":
                 offset += 4
                 # resource code
                 code = i16(s, offset)
@@ -153,8 +164,8 @@ def APP(self: JpegImageFile, marker: int) -> None:
                     photoshop[code] = data
                 offset += size
                 offset += offset & 1  # align
-            except struct.error:
-                break  # insufficient data
+        except struct.error:
+            pass  # insufficient data
 
     elif marker == 0xFFEE and s.startswith(b"Adobe"):
         self.info["adobe"] = i16(s, 5)
@@ -197,8 +208,6 @@ def SOF(self: JpegImageFile, marker: int) -> None:
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
     self._size = i16(s, 3), i16(s, 1)
-    if self._im is not None and self.size != self.im.size:
-        self._im = None
 
     self.bits = s[0]
     if self.bits != 8:
@@ -366,10 +375,12 @@ class JpegImageFile(ImageFile.ImageFile):
         self.applist: list[tuple[str, bytes]] = []
         self.icclist: list[bytes] = []
 
-        while True:
+        while s:
             i = s[0]
             if i == 0xFF:
-                s = s + self.fp.read(1)
+                s += self.fp.read(1)
+                if len(s) < 2:
+                    break
                 i = i16(s)
             else:
                 # Skip non-0xFF junk
@@ -385,7 +396,7 @@ class JpegImageFile(ImageFile.ImageFile):
                     if self.mode == "CMYK":
                         rawmode = "CMYK;I"  # assume adobe conventions
                     self.tile = [
-                        ImageFile._Tile("jpeg", (0, 0) + self.size, 0, (rawmode, ""))
+                        ImageFile._Tile("jpeg", (0, 0, *self.size), 0, (rawmode, ""))
                     ]
                     # self.__offset = self.fp.tell()
                     break
@@ -467,6 +478,13 @@ class JpegImageFile(ImageFile.ImageFile):
 
     def load_djpeg(self) -> None:
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
+        import tempfile
+
+        deprecate(
+            "load_djpeg",
+            14,
+            action="Use the built-in JPEG decoder instead, or call djpeg yourself.",
+        )
 
         f, path = tempfile.mkstemp()
         os.close(f)
@@ -605,7 +623,7 @@ def _getmp(self: JpegImageFile) -> dict[int, Any] | None:
             mpentry["Attribute"] = mpentryattr
             mpentries.append(mpentry)
         mp[0xB002] = mpentries
-    except KeyError as e:
+    except (KeyError, struct.error) as e:
         msg = "malformed MP Index (bad MP Entry)"
         raise SyntaxError(msg) from e
     # Next we should try and parse the individual image unique ID list;
@@ -626,7 +644,6 @@ RAWMODE = {
     "YCbCr": "YCbCr",
 }
 
-# fmt: off
 zigzag_index = (
     0,  1,  5,  6, 14, 15, 27, 28,
     2,  4,  7, 13, 16, 26, 29, 42,
@@ -636,14 +653,13 @@ zigzag_index = (
     20, 22, 33, 38, 46, 51, 55, 60,
     21, 34, 37, 47, 50, 56, 59, 61,
     35, 36, 48, 49, 57, 58, 62, 63,
-)
+)  # fmt: skip
 
 samplings = {
     (1, 1, 1, 1, 1, 1): 0,
     (2, 1, 1, 1, 1, 1): 1,
     (2, 2, 1, 1, 1, 1): 2,
 }
-# fmt: on
 
 
 def get_sampling(im: Image.Image) -> int:
@@ -661,10 +677,6 @@ def get_sampling(im: Image.Image) -> int:
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    if im.width == 0 or im.height == 0:
-        msg = "cannot write empty image as JPEG"
-        raise ValueError(msg)
-
     try:
         rawmode = RAWMODE[im.mode]
     except KeyError as e:
@@ -737,22 +749,21 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 qtables = [
                     qtables[key] for key in range(len(qtables)) if key in qtables
                 ]
-            elif isinstance(qtables, tuple):
+            else:
+                # Copy the sequence, so that it cannot be changed while it is read
                 qtables = list(qtables)
             if not (0 < len(qtables) < 5):
                 msg = "None or too many quantization tables"
                 raise ValueError(msg)
-            for idx, table in enumerate(qtables):
-                try:
+            try:
+                for idx, table in enumerate(qtables):
                     if len(table) != 64:
                         msg = "Invalid quantization table"
                         raise TypeError(msg)
-                    table_array = array.array("H", table)
-                except TypeError as e:
-                    msg = "Invalid quantization table"
-                    raise ValueError(msg) from e
-                else:
-                    qtables[idx] = list(table_array)
+                    qtables[idx] = list(array.array("H", table))
+            except TypeError as e:
+                msg = "Invalid quantization table"
+                raise ValueError(msg) from e
             return qtables
 
     if qtables == "keep":
@@ -795,6 +806,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             i += 1
 
     comment = info.get("comment", im.info.get("comment"))
+    if comment and len(comment) > MAX_BYTES_IN_MARKER:
+        msg = "Comment is too long"
+        raise ValueError(msg)
 
     # "progressive" is the official name, but older documentation
     # says "progression"
@@ -830,7 +844,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     # if we optimize, libjpeg needs a buffer big enough to hold the whole image
     # in a shot. Guessing on the size, at im.size bytes. (raw pixel size is
-    # channels*size, this is a value that's been used in a django patch.
+    # channels*size, this is a value that's been used in a Django patch.
     # https://github.com/matthewwithanm/django-imagekit/issues/50
     if optimize or progressive:
         # CMYK can be bigger
@@ -844,14 +858,18 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         if exif:
             bufsize += len(exif) + 5
         if extra:
-            bufsize += len(extra) + 1
+            bufsize += len(extra)
+        if comment:
+            bufsize += len(comment) + 5
     else:
-        # The EXIF info needs to be written as one block, + APP1, + one spare byte.
-        # Ensure that our buffer is big enough. Same with the icc_profile block.
-        bufsize = max(len(exif) + 5, len(extra) + 1)
+        # The EXIF info needs to be written as one block, + APP1, + one spare byte,
+        # as libjpeg without suspension requires one byte left after writing a marker.
+        # Ensure that our buffer is big enough. Same with the icc_profile block
+        # and the comment (COM marker).
+        bufsize = max(len(exif) + 5, len(extra), len(comment or b"") + 5)
 
     ImageFile._save(
-        im, fp, [ImageFile._Tile("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize
+        im, fp, [ImageFile._Tile("jpeg", (0, 0, *im.size), 0, rawmode)], bufsize
     )
 
 

@@ -20,14 +20,14 @@ class TestImageTransform:
         for transform in (
             ImageTransform.AffineTransform((1, 0, 0, 0, 1, 0)),
             ImageTransform.PerspectiveTransform((1, 0, 0, 0, 1, 0, 0, 0)),
-            ImageTransform.ExtentTransform((0, 0) + im.size),
+            ImageTransform.ExtentTransform((0, 0, *im.size)),
             ImageTransform.QuadTransform(
                 (0, 0, 0, im.height, im.width, im.height, im.width, 0)
             ),
             ImageTransform.MeshTransform(
                 [
                     (
-                        (0, 0) + im.size,
+                        (0, 0, *im.size),
                         (0, 0, 0, im.height, im.width, im.height, im.width, 0),
                     )
                 ]
@@ -45,18 +45,17 @@ class TestImageTransform:
             new_im = im.transform((100, 100), transform)
         assert new_im.info["comment"] == comment
 
-    def test_palette(self) -> None:
-        with Image.open("Tests/images/hopper.gif") as im:
-            transformed = im.transform(
-                im.size, Image.Transform.AFFINE, [1, 0, 0, 0, 1, 0]
-            )
-            assert im.palette is not None
-            assert transformed.palette is not None
-            assert im.palette.palette == transformed.palette.palette
+    @pytest.mark.parametrize("mode", ("P", "PA"))
+    def test_palette(self, mode: str) -> None:
+        im = hopper(mode)
+        transformed = im.transform(im.size, Image.Transform.AFFINE, [1, 0, 0, 0, 1, 0])
+        assert im.palette is not None
+        assert transformed.palette is not None
+        assert im.palette.palette == transformed.palette.palette
 
     def test_extent(self) -> None:
         im = hopper("RGB")
-        (w, h) = im.size
+        w, h = im.size
         transformed = im.transform(
             im.size,
             Image.Transform.EXTENT,
@@ -72,7 +71,7 @@ class TestImageTransform:
     def test_quad(self) -> None:
         # one simple quad transform, equivalent to scale & crop upper left quad
         im = hopper("RGB")
-        (w, h) = im.size
+        w, h = im.size
         transformed = im.transform(
             im.size,
             Image.Transform.QUAD,
@@ -94,12 +93,12 @@ class TestImageTransform:
         (
             ("RGB", (255, 0, 0)),
             ("RGBA", (255, 0, 0, 255)),
-            ("LA", (76, 0)),
+            ("LA", (76, 255)),
         ),
     )
     def test_fill(self, mode: str, expected_pixel: tuple[int, ...]) -> None:
         im = hopper(mode)
-        (w, h) = im.size
+        w, h = im.size
         transformed = im.transform(
             im.size,
             Image.Transform.EXTENT,
@@ -112,7 +111,7 @@ class TestImageTransform:
     def test_mesh(self) -> None:
         # this should be a checkerboard of halfsized hoppers in ul, lr
         im = hopper("RGBA")
-        (w, h) = im.size
+        w, h = im.size
         transformed = im.transform(
             im.size,
             Image.Transform.MESH,
@@ -174,7 +173,7 @@ class TestImageTransform:
 
     def test_alpha_premult_transform(self) -> None:
         def op(im: Image.Image, sz: tuple[int, int]) -> Image.Image:
-            (w, h) = im.size
+            w, h = im.size
             return im.transform(
                 sz, Image.Transform.EXTENT, (0, 0, w, h), Image.Resampling.BILINEAR
             )
@@ -216,7 +215,7 @@ class TestImageTransform:
     @pytest.mark.parametrize("mode", ("RGBA", "LA"))
     def test_nearest_transform(self, mode: str) -> None:
         def op(im: Image.Image, sz: tuple[int, int]) -> Image.Image:
-            (w, h) = im.size
+            w, h = im.size
             return im.transform(
                 sz, Image.Transform.EXTENT, (0, 0, w, h), Image.Resampling.NEAREST
             )
@@ -255,7 +254,7 @@ class TestImageTransform:
     @pytest.mark.parametrize("resample", (Image.Resampling.BOX, "unknown"))
     def test_unknown_resampling_filter(self, resample: Image.Resampling | str) -> None:
         with hopper() as im:
-            (w, h) = im.size
+            w, h = im.size
             with pytest.raises(ValueError):
                 im.transform((100, 100), Image.Transform.EXTENT, (0, 0, w, h), resample)  # type: ignore[arg-type]
 

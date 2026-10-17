@@ -21,16 +21,20 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "io", "subprocess"}
+
 import io
 import os
 import re
 import subprocess
 import sys
-import tempfile
-from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i32le as i32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 # --------------------------------------------------------------------
 
@@ -88,16 +92,22 @@ def Ghostscript(
     scale = int(scale) or 1
     width = size[0] * scale
     height = size[1] * scale
+    Image._decompression_bomb_check((width, height))
     # resolution is dependent on bbox and size
     res_x = 72.0 * width / (bbox[2] - bbox[0])
     res_y = 72.0 * height / (bbox[3] - bbox[1])
+
+    import tempfile
 
     out_fd, outfile = tempfile.mkstemp()
     os.close(out_fd)
 
     infile_temp = None
     if hasattr(fp, "name") and os.path.exists(fp.name):
-        infile = fp.name
+        # Make the path absolute so that a filename beginning with "-" or "@"
+        # can never be interpreted by Ghostscript's argument parser
+        # as an option or an @-file token
+        infile = os.path.abspath(fp.name)
     else:
         in_fd, infile_temp = tempfile.mkstemp()
         os.close(in_fd)
@@ -190,7 +200,7 @@ class EpsImageFile(ImageFile.ImageFile):
 
     def _open(self) -> None:
         assert self.fp is not None
-        (length, offset) = self._find_offset(self.fp)
+        length, offset = self._find_offset(self.fp)
 
         # go to offset - start of "%!PS"
         self.fp.seek(offset)
@@ -357,6 +367,9 @@ class EpsImageFile(ImageFile.ImageFile):
                 trailer_reached = True
             elif bytes_mv[:14] == b"%%BeginBinary:":
                 bytecount = int(byte_arr[14:bytes_read])
+                if bytecount < 0:
+                    msg = "BeginBinary bytecount cannot be negative"
+                    raise ValueError(msg)
                 self.fp.seek(bytecount, os.SEEK_CUR)
             bytes_read = 0
 
@@ -373,7 +386,7 @@ class EpsImageFile(ImageFile.ImageFile):
         )
 
         self.tile = [
-            ImageFile._Tile("eps", (0, 0) + self.size, offset, (length, bounding_box))
+            ImageFile._Tile("eps", (0, 0, *self.size), offset, (length, bounding_box))
         ]
 
     def _find_offset(self, fp: IO[bytes]) -> tuple[int, int]:
@@ -461,7 +474,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes, eps: int = 1) -
     if hasattr(fp, "flush"):
         fp.flush()
 
-    ImageFile._save(im, fp, [ImageFile._Tile("eps", (0, 0) + im.size)])
+    ImageFile._save(im, fp, [ImageFile._Tile("eps", (0, 0, *im.size))])
 
     fp.write(b"\n%%%%EndBinary\n")
     fp.write(b"grestore end\n")

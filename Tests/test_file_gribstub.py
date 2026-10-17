@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import IO
 
 import pytest
@@ -8,6 +7,10 @@ import pytest
 from PIL import GribStubImagePlugin, Image, ImageFile
 
 from .helper import hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_FILE = "Tests/images/WAlaska.wind.7days.grb"
 
@@ -20,7 +23,7 @@ def test_open() -> None:
 
         # Dummy data from the stub
         assert im.mode == "F"
-        assert im.size == (1, 1)
+        assert im.size == (0, 0)
 
 
 def test_invalid_file() -> None:
@@ -58,6 +61,7 @@ def test_handler(tmp_path: Path) -> None:
 
         def open(self, im: Image.Image) -> None:
             self.opened = True
+            im._size = (1, 1)
 
         def load(self, im: ImageFile.ImageFile) -> Image.Image:
             self.loaded = True

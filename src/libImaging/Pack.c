@@ -177,7 +177,7 @@ pack1L(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-packP4(UINT8 *out, const UINT8 *in, int pixels) {
+packL4(UINT8 *out, const UINT8 *in, int pixels) {
     while (pixels >= 2) {
         *out++ = (in[0] << 4) | (in[1] & 15);
         in += 2;
@@ -190,7 +190,7 @@ packP4(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-packP2(UINT8 *out, const UINT8 *in, int pixels) {
+packL2(UINT8 *out, const UINT8 *in, int pixels) {
     while (pixels >= 4) {
         *out++ = (in[0] << 6) | ((in[1] & 3) << 4) | ((in[2] & 3) << 2) | (in[3] & 3);
         in += 4;
@@ -321,6 +321,19 @@ ImagingPackXBGR(UINT8 *out, const UINT8 *in, int pixels) {
         out[2] = in[G];
         out[3] = in[R];
         out += 4;
+        in += 4;
+    }
+}
+
+void
+ImagingPackCMYK2RGB(UINT8 *out, const UINT8 *in, int xsize) {
+    int x, nk, tmp;
+    for (x = 0; x < xsize; x++) {
+        nk = 255 - in[3];
+        out[0] = CLIP8(nk - MULDIV255(in[0], nk, tmp));
+        out[1] = CLIP8(nk - MULDIV255(in[1], nk, tmp));
+        out[2] = CLIP8(nk - MULDIV255(in[2], nk, tmp));
+        out += 3;
         in += 4;
     }
 }
@@ -534,6 +547,9 @@ static struct {
 
     /* grayscale */
     {IMAGING_MODE_L, IMAGING_RAWMODE_L, 8, copy1},
+    {IMAGING_MODE_L, IMAGING_RAWMODE_L_1, 1, pack1},
+    {IMAGING_MODE_L, IMAGING_RAWMODE_L_2, 2, packL2},
+    {IMAGING_MODE_L, IMAGING_RAWMODE_L_4, 4, packL4},
     {IMAGING_MODE_L, IMAGING_RAWMODE_L_16, 16, packL16},
     {IMAGING_MODE_L, IMAGING_RAWMODE_L_16B, 16, packL16B},
 
@@ -546,8 +562,8 @@ static struct {
 
     /* palette */
     {IMAGING_MODE_P, IMAGING_RAWMODE_P_1, 1, pack1},
-    {IMAGING_MODE_P, IMAGING_RAWMODE_P_2, 2, packP2},
-    {IMAGING_MODE_P, IMAGING_RAWMODE_P_4, 4, packP4},
+    {IMAGING_MODE_P, IMAGING_RAWMODE_P_2, 2, packL2},
+    {IMAGING_MODE_P, IMAGING_RAWMODE_P_4, 4, packL4},
     {IMAGING_MODE_P, IMAGING_RAWMODE_P, 8, copy1},
 
     /* palette w. alpha */
@@ -605,6 +621,7 @@ static struct {
     {IMAGING_MODE_CMYK, IMAGING_RAWMODE_M, 8, band1},
     {IMAGING_MODE_CMYK, IMAGING_RAWMODE_Y, 8, band2},
     {IMAGING_MODE_CMYK, IMAGING_RAWMODE_K, 8, band3},
+    {IMAGING_MODE_CMYK, IMAGING_RAWMODE_RGB, 24, ImagingPackCMYK2RGB},
 
     /* video (YCbCr) */
     {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_YCbCr, 24, ImagingPackRGB},

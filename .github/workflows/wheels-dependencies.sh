@@ -19,6 +19,7 @@ function check_cibw_archs {
 # potential cross-build platforms before native platforms to ensure that we pick
 # up the cross environment.
 PROJECTDIR=$(pwd)
+PATCH_DIR=$(pwd)/patches
 if [[ "$CIBW_PLATFORM" == "ios" ]]; then
     check_cibw_archs
     # On iOS, CIBW_ARCHS is actually a multi-arch - arm64_iphoneos,
@@ -89,26 +90,23 @@ fi
 
 ARCHIVE_SDIR=pillow-depends-main
 
-# Package versions for fresh source builds.
-if [[ -n "$IOS_SDK" ]]; then
-  FREETYPE_VERSION=2.13.3
-else
-  FREETYPE_VERSION=2.14.1
-fi
-HARFBUZZ_VERSION=12.3.0
-LIBPNG_VERSION=1.6.53
-JPEGTURBO_VERSION=3.1.3
-OPENJPEG_VERSION=2.5.4
-XZ_VERSION=5.8.2
-ZSTD_VERSION=1.5.7
-TIFF_VERSION=4.7.1
-LCMS2_VERSION=2.17
-ZLIB_NG_VERSION=2.3.2
-LIBWEBP_VERSION=1.6.0
-BZIP2_VERSION=1.0.8
-LIBXCB_VERSION=1.17.0
-BROTLI_VERSION=1.2.0
-LIBAVIF_VERSION=1.3.0
+VERSIONS_FILE="$PROJECTDIR/.github/dependencies.json"
+_get_ver() { python3 -c "import json; print(json.load(open('$VERSIONS_FILE'))['$1'])"; }
+FREETYPE_VERSION=$(_get_ver freetype)
+HARFBUZZ_VERSION=$(_get_ver harfbuzz)
+LIBPNG_VERSION=$(_get_ver libpng)
+JPEGTURBO_VERSION=$(_get_ver jpegturbo)
+OPENJPEG_VERSION=$(_get_ver openjpeg)
+XZ_VERSION=$(_get_ver xz)
+ZSTD_VERSION=$(_get_ver zstd)
+TIFF_VERSION=$(_get_ver tiff)
+LCMS2_VERSION=$(_get_ver lcms2)
+ZLIB_NG_VERSION=$(_get_ver zlib-ng)
+LIBWEBP_VERSION=$(_get_ver libwebp)
+BZIP2_VERSION=$(_get_ver bzip2)
+LIBXCB_VERSION=$(_get_ver libxcb)
+BROTLI_VERSION=$(_get_ver brotli)
+LIBAVIF_VERSION=$(_get_ver libavif)
 
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
@@ -179,10 +177,9 @@ function build_libavif {
     python3 -m pip install meson ninja
 
     if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IOS_SDK" ]]) || [ -n "$SANITIZER" ]; then
-        build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
+        build_simple nasm 3.02 https://www.nasm.us/pub/nasm/releasebuilds/3.02
     fi
 
-    local build_type=MinSizeRel
     local build_shared=ON
     local lto=ON
 
@@ -199,9 +196,6 @@ function build_libavif {
             build_shared=OFF
         fi
     else
-        if [[ "$MB_ML_VER" == 2014 ]] && [[ "$PLAT" == "x86_64" ]]; then
-            build_type=Release
-        fi
         libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
     fi
     if [[ -n "$IOS_SDK" ]] && [[ "$PLAT" == "x86_64" ]]; then
@@ -230,7 +224,7 @@ function build_libavif {
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=$lto \
             -DCMAKE_C_VISIBILITY_PRESET=hidden \
             -DCMAKE_CXX_VISIBILITY_PRESET=hidden \
-            -DCMAKE_BUILD_TYPE=$build_type \
+            -DCMAKE_BUILD_TYPE=MinSizeRel \
             "${libavif_cmake_flags[@]}" \
             $HOST_CMAKE_FLAGS . )
 
@@ -267,7 +261,7 @@ function build {
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [[ -n "$IS_MACOS" ]]; then
-        build_simple xorgproto 2024.1 https://www.x.org/pub/individual/proto
+        build_simple xorgproto 2025.1 https://www.x.org/pub/individual/proto
         build_simple libXau 1.0.12 https://www.x.org/pub/individual/lib
         build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
     else
@@ -275,15 +269,33 @@ function build {
     fi
     build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
 
-    build_libjpeg_turbo
+    # -DCMAKE_POSITION_INDEPENDENT_CODE=1 is a workaround from https://github.com/libjpeg-turbo/libjpeg-turbo/issues/898
+    HOST_CMAKE_FLAGS="-DCMAKE_POSITION_INDEPENDENT_CODE=1 $HOST_CMAKE_FLAGS" build_libjpeg_turbo
+
     if [[ -n "$IS_MACOS" ]]; then
         # Custom tiff build to include jpeg; by default, configure won't include
         # headers/libs in the custom macOS/iOS prefix. Explicitly disable webp,
         # libdeflate and zstd, because on x86_64 macs, it will pick up the
         # Homebrew versions of those libraries from /usr/local.
+        tiff_configure_args=(
+            --disable-contrib
+            --disable-cxx
+            --disable-dependency-tracking
+            --disable-docs
+            --disable-libdeflate
+            --disable-tests
+            --disable-tools
+            --disable-webp
+            --disable-zstd
+            --with-jpeg-include-dir=$BUILD_PREFIX/include
+            --with-jpeg-lib-dir=$BUILD_PREFIX/lib
+        )
+        if [[ -z "$IOS_SDK" ]]; then
+            # iOS links libtiff statically, but otherwise we need the dylib.
+            tiff_configure_args+=(--disable-static)
+        fi
         build_simple tiff $TIFF_VERSION https://download.osgeo.org/libtiff tar.gz \
-            --with-jpeg-include-dir=$BUILD_PREFIX/include --with-jpeg-lib-dir=$BUILD_PREFIX/lib \
-            --disable-webp --disable-libdeflate --disable-zstd
+            "${tiff_configure_args[@]}"
     else
         build_zstd
         build_tiff
@@ -308,21 +320,19 @@ function build {
 
     build_brotli
 
-    if [[ -n "$IS_MACOS" ]]; then
-        # Custom freetype build
-        if [[ -z "$IOS_SDK" ]]; then
-          build_simple sed 4.9 https://mirrors.middlendian.com/gnu/sed
-        fi
-
-        build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no
-    else
-        build_freetype
-    fi
+    # FreeType and HarfBuzz each want the other:
+    # HarfBuzz reads font data through FreeType, and FreeType's auto-hinter asks HarfBuzz which glyphs a script covers.
+    # Break the cycle by building FreeType twice, so that the FreeType we ship is linked against the HarfBuzz we ship.
+    build_freetype
 
     if [[ -z "$IOS_SDK" ]]; then
         # On iOS, there's no vendor-provided raqm, and we can't ship it due to
         # licensing, so there's no point building harfbuzz.
         build_harfbuzz
+
+        # Now that HarfBuzz exists, build FreeType again against it.
+        rm -rf freetype-$FREETYPE_VERSION freetype-stamp
+        CFLAGS="$CFLAGS -DFT_CONFIG_OPTION_USE_HARFBUZZ" build_freetype
     fi
 }
 

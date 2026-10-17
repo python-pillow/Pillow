@@ -26,12 +26,19 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._util"}
+
 import os
 import re
-from typing import IO, Any
 
 from . import Image, ImageFile, ImagePalette
+from ._deprecate import deprecate
 from ._util import DeferredError
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
+
 
 # --------------------------------------------------------------------
 # Standard tags
@@ -106,6 +113,7 @@ split = re.compile(rb"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
 
 
 def number(s: Any) -> float:
+    deprecate("IM image format", 15)
     try:
         return int(s)
     except ValueError:
@@ -206,6 +214,8 @@ class ImImageFile(ImageFile.ImageFile):
             msg = "Not an IM file"
             raise SyntaxError(msg)
 
+        deprecate("IM image format", 15)
+
         # Basic attributes
         self._size = self.info[SIZE]
         self._mode = self.info[MODE]
@@ -257,7 +267,7 @@ class ImImageFile(ImageFile.ImageFile):
                 if bits not in [8, 16, 32]:
                     self.tile = [
                         ImageFile._Tile(
-                            "bit", (0, 0) + self.size, offs, (bits, 8, 3, 0, -1)
+                            "bit", (0, 0, *self.size), offs, (bits, 8, 3, 0, -1)
                         )
                     ]
                     return
@@ -269,16 +279,16 @@ class ImImageFile(ImageFile.ImageFile):
             # ever stumbled upon such a file ;-)
             size = self.size[0] * self.size[1]
             self.tile = [
-                ImageFile._Tile("raw", (0, 0) + self.size, offs, ("G", 0, -1)),
-                ImageFile._Tile("raw", (0, 0) + self.size, offs + size, ("R", 0, -1)),
+                ImageFile._Tile("raw", (0, 0, *self.size), offs, ("G", 0, -1)),
+                ImageFile._Tile("raw", (0, 0, *self.size), offs + size, ("R", 0, -1)),
                 ImageFile._Tile(
-                    "raw", (0, 0) + self.size, offs + 2 * size, ("B", 0, -1)
+                    "raw", (0, 0, *self.size), offs + 2 * size, ("B", 0, -1)
                 ),
             ]
         else:
             # LabEye/IFUNC files
             self.tile = [
-                ImageFile._Tile("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))
+                ImageFile._Tile("raw", (0, 0, *self.size), offs, (self.rawmode, 0, -1))
             ]
 
     @property
@@ -308,7 +318,7 @@ class ImImageFile(ImageFile.ImageFile):
         self.fp = self._fp
 
         self.tile = [
-            ImageFile._Tile("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))
+            ImageFile._Tile("raw", (0, 0, *self.size), offs, (self.rawmode, 0, -1))
         ]
 
     def tell(self) -> int:
@@ -341,6 +351,7 @@ SAVE = {
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
+    deprecate("IM image format", 15)
     try:
         image_type, rawmode = SAVE[im.mode]
     except KeyError as e:
@@ -375,7 +386,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             palette += b"\x00" * (256 - colors)
         fp.write(palette)  # 768 bytes
     ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, -1))]
+        im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, (rawmode, 0, -1))]
     )
 
 

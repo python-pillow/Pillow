@@ -27,7 +27,8 @@ ImagingPaletteNew(const ModeID mode) {
     int i;
     ImagingPalette palette;
 
-    if (mode != IMAGING_MODE_RGB && mode != IMAGING_MODE_RGBA) {
+    if (mode != IMAGING_MODE_RGB && mode != IMAGING_MODE_RGBA &&
+        mode != IMAGING_MODE_CMYK) {
         return (ImagingPalette)ImagingError_ModeError();
     }
 
@@ -210,6 +211,7 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b) {
 
     for (i = 0; i < BOXVOLUME; i++) {
         d[i] = (unsigned int)~0;
+        c[i] = 0;
     }
 
     for (i = 0; i < palette->size; i++) {

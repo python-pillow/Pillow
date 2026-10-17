@@ -20,6 +20,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 from . import Image, ImageFile
 from ._binary import i16le as i16
 
@@ -61,7 +63,7 @@ class PixarImageFile(ImageFile.ImageFile):
         # FIXME: to be continued...
 
         # create tile descriptor (assuming "dumped")
-        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 1024, self.mode)]
+        self.tile = [ImageFile._Tile("raw", (0, 0, *self.size), 1024, self.mode)]
 
 
 #

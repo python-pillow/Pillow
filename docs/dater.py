@@ -11,7 +11,7 @@ import subprocess
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from sphinx.application import Sphinx
+    from typing import Any
 
 DOC_NAME_REGEX = re.compile(r"releasenotes/\d+\.\d+\.\d+")
 VERSION_TITLE_REGEX = re.compile(r"^(\d+\.\d+\.\d+)\n-+\n")
@@ -28,7 +28,7 @@ def get_date_for(git_version: str) -> str | None:
     return out.split()[0]
 
 
-def add_date(app: Sphinx, doc_name: str, source: list[str]) -> None:
+def add_date(app: Any, doc_name: str, source: list[str]) -> None:
     if DOC_NAME_REGEX.match(doc_name) and (m := VERSION_TITLE_REGEX.match(source[0])):
         old_title = m.group(1)
 
@@ -43,6 +43,6 @@ def add_date(app: Sphinx, doc_name: str, source: list[str]) -> None:
         source[0] = result
 
 
-def setup(app: Sphinx) -> dict[str, bool]:
+def setup(app: Any) -> dict[str, bool]:
     app.connect("source-read", add_date)
     return {"parallel_read_safe": True}

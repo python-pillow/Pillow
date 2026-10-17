@@ -175,8 +175,15 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t 
 
     /* Get all data from File descriptor */
     c = (SGISTATE *)state->context;
-    _imaging_seek_pyFd(state->fd, 0L, SEEK_END);
+    if (_imaging_seek_pyFd(state->fd, 0L, SEEK_END) == -1) {
+        state->errcode = IMAGING_CODEC_UNKNOWN;
+        return -1;
+    }
     c->bufsize = _imaging_tell_pyFd(state->fd);
+    if (c->bufsize == -1) {
+        state->errcode = IMAGING_CODEC_UNKNOWN;
+        return -1;
+    }
     c->bufsize -= SGI_HEADER_SIZE;
 
     c->tablen = im->bands * im->ysize;
@@ -194,8 +201,8 @@ ImagingSgiRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t 
         state->errcode = IMAGING_CODEC_MEMORY;
         return -1;
     }
-    _imaging_seek_pyFd(state->fd, SGI_HEADER_SIZE, SEEK_SET);
-    if (_imaging_read_pyFd(state->fd, (char *)ptr, c->bufsize) != c->bufsize) {
+    if (_imaging_seek_pyFd(state->fd, SGI_HEADER_SIZE, SEEK_SET) == -1 ||
+        _imaging_read_pyFd(state->fd, (char *)ptr, c->bufsize) != c->bufsize) {
         free(ptr);
         state->errcode = IMAGING_CODEC_UNKNOWN;
         return -1;

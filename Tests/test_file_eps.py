@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import io
-from pathlib import Path
+import subprocess
 
 import pytest
 
@@ -13,10 +13,13 @@ from .helper import (
     assert_image_similar_tofile,
     hopper,
     is_win32,
-    mark_if_feature_version,
     skip_unless_feature,
     timeout_unless_slower_valgrind,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
 
@@ -106,6 +109,24 @@ def test_load() -> None:
         px = im.load()
         assert px is not None
         assert px[0, 0] == (255, 255, 255)
+
+
+def test_load_scale_decompression_bomb(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    def failing_check_call(command: list[str], **kwargs: object) -> None:
+        pytest.fail("EPS size not checked before invoking Ghostscript")
+
+    monkeypatch.setattr(EpsImagePlugin, "has_ghostscript", lambda: True)
+    monkeypatch.setattr(EpsImagePlugin, "gs_binary", "")
+    monkeypatch.setattr(subprocess, "check_call", failing_check_call)
+
+    with Image.open(FILE1) as im:
+        assert isinstance(im, EpsImagePlugin.EpsImageFile)
+        monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", im.width * im.height)
+
+        with pytest.raises(Image.DecompressionBombError):
+            im.load(scale=2)
 
 
 def test_binary() -> None:
@@ -204,10 +225,11 @@ def test_begin_binary() -> None:
     with Image.open(io.BytesIO(data)) as img:
         assert img.size == (399, 480)
 
+    data[76867:76873] = b"    -1"
+    with pytest.raises(ValueError, match="BeginBinary bytecount cannot be negative"):
+        Image.open(io.BytesIO(data))
 
-@mark_if_feature_version(
-    pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-)
+
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_cmyk() -> None:
     with Image.open("Tests/images/eps/pil_sample_cmyk.eps") as cmyk_image:
@@ -281,6 +303,11 @@ def test_bytesio_object() -> None:
     ),
 )
 def test_1(filename: str) -> None:
+    gs_binary = EpsImagePlugin.gs_binary
+    assert isinstance(gs_binary, str)
+    if subprocess.check_output([gs_binary, "--version"]) == b"10.06.0\n":
+        pytest.skip("Fails with Ghostscript 10.06.0")
+
     with Image.open(filename) as im:
         assert_image_equal_tofile(im, "Tests/images/eps/1.bmp")
 
@@ -290,6 +317,22 @@ def test_image_mode_not_supported(tmp_path: Path) -> None:
     tmpfile = tmp_path / "temp.eps"
     with pytest.raises(ValueError):
         im.save(tmpfile)
+
+
+@pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
+def test_filename_not_parsed_as_ghostscript_argument(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Check that a filename starting with "-" is not passed to Ghostscript unmodified
+    # If it was, the help functionality would be triggered instead
+    monkeypatch.chdir(tmp_path)
+    name = "-h"
+    with open(name, "wb") as f:
+        f.write(b"\n".join(simple_eps_file))
+
+    with Image.open(name) as im:
+        im.load()
+        assert im.size == (100, 100)
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")

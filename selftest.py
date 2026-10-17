@@ -76,7 +76,7 @@ def testimage() -> None:
     ('R', 'G', 'B')
     >>> im.getbbox()
     (0, 0, 128, 128)
-    >>> len(im.getdata())
+    >>> len(im.get_flattened_data())
     16384
     >>> im.getextrema()
     ((0, 255), (0, 255), (0, 255))

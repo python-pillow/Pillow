@@ -25,20 +25,24 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL._binary",
+    "PIL._util",
+    "itertools",
+    "math",
+    "subprocess",
+}
+
 import itertools
 import math
-import os
-import subprocess
 from enum import IntEnum
 from functools import cached_property
-from typing import Any, NamedTuple, cast
+from typing import NamedTuple, cast
 
 from . import (
     Image,
     ImageChops,
     ImageFile,
-    ImageMath,
-    ImageOps,
     ImagePalette,
     ImageSequence,
 )
@@ -49,7 +53,7 @@ from ._util import DeferredError
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from typing import IO, Literal
+    from typing import IO, Any, Literal
 
     from . import _imaging
     from ._typing import Buffer
@@ -164,13 +168,13 @@ class GifImageFile(ImageFile.ImageFile):
             self._seek(0)
 
         last_frame = self.__frame
-        for f in range(self.__frame + 1, frame + 1):
-            try:
+        try:
+            for f in range(self.__frame + 1, frame + 1):
                 self._seek(f)
-            except EOFError as e:
-                self.seek(last_frame)
-                msg = "no more images in GIF file"
-                raise EOFError(msg) from e
+        except EOFError as e:
+            self.seek(last_frame)
+            msg = "no more images in GIF file"
+            raise EOFError(msg) from e
 
     def _seek(self, frame: int, update_image: bool = True) -> None:
         if isinstance(self._fp, DeferredError):
@@ -209,6 +213,7 @@ class GifImageFile(ImageFile.ImageFile):
         palette: ImagePalette.ImagePalette | Literal[False] | None = None
 
         info: dict[str, Any] = {}
+        comment_blocks: list[bytes] = []
         frame_transparency = None
         interlace = None
         frame_dispose_extent = None
@@ -246,18 +251,12 @@ class GifImageFile(ImageFile.ImageFile):
                     #
                     # comment extension
                     #
-                    comment = b""
-
-                    # Read this comment block
-                    while block:
-                        comment += block
-                        block = self.data()
-
-                    if "comment" in info:
+                    if block and comment_blocks:
                         # If multiple comment blocks in frame, separate with \n
-                        info["comment"] += b"\n" + comment
-                    else:
-                        info["comment"] = comment
+                        comment_blocks.append(b"\n")
+                    while block:
+                        comment_blocks.append(block)
+                        block = self.data()
                     s = b""
                     continue
                 elif s[0] == 255 and frame == 0 and block is not None:
@@ -282,8 +281,9 @@ class GifImageFile(ImageFile.ImageFile):
                 x0, y0 = i16(s, 0), i16(s, 2)
                 x1, y1 = x0 + i16(s, 4), y0 + i16(s, 6)
                 if (x1 > self.size[0] or y1 > self.size[1]) and update_image:
-                    self._size = max(x1, self.size[0]), max(y1, self.size[1])
-                    Image._decompression_bomb_check(self._size)
+                    size = max(x1, self.size[0]), max(y1, self.size[1])
+                    Image._decompression_bomb_check(size)
+                    self._size = size
                 frame_dispose_extent = x0, y0, x1, y1
                 flags = s[8]
 
@@ -355,7 +355,7 @@ class GifImageFile(ImageFile.ImageFile):
                 if color * 3 + 3 > len(self._frame_palette.palette):
                     color = 0
                 return cast(
-                    tuple[int, int, int],
+                    "tuple[int, int, int]",
                     tuple(self._frame_palette.palette[color * 3 : color * 3 + 3]),
                 )
             else:
@@ -425,8 +425,8 @@ class GifImageFile(ImageFile.ImageFile):
                 )
             ]
 
-        if info.get("comment"):
-            self.info["comment"] = info["comment"]
+        if comment_blocks:
+            self.info["comment"] = b"".join(comment_blocks)
         for k in ["duration", "extension"]:
             if k in info:
                 self.info[k] = info[k]
@@ -452,7 +452,7 @@ class GifImageFile(ImageFile.ImageFile):
             expanded_im = Image.core.fill(self.im.mode, self.size)
             if self._frame_palette:
                 expanded_im.putpalette("RGB", *self._frame_palette.getdata())
-            expanded_im.paste(self.im, (0, 0) + self.im.size)
+            expanded_im.paste(self.im, (0, 0, *self.im.size))
 
             self.im = expanded_im
         self._mode = temp_mode
@@ -479,7 +479,7 @@ class GifImageFile(ImageFile.ImageFile):
                 expanded_im = Image.core.fill("P", self.size)
                 expanded_im.putpalette("RGB", "RGB", self.im.getpalette())
                 expanded_im = expanded_im.convert("RGB")
-            expanded_im.paste(self._prev_im, (0, 0) + self._prev_im.size)
+            expanded_im.paste(self._prev_im, (0, 0, *self._prev_im.size))
 
             self._prev_im = expanded_im
             assert self._prev_im is not None
@@ -635,7 +635,7 @@ def _write_single_frame(
 
     im_out.encoderconfig = (8, get_interlace(im))
     ImageFile._save(
-        im_out, fp, [ImageFile._Tile("gif", (0, 0) + im.size, 0, RAWMODE[im_out.mode])]
+        im_out, fp, [ImageFile._Tile("gif", (0, 0, *im.size), 0, RAWMODE[im_out.mode])]
     )
 
     fp.write(b"\0")  # end of image data
@@ -700,7 +700,10 @@ def _write_multiple_frames(
                 if not bbox:
                     # This frame is identical to the previous frame
                     if encoderinfo.get("duration"):
-                        im_frames[-1].encoderinfo["duration"] += encoderinfo["duration"]
+                        im_frames[-1].encoderinfo["duration"] = (
+                            im_frames[-1].encoderinfo.get("duration", 0)
+                            + encoderinfo["duration"]
+                        )
                     continue
                 if im_frames[-1].encoderinfo.get("disposal") == 2:
                     # To appear correctly in viewers using a convention,
@@ -717,7 +720,7 @@ def _write_multiple_frames(
                             background_im.putpalette(first_palette, first_palette.mode)
                         bbox = _getbbox(background_im, im_frame)[1]
                     else:
-                        bbox = (0, 0) + im_frame.size
+                        bbox = (0, 0, *im_frame.size)
                 elif encoderinfo.get("optimize") and im_frame.mode != "1":
                     if "transparency" not in encoderinfo:
                         assert im_frame.palette is not None
@@ -729,44 +732,25 @@ def _write_multiple_frames(
                             pass
                     if "transparency" in encoderinfo:
                         # When the delta is zero, fill the image with transparency
-                        diff_frame = im_frame.copy()
-                        fill = Image.new("P", delta.size, encoderinfo["transparency"])
                         if delta.mode == "RGBA":
+                            # Each pixel is unchanged only if all four bands are zero
                             r, g, b, a = delta.split()
-                            mask = ImageMath.lambda_eval(
-                                lambda args: args["convert"](
-                                    args["max"](
-                                        args["max"](
-                                            args["max"](args["r"], args["g"]), args["b"]
-                                        ),
-                                        args["a"],
-                                    )
-                                    * 255,
-                                    "1",
-                                ),
-                                r=r,
-                                g=g,
-                                b=b,
-                                a=a,
+                            delta = ImageChops.lighter(
+                                ImageChops.lighter(r, g),
+                                ImageChops.lighter(b, a),
                             )
-                        else:
-                            if delta.mode == "P":
-                                # Convert to L without considering palette
-                                delta_l = Image.new("L", delta.size)
-                                delta_l.putdata(delta.get_flattened_data())
-                                delta = delta_l
-                            mask = ImageMath.lambda_eval(
-                                lambda args: args["convert"](args["im"] * 255, "1"),
-                                im=delta,
-                            )
-                        diff_frame.paste(fill, mask=ImageOps.invert(mask))
+                        # Map zero pixels (palette indices, for "P")
+                        # to a "1" mask without consulting the palette.
+                        unchanged = delta.point([255, *(0,) * 255], "1")
+                        diff_frame = im_frame.copy()
+                        diff_frame.paste(encoderinfo["transparency"], mask=unchanged)
             else:
                 bbox = None
             previous_im = im_frame
             im_frames.append(_Frame(diff_frame or im_frame, bbox, encoderinfo))
 
     if len(im_frames) == 1:
-        if "duration" in im.encoderinfo:
+        if "duration" in im_frames[0].encoderinfo:
             # Since multiple frames will not be written, use the combined duration
             im.encoderinfo["duration"] = im_frames[0].encoderinfo["duration"]
         return False
@@ -783,7 +767,7 @@ def _write_multiple_frames(
             if not palette:
                 frame_data.encoderinfo["include_color_table"] = True
 
-            if frame_data.bbox != (0, 0) + im_frame.size:
+            if frame_data.bbox != (0, 0, *im_frame.size):
                 im_frame = im_frame.crop(frame_data.bbox)
             offset = frame_data.bbox[:2]
         _write_frame_data(fp, im_frame, offset, frame_data.encoderinfo)
@@ -873,54 +857,6 @@ def _write_local_header(
     fp.write(o8(8))  # bits
 
 
-def _save_netpbm(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
-    # Unused by default.
-    # To use, uncomment the register_save call at the end of the file.
-    #
-    # If you need real GIF compression and/or RGB quantization, you
-    # can use the external NETPBM/PBMPLUS utilities.  See comments
-    # below for information on how to enable this.
-    tempfile = im._dump()
-
-    try:
-        with open(filename, "wb") as f:
-            if im.mode != "RGB":
-                subprocess.check_call(
-                    ["ppmtogif", tempfile], stdout=f, stderr=subprocess.DEVNULL
-                )
-            else:
-                # Pipe ppmquant output into ppmtogif
-                # "ppmquant 256 %s | ppmtogif > %s" % (tempfile, filename)
-                quant_cmd = ["ppmquant", "256", tempfile]
-                togif_cmd = ["ppmtogif"]
-                quant_proc = subprocess.Popen(
-                    quant_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
-                )
-                togif_proc = subprocess.Popen(
-                    togif_cmd,
-                    stdin=quant_proc.stdout,
-                    stdout=f,
-                    stderr=subprocess.DEVNULL,
-                )
-
-                # Allow ppmquant to receive SIGPIPE if ppmtogif exits
-                assert quant_proc.stdout is not None
-                quant_proc.stdout.close()
-
-                retcode = quant_proc.wait()
-                if retcode:
-                    raise subprocess.CalledProcessError(retcode, quant_cmd)
-
-                retcode = togif_proc.wait()
-                if retcode:
-                    raise subprocess.CalledProcessError(retcode, togif_cmd)
-    finally:
-        try:
-            os.unlink(tempfile)
-        except OSError:
-            pass
-
-
 # Force optimization so that we can test performance against
 # cases where it took lots of memory and time previously.
 _FORCE_OPTIMIZE = False
@@ -937,7 +873,13 @@ def _get_optimize(im: Image.Image, info: dict[str, Any]) -> list[int] | None:
     :param info: encoderinfo
     :returns: list of indexes of palette entries in use, or None
     """
-    if im.mode in ("P", "L") and info and info.get("optimize"):
+    if (
+        im.mode in ("P", "L")
+        and info
+        and info.get("optimize")
+        and im.width != 0
+        and im.height != 0
+    ):
         # Potentially expensive operation.
 
         # The palette saves 3 bytes per color not used, but palette
@@ -1093,17 +1035,16 @@ def _get_global_header(im: Image.Image, info: dict[str, Any]) -> list[bytes]:
             + o8(0)
         )
     if info.get("comment"):
-        comment_block = b"!" + o8(254)  # extension intro
+        header.append(b"!" + o8(254))  # extension intro
 
         comment = info["comment"]
         if isinstance(comment, str):
             comment = comment.encode()
         for i in range(0, len(comment), 255):
             subblock = comment[i : i + 255]
-            comment_block += o8(len(subblock)) + subblock
+            header.append(o8(len(subblock)) + subblock)
 
-        comment_block += o8(0)
-        header.append(comment_block)
+        header.append(o8(0))
     return header
 
 
@@ -1122,7 +1063,7 @@ def _write_frame_data(
         ImageFile._save(
             im_frame,
             fp,
-            [ImageFile._Tile("gif", (0, 0) + im_frame.size, 0, RAWMODE[im_frame.mode])],
+            [ImageFile._Tile("gif", (0, 0, *im_frame.size), 0, RAWMODE[im_frame.mode])],
         )
 
         fp.write(b"\0")  # end of image data
@@ -1209,9 +1150,3 @@ Image.register_save(GifImageFile.format, _save)
 Image.register_save_all(GifImageFile.format, _save_all)
 Image.register_extension(GifImageFile.format, ".gif")
 Image.register_mime(GifImageFile.format, "image/gif")
-
-#
-# Uncomment the following line if you wish to use NETPBM/PBMPLUS
-# instead of the built-in "uncompressed" GIF encoder
-
-# Image.register_save(GifImageFile.format, _save_netpbm)

@@ -24,14 +24,17 @@
 # See also: https://www.fileformat.info/format/mspaint/egff.htm
 from __future__ import annotations
 
-import io
+__lazy_modules__ = {"PIL._binary", "struct"}
+
 import struct
-from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i16le as i16
 from ._binary import o16le as o16
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 #
 # read MSP files
 
@@ -70,9 +73,9 @@ class MspImageFile(ImageFile.ImageFile):
         self._size = i16(s, 4), i16(s, 6)
 
         if s.startswith(b"DanM"):
-            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 32, "1")]
+            self.tile = [ImageFile._Tile("raw", (0, 0, *self.size), 32, "1")]
         else:
-            self.tile = [ImageFile._Tile("MSP", (0, 0) + self.size, 32)]
+            self.tile = [ImageFile._Tile("MSP", (0, 0, *self.size), 32)]
 
 
 class MspDecoder(ImageFile.PyDecoder):
@@ -112,10 +115,10 @@ class MspDecoder(ImageFile.PyDecoder):
 
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         assert self.fd is not None
 
-        img = io.BytesIO()
+        data = bytearray()
         blank_line = bytearray((0xFF,) * ((self.state.xsize + 7) // 8))
         try:
             self.fd.seek(32)
@@ -126,33 +129,36 @@ class MspDecoder(ImageFile.PyDecoder):
             msg = "Truncated MSP file in row map"
             raise OSError(msg) from e
 
-        for x, rowlen in enumerate(rowmap):
+        for y, rowlen in enumerate(rowmap):
             try:
                 if rowlen == 0:
-                    img.write(blank_line)
+                    data += blank_line
                     continue
                 row = self.fd.read(rowlen)
                 if len(row) != rowlen:
-                    msg = f"Truncated MSP file, expected {rowlen} bytes on row {x}"
+                    msg = f"Truncated MSP file, expected {rowlen} bytes on row {y}"
                     raise OSError(msg)
                 idx = 0
+                row_data = bytearray()
                 while idx < rowlen:
                     runtype = row[idx]
                     idx += 1
                     if runtype == 0:
-                        (runcount, runval) = struct.unpack_from("Bc", row, idx)
-                        img.write(runval * runcount)
+                        runcount, runval = struct.unpack_from("Bc", row, idx)
+                        runcount = min(runcount, self.state.xsize - len(row_data))
+                        row_data += runval * runcount
                         idx += 2
                     else:
-                        runcount = runtype
-                        img.write(row[idx : idx + runcount])
+                        runcount = min(runtype, self.state.xsize - len(row_data))
+                        row_data += row[idx : idx + runcount]
                         idx += runcount
+                data += row_data
 
             except struct.error as e:
-                msg = f"Corrupted MSP file in row {x}"
+                msg = f"Corrupted MSP file in row {y}"
                 raise OSError(msg) from e
 
-        self.set_as_raw(img.getvalue(), "1")
+        self.set_as_raw(bytes(data), "1")
 
         return -1, 0
 
@@ -188,7 +194,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         fp.write(o16(h))
 
     # image body
-    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 32, "1")])
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 32, "1")])
 
 
 #

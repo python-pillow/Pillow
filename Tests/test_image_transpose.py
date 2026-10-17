@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import pytest
 
-from PIL import Image
 from PIL.Image import Transpose
 
 from . import helper
 from .helper import assert_image_equal
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from PIL import Image
 
 HOPPER = {
     mode: helper.hopper(mode).crop((0, 0, 121, 127)).copy()

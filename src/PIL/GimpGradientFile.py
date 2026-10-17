@@ -18,7 +18,10 @@ Stuff to translate curve segments to palette values (derived from
 the corresponding code in GIMP, written by Federico Mena Quintero.
 See the GIMP distribution for more information.)
 """
+
 from __future__ import annotations
+
+__lazy_modules__ = {"PIL._binary", "math"}
 
 from math import log, pi, sin, sqrt
 

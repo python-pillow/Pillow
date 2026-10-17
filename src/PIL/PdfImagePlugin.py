@@ -21,13 +21,18 @@
 ##
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "math"}
+
 import io
 import math
 import os
 import time
-from typing import IO, Any
 
 from . import Image, ImageFile, ImageSequence, PdfParser, features
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
 
 #
 # --------------------------------------------------------------------
@@ -52,7 +57,6 @@ def _write_image(
     im: Image.Image,
     filename: str | bytes,
     existing_pdf: PdfParser.PdfParser,
-    image_refs: list[PdfParser.IndirectReference],
 ) -> tuple[PdfParser.IndirectReference, str]:
     # FIXME: Should replace ASCIIHexDecode with RunLengthDecode
     # (packbits) or LZWDecode (tiff/lzw compression).  Note that
@@ -113,7 +117,7 @@ def _write_image(
             smask = im.convert("LA").getchannel("A")
             smask.encoderinfo = {}
 
-            image_ref = _write_image(smask, filename, existing_pdf, image_refs)[0]
+            image_ref = _write_image(smask, filename, existing_pdf)[0]
             dict_obj["SMask"] = image_ref
     elif im.mode == "RGB":
         decode_filter = "DCTDecode"
@@ -138,7 +142,7 @@ def _write_image(
     op = io.BytesIO()
 
     if decode_filter == "ASCIIHexDecode":
-        ImageFile._save(im, op, [ImageFile._Tile("hex", (0, 0) + im.size, 0, im.mode)])
+        ImageFile._save(im, op, [ImageFile._Tile("hex", (0, 0, *im.size), 0, im.mode)])
     elif decode_filter == "CCITTFaxDecode":
         im.save(
             op,
@@ -148,10 +152,14 @@ def _write_image(
             strip_size=math.ceil(width / 8) * height,
         )
     elif decode_filter == "DCTDecode":
-        Image.SAVE["JPEG"](im, op, filename)
+        from . import JpegImagePlugin
+
+        JpegImagePlugin._save(im, op, filename)
     elif decode_filter == "JPXDecode":
+        from . import Jpeg2KImagePlugin
+
         del dict_obj["BitsPerComponent"]
-        Image.SAVE["JPEG2000"](im, op, filename)
+        Jpeg2KImagePlugin._save(im, op, filename)
     else:
         msg = f"unsupported PDF filter ({decode_filter})"
         raise ValueError(msg)
@@ -164,9 +172,8 @@ def _write_image(
     else:
         filter = PdfParser.PdfName(decode_filter)
 
-    image_ref = image_refs.pop(0)
-    existing_pdf.write_obj(
-        image_ref,
+    image_ref = existing_pdf.write_obj(
+        None,
         stream=stream,
         Type=PdfParser.PdfName("XObject"),
         Subtype=PdfParser.PdfName("Image"),
@@ -232,7 +239,6 @@ def _save(
             append_im.encoderinfo = im.encoderinfo.copy()
             ims.append(append_im)
     number_of_pages = 0
-    image_refs = []
     page_refs = []
     contents_refs = []
     for im in ims:
@@ -241,10 +247,6 @@ def _save(
             im_number_of_pages = getattr(im, "n_frames", 1)
         number_of_pages += im_number_of_pages
         for i in range(im_number_of_pages):
-            image_refs.append(existing_pdf.next_object_id(0))
-            if im.mode == "P" and "transparency" in im.info:
-                image_refs.append(existing_pdf.next_object_id(0))
-
             page_refs.append(existing_pdf.next_object_id(0))
             contents_refs.append(existing_pdf.next_object_id(0))
             existing_pdf.pages.append(page_refs[-1])
@@ -259,7 +261,7 @@ def _save(
             ImageSequence.Iterator(im_sequence) if save_all else [im_sequence]
         )
         for im in im_pages:
-            image_ref, procset = _write_image(im, filename, existing_pdf, image_refs)
+            image_ref, procset = _write_image(im, filename, existing_pdf)
 
             #
             # page

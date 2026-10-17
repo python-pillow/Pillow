@@ -14,8 +14,8 @@ import shutil
 import struct
 import subprocess
 import sys
+import sysconfig
 import warnings
-from collections.abc import Iterator
 
 from pybind11.setup_helpers import ParallelCompile
 from setuptools import Extension, setup
@@ -23,6 +23,8 @@ from setuptools.command.build_ext import build_ext
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from setuptools import _BuildInfo
 
 configuration: dict[str, list[str]] = {}
@@ -32,8 +34,8 @@ while sys.argv[-1].startswith("--pillow-configuration="):
     _, key, value = sys.argv.pop().split("=", 2)
     configuration.setdefault(key, []).append(value)
 
-default = int(configuration.get("parallel", ["0"])[-1])
-ParallelCompile("MAX_CONCURRENCY", default).install()
+parallel_default = int(configuration.get("parallel", ["0"])[-1])
+ParallelCompile("MAX_CONCURRENCY", parallel_default).install()
 
 
 def get_version() -> str:
@@ -57,7 +59,7 @@ WEBP_ROOT = None
 ZLIB_ROOT = None
 FUZZING_BUILD = "LIB_FUZZING_ENGINE" in os.environ
 
-if sys.platform == "win32" and sys.version_info >= (3, 15):
+if sys.platform == "win32" and sys.version_info >= (3, 16):
     import atexit
 
     atexit.register(
@@ -94,7 +96,6 @@ _LIB_IMAGING = (
     "Draw",
     "Effects",
     "EpsEncode",
-    "File",
     "Fill",
     "Filter",
     "FliDecode",
@@ -363,7 +364,6 @@ class pil_build_ext(build_ext):
             ("disable-platform-guessing", None, "Disable platform guessing"),
             ("debug", None, "Debug logging"),
         ]
-        + [("add-imaging-libs=", None, "Add libs to _imaging build")]
     )
 
     @staticmethod
@@ -374,7 +374,6 @@ class pil_build_ext(build_ext):
         self.disable_platform_guessing = self.check_configuration(
             "platform-guessing", "disable"
         )
-        self.add_imaging_libs = ""
         build_ext.initialize_options(self)
         for x in self.feature:
             setattr(self, f"disable_{x}", self.check_configuration(x, "disable"))
@@ -383,7 +382,8 @@ class pil_build_ext(build_ext):
             setattr(self, f"vendor_{x}", self.check_configuration(x, "vendor"))
         if self.check_configuration("debug", "true"):
             self.debug = True
-        self.parallel = configuration.get("parallel", [None])[-1]
+        if parallel_default:
+            self.parallel = parallel_default
 
     def finalize_options(self) -> None:
         build_ext.finalize_options(self)
@@ -530,15 +530,12 @@ class pil_build_ext(build_ext):
                 )
 
             if root is None and pkg_config:
-                if isinstance(lib_name, str):
-                    _dbg("Looking for `%s` using pkg-config.", lib_name)
-                    root = pkg_config(lib_name)
-                else:
-                    for lib_name2 in lib_name:
-                        _dbg("Looking for `%s` using pkg-config.", lib_name2)
-                        root = pkg_config(lib_name2)
-                        if root:
-                            break
+                for lib_name2 in (
+                    [lib_name] if isinstance(lib_name, str) else lib_name
+                ):
+                    _dbg("Looking for `%s` using pkg-config.", lib_name2)
+                    if root := pkg_config(lib_name2):
+                        break
 
             if isinstance(root, tuple):
                 lib_root, include_root = root
@@ -575,8 +572,16 @@ class pil_build_ext(build_ext):
                 for d in os.environ[k].split(os.path.pathsep):
                     _add_directory(library_dirs, d)
 
-        _add_directory(library_dirs, os.path.join(sys.prefix, "lib"))
-        _add_directory(include_dirs, os.path.join(sys.prefix, "include"))
+        _add_directory(
+            library_dirs,
+            (sys.prefix == sys.base_prefix and sysconfig.get_config_var("LIBDIR"))
+            or os.path.join(sys.prefix, "lib"),
+        )
+        _add_directory(
+            include_dirs,
+            (sys.prefix == sys.base_prefix and sysconfig.get_config_var("INCLUDEDIR"))
+            or os.path.join(sys.prefix, "include"),
+        )
 
         #
         # add platform directories
@@ -901,7 +906,6 @@ class pil_build_ext(build_ext):
         # core library
 
         libs: list[str | bool | None] = []
-        libs.extend(self.add_imaging_libs.split())
         defs: list[tuple[str, str | None]] = []
         if feature.get("tiff"):
             libs.append(feature.get("tiff"))
@@ -1072,19 +1076,15 @@ class pil_build_ext(build_ext):
         print("")
 
 
-def debug_build() -> bool:
-    return hasattr(sys, "gettotalrefcount") or FUZZING_BUILD
-
-
 libraries: list[tuple[str, _BuildInfo]] = [
     ("pil_imaging_mode", {"sources": ["src/libImaging/Mode.c"]}),
 ]
 
 files: list[str | os.PathLike[str]] = ["src/_imaging.c"]
-for src_file in _IMAGING:
-    files.append("src/" + src_file + ".c")
-for src_file in _LIB_IMAGING:
-    files.append(os.path.join("src/libImaging", src_file + ".c"))
+files.extend("src/" + src_file + ".c" for src_file in _IMAGING)
+files.extend(
+    os.path.join("src/libImaging", src_file + ".c") for src_file in _LIB_IMAGING
+)
 ext_modules = [
     Extension("PIL._imaging", files),
     Extension("PIL._imagingft", ["src/_imagingft.c"]),
@@ -1092,7 +1092,11 @@ ext_modules = [
     Extension("PIL._webp", ["src/_webp.c"]),
     Extension("PIL._avif", ["src/_avif.c"]),
     Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),
-    Extension("PIL._imagingmath", ["src/_imagingmath.c"]),
+    Extension(
+        "PIL._imagingmath",
+        ["src/_imagingmath.c"],
+        libraries=None if sys.platform == "win32" else ["m"],
+    ),
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
 ]
 
@@ -1102,7 +1106,6 @@ try:
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=ext_modules,
         libraries=libraries,
-        zip_safe=not (debug_build() or PLATFORM_MINGW),
     )
 except RequiredDependencyException as err:
     msg = f"""
