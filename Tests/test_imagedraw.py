@@ -1746,7 +1746,7 @@ def test_draw_translation_invariant_negative_coords() -> None:
     shift = 10
     width = height = 12
 
-    def draw(shape, dx):
+    def draw(shape: tuple[object, ...], dx: int) -> Image.Image:
         im = Image.new("L", (width + shift, height), 0)
         d = ImageDraw.Draw(im)
         kind, pts, *rest = shape
