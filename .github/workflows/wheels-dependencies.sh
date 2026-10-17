@@ -20,7 +20,30 @@ function check_cibw_archs {
 # up the cross environment.
 PROJECTDIR=$(pwd)
 PATCH_DIR=$(pwd)/patches
-if [[ "$CIBW_PLATFORM" == "ios" ]]; then
+
+if [[ "$CIBW_PLATFORM" == "android" ]]; then
+    check_cibw_archs
+    case "$CIBW_ARCHS" in
+        arm64_v8a):
+            HOST_TRIPLE=aarch64-linux-android
+            PLAT=arm64
+            ;;
+        x86_64):
+            HOST_TRIPLE=x86_64-linux-android
+            PLAT=x86_64
+            ;;
+        *)
+            echo "ERROR: Unknown CIBW_ARCHS value '$CIBW_ARCHS'"
+            exit 1
+            ;;
+    esac
+    HOST_CONFIGURE_FLAGS="--disable-shared --enable-static --host=$HOST_TRIPLE"
+    HOST_CMAKE_FLAGS="-DBUILD_SHARED_LIBS=NO -DENABLE_SHARED=NO"
+
+    WORKDIR=$(pwd)/build/android_$CIBW_ARCHS
+    BUILD_PREFIX=$(pwd)/build/deps/android_$CIBW_ARCHS
+
+elif [[ "$CIBW_PLATFORM" == "ios" ]]; then
     check_cibw_archs
     # On iOS, CIBW_ARCHS is actually a multi-arch - arm64_iphoneos,
     # arm64_iphonesimulator or x86_64_iphonesimulator. Split into the CPU
@@ -111,11 +134,11 @@ LIBAVIF_VERSION=$(_get_ver libavif)
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
     # This essentially duplicates the Homebrew recipe.
-    # On iOS, we need a binary that can be executed on the build machine; but we
-    # can create a host-specific pc-path to store iOS .pc files. To ensure a
+    # When cross-compiling, we need a binary that can be executed on the build machine;
+    # but we can create a host-specific pc-path to store .pc files. To ensure a
     # macOS-compatible build, we temporarily clear environment flags that set
-    # iOS-specific values.
-    if [[ -n "$IOS_SDK" ]]; then
+    # host-specific values.
+    if [[ "$CIBW_PLATFORM" =~ ^(android|ios)$ ]]; then
         ORIGINAL_HOST_CONFIGURE_FLAGS=$HOST_CONFIGURE_FLAGS
         ORIGINAL_IPHONEOS_DEPLOYMENT_TARGET=$IPHONEOS_DEPLOYMENT_TARGET
         unset HOST_CONFIGURE_FLAGS
@@ -127,7 +150,7 @@ function build_pkg_config {
         --with-pc-path=$BUILD_PREFIX/share/pkgconfig:$BUILD_PREFIX/lib/pkgconfig \
         --with-system-include-path=$(xcrun --show-sdk-path --sdk macosx)/usr/include
 
-    if [[ -n "$IOS_SDK" ]]; then
+    if [[ "$CIBW_PLATFORM" =~ ^(android|ios)$ ]]; then
         HOST_CONFIGURE_FLAGS=$ORIGINAL_HOST_CONFIGURE_FLAGS
         IPHONEOS_DEPLOYMENT_TARGET=$ORIGINAL_IPHONEOS_DEPLOYMENT_TARGET
     fi;
@@ -197,6 +220,9 @@ function build_libavif {
         fi
     else
         libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
+        if [ "$CIBW_PLATFORM" = "android"]; then
+            build_shared=OFF
+        fi
     fi
     if [[ -n "$IOS_SDK" ]] && [[ "$PLAT" == "x86_64" ]]; then
         libavif_cmake_flags+=(-DAOM_TARGET_CPU=generic)
@@ -325,8 +351,8 @@ function build {
     # Break the cycle by building FreeType twice, so that the FreeType we ship is linked against the HarfBuzz we ship.
     build_freetype
 
-    if [[ -z "$IOS_SDK" ]]; then
-        # On iOS, there's no vendor-provided raqm, and we can't ship it due to
+    if ! [[ "$CIBW_PLATFORM" =~ ^(android|ios)$ ]]; then
+        # On some platforms there's no vendor-provided raqm, and we can't ship it due to
         # licensing, so there's no point building harfbuzz.
         build_harfbuzz
 
@@ -416,13 +442,13 @@ fi
 
 wrap_wheel_builder build
 
-# A safety catch for iOS. iOS can't use dynamic libraries, but clang will prefer
-# to link dynamic libraries to static libraries. The only way to reliably
+# A safety catch for mobile platforms. They can't use dynamic libraries, but the
+# linker will prefer dynamic libraries to static libraries. The only way to reliably
 # prevent this is to not have dynamic libraries available in the first place.
 # The build process *shouldn't* generate any dylibs... but just in case, purge
 # any dylibs that *have* been installed into the build prefix directory.
-if [[ -n "$IOS_SDK" ]]; then
-    find "$BUILD_PREFIX" -name "*.dylib" -exec rm -rf {} \;
+if [[ "$CIBW_PLATFORM" =~ ^(android|ios)$ ]]; then
+    find "$BUILD_PREFIX" -name "*.dylib" -or -name "*.so" -exec rm -rf {} \;
 fi
 
 # Return to the project root to finish the build
