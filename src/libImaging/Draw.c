@@ -66,11 +66,13 @@ ink16(Imaging im, const void *ink_) {
 }
 
 /*
- * Rounds around zero (up=away from zero, down=towards zero)
- * This guarantees that ROUND_UP|DOWN(f) == -ROUND_UP|DOWN(-f)
+ * Round half away from -inf so ROUND_UP/DOWN are translation-invariant
+ * across the origin (needed when geometry extends past the left/top edge).
+ * ROUND_UP(f)  == floor(f + 0.5)
+ * ROUND_DOWN(f) == ceil(f - 0.5)
  */
-#define ROUND_UP(f) ((int)((f) >= 0.0 ? floor((f) + 0.5F) : -floor(fabs(f) + 0.5F)))
-#define ROUND_DOWN(f) ((int)((f) >= 0.0 ? ceil((f) - 0.5F) : -ceil(fabs(f) - 0.5F)))
+#define ROUND_UP(f) ((int)floor((f) + 0.5F))
+#define ROUND_DOWN(f) ((int)ceil((f) - 0.5F))
 
 /* -------------------------------------------------------------------- */
 /* Primitives                                                           */

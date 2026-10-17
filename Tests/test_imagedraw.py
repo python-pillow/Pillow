@@ -1737,3 +1737,35 @@ def test_incorrectly_ordered_coordinates(xy: tuple[int, int, int, int]) -> None:
         draw.rectangle(xy)
     with pytest.raises(ValueError):
         draw.rounded_rectangle(xy)
+
+
+def test_draw_translation_invariant_negative_coords() -> None:
+    """Geometry extending past the left edge must match a shifted crop (#10228)."""
+    shift = 10
+    width = height = 12
+
+    def draw(
+        kind: str,
+        pts: list[tuple[float, float]],
+        dx: int,
+        line_width: int = 0,
+    ) -> Image.Image:
+        im = Image.new("L", (width + shift, height), 0)
+        d = ImageDraw.Draw(im)
+        shifted = [(x + dx, y) for x, y in pts]
+        if kind == "polygon":
+            d.polygon(shifted, fill=255, outline=255)
+        else:
+            d.line(shifted, fill=255, width=line_width)
+        return im.crop((dx, 0, dx + width, height))
+
+    shapes: list[tuple[str, list[tuple[float, float]], int]] = [
+        ("polygon", [(-0.9, 2), (-0.2, 2), (-0.2, 8), (-0.9, 8)], 0),
+        ("polygon", [(-0.3, 2), (5.5, 2), (5.5, 8), (-0.3, 8)], 0),
+        ("line", [(-0.6, 2), (-0.6, 9)], 1),
+        ("line", [(-1.6, 2), (-1.6, 9)], 3),
+    ]
+    for kind, pts, line_width in shapes:
+        a = draw(kind, pts, 0, line_width)
+        b = draw(kind, pts, shift, line_width)
+        assert a.tobytes() == b.tobytes()
