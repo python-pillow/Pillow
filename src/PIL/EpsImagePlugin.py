@@ -199,10 +199,10 @@ class EpsImageFile(ImageFile.ImageFile):
     mode_map = {1: "L", 2: "LAB", 3: "RGB", 4: "CMYK"}
 
     def _open(self) -> None:
-        assert self.fp is not None
         length, offset = self._find_offset()
 
         # go to offset - start of "%!PS"
+        assert self.fp is not None
         self.fp.seek(offset)
 
         self._mode = "RGB"
@@ -390,6 +390,7 @@ class EpsImageFile(ImageFile.ImageFile):
         ]
 
     def _find_offset(self) -> tuple[int, int]:
+        assert self.fp is not None
         s = self.fp.read(4)
 
         if s == b"%!PS":
