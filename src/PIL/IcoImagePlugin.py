@@ -135,7 +135,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 ImageFile._save(
                     and_mask,
                     image_io,
-                    [ImageFile._Tile("raw", (0, 0, *size), 0, ("1", 0, -1))],
+                    [ImageFile._Tile("raw", None, 0, ("1", 0, -1))],
                 )
         else:
             frame.save(image_io, "png")
@@ -263,8 +263,7 @@ class IcoFile:
 
             # change tile dimension to only encompass XOR image
             im._size = (im.size[0], int(im.size[1] / 2))
-            d, e, o, a = im.tile[0]
-            im.tile[0] = ImageFile._Tile(d, (0, 0, *im.size), o, a)
+            im.tile = [im.tile[0]._replace(extents=None)]
 
             # figure out where AND mask image starts
             if header.bpp == 32:
@@ -274,7 +273,7 @@ class IcoFile:
                 # channel.
 
                 # Back up to start of bmp data
-                self.buf.seek(o)
+                self.buf.seek(im.tile[0].offset)
                 # extract every 4th byte (eg. 3,7,11,15,...)
                 alpha_bytes = self.buf.read(im.size[0] * im.size[1] * 4)[3::4]
 

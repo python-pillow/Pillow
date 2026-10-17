@@ -319,7 +319,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         self.tile = [
             ImageFile._Tile(
                 "jpeg2k",
-                (0, 0, *self.size),
+                None,
                 0,
                 (self.codec, self._reduce, self.layers, fd, length),
             )
@@ -376,7 +376,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             t = self.tile[0]
             assert isinstance(t.args, tuple)
             args = (t.args[0], self._reduce, self.layers, t.args[3], t.args[4])
-            self.tile = [t._replace(extents=(0, 0, *self.size), args=args)]
+            self.tile = [t._replace(args=args)]
 
         return ImageFile.ImageFile.load(self)
 
@@ -455,7 +455,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         plt,
     )
 
-    ImageFile._save(im, fp, [ImageFile._Tile("jpeg2k", (0, 0, *im.size), 0, kind)])
+    ImageFile._save(im, fp, [ImageFile._Tile("jpeg2k", None, 0, kind)])
 
 
 # ------------------------------------------------------------

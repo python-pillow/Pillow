@@ -144,7 +144,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.write(o8(channels))
     fp.write(o8(colorspace))
 
-    ImageFile._save(im, fp, [ImageFile._Tile("qoi", (0, 0, *im.size))])
+    ImageFile._save(im, fp, [ImageFile._Tile("qoi", None)])
 
 
 class QoiEncoder(ImageFile.PyEncoder):

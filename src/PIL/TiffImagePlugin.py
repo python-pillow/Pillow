@@ -2064,7 +2064,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         ImageFile._save(
             im,
             fp,
-            [ImageFile._Tile("raw", (0, 0, *im.size), offset, (rawmode, stride, 1))],
+            [ImageFile._Tile("raw", None, offset, (rawmode, stride, 1))],
         )
 
     # -- helper for multi-page save --

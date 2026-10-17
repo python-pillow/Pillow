@@ -352,7 +352,6 @@ class DdsImageFile(ImageFile.ImageFile):
 
         flags, height, width = struct.unpack("<3I", header[:12])
         self._size = (width, height)
-        extents = (0, 0, *self.size)
 
         pitch, depth, mipmaps = struct.unpack("<3I", header[12:24])
         struct.unpack("<11I", header[24:68])  # reserved
@@ -371,7 +370,7 @@ class DdsImageFile(ImageFile.ImageFile):
                 mask_count = 3
 
             masks = struct.unpack(f"<{mask_count}I", header[84 : 84 + mask_count * 4])
-            self.tile = [ImageFile._Tile("dds_rgb", extents, 0, (bitcount, masks))]
+            self.tile = [ImageFile._Tile("dds_rgb", None, 0, (bitcount, masks))]
             return
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:
@@ -480,11 +479,9 @@ class DdsImageFile(ImageFile.ImageFile):
             raise NotImplementedError(msg)
 
         if n:
-            self.tile = [
-                ImageFile._Tile("bcn", extents, offset, (n, self.pixel_format))
-            ]
+            self.tile = [ImageFile._Tile("bcn", None, offset, (n, self.pixel_format))]
         else:
-            self.tile = [ImageFile._Tile("raw", extents, 0, rawmode or self.mode)]
+            self.tile = [ImageFile._Tile("raw", None, 0, rawmode or self.mode)]
 
     def load_seek(self, pos: int) -> None:
         pass
@@ -624,7 +621,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             # dxgi_format, 2D resource, misc, array size, straight alpha
             struct.pack("<5I", dxgi_format, 3, 0, 0, 1)
         )
-    ImageFile._save(im, fp, [ImageFile._Tile(codec_name, (0, 0, *im.size), 0, args)])
+    ImageFile._save(im, fp, [ImageFile._Tile(codec_name, None, 0, args)])
 
 
 def _accept(prefix: bytes) -> bool:
