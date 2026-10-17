@@ -30,7 +30,6 @@ packages=(
     libtiff-dev
     meson
     nasm
-    netpbm  # netpbm provides ppmquant and ppmtogif for GifImagePlugin._save_netpbm
     python3-tk
     sway
     wl-clipboard
@@ -38,7 +37,7 @@ packages=(
 sudo apt-get -qq install --no-install-recommends "${packages[@]}"
 
 python3 -m pip install --upgrade pip
-python3 -m pip install --upgrade coverage defusedxml ipython olefile pytest pytest-cov pytest-timeout
+python3 -m pip install --upgrade ipython
 
 # optional test dependencies, only install if there's a binary package.
 python3 -m pip install --only-binary=:all: numpy || true

@@ -499,6 +499,8 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 IM
 ^^
 
+.. deprecated:: 13.0.0
+
 IM is a format used by LabEye and other applications based on the IFUNC image
 processing library. The library reads and writes most uncompressed interchange
 versions of this format.
@@ -962,8 +964,10 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     .. versionadded:: 6.0.0
 
 **bits (experimental)**
-    For ``P`` images, this option controls how many bits to store. If omitted,
-    the PNG writer uses 8 bits (256 colors).
+    For ``L`` and ``P`` images, this option controls how many bits to store. If
+    omitted, the PNG writer uses 8 bits (256 colors). The ``PLTE`` chunk only contains
+    as many entries as the image's palette actually has, rather than being padded with
+    zeroes up to ``2 ** bits``.
 
 **dictionary (experimental)**
     Set the ZLIB encoder dictionary.

@@ -3,7 +3,7 @@ Pillow
 
 Pillow is the friendly PIL fork by `Jeffrey 'Alex' Clark and contributors <https://github.com/python-pillow/Pillow/graphs/contributors>`_. PIL is the Python Imaging Library by Fredrik Lundh and contributors.
 
-Pillow for enterprise is available via the Tidelift Subscription. `Learn more <https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=docs&utm_campaign=enterprise>`_.
+Pillow for enterprise is available via the Tidelift Subscription. `Learn more <https://tidelift.com/lifter/search/pypi/pillow>`_.
 
 .. image:: https://readthedocs.org/projects/pillow/badge/?version=latest
    :target: https://pillow.readthedocs.io/?badge=latest
@@ -42,7 +42,7 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :alt: Zenodo
 
 .. image:: https://tidelift.com/badges/package/pypi/pillow?style=flat
-   :target: https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=badge
+   :target: https://tidelift.com/lifter/search/pypi/pillow
    :alt: Tidelift
 
 .. image:: https://oss-fuzz-build-logs.storage.googleapis.com/badges/pillow.svg

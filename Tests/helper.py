@@ -167,6 +167,10 @@ def timeout_unless_slower_valgrind(timeout: float) -> pytest.MarkDecorator:
     return pytest.mark.timeout(timeout)
 
 
+def skip_if_tsan(reason: str = "Test skipped on TSAN run") -> pytest.MarkDecorator:
+    return pytest.mark.skipif("PILLOW_TSAN_TEST" in os.environ, reason=reason)
+
+
 def skip_unless_feature(feature: str) -> pytest.MarkDecorator:
     reason = f"{feature} not available"
     return pytest.mark.skipif(not features.check(feature), reason=reason)
@@ -304,10 +308,6 @@ def djpeg_available() -> bool:
         except subprocess.CalledProcessError:  # pragma: no cover
             return False
     return False
-
-
-def netpbm_available() -> bool:
-    return bool(shutil.which("ppmquant") and shutil.which("ppmtogif"))
 
 
 def magick_command() -> list[str] | None:

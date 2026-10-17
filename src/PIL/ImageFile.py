@@ -115,7 +115,7 @@ class _Tile(NamedTuple):
 # ImageFile base class
 
 
-class ImageFile(Image.Image):
+class ImageFile(Image.Image, metaclass=abc.ABCMeta):
     """Base class for image file format handlers."""
 
     def __init__(
@@ -177,6 +177,7 @@ class ImageFile(Image.Image):
                 self.fp.close()
             raise
 
+    @abc.abstractmethod
     def _open(self) -> None:
         pass
 
@@ -344,7 +345,15 @@ class ImageFile(Image.Image):
 
                     with open(self.filename) as fp:
                         self.map = mmap.mmap(fp.fileno(), 0, access=mmap.ACCESS_READ)
-                    if offset + self.size[1] * args[1] > self.map.size():
+
+                    if self.mode in {"L", "P"}:
+                        pixelsize = 1
+                    elif self.mode.startswith("I;16"):
+                        pixelsize = 2
+                    else:
+                        pixelsize = 4
+                    stride = max(args[1], self.size[0] * pixelsize)
+                    if offset + self.size[1] * stride > self.map.size():
                         msg = "buffer is not large enough"
                         raise OSError(msg)
                     self.im = Image.core.map_buffer(
@@ -482,7 +491,7 @@ class StubHandler(abc.ABC):
         pass
 
 
-class StubImageFile(ImageFile, metaclass=abc.ABCMeta):
+class StubImageFile(ImageFile):
     """
     Base class for stub image loaders.
 
@@ -491,10 +500,6 @@ class StubImageFile(ImageFile, metaclass=abc.ABCMeta):
     """
 
     _handler: StubHandler | None = None
-
-    @abc.abstractmethod
-    def _open(self) -> None:
-        pass
 
     def load(self) -> Image.core.PixelAccess | None:
         if self._handler is None:
@@ -933,7 +938,7 @@ class PyEncoder(PyCodec):
         """
         errcode = 0
         while errcode == 0:
-            status, errcode, buf = self.encode(bufsize)
-            if status > 0:
-                os.write(fh, buf[status:])
+            bytes_consumed, errcode, buf = self.encode(bufsize)
+            if bytes_consumed > 0:
+                os.write(fh, buf[:bytes_consumed])
         return errcode

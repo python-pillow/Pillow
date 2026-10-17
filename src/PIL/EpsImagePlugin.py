@@ -92,6 +92,7 @@ def Ghostscript(
     scale = int(scale) or 1
     width = size[0] * scale
     height = size[1] * scale
+    Image._decompression_bomb_check((width, height))
     # resolution is dependent on bbox and size
     res_x = 72.0 * width / (bbox[2] - bbox[0])
     res_y = 72.0 * height / (bbox[3] - bbox[1])
@@ -103,7 +104,10 @@ def Ghostscript(
 
     infile_temp = None
     if hasattr(fp, "name") and os.path.exists(fp.name):
-        infile = fp.name
+        # Make the path absolute so that a filename beginning with "-" or "@"
+        # can never be interpreted by Ghostscript's argument parser
+        # as an option or an @-file token
+        infile = os.path.abspath(fp.name)
     else:
         in_fd, infile_temp = tempfile.mkstemp()
         os.close(in_fd)

@@ -62,6 +62,7 @@ class TestDecompressionBomb:
         with Image.open("Tests/images/decompression_bomb_extents.gif") as im:
             with pytest.raises(Image.DecompressionBombError):
                 im.seek(1)
+            assert im.size == (100, 100)
 
     def test_exception_gif_zero_width(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # Set limit to trigger exception on the test file

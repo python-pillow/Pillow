@@ -17,8 +17,6 @@
 #
 from __future__ import annotations
 
-__lazy_modules__ = {"olefile"}
-
 import olefile
 
 from . import Image, TiffImagePlugin
@@ -80,8 +78,10 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         self.fp = self.ole.openstream(filename)
 
         TiffImagePlugin.TiffImageFile._open(self)
+        Image._decompression_bomb_check(self.size)
 
         self.frame = frame
+        Image.Image.seek(self, frame)
 
     def tell(self) -> int:
         return self.frame

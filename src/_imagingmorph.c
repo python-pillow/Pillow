@@ -62,6 +62,9 @@ apply(PyObject *self, PyObject *args) {
     }
     width = imgin->xsize;
     height = imgin->ysize;
+    if (!width || !height) {
+        return Py_BuildValue("i", num_changed_pixels);
+    }
 
     if (imgin->type != IMAGING_TYPE_UINT8 || imgin->bands != 1 ||
         imgout->type != IMAGING_TYPE_UINT8 || imgout->bands != 1) {

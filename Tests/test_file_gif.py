@@ -14,7 +14,6 @@ from .helper import (
     assert_image_similar,
     hopper,
     is_pypy,
-    netpbm_available,
 )
 
 TYPE_CHECKING = False
@@ -395,30 +394,6 @@ def test_palette_434(tmp_path: Path) -> None:
     with roundtrip(im_rgb) as reloaded:
         reloaded = reloaded.convert("RGB")
         assert_image_equal(im_rgb, reloaded)
-
-
-@pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
-def test_save_netpbm_bmp_mode(tmp_path: Path) -> None:
-    with Image.open(TEST_GIF) as img:
-        img_rgb = img.convert("RGB")
-
-    tempfile = str(tmp_path / "temp.gif")
-    b = BytesIO()
-    GifImagePlugin._save_netpbm(img_rgb, b, tempfile)
-    with Image.open(tempfile) as reloaded:
-        assert_image_equal(img_rgb, reloaded.convert("RGB"))
-
-
-@pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
-def test_save_netpbm_l_mode(tmp_path: Path) -> None:
-    with Image.open(TEST_GIF) as img:
-        img_l = img.convert("L")
-
-        tempfile = str(tmp_path / "temp.gif")
-        b = BytesIO()
-        GifImagePlugin._save_netpbm(img_l, b, tempfile)
-        with Image.open(tempfile) as reloaded:
-            assert_image_equal(img_l, reloaded.convert("L"))
 
 
 def test_seek() -> None:
@@ -997,6 +972,26 @@ def test_identical_frames_to_single_frame(
 
         # Assert that the new duration is the total of the identical frames
         assert reread.info["duration"] == 4500
+
+
+@pytest.mark.parametrize("first_duration", (None, 0))
+def test_identical_frames_missing_duration(
+    first_duration: int | None, tmp_path: Path
+) -> None:
+    frames = [Image.new("RGB", (1, 1), "red") for _ in range(3)]
+    if first_duration is not None:
+        frames[0].info["duration"] = first_duration
+    frames[1].info["duration"] = 100
+    frames[2].info["duration"] = 200
+
+    out = tmp_path / "temp.gif"
+    frames[0].save(out, save_all=True, append_images=frames[1:])
+
+    with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
+        assert reread.info["duration"] == 300
+        assert_image_equal(reread.convert("RGB"), frames[0])
+        assert reread.n_frames == 1
 
 
 def test_loop_none(tmp_path: Path) -> None:

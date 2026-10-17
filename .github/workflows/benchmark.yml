@@ -36,7 +36,7 @@ jobs:
           #     > At least one benchmark was run multiple times in your benchmarking workflow.
           #     > This could be because you used a matrix that runs your benchmarks multiple times.
           #     Hence, this list should only ever have exactly one version.
-          "3.14",
+          "3.15",
         ]
 
     runs-on: ubuntu-latest
@@ -92,5 +92,5 @@ jobs:
       with:
         mode: simulation
         run: |
-          python3 -m pip install -e . pytest-codspeed
+          python3 -m pip install -e .[tests] pytest-codspeed
           python3 -m pytest -vv --codspeed Tests/benchmarks.py

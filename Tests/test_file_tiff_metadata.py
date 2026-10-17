@@ -388,14 +388,21 @@ def test_ifd_unsigned_rational(tmp_path: Path) -> None:
         assert 1 == reloaded.tag_v2[41493].denominator
 
 
-def test_ifd_signed_rational(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "numerator, denominator, expected",
+    (
+        (2**31 - 1, -(2**31), None),  # pair of 4 byte signed longs
+        (-(2**31), 2**31 - 1, None),
+        (-(2**31) - 1, 1, (2**31 - 1, -1)),  # out of bounds of 4 byte signed long
+        (-1, 0, None),  # IFDRational nan
+    ),
+)
+def test_ifd_signed_rational(
+    numerator: int, denominator: int, expected: tuple[int, int] | None, tmp_path: Path
+) -> None:
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
-    # pair of 4 byte signed longs
-    numerator = 2**31 - 1
-    denominator = -(2**31)
-
     info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
 
     out = tmp_path / "temp.tiff"
@@ -403,35 +410,12 @@ def test_ifd_signed_rational(tmp_path: Path) -> None:
 
     with Image.open(out) as reloaded:
         assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
-        assert numerator == reloaded.tag_v2[37380].numerator
-        assert denominator == reloaded.tag_v2[37380].denominator
-
-    numerator = -(2**31)
-    denominator = 2**31 - 1
-
-    info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
-
-    out = tmp_path / "temp.tiff"
-    im.save(out, tiffinfo=info, compression="raw")
-
-    with Image.open(out) as reloaded:
-        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
-        assert numerator == reloaded.tag_v2[37380].numerator
-        assert denominator == reloaded.tag_v2[37380].denominator
-
-    # out of bounds of 4 byte signed long
-    numerator = -(2**31) - 1
-    denominator = 1
-
-    info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
-
-    out = tmp_path / "temp.tiff"
-    im.save(out, tiffinfo=info, compression="raw")
-
-    with Image.open(out) as reloaded:
-        assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
-        assert 2**31 - 1 == reloaded.tag_v2[37380].numerator
-        assert -1 == reloaded.tag_v2[37380].denominator
+        if expected is None:
+            expected = (numerator, denominator)
+        assert (
+            reloaded.tag_v2[37380].numerator,
+            reloaded.tag_v2[37380].denominator,
+        ) == expected
 
 
 def test_ifd_signed_long(tmp_path: Path) -> None:
@@ -498,6 +482,56 @@ def test_tag_offset() -> None:
     f = io.BytesIO(tag_count + tag + next_offset)
     with pytest.warns(UserWarning, match="Tag offset too large"):
         ifd.load(f)
+
+
+def test_tag_data_larger_than_file() -> None:
+    ifd = TiffImagePlugin.ImageFileDirectory_v2()
+
+    # Two BYTE tags that both claim the whole 30 byte IFD as their value.
+    tag_count = struct.pack("<H", 2)
+    tags = struct.pack("<HHLL", 0, 1, 30, 0) + struct.pack("<HHLL", 1, 1, 30, 0)
+    next_offset = struct.pack("<L", 0)
+
+    f = io.BytesIO(tag_count + tags + next_offset)
+    with pytest.warns(UserWarning, match="Tag data larger than file"):
+        ifd.load(f)
+    assert len(ifd[0]) == 30
+    assert 1 not in ifd
+
+
+def test_tag_data_larger_than_file_across_frames() -> None:
+    # Three 1x1 frames, each with a private BYTE tag that points to the same
+    # payload, which is more than half of the file.
+    payload_size = 400
+    ifd_size = 2 + 10 * 12 + 4
+    pixel_offset = 8 + payload_size
+    first_ifd = pixel_offset + 1
+
+    data = b"II*\x00" + struct.pack("<L", first_ifd)
+    data += b"Z" * payload_size + b"\x7f"
+    for i in range(3):
+        data += struct.pack("<H", 10)
+        for tag in (256, 257, 258, 259, 262, 277):
+            value = 8 if tag == 258 else 1
+            data += struct.pack("<HHLH2x", tag, 3, 1, value)
+        for tag, value in ((273, pixel_offset), (278, 1), (279, 1)):
+            data += struct.pack("<HHLL", tag, 4, 1, value)
+        data += struct.pack("<HHLL", 65000, 1, payload_size, 8)
+        data += struct.pack("<L", first_ifd + (i + 1) * ifd_size if i < 2 else 0)
+
+    with Image.open(io.BytesIO(data)) as im:
+        assert isinstance(im, TiffImagePlugin.TiffImageFile)
+        assert len(im.tag_v2[65000]) == payload_size
+
+        for frame in (1, 2):
+            with pytest.warns(UserWarning, match="Tag data larger than file"):
+                im.seek(frame)
+            assert 65000 not in im.tag_v2
+        assert im.n_frames == 3
+
+        # Reloading a frame gives the same tags as before
+        im.seek(0)
+        assert len(im.tag_v2[65000]) == payload_size
 
 
 def test_tag_group_data() -> None:
