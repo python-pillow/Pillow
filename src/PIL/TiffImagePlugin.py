@@ -40,6 +40,16 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {
+    "PIL._binary",
+    "PIL._util",
+    "fractions",
+    "itertools",
+    "math",
+    "struct",
+    "warnings",
+}
+
 import io
 import itertools
 import logging
@@ -55,7 +65,6 @@ from typing import IO, Any, cast
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
-from ._binary import o8
 from ._util import DeferredError, is_path
 from .TiffTags import TYPES
 
@@ -199,6 +208,10 @@ OPEN_INFO = {
     (MM, 1, (2,), 1, (32,), ()): ("I", "I;32BS"),
     (II, 1, (3,), 1, (32,), ()): ("F", "F;32F"),
     (MM, 1, (3,), 1, (32,), ()): ("F", "F;32BF"),
+    (II, 1, (1,), 1, (8, 8), (0,)): ("L", "LX"),
+    (MM, 1, (1,), 1, (8, 8), (0,)): ("L", "LX"),
+    (II, 1, (1,), 1, (8, 8), (1,)): ("La", "La"),
+    (MM, 1, (1,), 1, (8, 8), (1,)): ("La", "La"),
     (II, 1, (1,), 1, (8, 8), (2,)): ("LA", "LA"),
     (MM, 1, (1,), 1, (8, 8), (2,)): ("LA", "LA"),
     (II, 2, (1,), 1, (8, 8, 8), ()): ("RGB", "RGB"),
@@ -609,6 +622,10 @@ class ImageFileDirectory_v2(_IFDv2Base):
         self.tagtype: dict[int, int] = {}
         """ Dictionary of tag types """
         self.reset()
+        # Maximum total out-of-line tag data that load() may read, as well
+        # as the size of the stream. Set by TiffImageFile so that
+        # all frames of a file share one budget.
+        self._tag_data_limit: int | None = None
         self.next = (
             self._unpack("Q", ifh[8:])[0]
             if self._bigtiff
@@ -683,8 +700,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 self.tagtype[tag] = TiffTags.UNDEFINED
                 if all(isinstance(v, IFDRational) for v in values):
                     for v in values:
-                        assert isinstance(v, IFDRational)
-                        if v < 0:
+                        if v < IFDRational(0):
                             self.tagtype[tag] = TiffTags.SIGNED_RATIONAL
                             break
                     else:
@@ -753,11 +769,12 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 (dest[tag],) = values
             except ValueError:
                 # We've got a builtin tag with 1 expected entry
-                warnings.warn(
-                    f"Metadata Warning, tag {tag} had too many entries: "
-                    f"{len(values)}, expected 1"
-                )
-                dest[tag] = values[0]
+                if tag != PHOTOMETRIC_INTERPRETATION:
+                    warnings.warn(
+                        f"Metadata Warning, tag {tag} had too many entries: "
+                        f"{len(values)}, expected 1"
+                    )
+                    dest[tag] = values[0]
 
         else:
             # Spec'd length > 1 or undefined
@@ -882,6 +899,12 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def load(self, fp: IO[bytes]) -> None:
         self.reset()
         self._offset = fp.tell()
+        fp.seek(0, io.SEEK_END)
+        limit = fp.tell()
+        fp.seek(self._offset)
+        if self._tag_data_limit is not None:
+            limit = min(limit, self._tag_data_limit)
+        self._tag_data_size = 0
 
         try:
             tag_count = (
@@ -889,12 +912,15 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 if self._bigtiff
                 else self._unpack("H", self._ensure_read(fp, 2))
             )[0]
+            total_size = 0
             for i in range(tag_count):
                 tag, typ, count, data = (
                     self._unpack("HHQ8s", self._ensure_read(fp, 20))
                     if self._bigtiff
                     else self._unpack("HHL4s", self._ensure_read(fp, 12))
                 )
+                if tag in self._tagdata:
+                    continue
 
                 tagname = TiffTags.lookup(tag, self.group).name
                 typname = TYPES.get(typ, "unknown")
@@ -913,6 +939,13 @@ class ImageFileDirectory_v2(_IFDv2Base):
                     if offset >= 2**63:
                         warnings.warn("Tag offset too large")
                         continue
+                    # Well-formed IFD values should fit within the stream they
+                    # are read from, even before accounting for overlaps.
+                    total_size += size
+                    if total_size > limit:
+                        warnings.warn(f"Tag data larger than file. Skipping tag {tag}")
+                        continue
+                    self._tag_data_size += size
                     fp.seek(offset)
                     data = ImageFile._safe_read(fp, size)
                     fp.seek(here)
@@ -1172,6 +1205,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.tag: ImageFileDirectory_v1
         """ Legacy tag entries """
 
+        self._n_frames: int | None = None
         super().__init__(fp, filename)
 
     def _open(self) -> None:
@@ -1190,7 +1224,13 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__frame = -1
         self._fp = self.fp
         self._frame_pos: list[int] = []
-        self._n_frames: int | None = None
+
+        # Out-of-line tag data is budgeted across all frames, so that many
+        # frames cannot each read the same data. Each frame's limit is fixed
+        # when it is first loaded, so that reloading it gives the same tags.
+        self.fp.seek(0, io.SEEK_END)
+        self._tag_data_remaining = self.fp.tell()
+        self._tag_data_limits: list[int] = []
 
         logger.debug("*** TiffImageFile._open ***")
         logger.debug("- __first: %s", self.__first)
@@ -1244,20 +1284,24 @@ class TiffImageFile(ImageFile.ImageFile):
                 raise ValueError(msg)
             self.fp.seek(self.__next)
             self._frame_pos.append(self.__next)
+            self._tag_data_limits.append(self._tag_data_remaining)
             logger.debug("Loading tags, location: %s", self.fp.tell())
+            self.tag_v2._tag_data_limit = self._tag_data_remaining
             self.tag_v2.load(self.fp)
+            self._tag_data_remaining -= self.tag_v2._tag_data_size
             if self.tag_v2.next in self._frame_pos:
                 # This IFD has already been processed
                 # Declare this to be the end of the image
                 self.__next = 0
             else:
                 self.__next = self.tag_v2.next
-            if self.__next == 0:
+            if self.__next == 0 and self._n_frames is None:
                 self._n_frames = frame + 1
-            if len(self._frame_pos) == 1:
+            if not hasattr(self, "is_animated"):
                 self.is_animated = self.__next != 0
             self.__frame += 1
         self.fp.seek(self._frame_pos[frame])
+        self.tag_v2._tag_data_limit = self._tag_data_limits[frame]
         self.tag_v2.load(self.fp)
         if XMP in self.tag_v2:
             xmp = self.tag_v2[XMP]
@@ -1340,10 +1384,8 @@ class TiffImageFile(ImageFile.ImageFile):
             msg = "Not exactly one tile"
             raise OSError(msg)
 
-        # (self._compression, (extents tuple),
-        #   0, (rawmode, self._compression, fp))
-        extents = self.tile[0][1]
-        args = self.tile[0][3]
+        extents = self.tile[0].extents
+        args = self.tile[0].args
 
         # To be nice on memory footprint, if there's a
         # file descriptor, use that instead of reading
@@ -1364,7 +1406,7 @@ class TiffImageFile(ImageFile.ImageFile):
         if fp:
             assert isinstance(args, tuple)
             args_list = list(args)
-            args_list[2] = fp
+            args_list[1] = fp
             args = tuple(args_list)
 
         decoder = Image._getdecoder(self.mode, "libtiff", args, self.decoderconfig)
@@ -1606,7 +1648,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
             # Offset in the tile tuple is 0, we go from 0,0 to
             # w,h, and we only do this once -- eds
-            a = (rawmode, self._compression, False, self.tag_v2.offset)
+            a = (rawmode, False, self.tag_v2.offset)
             self.tile.append(ImageFile._Tile("libtiff", (0, 0, xsize, ysize), 0, a))
 
         elif STRIPOFFSETS in self.tag_v2 or TILEOFFSETS in self.tag_v2:
@@ -1669,8 +1711,8 @@ class TiffImageFile(ImageFile.ImageFile):
         # fixup palette descriptor
 
         if self.mode in ["P", "PA"]:
-            palette = [o8(b // 256) for b in self.tag_v2[COLORMAP]]
-            self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
+            palette = tuple(b // 256 for b in self.tag_v2[COLORMAP])
+            self.palette = ImagePalette.raw("RGB;L", palette)
         else:
             self.palette = None
 
@@ -1702,6 +1744,17 @@ SAVE_INFO = {
     "LAB": ("LAB", II, 8, 1, (8, 8, 8), None),
     "I;16B": ("I;16B", MM, 1, 1, (16,), None),
 }
+
+
+def _validate_tags(tags: dict[int, Any]) -> None:
+    if COLORMAP in tags:
+        bps = tags.get(BITSPERSAMPLE, 1)
+        if isinstance(bps, tuple):
+            bps = bps[0]
+        expected = (1 << bps) * 3
+        if len(tags[COLORMAP]) != expected:
+            msg = f"Requiring {expected} items for Colormap"
+            raise ValueError(msg)
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
@@ -1928,13 +1981,10 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # STRIPOFFSETS and STRIPBYTECOUNTS are added by the library
         # based on the data in the strip.
         # OSUBFILETYPE is deprecated.
-        # The other tags expect arrays with a certain length (fixed or depending on
-        # BITSPERSAMPLE, etc), passing arrays with a different length will result in
-        # segfaults. Block these tags until we add extra validation.
+        # TRANSFERFUNCTION is not supported by the libtiff encoder.
         # SUBIFD may also cause a segfault.
         blocklist += [
             OSUBFILETYPE,
-            REFERENCEBLACKWHITE,
             STRIPBYTECOUNTS,
             STRIPOFFSETS,
             TRANSFERFUNCTION,
@@ -1973,6 +2023,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
         if SAMPLEFORMAT in atts and len(atts[SAMPLEFORMAT]) == 1:
             atts[SAMPLEFORMAT] = atts[SAMPLEFORMAT][0]
+        _validate_tags(atts)
 
         logger.debug("Converted items: %s", sorted(atts.items()))
 
@@ -1988,28 +2039,32 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # pseudo tag requires that the COMPRESS tag was already set.
         tags = list(atts.items())
         tags.sort()
-        a = (rawmode, compression, _fp, filename, tags, types)
+        a = (rawmode, _fp, filename, tags, types)
         encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
-        encoder.setimage(im.im, (0, 0) + im.size)
-        while True:
-            errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
-            if not _fp:
-                fp.write(data)
-            if errcode:
-                break
-        if errcode < 0:
-            msg = f"encoder error {errcode} when writing image file"
-            raise OSError(msg)
+        try:
+            encoder.setimage(im.im, (0, 0, *im.size))
+            while True:
+                errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
+                if not _fp:
+                    fp.write(data)
+                if errcode:
+                    break
+            if errcode < 0:
+                msg = f"encoder error {errcode} when writing image file"
+                raise OSError(msg)
+        finally:
+            encoder.cleanup()
 
     else:
         for tag in blocklist:
             del ifd[tag]
+        _validate_tags(ifd._tags_v2)
         offset = ifd.save(fp)
 
         ImageFile._save(
             im,
             fp,
-            [ImageFile._Tile("raw", (0, 0) + im.size, offset, (rawmode, stride, 1))],
+            [ImageFile._Tile("raw", (0, 0, *im.size), offset, (rawmode, stride, 1))],
         )
 
     # -- helper for multi-page save --

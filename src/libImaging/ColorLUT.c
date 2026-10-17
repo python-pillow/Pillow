@@ -40,21 +40,25 @@ table_index3D(int index1D, int index2D, int index3D, int size1D, int size1D_2D) 
     return index1D + index2D * size1D + index3D * size1D_2D;
 }
 
-/*
- Transforms colors of imIn using provided 3D lookup table
- and puts the result in imOut. Returns imOut on success or 0 on error.
-
- imOut, imIn - images, should be the same size and may be the same image.
-    Should have 3 or 4 channels.
- table_channels - number of channels in the lookup table, 3 or 4.
-    Should be less or equal than number of channels in imOut image;
- size1D, size_2D and size3D - dimensions of provided table;
- table - flat table,
-    array with table_channels * size1D * size2D * size3D elements,
-    where channels are changed first, then 1D, then 2D, then 3D.
-    Each element is signed 16-bit int where 0 is lowest output value
-    and 255 << PRECISION_BITS (16320) is highest value.
-*/
+/**
+ * Apply a 3D colour lookup table to imIn, writing the result to imOut.
+ *
+ * imOut, imIn - images, should be the same size and may be the same image.
+ *    Should have 3 or 4 channels.
+ * table_channels - number of channels in the lookup table, 3 or 4.
+ *    Should be less or equal than number of channels in imOut image;
+ * size1D, size_2D and size3D - dimensions of provided table;
+ * table - flat table,
+ *    array with table_channels * size1D * size2D * size3D elements,
+ *    where channels are changed first, then 1D, then 2D, then 3D.
+ *    Each element is signed 16-bit int where 0 is lowest output value
+ *    and 255 << PRECISION_BITS (16320) is highest value.
+ *
+ * Contract: unlike the other point-style loops in libImaging,
+ * imIn and imOut MAY be the same image to support running in place.
+ *
+ * @return imOut on success or NULL on error.
+ */
 Imaging
 ImagingColorLUT3D_linear(
     Imaging imOut,
@@ -83,7 +87,7 @@ ImagingColorLUT3D_linear(
     ImagingSectionCookie cookie;
 
     if (table_channels < 3 || table_channels > 4) {
-        PyErr_SetString(PyExc_ValueError, "table_channels could be 3 or 4");
+        PyErr_SetString(PyExc_ValueError, "table_channels should be 3 or 4");
         return NULL;
     }
 

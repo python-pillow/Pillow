@@ -12,6 +12,7 @@ include .flake8
 include LICENSE
 include Makefile
 include tox.ini
+graft .claude
 graft Tests
 graft Tests/images
 graft checks

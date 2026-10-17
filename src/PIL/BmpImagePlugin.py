@@ -24,6 +24,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 import os
 
 from . import Image, ImageFile, ImagePalette
@@ -133,7 +135,9 @@ class BmpImageFile(ImageFile.ImageFile):
             file_info["colors"] = i32(header_data, 28)
             file_info["palette_padding"] = 4
             assert isinstance(file_info["pixels_per_meter"], tuple)
-            self.info["dpi"] = tuple(x / 39.3701 for x in file_info["pixels_per_meter"])
+            dpi = tuple(x / 39.3701 for x in file_info["pixels_per_meter"])
+            if dpi != (0, 0):
+                self.info["dpi"] = dpi
             if file_info["compression"] == self.COMPRESSIONS["BITFIELDS"]:
                 masks = ["r_mask", "g_mask", "b_mask"]
                 if len(header_data) >= 48:
@@ -370,7 +374,9 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     if len(bytes_read) < 2:
                         break
                     right, up = bytes_read
-                    data += b"\x00" * (right + up * self.state.xsize)
+                    data += b"\x00" * min(
+                        dest_length - len(data), right + up * self.state.xsize
+                    )
                     x = len(data) % self.state.xsize
                 else:
                     # absolute mode
@@ -494,7 +500,7 @@ def _save(
         fp.write(palette)
 
     ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, stride, -1))]
+        im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, (rawmode, stride, -1))]
     )
 
 

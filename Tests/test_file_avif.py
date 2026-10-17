@@ -26,6 +26,7 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
+    skip_if_tsan,
     skip_unless_feature,
     skip_unless_feature_version,
 )
@@ -768,6 +769,9 @@ class TestAvifAnimation:
             timestamp = duration * (im.n_frames - 1)
             for frame in reversed(range(im.n_frames)):
                 im.seek(frame)
+                assert "duration" not in im.info
+                assert "timestamp" not in im.info
+
                 im.load()
                 assert im.info["duration"] == duration
                 assert im.info["timestamp"] == timestamp
@@ -790,6 +794,7 @@ class TestAvifLeaks(PillowLeakTestCase):
     mem_limit = MAX_THREADS * 3 * 1024
     iterations = 100
 
+    @skip_if_tsan("TSAN takes more memory")
     @pytest.mark.skipif(
         is_docker_qemu(), reason="Skipping on cross-architecture containers"
     )

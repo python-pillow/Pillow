@@ -25,6 +25,8 @@ and has been tested with a few sample files found using google.
 
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 from . import Image, ImageFile
 from ._binary import i32le as i32
 

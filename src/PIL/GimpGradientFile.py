@@ -21,6 +21,8 @@ See the GIMP distribution for more information.)
 
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "math"}
+
 from math import log, pi, sin, sqrt
 
 from ._binary import o8

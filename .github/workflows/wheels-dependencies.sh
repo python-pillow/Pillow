@@ -277,9 +277,25 @@ function build {
         # headers/libs in the custom macOS/iOS prefix. Explicitly disable webp,
         # libdeflate and zstd, because on x86_64 macs, it will pick up the
         # Homebrew versions of those libraries from /usr/local.
+        tiff_configure_args=(
+            --disable-contrib
+            --disable-cxx
+            --disable-dependency-tracking
+            --disable-docs
+            --disable-libdeflate
+            --disable-tests
+            --disable-tools
+            --disable-webp
+            --disable-zstd
+            --with-jpeg-include-dir=$BUILD_PREFIX/include
+            --with-jpeg-lib-dir=$BUILD_PREFIX/lib
+        )
+        if [[ -z "$IOS_SDK" ]]; then
+            # iOS links libtiff statically, but otherwise we need the dylib.
+            tiff_configure_args+=(--disable-static)
+        fi
         build_simple tiff $TIFF_VERSION https://download.osgeo.org/libtiff tar.gz \
-            --with-jpeg-include-dir=$BUILD_PREFIX/include --with-jpeg-lib-dir=$BUILD_PREFIX/lib \
-            --disable-webp --disable-libdeflate --disable-zstd
+            "${tiff_configure_args[@]}"
     else
         build_zstd
         build_tiff
@@ -304,17 +320,19 @@ function build {
 
     build_brotli
 
-    if [[ -n "$IS_MACOS" ]]; then
-        # Custom freetype build
-        build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no
-    else
-        build_freetype
-    fi
+    # FreeType and HarfBuzz each want the other:
+    # HarfBuzz reads font data through FreeType, and FreeType's auto-hinter asks HarfBuzz which glyphs a script covers.
+    # Break the cycle by building FreeType twice, so that the FreeType we ship is linked against the HarfBuzz we ship.
+    build_freetype
 
     if [[ -z "$IOS_SDK" ]]; then
         # On iOS, there's no vendor-provided raqm, and we can't ship it due to
         # licensing, so there's no point building harfbuzz.
         build_harfbuzz
+
+        # Now that HarfBuzz exists, build FreeType again against it.
+        rm -rf freetype-$FREETYPE_VERSION freetype-stamp
+        CFLAGS="$CFLAGS -DFT_CONFIG_OPTION_USE_HARFBUZZ" build_freetype
     fi
 }
 

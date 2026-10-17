@@ -31,6 +31,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"math", "struct"}
+
 import math
 import struct
 from typing import cast
@@ -147,7 +149,11 @@ class ImageDraw:
                     ink = ImageColor.getcolor(ink, self.mode)
                 if self.palette and isinstance(ink, tuple):
                     ink = self.palette.getcolor(ink, self._image)
-                result_ink = self.draw.draw_ink(ink)
+                if isinstance(ink, tuple) and len(ink) == 4 and ink[3] == 0:
+                    # Do not use transparent ink
+                    result_ink = None
+                else:
+                    result_ink = self.draw.draw_ink(ink)
             if fill is not None:
                 if isinstance(fill, str):
                     fill = ImageColor.getcolor(fill, self.mode)

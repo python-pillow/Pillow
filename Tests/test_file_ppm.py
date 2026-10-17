@@ -5,7 +5,7 @@ from io import BytesIO, TextIOWrapper
 
 import pytest
 
-from PIL import Image, PpmImagePlugin
+from PIL import Image, ImageFile, PpmImagePlugin
 
 from .helper import (
     assert_image_equal,
@@ -343,6 +343,25 @@ def test_not_enough_image_data(tmp_path: Path) -> None:
     with Image.open(path) as im:
         with pytest.raises(ValueError):
             im.load()
+
+
+def test_truncated_raw_data(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    with open("Tests/images/hopper_8bit.pgm", "rb") as f:
+        data = f.read()[:-1]
+    path = tmp_path / "temp.pgm"
+    with open(path, "wb") as f:
+        f.write(data)
+
+    # Opening by filename tries mmap first,
+    # and then falls back to the decoder on error
+    with Image.open(path) as im:
+        with pytest.raises(OSError, match="image file is truncated"):
+            im.load()
+
+    monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+    with Image.open(path) as im:
+        with Image.open(BytesIO(data)) as expected:
+            assert_image_equal(im, expected)
 
 
 @pytest.mark.parametrize("maxval", (b"0", b"65536"))

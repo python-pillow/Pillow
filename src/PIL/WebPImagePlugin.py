@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"io"}
+
 from io import BytesIO
 
 from . import Image, ImageFile
+from ._binary import i16le as i16
+from ._binary import i32le as i32
 
 try:
     from . import _webp
@@ -36,6 +40,22 @@ def _accept(prefix: bytes) -> bool | str:
     return False
 
 
+def _get_size(s: bytes) -> tuple[int, int] | None:
+    # Read the canvas size from the file header, without decoding
+    chunk = s[12:16]
+    if chunk == b"VP8 ":
+        if len(s) >= 30 and s[23:26] == b"\x9d\x01\x2a":
+            return i16(s, 26) & 0x3FFF, i16(s, 28) & 0x3FFF
+    elif chunk == b"VP8X":
+        if len(s) >= 30:
+            return i32(s[24:27] + b"\0") + 1, i32(s[27:30] + b"\0") + 1
+    elif chunk == b"VP8L":
+        if len(s) >= 25 and s[20] == 0x2F:
+            bits = i32(s, 21)
+            return (bits & 0x3FFF) + 1, ((bits >> 14) & 0x3FFF) + 1
+    return None
+
+
 class WebPImageFile(ImageFile.ImageFile):
     format = "WEBP"
     format_description = "WebP image"
@@ -44,10 +64,18 @@ class WebPImageFile(ImageFile.ImageFile):
 
     def _open(self) -> None:
         assert self.fp is not None
-        s = self.fp.read()
+        s = self.fp.read(30)
         if not _accept(s):
             msg = "not a WEBP file"
             raise SyntaxError(msg)
+
+        # The decoder allocates memory for the canvas when it is created,
+        # so check the size before creating it.
+        if size := _get_size(s):
+            # Image.open() runs this check afterwards,
+            # so only raise errors here, to avoid warning twice
+            Image._decompression_bomb_check(size, error_only=True)
+        s += self.fp.read()
 
         # Use the newer AnimDecoder API to parse the (possibly) animated file,
         # and access muxed chunks like ICC/EXIF/XMP.
@@ -86,6 +114,8 @@ class WebPImageFile(ImageFile.ImageFile):
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
+        self.info.pop("timestamp", None)
+        self.info.pop("duration", None)
 
         # Set logical frame to requested position
         self.__logical_frame = frame
@@ -138,7 +168,7 @@ class WebPImageFile(ImageFile.ImageFile):
             if self.fp and self._exclusive_fp:
                 self.fp.close()
             self.fp = BytesIO(data)
-            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.rawmode)]
+            self.tile = [ImageFile._Tile("raw", (0, 0, *self.size), 0, self.rawmode)]
 
         return super().load()
 

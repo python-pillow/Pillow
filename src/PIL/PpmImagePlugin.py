@@ -15,6 +15,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary", "math"}
+
 import math
 
 from . import Image, ImageFile
@@ -155,7 +157,7 @@ class PpmImageFile(ImageFile.ImageFile):
 
             args = rawmode if decoder_name == "raw" else (rawmode, maxval)
         self.tile = [
-            ImageFile._Tile(decoder_name, (0, 0) + self.size, self.fp.tell(), args)
+            ImageFile._Tile(decoder_name, (0, 0, *self.size), self.fp.tell(), args)
         ]
 
 
@@ -359,7 +361,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         fp.write(b"-1.0\n")
     row_order = -1 if im.mode == "F" else 1
     ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, row_order))]
+        im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, (rawmode, 0, row_order))]
     )
 
 

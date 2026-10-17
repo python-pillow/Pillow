@@ -65,6 +65,7 @@ jobs:
               mingw-w64-x86_64-python-numpy \
               mingw-w64-x86_64-python-olefile \
               mingw-w64-x86_64-python-pip \
+              mingw-w64-x86_64-python-psutil \
               mingw-w64-x86_64-python-pytest \
               mingw-w64-x86_64-python-pytest-cov \
               mingw-w64-x86_64-python-pytest-timeout \
@@ -73,7 +74,7 @@ jobs:
           pushd depends && ./install_extra_test_images.sh && popd
 
       - name: Build Pillow
-        run: CFLAGS="-coverage" python3 -m pip install .
+        run: CFLAGS="-coverage" python3 -m pip install .[tests]
 
       - name: Test Pillow
         run: |
@@ -81,7 +82,7 @@ jobs:
           .ci/test.sh
 
       - name: Upload coverage
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           files: ./coverage.xml
           flags: GHA_Windows
