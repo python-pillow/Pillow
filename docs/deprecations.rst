@@ -53,7 +53,7 @@ resulting image with Pillow.
 Reading "P;2L" and "P;4L" raw mode data directly
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. deprecated:: 13.0.0
+.. deprecated:: 13.1.0
 
 Using :py:func:`.Image.frombuffer()`, :py:func:`.Image.frombytes()` or
 :py:meth:`~PIL.Image.Image.frombytes()` to read "P;2L" or "P;4L" raw mode data has been
