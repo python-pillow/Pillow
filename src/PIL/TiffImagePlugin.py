@@ -1054,12 +1054,25 @@ class ImageFileDirectory_v2(_IFDv2Base):
         # update strip offset data to point beyond auxiliary data
         if stripoffsets is not None:
             tag, typ, count, value, data = entries[stripoffsets]
+            size, handler = self._load_dispatch[typ]
             if data:
-                size, handler = self._load_dispatch[typ]
                 values = [val + offset for val in handler(self, data, self.legacy_api)]
                 data = self._write_dispatch[typ](self, *values)
             else:
-                value = self._pack(fmt, self._unpack(fmt, value)[0] + offset)
+                # The offsets fit within the entry, e.g. two LONG offsets in BigTIFF
+                values = [
+                    val + offset
+                    for val in handler(self, value[: size * count], self.legacy_api)
+                ]
+                if (
+                    self._bigtiff
+                    and typ == TiffTags.LONG
+                    and count == 1
+                    and values[0] >= 2**32
+                ):
+                    # Offset is too large for a LONG
+                    typ = TiffTags.LONG8
+                value = self._write_dispatch[typ](self, *values).ljust(fmt_size, b"\0")
             entries[stripoffsets] = tag, typ, count, value, data
 
         # pass 2: write entries to file
