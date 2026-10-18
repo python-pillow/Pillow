@@ -3346,7 +3346,7 @@ def frombuffer(
     if len(args) == 1 and isinstance(args[0], tuple):
         args = args[0]
 
-    if decoder_name == "raw":
+    if decoder_name == "raw" and min(size) != 0:
         if args == ():
             args = mode, 0, 1
         if args[0] in _MAPMODES:
