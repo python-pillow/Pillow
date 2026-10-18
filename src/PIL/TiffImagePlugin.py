@@ -617,7 +617,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
         else:
             msg = "not a TIFF IFD"
             raise SyntaxError(msg)
-        self._bigtiff = ifh[2] == 43
+        self._bigtiff = 43 in ifh[2:4]
         self.group = group
         self.tagtype: dict[int, int] = {}
         """ Dictionary of tag types """
@@ -1214,7 +1214,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # Header
         assert self.fp is not None
         ifh = self.fp.read(8)
-        if ifh[2] == 43:
+        if 43 in ifh[2:4]:
             ifh += self.fp.read(8)
 
         self.tag_v2 = ImageFileDirectory_v2(ifh)

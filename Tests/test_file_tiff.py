@@ -100,11 +100,15 @@ class TestFileTiff:
 
             assert_image_similar_tofile(im, "Tests/images/pil136.png", 1)
 
-    def test_bigtiff(self, tmp_path: Path) -> None:
-        with Image.open("Tests/images/hopper_bigtiff.tif") as im:
+    @pytest.mark.parametrize(
+        "test_file",
+        ("Tests/images/hopper_bigtiff.tif", "Tests/images/hopper_bigtiff_be.tif"),
+    )
+    def test_bigtiff(self, test_file: str, tmp_path: Path) -> None:
+        with Image.open(test_file) as im:
             assert_image_equal_tofile(im, "Tests/images/hopper.tif")
 
-        with Image.open("Tests/images/hopper_bigtiff.tif") as im:
+        with Image.open(test_file) as im:
             outfile = tmp_path / "temp.tif"
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
             im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)
