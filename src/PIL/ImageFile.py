@@ -64,6 +64,16 @@ User code may set this to another number.
 """
 
 SAFEBLOCK = 1024 * 1024
+"""
+When a plugin reads a chunk of data whose size is given by the image file itself,
+Pillow does not trust that size.
+
+If it is greater than this number of bytes, the data is read in blocks of this size
+instead of all at once. This stops a malicious file from causing a large allocation
+by claiming more data than it contains.
+
+User code may set this to another number.
+"""
 
 LOAD_TRUNCATED_IMAGES = False
 """Whether or not to load truncated image files. User code may change this."""
