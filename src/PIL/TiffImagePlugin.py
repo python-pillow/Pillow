@@ -1038,7 +1038,13 @@ class ImageFileDirectory_v2(_IFDv2Base):
             if len(data) <= fmt_size:
                 entries.append((tag, typ, count, data.ljust(fmt_size, b"\0"), b""))
             else:
-                entries.append((tag, typ, count, self._pack(fmt, offset), data))
+                if is_ifd:
+                    # The offset is the LONG value of the tag,
+                    # which is left-justified within a BigTIFF entry
+                    value = self._pack("L", offset).ljust(fmt_size, b"\0")
+                else:
+                    value = self._pack(fmt, offset)
+                entries.append((tag, typ, count, value, data))
                 offset += (len(data) + 1) // 2 * 2  # pad to word
 
         # update strip offset data to point beyond auxiliary data

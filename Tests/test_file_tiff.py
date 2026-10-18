@@ -128,6 +128,23 @@ class TestFileTiff:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2._bigtiff is True
 
+    def test_bigtiff_save_big_endian_ifd(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+        with Image.open("Tests/images/exif_gps.jpg") as jpeg:
+            exif = jpeg.getexif()
+        gps = exif.get_ifd(0x8825)
+        assert gps
+
+        # I;16B is saved as big-endian
+        im = Image.new("I;16B", (1, 1))
+        im.save(outfile, big_tiff=True, exif=exif)
+
+        with Image.open(outfile) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2.prefix == b"MM"
+            assert reloaded.tag_v2._bigtiff is True
+            assert reloaded.getexif().get_ifd(0x8825) == gps
+
     def test_seek_too_large(self) -> None:
         with pytest.raises(ValueError, match="Unable to seek to frame"):
             Image.open("Tests/images/seek_too_large.tif")
