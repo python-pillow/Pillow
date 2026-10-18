@@ -1322,13 +1322,14 @@ class TiffImageFile(ImageFile.ImageFile):
         original_size = self._size
         self._size = self._tile_size
 
-        if self.use_load_libtiff:
-            self._load_libtiff()
-            px = Image.Image.load(self)
-        else:
-            px = super().load()
-
-        self._size = original_size
+        try:
+            if self.use_load_libtiff:
+                self._load_libtiff()
+                px = Image.Image.load(self)
+            else:
+                px = super().load()
+        finally:
+            self._size = original_size
         return px
 
     def load_end(self) -> None:

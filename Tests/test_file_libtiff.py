@@ -1256,7 +1256,8 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_orientation(self) -> None:
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
             for i in range(2, 9):
-                with Image.open("Tests/images/g4_orientation_" + str(i) + ".tif") as im:
+                infile = "Tests/images/g4_orientation_" + str(i) + ".tif"
+                with Image.open(infile) as im:
                     assert isinstance(im, TiffImagePlugin.TiffImageFile)
                     assert 274 in im.tag_v2
 
@@ -1264,6 +1265,14 @@ class TestFileLibTiff(LibTiffTestCase):
                     assert 274 not in im.tag_v2
 
                     assert_image_similar(base_im, im, 0.7)
+
+                with Image.open(infile) as im:
+                    assert im.size == (590, 88)
+
+                    im.tile.append(im.tile[0])
+                    with pytest.raises(OSError, match="Not exactly one tile"):
+                        im.load()
+                    assert im.size == (590, 88)
 
     def test_exif_transpose(self) -> None:
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
