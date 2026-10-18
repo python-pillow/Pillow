@@ -2981,19 +2981,34 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
+        if not isinstance(method, ImageTransformHandler) and hasattr(method, "getdata"):
+            # Resolve old-style transform objects once, including for the fill mask.
+            method, data = method.getdata()
+
         if self.mode in ("LA", "RGBA") and resample != Resampling.NEAREST:
-            return (
+            im = (
                 self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
-                .transform(size, method, data, resample, fill, fillcolor)
+                .transform(
+                    size,
+                    method,
+                    data,
+                    resample,
+                    fill,
+                    0 if fillcolor is not None else None,
+                )
                 .convert(self.mode)
             )
+            if fillcolor is not None and not isinstance(method, ImageTransformHandler):
+                # Fill colors belong to the original mode. Applying them after
+                # conversion also avoids losing their precision to premultiplication.
+                mask = new("L", self.size).transform(
+                    size, method, data, resample, fillcolor=255
+                )
+                im.paste(fillcolor, mask=mask)
+            return im
 
         if isinstance(method, ImageTransformHandler):
             return method.transform(size, self, resample=resample, fill=fill)
-
-        if hasattr(method, "getdata"):
-            # compatibility w. old-style transform objects
-            method, data = method.getdata()
 
         if data is None:
             msg = "missing method data"

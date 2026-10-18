@@ -108,6 +108,67 @@ class TestImageTransform:
         )
         assert transformed.getpixel((w - 1, h - 1)) == expected_pixel
 
+    @pytest.mark.parametrize("mode", ("RGBA", "LA"))
+    @pytest.mark.parametrize("alpha", (0, 1, 128, 255))
+    @pytest.mark.parametrize(
+        "resample", (Image.Resampling.BILINEAR, Image.Resampling.BICUBIC)
+    )
+    @pytest.mark.parametrize(
+        "method, data",
+        (
+            (Image.Transform.AFFINE, (1, 0, -1, 0, 1, -1)),
+            (Image.Transform.EXTENT, (-1, -1, 5, 5)),
+            (Image.Transform.PERSPECTIVE, (1, 0, -1, 0, 1, -1, 0, 0)),
+            (Image.Transform.QUAD, (-1, -1, -1, 5, 5, 5, 5, -1)),
+            (Image.Transform.MESH, [((0, 0, 5, 5), (-1, -1, -1, 4, 4, 4, 4, -1))]),
+        ),
+    )
+    def test_fill_alpha(
+        self,
+        mode: str,
+        alpha: int,
+        resample: Image.Resampling,
+        method: Image.Transform,
+        data: tuple[int, ...] | list[tuple[tuple[int, ...], tuple[int, ...]]],
+    ) -> None:
+        color = (128, 64, 32, alpha) if mode == "RGBA" else (64, alpha)
+        im = Image.new(mode, (3, 3), "white")
+        transformed = im.transform((6, 6), method, data, resample, fillcolor=color)
+        assert transformed.getpixel((0, 0)) == color
+        assert transformed.getpixel((5, 5)) == color
+        assert transformed.getpixel((2, 2)) == im.getpixel((1, 1))
+
+    def test_fill_getdata(self) -> None:
+        class OldStyleTransform:
+            calls = 0
+
+            def getdata(self) -> tuple[Image.Transform, tuple[int, ...]]:
+                self.calls += 1
+                return Image.Transform.AFFINE, (1, 0, -1, 0, 1, -1)
+
+        transform = OldStyleTransform()
+        color = (128, 64, 32, 128)
+        im = Image.new("RGBA", (3, 3), "white")
+        transformed = im.transform(
+            (5, 5), transform, resample=Image.Resampling.BILINEAR, fillcolor=color
+        )
+        assert transform.calls == 1
+        assert transformed.getpixel((0, 0)) == color
+
+    def test_fill_overlapping_mesh(self) -> None:
+        im = Image.new("RGBA", (3, 3), "white")
+        transformed = im.transform(
+            im.size,
+            Image.Transform.MESH,
+            [
+                ((0, 0, 3, 3), (0, 0, 0, 3, 3, 3, 3, 0)),
+                ((0, 0, 3, 3), (-10, -10, -10, -7, -7, -7, -7, -10)),
+            ],
+            Image.Resampling.BILINEAR,
+            fillcolor=(128, 64, 32, 128),
+        )
+        assert_image_equal(transformed, im)
+
     def test_mesh(self) -> None:
         # this should be a checkerboard of halfsized hoppers in ul, lr
         im = hopper("RGBA")

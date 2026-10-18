@@ -1,0 +1,12 @@
+13.1.0
+------
+
+Other changes
+=============
+
+Preserve translucent fill colors during transforms
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For ``RGBA`` and ``LA`` images, bilinear and bicubic transforms now preserve
+the requested ``fillcolor`` outside the source image, including when called
+through :py:meth:`~PIL.Image.Image.rotate`.
