@@ -568,13 +568,11 @@ class TestFileTiff:
     def test_orientation_mmap(
         self, orientation: int, method: Image.Transpose, tmp_path: Path
     ) -> None:
-        im = hopper("L").crop((0, 0, 128, 64))
         filename = tmp_path / "temp.tif"
+        im = hopper().crop((0, 0, 128, 64))
         im.save(filename, tiffinfo={274: orientation})
-
         with Image.open(filename) as reloaded:
             assert reloaded.size == (64, 128)
-            reloaded.load()
             assert_image_equal(reloaded, im.transpose(method))
 
     @pytest.mark.parametrize("mode", ("1", "L"))
