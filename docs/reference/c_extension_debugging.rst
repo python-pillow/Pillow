@@ -11,7 +11,7 @@ distributions.
 -  ``python3-dbg`` package for the gdb extensions and python symbols
 -  ``gdb`` and ``valgrind``
 -  Potentially debug symbols for libraries. On Ubuntu you can follow those
-   instructions to install the corresponding packages: `Debug Symbol Packages <https://wiki.ubuntu.com/Debug%20Symbol%20Packages#Getting_-dbgsym.ddeb_packages>`_
+   instructions to install the corresponding packages: `Debug Symbol Packages <https://documentation.ubuntu.com/server/how-to/debugging/debug-symbol-packages/#getting-dbgsym-ddeb-packages>`_
 
 Then ``sudo apt-get install libtiff5-dbgsym``
 
