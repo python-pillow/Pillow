@@ -499,9 +499,7 @@ def _save(
     if palette:
         fp.write(palette)
 
-    ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, (rawmode, stride, -1))]
-    )
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", args=(rawmode, stride, -1))])
 
 
 #

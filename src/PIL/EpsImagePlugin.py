@@ -385,9 +385,7 @@ class EpsImageFile(ImageFile.ImageFile):
             bounding_box[3] - bounding_box[1],
         )
 
-        self.tile = [
-            ImageFile._Tile("eps", (0, 0, *self.size), offset, (length, bounding_box))
-        ]
+        self.tile = [ImageFile._Tile("eps", None, offset, (length, bounding_box))]
 
     def _find_offset(self, fp: IO[bytes]) -> tuple[int, int]:
         s = fp.read(4)
@@ -474,7 +472,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes, eps: int = 1) -
     if hasattr(fp, "flush"):
         fp.flush()
 
-    ImageFile._save(im, fp, [ImageFile._Tile("eps", (0, 0, *im.size))])
+    ImageFile._save(im, fp, [ImageFile._Tile("eps")])
 
     fp.write(b"\n%%%%EndBinary\n")
     fp.write(b"grestore end\n")

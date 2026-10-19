@@ -2047,7 +2047,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         a = (rawmode, _fp, filename, tags, types)
         encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
         try:
-            encoder.setimage(im.im, (0, 0, *im.size))
+            encoder.setimage(im.im)
             while True:
                 errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
                 if not _fp:
@@ -2069,7 +2069,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         ImageFile._save(
             im,
             fp,
-            [ImageFile._Tile("raw", (0, 0, *im.size), offset, (rawmode, stride, 1))],
+            [ImageFile._Tile("raw", None, offset, (rawmode, stride, 1))],
         )
 
     # -- helper for multi-page save --
