@@ -285,7 +285,7 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
             );
             if (imIn == imOut) {
                 // Commit.
-                memcpy(imOut->image8[y], lineOut, imIn->xsize * 2);
+                memcpy(imOut->image8[y], lineOut, imIn->linesize);
             }
         }
     } else if (imIn->image8) {
@@ -302,7 +302,7 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
             );
             if (imIn == imOut) {
                 // Commit.
-                memcpy(imOut->image8[y], lineOut, imIn->xsize);
+                memcpy(imOut->image8[y], lineOut, imIn->linesize);
             }
         }
     } else {
@@ -319,7 +319,7 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
             );
             if (imIn == imOut) {
                 // Commit.
-                memcpy(imOut->image32[y], lineOut, imIn->xsize * 4);
+                memcpy(imOut->image32[y], lineOut, imIn->linesize);
             }
         }
     }
