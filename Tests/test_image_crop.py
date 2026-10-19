@@ -69,6 +69,15 @@ def test_crop_float() -> None:
     assert cropped.size == (3, 5)
 
 
+@pytest.mark.parametrize("left", (1.5, 2.5, 84.5, 85.5))
+def test_crop_float_half(left: float) -> None:
+    # Halves are rounded up, so a box keeps its width wherever it is
+    im = Image.new("L", (200, 10))
+
+    assert im.crop((left, 0, left + 31, 1)).size == (31, 1)
+    assert im.crop((left, 0, left + 1, 1)).size == (1, 1)
+
+
 def test_crop_crash() -> None:
     # Image.crop crashes prepatch with an access violation
     # apparently a use after free on Windows, see

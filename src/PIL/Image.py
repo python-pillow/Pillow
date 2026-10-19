@@ -1403,7 +1403,7 @@ class Image:
         :returns: A core image object.
         """
 
-        x0, y0, x1, y1 = map(int, map(round, box))
+        x0, y0, x1, y1 = (math.floor(v + 0.5) for v in box)
 
         absolute_values = (abs(x1 - x0), abs(y1 - y0))
 
