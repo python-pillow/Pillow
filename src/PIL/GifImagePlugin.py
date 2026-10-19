@@ -335,20 +335,18 @@ class GifImageFile(ImageFile.ImageFile):
                 self.palette = copy(self.global_palette)
             else:
                 self.palette = None
-        else:
-            if self.mode == "P":
-                if (
-                    LOADING_STRATEGY != LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
-                    or palette
-                ):
-                    if "transparency" in self.info:
-                        self.im.putpalettealpha(self.info["transparency"], 0)
-                        self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
-                        self._mode = "RGBA"
-                        del self.info["transparency"]
-                    else:
-                        self._mode = "RGB"
-                        self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
+        elif self.mode == "P" and (
+            LOADING_STRATEGY != LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
+            or palette
+        ):
+            if "transparency" in self.info:
+                self.im.putpalettealpha(self.info["transparency"], 0)
+                self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
+                self._mode = "RGBA"
+                del self.info["transparency"]
+            else:
+                self._mode = "RGB"
+                self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
 
         def _rgb(color: int) -> tuple[int, int, int]:
             if self._frame_palette:
