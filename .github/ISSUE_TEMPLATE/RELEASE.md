@@ -42,5 +42,5 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
   ```bash
   git clone https://github.com/python-pillow/docker-images
   cd docker-images
-  ./update-pillow-tag.sh [[release tag]]
+  ./update-pillow-tag.sh
   ```
