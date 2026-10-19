@@ -300,6 +300,14 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
             msg = "cannot load this image"
             raise OSError(msg)
 
+        if self.width == 0 or self.height == 0:
+            ImageFile.load_prepare(self)
+
+            self.tile = []
+            self.readonly = 0
+
+            return Image.Image.load(self)
+
         pixel = Image.Image.load(self)
         if not self.tile:
             return pixel
