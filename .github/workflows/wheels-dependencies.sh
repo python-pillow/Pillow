@@ -1,19 +1,11 @@
 #!/bin/bash
 
-# Safety check - Pillow builds require that CIBW_ARCHS is set, and that it only
-# contains a single value (even though cibuildwheel allows multiple values in
-# CIBW_ARCHS). This check doesn't work on Linux because of how the CIBW_ARCHS
-# variable is exposed.
-function check_cibw_archs {
-    if [[ -z "$CIBW_ARCHS" ]]; then
-        echo "ERROR: Pillow builds require CIBW_ARCHS be defined."
-        exit 1
-    fi
-    if [[ "$CIBW_ARCHS" == *" "* ]]; then
-        echo "ERROR: Pillow builds only support a single architecture in CIBW_ARCHS."
-        exit 1
-    fi
-}
+set -e
+
+# CIBUILDWHEEL_BUILD_IDENTIFIER has the format {python_version}-{os}_{arch}
+CIBW_OS_ARCH=${CIBUILDWHEEL_BUILD_IDENTIFIER#*-}
+CIBW_OS=${CIBW_OS_ARCH%%_*}
+CIBW_ARCH=${CIBW_OS_ARCH#*_}
 
 # Setup that needs to be done before multibuild utils are invoked. Process
 # potential cross-build platforms before native platforms to ensure that we pick
@@ -21,40 +13,33 @@ function check_cibw_archs {
 PROJECTDIR=$(pwd)
 PATCH_DIR=$(pwd)/patches
 
-if [[ "$CIBW_PLATFORM" == "android" ]]; then
-    check_cibw_archs
-    case "$CIBW_ARCHS" in
-        arm64_v8a):
-            HOST_TRIPLE=aarch64-linux-android
-            PLAT=arm64
-            ;;
-        x86_64):
-            HOST_TRIPLE=x86_64-linux-android
-            PLAT=x86_64
-            ;;
+if [ "$CIBW_OS" = "android" ]; then
+    IS_ANDROID=1
+    case "$CIBW_ARCH" in
+        arm64_v8a) PLAT=aarch64 ;;
+        x86_64) PLAT=x86_64 ;;
         *)
-            echo "ERROR: Unknown CIBW_ARCHS value '$CIBW_ARCHS'"
+            echo "ERROR: Unknown Android architecture '$CIBW_ARCH'"
             exit 1
-            ;;
     esac
+    HOST_TRIPLE="$PLAT-linux-android"
     HOST_CONFIGURE_FLAGS="--host=$HOST_TRIPLE"
 
-    WORKDIR=$(pwd)/build/android_$CIBW_ARCHS
-    BUILD_PREFIX=$(pwd)/build/deps/android_$CIBW_ARCHS
+    # When building for Android, cibuildwheel sets the CMAKE_TOOLCHAIN_FILE environment
+    # variable, which includes most of the flags we need. Some additional flags are
+    # required by libavif.
+    android_toolchain_root=$(cd "$(dirname "$CC")/.." && pwd)
+    android_ndk=$(cd "$android_toolchain_root/../../../.." && pwd)
+    HOST_CMAKE_FLAGS+=" -DANDROID_TOOLCHAIN_ROOT=$android_toolchain_root"
+    HOST_CMAKE_FLAGS+=" -DANDROID_NDK=$android_ndk"
 
-elif [[ "$CIBW_PLATFORM" == "ios" ]]; then
-    check_cibw_archs
-    # On iOS, CIBW_ARCHS is actually a multi-arch - arm64_iphoneos,
+elif [ "$CIBW_OS" == "ios" ]; then
+    # IS_MACOS will be set by common_utils.sh.
+    # On iOS, CIBW_ARCH is actually a multi-arch - arm64_iphoneos,
     # arm64_iphonesimulator or x86_64_iphonesimulator. Split into the CPU
     # platform, and the iOS SDK.
-    PLAT=$(echo $CIBW_ARCHS | sed "s/\(.*\)_\(.*\)/\1/")
-    IOS_SDK=$(echo $CIBW_ARCHS | sed "s/\(.*\)_\(.*\)/\2/")
-
-    # Build iOS builds in `build/iphoneos` or `build/iphonesimulator`
-    # (depending on the build target). Install them into `build/deps/iphoneos`
-    # or `build/deps/iphonesimulator`
-    WORKDIR=$(pwd)/build/$IOS_SDK
-    BUILD_PREFIX=$(pwd)/build/deps/$IOS_SDK
+    PLAT=$(echo $CIBW_ARCH | sed "s/\(.*\)_\(.*\)/\1/")
+    IOS_SDK=$(echo $CIBW_ARCH | sed "s/\(.*\)_\(.*\)/\2/")
 
     # GNU tooling insists on using aarch64 rather than arm64
     if [[ $PLAT == "arm64" ]]; then
@@ -65,9 +50,9 @@ elif [[ "$CIBW_PLATFORM" == "ios" ]]; then
 
     IOS_SDK_PATH=$(xcrun --sdk $IOS_SDK --show-sdk-path)
     CMAKE_SYSTEM_NAME=iOS
-    IOS_HOST_TRIPLE=$PLAT-apple-ios$IPHONEOS_DEPLOYMENT_TARGET
+    HOST_TRIPLE=$PLAT-apple-ios$IPHONEOS_DEPLOYMENT_TARGET
     if [[ "$IOS_SDK" == "iphonesimulator" ]]; then
-        IOS_HOST_TRIPLE=$IOS_HOST_TRIPLE-simulator
+        HOST_TRIPLE=$HOST_TRIPLE-simulator
     fi
 
     # GNU Autotools doesn't recognize the existence of arm64-apple-ios-simulator
@@ -88,25 +73,34 @@ elif [[ "$CIBW_PLATFORM" == "ios" ]]; then
     # This will be generated once CC etc. have been evaluated.
     HOST_MESON_FLAGS="--cross-file $WORKDIR/meson-cross.txt -Dprefer_static=true -Ddefault_library=static"
 
-elif [[ "$(uname -s)" == "Darwin" ]]; then
-    check_cibw_archs
-    # Build macOS dependencies in `build/darwin`
-    # Install them into `build/deps/darwin`
-    PLAT=$CIBW_ARCHS
-    WORKDIR=$(pwd)/build/darwin
-    BUILD_PREFIX=$(pwd)/build/deps/darwin
-else
-    # Build prefix will default to /usr/local
-    PLAT="${CIBW_ARCHS:-$AUDITWHEEL_ARCH}"
-    WORKDIR=$(pwd)/build
+elif [ "$CIBW_OS" = "macosx" ]; then
+    # IS_MACOS will be set by common_utils.sh.
+    PLAT=$CIBW_ARCH
+
+elif [ "$CIBW_OS" = *linux ]; then
+    IS_LINUX=1
+    PLAT=$CIBW_ARCH
     MB_ML_LIBC=${AUDITWHEEL_POLICY::9}
     MB_ML_VER=${AUDITWHEEL_POLICY:9}
+
+else
+    echo "ERROR: Unknown operating system '$CIBW_OS'"
+    exit 1
 fi
+
+WORKDIR=$(pwd)/build/$CIBW_OS_ARCH
+BUILD_PREFIX=$WORKDIR/prefix
 
 # Define custom utilities
 source wheels/multibuild/common_utils.sh
+
+# Adjust variables for cross-compilation.
+if [ -n "$IS_ANDROID" ]; then
+    unset IS_MACOS IS_OSX MB_ML_VER
+fi
+
 source wheels/multibuild/library_builders.sh
-if [[ -z "$IS_MACOS" ]]; then
+if [ -n "$IS_LINUX" ]; then
     source wheels/multibuild/manylinux_utils.sh
 fi
 
@@ -138,7 +132,10 @@ function build_zlib_ng {
     ORIGINAL_HOST_CONFIGURE_FLAGS=$HOST_CONFIGURE_FLAGS
     unset HOST_CONFIGURE_FLAGS
 
-    build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --installnamedir=$BUILD_PREFIX/lib --zlib-compat
+    # CHOST is the equivalent of the autotools --host option. If it's empty, the library
+    # will be built for the build machine's platform.
+    CHOST=$HOST_TRIPLE build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION \
+        --installnamedir=$BUILD_PREFIX/lib --zlib-compat
 
     HOST_CONFIGURE_FLAGS=$ORIGINAL_HOST_CONFIGURE_FLAGS
     touch zlib-stamp
@@ -187,6 +184,14 @@ function build_libavif {
             build_shared=OFF
         fi
     else
+        if [ -n "$IS_ANDROID" ]; then
+            # CMake's internal Clang.cmake passes -fuse-ld=gold when building with LTO
+            # on Android, but current versions of the NDK no longer include gold. It
+            # looks like it should be possible to prevent this by setting
+            # CMAKE_ANDROID_NDK_VERSION to a high enough number, but doing that using -D
+            # has no effect, so maybe it needs to be in the toolchain file.
+            lto=OFF
+        fi
         libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
     fi
     if [[ -n "$IOS_SDK" ]] && [[ "$PLAT" == "x86_64" ]]; then
@@ -234,14 +239,20 @@ function build_libavif {
 function build_zstd {
     if [ -e zstd-stamp ]; then return; fi
     local out_dir=$(fetch_unpack https://github.com/facebook/zstd/releases/download/v$ZSTD_VERSION/zstd-$ZSTD_VERSION.tar.gz)
+
+    if [ -n "$IS_ANDROID" ]; then
+        zstd_uname="Linux"
+    else
+        zstd_uname=$(uname)
+    fi
     (cd $out_dir \
-        && make -j4 install)
+        && make -j4 install UNAME_TARGET_SYSTEM=$zstd_uname PREFIX="$BUILD_PREFIX")
     touch zstd-stamp
 }
 
 function build {
     build_xz
-    if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
+    if [ -n "$IS_LINUX" ] && [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ]; then
         yum remove -y zlib-devel
     fi
     if [[ -n "$IS_MACOS" ]]; then
@@ -250,15 +261,18 @@ function build {
         build_zlib_ng
     fi
 
-    build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
-    if [[ -n "$IS_MACOS" ]]; then
-        build_simple xorgproto 2025.1 https://www.x.org/pub/individual/proto
-        build_simple libXau 1.0.12 https://www.x.org/pub/individual/lib
-        build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
-    else
-        sed "s/\${pc_sysrootdir\}//" $BUILD_PREFIX/share/pkgconfig/xcb-proto.pc > $BUILD_PREFIX/lib/pkgconfig/xcb-proto.pc
+    # There's no X server on mobile devices.
+    if [ -z "$IS_ANDROID" ] && [ -z "$IOS_SDK" ]; then
+        build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
+        if [[ -n "$IS_MACOS" ]]; then
+            build_simple xorgproto 2025.1 https://www.x.org/pub/individual/proto
+            build_simple libXau 1.0.12 https://www.x.org/pub/individual/lib
+            build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
+        else
+            sed "s/\${pc_sysrootdir\}//" $BUILD_PREFIX/share/pkgconfig/xcb-proto.pc > $BUILD_PREFIX/lib/pkgconfig/xcb-proto.pc
+        fi
+        build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
     fi
-    build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
 
     # -DCMAKE_POSITION_INDEPENDENT_CODE=1 is a workaround from https://github.com/libjpeg-turbo/libjpeg-turbo/issues/898
     HOST_CMAKE_FLAGS="-DCMAKE_POSITION_INDEPENDENT_CODE=1 $HOST_CMAKE_FLAGS" build_libjpeg_turbo
@@ -316,7 +330,7 @@ function build {
     # Break the cycle by building FreeType twice, so that the FreeType we ship is linked against the HarfBuzz we ship.
     build_freetype
 
-    if ! [[ "$CIBW_PLATFORM" =~ ^(android|ios)$ ]]; then
+    if [[ -z "$IS_ANDROID" ]] && [[ -z "$IOS_SDK" ]]; then
         # On some platforms there's no vendor-provided raqm, and we can't ship it due to
         # licensing, so there's no point building harfbuzz.
         build_harfbuzz
@@ -385,8 +399,8 @@ if [[ -n "$IS_MACOS" ]]; then
         export STRIP=$(xcrun --find --sdk $IOS_SDK strip)
 
         CPPFLAGS="$CPPFLAGS --sysroot=$IOS_SDK_PATH"
-        CFLAGS="-target $IOS_HOST_TRIPLE --sysroot=$IOS_SDK_PATH -mios-version-min=$IPHONEOS_DEPLOYMENT_TARGET"
-        CXXFLAGS="-target $IOS_HOST_TRIPLE --sysroot=$IOS_SDK_PATH -mios-version-min=$IPHONEOS_DEPLOYMENT_TARGET"
+        CFLAGS="-target $HOST_TRIPLE --sysroot=$IOS_SDK_PATH -mios-version-min=$IPHONEOS_DEPLOYMENT_TARGET"
+        CXXFLAGS="-target $HOST_TRIPLE --sysroot=$IOS_SDK_PATH -mios-version-min=$IPHONEOS_DEPLOYMENT_TARGET"
 
         # Having IPHONEOS_DEPLOYMENT_TARGET in the environment causes problems
         # with some cross-building toolchains, because it introduces implicit

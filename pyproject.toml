@@ -114,9 +114,7 @@ test-extras = "tests"
 # Disable platform guessing on macOS to avoid picking up Homebrew etc.
 macos.config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable platform-guessing=disable"
 # Isolate macOS build environment from Homebrew etc.
-macos.environment.PATH = """\
-  $(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin\
-  """
+macos.environment.PATH = "$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
 
 # Settings for mobile platforms
 [[tool.cibuildwheel.overrides]]
