@@ -41,6 +41,12 @@ TODO
 API additions
 =============
 
+Jarvis-Judice-Ninke dithering
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:data:`PIL.Image.Dither.JARVIS_JUDICE_NINKE` can now be used when
+converting images to black and white or to a palette with error diffusion.
+
 TODO
 ^^^^
 
