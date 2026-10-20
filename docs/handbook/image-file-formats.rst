@@ -1139,7 +1139,17 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 SGI
 ^^^
 
-Pillow reads and writes uncompressed ``L``, ``RGB``, and ``RGBA`` files.
+Pillow reads uncompressed and RLE compressed ``L``, ``RGB``, and ``RGBA`` files,
+both 8-bit and 16-bit. It writes uncompressed files.
+
+Saving
+~~~~~~
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**bpc**
+    The number of bytes per channel. Use ``1`` (the default) to save an 8-bit
+    file, or ``2`` to save a 16-bit file.
 
 
 SPIDER
@@ -1366,6 +1376,11 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
     .. versionadded:: 6.1.0
 
+**strip_size**
+    The target size of each strip in bytes, used to work out how many rows go
+    in each strip when saving with libtiff, unless RowsPerStrip is already set
+    in ``tiffinfo``. The default is 65536.
+
 These arguments to set the tiff header fields are an alternative to
 using the general tags available through tiffinfo.
 
@@ -1517,6 +1532,23 @@ XBM
 ^^^
 
 Pillow reads and writes X bitmap files (mode ``1``).
+
+Opening
+~~~~~~~
+
+The :py:meth:`~PIL.Image.open` method sets the following
+:py:attr:`~PIL.Image.Image.info` properties:
+
+**hotspot**
+    The ``(x, y)`` hotspot of the bitmap, if the file defines one.
+
+Saving
+~~~~~~
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**hotspot**
+    An ``(x, y)`` tuple. If given, the hotspot is written to the file.
 
 Read-only formats
 -----------------
