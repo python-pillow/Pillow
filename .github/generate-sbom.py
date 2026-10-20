@@ -434,7 +434,7 @@ def generate(version: str) -> dict:
                     {
                         "bom-ref": "pkg:generic/openjpeg@2.5.4#upstream",
                         "type": "library",
-                        "name": "libtiff",
+                        "name": "OpenJPEG",
                         "version": "2.5.4",
                         "purl": "pkg:generic/openjpeg@2.5.4",
                         "externalReferences": [
