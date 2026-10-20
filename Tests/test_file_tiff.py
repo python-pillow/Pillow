@@ -142,8 +142,18 @@ class TestFileTiff:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2.prefix == b"MM"
             assert reloaded.tag_v2._bigtiff is True
-            assert reloaded.tag_v2.tagtype[0x8825] == TiffTags.LONG8
+            assert reloaded.tag_v2.tagtype[0x8825] == TiffTags.LONG
             assert reloaded.getexif().get_ifd(0x8825) == gps
+
+            # Check that a LONG tag is upgraded to LONG8
+            # when the offset is large enough to make it necessary
+            reloaded.tag_v2.tagtype[32768] = TiffTags.LONG
+            reloaded.tag_v2[32768] = {}
+            data = reloaded.tag_v2.tobytes(2**32)
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2(b"MM\x00\x2b" + b"\x00" * 12)
+        ifd.load(BytesIO(data))
+        assert ifd.tagtype[32768] == TiffTags.LONG8
 
     def test_seek_too_large(self) -> None:
         with pytest.raises(ValueError, match="Unable to seek to frame"):
