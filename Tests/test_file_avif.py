@@ -141,7 +141,7 @@ class TestFileAvif:
         assert reloaded.mode == "L"
         assert_image_similar(reloaded, im, 1.69)
 
-    @pytest.mark.parametrize("mode", ("1", "L", "I", "I;16", "F"))
+    @pytest.mark.parametrize("mode", ["1", "L", "I", "I;16", "F"])
     def test_write_grayscale(self, mode: str) -> None:
         im = hopper(mode)
         reloaded = roundtrip(im)
