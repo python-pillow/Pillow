@@ -77,7 +77,7 @@ class FtexImageFile(ImageFile.ImageFile):
         if not _accept(self.fp.read(4)):
             msg = "not an FTEX file"
             raise SyntaxError(msg)
-        struct.unpack("<i", self.fp.read(4))  # version
+        self.fp.read(4)  # version
         self._size = struct.unpack("<2i", self.fp.read(8))
         mipmap_count, format_count = struct.unpack("<2i", self.fp.read(8))
 
