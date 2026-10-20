@@ -142,6 +142,7 @@ class TestFileTiff:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2.prefix == b"MM"
             assert reloaded.tag_v2._bigtiff is True
+            assert reloaded.tag_v2.tagtype[0x8825] == TiffTags.LONG8
             assert reloaded.getexif().get_ifd(0x8825) == gps
 
     def test_seek_too_large(self) -> None:

@@ -1012,6 +1012,9 @@ class ImageFileDirectory_v2(_IFDv2Base):
             logger.debug("Tag %s, Type: %s, Value: %s", tag, typ, repr(value))
             is_ifd = typ == TiffTags.LONG and isinstance(value, dict)
             if is_ifd:
+                if self._bigtiff:
+                    # BigTIFF allows an 8-byte offset to the sub-IFD
+                    typ = TiffTags.LONG8
                 ifd = ImageFileDirectory_v2(self._get_ifh(), group=tag)
                 values = self._tags_v2[tag]
                 for ifd_tag, ifd_value in values.items():
@@ -1036,17 +1039,10 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 count = len(values)
             # figure out if data fits into the entry
             if len(data) <= fmt_size:
-                value = data.ljust(fmt_size, b"\0")
-                data = b""
+                entries.append((tag, typ, count, data.ljust(fmt_size, b"\0"), b""))
             else:
-                if is_ifd:
-                    # The offset is the LONG value of the tag,
-                    # which is left-justified within a BigTIFF entry
-                    value = self._pack("L", offset).ljust(fmt_size, b"\0")
-                else:
-                    value = self._pack(fmt, offset)
+                entries.append((tag, typ, count, self._pack(fmt, offset), data))
                 offset += (len(data) + 1) // 2 * 2  # pad to word
-            entries.append((tag, typ, count, value, data))
 
         # update strip offset data to point beyond auxiliary data
         if stripoffsets is not None:
