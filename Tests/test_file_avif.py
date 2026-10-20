@@ -141,6 +141,13 @@ class TestFileAvif:
         assert reloaded.mode == "L"
         assert_image_similar(reloaded, im, 1.69)
 
+    @pytest.mark.parametrize("mode", ("1", "L", "I", "I;16", "F"))
+    def test_write_grayscale(self, mode: str) -> None:
+        im = hopper(mode)
+        reloaded = roundtrip(im)
+
+        assert_image_similar(reloaded.convert("L"), im.convert("L"), 1.69)
+
     def test_write_rgb(self, tmp_path: Path) -> None:
         """
         Can we write a RGB mode file to avif without error?
@@ -193,6 +200,8 @@ class TestFileAvif:
         """Save should raise an OSError if AvifEncoder.finish returns None"""
 
         class _mock_avif:
+            libavif_version = "1.3.0"
+
             class AvifEncoder:
                 def __init__(self, *args: Any) -> None:
                     pass

@@ -239,6 +239,10 @@ def _save(
         advanced,
     )
 
+    supported_modes = {"RGB", "RGBA"}
+    if tuple(int(x) for x in _avif.libavif_version.split(".")) >= (1, 3):
+        supported_modes.add("L")
+
     # Add each frame
     frame_idx = 0
     frame_duration = 0
@@ -249,10 +253,10 @@ def _save(
             for frame in ImageSequence.Iterator(ims):
                 # Make sure image mode is supported
                 rawmode = frame.mode
-                if ims.mode not in {"L", "RGB", "RGBA"}:
+                if ims.mode not in supported_modes:
                     if ims.has_transparency_data:
                         rawmode = "RGBA"
-                    elif ims.mode in grayscale_modes:
+                    elif ims.mode in grayscale_modes and "L" in supported_modes:
                         rawmode = "L"
                     else:
                         rawmode = "RGB"
