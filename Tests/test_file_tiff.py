@@ -108,7 +108,6 @@ class TestFileTiff:
         with Image.open(test_file) as im:
             assert_image_equal_tofile(im, "Tests/images/hopper.tif")
 
-        with Image.open(test_file) as im:
             outfile = tmp_path / "temp.tif"
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
             im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)

@@ -1036,7 +1036,8 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 count = len(values)
             # figure out if data fits into the entry
             if len(data) <= fmt_size:
-                entries.append((tag, typ, count, data.ljust(fmt_size, b"\0"), b""))
+                value = data.ljust(fmt_size, b"\0")
+                data = b""
             else:
                 if is_ifd:
                     # The offset is the LONG value of the tag,
@@ -1044,8 +1045,8 @@ class ImageFileDirectory_v2(_IFDv2Base):
                     value = self._pack("L", offset).ljust(fmt_size, b"\0")
                 else:
                     value = self._pack(fmt, offset)
-                entries.append((tag, typ, count, value, data))
                 offset += (len(data) + 1) // 2 * 2  # pad to word
+            entries.append((tag, typ, count, value, data))
 
         # update strip offset data to point beyond auxiliary data
         if stripoffsets is not None:
