@@ -8,9 +8,18 @@ from PIL import Image
 
 # The JJN kernel has twelve forward neighbors and is normalized by 48.
 TAPS = (
-    (1, 0, 7), (2, 0, 5),
-    (-2, 1, 3), (-1, 1, 5), (0, 1, 7), (1, 1, 5), (2, 1, 3),
-    (-2, 2, 1), (-1, 2, 3), (0, 2, 5), (1, 2, 3), (2, 2, 1),
+    (1, 0, 7),
+    (2, 0, 5),
+    (-2, 1, 3),
+    (-1, 1, 5),
+    (0, 1, 7),
+    (1, 1, 5),
+    (2, 1, 3),
+    (-2, 2, 1),
+    (-1, 2, 3),
+    (0, 2, 5),
+    (1, 2, 3),
+    (2, 2, 1),
 )
 
 
@@ -41,15 +50,9 @@ def _expected_bilevel(values: list[int], size: tuple[int, int]) -> list[int]:
 
 @pytest.mark.parametrize("size", [(1, 1), (1, 9), (9, 1), (3, 3), (13, 11)])
 @pytest.mark.parametrize("mode", ["L", "RGB"])
-def test_jjn_bilevel_matches_diffusion_kernel(
-    mode: str, size: tuple[int, int]
-) -> None:
+def test_jjn_bilevel_matches_diffusion_kernel(mode: str, size: tuple[int, int]) -> None:
     width, height = size
-    values = [
-        (x * 37 + y * 29 + 65) % 256
-        for y in range(height)
-        for x in range(width)
-    ]
+    values = [(x * 37 + y * 29 + 65) % 256 for y in range(height) for x in range(width)]
     if mode == "RGB":
         im = Image.new("RGB", size)
         im.putdata([(v, v, v) for v in values])
@@ -67,9 +70,7 @@ def test_jjn_palette_differs_from_floyd_steinberg() -> None:
     size = (33, 15)
     im = Image.new("RGB", size)
     pixels = [
-        ((x * 7 + y * 11) % 256,) * 3
-        for y in range(size[1])
-        for x in range(size[0])
+        ((x * 7 + y * 11) % 256,) * 3 for y in range(size[1]) for x in range(size[0])
     ]
     im.putdata(pixels)
     palette = Image.new("P", (1, 1))

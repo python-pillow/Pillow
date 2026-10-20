@@ -1117,13 +1117,21 @@ frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
     return imOut;
 }
 
-
 /* Jarvis-Judice-Ninke error diffusion, with a 5x3 kernel (divisor 48).
  * Keep three rows of weighted errors; every contribution stays in bounds. */
 static const int jjn_taps[][3] = {
-    {1, 0, 7},  {2, 0, 5},
-    {-2, 1, 3}, {-1, 1, 5}, {0, 1, 7}, {1, 1, 5}, {2, 1, 3},
-    {-2, 2, 1}, {-1, 2, 3}, {0, 2, 5}, {1, 2, 3}, {2, 2, 1}
+    {1, 0, 7},
+    {2, 0, 5},
+    {-2, 1, 3},
+    {-1, 1, 5},
+    {0, 1, 7},
+    {1, 1, 5},
+    {2, 1, 3},
+    {-2, 2, 1},
+    {-1, 2, 3},
+    {0, 2, 5},
+    {1, 2, 3},
+    {2, 2, 1}
 };
 
 static Imaging
@@ -1164,7 +1172,8 @@ dither_jjn(Imaging imOut, Imaging imIn, ImagingPalette palette, int alpha) {
                     int original = imIn->bands == 1 ? in[x] : in[x * 4 + c];
                     values[c] = CLIP8(original + errors[pos + c] / 48);
                 }
-                INT16 *cache = &ImagingPaletteCache(palette, values[0], values[1], values[2]);
+                INT16 *cache =
+                    &ImagingPaletteCache(palette, values[0], values[1], values[2]);
                 if (cache[0] == 0x100) {
                     ImagingPaletteCacheUpdate(palette, values[0], values[1], values[2]);
                 }
