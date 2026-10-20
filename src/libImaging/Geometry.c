@@ -44,7 +44,7 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             FLIP_LEFT_RIGHT(UINT16, image8)
         } else {
             FLIP_LEFT_RIGHT(UINT8, image8)
@@ -138,7 +138,7 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
     MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             ROTATE_90(UINT16, image8);
         } else {
             ROTATE_90(UINT8, image8);
@@ -201,7 +201,7 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
     MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             TRANSPOSE(UINT16, image8);
         } else {
             TRANSPOSE(UINT8, image8);
@@ -266,7 +266,7 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
     MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             TRANSVERSE(UINT16, image8);
         } else {
             TRANSVERSE(UINT8, image8);
@@ -314,7 +314,7 @@ ImagingRotate180(Imaging imOut, Imaging imIn) {
 
     yr = ysize - 1;
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             ROTATE_180(UINT16, image8)
         } else {
             ROTATE_180(UINT8, image8)
@@ -378,7 +378,7 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
     MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             ROTATE_270(UINT16, image8);
         } else {
             ROTATE_270(UINT8, image8);

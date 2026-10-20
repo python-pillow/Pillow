@@ -100,11 +100,14 @@ class TestFileTiff:
 
             assert_image_similar_tofile(im, "Tests/images/pil136.png", 1)
 
-    def test_bigtiff(self, tmp_path: Path) -> None:
-        with Image.open("Tests/images/hopper_bigtiff.tif") as im:
+    @pytest.mark.parametrize(
+        "test_file",
+        ("Tests/images/hopper_bigtiff.tif", "Tests/images/hopper_bigtiff_be.tif"),
+    )
+    def test_bigtiff(self, test_file: str, tmp_path: Path) -> None:
+        with Image.open(test_file) as im:
             assert_image_equal_tofile(im, "Tests/images/hopper.tif")
 
-        with Image.open("Tests/images/hopper_bigtiff.tif") as im:
             outfile = tmp_path / "temp.tif"
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
             im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)
@@ -123,6 +126,34 @@ class TestFileTiff:
         with Image.open(outfile) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2._bigtiff is True
+
+    def test_bigtiff_save_big_endian_ifd(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+        with Image.open("Tests/images/exif_gps.jpg") as jpeg:
+            exif = jpeg.getexif()
+        gps = exif.get_ifd(0x8825)
+        assert gps
+
+        # I;16B is saved as big-endian
+        im = Image.new("I;16B", (1, 1))
+        im.save(outfile, big_tiff=True, exif=exif)
+
+        with Image.open(outfile) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2.prefix == b"MM"
+            assert reloaded.tag_v2._bigtiff is True
+            assert reloaded.tag_v2.tagtype[0x8825] == TiffTags.LONG
+            assert reloaded.getexif().get_ifd(0x8825) == gps
+
+            # Check that a LONG tag is upgraded to LONG8
+            # when the offset is large enough to make it necessary
+            reloaded.tag_v2.tagtype[32768] = TiffTags.LONG
+            reloaded.tag_v2[32768] = {}
+            data = reloaded.tag_v2.tobytes(2**32)
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2(b"MM\x00\x2b" + b"\x00" * 12)
+        ifd.load(BytesIO(data))
+        assert ifd.tagtype[32768] == TiffTags.LONG8
 
     def test_seek_too_large(self) -> None:
         with pytest.raises(ValueError, match="Unable to seek to frame"):
@@ -555,6 +586,25 @@ class TestFileTiff:
 
             im.seek(1)
             assert im.getexif()[273] == (1408, 1907)
+
+    @pytest.mark.parametrize(
+        "orientation, method",
+        (
+            (5, Image.Transpose.TRANSPOSE),
+            (6, Image.Transpose.ROTATE_270),
+            (7, Image.Transpose.TRANSVERSE),
+            (8, Image.Transpose.ROTATE_90),
+        ),
+    )
+    def test_orientation_mmap(
+        self, orientation: int, method: Image.Transpose, tmp_path: Path
+    ) -> None:
+        filename = tmp_path / "temp.tif"
+        im = hopper("L").crop((0, 0, 128, 64))
+        im.save(filename, tiffinfo={274: orientation})
+        with Image.open(filename) as reloaded:
+            assert reloaded.size == (64, 128)
+            assert_image_equal(reloaded, im.transpose(method))
 
     @pytest.mark.parametrize("mode", ("1", "L"))
     def test_photometric(self, mode: str, tmp_path: Path) -> None:
@@ -1023,6 +1073,8 @@ class TestFileTiff:
                 im.load()
 
     @timeout_unless_slower_valgrind(6)
+    @pytest.mark.filterwarnings("ignore:Corrupt EXIF data")
+    @pytest.mark.filterwarnings("ignore:Tag data larger than file")
     @pytest.mark.filterwarnings("ignore:Truncated File Read")
     def test_timeout(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/timeout-6646305047838720") as im:

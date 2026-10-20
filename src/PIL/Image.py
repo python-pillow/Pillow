@@ -884,7 +884,7 @@ class Image:
         # unpack data
         e = _getencoder(self.mode, encoder_name, encoder_args)
         try:
-            e.setimage(self.im, (0, 0, *self.size))
+            e.setimage(self.im)
 
             from . import ImageFile
 
@@ -951,19 +951,13 @@ class Image:
             # may pass tuple instead of argument list
             decoder_args = decoder_args[0]
 
-        if decoder_args and decoder_args[0] in {"P;2L", "P;4L"}:
-            multiple = 4 if decoder_args[0] == "P;2L" else 8
-            if len(data) % multiple:
-                msg = "not enough image data"
-                raise ValueError(msg)
-
         # default format
         if decoder_name == "raw" and decoder_args == ():
             decoder_args = self.mode
 
         # unpack data
         d = _getdecoder(self.mode, decoder_name, decoder_args)
-        d.setimage(self.im, (0, 0, *self.size))
+        d.setimage(self.im)
         s = d.decode(data)
 
         if s[0] >= 0:
@@ -2420,7 +2414,7 @@ class Image:
 
         if self.mode in ["LA", "RGBA"] and resample != Resampling.NEAREST:
             im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
-            im = im.resize(size, resample, box)
+            im = im.resize(size, resample, box, reducing_gap)
             return im.convert(self.mode)
 
         self.load()
@@ -3375,9 +3369,6 @@ class SupportsArrayInterface(Protocol):
 
     @property
     def __array_interface__(self) -> dict[str, Any]:
-        raise NotImplementedError()
-
-    def __len__(self) -> int:
         raise NotImplementedError()
 
 

@@ -202,9 +202,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             fp.write(colormap[3 * i : 3 * i + 3])
 
     # now convert data to raw form
-    ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, (rawmode, rowbytes, 1))]
-    )
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", args=(rawmode, rowbytes, 1))])
 
     if hasattr(fp, "flush"):
         fp.flush()
