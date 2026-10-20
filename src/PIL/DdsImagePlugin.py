@@ -354,7 +354,7 @@ class DdsImageFile(ImageFile.ImageFile):
         self._size = (width, height)
 
         pitch, depth, mipmaps = struct.unpack("<3I", header[12:24])
-        struct.unpack("<11I", header[24:68])  # reserved
+        # 24 - 68 is reserved
 
         # pixel format
         pfsize, pfflags, fourcc, bitcount = struct.unpack("<4I", header[68:84])
