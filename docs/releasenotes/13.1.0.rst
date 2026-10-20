@@ -49,6 +49,13 @@ TODO
 Other changes
 =============
 
+Palette operations after converting transparent images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Fixed incorrect palette colours and invalid palettes in :py:func:`~PIL.ImageOps.invert`,
+:py:func:`~PIL.ImageOps.posterize` and :py:func:`~PIL.ImageOps.solarize` when reusing a
+transparent P image with an RGB palette after conversion to RGBA, LA or PA, or saving it as WebP.
+
 Blurring I;16 images
 ^^^^^^^^^^^^^^^^^^^^
 

@@ -70,7 +70,7 @@ def _lut(image: Image.Image, lut: list[int], palette: bool = False) -> Image.Ima
         assert im.palette is not None
         palette_mode = im.palette.mode
         channels = len(palette_mode)
-        colors = im.getpalette(None)
+        colors = im.getpalette("RGB" if palette_mode == "RGB" else None)
         assert colors is not None
         im.putpalette(
             [

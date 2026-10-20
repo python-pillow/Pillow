@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from io import BytesIO
+
 import pytest
 
 from PIL import ExifTags, Image, ImageDraw, ImageOps, ImageStat, features
@@ -695,6 +697,54 @@ def test_palette_operation(operation: Callable[[Image.Image], Image.Image]) -> N
 
     assert result.mode == "P"
     assert_image_equal(result.convert("RGB"), operation(im.convert("RGB")))
+
+
+@pytest.mark.parametrize(
+    "operation",
+    (ImageOps.invert, lambda im: ImageOps.posterize(im, 3), ImageOps.solarize),
+)
+@pytest.mark.parametrize("test_file", ("transparent.gif", "tiny.png", "pil123p.png"))
+def test_palette_operation_after_rgba_conversion(
+    operation: Callable[[Image.Image], Image.Image], test_file: str
+) -> None:
+    with Image.open("Tests/images/" + test_file) as im:
+        # Converting to RGBA applies transparency to the original P image's C palette.
+        rgba = im.convert("RGBA")
+        result = operation(im)
+
+        assert result.mode == "P"
+        assert result.info["transparency"] == im.info["transparency"]
+        assert_image_equal(result.convert("RGB"), operation(im.convert("RGB")))
+        assert_image_equal(result.convert("RGBA").getchannel("A"), rgba.getchannel("A"))
+
+
+@pytest.mark.parametrize(
+    "operation",
+    (ImageOps.invert, lambda im: ImageOps.posterize(im, 3), ImageOps.solarize),
+)
+@pytest.mark.parametrize("mode", ("RGBA", "LA", "PA"))
+@pytest.mark.parametrize("transparency", (0, b"\x00\xff"))
+def test_cmyk_palette_operation_after_conversion(
+    operation: Callable[[Image.Image], Image.Image],
+    mode: str,
+    transparency: int | bytes,
+) -> None:
+    im = Image.new("P", (2, 1))
+    im.putpalette((10, 30, 70, 0, 20, 40, 80, 255), "CMYK")
+    im.putpixel((1, 0), 1)
+    im.info["transparency"] = transparency
+    expected = operation(im).getpalette("CMYK")
+
+    im.convert(mode)
+    result = operation(im)
+
+    assert result.mode == "P"
+    assert result.palette is not None
+    assert result.palette.mode == "CMYK"
+    assert result.getpalette("CMYK") == expected
+    assert result.info["transparency"] == transparency
+    assert result.tobytes() == im.tobytes()
+    result.save(BytesIO(), "PNG")
 
 
 def test_palette_operation_keeps_alpha() -> None:
