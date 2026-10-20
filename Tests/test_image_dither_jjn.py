@@ -22,9 +22,9 @@ def _expected_bilevel(values: list[int], size: tuple[int, int]) -> list[int]:
     for y in range(height):
         for x in range(width):
             weighted_error = errors[y % 3][x]
-            correction = (
-                weighted_error // 48 if weighted_error >= 0 else -(-weighted_error // 48)
-            )
+            correction = abs(weighted_error) // 48
+            if weighted_error < 0:
+                correction = -correction
             value = max(0, min(255, values[y * width + x] + correction))
             color = 255 if value > 128 else 0
             output.append(color)
