@@ -50,7 +50,7 @@ Other changes
 =============
 
 Copy read-only images before writing pixel data
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :py:meth:`~PIL.Image.Image.frombytes` and :py:meth:`~PIL.ImageCms.ImageCmsTransform.apply`
 now copy read-only image memory before writing to it. This also applies to in-place
