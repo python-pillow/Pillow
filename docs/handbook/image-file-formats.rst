@@ -1140,7 +1140,7 @@ SGI
 ^^^
 
 Pillow reads uncompressed and RLE compressed ``L``, ``RGB``, and ``RGBA`` files,
-both 8-bit and 16-bit. It writes uncompressed files.
+with either 8-bit or 16-bit channels. It writes uncompressed files.
 
 Saving
 ~~~~~~
@@ -1148,8 +1148,8 @@ Saving
 The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
 
 **bpc**
-    The number of bytes per channel. Use ``1`` (the default) to save an 8-bit
-    file, or ``2`` to save a 16-bit file.
+    The number of bytes per channel. Use ``1`` (the default) to save each channel as
+    8-bit, or ``2`` to save each channel as 16-bit.
 
 
 SPIDER
@@ -1377,9 +1377,10 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     .. versionadded:: 6.1.0
 
 **strip_size**
-    The target size of each strip in bytes, used to work out how many rows go
-    in each strip when saving with libtiff, unless RowsPerStrip is already set
-    in ``tiffinfo``. The default is 65536.
+    When saving with libtiff, the requested size of each strip in bytes. The default is
+    65536. The strip size is controlled by using this value to calculate the
+    RowsPerStrip tag. This can be overridden by setting the RowsPerStrip tag directly
+    instead.
 
 These arguments to set the tiff header fields are an alternative to
 using the general tags available through tiffinfo.
