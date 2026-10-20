@@ -503,12 +503,11 @@ class TestFileLibTiff(LibTiffTestCase):
 
         with Image.open(out) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            tag_data = reloaded.tag_v2[tag]
             if tag == 532:
-                assert tuple(float(v) for v in reloaded.tag_v2[tag]) == pytest.approx(
-                    value
-                )
+                assert tuple(float(v) for v in tag_data) == pytest.approx(value)
             else:
-                assert tuple(reloaded.tag_v2[tag]) == value
+                assert tuple(tag_data) == value
 
     def test_inknames_tag(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path

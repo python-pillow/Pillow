@@ -36,6 +36,7 @@ import itertools
 import logging
 import os
 import struct
+import sys
 from typing import NamedTuple, cast
 
 from . import ExifTags, Image
@@ -100,15 +101,15 @@ def _get_oserror(error: int, *, encoder: bool) -> OSError:
 
 def _get_fp_length(fp: IO[bytes]) -> int:
     if isinstance(fp, io.BytesIO):
-        return fp.getbuffer().nbytes
-    try:
-        return os.fstat(fp.fileno()).st_size
-    except Exception:
-        pos = fp.tell()
-        fp.seek(0, io.SEEK_END)
-        length = fp.tell()
-        fp.seek(pos)
-        return length
+        if sys.implementation.name == "pypy":
+            pos = fp.tell()
+            fp.seek(0, io.SEEK_END)
+            length = fp.tell()
+            fp.seek(pos)
+            return length
+        else:
+            return fp.getbuffer().nbytes
+    return os.fstat(fp.fileno()).st_size
 
 
 def _tilesort(t: _Tile) -> int:
@@ -480,6 +481,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
 
     def _get_fp_length(self, fp: IO[bytes] | None = None) -> int:
         if fp is None:
+            assert self.fp is not None
             fp = self.fp
         return _get_fp_length(fp)
 
