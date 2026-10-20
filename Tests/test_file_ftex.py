@@ -28,19 +28,6 @@ def test_invalid_file() -> None:
         FtexImagePlugin.FtexImageFile(invalid_file)
 
 
-def test_truncated_mipmap() -> None:
-    with open("Tests/images/ftex_uncompressed.ftu", "rb") as fp:
-        data = bytearray(fp.read())
-
-    # Set mipmap size larger than the remaining data
-    (where,) = struct.unpack("<i", data[28:32])
-    data[where : where + 4] = struct.pack("<I", 0xFFFFFFFF)
-
-    b = io.BytesIO(data)
-    with pytest.raises(OSError, match="Truncated File Read"):
-        Image.open(b)
-
-
 def test_invalid_texture() -> None:
     with open("Tests/images/ftex_dxt1.ftc", "rb") as fp:
         data = fp.read()

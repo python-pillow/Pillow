@@ -57,7 +57,6 @@ __lazy_modules__ = {"io", "struct"}
 
 import struct
 from enum import IntEnum
-from io import BytesIO
 
 from . import Image, ImageFile
 
@@ -89,26 +88,17 @@ class FtexImageFile(ImageFile.ImageFile):
             raise ValueError(msg)
 
         format, where = struct.unpack("<2i", self.fp.read(8))
-        self.fp.seek(where)
-        (mipmap_size,) = struct.unpack("<I", self.fp.read(4))
 
-        data = ImageFile._safe_read(self.fp, mipmap_size)
-
+        offset = where + 4
         if format == Format.DXT1:
             self._mode = "RGBA"
-            self.tile = [ImageFile._Tile("bcn", args=(1,))]
+            self.tile = [ImageFile._Tile("bcn", None, offset, (1,))]
         elif format == Format.UNCOMPRESSED:
             self._mode = "RGB"
-            self.tile = [ImageFile._Tile("raw", args="RGB")]
+            self.tile = [ImageFile._Tile("raw", None, offset, "RGB")]
         else:
             msg = f"Invalid texture compression format: {repr(format)}"
             raise ValueError(msg)
-
-        self.fp.close()
-        self.fp = BytesIO(data)
-
-    def load_seek(self, pos: int) -> None:
-        pass
 
 
 def _accept(prefix: bytes) -> bool:
