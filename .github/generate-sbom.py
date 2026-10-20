@@ -464,8 +464,9 @@ def generate(version: str) -> dict:
                     },
                 ],
                 "notes": (
-                    "Vendored from upstream openjpeg 2.5.4 with a commit from master "
-                    "cherry-picked to fix OSV-2025-219."
+                    "Vendored from upstream openjpeg 2.5.4 with commits from master "
+                    "cherry-picked to fix OSV-2025-219 and "
+                    "uclouvain/openjpeg#1619."
                 ),
             },
             "externalReferences": [
