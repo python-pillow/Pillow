@@ -13,6 +13,15 @@ CIBW_ARCH=${CIBW_OS_ARCH#*_}
 PROJECTDIR=$(pwd)
 PATCH_DIR=$(pwd)/patches
 
+# Use a subdirectory to allow building for multiple platforms on the same machine, but
+# create a "current" symlink to simplify setting PKG_CONFIG_PATH in setup.py, and
+# AUDITWHEEL_LD_LIBRARY_PATH in pyproject.toml.
+deps_dir=$(pwd)/build/deps
+mkdir -p $deps_dir
+WORKDIR=$deps_dir/$CIBW_OS_ARCH
+ln -sfn $CIBW_OS_ARCH $deps_dir/current
+BUILD_PREFIX=$WORKDIR/prefix
+
 if [ "$CIBW_OS" = "android" ]; then
     IS_ANDROID=1
     case "$CIBW_ARCH" in
@@ -88,13 +97,11 @@ else
     exit 1
 fi
 
-WORKDIR=$(pwd)/build/$CIBW_OS_ARCH
-BUILD_PREFIX=$WORKDIR/prefix
-
 # Define custom utilities
 source wheels/multibuild/common_utils.sh
 
-# Adjust variables for cross-compilation.
+# Android builds can be done on Linux or macOS, but we don't want to enable any behavior
+# specific to those platforms.
 if [ -n "$IS_ANDROID" ]; then
     unset IS_MACOS IS_OSX MB_ML_VER
 fi

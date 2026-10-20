@@ -280,6 +280,11 @@ def _cmd_exists(cmd: str) -> bool:
 
 def _pkg_config(name: str) -> tuple[list[str], list[str]] | None:
     command = os.environ.get("PKG_CONFIG", "pkg-config")
+    env = {
+        **os.environ,
+        "PKG_CONFIG_PATH": os.path.abspath("build/deps/current/prefix/lib/pkgconfig"),
+    }
+
     for keep_system in (True, False):
         try:
             command_libs = [command, "--libs-only-L", name]
@@ -294,13 +299,13 @@ def _pkg_config(name: str) -> tuple[list[str], list[str]] | None:
                 command_cflags.append("--silence-errors")
             libs = re.split(
                 r"(^|\s+)-L",
-                subprocess.check_output(command_libs, stderr=stderr)
+                subprocess.check_output(command_libs, env=env, stderr=stderr)
                 .decode("utf8")
                 .strip(),
             )[::2][1:]
             cflags = re.split(
                 r"(^|\s+)-I",
-                subprocess.check_output(command_cflags).decode("utf8").strip(),
+                subprocess.check_output(command_cflags, env=env).decode("utf8").strip(),
             )[::2][1:]
             return libs, cflags
         except Exception:
@@ -935,9 +940,6 @@ class pil_build_ext(build_ext):
             defs.append(("HAVE_LIBIMAGEQUANT", None))
         if feature.get("xcb"):
             libs.append(feature.get("xcb"))
-            if sys.platform == "ios":
-                # Ensure transitive dependencies are linked.
-                libs.append("Xau")
             defs.append(("HAVE_XCB", None))
         if sys.platform == "win32":
             libs.extend(["kernel32", "user32", "gdi32"])

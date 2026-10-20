@@ -135,6 +135,10 @@ test-sources = [
 xbuild-tools = []
 
 [[tool.cibuildwheel.overrides]]
+select = [ "*-android_*", "*-*linux_*" ]
+environment.AUDITWHEEL_LD_LIBRARY_PATH = "$(pwd)/build/deps/current/prefix/lib"
+
+[[tool.cibuildwheel.overrides]]
 select = [
   # NumPy does not have wheels for these platforms or Python versions.
   "*-android_*",
