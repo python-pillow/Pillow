@@ -35,7 +35,6 @@ ImagingUnsharpMask(
     UINT8 *lineIn8 = NULL;
     UINT8 *lineOut8 = NULL;
 
-    /* The sharpening below only handles 8-bit channels. */
     if (imIn->type != IMAGING_TYPE_UINT8) {
         return ImagingError_ModeError();
     }

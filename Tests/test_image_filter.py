@@ -269,8 +269,10 @@ def test_consistency_i16_high_byte(mode: str) -> None:
     "filter_to_apply",
     (
         ImageFilter.GaussianBlur,
+        ImageFilter.GaussianBlur(0),
         ImageFilter.GaussianBlur(5),
         ImageFilter.GaussianBlur((2, 5)),
+        ImageFilter.BoxBlur(0),
         ImageFilter.BoxBlur(5),
         ImageFilter.BoxBlur((2, 5)),
     ),

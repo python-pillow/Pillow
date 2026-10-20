@@ -2,6 +2,148 @@
 
 typedef UINT8 pixel[4];
 
+void static inline ImagingLineBoxBlur8(
+    UINT8 *lineOut,
+    UINT8 *lineIn,
+    int lastx,
+    int radius,
+    int edgeA,
+    int edgeB,
+    UINT32 ww,
+    UINT32 fw
+) {
+    int x;
+    UINT32 acc;
+    UINT32 bulk;
+
+#define MOVE_ACC(acc, subtract, add) acc += lineIn[add] - lineIn[subtract];
+
+#define ADD_FAR(bulk, acc, left, right) \
+    bulk = (acc * ww) + (lineIn[left] + lineIn[right]) * fw;
+
+#define SAVE(x, bulk) lineOut[x] = (UINT8)((bulk + (1 << 23)) >> 24)
+
+    acc = lineIn[0] * (radius + 1);
+    for (x = 0; x < edgeA - 1; x++) {
+        acc += lineIn[x];
+    }
+    acc += lineIn[lastx] * (radius - edgeA + 1);
+
+    if (edgeA <= edgeB) {
+        for (x = 0; x < edgeA; x++) {
+            MOVE_ACC(acc, 0, x + radius);
+            ADD_FAR(bulk, acc, 0, x + radius + 1);
+            SAVE(x, bulk);
+        }
+        for (x = edgeA; x < edgeB; x++) {
+            MOVE_ACC(acc, x - radius - 1, x + radius);
+            ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
+            SAVE(x, bulk);
+        }
+        for (x = edgeB; x <= lastx; x++) {
+            MOVE_ACC(acc, x - radius - 1, lastx);
+            ADD_FAR(bulk, acc, x - radius - 1, lastx);
+            SAVE(x, bulk);
+        }
+    } else {
+        for (x = 0; x < edgeB; x++) {
+            MOVE_ACC(acc, 0, x + radius);
+            ADD_FAR(bulk, acc, 0, x + radius + 1);
+            SAVE(x, bulk);
+        }
+        for (x = edgeB; x < edgeA; x++) {
+            MOVE_ACC(acc, 0, lastx);
+            ADD_FAR(bulk, acc, 0, lastx);
+            SAVE(x, bulk);
+        }
+        for (x = edgeA; x <= lastx; x++) {
+            MOVE_ACC(acc, x - radius - 1, lastx);
+            ADD_FAR(bulk, acc, x - radius - 1, lastx);
+            SAVE(x, bulk);
+        }
+    }
+
+#undef MOVE_ACC
+#undef ADD_FAR
+#undef SAVE
+}
+
+void static inline ImagingLineBoxBlur16(
+    UINT8 *lineOut,
+    UINT8 *lineIn,
+    int lastx,
+    int radius,
+    int edgeA,
+    int edgeB,
+    UINT32 ww,
+    UINT32 fw,
+    int bigendian
+) {
+    int x;
+    uint64_t acc;
+    uint64_t bulk;
+    UINT16 value;
+
+#define GET(x)                                         \
+    ((uint64_t)lineIn[(x) * 2 + (bigendian ? 1 : 0)] + \
+     ((uint64_t)lineIn[(x) * 2 + (bigendian ? 0 : 1)] << 8))
+
+#define MOVE_ACC(acc, subtract, add) acc += GET(add) - GET(subtract);
+
+#define ADD_FAR(bulk, acc, left, right) \
+    bulk = (acc * ww) + (GET(left) + GET(right)) * fw;
+
+#define SAVE(x, bulk)                                    \
+    value = (UINT16)((bulk + (1 << 23)) >> 24);          \
+    lineOut[x * 2 + (bigendian ? 1 : 0)] = (UINT8)value; \
+    lineOut[x * 2 + (bigendian ? 0 : 1)] = (UINT8)(value >> 8);
+
+    acc = GET(0) * (radius + 1);
+    for (x = 0; x < edgeA - 1; x++) {
+        acc += GET(x);
+    }
+    acc += GET(lastx) * (radius - edgeA + 1);
+
+    if (edgeA <= edgeB) {
+        for (x = 0; x < edgeA; x++) {
+            MOVE_ACC(acc, 0, x + radius);
+            ADD_FAR(bulk, acc, 0, x + radius + 1);
+            SAVE(x, bulk);
+        }
+        for (x = edgeA; x < edgeB; x++) {
+            MOVE_ACC(acc, x - radius - 1, x + radius);
+            ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
+            SAVE(x, bulk);
+        }
+        for (x = edgeB; x <= lastx; x++) {
+            MOVE_ACC(acc, x - radius - 1, lastx);
+            ADD_FAR(bulk, acc, x - radius - 1, lastx);
+            SAVE(x, bulk);
+        }
+    } else {
+        for (x = 0; x < edgeB; x++) {
+            MOVE_ACC(acc, 0, x + radius);
+            ADD_FAR(bulk, acc, 0, x + radius + 1);
+            SAVE(x, bulk);
+        }
+        for (x = edgeB; x < edgeA; x++) {
+            MOVE_ACC(acc, 0, lastx);
+            ADD_FAR(bulk, acc, 0, lastx);
+            SAVE(x, bulk);
+        }
+        for (x = edgeA; x <= lastx; x++) {
+            MOVE_ACC(acc, x - radius - 1, lastx);
+            ADD_FAR(bulk, acc, x - radius - 1, lastx);
+            SAVE(x, bulk);
+        }
+    }
+
+#undef GET
+#undef MOVE_ACC
+#undef ADD_FAR
+#undef SAVE
+}
+
 void static inline ImagingLineBoxBlur32(
     pixel *lineOut,
     pixel *lineIn,
@@ -94,148 +236,6 @@ void static inline ImagingLineBoxBlur32(
         }
     }
 
-#undef MOVE_ACC
-#undef ADD_FAR
-#undef SAVE
-}
-
-void static inline ImagingLineBoxBlur8(
-    UINT8 *lineOut,
-    UINT8 *lineIn,
-    int lastx,
-    int radius,
-    int edgeA,
-    int edgeB,
-    UINT32 ww,
-    UINT32 fw
-) {
-    int x;
-    UINT32 acc;
-    UINT32 bulk;
-
-#define MOVE_ACC(acc, subtract, add) acc += lineIn[add] - lineIn[subtract];
-
-#define ADD_FAR(bulk, acc, left, right) \
-    bulk = (acc * ww) + (lineIn[left] + lineIn[right]) * fw;
-
-#define SAVE(x, bulk) lineOut[x] = (UINT8)((bulk + (1 << 23)) >> 24)
-
-    acc = lineIn[0] * (radius + 1);
-    for (x = 0; x < edgeA - 1; x++) {
-        acc += lineIn[x];
-    }
-    acc += lineIn[lastx] * (radius - edgeA + 1);
-
-    if (edgeA <= edgeB) {
-        for (x = 0; x < edgeA; x++) {
-            MOVE_ACC(acc, 0, x + radius);
-            ADD_FAR(bulk, acc, 0, x + radius + 1);
-            SAVE(x, bulk);
-        }
-        for (x = edgeA; x < edgeB; x++) {
-            MOVE_ACC(acc, x - radius - 1, x + radius);
-            ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
-            SAVE(x, bulk);
-        }
-        for (x = edgeB; x <= lastx; x++) {
-            MOVE_ACC(acc, x - radius - 1, lastx);
-            ADD_FAR(bulk, acc, x - radius - 1, lastx);
-            SAVE(x, bulk);
-        }
-    } else {
-        for (x = 0; x < edgeB; x++) {
-            MOVE_ACC(acc, 0, x + radius);
-            ADD_FAR(bulk, acc, 0, x + radius + 1);
-            SAVE(x, bulk);
-        }
-        for (x = edgeB; x < edgeA; x++) {
-            MOVE_ACC(acc, 0, lastx);
-            ADD_FAR(bulk, acc, 0, lastx);
-            SAVE(x, bulk);
-        }
-        for (x = edgeA; x <= lastx; x++) {
-            MOVE_ACC(acc, x - radius - 1, lastx);
-            ADD_FAR(bulk, acc, x - radius - 1, lastx);
-            SAVE(x, bulk);
-        }
-    }
-
-#undef MOVE_ACC
-#undef ADD_FAR
-#undef SAVE
-}
-
-void static inline ImagingLineBoxBlur16(
-    UINT8 *lineOut,
-    UINT8 *lineIn,
-    int lastx,
-    int radius,
-    int edgeA,
-    int edgeB,
-    UINT32 ww,
-    UINT32 fw,
-    int bigendian
-) {
-    int x;
-    uint64_t acc;
-    uint64_t bulk;
-    UINT16 value;
-
-#define GET(x)                                         \
-    ((uint64_t)lineIn[(x) * 2 + (bigendian ? 1 : 0)] + \
-     ((uint64_t)lineIn[(x) * 2 + (bigendian ? 0 : 1)] << 8))
-
-#define MOVE_ACC(acc, subtract, add) acc += GET(add) - GET(subtract);
-
-#define ADD_FAR(bulk, acc, left, right) \
-    bulk = (acc * ww) + (GET(left) + GET(right)) * fw;
-
-#define SAVE(x, bulk)                                      \
-    value = (UINT16)((bulk + (1 << 23)) >> 24);            \
-    lineOut[(x) * 2 + (bigendian ? 1 : 0)] = (UINT8)value; \
-    lineOut[(x) * 2 + (bigendian ? 0 : 1)] = (UINT8)(value >> 8);
-
-    acc = GET(0) * (radius + 1);
-    for (x = 0; x < edgeA - 1; x++) {
-        acc += GET(x);
-    }
-    acc += GET(lastx) * (radius - edgeA + 1);
-
-    if (edgeA <= edgeB) {
-        for (x = 0; x < edgeA; x++) {
-            MOVE_ACC(acc, 0, x + radius);
-            ADD_FAR(bulk, acc, 0, x + radius + 1);
-            SAVE(x, bulk);
-        }
-        for (x = edgeA; x < edgeB; x++) {
-            MOVE_ACC(acc, x - radius - 1, x + radius);
-            ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
-            SAVE(x, bulk);
-        }
-        for (x = edgeB; x <= lastx; x++) {
-            MOVE_ACC(acc, x - radius - 1, lastx);
-            ADD_FAR(bulk, acc, x - radius - 1, lastx);
-            SAVE(x, bulk);
-        }
-    } else {
-        for (x = 0; x < edgeB; x++) {
-            MOVE_ACC(acc, 0, x + radius);
-            ADD_FAR(bulk, acc, 0, x + radius + 1);
-            SAVE(x, bulk);
-        }
-        for (x = edgeB; x < edgeA; x++) {
-            MOVE_ACC(acc, 0, lastx);
-            ADD_FAR(bulk, acc, 0, lastx);
-            SAVE(x, bulk);
-        }
-        for (x = edgeA; x <= lastx; x++) {
-            MOVE_ACC(acc, x - radius - 1, lastx);
-            ADD_FAR(bulk, acc, x - radius - 1, lastx);
-            SAVE(x, bulk);
-        }
-    }
-
-#undef GET
 #undef MOVE_ACC
 #undef ADD_FAR
 #undef SAVE
@@ -357,15 +357,12 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n)
         return ImagingError_Mismatch();
     }
 
-    if (imIn->type != IMAGING_TYPE_UINT8 && imIn->type != IMAGING_TYPE_I16) {
-        return ImagingError_ModeError();
-    }
-
-    if (imIn->mode != IMAGING_MODE_RGB && imIn->mode != IMAGING_MODE_RGBA &&
-        imIn->mode != IMAGING_MODE_RGBa && imIn->mode != IMAGING_MODE_RGBX &&
-        imIn->mode != IMAGING_MODE_CMYK && imIn->mode != IMAGING_MODE_L &&
-        imIn->mode != IMAGING_MODE_LA && imIn->mode != IMAGING_MODE_La &&
-        !isModeI16(imIn->mode)) {
+    if (!(imIn->type == IMAGING_TYPE_UINT8 &&
+          (imIn->mode == IMAGING_MODE_RGB || imIn->mode == IMAGING_MODE_RGBA ||
+           imIn->mode == IMAGING_MODE_RGBa || imIn->mode == IMAGING_MODE_RGBX ||
+           imIn->mode == IMAGING_MODE_CMYK || imIn->mode == IMAGING_MODE_L ||
+           imIn->mode == IMAGING_MODE_LA || imIn->mode == IMAGING_MODE_La)) &&
+        imIn->type != IMAGING_TYPE_I16) {
         return ImagingError_ModeError();
     }
 
