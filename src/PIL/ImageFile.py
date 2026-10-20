@@ -36,6 +36,7 @@ import itertools
 import logging
 import os
 import struct
+import sys
 from typing import NamedTuple, cast
 
 from . import ExifTags, Image
@@ -96,6 +97,19 @@ def _get_oserror(error: int, *, encoder: bool) -> OSError:
         msg = f"{'encoder' if encoder else 'decoder'} error {error}"
     msg += f" when {'writing' if encoder else 'reading'} image file"
     return OSError(msg)
+
+
+def _get_fp_length(fp: IO[bytes]) -> int:
+    if isinstance(fp, io.BytesIO):
+        if sys.implementation.name == "pypy":
+            pos = fp.tell()
+            fp.seek(0, io.SEEK_END)
+            length = fp.tell()
+            fp.seek(pos)
+            return length
+        else:
+            return fp.getbuffer().nbytes
+    return os.fstat(fp.fileno()).st_size
 
 
 def _tilesort(t: _Tile) -> int:
@@ -464,6 +478,12 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
     # may be defined for blocked formats (e.g. PNG)
     # def load_read(self, read_bytes: int) -> bytes:
     #     pass
+
+    def _get_fp_length(self, fp: IO[bytes] | None = None) -> int:
+        if fp is None:
+            assert self.fp is not None
+            fp = self.fp
+        return _get_fp_length(fp)
 
     def _seek_check(self, frame: int) -> bool:
         if (

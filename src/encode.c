@@ -929,8 +929,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         }
 
         if (type == TIFF_NOTYPE) {
-            // Autodetect type. Types should not be changed for backwards
-            // compatibility.
+            // Autodetect type
             if (PyLong_Check(value)) {
                 type = TIFF_LONG;
             } else if (PyFloat_Check(value)) {
@@ -960,9 +959,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                     type = TIFF_FLOAT;
                 }
             }
-        }
-
-        if (type == TIFF_BYTE || type == TIFF_UNDEFINED) {
+        } else if (type == TIFF_BYTE || type == TIFF_UNDEFINED) {
             is_var_length = 1;
         }
         if (!is_core_tag && ImagingLibTiffMergeFieldInfo(
