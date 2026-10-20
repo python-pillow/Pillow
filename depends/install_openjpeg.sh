@@ -7,7 +7,7 @@ archive=v2.5.4
 
 pushd openjpeg-2.5.4
 
-# Apply patches for OSV-2025-219 and uclouvain/openjpeg#1619
+# Apply patches for OSV-2025-219 and CVE-2026-6192
 # Pending release of https://github.com/uclouvain/openjpeg/pull/1621
 # and https://github.com/uclouvain/openjpeg/pull/1628
 patch -p0 < ../patches/$archive.tar.gz.patch
