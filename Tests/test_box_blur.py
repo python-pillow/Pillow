@@ -61,6 +61,10 @@ def test_color_modes() -> None:
     box_blur(sample.convert("L"))
     box_blur(sample.convert("LA"))
     box_blur(sample.convert("LA").convert("La"))
+    box_blur(sample.convert("I;16"))
+    box_blur(sample.convert("I;16L"))
+    box_blur(sample.convert("I;16B"))
+    box_blur(sample.convert("I;16N"))
     with pytest.raises(ValueError):
         box_blur(sample.convert("I"))
     with pytest.raises(ValueError):
@@ -71,6 +75,15 @@ def test_color_modes() -> None:
     box_blur(sample.convert("CMYK"))
     with pytest.raises(ValueError):
         box_blur(sample.convert("YCbCr"))
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_i16_max_value(mode: str) -> None:
+    im = Image.new(mode, sample.size, 65535)
+    assert (
+        box_blur(im, 600, 3).get_flattened_data()
+        == (65535,) * sample.width * sample.height
+    )
 
 
 @pytest.mark.parametrize("size", ((0, 1), (1, 0)))

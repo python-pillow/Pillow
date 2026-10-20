@@ -51,7 +51,8 @@ TODO
 Other changes
 =============
 
-TODO
-^^^^
+Blurring I;16 images
+^^^^^^^^^^^^^^^^^^^^
 
-TODO
+:py:class:`~PIL.ImageFilter.GaussianBlur` and :py:class:`~PIL.ImageFilter.BoxBlur`
+now support I;16, I;16L, I;16B and I;16N images.

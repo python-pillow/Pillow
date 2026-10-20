@@ -1345,15 +1345,21 @@ class TiffImageFile(ImageFile.ImageFile):
         return blocks
 
     def load(self) -> Image.core.PixelAccess | None:
-        if self.tile and self.use_load_libtiff:
-            return self._load_libtiff()
-        return super().load()
+        if not self.tile:
+            return super().load()
 
-    def load_prepare(self) -> None:
-        if self._im is None:
-            Image._decompression_bomb_check(self._tile_size)
-            self.im = Image.core.new(self.mode, self._tile_size)
-        ImageFile.ImageFile.load_prepare(self)
+        original_size = self._size
+        self._size = self._tile_size
+
+        try:
+            if self.use_load_libtiff:
+                self._load_libtiff()
+                px = Image.Image.load(self)
+            else:
+                px = super().load()
+        finally:
+            self._size = original_size
+        return px
 
     def load_end(self) -> None:
         # allow closing if we're on the first frame, there's no next
@@ -1372,7 +1378,7 @@ class TiffImageFile(ImageFile.ImageFile):
         if ExifTags.Base.Orientation in self.tag_v2:
             del self.tag_v2[ExifTags.Base.Orientation]
 
-    def _load_libtiff(self) -> Image.core.PixelAccess | None:
+    def _load_libtiff(self) -> None:
         """Overload method triggered when we detect a compressed tiff
         Calls out to libtiff"""
 
@@ -1465,8 +1471,6 @@ class TiffImageFile(ImageFile.ImageFile):
             msg = f"decoder error {err}"
             raise OSError(msg)
 
-        return Image.Image.load(self)
-
     def _setup(self) -> None:
         """Setup this image object based on current tags"""
 
@@ -1506,6 +1510,7 @@ class TiffImageFile(ImageFile.ImageFile):
             msg = "Invalid dimensions"
             raise ValueError(msg)
         self._tile_size = xsize, ysize
+        Image._decompression_bomb_check(self._tile_size)
         orientation = self.tag_v2.get(ExifTags.Base.Orientation)
         if orientation in (5, 6, 7, 8):
             self._size = ysize, xsize
@@ -2042,7 +2047,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         a = (rawmode, _fp, filename, tags, types)
         encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
         try:
-            encoder.setimage(im.im, (0, 0, *im.size))
+            encoder.setimage(im.im)
             while True:
                 errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
                 if not _fp:
@@ -2064,7 +2069,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         ImageFile._save(
             im,
             fp,
-            [ImageFile._Tile("raw", (0, 0, *im.size), offset, (rawmode, stride, 1))],
+            [ImageFile._Tile("raw", None, offset, (rawmode, stride, 1))],
         )
 
     # -- helper for multi-page save --

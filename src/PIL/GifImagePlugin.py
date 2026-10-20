@@ -335,20 +335,18 @@ class GifImageFile(ImageFile.ImageFile):
                 self.palette = copy(self.global_palette)
             else:
                 self.palette = None
-        else:
-            if self.mode == "P":
-                if (
-                    LOADING_STRATEGY != LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
-                    or palette
-                ):
-                    if "transparency" in self.info:
-                        self.im.putpalettealpha(self.info["transparency"], 0)
-                        self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
-                        self._mode = "RGBA"
-                        del self.info["transparency"]
-                    else:
-                        self._mode = "RGB"
-                        self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
+        elif self.mode == "P" and (
+            LOADING_STRATEGY != LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
+            or palette
+        ):
+            if "transparency" in self.info:
+                self.im.putpalettealpha(self.info["transparency"], 0)
+                self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
+                self._mode = "RGBA"
+                del self.info["transparency"]
+            else:
+                self._mode = "RGB"
+                self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
 
         def _rgb(color: int) -> tuple[int, int, int]:
             if self._frame_palette:
@@ -634,9 +632,7 @@ def _write_single_frame(
     _write_local_header(fp, im, (0, 0), flags)
 
     im_out.encoderconfig = (8, get_interlace(im))
-    ImageFile._save(
-        im_out, fp, [ImageFile._Tile("gif", (0, 0, *im.size), 0, RAWMODE[im_out.mode])]
-    )
+    ImageFile._save(im_out, fp, [ImageFile._Tile("gif", args=RAWMODE[im_out.mode])])
 
     fp.write(b"\0")  # end of image data
 

@@ -224,13 +224,13 @@ PyImaging_AsImaging(PyObject *op);
 
 static PyObject *
 _setimage(ImagingEncoderObject *encoder, PyObject *args) {
-    PyObject *op, *extents;
+    PyObject *op, *extents = Py_None;
     Imaging im;
     ImagingCodecState state;
     Py_ssize_t x0, y0, x1, y1;
 
     /* FIXME: should publish the ImagingType descriptor */
-    if (!PyArg_ParseTuple(args, "OO", &op, &extents)) {
+    if (!PyArg_ParseTuple(args, "O|O", &op, &extents)) {
         return NULL;
     }
     im = PyImaging_AsImaging(op);
