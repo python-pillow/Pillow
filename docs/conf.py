@@ -236,8 +236,6 @@ html_js_files = [
 
 linkcheck_allowed_redirects = {
     r"https://www.bestpractices.dev/projects/6331": r"https://www.bestpractices.dev/en/.*",
-    r"https://badges.gitter.im/python-pillow/Pillow.svg": r"https://badges.gitter.im/repo.svg",
-    r"https://gitter.im/python-pillow/Pillow?.*": r"https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im?.*",
     r"https://pillow.readthedocs.io/?badge=latest": r"https://pillow.readthedocs.io/en/stable/?badge=latest",
     r"https://pillow.readthedocs.io": r"https://pillow.readthedocs.io/en/stable/",
     r"https://tidelift.com/badges/package/pypi/pillow?.*": r"https://img.shields.io/badge/.*",
