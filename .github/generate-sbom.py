@@ -434,7 +434,7 @@ def generate(version: str) -> dict:
                     {
                         "bom-ref": "pkg:generic/openjpeg@2.5.4#upstream",
                         "type": "library",
-                        "name": "libtiff",
+                        "name": "OpenJPEG",
                         "version": "2.5.4",
                         "purl": "pkg:generic/openjpeg@2.5.4",
                         "externalReferences": [
@@ -464,8 +464,8 @@ def generate(version: str) -> dict:
                     },
                 ],
                 "notes": (
-                    "Vendored from upstream openjpeg 2.5.4 with a commit from master "
-                    "cherry-picked to fix OSV-2025-219."
+                    "Vendored from upstream openjpeg 2.5.4 with commits from master "
+                    "cherry-picked to fix OSV-2025-219 and CVE-2026-6192."
                 ),
             },
             "externalReferences": [
