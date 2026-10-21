@@ -144,8 +144,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             raise OSError(msg)
 
         # we ignore the palette here
-        im._mode = "P"
-        rawmode = f"P;{bpp}"
+        rawmode = f"L;{bpp}"
         version = 1
 
     elif im.mode == "1":
@@ -172,7 +171,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     compression_type = _COMPRESSION_TYPES["none"]
 
     flags = 0
-    if rawmode == "P":
+    if im.mode == "P":
         flags |= _FLAGS["custom-colormap"]
         colormap = im.im.getpalette()
         colors = len(colormap) // 3
