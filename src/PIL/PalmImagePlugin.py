@@ -143,7 +143,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             msg = f"cannot write mode {im.mode} as Palm"
             raise OSError(msg)
 
-        # we ignore the palette here
         rawmode = f"L;{bpp}"
         version = 1
 

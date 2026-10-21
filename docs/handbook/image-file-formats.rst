@@ -1796,11 +1796,11 @@ Saving
 The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
 
 **bpp**
-    For ``L`` images, the number of bits per pixel to write, either 1, 2 or 4.
-    The image is reduced to that many shades of gray. If it is not given, the
-    ``bpp`` value from :py:attr:`~PIL.Image.Image.info` is used instead, and
-    only the lowest bits of each pixel are kept. ``L`` images cannot be saved
-    without one of these.
+    For ``L`` images, the number of bits per pixel to write, either 1, 2 or 4. Shades
+    in the image are adjusted to fit within this restriction. If omitted, the ``bpp``
+    value from :py:attr:`~PIL.Image.Image.info` can be used instead, and only the
+    lowest bits of each pixel are kept. If there is no ``bpp`` setting at all, ``L``
+    mode images cannot be saved.
 
 PDF
 ^^^
