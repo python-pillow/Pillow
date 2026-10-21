@@ -462,6 +462,10 @@ Used to specify the dithering method to use for the
 
       Floyd-Steinberg dither
 
+    .. py:attribute:: JARVIS_JUDICE_NINKE
+
+      Jarvis-Judice-Ninke dither
+
 Palettes
 ^^^^^^^^
 
