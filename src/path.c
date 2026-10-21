@@ -49,6 +49,14 @@ typedef struct {
 
 static PyTypeObject PyPathType;
 
+int
+path_setup(void) {
+    if (PyType_Ready(&PyPathType) < 0) {
+        return -1;
+    }
+    return 0;
+}
+
 static double *
 alloc_array(Py_ssize_t count) {
     double *xy;
@@ -77,11 +85,6 @@ path_new(Py_ssize_t count, double *xy, int duplicate) {
         }
         memcpy(p, xy, count * 2 * sizeof(double));
         xy = p;
-    }
-
-    if (PyType_Ready(&PyPathType) < 0) {
-        free(xy);
-        return NULL;
     }
 
     path = PyObject_New(PyPathObject, &PyPathType);
@@ -325,6 +328,10 @@ path_compact(PyPathObject *self, PyObject *args) {
     if (self->mapping) {
         PyErr_SetString(PyExc_ValueError, "Path compacted during mapping");
         return NULL;
+    }
+    if (self->count == 0) {
+        // no points to remove
+        return Py_BuildValue("i", 0);
     }
     if (!PyArg_ParseTuple(args, "|d:compact", &cityblock)) {
         return NULL;

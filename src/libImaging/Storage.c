@@ -330,7 +330,9 @@ ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max) {
 
 void
 ImagingMemorySetBlockAllocator(ImagingMemoryArena arena, int use_block_allocator) {
+    MUTEX_LOCK(&arena->mutex);
     arena->use_block_allocator = use_block_allocator;
+    MUTEX_UNLOCK(&arena->mutex);
 }
 
 void
@@ -615,7 +617,13 @@ ImagingNewInternal(const ModeID mode, int xsize, int ysize, int dirty) {
 
 Imaging
 ImagingNew(const ModeID mode, int xsize, int ysize) {
-    if (ImagingDefaultArena.use_block_allocator) {
+    int use_block_allocator;
+
+    MUTEX_LOCK(&ImagingDefaultArena.mutex);
+    use_block_allocator = ImagingDefaultArena.use_block_allocator;
+    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+
+    if (use_block_allocator) {
         return ImagingNewBlock(mode, xsize, ysize);
     }
     return ImagingNewInternal(mode, xsize, ysize, 0);
@@ -623,7 +631,13 @@ ImagingNew(const ModeID mode, int xsize, int ysize) {
 
 Imaging
 ImagingNewDirty(const ModeID mode, int xsize, int ysize) {
-    if (ImagingDefaultArena.use_block_allocator) {
+    int use_block_allocator;
+
+    MUTEX_LOCK(&ImagingDefaultArena.mutex);
+    use_block_allocator = ImagingDefaultArena.use_block_allocator;
+    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+
+    if (use_block_allocator) {
         return ImagingNewBlock(mode, xsize, ysize);
     }
     return ImagingNewInternal(mode, xsize, ysize, 1);

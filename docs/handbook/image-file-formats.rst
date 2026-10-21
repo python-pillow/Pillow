@@ -964,10 +964,10 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     .. versionadded:: 6.0.0
 
 **bits (experimental)**
-    For ``P`` images, this option controls how many bits to store. If omitted,
-    the PNG writer uses 8 bits (256 colors). The ``PLTE`` chunk only contains
-    as many entries as the image's palette actually has, rather than being
-    padded with zeroes up to ``2 ** bits``.
+    For ``L`` and ``P`` images, this option controls how many bits to store. If
+    omitted, the PNG writer uses 8 bits (256 colors). The ``PLTE`` chunk only contains
+    as many entries as the image's palette actually has, rather than being padded with
+    zeroes up to ``2 ** bits``.
 
 **dictionary (experimental)**
     Set the ZLIB encoder dictionary.
@@ -1139,7 +1139,17 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 SGI
 ^^^
 
-Pillow reads and writes uncompressed ``L``, ``RGB``, and ``RGBA`` files.
+Pillow reads uncompressed and RLE compressed ``L``, ``RGB``, and ``RGBA`` files,
+with either 8-bit or 16-bit channels. It writes uncompressed files.
+
+Saving
+~~~~~~
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**bpc**
+    The number of bytes per channel. Use ``1`` (the default) to save each channel as
+    8-bit, or ``2`` to save each channel as 16-bit.
 
 
 SPIDER
@@ -1366,6 +1376,12 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
     .. versionadded:: 6.1.0
 
+**strip_size**
+    When saving with libtiff, the requested size of each strip in bytes. The default is
+    65536. The strip size is controlled by using this value to calculate the
+    RowsPerStrip tag. This can be overridden by setting the RowsPerStrip tag directly
+    instead.
+
 These arguments to set the tiff header fields are an alternative to
 using the general tags available through tiffinfo.
 
@@ -1517,6 +1533,23 @@ XBM
 ^^^
 
 Pillow reads and writes X bitmap files (mode ``1``).
+
+Opening
+~~~~~~~
+
+The :py:meth:`~PIL.Image.open` method sets the following
+:py:attr:`~PIL.Image.Image.info` properties:
+
+**hotspot**
+    The ``(x, y)`` hotspot of the bitmap, if the file defines one.
+
+Saving
+~~~~~~
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**hotspot**
+    An ``(x, y)`` tuple. If given, the hotspot is written to the file.
 
 Read-only formats
 -----------------

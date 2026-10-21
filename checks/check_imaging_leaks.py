@@ -46,7 +46,7 @@ def _test_leak(
 
 def test_leak_putdata() -> None:
     im = Image.new("RGB", (25, 25))
-    _test_leak(min_iterations, max_iterations, im.putdata, im.getdata())
+    _test_leak(min_iterations, max_iterations, im.putdata, im.get_flattened_data())
 
 
 def test_leak_getlist() -> None:

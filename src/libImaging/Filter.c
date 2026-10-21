@@ -70,8 +70,18 @@ ImagingExpand(Imaging imIn, int margin) {
         return (Imaging)ImagingError_ValueError("filter size too large");
     }
 
-    imOut =
-        ImagingNewDirty(imIn->mode, imIn->xsize + 2 * margin, imIn->ysize + 2 * margin);
+    int xsize = imIn->xsize + 2 * margin;
+    int ysize = imIn->ysize + 2 * margin;
+    if (imIn->xsize == 0 || imIn->ysize == 0) {
+        imOut = ImagingNew(imIn->mode, xsize, ysize);
+        if (!imOut) {
+            return NULL;
+        }
+        ImagingCopyPalette(imOut, imIn);
+        return imOut;
+    }
+
+    imOut = ImagingNewDirty(imIn->mode, xsize, ysize);
     if (!imOut) {
         return NULL;
     }
@@ -104,11 +114,14 @@ ImagingExpand(Imaging imIn, int margin) {
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
+
     if (imIn->image8) {
         EXPAND(UINT8, image8);
     } else {
         EXPAND(INT32, image32);
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
     ImagingCopyPalette(imOut, imIn);
@@ -517,6 +530,8 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 o
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&im->mutex);
+
     if (xsize == 3) {
         /* 3x3 kernel. */
         ImagingFilter3x3(imOut, im, kernel, offset);
@@ -524,6 +539,7 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 o
         /* 5x5 kernel. */
         ImagingFilter5x5(imOut, im, kernel, offset);
     }
+    MUTEX_UNLOCK(&im->mutex);
     ImagingSectionLeave(&cookie);
     return imOut;
 }

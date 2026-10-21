@@ -92,6 +92,7 @@ def Ghostscript(
     scale = int(scale) or 1
     width = size[0] * scale
     height = size[1] * scale
+    Image._decompression_bomb_check((width, height))
     # resolution is dependent on bbox and size
     res_x = 72.0 * width / (bbox[2] - bbox[0])
     res_y = 72.0 * height / (bbox[3] - bbox[1])
@@ -103,7 +104,10 @@ def Ghostscript(
 
     infile_temp = None
     if hasattr(fp, "name") and os.path.exists(fp.name):
-        infile = fp.name
+        # Make the path absolute so that a filename beginning with "-" or "@"
+        # can never be interpreted by Ghostscript's argument parser
+        # as an option or an @-file token
+        infile = os.path.abspath(fp.name)
     else:
         in_fd, infile_temp = tempfile.mkstemp()
         os.close(in_fd)
@@ -195,10 +199,10 @@ class EpsImageFile(ImageFile.ImageFile):
     mode_map = {1: "L", 2: "LAB", 3: "RGB", 4: "CMYK"}
 
     def _open(self) -> None:
-        assert self.fp is not None
-        length, offset = self._find_offset(self.fp)
+        length, offset = self._find_offset()
 
         # go to offset - start of "%!PS"
+        assert self.fp is not None
         self.fp.seek(offset)
 
         self._mode = "RGB"
@@ -381,17 +385,15 @@ class EpsImageFile(ImageFile.ImageFile):
             bounding_box[3] - bounding_box[1],
         )
 
-        self.tile = [
-            ImageFile._Tile("eps", (0, 0, *self.size), offset, (length, bounding_box))
-        ]
+        self.tile = [ImageFile._Tile("eps", None, offset, (length, bounding_box))]
 
-    def _find_offset(self, fp: IO[bytes]) -> tuple[int, int]:
-        s = fp.read(4)
+    def _find_offset(self) -> tuple[int, int]:
+        assert self.fp is not None
+        s = self.fp.read(4)
 
         if s == b"%!PS":
             # for HEAD without binary preview
-            fp.seek(0, io.SEEK_END)
-            length = fp.tell()
+            length = self._get_fp_length()
             offset = 0
         elif i32(s) == 0xC6D3D0C5:
             # FIX for: Some EPS file not handled correctly / issue #302
@@ -399,7 +401,7 @@ class EpsImageFile(ImageFile.ImageFile):
             # or start directly with latin coding
             # more info see:
             # https://web.archive.org/web/20160528181353/http://partners.adobe.com/public/developer/en/ps/5002.EPSF_Spec.pdf
-            s = fp.read(8)
+            s = self.fp.read(8)
             offset = i32(s)
             length = i32(s, 4)
         else:
@@ -470,7 +472,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes, eps: int = 1) -
     if hasattr(fp, "flush"):
         fp.flush()
 
-    ImageFile._save(im, fp, [ImageFile._Tile("eps", (0, 0, *im.size))])
+    ImageFile._save(im, fp, [ImageFile._Tile("eps")])
 
     fp.write(b"\n%%%%EndBinary\n")
     fp.write(b"grestore end\n")

@@ -10,10 +10,11 @@
 #
 from __future__ import annotations
 
-__lazy_modules__ = {"gzip", "math"}
+__lazy_modules__ = {"gzip", "math", "zlib"}
 
 import gzip
 import math
+import zlib
 
 from . import Image, ImageFile
 
@@ -69,7 +70,7 @@ class FitsImageFile(ImageFile.ImageFile):
             raise ValueError(msg)
 
         offset += self.fp.tell() - 80
-        self.tile = [ImageFile._Tile(decoder_name, (0, 0, *self.size), offset, args)]
+        self.tile = [ImageFile._Tile(decoder_name, None, offset, args)]
 
     def _get_size(
         self, headers: dict[bytes, bytes], prefix: bytes
@@ -137,7 +138,14 @@ class FitsGzipDecoder(ImageFile.PyDecoder):
     def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         assert self.fd is not None
         with gzip.open(self.fd) as fp:
-            value = fp.read(self.state.xsize * self.state.ysize * 4)
+            try:
+                value = fp.read(self.state.xsize * self.state.ysize * 4)
+            except EOFError as e:
+                msg = "Truncated FITS gzip data"
+                raise OSError(msg) from e
+            except zlib.error as e:
+                msg = "Corrupt FITS gzip data"
+                raise OSError(msg) from e
 
             rows = []
             offset = 0

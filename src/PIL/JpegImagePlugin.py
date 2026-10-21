@@ -208,8 +208,6 @@ def SOF(self: JpegImageFile, marker: int) -> None:
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
     self._size = i16(s, 3), i16(s, 1)
-    if self._im is not None and self.size != self.im.size:
-        self._im = None
 
     self.bits = s[0]
     if self.bits != 8:
@@ -377,10 +375,12 @@ class JpegImageFile(ImageFile.ImageFile):
         self.applist: list[tuple[str, bytes]] = []
         self.icclist: list[bytes] = []
 
-        while True:
+        while s:
             i = s[0]
             if i == 0xFF:
-                s = s + self.fp.read(1)
+                s += self.fp.read(1)
+                if len(s) < 2:
+                    break
                 i = i16(s)
             else:
                 # Skip non-0xFF junk
@@ -395,9 +395,7 @@ class JpegImageFile(ImageFile.ImageFile):
                     rawmode = self.mode
                     if self.mode == "CMYK":
                         rawmode = "CMYK;I"  # assume adobe conventions
-                    self.tile = [
-                        ImageFile._Tile("jpeg", (0, 0, *self.size), 0, (rawmode, ""))
-                    ]
+                    self.tile = [ImageFile._Tile("jpeg", args=(rawmode, ""))]
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
@@ -460,12 +458,11 @@ class JpegImageFile(ImageFile.ImageFile):
             for s in [8, 4, 2, 1]:
                 if scale >= s:
                     break
-            assert e is not None
             e = (
-                e[0],
-                e[1],
-                (e[2] - e[0] + s - 1) // s + e[0],
-                (e[3] - e[1] + s - 1) // s + e[1],
+                0,
+                0,
+                (self.size[0] + s - 1) // s,
+                (self.size[1] + s - 1) // s,
             )
             self._size = ((self.size[0] + s - 1) // s, (self.size[1] + s - 1) // s)
             scale = s
@@ -806,6 +803,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             i += 1
 
     comment = info.get("comment", im.info.get("comment"))
+    if comment and len(comment) > MAX_BYTES_IN_MARKER:
+        msg = "Comment is too long"
+        raise ValueError(msg)
 
     # "progressive" is the official name, but older documentation
     # says "progression"
@@ -856,15 +856,16 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             bufsize += len(exif) + 5
         if extra:
             bufsize += len(extra)
+        if comment:
+            bufsize += len(comment) + 5
     else:
         # The EXIF info needs to be written as one block, + APP1, + one spare byte,
         # as libjpeg without suspension requires one byte left after writing a marker.
-        # Ensure that our buffer is big enough. Same with the icc_profile block.
-        bufsize = max(len(exif) + 5, len(extra))
+        # Ensure that our buffer is big enough. Same with the icc_profile block
+        # and the comment (COM marker).
+        bufsize = max(len(exif) + 5, len(extra), len(comment or b"") + 5)
 
-    ImageFile._save(
-        im, fp, [ImageFile._Tile("jpeg", (0, 0, *im.size), 0, rawmode)], bufsize
-    )
+    ImageFile._save(im, fp, [ImageFile._Tile("jpeg", args=rawmode)], bufsize)
 
 
 ##
