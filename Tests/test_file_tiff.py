@@ -178,6 +178,10 @@ class TestFileTiff:
         with Image.open(outfile) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2.prefix == b"MM"
+            assert reloaded.tag_v2._bigtiff is True
+            assert (
+                reloaded.tag_v2.tagtype[TiffImagePlugin.STRIPOFFSETS] == TiffTags.LONG
+            )
             assert len(reloaded.tag_v2[TiffImagePlugin.STRIPOFFSETS]) == 1
             assert_image_equal(reloaded, im)
 
@@ -188,7 +192,7 @@ class TestFileTiff:
         ifd = TiffImagePlugin.ImageFileDirectory_v2(b"MM\x00\x2b" + b"\x00" * 12)
         ifd.load(BytesIO(data))
         assert ifd.tagtype[TiffImagePlugin.STRIPOFFSETS] == TiffTags.LONG8
-        assert ifd[TiffImagePlugin.STRIPOFFSETS][0] >= 2**32
+        assert ifd[TiffImagePlugin.STRIPOFFSETS][0] > 2**32
 
     def test_seek_too_large(self) -> None:
         with pytest.raises(ValueError, match="Unable to seek to frame"):
