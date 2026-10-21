@@ -130,7 +130,7 @@ EXIFIFD = 34665
 XMP = 700
 JPEGQUALITY = 65537  # pseudo-tag by libtiff
 
-# https://github.com/imagej/ImageJA/blob/master/src/main/java/ij/io/TiffDecoder.java
+# https://github.com/imagej/ImageJ/blob/master/ij/io/TiffDecoder.java
 IMAGEJ_META_DATA_BYTE_COUNTS = 50838
 IMAGEJ_META_DATA = 50839
 
