@@ -155,6 +155,45 @@ class TestFileTiff:
         ifd.load(BytesIO(data))
         assert ifd.tagtype[32768] == TiffTags.LONG8
 
+    def test_bigtiff_save_two_strips(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+        im = hopper("L")
+
+        # Two LONG strip offsets fit within a BigTIFF entry
+        im.save(outfile, big_tiff=True, tiffinfo={TiffImagePlugin.ROWSPERSTRIP: 64})
+
+        with Image.open(outfile) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert len(reloaded.tag_v2[TiffImagePlugin.STRIPOFFSETS]) == 2
+            assert_image_equal(reloaded, im)
+
+    def test_bigtiff_save_big_endian_strip_offset(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+        # I;16B is saved as big-endian
+        im = hopper("I;16B")
+
+        # The single LONG strip offset fits within a BigTIFF entry
+        im.save(outfile, big_tiff=True)
+
+        with Image.open(outfile) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2.prefix == b"MM"
+            assert reloaded.tag_v2._bigtiff is True
+            assert (
+                reloaded.tag_v2.tagtype[TiffImagePlugin.STRIPOFFSETS] == TiffTags.LONG
+            )
+            assert len(reloaded.tag_v2[TiffImagePlugin.STRIPOFFSETS]) == 1
+            assert_image_equal(reloaded, im)
+
+            # Check that the strip offset is upgraded to LONG8
+            # when it is too large for a LONG
+            data = reloaded.tag_v2.tobytes(2**32)
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2(b"MM\x00\x2b" + b"\x00" * 12)
+        ifd.load(BytesIO(data))
+        assert ifd.tagtype[TiffImagePlugin.STRIPOFFSETS] == TiffTags.LONG8
+        assert ifd[TiffImagePlugin.STRIPOFFSETS][0] > 2**32
+
     def test_seek_too_large(self) -> None:
         with pytest.raises(ValueError, match="Unable to seek to frame"):
             Image.open("Tests/images/seek_too_large.tif")
