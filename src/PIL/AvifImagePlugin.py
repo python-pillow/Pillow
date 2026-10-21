@@ -240,7 +240,8 @@ def _save(
     )
 
     supported_modes = {"RGB", "RGBA"}
-    if tuple(int(x) for x in _avif.libavif_version.split(".")) >= (1, 3):
+    if tuple(int(v) for v in _avif.libavif_version.split(".")) >= (1, 3):
+        # AVIF_RGB_FORMAT_GRAY was only added in libavif 1.3.0
         supported_modes.add("L")
 
     # Add each frame
