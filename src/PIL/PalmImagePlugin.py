@@ -172,7 +172,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     compression_type = _COMPRESSION_TYPES["none"]
 
     flags = 0
-    if im.mode == "P":
+    if rawmode == "P":
         flags |= _FLAGS["custom-colormap"]
         colormap = im.im.getpalette()
         colors = len(colormap) // 3

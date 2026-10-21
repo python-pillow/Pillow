@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os.path
 import subprocess
+from io import BytesIO
 
 import pytest
 
@@ -70,6 +71,38 @@ def test_p_mode(tmp_path: Path) -> None:
     # Act / Assert
     helper_save_as_palm(tmp_path, mode)
     roundtrip(tmp_path, mode)
+
+
+@pytest.mark.parametrize("bpp", (1, 2, 4))
+def test_l_mode(bpp: int) -> None:
+    im = Image.new("L", (4, 1))
+    im.putdata([0, 85, 170, 255])
+
+    out = BytesIO()
+    im.save(out, "PALM", bpp=bpp)
+
+    data = out.getvalue()
+    # No custom colormap flag, and the requested bits per pixel
+    assert data[6:8] == b"\x00\x00"
+    assert data[8] == bpp
+    assert len(data) == 16 + 2
+
+    # Palm grayscale goes from white (0) to black
+    expected = {1: b"\xc0\x00", 2: b"\xe4\x00", 4: b"\xfa\x50"}
+    assert data[16:] == expected[bpp]
+
+
+def test_l_mode_info_bpp() -> None:
+    im = Image.new("L", (4, 1))
+    im.putdata([0, 1, 2, 3])
+    im.info["bpp"] = 2
+
+    out = BytesIO()
+    im.save(out, "PALM")
+
+    data = out.getvalue()
+    assert data[8] == 2
+    assert data[16:] == b"\xe4\x00"
 
 
 @pytest.mark.parametrize("mode", ("L", "RGB"))

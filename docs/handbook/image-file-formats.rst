@@ -1788,6 +1788,20 @@ Pillow provides write-only support for PALM pixmap files.
 
 The format code is ``Palm``, the extension is ``.palm``.
 
+``1``, ``L`` and ``P`` images can be saved.
+
+Saving
+~~~~~~
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**bpp**
+    For ``L`` images, the number of bits per pixel to write, either 1, 2 or 4.
+    The image is reduced to that many shades of gray. If it is not given, the
+    ``bpp`` value from :py:attr:`~PIL.Image.Image.info` is used instead, and
+    only the lowest bits of each pixel are kept. ``L`` images cannot be saved
+    without one of these.
+
 PDF
 ^^^
 
