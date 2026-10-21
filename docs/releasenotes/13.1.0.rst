@@ -49,13 +49,6 @@ TODO
 Other changes
 =============
 
-Covering zero-width images
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-:py:func:`~PIL.ImageOps.cover` now handles a zero-width image with nonzero height
-by returning an image with zero width and the requested height, instead of
-raising :py:exc:`ZeroDivisionError`.
-
 Blurring I;16 images
 ^^^^^^^^^^^^^^^^^^^^
 

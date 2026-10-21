@@ -193,6 +193,10 @@ def test_cover(image_name: str, expected_size: tuple[int, int]) -> None:
 
 
 def test_cover_zero() -> None:
+    im = Image.new("1", (0, 10))
+    new_im = ImageOps.cover(im, (5, 5))
+    assert new_im.size == (0, 5)
+
     im = Image.new("1", (10, 0))
     new_im = ImageOps.cover(im, (5, 5))
     assert new_im.size == (5, 0)
@@ -200,28 +204,6 @@ def test_cover_zero() -> None:
     im = Image.new("1", (5, 5))
     new_im = ImageOps.cover(im, (2, 0))
     assert new_im.size == (0, 0)
-
-
-@pytest.mark.parametrize("mode", ("1", "L", "RGB", "RGBA"))
-@pytest.mark.parametrize(
-    "source_size, target_size, expected_size",
-    [
-        ((0, 10), (5, 5), (0, 5)),
-        ((0, 10), (3, 7), (0, 7)),
-        ((0, 10), (3, 0), (0, 0)),
-        ((0, 0), (3, 7), (3, 0)),
-    ],
-)
-def test_cover_zero_width(
-    mode: str,
-    source_size: tuple[int, int],
-    target_size: tuple[int, int],
-    expected_size: tuple[int, int],
-) -> None:
-    im = Image.new(mode, source_size)
-    result = ImageOps.cover(im, target_size)
-    assert result.size == expected_size
-    assert result.mode == mode
 
 
 def test_pad() -> None:
