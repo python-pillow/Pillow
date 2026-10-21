@@ -1404,8 +1404,6 @@ class TiffImageFile(ImageFile.ImageFile):
         """Overload method triggered when we detect a compressed tiff
         Calls out to libtiff"""
 
-        Image.Image.load(self)
-
         self.load_prepare()
 
         if not len(self.tile) == 1:
