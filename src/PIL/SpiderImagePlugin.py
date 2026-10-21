@@ -27,7 +27,7 @@
 # image data from electron microscopy and tomography.
 #
 # Spider home page:
-# https://spider-em.github.io/SPIDER/docs/spider.html
+# https://spider-em.github.io/SPIDER/
 #
 # Details about the Spider image format:
 # https://spider-em.github.io/SPIDER/docs/image_doc.html
