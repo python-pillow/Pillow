@@ -193,6 +193,10 @@ def test_cover(image_name: str, expected_size: tuple[int, int]) -> None:
 
 
 def test_cover_zero() -> None:
+    im = Image.new("1", (0, 10))
+    new_im = ImageOps.cover(im, (5, 5))
+    assert new_im.size == (0, 5)
+
     im = Image.new("1", (10, 0))
     new_im = ImageOps.cover(im, (5, 5))
     assert new_im.size == (5, 0)
