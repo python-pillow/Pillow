@@ -351,6 +351,8 @@ def cover(
 
     if image.height == 0:
         return Image.new(image.mode, (size[0], 0))
+    if image.width == 0:
+        return Image.new(image.mode, (0, size[1]))
     im_ratio = image.width / image.height
     if size[1] == 0:
         return Image.new(image.mode, (0, 0))
