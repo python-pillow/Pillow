@@ -1240,13 +1240,9 @@ def _write_multiple_frames(
 
                 if prev_disposal == Disposal.OP_BACKGROUND:
                     base_im = previous.im.convert("RGBA")
-                    dispose = Image.core.fill("RGBA", im.size, (0, 0, 0, 0))
-                    bbox = previous.bbox
-                    if bbox:
-                        dispose = dispose.crop(bbox)
-                    else:
-                        bbox = (0, 0, *im.size)
-                    base_im.paste(dispose, bbox)
+                    box = previous.bbox or (0, 0, *im.size)
+                    dispose = Image.new("RGBA", (box[2] - box[0], box[3] - box[1]))
+                    base_im.paste(dispose, box)
                 elif prev_disposal == Disposal.OP_PREVIOUS:
                     base_im = im_frames[-2].im
                 else:
