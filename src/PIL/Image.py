@@ -1056,7 +1056,8 @@ class Image:
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are :data:`Dither.NONE`, :data:`Dither.FLOYDSTEINBERG`
-           (default) or :data:`Dither.JARVIS_JUDICE_NINKE`. Note that this is not used when ``matrix`` is supplied.
+           (default) or :data:`Dither.JARVIS_JUDICE_NINKE`. Note that this is not used
+           when ``matrix`` is supplied.
         :param palette: Palette to use when converting from mode "RGB"
            to "P".  Available palettes are :data:`Palette.WEB` or
            :data:`Palette.ADAPTIVE`.
