@@ -794,13 +794,6 @@ def test_apng_save_blend(tmp_path: Path) -> None:
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
-    # test info blend
-    red.info["blend"] = PngImagePlugin.Blend.OP_OVER
-    red.save(test_file, save_all=True, append_images=[green, transparent])
-    with Image.open(test_file) as im:
-        im.seek(2)
-        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
-
 
 def test_apng_save_size(tmp_path: Path) -> None:
     test_file = tmp_path / "temp.png"

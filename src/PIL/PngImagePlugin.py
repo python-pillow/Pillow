@@ -1205,7 +1205,7 @@ def _write_multiple_frames(
     duration = im.encoderinfo.get("duration")
     loop = im.encoderinfo.get("loop", im.info.get("loop", 0))
     disposal = im.encoderinfo.get("disposal")
-    blend = im.encoderinfo.get("blend", im.info.get("blend", Blend.OP_SOURCE))
+    blend = im.encoderinfo.get("blend")
 
     if default_image:
         chain = itertools.chain(append_images)
@@ -1305,7 +1305,7 @@ def _write_multiple_frames(
             msg = "cannot write duration"
             raise ValueError(msg)
         frame_disposal = encoderinfo.get("disposal", Disposal.OP_NONE)
-        frame_blend = encoderinfo.get("blend", blend)
+        frame_blend = encoderinfo.get("blend", Blend.OP_SOURCE)
         # frame control
         chunk(
             fp,
