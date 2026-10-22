@@ -931,8 +931,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 try:
                     unit_size, handler = self._load_dispatch[typ]
                 except KeyError:
-                    if debug:
-                        logger.debug("%s - unsupported type %s", msg, typ)
+                    logger.debug("%s - unsupported type %s", msg, typ)
                     continue  # ignore unsupported type
                 size = count * unit_size
                 if size > (8 if self._bigtiff else 4):
@@ -962,13 +961,11 @@ class ImageFileDirectory_v2(_IFDv2Base):
                         f"Expecting to read {size} bytes but only got {len(data)}."
                         f" Skipping tag {tag}"
                     )
-                    if debug:
-                        logger.debug(msg)
+                    logger.debug(msg)
                     continue
 
                 if not data:
-                    if debug:
-                        logger.debug(msg)
+                    logger.debug(msg)
                     continue
 
                 self._tagdata[tag] = data
