@@ -911,13 +911,14 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 else self._unpack("H", self._ensure_read(fp, 2))
             )[0]
             total_size = 0
+            ignored_tags = set()
             for i in range(tag_count):
                 tag, typ, count, data = (
                     self._unpack("HHQ8s", self._ensure_read(fp, 20))
                     if self._bigtiff
                     else self._unpack("HHL4s", self._ensure_read(fp, 12))
                 )
-                if tag in self._tagdata:
+                if tag in self._tagdata or tag in ignored_tags:
                     continue
                 if (
                     tag == PHOTOMETRIC_INTERPRETATION
@@ -925,6 +926,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                     and self.group is None
                 ):
                     # Ignore a malformed PhotometricInterpretation tag, like libtiff
+                    ignored_tags.add(tag)
                     continue
 
                 tagname = TiffTags.lookup(tag, self.group).name
