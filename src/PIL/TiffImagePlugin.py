@@ -919,6 +919,13 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 )
                 if tag in self._tagdata:
                     continue
+                if (
+                    tag == PHOTOMETRIC_INTERPRETATION
+                    and count != 1
+                    and self.group is None
+                ):
+                    # Ignore a malformed PhotometricInterpretation tag, like libtiff
+                    continue
 
                 tagname = TiffTags.lookup(tag, self.group).name
                 typname = TYPES.get(typ, "unknown")
