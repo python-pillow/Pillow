@@ -42,7 +42,7 @@ if [ "$CIBW_OS" = "android" ]; then
     HOST_CMAKE_FLAGS+=" -DANDROID_TOOLCHAIN_ROOT=$android_toolchain_root"
     HOST_CMAKE_FLAGS+=" -DANDROID_NDK=$android_ndk"
 
-elif [ "$CIBW_OS" == "ios" ]; then
+elif [ "$CIBW_OS" = "ios" ]; then
     # IS_MACOS will be set by common_utils.sh.
     # On iOS, CIBW_ARCH is actually a multi-arch - arm64_iphoneos,
     # arm64_iphonesimulator or x86_64_iphonesimulator. Split into the CPU
@@ -86,7 +86,7 @@ elif [ "$CIBW_OS" = "macosx" ]; then
     # IS_MACOS will be set by common_utils.sh.
     PLAT=$CIBW_ARCH
 
-elif [ "$CIBW_OS" = *linux ]; then
+elif [[ "$CIBW_OS" = *linux ]]; then
     IS_LINUX=1
     PLAT=$CIBW_ARCH
     MB_ML_LIBC=${AUDITWHEEL_POLICY::9}
@@ -109,6 +109,11 @@ fi
 source wheels/multibuild/library_builders.sh
 if [ -n "$IS_LINUX" ]; then
     source wheels/multibuild/manylinux_utils.sh
+fi
+if [ -n "$IS_ANDROID" ] || [ -n "$IOS_SDK" ]; then
+    # LIBRARY_PATH may cause pkg-config to omit -L options, which isn't correct when
+    # cross-compiling.
+    unset LIBRARY_PATH
 fi
 
 ARCHIVE_SDIR=pillow-depends-main
@@ -171,7 +176,11 @@ function build_harfbuzz {
 function build_libavif {
     if [ -e libavif-stamp ]; then return; fi
 
-    if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IOS_SDK" ]]) || [ -n "$SANITIZER" ]; then
+    # nasm has to be compiled for the build machine, but Android and iOS will have
+    # environment variables set for cross-compilation.
+    if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IS_ANDROID" ]] && [[ -z "$IOS_SDK" ]]) \
+        || [ -n "$SANITIZER" ]
+    then
         build_simple nasm 3.02 https://www.nasm.us/pub/nasm/releasebuilds/3.02
     fi
 
@@ -196,7 +205,7 @@ function build_libavif {
             # on Android, but current versions of the NDK no longer include gold. It
             # looks like it should be possible to prevent this by setting
             # CMAKE_ANDROID_NDK_VERSION to a high enough number, but doing that using -D
-            # has no effect, so maybe it needs to be in the toolchain file.
+            # has no effect, so maybe cibuildwheel should put it in the toolchain file.
             lto=OFF
         fi
         libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
