@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os.path
+from decimal import Decimal
 
 import pytest
 
@@ -66,6 +67,12 @@ def test_sanity() -> None:
     draw.line(list(range(10)))
     draw.polygon(list(range(100)))
     draw.rectangle(list(range(4)))
+
+
+def test_line_invalid_coordinate_conversion() -> None:
+    draw = ImageDraw.Draw(Image.new("RGB", (4, 4)))
+    with pytest.raises(ValueError):
+        draw.line([Decimal("sNaN"), 0, 1, 1])
 
 
 def test_new_color() -> None:

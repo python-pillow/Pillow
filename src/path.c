@@ -117,9 +117,17 @@ assign_item_to_array(double *xy, Py_ssize_t j, PyObject *op) {
     if (PyFloat_Check(op)) {
         xy[j++] = PyFloat_AS_DOUBLE(op);
     } else if (PyLong_Check(op)) {
-        xy[j++] = (float)PyLong_AS_LONG(op);
+        double value = PyLong_AsDouble(op);
+        if (value == -1.0 && PyErr_Occurred()) {
+            return -1;
+        }
+        xy[j++] = value;
     } else if (PyNumber_Check(op)) {
-        xy[j++] = PyFloat_AsDouble(op);
+        double value = PyFloat_AsDouble(op);
+        if (value == -1.0 && PyErr_Occurred()) {
+            return -1;
+        }
+        xy[j++] = value;
     } else if (PyList_Check(op)) {
         if (PyList_GET_SIZE(op) != 2) {
             PyErr_SetString(
@@ -139,9 +147,11 @@ assign_item_to_array(double *xy, Py_ssize_t j, PyObject *op) {
             }
             Py_DECREF(op1);
             if (j == -1) {
-                PyErr_SetString(
-                    PyExc_ValueError, "coordinate list must contain numbers"
-                );
+                if (!PyErr_Occurred()) {
+                    PyErr_SetString(
+                        PyExc_ValueError, "coordinate list must contain numbers"
+                    );
+                }
                 return -1;
             }
         }
@@ -488,10 +498,19 @@ path_setitem(PyPathObject *self, Py_ssize_t i, PyObject *op) {
 
     xy = &self->xy[i + i];
 
-    if (!PyArg_ParseTuple(op, "dd", &xy[0], &xy[1])) {
+    double x, y;
+    PyObject *coordinates = PySequence_Tuple(op);
+    if (coordinates == NULL) {
+        return -1;
+    }
+    int ok = PyArg_ParseTuple(coordinates, "dd", &x, &y);
+    Py_DECREF(coordinates);
+    if (!ok) {
         return -1;
     }
 
+    xy[0] = x;
+    xy[1] = y;
     return 0;
 }
 
