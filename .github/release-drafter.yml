@@ -1,8 +1,14 @@
-name-template: "$NEXT_MINOR_VERSION"
-tag-template: "$NEXT_MINOR_VERSION"
+name-template: "$RESOLVED_VERSION"
+tag-template: "$RESOLVED_VERSION"
 change-template: '- $TITLE #$NUMBER [@$AUTHOR]'
 
 categories:
+  - type: "version-resolver"
+    semver-increment: "major"
+    when:
+      label: "Major"
+  - type: "version-resolver"
+    semver-increment: "minor"
   - title: "Removals"
     when:
       label: "Removal"
@@ -28,6 +34,6 @@ categories:
 
 template: |
 
-  https://pillow.readthedocs.io/en/stable/releasenotes/$NEXT_MINOR_VERSION.html
+  https://pillow.readthedocs.io/en/stable/releasenotes/$RESOLVED_VERSION.html
 
   $CHANGES
