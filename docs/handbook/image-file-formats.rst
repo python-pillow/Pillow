@@ -955,6 +955,12 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     When ``optimize`` option is True ``compress_level`` has no effect
     (it is set to 9 regardless of a value passed).
 
+**compress_type**
+    ZLIB compression strategy, one of the strategy constants from Python's
+    :py:mod:`zlib` module: ``zlib.Z_DEFAULT_STRATEGY``, ``zlib.Z_FILTERED``,
+    ``zlib.Z_HUFFMAN_ONLY``, ``zlib.Z_RLE`` or ``zlib.Z_FIXED``. Defaults to
+    ``zlib.Z_FILTERED``.
+
 **icc_profile**
     The ICC Profile to include in the saved file.
 
