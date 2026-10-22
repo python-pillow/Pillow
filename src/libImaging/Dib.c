@@ -156,33 +156,7 @@ ImagingNewDIB(const ModeID mode, int xsize, int ysize) {
 
             dib->palette = CreatePalette(pal);
         } else if (mode == IMAGING_MODE_RGB) {
-#ifdef CUBE216
-
-            /* Colour DIB.  Create a 6x6x6 colour cube (216 entries) and
-             * add 20 extra graylevels for best result with grayscale
-             * images. */
-
-            i = 10;
-            for (r = 0; r < 256; r += 51) {
-                for (g = 0; g < 256; g += 51) {
-                    for (b = 0; b < 256; b += 51) {
-                        pal->palPalEntry[i].peRed = r;
-                        pal->palPalEntry[i].peGreen = g;
-                        pal->palPalEntry[i].peBlue = b;
-                        i++;
-                    }
-                }
-            }
-            for (r = 1; r < 22 - 1; r++) {
-                /* Black and white are already provided by the cube. */
-                pal->palPalEntry[i].peRed = pal->palPalEntry[i].peGreen =
-                    pal->palPalEntry[i].peBlue = r * 255 / (22 - 1);
-                i++;
-            }
-
-#else
-
-            /* Colour DIB.  Alternate palette. */
+            /* Colour DIB. */
 
             i = 10;
             for (r = 0; r < 256; r += 37) {
@@ -196,8 +170,6 @@ ImagingNewDIB(const ModeID mode, int xsize, int ysize) {
                 }
             }
 
-#endif
-
             dib->palette = CreatePalette(pal);
         }
     }
@@ -208,9 +180,6 @@ ImagingNewDIB(const ModeID mode, int xsize, int ysize) {
 void
 ImagingPasteDIB(ImagingDIB dib, Imaging im, int xy[4]) {
     /* Paste image data into a bitmap */
-
-    /* FIXME: check size! */
-
     int y;
     for (y = 0; y < im->ysize; y++) {
         dib->pack(

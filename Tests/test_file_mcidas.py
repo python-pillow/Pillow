@@ -38,7 +38,7 @@ def test_undersized_stride(tmp_path: Path) -> None:
     path.write_bytes(data)
 
     with Image.open(path) as im:
-        with pytest.raises(ValueError, match="buffer is not large enough"):
+        with pytest.raises(OSError, match="codec configuration error"):
             im.load()
 
 

@@ -757,6 +757,17 @@ class TestFilePng:
             assert reloaded.png.im_palette is not None
             assert len(reloaded.png.im_palette[1]) == 48
 
+    def test_specify_bits_l(self, tmp_path: Path) -> None:
+        im = hopper("L")
+
+        out = tmp_path / "temp.png"
+        im.save(out, bits=4)
+
+        with Image.open(out) as reloaded:
+            colors = reloaded.getcolors()
+            assert colors is not None
+            assert len(colors) == 16
+
     def test_specify_bits_fewer_palette_entries(self, tmp_path: Path) -> None:
         im = Image.new("P", (1, 1))
         data = (0, 0, 0, 10, 10, 10, 20, 20, 20, 30, 30, 30, 40, 40, 40)

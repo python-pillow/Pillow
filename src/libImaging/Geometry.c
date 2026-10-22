@@ -41,9 +41,10 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             FLIP_LEFT_RIGHT(UINT16, image8)
         } else {
             FLIP_LEFT_RIGHT(UINT8, image8)
@@ -52,6 +53,7 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
         FLIP_LEFT_RIGHT(INT32, image32)
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef FLIP_LEFT_RIGHT
@@ -76,12 +78,14 @@ ImagingFlipTopBottom(Imaging imOut, Imaging imIn) {
     ImagingCopyPalette(imOut, imIn);
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     yr = ysize - 1;
     for (y = 0; y < ysize; y++, yr--) {
         memcpy(imOut->image[yr], imIn->image[y], imIn->linesize);
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
     return imOut;
@@ -131,9 +135,10 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             ROTATE_90(UINT16, image8);
         } else {
             ROTATE_90(UINT8, image8);
@@ -142,6 +147,7 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
         ROTATE_90(INT32, image32);
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef ROTATE_90
@@ -192,9 +198,10 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             TRANSPOSE(UINT16, image8);
         } else {
             TRANSPOSE(UINT8, image8);
@@ -203,6 +210,7 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
         TRANSPOSE(INT32, image32);
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef TRANSPOSE
@@ -255,9 +263,10 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             TRANSVERSE(UINT16, image8);
         } else {
             TRANSVERSE(UINT8, image8);
@@ -266,6 +275,7 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
         TRANSVERSE(INT32, image32);
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef TRANSVERSE
@@ -300,10 +310,11 @@ ImagingRotate180(Imaging imOut, Imaging imIn) {
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     yr = ysize - 1;
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             ROTATE_180(UINT16, image8)
         } else {
             ROTATE_180(UINT8, image8)
@@ -312,6 +323,7 @@ ImagingRotate180(Imaging imOut, Imaging imIn) {
         ROTATE_180(INT32, image32)
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef ROTATE_180
@@ -363,9 +375,10 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             ROTATE_270(UINT16, image8);
         } else {
             ROTATE_270(UINT8, image8);
@@ -374,6 +387,7 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
         ROTATE_270(INT32, image32);
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef ROTATE_270
@@ -779,7 +793,7 @@ getfilter(Imaging im, int filterid) {
 
 /* transformation engines */
 
-Imaging
+int
 ImagingGenericTransform(
     Imaging imOut,
     Imaging imIn,
@@ -801,17 +815,20 @@ ImagingGenericTransform(
     double xx, yy;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        ImagingError_ModeError();
+        return -1;
     }
 
     ImagingTransformFilter filter = getfilter(imIn, filterid);
     if (!filter) {
-        return (Imaging)ImagingError_ValueError("bad filter number");
+        ImagingError_ValueError("bad filter number");
+        return -1;
     }
 
     ImagingCopyPalette(imOut, imIn);
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (x0 < 0) {
         x0 = 0;
@@ -839,12 +856,13 @@ ImagingGenericTransform(
         }
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
-    return imOut;
+    return 0;
 }
 
-static Imaging
+static int
 ImagingScaleAffine(
     Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, double a[6], int fill
 ) {
@@ -858,7 +876,8 @@ ImagingScaleAffine(
     int *xintab;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        ImagingError_ModeError();
+        return -1;
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -882,8 +901,8 @@ ImagingScaleAffine(
     /* malloc check ok, uses calloc for overflow */
     xintab = (int *)calloc(out_xsize, sizeof(int));
     if (!xintab) {
-        ImagingDelete(imOut);
-        return (Imaging)ImagingError_MemoryError();
+        ImagingError_MemoryError();
+        return -1;
     }
 
     xo = a[2] + a[0] * 0.5;
@@ -923,6 +942,7 @@ ImagingScaleAffine(
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
         AFFINE_SCALE(UINT8, image8);
@@ -930,13 +950,14 @@ ImagingScaleAffine(
         AFFINE_SCALE(INT32, image32);
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef AFFINE_SCALE
 
     free(xintab);
 
-    return imOut;
+    return 0;
 }
 
 static inline int
@@ -947,7 +968,7 @@ check_fixed(double a[6], int x, int y) {
     );
 }
 
-static inline Imaging
+static inline int
 affine_fixed(
     Imaging imOut,
     Imaging imIn,
@@ -1011,6 +1032,7 @@ affine_fixed(
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
         AFFINE_TRANSFORM_FIXED(UINT8, image8)
@@ -1018,14 +1040,15 @@ affine_fixed(
         AFFINE_TRANSFORM_FIXED(INT32, image32)
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef AFFINE_TRANSFORM_FIXED
 
-    return imOut;
+    return 0;
 }
 
-Imaging
+int
 ImagingTransformAffine(
     Imaging imOut,
     Imaging imIn,
@@ -1048,7 +1071,8 @@ ImagingTransformAffine(
     double xo, yo;
 
     if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
+        ImagingError_ModeError();
+        return -1;
     }
 
     if (filterid || imIn->type == IMAGING_TYPE_I16) {
@@ -1120,6 +1144,7 @@ ImagingTransformAffine(
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
         AFFINE_TRANSFORM(UINT8, image8)
@@ -1127,14 +1152,30 @@ ImagingTransformAffine(
         AFFINE_TRANSFORM(INT32, image32)
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef AFFINE_TRANSFORM
 
-    return imOut;
+    return 0;
 }
 
-Imaging
+/**
+ * Runs a transformation over the data from imIn, placing the result in imOut.
+ *
+ * @param imOut     Existing image to write into
+ * @param imIn      Source image to transform
+ * @param method    Which method to use
+ * @param x0        The left co-ordinate of the area to transform
+ * @param y0        The upper co-ordinate of the area to transform
+ * @param x1        The right co-ordinate of the area to transform
+ * @param y1        The lower co-ordinate of the area to transform
+ * @param a         An array of extra data for the transformation method
+ * @param filterid  Which filter to use
+ * @param fill      1 to fill the area with zeros
+ * @return          -1 in case of an error, 0 otherwise
+ */
+int
 ImagingTransform(
     Imaging imOut,
     Imaging imIn,
@@ -1162,7 +1203,8 @@ ImagingTransform(
             transform = quad_transform;
             break;
         default:
-            return (Imaging)ImagingError_ValueError("bad transform method");
+            ImagingError_ValueError("bad transform method");
+            return -1;
     }
 
     return ImagingGenericTransform(

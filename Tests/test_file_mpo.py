@@ -265,6 +265,23 @@ def test_seek_decompression_bomb() -> None:
         im.seek(1)
 
 
+def test_seek_mode_change() -> None:
+    im = Image.new("L", (32, 32), 128)
+    im2 = Image.new("RGB", (32, 32), (255, 0, 0))
+    reloaded = roundtrip(im, save_all=True, append_images=[im2])
+    reloaded.load()
+    assert reloaded.mode == "L"
+
+    # Assert that C image is cleared after mode change
+    reloaded.seek(1)
+    assert reloaded._im is None
+
+    reloaded.load()
+    assert reloaded.mode == "RGB"
+    assert reloaded.im.mode == "RGB"
+    assert reloaded.im.size == reloaded.size
+
+
 def test_n_frames() -> None:
     with Image.open("Tests/images/sugarshack.mpo") as im:
         assert isinstance(im, MpoImagePlugin.MpoImageFile)

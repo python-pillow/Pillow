@@ -113,6 +113,7 @@ def test_l_mode_transparency_after_rgb() -> None:
 def test_palette_not_needed_for_second_frame() -> None:
     with Image.open("Tests/images/palette_not_needed_for_second_frame.gif") as im:
         im.seek(1)
+        assert im.palette is None
         assert_image_similar(im, hopper("L").convert("RGB"), 8)
 
 
@@ -131,10 +132,12 @@ def test_strategy(monkeypatch: pytest.MonkeyPatch) -> None:
     )
     with Image.open("Tests/images/iss634.gif") as im:
         assert im.mode == "RGB"
+        assert im.palette is None
         assert_image_equal(im, expected_rgb_always)
 
     with Image.open("Tests/images/chi.gif") as im:
         assert im.mode == "RGBA"
+        assert im.palette is None
         assert_image_equal(im, expected_rgb_always_rgba)
 
     monkeypatch.setattr(
@@ -974,6 +977,26 @@ def test_identical_frames_to_single_frame(
         assert reread.info["duration"] == 4500
 
 
+@pytest.mark.parametrize("first_duration", (None, 0))
+def test_identical_frames_missing_duration(
+    first_duration: int | None, tmp_path: Path
+) -> None:
+    frames = [Image.new("RGB", (1, 1), "red") for _ in range(3)]
+    if first_duration is not None:
+        frames[0].info["duration"] = first_duration
+    frames[1].info["duration"] = 100
+    frames[2].info["duration"] = 200
+
+    out = tmp_path / "temp.gif"
+    frames[0].save(out, save_all=True, append_images=frames[1:])
+
+    with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
+        assert reread.info["duration"] == 300
+        assert_image_equal(reread.convert("RGB"), frames[0])
+        assert reread.n_frames == 1
+
+
 def test_loop_none(tmp_path: Path) -> None:
     out = tmp_path / "temp.gif"
     im = Image.new("L", (100, 100), "#000")
@@ -1355,7 +1378,7 @@ def test_palette_save_all_P(tmp_path: Path) -> None:
     )
 
     with Image.open(out) as im:
-        # Assert that the frames are correct, and each frame has the same palette
+        # Assert that the frames are correct
         assert isinstance(im, GifImagePlugin.GifImageFile)
         assert_image_equal(im.convert("RGB"), frames[0].convert("RGB"))
         assert im.palette is not None
@@ -1363,8 +1386,7 @@ def test_palette_save_all_P(tmp_path: Path) -> None:
         assert im.palette.palette == im.global_palette.palette
 
         im.seek(1)
-        assert_image_equal(im.convert("RGB"), frames[1].convert("RGB"))
-        assert im.palette.palette == im.global_palette.palette
+        assert_image_equal(im, frames[1].convert("RGB"))
 
 
 def test_palette_save_ImagePalette(tmp_path: Path) -> None:

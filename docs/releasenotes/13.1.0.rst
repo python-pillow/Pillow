@@ -1,0 +1,64 @@
+13.1.0
+------
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+Backwards incompatible changes
+==============================
+
+TODO
+^^^^
+
+TODO
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API additions
+=============
+
+TODO
+^^^^
+
+TODO
+
+Other changes
+=============
+
+BOX downscale includes boundary source pixels
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:data:`PIL.Image.Resampling.BOX` downscaling could skip a source pixel whose
+center landed on an output bin edge, due to range rounding and the discontinuous
+box kernel. Those pixels are now assigned to exactly one output pixel, matching
+the documented "each source pixel contributes to one destination pixel" behavior.
+
+Blurring I;16 images
+^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageFilter.GaussianBlur` and :py:class:`~PIL.ImageFilter.BoxBlur`
+now support I;16, I;16L, I;16B and I;16N images.
