@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import logging
 import struct
 
 import pytest
@@ -582,3 +583,13 @@ def test_empty_subifd(tmp_path: Path) -> None:
     with Image.open(out) as reloaded:
         exif = reloaded.getexif()
         assert exif.get_ifd(TiffImagePlugin.EXIFIFD) == {}
+
+
+def test_load_debug_logging(caplog: pytest.LogCaptureFixture) -> None:
+    with caplog.at_level(logging.DEBUG, logger="PIL.TiffImagePlugin"):
+        with Image.open("Tests/images/hopper.tif"):
+            pass
+    assert (
+        "tag: ImageWidth (256) - type: short (3) - value: b'\\x80\\x00'"
+        in caplog.messages
+    )

@@ -911,6 +911,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 else self._unpack("H", self._ensure_read(fp, 2))
             )[0]
             total_size = 0
+            debug = logger.isEnabledFor(logging.DEBUG)
             for i in range(tag_count):
                 tag, typ, count, data = (
                     self._unpack("HHQ8s", self._ensure_read(fp, 20))
@@ -920,20 +921,25 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 if tag in self._tagdata:
                     continue
 
-                tagname = TiffTags.lookup(tag, self.group).name
-                typname = TYPES.get(typ, "unknown")
-                msg = f"tag: {tagname} ({tag}) - type: {typname} ({typ})"
+                # Only build the debug message if it will be logged
+                msg = ""
+                if debug:
+                    tagname = TiffTags.lookup(tag, self.group).name
+                    typname = TYPES.get(typ, "unknown")
+                    msg = f"tag: {tagname} ({tag}) - type: {typname} ({typ})"
 
                 try:
                     unit_size, handler = self._load_dispatch[typ]
                 except KeyError:
-                    logger.debug("%s - unsupported type %s", msg, typ)
+                    if debug:
+                        logger.debug("%s - unsupported type %s", msg, typ)
                     continue  # ignore unsupported type
                 size = count * unit_size
                 if size > (8 if self._bigtiff else 4):
                     here = fp.tell()
                     (offset,) = self._unpack("Q" if self._bigtiff else "L", data)
-                    msg += f" Tag Location: {here} - Data Location: {offset}"
+                    if debug:
+                        msg += f" Tag Location: {here} - Data Location: {offset}"
                     if offset >= 2**63:
                         warnings.warn("Tag offset too large")
                         continue
@@ -956,20 +962,22 @@ class ImageFileDirectory_v2(_IFDv2Base):
                         f"Expecting to read {size} bytes but only got {len(data)}."
                         f" Skipping tag {tag}"
                     )
-                    logger.debug(msg)
+                    if debug:
+                        logger.debug(msg)
                     continue
 
                 if not data:
-                    logger.debug(msg)
+                    if debug:
+                        logger.debug(msg)
                     continue
 
                 self._tagdata[tag] = data
                 self.tagtype[tag] = typ
 
-                msg += " - value: "
-                msg += f"<table: {size} bytes>" if size > 32 else repr(data)
-
-                logger.debug(msg)
+                if debug:
+                    msg += " - value: "
+                    msg += f"<table: {size} bytes>" if size > 32 else repr(data)
+                    logger.debug(msg)
 
             (self.next,) = (
                 self._unpack("Q", self._ensure_read(fp, 8))
