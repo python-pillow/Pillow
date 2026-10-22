@@ -49,6 +49,11 @@ TODO
 Other changes
 =============
 
+Android
+^^^^^^^
+
+Android ARM64 and x86_64 wheels are now built for Python 3.13 and later.
+
 Blurring I;16 images
 ^^^^^^^^^^^^^^^^^^^^
 
