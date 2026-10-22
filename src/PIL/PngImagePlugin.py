@@ -1258,7 +1258,7 @@ def _write_multiple_frames(
                     and "duration" in encoderinfo
                 ):
                     new_duration = (
-                        previous.encoderinfo["duration"] + encoderinfo["duration"]
+                        previous.encoderinfo.get("duration", 0) + encoderinfo["duration"]
                     )
                     delay = Fraction(new_duration / 1000).limit_denominator(65535)
                     if delay.numerator <= 65535:
