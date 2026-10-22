@@ -53,7 +53,7 @@ resulting image with Pillow.
 fribidi and harfbuzz features
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. deprecated:: 13.0.0
+.. deprecated:: 13.1.0
 
 ``fribidi`` and ``harfbuzz`` are deprecated aliases of ``raqm``. Raqm selects its
 own bidirectional text and shaping libraries when it is built, so Pillow cannot
