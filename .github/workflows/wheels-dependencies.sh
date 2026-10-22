@@ -389,6 +389,12 @@ if [[ ! -d $WORKDIR/pillow-depends-main ]]; then
   untar $PROJECTDIR/pillow-depends-main.zip
 fi
 
+# Install necessary build tools from PyPI. We can't use the build-system.requires
+# setting in pyproject.toml, because on all platforms except Android, cibuildwheel
+# runs the before-build script before processing that setting.
+unset CIBW_HOST_TRIPLET  # Install for the build system, not the host system.
+python3 -m pip install cmake meson ninja pkgconf
+
 if [[ -n "$IS_MACOS" ]]; then
     # Ensure the basic structure of the build prefix directory exists.
     mkdir -p "$BUILD_PREFIX/bin"

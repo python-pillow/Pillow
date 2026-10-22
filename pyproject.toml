@@ -1,10 +1,6 @@
 [build-system]
 build-backend = "backend"
 requires = [
-  "cmake",
-  "meson",
-  "ninja",
-  "pkgconf",
   "pybind11",
   "setuptools>=77",
 ]
