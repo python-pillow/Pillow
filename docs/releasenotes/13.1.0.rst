@@ -49,6 +49,12 @@ TODO
 Other changes
 =============
 
+Color strings without leading zeros
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.ImageColor.getrgb` now accepts decimals without a leading zero in
+HSL, HSV and HSB color strings, such as ``hsl(120,.5%,50%)``.
+
 Blurring I;16 images
 ^^^^^^^^^^^^^^^^^^^^
 

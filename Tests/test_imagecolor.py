@@ -159,6 +159,31 @@ def test_functions() -> None:
         ImageColor.getrgb("hsv(0,100%,50)")
 
 
+@pytest.mark.parametrize("function", ("hsl", "hsv", "hsb"))
+@pytest.mark.parametrize(
+    "components, normalized",
+    (
+        (".5,50%,50%", "0.5,50%,50%"),
+        ("120,.5%,50%", "120,0.5%,50%"),
+        ("120,50%,.5%", "120,50%,0.5%"),
+    ),
+)
+def test_float_without_leading_zero(
+    function: str, components: str, normalized: str
+) -> None:
+    assert ImageColor.getrgb(f"{function}({components})") == ImageColor.getrgb(
+        f"{function}({normalized})"
+    )
+
+
+@pytest.mark.parametrize(
+    "color", ("hsl(.,50%,50%)", "hsv(120,.%,50%)", "hsb(120,50%,.%)")
+)
+def test_float_without_digits(color: str) -> None:
+    with pytest.raises(ValueError):
+        ImageColor.getrgb(color)
+
+
 # look for rounding errors (based on code by Tim Hatch)
 def test_rounding_errors() -> None:
     for color in ImageColor.colormap:
