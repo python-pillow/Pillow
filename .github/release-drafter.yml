@@ -4,21 +4,27 @@ change-template: '- $TITLE #$NUMBER [@$AUTHOR]'
 
 categories:
   - title: "Removals"
-    label: "Removal"
+    when:
+      label: "Removal"
   - title: "Deprecations"
-    label: "Deprecation"
+    when:
+      label: "Deprecation"
   - title: "Documentation"
-    label: "Documentation"
+    when:
+      label: "Documentation"
   - title: "Dependencies"
-    label: "Dependency"
+    when:
+      label: "Dependency"
   - title: "Testing"
-    label: "Testing"
+    when:
+      label: "Testing"
   - title: "Type hints"
-    label: "Type hints"
+    when:
+      label: "Type hints"
   - title: "Other changes"
-
-exclude-labels:
-  - "changelog: skip"
+  - type: "pre-exclude"
+    when:
+      label: "changelog: skip"
 
 template: |
 
