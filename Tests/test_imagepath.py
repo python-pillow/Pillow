@@ -98,6 +98,10 @@ def test_path_item_assignment_accepts_list() -> None:
         p[1] = [6, "not a coordinate"]
     assert p[1] == (2.0, 3.0)
 
+    with pytest.raises(TypeError):
+        p[1] = None  # type: ignore[arg-type]
+    assert p[1] == (2.0, 3.0)
+
 
 def test_path_coordinate_conversion_errors() -> None:
     with pytest.raises(ValueError):
