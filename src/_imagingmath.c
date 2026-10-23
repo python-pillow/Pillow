@@ -84,15 +84,7 @@
  */
 
 #define DIV_I(type, v1, v2) ((v2) != 0) ? (v1) / (v2) : 0
-
-// Dividing first will let smart compilers vectorize the BINOP loop.
-static inline FLOAT32
-div_f(FLOAT32 v1, FLOAT32 v2) {
-    FLOAT32 q = v1 / v2;
-    return (v2 != 0.0F) ? q : 0.0F;
-}
-
-#define DIV_F(type, v1, v2) div_f((v1), (v2))
+#define DIV_F(type, v1, v2) ((v2) != 0.0F) ? (v1) / (v2) : 0.0F
 
 #define MOD_I(type, v1, v2) ((v2) != 0) ? (v1) % (v2) : 0
 #define MOD_F(type, v1, v2) ((v2) != 0.0F) ? fmod((v1), (v2)) : 0.0F
