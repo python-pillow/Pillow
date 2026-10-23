@@ -304,11 +304,9 @@ typedef enum {
     IMAGING_TRANSFORM_MKS2021 = 7,
 } ImagingResamplingType;
 
-/* mirrors PIL.Image.Dither */
+/* mirrors PIL.Image.Dither (ORDERED and RASTERIZE are not yet implemented) */
 typedef enum {
     IMAGING_DITHER_NONE = 0,
-    IMAGING_DITHER_ORDERED = 1,         // Not yet implemented
-    IMAGING_DITHER_RASTERIZE = 2,       // Not yet implemented
     IMAGING_DITHER_FLOYDSTEINBERG = 3,  // Default
 } ImagingDitherType;
 
