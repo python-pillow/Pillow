@@ -107,10 +107,6 @@ def assert_image_similar(
     assert a.mode == b.mode, msg or f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
     assert a.size == b.size, msg or f"got size {repr(a.size)}, expected {repr(b.size)}"
 
-    if a.mode == "I;16":
-        a = a.convert("I")
-        b = b.convert("I")
-
     diff = 0
     for ach, bch in zip(a.split(), b.split()):
         chdiff = ImageMath.lambda_eval(
