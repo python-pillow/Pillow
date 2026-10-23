@@ -135,6 +135,46 @@ def test_colors() -> None:
     assert len(converted.palette.palette) == colors * len("RGB")
 
 
+@pytest.mark.parametrize("size", ((1, 1), (1, 300), (300, 1), (64, 64)))
+@pytest.mark.parametrize("colors", (1, 2, 256))
+@pytest.mark.parametrize(
+    "mode, method",
+    (
+        ("L", Image.Quantize.MEDIANCUT),
+        ("P", Image.Quantize.MEDIANCUT),
+        ("RGB", Image.Quantize.MEDIANCUT),
+        ("RGB", Image.Quantize.MAXCOVERAGE),
+        ("RGB", Image.Quantize.FASTOCTREE),
+        ("RGBA", Image.Quantize.FASTOCTREE),
+    ),
+)
+def test_quantize_sizes(
+    mode: str, method: Image.Quantize, colors: int, size: tuple[int, int]
+) -> None:
+    im = hopper(mode).resize(size)
+
+    converted = im.quantize(colors, method)
+    assert converted.mode == "P"
+    assert converted.size == size
+    assert converted.palette is not None
+    entries = len(converted.palette.palette) // len(converted.palette.mode)
+    assert 1 <= entries <= colors
+    assert max(converted.tobytes()) < entries
+
+
+@skip_unless_feature("libimagequant")
+@pytest.mark.parametrize("size", ((1, 1), (1, 300), (300, 1)))
+def test_libimagequant_quantize_sizes(size: tuple[int, int]) -> None:
+    im = hopper().resize(size)
+
+    converted = im.quantize(2, Image.Quantize.LIBIMAGEQUANT)
+    assert converted.mode == "P"
+    assert converted.size == size
+    colors = converted.getcolors()
+    assert colors is not None
+    assert len(colors) <= 2
+
+
 def test_transparent_colors_equal() -> None:
     im = Image.new("RGBA", (1, 2), (0, 0, 0, 0))
     px = im.load()

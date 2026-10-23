@@ -55,3 +55,9 @@ def test_size_greater_than_int() -> None:
     assert numpy is not None
     arr = numpy.ndarray(shape=(16394, 16394))
     Image.fromarray(arr)
+
+
+def test_quantize_more_pixels_than_int() -> None:
+    im = Image.new("L", (2**16, 2**15))
+    with pytest.raises(MemoryError):
+        im.quantize()
