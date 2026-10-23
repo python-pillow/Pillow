@@ -273,7 +273,13 @@ class TestFilePng:
             assert len(im.info["transparency"]) == 256
 
             assert_image(im, "P", (162, 150))
+
+            original_palette = im.getpalette(None)
             im_rgba = im.convert("RGBA")
+
+            # Assert that original image palette was not changed
+            assert im.getpalette(None) == original_palette
+
         assert_image(im_rgba, "RGBA", (162, 150))
 
         # image has 124 unique alpha values

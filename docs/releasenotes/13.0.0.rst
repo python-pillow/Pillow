@@ -10,7 +10,7 @@ Critical
 ^^^^^^^^
 
 * :cve:`2026-96639`, :ghsa:`v9pv-5gc8-w2m6`: Stale native image storage reused after mode transitions
-* :ghsa:`5x8w-8jj5-q52h`, :ghsa:`8g5g-8vmr-9782`: JPEG decoder buffer overflow from scanlines wider than tile extents
+* :cve:`2026-112398`, :cve:`2026-112403`, :ghsa:`5x8w-8jj5-q52h`, :ghsa:`8g5g-8vmr-9782`: JPEG decoder buffer overflow from scanlines wider than tile extents
 
 High
 ^^^^
@@ -19,46 +19,47 @@ High
 * :cve:`2026-96637`, :ghsa:`g842-9rc4-69pw`: SPIDER decompression bomb bypass via seek()
 * :cve:`2026-96643`, :ghsa:`g4qv-2jxx-769h`: Unbounded Exif header replacement loop
 * :cve:`2026-96778`, :ghsa:`g7cr-3p24-7wf7`: JPEG comment write after ICC profile fills encoder buffer
-* :ghsa:`462x-pgg6-55fp`, :ghsa:`c6hw-5grf-ff96`: TIFF tile and YCbCr decoding out-of-bounds read from undersized libtiff buffers
-* :ghsa:`p4wg-p73j-c528`: PDF parsing stack exhaustion from long trailer chains and deep or cyclic page trees
+* :cve:`2026-112395`, :cve:`2026-112404`, :ghsa:`462x-pgg6-55fp`, :ghsa:`c6hw-5grf-ff96`: TIFF tile and YCbCr decoding out-of-bounds read from undersized libtiff buffers
+* :cve:`2026-112895`, :ghsa:`p4wg-p73j-c528`: PDF parsing stack exhaustion from long trailer chains and deep or cyclic page trees
 * :cve:`2026-96640`, :ghsa:`mrfp-p49p-3hf2`: PDF append resource exhaustion from repeated page tree references
-* :ghsa:`pchr-8j38-3x4p`: TIFF encoder accepted an incorrectly sized Colormap for non-8-bit images
-* :ghsa:`332p-7hrc-92wf`: TIFF encoder heap buffer overflow when saving to a file object
+* :cve:`2026-112896`, :ghsa:`pchr-8j38-3x4p`: TIFF encoder accepted an incorrectly sized Colormap for non-8-bit images
+* :cve:`2026-112393`, :ghsa:`332p-7hrc-92wf`: TIFF encoder heap buffer overflow when saving to a file object
 * :ghsa:`xcvg-w56q-r89m`: TIFF encoder heap buffer overflow when tags override the image size
-* :ghsa:`xvh5-g6gv-559v`: TIFF encoder memory disclosure and crash from mismatched tag values
-* :ghsa:`q45j-58j2-45rg`: TIFF decoding returned uninitialized memory for short JPEG strips
+* :cve:`2026-112902`, :ghsa:`xvh5-g6gv-559v`: TIFF encoder memory disclosure and crash from mismatched tag values
+* :cve:`2026-112897`, :ghsa:`q45j-58j2-45rg`: TIFF decoding returned uninitialized memory for short JPEG strips
 * :ghsa:`78g4-xqwv-q3g8`: Bundled OpenJPEG heap buffer overflow when reading tile-part data
 
 Medium
 ^^^^^^
 
-* :ghsa:`4rr5-89j8-mwwm`: TIFF encoder use-after-free write
+* :cve:`2026-112396`, :ghsa:`4rr5-89j8-mwwm`: TIFF encoder use-after-free write
 * :cve:`2026-96636`, :ghsa:`p8hx-v2p6-rp84`: MPO, DCX and MIC decompression bomb bypass via seek()
-* :ghsa:`f2g6-542v-9j58`: PDF page tree stack exhaustion via cyclic ``/Kids`` reference
-* :ghsa:`5xm2-6676-qcp9`: APNG decompression bomb bypass via delayed disposal-frame sizing
+* :cve:`2026-112406`, :ghsa:`f2g6-542v-9j58`: PDF page tree stack exhaustion via cyclic ``/Kids`` reference
+* :cve:`2026-112399`, :ghsa:`5xm2-6676-qcp9`: APNG decompression bomb bypass via delayed disposal-frame sizing
 * :cve:`2026-96642`, :ghsa:`3j72-p6qg-6xp7`: TarIO negative size field causes infinite CPU-spin loop
 * :cve:`2026-96638`, :ghsa:`24rc-8hj2-v98c`: BMP RLE decoder memory-amplification denial of service
-* :ghsa:`gg2r-wvfm-q9rx`: MSP RLE decoder expands a tiny file into unbounded memory
+* :cve:`2026-112892`, :ghsa:`gg2r-wvfm-q9rx`: MSP RLE decoder expands a tiny file into unbounded memory
 * :ghsa:`wqgw-9xfh-qf2g`: TIFF and Exif IFD parsing memory and CPU amplification from shared tag data
-* :ghsa:`jg86-v3jv-hrpm`: Quadratic time when writing many objects to a PDF
-* :ghsa:`254f-3936-288h`: PdfParser unbounded recursion via deeply nested objects
-* :ghsa:`rfgq-q3w2-pmv2`: Image.quantize() crash from an empty target palette
-* :ghsa:`xgh8-jp6q-p5x8`: XBM header parsing regular expression denial of service
-* :ghsa:`22hg-r758-rrw9`, :ghsa:`74r2-7ff9-mjj2`, :ghsa:`fc9g-5qg7-mf45`: GIF comment handling quadratic-time blowup from repeated concatenation
-* :ghsa:`27h8-gf7j-v5hc`: Out-of-bounds read in rank-based filters for zero-dimension images
+* :cve:`2026-112894`, :ghsa:`jg86-v3jv-hrpm`: Quadratic time when writing many objects to a PDF
+* :cve:`2026-112391`, :ghsa:`254f-3936-288h`: PdfParser unbounded recursion via deeply nested objects
+* :cve:`2026-112898`, :ghsa:`rfgq-q3w2-pmv2`: Image.quantize() crash from an empty target palette
+* :cve:`2026-112901`, :ghsa:`xgh8-jp6q-p5x8`: XBM header parsing regular expression denial of service
+* :cve:`2026-112390`, :cve:`2026-112401`, :cve:`2026-112891`, :ghsa:`22hg-r758-rrw9`, :ghsa:`74r2-7ff9-mjj2`, :ghsa:`fc9g-5qg7-mf45`: GIF comment handling quadratic-time blowup from repeated concatenation
+* :cve:`2026-112392`, :ghsa:`27h8-gf7j-v5hc`: Out-of-bounds read in rank-based filters for zero-dimension images
 * :cve:`2026-96641`, :ghsa:`4rm8-3hmm-39fg`: Integer underflow in PILfont text width calculation
-* :ghsa:`cp9v-662q-vvx9`: Image.merge() buffer overflow when merging 32-bit images as narrower bands
-* :ghsa:`j4m9-6w36-pw47`: Uninitialized glyph pointer freed on font rendering error path
-* :ghsa:`7mwm-ghpf-9vrm`: Double free in ``Image.transform()`` after an allocation failure
-* :ghsa:`4558-3h8r-v8xp`: ``P;2L`` and ``P;4L`` raw mode decoders read past the end of their input
-* :ghsa:`w889-685w-c8fh`: EPS filename argument injection into Ghostscript
+* :cve:`2026-112405`, :ghsa:`cp9v-662q-vvx9`: Image.merge() buffer overflow when merging 32-bit images as narrower bands
+* :cve:`2026-112893`, :ghsa:`j4m9-6w36-pw47`: Uninitialized glyph pointer freed on font rendering error path
+* :cve:`2026-112402`, :ghsa:`7mwm-ghpf-9vrm`: Double free in ``Image.transform()`` after an allocation failure
+* :cve:`2026-112394`, :ghsa:`4558-3h8r-v8xp`: ``P;2L`` and ``P;4L`` raw mode decoders read past the end of their input
+* :cve:`2026-112900`, :ghsa:`w889-685w-c8fh`: EPS filename argument injection into Ghostscript
+* :cve:`2026-114501`, :ghsa:`654x-cwwv-5j9c`: Arrow export leaks stale heap memory when ``PILLOW_ALIGNMENT`` > 1
 
 Low
 ^^^
 
-* :ghsa:`65qm-jvmh-6pqg`: GIF decompression bomb check used a size discarded on failure
-* :ghsa:`vx6w-vv9f-6gvg`: EPS decompression bomb bypass via Ghostscript rendering
-* :ghsa:`58r4-6rv3-gfh8`: ImageMorph.MorphOp.apply() out-of-bounds write on zero-width images
+* :cve:`2026-112400`, :ghsa:`65qm-jvmh-6pqg`: GIF decompression bomb check used a size discarded on failure
+* :cve:`2026-112899`, :ghsa:`vx6w-vv9f-6gvg`: EPS decompression bomb bypass via Ghostscript rendering
+* :cve:`2026-112397`, :ghsa:`58r4-6rv3-gfh8`: ImageMorph.MorphOp.apply() out-of-bounds write on zero-width images
 
 Backwards incompatible changes
 ==============================
