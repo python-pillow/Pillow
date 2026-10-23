@@ -33,6 +33,7 @@
  */
 
 #include "Imaging.h"
+#include <stdint.h>
 
 /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
 #define L(rgb) ((INT32)(rgb)[0] * 299 + (INT32)(rgb)[1] * 587 + (INT32)(rgb)[2] * 114)
@@ -1116,6 +1117,101 @@ frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
     return imOut;
 }
 
+/* Jarvis-Judice-Ninke error diffusion, with a 5x3 kernel (divisor 48).
+ * Keep three rows of weighted errors; every contribution stays in bounds. */
+static const int jjn_taps[][3] = {
+    {1, 0, 7},
+    {2, 0, 5},
+    {-2, 1, 3},
+    {-1, 1, 5},
+    {0, 1, 7},
+    {1, 1, 5},
+    {2, 1, 3},
+    {-2, 2, 1},
+    {-1, 2, 3},
+    {0, 2, 5},
+    {1, 2, 3},
+    {2, 2, 1}
+};
+
+static Imaging
+dither_jjn(Imaging imOut, Imaging imIn, ImagingPalette palette, int alpha) {
+    ImagingSectionCookie cookie;
+    int width = imIn->xsize;
+    int channels = palette ? 3 : 1;
+
+    if (width == 0 || imIn->ysize == 0) {
+        return imOut;
+    }
+
+    if ((size_t)width > SIZE_MAX / (3 * sizeof(int) * (size_t)channels)) {
+        ImagingDelete(imOut);
+        return ImagingError_MemoryError();
+    }
+
+    size_t row_size = (size_t)width * (size_t)channels;
+    int *errors = calloc(3 * row_size, sizeof(int));
+    if (!errors) {
+        ImagingDelete(imOut);
+        return ImagingError_MemoryError();
+    }
+
+    ImagingSectionEnter(&cookie);
+    for (int y = 0; y < imIn->ysize; y++) {
+        const UINT8 *in = (const UINT8 *)imIn->image[y];
+        UINT8 *out = alpha ? (UINT8 *)imOut->image32[y] : imOut->image8[y];
+        int current_row = y % 3;
+
+        for (int x = 0; x < width; x++) {
+            int values[3];
+            int count = palette ? 3 : 1;
+            size_t pos = (size_t)current_row * row_size + (size_t)x * channels;
+
+            if (palette) {
+                for (int c = 0; c < 3; c++) {
+                    int original = imIn->bands == 1 ? in[x] : in[x * 4 + c];
+                    values[c] = CLIP8(original + errors[pos + c] / 48);
+                }
+                INT16 *cache =
+                    &ImagingPaletteCache(palette, values[0], values[1], values[2]);
+                if (cache[0] == 0x100) {
+                    ImagingPaletteCacheUpdate(palette, values[0], values[1], values[2]);
+                }
+                if (alpha) {
+                    out[x * 4] = out[x * 4 + 1] = out[x * 4 + 2] = (UINT8)cache[0];
+                    out[x * 4 + 3] = 255;
+                } else {
+                    out[x] = (UINT8)cache[0];
+                }
+                for (int c = 0; c < 3; c++) {
+                    values[c] -= (int)palette->palette[cache[0] * 4 + c];
+                }
+            } else {
+                int original = imIn->bands == 1 ? in[x] : L(in + x * 4) / 1000;
+                values[0] = CLIP8(original + errors[pos] / 48);
+                out[x] = values[0] > 128 ? 255 : 0;
+                values[0] -= out[x];
+            }
+
+            for (size_t i = 0; i < sizeof(jjn_taps) / sizeof(jjn_taps[0]); i++) {
+                int xx = x + jjn_taps[i][0];
+                int yy = y + jjn_taps[i][1];
+                if (xx < 0 || xx >= width || yy >= imIn->ysize) {
+                    continue;
+                }
+                size_t next = (size_t)(yy % 3) * row_size + (size_t)xx * channels;
+                for (int c = 0; c < count; c++) {
+                    errors[next + c] += values[c] * jjn_taps[i][2];
+                }
+            }
+        }
+        memset(errors + (size_t)current_row * row_size, 0, row_size * sizeof(int));
+    }
+    ImagingSectionLeave(&cookie);
+    free(errors);
+    return imOut;
+}
+
 #if defined(_MSC_VER)
 #pragma optimize("", off)
 #endif
@@ -1172,7 +1268,7 @@ topalette(
     ImagingPaletteDelete(imOut->palette);
     imOut->palette = ImagingPaletteDuplicate(palette);
 
-    if (imIn->bands == 1) {
+    if (imIn->bands == 1 && dither != 4) {
         /* grayscale image */
 
         /* Grayscale palette: copy data as is */
@@ -1198,7 +1294,14 @@ topalette(
             return NULL;
         }
 
-        if (dither) {
+        if (dither == 4) {
+            if (!dither_jjn(imOut, imIn, palette, alpha)) {
+                if (inpalette != palette) {
+                    ImagingPaletteDelete(palette);
+                }
+                return NULL;
+            }
+        } else if (dither) {
             /* floyd-steinberg dither */
 
             int *errors;
@@ -1578,7 +1681,7 @@ static struct {
  * @param mode    Target mode.
  * @param palette Target palette for conversions to "P" or "PA";
  *                NULL to use a default palette.
- * @param dither  Nonzero to dither when converting to "P", "PA" or "1".
+ * @param dither  Dithering choice (0: none, 3: Floyd-Steinberg, 4: JJN).
  * @return        The resulting Imaging object,
  *                or NULL with a Python exception set on failure.
  */
@@ -1616,6 +1719,16 @@ ImagingConvert(
         return topalette(imOut, imIn, mode, palette, dither);
     }
 
+    if (dither == 4 && mode == IMAGING_MODE_1) {
+        if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_RGB) {
+            return (Imaging)ImagingError_ValueError("conversion not supported");
+        }
+        imOut = ImagingNew2Dirty(IMAGING_MODE_1, imOut, imIn);
+        if (!imOut) {
+            return NULL;
+        }
+        return dither_jjn(imOut, imIn, NULL, 0);
+    }
     if (dither && mode == IMAGING_MODE_1) {
         return tobilevel(imOut, imIn);
     }
