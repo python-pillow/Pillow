@@ -117,7 +117,7 @@ assign_item_to_array(double *xy, Py_ssize_t j, PyObject *op) {
     if (PyFloat_Check(op)) {
         xy[j++] = PyFloat_AS_DOUBLE(op);
     } else if (PyLong_Check(op)) {
-        xy[j++] = (float)PyLong_AS_LONG(op);
+        xy[j++] = (float)PyLong_AsLong(op);
     } else if (PyNumber_Check(op)) {
         xy[j++] = PyFloat_AsDouble(op);
     } else if (PyList_Check(op)) {
