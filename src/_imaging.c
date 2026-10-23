@@ -1311,22 +1311,17 @@ _getpalette_impl(ImagingObject *self, PyObject *args) {
     int bits;
     ImagingShuffler pack;
 
-    char *mode_name = "RGB";
     char *rawmode_name = NULL;
-    if (!PyArg_ParseTuple(args, "|ss", &mode_name, &rawmode_name)) {
+    if (!PyArg_ParseTuple(args, "|s", &rawmode_name)) {
         return NULL;
     }
-    if (rawmode_name == NULL) {
-        rawmode_name = mode_name;
-    }
-
     if (!self->image->palette) {
         PyErr_SetString(PyExc_ValueError, no_palette);
         return NULL;
     }
 
-    const ModeID mode = findModeID(mode_name);
-    const RawModeID rawmode = findRawModeID(rawmode_name);
+    const ModeID mode = self->image->palette->mode;
+    const RawModeID rawmode = rawmode_name != NULL ? findRawModeID(rawmode_name) : mode;
 
     pack = ImagingFindPacker(mode, rawmode, &bits);
     if (!pack) {
@@ -2480,25 +2475,25 @@ _transpose_impl(ImagingObject *self, PyObject *args) {
     if (imOut) {
         switch (op) {
             case 0:
-                (void)ImagingFlipLeftRight(imOut, imIn);
+                ImagingFlipLeftRight(imOut, imIn);
                 break;
             case 1:
-                (void)ImagingFlipTopBottom(imOut, imIn);
+                ImagingFlipTopBottom(imOut, imIn);
                 break;
             case 2:
-                (void)ImagingRotate90(imOut, imIn);
+                ImagingRotate90(imOut, imIn);
                 break;
             case 3:
-                (void)ImagingRotate180(imOut, imIn);
+                ImagingRotate180(imOut, imIn);
                 break;
             case 4:
-                (void)ImagingRotate270(imOut, imIn);
+                ImagingRotate270(imOut, imIn);
                 break;
             case 5:
-                (void)ImagingTranspose(imOut, imIn);
+                ImagingTranspose(imOut, imIn);
                 break;
             case 6:
-                (void)ImagingTransverse(imOut, imIn);
+                ImagingTransverse(imOut, imIn);
                 break;
         }
     }
