@@ -300,6 +300,16 @@ applied to RGBA and LA images. Previously, these modes ignored the argument,
 including when called by :py:meth:`~PIL.Image.Image.thumbnail`, which uses
 ``reducing_gap=2.0`` by default.
 
+Dithering with an adaptive palette
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, the ``dither`` argument was silently ignored when converting or
+quantizing to a palette computed from the image itself, e.g.
+``im.convert("P", palette=Image.Palette.ADAPTIVE, dither=Image.Dither.FLOYDSTEINBERG)``
+or ``im.quantize(dither=Image.Dither.FLOYDSTEINBERG)`` without a reference
+``palette``. Dithering is now applied in these cases as well, matching the
+documented behavior. Calls that don't specify ``dither`` are unaffected.
+
 Preserved transparency when padding or expanding images in ImageOps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
