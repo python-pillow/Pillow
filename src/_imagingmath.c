@@ -28,8 +28,8 @@
 //           and a different image.
 #define UNOP(name, op, type)                           \
     static void name(Imaging out, Imaging im1) {       \
-        int xsize = out->xsize, ysize = out->ysize;    \
-        for (int y = 0; y < ysize; y++) {              \
+        int xsize = out->xsize;                        \
+        for (int y = 0; y < out->ysize; y++) {         \
             type *restrict p0 = (type *)out->image[y]; \
             type *restrict p1 = (type *)im1->image[y]; \
             for (int x = 0; x < xsize; x++) {          \
@@ -42,8 +42,8 @@
 
 #define BINOP(name, op, type)                                 \
     static void name(Imaging out, Imaging im1, Imaging im2) { \
-        int xsize = out->xsize, ysize = out->ysize;           \
-        for (int y = 0; y < ysize; y++) {                     \
+        int xsize = out->xsize;                               \
+        for (int y = 0; y < out->ysize; y++) {                \
             type *restrict p0 = (type *)out->image[y];        \
             type *restrict p1 = (type *)im1->image[y];        \
             type *restrict p2 = (type *)im2->image[y];        \
@@ -103,7 +103,7 @@ powi(int x, int y) {
     if (errno == EDOM) {
         return 0;
     }
-    return (v < INT32_MIN ? INT32_MIN : (v > INT32_MAX ? INT32_MAX : (int)v));
+    return v < INT32_MIN ? INT32_MIN : (v > INT32_MAX ? INT32_MAX : (int)v);
 }
 
 #define POW_I(type, v1, v2) powi(v1, v2)
