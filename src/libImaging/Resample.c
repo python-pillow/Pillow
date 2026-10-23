@@ -380,9 +380,10 @@ _ImagingResampleHorizontal_8bpc(
                     xmax = bounds[xx * 2 + 1];
                     k = &kk[xx * ksize];
                     ss0 = ss3 = 1 << (PRECISION_BITS - 1);
-                    for (x = 0; x < xmax; x++) {
-                        ss0 += lineIn[(x + xmin) * 4 + 0] * k[x];
-                        ss3 += lineIn[(x + xmin) * 4 + 3] * k[x];
+                    const UINT8 *p = lineIn + xmin * 4;
+                    for (x = 0; x < xmax; x++, p += 4) {
+                        ss0 += p[0] * k[x];
+                        ss3 += p[3] * k[x];
                     }
                     v = MAKE_UINT32(clip8(ss0), 0, 0, clip8(ss3));
                     memcpy(lineOut + xx * sizeof(v), &v, sizeof(v));
@@ -399,10 +400,11 @@ _ImagingResampleHorizontal_8bpc(
                     xmax = bounds[xx * 2 + 1];
                     k = &kk[xx * ksize];
                     ss0 = ss1 = ss2 = 1 << (PRECISION_BITS - 1);
-                    for (x = 0; x < xmax; x++) {
-                        ss0 += lineIn[(x + xmin) * 4 + 0] * k[x];
-                        ss1 += lineIn[(x + xmin) * 4 + 1] * k[x];
-                        ss2 += lineIn[(x + xmin) * 4 + 2] * k[x];
+                    const UINT8 *p = lineIn + xmin * 4;
+                    for (x = 0; x < xmax; x++, p += 4) {
+                        ss0 += p[0] * k[x];
+                        ss1 += p[1] * k[x];
+                        ss2 += p[2] * k[x];
                     }
                     v = MAKE_UINT32(clip8(ss0), clip8(ss1), clip8(ss2), 0);
                     memcpy(lineOut + xx * sizeof(v), &v, sizeof(v));
@@ -419,11 +421,12 @@ _ImagingResampleHorizontal_8bpc(
                     xmax = bounds[xx * 2 + 1];
                     k = &kk[xx * ksize];
                     ss0 = ss1 = ss2 = ss3 = 1 << (PRECISION_BITS - 1);
-                    for (x = 0; x < xmax; x++) {
-                        ss0 += lineIn[(x + xmin) * 4 + 0] * k[x];
-                        ss1 += lineIn[(x + xmin) * 4 + 1] * k[x];
-                        ss2 += lineIn[(x + xmin) * 4 + 2] * k[x];
-                        ss3 += lineIn[(x + xmin) * 4 + 3] * k[x];
+                    const UINT8 *p = lineIn + xmin * 4;
+                    for (x = 0; x < xmax; x++, p += 4) {
+                        ss0 += p[0] * k[x];
+                        ss1 += p[1] * k[x];
+                        ss2 += p[2] * k[x];
+                        ss3 += p[3] * k[x];
                     }
                     v = MAKE_UINT32(clip8(ss0), clip8(ss1), clip8(ss2), clip8(ss3));
                     memcpy(lineOut + xx * sizeof(v), &v, sizeof(v));

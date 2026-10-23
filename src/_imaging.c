@@ -594,7 +594,7 @@ getink(PyObject *color, Imaging im, char *ink) {
        Python long (not int) that raises an overflow error when trying
        to return it into a 32 bit C long
     */
-    PY_LONG_LONG r = 0;
+    long long r = 0;
     FLOAT32 ftmp;
     INT32 itmp;
 
@@ -1379,13 +1379,13 @@ _getxy(PyObject *xy, int *x, int *y) {
 
     value = PyTuple_GET_ITEM(xy, 0);
     if (PyLong_Check(value)) {
-        *x = PyLong_AS_LONG(value);
+        *x = PyLong_AsLong(value);
     } else if (PyFloat_Check(value)) {
         *x = (int)PyFloat_AS_DOUBLE(value);
     } else {
         PyObject *int_value = PyObject_CallMethod(value, "__int__", NULL);
         if (int_value != NULL && PyLong_Check(int_value)) {
-            *x = PyLong_AS_LONG(int_value);
+            *x = PyLong_AsLong(int_value);
             Py_DECREF(int_value);
         } else {
             Py_XDECREF(int_value);
@@ -1395,13 +1395,13 @@ _getxy(PyObject *xy, int *x, int *y) {
 
     value = PyTuple_GET_ITEM(xy, 1);
     if (PyLong_Check(value)) {
-        *y = PyLong_AS_LONG(value);
+        *y = PyLong_AsLong(value);
     } else if (PyFloat_Check(value)) {
         *y = (int)PyFloat_AS_DOUBLE(value);
     } else {
         PyObject *int_value = PyObject_CallMethod(value, "__int__", NULL);
         if (int_value != NULL && PyLong_Check(int_value)) {
-            *y = PyLong_AS_LONG(int_value);
+            *y = PyLong_AsLong(int_value);
             Py_DECREF(int_value);
         } else {
             Py_XDECREF(int_value);
