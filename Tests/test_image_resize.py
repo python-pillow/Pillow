@@ -154,17 +154,12 @@ class TestImagingCoreResize:
                 # as separately resized channel
                 assert_image_equal(ch, references[channels[i]])
 
-    @pytest.mark.parametrize("mode", ("I;16L", "I;16B", "I;16N"))
-    @pytest.mark.parametrize("size", ((20, 128), (128, 20)))
-    def test_16bit_byte_order(self, mode: str, size: tuple[int, int]) -> None:
-        # Use values with different high and low bytes,
-        # so that the byte order matters
-        im = hopper("I").point(lambda x: x * 251 + 7)
-        reference = self.resize(im.convert("I;16"), size, Image.Resampling.BICUBIC)
-
-        resized = self.resize(im.convert(mode), size, Image.Resampling.BICUBIC)
-        assert resized.mode == mode
-        assert_image_equal(resized.convert("I"), reference.convert("I"))
+    @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+    def test_i16(self, mode: str) -> None:
+        im = Image.new(mode, (1, 2))
+        im.putdata((0x0099, 0x0100))
+        resized = self.resize(im, (1, 1), Image.Resampling.BICUBIC)
+        assert resized.getpixel((0, 0)) == 0x00CD
 
     @pytest.mark.parametrize(
         "resample",
