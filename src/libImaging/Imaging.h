@@ -285,7 +285,7 @@ ImagingError_ValueError(const char *message);
 /* Transform callbacks */
 /* ------------------- */
 
-/* mirrors PIL.Image.Transform (EXTENT and MESH are implemented in Python) */
+/* mirrors PIL.Image.Transform (EXTENT and MESH are handled in Python) */
 typedef enum {
     IMAGING_TRANSFORM_AFFINE = 0,
     IMAGING_TRANSFORM_PERSPECTIVE = 2,
@@ -302,7 +302,7 @@ typedef enum {
     IMAGING_TRANSFORM_LANCZOS = 1,
     IMAGING_TRANSFORM_MKS2013 = 6,
     IMAGING_TRANSFORM_MKS2021 = 7,
-} ImagingFilterType;
+} ImagingResamplingType;
 
 /* mirrors PIL.Image.Dither */
 typedef enum {
@@ -411,7 +411,7 @@ extern Imaging
 ImagingTransverse(Imaging imOut, Imaging imIn);
 extern Imaging
 ImagingResample(
-    Imaging imIn, int xsize, int ysize, ImagingFilterType filter, float box[4]
+    Imaging imIn, int xsize, int ysize, ImagingResamplingType filter, float box[4]
 );
 extern Imaging
 ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]);
@@ -425,7 +425,7 @@ ImagingTransform(
     int x1,
     int y1,
     double a[8],
-    ImagingFilterType filter,
+    ImagingResamplingType filter,
     int fill
 );
 extern Imaging

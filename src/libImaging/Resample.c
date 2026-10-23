@@ -776,7 +776,7 @@ ImagingResampleInner(
 
 Imaging
 ImagingResample(
-    Imaging imIn, int xsize, int ysize, ImagingFilterType filter, float box[4]
+    Imaging imIn, int xsize, int ysize, ImagingResamplingType filter, float box[4]
 ) {
     struct filter *filterp;
     ResampleFunction ResampleHorizontal;

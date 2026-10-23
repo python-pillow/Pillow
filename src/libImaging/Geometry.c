@@ -736,7 +736,7 @@ bicubic_filter32RGB(void *out, Imaging im, double xin, double yin) {
 #undef BICUBIC_BODY
 
 static ImagingTransformFilter
-getfilter(Imaging im, ImagingFilterType filterid) {
+getfilter(Imaging im, ImagingResamplingType filterid) {
     switch (filterid) {
         case IMAGING_TRANSFORM_NEAREST:
             if (im->image8) {
@@ -803,7 +803,7 @@ ImagingGenericTransform(
     int y1,
     ImagingTransformMap transform,
     void *transform_data,
-    ImagingFilterType filterid,
+    ImagingResamplingType filterid,
     int fill
 ) {
     /* slow generic transformation.  use ImagingTransformAffine or
@@ -977,7 +977,7 @@ affine_fixed(
     int x1,
     int y1,
     double a[6],
-    ImagingFilterType filterid,
+    ImagingResamplingType filterid,
     int fill
 ) {
     /* affine transform, nearest neighbour resampling, fixed point
@@ -1057,7 +1057,7 @@ ImagingTransformAffine(
     int x1,
     int y1,
     double a[6],
-    ImagingFilterType filterid,
+    ImagingResamplingType filterid,
     int fill
 ) {
     /* affine transform, nearest neighbour resampling, floating point
@@ -1185,7 +1185,7 @@ ImagingTransform(
     int x1,
     int y1,
     double a[8],
-    ImagingFilterType filterid,
+    ImagingResamplingType filterid,
     int fill
 ) {
     ImagingTransformMap transform;
