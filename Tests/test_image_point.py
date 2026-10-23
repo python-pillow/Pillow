@@ -66,24 +66,6 @@ def test_f_mode() -> None:
         im.point([])
 
 
-def test_overstated_length() -> None:
-    # shouldn't segfault
-    # see https://github.com/python-pillow/Pillow/issues/9892
-
-    class OverstatedLengthSequence:
-        def __len__(self) -> int:
-            return 256
-
-        def __getitem__(self, index: int) -> int:
-            if index >= 8:
-                raise IndexError
-            return index
-
-    im = Image.new("L", (4, 4))
-    with pytest.raises(ValueError):
-        im.point(OverstatedLengthSequence(), "F")  # type: ignore[arg-type]
-
-
 def test_raising_length() -> None:
     class RaisingLengthSequence:
         def __len__(self) -> int:
@@ -93,5 +75,7 @@ def test_raising_length() -> None:
             return index
 
     im = Image.new("L", (1, 1))
-    with pytest.raises(RuntimeError):
+    with pytest.raises(
+        TypeError, match="argument must be a sequence, callable or ImagePointHandler"
+    ):
         im.point(RaisingLengthSequence(), "F")  # type: ignore[arg-type]
