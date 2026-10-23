@@ -107,6 +107,8 @@ def test_path_coordinate_conversion_errors() -> None:
     with pytest.raises(ValueError):
         ImagePath.Path([Decimal("sNaN"), 0])
 
+    assert ImagePath.Path([Decimal("1.5"), 0])[0] == (1.5, 0.0)
+
     large_int = (1 << 30) + 1
     assert ImagePath.Path([large_int, 0])[0] == (float(large_int), 0.0)
 
