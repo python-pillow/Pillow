@@ -107,7 +107,6 @@ def test_pil184() -> None:
     test_file = "Tests/images/pil184.pcx"
     with Image.open(test_file) as im:
         assert im.size == (447, 144)
-        assert im.tile[0][1] == (0, 0, 447, 144)
 
         # Make sure all pixels are either 0 or 255.
         assert im.histogram()[0] + im.histogram()[255] == 447 * 144

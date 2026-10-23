@@ -224,13 +224,13 @@ PyImaging_AsImaging(PyObject *op);
 
 static PyObject *
 _setimage(ImagingEncoderObject *encoder, PyObject *args) {
-    PyObject *op, *extents;
+    PyObject *op, *extents = Py_None;
     Imaging im;
     ImagingCodecState state;
     Py_ssize_t x0, y0, x1, y1;
 
     /* FIXME: should publish the ImagingType descriptor */
-    if (!PyArg_ParseTuple(args, "OO", &op, &extents)) {
+    if (!PyArg_ParseTuple(args, "O|O", &op, &extents)) {
         return NULL;
     }
     im = PyImaging_AsImaging(op);
@@ -929,8 +929,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         }
 
         if (type == TIFF_NOTYPE) {
-            // Autodetect type. Types should not be changed for backwards
-            // compatibility.
+            // Autodetect type
             if (PyLong_Check(value)) {
                 type = TIFF_LONG;
             } else if (PyFloat_Check(value)) {
@@ -960,9 +959,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                     type = TIFF_FLOAT;
                 }
             }
-        }
-
-        if (type == TIFF_BYTE || type == TIFF_UNDEFINED) {
+        } else if (type == TIFF_BYTE || type == TIFF_UNDEFINED) {
             is_var_length = 1;
         }
         if (!is_core_tag && ImagingLibTiffMergeFieldInfo(

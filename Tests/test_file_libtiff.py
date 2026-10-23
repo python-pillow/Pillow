@@ -503,12 +503,11 @@ class TestFileLibTiff(LibTiffTestCase):
 
         with Image.open(out) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            tag_data = reloaded.tag_v2[tag]
             if tag == 532:
-                assert tuple(float(v) for v in reloaded.tag_v2[tag]) == pytest.approx(
-                    value
-                )
+                assert tuple(float(v) for v in tag_data) == pytest.approx(value)
             else:
-                assert tuple(reloaded.tag_v2[tag]) == value
+                assert tuple(tag_data) == value
 
     def test_inknames_tag(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
@@ -921,39 +920,34 @@ class TestFileLibTiff(LibTiffTestCase):
             )
 
     def test_save_bytesio_seek_past_end(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+
         # When writing the directory, libtiff seeks past the end of the data
         # written so far, and then writes the tag values there. Check that the
         # in-memory write buffer grows to fit, and that the bytes that are
         # skipped over are zero, as they would be when writing to a file.
+        def roundtrip(im: Image.Image, **kwargs: Any) -> None:
+            im.save(outfile, **kwargs)
+            buffer_io = io.BytesIO()
+            im.save(buffer_io, format="tiff", **kwargs)
+            assert buffer_io.getvalue() == outfile.read_bytes()
 
         # 7 distinct bytes per row: PackBits emits 8 bytes per row, so the strip
         # plus the header are exactly 64 KiB, the initial size of the buffer
         im = Image.new("L", (7, 8191))
         im.putdata([(i * 37) & 0xFF for i in range(7 * 8191)])
-        kwargs: dict[str, Any] = {
-            "compression": "packbits",
-            "description": "D" * 65535,
-        }
-
-        outfile = tmp_path / "temp.tif"
-        im.save(outfile, **kwargs)
-        buffer_io = io.BytesIO()
-        im.save(buffer_io, format="tiff", **kwargs)
-        assert buffer_io.getvalue() == outfile.read_bytes()
+        roundtrip(im, compression="packbits", description="D" * 65535)
 
         # odd-length tag values, so that libtiff pads between them. Large enough
         # that the buffer has to be reallocated
         im = hopper().resize((300, 300))
-        kwargs = {
-            "compression": "tiff_lzw",
-            "description": "abcdef",
-            "software": "xyz0",
-            "tiffinfo": {315: "artist", 33432: "copyright!"},
-        }
-        im.save(outfile, **kwargs)
-        buffer_io = io.BytesIO()
-        im.save(buffer_io, format="tiff", **kwargs)
-        assert buffer_io.getvalue() == outfile.read_bytes()
+        roundtrip(
+            im,
+            compression="tiff_lzw",
+            description="abcdef",
+            software="xyz0",
+            tiffinfo={315: "artist", 33432: "copyright!"},
+        )
 
     def test_save_ycbcr(self, tmp_path: Path) -> None:
         im = hopper("YCbCr")
@@ -1406,7 +1400,8 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_orientation(self) -> None:
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
             for i in range(2, 9):
-                with Image.open("Tests/images/g4_orientation_" + str(i) + ".tif") as im:
+                infile = "Tests/images/g4_orientation_" + str(i) + ".tif"
+                with Image.open(infile) as im:
                     assert isinstance(im, TiffImagePlugin.TiffImageFile)
                     assert 274 in im.tag_v2
 
@@ -1414,6 +1409,14 @@ class TestFileLibTiff(LibTiffTestCase):
                     assert 274 not in im.tag_v2
 
                     assert_image_similar(base_im, im, 0.7)
+
+                with Image.open(infile) as im:
+                    assert im.size == (590, 88)
+
+                    im.tile.append(im.tile[0])
+                    with pytest.raises(OSError, match="Not exactly one tile"):
+                        im.load()
+                    assert im.size == (590, 88)
 
     def test_exif_transpose(self) -> None:
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
