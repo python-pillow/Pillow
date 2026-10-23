@@ -840,7 +840,7 @@ font_render_impl(FontObject *self, PyObject *args) {
     int color = 0; /* is FT_LOAD_COLOR enabled? */
     float stroke_width = 0;
     int stroke_filled = 0;
-    PY_LONG_LONG foreground_ink_long = 0;
+    long long foreground_ink_long = 0;
     unsigned int foreground_ink;
     const char *mode_name = NULL;
     const char *dir = NULL;

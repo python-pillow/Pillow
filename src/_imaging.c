@@ -594,7 +594,7 @@ getink(PyObject *color, Imaging im, char *ink) {
        Python long (not int) that raises an overflow error when trying
        to return it into a 32 bit C long
     */
-    PY_LONG_LONG r = 0;
+    long long r = 0;
     FLOAT32 ftmp;
     INT32 itmp;
 
