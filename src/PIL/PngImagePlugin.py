@@ -1518,7 +1518,7 @@ def _save(
             msg = "cannot use transparency for this mode"
             raise OSError(msg)
     elif mode == "P" and palette_frame_with_alpha:
-        alpha = palette_frame_with_alpha.im.getpalette("RGBA", "A")
+        alpha = palette_frame_with_alpha.im.getpalette("A")
         alpha_bytes = colors
         chunk(fp, b"tRNS", alpha[:alpha_bytes])
 
