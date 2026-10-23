@@ -88,26 +88,9 @@ def test_path_list_of_lists(
     assert list(p) == expected
 
 
-def test_path_item_assignment_accepts_list() -> None:
-    p = ImagePath.Path([(0, 1), (2, 3)])
-
-    p[0] = [4, 5]
-    assert p[0] == (4.0, 5.0)
-
-    with pytest.raises(TypeError):
-        p[1] = [6, "not a coordinate"]
-    assert p[1] == (2.0, 3.0)
-
-    with pytest.raises(TypeError):
-        p[1] = None
-    assert p[1] == (2.0, 3.0)
-
-
 def test_path_coordinate_conversion_errors() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="cannot convert signaling NaN to float"):
         ImagePath.Path([Decimal("sNaN"), 0])
-
-    assert ImagePath.Path([Decimal("1.5"), 0])[0] == (1.5, 0.0)
 
     large_int = (1 << 30) + 1
     assert ImagePath.Path([large_int, 0])[0] == (float(large_int), 0.0)

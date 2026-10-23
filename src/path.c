@@ -498,19 +498,15 @@ path_setitem(PyPathObject *self, Py_ssize_t i, PyObject *op) {
 
     xy = &self->xy[i + i];
 
-    double x, y;
-    PyObject *coordinates = PySequence_Tuple(op);
-    if (coordinates == NULL) {
-        return -1;
-    }
-    int ok = PyArg_ParseTuple(coordinates, "dd", &x, &y);
-    Py_DECREF(coordinates);
-    if (!ok) {
+    if (!PyTuple_Check(op)) {
+        PyErr_SetString(PyExc_TypeError, "argument must be tuple of length 2");
         return -1;
     }
 
-    xy[0] = x;
-    xy[1] = y;
+    if (!PyArg_ParseTuple(op, "dd", &xy[0], &xy[1])) {
+        return -1;
+    }
+
     return 0;
 }
 
