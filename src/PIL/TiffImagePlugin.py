@@ -921,7 +921,6 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 if tag in self._tagdata:
                     continue
 
-                # Only build the debug message if it will be logged
                 msg = ""
                 if debug:
                     tagname = TiffTags.lookup(tag, self.group).name
