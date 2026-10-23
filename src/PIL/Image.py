@@ -1204,7 +1204,13 @@ class Image:
                     raise ValueError(msg)
 
         if mode == "P" and palette == Palette.ADAPTIVE:
-            im = self.im.quantize(colors)
+            # quantize() maps each pixel to the nearest palette entry without
+            # dithering, so it silently drops the dither argument. Build the
+            # adaptive palette first, then re-convert with dither so the
+            # dither argument is honored (see #5836).
+            adaptive = self.im.quantize(colors)
+            palette_im = self._new(adaptive)
+            im = self.im.convert(mode, dither, palette_im.im)
             new_im = self._new(im)
             from . import ImagePalette
 

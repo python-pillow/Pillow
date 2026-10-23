@@ -377,3 +377,20 @@ def test_matrix_identity() -> None:
     # Test list
     converted_im = im.convert("RGB", list(identity_matrix))
     assert_image_equal(converted_im, im)
+
+def test_adaptive_convert_honors_dither(tmp_path: Path) -> None:
+    # Regression test for #5836: convert("P", palette=ADAPTIVE, colors=N,
+    # dither=...) must apply dithering, not just nearest-color mapping.
+    im = hopper("RGB")
+
+    no_dither = im.convert("P", palette=Image.Palette.ADAPTIVE, colors=8, dither=Image.Dither.NONE)
+    with_dither = im.convert("P", palette=Image.Palette.ADAPTIVE, colors=8, dither=Image.Dither.FLOYDSTEINBERG)
+
+    # Both should produce valid palette images with the same palette size.
+    assert no_dither.mode == "P"
+    assert with_dither.mode == "P"
+    assert len(no_dither.getpalette()) == len(with_dither.getpalette()) == 24
+
+    # Dithered and non-dithered results must differ. Histograms should spread
+    # differently because dithering distributes error across neighboring pixels.
+    assert no_dither.histogram() != with_dither.histogram()
