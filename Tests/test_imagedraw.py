@@ -71,7 +71,7 @@ def test_sanity() -> None:
 
 def test_line_invalid_coordinate_conversion() -> None:
     draw = ImageDraw.Draw(Image.new("RGB", (4, 4)))
-    with pytest.raises(ValueError, match="(?i)cannot convert signaling NaN to float"):
+    with pytest.raises(ValueError, match="[Cc]annot convert signaling NaN to float"):
         draw.line([Decimal("sNaN"), 0, 1, 1])  # type: ignore[arg-type]
 
 
