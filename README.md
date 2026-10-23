@@ -75,9 +75,6 @@ Development is supported by:
     <tr>
         <th>social</th>
         <td>
-            <a href="https://gitter.im/python-pillow/Pillow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img
-                alt="Join the chat at https://gitter.im/python-pillow/Pillow"
-                src="https://badges.gitter.im/python-pillow/Pillow.svg"></a>
             <a href="https://fosstodon.org/@pillow"><img
                 alt="Follow on https://fosstodon.org/@pillow"
                 src="https://img.shields.io/badge/publish-on%20Mastodon-595aff.svg"
