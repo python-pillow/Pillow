@@ -32,7 +32,7 @@ jobs:
       run:
         shell: bash.exe --login -eo pipefail "{0}"
     env:
-      MSYSTEM: MINGW64
+      MSYSTEM: UCRT64
       CHERE_INVOKING: 1
 
     timeout-minutes: 30
@@ -51,25 +51,25 @@ jobs:
       - name: Install dependencies
         run: |
           pacman -S --noconfirm \
-              mingw-w64-x86_64-freetype \
-              mingw-w64-x86_64-gcc \
-              mingw-w64-x86_64-ghostscript \
-              mingw-w64-x86_64-lcms2 \
-              mingw-w64-x86_64-libavif \
-              mingw-w64-x86_64-libimagequant \
-              mingw-w64-x86_64-libjpeg-turbo \
-              mingw-w64-x86_64-libraqm \
-              mingw-w64-x86_64-libtiff \
-              mingw-w64-x86_64-libwebp \
-              mingw-w64-x86_64-openjpeg2 \
-              mingw-w64-x86_64-python-numpy \
-              mingw-w64-x86_64-python-olefile \
-              mingw-w64-x86_64-python-pip \
-              mingw-w64-x86_64-python-psutil \
-              mingw-w64-x86_64-python-pytest \
-              mingw-w64-x86_64-python-pytest-cov \
-              mingw-w64-x86_64-python-pytest-timeout \
-              mingw-w64-x86_64-python-pyqt6
+              mingw-w64-ucrt-x86_64-freetype \
+              mingw-w64-ucrt-x86_64-gcc \
+              mingw-w64-ucrt-x86_64-ghostscript \
+              mingw-w64-ucrt-x86_64-lcms2 \
+              mingw-w64-ucrt-x86_64-libavif \
+              mingw-w64-ucrt-x86_64-libimagequant \
+              mingw-w64-ucrt-x86_64-libjpeg-turbo \
+              mingw-w64-ucrt-x86_64-libraqm \
+              mingw-w64-ucrt-x86_64-libtiff \
+              mingw-w64-ucrt-x86_64-libwebp \
+              mingw-w64-ucrt-x86_64-openjpeg2 \
+              mingw-w64-ucrt-x86_64-python-numpy \
+              mingw-w64-ucrt-x86_64-python-olefile \
+              mingw-w64-ucrt-x86_64-python-pip \
+              mingw-w64-ucrt-x86_64-python-psutil \
+              mingw-w64-ucrt-x86_64-python-pytest \
+              mingw-w64-ucrt-x86_64-python-pytest-cov \
+              mingw-w64-ucrt-x86_64-python-pytest-timeout \
+              mingw-w64-ucrt-x86_64-python-pyqt6
 
           pushd depends && ./install_extra_test_images.sh && popd
 
