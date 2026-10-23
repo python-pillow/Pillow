@@ -50,6 +50,14 @@ JpegImageFile.load_djpeg
 Use the built-in JPEG decoder instead, or call ``djpeg`` directly and decode the
 resulting image with Pillow.
 
+Image.putpixel 'value' lists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 13.1.0
+
+Passing lists to the ``value`` parameter of :py:meth:`~PIL.Image.Image.putpixel` have
+been deprecated. Use tuples instead.
+
 Removed features
 ----------------
 
