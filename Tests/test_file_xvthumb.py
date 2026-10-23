@@ -16,8 +16,8 @@ def test_open() -> None:
         assert im.format == "XVThumb"
 
         # Create a Hopper image with a similar XV palette
-        im_hopper = hopper().quantize(palette=im)
-        assert_image_similar(im, im_hopper, 9)
+        im_hopper = hopper().quantize(palette=im, dither=Image.Dither.NONE)
+        assert_image_similar(im.convert("RGB"), im_hopper.convert("RGB"), 6.1)
 
 
 def test_unexpected_eof() -> None:
