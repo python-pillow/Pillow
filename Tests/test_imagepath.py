@@ -3,6 +3,7 @@ from __future__ import annotations
 import array
 import math
 import struct
+from decimal import Decimal
 
 import pytest
 
@@ -87,6 +88,28 @@ def test_path_list_of_lists(
     assert list(p) == expected
 
 
+def test_path_item_assignment_requires_tuple() -> None:
+    p = ImagePath.Path([(0, 1)])
+
+    with pytest.raises(TypeError):
+        p[0] = [4, 5]
+    assert p[0] == (0.0, 1.0)
+
+    p[0] = (4, 5)
+    assert p[0] == (4.0, 5.0)
+
+
+def test_path_coordinate_conversion_errors() -> None:
+    with pytest.raises(ValueError, match="[Cc]annot convert signaling NaN to float"):
+        ImagePath.Path([Decimal("sNaN"), 0])
+
+    large_int = (1 << 30) + 1
+    assert ImagePath.Path([large_int, 0])[0] == (float(large_int), 0.0)
+
+    with pytest.raises(OverflowError):
+        ImagePath.Path([1 << 1024, 0])
+
+
 @pytest.mark.parametrize(
     "coords, message",
     (
@@ -94,6 +117,7 @@ def test_path_list_of_lists(
         ([[1]], "coordinate list must contain exactly 2 coordinates"),
         ([[[1, 2], [3, 4]]], "coordinate list must contain numbers"),
         ([["a", "b"]], "coordinate list must contain numbers"),
+        ([[Decimal("sNaN"), 0]], "[Cc]annot convert signaling NaN to float"),
     ),
 )
 def test_invalid_list_coords(coords: list[list[object]], message: str) -> None:
