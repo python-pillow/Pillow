@@ -313,10 +313,10 @@ def contain(
     """
 
     if image.height == 0:
-        return Image.new(image.mode, (size[0], 0))
+        return image.crop((0, 0, size[0], 0))
     im_ratio = image.width / image.height
     if size[1] == 0:
-        return Image.new(image.mode, (0, 0))
+        return image.crop((0, 0, 0, 0))
     dest_ratio = size[0] / size[1]
 
     if im_ratio != dest_ratio:
@@ -329,7 +329,7 @@ def contain(
             if new_width != size[0]:
                 size = (new_width, size[1])
     if min(size) == 0:
-        return Image.new(image.mode, size)
+        return image.crop((0, 0, *size))
     return image.resize(size, resample=method)
 
 

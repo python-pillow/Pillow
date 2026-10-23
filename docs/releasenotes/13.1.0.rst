@@ -61,3 +61,13 @@ Blurring I;16 images
 
 :py:class:`~PIL.ImageFilter.GaussianBlur` and :py:class:`~PIL.ImageFilter.BoxBlur`
 now support I;16, I;16L, I;16B and I;16N images.
+
+Palettes in empty contain results
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.ImageOps.contain` now preserves the palette and transparency
+metadata when the result has zero width or height. This also preserves the
+padding color and transparency in :py:func:`~PIL.ImageOps.pad` when an image
+becomes empty after resizing.
+As with a non-empty resize, the source image is loaded before returning
+the empty result.

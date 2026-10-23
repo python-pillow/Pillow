@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from io import BytesIO
+
 import pytest
 
 from PIL import ExifTags, Image, ImageDraw, ImageOps, ImageStat, features
@@ -176,6 +178,83 @@ def test_contain_zero() -> None:
     im = Image.new("1", (5, 5))
     new_im = ImageOps.contain(im, (2, 0))
     assert new_im.size == (0, 0)
+
+
+@pytest.mark.parametrize(
+    "size, target, expected",
+    (
+        ((1, 1000), (10, 10), (0, 10)),
+        ((1000, 1), (10, 10), (10, 0)),
+        ((1, 0), (10, 10), (10, 0)),
+        ((1, 1), (10, 0), (0, 0)),
+    ),
+)
+def test_contain_empty_palette(
+    size: tuple[int, int], target: tuple[int, int], expected: tuple[int, int]
+) -> None:
+    im = Image.new("P", size, 1)
+    im.putpalette((0, 0, 0, 255, 0, 0))
+    im.info["transparency"] = 1
+
+    contained = ImageOps.contain(im, target)
+
+    assert contained.size == expected
+    assert contained.mode == im.mode
+    assert contained.getpalette() == im.getpalette()
+    assert contained.info["transparency"] == 1
+    assert contained.palette is not im.palette
+
+
+@pytest.mark.parametrize("size", ((1, 1000), (1000, 1)))
+@pytest.mark.parametrize("mode", ("P", "PA"))
+def test_pad_empty_palette(size: tuple[int, int], mode: str) -> None:
+    im = Image.new(mode, size)
+    im.putpalette((0, 0, 0, 255, 0, 0))
+    color = (1, 127) if mode == "PA" else 1
+    if mode == "P":
+        im.info["transparency"] = 1
+
+    padded = ImageOps.pad(im, (10, 10), color=color)
+
+    assert padded.size == (10, 10)
+    assert padded.mode == mode
+    assert padded.convert("RGBA").getpixel((0, 0)) == (
+        255,
+        0,
+        0,
+        127 if mode == "PA" else 0,
+    )
+
+
+def test_pad_empty_rgba_palette() -> None:
+    im = Image.new("P", (1, 1000))
+    im.putpalette((0, 0, 0, 255, 255, 0, 0, 127), "RGBA")
+    padded = ImageOps.pad(im, (10, 10), color=1)
+    assert padded.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, 127)
+
+
+def test_pad_empty_full_palette() -> None:
+    im = Image.new("P", (1, 1024))
+    im.putpalette([component for i in range(256) for component in (i, 0, 0)])
+    im.frombytes(bytes(range(256)) * 4)
+    original_palette = im.getpalette()
+
+    padded = ImageOps.pad(im, (10, 10), color=(0, 255, 0))
+
+    assert padded.convert("RGB").getpixel((0, 0)) == (0, 255, 0)
+    assert im.getpalette() == original_palette
+
+
+@pytest.mark.parametrize("format", ("PNG", "GIF"))
+def test_pad_empty_lazy_palette(format: str) -> None:
+    im = Image.new("P", (1, 1000), 1)
+    im.putpalette((0, 0, 0, 255, 0, 0))
+    with BytesIO() as buffer:
+        im.save(buffer, format, transparency=1, optimize=False)
+        buffer.seek(0)
+        with Image.open(buffer) as lazy_im:
+            padded = ImageOps.pad(lazy_im, (10, 10), color=1)
+    assert padded.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, 0)
 
 
 @pytest.mark.parametrize(
