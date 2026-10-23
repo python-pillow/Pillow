@@ -117,6 +117,7 @@ def test_path_coordinate_conversion_errors() -> None:
         ([[1]], "coordinate list must contain exactly 2 coordinates"),
         ([[[1, 2], [3, 4]]], "coordinate list must contain numbers"),
         ([["a", "b"]], "coordinate list must contain numbers"),
+        ([[Decimal("sNaN"), 0]], "cannot convert signaling NaN to float"),
     ),
 )
 def test_invalid_list_coords(coords: list[list[object]], message: str) -> None:
