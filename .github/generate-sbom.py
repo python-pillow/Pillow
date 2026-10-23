@@ -123,7 +123,7 @@ def generate(version: str) -> dict:
             "description": "FriBiDi runtime-loading shim "
             "(vendored in src/thirdparty/fribidi-shim/); "
             "loads libfribidi dynamically",
-            "licenses": [{"license": {"id": "LGPL-2.1-or-later"}}],
+            "licenses": [{"license": {"id": "MIT-CMU"}}],
             "hashes": [
                 {
                     "alg": "SHA-256",
@@ -131,7 +131,10 @@ def generate(version: str) -> dict:
                 }
             ],
             "pedigree": {
-                "notes": "Pillow-authored shim; not taken from an upstream project."
+                "notes": "Pillow-authored shim; not taken from an upstream project. "
+                "fribidi.h declares the subset of FriBiDi's public API types, "
+                "constants and function signatures needed to load libfribidi "
+                "at runtime. No FriBiDi implementation code is included."
             },
             "externalReferences": [
                 {"type": "website", "url": "https://github.com/fribidi/fribidi"},
@@ -431,7 +434,7 @@ def generate(version: str) -> dict:
                     {
                         "bom-ref": "pkg:generic/openjpeg@2.5.4#upstream",
                         "type": "library",
-                        "name": "libtiff",
+                        "name": "OpenJPEG",
                         "version": "2.5.4",
                         "purl": "pkg:generic/openjpeg@2.5.4",
                         "externalReferences": [
@@ -461,8 +464,8 @@ def generate(version: str) -> dict:
                     },
                 ],
                 "notes": (
-                    "Vendored from upstream openjpeg 2.5.4 with a commit from master "
-                    "cherry-picked to fix OSV-2025-219."
+                    "Vendored from upstream openjpeg 2.5.4 with commits from master "
+                    "cherry-picked to fix OSV-2025-219 and CVE-2026-6192."
                 ),
             },
             "externalReferences": [

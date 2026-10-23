@@ -11,6 +11,10 @@ from .helper import (
     hopper,
 )
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 
 class Deformer(ImageOps.SupportsGetMesh):
     def getmesh(
@@ -125,6 +129,20 @@ def test_fit_same_ratio() -> None:
         assert new_im.size == (1000, 755)
 
 
+def test_fit_zero() -> None:
+    im = Image.new("1", (5, 5))
+    new_im = ImageOps.fit(im, (0, 5))
+    assert new_im.width == 0
+
+    im = Image.new("1", (5, 0))
+    new_im = ImageOps.fit(im, (5, 5))
+    assert new_im.size == (5, 5)
+
+    im = Image.new("1", (5, 5))
+    new_im = ImageOps.fit(im, (10, 0))
+    assert new_im.size == (10, 0)
+
+
 @pytest.mark.parametrize("new_size", ((256, 256), (512, 256), (256, 512)))
 def test_contain(new_size: tuple[int, int]) -> None:
     im = hopper()
@@ -142,6 +160,24 @@ def test_contain_round() -> None:
     assert new_im.height == 5
 
 
+def test_contain_zero() -> None:
+    im = Image.new("1", (1, 10))
+    new_im = ImageOps.contain(im, (5, 5))
+    assert new_im.width == 0
+
+    im = Image.new("1", (10, 1))
+    new_im = ImageOps.contain(im, (5, 5))
+    assert new_im.height == 0
+
+    im = Image.new("1", (10, 0))
+    new_im = ImageOps.contain(im, (5, 5))
+    assert new_im.size == (5, 0)
+
+    im = Image.new("1", (5, 5))
+    new_im = ImageOps.contain(im, (2, 0))
+    assert new_im.size == (0, 0)
+
+
 @pytest.mark.parametrize(
     "image_name, expected_size",
     (
@@ -154,6 +190,20 @@ def test_cover(image_name: str, expected_size: tuple[int, int]) -> None:
     with Image.open("Tests/images/" + image_name) as im:
         new_im = ImageOps.cover(im, (256, 256))
         assert new_im.size == expected_size
+
+
+def test_cover_zero() -> None:
+    im = Image.new("1", (0, 10))
+    new_im = ImageOps.cover(im, (5, 5))
+    assert new_im.size == (0, 5)
+
+    im = Image.new("1", (10, 0))
+    new_im = ImageOps.cover(im, (5, 5))
+    assert new_im.size == (5, 0)
+
+    im = Image.new("1", (5, 5))
+    new_im = ImageOps.cover(im, (2, 0))
+    assert new_im.size == (0, 0)
 
 
 def test_pad() -> None:
@@ -633,3 +683,37 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
         img, cutoff=10, preserve_tone=True
     )  # single color 10 cutoff
     assert_image_equal(img, out)
+
+
+@pytest.mark.parametrize(
+    "operation",
+    (
+        ImageOps.invert,
+        lambda im: ImageOps.posterize(im, 3),
+        ImageOps.solarize,
+    ),
+)
+def test_palette_operation(operation: Callable[[Image.Image], Image.Image]) -> None:
+    im = hopper("P")
+    result = operation(im)
+
+    assert result.mode == "P"
+    assert_image_equal(result.convert("RGB"), operation(im.convert("RGB")))
+
+
+def test_palette_operation_keeps_alpha() -> None:
+    im = Image.new("P", (1, 2))
+    im.putpalette((0, 0, 0, 0, 255, 0, 0, 128), "RGBA")
+    im.putpixel((0, 1), 1)
+
+    result = ImageOps.invert(im)
+
+    palette = result.getpalette("RGBA")
+    assert palette is not None
+    assert palette == [255, 255, 255, 0, 0, 255, 255, 128]
+
+
+def test_palette_histogram_operation_not_supported() -> None:
+    im = hopper("P")
+    with pytest.raises(NotImplementedError, match="mode P support coming soon"):
+        ImageOps.autocontrast(im)

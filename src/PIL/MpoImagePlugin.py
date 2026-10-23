@@ -166,9 +166,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         if self.info.get("exif") != original_exif:
             self._reload_exif()
 
-        self.tile = [
-            ImageFile._Tile("jpeg", (0, 0, *self.size), self.offset, self.tile[0][-1])
-        ]
+        self.tile = [ImageFile._Tile("jpeg", None, self.offset, self.tile[0][-1])]
         self.__frame = frame
         Image.Image.seek(self, frame)
 

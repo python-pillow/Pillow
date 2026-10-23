@@ -41,9 +41,10 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             FLIP_LEFT_RIGHT(UINT16, image8)
         } else {
             FLIP_LEFT_RIGHT(UINT8, image8)
@@ -52,6 +53,7 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
         FLIP_LEFT_RIGHT(INT32, image32)
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef FLIP_LEFT_RIGHT
@@ -76,12 +78,14 @@ ImagingFlipTopBottom(Imaging imOut, Imaging imIn) {
     ImagingCopyPalette(imOut, imIn);
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     yr = ysize - 1;
     for (y = 0; y < ysize; y++, yr--) {
         memcpy(imOut->image[yr], imIn->image[y], imIn->linesize);
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
     return imOut;
@@ -131,9 +135,10 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             ROTATE_90(UINT16, image8);
         } else {
             ROTATE_90(UINT8, image8);
@@ -142,6 +147,7 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
         ROTATE_90(INT32, image32);
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef ROTATE_90
@@ -192,9 +198,10 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             TRANSPOSE(UINT16, image8);
         } else {
             TRANSPOSE(UINT8, image8);
@@ -203,6 +210,7 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
         TRANSPOSE(INT32, image32);
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef TRANSPOSE
@@ -255,9 +263,10 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             TRANSVERSE(UINT16, image8);
         } else {
             TRANSVERSE(UINT8, image8);
@@ -266,6 +275,7 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
         TRANSVERSE(INT32, image32);
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef TRANSVERSE
@@ -300,10 +310,11 @@ ImagingRotate180(Imaging imOut, Imaging imIn) {
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     yr = ysize - 1;
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             ROTATE_180(UINT16, image8)
         } else {
             ROTATE_180(UINT8, image8)
@@ -312,6 +323,7 @@ ImagingRotate180(Imaging imOut, Imaging imIn) {
         ROTATE_180(INT32, image32)
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef ROTATE_180
@@ -363,9 +375,10 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
-        if (isModeI16(imIn->mode)) {
+        if (imIn->type == IMAGING_TYPE_I16) {
             ROTATE_270(UINT16, image8);
         } else {
             ROTATE_270(UINT8, image8);
@@ -374,6 +387,7 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
         ROTATE_270(INT32, image32);
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef ROTATE_270
@@ -814,6 +828,7 @@ ImagingGenericTransform(
     ImagingCopyPalette(imOut, imIn);
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (x0 < 0) {
         x0 = 0;
@@ -841,6 +856,7 @@ ImagingGenericTransform(
         }
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
     return 0;
@@ -926,6 +942,7 @@ ImagingScaleAffine(
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
         AFFINE_SCALE(UINT8, image8);
@@ -933,6 +950,7 @@ ImagingScaleAffine(
         AFFINE_SCALE(INT32, image32);
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef AFFINE_SCALE
@@ -1014,6 +1032,7 @@ affine_fixed(
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
         AFFINE_TRANSFORM_FIXED(UINT8, image8)
@@ -1021,6 +1040,7 @@ affine_fixed(
         AFFINE_TRANSFORM_FIXED(INT32, image32)
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef AFFINE_TRANSFORM_FIXED
@@ -1124,6 +1144,7 @@ ImagingTransformAffine(
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
 
     if (imIn->image8) {
         AFFINE_TRANSFORM(UINT8, image8)
@@ -1131,6 +1152,7 @@ ImagingTransformAffine(
         AFFINE_TRANSFORM(INT32, image32)
     }
 
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
 #undef AFFINE_TRANSFORM

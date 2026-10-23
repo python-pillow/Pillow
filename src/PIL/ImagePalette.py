@@ -189,7 +189,6 @@ class ImagePalette:
                 # allocate new color slot
                 index = self._new_color_index(image, e)
                 assert isinstance(self._palette, bytearray)
-                self.colors[color] = index
                 mode_len = len(self.mode)
                 if index * mode_len < len(self.palette):
                     self._palette = (
@@ -197,8 +196,10 @@ class ImagePalette:
                         + bytes(color)
                         + self._palette[index * mode_len + mode_len :]
                     )
+                    self._colors = None
                 else:
                     self._palette += bytes(color)
+                self.colors[color] = index
                 self.dirty = 1
                 return index
         else:

@@ -315,7 +315,10 @@ DEPS: dict[str, dict[str, Any]] = {
         "patch": {
             r"src\lib\openjp2\j2k.c": {
                 "l_cstr_index->tile_index[p_j2k->m_current_tile_number].tp_index[l_current_tile_part].end_header\n            =\n                l_current_pos;\n        l_cstr_index->tile_index[p_j2k->m_current_tile_number].tp_index[l_current_tile_part].end_pos\n            =\n                l_current_pos + p_j2k->m_specific_param.m_decoder.m_sot_length + 2;": "        if (l_cstr_index->tile_index[p_j2k->m_current_tile_number].tp_index &&\n                l_current_tile_part <\n                l_cstr_index->tile_index[p_j2k->m_current_tile_number].nb_tps) {{\n            l_cstr_index->tile_index[p_j2k->m_current_tile_number].tp_index[l_current_tile_part].end_header\n                = l_current_pos;\n            l_cstr_index->tile_index[p_j2k->m_current_tile_number].tp_index[l_current_tile_part].end_pos\n                = l_current_pos + p_j2k->m_specific_param.m_decoder.m_sot_length + 2;\n        }}",  # noqa: E501
-            }
+            },
+            r"src\lib\openjp2\pi.c": {
+                "    l_current_pi->include_size = l_tcp->numlayers * l_step_l;\n    l_current_pi->include = (OPJ_INT16*) opj_calloc(l_current_pi->include_size,\n                            sizeof(OPJ_INT16));": "    l_current_pi->include = NULL;\n    if (l_step_l <= UINT_MAX / l_tcp->numlayers) {{\n        l_current_pi->include_size = l_tcp->numlayers * l_step_l;\n        l_current_pi->include = (OPJ_INT16*) opj_calloc(l_current_pi->include_size,\n                                sizeof(OPJ_INT16));\n    }}",  # noqa: E501
+            },
         },
         "build": [
             *cmds_cmake(

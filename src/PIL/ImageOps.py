@@ -58,11 +58,28 @@ def _color(
     return color
 
 
-def _lut(image: Image.Image, lut: list[int]) -> Image.Image:
+def _lut(image: Image.Image, lut: list[int], palette: bool = False) -> Image.Image:
     if image.mode == "P":
-        # FIXME: apply to lookup table, not image data
-        msg = "mode P support coming soon"
-        raise NotImplementedError(msg)
+        if not palette:
+            # The lookup table was built from the palette indexes, not colors
+            msg = "mode P support coming soon"
+            raise NotImplementedError(msg)
+
+        # The lookup table can be applied to the palette colors
+        im = image.copy()
+        assert im.palette is not None
+        palette_mode = im.palette.mode
+        channels = len(palette_mode)
+        colors = im.getpalette(None)
+        assert colors is not None
+        im.putpalette(
+            [
+                v if palette_mode[i % channels] == "A" else lut[v]
+                for i, v in enumerate(colors)
+            ],
+            palette_mode,
+        )
+        return im
     elif image.mode in ("L", "RGB"):
         if image.mode == "RGB" and len(lut) == 256:
             lut = lut + lut + lut
@@ -295,7 +312,11 @@ def contain(
     :return: An image.
     """
 
+    if image.height == 0:
+        return Image.new(image.mode, (size[0], 0))
     im_ratio = image.width / image.height
+    if size[1] == 0:
+        return Image.new(image.mode, (0, 0))
     dest_ratio = size[0] / size[1]
 
     if im_ratio != dest_ratio:
@@ -307,6 +328,8 @@ def contain(
             new_width = round(image.width / image.height * size[1])
             if new_width != size[0]:
                 size = (new_width, size[1])
+    if min(size) == 0:
+        return Image.new(image.mode, size)
     return image.resize(size, resample=method)
 
 
@@ -326,7 +349,13 @@ def cover(
     :return: An image.
     """
 
+    if image.width == 0:
+        return Image.new(image.mode, (0, size[1]))
+    if image.height == 0:
+        return Image.new(image.mode, (size[0], 0))
     im_ratio = image.width / image.height
+    if size[1] == 0:
+        return Image.new(image.mode, (0, 0))
     dest_ratio = size[0] / size[1]
 
     if im_ratio != dest_ratio:
@@ -576,6 +605,8 @@ def fit(
     # kevin@cazabon.com
     # https://www.cazabon.com
 
+    if min(size) == 0:
+        return Image.new(image.mode, size)
     centering_x, centering_y = centering
 
     if not 0.0 <= centering_x <= 1.0:
@@ -598,6 +629,8 @@ def fit(
     )
 
     # calculate the aspect ratio of the live_size
+    if live_size[1] == 0:
+        return Image.new(image.mode, size)
     live_size_ratio = live_size[0] / live_size[1]
 
     # calculate the aspect ratio of the output image
@@ -655,7 +688,7 @@ def invert(image: Image.Image) -> Image.Image:
     :return: An image.
     """
     lut = list(range(255, -1, -1))
-    return image.point(lut) if image.mode == "1" else _lut(image, lut)
+    return image.point(lut) if image.mode == "1" else _lut(image, lut, palette=True)
 
 
 def mirror(image: Image.Image) -> Image.Image:
@@ -681,7 +714,7 @@ def posterize(image: Image.Image, bits: int) -> Image.Image:
         raise ValueError(msg)
     mask = ~(2 ** (8 - bits) - 1)
     lut = [i & mask for i in range(256)]
-    return _lut(image, lut)
+    return _lut(image, lut, palette=True)
 
 
 def solarize(image: Image.Image, threshold: int = 128) -> Image.Image:
@@ -698,7 +731,7 @@ def solarize(image: Image.Image, threshold: int = 128) -> Image.Image:
             lut.append(i)
         else:
             lut.append(255 - i)
-    return _lut(image, lut)
+    return _lut(image, lut, palette=True)
 
 
 @overload
