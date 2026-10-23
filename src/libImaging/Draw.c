@@ -88,6 +88,7 @@ typedef void (*point_handler)(Imaging, int, int, int);
 
 /* Type used in "polygon*" functions */
 typedef void (*hline_handler)(Imaging, int, int, int, int, Imaging);
+typedef void (*vline_handler)(Imaging, int, int, int, int);
 
 static inline void
 point8(Imaging im, int x, int y, int ink) {
@@ -113,10 +114,22 @@ point32(Imaging im, int x, int y, int ink) {
 static inline void
 point32rgba(Imaging im, int x, int y, int ink) {
     unsigned int tmp;
+    const UINT8 *in = (UINT8 *)&ink;
+    if (in[3] == 0) {
+        // Transparent ink. Nothing to paint.
+        return;
+    }
+    if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
+        // Painting outside the canvas.
+        return;
+    }
 
-    if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize) {
-        UINT8 *out = (UINT8 *)im->image[y] + x * 4;
-        UINT8 *in = (UINT8 *)&ink;
+    UINT8 *out = (UINT8 *)im->image[y] + x * 4;
+    if (in[3] == 255) {  // Solid ink, no need to blend.
+        out[0] = in[0];
+        out[1] = in[1];
+        out[2] = in[2];
+    } else {
         out[0] = BLEND(in[3], out[0], in[0], tmp);
         out[1] = BLEND(in[3], out[1], in[1], tmp);
         out[2] = BLEND(in[3], out[2], in[2], tmp);
@@ -199,48 +212,173 @@ hline32(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
             x1 = im->xsize - 1;
         }
         p = im->image32[y0];
-        while (x0 <= x1) {
-            if (mask == NULL || mask->image8[y0][x0]) {
+        if (mask == NULL) {
+            for (; x0 <= x1; x0++) {
                 p[x0] = ink;
             }
-            x0++;
+        } else {
+            UINT8 *mask_row = mask->image8[y0];
+            for (; x0 <= x1; x0++) {
+                if (mask_row[x0]) {
+                    p[x0] = ink;
+                }
+            }
         }
     }
 }
+
+// On arm64/NEON, doing no-op work for the unused band allows for better vectorization
+#if defined(__aarch64__) || defined(__ARM_NEON)
+#define KEEP_UNUSED_BAND(out, a, tmp) (out)[3] = BLEND(a, (out)[3], (out)[3], tmp)
+#else
+#define KEEP_UNUSED_BAND(out, a, tmp) ((void)0)
+#endif
 
 static inline void
 hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
     unsigned int tmp;
+    UINT8 r = ((UINT8 *)&ink)[0];
+    UINT8 g = ((UINT8 *)&ink)[1];
+    UINT8 b = ((UINT8 *)&ink)[2];
+    UINT8 a = ((UINT8 *)&ink)[3];
 
-    if (y0 >= 0 && y0 < im->ysize) {
-        if (x0 < 0) {
-            x0 = 0;
-        } else if (x0 >= im->xsize) {
-            return;
+    if (a == 0) {  // Transparent ink. Nothing to paint.
+        return;
+    }
+
+    int xsize = im->xsize, ysize = im->ysize;
+    if (y0 < 0 || y0 >= ysize || x0 >= xsize || x1 < 0) {
+        // Painting outside the canvas.
+        return;
+    }
+
+    x0 = x0 < 0 ? 0 : x0;
+    x1 = x1 >= xsize ? xsize - 1 : x1;
+
+    UINT8 *restrict out = (UINT8 *)im->image[y0] + x0 * 4;
+
+    if (mask == NULL) {
+        if (a == 255) {  // Solid ink, no need to blend.
+            for (; x0 <= x1; x0++, out += 4) {
+                out[0] = r;
+                out[1] = g;
+                out[2] = b;
+                KEEP_UNUSED_BAND(out, 255, tmp);
+            }
+        } else {
+            for (; x0 <= x1; x0++, out += 4) {
+                out[0] = BLEND(a, out[0], r, tmp);
+                out[1] = BLEND(a, out[1], g, tmp);
+                out[2] = BLEND(a, out[2], b, tmp);
+                KEEP_UNUSED_BAND(out, a, tmp);
+            }
         }
-        if (x1 < 0) {
-            return;
-        } else if (x1 >= im->xsize) {
-            x1 = im->xsize - 1;
-        }
-        if (x0 <= x1) {
-            UINT8 *out = (UINT8 *)im->image[y0] + x0 * 4;
-            UINT8 *in = (UINT8 *)&ink;
-            while (x0 <= x1) {
-                if (mask == NULL || mask->image8[y0][x0]) {
-                    out[0] = BLEND(in[3], out[0], in[0], tmp);
-                    out[1] = BLEND(in[3], out[1], in[1], tmp);
-                    out[2] = BLEND(in[3], out[2], in[2], tmp);
+    } else {
+        UINT8 *mask_row = mask->image8[y0];
+        if (a == 255) {  // Solid paint, no need to blend.
+            for (; x0 <= x1; x0++, out += 4) {
+                if (mask_row[x0]) {
+                    out[0] = r;
+                    out[1] = g;
+                    out[2] = b;
                 }
-                x0++;
-                out += 4;
+            }
+        } else {
+            for (; x0 <= x1; x0++, out += 4) {
+                if (mask_row[x0]) {
+                    out[0] = BLEND(a, out[0], r, tmp);
+                    out[1] = BLEND(a, out[1], g, tmp);
+                    out[2] = BLEND(a, out[2], b, tmp);
+                }
             }
         }
     }
 }
 
 static inline void
-line(
+vline8(Imaging im, int x0, int y0, int y1, int ink) {
+    int ysize = im->ysize;
+
+    if (x0 < 0 || x0 >= im->xsize || y0 >= ysize || y1 < 0) {
+        return;
+    }
+    y0 = y0 < 0 ? 0 : y0;
+    y1 = y1 >= ysize ? ysize - 1 : y1;
+
+    UINT8 **rows = im->image8;
+    for (; y0 <= y1; y0++) {
+        rows[y0][x0] = (UINT8)ink;
+    }
+}
+
+static inline void
+vline16(Imaging im, int x0, int y0, int y1, int ink) {
+    int ysize = im->ysize;
+
+    if (x0 < 0 || x0 >= im->xsize || y0 >= ysize || y1 < 0) {
+        return;
+    }
+    y0 = y0 < 0 ? 0 : y0;
+    y1 = y1 >= ysize ? ysize - 1 : y1;
+
+    UINT8 **rows = im->image8;
+    for (; y0 <= y1; y0++) {
+        ((UINT16 *)rows[y0])[x0] = (UINT16)ink;
+    }
+}
+
+static inline void
+vline32(Imaging im, int x0, int y0, int y1, int ink) {
+    int ysize = im->ysize;
+
+    if (x0 < 0 || x0 >= im->xsize || y0 >= ysize || y1 < 0) {
+        return;
+    }
+    y0 = y0 < 0 ? 0 : y0;
+    y1 = y1 >= ysize ? ysize - 1 : y1;
+
+    INT32 **rows = im->image32;
+    for (; y0 <= y1; y0++) {
+        rows[y0][x0] = ink;
+    }
+}
+
+static inline void
+vline32rgba(Imaging im, int x0, int y0, int y1, int ink) {
+    unsigned int tmp;
+    UINT8 *in = (UINT8 *)&ink;
+    UINT8 r = in[0], g = in[1], b = in[2], a = in[3];
+    int ysize = im->ysize;
+
+    if (a == 0) {  // Transparent ink. Nothing to paint.
+        return;
+    }
+    if (x0 < 0 || x0 >= im->xsize || y0 >= ysize || y1 < 0) {
+        return;
+    }
+    y0 = y0 < 0 ? 0 : y0;
+    y1 = y1 >= ysize ? ysize - 1 : y1;
+
+    char **rows = im->image;
+    if (a == 255) {  // Solid ink, no need to blend.
+        for (; y0 <= y1; y0++) {
+            UINT8 *out = (UINT8 *)rows[y0] + x0 * 4;
+            out[0] = r;
+            out[1] = g;
+            out[2] = b;
+        }
+    } else {
+        for (; y0 <= y1; y0++) {
+            UINT8 *out = (UINT8 *)rows[y0] + x0 * 4;
+            out[0] = BLEND(a, out[0], r, tmp);
+            out[1] = BLEND(a, out[1], g, tmp);
+            out[2] = BLEND(a, out[2], b, tmp);
+        }
+    }
+}
+
+static inline void
+line_generic(
     Imaging im,
     int x0,
     int y0,
@@ -248,7 +386,8 @@ line(
     int y1,
     int ink,
     point_handler point,
-    hline_handler hline
+    hline_handler hline,
+    vline_handler vline
 ) {
     int i, n, e, dx, dy, xs, ys;
 
@@ -277,11 +416,13 @@ line(
     n = (dx > dy) ? dx : dy;
 
     if (dx == 0) {
-        /* vertical */
-        for (i = 0; i < dy; i++) {
-            point(im, x0, y0, ink);
-            y0 += ys;
+        /* vertical, exclude endpoint */
+        if (ys > 0) {
+            vline(im, x0, y0, y0 + dy - 1, ink);
+        } else {
+            vline(im, x0, y0 - dy + 1, y0, ink);
         }
+        return;
 
     } else if (dx > dy) {
         /* bresenham, horizontal slope */
@@ -557,15 +698,27 @@ add_edge(Edge *e, int x0, int y0, int x1, int y1) {
     e->y0 = y0;
 }
 
+#define DEFINE_LINE(name, point, hline, vline)                              \
+    static void name(Imaging im, int x0, int y0, int x1, int y1, int ink) { \
+        line_generic(im, x0, y0, x1, y1, ink, point, hline, vline);         \
+    }
+
+DEFINE_LINE(line8, point8, hline8, vline8)
+DEFINE_LINE(line16, point16, hline16, vline16)
+DEFINE_LINE(line32, point32, hline32, vline32)
+DEFINE_LINE(line32rgba, point32rgba, hline32rgba, vline32rgba)
+
 typedef struct {
     void (*point)(Imaging im, int x, int y, int ink);
     void (*hline)(Imaging im, int x0, int y0, int x1, int ink, Imaging mask);
+    void (*vline)(Imaging im, int x0, int y0, int y1, int ink);
+    void (*line)(Imaging im, int x0, int y0, int x1, int y1, int ink);
 } DRAW;
 
-DRAW draw8 = {point8, hline8};
-DRAW draw16 = {point16, hline16};
-DRAW draw32 = {point32, hline32};
-DRAW draw32rgba = {point32rgba, hline32rgba};
+DRAW draw8 = {point8, hline8, vline8, line8};
+DRAW draw16 = {point16, hline16, vline16, line16};
+DRAW draw32 = {point32, hline32, vline32, line32};
+DRAW draw32rgba = {point32rgba, hline32rgba, vline32rgba, line32rgba};
 
 /* -------------------------------------------------------------------- */
 /* Interface                                                            */
@@ -604,7 +757,7 @@ ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void *ink_, in
 
     DRAWINIT();
 
-    line(im, x0, y0, x1, y1, ink, draw->point, draw->hline);
+    draw->line(im, x0, y0, x1, y1, ink);
 
     return 0;
 }
@@ -676,8 +829,6 @@ ImagingDrawRectangle(
     int width,
     int op
 ) {
-    int i;
-    int y;
     int tmp;
     DRAW *draw;
     INT32 ink;
@@ -701,7 +852,7 @@ ImagingDrawRectangle(
             y1 = im->ysize;
         }
 
-        for (y = y0; y <= y1; y++) {
+        for (int y = y0; y <= y1; y++) {
             draw->hline(im, x0, y, x1, ink, NULL);
         }
 
@@ -710,29 +861,18 @@ ImagingDrawRectangle(
         if (width == 0) {
             width = 1;
         }
-        for (i = 0; i < width; i++) {
+        // Adjust side edges to avoid overlapping (matters with blends)
+        int ya = y0 + width, yb = y1 - width + 1, va = 0, vb = -1;
+        if (ya < yb) {
+            va = ya, vb = yb - 1;
+        } else if (ya > yb) {
+            va = yb + 1, vb = ya;
+        }
+        for (int i = 0; i < width; i++) {
             draw->hline(im, x0, y0 + i, x1, ink, NULL);
             draw->hline(im, x0, y1 - i, x1, ink, NULL);
-            line(
-                im,
-                x1 - i,
-                y0 + width,
-                x1 - i,
-                y1 - width + 1,
-                ink,
-                draw->point,
-                draw->hline
-            );
-            line(
-                im,
-                x0 + i,
-                y0 + width,
-                x0 + i,
-                y1 - width + 1,
-                ink,
-                draw->point,
-                draw->hline
-            );
+            draw->vline(im, x1 - i, va, vb, ink);
+            draw->vline(im, x0 + i, va, vb, ink);
         }
     }
 
@@ -799,27 +939,11 @@ ImagingDrawPolygon(
         /* Outline */
         if (width == 1) {
             for (i = 0; i < count - 1; i++) {
-                line(
-                    im,
-                    xy[i * 2],
-                    xy[i * 2 + 1],
-                    xy[i * 2 + 2],
-                    xy[i * 2 + 3],
-                    ink,
-                    draw->point,
-                    draw->hline
+                draw->line(
+                    im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink
                 );
             }
-            line(
-                im,
-                xy[i * 2],
-                xy[i * 2 + 1],
-                xy[0],
-                xy[1],
-                ink,
-                draw->point,
-                draw->hline
-            );
+            draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink);
         } else {
             for (i = 0; i < count - 1; i++) {
                 ImagingDrawWideLine(
