@@ -463,9 +463,6 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
         # create image memory if necessary
         if self._im is None:
             self.im = Image.core.new(self.mode, self.size)
-        # create palette (optional)
-        if self.mode == "P":
-            Image.Image.load(self)
 
     def load_end(self) -> None:
         # may be overridden

@@ -576,9 +576,9 @@ _ImagingResampleHorizontal_16bpc(
 
     int bigendian = 0;
     if (
-        imIn->mode == IMAGING_MODE_I_16N
+        imIn->mode == IMAGING_MODE_I_16B
 #ifdef WORDS_BIGENDIAN
-        || imIn->mode == IMAGING_MODE_I_16B
+        || imIn->mode == IMAGING_MODE_I_16N
 #endif
     ) {
         bigendian = 1;
@@ -627,9 +627,9 @@ _ImagingResampleVertical_16bpc(
 
     int bigendian = 0;
     if (
-        imIn->mode == IMAGING_MODE_I_16N
+        imIn->mode == IMAGING_MODE_I_16B
 #ifdef WORDS_BIGENDIAN
-        || imIn->mode == IMAGING_MODE_I_16B
+        || imIn->mode == IMAGING_MODE_I_16N
 #endif
     ) {
         bigendian = 1;
