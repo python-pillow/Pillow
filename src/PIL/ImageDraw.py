@@ -830,6 +830,8 @@ def floodfill(
     pixel = image.load()
     assert pixel is not None
     x, y = xy
+    if x < 0 or y < 0:
+        return
     try:
         background = pixel[x, y]
         if _color_diff(value, background) <= thresh:

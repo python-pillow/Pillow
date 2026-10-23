@@ -991,6 +991,14 @@ def test_floodfill(bbox: Coords) -> None:
     assert_image_equal(im, Image.new("RGB", (1, 1), red))
 
 
+@pytest.mark.parametrize("xy", ((-1, 1), (1, -1), (-1, -1), (-3, 0), (0, -3)))
+def test_floodfill_negative_seed(xy: tuple[int, int]) -> None:
+    im = Image.new("RGB", (3, 3))
+    original = im.copy()
+    ImageDraw.floodfill(im, xy, (255, 0, 0))
+    assert_image_equal(im, original)
+
+
 @pytest.mark.parametrize("bbox", BBOX)
 def test_floodfill_border(bbox: Coords) -> None:
     # floodfill() is experimental

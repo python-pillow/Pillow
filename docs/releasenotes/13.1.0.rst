@@ -49,6 +49,12 @@ TODO
 Other changes
 =============
 
+Negative seed coordinates in ImageDraw.floodfill
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.ImageDraw.floodfill` now leaves the image unchanged when either
+seed coordinate is negative, instead of wrapping around to the opposite edge.
+
 Resizing I;16B and I;16N images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
