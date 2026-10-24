@@ -4,7 +4,7 @@
 # https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks#handling-skipped-but-required-checks
 #
 # Keep the paths below in sync with the paths-ignore lists in test.yml,
-# test-docker.yml, test-mingw.yml and test-windows.yml.
+# test-docker.yml, test-msys2.yml and test-windows.yml.
 
 name: Test skipped
 
