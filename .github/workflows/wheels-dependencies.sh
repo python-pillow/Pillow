@@ -182,6 +182,7 @@ function build_libavif {
         || [ -n "$SANITIZER" ]
     then
         build_simple nasm 3.02 https://www.nasm.us/pub/nasm/releasebuilds/3.02
+        local have_nasm=1
     fi
 
     local build_shared=ON
@@ -210,9 +211,14 @@ function build_libavif {
         fi
         libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
     fi
-    if [[ -n "$IOS_SDK" ]] && [[ "$PLAT" == "x86_64" ]]; then
+
+    # AOM and dav1d both require nasm by default on x86_64. AOM has a CMake option to
+    # disable it, but dav1d doesn't.
+    if [[ -z "$have_nasm" ]] && [[ "$PLAT" == "x86_64" ]]; then
+        # Use AOM for both encoding and decoding, and don't enable dav1d.
         libavif_cmake_flags+=(-DAOM_TARGET_CPU=generic)
     else
+        # Use AOM for encoding and dav1d for decoding.
         libavif_cmake_flags+=(
             -DAVIF_CODEC_AOM_DECODE=OFF \
             -DAVIF_CODEC_DAV1D=LOCAL
