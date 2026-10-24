@@ -952,6 +952,11 @@ class Image:
             # may pass tuple instead of argument list
             decoder_args = decoder_args[0]
 
+        if decoder_args:
+            rawmode = decoder_args[0]
+            if rawmode in {"P;2L", "P;4L"}:
+                deprecate(rawmode, 15)
+
         # default format
         if decoder_name == "raw" and decoder_args == ():
             decoder_args = self.mode
