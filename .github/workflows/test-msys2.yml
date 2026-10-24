@@ -86,4 +86,4 @@ jobs:
         with:
           files: ./coverage.xml
           flags: GHA_Windows
-          name: "MSYS2 UCRT64"
+          name: "MSYS2"
