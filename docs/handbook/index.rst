@@ -8,4 +8,5 @@ Handbook
   tutorial
   concepts
   appendices
+  thread-safety
   security
