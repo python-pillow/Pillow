@@ -99,7 +99,7 @@ def isSpiderImage(filename: str) -> int:
     return hdrlen
 
 
-class SpiderImageFile(ImageFile.ImageFile):
+class SpiderImageFile(ImageFile.SeekableImageFile):
     format = "SPIDER"
     format_description = "Spider 2D image"
     _close_exclusive_fp_after_loading = False
@@ -172,12 +172,10 @@ class SpiderImageFile(ImageFile.ImageFile):
         else:
             return self.imgnumber - 1
 
-    def seek(self, frame: int) -> None:
+    def _seekTo(self, frame: int) -> None:
         if self.istack == 0:
             msg = "attempt to seek in a non-stack file"
             raise EOFError(msg)
-        if not self._seek_check(frame):
-            return
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
         self.stkoffset = self.hdrlen + frame * (self.hdrlen + self.imgbytes)

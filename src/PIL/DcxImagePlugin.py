@@ -24,7 +24,7 @@ from __future__ import annotations
 
 __lazy_modules__ = {"PIL._binary", "PIL._util"}
 
-from . import Image
+from . import Image, ImageFile
 from ._binary import i32le as i32
 from ._util import DeferredError
 from .PcxImagePlugin import PcxImageFile
@@ -40,7 +40,7 @@ def _accept(prefix: bytes) -> bool:
 # Image plugin for the Intel DCX format.
 
 
-class DcxImageFile(PcxImageFile):
+class DcxImageFile(PcxImageFile, ImageFile.SeekableImageFile):
     format = "DCX"
     format_description = "Intel DCX"
     _close_exclusive_fp_after_loading = False
@@ -67,9 +67,7 @@ class DcxImageFile(PcxImageFile):
         self.is_animated = self.n_frames > 1
         self.seek(0)
 
-    def seek(self, frame: int) -> None:
-        if not self._seek_check(frame):
-            return
+    def _seekTo(self, frame: int) -> None:
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
         self.frame = frame

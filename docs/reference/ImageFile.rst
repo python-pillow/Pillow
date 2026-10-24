@@ -62,6 +62,10 @@ Classes
     :undoc-members:
     :show-inheritance:
 
+.. autoclass:: PIL.ImageFile.SeekableImageFile()
+    :members:
+    :show-inheritance:
+
 .. autoclass:: PIL.ImageFile.StubHandler()
     :members:
     :show-inheritance:

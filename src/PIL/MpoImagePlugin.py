@@ -105,7 +105,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 # Image plugin for MPO images.
 
 
-class MpoImageFile(JpegImagePlugin.JpegImageFile):
+class MpoImageFile(JpegImagePlugin.JpegImageFile, ImageFile.SeekableImageFile):
     format = "MPO"
     format_description = "MPO (CIPA DC-007)"
     _close_exclusive_fp_after_loading = False
@@ -144,9 +144,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
             raise self._fp.ex
         self._fp.seek(pos)
 
-    def seek(self, frame: int) -> None:
-        if not self._seek_check(frame):
-            return
+    def _seekTo(self, frame: int) -> None:
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
         self.fp = self._fp
