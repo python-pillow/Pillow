@@ -1282,7 +1282,7 @@ get_qtables_arrays(PyObject *qtables, int *qtablesLen) {
         }
         for (j = 0; j < DCTSIZE2; j++) {
             qarrays[i * DCTSIZE2 + j] =
-                PyLong_AS_LONG(PySequence_Fast_GET_ITEM(table_data, j));
+                PyLong_AsLong(PySequence_Fast_GET_ITEM(table_data, j));
         }
         Py_DECREF(table_data);
     }

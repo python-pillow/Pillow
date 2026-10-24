@@ -57,6 +57,13 @@ now copy read-only image memory before writing to it. This also applies to in-pl
 ImageCms transforms, preventing writes into shared buffers or read-only memory-mapped
 files.
 
+Resizing I;16B and I;16N images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On little-endian systems, :py:meth:`~PIL.Image.Image.resize` read and wrote
+I;16B and I;16N pixel values in the wrong byte order when using a resampling
+filter other than ``Resampling.NEAREST``. This has been fixed.
+
 Blurring I;16 images
 ^^^^^^^^^^^^^^^^^^^^
 

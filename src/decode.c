@@ -934,7 +934,7 @@ PyImaging_Jpeg2KDecoderNew(PyObject *self, PyObject *args) {
     int reduce = 0;
     int layers = 0;
     int fd = -1;
-    PY_LONG_LONG length = -1;
+    long long length = -1;
 
     if (!PyArg_ParseTuple(
             args, "ss|iiiL", &mode, &format, &reduce, &layers, &fd, &length

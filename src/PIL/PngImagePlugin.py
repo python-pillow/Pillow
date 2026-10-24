@@ -1239,14 +1239,10 @@ def _write_multiple_frames(
                     prev_disposal = Disposal.OP_BACKGROUND
 
                 if prev_disposal == Disposal.OP_BACKGROUND:
-                    base_im = previous.im.copy()
-                    dispose = Image.core.fill("RGBA", im.size, (0, 0, 0, 0))
-                    bbox = previous.bbox
-                    if bbox:
-                        dispose = dispose.crop(bbox)
-                    else:
-                        bbox = (0, 0, *im.size)
-                    base_im.paste(dispose, bbox)
+                    base_im = previous.im.convert("RGBA")
+                    box = previous.bbox or (0, 0, *im.size)
+                    dispose = Image.new("RGBA", (box[2] - box[0], box[3] - box[1]))
+                    base_im.paste(dispose, box)
                 elif prev_disposal == Disposal.OP_PREVIOUS:
                     base_im = im_frames[-2].im
                 else:
@@ -1522,7 +1518,7 @@ def _save(
             msg = "cannot use transparency for this mode"
             raise OSError(msg)
     elif mode == "P" and palette_frame_with_alpha:
-        alpha = palette_frame_with_alpha.im.getpalette("RGBA", "A")
+        alpha = palette_frame_with_alpha.im.getpalette("A")
         alpha_bytes = colors
         chunk(fp, b"tRNS", alpha[:alpha_bytes])
 
