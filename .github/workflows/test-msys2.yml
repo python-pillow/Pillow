@@ -36,7 +36,7 @@ jobs:
       CHERE_INVOKING: 1
 
     timeout-minutes: 30
-    name: "MSYS2 UCRT64"
+    name: "MSYS2"
 
     steps:
       - name: Checkout Pillow
