@@ -146,11 +146,11 @@ function build_zlib_ng {
     # cross-compilation flags.
     ORIGINAL_HOST_CONFIGURE_FLAGS=$HOST_CONFIGURE_FLAGS
     unset HOST_CONFIGURE_FLAGS
+    if [ -n "$IS_ANDROID" ]; then
+        HOST_CONFIGURE_FLAGS="--uname=Linux"
+    fi
 
-    # CHOST is the equivalent of the autotools --host option. If it's empty, the library
-    # will be built for the build machine's platform.
-    CHOST=$HOST_TRIPLE build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION \
-        --installnamedir=$BUILD_PREFIX/lib --zlib-compat
+    build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --installnamedir=$BUILD_PREFIX/lib --zlib-compat
 
     HOST_CONFIGURE_FLAGS=$ORIGINAL_HOST_CONFIGURE_FLAGS
     touch zlib-stamp
@@ -305,9 +305,9 @@ function build {
     # -DCMAKE_POSITION_INDEPENDENT_CODE=1 is a workaround from https://github.com/libjpeg-turbo/libjpeg-turbo/issues/898
     HOST_CMAKE_FLAGS="-DCMAKE_POSITION_INDEPENDENT_CODE=1 $HOST_CMAKE_FLAGS" build_libjpeg_turbo
 
-    if [[ -n "$IS_MACOS" ]]; then
+    if [[ -n "$IS_MACOS" ]] || [[ -n "$IS_ANDROID" ]]; then
         # Custom tiff build to include jpeg; by default, configure won't include
-        # headers/libs in the custom macOS/iOS prefix. Explicitly disable webp,
+        # headers/libs in the BUILD_PREFIX. Explicitly disable webp,
         # libdeflate and zstd, because on x86_64 macs, it will pick up the
         # Homebrew versions of those libraries from /usr/local.
         tiff_configure_args=(
