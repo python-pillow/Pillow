@@ -123,14 +123,12 @@ select = [ "*-android_*", "*-ios_*" ]
 # vendor version, and we can't distribute it due to licensing)
 config-settings = "raqm=disable imagequant=disable platform-guessing=disable"
 # Mobile platforms only support Python test-commands, not shell scripts.
-test-command = [
-  "python -m selftest",
-  "python -m pytest -vv -x -W always checks/check_wheel.py Tests",
-]
+test-command = "python -m wheels_test"
 test-sources = [
   "checks",
   "Tests",
   "selftest.py",
+  "wheels_test.py",
 ]
 xbuild-tools = []
 
