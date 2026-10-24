@@ -111,6 +111,10 @@ test-extras = "tests"
 macos.config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable platform-guessing=disable"
 # Isolate macOS build environment from Homebrew etc.
 macos.environment.PATH = "$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
+# Windows uses build_dep_all.cmd instead of wheels-dependencies.sh.
+windows.before-build = ""
+# Tell auditwheel where to find dependencies.
+android.environment.AUDITWHEEL_LD_LIBRARY_PATH = "$(pwd)/build/deps/current/prefix/lib"
 
 # Settings for mobile platforms
 [[tool.cibuildwheel.overrides]]
@@ -129,10 +133,6 @@ test-sources = [
   "selftest.py",
 ]
 xbuild-tools = []
-
-[[tool.cibuildwheel.overrides]]
-select = [ "*-android_*" ]
-environment.AUDITWHEEL_LD_LIBRARY_PATH = "$(pwd)/build/deps/current/prefix/lib"
 
 [[tool.cibuildwheel.overrides]]
 select = [
