@@ -101,6 +101,28 @@ def test_sanity() -> None:
     hopper().point(t)
 
 
+@pytest.mark.parametrize("in_place", (False, True))
+def test_readonly_output(in_place: bool) -> None:
+    original = bytes([10, 20, 30, 255] * 4)
+    data = bytes(bytearray(original))
+    im = Image.frombuffer("RGBA", (2, 2), data, "raw", "RGBA", 0, 1)
+    assert im.readonly
+    profile = ImageCms.createProfile("sRGB")
+    transform = ImageCms.buildTransform(profile, profile, "RGBA", "RGBA")
+
+    if in_place:
+        expected = im.copy()
+        result = transform.apply_in_place(im)
+    else:
+        expected = Image.new("RGBA", im.size, (90, 80, 70, 255))
+        result = transform.apply(expected, im)
+
+    assert result is im
+    assert_image_equal(im, expected)
+    assert data == original
+    assert not im.readonly
+
+
 def test_flags() -> None:
     assert ImageCms.Flags.NONE.value == 0
     assert ImageCms.Flags.GRIDPOINTS(0) == ImageCms.Flags.NONE

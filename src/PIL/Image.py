@@ -947,6 +947,10 @@ class Image:
         if self.width == 0 or self.height == 0:
             return
 
+        # Plugins may call frombytes() during load(), before clearing self.readonly.
+        if self.im.readonly:
+            self._copy()
+
         decoder_args: Any = args
         if len(decoder_args) == 1 and isinstance(decoder_args[0], tuple):
             # may pass tuple instead of argument list
