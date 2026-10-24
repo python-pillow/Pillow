@@ -19,10 +19,20 @@
 
 #include <math.h>
 
+/**
+ * Generate a grayscale Mandelbrot set covering the given extent.
+ * Allocates a new image of the given size and returns it.
+ *
+ * @param xsize Width of the output image in pixels.
+ * @param ysize Height of the output image in pixels.
+ * @param extent Array of four doubles specifying the extent of the Mandelbrot set to
+ *               generate: [xmin, ymin, xmax, ymax].
+ * @param quality Maximum number of iterations for each pixel. Must be >= 2.
+ * @return A new grayscale image containing the Mandelbrot set,
+ *         or NULL with a Python error set if an error occurred.
+ */
 Imaging
 ImagingEffectMandelbrot(int xsize, int ysize, double extent[4], int quality) {
-    /* Generate a Mandelbrot set covering the given extent */
-
     Imaging im;
     int x, y, k;
     double width, height;
@@ -71,10 +81,18 @@ ImagingEffectMandelbrot(int xsize, int ysize, double extent[4], int quality) {
     return im;
 }
 
+/**
+ * Generate Gaussian noise centered around 128 with the given standard deviation.
+ * Allocates a new grayscale image of the given size and returns it.
+ *
+ * @param xsize Width of the output image in pixels.
+ * @param ysize Height of the output image in pixels.
+ * @param sigma Standard deviation of the Gaussian noise.
+ * @return A new grayscale image containing the Gaussian noise,
+ *         or NULL with a Python error set if an error occurred.
+ */
 Imaging
 ImagingEffectNoise(int xsize, int ysize, float sigma) {
-    /* Generate Gaussian noise centered around 128 */
-
     Imaging imOut;
     int x, y;
     int nextok;
@@ -113,10 +131,17 @@ ImagingEffectNoise(int xsize, int ysize, float sigma) {
     return imOut;
 }
 
+/**
+ * Randomly spread pixels in an image into a new image,
+ * with a maximum distance of `distance` pixels.
+ *
+ * @param imIn Input image.
+ * @param distance Maximum distance to spread pixels.
+ * @return A new image with pixels randomly spread,
+ *         or NULL with a Python error set if an error occurred.
+ */
 Imaging
 ImagingEffectSpread(Imaging imIn, int distance) {
-    /* Randomly spread pixels in an image */
-
     Imaging imOut;
     int x, y;
 

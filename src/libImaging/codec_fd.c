@@ -1,11 +1,16 @@
 #include <Python.h>
 #include "Imaging.h"
 
+/**
+ * Read from a Python file-like object into `dest`.
+ *
+ * @param fd Python file-like object with a `read` method
+ * @param dest Caller-allocated buffer to read into; must be at least `bytes` long
+ * @param bytes Number of bytes to read
+ * @return Number of bytes read; or -1 on error, and a Python exception set.
+ */
 Py_ssize_t
 _imaging_read_pyFd(PyObject *fd, char *dest, Py_ssize_t bytes) {
-    /* dest should be a buffer bytes long, returns length of read
-       -1 on error */
-
     PyObject *result;
     char *buffer;
     Py_ssize_t length;
