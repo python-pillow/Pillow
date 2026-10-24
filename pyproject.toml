@@ -131,7 +131,7 @@ test-sources = [
 xbuild-tools = []
 
 [[tool.cibuildwheel.overrides]]
-select = [ "*-android_*", "*-*linux_*" ]
+select = [ "*-android_*" ]
 environment.AUDITWHEEL_LD_LIBRARY_PATH = "$(pwd)/build/deps/current/prefix/lib"
 
 [[tool.cibuildwheel.overrides]]

@@ -20,7 +20,6 @@ deps_dir=$(pwd)/build/deps
 mkdir -p $deps_dir
 WORKDIR=$deps_dir/$CIBW_OS_ARCH
 ln -sfn $CIBW_OS_ARCH $deps_dir/current
-BUILD_PREFIX=$WORKDIR/prefix
 
 if [ "$CIBW_OS" = "android" ]; then
     IS_ANDROID=1
@@ -33,6 +32,7 @@ if [ "$CIBW_OS" = "android" ]; then
     esac
     HOST_TRIPLE="$PLAT-linux-android"
     HOST_CONFIGURE_FLAGS="--host=$HOST_TRIPLE"
+    BUILD_PREFIX=$WORKDIR/prefix
 
     # When building for Android, cibuildwheel sets the CMAKE_TOOLCHAIN_FILE environment
     # variable, which includes most of the flags we need. Some additional flags are
@@ -49,6 +49,7 @@ elif [ "$CIBW_OS" = "ios" ]; then
     # platform, and the iOS SDK.
     PLAT=$(echo $CIBW_ARCH | sed "s/\(.*\)_\(.*\)/\1/")
     IOS_SDK=$(echo $CIBW_ARCH | sed "s/\(.*\)_\(.*\)/\2/")
+    BUILD_PREFIX=$WORKDIR/prefix
 
     # GNU tooling insists on using aarch64 rather than arm64
     if [[ $PLAT == "arm64" ]]; then
@@ -85,8 +86,10 @@ elif [ "$CIBW_OS" = "ios" ]; then
 elif [ "$CIBW_OS" = "macosx" ]; then
     # IS_MACOS will be set by common_utils.sh.
     PLAT=$CIBW_ARCH
+    BUILD_PREFIX=$WORKDIR/prefix
 
 elif [[ "$CIBW_OS" = *linux ]]; then
+    # Build prefix will default to /usr/local
     IS_LINUX=1
     PLAT=$CIBW_ARCH
     MB_ML_LIBC=${AUDITWHEEL_POLICY::9}

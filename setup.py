@@ -280,10 +280,11 @@ def _cmd_exists(cmd: str) -> bool:
 
 def _pkg_config(name: str) -> tuple[list[str], list[str]] | None:
     command = os.environ.get("PKG_CONFIG", "pkg-config")
-    env = {
-        **os.environ,
-        "PKG_CONFIG_PATH": os.path.abspath("build/deps/current/prefix/lib/pkgconfig"),
-    }
+    env = os.environ.copy()
+    if sys.platform in ["android", "darwin", "ios"]:
+        env["PKG_CONFIG_PATH"] = os.path.abspath(
+            "build/deps/current/prefix/lib/pkgconfig"
+        )
 
     for keep_system in (True, False):
         try:
