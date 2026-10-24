@@ -137,7 +137,7 @@ class Stat:
                 s = s + self.h[b + j]
                 if s > half:
                     break
-            v.append(j)
+            v.append(j if self.count[i] else 0)
         return v
 
     @cached_property
