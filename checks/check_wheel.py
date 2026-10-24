@@ -22,8 +22,8 @@ def test_wheel_modules() -> None:
         if platform.machine() == "ARM64":
             expected_modules.remove("avif")
 
-    elif sys.platform == "ios":
-        # tkinter is not available on iOS
+    elif sys.platform in ["android", "ios"]:
+        # tkinter is not available on mobile devices
         expected_modules.remove("tkinter")
 
     assert set(features.get_supported_modules()) == expected_modules
@@ -47,7 +47,11 @@ def test_wheel_features() -> None:
 
     if sys.platform == "win32":
         expected_features.remove("xcb")
-    elif sys.platform == "ios":
+
+    elif sys.platform in ["android", "ios"]:
+        # There's no X server on mobile devices.
+        expected_features.remove("xcb")
+
         # Can't distribute raqm due to licensing, and there's no system version;
         # fribidi and harfbuzz won't be available if raqm isn't available.
         expected_features -= {"raqm", "fribidi", "harfbuzz"}

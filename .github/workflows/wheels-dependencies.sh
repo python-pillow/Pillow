@@ -296,7 +296,10 @@ function build {
         else
             sed "s/\${pc_sysrootdir\}//" $BUILD_PREFIX/share/pkgconfig/xcb-proto.pc > $BUILD_PREFIX/lib/pkgconfig/xcb-proto.pc
         fi
+        # FIXME
+        set
         build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
+        cat libxcb*/config.log
     fi
 
     # -DCMAKE_POSITION_INDEPENDENT_CODE=1 is a workaround from https://github.com/libjpeg-turbo/libjpeg-turbo/issues/898
@@ -369,7 +372,7 @@ function build {
 function create_meson_cross_config {
     cat << EOF > $WORKDIR/meson-cross.txt
 [binaries]
-pkg-config = '$(which pkg-config)'
+pkg-config = '$PKG_CONFIG'
 cmake = '$(which cmake)'
 c = '$CC'
 cpp = '$CXX'
@@ -425,7 +428,14 @@ if [ -e "$cross_pth.disabled" ]; then
     mv "$cross_pth.disabled" "$cross_pth"
 fi
 
-export PKG_CONFIG=$(which pkg-config)
+if [ -n "$IS_LINUX" ]; then
+    # This command will fall back to the system pkg-config executable if something isn't
+    # found on PKG_CONFIG_PATH. This is necessary for libraries such as libXau.
+    export PKG_CONFIG=$(which pkgconf-pypi)
+else
+    # This command only searches PKG_CONFIG_PATH.
+    export PKG_CONFIG=$(which pkgconf)
+fi
 export PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig:$BUILD_PREFIX/share/pkgconfig"
 
 if [[ -n "$IS_MACOS" ]]; then
