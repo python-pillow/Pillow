@@ -410,8 +410,20 @@ fi
 # Install necessary build tools from PyPI. We can't use the build-system.requires
 # setting in pyproject.toml, because on all platforms except Android, cibuildwheel
 # runs the before-build script before processing that setting.
-unset CIBW_HOST_TRIPLET  # Install for the build system, not the host system.
+#
+# When cross-compiling, install for the build system, not the host system.
+site_packages=$(python3 -c '
+import sys
+print(next(entry for entry in sys.path if entry.endswith("site-packages")))
+')
+cross_pth="$site_packages/_cross_venv.pth"
+if [ -e "$cross_pth" ]; then
+    mv "$cross_pth" "$cross_pth.disabled"
+fi
 python3 -m pip install cmake meson ninja pkgconf
+if [ -e "$cross_pth.disabled" ]; then
+    mv "$cross_pth.disabled" "$cross_pth"
+fi
 
 if [[ -n "$IS_MACOS" ]]; then
     # Ensure the basic structure of the build prefix directory exists.
