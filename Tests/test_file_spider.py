@@ -158,12 +158,18 @@ def test_invalid_file() -> None:
 
 def test_nonstack_file() -> None:
     with Image.open(TEST_FILE) as im:
+        assert isinstance(im, SpiderImagePlugin.SpiderImageFile)
+        im.imgnumber = 2
+
         with pytest.raises(EOFError):
             im.seek(0)
 
 
 def test_nonstack_dos() -> None:
     with Image.open(TEST_FILE) as im:
+        assert isinstance(im, SpiderImagePlugin.SpiderImageFile)
+        im.imgnumber = 2
+
         with pytest.raises(EOFError):
             im.seek(0)
 
