@@ -958,6 +958,10 @@ class Image:
 
         # unpack data
         d = _getdecoder(self.mode, decoder_name, decoder_args)
+        # Plugins may call this from load() while ImageFile.readonly is still set,
+        # so check whether the image memory itself is read-only
+        if self.im.readonly:
+            self._copy()
         d.setimage(self.im)
         s = d.decode(data)
 
