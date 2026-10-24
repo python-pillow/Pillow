@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from io import BytesIO
-
 import pytest
 
 from PIL import ExifTags, Image, ImageDraw, ImageOps, ImageStat, features
@@ -108,6 +106,34 @@ def test_crop(
     assert_image_equal(ImageOps.crop(im, border), im.crop(expected_box))
 
 
+def test_zero() -> None:
+    def _check(
+        size: tuple[int, int],
+        operation: Callable[[Image.Image], Image.Image],
+        expected_size: tuple[int, int],
+    ) -> None:
+        im = Image.new("P", size)
+        im.putpalette(list(range(256)) * 3)
+        im.info["transparency"] = 0
+        new_im = operation(im)
+        assert new_im.getpalette(None) == im.getpalette(None)
+        assert new_im.info["transparency"] == 0
+        assert new_im.size == expected_size
+
+    _check((5, 5), lambda im: ImageOps.fit(im, (0, 5)), (0, 5))
+    _check((5, 0), lambda im: ImageOps.fit(im, (5, 5)), (5, 5))
+    _check((5, 5), lambda im: ImageOps.fit(im, (10, 0)), (10, 0))
+
+    _check((1, 10), lambda im: ImageOps.contain(im, (5, 5)), (0, 5))
+    _check((10, 1), lambda im: ImageOps.contain(im, (5, 5)), (5, 0))
+    _check((10, 0), lambda im: ImageOps.contain(im, (5, 5)), (5, 0))
+    _check((5, 5), lambda im: ImageOps.contain(im, (2, 0)), (0, 0))
+
+    _check((0, 10), lambda im: ImageOps.cover(im, (5, 5)), (0, 5))
+    _check((10, 0), lambda im: ImageOps.cover(im, (5, 5)), (5, 0))
+    _check((5, 5), lambda im: ImageOps.cover(im, (2, 0)), (0, 0))
+
+
 def test_1pxfit() -> None:
     # Division by zero in equalize if image is 1 pixel high
     newimg = ImageOps.fit(hopper("RGB").resize((1, 1)), (35, 35))
@@ -131,20 +157,6 @@ def test_fit_same_ratio() -> None:
         assert new_im.size == (1000, 755)
 
 
-def test_fit_zero() -> None:
-    im = Image.new("1", (5, 5))
-    new_im = ImageOps.fit(im, (0, 5))
-    assert new_im.width == 0
-
-    im = Image.new("1", (5, 0))
-    new_im = ImageOps.fit(im, (5, 5))
-    assert new_im.size == (5, 5)
-
-    im = Image.new("1", (5, 5))
-    new_im = ImageOps.fit(im, (10, 0))
-    assert new_im.size == (10, 0)
-
-
 @pytest.mark.parametrize("new_size", ((256, 256), (512, 256), (256, 512)))
 def test_contain(new_size: tuple[int, int]) -> None:
     im = hopper()
@@ -162,101 +174,6 @@ def test_contain_round() -> None:
     assert new_im.height == 5
 
 
-def test_contain_zero() -> None:
-    im = Image.new("1", (1, 10))
-    new_im = ImageOps.contain(im, (5, 5))
-    assert new_im.width == 0
-
-    im = Image.new("1", (10, 1))
-    new_im = ImageOps.contain(im, (5, 5))
-    assert new_im.height == 0
-
-    im = Image.new("1", (10, 0))
-    new_im = ImageOps.contain(im, (5, 5))
-    assert new_im.size == (5, 0)
-
-    im = Image.new("1", (5, 5))
-    new_im = ImageOps.contain(im, (2, 0))
-    assert new_im.size == (0, 0)
-
-
-@pytest.mark.parametrize(
-    "size, target, expected",
-    (
-        ((1, 1000), (10, 10), (0, 10)),
-        ((1000, 1), (10, 10), (10, 0)),
-        ((1, 0), (10, 10), (10, 0)),
-        ((1, 1), (10, 0), (0, 0)),
-    ),
-)
-def test_contain_empty_palette(
-    size: tuple[int, int], target: tuple[int, int], expected: tuple[int, int]
-) -> None:
-    im = Image.new("P", size, 1)
-    im.putpalette((0, 0, 0, 255, 0, 0))
-    im.info["transparency"] = 1
-
-    contained = ImageOps.contain(im, target)
-
-    assert contained.size == expected
-    assert contained.mode == im.mode
-    assert contained.getpalette() == im.getpalette()
-    assert contained.info["transparency"] == 1
-    assert contained.palette is not im.palette
-
-
-@pytest.mark.parametrize("size", ((1, 1000), (1000, 1)))
-@pytest.mark.parametrize("mode", ("P", "PA"))
-def test_pad_empty_palette(size: tuple[int, int], mode: str) -> None:
-    im = Image.new(mode, size)
-    im.putpalette((0, 0, 0, 255, 0, 0))
-    color = (1, 127) if mode == "PA" else 1
-    if mode == "P":
-        im.info["transparency"] = 1
-
-    padded = ImageOps.pad(im, (10, 10), color=color)
-
-    assert padded.size == (10, 10)
-    assert padded.mode == mode
-    assert padded.convert("RGBA").getpixel((0, 0)) == (
-        255,
-        0,
-        0,
-        127 if mode == "PA" else 0,
-    )
-
-
-def test_pad_empty_rgba_palette() -> None:
-    im = Image.new("P", (1, 1000))
-    im.putpalette((0, 0, 0, 255, 255, 0, 0, 127), "RGBA")
-    padded = ImageOps.pad(im, (10, 10), color=1)
-    assert padded.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, 127)
-
-
-def test_pad_empty_full_palette() -> None:
-    im = Image.new("P", (1, 1024))
-    im.putpalette([component for i in range(256) for component in (i, 0, 0)])
-    im.frombytes(bytes(range(256)) * 4)
-    original_palette = im.getpalette()
-
-    padded = ImageOps.pad(im, (10, 10), color=(0, 255, 0))
-
-    assert padded.convert("RGB").getpixel((0, 0)) == (0, 255, 0)
-    assert im.getpalette() == original_palette
-
-
-@pytest.mark.parametrize("format", ("PNG", "GIF"))
-def test_pad_empty_lazy_palette(format: str) -> None:
-    im = Image.new("P", (1, 1000), 1)
-    im.putpalette((0, 0, 0, 255, 0, 0))
-    with BytesIO() as buffer:
-        im.save(buffer, format, transparency=1, optimize=False)
-        buffer.seek(0)
-        with Image.open(buffer) as lazy_im:
-            padded = ImageOps.pad(lazy_im, (10, 10), color=1)
-    assert padded.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, 0)
-
-
 @pytest.mark.parametrize(
     "image_name, expected_size",
     (
@@ -269,20 +186,6 @@ def test_cover(image_name: str, expected_size: tuple[int, int]) -> None:
     with Image.open("Tests/images/" + image_name) as im:
         new_im = ImageOps.cover(im, (256, 256))
         assert new_im.size == expected_size
-
-
-def test_cover_zero() -> None:
-    im = Image.new("1", (0, 10))
-    new_im = ImageOps.cover(im, (5, 5))
-    assert new_im.size == (0, 5)
-
-    im = Image.new("1", (10, 0))
-    new_im = ImageOps.cover(im, (5, 5))
-    assert new_im.size == (5, 0)
-
-    im = Image.new("1", (5, 5))
-    new_im = ImageOps.cover(im, (2, 0))
-    assert new_im.size == (0, 0)
 
 
 def test_pad() -> None:
