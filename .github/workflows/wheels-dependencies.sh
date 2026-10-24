@@ -369,7 +369,7 @@ function build {
 function create_meson_cross_config {
     cat << EOF > $WORKDIR/meson-cross.txt
 [binaries]
-pkg-config = '$BUILD_PREFIX/bin/pkg-config'
+pkg-config = '$(which pkg-config)'
 cmake = '$(which cmake)'
 c = '$CC'
 cpp = '$CXX'
@@ -424,6 +424,9 @@ python3 -m pip install cmake meson ninja pkgconf
 if [ -e "$cross_pth.disabled" ]; then
     mv "$cross_pth.disabled" "$cross_pth"
 fi
+
+export PKG_CONFIG=$(which pkg-config)
+export PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig:$BUILD_PREFIX/share/pkgconfig"
 
 if [[ -n "$IS_MACOS" ]]; then
     # Ensure the basic structure of the build prefix directory exists.
