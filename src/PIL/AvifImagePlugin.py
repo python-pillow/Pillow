@@ -64,7 +64,7 @@ def _get_default_max_threads() -> int:
         return os.cpu_count() or 1
 
 
-class AvifImageFile(ImageFile.ImageFile):
+class AvifImageFile(ImageFile.SeekableImageFile):
     format = "AVIF"
     format_description = "AVIF image"
     __frame = -1
@@ -112,9 +112,7 @@ class AvifImageFile(ImageFile.ImageFile):
             self.info["exif"] = exif
         self.seek(0)
 
-    def seek(self, frame: int) -> None:
-        if not self._seek_check(frame):
-            return
+    def _seekTo(self, frame: int) -> None:
         self.info.pop("timestamp", None)
         self.info.pop("duration", None)
 
