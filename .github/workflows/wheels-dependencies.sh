@@ -296,7 +296,8 @@ function build {
         else
             sed "s/\${pc_sysrootdir\}//" $BUILD_PREFIX/share/pkgconfig/xcb-proto.pc > $BUILD_PREFIX/lib/pkgconfig/xcb-proto.pc
         fi
-        # FIXME
+
+        echo FIXME
         set
         build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
         cat libxcb*/config.log
@@ -436,6 +437,7 @@ else
     # This command only searches PKG_CONFIG_PATH.
     export PKG_CONFIG=$(which pkgconf)
 fi
+export PKG_CONFIG_LIBDIR=""
 export PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig:$BUILD_PREFIX/share/pkgconfig"
 
 if [[ -n "$IS_MACOS" ]]; then
