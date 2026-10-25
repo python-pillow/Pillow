@@ -225,6 +225,25 @@ jobs:
           & python.exe winbuild\build_prepare.py -v --no-imagequant --architecture=${{ matrix.cibw_arch }}
         shell: pwsh
 
+      # The wheel test runs in a Windows container, but the Docker daemon is
+      # not reliably running when cibuildwheel reaches the test step, which
+      # fails the job after the wheels have already been built. Start it and
+      # wait for it here instead, so a daemon problem is caught in seconds.
+      - name: Start Docker
+        if: matrix.cibw_arch != 'ARM64'
+        run: |
+          Start-Service docker
+          foreach ($i in 1..30) {
+            docker info *> $null
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host "Docker daemon ready after $i attempt(s)"
+              exit 0
+            }
+            Start-Sleep -Seconds 2
+          }
+          Write-Error "Docker daemon did not become ready"
+        shell: pwsh
+
       - name: Build wheels
         run: |
           for f in winbuild/build/license/*; do
@@ -354,27 +373,6 @@ jobs:
         with:
           artifacts_path: dist
           anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
-
-  sbom-publish:
-    if: |
-      github.event.repository.fork == false
-      && github.event_name == 'push'
-      && startsWith(github.ref, 'refs/tags')
-    needs: [count-dists, sbom]
-    runs-on: ubuntu-latest
-    name: Publish SBOM to GitHub release
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: sbom
-          path: .
-
-      - name: Attach SBOM to GitHub release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "$GITHUB_REF_NAME" pillow-*.cdx.json --repo "$GITHUB_REPOSITORY"
 
   pypi-publish:
     if: github.event.repository.fork == false && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')

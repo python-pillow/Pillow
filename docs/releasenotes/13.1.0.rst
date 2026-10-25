@@ -54,6 +54,13 @@ Android
 
 Android ARM64 and x86_64 wheels are now built for Python 3.13 and later.
 
+Resizing I;16B and I;16N images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On little-endian systems, :py:meth:`~PIL.Image.Image.resize` read and wrote
+I;16B and I;16N pixel values in the wrong byte order when using a resampling
+filter other than ``Resampling.NEAREST``. This has been fixed.
+
 Blurring I;16 images
 ^^^^^^^^^^^^^^^^^^^^
 

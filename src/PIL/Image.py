@@ -686,6 +686,7 @@ class Image:
         if im.mode in ("P", "PA"):
             if self.palette:
                 new.palette = self.palette.copy()
+                new.palette.dirty = 1
             else:
                 from . import ImagePalette
 
@@ -1113,21 +1114,42 @@ class Image:
                 p = rgb.quantize(colors)
                 return merge("PA", (p, a))
 
+        if "LAB" in (self.mode, mode):
+            im = self
+            if mode == "LAB":
+                if im.mode not in {"RGB", "RGBA", "RGBX"}:
+                    im = im.convert("RGBA")
+                other_mode = im.mode
+            else:
+                other_mode = mode
+            if other_mode in {"RGB", "RGBA", "RGBX"}:
+                from . import ImageCms
+
+                srgb = ImageCms.createProfile("sRGB")
+                lab = ImageCms.createProfile("LAB")
+                profiles = [lab, srgb] if im.mode == "LAB" else [srgb, lab]
+                transform = ImageCms.buildTransform(
+                    profiles[0], profiles[1], im.mode, mode
+                )
+                return transform.apply(im)
+
+        im = self.im
+
         trns = None
         delete_trns = False
         # transparency handling
         if has_transparency:
-            if (self.mode in ("1", "L", "I", "I;16") and mode in ("LA", "RGBA")) or (
-                self.mode == "RGB" and mode in ("La", "LA", "RGBa", "RGBA")
+            if (self.mode in {"1", "L", "I", "I;16"} and mode in {"LA", "RGBA"}) or (
+                self.mode == "RGB" and mode in {"La", "LA", "RGBa", "RGBA"}
             ):
                 # Use transparent conversion to promote from transparent
                 # color to an alpha channel.
                 new_im = self._new(
-                    self.im.convert_transparent(mode, self.info["transparency"])
+                    im.convert_transparent(mode, self.info["transparency"])
                 )
                 del new_im.info["transparency"]
                 return new_im
-            elif self.mode in ("L", "RGB", "P") and mode in ("L", "RGB", "P"):
+            elif self.mode in {"L", "RGB", "P"} and mode in {"L", "RGB", "P"}:
                 t = self.info["transparency"]
                 if isinstance(t, bytes):
                     # Dragons. This can't be represented by a single color
@@ -1160,7 +1182,7 @@ class Image:
                     else:
                         trns_im.putpixel((0, 0), t)
 
-                        if mode in ("L", "RGB"):
+                        if mode in {"L", "RGB"}:
                             trns_im = trns_im.convert(mode)
                         else:
                             # can't just retrieve the palette number, got to do it
@@ -1168,14 +1190,16 @@ class Image:
                             trns_im = trns_im.convert("RGB")
                         trns = trns_im.getpixel((0, 0))
 
-            elif self.mode == "P" and mode in ("LA", "PA", "RGBA"):
+            elif self.mode == "P" and mode in {"LA", "PA", "RGBA"}:
                 t = self.info["transparency"]
                 delete_trns = True
 
                 if isinstance(t, bytes):
-                    self.im.putpalettealphas(t)
+                    im = im.copy()
+                    im.putpalettealphas(t)
                 elif isinstance(t, int):
-                    self.im.putpalettealpha(t, 0)
+                    im = im.copy()
+                    im.putpalettealpha(t, 0)
                 else:
                     msg = "Transparency for P mode should be bytes or int"
                     raise ValueError(msg)
@@ -1205,38 +1229,19 @@ class Image:
                     warnings.warn("Couldn't allocate palette entry for transparency")
             return new_im
 
-        if "LAB" in (self.mode, mode):
-            im = self
-            if mode == "LAB":
-                if im.mode not in ("RGB", "RGBA", "RGBX"):
-                    im = im.convert("RGBA")
-                other_mode = im.mode
-            else:
-                other_mode = mode
-            if other_mode in ("RGB", "RGBA", "RGBX"):
-                from . import ImageCms
-
-                srgb = ImageCms.createProfile("sRGB")
-                lab = ImageCms.createProfile("LAB")
-                profiles = [lab, srgb] if im.mode == "LAB" else [srgb, lab]
-                transform = ImageCms.buildTransform(
-                    profiles[0], profiles[1], im.mode, mode
-                )
-                return transform.apply(im)
-
         # colorspace conversion
         if dither is None:
             dither = Dither.FLOYDSTEINBERG
 
         try:
-            im = self.im.convert(mode, dither)
+            im = im.convert(mode, dither)
         except ValueError:
             try:
                 # normalize source image and try again
                 modebase = getmodebase(self.mode)
                 if modebase == self.mode:
                     raise
-                im = self.im.convert(modebase)
+                im = im.convert(modebase)
                 im = im.convert(mode, dither)
             except KeyError as e:
                 msg = "illegal conversion"
@@ -1347,7 +1352,7 @@ class Image:
         from . import ImagePalette
 
         mode = im.im.getpalettemode()
-        palette_data = im.im.getpalette(mode)[: colors * len(mode)]
+        palette_data = im.im.getpalette()[: colors * len(mode)]
         im.palette = ImagePalette.ImagePalette(mode, palette_data)
 
         return im
@@ -1701,12 +1706,14 @@ class Image:
 
         self.load()
         try:
-            mode = self.im.getpalettemode()
+            palette = (
+                self.im.getpalette(rawmode)
+                if rawmode is not None
+                else self.im.getpalette()
+            )
         except ValueError:
             return None  # no palette
-        if rawmode is None:
-            rawmode = mode
-        return list(self.im.getpalette(mode, rawmode))
+        return list(palette)
 
     @property
     def has_transparency_data(self) -> bool:
@@ -2245,7 +2252,7 @@ class Image:
                 palette_mode = self.im.getpalettemode()
                 if palette_mode == "RGBA":
                     bands = 4
-                source_palette = self.im.getpalette(palette_mode)
+                source_palette = self.im.getpalette()
             else:  # L-mode
                 source_palette = bytearray(i // 3 for i in range(768))
         elif len(source_palette) > 768:
