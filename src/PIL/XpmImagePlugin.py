@@ -78,6 +78,14 @@ class XpmImageFile(ImageFile.ImageFile):
                     if rgb == b"None":
                         transparent_key = c
                         palette[c] = b"\0\0\0"
+                    elif rgb.startswith(b"#") and len(rgb) in (4, 10, 13):
+                        # #RGB, #RRRGGGBBB or #RRRRGGGGBBBB
+                        digits = (len(rgb) - 1) // 3
+                        maxval = 16**digits - 1
+                        palette[c] = bytes(
+                            (int(rgb[i : i + digits], 16) * 255 + maxval // 2) // maxval
+                            for i in range(1, len(rgb), digits)
+                        )
                     elif rgb.startswith(b"#"):
                         rgb_int = int(rgb[1:], 16)
                         palette[c] = (
