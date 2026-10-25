@@ -858,3 +858,88 @@ class TestLibUnpack:
         im = Image.new("P", (9, 1))
         with pytest.raises(ValueError, match="not enough image data"):
             im.frombytes(data, decoder_name, rawmode)
+
+    @pytest.mark.parametrize(
+        "size, rawmode, data, stride",
+        (
+            ((9, 1), "P;2L", b"\x01\x02\x03", 3),  # packed size 3, planar size 4
+            ((17, 1), "P;4L", bytes(range(1, 10)), 9),  # packed 9, planar 12
+        ),
+    )
+    def test_pcx_pXl_decoder_buffer_size(
+        self, size: tuple[int, int], rawmode: str, data: bytes, stride: int
+    ) -> None:
+        # The PCX decoder takes its buffer size from the stride argument, so it
+        # must check against the planar row size itself
+        im = Image.new("P", size)
+        with pytest.raises(ValueError, match="cannot decode image data"):
+            im.frombytes(data, "pcx", rawmode, stride)
+
+    @pytest.mark.parametrize(
+        "size, rawmode, data, stride",
+        (
+            ((9, 1), "P;2L", b"\x01\x02\x03\x04", 4),
+            ((17, 1), "P;4L", bytes(range(1, 13)), 12),
+        ),
+    )
+    def test_pcx_pXl_decoder_buffer_size_ok(
+        self, size: tuple[int, int], rawmode: str, data: bytes, stride: int
+    ) -> None:
+        im = Image.new("P", size)
+        im.frombytes(data, "pcx", rawmode, stride)
+
+    @pytest.mark.parametrize(
+        "mode, rawmode, size, data, stride, expected",
+        (
+            # Packed 2/4-bit rows keep their packed layout when the row is
+            # padded: only the planar raw modes (P;2L/P;4L) store padded bit
+            # planes, so the row collapse must not de-interleave these rows
+            (
+                "L",
+                "L;2",
+                (9, 1),
+                b"\x94\x60\x80\x40\x00\x00",
+                6,
+                (170, 85, 85, 0, 85, 170, 0, 0, 170),
+            ),
+            (
+                "L",
+                "L;4",
+                (5, 1),
+                b"\x12\x34\x50\x00\x00\x00\x00\x00",
+                8,
+                (17, 34, 51, 68, 85),
+            ),
+            (
+                "P",
+                "P;2",
+                (9, 1),
+                b"\x94\x60\x80\x40\x00\x00",
+                6,
+                (2, 1, 1, 0, 1, 2, 0, 0, 2),
+            ),
+            (
+                "P",
+                "P;4",
+                (5, 1),
+                b"\x12\x34\x50\x00\x00\x00\x00\x00",
+                8,
+                (1, 2, 3, 4, 5),
+            ),
+        ),
+    )
+    def test_pcx_packed_low_bit_padded_row(
+        self,
+        mode: str,
+        rawmode: str,
+        size: tuple[int, int],
+        data: bytes,
+        stride: int,
+        expected: tuple[int, ...],
+    ) -> None:
+        # Packed L;2/L;4/P;2/P;4 rows are not bit planes; a padded stride must
+        # not change the decoded pixels (the rows are de-interleaved only for
+        # the planar raw modes)
+        im = Image.new(mode, size)
+        im.frombytes(data, "pcx", rawmode, stride)
+        assert tuple(im.get_flattened_data()) == expected
