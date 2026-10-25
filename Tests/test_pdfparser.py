@@ -7,8 +7,10 @@ from io import BytesIO
 import pytest
 
 from PIL.PdfParser import (
+    MAX_NESTING,
     IndirectObjectDef,
     IndirectReference,
+    PdfArray,
     PdfBinary,
     PdfDict,
     PdfFormatError,
@@ -290,3 +292,20 @@ def test_long_trailer_chain(tmp_path: Path) -> None:
 
     with PdfParser(f=b) as pdf:
         pass
+
+
+def _deep_array(depth: int) -> PdfArray:
+    value = PdfArray([0])
+    for _ in range(depth - 1):
+        value = PdfArray([value])
+    return value
+
+
+def test_pdf_repr_max_nesting() -> None:
+    # Serializing a deeply nested value must not exhaust the call stack. This is
+    # the write-side sibling of the max_nesting guard used while parsing.
+    pdf_repr(_deep_array(MAX_NESTING))
+    with pytest.raises(PdfFormatError, match="maximum nesting depth exceeded"):
+        pdf_repr(_deep_array(MAX_NESTING + 1))
+    with pytest.raises(PdfFormatError, match="maximum nesting depth exceeded"):
+        bytes(_deep_array(2 * MAX_NESTING))
