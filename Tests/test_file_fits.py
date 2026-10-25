@@ -99,18 +99,17 @@ def test_comment() -> None:
 def fits_image(bitpix: int, values: list[int], extra: list[str] = []) -> bytes:
     cards = [
         "SIMPLE  =                    T",
-        "BITPIX  = %20d" % bitpix,
+        f"BITPIX  = {bitpix:20d}",
         "NAXIS   =                    2",
-        "NAXIS1  = %20d" % len(values),
+        f"NAXIS1  = {len(values):20d}",
         "NAXIS2  =                    1",
         *extra,
         "END",
     ]
     header = b"".join(c.ljust(80).encode() for c in cards)
     header += b" " * (-len(header) % 2880)
-    data = struct.pack(
-        ">%d%s" % (len(values), {8: "B", 16: "h", 32: "i"}[bitpix]), *values
-    )
+    data_fmt = {8: "B", 16: "h", 32: "i"}[bitpix]
+    data = struct.pack(f">{len(values)}{data_fmt}", *values)
     return header + data + b"\0" * (-len(data) % 2880)
 
 
