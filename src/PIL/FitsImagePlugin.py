@@ -112,8 +112,10 @@ class FitsImageFile(ImageFile.ImageFile):
         if number_of_bits == 8:
             self._mode = rawmode = "L"
         elif number_of_bits == 16:
-            self._mode = "I;16"
-            rawmode = "I;16B"
+            # FITS 16-bit integers are signed (FITS Standard 4.0, Section 5.2);
+            # unsigned data is stored as signed with BZERO=32768
+            self._mode = "I"
+            rawmode = "I;16BS"
         elif number_of_bits == 32:
             self._mode = "I"
             rawmode = "I;32B"
@@ -123,6 +125,19 @@ class FitsImageFile(ImageFile.ImageFile):
         else:
             msg = "Unsupported number of bits"
             raise OSError(msg)
+
+        # The physical value is BZERO + BSCALE * array value (FITS Standard 4.0,
+        # Section 4.4.2.5). Scaling is left to the caller; the keywords are
+        # exposed in im.info.
+        for keyword in (b"BZERO", b"BSCALE"):
+            value = headers.get(keyword)
+            if value is None:
+                continue
+            try:
+                number = float(value.replace(b"D", b"E"))
+            except ValueError:
+                continue
+            self.info[keyword.decode("ascii")] = int(number) if number.is_integer() else number
 
         args: tuple[str | int, ...]
         if decoder_name == "raw":
@@ -153,9 +168,16 @@ class FitsGzipDecoder(ImageFile.PyDecoder):
             for y in range(self.state.ysize):
                 row = bytearray()
                 for x in range(self.state.xsize):
-                    row += value[
-                        offset + 4 - 1 : offset + (4 - number_of_bytes) - 1 : -1
-                    ]
+                    if number_of_bytes == 2:
+                        # 16-bit integers are signed; expand to the 4-byte "I" rawmode
+                        pixel = int.from_bytes(
+                            value[offset + 2 : offset + 4], "big", signed=True
+                        )
+                        row += pixel.to_bytes(4, "little", signed=True)
+                    else:
+                        row += value[
+                            offset + 4 - 1 : offset + (4 - number_of_bytes) - 1 : -1
+                        ]
                     offset += 4
                 rows.append(row)
         self.set_as_raw(bytes([pixel for row in rows[::-1] for pixel in row]))
