@@ -10,6 +10,23 @@ on:
   #        │  │ │ │ │
   - cron: "42 1 * * 0,3"
   push:
+    paths: &paths
+      - ".ci/requirements-cibw.txt"
+      - ".ci/requirements-sbom.txt"
+      - ".github/compare-dist-sizes.py"
+      - ".github/dependencies.json"
+      - ".github/embed-sbom.py"
+      - ".github/generate-sbom.py"
+      - ".github/workflows/wheels*"
+      - "pyproject.toml"
+      - "setup.py"
+      - "wheels/*"
+      - "winbuild/build_prepare.py"
+      - "winbuild/fribidi.cmake"
+    tags:
+      - "*"
+  pull_request:
+    paths: *paths
   workflow_dispatch:
 
 permissions:
@@ -66,64 +83,63 @@ jobs:
             cibw_arch: x86_64
             build: "cp311*"
             macosx_deployment_target: "10.10"
-          # FIXME
-          # - name: "macOS 10.13 x86_64"
-          #   platform: macos
-          #   os: macos-26-intel
-          #   cibw_arch: x86_64
-          #   build: "cp3{12,13}*"
-          #   macosx_deployment_target: "10.13"
-          # - name: "macOS 10.15 x86_64"
-          #   platform: macos
-          #   os: macos-26-intel
-          #   cibw_arch: x86_64
-          #   build: "{cp314,cp315,pp3}*"
-          #   macosx_deployment_target: "10.15"
-          # - name: "macOS arm64"
-          #   platform: macos
-          #   os: macos-latest
-          #   cibw_arch: arm64
-          #   macosx_deployment_target: "11.0"
-          # - name: "manylinux_2_28 x86_64"
-          #   platform: linux
-          #   os: ubuntu-latest
-          #   cibw_arch: x86_64
-          #   build: "*manylinux*"
-          # - name: "musllinux x86_64"
-          #   platform: linux
-          #   os: ubuntu-latest
-          #   cibw_arch: x86_64
-          #   build: "*musllinux*"
-          # - name: "manylinux_2_28 aarch64"
-          #   platform: linux
-          #   os: ubuntu-24.04-arm
-          #   cibw_arch: aarch64
-          #   build: "*manylinux*"
-          # - name: "musllinux aarch64"
-          #   platform: linux
-          #   os: ubuntu-24.04-arm
-          #   cibw_arch: aarch64
-          #   build: "*musllinux*"
-          # - name: "Android arm64"
-          #   platform: android
-          #   os: ubuntu-latest
-          #   cibw_arch: arm64_v8a
-          # - name: "Android x86_64"
-          #   platform: android
-          #   os: ubuntu-latest
-          #   cibw_arch: x86_64
-          # - name: "iOS arm64 device"
-          #   platform: ios
-          #   os: macos-latest
-          #   cibw_arch: arm64_iphoneos
-          # - name: "iOS arm64 simulator"
-          #   platform: ios
-          #   os: macos-latest
-          #   cibw_arch: arm64_iphonesimulator
-          # - name: "iOS x86_64 simulator"
-          #   platform: ios
-          #   os: macos-26-intel
-          #   cibw_arch: x86_64_iphonesimulator
+          - name: "macOS 10.13 x86_64"
+            platform: macos
+            os: macos-26-intel
+            cibw_arch: x86_64
+            build: "cp3{12,13}*"
+            macosx_deployment_target: "10.13"
+          - name: "macOS 10.15 x86_64"
+            platform: macos
+            os: macos-26-intel
+            cibw_arch: x86_64
+            build: "{cp314,cp315,pp3}*"
+            macosx_deployment_target: "10.15"
+          - name: "macOS arm64"
+            platform: macos
+            os: macos-latest
+            cibw_arch: arm64
+            macosx_deployment_target: "11.0"
+          - name: "manylinux_2_28 x86_64"
+            platform: linux
+            os: ubuntu-latest
+            cibw_arch: x86_64
+            build: "*manylinux*"
+          - name: "musllinux x86_64"
+            platform: linux
+            os: ubuntu-latest
+            cibw_arch: x86_64
+            build: "*musllinux*"
+          - name: "manylinux_2_28 aarch64"
+            platform: linux
+            os: ubuntu-24.04-arm
+            cibw_arch: aarch64
+            build: "*manylinux*"
+          - name: "musllinux aarch64"
+            platform: linux
+            os: ubuntu-24.04-arm
+            cibw_arch: aarch64
+            build: "*musllinux*"
+          - name: "Android arm64"
+            platform: android
+            os: ubuntu-latest
+            cibw_arch: arm64_v8a
+          - name: "Android x86_64"
+            platform: android
+            os: ubuntu-latest
+            cibw_arch: x86_64
+          - name: "iOS arm64 device"
+            platform: ios
+            os: macos-latest
+            cibw_arch: arm64_iphoneos
+          - name: "iOS arm64 simulator"
+            platform: ios
+            os: macos-latest
+            cibw_arch: arm64_iphonesimulator
+          - name: "iOS x86_64 simulator"
+            platform: ios
+            os: macos-26-intel
+            cibw_arch: x86_64_iphonesimulator
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

@@ -296,11 +296,7 @@ function build {
         else
             sed "s/\${pc_sysrootdir\}//" $BUILD_PREFIX/share/pkgconfig/xcb-proto.pc > $BUILD_PREFIX/lib/pkgconfig/xcb-proto.pc
         fi
-
-        echo FIXME
-        set
         build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
-        cat libxcb*/config.log
     fi
 
     # -DCMAKE_POSITION_INDEPENDENT_CODE=1 is a workaround from https://github.com/libjpeg-turbo/libjpeg-turbo/issues/898
