@@ -30,27 +30,27 @@ jobs:
     steps:
     - name: Build Fuzzers
       id: build
-      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@187888a8d1e04b93ebc0de70b87f624c0c136d49 # master
+      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@dec0ef9471729f77ed49c5cf0ff818538f616add # master
       with:
         oss-fuzz-project-name: 'pillow'
         language: python
         dry-run: false
     - name: Run Fuzzers
       id: run
-      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@187888a8d1e04b93ebc0de70b87f624c0c136d49 # master
+      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@dec0ef9471729f77ed49c5cf0ff818538f616add # master
       with:
         oss-fuzz-project-name: 'pillow'
         fuzz-seconds: 600
         language: python
         dry-run: false
     - name: Upload New Crash
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: failure() && steps.build.outcome == 'success'
       with:
         name: artifacts
         path: ./out/artifacts
     - name: Upload Legacy Crash
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: steps.run.outcome == 'success'
       with:
         name: crash

@@ -88,7 +88,7 @@ jobs:
         GHA_LIBWEBP_CACHE_HIT: ${{ steps.cache-libwebp.outputs.cache-hit }}
 
     - name: Run CodSpeed benchmarks
-      uses: CodSpeedHQ/action@373d6868929f444bc08d901fd0eb0ad52a8875ea # v5.2.1
+      uses: CodSpeedHQ/action@821a40cd6c80e3cfe387caf55668287addd808da # v5.5.0
       with:
         mode: simulation
         run: |
