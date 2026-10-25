@@ -108,7 +108,9 @@ def fits_image(bitpix: int, values: list[int], extra: list[str] = []) -> bytes:
     ]
     header = b"".join(c.ljust(80).encode() for c in cards)
     header += b" " * (-len(header) % 2880)
-    data = struct.pack(">%d%s" % (len(values), {8: "B", 16: "h", 32: "i"}[bitpix]), *values)
+    data = struct.pack(
+        ">%d%s" % (len(values), {8: "B", 16: "h", 32: "i"}[bitpix]), *values
+    )
     return header + data + b"\0" * (-len(data) % 2880)
 
 
@@ -116,24 +118,44 @@ def test_16bit_is_signed() -> None:
     # FITS 16-bit integers are signed
     with Image.open(BytesIO(fits_image(16, [-32768, -1, 0, 1, 32767]))) as im:
         assert im.mode == "I"
-        assert [im.getpixel((x, 0)) for x in range(im.width)] == [-32768, -1, 0, 1, 32767]
+        assert [im.getpixel((x, 0)) for x in range(im.width)] == [
+            -32768,
+            -1,
+            0,
+            1,
+            32767,
+        ]
 
 
 def test_16bit_scaling_keywords_in_info() -> None:
     # Unsigned 16-bit data is stored as signed with BZERO=32768;
     # the scaling keywords are exposed without being applied
     with Image.open(
-        BytesIO(fits_image(16, [-32768, -32767, -1, 0, 32767], ["BZERO   =                32768"]))
+        BytesIO(
+            fits_image(
+                16, [-32768, -32767, -1, 0, 32767], ["BZERO   =                32768"]
+            )
+        )
     ) as im:
         assert im.mode == "I"
         assert im.info["BZERO"] == 32768
-        assert [im.getpixel((x, 0)) for x in range(im.width)] == [-32768, -32767, -1, 0, 32767]
+        assert [im.getpixel((x, 0)) for x in range(im.width)] == [
+            -32768,
+            -32767,
+            -1,
+            0,
+            32767,
+        ]
 
 
 def test_bscale_keyword_in_info() -> None:
     with Image.open(
         BytesIO(
-            fits_image(16, [-32768, -1, 0, 1, 32767], ["BSCALE  = 0.5", "BZERO   =                100"])
+            fits_image(
+                16,
+                [-32768, -1, 0, 1, 32767],
+                ["BSCALE  = 0.5", "BZERO   =                100"],
+            )
         )
     ) as im:
         assert im.info["BZERO"] == 100

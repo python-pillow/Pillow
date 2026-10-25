@@ -137,7 +137,9 @@ class FitsImageFile(ImageFile.ImageFile):
                 number = float(value.replace(b"D", b"E"))
             except ValueError:
                 continue
-            self.info[keyword.decode("ascii")] = int(number) if number.is_integer() else number
+            self.info[keyword.decode("ascii")] = (
+                int(number) if number.is_integer() else number
+            )
 
         args: tuple[str | int, ...]
         if decoder_name == "raw":
