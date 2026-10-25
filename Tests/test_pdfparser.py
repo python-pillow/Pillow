@@ -309,3 +309,39 @@ def test_pdf_repr_max_nesting() -> None:
         pdf_repr(_deep_array(MAX_NESTING + 1))
     with pytest.raises(PdfFormatError, match="maximum nesting depth exceeded"):
         bytes(_deep_array(2 * MAX_NESTING))
+
+
+def test_read_indirect_missing_object() -> None:
+    b = BytesIO()
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
+
+    with PdfParser(f=b) as pdf:
+        # A reference to an object that is not in the xref table is malformed and
+        # must raise PdfFormatError rather than leaking a KeyError.
+        with pytest.raises(PdfFormatError, match="not found in xref table"):
+            pdf.read_indirect(IndirectReference(999, 0))
+
+
+def test_write_catalog_dangling_parent() -> None:
+    b = BytesIO()
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        page_id = pdf.next_object_id(0)
+        pdf.write_page(page_id, Parent=IndirectReference(999, 0))
+        pdf.pages = [page_id]
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
+
+    with PdfParser(f=b) as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+        # Rewriting a page whose /Parent is a dangling reference must not crash
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
