@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import tarfile
 import warnings
+from unittest.mock import patch
 
 import pytest
 
@@ -50,6 +51,53 @@ def test_cannot_find_subfile() -> None:
             pass
 
 
+@pytest.mark.parametrize(
+    "field, value, exception",
+    (
+        (slice(0, 1), b"\xff", UnicodeDecodeError),
+        (slice(124, 135), b"invalidsize", ValueError),
+        (slice(124, 135), b"-1".rjust(11), ValueError),
+    ),
+)
+@pytest.mark.parametrize("preceding_member", (False, True))
+def test_invalid_header_closes_file(
+    tmp_path: Path,
+    field: slice,
+    value: bytes,
+    exception: type[Exception],
+    preceding_member: bool,
+) -> None:
+    header = bytearray(tarfile.TarInfo("image.png").tobuf())
+    header[field] = value
+    tmpfile = tmp_path / "invalid.tar"
+    prefix = tarfile.TarInfo("other.png").tobuf() if preceding_member else b""
+    tmpfile.write_bytes(prefix + header)
+
+    with open(tmpfile, "rb") as fh:
+        with patch("PIL.TarIO.open", return_value=fh):
+            with pytest.raises(exception):
+                TarIO.TarIO(str(tmpfile), "image.png")
+        assert fh.closed
+
+
+@pytest.mark.parametrize(
+    "operation, member",
+    (("read", "hopper.png"), ("seek", "missing.png"), ("seek", "hopper.png")),
+)
+@pytest.mark.parametrize("exception", (OSError, KeyboardInterrupt))
+def test_io_error_closes_file(
+    operation: str, member: str, exception: type[BaseException]
+) -> None:
+    error = exception("TAR I/O failed")
+    with open(TEST_TAR_FILE, "rb") as fh:
+        with patch("PIL.TarIO.open", return_value=fh):
+            with patch.object(fh, operation, side_effect=error):
+                with pytest.raises(exception) as exc:
+                    TarIO.TarIO(TEST_TAR_FILE, member)
+        assert exc.value is error
+        assert fh.closed
+
+
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
 def test_unclosed_file() -> None:
     with pytest.warns(ResourceWarning):
@@ -64,8 +112,10 @@ def test_close() -> None:
 
 def test_contextmanager() -> None:
     with warnings.catch_warnings(action="error"):
-        with TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg"):
-            pass
+        with TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg") as tar:
+            assert not tar.fh.closed
+            assert tar.read(2) == b"\xff\xd8"
+        assert tar.fh.closed
 
 
 @pytest.mark.parametrize("size", (b"-1", b"-512"))
