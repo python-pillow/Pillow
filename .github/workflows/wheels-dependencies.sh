@@ -429,8 +429,8 @@ if [ -n "$IS_LINUX" ]; then
 else
     # This command only searches PKG_CONFIG_PATH.
     export PKG_CONFIG=$(which pkgconf)
+    export PKG_CONFIG_LIBDIR=""  # https://github.com/pypackaging-native/pkgconf-pypi/issues/110#issuecomment-6402850060
 fi
-export PKG_CONFIG_LIBDIR=""  # https://github.com/pypackaging-native/pkgconf-pypi/issues/110#issuecomment-6402850060
 export PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig:$BUILD_PREFIX/share/pkgconfig"
 
 if [[ -n "$IS_MACOS" ]]; then
