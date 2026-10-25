@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import zlib
 
 import pytest
 
@@ -943,3 +944,16 @@ class TestLibUnpack:
         im = Image.new(mode, size)
         im.frombytes(data, "pcx", rawmode, stride)
         assert tuple(im.get_flattened_data()) == expected
+
+    def test_zip_pXl_interlaced_rejected(self) -> None:
+        # The interlaced unpacker stages a single byte per pixel; planar raw
+        # modes would read past it
+        im = Image.new("P", (16, 16))
+        with pytest.raises(ValueError, match="unrecognized raw mode"):
+            im.frombytes(zlib.compress(b"\x00" * 32), "zip", "P;2L", 1)
+
+    @pytest.mark.parametrize("rawmode", ("P;2L", "P;4L"))
+    def test_zip_pXl_not_interlaced(self, rawmode: str) -> None:
+        planes = 2 if rawmode == "P;2L" else 4
+        im = Image.new("P", (9, 1))
+        im.frombytes(zlib.compress(b"\x00" * (planes * 2 + 1)), "zip", rawmode)
