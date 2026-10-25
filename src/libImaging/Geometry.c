@@ -716,6 +716,8 @@ getfilter(Imaging im, ImagingResamplingType filterid) {
                 }
             }
             break;
+        default:
+            break;
     }
     /* no such filter */
     return NULL;
