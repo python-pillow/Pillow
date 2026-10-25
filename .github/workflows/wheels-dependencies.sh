@@ -30,8 +30,7 @@ if [ "$CIBW_OS" = "android" ]; then
             echo "ERROR: Unknown Android architecture '$CIBW_ARCH'"
             exit 1
     esac
-    HOST_TRIPLE="$PLAT-linux-android"
-    HOST_CONFIGURE_FLAGS="--host=$HOST_TRIPLE"
+    HOST_CONFIGURE_FLAGS="--host=$PLAT-linux-android"
     BUILD_PREFIX=$WORKDIR/prefix
 
     # When building for Android, cibuildwheel sets the CMAKE_TOOLCHAIN_FILE environment
@@ -60,9 +59,9 @@ elif [ "$CIBW_OS" = "ios" ]; then
 
     IOS_SDK_PATH=$(xcrun --sdk $IOS_SDK --show-sdk-path)
     CMAKE_SYSTEM_NAME=iOS
-    HOST_TRIPLE=$PLAT-apple-ios$IPHONEOS_DEPLOYMENT_TARGET
+    IOS_HOST_TRIPLE=$PLAT-apple-ios$IPHONEOS_DEPLOYMENT_TARGET
     if [[ "$IOS_SDK" == "iphonesimulator" ]]; then
-        HOST_TRIPLE=$HOST_TRIPLE-simulator
+        IOS_HOST_TRIPLE=$IOS_HOST_TRIPLE-simulator
     fi
 
     # GNU Autotools doesn't recognize the existence of arm64-apple-ios-simulator
@@ -221,7 +220,7 @@ function build_libavif {
         # Use AOM for both encoding and decoding, and don't enable dav1d.
         libavif_cmake_flags+=(-DAOM_TARGET_CPU=generic)
     else
-        # Use AOM for encoding and dav1d for decoding.
+        # Use AOM for encoding, and dav1d for decoding.
         libavif_cmake_flags+=(
             -DAVIF_CODEC_AOM_DECODE=OFF \
             -DAVIF_CODEC_DAV1D=LOCAL
@@ -264,14 +263,12 @@ function build_libavif {
 function build_zstd {
     if [ -e zstd-stamp ]; then return; fi
     local out_dir=$(fetch_unpack https://github.com/facebook/zstd/releases/download/v$ZSTD_VERSION/zstd-$ZSTD_VERSION.tar.gz)
-
+    local zstd_args="PREFIX=$BUILD_PREFIX"
     if [ -n "$IS_ANDROID" ]; then
-        zstd_uname="Linux"
-    else
-        zstd_uname=$(uname)
+        zstd_args+=" UNAME_TARGET_SYSTEM=Linux"
     fi
     (cd $out_dir \
-        && make -j4 install UNAME_TARGET_SYSTEM=$zstd_uname PREFIX="$BUILD_PREFIX")
+        && make -j4 install $zstd_args)
     touch zstd-stamp
 }
 
@@ -433,7 +430,7 @@ else
     # This command only searches PKG_CONFIG_PATH.
     export PKG_CONFIG=$(which pkgconf)
 fi
-export PKG_CONFIG_LIBDIR=""
+export PKG_CONFIG_LIBDIR=""  # https://github.com/pypackaging-native/pkgconf-pypi/issues/110#issuecomment-6402850060
 export PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig:$BUILD_PREFIX/share/pkgconfig"
 
 if [[ -n "$IS_MACOS" ]]; then
@@ -453,8 +450,8 @@ if [[ -n "$IS_MACOS" ]]; then
         export STRIP=$(xcrun --find --sdk $IOS_SDK strip)
 
         CPPFLAGS="$CPPFLAGS --sysroot=$IOS_SDK_PATH"
-        CFLAGS="-target $HOST_TRIPLE --sysroot=$IOS_SDK_PATH -mios-version-min=$IPHONEOS_DEPLOYMENT_TARGET"
-        CXXFLAGS="-target $HOST_TRIPLE --sysroot=$IOS_SDK_PATH -mios-version-min=$IPHONEOS_DEPLOYMENT_TARGET"
+        CFLAGS="-target $IOS_HOST_TRIPLE --sysroot=$IOS_SDK_PATH -mios-version-min=$IPHONEOS_DEPLOYMENT_TARGET"
+        CXXFLAGS="-target $IOS_HOST_TRIPLE --sysroot=$IOS_SDK_PATH -mios-version-min=$IPHONEOS_DEPLOYMENT_TARGET"
 
         # Having IPHONEOS_DEPLOYMENT_TARGET in the environment causes problems
         # with some cross-building toolchains, because it introduces implicit
