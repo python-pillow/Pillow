@@ -2151,9 +2151,9 @@ class Image:
         :param offset: An optional offset value.  The default is 0.0.
         """
         if type(data) in (list, tuple):
-            singleChannel = getmodebands(self.mode) == 1
+            single_channel = getmodebands(self.mode) == 1
             for value in data:
-                if singleChannel:
+                if single_channel:
                     if type(value) not in (int, float):
                         msg = "sequence must be flattened"
                         raise TypeError(msg)
