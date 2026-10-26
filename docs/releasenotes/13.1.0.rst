@@ -49,6 +49,14 @@ TODO
 Other changes
 =============
 
+Scaling multiline text to a height limit
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageText.Text.wrap` now measures line spacing using the scaled
+font when growing or shrinking text. Previously, growing multiline text could
+exceed the height limit, and shrinking could select a smaller font than needed
+or fail to find a font size that fits.
+
 Resizing I;16B and I;16N images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
