@@ -49,13 +49,6 @@ TODO
 Other changes
 =============
 
-Closing TAR files after errors
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-:py:class:`~PIL.TarIO.TarIO` now closes its file when reading a malformed TAR
-header or another error interrupts initialization, before re-raising the
-exception.
-
 Resizing I;16B and I;16N images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

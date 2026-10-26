@@ -34,34 +34,45 @@ class TarIO(ContainerIO.ContainerIO[bytes]):
         """
         self.fh = open(tarfile, "rb")
 
-        try:
-            while True:
-                s = self.fh.read(512)
-                if len(s) != 512:
-                    msg = "unexpected end of tar file"
-                    raise OSError(msg)
+        while True:
+            s = self.fh.read(512)
+            if len(s) != 512:
+                self.fh.close()
 
+                msg = "unexpected end of tar file"
+                raise OSError(msg)
+
+            try:
                 name = s[:100].decode("utf-8")
-                i = name.find("\0")
-                if i == 0:
-                    msg = "cannot find subfile"
-                    raise OSError(msg)
-                if i > 0:
-                    name = name[:i]
+            except ValueError:
+                self.fh.close()
+                msg = "invalid name"
+                raise ValueError(msg)
+            i = name.find("\0")
+            if i == 0:
+                self.fh.close()
 
+                msg = "cannot find subfile"
+                raise OSError(msg)
+            if i > 0:
+                name = name[:i]
+
+            try:
                 size = int(s[124:135], 8)
-                if size < 0:
-                    msg = "size must not be negative"
-                    raise ValueError(msg)
+            except ValueError:
+                self.fh.close()
+                msg = "invalid size"
+                raise ValueError(msg)
+            if size < 0:
+                self.fh.close()
+                msg = "size must not be negative"
+                raise ValueError(msg)
 
-                if file == name:
-                    break
+            if file == name:
+                break
 
-                offset = (size + 511) & ~511
-                self.fh.seek(offset, io.SEEK_CUR)
+            offset = (size + 511) & ~511
+            self.fh.seek(offset, io.SEEK_CUR)
 
-            # Open region
-            super().__init__(self.fh, self.fh.tell(), size)
-        except BaseException:
-            self.fh.close()
-            raise
+        # Open region
+        super().__init__(self.fh, self.fh.tell(), size)
