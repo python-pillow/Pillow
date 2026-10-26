@@ -6,6 +6,8 @@ import pytest
 
 from PIL import Image
 
+from .helper import assert_image_equal, hopper
+
 # The JJN kernel has twelve forward neighbors and is normalized by 48.
 TAPS = (
     (1, 0, 7),
@@ -82,6 +84,14 @@ def test_jjn_palette_differs_from_floyd_steinberg() -> None:
     assert jjn.mode == "P"
     assert set(jjn.getdata()) <= {0, 1}
     assert jjn.tobytes() != floyd.tobytes()
+
+
+def test_jjn_hopper_reference_image() -> None:
+    # Compare with a checked-in reference image, not the Python diffusion model.
+    source = hopper("RGB").crop((24, 24, 56, 56))
+    result = source.convert("1", dither=Image.Dither.JARVIS_JUDICE_NINKE)
+    with Image.open("Tests/images/hopper_jjn.pbm") as expected:
+        assert_image_equal(result, expected)
 
 
 def test_jjn_empty_image() -> None:
