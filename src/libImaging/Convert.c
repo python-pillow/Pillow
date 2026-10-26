@@ -1117,8 +1117,12 @@ frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
     return imOut;
 }
 
-/* Jarvis-Judice-Ninke error diffusion, with a 5x3 kernel (divisor 48).
- * Keep three rows of weighted errors; every contribution stays in bounds. */
+/* Image.Dither.JARVIS_JUDICE_NINKE has the numeric value 4. */
+#define DITHER_JARVIS_JUDICE_NINKE 4
+
+/* Jarvis-Judice-Ninke error diffusion uses a 5x3 kernel (divisor 48).
+ * A three-row ring buffer stores weighted error for the current scanline and
+ * the next two scanlines. Taps outside the image bounds are skipped. */
 static const int jjn_taps[][3] = {
     {1, 0, 7},
     {2, 0, 5},
@@ -1268,7 +1272,7 @@ topalette(
     ImagingPaletteDelete(imOut->palette);
     imOut->palette = ImagingPaletteDuplicate(palette);
 
-    if (imIn->bands == 1 && dither != 4) {
+    if (imIn->bands == 1 && dither != DITHER_JARVIS_JUDICE_NINKE) {
         /* grayscale image */
 
         /* Grayscale palette: copy data as is */
@@ -1294,7 +1298,7 @@ topalette(
             return NULL;
         }
 
-        if (dither == 4) {
+        if (dither == DITHER_JARVIS_JUDICE_NINKE) {
             if (!dither_jjn(imOut, imIn, palette, alpha)) {
                 if (inpalette != palette) {
                     ImagingPaletteDelete(palette);
@@ -1719,7 +1723,7 @@ ImagingConvert(
         return topalette(imOut, imIn, mode, palette, dither);
     }
 
-    if (dither == 4 && mode == IMAGING_MODE_1) {
+    if (dither == DITHER_JARVIS_JUDICE_NINKE && mode == IMAGING_MODE_1) {
         if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_RGB) {
             return (Imaging)ImagingError_ValueError("conversion not supported");
         }
