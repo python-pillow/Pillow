@@ -529,7 +529,12 @@ class PngStream(ChunkStream):
             if self.im_mode == "1":
                 self.im_info["transparency"] = 255 if i16(s) else 0
             elif self.im_mode in ("L", "I;16"):
-                self.im_info["transparency"] = i16(s)
+                value = i16(s)
+                if self.im_rawmode in ("L;2", "L;4"):
+                    # Scale the grey level to match the unpacked 8-bit pixels
+                    max_value = (1 << int(self.im_rawmode[-1])) - 1
+                    value = (value & max_value) * 255 // max_value
+                self.im_info["transparency"] = value
             elif self.im_mode == "RGB":
                 self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
         return s
