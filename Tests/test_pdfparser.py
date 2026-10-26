@@ -7,7 +7,7 @@ from io import BytesIO
 import pytest
 
 from PIL.PdfParser import (
-    MAX_NESTING,
+    MAX_SERIALIZE_NESTING,
     IndirectObjectDef,
     IndirectReference,
     PdfArray,
@@ -304,11 +304,11 @@ def _deep_array(depth: int) -> PdfArray:
 def test_pdf_repr_max_nesting() -> None:
     # Serializing a deeply nested value must not exhaust the call stack. This is
     # the write-side sibling of the max_nesting guard used while parsing.
-    pdf_repr(_deep_array(MAX_NESTING))
+    pdf_repr(_deep_array(MAX_SERIALIZE_NESTING))
     with pytest.raises(PdfFormatError, match="maximum nesting depth exceeded"):
-        pdf_repr(_deep_array(MAX_NESTING + 1))
+        pdf_repr(_deep_array(MAX_SERIALIZE_NESTING + 1))
     with pytest.raises(PdfFormatError, match="maximum nesting depth exceeded"):
-        bytes(_deep_array(2 * MAX_NESTING))
+        bytes(_deep_array(2 * MAX_SERIALIZE_NESTING))
 
 
 def test_read_indirect_missing_object() -> None:

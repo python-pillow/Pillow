@@ -339,11 +339,11 @@ class PdfStream:
 # recurses several Python frames per nesting level and runs at arbitrary call depth
 # (for example while an image is being saved), so this bound is kept conservative to
 # keep the stack far below Python's recursion limit and prevent stack exhaustion.
-MAX_NESTING = 100
+MAX_SERIALIZE_NESTING = 100
 
 
 def pdf_repr(x: Any, _depth: int = 0) -> bytes:
-    if _depth > MAX_NESTING:
+    if _depth > MAX_SERIALIZE_NESTING:
         msg = "maximum nesting depth exceeded"
         raise PdfFormatError(msg)
     if x is True:
