@@ -306,8 +306,6 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
             self.tile = []
             self.readonly = 0
 
-            return Image.Image.load(self)
-
         pixel = Image.Image.load(self)
         if not self.tile:
             return pixel
