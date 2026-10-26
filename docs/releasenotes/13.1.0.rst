@@ -49,6 +49,13 @@ TODO
 Other changes
 =============
 
+Saving MPO images with more than two frames
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+MPO images saved with more than two frames had incorrect frame sizes in their
+MP Index. For images with four or more frames, this also resulted in incorrect
+frame offsets, preventing later frames from being read. This has been fixed.
+
 Resizing I;16B and I;16N images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

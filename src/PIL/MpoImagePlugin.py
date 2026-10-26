@@ -75,9 +75,10 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 offsets.append(fp.tell())
             else:
                 encoderinfo = im_frame._attach_default_encoderinfo(im)
+                offset = fp.tell()
                 im_frame.save(fp, "JPEG")
                 im_frame.encoderinfo = encoderinfo
-                offsets.append(fp.tell() - offsets[-1])
+                offsets.append(fp.tell() - offset)
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
     ifd[0xB000] = b"0100"
