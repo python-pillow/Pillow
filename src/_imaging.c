@@ -1588,8 +1588,8 @@ _entropy_impl(ImagingObject *self, PyObject *args) {
     fsum = (double)sum;
     entropy = 0.0;
     for (idx = 0; idx < length; idx++) {
-        p = (double)h->histogram[idx] / fsum;
-        if (p != 0.0) {
+        if (h->histogram[idx] != 0) {
+            p = (double)h->histogram[idx] / fsum;
             entropy += p * log(p) * M_LOG2E;
         }
     }

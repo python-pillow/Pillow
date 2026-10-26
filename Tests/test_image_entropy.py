@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import pytest
 
+from PIL import Image
+
 from .helper import hopper
 
 
@@ -18,3 +20,13 @@ def test_entropy() -> None:
     assert entropy("RGBA") == pytest.approx(7.42724306524488)
     assert entropy("CMYK") == pytest.approx(7.4272430652448795)
     assert entropy("YCbCr") == pytest.approx(7.698360534903628)
+
+
+@pytest.mark.parametrize("mode", ("L", "I", "F"))
+def test_entropy_zero_size(mode: str) -> None:
+    assert Image.new(mode, (0, 0)).entropy() == 0
+
+
+def test_entropy_empty_mask() -> None:
+    mask = Image.new("1", (128, 128))
+    assert hopper("L").entropy(mask) == 0

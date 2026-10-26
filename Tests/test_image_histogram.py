@@ -49,6 +49,12 @@ def test_histogram_masked() -> None:
     assert histogram("YCbCr") == (768, 0, 1009)
 
 
+@pytest.mark.parametrize("mode", ("L", "I", "F"))
+@pytest.mark.parametrize("size", ((0, 0), (0, 1), (1, 0)))
+def test_histogram_zero_size(mode: str, size: tuple[int, int]) -> None:
+    assert Image.new(mode, size).histogram() == [0] * 256
+
+
 @pytest.mark.parametrize("mode", ("I", "F"))
 def test_histogram_masked_unsupported_mode(mode: str) -> None:
     mask = Image.new("1", (128, 128))

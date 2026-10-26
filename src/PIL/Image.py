@@ -1809,8 +1809,9 @@ class Image:
             mask.load()
             return self.im.histogram((0, 0), mask.im)
         if self.mode in ("I", "F"):
+            # getextrema() returns None if the image has no pixels
             return self.im.histogram(
-                extrema if extrema is not None else self.getextrema()
+                extrema if extrema is not None else self.getextrema() or (0, 0)
             )
         return self.im.histogram()
 
@@ -1837,8 +1838,9 @@ class Image:
             mask.load()
             return self.im.entropy((0, 0), mask.im)
         if self.mode in ("I", "F"):
+            # getextrema() returns None if the image has no pixels
             return self.im.entropy(
-                extrema if extrema is not None else self.getextrema()
+                extrema if extrema is not None else self.getextrema() or (0, 0)
             )
         return self.im.entropy()
 
