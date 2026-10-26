@@ -111,6 +111,13 @@ def test_invalid_file() -> None:
         XbmImagePlugin.XbmImageFile(invalid_file)
 
 
+def test_non_numeric_define() -> None:
+    # A C header that is not an XBM image should not raise a ValueError
+    b = BytesIO(b"#define FOO bar\nint x;\n")
+    with pytest.raises(UnidentifiedImageError):
+        Image.open(b)
+
+
 def test_save_wrong_mode(tmp_path: Path) -> None:
     im = hopper()
     out = tmp_path / "temp.xbm"
