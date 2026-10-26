@@ -57,6 +57,13 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     for im_sequence in im_sequences:
         for im_frame in ImageSequence.Iterator(im_sequence):
             if not offsets:
+                # Adobe APP14 is two bytes shorter than JFIF APP0.
+                if im_frame.mode == "CMYK" or (
+                    im_frame.mode in ("RGB", "RGBX")
+                    and im_frame.encoderinfo.get("keep_rgb")
+                ):
+                    mpf_offset -= 2
+
                 # APP2 marker
                 ifd_length = 66 + 16 * total
                 im_frame.encoderinfo["extra"] = (
