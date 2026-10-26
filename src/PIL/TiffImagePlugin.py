@@ -337,7 +337,12 @@ def _delegate(op: str) -> Any:
     def delegate(
         self: IFDRational, *args: tuple[float, ...]
     ) -> bool | float | Fraction:
-        return getattr(self._val, op)(*args)
+        result = getattr(self._val, op)(*args)
+        if result is NotImplemented and args and isinstance(args[0], IFDRational):
+            # Python does not try the reflected operation
+            # when both operands are IFDRationals
+            result = getattr(self._val, op)(args[0]._val)
+        return result
 
     return delegate
 
