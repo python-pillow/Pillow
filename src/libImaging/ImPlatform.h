@@ -11,9 +11,6 @@
 #include <Python.h>
 
 /* Check that we have an ANSI compliant compiler */
-#ifndef HAVE_PROTOTYPES
-#error Sorry, this library requires support for ANSI prototypes.
-#endif
 #ifndef STDC_HEADERS
 #error Sorry, this library requires ANSI header files.
 #endif
