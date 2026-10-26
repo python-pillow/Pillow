@@ -122,3 +122,10 @@ def test_undefined_palette_index() -> None:
     im = Image.new("P", (1, 1), 3)
     im.putpalette((1, 2, 3))
     assert im.convert("RGB").getpixel((0, 0)) == (0, 0, 0)
+
+
+@pytest.mark.parametrize("rawmode", ("P;2L", "P;4L"))
+def test_planar_rawmode_rejected(rawmode: str) -> None:
+    im = Image.new("P", (1, 1))
+    with pytest.raises(ValueError, match="unrecognized raw mode"):
+        im.putpalette(b"\x00", rawmode)

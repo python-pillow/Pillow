@@ -11,6 +11,10 @@ from .helper import (
     hopper,
 )
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 
 class Deformer(ImageOps.SupportsGetMesh):
     def getmesh(
@@ -100,6 +104,34 @@ def test_crop(
 ) -> None:
     im = hopper()
     assert_image_equal(ImageOps.crop(im, border), im.crop(expected_box))
+
+
+def test_zero() -> None:
+    def _check(
+        size: tuple[int, int],
+        operation: Callable[[Image.Image], Image.Image],
+        expected_size: tuple[int, int],
+    ) -> None:
+        im = Image.new("P", size)
+        im.putpalette(list(range(256)) * 3)
+        im.info["transparency"] = 0
+        new_im = operation(im)
+        assert new_im.getpalette(None) == im.getpalette(None)
+        assert new_im.info["transparency"] == 0
+        assert new_im.size == expected_size
+
+    _check((5, 5), lambda im: ImageOps.fit(im, (0, 5)), (0, 5))
+    _check((5, 0), lambda im: ImageOps.fit(im, (5, 5)), (5, 5))
+    _check((5, 5), lambda im: ImageOps.fit(im, (10, 0)), (10, 0))
+
+    _check((1, 10), lambda im: ImageOps.contain(im, (5, 5)), (0, 5))
+    _check((10, 1), lambda im: ImageOps.contain(im, (5, 5)), (5, 0))
+    _check((10, 0), lambda im: ImageOps.contain(im, (5, 5)), (5, 0))
+    _check((5, 5), lambda im: ImageOps.contain(im, (2, 0)), (0, 0))
+
+    _check((0, 10), lambda im: ImageOps.cover(im, (5, 5)), (0, 5))
+    _check((10, 0), lambda im: ImageOps.cover(im, (5, 5)), (5, 0))
+    _check((5, 5), lambda im: ImageOps.cover(im, (2, 0)), (0, 0))
 
 
 def test_1pxfit() -> None:
@@ -633,3 +665,37 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
         img, cutoff=10, preserve_tone=True
     )  # single color 10 cutoff
     assert_image_equal(img, out)
+
+
+@pytest.mark.parametrize(
+    "operation",
+    (
+        ImageOps.invert,
+        lambda im: ImageOps.posterize(im, 3),
+        ImageOps.solarize,
+    ),
+)
+def test_palette_operation(operation: Callable[[Image.Image], Image.Image]) -> None:
+    im = hopper("P")
+    result = operation(im)
+
+    assert result.mode == "P"
+    assert_image_equal(result.convert("RGB"), operation(im.convert("RGB")))
+
+
+def test_palette_operation_keeps_alpha() -> None:
+    im = Image.new("P", (1, 2))
+    im.putpalette((0, 0, 0, 0, 255, 0, 0, 128), "RGBA")
+    im.putpixel((0, 1), 1)
+
+    result = ImageOps.invert(im)
+
+    palette = result.getpalette("RGBA")
+    assert palette is not None
+    assert palette == [255, 255, 255, 0, 0, 255, 255, 128]
+
+
+def test_palette_histogram_operation_not_supported() -> None:
+    im = hopper("P")
+    with pytest.raises(NotImplementedError, match="mode P support coming soon"):
+        ImageOps.autocontrast(im)

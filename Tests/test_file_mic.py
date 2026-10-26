@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from io import BytesIO
 
-import olefile
 import pytest
 
 from PIL import Image, ImagePalette
@@ -101,6 +100,8 @@ def test_seek_size_change() -> None:
 
 
 def test_seek_decompression_bomb(tmp_path: Path) -> None:
+    import olefile
+
     with Image.open(TEST_FILE) as im:
         assert isinstance(im, MicImagePlugin.MicImageFile)
         im._n_frames = 2
