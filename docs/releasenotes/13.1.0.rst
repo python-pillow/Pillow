@@ -50,7 +50,7 @@ Other changes
 =============
 
 Scaling multiline text to a height limit
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :py:meth:`~PIL.ImageText.Text.wrap` now measures line spacing using the scaled
 font when growing or shrinking text. Previously, growing multiline text could
