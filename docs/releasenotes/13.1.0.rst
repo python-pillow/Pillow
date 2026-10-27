@@ -75,3 +75,9 @@ Rejecting dangling object references
 Reading an indirect object that is missing from the xref table, or rewriting a
 PDF whose page tree is missing nodes, now raises ``PdfFormatError`` rather than
 a ``KeyError``.
+
+Minimum C version
+^^^^^^^^^^^^^^^^^
+
+C11 is now the minimum version of C required to compile Pillow from source.
+Pillow requires Python 3.11 or later, and CPython 3.11 and later require C11.
