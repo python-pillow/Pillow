@@ -536,8 +536,14 @@ class JpegImageFile(ImageFile.ImageFile):
                 return dpi
 
             x_dpi = to_dpi(exif[0x011A])
+            y_dpi = x_dpi
             y_resolution = exif.get(0x011B)
-            y_dpi = x_dpi if y_resolution is None else to_dpi(y_resolution)
+            if y_resolution is not None:
+                try:
+                    y_dpi = to_dpi(y_resolution)
+                except (TypeError, ValueError, ZeroDivisionError):
+                    # Keep the X resolution if the Y resolution is invalid
+                    pass
             self.info["dpi"] = x_dpi, y_dpi
         except (
             struct.error,  # truncated EXIF
