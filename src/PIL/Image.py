@@ -3802,7 +3802,7 @@ def composite(image1: Image, image2: Image, mask: Image) -> Image:
 
 
 def eval(image: Image, *args: Callable[[int], float]) -> Image:
-    """
+    r"""
     Applies the function (which should take one argument) to each pixel
     in the given image. If the image has more than one band, the same
     function is applied to each band. Note that the function is
@@ -3810,7 +3810,7 @@ def eval(image: Image, *args: Callable[[int], float]) -> Image:
     random components or other generators.
 
     :param image: The input image.
-    :param function: A function object, taking one integer argument.
+    :param \*args: A function object, taking one integer argument.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
