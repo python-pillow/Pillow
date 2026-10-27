@@ -2901,6 +2901,8 @@ class Image:
             x, y = provided_size
             if x >= self.width and y >= self.height:
                 return None
+            if min(self.size) == 0:
+                return min(x, self.width), min(y, self.height)
 
             aspect = self.width / self.height
             if x / y >= aspect:
@@ -2925,7 +2927,12 @@ class Image:
                 box = res[1]
 
         if self.size != final_size:
-            im = self.resize(final_size, resample, box=box, reducing_gap=reducing_gap)
+            if min(final_size) == 0:
+                im = self.crop((0, 0, *final_size))
+            else:
+                im = self.resize(
+                    final_size, resample, box=box, reducing_gap=reducing_gap
+                )
 
             self.im = im.im
             self._size = final_size
