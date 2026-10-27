@@ -31,3 +31,26 @@
 #define CLIP8(v) ((v) <= 0 ? 0 : (v) < 256 ? (v) : 255)
 
 #define CLIP16(v) ((v) <= 0 ? 0 : (v) < 65536 ? (v) : 65535)
+
+/* Overflow-checked multiplication for buffer-size calculations.
+ *
+ * Stores a * b in *result and returns 1 if the product overflows a
+ * size_t, otherwise stores the product and returns 0.
+ *
+ * This replaces the open-coded "a > LIMIT / b" idiom used before
+ * several allocations.  That idiom is fragile: the divisor b is often
+ * itself a product (for example height * bytes_per_pixel) that can
+ * overflow or be zero *before* the division runs, silently defeating
+ * the check.  Multiplying in a single checked step is correct by
+ * construction and easy to audit.  Callers that must fit the result in
+ * a narrower type still compare *result against the relevant limit. */
+static inline int
+_imaging_mul_overflow(size_t a, size_t b, size_t *result) {
+#if defined(__GNUC__) || defined(__clang__)
+    return __builtin_mul_overflow(a, b, result);
+#else
+    *result = a * b;
+    /* (size_t)-1 is SIZE_MAX */
+    return b != 0 && a > (size_t)-1 / b;
+#endif
+}

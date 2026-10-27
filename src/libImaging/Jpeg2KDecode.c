@@ -857,16 +857,20 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
             csize = (csize == 3) ? 4 : csize;
             total_component_width += csize;
         }
-        if ((tile_width > UINT_MAX / total_component_width) ||
-            (tile_height > UINT_MAX / total_component_width) ||
-            (tile_width > UINT_MAX / (tile_height * total_component_width)) ||
-            (tile_height > UINT_MAX / (tile_width * total_component_width))) {
+        /* tile_bytes = tile_width * tile_height * total_component_width.
+           Check each multiplication instead of dividing UINT_MAX by
+           (tile_* * total_component_width): that divisor could itself
+           overflow, or be zero when total_component_width is zero. */
+        if (total_component_width <= 0 ||
+            _imaging_mul_overflow(tile_width, tile_height, &tile_bytes) ||
+            _imaging_mul_overflow(
+                tile_bytes, (size_t)total_component_width, &tile_bytes
+            ) ||
+            tile_bytes > UINT_MAX) {
             state->errcode = IMAGING_CODEC_BROKEN;
             state->state = J2K_STATE_FAILED;
             goto quick_exit;
         }
-
-        tile_bytes = tile_width * tile_height * total_component_width;
 
         if (tile_bytes > tile_info.data_size) {
             tile_info.data_size = tile_bytes;

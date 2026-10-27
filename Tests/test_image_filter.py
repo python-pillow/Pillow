@@ -203,7 +203,10 @@ def test_rankfilter_overflow() -> None:
     im = Image.new("L", (16, 16))
     rankfilter = ImageFilter.RankFilter(3, 0)
 
-    for size in (2**31, 2**32 - 1):  # margins of 2**30 and INT_MAX
+    # 2**31 and 2**32 - 1 wrap to negative ints; 100001 is a positive odd
+    # size whose squared byte count (size * size * sizeof(FLOAT32)) exceeds
+    # INT_MAX. All must be rejected cleanly rather than under-allocating.
+    for size in (2**31, 2**32 - 1, 100001):
         rankfilter.size = size
         with pytest.raises(ValueError, match="filter size too large"):
             im.filter(rankfilter)

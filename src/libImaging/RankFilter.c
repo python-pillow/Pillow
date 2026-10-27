@@ -72,8 +72,14 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
         return (Imaging)ImagingError_ValueError("bad filter size");
     }
 
-    /* malloc check ok, for overflow in the define below */
-    if (size > INT_MAX / (size * (int)sizeof(FLOAT32))) {
+    /* The buffer in RANK_BODY holds size2 == size*size elements of up to
+       sizeof(FLOAT32) bytes.  Check the full product in one step: the old
+       check divided by (size * sizeof(FLOAT32)), a divisor that could
+       itself overflow for a large size. */
+    size_t buf_bytes;
+    if (size < 0 || _imaging_mul_overflow((size_t)size, (size_t)size, &buf_bytes) ||
+        _imaging_mul_overflow(buf_bytes, sizeof(FLOAT32), &buf_bytes) ||
+        buf_bytes > INT_MAX) {
         return (Imaging)ImagingError_ValueError("filter size too large");
     }
 

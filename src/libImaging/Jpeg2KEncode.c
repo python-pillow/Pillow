@@ -283,7 +283,6 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
     int ret = -1;
 
     unsigned prec = 8;
-    unsigned _overflow_scale_factor;
 
     stream = opj_stream_create(BUFFER_SIZE, OPJ_FALSE);
 
@@ -531,13 +530,15 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
     tiles_y = (im->ysize + (params.image_offset_y0 - params.cp_ty0) + tile_height - 1) /
               tile_height;
 
-    /* check for integer overflow for the malloc line, checking any expression
-       that may multiply either tile_width or tile_height */
-    _overflow_scale_factor = components * prec;
-    if ((tile_width > UINT_MAX / _overflow_scale_factor) ||
-        (tile_height > UINT_MAX / _overflow_scale_factor) ||
-        (tile_width > UINT_MAX / (tile_height * _overflow_scale_factor)) ||
-        (tile_height > UINT_MAX / (tile_width * _overflow_scale_factor))) {
+    /* Buffer size for the malloc line below is
+       tile_width * tile_height * components * prec / 8.  Check each
+       multiplication rather than dividing UINT_MAX by a product such as
+       (tile_height * components * prec) that could itself overflow. */
+    size_t buf_size;
+    if (_imaging_mul_overflow(tile_width, tile_height, &buf_size) ||
+        _imaging_mul_overflow(buf_size, (size_t)components, &buf_size) ||
+        _imaging_mul_overflow(buf_size, (size_t)prec, &buf_size) ||
+        buf_size > UINT_MAX) {
         state->errcode = IMAGING_CODEC_BROKEN;
         state->state = J2K_STATE_FAILED;
         goto quick_exit;
