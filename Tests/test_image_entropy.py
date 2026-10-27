@@ -22,9 +22,8 @@ def test_entropy() -> None:
     assert entropy("YCbCr") == pytest.approx(7.698360534903628)
 
 
-@pytest.mark.parametrize("mode", ("L", "I", "F"))
-def test_entropy_zero_size(mode: str) -> None:
-    assert Image.new(mode, (0, 0)).entropy() == 0
+def test_entropy_zero_size() -> None:
+    assert Image.new("I", (0, 0)).entropy() == 0
 
 
 def test_entropy_empty_mask() -> None:

@@ -1804,14 +1804,16 @@ class Image:
         :param extrema: An optional tuple of manually-specified extrema.
         :returns: A list containing pixel counts.
         """
+        if min(self.size) == 0:
+            return [0] * 256 * getmodebands(self.mode)
+
         self.load()
         if mask:
             mask.load()
             return self.im.histogram((0, 0), mask.im)
         if self.mode in ("I", "F"):
-            # getextrema() returns None if the image has no pixels
             return self.im.histogram(
-                extrema if extrema is not None else self.getextrema() or (0, 0)
+                extrema if extrema is not None else self.getextrema()
             )
         return self.im.histogram()
 
@@ -1833,14 +1835,16 @@ class Image:
         :param extrema: An optional tuple of manually-specified extrema.
         :returns: A float value representing the image entropy
         """
+        if min(self.size) == 0:
+            return 0.0
+
         self.load()
         if mask:
             mask.load()
             return self.im.entropy((0, 0), mask.im)
         if self.mode in ("I", "F"):
-            # getextrema() returns None if the image has no pixels
             return self.im.entropy(
-                extrema if extrema is not None else self.getextrema() or (0, 0)
+                extrema if extrema is not None else self.getextrema()
             )
         return self.im.entropy()
 

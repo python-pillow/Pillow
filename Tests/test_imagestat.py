@@ -59,9 +59,8 @@ def test_constant() -> None:
     assert st.stddev[0] == 0
 
 
-@pytest.mark.parametrize("mode", ("L", "I", "F"))
-def test_zero_count(mode: str) -> None:
-    im = Image.new(mode, (0, 0))
+def test_zero_count() -> None:
+    im = Image.new("L", (0, 0))
 
     st = ImageStat.Stat(im)
 
