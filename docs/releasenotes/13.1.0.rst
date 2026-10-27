@@ -68,3 +68,9 @@ JPEG 2000 channel definitions
 When a JP2 image has a channel definition box that places its components in a
 different order, such as blue, green, red, Pillow now reorders them when decoding.
 Previously, the box was ignored, and the channels were swapped.
+
+Minimum C version
+^^^^^^^^^^^^^^^^^
+
+C11 is now the minimum version of C required to compile Pillow from source.
+Pillow requires Python 3.11 or later, and CPython 3.11 and later require C11.
