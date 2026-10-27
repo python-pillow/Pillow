@@ -275,6 +275,31 @@ class TestFileTiff:
             assert im.tag_v2[X_RESOLUTION] == 123.45
             assert im.tag_v2[Y_RESOLUTION] == 123.45
 
+    def test_no_resolution(self) -> None:
+        b = BytesIO()
+        hopper().save(b, "TIFF")
+        with Image.open(b) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            assert X_RESOLUTION not in im.tag_v2
+            assert Y_RESOLUTION not in im.tag_v2
+            assert "dpi" not in im.info
+            assert "resolution" not in im.info
+
+    def test_resolution_per_frame(self) -> None:
+        b = BytesIO()
+        im = hopper()
+        im2 = hopper()
+        im2.encoderinfo = {"dpi": (300, 300)}
+        im.save(b, "TIFF", save_all=True, append_images=[im2])
+        with Image.open(b) as im:
+            assert "dpi" not in im.info
+
+            im.seek(1)
+            assert im.info["dpi"] == (300, 300)
+
+            im.seek(0)
+            assert "dpi" not in im.info
+
     def test_invalid_file(self) -> None:
         invalid_file = "Tests/images/flower.jpg"
 
