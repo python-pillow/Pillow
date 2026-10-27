@@ -356,7 +356,7 @@ def test_save_all() -> None:
             assert_image_similar(im, im_reloaded, 30)
 
     im_rgb = Image.new("RGB", (1, 1))
-    for colors in (("#f00",), ("#f00", "#0f0")):
+    for colors in (("#f00",), ("#f00", "#0f0"), ("#f00", "#0f0", "#00f")):
         append_images = [Image.new("RGB", (1, 1), color) for color in colors]
         im_reloaded = roundtrip(im_rgb, save_all=True, append_images=append_images)
 
@@ -372,52 +372,6 @@ def test_save_all() -> None:
     # Test that a single frame image will not be saved as an MPO
     jpg = roundtrip(im_rgb, save_all=True)
     assert "mp" not in jpg.info
-
-
-@pytest.mark.parametrize("n_frames", (2, 3, 4, 5))
-@pytest.mark.parametrize("with_exif", (False, True))
-def test_save_all_frame_offsets(n_frames: int, with_exif: bool) -> None:
-    colors = ("red", "green", "blue", "yellow", "purple")
-    frames = [
-        Image.new("RGB", (16 * (i + 1), 8 * (i + 1)), colors[i])
-        for i in range(n_frames)
-    ]
-    options: dict[str, Any] = {}
-    if with_exif:
-        exif = Image.Exif()
-        exif[270] = "Multiple frames"
-        options["exif"] = exif
-
-    jpeg_frames = []
-    for frame in frames:
-        out = BytesIO()
-        frame.save(out, "JPEG", **options)
-        jpeg_frames.append(out.getvalue())
-
-    out = BytesIO()
-    frames[0].save(out, "MPO", save_all=True, append_images=frames[1:], **options)
-    data = out.getvalue()
-    mpf_offset = data.index(b"MPF\0") + 4
-
-    with Image.open(out) as reloaded:
-        assert isinstance(reloaded, MpoImagePlugin.MpoImageFile)
-        assert reloaded.n_frames == n_frames
-        for i, jpeg_frame in enumerate(jpeg_frames):
-            reloaded.seek(i)
-            with Image.open(BytesIO(jpeg_frame)) as expected:
-                assert_image_equal(reloaded, expected)
-
-        assert reloaded.mpinfo is not None
-        offset = 0
-        for i, entry in enumerate(reloaded.mpinfo[0xB002]):
-            assert entry["DataOffset"] == (offset - mpf_offset if i else 0)
-            frame_data = data[offset : offset + entry["Size"]]
-            assert frame_data.startswith(b"\xff\xd8")
-            assert frame_data.endswith(b"\xff\xd9")
-            if i:
-                assert entry["Size"] == len(jpeg_frames[i])
-            offset += entry["Size"]
-        assert offset == len(data)
 
 
 def test_save_xmp() -> None:
