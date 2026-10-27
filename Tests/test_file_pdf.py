@@ -179,6 +179,7 @@ def test_save_all(tmp_path: Path) -> None:
     assert os.path.getsize(outfile) > 0
 
 
+@skip_unless_feature("jpg_2000")
 def test_save_all_object_ids(tmp_path: Path) -> None:
     outfile = str(tmp_path / "temp.pdf")
     with Image.open("Tests/images/transparent_dispose.gif") as im:

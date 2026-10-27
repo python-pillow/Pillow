@@ -41,7 +41,7 @@ xbm_head = re.compile(
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix.startswith((b"#define", b"\n#define"))
+    return prefix.startswith((b"#define", b"\n#define", b"/*"))
 
 
 ##
@@ -60,8 +60,19 @@ class XbmImageFile(ImageFile.ImageFile):
         x_hot = None
         offset = None
         starting = True
+        in_block_comment = False
         while True:
-            line = self.fp.readline(75).rstrip()
+            line = self.fp.readline(75)
+            if not line:
+                break
+            line = line.rstrip()
+            if in_block_comment:
+                if line.endswith(b"*/"):
+                    in_block_comment = False
+                continue
+            if line.startswith(b"/*"):
+                in_block_comment = not line.endswith(b"*/")
+                continue
             if starting and not line:
                 starting = False
                 continue
@@ -86,7 +97,7 @@ class XbmImageFile(ImageFile.ImageFile):
         self._mode = "1"
         self._size = width, height
 
-        self.tile = [ImageFile._Tile("xbm", (0, 0, *self.size), offset)]
+        self.tile = [ImageFile._Tile("xbm", None, offset)]
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
@@ -104,7 +115,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     fp.write(b"static char im_bits[] = {\n")
 
-    ImageFile._save(im, fp, [ImageFile._Tile("xbm", (0, 0, *im.size))])
+    ImageFile._save(im, fp, [ImageFile._Tile("xbm")])
 
     fp.write(b"};\n")
 

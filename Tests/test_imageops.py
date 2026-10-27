@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from PIL import Image, ImageDraw, ImageOps, ImageStat, features
+from PIL import ExifTags, Image, ImageDraw, ImageOps, ImageStat, features
 
 from .helper import (
     assert_image_equal,
@@ -10,6 +10,10 @@ from .helper import (
     assert_image_similar_tofile,
     hopper,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class Deformer(ImageOps.SupportsGetMesh):
@@ -100,6 +104,34 @@ def test_crop(
 ) -> None:
     im = hopper()
     assert_image_equal(ImageOps.crop(im, border), im.crop(expected_box))
+
+
+def test_zero() -> None:
+    def _check(
+        size: tuple[int, int],
+        operation: Callable[[Image.Image], Image.Image],
+        expected_size: tuple[int, int],
+    ) -> None:
+        im = Image.new("P", size)
+        im.putpalette(list(range(256)) * 3)
+        im.info["transparency"] = 0
+        new_im = operation(im)
+        assert new_im.getpalette(None) == im.getpalette(None)
+        assert new_im.info["transparency"] == 0
+        assert new_im.size == expected_size
+
+    _check((5, 5), lambda im: ImageOps.fit(im, (0, 5)), (0, 5))
+    _check((5, 0), lambda im: ImageOps.fit(im, (5, 5)), (5, 5))
+    _check((5, 5), lambda im: ImageOps.fit(im, (10, 0)), (10, 0))
+
+    _check((1, 10), lambda im: ImageOps.contain(im, (5, 5)), (0, 5))
+    _check((10, 1), lambda im: ImageOps.contain(im, (5, 5)), (5, 0))
+    _check((10, 0), lambda im: ImageOps.contain(im, (5, 5)), (5, 0))
+    _check((5, 5), lambda im: ImageOps.contain(im, (2, 0)), (0, 0))
+
+    _check((0, 10), lambda im: ImageOps.cover(im, (5, 5)), (0, 5))
+    _check((10, 0), lambda im: ImageOps.cover(im, (5, 5)), (5, 0))
+    _check((5, 5), lambda im: ImageOps.cover(im, (2, 0)), (0, 0))
 
 
 def test_1pxfit() -> None:
@@ -398,6 +430,12 @@ def test_colorize_invalid_mode() -> None:
         ImageOps.colorize(hopper("RGB"), "black", "white")
 
 
+@pytest.mark.parametrize("bits", (0, 9))
+def test_posterize_invalid_bits(bits: int) -> None:
+    with pytest.raises(ValueError, match="bits must be between or equal to 1 and 8"):
+        ImageOps.posterize(hopper("L"), bits)
+
+
 @pytest.mark.parametrize("blackpoint, whitepoint", ((-1, 255), (0, 256), (200, 50)))
 def test_colorize_invalid_points(blackpoint: int, whitepoint: int) -> None:
     with pytest.raises(ValueError, match="blackpoint and whitepoint must each be"):
@@ -492,6 +530,23 @@ def test_exif_transpose_xml_without_xmp() -> None:
         del im.info["xmp"]
         transposed_im = ImageOps.exif_transpose(im)
         assert 0x0112 not in transposed_im.getexif()
+
+
+def test_exif_transpose_raw_profile() -> None:
+    exif = Image.Exif()
+    exif[0x0112] = 3
+    exif[ExifTags.Base.UserComment] = "Pillow"
+    data = exif.tobytes()
+
+    im = Image.new("1", (1, 1))
+    im.info["Raw profile type exif"] = f"\nexif\n{len(data):8}\n{data.hex()}\n"
+    assert im.getexif()[0x0112] == 3
+
+    # Assert that the updated info is still present after transposing and copying
+    transposed_im = ImageOps.exif_transpose(im)
+    transposed_exif = transposed_im.copy().getexif()
+    assert 0x0112 not in transposed_exif
+    assert transposed_exif[ExifTags.Base.UserComment] == "Pillow"
 
 
 def test_exif_transpose_in_place() -> None:
@@ -610,3 +665,37 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
         img, cutoff=10, preserve_tone=True
     )  # single color 10 cutoff
     assert_image_equal(img, out)
+
+
+@pytest.mark.parametrize(
+    "operation",
+    (
+        ImageOps.invert,
+        lambda im: ImageOps.posterize(im, 3),
+        ImageOps.solarize,
+    ),
+)
+def test_palette_operation(operation: Callable[[Image.Image], Image.Image]) -> None:
+    im = hopper("P")
+    result = operation(im)
+
+    assert result.mode == "P"
+    assert_image_equal(result.convert("RGB"), operation(im.convert("RGB")))
+
+
+def test_palette_operation_keeps_alpha() -> None:
+    im = Image.new("P", (1, 2))
+    im.putpalette((0, 0, 0, 0, 255, 0, 0, 128), "RGBA")
+    im.putpixel((0, 1), 1)
+
+    result = ImageOps.invert(im)
+
+    palette = result.getpalette("RGBA")
+    assert palette is not None
+    assert palette == [255, 255, 255, 0, 0, 255, 255, 128]
+
+
+def test_palette_histogram_operation_not_supported() -> None:
+    im = hopper("P")
+    with pytest.raises(NotImplementedError, match="mode P support coming soon"):
+        ImageOps.autocontrast(im)

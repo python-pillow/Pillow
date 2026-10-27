@@ -101,6 +101,9 @@ def test_dpi() -> None:
     with Image.open(output) as reloaded:
         assert reloaded.info["dpi"] == (72.008961115161, 72.008961115161)
 
+    with Image.open("Tests/images/hopper_rle8_grayscale.bmp") as im:
+        assert "dpi" not in im.info
+
 
 def test_save_bmp_with_dpi(tmp_path: Path) -> None:
     # Test for #1301
@@ -212,7 +215,8 @@ def test_rle8() -> None:
 
 def test_rle4() -> None:
     with Image.open("Tests/images/bmp/g/pal4rle.bmp") as im:
-        assert_image_similar_tofile(im, "Tests/images/bmp/g/pal4.bmp", 12)
+        with Image.open("Tests/images/bmp/g/pal4.bmp") as im2:
+            assert_image_equal(im.convert("RGB"), im2.convert("RGB"))
 
 
 def encode_rle4(width: int, palette: bytes, rle: bytes) -> io.BytesIO:

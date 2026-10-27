@@ -273,7 +273,13 @@ class TestFilePng:
             assert len(im.info["transparency"]) == 256
 
             assert_image(im, "P", (162, 150))
+
+            original_palette = im.getpalette(None)
             im_rgba = im.convert("RGBA")
+
+            # Assert that original image palette was not changed
+            assert im.getpalette(None) == original_palette
+
         assert_image(im_rgba, "RGBA", (162, 150))
 
         # image has 124 unique alpha values
@@ -756,6 +762,17 @@ class TestFilePng:
             assert reloaded.png is not None
             assert reloaded.png.im_palette is not None
             assert len(reloaded.png.im_palette[1]) == 48
+
+    def test_specify_bits_l(self, tmp_path: Path) -> None:
+        im = hopper("L")
+
+        out = tmp_path / "temp.png"
+        im.save(out, bits=4)
+
+        with Image.open(out) as reloaded:
+            colors = reloaded.getcolors()
+            assert colors is not None
+            assert len(colors) == 16
 
     def test_specify_bits_fewer_palette_entries(self, tmp_path: Path) -> None:
         im = Image.new("P", (1, 1))

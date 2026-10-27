@@ -6,8 +6,8 @@ Date:   Tue Feb 10 17:09:30 2026 +0000
 
 diff --git a/src/lib/openjp2/j2k.c b/src/lib/openjp2/j2k.c
 index a2014c89..ad76aca7 100644
---- a/src/lib/openjp2/j2k.c
-+++ b/src/lib/openjp2/j2k.c
+--- src/lib/openjp2/j2k.c
++++ src/lib/openjp2/j2k.c
 @@ -5082,12 +5082,14 @@ static OPJ_BOOL opj_j2k_read_sod(opj_j2k_t *p_j2k,
 
          OPJ_UINT32 l_current_tile_part =
@@ -29,3 +29,31 @@ index a2014c89..ad76aca7 100644
 
          if (OPJ_FALSE == opj_j2k_add_tlmarker(p_j2k->m_current_tile_number,
                                                l_cstr_index,
+commit 839936aa33eb8899bbbd80fda02796bb65068951
+Author: Even Rouault <even.rouault@spatialys.com>
+Date:   Sun Apr 5 13:25:27 2026 +0200
+
+    opj_pi_initialise_encode() (write code path): avoid potential integer overflow leading to insufficient memory allocation
+    
+    Fixes #1619
+
+diff --git a/src/lib/openjp2/pi.c b/src/lib/openjp2/pi.c
+index 15ac3314..4abb87af 100644
+--- src/lib/openjp2/pi.c
++++ src/lib/openjp2/pi.c
+@@ -1694,9 +1694,12 @@ opj_pi_iterator_t *opj_pi_initialise_encode(const opj_image_t *p_image,
+     l_current_pi = l_pi;
+ 
+     /* memory allocation for include*/
+-    l_current_pi->include_size = l_tcp->numlayers * l_step_l;
+-    l_current_pi->include = (OPJ_INT16*) opj_calloc(l_current_pi->include_size,
+-                            sizeof(OPJ_INT16));
++    l_current_pi->include = NULL;
++    if (l_step_l <= UINT_MAX / l_tcp->numlayers) {
++        l_current_pi->include_size = l_tcp->numlayers * l_step_l;
++        l_current_pi->include = (OPJ_INT16*) opj_calloc(l_current_pi->include_size,
++                                sizeof(OPJ_INT16));
++    }
+     if (!l_current_pi->include) {
+         opj_free(l_tmp_data);
+         opj_free(l_tmp_ptr);

@@ -79,5 +79,5 @@ Released as needed privately to individual vendors for critical security-related
   ```bash
   git clone https://github.com/python-pillow/docker-images
   cd docker-images
-  ./update-pillow-tag.sh [[release tag]]
+  ./update-pillow-tag.sh
   ```

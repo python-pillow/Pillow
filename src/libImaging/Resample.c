@@ -340,6 +340,8 @@ _ImagingResampleHorizontal_8bpc(
     int xx, yy, x, xmin, xmax;
     INT32 *k, *kk;
 
+    MUTEX_LOCK(&imIn->mutex);
+
     // use the same buffer for normalized coefficients
     kk = (INT32 *)prekk;
     normalize_coeffs_8bpc(imOut->xsize, ksize, prekk);
@@ -348,6 +350,7 @@ _ImagingResampleHorizontal_8bpc(
     int xsize = imOut->xsize, ysize = imOut->ysize;
 
     ImagingSectionEnter(&cookie);
+
     if (imIn->image8) {
         // Verify caller allocated distinct buffers.
         assert(imIn->image8 != imOut->image8);
@@ -380,9 +383,10 @@ _ImagingResampleHorizontal_8bpc(
                     xmax = bounds[xx * 2 + 1];
                     k = &kk[xx * ksize];
                     ss0 = ss3 = 1 << (PRECISION_BITS - 1);
-                    for (x = 0; x < xmax; x++) {
-                        ss0 += lineIn[(x + xmin) * 4 + 0] * k[x];
-                        ss3 += lineIn[(x + xmin) * 4 + 3] * k[x];
+                    const UINT8 *p = lineIn + xmin * 4;
+                    for (x = 0; x < xmax; x++, p += 4) {
+                        ss0 += p[0] * k[x];
+                        ss3 += p[3] * k[x];
                     }
                     v = MAKE_UINT32(clip8(ss0), 0, 0, clip8(ss3));
                     memcpy(lineOut + xx * sizeof(v), &v, sizeof(v));
@@ -399,10 +403,11 @@ _ImagingResampleHorizontal_8bpc(
                     xmax = bounds[xx * 2 + 1];
                     k = &kk[xx * ksize];
                     ss0 = ss1 = ss2 = 1 << (PRECISION_BITS - 1);
-                    for (x = 0; x < xmax; x++) {
-                        ss0 += lineIn[(x + xmin) * 4 + 0] * k[x];
-                        ss1 += lineIn[(x + xmin) * 4 + 1] * k[x];
-                        ss2 += lineIn[(x + xmin) * 4 + 2] * k[x];
+                    const UINT8 *p = lineIn + xmin * 4;
+                    for (x = 0; x < xmax; x++, p += 4) {
+                        ss0 += p[0] * k[x];
+                        ss1 += p[1] * k[x];
+                        ss2 += p[2] * k[x];
                     }
                     v = MAKE_UINT32(clip8(ss0), clip8(ss1), clip8(ss2), 0);
                     memcpy(lineOut + xx * sizeof(v), &v, sizeof(v));
@@ -419,11 +424,12 @@ _ImagingResampleHorizontal_8bpc(
                     xmax = bounds[xx * 2 + 1];
                     k = &kk[xx * ksize];
                     ss0 = ss1 = ss2 = ss3 = 1 << (PRECISION_BITS - 1);
-                    for (x = 0; x < xmax; x++) {
-                        ss0 += lineIn[(x + xmin) * 4 + 0] * k[x];
-                        ss1 += lineIn[(x + xmin) * 4 + 1] * k[x];
-                        ss2 += lineIn[(x + xmin) * 4 + 2] * k[x];
-                        ss3 += lineIn[(x + xmin) * 4 + 3] * k[x];
+                    const UINT8 *p = lineIn + xmin * 4;
+                    for (x = 0; x < xmax; x++, p += 4) {
+                        ss0 += p[0] * k[x];
+                        ss1 += p[1] * k[x];
+                        ss2 += p[2] * k[x];
+                        ss3 += p[3] * k[x];
                     }
                     v = MAKE_UINT32(clip8(ss0), clip8(ss1), clip8(ss2), clip8(ss3));
                     memcpy(lineOut + xx * sizeof(v), &v, sizeof(v));
@@ -431,6 +437,7 @@ _ImagingResampleHorizontal_8bpc(
             }
         }
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 }
 
@@ -444,6 +451,8 @@ _ImagingResampleVertical_8bpc(
     int xx, yy, y, ymin, ymax;
     INT32 *k, *kk;
 
+    MUTEX_LOCK(&imIn->mutex);
+
     // use the same buffer for normalized coefficients
     kk = (INT32 *)prekk;
     normalize_coeffs_8bpc(imOut->ysize, ksize, prekk);
@@ -452,6 +461,7 @@ _ImagingResampleVertical_8bpc(
     int xsize = imOut->xsize, ysize = imOut->ysize;
 
     ImagingSectionEnter(&cookie);
+
     if (imIn->image8) {
         // Verify caller allocated distinct buffers.
         assert(imIn->image8 != imOut->image8);
@@ -531,6 +541,7 @@ _ImagingResampleVertical_8bpc(
             }
         }
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 }
 
@@ -546,13 +557,15 @@ _ImagingResampleHorizontal_16bpc(
 
     int bigendian = 0;
     if (
-        imIn->mode == IMAGING_MODE_I_16N
+        imIn->mode == IMAGING_MODE_I_16B
 #ifdef WORDS_BIGENDIAN
-        || imIn->mode == IMAGING_MODE_I_16B
+        || imIn->mode == IMAGING_MODE_I_16N
 #endif
     ) {
         bigendian = 1;
     }
+
+    MUTEX_LOCK(&imIn->mutex);
 
     // Sizes are invariant over the loop.
     int xsize = imOut->xsize, ysize = imOut->ysize;
@@ -579,6 +592,7 @@ _ImagingResampleHorizontal_16bpc(
             lineOut[xx * 2 + (bigendian ? 0 : 1)] = ss_int >> 8;
         }
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 }
 
@@ -594,13 +608,15 @@ _ImagingResampleVertical_16bpc(
 
     int bigendian = 0;
     if (
-        imIn->mode == IMAGING_MODE_I_16N
+        imIn->mode == IMAGING_MODE_I_16B
 #ifdef WORDS_BIGENDIAN
-        || imIn->mode == IMAGING_MODE_I_16B
+        || imIn->mode == IMAGING_MODE_I_16N
 #endif
     ) {
         bigendian = 1;
     }
+
+    MUTEX_LOCK(&imIn->mutex);
 
     // Sizes are invariant over the loop.
     int xsize = imOut->xsize, ysize = imOut->ysize;
@@ -608,6 +624,7 @@ _ImagingResampleVertical_16bpc(
     assert(imIn->image8 != imOut->image8);
 
     ImagingSectionEnter(&cookie);
+
     for (yy = 0; yy < ysize; yy++) {
         // imOut is a fresh allocation, so its row can be hoisted/restrict.
         UINT8 *restrict lineOut = imOut->image8[yy];
@@ -626,6 +643,7 @@ _ImagingResampleVertical_16bpc(
             lineOut[xx * 2 + (bigendian ? 0 : 1)] = ss_int >> 8;
         }
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 }
 
@@ -639,12 +657,15 @@ _ImagingResampleHorizontal_32bpc(
     int xx, yy, x, xmin, xmax;
     double *k;
 
+    MUTEX_LOCK(&imIn->mutex);
+
     // Sizes are invariant over the loop.
     int xsize = imOut->xsize, ysize = imOut->ysize;
     // Verify caller allocated distinct buffers. This function only uses image32.
     assert(imIn->image32 != imOut->image32);
 
     ImagingSectionEnter(&cookie);
+
     switch (imIn->type) {
         case IMAGING_TYPE_INT32:
             for (yy = 0; yy < ysize; yy++) {
@@ -682,6 +703,7 @@ _ImagingResampleHorizontal_32bpc(
             }
             break;
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 }
 
@@ -695,12 +717,15 @@ _ImagingResampleVertical_32bpc(
     int xx, yy, y, ymin, ymax;
     double *k;
 
+    MUTEX_LOCK(&imIn->mutex);
+
     // Sizes are invariant over the loop.
     int xsize = imOut->xsize, ysize = imOut->ysize;
     // Verify caller allocated distinct buffers. This function only uses image32.
     assert(imIn->image32 != imOut->image32);
 
     ImagingSectionEnter(&cookie);
+
     switch (imIn->type) {
         case IMAGING_TYPE_INT32:
             for (yy = 0; yy < ysize; yy++) {
@@ -736,6 +761,7 @@ _ImagingResampleVertical_32bpc(
             }
             break;
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 }
 
@@ -755,7 +781,9 @@ ImagingResampleInner(
 );
 
 Imaging
-ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]) {
+ImagingResample(
+    Imaging imIn, int xsize, int ysize, ImagingResamplingType filter, float box[4]
+) {
     struct filter *filterp;
     ResampleFunction ResampleHorizontal;
     ResampleFunction ResampleVertical;

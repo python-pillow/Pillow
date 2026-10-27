@@ -1128,6 +1128,9 @@ _OUTMODES = {
     # supported PIL modes, and corresponding rawmode, bit depth and color type
     "1": ("1", b"\x01", b"\x00"),
     "L": ("L", b"\x08", b"\x00"),
+    "L;1": ("L;1", b"\x01", b"\x00"),
+    "L;2": ("L;2", b"\x02", b"\x00"),
+    "L;4": ("L;4", b"\x04", b"\x00"),
     "LA": ("LA", b"\x08", b"\x04"),
     "I;16": ("I;16B", b"\x10", b"\x00"),
     "I;16B": ("I;16B", b"\x10", b"\x00"),
@@ -1201,8 +1204,8 @@ def _write_multiple_frames(
 ) -> Image.Image | None:
     duration = im.encoderinfo.get("duration")
     loop = im.encoderinfo.get("loop", im.info.get("loop", 0))
-    disposal = im.encoderinfo.get("disposal", im.info.get("disposal", Disposal.OP_NONE))
-    blend = im.encoderinfo.get("blend", im.info.get("blend", Blend.OP_SOURCE))
+    disposal = im.encoderinfo.get("disposal")
+    blend = im.encoderinfo.get("blend")
 
     if default_image:
         chain = itertools.chain(append_images)
@@ -1236,14 +1239,10 @@ def _write_multiple_frames(
                     prev_disposal = Disposal.OP_BACKGROUND
 
                 if prev_disposal == Disposal.OP_BACKGROUND:
-                    base_im = previous.im.copy()
-                    dispose = Image.core.fill("RGBA", im.size, (0, 0, 0, 0))
-                    bbox = previous.bbox
-                    if bbox:
-                        dispose = dispose.crop(bbox)
-                    else:
-                        bbox = (0, 0, *im.size)
-                    base_im.paste(dispose, bbox)
+                    base_im = previous.im.convert("RGBA")
+                    box = previous.bbox or (0, 0, *im.size)
+                    dispose = Image.new("RGBA", (box[2] - box[0], box[3] - box[1]))
+                    base_im.paste(dispose, box)
                 elif prev_disposal == Disposal.OP_PREVIOUS:
                     base_im = im_frames[-2].im
                 else:
@@ -1287,7 +1286,7 @@ def _write_multiple_frames(
         ImageFile._save(
             default_im,
             cast("IO[bytes]", _idat(fp, chunk)),
-            [ImageFile._Tile("zip", (0, 0, *im.size), 0, rawmode)],
+            [ImageFile._Tile("zip", args=rawmode)],
         )
 
     seq_num = 0
@@ -1305,8 +1304,8 @@ def _write_multiple_frames(
         if delay.numerator > 65535:
             msg = "cannot write duration"
             raise ValueError(msg)
-        frame_disposal = encoderinfo.get("disposal", disposal)
-        frame_blend = encoderinfo.get("blend", blend)
+        frame_disposal = encoderinfo.get("disposal", Disposal.OP_NONE)
+        frame_blend = encoderinfo.get("blend", Blend.OP_SOURCE)
         # frame control
         chunk(
             fp,
@@ -1418,6 +1417,8 @@ def _save(
             else:
                 bits = 4
             outmode += f";{bits}"
+    elif mode == "L" and im.encoderinfo.get("bits", 8) != 8:
+        outmode += f";{im.encoderinfo['bits']}"
 
     # get the corresponding PNG mode
     try:
@@ -1517,7 +1518,7 @@ def _save(
             msg = "cannot use transparency for this mode"
             raise OSError(msg)
     elif mode == "P" and palette_frame_with_alpha:
-        alpha = palette_frame_with_alpha.im.getpalette("RGBA", "A")
+        alpha = palette_frame_with_alpha.im.getpalette("A")
         alpha_bytes = colors
         chunk(fp, b"tRNS", alpha[:alpha_bytes])
 
