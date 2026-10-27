@@ -359,10 +359,12 @@ def test_apng_save_i16(mode: str, tmp_path: Path) -> None:
     im = Image.new(mode, (2, 1), 1000)
     second = Image.new(mode, (2, 1), 2000)
     second.putpixel((0, 0), 50)
+    third = Image.new(mode, (2, 1), 3000)
+    third.putpixel((0, 0), 50)
     im.save(
         test_file,
         save_all=True,
-        append_images=[second, Image.new(mode, (2, 1), 3000)],
+        append_images=[second, third],
         duration=100,
     )
 

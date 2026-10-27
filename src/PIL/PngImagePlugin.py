@@ -1258,10 +1258,8 @@ def _write_multiple_frames(
                         else base_im
                     )
                     raw_delta = ImageChops.subtract_modulo(
-                        *(
-                            Image.frombytes("LA", frame.size, frame.tobytes())
-                            for frame in (im_frame, raw_base)
-                        )
+                        Image.frombytes("LA", im.size, im_frame.tobytes()),
+                        Image.frombytes("LA", im.size, raw_base.tobytes()),
                     )
                     delta = ImageChops.lighter(delta, raw_delta.convert("RGBA"))
                 bbox = delta.getbbox(alpha_only=False)
