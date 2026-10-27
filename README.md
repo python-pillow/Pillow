@@ -35,9 +35,9 @@ Development is supported by:
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml"><img
                 alt="GitHub Actions build status (Test Windows)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Windows/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-mingw.yml"><img
-                alt="GitHub Actions build status (Test MinGW)"
-                src="https://github.com/python-pillow/Pillow/workflows/Test%20MinGW/badge.svg"></a>
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-msys2.yml"><img
+                alt="GitHub Actions build status (Test MSYS2)"
+                src="https://github.com/python-pillow/Pillow/workflows/Test%20MSYS2/badge.svg"></a>
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-docker.yml"><img
                 alt="GitHub Actions build status (Test Docker)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg"></a>
@@ -75,9 +75,6 @@ Development is supported by:
     <tr>
         <th>social</th>
         <td>
-            <a href="https://gitter.im/python-pillow/Pillow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img
-                alt="Join the chat at https://gitter.im/python-pillow/Pillow"
-                src="https://badges.gitter.im/python-pillow/Pillow.svg"></a>
             <a href="https://fosstodon.org/@pillow"><img
                 alt="Follow on https://fosstodon.org/@pillow"
                 src="https://img.shields.io/badge/publish-on%20Mastodon-595aff.svg"

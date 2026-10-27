@@ -929,8 +929,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         }
 
         if (type == TIFF_NOTYPE) {
-            // Autodetect type. Types should not be changed for backwards
-            // compatibility.
+            // Autodetect type
             if (PyLong_Check(value)) {
                 type = TIFF_LONG;
             } else if (PyFloat_Check(value)) {
@@ -960,9 +959,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                     type = TIFF_FLOAT;
                 }
             }
-        }
-
-        if (type == TIFF_BYTE || type == TIFF_UNDEFINED) {
+        } else if (type == TIFF_BYTE || type == TIFF_UNDEFINED) {
             is_var_length = 1;
         }
         if (!is_core_tag && ImagingLibTiffMergeFieldInfo(
@@ -1285,7 +1282,7 @@ get_qtables_arrays(PyObject *qtables, int *qtablesLen) {
         }
         for (j = 0; j < DCTSIZE2; j++) {
             qarrays[i * DCTSIZE2 + j] =
-                PyLong_AS_LONG(PySequence_Fast_GET_ITEM(table_data, j));
+                PyLong_AsLong(PySequence_Fast_GET_ITEM(table_data, j));
         }
         Py_DECREF(table_data);
     }
