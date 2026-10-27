@@ -1940,7 +1940,8 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         colormap = []
         colors = len(lut) // 3
         for i in range(3):
-            colormap += [v * 256 for v in lut[colors * i : colors * (i + 1)]]
+            # Multiplying by 257 scales 0-255 to 0-65535
+            colormap += [v * 257 for v in lut[colors * i : colors * (i + 1)]]
             colormap += [0] * (256 - colors)
         ifd[COLORMAP] = colormap
     # data orientation
