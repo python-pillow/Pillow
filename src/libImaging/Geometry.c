@@ -18,12 +18,12 @@ void
 ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xr;
-    int xsize = imIn->xsize;
+    int xsize = imIn->xsize, ysize = imIn->ysize;
 
     ImagingCopyPalette(imOut, imIn);
 
 #define FLIP_LEFT_RIGHT(INT, image)         \
-    for (y = 0; y < imIn->ysize; y++) {     \
+    for (y = 0; y < ysize; y++) {           \
         INT *in = (INT *)imIn->image[y];    \
         INT *out = (INT *)imOut->image[y];  \
         xr = xsize - 1;                     \
@@ -715,6 +715,8 @@ getfilter(Imaging im, ImagingResamplingType filterid) {
                         return bicubic_filter32F;
                 }
             }
+            break;
+        default:
             break;
     }
     /* no such filter */

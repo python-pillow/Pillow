@@ -1811,6 +1811,9 @@ class Image:
         :param extrema: An optional tuple of manually-specified extrema.
         :returns: A list containing pixel counts.
         """
+        if min(self.size) == 0:
+            return [0] * 256 * getmodebands(self.mode)
+
         self.load()
         if mask:
             mask.load()
@@ -1839,6 +1842,9 @@ class Image:
         :param extrema: An optional tuple of manually-specified extrema.
         :returns: A float value representing the image entropy
         """
+        if min(self.size) == 0:
+            return 0.0
+
         self.load()
         if mask:
             mask.load()
