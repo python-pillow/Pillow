@@ -337,7 +337,10 @@ def _delegate(op: str) -> Any:
     def delegate(
         self: IFDRational, *args: tuple[float, ...]
     ) -> bool | float | Fraction:
-        return getattr(self._val, op)(*args)
+        func = getattr(self._val, op)
+        if len(args) == 1 and isinstance(args[0], IFDRational):
+            return func(args[0]._val)
+        return func(*args)
 
     return delegate
 
@@ -700,7 +703,12 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 self.tagtype[tag] = TiffTags.UNDEFINED
                 if all(isinstance(v, IFDRational) for v in values):
                     for v in values:
-                        if v < IFDRational(0):
+                        value = (
+                            v.numerator
+                            if isinstance(v, IFDRational) and v.denominator == 0
+                            else v
+                        )
+                        if value < IFDRational(0):
                             self.tagtype[tag] = TiffTags.SIGNED_RATIONAL
                             break
                     else:
