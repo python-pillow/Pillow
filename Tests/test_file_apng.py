@@ -729,6 +729,22 @@ def test_apng_save_disposal_previous(tmp_path: Path) -> None:
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
+def test_apng_save_disposal_background(tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    im = Image.new("L", (32, 32), 128)
+
+    im.save(
+        test_file,
+        save_all=True,
+        append_images=[Image.new("L", (32, 32))],
+        disposal=PngImagePlugin.Disposal.OP_BACKGROUND,
+        duration=100,
+    )
+    with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+        assert reloaded.n_frames == 2
+
+
 def test_apng_save_blend(tmp_path: Path) -> None:
     test_file = tmp_path / "temp.png"
     size = (128, 64)

@@ -30,15 +30,19 @@ typedef struct {
 
 static PyTypeObject OutlineType;
 
+int
+outline_setup(void) {
+    if (PyType_Ready(&OutlineType) < 0) {
+        return -1;
+    }
+    return 0;
+}
+
 #define PyOutline_Check(op) (Py_TYPE(op) == &OutlineType)
 
 static OutlineObject *
 _outline_new(void) {
     OutlineObject *self;
-
-    if (PyType_Ready(&OutlineType) < 0) {
-        return NULL;
-    }
 
     self = PyObject_New(OutlineObject, &OutlineType);
     if (self == NULL) {

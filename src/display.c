@@ -46,13 +46,17 @@ typedef struct {
 
 static PyTypeObject ImagingDisplayType;
 
+int
+display_setup(void) {
+    if (PyType_Ready(&ImagingDisplayType) < 0) {
+        return -1;
+    }
+    return 0;
+}
+
 static ImagingDisplayObject *
 _new(const ModeID mode, int xsize, int ysize) {
     ImagingDisplayObject *display;
-
-    if (PyType_Ready(&ImagingDisplayType) < 0) {
-        return NULL;
-    }
 
     display = PyObject_New(ImagingDisplayObject, &ImagingDisplayType);
     if (display == NULL) {
@@ -871,6 +875,13 @@ error:
     DeleteDC(dc);
 
     return buffer;
+}
+
+#else
+
+int
+display_setup(void) {
+    return 0;
 }
 
 #endif /* _WIN32 */

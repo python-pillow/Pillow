@@ -109,7 +109,7 @@ class SgiImageFile(ImageFile.ImageFile):
                 self.tile = [
                     ImageFile._Tile(
                         "SGI16",
-                        (0, 0, *self.size),
+                        None,
                         headlen,
                         (self.mode, 0, orientation),
                     )
@@ -119,16 +119,12 @@ class SgiImageFile(ImageFile.ImageFile):
                 offset = headlen
                 for layer in self.mode:
                     self.tile.append(
-                        ImageFile._Tile(
-                            "raw", (0, 0, *self.size), offset, (layer, 0, orientation)
-                        )
+                        ImageFile._Tile("raw", None, offset, (layer, 0, orientation))
                     )
                     offset += pagesize
         elif compression == 1:
             self.tile = [
-                ImageFile._Tile(
-                    "sgi_rle", (0, 0, *self.size), headlen, (rawmode, orientation, bpc)
-                )
+                ImageFile._Tile("sgi_rle", None, headlen, (rawmode, orientation, bpc))
             ]
 
 

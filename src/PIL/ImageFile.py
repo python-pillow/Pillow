@@ -36,6 +36,7 @@ import itertools
 import logging
 import os
 import struct
+import sys
 from typing import NamedTuple, cast
 
 from . import ExifTags, Image
@@ -98,6 +99,19 @@ def _get_oserror(error: int, *, encoder: bool) -> OSError:
     return OSError(msg)
 
 
+def _get_fp_length(fp: IO[bytes]) -> int:
+    if isinstance(fp, io.BytesIO):
+        if sys.implementation.name == "pypy":
+            pos = fp.tell()
+            fp.seek(0, io.SEEK_END)
+            length = fp.tell()
+            fp.seek(pos)
+            return length
+        else:
+            return fp.getbuffer().nbytes
+    return os.fstat(fp.fileno()).st_size
+
+
 def _tilesort(t: _Tile) -> int:
     # sort on offset
     return t[2]
@@ -105,7 +119,7 @@ def _tilesort(t: _Tile) -> int:
 
 class _Tile(NamedTuple):
     codec_name: str
-    extents: tuple[int, int, int, int] | None
+    extents: tuple[int, int, int, int] | None = None
     offset: int = 0
     args: tuple[Any, ...] | str | None = None
 
@@ -296,13 +310,15 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
     def load(self) -> Image.core.PixelAccess | None:
         """Load image data based on tile list"""
 
-        if not self.tile and self._im is None:
-            msg = "cannot load this image"
-            raise OSError(msg)
-
-        pixel = Image.Image.load(self)
         if not self.tile:
-            return pixel
+            if self._im is None:
+                msg = "cannot load this image"
+                raise OSError(msg)
+            return Image.Image.load(self)
+
+        if self._im is not None:
+            # If this image has been closed, raise an error
+            self.im
 
         self.map: mmap.mmap | None = None
         use_mmap = self.filename and len(self.tile) == 1
@@ -449,9 +465,6 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
         # create image memory if necessary
         if self._im is None:
             self.im = Image.core.new(self.mode, self.size)
-        # create palette (optional)
-        if self.mode == "P":
-            Image.Image.load(self)
 
     def load_end(self) -> None:
         # may be overridden
@@ -464,6 +477,12 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
     # may be defined for blocked formats (e.g. PNG)
     # def load_read(self, read_bytes: int) -> bytes:
     #     pass
+
+    def _get_fp_length(self, fp: IO[bytes] | None = None) -> int:
+        if fp is None:
+            assert self.fp is not None
+            fp = self.fp
+        return _get_fp_length(fp)
 
     def _seek_check(self, frame: int) -> bool:
         if (

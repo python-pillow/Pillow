@@ -25,9 +25,9 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml
    :alt: GitHub Actions build status (Test Windows)
 
-.. image:: https://github.com/python-pillow/Pillow/workflows/Test%20MinGW/badge.svg
-   :target: https://github.com/python-pillow/Pillow/actions/workflows/test-mingw.yml
-   :alt: GitHub Actions build status (Test MinGW)
+.. image:: https://github.com/python-pillow/Pillow/workflows/Test%20MSYS2/badge.svg
+   :target: https://github.com/python-pillow/Pillow/actions/workflows/test-msys2.yml
+   :alt: GitHub Actions build status (Test MSYS2)
 
 .. image:: https://github.com/python-pillow/Pillow/workflows/Wheels/badge.svg
    :target: https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml
@@ -60,10 +60,6 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
 .. image:: https://www.bestpractices.dev/projects/6331/badge
    :target: https://www.bestpractices.dev/projects/6331
    :alt: OpenSSF Best Practices
-
-.. image:: https://badges.gitter.im/python-pillow/Pillow.svg
-   :target: https://gitter.im/python-pillow/Pillow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-   :alt: Join the chat at https://gitter.im/python-pillow/Pillow
 
 .. image:: https://img.shields.io/badge/publish-on%20Mastodon-595aff.svg
    :target: https://fosstodon.org/@pillow
