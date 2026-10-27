@@ -167,20 +167,26 @@ class FitsGzipDecoder(ImageFile.PyDecoder):
             rows = []
             offset = 0
             number_of_bytes = abs(self.args[0]) // 8
+            # The decompressed payload is either widened to 4-byte groups, as in
+            # existing files, or holds consecutive samples (see #10309)
+            widened = len(value) == self.state.xsize * self.state.ysize * 4
             for y in range(self.state.ysize):
                 row = bytearray()
                 for x in range(self.state.xsize):
                     if number_of_bytes == 2:
                         # 16-bit integers are signed; expand to the 4-byte "I" rawmode
-                        pixel = int.from_bytes(
-                            value[offset + 2 : offset + 4], "big", signed=True
+                        sample = (
+                            value[offset + 2 : offset + 4]
+                            if widened
+                            else value[offset : offset + 2]
                         )
+                        pixel = int.from_bytes(sample, "big", signed=True)
                         row += pixel.to_bytes(4, "little", signed=True)
+                    elif widened:
+                        row += value[offset + 4 - number_of_bytes : offset + 4][::-1]
                     else:
-                        row += value[
-                            offset + 4 - 1 : offset + (4 - number_of_bytes) - 1 : -1
-                        ]
-                    offset += 4
+                        row += value[offset : offset + number_of_bytes][::-1]
+                    offset += 4 if widened else number_of_bytes
                 rows.append(row)
         self.set_as_raw(bytes([pixel for row in rows[::-1] for pixel in row]))
         return -1, 0

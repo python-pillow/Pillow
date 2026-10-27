@@ -30,6 +30,20 @@ def test_gzip1() -> None:
         assert_image_equal_tofile(im, "Tests/images/m13.fits")
 
 
+def test_gzip_16bit_consecutive_samples() -> None:
+    # The decompressed payload of a GZIP_1 image may hold consecutive 2-byte
+    # samples rather than the widened 4-byte groups of Tests/images/m13_gzip.fits
+    with Image.open("Tests/images/gzip_1_16bit.fits") as im:
+        assert im.mode == "I"
+        assert [im.getpixel((x, 0)) for x in range(im.width)] == [
+            -32768,
+            -1,
+            0,
+            1,
+            32767,
+        ]
+
+
 def test_gzip_decode() -> None:
     with open("Tests/images/m13_gzip.fits", "rb") as fp:
         data = bytearray(fp.read())
