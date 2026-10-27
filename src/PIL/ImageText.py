@@ -52,7 +52,8 @@ class _Wrap(Generic[AnyStr]):
                     break
                 for i, line in enumerate(newlines):
                     if i != 0 and not self.add_line(emptystring):
-                        break
+                        self.remaining_text: AnyStr = input_text[self.position :]
+                        return
                     self.position += len(line)
                     word = word[len(line) :]
                 line = emptystring
@@ -80,7 +81,7 @@ class _Wrap(Generic[AnyStr]):
         else:
             if line:
                 self.add_line(line)
-        self.remaining_text: AnyStr = input_text[self.position :]
+        self.remaining_text = input_text[self.position :]
 
     def add_line(self, line: AnyStr) -> bool:
         lines = self.lines + [line]

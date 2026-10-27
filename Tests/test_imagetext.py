@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import AnyStr
+
 import pytest
 
 from PIL import Image, ImageDraw, ImageFont, ImageText, features
@@ -168,6 +170,29 @@ def test_wrap_height() -> None:
     assert wrapped is not None
     assert wrapped.text == "\nwithin height"
     assert text.text == "Text does\nnot fit"
+
+
+@skip_unless_feature("freetype2")
+@pytest.mark.parametrize(
+    "data",
+    (
+        "A\n\nB",
+        b"A\n\nB",
+        "A\n\n\nB",
+        b"A\n\n\nB",
+        "A\n \nB",
+        b"A\n \nB",
+    ),
+)
+def test_wrap_height_blank_line(layout_engine: ImageFont.Layout, data: AnyStr) -> None:
+    font = ImageFont.truetype(FONT_PATH, 10, layout_engine=layout_engine)
+    text = ImageText.Text(data, font)
+
+    wrapped = text.wrap(100, int(font.getbbox("A")[3]))
+
+    assert text.text == data[:1]
+    assert wrapped is not None
+    assert wrapped.text == data[2:]
 
 
 def test_wrap_scaling_unsupported() -> None:
