@@ -475,6 +475,8 @@ def scale(
         raise ValueError(msg)
     else:
         size = (round(factor * image.width), round(factor * image.height))
+        if min(size) == 0:
+            return _new_empty(image, size)
         return image.resize(size, resample)
 
 
