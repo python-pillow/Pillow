@@ -879,6 +879,23 @@ class TestFileJpeg:
             # Act / Assert
             assert im.info.get("dpi") == (508, 508)
 
+    def test_dpi_from_exif_different_axes(self) -> None:
+        exif = Image.Exif()
+        exif[0x011A] = 300.0  # XResolution
+        exif[0x011B] = 150.0  # YResolution
+        exif[0x0128] = 2  # ResolutionUnit: inches
+        buf = BytesIO()
+        Image.new("RGB", (16, 16)).save(buf, "JPEG", exif=exif)
+
+        # Remove the JFIF APP0 segment, so that DPI must be read from EXIF
+        data = buf.getvalue()
+        assert data[2:4] == b"\xff\xe0"
+        app0_length = int.from_bytes(data[4:6], "big")
+        data = data[:2] + data[4 + app0_length :]
+
+        with Image.open(BytesIO(data)) as im:
+            assert im.info.get("dpi") == (300, 150)
+
     def test_dpi_exif_zero_division(self) -> None:
         # Arrange
         # This is photoshop-200dpi.jpg with EXIF resolution set to 0/0:
