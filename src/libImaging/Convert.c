@@ -1728,10 +1728,27 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
     ImagingSectionEnter(&cookie);
     MUTEX_LOCK(&imIn->mutex);
     for (y = 0; y < imIn->ysize; y++) {
-        (*convert)((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
+        UINT8 *out = (UINT8 *)imOut->image[y];
+        (*convert)(out, (UINT8 *)imIn->image[y], imIn->xsize);
 
-        source = source_transparency ? (UINT8 *)imIn->image[y] : NULL;
-        rgbT2a((UINT8 *)imOut->image[y], source, imIn->xsize, r, g, b, premultiplied);
+        // Match integer samples before they are clipped to 8-bit values.
+        if (imIn->mode == IMAGING_MODE_I) {
+            for (int x = 0; x < imIn->xsize; x++, out += 4) {
+                if (imIn->image32[y][x] == r) {
+                    out[3] = 0;
+                }
+            }
+        } else if (imIn->mode == IMAGING_MODE_I_16) {
+            source = (UINT8 *)imIn->image[y];
+            for (int x = 0; x < imIn->xsize; x++, source += 2, out += 4) {
+                if ((source[0] | (source[1] << 8)) == r) {
+                    out[3] = 0;
+                }
+            }
+        } else {
+            source = source_transparency ? (UINT8 *)imIn->image[y] : NULL;
+            rgbT2a(out, source, imIn->xsize, r, g, b, premultiplied);
+        }
     }
     MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
