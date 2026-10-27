@@ -310,13 +310,15 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
     def load(self) -> Image.core.PixelAccess | None:
         """Load image data based on tile list"""
 
-        if not self.tile and self._im is None:
-            msg = "cannot load this image"
-            raise OSError(msg)
-
-        pixel = Image.Image.load(self)
         if not self.tile:
-            return pixel
+            if self._im is None:
+                msg = "cannot load this image"
+                raise OSError(msg)
+            return Image.Image.load(self)
+
+        if self._im is not None:
+            # If this image has been closed, raise an error
+            self.im
 
         self.map: mmap.mmap | None = None
         use_mmap = self.filename and len(self.tile) == 1
