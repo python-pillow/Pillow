@@ -377,9 +377,14 @@ def test_save_all() -> None:
 @pytest.mark.parametrize("mode", ("1", "L", "RGB", "RGBX", "YCbCr", "CMYK"))
 @pytest.mark.parametrize("keep_rgb", (False, True))
 @pytest.mark.parametrize("exif_type", ("none", "object", "bytes"))
-def test_save_all_adobe_header(mode: str, keep_rgb: bool, exif_type: str) -> None:
+@pytest.mark.parametrize("dpi", (None, (72, 72), (0, 72), (0.4, 72)))
+def test_save_all_adobe_header(
+    mode: str, keep_rgb: bool, exif_type: str, dpi: tuple[float, float] | None
+) -> None:
     frames = [Image.new(mode, (16, 8), 0), Image.new(mode, (24, 16), 1)]
     options: dict[str, Any] = {"keep_rgb": keep_rgb}
+    if dpi is not None:
+        options["dpi"] = dpi
     if exif_type != "none":
         exif = Image.Exif()
         exif[270] = "Metadata before the MP Index"

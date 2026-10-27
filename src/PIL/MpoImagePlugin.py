@@ -63,6 +63,10 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                     and im_frame.encoderinfo.get("keep_rgb")
                 ):
                     mpf_offset -= 2
+                    dpi = im_frame.encoderinfo.get("dpi", (0, 0))
+                    if all(round(value) > 0 for value in dpi):
+                        # libjpeg also writes JFIF APP0 when DPI is set.
+                        mpf_offset += 18
 
                 # APP2 marker
                 ifd_length = 66 + 16 * total
