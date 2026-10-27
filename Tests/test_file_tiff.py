@@ -849,6 +849,20 @@ class TestFileTiff:
         with Image.open(outfile) as reloaded:
             assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
+    def test_palette_colormap_full_range(self) -> None:
+        im = Image.new("P", (2, 1))
+        im.putpalette([0, 0, 0, 255, 255, 255])
+        im.putdata([0, 1])
+        b = BytesIO()
+        im.save(b, "TIFF")
+
+        with Image.open(b) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            colormap = reloaded.tag_v2[320]
+            # TIFF ColorMap values range from 0 to 65535
+            assert colormap[1] == colormap[257] == colormap[513] == 65535
+            assert reloaded.getpalette()[:6] == [0, 0, 0, 255, 255, 255]
+
     def test_tiff_save_all(self) -> None:
         mp = BytesIO()
         with Image.open("Tests/images/multipage.tiff") as im:
