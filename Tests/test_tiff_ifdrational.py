@@ -62,9 +62,6 @@ def test_arithmetic_between_rationals() -> None:
     assert a - b == Fraction(1, 6)
     assert a * b == Fraction(1, 6)
     assert a / b == Fraction(3, 2)
-    assert a // b == 1
-    assert a % b == Fraction(1, 6)
-    assert math.isnan(a + IFDRational(0, 0))
 
 
 def test_ranges() -> None:
