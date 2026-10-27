@@ -353,6 +353,31 @@ def test_apng_save_different_palettes(tmp_path: Path) -> None:
         assert reloaded.mode == "RGBA"
 
 
+@pytest.mark.parametrize("mode", ("I;16", "I;16B"))
+def test_apng_save_i16(mode: str, tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    im = Image.new(mode, (2, 1), 1000)
+    second = Image.new(mode, (2, 1), 2000)
+    second.putpixel((0, 0), 50)
+    im.save(
+        test_file,
+        save_all=True,
+        append_images=[second, Image.new(mode, (2, 1), 3000)],
+        duration=100,
+    )
+
+    with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+        assert reloaded.n_frames == 3
+
+        reloaded.seek(1)
+        assert reloaded.getpixel((0, 0)) == 50
+        assert reloaded.getpixel((1, 0)) == 2000
+
+        reloaded.seek(2)
+        assert reloaded.getpixel((1, 0)) == 3000
+
+
 def test_apng_chunk_errors() -> None:
     with Image.open("Tests/images/apng/chunk_no_actl.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)

@@ -1250,6 +1250,20 @@ def _write_multiple_frames(
                 delta = ImageChops.subtract_modulo(
                     im_frame.convert("RGBA"), base_im.convert("RGBA")
                 )
+                if mode in ("I;16", "I;16B"):
+                    # Converting to RGBA clips values above 255
+                    raw_base = (
+                        previous.im
+                        if prev_disposal == Disposal.OP_BACKGROUND
+                        else base_im
+                    )
+                    raw_delta = ImageChops.subtract_modulo(
+                        *(
+                            Image.frombytes("LA", frame.size, frame.tobytes())
+                            for frame in (im_frame, raw_base)
+                        )
+                    )
+                    delta = ImageChops.lighter(delta, raw_delta.convert("RGBA"))
                 bbox = delta.getbbox(alpha_only=False)
                 if (
                     not bbox
