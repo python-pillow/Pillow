@@ -1321,7 +1321,8 @@ _getpalette_impl(ImagingObject *self, PyObject *args) {
     }
 
     const ModeID mode = self->image->palette->mode;
-    const RawModeID rawmode = rawmode_name != NULL ? findRawModeID(rawmode_name) : mode;
+    const RawModeID rawmode =
+        rawmode_name != NULL ? findRawModeID(rawmode_name) : (RawModeID)mode;
 
     pack = ImagingFindPacker(mode, rawmode, &bits);
     if (!pack) {
