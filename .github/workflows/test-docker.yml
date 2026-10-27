@@ -50,11 +50,19 @@ jobs:
           ubuntu-26.04-resolute-amd64,
         ]
         dockerTag: [main]
+        exclude:
+          # Pending https://github.com/actions/runner-images/issues/14790
+          - docker: "debian-13-trixie-x86"
+            os: "ubuntu-latest"
         include:
           - docker: "ubuntu-26.04-resolute-ppc64le"
             qemu-arch: "ppc64le"
           - docker: "ubuntu-26.04-resolute-s390x"
             qemu-arch: "s390x"
+          # Pending https://github.com/actions/runner-images/issues/14790
+          - docker: "debian-13-trixie-x86"
+            os: "ubuntu-24.04"
+            dockerTag: main
           - docker: "ubuntu-26.04-resolute-arm64v8"
             os: "ubuntu-24.04-arm"
             dockerTag: main
