@@ -1245,30 +1245,15 @@ def _write_multiple_frames(
 
             if im_frames:
                 previous = im_frames[-1]
-                prev_disposal = previous.encoderinfo.get("disposal")
-                prev_blend = previous.encoderinfo.get("blend")
-                if prev_disposal == Disposal.OP_PREVIOUS and len(im_frames) < 2:
-                    prev_disposal = Disposal.OP_BACKGROUND
-
-                if prev_disposal == Disposal.OP_BACKGROUND:
-                    base_im = previous.im.convert("RGBA")
-                    box = previous.bbox or (0, 0, *im.size)
-                    dispose = Image.new("RGBA", (box[2] - box[0], box[3] - box[1]))
-                    base_im.paste(dispose, box)
-                elif prev_disposal == Disposal.OP_PREVIOUS:
-                    base_im = im_frames[-2].im
+                if mode.startswith("I;16"):
+                    delta = ImageChops.subtract_modulo(
+                        Image.frombytes("LA", im.size, im_frame.tobytes()),
+                        Image.frombytes("LA", im.size, previous.im.tobytes()),
+                    )
                 else:
-                    base_im = previous.im
-                delta = ImageChops.subtract_modulo(
-                    im_frame.convert("RGBA"), base_im.convert("RGBA")
-                )
+                    delta = ImageChops.subtract_modulo(im_frame, previous.im)
                 bbox = delta.getbbox(alpha_only=False)
-                if (
-                    not bbox
-                    and prev_disposal == encoderinfo.get("disposal")
-                    and prev_blend == encoderinfo.get("blend")
-                    and "duration" in encoderinfo
-                ):
+                if not bbox and "duration" in encoderinfo:
                     new_duration = (
                         previous.encoderinfo["duration"] + encoderinfo["duration"]
                     )
