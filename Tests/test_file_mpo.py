@@ -411,6 +411,7 @@ def test_save_all_write_only(
 
     with Image.open(path) as reopened:
         assert reopened.format == "MPO"
+        assert isinstance(reopened, MpoImagePlugin.MpoImageFile)
         assert reopened.n_frames == 2
         assert reopened.size == first.size
         with Image.open(BytesIO(references[0])) as expected:
