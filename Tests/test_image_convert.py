@@ -59,8 +59,12 @@ def test_default() -> None:
     assert_image(converted_im, "RGB", im.size)
 
     im.info["transparency"] = 0
+    original_palette = im.getpalette(None)
     converted_im = im.convert()
     assert_image(converted_im, "RGBA", im.size)
+
+    # Assert that original image palette was not changed
+    assert im.getpalette(None) == original_palette
 
 
 # ref https://github.com/python-pillow/Pillow/issues/274

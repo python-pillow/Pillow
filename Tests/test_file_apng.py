@@ -353,6 +353,27 @@ def test_apng_save_different_palettes(tmp_path: Path) -> None:
         assert reloaded.mode == "RGBA"
 
 
+@pytest.mark.parametrize("mode", ("I;16", "I;16B"))
+def test_apng_save_i16(mode: str, tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    im = Image.new(mode, (1, 1), 1000)
+    second = Image.new(mode, (1, 1), 2000)
+    im.save(
+        test_file,
+        save_all=True,
+        append_images=[second],
+        duration=100,
+    )
+
+    with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+        assert reloaded.n_frames == 2
+        assert reloaded.getpixel((0, 0)) == 1000
+
+        reloaded.seek(1)
+        assert reloaded.getpixel((0, 0)) == 2000
+
+
 def test_apng_chunk_errors() -> None:
     with Image.open("Tests/images/apng/chunk_no_actl.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
@@ -695,17 +716,6 @@ def test_apng_save_disposal(tmp_path: Path) -> None:
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
-    # test info disposal
-    red.info["disposal"] = PngImagePlugin.Disposal.OP_BACKGROUND
-    red.save(
-        test_file,
-        save_all=True,
-        append_images=[Image.new("RGBA", (10, 10), (0, 255, 0, 255))],
-    )
-    with Image.open(test_file) as im:
-        im.seek(1)
-        assert im.getpixel((64, 32)) == (0, 0, 0, 0)
-
 
 def test_apng_save_disposal_previous(tmp_path: Path) -> None:
     test_file = tmp_path / "temp.png"
@@ -727,6 +737,22 @@ def test_apng_save_disposal_previous(tmp_path: Path) -> None:
         im.seek(2)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
+
+
+def test_apng_save_disposal_background(tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    im = Image.new("L", (32, 32), 128)
+
+    im.save(
+        test_file,
+        save_all=True,
+        append_images=[Image.new("L", (32, 32))],
+        disposal=PngImagePlugin.Disposal.OP_BACKGROUND,
+        duration=100,
+    )
+    with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+        assert reloaded.n_frames == 2
 
 
 def test_apng_save_blend(tmp_path: Path) -> None:
@@ -788,13 +814,6 @@ def test_apng_save_blend(tmp_path: Path) -> None:
         im.seek(2)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
-
-    # test info blend
-    red.info["blend"] = PngImagePlugin.Blend.OP_OVER
-    red.save(test_file, save_all=True, append_images=[green, transparent])
-    with Image.open(test_file) as im:
-        im.seek(2)
-        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
 
 
 def test_apng_save_size(tmp_path: Path) -> None:

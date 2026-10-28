@@ -49,6 +49,13 @@ TODO
 Other changes
 =============
 
+Resizing I;16B and I;16N images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On little-endian systems, :py:meth:`~PIL.Image.Image.resize` read and wrote
+I;16B and I;16N pixel values in the wrong byte order when using a resampling
+filter other than ``Resampling.NEAREST``. This has been fixed.
+
 Blurring I;16 images
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -62,3 +69,9 @@ When building against a Python build tree, Pillow now skips the extra library an
 include directory lookups based on Python's installation prefix. This avoids
 adding unprefixed installation paths in cross-compilation environments. Builds
 against an installed Python retain the existing lookups.
+
+Minimum C version
+^^^^^^^^^^^^^^^^^
+
+C11 is now the minimum version of C required to compile Pillow from source.
+Pillow requires Python 3.11 or later, and CPython 3.11 and later require C11.

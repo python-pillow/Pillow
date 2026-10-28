@@ -460,7 +460,7 @@ def _save(
         palette = b"".join(o8(i) * 3 + b"\x00" for i in range(256))
     elif im.mode == "P":
         # Colors used should not be zero, as that is treated as the maximum
-        palette = im.im.getpalette("RGB", "BGRX") or b"\x00\x00\x00\x00"
+        palette = im.im.getpalette("BGRX") or b"\x00\x00\x00\x00"
         colors = len(palette) // 4
     else:
         palette = None

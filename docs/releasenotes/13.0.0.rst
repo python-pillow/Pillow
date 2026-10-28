@@ -52,7 +52,7 @@ Medium
 * :cve:`2026-112402`, :ghsa:`7mwm-ghpf-9vrm`: Double free in ``Image.transform()`` after an allocation failure
 * :cve:`2026-112394`, :ghsa:`4558-3h8r-v8xp`: ``P;2L`` and ``P;4L`` raw mode decoders read past the end of their input
 * :cve:`2026-112900`, :ghsa:`w889-685w-c8fh`: EPS filename argument injection into Ghostscript
-* :ghsa:`654x-cwwv-5j9c`: Arrow export leaks stale heap memory when ``PILLOW_ALIGNMENT`` > 1
+* :cve:`2026-114501`, :ghsa:`654x-cwwv-5j9c`: Arrow export leaks stale heap memory when ``PILLOW_ALIGNMENT`` > 1
 
 Low
 ^^^
