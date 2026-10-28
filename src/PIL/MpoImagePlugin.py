@@ -51,6 +51,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         return
 
     mpf_offset = 18
+    prev_offset = 0
     offsets: list[int] = []
     im_sequences = [im, *append_images]
     total = sum(getattr(seq, "n_frames", 1) for seq in im_sequences)
@@ -72,12 +73,13 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                     mpf_offset += 4 + len(exif)
 
                 JpegImagePlugin._save(im_frame, fp, filename)
-                offsets.append(fp.tell())
             else:
                 encoderinfo = im_frame._attach_default_encoderinfo(im)
                 im_frame.save(fp, "JPEG")
                 im_frame.encoderinfo = encoderinfo
-                offsets.append(fp.tell() - offsets[-1])
+            offset = fp.tell()
+            offsets.append(offset - prev_offset)
+            prev_offset = offset
 
     fp.seek(mpf_offset)
     mpf_offset += 8 + fp.read(20).rindex(b"\xff\xe2")
