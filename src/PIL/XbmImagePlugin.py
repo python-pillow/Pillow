@@ -82,9 +82,8 @@ class XbmImageFile(ImageFile.ImageFile):
                 break
             try:
                 value = int(line.split().pop())
-            except ValueError as e:
-                msg = "not a XBM file"
-                raise SyntaxError(msg) from e
+            except ValueError:
+                break
             if b"width " in line:
                 width = value
             elif b"height " in line:

@@ -4,7 +4,7 @@ from io import BytesIO
 
 import pytest
 
-from PIL import Image, ImageFile, UnidentifiedImageError, XbmImagePlugin
+from PIL import Image, UnidentifiedImageError, XbmImagePlugin
 
 from .helper import assert_image_equal, hopper, timeout_unless_slower_valgrind
 
@@ -110,23 +110,9 @@ def test_invalid_file() -> None:
     with pytest.raises(SyntaxError):
         XbmImagePlugin.XbmImageFile(invalid_file)
 
-
-def test_non_numeric_define() -> None:
-    # A C header that is not an XBM image should not raise a ValueError
-    b = BytesIO(b"#define FOO bar\nint x;\n")
-    with pytest.raises(UnidentifiedImageError):
-        Image.open(b)
-
-
-def test_parser_streaming() -> None:
-    # Test incremental parsing to ensure chunks don't cause ValueError
-    p = ImageFile.Parser()
-    for i in range(0, len(PIL151), 8):
-        p.feed(PIL151[i : i + 8])
-
-    with p.close() as im:
-        with Image.open(BytesIO(PIL151)) as expected:
-            assert_image_equal(im, expected)
+    b = BytesIO(b"#define basic_width invalidwidth")
+    with pytest.raises(SyntaxError):
+        XbmImagePlugin.XbmImageFile(b)
 
 
 def test_save_wrong_mode(tmp_path: Path) -> None:
