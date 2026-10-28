@@ -206,9 +206,7 @@ class TestFileJpeg:
 
     @pytest.mark.parametrize("progressive", (False, True))
     @pytest.mark.parametrize("draft_mode", (None, "RGB", "L"))
-    def test_keep_rgb_with_dpi(
-        self, progressive: bool, draft_mode: str | None
-    ) -> None:
+    def test_keep_rgb_with_dpi(self, progressive: bool, draft_mode: str | None) -> None:
         image = Image.new("RGB", (20, 20), (255, 0, 0))
         options = {"keep_rgb": True, "quality": 100, "progressive": progressive}
         outputs = []
