@@ -226,7 +226,7 @@ class TestFileJpeg:
                     actual.draft(draft_mode, (8, 8))
                 assert_image_equal(reference, actual)
 
-    def test_reopen_does_not_use_previous_adobe_marker(self) -> None:
+    def jfif_with_rgb_component_ids(self) -> bytes:
         output = BytesIO()
         Image.new("RGB", (20, 20), "red").save(
             output, "JPEG", dpi=(72, 72), quality=100, subsampling=0
@@ -239,7 +239,10 @@ class TestFileJpeg:
             for old_id, offset, new_id in zip((1, 2, 3), offsets, b"RGB"):
                 assert data[start + offset] == old_id
                 data[start + offset] = new_id
+        return bytes(data)
 
+    def test_reopen_does_not_use_previous_adobe_marker(self) -> None:
+        data = self.jfif_with_rgb_component_ids()
         with Image.open(BytesIO(data)) as reference:
             with Image.open(BytesIO(data)) as reopened:
                 assert isinstance(reopened, JpegImagePlugin.JpegImageFile)
@@ -250,6 +253,18 @@ class TestFileJpeg:
                 reopened.fp.seek(0)
                 reopened._open()
                 assert_image_equal(reference, reopened)
+
+    def test_multiple_adobe_markers_use_the_last_transform(self) -> None:
+        data = self.jfif_with_rgb_component_ids()
+        adobe = b"\xff\xee\x00\x0eAdobe\x00\x64\x00\x00\x00\x00"
+        first = adobe + b"\x00"
+        last = adobe + b"\x01"
+        both = data[:2] + first + last + data[2:]
+        last_only = data[:2] + last + data[2:]
+        with Image.open(BytesIO(last_only)) as reference:
+            with Image.open(BytesIO(both)) as actual:
+                assert actual.info["adobe_transform"] == 1
+                assert_image_equal(reference, actual)
 
     def test_icc(self, tmp_path: Path) -> None:
         # Test ICC support

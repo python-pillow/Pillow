@@ -403,11 +403,11 @@ class JpegImageFile(ImageFile.ImageFile):
                             name == "APP0" and data.startswith(b"JFIF")
                             for name, data in self.applist
                         )
+                        and self.info.get("adobe_transform") == 0
                         and any(
                             name == "APP14"
                             and data.startswith(b"Adobe")
                             and len(data) >= 12
-                            and data[11] == 0
                             for name, data in self.applist
                         )
                     ):
