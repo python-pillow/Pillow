@@ -15,14 +15,34 @@
 
 #include "Imaging.h"
 
+#include <limits.h>
+
 int
 ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
     UINT8 n;
     UINT8 *ptr;
 
-    if ((state->xsize * state->bits + 7) / 8 > state->bytes) {
-        state->errcode = IMAGING_CODEC_OVERRUN;
-        return -1;
+    /* Check that the buffer holds one line of input. Planar raw modes
+       (P;2L/P;4L) store each line as state->planes padded bit planes,
+       not as packed pixels (#10186). */
+    if (state->planes) {
+        if (state->xsize > INT_MAX - 7) {
+            state->errcode = IMAGING_CODEC_MEMORY;
+            return -1;
+        }
+        if (state->planes * ((state->xsize + 7) / 8) > state->bytes) {
+            state->errcode = IMAGING_CODEC_OVERRUN;
+            return -1;
+        }
+    } else {
+        if (state->xsize > ((INT_MAX / state->bits) - 7)) {
+            state->errcode = IMAGING_CODEC_MEMORY;
+            return -1;
+        }
+        if ((state->bits * state->xsize + 7) / 8 > state->bytes) {
+            state->errcode = IMAGING_CODEC_OVERRUN;
+            return -1;
+        }
     }
 
     ptr = buf;
@@ -62,9 +82,9 @@ ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
         if (state->x >= state->bytes) {
             int bands;
             int xsize = 0;
-            if (state->bits == 2 || state->bits == 4) {
+            if (state->planes) {
                 xsize = (state->xsize + 7) / 8;
-                bands = state->bits;
+                bands = state->planes;
             } else {
                 xsize = state->xsize;
                 bands = im->bands;

@@ -49,6 +49,15 @@ TODO
 Other changes
 =============
 
+PCX and ZIP decoder row sizes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When using :py:meth:`~PIL.Image.Image.frombytes()` with the ``pcx`` decoder and a
+caller-supplied stride, packed 2- and 4-bit rows padded to a byte boundary were
+collapsed incorrectly, and the row-size arithmetic could overflow for very wide
+images. The ZIP decoder no longer accepts planar raw modes when interlacing is
+requested, since it cannot decode them correctly.
+
 Resizing I;16B and I;16N images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
