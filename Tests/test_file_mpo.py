@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import warnings
 from io import BytesIO
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
@@ -22,6 +21,9 @@ from .helper import (
     is_pypy,
     skip_unless_feature,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 test_files = ["Tests/images/sugarshack.mpo", "Tests/images/frozenpond.mpo"]
 
@@ -386,7 +388,7 @@ def test_save_all_cmyk() -> None:
 
 
 @pytest.mark.parametrize(
-    ("mode", "options"),
+    "mode,options",
     [
         ("RGB", {}),
         ("CMYK", {}),
