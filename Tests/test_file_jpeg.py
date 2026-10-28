@@ -204,6 +204,55 @@ class TestFileJpeg:
         with Image.open("Tests/images/jfif_unit_cm.jpg") as im:
             assert im.info["dpi"] == (2.54, 5.08)
 
+    @pytest.mark.parametrize("progressive", (False, True))
+    @pytest.mark.parametrize("draft_mode", (None, "RGB", "L"))
+    def test_keep_rgb_with_dpi(
+        self, progressive: bool, draft_mode: str | None
+    ) -> None:
+        image = Image.new("RGB", (20, 20), (255, 0, 0))
+        options = {"keep_rgb": True, "quality": 100, "progressive": progressive}
+        outputs = []
+        for dpi in (None, (72, 72)):
+            output = BytesIO()
+            if dpi is None:
+                image.save(output, "JPEG", **options)
+            else:
+                image.save(output, "JPEG", dpi=dpi, **options)
+            outputs.append(output.getvalue())
+
+        with Image.open(BytesIO(outputs[0])) as reference:
+            with Image.open(BytesIO(outputs[1])) as actual:
+                assert actual.info["dpi"] == (72, 72)
+                if draft_mode:
+                    reference.draft(draft_mode, (8, 8))
+                    actual.draft(draft_mode, (8, 8))
+                assert_image_equal(reference, actual)
+
+    def test_reopen_does_not_use_previous_adobe_marker(self) -> None:
+        output = BytesIO()
+        Image.new("RGB", (20, 20), "red").save(
+            output, "JPEG", dpi=(72, 72), quality=100, subsampling=0
+        )
+        data = bytearray(output.getvalue())
+        # Give a JFIF YCbCr image RGB component identifiers without adding APP14.
+        for marker, offsets in ((b"\xff\xc0", (10, 13, 16)), (b"\xff\xda", (5, 7, 9))):
+            start = data.find(marker)
+            assert start >= 0
+            for old_id, offset, new_id in zip((1, 2, 3), offsets, b"RGB"):
+                assert data[start + offset] == old_id
+                data[start + offset] = new_id
+
+        with Image.open(BytesIO(data)) as reference:
+            with Image.open(BytesIO(data)) as reopened:
+                assert isinstance(reopened, JpegImagePlugin.JpegImageFile)
+                assert reopened.fp is not None
+                # MPO frame changes call _open on the same object and can leave
+                # information from the previous frame in the info dictionary.
+                reopened.info["adobe_transform"] = 0
+                reopened.fp.seek(0)
+                reopened._open()
+                assert_image_equal(reference, reopened)
+
     def test_icc(self, tmp_path: Path) -> None:
         # Test ICC support
         with Image.open("Tests/images/rgb.jpg") as im1:
