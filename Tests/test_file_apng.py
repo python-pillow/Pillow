@@ -362,6 +362,7 @@ def test_apng_save_i16(mode: str, tmp_path: Path) -> None:
         test_file,
         save_all=True,
         append_images=[second],
+        duration=100,
     )
 
     with Image.open(test_file) as reloaded:
