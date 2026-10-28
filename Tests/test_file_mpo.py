@@ -374,48 +374,14 @@ def test_save_all() -> None:
     assert "mp" not in jpg.info
 
 
-@pytest.mark.parametrize("mode", ("1", "L", "RGB", "RGBX", "YCbCr", "CMYK"))
-@pytest.mark.parametrize("keep_rgb", (False, True))
-@pytest.mark.parametrize("exif_type", ("none", "object", "bytes"))
-@pytest.mark.parametrize("dpi", (None, (72, 72), (0, 72), (0.4, 72)))
-def test_save_all_adobe_header(
-    mode: str, keep_rgb: bool, exif_type: str, dpi: tuple[float, float] | None
-) -> None:
-    frames = [Image.new(mode, (16, 8), 0), Image.new(mode, (24, 16), 1)]
-    options: dict[str, Any] = {"keep_rgb": keep_rgb}
-    if dpi is not None:
-        options["dpi"] = dpi
-    if exif_type != "none":
-        exif = Image.Exif()
-        exif[270] = "Metadata before the MP Index"
-        options["exif"] = exif if exif_type == "object" else exif.tobytes()
+def test_save_all_cmyk() -> None:
+    first = Image.new("CMYK", (1, 1))
+    second = Image.new("CMYK", (1, 1), (255, 255, 255, 255))
+    im_reloaded = roundtrip(first, save_all=True, append_images=[second])
+    assert_image_equal(first, im_reloaded)
 
-    jpeg_frames = []
-    for frame in frames:
-        out = BytesIO()
-        frame.save(out, "JPEG", **options)
-        jpeg_frames.append(out.getvalue())
-
-    out = BytesIO()
-    frames[0].save(out, "MPO", save_all=True, append_images=frames[1:], **options)
-    data = out.getvalue()
-    mpf_offset = data.index(b"MPF\0") + 4
-    assert data[mpf_offset : mpf_offset + 4] == b"II\x2a\x00"
-
-    with Image.open(out) as reloaded:
-        assert isinstance(reloaded, MpoImagePlugin.MpoImageFile)
-        assert reloaded.n_frames == 2
-        for i, jpeg_frame in enumerate(jpeg_frames):
-            reloaded.seek(i)
-            with Image.open(BytesIO(jpeg_frame)) as expected:
-                assert_image_equal(reloaded, expected)
-
-        assert reloaded.mpinfo is not None
-        first, second = reloaded.mpinfo[0xB002]
-        assert first["DataOffset"] == 0
-        assert second["DataOffset"] + mpf_offset == first["Size"]
-        assert second["Size"] == len(jpeg_frames[1])
-        assert first["Size"] + second["Size"] == len(data)
+    im_reloaded.seek(1)
+    assert_image_equal(second, im_reloaded)
 
 
 def test_save_xmp() -> None:

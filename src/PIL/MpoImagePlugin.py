@@ -50,24 +50,13 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         _save(im, fp, filename)
         return
 
-    mpf_offset = 28
+    mpf_offset = 18
     offsets: list[int] = []
     im_sequences = [im, *append_images]
     total = sum(getattr(seq, "n_frames", 1) for seq in im_sequences)
     for im_sequence in im_sequences:
         for im_frame in ImageSequence.Iterator(im_sequence):
             if not offsets:
-                # Adobe APP14 is two bytes shorter than JFIF APP0.
-                if im_frame.mode == "CMYK" or (
-                    im_frame.mode in ("RGB", "RGBX")
-                    and im_frame.encoderinfo.get("keep_rgb")
-                ):
-                    mpf_offset -= 2
-                    dpi = im_frame.encoderinfo.get("dpi", (0, 0))
-                    if all(round(value) > 0 for value in dpi):
-                        # libjpeg also writes JFIF APP0 when DPI is set.
-                        mpf_offset += 18
-
                 # APP2 marker
                 ifd_length = 66 + 16 * total
                 im_frame.encoderinfo["extra"] = (
@@ -89,6 +78,9 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 im_frame.save(fp, "JPEG")
                 im_frame.encoderinfo = encoderinfo
                 offsets.append(fp.tell() - offsets[-1])
+
+    fp.seek(mpf_offset)
+    mpf_offset += 8 + fp.read(20).rindex(b"\xff\xe2")
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
     ifd[0xB000] = b"0100"
