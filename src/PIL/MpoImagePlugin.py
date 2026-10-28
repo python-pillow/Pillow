@@ -40,6 +40,24 @@ if TYPE_CHECKING:
     from typing import IO, Any
 
 
+class _MarkerCapture:
+    """Forward JPEG data while retaining only the marker's search window."""
+
+    def __init__(self, fp: IO[bytes], start: int) -> None:
+        self.fp = fp
+        self.start = start
+        self.position = 0
+        self.window = bytearray()
+
+    def write(self, data: bytes) -> int:
+        begin = max(0, self.start - self.position)
+        end = min(len(data), self.start + 20 - self.position)
+        if end > begin:
+            self.window.extend(data[begin:end])
+        self.position += len(data)
+        return self.fp.write(data)
+
+
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     JpegImagePlugin._save(im, fp, filename)
 
@@ -52,6 +70,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     mpf_offset = 18
     prev_offset = 0
+    capture: _MarkerCapture | None = None
     offsets: list[int] = []
     im_sequences = [im, *append_images]
     total = sum(getattr(seq, "n_frames", 1) for seq in im_sequences)
@@ -72,7 +91,9 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                         im_frame.encoderinfo["exif"] = exif
                     mpf_offset += 4 + len(exif)
 
-                JpegImagePlugin._save(im_frame, fp, filename)
+                # Do not expose fileno: JPEG data must pass through write().
+                capture = _MarkerCapture(fp, mpf_offset)
+                JpegImagePlugin._save(im_frame, cast("IO[bytes]", capture), filename)
             else:
                 encoderinfo = im_frame._attach_default_encoderinfo(im)
                 im_frame.save(fp, "JPEG")
@@ -81,8 +102,8 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             offsets.append(offset - prev_offset)
             prev_offset = offset
 
-    fp.seek(mpf_offset)
-    mpf_offset += 8 + fp.read(20).rindex(b"\xff\xe2")
+    assert capture is not None
+    mpf_offset += 8 + capture.window.rindex(b"\xff\xe2")
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
     ifd[0xB000] = b"0100"

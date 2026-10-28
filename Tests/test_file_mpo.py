@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import warnings
 from io import BytesIO
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -382,6 +383,40 @@ def test_save_all_cmyk() -> None:
 
     im_reloaded.seek(1)
     assert_image_equal(second, im_reloaded)
+
+
+@pytest.mark.parametrize(
+    ("mode", "options"),
+    [
+        ("RGB", {}),
+        ("CMYK", {}),
+        ("RGB", {"keep_rgb": True, "dpi": (72, 72)}),
+    ],
+)
+def test_save_all_write_only(
+    tmp_path: Path, mode: str, options: dict[str, Any]
+) -> None:
+    first = Image.new(mode, (16, 8))
+    second = Image.new(mode, (24, 16))
+    references = []
+    for frame in (first, second):
+        buffer = BytesIO()
+        frame.save(buffer, "JPEG", **options)
+        references.append(buffer.getvalue())
+    path = tmp_path / "write-only.mpo"
+    with path.open("wb") as fp:
+        first.save(fp, "MPO", save_all=True, append_images=[second], **options)
+
+    with Image.open(path) as reopened:
+        assert reopened.format == "MPO"
+        assert reopened.n_frames == 2
+        assert reopened.size == first.size
+        with Image.open(BytesIO(references[0])) as expected:
+            assert_image_equal(expected, reopened)
+        reopened.seek(1)
+        assert reopened.size == second.size
+        with Image.open(BytesIO(references[1])) as expected:
+            assert_image_equal(expected, reopened)
 
 
 def test_save_xmp() -> None:
