@@ -289,13 +289,6 @@ class iTXt(str):
         return self
 
 
-def _check_text_key(key: bytes) -> None:
-    # PNG text keys are 1 to 79 characters long, and a null character ends the key
-    if not 1 <= len(key) <= 79 or b"\0" in key:
-        msg = "Text key must be 1 to 79 characters long, without null characters"
-        raise ValueError(msg)
-
-
 class PngInfo:
     """
     PNG chunk container (for use with save(pnginfo=))
@@ -317,6 +310,16 @@ class PngInfo:
 
         self.chunks.append((cid, data, after_idat))
 
+    def _check_text_key(self, key: bytes) -> None:
+        if not 1 <= len(key) <= 79:
+            msg = "Text key must be 1 to 79 characters long"
+            raise ValueError(msg)
+
+        if b"\0" in key:
+            # The NULL character is the separator after the key
+            msg = "Text key cannot contain null characters"
+            raise ValueError(msg)
+
     def add_itxt(
         self,
         key: str | bytes,
@@ -327,7 +330,7 @@ class PngInfo:
     ) -> None:
         """Appends an iTXt chunk.
 
-        :param key: latin-1 encodable text key name, 1 to 79 characters long
+        :param key: latin-1 encodable text key name. 1 to 79 characters long
         :param value: value for this key
         :param lang: language code
         :param tkey: UTF-8 version of the key name
@@ -337,7 +340,7 @@ class PngInfo:
 
         if not isinstance(key, bytes):
             key = key.encode("latin-1", "strict")
-        _check_text_key(key)
+        self._check_text_key(key)
         if not isinstance(value, bytes):
             value = value.encode("utf-8", "strict")
         if not isinstance(lang, bytes):
@@ -358,7 +361,7 @@ class PngInfo:
     ) -> None:
         """Appends a text chunk.
 
-        :param key: latin-1 encodable text key name, 1 to 79 characters long
+        :param key: latin-1 encodable text key name. 1 to 79 characters long
         :param value: value for this key, text or an
            :py:class:`PIL.PngImagePlugin.iTXt` instance
         :param zip: compression flag
@@ -382,7 +385,7 @@ class PngInfo:
 
         if not isinstance(key, bytes):
             key = key.encode("latin-1", "strict")
-        _check_text_key(key)
+        self._check_text_key(key)
 
         if zip:
             self.add(b"zTXt", key + b"\0\0" + zlib.compress(value))

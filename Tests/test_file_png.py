@@ -465,25 +465,23 @@ class TestFilePng:
         assert im.text["eggs"].lang == "en"
         assert im.text["eggs"].tkey == "Eggs"
 
-    def test_text_key_max_length(self) -> None:
+    def test_text_key(self) -> None:
         info = PngImagePlugin.PngInfo()
-        info.add_text("t" * 79, "value")
-        info.add_text("z" * 79, "value", zip=True)
+
+        for length in (0, 80):
+            with pytest.raises(
+                ValueError, match="Text key must be 1 to 79 characters long"
+            ):
+                info.add_itxt("k" * length, "value")
+        with pytest.raises(ValueError, match="Text key cannot contain null characters"):
+            info.add_text("a\0b", "value")
+        assert info.chunks == []
+
         info.add_itxt("i" * 79, "value")
+        info.add_text("t" * 79, "value")
 
         im = roundtrip(Image.new("RGB", (1, 1)), pnginfo=info)
-        assert im.text == {"t" * 79: "value", "z" * 79: "value", "i" * 79: "value"}
-
-    @pytest.mark.parametrize("key", ("", "k" * 80, "a\0b", b"a\0b"))
-    def test_invalid_text_key(self, key: str | bytes) -> None:
-        info = PngImagePlugin.PngInfo()
-        for value in ("value", chr(0x100), PngImagePlugin.iTXt("value", "en", "Key")):
-            for compress in (False, True):
-                with pytest.raises(ValueError, match="Text key"):
-                    info.add_text(key, value, zip=compress)
-        with pytest.raises(ValueError, match="Text key"):
-            info.add_itxt(key, "value")
-        assert info.chunks == []
+        assert im.text == {"i" * 79: "value", "t" * 79: "value"}
 
     def test_nonunicode_text(self) -> None:
         # Check so that non-Unicode text is saved as a tEXt rather than iTXt

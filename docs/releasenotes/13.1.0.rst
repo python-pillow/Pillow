@@ -33,16 +33,10 @@ TODO
 API changes
 ===========
 
-Checking PNG text keys
-^^^^^^^^^^^^^^^^^^^^^^
+TODO
+^^^^
 
-:py:meth:`~PIL.PngImagePlugin.PngInfo.add_text` and
-:py:meth:`~PIL.PngImagePlugin.PngInfo.add_itxt` now raise a :py:exc:`ValueError` if
-the key is empty, longer than 79 characters or contains a null character.
-
-PNG text keys must be 1 to 79 characters long, and libpng ignores zTXt and iTXt
-chunks with other keys. A null character ended the key early: the rest of the key was
-read as part of the value, the chunk was ignored, or the image could not be opened.
+TODO
 
 API additions
 =============
