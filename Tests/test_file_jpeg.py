@@ -204,67 +204,14 @@ class TestFileJpeg:
         with Image.open("Tests/images/jfif_unit_cm.jpg") as im:
             assert im.info["dpi"] == (2.54, 5.08)
 
-    @pytest.mark.parametrize("progressive", (False, True))
-    @pytest.mark.parametrize("draft_mode", (None, "RGB", "L"))
-    def test_keep_rgb_with_dpi(self, progressive: bool, draft_mode: str | None) -> None:
-        image = Image.new("RGB", (20, 20), (255, 0, 0))
-        options = {"keep_rgb": True, "quality": 100, "progressive": progressive}
-        outputs = []
-        for dpi in (None, (72, 72)):
-            output = BytesIO()
-            if dpi is None:
-                image.save(output, "JPEG", **options)
-            else:
-                image.save(output, "JPEG", dpi=dpi, **options)
-            outputs.append(output.getvalue())
+    def test_dpi_with_keep_rgb(self, tmp_path: Path) -> None:
+        im = Image.new("RGB", (20, 20), (255, 0, 0))
+        f = tmp_path / "temp.jpg"
+        im.save(f, "JPEG", dpi=(72, 72), keep_rgb=True)
 
-        with Image.open(BytesIO(outputs[0])) as reference:
-            with Image.open(BytesIO(outputs[1])) as actual:
-                assert actual.info["dpi"] == (72, 72)
-                if draft_mode:
-                    reference.draft(draft_mode, (8, 8))
-                    actual.draft(draft_mode, (8, 8))
-                assert_image_equal(reference, actual)
-
-    def jfif_with_rgb_component_ids(self) -> bytes:
-        output = BytesIO()
-        Image.new("RGB", (20, 20), "red").save(
-            output, "JPEG", dpi=(72, 72), quality=100, subsampling=0
-        )
-        data = bytearray(output.getvalue())
-        # Give a JFIF YCbCr image RGB component identifiers without adding APP14.
-        for marker, offsets in ((b"\xff\xc0", (10, 13, 16)), (b"\xff\xda", (5, 7, 9))):
-            start = data.find(marker)
-            assert start >= 0
-            for old_id, offset, new_id in zip((1, 2, 3), offsets, b"RGB"):
-                assert data[start + offset] == old_id
-                data[start + offset] = new_id
-        return bytes(data)
-
-    def test_reopen_does_not_use_previous_adobe_marker(self) -> None:
-        data = self.jfif_with_rgb_component_ids()
-        with Image.open(BytesIO(data)) as reference:
-            with Image.open(BytesIO(data)) as reopened:
-                assert isinstance(reopened, JpegImagePlugin.JpegImageFile)
-                assert reopened.fp is not None
-                # MPO frame changes call _open on the same object and can leave
-                # information from the previous frame in the info dictionary.
-                reopened.info["adobe_transform"] = 0
-                reopened.fp.seek(0)
-                reopened._open()
-                assert_image_equal(reference, reopened)
-
-    def test_multiple_adobe_markers_use_the_last_transform(self) -> None:
-        data = self.jfif_with_rgb_component_ids()
-        adobe = b"\xff\xee\x00\x0eAdobe\x00\x64\x00\x00\x00\x00"
-        first = adobe + b"\x00"
-        last = adobe + b"\x01"
-        both = data[:2] + first + last + data[2:]
-        last_only = data[:2] + last + data[2:]
-        with Image.open(BytesIO(last_only)) as reference:
-            with Image.open(BytesIO(both)) as actual:
-                assert actual.info["adobe_transform"] == 1
-                assert_image_equal(reference, actual)
+        with Image.open(f) as reloaded:
+            assert reloaded.info["dpi"] == (72, 72)
+            assert_image_equal(reloaded, im)
 
     def test_icc(self, tmp_path: Path) -> None:
         # Test ICC support

@@ -393,28 +393,9 @@ class JpegImageFile(ImageFile.ImageFile):
                     handler(self, i)
                 if i == 0xFFDA:  # start of scan
                     rawmode = self.mode
-                    jpegmode = ""
                     if self.mode == "CMYK":
                         rawmode = "CMYK;I"  # assume adobe conventions
-                    elif (
-                        self.mode == "RGB"
-                        and [component[0] for component in self.layer] == list(b"RGB")
-                        and any(
-                            name == "APP0" and data.startswith(b"JFIF")
-                            for name, data in self.applist
-                        )
-                        and self.info.get("adobe_transform") == 0
-                        and any(
-                            name == "APP14"
-                            and data.startswith(b"Adobe")
-                            and len(data) >= 12
-                            for name, data in self.applist
-                        )
-                    ):
-                        # JFIF takes precedence in libjpeg, but these component IDs
-                        # and the Adobe marker identify untransformed RGB data.
-                        jpegmode = "RGB"
-                    self.tile = [ImageFile._Tile("jpeg", args=(rawmode, jpegmode))]
+                    self.tile = [ImageFile._Tile("jpeg", args=(rawmode, ""))]
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
@@ -470,7 +451,7 @@ class JpegImageFile(ImageFile.ImageFile):
         assert isinstance(a, tuple)
         if a[0] == "RGB" and mode in ["L", "YCbCr"]:
             self._mode = mode
-            a = mode, a[1]
+            a = mode, ""
 
         if size:
             scale = min(self.size[0] // size[0], self.size[1] // size[1])
@@ -701,8 +682,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     info = im.encoderinfo
 
-    dpi = [round(x) for x in info.get("dpi", (0, 0))]
-
     quality = info.get("quality", -1)
     subsampling = info.get("subsampling", -1)
     qtables = info.get("qtables")
@@ -833,7 +812,20 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     optimize = info.get("optimize", False)
 
+    keep_rgb = info.get("keep_rgb", False)
+    jfif_dpi = (0, 0)
     exif = info.get("exif", b"")
+    if "dpi" in info:
+        dpi = tuple(round(x) for x in info["dpi"])
+        if keep_rgb:
+            if not isinstance(exif, Image.Exif):
+                exif_object = Image.Exif()
+                exif_object.load(exif)
+                exif = exif_object
+            exif[0x011A] = dpi
+        else:
+            jfif_dpi = dpi
+
     if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
     if len(exif) > MAX_BYTES_IN_MARKER:
@@ -846,9 +838,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         progressive,
         info.get("smooth", 0),
         optimize,
-        info.get("keep_rgb", False),
+        keep_rgb,
         info.get("streamtype", 0),
-        dpi,
+        jfif_dpi,
         subsampling,
         info.get("restart_marker_blocks", 0),
         info.get("restart_marker_rows", 0),
