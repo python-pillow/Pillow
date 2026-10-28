@@ -188,7 +188,16 @@ class FitsGzipDecoder(ImageFile.PyDecoder):
                         row += value[offset : offset + number_of_bytes][::-1]
                     offset += 4 if widened else number_of_bytes
                 rows.append(row)
-        self.set_as_raw(bytes([pixel for row in rows[::-1] for pixel in row]))
+        data = bytes([pixel for row in rows[::-1] for pixel in row])
+        # The 4-byte rows are little-endian; the default rawmodes for "I" and "F"
+        # are native-endian, so pass explicit little-endian ones for big-endian hosts
+        if number_of_bytes == 2:
+            # 16-bit samples are expanded to signed 32-bit
+            self.set_as_raw(data, "I;32S")
+        elif self.mode == "F":
+            self.set_as_raw(data, "F;32F")
+        else:
+            self.set_as_raw(data)
         return -1, 0
 
 
