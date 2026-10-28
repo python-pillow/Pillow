@@ -51,6 +51,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         return
 
     mpf_offset = 28
+    prev_offset = 0
     offsets: list[int] = []
     im_sequences = [im, *append_images]
     total = sum(getattr(seq, "n_frames", 1) for seq in im_sequences)
@@ -72,12 +73,13 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                     mpf_offset += 4 + len(exif)
 
                 JpegImagePlugin._save(im_frame, fp, filename)
-                offsets.append(fp.tell())
             else:
                 encoderinfo = im_frame._attach_default_encoderinfo(im)
                 im_frame.save(fp, "JPEG")
                 im_frame.encoderinfo = encoderinfo
-                offsets.append(fp.tell() - offsets[-1])
+            offset = fp.tell()
+            offsets.append(offset - prev_offset)
+            prev_offset = offset
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
     ifd[0xB000] = b"0100"
@@ -166,9 +168,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         if self.info.get("exif") != original_exif:
             self._reload_exif()
 
-        self.tile = [
-            ImageFile._Tile("jpeg", (0, 0, *self.size), self.offset, self.tile[0][-1])
-        ]
+        self.tile = [ImageFile._Tile("jpeg", None, self.offset, self.tile[0][-1])]
         self.__frame = frame
         Image.Image.seek(self, frame)
 

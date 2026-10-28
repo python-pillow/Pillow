@@ -133,6 +133,16 @@ def test_lifetime() -> None:
     del arr_2
 
 
+def test_lifetime_mapped() -> None:
+    # the array should keep the shared buffer alive after the image is deleted
+    img = Image.frombuffer("L", (3, 3), bytearray(range(9)), "raw", "L", 0, 1)
+
+    arr = pyarrow.array(img)  # type: ignore[call-overload]
+    del img
+
+    assert arr.to_pylist() == list(range(9))
+
+
 def test_lifetime2() -> None:
     # valgrind shouldn't error out here.
     # img should remain after the arrays are collected.
@@ -152,6 +162,15 @@ def test_lifetime2() -> None:
     px = img2.load()
     assert px  # make mypy happy
     assert isinstance(px[0, 0], int)
+
+
+@pytest.mark.parametrize("size", ((0, 0), (0, 3), (3, 0)))
+@pytest.mark.parametrize("mode", ("L", "RGBA"))
+def test_empty_image(mode: str, size: tuple[int, int]) -> None:
+    img = Image.new(mode, size)
+    arr = pyarrow.array(img)  # type: ignore[call-overload]
+    arr.validate(full=True)
+    assert len(arr) == 0
 
 
 class DataShape(NamedTuple):

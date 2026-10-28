@@ -147,6 +147,7 @@ const RawModeData RAWMODES[] = {
     [IMAGING_RAWMODE_LX] = {"LX"},
     [IMAGING_RAWMODE_L_16] = {"L;16"},
     [IMAGING_RAWMODE_L_16B] = {"L;16B"},
+    [IMAGING_RAWMODE_L_1] = {"L;1"},
     [IMAGING_RAWMODE_L_2] = {"L;2"},
     [IMAGING_RAWMODE_L_2I] = {"L;2I"},
     [IMAGING_RAWMODE_L_2IR] = {"L;2IR"},

@@ -375,10 +375,12 @@ class JpegImageFile(ImageFile.ImageFile):
         self.applist: list[tuple[str, bytes]] = []
         self.icclist: list[bytes] = []
 
-        while True:
+        while s:
             i = s[0]
             if i == 0xFF:
-                s = s + self.fp.read(1)
+                s += self.fp.read(1)
+                if len(s) < 2:
+                    break
                 i = i16(s)
             else:
                 # Skip non-0xFF junk
@@ -393,9 +395,7 @@ class JpegImageFile(ImageFile.ImageFile):
                     rawmode = self.mode
                     if self.mode == "CMYK":
                         rawmode = "CMYK;I"  # assume adobe conventions
-                    self.tile = [
-                        ImageFile._Tile("jpeg", (0, 0, *self.size), 0, (rawmode, ""))
-                    ]
+                    self.tile = [ImageFile._Tile("jpeg", args=(rawmode, ""))]
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
@@ -458,12 +458,11 @@ class JpegImageFile(ImageFile.ImageFile):
             for s in [8, 4, 2, 1]:
                 if scale >= s:
                     break
-            assert e is not None
             e = (
-                e[0],
-                e[1],
-                (e[2] - e[0] + s - 1) // s + e[0],
-                (e[3] - e[1] + s - 1) // s + e[1],
+                0,
+                0,
+                (self.size[0] + s - 1) // s,
+                (self.size[1] + s - 1) // s,
             )
             self._size = ((self.size[0] + s - 1) // s, (self.size[1] + s - 1) // s)
             scale = s
@@ -866,9 +865,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # and the comment (COM marker).
         bufsize = max(len(exif) + 5, len(extra), len(comment or b"") + 5)
 
-    ImageFile._save(
-        im, fp, [ImageFile._Tile("jpeg", (0, 0, *im.size), 0, rawmode)], bufsize
-    )
+    ImageFile._save(im, fp, [ImageFile._Tile("jpeg", args=rawmode)], bufsize)
 
 
 ##

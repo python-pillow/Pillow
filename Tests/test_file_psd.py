@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import io
-import sys
 import warnings
 
 import pytest
@@ -192,6 +191,20 @@ def test_unknown_channel_id() -> None:
         assert im.layers[0][1] == ""
 
 
+@pytest.mark.parametrize("bbox", ((1, 0, 0, 1), (0, 1, 1, 0)))
+def test_negative_tile_size(bbox: tuple[int, int, int, int]) -> None:
+    fp = io.BytesIO(b"\x00\x00")
+    with pytest.raises(ValueError, match="negative tile size"):
+        PsdImagePlugin._maketile(fp, "RGB", bbox, 3)
+
+
+def test_large_bytecounts() -> None:
+    # The declared height requires a packbits bytecounts table of ~26 GB.
+    # Reading it must fail cleanly instead of attempting a huge allocation.
+    with pytest.raises(OSError, match="Truncated File Read"):
+        Image.open("Tests/images/psd-large-bytecounts.psd")
+
+
 def test_combined_larger_than_size() -> None:
     # The combined size of the individual parts is larger than the
     # declared 'size' of the extra data field, resulting in a backwards seek.
@@ -251,5 +264,5 @@ def test_bounds_crash_overflow() -> None:
     with Image.open("Tests/images/psd-oob-write-overflow.psd") as im:
         assert isinstance(im, PsdImagePlugin.PsdImageFile)
         im.load()
-        with pytest.raises(OverflowError if sys.maxsize <= 2**32 else ValueError):
+        with pytest.raises(ValueError, match="negative tile size"):
             im.seek(im.n_frames)

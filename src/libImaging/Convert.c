@@ -403,18 +403,6 @@ rgba2la(UINT8 *out, const UINT8 *in, int xsize) {
 }
 
 static void
-rgba2rgb(UINT8 *out, const UINT8 *in, int xsize) {
-    int x;
-    for (x = 0; x < xsize; x++) {
-        *out++ = *in++;
-        *out++ = *in++;
-        *out++ = *in++;
-        *out++ = 255;
-        in++;
-    }
-}
-
-static void
 rgbA2rgba(UINT8 *out, const UINT8 *in, int xsize) {
     int x;
     unsigned int alpha, tmp;
@@ -1133,7 +1121,11 @@ frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
 #endif
 static Imaging
 topalette(
-    Imaging imOut, Imaging imIn, const ModeID mode, ImagingPalette inpalette, int dither
+    Imaging imOut,
+    Imaging imIn,
+    const ModeID mode,
+    ImagingPalette inpalette,
+    ImagingDitherType dither
 ) {
     ImagingSectionCookie cookie;
     int alpha;
@@ -1210,7 +1202,7 @@ topalette(
             return NULL;
         }
 
-        if (dither) {
+        if (dither != IMAGING_DITHER_NONE) {
             /* floyd-steinberg dither */
 
             int *errors;
@@ -1507,7 +1499,7 @@ static struct {
     {IMAGING_MODE_RGBA, IMAGING_MODE_LA, rgba2la},
     {IMAGING_MODE_RGBA, IMAGING_MODE_I, rgb2i},
     {IMAGING_MODE_RGBA, IMAGING_MODE_F, rgb2f},
-    {IMAGING_MODE_RGBA, IMAGING_MODE_RGB, rgba2rgb},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_RGB, rgb2rgba},
     {IMAGING_MODE_RGBA, IMAGING_MODE_RGBa, rgbA2rgba},
     {IMAGING_MODE_RGBA, IMAGING_MODE_RGBX, rgb2rgba},
     {IMAGING_MODE_RGBA, IMAGING_MODE_CMYK, rgb2cmyk},
@@ -1522,7 +1514,7 @@ static struct {
     {IMAGING_MODE_RGBX, IMAGING_MODE_LA, rgb2la},
     {IMAGING_MODE_RGBX, IMAGING_MODE_I, rgb2i},
     {IMAGING_MODE_RGBX, IMAGING_MODE_F, rgb2f},
-    {IMAGING_MODE_RGBX, IMAGING_MODE_RGB, rgba2rgb},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_RGB, rgb2rgba},
     {IMAGING_MODE_RGBX, IMAGING_MODE_CMYK, rgb2cmyk},
     {IMAGING_MODE_RGBX, IMAGING_MODE_YCbCr, ImagingConvertRGB2YCbCr},
     {IMAGING_MODE_RGBX, IMAGING_MODE_HSV, rgb2hsv},
@@ -1590,13 +1582,20 @@ static struct {
  * @param mode    Target mode.
  * @param palette Target palette for conversions to "P" or "PA";
  *                NULL to use a default palette.
- * @param dither  Nonzero to dither when converting to "P", "PA" or "1".
+ * @param dither  Dither method when converting to "P", "PA" or "1".
+ *                Currently, for historical PIL reasons,
+ *                any value other than IMAGING_DITHER_NONE uses Floyd-Steinberg
+ *                dithering.
  * @return        The resulting Imaging object,
  *                or NULL with a Python exception set on failure.
  */
 Imaging
 ImagingConvert(
-    Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int dither
+    Imaging imOut,
+    Imaging imIn,
+    ModeID mode,
+    ImagingPalette palette,
+    ImagingDitherType dither
 ) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
@@ -1628,7 +1627,7 @@ ImagingConvert(
         return topalette(imOut, imIn, mode, palette, dither);
     }
 
-    if (dither && mode == IMAGING_MODE_1) {
+    if (dither != IMAGING_DITHER_NONE && mode == IMAGING_MODE_1) {
         return tobilevel(imOut, imIn);
     }
 
@@ -1657,9 +1656,11 @@ ImagingConvert(
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
     for (int y = 0; y < imIn->ysize; y++) {
         (*convert)((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
     return imOut;
@@ -1725,12 +1726,14 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
     for (y = 0; y < imIn->ysize; y++) {
         (*convert)((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
 
         source = source_transparency ? (UINT8 *)imIn->image[y] : NULL;
         rgbT2a((UINT8 *)imOut->image[y], source, imIn->xsize, r, g, b, premultiplied);
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
     return imOut;

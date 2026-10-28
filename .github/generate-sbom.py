@@ -123,7 +123,7 @@ def generate(version: str) -> dict:
             "description": "FriBiDi runtime-loading shim "
             "(vendored in src/thirdparty/fribidi-shim/); "
             "loads libfribidi dynamically",
-            "licenses": [{"license": {"id": "LGPL-2.1-or-later"}}],
+            "licenses": [{"license": {"id": "MIT-CMU"}}],
             "hashes": [
                 {
                     "alg": "SHA-256",
@@ -131,7 +131,10 @@ def generate(version: str) -> dict:
                 }
             ],
             "pedigree": {
-                "notes": "Pillow-authored shim; not taken from an upstream project."
+                "notes": "Pillow-authored shim; not taken from an upstream project. "
+                "fribidi.h declares the subset of FriBiDi's public API types, "
+                "constants and function signatures needed to load libfribidi "
+                "at runtime. No FriBiDi implementation code is included."
             },
             "externalReferences": [
                 {"type": "website", "url": "https://github.com/fribidi/fribidi"},
@@ -261,6 +264,23 @@ def generate(version: str) -> dict:
                 {
                     "type": "distribution",
                     "url": "https://download.savannah.gnu.org/releases/freetype/",
+                },
+            ],
+        },
+        {
+            "bom-ref": "pkg:generic/brotli",
+            "type": "library",
+            "name": "Brotli",
+            "version": versions["brotli"],
+            "scope": "optional",
+            "description": "Lossless compression algorithm. "
+            "Required for WOFF2 font support.",
+            "licenses": [{"license": {"id": "MIT"}}],
+            "externalReferences": [
+                {"type": "website", "url": "https://brotli.org"},
+                {
+                    "type": "distribution",
+                    "url": "https://github.com/google/brotli/releases",
                 },
             ],
         },
@@ -431,7 +451,7 @@ def generate(version: str) -> dict:
                     {
                         "bom-ref": "pkg:generic/openjpeg@2.5.4#upstream",
                         "type": "library",
-                        "name": "libtiff",
+                        "name": "OpenJPEG",
                         "version": "2.5.4",
                         "purl": "pkg:generic/openjpeg@2.5.4",
                         "externalReferences": [
@@ -452,7 +472,7 @@ def generate(version: str) -> dict:
                                     (
                                         Path(__file__).parent.parent
                                         / "patches"
-                                        / "openjpeg-2.5.4.tar.gz.patch"
+                                        / "v2.5.4.tar.gz.patch"
                                     ).read_bytes()
                                 ).decode(),
                                 "encoding": "base64",
@@ -461,8 +481,8 @@ def generate(version: str) -> dict:
                     },
                 ],
                 "notes": (
-                    "Vendored from upstream openjpeg 2.5.4 with a commit from master "
-                    "cherry-picked to fix OSV-2025-219."
+                    "Vendored from upstream openjpeg 2.5.4 with commits from master "
+                    "cherry-picked to fix OSV-2025-219 and CVE-2026-6192."
                 ),
             },
             "externalReferences": [

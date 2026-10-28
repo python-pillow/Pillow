@@ -67,11 +67,13 @@ _tiffWriteProc(thandle_t hdata, tdata_t buf, tsize_t size) {
     TIFFSTATE *state = (TIFFSTATE *)hdata;
     tsize_t to_write;
 
+    // libtiff may have seeked past the end of the buffer, e.g. when writing the
+    // directory, so the required size is based on the current location.
     to_write = MIN(size, state->size - (tsize_t)state->loc);
     if (state->flrealloc && size > to_write) {
         tdata_t new_data;
         tsize_t newsize = state->size;
-        while (newsize < (size + state->size)) {
+        while (newsize < (size + (tsize_t)state->loc)) {
             if (newsize > INT_MAX - 64 * 1024) {
                 return 0;
             }
@@ -84,9 +86,20 @@ _tiffWriteProc(thandle_t hdata, tdata_t buf, tsize_t size) {
             // fail out
             return 0;
         }
+        // zero the new space, so that any bytes libtiff seeks over without
+        // writing are 0 in the output, as they would be in a file
+        memset((UINT8 *)new_data + state->size, 0, newsize - state->size);
         state->data = new_data;
         state->size = newsize;
         to_write = size;
+    } else if (to_write < 0) {
+        TIFFError(
+            "_tiffWriteProc",
+            "Invalid Write at loc %" PRIu64 ", size: %" PRIu64,
+            state->loc,
+            (toff_t)state->size
+        );
+        return 0;
     }
 
     _TIFFmemcpy((UINT8 *)state->data + state->loc, buf, to_write);
@@ -239,6 +252,14 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
         rows_per_block = state->ysize;
     }
 
+    // TiffRGBAImages are 32bits/pixel. If the unpacker reads more bits per pixel
+    // than that, (at least) the last row of the block will have a read buffer
+    // overflow.
+    if (state->bits != 32) {
+        state->errcode = IMAGING_CODEC_BROKEN;
+        return -1;
+    }
+
     if (!(TIFFRGBAImageOK(tiff, emsg) && TIFFRGBAImageBegin(&img, tiff, 0, emsg))) {
         state->errcode = IMAGING_CODEC_BROKEN;
         // nothing to clean up, just return
@@ -320,7 +341,7 @@ _decodeTile(
 ) {
     INT32 x, y, tile_y, current_tile_length, current_tile_width;
     UINT32 tile_width, tile_length;
-    tsize_t tile_bytes_size, row_byte_size;
+    tsize_t tile_bytes_size, row_byte_size, unpacker_row_byte_size;
     UINT8 *new_data;
 
     tile_bytes_size = TIFFTileSize(tiff);
@@ -352,8 +373,8 @@ _decodeTile(
         return -1;
     }
 
-    if (tile_bytes_size !=
-        ((tile_length * state->bits / planes + 7) / 8) * tile_width) {
+    unpacker_row_byte_size = ((tsize_t)tile_width * state->bits / planes + 7) / 8;
+    if (tile_bytes_size != unpacker_row_byte_size * tile_length) {
         // If the tile size as expected by LibTiff isn't what we're expecting, abort.
         // man:   TIFFTileSize returns the equivalent size for a tile of data as it
         // would be returned in a call to TIFFReadTile ...
@@ -361,16 +382,30 @@ _decodeTile(
         return -1;
     }
 
-    state->bytes = tile_bytes_size;
+    // if the unpacker calculated row size is > row byte size, (at least) the last
+    // row of the tile will have a read buffer overflow.
+    if (unpacker_row_byte_size > row_byte_size) {
+        state->errcode = IMAGING_CODEC_BROKEN;
+        return -1;
+    }
 
     /* realloc to fit whole tile */
     /* malloc check above */
-    new_data = realloc(state->buffer, state->bytes);
+    new_data = realloc(state->buffer, tile_bytes_size);
     if (!new_data) {
         state->errcode = IMAGING_CODEC_MEMORY;
         return -1;
     }
     state->buffer = new_data;
+
+    if (tile_bytes_size > state->bytes) {
+        // Some codecs (e.g. JPEG, Group 4) succeed on a tile that decodes
+        // to fewer rows than the tile length, leaving the rest of the buffer untouched.
+        // Clear it so that uninitialised memory is not copied into the image.
+        memset(state->buffer + state->bytes, 0, tile_bytes_size - state->bytes);
+    }
+
+    state->bytes = tile_bytes_size;
 
     for (y = state->yoff; y < state->ysize; y += tile_length) {
         int plane;
@@ -438,8 +473,6 @@ _decodeStrip(
         return -1;
     }
 
-    state->bytes = strip_size;
-
     row_byte_size = TIFFScanlineSize(tiff);
 
     // if the unpacker calculated row size is > row byte size, (at least) the last
@@ -451,13 +484,21 @@ _decodeStrip(
 
     /* realloc to fit whole strip */
     /* malloc check above */
-    new_data = realloc(state->buffer, state->bytes);
+    new_data = realloc(state->buffer, strip_size);
     if (!new_data) {
         state->errcode = IMAGING_CODEC_MEMORY;
         return -1;
     }
-
     state->buffer = new_data;
+
+    if (strip_size > state->bytes) {
+        // Some codecs (e.g. JPEG, Group 4) succeed on a strip that decodes
+        // to fewer rows than RowsPerStrip, leaving the rest of the buffer untouched.
+        // Clear it so that uninitialised memory is not copied into the image.
+        memset(state->buffer + state->bytes, 0, strip_size - state->bytes);
+    }
+
+    state->bytes = strip_size;
 
     for (; state->y < state->ysize; state->y += rows_per_strip) {
         int plane;
@@ -728,6 +769,29 @@ ImagingLibTiffMergeFieldInfo(
 }
 
 int
+ImagingLibTiffFindField(
+    ImagingCodecState state,
+    int key,
+    TIFFDataType *field_type,
+    int *passcount,
+    int *writecount
+) {
+    // Look up libtiff's own definition of a tag. TIFFMergeFieldInfo does not
+    // replace the definition of a tag that libtiff already knows, so this is
+    // what TIFFSetField will use for such tags.
+    TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
+    const TIFFField *fip = TIFFFindField(clientstate->tiff, (ttag_t)key, TIFF_ANY);
+
+    if (!fip) {
+        return 0;
+    }
+    *field_type = TIFFFieldDataType(fip);
+    *passcount = TIFFFieldPassCount(fip);
+    *writecount = TIFFFieldWriteCount(fip);
+    return 1;
+}
+
+int
 ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...) {
     // after tif_dir.c->TIFFSetField.
     TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
@@ -779,6 +843,14 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
     TIFF *tiff = clientstate->tiff;
 
     if (state->state == 0) {
+        // state->buffer holds one row of the image, but TIFFWriteScanline reads
+        // a scanline of the size described by the IMAGEWIDTH, SAMPLESPERPIXEL
+        // and BITSPERSAMPLE tags, so these must not describe a larger row.
+        if (TIFFScanlineSize64(tiff) > (uint64_t)state->bytes) {
+            state->errcode = IMAGING_CODEC_CONFIG;
+            return -1;
+        }
+
         // Encoding line by line
         while (state->y < state->ysize) {
             state->shuffle(
