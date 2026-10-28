@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import struct
 import warnings
 from io import BytesIO
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
@@ -21,6 +22,9 @@ from .helper import (
     is_pypy,
     skip_unless_feature,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 test_files = ["Tests/images/sugarshack.mpo", "Tests/images/frozenpond.mpo"]
 
@@ -382,6 +386,69 @@ def test_save_all_cmyk() -> None:
 
     im_reloaded.seek(1)
     assert_image_equal(second, im_reloaded)
+
+
+@pytest.mark.parametrize(
+    "mode,options",
+    [
+        ("RGB", {}),
+        ("CMYK", {}),
+        ("RGB", {"keep_rgb": True, "dpi": (72, 72)}),
+    ],
+)
+def test_save_all_write_only(
+    tmp_path: Path, mode: str, options: dict[str, Any]
+) -> None:
+    first = Image.new(mode, (16, 8))
+    second = Image.new(mode, (24, 16))
+    references = []
+    for frame in (first, second):
+        buffer = BytesIO()
+        frame.save(buffer, "JPEG", **options)
+        references.append(buffer.getvalue())
+    path = tmp_path / "write-only.mpo"
+    with path.open("wb") as fp:
+        first.save(fp, "MPO", save_all=True, append_images=[second], **options)
+
+    with Image.open(path) as reopened:
+        assert reopened.format == "MPO"
+        assert isinstance(reopened, MpoImagePlugin.MpoImageFile)
+        assert reopened.n_frames == 2
+        assert reopened.size == first.size
+        with Image.open(BytesIO(references[0])) as expected:
+            assert_image_equal(expected, reopened)
+        reopened.seek(1)
+        assert reopened.size == second.size
+        with Image.open(BytesIO(references[1])) as expected:
+            assert_image_equal(expected, reopened)
+
+
+@pytest.mark.parametrize("as_bytes", (False, True))
+def test_save_all_exif_contains_mpf_placeholder(as_bytes: bool) -> None:
+    ifd_length = 66 + 16 * 2
+    placeholder = b"\xff\xe2" + struct.pack(">H", 6 + ifd_length)
+    placeholder += b"MPF\0" + b" " * ifd_length
+    comment = b"ASCII\0\0\0" + placeholder
+    exif = Image.Exif()
+    exif[0x9286] = comment
+    first = Image.new("RGB", (16, 8))
+    second = Image.new("RGB", (24, 16))
+    output = BytesIO()
+    first.save(
+        output,
+        "MPO",
+        save_all=True,
+        append_images=[second],
+        exif=exif.tobytes() if as_bytes else exif,
+    )
+    output.seek(0)
+    with Image.open(output) as reopened:
+        assert isinstance(reopened, MpoImagePlugin.MpoImageFile)
+        assert reopened.n_frames == 2
+        assert reopened.size == first.size
+        assert reopened.getexif()[0x9286] == comment
+        reopened.seek(1)
+        assert reopened.size == second.size
 
 
 def test_save_xmp() -> None:

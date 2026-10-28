@@ -76,7 +76,9 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                     JpegImagePlugin._save(im_frame, first_frame_fp, filename)
                     first_frame_data = first_frame_fp.getvalue()
                 fp.write(first_frame_data)
-                mpf_offset = first_frame_data.index(extra) + 8
+                # The EXIF payload can itself contain the placeholder bytes.
+                search_start = 2 + (4 + len(exif) if exif else 0)
+                mpf_offset = first_frame_data.index(extra, search_start) + 8
             else:
                 encoderinfo = im_frame._attach_default_encoderinfo(im)
                 im_frame.save(fp, "JPEG")
