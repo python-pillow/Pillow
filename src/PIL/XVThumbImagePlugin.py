@@ -66,10 +66,14 @@ class XVThumbImageFile(ImageFile.ImageFile):
                 break
 
         # parse header line (already read)
-        w, h = s.strip().split(maxsplit=2)[:2]
+        try:
+            w, h = (int(value) for value in s.split(maxsplit=2)[:2])
+        except ValueError as e:
+            msg = "Invalid XV thumbnail header"
+            raise SyntaxError(msg) from e
 
         self._mode = "P"
-        self._size = int(w), int(h)
+        self._size = w, h
 
         self.palette = ImagePalette.raw("RGB", PALETTE)
 

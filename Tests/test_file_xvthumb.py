@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import io
+
 import pytest
 
-from PIL import Image, XVThumbImagePlugin
+from PIL import Image, UnidentifiedImageError, XVThumbImagePlugin
 
 from .helper import assert_image_similar, hopper
 
@@ -37,3 +39,15 @@ def test_invalid_file() -> None:
     # Act / Assert
     with pytest.raises(SyntaxError):
         XVThumbImagePlugin.XVThumbImageFile(invalid_file)
+
+
+@pytest.mark.parametrize(
+    "header",
+    (b"64", b"", b"ab cd 255"),
+)
+def test_invalid_header_line(header: bytes) -> None:
+    data = b"P7 332\n#IMGINFO\n" + header + b"\n"
+
+    with pytest.raises(UnidentifiedImageError):
+        with Image.open(io.BytesIO(data)):
+            pass
