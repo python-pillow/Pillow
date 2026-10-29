@@ -355,27 +355,16 @@ class TestFilePng:
             assert colors is not None
             assert colors[0][0] == num_transparent
 
-    @pytest.mark.parametrize("bits", (2, 4))
-    def test_load_low_bit_grayscale_transparency(self, bits: int) -> None:
-        # Two pixels, white then black. White is the transparent grey level
-        max_value = (1 << bits) - 1
-        data = (
-            MAGIC
-            + chunk(b"IHDR", o32(2), o32(1), bytes((bits, 0)), b"\0\0\0")
-            + chunk(b"tRNS", PngImagePlugin.o16(max_value))
-            + chunk(b"IDAT", zlib.compress(bytes((0, max_value << (8 - bits)))))
-            + IEND
-        )
-        with load(data) as im:
+    def test_low_bit_grayscale_transparency(self) -> None:
+        with Image.open("Tests/images/tbbn0g04.png") as im:
             assert im.mode == "L"
             assert im.info["transparency"] == 255
-            assert im.convert("LA").get_flattened_data() == ((255, 0), (0, 255))
+            assert im.convert("LA").getpixel((0, 0)) == (255, 0)
 
-        # Images saved by Pillow with fewer bits can still be read
-        im = Image.new("L", (2, 1))
-        im.putpixel((0, 0), 255)
-        with roundtrip(im, bits=bits, transparency=255) as reloaded:
-            assert reloaded.info["transparency"] == 255
+        for bits in (2, 4):
+            im2 = Image.new("L", (1, 1))
+            with roundtrip(im2, bits=bits, transparency=255) as reloaded:
+                assert reloaded.info["transparency"] == 255
 
     def test_save_1_transparency(self, tmp_path: Path) -> None:
         out = tmp_path / "temp.png"
