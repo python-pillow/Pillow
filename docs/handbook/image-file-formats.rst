@@ -955,6 +955,13 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     When ``optimize`` option is True ``compress_level`` has no effect
     (it is set to 9 regardless of a value passed).
 
+**compress_type**
+    ZLIB compression strategy, one of the strategy constants from Python's
+    :py:mod:`zlib` module: ``zlib.Z_DEFAULT_STRATEGY`` (0), ``zlib.Z_FILTERED`` (1),
+    ``zlib.Z_HUFFMAN_ONLY`` (2), ``zlib.Z_RLE`` (3) or ``zlib.Z_FIXED`` (4). For ``P``
+    images, defaults to ``zlib.Z_DEFAULT_STRATEGY`` (0). Otherwise defaults to
+    ``zlib.Z_FILTERED`` (1).
+
 **icc_profile**
     The ICC Profile to include in the saved file.
 
@@ -1787,6 +1794,20 @@ PALM
 Pillow provides write-only support for PALM pixmap files.
 
 The format code is ``Palm``, the extension is ``.palm``.
+
+``1``, ``L`` and ``P`` images can be saved.
+
+Saving
+~~~~~~
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**bpp**
+    For ``L`` images, the number of bits per pixel to write, either 1, 2 or 4. Shades
+    in the image are adjusted to fit within this restriction. If omitted, the ``bpp``
+    value from :py:attr:`~PIL.Image.Image.info` can be used instead, and only the
+    lowest bits of each pixel are kept. If there is no ``bpp`` setting at all, ``L``
+    mode images cannot be saved.
 
 PDF
 ^^^

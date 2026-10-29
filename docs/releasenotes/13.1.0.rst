@@ -49,12 +49,6 @@ TODO
 Other changes
 =============
 
-Blurring I;16 images
-^^^^^^^^^^^^^^^^^^^^
-
-:py:class:`~PIL.ImageFilter.GaussianBlur` and :py:class:`~PIL.ImageFilter.BoxBlur`
-now support I;16, I;16L, I;16B and I;16N images.
-
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -64,3 +58,22 @@ use, now copy an image before writing to it if its memory is read-only, as
 :py:meth:`~PIL.Image.Image.paste` already does. Previously, they could crash on
 memory-mapped image files, or modify the buffer behind an image created by
 :py:func:`~PIL.Image.frombuffer` or :py:func:`~PIL.Image.fromarrow`.
+
+Resizing I;16B and I;16N images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On little-endian systems, :py:meth:`~PIL.Image.Image.resize` read and wrote
+I;16B and I;16N pixel values in the wrong byte order when using a resampling
+filter other than ``Resampling.NEAREST``. This has been fixed.
+
+Blurring I;16 images
+^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageFilter.GaussianBlur` and :py:class:`~PIL.ImageFilter.BoxBlur`
+now support I;16, I;16L, I;16B and I;16N images.
+
+Minimum C version
+^^^^^^^^^^^^^^^^^
+
+C11 is now the minimum version of C required to compile Pillow from source.
+Pillow requires Python 3.11 or later, and CPython 3.11 and later require C11.
