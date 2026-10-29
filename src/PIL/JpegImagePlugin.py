@@ -520,11 +520,7 @@ class JpegImageFile(ImageFile.ImageFile):
             return
         try:
             exif = self.getexif()
-            x_resolution = exif[0x011A]
-            try:
-                dpi = float(x_resolution[0]) / x_resolution[1]
-            except TypeError:
-                dpi = x_resolution
+            dpi = exif[0x011A]
             if math.isnan(dpi):
                 msg = "DPI is not a number"
                 raise ValueError(msg)
@@ -538,7 +534,6 @@ class JpegImageFile(ImageFile.ImageFile):
             SyntaxError,  # invalid/unreadable EXIF
             TypeError,  # dpi is an invalid float
             ValueError,  # dpi is an invalid float
-            ZeroDivisionError,  # invalid dpi rational value
         ):
             self.info["dpi"] = 72, 72
 
