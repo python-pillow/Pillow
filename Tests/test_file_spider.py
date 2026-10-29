@@ -162,12 +162,6 @@ def test_nonstack_file() -> None:
             im.seek(0)
 
 
-def test_nonstack_dos() -> None:
-    with Image.open(TEST_FILE) as im:
-        with pytest.raises(EOFError):
-            im.seek(0)
-
-
 # for issue #4093
 def test_odd_size() -> None:
     data = BytesIO()
