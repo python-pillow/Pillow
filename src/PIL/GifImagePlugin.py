@@ -661,7 +661,7 @@ def _write_multiple_frames(
     im: Image.Image, fp: IO[bytes], palette: _Palette | None
 ) -> bool:
     duration = im.encoderinfo.get("duration")
-    disposal = im.encoderinfo.get("disposal", im.info.get("disposal"))
+    disposal = im.encoderinfo.get("disposal")
 
     im_frames: list[_Frame] = []
     previous_im: Image.Image | None = None

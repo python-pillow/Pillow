@@ -14,19 +14,11 @@
 /* -------------------------------------------------------------------- */
 /* Transpose operations                                                 */
 
-Imaging
+void
 ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xr;
-
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
-    }
-
     int xsize = imIn->xsize, ysize = imIn->ysize;
-    if (xsize != imOut->xsize || ysize != imOut->ysize) {
-        return (Imaging)ImagingError_Mismatch();
-    }
 
     ImagingCopyPalette(imOut, imIn);
 
@@ -57,23 +49,13 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     ImagingSectionLeave(&cookie);
 
 #undef FLIP_LEFT_RIGHT
-
-    return imOut;
 }
 
-Imaging
+void
 ImagingFlipTopBottom(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int y, yr;
-
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
-    }
-
     int ysize = imIn->ysize;
-    if (imIn->xsize != imOut->xsize || ysize != imOut->ysize) {
-        return (Imaging)ImagingError_Mismatch();
-    }
 
     ImagingCopyPalette(imOut, imIn);
 
@@ -87,24 +69,14 @@ ImagingFlipTopBottom(Imaging imOut, Imaging imIn) {
 
     MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
-
-    return imOut;
 }
 
-Imaging
+void
 ImagingRotate90(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xx, yy, xr, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
-
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
-    }
-
     int xsize = imIn->xsize, ysize = imIn->ysize;
-    if (xsize != imOut->ysize || ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch();
-    }
 
     ImagingCopyPalette(imOut, imIn);
 
@@ -151,24 +123,14 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
     ImagingSectionLeave(&cookie);
 
 #undef ROTATE_90
-
-    return imOut;
 }
 
-Imaging
+void
 ImagingTranspose(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xx, yy, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
-
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
-    }
-
     int xsize = imIn->xsize, ysize = imIn->ysize;
-    if (xsize != imOut->ysize || ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch();
-    }
 
     ImagingCopyPalette(imOut, imIn);
 
@@ -214,24 +176,14 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
     ImagingSectionLeave(&cookie);
 
 #undef TRANSPOSE
-
-    return imOut;
 }
 
-Imaging
+void
 ImagingTransverse(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xr, yr, xx, yy, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
-
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
-    }
-
     int xsize = imIn->xsize, ysize = imIn->ysize;
-    if (xsize != imOut->ysize || ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch();
-    }
 
     ImagingCopyPalette(imOut, imIn);
 
@@ -279,23 +231,13 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
     ImagingSectionLeave(&cookie);
 
 #undef TRANSVERSE
-
-    return imOut;
 }
 
-Imaging
+void
 ImagingRotate180(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xr, yr;
-
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
-    }
-
     int xsize = imIn->xsize, ysize = imIn->ysize;
-    if (xsize != imOut->xsize || ysize != imOut->ysize) {
-        return (Imaging)ImagingError_Mismatch();
-    }
 
     ImagingCopyPalette(imOut, imIn);
 
@@ -327,24 +269,14 @@ ImagingRotate180(Imaging imOut, Imaging imIn) {
     ImagingSectionLeave(&cookie);
 
 #undef ROTATE_180
-
-    return imOut;
 }
 
-Imaging
+void
 ImagingRotate270(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xx, yy, yr, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
-
-    if (!imOut || !imIn || imIn->mode != imOut->mode) {
-        return (Imaging)ImagingError_ModeError();
-    }
-
     int xsize = imIn->xsize, ysize = imIn->ysize;
-    if (xsize != imOut->ysize || ysize != imOut->xsize) {
-        return (Imaging)ImagingError_Mismatch();
-    }
 
     ImagingCopyPalette(imOut, imIn);
 
@@ -391,8 +323,6 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
     ImagingSectionLeave(&cookie);
 
 #undef ROTATE_270
-
-    return imOut;
 }
 
 /* -------------------------------------------------------------------- */
@@ -736,7 +666,7 @@ bicubic_filter32RGB(void *out, Imaging im, double xin, double yin) {
 #undef BICUBIC_BODY
 
 static ImagingTransformFilter
-getfilter(Imaging im, int filterid) {
+getfilter(Imaging im, ImagingResamplingType filterid) {
     switch (filterid) {
         case IMAGING_TRANSFORM_NEAREST:
             if (im->image8) {
@@ -786,6 +716,8 @@ getfilter(Imaging im, int filterid) {
                 }
             }
             break;
+        default:
+            break;
     }
     /* no such filter */
     return NULL;
@@ -803,7 +735,7 @@ ImagingGenericTransform(
     int y1,
     ImagingTransformMap transform,
     void *transform_data,
-    int filterid,
+    ImagingResamplingType filterid,
     int fill
 ) {
     /* slow generic transformation.  use ImagingTransformAffine or
@@ -977,7 +909,7 @@ affine_fixed(
     int x1,
     int y1,
     double a[6],
-    int filterid,
+    ImagingResamplingType filterid,
     int fill
 ) {
     /* affine transform, nearest neighbour resampling, fixed point
@@ -1057,7 +989,7 @@ ImagingTransformAffine(
     int x1,
     int y1,
     double a[6],
-    int filterid,
+    ImagingResamplingType filterid,
     int fill
 ) {
     /* affine transform, nearest neighbour resampling, floating point
@@ -1075,7 +1007,7 @@ ImagingTransformAffine(
         return -1;
     }
 
-    if (filterid || imIn->type == IMAGING_TYPE_I16) {
+    if (filterid != IMAGING_TRANSFORM_NEAREST || imIn->type == IMAGING_TYPE_I16) {
         return ImagingGenericTransform(
             imOut, imIn, x0, y0, x1, y1, affine_transform, a, filterid, fill
         );
@@ -1179,13 +1111,13 @@ int
 ImagingTransform(
     Imaging imOut,
     Imaging imIn,
-    int method,
+    ImagingTransformType method,
     int x0,
     int y0,
     int x1,
     int y1,
     double a[8],
-    int filterid,
+    ImagingResamplingType filterid,
     int fill
 ) {
     ImagingTransformMap transform;

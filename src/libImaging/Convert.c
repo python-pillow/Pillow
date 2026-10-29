@@ -789,6 +789,42 @@ I16B_F(UINT8 *out_, const UINT8 *in, int xsize) {
 }
 
 static void
+F_I16L(UINT8 *out, const UINT8 *in, int xsize) {
+    int x, v;
+    for (x = 0; x < xsize; x++, in += 4) {
+        FLOAT32 f;
+        memcpy(&f, in, sizeof(f));
+        if (f <= 0.0) {
+            v = 0;
+        } else if (f >= 65535.0) {
+            v = 65535;
+        } else {
+            v = (int)f;
+        }
+        *out++ = (UINT8)v;
+        *out++ = (UINT8)(v >> 8);
+    }
+}
+
+static void
+F_I16B(UINT8 *out, const UINT8 *in, int xsize) {
+    int x, v;
+    for (x = 0; x < xsize; x++, in += 4) {
+        FLOAT32 f;
+        memcpy(&f, in, sizeof(f));
+        if (f <= 0.0) {
+            v = 0;
+        } else if (f >= 65535.0) {
+            v = 65535;
+        } else {
+            v = (int)f;
+        }
+        *out++ = (UINT8)(v >> 8);
+        *out++ = (UINT8)v;
+    }
+}
+
+static void
 L_I16L(UINT8 *out, const UINT8 *in, int xsize) {
     int x;
     for (x = 0; x < xsize; x++, in++) {
@@ -1121,7 +1157,11 @@ frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
 #endif
 static Imaging
 topalette(
-    Imaging imOut, Imaging imIn, const ModeID mode, ImagingPalette inpalette, int dither
+    Imaging imOut,
+    Imaging imIn,
+    const ModeID mode,
+    ImagingPalette inpalette,
+    ImagingDitherType dither
 ) {
     ImagingSectionCookie cookie;
     int alpha;
@@ -1198,7 +1238,7 @@ topalette(
             return NULL;
         }
 
-        if (dither) {
+        if (dither != IMAGING_DITHER_NONE) {
             /* floyd-steinberg dither */
 
             int *errors;
@@ -1560,9 +1600,18 @@ static struct {
     {IMAGING_MODE_I_16L, IMAGING_MODE_F, I16L_F},
     {IMAGING_MODE_I_16B, IMAGING_MODE_F, I16B_F},
 #ifdef WORDS_BIGENDIAN
-    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16B_F}
+    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16B_F},
 #else
-    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16L_F}
+    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16L_F},
+#endif
+
+    {IMAGING_MODE_F, IMAGING_MODE_I_16, F_I16L},
+    {IMAGING_MODE_F, IMAGING_MODE_I_16L, F_I16L},
+    {IMAGING_MODE_F, IMAGING_MODE_I_16B, F_I16B},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_F, IMAGING_MODE_I_16N, F_I16B}
+#else
+    {IMAGING_MODE_F, IMAGING_MODE_I_16N, F_I16L}
 #endif
 };
 
@@ -1578,13 +1627,20 @@ static struct {
  * @param mode    Target mode.
  * @param palette Target palette for conversions to "P" or "PA";
  *                NULL to use a default palette.
- * @param dither  Nonzero to dither when converting to "P", "PA" or "1".
+ * @param dither  Dither method when converting to "P", "PA" or "1".
+ *                Currently, for historical PIL reasons,
+ *                any value other than IMAGING_DITHER_NONE uses Floyd-Steinberg
+ *                dithering.
  * @return        The resulting Imaging object,
  *                or NULL with a Python exception set on failure.
  */
 Imaging
 ImagingConvert(
-    Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int dither
+    Imaging imOut,
+    Imaging imIn,
+    ModeID mode,
+    ImagingPalette palette,
+    ImagingDitherType dither
 ) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
@@ -1616,7 +1672,7 @@ ImagingConvert(
         return topalette(imOut, imIn, mode, palette, dither);
     }
 
-    if (dither && mode == IMAGING_MODE_1) {
+    if (dither != IMAGING_DITHER_NONE && mode == IMAGING_MODE_1) {
         return tobilevel(imOut, imIn);
     }
 
