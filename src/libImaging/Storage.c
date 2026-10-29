@@ -550,9 +550,17 @@ ImagingBorrowArrow(
     struct ArrowArray *arr = external_array;
 
     if (arr->n_children == 1) {
+        if (!arr->children || !arr->children[0]) {
+            ImagingError_ValueError("Arrow Array, missing child array");
+            return 0;
+        }
         arr = arr->children[0];
     }
-    if (arr->n_buffers == 2) {
+    if (arr->offset < 0) {
+        ImagingError_ValueError("Arrow Array, negative offset");
+        return 0;
+    }
+    if (arr->n_buffers == 2 && arr->buffers && arr->buffers[1]) {
         // buffer 0 is the null list
         // buffer 1 is the data
         borrowed_buffer = (char *)arr->buffers[1] + (offset_width * arr->offset);
@@ -695,6 +703,11 @@ ImagingNewArrow(
         return NULL;
     }
 
+    if (!schema->format) {
+        ImagingDelete(im);
+        return (Imaging)ImagingError_ValueError("Arrow Schema, missing format");
+    }
+
     int64_t pixels = (int64_t)xsize * (int64_t)ysize;
 
     // fmt:off   // don't reformat this
@@ -719,6 +732,8 @@ ImagingNewArrow(
         && im->pixelsize == 4                // storage as 32 bpc
         && schema->n_children > 0            // make sure schema is well formed.
         && schema->children                  // make sure schema is well formed
+        && schema->children[0]               // make sure schema is well formed
+        && schema->children[0]->format       // make sure schema is well formed
         && strcmp(schema->children[0]->format, "C") == 0  // Expected format
         && strcmp(im->arrow_band_format, "C") == 0        // Expected Format
         && pixels == external_array->length               // expected length
