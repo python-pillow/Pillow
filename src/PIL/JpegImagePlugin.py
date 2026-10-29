@@ -816,12 +816,20 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     exif = info.get("exif", b"")
     if "dpi" in info:
         dpi = tuple(round(x) for x in info["dpi"])
-        if keep_rgb:
+        if (
+            keep_rgb
+            and im.mode in ("RGB", "RGBX")
+            and len(dpi) == 2
+            and dpi[0] > 0
+            and dpi[1] > 0
+        ):
             exif_object = Image.Exif()
             exif_object.load(exif.tobytes() if isinstance(exif, Image.Exif) else exif)
             exif = exif_object
 
-            exif[0x011A] = dpi
+            exif[0x011A] = dpi[0]
+            exif[0x011B] = dpi[1]
+            exif[0x0128] = 2
         else:
             jfif_dpi = dpi
 
