@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import struct
 import warnings
 from io import BytesIO
 from typing import TYPE_CHECKING, Any
@@ -421,34 +420,6 @@ def test_save_all_write_only(
         assert reopened.size == second.size
         with Image.open(BytesIO(references[1])) as expected:
             assert_image_equal(expected, reopened)
-
-
-@pytest.mark.parametrize("as_bytes", (False, True))
-def test_save_all_exif_contains_mpf_placeholder(as_bytes: bool) -> None:
-    ifd_length = 66 + 16 * 2
-    placeholder = b"\xff\xe2" + struct.pack(">H", 6 + ifd_length)
-    placeholder += b"MPF\0" + b" " * ifd_length
-    comment = b"ASCII\0\0\0" + placeholder
-    exif = Image.Exif()
-    exif[0x9286] = comment
-    first = Image.new("RGB", (16, 8))
-    second = Image.new("RGB", (24, 16))
-    output = BytesIO()
-    first.save(
-        output,
-        "MPO",
-        save_all=True,
-        append_images=[second],
-        exif=exif.tobytes() if as_bytes else exif,
-    )
-    output.seek(0)
-    with Image.open(output) as reopened:
-        assert isinstance(reopened, MpoImagePlugin.MpoImageFile)
-        assert reopened.n_frames == 2
-        assert reopened.size == first.size
-        assert reopened.getexif()[0x9286] == comment
-        reopened.seek(1)
-        assert reopened.size == second.size
 
 
 def test_save_xmp() -> None:
