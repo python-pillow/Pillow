@@ -6,7 +6,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_image_equal, hopper, is_pypy
+from .helper import assert_image_equal, hopper
 
 TYPE_CHECKING = False
 
@@ -317,7 +317,9 @@ class MalformedArrow:
         return self.schema_capsule, self.array_capsule
 
 
-@pytest.mark.skipif(is_pypy(), reason="Requires ctypes.pythonapi")
+@pytest.mark.skipif(
+    not hasattr(ctypes, "pythonapi"), reason="Requires ctypes.pythonapi"
+)
 @pytest.mark.parametrize(
     "field, value",
     (("format", None), ("buffers", None), ("n_children", 1), ("offset", -1)),
@@ -333,7 +335,9 @@ def test_malformed(field: str, value: object) -> None:
         Image.fromarrow(MalformedArrow(schema, array), "L", (2, 2))
 
 
-@pytest.mark.skipif(is_pypy(), reason="Requires ctypes.pythonapi")
+@pytest.mark.skipif(
+    not hasattr(ctypes, "pythonapi"), reason="Requires ctypes.pythonapi"
+)
 def test_malformed_schema_child() -> None:
     children = (ctypes.POINTER(ArrowSchema) * 1)()
     schema = ArrowSchema(format=b"+w:4", n_children=1, children=children)
