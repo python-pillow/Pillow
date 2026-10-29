@@ -110,3 +110,12 @@ def test_convert_i_f(mode: str) -> None:
 
     im = Image.new("I", (1, 1), 4660)
     assert im.convert(mode).getpixel((0, 0)) == 4660
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+@pytest.mark.parametrize(
+    "value, expected", ((-1, 0), (4660.5, 4660), (65535, 65535), (70000, 65535))
+)
+def test_convert_from_f(mode: str, value: float, expected: int) -> None:
+    im = Image.new("F", (1, 1), value)
+    assert im.convert(mode).getpixel((0, 0)) == expected
