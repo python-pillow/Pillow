@@ -667,20 +667,13 @@ class Image:
     def mode(self) -> str:
         return self._mode
 
-    @property
-    def readonly(self) -> int:
-        return (self._im and self._im.readonly) or self._readonly
-
-    @readonly.setter
-    def readonly(self, readonly: int) -> None:
-        self._readonly = readonly
-
     def _copy_info(self) -> dict[str | tuple[int, int], Any]:
         return {k: v.copy() if isinstance(v, list) else v for k, v in self.info.items()}
 
     def _new(self, im: core.ImagingCore) -> Image:
         new = Image()
         new.im = im
+        new.readonly = im.readonly
         new._mode = im.mode
         new._size = im.size
         if im.mode in ("P", "PA"):
