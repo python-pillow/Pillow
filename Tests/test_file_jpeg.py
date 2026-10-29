@@ -207,10 +207,10 @@ class TestFileJpeg:
     def test_dpi_with_keep_rgb(self, tmp_path: Path) -> None:
         im = Image.new("RGB", (20, 20), (255, 0, 0))
         f = tmp_path / "temp.jpg"
-        im.save(f, "JPEG", dpi=(72, 72), keep_rgb=True)
+        im.save(f, "JPEG", dpi=(96, 96), keep_rgb=True)
 
         with Image.open(f) as reloaded:
-            assert reloaded.info["dpi"] == (72, 72)
+            assert reloaded.info["dpi"] == (96, 96)
             assert_image_equal(reloaded, im)
 
     def test_icc(self, tmp_path: Path) -> None:
