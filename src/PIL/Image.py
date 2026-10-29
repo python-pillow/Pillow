@@ -715,15 +715,13 @@ class Image:
         self._im = DeferredError(ValueError("Operation on closed image"))
 
     def _copy(self) -> None:
-        self.load()
         self.im = self.im.copy()
         self.readonly = 0
 
     def _ensure_mutable(self) -> None:
+        self.load()
         if self.readonly:
             self._copy()
-        else:
-            self.load()
 
     def _dump(
         self, file: str | None = None, format: str | None = None, **options: Any
