@@ -66,6 +66,14 @@ On little-endian systems, :py:meth:`~PIL.Image.Image.resize` read and wrote
 I;16B and I;16N pixel values in the wrong byte order when using a resampling
 filter other than ``Resampling.NEAREST``. This has been fixed.
 
+Resizing vertically first
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When the height of an image is being reduced significantly more than the width,
+:py:meth:`~PIL.Image.Image.resize` now resamples vertically before horizontally, to
+improve performance. Because intermediate values are rounded between the two passes,
+pixels may be altered slightly with this change.
+
 Blurring I;16 images
 ^^^^^^^^^^^^^^^^^^^^
 
