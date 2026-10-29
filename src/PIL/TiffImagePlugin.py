@@ -1620,27 +1620,26 @@ class TiffImageFile(ImageFile.ImageFile):
 
         self.info["compression"] = self._compression
 
-        # A frame without resolution tags declares no resolution,
-        # whatever the previous frame declared
+        # Clear info from previous frame
         self.info.pop("dpi", None)
         self.info.pop("resolution", None)
-        if X_RESOLUTION in self.tag_v2 or Y_RESOLUTION in self.tag_v2:
-            xres = self.tag_v2.get(X_RESOLUTION, 1)
-            yres = self.tag_v2.get(Y_RESOLUTION, 1)
 
-            if xres and yres:
-                resunit = self.tag_v2.get(RESOLUTION_UNIT)
-                if resunit == 2:  # dots per inch
-                    self.info["dpi"] = (xres, yres)
-                elif resunit == 3:  # dots per centimeter. convert to dpi
-                    self.info["dpi"] = (xres * 2.54, yres * 2.54)
-                elif resunit is None:  # used to default to 1, but now 2)
-                    self.info["dpi"] = (xres, yres)
-                    # For backward compatibility,
-                    # we also preserve the old behavior
-                    self.info["resolution"] = xres, yres
-                else:  # No absolute unit of measurement
-                    self.info["resolution"] = xres, yres
+        xres = self.tag_v2.get(X_RESOLUTION)
+        yres = self.tag_v2.get(Y_RESOLUTION)
+
+        if xres and yres:
+            resunit = self.tag_v2.get(RESOLUTION_UNIT)
+            if resunit == 2:  # dots per inch
+                self.info["dpi"] = (xres, yres)
+            elif resunit == 3:  # dots per centimeter. convert to dpi
+                self.info["dpi"] = (xres * 2.54, yres * 2.54)
+            elif resunit is None:  # used to default to 1, but now 2)
+                self.info["dpi"] = (xres, yres)
+                # For backward compatibility,
+                # we also preserve the old behavior
+                self.info["resolution"] = xres, yres
+            else:  # No absolute unit of measurement
+                self.info["resolution"] = xres, yres
 
         # build tile descriptors
         x = y = layer = 0
