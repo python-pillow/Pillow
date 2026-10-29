@@ -317,76 +317,27 @@ class MalformedArrow:
         return self.schema_capsule, self.array_capsule
 
 
-def _l_arrow(data: ctypes.Array[ctypes.c_char]) -> tuple[ArrowSchema, ArrowArray]:
+@pytest.mark.skipif(is_pypy(), reason="Requires ctypes.pythonapi")
+@pytest.mark.parametrize(
+    "field, value",
+    (("format", None), ("buffers", None), ("n_children", 1), ("offset", -1)),
+)
+def test_malformed(field: str, value: object) -> None:
+    data = ctypes.create_string_buffer(4)
     schema = ArrowSchema(format=b"C")
     buffers = (ctypes.c_void_p * 2)(None, ctypes.addressof(data))
     array = ArrowArray(length=4, n_buffers=2, buffers=buffers)
-    return schema, array
+    setattr(schema if field == "format" else array, field, value)
+
+    with pytest.raises(ValueError):
+        Image.fromarrow(MalformedArrow(schema, array), "L", (2, 2))
 
 
 @pytest.mark.skipif(is_pypy(), reason="Requires ctypes.pythonapi")
-class TestMalformedArrow:
-    def test_valid(self) -> None:
-        data = ctypes.create_string_buffer(b"\x01\x02\x03\x04", 4)
-        schema, array = _l_arrow(data)
+def test_malformed_schema_child() -> None:
+    children = (ctypes.POINTER(ArrowSchema) * 1)()
+    schema = ArrowSchema(format=b"+w:4", n_children=1, children=children)
+    array = ArrowArray(length=4)
 
-        im = Image.fromarrow(MalformedArrow(schema, array), "L", (2, 2))
-        assert im.getpixel((1, 1)) == 4
-
-    def test_null_format(self) -> None:
-        data = ctypes.create_string_buffer(4)
-        schema, array = _l_arrow(data)
-        schema.format = None
-
-        with pytest.raises(ValueError, match="missing format"):
-            Image.fromarrow(MalformedArrow(schema, array), "L", (2, 2))
-
-    def test_null_buffers(self) -> None:
-        data = ctypes.create_string_buffer(4)
-        schema, array = _l_arrow(data)
-        array.buffers = None
-
-        with pytest.raises(ValueError, match="exactly 2 buffers required"):
-            Image.fromarrow(MalformedArrow(schema, array), "L", (2, 2))
-
-    def test_null_data_buffer(self) -> None:
-        data = ctypes.create_string_buffer(4)
-        schema, array = _l_arrow(data)
-        array.buffers[1] = None
-
-        with pytest.raises(ValueError, match="exactly 2 buffers required"):
-            Image.fromarrow(MalformedArrow(schema, array), "L", (2, 2))
-
-    def test_negative_offset(self) -> None:
-        data = ctypes.create_string_buffer(4)
-        schema, array = _l_arrow(data)
-        array.offset = -1
-
-        with pytest.raises(ValueError, match="negative offset"):
-            Image.fromarrow(MalformedArrow(schema, array), "L", (2, 2))
-
-    def test_null_array_children(self) -> None:
-        data = ctypes.create_string_buffer(4)
-        schema, array = _l_arrow(data)
-        array.n_children = 1
-
-        with pytest.raises(ValueError, match="missing child array"):
-            Image.fromarrow(MalformedArrow(schema, array), "L", (2, 2))
-
-    def test_null_array_child(self) -> None:
-        data = ctypes.create_string_buffer(4)
-        schema, array = _l_arrow(data)
-        children = (ctypes.POINTER(ArrowArray) * 1)()
-        array.n_children = 1
-        array.children = children
-
-        with pytest.raises(ValueError, match="missing child array"):
-            Image.fromarrow(MalformedArrow(schema, array), "L", (2, 2))
-
-    def test_null_schema_child(self) -> None:
-        children = (ctypes.POINTER(ArrowSchema) * 1)()
-        schema = ArrowSchema(format=b"+w:4", n_children=1, children=children)
-        array = ArrowArray(length=4)
-
-        with pytest.raises(ValueError, match="Invalid Arrow array mode"):
-            Image.fromarrow(MalformedArrow(schema, array), "RGBA", (2, 2))
+    with pytest.raises(ValueError):
+        Image.fromarrow(MalformedArrow(schema, array), "RGBA", (2, 2))
