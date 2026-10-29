@@ -1478,8 +1478,6 @@ def test_extents(
 
         im.seek(1)
         assert im.size == (150, 150)
-
-        im.load()
         assert im.im.size == (150, 150)
 
 
