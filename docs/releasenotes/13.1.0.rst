@@ -56,6 +56,16 @@ Saving CMYK images as MPO, or RGB images with ``keep_rgb=True``, wrote the
 MP Index at an incorrect offset after the Adobe JPEG header. The resulting
 files were reopened as a single JPEG instead of an MPO. This has been fixed.
 
+Writing to read-only images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.frombytes` and
+:py:meth:`~PIL.ImageCms.ImageCmsTransform.apply`, which in-place ImageCms transforms
+use, now copy an image before writing to it if its memory is read-only, as
+:py:meth:`~PIL.Image.Image.paste` already does. Previously, they could crash on
+memory-mapped image files, or modify the buffer behind an image created by
+:py:func:`~PIL.Image.frombuffer` or :py:func:`~PIL.Image.fromarrow`.
+
 Resizing I;16B and I;16N images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
