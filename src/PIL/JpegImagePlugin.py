@@ -527,7 +527,6 @@ class JpegImageFile(ImageFile.ImageFile):
             if exif.get(0x0128) == 3:  # ResolutionUnit is cm
                 # 1 dpcm = 2.54 dpi
                 dpi *= 2.54
-            self.info["dpi"] = dpi, dpi
         except (
             struct.error,  # truncated EXIF
             KeyError,  # dpi not included
@@ -535,7 +534,8 @@ class JpegImageFile(ImageFile.ImageFile):
             TypeError,  # dpi is an invalid float
             ValueError,  # dpi is an invalid float
         ):
-            self.info["dpi"] = 72, 72
+            dpi = 72
+        self.info["dpi"] = dpi, dpi
 
     def _getmp(self) -> dict[int, Any] | None:
         return _getmp(self)
