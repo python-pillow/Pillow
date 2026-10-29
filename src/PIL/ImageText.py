@@ -340,9 +340,9 @@ class Text(Generic[AnyStr]):
 
         if lines is None:
             lines = (
-                self.text.split("\n")
+                self.text.replace("\r\n", "\n").split("\n")
                 if isinstance(self.text, str)
-                else self.text.split(b"\n")
+                else self.text.replace(b"\r\n", b"\n").split(b"\n")
             )
         if len(lines) == 1:
             return [_Line(xy[0], xy[1], anchor, lines[0])]

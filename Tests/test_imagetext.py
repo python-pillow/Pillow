@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from typing import AnyStr
+
 import pytest
 
 from PIL import Image, ImageDraw, ImageFont, ImageText, features
 
-from .helper import assert_image_similar_tofile, skip_unless_feature
+from .helper import assert_image_equal, assert_image_similar_tofile, skip_unless_feature
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 
@@ -231,3 +233,39 @@ def test_wrap_grow() -> None:
     assert text.wrap(50, 50, ("grow", 18)) is None
     assert isinstance(text.font, ImageFont.FreeTypeFont)
     assert text.font.size == 16
+
+
+@pytest.mark.parametrize(
+    "data",
+    tuple(
+        value
+        for text in ("A\r\nBB", "\r\nAB", "ABC\r\n", "A\r\n\r\nBC", "A\nBB\r\nCCC")
+        for value in (text, text.encode())
+    ),
+)
+@pytest.mark.parametrize("align", ("left", "center", "right"))
+def test_crlf(
+    font: ImageFont.ImageFont | ImageFont.FreeTypeFont,
+    data: AnyStr,
+    align: str,
+) -> None:
+    expected = (
+        data.replace("\r\n", "\n")
+        if isinstance(data, str)
+        else data.replace(b"\r\n", b"\n")
+    )
+    text = ImageText.Text(data, font)
+    normalized = ImageText.Text(expected, font)
+    text.stroke(1)
+    normalized.stroke(1)
+    xy = (40, 40)
+    assert text.get_bbox(xy, anchor="mm", align=align) == normalized.get_bbox(
+        xy, anchor="mm", align=align
+    )
+    images = []
+    for value in (text, normalized):
+        im = Image.new("L", (100, 150))
+        ImageDraw.Draw(im).text(xy, value, fill=255, anchor="mm", align=align)
+        images.append(im)
+    assert_image_equal(images[0], images[1])
+    assert text.text == data

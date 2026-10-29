@@ -8,6 +8,9 @@ The :py:mod:`~PIL.ImageText` module defines a :py:class:`~PIL.ImageText.Text` cl
 Instances of this class provide a way to use fonts with text strings or bytes. The
 result is a simple API to apply styling to pieces of text and measure or draw them.
 
+When drawing text or measuring its bounding box, LF (``\n``) and CRLF
+(``\r\n``) separate lines. CRLF is treated as a single line break.
+
 Example
 -------
 

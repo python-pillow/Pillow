@@ -49,6 +49,22 @@ TODO
 Other changes
 =============
 
+CRLF line breaks in text
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Drawing and measuring multiline text now treats CRLF (``\r\n``) as a
+single line break, like LF (``\n``). This prevents a ``raqm_layout() failed.``
+error when rendering Windows-style line endings with Raqm 0.11.0, for example
+text submitted through a browser textarea. This applies to
+:py:meth:`~PIL.ImageDraw.ImageDraw.text`,
+:py:meth:`~PIL.ImageDraw.ImageDraw.textbbox`, their multiline variants, and
+:py:meth:`~PIL.ImageText.Text.get_bbox`.
+
+Previously, the carriage return was passed to the font layout engine. With
+other layout engines, the new behavior can change the width and appearance of
+CRLF text. Standalone carriage returns, other paragraph separators and the
+single-line :py:mod:`~PIL.ImageFont` methods are unchanged.
+
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
