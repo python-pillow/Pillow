@@ -958,6 +958,10 @@ class Image:
 
         # unpack data
         d = _getdecoder(self.mode, decoder_name, decoder_args)
+        # Plugins may call this from load() while ImageFile.readonly is still set,
+        # so check whether the image memory itself is read-only
+        if self.im.readonly:
+            self._copy()
         d.setimage(self.im)
         s = d.decode(data)
 
@@ -1811,6 +1815,9 @@ class Image:
         :param extrema: An optional tuple of manually-specified extrema.
         :returns: A list containing pixel counts.
         """
+        if min(self.size) == 0:
+            return [0] * 256 * getmodebands(self.mode)
+
         self.load()
         if mask:
             mask.load()
@@ -1839,6 +1846,9 @@ class Image:
         :param extrema: An optional tuple of manually-specified extrema.
         :returns: A float value representing the image entropy
         """
+        if min(self.size) == 0:
+            return 0.0
+
         self.load()
         if mask:
             mask.load()
@@ -3796,7 +3806,7 @@ def composite(image1: Image, image2: Image, mask: Image) -> Image:
 
 
 def eval(image: Image, *args: Callable[[int], float]) -> Image:
-    """
+    r"""
     Applies the function (which should take one argument) to each pixel
     in the given image. If the image has more than one band, the same
     function is applied to each band. Note that the function is
@@ -3804,7 +3814,7 @@ def eval(image: Image, *args: Callable[[int], float]) -> Image:
     random components or other generators.
 
     :param image: The input image.
-    :param function: A function object, taking one integer argument.
+    :param \*args: A function object, taking one integer argument.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 

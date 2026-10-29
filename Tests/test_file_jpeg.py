@@ -975,6 +975,17 @@ class TestFileJpeg:
             # OSError for an unidentified image.
             assert im.info.get("dpi") == (72, 72)
 
+    def test_dpi_without_resolution_unit(self, tmp_path: Path) -> None:
+        im = Image.new("RGB", (1, 1))
+        exif = Image.Exif()
+        exif[282] = 96
+
+        out = tmp_path / "out.jpg"
+        im.save(out, exif=exif)
+
+        with Image.open(out) as reloaded:
+            assert reloaded.info["dpi"] == (96, 96)
+
     def test_ifd_offset_exif(self) -> None:
         # Arrange
         # This image has been manually hexedited to have an IFD offset of 10,

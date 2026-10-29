@@ -520,7 +520,6 @@ class JpegImageFile(ImageFile.ImageFile):
             return
         try:
             exif = self.getexif()
-            resolution_unit = exif[0x0128]
 
             def to_dpi(resolution: Any) -> float:
                 try:
@@ -530,7 +529,7 @@ class JpegImageFile(ImageFile.ImageFile):
                 if math.isnan(dpi):
                     msg = "DPI is not a number"
                     raise ValueError(msg)
-                if resolution_unit == 3:  # cm
+                if exif.get(0x0128) == 3:  # ResolutionUnit is cm
                     # 1 dpcm = 2.54 dpi
                     dpi *= 2.54
                 return dpi
