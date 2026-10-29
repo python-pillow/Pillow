@@ -789,11 +789,11 @@ I16B_F(UINT8 *out_, const UINT8 *in, int xsize) {
 }
 
 static void
-F_I16L(UINT8 *out, const UINT8 *in_, int xsize) {
+F_I16L(UINT8 *out, const UINT8 *in, int xsize) {
     int x, v;
-    for (x = 0; x < xsize; x++, in_ += 4) {
+    for (x = 0; x < xsize; x++, in += 4) {
         FLOAT32 f;
-        memcpy(&f, in_, sizeof(f));
+        memcpy(&f, in, sizeof(f));
         if (f <= 0.0) {
             v = 0;
         } else if (f >= 65535.0) {
@@ -807,11 +807,11 @@ F_I16L(UINT8 *out, const UINT8 *in_, int xsize) {
 }
 
 static void
-F_I16B(UINT8 *out, const UINT8 *in_, int xsize) {
+F_I16B(UINT8 *out, const UINT8 *in, int xsize) {
     int x, v;
-    for (x = 0; x < xsize; x++, in_ += 4) {
+    for (x = 0; x < xsize; x++, in += 4) {
         FLOAT32 f;
-        memcpy(&f, in_, sizeof(f));
+        memcpy(&f, in, sizeof(f));
         if (f <= 0.0) {
             v = 0;
         } else if (f >= 65535.0) {
