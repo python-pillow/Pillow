@@ -49,13 +49,6 @@ TODO
 Other changes
 =============
 
-Saving MPO images with Adobe JPEG headers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Saving CMYK images as MPO, or RGB images with ``keep_rgb=True``, wrote the
-MP Index at an incorrect offset after the Adobe JPEG header. The resulting
-files were reopened as a single JPEG instead of an MPO. This has been fixed.
-
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
