@@ -353,7 +353,8 @@ class Text(Generic[AnyStr]):
             msg = "anchor not supported for multiline text"
             raise ValueError(msg)
 
-        font = font or self.font
+        if font is None:
+            font = self.font
         fontmode = self._get_fontmode()
         line_spacing = (
             font.getbbox(
