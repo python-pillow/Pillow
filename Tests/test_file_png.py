@@ -244,6 +244,116 @@ class TestFilePng:
         assert colors is not None
         assert len(colors) == 124
 
+    @pytest.mark.parametrize("interlaced", [False, True])
+    @pytest.mark.parametrize("filter_type", range(5))
+    def test_load_transparent_rgb_16(self, interlaced: bool, filter_type: int) -> None:
+        key = (0x1234, 0x5678, 0x9ABC)
+        pixel_variants = [
+            key,
+            (0x1235, 0x5678, 0x9ABC),
+            (0x3434, 0x7878, 0xBCBC),
+        ]
+        width = len(pixel_variants)
+        height = 9
+        samples = [
+            [pixel_variants[(x + y) % width] for x in range(width)]
+            for y in range(height)
+        ]
+
+        def encode_sample(sample: tuple[int, int, int]) -> bytes:
+            return b"".join(value.to_bytes(2, "big") for value in sample)
+
+        def encode_scanline(scanline: bytes, previous: bytes | None) -> bytes:
+            encoded = bytearray([filter_type])
+            for index, value in enumerate(scanline):
+                left = scanline[index - 6] if index >= 6 else 0
+                above = previous[index] if previous is not None else 0
+                upper_left = (
+                    previous[index - 6] if previous is not None and index >= 6 else 0
+                )
+                if filter_type == 0:
+                    predictor = 0
+                elif filter_type == 1:
+                    predictor = left
+                elif filter_type == 2:
+                    predictor = above
+                elif filter_type == 3:
+                    predictor = (left + above) // 2
+                else:
+                    p = left + above - upper_left
+                    pa = abs(p - left)
+                    pb = abs(p - above)
+                    pc = abs(p - upper_left)
+                    if pa <= pb and pa <= pc:
+                        predictor = left
+                    elif pb <= pc:
+                        predictor = above
+                    else:
+                        predictor = upper_left
+                encoded.append((value - predictor) & 0xFF)
+            return bytes(encoded)
+
+        raw = bytearray()
+        if interlaced:
+            passes = (
+                (0, 0, 8, 8),
+                (4, 0, 8, 8),
+                (0, 4, 4, 8),
+                (2, 0, 4, 4),
+                (0, 2, 2, 4),
+                (1, 0, 2, 2),
+                (0, 1, 1, 2),
+            )
+            for x_start, y_start, x_step, y_step in passes:
+                x_positions = tuple(range(x_start, width, x_step))
+                if not x_positions:
+                    continue
+                previous = None
+                for y in range(y_start, height, y_step):
+                    scanline = b"".join(
+                        encode_sample(samples[y][x]) for x in x_positions
+                    )
+                    raw.extend(encode_scanline(scanline, previous))
+                    previous = scanline
+        else:
+            previous = None
+            for row in samples:
+                scanline = b"".join(encode_sample(sample) for sample in row)
+                raw.extend(encode_scanline(scanline, previous))
+                previous = scanline
+
+        image_data = (
+            MAGIC
+            + chunk(
+                b"IHDR",
+                o32(width),
+                o32(height),
+                b"\x10\x02",
+                b"\x00\x00" + bytes([int(interlaced)]),
+            )
+            + chunk(b"tRNS", encode_sample(key))
+            + chunk(b"IDAT", zlib.compress(bytes(raw)))
+            + IEND
+        )
+
+        expected = [
+            (
+                sample[0] >> 8,
+                sample[1] >> 8,
+                sample[2] >> 8,
+                0 if sample == key else 255,
+            )
+            for row in samples
+            for sample in row
+        ]
+        with Image.open(BytesIO(image_data)) as im:
+            assert_image(im, "RGBA", (width, height))
+            assert "transparency" not in im.info
+            im_rgba = im.convert("RGBA")
+            assert [
+                im_rgba.getpixel((x, y)) for y in range(height) for x in range(width)
+            ] == expected
+
     def test_load_transparent_rgb(self) -> None:
         test_file = "Tests/images/rgb_trns.png"
         with Image.open(test_file) as im:
