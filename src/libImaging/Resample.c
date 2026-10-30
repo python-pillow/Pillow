@@ -250,8 +250,15 @@ precompute_coeffs(
     /* maximum number of coeffs */
     ksize = (int)ceil(support) * 2 + 1;
 
-    // check for overflow
-    if (outSize > INT_MAX / (ksize * (int)sizeof(double))) {
+    // check for overflow: the coefficient buffer below holds
+    // outSize*ksize doubles.  Check the whole product in one step; the
+    // old divisor (ksize * sizeof(double)) could itself overflow, and a
+    // huge filter support could even make ksize negative.
+    size_t kk_bytes;
+    if (outSize < 0 || ksize < 0 ||
+        _imaging_mul_overflow((size_t)outSize, (size_t)ksize, &kk_bytes) ||
+        _imaging_mul_overflow(kk_bytes, sizeof(double), &kk_bytes) ||
+        kk_bytes > INT_MAX) {
         ImagingError_MemoryError();
         return 0;
     }
