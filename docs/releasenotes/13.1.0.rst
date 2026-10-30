@@ -49,17 +49,6 @@ TODO
 Other changes
 =============
 
-Scaling multiline text to a height limit
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-:py:meth:`~PIL.ImageText.Text.wrap` now measures line spacing using the scaled
-font when growing or shrinking text. Previously, growing multiline text could
-exceed the height limit, and shrinking could select a smaller font than needed
-or fail to find a font size that fits.
-
-Wrapping also stops at a blank line that exceeds the height limit, preserving the
-remaining text. This avoids ``RuntimeError: raqm_layout() failed`` when using RAQM.
-
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

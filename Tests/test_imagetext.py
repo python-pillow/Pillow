@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import AnyStr
-
 import pytest
 
 from PIL import Image, ImageDraw, ImageFont, ImageText, features
@@ -172,27 +170,14 @@ def test_wrap_height() -> None:
     assert text.text == "Text does\nnot fit"
 
 
-@skip_unless_feature("freetype2")
-@pytest.mark.parametrize(
-    "data",
-    (
-        "A\n\nB",
-        b"A\n\nB",
-        "A\n\n\nB",
-        b"A\n\n\nB",
-        "A\n \nB",
-        b"A\n \nB",
-    ),
-)
-def test_wrap_height_blank_line(layout_engine: ImageFont.Layout, data: AnyStr) -> None:
+def test_wrap_height_blank_line(layout_engine: ImageFont.Layout) -> None:
     font = ImageFont.truetype(FONT_PATH, 10, layout_engine=layout_engine)
-    text = ImageText.Text(data, font)
+    text = ImageText.Text("A\n\nB", font)
 
-    wrapped = text.wrap(100, int(font.getbbox("A")[3]))
-
-    assert text.text == data[:1]
+    wrapped = text.wrap(100, 10)
     assert wrapped is not None
-    assert wrapped.text == data[2:]
+    assert wrapped.text == "\nB"
+    assert text.text == "A"
 
 
 def test_wrap_scaling_unsupported() -> None:
@@ -252,43 +237,10 @@ def test_wrap_grow() -> None:
     with pytest.raises(ValueError, match="Text could not be scaled"):
         text.wrap(50, 10, "grow")
 
+    text.wrap(50, 30, "grow")
+    assert text.get_bbox()[3] <= 30
+
     text = ImageText.Text("Hello World!")
     assert text.wrap(50, 50, ("grow", 18)) is None
     assert isinstance(text.font, ImageFont.FreeTypeFont)
     assert text.font.size == 16
-
-
-@skip_unless_feature("freetype2")
-@pytest.mark.parametrize("scaling, size", (("grow", 10), ("shrink", 60)))
-@pytest.mark.parametrize(
-    "data, width, spacing, stroke_width",
-    (
-        ("A\nB", 400, 4, 0),
-        ("A\n\nB", 400, 6, 2),
-        ("A B C D", 40, 4, 0),
-    ),
-)
-def test_wrap_scaling_height(
-    layout_engine: ImageFont.Layout,
-    scaling: str,
-    size: int,
-    data: str,
-    width: int,
-    spacing: int,
-    stroke_width: int,
-) -> None:
-    font = ImageFont.truetype(FONT_PATH, size, layout_engine=layout_engine)
-    text = ImageText.Text(data, font, spacing=spacing)
-    text.stroke(stroke_width)
-
-    assert text.wrap(width, 50, scaling) is None
-    assert text.get_bbox()[2] <= width
-    assert text.get_bbox()[3] <= 50
-
-    assert isinstance(text.font, ImageFont.FreeTypeFont)
-    larger = ImageText.Text(
-        data, text.font.font_variant(size=text.font.size + 1), spacing=spacing
-    )
-    larger.stroke(stroke_width)
-    assert larger.wrap(width) is None
-    assert larger.get_bbox()[3] > 50
