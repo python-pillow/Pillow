@@ -72,6 +72,14 @@ Blurring I;16 images
 :py:class:`~PIL.ImageFilter.GaussianBlur` and :py:class:`~PIL.ImageFilter.BoxBlur`
 now support I;16, I;16L, I;16B and I;16N images.
 
+Respect Python build-tree configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When building against a Python build tree, Pillow now skips the extra library and
+include directory lookups based on Python's installation prefix. This avoids
+adding unprefixed installation paths in cross-compilation environments. Builds
+against an installed Python retain the existing lookups.
+
 Minimum C version
 ^^^^^^^^^^^^^^^^^
 
