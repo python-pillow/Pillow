@@ -49,6 +49,15 @@ TODO
 Other changes
 =============
 
+BOX downscale includes boundary source pixels
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:data:`PIL.Image.Resampling.BOX` downscaling could skip a source pixel whose center
+landed on an output bin edge, due to range rounding and the discontinuous box kernel.
+Those pixels are now assigned to exactly one output pixel, matching the documented
+behavior that "Each pixel of the source image contributes to one pixel of the
+destination image with identical weights"
+
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
