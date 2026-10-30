@@ -17,10 +17,13 @@ TODO
 Backwards incompatible changes
 ==============================
 
-TODO
-^^^^
+16-bit RGB PNG transparency
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+16-bit RGB PNG images with a ``tRNS`` transparency key now open in RGBA mode.
+Pillow compares the full 16-bit samples to the key before reducing them to
+8-bit channel values. Code that assumes such images open in RGB mode should
+now handle RGBA.
 
 Deprecations
 ============

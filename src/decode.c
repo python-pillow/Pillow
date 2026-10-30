@@ -818,7 +818,17 @@ PyImaging_ZipDecoderNew(PyObject *self, PyObject *args) {
 
     char *mode_name, *rawmode_name;
     int interlaced = 0;
-    if (!PyArg_ParseTuple(args, "ss|i", &mode_name, &rawmode_name, &interlaced)) {
+    int transparency[3] = {-1, -1, -1};
+    if (!PyArg_ParseTuple(
+            args,
+            "ss|iiii",
+            &mode_name,
+            &rawmode_name,
+            &interlaced,
+            &transparency[0],
+            &transparency[1],
+            &transparency[2]
+        )) {
         return NULL;
     }
 
@@ -837,7 +847,21 @@ PyImaging_ZipDecoderNew(PyObject *self, PyObject *args) {
     decoder->decode = ImagingZipDecode;
     decoder->cleanup = ImagingZipDecodeCleanup;
 
-    ((ZIPSTATE *)decoder->state.context)->interlaced = interlaced;
+    ZIPSTATE *context = (ZIPSTATE *)decoder->state.context;
+    context->interlaced = interlaced;
+    context->has_rgb_transparency = 0;
+    if (transparency[0] >= 0 || transparency[1] >= 0 || transparency[2] >= 0) {
+        if (transparency[0] < 0 || transparency[1] < 0 || transparency[2] < 0 ||
+            mode != IMAGING_MODE_RGBA || rawmode != IMAGING_RAWMODE_RGB_16B) {
+            Py_DECREF(decoder);
+            PyErr_SetString(PyExc_ValueError, "invalid RGB 16-bit transparency key");
+            return NULL;
+        }
+        context->has_rgb_transparency = 1;
+        context->rgb_transparency[0] = transparency[0];
+        context->rgb_transparency[1] = transparency[1];
+        context->rgb_transparency[2] = transparency[2];
+    }
 
     return (PyObject *)decoder;
 }
