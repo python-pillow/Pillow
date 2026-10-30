@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import ctypes
+
 import pytest
 
 from PIL import Image
 
-from .helper import assert_image_equal, hopper
+from .helper import assert_image_equal, hopper, is_pypy
 
 TYPE_CHECKING = False
 
@@ -261,3 +263,81 @@ def test_mapped_image_pgm(tmp_path: Path) -> None:
 
         img2 = Image.fromarrow(img, img.mode, img.size)
         assert img2.tobytes()
+
+
+class ArrowSchema(ctypes.Structure):
+    pass
+
+
+ArrowSchema._fields_ = [
+    ("format", ctypes.c_char_p),
+    ("name", ctypes.c_char_p),
+    ("metadata", ctypes.c_char_p),
+    ("flags", ctypes.c_int64),
+    ("n_children", ctypes.c_int64),
+    ("children", ctypes.POINTER(ctypes.POINTER(ArrowSchema))),
+    ("dictionary", ctypes.c_void_p),
+    ("release", ctypes.c_void_p),
+    ("private_data", ctypes.c_void_p),
+]
+
+
+class ArrowArray(ctypes.Structure):
+    pass
+
+
+ArrowArray._fields_ = [
+    ("length", ctypes.c_int64),
+    ("null_count", ctypes.c_int64),
+    ("offset", ctypes.c_int64),
+    ("n_buffers", ctypes.c_int64),
+    ("n_children", ctypes.c_int64),
+    ("buffers", ctypes.POINTER(ctypes.c_void_p)),
+    ("children", ctypes.POINTER(ctypes.POINTER(ArrowArray))),
+    ("dictionary", ctypes.c_void_p),
+    ("release", ctypes.c_void_p),
+    ("private_data", ctypes.c_void_p),
+]
+
+
+class MalformedArrow:
+    def __init__(self, schema: ArrowSchema, array: ArrowArray) -> None:
+        capsule_new = ctypes.pythonapi.PyCapsule_New
+        capsule_new.restype = ctypes.py_object
+        capsule_new.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_void_p]
+
+        self.schema = schema
+        self.array = array
+        self.schema_capsule = capsule_new(
+            ctypes.addressof(schema), b"arrow_schema", None
+        )
+        self.array_capsule = capsule_new(ctypes.addressof(array), b"arrow_array", None)
+
+    def __arrow_c_array__(self, *args: object) -> tuple[object, object]:
+        return self.schema_capsule, self.array_capsule
+
+
+@pytest.mark.skipif(is_pypy(), reason="Requires CPython")
+@pytest.mark.parametrize(
+    "field, value",
+    (("format", None), ("buffers", None), ("n_children", 1), ("offset", -1)),
+)
+def test_malformed(field: str, value: object) -> None:
+    data = ctypes.create_string_buffer(4)
+    schema = ArrowSchema(format=b"C")
+    buffers = (ctypes.c_void_p * 2)(None, ctypes.addressof(data))
+    array = ArrowArray(length=4, n_buffers=2, buffers=buffers)
+    setattr(schema if field == "format" else array, field, value)
+
+    with pytest.raises(ValueError):
+        Image.fromarrow(MalformedArrow(schema, array), "L", (2, 2))
+
+
+@pytest.mark.skipif(is_pypy(), reason="Requires CPython")
+def test_malformed_schema_child() -> None:
+    children = (ctypes.POINTER(ArrowSchema) * 1)()
+    schema = ArrowSchema(format=b"+w:4", n_children=1, children=children)
+    array = ArrowArray(length=4)
+
+    with pytest.raises(ValueError):
+        Image.fromarrow(MalformedArrow(schema, array), "RGBA", (2, 2))

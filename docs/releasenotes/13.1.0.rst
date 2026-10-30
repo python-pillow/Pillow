@@ -49,6 +49,13 @@ TODO
 Other changes
 =============
 
+Validating Arrow C Data Interface structures
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.Image.fromarrow` now raises a :py:exc:`ValueError` for some
+malformed Arrow structures, such as missing formats, buffers or children, or a
+negative offset, rather than crashing.
+
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
