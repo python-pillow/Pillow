@@ -134,12 +134,14 @@ class FitsImageFile(ImageFile.ImageFile):
             if value is None:
                 continue
             try:
-                number = float(value.replace(b"D", b"E"))
+                # parse integers directly, so values beyond float precision survive
+                number: int | float = int(value)
             except ValueError:
-                continue
-            self.info[keyword.decode("ascii")] = (
-                int(number) if number.is_integer() else number
-            )
+                try:
+                    number = float(value.replace(b"D", b"E"))
+                except ValueError:
+                    continue
+            self.info[keyword.decode("ascii")] = number
 
         args: tuple[str | int, ...]
         if decoder_name == "raw":
@@ -189,10 +191,9 @@ class FitsGzipDecoder(ImageFile.PyDecoder):
                     offset += 4 if widened else number_of_bytes
                 rows.append(row)
         data = bytes([pixel for row in rows[::-1] for pixel in row])
-        # The 4-byte rows are little-endian; the default rawmodes for "I" and "F"
+        # The rows are little-endian; the default rawmodes for "I" and "F"
         # are native-endian, so pass explicit little-endian ones for big-endian hosts
-        if number_of_bytes == 2:
-            # 16-bit samples are expanded to signed 32-bit
+        if self.mode == "I":
             self.set_as_raw(data, "I;32S")
         elif self.mode == "F":
             self.set_as_raw(data, "F;32F")
