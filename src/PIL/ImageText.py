@@ -112,18 +112,6 @@ class _Wrap(Generic[AnyStr]):
 
 
 class Text(Generic[AnyStr]):
-    # From raqm.c's _raqm_is_paragraph_separator()
-    separators = (
-        "\r\n",  # Windows
-        "\n",  # 0x000A
-        "\r",  # 0x000D
-        "\u001c",
-        "\u001d",
-        "\u001e",
-        "\u0085",
-        "\u2029",
-    )
-
     def __init__(
         self,
         text: AnyStr,
@@ -340,7 +328,7 @@ class Text(Generic[AnyStr]):
 
         :return: Either width for horizontal text, or height for vertical text.
         """
-        for separator in self.separators:
+        for separator in ImageFont._separators:
             if (
                 separator if isinstance(self.text, str) else separator.encode()
             ) in self.text:
@@ -369,7 +357,7 @@ class Text(Generic[AnyStr]):
             raise ValueError(msg)
 
         if lines is None:
-            pattern = "|".join(self.separators)
+            pattern = "|".join(ImageFont._separators)
             lines = re.split(
                 pattern if isinstance(self.text, str) else pattern.encode(), self.text
             )

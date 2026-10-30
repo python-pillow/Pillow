@@ -66,6 +66,17 @@ class Layout(IntEnum):
 
 MAX_STRING_LENGTH = 1_000_000
 
+# From raqm.c's _raqm_is_paragraph_separator()
+_separators = (
+    "\r\n",  # Windows
+    "\n",  # 0x000A
+    "\r",  # 0x000D
+    "\u001c",
+    "\u001d",
+    "\u001e",
+    "\u0085",
+    "\u2029",
+)
 
 core: ModuleType | DeferredError
 try:
@@ -327,6 +338,16 @@ class FreeTypeFont(BaseImageFont):
         """
         return self.font.ascent, self.font.descent
 
+    def _has_separator(self, text: str | bytes | bytearray) -> bool:
+        for separator in _separators:
+            if (
+                separator in text
+                if isinstance(text, str)
+                else separator.encode() in text
+            ):
+                return True
+        return False
+
     def getlength(
         self,
         text: str | bytes,
@@ -404,6 +425,9 @@ class FreeTypeFont(BaseImageFont):
         :return: Either width for horizontal text, or height for vertical text.
         """
         _string_length_check(text)
+        if self._has_separator(text):
+            msg = "can't measure length of multiline text with Raqm"
+            raise ValueError(msg)
         return self.font.getlength(text, mode, direction, features, language) / 64
 
     def getbbox(
@@ -465,6 +489,9 @@ class FreeTypeFont(BaseImageFont):
         :return: ``(left, top, right, bottom)`` bounding box
         """
         _string_length_check(text)
+        if self._has_separator(text):
+            msg = "can't measure bounding box of multiline text"
+            raise ValueError(msg)
         size, offset = self.font.getsize(
             text, mode, direction, features, language, anchor
         )
