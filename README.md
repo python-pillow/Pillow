@@ -20,7 +20,7 @@ Development is supported by:
         <td>
             <a href="https://pillow.readthedocs.io/?badge=latest"><img
                 alt="Documentation Status"
-                src="https://readthedocs.org/projects/pillow/badge/?version=latest"></a>
+                src="https://app.readthedocs.org/projects/pillow/badge/?version=latest"></a>
         </td>
     </tr>
     <tr>
