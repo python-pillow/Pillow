@@ -291,7 +291,10 @@ class Text(Generic[AnyStr]):
         else:
             text = None
 
-        newline = "\n" if isinstance(self.text, str) else b"\n"
+        for separator in ("\r\n", "\r", "\n"):
+            newline = separator if isinstance(self.text, str) else separator.encode()
+            if newline in self.text:
+                break
         self.text = newline.join(wrap.lines)
         return text
 
