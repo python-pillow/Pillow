@@ -57,6 +57,16 @@ When converting I and I;16 images with a transparent color to LA or RGBA,
 the original pixel values, before clipping them to 8 bits. Previously, clipping
 could make the wrong pixels transparent.
 
+Writing to read-only images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.frombytes` and
+:py:meth:`~PIL.ImageCms.ImageCmsTransform.apply`, which in-place ImageCms transforms
+use, now copy an image before writing to it if its memory is read-only, as
+:py:meth:`~PIL.Image.Image.paste` already does. Previously, they could crash on
+memory-mapped image files, or modify the buffer behind an image created by
+:py:func:`~PIL.Image.frombuffer` or :py:func:`~PIL.Image.fromarrow`.
+
 Resizing I;16B and I;16N images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

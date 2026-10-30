@@ -110,6 +110,10 @@ def test_invalid_file() -> None:
     with pytest.raises(SyntaxError):
         XbmImagePlugin.XbmImageFile(invalid_file)
 
+    b = BytesIO(b"#define basic_width invalidwidth")
+    with pytest.raises(SyntaxError):
+        XbmImagePlugin.XbmImageFile(b)
+
 
 def test_save_wrong_mode(tmp_path: Path) -> None:
     im = hopper()

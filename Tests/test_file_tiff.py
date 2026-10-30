@@ -275,6 +275,31 @@ class TestFileTiff:
             assert im.tag_v2[X_RESOLUTION] == 123.45
             assert im.tag_v2[Y_RESOLUTION] == 123.45
 
+    def test_no_resolution(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+        hopper().save(outfile)
+        with Image.open(outfile) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            assert X_RESOLUTION not in im.tag_v2
+            assert Y_RESOLUTION not in im.tag_v2
+            assert "dpi" not in im.info
+            assert "resolution" not in im.info
+
+    def test_resolution_per_frame(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+        im = hopper()
+        im2 = im.copy()
+        im2.encoderinfo = {"dpi": (300, 300)}
+        im.save(outfile, save_all=True, append_images=[im2])
+        with Image.open(outfile) as im:
+            assert "dpi" not in im.info
+
+            im.seek(1)
+            assert im.info["dpi"] == (300, 300)
+
+            im.seek(0)
+            assert "dpi" not in im.info
+
     def test_invalid_file(self) -> None:
         invalid_file = "Tests/images/flower.jpg"
 
@@ -848,6 +873,21 @@ class TestFileTiff:
 
         with Image.open(outfile) as reloaded:
             assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
+
+    def test_palette_colormap(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+
+        im = Image.new("P", (2, 1))
+        im.putpalette([255, 255, 255, 0, 0, 0])
+        im.putdata([0, 1])
+        im.save(outfile)
+
+        with Image.open(outfile) as reloaded:
+            # TIFF ColorMap values range from 0 to 65535
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2[320] == ((65535,) + (0,) * 255) * 3
+
+            assert reloaded.getpalette() == [255, 255, 255] + [0, 0, 0] * 255
 
     def test_tiff_save_all(self) -> None:
         mp = BytesIO()

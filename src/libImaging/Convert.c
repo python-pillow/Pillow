@@ -789,6 +789,42 @@ I16B_F(UINT8 *out_, const UINT8 *in, int xsize) {
 }
 
 static void
+F_I16L(UINT8 *out, const UINT8 *in, int xsize) {
+    int x, v;
+    for (x = 0; x < xsize; x++, in += 4) {
+        FLOAT32 f;
+        memcpy(&f, in, sizeof(f));
+        if (f <= 0.0) {
+            v = 0;
+        } else if (f >= 65535.0) {
+            v = 65535;
+        } else {
+            v = (int)f;
+        }
+        *out++ = (UINT8)v;
+        *out++ = (UINT8)(v >> 8);
+    }
+}
+
+static void
+F_I16B(UINT8 *out, const UINT8 *in, int xsize) {
+    int x, v;
+    for (x = 0; x < xsize; x++, in += 4) {
+        FLOAT32 f;
+        memcpy(&f, in, sizeof(f));
+        if (f <= 0.0) {
+            v = 0;
+        } else if (f >= 65535.0) {
+            v = 65535;
+        } else {
+            v = (int)f;
+        }
+        *out++ = (UINT8)(v >> 8);
+        *out++ = (UINT8)v;
+    }
+}
+
+static void
 L_I16L(UINT8 *out, const UINT8 *in, int xsize) {
     int x;
     for (x = 0; x < xsize; x++, in++) {
@@ -1564,9 +1600,18 @@ static struct {
     {IMAGING_MODE_I_16L, IMAGING_MODE_F, I16L_F},
     {IMAGING_MODE_I_16B, IMAGING_MODE_F, I16B_F},
 #ifdef WORDS_BIGENDIAN
-    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16B_F}
+    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16B_F},
 #else
-    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16L_F}
+    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16L_F},
+#endif
+
+    {IMAGING_MODE_F, IMAGING_MODE_I_16, F_I16L},
+    {IMAGING_MODE_F, IMAGING_MODE_I_16L, F_I16L},
+    {IMAGING_MODE_F, IMAGING_MODE_I_16B, F_I16B},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_F, IMAGING_MODE_I_16N, F_I16B}
+#else
+    {IMAGING_MODE_F, IMAGING_MODE_I_16N, F_I16L}
 #endif
 };
 
