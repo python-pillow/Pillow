@@ -72,6 +72,13 @@ Blurring I;16 images
 :py:class:`~PIL.ImageFilter.GaussianBlur` and :py:class:`~PIL.ImageFilter.BoxBlur`
 now support I;16, I;16L, I;16B and I;16N images.
 
+JPEG 2000 channel definitions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When a JP2 image has a channel definition box that places its components in a
+different order, such as blue, green, red, Pillow now reorders them when decoding.
+Previously, the box was ignored, and the channels were swapped.
+
 Minimum C version
 ^^^^^^^^^^^^^^^^^
 
