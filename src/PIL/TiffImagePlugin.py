@@ -2030,7 +2030,16 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         ]
 
         # bits per sample is a single short in the tiff directory, not a list.
-        atts: dict[int, Any] = {BITSPERSAMPLE: bits[0]}
+        # The tags that determine the size of a scanline are taken from the image,
+        # not from tiffinfo/exif: libtiff reads a scanline of the size that they
+        # describe from a buffer that holds one row of the image.
+        atts: dict[int, Any] = {
+            BITSPERSAMPLE: bits[0],
+            SAMPLESPERPIXEL: len(bits),
+            IMAGEWIDTH: im.size[0],
+            IMAGELENGTH: im.size[1],
+            PLANAR_CONFIGURATION: 1,
+        }
         # Merge the ones that we have with (optional) more bits from
         # the original file, e.g x,y resolution so that we can
         # save(load('')) == original file.
