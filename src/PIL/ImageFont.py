@@ -339,6 +339,8 @@ class FreeTypeFont(BaseImageFont):
         return self.font.ascent, self.font.descent
 
     def _has_separator(self, text: str | bytes | bytearray) -> bool:
+        if self.layout_engine != Layout.RAQM:
+            return False
         if isinstance(text, str):
             return any(separator in text for separator in _separators)
         return any(separator.encode() in text for separator in _separators)
@@ -388,7 +390,7 @@ class FreeTypeFont(BaseImageFont):
 
         .. versionadded:: 8.0.0
 
-        :param text: Text to measure.
+        :param text: Text to measure. Newlines raise an error with Raqm layout.
         :param mode: Used by some graphics drivers to indicate what mode the
                      driver prefers; if empty, the renderer may return either
                      mode. Note that the mode is always a string, to simplify
@@ -445,7 +447,8 @@ class FreeTypeFont(BaseImageFont):
 
         .. versionadded:: 8.0.0
 
-        :param text: Text to render.
+        :param text: Text to render. Newlines will not cause a line break with
+                     Basic layout, and will raise an error with Raqm layout.
         :param mode: Used by some graphics drivers to indicate what mode the
                      driver prefers; if empty, the renderer may return either
                      mode. Note that the mode is always a string, to simplify
@@ -485,7 +488,7 @@ class FreeTypeFont(BaseImageFont):
         """
         _string_length_check(text)
         if self._has_separator(text):
-            msg = "can't measure bounding box of multiline text"
+            msg = "can't measure bounding box of multiline text with Raqm"
             raise ValueError(msg)
         size, offset = self.font.getsize(
             text, mode, direction, features, language, anchor
