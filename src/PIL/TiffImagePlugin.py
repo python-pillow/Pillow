@@ -1825,9 +1825,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     libtiff = WRITE_LIBTIFF or compression != "raw"
 
-    # required for color libtiff images
-    ifd[PLANAR_CONFIGURATION] = 1
-
     ifd[IMAGEWIDTH] = im.size[0]
     ifd[IMAGELENGTH] = im.size[1]
 
@@ -1846,6 +1843,8 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if isinstance(info, ImageFileDirectory_v1):
         info = info.to_v2()
     for key in info:
+        if libtiff and key in {IMAGEWIDTH, IMAGELENGTH}:
+            continue
         if isinstance(info, Image.Exif) and key in TiffTags.TAGS_V2_GROUPS:
             ifd[key] = info.get_ifd(key)
         else:
@@ -1854,6 +1853,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             ifd.tagtype[key] = info.tagtype[key]
         except Exception:
             pass  # might not be an IFD. Might not have populated type
+
+    # required for color libtiff images
+    ifd[PLANAR_CONFIGURATION] = 1
 
     legacy_ifd = {}
     if hasattr(im, "tag"):
@@ -1926,8 +1928,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     if bits != (1,):
         ifd[BITSPERSAMPLE] = bits
-        if len(bits) != 1:
-            ifd[SAMPLESPERPIXEL] = len(bits)
+    ifd[SAMPLESPERPIXEL] = len(bits)
     if extra is not None:
         ifd[EXTRASAMPLES] = extra
     if format != 1:
@@ -2030,16 +2031,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         ]
 
         # bits per sample is a single short in the tiff directory, not a list.
-        # The tags that determine the size of a scanline are taken from the image,
-        # not from tiffinfo/exif: libtiff reads a scanline of the size that they
-        # describe from a buffer that holds one row of the image.
-        atts: dict[int, Any] = {
-            BITSPERSAMPLE: bits[0],
-            SAMPLESPERPIXEL: len(bits),
-            IMAGEWIDTH: im.size[0],
-            IMAGELENGTH: im.size[1],
-            PLANAR_CONFIGURATION: 1,
-        }
+        atts: dict[int, Any] = {BITSPERSAMPLE: bits[0]}
         # Merge the ones that we have with (optional) more bits from
         # the original file, e.g x,y resolution so that we can
         # save(load('')) == original file.
