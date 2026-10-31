@@ -1537,8 +1537,8 @@ class TiffImageFile(ImageFile.ImageFile):
         if not isinstance(xsize, int) or not isinstance(ysize, int):
             msg = "Invalid dimensions"
             raise ValueError(msg)
+        Image._decompression_bomb_check((xsize, ysize))
         self._tile_size = xsize, ysize
-        Image._decompression_bomb_check(self._tile_size)
         orientation = self.tag_v2.get(ExifTags.Base.Orientation)
         if orientation in (5, 6, 7, 8):
             self._size = ysize, xsize
