@@ -339,14 +339,9 @@ class FreeTypeFont(BaseImageFont):
         return self.font.ascent, self.font.descent
 
     def _has_separator(self, text: str | bytes | bytearray) -> bool:
-        for separator in _separators:
-            if (
-                separator in text
-                if isinstance(text, str)
-                else separator.encode() in text
-            ):
-                return True
-        return False
+        if isinstance(text, str):
+            return any(separator in text for separator in _separators)
+        return any(separator.encode() in text for separator in _separators)
 
     def getlength(
         self,
