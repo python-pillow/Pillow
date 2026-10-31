@@ -77,3 +77,8 @@ Minimum C version
 
 C11 is now the minimum version of C required to compile Pillow from source.
 Pillow requires Python 3.11 or later, and CPython 3.11 and later require C11.
+
+Faster drawing
+^^^^^^^^^^^^^^
+
+Drawing rectangles, polygons and lines is faster, particularly with translucent ink.
