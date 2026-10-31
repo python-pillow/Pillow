@@ -59,6 +59,15 @@ use, now copy an image before writing to it if its memory is read-only, as
 memory-mapped image files, or modify the buffer behind an image created by
 :py:func:`~PIL.Image.frombuffer` or :py:func:`~PIL.Image.fromarrow`.
 
+Saving TIFF images with libtiff geometry tags
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving a TIFF image with libtiff, the ImageWidth, ImageLength,
+SamplesPerPixel and PlanarConfiguration tags are now always taken from the
+image, rather than from ``tiffinfo``, ``exif`` or the IFD of the original file.
+Previously, values that described a larger row than the image raised an
+:py:exc:`OSError`, and other values could produce an invalid file.
+
 Resizing I;16B and I;16N images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
