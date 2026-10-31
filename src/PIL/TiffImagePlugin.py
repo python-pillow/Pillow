@@ -1220,7 +1220,7 @@ ImageFileDirectory = ImageFileDirectory_v1
 # Image plugin for TIFF files.
 
 
-class TiffImageFile(ImageFile.ImageFile):
+class TiffImageFile(ImageFile.SeekableImageFile):
     format = "TIFF"
     format_description = "Adobe TIFF"
     _close_exclusive_fp_after_loading = False
@@ -1281,10 +1281,8 @@ class TiffImageFile(ImageFile.ImageFile):
         assert self._n_frames is not None
         return self._n_frames
 
-    def seek(self, frame: int) -> None:
+    def _seekTo(self, frame: int) -> None:
         """Select a given frame as current image"""
-        if not self._seek_check(frame):
-            return
         self._seek(frame)
         if self._im is not None and (
             self.im.size != self._tile_size
