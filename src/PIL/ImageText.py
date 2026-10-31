@@ -158,7 +158,11 @@ class Text(Generic[AnyStr]):
         Use the maximum line height from the text.
         """
         self.line_height = self.font.getbbox(
-            self.text,
+            (
+                self.text.replace("\n", "")
+                if isinstance(self.text, str)
+                else self.text.replace(b"\n", b"")
+            ),
             self._get_fontmode(),
             None,
             self.features,
