@@ -133,8 +133,8 @@ def test_zero() -> None:
     _check((10, 0), lambda im: ImageOps.cover(im, (5, 5)), (5, 0))
     _check((5, 5), lambda im: ImageOps.cover(im, (2, 0)), (0, 0))
 
-    _check((5, 0), lambda im: ImageOps.scale(im, 2), (10, 0))
     _check((10, 1), lambda im: ImageOps.scale(im, 0.4), (4, 0))
+    _check((1, 10), lambda im: ImageOps.scale(im, 0.4), (0, 4))
 
 
 def test_1pxfit() -> None:
