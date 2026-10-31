@@ -236,7 +236,12 @@ PyPath_Flatten(PyObject *data, double **pxy) {
         }
     } else if (PyTuple_Check(data)) {
         for (i = 0; i < n; i++) {
-            PyObject *op = PyTuple_GET_ITEM(data, i);
+            /* Checked access, as a subclass may report a larger __len__ */
+            PyObject *op = PyTuple_GetItem(data, i);
+            if (op == NULL) {
+                free(xy);
+                return -1;
+            }
             j = assign_item_to_array(xy, j, op);
             if (j == -1) {
                 free(xy);
