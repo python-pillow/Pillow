@@ -378,6 +378,17 @@ class TestFilePng:
         ]
         assert "transparency" not in converted.info
 
+    def test_low_bit_grayscale_transparency(self) -> None:
+        with Image.open("Tests/images/tbbn0g04.png") as im:
+            assert im.mode == "L"
+            assert im.info["transparency"] == 255
+            assert im.convert("LA").getpixel((0, 0)) == (255, 0)
+
+        for bits in (2, 4):
+            im2 = Image.new("L", (1, 1))
+            with roundtrip(im2, bits=bits, transparency=255) as reloaded:
+                assert reloaded.info["transparency"] == 255
+
     def test_save_1_transparency(self, tmp_path: Path) -> None:
         out = tmp_path / "temp.png"
 

@@ -300,6 +300,14 @@ applied to RGBA and LA images. Previously, these modes ignored the argument,
 including when called by :py:meth:`~PIL.Image.Image.thumbnail`, which uses
 ``reducing_gap=2.0`` by default.
 
+Resizing vertically first
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When the height of an image is being reduced significantly more than the width,
+:py:meth:`~PIL.Image.Image.resize` now resamples vertically before horizontally, to
+improve performance. Because intermediate values are rounded between the two passes,
+pixels may be altered slightly with this change.
+
 Preserved transparency when padding or expanding images in ImageOps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

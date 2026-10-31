@@ -667,20 +667,13 @@ class Image:
     def mode(self) -> str:
         return self._mode
 
-    @property
-    def readonly(self) -> int:
-        return (self._im and self._im.readonly) or self._readonly
-
-    @readonly.setter
-    def readonly(self, readonly: int) -> None:
-        self._readonly = readonly
-
     def _copy_info(self) -> dict[str | tuple[int, int], Any]:
         return {k: v.copy() if isinstance(v, list) else v for k, v in self.info.items()}
 
     def _new(self, im: core.ImagingCore) -> Image:
         new = Image()
         new.im = im
+        new.readonly = im.readonly
         new._mode = im.mode
         new._size = im.size
         if im.mode in ("P", "PA"):
@@ -722,15 +715,13 @@ class Image:
         self._im = DeferredError(ValueError("Operation on closed image"))
 
     def _copy(self) -> None:
-        self.load()
         self.im = self.im.copy()
         self.readonly = 0
 
     def _ensure_mutable(self) -> None:
+        self.load()
         if self.readonly:
             self._copy()
-        else:
-            self.load()
 
     def _dump(
         self, file: str | None = None, format: str | None = None, **options: Any
@@ -1385,7 +1376,11 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if box is None or box == (0, 0, *self.size):
+        if box is None:
+            box = (0, 0, *self.size)
+        if box[2] - box[0] == 0 or box[3] - box[1] == 0:
+            return self._new(core.new(self.mode, (box[2] - box[0], box[3] - box[1])))
+        if box == (0, 0, *self.size):
             return self.copy()
 
         if box[2] < box[0]:
@@ -2900,11 +2895,13 @@ class Image:
 
         def preserve_aspect_ratio() -> tuple[int, int] | None:
             def round_aspect(number: float, key: Callable[[int], float]) -> int:
-                return max(min(math.floor(number), math.ceil(number), key=key), 1)
+                return min(math.floor(number), math.ceil(number), key=key)
 
             x, y = provided_size
             if x >= self.width and y >= self.height:
                 return None
+            if self.height == 0:
+                return x, self.height
 
             aspect = self.width / self.height
             if x / y >= aspect:
@@ -2929,7 +2926,12 @@ class Image:
                 box = res[1]
 
         if self.size != final_size:
-            im = self.resize(final_size, resample, box=box, reducing_gap=reducing_gap)
+            if min(final_size) == 0:
+                im = self.crop((0, 0, *final_size))
+            else:
+                im = self.resize(
+                    final_size, resample, box=box, reducing_gap=reducing_gap
+                )
 
             self.im = im.im
             self._size = final_size
@@ -3373,7 +3375,6 @@ def frombuffer(
                 from . import ImagePalette
 
                 im.palette = ImagePalette.ImagePalette("RGB", im.im.getpalette("RGB"))
-            im.readonly = 1
             return im
 
     return frombytes(mode, size, data, decoder_name, args)
