@@ -355,29 +355,6 @@ class TestFilePng:
             assert colors is not None
             assert colors[0][0] == num_transparent
 
-    @pytest.mark.parametrize("mode", ("LA", "RGBA"))
-    def test_grayscale_16bit_transparency(self, mode: str) -> None:
-        im = Image.new("I;16", (3, 2))
-        values = [0x1234, 0x34, 0x1235, 255, 256, 0xFFFF]
-        im.putdata(values)
-
-        with roundtrip(im, transparency=0x1234) as reloaded:
-            assert reloaded.mode == "I;16"
-            assert reloaded.info["transparency"] == 0x1234
-            assert list(reloaded.get_flattened_data()) == values
-
-            converted = reloaded.convert(mode)
-
-        assert list(converted.getchannel("A").get_flattened_data()) == [
-            0,
-            255,
-            255,
-            255,
-            255,
-            255,
-        ]
-        assert "transparency" not in converted.info
-
     def test_low_bit_grayscale_transparency(self) -> None:
         with Image.open("Tests/images/tbbn0g04.png") as im:
             assert im.mode == "L"

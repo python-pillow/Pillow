@@ -49,14 +49,6 @@ TODO
 Other changes
 =============
 
-Integer image transparency
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-When converting I and I;16 images with a transparent color to LA or RGBA,
-:py:meth:`~PIL.Image.Image.convert` now compares the transparent color against
-the original pixel values, before clipping them to 8 bits. Previously, clipping
-could make the wrong pixels transparent.
-
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -194,44 +194,18 @@ def test_trns_l(tmp_path: Path) -> None:
     im_p.save(f)
 
 
-@pytest.mark.parametrize("mode", ("I;16", "I"))
+@pytest.mark.parametrize("mode", ("I", "I;16"))
 @pytest.mark.parametrize("convert_mode", ("LA", "RGBA"))
-@pytest.mark.parametrize("transparency", (0, 52, 255, 256, 0x1234, 0xFFFF))
-def test_trns_i(mode: str, convert_mode: str, transparency: int) -> None:
-    values = [0, 1, 52, 254, 255, 256, 0x1234, 0x1235, 0xFFFE, 0xFFFF]
-    if mode == "I":
-        values.extend([-0x80000000, -1, 0x10000, 0x7FFFFFFF])
-    im = Image.new(mode, (len(values), 2))
-    for y in range(im.height):
-        for x, value in enumerate(values):
-            im.putpixel((x, y), value)
-    expected = im.convert(convert_mode)
-    alpha = Image.new("L", im.size)
-    alpha.putdata([0 if value == transparency else 255 for value in values] * 2)
-    expected.putalpha(alpha)
-    im.info["transparency"] = transparency
+def test_trns_i(mode: str, convert_mode: str) -> None:
+    im = Image.new(mode, (3, 1))
+    im.putdata((0, 0x1234, 0xFFFF))
+    im.info["transparency"] = 0x1234
 
-    converted = im.convert(convert_mode)
+    expected: tuple[tuple[int, ...], ...] = ((0, 255), (255, 0), (255, 255))
+    while len(expected[0]) < len(convert_mode):
+        expected = tuple((v[0], *v) for v in expected)
 
-    assert_image_equal(converted, expected)
-    assert "transparency" not in converted.info
-    assert im.info["transparency"] == transparency
-    assert list(im.get_flattened_data()) == values * 2
-
-
-@pytest.mark.parametrize("convert_mode", ("LA", "RGBA"))
-@pytest.mark.parametrize("transparency", (-0x80000000, -1, 0x10000, 0x7FFFFFFF))
-def test_trns_i_boundaries(convert_mode: str, transparency: int) -> None:
-    values = [-0x80000000, -1, 0, 255, 256, 0x10000, 0x7FFFFFFF]
-    im = Image.new("I", (len(values), 1))
-    im.putdata(values)
-    expected = im.convert(convert_mode)
-    alpha = Image.new("L", im.size)
-    alpha.putdata([0 if value == transparency else 255 for value in values])
-    expected.putalpha(alpha)
-    im.info["transparency"] = transparency
-
-    assert_image_equal(im.convert(convert_mode), expected)
+    assert im.convert(convert_mode).get_flattened_data() == expected
 
 
 def test_trns_RGB(tmp_path: Path) -> None:

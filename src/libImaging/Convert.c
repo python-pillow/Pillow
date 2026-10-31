@@ -471,10 +471,8 @@ rgbT2a(UINT8 *out, UINT8 *in, int xsize, int r, int g, int b, int premultiplied)
     UINT32 repl = premultiplied ? 0 : (trns & 0x00ffffff);
 #endif
 
-    int i;
-
     UINT8 *ref = in != NULL ? in : out;
-    for (i = 0; i < xsize; i++, ref += sizeof(trns), out += sizeof(trns)) {
+    for (int x = 0; x < xsize; x++, ref += sizeof(trns), out += sizeof(trns)) {
         UINT32 v;
         memcpy(&v, ref, sizeof(v));
         if (v == trns) {
@@ -1776,23 +1774,25 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
         UINT8 *out = (UINT8 *)imOut->image[y];
         (*convert)(out, (UINT8 *)imIn->image[y], imIn->xsize);
 
-        // Match integer samples before they are clipped to 8-bit values.
         if (imIn->mode == IMAGING_MODE_I) {
-            for (int x = 0; x < imIn->xsize; x++, out += 4) {
-                if (imIn->image32[y][x] == r) {
-                    out[3] = 0;
-                }
-            }
-        } else if (imIn->mode == IMAGING_MODE_I_16) {
-            source = (UINT8 *)imIn->image[y];
-            for (int x = 0; x < imIn->xsize; x++, source += 2, out += 4) {
-                if ((source[0] | (source[1] << 8)) == r) {
+            INT32 *in = (INT32 *)imIn->image32[y];
+            for (int x = 0; x < imIn->xsize; x++, in++, out += 4) {
+                if (in[0] == r) {
                     out[3] = 0;
                 }
             }
         } else {
-            source = source_transparency ? (UINT8 *)imIn->image[y] : NULL;
-            rgbT2a(out, source, imIn->xsize, r, g, b, premultiplied);
+            UINT8 *in = (UINT8 *)imIn->image[y];
+            if (imIn->mode == IMAGING_MODE_I_16) {
+                for (int x = 0; x < imIn->xsize; x++, in += 2, out += 4) {
+                    if ((in[0] | (in[1] << 8)) == r) {
+                        out[3] = 0;
+                    }
+                }
+            } else {
+                source = source_transparency ? in : NULL;
+                rgbT2a(out, source, imIn->xsize, r, g, b, premultiplied);
+            }
         }
     }
     MUTEX_UNLOCK(&imIn->mutex);
