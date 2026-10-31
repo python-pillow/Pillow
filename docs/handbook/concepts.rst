@@ -95,6 +95,16 @@ Coordinates are usually passed to the library as 2-tuples (x, y). Rectangles
 are represented as 4-tuples, (x1, y1, x2, y2), with the upper left corner given
 first.
 
+Since Pillow 5.4.0, individual image pixels can be accessed using negative indexes.
+For example, to get or set the farthest pixel in the lower right of an image::
+
+    >>> from PIL import Image
+    >>> im = Image.new("RGB", (10, 10), (255, 0, 0))
+    >>> px = im.load()
+    >>> px[-1, -1]
+    (255, 0, 0)
+    >>> px[-1, -1] = (0, 0, 0)
+
 Palette
 -------
 
