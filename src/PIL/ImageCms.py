@@ -318,9 +318,7 @@ class ImageCmsTransform(Image.ImagePointHandler):
         if imOut is None:
             imOut = Image.new(self.output_mode, im.size)
         else:
-            imOut.load()
-            if imOut.im.readonly:
-                imOut._copy()
+            imOut._ensure_mutable()
         self.transform.apply(im.getim(), imOut.getim())
         imOut.info["icc_profile"] = self.output_profile.tobytes()
         return imOut
