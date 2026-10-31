@@ -7,7 +7,10 @@ import sys
 import pytest
 
 
-@pytest.mark.skipif(sys.platform == "ios", reason="Processes not supported on iOS")
+@pytest.mark.skipif(
+    sys.platform in ["android", "ios"],
+    reason="Subprocesses not supported on this platform",
+)
 @pytest.mark.parametrize(
     "args, report",
     ((["PIL"], False), (["PIL", "--report"], True), (["PIL.report"], True)),
