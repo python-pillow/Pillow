@@ -1620,8 +1620,12 @@ class TiffImageFile(ImageFile.ImageFile):
 
         self.info["compression"] = self._compression
 
-        xres = self.tag_v2.get(X_RESOLUTION, 1)
-        yres = self.tag_v2.get(Y_RESOLUTION, 1)
+        # Clear info from previous frame
+        self.info.pop("dpi", None)
+        self.info.pop("resolution", None)
+
+        xres = self.tag_v2.get(X_RESOLUTION)
+        yres = self.tag_v2.get(Y_RESOLUTION)
 
         if xres and yres:
             resunit = self.tag_v2.get(RESOLUTION_UNIT)
