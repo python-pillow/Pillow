@@ -2896,13 +2896,13 @@ class Image:
 
         def preserve_aspect_ratio() -> tuple[int, int] | None:
             def round_aspect(number: float, key: Callable[[int], float]) -> int:
-                return max(min(math.floor(number), math.ceil(number), key=key), 1)
+                return min(math.floor(number), math.ceil(number), key=key)
 
             x, y = provided_size
             if x >= self.width and y >= self.height:
                 return None
-            if min(self.size) == 0:
-                return min(x, self.width), min(y, self.height)
+            if self.height == 0:
+                return x, self.height
 
             aspect = self.width / self.height
             if x / y >= aspect:

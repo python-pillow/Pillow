@@ -70,7 +70,7 @@ def test_aspect() -> None:
 def test_division_by_zero() -> None:
     im = Image.new("L", (200, 2))
     im.thumbnail((75, 75))
-    assert im.size == (75, 1)
+    assert im.size == (75, 0)
 
 
 def test_zero_dimension() -> None:
