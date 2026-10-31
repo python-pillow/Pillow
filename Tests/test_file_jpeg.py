@@ -204,6 +204,80 @@ class TestFileJpeg:
         with Image.open("Tests/images/jfif_unit_cm.jpg") as im:
             assert im.info["dpi"] == (2.54, 5.08)
 
+    def test_dpi_with_keep_rgb(self, tmp_path: Path) -> None:
+        im = Image.new("RGB", (20, 20), (255, 0, 0))
+        f = tmp_path / "temp.jpg"
+        im.save(f, "JPEG", dpi=(96, 96), keep_rgb=True)
+
+        with Image.open(f) as reloaded:
+            assert reloaded.info["dpi"] == (96, 96)
+            assert_image_equal(reloaded, im)
+
+    @pytest.mark.parametrize("as_bytes", (False, True))
+    def test_dpi_keep_rgb_existing_exif(self, as_bytes: bool) -> None:
+        exif = Image.Exif()
+        exif[0x010E] = "description"
+        exif[0x011A] = 300
+        exif[0x011B] = 200
+        exif[0x0128] = 3
+        original = exif.tobytes()
+        output = BytesIO()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            Image.new("RGB", (20, 20), (255, 0, 0)).save(
+                output,
+                "JPEG",
+                keep_rgb=True,
+                dpi=(96, 96),
+                exif=original if as_bytes else exif,
+            )
+        assert exif.tobytes() == original
+        with Image.open(BytesIO(output.getvalue())) as reloaded:
+            stored = reloaded.getexif()
+            assert reloaded.info["dpi"] == (96, 96)
+            assert stored[0x011A] == 96
+            assert stored[0x011B] == 96
+            assert stored[0x0128] == 2
+            assert stored[0x010E] == "description"
+            assert reloaded.getpixel((0, 0)) == (255, 0, 0)
+
+    def test_dpi_keep_rgb_stores_both_axes(self) -> None:
+        output = BytesIO()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            Image.new("RGB", (20, 20)).save(
+                output, "JPEG", keep_rgb=True, dpi=(96, 150)
+            )
+        with Image.open(BytesIO(output.getvalue())) as reloaded:
+            exif = reloaded.getexif()
+            assert exif[0x011A] == 96
+            assert exif[0x011B] == 150
+            assert exif[0x0128] == 2
+
+    @pytest.mark.parametrize("mode", ("1", "L", "YCbCr", "CMYK"))
+    def test_dpi_keep_rgb_other_modes(self, mode: str) -> None:
+        output = BytesIO()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            Image.new(mode, (20, 20)).save(output, "JPEG", keep_rgb=True, dpi=(96, 150))
+        with Image.open(BytesIO(output.getvalue())) as reloaded:
+            assert reloaded.info["dpi"] == (96, 150)
+
+    @pytest.mark.parametrize("dpi", ((0, 0), (0, 150), (96, 0)))
+    def test_dpi_keep_rgb_zero_density(self, dpi: tuple[int, int]) -> None:
+        output = BytesIO()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            Image.new("RGB", (20, 20)).save(output, "JPEG", keep_rgb=True, dpi=dpi)
+        with Image.open(BytesIO(output.getvalue())) as reloaded:
+            assert "dpi" not in reloaded.info
+            assert not reloaded.getexif()
+
+    @pytest.mark.parametrize("dpi", ((96,), (96, 96, 96)))
+    def test_dpi_keep_rgb_invalid_length(self, dpi: tuple[int, ...]) -> None:
+        with pytest.raises(TypeError):
+            Image.new("RGB", (20, 20)).save(BytesIO(), "JPEG", keep_rgb=True, dpi=dpi)
+
     def test_icc(self, tmp_path: Path) -> None:
         # Test ICC support
         with Image.open("Tests/images/rgb.jpg") as im1:
