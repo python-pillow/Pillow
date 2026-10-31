@@ -60,7 +60,7 @@ class ImtImageFile(ImageFile.ImageFile):
                 self.tile = [
                     ImageFile._Tile(
                         "raw",
-                        (0, 0) + self.size,
+                        None,
                         self.fp.tell() - len(buffer),
                         self.mode,
                     )

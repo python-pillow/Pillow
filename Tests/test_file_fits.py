@@ -24,7 +24,26 @@ def test_open() -> None:
 
 def test_gzip1() -> None:
     with Image.open("Tests/images/m13_gzip.fits") as im:
+        assert im.getpixel((0, 0)) == 111
+
         assert_image_equal_tofile(im, "Tests/images/m13.fits")
+
+
+def test_gzip_decode() -> None:
+    with open("Tests/images/m13_gzip.fits", "rb") as fp:
+        data = bytearray(fp.read())
+
+    offset = 11040
+    data[offset + 10] = 0
+    with Image.open(BytesIO(data)) as im:
+        assert im.tile[0].offset == offset
+        with pytest.raises(OSError, match="Corrupt FITS gzip data"):
+            im.load()
+
+    data = data[: offset + 2]
+    with Image.open(BytesIO(data)) as im:
+        with pytest.raises(OSError, match="Truncated FITS gzip data"):
+            im.load()
 
 
 def test_invalid_file() -> None:
@@ -36,6 +55,23 @@ def test_invalid_file() -> None:
         FitsImagePlugin.FitsImageFile(invalid_file)
 
 
+def test_unsupported_number_of_bits() -> None:
+    b = BytesIO(
+        b"".join(
+            data.ljust(80, b" ")
+            for data in [
+                b"SIMPLE  = T",
+                b"BITPIX  = 128",
+                b"NAXIS   = 1",
+                b"NAXIS1  = 0",
+                b"END",
+            ]
+        )
+    )
+    with pytest.raises(OSError, match="Unsupported number of bits"):
+        Image.open(b)
+
+
 def test_truncated_fits() -> None:
     # No END to headers
     image_data = b"SIMPLE  =                    T" + b" " * 50 + b"TRUNCATE"
@@ -44,11 +80,13 @@ def test_truncated_fits() -> None:
 
 
 def test_naxis_zero() -> None:
-    # This test image has been manually hexedited
-    # to set the number of data axes to zero
-    with pytest.raises(ValueError):
-        with Image.open("Tests/images/hopper_naxis_zero.fits"):
-            pass
+    b = BytesIO(
+        b"".join(
+            data.ljust(80, b" ") for data in [b"SIMPLE  = T", b"NAXIS   = 0", b"END"]
+        ).ljust(2881)
+    )
+    with pytest.raises(ValueError, match="No image data"):
+        Image.open(b)
 
 
 def test_comment() -> None:

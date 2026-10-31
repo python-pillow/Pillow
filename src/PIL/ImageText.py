@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"math", "re"}
+
 import math
 import re
 from typing import AnyStr, Generic, NamedTuple
 
 from . import ImageFont
-from ._typing import _Ink
 
-Font = ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from ._typing import _Ink
 
 
 class _Line(NamedTuple):
@@ -27,7 +30,7 @@ class _Wrap(Generic[AnyStr]):
         text: Text[AnyStr],
         width: int,
         height: int | None = None,
-        font: Font | None = None,
+        font: ImageFont.BaseImageFont | None = None,
     ) -> None:
         self.text: Text[AnyStr] = text
         self.width = width
@@ -47,11 +50,15 @@ class _Wrap(Generic[AnyStr]):
             if newlines:
                 if not self.add_line(line):
                     break
+                newlines_all_fit = True
                 for i, line in enumerate(newlines):
                     if i != 0 and not self.add_line(emptystring):
+                        newlines_all_fit = False
                         break
                     self.position += len(line)
                     word = word[len(line) :]
+                if not newlines_all_fit:
+                    break
                 line = emptystring
 
             new_line = line + word
@@ -82,7 +89,7 @@ class _Wrap(Generic[AnyStr]):
     def add_line(self, line: AnyStr) -> bool:
         lines = self.lines + [line]
         if self.height is not None:
-            last_line_y = self.text._split(lines=lines)[-1].y
+            last_line_y = self.text._split(lines=lines, font=self.font)[-1].y
             last_line_height = self.text._get_bbox(line, self.font)[3]
             if last_line_y + last_line_height > self.height:
                 return False
@@ -97,7 +104,7 @@ class Text(Generic[AnyStr]):
     def __init__(
         self,
         text: AnyStr,
-        font: Font | None = None,
+        font: ImageFont.BaseImageFont | None = None,
         mode: str = "RGB",
         spacing: float = 4,
         direction: str | None = None,
@@ -230,18 +237,16 @@ class Text(Generic[AnyStr]):
             font = self.font
             wrap = _Wrap(self, width, height, font)
             if scaling == "shrink":
-                if not wrap.remaining_text:
-                    return None
-
-                size = math.ceil(font.size)
-                while wrap.remaining_text:
-                    if size == max(limit, 1):
-                        msg = "Text could not be scaled"
-                        raise ValueError(msg)
-                    size -= 1
-                    font = self.font.font_variant(size=size)
-                    wrap = _Wrap(self, width, height, font)
-                self.font = font
+                if wrap.remaining_text:
+                    size = math.ceil(font.size)
+                    while wrap.remaining_text:
+                        if size == max(limit, 1):
+                            msg = "Text could not be scaled"
+                            raise ValueError(msg)
+                        size -= 1
+                        font = self.font.font_variant(size=size)
+                        wrap = _Wrap(self, width, height, font)
+                    self.font = font
             else:
                 if wrap.remaining_text:
                     msg = "Text could not be scaled"
@@ -344,6 +349,7 @@ class Text(Generic[AnyStr]):
         anchor: str | None = None,
         align: str = "left",
         lines: list[str] | list[bytes] | None = None,
+        font: ImageFont.BaseImageFont | None = None,
     ) -> list[_Line]:
         if anchor is None:
             anchor = "lt" if self.direction == "ttb" else "la"
@@ -364,11 +370,13 @@ class Text(Generic[AnyStr]):
             msg = "anchor not supported for multiline text"
             raise ValueError(msg)
 
+        if font is None:
+            font = self.font
         fontmode = self._get_fontmode()
         if self.line_height is not None:
             line_height = self.line_height
         else:
-            line_height = self.font.getbbox(
+            line_height = font.getbbox(
                 "A",
                 fontmode,
                 None,
@@ -389,7 +397,7 @@ class Text(Generic[AnyStr]):
             widths = []
             max_width: float = 0
             for line in lines:
-                line_width = self.font.getlength(
+                line_width = font.getlength(
                     line, fontmode, self.direction, self.features, self.language
                 )
                 widths.append(line_width)
@@ -433,7 +441,7 @@ class Text(Generic[AnyStr]):
                             left -= max_width
 
                         word_widths = [
-                            self.font.getlength(
+                            font.getlength(
                                 word,
                                 fontmode,
                                 self.direction,
@@ -463,7 +471,10 @@ class Text(Generic[AnyStr]):
         return parts
 
     def _get_bbox(
-        self, text: str | bytes, font: Font | None = None, anchor: str | None = None
+        self,
+        text: str | bytes,
+        font: ImageFont.BaseImageFont | None = None,
+        anchor: str | None = None,
     ) -> tuple[float, float, float, float]:
         return (font or self.font).getbbox(
             text,

@@ -4,7 +4,7 @@ import pytest
 
 from PIL import Image, ImageMath, ImageMode
 
-from .helper import convert_to_comparable, skip_unless_feature
+from .helper import skip_unless_feature
 
 codecs = dir(Image.core)
 
@@ -51,6 +51,22 @@ gradients_image.load()
 def test_args_factor(size: int | tuple[int, int], expected: tuple[int, int]) -> None:
     im = Image.new("L", (10, 10))
     assert expected == im.reduce(size).size
+
+
+@pytest.mark.parametrize("mode", ("L", "I", "F"))
+@pytest.mark.parametrize(
+    "factor, expected",
+    (
+        (2**31 - 1, (1, 1)),
+        ((2**31 - 1, 1), (1, 10)),
+        ((1, 2**31 - 1), (10, 1)),
+    ),
+)
+def test_large_factor(
+    factor: int | tuple[int, int], expected: tuple[int, int], mode: str
+) -> None:
+    im = Image.new(mode, (10, 10))
+    assert im.reduce(factor).size == expected
 
 
 @pytest.mark.parametrize(
@@ -185,8 +201,6 @@ def assert_compare_images(
 ) -> None:
     assert a.mode == b.mode, f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
     assert a.size == b.size, f"got size {repr(a.size)}, expected {repr(b.size)}"
-
-    a, b = convert_to_comparable(a, b)
 
     bands = ImageMode.getmode(a.mode).bands
     for band, ach, bch in zip(bands, a.split(), b.split()):

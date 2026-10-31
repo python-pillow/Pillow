@@ -327,6 +327,11 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
         case 4:
 
             if (context->comment) {
+                // check for comment len + 'COM' header bytes
+                if (context->comment_size + 5 >
+                    context->destination.pub.free_in_buffer) {
+                    break;
+                }
                 jpeg_write_marker(
                     &context->cinfo,
                     JPEG_COM,

@@ -645,7 +645,6 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
     size_t tile_bytes = 0;
     unsigned n, tile_height, tile_width;
     int subsampling;
-    int total_component_width = 0;
 
     stream = opj_stream_create(BUFFER_SIZE, OPJ_TRUE);
 
@@ -851,6 +850,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
          a, and then a malicious file could have a smaller tile_bytes
         */
 
+        int total_component_width = 0;
         for (n = 0; n < tile_info.nb_comps; n++) {
             // see csize /acsize calcs
             int csize = (image->comps[n].prec + 7) >> 3;
@@ -961,7 +961,7 @@ ImagingJpeg2KDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t 
 /* Cleanup                                                              */
 /* -------------------------------------------------------------------- */
 
-int
+void
 ImagingJpeg2KDecodeCleanup(ImagingCodecState state) {
     JPEG2KDECODESTATE *context = (JPEG2KDECODESTATE *)state->context;
 
@@ -970,8 +970,6 @@ ImagingJpeg2KDecodeCleanup(ImagingCodecState state) {
     }
 
     context->error_msg = NULL;
-
-    return -1;
 }
 
 const char *

@@ -25,7 +25,7 @@
  * See the README file for information on usage and redistribution.
  */
 
-#include "Python.h"
+#include <Python.h>
 #include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
 
@@ -48,6 +48,14 @@ typedef struct {
 } PyPathObject;
 
 static PyTypeObject PyPathType;
+
+int
+path_setup(void) {
+    if (PyType_Ready(&PyPathType) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
 static double *
 alloc_array(Py_ssize_t count) {
@@ -77,11 +85,6 @@ path_new(Py_ssize_t count, double *xy, int duplicate) {
         }
         memcpy(p, xy, count * 2 * sizeof(double));
         xy = p;
-    }
-
-    if (PyType_Ready(&PyPathType) < 0) {
-        free(xy);
-        return NULL;
     }
 
     path = PyObject_New(PyPathObject, &PyPathType);
@@ -114,7 +117,7 @@ assign_item_to_array(double *xy, Py_ssize_t j, PyObject *op) {
     if (PyFloat_Check(op)) {
         xy[j++] = PyFloat_AS_DOUBLE(op);
     } else if (PyLong_Check(op)) {
-        xy[j++] = (float)PyLong_AS_LONG(op);
+        xy[j++] = (float)PyLong_AsLong(op);
     } else if (PyNumber_Check(op)) {
         xy[j++] = PyFloat_AsDouble(op);
     } else if (PyList_Check(op)) {
@@ -180,6 +183,7 @@ PyPath_Flatten(PyObject *data, double **pxy) {
             n = buffer.len / (2 * sizeof(float));
             xy = alloc_array(n);
             if (!xy) {
+                PyBuffer_Release(&buffer);
                 return -1;
             }
             for (i = 0; i < n + n; i++) {
@@ -189,7 +193,12 @@ PyPath_Flatten(PyObject *data, double **pxy) {
             PyBuffer_Release(&buffer);
             return n;
         }
-        PyErr_Clear();
+        if (PyErr_Occurred()) {
+            if (!PyErr_ExceptionMatches(PyExc_BufferError)) {
+                return -1;
+            }
+            PyErr_Clear();
+        }
     }
 
     if (!PySequence_Check(data)) {
@@ -276,8 +285,16 @@ PyPath_Create(PyObject *self, PyObject *args) {
     Py_ssize_t count;
     double *xy;
 
-    if (PyArg_ParseTuple(args, "n:Path", &count)) {
+    if (!PyArg_ParseTuple(args, "O", &data)) {
+        return NULL;
+    }
+    if (PyLong_Check(data)) {
         /* number of vertices */
+        count = PyLong_AsSsize_t(data);
+        if (PyErr_Occurred()) {
+            return NULL;
+        }
+
         xy = alloc_array(count);
         if (!xy) {
             return NULL;
@@ -285,11 +302,6 @@ PyPath_Create(PyObject *self, PyObject *args) {
 
     } else {
         /* sequence or other path */
-        PyErr_Clear();
-        if (!PyArg_ParseTuple(args, "O", &data)) {
-            return NULL;
-        }
-
         count = PyPath_Flatten(data, &xy);
         if (count < 0) {
             return NULL;
@@ -317,6 +329,10 @@ path_compact(PyPathObject *self, PyObject *args) {
         PyErr_SetString(PyExc_ValueError, "Path compacted during mapping");
         return NULL;
     }
+    if (self->count == 0) {
+        // no points to remove
+        return Py_BuildValue("i", 0);
+    }
     if (!PyArg_ParseTuple(args, "|d:compact", &cityblock)) {
         return NULL;
     }
@@ -334,11 +350,14 @@ path_compact(PyPathObject *self, PyObject *args) {
     }
 
     i = self->count - j;
-    self->count = j;
 
     /* shrink coordinate array */
-    /* malloc check ok, self->count is smaller than it was before */
-    self->xy = realloc(self->xy, 2 * self->count * sizeof(double));
+    double *new_xy = realloc(self->xy, 2 * j * sizeof(double));
+    if (!new_xy) {
+        return ImagingError_MemoryError();
+    }
+    self->xy = new_xy;
+    self->count = j;
 
     return Py_BuildValue("i", i); /* number of removed vertices */
 }
@@ -592,12 +611,13 @@ path_subscript(PyPathObject *self, PyObject *item) {
         return path_getitem(self, i);
     }
     if (PySlice_Check(item)) {
-        int len = 4;
+        int len = self->count;
         Py_ssize_t start, stop, step, slicelength;
 
-        if (PySlice_GetIndicesEx(item, len, &start, &stop, &step, &slicelength) < 0) {
+        if (PySlice_Unpack(item, &start, &stop, &step) < 0) {
             return NULL;
         }
+        slicelength = PySlice_AdjustIndices(len, &start, &stop, step);
 
         if (slicelength <= 0) {
             double *xy = alloc_array(0);

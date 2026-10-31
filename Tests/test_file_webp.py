@@ -4,7 +4,6 @@ import io
 import re
 import sys
 import warnings
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -18,6 +17,10 @@ from .helper import (
     hopper,
     skip_unless_feature,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 try:
     from PIL import _webp
@@ -163,7 +166,7 @@ class TestFileWebp:
 
     @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
     def test_write_encoding_error_bad_dimension(self, tmp_path: Path) -> None:
-        im = Image.new("L", (16384, 16384))
+        im = Image.new("L", (16384, 1))
         with pytest.raises(ValueError) as e:
             im.save(tmp_path / "temp.webp")
         assert (
@@ -187,12 +190,42 @@ class TestFileWebp:
         with pytest.raises(TypeError):
             _webp.WebPAnimDecoder()
 
+    @pytest.mark.parametrize(
+        "header",
+        (
+            # VP8X, 16384x16384 canvas
+            b"VP8X\x0a\x00\x00\x00\x00\x00\x00\x00\xff\x3f\x00\xff\x3f\x00",
+            # VP8L, 16384x16384
+            b"VP8L\x05\x00\x00\x00\x2f\xff\xff\xff\x0f",
+            # VP8, 16383x16383
+            b"VP8 \x0a\x00\x00\x00\x00\x00\x00\x9d\x01\x2a\xff\x3f\xff\x3f",
+        ),
+    )
+    def test_decompression_bomb_before_decoder(
+        self, header: bytes, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # The truncated data would fail to create a decoder,
+        # so the size must be checked before that
+        monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 128 * 128)
+        data = b"RIFF" + (4 + len(header)).to_bytes(4, "little") + b"WEBP" + header
+
+        with pytest.raises(Image.DecompressionBombError):
+            Image.open(io.BytesIO(data))
+
+    def test_decompression_bomb_warning_once(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 128 * 128 - 1)
+
+        with pytest.warns(Image.DecompressionBombWarning) as record:
+            with Image.open("Tests/images/hopper.webp"):
+                pass
+        assert len(record) == 1
+
     def test_no_resource_warning(self, tmp_path: Path) -> None:
         file_path = "Tests/images/hopper.webp"
         with Image.open(file_path) as image:
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 image.save(tmp_path / "temp.webp")
 
     def test_file_pointer_could_be_reused(self) -> None:

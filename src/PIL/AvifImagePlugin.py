@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "typing"}
+
 import os
 from io import BytesIO
 from typing import IO
@@ -113,10 +115,12 @@ class AvifImageFile(ImageFile.ImageFile):
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
+        self.info.pop("timestamp", None)
+        self.info.pop("duration", None)
 
         # Set tile
         self.__frame = frame
-        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.mode)]
+        self.tile = [ImageFile._Tile("raw", args=self.mode)]
 
     def load(self) -> Image.core.PixelAccess | None:
         if self.tile:
@@ -235,6 +239,11 @@ def _save(
         advanced,
     )
 
+    supported_modes = {"RGB", "RGBA"}
+    if tuple(int(v) for v in _avif.libavif_version.split(".")) >= (1, 3):
+        # AVIF_RGB_FORMAT_GRAY was only added in libavif 1.3.0
+        supported_modes.add("L")
+
     # Add each frame
     frame_idx = 0
     frame_duration = 0
@@ -245,10 +254,10 @@ def _save(
             for frame in ImageSequence.Iterator(ims):
                 # Make sure image mode is supported
                 rawmode = frame.mode
-                if ims.mode not in {"L", "RGB", "RGBA"}:
+                if ims.mode not in supported_modes:
                     if ims.has_transparency_data:
                         rawmode = "RGBA"
-                    elif ims.mode in grayscale_modes:
+                    elif ims.mode in grayscale_modes and "L" in supported_modes:
                         rawmode = "L"
                     else:
                         rawmode = "RGB"

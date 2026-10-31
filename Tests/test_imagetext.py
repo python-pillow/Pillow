@@ -189,6 +189,16 @@ def test_wrap_height() -> None:
     assert text.text == "Text does\nnot fit"
 
 
+def test_wrap_height_blank_line(layout_engine: ImageFont.Layout) -> None:
+    font = ImageFont.truetype(FONT_PATH, 10, layout_engine=layout_engine)
+    text = ImageText.Text("A\n\nB", font)
+
+    wrapped = text.wrap(100, 10)
+    assert wrapped is not None
+    assert wrapped.text == "\nB"
+    assert text.text == "A"
+
+
 def test_wrap_scaling_unsupported() -> None:
     font = ImageFont.load_default_imagefont()
     text = ImageText.Text("Hello World!", font)
@@ -210,11 +220,14 @@ def test_wrap_shrink() -> None:
     assert text.wrap(50, 50, "shrink") is None
     assert isinstance(text.font, ImageFont.FreeTypeFont)
     assert text.font.size == 10
+    assert text.text == "Hello\nWorld!"
 
+    text = ImageText.Text("Hello World!")
     with pytest.raises(ValueError, match="Text could not be scaled"):
         text.wrap(50, 15, ("shrink", 9))
 
     assert text.wrap(50, 15, "shrink") is None
+    assert isinstance(text.font, ImageFont.FreeTypeFont)
     assert text.font.size == 8
 
     text = ImageText.Text("Hello World!")
@@ -242,6 +255,9 @@ def test_wrap_grow() -> None:
     text = ImageText.Text("A\nB")
     with pytest.raises(ValueError, match="Text could not be scaled"):
         text.wrap(50, 10, "grow")
+
+    text.wrap(50, 30, "grow")
+    assert text.get_bbox()[3] <= 30
 
     text = ImageText.Text("Hello World!")
     assert text.wrap(50, 50, ("grow", 18)) is None

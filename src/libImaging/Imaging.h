@@ -70,7 +70,7 @@ typedef struct ImagingPaletteInstance *ImagingPalette;
 #define IMAGING_TYPE_UINT8 0
 #define IMAGING_TYPE_INT32 1
 #define IMAGING_TYPE_FLOAT32 2
-#define IMAGING_TYPE_SPECIAL 3 /* check mode for details */
+#define IMAGING_TYPE_I16 3
 
 typedef struct {
     char *ptr;
@@ -249,8 +249,16 @@ ImagingPaletteCacheDelete(ImagingPalette palette);
 #define ImagingPaletteCache(p, r, g, b) \
     p->cache[(r >> 2) + (g >> 2) * 64 + (b >> 2) * 64 * 64]
 
+/* mirrors PIL.Image.Quantize */
+typedef enum {
+    IMAGING_QUANTIZE_MEDIANCUT = 0,
+    IMAGING_QUANTIZE_MAXCOVERAGE = 1,
+    IMAGING_QUANTIZE_FASTOCTREE = 2,
+    IMAGING_QUANTIZE_LIBIMAGEQUANT = 3,
+} ImagingQuantizeMethod;
+
 extern Imaging
-ImagingQuantize(Imaging im, int colours, int mode, int kmeans);
+ImagingQuantize(Imaging im, int colours, ImagingQuantizeMethod method, int kmeans);
 
 /* Threading */
 /* --------- */
@@ -277,18 +285,30 @@ ImagingError_ValueError(const char *message);
 /* Transform callbacks */
 /* ------------------- */
 
-/* standard transforms */
-#define IMAGING_TRANSFORM_AFFINE 0
-#define IMAGING_TRANSFORM_PERSPECTIVE 2
-#define IMAGING_TRANSFORM_QUAD 3
+/* mirrors PIL.Image.Transform (EXTENT and MESH are handled in Python) */
+typedef enum {
+    IMAGING_TRANSFORM_AFFINE = 0,
+    IMAGING_TRANSFORM_PERSPECTIVE = 2,
+    IMAGING_TRANSFORM_QUAD = 3,
+} ImagingTransformType;
 
-/* standard filters */
-#define IMAGING_TRANSFORM_NEAREST 0
-#define IMAGING_TRANSFORM_BOX 4
-#define IMAGING_TRANSFORM_BILINEAR 2
-#define IMAGING_TRANSFORM_HAMMING 5
-#define IMAGING_TRANSFORM_BICUBIC 3
-#define IMAGING_TRANSFORM_LANCZOS 1
+/* mirrors PIL.Image.Resampling */
+typedef enum {
+    IMAGING_TRANSFORM_NEAREST = 0,
+    IMAGING_TRANSFORM_BOX = 4,
+    IMAGING_TRANSFORM_BILINEAR = 2,
+    IMAGING_TRANSFORM_HAMMING = 5,
+    IMAGING_TRANSFORM_BICUBIC = 3,
+    IMAGING_TRANSFORM_LANCZOS = 1,
+    IMAGING_TRANSFORM_MKS2013 = 6,
+    IMAGING_TRANSFORM_MKS2021 = 7,
+} ImagingResamplingType;
+
+/* mirrors PIL.Image.Dither (ORDERED and RASTERIZE are not yet implemented) */
+typedef enum {
+    IMAGING_DITHER_NONE = 0,
+    IMAGING_DITHER_FLOYDSTEINBERG = 3,  // Default
+} ImagingDitherType;
 
 typedef int (*ImagingTransformMap)(double *X, double *Y, int x, int y, void *data);
 typedef int (*ImagingTransformFilter)(void *out, Imaging im, double x, double y);
@@ -303,17 +323,21 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha);
 extern Imaging
 ImagingCopy(Imaging im);
 extern Imaging
-ImagingConvert(Imaging im, ModeID mode, ImagingPalette palette, int dither);
+ImagingConvert(
+    Imaging imOut,
+    Imaging imIn,
+    ModeID mode,
+    ImagingPalette palette,
+    ImagingDitherType dither
+);
 extern Imaging
-ImagingConvertInPlace(Imaging im, ModeID mode);
-extern Imaging
-ImagingConvertMatrix(Imaging im, ModeID mode, float m[]);
+ImagingConvertMatrix(Imaging im, ModeID mode, const float m[12]);
 extern Imaging
 ImagingConvertTransparent(Imaging im, ModeID mode, int r, int g, int b);
 extern Imaging
 ImagingCrop(Imaging im, int x0, int y0, int x1, int y1);
 extern Imaging
-ImagingExpand(Imaging im, int x, int y);
+ImagingExpand(Imaging im, int m);
 extern Imaging
 ImagingFill(Imaging im, const void *ink);
 extern int
@@ -328,9 +352,9 @@ extern Imaging
 ImagingFillRadialGradient(ModeID mode);
 extern Imaging
 ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 offset);
-extern Imaging
+extern void
 ImagingFlipLeftRight(Imaging imOut, Imaging imIn);
-extern Imaging
+extern void
 ImagingFlipTopBottom(Imaging imOut, Imaging imIn);
 extern Imaging
 ImagingGaussianBlur(
@@ -373,31 +397,33 @@ extern Imaging
 ImagingPutBand(Imaging im, Imaging imIn, int band);
 extern Imaging
 ImagingRankFilter(Imaging im, int size, int rank);
-extern Imaging
+extern void
 ImagingRotate90(Imaging imOut, Imaging imIn);
-extern Imaging
+extern void
 ImagingRotate180(Imaging imOut, Imaging imIn);
-extern Imaging
+extern void
 ImagingRotate270(Imaging imOut, Imaging imIn);
-extern Imaging
+extern void
 ImagingTranspose(Imaging imOut, Imaging imIn);
-extern Imaging
+extern void
 ImagingTransverse(Imaging imOut, Imaging imIn);
 extern Imaging
-ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]);
+ImagingResample(
+    Imaging imIn, int xsize, int ysize, ImagingResamplingType filter, float box[4]
+);
 extern Imaging
 ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]);
-extern Imaging
+extern int
 ImagingTransform(
     Imaging imOut,
     Imaging imIn,
-    int method,
+    ImagingTransformType method,
     int x0,
     int y0,
     int x1,
     int y1,
     double a[8],
-    int filter,
+    ImagingResamplingType filter,
     int fill
 );
 extern Imaging
@@ -417,8 +443,6 @@ ImagingColorLUT3D_linear(
 
 extern Imaging
 ImagingCopy2(Imaging imOut, Imaging imIn);
-extern Imaging
-ImagingConvert2(Imaging imOut, Imaging imIn);
 
 /* Channel operations */
 /* any mode, except "F" */
@@ -618,7 +642,7 @@ ImagingHexDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t 
 #ifdef HAVE_LIBJPEG
 extern int
 ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
-extern int
+extern void
 ImagingJpegDecodeCleanup(ImagingCodecState state);
 extern int
 ImagingJpegUseJCSExtensions(void);
@@ -631,11 +655,11 @@ extern int
 ImagingJpeg2KDecode(
     Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes
 );
-extern int
+extern void
 ImagingJpeg2KDecodeCleanup(ImagingCodecState state);
 extern int
 ImagingJpeg2KEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
-extern int
+extern void
 ImagingJpeg2KEncodeCleanup(ImagingCodecState state);
 #endif
 #ifdef HAVE_LIBTIFF
@@ -683,11 +707,11 @@ ImagingXbmEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
 #ifdef HAVE_LIBZ
 extern int
 ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
-extern int
+extern void
 ImagingZipDecodeCleanup(ImagingCodecState state);
 extern int
 ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
-extern int
+extern void
 ImagingZipEncodeCleanup(ImagingCodecState state);
 #endif
 
@@ -720,6 +744,8 @@ struct ImagingCodecStateInstance {
     int xsize, ysize, xoff, yoff;
     ImagingShuffler shuffle;
     int bits, bytes;
+    /* Number of bit planes per line (0=pixels are not stored as bit planes) */
+    int planes;
     UINT8 *buffer;
     void *context;
     PyObject *fd;

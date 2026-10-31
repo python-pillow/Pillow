@@ -16,12 +16,13 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "shutil", "subprocess"}
+
 import io
 import os
 import shutil
 import subprocess
 import sys
-import tempfile
 
 from . import Image
 
@@ -36,8 +37,12 @@ def grab(
     all_screens: bool = False,
     xdisplay: str | None = None,
     window: int | ImageWin.HWND | None = None,
+    *,
+    scale_down: bool = False,
 ) -> Image.Image:
     im: Image.Image
+    import tempfile
+
     if xdisplay is None:
         if sys.platform == "darwin":
             fh, filepath = tempfile.mkstemp(".png")
@@ -74,15 +79,16 @@ def grab(
                     # crop the image manually
                     if retina:
                         left, top, right, bottom = bbox
+                        scale = 1 if scale_down else 2
                         im_cropped = im.resize(
-                            (right - left, bottom - top),
-                            box=tuple(coord * 2 for coord in bbox),
+                            ((right - left) * scale, (bottom - top) * scale),
+                            box=(left * 2, top * 2, right * 2, bottom * 2),
                         )
                     else:
                         im_cropped = im.crop(bbox)
                     im.close()
                     return im_cropped
-                else:
+                elif scale_down:
                     im_resized = im.resize((right - left, bottom - top))
                     im.close()
                     return im_resized
@@ -164,8 +170,8 @@ def grabclipboard() -> Image.Image | list[str] | None:
         data = io.BytesIO(binascii.unhexlify(p.stdout[11:-3]))
         return Image.open(data)
     elif sys.platform == "win32":
-        fmt, data = Image.core.grabclipboard_win32()
-        if fmt == "file":  # CF_HDROP
+        format_name, data = Image.core.grabclipboard_win32()
+        if format_name == "file":  # CF_HDROP
             import struct
 
             o = struct.unpack_from("I", data)[0]
@@ -174,16 +180,8 @@ def grabclipboard() -> Image.Image | list[str] | None:
             else:
                 files = data[o:].decode("utf-16le").split("\0")
             return files[: files.index("")]
-        if isinstance(data, bytes):
-            data = io.BytesIO(data)
-            if fmt == "png":
-                from . import PngImagePlugin
-
-                return PngImagePlugin.PngImageFile(data)
-            elif fmt == "DIB":
-                from . import BmpImagePlugin
-
-                return BmpImagePlugin.DibImageFile(data)
+        if format_name in {"DIB", "PNG"}:
+            return Image.open(io.BytesIO(data), formats=[format_name])
         return None
     else:
         if os.getenv("WAYLAND_DISPLAY"):

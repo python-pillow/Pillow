@@ -62,6 +62,9 @@ apply(PyObject *self, PyObject *args) {
     }
     width = imgin->xsize;
     height = imgin->ysize;
+    if (!width || !height) {
+        return Py_BuildValue("i", num_changed_pixels);
+    }
 
     if (imgin->type != IMAGING_TYPE_UINT8 || imgin->bands != 1 ||
         imgout->type != IMAGING_TYPE_UINT8 || imgout->bands != 1) {
@@ -198,8 +201,12 @@ match(PyObject *self, PyObject *args) {
                     Py_DECREF(ret);
                     return NULL;
                 }
-                PyList_Append(ret, coordObj);
-                Py_XDECREF(coordObj);
+                if (PyList_Append(ret, coordObj) == -1) {
+                    Py_DECREF(ret);
+                    Py_DECREF(coordObj);
+                    return NULL;
+                }
+                Py_DECREF(coordObj);
             }
         }
     }
@@ -250,8 +257,12 @@ get_on_pixels(PyObject *self, PyObject *args) {
                     Py_DECREF(ret);
                     return NULL;
                 }
-                PyList_Append(ret, coordObj);
-                Py_XDECREF(coordObj);
+                if (PyList_Append(ret, coordObj) == -1) {
+                    Py_DECREF(ret);
+                    Py_DECREF(coordObj);
+                    return NULL;
+                }
+                Py_DECREF(coordObj);
             }
         }
     }

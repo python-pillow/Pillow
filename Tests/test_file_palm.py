@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import os.path
 import subprocess
-from pathlib import Path
 
 import pytest
 
 from PIL import Image
 
-from .helper import assert_image_equal, hopper, magick_command
+from .helper import assert_image_equal, assert_image_similar, hopper, magick_command
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from typing import Any
 
 
 def helper_save_as_palm(tmp_path: Path, mode: str) -> None:
@@ -33,40 +37,48 @@ def open_with_magick(magick: list[str], tmp_path: Path, f: str) -> Image.Image:
     return Image.open(outfile)
 
 
-def roundtrip(tmp_path: Path, mode: str) -> None:
+def roundtrip(tmp_path: Path, im: Image.Image, **options: Any) -> Image.Image:
     magick = magick_command()
     if not magick:
-        return
+        pytest.skip("ImageMagick not available")
 
-    im = hopper(mode)
     outfile = str(tmp_path / "temp.palm")
 
-    im.save(outfile)
-    converted = open_with_magick(magick, tmp_path, outfile)
-    if mode == "P":
-        assert converted.mode == "P"
-
-        im = im.convert("RGB")
-        converted = converted.convert("RGB")
-    assert_image_equal(converted, im)
+    im.save(outfile, **options)
+    return open_with_magick(magick, tmp_path, outfile)
 
 
 def test_monochrome(tmp_path: Path) -> None:
-    # Arrange
-    mode = "1"
+    helper_save_as_palm(tmp_path, "1")
 
-    # Act / Assert
-    helper_save_as_palm(tmp_path, mode)
-    roundtrip(tmp_path, mode)
+    im = hopper("1")
+    assert_image_equal(roundtrip(tmp_path, im), im)
 
 
 def test_p_mode(tmp_path: Path) -> None:
-    # Arrange
-    mode = "P"
+    helper_save_as_palm(tmp_path, "P")
 
-    # Act / Assert
-    helper_save_as_palm(tmp_path, mode)
-    roundtrip(tmp_path, mode)
+    im = hopper("P")
+    converted = roundtrip(tmp_path, im)
+    assert converted.mode == "P"
+    assert_image_equal(converted.convert("RGB"), im.convert("RGB"))
+
+
+@pytest.mark.parametrize("bpp", (1, 2, 4))
+@pytest.mark.parametrize("info", (True, False))
+def test_l_mode(tmp_path: Path, bpp: int, info: bool) -> None:
+    im = hopper("L")
+    if info:
+        reloaded = roundtrip(tmp_path, im, bpp=bpp)
+    else:
+        im.info["bpp"] = bpp
+        reloaded = roundtrip(tmp_path, im)
+    if bpp == 1:
+        assert reloaded.mode == "1"
+    else:
+        assert reloaded.mode == "L"
+        if info:
+            assert_image_similar(reloaded, im, 23 if bpp == 2 else 6)
 
 
 @pytest.mark.parametrize("mode", ("L", "RGB"))

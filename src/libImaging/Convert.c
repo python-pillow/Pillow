@@ -34,9 +34,6 @@
 
 #include "Imaging.h"
 
-#define MAX(a, b) (a) > (b) ? (a) : (b)
-#define MIN(a, b) (a) < (b) ? (a) : (b)
-
 /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
 #define L(rgb) ((INT32)(rgb)[0] * 299 + (INT32)(rgb)[1] * 587 + (INT32)(rgb)[2] * 114)
 #define L24(rgb) ((rgb)[0] * 19595 + (rgb)[1] * 38470 + (rgb)[2] * 7471 + 0x8000)
@@ -406,18 +403,6 @@ rgba2la(UINT8 *out, const UINT8 *in, int xsize) {
 }
 
 static void
-rgba2rgb(UINT8 *out, const UINT8 *in, int xsize) {
-    int x;
-    for (x = 0; x < xsize; x++) {
-        *out++ = *in++;
-        *out++ = *in++;
-        *out++ = *in++;
-        *out++ = 255;
-        in++;
-    }
-}
-
-static void
 rgbA2rgba(UINT8 *out, const UINT8 *in, int xsize) {
     int x;
     unsigned int alpha, tmp;
@@ -590,17 +575,11 @@ l2i(UINT8 *out_, const UINT8 *in, int xsize) {
 
 static void
 i2l(UINT8 *out, const UINT8 *in_, int xsize) {
-    int x;
-    for (x = 0; x < xsize; x++, out++, in_ += 4) {
+    for (int x = 0; x < xsize; x++, out++, in_ += 4) {
         INT32 v;
         memcpy(&v, in_, sizeof(v));
-        if (v <= 0) {
-            *out = 0;
-        } else if (v >= 255) {
-            *out = 255;
-        } else {
-            *out = (UINT8)v;
-        }
+        // Branchless saturation
+        *out = (UINT8)(v <= 0 ? 0 : (v >= 255 ? 255 : v));
     }
 }
 
@@ -810,6 +789,42 @@ I16B_F(UINT8 *out_, const UINT8 *in, int xsize) {
 }
 
 static void
+F_I16L(UINT8 *out, const UINT8 *in, int xsize) {
+    int x, v;
+    for (x = 0; x < xsize; x++, in += 4) {
+        FLOAT32 f;
+        memcpy(&f, in, sizeof(f));
+        if (f <= 0.0) {
+            v = 0;
+        } else if (f >= 65535.0) {
+            v = 65535;
+        } else {
+            v = (int)f;
+        }
+        *out++ = (UINT8)v;
+        *out++ = (UINT8)(v >> 8);
+    }
+}
+
+static void
+F_I16B(UINT8 *out, const UINT8 *in, int xsize) {
+    int x, v;
+    for (x = 0; x < xsize; x++, in += 4) {
+        FLOAT32 f;
+        memcpy(&f, in, sizeof(f));
+        if (f <= 0.0) {
+            v = 0;
+        } else if (f >= 65535.0) {
+            v = 65535;
+        } else {
+            v = (int)f;
+        }
+        *out++ = (UINT8)(v >> 8);
+        *out++ = (UINT8)v;
+    }
+}
+
+static void
 L_I16L(UINT8 *out, const UINT8 *in, int xsize) {
     int x;
     for (x = 0; x < xsize; x++, in++) {
@@ -983,27 +998,30 @@ pa2f(UINT8 *out_, const UINT8 *in, int xsize, ImagingPalette palette) {
     }
 }
 
+// Set the alpha channel of the UINT32 `v` in-place to the given value.
+#ifdef WORDS_BIGENDIAN
+#define SET_ALPHA_32(v, alpha) v = ((v & 0xFFFFFF00u) | (alpha))
+#else
+#define SET_ALPHA_32(v, alpha) v = ((v & 0x00FFFFFFu) | ((UINT32)(alpha) << 24))
+#endif
+
 static void
 p2rgb(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
-    int x;
-    for (x = 0; x < xsize; x++) {
-        const UINT8 *rgb = &palette->palette[*in++ * 4];
-        *out++ = rgb[0];
-        *out++ = rgb[1];
-        *out++ = rgb[2];
-        *out++ = 255;
+    for (int x = 0; x < xsize; x++, in++, out += 4) {
+        UINT32 v;
+        memcpy(&v, &palette->palette[in[0] * 4], sizeof(v));
+        SET_ALPHA_32(v, 0xFF);
+        memcpy(out, &v, sizeof(v));
     }
 }
 
 static void
 pa2rgb(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
-    int x;
-    for (x = 0; x < xsize; x++, in += 4) {
-        const UINT8 *rgb = &palette->palette[in[0] * 4];
-        *out++ = rgb[0];
-        *out++ = rgb[1];
-        *out++ = rgb[2];
-        *out++ = 255;
+    for (int x = 0; x < xsize; x++, in += 4, out += 4) {
+        UINT32 v;
+        memcpy(&v, &palette->palette[in[0] * 4], sizeof(v));
+        SET_ALPHA_32(v, 0xFF);
+        memcpy(out, &v, sizeof(v));
     }
 }
 
@@ -1029,25 +1047,18 @@ pa2hsv(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 
 static void
 p2rgba(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
-    int x;
-    for (x = 0; x < xsize; x++) {
-        const UINT8 *rgba = &palette->palette[*in++ * 4];
-        *out++ = rgba[0];
-        *out++ = rgba[1];
-        *out++ = rgba[2];
-        *out++ = rgba[3];
+    for (int x = 0; x < xsize; x++, in++, out += 4) {
+        memcpy(out, &palette->palette[in[0] * 4], 4);
     }
 }
 
 static void
 pa2rgba(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
-    int x;
-    for (x = 0; x < xsize; x++, in += 4) {
-        const UINT8 *rgb = &palette->palette[in[0] * 4];
-        *out++ = rgb[0];
-        *out++ = rgb[1];
-        *out++ = rgb[2];
-        *out++ = in[3];
+    for (int x = 0; x < xsize; x++, in += 4, out += 4) {
+        UINT32 v;
+        memcpy(&v, &palette->palette[in[0] * 4], sizeof(v));
+        SET_ALPHA_32(v, in[3]);
+        memcpy(out, &v, sizeof(v));
     }
 }
 
@@ -1146,7 +1157,11 @@ frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
 #endif
 static Imaging
 topalette(
-    Imaging imOut, Imaging imIn, const ModeID mode, ImagingPalette inpalette, int dither
+    Imaging imOut,
+    Imaging imIn,
+    const ModeID mode,
+    ImagingPalette inpalette,
+    ImagingDitherType dither
 ) {
     ImagingSectionCookie cookie;
     int alpha;
@@ -1162,7 +1177,11 @@ topalette(
 
     alpha = mode == IMAGING_MODE_PA;
 
-    if (palette == NULL) {
+    if (palette != NULL) {
+        if (palette->size == 0) {
+            return (Imaging)ImagingError_ValueError("empty palette");
+        }
+    } else {
         /* FIXME: make user configurable */
         if (imIn->bands == 1) {
             palette = ImagingPaletteNew(IMAGING_MODE_RGB);
@@ -1219,7 +1238,7 @@ topalette(
             return NULL;
         }
 
-        if (dither) {
+        if (dither != IMAGING_DITHER_NONE) {
             /* floyd-steinberg dither */
 
             int *errors;
@@ -1450,6 +1469,7 @@ static struct {
     {IMAGING_MODE_1, IMAGING_MODE_L, bit2l},
     {IMAGING_MODE_1, IMAGING_MODE_I, bit2i},
     {IMAGING_MODE_1, IMAGING_MODE_F, bit2f},
+    {IMAGING_MODE_1, IMAGING_MODE_LA, bit2rgb},
     {IMAGING_MODE_1, IMAGING_MODE_RGB, bit2rgb},
     {IMAGING_MODE_1, IMAGING_MODE_RGBA, bit2rgb},
     {IMAGING_MODE_1, IMAGING_MODE_RGBX, bit2rgb},
@@ -1515,7 +1535,7 @@ static struct {
     {IMAGING_MODE_RGBA, IMAGING_MODE_LA, rgba2la},
     {IMAGING_MODE_RGBA, IMAGING_MODE_I, rgb2i},
     {IMAGING_MODE_RGBA, IMAGING_MODE_F, rgb2f},
-    {IMAGING_MODE_RGBA, IMAGING_MODE_RGB, rgba2rgb},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_RGB, rgb2rgba},
     {IMAGING_MODE_RGBA, IMAGING_MODE_RGBa, rgbA2rgba},
     {IMAGING_MODE_RGBA, IMAGING_MODE_RGBX, rgb2rgba},
     {IMAGING_MODE_RGBA, IMAGING_MODE_CMYK, rgb2cmyk},
@@ -1530,7 +1550,7 @@ static struct {
     {IMAGING_MODE_RGBX, IMAGING_MODE_LA, rgb2la},
     {IMAGING_MODE_RGBX, IMAGING_MODE_I, rgb2i},
     {IMAGING_MODE_RGBX, IMAGING_MODE_F, rgb2f},
-    {IMAGING_MODE_RGBX, IMAGING_MODE_RGB, rgba2rgb},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_RGB, rgb2rgba},
     {IMAGING_MODE_RGBX, IMAGING_MODE_CMYK, rgb2cmyk},
     {IMAGING_MODE_RGBX, IMAGING_MODE_YCbCr, ImagingConvertRGB2YCbCr},
     {IMAGING_MODE_RGBX, IMAGING_MODE_HSV, rgb2hsv},
@@ -1556,6 +1576,13 @@ static struct {
     {IMAGING_MODE_I_16L, IMAGING_MODE_I, I16L_I},
     {IMAGING_MODE_I, IMAGING_MODE_I_16B, I_I16B},
     {IMAGING_MODE_I_16B, IMAGING_MODE_I, I16B_I},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_I, IMAGING_MODE_I_16N, I_I16B},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I, I16B_I},
+#else
+    {IMAGING_MODE_I, IMAGING_MODE_I_16N, I_I16L},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I, I16L_I},
+#endif
 
     {IMAGING_MODE_L, IMAGING_MODE_I_16L, L_I16L},
     {IMAGING_MODE_I_16L, IMAGING_MODE_L, I16L_L},
@@ -1571,11 +1598,50 @@ static struct {
 
     {IMAGING_MODE_I_16, IMAGING_MODE_F, I16L_F},
     {IMAGING_MODE_I_16L, IMAGING_MODE_F, I16L_F},
-    {IMAGING_MODE_I_16B, IMAGING_MODE_F, I16B_F}
+    {IMAGING_MODE_I_16B, IMAGING_MODE_F, I16B_F},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16B_F},
+#else
+    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16L_F},
+#endif
+
+    {IMAGING_MODE_F, IMAGING_MODE_I_16, F_I16L},
+    {IMAGING_MODE_F, IMAGING_MODE_I_16L, F_I16L},
+    {IMAGING_MODE_F, IMAGING_MODE_I_16B, F_I16B},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_F, IMAGING_MODE_I_16N, F_I16B}
+#else
+    {IMAGING_MODE_F, IMAGING_MODE_I_16N, F_I16L}
+#endif
 };
 
-static Imaging
-convert(Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int dither) {
+/**
+ * Convert imIn to `mode`.
+ * If imIn is already in `mode`, this performs a copy into imOut
+ * (or a newly allocated image if imOut is NULL).
+ *
+ * @param imOut   Existing image to write into
+ *                (must already be in `mode` and the same size as imIn),
+ *                or NULL to allocate a new image for the result.
+ * @param imIn    Source image to convert.
+ * @param mode    Target mode.
+ * @param palette Target palette for conversions to "P" or "PA";
+ *                NULL to use a default palette.
+ * @param dither  Dither method when converting to "P", "PA" or "1".
+ *                Currently, for historical PIL reasons,
+ *                any value other than IMAGING_DITHER_NONE uses Floyd-Steinberg
+ *                dithering.
+ * @return        The resulting Imaging object,
+ *                or NULL with a Python exception set on failure.
+ */
+Imaging
+ImagingConvert(
+    Imaging imOut,
+    Imaging imIn,
+    ModeID mode,
+    ImagingPalette palette,
+    ImagingDitherType dither
+) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
 
@@ -1606,7 +1672,7 @@ convert(Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int di
         return topalette(imOut, imIn, mode, palette, dither);
     }
 
-    if (dither && mode == IMAGING_MODE_1) {
+    if (dither != IMAGING_DITHER_NONE && mode == IMAGING_MODE_1) {
         return tobilevel(imOut, imIn);
     }
 
@@ -1621,19 +1687,12 @@ convert(Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int di
     }
 
     if (!convert) {
-#ifdef notdef
-        return (Imaging)ImagingError_ValueError("conversion not supported");
-#else
-        static char buf[100];
-        snprintf(
-            buf,
-            100,
+        return (Imaging)PyErr_Format(
+            PyExc_ValueError,
             "conversion from %.10s to %.10s not supported",
             getModeData(imIn->mode)->name,
             getModeData(mode)->name
         );
-        return (Imaging)ImagingError_ValueError(buf);
-#endif
     }
 
     imOut = ImagingNew2Dirty(mode, imOut, imIn);
@@ -1642,22 +1701,14 @@ convert(Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int di
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
     for (int y = 0; y < imIn->ysize; y++) {
         (*convert)((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
     return imOut;
-}
-
-Imaging
-ImagingConvert(Imaging imIn, const ModeID mode, ImagingPalette palette, int dither) {
-    return convert(NULL, imIn, mode, palette, dither);
-}
-
-Imaging
-ImagingConvert2(Imaging imOut, Imaging imIn) {
-    return convert(imOut, imIn, imOut->mode, NULL, 0);
 }
 
 Imaging
@@ -1706,15 +1757,12 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
         }
         g = b = r;
     } else {
-        static char buf[100];
-        snprintf(
-            buf,
-            100,
+        return (Imaging)PyErr_Format(
+            PyExc_ValueError,
             "conversion from %.10s to %.10s not supported in convert_transparent",
             getModeData(imIn->mode)->name,
             getModeData(mode)->name
         );
-        return (Imaging)ImagingError_ValueError(buf);
     }
 
     imOut = ImagingNew2Dirty(mode, imOut, imIn);
@@ -1723,37 +1771,15 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
     for (y = 0; y < imIn->ysize; y++) {
         (*convert)((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
 
         source = source_transparency ? (UINT8 *)imIn->image[y] : NULL;
         rgbT2a((UINT8 *)imOut->image[y], source, imIn->xsize, r, g, b, premultiplied);
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
     return imOut;
-}
-
-Imaging
-ImagingConvertInPlace(Imaging imIn, const ModeID mode) {
-    ImagingSectionCookie cookie;
-    ImagingShuffler convert;
-    int y;
-
-    /* limited support for inplace conversion */
-    if (imIn->mode == IMAGING_MODE_L && mode == IMAGING_MODE_1) {
-        convert = l2bit;
-    } else if (imIn->mode == IMAGING_MODE_1 && mode == IMAGING_MODE_L) {
-        convert = bit2l;
-    } else {
-        return ImagingError_ModeError();
-    }
-
-    ImagingSectionEnter(&cookie);
-    for (y = 0; y < imIn->ysize; y++) {
-        (*convert)((UINT8 *)imIn->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
-    }
-    ImagingSectionLeave(&cookie);
-
-    return imIn;
 }

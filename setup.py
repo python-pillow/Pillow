@@ -14,8 +14,8 @@ import shutil
 import struct
 import subprocess
 import sys
+import sysconfig
 import warnings
-from collections.abc import Iterator
 
 from pybind11.setup_helpers import ParallelCompile
 from setuptools import Extension, setup
@@ -23,6 +23,8 @@ from setuptools.command.build_ext import build_ext
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from setuptools import _BuildInfo
 
 configuration: dict[str, list[str]] = {}
@@ -32,8 +34,8 @@ while sys.argv[-1].startswith("--pillow-configuration="):
     _, key, value = sys.argv.pop().split("=", 2)
     configuration.setdefault(key, []).append(value)
 
-default = int(configuration.get("parallel", ["0"])[-1])
-ParallelCompile("MAX_CONCURRENCY", default).install()
+parallel_default = int(configuration.get("parallel", ["0"])[-1])
+ParallelCompile("MAX_CONCURRENCY", parallel_default).install()
 
 
 def get_version() -> str:
@@ -301,7 +303,7 @@ def _pkg_config(name: str) -> tuple[list[str], list[str]] | None:
                 subprocess.check_output(command_cflags).decode("utf8").strip(),
             )[::2][1:]
             return libs, cflags
-        except Exception:  # noqa: PERF203
+        except Exception:
             pass
     return None
 
@@ -380,7 +382,8 @@ class pil_build_ext(build_ext):
             setattr(self, f"vendor_{x}", self.check_configuration(x, "vendor"))
         if self.check_configuration("debug", "true"):
             self.debug = True
-        self.parallel = configuration.get("parallel", [None])[-1]
+        if parallel_default:
+            self.parallel = parallel_default
 
     def finalize_options(self) -> None:
         build_ext.finalize_options(self)
@@ -527,15 +530,12 @@ class pil_build_ext(build_ext):
                 )
 
             if root is None and pkg_config:
-                if isinstance(lib_name, str):
-                    _dbg("Looking for `%s` using pkg-config.", lib_name)
-                    root = pkg_config(lib_name)
-                else:
-                    for lib_name2 in lib_name:
-                        _dbg("Looking for `%s` using pkg-config.", lib_name2)
-                        root = pkg_config(lib_name2)
-                        if root:
-                            break
+                for lib_name2 in (
+                    [lib_name] if isinstance(lib_name, str) else lib_name
+                ):
+                    _dbg("Looking for `%s` using pkg-config.", lib_name2)
+                    if root := pkg_config(lib_name2):
+                        break
 
             if isinstance(root, tuple):
                 lib_root, include_root = root
@@ -572,8 +572,16 @@ class pil_build_ext(build_ext):
                 for d in os.environ[k].split(os.path.pathsep):
                     _add_directory(library_dirs, d)
 
-        _add_directory(library_dirs, os.path.join(sys.prefix, "lib"))
-        _add_directory(include_dirs, os.path.join(sys.prefix, "include"))
+        _add_directory(
+            library_dirs,
+            (sys.prefix == sys.base_prefix and sysconfig.get_config_var("LIBDIR"))
+            or os.path.join(sys.prefix, "lib"),
+        )
+        _add_directory(
+            include_dirs,
+            (sys.prefix == sys.base_prefix and sysconfig.get_config_var("INCLUDEDIR"))
+            or os.path.join(sys.prefix, "include"),
+        )
 
         #
         # add platform directories
@@ -1068,10 +1076,6 @@ class pil_build_ext(build_ext):
         print("")
 
 
-def debug_build() -> bool:
-    return hasattr(sys, "gettotalrefcount") or FUZZING_BUILD
-
-
 libraries: list[tuple[str, _BuildInfo]] = [
     ("pil_imaging_mode", {"sources": ["src/libImaging/Mode.c"]}),
 ]
@@ -1102,7 +1106,6 @@ try:
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=ext_modules,
         libraries=libraries,
-        zip_safe=not (debug_build() or PLATFORM_MINGW),
     )
 except RequiredDependencyException as err:
     msg = f"""

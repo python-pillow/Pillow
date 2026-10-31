@@ -59,7 +59,7 @@ def upstream_diff_b64(
 
 def generate(version: str) -> dict:
     serial = str(uuid.uuid4())
-    now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now = dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     purl = f"pkg:pypi/pillow@{version}"
     root = Path(__file__).parent.parent
     thirdparty = root / "src" / "thirdparty"
@@ -74,7 +74,7 @@ def generate(version: str) -> dict:
         "licenses": [{"license": {"id": "MIT-CMU"}}],
         "purl": purl,
         "externalReferences": [
-            {"type": "website", "url": "https://python-pillow.github.io"},
+            {"type": "website", "url": "https://python-pillow.org"},
             {"type": "vcs", "url": "https://github.com/python-pillow/Pillow"},
             {"type": "documentation", "url": "https://pillow.readthedocs.io"},
             {
@@ -88,8 +88,10 @@ def generate(version: str) -> dict:
         ("PIL._avif", "AVIF image format extension"),
         (
             "PIL._imaging",
-            "Core image processing extension "
-            "(decode, encode, map, display, outline, path, libImaging)",
+            (
+                "Core image processing extension "
+                "(decode, encode, map, display, outline, path, libImaging)"
+            ),
         ),
         ("PIL._imagingcms", "LittleCMS2 colour management extension"),
         ("PIL._imagingft", "FreeType font rendering extension"),
@@ -121,7 +123,7 @@ def generate(version: str) -> dict:
             "description": "FriBiDi runtime-loading shim "
             "(vendored in src/thirdparty/fribidi-shim/); "
             "loads libfribidi dynamically",
-            "licenses": [{"license": {"id": "LGPL-2.1-or-later"}}],
+            "licenses": [{"license": {"id": "MIT-CMU"}}],
             "hashes": [
                 {
                     "alg": "SHA-256",
@@ -129,7 +131,10 @@ def generate(version: str) -> dict:
                 }
             ],
             "pedigree": {
-                "notes": "Pillow-authored shim; not taken from an upstream project."
+                "notes": "Pillow-authored shim; not taken from an upstream project. "
+                "fribidi.h declares the subset of FriBiDi's public API types, "
+                "constants and function signatures needed to load libfribidi "
+                "at runtime. No FriBiDi implementation code is included."
             },
             "externalReferences": [
                 {"type": "website", "url": "https://github.com/fribidi/fribidi"},
@@ -162,7 +167,7 @@ def generate(version: str) -> dict:
             "bom-ref": f"{purl}#thirdparty/raqm",
             "type": "library",
             "name": "raqm",
-            "version": "0.10.5",
+            "version": "0.11.0",
             "description": "Complex text layout library "
             "(vendored in src/thirdparty/raqm/)",
             "licenses": [{"license": {"id": "MIT"}}],
@@ -175,15 +180,15 @@ def generate(version: str) -> dict:
             "pedigree": {
                 "ancestors": [
                     {
-                        "bom-ref": "pkg:github/HOST-Oman/libraqm@0.10.5#upstream",
+                        "bom-ref": "pkg:github/HOST-Oman/libraqm@0.11.0#upstream",
                         "type": "library",
                         "name": "raqm",
-                        "version": "0.10.5",
-                        "purl": "pkg:github/HOST-Oman/libraqm@0.10.5",
+                        "version": "0.11.0",
+                        "purl": "pkg:github/HOST-Oman/libraqm@0.11.0",
                         "externalReferences": [
                             {
                                 "type": "distribution",
-                                "url": "https://github.com/HOST-Oman/libraqm/releases/tag/v0.10.5",
+                                "url": "https://github.com/HOST-Oman/libraqm/releases/tag/v0.11.0",
                             }
                         ],
                     }
@@ -195,10 +200,10 @@ def generate(version: str) -> dict:
                             "text": {
                                 # raqm-version.h.in → raqm-version.h:
                                 # template @RAQM_VERSION_*@ placeholders replaced
-                                # with literal 0.10.5 values; filename changed to
-                                # drop the .in suffix; minor indentation fix.
+                                # with literal 0.11.0 values; filename changed to
+                                # drop the .in suffix.
                                 "content": upstream_diff_b64(
-                                    "https://raw.githubusercontent.com/HOST-Oman/libraqm/v0.10.5/src/raqm-version.h.in",
+                                    "https://raw.githubusercontent.com/HOST-Oman/libraqm/v0.11.0/src/raqm-version.h.in",
                                     b"src/raqm-version.h.in",
                                     thirdparty / "raqm" / "raqm-version.h",
                                     b"src/raqm-version.h",
@@ -216,7 +221,7 @@ def generate(version: str) -> dict:
                                 # building without a system FriBiDi Pillow's own
                                 # fribidi-shim is used instead.
                                 "content": upstream_diff_b64(
-                                    "https://raw.githubusercontent.com/HOST-Oman/libraqm/v0.10.5/src/raqm.c",
+                                    "https://raw.githubusercontent.com/HOST-Oman/libraqm/v0.11.0/src/raqm.c",
                                     b"src/raqm.c",
                                     thirdparty / "raqm" / "raqm.c",
                                     b"src/raqm.c",
@@ -227,7 +232,7 @@ def generate(version: str) -> dict:
                     },
                 ],
                 "notes": (
-                    "Vendored from upstream HOST-Oman/libraqm v0.10.5 with two "
+                    "Vendored from upstream HOST-Oman/libraqm v0.11.0 with two "
                     "Pillow-specific modifications: (1) raqm-version.h.in was "
                     "pre-processed into raqm-version.h with version placeholders "
                     "replaced by literal values; (2) raqm.c wraps the <fribidi.h> "
@@ -259,6 +264,23 @@ def generate(version: str) -> dict:
                 {
                     "type": "distribution",
                     "url": "https://download.savannah.gnu.org/releases/freetype/",
+                },
+            ],
+        },
+        {
+            "bom-ref": "pkg:generic/brotli",
+            "type": "library",
+            "name": "Brotli",
+            "version": versions["brotli"],
+            "scope": "optional",
+            "description": "Lossless compression algorithm. "
+            "Required for WOFF2 font support.",
+            "licenses": [{"license": {"id": "MIT"}}],
+            "externalReferences": [
+                {"type": "website", "url": "https://brotli.org"},
+                {
+                    "type": "distribution",
+                    "url": "https://github.com/google/brotli/releases",
                 },
             ],
         },
@@ -356,45 +378,6 @@ def generate(version: str) -> dict:
             "scope": "optional",
             "description": "TIFF codec (optional).",
             "licenses": [{"license": {"id": "libtiff"}}],
-            "pedigree": {
-                "ancestors": [
-                    {
-                        "bom-ref": "pkg:generic/libtiff@4.7.1#upstream",
-                        "type": "library",
-                        "name": "libtiff",
-                        "version": "4.7.1",
-                        "purl": "pkg:generic/libtiff@4.7.1",
-                        "externalReferences": [
-                            {
-                                "type": "distribution",
-                                "url": "https://gitlab.com/libtiff/libtiff/-/tags/v4.7.1",
-                            }
-                        ],
-                    }
-                ],
-                "patches": [
-                    {
-                        "type": "cherry-pick",
-                        "diff": {
-                            "text": {
-                                # apply https://gitlab.com/libtiff/libtiff/-/commit/782a11d6
-                                "content": base64.b64encode(
-                                    (
-                                        Path(__file__).parent.parent
-                                        / "patches"
-                                        / "tiff-4.7.1.tar.gz.patch"
-                                    ).read_bytes()
-                                ).decode(),
-                                "encoding": "base64",
-                            }
-                        },
-                    },
-                ],
-                "notes": (
-                    "Vendored from upstream libtiff v4.7.1 with a commit from master "
-                    "cherry-picked to fix CVE-2026-4775."
-                ),
-            },
             "externalReferences": [
                 {"type": "website", "url": "https://libtiff.gitlab.io/libtiff/"},
                 {
@@ -463,6 +446,45 @@ def generate(version: str) -> dict:
             "scope": "optional",
             "description": "JPEG 2000 codec (optional).",
             "licenses": [{"license": {"id": "BSD-2-Clause"}}],
+            "pedigree": {
+                "ancestors": [
+                    {
+                        "bom-ref": "pkg:generic/openjpeg@2.5.4#upstream",
+                        "type": "library",
+                        "name": "OpenJPEG",
+                        "version": "2.5.4",
+                        "purl": "pkg:generic/openjpeg@2.5.4",
+                        "externalReferences": [
+                            {
+                                "type": "distribution",
+                                "url": "https://github.com/uclouvain/openjpeg/releases/tag/v2.5.4",
+                            }
+                        ],
+                    }
+                ],
+                "patches": [
+                    {
+                        "type": "cherry-pick",
+                        "diff": {
+                            "text": {
+                                # apply https://github.com/uclouvain/openjpeg/commit/91d08b11a72764f6d199f32fa0c1b1abd4edc2ad
+                                "content": base64.b64encode(
+                                    (
+                                        Path(__file__).parent.parent
+                                        / "patches"
+                                        / "v2.5.4.tar.gz.patch"
+                                    ).read_bytes()
+                                ).decode(),
+                                "encoding": "base64",
+                            }
+                        },
+                    },
+                ],
+                "notes": (
+                    "Vendored from upstream openjpeg 2.5.4 with commits from master "
+                    "cherry-picked to fix OSV-2025-219 and CVE-2026-6192."
+                ),
+            },
             "externalReferences": [
                 {"type": "website", "url": "https://www.openjpeg.org"},
                 {

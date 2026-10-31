@@ -33,6 +33,43 @@ def test_rgb() -> None:
         assert_image_similar(im, hopper(), 16)
 
 
+def test_transparency() -> None:
+    data = b"""/* XPM */
+static char *test[] = {
+"3 1 3 1",
+" \tc None",
+"r\tc #FF0000",
+"b\tc #0000FF",
+" rb"};
+"""
+    with Image.open(BytesIO(data)) as im:
+        assert im.mode == "P"
+        assert im.info["transparency"] == 0
+
+        converted = im.convert("RGBA")
+    assert converted.getpixel((0, 0)) == (0, 0, 0, 0)
+    assert converted.getpixel((1, 0)) == (255, 0, 0, 255)
+    assert converted.getpixel((2, 0)) == (0, 0, 255, 255)
+
+
+def test_transparency_rgba() -> None:
+    # With more than 256 colours and a transparent colour,
+    # the image is opened as RGBA
+    colours = [b'"%03d\tc #%06x",' % (i, i + 1) for i in range(300)]
+    colours.append(b'"   \tc None",')
+    data = (
+        b'/* XPM */\nstatic char *test[] = {\n"2 1 301 3",\n'
+        + b"\n".join(colours)
+        + b'\n"000   "};\n'
+    )
+    with Image.open(BytesIO(data)) as im:
+        assert im.mode == "RGBA"
+        assert "transparency" not in im.info
+
+        assert im.getpixel((0, 0)) == (0, 0, 1, 255)
+        assert im.getpixel((1, 0)) == (0, 0, 0, 0)
+
+
 def test_truncated_header() -> None:
     data = b"/* XPM */"
     with pytest.raises(SyntaxError, match="broken XPM file"):
@@ -57,6 +94,30 @@ def test_not_enough_image_data() -> None:
         data = fp.read().split(b"/* pixels */")[0]
     with Image.open(BytesIO(data)) as im:
         with pytest.raises(ValueError, match="not enough image data"):
+            im.load()
+
+
+def test_undefined_color_key() -> None:
+    # Pixel data references a color key that is not defined in the palette
+    data = b"""/* XPM */
+static char *x[] = {"
+"1 1 1 1"
+"a\tc #000000"
+"b"};
+"""
+    with Image.open(BytesIO(data)) as im:
+        with pytest.raises(ValueError, match="unknown color"):
+            im.load()
+
+    # Same in RGB mode (more than 256 palette entries)
+    colours = [b'"%03d\tc #%06x",' % (i, i + 1) for i in range(257)]
+    data = (
+        b'/* XPM */\nstatic char *test[] = {\n"1 1 257 3",\n'
+        + b"\n".join(colours)
+        + b'\n"zzz"};\n'
+    )
+    with Image.open(BytesIO(data)) as im:
+        with pytest.raises(ValueError, match="unknown color"):
             im.load()
 
 
