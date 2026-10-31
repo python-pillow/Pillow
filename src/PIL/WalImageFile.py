@@ -47,8 +47,9 @@ class WalImageFile(ImageFile.ImageFile):
         # read header fields
         assert self.fp is not None
         header = self.fp.read(32 + 24 + 32 + 12)
-        self._size = i32(header, 32), i32(header, 36)
-        Image._decompression_bomb_check(self.size)
+        size = i32(header, 32), i32(header, 36)
+        Image._decompression_bomb_check(size)
+        self._size = size
 
         # load pixel data
         offset = i32(header, 40)

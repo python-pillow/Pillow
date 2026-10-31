@@ -63,8 +63,9 @@ class GdImageFile(ImageFile.ImageFile):
             raise SyntaxError(msg)
 
         self._mode = "P"
-        self._size = i16(s, 2), i16(s, 4)
-        Image._decompression_bomb_check(self.size)
+        size = i16(s, 2), i16(s, 4)
+        Image._decompression_bomb_check(size)
+        self._size = size
 
         true_color = s[6]
         true_color_offset = 2 if true_color else 0
