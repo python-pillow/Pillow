@@ -92,8 +92,7 @@ class FontFile:
         self.ysize = h
 
         # paste glyphs into bitmap
-        Image._decompression_bomb_check((xsize, ysize))
-        self.bitmap = Image.new("1", (xsize, ysize))
+        self.bitmap = Image.new("1", Image._decompression_bomb_check((xsize, ysize)))
         self.metrics: list[
             tuple[tuple[int, int], tuple[int, int, int, int], tuple[int, int, int, int]]
             | None

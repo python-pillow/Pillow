@@ -650,9 +650,10 @@ class FreeTypeFont(BaseImageFont):
             start = (0, 0)
 
         def fill(width: int, height: int) -> Image.core.ImagingCore:
-            size = (width, height)
-            Image._decompression_bomb_check(size)
-            return Image.core.fill("RGBA" if mode == "RGBA" else "L", size)
+            return Image.core.fill(
+                "RGBA" if mode == "RGBA" else "L",
+                Image._decompression_bomb_check((width, height)),
+            )
 
         return self.font.render(
             text,

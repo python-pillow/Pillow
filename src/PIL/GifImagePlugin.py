@@ -281,9 +281,9 @@ class GifImageFile(ImageFile.ImageFile):
                 x0, y0 = i16(s, 0), i16(s, 2)
                 x1, y1 = x0 + i16(s, 4), y0 + i16(s, 6)
                 if (x1 > self.size[0] or y1 > self.size[1]) and update_image:
-                    size = max(x1, self.size[0]), max(y1, self.size[1])
-                    Image._decompression_bomb_check(size)
-                    self._size = size
+                    self._size = Image._decompression_bomb_check(
+                        (max(x1, self.size[0]), max(y1, self.size[1]))
+                    )
                 frame_dispose_extent = x0, y0, x1, y1
                 flags = s[8]
 
@@ -367,9 +367,7 @@ class GifImageFile(ImageFile.ImageFile):
 
                     # only dispose the extent in this frame
                     x0, y0, x1, y1 = self.dispose_extent
-                    dispose_size = (x1 - x0, y1 - y0)
-
-                    Image._decompression_bomb_check(dispose_size)
+                    dispose_size = Image._decompression_bomb_check((x1 - x0, y1 - y0))
 
                     # by convention, attempt to use transparency first
                     dispose_mode = "P"
@@ -391,9 +389,9 @@ class GifImageFile(ImageFile.ImageFile):
                         self.dispose = self._crop(self.im, self.dispose_extent)
                     elif frame_transparency is not None:
                         x0, y0, x1, y1 = self.dispose_extent
-                        dispose_size = (x1 - x0, y1 - y0)
-
-                        Image._decompression_bomb_check(dispose_size)
+                        dispose_size = Image._decompression_bomb_check(
+                            (x1 - x0, y1 - y0)
+                        )
                         dispose_mode = "P"
                         color = frame_transparency
                         if self.mode in {"RGB", "RGBA"}:

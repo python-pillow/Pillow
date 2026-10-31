@@ -77,10 +77,9 @@ class GbrImageFile(ImageFile.ImageFile):
         self.info["comment"] = self.fp.read(comment_length)[:-1]
 
         self._mode = "L" if color_depth == 1 else "RGBA"
-        self._size = width, height
 
         # Image might not be small
-        Image._decompression_bomb_check(self.size)
+        self._size = Image._decompression_bomb_check((width, height))
 
     def load(self) -> Image.core.PixelAccess | None:
         if self._im is None:

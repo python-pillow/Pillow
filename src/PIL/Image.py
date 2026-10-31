@@ -3594,9 +3594,9 @@ _fromarray_typemap = {
 
 def _decompression_bomb_check(
     size: tuple[int, int], *, error_only: bool = False
-) -> None:
+) -> tuple[int, int]:
     if MAX_IMAGE_PIXELS is None:
-        return
+        return size
 
     pixels = max(1, size[0]) * max(1, size[1])
 
@@ -3613,6 +3613,8 @@ def _decompression_bomb_check(
             "could be decompression bomb DOS attack.",
             DecompressionBombWarning,
         )
+
+    return size
 
 
 def open(
