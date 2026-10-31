@@ -667,20 +667,13 @@ class Image:
     def mode(self) -> str:
         return self._mode
 
-    @property
-    def readonly(self) -> int:
-        return (self._im and self._im.readonly) or self._readonly
-
-    @readonly.setter
-    def readonly(self, readonly: int) -> None:
-        self._readonly = readonly
-
     def _copy_info(self) -> dict[str | tuple[int, int], Any]:
         return {k: v.copy() if isinstance(v, list) else v for k, v in self.info.items()}
 
     def _new(self, im: core.ImagingCore) -> Image:
         new = Image()
         new.im = im
+        new.readonly = im.readonly
         new._mode = im.mode
         new._size = im.size
         if im.mode in ("P", "PA"):
@@ -722,15 +715,13 @@ class Image:
         self._im = DeferredError(ValueError("Operation on closed image"))
 
     def _copy(self) -> None:
-        self.load()
         self.im = self.im.copy()
         self.readonly = 0
 
     def _ensure_mutable(self) -> None:
+        self.load()
         if self.readonly:
             self._copy()
-        else:
-            self.load()
 
     def _dump(
         self, file: str | None = None, format: str | None = None, **options: Any
@@ -3384,7 +3375,6 @@ def frombuffer(
                 from . import ImagePalette
 
                 im.palette = ImagePalette.ImagePalette("RGB", im.im.getpalette("RGB"))
-            im.readonly = 1
             return im
 
     return frombytes(mode, size, data, decoder_name, args)
