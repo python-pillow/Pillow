@@ -11,9 +11,7 @@ from .helper import assert_image_equal, hopper
 @pytest.mark.parametrize("size", [(1, 1), (1, 9), (9, 1), (3, 3), (13, 11)])
 @pytest.mark.parametrize("mode", ["L", "RGB"])
 @pytest.mark.parametrize("value", [0, 255])
-def test_jjn_bilevel_solid_image(
-    mode: str, size: tuple[int, int], value: int
-) -> None:
+def test_jjn_bilevel_solid_image(mode: str, size: tuple[int, int], value: int) -> None:
     im = Image.new(mode, size, (value,) * 3 if mode == "RGB" else value)
     result = im.convert("1", dither=Image.Dither.JARVIS_JUDICE_NINKE)
     assert_image_equal(result, Image.new("1", size, value))
