@@ -161,6 +161,28 @@ class TestImageFile:
             with pytest.raises(ValueError, match="Tile offset cannot be negative"):
                 im.load()
 
+    @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
+    def test_zero_dimension_seek(self, size: tuple[int, int]) -> None:
+        class ZeroImageFile(ImageFile.ImageFile):
+            def _open(self) -> None:
+                self._mode = "1"
+                self._size = (1, 1)
+                self._im = Image.core.fill(self.mode, self.size)
+
+            def seek(self, frame: int) -> None:
+                self._size = (0, 0)
+                self.tile = [ImageFile._Tile("raw")]
+
+                self.frame = frame
+                Image.Image.seek(self, frame)
+
+            def tell(self) -> int:
+                return self.frame
+
+        im = ZeroImageFile(BytesIO(b""))
+        im.seek(1)
+        im.load()
+
     @pytest.mark.parametrize("xy", ((-1, 0), (0, -1)))
     def test_negative_tile_extents(self, xy: tuple[int, int]) -> None:
         im = Image.new("1", (1, 1))
