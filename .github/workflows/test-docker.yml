@@ -79,6 +79,9 @@ jobs:
 
     - name: Docker pull
       run: |
+        if [ "${{ matrix.docker }}" = "cpython_sanity-3.14tsan" ]; then
+          sudo sysctl vm.mmap_rnd_bits=28
+        fi
         docker pull ${{ matrix.qemu-arch && format('--platform=linux/{0}', matrix.qemu-arch)}} pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
 
     - name: Docker build
