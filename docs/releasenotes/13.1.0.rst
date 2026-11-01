@@ -66,6 +66,15 @@ On little-endian systems, :py:meth:`~PIL.Image.Image.resize` read and wrote
 I;16B and I;16N pixel values in the wrong byte order when using a resampling
 filter other than ``Resampling.NEAREST``. This has been fixed.
 
+Pasting into I;16, I and F images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.paste` with an L, LA, RGBA or RGBa mask blended
+each byte of an I;16, I or F pixel separately, so partly transparent pixels
+received unrelated values. Pasting a color into an I;16 image without a mask
+or with a 1 mask also wrote the wrong value. Pixels are now blended as whole
+values, in the byte order of the mode.
+
 Blurring I;16 images
 ^^^^^^^^^^^^^^^^^^^^
 

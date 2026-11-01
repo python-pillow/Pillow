@@ -23,6 +23,8 @@
 
 #include "Imaging.h"
 
+#include <math.h>
+
 #define PREPARE_PASTE_LOOP()        \
     int y, y_end, offset;           \
     if (imOut == imIn && dy > sy) { \
@@ -270,6 +272,111 @@ paste_mask_RGBa(
     }
 }
 
+/*
+ * I;16, I and F pixels are single numbers wider than a byte. Blending them
+ * with a mask has to work on the whole value, not on each of its bytes.
+ */
+static inline int
+i16_bigendian(Imaging im) {
+    return im->mode == IMAGING_MODE_I_16B
+#ifdef WORDS_BIGENDIAN
+           || im->mode == IMAGING_MODE_I_16N
+#endif
+        ;
+}
+
+static inline double
+get_wide(Imaging im, const UINT8 *p) {
+    INT32 i;
+    FLOAT32 f;
+    switch (im->type) {
+        case IMAGING_TYPE_I16:
+            return i16_bigendian(im) ? (p[0] << 8) + p[1] : p[0] + (p[1] << 8);
+        case IMAGING_TYPE_INT32:
+            memcpy(&i, p, sizeof(i));
+            return i;
+        default:
+            memcpy(&f, p, sizeof(f));
+            return f;
+    }
+}
+
+static inline void
+put_wide(Imaging im, UINT8 *p, double v) {
+    INT32 i;
+    FLOAT32 f;
+    switch (im->type) {
+        case IMAGING_TYPE_I16:
+            i = v <= 0.0 ? 0 : v >= 65535.0 ? 65535 : (INT32)(v + 0.5);
+            if (i16_bigendian(im)) {
+                p[0] = (UINT8)(i >> 8);
+                p[1] = (UINT8)i;
+            } else {
+                p[0] = (UINT8)i;
+                p[1] = (UINT8)(i >> 8);
+            }
+            break;
+        case IMAGING_TYPE_INT32:
+            v = floor(v + 0.5);
+            i = v <= INT32_MIN ? INT32_MIN : v >= INT32_MAX ? INT32_MAX : (INT32)v;
+            memcpy(p, &i, sizeof(i));
+            break;
+        default:
+            f = (FLOAT32)v;
+            memcpy(p, &f, sizeof(f));
+            break;
+    }
+}
+
+static inline double
+blend_wide(double out, double in, UINT8 a, int premultiplied) {
+    if (premultiplied) {
+        return in + out * (255 - a) / 255.0;
+    }
+    return (in * a + out * (255 - a)) / 255.0;
+}
+
+static inline void
+paste_mask_wide(
+    Imaging imOut,
+    Imaging imIn,
+    Imaging imMask,
+    int dx,
+    int dy,
+    int sx,
+    int sy,
+    int xsize,
+    int ysize,
+    int pixelsize
+) {
+    /* paste an I;16, I or F image with mode "L", "LA", "RGBA" or "RGBa" matte */
+
+    int x;
+    /* the alpha is the only band of "L", and the last of the other modes */
+    int mask_step = imMask->mode == IMAGING_MODE_L ? 1 : 4;
+    int mask_offset = mask_step - 1;
+    int premultiplied = imMask->mode == IMAGING_MODE_RGBa;
+
+    PREPARE_PASTE_LOOP();
+    for (; y != y_end; y += offset) {
+        UINT8 *out = (UINT8 *)imOut->image[y + dy] + dx * pixelsize;
+        UINT8 *in = (UINT8 *)imIn->image[y + sy] + sx * pixelsize;
+        UINT8 *mask = (UINT8 *)imMask->image[y + sy] + sx * mask_step + mask_offset;
+        for (x = 0; x < xsize; x++) {
+            put_wide(
+                imOut,
+                out,
+                blend_wide(
+                    get_wide(imOut, out), get_wide(imIn, in), *mask, premultiplied
+                )
+            );
+            out += pixelsize;
+            in += pixelsize;
+            mask += mask_step;
+        }
+    }
+}
+
 int
 ImagingPaste(
     Imaging imOut, Imaging imIn, Imaging imMask, int dx0, int dy0, int dx1, int dy1
@@ -326,6 +433,16 @@ ImagingPaste(
         ImagingSectionEnter(&cookie);
         paste_mask_1(imOut, imIn, imMask, dx0, dy0, sx0, sy0, xsize, ysize, pixelsize);
         ImagingSectionLeave(&cookie);
+    } else if (
+        imOut->type != IMAGING_TYPE_UINT8 &&
+        (imMask->mode == IMAGING_MODE_L || imMask->mode == IMAGING_MODE_LA ||
+         imMask->mode == IMAGING_MODE_RGBA || imMask->mode == IMAGING_MODE_RGBa)
+    ) {
+        ImagingSectionEnter(&cookie);
+        paste_mask_wide(
+            imOut, imIn, imMask, dx0, dy0, sx0, sy0, xsize, ysize, pixelsize
+        );
+        ImagingSectionLeave(&cookie);
     } else if (imMask->mode == IMAGING_MODE_L) {
         ImagingSectionEnter(&cookie);
         paste_mask_L(imOut, imIn, imMask, dx0, dy0, sx0, sy0, xsize, ysize, pixelsize);
@@ -363,11 +480,21 @@ fill(
     memcpy(&ink32, ink, pixelsize);
     memcpy(&ink8, ink, sizeof(ink8));
 
-    if (imOut->image8 || ink32 == 0L) {
+    if (pixelsize == 1 || ink32 == 0L) {
         dx *= pixelsize;
         xsize *= pixelsize;
         for (y = 0; y < ysize; y++) {
             memset(imOut->image[y + dy] + dx, ink8, xsize);
+        }
+
+    } else if (imOut->image8) {
+        /* I;16 */
+        dx *= pixelsize;
+        for (y = 0; y < ysize; y++) {
+            UINT8 *out = (UINT8 *)imOut->image[y + dy] + dx;
+            for (x = 0; x < xsize; x++, out += pixelsize) {
+                memcpy(out, ink, pixelsize);
+            }
         }
 
     } else {
@@ -417,13 +544,18 @@ fill_mask_1(
 
     if (imOut->image8) {
         for (y = 0; y < ysize; y++) {
-            UINT8 *out = imOut->image8[y + dy] + dx;
+            UINT8 *out = imOut->image8[y + dy] + dx * pixelsize;
             UINT8 *mask = imMask->image8[y + sy] + sx;
             for (x = 0; x < xsize; x++) {
                 if (*mask++) {
-                    *out = ink8;
+                    if (pixelsize == 1) {
+                        *out = ink8;
+                    } else {
+                        /* I;16 */
+                        memcpy(out, ink_, pixelsize);
+                    }
                 }
-                out++;
+                out += pixelsize;
             }
         }
 
@@ -460,19 +592,11 @@ fill_mask_L(
     unsigned int tmp1;
 
     if (imOut->image8) {
-        int i16 = imOut->type == IMAGING_TYPE_I16;
         for (y = 0; y < ysize; y++) {
             UINT8 *out = imOut->image8[y + dy] + dx;
-            if (i16) {
-                out += dx;
-            }
             UINT8 *mask = imMask->image8[y + sy] + sx;
             for (x = 0; x < xsize; x++) {
                 *out = BLEND(*mask, *out, ink[0], tmp1);
-                if (i16) {
-                    out++;
-                    *out = BLEND(*mask, *out, ink[1], tmp1);
-                }
                 out++, mask++;
             }
         }
@@ -593,6 +717,42 @@ fill_mask_RGBa(
     }
 }
 
+static inline void
+fill_mask_wide(
+    Imaging imOut,
+    const UINT8 *ink,
+    Imaging imMask,
+    int dx,
+    int dy,
+    int sx,
+    int sy,
+    int xsize,
+    int ysize,
+    int pixelsize
+) {
+    /* fill an I;16, I or F image with mode "L", "RGBA" or "RGBa" matte */
+
+    int x, y;
+    int mask_step = imMask->mode == IMAGING_MODE_L ? 1 : 4;
+    int mask_offset = mask_step - 1;
+    int premultiplied = imMask->mode == IMAGING_MODE_RGBa;
+    double value = get_wide(imOut, ink);
+
+    for (y = 0; y < ysize; y++) {
+        UINT8 *out = (UINT8 *)imOut->image[y + dy] + dx * pixelsize;
+        UINT8 *mask = (UINT8 *)imMask->image[y + sy] + sx * mask_step + mask_offset;
+        for (x = 0; x < xsize; x++) {
+            put_wide(
+                imOut,
+                out,
+                blend_wide(get_wide(imOut, out), value, *mask, premultiplied)
+            );
+            out += pixelsize;
+            mask += mask_step;
+        }
+    }
+}
+
 int
 ImagingFill2(
     Imaging imOut, const void *ink, Imaging imMask, int dx0, int dy0, int dx1, int dy1
@@ -608,6 +768,20 @@ ImagingFill2(
     }
 
     pixelsize = imOut->pixelsize;
+
+    UINT8 ink16[4] = {0};
+    if (imOut->type == IMAGING_TYPE_I16) {
+        /* getink() gives I;16 ink in little endian order, whatever the mode */
+        const UINT8 *ink8 = ink;
+        if (i16_bigendian(imOut)) {
+            ink16[0] = ink8[1];
+            ink16[1] = ink8[0];
+        } else {
+            ink16[0] = ink8[0];
+            ink16[1] = ink8[1];
+        }
+        ink = ink16;
+    }
 
     xsize = (int64_t)dx1 - dx0;
     ysize = (int64_t)dy1 - dy0;
@@ -651,6 +825,14 @@ ImagingFill2(
     } else if (imMask->mode == IMAGING_MODE_1) {
         ImagingSectionEnter(&cookie);
         fill_mask_1(imOut, ink, imMask, dx0, dy0, sx0, sy0, xsize, ysize, pixelsize);
+        ImagingSectionLeave(&cookie);
+    } else if (
+        imOut->type != IMAGING_TYPE_UINT8 &&
+        (imMask->mode == IMAGING_MODE_L || imMask->mode == IMAGING_MODE_RGBA ||
+         imMask->mode == IMAGING_MODE_RGBa)
+    ) {
+        ImagingSectionEnter(&cookie);
+        fill_mask_wide(imOut, ink, imMask, dx0, dy0, sx0, sy0, xsize, ysize, pixelsize);
         ImagingSectionLeave(&cookie);
     } else if (imMask->mode == IMAGING_MODE_L) {
         ImagingSectionEnter(&cookie);
