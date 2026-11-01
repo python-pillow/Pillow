@@ -310,6 +310,16 @@ class PngInfo:
 
         self.chunks.append((cid, data, after_idat))
 
+    def _check_text_key(self, key: bytes) -> None:
+        if not 1 <= len(key) <= 79:
+            msg = "Text key must be 1 to 79 characters long"
+            raise ValueError(msg)
+
+        if b"\0" in key:
+            # The NULL character is the separator after the key
+            msg = "Text key cannot contain null characters"
+            raise ValueError(msg)
+
     def add_itxt(
         self,
         key: str | bytes,
@@ -320,7 +330,7 @@ class PngInfo:
     ) -> None:
         """Appends an iTXt chunk.
 
-        :param key: latin-1 encodable text key name
+        :param key: latin-1 encodable text key name. 1 to 79 characters long
         :param value: value for this key
         :param lang: language code
         :param tkey: UTF-8 version of the key name
@@ -330,6 +340,7 @@ class PngInfo:
 
         if not isinstance(key, bytes):
             key = key.encode("latin-1", "strict")
+        self._check_text_key(key)
         if not isinstance(value, bytes):
             value = value.encode("utf-8", "strict")
         if not isinstance(lang, bytes):
@@ -350,7 +361,7 @@ class PngInfo:
     ) -> None:
         """Appends a text chunk.
 
-        :param key: latin-1 encodable text key name
+        :param key: latin-1 encodable text key name. 1 to 79 characters long
         :param value: value for this key, text or an
            :py:class:`PIL.PngImagePlugin.iTXt` instance
         :param zip: compression flag
@@ -374,6 +385,7 @@ class PngInfo:
 
         if not isinstance(key, bytes):
             key = key.encode("latin-1", "strict")
+        self._check_text_key(key)
 
         if zip:
             self.add(b"zTXt", key + b"\0\0" + zlib.compress(value))
@@ -529,7 +541,12 @@ class PngStream(ChunkStream):
             if self.im_mode == "1":
                 self.im_info["transparency"] = 255 if i16(s) else 0
             elif self.im_mode in ("L", "I;16"):
-                self.im_info["transparency"] = i16(s)
+                value = i16(s)
+                if self.im_rawmode in {"L;2", "L;4"}:
+                    # Scale the grey level to match the unpacked 8-bit pixels
+                    max_value = (1 << int(self.im_rawmode[-1])) - 1
+                    value = int(min(1, value / max_value) * 255)
+                self.im_info["transparency"] = value
             elif self.im_mode == "RGB":
                 self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
         return s
@@ -1204,8 +1221,8 @@ def _write_multiple_frames(
 ) -> Image.Image | None:
     duration = im.encoderinfo.get("duration")
     loop = im.encoderinfo.get("loop", im.info.get("loop", 0))
-    disposal = im.encoderinfo.get("disposal", im.info.get("disposal", Disposal.OP_NONE))
-    blend = im.encoderinfo.get("blend", im.info.get("blend", Blend.OP_SOURCE))
+    disposal = im.encoderinfo.get("disposal")
+    blend = im.encoderinfo.get("blend")
 
     if default_image:
         chain = itertools.chain(append_images)
@@ -1233,30 +1250,15 @@ def _write_multiple_frames(
 
             if im_frames:
                 previous = im_frames[-1]
-                prev_disposal = previous.encoderinfo.get("disposal")
-                prev_blend = previous.encoderinfo.get("blend")
-                if prev_disposal == Disposal.OP_PREVIOUS and len(im_frames) < 2:
-                    prev_disposal = Disposal.OP_BACKGROUND
-
-                if prev_disposal == Disposal.OP_BACKGROUND:
-                    base_im = previous.im.convert("RGBA")
-                    box = previous.bbox or (0, 0, *im.size)
-                    dispose = Image.new("RGBA", (box[2] - box[0], box[3] - box[1]))
-                    base_im.paste(dispose, box)
-                elif prev_disposal == Disposal.OP_PREVIOUS:
-                    base_im = im_frames[-2].im
+                if mode.startswith("I;16"):
+                    delta = ImageChops.subtract_modulo(
+                        Image.frombytes("LA", im.size, im_frame.tobytes()),
+                        Image.frombytes("LA", im.size, previous.im.tobytes()),
+                    )
                 else:
-                    base_im = previous.im
-                delta = ImageChops.subtract_modulo(
-                    im_frame.convert("RGBA"), base_im.convert("RGBA")
-                )
+                    delta = ImageChops.subtract_modulo(im_frame, previous.im)
                 bbox = delta.getbbox(alpha_only=False)
-                if (
-                    not bbox
-                    and prev_disposal == encoderinfo.get("disposal")
-                    and prev_blend == encoderinfo.get("blend")
-                    and "duration" in encoderinfo
-                ):
+                if not bbox and "duration" in encoderinfo:
                     new_duration = (
                         previous.encoderinfo["duration"] + encoderinfo["duration"]
                     )
@@ -1304,8 +1306,8 @@ def _write_multiple_frames(
         if delay.numerator > 65535:
             msg = "cannot write duration"
             raise ValueError(msg)
-        frame_disposal = encoderinfo.get("disposal", disposal)
-        frame_blend = encoderinfo.get("blend", blend)
+        frame_disposal = encoderinfo.get("disposal", Disposal.OP_NONE)
+        frame_blend = encoderinfo.get("blend", Blend.OP_SOURCE)
         # frame control
         chunk(
             fp,
