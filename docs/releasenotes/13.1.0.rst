@@ -49,6 +49,15 @@ TODO
 Other changes
 =============
 
+Faster and more accurate image comparison
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Comparing two images with ``==`` was made faster by reducing data copying.
+
+For ``P`` and ``PA`` images, comparison now also takes palette mode and alpha
+into account. Previously palettes that differed only in alpha, or an RGB palette
+identical with a fully opaque RGBA palette compared equal.
+
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
