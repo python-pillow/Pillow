@@ -171,6 +171,7 @@ class Dither(IntEnum):
     ORDERED = 1  # Not yet implemented
     RASTERIZE = 2  # Not yet implemented
     FLOYDSTEINBERG = 3  # default
+    JARVIS_JUDICE_NINKE = 4
 
 
 # palettes/quantizers
@@ -1050,8 +1051,9 @@ class Image:
            should be 4- or 12-sequence containing floating point values.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
-           Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
-           (default). Note that this is not used when ``matrix`` is supplied.
+           Available methods are :data:`Dither.NONE`, :data:`Dither.FLOYDSTEINBERG`
+           (default) or :data:`Dither.JARVIS_JUDICE_NINKE`. Note that this is not used
+           when ``matrix`` is supplied.
         :param palette: Palette to use when converting from mode "RGB"
            to "P".  Available palettes are :data:`Palette.WEB` or
            :data:`Palette.ADAPTIVE`.
@@ -1299,8 +1301,8 @@ class Image:
                         :py:class:`PIL.Image.Image`.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
-           Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
-           (default).
+           Available methods are :data:`Dither.NONE`, :data:`Dither.FLOYDSTEINBERG`
+           (default) or :data:`Dither.JARVIS_JUDICE_NINKE`.
         :returns: A new image
         """
 
