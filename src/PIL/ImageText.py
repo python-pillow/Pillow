@@ -82,8 +82,9 @@ class _Wrap(Generic[AnyStr]):
                 break
             line = word
         else:
-            if line:
-                self.add_line(line)
+            if not line or self.add_line(line):
+                # Only trailing whitespace remains, which does not need to be drawn
+                self.position = len(input_text)
         self.remaining_text: AnyStr = input_text[self.position :]
 
     def add_line(self, line: AnyStr) -> bool:
