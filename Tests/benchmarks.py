@@ -50,9 +50,6 @@ SIZES = [(1237, 811)]  # Primes, non-power-of-two, asymmetric, approximately 102
 
 # For benchmarks that act on test fixture files, these are the paths loaded.
 IMAGES_PATH = Path(__file__).parent / "images"
-PATHS = [
-    IMAGES_PATH / "flower2.jpg",
-]
 
 # These are derived from the other configuration, above.
 RGB_MODES = [mode for mode in MODES if mode.startswith("RGB")]
@@ -574,24 +571,26 @@ def test_draw_lines_blend(
 @pytest.mark.benchmark(group="load")
 @pytest.mark.parametrize(
     "path",
-    # Commonly used formats and decoder settings.
+    # Commonly used formats
     [
-        IMAGES_PATH / "avif" / "hopper.avif",  # AVIF, RGB
-        IMAGES_PATH / "hopper.bmp",  # BMP, RGB
-        IMAGES_PATH / "hopper.gif",  # GIF, P
-        IMAGES_PATH / "hopper.jpg",  # JPEG, RGB
-        IMAGES_PATH / "hopper.png",  # PNG, RGB
-        IMAGES_PATH / "hopper.tif",  # TIFF, raw
-        IMAGES_PATH / "hopper.webp",  # WebP, lossy RGB
-        IMAGES_PATH / "hopper_gray.jpg",  # JPEG, L
-        IMAGES_PATH / "hopper_lossless.webp",  # WebP, lossless
-        IMAGES_PATH / "hopper_lzw.tif",  # TIFF, LZW
-        IMAGES_PATH / "hopper_wal.png",  # PNG, P
-        IMAGES_PATH / "pil123rgba.png",  # PNG, RGBA
-        IMAGES_PATH / "pil_sample_cmyk.jpg",  # JPEG, CMYK
-        IMAGES_PATH / "tiff_adobe_deflate.tif",  # TIFF, deflate
-        IMAGES_PATH / "transparent.webp",  # WebP, RGBA
-        IMAGES_PATH / "uncompressed_rgb.dds",  # DDS, uncompressed (see PR #9943)
+        IMAGES_PATH / "avif" / "hopper.avif",  # AVIF, RGB mode
+        IMAGES_PATH / "hopper.bmp",  # BMP, RGB mode
+        IMAGES_PATH / "hopper.gif",  # GIF, P mode
+        IMAGES_PATH / "hopper_gray.jpg",  # JPEG, L mode
+        IMAGES_PATH / "hopper.jpg",  # JPEG, RGB mode
+        IMAGES_PATH / "pil_sample_cmyk.jpg",  # JPEG, CMYK mode
+        IMAGES_PATH / "hopper_wal.png",  # PNG, P mode
+        IMAGES_PATH / "hopper.png",  # PNG, RGB mode
+        IMAGES_PATH / "pil123rgba.png",  # PNG, RGBA mode
+        IMAGES_PATH / "hopper.tif",  # TIFF, RGB mode. raw codec
+        IMAGES_PATH / "hopper_lzw.tif",  # TIFF, RGB mode. tiff_lzw compression
+        IMAGES_PATH
+        / "tiff_adobe_deflate.tif",  # TIFF, RGB mode. tiff_adobe_deflate compression
+        IMAGES_PATH / "hopper.webp",  # WebP, RGB mode. VP8 (lossy)
+        IMAGES_PATH / "hopper_lossless.webp",  # WebP, RGB mode. VP8L (lossless)
+        IMAGES_PATH / "transparent.webp",  # WebP, RGBA mode. VP8X with VP8 (lossy)
+        IMAGES_PATH
+        / "uncompressed_rgb.dds",  # DDS, RGBA mode. uncompressed (see #9943)
     ],
     ids=_format_path,
 )
@@ -602,7 +601,7 @@ def test_load(bench: BenchmarkFixture, path: Path) -> None:
 
     try:
         run()
-    except Exception as e:  # e.g. the codec is not available in this build
+    except Exception as e:  # not all features are necessarily available
         pytest.skip(f"cannot load {path.name}: {e}")
     bench(run)
 
@@ -651,7 +650,7 @@ def test_save(
 
     try:
         run()
-    except Exception as e:  # e.g. the codec is not available in this build
+    except Exception as e:  # not all features are necessarily available
         pytest.skip(f"cannot save {format}: {e}")
     bench(run)
 
