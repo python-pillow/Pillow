@@ -68,6 +68,7 @@ from ._util import DeferredError, is_path
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
+    from types import ModuleType
     from typing import Any, Literal, Self
 
 
@@ -612,6 +613,17 @@ class SupportsGetData(Protocol):
     def getdata(
         self,
     ) -> tuple[Transform, Sequence[int]]: ...
+
+
+def _is_numpy_array(data: object) -> bool:
+    numpy: ModuleType | None = None
+    if hasattr(data, "shape"):
+        try:
+            import numpy
+        except ImportError:
+            pass
+
+    return numpy is not None and isinstance(data, numpy.ndarray)
 
 
 class Image:
@@ -2051,6 +2063,14 @@ class Image:
             # for other modes, convert the function to a table
             flatLut = [lut(i) for i in range(256)] * self.im.bands  # type: ignore[arg-type]
         else:
+            if type(lut) in (list, tuple):
+                for value in lut:
+                    if type(value) not in (int, float):
+                        msg = "sequence must be flattened"
+                        raise TypeError(msg)
+            elif not _is_numpy_array(lut):
+                msg = "argument must be a sequence, callable or ImagePointHandler"
+                raise TypeError(msg)
             flatLut = lut
 
         if self.mode == "F":
@@ -2136,6 +2156,34 @@ class Image:
         :param scale: An optional scale value.  The default is 1.0.
         :param offset: An optional offset value.  The default is 0.0.
         """
+        if type(data) in (list, tuple):
+            single_channel = getmodebands(self.mode) == 1
+            for value in data:
+                if single_channel:
+                    if type(value) not in (int, float):
+                        msg = "sequence must be flattened"
+                        raise TypeError(msg)
+                elif type(value) in (list, tuple):
+                    assert not isinstance(value, float)
+                    if not all(type(value2) is int for value2 in value):
+                        msg = (
+                            "color must be int, or tuple of one, three or four elements"
+                        )
+                        raise TypeError(msg)
+                elif type(value) is not int:
+                    msg = "color must be int or tuple"
+                    raise TypeError(msg)
+        else:
+            import array
+
+            if (
+                not isinstance(data, array.array)
+                and not _is_numpy_array(data)
+                # ImagingCore is only to support deprecated getdata()
+                and data.__class__.__name__ != "ImagingCore"
+            ):
+                msg = "argument must be a sequence"
+                raise TypeError(msg)
 
         self._ensure_mutable()
 
