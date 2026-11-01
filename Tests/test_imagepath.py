@@ -216,6 +216,15 @@ def test_overflow_segfault() -> None:
             x[i] = b"0" * 16
 
 
+def test_tuple_subclass_with_larger_len() -> None:
+    class LargerLen(tuple[float, ...]):
+        def __len__(self) -> int:
+            return 10
+
+    with pytest.raises(IndexError):
+        ImagePath.Path(LargerLen((0.0,)))
+
+
 def test_compact_empty_path() -> None:
     p = ImagePath.Path(0)
     assert p.compact() == 0
