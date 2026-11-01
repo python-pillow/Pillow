@@ -8,6 +8,7 @@ from PIL import Image
 
 from .helper import assert_image_equal, hopper
 
+
 @pytest.mark.parametrize("size", [(1, 1), (1, 9), (9, 1), (3, 3), (13, 11)])
 @pytest.mark.parametrize("mode", ["L", "RGB"])
 @pytest.mark.parametrize("value", [0, 255])
