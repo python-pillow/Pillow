@@ -59,8 +59,12 @@ def test_default() -> None:
     assert_image(converted_im, "RGB", im.size)
 
     im.info["transparency"] = 0
+    original_palette = im.getpalette(None)
     converted_im = im.convert()
     assert_image(converted_im, "RGBA", im.size)
+
+    # Assert that original image palette was not changed
+    assert im.getpalette(None) == original_palette
 
 
 # ref https://github.com/python-pillow/Pillow/issues/274
@@ -188,6 +192,20 @@ def test_trns_l(tmp_path: Path) -> None:
     im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
     assert "transparency" in im_p.info
     im_p.save(f)
+
+
+@pytest.mark.parametrize("mode", ("I", "I;16"))
+@pytest.mark.parametrize("convert_mode", ("LA", "RGBA"))
+def test_trns_i(mode: str, convert_mode: str) -> None:
+    im = Image.new(mode, (3, 1))
+    im.putdata((0, 0x1234, 0xFFFF))
+    im.info["transparency"] = 0x1234
+
+    expected: tuple[tuple[int, ...], ...] = ((0, 255), (255, 0), (255, 255))
+    while len(expected[0]) < len(convert_mode):
+        expected = tuple((v[0], *v) for v in expected)
+
+    assert im.convert(convert_mode).get_flattened_data() == expected
 
 
 def test_trns_RGB(tmp_path: Path) -> None:

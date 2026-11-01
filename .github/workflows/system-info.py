@@ -4,7 +4,7 @@ Print out some handy system info like Travis CI does.
 This sort of info is missing from GitHub Actions.
 
 Requested here:
-https://github.com/actions/virtual-environments/issues/79
+https://github.com/actions/runner-images/issues/79
 """
 
 from __future__ import annotations
