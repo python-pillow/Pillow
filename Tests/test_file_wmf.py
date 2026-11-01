@@ -47,6 +47,19 @@ def test_load_zero_inch() -> None:
             pass
 
 
+@pytest.mark.parametrize("frame_offset", (24, 28))
+def test_load_zero_emf_frame(frame_offset: int) -> None:
+    with open("Tests/images/drawing.emf", "rb") as fp:
+        data = bytearray(fp.read())
+
+    # Make the frame's right (or bottom) edge equal its left (or top) edge
+    data[frame_offset + 8 : frame_offset + 12] = data[frame_offset : frame_offset + 4]
+
+    with pytest.raises(ValueError, match="Invalid frame"):
+        with Image.open(BytesIO(data)):
+            pass
+
+
 def test_load_unsupported_wmf() -> None:
     b = BytesIO(b"\xd7\xcd\xc6\x9a\x00\x00" + b"\x01" * 10)
     with pytest.raises(SyntaxError, match="Unsupported WMF file format"):
