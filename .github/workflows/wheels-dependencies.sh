@@ -1,38 +1,54 @@
 #!/bin/bash
 
-# Safety check - Pillow builds require that CIBW_ARCHS is set, and that it only
-# contains a single value (even though cibuildwheel allows multiple values in
-# CIBW_ARCHS). This check doesn't work on Linux because of how the CIBW_ARCHS
-# variable is exposed.
-function check_cibw_archs {
-    if [[ -z "$CIBW_ARCHS" ]]; then
-        echo "ERROR: Pillow builds require CIBW_ARCHS be defined."
-        exit 1
-    fi
-    if [[ "$CIBW_ARCHS" == *" "* ]]; then
-        echo "ERROR: Pillow builds only support a single architecture in CIBW_ARCHS."
-        exit 1
-    fi
-}
+set -e
+
+# CIBUILDWHEEL_BUILD_IDENTIFIER has the format {python_version}-{os}_{arch}
+CIBW_OS_ARCH=${CIBUILDWHEEL_BUILD_IDENTIFIER#*-}
+CIBW_OS=${CIBW_OS_ARCH%%_*}
+CIBW_ARCH=${CIBW_OS_ARCH#*_}
 
 # Setup that needs to be done before multibuild utils are invoked. Process
 # potential cross-build platforms before native platforms to ensure that we pick
 # up the cross environment.
 PROJECTDIR=$(pwd)
 PATCH_DIR=$(pwd)/patches
-if [[ "$CIBW_PLATFORM" == "ios" ]]; then
-    check_cibw_archs
-    # On iOS, CIBW_ARCHS is actually a multi-arch - arm64_iphoneos,
+
+# Use a subdirectory to allow building for multiple platforms on the same machine, but
+# create a "current" symlink to simplify setting PKG_CONFIG_PATH in setup.py, and
+# AUDITWHEEL_LD_LIBRARY_PATH in pyproject.toml.
+deps_dir=$(pwd)/build/deps
+mkdir -p $deps_dir
+WORKDIR=$deps_dir/$CIBW_OS_ARCH
+ln -sfn $CIBW_OS_ARCH $deps_dir/current
+
+if [ "$CIBW_OS" = "android" ]; then
+    IS_ANDROID=1
+    case "$CIBW_ARCH" in
+        arm64_v8a) PLAT=aarch64 ;;
+        x86_64) PLAT=x86_64 ;;
+        *)
+            echo "ERROR: Unknown Android architecture '$CIBW_ARCH'"
+            exit 1
+    esac
+    HOST_CONFIGURE_FLAGS="--host=$PLAT-linux-android"
+    BUILD_PREFIX=$WORKDIR/prefix
+
+    # When building for Android, cibuildwheel sets the CMAKE_TOOLCHAIN_FILE environment
+    # variable, which includes most of the flags we need. Some additional flags are
+    # required by libavif.
+    android_toolchain_root=$(cd "$(dirname "$CC")/.." && pwd)
+    android_ndk=$(cd "$android_toolchain_root/../../../.." && pwd)
+    HOST_CMAKE_FLAGS+=" -DANDROID_TOOLCHAIN_ROOT=$android_toolchain_root"
+    HOST_CMAKE_FLAGS+=" -DANDROID_NDK=$android_ndk"
+
+elif [ "$CIBW_OS" = "ios" ]; then
+    # IS_MACOS will be set by common_utils.sh.
+    # On iOS, CIBW_ARCH is actually a multi-arch - arm64_iphoneos,
     # arm64_iphonesimulator or x86_64_iphonesimulator. Split into the CPU
     # platform, and the iOS SDK.
-    PLAT=$(echo $CIBW_ARCHS | sed "s/\(.*\)_\(.*\)/\1/")
-    IOS_SDK=$(echo $CIBW_ARCHS | sed "s/\(.*\)_\(.*\)/\2/")
-
-    # Build iOS builds in `build/iphoneos` or `build/iphonesimulator`
-    # (depending on the build target). Install them into `build/deps/iphoneos`
-    # or `build/deps/iphonesimulator`
-    WORKDIR=$(pwd)/build/$IOS_SDK
-    BUILD_PREFIX=$(pwd)/build/deps/$IOS_SDK
+    PLAT=$(echo $CIBW_ARCH | sed "s/\(.*\)_\(.*\)/\1/")
+    IOS_SDK=$(echo $CIBW_ARCH | sed "s/\(.*\)_\(.*\)/\2/")
+    BUILD_PREFIX=$WORKDIR/prefix
 
     # GNU tooling insists on using aarch64 rather than arm64
     if [[ $PLAT == "arm64" ]]; then
@@ -66,26 +82,40 @@ if [[ "$CIBW_PLATFORM" == "ios" ]]; then
     # This will be generated once CC etc. have been evaluated.
     HOST_MESON_FLAGS="--cross-file $WORKDIR/meson-cross.txt -Dprefer_static=true -Ddefault_library=static"
 
-elif [[ "$(uname -s)" == "Darwin" ]]; then
-    check_cibw_archs
-    # Build macOS dependencies in `build/darwin`
-    # Install them into `build/deps/darwin`
-    PLAT=$CIBW_ARCHS
-    WORKDIR=$(pwd)/build/darwin
-    BUILD_PREFIX=$(pwd)/build/deps/darwin
-else
+elif [ "$CIBW_OS" = "macosx" ]; then
+    # IS_MACOS will be set by common_utils.sh.
+    PLAT=$CIBW_ARCH
+    BUILD_PREFIX=$WORKDIR/prefix
+
+elif [[ "$CIBW_OS" = *linux ]]; then
     # Build prefix will default to /usr/local
-    PLAT="${CIBW_ARCHS:-$AUDITWHEEL_ARCH}"
-    WORKDIR=$(pwd)/build
+    IS_LINUX=1
+    PLAT=$CIBW_ARCH
     MB_ML_LIBC=${AUDITWHEEL_POLICY::9}
     MB_ML_VER=${AUDITWHEEL_POLICY:9}
+
+else
+    echo "ERROR: Unknown operating system '$CIBW_OS'"
+    exit 1
 fi
 
 # Define custom utilities
 source wheels/multibuild/common_utils.sh
+
+# Android builds can be done on Linux or macOS, but we don't want to enable any behavior
+# specific to those platforms.
+if [ -n "$IS_ANDROID" ]; then
+    unset IS_MACOS IS_OSX MB_ML_VER
+fi
+
 source wheels/multibuild/library_builders.sh
-if [[ -z "$IS_MACOS" ]]; then
+if [ -n "$IS_LINUX" ]; then
     source wheels/multibuild/manylinux_utils.sh
+fi
+if [ -n "$IS_ANDROID" ] || [ -n "$IOS_SDK" ]; then
+    # LIBRARY_PATH may cause pkg-config to omit -L options, which isn't correct when
+    # cross-compiling.
+    unset LIBRARY_PATH
 fi
 
 ARCHIVE_SDIR=pillow-depends-main
@@ -108,34 +138,6 @@ LIBXCB_VERSION=$(_get_ver libxcb)
 BROTLI_VERSION=$(_get_ver brotli)
 LIBAVIF_VERSION=$(_get_ver libavif)
 
-function build_pkg_config {
-    if [ -e pkg-config-stamp ]; then return; fi
-    # This essentially duplicates the Homebrew recipe.
-    # On iOS, we need a binary that can be executed on the build machine; but we
-    # can create a host-specific pc-path to store iOS .pc files. To ensure a
-    # macOS-compatible build, we temporarily clear environment flags that set
-    # iOS-specific values.
-    if [[ -n "$IOS_SDK" ]]; then
-        ORIGINAL_HOST_CONFIGURE_FLAGS=$HOST_CONFIGURE_FLAGS
-        ORIGINAL_IPHONEOS_DEPLOYMENT_TARGET=$IPHONEOS_DEPLOYMENT_TARGET
-        unset HOST_CONFIGURE_FLAGS
-        unset IPHONEOS_DEPLOYMENT_TARGET
-    fi
-
-    CFLAGS="$CFLAGS -Wno-int-conversion" CPPFLAGS="" build_simple pkg-config 0.29.2 https://pkg-config.freedesktop.org/releases tar.gz \
-        --disable-debug --disable-host-tool --with-internal-glib \
-        --with-pc-path=$BUILD_PREFIX/share/pkgconfig:$BUILD_PREFIX/lib/pkgconfig \
-        --with-system-include-path=$(xcrun --show-sdk-path --sdk macosx)/usr/include
-
-    if [[ -n "$IOS_SDK" ]]; then
-        HOST_CONFIGURE_FLAGS=$ORIGINAL_HOST_CONFIGURE_FLAGS
-        IPHONEOS_DEPLOYMENT_TARGET=$ORIGINAL_IPHONEOS_DEPLOYMENT_TARGET
-    fi;
-
-    export PKG_CONFIG=$BUILD_PREFIX/bin/pkg-config
-    touch pkg-config-stamp
-}
-
 function build_zlib_ng {
     if [ -e zlib-stamp ]; then return; fi
     # zlib-ng uses a "configure" script, but it's not a GNU autotools script, so
@@ -143,6 +145,9 @@ function build_zlib_ng {
     # cross-compilation flags.
     ORIGINAL_HOST_CONFIGURE_FLAGS=$HOST_CONFIGURE_FLAGS
     unset HOST_CONFIGURE_FLAGS
+    if [ -n "$IS_ANDROID" ]; then
+        HOST_CONFIGURE_FLAGS="--uname=Linux"
+    fi
 
     build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --installnamedir=$BUILD_PREFIX/lib --zlib-compat
 
@@ -161,7 +166,6 @@ function build_brotli {
 
 function build_harfbuzz {
     if [ -e harfbuzz-stamp ]; then return; fi
-    python3 -m pip install meson ninja
 
     local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/harfbuzz-$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
     (cd $out_dir \
@@ -174,10 +178,13 @@ function build_harfbuzz {
 function build_libavif {
     if [ -e libavif-stamp ]; then return; fi
 
-    python3 -m pip install meson ninja
-
-    if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IOS_SDK" ]]) || [ -n "$SANITIZER" ]; then
+    # nasm has to be compiled for the build machine, but Android and iOS will have
+    # environment variables set for cross-compilation.
+    if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IS_ANDROID" ]] && [[ -z "$IOS_SDK" ]]) \
+        || [ -n "$SANITIZER" ]
+    then
         build_simple nasm 3.02 https://www.nasm.us/pub/nasm/releasebuilds/3.02
+        local have_nasm=1
     fi
 
     local build_shared=ON
@@ -196,11 +203,24 @@ function build_libavif {
             build_shared=OFF
         fi
     else
+        if [ -n "$IS_ANDROID" ]; then
+            # CMake's internal Clang.cmake passes -fuse-ld=gold when building with LTO
+            # on Android, but current versions of the NDK no longer include gold. It
+            # looks like it should be possible to prevent this by setting
+            # CMAKE_ANDROID_NDK_VERSION to a high enough number, but doing that using -D
+            # has no effect, so maybe cibuildwheel should put it in the toolchain file.
+            lto=OFF
+        fi
         libavif_cmake_flags=(-DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,--strip-all,-z,relro,-z,now")
     fi
-    if [[ -n "$IOS_SDK" ]] && [[ "$PLAT" == "x86_64" ]]; then
+
+    # AOM and dav1d both require nasm by default on x86_64. AOM has a CMake option to
+    # disable it, but dav1d doesn't.
+    if [[ -z "$have_nasm" ]] && [[ "$PLAT" == "x86_64" ]]; then
+        # Use AOM for both encoding and decoding, and don't enable dav1d.
         libavif_cmake_flags+=(-DAOM_TARGET_CPU=generic)
     else
+        # Use AOM for encoding, and dav1d for decoding.
         libavif_cmake_flags+=(
             -DAVIF_CODEC_AOM_DECODE=OFF \
             -DAVIF_CODEC_DAV1D=LOCAL
@@ -243,14 +263,18 @@ function build_libavif {
 function build_zstd {
     if [ -e zstd-stamp ]; then return; fi
     local out_dir=$(fetch_unpack https://github.com/facebook/zstd/releases/download/v$ZSTD_VERSION/zstd-$ZSTD_VERSION.tar.gz)
+    local zstd_args="PREFIX=$BUILD_PREFIX"
+    if [ -n "$IS_ANDROID" ]; then
+        zstd_args+=" UNAME_TARGET_SYSTEM=Linux"
+    fi
     (cd $out_dir \
-        && make -j4 install)
+        && make -j4 install $zstd_args)
     touch zstd-stamp
 }
 
 function build {
     build_xz
-    if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
+    if [ -n "$IS_LINUX" ] && [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ]; then
         yum remove -y zlib-devel
     fi
     if [[ -n "$IS_MACOS" ]]; then
@@ -259,22 +283,25 @@ function build {
         build_zlib_ng
     fi
 
-    build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
-    if [[ -n "$IS_MACOS" ]]; then
-        build_simple xorgproto 2025.1 https://www.x.org/pub/individual/proto
-        build_simple libXau 1.0.12 https://www.x.org/pub/individual/lib
-        build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
-    else
-        sed "s/\${pc_sysrootdir\}//" $BUILD_PREFIX/share/pkgconfig/xcb-proto.pc > $BUILD_PREFIX/lib/pkgconfig/xcb-proto.pc
+    # There's no X server on mobile devices.
+    if [ -z "$IS_ANDROID" ] && [ -z "$IOS_SDK" ]; then
+        build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
+        if [[ -n "$IS_MACOS" ]]; then
+            build_simple xorgproto 2025.1 https://www.x.org/pub/individual/proto
+            build_simple libXau 1.0.12 https://www.x.org/pub/individual/lib
+            build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
+        else
+            sed "s/\${pc_sysrootdir\}//" $BUILD_PREFIX/share/pkgconfig/xcb-proto.pc > $BUILD_PREFIX/lib/pkgconfig/xcb-proto.pc
+        fi
+        build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
     fi
-    build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
 
     # -DCMAKE_POSITION_INDEPENDENT_CODE=1 is a workaround from https://github.com/libjpeg-turbo/libjpeg-turbo/issues/898
     HOST_CMAKE_FLAGS="-DCMAKE_POSITION_INDEPENDENT_CODE=1 $HOST_CMAKE_FLAGS" build_libjpeg_turbo
 
-    if [[ -n "$IS_MACOS" ]]; then
+    if [[ -n "$IS_MACOS" ]] || [[ -n "$IS_ANDROID" ]]; then
         # Custom tiff build to include jpeg; by default, configure won't include
-        # headers/libs in the custom macOS/iOS prefix. Explicitly disable webp,
+        # headers/libs in the BUILD_PREFIX. Explicitly disable webp,
         # libdeflate and zstd, because on x86_64 macs, it will pick up the
         # Homebrew versions of those libraries from /usr/local.
         tiff_configure_args=(
@@ -325,8 +352,8 @@ function build {
     # Break the cycle by building FreeType twice, so that the FreeType we ship is linked against the HarfBuzz we ship.
     build_freetype
 
-    if [[ -z "$IOS_SDK" ]]; then
-        # On iOS, there's no vendor-provided raqm, and we can't ship it due to
+    if [[ -z "$IS_ANDROID" ]] && [[ -z "$IOS_SDK" ]]; then
+        # On some platforms there's no vendor-provided raqm, and we can't ship it due to
         # licensing, so there's no point building harfbuzz.
         build_harfbuzz
 
@@ -339,7 +366,7 @@ function build {
 function create_meson_cross_config {
     cat << EOF > $WORKDIR/meson-cross.txt
 [binaries]
-pkg-config = '$BUILD_PREFIX/bin/pkg-config'
+pkg-config = '$PKG_CONFIG'
 cmake = '$(which cmake)'
 c = '$CC'
 cpp = '$CXX'
@@ -377,19 +404,41 @@ if [[ ! -d $WORKDIR/pillow-depends-main ]]; then
   untar $PROJECTDIR/pillow-depends-main.zip
 fi
 
+# Install necessary build tools from PyPI. We can't use the build-system.requires
+# setting in pyproject.toml, because on all platforms except Android, cibuildwheel
+# runs the before-build script before processing that setting.
+#
+# When cross-compiling, install for the build system, not the host system.
+site_packages=$(python3 -c '
+import sys
+print(next(entry for entry in sys.path if entry.endswith("site-packages")))
+')
+cross_pth="$site_packages/_cross_venv.pth"
+if [ -e "$cross_pth" ]; then
+    mv "$cross_pth" "$cross_pth.disabled"
+fi
+python3 -m pip install cmake meson ninja pkgconf
+if [ -e "$cross_pth.disabled" ]; then
+    mv "$cross_pth.disabled" "$cross_pth"
+fi
+
+if [ -n "$IS_LINUX" ]; then
+    # This command will fall back to the system pkg-config executable if something isn't
+    # found on PKG_CONFIG_PATH. This is necessary for libraries such as libXau.
+    export PKG_CONFIG=$(which pkgconf-pypi)
+else
+    # This command only searches PKG_CONFIG_PATH.
+    export PKG_CONFIG=$(which pkgconf)
+    export PKG_CONFIG_LIBDIR=""  # https://github.com/pypackaging-native/pkgconf-pypi/issues/110#issuecomment-6402850060
+fi
+export PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig:$BUILD_PREFIX/share/pkgconfig"
+
 if [[ -n "$IS_MACOS" ]]; then
     # Ensure the basic structure of the build prefix directory exists.
     mkdir -p "$BUILD_PREFIX/bin"
     mkdir -p "$BUILD_PREFIX/lib"
 
-    # Ensure pkg-config is available. This is done *before* setting CC, CFLAGS
-    # etc. to ensure that the build is *always* a macOS build, even when building
-    # for iOS.
-    build_pkg_config
-
-    # Ensure cmake is available, and that the default prefix used by CMake is
-    # the build prefix
-    python3 -m pip install cmake
+    # Ensure that the default prefix used by CMake is the build prefix
     export CMAKE_PREFIX_PATH=$BUILD_PREFIX
 
     if [[ -n "$IOS_SDK" ]]; then
