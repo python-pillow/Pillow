@@ -1084,8 +1084,10 @@ pa2ycbcr(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     ImagingConvertRGB2YCbCr(out, out, xsize);
 }
 
+typedef Imaging (*ImagingAllocator)(ModeID mode, int xsize, int ysize);
+
 static Imaging
-frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
+frompalette(Imaging imIn, const ModeID mode, ImagingAllocator new_image) {
     ImagingSectionCookie cookie;
     int alpha;
     int y;
@@ -1127,7 +1129,7 @@ frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
         return (Imaging)ImagingError_ValueError("conversion not supported");
     }
 
-    imOut = ImagingNew2Dirty(mode, imOut, imIn);
+    Imaging imOut = new_image(mode, imIn->xsize, imIn->ysize);
     if (!imOut) {
         return NULL;
     }
@@ -1155,11 +1157,11 @@ frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
 #endif
 static Imaging
 topalette(
-    Imaging imOut,
     Imaging imIn,
     const ModeID mode,
     ImagingPalette inpalette,
-    ImagingDitherType dither
+    ImagingDitherType dither,
+    ImagingAllocator new_image
 ) {
     ImagingSectionCookie cookie;
     int alpha;
@@ -1199,7 +1201,7 @@ topalette(
         return (Imaging)ImagingError_ValueError("no palette");
     }
 
-    imOut = ImagingNew2Dirty(mode, imOut, imIn);
+    Imaging imOut = new_image(mode, imIn->xsize, imIn->ysize);
     if (!imOut) {
         if (palette != inpalette) {
             ImagingPaletteDelete(palette);
@@ -1363,7 +1365,7 @@ topalette(
 }
 
 static Imaging
-tobilevel(Imaging imOut, Imaging imIn) {
+tobilevel(Imaging imIn, ImagingAllocator new_image) {
     ImagingSectionCookie cookie;
     int x, y;
     int *errors;
@@ -1373,7 +1375,7 @@ tobilevel(Imaging imOut, Imaging imIn) {
         return (Imaging)ImagingError_ValueError("conversion not supported");
     }
 
-    imOut = ImagingNew2Dirty(IMAGING_MODE_1, imOut, imIn);
+    Imaging imOut = new_image(IMAGING_MODE_1, imIn->xsize, imIn->ysize);
     if (!imOut) {
         return NULL;
     }
@@ -1613,35 +1615,17 @@ static struct {
 #endif
 };
 
-/**
- * Convert imIn to `mode`.
- * If imIn is already in `mode`, this performs a copy into imOut
- * (or a newly allocated image if imOut is NULL).
- *
- * @param imOut   Existing image to write into
- *                (must already be in `mode` and the same size as imIn),
- *                or NULL to allocate a new image for the result.
- * @param imIn    Source image to convert.
- * @param mode    Target mode.
- * @param palette Target palette for conversions to "P" or "PA";
- *                NULL to use a default palette.
- * @param dither  Dither method when converting to "P", "PA" or "1".
- *                Currently, for historical PIL reasons,
- *                any value other than IMAGING_DITHER_NONE uses Floyd-Steinberg
- *                dithering.
- * @return        The resulting Imaging object,
- *                or NULL with a Python exception set on failure.
- */
-Imaging
-ImagingConvert(
-    Imaging imOut,
+static Imaging
+_convert_impl(
     Imaging imIn,
     ModeID mode,
     ImagingPalette palette,
-    ImagingDitherType dither
+    ImagingDitherType dither,
+    ImagingAllocator new_image
 ) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
+    Imaging imOut;
 
     if (!imIn) {
         return (Imaging)ImagingError_ModeError();
@@ -1656,22 +1640,27 @@ ImagingConvert(
     } else {
         /* Same mode? */
         if (imIn->mode == mode) {
-            return ImagingCopy2(imOut, imIn);
+            imOut = new_image(mode, imIn->xsize, imIn->ysize);
+            if (imOut && !ImagingCopyInto(imOut, imIn)) {
+                ImagingDelete(imOut);
+                return NULL;
+            }
+            return imOut;
         }
     }
 
     /* test for special conversions */
 
     if (imIn->mode == IMAGING_MODE_P || imIn->mode == IMAGING_MODE_PA) {
-        return frompalette(imOut, imIn, mode);
+        return frompalette(imIn, mode, new_image);
     }
 
     if (mode == IMAGING_MODE_P || mode == IMAGING_MODE_PA) {
-        return topalette(imOut, imIn, mode, palette, dither);
+        return topalette(imIn, mode, palette, dither, new_image);
     }
 
     if (dither != IMAGING_DITHER_NONE && mode == IMAGING_MODE_1) {
-        return tobilevel(imOut, imIn);
+        return tobilevel(imIn, new_image);
     }
 
     /* standard conversion machinery */
@@ -1693,7 +1682,7 @@ ImagingConvert(
         );
     }
 
-    imOut = ImagingNew2Dirty(mode, imOut, imIn);
+    imOut = new_image(mode, imIn->xsize, imIn->ysize);
     if (!imOut) {
         return NULL;
     }
@@ -1707,6 +1696,42 @@ ImagingConvert(
     ImagingSectionLeave(&cookie);
 
     return imOut;
+}
+
+/**
+ * Convert imIn to `mode`, returning a new image.
+ * If imIn is already in `mode`, this returns a copy.
+ *
+ * @param imIn    Source image to convert.
+ * @param mode    Target mode.
+ * @param palette Target palette for conversions to "P" or "PA";
+ *                NULL to use a default palette.
+ * @param dither  Dither method when converting to "P", "PA" or "1".
+ *                Currently, for historical PIL reasons,
+ *                any value other than IMAGING_DITHER_NONE uses Floyd-Steinberg
+ *                dithering.
+ * @return        A new image owned by the caller,
+ *                or NULL with a Python exception set on failure.
+ */
+Imaging
+ImagingConvert(
+    Imaging imIn, ModeID mode, ImagingPalette palette, ImagingDitherType dither
+) {
+    return _convert_impl(imIn, mode, palette, dither, ImagingNewDirty);
+}
+
+/**
+ * Like ImagingConvert (without palette or dithering),
+ * but the new image is always allocated as a single contiguous block.
+ *
+ * @param imIn    Source image to convert.
+ * @param mode    Target mode.
+ * @return        A new image owned by the caller,
+ *                or NULL with a Python exception set on failure.
+ */
+Imaging
+ImagingConvertBlock(Imaging imIn, ModeID mode) {
+    return _convert_impl(imIn, mode, NULL, IMAGING_DITHER_NONE, ImagingNewBlock);
 }
 
 Imaging
@@ -1763,7 +1788,7 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
         );
     }
 
-    imOut = ImagingNew2Dirty(mode, imOut, imIn);
+    imOut = ImagingNewDirty(mode, imIn->xsize, imIn->ysize);
     if (!imOut) {
         return NULL;
     }
