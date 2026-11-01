@@ -37,7 +37,7 @@ class _Wrap(Generic[AnyStr]):
         self.height = height
         self.font = font
 
-        input_text = self.text.text
+        input_text = self.text.text.rstrip()
         emptystring = "" if isinstance(input_text, str) else b""
         line = emptystring
 
