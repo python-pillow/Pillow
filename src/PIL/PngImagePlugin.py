@@ -499,6 +499,9 @@ class PngStream(ChunkStream):
             if self.im_n_frames is not None:
                 self.im_info["default_image"] = True
             tile = [ImageFile._Tile("zip", (0, 0, *self.im_size), pos, self.im_rawmode)]
+        if self.im_rawmode == "RGB;16B" and "transparency" in self.im_info:
+            # Preserve the full tRNS key before the RGB unpacker drops sample bits.
+            self.im_mode = "RGBA"
         self.im_tile = tile
         self.im_idat = length
         msg = "image data found"
@@ -844,6 +847,9 @@ class PngImageFile(ImageFile.ImageFile):
         self._mode = self.png.im_mode
         self._size = self.png.im_size
         self.info = self.png.im_info
+        self._transparency_16bit: tuple[int, int, int] | None = None
+        if self.png.im_mode == "RGBA" and self.png.im_rawmode == "RGB;16B":
+            self._transparency_16bit = self.info.pop("transparency")
         self._text: dict[str, str | iTXt] | None = None
         self.tile = self.png.im_tile
         self.custom_mimetype = self.png.im_custom_mimetype
@@ -1020,7 +1026,10 @@ class PngImageFile(ImageFile.ImageFile):
     def load_prepare(self) -> None:
         """internal: prepare to read PNG file"""
 
-        if self.info.get("interlace"):
+        if self._transparency_16bit is not None:
+            interlaced = 1 if self.info.get("interlace") else 0
+            self.decoderconfig = (interlaced, *self._transparency_16bit)
+        elif self.info.get("interlace"):
             self.decoderconfig = self.decoderconfig + (1,)
 
         self.__idat = self.__prepare_idat  # used by load_read()
