@@ -399,21 +399,23 @@ class TestFileLibTiff(LibTiffTestCase):
         "tiffinfo",
         (
             {TiffImagePlugin.IMAGEWIDTH: 1 << 27},
+            {TiffImagePlugin.IMAGELENGTH: 1 << 27},
             {TiffImagePlugin.SAMPLESPERPIXEL: 3},
+            {TiffImagePlugin.PLANAR_CONFIGURATION: 2},
         ),
     )
     def test_geometry_tags(
         self, tiffinfo: dict[int, int], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
-        # libtiff reads a scanline of the size described by the IMAGEWIDTH,
-        # SAMPLESPERPIXEL and BITSPERSAMPLE tags from a buffer that only holds one
-        # row of the image, so a tag describing a larger row must be rejected.
+        # The geometry of the image is used, not the geometry from tiffinfo.
+        # Otherwise libtiff would read past the end of the row buffer.
         monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
 
         out = tmp_path / "temp.tif"
         im = hopper("L")
-        with pytest.raises(OSError, match="encoder error -8"):
-            im.save(out, tiffinfo=tiffinfo)
+        im.save(out, tiffinfo=tiffinfo)
+
+        assert_image_equal_tofile(im, out)
 
     @pytest.mark.parametrize(
         "tag, value",
