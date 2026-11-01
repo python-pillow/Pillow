@@ -672,7 +672,17 @@ f2i(UINT8 *out_, const UINT8 *in_, int xsize) {
         FLOAT32 f;
         INT32 i;
         memcpy(&f, in_, sizeof(f));
-        i = f;
+        /* Casting a float outside the INT32 range is undefined behavior,
+           so clip it, and map NaN to 0 */
+        if (f >= 2147483648.0F) {
+            i = INT32_MAX;
+        } else if (f >= -2147483648.0F) {
+            i = (INT32)f;
+        } else if (f < 0) {
+            i = INT32_MIN;
+        } else {
+            i = 0;
+        }
         memcpy(out_, &i, sizeof(i));
     }
 }
