@@ -268,6 +268,23 @@ def generate(version: str) -> dict:
             ],
         },
         {
+            "bom-ref": "pkg:generic/brotli",
+            "type": "library",
+            "name": "Brotli",
+            "version": versions["brotli"],
+            "scope": "optional",
+            "description": "Lossless compression algorithm. "
+            "Required for WOFF2 font support.",
+            "licenses": [{"license": {"id": "MIT"}}],
+            "externalReferences": [
+                {"type": "website", "url": "https://brotli.org"},
+                {
+                    "type": "distribution",
+                    "url": "https://github.com/google/brotli/releases",
+                },
+            ],
+        },
+        {
             "bom-ref": "pkg:generic/fribidi",
             "type": "library",
             "name": "FriBiDi",
