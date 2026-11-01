@@ -37,7 +37,7 @@ class _Wrap(Generic[AnyStr]):
         self.height = height
         self.font = font
 
-        input_text = self.text.text
+        input_text = self.text.text.rstrip()
         emptystring = "" if isinstance(input_text, str) else b""
         line = emptystring
 
@@ -82,9 +82,8 @@ class _Wrap(Generic[AnyStr]):
                 break
             line = word
         else:
-            if not line or self.add_line(line):
-                # Only trailing whitespace remains, which does not need to be drawn
-                self.position = len(input_text)
+            if line:
+                self.add_line(line)
         self.remaining_text: AnyStr = input_text[self.position :]
 
     def add_line(self, line: AnyStr) -> bool:
