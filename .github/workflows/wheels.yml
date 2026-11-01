@@ -13,7 +13,9 @@ on:
     paths: &paths
       - ".ci/requirements-cibw.txt"
       - ".ci/requirements-sbom.txt"
+      - ".github/compare-dist-sizes.py"
       - ".github/dependencies.json"
+      - ".github/embed-sbom.py"
       - ".github/generate-sbom.py"
       - ".github/workflows/wheels*"
       - "pyproject.toml"
@@ -35,11 +37,39 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  EXPECTED_DISTS: 66
+  EXPECTED_DISTS: 83
   FORCE_COLOR: 1
 
 jobs:
+  sbom:
+    if: github.event_name != 'schedule' || github.event.repository.fork == false
+    runs-on: ubuntu-latest
+    name: Generate SBOM
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.x"
+
+      - name: Generate CycloneDX SBOM
+        run: python3 .github/generate-sbom.py
+
+      - name: Validate SBOM
+        run: |
+          python3 -m pip install -r .ci/requirements-sbom.txt
+          check-jsonschema --schemafile "https://raw.githubusercontent.com/CycloneDX/specification/1.7/schema/bom-1.7.schema.json" pillow-*.cdx.json
+
+      - name: Upload SBOM as workflow artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom
+          path: "pillow-*.cdx.json"
+
   build-native-wheels:
+    needs: sbom
     if: github.event_name != 'schedule' || github.event.repository.fork == false
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
@@ -51,7 +81,7 @@ jobs:
             platform: macos
             os: macos-26-intel
             cibw_arch: x86_64
-            build: "cp3{10,11}*"
+            build: "cp311*"
             macosx_deployment_target: "10.10"
           - name: "macOS 10.13 x86_64"
             platform: macos
@@ -63,7 +93,7 @@ jobs:
             platform: macos
             os: macos-26-intel
             cibw_arch: x86_64
-            build: "{cp314,pp3}*"
+            build: "{cp314,cp315,pp3}*"
             macosx_deployment_target: "10.15"
           - name: "macOS arm64"
             platform: macos
@@ -100,15 +130,15 @@ jobs:
             cibw_arch: arm64_iphonesimulator
           - name: "iOS x86_64 simulator"
             platform: ios
-            os: macos-15-intel
+            os: macos-26-intel
             cibw_arch: x86_64_iphonesimulator
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           submodules: true
 
-      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.x"
 
@@ -124,7 +154,17 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_ENABLE: cpython-prerelease pypy
+          CIBW_ENVIRONMENT_PASS_LINUX: FORCE_COLOR
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
+
+      - name: Download SBOM
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sbom
+          path: sbom
+
+      - name: Embed SBOM in wheels
+        run: python3 .github/embed-sbom.py wheelhouse sbom
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -132,6 +172,7 @@ jobs:
           path: ./wheelhouse/*.whl
 
   windows:
+    needs: sbom
     if: github.event_name != 'schedule' || github.event.repository.fork == false
     name: Windows ${{ matrix.cibw_arch }}
     runs-on: ${{ matrix.os }}
@@ -146,18 +187,18 @@ jobs:
           - cibw_arch: ARM64
             os: windows-11-arm
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Checkout extra test images
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           repository: python-pillow/test-images
           path: Tests\test-images
 
-      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.x"
 
@@ -174,6 +215,25 @@ jobs:
           xcopy /S /Y Tests\test-images\* Tests\images
 
           & python.exe winbuild\build_prepare.py -v --no-imagequant --architecture=${{ matrix.cibw_arch }}
+        shell: pwsh
+
+      # The wheel test runs in a Windows container, but the Docker daemon is
+      # not reliably running when cibuildwheel reaches the test step, which
+      # fails the job after the wheels have already been built. Start it and
+      # wait for it here instead, so a daemon problem is caught in seconds.
+      - name: Start Docker
+        if: matrix.cibw_arch != 'ARM64'
+        run: |
+          Start-Service docker
+          foreach ($i in 1..30) {
+            docker info *> $null
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host "Docker daemon ready after $i attempt(s)"
+              exit 0
+            }
+            Start-Sleep -Seconds 2
+          }
+          Write-Error "Docker daemon did not become ready"
         shell: pwsh
 
       - name: Build wheels
@@ -200,10 +260,19 @@ jobs:
             -v {project}:C:\pillow
             -v C:\cibw:C:\cibw
             -v %CD%\..\venv-test:%CD%\..\venv-test
-            -e CI -e GITHUB_ACTIONS
+            -e CI -e GITHUB_ACTIONS -e FORCE_COLOR
             mcr.microsoft.com/windows/servercore:ltsc2022
             powershell C:\pillow\.github\workflows\wheels-test.ps1 %CD%\..\venv-test'
         shell: bash
+
+      - name: Download SBOM
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sbom
+          path: sbom
+
+      - name: Embed SBOM in wheels
+        run: python3 .github/embed-sbom.py wheelhouse sbom
 
       - name: Upload wheels
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -221,12 +290,12 @@ jobs:
     if: github.event_name != 'schedule' || github.event.repository.fork == false
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
 
     - name: Set up Python
-      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
         python-version: "3.x"
 
@@ -255,6 +324,28 @@ jobs:
           echo $files
           [ "$files" -eq $EXPECTED_DISTS ] || exit 1
 
+  compare-dist-sizes:
+    needs: [build-native-wheels, windows, sdist]
+    runs-on: ubuntu-latest
+    name: Compare dist sizes vs PyPI
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
+
+      - name: Compare dist sizes vs latest PyPI release
+        run: uv run .github/compare-dist-sizes.py dist
+
   scientific-python-nightly-wheels-publish:
     if: github.event.repository.fork == false && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
     needs: count-dists
@@ -270,57 +361,10 @@ jobs:
           path: dist
           merge-multiple: true
       - name: Upload wheels to scientific-python-nightly-wheels
-        uses: scientific-python/upload-nightly-action@e76cfec8a4611fd02808a801b0ff5a7d7c1b2d99 # 0.6.4
+        uses: scientific-python/upload-nightly-action@16fa02eacee1655195143de09f03676e60ef2bf5 # 0.6.5
         with:
           artifacts_path: dist
           anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
-
-  sbom:
-    runs-on: ubuntu-latest
-    name: Generate SBOM
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-
-      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
-        with:
-          python-version: "3.x"
-
-      - name: Generate CycloneDX SBOM
-        run: python3 .github/generate-sbom.py
-
-      - name: Upload SBOM as workflow artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: sbom
-          path: "pillow-*.cdx.json"
-
-      - name: Validate SBOM
-        run: |
-          python3 -m pip install -r .ci/requirements-sbom.txt
-          check-jsonschema --schemafile "https://raw.githubusercontent.com/CycloneDX/specification/1.7/schema/bom-1.7.schema.json" pillow-*.cdx.json
-
-  sbom-publish:
-    if: |
-      github.event.repository.fork == false
-      && github.event_name == 'push'
-      && startsWith(github.ref, 'refs/tags')
-    needs: [count-dists, sbom]
-    runs-on: ubuntu-latest
-    name: Publish SBOM to GitHub release
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: sbom
-          path: .
-
-      - name: Attach SBOM to GitHub release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "$GITHUB_REF_NAME" pillow-*.cdx.json
 
   pypi-publish:
     if: github.event.repository.fork == false && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
@@ -339,6 +383,6 @@ jobs:
           path: dist
           merge-multiple: true
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
         with:
           attestations: true

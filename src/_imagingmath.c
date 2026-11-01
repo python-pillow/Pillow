@@ -13,47 +13,47 @@
  * See the README file for information on usage and redistribution.
  */
 
-#include "Python.h"
+#include <Python.h>
 
 #include "libImaging/Imaging.h"
 
-#include "math.h"
-#include "float.h"
-
-#define MAX_INT32 2147483647.0
-#define MIN_INT32 -2147483648.0
+#include <stdint.h>
+#include <math.h>
+#include <float.h>
 
 #define MATH_FUNC_UNOP_MAGIC "Pillow Math unary func"
 #define MATH_FUNC_BINOP_MAGIC "Pillow Math binary func"
 
-#define UNOP(name, op, type)                   \
-    void name(Imaging out, Imaging im1) {      \
-        int x, y;                              \
-        for (y = 0; y < out->ysize; y++) {     \
-            type *p0 = (type *)out->image[y];  \
-            type *p1 = (type *)im1->image[y];  \
-            for (x = 0; x < out->xsize; x++) { \
-                *p0 = op(type, *p1);           \
-                p0++;                          \
-                p1++;                          \
-            }                                  \
-        }                                      \
-    }
-
-#define BINOP(name, op, type)                          \
-    void name(Imaging out, Imaging im1, Imaging im2) { \
-        int x, y;                                      \
-        for (y = 0; y < out->ysize; y++) {             \
-            type *p0 = (type *)out->image[y];          \
-            type *p1 = (type *)im1->image[y];          \
-            type *p2 = (type *)im2->image[y];          \
-            for (x = 0; x < out->xsize; x++) {         \
-                *p0 = op(type, *p1, *p2);              \
+// Contract: `out` is the same size and type as `im1`,
+//           and a different image.
+#define UNOP(name, op, type)                           \
+    static void name(Imaging out, Imaging im1) {       \
+        int xsize = out->xsize;                        \
+        for (int y = 0; y < out->ysize; y++) {         \
+            type *restrict p0 = (type *)out->image[y]; \
+            type *restrict p1 = (type *)im1->image[y]; \
+            for (int x = 0; x < xsize; x++) {          \
+                *p0 = op(type, *p1);                   \
                 p0++;                                  \
                 p1++;                                  \
-                p2++;                                  \
             }                                          \
         }                                              \
+    }
+
+#define BINOP(name, op, type)                                 \
+    static void name(Imaging out, Imaging im1, Imaging im2) { \
+        int xsize = out->xsize;                               \
+        for (int y = 0; y < out->ysize; y++) {                \
+            type *restrict p0 = (type *)out->image[y];        \
+            type *restrict p1 = (type *)im1->image[y];        \
+            type *restrict p2 = (type *)im2->image[y];        \
+            for (int x = 0; x < xsize; x++) {                 \
+                *p0 = op(type, *p1, *p2);                     \
+                p0++;                                         \
+                p1++;                                         \
+                p2++;                                         \
+            }                                                 \
+        }                                                     \
     }
 
 #define NEG(type, v1) -(v1)
@@ -63,8 +63,8 @@
 #define SUB(type, v1, v2) (v1) - (v2)
 #define MUL(type, v1, v2) (v1) * (v2)
 
-#define MIN(type, v1, v2) ((v1) < (v2)) ? (v1) : (v2)
-#define MAX(type, v1, v2) ((v1) > (v2)) ? (v1) : (v2)
+#define MINOP(type, v1, v2) ((v1) < (v2)) ? (v1) : (v2)
+#define MAXOP(type, v1, v2) ((v1) > (v2)) ? (v1) : (v2)
 
 #define AND(type, v1, v2) (v1) & (v2)
 #define OR(type, v1, v2) (v1) | (v2)
@@ -95,12 +95,7 @@ powi(int x, int y) {
     if (errno == EDOM) {
         return 0;
     }
-    if (v < MIN_INT32) {
-        v = MIN_INT32;
-    } else if (v > MAX_INT32) {
-        v = MAX_INT32;
-    }
-    return (int)v;
+    return v < INT32_MIN ? INT32_MIN : (v > INT32_MAX ? INT32_MAX : (int)v);
 }
 
 #define POW_I(type, v1, v2) powi(v1, v2)
@@ -134,8 +129,8 @@ BINOP(xor_I, XOR, INT32)
 BINOP(lshift_I, LSHIFT, INT32)
 BINOP(rshift_I, RSHIFT, INT32)
 
-BINOP(min_I, MIN, INT32)
-BINOP(max_I, MAX, INT32)
+BINOP(min_I, MINOP, INT32)
+BINOP(max_I, MAXOP, INT32)
 
 BINOP(eq_I, EQ, INT32)
 BINOP(ne_I, NE, INT32)
@@ -155,8 +150,8 @@ BINOP(mod_F, MOD_F, FLOAT32)
 BINOP(pow_F, POW_F, FLOAT32)
 BINOP(diff_F, DIFF_F, FLOAT32)
 
-BINOP(min_F, MIN, FLOAT32)
-BINOP(max_F, MAX, FLOAT32)
+BINOP(min_F, MINOP, FLOAT32)
+BINOP(max_F, MAXOP, FLOAT32)
 
 BINOP(eq_F, EQ, FLOAT32)
 BINOP(ne_F, NE, FLOAT32)
@@ -165,6 +160,16 @@ BINOP(le_F, LE, FLOAT32)
 BINOP(gt_F, GT, FLOAT32)
 BINOP(ge_F, GE, FLOAT32)
 
+/**
+ * Apply an unary operation to the input image and store the result in the output image.
+ * The output image MUST be disparate from the input image,
+ * otherwise the result will be undefined.
+ *
+ * Python arguments:
+ * * op: A Capsule containing a pointer to the unary operation function.
+ * * i0: A Capsule containing a pointer to the output Imaging object.
+ * * i1: A Capsule containing a pointer to the input Imaging object.
+ */
 static PyObject *
 _unop(PyObject *self, PyObject *args) {
     Imaging out;
@@ -204,6 +209,18 @@ _unop(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
+/**
+ * Apply the given binary operation to the two input images and store the result in the
+ * output image.
+ * The output image MUST be disparate from the input images,
+ * otherwise the result will be undefined.
+ *
+ * Python arguments:
+ * * op: A Capsule containing a pointer to the binary operation function.
+ * * i0: A Capsule containing a pointer to the output Imaging object.
+ * * i1: A Capsule containing a pointer to the first input Imaging object.
+ * * i2: A Capsule containing a pointer to the second input Imaging object.
+ */
 static PyObject *
 _binop(PyObject *self, PyObject *args) {
     Imaging out;
@@ -256,19 +273,19 @@ static PyMethodDef _functions[] = {
 static void
 install_unary(PyObject *d, char *name, void *func) {
     PyObject *v = PyCapsule_New(func, MATH_FUNC_UNOP_MAGIC, NULL);
-    if (!v || PyDict_SetItemString(d, name, v)) {
-        PyErr_Clear();
+    if (v) {
+        PyDict_SetItemString(d, name, v);
+        Py_DECREF(v);
     }
-    Py_XDECREF(v);
 }
 
 static void
 install_binary(PyObject *d, char *name, void *func) {
     PyObject *v = PyCapsule_New(func, MATH_FUNC_BINOP_MAGIC, NULL);
-    if (!v || PyDict_SetItemString(d, name, v)) {
-        PyErr_Clear();
+    if (v) {
+        PyDict_SetItemString(d, name, v);
+        Py_DECREF(v);
     }
-    Py_XDECREF(v);
 }
 
 static int

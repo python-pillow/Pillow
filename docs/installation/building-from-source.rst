@@ -51,7 +51,7 @@ Many of Pillow's features require external libraries:
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.19**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.19.1**.
 
 * **libwebp** provides the WebP format.
 
@@ -214,17 +214,15 @@ Many of Pillow's features require external libraries:
 
 .. tab:: FreeBSD
 
-    .. Note:: Only FreeBSD 10 and 11 tested
+    .. Note:: Only FreeBSD 15.1 tested
 
     Make sure you have Python's development libraries installed::
 
         sudo pkg install python3
 
-    Prerequisites are installed on **FreeBSD 10 or 11** with::
+    Prerequisites are installed on **FreeBSD 15.1** with::
 
-        sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi libxcb libavif
-
-    Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
+        sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi libxcb libavif libraqm libimagequant
 
 .. tab:: Android
 

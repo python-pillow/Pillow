@@ -25,14 +25,21 @@
 
 from __future__ import annotations
 
-from typing import Any, AnyStr, BinaryIO
-
 from . import Image, ImageColor, ImageDraw, ImageFont, ImagePath
-from ._typing import Coords, StrOrBytesPath
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import Any, AnyStr, BinaryIO
+
+    from ._typing import Coords, StrOrBytesPath
 
 
 class Pen:
-    """Stores an outline color and width."""
+    """Stores an outline color and width.
+
+    :param color: The outline color.
+    :param width: The line width, in pixels.
+    """
 
     def __init__(self, color: str, width: int = 1, opacity: int = 255) -> None:
         self.color = ImageColor.getrgb(color)
@@ -112,8 +119,7 @@ class Draw:
         else:
             kwargs.setdefault("fill", fill)
             kwargs.setdefault("outline", outline)
-        if op == "line":
-            kwargs.setdefault("width", width)
+        kwargs.setdefault("width", width)
         getattr(self.draw, op)(xy, **kwargs)
 
     def settransform(self, offset: tuple[float, float]) -> None:

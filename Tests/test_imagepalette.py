@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import io
-from pathlib import Path
 
 import pytest
 
@@ -9,10 +8,39 @@ from PIL import Image, ImagePalette, PaletteFile
 
 from .helper import assert_image_equal, assert_image_equal_tofile
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 def test_sanity() -> None:
     palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
     assert len(palette.colors) == 256
+
+
+def test_colors_rawmode() -> None:
+    palette = ImagePalette.raw(
+        "BGRX", (0, 0, 0, 0, 255, 255, 255, 0, 0, 0, 255, 0, 0, 255, 0, 0, 255, 0, 0, 0)
+    )
+    assert palette.colors == {
+        (0, 0, 0): 0,
+        (255, 255, 255): 1,
+        (255, 0, 0): 2,
+        (0, 255, 0): 3,
+        (0, 0, 255): 4,
+    }
+
+
+def test_wrong_mode() -> None:
+    with pytest.raises(ValueError, match="unsupported palette mode"):
+        ImagePalette.ImagePalette("L")
+
+    im = Image.new("L", (1, 1))
+    im.palette = ImagePalette.ImagePalette()
+    im.palette.mode = "L"
+    im.palette.dirty = 1
+    with pytest.raises(ValueError, match="image has wrong mode"):
+        im.load()
 
 
 def test_reload() -> None:
@@ -57,6 +85,24 @@ def test_getcolor() -> None:
         palette.getcolor("unknown")  # type: ignore[arg-type]
 
 
+def test_putpixel_reused_palette_color() -> None:
+    # Given a full palette where (1, 1, 1) is a duplicate entry
+    # and one of the duplicate entries is unused
+    im = Image.new("P", (256, 1))
+    im.putdata([0, 0] + list(range(2, 256)))
+    im.putpalette([0, 0, 0] + [1, 1, 1] * 2 + [0, 0, 0] * 253)
+
+    # And where that unused entry is replaced with (255, 0, 0)
+    im.putpixel((0, 0), (255, 0, 0))
+    assert im.getpixel((0, 0)) == 1
+
+    # Drawing the original color again should have a different index
+    im.putpixel((0, 0), (1, 1, 1))
+    assert im.getpixel((0, 0)) == 2
+
+    assert im.convert("RGB").getpixel((0, 0)) == (1, 1, 1)
+
+
 def test_getcolor_rgba() -> None:
     palette = ImagePalette.ImagePalette("RGBA", (1, 2, 3, 4))
     palette.getcolor((5, 6, 7, 8))
@@ -87,13 +133,17 @@ def test_getcolor_not_special(index: int, palette: ImagePalette.ImagePalette) ->
 
     # Do not use transparency index as a new color
     im.info["transparency"] = index
-    index1 = palette.getcolor((0, 0, 0), im)
+    index1 = palette.getcolor((0, 0, 1), im)
     assert index1 != index
+    roundtripped_palette = ImagePalette.ImagePalette(palette=palette.palette)
+    assert roundtripped_palette.colors[(0, 0, 1)] == index1
 
     # Do not use background index as a new color
     im.info["background"] = index1
-    index2 = palette.getcolor((0, 0, 1), im)
+    index2 = palette.getcolor((0, 0, 2), im)
     assert index2 not in (index, index1)
+    roundtripped_palette = ImagePalette.ImagePalette(palette=palette.palette)
+    assert roundtripped_palette.colors[(0, 0, 2)] == index2
 
 
 def test_file(tmp_path: Path) -> None:
@@ -159,17 +209,23 @@ def test_make_gamma_lut() -> None:
     assert lut[255] == 255
 
 
-def test_rawmode_valueerrors(tmp_path: Path) -> None:
+def test_raw() -> None:
+    data = list(range(256)) * 3
+    palette = ImagePalette.raw("RGB", data)
+    assert palette.tobytes() == bytes(data)
+
+
+def test_raw_valueerrors(tmp_path: Path) -> None:
     # Arrange
-    palette = ImagePalette.raw("RGB", list(range(256)) * 3)
+    palette = ImagePalette.raw("BGR", list(range(256)) * 3)
 
     # Act / Assert
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="palette contains raw palette data"):
         palette.tobytes()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="palette contains raw palette data"):
         palette.getcolor((1, 2, 3))
     f = str(tmp_path / "temp.lut")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="palette contains raw palette data"):
         palette.save(f)
 
 
@@ -195,7 +251,9 @@ def test_rawmode_getdata() -> None:
 
     # Assert
     assert rawmode == "RGB"
-    assert data_in == data_out
+    assert data_out == bytes(data_in)
+    im = Image.new("P", (1, 1))
+    im.im.putpalette("RGB", rawmode, data_out)
 
 
 def test_2bit_palette(tmp_path: Path) -> None:

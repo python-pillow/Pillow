@@ -1,3 +1,21 @@
+Overview of changes leading to 0.11.0
+Thursday, July 23, 2026
+====================================
+
+Update grapheme cluster boundary detection to Unicode 17, conforming to
+Unicode UAX #29 and verified against the Unicode conformance test.
+
+Reject input that spans multiple paragraphs; raqm_layout() now fails when
+the text contains a paragraph separator.
+
+Fix out-of-bounds read in the UTF-8 and UTF-16 decoders.
+
+Build, CI and documentation updates.
+
+New API:
+    * raqm_get_par_detected_direction
+    * raqm_allowed_grapheme_boundary
+
 Overview of changes leading to 0.10.5
 Saturday, April 11, 2026
 ====================================

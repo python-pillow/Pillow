@@ -132,6 +132,20 @@ def test_wrap(data: str, width: int, expected: str, string: bool) -> None:
         assert text_bytes.text == expected.encode()
 
 
+@pytest.mark.parametrize("data", ("Hello World!\n", "Hello World! \n\n", " "))
+@pytest.mark.parametrize("string", (True, False))
+def test_wrap_trailing_whitespace(data: str, string: bool) -> None:
+    # Trailing whitespace is not returned as text that did not fit
+    if string:
+        text = ImageText.Text(data)
+        assert text.wrap(100) is None
+        assert text.text == data.rstrip()
+    else:
+        text_bytes = ImageText.Text(data.encode())
+        assert text_bytes.wrap(100) is None
+        assert text_bytes.text == data.rstrip().encode()
+
+
 def test_wrap_long_word() -> None:
     text = ImageText.Text("Hello World!")
     with pytest.raises(ValueError, match="Word does not fit within line"):
@@ -170,6 +184,16 @@ def test_wrap_height() -> None:
     assert text.text == "Text does\nnot fit"
 
 
+def test_wrap_height_blank_line(layout_engine: ImageFont.Layout) -> None:
+    font = ImageFont.truetype(FONT_PATH, 10, layout_engine=layout_engine)
+    text = ImageText.Text("A\n\nB", font)
+
+    wrapped = text.wrap(100, 10)
+    assert wrapped is not None
+    assert wrapped.text == "\nB"
+    assert text.text == "A"
+
+
 def test_wrap_scaling_unsupported() -> None:
     font = ImageFont.load_default_imagefont()
     text = ImageText.Text("Hello World!", font)
@@ -191,11 +215,14 @@ def test_wrap_shrink() -> None:
     assert text.wrap(50, 50, "shrink") is None
     assert isinstance(text.font, ImageFont.FreeTypeFont)
     assert text.font.size == 10
+    assert text.text == "Hello\nWorld!"
 
+    text = ImageText.Text("Hello World!")
     with pytest.raises(ValueError, match="Text could not be scaled"):
         text.wrap(50, 15, ("shrink", 9))
 
     assert text.wrap(50, 15, "shrink") is None
+    assert isinstance(text.font, ImageFont.FreeTypeFont)
     assert text.font.size == 8
 
     text = ImageText.Text("Hello World!")
@@ -224,7 +251,20 @@ def test_wrap_grow() -> None:
     with pytest.raises(ValueError, match="Text could not be scaled"):
         text.wrap(50, 10, "grow")
 
+    text.wrap(50, 30, "grow")
+    assert text.get_bbox()[3] <= 30
+
     text = ImageText.Text("Hello World!")
     assert text.wrap(50, 50, ("grow", 18)) is None
     assert isinstance(text.font, ImageFont.FreeTypeFont)
     assert text.font.size == 16
+
+
+@skip_unless_feature("freetype2")
+@pytest.mark.parametrize("scaling, size", (("shrink", 10), ("grow", 16)))
+def test_wrap_scaling_trailing_whitespace(scaling: str, size: int) -> None:
+    text = ImageText.Text("Hello World!\n")
+    assert text.wrap(50, 50, scaling) is None
+    assert isinstance(text.font, ImageFont.FreeTypeFont)
+    assert text.font.size == size
+    assert text.text == "Hello\nWorld!"

@@ -19,7 +19,7 @@
  */
 
 #define PY_SSIZE_T_CLEAN
-#include "Python.h"
+#include <Python.h>
 #include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
 
@@ -119,7 +119,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     FontObject *self;
     int error = 0;
 
-    char *filename = NULL;
+    PyBytesObject *filename_bytes = NULL;
     float size;
     FT_Size_RequestRec req;
     FT_Long width;
@@ -137,35 +137,13 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
         return NULL;
     }
 
-#if PY_MAJOR_VERSION > 3 || PY_MINOR_VERSION > 11
-    PyConfig config;
-    PyConfig_InitPythonConfig(&config);
     if (!PyArg_ParseTupleAndKeywords(
             args,
             kw,
-            "etf|nsy#n",
+            "O&f|nsy#n",
             kwlist,
-            config.filesystem_encoding,
-            &filename,
-            &size,
-            &index,
-            &encoding,
-            &font_bytes,
-            &font_bytes_size,
-            &layout_engine
-        )) {
-        PyConfig_Clear(&config);
-        return NULL;
-    }
-    PyConfig_Clear(&config);
-#else
-    if (!PyArg_ParseTupleAndKeywords(
-            args,
-            kw,
-            "etf|nsy#n",
-            kwlist,
-            Py_FileSystemDefaultEncoding,
-            &filename,
+            PyUnicode_FSConverter,
+            &filename_bytes,
             &size,
             &index,
             &encoding,
@@ -175,13 +153,11 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
         )) {
         return NULL;
     }
-#endif
+    const char *filename = PyBytes_AS_STRING(filename_bytes);
 
     self = PyObject_New(FontObject, &Font_Type);
     if (!self) {
-        if (filename) {
-            PyMem_Free(filename);
-        }
+        Py_DECREF(filename_bytes);
         return NULL;
     }
 
@@ -229,19 +205,18 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
             FT_MAKE_TAG(encoding[0], encoding[1], encoding[2], encoding[3]);
         error = FT_Select_Charmap(self->face, encoding_tag);
     }
-    if (filename) {
-        PyMem_Free(filename);
-    }
 
     if (error) {
         if (self->font_bytes) {
             PyMem_Free(self->font_bytes);
             self->font_bytes = NULL;
         }
+        Py_DECREF(filename_bytes);
         Py_DECREF(self);
         return geterror(error);
     }
 
+    Py_DECREF(filename_bytes);
     return (PyObject *)self;
 }
 
@@ -584,10 +559,10 @@ bounding_box_and_anchors(
     GlyphInfo *glyph_info,
     size_t count,
     int load_flags,
-    int *width,
-    int *height,
+    int64_t *width,
+    int64_t *height,
     int *x_offset,
-    int *y_offset
+    int64_t *y_offset
 ) {
     long position; /* pen position along primary axis, in 26.6 precision */
     long advanced; /* pen position along primary axis, in pixels */
@@ -743,10 +718,10 @@ bounding_box_and_anchors(
             }
         }
     }
-    *width = x_max - x_min;
-    *height = y_max - y_min;
+    *width = (int64_t)x_max - x_min;
+    *height = (int64_t)y_max - y_min;
     *x_offset = -x_anchor + x_min;
-    *y_offset = -(-y_anchor + y_max);
+    *y_offset = (int64_t)y_anchor - y_max;
     return 0;
 
 bad_anchor:
@@ -756,7 +731,8 @@ bad_anchor:
 
 static PyObject *
 font_getsize_impl(FontObject *self, PyObject *args) {
-    int width, height, x_offset, y_offset;
+    int64_t width, height, y_offset;
+    int x_offset;
     int load_flags; /* FreeType load_flags parameter */
     int error;
     GlyphInfo *glyph_info = NULL; /* computed text layout */
@@ -825,7 +801,7 @@ font_getsize_impl(FontObject *self, PyObject *args) {
         return NULL;
     }
 
-    return Py_BuildValue("(ii)(ii)", width, height, x_offset, y_offset);
+    return Py_BuildValue("(LL)(iL)", width, height, x_offset, y_offset);
 }
 
 static PyObject *
@@ -844,7 +820,7 @@ font_render_impl(FontObject *self, PyObject *args) {
     int x_min, y_max; /* text offset in 26.6 precision */
     int load_flags;   /* FreeType load_flags parameter */
     int error;
-    FT_Glyph glyph;
+    FT_Glyph glyph = NULL;
     FT_GlyphSlot glyph_slot;
     FT_Bitmap bitmap;
     FT_Bitmap bitmap_converted; /* initialized lazily, for non-8bpp fonts */
@@ -864,7 +840,7 @@ font_render_impl(FontObject *self, PyObject *args) {
     int color = 0; /* is FT_LOAD_COLOR enabled? */
     float stroke_width = 0;
     int stroke_filled = 0;
-    PY_LONG_LONG foreground_ink_long = 0;
+    long long foreground_ink_long = 0;
     unsigned int foreground_ink;
     const char *mode_name = NULL;
     const char *dir = NULL;
@@ -875,7 +851,8 @@ font_render_impl(FontObject *self, PyObject *args) {
     PyObject *fill;
     float x_start = 0;
     float y_start = 0;
-    int width, height, x_offset, y_offset;
+    int64_t width, height, y_offset;
+    int x_offset;
     int horizontal_dir; /* is primary axis horizontal? */
 
     /* render string into given buffer (the buffer *must* have
@@ -953,7 +930,7 @@ font_render_impl(FontObject *self, PyObject *args) {
 
     width += ceil(stroke_width * 2 + x_start);
     height += ceil(stroke_width * 2 + y_start);
-    image = PyObject_CallFunction(fill, "ii", width, height);
+    image = PyObject_CallFunction(fill, "LL", width, height);
     if (image == NULL) {
         PyMem_Del(glyph_info);
         return NULL;
@@ -976,7 +953,7 @@ font_render_impl(FontObject *self, PyObject *args) {
     y_offset = round(y_offset - stroke_width);
     if (count == 0 || width == 0 || height == 0) {
         PyMem_Del(glyph_info);
-        return Py_BuildValue("N(ii)", image, x_offset, y_offset);
+        return Py_BuildValue("N(iL)", image, x_offset, y_offset);
     }
 
     if (stroke_width) {
@@ -1238,6 +1215,7 @@ font_render_impl(FontObject *self, PyObject *args) {
         y += glyph_info[i].y_advance;
         if (stroker != NULL) {
             FT_Done_Glyph(glyph);
+            glyph = NULL;
         }
     }
 
@@ -1246,11 +1224,11 @@ font_render_impl(FontObject *self, PyObject *args) {
     }
     FT_Stroker_Done(stroker);
     PyMem_Del(glyph_info);
-    return Py_BuildValue("N(ii)", image, x_offset, y_offset);
+    return Py_BuildValue("N(iL)", image, x_offset, y_offset);
 
 glyph_error:
     Py_DECREF(image);
-    if (stroker != NULL) {
+    if (glyph != NULL) {
         FT_Done_Glyph(glyph);
     }
     if (bitmap_converted_ready) {
@@ -1271,7 +1249,7 @@ font_render(FontObject *self, PyObject *args) {
 }
 
 static PyObject *
-font_getvarnames(FontObject *self) {
+font_getvarnames(FontObject *self, PyObject *args) {
     int error;
     FT_UInt i, j, num_namedstyles, name_count;
     FT_MM_Var *master;
@@ -1336,7 +1314,7 @@ font_getvarnames(FontObject *self) {
 }
 
 static PyObject *
-font_getvaraxes(FontObject *self) {
+font_getvaraxes(FontObject *self, PyObject *args) {
     int error;
     FT_UInt i, j, num_axis, name_count;
     FT_MM_Var *master;
@@ -1466,7 +1444,7 @@ font_setvaraxes_impl(FontObject *self, PyObject *args) {
         if (PyFloat_Check(item)) {
             coord = PyFloat_AS_DOUBLE(item);
         } else if (PyLong_Check(item)) {
-            coord = (float)PyLong_AS_LONG(item);
+            coord = (float)PyLong_AsLong(item);
         } else if (PyNumber_Check(item)) {
             coord = PyFloat_AsDouble(item);
         } else {
@@ -1656,8 +1634,11 @@ setup_module(PyObject *m) {
     FT_Library_Version(library, &major, &minor, &patch);
 
     v = PyUnicode_FromFormat("%d.%d.%d", major, minor, patch);
-    PyDict_SetItemString(d, "freetype2_version", v ? v : Py_None);
-    Py_XDECREF(v);
+    if (!v) {
+        return -1;
+    }
+    PyDict_SetItemString(d, "freetype2_version", v);
+    Py_DECREF(v);
 
 #ifdef HAVE_RAQM
 #if defined(HAVE_RAQM_SYSTEM) || defined(HAVE_FRIBIDI_SYSTEM)
@@ -1680,6 +1661,9 @@ setup_module(PyObject *m) {
         v = NULL;
 #ifdef RAQM_VERSION_MAJOR
         v = PyUnicode_FromString(raqm_version_string());
+        if (!v) {
+            return -1;
+        }
 #endif
         PyDict_SetItemString(d, "raqm_version", v ? v : Py_None);
         Py_XDECREF(v);
@@ -1691,6 +1675,9 @@ setup_module(PyObject *m) {
             const char *b = strchr(fribidi_version_info, '\n');
             if (a && b && a + 2 < b) {
                 v = PyUnicode_FromStringAndSize(a + 2, b - (a + 2));
+                if (!v) {
+                    return -1;
+                }
             }
         }
 #endif
@@ -1700,6 +1687,9 @@ setup_module(PyObject *m) {
         v = NULL;
 #ifdef HB_VERSION_STRING
         v = PyUnicode_FromString(hb_version_string());
+        if (!v) {
+            return -1;
+        }
 #endif
         PyDict_SetItemString(d, "harfbuzz_version", v ? v : Py_None);
         Py_XDECREF(v);

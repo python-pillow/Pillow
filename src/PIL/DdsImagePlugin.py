@@ -12,15 +12,20 @@ https://creativecommons.org/publicdomain/zero/1.0/
 
 from __future__ import annotations
 
+__lazy_modules__ = {"struct"}
+
 import struct
 import sys
 from enum import IntEnum, IntFlag
-from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i32le as i32
 from ._binary import o8
 from ._binary import o32le as o32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 # Magic ("DDS ")
 DDS_MAGIC = 0x20534444
@@ -347,10 +352,9 @@ class DdsImageFile(ImageFile.ImageFile):
 
         flags, height, width = struct.unpack("<3I", header[:12])
         self._size = (width, height)
-        extents = (0, 0) + self.size
 
         pitch, depth, mipmaps = struct.unpack("<3I", header[12:24])
-        struct.unpack("<11I", header[24:68])  # reserved
+        # 24 - 68 is reserved
 
         # pixel format
         pfsize, pfflags, fourcc, bitcount = struct.unpack("<4I", header[68:84])
@@ -366,8 +370,13 @@ class DdsImageFile(ImageFile.ImageFile):
                 mask_count = 3
 
             masks = struct.unpack(f"<{mask_count}I", header[84 : 84 + mask_count * 4])
-            self.tile = [ImageFile._Tile("dds_rgb", extents, 0, (bitcount, masks))]
-            return
+            if masks == (0xFF0000, 0x00FF00, 0x0000FF):
+                rawmode = "BGR"
+            elif masks == (0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000):
+                rawmode = "BGRA"
+            else:
+                self.tile = [ImageFile._Tile("dds_rgb", args=(bitcount, masks))]
+                return
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:
                 self._mode = "L"
@@ -378,8 +387,8 @@ class DdsImageFile(ImageFile.ImageFile):
                 raise OSError(msg)
         elif pfflags & DDPF.PALETTEINDEXED8:
             self._mode = "P"
-            self.palette = ImagePalette.raw("RGBA", self.fp.read(1024))
-            self.palette.mode = "RGBA"
+            self.palette = ImagePalette.ImagePalette("RGBA", self.fp.read(1024))
+            self.palette.dirty = 1
         elif pfflags & DDPF.FOURCC:
             offset = header_size + 4
             if fourcc == D3DFMT.DXT1:
@@ -475,11 +484,9 @@ class DdsImageFile(ImageFile.ImageFile):
             raise NotImplementedError(msg)
 
         if n:
-            self.tile = [
-                ImageFile._Tile("bcn", extents, offset, (n, self.pixel_format))
-            ]
+            self.tile = [ImageFile._Tile("bcn", None, offset, (n, self.pixel_format))]
         else:
-            self.tile = [ImageFile._Tile("raw", extents, 0, rawmode or self.mode)]
+            self.tile = [ImageFile._Tile("raw", args=rawmode or self.mode)]
 
     def load_seek(self, pos: int) -> None:
         pass
@@ -488,9 +495,14 @@ class DdsImageFile(ImageFile.ImageFile):
 class DdsRgbDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
-        assert self.fd is not None
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         bitcount, masks = self.args
+
+        data = bytearray()
+        bytecount = bitcount // 8
+        if not bytecount:
+            self.set_as_raw(data)
+            return -1, 0
 
         # Some masks will be padded with zeros, e.g. R 0b11 G 0b1100
         # Calculate how many zeros each mask is padded with
@@ -505,11 +517,13 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
             mask_offsets.append(offset)
             mask_totals.append(mask >> offset)
 
-        data = bytearray()
-        bytecount = bitcount // 8
+        assert self.fd is not None
         dest_length = self.state.xsize * self.state.ysize * len(masks)
         while len(data) < dest_length:
-            value = int.from_bytes(self.fd.read(bytecount), "little")
+            bytes_read = self.fd.read(bytecount)
+            if len(bytes_read) < bytecount:
+                break
+            value = int.from_bytes(bytes_read, "little")
             for i, mask in enumerate(masks):
                 masked_value = value & mask
                 # Remove the zero padding, and scale it to 8 bits
@@ -612,7 +626,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             # dxgi_format, 2D resource, misc, array size, straight alpha
             struct.pack("<5I", dxgi_format, 3, 0, 0, 1)
         )
-    ImageFile._save(im, fp, [ImageFile._Tile(codec_name, (0, 0) + im.size, 0, args)])
+    ImageFile._save(im, fp, [ImageFile._Tile(codec_name, args=args)])
 
 
 def _accept(prefix: bytes) -> bool:

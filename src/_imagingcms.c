@@ -27,14 +27,13 @@ https://www.cazabon.com\n\
 "
 
 #define PY_SSIZE_T_CLEAN
-#include "Python.h"  // Include before wchar.h so _GNU_SOURCE is set
-#include "wchar.h"
-#include "datetime.h"
+#include <Python.h>  // Include before wchar.h so _GNU_SOURCE is set
+#include "thirdparty/pythoncapi_compat.h"
+#include <wchar.h>
+#include <datetime.h>
 
-#include "lcms2.h"
+#include <lcms2.h>
 #include "libImaging/Imaging.h"
-
-#define PYCMSVERSION "1.0.0 pil"
 
 /* version history */
 
@@ -182,6 +181,8 @@ cms_profile_dealloc(CmsProfileObject *self) {
 
 typedef struct {
     PyObject_HEAD cmsHTRANSFORM transform;
+    ModeID in_mode;
+    ModeID out_mode;
 } CmsTransformObject;
 
 static PyTypeObject CmsTransform_Type;
@@ -189,7 +190,7 @@ static PyTypeObject CmsTransform_Type;
 #define CmsTransform_Check(op) (Py_TYPE(op) == &CmsTransform_Type)
 
 static PyObject *
-cms_transform_new(cmsHTRANSFORM transform) {
+cms_transform_new(cmsHTRANSFORM transform, ModeID in_mode, ModeID out_mode) {
     CmsTransformObject *self;
 
     self = PyObject_New(CmsTransformObject, &CmsTransform_Type);
@@ -198,6 +199,8 @@ cms_transform_new(cmsHTRANSFORM transform) {
     }
 
     self->transform = transform;
+    self->in_mode = in_mode;
+    self->out_mode = out_mode;
 
     return (PyObject *)self;
 }
@@ -235,23 +238,9 @@ findLCMStype(const char *const mode_name) {
             );
         default:
             // This function only accepts a subset of the imaging modes Pillow has.
-            break;
+            // presume "1" or "L" by default
+            return TYPE_GRAY_8;
     }
-    // The following modes are not valid PIL Image modes.
-    if (strcmp(mode_name, "RGBA;16B") == 0) {
-        return TYPE_RGBA_16;
-    }
-    if (strcmp(mode_name, "L;16") == 0) {
-        return TYPE_GRAY_16;
-    }
-    if (strcmp(mode_name, "L;16B") == 0) {
-        return TYPE_GRAY_16_SE;
-    }
-    if (strcmp(mode_name, "YCCA") == 0 || strcmp(mode_name, "YCC") == 0) {
-        return TYPE_YCbCr_8;
-    }
-    /* presume "1" or "L" by default */
-    return TYPE_GRAY_8;
 }
 
 #define Cms_Min(a, b) ((a) < (b) ? (a) : (b))
@@ -489,7 +478,7 @@ buildTransform(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    return cms_transform_new(transform);
+    return cms_transform_new(transform, findModeID(sInMode), findModeID(sOutMode));
 }
 
 static PyObject *
@@ -538,11 +527,11 @@ buildProofTransform(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    return cms_transform_new(transform);
+    return cms_transform_new(transform, findModeID(sInMode), findModeID(sOutMode));
 }
 
 static PyObject *
-cms_transform_apply(CmsTransformObject *self, PyObject *args) {
+cms_transform_apply_impl(CmsTransformObject *self, PyObject *args) {
     PyObject *i0, *i1;
     Imaging im;
     Imaging imOut;
@@ -566,7 +555,21 @@ cms_transform_apply(CmsTransformObject *self, PyObject *args) {
         return NULL;
     }
 
+    if (self->in_mode != im->mode || self->out_mode != imOut->mode) {
+        PyErr_SetString(PyExc_ValueError, "mode mismatch");
+        return NULL;
+    }
+
     return Py_BuildValue("i", pyCMSdoTransform(im, imOut, self->transform));
+}
+
+static PyObject *
+cms_transform_apply(CmsTransformObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = cms_transform_apply_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 /* -------------------------------------------------------------------- */
@@ -629,10 +632,6 @@ cms_profile_is_intent_supported(CmsProfileObject *self, PyObject *args) {
     }
 
     result = cmsIsIntentSupported(self->profile, intent, direction);
-
-    /* printf("cmsIsIntentSupported(%p, %d, %d) => %d\n", self->profile, intent,
-     * direction, result); */
-
     return PyLong_FromLong(result != 0);
 }
 
@@ -854,7 +853,7 @@ _profile_read_named_color_list(CmsProfileObject *self, cmsTagSignature info) {
     n = cmsNamedColorCount(ncl);
     result = PyList_New(n);
     if (!result) {
-        Py_RETURN_NONE;
+        return NULL;
     }
 
     for (i = 0; i < n; i++) {
@@ -863,7 +862,7 @@ _profile_read_named_color_list(CmsProfileObject *self, cmsTagSignature info) {
         str = PyUnicode_FromString(name);
         if (str == NULL) {
             Py_DECREF(result);
-            Py_RETURN_NONE;
+            return NULL;
         }
         PyList_SET_ITEM(result, i, str);
     }
@@ -930,7 +929,7 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
 
     result = PyDict_New();
     if (result == NULL) {
-        Py_RETURN_NONE;
+        return NULL;
     }
 
     n = cmsGetSupportedIntents(INTENTS, intent_ids, intent_descs);
@@ -960,7 +959,7 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
             Py_XDECREF(id);
             Py_XDECREF(entry);
             Py_XDECREF(result);
-            Py_RETURN_NONE;
+            return NULL;
         }
         PyDict_SetItem(result, id, entry);
         Py_DECREF(id);
@@ -1048,7 +1047,13 @@ cms_profile_getattr_creation_date(CmsProfileObject *self, void *closure) {
     }
 
     return PyDateTime_FromDateAndTime(
-        1900 + ct.tm_year, ct.tm_mon, ct.tm_mday, ct.tm_hour, ct.tm_min, ct.tm_sec, 0
+        1900 + ct.tm_year,
+        ct.tm_mon + 1,
+        ct.tm_mday,
+        ct.tm_hour,
+        ct.tm_min,
+        ct.tm_sec,
+        0
     );
 }
 
@@ -1462,6 +1467,8 @@ setup_module(PyObject *m) {
         return -1;
     }
 
+    PyDateTime_IMPORT;
+
     d = PyModule_GetDict(m);
 
     /* this check is also in PIL.features.pilinfo() */
@@ -1475,8 +1482,11 @@ setup_module(PyObject *m) {
     } else {
         v = PyUnicode_FromFormat("%d.%d", vn / 1000, (vn / 10) % 100);
     }
-    PyDict_SetItemString(d, "littlecms_version", v ? v : Py_None);
-    Py_XDECREF(v);
+    if (!v) {
+        return -1;
+    }
+    PyDict_SetItemString(d, "littlecms_version", v);
+    Py_DECREF(v);
 
     return 0;
 }
@@ -1491,8 +1501,6 @@ static PyModuleDef_Slot slots[] = {
 
 PyMODINIT_FUNC
 PyInit__imagingcms(void) {
-    PyDateTime_IMPORT;
-
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         .m_name = "_imagingcms",

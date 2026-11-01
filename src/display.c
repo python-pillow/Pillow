@@ -23,7 +23,7 @@
  */
 
 #define PY_SSIZE_T_CLEAN
-#include "Python.h"
+#include <Python.h>
 
 #include "libImaging/Imaging.h"
 
@@ -46,13 +46,17 @@ typedef struct {
 
 static PyTypeObject ImagingDisplayType;
 
+int
+display_setup(void) {
+    if (PyType_Ready(&ImagingDisplayType) < 0) {
+        return -1;
+    }
+    return 0;
+}
+
 static ImagingDisplayObject *
 _new(const ModeID mode, int xsize, int ysize) {
     ImagingDisplayObject *display;
-
-    if (PyType_Ready(&ImagingDisplayType) < 0) {
-        return NULL;
-    }
 
     display = PyObject_New(ImagingDisplayObject, &ImagingDisplayType);
     if (display == NULL) {
@@ -134,9 +138,29 @@ _paste(ImagingDisplayObject *display, PyObject *args) {
 
     if (xy[2] <= xy[0]) {
         xy[2] = xy[0] + im->xsize;
+    } else if (xy[2] - xy[0] != im->xsize) {
+        return ImagingError_Mismatch();
+    }
+    if (xy[0] < 0) {
+        PyErr_SetString(PyExc_ValueError, "left box co-ordinate cannot be negative");
+        return NULL;
+    }
+    if (xy[2] > display->dib->xsize) {
+        PyErr_SetString(PyExc_ValueError, "right box co-ordinate outside bitmap image");
+        return NULL;
     }
     if (xy[3] <= xy[1]) {
         xy[3] = xy[1] + im->ysize;
+    } else if (xy[3] - xy[1] != im->ysize) {
+        return ImagingError_Mismatch();
+    }
+    if (xy[1] < 0) {
+        PyErr_SetString(PyExc_ValueError, "upper box co-ordinate cannot be negative");
+        return NULL;
+    }
+    if (xy[3] > display->dib->ysize) {
+        PyErr_SetString(PyExc_ValueError, "lower box co-ordinate outside bitmap image");
+        return NULL;
     }
 
     ImagingPasteDIB(display->dib, im, xy);
@@ -291,12 +315,12 @@ PyObject *
 PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
     int x = 0, y = 0, width = -1, height;
     int includeLayeredWindows = 0, screens = 0;
-    HBITMAP bitmap;
+    HBITMAP bitmap = NULL;
     BITMAPCOREHEADER core;
     HDC screen, screen_copy;
     HWND wnd;
     DWORD rop;
-    PyObject *buffer;
+    PyObject *buffer = NULL;
     HANDLE dpiAwareness = NULL;
     HMODULE user32;
     Func_GetWindowDpiAwarenessContext GetWindowDpiAwarenessContext_function;
@@ -362,15 +386,18 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
     FreeLibrary(user32);
 
     if (width == -1) {
+        PyErr_SetString(PyExc_OSError, "screen grab failed");
         goto error;
     }
 
     bitmap = CreateCompatibleBitmap(screen, width, height);
     if (!bitmap) {
+        PyErr_SetString(PyExc_OSError, "screen grab failed");
         goto error;
     }
 
     if (!SelectObject(screen_copy, bitmap)) {
+        PyErr_SetString(PyExc_OSError, "screen grab failed");
         goto error;
     }
 
@@ -381,6 +408,7 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
         rop |= CAPTUREBLT;
     }
     if (!BitBlt(screen_copy, 0, 0, width, height, screen, x, y, rop)) {
+        PyErr_SetString(PyExc_OSError, "screen grab failed");
         goto error;
     }
 
@@ -388,7 +416,7 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
 
     buffer = PyBytes_FromStringAndSize(NULL, height * ((width * 3 + 3) & -4));
     if (!buffer) {
-        return NULL;
+        goto error;
     }
 
     core.bcSize = sizeof(core);
@@ -405,6 +433,7 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
             (BITMAPINFO *)&core,
             DIB_RGB_COLORS
         )) {
+        PyErr_SetString(PyExc_OSError, "screen grab failed");
         goto error;
     }
 
@@ -419,8 +448,10 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
     return Py_BuildValue("(ii)(ii)N", x, y, width, height, buffer);
 
 error:
-    PyErr_SetString(PyExc_OSError, "screen grab failed");
-
+    Py_XDECREF(buffer);
+    if (bitmap != NULL) {
+        DeleteObject(bitmap);
+    }
     DeleteDC(screen_copy);
     if (screens == -1) {
         ReleaseDC(wnd, screen);
@@ -441,8 +472,10 @@ PyImaging_GrabClipboardWin32(PyObject *self, PyObject *args) {
     void *data;
     PyObject *result;
     UINT format;
+    // Windows clipboard format identifiers
     UINT formats[] = {CF_DIB, CF_DIBV5, CF_HDROP, RegisterClipboardFormatA("PNG"), 0};
-    LPCSTR format_names[] = {"DIB", "DIB", "file", "png", NULL};
+    // For format_name in ImageGrab.py, in the same order as the formats above
+    LPCSTR format_names[] = {"DIB", "DIB", "file", "PNG", NULL};
 
     if (!OpenClipboard(NULL)) {
         // Maybe the clipboard is temporarily in use by another process.
@@ -763,6 +796,16 @@ PyImaging_DrawWmf(PyObject *self, PyObject *args) {
         return NULL;
     }
 
+    /* bcWidth/bcHeight in BITMAPCOREHEADER are 16-bit fields (WORD). If width
+     * or height do not fit, they would silently truncate when assigned below,
+     * while the later buffer read (PyBytes_FromStringAndSize) still uses the
+     * untruncated values, causing a heap buffer over-read. Reject anything
+     * that would not round-trip through a 16-bit unsigned field. */
+    if (width <= 0 || height <= 0 || width > 65535 || height > 65535) {
+        PyErr_SetString(PyExc_ValueError, "invalid dimensions");
+        return NULL;
+    }
+
     /* step 1: copy metafile contents into METAFILE object */
 
     if (datasize > 22 && GET32(data, 0) == 0x9ac6cdd7) {
@@ -832,6 +875,13 @@ error:
     DeleteDC(dc);
 
     return buffer;
+}
+
+#else
+
+int
+display_setup(void) {
+    return 0;
 }
 
 #endif /* _WIN32 */

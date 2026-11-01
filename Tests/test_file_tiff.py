@@ -2,10 +2,7 @@ from __future__ import annotations
 
 import os
 import warnings
-from collections.abc import Generator
 from io import BytesIO
-from pathlib import Path
-from types import ModuleType
 
 import pytest
 
@@ -30,6 +27,12 @@ from .helper import (
     is_win32,
     timeout_unless_slower_valgrind,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
+    from types import ModuleType
 
 ElementTree: ModuleType | None
 try:
@@ -65,9 +68,7 @@ class TestFileTiff:
             open_test_image()
 
     def test_closed_file(self) -> None:
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-
+        with warnings.catch_warnings(action="error"):
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
             im.close()
@@ -83,9 +84,7 @@ class TestFileTiff:
             im.seek(1)
 
     def test_context_manager(self) -> None:
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-
+        with warnings.catch_warnings(action="error"):
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 
@@ -101,11 +100,14 @@ class TestFileTiff:
 
             assert_image_similar_tofile(im, "Tests/images/pil136.png", 1)
 
-    def test_bigtiff(self, tmp_path: Path) -> None:
-        with Image.open("Tests/images/hopper_bigtiff.tif") as im:
+    @pytest.mark.parametrize(
+        "test_file",
+        ("Tests/images/hopper_bigtiff.tif", "Tests/images/hopper_bigtiff_be.tif"),
+    )
+    def test_bigtiff(self, test_file: str, tmp_path: Path) -> None:
+        with Image.open(test_file) as im:
             assert_image_equal_tofile(im, "Tests/images/hopper.tif")
 
-        with Image.open("Tests/images/hopper_bigtiff.tif") as im:
             outfile = tmp_path / "temp.tif"
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
             im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)
@@ -124,6 +126,73 @@ class TestFileTiff:
         with Image.open(outfile) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2._bigtiff is True
+
+    def test_bigtiff_save_big_endian_ifd(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+        with Image.open("Tests/images/exif_gps.jpg") as jpeg:
+            exif = jpeg.getexif()
+        gps = exif.get_ifd(0x8825)
+        assert gps
+
+        # I;16B is saved as big-endian
+        im = Image.new("I;16B", (1, 1))
+        im.save(outfile, big_tiff=True, exif=exif)
+
+        with Image.open(outfile) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2.prefix == b"MM"
+            assert reloaded.tag_v2._bigtiff is True
+            assert reloaded.tag_v2.tagtype[0x8825] == TiffTags.LONG
+            assert reloaded.getexif().get_ifd(0x8825) == gps
+
+            # Check that a LONG tag is upgraded to LONG8
+            # when the offset is large enough to make it necessary
+            reloaded.tag_v2.tagtype[32768] = TiffTags.LONG
+            reloaded.tag_v2[32768] = {}
+            data = reloaded.tag_v2.tobytes(2**32)
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2(b"MM\x00\x2b" + b"\x00" * 12)
+        ifd.load(BytesIO(data))
+        assert ifd.tagtype[32768] == TiffTags.LONG8
+
+    def test_bigtiff_save_two_strips(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+        im = hopper("L")
+
+        # Two LONG strip offsets fit within a BigTIFF entry
+        im.save(outfile, big_tiff=True, tiffinfo={TiffImagePlugin.ROWSPERSTRIP: 64})
+
+        with Image.open(outfile) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert len(reloaded.tag_v2[TiffImagePlugin.STRIPOFFSETS]) == 2
+            assert_image_equal(reloaded, im)
+
+    def test_bigtiff_save_big_endian_strip_offset(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+        # I;16B is saved as big-endian
+        im = hopper("I;16B")
+
+        # The single LONG strip offset fits within a BigTIFF entry
+        im.save(outfile, big_tiff=True)
+
+        with Image.open(outfile) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2.prefix == b"MM"
+            assert reloaded.tag_v2._bigtiff is True
+            assert (
+                reloaded.tag_v2.tagtype[TiffImagePlugin.STRIPOFFSETS] == TiffTags.LONG
+            )
+            assert len(reloaded.tag_v2[TiffImagePlugin.STRIPOFFSETS]) == 1
+            assert_image_equal(reloaded, im)
+
+            # Check that the strip offset is upgraded to LONG8
+            # when it is too large for a LONG
+            data = reloaded.tag_v2.tobytes(2**32)
+
+        ifd = TiffImagePlugin.ImageFileDirectory_v2(b"MM\x00\x2b" + b"\x00" * 12)
+        ifd.load(BytesIO(data))
+        assert ifd.tagtype[TiffImagePlugin.STRIPOFFSETS] == TiffTags.LONG8
+        assert ifd[TiffImagePlugin.STRIPOFFSETS][0] > 2**32
 
     def test_seek_too_large(self) -> None:
         with pytest.raises(ValueError, match="Unable to seek to frame"):
@@ -206,6 +275,31 @@ class TestFileTiff:
             assert im.tag_v2[X_RESOLUTION] == 123.45
             assert im.tag_v2[Y_RESOLUTION] == 123.45
 
+    def test_no_resolution(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+        hopper().save(outfile)
+        with Image.open(outfile) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            assert X_RESOLUTION not in im.tag_v2
+            assert Y_RESOLUTION not in im.tag_v2
+            assert "dpi" not in im.info
+            assert "resolution" not in im.info
+
+    def test_resolution_per_frame(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+        im = hopper()
+        im2 = im.copy()
+        im2.encoderinfo = {"dpi": (300, 300)}
+        im.save(outfile, save_all=True, append_images=[im2])
+        with Image.open(outfile) as im:
+            assert "dpi" not in im.info
+
+            im.seek(1)
+            assert im.info["dpi"] == (300, 300)
+
+            im.seek(0)
+            assert "dpi" not in im.info
+
     def test_invalid_file(self) -> None:
         invalid_file = "Tests/images/flower.jpg"
 
@@ -229,6 +323,14 @@ class TestFileTiff:
         im = hopper("RGBA")
         outfile = tmp_path / "temp.tif"
         im.save(outfile)
+
+    def test_save_ycbcr(self, tmp_path: Path) -> None:
+        im = hopper("YCbCr")
+        outfile = tmp_path / "temp.tif"
+        im.save(outfile)
+
+        with Image.open(outfile) as reloaded:
+            assert_image_equal(im, reloaded)
 
     def test_save_unsupported_mode(self, tmp_path: Path) -> None:
         im = hopper("HSV")
@@ -549,6 +651,25 @@ class TestFileTiff:
             im.seek(1)
             assert im.getexif()[273] == (1408, 1907)
 
+    @pytest.mark.parametrize(
+        "orientation, method",
+        (
+            (5, Image.Transpose.TRANSPOSE),
+            (6, Image.Transpose.ROTATE_270),
+            (7, Image.Transpose.TRANSVERSE),
+            (8, Image.Transpose.ROTATE_90),
+        ),
+    )
+    def test_orientation_mmap(
+        self, orientation: int, method: Image.Transpose, tmp_path: Path
+    ) -> None:
+        filename = tmp_path / "temp.tif"
+        im = hopper("L").crop((0, 0, 128, 64))
+        im.save(filename, tiffinfo={274: orientation})
+        with Image.open(filename) as reloaded:
+            assert reloaded.size == (64, 128)
+            assert_image_equal(reloaded, im.transpose(method))
+
     @pytest.mark.parametrize("mode", ("1", "L"))
     def test_photometric(self, mode: str, tmp_path: Path) -> None:
         filename = tmp_path / "temp.tif"
@@ -753,6 +874,21 @@ class TestFileTiff:
         with Image.open(outfile) as reloaded:
             assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
+    def test_palette_colormap(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+
+        im = Image.new("P", (2, 1))
+        im.putpalette([255, 255, 255, 0, 0, 0])
+        im.putdata([0, 1])
+        im.save(outfile)
+
+        with Image.open(outfile) as reloaded:
+            # TIFF ColorMap values range from 0 to 65535
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.tag_v2[320] == ((65535,) + (0,) * 255) * 3
+
+            assert reloaded.getpalette() == [255, 255, 255] + [0, 0, 0] * 255
+
     def test_tiff_save_all(self) -> None:
         mp = BytesIO()
         with Image.open("Tests/images/multipage.tiff") as im:
@@ -775,7 +911,7 @@ class TestFileTiff:
             assert reread.n_frames == 3
 
         # Test appending using a generator
-        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image, None, None]:
+        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image]:
             yield from ims
 
         mp = BytesIO()
@@ -1016,6 +1152,8 @@ class TestFileTiff:
                 im.load()
 
     @timeout_unless_slower_valgrind(6)
+    @pytest.mark.filterwarnings("ignore:Corrupt EXIF data")
+    @pytest.mark.filterwarnings("ignore:Tag data larger than file")
     @pytest.mark.filterwarnings("ignore:Truncated File Read")
     def test_timeout(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/timeout-6646305047838720") as im:

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 from typing import IO
 
 import pytest
@@ -9,6 +8,10 @@ import pytest
 from PIL import Image, ImageFile, WmfImagePlugin
 
 from .helper import assert_image_equal_tofile, assert_image_similar_tofile, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_load_raw() -> None:
@@ -56,6 +59,19 @@ def test_load_unsupported() -> None:
         WmfImagePlugin.WmfStubImageFile(b)
 
 
+@pytest.mark.skipif(not hasattr(Image.core, "drawwmf"), reason="requires Windows")
+def test_load_oversized_dimensions() -> None:
+    with Image.open("Tests/images/drawing.wmf") as im:
+        assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
+        assert im.size == (82, 82)
+
+        # (60000, 1) DPI produces a 68450x1 image
+        # width exceeds the 65535 limit of the 16-bit BITMAPCOREHEADER field
+        # in the native drawwmf handler, previously causing a heap over-read.
+        with pytest.raises(ValueError, match="invalid dimensions"):
+            im.load((60000, 1))
+
+
 def test_render() -> None:
     with open("Tests/images/drawing.emf", "rb") as fp:
         data = fp.read()
@@ -69,6 +85,9 @@ def test_register_handler(tmp_path: Path) -> None:
     class TestHandler(ImageFile.StubHandler):
         methodCalled = False
 
+        def open(self, im: ImageFile.StubImageFile) -> None:
+            im._size = (1, 1)
+
         def load(self, im: ImageFile.StubImageFile) -> Image.Image:
             return Image.new("RGB", (1, 1))
 
@@ -76,7 +95,7 @@ def test_register_handler(tmp_path: Path) -> None:
             self.methodCalled = True
 
     handler = TestHandler()
-    original_handler = WmfImagePlugin._handler
+    original_handler = WmfImagePlugin.WmfStubImageFile._handler
     WmfImagePlugin.register_handler(handler)
 
     im = hopper()
@@ -110,11 +129,26 @@ def test_load_set_dpi() -> None:
 
             assert_image_similar_tofile(im, "Tests/images/drawing_wmf_ref_144.png", 2.1)
 
+            for dpi in (0, (0, 0), (0, 1), (1, 0)):
+                with Image.open("Tests/images/drawing.wmf") as im:
+                    assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
+                    im.load(dpi)
+
+            for dpi in (-1, (-1, -1), (-1, 1), (1, -1)):
+                with Image.open("Tests/images/drawing.wmf") as im:
+                    assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
+                    with pytest.raises(ValueError, match="DPI must be non-negative"):
+                        im.load(dpi)
+
     with Image.open("Tests/images/drawing.emf") as im:
         assert im.size == (1625, 1625)
+        assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
+        with pytest.raises(Image.DecompressionBombError):
+            im.load(20000)
 
-        if not hasattr(Image.core, "drawwmf"):
-            return
+    if not hasattr(Image.core, "drawwmf"):
+        return
+    with Image.open("Tests/images/drawing.emf") as im:
         assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
         im.load(im.info["dpi"])
         assert im.size == (1625, 1625)

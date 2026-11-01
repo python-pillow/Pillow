@@ -8,13 +8,16 @@
 ##
 from __future__ import annotations
 
-from typing import IO
+__lazy_modules__ = {"PIL._binary"}
 
 from . import Image, ImageFile
 from ._binary import o8
 from ._binary import o16be as o16b
 
-# fmt: off
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
+
 _Palm8BitColormapValues = (
     (255, 255, 255), (255, 204, 255), (255, 153, 255), (255, 102, 255),
     (255,  51, 255), (255,   0, 255), (255, 255, 204), (255, 204, 204),
@@ -79,8 +82,8 @@ _Palm8BitColormapValues = (
     (0,     0,   0), (0,     0,   0), (0,     0,   0), (0,     0,   0),
     (0,     0,   0), (0,     0,   0), (0,     0,   0), (0,     0,   0),
     (0,     0,   0), (0,     0,   0), (0,     0,   0), (0,     0,   0),
-    (0,     0,   0), (0,     0,   0), (0,     0,   0), (0,     0,   0))
-# fmt: on
+    (0,     0,   0), (0,     0,   0), (0,     0,   0), (0,     0,   0),
+)  # fmt: skip
 
 
 # so build a prototype image to be used for palette resampling
@@ -140,9 +143,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             msg = f"cannot write mode {im.mode} as Palm"
             raise OSError(msg)
 
-        # we ignore the palette here
-        im._mode = "P"
-        rawmode = f"P;{bpp}"
+        rawmode = f"L;{bpp}"
         version = 1
 
     elif im.mode == "1":
@@ -171,7 +172,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     flags = 0
     if im.mode == "P":
         flags |= _FLAGS["custom-colormap"]
-        colormap = im.im.getpalette()
+        colormap = im.im.getpalette("RGB")
         colors = len(colormap) // 3
         colormapsize = 4 * colors + 2
     else:
@@ -199,9 +200,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             fp.write(colormap[3 * i : 3 * i + 3])
 
     # now convert data to raw form
-    ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, rowbytes, 1))]
-    )
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", args=(rawmode, rowbytes, 1))])
 
     if hasattr(fp, "flush"):
         fp.flush()

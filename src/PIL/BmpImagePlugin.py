@@ -24,8 +24,9 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 import os
-from typing import IO, Any
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
@@ -33,6 +34,10 @@ from ._binary import i32le as i32
 from ._binary import o8
 from ._binary import o16le as o16
 from ._binary import o32le as o32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
 
 #
 # --------------------------------------------------------------------
@@ -130,7 +135,9 @@ class BmpImageFile(ImageFile.ImageFile):
             file_info["colors"] = i32(header_data, 28)
             file_info["palette_padding"] = 4
             assert isinstance(file_info["pixels_per_meter"], tuple)
-            self.info["dpi"] = tuple(x / 39.3701 for x in file_info["pixels_per_meter"])
+            dpi = tuple(x / 39.3701 for x in file_info["pixels_per_meter"])
+            if dpi != (0, 0):
+                self.info["dpi"] = dpi
             if file_info["compression"] == self.COMPRESSIONS["BITFIELDS"]:
                 masks = ["r_mask", "g_mask", "b_mask"]
                 if len(header_data) >= 48:
@@ -280,7 +287,7 @@ class BmpImageFile(ImageFile.ImageFile):
 
                 # ------- If all colors are gray, white or black, ditch palette
                 if grayscale:
-                    self._mode = "1" if file_info["colors"] == 2 else "L"
+                    self._mode = "1" if file_info["colors"] <= 2 else "L"
                     raw_mode = self.mode
                 else:
                     self._mode = "P"
@@ -324,7 +331,7 @@ class BmpImageFile(ImageFile.ImageFile):
 class BmpRleDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         assert self.fd is not None
         rle4 = self.args[1]
         data = bytearray()
@@ -367,29 +374,33 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     if len(bytes_read) < 2:
                         break
                     right, up = bytes_read
-                    data += b"\x00" * (right + up * self.state.xsize)
+                    data += b"\x00" * min(
+                        dest_length - len(data), right + up * self.state.xsize
+                    )
                     x = len(data) % self.state.xsize
                 else:
                     # absolute mode
+                    data_count = min(dest_length - len(data), byte[0])
                     if rle4:
-                        # 2 pixels per byte
-                        byte_count = byte[0] // 2
+                        # 2 pixels per byte, padded up to a whole byte
+                        byte_count = (data_count + 1) // 2
                         bytes_read = self.fd.read(byte_count)
-                        for byte_read in bytes_read:
+                        for i, byte_read in enumerate(bytes_read):
                             data += o8(byte_read >> 4)
-                            data += o8(byte_read & 0x0F)
+                            if i * 2 + 1 < data_count:
+                                data += o8(byte_read & 0x0F)
                     else:
-                        byte_count = byte[0]
+                        byte_count = data_count
                         bytes_read = self.fd.read(byte_count)
                         data += bytes_read
-                    if len(bytes_read) < byte_count:
+                    if len(bytes_read) < byte_count or len(data) == dest_length:
                         break
                     x += byte[0]
 
                     # align to 16-bit word boundary
                     if self.fd.tell() % 2 != 0:
                         self.fd.seek(1, os.SEEK_CUR)
-        rawmode = "L" if self.mode == "L" else "P"
+        rawmode = "L" if self.mode in {"1", "L"} else "P"
         self.set_as_raw(bytes(data), rawmode, (0, self.args[-1]))
         return -1, 0
 
@@ -448,7 +459,8 @@ def _save(
     elif im.mode == "L":
         palette = b"".join(o8(i) * 3 + b"\x00" for i in range(256))
     elif im.mode == "P":
-        palette = im.im.getpalette("RGB", "BGRX")
+        # Colors used should not be zero, as that is treated as the maximum
+        palette = im.im.getpalette("BGRX") or b"\x00\x00\x00\x00"
         colors = len(palette) // 4
     else:
         palette = None
@@ -487,9 +499,7 @@ def _save(
     if palette:
         fp.write(palette)
 
-    ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, stride, -1))]
-    )
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", args=(rawmode, stride, -1))])
 
 
 #

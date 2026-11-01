@@ -30,7 +30,28 @@ def test_compile() -> None:
     assert font.ysize == 2
 
 
-def test_save(tmp_path: Path) -> None:
+def test_decompression_bomb() -> None:
+    font = FontFile.FontFile()
+    font.glyph[0] = ((0, 0), (0, 0, 0, 0), (0, 0, 10000, 10000), Image.new("L", (0, 0)))
+    with pytest.raises(Image.DecompressionBombError):
+        font.compile()
+
+
+@pytest.mark.parametrize("filename_type", (str, Path))
+def test_save(tmp_path: Path, filename_type: type[str | Path]) -> None:
+    # Arrange
+    font = FontFile.FontFile()
+    font.glyph[0] = ((0, 0), (0, 0, 0, 0), (0, 0, 1, 1), Image.new("L", (1, 1)))
+
+    # Act
+    font.save(filename_type(tmp_path / "temp.pil"))
+
+    # Assert
+    assert (tmp_path / "temp.pil").is_file()
+    assert (tmp_path / "temp.pbm").is_file()
+
+
+def test_save_no_bitmap(tmp_path: Path) -> None:
     tempname = str(tmp_path / "temp.pil")
 
     font = FontFile.FontFile()
