@@ -1,3 +1,14 @@
+/*
+ * FriBiDi shim: declarations for loading libfribidi at runtime.
+ *
+ * SPDX-License-Identifier: MIT-CMU
+ * Part of Pillow; see the LICENSE file in the root of the Pillow source tree.
+ *
+ * This header declares the subset of FriBiDi's public API (types, constants
+ * and function signatures, from the FriBiDi headers named in the section
+ * comments below) needed to call into libfribidi for interoperability.
+ * It contains no FriBiDi implementation code.
+ */
 
 #define FRIBIDI_MAJOR_VERSION 1
 

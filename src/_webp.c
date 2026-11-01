@@ -675,7 +675,6 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
         WebPData exif = {exif_bytes, i_exif_size};
         WebPData xmp = {xmp_bytes, i_xmp_size};
         WebPMuxError err;
-        int dbg = 0;
 
         int copy_data = 0;  // value 1 indicates given data WILL be copied to the mux
                             // and value 0 indicates data will NOT be copied.
@@ -687,41 +686,21 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
         }
         WebPMuxSetImage(mux, &image, copy_data);
 
-        if (dbg) {
-            /* was getting %ld icc_size == 0, icc_size>0 was true */
-            fprintf(stderr, "icc size %d, %d \n", i_icc_size, i_icc_size > 0);
-        }
-
         if (i_icc_size > 0) {
-            if (dbg) {
-                fprintf(stderr, "Adding ICC Profile\n");
-            }
             err = WebPMuxSetChunk(mux, "ICCP", &icc_profile, copy_data);
             if (err != WEBP_MUX_OK) {
                 return HandleMuxError(err, "ICCP");
             }
         }
 
-        if (dbg) {
-            fprintf(stderr, "exif size %d \n", i_exif_size);
-        }
         if (i_exif_size > 0) {
-            if (dbg) {
-                fprintf(stderr, "Adding Exif Data\n");
-            }
             err = WebPMuxSetChunk(mux, "EXIF", &exif, copy_data);
             if (err != WEBP_MUX_OK) {
                 return HandleMuxError(err, "EXIF");
             }
         }
 
-        if (dbg) {
-            fprintf(stderr, "xmp size %d \n", i_xmp_size);
-        }
         if (i_xmp_size > 0) {
-            if (dbg) {
-                fprintf(stderr, "Adding XMP Data\n");
-            }
             err = WebPMuxSetChunk(mux, "XMP ", &xmp, copy_data);
             if (err != WEBP_MUX_OK) {
                 return HandleMuxError(err, "XMP ");

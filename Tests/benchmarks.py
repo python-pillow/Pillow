@@ -6,32 +6,37 @@ from __future__ import annotations
 
 import hashlib
 import os
-import pathlib
 import re
 import warnings
 from importlib.util import find_spec
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
-from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, ImageMath
 from PIL.Image import Resampling, Transform, Transpose
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from typing import Any
 
-    BenchmarkSave = Callable[[Image.Image], None]
-
+    from _pytest.mark.structures import ParameterSet
     from pytest_benchmark.fixture import (  # type: ignore[unused-ignore, import-not-found]
         BenchmarkFixture,
     )
 
+    BenchmarkSave = Callable[[Image.Image], None]
+
+
 if not (find_spec("pytest_benchmark") or find_spec("pytest_codspeed")):
     pytest.skip("pytest-benchmark or pytest-codspeed required", allow_module_level=True)
 
+IMAGES_PATH = Path(__file__).parent / "images"
+
 _save_results = os.environ.get("PILLOW_BENCHMARK_SAVE_RESULTS_PATH")
-SAVE_RESULTS_PATH = pathlib.Path(_save_results) if _save_results else None
+SAVE_RESULTS_PATH = Path(_save_results) if _save_results else None
 
 # These can be adjusted to add more modes to benchmark
 # (however all features benchmarked might not support all PIL modes).
@@ -44,10 +49,7 @@ MODES = ["RGB", "RGBA", "L", "LA"]
 SIZES = [(1237, 811)]  # Primes, non-power-of-two, asymmetric, approximately 1024x1024
 
 # For benchmarks that act on test fixture files, these are the paths loaded.
-IMAGES_PATH = pathlib.Path(__file__).parent / "images"
-PATHS = [
-    IMAGES_PATH / "flower2.jpg",
-]
+IMAGES_PATH = Path(__file__).parent / "images"
 
 # These are derived from the other configuration, above.
 RGB_MODES = [mode for mode in MODES if mode.startswith("RGB")]
@@ -59,7 +61,7 @@ def _format_size(size: tuple[int, int]) -> str:
     return f"{size[0]}x{size[1]}"
 
 
-def _format_path(path: pathlib.Path) -> str:
+def _format_path(path: Path) -> str:
     return path.name
 
 
@@ -567,21 +569,89 @@ def test_draw_lines_blend(
 
 
 @pytest.mark.benchmark(group="load")
-@pytest.mark.parametrize("path", PATHS, ids=_format_path)
-def test_load(bench: BenchmarkFixture, path: pathlib.Path) -> None:
+@pytest.mark.parametrize(
+    "path",
+    # Commonly used formats
+    [
+        IMAGES_PATH / "avif" / "hopper.avif",  # AVIF, RGB mode
+        IMAGES_PATH / "hopper.bmp",  # BMP, RGB mode
+        IMAGES_PATH / "hopper.gif",  # GIF, P mode
+        IMAGES_PATH / "hopper_gray.jpg",  # JPEG, L mode
+        IMAGES_PATH / "hopper.jpg",  # JPEG, RGB mode
+        IMAGES_PATH / "pil_sample_cmyk.jpg",  # JPEG, CMYK mode
+        IMAGES_PATH / "hopper_wal.png",  # PNG, P mode
+        IMAGES_PATH / "hopper.png",  # PNG, RGB mode
+        IMAGES_PATH / "pil123rgba.png",  # PNG, RGBA mode
+        IMAGES_PATH / "hopper.tif",  # TIFF, RGB mode. raw codec
+        IMAGES_PATH / "hopper_lzw.tif",  # TIFF, RGB mode. tiff_lzw compression
+        IMAGES_PATH
+        / "tiff_adobe_deflate.tif",  # TIFF, RGB mode. tiff_adobe_deflate compression
+        IMAGES_PATH / "hopper.webp",  # WebP, RGB mode. VP8 (lossy)
+        IMAGES_PATH / "hopper_lossless.webp",  # WebP, RGB mode. VP8L (lossless)
+        IMAGES_PATH / "transparent.webp",  # WebP, RGBA mode. VP8X with VP8 (lossy)
+        IMAGES_PATH / "uncompressed_rgb.dds",  # DDS, RGBA mode. uncompressed
+    ],
+    ids=_format_path,
+)
+def test_load(bench: BenchmarkFixture, path: Path) -> None:
     def run() -> None:
         with Image.open(path) as im:
             im.load()
 
+    try:
+        run()
+    except Exception as e:  # not all features are necessarily available
+        pytest.skip(f"cannot load {path.name}: {e}")
     bench(run)
 
 
-@pytest.mark.benchmark(group="save")
-@pytest.mark.parametrize("path", PATHS, ids=_format_path)
-def test_save_jpeg(bench: BenchmarkFixture, path: pathlib.Path) -> None:
-    with Image.open(path) as im:
-        im.load()
-    bench(lambda: im.save(BytesIO(), format="JPEG", quality=85))
+def _save_format(
+    format: str,
+    mode: str,
+    **options: Any,
+) -> ParameterSet:
+    id = "-".join([format, mode, *(f"{k}={v}" for k, v in options.items())])
+    return pytest.param(format, mode, options, id=id)
+
+
+@pytest.mark.parametrize(
+    "format, mode, options",
+    [
+        _save_format("AVIF", "RGB"),
+        _save_format("BMP", "RGB"),
+        _save_format("GIF", "P"),
+        _save_format("JPEG", "RGB"),
+        _save_format("JPEG", "L"),
+        _save_format("PNG", "L"),
+        _save_format("PNG", "P"),
+        _save_format("PNG", "RGB"),
+        _save_format("PNG", "RGBA"),
+        _save_format("TIFF", "RGB"),
+        _save_format("TIFF", "RGB", compression="tiff_lzw"),
+        _save_format("TIFF", "RGB", compression="tiff_adobe_deflate"),
+        _save_format("WEBP", "RGB"),
+        _save_format("WEBP", "RGBA", lossless=True),
+    ],
+)
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_save(
+    bench: BenchmarkFixture,
+    format: str,
+    mode: str,
+    options: dict[str, Any],
+    size: tuple[int, int],
+) -> None:
+    im = make_pillow_image(mode, size)
+    bench.extra_info["label"] = [format, *(f"{k}={v}" for k, v in options.items())]
+
+    def run() -> None:
+        im.save(BytesIO(), format, **options)
+
+    try:
+        run()
+    except Exception as e:  # not all features are necessarily available
+        pytest.skip(f"cannot save {format}: {e}")
+    bench(run)
 
 
 @pytest.mark.benchmark(group="allocate")
@@ -726,6 +796,66 @@ def test_offset(bench: BenchmarkFixture, mode: str, size: tuple[int, int]) -> No
     im = make_pillow_image(mode, size)
     bench.extra_info["label"] = ["offset"]
     bench(ImageChops.offset, im, 123, 45)
+
+
+@pytest.mark.benchmark(group="imagemath")
+@pytest.mark.parametrize(
+    "op",
+    [
+        pytest.param(lambda a, b: a + b, id="add"),
+        pytest.param(lambda a, b: a * b, id="mul"),
+        pytest.param(lambda a, b: a / b, id="div"),
+        pytest.param(lambda a, b: ImageMath.imagemath_min(a, b), id="min"),
+        pytest.param(lambda a, b: a < b, id="lt"),
+    ],
+)
+@pytest.mark.parametrize("mode", ["I", "F"])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_imagemath_binary(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+    op: Callable[[Image.Image, Image.Image], Any],
+) -> None:
+    a = make_pillow_image(mode, size)
+    b = make_pillow_image(mode, size, seed=1)
+    result = bench(
+        ImageMath.lambda_eval, lambda args: op(args["a"], args["b"]), a=a, b=b
+    )
+    assert result.size == a.size
+
+
+@pytest.mark.benchmark(group="imagemath")
+@pytest.mark.parametrize(
+    "op",
+    [
+        pytest.param(lambda a: abs(a), id="abs"),
+        pytest.param(lambda a: -a, id="neg"),
+    ],
+)
+@pytest.mark.parametrize("mode", ["I", "F"])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_imagemath_unary(
+    bench: BenchmarkFixture,
+    mode: str,
+    size: tuple[int, int],
+    op: Callable[[Image.Image], Any],
+) -> None:
+    a = make_pillow_image(mode, size)
+    result = bench(ImageMath.lambda_eval, lambda args: op(args["a"]), a=a)
+    assert result.size == a.size
+
+
+@pytest.mark.benchmark(group="imagemath")
+@pytest.mark.parametrize("mode", ["I", "F"])
+@pytest.mark.parametrize("size", SIZES, ids=_format_size)
+def test_imagemath_scalar(
+    bench: BenchmarkFixture, mode: str, size: tuple[int, int]
+) -> None:
+    a = make_pillow_image(mode, size)
+    bench.extra_info["label"] = [f"scalar mul {mode}"]
+    result = bench(ImageMath.lambda_eval, lambda args: args["a"] * 2, a=a)
+    assert result.size == a.size
 
 
 @pytest.mark.benchmark(group="compare")
@@ -911,7 +1041,7 @@ def test_quantize_grayscale_to_palette(
     "source_type",
     [
         "synthetic",
-        *(pytest.param(image, id=f"{image.stem}") for image in PATHS),
+        pytest.param(IMAGES_PATH / "flower2.jpg", id="flower2.jpg"),
     ],
 )
 @pytest.mark.parametrize("palette_type", ["exact", "grayscale", "web"])
@@ -921,11 +1051,11 @@ def test_quantize_to_palette(
     benchmark_save: BenchmarkSave,
     dither: Image.Dither,
     output_mode: str,
-    source_type: str | pathlib.Path,
+    source_type: str | Path,
     palette_type: str,
     size: tuple[int, int],
 ) -> None:
-    if isinstance(source_type, pathlib.Path):
+    if isinstance(source_type, Path):
         with Image.open(source_type) as source_im:
             im = source_im.convert("RGB").resize(size)
     elif source_type == "synthetic":
@@ -953,6 +1083,7 @@ def test_quantize_to_palette(
     if output_mode == "P":
         result = bench(im.quantize, palette=palette, dither=dither)
     else:
+        palette.load()
         result = bench(lambda: im._new(im.im.convert(output_mode, dither, palette.im)))
     assert result.mode == output_mode
     benchmark_save(result)

@@ -310,6 +310,16 @@ class PngInfo:
 
         self.chunks.append((cid, data, after_idat))
 
+    def _check_text_key(self, key: bytes) -> None:
+        if not 1 <= len(key) <= 79:
+            msg = "Text key must be 1 to 79 characters long"
+            raise ValueError(msg)
+
+        if b"\0" in key:
+            # The NULL character is the separator after the key
+            msg = "Text key cannot contain null characters"
+            raise ValueError(msg)
+
     def add_itxt(
         self,
         key: str | bytes,
@@ -320,7 +330,7 @@ class PngInfo:
     ) -> None:
         """Appends an iTXt chunk.
 
-        :param key: latin-1 encodable text key name
+        :param key: latin-1 encodable text key name. 1 to 79 characters long
         :param value: value for this key
         :param lang: language code
         :param tkey: UTF-8 version of the key name
@@ -330,6 +340,7 @@ class PngInfo:
 
         if not isinstance(key, bytes):
             key = key.encode("latin-1", "strict")
+        self._check_text_key(key)
         if not isinstance(value, bytes):
             value = value.encode("utf-8", "strict")
         if not isinstance(lang, bytes):
@@ -350,7 +361,7 @@ class PngInfo:
     ) -> None:
         """Appends a text chunk.
 
-        :param key: latin-1 encodable text key name
+        :param key: latin-1 encodable text key name. 1 to 79 characters long
         :param value: value for this key, text or an
            :py:class:`PIL.PngImagePlugin.iTXt` instance
         :param zip: compression flag
@@ -374,6 +385,7 @@ class PngInfo:
 
         if not isinstance(key, bytes):
             key = key.encode("latin-1", "strict")
+        self._check_text_key(key)
 
         if zip:
             self.add(b"zTXt", key + b"\0\0" + zlib.compress(value))
@@ -529,7 +541,12 @@ class PngStream(ChunkStream):
             if self.im_mode == "1":
                 self.im_info["transparency"] = 255 if i16(s) else 0
             elif self.im_mode in ("L", "I;16"):
-                self.im_info["transparency"] = i16(s)
+                value = i16(s)
+                if self.im_rawmode in {"L;2", "L;4"}:
+                    # Scale the grey level to match the unpacked 8-bit pixels
+                    max_value = (1 << int(self.im_rawmode[-1])) - 1
+                    value = int(min(1, value / max_value) * 255)
+                self.im_info["transparency"] = value
             elif self.im_mode == "RGB":
                 self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
         return s
@@ -905,7 +922,6 @@ class PngImageFile(ImageFile.ImageFile):
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
 
-        self.dispose: _imaging.ImagingCore | None
         dispose_extent = None
         if frame == 0:
             if rewind:
@@ -916,8 +932,7 @@ class PngImageFile(ImageFile.ImageFile):
                 self.info = self.png.im_info
                 self.tile = self.png.im_tile
                 self.fp = self._fp
-            self._prev_im = None
-            self.dispose = None
+            self._prev_im: _imaging.ImagingCore | None = None
             self.default_image = self.info.get("default_image", False)
             self.dispose_op = self.info.get("disposal")
             self.blend_op = self.info.get("blend")
@@ -928,11 +943,19 @@ class PngImageFile(ImageFile.ImageFile):
                 msg = f"cannot seek to frame {frame}"
                 raise ValueError(msg)
 
+            if self.dispose_op == Disposal.OP_BACKGROUND:
+                x0, y0, x1, y1 = self.dispose_extent
+                dispose = Image.core.fill(self.mode, (x1 - x0, y1 - y0))
+            elif self.dispose_op == Disposal.OP_PREVIOUS and self._prev_im is not None:
+                dispose = self._crop(self._prev_im.copy(), self.dispose_extent)
+            else:
+                dispose = None
+
             # ensure previous frame was loaded
             self.load()
 
-            if self.dispose:
-                self.im.paste(self.dispose, self.dispose_extent)
+            if dispose:
+                self.im.paste(dispose, self.dispose_extent)
             self._prev_im = self.im.copy()
 
             self.fp = self._fp
@@ -990,15 +1013,6 @@ class PngImageFile(ImageFile.ImageFile):
         # setup frame disposal (actual disposal done when needed in the next _seek())
         if self._prev_im is None and self.dispose_op == Disposal.OP_PREVIOUS:
             self.dispose_op = Disposal.OP_BACKGROUND
-
-        self.dispose = None
-        if self.dispose_op == Disposal.OP_PREVIOUS:
-            if self._prev_im:
-                self.dispose = self._prev_im.copy()
-                self.dispose = self._crop(self.dispose, self.dispose_extent)
-        elif self.dispose_op == Disposal.OP_BACKGROUND:
-            self.dispose = Image.core.fill(self.mode, self.size)
-            self.dispose = self._crop(self.dispose, self.dispose_extent)
 
     def tell(self) -> int:
         return self.__frame
@@ -1131,6 +1145,9 @@ _OUTMODES = {
     # supported PIL modes, and corresponding rawmode, bit depth and color type
     "1": ("1", b"\x01", b"\x00"),
     "L": ("L", b"\x08", b"\x00"),
+    "L;1": ("L;1", b"\x01", b"\x00"),
+    "L;2": ("L;2", b"\x02", b"\x00"),
+    "L;4": ("L;4", b"\x04", b"\x00"),
     "LA": ("LA", b"\x08", b"\x04"),
     "I;16": ("I;16B", b"\x10", b"\x00"),
     "I;16B": ("I;16B", b"\x10", b"\x00"),
@@ -1204,8 +1221,8 @@ def _write_multiple_frames(
 ) -> Image.Image | None:
     duration = im.encoderinfo.get("duration")
     loop = im.encoderinfo.get("loop", im.info.get("loop", 0))
-    disposal = im.encoderinfo.get("disposal", im.info.get("disposal", Disposal.OP_NONE))
-    blend = im.encoderinfo.get("blend", im.info.get("blend", Blend.OP_SOURCE))
+    disposal = im.encoderinfo.get("disposal")
+    blend = im.encoderinfo.get("blend")
 
     if default_image:
         chain = itertools.chain(append_images)
@@ -1233,36 +1250,22 @@ def _write_multiple_frames(
 
             if im_frames:
                 previous = im_frames[-1]
-                prev_disposal = previous.encoderinfo.get("disposal")
-                prev_blend = previous.encoderinfo.get("blend")
-                if prev_disposal == Disposal.OP_PREVIOUS and len(im_frames) < 2:
-                    prev_disposal = Disposal.OP_BACKGROUND
-
-                if prev_disposal == Disposal.OP_BACKGROUND:
-                    base_im = previous.im.copy()
-                    dispose = Image.core.fill("RGBA", im.size, (0, 0, 0, 0))
-                    bbox = previous.bbox
-                    if bbox:
-                        dispose = dispose.crop(bbox)
-                    else:
-                        bbox = (0, 0, *im.size)
-                    base_im.paste(dispose, bbox)
-                elif prev_disposal == Disposal.OP_PREVIOUS:
-                    base_im = im_frames[-2].im
+                if mode.startswith("I;16"):
+                    delta = ImageChops.subtract_modulo(
+                        Image.frombytes("LA", im.size, im_frame.tobytes()),
+                        Image.frombytes("LA", im.size, previous.im.tobytes()),
+                    )
                 else:
-                    base_im = previous.im
-                delta = ImageChops.subtract_modulo(
-                    im_frame.convert("RGBA"), base_im.convert("RGBA")
-                )
+                    delta = ImageChops.subtract_modulo(im_frame, previous.im)
                 bbox = delta.getbbox(alpha_only=False)
-                if (
-                    not bbox
-                    and prev_disposal == encoderinfo.get("disposal")
-                    and prev_blend == encoderinfo.get("blend")
-                    and "duration" in encoderinfo
-                ):
-                    previous.encoderinfo["duration"] += encoderinfo["duration"]
-                    continue
+                if not bbox and "duration" in encoderinfo:
+                    new_duration = (
+                        previous.encoderinfo["duration"] + encoderinfo["duration"]
+                    )
+                    delay = Fraction(new_duration / 1000).limit_denominator(65535)
+                    if delay.numerator <= 65535:
+                        previous.encoderinfo["duration"] = new_duration
+                        continue
             else:
                 bbox = None
             im_frames.append(_Frame(im_frame, bbox, encoderinfo))
@@ -1285,7 +1288,7 @@ def _write_multiple_frames(
         ImageFile._save(
             default_im,
             cast("IO[bytes]", _idat(fp, chunk)),
-            [ImageFile._Tile("zip", (0, 0, *im.size), 0, rawmode)],
+            [ImageFile._Tile("zip", args=rawmode)],
         )
 
     seq_num = 0
@@ -1303,8 +1306,8 @@ def _write_multiple_frames(
         if delay.numerator > 65535:
             msg = "cannot write duration"
             raise ValueError(msg)
-        frame_disposal = encoderinfo.get("disposal", disposal)
-        frame_blend = encoderinfo.get("blend", blend)
+        frame_disposal = encoderinfo.get("disposal", Disposal.OP_NONE)
+        frame_blend = encoderinfo.get("blend", Blend.OP_SOURCE)
         # frame control
         chunk(
             fp,
@@ -1416,6 +1419,8 @@ def _save(
             else:
                 bits = 4
             outmode += f";{bits}"
+    elif mode == "L" and im.encoderinfo.get("bits", 8) != 8:
+        outmode += f";{im.encoderinfo['bits']}"
 
     # get the corresponding PNG mode
     try:
@@ -1515,7 +1520,7 @@ def _save(
             msg = "cannot use transparency for this mode"
             raise OSError(msg)
     elif mode == "P" and palette_frame_with_alpha:
-        alpha = palette_frame_with_alpha.im.getpalette("RGBA", "A")
+        alpha = palette_frame_with_alpha.im.getpalette("A")
         alpha_bytes = colors
         chunk(fp, b"tRNS", alpha[:alpha_bytes])
 

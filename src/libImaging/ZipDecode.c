@@ -283,7 +283,7 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
     return bytes; /* consumed all of it */
 }
 
-int
+void
 ImagingZipDecodeCleanup(ImagingCodecState state) {
     /* called to free the decompression engine when the decode terminates
        due to a corrupt or truncated image
@@ -296,7 +296,6 @@ ImagingZipDecodeCleanup(ImagingCodecState state) {
         free(context->previous);
         context->previous = NULL;
     }
-    return -1;
 }
 
 #endif

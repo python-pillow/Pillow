@@ -273,7 +273,13 @@ class TestFilePng:
             assert len(im.info["transparency"]) == 256
 
             assert_image(im, "P", (162, 150))
+
+            original_palette = im.getpalette(None)
             im_rgba = im.convert("RGBA")
+
+            # Assert that original image palette was not changed
+            assert im.getpalette(None) == original_palette
+
         assert_image(im_rgba, "RGBA", (162, 150))
 
         # image has 124 unique alpha values
@@ -348,6 +354,17 @@ class TestFilePng:
             colors = test_im_rgba.getchannel("A").getcolors()
             assert colors is not None
             assert colors[0][0] == num_transparent
+
+    def test_low_bit_grayscale_transparency(self) -> None:
+        with Image.open("Tests/images/tbbn0g04.png") as im:
+            assert im.mode == "L"
+            assert im.info["transparency"] == 255
+            assert im.convert("LA").getpixel((0, 0)) == (255, 0)
+
+        for bits in (2, 4):
+            im2 = Image.new("L", (1, 1))
+            with roundtrip(im2, bits=bits, transparency=255) as reloaded:
+                assert reloaded.info["transparency"] == 255
 
     def test_save_1_transparency(self, tmp_path: Path) -> None:
         out = tmp_path / "temp.png"
@@ -458,6 +475,24 @@ class TestFilePng:
         assert isinstance(im.text["eggs"], PngImagePlugin.iTXt)
         assert im.text["eggs"].lang == "en"
         assert im.text["eggs"].tkey == "Eggs"
+
+    def test_text_key(self) -> None:
+        info = PngImagePlugin.PngInfo()
+
+        for length in (0, 80):
+            with pytest.raises(
+                ValueError, match="Text key must be 1 to 79 characters long"
+            ):
+                info.add_itxt("k" * length, "value")
+        with pytest.raises(ValueError, match="Text key cannot contain null characters"):
+            info.add_text("a\0b", "value")
+        assert info.chunks == []
+
+        info.add_itxt("i" * 79, "value")
+        info.add_text("t" * 79, "value")
+
+        im = roundtrip(Image.new("RGB", (1, 1)), pnginfo=info)
+        assert im.text == {"i" * 79: "value", "t" * 79: "value"}
 
     def test_nonunicode_text(self) -> None:
         # Check so that non-Unicode text is saved as a tEXt rather than iTXt
@@ -756,6 +791,17 @@ class TestFilePng:
             assert reloaded.png is not None
             assert reloaded.png.im_palette is not None
             assert len(reloaded.png.im_palette[1]) == 48
+
+    def test_specify_bits_l(self, tmp_path: Path) -> None:
+        im = hopper("L")
+
+        out = tmp_path / "temp.png"
+        im.save(out, bits=4)
+
+        with Image.open(out) as reloaded:
+            colors = reloaded.getcolors()
+            assert colors is not None
+            assert len(colors) == 16
 
     def test_specify_bits_fewer_palette_entries(self, tmp_path: Path) -> None:
         im = Image.new("P", (1, 1))
