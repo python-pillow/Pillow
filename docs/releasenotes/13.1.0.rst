@@ -72,6 +72,20 @@ Blurring I;16 images
 :py:class:`~PIL.ImageFilter.GaussianBlur` and :py:class:`~PIL.ImageFilter.BoxBlur`
 now support I;16, I;16L, I;16B and I;16N images.
 
+Bounding recursion when writing PDFs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Serializing a deeply nested value with ``PIL.PdfParser`` could exhaust the call
+stack and raise ``RecursionError``. Writing now stops at a fixed nesting depth
+and raises ``PdfFormatError`` instead.
+
+Rejecting dangling object references
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Reading an indirect object that is missing from the xref table, or rewriting a
+PDF whose page tree is missing nodes, now raises ``PdfFormatError`` rather than
+a ``KeyError``.
+
 Minimum C version
 ^^^^^^^^^^^^^^^^^
 

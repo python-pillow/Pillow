@@ -7,8 +7,10 @@ from io import BytesIO
 import pytest
 
 from PIL.PdfParser import (
+    MAX_SERIALIZE_NESTING,
     IndirectObjectDef,
     IndirectReference,
+    PdfArray,
     PdfBinary,
     PdfDict,
     PdfFormatError,
@@ -290,3 +292,56 @@ def test_long_trailer_chain(tmp_path: Path) -> None:
 
     with PdfParser(f=b) as pdf:
         pass
+
+
+def _deep_array(depth: int) -> PdfArray:
+    value = PdfArray([0])
+    for _ in range(depth - 1):
+        value = PdfArray([value])
+    return value
+
+
+def test_pdf_repr_max_nesting() -> None:
+    # Serializing a deeply nested value must not exhaust the call stack. This is
+    # the write-side sibling of the max_nesting guard used while parsing.
+    pdf_repr(_deep_array(MAX_SERIALIZE_NESTING))
+    with pytest.raises(PdfFormatError, match="maximum nesting depth exceeded"):
+        pdf_repr(_deep_array(MAX_SERIALIZE_NESTING + 1))
+    with pytest.raises(PdfFormatError, match="maximum nesting depth exceeded"):
+        bytes(_deep_array(2 * MAX_SERIALIZE_NESTING))
+
+
+def test_read_indirect_missing_object() -> None:
+    b = BytesIO()
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
+
+    with PdfParser(f=b) as pdf:
+        # A reference to an object that is not in the xref table is malformed and
+        # must raise PdfFormatError rather than leaking a KeyError.
+        with pytest.raises(PdfFormatError, match="not found in xref table"):
+            pdf.read_indirect(IndirectReference(999, 0))
+
+
+def test_write_catalog_dangling_parent() -> None:
+    b = BytesIO()
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        page_id = pdf.next_object_id(0)
+        pdf.write_page(page_id, Parent=IndirectReference(999, 0))
+        pdf.pages = [page_id]
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
+
+    with PdfParser(f=b) as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+        # Rewriting a page whose /Parent is a dangling reference must not crash
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
