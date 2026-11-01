@@ -313,10 +313,10 @@ def contain(
     """
 
     if image.height == 0:
-        return Image.new(image.mode, (size[0], 0))
+        return image.crop((0, 0, size[0], 0))
     im_ratio = image.width / image.height
     if size[1] == 0:
-        return Image.new(image.mode, (0, 0))
+        return image.crop((0, 0, 0, 0))
     dest_ratio = size[0] / size[1]
 
     if im_ratio != dest_ratio:
@@ -329,7 +329,7 @@ def contain(
             if new_width != size[0]:
                 size = (new_width, size[1])
     if min(size) == 0:
-        return Image.new(image.mode, size)
+        return image.crop((0, 0, *size))
     return image.resize(size, resample=method)
 
 
@@ -349,11 +349,13 @@ def cover(
     :return: An image.
     """
 
+    if image.width == 0:
+        return image.crop((0, 0, 0, size[1]))
     if image.height == 0:
-        return Image.new(image.mode, (size[0], 0))
+        return image.crop((0, 0, size[0], 0))
     im_ratio = image.width / image.height
     if size[1] == 0:
-        return Image.new(image.mode, (0, 0))
+        return image.crop((0, 0, 0, 0))
     dest_ratio = size[0] / size[1]
 
     if im_ratio != dest_ratio:
@@ -469,6 +471,8 @@ def scale(
         raise ValueError(msg)
     else:
         size = (round(factor * image.width), round(factor * image.height))
+        if min(size) == 0:
+            return image.crop((0, 0, *size))
         return image.resize(size, resample)
 
 
@@ -604,7 +608,7 @@ def fit(
     # https://www.cazabon.com
 
     if min(size) == 0:
-        return Image.new(image.mode, size)
+        return image.crop((0, 0, *size))
     centering_x, centering_y = centering
 
     if not 0.0 <= centering_x <= 1.0:
@@ -628,7 +632,7 @@ def fit(
 
     # calculate the aspect ratio of the live_size
     if live_size[1] == 0:
-        return Image.new(image.mode, size)
+        return image.crop((0, 0, *size))
     live_size_ratio = live_size[0] / live_size[1]
 
     # calculate the aspect ratio of the output image

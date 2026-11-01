@@ -472,10 +472,8 @@ rgbT2a(UINT8 *out, UINT8 *in, int xsize, int r, int g, int b, int premultiplied)
     UINT32 repl = premultiplied ? 0 : (trns & 0x00ffffff);
 #endif
 
-    int i;
-
     UINT8 *ref = in != NULL ? in : out;
-    for (i = 0; i < xsize; i++, ref += sizeof(trns), out += sizeof(trns)) {
+    for (int x = 0; x < xsize; x++, ref += sizeof(trns), out += sizeof(trns)) {
         UINT32 v;
         memcpy(&v, ref, sizeof(v));
         if (v == trns) {
@@ -786,6 +784,42 @@ I16B_F(UINT8 *out_, const UINT8 *in, int xsize) {
     for (x = 0; x < xsize; x++, in += 2, out_ += 4) {
         FLOAT32 v = in[1] + ((int)in[0] << 8);
         memcpy(out_, &v, sizeof(v));
+    }
+}
+
+static void
+F_I16L(UINT8 *out, const UINT8 *in, int xsize) {
+    int x, v;
+    for (x = 0; x < xsize; x++, in += 4) {
+        FLOAT32 f;
+        memcpy(&f, in, sizeof(f));
+        if (f <= 0.0) {
+            v = 0;
+        } else if (f >= 65535.0) {
+            v = 65535;
+        } else {
+            v = (int)f;
+        }
+        *out++ = (UINT8)v;
+        *out++ = (UINT8)(v >> 8);
+    }
+}
+
+static void
+F_I16B(UINT8 *out, const UINT8 *in, int xsize) {
+    int x, v;
+    for (x = 0; x < xsize; x++, in += 4) {
+        FLOAT32 f;
+        memcpy(&f, in, sizeof(f));
+        if (f <= 0.0) {
+            v = 0;
+        } else if (f >= 65535.0) {
+            v = 65535;
+        } else {
+            v = (int)f;
+        }
+        *out++ = (UINT8)(v >> 8);
+        *out++ = (UINT8)v;
     }
 }
 
@@ -1117,9 +1151,6 @@ frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
     return imOut;
 }
 
-/* Image.Dither.JARVIS_JUDICE_NINKE has the numeric value 4. */
-#define DITHER_JARVIS_JUDICE_NINKE 4
-
 /* Jarvis-Judice-Ninke error diffusion uses a 5x3 kernel (divisor 48).
  * A three-row ring buffer stores weighted error for the current scanline and
  * the next two scanlines. Taps outside the image bounds are skipped. */
@@ -1221,7 +1252,11 @@ dither_jjn(Imaging imOut, Imaging imIn, ImagingPalette palette, int alpha) {
 #endif
 static Imaging
 topalette(
-    Imaging imOut, Imaging imIn, const ModeID mode, ImagingPalette inpalette, int dither
+    Imaging imOut,
+    Imaging imIn,
+    const ModeID mode,
+    ImagingPalette inpalette,
+    ImagingDitherType dither
 ) {
     ImagingSectionCookie cookie;
     int alpha;
@@ -1272,7 +1307,7 @@ topalette(
     ImagingPaletteDelete(imOut->palette);
     imOut->palette = ImagingPaletteDuplicate(palette);
 
-    if (imIn->bands == 1 && dither != DITHER_JARVIS_JUDICE_NINKE) {
+    if (imIn->bands == 1 && dither != IMAGING_DITHER_JARVIS_JUDICE_NINKE) {
         /* grayscale image */
 
         /* Grayscale palette: copy data as is */
@@ -1298,14 +1333,14 @@ topalette(
             return NULL;
         }
 
-        if (dither == DITHER_JARVIS_JUDICE_NINKE) {
+        if (dither == IMAGING_DITHER_JARVIS_JUDICE_NINKE) {
             if (!dither_jjn(imOut, imIn, palette, alpha)) {
                 if (inpalette != palette) {
                     ImagingPaletteDelete(palette);
                 }
                 return NULL;
             }
-        } else if (dither) {
+        } else if (dither != IMAGING_DITHER_NONE) {
             /* floyd-steinberg dither */
 
             int *errors;
@@ -1667,9 +1702,18 @@ static struct {
     {IMAGING_MODE_I_16L, IMAGING_MODE_F, I16L_F},
     {IMAGING_MODE_I_16B, IMAGING_MODE_F, I16B_F},
 #ifdef WORDS_BIGENDIAN
-    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16B_F}
+    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16B_F},
 #else
-    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16L_F}
+    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16L_F},
+#endif
+
+    {IMAGING_MODE_F, IMAGING_MODE_I_16, F_I16L},
+    {IMAGING_MODE_F, IMAGING_MODE_I_16L, F_I16L},
+    {IMAGING_MODE_F, IMAGING_MODE_I_16B, F_I16B},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_F, IMAGING_MODE_I_16N, F_I16B}
+#else
+    {IMAGING_MODE_F, IMAGING_MODE_I_16N, F_I16L}
 #endif
 };
 
@@ -1685,13 +1729,20 @@ static struct {
  * @param mode    Target mode.
  * @param palette Target palette for conversions to "P" or "PA";
  *                NULL to use a default palette.
- * @param dither  Dithering choice (0: none, 3: Floyd-Steinberg, 4: JJN).
+ * @param dither  Dither method when converting to "P", "PA" or "1".
+ *                Currently, for historical PIL reasons,
+ *                any value other than IMAGING_DITHER_NONE or
+ *                IMAGING_DITHER_JARVIS_JUDICE_NINKE uses Floyd-Steinberg dithering.
  * @return        The resulting Imaging object,
  *                or NULL with a Python exception set on failure.
  */
 Imaging
 ImagingConvert(
-    Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int dither
+    Imaging imOut,
+    Imaging imIn,
+    ModeID mode,
+    ImagingPalette palette,
+    ImagingDitherType dither
 ) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
@@ -1723,7 +1774,7 @@ ImagingConvert(
         return topalette(imOut, imIn, mode, palette, dither);
     }
 
-    if (dither == DITHER_JARVIS_JUDICE_NINKE && mode == IMAGING_MODE_1) {
+    if (dither == IMAGING_DITHER_JARVIS_JUDICE_NINKE && mode == IMAGING_MODE_1) {
         if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_RGB) {
             return (Imaging)ImagingError_ValueError("conversion not supported");
         }
@@ -1733,7 +1784,7 @@ ImagingConvert(
         }
         return dither_jjn(imOut, imIn, NULL, 0);
     }
-    if (dither && mode == IMAGING_MODE_1) {
+    if (dither != IMAGING_DITHER_NONE && mode == IMAGING_MODE_1) {
         return tobilevel(imOut, imIn);
     }
 
@@ -1834,10 +1885,29 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
     ImagingSectionEnter(&cookie);
     MUTEX_LOCK(&imIn->mutex);
     for (y = 0; y < imIn->ysize; y++) {
-        (*convert)((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
+        UINT8 *out = (UINT8 *)imOut->image[y];
+        (*convert)(out, (UINT8 *)imIn->image[y], imIn->xsize);
 
-        source = source_transparency ? (UINT8 *)imIn->image[y] : NULL;
-        rgbT2a((UINT8 *)imOut->image[y], source, imIn->xsize, r, g, b, premultiplied);
+        if (imIn->mode == IMAGING_MODE_I) {
+            INT32 *in = (INT32 *)imIn->image32[y];
+            for (int x = 0; x < imIn->xsize; x++, in++, out += 4) {
+                if (in[0] == r) {
+                    out[3] = 0;
+                }
+            }
+        } else {
+            UINT8 *in = (UINT8 *)imIn->image[y];
+            if (imIn->mode == IMAGING_MODE_I_16) {
+                for (int x = 0; x < imIn->xsize; x++, in += 2, out += 4) {
+                    if ((in[0] | (in[1] << 8)) == r) {
+                        out[3] = 0;
+                    }
+                }
+            } else {
+                source = source_transparency ? in : NULL;
+                rgbT2a(out, source, imIn->xsize, r, g, b, premultiplied);
+            }
+        }
     }
     MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);

@@ -5,7 +5,7 @@ Pillow is the friendly PIL fork by `Jeffrey 'Alex' Clark and contributors <https
 
 Pillow for enterprise is available via the Tidelift Subscription. `Learn more <https://tidelift.com/lifter/search/pypi/pillow>`_.
 
-.. image:: https://readthedocs.org/projects/pillow/badge/?version=latest
+.. image:: https://app.readthedocs.org/projects/pillow/badge/?version=latest
    :target: https://pillow.readthedocs.io/?badge=latest
    :alt: Documentation Status
 
@@ -25,9 +25,9 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml
    :alt: GitHub Actions build status (Test Windows)
 
-.. image:: https://github.com/python-pillow/Pillow/workflows/Test%20MinGW/badge.svg
-   :target: https://github.com/python-pillow/Pillow/actions/workflows/test-mingw.yml
-   :alt: GitHub Actions build status (Test MinGW)
+.. image:: https://github.com/python-pillow/Pillow/workflows/Test%20MSYS2/badge.svg
+   :target: https://github.com/python-pillow/Pillow/actions/workflows/test-msys2.yml
+   :alt: GitHub Actions build status (Test MSYS2)
 
 .. image:: https://github.com/python-pillow/Pillow/workflows/Wheels/badge.svg
    :target: https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml

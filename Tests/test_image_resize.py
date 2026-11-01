@@ -154,6 +154,13 @@ class TestImagingCoreResize:
                 # as separately resized channel
                 assert_image_equal(ch, references[channels[i]])
 
+    @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+    def test_i16(self, mode: str) -> None:
+        im = Image.new(mode, (1, 2))
+        im.putdata((0x0099, 0x0100))
+        resized = self.resize(im, (1, 1), Image.Resampling.BICUBIC)
+        assert resized.getpixel((0, 0)) == 0x00CD
+
     @pytest.mark.parametrize(
         "resample",
         (

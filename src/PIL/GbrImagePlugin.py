@@ -14,7 +14,7 @@
 # See the README file for information on usage and redistribution.
 #
 #
-# See https://github.com/GNOME/gimp/blob/mainline/devel-docs/gbr.txt for
+# See https://developer.gimp.org/core/standards/gbr/ for
 # format documentation.
 #
 # This code Interprets version 1 and 2 .gbr files.
