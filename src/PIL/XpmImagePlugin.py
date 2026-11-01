@@ -78,6 +78,16 @@ class XpmImageFile(ImageFile.ImageFile):
                     if rgb == b"None":
                         transparent_key = c
                         palette[c] = b"\0\0\0"
+                    elif rgb.startswith(b"#") and len(rgb) in (4, 7, 10, 13):
+                        # #RGB, #RRGGBB, #RRRGGGBBB or #RRRRGGGGBBBB
+                        # libXpm parses colours with XParseColor,
+                        # which uses the digits as the most significant bits
+                        # of each channel instead of scaling them
+                        digits = (len(rgb) - 1) // 3
+                        palette[c] = bytes(
+                            int(rgb[i : i + digits], 16) << (16 - 4 * digits) >> 8
+                            for i in range(1, len(rgb), digits)
+                        )
                     elif rgb.startswith(b"#"):
                         rgb_int = int(rgb[1:], 16)
                         palette[c] = (
