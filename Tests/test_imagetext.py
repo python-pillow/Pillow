@@ -46,9 +46,10 @@ def test_get_length(font: ImageFont.ImageFont | ImageFont.FreeTypeFont) -> None:
     assert ImageText.Text("y", font).get_length() == 6 * factor
     assert ImageText.Text("a", font).get_length() == 6 * factor
 
-    text = ImageText.Text("\n", font)
-    with pytest.raises(ValueError, match="can't measure length of multiline text"):
-        text.get_length()
+    for separator in ImageFont._separators:
+        text = ImageText.Text(separator, font)
+        with pytest.raises(ValueError, match="can't measure length of multiline text"):
+            text.get_length()
 
 
 @pytest.mark.parametrize(
@@ -192,6 +193,19 @@ def test_wrap_height_blank_line(layout_engine: ImageFont.Layout) -> None:
     assert wrapped is not None
     assert wrapped.text == "\nB"
     assert text.text == "A"
+
+
+@pytest.mark.parametrize("separator", ImageFont._separators)
+def test_wrap_other_newlines(
+    font: ImageFont.ImageFont | ImageFont.FreeTypeFont, separator: str
+) -> None:
+    factor = 1 if isinstance(font, ImageFont.ImageFont) else 2
+    text = ImageText.Text("Other newlines" + separator + "test", font)
+
+    text.wrap(50 * factor)
+    if separator not in {"\r\n", "\r", "\n"}:
+        separator = "\n"
+    assert text.text == "Other" + separator + "newlines" + separator + "test"
 
 
 def test_wrap_scaling_unsupported() -> None:

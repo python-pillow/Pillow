@@ -41,13 +41,24 @@ class _Wrap(Generic[AnyStr]):
         emptystring = "" if isinstance(input_text, str) else b""
         line = emptystring
 
+        newline_pattern = (
+            r"[^\S"
+            + "".join(ImageFont._separators)
+            + "]*("
+            + "|".join(ImageFont._separators)
+            + ")"
+        )
         for word in re.findall(
             r"\s*\S+" if isinstance(input_text, str) else rb"\s*\S+", input_text
         ):
-            newlines = re.findall(
-                r"[^\S\n]*\n" if isinstance(input_text, str) else rb"[^\S\n]*\n", word
-            )
-            if newlines:
+            if newlines := re.findall(
+                (
+                    newline_pattern
+                    if isinstance(input_text, str)
+                    else newline_pattern.encode()
+                ),
+                word,
+            ):
                 if not self.add_line(line):
                     break
                 newlines_all_fit = True
@@ -268,7 +279,10 @@ class Text(Generic[AnyStr]):
         else:
             text = None
 
-        newline = "\n" if isinstance(self.text, str) else b"\n"
+        for separator in ("\r\n", "\r", "\n"):
+            newline = separator if isinstance(self.text, str) else separator.encode()
+            if newline in self.text:
+                break
         self.text = newline.join(wrap.lines)
         return text
 
@@ -314,13 +328,12 @@ class Text(Generic[AnyStr]):
 
         :return: Either width for horizontal text, or height for vertical text.
         """
-        if isinstance(self.text, str):
-            multiline = "\n" in self.text
-        else:
-            multiline = b"\n" in self.text
-        if multiline:
-            msg = "can't measure length of multiline text"
-            raise ValueError(msg)
+        for separator in ImageFont._separators:
+            if (
+                separator if isinstance(self.text, str) else separator.encode()
+            ) in self.text:
+                msg = "can't measure length of multiline text"
+                raise ValueError(msg)
         return self.font.getlength(
             self.text,
             self._get_fontmode(),
@@ -344,10 +357,9 @@ class Text(Generic[AnyStr]):
             raise ValueError(msg)
 
         if lines is None:
-            lines = (
-                self.text.split("\n")
-                if isinstance(self.text, str)
-                else self.text.split(b"\n")
+            pattern = "|".join(ImageFont._separators)
+            lines = re.split(
+                pattern if isinstance(self.text, str) else pattern.encode(), self.text
             )
         if len(lines) == 1:
             return [_Line(xy[0], xy[1], anchor, lines[0])]

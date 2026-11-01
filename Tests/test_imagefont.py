@@ -228,6 +228,17 @@ def test_getlength(
         assert length == length_raqm
 
 
+@skip_unless_feature("raqm")
+@pytest.mark.parametrize("separator", ImageFont._separators)
+@pytest.mark.parametrize("string", (True, False))
+def test_getlength_multiline(separator: str, string: bool) -> None:
+    font = ImageFont.truetype(FONT_PATH, FONT_SIZE, layout_engine=ImageFont.Layout.RAQM)
+    with pytest.raises(
+        ValueError, match="can't measure length of multiline text with Raqm"
+    ):
+        font.getlength(separator if string else separator.encode())
+
+
 def test_float_size(layout_engine: ImageFont.Layout) -> None:
     lengths = []
     for size in (48, 48.5, 49):
@@ -601,12 +612,21 @@ def test_default_font() -> None:
 
 @pytest.mark.parametrize("mode", ("", "1", "RGBA"))
 def test_getbbox(font: ImageFont.FreeTypeFont, mode: str) -> None:
-    assert (0, 4, 12, 16) == font.getbbox("A", mode)
+    assert font.getbbox("A", mode) == (0, 4, 12, 16)
+
+
+@skip_unless_feature("raqm")
+def test_getbbox_multiline() -> None:
+    font = ImageFont.truetype(FONT_PATH, FONT_SIZE, layout_engine=ImageFont.Layout.RAQM)
+    with pytest.raises(
+        ValueError, match="can't measure bounding box of multiline text with Raqm"
+    ):
+        font.getbbox("\n")
 
 
 def test_getbbox_empty(font: ImageFont.FreeTypeFont) -> None:
     # issue #2614, should not crash.
-    assert (0, 0, 0, 0) == font.getbbox("")
+    assert font.getbbox("") == (0, 0, 0, 0)
 
 
 def test_render_empty(font: ImageFont.FreeTypeFont) -> None:
