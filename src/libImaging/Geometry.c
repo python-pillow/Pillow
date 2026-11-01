@@ -477,6 +477,58 @@ bilinear_filter8(void *out, Imaging im, double xin, double yin) {
     return 1;
 }
 
+/* I;16 modes keep each pixel in two bytes, in the byte order of the mode */
+static int
+is_bigendian16(Imaging im) {
+    return im->mode == IMAGING_MODE_I_16B
+#ifdef WORDS_BIGENDIAN
+           || im->mode == IMAGING_MODE_I_16N
+#endif
+        ;
+}
+
+#define GET16(in, x)                                      \
+    (bigendian ? ((in)[(x) * 2] << 8) + (in)[(x) * 2 + 1] \
+               : (in)[(x) * 2] + ((in)[(x) * 2 + 1] << 8))
+
+static void
+put16(void *out, double v, int bigendian) {
+    int k;
+    if (v <= 0.0) {
+        k = 0;
+    } else if (v >= 65535.0) {
+        k = 65535;
+    } else {
+        k = (int)v;
+    }
+    if (bigendian) {
+        ((UINT8 *)out)[0] = (UINT8)(k >> 8);
+        ((UINT8 *)out)[1] = (UINT8)k;
+    } else {
+        ((UINT8 *)out)[0] = (UINT8)k;
+        ((UINT8 *)out)[1] = (UINT8)(k >> 8);
+    }
+}
+
+static int
+bilinear_filter16(void *out, Imaging im, double xin, double yin) {
+    int bigendian = is_bigendian16(im);
+    BILINEAR_HEAD(UINT8);
+    in = (UINT8 *)im->image8[YCLIP(y)];
+    x0 = XCLIP(x + 0);
+    x1 = XCLIP(x + 1);
+    BILINEAR(v1, GET16(in, x0), GET16(in, x1), dx);
+    if (y + 1 >= 0 && y + 1 < ysize) {
+        in = (UINT8 *)im->image8[y + 1];
+        BILINEAR(v2, GET16(in, x0), GET16(in, x1), dx);
+    } else {
+        v2 = v1;
+    }
+    BILINEAR(v1, v1, v2, dy);
+    put16(out, v1, bigendian);
+    return 1;
+}
+
 static int
 bilinear_filter32I(void *out, Imaging im, double xin, double yin) {
     INT32 k;
@@ -596,6 +648,43 @@ bicubic_filter8(void *out, Imaging im, double xin, double yin) {
     return 1;
 }
 
+#define BICUBIC_ROW16(v, row)                                                       \
+    {                                                                               \
+        in = (UINT8 *)im->image8[row];                                              \
+        BICUBIC(v, GET16(in, x0), GET16(in, x1), GET16(in, x2), GET16(in, x3), dx); \
+    }
+
+static int
+bicubic_filter16(void *out, Imaging im, double xin, double yin) {
+    int bigendian = is_bigendian16(im);
+    BICUBIC_HEAD(UINT8);
+    x0 = XCLIP(x + 0);
+    x1 = XCLIP(x + 1);
+    x2 = XCLIP(x + 2);
+    x3 = XCLIP(x + 3);
+    BICUBIC_ROW16(v1, YCLIP(y));
+    if (y + 1 >= 0 && y + 1 < ysize) {
+        BICUBIC_ROW16(v2, y + 1);
+    } else {
+        v2 = v1;
+    }
+    if (y + 2 >= 0 && y + 2 < ysize) {
+        BICUBIC_ROW16(v3, y + 2);
+    } else {
+        v3 = v2;
+    }
+    if (y + 3 >= 0 && y + 3 < ysize) {
+        BICUBIC_ROW16(v4, y + 3);
+    } else {
+        v4 = v3;
+    }
+    BICUBIC(v1, v1, v2, v3, v4, dy);
+    put16(out, v1, bigendian);
+    return 1;
+}
+
+#undef BICUBIC_ROW16
+
 static int
 bicubic_filter32I(void *out, Imaging im, double xin, double yin) {
     INT32 k;
@@ -664,6 +753,7 @@ bicubic_filter32RGB(void *out, Imaging im, double xin, double yin) {
 #undef BICUBIC
 #undef BICUBIC_HEAD
 #undef BICUBIC_BODY
+#undef GET16
 
 static ImagingTransformFilter
 getfilter(Imaging im, ImagingResamplingType filterid) {
@@ -682,7 +772,12 @@ getfilter(Imaging im, ImagingResamplingType filterid) {
             break;
         case IMAGING_TRANSFORM_BILINEAR:
             if (im->image8) {
-                return bilinear_filter8;
+                switch (im->type) {
+                    case IMAGING_TYPE_UINT8:
+                        return bilinear_filter8;
+                    case IMAGING_TYPE_I16:
+                        return bilinear_filter16;
+                }
             } else if (im->image32) {
                 switch (im->type) {
                     case IMAGING_TYPE_UINT8:
@@ -700,7 +795,12 @@ getfilter(Imaging im, ImagingResamplingType filterid) {
             break;
         case IMAGING_TRANSFORM_BICUBIC:
             if (im->image8) {
-                return bicubic_filter8;
+                switch (im->type) {
+                    case IMAGING_TYPE_UINT8:
+                        return bicubic_filter8;
+                    case IMAGING_TYPE_I16:
+                        return bicubic_filter16;
+                }
             } else if (im->image32) {
                 switch (im->type) {
                     case IMAGING_TYPE_UINT8:

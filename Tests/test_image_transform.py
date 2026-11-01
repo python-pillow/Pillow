@@ -222,6 +222,25 @@ class TestImageTransform:
 
         self._test_nearest(op, mode)
 
+    @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+    @pytest.mark.parametrize(
+        "resample", (Image.Resampling.BILINEAR, Image.Resampling.BICUBIC)
+    )
+    def test_i16(self, mode: str, resample: Image.Resampling) -> None:
+        # Values above 255, so both bytes of each pixel matter
+        im = Image.new("I", (8, 8))
+        im.putdata([i * 1000 for i in range(64)])
+
+        def op(im: Image.Image) -> Image.Image:
+            return im.transform(
+                (8, 8),
+                Image.Transform.AFFINE,
+                (0.9, 0.2, 0.3, -0.1, 1.1, 0.4),
+                resample,
+            )
+
+        assert_image_equal(op(im.convert(mode)), op(im).convert(mode))
+
     def test_blank_fill(self) -> None:
         # attempting to hit
         # https://github.com/python-pillow/Pillow/issues/254 reported
