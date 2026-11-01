@@ -667,25 +667,19 @@ class Image:
     def mode(self) -> str:
         return self._mode
 
-    @property
-    def readonly(self) -> int:
-        return (self._im and self._im.readonly) or self._readonly
-
-    @readonly.setter
-    def readonly(self, readonly: int) -> None:
-        self._readonly = readonly
-
     def _copy_info(self) -> dict[str | tuple[int, int], Any]:
         return {k: v.copy() if isinstance(v, list) else v for k, v in self.info.items()}
 
     def _new(self, im: core.ImagingCore) -> Image:
         new = Image()
         new.im = im
+        new.readonly = im.readonly
         new._mode = im.mode
         new._size = im.size
         if im.mode in ("P", "PA"):
             if self.palette:
                 new.palette = self.palette.copy()
+                new.palette.dirty = 1
             else:
                 from . import ImagePalette
 
@@ -721,15 +715,13 @@ class Image:
         self._im = DeferredError(ValueError("Operation on closed image"))
 
     def _copy(self) -> None:
-        self.load()
         self.im = self.im.copy()
         self.readonly = 0
 
     def _ensure_mutable(self) -> None:
+        self.load()
         if self.readonly:
             self._copy()
-        else:
-            self.load()
 
     def _dump(
         self, file: str | None = None, format: str | None = None, **options: Any
@@ -963,6 +955,10 @@ class Image:
 
         # unpack data
         d = _getdecoder(self.mode, decoder_name, decoder_args)
+        # Plugins may call this from load() while ImageFile.readonly is still set,
+        # so check whether the image memory itself is read-only
+        if self.im.readonly:
+            self._copy()
         d.setimage(self.im)
         s = d.decode(data)
 
@@ -1169,7 +1165,7 @@ class Image:
                     trns_im = new(self.mode, (1, 1))
                     if self.mode == "P":
                         assert self.palette is not None
-                        trns_im.putpalette(self.palette, self.palette.mode)
+                        trns_im.putpalette(self.palette)
                         if isinstance(t, tuple):
                             err = "Couldn't allocate a palette color for transparency"
                             assert trns_im.palette is not None
@@ -1357,7 +1353,7 @@ class Image:
         from . import ImagePalette
 
         mode = im.im.getpalettemode()
-        palette_data = im.im.getpalette(mode)[: colors * len(mode)]
+        palette_data = im.im.getpalette()[: colors * len(mode)]
         im.palette = ImagePalette.ImagePalette(mode, palette_data)
 
         return im
@@ -1386,7 +1382,11 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
 
-        if box is None or box == (0, 0, *self.size):
+        if box is None:
+            box = (0, 0, *self.size)
+        if box[2] - box[0] == 0 or box[3] - box[1] == 0:
+            return self._new(core.new(self.mode, (box[2] - box[0], box[3] - box[1])))
+        if box == (0, 0, *self.size):
             return self.copy()
 
         if box[2] < box[0]:
@@ -1711,12 +1711,14 @@ class Image:
 
         self.load()
         try:
-            mode = self.im.getpalettemode()
+            palette = (
+                self.im.getpalette(rawmode)
+                if rawmode is not None
+                else self.im.getpalette()
+            )
         except ValueError:
             return None  # no palette
-        if rawmode is None:
-            rawmode = mode
-        return list(self.im.getpalette(mode, rawmode))
+        return list(palette)
 
     @property
     def has_transparency_data(self) -> bool:
@@ -1814,6 +1816,9 @@ class Image:
         :param extrema: An optional tuple of manually-specified extrema.
         :returns: A list containing pixel counts.
         """
+        if min(self.size) == 0:
+            return [0] * 256 * getmodebands(self.mode)
+
         self.load()
         if mask:
             mask.load()
@@ -1842,6 +1847,9 @@ class Image:
         :param extrema: An optional tuple of manually-specified extrema.
         :returns: A float value representing the image entropy
         """
+        if min(self.size) == 0:
+            return 0.0
+
         self.load()
         if mask:
             mask.load()
@@ -2158,9 +2166,10 @@ class Image:
 
         Alternatively, an 8-bit string may be used instead of an integer sequence.
 
-        :param data: A palette sequence (either a list or a string).
+        :param data: A palette sequence (either a list or a string) or an ImagePalette.
         :param rawmode: The raw mode of the palette. Either "RGB", "RGBA", "CMYK", or a
            mode that can be transformed to one of those modes (e.g. "R", "RGBA;L").
+           Ignored if ``data`` is an ImagePalette.
         """
         from . import ImagePalette
 
@@ -2168,17 +2177,18 @@ class Image:
             msg = "illegal image mode"
             raise ValueError(msg)
         if isinstance(data, ImagePalette.ImagePalette):
-            palette = ImagePalette.raw(data.rawmode or "RGB", data.palette)
+            palette = data.copy()
+            palette.dirty = 1
         else:
             palette = ImagePalette.raw(rawmode, data)
+            if rawmode.startswith("CMYK"):
+                palette.mode = "CMYK"
+            elif "A" in rawmode:
+                palette.mode = "RGBA"
+            if palette.mode == palette.rawmode:
+                palette.rawmode = None
         self._mode = "PA" if "A" in self.mode else "P"
         self.palette = palette
-        if rawmode.startswith("CMYK"):
-            self.palette.mode = "CMYK"
-        elif "A" in rawmode:
-            self.palette.mode = "RGBA"
-        if self.palette.mode == self.palette.rawmode:
-            self.palette.rawmode = None
         if self.palette.rawmode or (
             self._im is not None and self._im.mode != self.mode
         ):
@@ -2255,7 +2265,7 @@ class Image:
                 palette_mode = self.im.getpalettemode()
                 if palette_mode == "RGBA":
                     bands = 4
-                source_palette = self.im.getpalette(palette_mode)
+                source_palette = self.im.getpalette()
             else:  # L-mode
                 source_palette = bytearray(i // 3 for i in range(768))
         elif len(source_palette) > 768:
@@ -2893,11 +2903,13 @@ class Image:
 
         def preserve_aspect_ratio() -> tuple[int, int] | None:
             def round_aspect(number: float, key: Callable[[int], float]) -> int:
-                return max(min(math.floor(number), math.ceil(number), key=key), 1)
+                return min(math.floor(number), math.ceil(number), key=key)
 
             x, y = provided_size
             if x >= self.width and y >= self.height:
                 return None
+            if self.height == 0:
+                return x, self.height
 
             aspect = self.width / self.height
             if x / y >= aspect:
@@ -2922,7 +2934,12 @@ class Image:
                 box = res[1]
 
         if self.size != final_size:
-            im = self.resize(final_size, resample, box=box, reducing_gap=reducing_gap)
+            if min(final_size) == 0:
+                im = self.crop((0, 0, *final_size))
+            else:
+                im = self.resize(
+                    final_size, resample, box=box, reducing_gap=reducing_gap
+                )
 
             self.im = im.im
             self._size = final_size
@@ -3359,14 +3376,12 @@ def frombuffer(
     if decoder_name == "raw" and min(size) != 0:
         if args == ():
             args = mode, 0, 1
-        if args[0] in _MAPMODES:
-            im = new(mode, (0, 0))
-            im = im._new(core.map_buffer(data, size, decoder_name, 0, args))
+        if args[0] == mode and args[0] in _MAPMODES:
+            im = Image()._new(core.map_buffer(data, size, decoder_name, 0, args))
             if mode == "P":
                 from . import ImagePalette
 
                 im.palette = ImagePalette.ImagePalette("RGB", im.im.getpalette("RGB"))
-            im.readonly = 1
             return im
 
     return frombytes(mode, size, data, decoder_name, args)
@@ -3563,8 +3578,8 @@ _fromarray_typemap = {
     ((1, 1), "|b1"): ("1", "1;8", []),
     ((1, 1), "|u1"): ("L", "L", ["P"]),
     ((1, 1), "|i1"): ("I", "I;8", []),
-    ((1, 1), "<u2"): ("I", "I;16", []),
-    ((1, 1), ">u2"): ("I", "I;16B", []),
+    ((1, 1), "<u2"): ("I;16", "I;16", []),
+    ((1, 1), ">u2"): ("I;16B", "I;16B", []),
     ((1, 1), "<i2"): ("I", "I;16S", []),
     ((1, 1), ">i2"): ("I", "I;16BS", []),
     ((1, 1), "<u4"): ("I", "I;32", []),
@@ -3799,7 +3814,7 @@ def composite(image1: Image, image2: Image, mask: Image) -> Image:
 
 
 def eval(image: Image, *args: Callable[[int], float]) -> Image:
-    """
+    r"""
     Applies the function (which should take one argument) to each pixel
     in the given image. If the image has more than one band, the same
     function is applied to each band. Note that the function is
@@ -3807,7 +3822,7 @@ def eval(image: Image, *args: Callable[[int], float]) -> Image:
     random components or other generators.
 
     :param image: The input image.
-    :param function: A function object, taking one integer argument.
+    :param \*args: A function object, taking one integer argument.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 

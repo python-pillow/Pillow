@@ -117,7 +117,7 @@ assign_item_to_array(double *xy, Py_ssize_t j, PyObject *op) {
     if (PyFloat_Check(op)) {
         xy[j++] = PyFloat_AS_DOUBLE(op);
     } else if (PyLong_Check(op)) {
-        xy[j++] = (float)PyLong_AS_LONG(op);
+        xy[j++] = (float)PyLong_AsLong(op);
     } else if (PyNumber_Check(op)) {
         xy[j++] = PyFloat_AsDouble(op);
     } else if (PyList_Check(op)) {
@@ -614,9 +614,10 @@ path_subscript(PyPathObject *self, PyObject *item) {
         int len = self->count;
         Py_ssize_t start, stop, step, slicelength;
 
-        if (PySlice_GetIndicesEx(item, len, &start, &stop, &step, &slicelength) < 0) {
+        if (PySlice_Unpack(item, &start, &stop, &step) < 0) {
             return NULL;
         }
+        slicelength = PySlice_AdjustIndices(len, &start, &stop, step);
 
         if (slicelength <= 0) {
             double *xy = alloc_array(0);
