@@ -82,6 +82,32 @@ class GbrImageFile(ImageFile.ImageFile):
         # Image might not be small
         Image._decompression_bomb_check(self.size)
 
+        # Calculate required pixel data byte size for validation only
+        bands = Image.getmodebands(self._mode)
+        required_size = width * height * bands
+    
+        # Match C decoder overflow guard in _setimage:
+        # state->xsize > INT_MAX / bits - 7
+        bits = 8 if self._mode == "L" else 32
+        max_width = (2**31 - 1) // bits - 7
+        if width > max_width:
+            msg = "image width too large for decoder"
+            raise SyntaxError(msg)
+
+        # Best-effort check for remaining stream length, only for seekable streams
+        try:
+            pos = self.fp.tell()
+            self.fp.seek(0, 2)
+            total_len = self.fp.tell()
+            self.fp.seek(pos)
+        except OSError:
+            # Non-seekable stream (pipe, socket): skip length check
+            pass
+        else:
+            if total_len - pos < required_size:
+                msg = "not enough image data"
+                raise ValueError(msg)
+    
     def load(self) -> Image.core.PixelAccess | None:
         if self._im is None:
             assert self.fp is not None
