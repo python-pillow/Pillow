@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import itertools
-from unittest.mock import Mock
 
 import pytest
 
@@ -99,10 +98,17 @@ def test_compare_with_other_type() -> None:
     im = Image.new("L", (1, 1))
     assert im.im == im.im
     assert im.im != 42
-    # Check that the other object's comparison method is called.
-    x = Mock(__eq__=Mock(return_value=True))
+
+    class EqMock:
+        eq_called = False
+
+        def __eq__(self, other: object) -> bool:
+            self.eq_called = True
+            return True
+
+    x = EqMock()
     assert im.im == x
-    assert x.__eq__.called  # type: ignore[attr-defined]
+    assert x.eq_called
 
 
 def test_equal_frombuffer_stride() -> None:
