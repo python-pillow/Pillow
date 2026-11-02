@@ -286,7 +286,6 @@ class TestEmbeddable:
 
         with open("embed_pil.c", "w", encoding="utf-8") as fh:
             home = sys.base_prefix.replace("\\", "\\\\")
-            executable = sys.executable.replace("\\", "\\\\")
             fh.write(f"""
 #include <Python.h>
 
@@ -306,7 +305,6 @@ int main(int argc, char* argv[])
         }}
         if (
             PyInitConfig_SetStr(config, "home", "{home}") < 0 ||
-            PyInitConfig_SetStr(config, "program_name", "{executable}") < 0 ||
             Py_InitializeFromInitConfig(config) < 0
         ) {{
             const char *error;
