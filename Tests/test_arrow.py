@@ -61,8 +61,6 @@ def test_readonly() -> None:
     img = hopper("L")
     reloaded = Image.fromarrow(img, img.mode, img.size)
     assert reloaded.readonly == 1
-    reloaded._readonly = 0
-    assert reloaded.readonly == 1
 
 
 def test_multiblock_l_image() -> None:

@@ -103,10 +103,17 @@ def test_convert() -> None:
 
 
 @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
-def test_convert_i_f(mode: str) -> None:
+def test_convert_i16_f(mode: str) -> None:
     im = Image.new(mode, (1, 1), 4660)
     assert im.convert("I").getpixel((0, 0)) == 4660
     assert im.convert("F").getpixel((0, 0)) == 4660.0
 
     im = Image.new("I", (1, 1), 4660)
     assert im.convert(mode).getpixel((0, 0)) == 4660
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+@pytest.mark.parametrize("value", (-1, 4660.4, 65535, 70000))
+def test_convert_f_i16(mode: str, value: float) -> None:
+    im = Image.new("F", (1, 1), value)
+    assert im.convert(mode).getpixel((0, 0)) == min(max(0, int(value)), 65535)

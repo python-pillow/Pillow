@@ -80,7 +80,10 @@ class XbmImageFile(ImageFile.ImageFile):
                 if line.endswith(b"_bits[] = {"):
                     offset = self.fp.tell()
                 break
-            value = int(line.split().pop())
+            try:
+                value = int(line.split().pop())
+            except ValueError:
+                break
             if b"width " in line:
                 width = value
             elif b"height " in line:

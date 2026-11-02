@@ -58,6 +58,28 @@ collapsed incorrectly, and the row-size arithmetic could overflow for very wide
 images. The ZIP decoder no longer accepts planar raw modes when interlacing is
 requested, since it cannot decode them correctly.
 
+Writing to read-only images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.frombytes` and
+:py:meth:`~PIL.ImageCms.ImageCmsTransform.apply`, which in-place ImageCms transforms
+use, now copy an image before writing to it if its memory is read-only, as
+:py:meth:`~PIL.Image.Image.paste` already does. Previously, they could crash on
+memory-mapped image files, or modify the buffer behind an image created by
+:py:func:`~PIL.Image.frombuffer` or :py:func:`~PIL.Image.fromarrow`.
+
+As a further safeguard, the C decoder and ImageCms transform layers now raise a
+:py:exc:`ValueError` if asked to write into a read-only image directly.
+
+Saving TIFF images with libtiff geometry tags
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving a TIFF image with libtiff, the ImageWidth, ImageLength,
+SamplesPerPixel and PlanarConfiguration tags are now always taken from the
+image, rather than from ``tiffinfo``, ``exif`` or the IFD of the original file.
+Previously, values that described a larger row than the image raised an
+:py:exc:`OSError`, and other values could produce an invalid file.
+
 Resizing I;16B and I;16N images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
