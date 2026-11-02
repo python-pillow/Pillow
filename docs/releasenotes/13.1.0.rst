@@ -41,10 +41,12 @@ TODO
 API additions
 =============
 
-TODO
-^^^^
+Encoder optimal buffer size
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Encoders now have an ``optimal_bufsize`` property: the buffer size needed to
+encode the whole tile in a single ``encode()`` call, or 0 if that is not known
+in advance. :py:class:`~PIL.ImageFile.PyEncoder` subclasses can override it.
 
 Other changes
 =============
@@ -93,14 +95,12 @@ Pillow requires Python 3.11 or later, and CPython 3.11 and later require C11.
 Reduced memory use in Image.tobytes() in raw mode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Encoders may now report the "optimal" buffer size that they will need to encode the
-entire image into their output format.
-
 In general, :py:meth:`~PIL.Image.Image.tobytes` collects encoded data in
-``ImageFile.MAXBLOCK`` sized chunks and join them into the output byte buffer
+``ImageFile.MAXBLOCK`` sized chunks and joins them into the output byte buffer
 afterwards. For raw uncompressed output, this would need, momentarily, roughly
 twice the memory of the returned data. The raw encoder now reports the buffer size
-that encodes the whole image in a single call, so no copy of the result is made.
+that encodes the whole image in a single call (see "Encoder optimal buffer size"
+in API additions), so no copy of the result is made.
 
 Encoders that cannot know their output size in advance, such as the compressed
 encoders, are unaffected and keep using :py:data:`~PIL.ImageFile.MAXBLOCK`;
