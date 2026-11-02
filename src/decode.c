@@ -839,9 +839,9 @@ PyImaging_ZipDecoderNew(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    /* The interlaced path feeds the unpacker one pixel at a time through a
-       single byte staging slot, while planar raw modes (P;2L/P;4L) read a
-       whole padded bit plane per call (#10186). */
+    // The interlaced path feeds the unpacker one pixel at a time through a
+    // single byte staging slot, which is incompatible with planar raw modes,
+    // so reject this combination now.
     if (interlaced &&
         (rawmode == IMAGING_RAWMODE_P_2L || rawmode == IMAGING_RAWMODE_P_4L)) {
         Py_DECREF(decoder);

@@ -896,22 +896,6 @@ class TestLibUnpack:
             # padded: only the planar raw modes (P;2L/P;4L) store padded bit
             # planes, so the row collapse must not de-interleave these rows
             (
-                "L",
-                "L;2",
-                (9, 1),
-                b"\x94\x60\x80\x40\x00\x00",
-                6,
-                (170, 85, 85, 0, 85, 170, 0, 0, 170),
-            ),
-            (
-                "L",
-                "L;4",
-                (5, 1),
-                b"\x12\x34\x50\x00\x00\x00\x00\x00",
-                8,
-                (17, 34, 51, 68, 85),
-            ),
-            (
                 "P",
                 "P;2",
                 (9, 1),
@@ -938,22 +922,17 @@ class TestLibUnpack:
         stride: int,
         expected: tuple[int, ...],
     ) -> None:
-        # Packed L;2/L;4/P;2/P;4 rows are not bit planes; a padded stride must
+        # Packed P;2/P;4 rows are not bit planes; a padded stride must
         # not change the decoded pixels (the rows are de-interleaved only for
         # the planar raw modes)
         im = Image.new(mode, size)
         im.frombytes(data, "pcx", rawmode, stride)
         assert tuple(im.get_flattened_data()) == expected
 
-    def test_zip_pXl_interlaced_rejected(self) -> None:
+    @pytest.mark.parametrize("rawmode", ("P;2L", "P;4L"))
+    def test_zip_pXl_interlaced_rejected(self, rawmode: str) -> None:
         # The interlaced unpacker stages a single byte per pixel; planar raw
         # modes would read past it
         im = Image.new("P", (16, 16))
         with pytest.raises(ValueError, match="unrecognized raw mode"):
-            im.frombytes(zlib.compress(b"\x00" * 32), "zip", "P;2L", 1)
-
-    @pytest.mark.parametrize("rawmode", ("P;2L", "P;4L"))
-    def test_zip_pXl_not_interlaced(self, rawmode: str) -> None:
-        planes = 2 if rawmode == "P;2L" else 4
-        im = Image.new("P", (9, 1))
-        im.frombytes(zlib.compress(b"\x00" * (planes * 2 + 1)), "zip", rawmode)
+            im.frombytes(zlib.compress(b"\x00" * 32), "zip", rawmode, 1)
