@@ -4600,7 +4600,8 @@ _compare_palette(const ImagingPalette palette_a, const ImagingPalette palette_b)
 
     const char *palette_a_data = (const char *)palette_a->palette;
     const char *palette_b_data = (const char *)palette_b->palette;
-    // 1024 is the hard-coded maximum size of a palette
+    // 1024 is the maximum size of a palette hard-coded in Imaging.h's
+    // ImagingPaletteInstance struct.
     int linesize = MIN(palette_a->size * 4, 1024);
     return _compare_pixels(
         palette_a->mode, 1, linesize, &palette_a_data, &palette_b_data
