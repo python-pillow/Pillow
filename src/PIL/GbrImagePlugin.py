@@ -94,20 +94,6 @@ class GbrImageFile(ImageFile.ImageFile):
             msg = "image width too large for decoder"
             raise SyntaxError(msg)
 
-        # Best-effort check for remaining stream length, only for seekable streams
-        try:
-            pos = self.fp.tell()
-            self.fp.seek(0, 2)
-            total_len = self.fp.tell()
-            self.fp.seek(pos)
-        except OSError:
-            # Non-seekable stream (pipe, socket): skip length check
-            pass
-        else:
-            if total_len - pos < required_size:
-                msg = "not enough image data"
-                raise ValueError(msg)
-
     def load(self) -> Image.core.PixelAccess | None:
         if self._im is None:
             assert self.fp is not None
