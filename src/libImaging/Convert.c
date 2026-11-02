@@ -1629,7 +1629,7 @@ static struct {
 };
 
 static Imaging
-_convert_impl(
+_convert_using_allocator(
     Imaging imIn,
     ModeID mode,
     ImagingPalette palette,
@@ -1730,7 +1730,7 @@ Imaging
 ImagingConvert(
     Imaging imIn, ModeID mode, ImagingPalette palette, ImagingDitherType dither
 ) {
-    return _convert_impl(imIn, mode, palette, dither, ImagingNewDirty);
+    return _convert_using_allocator(imIn, mode, palette, dither, ImagingNewDirty);
 }
 
 /**
@@ -1744,7 +1744,9 @@ ImagingConvert(
  */
 Imaging
 ImagingConvertBlock(Imaging imIn, ModeID mode) {
-    return _convert_impl(imIn, mode, NULL, IMAGING_DITHER_NONE, ImagingNewBlock);
+    return _convert_using_allocator(
+        imIn, mode, NULL, IMAGING_DITHER_NONE, ImagingNewBlock
+    );
 }
 
 Imaging
