@@ -11,6 +11,9 @@ def test_putpalette() -> None:
     def palette(mode: str) -> str | tuple[str, list[int]]:
         im = hopper(mode).copy()
         im.putpalette(list(range(256)) * 3)
+        assert im.palette is not None
+        assert im.palette.dirty == (0 if mode[0] == "L" else 1)
+
         p = im.getpalette()
         if p:
             return im.mode, p[:10]
@@ -56,6 +59,11 @@ def test_imagepalette() -> None:
     im.putpalette(ImagePalette.wedge())
     assert_image_equal_tofile(im.convert("RGB"), "Tests/images/palette_wedge.png")
 
+    # Check that rawmode is ignored
+    im.putpalette(ImagePalette.wedge(), "RGBA")
+    assert im.palette is not None
+    assert im.palette.mode == "RGB"
+
 
 def test_putpalette_with_alpha_values() -> None:
     with Image.open("Tests/images/transparent.gif") as im:
@@ -86,6 +94,8 @@ def test_putpalette_with_alpha_values() -> None:
 def test_rgba_palette(mode: str, palette: tuple[int, ...]) -> None:
     im = Image.new("P", (1, 1))
     im.putpalette(palette, mode)
+    assert im.palette is not None
+    assert im.palette.dirty == (1 if mode == "RGBA" else 0)
     assert im.getpalette() == [1, 2, 3]
     assert im.palette is not None
     assert im.palette.colors == {(1, 2, 3, 4): 0}
@@ -101,6 +111,8 @@ def test_rgba_palette(mode: str, palette: tuple[int, ...]) -> None:
 def test_cmyk_palette(mode: str, palette: tuple[int, ...]) -> None:
     im = Image.new("P", (1, 1))
     im.putpalette(palette, mode)
+    assert im.palette is not None
+    assert im.palette.dirty == (1 if mode == "CMYK" else 0)
     assert im.getpalette() == [250, 249, 248]
     assert im.palette is not None
     assert im.palette.colors == {(1, 2, 3, 4): 0}
@@ -115,3 +127,10 @@ def test_undefined_palette_index() -> None:
     im = Image.new("P", (1, 1), 3)
     im.putpalette((1, 2, 3))
     assert im.convert("RGB").getpixel((0, 0)) == (0, 0, 0)
+
+
+@pytest.mark.parametrize("rawmode", ("P;2L", "P;4L"))
+def test_planar_rawmode_rejected(rawmode: str) -> None:
+    im = Image.new("P", (1, 1))
+    with pytest.raises(ValueError, match="unrecognized raw mode"):
+        im.putpalette(b"\x00", rawmode)

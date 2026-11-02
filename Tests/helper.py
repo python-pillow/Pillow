@@ -55,21 +55,6 @@ def upload(a: Image.Image, b: Image.Image) -> str | None:
     return None
 
 
-def convert_to_comparable(
-    a: Image.Image, b: Image.Image
-) -> tuple[Image.Image, Image.Image]:
-    new_a, new_b = a, b
-    if a.mode == "P":
-        new_a = Image.new("L", a.size)
-        new_b = Image.new("L", b.size)
-        new_a.putdata(a.get_flattened_data())
-        new_b.putdata(b.get_flattened_data())
-    elif a.mode == "I;16":
-        new_a = a.convert("I")
-        new_b = b.convert("I")
-    return new_a, new_b
-
-
 def assert_deep_equal(a: Any, b: Any, msg: str | None = None) -> None:
     try:
         assert len(a) == len(b), msg or f"got length {len(a)}, expected {len(b)}"
@@ -122,8 +107,6 @@ def assert_image_similar(
     assert a.mode == b.mode, msg or f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
     assert a.size == b.size, msg or f"got size {repr(a.size)}, expected {repr(b.size)}"
 
-    a, b = convert_to_comparable(a, b)
-
     diff = 0
     for ach, bch in zip(a.split(), b.split()):
         chdiff = ImageMath.lambda_eval(
@@ -165,6 +148,10 @@ def timeout_unless_slower_valgrind(timeout: float) -> pytest.MarkDecorator:
     if "PILLOW_VALGRIND_TEST" in os.environ:
         return pytest.mark.pil_noop_mark()
     return pytest.mark.timeout(timeout)
+
+
+def skip_if_tsan(reason: str = "Test skipped on TSAN run") -> pytest.MarkDecorator:
+    return pytest.mark.skipif("PILLOW_TSAN_TEST" in os.environ, reason=reason)
 
 
 def skip_unless_feature(feature: str) -> pytest.MarkDecorator:

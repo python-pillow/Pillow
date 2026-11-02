@@ -66,6 +66,7 @@ def test_font_properties(font: ImageFont.FreeTypeFont) -> None:
     font_copy = font.font_variant()
     assert font_copy.path == FONT_PATH
     assert font_copy.size == FONT_SIZE
+    assert font_copy.layout_engine == font.layout_engine
 
     font_copy = font.font_variant(size=FONT_SIZE + 1)
     assert font_copy.size == FONT_SIZE + 1
@@ -73,6 +74,20 @@ def test_font_properties(font: ImageFont.FreeTypeFont) -> None:
     second_font_path = "Tests/fonts/DejaVuSans/DejaVuSans.ttf"
     font_copy = font.font_variant(font=second_font_path)
     assert font_copy.path == second_font_path
+
+
+@pytest.mark.parametrize(
+    "variant_layout_engine",
+    (
+        ImageFont.Layout.BASIC,
+        pytest.param(ImageFont.Layout.RAQM, marks=skip_unless_feature("raqm")),
+    ),
+)
+def test_font_variant_layout_engine(
+    font: ImageFont.FreeTypeFont, variant_layout_engine: ImageFont.Layout
+) -> None:
+    font_copy = font.font_variant(layout_engine=variant_layout_engine)
+    assert font_copy.layout_engine == variant_layout_engine
 
 
 def _render(
@@ -496,6 +511,14 @@ def test_stroke_mask() -> None:
     assert mask.getpixel((42, 5)) == 255
 
 
+@pytest.mark.parametrize("filename_type", (str, Path))
+def test_load(filename_type: type[str | Path]) -> None:
+    font = ImageFont.load(filename_type("Tests/fonts/10x20.pil"))
+
+    assert isinstance(font, ImageFont.ImageFont)
+    assert font.getlength("hello") == 50
+
+
 def test_load_invalid_file() -> None:
     with pytest.raises(SyntaxError, match="Not a PILfont file"):
         ImageFont.load("Tests/images/1_trns.png")
@@ -511,6 +534,21 @@ def test_load_when_image_not_found() -> None:
 
     root = os.path.splitext(tmp.name)[0]
     assert str(e.value) == f"cannot find glyph data file {root}.{{gif|pbm|png}}"
+
+
+@pytest.mark.parametrize("filename", ("10x20.pil", b"10x20.pil", Path("10x20.pil")))
+def test_load_path(
+    monkeypatch: pytest.MonkeyPatch, filename: str | bytes | Path
+) -> None:
+    # Arrange
+    monkeypatch.syspath_prepend("Tests/fonts")
+
+    # Act
+    font = ImageFont.load_path(filename)
+
+    # Assert
+    assert isinstance(font, ImageFont.ImageFont)
+    assert font.getlength("hello") == 50
 
 
 def test_load_path_not_found() -> None:

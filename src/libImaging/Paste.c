@@ -79,8 +79,8 @@ paste_mask_1(
 
     PREPARE_PASTE_LOOP();
     if (imOut->image8) {
-        int in_i16 = isModeI16(imIn->mode);
-        int out_i16 = isModeI16(imOut->mode);
+        int in_i16 = imIn->type == IMAGING_TYPE_I16;
+        int out_i16 = imOut->type == IMAGING_TYPE_I16;
         for (; y != y_end; y += offset) {
             UINT8 *out = imOut->image8[y + dy] + dx;
             if (out_i16) {
@@ -460,7 +460,7 @@ fill_mask_L(
     unsigned int tmp1;
 
     if (imOut->image8) {
-        int i16 = isModeI16(imOut->mode);
+        int i16 = imOut->type == IMAGING_TYPE_I16;
         for (y = 0; y < ysize; y++) {
             UINT8 *out = imOut->image8[y + dy] + dx;
             if (i16) {

@@ -260,7 +260,11 @@ class TestImagePutPixelError:
 
 
 class TestEmbeddable:
-    @pytest.mark.xfail(not (sys.version_info >= (3, 13)), reason="failing test")
+    @pytest.mark.xfail(
+        sysconfig.get_platform().startswith("mingw")
+        or not (sys.version_info >= (3, 13)),
+        reason="failing test",
+    )
     @pytest.mark.skipif(not is_win32(), reason="requires Windows")
     def test_embeddable(self) -> None:
         pytest.importorskip("setuptools", reason="setuptools not installed")
@@ -281,25 +285,45 @@ class TestEmbeddable:
             pytest.skip("Compiler could not be initialized")
 
         with open("embed_pil.c", "w", encoding="utf-8") as fh:
-            home = sys.prefix.replace("\\", "\\\\")
+            home = sys.base_prefix.replace("\\", "\\\\")
             fh.write(f"""
 #include <Python.h>
 
 int main(int argc, char* argv[])
 {{
+#if PY_VERSION_HEX < 0x030E0000
     char *home = "{home}";
     wchar_t *whome = Py_DecodeLocale(home, NULL);
     Py_SetPythonHome(whome);
+#endif
 
-    Py_InitializeEx(0);
-    Py_DECREF(PyImport_ImportModule("PIL.Image"));
-    Py_Finalize();
+    for (int i = 0; i < 2; i++) {{
+#if PY_VERSION_HEX >= 0x030E0000
+        PyInitConfig *config = PyInitConfig_Create();
+        if (config == NULL) {{
+            return 1;
+        }}
+        if (
+            PyInitConfig_SetStr(config, "home", "{home}") < 0 ||
+            Py_InitializeFromInitConfig(config) < 0
+        ) {{
+            const char *error;
+            PyInitConfig_GetError(config, &error);
+            fprintf(stderr, "%s\\n", error);
+            PyInitConfig_Free(config);
+            return 1;
+        }}
+        PyInitConfig_Free(config);
+#else
+        Py_InitializeEx(0);
+#endif
+        Py_DECREF(PyImport_ImportModule("PIL.Image"));
+        Py_Finalize();
+    }}
 
-    Py_InitializeEx(0);
-    Py_DECREF(PyImport_ImportModule("PIL.Image"));
-    Py_Finalize();
-
+#if PY_VERSION_HEX < 0x030E0000
     PyMem_RawFree(whome);
+#endif
 
     return 0;
 }}
@@ -309,7 +333,7 @@ int main(int argc, char* argv[])
         compiler.link_executable(objects, "embed_pil")
 
         env = os.environ.copy()
-        env["PATH"] = sys.prefix + ";" + env["PATH"]
+        env["PATH"] = os.pathsep.join((sys.prefix, sys.base_prefix, env["PATH"]))
 
         # Do not display the Windows Error Reporting dialog
         getattr(ctypes, "windll").kernel32.SetErrorMode(0x0002)

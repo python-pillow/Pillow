@@ -19,6 +19,7 @@ from PIL import (
 
 from .helper import (
     assert_image_equal,
+    assert_image_equal_tofile,
     assert_image_similar,
     assert_image_similar_tofile,
     skip_unless_feature,
@@ -310,7 +311,7 @@ def test_mct(card: ImageFile.ImageFile) -> None:
 
         assert out.getvalue()[59] == val
         with Image.open(out) as im:
-            assert_image_similar(im, card, 1.0e-3)
+            assert_image_equal(im, card)
 
     # Single component should have MCT disabled
     for val in (0, 1):
@@ -320,7 +321,7 @@ def test_mct(card: ImageFile.ImageFile) -> None:
 
         assert out.getvalue()[53] == 0
         with Image.open(out) as im:
-            assert_image_similar(im, jp2, 1.0e-3)
+            assert_image_equal(im, jp2)
 
 
 def test_sgnd(tmp_path: Path) -> None:
@@ -360,6 +361,16 @@ def test_grayscale_four_channels() -> None:
         assert im.mode == "RGBA"
 
 
+def test_five_channels() -> None:
+    with open("Tests/images/rgb_trns_ycbc.jp2", "rb") as fp:
+        data = fp.read()
+
+    data = data[:126] + b"\x05" + data[127:]
+
+    with pytest.raises(SyntaxError, match="unable to determine J2K image mode"):
+        Jpeg2KImagePlugin.Jpeg2KImageFile(BytesIO(data))
+
+
 @pytest.mark.skipif(
     not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
 )
@@ -383,20 +394,11 @@ def test_cmyk_save() -> None:
 
 
 @pytest.mark.parametrize("ext", (".j2k", ".jp2"))
-def test_16bit_monochrome_has_correct_mode(ext: str) -> None:
+def test_16bit_monochrome(ext: str) -> None:
     with Image.open("Tests/images/16bit.cropped" + ext) as im:
-        im.load()
         assert im.mode == "I;16"
 
-
-def test_16bit_monochrome_jp2_like_tiff() -> None:
-    with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
-        assert_image_similar_tofile(tiff_16bit, "Tests/images/16bit.cropped.jp2", 1e-3)
-
-
-def test_16bit_monochrome_j2k_like_tiff() -> None:
-    with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
-        assert_image_similar_tofile(tiff_16bit, "Tests/images/16bit.cropped.j2k", 1e-3)
+        assert_image_equal_tofile(im, "Tests/images/16bit.cropped.tif")
 
 
 def test_16bit_j2k_roundtrips() -> None:

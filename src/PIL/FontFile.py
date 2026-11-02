@@ -130,7 +130,7 @@ class FontFile:
             data += _binary.o16be(v)
         return bytes(data)
 
-    def save(self, filename: str) -> None:
+    def save(self, filename: str | os.PathLike[str]) -> None:
         """Save font"""
 
         self.compile()

@@ -65,6 +65,7 @@ def test_zero_count() -> None:
     st = ImageStat.Stat(im)
 
     assert st.mean == [0]
+    assert st.median == [0]
     assert st.rms == [0]
     assert st.var == [0]
 

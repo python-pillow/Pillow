@@ -222,6 +222,50 @@ def test_exceptions() -> None:
         ImageCms.isIntentSupported(SRGB, None, None)  # type: ignore[arg-type]
 
 
+def test_apply_readonly() -> None:
+    skip_missing()
+    t = ImageCms.buildTransform(
+        SRGB, "Tests/icc/sRGB_v4_ICC_preference.icc", "RGB", "RGB"
+    )
+    source = hopper()
+    im = Image.fromarrow(source, source.mode, source.size)
+    assert im.readonly
+
+    t.apply(hopper(), im)
+    assert not im.readonly
+    assert_image_equal(im, t.apply(hopper()))
+    assert_image_equal(source, hopper())
+
+
+def test_apply_core_readonly() -> None:
+    skip_missing()
+    t = ImageCms.buildTransform(
+        SRGB, "Tests/icc/sRGB_v4_ICC_preference.icc", "RGBA", "RGBA"
+    )
+    data = bytes(4)
+    im = Image.frombuffer("RGBA", (1, 1), data, "raw", "RGBA", 0, 1)
+    assert im.readonly
+
+    with pytest.raises(ValueError, match="image is readonly"):
+        t.transform.apply(Image.new("RGBA", (1, 1), "red").getim(), im.getim())
+    assert data == bytes(4)
+
+
+def test_apply_in_place_readonly(tmp_path: Path) -> None:
+    skip_missing()
+    temp_file = tmp_path / "temp.tif"
+    hopper("RGBA").save(temp_file)
+    t = ImageCms.buildTransform(
+        SRGB, "Tests/icc/sRGB_v4_ICC_preference.icc", "RGBA", "RGBA"
+    )
+
+    with Image.open(temp_file) as im:
+        ImageCms.applyTransform(im, t, inPlace=True)
+        assert im.map is not None  # memory-mapped
+        assert not im.readonly
+        assert_image_equal(im, t.apply(hopper("RGBA")))
+
+
 def test_display_profile() -> None:
     # try fetching the profile for the current display device
     ImageCms.get_display_profile()

@@ -27,10 +27,10 @@
 # image data from electron microscopy and tomography.
 #
 # Spider home page:
-# https://spider.wadsworth.org/spider_doc/spider/docs/spider.html
+# https://spider-em.github.io/SPIDER/
 #
 # Details about the Spider image format:
-# https://spider.wadsworth.org/spider_doc/spider/docs/image_doc.html
+# https://spider-em.github.io/SPIDER/docs/image_doc.html
 #
 from __future__ import annotations
 
@@ -162,7 +162,7 @@ class SpiderImageFile(ImageFile.ImageFile):
             self.rawmode = "F;32F"
         self._mode = "F"
 
-        self.tile = [ImageFile._Tile("raw", (0, 0, *self.size), offset, self.rawmode)]
+        self.tile = [ImageFile._Tile("raw", None, offset, self.rawmode)]
         self._fp = self.fp  # FIXME: hack
 
     # 1st image index is zero (although SPIDER imgnumber starts at 1)
@@ -184,6 +184,7 @@ class SpiderImageFile(ImageFile.ImageFile):
         self.fp = self._fp
         self.fp.seek(self.stkoffset)
         self._open()
+        Image._decompression_bomb_check(self.size)
 
     # returns a byte image after rescaling to 0..255
     def convert2byte(self, depth: int = 255) -> Image.Image:
@@ -281,7 +282,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.writelines(hdr)
 
     rawmode = "F;32NF"  # 32-bit native floating point
-    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, rawmode)])
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", args=rawmode)])
 
 
 def _save_spider(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:

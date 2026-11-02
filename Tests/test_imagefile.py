@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import tempfile
 from io import BytesIO
 from typing import Any
 
@@ -25,10 +26,6 @@ from .helper import (
     tostring,
 )
 
-# save original block sizes
-MAXBLOCK = ImageFile.MAXBLOCK
-SAFEBLOCK = ImageFile.SAFEBLOCK
-
 
 class TestImageFile:
     def test_parser(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -51,7 +48,7 @@ class TestImageFile:
 
         assert_image_equal(*roundtrip("BMP"))
         im1, im2 = roundtrip("GIF")
-        assert_image_similar(im1.convert("P"), im2, 1)
+        assert_image_equal(im1.convert("RGB"), im2.convert("RGB"))
         with pytest.warns(DeprecationWarning, match="IM image format"):
             assert_image_equal(*roundtrip("IM"))
         assert_image_equal(*roundtrip("MSP"))
@@ -275,7 +272,7 @@ class MockPyEncoder(ImageFile.PyEncoder):
         super().__init__(mode, *args)
 
     def encode(self, bufsize: int) -> tuple[int, int, bytes]:
-        return 1, 1, b""
+        return 1, 1, b"a"
 
     def cleanup(self) -> None:
         self.cleanup_called = True
@@ -437,6 +434,44 @@ class TestPyEncoder(CodecsTest):
         with pytest.raises(NotImplementedError):
             encoder.encode_to_file(0, 0)
 
+        mock_encoder = MockPyEncoder("")
+        with tempfile.TemporaryFile() as fp:
+            mock_encoder.encode_to_file(fp.fileno(), 1)
+
+            fp.seek(0)
+            assert fp.read() == b"a"
+
     def test_zero_height(self) -> None:
         with pytest.raises(UnidentifiedImageError):
             Image.open("Tests/images/zero_height.j2k")
+
+    def test_load_prepare(self) -> None:
+        class TestImageFile(ImageFile.ImageFile):
+            def _open(self) -> None:
+                self._mode = "1"
+                self._size = (1, 1)
+                self._frame = 0
+
+            def seek(self, frame: int) -> None:
+                self._mode = "L"
+                self._size = (2, 2)
+                self._frame = frame
+                super().seek(frame)
+
+            def tell(self) -> int:
+                return self._frame
+
+        fp = BytesIO()
+        im = TestImageFile(fp)
+        im.load_prepare()
+        before_seek = im._im
+        assert before_seek is not None
+
+        im.seek(1)
+        after_seek = im._im
+        assert after_seek is None
+
+        im.load_prepare()
+        assert im._im is not None
+        assert im._im.mode == im.mode
+        assert im._im.size == im.size

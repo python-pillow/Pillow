@@ -4,7 +4,7 @@ import pytest
 
 from PIL import Image, ImageMath, ImageMode
 
-from .helper import convert_to_comparable, skip_unless_feature
+from .helper import skip_unless_feature
 
 codecs = dir(Image.core)
 
@@ -201,8 +201,6 @@ def assert_compare_images(
 ) -> None:
     assert a.mode == b.mode, f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
     assert a.size == b.size, f"got size {repr(a.size)}, expected {repr(b.size)}"
-
-    a, b = convert_to_comparable(a, b)
 
     bands = ImageMode.getmode(a.mode).bands
     for band, ach, bch in zip(bands, a.split(), b.split()):

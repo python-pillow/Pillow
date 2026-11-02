@@ -211,6 +211,7 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b) {
 
     for (i = 0; i < BOXVOLUME; i++) {
         d[i] = (unsigned int)~0;
+        c[i] = 0;
     }
 
     for (i = 0; i < palette->size; i++) {

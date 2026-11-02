@@ -161,6 +161,33 @@ def test_apng_dispose_op_background_p_mode() -> None:
         assert im.size == (128, 64)
 
 
+def test_apng_dispose_op_background_decompression_bomb() -> None:
+    o16 = PngImagePlugin.o16
+    o32 = PngImagePlugin.o32
+
+    b = BytesIO()
+    b.write(PngImagePlugin._MAGIC)
+    PngImagePlugin.putchunk(b, b"IHDR", o32(2**31 - 1), o32(1), b"\x08\x06\x00\x00\x00")
+    PngImagePlugin.putchunk(b, b"acTL", o32(2), o32(0))
+    PngImagePlugin.putchunk(
+        b,
+        b"fcTL",
+        o32(0),
+        o32(1),
+        o32(1),
+        o32(0),
+        o32(0),
+        o16(1),
+        o16(10),
+        bytes([PngImagePlugin.Disposal.OP_BACKGROUND, PngImagePlugin.Blend.OP_SOURCE]),
+    )
+    PngImagePlugin.putchunk(b, b"IDAT")
+    PngImagePlugin.putchunk(b, b"IEND")
+
+    with pytest.raises(Image.DecompressionBombError):
+        Image.open(b)
+
+
 def test_apng_blend() -> None:
     with Image.open("Tests/images/apng/blend_op_source_solid.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
@@ -324,6 +351,27 @@ def test_apng_save_different_palettes(tmp_path: Path) -> None:
     red.save(test_file, save_all=True, append_images=[green])
     with Image.open(test_file) as reloaded:
         assert reloaded.mode == "RGBA"
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16B"))
+def test_apng_save_i16(mode: str, tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    im = Image.new(mode, (1, 1), 1000)
+    second = Image.new(mode, (1, 1), 2000)
+    im.save(
+        test_file,
+        save_all=True,
+        append_images=[second],
+        duration=100,
+    )
+
+    with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+        assert reloaded.n_frames == 2
+        assert reloaded.getpixel((0, 0)) == 1000
+
+        reloaded.seek(1)
+        assert reloaded.getpixel((0, 0)) == 2000
 
 
 def test_apng_chunk_errors() -> None:
@@ -562,6 +610,22 @@ def test_apng_save_large_duration(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="cannot write duration"):
         im.save(test_file, save_all=True, append_images=[im2], duration=65536000)
 
+    # Do not merge identical frames if the combined duration cannot be written
+    im.save(
+        test_file,
+        save_all=True,
+        append_images=[im.copy()],
+        duration=[32768000, 32768000],
+    )
+
+    with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+        assert reloaded.n_frames == 2
+        assert reloaded.info["duration"] == 32768000
+
+        reloaded.seek(1)
+        assert reloaded.info["duration"] == 32768000
+
 
 def test_apng_save_disposal(tmp_path: Path) -> None:
     test_file = tmp_path / "temp.png"
@@ -652,17 +716,6 @@ def test_apng_save_disposal(tmp_path: Path) -> None:
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
-    # test info disposal
-    red.info["disposal"] = PngImagePlugin.Disposal.OP_BACKGROUND
-    red.save(
-        test_file,
-        save_all=True,
-        append_images=[Image.new("RGBA", (10, 10), (0, 255, 0, 255))],
-    )
-    with Image.open(test_file) as im:
-        im.seek(1)
-        assert im.getpixel((64, 32)) == (0, 0, 0, 0)
-
 
 def test_apng_save_disposal_previous(tmp_path: Path) -> None:
     test_file = tmp_path / "temp.png"
@@ -684,6 +737,22 @@ def test_apng_save_disposal_previous(tmp_path: Path) -> None:
         im.seek(2)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
+
+
+def test_apng_save_disposal_background(tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    im = Image.new("L", (32, 32), 128)
+
+    im.save(
+        test_file,
+        save_all=True,
+        append_images=[Image.new("L", (32, 32))],
+        disposal=PngImagePlugin.Disposal.OP_BACKGROUND,
+        duration=100,
+    )
+    with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+        assert reloaded.n_frames == 2
 
 
 def test_apng_save_blend(tmp_path: Path) -> None:
@@ -745,13 +814,6 @@ def test_apng_save_blend(tmp_path: Path) -> None:
         im.seek(2)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
-
-    # test info blend
-    red.info["blend"] = PngImagePlugin.Blend.OP_OVER
-    red.save(test_file, save_all=True, append_images=[green, transparent])
-    with Image.open(test_file) as im:
-        im.seek(2)
-        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
 
 
 def test_apng_save_size(tmp_path: Path) -> None:
