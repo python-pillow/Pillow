@@ -370,7 +370,7 @@ class TestImagingPaste:
         im = Image.new("1", (1, 1))
         im.paste(1, box)
 
-        with pytest.raises(ValueError, match="images do not match"):
+        with pytest.raises(ValueError, match="box must match image size"):
             im.paste(im.copy(), box)
 
     def test_incorrect_abbreviated_form(self) -> None:
