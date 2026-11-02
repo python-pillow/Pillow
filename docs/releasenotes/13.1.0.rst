@@ -59,6 +59,9 @@ use, now copy an image before writing to it if its memory is read-only, as
 memory-mapped image files, or modify the buffer behind an image created by
 :py:func:`~PIL.Image.frombuffer` or :py:func:`~PIL.Image.fromarrow`.
 
+As a further safeguard, the C decoder and ImageCms transform layers now raise a
+:py:exc:`ValueError` if asked to write into a read-only image directly.
+
 Saving TIFF images with libtiff geometry tags
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
