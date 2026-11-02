@@ -497,11 +497,10 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
     def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         bitcount, masks = self.args
 
-        data = bytearray()
         bytecount = bitcount // 8
         if not bytecount:
-            self.set_as_raw(data)
-            return -1, 0
+            msg = f"Unsupported bitcount {bitcount}"
+            raise OSError(msg)
 
         # Some masks will be padded with zeros, e.g. R 0b11 G 0b1100
         # Calculate how many zeros each mask is padded with
@@ -518,17 +517,8 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
 
         assert self.fd is not None
         pixel_count = self.state.xsize * self.state.ysize
-
-        src = bytearray()
-        needed = pixel_count * bytecount
-        while len(src) < needed:
-            chunk = self.fd.read(min(needed - len(src), ImageFile.SAFEBLOCK))
-            if not chunk:
-                break
-            src += chunk
-        pixel_count = len(src) // bytecount
         src_length = pixel_count * bytecount
-        del src[src_length:]
+        src = ImageFile._safe_read(self.fd, src_length)
 
         nmasks = len(masks)
         data = bytearray(pixel_count * nmasks)
