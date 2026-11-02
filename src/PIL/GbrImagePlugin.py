@@ -85,7 +85,7 @@ class GbrImageFile(ImageFile.ImageFile):
         # Calculate required pixel data byte size for validation only
         bands = Image.getmodebands(self._mode)
         required_size = width * height * bands
-    
+
         # Match C decoder overflow guard in _setimage:
         # state->xsize > INT_MAX / bits - 7
         bits = 8 if self._mode == "L" else 32
@@ -107,7 +107,6 @@ class GbrImageFile(ImageFile.ImageFile):
             if total_len - pos < required_size:
                 msg = "not enough image data"
                 raise ValueError(msg)
-    
     def load(self) -> Image.core.PixelAccess | None:
         if self._im is None:
             assert self.fp is not None
