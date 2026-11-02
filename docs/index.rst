@@ -5,7 +5,7 @@ Pillow is the friendly PIL fork by `Jeffrey 'Alex' Clark and contributors <https
 
 Pillow for enterprise is available via the Tidelift Subscription. `Learn more <https://tidelift.com/lifter/search/pypi/pillow>`_.
 
-.. image:: https://readthedocs.org/projects/pillow/badge/?version=latest
+.. image:: https://app.readthedocs.org/projects/pillow/badge/?version=latest
    :target: https://pillow.readthedocs.io/?badge=latest
    :alt: Documentation Status
 

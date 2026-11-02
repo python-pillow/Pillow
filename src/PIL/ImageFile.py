@@ -113,8 +113,7 @@ def _get_fp_length(fp: IO[bytes]) -> int:
 
 
 def _tilesort(t: _Tile) -> int:
-    # sort on offset
-    return t[2]
+    return t.offset
 
 
 class _Tile(NamedTuple):
@@ -437,7 +436,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                                     )
                                     raise OSError(msg)
 
-                            b = b + s
+                            b += s
                             n, err_code = decoder.decode(b)
                             if n < 0:
                                 break

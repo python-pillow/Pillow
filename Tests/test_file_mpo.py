@@ -374,6 +374,16 @@ def test_save_all() -> None:
     assert "mp" not in jpg.info
 
 
+def test_save_all_cmyk() -> None:
+    first = Image.new("CMYK", (1, 1))
+    second = Image.new("CMYK", (1, 1), (255, 255, 255, 255))
+    im_reloaded = roundtrip(first, save_all=True, append_images=[second])
+    assert_image_equal(first, im_reloaded)
+
+    im_reloaded.seek(1)
+    assert_image_equal(second, im_reloaded)
+
+
 def test_save_xmp() -> None:
     im = Image.new("RGB", (1, 1))
     im2 = Image.new("RGB", (1, 1), "#f00")
