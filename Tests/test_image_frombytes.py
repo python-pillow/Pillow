@@ -32,6 +32,17 @@ def test_readonly_buffer() -> None:
     assert data == bytes(4)
 
 
+def test_decoder_readonly() -> None:
+    data = bytes(4)
+    im = Image.frombuffer("L", (2, 2), data, "raw", "L", 0, 1)
+    assert im.readonly
+
+    decoder = Image._getdecoder("L", "raw", ("L",))
+    with pytest.raises(ValueError, match="image is readonly"):
+        decoder.setimage(im.im, (0, 0, 2, 2))
+    assert data == bytes(4)
+
+
 def test_readonly_file() -> None:
     with Image.open("Tests/images/hopper_8bit.pgm") as im:
         im.load()
