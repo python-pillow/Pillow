@@ -304,9 +304,11 @@ int main(int argc, char* argv[])
         if (config == NULL) {{
             return 1;
         }}
-        if (PyInitConfig_SetStr(config, "home", "{home}") < 0 ||
+        if (
+            PyInitConfig_SetStr(config, "home", "{home}") < 0 ||
             PyInitConfig_SetStr(config, "program_name", "{executable}") < 0 ||
-            Py_InitializeFromInitConfig(config) < 0) {{
+            Py_InitializeFromInitConfig(config) < 0
+        ) {{
             const char *error;
             PyInitConfig_GetError(config, &error);
             fprintf(stderr, "%s\\n", error);
