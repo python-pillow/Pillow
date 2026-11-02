@@ -1929,11 +1929,13 @@ class Image:
 
             source = ImageColor.getcolor(im, self.mode)
         elif isinstance(im, Image):
-            im.load()
-            if self.mode != im.mode:
-                if self.mode != "RGB" or im.mode not in ("LA", "RGBA", "RGBa"):
-                    # should use an adapter for this!
-                    im = im.convert(self.mode)
+            if self.mode != im.mode and (
+                self.mode != "RGB" or im.mode not in {"LA", "RGBA", "RGBa"}
+            ):
+                # should use an adapter for this!
+                im = im.convert(self.mode)
+            else:
+                im.load()
             source = im.im
         else:
             source = im
