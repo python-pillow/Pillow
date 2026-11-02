@@ -1044,8 +1044,12 @@ _convert_impl(ImagingObject *self, PyObject *args) {
 
     const ModeID mode = findModeID(mode_name);
 
-    return PyImagingNew(ImagingConvert(
-        self->image, mode, paletteimage ? paletteimage->image->palette : NULL, dither
+    return PyImagingNew(ImagingConvertUsingAllocator(
+        self->image,
+        mode,
+        paletteimage ? paletteimage->image->palette : NULL,
+        dither,
+        ImagingNewDirty
     ));
 }
 
@@ -1067,7 +1071,9 @@ _convert_block(ImagingObject *self, PyObject *args) {
     }
 
     Py_BEGIN_CRITICAL_SECTION(self);
-    result = ImagingConvertBlock(self->image, findModeID(mode_name));
+    result = ImagingConvertUsingAllocator(
+        self->image, findModeID(mode_name), NULL, IMAGING_DITHER_NONE, ImagingNewBlock
+    );
     Py_END_CRITICAL_SECTION();
 
     return PyImagingNew(result);

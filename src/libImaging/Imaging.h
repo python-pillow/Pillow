@@ -202,6 +202,8 @@ ImagingDelete(Imaging im);
 extern Imaging
 ImagingNewBlock(ModeID mode, int xsize, int ysize);
 
+typedef Imaging (*ImagingAllocator)(ModeID mode, int xsize, int ysize);
+
 extern Imaging
 ImagingNewArrow(
     const ModeID mode,
@@ -321,11 +323,13 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha);
 extern Imaging
 ImagingCopy(Imaging im);
 extern Imaging
-ImagingConvert(
-    Imaging imIn, ModeID mode, ImagingPalette palette, ImagingDitherType dither
+ImagingConvertUsingAllocator(
+    Imaging imIn,
+    ModeID mode,
+    ImagingPalette palette,
+    ImagingDitherType dither,
+    ImagingAllocator new_image
 );
-extern Imaging
-ImagingConvertBlock(Imaging imIn, ModeID mode);
 extern Imaging
 ImagingConvertMatrix(Imaging im, ModeID mode, const float m[12]);
 extern Imaging

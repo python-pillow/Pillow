@@ -1089,8 +1089,6 @@ pa2ycbcr(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     ImagingConvertRGB2YCbCr(out, out, xsize);
 }
 
-typedef Imaging (*ImagingAllocator)(ModeID mode, int xsize, int ysize);
-
 /**
  * Map P or PA image to another mode.
  *
@@ -1628,8 +1626,25 @@ static struct {
 #endif
 };
 
-static Imaging
-_convert_using_allocator(
+/**
+ * Convert imIn to `mode`, returning a new image.
+ * If imIn is already in `mode`, this returns a copy.
+ *
+ * @param imIn    Source image to convert.
+ * @param mode    Target mode.
+ * @param palette Target palette for conversions to "P" or "PA";
+ *                NULL to use a default palette.
+ * @param dither  Dither method when converting to "P", "PA" or "1".
+ *                Currently, for historical PIL reasons,
+ *                any value other than IMAGING_DITHER_NONE uses Floyd-Steinberg
+ *                dithering.
+ * @param new_image Allocator used to create the output image,
+ *                e.g. ImagingNewDirty or ImagingNewBlock.
+ * @return        A new image owned by the caller,
+ *                or NULL with a Python exception set on failure.
+ */
+Imaging
+ImagingConvertUsingAllocator(
     Imaging imIn,
     ModeID mode,
     ImagingPalette palette,
@@ -1709,44 +1724,6 @@ _convert_using_allocator(
     ImagingSectionLeave(&cookie);
 
     return imOut;
-}
-
-/**
- * Convert imIn to `mode`, returning a new image.
- * If imIn is already in `mode`, this returns a copy.
- *
- * @param imIn    Source image to convert.
- * @param mode    Target mode.
- * @param palette Target palette for conversions to "P" or "PA";
- *                NULL to use a default palette.
- * @param dither  Dither method when converting to "P", "PA" or "1".
- *                Currently, for historical PIL reasons,
- *                any value other than IMAGING_DITHER_NONE uses Floyd-Steinberg
- *                dithering.
- * @return        A new image owned by the caller,
- *                or NULL with a Python exception set on failure.
- */
-Imaging
-ImagingConvert(
-    Imaging imIn, ModeID mode, ImagingPalette palette, ImagingDitherType dither
-) {
-    return _convert_using_allocator(imIn, mode, palette, dither, ImagingNewDirty);
-}
-
-/**
- * Like ImagingConvert (without palette or dithering),
- * but the new image is always allocated as a single contiguous block.
- *
- * @param imIn    Source image to convert.
- * @param mode    Target mode.
- * @return        A new image owned by the caller,
- *                or NULL with a Python exception set on failure.
- */
-Imaging
-ImagingConvertBlock(Imaging imIn, ModeID mode) {
-    return _convert_using_allocator(
-        imIn, mode, NULL, IMAGING_DITHER_NONE, ImagingNewBlock
-    );
 }
 
 Imaging
