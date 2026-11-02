@@ -475,21 +475,6 @@ def test_too_many_entries() -> None:
 def test_photometric_interpretation_multiple_values() -> None:
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
 
-    # A PhotometricInterpretation tag with two values
-    tag_count = struct.pack("<H", 1)
-    tag = struct.pack(
-        "<HHL2H", TiffImagePlugin.PHOTOMETRIC_INTERPRETATION, TiffTags.SHORT, 2, 1, 2
-    )
-    next_offset = struct.pack("<L", 0)
-
-    ifd.load(io.BytesIO(tag_count + tag + next_offset))
-    assert TiffImagePlugin.PHOTOMETRIC_INTERPRETATION not in ifd
-    assert dict(ifd) == {}
-
-
-def test_photometric_interpretation_multiple_values_duplicate() -> None:
-    ifd = TiffImagePlugin.ImageFileDirectory_v2()
-
     # A PhotometricInterpretation tag with two values,
     # followed by a duplicate PhotometricInterpretation tag with one value
     tag_count = struct.pack("<H", 2)
@@ -501,6 +486,10 @@ def test_photometric_interpretation_multiple_values_duplicate() -> None:
     next_offset = struct.pack("<L", 0)
 
     ifd.load(io.BytesIO(tag_count + tags + next_offset))
+    assert TiffImagePlugin.PHOTOMETRIC_INTERPRETATION not in ifd
+
+    # Test setting the tag on the IFD directly
+    ifd[TiffImagePlugin.PHOTOMETRIC_INTERPRETATION] = (1, 2)
     assert TiffImagePlugin.PHOTOMETRIC_INTERPRETATION not in ifd
 
 

@@ -769,7 +769,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 (dest[tag],) = values
             except ValueError:
                 # We've got a builtin tag with 1 expected entry
-                if tag != PHOTOMETRIC_INTERPRETATION:
+                if tag != PHOTOMETRIC_INTERPRETATION and self.group is None:
                     warnings.warn(
                         f"Metadata Warning, tag {tag} had too many entries: "
                         f"{len(values)}, expected 1"
