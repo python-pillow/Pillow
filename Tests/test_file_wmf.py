@@ -40,20 +40,33 @@ def test_load() -> None:
             assert px[0, 0] == (255, 255, 255)
 
 
-def test_load_zero_inch() -> None:
+def test_zero_wmf() -> None:
     b = BytesIO(b"\xd7\xcd\xc6\x9a\x00\x00" + b"\x00" * 10)
     with pytest.raises(ValueError):
-        with Image.open(b):
-            pass
+        Image.open(b)
 
 
-def test_load_unsupported_wmf() -> None:
+@pytest.mark.parametrize("dimension", ("width", "height"))
+def test_zero_emf(dimension: str) -> None:
+    with open("Tests/images/drawing.emf", "rb") as fp:
+        data = bytearray(fp.read())
+
+    # Make the frame's right (or bottom) edge equal its left (or top) edge
+    offset = 24 if dimension == "width" else 28
+    data[offset + 8 : offset + 12] = data[offset : offset + 4]
+
+    b = BytesIO(data)
+    with pytest.raises(ValueError, match="Invalid frame"):
+        Image.open(b)
+
+
+def test_unsupported_wmf() -> None:
     b = BytesIO(b"\xd7\xcd\xc6\x9a\x00\x00" + b"\x01" * 10)
     with pytest.raises(SyntaxError, match="Unsupported WMF file format"):
         WmfImagePlugin.WmfStubImageFile(b)
 
 
-def test_load_unsupported() -> None:
+def test_unsupported() -> None:
     b = BytesIO(b"\x01\x00\x00\x00")
     with pytest.raises(SyntaxError, match="Unsupported file format"):
         WmfImagePlugin.WmfStubImageFile(b)
