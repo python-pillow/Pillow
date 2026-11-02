@@ -107,6 +107,7 @@ class GbrImageFile(ImageFile.ImageFile):
             if total_len - pos < required_size:
                 msg = "not enough image data"
                 raise ValueError(msg)
+
     def load(self) -> Image.core.PixelAccess | None:
         if self._im is None:
             assert self.fp is not None
