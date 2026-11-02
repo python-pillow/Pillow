@@ -10,3 +10,4 @@ Internal reference
   internal_modules
   c_extension_debugging
   arrow_support
+  multiband_design
