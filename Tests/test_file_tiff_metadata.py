@@ -472,6 +472,27 @@ def test_too_many_entries() -> None:
         assert ifd[277] == 4
 
 
+def test_photometric_interpretation_multiple_values() -> None:
+    ifd = TiffImagePlugin.ImageFileDirectory_v2()
+
+    # A PhotometricInterpretation tag with two values,
+    # followed by a duplicate PhotometricInterpretation tag with one value
+    tag_count = struct.pack("<H", 2)
+    tags = struct.pack(
+        "<HHL2H", TiffImagePlugin.PHOTOMETRIC_INTERPRETATION, TiffTags.SHORT, 2, 1, 2
+    ) + struct.pack(
+        "<HHL2H", TiffImagePlugin.PHOTOMETRIC_INTERPRETATION, TiffTags.SHORT, 1, 1, 0
+    )
+    next_offset = struct.pack("<L", 0)
+
+    ifd.load(io.BytesIO(tag_count + tags + next_offset))
+    assert TiffImagePlugin.PHOTOMETRIC_INTERPRETATION not in ifd
+
+    # Test setting the tag on the IFD directly
+    ifd[TiffImagePlugin.PHOTOMETRIC_INTERPRETATION] = (1, 2)
+    assert TiffImagePlugin.PHOTOMETRIC_INTERPRETATION not in ifd
+
+
 def test_tag_offset() -> None:
     ifd = TiffImagePlugin.ImageFileDirectory_v2(b"II\x2b\x00" + b"\x00" * 12)
 
