@@ -82,10 +82,6 @@ class GbrImageFile(ImageFile.ImageFile):
         # Image might not be small
         Image._decompression_bomb_check(self.size)
 
-        # Calculate required pixel data byte size for validation only
-        bands = Image.getmodebands(self._mode)
-        required_size = width * height * bands
-
         # Match C decoder overflow guard in _setimage:
         # state->xsize > INT_MAX / bits - 7
         bits = 8 if self._mode == "L" else 32
