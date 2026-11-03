@@ -276,7 +276,7 @@ ArrowSchema._fields_ = [
     ("flags", ctypes.c_int64),
     ("n_children", ctypes.c_int64),
     ("children", ctypes.POINTER(ctypes.POINTER(ArrowSchema))),
-    ("dictionary", ctypes.c_void_p),
+    ("dictionary", ctypes.POINTER(ArrowSchema)),
     ("release", ctypes.c_void_p),
     ("private_data", ctypes.c_void_p),
 ]
@@ -294,7 +294,7 @@ ArrowArray._fields_ = [
     ("n_children", ctypes.c_int64),
     ("buffers", ctypes.POINTER(ctypes.c_void_p)),
     ("children", ctypes.POINTER(ctypes.POINTER(ArrowArray))),
-    ("dictionary", ctypes.c_void_p),
+    ("dictionary", ctypes.POINTER(ArrowArray)),
     ("release", ctypes.c_void_p),
     ("private_data", ctypes.c_void_p),
 ]
