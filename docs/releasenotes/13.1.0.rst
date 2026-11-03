@@ -45,9 +45,9 @@ API additions
 Encoder optimal buffer size
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Encoders now have an ``optimal_bufsize`` property: the buffer size needed to
-encode the whole tile in a single ``encode()`` call, or 0 if that is not known
-in advance. :py:class:`~PIL.ImageFile.PyEncoder` subclasses can override it.
+Encoders now have an ``optimal_bufsize`` property: the buffer size needed to encode
+the whole tile in a single ``encode()`` call. If the size is not known in advance, it
+is set to 0. :py:class:`~PIL.ImageFile.PyEncoder` subclasses can override it.
 
 Other changes
 =============
@@ -125,9 +125,9 @@ that encodes the whole image in a single call (see "Encoder optimal buffer size"
 in API additions), so no copy of the result is made.
 
 Encoders that cannot know their output size in advance, such as the compressed
-encoders, are unaffected and keep using :py:data:`~PIL.ImageFile.MAXBLOCK`;
-for many applications, it may be beneficial to adjust that value for improved
-performance and reduced peak memory use.
+encoders, are unaffected; for many applications, it may be beneficial to increase
+:py:data:`~PIL.ImageFile.MAXBLOCK` for improved performance and reduced peak memory
+use.
 
 This also reduces peak memory use in other operations in Pillow that use this
 path for encoding, including but not limited to:

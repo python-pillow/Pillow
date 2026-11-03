@@ -935,7 +935,7 @@ class PyEncoder(PyCodec):
     def optimal_bufsize(self) -> int:
         """
         The buffer size that would encode the whole tile in a single
-        :meth:`encode` call, or 0 if that is not known in advance.
+        :meth:`encode` call. If not known in advance, return 0.
         """
         return 0
 
