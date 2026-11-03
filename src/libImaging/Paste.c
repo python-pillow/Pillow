@@ -411,7 +411,7 @@ fill(
 static inline void
 fill_mask_1(
     Imaging imOut,
-    const void *ink_,
+    const UINT8 *ink,
     Imaging imMask,
     int dx,
     int dy,
@@ -424,25 +424,28 @@ fill_mask_1(
     /* fill with mode "1" mask */
 
     int x, y;
-    UINT8 ink8 = 0;
-    INT32 ink32 = 0L;
-
-    memcpy(&ink32, ink_, pixelsize);
-    memcpy(&ink8, ink_, sizeof(ink8));
 
     if (imOut->image8) {
+        int i16 = imOut->type == IMAGING_TYPE_I16;
         for (y = 0; y < ysize; y++) {
             UINT8 *out = imOut->image8[y + dy] + dx;
+            if (i16) {
+                out += dx;
+            }
             UINT8 *mask = imMask->image8[y + sy] + sx;
             for (x = 0; x < xsize; x++) {
                 if (*mask++) {
-                    *out = ink8;
+                    out[0] = ink[0];
+                    if (i16) {
+                        out[1] = ink[1];
+                    }
                 }
-                out++;
+                out += pixelsize;
             }
         }
-
     } else {
+        INT32 ink32 = 0L;
+        memcpy(&ink32, ink, pixelsize);
         for (y = 0; y < ysize; y++) {
             INT32 *out = imOut->image32[y + dy] + dx;
             UINT8 *mask = imMask->image8[y + sy] + sx;

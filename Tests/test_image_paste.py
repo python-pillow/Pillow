@@ -318,6 +318,19 @@ class TestImagingPaste:
             ],
         )
 
+    def test_color_mask_1_I16(self) -> None:
+        im = Image.new("I;16", (200, 200), 50)
+        color = 10
+
+        self.assert_9points_paste(
+            im,
+            (color,),
+            self.mask_1,
+            [
+                50, 50, 10, 50, 50, 10, 10, 10, 50
+            ],
+        )
+
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
     def test_color_mask_L(self, mode: str) -> None:
         im = getattr(self, "gradient_" + mode).copy()
