@@ -1,7 +1,7 @@
 {
   "brotli": "1.2.1",
   "bzip2": "1.0.8",
-  "freetype": "2-15-0",
+  "freetype": "2.15.0",
   "fribidi": "1.0.17",
   "harfbuzz": "14.5.0",
   "jpegturbo": "3.2.0",
