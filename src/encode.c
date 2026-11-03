@@ -341,9 +341,12 @@ static struct PyMethodDef methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-/* The buffer size that would let this encoder consume the whole tile in a
-   single call, or 0 if that size cannot be known up front (basically all
-   non-raw formats). Only meaningful once setimage() has been called. */
+// The buffer size that would let this encoder consume the whole tile in a
+// single call. If it is not known in advance, as is the case for most
+// encoders apart from "raw", this is set to 0.
+//
+// Most image formats have varying sizes, so this will only return useful
+// information once setimage() has been called.
 static PyObject *
 _get_optimal_bufsize(ImagingEncoderObject *encoder, void *closure) {
     Py_ssize_t bufsize = 0;
@@ -528,9 +531,10 @@ _raw_optimal_bufsize(ImagingCodecState state) {
     // The larger is the row size.
     Py_ssize_t row = MAX(state->bytes, state->count);
     Py_ssize_t bufsize = row * state->ysize;
-    // Cap the size to the whole number of rows that fits an `int`.
-    // If encoders' buffer sizes become `ssize_t`, like #3791,
-    // then this will need to be updated
+
+    // Cap the size to the whole number of rows that fits in an `int`.
+    // If encoders' buffer sizes become `ssize_t`,
+    // like decoder buffer sizes did in #3791, then this will need to be updated
     if (bufsize > INT_MAX) {
         bufsize = INT_MAX - (INT_MAX % row);
     }
@@ -541,17 +545,18 @@ _raw_optimal_bufsize(ImagingCodecState state) {
  * Instantiate a raw, uncompressed encoder.
  *
  * Python arguments:
- * - mode (str): The mode name for finding a pixel packer.
- * - rawmode (str): The rawmode name for finding a pixel packer.
+ * - mode_name (str): The mode name for finding a pixel packer.
+ * - rawmode_name (str): The rawmode name for finding a pixel packer.
  * - stride (int, optional): The number of bytes each row occupies in the output stream,
  *                           >= the packed pixel size. Each row is explicitly
  *                           zero-padded to this size. If unset, the true packed size
  *                           is used.
  * - ystep (int, optional): Specifies the orientation. If set to a negative value, the
  *                          encoder will write rows in reverse order (upside-down).
+ #
  * @param self Unused.
  * @param args Python arguments, see above.
- * @return A Python object representing an encoder.
+ * @return A Python object representing the encoder.
  */
 PyObject *
 PyImaging_RawEncoderNew(PyObject *self, PyObject *args) {
