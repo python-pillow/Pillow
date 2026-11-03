@@ -141,6 +141,34 @@ def test_rankfilter(
     assert (minimum, med, maximum) == expected
 
 
+@pytest.mark.parametrize("size", (1, 3, 5, 9, 25))
+def test_rankfilter_l_matches_reference(size: int) -> None:
+    # Compare the 8-bit fast path against a brute-force rank on edge-padded windows
+    xsize, ysize = 23, 17
+    data = [
+        (x * 37 + y * 101 + (x * y) % 13) % 256
+        for y in range(ysize)
+        for x in range(xsize)
+    ]
+    im = Image.new("L", (xsize, ysize))
+    im.putdata(data)
+    margin = size // 2
+
+    for rank in {0, size * size // 2, size * size - 1}:
+        result = im.filter(ImageFilter.RankFilter(size, rank))
+        for y in range(ysize):
+            for x in range(xsize):
+                window = sorted(
+                    data[
+                        min(max(y + j, 0), ysize - 1) * xsize
+                        + min(max(x + i, 0), xsize - 1)
+                    ]
+                    for j in range(-margin, margin + 1)
+                    for i in range(-margin, margin + 1)
+                )
+                assert result.getpixel((x, y)) == window[rank]
+
+
 @pytest.mark.parametrize(
     "filter", (ImageFilter.MinFilter, ImageFilter.MedianFilter, ImageFilter.MaxFilter)
 )

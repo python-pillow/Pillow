@@ -14,6 +14,57 @@
 
 #include "Imaging.h"
 
+/* Sliding histogram rank filter for 8-bit images (Huang, 1979).
+   Moving the window one pixel to the right removes one column and adds
+   another, so each step costs O(size) instead of the O(size^2) needed to
+   copy and select the whole window. "below" counts the window samples
+   less than v, the current output value, which moves only a little
+   between neighbouring pixels. */
+static void
+RankUINT8(Imaging imOut, Imaging im, int size, int rank) {
+    int x, y, i, v, below;
+    int hist[256];
+
+    if (imOut->xsize <= 0) {
+        return;
+    }
+
+    for (y = 0; y < imOut->ysize; y++) {
+        UINT8 *out = imOut->image8[y];
+        UINT8 **in = &im->image8[y];
+
+        memset(hist, 0, sizeof(hist));
+        for (i = 0; i < size; i++) {
+            for (x = 0; x < size; x++) {
+                hist[in[i][x]]++;
+            }
+        }
+        v = 0;
+        below = 0;
+        while (below + hist[v] <= rank) {
+            below += hist[v++];
+        }
+        out[0] = (UINT8)v;
+
+        for (x = 1; x < imOut->xsize; x++) {
+            for (i = 0; i < size; i++) {
+                UINT8 a = in[i][x - 1];
+                UINT8 b = in[i][x + size - 1];
+                hist[a]--;
+                hist[b]++;
+                below += (b < v) - (a < v);
+            }
+            while (below > rank) {
+                below -= hist[--v];
+            }
+            while (below + hist[v] <= rank) {
+                below += hist[v++];
+            }
+            out[x] = (UINT8)v;
+        }
+    }
+}
+
 /* Fast rank algorithm (due to Wirth), based on public domain code
    by Nicolas Devillard, available at http://ndevilla.free.fr */
 
@@ -57,7 +108,7 @@
         return a[k];                                 \
     }
 
-MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
+MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
 
     Imaging ImagingRankFilter(Imaging im, int size, int rank) {
     Imaging imOut = NULL;
@@ -116,7 +167,9 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
     } while (0)
 
     if (im->image8) {
-        RANK_BODY(UINT8);
+        ImagingSectionEnter(&cookie);
+        RankUINT8(imOut, im, size, rank);
+        ImagingSectionLeave(&cookie);
     } else if (im->type == IMAGING_TYPE_INT32) {
         RANK_BODY(INT32);
     } else if (im->type == IMAGING_TYPE_FLOAT32) {
