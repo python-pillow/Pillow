@@ -74,6 +74,14 @@ Many of Pillow's features require external libraries:
   * libraqm provides bidirectional text support (using FriBiDi),
     shaping (using HarfBuzz), and proper script itemization. As a
     result, Raqm can support most writing systems covered by Unicode.
+  * Because Raqm already shapes and reorders text, do not pass it
+    text that has been pre-processed with ``arabic_reshaper`` and
+    ``python-bidi``. That recipe is only needed on builds without
+    Raqm; on a Raqm build the text is processed twice and renders
+    incorrectly, and reshaping also rewrites the string itself,
+    merging lam-alef into a single presentation form and dropping
+    diacritics. Only apply the recipe when Raqm is not available,
+    for example by checking ``features.check("raqm")`` first.
   * libraqm depends on the following libraries: FreeType, HarfBuzz,
     FriBiDi, make sure that you install them before installing libraqm
     if not available as package in your system.
