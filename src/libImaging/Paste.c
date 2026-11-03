@@ -143,12 +143,27 @@ paste_mask_L(
 
     PREPARE_PASTE_LOOP();
     if (imOut->image8) {
+        int in_i16 = imIn->type == IMAGING_TYPE_I16;
+        int out_i16 = imOut->type == IMAGING_TYPE_I16;
         for (; y != y_end; y += offset) {
             UINT8 *out = imOut->image8[y + dy] + dx;
+            if (out_i16) {
+                out += dx;
+            }
             UINT8 *in = imIn->image8[y + sy] + sx;
+            if (in_i16) {
+                in += sx;
+            }
             UINT8 *mask = imMask->image8[y + sy] + sx;
             for (x = 0; x < xsize; x++) {
                 *out = BLEND(*mask, *out, *in, tmp1);
+                if (in_i16) {
+                    in++;
+                }
+                if (out_i16) {
+                    out++;
+                    *out = BLEND(*mask, *out, *in, tmp1);
+                }
                 out++, in++, mask++;
             }
         }

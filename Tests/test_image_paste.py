@@ -13,7 +13,7 @@ class TestImagingPaste:
     size = 128
 
     def assert_9points_image(
-        self, im: Image.Image, expected: list[tuple[int, int, int, int]]
+        self, im: Image.Image, expected: list[tuple[int, int, int, int]] | list[int]
     ) -> None:
         px = im.load()
         assert px is not None
@@ -28,16 +28,27 @@ class TestImagingPaste:
             px[self.size // 2, self.size - 1],
             px[self.size - 1, self.size - 1],
         ]
-        assert actual == [
-            point[0] if im.mode == "L" else point[: len(im.mode)] for point in expected
-        ]
+        if im.mode == "L":
+            points_l = []
+            for point in expected:
+                assert isinstance(point, tuple)
+                points_l.append(point[0])
+            assert actual == points_l
+        elif im.mode == "I;16":
+            assert actual == expected
+        else:
+            points = []
+            for point in expected:
+                assert isinstance(point, tuple)
+                points.append(point[: len(im.mode)])
+            assert actual == points
 
     def assert_9points_paste(
         self,
         im: Image.Image,
         im2: Image.Image | str | tuple[int, ...],
         mask: Image.Image,
-        expected: list[tuple[int, int, int, int]],
+        expected: list[tuple[int, int, int, int]] | list[int],
     ) -> None:
         im3 = im.copy()
         im3.paste(im2, (0, 0), mask)
@@ -182,6 +193,27 @@ class TestImagingPaste:
                 (128, 1, 128, 254),
                 (207, 113, 112, 207),
                 (255, 191, 128, 191),
+            ],
+        )
+
+    def test_image_mask_L_I16(self) -> None:
+        im = Image.new("I;16", (200, 200), "white")
+        im2 = self.gradient_L.convert("I;16")
+
+        self.assert_9points_paste(
+            im,
+            im2,
+            self.mask_L,
+            [
+                128,
+                208,
+                255,
+                112,
+                192,
+                239,
+                128,
+                207,
+                255,
             ],
         )
 
