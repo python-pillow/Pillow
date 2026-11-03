@@ -283,18 +283,14 @@ class TestImagingPaste:
             ],
         )
 
-    @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
+    @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L", "I;16"])
     def test_color_solid(self, mode: str) -> None:
         im = Image.new(mode, (200, 200), "black")
 
         rect = (12, 23, 128 + 12, 128 + 23)
         im.paste("white", rect)
 
-        hist = im.crop(rect).histogram()
-        while hist:
-            head, hist = hist[:256], hist[256:]
-            assert head[255] == 128 * 128
-            assert sum(head[:255]) == 0
+        assert_image_equal(im.crop(rect), Image.new(mode, (128, 128), "white"))
 
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
     def test_color_mask_1(self, mode: str) -> None:
@@ -326,9 +322,7 @@ class TestImagingPaste:
             im,
             (color,),
             self.mask_1,
-            [
-                50, 50, 10, 50, 50, 10, 10, 10, 50
-            ],
+            [50, 50, 10, 50, 50, 10, 10, 10, 50],
         )
 
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
