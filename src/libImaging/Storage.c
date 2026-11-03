@@ -36,6 +36,8 @@
 
 #include "Imaging.h"
 #include <string.h>
+#include <limits.h>
+#include <stdint.h>
 
 /* --------------------------------------------------------------------
  * Standard image object.
