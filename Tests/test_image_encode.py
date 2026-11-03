@@ -9,22 +9,19 @@ if TYPE_CHECKING:
     from typing import Any
 
 
-@pytest.mark.parametrize(
-    "mode",
-    ("1", "L", "P", "LA", "I", "F", "I;16", "RGB", "RGBA", "CMYK"),
-)
+@pytest.mark.parametrize("mode", Image.MODES)
 def test_raw_encoder_optimal_bufsize(mode: str) -> None:
     # Test the raw encoder does know the exact buffer size.
     im = Image.new(mode, (300, 200))
     encoder = Image._getencoder(mode, "raw", mode)
-    encoder.setimage(im.im, (0, 0) + im.size)
+    encoder.setimage(im.im)
     assert encoder.optimal_bufsize == len(im.tobytes())
 
 
 def test_raw_encoder_optimal_bufsize_stride() -> None:
     im = Image.new("RGB", (100, 50))
     encoder = Image._getencoder("RGB", "raw", ("RGB", 400))
-    encoder.setimage(im.im, (0, 0) + im.size)
+    encoder.setimage(im.im)
     assert encoder.optimal_bufsize == 400 * 50
     encoder.encode(400)  # The encoder's internals change here
     # ... but the result for this should remain the same.
@@ -40,7 +37,7 @@ def test_encoder_optimal_bufsize_unknown() -> None:
 
     # nor for encoders whose output size depends on the pixel data
     encoder = Image._getencoder("1", "xbm", "1")
-    encoder.setimage(im.im, (0, 0) + im.size)
+    encoder.setimage(im.im)
     assert encoder.optimal_bufsize == 0
 
 
@@ -85,7 +82,6 @@ def test_tobytes_exact_buffer_and_single_pass(
     )
 
     im = Image.new(mode, size)
-    n_bands = len(im.getbands())
-    expected_size = size[0] * size[1] * n_bands
+    expected_size = size[0] * size[1] * Image.getmodebands(mode)
     assert len(im.tobytes()) == expected_size
     assert bufsizes == [expected_size]
