@@ -406,7 +406,7 @@ ImagingDestroyArray(Imaging im) {
 
     if (im->blocks) {
         MUTEX_LOCK(&ImagingDefaultArena.mutex);
-        while (im->blocks[y].ptr) {
+        while (y < im->blocks_count && im->blocks[y].ptr) {
             memory_return_block(&ImagingDefaultArena, im->blocks[y]);
             y += 1;
         }
