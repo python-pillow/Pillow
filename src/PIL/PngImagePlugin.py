@@ -1121,8 +1121,12 @@ class PngImageFile(ImageFile.ImageFile):
                         elif isinstance(t, int):
                             updated.putpalettealpha(t)
                     mask = updated.convert("RGBA")
-                self._prev_im.paste(updated, self.dispose_extent, mask)
-                self.im = self._prev_im
+                if self.dispose_op == Disposal.OP_PREVIOUS:
+                    # Keep the previous image unchanged for disposal
+                    self.im = self._prev_im.copy()
+                else:
+                    self.im = self._prev_im
+                self.im.paste(updated, self.dispose_extent, mask)
 
     def _getexif(self) -> dict[int, Any] | None:
         if "exif" not in self.info:
