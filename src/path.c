@@ -239,6 +239,10 @@ PyPath_Flatten(PyObject *data, double **pxy) {
             /* Checked access, as a subclass may report a larger __len__ */
             PyObject *op = PyTuple_GetItem(data, i);
             if (op == NULL) {
+                if (!PyErr_Occurred()) {
+                    /* PyPy returns NULL without setting an exception */
+                    PyErr_SetString(PyExc_IndexError, "tuple index out of range");
+                }
                 free(xy);
                 return -1;
             }
