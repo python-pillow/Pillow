@@ -329,7 +329,7 @@ def test_malformed(field: str, value: object) -> None:
     array = ArrowArray(length=4, n_buffers=2, buffers=buffers)
     setattr(schema if field == "format" else array, field, value)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Arrow "):
         Image.fromarrow(MalformedArrow(schema, array), "L", (2, 2))
 
 
@@ -339,5 +339,5 @@ def test_malformed_schema_child() -> None:
     schema = ArrowSchema(format=b"+w:4", n_children=1, children=children)
     array = ArrowArray(length=4)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Invalid Arrow array mode or size mismatch"):
         Image.fromarrow(MalformedArrow(schema, array), "RGBA", (2, 2))
