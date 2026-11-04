@@ -414,7 +414,7 @@ getbands(const ModeID mode) {
  * @param length The required number of items.
  * @param wrong_length Error message to emit in exception if the sequence length does
  *                     not match.
- * @param type Type specifier (one of the TYPE_* constants above)
+ * @param type Type specifier (TYPE_UINT8, TYPE_INT32, TYPE_FLOAT32 or TYPE_DOUBLE)
  *
  * @return A pointer to the allocated C array, or NULL on error. The caller is
  *         responsible for freeing the memory.
