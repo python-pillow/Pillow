@@ -104,3 +104,12 @@ Minimum C version
 
 C11 is now the minimum version of C required to compile Pillow from source.
 Pillow requires Python 3.11 or later, and CPython 3.11 and later require C11.
+
+Out-of-range color functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.ImageColor.getrgb` and :py:func:`~PIL.ImageColor.getcolor` now raise a
+:py:exc:`ValueError` when a color function has a value outside of its documented range,
+such as ``rgb(300,0,0)`` or ``hsl(0,200%,50%)``. Previously, these returned channels above
+255 or below 0, which gave the wrong gray level for L images and a less clear
+:py:exc:`ValueError` for P images, while RGB images clipped them.
