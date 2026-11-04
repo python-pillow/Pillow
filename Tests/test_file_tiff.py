@@ -8,7 +8,6 @@ import pytest
 
 from PIL import (
     Image,
-    ImageFile,
     JpegImagePlugin,
     TiffImagePlugin,
     TiffTags,
@@ -1154,11 +1153,11 @@ class TestFileTiff:
     @timeout_unless_slower_valgrind(6)
     @pytest.mark.filterwarnings("ignore:Corrupt EXIF data")
     @pytest.mark.filterwarnings("ignore:Tag data larger than file")
-    @pytest.mark.filterwarnings("ignore:Truncated File Read")
-    def test_timeout(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        with Image.open("Tests/images/timeout-6646305047838720") as im:
-            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
-            im.load()
+    def test_timeout(self) -> None:
+        # The first StripOffsets tag is empty, so its duplicates are ignored
+        with pytest.raises(UnidentifiedImageError):
+            with Image.open("Tests/images/timeout-6646305047838720"):
+                pass
 
     @pytest.mark.parametrize(
         "test_file",
