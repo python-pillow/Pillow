@@ -1087,15 +1087,13 @@ pa2ycbcr(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 }
 
 /**
- * Map palette image to L, RGB, RGBA, or CMYK.
+ * Map P or PA image to another mode.
  *
  * @param imOut The output image.
  *              Must be NULL or have the same size as imIn and the same mode as `mode`.
  * @param imIn The input palette image.
  * @param mode The desired output mode.
- * @return The converted image, or NULL on error.
- *         FIXME: there's no way of knowing if Imaging2Dirty did the the conversion
- *                or if it returned the same image. This should be fixed.
+ * @return imOut, or NULL on error.
  */
 static Imaging
 frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {

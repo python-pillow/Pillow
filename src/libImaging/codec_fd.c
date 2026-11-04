@@ -7,7 +7,7 @@
  * @param fd Python file-like object with a `read` method
  * @param dest Caller-allocated buffer to read into; must be at least `bytes` long
  * @param bytes Number of bytes to read
- * @return Number of bytes read; or -1 on error, and a Python exception set.
+ * @return Number of bytes read; or -1 on error.
  */
 Py_ssize_t
 _imaging_read_pyFd(PyObject *fd, char *dest, Py_ssize_t bytes) {

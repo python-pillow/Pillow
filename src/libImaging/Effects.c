@@ -26,7 +26,7 @@
  * @param xsize Width of the output image in pixels.
  * @param ysize Height of the output image in pixels.
  * @param extent Array of four doubles specifying the extent of the Mandelbrot set to
- *               generate: [xmin, ymin, xmax, ymax].
+ *               generate: [left, upper, right, lower].
  * @param quality Maximum number of iterations for each pixel. Must be >= 2.
  * @return A new grayscale image containing the Mandelbrot set,
  *         or NULL with a Python error set if an error occurred.

@@ -23,7 +23,7 @@
  *
  * @param im The image to analyze.
  * @param bbox An array of four integers to store the bounding box coordinates:
- *             [left, top, right, bottom].
+ *             [left, upper, right, lower].
  *             Must have been allocated as such by the caller.
  * @param alpha_only If non-zero, only consider the alpha channel for bounding box
  *                   calculation.

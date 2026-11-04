@@ -180,15 +180,14 @@ _encode_to_pyfd(ImagingEncoderObject *encoder, PyObject *args) {
 }
 
 /**
- * Encode to a file descriptor.
+ * Encode to a file handle.
  *
  * Python arguments:
- * - fh (int): The open writable binary file descriptor to write the encoded data to.
+ * - fh (int): The open writable binary file handle to write the encoded data to.
  * - bufsize (int, optional): The size of the buffer to use for encoding.
  *                            Default is 16384.
  *
- * @return The error code from the encoder after encoding.
- *         The caller must ensure this is zero; otherwise encoding had failed.
+ * @return The error code from the encoder after encoding. Zero on success.
  *         Returns NULL if an error occurred, with a Python exception set.
  */
 static PyObject *

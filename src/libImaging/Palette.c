@@ -118,7 +118,7 @@ ImagingPaletteDuplicate(ImagingPalette palette) {
  * Destroy a palette object.
  *
  * @param palette The palette to destroy; may be NULL.
- * @return Infallible. The passed-in palette pointer is invalid after this call.
+ * @return Void. The passed-in palette pointer is invalid after this call.
  */
 void
 ImagingPaletteDelete(ImagingPalette palette) {
