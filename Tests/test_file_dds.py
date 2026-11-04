@@ -551,7 +551,6 @@ def test_save_large_file(tmp_path: Path, pixel_format: str, mode: str) -> None:
 @pytest.mark.parametrize(
     "test_file",
     [
-        "Tests/images/timeout-041dd17dfde800360a47a172269df127af138c6b.dds",
         "Tests/images/timeout-755a4d204f4208e3597ac3391edebee196462bd0.dds",
         "Tests/images/timeout-52d106579505547091ef69b58341351a37c23e31.dds",
         "Tests/images/timeout-c60a3d7314213624607bfb3e38d551a8b24a7435.dds",
@@ -559,5 +558,13 @@ def test_save_large_file(tmp_path: Path, pixel_format: str, mode: str) -> None:
 )
 def test_not_enough_image_data(test_file: str) -> None:
     with Image.open(test_file) as im:
-        with pytest.raises(ValueError, match="not enough image data"):
+        with pytest.raises(OSError, match="Truncated File Read"):
+            im.load()
+
+
+def test_unsupported_bitcount_0() -> None:
+    with Image.open(
+        "Tests/images/timeout-041dd17dfde800360a47a172269df127af138c6b.dds"
+    ) as im:
+        with pytest.raises(OSError, match="Unsupported bitcount 0"):
             im.load()
