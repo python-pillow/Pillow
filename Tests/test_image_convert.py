@@ -251,6 +251,9 @@ def test_trns_RGB(tmp_path: Path) -> None:
 
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = im.getpixel((0, 0))
+
+    assert im.convert("LA").getpixel((0, 0)) == (0, 0)
+
     im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
     assert im_p.info["transparency"] == im_p.getpixel((0, 0))
     im_p.save(f)

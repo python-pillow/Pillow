@@ -475,6 +475,11 @@ rgbT2a(UINT8 *out, UINT8 *in, int xsize, int r, int g, int b, int premultiplied)
     for (int x = 0; x < xsize; x++, ref += sizeof(trns), out += sizeof(trns)) {
         UINT32 v;
         memcpy(&v, ref, sizeof(v));
+#ifdef WORDS_BIGENDIAN
+        v |= 0xff;
+#else
+        v = (0xffU << 24) | v;
+#endif
         if (v == trns) {
             memcpy(out, &repl, sizeof(repl));
         }
