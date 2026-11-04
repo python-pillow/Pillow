@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from PIL import Image, ImageChops
 
 from .helper import assert_image_equal, hopper
@@ -280,6 +282,33 @@ def test_offset() -> None:
 
         # Test no yoffset
         assert ImageChops.offset(im, xoffset) == ImageChops.offset(im, xoffset, xoffset)
+
+
+@pytest.mark.parametrize("mode", Image.MODES)
+def test_offset_modes(mode: str) -> None:
+    # Arrange
+    im = hopper(mode)
+    assert_image_equal(ImageChops.offset(im, 0, 0), im)  # check no-op
+
+    xoffset = 45
+    yoffset = 20
+
+    # Act
+    new = ImageChops.offset(im, xoffset, yoffset)
+
+    # Assert
+    w, h = im.size
+    for x in range(w):
+        for y in range(h):
+            wrapped_coord = ((x + xoffset) % w, (y + yoffset) % h)
+            assert new.getpixel(wrapped_coord) == im.getpixel((x, y))
+
+
+@pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
+def test_offset_zero_size(size: tuple[int, int]) -> None:
+    im = Image.new("RGB", size)
+
+    assert_image_equal(ImageChops.offset(im, 1, 1), im)
 
 
 def test_screen() -> None:

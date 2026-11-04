@@ -1,3 +1,14 @@
+/*
+ * FriBiDi shim: declarations for loading libfribidi at runtime.
+ *
+ * SPDX-License-Identifier: MIT-CMU
+ * Part of Pillow; see the LICENSE file in the root of the Pillow source tree.
+ *
+ * This header declares the subset of FriBiDi's public API (types, constants
+ * and function signatures, from the FriBiDi headers named in the section
+ * comments below) needed to call into libfribidi for interoperability.
+ * It contains no FriBiDi implementation code.
+ */
 
 #define FRIBIDI_MAJOR_VERSION 1
 
@@ -84,6 +95,9 @@ FRIBIDI_FUNC(FriBidiStrIndex, fribidi_charset_to_unicode,
 
 FRIBIDI_FUNC(void, fribidi_get_bidi_types,
     const FriBidiChar *, const FriBidiStrIndex, FriBidiCharType *);
+
+FRIBIDI_FUNC(FriBidiParType, fribidi_get_par_direction,
+    const FriBidiCharType *, const FriBidiStrIndex);
 
 FRIBIDI_FUNC(FriBidiLevel, fribidi_get_par_embedding_levels,
     const FriBidiCharType *, const FriBidiStrIndex, FriBidiParType *,

@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-from packaging.version import parse as parse_version
 
 from PIL import Image
 
@@ -44,12 +43,8 @@ def test_toarray() -> None:
     test_with_dtype(numpy.uint8)
 
     with Image.open("Tests/images/truncated_jpeg.jpg") as im_truncated:
-        if parse_version(numpy.__version__) >= parse_version("1.23"):
-            with pytest.raises(OSError):
-                numpy.array(im_truncated)
-        else:
-            with pytest.warns(DeprecationWarning, match="__array_interface__"):
-                numpy.array(im_truncated)
+        with pytest.raises(OSError):
+            numpy.array(im_truncated)
 
 
 def test_fromarray() -> None:
@@ -59,9 +54,6 @@ def test_fromarray() -> None:
         def __init__(self, img: Image.Image, arr_params: dict[str, Any]) -> None:
             self.img = img
             self.__array_interface__ = arr_params
-
-        def __len__(self) -> int:
-            return len(self.img.tobytes())
 
         def tobytes(self) -> bytes:
             return self.img.tobytes()
@@ -103,9 +95,6 @@ def test_fromarray_strides_without_tobytes() -> None:
         def __init__(self, arr_params: dict[str, Any]) -> None:
             self.__array_interface__ = arr_params
 
-        def __len__(self) -> int:
-            return 1
-
     with pytest.raises(ValueError):
         wrapped = Wrapper({"shape": (1, 1), "strides": (1, 1), "typestr": "|u1"})
         Image.fromarray(wrapped, "L")
@@ -118,6 +107,7 @@ def test_fromarray_palette() -> None:
 
     # Act
     out = Image.fromarray(a, "P")
+    assert out.readonly == 0
 
     # Assert that the Python and C palettes match
     assert out.palette is not None

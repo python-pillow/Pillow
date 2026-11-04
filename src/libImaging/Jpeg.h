@@ -8,7 +8,7 @@
  * Copyright (c) 1995-1996 by Fredrik Lundh
  */
 
-#include "jpeglib.h"
+#include <jpeglib.h>
 
 #include <setjmp.h>
 

@@ -3,11 +3,14 @@ from __future__ import annotations
 import array
 import math
 import struct
-from collections.abc import Sequence
 
 import pytest
 
 from PIL import Image, ImagePath
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 def test_path() -> None:
@@ -211,6 +214,11 @@ def test_overflow_segfault() -> None:
         # and segfaults
         for i in range(200000):
             x[i] = b"0" * 16
+
+
+def test_compact_empty_path() -> None:
+    p = ImagePath.Path(0)
+    assert p.compact() == 0
 
 
 def test_compact_within_map() -> None:

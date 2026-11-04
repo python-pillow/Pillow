@@ -1,0 +1,106 @@
+13.1.0
+------
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+Backwards incompatible changes
+==============================
+
+TODO
+^^^^
+
+TODO
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API additions
+=============
+
+TODO
+^^^^
+
+TODO
+
+Other changes
+=============
+
+Writing to read-only images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.frombytes` and
+:py:meth:`~PIL.ImageCms.ImageCmsTransform.apply`, which in-place ImageCms transforms
+use, now copy an image before writing to it if its memory is read-only, as
+:py:meth:`~PIL.Image.Image.paste` already does. Previously, they could crash on
+memory-mapped image files, or modify the buffer behind an image created by
+:py:func:`~PIL.Image.frombuffer` or :py:func:`~PIL.Image.fromarrow`.
+
+As a further safeguard, the C decoder and ImageCms transform layers now raise a
+:py:exc:`ValueError` if asked to write into a read-only image directly.
+
+Saving TIFF images with libtiff geometry tags
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving a TIFF image with libtiff, the ImageWidth, ImageLength,
+SamplesPerPixel and PlanarConfiguration tags are now always taken from the
+image, rather than from ``tiffinfo``, ``exif`` or the IFD of the original file.
+Previously, values that described a larger row than the image raised an
+:py:exc:`OSError`, and other values could produce an invalid file.
+
+Resizing I;16B and I;16N images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On little-endian systems, :py:meth:`~PIL.Image.Image.resize` read and wrote
+I;16B and I;16N pixel values in the wrong byte order when using a resampling
+filter other than ``Resampling.NEAREST``. This has been fixed.
+
+Blurring I;16 images
+^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageFilter.GaussianBlur` and :py:class:`~PIL.ImageFilter.BoxBlur`
+now support I;16, I;16L, I;16B and I;16N images.
+
+Respect Python build-tree configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When building against a Python build tree, Pillow now skips the extra library and
+include directory lookups based on Python's installation prefix. This avoids
+adding unprefixed installation paths in cross-compilation environments. Builds
+against an installed Python retain the existing lookups.
+
+APNG frames with previous disposal
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In Pillow 13.0.0, loading an APNG frame before seeking to the next could cause
+frames using ``Disposal.OP_PREVIOUS`` and ``Blend.OP_OVER`` to be drawn over the
+wrong image. This has been fixed.
+
+Minimum C version
+^^^^^^^^^^^^^^^^^
+
+C11 is now the minimum version of C required to compile Pillow from source.
+Pillow requires Python 3.11 or later, and CPython 3.11 and later require C11.

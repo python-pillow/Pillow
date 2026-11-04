@@ -27,6 +27,8 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {"base64", "io", "types", "warnings"}
+
 import abc
 import base64
 import os
@@ -35,24 +37,26 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from types import ModuleType
-from typing import IO, Any, BinaryIO, TypedDict, cast
+from typing import TypedDict, cast
 
 from . import Image
-from ._typing import StrOrBytesPath
 from ._util import DeferredError, is_path
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from typing import IO, Any, BinaryIO, NotRequired
+
     from . import ImageFile
     from ._imaging import ImagingFont
     from ._imagingft import Font
+    from ._typing import StrOrBytesPath
 
 
 class Axis(TypedDict):
     minimum: int | None
     default: int | None
     maximum: int | None
-    name: bytes | None
+    name: NotRequired[bytes]
 
 
 class Layout(IntEnum):
@@ -117,7 +121,7 @@ class ImageFont(BaseImageFont):
 
     font: ImagingFont
 
-    def _load_pilfont(self, filename: str) -> None:
+    def _load_pilfont(self, filename: str | os.PathLike[str]) -> None:
         with open(filename, "rb") as fp:
             image: ImageFile.ImageFile | None = None
             root = os.path.splitext(filename)[0]
@@ -299,7 +303,7 @@ class FreeTypeFont(BaseImageFont):
                 font, size, index, encoding, layout_engine=layout_engine
             )
         else:
-            load_from_bytes(cast(IO[bytes], font))
+            load_from_bytes(cast("IO[bytes]", font))
 
     def __getstate__(self) -> list[Any]:
         return [self.path, self.size, self.index, self.encoding, self.layout_engine]
@@ -691,7 +695,9 @@ class FreeTypeFont(BaseImageFont):
             size=self.size if size is None else size,
             index=self.index if index is None else index,
             encoding=self.encoding if encoding is None else encoding,
-            layout_engine=layout_engine or self.layout_engine,
+            layout_engine=(
+                layout_engine if layout_engine is not None else self.layout_engine
+            ),
         )
 
     def get_variation_names(self) -> list[bytes]:
@@ -732,7 +738,7 @@ class FreeTypeFont(BaseImageFont):
         """
         axes = self.font.getvaraxes()
         for axis in axes:
-            if axis["name"]:
+            if "name" in axis:
                 axis["name"] = axis["name"].replace(b"\x00", b"")
         return axes
 
@@ -790,7 +796,7 @@ class TransposedFont(BaseImageFont):
         return self.font.getlength(text, *args, **kwargs)
 
 
-def load(filename: str) -> ImageFont:
+def load(filename: str | os.PathLike[str]) -> ImageFont:
     """
     Load a font file. This function loads a font object from the given
     bitmap font file, and returns the corresponding font object. For loading TrueType
@@ -937,7 +943,7 @@ def truetype(
         raise
 
 
-def load_path(filename: str | bytes) -> ImageFont:
+def load_path(filename: StrOrBytesPath) -> ImageFont:
     """
     Load font file. Same as :py:func:`~PIL.ImageFont.load`, but searches for a
     bitmap font along the Python path.
@@ -946,12 +952,11 @@ def load_path(filename: str | bytes) -> ImageFont:
     :return: A font object.
     :exception OSError: If the file could not be read.
     """
-    if not isinstance(filename, str):
-        filename = filename.decode("utf-8")
+    filename = os.fsdecode(filename)
     for directory in sys.path:
         try:
             return load(os.path.join(directory, filename))
-        except OSError:  # noqa: PERF203
+        except OSError:
             pass
     msg = f'cannot find font file "{filename}" in sys.path'
     if os.path.exists(filename):

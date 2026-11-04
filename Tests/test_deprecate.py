@@ -10,13 +10,17 @@ from PIL import _deprecate
     [
         (
             14,
-            "Old thing is deprecated and will be removed in Pillow 14 "
-            r"\(2027-10-15\)\. Use new thing instead\.",
+            (
+                "Old thing is deprecated and will be removed in Pillow 14 "
+                r"\(2027-10-15\)\. Use new thing instead\."
+            ),
         ),
         (
             None,
-            r"Old thing is deprecated and will be removed in a future version\. "
-            r"Use new thing instead\.",
+            (
+                r"Old thing is deprecated and will be removed in a future version\. "
+                r"Use new thing instead\."
+            ),
         ),
     ],
 )

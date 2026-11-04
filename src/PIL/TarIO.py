@@ -15,6 +15,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"io"}
+
 import io
 
 from . import ContainerIO
@@ -40,7 +42,12 @@ class TarIO(ContainerIO.ContainerIO[bytes]):
                 msg = "unexpected end of tar file"
                 raise OSError(msg)
 
-            name = s[:100].decode("utf-8")
+            try:
+                name = s[:100].decode("utf-8")
+            except ValueError:
+                self.fh.close()
+                msg = "invalid name"
+                raise ValueError(msg)
             i = name.find("\0")
             if i == 0:
                 self.fh.close()
@@ -50,12 +57,22 @@ class TarIO(ContainerIO.ContainerIO[bytes]):
             if i > 0:
                 name = name[:i]
 
-            size = int(s[124:135], 8)
+            try:
+                size = int(s[124:135], 8)
+            except ValueError:
+                self.fh.close()
+                msg = "invalid size"
+                raise ValueError(msg)
+            if size < 0:
+                self.fh.close()
+                msg = "size must not be negative"
+                raise ValueError(msg)
 
             if file == name:
                 break
 
-            self.fh.seek((size + 511) & (~511), io.SEEK_CUR)
+            offset = (size + 511) & ~511
+            self.fh.seek(offset, io.SEEK_CUR)
 
         # Open region
         super().__init__(self.fh, self.fh.tell(), size)

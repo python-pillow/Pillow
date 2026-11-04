@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+import struct
 import tempfile
 import warnings
 from io import BytesIO
-from pathlib import Path
 
 import pytest
 
 from PIL import Image, SpiderImagePlugin
 
 from .helper import assert_image_equal, hopper, is_pypy
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_FILE = "Tests/images/hopper.spider"
 
@@ -33,18 +37,14 @@ def test_unclosed_file() -> None:
 
 
 def test_closed_file() -> None:
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-
+    with warnings.catch_warnings(action="error"):
         im = Image.open(TEST_FILE)
         im.load()
         im.close()
 
 
 def test_context_manager() -> None:
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-
+    with warnings.catch_warnings(action="error"):
         with Image.open(TEST_FILE) as im:
             im.load()
 
@@ -162,12 +162,6 @@ def test_nonstack_file() -> None:
             im.seek(0)
 
 
-def test_nonstack_dos() -> None:
-    with Image.open(TEST_FILE) as im:
-        with pytest.raises(EOFError):
-            im.seek(0)
-
-
 # for issue #4093
 def test_odd_size() -> None:
     data = BytesIO()
@@ -178,3 +172,22 @@ def test_odd_size() -> None:
     data.seek(0)
     with Image.open(data) as im2:
         assert_image_equal(im, im2)
+
+
+def test_seek_decompression_bomb() -> None:
+    with open(TEST_FILE, "rb") as fp:
+        data = fp.read()
+    # istack
+    first_frame = data[: 23 * 4] + struct.pack("<f", 1) + data[24 * 4 :]
+    # frame count
+    first_frame = first_frame[: 25 * 4] + struct.pack("<f", 2) + first_frame[26 * 4 :]
+
+    # width
+    second_frame = data[: 11 * 4] + struct.pack("<f", 65535) + data[12 * 4 :]
+    # height
+    second_frame = (
+        second_frame[: 1 * 4] + struct.pack("<f", 65535) + second_frame[2 * 4 :]
+    )
+    with Image.open(BytesIO(first_frame + b"\x00" * 1024 + second_frame)) as im:
+        with pytest.raises(Image.DecompressionBombError):
+            im.seek(1)

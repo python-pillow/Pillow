@@ -17,8 +17,11 @@
 
 #include "Imaging.h"
 
-#include "math.h"
+#include <math.h>
 
+/**
+ * Fill an entire image with a constant colour, in place.
+ */
 Imaging
 ImagingFill(Imaging im, const void *colour) {
     ImagingSectionCookie cookie;
@@ -32,25 +35,29 @@ ImagingFill(Imaging im, const void *colour) {
     int xsize = im->xsize;
     int ysize = im->ysize;
 
-    if (im->type == IMAGING_TYPE_SPECIAL) {
+    if (im->type == IMAGING_TYPE_I16) {
         /* use generic API */
         ImagingAccess access = ImagingAccessNew(im);
         if (access) {
             for (int y = 0; y < ysize; y++) {
                 for (int x = 0; x < xsize; x++) {
+                    // has internal mutex
                     access->put_pixel(im, x, y, colour);
                 }
             }
             ImagingAccessDelete(im, access);
         } else {
             /* wipe the image */
+            MUTEX_LOCK(&im->mutex);
             for (int y = 0; y < ysize; y++) {
                 memset(im->image[y], 0, im->linesize);
             }
+            MUTEX_UNLOCK(&im->mutex);
         }
     } else {
         INT32 c = 0L;
         ImagingSectionEnter(&cookie);
+        MUTEX_LOCK(&im->mutex);
         memcpy(&c, colour, im->pixelsize);
         if (im->image32 && c != 0L) {
             for (int y = 0; y < ysize; y++) {
@@ -66,6 +73,7 @@ ImagingFill(Imaging im, const void *colour) {
                 memset(im->image[y], cc, im->linesize);
             }
         }
+        MUTEX_UNLOCK(&im->mutex);
         ImagingSectionLeave(&cookie);
     }
 

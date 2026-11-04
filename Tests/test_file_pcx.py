@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import io
-from pathlib import Path
 
 import pytest
 
 from PIL import Image, ImageFile, PcxImagePlugin
 
 from .helper import assert_image_equal, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _roundtrip(tmp_path: Path, im: Image.Image) -> None:
@@ -80,13 +83,14 @@ def test_invalid_file() -> None:
 
 
 @pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
-def test_odd(tmp_path: Path, mode: str) -> None:
+@pytest.mark.parametrize("size", (1, 3, 511))
+def test_odd(tmp_path: Path, mode: str, size: int) -> None:
     # See issue #523, odd sized images should have a stride that's even.
     # Not that ImageMagick or GIMP write PCX that way.
     # We were not handling properly.
     # larger, odd sized images are better here to ensure that
     # we handle interrupted scan lines properly.
-    _roundtrip(tmp_path, hopper(mode).resize((511, 511)))
+    _roundtrip(tmp_path, hopper(mode).resize((size, size)))
 
 
 def test_odd_read() -> None:
@@ -103,7 +107,6 @@ def test_pil184() -> None:
     test_file = "Tests/images/pil184.pcx"
     with Image.open(test_file) as im:
         assert im.size == (447, 144)
-        assert im.tile[0][1] == (0, 0, 447, 144)
 
         # Make sure all pixels are either 0 or 255.
         assert im.histogram()[0] + im.histogram()[255] == 447 * 144
@@ -202,16 +205,3 @@ def test_break_padding(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     for x in range(5):
         px[x, 3] = 0
     _test_buffer_overflow(tmp_path, im, monkeypatch)
-
-
-@pytest.mark.parametrize(
-    "data_len, rawmode",
-    (
-        (5, "P;4L"),
-        (3, "P;2L"),
-    ),
-)
-def test_truncated(data_len: int, rawmode: str) -> None:
-    data = b"\x00" * data_len
-    with pytest.raises(ValueError, match="not enough image data"):
-        Image.frombuffer("P", (9, 1), data, "raw", rawmode, 0, 1)

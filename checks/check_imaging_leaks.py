@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import sys
-from collections.abc import Callable
 from typing import Any
 
 import pytest
 
 from PIL import Image
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 min_iterations = 100
 max_iterations = 10000
@@ -43,7 +46,7 @@ def _test_leak(
 
 def test_leak_putdata() -> None:
     im = Image.new("RGB", (25, 25))
-    _test_leak(min_iterations, max_iterations, im.putdata, im.getdata())
+    _test_leak(min_iterations, max_iterations, im.putdata, im.get_flattened_data())
 
 
 def test_leak_getlist() -> None:

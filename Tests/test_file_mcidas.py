@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import struct
-from pathlib import Path
 
 import pytest
 
 from PIL import Image, McIdasImagePlugin
 
 from .helper import assert_image_equal_tofile
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_invalid_file() -> None:
@@ -35,7 +38,7 @@ def test_undersized_stride(tmp_path: Path) -> None:
     path.write_bytes(data)
 
     with Image.open(path) as im:
-        with pytest.raises(ValueError, match="buffer is not large enough"):
+        with pytest.raises(OSError, match="codec configuration error"):
             im.load()
 
 

@@ -31,6 +31,32 @@ Pillow reads and writes AVIF files, including AVIF sequence images.
 It is only possible to save 8-bit AVIF images, and all AVIF images are decoded
 as 8-bit RGB(A).
 
+Opening
+~~~~~~~
+
+The :py:meth:`~PIL.Image.open` method sets the following
+:py:attr:`~PIL.Image.Image.info` properties:
+
+**icc_profile**
+    May not be present. The ICC color profile for the image.
+
+**exif**
+    May not be present. Raw EXIF data from the image.
+
+**xmp**
+    May not be present. Raw XMP data from the image.
+
+**duration**
+    Only present after the current frame is loaded. The time to display the current
+    frame of the AVIF sequence, in milliseconds.
+
+**timestamp**
+    Only present after the current frame is loaded. The time of the current frame
+    within the AVIF sequence, in milliseconds.
+
+Saving
+~~~~~~
+
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **quality**
@@ -237,7 +263,7 @@ images. Seeking to later frames in a ``P`` image will change the image to
 ``P`` mode images are changed to ``RGB`` because each frame of a GIF may contain
 its own individual palette of up to 256 colors. When a new frame is placed onto a
 previous frame, those colors may combine to exceed the ``P`` mode limit of 256
-colors. Instead, the image is converted to ``RGB`` handle this.
+colors. Instead, the image is converted to ``RGB`` to handle this.
 
 If you would prefer the first ``P`` image frame to be ``RGB`` as well, so that
 every ``P`` frame is converted to ``RGB`` or ``RGBA`` mode, there is a setting
@@ -346,7 +372,7 @@ following options are available::
 **palette**
     Use the specified palette for the saved image. The palette should
     be a bytes or bytearray object containing the palette entries in
-    RGBRGB... form. It should be no more than 768 bytes. Alternately,
+    RGBRGB... form. It should be no more than 768 bytes. Alternatively,
     the palette can be passed in as an
     :py:class:`PIL.ImagePalette.ImagePalette` object.
 
@@ -452,8 +478,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **sizes**
     A list of sizes included in this ico file; these are a 2-tuple,
     ``(width, height)``; Default to ``[(16, 16), (24, 24), (32, 32), (48, 48),
-    (64, 64), (128, 128), (256, 256)]``. Any sizes bigger than the original
-    size or 256 will be ignored.
+    (64, 64), (128, 128), (256, 256)]``, or if it is smaller, only the image size.
+    Any sizes bigger than the original size or 256 will be ignored.
 
 The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
 
@@ -472,6 +498,8 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
 IM
 ^^
+
+.. deprecated:: 13.0.0
 
 IM is a format used by LabEye and other applications based on the IFUNC image
 processing library. The library reads and writes most uncompressed interchange
@@ -927,6 +955,13 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     When ``optimize`` option is True ``compress_level`` has no effect
     (it is set to 9 regardless of a value passed).
 
+**compress_type**
+    ZLIB compression strategy, one of the strategy constants from Python's
+    :py:mod:`zlib` module: ``zlib.Z_DEFAULT_STRATEGY`` (0), ``zlib.Z_FILTERED`` (1),
+    ``zlib.Z_HUFFMAN_ONLY`` (2), ``zlib.Z_RLE`` (3) or ``zlib.Z_FIXED`` (4). For ``P``
+    images, defaults to ``zlib.Z_DEFAULT_STRATEGY`` (0). Otherwise defaults to
+    ``zlib.Z_FILTERED`` (1).
+
 **icc_profile**
     The ICC Profile to include in the saved file.
 
@@ -936,8 +971,10 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     .. versionadded:: 6.0.0
 
 **bits (experimental)**
-    For ``P`` images, this option controls how many bits to store. If omitted,
-    the PNG writer uses 8 bits (256 colors).
+    For ``L`` and ``P`` images, this option controls how many bits to store. If
+    omitted, the PNG writer uses 8 bits (256 colors). The ``PLTE`` chunk only contains
+    as many entries as the image's palette actually has, rather than being padded with
+    zeroes up to ``2 ** bits``.
 
 **dictionary (experimental)**
     Set the ZLIB encoder dictionary.
@@ -1109,7 +1146,17 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 SGI
 ^^^
 
-Pillow reads and writes uncompressed ``L``, ``RGB``, and ``RGBA`` files.
+Pillow reads uncompressed and RLE compressed ``L``, ``RGB``, and ``RGBA`` files,
+with either 8-bit or 16-bit channels. It writes uncompressed files.
+
+Saving
+~~~~~~
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**bpc**
+    The number of bytes per channel. Use ``1`` (the default) to save each channel as
+    8-bit, or ``2`` to save each channel as 16-bit.
 
 
 SPIDER
@@ -1307,7 +1354,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     .. versionadded:: 6.1.0
 
     Added support for signed types (e.g. ``TIFF_SIGNED_LONG``) and multiple values.
-    Multiple values for a single tag must be to
+    Multiple values for a single tag must be passed to
     :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2` as a tuple and
     require a matching type in
     :py:attr:`~PIL.TiffImagePlugin.ImageFileDirectory_v2.tagtype` tagtype.
@@ -1335,6 +1382,12 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     (best). The default is 75.
 
     .. versionadded:: 6.1.0
+
+**strip_size**
+    When saving with libtiff, the requested size of each strip in bytes. The default is
+    65536. The strip size is controlled by using this value to calculate the
+    RowsPerStrip tag. This can be overridden by setting the RowsPerStrip tag directly
+    instead.
 
 These arguments to set the tiff header fields are an alternative to
 using the general tags available through tiffinfo.
@@ -1375,6 +1428,36 @@ WebP
 ^^^^
 
 Pillow reads and writes WebP files. Requires libwebp v0.5.0 or later.
+
+Opening
+~~~~~~~
+
+The :py:meth:`~PIL.Image.open` method sets the following
+:py:attr:`~PIL.Image.Image.info` properties:
+
+**background**
+    Background color of the canvas, as an RGBA tuple with values in
+    the range of (0-255).
+
+**loop**
+    The number of times the WEBP should loop. 0 means that it will loop forever.
+
+**icc_profile**
+    May not be present. The ICC color profile for the image.
+
+**exif**
+    May not be present. Raw EXIF data from the image.
+
+**xmp**
+    May not be present. Raw XMP data from the image.
+
+**duration**
+    Only present after the current frame is loaded. The time to display the current
+    frame of the WEBP, in milliseconds.
+
+**timestamp**
+    Only present after the current frame is loaded. The total duration of all previous
+    frames of the WEBP, in milliseconds.
 
 .. _webp-saving:
 
@@ -1457,6 +1540,23 @@ XBM
 ^^^
 
 Pillow reads and writes X bitmap files (mode ``1``).
+
+Opening
+~~~~~~~
+
+The :py:meth:`~PIL.Image.open` method sets the following
+:py:attr:`~PIL.Image.Image.info` properties:
+
+**hotspot**
+    The ``(x, y)`` hotspot of the bitmap, if the file defines one.
+
+Saving
+~~~~~~
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**hotspot**
+    An ``(x, y)`` tuple. If given, the hotspot is written to the file.
 
 Read-only formats
 -----------------
@@ -1694,6 +1794,20 @@ PALM
 Pillow provides write-only support for PALM pixmap files.
 
 The format code is ``Palm``, the extension is ``.palm``.
+
+``1``, ``L`` and ``P`` images can be saved.
+
+Saving
+~~~~~~
+
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**bpp**
+    For ``L`` images, the number of bits per pixel to write, either 1, 2 or 4. Shades
+    in the image are adjusted to fit within this restriction. If omitted, the ``bpp``
+    value from :py:attr:`~PIL.Image.Image.info` can be used instead, and only the
+    lowest bits of each pixel are kept. If there is no ``bpp`` setting at all, ``L``
+    mode images cannot be saved.
 
 PDF
 ^^^

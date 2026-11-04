@@ -10,7 +10,7 @@ Pillow is the friendly PIL fork by [Jeffrey 'Alex' Clark and
 contributors](https://github.com/python-pillow/Pillow/graphs/contributors).
 PIL is the Python Imaging Library by Fredrik Lundh and contributors.
 Development is supported by:
-- [Tidelift](https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=readme&utm_campaign=enterprise) (since 2018)
+- [Tidelift](https://tidelift.com/lifter/search/pypi/pillow) (since 2018)
 - [Thanks.dev](https://thanks.dev) (since 2023)
 - [GitHub Sponsors](https://github.com/sponsors/python-pillow) (since 2026)
 
@@ -20,7 +20,7 @@ Development is supported by:
         <td>
             <a href="https://pillow.readthedocs.io/?badge=latest"><img
                 alt="Documentation Status"
-                src="https://readthedocs.org/projects/pillow/badge/?version=latest"></a>
+                src="https://app.readthedocs.org/projects/pillow/badge/?version=latest"></a>
         </td>
     </tr>
     <tr>
@@ -35,9 +35,9 @@ Development is supported by:
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml"><img
                 alt="GitHub Actions build status (Test Windows)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Windows/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-mingw.yml"><img
-                alt="GitHub Actions build status (Test MinGW)"
-                src="https://github.com/python-pillow/Pillow/workflows/Test%20MinGW/badge.svg"></a>
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-msys2.yml"><img
+                alt="GitHub Actions build status (Test MSYS2)"
+                src="https://github.com/python-pillow/Pillow/workflows/Test%20MSYS2/badge.svg"></a>
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-docker.yml"><img
                 alt="GitHub Actions build status (Test Docker)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg"></a>
@@ -58,7 +58,7 @@ Development is supported by:
             <a href="https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow"><img
                 alt="Zenodo"
                 src="https://zenodo.org/badge/17549/python-pillow/Pillow.svg"></a>
-            <a href="https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=badge"><img
+            <a href="https://tidelift.com/lifter/search/pypi/pillow"><img
                 alt="Tidelift"
                 src="https://tidelift.com/badges/package/pypi/pillow?style=flat"></a>
             <a href="https://pypi.org/project/pillow/"><img
@@ -75,9 +75,6 @@ Development is supported by:
     <tr>
         <th>social</th>
         <td>
-            <a href="https://gitter.im/python-pillow/Pillow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img
-                alt="Join the chat at https://gitter.im/python-pillow/Pillow"
-                src="https://badges.gitter.im/python-pillow/Pillow.svg"></a>
             <a href="https://fosstodon.org/@pillow"><img
                 alt="Follow on https://fosstodon.org/@pillow"
                 src="https://img.shields.io/badge/publish-on%20Mastodon-595aff.svg"

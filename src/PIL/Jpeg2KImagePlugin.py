@@ -15,6 +15,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "struct"}
+
 import io
 import os
 import struct
@@ -54,6 +56,9 @@ class BoxReader:
         if not self._can_read(num_bytes):
             msg = "Not enough data in header"
             raise SyntaxError(msg)
+        if self.fp.tell() + num_bytes >= 2**63:
+            msg = "Box length too large"
+            raise SyntaxError(msg)
 
         data = self.fp.read(num_bytes)
         if len(data) < num_bytes:
@@ -83,13 +88,16 @@ class BoxReader:
     def next_box_type(self) -> bytes:
         # Skip the rest of the box if it has not been read
         if self.remaining_in_box > 0:
+            if self.fp.tell() + self.remaining_in_box >= 2**63:
+                msg = "Box length too large"
+                raise SyntaxError(msg)
             self.fp.seek(self.remaining_in_box, os.SEEK_CUR)
         self.remaining_in_box = -1
 
         # Read the length and type of the next box
-        lbox, tbox = cast(tuple[int, bytes], self.read_fields(">I4s"))
+        lbox, tbox = cast("tuple[int, bytes]", self.read_fields(">I4s"))
         if lbox == 1:
-            lbox = cast(int, self.read_fields(">Q")[0])
+            lbox = cast("int", self.read_fields(">Q")[0])
             hlen = 16
         else:
             hlen = 8
@@ -283,9 +291,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 if dpi is not None:
                     self.info["dpi"] = dpi
                 if self.fp.read(12).endswith(b"jp2c\xff\x4f\xff\x51"):
-                    hdr = self.fp.read(2)
-                    length = _binary.i16be(hdr)
-                    self.fp.seek(length - 2, os.SEEK_CUR)
+                    _parse_codestream(self.fp)
                     self._parse_comment()
             else:
                 msg = "not a JPEG 2000 file"
@@ -294,28 +300,15 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         self._reduce = 0
         self.layers = 0
 
-        fd = -1
-        length = -1
-
         try:
             fd = self.fp.fileno()
-            length = os.fstat(fd).st_size
         except Exception:
             fd = -1
-            try:
-                pos = self.fp.tell()
-                self.fp.seek(0, io.SEEK_END)
-                length = self.fp.tell()
-                self.fp.seek(pos)
-            except Exception:
-                length = -1
 
         self.tile = [
             ImageFile._Tile(
                 "jpeg2k",
-                (0, 0) + self.size,
-                0,
-                (self.codec, self._reduce, self.layers, fd, length),
+                args=(self.codec, self._reduce, self.layers, fd, self._get_fp_length()),
             )
         ]
 
@@ -368,9 +361,9 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
 
             # Update the reduce and layers settings
             t = self.tile[0]
-            assert isinstance(t[3], tuple)
-            t3 = (t[3][0], self._reduce, self.layers, t[3][3], t[3][4])
-            self.tile = [ImageFile._Tile(t[0], (0, 0) + self.size, t[2], t3)]
+            assert isinstance(t.args, tuple)
+            args = (t.args[0], self._reduce, self.layers, t.args[3], t.args[4])
+            self.tile = [t._replace(args=args)]
 
         return ImageFile.ImageFile.load(self)
 
@@ -449,7 +442,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         plt,
     )
 
-    ImageFile._save(im, fp, [ImageFile._Tile("jpeg2k", (0, 0) + im.size, 0, kind)])
+    ImageFile._save(im, fp, [ImageFile._Tile("jpeg2k", args=kind)])
 
 
 # ------------------------------------------------------------

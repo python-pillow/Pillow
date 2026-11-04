@@ -13,11 +13,6 @@
 #include <tiff.h>
 #endif
 
-#ifndef min
-#define min(x, y) ((x > y) ? y : x)
-#define max(x, y) ((x < y) ? y : x)
-#endif
-
 #ifndef _PIL_LIBTIFF_
 #define _PIL_LIBTIFF_
 
@@ -39,25 +34,21 @@ extern int
 ImagingLibTiffInit(ImagingCodecState state, int fp, uint32_t offset);
 extern int
 ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp);
-extern int
+extern void
 ImagingLibTiffEncodeCleanup(ImagingCodecState state);
 extern int
 ImagingLibTiffMergeFieldInfo(
     ImagingCodecState state, TIFFDataType field_type, int key, int is_var_length
 );
 extern int
+ImagingLibTiffFindField(
+    ImagingCodecState state,
+    int key,
+    TIFFDataType *field_type,
+    int *passcount,
+    int *writecount
+);
+extern int
 ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
-
-/*
-   Trace debugging
-   legacy, don't enable for Python 3.x, unicode issues.
-*/
-
-/*
-#define VA_ARGS(...)   __VA_ARGS__
-#define TRACE(args)    fprintf(stderr, VA_ARGS args)
-*/
-
-#define TRACE(args)
 
 #endif

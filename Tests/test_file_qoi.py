@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-from pathlib import Path
+from io import BytesIO
 
 import pytest
 
 from PIL import Image, QoiImagePlugin
 
 from .helper import assert_image_equal_tofile, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_sanity() -> None:
@@ -30,6 +34,15 @@ def test_invalid_file() -> None:
 
     with pytest.raises(SyntaxError):
         QoiImagePlugin.QoiImageFile(invalid_file)
+
+
+@pytest.mark.parametrize("length", (14, 44, 48, 55))
+def test_truncated(length: int) -> None:
+    with open("Tests/images/pil123rgba.qoi", "rb") as fp:
+        data = fp.read()[:length]
+    with Image.open(BytesIO(data)) as im:
+        with pytest.raises(ValueError, match="not enough image data"):
+            im.load()
 
 
 def test_op_index() -> None:

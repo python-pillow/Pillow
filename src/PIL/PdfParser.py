@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"calendar", "mmap", "zlib"}
+
 import calendar
 import codecs
 import collections
 import mmap
 import os
 import re
+import sys
 import time
 import zlib
 from typing import Any, NamedTuple
@@ -14,7 +17,7 @@ from . import ImageFile
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
-    from typing import IO
+    from typing import IO, Self
 
     _DictBase = collections.UserDict[str | bytes, Any]
 else:
@@ -131,12 +134,15 @@ class XrefTable:
         )  # object ID => (offset, generation)
         self.deleted_entries = {0: 65536}  # object ID => generation
         self.reading_finished = False
+        self._max_object_id = 0
 
     def __setitem__(self, key: int, value: tuple[int, int]) -> None:
         if self.reading_finished:
             self.new_entries[key] = value
         else:
             self.existing_entries[key] = value
+        if key > self._max_object_id:
+            self._max_object_id = key
         if key in self.deleted_entries:
             del self.deleted_entries[key]
 
@@ -177,7 +183,7 @@ class XrefTable:
 
     def write(self, f: IO[bytes]) -> int:
         keys = sorted(set(self.new_entries.keys()) | set(self.deleted_entries.keys()))
-        deleted_keys = sorted(set(self.deleted_entries.keys()))
+        deleted_keys = sorted(self.deleted_entries)
         startxref = f.tell()
         f.write(b"xref\n")
         while keys:
@@ -427,7 +433,7 @@ class PdfParser:
         if f:
             self.seek_end()
 
-    def __enter__(self) -> PdfParser:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -440,6 +446,11 @@ class PdfParser:
     def close_buf(self) -> None:
         if isinstance(self.buf, memoryview):
             self.buf.release()
+            if sys.implementation.name == "pypy":
+                import gc
+
+                # See https://github.com/pypy/pypy/pull/5616
+                gc.collect()
         elif isinstance(self.buf, mmap.mmap):
             self.buf.close()
         self.buf = None
@@ -500,7 +511,9 @@ class PdfParser:
                     self.pages[j] = new_page_ref
         # delete redundant Pages tree nodes from xref table
         for pages_tree_node_ref in pages_tree_nodes_to_delete:
-            while pages_tree_node_ref:
+            processed_refs = []
+            while pages_tree_node_ref and pages_tree_node_ref not in processed_refs:
+                processed_refs.append(pages_tree_node_ref)
                 pages_tree_node = self.cached_objects[pages_tree_node_ref]
                 if pages_tree_node_ref.object_id in self.xref_table:
                     del self.xref_table[pages_tree_node_ref.object_id]
@@ -615,18 +628,15 @@ class PdfParser:
         self.pages_ref = self.root[b"Pages"]
         assert self.pages_ref is not None
         self.page_tree_root = self.read_indirect(self.pages_ref)
-        self.pages = self.linearize_page_tree(self.page_tree_root)
+        self.pages = self.linearize_page_tree()
         # save the original list of page references
         # in case the user modifies, adds or deletes some pages
         # and we need to rewrite the pages and their list
         self.orig_pages = self.pages[:]
 
     def next_object_id(self, offset: int | None = None) -> IndirectReference:
-        try:
-            # TODO: support reuse of deleted objects
-            reference = IndirectReference(max(self.xref_table.keys()) + 1, 0)
-        except ValueError:
-            reference = IndirectReference(1, 0)
+        # TODO: support reuse of deleted objects
+        reference = IndirectReference(self.xref_table._max_object_id + 1, 0)
         if offset is not None:
             self.xref_table[reference.object_id] = (offset, 0)
         return reference
@@ -698,26 +708,31 @@ class PdfParser:
         self, xref_section_offset: int, processed_offsets: list[int] | None = None
     ) -> None:
         assert self.buf is not None
-        trailer_offset = self.read_xref_table(xref_section_offset=xref_section_offset)
-        m = self.re_trailer_prev.search(
-            self.buf[trailer_offset : trailer_offset + 16384]
-        )
-        check_format_condition(m is not None, "previous trailer not found")
-        assert m is not None
-        trailer_data = m.group(1)
-        check_format_condition(
-            int(m.group(2)) == xref_section_offset,
-            "xref section offset in previous trailer doesn't match what was expected",
-        )
-        trailer_dict = self.interpret_trailer(trailer_data)
-        if b"Prev" in trailer_dict:
-            if processed_offsets is None:
-                processed_offsets = []
-            processed_offsets.append(xref_section_offset)
+        if processed_offsets is None:
+            processed_offsets = []
+        while True:
             check_format_condition(
-                trailer_dict[b"Prev"] not in processed_offsets, "trailer loop found"
+                xref_section_offset not in processed_offsets, "trailer loop found"
             )
-            self.read_prev_trailer(trailer_dict[b"Prev"], processed_offsets)
+            trailer_offset = self.read_xref_table(
+                xref_section_offset=xref_section_offset
+            )
+            m = self.re_trailer_prev.search(
+                self.buf[trailer_offset : trailer_offset + 16384]
+            )
+            check_format_condition(m is not None, "previous trailer not found")
+            assert m is not None
+            trailer_data = m.group(1)
+            check_format_condition(
+                int(m.group(2)) == xref_section_offset,
+                "xref section offset in previous trailer "
+                "doesn't match what was expected",
+            )
+            trailer_dict = self.interpret_trailer(trailer_data)
+            if b"Prev" not in trailer_dict:
+                break
+            processed_offsets.append(xref_section_offset)
+            xref_section_offset = trailer_dict[b"Prev"]
 
     re_whitespace_optional = re.compile(whitespace_optional)
     re_name = re.compile(
@@ -830,7 +845,7 @@ class PdfParser:
         data: bytes | bytearray | memoryview | mmap.mmap,
         offset: int,
         expect_indirect: IndirectReference | None = None,
-        max_nesting: int = -1,
+        max_nesting: int = 900,
     ) -> tuple[Any, int | None]:
         if max_nesting == 0:
             return None, None
@@ -886,13 +901,13 @@ class PdfParser:
             current_offset: int | None = offset
             while not m:
                 assert current_offset is not None
-                key, current_offset = cls.get_value(
-                    data, current_offset, max_nesting=max_nesting - 1
-                )
-                if current_offset is None:
-                    return result, None
+                m = cls.re_name.match(data, current_offset)
+                if not m:
+                    msg = "key must be a name"
+                    raise PdfFormatError(msg)
+                key = PdfName(cls.interpret_name(m.group(1)))
                 value, current_offset = cls.get_value(
-                    data, current_offset, max_nesting=max_nesting - 1
+                    data, m.end(), max_nesting=max_nesting - 1
                 )
                 result[key] = value
                 if current_offset is None:
@@ -1058,7 +1073,7 @@ class PdfParser:
                         self.xref_table[i] = new_entry
         return offset
 
-    def read_indirect(self, ref: IndirectReference, max_nesting: int = -1) -> Any:
+    def read_indirect(self, ref: IndirectReference, max_nesting: int = 900) -> Any:
         offset, generation = self.xref_table[ref[0]]
         check_format_condition(
             generation == ref[1],
@@ -1078,15 +1093,37 @@ class PdfParser:
     def linearize_page_tree(
         self, node: PdfDict | None = None
     ) -> list[IndirectReference]:
-        page_node = node if node is not None else self.page_tree_root
+        processed_ids = set()
+        if node is not None:
+            page_node = node
+        else:
+            page_node = self.page_tree_root
+            if self.pages_ref is not None:
+                processed_ids.add(self.pages_ref.object_id)
         check_format_condition(
             page_node[b"Type"] == b"Pages", "/Type of page tree node is not /Pages"
         )
         pages = []
-        for kid in page_node[b"Kids"]:
+        # Walk the tree with a stack of iterators rather than recursion,
+        # so that a deep page tree cannot exhaust the call stack
+        stack = [iter(page_node[b"Kids"])]
+        while stack:
+            kid = next(stack[-1], None)
+            if kid is None:
+                stack.pop()
+                continue
+            check_format_condition(
+                kid.object_id not in processed_ids,
+                f"page tree contains a cyclic or duplicate reference to {kid}",
+            )
+            processed_ids.add(kid.object_id)
             kid_object = self.read_indirect(kid)
             if kid_object[b"Type"] == b"Page":
                 pages.append(kid)
             else:
-                pages.extend(self.linearize_page_tree(node=kid_object))
+                check_format_condition(
+                    kid_object[b"Type"] == b"Pages",
+                    "/Type of page tree node is not /Pages",
+                )
+                stack.append(iter(kid_object[b"Kids"]))
         return pages

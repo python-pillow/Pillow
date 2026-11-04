@@ -16,9 +16,12 @@
 from __future__ import annotations
 
 import os
-from typing import BinaryIO
 
 from . import Image, ImageFont, _binary
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import BinaryIO
 
 WIDTH = 800
 
@@ -127,7 +130,7 @@ class FontFile:
             data += _binary.o16be(v)
         return bytes(data)
 
-    def save(self, filename: str) -> None:
+    def save(self, filename: str | os.PathLike[str]) -> None:
         """Save font"""
 
         self.compile()

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 from fractions import Fraction
-from pathlib import Path
 
 import pytest
 
@@ -10,6 +9,10 @@ from PIL import Image, TiffImagePlugin
 from PIL.TiffImagePlugin import IFDRational
 
 from .helper import hopper, skip_unless_feature
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _test_equal(
@@ -49,6 +52,16 @@ def test_float() -> None:
     # Integer numerator and 0/0 (nan) cases
     assert float(IFDRational(4, 2)) == 2.0
     assert math.isnan(float(IFDRational(0, 0)))
+
+
+def test_arithmetic_between_rationals() -> None:
+    a = IFDRational(1, 2)
+    b = IFDRational(1, 3)
+
+    assert a + b == Fraction(5, 6)
+    assert a - b == Fraction(1, 6)
+    assert a * b == Fraction(1, 6)
+    assert a / b == Fraction(3, 2)
 
 
 def test_ranges() -> None:

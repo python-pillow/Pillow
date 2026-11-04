@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-import pytest
-
 from PIL import Image, ImageDraw, ImageFont, _util
 
 from .helper import PillowLeakTestCase, features, skip_unless_feature
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    import pytest
 
 original_core = ImageFont.core
 
@@ -21,9 +23,8 @@ class TestFontLeak(PillowLeakTestCase):
 
 
 class TestTTypeFontLeak(TestFontLeak):
-    # fails at iteration 3 in main
-    iterations = 10
-    mem_limit = 4096  # k
+    iterations = 30
+    mem_limit = 32768  # k
 
     @skip_unless_feature("freetype2")
     def test_leak(self) -> None:
@@ -32,9 +33,8 @@ class TestTTypeFontLeak(TestFontLeak):
 
 
 class TestDefaultFontLeak(TestFontLeak):
-    # fails at iteration 37 in main
-    iterations = 100
-    mem_limit = 1024  # k
+    iterations = 1000
+    mem_limit = 16384  # k
 
     def test_leak(self, monkeypatch: pytest.MonkeyPatch) -> None:
         if features.check_module("freetype2"):

@@ -67,7 +67,7 @@ metadata tag numbers, names, and type information.
         'ImageDescription'
 
     This dictionary contains a superset of the tags in :py:data:`~PIL.TiffTags.TAGS_V2`, common
-    EXIF tags, and other well known metadata tags.
+    EXIF tags, and other well-known metadata tags.
 
 .. py:data:: PIL.TiffTags.TYPES
     :type: dict

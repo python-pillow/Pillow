@@ -27,14 +27,13 @@ https://www.cazabon.com\n\
 "
 
 #define PY_SSIZE_T_CLEAN
-#include "Python.h"  // Include before wchar.h so _GNU_SOURCE is set
-#include "wchar.h"
-#include "datetime.h"
+#include <Python.h>  // Include before wchar.h so _GNU_SOURCE is set
+#include "thirdparty/pythoncapi_compat.h"
+#include <wchar.h>
+#include <datetime.h>
 
-#include "lcms2.h"
+#include <lcms2.h>
 #include "libImaging/Imaging.h"
-
-#define PYCMSVERSION "1.0.0 pil"
 
 /* version history */
 
@@ -182,6 +181,8 @@ cms_profile_dealloc(CmsProfileObject *self) {
 
 typedef struct {
     PyObject_HEAD cmsHTRANSFORM transform;
+    ModeID in_mode;
+    ModeID out_mode;
 } CmsTransformObject;
 
 static PyTypeObject CmsTransform_Type;
@@ -189,7 +190,7 @@ static PyTypeObject CmsTransform_Type;
 #define CmsTransform_Check(op) (Py_TYPE(op) == &CmsTransform_Type)
 
 static PyObject *
-cms_transform_new(cmsHTRANSFORM transform) {
+cms_transform_new(cmsHTRANSFORM transform, ModeID in_mode, ModeID out_mode) {
     CmsTransformObject *self;
 
     self = PyObject_New(CmsTransformObject, &CmsTransform_Type);
@@ -198,6 +199,8 @@ cms_transform_new(cmsHTRANSFORM transform) {
     }
 
     self->transform = transform;
+    self->in_mode = in_mode;
+    self->out_mode = out_mode;
 
     return (PyObject *)self;
 }
@@ -475,7 +478,7 @@ buildTransform(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    return cms_transform_new(transform);
+    return cms_transform_new(transform, findModeID(sInMode), findModeID(sOutMode));
 }
 
 static PyObject *
@@ -524,11 +527,11 @@ buildProofTransform(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    return cms_transform_new(transform);
+    return cms_transform_new(transform, findModeID(sInMode), findModeID(sOutMode));
 }
 
 static PyObject *
-cms_transform_apply(CmsTransformObject *self, PyObject *args) {
+cms_transform_apply_impl(CmsTransformObject *self, PyObject *args) {
     PyObject *i0, *i1;
     Imaging im;
     Imaging imOut;
@@ -552,7 +555,26 @@ cms_transform_apply(CmsTransformObject *self, PyObject *args) {
         return NULL;
     }
 
+    if (self->in_mode != im->mode || self->out_mode != imOut->mode) {
+        PyErr_SetString(PyExc_ValueError, "mode mismatch");
+        return NULL;
+    }
+
+    if (imOut->read_only) {
+        PyErr_SetString(PyExc_ValueError, "image is readonly");
+        return NULL;
+    }
+
     return Py_BuildValue("i", pyCMSdoTransform(im, imOut, self->transform));
+}
+
+static PyObject *
+cms_transform_apply(CmsTransformObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = cms_transform_apply_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 /* -------------------------------------------------------------------- */
@@ -615,10 +637,6 @@ cms_profile_is_intent_supported(CmsProfileObject *self, PyObject *args) {
     }
 
     result = cmsIsIntentSupported(self->profile, intent, direction);
-
-    /* printf("cmsIsIntentSupported(%p, %d, %d) => %d\n", self->profile, intent,
-     * direction, result); */
-
     return PyLong_FromLong(result != 0);
 }
 
@@ -1034,7 +1052,13 @@ cms_profile_getattr_creation_date(CmsProfileObject *self, void *closure) {
     }
 
     return PyDateTime_FromDateAndTime(
-        1900 + ct.tm_year, ct.tm_mon, ct.tm_mday, ct.tm_hour, ct.tm_min, ct.tm_sec, 0
+        1900 + ct.tm_year,
+        ct.tm_mon + 1,
+        ct.tm_mday,
+        ct.tm_hour,
+        ct.tm_min,
+        ct.tm_sec,
+        0
     );
 }
 

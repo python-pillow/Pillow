@@ -22,7 +22,14 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
     from pathlib import Path
+    from types import ModuleType
     from typing import Any
+
+psutil: ModuleType | None
+try:
+    import psutil
+except ImportError:
+    psutil = None
 
 logger = logging.getLogger(__name__)
 
@@ -46,21 +53,6 @@ def upload(a: Image.Image, b: Image.Image) -> str | None:
         b.save(os.path.join(tmpdir, "b.png"))
         return tmpdir
     return None
-
-
-def convert_to_comparable(
-    a: Image.Image, b: Image.Image
-) -> tuple[Image.Image, Image.Image]:
-    new_a, new_b = a, b
-    if a.mode == "P":
-        new_a = Image.new("L", a.size)
-        new_b = Image.new("L", b.size)
-        new_a.putdata(a.get_flattened_data())
-        new_b.putdata(b.get_flattened_data())
-    elif a.mode == "I;16":
-        new_a = a.convert("I")
-        new_b = b.convert("I")
-    return new_a, new_b
 
 
 def assert_deep_equal(a: Any, b: Any, msg: str | None = None) -> None:
@@ -115,8 +107,6 @@ def assert_image_similar(
     assert a.mode == b.mode, msg or f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
     assert a.size == b.size, msg or f"got size {repr(a.size)}, expected {repr(b.size)}"
 
-    a, b = convert_to_comparable(a, b)
-
     diff = 0
     for ach, bch in zip(a.split(), b.split()):
         chdiff = ImageMath.lambda_eval(
@@ -154,19 +144,14 @@ def assert_not_all_same(items: Sequence[Any], msg: str | None = None) -> None:
     assert items.count(items[0]) != len(items), msg
 
 
-def assert_tuple_approx_equal(
-    actuals: Sequence[int], targets: tuple[int, ...], threshold: int, msg: str
-) -> None:
-    """Tests if actuals has values within threshold from targets"""
-    for i, target in enumerate(targets):
-        if not (target - threshold <= actuals[i] <= target + threshold):
-            pytest.fail(msg + ": " + repr(actuals) + " != " + repr(targets))
-
-
 def timeout_unless_slower_valgrind(timeout: float) -> pytest.MarkDecorator:
     if "PILLOW_VALGRIND_TEST" in os.environ:
         return pytest.mark.pil_noop_mark()
     return pytest.mark.timeout(timeout)
+
+
+def skip_if_tsan(reason: str = "Test skipped on TSAN run") -> pytest.MarkDecorator:
+    return pytest.mark.skipif("PILLOW_TSAN_TEST" in os.environ, reason=reason)
 
 
 def skip_unless_feature(feature: str) -> pytest.MarkDecorator:
@@ -216,30 +201,37 @@ def mark_if_feature_version(
     return pytest.mark.pil_noop_mark()
 
 
-@pytest.mark.skipif(sys.platform.startswith("win32"), reason="Requires Unix or macOS")
+def is_pypy() -> bool:
+    return sys.implementation.name == "pypy"
+
+
+@pytest.mark.skipif(psutil is None, reason="psutil not installed")
+@pytest.mark.skipif(
+    sys.platform.startswith("win32"),
+    reason="Leak limits are not calibrated for Windows",
+)
+# Per https://stackoverflow.com/a/29007723/51685, due to JIT compilation,
+# RSS utilization is known to grow in PyPy.
+@pytest.mark.skipif(is_pypy(), reason="max RSS utilization is not stable on PyPy")
 class PillowLeakTestCase:
-    # requires unix/macOS
     iterations = 100  # count
     mem_limit = 512  # k
 
     def _get_mem_usage(self) -> float:
         """
-        Gets the RUSAGE memory usage, returns in K. Encapsulates the difference
-        between macOS and Linux rss reporting
+        Gets the resident set size currently used by this process.
 
         :returns: memory usage in kilobytes
         """
 
-        from resource import RUSAGE_SELF, getrusage
-
-        mem = getrusage(RUSAGE_SELF).ru_maxrss
-        # man 2 getrusage:
-        #     ru_maxrss
-        # This is the maximum resident set size utilized
-        # in bytes on macOS, in kilobytes on Linux
-        return mem / 1024 if sys.platform == "darwin" else mem
+        assert psutil is not None
+        return psutil.Process().memory_info().rss / 1024
 
     def _test_leak(self, core: Callable[[], None]) -> None:
+        # Warm up so allocator arenas, caches, etc. are allocated,
+        # before taking the baseline measurement.
+        core()
+
         start_mem = self._get_mem_usage()
         for cycle in range(self.iterations):
             core()
@@ -301,10 +293,6 @@ def djpeg_available() -> bool:
     return False
 
 
-def netpbm_available() -> bool:
-    return bool(shutil.which("ppmquant") and shutil.which("ppmtogif"))
-
-
 def magick_command() -> list[str] | None:
     if sys.platform == "win32":
         magickhome = os.environ.get("MAGICK_HOME")
@@ -341,16 +329,3 @@ def is_ppc64le() -> bool:
 
 def is_win32() -> bool:
     return sys.platform.startswith("win32")
-
-
-def is_pypy() -> bool:
-    return hasattr(sys, "pypy_translation_info")
-
-
-class CachedProperty:
-    def __init__(self, func: Callable[[Any], Any]) -> None:
-        self.func = func
-
-    def __get__(self, instance: Any, cls: type[Any] | None = None) -> Any:
-        result = instance.__dict__[self.func.__name__] = self.func(instance)
-        return result

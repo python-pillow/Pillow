@@ -6,7 +6,6 @@ import re
 import shutil
 import sys
 from io import BytesIO
-from pathlib import Path
 from typing import Literal, cast
 
 import pytest
@@ -22,6 +21,11 @@ from .helper import (
     is_pypy,
 )
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
+    from typing import Any
+
 try:
     from PIL import ImageCms
     from PIL.ImageCms import ImageCmsProfile
@@ -30,10 +34,6 @@ try:
 except ImportError:
     # Skipped via setup_module()
     pass
-
-TYPE_CHECKING = False
-if TYPE_CHECKING:
-    from typing import Any
 
 SRGB = "Tests/icc/sRGB_IEC61966-2-1_black_scaled.icc"
 HAVE_PROFILE = os.path.exists(SRGB)
@@ -220,6 +220,50 @@ def test_exceptions() -> None:
         match="'NoneType' object cannot be interpreted as an integer",
     ):
         ImageCms.isIntentSupported(SRGB, None, None)  # type: ignore[arg-type]
+
+
+def test_apply_readonly() -> None:
+    skip_missing()
+    t = ImageCms.buildTransform(
+        SRGB, "Tests/icc/sRGB_v4_ICC_preference.icc", "RGB", "RGB"
+    )
+    source = hopper()
+    im = Image.fromarrow(source, source.mode, source.size)
+    assert im.readonly
+
+    t.apply(hopper(), im)
+    assert not im.readonly
+    assert_image_equal(im, t.apply(hopper()))
+    assert_image_equal(source, hopper())
+
+
+def test_apply_core_readonly() -> None:
+    skip_missing()
+    t = ImageCms.buildTransform(
+        SRGB, "Tests/icc/sRGB_v4_ICC_preference.icc", "RGBA", "RGBA"
+    )
+    data = bytes(4)
+    im = Image.frombuffer("RGBA", (1, 1), data, "raw", "RGBA", 0, 1)
+    assert im.readonly
+
+    with pytest.raises(ValueError, match="image is readonly"):
+        t.transform.apply(Image.new("RGBA", (1, 1), "red").getim(), im.getim())
+    assert data == bytes(4)
+
+
+def test_apply_in_place_readonly(tmp_path: Path) -> None:
+    skip_missing()
+    temp_file = tmp_path / "temp.tif"
+    hopper("RGBA").save(temp_file)
+    t = ImageCms.buildTransform(
+        SRGB, "Tests/icc/sRGB_v4_ICC_preference.icc", "RGBA", "RGBA"
+    )
+
+    with Image.open(temp_file) as im:
+        ImageCms.applyTransform(im, t, inPlace=True)
+        assert im.map is not None  # memory-mapped
+        assert not im.readonly
+        assert_image_equal(im, t.apply(hopper("RGBA")))
 
 
 def test_display_profile() -> None:
@@ -418,7 +462,7 @@ def test_extended_information() -> None:
     assert p.colorimetric_intent is None
     assert p.connection_space == "XYZ "
     assert p.copyright == "Copyright International Color Consortium, 2009"
-    assert p.creation_date == datetime.datetime(2009, 2, 27, 21, 36, 31)
+    assert p.creation_date == datetime.datetime(2009, 3, 27, 21, 36, 31)
     assert p.device_class == "mntr"
     assert_truncated_tuple_equal(
         p.green_colorant,
@@ -550,13 +594,11 @@ def assert_aux_channel_preserved(
 ) -> None:
     def create_test_image() -> Image.Image:
         # set up test image with something interesting in the tested aux channel.
-        # fmt: off
         nine_grid_deltas = [
             (-1, -1), (-1, 0), (-1, 1),
             (0,  -1),  (0, 0),  (0, 1),
             (1,  -1),  (1, 0),  (1, 1),
-        ]
-        # fmt: on
+        ]  # fmt: skip
         chans = []
         bands = ImageMode.getmode(mode).bands
         for band_ndx in range(len(bands)):
@@ -644,9 +686,9 @@ def test_auxiliary_channels_isolated() -> None:
                     continue
 
                 # convert with and without AUX data, test colors are equal
-                src_colorSpace = cast(Literal["LAB", "XYZ", "sRGB"], src_format[1])
+                src_colorSpace = cast("Literal['LAB', 'XYZ', 'sRGB']", src_format[1])
                 source_profile = ImageCms.createProfile(src_colorSpace)
-                dst_colorSpace = cast(Literal["LAB", "XYZ", "sRGB"], dst_format[1])
+                dst_colorSpace = cast("Literal['LAB', 'XYZ', 'sRGB']", dst_format[1])
                 destination_profile = ImageCms.createProfile(dst_colorSpace)
                 source_image = src_format[3]
                 test_transform = ImageCms.buildTransform(

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import subprocess
 import sys
+from pathlib import Path
 
 import fuzzers
 import packaging
@@ -21,17 +21,22 @@ if libjpeg_turbo_version is not None:
             reason="Known failing with libjpeg_turbo 2.0"
         )
 
+tests_path = Path(__file__).parent.parent
+
+
+def find_files(subdir: str) -> list[Path]:
+    return [path for path in tests_path.joinpath(subdir).rglob("*") if path.is_file()]
+
 
 @pytest.mark.parametrize(
     "path",
-    subprocess.check_output("find Tests/images -type f", shell=True).split(b"\n"),
+    find_files("images"),
+    ids=lambda p: str(p.relative_to(tests_path)),
 )
-def test_fuzz_images(path: str) -> None:
+def test_fuzz_images(path: Path) -> None:
     fuzzers.enable_decompressionbomb_error()
     try:
-        with open(path, "rb") as f:
-            fuzzers.fuzz_image(f.read())
-            assert True
+        fuzzers.fuzz_image(path.read_bytes())
     except (
         # Known exceptions from Pillow
         OSError,
@@ -44,21 +49,19 @@ def test_fuzz_images(path: str) -> None:
         Image.DecompressionBombError,
         Image.DecompressionBombWarning,
     ):
-        assert True
+        pass
     finally:
         fuzzers.disable_decompressionbomb_error()
 
 
 @skip_unless_feature("freetype2")
 @pytest.mark.parametrize(
-    "path", subprocess.check_output("find Tests/fonts -type f", shell=True).split(b"\n")
+    "path",
+    find_files("fonts"),
+    ids=lambda p: str(p.relative_to(tests_path)),
 )
-def test_fuzz_fonts(path: str) -> None:
-    if not path:
-        return
-    with open(path, "rb") as f:
-        try:
-            fuzzers.fuzz_font(f.read())
-        except (Image.DecompressionBombError, Image.DecompressionBombWarning, OSError):
-            pass
-        assert True
+def test_fuzz_fonts(path: Path) -> None:
+    try:
+        fuzzers.fuzz_font(path.read_bytes())
+    except (Image.DecompressionBombError, Image.DecompressionBombWarning, OSError):
+        pass

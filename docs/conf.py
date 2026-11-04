@@ -121,7 +121,11 @@ nitpicky = True
 # generating warnings in “nitpicky mode”. Note that type should include the domain name
 # if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
-nitpick_ignore = [("py:class", "_CmsProfileCompatible")]
+nitpick_ignore = [
+    ("py:class", "_CmsProfileCompatible"),
+    ("py:class", "_Ink"),
+    ("py:class", "_Palette"),
+]
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -232,8 +236,6 @@ html_js_files = [
 
 linkcheck_allowed_redirects = {
     r"https://www.bestpractices.dev/projects/6331": r"https://www.bestpractices.dev/en/.*",
-    r"https://badges.gitter.im/python-pillow/Pillow.svg": r"https://badges.gitter.im/repo.svg",
-    r"https://gitter.im/python-pillow/Pillow?.*": r"https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im?.*",
     r"https://pillow.readthedocs.io/?badge=latest": r"https://pillow.readthedocs.io/en/stable/?badge=latest",
     r"https://pillow.readthedocs.io": r"https://pillow.readthedocs.io/en/stable/",
     r"https://tidelift.com/badges/package/pypi/pillow?.*": r"https://img.shields.io/badge/.*",
@@ -247,6 +249,7 @@ linkcheck_allowed_redirects = {
 # https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 _repo = "https://github.com/python-pillow/Pillow/"
 extlinks = {
+    "ghsa": (_repo + "security/advisories/GHSA-%s", "GHSA-%s"),
     "issue": (_repo + "issues/%s", "#%s"),
     "pr": (_repo + "pull/%s", "#%s"),
     "pypi": ("https://pypi.org/project/%s/", "%s"),

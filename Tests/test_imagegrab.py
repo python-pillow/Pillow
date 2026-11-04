@@ -75,10 +75,12 @@ class TestImageGrab:
             [
                 "osascript",
                 "-e",
-                'tell application "Finder"\n'
-                'open ("/" as POSIX file)\n'
-                "get id of front window\n"
-                "end tell",
+                (
+                    'tell application "Finder"\n'
+                    'open ("/" as POSIX file)\n'
+                    "get id of front window\n"
+                    "end tell"
+                ),
             ],
             stdout=subprocess.PIPE,
         )
