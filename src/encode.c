@@ -343,7 +343,7 @@ static struct PyGetSetDef getseters[] = {
     {"pushes_fd",
      (getter)_get_pushes_fd,
      NULL,
-     "True if this decoder expects to push directly to self.fd",
+     "True if this encoder expects to push directly to self.fd",
      NULL},
     {NULL, NULL, NULL, NULL, NULL} /* sentinel */
 };
