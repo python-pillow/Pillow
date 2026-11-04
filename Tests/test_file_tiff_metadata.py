@@ -493,6 +493,28 @@ def test_photometric_interpretation_multiple_values() -> None:
     assert TiffImagePlugin.PHOTOMETRIC_INTERPRETATION not in ifd
 
 
+@pytest.mark.parametrize(
+    "typ, count",
+    (
+        (0, 1),  # Unsupported type
+        (TiffTags.SHORT, 0),  # No data
+    ),
+)
+def test_duplicate_of_skipped_tag(typ: int, count: int) -> None:
+    ifd = TiffImagePlugin.ImageFileDirectory_v2()
+
+    # An ImageWidth tag that is skipped,
+    # followed by a duplicate ImageWidth tag that is valid
+    tag_count = struct.pack("<H", 2)
+    tags = struct.pack("<HHL2H", 256, typ, count, 1, 0) + struct.pack(
+        "<HHL2H", 256, TiffTags.SHORT, 1, 1, 0
+    )
+    next_offset = struct.pack("<L", 0)
+
+    ifd.load(io.BytesIO(tag_count + tags + next_offset))
+    assert 256 not in ifd
+
+
 def test_tag_offset() -> None:
     ifd = TiffImagePlugin.ImageFileDirectory_v2(b"II\x2b\x00" + b"\x00" * 12)
 
