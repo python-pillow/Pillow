@@ -241,18 +241,19 @@ class TestFileJpeg:
             assert stored[0x010E] == "description"
             assert reloaded.getpixel((0, 0)) == (255, 0, 0)
 
-    def test_dpi_keep_rgb_stores_both_axes(self) -> None:
-        output = BytesIO()
-        with warnings.catch_warnings():
-            warnings.simplefilter("error", UserWarning)
-            Image.new("RGB", (20, 20)).save(
-                output, "JPEG", keep_rgb=True, dpi=(96, 150)
+    @pytest.mark.parametrize("mode", ("RGB", "RGBX"))
+    @pytest.mark.parametrize("dpi", ((96, 150), (0, 150), (96, 0), (96.1, 96.4)))
+    def test_dpi_keep_rgb_rejects_unequal_axes(
+        self, mode: str, dpi: tuple[float, float]
+    ) -> None:
+        exif = Image.Exif()
+        exif[0x010E] = "description"
+        original = exif.tobytes()
+        with pytest.raises(ValueError, match="same horizontal and vertical DPI"):
+            Image.new(mode, (20, 20)).save(
+                BytesIO(), "JPEG", keep_rgb=True, dpi=dpi, exif=exif
             )
-        with Image.open(BytesIO(output.getvalue())) as reloaded:
-            exif = reloaded.getexif()
-            assert exif[0x011A] == 96
-            assert exif[0x011B] == 150
-            assert exif[0x0128] == 2
+        assert exif.tobytes() == original
 
     @pytest.mark.parametrize("mode", ("1", "L", "YCbCr", "CMYK"))
     def test_dpi_keep_rgb_other_modes(self, mode: str) -> None:
@@ -263,20 +264,14 @@ class TestFileJpeg:
         with Image.open(BytesIO(output.getvalue())) as reloaded:
             assert reloaded.info["dpi"] == (96, 150)
 
-    @pytest.mark.parametrize("dpi", ((0, 0), (0, 150), (96, 0)))
-    def test_dpi_keep_rgb_zero_density(self, dpi: tuple[int, int]) -> None:
+    def test_dpi_keep_rgb_zero_density(self) -> None:
         output = BytesIO()
         with warnings.catch_warnings():
             warnings.simplefilter("error", UserWarning)
-            Image.new("RGB", (20, 20)).save(output, "JPEG", keep_rgb=True, dpi=dpi)
+            Image.new("RGB", (20, 20)).save(output, "JPEG", keep_rgb=True, dpi=(0, 0))
         with Image.open(BytesIO(output.getvalue())) as reloaded:
             assert "dpi" not in reloaded.info
             assert not reloaded.getexif()
-
-    @pytest.mark.parametrize("dpi", ((96,), (96, 96, 96)))
-    def test_dpi_keep_rgb_invalid_length(self, dpi: tuple[int, ...]) -> None:
-        with pytest.raises(TypeError):
-            Image.new("RGB", (20, 20)).save(BytesIO(), "JPEG", keep_rgb=True, dpi=dpi)
 
     def test_icc(self, tmp_path: Path) -> None:
         # Test ICC support

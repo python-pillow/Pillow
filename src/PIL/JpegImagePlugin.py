@@ -815,7 +815,16 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     jfif_dpi = (0, 0)
     exif = info.get("exif", b"")
     if "dpi" in info:
-        dpi = tuple(round(x) for x in info["dpi"])
+        requested_dpi = tuple(info["dpi"])
+        dpi = tuple(round(x) for x in requested_dpi)
+        if (
+            keep_rgb
+            and im.mode in ("RGB", "RGBX")
+            and len(dpi) == 2
+            and requested_dpi[0] != requested_dpi[1]
+        ):
+            msg = "keep_rgb requires the same horizontal and vertical DPI"
+            raise ValueError(msg)
         if (
             keep_rgb
             and im.mode in ("RGB", "RGBX")
