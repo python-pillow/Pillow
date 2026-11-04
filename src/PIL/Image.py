@@ -1144,7 +1144,9 @@ class Image:
                 )
                 del new_im.info["transparency"]
                 return new_im
-            elif self.mode in {"L", "RGB", "P"} and mode in {"L", "RGB", "P"}:
+            elif self.mode in {"1", "L", "I", "I;16", "RGB", "P"} and (
+                mode in {"L", "RGB", "P"}
+            ):
                 t = self.info["transparency"]
                 if isinstance(t, bytes):
                     # Dragons. This can't be represented by a single color
