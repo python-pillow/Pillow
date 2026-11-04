@@ -1156,8 +1156,7 @@ class TestFileTiff:
     def test_timeout(self) -> None:
         # The first StripOffsets tag is empty, so its duplicates are ignored
         with pytest.raises(UnidentifiedImageError):
-            with Image.open("Tests/images/timeout-6646305047838720"):
-                pass
+            Image.open("Tests/images/timeout-6646305047838720")
 
     @pytest.mark.parametrize(
         "test_file",
