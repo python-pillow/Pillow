@@ -408,9 +408,10 @@ ImagingDestroyArray(Imaging im) {
 
     if (im->blocks) {
         MUTEX_LOCK(&ImagingDefaultArena.mutex);
-        while (y < im->blocks_count && im->blocks[y].ptr) {
-            memory_return_block(&ImagingDefaultArena, im->blocks[y]);
-            y += 1;
+        for (int y = 0; y < im->blocks_count; y++) {
+            if (im->blocks[y].ptr) {
+                memory_return_block(&ImagingDefaultArena, im->blocks[y]);
+            }
         }
         MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
         free(im->blocks);
