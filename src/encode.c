@@ -551,8 +551,8 @@ _raw_optimal_bufsize(ImagingCodecState state) {
  *                           >= the packed pixel size. Each row is explicitly
  *                           zero-padded to this size. If unset, the true packed size
  *                           is used.
- * - ystep (int, optional): Specifies the orientation. If set to a negative value, the
- *                          encoder will write rows in reverse order (upside-down).
+ * - ystep (int, optional): Specifies the orientation. 1 or -1. -1 will write rows in
+                            reverse order (upside-down).
  #
  * @param self Unused.
  * @param args Python arguments, see above.
