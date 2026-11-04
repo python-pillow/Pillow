@@ -2379,7 +2379,7 @@ im_setalpha_impl(ImagingObject *self, PyObject *args) {
 /**
  * Convert the given RGB/RGBX image to RGBA in-place.
  *
- * @return None on success, with Python exception set on failure.
+ * @return None on success, or NULL on failure with Python exception set.
  */
 static PyObject *
 im_setalpha(ImagingObject *self, PyObject *args) {
@@ -3287,14 +3287,13 @@ textwidth(ImagingFontObject *self, const unsigned char *text) {
 }
 
 /**
- * Convert the given Python string to a C Latin-1 string
- * suitable for basic text rendering.
+ * Convert the given Python string or bytes object to an unsigned char array.
  *
  * @param encoded_string The Python string to convert. Can be a Unicode or bytes object.
  * @param text Pointer to an unsigned char pointer that will be set to the allocated C
  *             string. The caller is responsible for freeing the memory with `free`.
  * @return Void, but a Python exception will be set if an error occurs (e.g., memory
- *         allocation failure). `text` will not have been set in this case.
+ *         allocation failure). `text` will be NULL in this case.
  */
 void
 _font_text_asBytes(PyObject *encoded_string, unsigned char **text) {
