@@ -7,40 +7,6 @@
 The :py:mod:`~PIL.ImageEnhance` module contains a number of classes that can be used
 for image enhancement.
 
-Image modes
------------
-
-Enhancement does not automatically convert unsupported :ref:`image modes
-<concept-modes>`. For example, enhancing a palette image (``P``) or a 16-bit
-grayscale image (``I;16``) can raise ``ValueError: image has wrong mode``.
-
-Convert a palette image to ``RGB`` before enhancement, or to ``RGBA`` to preserve
-transparency::
-
-    from PIL import Image, ImageEnhance
-
-    with Image.open("palette.png") as image:
-        rgba_image = image.convert("RGBA")
-    enhanced = ImageEnhance.Contrast(rgba_image).enhance(1.3)
-
-For a 16-bit grayscale image, converting directly to ``L`` clips values above
-255 rather than scaling them to the 8-bit range. If an 8-bit result is suitable,
-scale the values before converting. This example maps the full unsigned 16-bit
-range, 0 to 65535, to 0 to 255::
-
-    from PIL import Image, ImageEnhance
-
-    with Image.open("grayscale16.tif") as image:
-        grayscale = image.convert("I").point(lambda value: value / 256).convert("L")
-    enhanced = ImageEnhance.Contrast(grayscale).enhance(1.3)
-
-The conversion to ``I`` allows the same scaling operation for both little-endian
-and big-endian 16-bit images. This reduces the image to 256 gray levels and does
-not preserve its original precision. It also does not stretch the image's actual
-minimum and maximum to fill the output range; data using only part of the 16-bit
-range may need a different scaling factor. Enhancement in the original 16-bit
-mode is not supported.
-
 Example: Vary the sharpness of an image
 ---------------------------------------
 

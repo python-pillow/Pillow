@@ -75,6 +75,12 @@ combinations that are not listed above, use a sequence of Image objects.
 You can read the mode of an image through the :py:attr:`~PIL.Image.Image.mode`
 attribute. This is a string containing one of the above values.
 
+Not every operation supports every mode. Most operations do not automatically
+convert an image to a supported mode; use :py:meth:`~PIL.Image.Image.convert`
+explicitly when needed. For example, a palette image (``P``) can be converted to
+``RGB``, or to ``RGBA`` to preserve transparency. Mode conversion can change pixel
+values or reduce their precision. See :ref:`color-transforms` for examples.
+
 Size
 ----
 
