@@ -261,8 +261,8 @@ def test_pa_color(color: str | tuple[int, ...]) -> None:
     assert expanded_im.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, 255)
 
     # Pad
-    padded_im = ImageOps.pad(im, (256, 128), color=color, centering=(0, 0))
-    assert padded_im.convert("RGBA").getpixel((255, 0)) == (255, 0, 0, 255)
+    padded_im = ImageOps.pad(im, (256, 128), color=color)
+    assert padded_im.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, 255)
 
 
 def test_rgba_palette() -> None:
