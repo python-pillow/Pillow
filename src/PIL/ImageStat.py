@@ -39,7 +39,7 @@ class Stat:
         only the regions covered by that mask are included in the
         statistics. You can also pass in a previously calculated histogram.
 
-        :param image: A PIL image, or a precalculated histogram.
+        :param image_or_list: A PIL image, or a precalculated histogram.
 
             .. note::
 

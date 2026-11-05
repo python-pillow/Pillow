@@ -337,7 +337,10 @@ def _delegate(op: str) -> Any:
     def delegate(
         self: IFDRational, *args: tuple[float, ...]
     ) -> bool | float | Fraction:
-        return getattr(self._val, op)(*args)
+        func = getattr(self._val, op)
+        if len(args) == 1 and isinstance(args[0], IFDRational):
+            return func(args[0]._val)
+        return func(*args)
 
     return delegate
 
@@ -700,7 +703,12 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 self.tagtype[tag] = TiffTags.UNDEFINED
                 if all(isinstance(v, IFDRational) for v in values):
                     for v in values:
-                        if v < IFDRational(0):
+                        value = (
+                            v.numerator
+                            if isinstance(v, IFDRational) and v.denominator == 0
+                            else v
+                        )
+                        if value < IFDRational(0):
                             self.tagtype[tag] = TiffTags.SIGNED_RATIONAL
                             break
                     else:
@@ -769,7 +777,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 (dest[tag],) = values
             except ValueError:
                 # We've got a builtin tag with 1 expected entry
-                if tag != PHOTOMETRIC_INTERPRETATION:
+                if tag != PHOTOMETRIC_INTERPRETATION and self.group is None:
                     warnings.warn(
                         f"Metadata Warning, tag {tag} had too many entries: "
                         f"{len(values)}, expected 1"
@@ -911,29 +919,40 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 else self._unpack("H", self._ensure_read(fp, 2))
             )[0]
             total_size = 0
+            seen_tags = set()
             for i in range(tag_count):
                 tag, typ, count, data = (
                     self._unpack("HHQ8s", self._ensure_read(fp, 20))
                     if self._bigtiff
                     else self._unpack("HHL4s", self._ensure_read(fp, 12))
                 )
-                if tag in self._tagdata:
+                if tag in seen_tags:
+                    # Ignore duplicate tags, like libtiff
+                    # even if the first one was skipped
+                    continue
+                seen_tags.add(tag)
+                if (
+                    tag == PHOTOMETRIC_INTERPRETATION
+                    and count != 1
+                    and self.group is None
+                ):
+                    # Ignore a malformed PhotometricInterpretation tag, like libtiff
                     continue
 
-                tagname = TiffTags.lookup(tag, self.group).name
-                typname = TYPES.get(typ, "unknown")
-                msg = f"tag: {tagname} ({tag}) - type: {typname} ({typ})"
+                # tagname = TiffTags.lookup(tag, self.group).name
+                # typname = TYPES.get(typ, "unknown")
+                # msg = f"tag: {tagname} ({tag}) - type: {typname} ({typ})"
 
                 try:
                     unit_size, handler = self._load_dispatch[typ]
                 except KeyError:
-                    logger.debug("%s - unsupported type %s", msg, typ)
+                    # logger.debug("%s - unsupported type %s", msg, typ)
                     continue  # ignore unsupported type
                 size = count * unit_size
                 if size > (8 if self._bigtiff else 4):
                     here = fp.tell()
                     (offset,) = self._unpack("Q" if self._bigtiff else "L", data)
-                    msg += f" Tag Location: {here} - Data Location: {offset}"
+                    # msg += f" Tag Location: {here} - Data Location: {offset}"
                     if offset >= 2**63:
                         warnings.warn("Tag offset too large")
                         continue
@@ -956,20 +975,20 @@ class ImageFileDirectory_v2(_IFDv2Base):
                         f"Expecting to read {size} bytes but only got {len(data)}."
                         f" Skipping tag {tag}"
                     )
-                    logger.debug(msg)
+                    # logger.debug(msg)
                     continue
 
                 if not data:
-                    logger.debug(msg)
+                    # logger.debug(msg)
                     continue
 
                 self._tagdata[tag] = data
                 self.tagtype[tag] = typ
 
-                msg += " - value: "
-                msg += f"<table: {size} bytes>" if size > 32 else repr(data)
+                # msg += " - value: "
+                # msg += f"<table: {size} bytes>" if size > 32 else repr(data)
 
-                logger.debug(msg)
+                # logger.debug(msg)
 
             (self.next,) = (
                 self._unpack("Q", self._ensure_read(fp, 8))
@@ -1612,8 +1631,12 @@ class TiffImageFile(ImageFile.ImageFile):
 
         self.info["compression"] = self._compression
 
-        xres = self.tag_v2.get(X_RESOLUTION, 1)
-        yres = self.tag_v2.get(Y_RESOLUTION, 1)
+        # Clear info from previous frame
+        self.info.pop("dpi", None)
+        self.info.pop("resolution", None)
+
+        xres = self.tag_v2.get(X_RESOLUTION)
+        yres = self.tag_v2.get(Y_RESOLUTION)
 
         if xres and yres:
             resunit = self.tag_v2.get(RESOLUTION_UNIT)
@@ -1813,9 +1836,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     libtiff = WRITE_LIBTIFF or compression != "raw"
 
-    # required for color libtiff images
-    ifd[PLANAR_CONFIGURATION] = 1
-
     ifd[IMAGEWIDTH] = im.size[0]
     ifd[IMAGELENGTH] = im.size[1]
 
@@ -1834,6 +1854,8 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if isinstance(info, ImageFileDirectory_v1):
         info = info.to_v2()
     for key in info:
+        if libtiff and key in {IMAGEWIDTH, IMAGELENGTH}:
+            continue
         if isinstance(info, Image.Exif) and key in TiffTags.TAGS_V2_GROUPS:
             ifd[key] = info.get_ifd(key)
         else:
@@ -1842,6 +1864,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             ifd.tagtype[key] = info.tagtype[key]
         except Exception:
             pass  # might not be an IFD. Might not have populated type
+
+    # required for color libtiff images
+    ifd[PLANAR_CONFIGURATION] = 1
 
     legacy_ifd = {}
     if hasattr(im, "tag"):
@@ -1914,8 +1939,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     if bits != (1,):
         ifd[BITSPERSAMPLE] = bits
-        if len(bits) != 1:
-            ifd[SAMPLESPERPIXEL] = len(bits)
+    ifd[SAMPLESPERPIXEL] = len(bits)
     if extra is not None:
         ifd[EXTRASAMPLES] = extra
     if format != 1:
@@ -1940,7 +1964,8 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         colormap = []
         colors = len(lut) // 3
         for i in range(3):
-            colormap += [v * 256 for v in lut[colors * i : colors * (i + 1)]]
+            # Multiplying by 257 scales 0-255 to 0-65535
+            colormap += [v * 257 for v in lut[colors * i : colors * (i + 1)]]
             colormap += [0] * (256 - colors)
         ifd[COLORMAP] = colormap
     # data orientation

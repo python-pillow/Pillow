@@ -254,7 +254,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/freetype2",
             "type": "library",
             "name": "FreeType",
-            "version": versions["freetype"],
+            "version": versions["freetype"].replace("-", "."),
             "scope": "optional",
             "description": "Font rendering (optional, used by PIL._imagingft). "
             "Required for text/font support.",
@@ -264,6 +264,23 @@ def generate(version: str) -> dict:
                 {
                     "type": "distribution",
                     "url": "https://download.savannah.gnu.org/releases/freetype/",
+                },
+            ],
+        },
+        {
+            "bom-ref": "pkg:generic/brotli",
+            "type": "library",
+            "name": "Brotli",
+            "version": versions["brotli"],
+            "scope": "optional",
+            "description": "Lossless compression algorithm. "
+            "Required for WOFF2 font support.",
+            "licenses": [{"license": {"id": "MIT"}}],
+            "externalReferences": [
+                {"type": "website", "url": "https://brotli.org"},
+                {
+                    "type": "distribution",
+                    "url": "https://github.com/google/brotli/releases",
                 },
             ],
         },

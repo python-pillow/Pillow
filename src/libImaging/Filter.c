@@ -24,8 +24,8 @@
  * FIXME: Implement image processing gradient filters
  */
 
-#include <stdint.h>
 #include "Imaging.h"
+#include <stdint.h>
 
 #define INT32_MAX_F 2147483647.0F
 

@@ -74,6 +74,11 @@ class TestFileWebp:
             # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
             assert_image_similar_tofile(image, "Tests/images/hopper_webp_bits.ppm", 1.0)
 
+    def test_read_lossless(self) -> None:
+        # generated with: cwebp -z 9 hopper.ppm -o hopper_lossless.webp
+        with Image.open("Tests/images/hopper_lossless.webp") as webp:
+            assert_image_equal(webp, hopper("RGB"))
+
     def _roundtrip(
         self, tmp_path: Path, mode: str, epsilon: float, args: dict[str, Any] = {}
     ) -> None:
