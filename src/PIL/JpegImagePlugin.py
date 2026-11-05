@@ -819,8 +819,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             exif_object.load(exif.tobytes() if isinstance(exif, Image.Exif) else exif)
             exif = exif_object
 
-            exif[0x011A] = dpi[0]
-            exif[0x011B] = dpi[1]
+            resolution = dpi[0] / 2.54 if exif.get(0x0128) == 3 else dpi[0]
+            exif[0x011A] = resolution
+            exif[0x011B] = resolution
             if 0x0128 not in exif:
                 exif[0x0128] = 2
         else:

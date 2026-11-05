@@ -214,11 +214,17 @@ class TestFileJpeg:
             assert_image_equal(reloaded, im)
 
     @pytest.mark.parametrize("as_bytes", (False, True))
-    def test_dpi_keep_rgb_existing_exif(self, as_bytes: bool) -> None:
+    @pytest.mark.parametrize("unit", (None, 1, 2, 3))
+    @pytest.mark.parametrize("dpi", (96, 300))
+    def test_dpi_keep_rgb_existing_exif(
+        self, as_bytes: bool, unit: int | None, dpi: int
+    ) -> None:
         exif = Image.Exif()
         exif[0x010E] = "description"
         exif[0x011A] = 300
         exif[0x011B] = 200
+        if unit is not None:
+            exif[0x0128] = unit
         original = exif.tobytes()
         output = BytesIO()
         with warnings.catch_warnings():
@@ -227,15 +233,17 @@ class TestFileJpeg:
                 output,
                 "JPEG",
                 keep_rgb=True,
-                dpi=(96, 96),
+                dpi=(dpi, dpi),
                 exif=original if as_bytes else exif,
             )
         assert exif.tobytes() == original
         with Image.open(BytesIO(output.getvalue())) as reloaded:
             stored = reloaded.getexif()
-            assert reloaded.info["dpi"] == (96, 96)
-            assert stored[0x011A] == 96
-            assert stored[0x011B] == 96
+            assert reloaded.info["dpi"] == pytest.approx((dpi, dpi))
+            expected_resolution = dpi / 2.54 if unit == 3 else dpi
+            assert float(stored[0x011A]) == pytest.approx(expected_resolution)
+            assert float(stored[0x011B]) == pytest.approx(expected_resolution)
+            assert stored[0x0128] == (unit if unit is not None else 2)
             assert stored[0x010E] == "description"
             assert reloaded.getpixel((0, 0)) == (255, 0, 0)
 
