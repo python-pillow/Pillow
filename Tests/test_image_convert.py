@@ -135,6 +135,18 @@ def test_pa() -> None:
     assert palette.colors != {}
 
 
+@pytest.mark.parametrize("mode, value", (("1", 255), ("I;16", 0x1234), ("I", 0x12345)))
+@pytest.mark.parametrize("convert_mode", ("L", "RGB", "P"))
+def test_trns(mode: str, value: int, convert_mode: str) -> None:
+    im = Image.new(mode, (2, 1))
+    im.putpixel((1, 0), value)
+    im.info["transparency"] = value
+
+    converted = im.convert(convert_mode)
+    assert converted.info["transparency"] != converted.getpixel((0, 0))
+    assert converted.info["transparency"] == converted.getpixel((1, 0))
+
+
 def test_trns_p(tmp_path: Path) -> None:
     im = hopper("P")
     im.info["transparency"] = 0
