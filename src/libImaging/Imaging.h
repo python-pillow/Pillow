@@ -196,13 +196,13 @@ extern Imaging
 ImagingNew(ModeID mode, int xsize, int ysize);
 extern Imaging
 ImagingNewDirty(ModeID mode, int xsize, int ysize);
-extern Imaging
-ImagingNew2Dirty(ModeID mode, Imaging imOut, Imaging imIn);
 extern void
 ImagingDelete(Imaging im);
 
 extern Imaging
 ImagingNewBlock(ModeID mode, int xsize, int ysize);
+
+typedef Imaging (*ImagingAllocator)(ModeID mode, int xsize, int ysize);
 
 extern Imaging
 ImagingNewArrow(
@@ -323,12 +323,12 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha);
 extern Imaging
 ImagingCopy(Imaging im);
 extern Imaging
-ImagingConvert(
-    Imaging imOut,
+ImagingConvertUsingAllocator(
     Imaging imIn,
     ModeID mode,
     ImagingPalette palette,
-    ImagingDitherType dither
+    ImagingDitherType dither,
+    ImagingAllocator new_image
 );
 extern Imaging
 ImagingConvertMatrix(Imaging im, ModeID mode, const float m[12]);
@@ -442,7 +442,7 @@ ImagingColorLUT3D_linear(
 );
 
 extern Imaging
-ImagingCopy2(Imaging imOut, Imaging imIn);
+ImagingCopyInto(Imaging imOut, Imaging imIn);
 
 /* Channel operations */
 /* any mode, except "F" */
