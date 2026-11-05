@@ -280,6 +280,27 @@ def test_roundtrip2(tmp_path: Path) -> None:
         assert_image_similar(reread.convert("RGB"), hopper(), 50)
 
 
+@pytest.mark.parametrize("mode", ("RGBX", "CMYK", "YCbCr", "HSV"))
+def test_roundtrip_other_rgb_modes(mode: str) -> None:
+    im = hopper(mode)
+    out = BytesIO()
+    im.save(out, "GIF")
+    with Image.open(out) as reread:
+        assert_image_similar(reread.convert("RGB"), im.convert("RGB"), 50)
+
+
+@pytest.mark.parametrize("mode", ("RGBa", "PA"))
+def test_roundtrip_other_alpha_modes(mode: str) -> None:
+    im = hopper("RGBA")
+    im.putpixel((0, 0), (255, 0, 0, 0))
+    im = im.convert(mode)
+    out = BytesIO()
+    im.save(out, "GIF")
+    with Image.open(out) as reread:
+        assert reread.convert("RGBA").getpixel((0, 0))[3] == 0
+        assert_image_similar(reread.convert("RGB"), hopper(), 50)
+
+
 def test_roundtrip_save_all(tmp_path: Path) -> None:
     # Single frame image
     out = tmp_path / "temp.gif"
