@@ -20,9 +20,9 @@ Backwards incompatible changes
 Non-square DPI for RGB JPEGs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Saving RGB or RGBX JPEGs with ``keep_rgb=True`` and different horizontal and
-vertical ``dpi`` values now raises :py:exc:`ValueError`. The EXIF resolution
-used by these images requires the two values to match.
+Saving RGB or RGBX JPEGs with ``keep_rgb=True`` now raises :py:exc:`ValueError`
+when the horizontal and vertical ``dpi`` values round to different positive
+integers. The EXIF resolution used by these images requires the values to match.
 
 Deprecations
 ============
@@ -54,8 +54,9 @@ Other changes
 RGB JPEGs with DPI
 ^^^^^^^^^^^^^^^^^^
 
-Saving an RGB JPEG with both ``keep_rgb=True`` and ``dpi`` now uses EXIF for
-resolution, avoiding conflicting JPEG markers that could cause incorrect colours.
+Saving an RGB or RGBX JPEG with ``keep_rgb=True`` and ``dpi`` now uses EXIF for
+resolution when both values round to the same positive integer. This avoids
+conflicting JPEG markers that could cause incorrect colours.
 
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
