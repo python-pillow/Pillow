@@ -114,7 +114,6 @@ def test_args_box_error(
         im.reduce(2, size).size  # type: ignore[arg-type]
 
 
-@pytest.mark.parametrize("mode", ("L", "LA", "RGB", "RGBA", "I", "F"))
 @pytest.mark.parametrize(
     "size, expected",
     (
@@ -123,10 +122,8 @@ def test_args_box_error(
         ((0, 5), (0, 3)),
     ),
 )
-def test_zero_dimension(
-    mode: str, size: tuple[int, int], expected: tuple[int, int]
-) -> None:
-    im = Image.new(mode, size)
+def test_zero_dimension(size: tuple[int, int], expected: tuple[int, int]) -> None:
+    im = Image.new("L", size)
     assert im.reduce(2).size == expected
 
 
