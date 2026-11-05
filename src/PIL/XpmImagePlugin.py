@@ -22,9 +22,8 @@ import re
 from . import Image, ImageFile, ImagePalette
 from ._binary import o8
 
-# XPM header. The four values are separated by whitespace runs: GROMACS, for
-# example, writes multiple spaces between the numbers (#10429).
-xpm_head = re.compile(b'"([0-9]*)\\s+([0-9]*)\\s+([0-9]*)\\s+([0-9]*)')
+# XPM header
+xpm_head = re.compile(rb'"([0-9]*)\s+([0-9]*)\s+([0-9]*)\s+([0-9]*)')
 
 
 def _accept(prefix: bytes) -> bool:
