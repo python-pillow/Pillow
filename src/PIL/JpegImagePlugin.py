@@ -676,8 +676,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     info = im.encoderinfo
 
-    dpi = [round(x) for x in info.get("dpi", (0, 0))]
-
     quality = info.get("quality", -1)
     subsampling = info.get("subsampling", -1)
     qtables = info.get("qtables")
@@ -808,7 +806,27 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     optimize = info.get("optimize", False)
 
+    keep_rgb = info.get("keep_rgb", False)
+    jfif_dpi = (0, 0)
     exif = info.get("exif", b"")
+    if "dpi" in info:
+        dpi = tuple(round(x) for x in info["dpi"])
+        if keep_rgb and im.mode in {"RGB", "RGBX"} and len(dpi) == 2 and min(dpi) > 0:
+            if dpi[0] != dpi[1]:
+                msg = "keep_rgb requires the same horizontal and vertical DPI"
+                raise ValueError(msg)
+            exif_object = Image.Exif()
+            exif_object.load(exif.tobytes() if isinstance(exif, Image.Exif) else exif)
+            exif = exif_object
+
+            resolution = dpi[0] / 2.54 if exif.get(0x0128) == 3 else dpi[0]
+            exif[0x011A] = resolution
+            exif[0x011B] = resolution
+            if 0x0128 not in exif:
+                exif[0x0128] = 2
+        else:
+            jfif_dpi = dpi
+
     if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
     if len(exif) > MAX_BYTES_IN_MARKER:
@@ -821,9 +839,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         progressive,
         info.get("smooth", 0),
         optimize,
-        info.get("keep_rgb", False),
+        keep_rgb,
         info.get("streamtype", 0),
-        dpi,
+        jfif_dpi,
         subsampling,
         info.get("restart_marker_blocks", 0),
         info.get("restart_marker_rows", 0),
