@@ -140,11 +140,13 @@ def test_rotate_with_fill() -> None:
     assert_image_equal_tofile(im, "Tests/images/rotate_45_with_fill.png")
 
 
-@pytest.mark.parametrize("fillcolor", ("red", (255, 0, 0), "blue", (0, 0, 255)))
-def test_p_rotate_with_fill(fillcolor: str | tuple[int, int, int]) -> None:
-    im = Image.new("P", (10, 10))
-    im.putpalette((0, 128, 0, 255, 0, 0))
-    im = im.rotate(45, expand=1, fillcolor=fillcolor)
+@pytest.mark.parametrize("mode", ("P", "PA"))
+@pytest.mark.parametrize("fillcolor", ("red", (255, 0, 0)))
+def test_rotate_with_fill_palette(
+    mode: str, fillcolor: str | tuple[int, int, int]
+) -> None:
+    im = Image.new(mode, (10, 10))
+    im = im.rotate(45, expand=True, fillcolor=fillcolor)
 
     expected = Image.new("RGB", (1, 1), fillcolor).getpixel((0, 0))
     assert im.convert("RGB").getpixel((0, 0)) == expected

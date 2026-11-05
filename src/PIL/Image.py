@@ -3023,15 +3023,15 @@ class Image:
             raise ValueError(msg)
 
         palette = None
-        if self.mode in ("P", "PA") and self.palette:
-            self.load()
+        if self.mode in {"P", "PA"} and self.palette:
             palette = self.palette.copy()
-            if self.mode == "P" and isinstance(fillcolor, (str, tuple)):
-                # Find the fill color in the image palette
-                if isinstance(fillcolor, str):
-                    from . import ImageColor
+            if isinstance(fillcolor, str):
+                from . import ImageColor
 
-                    fillcolor = ImageColor.getcolor(fillcolor, self.mode)
+                fillcolor = ImageColor.getcolor(fillcolor, self.mode)
+            if isinstance(fillcolor, tuple) and all(
+                isinstance(i, int) for i in fillcolor
+            ):
                 fillcolor = palette.getcolor(cast("tuple[int, ...]", fillcolor), self)
 
         im = new(self.mode, size, fillcolor)
