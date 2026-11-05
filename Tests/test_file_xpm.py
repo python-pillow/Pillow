@@ -33,6 +33,25 @@ def test_rgb() -> None:
         assert_image_similar(im, hopper(), 16)
 
 
+def test_multiple_spaces_in_values_line() -> None:
+    # The four header values may be separated by whitespace runs,
+    # as written by e.g. GROMACS matrix output (#10429).
+    data = b"""/* XPM */
+static char *gromacs_xpm[] = {
+"4 4   2 1",
+"A  c #FFFFFF ",
+"B  c #000000 ",
+"ABAB",
+"BABA",
+"ABAB",
+"BABA"
+};
+"""
+    with Image.open(BytesIO(data)) as im:
+        assert im.mode == "P"
+        assert im.size == (4, 4)
+
+
 def test_transparency() -> None:
     data = b"""/* XPM */
 static char *test[] = {
