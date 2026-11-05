@@ -1089,14 +1089,21 @@ pa2ycbcr(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     ImagingConvertRGB2YCbCr(out, out, xsize);
 }
 
+/**
+ * Map P or PA image to another mode.
+ *
+ * @param imOut The output image.
+ *              Must be NULL or have the same size as imIn and the same mode as `mode`.
+ * @param imIn The input palette image.
+ * @param mode The desired output mode.
+ * @return imOut, or NULL on error.
+ */
 static Imaging
 frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
     ImagingSectionCookie cookie;
     int alpha;
     int y;
     void (*convert)(UINT8 *, const UINT8 *, int, ImagingPalette);
-
-    /* Map palette image to L, RGB, RGBA, or CMYK */
 
     if (!imIn->palette) {
         return (Imaging)ImagingError_ValueError("no palette");
@@ -1367,13 +1374,15 @@ topalette(
     return imOut;
 }
 
+/**
+ * Map L or RGB to dithered 1 image
+ */
 static Imaging
 tobilevel(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y;
     int *errors;
 
-    /* Map L or RGB to dithered 1 image */
     if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_RGB) {
         return (Imaging)ImagingError_ValueError("conversion not supported");
     }
