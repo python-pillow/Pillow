@@ -317,6 +317,20 @@ def test_p2pa_palette() -> None:
     assert im_pa.getpalette(None) == im.getpalette()
 
 
+@pytest.mark.parametrize(
+    "mode, value",
+    (("1", 255), ("L", 128), ("I", 0x1234), ("I;16", 0x1234), ("RGB", (1, 2, 3))),
+)
+def test_trns_to_pa(mode: str, value: int | tuple[int, int, int]) -> None:
+    im = Image.new(mode, (2, 1))
+    im.putpixel((1, 0), value)
+    im.info["transparency"] = value
+
+    im_pa = im.convert("PA")
+    assert "transparency" not in im_pa.info
+    assert im_pa.getchannel("A").get_flattened_data() == (255, 0)
+
+
 rgb2xyz_matrix = (
     0.412453, 0.357580, 0.180423, 0,
     0.212671, 0.715160, 0.072169, 0,
