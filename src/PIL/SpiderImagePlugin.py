@@ -147,8 +147,8 @@ class SpiderImageFile(ImageFile.ImageFile):
             # Point to the first image in the stack
             offset = hdrlen * 2
             self.imgnumber = 1
-        elif self.istack == 0 and self.imgnumber > 0:
-            # stk=0, img>0: an image within the stack
+        elif self.istack == 0 and self.imgnumber > 0 and hasattr(self, "stkoffset"):
+            # stk=0, img>0: an image within the stack, reached through seek()
             offset = hdrlen + self.stkoffset
             self.istack = 2  # So Image knows it's still a stack
         else:
