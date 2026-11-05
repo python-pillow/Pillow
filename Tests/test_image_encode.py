@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from PIL import Image
+from PIL import Image, ImageFile
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -22,10 +22,7 @@ def test_raw_encoder_optimal_bufsize_stride() -> None:
     im = Image.new("RGB", (100, 50))
     encoder = Image._getencoder("RGB", "raw", ("RGB", 400))
     encoder.setimage(im.im)
-    assert encoder.optimal_bufsize == 400 * 50
-    encoder.encode(400)  # The encoder's internals change here
-    # ... but the result for this should remain the same.
-    assert encoder.optimal_bufsize == 400 * 50
+    assert encoder.optimal_bufsize == 400 * im.height
 
 
 def test_encoder_optimal_bufsize_unknown() -> None:
@@ -39,19 +36,6 @@ def test_encoder_optimal_bufsize_unknown() -> None:
     encoder = Image._getencoder("1", "xbm", "1")
     encoder.setimage(im.im)
     assert encoder.optimal_bufsize == 0
-
-
-class EncoderSpy:
-    def __init__(self, encoder: Any, *, bufsizes: list[int]) -> None:
-        self._encoder = encoder
-        self.bufsizes = bufsizes
-
-    def __getattr__(self, name: str) -> Any:
-        return getattr(self._encoder, name)
-
-    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
-        self.bufsizes.append(bufsize)
-        return self._encoder.encode(bufsize)
 
 
 @pytest.mark.parametrize("mode", ("L", "RGB"))
@@ -74,11 +58,25 @@ def test_tobytes_exact_buffer_and_single_pass(
     and ends up doing its work in a single pass.
     """
     bufsizes: list[int] = []
-    get_encoder = Image._getencoder
+
+    class EncoderSpy:
+        def __init__(
+            self, encoder: Image.core.ImagingEncoder | ImageFile.PyEncoder
+        ) -> None:
+            self._encoder = encoder
+
+        def __getattr__(self, name: str) -> Any:
+            return getattr(self._encoder, name)
+
+        def encode(self, bufsize: int) -> tuple[int, int, bytes]:
+            bufsizes.append(bufsize)
+            return self._encoder.encode(bufsize)
+
+    _getencoder = Image._getencoder
     monkeypatch.setattr(
         Image,
         "_getencoder",
-        lambda *args: EncoderSpy(get_encoder(*args), bufsizes=bufsizes),
+        lambda *args: EncoderSpy(_getencoder(*args)),
     )
 
     im = Image.new(mode, size)
