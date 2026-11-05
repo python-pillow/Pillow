@@ -297,7 +297,9 @@ def test_roundtrip_other_alpha_modes(mode: str) -> None:
     out = BytesIO()
     im.save(out, "GIF")
     with Image.open(out) as reread:
-        assert reread.convert("RGBA").getpixel((0, 0))[3] == 0
+        px = reread.convert("RGBA").getpixel((0, 0))
+        assert isinstance(px, tuple)
+        assert px[3] == 0
         assert_image_similar(reread.convert("RGB"), hopper(), 50)
 
 
