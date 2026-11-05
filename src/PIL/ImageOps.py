@@ -378,7 +378,11 @@ def _new_with_fill(
         mode = image.palette.mode
         palette = ImagePalette.ImagePalette(mode, image.getpalette(mode))
         if isinstance(color, tuple) and len(color) in (3, 4):
-            color = palette.getcolor(color, image)
+            if image.mode == "PA":
+                alpha = color[3] if len(color) == 4 else 255
+                color = (palette.getcolor(color[:3], image), alpha)
+            else:
+                color = palette.getcolor(color, image)
     else:
         palette = None
     out = Image.new(image.mode, size, color)
