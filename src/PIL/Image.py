@@ -3022,9 +3022,19 @@ class Image:
             msg = "missing method data"
             raise ValueError(msg)
 
+        palette = None
+        if self.mode in {"P", "PA"} and self.palette:
+            palette = self.palette.copy()
+            if isinstance(fillcolor, str):
+                from . import ImageColor
+
+                fillcolor = ImageColor.getcolor(fillcolor, self.mode)
+            if isinstance(fillcolor, tuple) and all(
+                isinstance(i, int) for i in fillcolor
+            ):
+                fillcolor = palette.getcolor(cast("tuple[int, ...]", fillcolor), self)
+
         im = new(self.mode, size, fillcolor)
-        if self.mode in ("P", "PA") and self.palette:
-            im.palette = self.palette.copy()
         im.info = self._copy_info()
         if method == Transform.MESH:
             # list of quads
@@ -3036,6 +3046,8 @@ class Image:
             im.__transformer(
                 (0, 0, *size), self, method, data, resample, fillcolor is None
             )
+        if palette:
+            im.palette = palette
 
         return im
 
