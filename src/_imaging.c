@@ -688,6 +688,12 @@ getink(PyObject *color, Imaging im, char *ink) {
             return ink;
         case IMAGING_TYPE_FLOAT32:
             /* floating point */
+            if (!PyFloat_Check(color) && !PyLong_Check(color)) {
+                PyErr_SetString(
+                    PyExc_TypeError, "color must be int, float or single-element tuple"
+                );
+                return NULL;
+            }
             f = PyFloat_AsDouble(color);
             if (f == -1.0 && PyErr_Occurred()) {
                 return NULL;
