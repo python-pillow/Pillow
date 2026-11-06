@@ -3292,7 +3292,7 @@ def new(
     im = Image()
     if (
         mode in {"P", "PA"}
-        and isinstance(color, (list, tuple))
+        and isinstance(color, tuple)
         and all(isinstance(i, int) for i in color)
     ):
         from . import ImagePalette
