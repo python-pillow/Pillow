@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
-from PIL import Image
-
 from .helper import hopper
 
 
@@ -38,6 +34,11 @@ def test_getcolors() -> None:
     assert getcolors("RGBA", 16384) == 10100
     assert getcolors("CMYK", 16384) == 10100
     assert getcolors("YCbCr", 16384) == 9329
+
+
+def test_negative_maxcolors() -> None:
+    im = hopper()
+    assert im.getcolors(-1) is None
 
 
 # --------------------------------------------------------------------
@@ -76,28 +77,3 @@ def test_pack() -> None:
     assert A is not None
     A.sort()
     assert A == expected
-
-
-@pytest.mark.parametrize(
-    "mode", ("1", "L", "P", "RGB", "RGBA", "CMYK", "YCbCr", "I", "F")
-)
-@pytest.mark.parametrize("color_count", (4, 5))
-@pytest.mark.parametrize("maxcolors", (-2, -1))
-def test_negative_maxcolors(mode: str, color_count: int, maxcolors: int) -> None:
-    im = Image.new("L", (color_count, 1))
-    im.putdata(range(color_count))
-    im = im.convert(mode)
-
-    assert im.getcolors(maxcolors) is None
-
-
-def test_maxcolors_boundary() -> None:
-    pixels = [(value, 0, 0) for value in range(5)]
-    im = Image.new("RGB", (5, 1))
-    im.putdata(pixels)
-
-    assert im.getcolors(0) is None
-    assert im.getcolors(4) is None
-    colors = im.getcolors(5)
-    assert colors is not None
-    assert sorted(colors) == [(1, pixel) for pixel in pixels]

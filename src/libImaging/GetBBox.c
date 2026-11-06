@@ -375,7 +375,7 @@ getcolors32(Imaging im, int maxcolors, int *size) {
             v = &table[i];
             if (!v->count) {
                 /* add to table */
-                if (colors++ >= maxcolors) {
+                if (colors++ == maxcolors) {
                     goto overflow;
                 }
                 v->x = x;
@@ -396,7 +396,7 @@ getcolors32(Imaging im, int maxcolors, int *size) {
                 v = &table[i];
                 if (!v->count) {
                     /* add to table */
-                    if (colors++ >= maxcolors) {
+                    if (colors++ == maxcolors) {
                         goto overflow;
                     }
                     v->x = x;
