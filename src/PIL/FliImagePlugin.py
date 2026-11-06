@@ -42,7 +42,7 @@ def _accept(prefix: bytes) -> bool:
 # method to load individual frames.
 
 
-class FliImageFile(ImageFile.ImageFile):
+class FliImageFile(ImageFile.SeekableImageFile):
     format = "FLI"
     format_description = "Autodesk FLI/FLC Animation"
     _close_exclusive_fp_after_loading = False
@@ -135,9 +135,7 @@ class FliImageFile(ImageFile.ImageFile):
                 palette[i] = (r, g, b)
                 i += 1
 
-    def seek(self, frame: int) -> None:
-        if not self._seek_check(frame):
-            return
+    def _seekTo(self, frame: int) -> None:
         if frame < self.__frame:
             self._seek(0)
 

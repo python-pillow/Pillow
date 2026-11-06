@@ -136,8 +136,6 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
     ) -> None:
         super().__init__()
 
-        self._min_frame = 0
-
         self.custom_mimetype: str | None = None
 
         self.tile: list[_Tile] = []
@@ -483,7 +481,11 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
             fp = self.fp
         return _get_fp_length(fp)
 
-    def _seek_check(self, frame: int) -> bool:
+
+class SeekableImageFile(ImageFile):
+    _min_frame = 0
+
+    def seek(self, frame: int) -> None:
         if (
             frame < self._min_frame
             # Only check upper limit on frames if additional seek operations
@@ -496,7 +498,14 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
             msg = "attempt to seek outside sequence"
             raise EOFError(msg)
 
-        return self.tell() != frame
+        if self.tell() == frame:
+            return
+
+        self._seekTo(frame)
+
+    @abc.abstractmethod
+    def _seekTo(self, frame: int) -> None:
+        pass
 
 
 class StubHandler(abc.ABC):

@@ -171,6 +171,9 @@ def test_image_within_stack_without_stack_header() -> None:
 
 def test_nonstack_file() -> None:
     with Image.open(TEST_FILE) as im:
+        assert isinstance(im, SpiderImagePlugin.SpiderImageFile)
+        im.imgnumber = 2
+
         with pytest.raises(EOFError):
             im.seek(0)
 
