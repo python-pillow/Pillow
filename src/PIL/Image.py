@@ -3277,17 +3277,21 @@ def new(
 
     im = Image()
     if (
-        mode == "P"
+        mode in ("P", "PA")
         and isinstance(color, (list, tuple))
         and all(isinstance(i, int) for i in color)
     ):
         color_ints: tuple[int, ...] = cast("tuple[int, ...]", tuple(color))
         if len(color_ints) == 3 or len(color_ints) == 4:
-            # RGB or RGBA value for a P image
+            # RGB or RGBA value for a P or PA image
             from . import ImagePalette
 
             im.palette = ImagePalette.ImagePalette()
-            color = im.palette.getcolor(color_ints)
+            if mode == "PA":
+                alpha = color_ints[3] if len(color_ints) == 4 else 255
+                color = (im.palette.getcolor(color_ints[:3]), alpha)
+            else:
+                color = im.palette.getcolor(color_ints)
     return im._new(core.fill(mode, size, color))
 
 

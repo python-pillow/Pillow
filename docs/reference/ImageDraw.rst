@@ -48,9 +48,10 @@ To specify colors, you can use numbers or tuples just as you would use with
 :py:meth:`PIL.Image.new`. See :ref:`colors` for more information.
 
 For palette images (mode “P”), use integers as color indexes. In 1.1.4 and
-later, you can also use RGB 3-tuples or color names (see below). The drawing
-layer will automatically assign color indexes, as long as you don’t draw with
-more than 256 colors.
+later, you can also use RGB 3-tuples or color names (see below). For mode “PA”,
+use a tuple of a color index and an alpha value, or RGB 3-tuples, RGBA 4-tuples
+or color names. The drawing layer will automatically assign color indexes, as
+long as you don’t draw with more than 256 colors.
 
 Color names
 ^^^^^^^^^^^
