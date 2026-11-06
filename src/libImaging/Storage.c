@@ -404,8 +404,6 @@ memory_return_block(ImagingMemoryArena arena, ImagingMemoryBlock block) {
 
 static void
 ImagingDestroyArray(Imaging im) {
-    int y = 0;
-
     if (im->blocks) {
         MUTEX_LOCK(&ImagingDefaultArena.mutex);
         for (int y = 0; y < im->blocks_count; y++) {
