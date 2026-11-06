@@ -319,7 +319,7 @@ def test_p2pa_palette() -> None:
 
 @pytest.mark.parametrize(
     "mode, value",
-    (("1", 255), ("L", 128), ("I", 0x1234), ("I;16", 0x1234), ("RGB", (1, 2, 3))),
+    (("1", 255), ("L", 128), ("RGB", (1, 2, 3)), ("I;16", 0x1234), ("I", 0x12345)),
 )
 def test_trns_to_pa(mode: str, value: int | tuple[int, int, int]) -> None:
     im = Image.new(mode, (2, 1))

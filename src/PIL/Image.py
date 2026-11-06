@@ -1199,12 +1199,10 @@ class Image:
                     msg = "Transparency for P mode should be bytes or int"
                     raise ValueError(msg)
             elif self.mode in {"1", "L", "I", "I;16", "RGB"} and mode == "PA":
-                # Use the transparency for the alpha channel
-                alpha = self.convert("RGBA").getchannel("A")
                 im_without_trns = self.copy()
                 del im_without_trns.info["transparency"]
                 new_im = im_without_trns.convert(mode, dither=dither)
-                new_im.putalpha(alpha)
+                new_im.putalpha(self.convert("RGBA").getchannel("A"))
                 return new_im
 
         if mode == "P" and palette == Palette.ADAPTIVE:
