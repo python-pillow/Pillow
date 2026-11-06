@@ -2541,6 +2541,9 @@ class Image:
         """
 
         angle = angle % 360.0
+        if math.isnan(angle):
+            msg = "invalid angle"
+            raise ValueError(msg)
 
         # Fast paths regardless of filter, as long as we're not
         # translating or changing the center.
