@@ -169,28 +169,33 @@ ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj) {
     memset(xproj, 0, im->xsize);
     memset(yproj, 0, im->ysize);
 
-#define GETPROJ(mask)                     \
-    for (y = 0; y < im->ysize; y++) {     \
-        has_data = 0;                     \
-        for (x = 0; x < im->xsize; x++) { \
-            if (im->image[y][x] & mask) { \
-                has_data = 1;             \
-                xproj[x] = 1;             \
-            }                             \
-        }                                 \
-        if (has_data) {                   \
-            yproj[y] = 1;                 \
-        }                                 \
+#define GETPROJ(mask, type)                           \
+    for (y = 0; y < im->ysize; y++) {                 \
+        const type *row = (const type *)im->image[y]; \
+        has_data = 0;                                 \
+        for (x = 0; x < im->xsize; x++) {             \
+            if (row[x] & mask) {                      \
+                has_data = 1;                         \
+                xproj[x] = 1;                         \
+            }                                         \
+        }                                             \
+        if (has_data) {                               \
+            yproj[y] = 1;                             \
+        }                                             \
     }
 
     if (im->image8) {
-        GETPROJ(0xff);
+        if (im->type == IMAGING_TYPE_I16) {
+            GETPROJ(0xffff, UINT16);
+        } else {
+            GETPROJ(0xff, UINT8);
+        }
     } else {
         INT32 mask = 0xffffffff;
         if (im->bands == 3) {
             ((UINT8 *)&mask)[3] = 0;
         }
-        GETPROJ(mask);
+        GETPROJ(mask, INT32);
     }
 
     return 1; /* ok */
