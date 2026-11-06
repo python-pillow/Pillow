@@ -104,3 +104,10 @@ Minimum C version
 
 C11 is now the minimum version of C required to compile Pillow from source.
 Pillow requires Python 3.11 or later, and CPython 3.11 and later require C11.
+
+Counting colors with a negative limit
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.getcolors` now returns ``None`` instead of hanging
+when ``maxcolors`` is negative and an image in RGB, RGBA or another 32-bit
+pixel mode contains more than four distinct colors.
