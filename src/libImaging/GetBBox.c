@@ -38,7 +38,7 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
     bbox[1] = -1;
     bbox[2] = bbox[3] = 0;
 
-#define GETBBOX(image, mask, type)                             \
+#define GETBBOX(mask, type)                                    \
     /* first stage: looking for any pixels from top */         \
     for (int y = 0; y < ysize; y++) {                          \
         const type *restrict row = (const type *)im->image[y]; \
@@ -122,9 +122,9 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
         if (im->type == IMAGING_TYPE_I16) {
             // In I;16 modes, image8 is two-byte pixels, so scan as UINT16.
             // Since we're looking for zeroes, endianness doesn't matter.
-            GETBBOX(image8, 0xffff, UINT16);
+            GETBBOX(0xffff, UINT16);
         } else {
-            GETBBOX(image8, 0xff, UINT8);
+            GETBBOX(0xff, UINT8);
         }
     } else {
         INT32 mask = 0xffffffff;
@@ -142,7 +142,7 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
             mask = 0xff000000;
 #endif
         }
-        GETBBOX(image32, mask, INT32);
+        GETBBOX(mask, INT32);
     }
 
     return 1; /* ok */
@@ -169,7 +169,7 @@ ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj) {
     memset(xproj, 0, im->xsize);
     memset(yproj, 0, im->ysize);
 
-#define GETPROJ(image, mask)              \
+#define GETPROJ(mask)                     \
     for (y = 0; y < im->ysize; y++) {     \
         has_data = 0;                     \
         for (x = 0; x < im->xsize; x++) { \
@@ -184,13 +184,13 @@ ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj) {
     }
 
     if (im->image8) {
-        GETPROJ(image8, 0xff);
+        GETPROJ(0xff);
     } else {
         INT32 mask = 0xffffffff;
         if (im->bands == 3) {
             ((UINT8 *)&mask)[3] = 0;
         }
-        GETPROJ(image32, mask);
+        GETPROJ(mask);
     }
 
     return 1; /* ok */
