@@ -280,7 +280,7 @@ def test_roundtrip2(tmp_path: Path) -> None:
         assert_image_similar(reread.convert("RGB"), hopper(), 12)
 
 
-@pytest.mark.parametrize("mode", ("RGBX", "CMYK", "YCbCr", "HSV"))
+@pytest.mark.parametrize("mode", ("CMYK", "HSV", "LAB", "RGBX", "YCbCr"))
 def test_roundtrip_other_rgb_modes(tmp_path: Path, mode: str) -> None:
     out = tmp_path / "temp.gif"
     im = hopper(mode)
