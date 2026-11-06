@@ -147,8 +147,8 @@ class ImageDraw:
             if ink is not None:
                 if isinstance(ink, str):
                     ink = ImageColor.getcolor(ink, self.mode)
-                if self.palette and isinstance(ink, tuple):
-                    ink = self._palette_color(ink)
+                if self.mode in {"P", "PA"} and isinstance(ink, tuple):
+                    ink = self._image._get_palette_color(ink)
                 if isinstance(ink, tuple) and len(ink) == 4 and ink[3] == 0:
                     # Do not use transparent ink
                     result_ink = None
@@ -157,20 +157,10 @@ class ImageDraw:
             if fill is not None:
                 if isinstance(fill, str):
                     fill = ImageColor.getcolor(fill, self.mode)
-                if self.palette and isinstance(fill, tuple):
-                    fill = self._palette_color(fill)
+                if self.mode in {"P", "PA"} and isinstance(fill, tuple):
+                    fill = self._image._get_palette_color(fill)
                 result_fill = self.draw.draw_ink(fill)
         return result_ink, result_fill
-
-    def _palette_color(self, color: tuple[int, ...]) -> int | tuple[int, ...]:
-        assert self.palette is not None
-        if self.mode == "PA":
-            if len(color) not in (3, 4):
-                # Already a palette index and alpha value
-                return color
-            alpha = color[3] if len(color) == 4 else 255
-            return (self.palette.getcolor(color[:3], self._image), alpha)
-        return self.palette.getcolor(color, self._image)
 
     def arc(
         self,
