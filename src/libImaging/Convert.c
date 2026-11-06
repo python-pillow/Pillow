@@ -471,12 +471,15 @@ rgbT2a(UINT8 *out, UINT8 *in, int xsize, int r, int g, int b, int premultiplied)
     UINT32 repl = premultiplied ? 0 : (trns & 0x00ffffff);
 #endif
 
-    int i;
-
     UINT8 *ref = in != NULL ? in : out;
-    for (i = 0; i < xsize; i++, ref += sizeof(trns), out += sizeof(trns)) {
+    for (int x = 0; x < xsize; x++, ref += sizeof(trns), out += sizeof(trns)) {
         UINT32 v;
         memcpy(&v, ref, sizeof(v));
+#ifdef WORDS_BIGENDIAN
+        v |= 0xff;
+#else
+        v = (0xffU << 24) | v;
+#endif
         if (v == trns) {
             memcpy(out, &repl, sizeof(repl));
         }
@@ -1086,14 +1089,21 @@ pa2ycbcr(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     ImagingConvertRGB2YCbCr(out, out, xsize);
 }
 
+/**
+ * Map P or PA image to another mode.
+ *
+ * @param imOut The output image.
+ *              Must be NULL or have the same size as imIn and the same mode as `mode`.
+ * @param imIn The input palette image.
+ * @param mode The desired output mode.
+ * @return imOut, or NULL on error.
+ */
 static Imaging
 frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
     ImagingSectionCookie cookie;
     int alpha;
     int y;
     void (*convert)(UINT8 *, const UINT8 *, int, ImagingPalette);
-
-    /* Map palette image to L, RGB, RGBA, or CMYK */
 
     if (!imIn->palette) {
         return (Imaging)ImagingError_ValueError("no palette");
@@ -1364,13 +1374,15 @@ topalette(
     return imOut;
 }
 
+/**
+ * Map L or RGB to dithered 1 image
+ */
 static Imaging
 tobilevel(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y;
     int *errors;
 
-    /* Map L or RGB to dithered 1 image */
     if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_RGB) {
         return (Imaging)ImagingError_ValueError("conversion not supported");
     }
@@ -1773,10 +1785,29 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
     ImagingSectionEnter(&cookie);
     MUTEX_LOCK(&imIn->mutex);
     for (y = 0; y < imIn->ysize; y++) {
-        (*convert)((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
+        UINT8 *out = (UINT8 *)imOut->image[y];
+        (*convert)(out, (UINT8 *)imIn->image[y], imIn->xsize);
 
-        source = source_transparency ? (UINT8 *)imIn->image[y] : NULL;
-        rgbT2a((UINT8 *)imOut->image[y], source, imIn->xsize, r, g, b, premultiplied);
+        if (imIn->mode == IMAGING_MODE_I) {
+            INT32 *in = (INT32 *)imIn->image32[y];
+            for (int x = 0; x < imIn->xsize; x++, in++, out += 4) {
+                if (in[0] == r) {
+                    out[3] = 0;
+                }
+            }
+        } else {
+            UINT8 *in = (UINT8 *)imIn->image[y];
+            if (imIn->mode == IMAGING_MODE_I_16) {
+                for (int x = 0; x < imIn->xsize; x++, in += 2, out += 4) {
+                    if ((in[0] | (in[1] << 8)) == r) {
+                        out[3] = 0;
+                    }
+                }
+            } else {
+                source = source_transparency ? in : NULL;
+                rgbT2a(out, source, imIn->xsize, r, g, b, premultiplied);
+            }
+        }
     }
     MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);

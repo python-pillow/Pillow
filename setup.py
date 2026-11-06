@@ -572,16 +572,20 @@ class pil_build_ext(build_ext):
                 for d in os.environ[k].split(os.path.pathsep):
                     _add_directory(library_dirs, d)
 
-        _add_directory(
-            library_dirs,
-            (sys.prefix == sys.base_prefix and sysconfig.get_config_var("LIBDIR"))
-            or os.path.join(sys.prefix, "lib"),
-        )
-        _add_directory(
-            include_dirs,
-            (sys.prefix == sys.base_prefix and sysconfig.get_config_var("INCLUDEDIR"))
-            or os.path.join(sys.prefix, "include"),
-        )
+        if not sysconfig.is_python_build():
+            _add_directory(
+                library_dirs,
+                (sys.prefix == sys.base_prefix and sysconfig.get_config_var("LIBDIR"))
+                or os.path.join(sys.prefix, "lib"),
+            )
+            _add_directory(
+                include_dirs,
+                (
+                    sys.prefix == sys.base_prefix
+                    and sysconfig.get_config_var("INCLUDEDIR")
+                )
+                or os.path.join(sys.prefix, "include"),
+            )
 
         #
         # add platform directories

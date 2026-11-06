@@ -135,6 +135,18 @@ def test_pa() -> None:
     assert palette.colors != {}
 
 
+@pytest.mark.parametrize("mode, value", (("1", 255), ("I;16", 0x1234), ("I", 0x12345)))
+@pytest.mark.parametrize("convert_mode", ("L", "RGB", "P"))
+def test_trns(mode: str, value: int, convert_mode: str) -> None:
+    im = Image.new(mode, (2, 1))
+    im.putpixel((1, 0), value)
+    im.info["transparency"] = value
+
+    converted = im.convert(convert_mode)
+    assert converted.info["transparency"] != converted.getpixel((0, 0))
+    assert converted.info["transparency"] == converted.getpixel((1, 0))
+
+
 def test_trns_p(tmp_path: Path) -> None:
     im = hopper("P")
     im.info["transparency"] = 0
@@ -194,6 +206,20 @@ def test_trns_l(tmp_path: Path) -> None:
     im_p.save(f)
 
 
+@pytest.mark.parametrize("mode", ("I", "I;16"))
+@pytest.mark.parametrize("convert_mode", ("LA", "RGBA"))
+def test_trns_i(mode: str, convert_mode: str) -> None:
+    im = Image.new(mode, (3, 1))
+    im.putdata((0, 0x1234, 0xFFFF))
+    im.info["transparency"] = 0x1234
+
+    expected: tuple[tuple[int, ...], ...] = ((0, 255), (255, 0), (255, 255))
+    while len(expected[0]) < len(convert_mode):
+        expected = tuple((v[0], *v) for v in expected)
+
+    assert im.convert(convert_mode).get_flattened_data() == expected
+
+
 def test_trns_RGB(tmp_path: Path) -> None:
     im = hopper("RGB")
     im.info["transparency"] = im.getpixel((0, 0))
@@ -237,6 +263,9 @@ def test_trns_RGB(tmp_path: Path) -> None:
 
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = im.getpixel((0, 0))
+
+    assert im.convert("LA").getpixel((0, 0)) == (0, 0)
+
     im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
     assert im_p.info["transparency"] == im_p.getpixel((0, 0))
     im_p.save(f)

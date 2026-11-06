@@ -498,7 +498,7 @@ class PngStream(ChunkStream):
         else:
             if self.im_n_frames is not None:
                 self.im_info["default_image"] = True
-            tile = [ImageFile._Tile("zip", (0, 0, *self.im_size), pos, self.im_rawmode)]
+            tile = [ImageFile._Tile("zip", None, pos, self.im_rawmode)]
         if self.im_rawmode == "RGB;16B" and "transparency" in self.im_info:
             # Preserve the full tRNS key before the RGB unpacker drops sample bits.
             self.im_mode = "RGBA"
@@ -544,7 +544,12 @@ class PngStream(ChunkStream):
             if self.im_mode == "1":
                 self.im_info["transparency"] = 255 if i16(s) else 0
             elif self.im_mode in ("L", "I;16"):
-                self.im_info["transparency"] = i16(s)
+                value = i16(s)
+                if self.im_rawmode in {"L;2", "L;4"}:
+                    # Scale the grey level to match the unpacked 8-bit pixels
+                    max_value = (1 << int(self.im_rawmode[-1])) - 1
+                    value = int(min(1, value / max_value) * 255)
+                self.im_info["transparency"] = value
             elif self.im_mode == "RGB":
                 self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
         return s
@@ -1125,8 +1130,12 @@ class PngImageFile(ImageFile.ImageFile):
                         elif isinstance(t, int):
                             updated.putpalettealpha(t)
                     mask = updated.convert("RGBA")
-                self._prev_im.paste(updated, self.dispose_extent, mask)
-                self.im = self._prev_im
+                if self.dispose_op == Disposal.OP_PREVIOUS:
+                    # Keep the previous image unchanged for disposal
+                    self.im = self._prev_im.copy()
+                else:
+                    self.im = self._prev_im
+                self.im.paste(updated, self.dispose_extent, mask)
 
     def _getexif(self) -> dict[int, Any] | None:
         if "exif" not in self.info:
@@ -1334,14 +1343,14 @@ def _write_multiple_frames(
             ImageFile._save(
                 im_frame,
                 cast("IO[bytes]", _idat(fp, chunk)),
-                [ImageFile._Tile("zip", (0, 0, *im_frame.size), 0, rawmode)],
+                [ImageFile._Tile("zip", args=rawmode)],
             )
         else:
             fdat_chunks = _fdat(fp, chunk, seq_num)
             ImageFile._save(
                 im_frame,
                 cast("IO[bytes]", fdat_chunks),
-                [ImageFile._Tile("zip", (0, 0, *im_frame.size), 0, rawmode)],
+                [ImageFile._Tile("zip", args=rawmode)],
             )
             seq_num = fdat_chunks.seq_num
     return None
@@ -1562,7 +1571,7 @@ def _save(
         ImageFile._save(
             single_im,
             cast("IO[bytes]", _idat(fp, chunk)),
-            [ImageFile._Tile("zip", (0, 0, *single_im.size), 0, rawmode)],
+            [ImageFile._Tile("zip", args=rawmode)],
         )
 
     if info:

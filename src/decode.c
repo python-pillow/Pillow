@@ -210,6 +210,11 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
         PyErr_SetString(PyExc_ValueError, "decoder already has an image");
         return NULL;
     }
+
+    if (im->read_only) {
+        PyErr_SetString(PyExc_ValueError, "image is readonly");
+        return NULL;
+    }
     decoder->im = im;
 
     state = &decoder->state;

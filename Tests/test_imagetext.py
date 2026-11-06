@@ -132,6 +132,20 @@ def test_wrap(data: str, width: int, expected: str, string: bool) -> None:
         assert text_bytes.text == expected.encode()
 
 
+@pytest.mark.parametrize("data", ("Hello World!\n", "Hello World! \n\n", " "))
+@pytest.mark.parametrize("string", (True, False))
+def test_wrap_trailing_whitespace(data: str, string: bool) -> None:
+    # Trailing whitespace is not returned as text that did not fit
+    if string:
+        text = ImageText.Text(data)
+        assert text.wrap(100) is None
+        assert text.text == data.rstrip()
+    else:
+        text_bytes = ImageText.Text(data.encode())
+        assert text_bytes.wrap(100) is None
+        assert text_bytes.text == data.rstrip().encode()
+
+
 def test_wrap_long_word() -> None:
     text = ImageText.Text("Hello World!")
     with pytest.raises(ValueError, match="Word does not fit within line"):
@@ -244,3 +258,13 @@ def test_wrap_grow() -> None:
     assert text.wrap(50, 50, ("grow", 18)) is None
     assert isinstance(text.font, ImageFont.FreeTypeFont)
     assert text.font.size == 16
+
+
+@skip_unless_feature("freetype2")
+@pytest.mark.parametrize("scaling, size", (("shrink", 10), ("grow", 16)))
+def test_wrap_scaling_trailing_whitespace(scaling: str, size: int) -> None:
+    text = ImageText.Text("Hello World!\n")
+    assert text.wrap(50, 50, scaling) is None
+    assert isinstance(text.font, ImageFont.FreeTypeFont)
+    assert text.font.size == size
+    assert text.text == "Hello\nWorld!"
