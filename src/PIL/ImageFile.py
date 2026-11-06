@@ -678,10 +678,6 @@ def _save(im: Image.Image, fp: IO[bytes], tile: list[_Tile], bufsize: int = 0) -
     if not hasattr(im, "encoderconfig"):
         im.encoderconfig = ()
     tile.sort(key=_tilesort)
-    # FIXME: make MAXBLOCK a configuration parameter
-    # It would be great if we could have the encoder specify what it needs
-    # But, it would need at least the image size in most cases. RawEncode is
-    # a tricky case.
     bufsize = max(MAXBLOCK, bufsize, im.size[0] * 4)  # see RawEncode.c
     try:
         fh = fp.fileno()
@@ -711,6 +707,8 @@ def _encode_tile(
                 encoder.setfd(fp)
                 errcode = encoder.encode_to_pyfd()[1]
             else:
+                if encoder.optimal_bufsize:
+                    bufsize = encoder.optimal_bufsize
                 if exc:
                     # compress to Python file-compatible object
                     while True:
@@ -916,6 +914,14 @@ class PyEncoder(PyCodec):
     @property
     def pushes_fd(self) -> bool:
         return self._pushes_fd
+
+    @property
+    def optimal_bufsize(self) -> int:
+        """
+        The buffer size that would encode the whole tile in a single
+        :meth:`encode` call. If not known in advance, return 0.
+        """
+        return 0
 
     def encode(self, bufsize: int) -> tuple[int, int, bytes]:
         """

@@ -43,6 +43,7 @@ typedef struct {
         Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes
     );
     void (*cleanup)(ImagingCodecState state);
+    Py_ssize_t (*optimal_bufsize)(ImagingCodecState state);
     struct ImagingCodecStateInstance state;
     Imaging im;
     PyObject *lock;
@@ -87,8 +88,9 @@ PyImaging_EncoderNew(int contextsize) {
     /* Initialize encoder context */
     encoder->state.context = context;
 
-    /* Most encoders don't need this */
+    /* Most encoders don't need these */
     encoder->cleanup = NULL;
+    encoder->optimal_bufsize = NULL;
 
     /* Target image */
     encoder->lock = NULL;
@@ -355,11 +357,33 @@ static struct PyMethodDef methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
+// The buffer size that would let this encoder consume the whole tile in a
+// single call. If it is not known in advance, as is the case for most
+// encoders apart from "raw", this is set to 0.
+//
+// Most image formats have varying sizes, so this will only return useful
+// information once setimage() has been called.
+static PyObject *
+_get_optimal_bufsize(ImagingEncoderObject *encoder, void *closure) {
+    Py_ssize_t bufsize = 0;
+
+    if (encoder->optimal_bufsize && encoder->im) {
+        bufsize = encoder->optimal_bufsize(&encoder->state);
+    }
+
+    return PyLong_FromSsize_t(bufsize);
+}
+
 static struct PyGetSetDef getseters[] = {
     {"pushes_fd",
      (getter)_get_pushes_fd,
      NULL,
      "True if this encoder expects to push directly to self.fd",
+     NULL},
+    {"optimal_bufsize",
+     (getter)_get_optimal_bufsize,
+     NULL,
+     "Buffer size that encodes the entire tile in one call, or 0 if unknown",
      NULL},
     {NULL, NULL, NULL, NULL, NULL} /* sentinel */
 };
@@ -515,6 +539,39 @@ PyImaging_PcxEncoderNew(PyObject *self, PyObject *args) {
 /* RAW                                                                  */
 /* -------------------------------------------------------------------- */
 
+static Py_ssize_t
+_raw_optimal_bufsize(ImagingCodecState state) {
+    // ImagingRawEncode writes one row at a time into a buffer of `bytes`,
+    // the packed row size. `count` is the stride (or zero).
+    Py_ssize_t row = state->count > 0 ? state->count : state->bytes;
+    Py_ssize_t bufsize = row * state->ysize;
+
+    // Cap the size to the whole number of rows that fits in an `int`.
+    // If encoders' buffer sizes become `ssize_t`,
+    // like decoder buffer sizes did in #3791, then this will need to be updated
+    if (bufsize > INT_MAX) {
+        bufsize = INT_MAX - (INT_MAX % row);
+    }
+    return bufsize;
+}
+
+/**
+ * Instantiate a raw, uncompressed encoder.
+ *
+ * Python arguments:
+ * - mode_name (str): The mode name for finding a pixel packer.
+ * - rawmode_name (str): The rawmode name for finding a pixel packer.
+ * - stride (int, optional): The number of bytes each row occupies in the output stream,
+ *                           >= the packed pixel size. Each row is explicitly
+ *                           zero-padded to this size. If unset, the true packed size
+ *                           is used.
+ * - ystep (int, optional): Specifies the orientation. 1 or -1. -1 will write rows in
+                            reverse order (upside-down).
+ #
+ * @param self Unused.
+ * @param args Python arguments, see above.
+ * @return A Python object representing the encoder.
+ */
 PyObject *
 PyImaging_RawEncoderNew(PyObject *self, PyObject *args) {
     ImagingEncoderObject *encoder;
@@ -541,6 +598,7 @@ PyImaging_RawEncoderNew(PyObject *self, PyObject *args) {
     }
 
     encoder->encode = ImagingRawEncode;
+    encoder->optimal_bufsize = _raw_optimal_bufsize;
 
     encoder->state.ystep = ystep;
     encoder->state.count = stride;
