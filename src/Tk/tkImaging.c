@@ -239,14 +239,14 @@ TkImaging_Init(Tcl_Interp *interp) {
 
 #define TKINTER_PKG "tkinter"
 
+/**
+ * Load function `func_name` from `lib_handle`.
+ * Set Python exception if we can't find `func_name` in `lib_handle`.
+ *
+ * @return Function pointer or NULL if not present, with Python exception set.
+ */
 FARPROC
 _dfunc(HMODULE lib_handle, const char *func_name) {
-    /*
-     * Load function `func_name` from `lib_handle`.
-     * Set Python exception if we can't find `func_name` in `lib_handle`.
-     * Returns function pointer or NULL if not present.
-     */
-
     FARPROC func = GetProcAddress(lib_handle, func_name);
     if (func == NULL) {
         PyErr_Format(PyExc_RuntimeError, "Cannot load function %s", func_name);
@@ -254,14 +254,14 @@ _dfunc(HMODULE lib_handle, const char *func_name) {
     return func;
 }
 
+/**
+ * Try to fill Tcl global vars with function pointers.
+ *
+ * @return 0 for no functions found, 1 for all functions found,
+ *         -1 for some but not all functions found.
+ */
 int
 get_tcl(HMODULE hMod) {
-    /*
-     * Try to fill Tcl global vars with function pointers. Return 0 for no
-     * functions found, 1 for all functions found, -1 for some but not all
-     * functions found.
-     */
-
     if ((TCL_CREATE_COMMAND =
              (Tcl_CreateCommand_t)GetProcAddress(hMod, "Tcl_CreateCommand")) == NULL) {
         return 0; /* Maybe not Tcl module */
@@ -272,14 +272,14 @@ get_tcl(HMODULE hMod) {
                : 1;
 }
 
+/**
+ * Try to fill Tk global vars with function pointers.
+ *
+ * @return 0 for no functions found, 1 for all functions found,
+ *         -1 for some but not all functions found.
+ */
 int
 get_tk(HMODULE hMod) {
-    /*
-     * Try to fill Tk global vars with function pointers. Return 0 for no
-     * functions found, 1 for all functions found, -1 for some but not all
-     * functions found.
-     */
-
     FARPROC func = GetProcAddress(hMod, "Tk_PhotoPutBlock");
     if (func == NULL) { /* Maybe not Tk module */
         return 0;
@@ -295,13 +295,13 @@ get_tk(HMODULE hMod) {
     return 1;
 }
 
+/**
+ * Load Tcl and Tk functions by searching all modules in current process.
+ *
+ * @return 0 for success, non-zero for failure, with Python exception set.
+ */
 int
 load_tkinter_funcs(void) {
-    /*
-     * Load Tcl and Tk functions by searching all modules in current process.
-     * Return 0 for success, non-zero for failure.
-     */
-
     HMODULE *hMods = NULL;
     HANDLE hProcess;
     DWORD cbNeeded;
@@ -373,14 +373,14 @@ load_tkinter_funcs(void) {
 
 #include <dlfcn.h>
 
+/**
+ * Load function `func_name` from `lib_handle`.
+ * Set Python exception if we can't find `func_name` in `lib_handle`.
+ *
+ * @return Function pointer or NULL if not present, with Python exception set.
+ */
 void *
 _dfunc(void *lib_handle, const char *func_name) {
-    /*
-     * Load function `func_name` from `lib_handle`.
-     * Set Python exception if we can't find `func_name` in `lib_handle`.
-     * Returns function pointer or NULL if not present.
-     */
-
     void *func;
     /* Reset errors. */
     dlerror();
@@ -392,13 +392,13 @@ _dfunc(void *lib_handle, const char *func_name) {
     return func;
 }
 
+/**
+ * Fill global function pointers from dynamic library.
+ *
+ * @return 1 if any pointer is NULL, 0 otherwise.
+ */
 int
 _func_loader(void *lib) {
-    /*
-     * Fill global function pointers from dynamic lib.
-     * Return 1 if any pointer is NULL, 0 otherwise.
-     */
-
     if ((TCL_CREATE_COMMAND = (Tcl_CreateCommand_t)_dfunc(lib, "Tcl_CreateCommand")) ==
         NULL) {
         return 1;
@@ -420,13 +420,13 @@ _func_loader(void *lib) {
     );
 }
 
+/**
+ * Load tkinter global functions from tkinter compiled module.
+ *
+ * @return 0 for success, non-zero for failure, with Python exception set.
+ */
 int
 load_tkinter_funcs(void) {
-    /*
-     * Load tkinter global funcs from tkinter compiled module.
-     * Return 0 for success, non-zero for failure.
-     */
-
     int ret = -1;
     void *main_program, *tkinter_lib;
     char *tkinter_libname;

@@ -1,3 +1,9 @@
+/*
+ * FriBiDi shim: loads libfribidi at runtime.
+ *
+ * SPDX-License-Identifier: MIT-CMU
+ * Part of Pillow; see the LICENSE file in the root of the Pillow source tree.
+ */
 
 #ifndef _WIN32
 #include <dlfcn.h>

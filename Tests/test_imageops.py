@@ -11,6 +11,10 @@ from .helper import (
     hopper,
 )
 
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 
 class Deformer(ImageOps.SupportsGetMesh):
     def getmesh(
@@ -100,6 +104,37 @@ def test_crop(
 ) -> None:
     im = hopper()
     assert_image_equal(ImageOps.crop(im, border), im.crop(expected_box))
+
+
+def test_zero() -> None:
+    def _check(
+        size: tuple[int, int],
+        operation: Callable[[Image.Image], Image.Image],
+        expected_size: tuple[int, int],
+    ) -> None:
+        im = Image.new("P", size)
+        im.putpalette(list(range(256)) * 3)
+        im.info["transparency"] = 0
+        new_im = operation(im)
+        assert new_im.getpalette(None) == im.getpalette(None)
+        assert new_im.info["transparency"] == 0
+        assert new_im.size == expected_size
+
+    _check((5, 5), lambda im: ImageOps.fit(im, (0, 5)), (0, 5))
+    _check((5, 0), lambda im: ImageOps.fit(im, (5, 5)), (5, 5))
+    _check((5, 5), lambda im: ImageOps.fit(im, (10, 0)), (10, 0))
+
+    _check((1, 10), lambda im: ImageOps.contain(im, (5, 5)), (0, 5))
+    _check((10, 1), lambda im: ImageOps.contain(im, (5, 5)), (5, 0))
+    _check((10, 0), lambda im: ImageOps.contain(im, (5, 5)), (5, 0))
+    _check((5, 5), lambda im: ImageOps.contain(im, (2, 0)), (0, 0))
+
+    _check((0, 10), lambda im: ImageOps.cover(im, (5, 5)), (0, 5))
+    _check((10, 0), lambda im: ImageOps.cover(im, (5, 5)), (5, 0))
+    _check((5, 5), lambda im: ImageOps.cover(im, (2, 0)), (0, 0))
+
+    _check((10, 1), lambda im: ImageOps.scale(im, 0.4), (4, 0))
+    _check((1, 10), lambda im: ImageOps.scale(im, 0.4), (0, 4))
 
 
 def test_1pxfit() -> None:
@@ -215,6 +250,19 @@ def test_palette(mode: str) -> None:
     assert_image_equal(
         im.convert("RGB"), padded_im.convert("RGB").crop((0, 0, 128, 128))
     )
+
+
+@pytest.mark.parametrize("color", ("red", (255, 0, 0), (255, 0, 0, 255)))
+def test_pa_color(color: str | tuple[int, ...]) -> None:
+    im = hopper("PA")
+
+    # Expand
+    expanded_im = ImageOps.expand(im, 1, color)
+    assert expanded_im.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, 255)
+
+    # Pad
+    padded_im = ImageOps.pad(im, (256, 128), color=color)
+    assert padded_im.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, 255)
 
 
 def test_rgba_palette() -> None:
@@ -546,6 +594,15 @@ def test_autocontrast_cutoff() -> None:
         assert autocontrast(10) != autocontrast((1, 10))
 
 
+@pytest.mark.parametrize("ignore", (-1, 256, [0, -1], [0, 256]))
+def test_autocontrast_invalid_ignore(ignore: int | list[int]) -> None:
+    im = Image.new("L", (1, 1))
+    with pytest.raises(
+        ValueError, match="ignore must be between or equal to 0 and 255"
+    ):
+        ImageOps.autocontrast(im, ignore=ignore)
+
+
 def test_autocontrast_mask_toy_input() -> None:
     # Test the mask argument of autocontrast
     with Image.open("Tests/images/bw_gradient.png") as img:
@@ -633,3 +690,37 @@ def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
         img, cutoff=10, preserve_tone=True
     )  # single color 10 cutoff
     assert_image_equal(img, out)
+
+
+@pytest.mark.parametrize(
+    "operation",
+    (
+        ImageOps.invert,
+        lambda im: ImageOps.posterize(im, 3),
+        ImageOps.solarize,
+    ),
+)
+def test_palette_operation(operation: Callable[[Image.Image], Image.Image]) -> None:
+    im = hopper("P")
+    result = operation(im)
+
+    assert result.mode == "P"
+    assert_image_equal(result.convert("RGB"), operation(im.convert("RGB")))
+
+
+def test_palette_operation_keeps_alpha() -> None:
+    im = Image.new("P", (1, 2))
+    im.putpalette((0, 0, 0, 0, 255, 0, 0, 128), "RGBA")
+    im.putpixel((0, 1), 1)
+
+    result = ImageOps.invert(im)
+
+    palette = result.getpalette("RGBA")
+    assert palette is not None
+    assert palette == [255, 255, 255, 0, 0, 255, 255, 128]
+
+
+def test_palette_histogram_operation_not_supported() -> None:
+    im = hopper("P")
+    with pytest.raises(NotImplementedError, match="mode P support coming soon"):
+        ImageOps.autocontrast(im)

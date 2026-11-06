@@ -103,7 +103,7 @@ def test_ellipse(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
-    pen = ImageDraw2.Pen("blue", width=2)
+    pen = ImageDraw2.Pen("blue")
     brush = ImageDraw2.Brush("green")
 
     # Act
@@ -177,7 +177,7 @@ def test_polygon(points: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
-    pen = ImageDraw2.Pen("blue", width=2)
+    pen = ImageDraw2.Pen("blue")
     brush = ImageDraw2.Brush("red")
 
     # Act
@@ -192,7 +192,7 @@ def test_rectangle(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
-    pen = ImageDraw2.Pen("green", width=2)
+    pen = ImageDraw2.Pen("green")
     brush = ImageDraw2.Brush("black")
 
     # Act
@@ -200,6 +200,16 @@ def test_rectangle(bbox: Coords) -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle.png")
+
+
+@pytest.mark.parametrize("bbox", BBOX)
+def test_rectangle_pen_width(bbox: Coords) -> None:
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    pen = ImageDraw2.Pen("white", width=4)
+    draw.rectangle(bbox, pen)
+    assert im.getpixel((28, 28)) == WHITE
+    assert im.getpixel((50, 50)) == BLACK
 
 
 def test_big_rectangle() -> None:

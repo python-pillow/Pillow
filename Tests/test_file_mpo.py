@@ -356,7 +356,7 @@ def test_save_all() -> None:
             assert_image_similar(im, im_reloaded, 30)
 
     im_rgb = Image.new("RGB", (1, 1))
-    for colors in (("#f00",), ("#f00", "#0f0")):
+    for colors in (("#f00",), ("#f00", "#0f0"), ("#f00", "#0f0", "#00f")):
         append_images = [Image.new("RGB", (1, 1), color) for color in colors]
         im_reloaded = roundtrip(im_rgb, save_all=True, append_images=append_images)
 
@@ -372,6 +372,16 @@ def test_save_all() -> None:
     # Test that a single frame image will not be saved as an MPO
     jpg = roundtrip(im_rgb, save_all=True)
     assert "mp" not in jpg.info
+
+
+def test_save_all_cmyk() -> None:
+    first = Image.new("CMYK", (1, 1))
+    second = Image.new("CMYK", (1, 1), (255, 255, 255, 255))
+    im_reloaded = roundtrip(first, save_all=True, append_images=[second])
+    assert_image_equal(first, im_reloaded)
+
+    im_reloaded.seek(1)
+    assert_image_equal(second, im_reloaded)
 
 
 def test_save_xmp() -> None:

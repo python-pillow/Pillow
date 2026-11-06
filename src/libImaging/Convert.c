@@ -471,12 +471,15 @@ rgbT2a(UINT8 *out, UINT8 *in, int xsize, int r, int g, int b, int premultiplied)
     UINT32 repl = premultiplied ? 0 : (trns & 0x00ffffff);
 #endif
 
-    int i;
-
     UINT8 *ref = in != NULL ? in : out;
-    for (i = 0; i < xsize; i++, ref += sizeof(trns), out += sizeof(trns)) {
+    for (int x = 0; x < xsize; x++, ref += sizeof(trns), out += sizeof(trns)) {
         UINT32 v;
         memcpy(&v, ref, sizeof(v));
+#ifdef WORDS_BIGENDIAN
+        v |= 0xff;
+#else
+        v = (0xffU << 24) | v;
+#endif
         if (v == trns) {
             memcpy(out, &repl, sizeof(repl));
         }
@@ -789,6 +792,58 @@ I16B_F(UINT8 *out_, const UINT8 *in, int xsize) {
 }
 
 static void
+F_I16L(UINT8 *out, const UINT8 *in, int xsize) {
+    int x, v;
+    for (x = 0; x < xsize; x++, in += 4) {
+        FLOAT32 f;
+        memcpy(&f, in, sizeof(f));
+        if (f <= 0.0) {
+            v = 0;
+        } else if (f >= 65535.0) {
+            v = 65535;
+        } else {
+            v = (int)f;
+        }
+        *out++ = (UINT8)v;
+        *out++ = (UINT8)(v >> 8);
+    }
+}
+
+static void
+F_I16B(UINT8 *out, const UINT8 *in, int xsize) {
+    int x, v;
+    for (x = 0; x < xsize; x++, in += 4) {
+        FLOAT32 f;
+        memcpy(&f, in, sizeof(f));
+        if (f <= 0.0) {
+            v = 0;
+        } else if (f >= 65535.0) {
+            v = 65535;
+        } else {
+            v = (int)f;
+        }
+        *out++ = (UINT8)(v >> 8);
+        *out++ = (UINT8)v;
+    }
+}
+
+static void
+I16_I16(UINT8 *out, const UINT8 *in, int xsize) {
+    /* same byte order */
+    memcpy(out, in, xsize * 2);
+}
+
+static void
+I16_I16_swap(UINT8 *out, const UINT8 *in, int xsize) {
+    /* opposite byte order */
+    int x;
+    for (x = 0; x < xsize; x++, in += 2) {
+        *out++ = in[1];
+        *out++ = in[0];
+    }
+}
+
+static void
 L_I16L(UINT8 *out, const UINT8 *in, int xsize) {
     int x;
     for (x = 0; x < xsize; x++, in++) {
@@ -1050,14 +1105,21 @@ pa2ycbcr(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     ImagingConvertRGB2YCbCr(out, out, xsize);
 }
 
+/**
+ * Map P or PA image to another mode.
+ *
+ * @param imOut The output image.
+ *              Must be NULL or have the same size as imIn and the same mode as `mode`.
+ * @param imIn The input palette image.
+ * @param mode The desired output mode.
+ * @return imOut, or NULL on error.
+ */
 static Imaging
 frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
     ImagingSectionCookie cookie;
     int alpha;
     int y;
     void (*convert)(UINT8 *, const UINT8 *, int, ImagingPalette);
-
-    /* Map palette image to L, RGB, RGBA, or CMYK */
 
     if (!imIn->palette) {
         return (Imaging)ImagingError_ValueError("no palette");
@@ -1121,7 +1183,11 @@ frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
 #endif
 static Imaging
 topalette(
-    Imaging imOut, Imaging imIn, const ModeID mode, ImagingPalette inpalette, int dither
+    Imaging imOut,
+    Imaging imIn,
+    const ModeID mode,
+    ImagingPalette inpalette,
+    ImagingDitherType dither
 ) {
     ImagingSectionCookie cookie;
     int alpha;
@@ -1198,7 +1264,7 @@ topalette(
             return NULL;
         }
 
-        if (dither) {
+        if (dither != IMAGING_DITHER_NONE) {
             /* floyd-steinberg dither */
 
             int *errors;
@@ -1324,13 +1390,15 @@ topalette(
     return imOut;
 }
 
+/**
+ * Map L or RGB to dithered 1 image
+ */
 static Imaging
 tobilevel(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y;
     int *errors;
 
-    /* Map L or RGB to dithered 1 image */
     if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_RGB) {
         return (Imaging)ImagingError_ValueError("conversion not supported");
     }
@@ -1526,6 +1594,28 @@ static struct {
 
     {IMAGING_MODE_HSV, IMAGING_MODE_RGB, hsv2rgb},
 
+    {IMAGING_MODE_I_16, IMAGING_MODE_I_16L, I16_I16},
+    {IMAGING_MODE_I_16L, IMAGING_MODE_I_16, I16_I16},
+    {IMAGING_MODE_I_16, IMAGING_MODE_I_16B, I16_I16_swap},
+    {IMAGING_MODE_I_16B, IMAGING_MODE_I_16, I16_I16_swap},
+    {IMAGING_MODE_I_16L, IMAGING_MODE_I_16B, I16_I16_swap},
+    {IMAGING_MODE_I_16B, IMAGING_MODE_I_16L, I16_I16_swap},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_I_16, IMAGING_MODE_I_16N, I16_I16_swap},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I_16, I16_I16_swap},
+    {IMAGING_MODE_I_16L, IMAGING_MODE_I_16N, I16_I16_swap},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I_16L, I16_I16_swap},
+    {IMAGING_MODE_I_16B, IMAGING_MODE_I_16N, I16_I16},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I_16B, I16_I16},
+#else
+    {IMAGING_MODE_I_16, IMAGING_MODE_I_16N, I16_I16},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I_16, I16_I16},
+    {IMAGING_MODE_I_16L, IMAGING_MODE_I_16N, I16_I16},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I_16L, I16_I16},
+    {IMAGING_MODE_I_16B, IMAGING_MODE_I_16N, I16_I16_swap},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I_16B, I16_I16_swap},
+#endif
+
     {IMAGING_MODE_I, IMAGING_MODE_I_16, I_I16L},
     {IMAGING_MODE_I_16, IMAGING_MODE_I, I16L_I},
     {IMAGING_MODE_I_16, IMAGING_MODE_RGB, I16_RGB},
@@ -1560,9 +1650,18 @@ static struct {
     {IMAGING_MODE_I_16L, IMAGING_MODE_F, I16L_F},
     {IMAGING_MODE_I_16B, IMAGING_MODE_F, I16B_F},
 #ifdef WORDS_BIGENDIAN
-    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16B_F}
+    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16B_F},
 #else
-    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16L_F}
+    {IMAGING_MODE_I_16N, IMAGING_MODE_F, I16L_F},
+#endif
+
+    {IMAGING_MODE_F, IMAGING_MODE_I_16, F_I16L},
+    {IMAGING_MODE_F, IMAGING_MODE_I_16L, F_I16L},
+    {IMAGING_MODE_F, IMAGING_MODE_I_16B, F_I16B},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_F, IMAGING_MODE_I_16N, F_I16B}
+#else
+    {IMAGING_MODE_F, IMAGING_MODE_I_16N, F_I16L}
 #endif
 };
 
@@ -1578,13 +1677,20 @@ static struct {
  * @param mode    Target mode.
  * @param palette Target palette for conversions to "P" or "PA";
  *                NULL to use a default palette.
- * @param dither  Nonzero to dither when converting to "P", "PA" or "1".
+ * @param dither  Dither method when converting to "P", "PA" or "1".
+ *                Currently, for historical PIL reasons,
+ *                any value other than IMAGING_DITHER_NONE uses Floyd-Steinberg
+ *                dithering.
  * @return        The resulting Imaging object,
  *                or NULL with a Python exception set on failure.
  */
 Imaging
 ImagingConvert(
-    Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int dither
+    Imaging imOut,
+    Imaging imIn,
+    ModeID mode,
+    ImagingPalette palette,
+    ImagingDitherType dither
 ) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
@@ -1616,7 +1722,7 @@ ImagingConvert(
         return topalette(imOut, imIn, mode, palette, dither);
     }
 
-    if (dither && mode == IMAGING_MODE_1) {
+    if (dither != IMAGING_DITHER_NONE && mode == IMAGING_MODE_1) {
         return tobilevel(imOut, imIn);
     }
 
@@ -1645,9 +1751,11 @@ ImagingConvert(
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
     for (int y = 0; y < imIn->ysize; y++) {
         (*convert)((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
     return imOut;
@@ -1713,12 +1821,33 @@ ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) 
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
     for (y = 0; y < imIn->ysize; y++) {
-        (*convert)((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
+        UINT8 *out = (UINT8 *)imOut->image[y];
+        (*convert)(out, (UINT8 *)imIn->image[y], imIn->xsize);
 
-        source = source_transparency ? (UINT8 *)imIn->image[y] : NULL;
-        rgbT2a((UINT8 *)imOut->image[y], source, imIn->xsize, r, g, b, premultiplied);
+        if (imIn->mode == IMAGING_MODE_I) {
+            INT32 *in = (INT32 *)imIn->image32[y];
+            for (int x = 0; x < imIn->xsize; x++, in++, out += 4) {
+                if (in[0] == r) {
+                    out[3] = 0;
+                }
+            }
+        } else {
+            UINT8 *in = (UINT8 *)imIn->image[y];
+            if (imIn->mode == IMAGING_MODE_I_16) {
+                for (int x = 0; x < imIn->xsize; x++, in += 2, out += 4) {
+                    if ((in[0] | (in[1] << 8)) == r) {
+                        out[3] = 0;
+                    }
+                }
+            } else {
+                source = source_transparency ? in : NULL;
+                rgbT2a(out, source, imIn->xsize, r, g, b, premultiplied);
+            }
+        }
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
     return imOut;

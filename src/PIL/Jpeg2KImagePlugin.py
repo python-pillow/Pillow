@@ -300,28 +300,15 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         self._reduce = 0
         self.layers = 0
 
-        fd = -1
-        length = -1
-
         try:
             fd = self.fp.fileno()
-            length = os.fstat(fd).st_size
         except Exception:
             fd = -1
-            try:
-                pos = self.fp.tell()
-                self.fp.seek(0, io.SEEK_END)
-                length = self.fp.tell()
-                self.fp.seek(pos)
-            except Exception:
-                length = -1
 
         self.tile = [
             ImageFile._Tile(
                 "jpeg2k",
-                (0, 0, *self.size),
-                0,
-                (self.codec, self._reduce, self.layers, fd, length),
+                args=(self.codec, self._reduce, self.layers, fd, self._get_fp_length()),
             )
         ]
 
@@ -374,9 +361,9 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
 
             # Update the reduce and layers settings
             t = self.tile[0]
-            assert isinstance(t[3], tuple)
-            t3 = (t[3][0], self._reduce, self.layers, t[3][3], t[3][4])
-            self.tile = [ImageFile._Tile(t[0], (0, 0, *self.size), t[2], t3)]
+            assert isinstance(t.args, tuple)
+            args = (t.args[0], self._reduce, self.layers, t.args[3], t.args[4])
+            self.tile = [t._replace(args=args)]
 
         return ImageFile.ImageFile.load(self)
 
@@ -392,6 +379,10 @@ def _accept(prefix: bytes) -> bool:
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
+    if im.mode not in {"L", "I;16", "I;16B", "LA", "RGB", "YCbCr", "RGBA", "CMYK"}:
+        msg = f"cannot write mode {im.mode} as JPEG2000"
+        raise OSError(msg)
+
     # Get the keyword arguments
     info = im.encoderinfo
 
@@ -455,7 +446,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         plt,
     )
 
-    ImageFile._save(im, fp, [ImageFile._Tile("jpeg2k", (0, 0, *im.size), 0, kind)])
+    ImageFile._save(im, fp, [ImageFile._Tile("jpeg2k", args=kind)])
 
 
 # ------------------------------------------------------------

@@ -99,6 +99,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
         /* mask */
         if (im->image8) {
             ImagingSectionEnter(&cookie);
+            MUTEX_LOCK(&im->mutex);
             for (int y = 0; y < ysize; y++) {
                 UINT8 *restrict in = im->image8[y];
                 UINT8 *restrict mask = imMask->image8[y];
@@ -108,6 +109,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                     }
                 }
             }
+            MUTEX_UNLOCK(&im->mutex);
             ImagingSectionLeave(&cookie);
         } else { /* yes, we need the braces. C isn't Python! */
             if (im->type != IMAGING_TYPE_UINT8) {
@@ -115,6 +117,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                 return ImagingError_ModeError();
             }
             ImagingSectionEnter(&cookie);
+            MUTEX_LOCK(&im->mutex);
             for (int y = 0; y < ysize; y++) {
                 UINT8 *restrict in = (UINT8 *)im->image32[y];
                 UINT8 *restrict mask = imMask->image8[y];
@@ -131,23 +134,27 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                     }
                 }
             }
+            MUTEX_UNLOCK(&im->mutex);
             ImagingSectionLeave(&cookie);
         }
     } else {
         /* mask not given; process pixels in image */
         if (im->image8) {
             ImagingSectionEnter(&cookie);
+            MUTEX_LOCK(&im->mutex);
             for (int y = 0; y < ysize; y++) {
                 UINT8 *restrict in = im->image8[y];
                 for (int x = 0; x < xsize; x++) {
                     histogram[in[x]]++;
                 }
             }
+            MUTEX_UNLOCK(&im->mutex);
             ImagingSectionLeave(&cookie);
         } else {
             switch (im->type) {
                 case IMAGING_TYPE_UINT8:
                     ImagingSectionEnter(&cookie);
+                    MUTEX_LOCK(&im->mutex);
                     if (im->bands == 2) {
                         for (int y = 0; y < ysize; y++) {
                             UINT8 *restrict in = (UINT8 *)im->image[y];
@@ -176,6 +183,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                             }
                         }
                     }
+                    MUTEX_UNLOCK(&im->mutex);
                     ImagingSectionLeave(&cookie);
                     break;
                 case IMAGING_TYPE_INT32:
@@ -192,6 +200,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                         break;
                     }
                     ImagingSectionEnter(&cookie);
+                    MUTEX_LOCK(&im->mutex);
                     scale = 255.0F / (imax - imin);
                     for (int y = 0; y < ysize; y++) {
                         INT32 *restrict in = im->image32[y];
@@ -202,6 +211,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                             }
                         }
                     }
+                    MUTEX_UNLOCK(&im->mutex);
                     ImagingSectionLeave(&cookie);
                     break;
                 case IMAGING_TYPE_FLOAT32:
@@ -218,6 +228,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                         break;
                     }
                     ImagingSectionEnter(&cookie);
+                    MUTEX_LOCK(&im->mutex);
                     scale = 255.0F / (fmax - fmin);
                     for (int y = 0; y < ysize; y++) {
                         FLOAT32 *restrict in = (FLOAT32 *)im->image32[y];
@@ -228,6 +239,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                             }
                         }
                     }
+                    MUTEX_UNLOCK(&im->mutex);
                     ImagingSectionLeave(&cookie);
                     break;
             }
