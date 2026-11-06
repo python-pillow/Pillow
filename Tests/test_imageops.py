@@ -594,6 +594,15 @@ def test_autocontrast_cutoff() -> None:
         assert autocontrast(10) != autocontrast((1, 10))
 
 
+@pytest.mark.parametrize("ignore", (-1, 256, [0, -1], [0, 256]))
+def test_autocontrast_invalid_ignore(ignore: int | list[int]) -> None:
+    im = Image.new("L", (1, 1))
+    with pytest.raises(
+        ValueError, match="ignore must be between or equal to 0 and 255"
+    ):
+        ImageOps.autocontrast(im, ignore=ignore)
+
+
 def test_autocontrast_mask_toy_input() -> None:
     # Test the mask argument of autocontrast
     with Image.open("Tests/images/bw_gradient.png") as img:

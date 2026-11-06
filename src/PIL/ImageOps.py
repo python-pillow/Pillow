@@ -121,6 +121,13 @@ def autocontrast(
 
     :return: An image.
     """
+    if ignore is not None:
+        if isinstance(ignore, int):
+            ignore = (ignore,)
+        if not all(0 <= ix <= 255 for ix in ignore):
+            msg = "ignore must be between or equal to 0 and 255"
+            raise ValueError(msg)
+
     if preserve_tone:
         histogram = image.convert("L").histogram(mask)
     else:
@@ -131,11 +138,8 @@ def autocontrast(
         h = histogram[layer : layer + 256]
         if ignore is not None:
             # get rid of outliers
-            if isinstance(ignore, int):
-                h[ignore] = 0
-            else:
-                for ix in ignore:
-                    h[ix] = 0
+            for ix in ignore:
+                h[ix] = 0
         if cutoff:
             # cut off pixels from both ends of the histogram
             if not isinstance(cutoff, tuple):
