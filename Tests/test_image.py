@@ -746,6 +746,20 @@ class TestImage:
         expected = Image.new(mode, (100, 100), color)
         assert_image_equal(im.convert(mode), expected)
 
+    @pytest.mark.parametrize(
+        "color, expected",
+        (
+            ("#DDEEFF", (221, 238, 255, 255)),
+            ((221, 238, 255), (221, 238, 255, 255)),
+            ((221, 238, 255, 128), (221, 238, 255, 128)),
+        ),
+    )
+    def test_pa_from_rgb_rgba(
+        self, color: str | tuple[int, ...], expected: tuple[int, ...]
+    ) -> None:
+        im = Image.new("PA", (100, 100), color)
+        assert_image_equal(im.convert("RGBA"), Image.new("RGBA", (100, 100), expected))
+
     def test_no_resource_warning_on_save(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/835
         # Arrange
