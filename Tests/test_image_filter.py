@@ -76,7 +76,7 @@ def test_sanity_error(mode: str) -> None:
 
 def test_noop_on_small_images() -> None:
     # If image is smaller than the kernel size, return it as-is.
-    kernel_size: tuple[int, int] = ImageFilter.SMOOTH_MORE.filterargs[0]
+    kernel_size: tuple[int, int] = ImageFilter.SMOOTH_MORE.filterargs.size
     kernel_w, kernel_h = kernel_size
     for w in range(1, kernel_w):
         for h in range(1, kernel_h):
@@ -263,6 +263,35 @@ def test_consistency_i16_high_byte(mode: str) -> None:
     for _ in range(5):
         im = im.filter(ImageFilter.SMOOTH)
         assert im.getpixel((4, 4)) == 1000
+
+
+@pytest.mark.parametrize(
+    "filter_to_apply",
+    (
+        ImageFilter.GaussianBlur,
+        ImageFilter.GaussianBlur(0),
+        ImageFilter.GaussianBlur(5),
+        ImageFilter.GaussianBlur((2, 5)),
+        ImageFilter.BoxBlur(0),
+        ImageFilter.BoxBlur(5),
+        ImageFilter.BoxBlur((2, 5)),
+    ),
+)
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_blur_i16(
+    filter_to_apply: ImageFilter.Filter | type[ImageFilter.Filter], mode: str
+) -> None:
+    im = hopper("L")
+    reference = im.filter(filter_to_apply)
+    result = im.convert(mode).filter(filter_to_apply)
+    assert result.mode == mode
+    assert_image_equal(result.convert("L"), reference)
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_unsharp_mask_i16(mode: str) -> None:
+    with pytest.raises(ValueError, match="image has wrong mode"):
+        hopper(mode).filter(ImageFilter.UnsharpMask)
 
 
 @pytest.mark.parametrize("size", (-1, math.nan, math.inf, 2**31))

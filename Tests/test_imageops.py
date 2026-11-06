@@ -108,6 +108,37 @@ def test_crop(
     assert_image_equal(ImageOps.crop(im, border), im.crop(expected_box))
 
 
+def test_zero() -> None:
+    def _check(
+        size: tuple[int, int],
+        operation: Callable[[Image.Image], Image.Image],
+        expected_size: tuple[int, int],
+    ) -> None:
+        im = Image.new("P", size)
+        im.putpalette(list(range(256)) * 3)
+        im.info["transparency"] = 0
+        new_im = operation(im)
+        assert new_im.getpalette(None) == im.getpalette(None)
+        assert new_im.info["transparency"] == 0
+        assert new_im.size == expected_size
+
+    _check((5, 5), lambda im: ImageOps.fit(im, (0, 5)), (0, 5))
+    _check((5, 0), lambda im: ImageOps.fit(im, (5, 5)), (5, 5))
+    _check((5, 5), lambda im: ImageOps.fit(im, (10, 0)), (10, 0))
+
+    _check((1, 10), lambda im: ImageOps.contain(im, (5, 5)), (0, 5))
+    _check((10, 1), lambda im: ImageOps.contain(im, (5, 5)), (5, 0))
+    _check((10, 0), lambda im: ImageOps.contain(im, (5, 5)), (5, 0))
+    _check((5, 5), lambda im: ImageOps.contain(im, (2, 0)), (0, 0))
+
+    _check((0, 10), lambda im: ImageOps.cover(im, (5, 5)), (0, 5))
+    _check((10, 0), lambda im: ImageOps.cover(im, (5, 5)), (5, 0))
+    _check((5, 5), lambda im: ImageOps.cover(im, (2, 0)), (0, 0))
+
+    _check((10, 1), lambda im: ImageOps.scale(im, 0.4), (4, 0))
+    _check((1, 10), lambda im: ImageOps.scale(im, 0.4), (0, 4))
+
+
 def test_1pxfit() -> None:
     # Division by zero in equalize if image is 1 pixel high
     newimg = ImageOps.fit(hopper("RGB").resize((1, 1)), (35, 35))
@@ -131,20 +162,6 @@ def test_fit_same_ratio() -> None:
         assert new_im.size == (1000, 755)
 
 
-def test_fit_zero() -> None:
-    im = Image.new("1", (5, 5))
-    new_im = ImageOps.fit(im, (0, 5))
-    assert new_im.width == 0
-
-    im = Image.new("1", (5, 0))
-    new_im = ImageOps.fit(im, (5, 5))
-    assert new_im.size == (5, 5)
-
-    im = Image.new("1", (5, 5))
-    new_im = ImageOps.fit(im, (10, 0))
-    assert new_im.size == (10, 0)
-
-
 @pytest.mark.parametrize("new_size", ((256, 256), (512, 256), (256, 512)))
 def test_contain(new_size: tuple[int, int]) -> None:
     im = hopper()
@@ -162,24 +179,6 @@ def test_contain_round() -> None:
     assert new_im.height == 5
 
 
-def test_contain_zero() -> None:
-    im = Image.new("1", (1, 10))
-    new_im = ImageOps.contain(im, (5, 5))
-    assert new_im.width == 0
-
-    im = Image.new("1", (10, 1))
-    new_im = ImageOps.contain(im, (5, 5))
-    assert new_im.height == 0
-
-    im = Image.new("1", (10, 0))
-    new_im = ImageOps.contain(im, (5, 5))
-    assert new_im.size == (5, 0)
-
-    im = Image.new("1", (5, 5))
-    new_im = ImageOps.contain(im, (2, 0))
-    assert new_im.size == (0, 0)
-
-
 @pytest.mark.parametrize(
     "image_name, expected_size",
     (
@@ -192,16 +191,6 @@ def test_cover(image_name: str, expected_size: tuple[int, int]) -> None:
     with Image.open("Tests/images/" + image_name) as im:
         new_im = ImageOps.cover(im, (256, 256))
         assert new_im.size == expected_size
-
-
-def test_cover_zero() -> None:
-    im = Image.new("1", (10, 0))
-    new_im = ImageOps.cover(im, (5, 5))
-    assert new_im.size == (5, 0)
-
-    im = Image.new("1", (5, 5))
-    new_im = ImageOps.cover(im, (2, 0))
-    assert new_im.size == (0, 0)
 
 
 def test_pad() -> None:
@@ -263,6 +252,19 @@ def test_palette(mode: str) -> None:
     assert_image_equal(
         im.convert("RGB"), padded_im.convert("RGB").crop((0, 0, 128, 128))
     )
+
+
+@pytest.mark.parametrize("color", ("red", (255, 0, 0), (255, 0, 0, 255)))
+def test_pa_color(color: str | tuple[int, ...]) -> None:
+    im = hopper("PA")
+
+    # Expand
+    expanded_im = ImageOps.expand(im, 1, color)
+    assert expanded_im.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, 255)
+
+    # Pad
+    padded_im = ImageOps.pad(im, (256, 128), color=color)
+    assert padded_im.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, 255)
 
 
 def test_rgba_palette() -> None:
@@ -592,6 +594,15 @@ def test_autocontrast_cutoff() -> None:
 
         assert autocontrast(10) == autocontrast((10, 10))
         assert autocontrast(10) != autocontrast((1, 10))
+
+
+@pytest.mark.parametrize("ignore", (-1, 256, [0, -1], [0, 256]))
+def test_autocontrast_invalid_ignore(ignore: int | list[int]) -> None:
+    im = Image.new("L", (1, 1))
+    with pytest.raises(
+        ValueError, match="ignore must be between or equal to 0 and 255"
+    ):
+        ImageOps.autocontrast(im, ignore=ignore)
 
 
 def test_autocontrast_mask_toy_input() -> None:

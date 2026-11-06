@@ -39,16 +39,16 @@ jobs:
           "3.15",
         ]
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     name: Benchmark Python ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      uses: actions/setup-python@v7.1.0
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
@@ -58,21 +58,21 @@ jobs:
           "pyproject.toml"
 
     - name: Cache libavif
-      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      uses: actions/cache@v6.1.0
       id: cache-libavif
       with:
         path: ~/cache-libavif
         key: ${{ runner.os }}-libavif-${{ hashFiles('depends/install_libavif.sh') }}
 
     - name: Cache libimagequant
-      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      uses: actions/cache@v6.1.0
       id: cache-libimagequant
       with:
         path: ~/cache-libimagequant
         key: ${{ runner.os }}-libimagequant-${{ hashFiles('depends/install_imagequant.sh') }}
 
     - name: Cache libwebp
-      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      uses: actions/cache@v6.1.0
       id: cache-libwebp
       with:
         path: ~/cache-libwebp
@@ -88,7 +88,7 @@ jobs:
         GHA_LIBWEBP_CACHE_HIT: ${{ steps.cache-libwebp.outputs.cache-hit }}
 
     - name: Run CodSpeed benchmarks
-      uses: CodSpeedHQ/action@373d6868929f444bc08d901fd0eb0ad52a8875ea # v5.2.1
+      uses: CodSpeedHQ/action@v5.6.0
       with:
         mode: simulation
         run: |

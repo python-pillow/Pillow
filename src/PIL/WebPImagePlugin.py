@@ -19,17 +19,11 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from typing import IO, Any
 
-_VP8_MODES_BY_IDENTIFIER = {
-    b"VP8 ": "RGB",
-    b"VP8X": "RGBA",
-    b"VP8L": "RGBA",  # lossless
-}
-
 
 def _accept(prefix: bytes) -> bool | str:
     is_riff_file_format = prefix.startswith(b"RIFF")
     is_webp_file = prefix[8:12] == b"WEBP"
-    is_valid_vp8_mode = prefix[12:16] in _VP8_MODES_BY_IDENTIFIER
+    is_valid_vp8_mode = prefix[12:16] in {b"VP8 ", b"VP8X", b"VP8L"}
 
     if is_riff_file_format and is_webp_file and is_valid_vp8_mode:
         if not SUPPORTED:
@@ -168,7 +162,7 @@ class WebPImageFile(ImageFile.ImageFile):
             if self.fp and self._exclusive_fp:
                 self.fp.close()
             self.fp = BytesIO(data)
-            self.tile = [ImageFile._Tile("raw", (0, 0, *self.size), 0, self.rawmode)]
+            self.tile = [ImageFile._Tile("raw", args=self.rawmode)]
 
         return super().load()
 

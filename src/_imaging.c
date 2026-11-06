@@ -406,15 +406,21 @@ getbands(const ModeID mode) {
 #define TYPE_FLOAT32 (0x300 | sizeof(FLOAT32))
 #define TYPE_DOUBLE (0x400 | sizeof(double))
 
+/**
+ * Allocates and returns a C array of the items in the Python sequence arg.
+ * The sequence's length is checked against the length parameter.
+ *
+ * @param arg The Python sequence to convert
+ * @param length The required number of items.
+ * @param wrong_length Error message to emit in exception if the sequence length does
+ *                     not match.
+ * @param type Type specifier (TYPE_UINT8, TYPE_INT32, TYPE_FLOAT32 or TYPE_DOUBLE)
+ *
+ * @return A pointer to the allocated C array, or NULL on error. The caller is
+ *         responsible for freeing the memory.
+ */
 static void *
 getlist_impl(PyObject *arg, Py_ssize_t length, const char *wrong_length, int type) {
-    /* - allocates and returns a c array of the items in the Python sequence arg.
-       - the size of the returned array is in length
-       - all of the arg items must be numeric items of the type specified in type
-       - sequence length is checked against the length parameter
-       - caller is responsible for freeing the memory
-    */
-
     Py_ssize_t i, n;
     int itemp;
     double dtemp;
@@ -594,7 +600,7 @@ getink(PyObject *color, Imaging im, char *ink) {
        Python long (not int) that raises an overflow error when trying
        to return it into a 32 bit C long
     */
-    PY_LONG_LONG r = 0;
+    long long r = 0;
     FLOAT32 ftmp;
     INT32 itmp;
 
@@ -1030,7 +1036,7 @@ _color_lut_3d(ImagingObject *self, PyObject *args) {
 static PyObject *
 _convert_impl(ImagingObject *self, PyObject *args) {
     char *mode_name;
-    int dither = 0;
+    int dither = IMAGING_DITHER_NONE;
     ImagingObject *paletteimage = NULL;
 
     if (!PyArg_ParseTuple(args, "s|iO", &mode_name, &dither, &paletteimage)) {
@@ -1079,7 +1085,9 @@ _convert_into(ImagingObject *self, PyObject *args) {
     }
 
     Py_BEGIN_CRITICAL_SECTION2(self, imagep);
-    result = ImagingConvert(imagep->image, self->image, imagep->image->mode, NULL, 0);
+    result = ImagingConvert(
+        imagep->image, self->image, imagep->image->mode, NULL, IMAGING_DITHER_NONE
+    );
     Py_END_CRITICAL_SECTION2();
 
     if (!result) {
@@ -1309,22 +1317,18 @@ _getpalette_impl(ImagingObject *self, PyObject *args) {
     int bits;
     ImagingShuffler pack;
 
-    char *mode_name = "RGB";
     char *rawmode_name = NULL;
-    if (!PyArg_ParseTuple(args, "|ss", &mode_name, &rawmode_name)) {
+    if (!PyArg_ParseTuple(args, "|s", &rawmode_name)) {
         return NULL;
     }
-    if (rawmode_name == NULL) {
-        rawmode_name = mode_name;
-    }
-
     if (!self->image->palette) {
         PyErr_SetString(PyExc_ValueError, no_palette);
         return NULL;
     }
 
-    const ModeID mode = findModeID(mode_name);
-    const RawModeID rawmode = findRawModeID(rawmode_name);
+    const ModeID mode = self->image->palette->mode;
+    const RawModeID rawmode =
+        rawmode_name != NULL ? findRawModeID(rawmode_name) : (RawModeID)mode;
 
     pack = ImagingFindPacker(mode, rawmode, &bits);
     if (!pack) {
@@ -1382,13 +1386,13 @@ _getxy(PyObject *xy, int *x, int *y) {
 
     value = PyTuple_GET_ITEM(xy, 0);
     if (PyLong_Check(value)) {
-        *x = PyLong_AS_LONG(value);
+        *x = PyLong_AsLong(value);
     } else if (PyFloat_Check(value)) {
         *x = (int)PyFloat_AS_DOUBLE(value);
     } else {
         PyObject *int_value = PyObject_CallMethod(value, "__int__", NULL);
         if (int_value != NULL && PyLong_Check(int_value)) {
-            *x = PyLong_AS_LONG(int_value);
+            *x = PyLong_AsLong(int_value);
             Py_DECREF(int_value);
         } else {
             Py_XDECREF(int_value);
@@ -1398,13 +1402,13 @@ _getxy(PyObject *xy, int *x, int *y) {
 
     value = PyTuple_GET_ITEM(xy, 1);
     if (PyLong_Check(value)) {
-        *y = PyLong_AS_LONG(value);
+        *y = PyLong_AsLong(value);
     } else if (PyFloat_Check(value)) {
         *y = (int)PyFloat_AS_DOUBLE(value);
     } else {
         PyObject *int_value = PyObject_CallMethod(value, "__int__", NULL);
         if (int_value != NULL && PyLong_Check(int_value)) {
-            *y = PyLong_AS_LONG(int_value);
+            *y = PyLong_AsLong(int_value);
             Py_DECREF(int_value);
         } else {
             Py_XDECREF(int_value);
@@ -1588,8 +1592,8 @@ _entropy_impl(ImagingObject *self, PyObject *args) {
     fsum = (double)sum;
     entropy = 0.0;
     for (idx = 0; idx < length; idx++) {
-        p = (double)h->histogram[idx] / fsum;
-        if (p != 0.0) {
+        if (h->histogram[idx] != 0) {
+            p = (double)h->histogram[idx] / fsum;
             entropy += p * log(p) * M_LOG2E;
         }
     }
@@ -1984,7 +1988,7 @@ _putdata(ImagingObject *self, PyObject *args) {
 static PyObject *
 _quantize_impl(ImagingObject *self, PyObject *args) {
     int colours = 256;
-    int method = 0;
+    int method = IMAGING_QUANTIZE_MEDIANCUT;
     int kmeans = 0;
     if (!PyArg_ParseTuple(args, "|iii", &colours, &method, &kmeans)) {
         return NULL;
@@ -2329,7 +2333,7 @@ _reduce_impl(ImagingObject *self, PyObject *args) {
         return ImagingError_ValueError("box can't exceed original image size");
     }
 
-    if (box[2] <= box[0] || box[3] <= box[1]) {
+    if (box[2] < box[0] || box[3] < box[1]) {
         return ImagingError_ValueError("box can't be empty");
     }
 
@@ -2356,7 +2360,6 @@ _reduce(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 im_setalpha_impl(ImagingObject *self, PyObject *args) {
-    /* attempt to modify the mode of an image in place */
     Imaging im = self->image;
     if (im->mode != IMAGING_MODE_RGB && im->mode != IMAGING_MODE_RGBX) {
         return ImagingError_ModeError();
@@ -2372,6 +2375,12 @@ im_setalpha_impl(ImagingObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+
+/**
+ * Convert the given RGB/RGBX image to RGBA in-place.
+ *
+ * @return None on success, or NULL on failure with Python exception set.
+ */
 static PyObject *
 im_setalpha(ImagingObject *self, PyObject *args) {
     PyObject *result;
@@ -2478,25 +2487,25 @@ _transpose_impl(ImagingObject *self, PyObject *args) {
     if (imOut) {
         switch (op) {
             case 0:
-                (void)ImagingFlipLeftRight(imOut, imIn);
+                ImagingFlipLeftRight(imOut, imIn);
                 break;
             case 1:
-                (void)ImagingFlipTopBottom(imOut, imIn);
+                ImagingFlipTopBottom(imOut, imIn);
                 break;
             case 2:
-                (void)ImagingRotate90(imOut, imIn);
+                ImagingRotate90(imOut, imIn);
                 break;
             case 3:
-                (void)ImagingRotate180(imOut, imIn);
+                ImagingRotate180(imOut, imIn);
                 break;
             case 4:
-                (void)ImagingRotate270(imOut, imIn);
+                ImagingRotate270(imOut, imIn);
                 break;
             case 5:
-                (void)ImagingTranspose(imOut, imIn);
+                ImagingTranspose(imOut, imIn);
                 break;
             case 6:
-                (void)ImagingTransverse(imOut, imIn);
+                ImagingTransverse(imOut, imIn);
                 break;
         }
     }
@@ -3277,10 +3286,17 @@ textwidth(ImagingFontObject *self, const unsigned char *text) {
     return xsize;
 }
 
+/**
+ * Convert the given Python string or bytes object to an unsigned char array.
+ *
+ * @param encoded_string The Python string to convert. Can be a Unicode or bytes object.
+ * @param text Pointer to an unsigned char pointer that will be set to the allocated C
+ *             string. The caller is responsible for freeing the memory with `free`.
+ * @return Void, but a Python exception will be set if an error occurs (e.g., memory
+ *         allocation failure). `text` will be NULL in this case.
+ */
 void
 _font_text_asBytes(PyObject *encoded_string, unsigned char **text) {
-    /* Allocates *text, returns a 'new reference'. Caller is required to free */
-
     PyObject *bytes = NULL;
     Py_ssize_t len = 0;
     char *buffer;
@@ -3306,8 +3322,6 @@ _font_text_asBytes(PyObject *encoded_string, unsigned char **text) {
     if (bytes) {
         Py_DECREF(bytes);
     }
-
-    return;
 }
 
 static PyObject *

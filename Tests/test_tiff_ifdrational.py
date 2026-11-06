@@ -54,6 +54,16 @@ def test_float() -> None:
     assert math.isnan(float(IFDRational(0, 0)))
 
 
+def test_arithmetic_between_rationals() -> None:
+    a = IFDRational(1, 2)
+    b = IFDRational(1, 3)
+
+    assert a + b == Fraction(5, 6)
+    assert a - b == Fraction(1, 6)
+    assert a * b == Fraction(1, 6)
+    assert a / b == Fraction(3, 2)
+
+
 def test_ranges() -> None:
     for num in range(1, 10):
         for denom in range(1, 10):
