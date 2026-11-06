@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import os
 import subprocess
 import sys
@@ -257,13 +258,16 @@ class TestImagePutPixelError:
             ):
                 im.putpixel((0, 0), v)  # type: ignore[arg-type]
 
-    def test_putpixel_type_error_float(self) -> None:
+    def test_putpixel_error_float(self) -> None:
         im = hopper("F")
         for v in ("foo", None):
             with pytest.raises(
                 TypeError, match="color must be int, float or single-element tuple"
             ):
                 im.putpixel((0, 0), v)  # type: ignore[arg-type]
+
+        with pytest.raises(ValueError, match="color is not a number"):
+            im.putpixel((0, 0), math.nan)
 
     @pytest.mark.parametrize("mode", IMAGE_MODES1 + IMAGE_MODES2)
     def test_putpixel_overflow_error(self, mode: str) -> None:

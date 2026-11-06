@@ -704,6 +704,10 @@ getink(PyObject *color, Imaging im, char *ink) {
             if (f == -1.0 && PyErr_Occurred()) {
                 return NULL;
             }
+            if (isnan(f)) {
+                PyErr_SetString(PyExc_ValueError, "color is not a number");
+                return NULL;
+            }
             ftmp = f;
             memcpy(ink, &ftmp, sizeof(ftmp));
             return ink;
