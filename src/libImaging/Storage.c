@@ -423,7 +423,6 @@ ImagingAllocateArray(Imaging im, ImagingMemoryArena arena, int dirty, int block_
     int y, line_in_block, current_block;
     ImagingMemoryBlock block = {NULL, 0};
     int aligned_linesize, lines_per_block;
-    int64_t blocks_count;
     char *aligned_ptr = NULL;
 
     /* 0-width or 0-height image. No need to do anything */
@@ -438,9 +437,9 @@ ImagingAllocateArray(Imaging im, ImagingMemoryArena arena, int dirty, int block_
     }
     im->lines_per_block = lines_per_block;
 
-    /* Compute in 64 bits to avoid signed overflow when
-     * ysize + lines_per_block - 1 exceeds INT_MAX. */
-    blocks_count = ((int64_t)im->ysize + lines_per_block - 1) / lines_per_block;
+    /* Compute in 64 bits to avoid signed overflow if ysize + lines_per_block - 1
+     * exceeds INT_MAX. */
+    int64_t blocks_count = ((int64_t)im->ysize + lines_per_block - 1) / lines_per_block;
     if (blocks_count > INT_MAX) {
         return (Imaging)ImagingError_MemoryError();
     }
