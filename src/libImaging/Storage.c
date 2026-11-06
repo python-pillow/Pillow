@@ -436,9 +436,9 @@ ImagingAllocateArray(Imaging im, ImagingMemoryArena arena, int dirty, int block_
     im->lines_per_block = lines_per_block;
 
     /* Compute in 64 bits to avoid signed overflow if ysize + lines_per_block - 1
-     * exceeds INT_MAX. */
+     * exceeds INT32_MAX. */
     int64_t blocks_count = ((int64_t)im->ysize + lines_per_block - 1) / lines_per_block;
-    if (blocks_count > INT_MAX) {
+    if (blocks_count > INT32_MAX) {
         return (Imaging)ImagingError_MemoryError();
     }
 
