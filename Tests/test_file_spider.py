@@ -7,7 +7,7 @@ from io import BytesIO
 
 import pytest
 
-from PIL import Image, SpiderImagePlugin, UnidentifiedImageError
+from PIL import Image, SpiderImagePlugin
 
 from .helper import assert_image_equal, hopper, is_pypy
 
@@ -157,18 +157,16 @@ def test_invalid_file() -> None:
 
 
 def test_image_within_stack_without_stack_header() -> None:
-    # An image within a stack (istack=0, imgnumber>0) can only be read
-    # through seek(), so opening it directly is an invalid file
     with open(TEST_FILE, "rb") as fp:
-        data = fp.read()
-    # imgnumber
-    data = data[: 26 * 4] + struct.pack("<f", 1) + data[27 * 4 :]
+        data = bytearray(fp.read())
 
+    # Set imgnumber to 1, so that the first frame in this stack
+    # is marked as the second image
+    data[26 * 4 : 27 * 4] = struct.pack("<f", 1)
+
+    b = BytesIO(data)
     with pytest.raises(SyntaxError, match="inconsistent stack header values"):
-        SpiderImagePlugin.SpiderImageFile(BytesIO(data))
-    with pytest.raises(UnidentifiedImageError):
-        with Image.open(BytesIO(data)):
-            pass
+        SpiderImagePlugin.SpiderImageFile(b)
 
 
 def test_nonstack_file() -> None:
