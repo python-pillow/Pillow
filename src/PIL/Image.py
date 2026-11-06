@@ -1144,7 +1144,9 @@ class Image:
                 )
                 del new_im.info["transparency"]
                 return new_im
-            elif self.mode in {"L", "RGB", "P"} and mode in {"L", "RGB", "P"}:
+            elif self.mode in {"1", "L", "I", "I;16", "RGB", "P"} and (
+                mode in {"L", "RGB", "P"}
+            ):
                 t = self.info["transparency"]
                 if isinstance(t, bytes):
                     # Dragons. This can't be represented by a single color
@@ -1198,6 +1200,12 @@ class Image:
                 else:
                     msg = "Transparency for P mode should be bytes or int"
                     raise ValueError(msg)
+            elif self.mode in {"1", "L", "I", "I;16", "RGB"} and mode == "PA":
+                im_without_trns = self.copy()
+                del im_without_trns.info["transparency"]
+                new_im = im_without_trns.convert(mode, dither=dither)
+                new_im.putalpha(self.convert("RGBA").getchannel("A"))
+                return new_im
 
         if mode == "P" and palette == Palette.ADAPTIVE:
             im = self.im.quantize(colors)
@@ -1505,14 +1513,16 @@ class Image:
         return a tuple of (red, green, blue) color values, and a P image will
         return the index of the color in the palette.
 
-        :param maxcolors: Maximum number of colors.  If this number is
-           exceeded, this method returns None.  The default limit is
+        :param maxcolors: Maximum number of colors. If this number is
+           exceeded, this method returns None. The default limit is
            256 colors.
         :returns: An unsorted list of (count, pixel) values.
         """
+        if maxcolors < 0:
+            return None
 
         self.load()
-        if self.mode in ("1", "L", "P"):
+        if self.mode in {"1", "L", "P"}:
             h = self.im.histogram()
             out: list[tuple[int, float]] = [(h[i], i) for i in range(256) if h[i]]
             if len(out) > maxcolors:
@@ -1929,11 +1939,13 @@ class Image:
 
             source = ImageColor.getcolor(im, self.mode)
         elif isinstance(im, Image):
-            im.load()
-            if self.mode != im.mode:
-                if self.mode != "RGB" or im.mode not in ("LA", "RGBA", "RGBa"):
-                    # should use an adapter for this!
-                    im = im.convert(self.mode)
+            if self.mode != im.mode and (
+                self.mode != "RGB" or im.mode not in {"LA", "RGBA", "RGBa"}
+            ):
+                # should use an adapter for this!
+                im = im.convert(self.mode)
+            else:
+                im.load()
             source = im.im
         else:
             source = im
@@ -3020,9 +3032,19 @@ class Image:
             msg = "missing method data"
             raise ValueError(msg)
 
+        palette = None
+        if self.mode in {"P", "PA"} and self.palette:
+            palette = self.palette.copy()
+            if isinstance(fillcolor, str):
+                from . import ImageColor
+
+                fillcolor = ImageColor.getcolor(fillcolor, self.mode)
+            if isinstance(fillcolor, tuple) and all(
+                isinstance(i, int) for i in fillcolor
+            ):
+                fillcolor = palette.getcolor(cast("tuple[int, ...]", fillcolor), self)
+
         im = new(self.mode, size, fillcolor)
-        if self.mode in ("P", "PA") and self.palette:
-            im.palette = self.palette.copy()
         im.info = self._copy_info()
         if method == Transform.MESH:
             # list of quads
@@ -3034,6 +3056,8 @@ class Image:
             im.__transformer(
                 (0, 0, *size), self, method, data, resample, fillcolor is None
             )
+        if palette:
+            im.palette = palette
 
         return im
 
