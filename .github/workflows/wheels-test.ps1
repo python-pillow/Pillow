@@ -18,9 +18,5 @@ if (Test-Path $venv\Scripts\pypy.exe) {
 cd $pillow
 & $venv\Scripts\$python -VV
 if (!$?) { exit $LASTEXITCODE }
-& $venv\Scripts\$python selftest.py
-if (!$?) { exit $LASTEXITCODE }
-& $venv\Scripts\$python -m pytest -vv -x checks\check_wheel.py
-if (!$?) { exit $LASTEXITCODE }
-& $venv\Scripts\$python -m pytest -vv -x --numprocesses=logical --dist=worksteal Tests
+& $venv\Scripts\$python -m wheels_test
 if (!$?) { exit $LASTEXITCODE }
