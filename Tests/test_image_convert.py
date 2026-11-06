@@ -96,6 +96,22 @@ def test_16bit_workaround() -> None:
         _test_float_conversion(im.convert("I"))
 
 
+@pytest.mark.parametrize(
+    "value, expected",
+    (
+        (2147483648, 2147483647),
+        (2147483647, 2147483647),
+        (1, 1),
+        (-5.5, -5),
+        (-2147483648, -2147483648),
+        (-2147483649, -2147483648),
+    ),
+)
+def test_f_to_i(value: float, expected: int) -> None:
+    im = Image.new("F", (1, 1), value)
+    assert im.convert("I").getpixel((0, 0)) == expected
+
+
 def test_opaque() -> None:
     alpha = hopper("P").convert("PA").getchannel("A")
 
