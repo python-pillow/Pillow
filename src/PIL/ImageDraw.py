@@ -83,7 +83,7 @@ class ImageDraw:
             else:
                 msg = "mode mismatch"
                 raise ValueError(msg)
-        if mode in ("P", "PA"):
+        if mode in {"P", "PA"}:
             self.palette = im.palette
         else:
             self.palette = None

@@ -3277,7 +3277,7 @@ def new(
 
     im = Image()
     if (
-        mode in ("P", "PA")
+        mode in {"P", "PA"}
         and isinstance(color, (list, tuple))
         and all(isinstance(i, int) for i in color)
     ):
