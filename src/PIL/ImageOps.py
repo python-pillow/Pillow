@@ -124,8 +124,7 @@ def autocontrast(
     if ignore is not None:
         if isinstance(ignore, int):
             ignore = (ignore,)
-        ignore = tuple(ignore)
-        if any(not 0 <= i <= 255 for i in ignore):
+        if not all(0 <= i <= 255 for i in ignore):
             msg = "ignore must be between or equal to 0 and 255"
             raise ValueError(msg)
 
