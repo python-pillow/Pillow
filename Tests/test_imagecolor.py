@@ -218,3 +218,20 @@ def test_color_too_long() -> None:
     # Act / Assert
     with pytest.raises(ValueError):
         ImageColor.getrgb(color_too_long)
+
+
+@pytest.mark.parametrize(
+    "color",
+    (
+        "rgb(256,0,0)",
+        "rgb(101%,0%,0%)",
+        "hsl(0,101%,50%)",
+        "hsl(0,100%,100.5%)",
+        "hsv(0,200%,100%)",
+        "hsv(0,100%,101%)",
+        "rgba(255,0,0,256)",
+    ),
+)
+def test_out_of_range(color: str) -> None:
+    with pytest.raises(ValueError, match="out of range"):
+        ImageColor.getrgb(color)

@@ -26,11 +26,18 @@ from functools import lru_cache
 from . import Image
 
 
+def _check_max(m: re.Match[str], maximum: int, offset: int = 0) -> None:
+    if any(float(value) > maximum for value in m.groups()[offset:]):
+        msg = "color value out of range"
+        raise ValueError(msg)
+
+
 @lru_cache
 def getrgb(color: str) -> tuple[int, int, int] | tuple[int, int, int, int]:
     """
      Convert a color string to an RGB or RGBA tuple. If the string cannot be
-     parsed, this function raises a :py:exc:`ValueError` exception.
+     parsed, or a value in a color function is out of range, this function raises
+     a :py:exc:`ValueError` exception.
 
     .. versionadded:: 1.1.4
 
@@ -73,10 +80,12 @@ def getrgb(color: str) -> tuple[int, int, int] | tuple[int, int, int, int]:
 
     m = re.match(r"rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
     if m:
+        _check_max(m, 255)
         return int(m.group(1)), int(m.group(2)), int(m.group(3))
 
     m = re.match(r"rgb\(\s*(\d+)%\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$", color)
     if m:
+        _check_max(m, 100)
         return (
             int((int(m.group(1)) * 255) / 100.0 + 0.5),
             int((int(m.group(2)) * 255) / 100.0 + 0.5),
@@ -87,6 +96,7 @@ def getrgb(color: str) -> tuple[int, int, int] | tuple[int, int, int, int]:
         r"hsl\(\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)%\s*,\s*(\d+\.?\d*)%\s*\)$", color
     )
     if m:
+        _check_max(m, 100, 1)
         from colorsys import hls_to_rgb
 
         rgb_floats = hls_to_rgb(
@@ -104,6 +114,7 @@ def getrgb(color: str) -> tuple[int, int, int] | tuple[int, int, int, int]:
         r"hs[bv]\(\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)%\s*,\s*(\d+\.?\d*)%\s*\)$", color
     )
     if m:
+        _check_max(m, 100, 1)
         from colorsys import hsv_to_rgb
 
         rgb_floats = hsv_to_rgb(
@@ -119,6 +130,7 @@ def getrgb(color: str) -> tuple[int, int, int] | tuple[int, int, int, int]:
 
     m = re.match(r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
     if m:
+        _check_max(m, 255)
         return int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4))
     msg = f"unknown color specifier: {repr(color)}"
     raise ValueError(msg)
@@ -130,8 +142,8 @@ def getcolor(color: str, mode: str) -> int | tuple[int, ...]:
     Same as :py:func:`~PIL.ImageColor.getrgb` for most modes. However, if
     ``mode`` is HSV, converts the RGB value to a HSV value, or if ``mode`` is
     not color or a palette image, converts the RGB value to a grayscale value.
-    If the string cannot be parsed, this function raises a :py:exc:`ValueError`
-    exception.
+    If the string cannot be parsed, or a value in a color function is out of range,
+    this function raises a :py:exc:`ValueError` exception.
 
     .. versionadded:: 1.1.4
 

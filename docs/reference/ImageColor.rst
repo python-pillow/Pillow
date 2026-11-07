@@ -50,6 +50,9 @@ The ImageColor module supports the following string formats:
   system and most web browsers. Color names are case insensitive. For example,
   ``red`` and ``Red`` both specify pure red.
 
+A red, green, blue, alpha, saturation, lightness or value outside of these ranges
+raises a :py:exc:`ValueError`.
+
 Functions
 ---------
 
