@@ -58,7 +58,8 @@ def test_save_fp() -> None:
         assert not fp.closed
 
 
-def test_getcolor() -> None:
+@pytest.mark.parametrize("mode", ("P", "PA"))
+def test_getcolor(mode: str) -> None:
     palette = ImagePalette.ImagePalette()
     assert len(palette.palette) == 0
     assert len(palette.colors) == 0
@@ -78,7 +79,7 @@ def test_getcolor() -> None:
     with pytest.raises(ValueError):
         palette.getcolor((1, 2, 3))
     # But not if the image is not using one of the palette entries
-    palette.getcolor((1, 2, 3), image=Image.new("P", (1, 1)))
+    palette.getcolor((1, 2, 3), image=Image.new(mode, (1, 1)))
 
     # Test unknown color specifier
     with pytest.raises(ValueError):
