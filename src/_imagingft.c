@@ -66,9 +66,15 @@ static int have_raqm = 0;
 #define LAYOUT_FALLBACK 0
 #define LAYOUT_RAQM 1
 
+// Mirrors raqm_glyph_t
+// Coordinate units are 26.6 fractional pixels
 typedef struct {
-    int index, x_offset, x_advance, y_offset, y_advance;
-    unsigned int cluster;
+    unsigned int index;    // the index of the glyph in the font file
+    int x_offset;          // horizontal movement of the glyph from current point
+    int x_advance;         // glyph advance width in horizontal text
+    int y_offset;          // vertical movement of the glyph from current point
+    int y_advance;         // glyph advance height in vertical text
+    unsigned int cluster;  // character index in original text
 } GlyphInfo;
 
 struct {
@@ -492,6 +498,23 @@ text_layout(
     return count;
 }
 
+/** Calculate how far the pen advances for a given string.
+ *
+ * This is the sum of the glyph advances, which is not the width of the inked
+ * area that font_getsize_impl() reports: it includes side bearings.
+ *
+ * Python parameters:
+ *   - string: the text to measure
+ *   - mode_name: image mode string
+ *   - dir: text direction string
+ *   - features: font features sequence
+ *   - lang: language string
+ *
+ * Python return value:
+ *   - length: advance along the primary axis, 26.6 precision integer.
+ *     Unlike the other methods here this is not in pixels;
+ *     ImageFont.FreeTypeFont.getlength() divides by 64.
+ */
 static PyObject *
 font_getlength_impl(FontObject *self, PyObject *args) {
     int length;                   /* length along primary axis, in 26.6 precision */
@@ -505,8 +528,6 @@ font_getlength_impl(FontObject *self, PyObject *args) {
     const char *lang = NULL;
     PyObject *features = Py_None;
     PyObject *string;
-
-    /* calculate size and bearing for a given string */
 
     if (!PyArg_ParseTuple(
             args, "O|zzOz:getlength", &string, &mode_name, &dir, &features, &lang
@@ -729,6 +750,19 @@ bad_anchor:
     return 1;
 }
 
+/** Calculate size and bearing for a given string.
+ *
+ * Python parameters:
+ *   - string: the text to measure
+ *   - mode_name: image mode string
+ *   - dir: text direction string
+ *   - features: font features sequence
+ *   - lang: language string
+ *   - anchor: anchor string
+ *
+ * Python return value:
+ *   - ((width, height), (x_offset, y_offset)): size and bearing of the text, in pixels
+ */
 static PyObject *
 font_getsize_impl(FontObject *self, PyObject *args) {
     int64_t width, height, y_offset;
@@ -746,8 +780,6 @@ font_getsize_impl(FontObject *self, PyObject *args) {
     const char *anchor = NULL;
     PyObject *features = Py_None;
     PyObject *string;
-
-    /* calculate size and bearing for a given string */
 
     if (!PyArg_ParseTuple(
             args,
@@ -813,11 +845,31 @@ font_getsize(FontObject *self, PyObject *args) {
     return result;
 }
 
+/**
+ * Rasterize a string into an image buffer.
+ *
+ * Python parameters:
+ * - string: the text to render
+ * - fill: Python function to create a core image object at a specified width and height
+ * - mode_name: image mode string
+ * - dir: text direction string
+ * - features: font features sequence
+ * - lang: language string
+ * - stroke_width: stroke width in pixels
+ * - stroke_filled: bool: omit inner stroke border, filling inside the outer border
+ * - anchor: anchor string
+ * - foreground_ink_long: foreground color
+ * - x_start: starting x position of the pen in pixels
+ * - y_start: starting y position of the pen in pixels
+ *
+ * Python return value:
+ *   - (image, (x_offset, y_offset)): image with the rendered text, and text offset
+ */
 static PyObject *
 font_render_impl(FontObject *self, PyObject *args) {
     int x, y;         /* pen position, in 26.6 precision */
     int px, py;       /* position of current glyph, in pixels */
-    int x_min, y_max; /* text offset in 26.6 precision */
+    int x_min, y_max; /* text offset, in pixels */
     int load_flags;   /* FreeType load_flags parameter */
     int error;
     FT_Glyph glyph = NULL;
