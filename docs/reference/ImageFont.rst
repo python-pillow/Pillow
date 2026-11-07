@@ -100,6 +100,29 @@ Constants
         Requires Raqm, you can check support using
         :py:func:`PIL.features.check_feature` with ``feature="raqm"``.
 
+    .. warning:: Do not pre-shape text for the Raqm engine.
+
+        A widespread pattern for Arabic, Persian and Urdu is to run the string
+        through ``arabic_reshaper`` and ``python-bidi`` before drawing it. That
+        is correct **only** for :py:attr:`PIL.ImageFont.Layout.BASIC`, which does no
+        shaping of its own.
+
+        Under :py:attr:`PIL.ImageFont.Layout.RAQM`, Pillow shapes and reorders
+        the text itself, so a pre-shaped string is shaped a second time. The
+        result still renders, it is simply wrong, which is what makes the
+        failure easy to miss.
+
+        Which engine is used depends on how Pillow was built, so the same code
+        can be correct on one machine and wrong on another. Check at run time
+        rather than assuming::
+
+            from PIL import features
+
+            if features.check_feature("raqm"):
+                draw.text(xy, arabic_text, font=font)
+            else:
+                draw.text(xy, reshaped_bidi_text, font=font)
+
 .. data:: MAX_STRING_LENGTH
 
     Set to 1,000,000, to protect against potential DOS attacks. Pillow will
