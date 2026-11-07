@@ -98,6 +98,7 @@ _LIB_IMAGING = (
     "EpsEncode",
     "Fill",
     "Filter",
+    "FitsRiceDecode",
     "FliDecode",
     "Geometry",
     "GetBBox",
