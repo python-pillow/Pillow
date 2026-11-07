@@ -3336,6 +3336,9 @@ _font_text_asBytes(PyObject *encoded_string, unsigned char **text) {
         PyBytes_AsStringAndSize(bytes, &buffer, &len);
     } else if (PyBytes_Check(encoded_string)) {
         PyBytes_AsStringAndSize(encoded_string, &buffer, &len);
+    } else if (PyByteArray_Check(encoded_string)) {
+        buffer = PyByteArray_AS_STRING(encoded_string);
+        len = PyByteArray_GET_SIZE(encoded_string);
     }
 
     *text = calloc(len + 1, 1);

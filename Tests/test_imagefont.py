@@ -8,7 +8,7 @@ import sys
 import tempfile
 from io import BytesIO
 from pathlib import Path
-from typing import Any, BinaryIO
+from typing import Any, AnyStr, BinaryIO
 
 import pytest
 
@@ -357,13 +357,12 @@ def test_multiline_spacing(font: ImageFont.FreeTypeFont) -> None:
 @pytest.mark.parametrize(
     "orientation", (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270)
 )
+@pytest.mark.parametrize("word", ("testing", b"testing", bytearray(b"testing")))
 def test_rotated_transposed_font(
-    font: ImageFont.FreeTypeFont, orientation: Image.Transpose
+    font: ImageFont.FreeTypeFont, orientation: Image.Transpose, word: AnyStr
 ) -> None:
     img_gray = Image.new("L", (100, 100))
     draw = ImageDraw.Draw(img_gray)
-    word = "testing"
-
     transposed_font = ImageFont.TransposedFont(font, orientation=orientation)
 
     # Original font
@@ -437,11 +436,13 @@ def test_unrotated_transposed_font(
 @pytest.mark.parametrize(
     "orientation", (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270)
 )
+@pytest.mark.parametrize("text", ("mask this", b"mask this", bytearray(b"mask this")))
 def test_rotated_transposed_font_get_mask(
-    font: ImageFont.FreeTypeFont, orientation: Image.Transpose
+    font: ImageFont.FreeTypeFont,
+    orientation: Image.Transpose,
+    text: str | bytes | bytearray,
 ) -> None:
     # Arrange
-    text = "mask this"
     transposed_font = ImageFont.TransposedFont(font, orientation=orientation)
 
     # Act
@@ -512,11 +513,13 @@ def test_stroke_mask() -> None:
 
 
 @pytest.mark.parametrize("filename_type", (str, Path))
-def test_load(filename_type: type[str | Path]) -> None:
+@pytest.mark.parametrize("text", ("hello", b"hello", bytearray(b"hello")))
+def test_load(filename_type: type[str | Path], text: str | bytes | bytearray) -> None:
     font = ImageFont.load(filename_type("Tests/fonts/10x20.pil"))
 
     assert isinstance(font, ImageFont.ImageFont)
-    assert font.getlength("hello") == 50
+    assert font.getlength(text) == 50
+    assert font.getmask(text).size == (50, 20)
 
 
 def test_load_invalid_file() -> None:
@@ -1194,21 +1197,22 @@ def test_too_many_characters(font: ImageFont.FreeTypeFont) -> None:
         imagefont.getmask("A" * 1_000_001)
 
 
-def test_bytes(font: ImageFont.FreeTypeFont) -> None:
-    assert font.getlength(b"test") == font.getlength("test")
+@pytest.mark.parametrize("text", (b"test", bytearray(b"test")))
+def test_bytes(font: ImageFont.FreeTypeFont, text: bytes | bytearray) -> None:
+    assert font.getlength(text) == font.getlength("test")
 
-    assert font.getbbox(b"test") == font.getbbox("test")
+    assert font.getbbox(text) == font.getbbox("test")
 
     assert_image_equal(
-        Image.Image()._new(font.getmask(b"test")),
+        Image.Image()._new(font.getmask(text)),
         Image.Image()._new(font.getmask("test")),
     )
 
     assert_image_equal(
-        Image.Image()._new(font.getmask2(b"test")[0]),
+        Image.Image()._new(font.getmask2(text)[0]),
         Image.Image()._new(font.getmask2("test")[0]),
     )
-    assert font.getmask2(b"test")[1] == font.getmask2("test")[1]
+    assert font.getmask2(text)[1] == font.getmask2("test")[1]
 
     with pytest.raises(TypeError):
         font.getlength((0, 0))  # type: ignore[arg-type]

@@ -107,12 +107,14 @@ class BaseImageFont(abc.ABC):
 
     @abc.abstractmethod
     def getmask(
-        self, text: str | bytes, mode: str = "", *args: Any, **kwargs: Any
+        self, text: str | bytes | bytearray, mode: str = "", *args: Any, **kwargs: Any
     ) -> Image.core.ImagingCore:
         pass
 
     @abc.abstractmethod
-    def getlength(self, text: str | bytes, *args: Any, **kwargs: Any) -> float:
+    def getlength(
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+    ) -> float:
         pass
 
 
@@ -182,7 +184,7 @@ class ImageFont(BaseImageFont):
         self.font = Image.core.font(image.im, data)
 
     def getmask(
-        self, text: str | bytes, mode: str = "", *args: Any, **kwargs: Any
+        self, text: str | bytes | bytearray, mode: str = "", *args: Any, **kwargs: Any
     ) -> Image.core.ImagingCore:
         """
         Create a bitmap for the text.
@@ -329,7 +331,7 @@ class FreeTypeFont(BaseImageFont):
 
     def getlength(
         self,
-        text: str | bytes,
+        text: str | bytes | bytearray,
         mode: str = "",
         direction: str | None = None,
         features: list[str] | None = None,
@@ -474,7 +476,7 @@ class FreeTypeFont(BaseImageFont):
 
     def getmask(
         self,
-        text: str | bytes,
+        text: str | bytes | bytearray,
         mode: str = "",
         direction: str | None = None,
         features: list[str] | None = None,
@@ -565,7 +567,7 @@ class FreeTypeFont(BaseImageFont):
 
     def getmask2(
         self,
-        text: str | bytes,
+        text: str | bytes | bytearray,
         mode: str = "",
         direction: str | None = None,
         features: list[str] | None = None,
@@ -770,7 +772,7 @@ class TransposedFont(BaseImageFont):
         self.orientation = orientation  # any 'transpose' argument, or None
 
     def getmask(
-        self, text: str | bytes, mode: str = "", *args: Any, **kwargs: Any
+        self, text: str | bytes | bytearray, mode: str = "", *args: Any, **kwargs: Any
     ) -> Image.core.ImagingCore:
         im = self.font.getmask(text, mode, *args, **kwargs)
         if self.orientation is not None:
@@ -789,7 +791,9 @@ class TransposedFont(BaseImageFont):
             return 0, 0, height, width
         return 0, 0, width, height
 
-    def getlength(self, text: str | bytes, *args: Any, **kwargs: Any) -> float:
+    def getlength(
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+    ) -> float:
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             msg = "text length is undefined for text rotated by 90 or 270 degrees"
             raise ValueError(msg)
