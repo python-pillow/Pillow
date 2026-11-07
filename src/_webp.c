@@ -82,16 +82,16 @@ HandleMuxError(WebPMuxError err, char *chunk) {
 
 static const char *const kEncoderErrorMessages[VP8_ENC_ERROR_LAST] = {
     "ok",
-    "out of memory allocating objects",
-    "out of memory re-allocating byte buffer",
+    "Out of memory allocating objects",
+    "Out of memory re-allocating byte buffer",
     "NULL parameter passed to function",
     "configuration is invalid",
     "image size exceeds WebP limit of " WEBP_STR(WEBP_MAX_DIMENSION) " pixels",
-    "partition #0 is bigger than 512K",
-    "partition is bigger than 16M",
-    "picture writer returned an I/O error",
-    "file would be bigger than 4G",
-    "encoding aborted by user"
+    "Partition #0 is too big to fit 512k",
+    "Partition too big to fit 16M",
+    "Picture writer returned an I/O error",
+    "File would be too big to fit in 4G",
+    "encoding abort requested by user"
 };
 
 #undef WEBP_STR
