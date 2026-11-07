@@ -394,6 +394,19 @@ def test_matrix_truncated() -> None:
         im.convert(mode="L", matrix=(0,))
 
 
+def test_matrix_too_short_for_rgb() -> None:
+    # Arrange
+    im = hopper("RGB")
+    short_matrix = (1, 0, 0, 0)
+
+    # Act / Assert
+    # A 4-value matrix fills only m[0:4]; mode "RGB" reads all twelve.
+    with pytest.raises(
+        TypeError, match="matrix must be tuple of length 12 for mode RGB"
+    ):
+        im.convert(mode="RGB", matrix=short_matrix)
+
+
 @pytest.mark.parametrize("mode", ("RGB", "L"))
 def test_matrix_xyz(mode: str) -> None:
     # Arrange
