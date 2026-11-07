@@ -251,7 +251,7 @@ DEPS: dict[str, dict[str, Any]] = {
     },
     "freetype": {
         "url": "https://download.savannah.gnu.org/releases/freetype/FILENAME",
-        "filename": f"freetype-{V['freetype']}.tar.gz",
+        "filename": f"freetype-{V['freetype'].replace('-', '.')}.tar.gz",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {

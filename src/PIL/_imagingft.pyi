@@ -64,7 +64,7 @@ def getfont(
     size: float,
     index: int,
     encoding: str,
-    font_bytes: bytes,
     layout_engine: int,
+    font_bytes: bytes,
 ) -> Font: ...
 def __getattr__(name: str) -> Any: ...

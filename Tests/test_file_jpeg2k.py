@@ -156,7 +156,7 @@ def test_prog_res_rt(card: ImageFile.ImageFile) -> None:
 def test_unknown_progression(tmp_path: Path) -> None:
     outfile = tmp_path / "temp.jp2"
 
-    im = Image.new("1", (1, 1))
+    im = Image.new("L", (1, 1))
     with pytest.raises(ValueError, match="unknown progression"):
         im.save(outfile, progression="invalid")
 
@@ -164,9 +164,18 @@ def test_unknown_progression(tmp_path: Path) -> None:
 def test_unknown_cinema_mode(tmp_path: Path) -> None:
     outfile = tmp_path / "temp.jp2"
 
-    im = Image.new("1", (1, 1))
+    im = Image.new("L", (1, 1))
     with pytest.raises(ValueError, match="unknown cinema mode"):
         im.save(outfile, cinema_mode="invalid")
+
+
+@pytest.mark.parametrize("mode", ("1", "P", "I", "F"))
+def test_unsupported_mode(mode: str, tmp_path: Path) -> None:
+    outfile = tmp_path / "temp.jp2"
+
+    im = Image.new(mode, (1, 1))
+    with pytest.raises(OSError, match=f"cannot write mode {mode} as JPEG2000"):
+        im.save(outfile)
 
 
 @pytest.mark.parametrize("num_resolutions", range(2, 6))

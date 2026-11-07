@@ -406,15 +406,21 @@ getbands(const ModeID mode) {
 #define TYPE_FLOAT32 (0x300 | sizeof(FLOAT32))
 #define TYPE_DOUBLE (0x400 | sizeof(double))
 
+/**
+ * Allocates and returns a C array of the items in the Python sequence arg.
+ * The sequence's length is checked against the length parameter.
+ *
+ * @param arg The Python sequence to convert
+ * @param length The required number of items.
+ * @param wrong_length Error message to emit in exception if the sequence length does
+ *                     not match.
+ * @param type Type specifier (TYPE_UINT8, TYPE_INT32, TYPE_FLOAT32 or TYPE_DOUBLE)
+ *
+ * @return A pointer to the allocated C array, or NULL on error. The caller is
+ *         responsible for freeing the memory.
+ */
 static void *
 getlist_impl(PyObject *arg, Py_ssize_t length, const char *wrong_length, int type) {
-    /* - allocates and returns a c array of the items in the Python sequence arg.
-       - the size of the returned array is in length
-       - all of the arg items must be numeric items of the type specified in type
-       - sequence length is checked against the length parameter
-       - caller is responsible for freeing the memory
-    */
-
     Py_ssize_t i, n;
     int itemp;
     double dtemp;
@@ -688,6 +694,12 @@ getink(PyObject *color, Imaging im, char *ink) {
             return ink;
         case IMAGING_TYPE_FLOAT32:
             /* floating point */
+            if (!PyFloat_Check(color) && !PyLong_Check(color)) {
+                PyErr_SetString(
+                    PyExc_TypeError, "color must be int, float or single-element tuple"
+                );
+                return NULL;
+            }
             f = PyFloat_AsDouble(color);
             if (f == -1.0 && PyErr_Occurred()) {
                 return NULL;
@@ -2327,7 +2339,7 @@ _reduce_impl(ImagingObject *self, PyObject *args) {
         return ImagingError_ValueError("box can't exceed original image size");
     }
 
-    if (box[2] <= box[0] || box[3] <= box[1]) {
+    if (box[2] < box[0] || box[3] < box[1]) {
         return ImagingError_ValueError("box can't be empty");
     }
 
@@ -2354,7 +2366,6 @@ _reduce(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 im_setalpha_impl(ImagingObject *self, PyObject *args) {
-    /* attempt to modify the mode of an image in place */
     Imaging im = self->image;
     if (im->mode != IMAGING_MODE_RGB && im->mode != IMAGING_MODE_RGBX) {
         return ImagingError_ModeError();
@@ -2370,6 +2381,12 @@ im_setalpha_impl(ImagingObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+
+/**
+ * Convert the given RGB/RGBX image to RGBA in-place.
+ *
+ * @return None on success, or NULL on failure with Python exception set.
+ */
 static PyObject *
 im_setalpha(ImagingObject *self, PyObject *args) {
     PyObject *result;
@@ -2670,15 +2687,34 @@ _getcolors(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _getextrema_impl(ImagingObject *self, PyObject *args) {
+    if (self->image->bands > 1) {
+        UINT8 mb[2 * 4];
+        int bands = self->image->bands;
+        int status = ImagingGetExtremaMultiband(self->image, mb);
+        PyObject *result = PyTuple_New(bands);
+        if (!result) {
+            return NULL;
+        }
+        for (int b = 0; b < bands; b++) {
+            // status == 0 for an empty image: report None per band.
+            PyObject *item = status ? Py_BuildValue("BB", mb[b * 2], mb[b * 2 + 1])
+                                    : Py_NewRef(Py_None);
+            if (!item) {
+                Py_DECREF(result);
+                return NULL;
+            }
+            PyTuple_SET_ITEM(result, b, item);
+        }
+        return result;
+    }
+
     union {
         UINT8 u[2];
         INT32 i[2];
         FLOAT32 f[2];
         UINT16 s[2];
     } extrema;
-    int status;
-
-    status = ImagingGetExtrema(self->image, &extrema);
+    int status = ImagingGetExtrema(self->image, &extrema);
     if (status < 0) {
         return NULL;
     }
@@ -3275,10 +3311,17 @@ textwidth(ImagingFontObject *self, const unsigned char *text) {
     return xsize;
 }
 
+/**
+ * Convert the given Python string or bytes object to an unsigned char array.
+ *
+ * @param encoded_string The Python string to convert. Can be a Unicode or bytes object.
+ * @param text Pointer to an unsigned char pointer that will be set to the allocated C
+ *             string. The caller is responsible for freeing the memory with `free`.
+ * @return Void, but a Python exception will be set if an error occurs (e.g., memory
+ *         allocation failure). `text` will be NULL in this case.
+ */
 void
 _font_text_asBytes(PyObject *encoded_string, unsigned char **text) {
-    /* Allocates *text, returns a 'new reference'. Caller is required to free */
-
     PyObject *bytes = NULL;
     Py_ssize_t len = 0;
     char *buffer;
@@ -3304,8 +3347,6 @@ _font_text_asBytes(PyObject *encoded_string, unsigned char **text) {
     if (bytes) {
         Py_DECREF(bytes);
     }
-
-    return;
 }
 
 static PyObject *
