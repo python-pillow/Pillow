@@ -14,6 +14,83 @@
 
 #include "Imaging.h"
 
+/* Sliding histogram rank filter for 8-bit images (Huang, 1979).
+   Moving the window one pixel to the right removes one column and adds
+   another, so each step costs O(size) instead of the O(size^2) needed to
+   copy and select the whole window. "below" counts the window samples
+   less than v, the current output value, which moves only a little
+   between neighbouring pixels. */
+
+/* Count the values in the size x size window whose top left is in[0][0] */
+static void
+FillHistogram(int *hist, UINT8 **in, int size) {
+    int x, i;
+
+    memset(hist, 0, 256 * sizeof(int));
+    for (i = 0; i < size; i++) {
+        for (x = 0; x < size; x++) {
+            hist[in[i][x]]++;
+        }
+    }
+}
+
+/* Move the window from column x - 1 to column x, and return the change
+   in the number of samples below v */
+static inline int
+SlideHistogram(int *hist, UINT8 **in, int x, int size, int v) {
+    int i, delta = 0;
+
+    for (i = 0; i < size; i++) {
+        UINT8 removed = in[i][x - 1];
+        UINT8 added = in[i][x + size - 1];
+        hist[removed]--;
+        hist[added]++;
+        delta += (added < v) - (removed < v);
+    }
+    return delta;
+}
+
+/* Starting from v, find the value with exactly rank samples below it,
+   keeping *below in step */
+static inline int
+SeekRank(const int *hist, int rank, int v, int *below) {
+    while (*below > rank) {
+        *below -= hist[--v];
+    }
+    while (*below + hist[v] <= rank) {
+        *below += hist[v++];
+    }
+    return v;
+}
+
+static void
+RankRowUINT8(UINT8 *out, UINT8 **in, int xsize, int size, int rank) {
+    int x, v, below = 0;
+    int hist[256];
+
+    FillHistogram(hist, in, size);
+    v = SeekRank(hist, rank, 0, &below);
+    out[0] = (UINT8)v;
+
+    for (x = 1; x < xsize; x++) {
+        below += SlideHistogram(hist, in, x, size, v);
+        v = SeekRank(hist, rank, v, &below);
+        out[x] = (UINT8)v;
+    }
+}
+
+static void
+RankUINT8(Imaging imOut, Imaging im, int size, int rank) {
+    int y;
+
+    if (imOut->xsize <= 0) {
+        return;
+    }
+    for (y = 0; y < imOut->ysize; y++) {
+        RankRowUINT8(imOut->image8[y], &im->image8[y], imOut->xsize, size, rank);
+    }
+}
+
 /* Fast rank algorithm (due to Wirth), based on public domain code
    by Nicolas Devillard, available at http://ndevilla.free.fr */
 
@@ -57,7 +134,7 @@
         return a[k];                                 \
     }
 
-MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
+MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
 
     Imaging ImagingRankFilter(Imaging im, int size, int rank) {
     Imaging imOut = NULL;
@@ -116,7 +193,9 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
     } while (0)
 
     if (im->image8) {
-        RANK_BODY(UINT8);
+        ImagingSectionEnter(&cookie);
+        RankUINT8(imOut, im, size, rank);
+        ImagingSectionLeave(&cookie);
     } else if (im->type == IMAGING_TYPE_INT32) {
         RANK_BODY(INT32);
     } else if (im->type == IMAGING_TYPE_FLOAT32) {
