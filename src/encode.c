@@ -140,14 +140,15 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
         return NULL;
     }
 
-    buf = PyBytes_FromStringAndSize(NULL, bufsize);
-    if (!buf) {
+    PyBytesWriter *writer = PyBytesWriter_Create(bufsize);
+    if (writer == NULL) {
         return NULL;
     }
 
     bytes_consumed = encoder->encode(
-        encoder->im, &encoder->state, (UINT8 *)PyBytes_AsString(buf), bufsize
+        encoder->im, &encoder->state, PyBytesWriter_GetData(writer), bufsize
     );
+    buf = PyBytesWriter_Finish(writer);
 
     /* adjust string length to avoid slicing in encoder */
     if (_PyBytes_Resize(&buf, (bytes_consumed > 0) ? bytes_consumed : 0) < 0) {
