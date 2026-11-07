@@ -304,12 +304,12 @@ class TestImage:
         assert_image_equal(Cr, im.getchannel(2))
         assert_image_equal(Cr, im.getchannel("Cr"))
 
-    @pytest.mark.parametrize("mode", ("I", "F", "I;16", "I;16B"))
+    @pytest.mark.parametrize("mode", ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"))
     def test_getchannel_single_band(self, mode: str) -> None:
         im = hopper(mode)
 
-        assert_image_equal(im.getchannel(0), im)
-        assert_image_equal(im.getchannel(im.getbands()[0]), im)
+        for channel in (0, im.getbands()[0]):
+            assert_image_equal(im.getchannel(channel), im)
 
     def test_getbbox(self) -> None:
         # Arrange
