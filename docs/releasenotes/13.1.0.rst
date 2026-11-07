@@ -51,7 +51,7 @@ Other changes
 =============
 
 Reusing palette entries in PA images
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :py:func:`~PIL.ImageOps.expand` and :py:func:`~PIL.ImageOps.pad` now reuse unused
 entries in a full palette when filling PA images with a new color. Previously,
