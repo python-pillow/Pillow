@@ -26,9 +26,9 @@ from functools import lru_cache
 from . import Image
 
 
-def _check_range(color: str, maximum: int, *values: float) -> None:
-    if any(value > maximum for value in values):
-        msg = f"color value out of range: {repr(color)}"
+def _check_max(m: re.Match[str], maximum: int, offset: int = 0) -> None:
+    if any(float(value) > maximum for value in m.groups()[offset:]):
+        msg = "color value out of range"
         raise ValueError(msg)
 
 
@@ -80,12 +80,12 @@ def getrgb(color: str) -> tuple[int, int, int] | tuple[int, int, int, int]:
 
     m = re.match(r"rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
     if m:
-        _check_range(color, 255, int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        _check_max(m, 255)
         return int(m.group(1)), int(m.group(2)), int(m.group(3))
 
     m = re.match(r"rgb\(\s*(\d+)%\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$", color)
     if m:
-        _check_range(color, 100, int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        _check_max(m, 100)
         return (
             int((int(m.group(1)) * 255) / 100.0 + 0.5),
             int((int(m.group(2)) * 255) / 100.0 + 0.5),
@@ -96,7 +96,7 @@ def getrgb(color: str) -> tuple[int, int, int] | tuple[int, int, int, int]:
         r"hsl\(\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)%\s*,\s*(\d+\.?\d*)%\s*\)$", color
     )
     if m:
-        _check_range(color, 100, float(m.group(2)), float(m.group(3)))
+        _check_max(m, 100, 1)
         from colorsys import hls_to_rgb
 
         rgb_floats = hls_to_rgb(
@@ -114,7 +114,7 @@ def getrgb(color: str) -> tuple[int, int, int] | tuple[int, int, int, int]:
         r"hs[bv]\(\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)%\s*,\s*(\d+\.?\d*)%\s*\)$", color
     )
     if m:
-        _check_range(color, 100, float(m.group(2)), float(m.group(3)))
+        _check_max(m, 100, 1)
         from colorsys import hsv_to_rgb
 
         rgb_floats = hsv_to_rgb(
@@ -130,14 +130,7 @@ def getrgb(color: str) -> tuple[int, int, int] | tuple[int, int, int, int]:
 
     m = re.match(r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
     if m:
-        _check_range(
-            color,
-            255,
-            int(m.group(1)),
-            int(m.group(2)),
-            int(m.group(3)),
-            int(m.group(4)),
-        )
+        _check_max(m, 255)
         return int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4))
     msg = f"unknown color specifier: {repr(color)}"
     raise ValueError(msg)
