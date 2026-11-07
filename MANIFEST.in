@@ -40,7 +40,8 @@ prune .ci
 prune wheels
 prune winbuild/build
 prune winbuild/depends
-prune Tests/errors
+# Tests/errors is absent from the sdist; unmatched prune is fatal on recent setuptools
+# prune Tests/errors
 prune Tests/images/jpeg2000
 prune Tests/images/msp
 prune Tests/images/picins
