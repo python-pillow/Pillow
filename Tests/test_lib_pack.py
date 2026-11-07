@@ -56,10 +56,10 @@ class TestLibPack:
         self.assert_pack("La", "La", 2, (1, 2), (3, 4), (5, 6))
 
     def test_P(self) -> None:
+        self.assert_pack("P", "P", 1, 1, 2, 3, 4)
         self.assert_pack("P", "P;1", b"\xe4", 1, 1, 1, 0, 0, 255, 0, 0)
         self.assert_pack("P", "P;2", b"\xe4", 3, 2, 1, 0)
         self.assert_pack("P", "P;4", b"\x02\xef", 0, 2, 14, 15)
-        self.assert_pack("P", "P", 1, 1, 2, 3, 4)
 
     def test_PA(self) -> None:
         self.assert_pack("PA", "PA", 2, (1, 2), (3, 4), (5, 6))
@@ -298,10 +298,13 @@ class TestLibUnpack:
     def test_P(self) -> None:
         self.assert_unpack("P", "P;1", b"\xe4", 1, 1, 1, 0, 0, 1, 0, 0)
         self.assert_unpack("P", "P;2", b"\xe4", 3, 2, 1, 0)
-        self.assert_unpack("P", "P;2L", b"\xe4\x0f", 1, 1, 1, 0, 2, 3, 2, 2)
-        self.assert_unpack("P", "P;2L", b"\xe4\x00", 1, 1, 1, 0)
+        with pytest.warns(DeprecationWarning, match="P;2L"):
+            self.assert_unpack("P", "P;2L", b"\xe4\x0f", 1, 1, 1, 0, 2, 3, 2, 2)
+        with pytest.warns(DeprecationWarning, match="P;2L"):
+            self.assert_unpack("P", "P;2L", b"\xe4\x00", 1, 1, 1, 0)
         self.assert_unpack("P", "P;4", b"\x02\xef", 0, 2, 14, 15)
-        self.assert_unpack("P", "P;4L", b"\x02\xef\x00\x00", 2, 2, 2, 0)
+        with pytest.warns(DeprecationWarning, match="P;4L"):
+            self.assert_unpack("P", "P;4L", b"\x02\xef\x00\x00", 2, 2, 2, 0)
         self.assert_unpack("P", "P", 1, 1, 2, 3, 4)
         self.assert_unpack("P", "P;R", 1, 128, 64, 192, 32)
 
@@ -823,8 +826,9 @@ class TestLibUnpack:
         self, size: tuple[int, int], data_len: int, rawmode: str
     ) -> None:
         data = b"\x00" * data_len
-        with pytest.raises(ValueError, match="not enough image data"):
-            Image.frombuffer("P", size, data, "raw", rawmode, 0, 1)
+        with pytest.warns(DeprecationWarning, match=rawmode):
+            with pytest.raises(ValueError, match="not enough image data"):
+                Image.frombuffer("P", size, data, "raw", rawmode, 0, 1)
 
     @pytest.mark.parametrize(
         "size, data_len, rawmode",
@@ -841,7 +845,8 @@ class TestLibUnpack:
         self, size: tuple[int, int], data_len: int, rawmode: str
     ) -> None:
         data = b"\x00" * data_len
-        Image.frombuffer("P", size, data, "raw", rawmode, 0, 1)
+        with pytest.warns(DeprecationWarning, match=rawmode):
+            Image.frombuffer("P", size, data, "raw", rawmode, 0, 1)
 
     @pytest.mark.parametrize(
         "decoder_name, rawmode, data",
