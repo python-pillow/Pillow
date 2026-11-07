@@ -1585,6 +1585,13 @@ FITS
 Pillow identifies and reads FITS files, commonly used for astronomy. Uncompressed and
 GZIP_1 compressed images can be read.
 
+.. versionadded:: 13.1.0
+
+RICE_1 compressed images with 8-, 16- or 32-bit integer samples can also be read,
+including images split into multiple tiles. Floating-point RICE_1 images are not
+supported. Signed 16- and 32-bit RICE_1 samples are returned in mode ``I``;
+``BZERO`` and ``BSCALE`` are not applied.
+
 FLI, FLC
 ^^^^^^^^
 
