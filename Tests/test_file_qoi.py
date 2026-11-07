@@ -51,6 +51,18 @@ def test_op_index() -> None:
         assert im.getpixel((0, 0)) == (0, 0, 0, 0)
 
 
+def test_op_run_adds_to_previously_seen_pixels() -> None:
+    data = (
+        b"qoif\x00\x00\x00\x03\x00\x00\x00\x01\x04\x00"
+        b"\xc0"  # QOI_OP_RUN of the initial pixel, (0, 0, 0, 255)
+        b"\xff\x01\x02\x03\x04"  # QOI_OP_RGBA
+        b"\x35"  # QOI_OP_INDEX of the initial pixel
+        b"\x00\x00\x00\x00\x00\x00\x00\x01"
+    )
+    with Image.open(BytesIO(data)) as im:
+        assert im.getpixel((2, 0)) == (0, 0, 0, 255)
+
+
 def test_save(tmp_path: Path) -> None:
     f = tmp_path / "temp.qoi"
 
