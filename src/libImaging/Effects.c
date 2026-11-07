@@ -154,20 +154,20 @@ ImagingEffectSpread(Imaging imIn, int distance) {
 #define SPREAD(type)                                                              \
     if (distance == 0) {                                                          \
         for (y = 0; y < imOut->ysize; y++) {                                      \
-            for (x = 0; x < imOut->xsize; x++) {                                  \
-                ((type *)imOut->image[y])[x] = ((type *)imIn->image[y])[x];       \
-            }                                                                     \
+            memcpy(imOut->image[y], imIn->image[y], imIn->linesize);              \
         }                                                                         \
     } else {                                                                      \
         for (y = 0; y < imOut->ysize; y++) {                                      \
+            type *out = (type *)imOut->image[y];                                  \
+            type *in = (type *)imIn->image[y];                                    \
             for (x = 0; x < imOut->xsize; x++) {                                  \
                 int xx = x + (rand() % distance) - distance / 2;                  \
                 int yy = y + (rand() % distance) - distance / 2;                  \
                 if (xx >= 0 && xx < imIn->xsize && yy >= 0 && yy < imIn->ysize) { \
-                    ((type *)imOut->image[yy])[xx] = ((type *)imIn->image[y])[x]; \
-                    ((type *)imOut->image[y])[x] = ((type *)imIn->image[yy])[xx]; \
+                    ((type *)imOut->image[yy])[xx] = in[x];                       \
+                    out[x] = ((type *)imIn->image[yy])[xx];                       \
                 } else {                                                          \
-                    ((type *)imOut->image[y])[x] = ((type *)imIn->image[y])[x];   \
+                    out[x] = in[x];                                               \
                 }                                                                 \
             }                                                                     \
         }                                                                         \
@@ -176,7 +176,6 @@ ImagingEffectSpread(Imaging imIn, int distance) {
     if (imIn->pixelsize == 1) {
         SPREAD(UINT8);
     } else if (imIn->pixelsize == 2) {
-        /* I;16 modes */
         SPREAD(UINT16);
     } else {
         SPREAD(INT32);

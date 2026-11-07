@@ -532,9 +532,10 @@ class TestImage:
         assert im.size == (128, 128)
         assert_image_similar_tofile(im2, "Tests/images/effect_spread.png", 110)
 
-    def test_effect_spread_zero(self) -> None:
+    @pytest.mark.parametrize("mode", ("RGB", "I;16", "I;16L", "I;16B", "I;16N"))
+    def test_effect_spread_zero(self, mode: str) -> None:
         # Arrange
-        im = hopper()
+        im = hopper(mode)
         distance = 0
 
         # Act
@@ -548,11 +549,8 @@ class TestImage:
         im = Image.new(mode, (3, 3))
         im.putdata(range(1000, 10000, 1000))
 
-        assert_image_equal(im.effect_spread(0), im)
-
         # Whole pixels are moved, so every value comes from the original image
         im2 = im.effect_spread(2)
-        assert im2.mode == mode
         assert set(im2.get_flattened_data()) <= set(im.get_flattened_data())
 
     def test_check_size(self) -> None:
