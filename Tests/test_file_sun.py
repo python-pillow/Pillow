@@ -72,6 +72,37 @@ def test_unsupported_file_type() -> None:
             pass
 
 
+def _sun_rle_image(width: int, height: int, data: bytes) -> io.BytesIO:
+    return io.BytesIO(
+        _binary.o32be(0x59A66A95)
+        + _binary.o32be(width)
+        + _binary.o32be(height)
+        + _binary.o32be(8)  # depth
+        + _binary.o32be(8)  # pitch
+        + _binary.o32be(2)  # RLE
+        + _binary.o32be(0)  # palette type
+        + _binary.o32be(0)  # palette length
+        + data
+    )
+
+
+def test_rle_padded_row() -> None:
+    # 3x2, 8-bit: each stored row is 3 pixels plus 1 padding byte.
+    data = bytes([0x10, 0x20, 0x30, 0x00, 0x40, 0x50, 0x60, 0x00])
+    with Image.open(_sun_rle_image(3, 2, data)) as im:
+        im.load()
+        assert im.size == (3, 2)
+        assert im.tobytes() == bytes([16, 32, 48, 64, 80, 96])
+
+
+def test_rle_run_crosses_padded_rows() -> None:
+    # One run of 8 pixels 0xAA covers two padded rows.
+    data = bytes([0x80, 7, 0xAA])
+    with Image.open(_sun_rle_image(3, 2, data)) as im:
+        im.load()
+        assert im.tobytes() == bytes([0xAA] * 6)
+
+
 @pytest.mark.skipif(
     not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
 )
