@@ -111,3 +111,11 @@ WebP encoding errors now include a description
 
 When libwebp fails to encode an image, the raised :py:exc:`ValueError` now
 consistently describes the error rather than only reporting a numeric code.
+
+QOI run pixels in the index
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When opening QOI images, pixels decoded from a run now update the index of
+previously seen pixels. Previously, a run of the initial opaque black pixel
+followed by an index referring to that pixel could be decoded as transparent
+black instead.

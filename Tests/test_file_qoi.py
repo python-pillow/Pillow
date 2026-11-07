@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import struct
 from io import BytesIO
 
 import pytest
@@ -51,16 +52,23 @@ def test_op_index() -> None:
         assert im.getpixel((0, 0)) == (0, 0, 0, 0)
 
 
-def test_op_run_adds_to_previously_seen_pixels() -> None:
+@pytest.mark.parametrize("channels", (3, 4))
+@pytest.mark.parametrize("run_length", (1, 2, 62))
+def test_op_run_updates_index(channels: int, run_length: int) -> None:
     data = (
-        b"qoif\x00\x00\x00\x03\x00\x00\x00\x01\x04\x00"
-        b"\xc0"  # QOI_OP_RUN of the initial pixel, (0, 0, 0, 255)
-        b"\xff\x01\x02\x03\x04"  # QOI_OP_RGBA
-        b"\x35"  # QOI_OP_INDEX of the initial pixel
-        b"\x00\x00\x00\x00\x00\x00\x00\x01"
+        struct.pack(">4sIIBB", b"qoif", run_length + 2, 1, channels, 0)
+        + bytes((0xC0 | (run_length - 1),))  # RUN of the initial opaque black pixel
+        + b"\xff\x01\x02\x03\x04"  # RGBA with a different index
+        + b"\x35"  # INDEX: opaque black hashes to 255 * 11 % 64 == 53
+        + b"\x00" * 7
+        + b"\x01"
     )
+    black = (0, 0, 0, 255)[:channels]
+    expected = [black] * run_length + [(1, 2, 3, 4)[:channels], black]
     with Image.open(BytesIO(data)) as im:
-        assert im.getpixel((2, 0)) == (0, 0, 0, 255)
+        assert im.mode == ("RGB" if channels == 3 else "RGBA")
+        assert im.size == (run_length + 2, 1)
+        assert [im.getpixel((x, 0)) for x in range(im.width)] == expected
 
 
 def test_save(tmp_path: Path) -> None:
