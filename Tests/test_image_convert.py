@@ -96,6 +96,22 @@ def test_16bit_workaround() -> None:
         _test_float_conversion(im.convert("I"))
 
 
+@pytest.mark.parametrize(
+    "value, expected",
+    (
+        (2147483648, 2147483647),
+        (2147483647, 2147483647),
+        (1, 1),
+        (-5.5, -5),
+        (-2147483648, -2147483648),
+        (-2147483649, -2147483648),
+    ),
+)
+def test_f_to_i(value: float, expected: int) -> None:
+    im = Image.new("F", (1, 1), value)
+    assert im.convert("I").getpixel((0, 0)) == expected
+
+
 def test_opaque() -> None:
     alpha = hopper("P").convert("PA").getchannel("A")
 
@@ -133,6 +149,18 @@ def test_pa() -> None:
     palette = im.palette
     assert palette is not None
     assert palette.colors != {}
+
+
+@pytest.mark.parametrize("mode, value", (("1", 255), ("I;16", 0x1234), ("I", 0x12345)))
+@pytest.mark.parametrize("convert_mode", ("L", "RGB", "P"))
+def test_trns(mode: str, value: int, convert_mode: str) -> None:
+    im = Image.new(mode, (2, 1))
+    im.putpixel((1, 0), value)
+    im.info["transparency"] = value
+
+    converted = im.convert(convert_mode)
+    assert converted.info["transparency"] != converted.getpixel((0, 0))
+    assert converted.info["transparency"] == converted.getpixel((1, 0))
 
 
 def test_trns_p(tmp_path: Path) -> None:
@@ -315,6 +343,20 @@ def test_p2pa_palette() -> None:
     with Image.open("Tests/images/tiny.png") as im:
         im_pa = im.convert("PA")
     assert im_pa.getpalette(None) == im.getpalette()
+
+
+@pytest.mark.parametrize(
+    "mode, value",
+    (("1", 255), ("L", 128), ("RGB", (1, 2, 3)), ("I;16", 0x1234), ("I", 0x12345)),
+)
+def test_trns_to_pa(mode: str, value: int | tuple[int, int, int]) -> None:
+    im = Image.new(mode, (2, 1))
+    im.putpixel((1, 0), value)
+    im.info["transparency"] = value
+
+    im_pa = im.convert("PA")
+    assert "transparency" not in im_pa.info
+    assert im_pa.getchannel("A").get_flattened_data() == (255, 0)
 
 
 rgb2xyz_matrix = (

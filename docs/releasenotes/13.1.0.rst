@@ -25,10 +25,11 @@ TODO
 Deprecations
 ============
 
-TODO
-^^^^
+Image.putpixel 'value' lists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Passing lists to the ``value`` parameter of :py:meth:`~PIL.Image.Image.putpixel` has
+been deprecated. Use tuples instead.
 
 API changes
 ===========
@@ -113,3 +114,9 @@ Out-of-range color functions
 such as ``rgb(300,0,0)`` or ``hsl(0,200%,50%)``. Previously, these returned channels above
 255 or below 0, which gave the wrong gray level for L images and a less clear
 :py:exc:`ValueError` for P images, while RGB images clipped them.
+
+WebP encoding errors now include a description
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When libwebp fails to encode an image, the raised :py:exc:`ValueError` now
+consistently describes the error rather than only reporting a numeric code.

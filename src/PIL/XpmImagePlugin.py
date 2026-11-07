@@ -23,7 +23,7 @@ from . import Image, ImageFile, ImagePalette
 from ._binary import o8
 
 # XPM header
-xpm_head = re.compile(b'"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)')
+xpm_head = re.compile(rb'"([0-9]*)\s+([0-9]*)\s+([0-9]*)\s+([0-9]*)')
 
 
 def _accept(prefix: bytes) -> bool:

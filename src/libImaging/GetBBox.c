@@ -198,25 +198,20 @@ ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj) {
 
 int
 ImagingGetExtrema(Imaging im, void *extrema) {
-    int x, y;
     INT32 imin, imax;
     FLOAT32 fmin, fmax;
 
-    if (im->bands != 1) {
-        (void)ImagingError_ModeError();
-        return -1; /* mismatch */
-    }
-
-    if (!im->xsize || !im->ysize) {
+    int xsize = im->xsize, ysize = im->ysize;
+    if (!xsize || !ysize) {
         return 0; /* zero size */
     }
 
     switch (im->type) {
         case IMAGING_TYPE_UINT8:
             imin = imax = im->image8[0][0];
-            for (y = 0; y < im->ysize; y++) {
+            for (int y = 0; y < ysize; y++) {
                 UINT8 *in = im->image8[y];
-                for (x = 0; x < im->xsize; x++) {
+                for (int x = 0; x < xsize; x++) {
                     if (imin > in[x]) {
                         imin = in[x];
                     } else if (imax < in[x]) {
@@ -232,9 +227,9 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             break;
         case IMAGING_TYPE_INT32:
             imin = imax = im->image32[0][0];
-            for (y = 0; y < im->ysize; y++) {
+            for (int y = 0; y < ysize; y++) {
                 INT32 *in = im->image32[y];
-                for (x = 0; x < im->xsize; x++) {
+                for (int x = 0; x < xsize; x++) {
                     if (imin > in[x]) {
                         imin = in[x];
                     } else if (imax < in[x]) {
@@ -247,9 +242,9 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             break;
         case IMAGING_TYPE_FLOAT32:
             fmin = fmax = ((FLOAT32 *)im->image32[0])[0];
-            for (y = 0; y < im->ysize; y++) {
+            for (int y = 0; y < ysize; y++) {
                 FLOAT32 *in = (FLOAT32 *)im->image32[y];
-                for (x = 0; x < im->xsize; x++) {
+                for (int x = 0; x < xsize; x++) {
                     if (fmin > in[x]) {
                         fmin = in[x];
                     } else if (fmax < in[x]) {
@@ -270,8 +265,8 @@ ImagingGetExtrema(Imaging im, void *extrema) {
                 memcpy(&v, pixel, sizeof(v));
 #endif
                 imin = imax = v;
-                for (y = 0; y < im->ysize; y++) {
-                    for (x = 0; x < im->xsize; x++) {
+                for (int y = 0; y < ysize; y++) {
+                    for (int x = 0; x < xsize; x++) {
                         pixel = (UINT8 *)im->image[y] + x * sizeof(v);
 #ifdef WORDS_BIGENDIAN
                         v = pixel[0] + ((UINT16)pixel[1] << 8);
@@ -297,6 +292,46 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             return -1;
     }
     return 1; /* ok */
+}
+
+int
+ImagingGetExtremaMultiband(Imaging im, UINT8 extrema[8]) {
+    // Per-band min/max for 8-bit images (up to 4 bands).
+    // Writes 2 * im->bands bytes to extrema as [min0, max0, min1, max1, ...].
+    // Returns 1 on success, or 0 for an empty image.
+    UINT8 vmin[4], vmax[4];
+
+    int xsize = im->xsize, ysize = im->ysize;
+    if (!xsize || !ysize) {
+        return 0; /* zero size */
+    }
+
+    UINT8 *restrict in = (UINT8 *)im->image[0];
+    for (int b = 0; b < 4; b++) {
+        vmin[b] = vmax[b] = in[b];
+    }
+
+    for (int y = 0; y < ysize; y++) {
+        UINT8 *restrict in = (UINT8 *)im->image[y];
+        for (int x = 0; x < xsize; x++, in += 4) {
+            for (int b = 0; b < 4; b++) {
+                vmin[b] = MIN(vmin[b], in[b]);
+                vmax[b] = MAX(vmax[b], in[b]);
+            }
+        }
+    }
+
+    int bands = im->bands;
+    if (bands == 2) {
+        // The second band of a two-band image is stored in the fourth byte
+        vmin[1] = vmin[3];
+        vmax[1] = vmax[3];
+    }
+    for (int b = 0; b < bands; b++) {
+        extrema[b * 2 + 0] = vmin[b];
+        extrema[b * 2 + 1] = vmax[b];
+    }
+    return 1;
 }
 
 static ImagingColorItem *

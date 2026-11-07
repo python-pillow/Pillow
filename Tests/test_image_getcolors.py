@@ -36,6 +36,11 @@ def test_getcolors() -> None:
     assert getcolors("YCbCr", 16384) == 9329
 
 
+def test_negative_maxcolors() -> None:
+    im = hopper()
+    assert im.getcolors(-1) is None
+
+
 # --------------------------------------------------------------------
 
 
