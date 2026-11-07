@@ -119,6 +119,11 @@ class TestImagePutPixel:
         assert numpy is not None
         assert px[numpy.int32(1), numpy.int32(2)] == (18, 20, 59)
 
+    def test_deprecation(self) -> None:
+        im = Image.new("PA", (1, 1))
+        with pytest.warns(DeprecationWarning, match="'value' lists"):
+            im.putpixel((0, 0), [0, 0, 0])  # type: ignore[arg-type]
+
 
 class TestImageGetPixel:
     @staticmethod
@@ -249,6 +254,14 @@ class TestImagePutPixelError:
         for v in self.INVALID_TYPES:
             with pytest.raises(
                 TypeError, match="color must be int or single-element tuple"
+            ):
+                im.putpixel((0, 0), v)  # type: ignore[arg-type]
+
+    def test_putpixel_type_error_float(self) -> None:
+        im = hopper("F")
+        for v in ("foo", None):
+            with pytest.raises(
+                TypeError, match="color must be int, float or single-element tuple"
             ):
                 im.putpixel((0, 0), v)  # type: ignore[arg-type]
 

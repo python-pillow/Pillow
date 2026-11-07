@@ -1583,8 +1583,6 @@ class Image:
         """
 
         self.load()
-        if self.im.bands > 1:
-            return tuple(self.im.getband(i).getextrema() for i in range(self.im.bands))
         return self.im.getextrema()
 
     def getxmp(self, *, strip_namespaces: bool = True) -> dict[str, Any]:
@@ -2202,10 +2200,21 @@ class Image:
             # or the core image needs its mode updated
             self.load()
 
+    def _get_palette_color(self, value: tuple[int, ...]) -> tuple[int, ...] | int:
+        if len(value) in {3, 4}:
+            # RGB or RGBA value for a P or PA image
+            if self.mode == "PA":
+                alpha = value[3] if len(value) == 4 else 255
+                value = value[:3]
+            assert self.palette is not None
+            palette_index = self.palette.getcolor(value, self)
+            return (palette_index, alpha) if self.mode == "PA" else palette_index
+        return value
+
     def putpixel(
         self,
         xy: tuple[int, int] | list[int],
-        value: float | tuple[int, ...] | list[int],
+        value: float | tuple[int, ...],
     ) -> None:
         """
         Modifies the pixel at the given position. The color is given as
@@ -2230,18 +2239,13 @@ class Image:
 
         self._ensure_mutable()
 
-        if (
-            self.mode in ("P", "PA")
-            and isinstance(value, (list, tuple))
-            and len(value) in [3, 4]
-        ):
-            # RGB or RGBA value for a P or PA image
-            if self.mode == "PA":
-                alpha = value[3] if len(value) == 4 else 255
-                value = value[:3]
-            assert self.palette is not None
-            palette_index = self.palette.getcolor(tuple(value), self)
-            value = (palette_index, alpha) if self.mode == "PA" else palette_index
+        if self.mode in {"P", "PA"}:
+            if isinstance(value, list) and len(value) in {3, 4}:  # type: ignore[unreachable]
+                deprecate("'value' lists", 15, "tuples", plural=True)  # type: ignore[unreachable]
+
+                value = tuple(value)
+            if isinstance(value, tuple):
+                value = self._get_palette_color(value)
         return self.im.putpixel(xy, value)
 
     def remap_palette(
@@ -3285,17 +3289,15 @@ def new(
 
     im = Image()
     if (
-        mode == "P"
-        and isinstance(color, (list, tuple))
+        mode in {"P", "PA"}
+        and isinstance(color, tuple)
         and all(isinstance(i, int) for i in color)
     ):
-        color_ints: tuple[int, ...] = cast("tuple[int, ...]", tuple(color))
-        if len(color_ints) == 3 or len(color_ints) == 4:
-            # RGB or RGBA value for a P image
-            from . import ImagePalette
+        from . import ImagePalette
 
-            im.palette = ImagePalette.ImagePalette()
-            color = im.palette.getcolor(color_ints)
+        im._mode = mode
+        im.palette = ImagePalette.ImagePalette()
+        color = im._get_palette_color(cast("tuple[int, ...]", color))
     return im._new(core.fill(mode, size, color))
 
 
