@@ -673,10 +673,16 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     if (!ok) {
         free(output);
         WebPEncodingError error_code = pic.error_code;
-        const char *message = error_code > VP8_ENC_OK && error_code < VP8_ENC_ERROR_LAST
-                                  ? kEncoderErrorMessages[error_code]
-                                  : "unknown error";
-        PyErr_Format(PyExc_ValueError, "encoding error %d: %s", error_code, message);
+        if (error_code > VP8_ENC_OK && error_code < VP8_ENC_ERROR_LAST) {
+            PyErr_Format(
+                PyExc_ValueError,
+                "encoding error %d: %s",
+                error_code,
+                kEncoderErrorMessages[error_code]
+            );
+        } else {
+            PyErr_Format(PyExc_ValueError, "encoding error %d", error_code);
+        }
         return NULL;
     }
 
