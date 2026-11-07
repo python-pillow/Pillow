@@ -133,7 +133,6 @@ class AvifImageFile(ImageFile.ImageFile):
             if self.fp and self._exclusive_fp:
                 self.fp.close()
             self.fp = None
-            self.load_prepare()
             self.frombytes(data)
 
         return super().load()
