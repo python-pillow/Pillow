@@ -132,7 +132,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     Py_ssize_t index = 0;
     Py_ssize_t layout_engine = 0;
     unsigned char *encoding;
-    unsigned char *font_bytes;
+    unsigned char *font_bytes = NULL;
     Py_ssize_t font_bytes_size = 0;
     static char *kwlist[] = {
         "filename", "size", "index", "encoding", "font_bytes", "layout_engine", NULL
@@ -146,16 +146,16 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     if (!PyArg_ParseTupleAndKeywords(
             args,
             kw,
-            "O&f|nsy#n",
+            "O&fnsn|y#",
             kwlist,
             PyUnicode_FSConverter,
             &filename_bytes,
             &size,
             &index,
             &encoding,
+            &layout_engine,
             &font_bytes,
-            &font_bytes_size,
-            &layout_engine
+            &font_bytes_size
         )) {
         return NULL;
     }
