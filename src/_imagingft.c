@@ -66,9 +66,8 @@ static int have_raqm = 0;
 #define LAYOUT_FALLBACK 0
 #define LAYOUT_RAQM 1
 
-// These mirror raqm_glyph_t, which in turn mirrors harfbuzz's hb_glyph_info_t,
-// with the addition of y_advance and y_offset for vertical text layout.
-// Coordinate units are 26.6 fixed-point precision.
+// Mirrors raqm_glyph_t
+// Coordinate units are 26.6 fractional pixels
 typedef struct {
     unsigned int index;    // the index of the glyph in the font file
     int x_offset;          // horizontal movement of the glyph from current point
@@ -499,15 +498,14 @@ text_layout(
     return count;
 }
 
-/** Calculate how far the pen advances over a given string.
+/** Calculate how far the pen advances for a given string.
  *
  * This is the sum of the glyph advances, which is not the width of the inked
- * area that font_getsize_impl() reports: it includes side bearings and any
- * trailing whitespace.
+ * area that font_getsize_impl() reports: it includes side bearings.
  *
  * Python parameters:
  *   - string: the text to measure
- *   - mode_name: imaging mode string
+ *   - mode_name: image mode string
  *   - dir: text direction string
  *   - features: font features sequence
  *   - lang: language string
@@ -756,7 +754,7 @@ bad_anchor:
  *
  * Python parameters:
  *   - string: the text to measure
- *   - mode_name: imaging mode string
+ *   - mode_name: image mode string
  *   - dir: text direction string
  *   - features: font features sequence
  *   - lang: language string
@@ -853,18 +851,19 @@ font_getsize(FontObject *self, PyObject *args) {
  * Python parameters:
  * - string: the text to render
  * - fill: Python function to create a core image object at a specified width and height
- * - mode_name: imaging mode string
+ * - mode_name: image mode string
  * - dir: text direction string
  * - features: font features sequence
  * - lang: language string
  * - stroke_width: stroke width in pixels
- * - stroke_filled: bool: omit inner stroke border, to stroke outside + fill inside
+ * - stroke_filled: bool: omit inner stroke border, filling inside the outer border
  * - anchor: anchor string
- * - foreground_ink_long: foreground color as a long integer
+ * - foreground_ink_long: foreground color
  * - x_start: starting x position of the pen in pixels
  * - y_start: starting y position of the pen in pixels
  *
- * Returns: a new image object containing the rendered text.
+ * Python return value:
+ *   - (image, (x_offset, y_offset)): image with the rendered text, and text offset
  */
 static PyObject *
 font_render_impl(FontObject *self, PyObject *args) {
