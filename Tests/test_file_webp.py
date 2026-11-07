@@ -166,7 +166,7 @@ class TestFileWebp:
         im = Image.new("L", (16384, 1))
         with pytest.raises(
             ValueError,
-            match="encoding error 5: image size exceeds WebP limit of 16383 pixels",
+            match="encoding error 5: Image size exceeds WebP limit of 16383 pixels",
         ):
             im.save(tmp_path / "temp.webp")
 

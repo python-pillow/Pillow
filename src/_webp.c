@@ -86,7 +86,7 @@ static const char *const kEncoderErrorMessages[VP8_ENC_ERROR_LAST] = {
     "Out of memory re-allocating byte buffer",
     "NULL parameter passed to function",
     "configuration is invalid",
-    "image size exceeds WebP limit of " WEBP_STR(WEBP_MAX_DIMENSION) " pixels",
+    "Image size exceeds WebP limit of " WEBP_STR(WEBP_MAX_DIMENSION) " pixels",
     "Partition #0 is too big to fit 512k",
     "Partition too big to fit 16M",
     "Picture writer returned an I/O error",
