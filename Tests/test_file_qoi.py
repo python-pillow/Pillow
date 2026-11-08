@@ -5,7 +5,7 @@ from io import BytesIO
 
 import pytest
 
-from PIL import Image, QoiImagePlugin
+from PIL import Image, QoiImagePlugin, _binary
 
 from .helper import assert_image_equal_tofile, hopper
 
@@ -52,23 +52,33 @@ def test_op_index() -> None:
         assert im.getpixel((0, 0)) == (0, 0, 0, 0)
 
 
-@pytest.mark.parametrize("channels", (3, 4))
+@pytest.mark.parametrize("mode", ("RGB", "RGBA"))
 @pytest.mark.parametrize("run_length", (1, 2, 62))
-def test_op_run_updates_index(channels: int, run_length: int) -> None:
+def test_op_run_updates_index(mode: str, run_length: int) -> None:
+    size = run_length + 2, 1
+    channels = len(mode)
+    header = b"qoif" + struct.pack(">IIBB", *size, channels, 0)
+    op_run = 3 << 6
+    op_rgba = _binary.o8(0b11111111)
+    black = (0, 0, 0, 255)
+    gray = (1, 2, 3, 4)
+    stream_end = b"\x00" * 7 + b"\x01"
     data = (
-        struct.pack(">4sIIBB", b"qoif", run_length + 2, 1, channels, 0)
-        + bytes((0xC0 | (run_length - 1),))  # RUN of the initial opaque black pixel
-        + b"\xff\x01\x02\x03\x04"  # RGBA with a different index
-        + b"\x35"  # INDEX: opaque black hashes to 255 * 11 % 64 == 53
-        + b"\x00" * 7
-        + b"\x01"
+        header
+        # OP_RUN of the initial opaque black pixel
+        + _binary.o8(op_run | (run_length - 1))
+        # OP_RGBA with a different index
+        + op_rgba
+        + struct.pack("4B", *gray)
+        # OP_INDEX: opaque black
+        + _binary.o8((black[0] * 3 + black[1] * 5 + black[2] * 7 + black[3] * 11) % 64)
+        + stream_end
     )
-    black = (0, 0, 0, 255)[:channels]
-    expected = [black] * run_length + [(1, 2, 3, 4)[:channels], black]
+    expected = tuple(pixel[:channels] for pixel in [*[black] * run_length, gray, black])
     with Image.open(BytesIO(data)) as im:
-        assert im.mode == ("RGB" if channels == 3 else "RGBA")
-        assert im.size == (run_length + 2, 1)
-        assert [im.getpixel((x, 0)) for x in range(im.width)] == expected
+        assert im.mode == mode
+        assert im.size == size
+        assert im.get_flattened_data() == expected
 
 
 def test_save(tmp_path: Path) -> None:
