@@ -382,16 +382,23 @@ def test_matrix_wrong_mode() -> None:
 
     # Act / Assert
     with pytest.raises(ValueError, match="image has wrong mode"):
-        im.convert(mode="L", matrix=rgb2xyz_matrix)
+        im.convert(mode="L", matrix=rgb2xyz_matrix[:4])
 
 
-def test_matrix_truncated() -> None:
+@pytest.mark.parametrize(
+    "mode, message",
+    (
+        ("RGB", "matrix must have length 12 for mode RGB"),
+        ("L", "matrix must have length 4 for mode L"),
+    ),
+)
+def test_matrix_truncated(mode: str, message: str) -> None:
     # Arrange
     im = hopper()
 
     # Act / Assert
-    with pytest.raises(TypeError, match="matrix must be tuple of length 4 or 12"):
-        im.convert(mode="L", matrix=(0,))
+    with pytest.raises(TypeError, match=message):
+        im.convert(mode, matrix=(0,))
 
 
 @pytest.mark.parametrize("mode", ("RGB", "L"))
@@ -402,7 +409,7 @@ def test_matrix_xyz(mode: str) -> None:
 
     # Act
     # Convert an RGB image to the CIE XYZ colour space
-    converted_im = im.convert(mode=mode, matrix=rgb2xyz_matrix)
+    converted_im = im.convert(mode=mode, matrix=rgb2xyz_matrix[: len(mode) * 4])
 
     # Assert
     assert converted_im.mode == mode
