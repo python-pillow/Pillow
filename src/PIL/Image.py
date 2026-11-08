@@ -1046,9 +1046,9 @@ class Image:
         channel from the image will be used instead of the values from the palette.
 
         :param mode: The requested mode. See: :ref:`concept-modes`.
-        :param matrix: An optional conversion matrix.  If given, this
-           should be 4- or 12-sequence containing floating point values.
-           Mode "RGB" requires 12.
+        :param matrix: An optional conversion matrix containing floating point values.
+           When converting to L mode, the sequence should have length 4. For RGB, it
+           should have length 12.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
@@ -1077,9 +1077,14 @@ class Image:
 
         if matrix:
             # matrix conversion
-            if mode not in ("L", "RGB"):
+            try:
+                matrix_length = {"L": 4, "RGB": 12}[mode]
+            except KeyError:
                 msg = "illegal conversion"
                 raise ValueError(msg)
+            if matrix_length != len(matrix):
+                msg = f"matrix must have length {matrix_length} for mode {mode}"
+                raise TypeError(msg)
             im = self.im.convert_matrix(mode, matrix)
             new_im = self._new(im)
             if has_transparency and self.im.bands == 3:

@@ -111,11 +111,3 @@ WebP encoding errors now include a description
 
 When libwebp fails to encode an image, the raised :py:exc:`ValueError` now
 consistently describes the error rather than only reporting a numeric code.
-
-Conversion matrix for mode "RGB"
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-:py:meth:`~PIL.Image.Image.convert` now raises a :py:exc:`TypeError` if a
-4-value ``matrix`` is given with mode ``"RGB"``, which requires 12 values.
-Previously, the green and blue channels were computed from uninitialized
-memory.

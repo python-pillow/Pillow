@@ -1111,12 +1111,14 @@ _convert_matrix_impl(ImagingObject *self, PyObject *args) {
     if (!PyArg_ParseTuple(args, "sO", &mode_name, &matrix)) {
         return NULL;
     }
-    Py_ssize_t size = PySequence_Size(matrix);
     const ModeID mode = findModeID(mode_name);
-    if (size == -1) {
-        return NULL;
-    }
-    if (size == 12) {
+    if (mode == IMAGING_MODE_L) {
+        if (!PyArg_ParseTuple(
+                args, "s(ffff)", &mode_name, m + 0, m + 1, m + 2, m + 3
+            )) {
+            return NULL;
+        }
+    } else if (mode == IMAGING_MODE_RGB) {
         if (!PyArg_ParseTuple(
                 args,
                 "s(ffffffffffff)",
@@ -1136,22 +1138,8 @@ _convert_matrix_impl(ImagingObject *self, PyObject *args) {
             )) {
             return NULL;
         }
-    } else if (size == 4) {
-        if (mode == IMAGING_MODE_RGB) {
-            PyErr_SetString(
-                PyExc_TypeError, "matrix must be tuple of length 12 for mode RGB"
-            );
-            return NULL;
-        }
-        if (!PyArg_ParseTuple(
-                args, "s(ffff)", &mode_name, m + 0, m + 1, m + 2, m + 3
-            )) {
-            return NULL;
-        }
-    } else {
-        PyErr_SetString(PyExc_TypeError, "matrix must be tuple of length 4 or 12");
-        return NULL;
     }
+
     return PyImagingNew(ImagingConvertMatrix(self->image, mode, m));
 }
 
