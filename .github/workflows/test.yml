@@ -76,12 +76,11 @@ jobs:
       run: python3 .github/workflows/system-info.py
 
     - name: Cache libavif
-      if: startsWith(matrix.os, 'ubuntu')
       uses: actions/cache@v6.1.0
       id: cache-libavif
       with:
         path: ~/cache-libavif
-        key: ${{ runner.os }}-libavif-${{ hashFiles('depends/install_libavif.sh') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-libavif-${{ hashFiles('depends/install_libavif.sh') }}
 
     - name: Cache libimagequant
       if: startsWith(matrix.os, 'ubuntu')
@@ -115,6 +114,7 @@ jobs:
         .github/workflows/macos-install.sh
       env:
         GHA_PYTHON_VERSION: ${{ matrix.python-version }}
+        GHA_LIBAVIF_CACHE_HIT: ${{ steps.cache-libavif.outputs.cache-hit }}
 
     - name: Register gcc problem matcher
       if: "matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'"
