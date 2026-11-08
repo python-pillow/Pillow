@@ -2,21 +2,19 @@ from __future__ import annotations
 
 import io
 import sys
-import sysconfig
 
 import pytest
 
 from PIL import Image
 
+from .helper import is_freethreaded
+
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-
-FREE_THREADED_BUILD = bool(sysconfig.get_config_var("Py_GIL_DISABLED"))
-
 gil_enabled_at_start = True
-if FREE_THREADED_BUILD:
+if is_freethreaded():
     gil_enabled_at_start = sys._is_gil_enabled()  # type: ignore[attr-defined]
 
 
@@ -33,7 +31,7 @@ def pytest_report_header(config: pytest.Config) -> str:
 
 def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter) -> None:
     if (
-        FREE_THREADED_BUILD
+        is_freethreaded()
         and not gil_enabled_at_start
         and sys._is_gil_enabled()  # type: ignore[attr-defined]
     ):
