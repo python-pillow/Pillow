@@ -80,6 +80,25 @@ class TestImageFile:
         with pytest.raises(OSError):
             roundtrip("PDF")
 
+    @pytest.mark.parametrize(
+        "test_file",
+        (
+            "Tests/images/hopper_rle8.bmp",
+            "Tests/images/hopper.qoi",
+            "Tests/images/hopper.sgi",
+            "Tests/images/hopper_8bit_plain.pgm",
+        ),
+    )
+    def test_parser_pulls_fd(self, test_file: str) -> None:
+        with open(test_file, "rb") as f:
+            data = f.read()
+        with ImageFile.Parser() as p:
+            p.feed(data)
+        assert p.image is not None
+
+        with Image.open(test_file) as im:
+            assert_image_equal(p.image, im)
+
     def test_ico(self) -> None:
         with open("Tests/images/python.ico", "rb") as f:
             data = f.read()

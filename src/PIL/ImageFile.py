@@ -611,17 +611,21 @@ class Parser:
                 flag = hasattr(im, "load_seek") or hasattr(im, "load_read")
                 if not flag and len(im.tile) == 1:
                     # initialize decoder
-                    im.load_prepare()
                     d, e, o, a = im.tile[0]
-                    im.tile = []
-                    self.decoder = Image._getdecoder(im.mode, d, a, im.decoderconfig)
-                    self.decoder.setimage(im.im, e)
+                    decoder = Image._getdecoder(im.mode, d, a, im.decoderconfig)
+                    # a decoder that reads from the file itself
+                    # cannot be fed data incrementally
+                    if not decoder.pulls_fd:
+                        im.load_prepare()
+                        im.tile = []
+                        self.decoder = decoder
+                        self.decoder.setimage(im.im, e)
 
-                    # calculate decoder offset
-                    self.offset = o
-                    if self.offset <= len(self.data):
-                        self.data = self.data[self.offset :]
-                        self.offset = 0
+                        # calculate decoder offset
+                        self.offset = o
+                        if self.offset <= len(self.data):
+                            self.data = self.data[self.offset :]
+                            self.offset = 0
 
                 self.image = im
 
