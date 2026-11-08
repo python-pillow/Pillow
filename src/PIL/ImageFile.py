@@ -567,7 +567,7 @@ class Parser:
         if self.data is None:
             self.data = data
         else:
-            self.data = self.data + data
+            self.data += data
 
         # parse what we have
         if self.decoder:
@@ -596,8 +596,8 @@ class Parser:
 
         elif self.image:
             # if we end up here with no decoder, this file cannot
-            # be incrementally parsed.  wait until we've gotten all
-            # available data
+            # be incrementally parsed, due to load_seek, load_read, or pulls_fd
+            # wait until we've gotten all available data
             pass
 
         else:
@@ -611,18 +611,21 @@ class Parser:
                 flag = hasattr(im, "load_seek") or hasattr(im, "load_read")
                 if not flag and len(im.tile) == 1:
                     # initialize decoder
-                    d, e, o, a = im.tile[0]
-                    decoder = Image._getdecoder(im.mode, d, a, im.decoderconfig)
+                    decoder_name, extents, offset, args = im.tile[0]
+                    decoder = Image._getdecoder(
+                        im.mode, decoder_name, args, im.decoderconfig
+                    )
                     # a decoder that reads from the file itself
-                    # cannot be fed data incrementally
+                    # cannot be incrementally parsed.
+                    # wait until we've gotten all available data
                     if not decoder.pulls_fd:
                         im.load_prepare()
                         im.tile = []
                         self.decoder = decoder
-                        self.decoder.setimage(im.im, e)
+                        self.decoder.setimage(im.im, extents)
 
                         # calculate decoder offset
-                        self.offset = o
+                        self.offset = offset
                         if self.offset <= len(self.data):
                             self.data = self.data[self.offset :]
                             self.offset = 0
