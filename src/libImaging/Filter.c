@@ -28,6 +28,7 @@
 #include <stdint.h>
 
 #define INT32_MAX_F 2147483647.0F
+#define INT32_MIN_F (-2147483648.0F)
 
 static inline UINT8
 clip8(float in) {
@@ -47,11 +48,19 @@ clip16(float in) {
 
 static inline INT32
 clip32(float in) {
-    // Clamp the low bound branchlessly (maxss).
-    in = in < 0.0f ? 0.0f : in;
-    // Must explicitly return INT32_MAX for the high bound
-    // to avoid incorrect overflow to INT_MIN.
-    return in >= INT32_MAX_F ? INT32_MAX : (INT32)in;
+    // Mode "I" is signed, so clamp to the whole INT32 range.
+    // Must explicitly return the bounds to avoid incorrect overflow.
+    if (in <= INT32_MIN_F) {
+        return INT32_MIN;
+    }
+    if (in >= INT32_MAX_F) {
+        return INT32_MAX;
+    }
+    // `offset` already carries a +0.5 bias, so round towards negative
+    // infinity rather than towards zero, to round half up for negative
+    // values as well.  Positive values are unaffected.
+    INT32 out = (INT32)in;
+    return out > in ? out - 1 : out;
 }
 
 Imaging

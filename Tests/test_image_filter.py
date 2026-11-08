@@ -265,6 +265,29 @@ def test_consistency_i16_high_byte(mode: str) -> None:
         assert im.getpixel((4, 4)) == 1000
 
 
+def test_i_negative_values() -> None:
+    # Mode "I" is signed, so filtering must keep negative pixel values,
+    # instead of clamping them to zero.
+    im = Image.new("I", (8, 8), -1000)
+    for filter_to_apply in (
+        ImageFilter.SMOOTH,
+        ImageFilter.BLUR,
+        ImageFilter.SHARPEN,
+        ImageFilter.DETAIL,
+    ):
+        assert im.filter(filter_to_apply).getpixel((4, 4)) == -1000
+
+    # An identity kernel must not change the image at all.
+    kernel = ImageFilter.Kernel((3, 3), [0, 0, 0, 0, 1, 0, 0, 0, 0], scale=1)
+    im = Image.new("I", (4, 4))
+    im.putdata([-8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7])
+    assert_image_equal(im.filter(kernel), im)
+
+    for value in (-(2**30), -(2**31)):
+        im = Image.new("I", (4, 4), value)
+        assert_image_equal(im.filter(kernel), im)
+
+
 @pytest.mark.parametrize(
     "filter_to_apply",
     (
