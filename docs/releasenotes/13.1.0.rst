@@ -50,6 +50,13 @@ TODO
 Other changes
 =============
 
+Transformed text in ImageDraw2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`.ImageDraw2.Draw.text` and :py:meth:`.ImageDraw2.Draw.textbbox` now
+use the transformed position after :py:meth:`.ImageDraw2.Draw.settransform`,
+instead of raising an :py:exc:`IndexError`.
+
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

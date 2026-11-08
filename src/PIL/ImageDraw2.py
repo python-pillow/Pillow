@@ -221,7 +221,7 @@ class Draw:
         if self.transform:
             path = ImagePath.Path(xy)
             path.transform(self.transform)
-            xy = path
+            xy = path[0]
         self.draw.text(xy, text, font=font.font, fill=font.color)
 
     def textbbox(
@@ -237,7 +237,7 @@ class Draw:
         if self.transform:
             path = ImagePath.Path(xy)
             path.transform(self.transform)
-            xy = path
+            xy = path[0]
         return self.draw.textbbox(xy, text, font=font.font)
 
     def textlength(self, text: AnyStr, font: Font) -> float:

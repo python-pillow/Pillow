@@ -259,6 +259,31 @@ def test_textbbox() -> None:
 
 
 @skip_unless_feature("freetype2")
+@pytest.mark.parametrize("offset", ((0, 0), (11, 13), (-3, 4), (0.5, 1.25)))
+@pytest.mark.parametrize("text", ("ImageDraw2", "ImageDraw2\ntext"))
+@pytest.mark.parametrize("operation", ("text", "textbbox"))
+def test_text_transform(offset: tuple[float, float], text: str, operation: str) -> None:
+    im = Image.new("RGB", (W, H))
+    expected = Image.new("RGB", im.size)
+    draw = ImageDraw2.Draw(im)
+    draw.settransform(offset)
+    font = ImageDraw2.Font("white", FONT_PATH)
+    xy = (5, 7)
+    translated = (xy[0] + offset[0], xy[1] + offset[1])
+    reference = ImageDraw.Draw(expected)
+
+    if operation == "text":
+        draw.text(xy, text, font)
+        reference.text(translated, text, font=font.font, fill=font.color)
+        assert expected.getbbox() is not None
+        assert_image_equal(im, expected)
+    else:
+        assert draw.textbbox(xy, text, font) == reference.textbbox(
+            translated, text, font=font.font
+        )
+
+
+@skip_unless_feature("freetype2")
 def test_textsize_empty_string() -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
