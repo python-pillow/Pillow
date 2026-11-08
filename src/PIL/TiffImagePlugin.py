@@ -1850,9 +1850,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             exif.load(info)
             info = exif
         elif isinstance(info, Image.Exif) and not libtiff:
-            for key in TiffTags.TAGS_V2_GROUPS:
-                if info._ifds.get(key, {}) != {}:
-                    subifds.append(key)
+            subifds.extend(
+                key for key in TiffTags.TAGS_V2_GROUPS if info._ifds.get(key, {}) != {}
+            )
     else:
         info = {}
     logger.debug("Tiffinfo Keys: %s", list(info))
