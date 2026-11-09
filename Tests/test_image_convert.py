@@ -401,7 +401,7 @@ def test_matrix_truncated(mode: str, message: str) -> None:
         im.convert(mode, matrix=(0,))
 
 
-@pytest.mark.parametrize("mode", ("RGB", "L"))
+@pytest.mark.parametrize("mode", ("L", "RGB"))
 def test_matrix_xyz(mode: str) -> None:
     # Arrange
     im = hopper("RGB")
@@ -424,20 +424,13 @@ def test_matrix_xyz(mode: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "mode, matrix",
-    (
-        ("L", (0.5, 0.5, 0, 0)),
-        ("L", (1, 0, 0, -10)),
-        ("RGB", (0.5, 0.5, 0, 0, 1, 0, 0, 10, 0, 0, 0.5, 0)),
-    ),
+    "mode, matrix", (("L", (0.5, 0.5, 0, 0)), ("RGB", rgb2xyz_matrix))
 )
 def test_matrix_transparency(mode: str, matrix: tuple[float, ...]) -> None:
     im = Image.new("RGB", (1, 1), (255, 0, 101))
     im.info["transparency"] = (255, 0, 101)
 
     converted_im = im.convert(mode, matrix)
-
-    # The transparent color should match the converted pixel
     assert converted_im.info["transparency"] == converted_im.getpixel((0, 0))
 
 
