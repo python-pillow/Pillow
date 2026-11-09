@@ -417,10 +417,28 @@ def test_matrix_xyz(mode: str) -> None:
     with Image.open("Tests/images/hopper-XYZ.png") as target:
         if converted_im.mode == "RGB":
             assert_image_similar(converted_im, target, 3)
-            assert converted_im.info["transparency"] == (105, 54, 4)
+            assert converted_im.info["transparency"] == (105, 54, 5)
         else:
             assert_image_similar(converted_im, target.getchannel(0), 1)
             assert converted_im.info["transparency"] == 105
+
+
+@pytest.mark.parametrize(
+    "mode, matrix",
+    (
+        ("L", (0.5, 0.5, 0, 0)),
+        ("L", (1, 0, 0, -10)),
+        ("RGB", (0.5, 0.5, 0, 0, 1, 0, 0, 10, 0, 0, 0.5, 0)),
+    ),
+)
+def test_matrix_transparency(mode: str, matrix: tuple[float, ...]) -> None:
+    im = Image.new("RGB", (1, 1), (255, 0, 101))
+    im.info["transparency"] = (255, 0, 101)
+
+    converted_im = im.convert(mode, matrix)
+
+    # The transparent color should match the converted pixel
+    assert converted_im.info["transparency"] == converted_im.getpixel((0, 0))
 
 
 def test_matrix_identity() -> None:
