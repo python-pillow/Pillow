@@ -4,7 +4,11 @@ import pytest
 
 from PIL import Image, ImageDraw, ImageFont, ImageText, features
 
-from .helper import assert_image_similar_tofile, skip_unless_feature
+from .helper import (
+    assert_image_equal_tofile,
+    assert_image_similar_tofile,
+    skip_unless_feature,
+)
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 
@@ -89,6 +93,26 @@ def test_standard_embedded_color(layout_engine: ImageFont.Layout) -> None:
         ValueError, match="Embedded color supported only in RGB and RGBA modes"
     ):
         text.embed_color()
+
+
+@skip_unless_feature("freetype2")
+def test_cbdt(layout_engine: ImageFont.Layout) -> None:
+    try:
+        font = ImageFont.truetype(
+            "Tests/fonts/CBDTTestFont.ttf", size=64, layout_engine=layout_engine
+        )
+        text = ImageText.Text("AB", font)
+        text.embed_color()
+
+        im = Image.new("RGB", (128, 96), "white")
+        d = ImageDraw.Draw(im)
+
+        d.text((16, 16), text)
+
+        assert_image_equal_tofile(im, "Tests/images/cbdt.png")
+    except OSError as e:  # pragma: no cover
+        assert str(e) in ("unimplemented feature", "unknown file format")
+        pytest.skip("freetype compiled without libpng or CBDT support")
 
 
 @skip_unless_feature("freetype2")
