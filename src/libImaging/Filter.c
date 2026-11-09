@@ -48,19 +48,12 @@ clip16(float in) {
 
 static inline INT32
 clip32(float in) {
-    // Mode "I" is signed, so clamp to the whole INT32 range.
-    // Must explicitly return the bounds to avoid incorrect overflow.
-    if (in <= INT32_MIN_F) {
-        return INT32_MIN;
-    }
-    if (in >= INT32_MAX_F) {
-        return INT32_MAX;
-    }
-    // `offset` already carries a +0.5 bias, so round towards negative
-    // infinity rather than towards zero, to round half up for negative
-    // values as well.  Positive values are unaffected.
-    INT32 out = (INT32)in;
-    return out > in ? out - 1 : out;
+    // I mode is signed, so whole INT32 range can be used.
+    in = in < INT32_MIN_F ? INT32_MIN : in;
+
+    // Must explicitly return INT32_MAX for the high bound
+    // to avoid incorrect overflow to INT_MIN.
+    return in >= INT32_MAX_F ? INT32_MAX : (INT32)round(in);
 }
 
 Imaging
@@ -172,8 +165,6 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
 
     memcpy(imOut->image[0], im->image[0], im->linesize);
     if (im->bands == 1) {
-        // Add one time for rounding
-        offset += 0.5;
         if (im->type == IMAGING_TYPE_INT32) {
             for (y = 1; y < ysize - 1; y++) {
                 INT32 *restrict in_1 = (INT32 *)im->image[y - 1];
@@ -192,6 +183,8 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 out[x] = in0[x];
             }
         } else if (im->type == IMAGING_TYPE_I16) {
+            // Add one time for rounding
+            offset += 0.5;
             int bigendian = 0;
             if (
                 im->mode == IMAGING_MODE_I_16B
@@ -223,6 +216,8 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 out[x * 2 + 1] = in0[x * 2 + 1];
             }
         } else {
+            // Add one time for rounding
+            offset += 0.5;
             for (y = 1; y < ysize - 1; y++) {
                 UINT8 *restrict in_1 = (UINT8 *)im->image[y - 1];
                 UINT8 *restrict in0 = (UINT8 *)im->image[y];
@@ -334,8 +329,6 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
     memcpy(imOut->image[0], im->image[0], im->linesize);
     memcpy(imOut->image[1], im->image[1], im->linesize);
     if (im->bands == 1) {
-        // Add one time for rounding
-        offset += 0.5;
         if (im->type == IMAGING_TYPE_INT32) {
             for (y = 2; y < ysize - 2; y++) {
                 INT32 *restrict in_2 = (INT32 *)im->image[y - 2];
@@ -360,6 +353,8 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 out[x + 1] = in0[x + 1];
             }
         } else if (im->type == IMAGING_TYPE_I16) {
+            // Add one time for rounding
+            offset += 0.5;
             int bigendian = 0;
             if (
                 im->mode == IMAGING_MODE_I_16B
@@ -399,6 +394,8 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 out[x * 2 + 3] = in0[x * 2 + 3];
             }
         } else {
+            // Add one time for rounding
+            offset += 0.5;
             for (y = 2; y < ysize - 2; y++) {
                 UINT8 *restrict in_2 = (UINT8 *)im->image[y - 2];
                 UINT8 *restrict in_1 = (UINT8 *)im->image[y - 1];
