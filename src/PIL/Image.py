@@ -1423,13 +1423,12 @@ class Image:
         :returns: A core image object.
         """
 
-        x0, y0, x1, y1 = (math.floor(v + 0.5) for v in box)
+        x0, y0 = (math.floor(v + 0.5) for v in box[:2])
+        w, h = (math.floor(v + 0.5) for v in (box[2] - box[0], box[3] - box[1]))
 
-        absolute_values = (abs(x1 - x0), abs(y1 - y0))
+        _decompression_bomb_check((w, h))
 
-        _decompression_bomb_check(absolute_values)
-
-        return im.crop((x0, y0, x1, y1))
+        return im.crop((x0, y0, x0 + w, y0 + h))
 
     def draft(
         self, mode: str | None, size: tuple[int, int] | None
