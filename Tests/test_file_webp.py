@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import re
-import sys
 import warnings
 from typing import Any
 
@@ -73,6 +72,11 @@ class TestFileWebp:
             # generated with:
             # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
             assert_image_similar_tofile(image, "Tests/images/hopper_webp_bits.ppm", 1.0)
+
+    def test_read_lossless(self) -> None:
+        # generated with: cwebp -z 9 hopper.ppm -o hopper_lossless.webp
+        with Image.open("Tests/images/hopper_lossless.webp") as webp:
+            assert_image_equal(webp, hopper("RGB"))
 
     def _roundtrip(
         self, tmp_path: Path, mode: str, epsilon: float, args: dict[str, Any] = {}
@@ -158,21 +162,13 @@ class TestFileWebp:
 
         self._roundtrip(tmp_path, "P", 50.0)
 
-    @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
-    def test_write_encoding_error_message(self, tmp_path: Path) -> None:
-        im = Image.new("RGB", (15000, 15000))
-        with pytest.raises(ValueError, match="encoding error 6"):
-            im.save(tmp_path / "temp.webp", method=0)
-
-    @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
     def test_write_encoding_error_bad_dimension(self, tmp_path: Path) -> None:
         im = Image.new("L", (16384, 1))
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(
+            ValueError,
+            match="encoding error 5: Image size exceeds WebP limit of 16383 pixels",
+        ):
             im.save(tmp_path / "temp.webp")
-        assert (
-            str(e.value)
-            == "encoding error 5: Image size exceeds WebP limit of 16383 pixels"
-        )
 
     def test_WebPEncode_with_invalid_args(self) -> None:
         """

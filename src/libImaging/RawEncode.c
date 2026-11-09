@@ -24,26 +24,14 @@ ImagingRawEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
     UINT8 *ptr;
 
     if (!state->state) {
-        /* The "count" field holds the stride, if specified.  Fix
-           things up so "bytes" is the full size, and "count" the
-           packed size */
-
-        if (state->count > 0) {
-            int bytes = state->count;
-
+        /* The "count" field holds the stride, if specified */
+        if (state->count > 0 && state->count < state->bytes) {
             /* stride must not be less than real size */
-            if (state->count < state->bytes) {
-                state->errcode = IMAGING_CODEC_CONFIG;
-                return -1;
-            }
-            state->count = state->bytes;
-            state->bytes = bytes;
-        } else {
-            state->count = state->bytes;
+            state->errcode = IMAGING_CODEC_CONFIG;
+            return -1;
         }
 
         /* The "ystep" field specifies the orientation */
-
         if (state->ystep < 0) {
             state->y = state->ysize - 1;
             state->ystep = -1;
@@ -54,27 +42,28 @@ ImagingRawEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
         state->state = 1;
     }
 
-    if (bytes < state->bytes) {
+    int row = state->count > 0 ? state->count : state->bytes;
+    if (bytes < row) {
         state->errcode = IMAGING_CODEC_CONFIG;
         return 0;
     }
 
     ptr = buf;
 
-    while (bytes >= state->bytes) {
+    while (bytes >= row) {
         state->shuffle(
             ptr,
             (UINT8 *)im->image[state->y + state->yoff] + state->xoff * im->pixelsize,
             state->xsize
         );
 
-        if (state->bytes > state->count) {
+        if (row > state->bytes) {
             /* zero-pad the buffer, if necessary */
-            memset(ptr + state->count, 0, state->bytes - state->count);
+            memset(ptr + state->bytes, 0, row - state->bytes);
         }
 
-        ptr += state->bytes;
-        bytes -= state->bytes;
+        ptr += row;
+        bytes -= row;
 
         state->y += state->ystep;
 

@@ -26,6 +26,10 @@ def test_histogram() -> None:
     assert histogram("YCbCr") == (768, 0, 1908)
 
 
+def test_histogram_zero_size() -> None:
+    assert Image.new("I", (0, 0)).histogram() == [0] * 256
+
+
 def test_histogram_masked() -> None:
     mask = Image.new("1", (128, 128), 0)
     crop_box = (0, 0, 128, 64)

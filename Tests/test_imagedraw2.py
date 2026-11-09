@@ -103,7 +103,7 @@ def test_ellipse(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
-    pen = ImageDraw2.Pen("blue", width=2)
+    pen = ImageDraw2.Pen("blue")
     brush = ImageDraw2.Brush("green")
 
     # Act
@@ -177,7 +177,7 @@ def test_polygon(points: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
-    pen = ImageDraw2.Pen("blue", width=2)
+    pen = ImageDraw2.Pen("blue")
     brush = ImageDraw2.Brush("red")
 
     # Act
@@ -192,7 +192,7 @@ def test_rectangle(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
-    pen = ImageDraw2.Pen("green", width=2)
+    pen = ImageDraw2.Pen("green")
     brush = ImageDraw2.Brush("black")
 
     # Act
@@ -200,6 +200,16 @@ def test_rectangle(bbox: Coords) -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle.png")
+
+
+@pytest.mark.parametrize("bbox", BBOX)
+def test_rectangle_pen_width(bbox: Coords) -> None:
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    pen = ImageDraw2.Pen("white", width=4)
+    draw.rectangle(bbox, pen)
+    assert im.getpixel((28, 28)) == WHITE
+    assert im.getpixel((50, 50)) == BLACK
 
 
 def test_big_rectangle() -> None:
@@ -246,6 +256,32 @@ def test_textbbox() -> None:
     # Assert
     right = 72 if features.check_feature("raqm") else 70
     assert bbox == (0, 2, right, 12)
+
+
+@skip_unless_feature("freetype2")
+def test_transform() -> None:
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    font = ImageDraw2.Font("white", FONT_PATH)
+
+    expected = im.copy()
+    expected_draw = ImageDraw.Draw(expected)
+
+    offset = (1, 2)
+    draw.settransform(offset)
+    xy = (3, 4)
+    xy_translated = (xy[0] + offset[0], xy[1] + offset[1])
+    text = "ImageDraw2"
+
+    # text
+    draw.text(xy, text, font)
+    expected_draw.text(xy_translated, text, font.color, font.font)
+    assert_image_equal(im, expected)
+
+    # textbbox
+    assert draw.textbbox(xy, text, font) == expected_draw.textbbox(
+        xy_translated, text, font.font
+    )
 
 
 @skip_unless_feature("freetype2")

@@ -74,6 +74,10 @@ def test_ops() -> None:
         pixel(ImageMath.lambda_eval(lambda args: args["A"] / args["B"], **images))
         == "I 0"
     )
+    assert pixel(ImageMath.lambda_eval(lambda args: args["A"] + 1, **images)) == "I 2"
+    assert (
+        pixel(ImageMath.lambda_eval(lambda args: args["A"] + 1.0, **images)) == "F 2.0"
+    )
     assert pixel(ImageMath.lambda_eval(lambda args: args["B"] ** 2, **images)) == "I 4"
     assert (
         pixel(ImageMath.lambda_eval(lambda args: args["B"] ** 33, **images))

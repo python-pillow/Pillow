@@ -406,15 +406,21 @@ getbands(const ModeID mode) {
 #define TYPE_FLOAT32 (0x300 | sizeof(FLOAT32))
 #define TYPE_DOUBLE (0x400 | sizeof(double))
 
+/**
+ * Allocates and returns a C array of the items in the Python sequence arg.
+ * The sequence's length is checked against the length parameter.
+ *
+ * @param arg The Python sequence to convert
+ * @param length The required number of items.
+ * @param wrong_length Error message to emit in exception if the sequence length does
+ *                     not match.
+ * @param type Type specifier (TYPE_UINT8, TYPE_INT32, TYPE_FLOAT32 or TYPE_DOUBLE)
+ *
+ * @return A pointer to the allocated C array, or NULL on error. The caller is
+ *         responsible for freeing the memory.
+ */
 static void *
 getlist_impl(PyObject *arg, Py_ssize_t length, const char *wrong_length, int type) {
-    /* - allocates and returns a c array of the items in the Python sequence arg.
-       - the size of the returned array is in length
-       - all of the arg items must be numeric items of the type specified in type
-       - sequence length is checked against the length parameter
-       - caller is responsible for freeing the memory
-    */
-
     Py_ssize_t i, n;
     int itemp;
     double dtemp;
@@ -594,7 +600,7 @@ getink(PyObject *color, Imaging im, char *ink) {
        Python long (not int) that raises an overflow error when trying
        to return it into a 32 bit C long
     */
-    PY_LONG_LONG r = 0;
+    long long r = 0;
     FLOAT32 ftmp;
     INT32 itmp;
 
@@ -688,6 +694,12 @@ getink(PyObject *color, Imaging im, char *ink) {
             return ink;
         case IMAGING_TYPE_FLOAT32:
             /* floating point */
+            if (!PyFloat_Check(color) && !PyLong_Check(color)) {
+                PyErr_SetString(
+                    PyExc_TypeError, "color must be int, float or single-element tuple"
+                );
+                return NULL;
+            }
             f = PyFloat_AsDouble(color);
             if (f == -1.0 && PyErr_Occurred()) {
                 return NULL;
@@ -1030,7 +1042,7 @@ _color_lut_3d(ImagingObject *self, PyObject *args) {
 static PyObject *
 _convert_impl(ImagingObject *self, PyObject *args) {
     char *mode_name;
-    int dither = 0;
+    int dither = IMAGING_DITHER_NONE;
     ImagingObject *paletteimage = NULL;
 
     if (!PyArg_ParseTuple(args, "s|iO", &mode_name, &dither, &paletteimage)) {
@@ -1079,7 +1091,9 @@ _convert_into(ImagingObject *self, PyObject *args) {
     }
 
     Py_BEGIN_CRITICAL_SECTION2(self, imagep);
-    result = ImagingConvert(imagep->image, self->image, imagep->image->mode, NULL, 0);
+    result = ImagingConvert(
+        imagep->image, self->image, imagep->image->mode, NULL, IMAGING_DITHER_NONE
+    );
     Py_END_CRITICAL_SECTION2();
 
     if (!result) {
@@ -1097,11 +1111,14 @@ _convert_matrix_impl(ImagingObject *self, PyObject *args) {
     if (!PyArg_ParseTuple(args, "sO", &mode_name, &matrix)) {
         return NULL;
     }
-    Py_ssize_t size = PySequence_Size(matrix);
-    if (size == -1) {
-        return NULL;
-    }
-    if (size == 12) {
+    const ModeID mode = findModeID(mode_name);
+    if (mode == IMAGING_MODE_L) {
+        if (!PyArg_ParseTuple(
+                args, "s(ffff)", &mode_name, m + 0, m + 1, m + 2, m + 3
+            )) {
+            return NULL;
+        }
+    } else if (mode == IMAGING_MODE_RGB) {
         if (!PyArg_ParseTuple(
                 args,
                 "s(ffffffffffff)",
@@ -1121,18 +1138,8 @@ _convert_matrix_impl(ImagingObject *self, PyObject *args) {
             )) {
             return NULL;
         }
-    } else if (size == 4) {
-        if (!PyArg_ParseTuple(
-                args, "s(ffff)", &mode_name, m + 0, m + 1, m + 2, m + 3
-            )) {
-            return NULL;
-        }
-    } else {
-        PyErr_SetString(PyExc_TypeError, "matrix must be tuple of length 4 or 12");
-        return NULL;
     }
 
-    const ModeID mode = findModeID(mode_name);
     return PyImagingNew(ImagingConvertMatrix(self->image, mode, m));
 }
 
@@ -1309,22 +1316,18 @@ _getpalette_impl(ImagingObject *self, PyObject *args) {
     int bits;
     ImagingShuffler pack;
 
-    char *mode_name = "RGB";
     char *rawmode_name = NULL;
-    if (!PyArg_ParseTuple(args, "|ss", &mode_name, &rawmode_name)) {
+    if (!PyArg_ParseTuple(args, "|s", &rawmode_name)) {
         return NULL;
     }
-    if (rawmode_name == NULL) {
-        rawmode_name = mode_name;
-    }
-
     if (!self->image->palette) {
         PyErr_SetString(PyExc_ValueError, no_palette);
         return NULL;
     }
 
-    const ModeID mode = findModeID(mode_name);
-    const RawModeID rawmode = findRawModeID(rawmode_name);
+    const ModeID mode = self->image->palette->mode;
+    const RawModeID rawmode =
+        rawmode_name != NULL ? findRawModeID(rawmode_name) : (RawModeID)mode;
 
     pack = ImagingFindPacker(mode, rawmode, &bits);
     if (!pack) {
@@ -1382,13 +1385,13 @@ _getxy(PyObject *xy, int *x, int *y) {
 
     value = PyTuple_GET_ITEM(xy, 0);
     if (PyLong_Check(value)) {
-        *x = PyLong_AS_LONG(value);
+        *x = PyLong_AsLong(value);
     } else if (PyFloat_Check(value)) {
         *x = (int)PyFloat_AS_DOUBLE(value);
     } else {
         PyObject *int_value = PyObject_CallMethod(value, "__int__", NULL);
         if (int_value != NULL && PyLong_Check(int_value)) {
-            *x = PyLong_AS_LONG(int_value);
+            *x = PyLong_AsLong(int_value);
             Py_DECREF(int_value);
         } else {
             Py_XDECREF(int_value);
@@ -1398,13 +1401,13 @@ _getxy(PyObject *xy, int *x, int *y) {
 
     value = PyTuple_GET_ITEM(xy, 1);
     if (PyLong_Check(value)) {
-        *y = PyLong_AS_LONG(value);
+        *y = PyLong_AsLong(value);
     } else if (PyFloat_Check(value)) {
         *y = (int)PyFloat_AS_DOUBLE(value);
     } else {
         PyObject *int_value = PyObject_CallMethod(value, "__int__", NULL);
         if (int_value != NULL && PyLong_Check(int_value)) {
-            *y = PyLong_AS_LONG(int_value);
+            *y = PyLong_AsLong(int_value);
             Py_DECREF(int_value);
         } else {
             Py_XDECREF(int_value);
@@ -1588,8 +1591,8 @@ _entropy_impl(ImagingObject *self, PyObject *args) {
     fsum = (double)sum;
     entropy = 0.0;
     for (idx = 0; idx < length; idx++) {
-        p = (double)h->histogram[idx] / fsum;
-        if (p != 0.0) {
+        if (h->histogram[idx] != 0) {
+            p = (double)h->histogram[idx] / fsum;
             entropy += p * log(p) * M_LOG2E;
         }
     }
@@ -1984,7 +1987,7 @@ _putdata(ImagingObject *self, PyObject *args) {
 static PyObject *
 _quantize_impl(ImagingObject *self, PyObject *args) {
     int colours = 256;
-    int method = 0;
+    int method = IMAGING_QUANTIZE_MEDIANCUT;
     int kmeans = 0;
     if (!PyArg_ParseTuple(args, "|iii", &colours, &method, &kmeans)) {
         return NULL;
@@ -2036,6 +2039,12 @@ _putpalette_impl(ImagingObject *self, PyObject *args) {
 
     const RawModeID rawmode = findRawModeID(rawmode_name);
     if (rawmode == IMAGING_RAWMODE_UNKNOWN) {
+        PyErr_SetString(PyExc_ValueError, wrong_raw_mode);
+        return NULL;
+    }
+
+    // Planar palette rawmodes are not meaningful for palette data.
+    if (rawmode == IMAGING_RAWMODE_P_2L || rawmode == IMAGING_RAWMODE_P_4L) {
         PyErr_SetString(PyExc_ValueError, wrong_raw_mode);
         return NULL;
     }
@@ -2323,7 +2332,7 @@ _reduce_impl(ImagingObject *self, PyObject *args) {
         return ImagingError_ValueError("box can't exceed original image size");
     }
 
-    if (box[2] <= box[0] || box[3] <= box[1]) {
+    if (box[2] < box[0] || box[3] < box[1]) {
         return ImagingError_ValueError("box can't be empty");
     }
 
@@ -2350,7 +2359,6 @@ _reduce(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 im_setalpha_impl(ImagingObject *self, PyObject *args) {
-    /* attempt to modify the mode of an image in place */
     Imaging im = self->image;
     if (im->mode != IMAGING_MODE_RGB && im->mode != IMAGING_MODE_RGBX) {
         return ImagingError_ModeError();
@@ -2366,6 +2374,12 @@ im_setalpha_impl(ImagingObject *self, PyObject *args) {
 
     Py_RETURN_NONE;
 }
+
+/**
+ * Convert the given RGB/RGBX image to RGBA in-place.
+ *
+ * @return None on success, or NULL on failure with Python exception set.
+ */
 static PyObject *
 im_setalpha(ImagingObject *self, PyObject *args) {
     PyObject *result;
@@ -2472,25 +2486,25 @@ _transpose_impl(ImagingObject *self, PyObject *args) {
     if (imOut) {
         switch (op) {
             case 0:
-                (void)ImagingFlipLeftRight(imOut, imIn);
+                ImagingFlipLeftRight(imOut, imIn);
                 break;
             case 1:
-                (void)ImagingFlipTopBottom(imOut, imIn);
+                ImagingFlipTopBottom(imOut, imIn);
                 break;
             case 2:
-                (void)ImagingRotate90(imOut, imIn);
+                ImagingRotate90(imOut, imIn);
                 break;
             case 3:
-                (void)ImagingRotate180(imOut, imIn);
+                ImagingRotate180(imOut, imIn);
                 break;
             case 4:
-                (void)ImagingRotate270(imOut, imIn);
+                ImagingRotate270(imOut, imIn);
                 break;
             case 5:
-                (void)ImagingTranspose(imOut, imIn);
+                ImagingTranspose(imOut, imIn);
                 break;
             case 6:
-                (void)ImagingTransverse(imOut, imIn);
+                ImagingTransverse(imOut, imIn);
                 break;
         }
     }
@@ -2666,15 +2680,34 @@ _getcolors(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _getextrema_impl(ImagingObject *self, PyObject *args) {
+    if (self->image->bands > 1) {
+        UINT8 mb[2 * 4];
+        int bands = self->image->bands;
+        int status = ImagingGetExtremaMultiband(self->image, mb);
+        PyObject *result = PyTuple_New(bands);
+        if (!result) {
+            return NULL;
+        }
+        for (int b = 0; b < bands; b++) {
+            // status == 0 for an empty image: report None per band.
+            PyObject *item = status ? Py_BuildValue("BB", mb[b * 2], mb[b * 2 + 1])
+                                    : Py_NewRef(Py_None);
+            if (!item) {
+                Py_DECREF(result);
+                return NULL;
+            }
+            PyTuple_SET_ITEM(result, b, item);
+        }
+        return result;
+    }
+
     union {
         UINT8 u[2];
         INT32 i[2];
         FLOAT32 f[2];
         UINT16 s[2];
     } extrema;
-    int status;
-
-    status = ImagingGetExtrema(self->image, &extrema);
+    int status = ImagingGetExtrema(self->image, &extrema);
     if (status < 0) {
         return NULL;
     }
@@ -3271,10 +3304,17 @@ textwidth(ImagingFontObject *self, const unsigned char *text) {
     return xsize;
 }
 
+/**
+ * Convert the given Python string or bytes object to an unsigned char array.
+ *
+ * @param encoded_string The Python string to convert. Can be a Unicode or bytes object.
+ * @param text Pointer to an unsigned char pointer that will be set to the allocated C
+ *             string. The caller is responsible for freeing the memory with `free`.
+ * @return Void, but a Python exception will be set if an error occurs (e.g., memory
+ *         allocation failure). `text` will be NULL in this case.
+ */
 void
 _font_text_asBytes(PyObject *encoded_string, unsigned char **text) {
-    /* Allocates *text, returns a 'new reference'. Caller is required to free */
-
     PyObject *bytes = NULL;
     Py_ssize_t len = 0;
     char *buffer;
@@ -3300,8 +3340,6 @@ _font_text_asBytes(PyObject *encoded_string, unsigned char **text) {
     if (bytes) {
         Py_DECREF(bytes);
     }
-
-    return;
 }
 
 static PyObject *
