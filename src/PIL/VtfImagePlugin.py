@@ -350,7 +350,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     for mip_id in range(mipmap_count - 1, 0, -1):
         size = cast(
-            tuple[int, int],
+            "tuple[int, int]",
             tuple(max(min_size, dimension >> mip_id) for dimension in im.size),
         )
         mip = im.resize(size)
