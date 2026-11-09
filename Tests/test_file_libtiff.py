@@ -11,6 +11,7 @@ from typing import NamedTuple
 import pytest
 
 from PIL import (
+    ExifTags,
     Image,
     ImageFile,
     ImageFilter,
@@ -58,6 +59,54 @@ class LibTiffTestCase:
 
 
 class TestFileLibTiff(LibTiffTestCase):
+    @pytest.mark.parametrize("compression", ("tiff_lzw", "tiff_adobe_deflate"))
+    @pytest.mark.parametrize("use_file", (False, True))
+    @pytest.mark.parametrize("save_all", (False, True))
+    def test_save_exif_subifd(
+        self, tmp_path: Path, compression: str, use_file: bool, save_all: bool
+    ) -> None:
+        exif = Image.Exif()
+        exif[ExifTags.Base.Make] = "Canon"
+        expected = {
+            ExifTags.Base.ISOSpeedRatings: 400,
+            ExifTags.Base.DateTimeOriginal: "2026:11:08 12:00:00",
+        }
+        exif.get_ifd(ExifTags.IFD.Exif).update(expected)
+        interop = {ExifTags.Interop.InteropIndex: "R98"}
+        exif.get_ifd(ExifTags.IFD.Exif)[ExifTags.IFD.Interop] = interop
+        gps = {ExifTags.GPS.GPSMapDatum: "WGS-84"}
+        exif.get_ifd(ExifTags.IFD.GPSInfo).update(gps)
+        jpeg = io.BytesIO()
+        Image.new("RGB", (8, 8), (10, 20, 30)).save(jpeg, format="JPEG", exif=exif)
+        destination = tmp_path / "exif.tiff" if use_file else io.BytesIO()
+
+        with Image.open(jpeg) as source:
+            frames = [source]
+            if save_all:
+                frames.append(Image.new("RGB", (8, 8), (30, 20, 10)))
+            source.save(
+                destination,
+                format="TIFF",
+                compression=compression,
+                exif=source.getexif(),
+                save_all=save_all,
+                append_images=frames[1:],
+            )
+            with Image.open(destination) as saved:
+                assert saved.n_frames == len(frames)
+                for index, frame in enumerate(frames):
+                    saved.seek(index)
+                    assert saved.info["compression"] == compression
+                    saved_exif = saved.getexif()
+                    assert saved_exif[ExifTags.Base.Make] == "Canon"
+                    assert (
+                        expected.items()
+                        <= saved_exif.get_ifd(ExifTags.IFD.Exif).items()
+                    )
+                    assert saved_exif.get_ifd(ExifTags.IFD.Interop) == interop
+                    assert saved_exif.get_ifd(ExifTags.IFD.GPSInfo) == gps
+                    assert_image_equal(saved, frame)
+
     def test_version(self) -> None:
         version = features.version_codec("libtiff")
         assert version is not None

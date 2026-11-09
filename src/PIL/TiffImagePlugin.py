@@ -56,6 +56,7 @@ import logging
 import math
 import os
 import struct
+import sys
 import warnings
 from collections.abc import Callable, MutableMapping
 from fractions import Fraction
@@ -1857,7 +1858,18 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         if libtiff and key in {IMAGEWIDTH, IMAGELENGTH}:
             continue
         if isinstance(info, Image.Exif) and key in TiffTags.TAGS_V2_GROUPS:
-            ifd[key] = info.get_ifd(key)
+            value = info.get_ifd(key)
+            if (
+                libtiff
+                and key == EXIFIFD
+                and ExifTags.IFD.Interop in value
+                and not isinstance(value[ExifTags.IFD.Interop], dict)
+            ):
+                value = {
+                    **value,
+                    ExifTags.IFD.Interop: info.get_ifd(ExifTags.IFD.Interop),
+                }
+            ifd[key] = value
         else:
             ifd[key] = info.get(key)
         try:
@@ -2041,12 +2053,30 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             SUBIFD,
         ]
 
+        # LibTIFF writes ClassicTIFF in native byte order.
+        subifds = bytearray()
+        subifd_prefix = II if sys.byteorder == "little" else MM
+        appender = fp if isinstance(fp, AppendingTiffWriter) else None
         # bits per sample is a single short in the tiff directory, not a list.
         atts: dict[int, Any] = {BITSPERSAMPLE: bits[0]}
         # Merge the ones that we have with (optional) more bits from
         # the original file, e.g x,y resolution so that we can
         # save(load('')) == original file.
         for tag, value in itertools.chain(ifd.items(), supplied_tags.items()):
+            if tag in TiffTags.TAGS_V2_GROUPS and isinstance(value, dict):
+                if tag in atts:
+                    continue
+                offset = 8 + len(subifds)
+                subifd = ImageFileDirectory_v2(prefix=subifd_prefix, group=tag)
+                for key, item in value.items():
+                    subifd[key] = item
+                # The appender rebases the main IFD's pointer. Offsets inside
+                # the subdirectory already refer to the final file.
+                page_offset = appender.offsetOfNewPage if appender else 0
+                subifds.extend(subifd.tobytes(page_offset + offset))
+                if appender:
+                    appender._libtiff_subifd_tags.add(tag)
+                value = offset
             # Libtiff can only process certain core items without adding
             # them to the custom dictionary.
             # Custom items are supported for int, float, unicode, string and byte
@@ -2089,7 +2119,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # pseudo tag requires that the COMPRESS tag was already set.
         tags = list(atts.items())
         tags.sort()
-        a = (rawmode, _fp, filename, tags, types)
+        a = (rawmode, _fp, filename, tags, types, bytes(subifds))
         encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
         try:
             encoder.setimage(im.im)
@@ -2174,6 +2204,7 @@ class AppendingTiffWriter(io.BytesIO):
 
         self.whereToWriteNewIFDOffset: int | None = None
         self.offsetOfNewPage = 0
+        self._libtiff_subifd_tags: set[int] = set()
 
         self.IIMM = iimm = self.f.read(4)
         self._bigtiff = b"\x2b" in iimm
@@ -2358,7 +2389,7 @@ class AppendingTiffWriter(io.BytesIO):
                 offset = self._read(fmt_size) + self.offsetOfNewPage
                 self._rewriteLast(offset, fmt_size)
 
-            if tag in self.Tags:
+            if tag in self.Tags or tag in self._libtiff_subifd_tags:
                 cur_pos = self.f.tell()
 
                 logger.debug(

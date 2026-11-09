@@ -824,6 +824,8 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     Py_ssize_t fp;
 
     PyObject *tags, *types;
+    const char *subifds = NULL;
+    Py_ssize_t subifds_size = 0;
     PyObject *key, *value;
     Py_ssize_t pos = 0;
     int key_int, status, is_core_tag, is_var_length, num_core_tags, i;
@@ -839,7 +841,16 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     PyObject *item;
 
     if (!PyArg_ParseTuple(
-            args, "ssnsOO", &mode_name, &rawmode_name, &fp, &filename, &tags, &types
+            args,
+            "ssnsOO|y#",
+            &mode_name,
+            &rawmode_name,
+            &fp,
+            &filename,
+            &tags,
+            &types,
+            &subifds,
+            &subifds_size
         )) {
         return NULL;
     }
@@ -888,6 +899,13 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     }
 
     encoder->cleanup = ImagingLibTiffEncodeCleanup;
+
+    if (subifds_size &&
+        !ImagingLibTiffWriteSubIFDs(&encoder->state, subifds, subifds_size)) {
+        Py_DECREF(encoder);
+        PyErr_SetString(PyExc_OSError, "cannot write TIFF subdirectories");
+        return NULL;
+    }
 
     num_core_tags = sizeof(core_tags) / sizeof(int);
     long bits_per_sample = 1;
