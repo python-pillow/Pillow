@@ -2457,7 +2457,11 @@ class Image:
 
         self.load()
 
-        if reducing_gap is not None and resample != Resampling.NEAREST:
+        if (
+            reducing_gap is not None
+            and resample != Resampling.NEAREST
+            and not self.mode.startswith("I;16")
+        ):
             factor_x = int((box[2] - box[0]) / size[0] / reducing_gap) or 1
             factor_y = int((box[3] - box[1]) / size[1] / reducing_gap) or 1
             if factor_x > 1 or factor_y > 1:

@@ -89,6 +89,13 @@ def test_float() -> None:
     assert im.size == (99, 99)
 
 
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_i16(mode: str) -> None:
+    im = hopper(mode)
+    im.thumbnail((32, 32))
+    assert_image_equal(im, hopper(mode).resize((32, 32)))
+
+
 def test_no_resize() -> None:
     # Check that draft() can resize the image to the destination size
     with Image.open("Tests/images/hopper.jpg") as im:
