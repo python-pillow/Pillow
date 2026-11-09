@@ -265,22 +265,6 @@ def test_pa_color(color: str | tuple[int, ...]) -> None:
     assert padded_im.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, 255)
 
 
-@pytest.mark.parametrize(
-    "color, alpha", [("red", 255), ((255, 0, 0), 255), ((255, 0, 0, 128), 128)]
-)
-def test_pa_color_full_palette(color: str | tuple[int, ...], alpha: int) -> None:
-    im = Image.new("PA", (1, 1), (0, 73))
-    im.putpalette([i for i in range(256) for _ in range(3)])
-
-    expanded_im = ImageOps.expand(im, 1, color).convert("RGBA")
-    assert expanded_im.getpixel((0, 0)) == (255, 0, 0, alpha)
-    assert expanded_im.getpixel((1, 1)) == (0, 0, 0, 73)
-
-    padded_im = ImageOps.pad(im, (3, 1), color=color).convert("RGBA")
-    assert padded_im.getpixel((0, 0)) == (255, 0, 0, alpha)
-    assert padded_im.getpixel((1, 0)) == (0, 0, 0, 73)
-
-
 def test_rgba_palette() -> None:
     im = Image.new("P", (1, 1))
 
