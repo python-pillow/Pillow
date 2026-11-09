@@ -28,7 +28,7 @@
 #include <stdint.h>
 
 #define INT32_MAX_F 2147483647.0F
-#define INT32_MIN_F (-2147483648.0F)
+#define INT32_MIN_F -2147483648.0F
 
 static inline UINT8
 clip8(float in) {

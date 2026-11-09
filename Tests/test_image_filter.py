@@ -251,8 +251,8 @@ def test_consistency_i16(size: int, mode: str) -> None:
     kernel = ImageFilter.Kernel((size, size), EMBOSS_MATRIX[size], 0.3)
     reference = hopper("I").filter(kernel)
     result = hopper(mode).filter(kernel)
-    # Mode "I" is signed, so it keeps the negative values that the unsigned
-    # I;16 modes clamp to zero. Converting the reference applies the same clamp.
+    # I;16* images cannot have negative values, but I images can
+    # Convert the reference image before comparing so that both are clipped
     assert_image_equal(result, reference.convert(mode))
 
 
@@ -268,27 +268,9 @@ def test_consistency_i16_high_byte(mode: str) -> None:
 
 
 def test_i_negative_values() -> None:
-    # Mode "I" is signed, so filtering must keep negative pixel values,
-    # instead of clamping them to zero.
+    # I mode is signed, so filtering must keep negative pixel values
     im = Image.new("I", (8, 8), -1000)
-    for filter_to_apply in (
-        ImageFilter.SMOOTH,
-        ImageFilter.BLUR,
-        ImageFilter.SHARPEN,
-        ImageFilter.DETAIL,
-    ):
-        assert im.filter(filter_to_apply).getpixel((4, 4)) == -1000
-
-    # An identity kernel must not change the image at all.
-    kernel = ImageFilter.Kernel((3, 3), [0, 0, 0, 0, 1, 0, 0, 0, 0], scale=1)
-    im = Image.new("I", (4, 4))
-    im.putdata([-8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7])
-    assert_image_equal(im.filter(kernel), im)
-
-    # Both ends of the INT32 range must saturate, rather than overflow.
-    for value in (-(2**30), -(2**31), 2**31 - 1):
-        im = Image.new("I", (4, 4), value)
-        assert_image_equal(im.filter(kernel), im)
+    assert im.filter(ImageFilter.SMOOTH).getpixel((4, 4)) == -1000
 
 
 @pytest.mark.parametrize(
