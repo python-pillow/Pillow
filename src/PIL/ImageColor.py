@@ -36,8 +36,8 @@ def _check_max(m: re.Match[str], maximum: int, offset: int = 0) -> None:
 def getrgb(color: str) -> tuple[int, int, int] | tuple[int, int, int, int]:
     """
      Convert a color string to an RGB or RGBA tuple. If the string cannot be
-     parsed, or a value in a color function is out of range, this function raises
-     a :py:exc:`ValueError` exception.
+     parsed, or a value in a color is out of range, this function raises a
+     :py:exc:`ValueError` exception.
 
     .. versionadded:: 1.1.4
 
@@ -142,7 +142,7 @@ def getcolor(color: str, mode: str) -> int | tuple[int, ...]:
     Same as :py:func:`~PIL.ImageColor.getrgb` for most modes. However, if
     ``mode`` is HSV, converts the RGB value to a HSV value, or if ``mode`` is
     not color or a palette image, converts the RGB value to a grayscale value.
-    If the string cannot be parsed, or a value in a color function is out of range,
+    If the string cannot be parsed, or a value in a color is out of range,
     this function raises a :py:exc:`ValueError` exception.
 
     .. versionadded:: 1.1.4
