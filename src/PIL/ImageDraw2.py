@@ -112,7 +112,7 @@ class Draw:
         if self.transform:
             path = ImagePath.Path(xy)
             path.transform(self.transform)
-            xy = path
+            xy = tuple(path)
         # render the item
         if op in ("arc", "line"):
             kwargs.setdefault("fill", outline)
