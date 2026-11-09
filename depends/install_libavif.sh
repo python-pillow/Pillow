@@ -3,12 +3,14 @@ set -eo pipefail
 
 version=1.4.2
 
-if [ $(uname) == "Darwin" ] && [ -x "$(command -v brew)" ]; then
-    PREFIX=$(brew --prefix)
+PREFIX=/usr
+if [ $(uname) == "Darwin" ]; then
+    if [ -x "$(command -v brew)" ]; then
+        PREFIX=$(brew --prefix)
+    fi
     LIBDIR=$PREFIX/lib
     LIBGLOB="libavif*.dylib"
 else
-    PREFIX=/usr
     LIBDIR=/usr/lib/x86_64-linux-gnu
     LIBGLOB="libavif.so*"
 fi
