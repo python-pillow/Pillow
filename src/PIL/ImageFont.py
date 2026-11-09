@@ -27,6 +27,9 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = {"base64", "io", "types", "warnings"}
+
+import abc
 import base64
 import os
 import sys
@@ -34,24 +37,26 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from types import ModuleType
-from typing import IO, Any, BinaryIO, TypedDict, cast
+from typing import TypedDict, cast
 
 from . import Image
-from ._typing import StrOrBytesPath
 from ._util import DeferredError, is_path
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from typing import IO, Any, BinaryIO, NotRequired
+
     from . import ImageFile
     from ._imaging import ImagingFont
     from ._imagingft import Font
+    from ._typing import StrOrBytesPath
 
 
 class Axis(TypedDict):
     minimum: int | None
     default: int | None
     maximum: int | None
-    name: bytes | None
+    name: NotRequired[bytes]
 
 
 class Layout(IntEnum):
@@ -91,12 +96,32 @@ def _string_length_check(text: str | bytes | bytearray) -> None:
 # --------------------------------------------------------------------
 
 
-class ImageFont:
+class BaseImageFont(abc.ABC):
+    """Used by ImageDraw and ImageText"""
+
+    @abc.abstractmethod
+    def getbbox(
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+    ) -> tuple[float, float, float, float]:
+        pass
+
+    @abc.abstractmethod
+    def getmask(
+        self, text: str | bytes, mode: str = "", *args: Any, **kwargs: Any
+    ) -> Image.core.ImagingCore:
+        pass
+
+    @abc.abstractmethod
+    def getlength(self, text: str | bytes, *args: Any, **kwargs: Any) -> float:
+        pass
+
+
+class ImageFont(BaseImageFont):
     """PIL font wrapper"""
 
     font: ImagingFont
 
-    def _load_pilfont(self, filename: str) -> None:
+    def _load_pilfont(self, filename: str | os.PathLike[str]) -> None:
         with open(filename, "rb") as fp:
             image: ImageFile.ImageFile | None = None
             root = os.path.splitext(filename)[0]
@@ -110,7 +135,7 @@ class ImageFont:
                 except Exception:
                     pass
                 else:
-                    if image and image.mode in ("1", "L"):
+                    if image.mode in ("1", "L"):
                         break
             else:
                 if image:
@@ -149,6 +174,9 @@ class ImageFont:
         # read PILfont metrics
         data = file.read(256 * 20)
 
+        self._load(image, data)
+
+    def _load(self, image: Image.Image, data: bytes) -> None:
         image.load()
 
         self.font = Image.core.font(image.im, data)
@@ -212,7 +240,7 @@ class ImageFont:
 # <b>truetype</b> factory function to create font objects.
 
 
-class FreeTypeFont:
+class FreeTypeFont(BaseImageFont):
     """FreeType font wrapper (requires _imagingft service)"""
 
     font: Font
@@ -256,7 +284,7 @@ class FreeTypeFont:
         def load_from_bytes(f: IO[bytes]) -> None:
             self.font_bytes = f.read()
             self.font = core.getfont(
-                "", size, index, encoding, self.font_bytes, layout_engine
+                "", size, index, encoding, layout_engine, self.font_bytes
             )
 
         if is_path(font):
@@ -271,11 +299,9 @@ class FreeTypeFont:
                     with open(font, "rb") as f:
                         load_from_bytes(f)
                     return
-            self.font = core.getfont(
-                font, size, index, encoding, layout_engine=layout_engine
-            )
+            self.font = core.getfont(font, size, index, encoding, layout_engine)
         else:
-            load_from_bytes(cast(IO[bytes], font))
+            load_from_bytes(cast("IO[bytes]", font))
 
     def __getstate__(self) -> list[Any]:
         return [self.path, self.size, self.index, self.encoding, self.layout_engine]
@@ -380,7 +406,7 @@ class FreeTypeFont:
 
     def getbbox(
         self,
-        text: str | bytes,
+        text: str | bytes | bytearray,
         mode: str = "",
         direction: str | None = None,
         features: list[str] | None = None,
@@ -667,7 +693,9 @@ class FreeTypeFont:
             size=self.size if size is None else size,
             index=self.index if index is None else index,
             encoding=self.encoding if encoding is None else encoding,
-            layout_engine=layout_engine or self.layout_engine,
+            layout_engine=(
+                layout_engine if layout_engine is not None else self.layout_engine
+            ),
         )
 
     def get_variation_names(self) -> list[bytes]:
@@ -708,7 +736,7 @@ class FreeTypeFont:
         """
         axes = self.font.getvaraxes()
         for axis in axes:
-            if axis["name"]:
+            if "name" in axis:
                 axis["name"] = axis["name"].replace(b"\x00", b"")
         return axes
 
@@ -720,7 +748,7 @@ class FreeTypeFont:
         self.font.setvaraxes(axes)
 
 
-class TransposedFont:
+class TransposedFont(BaseImageFont):
     """Wrapper for writing rotated or mirrored text"""
 
     def __init__(
@@ -748,7 +776,7 @@ class TransposedFont:
         return im
 
     def getbbox(
-        self, text: str | bytes, *args: Any, **kwargs: Any
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
     ) -> tuple[int, int, float, float]:
         # TransposedFont doesn't support getmask2, move top-left point to (0, 0)
         # this has no effect on ImageFont and simulates anchor="lt" for FreeTypeFont
@@ -766,7 +794,7 @@ class TransposedFont:
         return self.font.getlength(text, *args, **kwargs)
 
 
-def load(filename: str) -> ImageFont:
+def load(filename: str | os.PathLike[str]) -> ImageFont:
     """
     Load a font file. This function loads a font object from the given
     bitmap font file, and returns the corresponding font object. For loading TrueType
@@ -913,7 +941,7 @@ def truetype(
         raise
 
 
-def load_path(filename: str | bytes) -> ImageFont:
+def load_path(filename: StrOrBytesPath) -> ImageFont:
     """
     Load font file. Same as :py:func:`~PIL.ImageFont.load`, but searches for a
     bitmap font along the Python path.
@@ -922,8 +950,7 @@ def load_path(filename: str | bytes) -> ImageFont:
     :return: A font object.
     :exception OSError: If the file could not be read.
     """
-    if not isinstance(filename, str):
-        filename = filename.decode("utf-8")
+    filename = os.fsdecode(filename)
     for directory in sys.path:
         try:
             return load(os.path.join(directory, filename))

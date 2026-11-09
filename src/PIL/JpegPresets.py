@@ -65,7 +65,6 @@ https://web.archive.org/web/20120328125543/http://www.jpegcameras.com/libjpeg/li
 
 from __future__ import annotations
 
-# fmt: off
 presets = {
             'web_low':      {'subsampling':  2,  # "4:2:0"
                              'quantization': [
@@ -238,5 +237,4 @@ presets = {
                                 15, 12, 12, 12, 12, 12, 12, 12,
                                 15, 12, 12, 12, 12, 12, 12, 12]
                              ]},
-}
-# fmt: on
+}  # fmt: skip

@@ -61,10 +61,11 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
 
     Imaging ImagingRankFilter(Imaging im, int size, int rank) {
     Imaging imOut = NULL;
+    ImagingSectionCookie cookie;
     int x, y;
     int i, margin, size2;
 
-    if (!im || im->bands != 1 || im->type == IMAGING_TYPE_SPECIAL) {
+    if (!im || im->bands != 1 || im->type == IMAGING_TYPE_I16) {
         return (Imaging)ImagingError_ModeError();
     }
 
@@ -73,7 +74,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
     }
 
     /* malloc check ok, for overflow in the define below */
-    if (size > INT_MAX / size || size > INT_MAX / (size * (int)sizeof(FLOAT32))) {
+    if (size > INT_MAX / (size * (int)sizeof(FLOAT32))) {
         return (Imaging)ImagingError_ValueError("filter size too large");
     }
 
@@ -84,7 +85,8 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
         return (Imaging)ImagingError_ValueError("bad rank value");
     }
 
-    imOut = ImagingNew(im->mode, im->xsize - 2 * margin, im->ysize - 2 * margin);
+    // Every output pixel is written by the rank loop below
+    imOut = ImagingNewDirty(im->mode, im->xsize - 2 * margin, im->ysize - 2 * margin);
     if (!imOut) {
         return NULL;
     }
@@ -96,6 +98,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
         if (!buf) {                                                               \
             goto nomemory;                                                        \
         }                                                                         \
+        ImagingSectionEnter(&cookie);                                             \
         for (y = 0; y < imOut->ysize; y++) {                                      \
             for (x = 0; x < imOut->xsize; x++) {                                  \
                 for (i = 0; i < size; i++) {                                      \
@@ -108,6 +111,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
                 IMAGING_PIXEL_##type(imOut, x, y) = Rank##type(buf, size2, rank); \
             }                                                                     \
         }                                                                         \
+        ImagingSectionLeave(&cookie);                                             \
         free(buf);                                                                \
     } while (0)
 

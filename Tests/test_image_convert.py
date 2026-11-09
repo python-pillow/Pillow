@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from PIL import Image
 
 from .helper import assert_image, assert_image_equal, assert_image_similar, hopper
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_sanity() -> None:
@@ -44,7 +46,7 @@ def test_sanity() -> None:
 
 def test_unsupported_conversion() -> None:
     im = hopper()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="image has wrong mode"):
         im.convert("INVALID")
 
 
@@ -57,8 +59,12 @@ def test_default() -> None:
     assert_image(converted_im, "RGB", im.size)
 
     im.info["transparency"] = 0
+    original_palette = im.getpalette(None)
     converted_im = im.convert()
     assert_image(converted_im, "RGBA", im.size)
+
+    # Assert that original image palette was not changed
+    assert im.getpalette(None) == original_palette
 
 
 # ref https://github.com/python-pillow/Pillow/issues/274
@@ -88,6 +94,22 @@ def test_16bit() -> None:
 def test_16bit_workaround() -> None:
     with Image.open("Tests/images/16bit.cropped.tif") as im:
         _test_float_conversion(im.convert("I"))
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    (
+        (2147483648, 2147483647),
+        (2147483647, 2147483647),
+        (1, 1),
+        (-5.5, -5),
+        (-2147483648, -2147483648),
+        (-2147483649, -2147483648),
+    ),
+)
+def test_f_to_i(value: float, expected: int) -> None:
+    im = Image.new("F", (1, 1), value)
+    assert im.convert("I").getpixel((0, 0)) == expected
 
 
 def test_opaque() -> None:
@@ -127,6 +149,18 @@ def test_pa() -> None:
     palette = im.palette
     assert palette is not None
     assert palette.colors != {}
+
+
+@pytest.mark.parametrize("mode, value", (("1", 255), ("I;16", 0x1234), ("I", 0x12345)))
+@pytest.mark.parametrize("convert_mode", ("L", "RGB", "P"))
+def test_trns(mode: str, value: int, convert_mode: str) -> None:
+    im = Image.new(mode, (2, 1))
+    im.putpixel((1, 0), value)
+    im.info["transparency"] = value
+
+    converted = im.convert(convert_mode)
+    assert converted.info["transparency"] != converted.getpixel((0, 0))
+    assert converted.info["transparency"] == converted.getpixel((1, 0))
 
 
 def test_trns_p(tmp_path: Path) -> None:
@@ -188,6 +222,20 @@ def test_trns_l(tmp_path: Path) -> None:
     im_p.save(f)
 
 
+@pytest.mark.parametrize("mode", ("I", "I;16"))
+@pytest.mark.parametrize("convert_mode", ("LA", "RGBA"))
+def test_trns_i(mode: str, convert_mode: str) -> None:
+    im = Image.new(mode, (3, 1))
+    im.putdata((0, 0x1234, 0xFFFF))
+    im.info["transparency"] = 0x1234
+
+    expected: tuple[tuple[int, ...], ...] = ((0, 255), (255, 0), (255, 255))
+    while len(expected[0]) < len(convert_mode):
+        expected = tuple((v[0], *v) for v in expected)
+
+    assert im.convert(convert_mode).get_flattened_data() == expected
+
+
 def test_trns_RGB(tmp_path: Path) -> None:
     im = hopper("RGB")
     im.info["transparency"] = im.getpixel((0, 0))
@@ -225,8 +273,15 @@ def test_trns_RGB(tmp_path: Path) -> None:
     assert "transparency" not in im_p.info
     im_p.save(f)
 
+    im.info["transparency"] = list(im.info["transparency"])
+    im_rgba = im.convert("RGBA")
+    assert "transparency" not in im_rgba.info
+
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = im.getpixel((0, 0))
+
+    assert im.convert("LA").getpixel((0, 0)) == (0, 0)
+
     im_p = im.convert("P", palette=Image.Palette.ADAPTIVE)
     assert im_p.info["transparency"] == im_p.getpixel((0, 0))
     im_p.save(f)
@@ -287,39 +342,63 @@ def test_p2pa_alpha() -> None:
 def test_p2pa_palette() -> None:
     with Image.open("Tests/images/tiny.png") as im:
         im_pa = im.convert("PA")
-    assert im_pa.getpalette() == im.getpalette()
+    assert im_pa.getpalette(None) == im.getpalette()
+
+
+@pytest.mark.parametrize(
+    "mode, value",
+    (("1", 255), ("L", 128), ("RGB", (1, 2, 3)), ("I;16", 0x1234), ("I", 0x12345)),
+)
+def test_trns_to_pa(mode: str, value: int | tuple[int, int, int]) -> None:
+    im = Image.new(mode, (2, 1))
+    im.putpixel((1, 0), value)
+    im.info["transparency"] = value
+
+    im_pa = im.convert("PA")
+    assert "transparency" not in im_pa.info
+    assert im_pa.getchannel("A").get_flattened_data() == (255, 0)
+
+
+rgb2xyz_matrix = (
+    0.412453, 0.357580, 0.180423, 0,
+    0.212671, 0.715160, 0.072169, 0,
+    0.019334, 0.119193, 0.950227, 0,
+)  # fmt: skip
 
 
 def test_matrix_illegal_conversion() -> None:
     # Arrange
     im = hopper("CMYK")
-    # fmt: off
-    matrix = (
-        0.412453, 0.357580, 0.180423, 0,
-        0.212671, 0.715160, 0.072169, 0,
-        0.019334, 0.119193, 0.950227, 0)
-    # fmt: on
     assert im.mode != "RGB"
 
     # Act / Assert
-    with pytest.raises(ValueError):
-        im.convert(mode="CMYK", matrix=matrix)
+    with pytest.raises(ValueError, match="illegal conversion"):
+        im.convert(mode="CMYK", matrix=rgb2xyz_matrix)
 
 
 def test_matrix_wrong_mode() -> None:
     # Arrange
     im = hopper("L")
-    # fmt: off
-    matrix = (
-        0.412453, 0.357580, 0.180423, 0,
-        0.212671, 0.715160, 0.072169, 0,
-        0.019334, 0.119193, 0.950227, 0)
-    # fmt: on
-    assert im.mode == "L"
 
     # Act / Assert
-    with pytest.raises(ValueError):
-        im.convert(mode="L", matrix=matrix)
+    with pytest.raises(ValueError, match="image has wrong mode"):
+        im.convert(mode="L", matrix=rgb2xyz_matrix[:4])
+
+
+@pytest.mark.parametrize(
+    "mode, message",
+    (
+        ("RGB", "matrix must have length 12 for mode RGB"),
+        ("L", "matrix must have length 4 for mode L"),
+    ),
+)
+def test_matrix_truncated(mode: str, message: str) -> None:
+    # Arrange
+    im = hopper()
+
+    # Act / Assert
+    with pytest.raises(TypeError, match=message):
+        im.convert(mode, matrix=(0,))
 
 
 @pytest.mark.parametrize("mode", ("RGB", "L"))
@@ -327,17 +406,10 @@ def test_matrix_xyz(mode: str) -> None:
     # Arrange
     im = hopper("RGB")
     im.info["transparency"] = (255, 0, 0)
-    # fmt: off
-    matrix = (
-        0.412453, 0.357580, 0.180423, 0,
-        0.212671, 0.715160, 0.072169, 0,
-        0.019334, 0.119193, 0.950227, 0)
-    # fmt: on
-    assert im.mode == "RGB"
 
     # Act
     # Convert an RGB image to the CIE XYZ colour space
-    converted_im = im.convert(mode=mode, matrix=matrix)
+    converted_im = im.convert(mode=mode, matrix=rgb2xyz_matrix[: len(mode) * 4])
 
     # Assert
     assert converted_im.mode == mode
@@ -354,18 +426,20 @@ def test_matrix_xyz(mode: str) -> None:
 def test_matrix_identity() -> None:
     # Arrange
     im = hopper("RGB")
-    # fmt: off
     identity_matrix = (
         1, 0, 0, 0,
         0, 1, 0, 0,
-        0, 0, 1, 0)
-    # fmt: on
-    assert im.mode == "RGB"
+        0, 0, 1, 0,
+    )  # fmt: skip
 
     # Act
     # Convert with an identity matrix
-    converted_im = im.convert(mode="RGB", matrix=identity_matrix)
+    converted_im = im.convert("RGB", identity_matrix)
 
     # Assert
     # No change
+    assert_image_equal(converted_im, im)
+
+    # Test list
+    converted_im = im.convert("RGB", list(identity_matrix))
     assert_image_equal(converted_im, im)

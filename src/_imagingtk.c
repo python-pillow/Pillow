@@ -12,7 +12,7 @@
  * See the README file for information on usage and redistribution.
  */
 
-#include "Python.h"
+#include <Python.h>
 #include "libImaging/Imaging.h"
 
 #include "Tk/_tkmini.h"
@@ -33,8 +33,10 @@ _tkinit(PyObject *self, PyObject *args) {
     }
 
     interp = (Tcl_Interp *)PyLong_AsVoidPtr(arg);
+    if (interp == NULL && PyErr_Occurred()) {
+        return NULL;
+    }
 
-    /* This will bomb if interp is invalid... */
     TkImaging_Init(interp);
 
     Py_RETURN_NONE;

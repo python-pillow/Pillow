@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__lazy_modules__ = {"warnings"}
+
 import warnings
 
 from . import __version__
@@ -46,10 +48,10 @@ def deprecate(
     elif when <= int(__version__.split(".")[0]):
         msg = f"{deprecated} {is_} deprecated and should be removed."
         raise RuntimeError(msg)
-    elif when == 13:
-        removed = "Pillow 13 (2026-10-15)"
     elif when == 14:
         removed = "Pillow 14 (2027-10-15)"
+    elif when == 15:
+        removed = "Pillow 15 (2028-10-15)"
     else:
         msg = f"Unknown removal version: {when}. Update {__name__}?"
         raise ValueError(msg)

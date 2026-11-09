@@ -48,7 +48,7 @@ extern "C" {
 /**
  * raqm_t:
  *
- * This is the main object holding all state of the currently processed text as
+ * This is the main object holding all the states of the currently processed text as
  * well as its output.
  *
  * Since: 0.1
@@ -81,7 +81,7 @@ typedef enum
  * @y_advance: the glyph advance width in vertical text.
  * @x_offset: the horizontal movement of the glyph from the current point.
  * @y_offset: the vertical movement of the glyph from the current point.
- * @cluster: the index of original character in input text.
+ * @cluster: the index of the original character in the input text.
  * @ftface: the @FT_Face of the glyph.
  *
  * The structure that holds information about output glyphs, returned from
@@ -184,6 +184,9 @@ RAQM_API raqm_direction_t
 raqm_get_par_resolved_direction (raqm_t *rq);
 
 RAQM_API raqm_direction_t
+raqm_get_par_detected_direction (raqm_t *rq);
+
+RAQM_API raqm_direction_t
 raqm_get_direction_at_index (raqm_t *rq,
                              size_t index);
 
@@ -206,6 +209,10 @@ raqm_version (unsigned int *major,
 
 RAQM_API const char *
 raqm_version_string (void);
+
+RAQM_API bool
+raqm_allowed_grapheme_boundary (raqm_t *rq,
+                                size_t  index);
 
 RAQM_API bool
 raqm_version_atleast (unsigned int major,

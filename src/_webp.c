@@ -41,47 +41,61 @@ static const char *const kErrorMessages[-WEBP_MUX_NOT_ENOUGH_DATA + 1] = {
 
 PyObject *
 HandleMuxError(WebPMuxError err, char *chunk) {
-    char message[100];
-    int message_len;
     assert(err <= WEBP_MUX_NOT_FOUND && err >= WEBP_MUX_NOT_ENOUGH_DATA);
 
-    // Check for a memory error first
-    if (err == WEBP_MUX_MEMORY_ERROR) {
-        return PyErr_NoMemory();
-    }
-
-    // Create the error message
-    if (chunk == NULL) {
-        message_len =
-            sprintf(message, "could not assemble chunks: %s", kErrorMessages[-err]);
-    } else {
-        message_len = sprintf(
-            message, "could not set %.4s chunk: %s", chunk, kErrorMessages[-err]
-        );
-    }
-    if (message_len < 0) {
-        PyErr_SetString(PyExc_RuntimeError, "failed to construct error message");
-        return NULL;
-    }
-
-    // Set the proper error type
+    PyObject *err_type;
     switch (err) {
+        case WEBP_MUX_MEMORY_ERROR:
+            return PyErr_NoMemory();
+
         case WEBP_MUX_NOT_FOUND:
         case WEBP_MUX_INVALID_ARGUMENT:
-            PyErr_SetString(PyExc_ValueError, message);
+            err_type = PyExc_ValueError;
             break;
 
         case WEBP_MUX_BAD_DATA:
         case WEBP_MUX_NOT_ENOUGH_DATA:
-            PyErr_SetString(PyExc_OSError, message);
+            err_type = PyExc_OSError;
             break;
 
         default:
-            PyErr_SetString(PyExc_RuntimeError, message);
+            err_type = PyExc_RuntimeError;
             break;
+    }
+
+    if (chunk == NULL) {
+        PyErr_Format(err_type, "could not assemble chunks: %s", kErrorMessages[-err]);
+    } else {
+        PyErr_Format(
+            err_type, "could not set %.4s chunk: %s", chunk, kErrorMessages[-err]
+        );
     }
     return NULL;
 }
+
+/* -------------------------------------------------------------------- */
+/* WebP Encoder Error Mapping                                           */
+/* -------------------------------------------------------------------- */
+
+#define WEBP_STR_HELPER(x) #x
+#define WEBP_STR(x) WEBP_STR_HELPER(x)
+
+static const char *const kEncoderErrorMessages[VP8_ENC_ERROR_LAST] = {
+    "ok",
+    "Out of memory allocating objects",
+    "Out of memory re-allocating byte buffer",
+    "NULL parameter passed to function",
+    "configuration is invalid",
+    "Image size exceeds WebP limit of " WEBP_STR(WEBP_MAX_DIMENSION) " pixels",
+    "Partition #0 is too big to fit 512k",
+    "Partition too big to fit 16M",
+    "Picture writer returned an I/O error",
+    "File would be too big to fit in 4G",
+    "encoding abort requested by user"
+};
+
+#undef WEBP_STR
+#undef WEBP_STR_HELPER
 
 /* -------------------------------------------------------------------- */
 /* Frame import                                                         */
@@ -219,6 +233,7 @@ _anim_encoder_dealloc(PyObject *self) {
     WebPAnimEncoderObject *encp = (WebPAnimEncoderObject *)self;
     WebPPictureFree(&(encp->frame));
     WebPAnimEncoderDelete(encp->enc);
+    Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *
@@ -261,6 +276,9 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
     }
 
     im = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!im) {
+        return NULL;
+    }
 
     // Setup config for this frame
     if (!WebPConfigInit(&config)) {
@@ -441,10 +459,11 @@ _anim_decoder_dealloc(PyObject *self) {
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
     WebPDataClear(&(decp->data));
     WebPAnimDecoderDelete(decp->dec);
+    Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *
-_anim_decoder_get_info(PyObject *self) {
+_anim_decoder_get_info(PyObject *self, PyObject *args) {
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
     WebPAnimInfo *info = &(decp->info);
 
@@ -483,7 +502,7 @@ _anim_decoder_get_chunk(PyObject *self, PyObject *args) {
 }
 
 PyObject *
-_anim_decoder_get_next(PyObject *self) {
+_anim_decoder_get_next(PyObject *self, PyObject *args) {
     uint8_t *buf;
     int timestamp;
     int ok;
@@ -503,6 +522,9 @@ _anim_decoder_get_next(PyObject *self) {
     bytes = PyBytes_FromStringAndSize(
         (char *)buf, decp->info.canvas_width * 4 * decp->info.canvas_height
     );
+    if (!bytes) {
+        return NULL;
+    }
 
     ret = Py_BuildValue("Si", bytes, timestamp);
 
@@ -511,7 +533,7 @@ _anim_decoder_get_next(PyObject *self) {
 }
 
 PyObject *
-_anim_decoder_reset(PyObject *self) {
+_anim_decoder_reset(PyObject *self, PyObject *args) {
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
     WebPAnimDecoderReset(decp->dec);
     Py_RETURN_NONE;
@@ -605,6 +627,9 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     }
 
     im = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    if (!im) {
+        return NULL;
+    }
 
     // Setup config for this frame
     if (!WebPConfigInit(&config)) {
@@ -646,17 +671,18 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     ret_size = writer.size;
 
     if (!ok) {
-        int error_code = (&pic)->error_code;
-        char message[50] = "";
-        if (error_code == VP8_ENC_ERROR_BAD_DIMENSION) {
-            sprintf(
-                message,
-                ": Image size exceeds WebP limit of %d pixels",
-                WEBP_MAX_DIMENSION
-            );
-        }
-        PyErr_Format(PyExc_ValueError, "encoding error %d%s", error_code, message);
         free(output);
+        WebPEncodingError error_code = pic.error_code;
+        if (error_code > VP8_ENC_OK && error_code < VP8_ENC_ERROR_LAST) {
+            PyErr_Format(
+                PyExc_ValueError,
+                "encoding error %d: %s",
+                error_code,
+                kEncoderErrorMessages[error_code]
+            );
+        } else {
+            PyErr_Format(PyExc_ValueError, "encoding error %d", error_code);
+        }
         return NULL;
     }
 
@@ -674,49 +700,32 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
         WebPData exif = {exif_bytes, i_exif_size};
         WebPData xmp = {xmp_bytes, i_xmp_size};
         WebPMuxError err;
-        int dbg = 0;
 
         int copy_data = 0;  // value 1 indicates given data WILL be copied to the mux
                             // and value 0 indicates data will NOT be copied.
 
         WebPMux *mux = WebPMuxNew();
+        if (mux == NULL) {
+            PyErr_SetString(PyExc_RuntimeError, "could not create mux object");
+            return NULL;
+        }
         WebPMuxSetImage(mux, &image, copy_data);
 
-        if (dbg) {
-            /* was getting %ld icc_size == 0, icc_size>0 was true */
-            fprintf(stderr, "icc size %d, %d \n", i_icc_size, i_icc_size > 0);
-        }
-
         if (i_icc_size > 0) {
-            if (dbg) {
-                fprintf(stderr, "Adding ICC Profile\n");
-            }
             err = WebPMuxSetChunk(mux, "ICCP", &icc_profile, copy_data);
             if (err != WEBP_MUX_OK) {
                 return HandleMuxError(err, "ICCP");
             }
         }
 
-        if (dbg) {
-            fprintf(stderr, "exif size %d \n", i_exif_size);
-        }
         if (i_exif_size > 0) {
-            if (dbg) {
-                fprintf(stderr, "Adding Exif Data\n");
-            }
             err = WebPMuxSetChunk(mux, "EXIF", &exif, copy_data);
             if (err != WEBP_MUX_OK) {
                 return HandleMuxError(err, "EXIF");
             }
         }
 
-        if (dbg) {
-            fprintf(stderr, "xmp size %d \n", i_xmp_size);
-        }
         if (i_xmp_size > 0) {
-            if (dbg) {
-                fprintf(stderr, "Adding XMP Data\n");
-            }
             err = WebPMuxSetChunk(mux, "XMP ", &xmp, copy_data);
             if (err != WEBP_MUX_OK) {
                 return HandleMuxError(err, "XMP ");
@@ -774,8 +783,11 @@ setup_module(PyObject *m) {
 
     PyObject *d = PyModule_GetDict(m);
     PyObject *v = PyUnicode_FromString(WebPDecoderVersion_str());
-    PyDict_SetItemString(d, "webpdecoder_version", v ? v : Py_None);
-    Py_XDECREF(v);
+    if (!v) {
+        return -1;
+    }
+    PyDict_SetItemString(d, "webpdecoder_version", v);
+    Py_DECREF(v);
 
     return 0;
 }

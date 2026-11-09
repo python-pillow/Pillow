@@ -115,7 +115,7 @@ Example
 
 Here's an example script to build on Windows::
 
-    set PYTHON=C:\Python310\bin
+    set PYTHON=C:\Python311\bin
     cd /D C:\Pillow\winbuild
     %PYTHON%\python.exe build_prepare.py -v --depends C:\pillow-depends
     build\build_dep_all.cmd

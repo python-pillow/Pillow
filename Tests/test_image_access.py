@@ -4,13 +4,16 @@ import os
 import subprocess
 import sys
 import sysconfig
-from types import ModuleType
 
 import pytest
 
 from PIL import Image
 
-from .helper import assert_image_equal, hopper, is_win32
+from .helper import assert_image_equal, hopper, is_freethreaded, is_win32
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from types import ModuleType
 
 numpy: ModuleType | None
 try:
@@ -115,6 +118,11 @@ class TestImagePutPixel:
         assert px is not None
         assert numpy is not None
         assert px[numpy.int32(1), numpy.int32(2)] == (18, 20, 59)
+
+    def test_deprecation(self) -> None:
+        im = Image.new("PA", (1, 1))
+        with pytest.warns(DeprecationWarning, match="'value' lists"):
+            im.putpixel((0, 0), [0, 0, 0])  # type: ignore[arg-type]
 
 
 class TestImageGetPixel:
@@ -249,6 +257,14 @@ class TestImagePutPixelError:
             ):
                 im.putpixel((0, 0), v)  # type: ignore[arg-type]
 
+    def test_putpixel_type_error_float(self) -> None:
+        im = hopper("F")
+        for v in ("foo", None):
+            with pytest.raises(
+                TypeError, match="color must be int, float or single-element tuple"
+            ):
+                im.putpixel((0, 0), v)  # type: ignore[arg-type]
+
     @pytest.mark.parametrize("mode", IMAGE_MODES1 + IMAGE_MODES2)
     def test_putpixel_overflow_error(self, mode: str) -> None:
         im = hopper(mode)
@@ -257,9 +273,14 @@ class TestImagePutPixelError:
 
 
 class TestEmbeddable:
-    @pytest.mark.xfail(not (sys.version_info >= (3, 13)), reason="failing test")
+    @pytest.mark.xfail(
+        sysconfig.get_platform().startswith("mingw")
+        or not (sys.version_info >= (3, 13)),
+        reason="failing test",
+    )
     @pytest.mark.skipif(not is_win32(), reason="requires Windows")
     def test_embeddable(self) -> None:
+        pytest.importorskip("setuptools", reason="setuptools not installed")
         import ctypes
 
         from setuptools.command import build_ext
@@ -276,26 +297,53 @@ class TestEmbeddable:
         except Exception:
             pytest.skip("Compiler could not be initialized")
 
+        # The official Windows free-threaded Python installer doesn't set
+        # Py_GIL_DISABLED because its pyconfig.h is shared with the default build,
+        # so define it here, like distutils does:
+        # https://github.com/pypa/distutils/pull/310
+        if is_freethreaded():
+            compiler.define_macro("Py_GIL_DISABLED", "1")
+
         with open("embed_pil.c", "w", encoding="utf-8") as fh:
-            home = sys.prefix.replace("\\", "\\\\")
+            home = sys.base_prefix.replace("\\", "\\\\")
             fh.write(f"""
-#include "Python.h"
+#include <Python.h>
 
 int main(int argc, char* argv[])
 {{
+#if PY_VERSION_HEX < 0x030E0000
     char *home = "{home}";
     wchar_t *whome = Py_DecodeLocale(home, NULL);
     Py_SetPythonHome(whome);
+#endif
 
-    Py_InitializeEx(0);
-    Py_DECREF(PyImport_ImportModule("PIL.Image"));
-    Py_Finalize();
+    for (int i = 0; i < 2; i++) {{
+#if PY_VERSION_HEX >= 0x030E0000
+        PyInitConfig *config = PyInitConfig_Create();
+        if (config == NULL) {{
+            return 1;
+        }}
+        if (
+            PyInitConfig_SetStr(config, "home", "{home}") < 0 ||
+            Py_InitializeFromInitConfig(config) < 0
+        ) {{
+            const char *error;
+            PyInitConfig_GetError(config, &error);
+            fprintf(stderr, "%s\\n", error);
+            PyInitConfig_Free(config);
+            return 1;
+        }}
+        PyInitConfig_Free(config);
+#else
+        Py_InitializeEx(0);
+#endif
+        Py_DECREF(PyImport_ImportModule("PIL.Image"));
+        Py_Finalize();
+    }}
 
-    Py_InitializeEx(0);
-    Py_DECREF(PyImport_ImportModule("PIL.Image"));
-    Py_Finalize();
-
+#if PY_VERSION_HEX < 0x030E0000
     PyMem_RawFree(whome);
+#endif
 
     return 0;
 }}
@@ -305,7 +353,7 @@ int main(int argc, char* argv[])
         compiler.link_executable(objects, "embed_pil")
 
         env = os.environ.copy()
-        env["PATH"] = sys.prefix + ";" + env["PATH"]
+        env["PATH"] = os.pathsep.join((sys.prefix, sys.base_prefix, env["PATH"]))
 
         # Do not display the Windows Error Reporting dialog
         getattr(ctypes, "windll").kernel32.SetErrorMode(0x0002)

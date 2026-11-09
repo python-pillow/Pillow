@@ -18,13 +18,18 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"io", "struct"}
+
 import io
 import os
 import struct
 import sys
-from typing import IO
 
 from . import Image, ImageFile, PngImagePlugin, features
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO
 
 enable_jpeg2k = features.check_codec("jpg_2000")
 if enable_jpeg2k:
@@ -80,8 +85,7 @@ def read_32(
                 if byte_int & 0x80:
                     blocksize = byte_int - 125
                     byte = fobj.read(1)
-                    for i in range(blocksize):
-                        data.append(byte)
+                    data.extend([byte] * blocksize)
                 else:
                     blocksize = byte_int + 1
                     data.append(fobj.read(blocksize))

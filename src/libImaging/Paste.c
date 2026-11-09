@@ -79,8 +79,8 @@ paste_mask_1(
 
     PREPARE_PASTE_LOOP();
     if (imOut->image8) {
-        int in_i16 = isModeI16(imIn->mode);
-        int out_i16 = isModeI16(imOut->mode);
+        int in_i16 = imIn->type == IMAGING_TYPE_I16;
+        int out_i16 = imOut->type == IMAGING_TYPE_I16;
         for (; y != y_end; y += offset) {
             UINT8 *out = imOut->image8[y + dy] + dx;
             if (out_i16) {
@@ -143,16 +143,42 @@ paste_mask_L(
 
     PREPARE_PASTE_LOOP();
     if (imOut->image8) {
-        for (; y != y_end; y += offset) {
-            UINT8 *out = imOut->image8[y + dy] + dx;
-            UINT8 *in = imIn->image8[y + sy] + sx;
-            UINT8 *mask = imMask->image8[y + sy] + sx;
-            for (x = 0; x < xsize; x++) {
-                *out = BLEND(*mask, *out, *in, tmp1);
-                out++, in++, mask++;
+        int in_i16 = imIn->type == IMAGING_TYPE_I16;
+        int out_i16 = imOut->type == IMAGING_TYPE_I16;
+        if (!in_i16 && !out_i16) {
+            for (; y != y_end; y += offset) {
+                UINT8 *out = imOut->image8[y + dy] + dx;
+                UINT8 *in = imIn->image8[y + sy] + sx;
+                UINT8 *mask = imMask->image8[y + sy] + sx;
+                for (x = 0; x < xsize; x++) {
+                    *out = BLEND(*mask, *out, *in, tmp1);
+                    out++, in++, mask++;
+                }
+            }
+        } else {
+            for (; y != y_end; y += offset) {
+                UINT8 *out = imOut->image8[y + dy] + dx;
+                if (out_i16) {
+                    out += dx;
+                }
+                UINT8 *in = imIn->image8[y + sy] + sx;
+                if (in_i16) {
+                    in += sx;
+                }
+                UINT8 *mask = imMask->image8[y + sy] + sx;
+                for (x = 0; x < xsize; x++) {
+                    *out = BLEND(*mask, *out, *in, tmp1);
+                    if (in_i16) {
+                        in++;
+                    }
+                    if (out_i16) {
+                        out++;
+                        *out = BLEND(*mask, *out, *in, tmp1);
+                    }
+                    out++, in++, mask++;
+                }
             }
         }
-
     } else {
         for (; y != y_end; y += offset) {
             UINT8 *out = (UINT8 *)(imOut->image32[y + dy] + dx);
@@ -274,7 +300,7 @@ int
 ImagingPaste(
     Imaging imOut, Imaging imIn, Imaging imMask, int dx0, int dy0, int dx1, int dy1
 ) {
-    int xsize, ysize;
+    int64_t xsize, ysize;
     int pixelsize;
     int sx0, sy0;
     ImagingSectionCookie cookie;
@@ -286,8 +312,8 @@ ImagingPaste(
 
     pixelsize = imOut->pixelsize;
 
-    xsize = dx1 - dx0;
-    ysize = dy1 - dy0;
+    xsize = (int64_t)dx1 - dx0;
+    ysize = (int64_t)dy1 - dy0;
 
     if (xsize != imIn->xsize || ysize != imIn->ysize || pixelsize != imIn->pixelsize) {
         (void)ImagingError_Mismatch();
@@ -352,38 +378,66 @@ ImagingPaste(
 
 static inline void
 fill(
-    Imaging imOut, const void *ink_, int dx, int dy, int xsize, int ysize, int pixelsize
+    Imaging imOut, const UINT8 *ink, int dx, int dy, int xsize, int ysize, int pixelsize
 ) {
     /* fill opaque region */
 
     int x, y;
-    UINT8 ink8 = 0;
     INT32 ink32 = 0L;
 
-    memcpy(&ink32, ink_, pixelsize);
-    memcpy(&ink8, ink_, sizeof(ink8));
+    memcpy(&ink32, ink, pixelsize);
 
     if (imOut->image8 || ink32 == 0L) {
-        dx *= pixelsize;
-        xsize *= pixelsize;
-        for (y = 0; y < ysize; y++) {
-            memset(imOut->image[y + dy] + dx, ink8, xsize);
-        }
+        int i16 = imOut->type == IMAGING_TYPE_I16;
+        if (i16 && ink32 != 0L) {
+            for (y = 0; y < ysize; y++) {
+                UINT16 *out = (UINT16 *)imOut->image[y + dy] + dx;
+                for (x = 0; x < xsize; x++) {
+                    *out++ =
+#ifdef WORDS_BIGENDIAN
+                        (ink[0] << 8) | ink[1];
+#else
+                        ink[0] | (ink[1] << 8);
+#endif
+                }
+            }
+        } else {
+            UINT8 ink8 = 0;
+            memcpy(&ink8, ink, sizeof(ink8));
 
+            dx *= pixelsize;
+            xsize *= pixelsize;
+            for (y = 0; y < ysize; y++) {
+                memset(imOut->image[y + dy] + dx, ink8, xsize);
+            }
+        }
     } else {
+#if defined _WIN32 && !defined _WIN64
+        int i;
+        dx *= pixelsize;
+        for (y = 0; y < ysize; y++) {
+            UINT8 *out = (UINT8 *)imOut->image[y + dy] + dx;
+            for (x = 0; x < xsize; x++) {
+                for (i = 0; i < pixelsize; i++) {
+                    *out++ = ink[i];
+                }
+            }
+        }
+#else
         for (y = 0; y < ysize; y++) {
             INT32 *out = imOut->image32[y + dy] + dx;
             for (x = 0; x < xsize; x++) {
                 out[x] = ink32;
             }
         }
+#endif
     }
 }
 
 static inline void
 fill_mask_1(
     Imaging imOut,
-    const void *ink_,
+    const UINT8 *ink,
     Imaging imMask,
     int dx,
     int dy,
@@ -396,25 +450,28 @@ fill_mask_1(
     /* fill with mode "1" mask */
 
     int x, y;
-    UINT8 ink8 = 0;
-    INT32 ink32 = 0L;
-
-    memcpy(&ink32, ink_, pixelsize);
-    memcpy(&ink8, ink_, sizeof(ink8));
 
     if (imOut->image8) {
+        int i16 = imOut->type == IMAGING_TYPE_I16;
         for (y = 0; y < ysize; y++) {
             UINT8 *out = imOut->image8[y + dy] + dx;
+            if (i16) {
+                out += dx;
+            }
             UINT8 *mask = imMask->image8[y + sy] + sx;
             for (x = 0; x < xsize; x++) {
                 if (*mask++) {
-                    *out = ink8;
+                    out[0] = ink[0];
+                    if (i16) {
+                        out[1] = ink[1];
+                    }
                 }
-                out++;
+                out += pixelsize;
             }
         }
-
     } else {
+        INT32 ink32 = 0L;
+        memcpy(&ink32, ink, pixelsize);
         for (y = 0; y < ysize; y++) {
             INT32 *out = imOut->image32[y + dy] + dx;
             UINT8 *mask = imMask->image8[y + sy] + sx;
@@ -447,7 +504,7 @@ fill_mask_L(
     unsigned int tmp1;
 
     if (imOut->image8) {
-        int i16 = isModeI16(imOut->mode);
+        int i16 = imOut->type == IMAGING_TYPE_I16;
         for (y = 0; y < ysize; y++) {
             UINT8 *out = imOut->image8[y + dy] + dx;
             if (i16) {
@@ -585,7 +642,7 @@ ImagingFill2(
     Imaging imOut, const void *ink, Imaging imMask, int dx0, int dy0, int dx1, int dy1
 ) {
     ImagingSectionCookie cookie;
-    int xsize, ysize;
+    int64_t xsize, ysize;
     int pixelsize;
     int sx0, sy0;
 
@@ -596,8 +653,8 @@ ImagingFill2(
 
     pixelsize = imOut->pixelsize;
 
-    xsize = dx1 - dx0;
-    ysize = dy1 - dy0;
+    xsize = (int64_t)dx1 - dx0;
+    ysize = (int64_t)dy1 - dy0;
 
     if (imMask && (xsize != imMask->xsize || ysize != imMask->ysize)) {
         (void)ImagingError_Mismatch();
@@ -607,13 +664,21 @@ ImagingFill2(
     /* Determine which region to fill */
     sx0 = sy0 = 0;
     if (dx0 < 0) {
-        xsize += dx0, sx0 = -dx0, dx0 = 0;
+        xsize += dx0;
+        if (xsize <= 0) {
+            return 0;
+        }
+        sx0 = -dx0, dx0 = 0;
     }
     if (dx0 + xsize > imOut->xsize) {
         xsize = imOut->xsize - dx0;
     }
     if (dy0 < 0) {
-        ysize += dy0, sy0 = -dy0, dy0 = 0;
+        ysize += dy0;
+        if (ysize <= 0) {
+            return 0;
+        }
+        sy0 = -dy0, dy0 = 0;
     }
     if (dy0 + ysize > imOut->ysize) {
         ysize = imOut->ysize - dy0;

@@ -6,24 +6,24 @@
 # Copyright (c) 2014 Dov Grobgeld <dov.grobgeld@gmail.com>
 from __future__ import annotations
 
+__lazy_modules__ = {"re"}
+
 import re
 
 from . import Image, _imagingmorph
 
 LUT_SIZE = 1 << 9
 
-# fmt: off
 ROTATION_MATRIX = [
     6, 3, 0,
     7, 4, 1,
     8, 5, 2,
-]
+]  # fmt: skip
 MIRROR_MATRIX = [
     2, 1, 0,
     5, 4, 3,
     8, 7, 6,
-]
-# fmt: on
+]  # fmt: skip
 
 
 class LutBuilder:
@@ -169,7 +169,7 @@ class LutBuilder:
 
         # Parse and create symmetries of the patterns strings
         for p in self.patterns:
-            m = re.search(r"(\w):?\s*\((.+?)\)\s*->\s*(\d)", p.replace("\n", ""))
+            m = re.fullmatch(r"(\w):?\s*\((.+?)\)\s*->\s*([01])", p.replace("\n", ""))
             if not m:
                 msg = 'Syntax error in pattern "' + p + '"'
                 raise Exception(msg)
@@ -197,7 +197,7 @@ class LutBuilder:
 
             for pattern, r in compiled_patterns:
                 if pattern.match(bitpattern):
-                    self.lut[i] = [0, 1][r]
+                    self.lut[i] = r
 
         return self.lut
 

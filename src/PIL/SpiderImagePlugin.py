@@ -27,22 +27,25 @@
 # image data from electron microscopy and tomography.
 #
 # Spider home page:
-# https://spider.wadsworth.org/spider_doc/spider/docs/spider.html
+# https://spider-em.github.io/SPIDER/
 #
 # Details about the Spider image format:
-# https://spider.wadsworth.org/spider_doc/spider/docs/image_doc.html
+# https://spider-em.github.io/SPIDER/docs/image_doc.html
 #
 from __future__ import annotations
+
+__lazy_modules__ = {"PIL._util", "struct"}
 
 import os
 import struct
 import sys
-from typing import IO, Any, cast
 
 from . import Image, ImageFile
 from ._util import DeferredError
 
 TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from typing import IO, Any
 
 
 def isInt(f: Any) -> int:
@@ -101,6 +104,8 @@ class SpiderImageFile(ImageFile.ImageFile):
     format_description = "Spider 2D image"
     _close_exclusive_fp_after_loading = False
 
+    stkoffset = 0
+
     def _open(self) -> None:
         # check header
         n = 27 * 4  # read 27 float values
@@ -132,25 +137,26 @@ class SpiderImageFile(ImageFile.ImageFile):
         self.istack = int(h[24])
         self.imgnumber = int(h[27])
 
+        self.n_frames = 1
         if self.istack == 0 and self.imgnumber == 0:
             # stk=0, img=0: a regular 2D image
             offset = hdrlen
-            self._nimages = 1
         elif self.istack > 0 and self.imgnumber == 0:
             # stk>0, img=0: Opening the stack for the first time
             self.imgbytes = int(h[12]) * int(h[2]) * 4
             self.hdrlen = hdrlen
-            self._nimages = int(h[26])
+            self.n_frames = int(h[26])
             # Point to the first image in the stack
             offset = hdrlen * 2
             self.imgnumber = 1
-        elif self.istack == 0 and self.imgnumber > 0:
-            # stk=0, img>0: an image within the stack
+        elif self.istack == 0 and self.imgnumber > 0 and self.stkoffset != 0:
+            # stk=0, img>0: an image within the stack, reached through seek()
             offset = hdrlen + self.stkoffset
             self.istack = 2  # So Image knows it's still a stack
         else:
             msg = "inconsistent stack header values"
             raise SyntaxError(msg)
+        self.is_animated = self.n_frames > 1
 
         if self.bigendian:
             self.rawmode = "F;32BF"
@@ -158,16 +164,8 @@ class SpiderImageFile(ImageFile.ImageFile):
             self.rawmode = "F;32F"
         self._mode = "F"
 
-        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, offset, self.rawmode)]
+        self.tile = [ImageFile._Tile("raw", None, offset, self.rawmode)]
         self._fp = self.fp  # FIXME: hack
-
-    @property
-    def n_frames(self) -> int:
-        return self._nimages
-
-    @property
-    def is_animated(self) -> bool:
-        return self._nimages > 1
 
     # 1st image index is zero (although SPIDER imgnumber starts at 1)
     def tell(self) -> int:
@@ -188,12 +186,13 @@ class SpiderImageFile(ImageFile.ImageFile):
         self.fp = self._fp
         self.fp.seek(self.stkoffset)
         self._open()
+        Image._decompression_bomb_check(self.size)
 
     # returns a byte image after rescaling to 0..255
     def convert2byte(self, depth: int = 255) -> Image.Image:
         extrema = self.getextrema()
         assert isinstance(extrema[0], float)
-        minimum, maximum = cast(tuple[float, float], extrema)
+        minimum, maximum = extrema
         m: float = 1
         if maximum != minimum:
             m = depth / (maximum - minimum)
@@ -244,7 +243,7 @@ def loadImageSeries(filelist: list[str] | None = None) -> list[Image.Image] | No
 
 def makeSpiderHeader(im: Image.Image) -> list[bytes]:
     nsam, nrow = im.size
-    lenbyt = nsam * 4  # There are labrec records in the header
+    lenbyt = max(1, nsam) * 4  # There are labrec records in the header
     labrec = int(1024 / lenbyt)
     if 1024 % lenbyt != 0:
         labrec += 1
@@ -285,7 +284,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.writelines(hdr)
 
     rawmode = "F;32NF"  # 32-bit native floating point
-    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, rawmode)])
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", args=rawmode)])
 
 
 def _save_spider(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:

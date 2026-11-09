@@ -6,11 +6,13 @@
 
 ## Python Imaging Library (Fork)
 
-Pillow is the friendly PIL fork by [Jeffrey A. Clark and
+Pillow is the friendly PIL fork by [Jeffrey 'Alex' Clark and
 contributors](https://github.com/python-pillow/Pillow/graphs/contributors).
 PIL is the Python Imaging Library by Fredrik Lundh and contributors.
-As of 2019, Pillow development is
-[supported by Tidelift](https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=readme&utm_campaign=enterprise).
+Development is supported by:
+- [Tidelift](https://tidelift.com/lifter/search/pypi/pillow) (since 2018)
+- [Thanks.dev](https://thanks.dev) (since 2023)
+- [GitHub Sponsors](https://github.com/sponsors/python-pillow) (since 2026)
 
 <table>
     <tr>
@@ -18,7 +20,7 @@ As of 2019, Pillow development is
         <td>
             <a href="https://pillow.readthedocs.io/?badge=latest"><img
                 alt="Documentation Status"
-                src="https://readthedocs.org/projects/pillow/badge/?version=latest"></a>
+                src="https://app.readthedocs.org/projects/pillow/badge/?version=latest"></a>
         </td>
     </tr>
     <tr>
@@ -33,9 +35,9 @@ As of 2019, Pillow development is
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml"><img
                 alt="GitHub Actions build status (Test Windows)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Windows/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-mingw.yml"><img
-                alt="GitHub Actions build status (Test MinGW)"
-                src="https://github.com/python-pillow/Pillow/workflows/Test%20MinGW/badge.svg"></a>
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-msys2.yml"><img
+                alt="GitHub Actions build status (Test MSYS2)"
+                src="https://github.com/python-pillow/Pillow/workflows/Test%20MSYS2/badge.svg"></a>
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-docker.yml"><img
                 alt="GitHub Actions build status (Test Docker)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg"></a>
@@ -56,7 +58,7 @@ As of 2019, Pillow development is
             <a href="https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow"><img
                 alt="Zenodo"
                 src="https://zenodo.org/badge/17549/python-pillow/Pillow.svg"></a>
-            <a href="https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=badge"><img
+            <a href="https://tidelift.com/lifter/search/pypi/pillow"><img
                 alt="Tidelift"
                 src="https://tidelift.com/badges/package/pypi/pillow?style=flat"></a>
             <a href="https://pypi.org/project/pillow/"><img
@@ -73,9 +75,6 @@ As of 2019, Pillow development is
     <tr>
         <th>social</th>
         <td>
-            <a href="https://gitter.im/python-pillow/Pillow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img
-                alt="Join the chat at https://gitter.im/python-pillow/Pillow"
-                src="https://badges.gitter.im/python-pillow/Pillow.svg"></a>
             <a href="https://fosstodon.org/@pillow"><img
                 alt="Follow on https://fosstodon.org/@pillow"
                 src="https://img.shields.io/badge/publish-on%20Mastodon-595aff.svg"
@@ -106,4 +105,8 @@ The core image library is designed for fast access to data stored in a few basic
 
 ## Report a vulnerability
 
-To report a security vulnerability, please follow the procedure described in the [Tidelift security policy](https://tidelift.com/docs/security).
+To report sensitive vulnerability information, report it [privately on GitHub](https://github.com/python-pillow/Pillow/security/advisories/new).
+
+If you cannot use GitHub, use the [Tidelift security contact](https://tidelift.com/security). Tidelift will coordinate the fix and disclosure.
+
+DO NOT report sensitive vulnerability information in public.

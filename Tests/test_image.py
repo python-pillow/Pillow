@@ -8,8 +8,6 @@ import sys
 import tempfile
 import warnings
 from pathlib import Path
-from types import ModuleType
-from typing import IO, Any
 
 import pytest
 
@@ -19,7 +17,6 @@ from PIL import (
     ImageDraw,
     ImageFile,
     ImagePalette,
-    ImageShow,
     UnidentifiedImageError,
     features,
 )
@@ -32,10 +29,13 @@ from .helper import (
     assert_not_all_same,
     hopper,
     is_win32,
-    mark_if_feature_version,
     skip_unless_feature,
-    timeout_unless_slower_valgrind,
 )
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from types import ModuleType
+    from typing import IO
 
 ElementTree: ModuleType | None
 try:
@@ -198,17 +198,6 @@ class TestImage:
         class FP(io.BytesIO):
             name: Path
 
-            if sys.version_info >= (3, 12):
-                from collections.abc import Buffer
-
-                def write(self, data: Buffer) -> int:
-                    return len(data)
-
-            else:
-
-                def write(self, data: Any) -> int:
-                    return len(data)
-
         fp = FP()
         fp.name = temp_file
 
@@ -270,8 +259,11 @@ class TestImage:
         im = Image.new("RGB", (10, 10))
         im._dump(str(tmp_path / "temp_RGB.ppm"))
 
+        im = Image.new("RGBA", (10, 10))
+        im._dump(str(tmp_path / "temp_RGBA.ppm"))
+
         im = Image.new("HSV", (10, 10))
-        with pytest.raises(ValueError):
+        with pytest.raises(OSError):
             im._dump(str(tmp_path / "temp_HSV.ppm"))
 
     def test_comparison_with_other_type(self) -> None:
@@ -311,6 +303,13 @@ class TestImage:
         assert_image_equal(Cb, im.getchannel("Cb"))
         assert_image_equal(Cr, im.getchannel(2))
         assert_image_equal(Cr, im.getchannel("Cr"))
+
+    @pytest.mark.parametrize("mode", ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"))
+    def test_getchannel_single_band(self, mode: str) -> None:
+        im = hopper(mode)
+
+        for channel in (0, im.getbands()[0]):
+            assert_image_equal(im.getchannel(channel), im)
 
     def test_getbbox(self) -> None:
         # Arrange
@@ -540,9 +539,10 @@ class TestImage:
         assert im.size == (128, 128)
         assert_image_similar_tofile(im2, "Tests/images/effect_spread.png", 110)
 
-    def test_effect_spread_zero(self) -> None:
+    @pytest.mark.parametrize("mode", ("RGB", "I;16", "I;16L", "I;16B", "I;16N"))
+    def test_effect_spread_zero(self, mode: str) -> None:
         # Arrange
-        im = hopper()
+        im = hopper(mode)
         distance = 0
 
         # Act
@@ -550,6 +550,15 @@ class TestImage:
 
         # Assert
         assert_image_equal(im, im2)
+
+    @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+    def test_effect_spread_i16(self, mode: str) -> None:
+        im = Image.new(mode, (3, 3))
+        im.putdata(range(1000, 10000, 1000))
+
+        # Whole pixels are moved, so every value comes from the original image
+        im2 = im.effect_spread(2)
+        assert set(im2.get_flattened_data()) <= set(im.get_flattened_data())
 
     def test_check_size(self) -> None:
         # Checking that the _check_size function throws value errors when we want it to
@@ -576,11 +585,6 @@ class TestImage:
         # Should pass lists too
         i = Image.new("RGB", [1, 1])
         assert isinstance(i.size, tuple)
-
-    @timeout_unless_slower_valgrind(0.75)
-    @pytest.mark.parametrize("size", ((0, 100000000), (100000000, 0)))
-    def test_empty_image(self, size: tuple[int, int]) -> None:
-        Image.new("RGB", size)
 
     def test_storage_neg(self) -> None:
         # Storage.c accepted negative values for xsize, ysize.  Was
@@ -676,12 +680,29 @@ class TestImage:
         assert_image_equal(im_p, im_remapped)
         assert im_p.palette is not None
         assert im_remapped.palette is not None
-        assert im_p.palette.palette == im_remapped.palette.palette
+        assert bytes(im_p.palette.palette) == im_remapped.palette.palette
 
         # Test illegal image mode
         with hopper() as im_hopper:
             with pytest.raises(ValueError):
                 im_hopper.remap_palette([])
+
+    @pytest.mark.parametrize("palette_mode", ("RGB", "RGBA"))
+    def test_remap_palette_source_palette(self, palette_mode: str) -> None:
+        # When source_palette is provided, mode is inferred from length.
+        # 768 entries should be detected as a 256-entry RGB palette
+        # 1024 entries should be detected as a 256-entry RGBA palette
+        im = Image.new("P", (1, 1))
+        source_palette = bytes(
+            entry for entry in range(256) for channel in range(len(palette_mode))
+        )
+        im_remapped = im.remap_palette(list(range(256)), source_palette)
+
+        palette = im_remapped.palette
+        assert palette is not None
+        assert len(palette.colors) == 256
+        assert palette.mode == palette_mode
+        assert palette.palette == source_palette
 
     def test_remap_palette_transparency(self) -> None:
         im = Image.new("P", (1, 2), (0, 0, 0))
@@ -742,6 +763,20 @@ class TestImage:
         expected = Image.new(mode, (100, 100), color)
         assert_image_equal(im.convert(mode), expected)
 
+    @pytest.mark.parametrize(
+        "color, expected",
+        (
+            ("#DDEEFF", (221, 238, 255, 255)),
+            ((221, 238, 255), (221, 238, 255, 255)),
+            ((221, 238, 255, 128), (221, 238, 255, 128)),
+        ),
+    )
+    def test_pa_from_rgb_rgba(
+        self, color: str | tuple[int, ...], expected: tuple[int, ...]
+    ) -> None:
+        im = Image.new("PA", (100, 100), color)
+        assert_image_equal(im.convert("RGBA"), Image.new("RGBA", (100, 100), expected))
+
     def test_no_resource_warning_on_save(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/835
         # Arrange
@@ -750,9 +785,7 @@ class TestImage:
 
         # Act/Assert
         with Image.open(test_file) as im:
-            with warnings.catch_warnings():
-                warnings.simplefilter("error")
-
+            with warnings.catch_warnings(action="error"):
                 im.save(temp_file)
 
     def test_no_new_file_on_error(self, tmp_path: Path) -> None:
@@ -799,6 +832,12 @@ class TestImage:
             exif = im.getexif()
         assert exif[274] == 1
 
+        with Image.open("Tests/images/exif.png") as im:
+            im.load()
+            im.info["exif"] = b"Exif\x00\x00" * 2 + im.info["exif"]
+            with pytest.raises(SyntaxError):
+                im.getexif()
+
     def test_empty_get_ifd(self) -> None:
         exif = Image.Exif()
         ifd = exif.get_ifd(0x8769)
@@ -811,9 +850,20 @@ class TestImage:
         reloaded_exif.load(exif.tobytes())
         assert reloaded_exif.get_ifd(0x8769) == {36864: b"0220"}
 
-    @mark_if_feature_version(
-        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
-    )
+    @pytest.mark.parametrize("tag", (ExifTags.IFD.Interop, ExifTags.IFD.MakerNote))
+    def test_get_ifd_missing_from_exif_ifd(self, tag: int) -> None:
+        # Without an Exif IFD
+        assert Image.Exif().get_ifd(tag) == {}
+
+        with Image.open("Tests/images/exif_gps.jpg") as im:
+            exif = im.getexif()
+
+            # With an Exif IFD that does not reference this IFD
+            assert ExifTags.IFD.Exif in exif
+            assert tag not in exif.get_ifd(ExifTags.IFD.Exif)
+
+            assert exif.get_ifd(tag) == {}
+
     def test_exif_jpeg(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
             exif = im.getexif()
@@ -862,7 +912,7 @@ class TestImage:
     def test_exif_webp(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/hopper.webp") as im:
             exif = im.getexif()
-            assert exif == {}
+            assert dict(exif) == {}
 
             out = tmp_path / "temp.webp"
             exif[258] = 8
@@ -884,7 +934,7 @@ class TestImage:
     def test_exif_png(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/exif.png") as im:
             exif = im.getexif()
-            assert exif == {274: 1}
+            assert dict(exif) == {274: 1}
 
             out = tmp_path / "temp.png"
             exif[258] = 8
@@ -914,6 +964,7 @@ class TestImage:
     def test_exif_ifd1(self) -> None:
         with Image.open("Tests/images/flower.jpg") as im:
             exif = im.getexif()
+            before_ifd1_read = exif.tobytes()
             assert exif.get_ifd(ExifTags.IFD.IFD1) == {
                 513: 2036,
                 514: 5448,
@@ -922,6 +973,9 @@ class TestImage:
                 282: 180.0,
                 283: 180.0,
             }
+
+            # Assert that reading IFD1 does not change the data
+            assert exif.tobytes() == before_ifd1_read
 
     def test_exif_ifd(self) -> None:
         with Image.open("Tests/images/flower.jpg") as im:
@@ -1006,6 +1060,34 @@ class TestImage:
                 xmp = im.getxmp()
             assert xmp == {}
 
+    @pytest.mark.skipif(ElementTree is None, reason="defusedxml is not installed")
+    def test_getxmp_strip_namespaces(self) -> None:
+        im = Image.new("RGB", (1, 1))
+        im.info["xmp"] = (
+            b'<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
+            b'<x:xmpmeta xmlns:x="adobe:ns:meta/">'
+            b'<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+            b'<rdf:Description rdf:about=""'
+            b' xmlns:a="http://example.com/ns/a/"'
+            b' xmlns:b="http://example.com/ns/b/">'
+            b"<a:id>from-a</a:id>"
+            b"<b:id>from-b</b:id>"
+            b"</rdf:Description>"
+            b"</rdf:RDF>"
+            b'</x:xmpmeta>\n<?xpacket end="w"?>'
+        )
+
+        stripped = im.getxmp()
+        desc = stripped["xmpmeta"]["RDF"]["Description"]
+        assert desc["id"] == ["from-a", "from-b"]
+
+        full = im.getxmp(strip_namespaces=False)
+        desc_full = full["{adobe:ns:meta/}xmpmeta"][
+            "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF"
+        ]["{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description"]
+        assert desc_full["{http://example.com/ns/a/}id"] == "from-a"
+        assert desc_full["{http://example.com/ns/b/}id"] == "from-b"
+
     def test_getxmp_padded(self) -> None:
         im = Image.new("RGB", (1, 1))
         im.info["xmp"] = (
@@ -1020,18 +1102,6 @@ class TestImage:
                 assert im.getxmp() == {}
         else:
             assert im.getxmp() == {"xmpmeta": None}
-
-    def test_get_child_images(self) -> None:
-        im = Image.new("RGB", (1, 1))
-        with pytest.warns(DeprecationWarning, match="Image.Image.get_child_images"):
-            assert im.get_child_images() == []
-
-    def test_show(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(ImageShow, "_viewers", [])
-
-        im = Image.new("RGB", (1, 1))
-        with pytest.warns(DeprecationWarning, match="Image._show"):
-            Image._show(im)
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size: tuple[int, int]) -> None:
@@ -1110,6 +1180,12 @@ class TestImage:
         pa = Image.merge("PA", (p, a))
         assert p.getpalette() == pa.getpalette()
 
+    def test_merge_i(self) -> None:
+        i = Image.new("I", (1, 1))
+        a = Image.new("L", (1, 1))
+        with pytest.raises(ValueError, match="image has wrong mode"):
+            Image.merge("PA", (i, a))
+
     def test_constants(self) -> None:
         for enum in (
             Image.Transpose,
@@ -1121,6 +1197,14 @@ class TestImage:
         ):
             for name in enum.__members__:
                 assert getattr(Image, name) == enum[name]
+
+    def test_decoder_setimage_once(self) -> None:
+        im = Image.new("L", (1, 1))
+        decoder = Image._getdecoder("L", "raw", "L")
+
+        decoder.setimage(im.im, None)
+        with pytest.raises(ValueError, match="decoder already has an image"):
+            decoder.setimage(im.im, None)
 
     @pytest.mark.parametrize(
         "path",

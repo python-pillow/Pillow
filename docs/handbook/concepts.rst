@@ -95,6 +95,16 @@ Coordinates are usually passed to the library as 2-tuples (x, y). Rectangles
 are represented as 4-tuples, (x1, y1, x2, y2), with the upper left corner given
 first.
 
+Since Pillow 5.4.0, individual image pixels can be accessed using negative indexes.
+For example, to get or set the farthest pixel in the lower right of an image::
+
+    >>> from PIL import Image
+    >>> im = Image.new("RGB", (10, 10), (255, 0, 0))
+    >>> px = im.load()
+    >>> px[-1, -1]
+    (255, 0, 0)
+    >>> px[-1, -1] = (0, 0, 0)
+
 Palette
 -------
 
@@ -173,9 +183,9 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 .. data:: Resampling.BOX
     :noindex:
 
-    Each pixel of source image contributes to one pixel of the
+    Each pixel of the source image contributes to one pixel of the
     destination image with identical weights.
-    For upscaling is equivalent of :data:`Resampling.NEAREST`.
+    For upscaling, this is equivalent to :data:`Resampling.NEAREST`.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
     and :py:meth:`~PIL.Image.Image.thumbnail` methods.
 
@@ -184,7 +194,7 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 .. data:: Resampling.BILINEAR
     :noindex:
 
-    For resize calculate the output pixel value using linear interpolation
+    For resize, calculate the output pixel value using linear interpolation
     on all pixels that may contribute to the output value.
     For other transformations linear interpolation over a 2x2 environment
     in the input image is used.
@@ -202,7 +212,7 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 .. data:: Resampling.BICUBIC
     :noindex:
 
-    For resize calculate the output pixel value using cubic interpolation
+    For resize, calculate the output pixel value using cubic interpolation
     on all pixels that may contribute to the output value.
     For other transformations cubic interpolation over a 4x4 environment
     in the input image is used.
@@ -217,6 +227,27 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 
     .. versionadded:: 1.1.3
 
+.. data:: Resampling.MKS2013
+    :noindex:
+
+    Calculate the output pixel value using the Magic Kernel Sharp 2013 filter
+    (a quadratic B-spline composed with a sharpening kernel) on all pixels that
+    may contribute to the output value. This filter can only be used with the
+    :py:meth:`~PIL.Image.Image.resize` and :py:meth:`~PIL.Image.Image.thumbnail`
+    methods.
+
+    .. versionadded:: 13.0.0
+
+.. data:: Resampling.MKS2021
+    :noindex:
+
+    Calculate the output pixel value using the Magic Kernel Sharp 2021 filter
+    (a quadratic B-spline composed with a sharpening kernel) on all pixels that
+    may contribute to the output value. This filter can only be used with the
+    :py:meth:`~PIL.Image.Image.resize` and :py:meth:`~PIL.Image.Image.thumbnail`
+    methods.
+
+    .. versionadded:: 13.0.0
 
 Filters comparison table
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -236,4 +267,8 @@ Filters comparison table
 |:data:`Resampling.BICUBIC` | ⭐⭐⭐      | ⭐⭐⭐    | ⭐⭐        |
 +---------------------------+-------------+-----------+-------------+
 |:data:`Resampling.LANCZOS` | ⭐⭐⭐⭐    | ⭐⭐⭐⭐  | ⭐          |
++---------------------------+-------------+-----------+-------------+
+|:data:`Resampling.MKS2013` | ⭐⭐⭐⭐    | ⭐⭐⭐⭐  | ⭐          |
++---------------------------+-------------+-----------+-------------+
+|:data:`Resampling.MKS2021` | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐| ⭐          |
 +---------------------------+-------------+-----------+-------------+

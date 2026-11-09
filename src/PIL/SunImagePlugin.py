@@ -17,6 +17,8 @@
 #
 from __future__ import annotations
 
+__lazy_modules__ = {"PIL._binary"}
+
 from . import Image, ImageFile, ImagePalette
 from ._binary import i32be as i32
 
@@ -124,13 +126,9 @@ class SunImageFile(ImageFile.ImageFile):
         # (https://www.fileformat.info/format/sunraster/egff.htm)
 
         if file_type in (0, 1, 3, 4, 5):
-            self.tile = [
-                ImageFile._Tile("raw", (0, 0) + self.size, offset, (rawmode, stride))
-            ]
+            self.tile = [ImageFile._Tile("raw", None, offset, (rawmode, stride))]
         elif file_type == 2:
-            self.tile = [
-                ImageFile._Tile("sun_rle", (0, 0) + self.size, offset, rawmode)
-            ]
+            self.tile = [ImageFile._Tile("sun_rle", None, offset, rawmode)]
         else:
             msg = "Unsupported Sun Raster file type"
             raise SyntaxError(msg)

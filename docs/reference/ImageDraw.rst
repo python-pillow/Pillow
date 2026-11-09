@@ -47,10 +47,13 @@ Colors
 To specify colors, you can use numbers or tuples just as you would use with
 :py:meth:`PIL.Image.new`. See :ref:`colors` for more information.
 
-For palette images (mode “P”), use integers as color indexes. In 1.1.4 and
+For palette images (mode "P"), use integers as color indexes. In 1.1.4 and
 later, you can also use RGB 3-tuples or color names (see below). The drawing
 layer will automatically assign color indexes, as long as you don’t draw with
 more than 256 colors.
+
+For palette images with an alpha channel (mode "PA"), use a tuple of a color
+index and an alpha value, RGB 3-tuples, RGBA 4-tuples or color names.
 
 Color names
 ^^^^^^^^^^^
@@ -106,9 +109,9 @@ contains font metrics, the latter raster data.
 To load a bitmap font, use the load functions in the :py:mod:`~PIL.ImageFont`
 module.
 
-To load a OpenType/TrueType font, use the truetype function in the
+To load an OpenType/TrueType font, use the truetype function in the
 :py:mod:`~PIL.ImageFont` module. Note that this function depends on third-party
-libraries, and may not available in all PIL builds.
+libraries, and may not be available in all PIL builds.
 
 Example: Draw partial opacity text
 ----------------------------------
@@ -221,7 +224,7 @@ Methods
 
     :returns: An image font.
 
-.. py:method:: ImageDraw.arc(xy, start, end, fill=None, width=0)
+.. py:method:: ImageDraw.arc(xy, start, end, fill=None, width=1)
 
     Draws an arc (a portion of a circle outline) between the start and end
     angles, inside the given bounding box.
@@ -287,7 +290,7 @@ Methods
 
         .. versionadded:: 5.3.0
 
-.. py:method:: ImageDraw.line(xy, fill=None, width=0, joint=None)
+.. py:method:: ImageDraw.line(xy, fill=None, width=1, joint=None)
 
     Draws a line between the coordinates in the ``xy`` list.
     The coordinate pixels are included in the drawn line.
@@ -382,7 +385,8 @@ Methods
     :param xy: Two points to define the bounding box. Sequence of either
             ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``, where ``x1 >= x0`` and
             ``y1 >= y0``. The bounding box is inclusive of both endpoints.
-    :param radius: Radius of the corners.
+    :param radius: Radius of the corners, limited to half of the smallest dimension of
+            the bounding box.
     :param fill: Color to use for the fill.
     :param outline: Color to use for the outline.
     :param width: The line width, in pixels.
@@ -731,7 +735,7 @@ Methods
 
     :return: ``(left, top, right, bottom)`` bounding box
 
-.. py:method:: getdraw(im=None, hints=None)
+.. py:method:: getdraw(im=None)
 
     .. warning:: This method is experimental.
 
@@ -739,7 +743,6 @@ Methods
     based on the WCK interface.
 
     :param im: The image to draw in.
-    :param hints: An optional list of hints.
     :returns: A (drawing context, drawing resource factory) tuple.
 
 .. autofunction:: PIL.ImageDraw.floodfill

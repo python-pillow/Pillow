@@ -350,7 +350,7 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
 /* Cleanup                                                              */
 /* -------------------------------------------------------------------- */
 
-int
+void
 ImagingZipEncodeCleanup(ImagingCodecState state) {
     ZIPSTATE *context = (ZIPSTATE *)state->context;
 
@@ -358,8 +358,6 @@ ImagingZipEncodeCleanup(ImagingCodecState state) {
         free(context->dictionary);
         context->dictionary = NULL;
     }
-
-    return -1;
 }
 
 const char *

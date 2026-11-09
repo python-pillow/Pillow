@@ -330,8 +330,10 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         components = 4;
         color_space = OPJ_CLRSPC_SRGB;
         pack = j2k_pack_rgba;
-#if ((OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR == 5 && OPJ_VERSION_BUILD >= 3) || \
-     (OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR > 5) || OPJ_VERSION_MAJOR > 2)
+#if (                                                                               \
+    (OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR == 5 && OPJ_VERSION_BUILD >= 3) || \
+    (OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR > 5) || OPJ_VERSION_MAJOR > 2      \
+)
     } else if (im->mode == IMAGING_MODE_CMYK) {
         components = 4;
         color_space = OPJ_CLRSPC_CMYK;
@@ -635,7 +637,7 @@ ImagingJpeg2KEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) 
 /* Cleanup                                                              */
 /* -------------------------------------------------------------------- */
 
-int
+void
 ImagingJpeg2KEncodeCleanup(ImagingCodecState state) {
     JPEG2KENCODESTATE *context = (JPEG2KENCODESTATE *)state->context;
 
@@ -654,8 +656,6 @@ ImagingJpeg2KEncodeCleanup(ImagingCodecState state) {
 
     context->error_msg = NULL;
     context->comment = NULL;
-
-    return -1;
 }
 
 #endif /* HAVE_OPENJPEG */

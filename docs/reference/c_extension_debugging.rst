@@ -1,4 +1,4 @@
-C extension debugging on Linux, with GBD/Valgrind
+C extension debugging on Linux, with GDB/Valgrind
 =================================================
 
 Install the tools
@@ -11,7 +11,7 @@ distributions.
 -  ``python3-dbg`` package for the gdb extensions and python symbols
 -  ``gdb`` and ``valgrind``
 -  Potentially debug symbols for libraries. On Ubuntu you can follow those
-   instructions to install the corresponding packages: `Debug Symbol Packages <https://wiki.ubuntu.com/Debug%20Symbol%20Packages#Getting_-dbgsym.ddeb_packages>`_
+   instructions to install the corresponding packages: `Debug Symbol Packages <https://ubuntu.com/server/docs/how-to/debugging/debug-symbol-packages/#getting-dbgsym-ddeb-packages>`_
 
 Then ``sudo apt-get install libtiff5-dbgsym``
 
@@ -64,7 +64,7 @@ Take your test image, and make a really simple harness.
 -  Run this through valgrind, but note that python triggers some issues
    on its own, so you're looking for items within the Pillow hierarchy
    that don't look like they're solely in the python call chain. In this
-   example, the ones we're interested are after the warnings, and have
+   example, the ones we're interested in are after the warnings, and have
    ``decode.c`` and ``TiffDecode.c`` in the call stack:
 
 ::
@@ -457,8 +457,8 @@ Caveats
    You probably won't have the capability to do that from within the
    docker container, as the trace capacity isn't allowed by default.
 
--  Variations of this are possible on the mac/windows, but the details
-   are going to be different.
+-  Variations of this are possible on macOS/Windows, but the details are
+   going to be different.
 
 -  IIRC, Fedora has the gdb bits working by default. Ubuntu has always
    been a bit of a battle to make it work.

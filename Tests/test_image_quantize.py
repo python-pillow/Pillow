@@ -179,3 +179,14 @@ def test_small_palette() -> None:
     quantized_colors = im.getcolors()
     assert quantized_colors is not None
     assert len(quantized_colors) == 2
+
+
+def test_empty_palette() -> None:
+    im = hopper()
+
+    p = Image.new("P", (1, 1))
+    assert p.palette is not None
+    assert p.palette.palette == b""
+
+    with pytest.raises(ValueError, match="empty palette"):
+        im.quantize(palette=p)

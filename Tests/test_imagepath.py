@@ -3,11 +3,15 @@ from __future__ import annotations
 import array
 import math
 import struct
-from collections.abc import Sequence
+from decimal import Decimal
 
 import pytest
 
 from PIL import Image, ImagePath
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 def test_path() -> None:
@@ -18,8 +22,9 @@ def test_path() -> None:
     assert p[0] == (0.0, 1.0)
     assert p[-1] == (8.0, 9.0)
     assert list(p[:1]) == [(0.0, 1.0)]
+    assert list(p[-1:]) == [(8.0, 9.0)]
     with pytest.raises(TypeError) as cm:
-        p["foo"]
+        p["foo"]  # type: ignore[call-overload]
     assert str(cm.value) == "Path indices must be integers, not str"
     assert list(p) == [(0.0, 1.0), (2.0, 3.0), (4.0, 5.0), (6.0, 7.0), (8.0, 9.0)]
 
@@ -51,6 +56,7 @@ def test_path() -> None:
         [0.0, 1.0],
         ((0, 1),),
         [(0, 1)],
+        [[0, 1]],
         ((0.0, 1.0),),
         [(0.0, 1.0)],
         array.array("f", [0, 1]),
@@ -59,13 +65,61 @@ def test_path() -> None:
     ),
 )
 def test_path_constructors(
-    coords: Sequence[float] | array.array[float] | ImagePath.Path,
+    coords: Sequence[float] | array.array[float] | Image.core._Path,
 ) -> None:
     # Arrange / Act
     p = ImagePath.Path(coords)
 
     # Assert
     assert list(p) == [(0.0, 1.0)]
+
+
+@pytest.mark.parametrize(
+    "coords, expected",
+    (
+        ([[0, 1], [2, 3]], [(0.0, 1.0), (2.0, 3.0)]),
+        ([[0.0, 1.0], [2.0, 3.0]], [(0.0, 1.0), (2.0, 3.0)]),
+    ),
+)
+def test_path_list_of_lists(
+    coords: list[list[float]], expected: list[tuple[float, float]]
+) -> None:
+    p = ImagePath.Path(coords)
+    assert list(p) == expected
+
+
+def test_path_item_assignment_requires_tuple() -> None:
+    p = ImagePath.Path([(0, 1)])
+
+    with pytest.raises(TypeError, match="argument must be tuple of length 2"):
+        p[0] = [4, 5]
+    assert p[0] == (0.0, 1.0)
+
+    p[0] = (4, 5)
+    assert p[0] == (4.0, 5.0)
+
+
+def test_path_large_coordinates() -> None:
+    large_int = (1 << 30) + 1
+    assert ImagePath.Path([large_int, 0])[0] == (large_int, 0)
+
+    with pytest.raises(OverflowError):
+        ImagePath.Path([1 << 1024, 0])
+
+
+@pytest.mark.parametrize(
+    "coords, message",
+    (
+        ([[1, 2, 3]], "coordinate list must contain exactly 2 coordinates"),
+        ([[1]], "coordinate list must contain exactly 2 coordinates"),
+        ([[[1, 2], [3, 4]]], "coordinate list must contain numbers"),
+        ([["a", "b"]], "coordinate list must contain numbers"),
+        ([[Decimal("sNaN"), 0]], "[Cc]annot convert signaling NaN to float"),
+    ),
+)
+def test_invalid_list_coords(coords: list[list[object]], message: str) -> None:
+    with pytest.raises(ValueError, match=message):
+        ImagePath.Path(coords)
 
 
 def test_invalid_path_constructors() -> None:
@@ -173,16 +227,19 @@ def test_transform_with_wrap() -> None:
 
 
 def test_overflow_segfault() -> None:
-    # Some Pythons fail getting the argument as an integer, and it falls
-    # through to the sequence. Seeing this on 32-bit Windows.
-    with pytest.raises((TypeError, MemoryError)):
-        # post patch, this fails with a memory error
+    with pytest.raises((OverflowError, MemoryError)):
+        # post patch, this fails with a memory error on 64-bit
         x = Evil()
 
         # This fails due to the invalid malloc above,
         # and segfaults
         for i in range(200000):
             x[i] = b"0" * 16
+
+
+def test_compact_empty_path() -> None:
+    p = ImagePath.Path(0)
+    assert p.compact() == 0
 
 
 def test_compact_within_map() -> None:

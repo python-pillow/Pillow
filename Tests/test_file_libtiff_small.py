@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 
 from PIL import Image
 
 from .test_file_libtiff import LibTiffTestCase
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestFileLibTiffSmall(LibTiffTestCase):

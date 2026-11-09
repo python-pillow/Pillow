@@ -49,7 +49,7 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
 
     framesize = I32(ptr);
     // there can be one pad byte in the framesize
-    if (bytes + (bytes % 2) < framesize) {
+    if ((unsigned)(bytes + (bytes % 2)) < framesize) {
         return 0;
     }
 
@@ -249,7 +249,6 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
                 break; /* ignored */
             default:
                 /* unknown chunk */
-                /* printf("unknown FLI/FLC chunk: %d\n", I16(ptr+4)); */
                 state->errcode = IMAGING_CODEC_UNKNOWN;
                 return -1;
         }
@@ -259,7 +258,7 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
             state->errcode = IMAGING_CODEC_BROKEN;
             return -1;
         }
-        if (advance < 0 || advance > bytes) {
+        if (advance < 0 || advance > (unsigned)bytes) {
             state->errcode = IMAGING_CODEC_OVERRUN;
             return -1;
         }

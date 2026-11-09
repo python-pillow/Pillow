@@ -127,10 +127,17 @@ im_point_32_8(Imaging imOut, Imaging imIn, im_point_context *context) {
     }
 }
 
+/**
+ * Apply a lookup table to an image.
+ *
+ * @param imIn The input image.
+ * @param mode The output mode.
+ * @param table The lookup table. No bounds checking is done for the table;
+ *              the caller must ensure that the table is valid for the image and mode.
+ * @return A new output image, or NULL on error with a Python exception set.
+ */
 Imaging
 ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
-    /* lookup table transform */
-
     ImagingSectionCookie cookie;
     Imaging imOut;
     im_point_context context;
@@ -144,11 +151,17 @@ ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
         mode = imIn->mode;
     }
 
-    if (imIn->type != IMAGING_TYPE_UINT8) {
-        if (imIn->type != IMAGING_TYPE_INT32 || mode != IMAGING_MODE_L) {
+    if (imIn->type == IMAGING_TYPE_UINT8) {
+        if (imIn->mode != mode && !imIn->image8) {
             goto mode_mismatch;
         }
-    } else if (!imIn->image8 && imIn->mode != mode) {
+    } else if (imIn->type == IMAGING_TYPE_INT32) {
+        if (mode != IMAGING_MODE_L) {
+            // I images can only be used with L output mode
+            goto mode_mismatch;
+        }
+    } else {
+        // Reject F modes and modes based on I;16
         goto mode_mismatch;
     }
 
@@ -202,10 +215,17 @@ mode_mismatch:
     );
 }
 
+/**
+ * Transform each pixel of the image with the given scale and offset.
+ * This can be read as a "multiply and add" operation.
+ *
+ * @param imIn The input image.
+ * @param scale The scale factor.
+ * @param offset The offset.
+ * @return A new output image, or NULL on error with a Python exception set.
+ */
 Imaging
 ImagingPointTransform(Imaging imIn, double scale, double offset) {
-    /* scale/offset transform */
-
     ImagingSectionCookie cookie;
     Imaging imOut;
     int x, y;
@@ -244,7 +264,7 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
             }
             ImagingSectionLeave(&cookie);
             break;
-        case IMAGING_TYPE_SPECIAL:
+        case IMAGING_TYPE_I16:
             if (imIn->mode == IMAGING_MODE_I_16) {
                 ImagingSectionEnter(&cookie);
                 for (y = 0; y < imIn->ysize; y++) {

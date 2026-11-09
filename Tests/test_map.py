@@ -34,8 +34,6 @@ def test_tobytes(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
 def test_ysize() -> None:
-    numpy = pytest.importorskip("numpy", reason="NumPy not installed")
-
     # Should not raise 'Integer overflow in ysize'
-    arr = numpy.zeros((46341, 46341), dtype=numpy.uint8)
-    Image.fromarray(arr)
+    with pytest.raises(ValueError, match="buffer is not large enough"):
+        Image.frombuffer("L", (46341, 46341), b"")
