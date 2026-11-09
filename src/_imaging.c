@@ -4760,6 +4760,8 @@ PyImaging_BitDecoderNew(PyObject *self, PyObject *args);
 extern PyObject *
 PyImaging_FliDecoderNew(PyObject *self, PyObject *args);
 extern PyObject *
+PyImaging_FitsRiceDecoderNew(PyObject *self, PyObject *args);
+extern PyObject *
 PyImaging_GifDecoderNew(PyObject *self, PyObject *args);
 extern PyObject *
 PyImaging_HexDecoderNew(PyObject *self, PyObject *args);
@@ -4862,6 +4864,7 @@ static PyMethodDef functions[] = {
     {"bit_decoder", (PyCFunction)PyImaging_BitDecoderNew, METH_VARARGS},
     {"eps_encoder", (PyCFunction)PyImaging_EpsEncoderNew, METH_VARARGS},
     {"fli_decoder", (PyCFunction)PyImaging_FliDecoderNew, METH_VARARGS},
+    {"fits_rice_decoder", (PyCFunction)PyImaging_FitsRiceDecoderNew, METH_VARARGS},
     {"gif_decoder", (PyCFunction)PyImaging_GifDecoderNew, METH_VARARGS},
     {"gif_encoder", (PyCFunction)PyImaging_GifEncoderNew, METH_VARARGS},
     {"hex_decoder", (PyCFunction)PyImaging_HexDecoderNew, METH_VARARGS},

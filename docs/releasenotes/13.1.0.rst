@@ -50,6 +50,14 @@ TODO
 Other changes
 =============
 
+FITS RICE_1 compression
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow can now read RICE_1 compressed FITS images with 8-, 16- or 32-bit integer
+samples, including multiple tiles and partial edge tiles. Signed 16- and 32-bit
+samples are returned in mode ``I``. Floating-point quantization and application
+of ``BZERO`` or ``BSCALE`` are not supported.
+
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

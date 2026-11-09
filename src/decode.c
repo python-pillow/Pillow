@@ -36,6 +36,7 @@
 
 #include "libImaging/Bit.h"
 #include "libImaging/Bcn.h"
+#include "libImaging/FitsRice.h"
 #include "libImaging/Gif.h"
 #include "libImaging/Raw.h"
 #include "libImaging/Sgi.h"
@@ -331,6 +332,57 @@ get_unpacker(
     }
 
     return 0;
+}
+
+/* -------------------------------------------------------------------- */
+/* FITS RICE                                                            */
+/* -------------------------------------------------------------------- */
+
+PyObject *
+PyImaging_FitsRiceDecoderNew(PyObject *self, PyObject *args) {
+    char *mode_name, *rawmode_name;
+    int bytepix, blocksize;
+    Py_ssize_t length;
+    if (!PyArg_ParseTuple(
+            args, "ssiin", &mode_name, &rawmode_name, &bytepix, &blocksize, &length
+        )) {
+        return NULL;
+    }
+    const ModeID mode = findModeID(mode_name);
+    const RawModeID rawmode = findRawModeID(rawmode_name);
+    int output_bytes;
+    if (mode == IMAGING_MODE_L && rawmode == IMAGING_RAWMODE_L) {
+        output_bytes = 1;
+    } else if (mode == IMAGING_MODE_I && rawmode == IMAGING_RAWMODE_I_16BS) {
+        output_bytes = 2;
+    } else if (mode == IMAGING_MODE_I && rawmode == IMAGING_RAWMODE_I_32BS) {
+        output_bytes = 4;
+    } else {
+        PyErr_SetString(PyExc_ValueError, "unsupported FITS Rice image mode");
+        return NULL;
+    }
+    if ((bytepix != 1 && bytepix != 2 && bytepix != 4) || bytepix < output_bytes ||
+        blocksize <= 0 || length <= 0) {
+        PyErr_SetString(PyExc_ValueError, "invalid FITS Rice decoder configuration");
+        return NULL;
+    }
+    ImagingDecoderObject *decoder = PyImaging_DecoderNew(sizeof(FITSRICESTATE));
+    if (decoder == NULL) {
+        return NULL;
+    }
+    if (get_unpacker(decoder, mode, rawmode) < 0) {
+        return NULL;
+    }
+    decoder->decode = ImagingFitsRiceDecode;
+    FITSRICESTATE *context = decoder->state.context;
+    context->bytepix = bytepix;
+    context->blocksize = blocksize;
+    context->output_bytes = output_bytes;
+    context->remaining = length;
+    context->fsbits = bytepix == 1 ? 3 : bytepix == 2 ? 4 : 5;
+    context->fsmax = bytepix == 1 ? 6 : bytepix == 2 ? 14 : 25;
+    context->mask = bytepix == 4 ? UINT32_MAX : (1U << (8 * bytepix)) - 1;
+    return (PyObject *)decoder;
 }
 
 /* -------------------------------------------------------------------- */

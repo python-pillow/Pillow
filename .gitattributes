@@ -1,3 +1,4 @@
 *.eps binary
+*.fits binary
 *.ppm binary
 *.container binary
