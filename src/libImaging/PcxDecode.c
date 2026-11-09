@@ -25,8 +25,7 @@ ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
        not as packed pixels (#10186). The row size is computed in 64-bit
        arithmetic so that a very wide image cannot overflow it. */
     if (state->planes) {
-        if ((int64_t)state->planes * (((int64_t)state->xsize + 7) / 8) >
-            state->bytes) {
+        if ((int64_t)state->planes * (((int64_t)state->xsize + 7) / 8) > state->bytes) {
             state->errcode = IMAGING_CODEC_OVERRUN;
             return -1;
         }
