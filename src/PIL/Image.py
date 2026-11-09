@@ -1833,7 +1833,7 @@ class Image:
         if mask:
             mask.load()
             return self.im.histogram(None, mask.im)
-        if self.mode in ("I", "F"):
+        if self.mode in ("I", "I;16", "F"):
             return self.im.histogram(
                 extrema if extrema is not None else self.getextrema()
             )

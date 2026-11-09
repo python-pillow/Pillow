@@ -17,6 +17,7 @@ def test_histogram() -> None:
     assert histogram("LA") == (512, 0, 16384)
     assert histogram("La") == (512, 0, 16384)
     assert histogram("I") == (256, 0, 662)
+    assert histogram("I;16") == (256, 0, 662)
     assert histogram("F") == (256, 0, 662)
     assert histogram("P") == (256, 0, 1551)
     assert histogram("PA") == (512, 0, 16384)

@@ -1451,6 +1451,7 @@ _getpixel_impl(ImagingObject *self, PyObject *args) {
 
 union hist_extrema {
     UINT8 u[2];
+    UINT16 i16[2];
     INT32 i[2];
     FLOAT32 f[2];
 };
@@ -1478,6 +1479,13 @@ parse_histogram_extremap(
                 }
                 ep->u[0] = CLIP8(i0);
                 ep->u[1] = CLIP8(i1);
+                break;
+            case IMAGING_TYPE_I16:
+                if (!PyArg_ParseTuple(extremap, "ii", &i0, &i1)) {
+                    return NULL;
+                }
+                ep->i16[0] = i0;
+                ep->i16[1] = i1;
                 break;
             case IMAGING_TYPE_INT32:
                 if (!PyArg_ParseTuple(extremap, "ii", &i0, &i1)) {
