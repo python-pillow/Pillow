@@ -1517,8 +1517,12 @@ _histogram_impl(ImagingObject *self, PyObject *args) {
     }
 
     /* Using a var to avoid allocations. */
-    ep = parse_histogram_extremap(self, extremap, &extrema);
-    h = ImagingGetHistogram(self->image, (maskp) ? maskp->image : NULL, ep);
+    if (maskp) {
+        h = ImagingGetHistogram(self->image, maskp->image, NULL);
+    } else {
+        ep = parse_histogram_extremap(self, extremap, &extrema);
+        h = ImagingGetHistogram(self->image, NULL, ep);
+    }
 
     if (!h) {
         return NULL;
@@ -1571,8 +1575,12 @@ _entropy_impl(ImagingObject *self, PyObject *args) {
     }
 
     /* Using a local var to avoid allocations. */
-    ep = parse_histogram_extremap(self, extremap, &extrema);
-    h = ImagingGetHistogram(self->image, (maskp) ? maskp->image : NULL, ep);
+    if (maskp) {
+        h = ImagingGetHistogram(self->image, maskp->image, NULL);
+    } else {
+        ep = parse_histogram_extremap(self, extremap, &extrema);
+        h = ImagingGetHistogram(self->image, NULL, ep);
+    }
 
     if (!h) {
         return NULL;
