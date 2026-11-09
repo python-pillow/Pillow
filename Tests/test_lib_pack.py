@@ -876,6 +876,12 @@ class TestLibUnpack:
         with pytest.raises(ValueError, match="cannot decode image data"):
             im.frombytes(data, "pcx", rawmode, stride)
 
+    def test_pcx_packed_decoder_buffer_size(self) -> None:
+        # Packed rows use the packed row size, not the stride argument
+        im = Image.new("P", (9, 1))
+        with pytest.raises(ValueError, match="cannot decode image data"):
+            im.frombytes(b"\x94\x60\x80", "pcx", "P;2", 1)
+
     @pytest.mark.parametrize(
         "size, rawmode, data, stride",
         (

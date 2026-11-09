@@ -15,8 +15,6 @@
 
 #include "Imaging.h"
 
-#include <limits.h>
-
 int
 ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
     UINT8 n;
@@ -24,22 +22,16 @@ ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
 
     /* Check that the buffer holds one line of input. Planar raw modes
        (P;2L/P;4L) store each line as state->planes padded bit planes,
-       not as packed pixels (#10186). */
+       not as packed pixels (#10186). The row size is computed in 64-bit
+       arithmetic so that a very wide image cannot overflow it. */
     if (state->planes) {
-        if (state->xsize > INT_MAX - 7) {
-            state->errcode = IMAGING_CODEC_MEMORY;
-            return -1;
-        }
-        if (state->planes * ((state->xsize + 7) / 8) > state->bytes) {
+        if ((int64_t)state->planes * (((int64_t)state->xsize + 7) / 8) >
+            state->bytes) {
             state->errcode = IMAGING_CODEC_OVERRUN;
             return -1;
         }
     } else {
-        if (state->xsize > ((INT_MAX / state->bits) - 7)) {
-            state->errcode = IMAGING_CODEC_MEMORY;
-            return -1;
-        }
-        if ((state->bits * state->xsize + 7) / 8 > state->bytes) {
+        if (((int64_t)state->bits * state->xsize + 7) / 8 > state->bytes) {
             state->errcode = IMAGING_CODEC_OVERRUN;
             return -1;
         }
