@@ -527,6 +527,9 @@ def _normalize_mode(im: Image.Image) -> Image.Image:
         im.load()
         return im
     if Image.getmodebase(im.mode) == "RGB":
+        if im.mode not in {"RGB", "RGBA"}:
+            # Of the RGB-based modes, quantization only supports RGB and RGBA
+            im = im.convert("RGBA" if im.has_transparency_data else "RGB")
         im = im.convert("P", palette=Image.Palette.ADAPTIVE)
         assert im.palette is not None
         if im.palette.mode == "RGBA":
@@ -714,7 +717,7 @@ def _write_multiple_frames(
                             background_im = Image.new("P", im_frame.size, background)
                             first_palette = im_frames[0].im.palette
                             assert first_palette is not None
-                            background_im.putpalette(first_palette, first_palette.mode)
+                            background_im.putpalette(first_palette)
                         bbox = _getbbox(background_im, im_frame)[1]
                     else:
                         bbox = (0, 0, *im_frame.size)

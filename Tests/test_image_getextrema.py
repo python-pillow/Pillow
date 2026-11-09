@@ -11,6 +11,7 @@ def test_extrema() -> None:
 
     assert extrema("1") == (0, 255)
     assert extrema("L") == (1, 255)
+    assert extrema("LA") == ((1, 255), (255, 255))
     assert extrema("I") == (1, 255)
     assert extrema("F") == (1, 255)
     assert extrema("P") == (0, 225)  # fixed palette
@@ -18,6 +19,14 @@ def test_extrema() -> None:
     assert extrema("RGBA") == ((0, 255), (0, 255), (0, 255), (255, 255))
     assert extrema("CMYK") == ((0, 255), (0, 255), (0, 255), (0, 0))
     assert extrema("I;16") == (1, 255)
+
+
+def test_zero() -> None:
+    im = Image.new("L", (0, 0))
+    assert im.getextrema() is None
+
+    im = Image.new("RGB", (0, 0))
+    assert im.getextrema() == (None, None, None)
 
 
 def test_true_16() -> None:

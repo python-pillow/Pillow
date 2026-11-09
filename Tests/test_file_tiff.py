@@ -8,7 +8,6 @@ import pytest
 
 from PIL import (
     Image,
-    ImageFile,
     JpegImagePlugin,
     TiffImagePlugin,
     TiffTags,
@@ -274,6 +273,31 @@ class TestFileTiff:
             assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.tag_v2[X_RESOLUTION] == 123.45
             assert im.tag_v2[Y_RESOLUTION] == 123.45
+
+    def test_no_resolution(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+        hopper().save(outfile)
+        with Image.open(outfile) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            assert X_RESOLUTION not in im.tag_v2
+            assert Y_RESOLUTION not in im.tag_v2
+            assert "dpi" not in im.info
+            assert "resolution" not in im.info
+
+    def test_resolution_per_frame(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+        im = hopper()
+        im2 = im.copy()
+        im2.encoderinfo = {"dpi": (300, 300)}
+        im.save(outfile, save_all=True, append_images=[im2])
+        with Image.open(outfile) as im:
+            assert "dpi" not in im.info
+
+            im.seek(1)
+            assert im.info["dpi"] == (300, 300)
+
+            im.seek(0)
+            assert "dpi" not in im.info
 
     def test_invalid_file(self) -> None:
         invalid_file = "Tests/images/flower.jpg"
@@ -1114,8 +1138,9 @@ class TestFileTiff:
     # Ignore this UserWarning which triggers for four tags:
     # "Possibly corrupt EXIF data.  Expecting to read 50404352 bytes but..."
     @pytest.mark.filterwarnings("ignore:Possibly corrupt EXIF data")
-    # Ignore this UserWarning:
+    # Ignore these UserWarnings:
     @pytest.mark.filterwarnings("ignore:Truncated File Read")
+    @pytest.mark.filterwarnings("ignore:Tag data larger than file. Skipping tag")
     @pytest.mark.skipif(
         not os.path.exists("Tests/images/string_dimension.tiff"),
         reason="Extra image files not installed",
@@ -1129,11 +1154,10 @@ class TestFileTiff:
     @timeout_unless_slower_valgrind(6)
     @pytest.mark.filterwarnings("ignore:Corrupt EXIF data")
     @pytest.mark.filterwarnings("ignore:Tag data larger than file")
-    @pytest.mark.filterwarnings("ignore:Truncated File Read")
-    def test_timeout(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        with Image.open("Tests/images/timeout-6646305047838720") as im:
-            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
-            im.load()
+    def test_timeout(self) -> None:
+        # The first StripOffsets tag is empty, so its duplicates are ignored
+        with pytest.raises(UnidentifiedImageError):
+            Image.open("Tests/images/timeout-6646305047838720")
 
     @pytest.mark.parametrize(
         "test_file",

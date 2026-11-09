@@ -89,10 +89,6 @@ def _lut(image: Image.Image, lut: list[int], palette: bool = False) -> Image.Ima
         raise OSError(msg)
 
 
-def _new_empty(image: Image.Image, size: tuple[int, int]) -> Image.Image:
-    return image._new(Image.core.new(image.mode, size))
-
-
 #
 # actions
 
@@ -125,6 +121,13 @@ def autocontrast(
 
     :return: An image.
     """
+    if ignore is not None:
+        if isinstance(ignore, int):
+            ignore = (ignore,)
+        if not all(0 <= ix <= 255 for ix in ignore):
+            msg = "ignore must be between or equal to 0 and 255"
+            raise ValueError(msg)
+
     if preserve_tone:
         histogram = image.convert("L").histogram(mask)
     else:
@@ -135,11 +138,8 @@ def autocontrast(
         h = histogram[layer : layer + 256]
         if ignore is not None:
             # get rid of outliers
-            if isinstance(ignore, int):
-                h[ignore] = 0
-            else:
-                for ix in ignore:
-                    h[ix] = 0
+            for ix in ignore:
+                h[ix] = 0
         if cutoff:
             # cut off pixels from both ends of the histogram
             if not isinstance(cutoff, tuple):
@@ -317,10 +317,10 @@ def contain(
     """
 
     if image.height == 0:
-        return _new_empty(image, (size[0], 0))
+        return image.crop((0, 0, size[0], 0))
     im_ratio = image.width / image.height
     if size[1] == 0:
-        return _new_empty(image, (0, 0))
+        return image.crop((0, 0, 0, 0))
     dest_ratio = size[0] / size[1]
 
     if im_ratio != dest_ratio:
@@ -333,7 +333,7 @@ def contain(
             if new_width != size[0]:
                 size = (new_width, size[1])
     if min(size) == 0:
-        return _new_empty(image, size)
+        return image.crop((0, 0, *size))
     return image.resize(size, resample=method)
 
 
@@ -354,12 +354,12 @@ def cover(
     """
 
     if image.width == 0:
-        return _new_empty(image, (0, size[1]))
+        return image.crop((0, 0, 0, size[1]))
     if image.height == 0:
-        return _new_empty(image, (size[0], 0))
+        return image.crop((0, 0, size[0], 0))
     im_ratio = image.width / image.height
     if size[1] == 0:
-        return _new_empty(image, (0, 0))
+        return image.crop((0, 0, 0, 0))
     dest_ratio = size[0] / size[1]
 
     if im_ratio != dest_ratio:
@@ -382,7 +382,11 @@ def _new_with_fill(
         mode = image.palette.mode
         palette = ImagePalette.ImagePalette(mode, image.getpalette(mode))
         if isinstance(color, tuple) and len(color) in (3, 4):
-            color = palette.getcolor(color, image)
+            if image.mode == "PA":
+                alpha = color[3] if len(color) == 4 else 255
+                color = (palette.getcolor(color[:3], image), alpha)
+            else:
+                color = palette.getcolor(color, image)
     else:
         palette = None
     out = Image.new(image.mode, size, color)
@@ -475,6 +479,8 @@ def scale(
         raise ValueError(msg)
     else:
         size = (round(factor * image.width), round(factor * image.height))
+        if min(size) == 0:
+            return image.crop((0, 0, *size))
         return image.resize(size, resample)
 
 
@@ -610,7 +616,7 @@ def fit(
     # https://www.cazabon.com
 
     if min(size) == 0:
-        return _new_empty(image, size)
+        return image.crop((0, 0, *size))
     centering_x, centering_y = centering
 
     if not 0.0 <= centering_x <= 1.0:
@@ -634,7 +640,7 @@ def fit(
 
     # calculate the aspect ratio of the live_size
     if live_size[1] == 0:
-        return _new_empty(image, size)
+        return image.crop((0, 0, *size))
     live_size_ratio = live_size[0] / live_size[1]
 
     # calculate the aspect ratio of the output image
