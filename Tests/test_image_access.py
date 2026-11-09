@@ -299,8 +299,8 @@ class TestEmbeddable:
 
         # The official Windows free-threaded Python installer doesn't set
         # Py_GIL_DISABLED because its pyconfig.h is shared with the default build,
-        # so define it here, like setuptools does:
-        # https://github.com/pypa/setuptools/issues/4662
+        # so define it here, like distutils does:
+        # https://github.com/pypa/distutils/pull/310
         if sysconfig.get_config_var("Py_GIL_DISABLED"):
             compiler.define_macro("Py_GIL_DISABLED", "1")
 
