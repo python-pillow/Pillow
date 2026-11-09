@@ -97,9 +97,13 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
 
     if (imMask) {
         /* mask */
+        if (im->type != IMAGING_TYPE_UINT8) {
+            ImagingHistogramDelete(h);
+            return ImagingError_ModeError();
+        }
+        ImagingSectionEnter(&cookie);
+        MUTEX_LOCK(&im->mutex);
         if (im->image8) {
-            ImagingSectionEnter(&cookie);
-            MUTEX_LOCK(&im->mutex);
             for (int y = 0; y < ysize; y++) {
                 UINT8 *restrict in = im->image8[y];
                 UINT8 *restrict mask = imMask->image8[y];
@@ -109,15 +113,7 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                     }
                 }
             }
-            MUTEX_UNLOCK(&im->mutex);
-            ImagingSectionLeave(&cookie);
-        } else { /* yes, we need the braces. C isn't Python! */
-            if (im->type != IMAGING_TYPE_UINT8) {
-                ImagingHistogramDelete(h);
-                return ImagingError_ModeError();
-            }
-            ImagingSectionEnter(&cookie);
-            MUTEX_LOCK(&im->mutex);
+        } else {
             for (int y = 0; y < ysize; y++) {
                 UINT8 *restrict in = (UINT8 *)im->image32[y];
                 UINT8 *restrict mask = imMask->image8[y];
@@ -134,9 +130,9 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                     }
                 }
             }
-            MUTEX_UNLOCK(&im->mutex);
-            ImagingSectionLeave(&cookie);
         }
+        MUTEX_UNLOCK(&im->mutex);
+        ImagingSectionLeave(&cookie);
     } else {
         /* mask not given; process pixels in image */
         if (im->image8) {

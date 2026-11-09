@@ -53,7 +53,7 @@ def test_histogram_masked() -> None:
     assert histogram("YCbCr") == (768, 0, 1009)
 
 
-@pytest.mark.parametrize("mode", ("I", "F"))
+@pytest.mark.parametrize("mode", ("I", "I;16", "F"))
 def test_histogram_masked_unsupported_mode(mode: str) -> None:
     mask = Image.new("1", (128, 128))
     with pytest.raises(ValueError, match="image has wrong mode"):
