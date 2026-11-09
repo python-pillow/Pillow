@@ -62,7 +62,7 @@ jobs:
       id: cache-libavif
       with:
         path: ~/cache-libavif
-        key: ${{ runner.os }}-libavif-${{ hashFiles('depends/install_libavif.sh') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-libavif-${{ hashFiles('depends/install_libavif.sh') }}
 
     - name: Cache libimagequant
       uses: actions/cache@v6.1.0

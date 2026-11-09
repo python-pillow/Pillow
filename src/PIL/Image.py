@@ -1096,7 +1096,7 @@ class Image:
                 def convert_transparency(
                     m: list[float] | tuple[float, ...], v: tuple[int, int, int]
                 ) -> int:
-                    value = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3] * 0.5
+                    value = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3] + 0.5
                     return max(0, min(255, int(value)))
 
                 if mode == "L":
