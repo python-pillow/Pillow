@@ -9,7 +9,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_image_equal, hopper, is_win32
+from .helper import assert_image_equal, hopper, is_freethreaded, is_win32
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -296,6 +296,13 @@ class TestEmbeddable:
             compiler.initialize()
         except Exception:
             pytest.skip("Compiler could not be initialized")
+
+        # The official Windows free-threaded Python installer doesn't set
+        # Py_GIL_DISABLED because its pyconfig.h is shared with the default build,
+        # so define it here, like distutils does:
+        # https://github.com/pypa/distutils/pull/310
+        if is_freethreaded():
+            compiler.define_macro("Py_GIL_DISABLED", "1")
 
         with open("embed_pil.c", "w", encoding="utf-8") as fh:
             home = sys.base_prefix.replace("\\", "\\\\")
