@@ -251,7 +251,9 @@ def test_consistency_i16(size: int, mode: str) -> None:
     kernel = ImageFilter.Kernel((size, size), EMBOSS_MATRIX[size], 0.3)
     reference = hopper("I").filter(kernel)
     result = hopper(mode).filter(kernel)
-    assert_image_equal(result.convert("I"), reference)
+    # Mode "I" is signed, so it keeps the negative values that the unsigned
+    # I;16 modes clamp to zero. Converting the reference applies the same clamp.
+    assert_image_equal(result, reference.convert(mode))
 
 
 @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
