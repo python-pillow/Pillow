@@ -1451,6 +1451,7 @@ _getpixel_impl(ImagingObject *self, PyObject *args) {
 
 union hist_extrema {
     UINT8 u[2];
+    UINT16 i16[2];
     INT32 i[2];
     FLOAT32 f[2];
 };
@@ -1478,6 +1479,13 @@ parse_histogram_extremap(
                 }
                 ep->u[0] = CLIP8(i0);
                 ep->u[1] = CLIP8(i1);
+                break;
+            case IMAGING_TYPE_I16:
+                if (!PyArg_ParseTuple(extremap, "ii", &i0, &i1)) {
+                    return NULL;
+                }
+                ep->i16[0] = i0;
+                ep->i16[1] = i1;
                 break;
             case IMAGING_TYPE_INT32:
                 if (!PyArg_ParseTuple(extremap, "ii", &i0, &i1)) {
@@ -1517,8 +1525,12 @@ _histogram_impl(ImagingObject *self, PyObject *args) {
     }
 
     /* Using a var to avoid allocations. */
-    ep = parse_histogram_extremap(self, extremap, &extrema);
-    h = ImagingGetHistogram(self->image, (maskp) ? maskp->image : NULL, ep);
+    if (maskp) {
+        h = ImagingGetHistogram(self->image, maskp->image, NULL);
+    } else {
+        ep = parse_histogram_extremap(self, extremap, &extrema);
+        h = ImagingGetHistogram(self->image, NULL, ep);
+    }
 
     if (!h) {
         return NULL;
@@ -1571,8 +1583,12 @@ _entropy_impl(ImagingObject *self, PyObject *args) {
     }
 
     /* Using a local var to avoid allocations. */
-    ep = parse_histogram_extremap(self, extremap, &extrema);
-    h = ImagingGetHistogram(self->image, (maskp) ? maskp->image : NULL, ep);
+    if (maskp) {
+        h = ImagingGetHistogram(self->image, maskp->image, NULL);
+    } else {
+        ep = parse_histogram_extremap(self, extremap, &extrema);
+        h = ImagingGetHistogram(self->image, NULL, ep);
+    }
 
     if (!h) {
         return NULL;
