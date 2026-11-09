@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from PIL import Image
@@ -166,3 +168,11 @@ def test_alpha_rotate_with_fill() -> None:
     im = im.rotate(45, expand=1, fillcolor=(255, 0, 0, 255))
     corner = im.getpixel((0, 0))
     assert corner == (255, 0, 0, 255)
+
+
+def test_invalid_angle() -> None:
+    im = hopper()
+    with pytest.raises(ValueError, match="invalid angle"):
+        im.rotate(math.inf)
+    with pytest.raises(ValueError, match="invalid angle"):
+        im.rotate(math.nan)
