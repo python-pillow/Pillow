@@ -83,7 +83,7 @@ class ImageDraw:
             else:
                 msg = "mode mismatch"
                 raise ValueError(msg)
-        if mode == "P":
+        if mode in {"P", "PA"}:
             self.palette = im.palette
         else:
             self.palette = None
@@ -147,8 +147,8 @@ class ImageDraw:
             if ink is not None:
                 if isinstance(ink, str):
                     ink = ImageColor.getcolor(ink, self.mode)
-                if self.palette and isinstance(ink, tuple):
-                    ink = self.palette.getcolor(ink, self._image)
+                if self.mode in {"P", "PA"} and isinstance(ink, tuple):
+                    ink = self._image._get_palette_color(ink)
                 if isinstance(ink, tuple) and len(ink) == 4 and ink[3] == 0:
                     # Do not use transparent ink
                     result_ink = None
@@ -157,8 +157,8 @@ class ImageDraw:
             if fill is not None:
                 if isinstance(fill, str):
                     fill = ImageColor.getcolor(fill, self.mode)
-                if self.palette and isinstance(fill, tuple):
-                    fill = self.palette.getcolor(fill, self._image)
+                if self.mode in {"P", "PA"} and isinstance(fill, tuple):
+                    fill = self._image._get_palette_color(fill)
                 result_fill = self.draw.draw_ink(fill)
         return result_ink, result_fill
 

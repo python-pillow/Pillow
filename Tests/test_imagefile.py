@@ -26,10 +26,6 @@ from .helper import (
     tostring,
 )
 
-# save original block sizes
-MAXBLOCK = ImageFile.MAXBLOCK
-SAFEBLOCK = ImageFile.SAFEBLOCK
-
 
 class TestImageFile:
     def test_parser(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -52,7 +48,7 @@ class TestImageFile:
 
         assert_image_equal(*roundtrip("BMP"))
         im1, im2 = roundtrip("GIF")
-        assert_image_similar(im1.convert("P"), im2, 1)
+        assert_image_equal(im1.convert("RGB"), im2.convert("RGB"))
         with pytest.warns(DeprecationWarning, match="IM image format"):
             assert_image_equal(*roundtrip("IM"))
         assert_image_equal(*roundtrip("MSP"))
@@ -83,6 +79,24 @@ class TestImageFile:
 
         with pytest.raises(OSError):
             roundtrip("PDF")
+
+    @pytest.mark.parametrize(
+        "path",
+        (
+            "Tests/images/hopper.qoi",
+            "Tests/images/hopper.sgi",
+        ),
+    )
+    def test_parser_pulls_fd(self, path: str) -> None:
+        with open(path, "rb") as f:
+            data = f.read()
+
+        with ImageFile.Parser() as p:
+            p.feed(data)
+        assert p.image is not None
+
+        with Image.open(path) as expected:
+            assert_image_equal(p.image, expected)
 
     def test_ico(self) -> None:
         with open("Tests/images/python.ico", "rb") as f:
