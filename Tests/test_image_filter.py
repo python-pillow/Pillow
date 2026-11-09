@@ -285,7 +285,8 @@ def test_i_negative_values() -> None:
     im.putdata([-8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7])
     assert_image_equal(im.filter(kernel), im)
 
-    for value in (-(2**30), -(2**31)):
+    # Both ends of the INT32 range must saturate, rather than overflow.
+    for value in (-(2**30), -(2**31), 2**31 - 1):
         im = Image.new("I", (4, 4), value)
         assert_image_equal(im.filter(kernel), im)
 
