@@ -191,9 +191,6 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                         ImagingHistogramDelete(h);
                         return ImagingError_ValueError("min/max not given");
                     }
-                    if (!xsize || !ysize) {
-                        break;
-                    }
                     memcpy(&imin, minmax, sizeof(imin));
                     memcpy(&imax, ((char *)minmax) + sizeof(imin), sizeof(imax));
                     if (imin >= imax) {
@@ -218,9 +215,6 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                     if (!minmax) {
                         ImagingHistogramDelete(h);
                         return ImagingError_ValueError("min/max not given");
-                    }
-                    if (!xsize || !ysize) {
-                        break;
                     }
                     memcpy(&fmin, minmax, sizeof(fmin));
                     memcpy(&fmax, ((char *)minmax) + sizeof(fmin), sizeof(fmax));
