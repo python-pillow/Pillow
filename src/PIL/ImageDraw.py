@@ -587,7 +587,7 @@ class ImageDraw:
 
             def draw_text(ink: int, stroke_width: float = 0) -> None:
                 mode = self.fontmode
-                if stroke_width == 0 and (embedded_color or image_text.embedded_color):
+                if stroke_width == 0 and image_text.embedded_color:
                     mode = "RGBA"
                 x = int(line.x)
                 y = int(line.y)
