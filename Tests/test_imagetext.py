@@ -291,8 +291,10 @@ def test_wrap_grow() -> None:
 def test_wrap_grow_empty(data: str, scaling: str | tuple[str, int]) -> None:
     for text in (ImageText.Text(data), ImageText.Text(data.encode())):
         original_font = text.font
-        assert text.wrap(50, 50, scaling) is None
-        assert text.text in ("", b"")
+        original_text = text.text
+        with pytest.raises(ValueError, match="Text could not be scaled"):
+            text.wrap(50, 50, scaling)
+        assert text.text == original_text
         assert text.font is original_font
 
 
