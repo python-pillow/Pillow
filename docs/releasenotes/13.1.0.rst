@@ -25,10 +25,11 @@ TODO
 Deprecations
 ============
 
-TODO
-^^^^
+Image.putpixel 'value' lists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Passing lists to the ``value`` parameter of :py:meth:`~PIL.Image.Image.putpixel` has
+been deprecated. Use tuples instead.
 
 API changes
 ===========
@@ -104,3 +105,9 @@ Minimum C version
 
 C11 is now the minimum version of C required to compile Pillow from source.
 Pillow requires Python 3.11 or later, and CPython 3.11 and later require C11.
+
+WebP encoding errors now include a description
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When libwebp fails to encode an image, the raised :py:exc:`ValueError` now
+consistently describes the error rather than only reporting a numeric code.

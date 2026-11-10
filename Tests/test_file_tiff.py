@@ -622,6 +622,18 @@ class TestFileTiff:
             exif = im.getexif()
             check_exif(exif)
 
+    def test_exif_manual_ifd(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+        im = Image.new("L", (1, 1))
+        exif = im.getexif()
+        gps = exif.get_ifd(0x8825)
+        gps[18] = "WGS-84"
+        im.save(outfile, exif=exif)
+
+        with Image.open(outfile) as reloaded:
+            exif = reloaded.getexif()
+            assert exif.get_ifd(0x8825) == {18: "WGS-84"}
+
     def test_modify_exif(self, tmp_path: Path) -> None:
         outfile = tmp_path / "temp.tif"
         with Image.open("Tests/images/ifd_tag_type.tiff") as im:
@@ -1138,8 +1150,9 @@ class TestFileTiff:
     # Ignore this UserWarning which triggers for four tags:
     # "Possibly corrupt EXIF data.  Expecting to read 50404352 bytes but..."
     @pytest.mark.filterwarnings("ignore:Possibly corrupt EXIF data")
-    # Ignore this UserWarning:
+    # Ignore these UserWarnings:
     @pytest.mark.filterwarnings("ignore:Truncated File Read")
+    @pytest.mark.filterwarnings("ignore:Tag data larger than file. Skipping tag")
     @pytest.mark.skipif(
         not os.path.exists("Tests/images/string_dimension.tiff"),
         reason="Extra image files not installed",

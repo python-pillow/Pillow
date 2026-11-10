@@ -80,6 +80,24 @@ class TestImageFile:
         with pytest.raises(OSError):
             roundtrip("PDF")
 
+    @pytest.mark.parametrize(
+        "path",
+        (
+            "Tests/images/hopper.qoi",
+            "Tests/images/hopper.sgi",
+        ),
+    )
+    def test_parser_pulls_fd(self, path: str) -> None:
+        with open(path, "rb") as f:
+            data = f.read()
+
+        with ImageFile.Parser() as p:
+            p.feed(data)
+        assert p.image is not None
+
+        with Image.open(path) as expected:
+            assert_image_equal(p.image, expected)
+
     def test_ico(self) -> None:
         with open("Tests/images/python.ico", "rb") as f:
             data = f.read()
@@ -248,6 +266,23 @@ class TestImageFile:
         with Image.open("Tests/images/broken_data_stream.png") as im:
             monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
             im.load()
+
+    def test_mmap_partial_tile(self) -> None:
+        extents = (0, 0, 128, 64)
+
+        # This image is normally loaded through mmap
+        with Image.open("Tests/images/hopper_8bit.pgm") as im:
+            im.load()
+
+            assert im.map is not None
+
+        # But a partial tile is not
+        with Image.open("Tests/images/hopper_8bit.pgm") as im:
+            im.tile = [im.tile[0]._replace(extents=extents)]
+            im.load()
+
+            assert im.map is None
+            assert im.getbbox() == extents
 
 
 class MockPyDecoder(ImageFile.PyDecoder):

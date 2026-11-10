@@ -30,7 +30,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.12", "pypy3.11", "3.15", "3.14", "3.13", "3.12"]
+        python-version: [
+          "pypy3.12",
+          "pypy3.11",
+          "3.15t",
+          "3.15",
+          "3.14t",
+          "3.14",
+          "3.13",
+          "3.12",
+        ]
         architecture: ["x64"]
         os: ["windows-latest"]
         include:
@@ -43,19 +52,19 @@ jobs:
 
     steps:
     - name: Checkout Pillow
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
 
     - name: Checkout cached dependencies
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
         repository: python-pillow/pillow-depends
         path: winbuild\depends
 
     - name: Checkout extra test images
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
         repository: python-pillow/test-images
@@ -63,7 +72,7 @@ jobs:
 
     # sets env: pythonLocation
     - name: Set up Python
-      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      uses: actions/setup-python@v7.1.0
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
@@ -81,7 +90,7 @@ jobs:
     - name: Install CPython dependencies
       if: "!contains(matrix.python-version, 'pypy') && matrix.architecture != 'x86'"
       run: |
-        python3 -m pip install PyQt6
+        python3 -m pip install --only-binary=:all: PyQt6 || true
 
     - name: Install PyArrow dependency
       run: |
@@ -109,11 +118,11 @@ jobs:
 
     - name: Cache build
       id: build-cache
-      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      uses: actions/cache@v6.1.0
       with:
         path: winbuild\build
         key:
-          ${{ hashFiles('.github\dependencies.json') }}-${{ hashFiles('winbuild\build_prepare.py') }}-${{ hashFiles('.github\workflows\test-windows.yml') }}-${{ env.pythonLocation }}-${{ steps.install.outputs.vs }}
+          ${{ hashFiles('.github\dependencies.json') }}-${{ hashFiles('winbuild\build_prepare.py') }}-${{ hashFiles('.github\workflows\test-windows.yml') }}-${{ matrix.os }}-${{ matrix.architecture }}-${{ steps.install.outputs.vs }}
 
     - name: Prepare build
       if: steps.build-cache.outputs.cache-hit != 'true'
@@ -213,14 +222,14 @@ jobs:
       shell: bash
 
     - name: Upload errors
-      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      uses: actions/upload-artifact@v7.0.2
       if: failure()
       with:
         name: errors
         path: Tests/errors
 
     - name: Upload coverage
-      uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+      uses: codecov/codecov-action@v7.1.1
       with:
         files: ./coverage.xml
         flags: GHA_Windows
