@@ -371,27 +371,25 @@ Converting between modes
     with Image.open("hopper.ppm") as im:
         im = im.convert("L")
 
-The library supports transformations between each supported mode and the “L”
-and “RGB” modes. To convert between other modes, you may have to use an
-intermediate image (typically an “RGB” image).
+The library supports transformations between each supported mode and the "L"
+and "RGB" modes. To convert between other modes, you may have to use an
+intermediate image (typically an "RGB" image).
 
-Converting 16-bit grayscale to 8-bit
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Converting and scaling
+^^^^^^^^^^^^^^^^^^^^^^
 
-Converting an unsigned 16-bit grayscale image directly to ``L`` clips values
-above 255 rather than scaling them to the 8-bit range. If an 8-bit result is
-suitable, scale the values first. This example maps the full unsigned 16-bit
-range, 0 to 65535, to 0 to 255::
+When converting to a mode with a lower bit depth, Pillow does not automatically
+scale pixel values. For example, converting from "I;16" mode to "L" mode limits
+values to a maximum of 255. You may wish to scale values before converting::
 
-    from PIL import Image
-
-    with Image.open("grayscale16.tif") as im:
-        grayscale = im.convert("I").point(lambda value: value / 256).convert("L")
-
-The intermediate ``I`` image allows the same scaling operation for both
-little-endian and big-endian 16-bit images. The result has only 256 gray levels;
-it does not preserve the original precision or stretch the image's actual
-minimum and maximum to fill the output range.
+    >>> from PIL import Image
+    >>> im = Image.new("I;16", (1, 1), 51200)
+    >>> im_l = im.convert("L")
+    >>> im_l.getpixel((0, 0))
+    255
+    >>> im_l2 = im.point(lambda value: value / 256).convert("L")
+    >>> im_l2.getpixel((0, 0))
+    200
 
 Image enhancement
 -----------------
