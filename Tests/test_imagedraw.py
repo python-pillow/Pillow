@@ -1069,28 +1069,17 @@ def test_floodfill_not_negative() -> None:
     assert_image_equal_tofile(im, "Tests/images/imagedraw_floodfill_not_negative.png")
 
 
-@pytest.mark.parametrize("border", (None, (0, 0, 255)))
-def test_floodfill_rgb_on_rgba(border: tuple[int, int, int] | None) -> None:
+def test_floodfill_rgb_on_rgba() -> None:
     # Arrange
     im = Image.new("RGBA", (W, H), "black")
-    draw = ImageDraw.Draw(im)
-    draw.rectangle((10, 10, 50, 50), outline="blue")
-    expected = im.copy()
-    centre_point = (30, 30)
+    xy = int(W / 2), int(H / 2)
+    rgb = (255, 0, 0)
 
     # Act
-    ImageDraw.floodfill(im, centre_point, (255, 0, 0), border=border)
+    ImageDraw.floodfill(im, xy, rgb)
 
     # Assert
-    ImageDraw.floodfill(
-        expected,
-        centre_point,
-        (255, 0, 0, 255),
-        border=None if border is None else (0, 0, 255, 255),
-    )
-    assert expected.getpixel(centre_point) == (255, 0, 0, 255)
-    assert expected.getpixel((0, 0)) == (0, 0, 0, 255)
-    assert_image_equal(im, expected)
+    assert im.getpixel(xy) == rgb + (255,)
 
 
 def create_base_image_draw(

@@ -834,16 +834,19 @@ def floodfill(
         background = pixel[x, y]
     except IndexError:
         return  # seed point outside image
-    # Read the colors back as the image stores them, so that an RGB tuple
-    # on an RGBA image gains its alpha and compares equal to the pixels
-    if border is not None:
-        pixel[x, y] = border
-        border = pixel[x, y]
-    pixel[x, y] = value
-    value = pixel[x, y]
+
+    def _update_color(color: float | tuple[int, ...]) -> float | tuple[int, ...]:
+        if image.mode == "RGBA" and isinstance(color, tuple) and len(color) == 3:
+            color += (255,)
+        return color
+
+    value = _update_color(value)
     if _color_diff(value, background) <= thresh:
-        pixel[x, y] = background
         return  # seed point already has fill color
+
+    if border is not None:
+        border = _update_color(border)
+    pixel[x, y] = value
     edge = {(x, y)}
     # use a set to keep record of current and previous edge pixels
     # to reduce memory consumption
