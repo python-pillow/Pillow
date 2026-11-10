@@ -75,6 +75,21 @@ def test_get_bbox(
     assert ImageText.Text(text, font).get_bbox() == expected
 
 
+def test_use_max_line_height() -> None:
+    font = ImageFont.truetype("Tests/fonts/GreatVibes-Regular.ttf", 120)
+    text = ImageText.Text("adjust\nYellow", font)
+    text.use_max_line_height()
+
+    im = Image.new("RGB", (309, 306))
+    draw = ImageDraw.Draw(im)
+    draw.text((0, 0), text, "#ff0")
+    expected = "Tests/images/use_max_line_height.png"
+    if features.check_feature("raqm"):
+        assert_image_equal_tofile(im, expected)
+    else:
+        assert_image_similar_tofile(im, expected, 12.28)
+
+
 def test_standard_embedded_color(layout_engine: ImageFont.Layout) -> None:
     if features.check_module("freetype2"):
         font = ImageFont.truetype(FONT_PATH, 40, layout_engine=layout_engine)
