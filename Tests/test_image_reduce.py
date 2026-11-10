@@ -241,8 +241,9 @@ def assert_compare_images(
 
 
 @pytest.mark.parametrize("factor", remarkable_factors)
-def test_mode_L(factor: int | tuple[int, int]) -> None:
-    im = get_image("L")
+@pytest.mark.parametrize("mode", ("L", "La", "RGB", "RGBa", "I"))
+def test_mode(factor: int | tuple[int, int], mode: str) -> None:
+    im = get_image(mode)
     compare_reduce_with_reference(im, factor)
     compare_reduce_with_box(im, factor)
 
@@ -263,20 +264,6 @@ def test_mode_LA_opaque(factor: int | tuple[int, int]) -> None:
 
 
 @pytest.mark.parametrize("factor", remarkable_factors)
-def test_mode_La(factor: int | tuple[int, int]) -> None:
-    im = get_image("La")
-    compare_reduce_with_reference(im, factor)
-    compare_reduce_with_box(im, factor)
-
-
-@pytest.mark.parametrize("factor", remarkable_factors)
-def test_mode_RGB(factor: int | tuple[int, int]) -> None:
-    im = get_image("RGB")
-    compare_reduce_with_reference(im, factor)
-    compare_reduce_with_box(im, factor)
-
-
-@pytest.mark.parametrize("factor", remarkable_factors)
 def test_mode_RGBA(factor: int | tuple[int, int]) -> None:
     im = get_image("RGBA")
     compare_reduce_with_reference(im, factor, 0.8, 5)
@@ -287,20 +274,6 @@ def test_mode_RGBA_opaque(factor: int | tuple[int, int]) -> None:
     im = get_image("RGBA")
     # With opaque alpha, an error should be way smaller.
     im.putalpha(Image.new("L", im.size, 255))
-    compare_reduce_with_reference(im, factor)
-    compare_reduce_with_box(im, factor)
-
-
-@pytest.mark.parametrize("factor", remarkable_factors)
-def test_mode_RGBa(factor: int | tuple[int, int]) -> None:
-    im = get_image("RGBa")
-    compare_reduce_with_reference(im, factor)
-    compare_reduce_with_box(im, factor)
-
-
-@pytest.mark.parametrize("factor", remarkable_factors)
-def test_mode_I(factor: int | tuple[int, int]) -> None:
-    im = get_image("I")
     compare_reduce_with_reference(im, factor)
     compare_reduce_with_box(im, factor)
 
