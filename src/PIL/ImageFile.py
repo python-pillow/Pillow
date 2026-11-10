@@ -931,6 +931,14 @@ class PyEncoder(PyCodec):
     def pushes_fd(self) -> bool:
         return self._pushes_fd
 
+    @property
+    def optimal_bufsize(self) -> int:
+        """
+        The buffer size that would encode the whole tile in a single
+        :meth:`encode` call. If not known in advance, return 0.
+        """
+        return 0
+
     def encode(self, bufsize: int) -> tuple[int, int, bytes]:
         """
         Override to perform the encoding process.
