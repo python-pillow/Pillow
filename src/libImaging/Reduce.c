@@ -1272,16 +1272,26 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
 
 static UINT16
 _i16_get(Imaging im, int y, int x) {
-    UINT16 pixel = ((UINT16 *)im->image8[y])[x];
+    UINT8 *pixel = &im->image8[y][x * 2];
     if (
         im->mode == IMAGING_MODE_I_16B
 #ifdef WORDS_BIGENDIAN
         || im->mode == IMAGING_MODE_I_16N
 #endif
     ) {
-        pixel = (pixel >> 8) | (pixel << 8);
+        return (pixel[0] << 8) | pixel[1];
     }
-    return pixel;
+    return pixel[0] | (pixel[1] << 8);
+}
+
+static void
+_i16_set(Imaging im, int y, int x, UINT16 value) {
+    int bigendian = im->mode == IMAGING_MODE_I_16B;
+#ifdef WORDS_BIGENDIAN
+    bigendian = bigendian || im->mode == IMAGING_MODE_I_16N;
+#endif
+    im->image8[y][x * 2 + (bigendian ? 1 : 0)] = value & 0xFF;
+    im->image8[y][x * 2 + (bigendian ? 0 : 1)] = value >> 8;
 }
 
 void
@@ -1408,6 +1418,49 @@ ImagingReduceCorners_32bpc(
     int x, y, xx, yy;
 
     switch (imIn->type) {
+        case IMAGING_TYPE_I16:
+            if (box[2] % xscale) {
+                double multiplier = 1.0 / ((box[2] % xscale) * yscale);
+                for (y = 0; y < box[3] / yscale; y++) {
+                    int yy_from = box[1] + y * yscale;
+                    double ss = 0;
+                    x = box[2] / xscale;
+                    for (yy = yy_from; yy < yy_from + yscale; yy++) {
+                        for (xx = box[0] + x * xscale; xx < box[0] + box[2]; xx++) {
+                            ss += _i16_get(imIn, yy, xx);
+                        }
+                    }
+                    _i16_set(imOut, y, x, CLIP16(ROUND_UP(ss * multiplier)));
+                }
+            }
+            if (box[3] % yscale) {
+                double multiplier = 1.0 / (xscale * (box[3] % yscale));
+                y = box[3] / yscale;
+                for (x = 0; x < box[2] / xscale; x++) {
+                    int xx_from = box[0] + x * xscale;
+                    double ss = 0;
+                    for (yy = box[1] + y * yscale; yy < box[1] + box[3]; yy++) {
+                        for (xx = xx_from; xx < xx_from + xscale; xx++) {
+                            ss += _i16_get(imIn, yy, xx);
+                        }
+                    }
+                    _i16_set(imOut, y, x, CLIP16(ROUND_UP(ss * multiplier)));
+                }
+            }
+            if (box[2] % xscale && box[3] % yscale) {
+                double multiplier = 1.0 / ((box[2] % xscale) * (box[3] % yscale));
+                double ss = 0;
+                x = box[2] / xscale;
+                y = box[3] / yscale;
+                for (yy = box[1] + y * yscale; yy < box[1] + box[3]; yy++) {
+                    for (xx = box[0] + x * xscale; xx < box[0] + box[2]; xx++) {
+                        ss += _i16_get(imIn, yy, xx);
+                    }
+                }
+                _i16_set(imOut, y, x, CLIP16(ROUND_UP(ss * multiplier)));
+            }
+            break;
+
         case IMAGING_TYPE_INT32:
             if (box[2] % xscale) {
                 double multiplier = 1.0 / ((box[2] % xscale) * yscale);

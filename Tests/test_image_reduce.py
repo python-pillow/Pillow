@@ -4,7 +4,7 @@ import pytest
 
 from PIL import Image, ImageMath, ImageMode
 
-from .helper import skip_unless_feature
+from .helper import assert_image_equal, skip_unless_feature
 
 codecs = dir(Image.core)
 
@@ -127,9 +127,9 @@ def test_zero_dimension(size: tuple[int, int], expected: tuple[int, int]) -> Non
     assert im.reduce(2).size == expected
 
 
-@pytest.mark.parametrize("mode", ("P", "1", "I;16"))
+@pytest.mark.parametrize("mode", ("P", "1"))
 def test_unsupported_modes(mode: str) -> None:
-    im = Image.new("P", (10, 10))
+    im = Image.new(mode, (10, 10))
     with pytest.raises(ValueError):
         im.reduce(3)
 
@@ -316,3 +316,17 @@ def test_mode_F(factor: int | tuple[int, int]) -> None:
 def test_jpeg2k() -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         assert im.reduce(2).size == (320, 240)
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+@pytest.mark.parametrize("factor", remarkable_factors + [2**31 - 1])
+@pytest.mark.parametrize("box", (None, (1, 2, 20, 19)))
+def test_mode_I16(
+    mode: str, factor: int | tuple[int, int], box: tuple[int, int, int, int] | None
+) -> None:
+    im = Image.new("I", (23, 21))
+    im.putdata([(i * 1009) % 65536 for i in range(23 * 21)])
+    expected = im.reduce(factor, box)
+    reduced = im.convert(mode).reduce(factor, box)
+    assert reduced.mode == mode
+    assert_image_equal(reduced.convert("I"), expected)
