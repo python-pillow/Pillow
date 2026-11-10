@@ -143,6 +143,16 @@ def test_rgba_pa() -> None:
     assert_image_similar(im, expected, 9.3)
 
 
+def test_la_pa() -> None:
+    im = hopper("LA")
+    im.putalpha(hopper("L").transpose(Image.Transpose.FLIP_LEFT_RIGHT))
+
+    converted = im.convert("PA")
+    assert converted.mode == "PA"
+    assert_image_equal(converted.getchannel("A"), im.getchannel("A"))
+    assert_image_equal(converted.convert("LA"), im)
+
+
 def test_pa() -> None:
     im = hopper().convert("PA")
 
