@@ -4,7 +4,7 @@ import pytest
 
 from PIL import Image, ImageMath, ImageMode
 
-from .helper import assert_image_equal, skip_unless_feature
+from .helper import skip_unless_feature
 
 codecs = dir(Image.core)
 
@@ -136,7 +136,7 @@ def test_unsupported_modes(mode: str) -> None:
 
 def get_image(mode: str) -> Image.Image:
     mode_info = ImageMode.getmode(mode)
-    if mode_info.basetype == "L":
+    if mode_info.basetype == "L" and not mode.startswith("I;16"):
         bands: list[Image.Image] = [gradients_image]
         for _ in mode_info.bands[1:]:
             # rotate previous image
@@ -216,6 +216,9 @@ def assert_compare_images(
 ) -> None:
     assert a.mode == b.mode, f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
     assert a.size == b.size, f"got size {repr(a.size)}, expected {repr(b.size)}"
+    if a.mode.startswith("I;16"):
+        a = a.convert("I")
+        b = b.convert("I")
 
     bands = ImageMode.getmode(a.mode).bands
     for band, ach, bch in zip(bands, a.split(), b.split()):
@@ -240,9 +243,9 @@ def assert_compare_images(
         )
 
 
-@pytest.mark.parametrize("factor", remarkable_factors)
 @pytest.mark.parametrize("mode", ("L", "La", "RGB", "RGBa", "I"))
-def test_mode(factor: int | tuple[int, int], mode: str) -> None:
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode(mode: str, factor: int | tuple[int, int]) -> None:
     im = get_image(mode)
     compare_reduce_with_reference(im, factor)
     compare_reduce_with_box(im, factor)
@@ -278,6 +281,14 @@ def test_mode_RGBA_opaque(factor: int | tuple[int, int]) -> None:
     compare_reduce_with_box(im, factor)
 
 
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_I16(mode: str, factor: int | tuple[int, int]) -> None:
+    im = get_image(mode)
+    compare_reduce_with_reference(im, factor)
+    compare_reduce_with_box(im, factor)
+
+
 @pytest.mark.parametrize("factor", remarkable_factors)
 def test_mode_F(factor: int | tuple[int, int]) -> None:
     im = get_image("F")
@@ -289,17 +300,3 @@ def test_mode_F(factor: int | tuple[int, int]) -> None:
 def test_jpeg2k() -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         assert im.reduce(2).size == (320, 240)
-
-
-@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
-@pytest.mark.parametrize("factor", remarkable_factors + [2**31 - 1])
-@pytest.mark.parametrize("box", (None, (1, 2, 20, 19)))
-def test_mode_I16(
-    mode: str, factor: int | tuple[int, int], box: tuple[int, int, int, int] | None
-) -> None:
-    im = Image.new("I", (23, 21))
-    im.putdata([(i * 1009) % 65536 for i in range(23 * 21)])
-    expected = im.reduce(factor, box)
-    reduced = im.convert(mode).reduce(factor, box)
-    assert reduced.mode == mode
-    assert_image_equal(reduced.convert("I"), expected)

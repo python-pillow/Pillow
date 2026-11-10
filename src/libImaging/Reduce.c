@@ -1286,10 +1286,11 @@ _i16_get(Imaging im, int y, int x) {
 
 static void
 _i16_set(Imaging im, int y, int x, UINT16 value) {
-    int bigendian = im->mode == IMAGING_MODE_I_16B;
+    int bigendian = im->mode == IMAGING_MODE_I_16B
 #ifdef WORDS_BIGENDIAN
-    bigendian = bigendian || im->mode == IMAGING_MODE_I_16N;
+                    || im->mode == IMAGING_MODE_I_16N
 #endif
+        ;
     im->image8[y][x * 2 + (bigendian ? 1 : 0)] = value & 0xFF;
     im->image8[y][x * 2 + (bigendian ? 0 : 1)] = value >> 8;
 }
