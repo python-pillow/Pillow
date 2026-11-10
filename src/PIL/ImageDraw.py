@@ -832,7 +832,7 @@ def floodfill(
     x, y = xy
     try:
         background = pixel[x, y]
-    except (ValueError, IndexError):
+    except IndexError:
         return  # seed point outside image
     # Read the colors back as the image stores them, so that an RGB tuple
     # on an RGBA image gains its alpha and compares equal to the pixels
