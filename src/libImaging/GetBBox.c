@@ -257,23 +257,21 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             memcpy(((char *)extrema) + sizeof(fmin), &fmax, sizeof(fmax));
             break;
         case IMAGING_TYPE_I16:
-            if (im->mode == IMAGING_MODE_I_16) {
+            if (isModeI16(im->mode)) {
                 UINT16 v;
                 UINT8 *pixel = *im->image8;
+                int big = im->mode == IMAGING_MODE_I_16B;
 #ifdef WORDS_BIGENDIAN
-                v = pixel[0] + ((UINT16)pixel[1] << 8);
-#else
-                memcpy(&v, pixel, sizeof(v));
+                big = big || im->mode == IMAGING_MODE_I_16N;
 #endif
+                v = big ? ((UINT16)pixel[0] << 8) + pixel[1]
+                        : pixel[0] + ((UINT16)pixel[1] << 8);
                 imin = imax = v;
                 for (int y = 0; y < ysize; y++) {
                     for (int x = 0; x < xsize; x++) {
                         pixel = (UINT8 *)im->image[y] + x * sizeof(v);
-#ifdef WORDS_BIGENDIAN
-                        v = pixel[0] + ((UINT16)pixel[1] << 8);
-#else
-                        memcpy(&v, pixel, sizeof(v));
-#endif
+                        v = big ? ((UINT16)pixel[0] << 8) + pixel[1]
+                                : pixel[0] + ((UINT16)pixel[1] << 8);
                         if (imin > v) {
                             imin = v;
                         } else if (imax < v) {

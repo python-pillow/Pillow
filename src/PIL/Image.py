@@ -1833,7 +1833,7 @@ class Image:
         if mask:
             mask.load()
             return self.im.histogram(None, mask.im)
-        if self.mode in ("I", "I;16", "F"):
+        if self.mode in ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"):
             return self.im.histogram(
                 extrema if extrema is not None else self.getextrema()
             )
@@ -1864,7 +1864,7 @@ class Image:
         if mask:
             mask.load()
             return self.im.entropy(None, mask.im)
-        if self.mode in ("I", "I;16", "F"):
+        if self.mode in ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"):
             return self.im.entropy(
                 extrema if extrema is not None else self.getextrema()
             )

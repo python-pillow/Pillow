@@ -18,6 +18,9 @@ def test_histogram() -> None:
     assert histogram("La") == (512, 0, 16384)
     assert histogram("I") == (256, 0, 662)
     assert histogram("I;16") == (256, 0, 662)
+    assert histogram("I;16L") == (256, 0, 662)
+    assert histogram("I;16B") == (256, 0, 662)
+    assert histogram("I;16N") == (256, 0, 662)
     assert histogram("F") == (256, 0, 662)
     assert histogram("P") == (256, 0, 1551)
     assert histogram("PA") == (512, 0, 16384)
@@ -25,6 +28,19 @@ def test_histogram() -> None:
     assert histogram("RGBA") == (1024, 0, 16384)
     assert histogram("CMYK") == (1024, 0, 16384)
     assert histogram("YCbCr") == (768, 0, 1908)
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_histogram_i16(mode: str) -> None:
+    im = Image.new(mode, (2, 1))
+    im.putpixel((1, 0), 300)
+    h = im.histogram()
+    assert h[0] == h[255] == 1
+    assert sum(h) == 2
+
+    h = im.histogram(extrema=(0, 510))
+    assert h[0] == h[150] == 1
+    assert sum(h) == 2
 
 
 def test_histogram_zero_size() -> None:

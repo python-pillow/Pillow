@@ -2734,7 +2734,7 @@ _getextrema_impl(ImagingObject *self, PyObject *args) {
             case IMAGING_TYPE_FLOAT32:
                 return Py_BuildValue("dd", extrema.f[0], extrema.f[1]);
             case IMAGING_TYPE_I16:
-                if (self->image->mode == IMAGING_MODE_I_16) {
+                if (isModeI16(self->image->mode)) {
                     return Py_BuildValue("HH", extrema.s[0], extrema.s[1]);
                 }
         }
