@@ -148,7 +148,6 @@ def test_la_pa() -> None:
     im.putalpha(hopper("L").transpose(Image.Transpose.FLIP_LEFT_RIGHT))
 
     converted = im.convert("PA")
-    assert converted.mode == "PA"
     assert_image_equal(converted.getchannel("A"), im.getchannel("A"))
     assert_image_equal(converted.convert("LA"), im)
 

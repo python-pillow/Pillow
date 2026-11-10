@@ -1195,9 +1195,9 @@ topalette(
     ImagingPalette palette = inpalette;
 
     /* Map L or RGB/RGBX/RGBA/RGBa to palette image */
-    if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_RGB &&
-        imIn->mode != IMAGING_MODE_RGBX && imIn->mode != IMAGING_MODE_RGBA &&
-        imIn->mode != IMAGING_MODE_RGBa) {
+    if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_LA &&
+        imIn->mode != IMAGING_MODE_RGB && imIn->mode != IMAGING_MODE_RGBX &&
+        imIn->mode != IMAGING_MODE_RGBA && imIn->mode != IMAGING_MODE_RGBa) {
         return (Imaging)ImagingError_ValueError("conversion not supported");
     }
 
@@ -1209,7 +1209,7 @@ topalette(
         }
     } else {
         /* FIXME: make user configurable */
-        if (imIn->bands == 1) {
+        if (imIn->bands < 3) {
             palette = ImagingPaletteNew(IMAGING_MODE_RGB);
 
             palette->size = 256;
@@ -1238,16 +1238,30 @@ topalette(
     ImagingPaletteDelete(imOut->palette);
     imOut->palette = ImagingPaletteDuplicate(palette);
 
-    if (imIn->bands == 1) {
+    if (imIn->bands < 3) {
         /* grayscale image */
 
         /* Grayscale palette: copy data as is */
         ImagingSectionEnter(&cookie);
         for (y = 0; y < imIn->ysize; y++) {
             if (alpha) {
-                l2rgb((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
+                if (imIn->mode == IMAGING_MODE_LA) {
+                    la2rgb(
+                        (UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize
+                    );
+                } else {
+                    l2rgb(
+                        (UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize
+                    );
+                }
             } else {
-                memcpy(imOut->image[y], imIn->image[y], imIn->linesize);
+                if (imIn->mode == IMAGING_MODE_LA) {
+                    la2l(
+                        (UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize
+                    );
+                } else {
+                    memcpy(imOut->image[y], imIn->image[y], imIn->linesize);
+                }
             }
         }
         ImagingSectionLeave(&cookie);

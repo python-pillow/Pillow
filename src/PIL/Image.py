@@ -1117,11 +1117,6 @@ class Image:
                 p = rgb.quantize(colors)
                 return merge("PA", (p, a))
 
-        if self.mode == "LA" and mode == "PA":
-            lum, a = self.split()
-            p = lum.convert("P", dither=dither, palette=palette, colors=colors)
-            return merge("PA", (p, a))
-
         if "LAB" in (self.mode, mode):
             im = self
             if mode == "LAB":
