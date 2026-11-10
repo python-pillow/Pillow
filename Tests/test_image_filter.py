@@ -141,6 +141,33 @@ def test_rankfilter(
     assert (minimum, med, maximum) == expected
 
 
+def reference_rank(im: Image.Image, x: int, y: int, size: int, rank: int) -> int:
+    # Brute-force rank of the window around (x, y), with edge pixels repeated
+    margin = size // 2
+    data = im.tobytes()
+    window = []
+    for j in range(y - margin, y + margin + 1):
+        for i in range(x - margin, x + margin + 1):
+            row = min(max(j, 0), im.height - 1)
+            column = min(max(i, 0), im.width - 1)
+            window.append(data[row * im.width + column])
+    return sorted(window)[rank]
+
+
+@pytest.mark.parametrize("size", (1, 3, 5, 9, 25))
+def test_rankfilter_l_matches_reference(size: int) -> None:
+    im = hopper("L").crop((40, 40, 63, 57))
+
+    for rank in {0, size * size // 2, size * size - 1}:
+        result = im.filter(ImageFilter.RankFilter(size, rank))
+        expected = [
+            reference_rank(im, x, y, size, rank)
+            for y in range(im.height)
+            for x in range(im.width)
+        ]
+        assert list(result.get_flattened_data()) == expected
+
+
 @pytest.mark.parametrize(
     "filter", (ImageFilter.MinFilter, ImageFilter.MedianFilter, ImageFilter.MaxFilter)
 )

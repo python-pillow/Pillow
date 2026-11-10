@@ -50,6 +50,16 @@ TODO
 Other changes
 =============
 
+Faster rank filters for 8-bit images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageFilter.RankFilter`, and so
+:py:class:`~PIL.ImageFilter.MedianFilter`, :py:class:`~PIL.ImageFilter.MinFilter`
+and :py:class:`~PIL.ImageFilter.MaxFilter`, now update a histogram as the window
+slides across 8-bit images, instead of selecting from the whole window for every
+pixel. The time per pixel now grows with the filter size rather than its square,
+so larger filters are many times faster. The output is unchanged.
+
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
