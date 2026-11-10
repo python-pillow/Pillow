@@ -286,6 +286,18 @@ def test_wrap_grow() -> None:
 
 
 @skip_unless_feature("freetype2")
+@pytest.mark.parametrize("scaling", ("shrink", "grow"))
+def test_wrap_empty(scaling: str) -> None:
+    text = ImageText.Text("")
+    with pytest.raises(ValueError, match="Empty text cannot be scaled"):
+        text.wrap(1, 1, scaling)
+    for data in (" ", "\n"):
+        text = ImageText.Text(data)
+        with pytest.raises(ValueError, match="Blank text cannot be scaled"):
+            text.wrap(1, 1, scaling)
+
+
+@skip_unless_feature("freetype2")
 @pytest.mark.parametrize("scaling, size", (("shrink", 10), ("grow", 16)))
 def test_wrap_scaling_trailing_whitespace(scaling: str, size: int) -> None:
     text = ImageText.Text("Hello World!\n")

@@ -214,6 +214,9 @@ class Text(Generic[AnyStr]):
             if height is None:
                 msg = "'scaling' requires 'height'"
                 raise ValueError(msg)
+            if not self.text.strip():
+                msg = ("Blank" if self.text else "Empty") + " text cannot be scaled"
+                raise ValueError(msg)
 
             if isinstance(scaling, str):
                 limit = 1
