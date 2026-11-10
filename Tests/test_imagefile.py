@@ -275,7 +275,6 @@ class TestImageFile:
             im.load()
 
             assert im.map is not None
-            expected = im.crop(extents)
 
         # But a partial tile is not
         with Image.open("Tests/images/hopper_8bit.pgm") as im:
@@ -283,7 +282,7 @@ class TestImageFile:
             im.load()
 
             assert im.map is None
-            assert_image_equal(im.crop(extents), expected)
+            assert im.getbbox() == extents
 
 
 class MockPyDecoder(ImageFile.PyDecoder):
