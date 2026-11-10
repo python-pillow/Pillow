@@ -208,6 +208,7 @@ def test_wrap_height() -> None:
     assert text.text == "Text does\nnot fit"
 
 
+@skip_unless_feature("freetype2")
 def test_wrap_height_blank_line(layout_engine: ImageFont.Layout) -> None:
     font = ImageFont.truetype(FONT_PATH, 10, layout_engine=layout_engine)
     text = ImageText.Text("A\n\nB", font)
