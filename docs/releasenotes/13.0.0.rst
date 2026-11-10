@@ -212,13 +212,6 @@ such as :py:class:`pathlib.Path`, in addition to strings.
 Other changes
 =============
 
-Growing empty text
-^^^^^^^^^^^^^^^^^^
-
-:py:meth:`~PIL.ImageText.Text.wrap` now raises :py:exc:`ValueError` for empty or
-whitespace-only text with ``scaling="grow"``, without increasing the font size.
-Previously, growing without a size limit continued until FreeType raised an error.
-
 Python 3.15
 ^^^^^^^^^^^
 

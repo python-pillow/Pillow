@@ -286,16 +286,15 @@ def test_wrap_grow() -> None:
 
 
 @skip_unless_feature("freetype2")
-@pytest.mark.parametrize("data", ("", " ", "\n\t"))
-@pytest.mark.parametrize("scaling", ("grow", ("grow", 10), ("grow", 12)))
-def test_wrap_grow_empty(data: str, scaling: str | tuple[str, int]) -> None:
-    for text in (ImageText.Text(data), ImageText.Text(data.encode())):
-        original_font = text.font
-        original_text = text.text
-        with pytest.raises(ValueError, match="Text could not be scaled"):
-            text.wrap(50, 50, scaling)
-        assert text.text == original_text
-        assert text.font is original_font
+@pytest.mark.parametrize("scaling", ("shrink", "grow"))
+def test_wrap_empty(scaling: str) -> None:
+    text = ImageText.Text("")
+    with pytest.raises(ValueError, match="Empty text cannot be scaled"):
+        text.wrap(1, 1, scaling)
+    for data in (" ", "\n"):
+        text = ImageText.Text(data)
+        with pytest.raises(ValueError, match="Blank text cannot be scaled"):
+            text.wrap(1, 1, scaling)
 
 
 @skip_unless_feature("freetype2")

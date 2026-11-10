@@ -214,6 +214,9 @@ class Text(Generic[AnyStr]):
             if height is None:
                 msg = "'scaling' requires 'height'"
                 raise ValueError(msg)
+            if not self.text.strip():
+                msg = ("Blank" if self.text else "Empty") + " text cannot be scaled"
+                raise ValueError(msg)
 
             if isinstance(scaling, str):
                 limit = 1
@@ -234,7 +237,7 @@ class Text(Generic[AnyStr]):
                         wrap = _Wrap(self, width, height, font)
                     self.font = font
             else:
-                if not wrap.lines or wrap.remaining_text:
+                if wrap.remaining_text:
                     msg = "Text could not be scaled"
                     raise ValueError(msg)
 
