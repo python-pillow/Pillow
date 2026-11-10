@@ -346,6 +346,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                 args = (args, 0, 1)
             if (
                 decoder_name == "raw"
+                and extents in {None, (0, 0, *self.size)}
                 and isinstance(args, tuple)
                 and len(args) >= 3
                 and args[0] == self.mode
