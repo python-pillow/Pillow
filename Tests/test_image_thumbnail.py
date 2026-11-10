@@ -93,7 +93,9 @@ def test_float() -> None:
 def test_i16(mode: str) -> None:
     im = hopper(mode)
     im.thumbnail((32, 32))
-    assert_image_equal(im, hopper(mode).resize((32, 32)))
+    expected = hopper("I")
+    expected.thumbnail((32, 32))
+    assert_image_similar(im.convert("I"), expected, 1.1)
 
 
 def test_no_resize() -> None:
