@@ -37,6 +37,7 @@ def test_histogram_single_value(mode: str) -> None:
     assert im.histogram() == [4] + [0] * 255
     assert im.histogram(extrema=(3, 3)) == [4] + [0] * 255
     assert im.histogram(extrema=(2, 2)) == [0] * 256
+    assert im.histogram(extrema=(4, 2)) == [0] * 256
 
 
 def test_histogram_masked() -> None:
