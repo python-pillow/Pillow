@@ -832,11 +832,18 @@ def floodfill(
     x, y = xy
     try:
         background = pixel[x, y]
-        if _color_diff(value, background) <= thresh:
-            return  # seed point already has fill color
-        pixel[x, y] = value
     except (ValueError, IndexError):
         return  # seed point outside image
+    # Read the colors back as the image stores them, so that an RGB tuple
+    # on an RGBA image gains its alpha and compares equal to the pixels
+    if border is not None:
+        pixel[x, y] = border
+        border = pixel[x, y]
+    pixel[x, y] = value
+    value = pixel[x, y]
+    if _color_diff(value, background) <= thresh:
+        pixel[x, y] = background
+        return  # seed point already has fill color
     edge = {(x, y)}
     # use a set to keep record of current and previous edge pixels
     # to reduce memory consumption
