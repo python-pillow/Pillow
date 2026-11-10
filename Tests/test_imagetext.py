@@ -286,6 +286,17 @@ def test_wrap_grow() -> None:
 
 
 @skip_unless_feature("freetype2")
+@pytest.mark.parametrize("data", ("", " ", "\n\t"))
+@pytest.mark.parametrize("scaling", ("grow", ("grow", 10), ("grow", 12)))
+def test_wrap_grow_empty(data: str, scaling: str | tuple[str, int]) -> None:
+    for text in (ImageText.Text(data), ImageText.Text(data.encode())):
+        original_font = text.font
+        assert text.wrap(50, 50, scaling) is None
+        assert text.text in ("", b"")
+        assert text.font is original_font
+
+
+@skip_unless_feature("freetype2")
 @pytest.mark.parametrize("scaling, size", (("shrink", 10), ("grow", 16)))
 def test_wrap_scaling_trailing_whitespace(scaling: str, size: int) -> None:
     text = ImageText.Text("Hello World!\n")

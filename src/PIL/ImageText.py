@@ -233,7 +233,7 @@ class Text(Generic[AnyStr]):
                         font = self.font.font_variant(size=size)
                         wrap = _Wrap(self, width, height, font)
                     self.font = font
-            else:
+            elif wrap.lines or wrap.remaining_text:
                 if wrap.remaining_text:
                     msg = "Text could not be scaled"
                     raise ValueError(msg)

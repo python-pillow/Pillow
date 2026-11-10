@@ -212,6 +212,13 @@ such as :py:class:`pathlib.Path`, in addition to strings.
 Other changes
 =============
 
+Growing empty text
+^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageText.Text.wrap` now handles empty and whitespace-only text with
+``scaling="grow"`` without changing the font. Previously, it kept increasing the
+font size until an error occurred, or raised an error at a configured size limit.
+
 Python 3.15
 ^^^^^^^^^^^
 
