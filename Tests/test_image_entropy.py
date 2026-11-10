@@ -14,6 +14,7 @@ def test_entropy() -> None:
     assert entropy("1") == pytest.approx(0.9138803254693582)
     assert entropy("L") == pytest.approx(7.063008716585465)
     assert entropy("I") == pytest.approx(7.063008716585465)
+    assert entropy("I;16") == pytest.approx(7.063008716585465)
     assert entropy("F") == pytest.approx(7.063008716585465)
     assert entropy("P") == pytest.approx(5.082506854662517)
     assert entropy("RGB") == pytest.approx(8.821286587714319)

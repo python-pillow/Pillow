@@ -1864,7 +1864,7 @@ class Image:
         if mask:
             mask.load()
             return self.im.entropy(None, mask.im)
-        if self.mode in ("I", "F"):
+        if self.mode in ("I", "I;16", "F"):
             return self.im.entropy(
                 extrema if extrema is not None else self.getextrema()
             )
