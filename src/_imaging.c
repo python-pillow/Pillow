@@ -1311,7 +1311,6 @@ _gaussian_blur(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _getpalette_impl(ImagingObject *self, PyObject *args) {
-    PyObject *palette;
     int palettesize;
     int bits;
     ImagingShuffler pack;
@@ -1336,16 +1335,14 @@ _getpalette_impl(ImagingObject *self, PyObject *args) {
     }
 
     palettesize = self->image->palette->size;
-    palette = PyBytes_FromStringAndSize(NULL, palettesize * bits / 8);
-    if (!palette) {
+    PyBytesWriter *writer = PyBytesWriter_Create(palettesize * bits / 8);
+    if (writer == NULL) {
         return NULL;
     }
 
-    pack(
-        (UINT8 *)PyBytes_AsString(palette), self->image->palette->palette, palettesize
-    );
+    pack(PyBytesWriter_GetData(writer), self->image->palette->palette, palettesize);
 
-    return palette;
+    return PyBytesWriter_Finish(writer);
 }
 static PyObject *
 _getpalette(ImagingObject *self, PyObject *args) {
