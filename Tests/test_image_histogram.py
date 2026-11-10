@@ -31,6 +31,14 @@ def test_histogram_zero_size() -> None:
     assert Image.new("I", (0, 0)).histogram() == [0] * 256
 
 
+@pytest.mark.parametrize("mode", ("I", "I;16", "F"))
+def test_histogram_single_value(mode: str) -> None:
+    im = Image.new(mode, (2, 2), 3)
+    assert im.histogram() == [4] + [0] * 255
+    assert im.histogram(extrema=(3, 3)) == [4] + [0] * 255
+    assert im.histogram(extrema=(2, 2)) == [0] * 256
+
+
 def test_histogram_masked() -> None:
     mask = Image.new("1", (128, 128), 0)
     crop_box = (0, 0, 128, 64)

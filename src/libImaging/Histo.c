@@ -144,12 +144,13 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                 UINT16 i16min, i16max;
                 memcpy(&i16min, minmax, sizeof(i16min));
                 memcpy(&i16max, ((char *)minmax) + sizeof(i16min), sizeof(i16max));
-                if (i16min >= i16max) {
+                if (i16min > i16max) {
                     return h;
                 }
                 ImagingSectionEnter(&cookie);
                 MUTEX_LOCK(&im->mutex);
-                scale = 255.0F / (i16max - i16min);
+                /* if min and max are equal, those pixels all go in the first bin */
+                scale = i16min == i16max ? 0 : 255.0F / (i16max - i16min);
                 for (int y = 0; y < ysize; y++) {
                     UINT16 *restrict in = (UINT16 *)im->image8[y];
                     for (int x = 0; x < xsize; x++) {
@@ -157,6 +158,9 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
 #ifdef WORDS_BIGENDIAN
                         pixel = (pixel >> 8) | (pixel << 8);
 #endif
+                        if (i16min == i16max && pixel != i16min) {
+                            continue;
+                        }
                         int i = (pixel - i16min) * scale;
                         if (i >= 0 && i < 256) {
                             histogram[i]++;
@@ -222,16 +226,20 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                     INT32 imin, imax;
                     memcpy(&imin, minmax, sizeof(imin));
                     memcpy(&imax, ((char *)minmax) + sizeof(imin), sizeof(imax));
-                    if (imin >= imax) {
+                    if (imin > imax) {
                         break;
                     }
                     ImagingSectionEnter(&cookie);
                     MUTEX_LOCK(&im->mutex);
-                    scale = 255.0F / (imax - imin);
+                    /* if min and max are equal, those pixels all go in the first bin */
+                    scale = imin == imax ? 0 : 255.0F / (imax - imin);
                     for (int y = 0; y < ysize; y++) {
                         INT32 *restrict in = im->image32[y];
-                        for (int x = 0; x < xsize; x++) {
-                            int i = (int)(((*in++) - imin) * scale);
+                        for (int x = 0; x < xsize; x++, in++) {
+                            if (imin == imax && *in != imin) {
+                                continue;
+                            }
+                            int i = (int)((*in - imin) * scale);
                             if (i >= 0 && i < 256) {
                                 histogram[i]++;
                             }
@@ -249,16 +257,20 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                     FLOAT32 fmin, fmax;
                     memcpy(&fmin, minmax, sizeof(fmin));
                     memcpy(&fmax, ((char *)minmax) + sizeof(fmin), sizeof(fmax));
-                    if (fmin >= fmax) {
+                    if (fmin > fmax) {
                         break;
                     }
                     ImagingSectionEnter(&cookie);
                     MUTEX_LOCK(&im->mutex);
-                    scale = 255.0F / (fmax - fmin);
+                    /* if min and max are equal, those pixels all go in the first bin */
+                    scale = fmin == fmax ? 0 : 255.0F / (fmax - fmin);
                     for (int y = 0; y < ysize; y++) {
                         FLOAT32 *restrict in = (FLOAT32 *)im->image32[y];
-                        for (int x = 0; x < xsize; x++) {
-                            int i = (int)(((*in++) - fmin) * scale);
+                        for (int x = 0; x < xsize; x++, in++) {
+                            if (fmin == fmax && *in != fmin) {
+                                continue;
+                            }
+                            int i = (int)((*in - fmin) * scale);
                             if (i >= 0 && i < 256) {
                                 histogram[i]++;
                             }
