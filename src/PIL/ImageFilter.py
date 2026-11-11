@@ -52,7 +52,7 @@ class BuiltinFilter(MultibandFilter):
     filterargs: _FilterArgs
 
     def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
-        if image.mode in ("P", "PA"):
+        if image.mode in {"P", "PA"}:
             msg = "cannot filter palette images"
             raise ValueError(msg)
         return image.filter(*self.filterargs)
