@@ -158,14 +158,14 @@ ImagingRankFilter(Imaging im, int size, int rank) {
     } while (0)
 
     if (im->type == IMAGING_TYPE_I16) {
-        int bigendian = isImageI16BigEndian(im);
         // Compare in native byte order
+        if (
 #ifdef WORDS_BIGENDIAN
-        int swap = !bigendian;
+            im->mode == IMAGING_MODE_I_16 || im->mode == IMAGING_MODE_I_16L
 #else
-        int swap = bigendian;
+            im->mode == IMAGING_MODE_I_16B
 #endif
-        if (swap) {
+        ) {
             RANK_DISPATCH(UINT16, RANK_BSWAP16);
         } else {
             RANK_DISPATCH(UINT16, RANK_IDENTITY);
