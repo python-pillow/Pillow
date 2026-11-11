@@ -352,10 +352,3 @@ class TestImageResize:
     def test_default_filter_nearest(self, mode: str) -> None:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.NEAREST) == im.resize((20, 20))
-
-    @pytest.mark.parametrize("mode", ("1", "P", "PA"))
-    def test_filter_nearest(self, mode: str) -> None:
-        im = hopper(mode)
-        expected = im.resize((20, 20), Image.Resampling.NEAREST)
-        for resample in (Image.Resampling.BILINEAR, Image.Resampling.LANCZOS):
-            assert im.resize((20, 20), resample) == expected

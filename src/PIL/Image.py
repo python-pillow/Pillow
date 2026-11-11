@@ -2447,10 +2447,10 @@ class Image:
         if self.size == size and box == (0, 0, *self.size):
             return self.copy()
 
-        if self.mode in ("1", "P", "PA"):
+        if self.mode in {"1", "P", "PA"}:
             resample = Resampling.NEAREST
 
-        if self.mode in ["LA", "RGBA"] and resample != Resampling.NEAREST:
+        if self.mode in {"LA", "RGBA"} and resample != Resampling.NEAREST:
             im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
             im = im.resize(size, resample, box, reducing_gap)
             return im.convert(self.mode)
@@ -3165,7 +3165,7 @@ class Image:
 
         self.load()
 
-        if image.mode in ("1", "P", "PA"):
+        if image.mode in {"1", "P", "PA"}:
             resample = Resampling.NEAREST
 
         self.im.transform(box, image.im, method, data, resample, fill)
