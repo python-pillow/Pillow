@@ -17,53 +17,45 @@
 /* Fast rank algorithm (due to Wirth), based on public domain code
    by Nicolas Devillard, available at http://ndevilla.free.fr */
 
-#define RANK_INNER_BODY(type)  \
-    int i, j, l, m;            \
-    type x;                    \
-    l = 0;                     \
-    m = n - 1;                 \
-    while (l < m) {            \
-        x = a[k];              \
-        i = l;                 \
-        j = m;                 \
-        do {                   \
-            while (a[i] < x) { \
-                i++;           \
-            }                  \
-            while (x < a[j]) { \
-                j--;           \
-            }                  \
-            if (i <= j) {      \
-                type t = a[i]; \
-                a[i] = a[j];   \
-                a[j] = t;      \
-                i++;           \
-                j--;           \
-            }                  \
-        } while (i <= j);      \
-        if (j < k) {           \
-            l = i;             \
-        }                      \
-        if (k < i) {           \
-            m = j;             \
-        }                      \
-    }                          \
-    return a[k]
+#define RANK_INNER_BODY(type, a, n, k) \
+    int i, j, l, m;                    \
+    type t;                            \
+    l = 0;                             \
+    m = n - 1;                         \
+    while (l < m) {                    \
+        t = a[k];                      \
+        i = l;                         \
+        j = m;                         \
+        do {                           \
+            while (a[i] < t) {         \
+                i++;                   \
+            }                          \
+            while (t < a[j]) {         \
+                j--;                   \
+            }                          \
+            if (i <= j) {              \
+                type t2 = a[i];        \
+                a[i] = a[j];           \
+                a[j] = t2;             \
+                i++;                   \
+                j--;                   \
+            }                          \
+        } while (i <= j);              \
+        if (j < k) {                   \
+            l = i;                     \
+        }                              \
+        if (k < i) {                   \
+            m = j;                     \
+        }                              \
+    }
 
-static UINT8
-RankUINT8(UINT8 a[], int n, int k) {
-    RANK_INNER_BODY(UINT8);
-}
-
-static INT32
-RankINT32(INT32 a[], int n, int k) {
-    RANK_INNER_BODY(INT32);
-}
-
-static FLOAT32
-RankFLOAT32(FLOAT32 a[], int n, int k) {
-    RANK_INNER_BODY(FLOAT32);
-}
+// For RANK_BODY,
+// `load` converts a stored value to one that compares correctly
+// in the native byte order, and `store` converts it back.
+// They are `RANK_IDENTITY` except when dealing with 16bpc images
+// that are not in native byte order.
+#define RANK_IDENTITY(v) (v)
+#define RANK_BSWAP16(v) ((UINT16)(((v) >> 8) | ((v) << 8)))
 
 Imaging
 ImagingRankFilter(Imaging im, int size, int rank) {
@@ -71,7 +63,7 @@ ImagingRankFilter(Imaging im, int size, int rank) {
     ImagingSectionCookie cookie;
     int margin, size2;
 
-    if (!im || im->bands != 1 || im->type == IMAGING_TYPE_I16) {
+    if (!im || im->bands != 1) {
         return (Imaging)ImagingError_ModeError();
     }
 
@@ -100,7 +92,7 @@ ImagingRankFilter(Imaging im, int size, int rank) {
 
     /* malloc check ok, checked above */
     // restrict safe: buf is a private allocation, imOut is a fresh allocation.
-#define RANK_BODY(type)                                                   \
+#define RANK_BODY(type, load, store)                                      \
     do {                                                                  \
         type *restrict buf = malloc(size2 * sizeof(type));                \
         if (!buf) {                                                       \
@@ -111,25 +103,39 @@ ImagingRankFilter(Imaging im, int size, int rank) {
             type *restrict out = (type *)imOut->image[y];                 \
             for (int x = 0; x < xsize; x++) {                             \
                 type *restrict p = buf;                                   \
-                for (int i = 0; i < size; i++) {                          \
-                    const type *row = (const type *)im->image[y + i] + x; \
-                    for (int k = 0; k < size; k++) {                      \
-                        *p++ = row[k];                                    \
+                for (int s = 0; s < size; s++) {                          \
+                    const type *row = (const type *)im->image[y + s] + x; \
+                    for (int s2 = 0; s2 < size; s2++) {                   \
+                        *p++ = load(row[s2]);                             \
                     }                                                     \
                 }                                                         \
-                out[x] = Rank##type(buf, size2, rank);                    \
+                RANK_INNER_BODY(type, buf, size2, rank);                  \
+                out[x] = store(buf[rank]);                                \
             }                                                             \
         }                                                                 \
         ImagingSectionLeave(&cookie);                                     \
         free(buf);                                                        \
     } while (0)
 
-    if (im->image8) {
-        RANK_BODY(UINT8);
+    if (im->type == IMAGING_TYPE_I16) {
+        int bigendian = isImageI16BigEndian(im);
+        // Compare in native byte order
+#ifdef WORDS_BIGENDIAN
+        int swap = !bigendian;
+#else
+        int swap = bigendian;
+#endif
+        if (swap) {
+            RANK_BODY(UINT16, RANK_BSWAP16, RANK_BSWAP16);
+        } else {
+            RANK_BODY(UINT16, RANK_IDENTITY, RANK_IDENTITY);
+        }
+    } else if (im->image8) {
+        RANK_BODY(UINT8, RANK_IDENTITY, RANK_IDENTITY);
     } else if (im->type == IMAGING_TYPE_INT32) {
-        RANK_BODY(INT32);
+        RANK_BODY(INT32, RANK_IDENTITY, RANK_IDENTITY);
     } else if (im->type == IMAGING_TYPE_FLOAT32) {
-        RANK_BODY(FLOAT32);
+        RANK_BODY(FLOAT32, RANK_IDENTITY, RANK_IDENTITY);
     } else {
         /* safety net (we shouldn't end up here) */
         ImagingDelete(imOut);
