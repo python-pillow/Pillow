@@ -41,6 +41,19 @@ def test_sanity() -> None:
         im.point(lambda x: x // 2)
 
 
+@pytest.mark.parametrize("mode", ("LA", "RGBA", "CMYK"))
+def test_multiband(mode: str) -> None:
+    im = hopper(mode)
+    single_band_lut = [(x + 1) % 256 for x in range(256)]
+    lut = single_band_lut * Image.getmodebands(mode)
+    out = im.point(lut)
+
+    expected = Image.merge(
+        mode, tuple(band.point(single_band_lut) for band in im.split())
+    )
+    assert_image_equal(out, expected)
+
+
 def test_16bit_lut() -> None:
     """Tests for 16 bit -> 8 bit lut for converting I->L images
     see https://github.com/python-pillow/Pillow/issues/440
