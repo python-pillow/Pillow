@@ -216,6 +216,18 @@ def test_builtinfilter_p() -> None:
         builtin_filter.filter(hopper("P").im)
 
 
+@pytest.mark.parametrize(
+    "filter_to_apply",
+    (ImageFilter.BLUR, ImageFilter.Kernel((3, 3), (0, 0, 0, 0, 1, 0, 0, 0, 0))),
+)
+@pytest.mark.parametrize("mode", ("P", "PA"))
+def test_builtinfilter_palette(
+    filter_to_apply: ImageFilter.BuiltinFilter, mode: str
+) -> None:
+    with pytest.raises(ValueError, match="cannot filter palette images"):
+        hopper(mode).filter(filter_to_apply)
+
+
 def test_kernel_not_enough_coefficients() -> None:
     with pytest.raises(ValueError):
         ImageFilter.Kernel((3, 3), (0, 0))
