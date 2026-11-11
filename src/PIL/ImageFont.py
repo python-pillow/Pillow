@@ -66,6 +66,17 @@ class Layout(IntEnum):
 
 MAX_STRING_LENGTH = 1_000_000
 
+# From raqm.c's _raqm_is_paragraph_separator()
+_separators = (
+    "\r\n",  # Windows
+    "\n",  # 0x000A
+    "\r",  # 0x000D
+    "\u001c",
+    "\u001d",
+    "\u001e",
+    "\u0085",
+    "\u2029",
+)
 
 core: ModuleType | DeferredError
 try:
@@ -325,6 +336,13 @@ class FreeTypeFont(BaseImageFont):
         """
         return self.font.ascent, self.font.descent
 
+    def _has_separator(self, text: str | bytes | bytearray) -> bool:
+        if self.layout_engine != Layout.RAQM:
+            return False
+        if isinstance(text, str):
+            return any(separator in text for separator in _separators)
+        return any(separator.encode() in text for separator in _separators)
+
     def getlength(
         self,
         text: str | bytes,
@@ -370,7 +388,7 @@ class FreeTypeFont(BaseImageFont):
 
         .. versionadded:: 8.0.0
 
-        :param text: Text to measure.
+        :param text: Text to measure. Newlines raise an error with Raqm layout.
         :param mode: Used by some graphics drivers to indicate what mode the
                      driver prefers; if empty, the renderer may return either
                      mode. Note that the mode is always a string, to simplify
@@ -402,6 +420,9 @@ class FreeTypeFont(BaseImageFont):
         :return: Either width for horizontal text, or height for vertical text.
         """
         _string_length_check(text)
+        if self._has_separator(text):
+            msg = "can't measure length of multiline text with Raqm"
+            raise ValueError(msg)
         return self.font.getlength(text, mode, direction, features, language) / 64
 
     def getbbox(
@@ -424,7 +445,8 @@ class FreeTypeFont(BaseImageFont):
 
         .. versionadded:: 8.0.0
 
-        :param text: Text to render.
+        :param text: Text to render. Newlines will not cause a line break with
+                     Basic layout, and will raise an error with Raqm layout.
         :param mode: Used by some graphics drivers to indicate what mode the
                      driver prefers; if empty, the renderer may return either
                      mode. Note that the mode is always a string, to simplify
@@ -463,6 +485,9 @@ class FreeTypeFont(BaseImageFont):
         :return: ``(left, top, right, bottom)`` bounding box
         """
         _string_length_check(text)
+        if self._has_separator(text):
+            msg = "can't measure bounding box of multiline text with Raqm"
+            raise ValueError(msg)
         size, offset = self.font.getsize(
             text, mode, direction, features, language, anchor
         )
