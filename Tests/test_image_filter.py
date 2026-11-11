@@ -298,7 +298,7 @@ def test_blur_i16(
 
 @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
 def test_unsharp_mask_i16(mode: str) -> None:
-    with pytest.raises(ValueError, match="image has wrong mode"):
+    with pytest.raises(ValueError, match="only 8-bit images supported"):
         hopper(mode).filter(ImageFilter.UnsharpMask)
 
 

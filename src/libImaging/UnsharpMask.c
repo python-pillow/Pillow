@@ -36,7 +36,7 @@ ImagingUnsharpMask(
     UINT8 *lineOut8 = NULL;
 
     if (imIn->type != IMAGING_TYPE_UINT8) {
-        return ImagingError_ModeError();
+        return ImagingError_NotSupportedError("only 8-bit images supported");
     }
 
     /* First, do a gaussian blur on the image, putting results in imOut

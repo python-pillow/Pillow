@@ -29,7 +29,7 @@ ImagingNegative(Imaging im) {
     int x, y;
 
     if (!im) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ValueError(NULL);
     }
 
     imOut = ImagingNewDirty(im->mode, im->xsize, im->ysize);
