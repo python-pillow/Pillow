@@ -2060,7 +2060,7 @@ class Image:
 
         if callable(lut):
             # if it isn't a list, it should be a function
-            if self.mode in ("I", "I;16", "F"):
+            if self.mode in ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"):
                 # check if the function can be used with point_transform
                 # UNDONE wiredfool -- I think this prevents us from ever doing
                 # a gamma function point transform on > 8bit images.

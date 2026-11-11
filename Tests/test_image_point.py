@@ -54,6 +54,12 @@ def test_multiband(mode: str) -> None:
     assert_image_equal(out, expected)
 
 
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_16bit(mode: str) -> None:
+    im = Image.new(mode, (1, 1), 0x1234)
+    im.point(lambda x: x).getpixel((0, 0)) == 0x1234
+
+
 def test_16bit_lut() -> None:
     """Tests for 16 bit -> 8 bit lut for converting I->L images
     see https://github.com/python-pillow/Pillow/issues/440

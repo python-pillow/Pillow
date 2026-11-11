@@ -256,7 +256,7 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
     ImagingSectionCookie cookie;
     Imaging imOut;
 
-    if (!imIn || (imIn->mode != IMAGING_MODE_I && imIn->mode != IMAGING_MODE_I_16 &&
+    if (!imIn || (imIn->mode != IMAGING_MODE_I && imIn->type != IMAGING_TYPE_I16 &&
                   imIn->mode != IMAGING_MODE_F)) {
         return (Imaging)ImagingError_ModeError();
     }
@@ -293,23 +293,25 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
             ImagingSectionLeave(&cookie);
             break;
         case IMAGING_TYPE_I16:
-            if (imIn->mode == IMAGING_MODE_I_16) {
-                ImagingSectionEnter(&cookie);
-                for (int y = 0; y < ysize; y++) {
-                    char *restrict in = imIn->image[y];
-                    char *restrict out = imOut->image[y];
-                    /* FIXME: add clipping? */
-                    for (int x = 0; x < xsize; x++) {
-                        UINT16 v;
-                        memcpy(&v, in + x * sizeof(v), sizeof(v));
-                        v = v * scale + offset;
-                        memcpy(out + x * sizeof(UINT16), &v, sizeof(v));
-                    }
+            ImagingSectionEnter(&cookie);
+            UINT16 v;
+            UINT8 *pixel;
+            int bigendian = isImageI16BigEndian(imIn);
+            for (int y = 0; y < imIn->ysize; y++) {
+                UINT8 *restrict in = imIn->image8[y];
+                UINT8 *restrict out = imOut->image8[y];
+                /* FIXME: add clipping? */
+                for (int x = 0; x < imIn->xsize; x++) {
+                    pixel = in + x * 2;
+                    v = bigendian ? ((UINT16)pixel[0] << 8) + pixel[1]
+                                  : pixel[0] + ((UINT16)pixel[1] << 8);
+                    v = v * scale + offset;
+                    out[x * 2 + (bigendian ? 1 : 0)] = v;
+                    out[x * 2 + (bigendian ? 0 : 1)] = v >> 8;
                 }
-                ImagingSectionLeave(&cookie);
-                break;
             }
-            /* FALL THROUGH */
+            ImagingSectionLeave(&cookie);
+            break;
         default:
             ImagingDelete(imOut);
             return (Imaging)ImagingError_ValueError("internal error");
