@@ -56,31 +56,31 @@
 #define RANK_BSWAP16(v) ((UINT16)(((v) >> 8) | ((v) << 8)))
 
 // For both MINMAX_BODY and RANK_BODY,
-// `load` converts a stored value to one that compares correctly
-// in the native byte order, and `store` converts it back.
+// `pixel` converts a stored value to one that compares correctly
+// in the native byte order, and converts it back.
 // They are `RANK_IDENTITY` except when dealing with 16bpc images
 // that are not in native byte order.
 
-#define MINMAX_BODY(type, op, load, store)                        \
+#define MINMAX_BODY(type, op, pixel)                              \
     do {                                                          \
         ImagingSectionEnter(&cookie);                             \
         for (int y = 0; y < ysize; y++) {                         \
             type *out = (type *)imOut->image[y];                  \
             const type *in0 = (const type *)im->image[y];         \
             for (int x = 0; x < xsize; x++) {                     \
-                out[x] = load(in0[x]);                            \
+                out[x] = pixel(in0[x]);                           \
             }                                                     \
             for (int i = 0; i < size; i++) {                      \
                 const type *row = (const type *)im->image[y + i]; \
                 for (int k = (i == 0); k < size; k++) {           \
                     const type *in = row + k;                     \
                     for (int x = 0; x < xsize; x++) {             \
-                        out[x] = op(out[x], load(in[x]));         \
+                        out[x] = op(out[x], pixel(in[x]));        \
                     }                                             \
                 }                                                 \
             }                                                     \
             for (int x = 0; x < xsize; x++) {                     \
-                out[x] = store(out[x]);                           \
+                out[x] = pixel(out[x]);                           \
             }                                                     \
         }                                                         \
         ImagingSectionLeave(&cookie);                             \
@@ -121,7 +121,7 @@ ImagingRankFilter(Imaging im, int size, int rank) {
 
     /* malloc check ok, checked above */
     // restrict safe: buf is a private allocation, imOut is a fresh allocation.
-#define RANK_BODY(type, load, store)                                      \
+#define RANK_BODY(type, pixel)                                            \
     do {                                                                  \
         type *restrict buf = malloc(size2 * sizeof(type));                \
         if (!buf) {                                                       \
@@ -135,26 +135,26 @@ ImagingRankFilter(Imaging im, int size, int rank) {
                 for (int s = 0; s < size; s++) {                          \
                     const type *row = (const type *)im->image[y + s] + x; \
                     for (int s2 = 0; s2 < size; s2++) {                   \
-                        *p++ = load(row[s2]);                             \
+                        *p++ = pixel(row[s2]);                            \
                     }                                                     \
                 }                                                         \
                 RANK_INNER_BODY(type, buf, size2, rank);                  \
-                out[x] = store(buf[rank]);                                \
+                out[x] = pixel(buf[rank]);                                \
             }                                                             \
         }                                                                 \
         ImagingSectionLeave(&cookie);                                     \
         free(buf);                                                        \
     } while (0)
 
-#define RANK_DISPATCH(type, load, store)              \
-    do {                                              \
-        if (rank == 0) {                              \
-            MINMAX_BODY(type, RANK_MIN, load, store); \
-        } else if (rank == size2 - 1) {               \
-            MINMAX_BODY(type, RANK_MAX, load, store); \
-        } else {                                      \
-            RANK_BODY(type, load, store);             \
-        }                                             \
+#define RANK_DISPATCH(type, pixel)              \
+    do {                                        \
+        if (rank == 0) {                        \
+            MINMAX_BODY(type, RANK_MIN, pixel); \
+        } else if (rank == size2 - 1) {         \
+            MINMAX_BODY(type, RANK_MAX, pixel); \
+        } else {                                \
+            RANK_BODY(type, pixel);             \
+        }                                       \
     } while (0)
 
     if (im->type == IMAGING_TYPE_I16) {
@@ -166,16 +166,16 @@ ImagingRankFilter(Imaging im, int size, int rank) {
         int swap = bigendian;
 #endif
         if (swap) {
-            RANK_DISPATCH(UINT16, RANK_BSWAP16, RANK_BSWAP16);
+            RANK_DISPATCH(UINT16, RANK_BSWAP16);
         } else {
-            RANK_DISPATCH(UINT16, RANK_IDENTITY, RANK_IDENTITY);
+            RANK_DISPATCH(UINT16, RANK_IDENTITY);
         }
     } else if (im->image8) {
-        RANK_DISPATCH(UINT8, RANK_IDENTITY, RANK_IDENTITY);
+        RANK_DISPATCH(UINT8, RANK_IDENTITY);
     } else if (im->type == IMAGING_TYPE_INT32) {
-        RANK_DISPATCH(INT32, RANK_IDENTITY, RANK_IDENTITY);
+        RANK_DISPATCH(INT32, RANK_IDENTITY);
     } else if (im->type == IMAGING_TYPE_FLOAT32) {
-        RANK_DISPATCH(FLOAT32, RANK_IDENTITY, RANK_IDENTITY);
+        RANK_DISPATCH(FLOAT32, RANK_IDENTITY);
     } else {
         /* safety net (we shouldn't end up here) */
         ImagingDelete(imOut);
