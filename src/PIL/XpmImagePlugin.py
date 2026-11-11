@@ -23,7 +23,7 @@ from . import Image, ImageFile, ImagePalette
 from ._binary import o8
 
 # XPM header
-xpm_head = re.compile(b'"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)')
+xpm_head = re.compile(rb'"([0-9]*)\s+([0-9]*)\s+([0-9]*)\s+([0-9]*)')
 
 
 def _accept(prefix: bytes) -> bool:
@@ -115,7 +115,7 @@ class XpmImageFile(ImageFile.ImageFile):
             if transparent_key is not None:
                 self.info["transparency"] = palette_keys.index(transparent_key)
 
-        self.tile = [ImageFile._Tile("xpm", (0, 0, *self.size), self.fp.tell(), args)]
+        self.tile = [ImageFile._Tile("xpm", None, self.fp.tell(), args)]
 
     def load_read(self, read_bytes: int) -> bytes:
         #

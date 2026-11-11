@@ -14,6 +14,7 @@ from .helper import (
     assert_image_similar,
     hopper,
     is_pypy,
+    skip_unless_feature,
 )
 
 TYPE_CHECKING = False
@@ -113,6 +114,7 @@ def test_l_mode_transparency_after_rgb() -> None:
 def test_palette_not_needed_for_second_frame() -> None:
     with Image.open("Tests/images/palette_not_needed_for_second_frame.gif") as im:
         im.seek(1)
+        assert im.palette is None
         assert_image_similar(im, hopper("L").convert("RGB"), 8)
 
 
@@ -131,10 +133,12 @@ def test_strategy(monkeypatch: pytest.MonkeyPatch) -> None:
     )
     with Image.open("Tests/images/iss634.gif") as im:
         assert im.mode == "RGB"
+        assert im.palette is None
         assert_image_equal(im, expected_rgb_always)
 
     with Image.open("Tests/images/chi.gif") as im:
         assert im.mode == "RGBA"
+        assert im.palette is None
         assert_image_equal(im, expected_rgb_always_rgba)
 
     monkeypatch.setattr(
@@ -264,17 +268,49 @@ def test_roundtrip(tmp_path: Path) -> None:
     im = hopper()
     im.save(out)
     with Image.open(out) as reread:
-        assert_image_similar(reread.convert("RGB"), im, 50)
+        assert_image_similar(reread.convert("RGB"), im, 10)
 
 
 def test_roundtrip2(tmp_path: Path) -> None:
-    # see https://github.com/python-pillow/Pillow/issues/403
+    # See https://github.com/python-pillow/Pillow/issues/403
     out = tmp_path / "temp.gif"
     with Image.open(TEST_GIF) as im:
         im2 = im.copy()
         im2.save(out)
     with Image.open(out) as reread:
-        assert_image_similar(reread.convert("RGB"), hopper(), 50)
+        assert_image_similar(reread.convert("RGB"), hopper(), 12)
+
+
+@pytest.mark.parametrize(
+    "mode",
+    (
+        "CMYK",
+        "HSV",
+        "RGBX",
+        "YCbCr",
+        pytest.param("LAB", marks=skip_unless_feature("littlecms2")),
+    ),
+)
+def test_roundtrip_other_rgb_modes(tmp_path: Path, mode: str) -> None:
+    out = tmp_path / "temp.gif"
+    im = hopper(mode)
+    im.save(out)
+    with Image.open(out) as reread:
+        assert_image_similar(reread.convert("RGB"), hopper(), 11)
+
+
+@pytest.mark.parametrize("mode", ("RGBa", "PA"))
+def test_roundtrip_other_alpha_modes(tmp_path: Path, mode: str) -> None:
+    out = tmp_path / "temp.gif"
+    im = hopper("RGBA")
+    im.putpixel((0, 0), (255, 0, 0, 0))
+    im = im.convert(mode)
+    im.save(out)
+    with Image.open(out) as reread:
+        px = reread.convert("RGBA").getpixel((0, 0))
+        assert isinstance(px, tuple)
+        assert px[3] == 0
+        assert_image_similar(reread.convert("RGB"), hopper(), 15)
 
 
 def test_roundtrip_save_all(tmp_path: Path) -> None:
@@ -283,7 +319,7 @@ def test_roundtrip_save_all(tmp_path: Path) -> None:
     im = hopper()
     im.save(out, save_all=True)
     with Image.open(out) as reread:
-        assert_image_similar(reread.convert("RGB"), im, 50)
+        assert_image_similar(reread.convert("RGB"), im, 10)
 
     # Multiframe image
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
@@ -372,28 +408,24 @@ def test_palette_handling(tmp_path: Path) -> None:
 
 
 def test_palette_434(tmp_path: Path) -> None:
-    # see https://github.com/python-pillow/Pillow/issues/434
+    # See https://github.com/python-pillow/Pillow/issues/434
 
     def roundtrip(im: Image.Image, **kwargs: bool) -> Image.Image:
         out = tmp_path / "temp.gif"
         im.copy().save(out, "GIF", **kwargs)
-        reloaded = Image.open(out)
+        return Image.open(out)
 
-        return reloaded
-
-    orig = "Tests/images/test.colors.gif"
-    with Image.open(orig) as im:
-        with roundtrip(im) as reloaded:
-            assert_image_similar(im, reloaded, 1)
-        with roundtrip(im, optimize=True) as reloaded:
-            assert_image_similar(im, reloaded, 1)
-
+    with Image.open("Tests/images/test.colors.gif") as im:
         im_rgb = im.convert("RGB")
+
+        with roundtrip(im) as reloaded:
+            assert_image_equal(im_rgb, reloaded.convert("RGB"))
+        with roundtrip(im, optimize=True) as reloaded:
+            assert_image_equal(im_rgb, reloaded.convert("RGB"))
 
     # check automatic P conversion
     with roundtrip(im_rgb) as reloaded:
-        reloaded = reloaded.convert("RGB")
-        assert_image_equal(im_rgb, reloaded)
+        assert_image_equal(im_rgb, reloaded.convert("RGB"))
 
 
 def test_seek() -> None:
@@ -1375,7 +1407,7 @@ def test_palette_save_all_P(tmp_path: Path) -> None:
     )
 
     with Image.open(out) as im:
-        # Assert that the frames are correct, and each frame has the same palette
+        # Assert that the frames are correct
         assert isinstance(im, GifImagePlugin.GifImageFile)
         assert_image_equal(im.convert("RGB"), frames[0].convert("RGB"))
         assert im.palette is not None
@@ -1383,8 +1415,7 @@ def test_palette_save_all_P(tmp_path: Path) -> None:
         assert im.palette.palette == im.global_palette.palette
 
         im.seek(1)
-        assert_image_equal(im.convert("RGB"), frames[1].convert("RGB"))
-        assert im.palette.palette == im.global_palette.palette
+        assert_image_equal(im, frames[1].convert("RGB"))
 
 
 def test_palette_save_ImagePalette(tmp_path: Path) -> None:

@@ -119,13 +119,20 @@ _encode_cleanup(ImagingEncoderObject *encoder, PyObject *args) {
     Py_RETURN_NONE;
 }
 
+/**
+ * Encode to a Python bytes object allocated by this method.
+ *
+ * Python arguments:
+ * - bufsize (int, optional): The size of the buffer to use for encoding.
+ *
+ * @return A tuple containing the number of bytes written, an error code if any, and the
+ *         encoded bytes object. NULL if an error occurred, with a Python exception set.
+ */
 static PyObject *
 _encode(ImagingEncoderObject *encoder, PyObject *args) {
     PyObject *buf;
     PyObject *result;
     int bytes_consumed;
-
-    /* Encode to a Python string (allocated by this method) */
 
     Py_ssize_t bufsize = 16384;
 
@@ -133,17 +140,18 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
         return NULL;
     }
 
-    buf = PyBytes_FromStringAndSize(NULL, bufsize);
-    if (!buf) {
+    PyBytesWriter *writer = PyBytesWriter_Create(bufsize);
+    if (writer == NULL) {
         return NULL;
     }
 
     bytes_consumed = encoder->encode(
-        encoder->im, &encoder->state, (UINT8 *)PyBytes_AsString(buf), bufsize
+        encoder->im, &encoder->state, PyBytesWriter_GetData(writer), bufsize
     );
-
     /* adjust string length to avoid slicing in encoder */
-    if (_PyBytes_Resize(&buf, (bytes_consumed > 0) ? bytes_consumed : 0) < 0) {
+    buf =
+        PyBytesWriter_FinishWithSize(writer, (bytes_consumed > 0) ? bytes_consumed : 0);
+    if (buf == NULL) {
         return NULL;
     }
 
@@ -172,13 +180,22 @@ _encode_to_pyfd(ImagingEncoderObject *encoder, PyObject *args) {
     return result;
 }
 
+/**
+ * Encode to a file handle.
+ *
+ * Python arguments:
+ * - fh (int): The open writable binary file handle to write the encoded data to.
+ * - bufsize (int, optional): The size of the buffer to use for encoding.
+ *                            Default is 16384.
+ *
+ * @return The error code from the encoder after encoding. Zero on success.
+ *         Returns NULL if an error occurred, with a Python exception set.
+ */
 static PyObject *
 _encode_to_file(ImagingEncoderObject *encoder, PyObject *args) {
     UINT8 *buf;
     int bytes_consumed;
     ImagingSectionCookie cookie;
-
-    /* Encode to a file handle */
 
     Py_ssize_t fh;
     Py_ssize_t bufsize = 16384;
@@ -224,13 +241,13 @@ PyImaging_AsImaging(PyObject *op);
 
 static PyObject *
 _setimage(ImagingEncoderObject *encoder, PyObject *args) {
-    PyObject *op, *extents;
+    PyObject *op, *extents = Py_None;
     Imaging im;
     ImagingCodecState state;
     Py_ssize_t x0, y0, x1, y1;
 
     /* FIXME: should publish the ImagingType descriptor */
-    if (!PyArg_ParseTuple(args, "OO", &op, &extents)) {
+    if (!PyArg_ParseTuple(args, "O|O", &op, &extents)) {
         return NULL;
     }
     im = PyImaging_AsImaging(op);
@@ -343,7 +360,7 @@ static struct PyGetSetDef getseters[] = {
     {"pushes_fd",
      (getter)_get_pushes_fd,
      NULL,
-     "True if this decoder expects to push directly to self.fd",
+     "True if this encoder expects to push directly to self.fd",
      NULL},
     {NULL, NULL, NULL, NULL, NULL} /* sentinel */
 };
@@ -929,8 +946,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         }
 
         if (type == TIFF_NOTYPE) {
-            // Autodetect type. Types should not be changed for backwards
-            // compatibility.
+            // Autodetect type
             if (PyLong_Check(value)) {
                 type = TIFF_LONG;
             } else if (PyFloat_Check(value)) {
@@ -960,9 +976,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                     type = TIFF_FLOAT;
                 }
             }
-        }
-
-        if (type == TIFF_BYTE || type == TIFF_UNDEFINED) {
+        } else if (type == TIFF_BYTE || type == TIFF_UNDEFINED) {
             is_var_length = 1;
         }
         if (!is_core_tag && ImagingLibTiffMergeFieldInfo(
@@ -1285,7 +1299,7 @@ get_qtables_arrays(PyObject *qtables, int *qtablesLen) {
         }
         for (j = 0; j < DCTSIZE2; j++) {
             qarrays[i * DCTSIZE2 + j] =
-                PyLong_AS_LONG(PySequence_Fast_GET_ITEM(table_data, j));
+                PyLong_AsLong(PySequence_Fast_GET_ITEM(table_data, j));
         }
         Py_DECREF(table_data);
     }

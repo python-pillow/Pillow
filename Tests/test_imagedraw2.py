@@ -259,6 +259,32 @@ def test_textbbox() -> None:
 
 
 @skip_unless_feature("freetype2")
+def test_transform() -> None:
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    font = ImageDraw2.Font("white", FONT_PATH)
+
+    expected = im.copy()
+    expected_draw = ImageDraw.Draw(expected)
+
+    offset = (1, 2)
+    draw.settransform(offset)
+    xy = (3, 4)
+    xy_translated = (xy[0] + offset[0], xy[1] + offset[1])
+    text = "ImageDraw2"
+
+    # text
+    draw.text(xy, text, font)
+    expected_draw.text(xy_translated, text, font.color, font.font)
+    assert_image_equal(im, expected)
+
+    # textbbox
+    assert draw.textbbox(xy, text, font) == expected_draw.textbbox(
+        xy_translated, text, font.font
+    )
+
+
+@skip_unless_feature("freetype2")
 def test_textsize_empty_string() -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
