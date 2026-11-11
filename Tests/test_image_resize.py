@@ -348,7 +348,7 @@ class TestImageResize:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.BICUBIC) == im.resize((20, 20))
 
-    @pytest.mark.parametrize("mode", ("1", "P"))
+    @pytest.mark.parametrize("mode", ("1", "P", "PA"))
     def test_default_filter_nearest(self, mode: str) -> None:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.NEAREST) == im.resize((20, 20))

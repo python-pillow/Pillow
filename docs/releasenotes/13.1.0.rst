@@ -59,6 +59,12 @@ collapsed incorrectly, and the row-size arithmetic could overflow for very wide
 images. The ZIP decoder no longer accepts planar raw modes when interlacing is
 requested, since it cannot decode them correctly.
 
+Scaling empty text
+^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageText.Text.wrap` now raises :py:exc:`ValueError` for empty or
+whitespace-only text with ``scaling``, before adjusting the font size.
+
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

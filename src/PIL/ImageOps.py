@@ -179,10 +179,8 @@ def autocontrast(
             # don't bother
             lut.extend(list(range(256)))
         else:
-            scale = 255.0 / (hi - lo)
-            offset = -lo * scale
             for ix in range(256):
-                ix = int(ix * scale + offset)
+                ix = (ix - lo) * 255 // (hi - lo)
                 if ix < 0:
                     ix = 0
                 elif ix > 255:

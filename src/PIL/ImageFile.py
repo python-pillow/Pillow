@@ -346,6 +346,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                 args = (args, 0, 1)
             if (
                 decoder_name == "raw"
+                and extents in {None, (0, 0, *self.size)}
                 and isinstance(args, tuple)
                 and len(args) >= 3
                 and args[0] == self.mode
@@ -524,6 +525,12 @@ class StubImageFile(ImageFile):
             msg = f"cannot find loader for this {self.format} file"
             raise OSError(msg)
         image = self._handler.load(self)
+
+        assert self.fp is not None
+        if self._exclusive_fp and self._close_exclusive_fp_after_loading:
+            self.fp.close()
+        self.fp = None
+
         assert image is not None
         # become the other object (!)
         self.__class__ = image.__class__  # type: ignore[assignment]
