@@ -197,15 +197,17 @@ Many of Pillow's features require external libraries:
           - ``mingw-w64-ucrt-x86_64``
         * - **CLANG64**
           - ``mingw-w64-clang-x86_64``
+        * - **CLANGARM64**
+          - ``mingw-w64-clang-aarch64``
         * - **MINGW64**
           - ``mingw-w64-x86_64``
 
     Installing in **MSYS2 MSYS** is not supported.
 
-    Make sure you have Python and GCC installed::
+    Make sure you have Python and CC installed::
 
         pacman -S \
-            mingw-w64-ucrt-x86_64-gcc \
+            mingw-w64-ucrt-x86_64-cc \
             mingw-w64-ucrt-x86_64-python \
             mingw-w64-ucrt-x86_64-python-pip \
             mingw-w64-ucrt-x86_64-python-setuptools
