@@ -70,6 +70,24 @@ def test_transparency_rgba() -> None:
         assert im.getpixel((1, 0)) == (0, 0, 0, 0)
 
 
+def test_multiple_spaces_in_values_line() -> None:
+    # The header values may be separated by whitespace, as written by GROMACS
+    data = b"""/* XPM */
+static char *gromacs_xpm[] = {
+"4 4   2 1",
+"A  c #FFFFFF ",
+"B  c #000000 ",
+"ABAB",
+"BABA",
+"ABAB",
+"BABA"
+};
+"""
+    with Image.open(BytesIO(data)) as im:
+        assert im.mode == "P"
+        assert im.size == (4, 4)
+
+
 def test_truncated_header() -> None:
     data = b"/* XPM */"
     with pytest.raises(SyntaxError, match="broken XPM file"):

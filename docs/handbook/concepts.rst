@@ -75,6 +75,12 @@ combinations that are not listed above, use a sequence of Image objects.
 You can read the mode of an image through the :py:attr:`~PIL.Image.Image.mode`
 attribute. This is a string containing one of the above values.
 
+If an operation does not support a particular mode, you can
+:py:meth:`~PIL.Image.Image.convert` it, but not all conversions are lossless.
+For example, converting a palette image (``P``) to a grayscale image (``L``)
+will lose all colour, and converting an image with floating point pixels
+(``F``) to an image with signed integer pixels (``I``) will lose precision.
+
 Size
 ----
 
@@ -94,6 +100,16 @@ corners; the centre of a pixel addressed as (0, 0) actually lies at (0.5, 0.5).
 Coordinates are usually passed to the library as 2-tuples (x, y). Rectangles
 are represented as 4-tuples, (x1, y1, x2, y2), with the upper left corner given
 first.
+
+Since Pillow 5.4.0, individual image pixels can be accessed using negative indexes.
+For example, to get or set the farthest pixel in the lower right of an image::
+
+    >>> from PIL import Image
+    >>> im = Image.new("RGB", (10, 10), (255, 0, 0))
+    >>> px = im.load()
+    >>> px[-1, -1]
+    (255, 0, 0)
+    >>> px[-1, -1] = (0, 0, 0)
 
 Palette
 -------
