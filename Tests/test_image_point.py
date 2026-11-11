@@ -43,15 +43,15 @@ def test_sanity() -> None:
 
 @pytest.mark.parametrize("mode", ("LA", "RGBA", "CMYK"))
 def test_multiband(mode: str) -> None:
-    # Exercises im_point_2x8_2x8 (2 bands) and im_point_4x8_4x8 (4 bands)
     im = hopper(mode)
-    lut = [(x + 1) % 256 for x in range(256)] * len(im.getbands())
+    single_band_lut = [(x + 1) % 256 for x in range(256)]
+    lut = single_band_lut * Image.getmodebands(mode)
     out = im.point(lut)
 
-    assert out.mode == mode
-    assert isinstance(px := im.getpixel((0, 0)), tuple)  # Placate mypy
-    expected_px = tuple((v + 1) % 256 for v in px)
-    assert out.getpixel((0, 0)) == expected_px
+    expected = Image.merge(
+        mode, tuple(band.point(single_band_lut) for band in im.split())
+    )
+    assert_image_equal(out, expected)
 
 
 def test_16bit_lut() -> None:
