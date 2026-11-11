@@ -121,6 +121,13 @@ def autocontrast(
 
     :return: An image.
     """
+    if ignore is not None:
+        if isinstance(ignore, int):
+            ignore = (ignore,)
+        if not all(0 <= ix <= 255 for ix in ignore):
+            msg = "ignore must be between or equal to 0 and 255"
+            raise ValueError(msg)
+
     if preserve_tone:
         histogram = image.convert("L").histogram(mask)
     else:
@@ -131,11 +138,8 @@ def autocontrast(
         h = histogram[layer : layer + 256]
         if ignore is not None:
             # get rid of outliers
-            if isinstance(ignore, int):
-                h[ignore] = 0
-            else:
-                for ix in ignore:
-                    h[ix] = 0
+            for ix in ignore:
+                h[ix] = 0
         if cutoff:
             # cut off pixels from both ends of the histogram
             if not isinstance(cutoff, tuple):
@@ -175,10 +179,8 @@ def autocontrast(
             # don't bother
             lut.extend(list(range(256)))
         else:
-            scale = 255.0 / (hi - lo)
-            offset = -lo * scale
             for ix in range(256):
-                ix = int(ix * scale + offset)
+                ix = (ix - lo) * 255 // (hi - lo)
                 if ix < 0:
                     ix = 0
                 elif ix > 255:
@@ -378,7 +380,11 @@ def _new_with_fill(
         mode = image.palette.mode
         palette = ImagePalette.ImagePalette(mode, image.getpalette(mode))
         if isinstance(color, tuple) and len(color) in (3, 4):
-            color = palette.getcolor(color, image)
+            if image.mode == "PA":
+                alpha = color[3] if len(color) == 4 else 255
+                color = (palette.getcolor(color[:3], image), alpha)
+            else:
+                color = palette.getcolor(color, image)
     else:
         palette = None
     out = Image.new(image.mode, size, color)

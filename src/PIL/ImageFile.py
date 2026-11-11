@@ -346,6 +346,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                 args = (args, 0, 1)
             if (
                 decoder_name == "raw"
+                and extents in {None, (0, 0, *self.size)}
                 and isinstance(args, tuple)
                 and len(args) >= 3
                 and args[0] == self.mode
@@ -524,6 +525,12 @@ class StubImageFile(ImageFile):
             msg = f"cannot find loader for this {self.format} file"
             raise OSError(msg)
         image = self._handler.load(self)
+
+        assert self.fp is not None
+        if self._exclusive_fp and self._close_exclusive_fp_after_loading:
+            self.fp.close()
+        self.fp = None
+
         assert image is not None
         # become the other object (!)
         self.__class__ = image.__class__  # type: ignore[assignment]
@@ -567,7 +574,7 @@ class Parser:
         if self.data is None:
             self.data = data
         else:
-            self.data = self.data + data
+            self.data += data
 
         # parse what we have
         if self.decoder:
@@ -596,8 +603,8 @@ class Parser:
 
         elif self.image:
             # if we end up here with no decoder, this file cannot
-            # be incrementally parsed.  wait until we've gotten all
-            # available data
+            # be incrementally parsed, due to load_seek, load_read, or pulls_fd
+            # wait until we've gotten all available data
             pass
 
         else:
@@ -611,17 +618,24 @@ class Parser:
                 flag = hasattr(im, "load_seek") or hasattr(im, "load_read")
                 if not flag and len(im.tile) == 1:
                     # initialize decoder
-                    im.load_prepare()
-                    d, e, o, a = im.tile[0]
-                    im.tile = []
-                    self.decoder = Image._getdecoder(im.mode, d, a, im.decoderconfig)
-                    self.decoder.setimage(im.im, e)
+                    decoder_name, extents, offset, args = im.tile[0]
+                    decoder = Image._getdecoder(
+                        im.mode, decoder_name, args, im.decoderconfig
+                    )
+                    # a decoder that reads from the file itself
+                    # cannot be incrementally parsed.
+                    # wait until we've gotten all available data
+                    if not decoder.pulls_fd:
+                        im.load_prepare()
+                        im.tile = []
+                        self.decoder = decoder
+                        self.decoder.setimage(im.im, extents)
 
-                    # calculate decoder offset
-                    self.offset = o
-                    if self.offset <= len(self.data):
-                        self.data = self.data[self.offset :]
-                        self.offset = 0
+                        # calculate decoder offset
+                        self.offset = offset
+                        if self.offset <= len(self.data):
+                            self.data = self.data[self.offset :]
+                            self.offset = 0
 
                 self.image = im
 
