@@ -18,7 +18,7 @@ Backwards incompatible changes
 ==============================
 
 16-bit RGB PNG transparency
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 16-bit RGB PNG images with a ``tRNS`` transparency key now open in RGBA mode.
 Pillow compares the full 16-bit samples to the key before reducing them to
