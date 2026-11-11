@@ -148,10 +148,10 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
     bytes_consumed = encoder->encode(
         encoder->im, &encoder->state, PyBytesWriter_GetData(writer), bufsize
     );
-    buf = PyBytesWriter_Finish(writer);
-
     /* adjust string length to avoid slicing in encoder */
-    if (_PyBytes_Resize(&buf, (bytes_consumed > 0) ? bytes_consumed : 0) < 0) {
+    buf =
+        PyBytesWriter_FinishWithSize(writer, (bytes_consumed > 0) ? bytes_consumed : 0);
+    if (buf == NULL) {
         return NULL;
     }
 
