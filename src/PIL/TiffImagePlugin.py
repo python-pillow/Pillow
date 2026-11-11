@@ -777,7 +777,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 (dest[tag],) = values
             except ValueError:
                 # We've got a builtin tag with 1 expected entry
-                if tag != PHOTOMETRIC_INTERPRETATION:
+                if tag != PHOTOMETRIC_INTERPRETATION and self.group is None:
                     warnings.warn(
                         f"Metadata Warning, tag {tag} had too many entries: "
                         f"{len(values)}, expected 1"
@@ -919,13 +919,24 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 else self._unpack("H", self._ensure_read(fp, 2))
             )[0]
             total_size = 0
+            seen_tags = set()
             for i in range(tag_count):
                 tag, typ, count, data = (
                     self._unpack("HHQ8s", self._ensure_read(fp, 20))
                     if self._bigtiff
                     else self._unpack("HHL4s", self._ensure_read(fp, 12))
                 )
-                if tag in self._tagdata:
+                if tag in seen_tags:
+                    # Ignore duplicate tags, like libtiff
+                    # even if the first one was skipped
+                    continue
+                seen_tags.add(tag)
+                if (
+                    tag == PHOTOMETRIC_INTERPRETATION
+                    and count != 1
+                    and self.group is None
+                ):
+                    # Ignore a malformed PhotometricInterpretation tag, like libtiff
                     continue
 
                 # tagname = TiffTags.lookup(tag, self.group).name
@@ -1829,6 +1840,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     ifd[IMAGELENGTH] = im.size[1]
 
     # write any arbitrary tags passed in as an ImageFileDirectory
+    subifds: list[int] = []
     if "tiffinfo" in encoderinfo:
         info = encoderinfo["tiffinfo"]
     elif "exif" in encoderinfo:
@@ -1837,12 +1849,16 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             exif = Image.Exif()
             exif.load(info)
             info = exif
+        elif isinstance(info, Image.Exif) and not libtiff:
+            subifds.extend(
+                key for key in TiffTags.TAGS_V2_GROUPS if info._ifds.get(key, {}) != {}
+            )
     else:
         info = {}
     logger.debug("Tiffinfo Keys: %s", list(info))
     if isinstance(info, ImageFileDirectory_v1):
         info = info.to_v2()
-    for key in info:
+    for key in {*info, *subifds}:
         if libtiff and key in {IMAGEWIDTH, IMAGELENGTH}:
             continue
         if isinstance(info, Image.Exif) and key in TiffTags.TAGS_V2_GROUPS:

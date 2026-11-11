@@ -371,9 +371,25 @@ Converting between modes
     with Image.open("hopper.ppm") as im:
         im = im.convert("L")
 
-The library supports transformations between each supported mode and the “L”
-and “RGB” modes. To convert between other modes, you may have to use an
-intermediate image (typically an “RGB” image).
+The library supports transformations between each supported mode and the "L"
+and "RGB" modes. To convert between other modes, you may have to use an
+intermediate image (typically an "RGB" image).
+
+Converting and scaling
+^^^^^^^^^^^^^^^^^^^^^^
+
+When converting to a mode with a lower bit depth, Pillow does not automatically
+scale pixel values. For example, converting from "I;16" mode to "L" mode limits
+values to a maximum of 255. You may wish to scale values before converting::
+
+    >>> from PIL import Image
+    >>> im = Image.new("I;16", (1, 1), 51200)
+    >>> im_l = im.convert("L")
+    >>> im_l.getpixel((0, 0))
+    255
+    >>> im_l2 = im.point(lambda value: value / 256).convert("L")
+    >>> im_l2.getpixel((0, 0))
+    200
 
 Image enhancement
 -----------------
