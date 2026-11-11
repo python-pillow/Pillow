@@ -603,6 +603,13 @@ def test_autocontrast_invalid_ignore(ignore: int | list[int]) -> None:
         ImageOps.autocontrast(im, ignore=ignore)
 
 
+def test_autocontrast_lightest() -> None:
+    im = Image.new("L", (2, 1))
+    im.putpixel((1, 0), 25)
+
+    assert ImageOps.autocontrast(im).getpixel((1, 0)) == 255
+
+
 def test_autocontrast_mask_toy_input() -> None:
     # Test the mask argument of autocontrast
     with Image.open("Tests/images/bw_gradient.png") as img:

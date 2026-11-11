@@ -1095,7 +1095,7 @@ class Image:
                 def convert_transparency(
                     m: list[float] | tuple[float, ...], v: tuple[int, int, int]
                 ) -> int:
-                    value = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3] * 0.5
+                    value = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3] + 0.5
                     return max(0, min(255, int(value)))
 
                 if mode == "L":
@@ -1831,8 +1831,8 @@ class Image:
         self.load()
         if mask:
             mask.load()
-            return self.im.histogram((0, 0), mask.im)
-        if self.mode in ("I", "F"):
+            return self.im.histogram(None, mask.im)
+        if self.mode in ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"):
             return self.im.histogram(
                 extrema if extrema is not None else self.getextrema()
             )
@@ -1862,8 +1862,8 @@ class Image:
         self.load()
         if mask:
             mask.load()
-            return self.im.entropy((0, 0), mask.im)
-        if self.mode in ("I", "F"):
+            return self.im.entropy(None, mask.im)
+        if self.mode in ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"):
             return self.im.entropy(
                 extrema if extrema is not None else self.getextrema()
             )

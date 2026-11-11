@@ -58,6 +58,12 @@ Coordinates ending in .5 were rounded to the nearest even integer, so a box of t
 size could give an image one pixel larger or smaller depending on where it was. They
 are now always rounded up.
 
+Scaling empty text
+^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageText.Text.wrap` now raises :py:exc:`ValueError` for empty or
+whitespace-only text with ``scaling``, before adjusting the font size.
+
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
