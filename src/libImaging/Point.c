@@ -297,11 +297,11 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
             UINT16 v;
             UINT8 *pixel;
             int bigendian = isImageI16BigEndian(imIn);
-            for (int y = 0; y < imIn->ysize; y++) {
+            for (int y = 0; y < ysize; y++) {
                 UINT8 *restrict in = imIn->image8[y];
                 UINT8 *restrict out = imOut->image8[y];
                 /* FIXME: add clipping? */
-                for (int x = 0; x < imIn->xsize; x++) {
+                for (int x = 0; x < xsize; x++) {
                     pixel = in + x * 2;
                     v = bigendian ? ((UINT16)pixel[0] << 8) + pixel[1]
                                   : pixel[0] + ((UINT16)pixel[1] << 8);
