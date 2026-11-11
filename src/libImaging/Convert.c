@@ -677,7 +677,8 @@ f2i(UINT8 *out_, const UINT8 *in_, int xsize) {
         FLOAT32 f;
         INT32 i;
         memcpy(&f, in_, sizeof(f));
-        i = f >= INT32_MAX ? INT32_MAX : (f >= INT32_MIN ? (INT32)f : INT32_MIN);
+        i = f >= (FLOAT32)INT32_MAX ? INT32_MAX
+                                    : (f >= INT32_MIN ? (INT32)f : INT32_MIN);
         memcpy(out_, &i, sizeof(i));
     }
 }
