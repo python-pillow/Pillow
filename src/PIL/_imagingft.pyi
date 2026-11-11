@@ -22,7 +22,7 @@ class Font:
     def glyphs(self) -> int: ...
     def render(
         self,
-        string: str | bytes,
+        string: str | bytes | bytearray,
         fill: Callable[[int, int], _imaging.ImagingCore],
         mode_name: str | None = None,
         dir: str | None = None,
@@ -47,7 +47,7 @@ class Font:
     ) -> tuple[tuple[int, int], tuple[int, int]]: ...
     def getlength(
         self,
-        string: str | bytes,
+        string: str | bytes | bytearray,
         mode_name: str | None = None,
         dir: str | None = None,
         features: list[str] | None = None,
