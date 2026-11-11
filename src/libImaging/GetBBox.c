@@ -259,11 +259,7 @@ ImagingGetExtrema(Imaging im, void *extrema) {
         case IMAGING_TYPE_I16:
             UINT16 v;
             UINT8 *pixel = *im->image8;
-            int bigendian = im->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-                                || im->mode == IMAGING_MODE_I_16N
-#endif
-                ;
+            int bigendian = isImageI16BigEndian(im);
             v = bigendian ? ((UINT16)pixel[0] << 8) + pixel[1]
                           : pixel[0] + ((UINT16)pixel[1] << 8);
             imin = imax = v;

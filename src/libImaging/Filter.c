@@ -185,15 +185,7 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
         } else if (im->type == IMAGING_TYPE_I16) {
             // Add one time for rounding
             offset += 0.5;
-            int bigendian = 0;
-            if (
-                im->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-                || im->mode == IMAGING_MODE_I_16N
-#endif
-            ) {
-                bigendian = 1;
-            }
+            int bigendian = isImageI16BigEndian(im);
             for (y = 1; y < ysize - 1; y++) {
                 UINT8 *restrict in_1 = (UINT8 *)im->image[y - 1];
                 UINT8 *restrict in0 = (UINT8 *)im->image[y];
@@ -355,15 +347,7 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
         } else if (im->type == IMAGING_TYPE_I16) {
             // Add one time for rounding
             offset += 0.5;
-            int bigendian = 0;
-            if (
-                im->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-                || im->mode == IMAGING_MODE_I_16N
-#endif
-            ) {
-                bigendian = 1;
-            }
+            int bigendian = isImageI16BigEndian(im);
             for (y = 2; y < ysize - 2; y++) {
                 UINT8 *restrict in_2 = (UINT8 *)im->image[y - 2];
                 UINT8 *restrict in_1 = (UINT8 *)im->image[y - 1];
