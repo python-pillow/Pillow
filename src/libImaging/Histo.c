@@ -150,15 +150,16 @@ ImagingGetHistogram(Imaging im, Imaging imMask, void *minmax) {
                 ImagingSectionEnter(&cookie);
                 MUTEX_LOCK(&im->mutex);
                 scale = 255.0F / (i16max - i16min);
-                int big = im->mode == IMAGING_MODE_I_16B;
+                int bigendian = im->mode == IMAGING_MODE_I_16B
 #ifdef WORDS_BIGENDIAN
-                big = big || im->mode == IMAGING_MODE_I_16N;
+                                || im->mode == IMAGING_MODE_I_16N
 #endif
+                    ;
                 for (int y = 0; y < ysize; y++) {
                     UINT8 *restrict in = im->image8[y];
                     for (int x = 0; x < xsize; x++, in += 2) {
-                        UINT16 pixel = big ? ((UINT16)in[0] << 8) + in[1]
-                                           : in[0] + ((UINT16)in[1] << 8);
+                        UINT16 pixel = bigendian ? ((UINT16)in[0] << 8) + in[1]
+                                                 : in[0] + ((UINT16)in[1] << 8);
                         int i = (pixel - i16min) * scale;
                         if (i >= 0 && i < 256) {
                             histogram[i]++;
