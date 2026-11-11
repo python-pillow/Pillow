@@ -237,6 +237,20 @@ def test_apply_readonly() -> None:
     assert_image_equal(source, hopper())
 
 
+def test_apply_core_readonly() -> None:
+    skip_missing()
+    t = ImageCms.buildTransform(
+        SRGB, "Tests/icc/sRGB_v4_ICC_preference.icc", "RGBA", "RGBA"
+    )
+    data = bytes(4)
+    im = Image.frombuffer("RGBA", (1, 1), data, "raw", "RGBA", 0, 1)
+    assert im.readonly
+
+    with pytest.raises(ValueError, match="image is readonly"):
+        t.transform.apply(Image.new("RGBA", (1, 1), "red").getim(), im.getim())
+    assert data == bytes(4)
+
+
 def test_apply_in_place_readonly(tmp_path: Path) -> None:
     skip_missing()
     temp_file = tmp_path / "temp.tif"

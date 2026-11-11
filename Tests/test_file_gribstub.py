@@ -65,8 +65,6 @@ def test_handler(tmp_path: Path) -> None:
 
         def load(self, im: ImageFile.ImageFile) -> Image.Image:
             self.loaded = True
-            assert im.fp is not None
-            im.fp.close()
             return Image.new("RGB", (1, 1))
 
         def is_loaded(self) -> bool:
@@ -81,8 +79,11 @@ def test_handler(tmp_path: Path) -> None:
         assert handler.opened
         assert not handler.is_loaded()
 
+        fp = im.fp
         im.load()
         assert handler.is_loaded()
+        assert fp is not None
+        assert fp.closed
 
         temp_file = tmp_path / "temp.grib"
         im.save(temp_file)

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 __lazy_modules__ = {"io"}
 
-from io import BytesIO
 
 from . import Image, ImageFile
 from ._binary import i16le as i16
@@ -158,11 +157,10 @@ class WebPImageFile(ImageFile.ImageFile):
             data, self.info["timestamp"], self.info["duration"] = self._get_next()
             self.__loaded = self.__logical_frame
 
-            # Set tile
             if self.fp and self._exclusive_fp:
                 self.fp.close()
-            self.fp = BytesIO(data)
-            self.tile = [ImageFile._Tile("raw", args=self.rawmode)]
+            self.fp = None
+            self.frombytes(data, "raw", self.rawmode)
 
         return super().load()
 

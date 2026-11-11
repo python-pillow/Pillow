@@ -154,6 +154,20 @@ def test_apng_dispose_op_previous_frame() -> None:
         assert im.getpixel((0, 0)) == (255, 0, 0, 255)
 
 
+@pytest.mark.parametrize(
+    "filename", ("dispose_op_previous.png", "dispose_op_previous_region.png")
+)
+def test_apng_dispose_op_previous_load_each_frame(filename: str) -> None:
+    # Loading each frame before seeking should not change the result
+    with Image.open("Tests/images/apng/" + filename) as im:
+        assert isinstance(im, PngImagePlugin.PngImageFile)
+        for i in range(im.n_frames):
+            im.seek(i)
+            im.load()
+        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
+        assert im.getpixel((64, 32)) == (0, 255, 0, 255)
+
+
 def test_apng_dispose_op_background_p_mode() -> None:
     with Image.open("Tests/images/apng/dispose_op_background_p_mode.png") as im:
         im.seek(1)

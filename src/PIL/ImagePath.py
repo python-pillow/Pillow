@@ -17,4 +17,12 @@ from __future__ import annotations
 
 from . import Image
 
-Path = Image.core.path
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+
+    from ._typing import Buffer
+
+Path: Callable[
+    [int | Image.core._Path | Buffer | Sequence[float]], Image.core._Path
+] = Image.core.path
