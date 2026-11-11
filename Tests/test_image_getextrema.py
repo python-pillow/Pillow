@@ -18,7 +18,8 @@ def test_extrema() -> None:
     assert extrema("RGB") == ((0, 255), (0, 255), (0, 255))
     assert extrema("RGBA") == ((0, 255), (0, 255), (0, 255), (255, 255))
     assert extrema("CMYK") == ((0, 255), (0, 255), (0, 255), (0, 0))
-    assert extrema("I;16") == (1, 255)
+    for mode in ("I;16", "I;16L", "I;16B", "I;16N"):
+        assert extrema(mode) == (1, 255)
 
 
 def test_zero() -> None:
@@ -32,5 +33,6 @@ def test_zero() -> None:
 def test_true_16() -> None:
     with Image.open("Tests/images/16_bit_noise.tif") as im:
         assert im.mode == "I;16"
-        extrema = im.getextrema()
-    assert extrema == (106, 285)
+        assert im.getextrema() == (106, 285)
+        for mode in ("I;16L", "I;16B", "I;16N"):
+            assert im.convert(mode).getextrema() == (106, 285)

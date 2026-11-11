@@ -267,6 +267,23 @@ class TestImageFile:
             monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
             im.load()
 
+    def test_mmap_partial_tile(self) -> None:
+        extents = (0, 0, 128, 64)
+
+        # This image is normally loaded through mmap
+        with Image.open("Tests/images/hopper_8bit.pgm") as im:
+            im.load()
+
+            assert im.map is not None
+
+        # But a partial tile is not
+        with Image.open("Tests/images/hopper_8bit.pgm") as im:
+            im.tile = [im.tile[0]._replace(extents=extents)]
+            im.load()
+
+            assert im.map is None
+            assert im.getbbox() == extents
+
 
 class MockPyDecoder(ImageFile.PyDecoder):
     last: MockPyDecoder
