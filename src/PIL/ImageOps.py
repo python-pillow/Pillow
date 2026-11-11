@@ -699,21 +699,23 @@ def sepia(image: Image.Image) -> Image.Image:
     if image.mode != "RGB":
         image = image.convert("RGB")
 
-    out = Image.new("RGB", image.size)
-
-    for x in range(image.width):
-        for y in range(image.height):
-            value = image.getpixel((x, y))
-            assert isinstance(value, tuple)
-            r, g, b = value
-
-            tr = 0.393 * r + 0.769 * g + 0.189 * b
-            tg = 0.349 * r + 0.686 * g + 0.168 * b
-            tb = 0.272 * r + 0.534 * g + 0.131 * b
-
-            out.putpixel((x, y), tuple(min(255, int(c)) for c in (tr, tg, tb)))
-
-    return out
+    return image.convert(
+        "RGB",
+        matrix=(
+            0.393,
+            0.769,
+            0.189,
+            0,
+            0.349,
+            0.686,
+            0.168,
+            0,
+            0.272,
+            0.534,
+            0.131,
+            0,
+        ),
+    )
 
 
 def sobel(image: Image.Image) -> Image.Image:
