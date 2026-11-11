@@ -725,9 +725,9 @@ def test_sobel_output_mode_and_size() -> None:
     assert out.size == img.size
 
 
-def test_neon_effect_mode_and_size() -> None:
+def test_neon_mode_and_size() -> None:
     img = Image.new("RGB", (20, 20))
-    out = ImageOps.neon_effect(img)
+    out = ImageOps.neon(img)
 
     assert out.mode == "RGB"
     assert out.size == img.size

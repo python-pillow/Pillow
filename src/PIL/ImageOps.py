@@ -754,7 +754,7 @@ def sobel(image: Image.Image) -> Image.Image:
     return out
 
 
-def neon_effect(
+def neon(
     image: Image.Image, color: tuple[int, int, int] = (255, 0, 255), alpha: float = 0.2
 ) -> Image.Image:
     """

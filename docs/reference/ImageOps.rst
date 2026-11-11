@@ -28,7 +28,7 @@ only work on L and RGB images.
 .. autofunction:: exif_transpose
 .. autofunction:: sepia
 .. autofunction:: sobel
-.. autofunction:: neon_effect
+.. autofunction:: neon
 
 .. _relative-resize:
 
