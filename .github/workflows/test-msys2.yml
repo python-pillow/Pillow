@@ -50,7 +50,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pacman -S --noconfirm \
+          pacman -S --needed --noconfirm \
               mingw-w64-ucrt-x86_64-freetype \
               mingw-w64-ucrt-x86_64-gcc \
               mingw-w64-ucrt-x86_64-ghostscript \

@@ -206,7 +206,7 @@ Many of Pillow's features require external libraries:
 
     Make sure you have Python and CC installed::
 
-        pacman -S \
+        pacman -S --needed \
             mingw-w64-ucrt-x86_64-cc \
             mingw-w64-ucrt-x86_64-python \
             mingw-w64-ucrt-x86_64-python-pip \
@@ -214,7 +214,7 @@ Many of Pillow's features require external libraries:
 
     Prerequisites are installed on **MSYS2 UCRT64** with::
 
-        pacman -S \
+        pacman -S --needed \
             mingw-w64-ucrt-x86_64-libjpeg-turbo \
             mingw-w64-ucrt-x86_64-zlib \
             mingw-w64-ucrt-x86_64-libtiff \
