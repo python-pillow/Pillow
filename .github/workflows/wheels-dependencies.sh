@@ -92,7 +92,7 @@ ARCHIVE_SDIR=pillow-depends-main
 
 VERSIONS_FILE="$PROJECTDIR/.github/dependencies.json"
 _get_ver() { python3 -c "import json; print(json.load(open('$VERSIONS_FILE'))['$1'])"; }
-FREETYPE_VERSION=$(_get_ver freetype)
+FREETYPE_VERSION=$(_get_ver freetype | tr - .)
 HARFBUZZ_VERSION=$(_get_ver harfbuzz)
 LIBPNG_VERSION=$(_get_ver libpng)
 JPEGTURBO_VERSION=$(_get_ver jpegturbo)

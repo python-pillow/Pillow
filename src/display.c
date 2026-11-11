@@ -25,6 +25,7 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+#include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
 
 /* -------------------------------------------------------------------- */
@@ -320,7 +321,6 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
     HDC screen, screen_copy;
     HWND wnd;
     DWORD rop;
-    PyObject *buffer = NULL;
     HANDLE dpiAwareness = NULL;
     HMODULE user32;
     Func_GetWindowDpiAwarenessContext GetWindowDpiAwarenessContext_function;
@@ -414,8 +414,8 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
 
     /* step 3: extract bits from bitmap */
 
-    buffer = PyBytes_FromStringAndSize(NULL, height * ((width * 3 + 3) & -4));
-    if (!buffer) {
+    PyBytesWriter *writer = PyBytesWriter_Create(height * ((width * 3 + 3) & -4));
+    if (writer == NULL) {
         goto error;
     }
 
@@ -429,10 +429,11 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
             bitmap,
             0,
             height,
-            PyBytes_AS_STRING(buffer),
+            PyBytesWriter_GetData(writer),
             (BITMAPINFO *)&core,
             DIB_RGB_COLORS
         )) {
+        PyBytesWriter_Discard(writer);
         PyErr_SetString(PyExc_OSError, "screen grab failed");
         goto error;
     }
@@ -445,10 +446,11 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
         DeleteDC(screen);
     }
 
-    return Py_BuildValue("(ii)(ii)N", x, y, width, height, buffer);
+    return Py_BuildValue(
+        "(ii)(ii)N", x, y, width, height, PyBytesWriter_Finish(writer)
+    );
 
 error:
-    Py_XDECREF(buffer);
     if (bitmap != NULL) {
         DeleteObject(bitmap);
     }

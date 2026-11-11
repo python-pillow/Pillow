@@ -949,9 +949,11 @@ class Image:
 
         # unpack data
         d = _getdecoder(self.mode, decoder_name, decoder_args)
+        if self._im is None:
+            self.im = core.new(self.mode, self.size)
         # Plugins may call this from load() while ImageFile.readonly is still set,
         # so check whether the image memory itself is read-only
-        if self.im.readonly:
+        elif self.im.readonly:
             self._copy()
         d.setimage(self.im)
         s = d.decode(data)
@@ -1046,14 +1048,15 @@ class Image:
         channel from the image will be used instead of the values from the palette.
 
         :param mode: The requested mode. See: :ref:`concept-modes`.
-        :param matrix: An optional conversion matrix.  If given, this
-           should be 4- or 12-sequence containing floating point values.
+        :param matrix: An optional conversion matrix containing floating point values.
+           When converting to L mode, the sequence should have length 4. For RGB, it
+           should have length 12.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`.
            :data:`Dither.FLOYDSTEINBERG` is used by default, except when converting
            to an adaptive ``palette``: there, for backwards compatibility with
-           versions prior to 13.0.0, the default remains :data:`Dither.NONE`; pass
+           versions prior to 13.1.0, the default remains :data:`Dither.NONE`; pass
            ``dither=Dither.FLOYDSTEINBERG`` explicitly to enable dithering in that
            case too. Note that ``dither`` is not used when ``matrix`` is supplied.
         :param palette: Palette to use when converting from mode "RGB"
@@ -1080,9 +1083,14 @@ class Image:
 
         if matrix:
             # matrix conversion
-            if mode not in ("L", "RGB"):
+            try:
+                matrix_length = {"L": 4, "RGB": 12}[mode]
+            except KeyError:
                 msg = "illegal conversion"
                 raise ValueError(msg)
+            if matrix_length != len(matrix):
+                msg = f"matrix must have length {matrix_length} for mode {mode}"
+                raise TypeError(msg)
             im = self.im.convert_matrix(mode, matrix)
             new_im = self._new(im)
             if has_transparency and self.im.bands == 3:
@@ -1091,7 +1099,7 @@ class Image:
                 def convert_transparency(
                     m: list[float] | tuple[float, ...], v: tuple[int, int, int]
                 ) -> int:
-                    value = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3] * 0.5
+                    value = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3] + 0.5
                     return max(0, min(255, int(value)))
 
                 if mode == "L":
@@ -1148,7 +1156,9 @@ class Image:
                 )
                 del new_im.info["transparency"]
                 return new_im
-            elif self.mode in {"L", "RGB", "P"} and mode in {"L", "RGB", "P"}:
+            elif self.mode in {"1", "L", "I", "I;16", "RGB", "P"} and (
+                mode in {"L", "RGB", "P"}
+            ):
                 t = self.info["transparency"]
                 if isinstance(t, bytes):
                     # Dragons. This can't be represented by a single color
@@ -1202,6 +1212,12 @@ class Image:
                 else:
                     msg = "Transparency for P mode should be bytes or int"
                     raise ValueError(msg)
+            elif self.mode in {"1", "L", "I", "I;16", "RGB"} and mode == "PA":
+                im_without_trns = self.copy()
+                del im_without_trns.info["transparency"]
+                new_im = im_without_trns.convert(mode, dither=dither)
+                new_im.putalpha(self.convert("RGBA").getchannel("A"))
+                return new_im
 
         if mode == "P" and palette == Palette.ADAPTIVE:
             im = self.im.quantize(colors)
@@ -1319,7 +1335,7 @@ class Image:
            When a reference ``palette`` is supplied, :data:`Dither.FLOYDSTEINBERG`
            is used by default. When no ``palette`` is given (e.g. quantizing to a
            new adaptive palette), the default remains :data:`Dither.NONE`, for
-           backwards compatibility with versions prior to 13.0.0; pass
+           backwards compatibility with versions prior to 13.1.0; pass
            ``dither=Dither.FLOYDSTEINBERG`` explicitly to enable dithering in that
            case too.
         :returns: A new image
@@ -1538,14 +1554,16 @@ class Image:
         return a tuple of (red, green, blue) color values, and a P image will
         return the index of the color in the palette.
 
-        :param maxcolors: Maximum number of colors.  If this number is
-           exceeded, this method returns None.  The default limit is
+        :param maxcolors: Maximum number of colors. If this number is
+           exceeded, this method returns None. The default limit is
            256 colors.
         :returns: An unsorted list of (count, pixel) values.
         """
+        if maxcolors < 0:
+            return None
 
         self.load()
-        if self.mode in ("1", "L", "P"):
+        if self.mode in {"1", "L", "P"}:
             h = self.im.histogram()
             out: list[tuple[int, float]] = [(h[i], i) for i in range(256) if h[i]]
             if len(out) > maxcolors:
@@ -1606,8 +1624,6 @@ class Image:
         """
 
         self.load()
-        if self.im.bands > 1:
-            return tuple(self.im.getband(i).getextrema() for i in range(self.im.bands))
         return self.im.getextrema()
 
     def getxmp(self, *, strip_namespaces: bool = True) -> dict[str, Any]:
@@ -1849,8 +1865,8 @@ class Image:
         self.load()
         if mask:
             mask.load()
-            return self.im.histogram((0, 0), mask.im)
-        if self.mode in ("I", "F"):
+            return self.im.histogram(None, mask.im)
+        if self.mode in ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"):
             return self.im.histogram(
                 extrema if extrema is not None else self.getextrema()
             )
@@ -1880,8 +1896,8 @@ class Image:
         self.load()
         if mask:
             mask.load()
-            return self.im.entropy((0, 0), mask.im)
-        if self.mode in ("I", "F"):
+            return self.im.entropy(None, mask.im)
+        if self.mode in ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"):
             return self.im.entropy(
                 extrema if extrema is not None else self.getextrema()
             )
@@ -1962,11 +1978,13 @@ class Image:
 
             source = ImageColor.getcolor(im, self.mode)
         elif isinstance(im, Image):
-            im.load()
-            if self.mode != im.mode:
-                if self.mode != "RGB" or im.mode not in ("LA", "RGBA", "RGBa"):
-                    # should use an adapter for this!
-                    im = im.convert(self.mode)
+            if self.mode != im.mode and (
+                self.mode != "RGB" or im.mode not in {"LA", "RGBA", "RGBa"}
+            ):
+                # should use an adapter for this!
+                im = im.convert(self.mode)
+            else:
+                im.load()
             source = im.im
         else:
             source = im
@@ -2075,7 +2093,7 @@ class Image:
 
         if callable(lut):
             # if it isn't a list, it should be a function
-            if self.mode in ("I", "I;16", "F"):
+            if self.mode in ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"):
                 # check if the function can be used with point_transform
                 # UNDONE wiredfool -- I think this prevents us from ever doing
                 # a gamma function point transform on > 8bit images.
@@ -2223,10 +2241,21 @@ class Image:
             # or the core image needs its mode updated
             self.load()
 
+    def _get_palette_color(self, value: tuple[int, ...]) -> tuple[int, ...] | int:
+        if len(value) in {3, 4}:
+            # RGB or RGBA value for a P or PA image
+            if self.mode == "PA":
+                alpha = value[3] if len(value) == 4 else 255
+                value = value[:3]
+            assert self.palette is not None
+            palette_index = self.palette.getcolor(value, self)
+            return (palette_index, alpha) if self.mode == "PA" else palette_index
+        return value
+
     def putpixel(
         self,
         xy: tuple[int, int] | list[int],
-        value: float | tuple[int, ...] | list[int],
+        value: float | tuple[int, ...],
     ) -> None:
         """
         Modifies the pixel at the given position. The color is given as
@@ -2251,18 +2280,13 @@ class Image:
 
         self._ensure_mutable()
 
-        if (
-            self.mode in ("P", "PA")
-            and isinstance(value, (list, tuple))
-            and len(value) in [3, 4]
-        ):
-            # RGB or RGBA value for a P or PA image
-            if self.mode == "PA":
-                alpha = value[3] if len(value) == 4 else 255
-                value = value[:3]
-            assert self.palette is not None
-            palette_index = self.palette.getcolor(tuple(value), self)
-            value = (palette_index, alpha) if self.mode == "PA" else palette_index
+        if self.mode in {"P", "PA"}:
+            if isinstance(value, list) and len(value) in {3, 4}:  # type: ignore[unreachable]
+                deprecate("'value' lists", 15, "tuples", plural=True)  # type: ignore[unreachable]
+
+                value = tuple(value)
+            if isinstance(value, tuple):
+                value = self._get_palette_color(value)
         return self.im.putpixel(xy, value)
 
     def remap_palette(
@@ -2393,7 +2417,7 @@ class Image:
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
            :py:data:`Resampling.BICUBIC`, :py:data:`Resampling.LANCZOS`,
            :py:data:`Resampling.MKS2013`, or :py:data:`Resampling.MKS2021`.
-           If the image has mode "1" or "P", it is always set to
+           If the image has mode "1", "P" or "PA", it is always set to
            :py:data:`Resampling.NEAREST`. Otherwise, the default filter is
            :py:data:`Resampling.BICUBIC`. See: :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats providing
@@ -2456,10 +2480,10 @@ class Image:
         if self.size == size and box == (0, 0, *self.size):
             return self.copy()
 
-        if self.mode in ("1", "P"):
+        if self.mode in {"1", "P", "PA"}:
             resample = Resampling.NEAREST
 
-        if self.mode in ["LA", "RGBA"] and resample != Resampling.NEAREST:
+        if self.mode in {"LA", "RGBA"} and resample != Resampling.NEAREST:
             im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
             im = im.resize(size, resample, box, reducing_gap)
             return im.convert(self.mode)
@@ -2541,7 +2565,7 @@ class Image:
            :py:data:`Resampling.BILINEAR` (linear interpolation in a 2x2
            environment), or :py:data:`Resampling.BICUBIC` (cubic spline
            interpolation in a 4x4 environment). If omitted, or if the image has
-           mode "1" or "P", it is set to :py:data:`Resampling.NEAREST`.
+           mode "1", "P" or "PA", it is set to :py:data:`Resampling.NEAREST`.
            See :ref:`concept-filters`.
         :param expand: Optional expansion flag.  If true, expands the output
            image to make it large enough to hold the entire rotated image.
@@ -2556,6 +2580,9 @@ class Image:
         """
 
         angle = angle % 360.0
+        if math.isnan(angle):
+            msg = "invalid angle"
+            raise ValueError(msg)
 
         # Fast paths regardless of filter, as long as we're not
         # translating or changing the center.
@@ -3025,7 +3052,7 @@ class Image:
            :py:data:`Resampling.BILINEAR` (linear interpolation in a 2x2
            environment), or :py:data:`Resampling.BICUBIC` (cubic spline
            interpolation in a 4x4 environment). If omitted, or if the image
-           has mode "1" or "P", it is set to :py:data:`Resampling.NEAREST`.
+           has mode "1", "P" or "PA", it is set to :py:data:`Resampling.NEAREST`.
            See: :ref:`concept-filters`.
         :param fill: If ``method`` is an
           :py:class:`~PIL.Image.ImageTransformHandler` object, this is one of
@@ -3053,9 +3080,19 @@ class Image:
             msg = "missing method data"
             raise ValueError(msg)
 
+        palette = None
+        if self.mode in {"P", "PA"} and self.palette:
+            palette = self.palette.copy()
+            if isinstance(fillcolor, str):
+                from . import ImageColor
+
+                fillcolor = ImageColor.getcolor(fillcolor, self.mode)
+            if isinstance(fillcolor, tuple) and all(
+                isinstance(i, int) for i in fillcolor
+            ):
+                fillcolor = palette.getcolor(cast("tuple[int, ...]", fillcolor), self)
+
         im = new(self.mode, size, fillcolor)
-        if self.mode in ("P", "PA") and self.palette:
-            im.palette = self.palette.copy()
         im.info = self._copy_info()
         if method == Transform.MESH:
             # list of quads
@@ -3067,6 +3104,8 @@ class Image:
             im.__transformer(
                 (0, 0, *size), self, method, data, resample, fillcolor is None
             )
+        if palette:
+            im.palette = palette
 
         return im
 
@@ -3159,7 +3198,7 @@ class Image:
 
         self.load()
 
-        if image.mode in ("1", "P"):
+        if image.mode in {"1", "P", "PA"}:
             resample = Resampling.NEAREST
 
         self.im.transform(box, image.im, method, data, resample, fill)
@@ -3294,17 +3333,15 @@ def new(
 
     im = Image()
     if (
-        mode == "P"
-        and isinstance(color, (list, tuple))
+        mode in {"P", "PA"}
+        and isinstance(color, tuple)
         and all(isinstance(i, int) for i in color)
     ):
-        color_ints: tuple[int, ...] = cast("tuple[int, ...]", tuple(color))
-        if len(color_ints) == 3 or len(color_ints) == 4:
-            # RGB or RGBA value for a P image
-            from . import ImagePalette
+        from . import ImagePalette
 
-            im.palette = ImagePalette.ImagePalette()
-            color = im.palette.getcolor(color_ints)
+        im._mode = mode
+        im.palette = ImagePalette.ImagePalette()
+        color = im._get_palette_color(cast("tuple[int, ...]", color))
     return im._new(core.fill(mode, size, color))
 
 

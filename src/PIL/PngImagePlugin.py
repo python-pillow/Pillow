@@ -498,7 +498,7 @@ class PngStream(ChunkStream):
         else:
             if self.im_n_frames is not None:
                 self.im_info["default_image"] = True
-            tile = [ImageFile._Tile("zip", (0, 0, *self.im_size), pos, self.im_rawmode)]
+            tile = [ImageFile._Tile("zip", None, pos, self.im_rawmode)]
         self.im_tile = tile
         self.im_idat = length
         msg = "image data found"
@@ -1121,8 +1121,12 @@ class PngImageFile(ImageFile.ImageFile):
                         elif isinstance(t, int):
                             updated.putpalettealpha(t)
                     mask = updated.convert("RGBA")
-                self._prev_im.paste(updated, self.dispose_extent, mask)
-                self.im = self._prev_im
+                if self.dispose_op == Disposal.OP_PREVIOUS:
+                    # Keep the previous image unchanged for disposal
+                    self.im = self._prev_im.copy()
+                else:
+                    self.im = self._prev_im
+                self.im.paste(updated, self.dispose_extent, mask)
 
     def _getexif(self) -> dict[int, Any] | None:
         if "exif" not in self.info:
@@ -1330,14 +1334,14 @@ def _write_multiple_frames(
             ImageFile._save(
                 im_frame,
                 cast("IO[bytes]", _idat(fp, chunk)),
-                [ImageFile._Tile("zip", (0, 0, *im_frame.size), 0, rawmode)],
+                [ImageFile._Tile("zip", args=rawmode)],
             )
         else:
             fdat_chunks = _fdat(fp, chunk, seq_num)
             ImageFile._save(
                 im_frame,
                 cast("IO[bytes]", fdat_chunks),
-                [ImageFile._Tile("zip", (0, 0, *im_frame.size), 0, rawmode)],
+                [ImageFile._Tile("zip", args=rawmode)],
             )
             seq_num = fdat_chunks.seq_num
     return None
@@ -1558,7 +1562,7 @@ def _save(
         ImageFile._save(
             single_im,
             cast("IO[bytes]", _idat(fp, chunk)),
-            [ImageFile._Tile("zip", (0, 0, *single_im.size), 0, rawmode)],
+            [ImageFile._Tile("zip", args=rawmode)],
         )
 
     if info:
