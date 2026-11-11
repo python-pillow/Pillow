@@ -395,9 +395,7 @@ class JpegImageFile(ImageFile.ImageFile):
                     rawmode = self.mode
                     if self.mode == "CMYK":
                         rawmode = "CMYK;I"  # assume adobe conventions
-                    self.tile = [
-                        ImageFile._Tile("jpeg", (0, 0, *self.size), 0, (rawmode, ""))
-                    ]
+                    self.tile = [ImageFile._Tile("jpeg", args=(rawmode, ""))]
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
@@ -460,12 +458,11 @@ class JpegImageFile(ImageFile.ImageFile):
             for s in [8, 4, 2, 1]:
                 if scale >= s:
                     break
-            assert e is not None
             e = (
-                e[0],
-                e[1],
-                (e[2] - e[0] + s - 1) // s + e[0],
-                (e[3] - e[1] + s - 1) // s + e[1],
+                0,
+                0,
+                (self.size[0] + s - 1) // s,
+                (self.size[1] + s - 1) // s,
             )
             self._size = ((self.size[0] + s - 1) // s, (self.size[1] + s - 1) // s)
             scale = s
@@ -523,28 +520,22 @@ class JpegImageFile(ImageFile.ImageFile):
             return
         try:
             exif = self.getexif()
-            resolution_unit = exif[0x0128]
-            x_resolution = exif[0x011A]
-            try:
-                dpi = float(x_resolution[0]) / x_resolution[1]
-            except TypeError:
-                dpi = x_resolution
+            dpi = exif[0x011A]
             if math.isnan(dpi):
                 msg = "DPI is not a number"
                 raise ValueError(msg)
-            if resolution_unit == 3:  # cm
+            if exif.get(0x0128) == 3:  # ResolutionUnit is cm
                 # 1 dpcm = 2.54 dpi
                 dpi *= 2.54
-            self.info["dpi"] = dpi, dpi
         except (
             struct.error,  # truncated EXIF
             KeyError,  # dpi not included
             SyntaxError,  # invalid/unreadable EXIF
             TypeError,  # dpi is an invalid float
             ValueError,  # dpi is an invalid float
-            ZeroDivisionError,  # invalid dpi rational value
         ):
-            self.info["dpi"] = 72, 72
+            dpi = 72
+        self.info["dpi"] = dpi, dpi
 
     def _getmp(self) -> dict[int, Any] | None:
         return _getmp(self)
@@ -868,9 +859,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # and the comment (COM marker).
         bufsize = max(len(exif) + 5, len(extra), len(comment or b"") + 5)
 
-    ImageFile._save(
-        im, fp, [ImageFile._Tile("jpeg", (0, 0, *im.size), 0, rawmode)], bufsize
-    )
+    ImageFile._save(im, fp, [ImageFile._Tile("jpeg", args=rawmode)], bufsize)
 
 
 ##

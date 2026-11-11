@@ -156,13 +156,20 @@ def test_invalid_file() -> None:
             pass
 
 
+def test_image_within_stack_without_stack_header() -> None:
+    with open(TEST_FILE, "rb") as fp:
+        data = bytearray(fp.read())
+
+    # Set imgnumber to 1, so that the first frame in this stack
+    # is marked as the second image
+    data[26 * 4 : 27 * 4] = struct.pack("<f", 1)
+
+    b = BytesIO(data)
+    with pytest.raises(SyntaxError, match="inconsistent stack header values"):
+        SpiderImagePlugin.SpiderImageFile(b)
+
+
 def test_nonstack_file() -> None:
-    with Image.open(TEST_FILE) as im:
-        with pytest.raises(EOFError):
-            im.seek(0)
-
-
-def test_nonstack_dos() -> None:
     with Image.open(TEST_FILE) as im:
         with pytest.raises(EOFError):
             im.seek(0)

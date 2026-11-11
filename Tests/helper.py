@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
+import sysconfig
 import tempfile
 from functools import lru_cache
 from io import BytesIO
@@ -53,21 +54,6 @@ def upload(a: Image.Image, b: Image.Image) -> str | None:
         b.save(os.path.join(tmpdir, "b.png"))
         return tmpdir
     return None
-
-
-def convert_to_comparable(
-    a: Image.Image, b: Image.Image
-) -> tuple[Image.Image, Image.Image]:
-    new_a, new_b = a, b
-    if a.mode == "P":
-        new_a = Image.new("L", a.size)
-        new_b = Image.new("L", b.size)
-        new_a.putdata(a.get_flattened_data())
-        new_b.putdata(b.get_flattened_data())
-    elif a.mode == "I;16":
-        new_a = a.convert("I")
-        new_b = b.convert("I")
-    return new_a, new_b
 
 
 def assert_deep_equal(a: Any, b: Any, msg: str | None = None) -> None:
@@ -121,8 +107,6 @@ def assert_image_similar(
 ) -> None:
     assert a.mode == b.mode, msg or f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
     assert a.size == b.size, msg or f"got size {repr(a.size)}, expected {repr(b.size)}"
-
-    a, b = convert_to_comparable(a, b)
 
     diff = 0
     for ach, bch in zip(a.split(), b.split()):
@@ -346,3 +330,7 @@ def is_ppc64le() -> bool:
 
 def is_win32() -> bool:
     return sys.platform.startswith("win32")
+
+
+def is_freethreaded() -> bool:
+    return bool(sysconfig.get_config_var("Py_GIL_DISABLED"))
