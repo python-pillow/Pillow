@@ -14,7 +14,7 @@
 # See the README file for information on usage and redistribution.
 #
 #
-# See https://github.com/GNOME/gimp/blob/mainline/devel-docs/gbr.txt for
+# See https://developer.gimp.org/core/standards/gbr/ for
 # format documentation.
 #
 # This code Interprets version 1 and 2 .gbr files.
@@ -59,10 +59,16 @@ class GbrImageFile(ImageFile.ImageFile):
         if width == 0 or height == 0:
             msg = "not a GIMP brush"
             raise SyntaxError(msg)
+        self._size = width, height
+
+        # Image might not be small
+        Image._decompression_bomb_check(self.size)
+
         color_depth = i32(self.fp.read(4))
         if color_depth not in (1, 4):
             msg = f"Unsupported GIMP brush color depth: {color_depth}"
             raise SyntaxError(msg)
+        self._mode = "L" if color_depth == 1 else "RGBA"
 
         if version == 1:
             comment_length = header_size - 20
@@ -76,21 +82,7 @@ class GbrImageFile(ImageFile.ImageFile):
 
         self.info["comment"] = self.fp.read(comment_length)[:-1]
 
-        self._mode = "L" if color_depth == 1 else "RGBA"
-        self._size = width, height
-
-        # Image might not be small
-        Image._decompression_bomb_check(self.size)
-
-    def load(self) -> Image.core.PixelAccess | None:
-        if self._im is None:
-            assert self.fp is not None
-            self.im = Image.core.new(self.mode, self.size)
-
-            # Data is an uncompressed block of w * h * bytes/pixel
-            data_size = self.width * self.height * Image.getmodebands(self.mode)
-            self.frombytes(self.fp.read(data_size))
-        return Image.Image.load(self)
+        self.tile = [ImageFile._Tile("raw", None, self.fp.tell(), self.mode)]
 
 
 #

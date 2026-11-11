@@ -17,8 +17,6 @@
 #
 from __future__ import annotations
 
-__lazy_modules__ = {"olefile"}
-
 import olefile
 
 from . import Image, TiffImagePlugin

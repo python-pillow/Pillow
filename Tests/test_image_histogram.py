@@ -16,14 +16,18 @@ def test_histogram() -> None:
     assert histogram("L") == (256, 0, 662)
     assert histogram("LA") == (512, 0, 16384)
     assert histogram("La") == (512, 0, 16384)
-    assert histogram("I") == (256, 0, 662)
-    assert histogram("F") == (256, 0, 662)
+    for mode in ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"):
+        assert histogram(mode) == (256, 0, 662)
     assert histogram("P") == (256, 0, 1551)
     assert histogram("PA") == (512, 0, 16384)
     assert histogram("RGB") == (768, 4, 675)
     assert histogram("RGBA") == (1024, 0, 16384)
     assert histogram("CMYK") == (1024, 0, 16384)
     assert histogram("YCbCr") == (768, 0, 1908)
+
+
+def test_histogram_zero_size() -> None:
+    assert Image.new("I", (0, 0)).histogram() == [0] * 256
 
 
 def test_histogram_masked() -> None:
@@ -49,7 +53,7 @@ def test_histogram_masked() -> None:
     assert histogram("YCbCr") == (768, 0, 1009)
 
 
-@pytest.mark.parametrize("mode", ("I", "F"))
+@pytest.mark.parametrize("mode", ("I", "I;16", "F"))
 def test_histogram_masked_unsupported_mode(mode: str) -> None:
     mask = Image.new("1", (128, 128))
     with pytest.raises(ValueError, match="image has wrong mode"):

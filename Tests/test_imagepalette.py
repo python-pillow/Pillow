@@ -78,11 +78,30 @@ def test_getcolor() -> None:
     with pytest.raises(ValueError):
         palette.getcolor((1, 2, 3))
     # But not if the image is not using one of the palette entries
-    palette.getcolor((1, 2, 3), image=Image.new("P", (1, 1)))
+    for mode, color in (("P", (1, 2, 3)), ("PA", (1, 2, 4))):
+        palette.getcolor(color, image=Image.new(mode, (1, 1)))
 
     # Test unknown color specifier
     with pytest.raises(ValueError):
         palette.getcolor("unknown")  # type: ignore[arg-type]
+
+
+def test_putpixel_reused_palette_color() -> None:
+    # Given a full palette where (1, 1, 1) is a duplicate entry
+    # and one of the duplicate entries is unused
+    im = Image.new("P", (256, 1))
+    im.putdata([0, 0] + list(range(2, 256)))
+    im.putpalette([0, 0, 0] + [1, 1, 1] * 2 + [0, 0, 0] * 253)
+
+    # And where that unused entry is replaced with (255, 0, 0)
+    im.putpixel((0, 0), (255, 0, 0))
+    assert im.getpixel((0, 0)) == 1
+
+    # Drawing the original color again should have a different index
+    im.putpixel((0, 0), (1, 1, 1))
+    assert im.getpixel((0, 0)) == 2
+
+    assert im.convert("RGB").getpixel((0, 0)) == (1, 1, 1)
 
 
 def test_getcolor_rgba() -> None:

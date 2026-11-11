@@ -38,6 +38,7 @@ _copy(Imaging imOut, Imaging imIn) {
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
     if (imIn->block != NULL && imOut->block != NULL) {
         memcpy(imOut->block, imIn->block, (size_t)imIn->ysize * imIn->linesize);
     } else {
@@ -45,6 +46,7 @@ _copy(Imaging imOut, Imaging imIn) {
             memcpy(imOut->image[y], imIn->image[y], imIn->linesize);
         }
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
     return imOut;
