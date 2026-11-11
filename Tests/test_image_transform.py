@@ -222,6 +222,19 @@ class TestImageTransform:
 
         self._test_nearest(op, mode)
 
+    @pytest.mark.parametrize("mode", ("1", "P", "PA"))
+    def test_filter_nearest(self, mode: str) -> None:
+        im = hopper(mode)
+        data = (1, 0.2, 0, 0.1, 1, 0)
+        expected = im.transform(
+            im.size, Image.Transform.AFFINE, data, Image.Resampling.NEAREST
+        )
+        for resample in (Image.Resampling.BILINEAR, Image.Resampling.BICUBIC):
+            assert (
+                im.transform(im.size, Image.Transform.AFFINE, data, resample)
+                == expected
+            )
+
     def test_blank_fill(self) -> None:
         # attempting to hit
         # https://github.com/python-pillow/Pillow/issues/254 reported
