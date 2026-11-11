@@ -1273,12 +1273,7 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
 static UINT16
 _i16_get(Imaging im, int y, int x) {
     UINT8 *pixel = &im->image8[y][x * 2];
-    if (
-        im->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-        || im->mode == IMAGING_MODE_I_16N
-#endif
-    ) {
+    if (isImageI16BigEndian(im)) {
         return (pixel[0] << 8) | pixel[1];
     }
     return pixel[0] | (pixel[1] << 8);
@@ -1286,11 +1281,7 @@ _i16_get(Imaging im, int y, int x) {
 
 static void
 _i16_set(Imaging im, int y, int x, UINT16 value) {
-    int bigendian = im->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-                    || im->mode == IMAGING_MODE_I_16N
-#endif
-        ;
+    int bigendian = isImageI16BigEndian(im);
     im->image8[y][x * 2 + (bigendian ? 1 : 0)] = value & 0xFF;
     im->image8[y][x * 2 + (bigendian ? 0 : 1)] = value >> 8;
 }
@@ -1307,15 +1298,7 @@ ImagingReduceNxN_32bpc(
     switch (imIn->type) {
         case IMAGING_TYPE_I16:
             for (y = 0; y < box[3] / yscale; y++) {
-                int bigendian = 0;
-                if (
-                    imIn->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-                    || imIn->mode == IMAGING_MODE_I_16N
-#endif
-                ) {
-                    bigendian = 1;
-                }
+                int bigendian = isImageI16BigEndian(imIn);
                 UINT8 *lineOut = imOut->image8[y];
                 int yy_from = box[1] + y * yscale;
                 for (x = 0; x < box[2] / xscale; x++) {
