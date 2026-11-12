@@ -184,8 +184,7 @@ class PhotoImage:
         ptr = im.getim()
         image = im.im
         if not image.isblock() or im.mode != self.__mode:
-            block = Image.core.new_block(self.__mode, im.size)
-            image.convert_into(block)  # convert directly between buffers
+            block = image.convert_block(self.__mode)  # contiguous, for Tk
             ptr = block.ptr
 
         _pyimagingtkcall("PyImagingPhoto", self.__photo, ptr)
