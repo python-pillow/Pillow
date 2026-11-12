@@ -23,7 +23,7 @@ from . import Image, ImageFile, ImagePalette
 from ._binary import o8
 
 # XPM header
-xpm_head = re.compile(b'"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)')
+xpm_head = re.compile(rb'"([0-9]*)\s+([0-9]*)\s+([0-9]*)\s+([0-9]*)')
 
 
 def _accept(prefix: bytes) -> bool:
@@ -78,12 +78,15 @@ class XpmImageFile(ImageFile.ImageFile):
                     if rgb == b"None":
                         transparent_key = c
                         palette[c] = b"\0\0\0"
-                    elif rgb.startswith(b"#"):
-                        rgb_int = int(rgb[1:], 16)
-                        palette[c] = (
-                            o8((rgb_int >> 16) & 255)
-                            + o8((rgb_int >> 8) & 255)
-                            + o8(rgb_int & 255)
+                    elif rgb.startswith(b"#") and len(rgb) in {4, 7, 10, 13}:
+                        # #RGB, #RRGGBB, #RRRGGGBBB or #RRRRGGGGBBBB
+                        # libXpm parses colours with XParseColor,
+                        # which uses the digits as the most significant bits
+                        # of each channel instead of scaling them
+                        digits = len(rgb) // 3
+                        palette[c] = bytes(
+                            int(rgb[i : i + digits], 16) << (4 - digits) * 4 >> 8
+                            for i in range(1, len(rgb), digits)
                         )
                     else:
                         # unknown colour

@@ -38,7 +38,7 @@ class QoiImageFile(ImageFile.ImageFile):
         self._mode = "RGB" if channels == 3 else "RGBA"
 
         self.fp.seek(1, os.SEEK_CUR)  # colorspace
-        self.tile = [ImageFile._Tile("qoi", (0, 0, *self._size), self.fp.tell())]
+        self.tile = [ImageFile._Tile("qoi", None, self.fp.tell())]
 
 
 class QoiDecoder(ImageFile.PyDecoder):
@@ -114,10 +114,8 @@ class QoiDecoder(ImageFile.PyDecoder):
                 elif op == 3 and self._previous_pixel:  # QOI_OP_RUN
                     run_length = (byte & 0b00111111) + 1
                     value = self._previous_pixel
-                    if bands == 3:
-                        value = value[:3]
-                    data += value * run_length
-                    continue
+                    if run_length > 1:
+                        data += value[:bands] * (run_length - 1)
             self._add_to_previous_pixels(value)
 
             if bands == 3:

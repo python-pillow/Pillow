@@ -23,6 +23,7 @@ __lazy_modules__ = {"PIL._binary", "PIL._util", "struct"}
 
 import os
 import struct
+from io import BytesIO
 from typing import cast
 
 from . import (
@@ -50,7 +51,6 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         _save(im, fp, filename)
         return
 
-    mpf_offset = 28
     prev_offset = 0
     offsets: list[int] = []
     im_sequences = [im, *append_images]
@@ -60,19 +60,23 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             if not offsets:
                 # APP2 marker
                 ifd_length = 66 + 16 * total
-                im_frame.encoderinfo["extra"] = (
+                extra = (
                     b"\xff\xe2"
                     + struct.pack(">H", 6 + ifd_length)
                     + b"MPF\0"
                     + b" " * ifd_length
                 )
+                im_frame.encoderinfo["extra"] = extra
                 if exif := im_frame.encoderinfo.get("exif"):
                     if isinstance(exif, Image.Exif):
                         exif = exif.tobytes()
                         im_frame.encoderinfo["exif"] = exif
-                    mpf_offset += 4 + len(exif)
 
-                JpegImagePlugin._save(im_frame, fp, filename)
+                with BytesIO() as first_frame_fp:
+                    JpegImagePlugin._save(im_frame, first_frame_fp, filename)
+                    first_frame_data = first_frame_fp.getvalue()
+                fp.write(first_frame_data)
+                mpf_offset = first_frame_data.index(extra) + 8
             else:
                 encoderinfo = im_frame._attach_default_encoderinfo(im)
                 im_frame.save(fp, "JPEG")

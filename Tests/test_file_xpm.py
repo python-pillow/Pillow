@@ -52,6 +52,26 @@ static char *test[] = {
     assert converted.getpixel((2, 0)) == (0, 0, 255, 255)
 
 
+@pytest.mark.parametrize(
+    "colour, expected",
+    (
+        (b"#F00", (240, 0, 0)),
+        (b"#FF8000", (255, 128, 0)),
+        (b"#123456789", (18, 69, 120)),
+        (b"#C71BC30BC71B", (199, 195, 199)),
+    ),
+)
+def test_hex_colour_lengths(colour: bytes, expected: tuple[int, int, int]) -> None:
+    data = b"""/* XPM */
+static char *test[] = {
+"1 1 1 1",
+"a\tc %s",
+"a"};
+""" % colour
+    with Image.open(BytesIO(data)) as im:
+        assert im.convert("RGB").getpixel((0, 0)) == expected
+
+
 def test_transparency_rgba() -> None:
     # With more than 256 colours and a transparent colour,
     # the image is opened as RGBA
@@ -68,6 +88,24 @@ def test_transparency_rgba() -> None:
 
         assert im.getpixel((0, 0)) == (0, 0, 1, 255)
         assert im.getpixel((1, 0)) == (0, 0, 0, 0)
+
+
+def test_multiple_spaces_in_values_line() -> None:
+    # The header values may be separated by whitespace, as written by GROMACS
+    data = b"""/* XPM */
+static char *gromacs_xpm[] = {
+"4 4   2 1",
+"A  c #FFFFFF ",
+"B  c #000000 ",
+"ABAB",
+"BABA",
+"ABAB",
+"BABA"
+};
+"""
+    with Image.open(BytesIO(data)) as im:
+        assert im.mode == "P"
+        assert im.size == (4, 4)
 
 
 def test_truncated_header() -> None:
@@ -102,7 +140,7 @@ def test_undefined_color_key() -> None:
     data = b"""/* XPM */
 static char *x[] = {"
 "1 1 1 1"
-"a\tc #000000"
+"a\tc #000000",
 "b"};
 """
     with Image.open(BytesIO(data)) as im:
