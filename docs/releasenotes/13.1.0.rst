@@ -54,6 +54,14 @@ Two new image processing operations are available in ImageOps.
 Other changes
 =============
 
+Rounding crop coordinates
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.crop` rounds float coordinates to the nearest integer.
+Coordinates ending in .5 were rounded to the nearest even integer, so a box of the same
+size could give an image one pixel larger or smaller depending on where it was. They
+are now always rounded up.
+
 Scaling empty text
 ^^^^^^^^^^^^^^^^^^
 
