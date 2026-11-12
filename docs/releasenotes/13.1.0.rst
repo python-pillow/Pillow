@@ -42,10 +42,15 @@ TODO
 API additions
 =============
 
-TODO
-^^^^
+ImageOps sepia, sobel and neon
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Three new image processing operations are available in ImageOps.
+
+* :py:meth:`~PIL.ImageOps.sepia`: apply a sepia tone
+* :py:meth:`~PIL.ImageOps.sobel`: apply a Sobel edge-detection filter
+* :py:meth:`~PIL.ImageOps.neon`: apply a neon glow effect, with arguments for color and
+  alpha
 
 Other changes
 =============

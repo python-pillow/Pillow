@@ -690,11 +690,12 @@ def grayscale(image: Image.Image) -> Image.Image:
 
 def sepia(image: Image.Image) -> Image.Image:
     """
-    Apply a sepia tone effect to an image.
+    Apply a sepia tone to the image.
 
     :param image: The image to modify.
     :return: An image.
 
+    .. versionadded:: 13.1.0
     """
     if image.mode != "RGB":
         image = image.convert("RGB")
@@ -720,13 +721,15 @@ def sepia(image: Image.Image) -> Image.Image:
 
 def sobel(image: Image.Image) -> Image.Image:
     """
-    Applies a Sobel edge-detection filter to the given image.
+    Apply a Sobel edge-detection filter to the image.
 
     This function computes the Sobel gradient magnitude using the
     horizontal (Gx) and vertical (Gy) Sobel kernels.
 
     :param image: The image to be filtered
     :return: An image.
+
+    .. versionadded:: 13.1.0
     """
     if image.mode != "L":
         image = image.convert("L")
@@ -762,14 +765,14 @@ def neon(
     """
     Apply a neon glow effect to an image using edge detection,
     blur-based glow generation, colorization, and alpha blending.
-    It calls all auxiliary functions required to generate
-    the final result.
 
-    :param image: Image to create the effect
-    :param color: RGB color used for neon effect
-    :param alpha: Controls the intensity of the neon effect. If alpha is 0.0, a copy of
-       the image is returned unaltered.
-    :return: An image
+    :param image: The image to be used for the effect
+    :param color: RGB color to be used for the neon effect
+    :param alpha: The intensity of the neon effect. If alpha is 0.0, a copy of the
+        image is returned unaltered.
+    :return: An image.
+
+    .. versionadded:: 13.1.0
     """
     edges = sobel(image).filter(ImageFilter.GaussianBlur(2))
 
@@ -782,7 +785,7 @@ def neon(
         tuple(glow.point(lambda value: min(255, int(value * c / 255))) for c in color),
     )
 
-    return Image.blend(image, neon, alpha)
+    return Image.blend(image.convert("RGB"), neon, alpha)
 
 
 def invert(image: Image.Image) -> Image.Image:
