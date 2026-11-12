@@ -78,7 +78,7 @@ class XpmImageFile(ImageFile.ImageFile):
                     if rgb == b"None":
                         transparent_key = c
                         palette[c] = b"\0\0\0"
-                    elif rgb.startswith(b"#") and len(rgb) in (4, 7, 10, 13):
+                    elif rgb.startswith(b"#") and len(rgb) in {4, 7, 10, 13}:
                         # #RGB, #RRGGBB, #RRRGGGBBB or #RRRRGGGGBBBB
                         # libXpm parses colours with XParseColor,
                         # which uses the digits as the most significant bits
