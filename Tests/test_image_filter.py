@@ -159,7 +159,7 @@ def test_rankfilter_i16(mode: str, filter: ImageFilter.RankFilter) -> None:
     data = [(i * 0x1F3D) & 0xFFFF for i in range(10 * 10)]
     im = Image.new(mode, (10, 10))
     im.putdata(data)
-    reference = Image.new("I", (10, 10))  # Reference image in I32 mode.
+    reference = Image.new("I", (10, 10))  # Reference image in INT32 mode.
     reference.putdata(data)
 
     out = im.filter(filter)
