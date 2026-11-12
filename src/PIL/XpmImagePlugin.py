@@ -85,7 +85,7 @@ class XpmImageFile(ImageFile.ImageFile):
                         # of each channel instead of scaling them
                         digits = len(rgb) // 3
                         palette[c] = bytes(
-                            int(rgb[i : i + digits], 16) << (16 - 4 * digits) >> 8
+                            int(rgb[i : i + digits], 16) << (4 - digits) * 4 >> 8
                             for i in range(1, len(rgb), digits)
                         )
                     else:
