@@ -92,8 +92,6 @@ def test_sanity() -> None:
 
         ImageOps.sepia(im)
 
-        ImageOps.sobel(im)
-
         ImageOps.neon(im)
 
 

@@ -719,18 +719,7 @@ def sepia(image: Image.Image) -> Image.Image:
     )
 
 
-def sobel(image: Image.Image) -> Image.Image:
-    """
-    Apply a Sobel edge-detection filter to the image.
-
-    This function computes the Sobel gradient magnitude using the
-    horizontal (Gx) and vertical (Gy) Sobel kernels.
-
-    :param image: The image to be filtered
-    :return: An image.
-
-    .. versionadded:: 13.1.0
-    """
+def _sobel(image: Image.Image) -> Image.Image:
     if image.mode != "L":
         image = image.convert("L")
 
@@ -774,7 +763,7 @@ def neon(
 
     .. versionadded:: 13.1.0
     """
-    edges = sobel(image).filter(ImageFilter.GaussianBlur(2))
+    edges = _sobel(image).filter(ImageFilter.GaussianBlur(2))
 
     # Apply a glow-enhancing mask transformation
     glow = edges.point(lambda value: 255 - ((255 - value) ** 2 // 255))
