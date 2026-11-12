@@ -55,8 +55,23 @@ skips 2, draws 3, skips 1, draws 2, and so on.
 
 When ``dash`` is set, ``width`` is ignored.
 
+ImageOps sepia and neon
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Two new image processing operations are available in ImageOps.
+
+* :py:meth:`~PIL.ImageOps.sepia`: apply a sepia tone
+* :py:meth:`~PIL.ImageOps.neon`: apply a neon glow effect, with arguments for color and
+  alpha
+
 Other changes
 =============
+
+Scaling empty text
+^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageText.Text.wrap` now raises :py:exc:`ValueError` for empty or
+whitespace-only text with ``scaling``, before adjusting the font size.
 
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -1069,6 +1069,19 @@ def test_floodfill_not_negative() -> None:
     assert_image_equal_tofile(im, "Tests/images/imagedraw_floodfill_not_negative.png")
 
 
+def test_floodfill_rgb_on_rgba() -> None:
+    # Arrange
+    im = Image.new("RGBA", (W, H), "black")
+    xy = int(W / 2), int(H / 2)
+    rgb = (255, 0, 0)
+
+    # Act
+    ImageDraw.floodfill(im, xy, rgb)
+
+    # Assert
+    assert im.getpixel(xy) == rgb + (255,)
+
+
 def create_base_image_draw(
     size: tuple[int, int],
     mode: str = DEFAULT_MODE,

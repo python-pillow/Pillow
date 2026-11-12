@@ -143,6 +143,15 @@ def test_rgba_pa() -> None:
     assert_image_similar(im, expected, 9.3)
 
 
+def test_la_pa() -> None:
+    im = hopper("LA")
+    im.putalpha(hopper("L").transpose(Image.Transpose.FLIP_LEFT_RIGHT))
+
+    converted = im.convert("PA")
+    assert_image_equal(converted.getchannel("A"), im.getchannel("A"))
+    assert_image_equal(converted.convert("LA"), im)
+
+
 def test_pa() -> None:
     im = hopper().convert("PA")
 
@@ -401,7 +410,7 @@ def test_matrix_truncated(mode: str, message: str) -> None:
         im.convert(mode, matrix=(0,))
 
 
-@pytest.mark.parametrize("mode", ("RGB", "L"))
+@pytest.mark.parametrize("mode", ("L", "RGB"))
 def test_matrix_xyz(mode: str) -> None:
     # Arrange
     im = hopper("RGB")
@@ -417,10 +426,21 @@ def test_matrix_xyz(mode: str) -> None:
     with Image.open("Tests/images/hopper-XYZ.png") as target:
         if converted_im.mode == "RGB":
             assert_image_similar(converted_im, target, 3)
-            assert converted_im.info["transparency"] == (105, 54, 4)
+            assert converted_im.info["transparency"] == (105, 54, 5)
         else:
             assert_image_similar(converted_im, target.getchannel(0), 1)
             assert converted_im.info["transparency"] == 105
+
+
+@pytest.mark.parametrize(
+    "mode, matrix", (("L", (0.5, 0.5, 0, 0)), ("RGB", rgb2xyz_matrix))
+)
+def test_matrix_transparency(mode: str, matrix: tuple[float, ...]) -> None:
+    im = Image.new("RGB", (1, 1), (255, 0, 101))
+    im.info["transparency"] = (255, 0, 101)
+
+    converted_im = im.convert(mode, matrix)
+    assert converted_im.info["transparency"] == converted_im.getpixel((0, 0))
 
 
 def test_matrix_identity() -> None:

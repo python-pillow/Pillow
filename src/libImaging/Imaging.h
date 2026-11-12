@@ -282,6 +282,12 @@ ImagingError_Mismatch(void); /* maps to ValueError by default */
 extern void *
 ImagingError_ValueError(const char *message);
 
+/* Helpers */
+/* ------- */
+
+int
+isImageI16BigEndian(Imaging im);
+
 /* Transform callbacks */
 /* ------------------- */
 

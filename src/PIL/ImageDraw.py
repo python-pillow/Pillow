@@ -624,7 +624,7 @@ class ImageDraw:
 
             def draw_text(ink: int, stroke_width: float = 0) -> None:
                 mode = self.fontmode
-                if stroke_width == 0 and embedded_color:
+                if stroke_width == 0 and image_text.embedded_color:
                     mode = "RGBA"
                 x = int(line.x)
                 y = int(line.y)
@@ -869,11 +869,21 @@ def floodfill(
     x, y = xy
     try:
         background = pixel[x, y]
-        if _color_diff(value, background) <= thresh:
-            return  # seed point already has fill color
-        pixel[x, y] = value
-    except (ValueError, IndexError):
+    except IndexError:
         return  # seed point outside image
+
+    def _update_color(color: float | tuple[int, ...]) -> float | tuple[int, ...]:
+        if image.mode == "RGBA" and isinstance(color, tuple) and len(color) == 3:
+            color += (255,)
+        return color
+
+    value = _update_color(value)
+    if _color_diff(value, background) <= thresh:
+        return  # seed point already has fill color
+
+    if border is not None:
+        border = _update_color(border)
+    pixel[x, y] = value
     edge = {(x, y)}
     # use a set to keep record of current and previous edge pixels
     # to reduce memory consumption
