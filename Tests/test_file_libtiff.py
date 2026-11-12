@@ -6,7 +6,7 @@ import itertools
 import os
 import re
 import sys
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 import pytest
 
@@ -67,21 +67,21 @@ class TestFileLibTiff(LibTiffTestCase):
     ) -> None:
         exif = Image.Exif()
         exif[ExifTags.Base.Make] = "Canon"
-        expected = {
+        expected: dict[int, Any] = {
             ExifTags.Base.ISOSpeedRatings: 400,
             ExifTags.Base.DateTimeOriginal: "2026:11:08 12:00:00",
         }
         exif.get_ifd(ExifTags.IFD.Exif).update(expected)
         interop = {ExifTags.Interop.InteropIndex: "R98"}
         exif.get_ifd(ExifTags.IFD.Exif)[ExifTags.IFD.Interop] = interop
-        gps = {ExifTags.GPS.GPSMapDatum: "WGS-84"}
+        gps: dict[int, Any] = {ExifTags.GPS.GPSMapDatum: "WGS-84"}
         exif.get_ifd(ExifTags.IFD.GPSInfo).update(gps)
         jpeg = io.BytesIO()
         Image.new("RGB", (8, 8), (10, 20, 30)).save(jpeg, format="JPEG", exif=exif)
         destination = tmp_path / "exif.tiff" if use_file else io.BytesIO()
 
         with Image.open(jpeg) as source:
-            frames = [source]
+            frames: list[Image.Image] = [source]
             if save_all:
                 frames.append(Image.new("RGB", (8, 8), (30, 20, 10)))
             source.save(
@@ -93,6 +93,7 @@ class TestFileLibTiff(LibTiffTestCase):
                 append_images=frames[1:],
             )
             with Image.open(destination) as saved:
+                assert isinstance(saved, TiffImagePlugin.TiffImageFile)
                 assert saved.n_frames == len(frames)
                 for index, frame in enumerate(frames):
                     saved.seek(index)
