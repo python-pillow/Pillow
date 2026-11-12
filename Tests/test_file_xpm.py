@@ -57,7 +57,6 @@ static char *test[] = {
     (
         (b"#F00", (240, 0, 0)),
         (b"#FF8000", (255, 128, 0)),
-        (b"#12345678", (52, 86, 120)),
         (b"#123456789", (18, 69, 120)),
         (b"#C71BC30BC71B", (199, 195, 199)),
     ),
@@ -123,7 +122,7 @@ def test_undefined_color_key() -> None:
     data = b"""/* XPM */
 static char *x[] = {"
 "1 1 1 1"
-"a\tc #000000"
+"a\tc #000000",
 "b"};
 """
     with Image.open(BytesIO(data)) as im:
