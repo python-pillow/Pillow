@@ -55,6 +55,8 @@ Many of Pillow's features require external libraries:
 
 * **libwebp** provides the WebP format.
 
+  * Pillow requires libwebp **1.2.0** or later.
+
 * **openjpeg** provides JPEG 2000 functionality.
 
   * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1**,
