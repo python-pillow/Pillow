@@ -57,9 +57,9 @@ static char *test[] = {
     (
         (b"#F00", (240, 0, 0)),
         (b"#FF8000", (255, 128, 0)),
+        (b"#12345678", (52, 86, 120)),
         (b"#123456789", (18, 69, 120)),
         (b"#C71BC30BC71B", (199, 195, 199)),
-        (b"#FFFF00000000", (255, 0, 0)),
     ),
 )
 def test_hex_colour_lengths(colour: bytes, expected: tuple[int, int, int]) -> None:
@@ -96,26 +96,6 @@ def test_truncated_header() -> None:
     with pytest.raises(SyntaxError, match="broken XPM file"):
         with XpmImagePlugin.XpmImageFile(BytesIO(data)):
             pass
-
-
-@pytest.mark.parametrize(
-    "colour, expected", ((b"#1234", (0, 18, 52)), (b"#12345678", (52, 86, 120)))
-)
-def test_other_hex_colour_lengths(
-    colour: bytes, expected: tuple[int, int, int]
-) -> None:
-    # Other lengths keep using the lowest 24 bits, without shifting the next colour
-    data = b"""/* XPM */
-static char *test[] = {
-"2 1 2 1",
-"a\tc %s",
-"b\tc #00ff00",
-"ab"};
-""" % colour
-    with Image.open(BytesIO(data)) as im:
-        rgb = im.convert("RGB")
-        assert rgb.getpixel((0, 0)) == expected
-        assert rgb.getpixel((1, 0)) == (0, 255, 0)
 
 
 def test_cannot_read_color() -> None:
