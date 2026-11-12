@@ -70,10 +70,10 @@
             for (int x = 0; x < xsize; x++) {                     \
                 out[x] = pixel(in0[x]);                           \
             }                                                     \
-            for (int i = 0; i < size; i++) {                      \
-                const type *row = (const type *)im->image[y + i]; \
-                for (int k = (i == 0); k < size; k++) {           \
-                    const type *in = row + k;                     \
+            for (int s = 0; s < size; s++) {                      \
+                const type *row = (const type *)im->image[y + s]; \
+                for (int s2 = (s == 0); s2 < size; s2++) {        \
+                    const type *in = row + s2;                    \
                     for (int x = 0; x < xsize; x++) {             \
                         out[x] = op(out[x], pixel(in[x]));        \
                     }                                             \
