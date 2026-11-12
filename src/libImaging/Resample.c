@@ -287,7 +287,7 @@ precompute_coeffs(
 
     double inv_filterscale = 1.0 / filterscale;  // invariant over the loop
     for (xx = 0; xx < outSize; xx++) {
-        double center = in0 + (xx + 0.5) * scale;
+        double center;
         double ww = 0.0;
         if (box_downscale) {
             double left = in0 + (double)xx * scale;
@@ -295,6 +295,7 @@ precompute_coeffs(
             xmin = (int)floor(left - 0.5) + 1;
             xmax = (int)floor(right - 0.5) + 1;
         } else {
+            center = in0 + (xx + 0.5) * scale;
             // Round the value
             xmin = (int)(center - support + 0.5);
             // Round the value
