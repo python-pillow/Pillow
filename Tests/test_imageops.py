@@ -84,11 +84,15 @@ def test_sanity() -> None:
     ImageOps.posterize(hopper("L"), 4)
     ImageOps.posterize(hopper("RGB"), 4)
 
-    ImageOps.solarize(hopper("L"))
-    ImageOps.solarize(hopper("RGB"))
+    for mode in ("L", "RGB"):
+        im = hopper(mode)
+        ImageOps.solarize(im)
 
-    ImageOps.exif_transpose(hopper("L"))
-    ImageOps.exif_transpose(hopper("RGB"))
+        ImageOps.exif_transpose(im)
+
+        ImageOps.sepia(im)
+
+        ImageOps.neon(im)
 
 
 @pytest.mark.parametrize(
