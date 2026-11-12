@@ -313,7 +313,7 @@ Methods
         skips 2, draws 3, skips 1, draws 2, and so on). When ``dash`` is set, ``width``
         and ``joint`` are ignored.
 
-        .. versionadded:: 13.0.0
+        .. versionadded:: 13.1.0
 
 .. py:method:: ImageDraw.pieslice(xy, start, end, fill=None, outline=None, width=1)
 
@@ -360,7 +360,7 @@ Methods
         skips 2, draws 3, skips 1, draws 2, and so on). When ``dash`` is set, ``width``
         is ignored.
 
-        .. versionadded:: 13.0.0
+        .. versionadded:: 13.1.0
 
 
 .. py:method:: ImageDraw.regular_polygon(bounding_circle, n_sides, rotation=0, fill=None, outline=None, width=1)
@@ -400,7 +400,7 @@ Methods
         skips 2, draws 3, skips 1, draws 2, and so on). When ``dash`` is set, ``width``
         is ignored.
 
-        .. versionadded:: 13.0.0
+        .. versionadded:: 13.1.0
 
 .. py:method:: ImageDraw.rounded_rectangle(xy, radius=0, fill=None, outline=None, width=1, corners=None)
 
