@@ -400,6 +400,19 @@ getbands(const ModeID mode) {
     return bands;
 }
 
+int
+isImageI16BigEndian(Imaging im) {
+    if (
+        im->mode == IMAGING_MODE_I_16B
+#ifdef WORDS_BIGENDIAN
+        || im->mode == IMAGING_MODE_I_16N
+#endif
+    ) {
+        return 1;
+    }
+    return 0;
+}
+
 #define TYPE_UINT8 (0x100 | sizeof(UINT8))
 #define TYPE_INT32 (0x200 | sizeof(INT32))
 #define TYPE_FLOAT16 (0x500 | sizeof(FLOAT16))
@@ -1311,7 +1324,6 @@ _gaussian_blur(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _getpalette_impl(ImagingObject *self, PyObject *args) {
-    PyObject *palette;
     int palettesize;
     int bits;
     ImagingShuffler pack;
@@ -1336,16 +1348,14 @@ _getpalette_impl(ImagingObject *self, PyObject *args) {
     }
 
     palettesize = self->image->palette->size;
-    palette = PyBytes_FromStringAndSize(NULL, palettesize * bits / 8);
-    if (!palette) {
+    PyBytesWriter *writer = PyBytesWriter_Create(palettesize * bits / 8);
+    if (writer == NULL) {
         return NULL;
     }
 
-    pack(
-        (UINT8 *)PyBytes_AsString(palette), self->image->palette->palette, palettesize
-    );
+    pack(PyBytesWriter_GetData(writer), self->image->palette->palette, palettesize);
 
-    return palette;
+    return PyBytesWriter_Finish(writer);
 }
 static PyObject *
 _getpalette(ImagingObject *self, PyObject *args) {
@@ -1911,14 +1921,7 @@ _putdata_impl(ImagingObject *self, PyObject *args) {
             int bigendian = 0;
             if (image->type == IMAGING_TYPE_I16) {
                 // I;16*
-                if (
-                    image->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-                    || image->mode == IMAGING_MODE_I_16N
-#endif
-                ) {
-                    bigendian = 1;
-                }
+                bigendian = isImageI16BigEndian(image);
             }
             for (i = x = y = 0; i < n; i++) {
                 set_value_to_item(seq, i);
@@ -2737,9 +2740,7 @@ _getextrema_impl(ImagingObject *self, PyObject *args) {
             case IMAGING_TYPE_FLOAT32:
                 return Py_BuildValue("dd", extrema.f[0], extrema.f[1]);
             case IMAGING_TYPE_I16:
-                if (self->image->mode == IMAGING_MODE_I_16) {
-                    return Py_BuildValue("HH", extrema.s[0], extrema.s[1]);
-                }
+                return Py_BuildValue("HH", extrema.s[0], extrema.s[1]);
         }
     }
 

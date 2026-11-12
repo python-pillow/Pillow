@@ -16,9 +16,8 @@ def test_histogram() -> None:
     assert histogram("L") == (256, 0, 662)
     assert histogram("LA") == (512, 0, 16384)
     assert histogram("La") == (512, 0, 16384)
-    assert histogram("I") == (256, 0, 662)
-    assert histogram("I;16") == (256, 0, 662)
-    assert histogram("F") == (256, 0, 662)
+    for mode in ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"):
+        assert histogram(mode) == (256, 0, 662)
     assert histogram("P") == (256, 0, 1551)
     assert histogram("PA") == (512, 0, 16384)
     assert histogram("RGB") == (768, 4, 675)

@@ -209,11 +209,13 @@ def test_rankfilter_overflow() -> None:
             im.filter(rankfilter)
 
 
-def test_builtinfilter_p() -> None:
+@pytest.mark.parametrize("mode", ("P", "PA"))
+def test_builtinfilter_palette(mode: str) -> None:
     builtin_filter = ImageFilter.BuiltinFilter()
 
-    with pytest.raises(ValueError):
-        builtin_filter.filter(hopper("P").im)
+    im = hopper(mode)
+    with pytest.raises(ValueError, match="cannot filter palette images"):
+        builtin_filter.filter(im.im)
 
 
 def test_kernel_not_enough_coefficients() -> None:

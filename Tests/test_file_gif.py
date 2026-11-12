@@ -14,6 +14,7 @@ from .helper import (
     assert_image_similar,
     hopper,
     is_pypy,
+    skip_unless_feature,
 )
 
 TYPE_CHECKING = False
@@ -280,7 +281,16 @@ def test_roundtrip2(tmp_path: Path) -> None:
         assert_image_similar(reread.convert("RGB"), hopper(), 12)
 
 
-@pytest.mark.parametrize("mode", ("CMYK", "HSV", "LAB", "RGBX", "YCbCr"))
+@pytest.mark.parametrize(
+    "mode",
+    (
+        "CMYK",
+        "HSV",
+        "RGBX",
+        "YCbCr",
+        pytest.param("LAB", marks=skip_unless_feature("littlecms2")),
+    ),
+)
 def test_roundtrip_other_rgb_modes(tmp_path: Path, mode: str) -> None:
     out = tmp_path / "temp.gif"
     im = hopper(mode)

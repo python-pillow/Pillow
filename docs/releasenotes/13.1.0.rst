@@ -42,10 +42,14 @@ TODO
 API additions
 =============
 
-TODO
-^^^^
+ImageOps sepia and neon
+^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Two new image processing operations are available in ImageOps.
+
+* :py:meth:`~PIL.ImageOps.sepia`: apply a sepia tone
+* :py:meth:`~PIL.ImageOps.neon`: apply a neon glow effect, with arguments for color and
+  alpha
 
 Other changes
 =============
@@ -56,6 +60,12 @@ EXIF metadata in compressed TIFF images
 Saving a compressed TIFF with an EXIF subdirectory now preserves that
 metadata. Previously, passing EXIF metadata from an image such as a JPEG
 could cause the TIFF save to fail.
+
+Scaling empty text
+^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageText.Text.wrap` now raises :py:exc:`ValueError` for empty or
+whitespace-only text with ``scaling``, before adjusting the font size.
 
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
