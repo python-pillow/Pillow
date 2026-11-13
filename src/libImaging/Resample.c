@@ -250,19 +250,6 @@ precompute_coeffs(
     /* maximum number of coeffs */
     ksize = (int)ceil(support) * 2 + 1;
 
-    /* For BOX, each source pixel contributes to one output pixel with equal weights.
-       When downscaling, (int)(center ± support + 0.5) and the discontinuous box kernel
-       can both miss a pixel whose center lands on a bin edge (issue #9939).
-       Tile bins as (left, right] instead. */
-    int box_downscale = filterp == &BOX && scale > 1.0;
-    if (box_downscale) {
-        /* One extra source pixel per output when a bin edge hits a center. */
-        int needed = (int)scale + 2;
-        if (needed > ksize) {
-            ksize = needed;
-        }
-    }
-
     // check for overflow
     if (outSize > INT_MAX / (ksize * (int)sizeof(double))) {
         ImagingError_MemoryError();
@@ -284,6 +271,12 @@ precompute_coeffs(
         ImagingError_MemoryError();
         return 0;
     }
+
+    /* For BOX, each source pixel contributes to one output pixel with equal weights.
+       When downscaling, (int)(center ± support + 0.5) and the discontinuous box kernel
+       can both miss a pixel whose center lands on a bin edge (issue #9939).
+       Tile bins as (left, right] instead. */
+    int box_downscale = filterp == &BOX && scale > 1.0;
 
     double inv_filterscale = 1.0 / filterscale;  // invariant over the loop
     for (xx = 0; xx < outSize; xx++) {
