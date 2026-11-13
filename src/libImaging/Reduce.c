@@ -1270,6 +1270,22 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
     }
 }
 
+static UINT16
+_i16_get(Imaging im, int y, int x) {
+    UINT8 *pixel = &im->image8[y][x * 2];
+    if (isImageI16BigEndian(im)) {
+        return (pixel[0] << 8) | pixel[1];
+    }
+    return pixel[0] | (pixel[1] << 8);
+}
+
+static void
+_i16_set(Imaging im, int y, int x, UINT16 value) {
+    int bigendian = isImageI16BigEndian(im);
+    im->image8[y][x * 2 + (bigendian ? 1 : 0)] = value & 0xFF;
+    im->image8[y][x * 2 + (bigendian ? 0 : 1)] = value >> 8;
+}
+
 void
 ImagingReduceNxN_32bpc(
     Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
@@ -1280,6 +1296,39 @@ ImagingReduceNxN_32bpc(
     double multiplier = 1.0 / (yscale * xscale);
 
     switch (imIn->type) {
+        case IMAGING_TYPE_I16:
+            for (y = 0; y < box[3] / yscale; y++) {
+                int bigendian = isImageI16BigEndian(imIn);
+                UINT8 *lineOut = imOut->image8[y];
+                int yy_from = box[1] + y * yscale;
+                for (x = 0; x < box[2] / xscale; x++) {
+                    int xx_from = box[0] + x * xscale;
+                    double ss = 0;
+                    for (yy = yy_from; yy < yy_from + yscale - 1; yy += 2) {
+                        for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
+                            ss += _i16_get(imIn, yy, xx) + _i16_get(imIn, yy, xx + 1) +
+                                  _i16_get(imIn, yy + 1, xx) +
+                                  _i16_get(imIn, yy + 1, xx + 1);
+                        }
+                        if (xscale & 0x01) {
+                            ss += _i16_get(imIn, yy, xx) + _i16_get(imIn, yy + 1, xx);
+                        }
+                    }
+                    if (yscale & 0x01) {
+                        for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
+                            ss += _i16_get(imIn, yy, xx) + _i16_get(imIn, yy, xx + 1);
+                        }
+                        if (xscale & 0x01) {
+                            ss += _i16_get(imIn, yy, xx);
+                        }
+                    }
+                    int ss_int = CLIP16(ROUND_UP(ss * multiplier));
+                    lineOut[x * 2 + (bigendian ? 1 : 0)] = ss_int & 0xFF;
+                    lineOut[x * 2 + (bigendian ? 0 : 1)] = ss_int >> 8;
+                }
+            }
+            break;
+
         case IMAGING_TYPE_INT32:
             for (y = 0; y < box[3] / yscale; y++) {
                 int yy_from = box[1] + y * yscale;
@@ -1353,6 +1402,49 @@ ImagingReduceCorners_32bpc(
     int x, y, xx, yy;
 
     switch (imIn->type) {
+        case IMAGING_TYPE_I16:
+            if (box[2] % xscale) {
+                double multiplier = 1.0 / ((box[2] % xscale) * yscale);
+                for (y = 0; y < box[3] / yscale; y++) {
+                    int yy_from = box[1] + y * yscale;
+                    double ss = 0;
+                    x = box[2] / xscale;
+                    for (yy = yy_from; yy < yy_from + yscale; yy++) {
+                        for (xx = box[0] + x * xscale; xx < box[0] + box[2]; xx++) {
+                            ss += _i16_get(imIn, yy, xx);
+                        }
+                    }
+                    _i16_set(imOut, y, x, CLIP16(ROUND_UP(ss * multiplier)));
+                }
+            }
+            if (box[3] % yscale) {
+                double multiplier = 1.0 / (xscale * (box[3] % yscale));
+                y = box[3] / yscale;
+                for (x = 0; x < box[2] / xscale; x++) {
+                    int xx_from = box[0] + x * xscale;
+                    double ss = 0;
+                    for (yy = box[1] + y * yscale; yy < box[1] + box[3]; yy++) {
+                        for (xx = xx_from; xx < xx_from + xscale; xx++) {
+                            ss += _i16_get(imIn, yy, xx);
+                        }
+                    }
+                    _i16_set(imOut, y, x, CLIP16(ROUND_UP(ss * multiplier)));
+                }
+            }
+            if (box[2] % xscale && box[3] % yscale) {
+                double multiplier = 1.0 / ((box[2] % xscale) * (box[3] % yscale));
+                double ss = 0;
+                x = box[2] / xscale;
+                y = box[3] / yscale;
+                for (yy = box[1] + y * yscale; yy < box[1] + box[3]; yy++) {
+                    for (xx = box[0] + x * xscale; xx < box[0] + box[2]; xx++) {
+                        ss += _i16_get(imIn, yy, xx);
+                    }
+                }
+                _i16_set(imOut, y, x, CLIP16(ROUND_UP(ss * multiplier)));
+            }
+            break;
+
         case IMAGING_TYPE_INT32:
             if (box[2] % xscale) {
                 double multiplier = 1.0 / ((box[2] % xscale) * yscale);
@@ -1452,8 +1544,7 @@ ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]) {
     ImagingSectionCookie cookie;
     Imaging imOut = NULL;
 
-    if (imIn->mode == IMAGING_MODE_P || imIn->mode == IMAGING_MODE_1 ||
-        imIn->type == IMAGING_TYPE_I16) {
+    if (imIn->mode == IMAGING_MODE_P || imIn->mode == IMAGING_MODE_1) {
         return (Imaging)ImagingError_ModeError();
     }
 
@@ -1506,6 +1597,7 @@ ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]) {
             ImagingReduceCorners(imOut, imIn, box, xscale, yscale);
             break;
 
+        case IMAGING_TYPE_I16:
         case IMAGING_TYPE_INT32:
         case IMAGING_TYPE_FLOAT32:
             ImagingReduceNxN_32bpc(imOut, imIn, box, xscale, yscale);
