@@ -255,6 +255,64 @@ def test_oversized_box_length(tbox: bytes) -> None:
         Jpeg2KImagePlugin.Jpeg2KImageFile(BytesIO(data))
 
 
+def _insert_xml_box(size: int) -> bytes:
+    # Returns a valid image with an xml box of the given size placed before
+    # the codestream box, which OpenJPEG skips
+    with open("Tests/images/test-card-lossless.jp2", "rb") as fp:
+        data = fp.read()
+    offset = 0
+    while data[offset + 4 : offset + 8] != b"jp2c":
+        offset += _binary.i32be(data, offset)
+    xml = b"<a>" + b" " * size + b"</a>"
+    box = _binary.o32be(8 + len(xml)) + b"xml " + xml
+    return data[:offset] + box + data[offset:]
+
+
+def test_skipped_box_benign_control() -> None:
+    # A box smaller than the stream buffer does not reach the skip callback
+    boxed = _insert_xml_box(1024)
+    with Image.open(BytesIO(boxed)) as im:
+        assert im.size == (640, 480)
+        assert_image_equal_tofile(im, "Tests/images/test-card-lossless.jp2")
+
+
+def test_large_skipped_box(tmp_path: Path) -> None:
+    # A box larger than the stream buffer reaches the skip callback
+    boxed = _insert_xml_box(2 * 1024 * 1024)
+
+    outfile = tmp_path / "temp.jp2"
+    outfile.write_bytes(boxed)
+    with Image.open(outfile) as im:
+        assert_image_equal_tofile(im, "Tests/images/test-card-lossless.jp2")
+
+    with Image.open(BytesIO(boxed)) as im:
+        assert_image_equal_tofile(im, "Tests/images/test-card-lossless.jp2")
+
+
+def test_large_skipped_box_truncated() -> None:
+    # If the file ends within the box, it is still rejected
+    boxed = _insert_xml_box(2 * 1024 * 1024)
+    with Image.open(BytesIO(boxed[: len(boxed) // 2])) as im:
+        with pytest.raises(OSError):
+            im.load()
+
+
+def test_large_skipped_box_seek_error() -> None:
+    # An error from seeking over a box is reported directly without leaving
+    # an unhandled exception set on decoder return
+    class FailingSeek(BytesIO):
+        def seek(self, offset: int, whence: int = 0) -> int:
+            if whence == 1 and offset > 512 * 1024:
+                msg = "seek refused"
+                raise OSError(msg)
+            return super().seek(offset, whence)
+
+    boxed = _insert_xml_box(2 * 1024 * 1024)
+    with Image.open(FailingSeek(boxed)) as im:
+        with pytest.raises(OSError, match="seek refused"):
+            im.load()
+
+
 def test_layers_type(card: ImageFile.ImageFile, tmp_path: Path) -> None:
     outfile = tmp_path / "temp_layers.jp2"
     for quality_layers in [[100, 50, 10], (100, 50, 10), None]:
