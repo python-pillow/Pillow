@@ -75,7 +75,7 @@ class XpmImageFile(ImageFile.ImageFile):
                 if s[i] == b"c":
                     # process colour key
                     rgb = s[i + 1]
-                    if rgb == b"None":
+                    if rgb.lower() == b"none":
                         transparent_key = c
                         palette[c] = b"\0\0\0"
                     elif rgb.startswith(b"#") and len(rgb) in {4, 7, 10, 13}:
