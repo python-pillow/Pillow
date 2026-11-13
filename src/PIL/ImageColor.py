@@ -22,6 +22,7 @@ __lazy_modules__ = {"re"}
 
 import re
 from functools import lru_cache
+from typing import cast
 
 from . import Image
 
@@ -128,8 +129,9 @@ def getrgb(color: str) -> tuple[int, int, int] | tuple[int, int, int, int]:
 def getcolor(color: str, mode: str) -> int | tuple[int, ...]:
     """
     Same as :py:func:`~PIL.ImageColor.getrgb` for most modes. However, if
-    ``mode`` is HSV, converts the RGB value to a HSV value, or if ``mode`` is
-    not color or a palette image, converts the RGB value to a grayscale value.
+    ``mode`` is HSV, CMYK, YCbCr or LAB, converts the RGB value to that mode,
+    or if ``mode`` is not color or a palette image, converts the RGB value to a
+    grayscale value.
     If the string cannot be parsed, this function raises a :py:exc:`ValueError`
     exception.
 
@@ -151,6 +153,10 @@ def getcolor(color: str, mode: str) -> int | tuple[int, ...]:
         r, g, b = rgb
         h, s, v = rgb_to_hsv(r / 255, g / 255, b / 255)
         return int(h * 255), int(s * 255), int(v * 255)
+    if mode in ("CMYK", "YCbCr", "LAB"):
+        # Convert the RGB value the same way that Image.convert() does
+        im = Image.new("RGB", (1, 1), rgb).convert(mode)
+        return cast("tuple[int, ...]", im.getpixel((0, 0)))
     if Image.getmodebase(mode) == "L":
         r, g, b = rgb
         # ITU-R Recommendation 601-2 for nonlinear RGB

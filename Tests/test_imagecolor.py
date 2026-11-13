@@ -211,6 +211,16 @@ def test_color_premultiplied_alpha(
     assert ImageColor.getcolor(color, premultiplied_mode) == expected
 
 
+@pytest.mark.parametrize("mode", ("CMYK", "YCbCr", "LAB"))
+@pytest.mark.parametrize("color", ("red", "#0080ff", "rgb(10, 200, 30)", "#ff000080"))
+def test_color_converted_modes(mode: str, color: str) -> None:
+    rgb = ImageColor.getrgb(color)[:3]
+    expected = Image.new("RGB", (1, 1), rgb).convert(mode).getpixel((0, 0))
+
+    assert ImageColor.getcolor(color, mode) == expected
+    assert Image.new(mode, (1, 1), color).getpixel((0, 0)) == expected
+
+
 def test_color_too_long() -> None:
     # Arrange
     color_too_long = "hsl(" + "1" * 40 + "," + "1" * 40 + "%," + "1" * 40 + "%)"
