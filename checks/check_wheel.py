@@ -3,6 +3,8 @@ from __future__ import annotations
 import platform
 import sys
 
+import pytest
+
 from PIL import features
 
 
@@ -33,6 +35,15 @@ def test_wheel_codecs() -> None:
     expected_codecs = {"jpg", "jpg_2000", "zlib", "libtiff"}
 
     assert set(features.get_supported_codecs()) == expected_codecs
+
+
+@pytest.mark.skipif(sys.platform != "linux", reason="Linux-only check")
+def test_wheel_zlib_ng_linked_statically() -> None:
+    # The Linux wheels link zlib-ng statically, so the version at runtime
+    # should be from zlib-ng, whichever zlib the system has
+    version = features.version_codec("zlib")
+    assert version is not None
+    assert version.endswith(".zlib-ng")
 
 
 def test_wheel_features() -> None:
