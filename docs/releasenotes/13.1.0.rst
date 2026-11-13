@@ -27,10 +27,11 @@ integers. The EXIF resolution used by these images requires the values to match.
 Deprecations
 ============
 
-TODO
-^^^^
+Image.putpixel 'value' lists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Passing lists to the ``value`` parameter of :py:meth:`~PIL.Image.Image.putpixel` has
+been deprecated. Use tuples instead.
 
 API changes
 ===========
@@ -43,10 +44,14 @@ TODO
 API additions
 =============
 
-TODO
-^^^^
+ImageOps sepia and neon
+^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Two new image processing operations are available in ImageOps.
+
+* :py:meth:`~PIL.ImageOps.sepia`: apply a sepia tone
+* :py:meth:`~PIL.ImageOps.neon`: apply a neon glow effect, with arguments for color and
+  alpha
 
 Other changes
 =============
@@ -57,6 +62,12 @@ RGB JPEGs with DPI
 Saving an RGB or RGBX JPEG with ``keep_rgb=True`` and ``dpi`` now uses EXIF for
 resolution when both values round to the same positive integer. This avoids
 conflicting JPEG markers that could cause incorrect colours.
+
+Scaling empty text
+^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageText.Text.wrap` now raises :py:exc:`ValueError` for empty or
+whitespace-only text with ``scaling``, before adjusting the font size.
 
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -113,3 +124,9 @@ Minimum C version
 
 C11 is now the minimum version of C required to compile Pillow from source.
 Pillow requires Python 3.11 or later, and CPython 3.11 and later require C11.
+
+WebP encoding errors now include a description
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When libwebp fails to encode an image, the raised :py:exc:`ValueError` now
+consistently describes the error rather than only reporting a numeric code.
