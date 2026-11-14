@@ -54,6 +54,11 @@ Two new image processing operations are available in ImageOps.
 Other changes
 =============
 
+Android
+^^^^^^^
+
+Android ARM64 and x86_64 wheels are now built for Python 3.13 and later.
+
 Scaling empty text
 ^^^^^^^^^^^^^^^^^^
 

@@ -32,6 +32,4 @@ if [ ! -d "test-images-main" ]; then
 fi
 
 # Runs tests
-python3 selftest.py
-python3 -m pytest -vv -x checks/check_wheel.py
-python3 -m pytest -vv -x --numprocesses=logical --dist=worksteal
+python3 -m wheels_test

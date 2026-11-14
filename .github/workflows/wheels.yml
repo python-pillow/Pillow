@@ -37,7 +37,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  EXPECTED_DISTS: 83
+  EXPECTED_DISTS: 89
   FORCE_COLOR: 1
 
 jobs:
@@ -120,6 +120,14 @@ jobs:
             os: ubuntu-24.04-arm
             cibw_arch: aarch64
             build: "*musllinux*"
+          - name: "Android arm64"
+            platform: android
+            os: ubuntu-latest
+            cibw_arch: arm64_v8a
+          - name: "Android x86_64"
+            platform: android
+            os: ubuntu-latest
+            cibw_arch: x86_64
           - name: "iOS arm64 device"
             platform: ios
             os: macos-latest
