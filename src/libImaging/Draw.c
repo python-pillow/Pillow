@@ -1836,9 +1836,9 @@ ImagingDrawPieslice(
    itself */
 
 struct ImagingOutlineInstance {
-    float x0, y0;
+    double x0, y0;
 
-    float x, y;
+    double x, y;
 
     int count;
     Edge *edges;
@@ -1907,7 +1907,7 @@ allocate(ImagingOutline outline, int extra) {
 }
 
 int
-ImagingOutlineMove(ImagingOutline outline, float x0, float y0) {
+ImagingOutlineMove(ImagingOutline outline, double x0, double y0) {
     outline->x = outline->x0 = x0;
     outline->y = outline->y0 = y0;
 
@@ -1915,7 +1915,7 @@ ImagingOutlineMove(ImagingOutline outline, float x0, float y0) {
 }
 
 int
-ImagingOutlineLine(ImagingOutline outline, float x1, float y1) {
+ImagingOutlineLine(ImagingOutline outline, double x1, double y1) {
     Edge *e;
 
     e = allocate(outline, 1);
@@ -1933,11 +1933,17 @@ ImagingOutlineLine(ImagingOutline outline, float x1, float y1) {
 
 int
 ImagingOutlineCurve(
-    ImagingOutline outline, float x1, float y1, float x2, float y2, float x3, float y3
+    ImagingOutline outline,
+    double x1,
+    double y1,
+    double x2,
+    double y2,
+    double x3,
+    double y3
 ) {
     Edge *e;
     int i;
-    float xo, yo;
+    double xo, yo;
 
 #define STEPS 32
 
@@ -1952,16 +1958,16 @@ ImagingOutlineCurve(
     /* flatten the bezier segment */
 
     for (i = 1; i <= STEPS; i++) {
-        float t = ((float)i) / STEPS;
-        float t2 = t * t;
-        float t3 = t2 * t;
+        double t = ((double)i) / STEPS;
+        double t2 = t * t;
+        double t3 = t2 * t;
 
-        float u = 1.0F - t;
-        float u2 = u * u;
-        float u3 = u2 * u;
+        double u = 1.0 - t;
+        double u2 = u * u;
+        double u3 = u2 * u;
 
-        float x = outline->x * u3 + 3 * (x1 * t * u2 + x2 * t2 * u) + x3 * t3 + 0.5;
-        float y = outline->y * u3 + 3 * (y1 * t * u2 + y2 * t2 * u) + y3 * t3 + 0.5;
+        double x = outline->x * u3 + 3 * (x1 * t * u2 + x2 * t2 * u) + x3 * t3 + 0.5;
+        double y = outline->y * u3 + 3 * (y1 * t * u2 + y2 * t2 * u) + y3 * t3 + 0.5;
 
         add_edge(e++, FLOOR(xo), FLOOR(yo), FLOOR(x), FLOOR(y));
 

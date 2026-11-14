@@ -86,8 +86,8 @@ PyOutline_Create(PyObject *self, PyObject *args) {
 
 static PyObject *
 _outline_move(OutlineObject *self, PyObject *args) {
-    float x0, y0;
-    if (!PyArg_ParseTuple(args, "ff", &x0, &y0)) {
+    double x0, y0;
+    if (!PyArg_ParseTuple(args, "dd", &x0, &y0)) {
         return NULL;
     }
 
@@ -98,8 +98,8 @@ _outline_move(OutlineObject *self, PyObject *args) {
 
 static PyObject *
 _outline_line(OutlineObject *self, PyObject *args) {
-    float x1, y1;
-    if (!PyArg_ParseTuple(args, "ff", &x1, &y1)) {
+    double x1, y1;
+    if (!PyArg_ParseTuple(args, "dd", &x1, &y1)) {
         return NULL;
     }
 
@@ -110,8 +110,8 @@ _outline_line(OutlineObject *self, PyObject *args) {
 
 static PyObject *
 _outline_curve(OutlineObject *self, PyObject *args) {
-    float x1, y1, x2, y2, x3, y3;
-    if (!PyArg_ParseTuple(args, "ffffff", &x1, &y1, &x2, &y2, &x3, &y3)) {
+    double x1, y1, x2, y2, x3, y3;
+    if (!PyArg_ParseTuple(args, "dddddd", &x1, &y1, &x2, &y2, &x3, &y3)) {
         return NULL;
     }
 
