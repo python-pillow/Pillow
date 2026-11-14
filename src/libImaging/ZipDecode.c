@@ -27,6 +27,25 @@ static const int STARTING_ROW[] = {0, 0, 4, 0, 2, 0, 1};
 static const int COL_INCREMENT[] = {8, 8, 4, 4, 2, 2, 1};
 static const int ROW_INCREMENT[] = {8, 8, 8, 4, 4, 2, 2};
 
+static void
+apply_rgb16_transparency(
+    UINT8 *out, const UINT8 *in, int pixels, const ZIPSTATE *context
+) {
+    int i;
+    for (i = 0; i < pixels; i++) {
+        unsigned int red = ((unsigned int)in[0] << 8) | in[1];
+        unsigned int green = ((unsigned int)in[2] << 8) | in[3];
+        unsigned int blue = ((unsigned int)in[4] << 8) | in[5];
+        if (red == (unsigned int)context->rgb_transparency[0] &&
+            green == (unsigned int)context->rgb_transparency[1] &&
+            blue == (unsigned int)context->rgb_transparency[2]) {
+            out[3] = 0;
+        }
+        in += 6;
+        out += 4;
+    }
+}
+
 /* Get the length in bytes of a scanline in the pass specified,
  * for interlaced images */
 static int
@@ -45,6 +64,8 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
     int err;
     int n;
     UINT8 *ptr;
+    UINT8 *pixel;
+    const UINT8 *sample;
     int i, bpp;
     int row_len;
 
@@ -214,11 +235,12 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
             if (state->bits >= 8) {
                 /* Stuff pixels in their correct location, one by one */
                 for (i = 0; i < row_len; i += ((state->bits + 7) / 8)) {
-                    state->shuffle(
-                        (UINT8 *)im->image[state->y] + col * im->pixelsize,
-                        state->buffer + context->prefix + i,
-                        1
-                    );
+                    pixel = (UINT8 *)im->image[state->y] + col * im->pixelsize;
+                    sample = state->buffer + context->prefix + i;
+                    state->shuffle(pixel, sample, 1);
+                    if (context->has_rgb_transparency) {
+                        apply_rgb16_transparency(pixel, sample, 1, context);
+                    }
                     col += COL_INCREMENT[context->pass];
                 }
             } else {
@@ -251,12 +273,13 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
                 memset(state->buffer, 0, state->bytes + 1);
             }
         } else {
-            state->shuffle(
-                (UINT8 *)im->image[state->y + state->yoff] +
-                    state->xoff * im->pixelsize,
-                state->buffer + context->prefix,
-                state->xsize
-            );
+            pixel = (UINT8 *)im->image[state->y + state->yoff] +
+                    state->xoff * im->pixelsize;
+            sample = state->buffer + context->prefix;
+            state->shuffle(pixel, sample, state->xsize);
+            if (context->has_rgb_transparency) {
+                apply_rgb16_transparency(pixel, sample, state->xsize, context);
+            }
             state->y++;
         }
 
