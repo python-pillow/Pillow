@@ -131,3 +131,8 @@ not bundled into the wheels, so the system zlib was used at runtime instead, and
 Pillow 13.0.0 also failed to import on systems where ``libz.so.1`` was not on the
 default library search path, such as NixOS. Linux wheels no longer require a
 system zlib, and gain the speed of zlib-ng as macOS and Windows wheels already did.
+
+Faster drawing
+^^^^^^^^^^^^^^
+
+Drawing rectangles, polygons and lines is faster, particularly with translucent ink.
