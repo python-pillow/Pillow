@@ -46,10 +46,6 @@ static OPJ_SIZE_T
 j2k_read(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data) {
     ImagingCodecState state = (ImagingCodecState)p_user_data;
 
-    if (PyErr_Occurred()) {
-        return (OPJ_SIZE_T)-1;
-    }
-
     size_t len = _imaging_read_pyFd(state->fd, p_buffer, p_nb_bytes);
 
     return len ? len : (OPJ_SIZE_T)-1;
@@ -59,7 +55,7 @@ static OPJ_OFF_T
 j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data) {
     ImagingCodecState state = (ImagingCodecState)p_user_data;
 
-    if (PyErr_Occurred() || _imaging_seek_pyFd(state->fd, p_nb_bytes, SEEK_CUR) == -1) {
+    if (_imaging_seek_pyFd(state->fd, p_nb_bytes, SEEK_CUR) == -1) {
         return (OPJ_OFF_T)-1;
     }
 
