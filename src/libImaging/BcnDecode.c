@@ -729,7 +729,6 @@ decode_bc6_block(rgba *col, const UINT8 *src, int sign) {
     }
     if (mode >= 14) {
         /* invalid block */
-        memset(col, 0, 16 * sizeof(col[0]));
         return;
     }
     info = &bc6_modes[mode];
@@ -879,6 +878,7 @@ decode_bcn(
             int sign = strcmp(pixel_format, "BC6HS") == 0 ? 1 : 0;
             while (bytes >= 16) {
                 rgba col[16];
+                memset(col, 0, 16 * sizeof(col[0]));
                 decode_bc6_block(col, ptr, sign);
                 put_block(im, state, (const char *)col, sizeof(col[0]), C);
                 ptr += 16;
