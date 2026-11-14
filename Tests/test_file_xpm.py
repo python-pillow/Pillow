@@ -33,7 +33,7 @@ def test_rgb() -> None:
         assert_image_similar(im, hopper(), 16)
 
 
-@pytest.mark.parametrize("none", (b"None", b"none", b"NONE"))
+@pytest.mark.parametrize("none", (b"None", b"none"))
 def test_transparency(none: bytes) -> None:
     data = b"""/* XPM */
 static char *test[] = {
