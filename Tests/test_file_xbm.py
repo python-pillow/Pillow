@@ -43,6 +43,17 @@ def test_pil151() -> None:
         assert im.size == (32, 32)
 
 
+def test_tab_delimited_defines() -> None:
+    data = PIL151.replace(b"#define basic_width 32", b"#define\tbasic_width 32")
+    data = data.replace(
+        b"#define basic_height 32",
+        b"#define basic_height\t32\n#define basic_x_hot\t0\n#define\tbasic_y_hot 7",
+    )
+    with Image.open(BytesIO(data)) as im, Image.open(BytesIO(PIL151)) as expected:
+        assert im.info["hotspot"] == (0, 7)
+        assert_image_equal(im, expected)
+
+
 def test_open() -> None:
     # Arrange
     # Created with `convert hopper.png hopper.xbm`

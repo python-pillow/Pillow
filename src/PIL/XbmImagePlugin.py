@@ -76,21 +76,25 @@ class XbmImageFile(ImageFile.ImageFile):
             if starting and not line:
                 starting = False
                 continue
-            if not line.startswith(b"#define "):
+            fields = line.split()
+            if not fields or fields[0] != b"#define":
                 if line.endswith(b"_bits[] = {"):
                     offset = self.fp.tell()
                 break
+            if len(fields) < 3:
+                break
+            name, raw_value = fields[1], fields[-1]
             try:
-                value = int(line.split().pop())
+                value = int(raw_value)
             except ValueError:
                 break
-            if b"width " in line:
+            if name.endswith(b"width"):
                 width = value
-            elif b"height " in line:
+            elif name.endswith(b"height"):
                 height = value
-            elif b"_x_hot " in line:
+            elif name.endswith(b"_x_hot"):
                 x_hot = value
-            elif b"_y_hot " in line:
+            elif name.endswith(b"_y_hot"):
                 if x_hot is not None:
                     self.info["hotspot"] = x_hot, value
         if width is None or height is None or offset is None:

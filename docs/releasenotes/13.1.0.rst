@@ -99,6 +99,12 @@ In Pillow 13.0.0, loading an APNG frame before seeking to the next could cause
 frames using ``Disposal.OP_PREVIOUS`` and ``Blend.OP_OVER`` to be drawn over the
 wrong image. This has been fixed.
 
+Tabs in XBM headers
+^^^^^^^^^^^^^^^^^^^
+
+XBM header definitions can once again use tabs between tokens, including in
+the width, height, and hotspot definitions.
+
 Minimum C version
 ^^^^^^^^^^^^^^^^^
 
