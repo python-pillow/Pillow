@@ -610,6 +610,11 @@ static const struct j2k_decode_unpacker j2k_unpackers[] = {
     {IMAGING_MODE_RGB, OPJ_CLRSPC_GRAY, 2, 0, j2ku_gray_rgb},
     {IMAGING_MODE_RGB, OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb},
     {IMAGING_MODE_RGB, OPJ_CLRSPC_SYCC, 3, 1, j2ku_sycc_rgb},
+    /* YCbCr components unpacked without conversion, so that they can be reordered
+       before conversion. Without the JP2 colour space, OpenJPEG < 2.5.1 reports
+       an image without subsampling as sRGB. */
+    {IMAGING_MODE_YCbCr, OPJ_CLRSPC_SYCC, 3, 1, j2ku_srgb_rgb},
+    {IMAGING_MODE_YCbCr, OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb},
     {IMAGING_MODE_RGB, OPJ_CLRSPC_SRGB, 4, 1, j2ku_srgb_rgb},
     {IMAGING_MODE_RGB, OPJ_CLRSPC_SYCC, 4, 1, j2ku_sycc_rgb},
     {IMAGING_MODE_RGBA, OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_rgb},

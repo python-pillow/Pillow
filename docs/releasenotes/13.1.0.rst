@@ -110,6 +110,13 @@ In Pillow 13.0.0, loading an APNG frame before seeking to the next could cause
 frames using ``Disposal.OP_PREVIOUS`` and ``Blend.OP_OVER`` to be drawn over the
 wrong image. This has been fixed.
 
+JPEG 2000 channel definitions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When a JP2 image has a channel definition box that places its components in a
+different order, such as blue, green, red, Pillow now reorders them when decoding.
+Previously, the box was ignored, and the channels were swapped.
+
 Minimum C version
 ^^^^^^^^^^^^^^^^^
 
