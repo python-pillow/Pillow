@@ -42,6 +42,19 @@ TODO
 API additions
 =============
 
+ImageDraw dash
+^^^^^^^^^^^^^^
+
+:py:meth:`.ImageDraw.line`, :py:meth:`.ImageDraw.polygon` and
+:py:meth:`.ImageDraw.rectangle` now accept an optional ``dash`` argument.
+
+It is a tuple of integers, specifying the lengths of alternating drawn and blank
+segments. For example, ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd
+number of values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
+skips 2, draws 3, skips 1, draws 2, and so on.
+
+When ``dash`` is set, ``width`` is ignored.
+
 ImageOps sepia and neon
 ^^^^^^^^^^^^^^^^^^^^^^^
 
