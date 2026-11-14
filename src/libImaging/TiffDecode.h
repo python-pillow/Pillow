@@ -34,6 +34,8 @@ extern int
 ImagingLibTiffInit(ImagingCodecState state, int fp, uint32_t offset);
 extern int
 ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp);
+extern int
+ImagingLibTiffWriteSubIFDs(ImagingCodecState state, const char *data, tmsize_t size);
 extern void
 ImagingLibTiffEncodeCleanup(ImagingCodecState state);
 extern int

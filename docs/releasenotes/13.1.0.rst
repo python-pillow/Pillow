@@ -54,6 +54,13 @@ Two new image processing operations are available in ImageOps.
 Other changes
 =============
 
+EXIF metadata in compressed TIFF images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Saving a compressed TIFF with an EXIF subdirectory now preserves that
+metadata. Previously, passing EXIF metadata from an image such as a JPEG
+could cause the TIFF save to fail.
+
 Scaling empty text
 ^^^^^^^^^^^^^^^^^^
 
