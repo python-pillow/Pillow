@@ -82,8 +82,13 @@ def test_getcolor() -> None:
         palette.getcolor(color, image=Image.new(mode, (1, 1)))
 
     # Test unknown color specifier
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="unknown color specifier"):
         palette.getcolor("unknown")  # type: ignore[arg-type]
+
+    for mode in ("RGB", "RGBA", "CMYK"):
+        palette = ImagePalette.ImagePalette(mode)
+        with pytest.raises(ValueError, match="unknown color specifier"):
+            palette.getcolor((1,))
 
 
 def test_putpixel_reused_palette_color() -> None:
