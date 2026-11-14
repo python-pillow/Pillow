@@ -194,7 +194,7 @@ getfont(PyObject *self_, PyObject *args) {
     }
 
     if (!error) {
-        width = size * 64;
+        width = PIXEL_TO_FIXED(size);
         req.type = FT_SIZE_REQUEST_TYPE_NOMINAL;
         req.width = width;
         req.height = width;
