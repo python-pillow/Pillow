@@ -255,6 +255,29 @@ def test_oversized_box_length(tbox: bytes) -> None:
         Jpeg2KImagePlugin.Jpeg2KImageFile(BytesIO(data))
 
 
+def test_large_skipped_box() -> None:
+    # A box larger than the stream buffer reaches the skip callback
+    xml = b" " * 2 * 1024 * 1024
+    box = _binary.o32be(8 + len(xml)) + b"xml " + xml
+    with open("Tests/images/test-card-lossless.jp2", "rb") as fp:
+        data = fp.read()
+    data = data[:326] + box + data[326:]
+
+    with Image.open(BytesIO(data)) as im:
+        assert_image_equal_tofile(im, "Tests/images/test-card-lossless.jp2")
+
+    class FailingSeek(BytesIO):
+        def seek(self, offset: int, whence: int = os.SEEK_SET) -> int:
+            if whence == os.SEEK_CUR and offset > 512 * 1024:
+                msg = "seek refused"
+                raise OSError(msg)
+            return super().seek(offset, whence)
+
+    with Image.open(FailingSeek(data)) as im:
+        with pytest.raises(OSError, match="seek refused"):
+            im.load()
+
+
 def test_layers_type(card: ImageFile.ImageFile, tmp_path: Path) -> None:
     outfile = tmp_path / "temp_layers.jp2"
     for quality_layers in [[100, 50, 10], (100, 50, 10), None]:

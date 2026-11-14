@@ -140,6 +140,9 @@ _decode(ImagingDecoderObject *decoder, PyObject *args) {
     }
 
     PyBuffer_Release(&buffer);
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
     return Py_BuildValue("ii", status, decoder->state.errcode);
 }
 
