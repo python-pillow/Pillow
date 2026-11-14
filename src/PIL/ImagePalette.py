@@ -183,31 +183,28 @@ class ImagePalette:
             elif self.mode == "RGBA":
                 if len(color) == 3:
                     color += (255,)
-            if len(color) != len(self.mode):
-                msg = f"invalid color channel count for {self.mode} palette"
-                raise ValueError(msg)
-            try:
-                return self.colors[color]
-            except KeyError as e:
-                # allocate new color slot
-                index = self._new_color_index(image, e)
-                assert isinstance(self._palette, bytearray)
-                mode_len = len(self.mode)
-                if index * mode_len < len(self.palette):
-                    self._palette = (
-                        self._palette[: index * mode_len]
-                        + bytes(color)
-                        + self._palette[index * mode_len + mode_len :]
-                    )
-                    self._colors = None
-                else:
-                    self._palette += bytes(color)
-                self.colors[color] = index
-                self.dirty = 1
-                return index
-        else:
-            msg = f"unknown color specifier: {repr(color)}"  # type: ignore[unreachable]
-            raise ValueError(msg)
+            mode_len = len(self.mode)
+            if len(color) == mode_len:
+                try:
+                    return self.colors[color]
+                except KeyError as e:
+                    # allocate new color slot
+                    index = self._new_color_index(image, e)
+                    assert isinstance(self._palette, bytearray)
+                    if index * mode_len < len(self.palette):
+                        self._palette = (
+                            self._palette[: index * mode_len]
+                            + bytes(color)
+                            + self._palette[index * mode_len + mode_len :]
+                        )
+                        self._colors = None
+                    else:
+                        self._palette += bytes(color)
+                    self.colors[color] = index
+                    self.dirty = 1
+                    return index
+        msg = f"unknown color specifier: {repr(color)}"
+        raise ValueError(msg)
 
     def save(self, fp: str | IO[str]) -> None:
         """Save palette to text file.

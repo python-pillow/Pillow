@@ -73,13 +73,6 @@ memory-mapped image files, or modify the buffer behind an image created by
 As a further safeguard, the C decoder and ImageCms transform layers now raise a
 :py:exc:`ValueError` if asked to write into a read-only image directly.
 
-Palette color channel counts
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Adding a color with the wrong number of channels to an image palette now raises
-:py:exc:`ValueError`. Previously it could write an incomplete palette entry and
-affect the colors of later pixels.
-
 Saving TIFF images with libtiff geometry tags
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
