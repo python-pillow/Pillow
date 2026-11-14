@@ -59,11 +59,10 @@ static OPJ_OFF_T
 j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data) {
     ImagingCodecState state = (ImagingCodecState)p_user_data;
 
-    if (PyErr_Occurred() || _imaging_seek_pyFd(state->fd, p_nb_bytes, SEEK_CUR) != 0) {
+    if (PyErr_Occurred() || _imaging_seek_pyFd(state->fd, p_nb_bytes, SEEK_CUR) == -1) {
         return (OPJ_OFF_T)-1;
     }
 
-    /* OpenJPEG expects the number of bytes skipped, not the new position */
     return p_nb_bytes;
 }
 
