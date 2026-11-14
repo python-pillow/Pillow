@@ -96,6 +96,22 @@ def test_16bit_workaround() -> None:
         _test_float_conversion(im.convert("I"))
 
 
+@pytest.mark.parametrize(
+    "value, expected",
+    (
+        (2147483648, 2147483647),
+        (2147483647, 2147483647),
+        (1, 1),
+        (-5.5, -5),
+        (-2147483648, -2147483648),
+        (-2147483649, -2147483648),
+    ),
+)
+def test_f_to_i(value: float, expected: int) -> None:
+    im = Image.new("F", (1, 1), value)
+    assert im.convert("I").getpixel((0, 0)) == expected
+
+
 def test_opaque() -> None:
     alpha = hopper("P").convert("PA").getchannel("A")
 
@@ -125,6 +141,15 @@ def test_rgba_pa() -> None:
     expected = hopper("RGB")
 
     assert_image_similar(im, expected, 9.3)
+
+
+def test_la_pa() -> None:
+    im = hopper("LA")
+    im.putalpha(hopper("L").transpose(Image.Transpose.FLIP_LEFT_RIGHT))
+
+    converted = im.convert("PA")
+    assert_image_equal(converted.getchannel("A"), im.getchannel("A"))
+    assert_image_equal(converted.convert("LA"), im)
 
 
 def test_pa() -> None:
@@ -329,6 +354,20 @@ def test_p2pa_palette() -> None:
     assert im_pa.getpalette(None) == im.getpalette()
 
 
+@pytest.mark.parametrize(
+    "mode, value",
+    (("1", 255), ("L", 128), ("RGB", (1, 2, 3)), ("I;16", 0x1234), ("I", 0x12345)),
+)
+def test_trns_to_pa(mode: str, value: int | tuple[int, int, int]) -> None:
+    im = Image.new(mode, (2, 1))
+    im.putpixel((1, 0), value)
+    im.info["transparency"] = value
+
+    im_pa = im.convert("PA")
+    assert "transparency" not in im_pa.info
+    assert im_pa.getchannel("A").get_flattened_data() == (255, 0)
+
+
 rgb2xyz_matrix = (
     0.412453, 0.357580, 0.180423, 0,
     0.212671, 0.715160, 0.072169, 0,
@@ -352,19 +391,26 @@ def test_matrix_wrong_mode() -> None:
 
     # Act / Assert
     with pytest.raises(ValueError, match="image has wrong mode"):
-        im.convert(mode="L", matrix=rgb2xyz_matrix)
+        im.convert(mode="L", matrix=rgb2xyz_matrix[:4])
 
 
-def test_matrix_truncated() -> None:
+@pytest.mark.parametrize(
+    "mode, message",
+    (
+        ("RGB", "matrix must have length 12 for mode RGB"),
+        ("L", "matrix must have length 4 for mode L"),
+    ),
+)
+def test_matrix_truncated(mode: str, message: str) -> None:
     # Arrange
     im = hopper()
 
     # Act / Assert
-    with pytest.raises(TypeError, match="matrix must be tuple of length 4 or 12"):
-        im.convert(mode="L", matrix=(0,))
+    with pytest.raises(TypeError, match=message):
+        im.convert(mode, matrix=(0,))
 
 
-@pytest.mark.parametrize("mode", ("RGB", "L"))
+@pytest.mark.parametrize("mode", ("L", "RGB"))
 def test_matrix_xyz(mode: str) -> None:
     # Arrange
     im = hopper("RGB")
@@ -372,7 +418,7 @@ def test_matrix_xyz(mode: str) -> None:
 
     # Act
     # Convert an RGB image to the CIE XYZ colour space
-    converted_im = im.convert(mode=mode, matrix=rgb2xyz_matrix)
+    converted_im = im.convert(mode=mode, matrix=rgb2xyz_matrix[: len(mode) * 4])
 
     # Assert
     assert converted_im.mode == mode
@@ -380,10 +426,21 @@ def test_matrix_xyz(mode: str) -> None:
     with Image.open("Tests/images/hopper-XYZ.png") as target:
         if converted_im.mode == "RGB":
             assert_image_similar(converted_im, target, 3)
-            assert converted_im.info["transparency"] == (105, 54, 4)
+            assert converted_im.info["transparency"] == (105, 54, 5)
         else:
             assert_image_similar(converted_im, target.getchannel(0), 1)
             assert converted_im.info["transparency"] == 105
+
+
+@pytest.mark.parametrize(
+    "mode, matrix", (("L", (0.5, 0.5, 0, 0)), ("RGB", rgb2xyz_matrix))
+)
+def test_matrix_transparency(mode: str, matrix: tuple[float, ...]) -> None:
+    im = Image.new("RGB", (1, 1), (255, 0, 101))
+    im.info["transparency"] = (255, 0, 101)
+
+    converted_im = im.convert(mode, matrix)
+    assert converted_im.info["transparency"] == converted_im.getpixel((0, 0))
 
 
 def test_matrix_identity() -> None:

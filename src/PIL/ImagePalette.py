@@ -152,7 +152,7 @@ class ImagePalette:
         if index >= 256:
             if image:
                 # Search for an unused index
-                for i, count in reversed(list(enumerate(image.histogram()))):
+                for i, count in reversed(list(enumerate(image.histogram()[:256]))):
                     if count == 0 and i not in special_colors:
                         index = i
                         break

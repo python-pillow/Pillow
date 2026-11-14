@@ -3,7 +3,6 @@ from __future__ import annotations
 __lazy_modules__ = {"io", "typing"}
 
 import os
-from io import BytesIO
 from typing import IO
 
 from . import ExifTags, Image, ImageFile, ImageSequence
@@ -120,10 +119,10 @@ class AvifImageFile(ImageFile.ImageFile):
 
         # Set tile
         self.__frame = frame
-        self.tile = [ImageFile._Tile("raw", args=self.mode)]
+        self._im = None
 
     def load(self) -> Image.core.PixelAccess | None:
-        if self.tile:
+        if self._im is None:
             # We need to load the image data for this frame
             data, timescale, pts_in_timescales, duration_in_timescales = (
                 self._decoder.get_frame(self.__frame)
@@ -133,7 +132,8 @@ class AvifImageFile(ImageFile.ImageFile):
 
             if self.fp and self._exclusive_fp:
                 self.fp.close()
-            self.fp = BytesIO(data)
+            self.fp = None
+            self.frombytes(data)
 
         return super().load()
 

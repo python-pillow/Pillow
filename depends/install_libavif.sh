@@ -3,25 +3,30 @@ set -eo pipefail
 
 version=1.4.2
 
-if [[ "$GHA_LIBAVIF_CACHE_HIT" == "true" ]]; then
-
+PREFIX=/usr
+if [ $(uname) == "Darwin" ]; then
+    if [ -x "$(command -v brew)" ]; then
+        PREFIX=$(brew --prefix)
+    fi
+    LIBDIR=$PREFIX/lib
+    LIBGLOB="libavif*.dylib"
+else
     LIBDIR=/usr/lib/x86_64-linux-gnu
+    LIBGLOB="libavif.so*"
+fi
+
+if [[ "$GHA_LIBAVIF_CACHE_HIT" == "true" ]]; then
 
     # Copy cached files into place
     sudo cp ~/cache-libavif/lib/* $LIBDIR/
-    sudo cp -r ~/cache-libavif/include/avif /usr/include/
+    sudo mkdir -p $PREFIX/include/avif
+    sudo cp ~/cache-libavif/include/avif/* $PREFIX/include/avif/
 
 else
 
     ./download-and-extract.sh libavif-$version https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$version.tar.gz
 
     pushd libavif-$version
-
-    if [ $(uname) == "Darwin" ] && [ -x "$(command -v brew)" ]; then
-        PREFIX=$(brew --prefix)
-    else
-        PREFIX=/usr
-    fi
 
     PKGCONFIG=${PKGCONFIG:-pkg-config}
 
@@ -71,14 +76,13 @@ else
 
     sudo make install
 
-    if [ -n "$GITHUB_ACTIONS" ] && [ "$(uname)" != "Darwin" ]; then
+    if [ -n "$GITHUB_ACTIONS" ]; then
         # Copy to cache
-        LIBDIR=/usr/lib/x86_64-linux-gnu
         rm -rf ~/cache-libavif
         mkdir -p ~/cache-libavif/lib
         mkdir -p ~/cache-libavif/include
-        cp $LIBDIR/libavif.so* ~/cache-libavif/lib/
-        cp -r /usr/include/avif ~/cache-libavif/include/
+        cp $LIBDIR/$LIBGLOB ~/cache-libavif/lib/
+        cp -r $PREFIX/include/avif ~/cache-libavif/include/
     fi
 
     popd

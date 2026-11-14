@@ -1677,7 +1677,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 # fillorder==2 modes have a corresponding
                 # fillorder=1 mode
                 self._mode, rawmode = OPEN_INFO[key]
-            if photo == 6:
+            if photo == 6 and len(bps_tuple) == 3:
                 self._mode = "RGB"
                 if self._compression in "jpeg" and self._planar_configuration == 1:
                     # YCbCr images with new jpeg compression with pixels in one plane
@@ -1840,6 +1840,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     ifd[IMAGELENGTH] = im.size[1]
 
     # write any arbitrary tags passed in as an ImageFileDirectory
+    subifds: list[int] = []
     if "tiffinfo" in encoderinfo:
         info = encoderinfo["tiffinfo"]
     elif "exif" in encoderinfo:
@@ -1848,12 +1849,16 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             exif = Image.Exif()
             exif.load(info)
             info = exif
+        elif isinstance(info, Image.Exif) and not libtiff:
+            subifds.extend(
+                key for key in TiffTags.TAGS_V2_GROUPS if info._ifds.get(key, {}) != {}
+            )
     else:
         info = {}
     logger.debug("Tiffinfo Keys: %s", list(info))
     if isinstance(info, ImageFileDirectory_v1):
         info = info.to_v2()
-    for key in info:
+    for key in {*info, *subifds}:
         if libtiff and key in {IMAGEWIDTH, IMAGELENGTH}:
             continue
         if isinstance(info, Image.Exif) and key in TiffTags.TAGS_V2_GROUPS:
