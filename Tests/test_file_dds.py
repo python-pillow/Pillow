@@ -223,6 +223,9 @@ def test_dx10_bc6h(image_path: str) -> None:
 
         assert_image_equal_tofile(im, image_path.replace(".dds", ".png"))
 
+        padding = im.tobytes("raw", "RGBX")[3::4]
+        assert padding == b"\0" * len(padding)
+
 
 def test_dx10_bc7() -> None:
     """Check DX10 images can be opened"""
