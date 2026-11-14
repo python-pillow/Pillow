@@ -24,10 +24,11 @@
  * FIXME: Implement image processing gradient filters
  */
 
-#include <stdint.h>
 #include "Imaging.h"
+#include <stdint.h>
 
 #define INT32_MAX_F 2147483647.0F
+#define INT32_MIN_F -2147483648.0F
 
 static inline UINT8
 clip8(float in) {
@@ -47,11 +48,12 @@ clip16(float in) {
 
 static inline INT32
 clip32(float in) {
-    // Clamp the low bound branchlessly (maxss).
-    in = in < 0.0f ? 0.0f : in;
+    // I mode is signed, so whole INT32 range can be used.
+    in = in < INT32_MIN_F ? INT32_MIN : in;
+
     // Must explicitly return INT32_MAX for the high bound
     // to avoid incorrect overflow to INT_MIN.
-    return in >= INT32_MAX_F ? INT32_MAX : (INT32)in;
+    return in >= INT32_MAX_F ? INT32_MAX : (INT32)round(in);
 }
 
 Imaging
@@ -63,12 +65,25 @@ ImagingExpand(Imaging imIn, int margin) {
     if (margin < 0) {
         return (Imaging)ImagingError_ValueError("bad kernel size");
     }
-    if (margin > 0 && margin > INT_MAX / (margin * (int)sizeof(FLOAT32))) {
+    // Compute in int64_t via division, not squaring, so the check itself
+    // can't overflow or divide by zero for any valid int margin.
+    if (margin > 0 && (int64_t)margin > (int64_t)INT_MAX / ((int64_t)margin *
+                                                            (int64_t)sizeof(FLOAT32))) {
         return (Imaging)ImagingError_ValueError("filter size too large");
     }
 
-    imOut =
-        ImagingNewDirty(imIn->mode, imIn->xsize + 2 * margin, imIn->ysize + 2 * margin);
+    int xsize = imIn->xsize + 2 * margin;
+    int ysize = imIn->ysize + 2 * margin;
+    if (imIn->xsize == 0 || imIn->ysize == 0) {
+        imOut = ImagingNew(imIn->mode, xsize, ysize);
+        if (!imOut) {
+            return NULL;
+        }
+        ImagingCopyPalette(imOut, imIn);
+        return imOut;
+    }
+
+    imOut = ImagingNewDirty(imIn->mode, xsize, ysize);
     if (!imOut) {
         return NULL;
     }
@@ -101,11 +116,14 @@ ImagingExpand(Imaging imIn, int margin) {
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
+
     if (imIn->image8) {
         EXPAND(UINT8, image8);
     } else {
         EXPAND(INT32, image32);
     }
+    MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
 
     ImagingCopyPalette(imOut, imIn);
@@ -127,6 +145,11 @@ kernel_i16(int size, UINT8 *in0, int x, const float *kernel, int bigendian) {
     return result;
 }
 
+/**
+ * Convolve `im` with a 3x3 kernel, writing the result to imOut.
+ *
+ * Contract: imOut and im *MUST* be distinct images.
+ */
 static void
 ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
 #define KERNEL1x3(in0, x, kernel, d)                                     \
@@ -142,8 +165,6 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
 
     memcpy(imOut->image[0], im->image[0], im->linesize);
     if (im->bands == 1) {
-        // Add one time for rounding
-        offset += 0.5;
         if (im->type == IMAGING_TYPE_INT32) {
             for (y = 1; y < ysize - 1; y++) {
                 INT32 *restrict in_1 = (INT32 *)im->image[y - 1];
@@ -161,18 +182,10 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 }
                 out[x] = in0[x];
             }
-        } else {
-            int bigendian = 0;
-            if (im->type == IMAGING_TYPE_I16) {
-                if (
-                    im->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-                    || im->mode == IMAGING_MODE_I_16N
-#endif
-                ) {
-                    bigendian = 1;
-                }
-            }
+        } else if (im->type == IMAGING_TYPE_I16) {
+            // Add one time for rounding
+            offset += 0.5;
+            int bigendian = isImageI16BigEndian(im);
             for (y = 1; y < ysize - 1; y++) {
                 UINT8 *restrict in_1 = (UINT8 *)im->image[y - 1];
                 UINT8 *restrict in0 = (UINT8 *)im->image[y];
@@ -180,32 +193,38 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 UINT8 *restrict out = (UINT8 *)imOut->image[y];
 
                 out[0] = in0[0];
-                if (im->type == IMAGING_TYPE_I16) {
-                    out[1] = in0[1];
-                }
+                out[1] = in0[1];
                 for (x = 1; x < xsize - 1; x++) {
                     float ss = offset;
-                    if (im->type == IMAGING_TYPE_I16) {
-                        ss += kernel_i16(3, in1, x, &kernel[0], bigendian);
-                        ss += kernel_i16(3, in0, x, &kernel[3], bigendian);
-                        ss += kernel_i16(3, in_1, x, &kernel[6], bigendian);
-                        // NOT rounding here because `offset` already has a +0.5 bias.
-                        int ss_int = clip16(ss);
-                        out[x * 2 + (bigendian ? 1 : 0)] = (UINT8)(ss_int & 0xff);
-                        out[x * 2 + (bigendian ? 0 : 1)] = (UINT8)(ss_int >> 8);
-                    } else {
-                        ss += KERNEL1x3(in1, x, &kernel[0], 1);
-                        ss += KERNEL1x3(in0, x, &kernel[3], 1);
-                        ss += KERNEL1x3(in_1, x, &kernel[6], 1);
-                        out[x] = clip8(ss);
-                    }
+                    ss += kernel_i16(3, in1, x, &kernel[0], bigendian);
+                    ss += kernel_i16(3, in0, x, &kernel[3], bigendian);
+                    ss += kernel_i16(3, in_1, x, &kernel[6], bigendian);
+                    // NOT rounding here because `offset` already has a +0.5 bias.
+                    int ss_int = clip16(ss);
+                    out[x * 2 + (bigendian ? 1 : 0)] = (UINT8)(ss_int & 0xff);
+                    out[x * 2 + (bigendian ? 0 : 1)] = (UINT8)(ss_int >> 8);
                 }
-                if (im->type == IMAGING_TYPE_I16) {
-                    out[x * 2] = in0[x * 2];
-                    out[x * 2 + 1] = in0[x * 2 + 1];
-                } else {
-                    out[x] = in0[x];
+                out[x * 2] = in0[x * 2];
+                out[x * 2 + 1] = in0[x * 2 + 1];
+            }
+        } else {
+            // Add one time for rounding
+            offset += 0.5;
+            for (y = 1; y < ysize - 1; y++) {
+                UINT8 *restrict in_1 = (UINT8 *)im->image[y - 1];
+                UINT8 *restrict in0 = (UINT8 *)im->image[y];
+                UINT8 *restrict in1 = (UINT8 *)im->image[y + 1];
+                UINT8 *restrict out = (UINT8 *)imOut->image[y];
+
+                out[0] = in0[0];
+                for (x = 1; x < xsize - 1; x++) {
+                    float ss = offset;
+                    ss += KERNEL1x3(in1, x, &kernel[0], 1);
+                    ss += KERNEL1x3(in0, x, &kernel[3], 1);
+                    ss += KERNEL1x3(in_1, x, &kernel[6], 1);
+                    out[x] = clip8(ss);
                 }
+                out[x] = in0[x];
             }
         }
     } else {
@@ -279,6 +298,11 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
     memcpy(imOut->image[y], im->image[y], im->linesize);
 }
 
+/**
+ * Convolve `im` with a 5x5 kernel, writing the result to imOut.
+ *
+ * Contract: imOut and im *MUST* be distinct images.
+ */
 static void
 ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
 #define KERNEL1x5(in0, x, kernel, d)                                             \
@@ -297,8 +321,6 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
     memcpy(imOut->image[0], im->image[0], im->linesize);
     memcpy(imOut->image[1], im->image[1], im->linesize);
     if (im->bands == 1) {
-        // Add one time for rounding
-        offset += 0.5;
         if (im->type == IMAGING_TYPE_INT32) {
             for (y = 2; y < ysize - 2; y++) {
                 INT32 *restrict in_2 = (INT32 *)im->image[y - 2];
@@ -322,18 +344,10 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 out[x + 0] = in0[x + 0];
                 out[x + 1] = in0[x + 1];
             }
-        } else {
-            int bigendian = 0;
-            if (im->type == IMAGING_TYPE_I16) {
-                if (
-                    im->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-                    || im->mode == IMAGING_MODE_I_16N
-#endif
-                ) {
-                    bigendian = 1;
-                }
-            }
+        } else if (im->type == IMAGING_TYPE_I16) {
+            // Add one time for rounding
+            offset += 0.5;
+            int bigendian = isImageI16BigEndian(im);
             for (y = 2; y < ysize - 2; y++) {
                 UINT8 *restrict in_2 = (UINT8 *)im->image[y - 2];
                 UINT8 *restrict in_1 = (UINT8 *)im->image[y - 1];
@@ -344,40 +358,49 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
 
                 out[0] = in0[0];
                 out[1] = in0[1];
-                if (im->type == IMAGING_TYPE_I16) {
-                    out[2] = in0[2];
-                    out[3] = in0[3];
-                }
+                out[2] = in0[2];
+                out[3] = in0[3];
                 for (x = 2; x < xsize - 2; x++) {
                     float ss = offset;
-                    if (im->type == IMAGING_TYPE_I16) {
-                        ss += kernel_i16(5, in2, x, &kernel[0], bigendian);
-                        ss += kernel_i16(5, in1, x, &kernel[5], bigendian);
-                        ss += kernel_i16(5, in0, x, &kernel[10], bigendian);
-                        ss += kernel_i16(5, in_1, x, &kernel[15], bigendian);
-                        ss += kernel_i16(5, in_2, x, &kernel[20], bigendian);
-                        // NOT rounding here because `offset` already has a +0.5 bias.
-                        int ss_int = clip16(ss);
-                        out[x * 2 + (bigendian ? 1 : 0)] = (UINT8)(ss_int & 0xff);
-                        out[x * 2 + (bigendian ? 0 : 1)] = (UINT8)(ss_int >> 8);
-                    } else {
-                        ss += KERNEL1x5(in2, x, &kernel[0], 1);
-                        ss += KERNEL1x5(in1, x, &kernel[5], 1);
-                        ss += KERNEL1x5(in0, x, &kernel[10], 1);
-                        ss += KERNEL1x5(in_1, x, &kernel[15], 1);
-                        ss += KERNEL1x5(in_2, x, &kernel[20], 1);
-                        out[x] = clip8(ss);
-                    }
+                    ss += kernel_i16(5, in2, x, &kernel[0], bigendian);
+                    ss += kernel_i16(5, in1, x, &kernel[5], bigendian);
+                    ss += kernel_i16(5, in0, x, &kernel[10], bigendian);
+                    ss += kernel_i16(5, in_1, x, &kernel[15], bigendian);
+                    ss += kernel_i16(5, in_2, x, &kernel[20], bigendian);
+                    // NOT rounding here because `offset` already has a +0.5 bias.
+                    int ss_int = clip16(ss);
+                    out[x * 2 + (bigendian ? 1 : 0)] = (UINT8)(ss_int & 0xff);
+                    out[x * 2 + (bigendian ? 0 : 1)] = (UINT8)(ss_int >> 8);
                 }
-                if (im->type == IMAGING_TYPE_I16) {
-                    out[x * 2 + 0] = in0[x * 2 + 0];
-                    out[x * 2 + 1] = in0[x * 2 + 1];
-                    out[x * 2 + 2] = in0[x * 2 + 2];
-                    out[x * 2 + 3] = in0[x * 2 + 3];
-                } else {
-                    out[x + 0] = in0[x + 0];
-                    out[x + 1] = in0[x + 1];
+                out[x * 2 + 0] = in0[x * 2 + 0];
+                out[x * 2 + 1] = in0[x * 2 + 1];
+                out[x * 2 + 2] = in0[x * 2 + 2];
+                out[x * 2 + 3] = in0[x * 2 + 3];
+            }
+        } else {
+            // Add one time for rounding
+            offset += 0.5;
+            for (y = 2; y < ysize - 2; y++) {
+                UINT8 *restrict in_2 = (UINT8 *)im->image[y - 2];
+                UINT8 *restrict in_1 = (UINT8 *)im->image[y - 1];
+                UINT8 *restrict in0 = (UINT8 *)im->image[y];
+                UINT8 *restrict in1 = (UINT8 *)im->image[y + 1];
+                UINT8 *restrict in2 = (UINT8 *)im->image[y + 2];
+                UINT8 *restrict out = (UINT8 *)imOut->image[y];
+
+                out[0] = in0[0];
+                out[1] = in0[1];
+                for (x = 2; x < xsize - 2; x++) {
+                    float ss = offset;
+                    ss += KERNEL1x5(in2, x, &kernel[0], 1);
+                    ss += KERNEL1x5(in1, x, &kernel[5], 1);
+                    ss += KERNEL1x5(in0, x, &kernel[10], 1);
+                    ss += KERNEL1x5(in_1, x, &kernel[15], 1);
+                    ss += KERNEL1x5(in_2, x, &kernel[20], 1);
+                    out[x] = clip8(ss);
                 }
+                out[x + 0] = in0[x + 0];
+                out[x + 1] = in0[x + 1];
             }
         }
     } else {
@@ -497,6 +520,8 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 o
     }
 
     ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&im->mutex);
+
     if (xsize == 3) {
         /* 3x3 kernel. */
         ImagingFilter3x3(imOut, im, kernel, offset);
@@ -504,6 +529,7 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 o
         /* 5x5 kernel. */
         ImagingFilter5x5(imOut, im, kernel, offset);
     }
+    MUTEX_UNLOCK(&im->mutex);
     ImagingSectionLeave(&cookie);
     return imOut;
 }

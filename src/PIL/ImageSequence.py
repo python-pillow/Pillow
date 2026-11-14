@@ -82,8 +82,8 @@ def all_frames(
     ims = []
     for imSequence in im:
         current = imSequence.tell()
-
-        ims += [im_frame.copy() for im_frame in Iterator(imSequence)]
-
-        imSequence.seek(current)
+        try:
+            ims += [im_frame.copy() for im_frame in Iterator(imSequence)]
+        finally:
+            imSequence.seek(current)
     return [func(im) for im in ims] if func else ims

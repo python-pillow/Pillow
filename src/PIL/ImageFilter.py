@@ -17,8 +17,7 @@
 from __future__ import annotations
 
 import abc
-import math
-from typing import cast
+from typing import NamedTuple, cast
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -40,12 +39,20 @@ class MultibandFilter(Filter):
     pass
 
 
+# Arguments passed to the core filter method
+class _FilterArgs(NamedTuple):
+    size: tuple[int, int]
+    scale: float
+    offset: float
+    kernel: Sequence[float]
+
+
 class BuiltinFilter(MultibandFilter):
     name: str
-    filterargs: tuple[Any, ...]
+    filterargs: _FilterArgs
 
     def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
-        if image.mode == "P":
+        if image.mode in {"P", "PA"}:
             msg = "cannot filter palette images"
             raise ValueError(msg)
         return image.filter(*self.filterargs)
@@ -53,10 +60,8 @@ class BuiltinFilter(MultibandFilter):
 
 class Kernel(BuiltinFilter):
     """
-    Create a convolution kernel. This only supports 3x3 and 5x5 integer and floating
-    point kernels.
-
-    Kernels can only be applied to "L" and "RGB" images.
+    Create a convolution kernel.
+    This only supports 3x3 and 5x5 integer and floating point kernels.
 
     :param size: Kernel size, given as (width, height). This must be (3,3) or (5,5).
     :param kernel: A sequence containing kernel weights. The kernel will be flipped
@@ -82,7 +87,7 @@ class Kernel(BuiltinFilter):
         if size[0] * size[1] != len(kernel):
             msg = "not enough coefficients in kernel"
             raise ValueError(msg)
-        self.filterargs = size, scale, offset, kernel
+        self.filterargs = _FilterArgs(size, scale, offset, kernel)
 
 
 class RankFilter(Filter):
@@ -223,8 +228,11 @@ class BoxBlur(MultibandFilter):
 
     def __init__(self, radius: float | Sequence[float]) -> None:
         xy = radius if isinstance(radius, (tuple, list)) else (radius, radius)
-        if not all(math.isfinite(value) and value >= 0 for value in xy):
-            msg = "radius must be a finite number >= 0"
+        if not all(value >= 0 for value in xy):
+            msg = "radius must be >= 0"
+            raise ValueError(msg)
+        if any(value >= 2**31 for value in xy):
+            msg = "radius too large"
             raise ValueError(msg)
         self.radius = radius
 
@@ -267,96 +275,96 @@ class UnsharpMask(MultibandFilter):
 
 class BLUR(BuiltinFilter):
     name = "Blur"
-    filterargs = (5, 5), 16, 0, (
+    filterargs = _FilterArgs(size=(5, 5), scale=16, offset=0, kernel=(
         1, 1, 1, 1, 1,
         1, 0, 0, 0, 1,
         1, 0, 0, 0, 1,
         1, 0, 0, 0, 1,
         1, 1, 1, 1, 1,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class CONTOUR(BuiltinFilter):
     name = "Contour"
-    filterargs = (3, 3), 1, 255, (
+    filterargs = _FilterArgs(size=(3, 3), scale=1, offset=255, kernel=(
         -1, -1, -1,
         -1,  8, -1,
         -1, -1, -1,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class DETAIL(BuiltinFilter):
     name = "Detail"
-    filterargs = (3, 3), 6, 0, (
+    filterargs = _FilterArgs(size=(3, 3), scale=6, offset=0, kernel=(
         0,  -1,  0,
         -1, 10, -1,
         0,  -1,  0,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class EDGE_ENHANCE(BuiltinFilter):
     name = "Edge-enhance"
-    filterargs = (3, 3), 2, 0, (
+    filterargs = _FilterArgs(size=(3, 3), scale=2, offset=0, kernel=(
         -1, -1, -1,
         -1, 10, -1,
         -1, -1, -1,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class EDGE_ENHANCE_MORE(BuiltinFilter):
     name = "Edge-enhance More"
-    filterargs = (3, 3), 1, 0, (
+    filterargs = _FilterArgs(size=(3, 3), scale=1, offset=0, kernel=(
         -1, -1, -1,
         -1,  9, -1,
         -1, -1, -1,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class EMBOSS(BuiltinFilter):
     name = "Emboss"
-    filterargs = (3, 3), 1, 128, (
+    filterargs = _FilterArgs(size=(3, 3), scale=1, offset=128, kernel=(
         -1, 0, 0,
         0,  1, 0,
         0,  0, 0,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class FIND_EDGES(BuiltinFilter):
     name = "Find Edges"
-    filterargs = (3, 3), 1, 0, (
+    filterargs = _FilterArgs(size=(3, 3), scale=1, offset=0, kernel=(
         -1, -1, -1,
         -1,  8, -1,
         -1, -1, -1,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class SHARPEN(BuiltinFilter):
     name = "Sharpen"
-    filterargs = (3, 3), 16, 0, (
+    filterargs = _FilterArgs(size=(3, 3), scale=16, offset=0, kernel=(
         -2, -2, -2,
         -2, 32, -2,
         -2, -2, -2,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class SMOOTH(BuiltinFilter):
     name = "Smooth"
-    filterargs = (3, 3), 13, 0, (
+    filterargs = _FilterArgs(size=(3, 3), scale=13, offset=0, kernel=(
         1, 1, 1,
         1, 5, 1,
         1, 1, 1,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class SMOOTH_MORE(BuiltinFilter):
     name = "Smooth More"
-    filterargs = (5, 5), 100, 0, (
+    filterargs = _FilterArgs(size=(5, 5), scale=100, offset=0, kernel=(
         1, 1,  1, 1, 1,
         1, 5,  5, 5, 1,
         1, 5, 44, 5, 1,
         1, 5,  5, 5, 1,
         1, 1,  1, 1, 1,
-    )  # fmt: skip
+    ))  # fmt: skip
 
 
 class Color3DLUT(MultibandFilter):
@@ -377,7 +385,7 @@ class Color3DLUT(MultibandFilter):
                   tuples with floats. Channels are changed first,
                   then first dimension, then second, then third.
                   Value 0.0 corresponds lowest value of output, 1.0 highest.
-    :param channels: Number of channels in the table. Could be 3 or 4.
+    :param channels: Number of channels in the table. Should be 3 or 4.
                      Default is 3.
     :param target_mode: A mode for the result image. Should have not less
                         than ``channels`` channels. Default is ``None``,

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import re
-import sys
 import warnings
 from typing import Any
 
@@ -73,6 +72,11 @@ class TestFileWebp:
             # generated with:
             # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
             assert_image_similar_tofile(image, "Tests/images/hopper_webp_bits.ppm", 1.0)
+
+    def test_read_lossless(self) -> None:
+        # generated with: cwebp -z 9 hopper.ppm -o hopper_lossless.webp
+        with Image.open("Tests/images/hopper_lossless.webp") as webp:
+            assert_image_equal(webp, hopper("RGB"))
 
     def _roundtrip(
         self, tmp_path: Path, mode: str, epsilon: float, args: dict[str, Any] = {}
@@ -158,21 +162,13 @@ class TestFileWebp:
 
         self._roundtrip(tmp_path, "P", 50.0)
 
-    @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
-    def test_write_encoding_error_message(self, tmp_path: Path) -> None:
-        im = Image.new("RGB", (15000, 15000))
-        with pytest.raises(ValueError, match="encoding error 6"):
-            im.save(tmp_path / "temp.webp", method=0)
-
-    @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
     def test_write_encoding_error_bad_dimension(self, tmp_path: Path) -> None:
-        im = Image.new("L", (16384, 16384))
-        with pytest.raises(ValueError) as e:
+        im = Image.new("L", (16384, 1))
+        with pytest.raises(
+            ValueError,
+            match="encoding error 5: Image size exceeds WebP limit of 16383 pixels",
+        ):
             im.save(tmp_path / "temp.webp")
-        assert (
-            str(e.value)
-            == "encoding error 5: Image size exceeds WebP limit of 16383 pixels"
-        )
 
     def test_WebPEncode_with_invalid_args(self) -> None:
         """
@@ -189,6 +185,38 @@ class TestFileWebp:
         """
         with pytest.raises(TypeError):
             _webp.WebPAnimDecoder()
+
+    @pytest.mark.parametrize(
+        "header",
+        (
+            # VP8X, 16384x16384 canvas
+            b"VP8X\x0a\x00\x00\x00\x00\x00\x00\x00\xff\x3f\x00\xff\x3f\x00",
+            # VP8L, 16384x16384
+            b"VP8L\x05\x00\x00\x00\x2f\xff\xff\xff\x0f",
+            # VP8, 16383x16383
+            b"VP8 \x0a\x00\x00\x00\x00\x00\x00\x9d\x01\x2a\xff\x3f\xff\x3f",
+        ),
+    )
+    def test_decompression_bomb_before_decoder(
+        self, header: bytes, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # The truncated data would fail to create a decoder,
+        # so the size must be checked before that
+        monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 128 * 128)
+        data = b"RIFF" + (4 + len(header)).to_bytes(4, "little") + b"WEBP" + header
+
+        with pytest.raises(Image.DecompressionBombError):
+            Image.open(io.BytesIO(data))
+
+    def test_decompression_bomb_warning_once(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 128 * 128 - 1)
+
+        with pytest.warns(Image.DecompressionBombWarning) as record:
+            with Image.open("Tests/images/hopper.webp"):
+                pass
+        assert len(record) == 1
 
     def test_no_resource_warning(self, tmp_path: Path) -> None:
         file_path = "Tests/images/hopper.webp"

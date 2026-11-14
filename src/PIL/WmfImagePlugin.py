@@ -54,7 +54,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
         s = self.fp.read(44)
 
         if s.startswith(b"\xd7\xcd\xc6\x9a\x00\x00"):
-            # placeable windows metafile
+            # placeable Windows metafile
 
             # get units per inch
             inch = word(s, 14)
@@ -97,9 +97,15 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
             size = x1 - x0, y1 - y0
 
+            frame_width = frame[2] - frame[0]
+            frame_height = frame[3] - frame[1]
+            if frame_width == 0 or frame_height == 0:
+                msg = "Invalid frame"
+                raise ValueError(msg)
+
             # calculate dots per inch from bbox and frame
-            xdpi = 2540.0 * (x1 - x0) / (frame[2] - frame[0])
-            ydpi = 2540.0 * (y1 - y0) / (frame[3] - frame[1])
+            xdpi = 2540.0 * (x1 - x0) / frame_width
+            ydpi = 2540.0 * (y1 - y0) / frame_height
 
             self.info["wmf_bbox"] = x0, y0, x1, y1
 
@@ -120,14 +126,18 @@ class WmfStubImageFile(ImageFile.StubImageFile):
         self, dpi: float | tuple[float, float] | None = None
     ) -> Image.core.PixelAccess | None:
         if dpi is not None:
+            xy_dpi = dpi if isinstance(dpi, tuple) else (dpi, dpi)
+            if any(v < 0 for v in xy_dpi):
+                msg = "DPI must be non-negative"
+                raise ValueError(msg)
+
             self.info["dpi"] = dpi
             x0, y0, x1, y1 = self.info["wmf_bbox"]
-            if not isinstance(dpi, tuple):
-                dpi = dpi, dpi
             self._size = (
-                int((x1 - x0) * dpi[0] / self._inch[0]),
-                int((y1 - y0) * dpi[1] / self._inch[1]),
+                int((x1 - x0) * xy_dpi[0] / self._inch[0]),
+                int((y1 - y0) * xy_dpi[1] / self._inch[1]),
             )
+            Image._decompression_bomb_check(self.size)
         return super().load()
 
 
@@ -150,13 +160,15 @@ def register_handler(handler: ImageFile.StubHandler | None) -> None:
 
 
 if hasattr(Image.core, "drawwmf"):
-    # install default handler (windows only)
+    # install default handler (Windows only)
 
     class WmfHandler(ImageFile.StubHandler):
         def open(self, im: ImageFile.StubImageFile) -> None:
             self.bbox = im.info["wmf_bbox"]
 
         def load(self, im: ImageFile.StubImageFile) -> Image.Image:
+            if min(im.size) == 0:
+                return Image.new("RGB", im.size)
             assert im.fp is not None
             im.fp.seek(0)  # rewind
             return Image.frombytes(

@@ -33,12 +33,7 @@ endfunction()
 fribidi_conf()
 
 
-option(ARCH "Target architecture")
-if(${ARCH} STREQUAL ARM64)
-    set(GEN FALSE)
-else()
-    set(GEN TRUE)
-endif()
+option(GEN "Generate tab.i files" TRUE)
 message("Generate tab.i files: " ${GEN})
 
 function(prepend var prefix)

@@ -66,9 +66,15 @@ static int have_raqm = 0;
 #define LAYOUT_FALLBACK 0
 #define LAYOUT_RAQM 1
 
+// Mirrors raqm_glyph_t
+// Coordinate units are 26.6 fractional pixels
 typedef struct {
-    int index, x_offset, x_advance, y_offset, y_advance;
-    unsigned int cluster;
+    unsigned int index;    // the index of the glyph in the font file
+    int x_offset;          // horizontal movement of the glyph from current point
+    int x_advance;         // glyph advance width in horizontal text
+    int y_offset;          // vertical movement of the glyph from current point
+    int y_advance;         // glyph advance height in vertical text
+    unsigned int cluster;  // character index in original text
 } GlyphInfo;
 
 struct {
@@ -113,75 +119,46 @@ geterror(int code) {
 }
 
 static PyObject *
-getfont(PyObject *self_, PyObject *args, PyObject *kw) {
+getfont(PyObject *self_, PyObject *args) {
     /* create a font object from a file name and a size (in pixels) */
 
     FontObject *self;
     int error = 0;
 
-    char *filename = NULL;
+    PyBytesObject *filename_bytes = NULL;
     float size;
     FT_Size_RequestRec req;
     FT_Long width;
     Py_ssize_t index = 0;
     Py_ssize_t layout_engine = 0;
     unsigned char *encoding;
-    unsigned char *font_bytes;
+    unsigned char *font_bytes = NULL;
     Py_ssize_t font_bytes_size = 0;
-    static char *kwlist[] = {
-        "filename", "size", "index", "encoding", "font_bytes", "layout_engine", NULL
-    };
 
     if (!library) {
         PyErr_SetString(PyExc_OSError, "failed to initialize FreeType library");
         return NULL;
     }
 
-#if PY_MAJOR_VERSION > 3 || PY_MINOR_VERSION > 11
-    PyConfig config;
-    PyConfig_InitPythonConfig(&config);
-    if (!PyArg_ParseTupleAndKeywords(
+    if (!PyArg_ParseTuple(
             args,
-            kw,
-            "etf|nsy#n",
-            kwlist,
-            config.filesystem_encoding,
-            &filename,
+            "O&fnsn|y#",
+            PyUnicode_FSConverter,
+            &filename_bytes,
             &size,
             &index,
             &encoding,
+            &layout_engine,
             &font_bytes,
-            &font_bytes_size,
-            &layout_engine
-        )) {
-        PyConfig_Clear(&config);
-        return NULL;
-    }
-    PyConfig_Clear(&config);
-#else
-    if (!PyArg_ParseTupleAndKeywords(
-            args,
-            kw,
-            "etf|nsy#n",
-            kwlist,
-            Py_FileSystemDefaultEncoding,
-            &filename,
-            &size,
-            &index,
-            &encoding,
-            &font_bytes,
-            &font_bytes_size,
-            &layout_engine
+            &font_bytes_size
         )) {
         return NULL;
     }
-#endif
+    const char *filename = PyBytes_AS_STRING(filename_bytes);
 
     self = PyObject_New(FontObject, &Font_Type);
     if (!self) {
-        if (filename) {
-            PyMem_Free(filename);
-        }
+        Py_DECREF(filename_bytes);
         return NULL;
     }
 
@@ -229,19 +206,18 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
             FT_MAKE_TAG(encoding[0], encoding[1], encoding[2], encoding[3]);
         error = FT_Select_Charmap(self->face, encoding_tag);
     }
-    if (filename) {
-        PyMem_Free(filename);
-    }
 
     if (error) {
         if (self->font_bytes) {
             PyMem_Free(self->font_bytes);
             self->font_bytes = NULL;
         }
+        Py_DECREF(filename_bytes);
         Py_DECREF(self);
         return geterror(error);
     }
 
+    Py_DECREF(filename_bytes);
     return (PyObject *)self;
 }
 
@@ -517,6 +493,23 @@ text_layout(
     return count;
 }
 
+/** Calculate how far the pen advances for a given string.
+ *
+ * This is the sum of the glyph advances, which is not the width of the inked
+ * area that font_getsize_impl() reports: it includes side bearings.
+ *
+ * Python parameters:
+ *   - string: the text to measure
+ *   - mode_name: image mode string
+ *   - dir: text direction string
+ *   - features: font features sequence
+ *   - lang: language string
+ *
+ * Python return value:
+ *   - length: advance along the primary axis, 26.6 precision integer.
+ *     Unlike the other methods here this is not in pixels;
+ *     ImageFont.FreeTypeFont.getlength() divides by 64.
+ */
 static PyObject *
 font_getlength_impl(FontObject *self, PyObject *args) {
     int length;                   /* length along primary axis, in 26.6 precision */
@@ -530,8 +523,6 @@ font_getlength_impl(FontObject *self, PyObject *args) {
     const char *lang = NULL;
     PyObject *features = Py_None;
     PyObject *string;
-
-    /* calculate size and bearing for a given string */
 
     if (!PyArg_ParseTuple(
             args, "O|zzOz:getlength", &string, &mode_name, &dir, &features, &lang
@@ -587,7 +578,7 @@ bounding_box_and_anchors(
     int64_t *width,
     int64_t *height,
     int *x_offset,
-    int *y_offset
+    int64_t *y_offset
 ) {
     long position; /* pen position along primary axis, in 26.6 precision */
     long advanced; /* pen position along primary axis, in pixels */
@@ -746,7 +737,7 @@ bounding_box_and_anchors(
     *width = (int64_t)x_max - x_min;
     *height = (int64_t)y_max - y_min;
     *x_offset = -x_anchor + x_min;
-    *y_offset = -(-y_anchor + y_max);
+    *y_offset = (int64_t)y_anchor - y_max;
     return 0;
 
 bad_anchor:
@@ -754,10 +745,23 @@ bad_anchor:
     return 1;
 }
 
+/** Calculate size and bearing for a given string.
+ *
+ * Python parameters:
+ *   - string: the text to measure
+ *   - mode_name: image mode string
+ *   - dir: text direction string
+ *   - features: font features sequence
+ *   - lang: language string
+ *   - anchor: anchor string
+ *
+ * Python return value:
+ *   - ((width, height), (x_offset, y_offset)): size and bearing of the text, in pixels
+ */
 static PyObject *
 font_getsize_impl(FontObject *self, PyObject *args) {
-    int64_t width, height;
-    int x_offset, y_offset;
+    int64_t width, height, y_offset;
+    int x_offset;
     int load_flags; /* FreeType load_flags parameter */
     int error;
     GlyphInfo *glyph_info = NULL; /* computed text layout */
@@ -771,8 +775,6 @@ font_getsize_impl(FontObject *self, PyObject *args) {
     const char *anchor = NULL;
     PyObject *features = Py_None;
     PyObject *string;
-
-    /* calculate size and bearing for a given string */
 
     if (!PyArg_ParseTuple(
             args,
@@ -826,7 +828,7 @@ font_getsize_impl(FontObject *self, PyObject *args) {
         return NULL;
     }
 
-    return Py_BuildValue("(LL)(ii)", width, height, x_offset, y_offset);
+    return Py_BuildValue("(LL)(iL)", width, height, x_offset, y_offset);
 }
 
 static PyObject *
@@ -838,14 +840,34 @@ font_getsize(FontObject *self, PyObject *args) {
     return result;
 }
 
+/**
+ * Rasterize a string into an image buffer.
+ *
+ * Python parameters:
+ * - string: the text to render
+ * - fill: Python function to create a core image object at a specified width and height
+ * - mode_name: image mode string
+ * - dir: text direction string
+ * - features: font features sequence
+ * - lang: language string
+ * - stroke_width: stroke width in pixels
+ * - stroke_filled: bool: omit inner stroke border, filling inside the outer border
+ * - anchor: anchor string
+ * - foreground_ink_long: foreground color
+ * - x_start: starting x position of the pen in pixels
+ * - y_start: starting y position of the pen in pixels
+ *
+ * Python return value:
+ *   - (image, (x_offset, y_offset)): image with the rendered text, and text offset
+ */
 static PyObject *
 font_render_impl(FontObject *self, PyObject *args) {
     int x, y;         /* pen position, in 26.6 precision */
     int px, py;       /* position of current glyph, in pixels */
-    int x_min, y_max; /* text offset in 26.6 precision */
+    int x_min, y_max; /* text offset, in pixels */
     int load_flags;   /* FreeType load_flags parameter */
     int error;
-    FT_Glyph glyph;
+    FT_Glyph glyph = NULL;
     FT_GlyphSlot glyph_slot;
     FT_Bitmap bitmap;
     FT_Bitmap bitmap_converted; /* initialized lazily, for non-8bpp fonts */
@@ -865,7 +887,7 @@ font_render_impl(FontObject *self, PyObject *args) {
     int color = 0; /* is FT_LOAD_COLOR enabled? */
     float stroke_width = 0;
     int stroke_filled = 0;
-    PY_LONG_LONG foreground_ink_long = 0;
+    long long foreground_ink_long = 0;
     unsigned int foreground_ink;
     const char *mode_name = NULL;
     const char *dir = NULL;
@@ -876,8 +898,8 @@ font_render_impl(FontObject *self, PyObject *args) {
     PyObject *fill;
     float x_start = 0;
     float y_start = 0;
-    int64_t width, height;
-    int x_offset, y_offset;
+    int64_t width, height, y_offset;
+    int x_offset;
     int horizontal_dir; /* is primary axis horizontal? */
 
     /* render string into given buffer (the buffer *must* have
@@ -978,7 +1000,7 @@ font_render_impl(FontObject *self, PyObject *args) {
     y_offset = round(y_offset - stroke_width);
     if (count == 0 || width == 0 || height == 0) {
         PyMem_Del(glyph_info);
-        return Py_BuildValue("N(ii)", image, x_offset, y_offset);
+        return Py_BuildValue("N(iL)", image, x_offset, y_offset);
     }
 
     if (stroke_width) {
@@ -1240,6 +1262,7 @@ font_render_impl(FontObject *self, PyObject *args) {
         y += glyph_info[i].y_advance;
         if (stroker != NULL) {
             FT_Done_Glyph(glyph);
+            glyph = NULL;
         }
     }
 
@@ -1248,11 +1271,11 @@ font_render_impl(FontObject *self, PyObject *args) {
     }
     FT_Stroker_Done(stroker);
     PyMem_Del(glyph_info);
-    return Py_BuildValue("N(ii)", image, x_offset, y_offset);
+    return Py_BuildValue("N(iL)", image, x_offset, y_offset);
 
 glyph_error:
     Py_DECREF(image);
-    if (stroker != NULL) {
+    if (glyph != NULL) {
         FT_Done_Glyph(glyph);
     }
     if (bitmap_converted_ready) {
@@ -1468,7 +1491,7 @@ font_setvaraxes_impl(FontObject *self, PyObject *args) {
         if (PyFloat_Check(item)) {
             coord = PyFloat_AS_DOUBLE(item);
         } else if (PyLong_Check(item)) {
-            coord = (float)PyLong_AS_LONG(item);
+            coord = (float)PyLong_AsLong(item);
         } else if (PyNumber_Check(item)) {
             coord = PyFloat_AsDouble(item);
         } else {
@@ -1635,7 +1658,7 @@ static PyTypeObject Font_Type = {
 };
 
 static PyMethodDef _functions[] = {
-    {"getfont", (PyCFunction)getfont, METH_VARARGS | METH_KEYWORDS}, {NULL, NULL}
+    {"getfont", (PyCFunction)getfont, METH_VARARGS}, {NULL, NULL}
 };
 
 static int

@@ -22,5 +22,5 @@ if (!$?) { exit $LASTEXITCODE }
 if (!$?) { exit $LASTEXITCODE }
 & $venv\Scripts\$python -m pytest -vv -x checks\check_wheel.py
 if (!$?) { exit $LASTEXITCODE }
-& $venv\Scripts\$python -m pytest -vv -x Tests
+& $venv\Scripts\$python -m pytest -vv -x --numprocesses=logical --dist=worksteal Tests
 if (!$?) { exit $LASTEXITCODE }

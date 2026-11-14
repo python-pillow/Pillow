@@ -3,6 +3,7 @@ from __future__ import annotations
 import array
 import math
 import struct
+from decimal import Decimal
 
 import pytest
 
@@ -23,7 +24,7 @@ def test_path() -> None:
     assert list(p[:1]) == [(0.0, 1.0)]
     assert list(p[-1:]) == [(8.0, 9.0)]
     with pytest.raises(TypeError) as cm:
-        p["foo"]
+        p["foo"]  # type: ignore[call-overload]
     assert str(cm.value) == "Path indices must be integers, not str"
     assert list(p) == [(0.0, 1.0), (2.0, 3.0), (4.0, 5.0), (6.0, 7.0), (8.0, 9.0)]
 
@@ -64,7 +65,7 @@ def test_path() -> None:
     ),
 )
 def test_path_constructors(
-    coords: Sequence[float] | array.array[float] | ImagePath.Path,
+    coords: Sequence[float] | array.array[float] | Image.core._Path,
 ) -> None:
     # Arrange / Act
     p = ImagePath.Path(coords)
@@ -87,6 +88,25 @@ def test_path_list_of_lists(
     assert list(p) == expected
 
 
+def test_path_item_assignment_requires_tuple() -> None:
+    p = ImagePath.Path([(0, 1)])
+
+    with pytest.raises(TypeError, match="argument must be tuple of length 2"):
+        p[0] = [4, 5]
+    assert p[0] == (0.0, 1.0)
+
+    p[0] = (4, 5)
+    assert p[0] == (4.0, 5.0)
+
+
+def test_path_large_coordinates() -> None:
+    large_int = (1 << 30) + 1
+    assert ImagePath.Path([large_int, 0])[0] == (large_int, 0)
+
+    with pytest.raises(OverflowError):
+        ImagePath.Path([1 << 1024, 0])
+
+
 @pytest.mark.parametrize(
     "coords, message",
     (
@@ -94,6 +114,7 @@ def test_path_list_of_lists(
         ([[1]], "coordinate list must contain exactly 2 coordinates"),
         ([[[1, 2], [3, 4]]], "coordinate list must contain numbers"),
         ([["a", "b"]], "coordinate list must contain numbers"),
+        ([[Decimal("sNaN"), 0]], "[Cc]annot convert signaling NaN to float"),
     ),
 )
 def test_invalid_list_coords(coords: list[list[object]], message: str) -> None:
@@ -214,6 +235,11 @@ def test_overflow_segfault() -> None:
         # and segfaults
         for i in range(200000):
             x[i] = b"0" * 16
+
+
+def test_compact_empty_path() -> None:
+    p = ImagePath.Path(0)
+    assert p.compact() == 0
 
 
 def test_compact_within_map() -> None:

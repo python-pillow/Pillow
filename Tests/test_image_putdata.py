@@ -15,14 +15,14 @@ def test_sanity() -> None:
     im1 = hopper()
     for data in (im1.get_flattened_data(), im1.im):
         im2 = Image.new(im1.mode, im1.size, 0)
-        im2.putdata(data)
+        im2.putdata(data)  # type: ignore[arg-type]
 
         assert_image_equal(im1, im2)
 
         # readonly
         im2 = Image.new(im1.mode, im2.size, 0)
         im2.readonly = 1
-        im2.putdata(data)
+        im2.putdata(data)  # type: ignore[arg-type]
 
         assert not im2.readonly
         assert_image_equal(im1, im2)
@@ -97,6 +97,43 @@ def test_array_F() -> None:
     im.putdata(arr)
 
     assert len(im.get_flattened_data()) == len(arr)
+
+
+def test_too_many_entries() -> None:
+    im = Image.new("L", (4, 4))
+    with pytest.raises(TypeError):
+        im.putdata(list(range(17)))
+
+
+def test_overstated_length() -> None:
+    # shouldn't segfault
+    # see https://github.com/python-pillow/Pillow/issues/9892
+
+    class OverstatedLengthSequence:
+        def __len__(self) -> int:
+            return 16
+
+        def __getitem__(self, index: int) -> int:
+            if index >= 2:
+                raise IndexError
+            return index + 1
+
+    im = Image.new("L", (4, 4))
+    im.putdata(OverstatedLengthSequence())  # type: ignore[arg-type]
+    assert im.get_flattened_data() == (1, 2, *(0,) * 14)
+
+
+def test_raising_length() -> None:
+    class RaisingLengthSequence:
+        def __len__(self) -> int:
+            raise RuntimeError
+
+        def __getitem__(self, index: int) -> int:
+            return index
+
+    im = Image.new("L", (1, 1))
+    with pytest.raises(RuntimeError):
+        im.putdata(RaisingLengthSequence())  # type: ignore[arg-type]
 
 
 def test_not_flattened() -> None:

@@ -18,73 +18,114 @@
 
 #include "Imaging.h"
 
+/**
+ * Get the bounding box for any non-zero data in the image.
+ *
+ * @param im The image to analyze.
+ * @param bbox An array of four integers to store the bounding box coordinates:
+ *             [left, upper, right, lower].
+ *             Must have been allocated as such by the caller.
+ * @param alpha_only If non-zero, only consider the alpha channel for bounding box
+ *                   calculation.
+ * @return 1 if a bounding box was found, 0 if the image is empty (no non-zero pixels).
+ */
 int
 ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
-    /* Get the bounding box for any non-zero data in the image.*/
-
-    int x, y;
-    int has_data;
+    int xsize = im->xsize, ysize = im->ysize;
 
     /* Initialize bounding box to max values */
-    bbox[0] = im->xsize;
+    bbox[0] = xsize;
     bbox[1] = -1;
     bbox[2] = bbox[3] = 0;
 
-#define GETBBOX(image, mask)                                 \
-    /* first stage: looking for any pixels from top */       \
-    for (y = 0; y < im->ysize; y++) {                        \
-        has_data = 0;                                        \
-        for (x = 0; x < im->xsize; x++) {                    \
-            if (im->image[y][x] & mask) {                    \
-                has_data = 1;                                \
-                bbox[0] = x;                                 \
-                bbox[1] = y;                                 \
-                break;                                       \
-            }                                                \
-        }                                                    \
-        if (has_data) {                                      \
-            break;                                           \
-        }                                                    \
-    }                                                        \
-    /* Check that we have a box */                           \
-    if (bbox[1] < 0) {                                       \
-        return 0; /* no data */                              \
-    }                                                        \
-    /* second stage: looking for any pixels from bottom */   \
-    for (y = im->ysize - 1; y >= bbox[1]; y--) {             \
-        has_data = 0;                                        \
-        for (x = 0; x < im->xsize; x++) {                    \
-            if (im->image[y][x] & mask) {                    \
-                has_data = 1;                                \
-                if (x < bbox[0]) {                           \
-                    bbox[0] = x;                             \
-                }                                            \
-                bbox[3] = y + 1;                             \
-                break;                                       \
-            }                                                \
-        }                                                    \
-        if (has_data) {                                      \
-            break;                                           \
-        }                                                    \
-    }                                                        \
-    /* third stage: looking for left and right boundaries */ \
-    for (y = bbox[1]; y < bbox[3]; y++) {                    \
-        for (x = 0; x < bbox[0]; x++) {                      \
-            if (im->image[y][x] & mask) {                    \
-                bbox[0] = x;                                 \
-                break;                                       \
-            }                                                \
-        }                                                    \
-        for (x = im->xsize - 1; x >= bbox[2]; x--) {         \
-            if (im->image[y][x] & mask) {                    \
-                bbox[2] = x + 1;                             \
-                break;                                       \
-            }                                                \
-        }                                                    \
+#define GETBBOX(mask, type)                                    \
+    /* first stage: looking for any pixels from top */         \
+    for (int y = 0; y < ysize; y++) {                          \
+        const type *restrict row = (const type *)im->image[y]; \
+        /* vectorisable OR-reduce of the row */                \
+        type acc = 0;                                          \
+        for (int x = 0; x < xsize; x++) {                      \
+            acc |= row[x] & mask;                              \
+        }                                                      \
+        if (!acc) {                                            \
+            continue;                                          \
+        }                                                      \
+        for (int x = 0; x < xsize; x++) {                      \
+            if (row[x] & mask) {                               \
+                bbox[0] = x;                                   \
+                bbox[1] = y;                                   \
+                break;                                         \
+            }                                                  \
+        }                                                      \
+        break;                                                 \
+    }                                                          \
+    /* Check that we have a box */                             \
+    if (bbox[1] < 0) {                                         \
+        return 0; /* no data */                                \
+    }                                                          \
+    /* second stage: looking for any pixels from bottom */     \
+    for (int y = ysize - 1; y >= bbox[1]; y--) {               \
+        const type *restrict row = (const type *)im->image[y]; \
+        /* vectorisable OR-reduce of the row */                \
+        type acc = 0;                                          \
+        for (int x = 0; x < xsize; x++) {                      \
+            acc |= row[x] & mask;                              \
+        }                                                      \
+        if (!acc) {                                            \
+            continue;                                          \
+        }                                                      \
+        for (int x = 0; x < xsize; x++) {                      \
+            if (row[x] & mask) {                               \
+                bbox[0] = x < bbox[0] ? x : bbox[0];           \
+                bbox[3] = y + 1;                               \
+                break;                                         \
+            }                                                  \
+        }                                                      \
+        break;                                                 \
+    }                                                          \
+    /* third stage: looking for left and right boundaries */   \
+    for (int y = bbox[1]; y < bbox[3]; y++) {                  \
+        const type *restrict row = (const type *)im->image[y]; \
+        if (bbox[0] > 0) {                                     \
+            /* vectorisable OR-reduce of the left margin */    \
+            type acc = 0;                                      \
+            for (int x = 0; x < bbox[0]; x++) {                \
+                acc |= row[x] & mask;                          \
+            }                                                  \
+            if (acc) {                                         \
+                for (int x = 0; x < bbox[0]; x++) {            \
+                    if (row[x] & mask) {                       \
+                        bbox[0] = x;                           \
+                        break;                                 \
+                    }                                          \
+                }                                              \
+            }                                                  \
+        }                                                      \
+        if (bbox[2] < xsize) {                                 \
+            /* vectorisable OR-reduce of the right margin */   \
+            type acc = 0;                                      \
+            for (int x = bbox[2]; x < xsize; x++) {            \
+                acc |= row[x] & mask;                          \
+            }                                                  \
+            if (acc) {                                         \
+                for (int x = xsize - 1; x >= bbox[2]; x--) {   \
+                    if (row[x] & mask) {                       \
+                        bbox[2] = x + 1;                       \
+                        break;                                 \
+                    }                                          \
+                }                                              \
+            }                                                  \
+        }                                                      \
     }
 
     if (im->image8) {
-        GETBBOX(image8, 0xff);
+        if (im->type == IMAGING_TYPE_I16) {
+            // In I;16 modes, image8 is two-byte pixels, so scan as UINT16.
+            // Since we're looking for zeroes, endianness doesn't matter.
+            GETBBOX(0xffff, UINT16);
+        } else {
+            GETBBOX(0xff, UINT8);
+        }
     } else {
         INT32 mask = 0xffffffff;
         if (im->bands == 3) {
@@ -101,16 +142,26 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
             mask = 0xff000000;
 #endif
         }
-        GETBBOX(image32, mask);
+        GETBBOX(mask, INT32);
     }
 
     return 1; /* ok */
 }
 
+/**
+ * Get projection arrays for non-zero data in the image.
+ * Projection arrays indicate the rows and columns in the image
+ * with non-zero data.
+ *
+ * @param im The image to analyze.
+ * @param xproj Projection array for columns.
+ *              Must be of size `im->xsize`, allocated by the caller.
+ * @param yproj Projection array for rows.
+ *              Must be of size `im->ysize`, allocated by the caller.
+ * @return Always 1.
+ */
 int
 ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj) {
-    /* Get projection arrays for non-zero data in the image.*/
-
     int x, y;
     int has_data;
 
@@ -118,28 +169,33 @@ ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj) {
     memset(xproj, 0, im->xsize);
     memset(yproj, 0, im->ysize);
 
-#define GETPROJ(image, mask)              \
-    for (y = 0; y < im->ysize; y++) {     \
-        has_data = 0;                     \
-        for (x = 0; x < im->xsize; x++) { \
-            if (im->image[y][x] & mask) { \
-                has_data = 1;             \
-                xproj[x] = 1;             \
-            }                             \
-        }                                 \
-        if (has_data) {                   \
-            yproj[y] = 1;                 \
-        }                                 \
+#define GETPROJ(mask, type)                           \
+    for (y = 0; y < im->ysize; y++) {                 \
+        const type *row = (const type *)im->image[y]; \
+        has_data = 0;                                 \
+        for (x = 0; x < im->xsize; x++) {             \
+            if (row[x] & mask) {                      \
+                has_data = 1;                         \
+                xproj[x] = 1;                         \
+            }                                         \
+        }                                             \
+        if (has_data) {                               \
+            yproj[y] = 1;                             \
+        }                                             \
     }
 
     if (im->image8) {
-        GETPROJ(image8, 0xff);
+        if (im->type == IMAGING_TYPE_I16) {
+            GETPROJ(0xffff, UINT16);
+        } else {
+            GETPROJ(0xff, UINT8);
+        }
     } else {
         INT32 mask = 0xffffffff;
         if (im->bands == 3) {
             ((UINT8 *)&mask)[3] = 0;
         }
-        GETPROJ(image32, mask);
+        GETPROJ(mask, INT32);
     }
 
     return 1; /* ok */
@@ -147,30 +203,22 @@ ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj) {
 
 int
 ImagingGetExtrema(Imaging im, void *extrema) {
-    int x, y;
     INT32 imin, imax;
     FLOAT32 fmin, fmax;
 
-    if (im->bands != 1) {
-        (void)ImagingError_ModeError();
-        return -1; /* mismatch */
-    }
-
-    if (!im->xsize || !im->ysize) {
+    int xsize = im->xsize, ysize = im->ysize;
+    if (!xsize || !ysize) {
         return 0; /* zero size */
     }
 
     switch (im->type) {
         case IMAGING_TYPE_UINT8:
             imin = imax = im->image8[0][0];
-            for (y = 0; y < im->ysize; y++) {
+            for (int y = 0; y < ysize; y++) {
                 UINT8 *in = im->image8[y];
-                for (x = 0; x < im->xsize; x++) {
-                    if (imin > in[x]) {
-                        imin = in[x];
-                    } else if (imax < in[x]) {
-                        imax = in[x];
-                    }
+                for (int x = 0; x < xsize; x++) {
+                    imin = imin < in[x] ? imin : in[x];
+                    imax = imax > in[x] ? imax : in[x];
                 }
                 if (imin == 0 && imax == 255) {
                     break;
@@ -181,14 +229,11 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             break;
         case IMAGING_TYPE_INT32:
             imin = imax = im->image32[0][0];
-            for (y = 0; y < im->ysize; y++) {
+            for (int y = 0; y < ysize; y++) {
                 INT32 *in = im->image32[y];
-                for (x = 0; x < im->xsize; x++) {
-                    if (imin > in[x]) {
-                        imin = in[x];
-                    } else if (imax < in[x]) {
-                        imax = in[x];
-                    }
+                for (int x = 0; x < xsize; x++) {
+                    imin = imin < in[x] ? imin : in[x];
+                    imax = imax > in[x] ? imax : in[x];
                 }
             }
             memcpy(extrema, &imin, sizeof(imin));
@@ -196,9 +241,11 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             break;
         case IMAGING_TYPE_FLOAT32:
             fmin = fmax = ((FLOAT32 *)im->image32[0])[0];
-            for (y = 0; y < im->ysize; y++) {
+            for (int y = 0; y < ysize; y++) {
                 FLOAT32 *in = (FLOAT32 *)im->image32[y];
-                for (x = 0; x < im->xsize; x++) {
+                for (int x = 0; x < xsize; x++) {
+                    // Kept as if/else (unlike the integer branches above),
+                    // since float min/max isn't vectorisable due to NaN semantics.
                     if (fmin > in[x]) {
                         fmin = in[x];
                     } else if (fmax < in[x]) {
@@ -209,38 +256,30 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             memcpy(extrema, &fmin, sizeof(fmin));
             memcpy(((char *)extrema) + sizeof(fmin), &fmax, sizeof(fmax));
             break;
-        case IMAGING_TYPE_I16:
-            if (im->mode == IMAGING_MODE_I_16) {
-                UINT16 v;
-                UINT8 *pixel = *im->image8;
-#ifdef WORDS_BIGENDIAN
-                v = pixel[0] + ((UINT16)pixel[1] << 8);
-#else
-                memcpy(&v, pixel, sizeof(v));
-#endif
-                imin = imax = v;
-                for (y = 0; y < im->ysize; y++) {
-                    for (x = 0; x < im->xsize; x++) {
-                        pixel = (UINT8 *)im->image[y] + x * sizeof(v);
-#ifdef WORDS_BIGENDIAN
-                        v = pixel[0] + ((UINT16)pixel[1] << 8);
-#else
-                        memcpy(&v, pixel, sizeof(v));
-#endif
-                        if (imin > v) {
-                            imin = v;
-                        } else if (imax < v) {
-                            imax = v;
-                        }
+        case IMAGING_TYPE_I16: {
+            UINT16 v;
+            UINT8 *pixel = *im->image8;
+            int bigendian = isImageI16BigEndian(im);
+            v = bigendian ? ((UINT16)pixel[0] << 8) + pixel[1]
+                          : pixel[0] + ((UINT16)pixel[1] << 8);
+            imin = imax = v;
+            for (int y = 0; y < ysize; y++) {
+                for (int x = 0; x < xsize; x++) {
+                    pixel = (UINT8 *)im->image[y] + x * sizeof(v);
+                    v = bigendian ? ((UINT16)pixel[0] << 8) + pixel[1]
+                                  : pixel[0] + ((UINT16)pixel[1] << 8);
+                    if (imin > v) {
+                        imin = v;
+                    } else if (imax < v) {
+                        imax = v;
                     }
                 }
-                v = (UINT16)imin;
-                memcpy(extrema, &v, sizeof(v));
-                v = (UINT16)imax;
-                memcpy(((char *)extrema) + sizeof(v), &v, sizeof(v));
-                break;
             }
-            /* FALL THROUGH */
+            v = (UINT16)imin;
+            memcpy(extrema, &v, sizeof(v));
+            v = (UINT16)imax;
+            memcpy(((char *)extrema) + sizeof(v), &v, sizeof(v));
+        } break;
         default:
             (void)ImagingError_ModeError();
             return -1;
@@ -248,7 +287,46 @@ ImagingGetExtrema(Imaging im, void *extrema) {
     return 1; /* ok */
 }
 
-/* static ImagingColorItem* getcolors8(Imaging im, int maxcolors, int* size);*/
+int
+ImagingGetExtremaMultiband(Imaging im, UINT8 extrema[8]) {
+    // Per-band min/max for 8-bit images (up to 4 bands).
+    // Writes 2 * im->bands bytes to extrema as [min0, max0, min1, max1, ...].
+    // Returns 1 on success, or 0 for an empty image.
+    UINT8 vmin[4], vmax[4];
+
+    int xsize = im->xsize, ysize = im->ysize;
+    if (!xsize || !ysize) {
+        return 0; /* zero size */
+    }
+
+    UINT8 *restrict in = (UINT8 *)im->image[0];
+    for (int b = 0; b < 4; b++) {
+        vmin[b] = vmax[b] = in[b];
+    }
+
+    for (int y = 0; y < ysize; y++) {
+        UINT8 *restrict in = (UINT8 *)im->image[y];
+        for (int x = 0; x < xsize; x++, in += 4) {
+            for (int b = 0; b < 4; b++) {
+                vmin[b] = MIN(vmin[b], in[b]);
+                vmax[b] = MAX(vmax[b], in[b]);
+            }
+        }
+    }
+
+    int bands = im->bands;
+    if (bands == 2) {
+        // The second band of a two-band image is stored in the fourth byte
+        vmin[1] = vmin[3];
+        vmax[1] = vmax[3];
+    }
+    for (int b = 0; b < bands; b++) {
+        extrema[b * 2 + 0] = vmin[b];
+        extrema[b * 2 + 1] = vmax[b];
+    }
+    return 1;
+}
+
 static ImagingColorItem *
 getcolors32(Imaging im, int maxcolors, int *size);
 
@@ -295,9 +373,6 @@ getcolors32(Imaging im, int maxcolors, int *size) {
             break;
         }
     }
-
-    /* printf("code_size=%d\n", code_size); */
-    /* printf("code_poly=%d\n", code_poly); */
 
     if (!code_size) {
         return ImagingError_MemoryError(); /* just give up */

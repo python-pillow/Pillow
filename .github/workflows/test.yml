@@ -36,6 +36,7 @@ jobs:
           "ubuntu-latest",
         ]
         python-version: [
+          "pypy3.12",
           "pypy3.11",
           "3.15t",
           "3.15",
@@ -46,7 +47,7 @@ jobs:
           "3.11",
         ]
         include:
-        - { python-version: "3.13", PYTHONOPTIMIZE: 1, REVERSE: "--reverse" }
+        - { python-version: "3.13", PYTHONOPTIMIZE: 1 }
         - { python-version: "3.12", PYTHONOPTIMIZE: 2 }
         # Intel
         - { os: "macos-26-intel", python-version: "3.11" }
@@ -57,12 +58,12 @@ jobs:
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      uses: actions/setup-python@v7.1.0
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
@@ -75,16 +76,15 @@ jobs:
       run: python3 .github/workflows/system-info.py
 
     - name: Cache libavif
-      if: startsWith(matrix.os, 'ubuntu')
-      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      uses: actions/cache@v6.1.0
       id: cache-libavif
       with:
         path: ~/cache-libavif
-        key: ${{ runner.os }}-libavif-${{ hashFiles('depends/install_libavif.sh') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-libavif-${{ hashFiles('depends/install_libavif.sh') }}
 
     - name: Cache libimagequant
       if: startsWith(matrix.os, 'ubuntu')
-      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      uses: actions/cache@v6.1.0
       id: cache-libimagequant
       with:
         path: ~/cache-libimagequant
@@ -92,7 +92,7 @@ jobs:
 
     - name: Cache libwebp
       if: startsWith(matrix.os, 'ubuntu')
-      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      uses: actions/cache@v6.1.0
       id: cache-libwebp
       with:
         path: ~/cache-libwebp
@@ -114,6 +114,7 @@ jobs:
         .github/workflows/macos-install.sh
       env:
         GHA_PYTHON_VERSION: ${{ matrix.python-version }}
+        GHA_LIBAVIF_CACHE_HIT: ${{ steps.cache-libavif.outputs.cache-hit }}
 
     - name: Register gcc problem matcher
       if: "matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'"
@@ -125,9 +126,6 @@ jobs:
 
     - name: Test
       run: |
-        if [ $REVERSE ]; then
-          python3 -m pip install pytest-reverse
-        fi
         if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
           xvfb-run -s '-screen 0 1024x768x24' sway&
           export WAYLAND_DISPLAY=wayland-1
@@ -137,7 +135,6 @@ jobs:
         fi
       env:
         PYTHONOPTIMIZE: ${{ matrix.PYTHONOPTIMIZE }}
-        REVERSE: ${{ matrix.REVERSE }}
 
     - name: Prepare to upload errors
       if: failure()
@@ -145,18 +142,14 @@ jobs:
         mkdir -p Tests/errors
 
     - name: Upload errors
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@v7.0.2
       if: failure()
       with:
         name: errors
         path: Tests/errors
 
-    - name: After success
-      run: |
-        .ci/after_success.sh
-
     - name: Upload coverage
-      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+      uses: codecov/codecov-action@v7.1.1
       with:
         flags: ${{ matrix.os == 'ubuntu-latest' && 'GHA_Ubuntu' || 'GHA_macOS' }}
         name: ${{ matrix.os }} Python ${{ matrix.python-version }}

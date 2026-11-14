@@ -25,97 +25,127 @@ typedef struct {
     const void *table;
 } im_point_context;
 
+// Note: all point handlers must fill the entirety of `imOut`,
+//       as it is allocated dirty by `ImagingPoint`.
+
+/**
+ * Contract: imIn is read-only and imOut must be a distinct image.
+ */
 static void
 im_point_8_8(Imaging imOut, Imaging imIn, im_point_context *context) {
-    int x, y;
     /* 8-bit source, 8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
-    for (y = 0; y < imIn->ysize; y++) {
-        UINT8 *in = imIn->image8[y];
-        UINT8 *out = imOut->image8[y];
-        for (x = 0; x < imIn->xsize; x++) {
+    int xsize = imIn->xsize;
+    for (int y = 0; y < imIn->ysize; y++) {
+        UINT8 *restrict in = imIn->image8[y];
+        UINT8 *restrict out = imOut->image8[y];
+        for (int x = 0; x < xsize; x++) {
             out[x] = table[in[x]];
         }
     }
 }
 
+/**
+ * Contract: imIn is read-only and imOut must be a distinct image.
+ */
 static void
 im_point_2x8_2x8(Imaging imOut, Imaging imIn, im_point_context *context) {
-    int x, y;
     /* 2x8-bit source, 2x8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
-    for (y = 0; y < imIn->ysize; y++) {
-        UINT8 *in = (UINT8 *)imIn->image[y];
-        UINT8 *out = (UINT8 *)imOut->image[y];
-        for (x = 0; x < imIn->xsize; x++) {
+    UINT8 *table_256 = table + 256;
+    int xsize = imIn->xsize;
+    for (int y = 0; y < imIn->ysize; y++) {
+        UINT8 *restrict in = (UINT8 *)imIn->image[y];
+        UINT8 *restrict out = (UINT8 *)imOut->image[y];
+        for (int x = 0; x < xsize; x++) {
             out[0] = table[in[0]];
-            out[3] = table[in[3] + 256];
+            out[1] = 0;
+            out[2] = 0;
+            out[3] = table_256[in[3]];
             in += 4;
             out += 4;
         }
     }
 }
 
+/**
+ * Contract: imIn is read-only and imOut must be a distinct image.
+ */
 static void
 im_point_3x8_3x8(Imaging imOut, Imaging imIn, im_point_context *context) {
-    int x, y;
     /* 3x8-bit source, 3x8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
-    for (y = 0; y < imIn->ysize; y++) {
-        UINT8 *in = (UINT8 *)imIn->image[y];
-        UINT8 *out = (UINT8 *)imOut->image[y];
-        for (x = 0; x < imIn->xsize; x++) {
+    UINT8 *table_256 = table + 256;
+    UINT8 *table_512 = table + 512;
+    int xsize = imIn->xsize;
+    for (int y = 0; y < imIn->ysize; y++) {
+        UINT8 *restrict in = (UINT8 *)imIn->image[y];
+        UINT8 *restrict out = (UINT8 *)imOut->image[y];
+        for (int x = 0; x < xsize; x++) {
             out[0] = table[in[0]];
-            out[1] = table[in[1] + 256];
-            out[2] = table[in[2] + 512];
+            out[1] = table_256[in[1]];
+            out[2] = table_512[in[2]];
+            out[3] = 0;
             in += 4;
             out += 4;
         }
     }
 }
 
+/**
+ * Contract: imIn is read-only and imOut must be a distinct image.
+ */
 static void
 im_point_4x8_4x8(Imaging imOut, Imaging imIn, im_point_context *context) {
-    int x, y;
     /* 4x8-bit source, 4x8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
-    for (y = 0; y < imIn->ysize; y++) {
-        UINT8 *in = (UINT8 *)imIn->image[y];
-        UINT8 *out = (UINT8 *)imOut->image[y];
-        for (x = 0; x < imIn->xsize; x++) {
+    UINT8 *table_256 = table + 256;
+    UINT8 *table_512 = table + 512;
+    UINT8 *table_768 = table + 768;
+    int xsize = imIn->xsize;
+    for (int y = 0; y < imIn->ysize; y++) {
+        UINT8 *restrict in = (UINT8 *)imIn->image[y];
+        UINT8 *restrict out = (UINT8 *)imOut->image[y];
+        for (int x = 0; x < xsize; x++) {
             out[0] = table[in[0]];
-            out[1] = table[in[1] + 256];
-            out[2] = table[in[2] + 512];
-            out[3] = table[in[3] + 768];
+            out[1] = table_256[in[1]];
+            out[2] = table_512[in[2]];
+            out[3] = table_768[in[3]];
             in += 4;
             out += 4;
         }
     }
 }
 
+/**
+ * Contract: imIn is read-only and imOut must be a distinct image.
+ */
 static void
 im_point_8_32(Imaging imOut, Imaging imIn, im_point_context *context) {
-    int x, y;
     /* 8-bit source, 32-bit destination */
     char *table = (char *)context->table;
-    for (y = 0; y < imIn->ysize; y++) {
-        UINT8 *in = imIn->image8[y];
-        INT32 *out = imOut->image32[y];
-        for (x = 0; x < imIn->xsize; x++) {
+    int xsize = imIn->xsize;
+    for (int y = 0; y < imIn->ysize; y++) {
+        UINT8 *restrict in = imIn->image8[y];
+        INT32 *restrict out = imOut->image32[y];
+        for (int x = 0; x < xsize; x++) {
             memcpy(out + x, table + in[x] * sizeof(INT32), sizeof(INT32));
         }
     }
 }
 
+/**
+ * Contract: imIn is read-only and imOut must be a distinct image.
+ */
 static void
 im_point_32_8(Imaging imOut, Imaging imIn, im_point_context *context) {
-    int x, y;
     /* 32-bit source, 8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
-    for (y = 0; y < imIn->ysize; y++) {
-        INT32 *in = imIn->image32[y];
-        UINT8 *out = imOut->image8[y];
-        for (x = 0; x < imIn->xsize; x++) {
+    int xsize = imIn->xsize;
+    for (int y = 0; y < imIn->ysize; y++) {
+        INT32 *restrict in = imIn->image32[y];
+        UINT8 *restrict out = imOut->image8[y];
+        for (int x = 0; x < xsize; x++) {
             int v = in[x];
             if (v < 0) {
                 v = 0;
@@ -127,14 +157,20 @@ im_point_32_8(Imaging imOut, Imaging imIn, im_point_context *context) {
     }
 }
 
+/**
+ * Apply a lookup table to an image.
+ *
+ * @param imIn The input image.
+ * @param mode The output mode.
+ * @param table The lookup table. No bounds checking is done for the table;
+ *              the caller must ensure that the table is valid for the image and mode.
+ * @return A new output image, or NULL on error with a Python exception set.
+ */
 Imaging
 ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
-    /* lookup table transform */
-
     ImagingSectionCookie cookie;
     Imaging imOut;
     im_point_context context;
-    void (*point)(Imaging imIn, Imaging imOut, im_point_context *context);
 
     if (!imIn) {
         return (Imaging)ImagingError_ModeError();
@@ -144,54 +180,56 @@ ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
         mode = imIn->mode;
     }
 
-    if (imIn->type != IMAGING_TYPE_UINT8) {
-        if (imIn->type != IMAGING_TYPE_INT32 || mode != IMAGING_MODE_L) {
+    if (imIn->type == IMAGING_TYPE_UINT8) {
+        if (imIn->mode != mode && !imIn->image8) {
             goto mode_mismatch;
         }
-    } else if (!imIn->image8 && imIn->mode != mode) {
+    } else if (imIn->type == IMAGING_TYPE_INT32) {
+        if (mode != IMAGING_MODE_L) {
+            // I images can only be used with L output mode
+            goto mode_mismatch;
+        }
+    } else {
+        // Reject F modes and modes based on I;16
         goto mode_mismatch;
     }
 
-    imOut = ImagingNew(mode, imIn->xsize, imIn->ysize);
+    imOut = ImagingNewDirty(mode, imIn->xsize, imIn->ysize);
     if (!imOut) {
         return NULL;
-    }
-
-    /* find appropriate handler */
-    if (imIn->type == IMAGING_TYPE_UINT8) {
-        if (imIn->bands == imOut->bands && imIn->type == imOut->type) {
-            switch (imIn->bands) {
-                case 1:
-                    point = im_point_8_8;
-                    break;
-                case 2:
-                    point = im_point_2x8_2x8;
-                    break;
-                case 3:
-                    point = im_point_3x8_3x8;
-                    break;
-                case 4:
-                    point = im_point_4x8_4x8;
-                    break;
-                default:
-                    /* this cannot really happen */
-                    point = im_point_8_8;
-                    break;
-            }
-        } else {
-            point = im_point_8_32;
-        }
-    } else {
-        point = im_point_32_8;
     }
 
     ImagingCopyPalette(imOut, imIn);
 
     ImagingSectionEnter(&cookie);
-
     context.table = table;
-    point(imOut, imIn, &context);
 
+    if (imIn->type == IMAGING_TYPE_UINT8) {
+        if (imIn->bands == imOut->bands && imIn->type == imOut->type) {
+            switch (imIn->bands) {
+                case 1:
+                    im_point_8_8(imOut, imIn, &context);
+                    break;
+                case 2:
+                    im_point_2x8_2x8(imOut, imIn, &context);
+                    break;
+                case 3:
+                    im_point_3x8_3x8(imOut, imIn, &context);
+                    break;
+                case 4:
+                    im_point_4x8_4x8(imOut, imIn, &context);
+                    break;
+                default:
+                    /* this cannot really happen */
+                    im_point_8_8(imOut, imIn, &context);
+                    break;
+            }
+        } else {
+            im_point_8_32(imOut, imIn, &context);
+        }
+    } else {
+        im_point_32_8(imOut, imIn, &context);
+    }
     ImagingSectionLeave(&cookie);
 
     return imOut;
@@ -202,20 +240,30 @@ mode_mismatch:
     );
 }
 
+/**
+ * Transform each pixel of the image with the given scale and offset.
+ * This can be read as a "multiply and add" operation.
+ *
+ * Contract: imIn is read-only.
+ *
+ * @param imIn The input image.
+ * @param scale The scale factor.
+ * @param offset The offset.
+ * @return A new output image, or NULL on error with a Python exception set.
+ */
 Imaging
 ImagingPointTransform(Imaging imIn, double scale, double offset) {
-    /* scale/offset transform */
-
     ImagingSectionCookie cookie;
     Imaging imOut;
-    int x, y;
 
-    if (!imIn || (imIn->mode != IMAGING_MODE_I && imIn->mode != IMAGING_MODE_I_16 &&
+    if (!imIn || (imIn->mode != IMAGING_MODE_I && imIn->type != IMAGING_TYPE_I16 &&
                   imIn->mode != IMAGING_MODE_F)) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    imOut = ImagingNew(imIn->mode, imIn->xsize, imIn->ysize);
+    int xsize = imIn->xsize, ysize = imIn->ysize;
+
+    imOut = ImagingNewDirty(imIn->mode, xsize, ysize);
     if (!imOut) {
         return NULL;
     }
@@ -223,11 +271,11 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
     switch (imIn->type) {
         case IMAGING_TYPE_INT32:
             ImagingSectionEnter(&cookie);
-            for (y = 0; y < imIn->ysize; y++) {
-                INT32 *in = imIn->image32[y];
-                INT32 *out = imOut->image32[y];
+            for (int y = 0; y < ysize; y++) {
+                INT32 *restrict in = imIn->image32[y];
+                INT32 *restrict out = imOut->image32[y];
                 /* FIXME: add clipping? */
-                for (x = 0; x < imIn->xsize; x++) {
+                for (int x = 0; x < xsize; x++) {
                     out[x] = in[x] * scale + offset;
                 }
             }
@@ -235,33 +283,35 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
             break;
         case IMAGING_TYPE_FLOAT32:
             ImagingSectionEnter(&cookie);
-            for (y = 0; y < imIn->ysize; y++) {
-                FLOAT32 *in = (FLOAT32 *)imIn->image32[y];
-                FLOAT32 *out = (FLOAT32 *)imOut->image32[y];
-                for (x = 0; x < imIn->xsize; x++) {
+            for (int y = 0; y < ysize; y++) {
+                FLOAT32 *restrict in = (FLOAT32 *)imIn->image32[y];
+                FLOAT32 *restrict out = (FLOAT32 *)imOut->image32[y];
+                for (int x = 0; x < xsize; x++) {
                     out[x] = in[x] * scale + offset;
                 }
             }
             ImagingSectionLeave(&cookie);
             break;
         case IMAGING_TYPE_I16:
-            if (imIn->mode == IMAGING_MODE_I_16) {
-                ImagingSectionEnter(&cookie);
-                for (y = 0; y < imIn->ysize; y++) {
-                    char *in = (char *)imIn->image[y];
-                    char *out = (char *)imOut->image[y];
-                    /* FIXME: add clipping? */
-                    for (x = 0; x < imIn->xsize; x++) {
-                        UINT16 v;
-                        memcpy(&v, in + x * sizeof(v), sizeof(v));
-                        v = v * scale + offset;
-                        memcpy(out + x * sizeof(UINT16), &v, sizeof(v));
-                    }
+            ImagingSectionEnter(&cookie);
+            UINT16 v;
+            UINT8 *pixel;
+            int bigendian = isImageI16BigEndian(imIn);
+            for (int y = 0; y < ysize; y++) {
+                UINT8 *restrict in = imIn->image8[y];
+                UINT8 *restrict out = imOut->image8[y];
+                /* FIXME: add clipping? */
+                for (int x = 0; x < xsize; x++) {
+                    pixel = in + x * 2;
+                    v = bigendian ? ((UINT16)pixel[0] << 8) + pixel[1]
+                                  : pixel[0] + ((UINT16)pixel[1] << 8);
+                    v = v * scale + offset;
+                    out[x * 2 + (bigendian ? 1 : 0)] = v;
+                    out[x * 2 + (bigendian ? 0 : 1)] = v >> 8;
                 }
-                ImagingSectionLeave(&cookie);
-                break;
             }
-            /* FALL THROUGH */
+            ImagingSectionLeave(&cookie);
+            break;
         default:
             ImagingDelete(imOut);
             return (Imaging)ImagingError_ValueError("internal error");

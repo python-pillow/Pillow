@@ -18,7 +18,7 @@ from __future__ import annotations
 
 __lazy_modules__ = {"struct"}
 
-from struct import pack, unpack_from
+from struct import unpack_from
 
 
 def i8(c: bytes) -> int:
@@ -26,7 +26,7 @@ def i8(c: bytes) -> int:
 
 
 def o8(i: int) -> bytes:
-    return bytes((i & 255,))
+    return (i & 255).to_bytes()
 
 
 # Input, le = little endian, be = big endian
@@ -100,16 +100,16 @@ def i32be(c: bytes, o: int = 0) -> int:
 
 # Output, le = little endian, be = big endian
 def o16le(i: int) -> bytes:
-    return pack("<H", i)
+    return i.to_bytes(2, "little")
 
 
 def o32le(i: int) -> bytes:
-    return pack("<I", i)
+    return i.to_bytes(4, "little")
 
 
 def o16be(i: int) -> bytes:
-    return pack(">H", i)
+    return i.to_bytes(2, "big")
 
 
 def o32be(i: int) -> bytes:
-    return pack(">I", i)
+    return i.to_bytes(4, "big")

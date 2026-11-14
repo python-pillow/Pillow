@@ -154,6 +154,13 @@ class TestImagingCoreResize:
                 # as separately resized channel
                 assert_image_equal(ch, references[channels[i]])
 
+    @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+    def test_i16(self, mode: str) -> None:
+        im = Image.new(mode, (1, 2))
+        im.putdata((0x0099, 0x0100))
+        resized = self.resize(im, (1, 1), Image.Resampling.BICUBIC)
+        assert resized.getpixel((0, 0)) == 0x00CD
+
     @pytest.mark.parametrize(
         "resample",
         (
@@ -282,6 +289,18 @@ class TestReducingGapResize:
 
         assert_image_equal(ref, im)
 
+    @pytest.mark.parametrize("mode", ("RGBA", "LA"))
+    def test_reducing_gap_alpha(self, mode: str) -> None:
+        with Image.open("Tests/images/transparent.png") as im:
+            im_converted = im.convert(mode)
+
+        # Premultiply the alpha manually
+        premultiplied = im_converted.convert({"RGBA": "RGBa", "LA": "La"}[mode])
+        expected = premultiplied.resize((16, 16), reducing_gap=2).convert(mode)
+
+        # Test that resizing the image applies the alpha in the same way
+        assert_image_equal(im_converted.resize((16, 16), reducing_gap=2), expected)
+
     @pytest.mark.parametrize(
         "box, epsilon",
         (((0, 0, 512, 512), 5.5), ((0.9, 1.7, 128, 128), 9.5)),
@@ -329,7 +348,7 @@ class TestImageResize:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.BICUBIC) == im.resize((20, 20))
 
-    @pytest.mark.parametrize("mode", ("1", "P"))
+    @pytest.mark.parametrize("mode", ("1", "P", "PA"))
     def test_default_filter_nearest(self, mode: str) -> None:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.NEAREST) == im.resize((20, 20))

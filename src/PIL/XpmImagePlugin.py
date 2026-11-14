@@ -23,7 +23,7 @@ from . import Image, ImageFile, ImagePalette
 from ._binary import o8
 
 # XPM header
-xpm_head = re.compile(b'"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)')
+xpm_head = re.compile(rb'"([0-9]*)\s+([0-9]*)\s+([0-9]*)\s+([0-9]*)')
 
 
 def _accept(prefix: bytes) -> bool:
@@ -75,15 +75,18 @@ class XpmImageFile(ImageFile.ImageFile):
                 if s[i] == b"c":
                     # process colour key
                     rgb = s[i + 1]
-                    if rgb == b"None":
+                    if rgb.lower() == b"none":
                         transparent_key = c
                         palette[c] = b"\0\0\0"
-                    elif rgb.startswith(b"#"):
-                        rgb_int = int(rgb[1:], 16)
-                        palette[c] = (
-                            o8((rgb_int >> 16) & 255)
-                            + o8((rgb_int >> 8) & 255)
-                            + o8(rgb_int & 255)
+                    elif rgb.startswith(b"#") and len(rgb) in {4, 7, 10, 13}:
+                        # #RGB, #RRGGBB, #RRRGGGBBB or #RRRRGGGGBBBB
+                        # libXpm parses colours with XParseColor,
+                        # which uses the digits as the most significant bits
+                        # of each channel instead of scaling them
+                        digits = len(rgb) // 3
+                        palette[c] = bytes(
+                            int(rgb[i : i + digits], 16) << (4 - digits) * 4 >> 8
+                            for i in range(1, len(rgb), digits)
                         )
                     else:
                         # unknown colour
@@ -115,7 +118,7 @@ class XpmImageFile(ImageFile.ImageFile):
             if transparent_key is not None:
                 self.info["transparency"] = palette_keys.index(transparent_key)
 
-        self.tile = [ImageFile._Tile("xpm", (0, 0, *self.size), self.fp.tell(), args)]
+        self.tile = [ImageFile._Tile("xpm", None, self.fp.tell(), args)]
 
     def load_read(self, read_bytes: int) -> bytes:
         #
@@ -151,10 +154,14 @@ class XpmDecoder(ImageFile.PyDecoder):
             line = b'"'.join(line.split(b'"')[1:-1])
             for i in range(0, len(line), bpp):
                 key = line[i : i + bpp]
-                if self.mode in {"RGB", "RGBA"}:
-                    data += palette[key]
-                else:
-                    data += o8(palette.index(key))
+                try:
+                    if self.mode in {"RGB", "RGBA"}:
+                        data += palette[key]
+                    else:
+                        data += o8(palette.index(key))
+                except (KeyError, ValueError):
+                    msg = "unknown color"
+                    raise ValueError(msg)
         self.set_as_raw(bytes(data))
         return -1, 0
 

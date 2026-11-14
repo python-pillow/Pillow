@@ -27,10 +27,10 @@
 # image data from electron microscopy and tomography.
 #
 # Spider home page:
-# https://spider.wadsworth.org/spider_doc/spider/docs/spider.html
+# https://spider-em.github.io/SPIDER/
 #
 # Details about the Spider image format:
-# https://spider.wadsworth.org/spider_doc/spider/docs/image_doc.html
+# https://spider-em.github.io/SPIDER/docs/image_doc.html
 #
 from __future__ import annotations
 
@@ -104,6 +104,8 @@ class SpiderImageFile(ImageFile.ImageFile):
     format_description = "Spider 2D image"
     _close_exclusive_fp_after_loading = False
 
+    stkoffset = 0
+
     def _open(self) -> None:
         # check header
         n = 27 * 4  # read 27 float values
@@ -147,8 +149,8 @@ class SpiderImageFile(ImageFile.ImageFile):
             # Point to the first image in the stack
             offset = hdrlen * 2
             self.imgnumber = 1
-        elif self.istack == 0 and self.imgnumber > 0:
-            # stk=0, img>0: an image within the stack
+        elif self.istack == 0 and self.imgnumber > 0 and self.stkoffset != 0:
+            # stk=0, img>0: an image within the stack, reached through seek()
             offset = hdrlen + self.stkoffset
             self.istack = 2  # So Image knows it's still a stack
         else:
@@ -162,7 +164,7 @@ class SpiderImageFile(ImageFile.ImageFile):
             self.rawmode = "F;32F"
         self._mode = "F"
 
-        self.tile = [ImageFile._Tile("raw", (0, 0, *self.size), offset, self.rawmode)]
+        self.tile = [ImageFile._Tile("raw", None, offset, self.rawmode)]
         self._fp = self.fp  # FIXME: hack
 
     # 1st image index is zero (although SPIDER imgnumber starts at 1)
@@ -184,6 +186,7 @@ class SpiderImageFile(ImageFile.ImageFile):
         self.fp = self._fp
         self.fp.seek(self.stkoffset)
         self._open()
+        Image._decompression_bomb_check(self.size)
 
     # returns a byte image after rescaling to 0..255
     def convert2byte(self, depth: int = 255) -> Image.Image:
@@ -281,7 +284,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.writelines(hdr)
 
     rawmode = "F;32NF"  # 32-bit native floating point
-    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, rawmode)])
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", args=rawmode)])
 
 
 def _save_spider(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:

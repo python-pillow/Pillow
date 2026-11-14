@@ -42,20 +42,29 @@ jobs:
           arch,
           centos-stream-9-amd64,
           centos-stream-10-amd64,
+          cpython_sanity-3.14tsan,
           debian-13-trixie-x86,
           debian-13-trixie-amd64,
-          fedora-43-amd64,
           fedora-44-amd64,
+          fedora-45-amd64,
           gentoo,
           ubuntu-24.04-noble-amd64,
           ubuntu-26.04-resolute-amd64,
         ]
         dockerTag: [main]
+        exclude:
+          # Pending https://github.com/actions/runner-images/issues/14790
+          - docker: "debian-13-trixie-x86"
+            os: "ubuntu-latest"
         include:
           - docker: "ubuntu-26.04-resolute-ppc64le"
             qemu-arch: "ppc64le"
           - docker: "ubuntu-26.04-resolute-s390x"
             qemu-arch: "s390x"
+          # Pending https://github.com/actions/runner-images/issues/14790
+          - docker: "debian-13-trixie-x86"
+            os: "ubuntu-24.04"
+            dockerTag: main
           - docker: "ubuntu-26.04-resolute-arm64v8"
             os: "ubuntu-24.04-arm"
             dockerTag: main
@@ -63,7 +72,7 @@ jobs:
     name: ${{ matrix.docker }}
 
     steps:
-    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
 
@@ -72,12 +81,15 @@ jobs:
 
     - name: Set up QEMU
       if: "matrix.qemu-arch"
-      uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+      uses: docker/setup-qemu-action@v4.4.0
       with:
         platforms: ${{ matrix.qemu-arch }}
 
     - name: Docker pull
       run: |
+        if [ "${{ matrix.docker }}" = "cpython_sanity-3.14tsan" ]; then
+          sudo sysctl vm.mmap_rnd_bits=28
+        fi
         docker pull ${{ matrix.qemu-arch && format('--platform=linux/{0}', matrix.qemu-arch)}} pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
 
     - name: Docker build
@@ -87,20 +99,8 @@ jobs:
         docker run --name pillow_container  -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
         sudo chown -R runner $GITHUB_WORKSPACE
 
-    - name: After success
-      run: |
-        docker start pillow_container
-        sudo docker cp pillow_container:/Pillow /Pillow
-        sudo chown -R runner /Pillow
-        pil_path=`docker exec pillow_container /vpy3/bin/python -c 'import os, PIL;print(os.path.realpath(os.path.dirname(PIL.__file__)))'`
-        docker stop pillow_container
-        sudo mkdir -p $pil_path
-        sudo cp src/PIL/*.py $pil_path
-        cd /Pillow
-        .ci/after_success.sh
-
     - name: Upload coverage
-      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+      uses: codecov/codecov-action@v7.1.1
       with:
         flags: GHA_Docker
         name: ${{ matrix.docker }}

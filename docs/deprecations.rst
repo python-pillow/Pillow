@@ -22,6 +22,15 @@ Image getdata()
 identical, except that it returns a tuple of pixel values, instead of an internal
 Pillow data type.
 
+IM image format
+^^^^^^^^^^^^^^^
+
+.. deprecated:: 13.0.0
+
+The IM image format has been deprecated and removal is planned in Pillow 15.0.0
+(2028-10-15). If you are using this format and would like to continue doing so,
+open an issue about what other software uses it.
+
 ImageQt align8to32()
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -40,6 +49,14 @@ JpegImageFile.load_djpeg
 
 Use the built-in JPEG decoder instead, or call ``djpeg`` directly and decode the
 resulting image with Pillow.
+
+Image.putpixel 'value' lists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 13.1.0
+
+Passing lists to the ``value`` parameter of :py:meth:`~PIL.Image.Image.putpixel` has
+been deprecated. Use tuples instead.
 
 Removed features
 ----------------

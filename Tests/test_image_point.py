@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import pytest
 
+from PIL import Image
+
 from .helper import assert_image_equal, hopper
 
 
@@ -39,6 +41,25 @@ def test_sanity() -> None:
         im.point(lambda x: x // 2)
 
 
+@pytest.mark.parametrize("mode", ("LA", "RGBA", "CMYK"))
+def test_multiband(mode: str) -> None:
+    im = hopper(mode)
+    single_band_lut = [(x + 1) % 256 for x in range(256)]
+    lut = single_band_lut * Image.getmodebands(mode)
+    out = im.point(lut)
+
+    expected = Image.merge(
+        mode, tuple(band.point(single_band_lut) for band in im.split())
+    )
+    assert_image_equal(out, expected)
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_16bit(mode: str) -> None:
+    im = Image.new(mode, (1, 1), 0x1234)
+    im.point(lambda x: x).getpixel((0, 0)) == 0x1234
+
+
 def test_16bit_lut() -> None:
     """Tests for 16 bit -> 8 bit lut for converting I->L images
     see https://github.com/python-pillow/Pillow/issues/440
@@ -62,3 +83,34 @@ def test_f_mode() -> None:
     im = hopper("F")
     with pytest.raises(ValueError):
         im.point([])
+
+
+def test_overstated_length() -> None:
+    # shouldn't segfault
+    # see https://github.com/python-pillow/Pillow/issues/9892
+
+    class OverstatedLengthSequence:
+        def __len__(self) -> int:
+            return 256
+
+        def __getitem__(self, index: int) -> int:
+            if index >= 8:
+                raise IndexError
+            return index
+
+    im = Image.new("L", (4, 4))
+    with pytest.raises(ValueError):
+        im.point(OverstatedLengthSequence(), "F")  # type: ignore[arg-type]
+
+
+def test_raising_length() -> None:
+    class RaisingLengthSequence:
+        def __len__(self) -> int:
+            raise RuntimeError
+
+        def __getitem__(self, index: int) -> float:
+            return index
+
+    im = Image.new("L", (1, 1))
+    with pytest.raises(RuntimeError):
+        im.point(RaisingLengthSequence(), "F")  # type: ignore[arg-type]

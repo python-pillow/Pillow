@@ -66,6 +66,17 @@ class Layout(IntEnum):
 
 MAX_STRING_LENGTH = 1_000_000
 
+# From raqm.c's _raqm_is_paragraph_separator()
+_separators = (
+    "\r\n",  # Windows
+    "\n",  # 0x000A
+    "\r",  # 0x000D
+    "\u001c",
+    "\u001d",
+    "\u001e",
+    "\u0085",
+    "\u2029",
+)
 
 core: ModuleType | DeferredError
 try:
@@ -121,7 +132,7 @@ class ImageFont(BaseImageFont):
 
     font: ImagingFont
 
-    def _load_pilfont(self, filename: str) -> None:
+    def _load_pilfont(self, filename: str | os.PathLike[str]) -> None:
         with open(filename, "rb") as fp:
             image: ImageFile.ImageFile | None = None
             root = os.path.splitext(filename)[0]
@@ -131,7 +142,7 @@ class ImageFont(BaseImageFont):
                     image.close()
                 try:
                     fullname = root + ext
-                    image = Image.open(fullname)
+                    image = Image.open(fullname, formats=["PNG", "GIF", "PPM"])
                 except Exception:
                     pass
                 else:
@@ -284,7 +295,7 @@ class FreeTypeFont(BaseImageFont):
         def load_from_bytes(f: IO[bytes]) -> None:
             self.font_bytes = f.read()
             self.font = core.getfont(
-                "", size, index, encoding, self.font_bytes, layout_engine
+                "", size, index, encoding, layout_engine, self.font_bytes
             )
 
         if is_path(font):
@@ -299,9 +310,7 @@ class FreeTypeFont(BaseImageFont):
                     with open(font, "rb") as f:
                         load_from_bytes(f)
                     return
-            self.font = core.getfont(
-                font, size, index, encoding, layout_engine=layout_engine
-            )
+            self.font = core.getfont(font, size, index, encoding, layout_engine)
         else:
             load_from_bytes(cast("IO[bytes]", font))
 
@@ -326,6 +335,13 @@ class FreeTypeFont(BaseImageFont):
             baseline to the lowest outline point, a negative value)
         """
         return self.font.ascent, self.font.descent
+
+    def _has_separator(self, text: str | bytes | bytearray) -> bool:
+        if self.layout_engine != Layout.RAQM:
+            return False
+        if isinstance(text, str):
+            return any(separator in text for separator in _separators)
+        return any(separator.encode() in text for separator in _separators)
 
     def getlength(
         self,
@@ -372,7 +388,7 @@ class FreeTypeFont(BaseImageFont):
 
         .. versionadded:: 8.0.0
 
-        :param text: Text to measure.
+        :param text: Text to measure. Newlines raise an error with Raqm layout.
         :param mode: Used by some graphics drivers to indicate what mode the
                      driver prefers; if empty, the renderer may return either
                      mode. Note that the mode is always a string, to simplify
@@ -404,6 +420,9 @@ class FreeTypeFont(BaseImageFont):
         :return: Either width for horizontal text, or height for vertical text.
         """
         _string_length_check(text)
+        if self._has_separator(text):
+            msg = "can't measure length of multiline text with Raqm"
+            raise ValueError(msg)
         return self.font.getlength(text, mode, direction, features, language) / 64
 
     def getbbox(
@@ -426,7 +445,8 @@ class FreeTypeFont(BaseImageFont):
 
         .. versionadded:: 8.0.0
 
-        :param text: Text to render.
+        :param text: Text to render. Newlines will not cause a line break with
+                     Basic layout, and will raise an error with Raqm layout.
         :param mode: Used by some graphics drivers to indicate what mode the
                      driver prefers; if empty, the renderer may return either
                      mode. Note that the mode is always a string, to simplify
@@ -465,6 +485,9 @@ class FreeTypeFont(BaseImageFont):
         :return: ``(left, top, right, bottom)`` bounding box
         """
         _string_length_check(text)
+        if self._has_separator(text):
+            msg = "can't measure bounding box of multiline text with Raqm"
+            raise ValueError(msg)
         size, offset = self.font.getsize(
             text, mode, direction, features, language, anchor
         )
@@ -695,7 +718,9 @@ class FreeTypeFont(BaseImageFont):
             size=self.size if size is None else size,
             index=self.index if index is None else index,
             encoding=self.encoding if encoding is None else encoding,
-            layout_engine=layout_engine or self.layout_engine,
+            layout_engine=(
+                layout_engine if layout_engine is not None else self.layout_engine
+            ),
         )
 
     def get_variation_names(self) -> list[bytes]:
@@ -794,7 +819,7 @@ class TransposedFont(BaseImageFont):
         return self.font.getlength(text, *args, **kwargs)
 
 
-def load(filename: str) -> ImageFont:
+def load(filename: str | os.PathLike[str]) -> ImageFont:
     """
     Load a font file. This function loads a font object from the given
     bitmap font file, and returns the corresponding font object. For loading TrueType
@@ -941,7 +966,7 @@ def truetype(
         raise
 
 
-def load_path(filename: str | bytes) -> ImageFont:
+def load_path(filename: StrOrBytesPath) -> ImageFont:
     """
     Load font file. Same as :py:func:`~PIL.ImageFont.load`, but searches for a
     bitmap font along the Python path.
@@ -950,8 +975,7 @@ def load_path(filename: str | bytes) -> ImageFont:
     :return: A font object.
     :exception OSError: If the file could not be read.
     """
-    if not isinstance(filename, str):
-        filename = filename.decode("utf-8")
+    filename = os.fsdecode(filename)
     for directory in sys.path:
         try:
             return load(os.path.join(directory, filename))

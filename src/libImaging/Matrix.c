@@ -17,6 +17,12 @@
 
 #define CLIPF(v) ((v <= 0.0) ? 0 : (v >= 255.0F) ? 255 : (UINT8)v)
 
+/**
+ * Convert `im` to `mode` by applying the matrix `m`,
+ * returning a newly allocated result.
+ *
+ * Contract: im is read-only.
+ */
 Imaging
 ImagingConvertMatrix(Imaging im, const ModeID mode, const float m[12]) {
     Imaging imOut;
@@ -71,6 +77,7 @@ ImagingConvertMatrix(Imaging im, const ModeID mode, const float m[12]) {
                 out[0] = CLIPF(v0);
                 out[1] = CLIPF(v1);
                 out[2] = CLIPF(v2);
+                out[3] = 0;
                 in += 4;
                 out += 4;
             }
