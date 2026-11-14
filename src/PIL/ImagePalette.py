@@ -183,6 +183,9 @@ class ImagePalette:
             elif self.mode == "RGBA":
                 if len(color) == 3:
                     color += (255,)
+            if len(color) != len(self.mode):
+                msg = f"invalid color channel count for {self.mode} palette"
+                raise ValueError(msg)
             try:
                 return self.colors[color]
             except KeyError as e:

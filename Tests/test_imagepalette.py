@@ -85,6 +85,17 @@ def test_getcolor() -> None:
         palette.getcolor("unknown")  # type: ignore[arg-type]
 
 
+@pytest.mark.parametrize(
+    "mode, color", [("RGB", (1, 2)), ("RGBA", (1, 2)), ("CMYK", (1, 2, 3))]
+)
+def test_getcolor_rejects_wrong_channels(mode: str, color: tuple[int, ...]) -> None:
+    original = bytes(len(mode))
+    palette = ImagePalette.ImagePalette(mode, original)
+    with pytest.raises(ValueError):
+        palette.getcolor(color)
+    assert palette.tobytes() == original
+
+
 def test_putpixel_reused_palette_color() -> None:
     # Given a full palette where (1, 1, 1) is a duplicate entry
     # and one of the duplicate entries is unused
