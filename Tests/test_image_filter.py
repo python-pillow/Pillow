@@ -119,6 +119,8 @@ def test_modefilter(
         ("L", (0, 4, 8)),
         ("RGB", ((0, 0, 0), (4, 0, 0), (8, 0, 0))),
         ("I", (0, 4, 8)),
+        ("I;16", (0, 4, 8)),
+        ("I;16B", (0, 4, 8)),
         ("F", (0.0, 4.0, 8.0)),
     ),
 )
@@ -139,6 +141,30 @@ def test_rankfilter(
     med = im.filter(ImageFilter.MedianFilter).getpixel((1, 1))
     maximum = im.filter(ImageFilter.MaxFilter).getpixel((1, 1))
     assert (minimum, med, maximum) == expected
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+@pytest.mark.parametrize(
+    "filter",
+    (
+        ImageFilter.MinFilter(3),
+        ImageFilter.MedianFilter(3),
+        ImageFilter.MaxFilter(3),
+        ImageFilter.RankFilter(5, 7),
+    ),
+)
+def test_rankfilter_i16(mode: str, filter: ImageFilter.RankFilter) -> None:
+    # Arrange values whose high and low bytes order differently,
+    # so comparing in the wrong byte order would give wrong results.
+    data = [(i * 0x1F3D) & 0xFFFF for i in range(10 * 10)]
+    im = Image.new(mode, (10, 10))
+    im.putdata(data)
+    reference = Image.new("I", (10, 10))  # Reference image in INT32 mode.
+    reference.putdata(data)
+
+    out = im.filter(filter)
+    assert out.mode == mode
+    assert out.get_flattened_data() == reference.filter(filter).get_flattened_data()
 
 
 @pytest.mark.parametrize(
