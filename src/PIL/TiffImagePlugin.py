@@ -1677,7 +1677,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 # fillorder==2 modes have a corresponding
                 # fillorder=1 mode
                 self._mode, rawmode = OPEN_INFO[key]
-            if photo == 6:
+            if photo == 6 and len(bps_tuple) == 3:
                 self._mode = "RGB"
                 if self._compression in "jpeg" and self._planar_configuration == 1:
                     # YCbCr images with new jpeg compression with pixels in one plane
