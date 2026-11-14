@@ -434,36 +434,6 @@ class BLP2Decoder(_BLPBaseDecoder):
         self.set_as_raw(data)
 
 
-class BLPEncoder(ImageFile.PyEncoder):
-    _pushes_fd = True
-
-    def _write_palette(self) -> bytes:
-        data = b""
-        assert self.im is not None
-        data = bytearray(self.im.getpalette("BGRA"))
-        while len(data) < 256 * 4:
-            data += b"\x00" * 4
-        return data
-
-    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
-        palette_data = self._write_palette()
-
-        offset = 20 + 16 * 4 * 2 + len(palette_data)
-        data = struct.pack("<16I", offset, *((0,) * 15))
-
-        assert self.im is not None
-        w, h = self.im.size
-        data += struct.pack("<16I", w * h, *((0,) * 15))
-
-        data += palette_data
-
-        for y in range(h):
-            for x in range(w):
-                data += struct.pack("<B", self.im.getpixel((x, y)))
-
-        return len(data), 0, data
-
-
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode != "P":
         msg = "Unsupported BLP image mode"
@@ -488,7 +458,15 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         fp.write(struct.pack("<i", 5))
         fp.write(struct.pack("<i", 0))
 
-    ImageFile._save(im, fp, [ImageFile._Tile("BLP", args=im.mode)])
+    offset = 20 + 16 * 4 * 2 + 256 * 4
+    fp.write(struct.pack("<16I", offset, *((0,) * 15)))
+
+    fp.write(struct.pack("<16I", im.width * im.height, *((0,) * 15)))
+
+    palette = im.im.getpalette("BGRA")
+    fp.write(palette + b"\x00" * (256 * 4 - len(palette)))
+
+    fp.write(im.tobytes())
 
 
 Image.register_open(BlpImageFile.format, BlpImageFile, _accept)
@@ -497,4 +475,3 @@ Image.register_decoder("BLP1", BLP1Decoder)
 Image.register_decoder("BLP2", BLP2Decoder)
 
 Image.register_save(BlpImageFile.format, _save)
-Image.register_encoder("BLP", BLPEncoder)
