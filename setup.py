@@ -937,7 +937,7 @@ class pil_build_ext(build_ext):
         if feature.get("imagequant"):
             libs.append(feature.get("imagequant"))
             if sys.platform == "win32":
-                libs.extend(["ntdll", "userenv", "ws2_32"])
+                libs.extend(["ntdll", "synchronization", "userenv", "ws2_32"])
             defs.append(("HAVE_LIBIMAGEQUANT", None))
         if feature.get("xcb"):
             libs.append(feature.get("xcb"))
