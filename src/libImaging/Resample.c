@@ -841,7 +841,7 @@ ImagingResampleInner(
     Imaging imOut = NULL;
 
     int i, second_pass, need_horizontal, need_vertical, error = 0;
-    int ybox_first, ybox_last;
+    int ybox_first = 0, ybox_last = 0;
     int ksize_horiz = 0, ksize_vert = 0;
     int *bounds_horiz, *bounds_vert;
     double *kk_horiz, *kk_vert;
