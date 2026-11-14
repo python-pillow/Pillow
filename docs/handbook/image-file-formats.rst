@@ -618,6 +618,10 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     When this option is enabled, attempting to chroma-subsample RGB images
     with the ``subsampling`` option will raise an :py:exc:`OSError`.
 
+    When saving RGB or RGBX images with this option and ``dpi``, Pillow rounds
+    both values to the nearest integer. If both are positive and unequal, a
+    :py:exc:`ValueError` is raised.
+
     .. versionadded:: 10.2.0
 
 **subsampling**

@@ -17,10 +17,12 @@ TODO
 Backwards incompatible changes
 ==============================
 
-TODO
-^^^^
+Non-square DPI for RGB JPEGs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Saving RGB or RGBX JPEGs with ``keep_rgb=True`` now raises :py:exc:`ValueError`
+when the horizontal and vertical ``dpi`` values round to different positive
+integers. The EXIF resolution used by these images requires the values to match.
 
 Deprecations
 ============
@@ -53,6 +55,13 @@ Two new image processing operations are available in ImageOps.
 
 Other changes
 =============
+
+RGB JPEGs with DPI
+^^^^^^^^^^^^^^^^^^
+
+Saving an RGB or RGBX JPEG with ``keep_rgb=True`` and ``dpi`` now uses EXIF for
+resolution when both values round to the same positive integer. This avoids
+conflicting JPEG markers that could cause incorrect colours.
 
 Scaling empty text
 ^^^^^^^^^^^^^^^^^^
