@@ -400,6 +400,19 @@ getbands(const ModeID mode) {
     return bands;
 }
 
+int
+isImageI16BigEndian(Imaging im) {
+    if (
+        im->mode == IMAGING_MODE_I_16B
+#ifdef WORDS_BIGENDIAN
+        || im->mode == IMAGING_MODE_I_16N
+#endif
+    ) {
+        return 1;
+    }
+    return 0;
+}
+
 #define TYPE_UINT8 (0x100 | sizeof(UINT8))
 #define TYPE_INT32 (0x200 | sizeof(INT32))
 #define TYPE_FLOAT16 (0x500 | sizeof(FLOAT16))
@@ -1311,7 +1324,6 @@ _gaussian_blur(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _getpalette_impl(ImagingObject *self, PyObject *args) {
-    PyObject *palette;
     int palettesize;
     int bits;
     ImagingShuffler pack;
@@ -1336,16 +1348,14 @@ _getpalette_impl(ImagingObject *self, PyObject *args) {
     }
 
     palettesize = self->image->palette->size;
-    palette = PyBytes_FromStringAndSize(NULL, palettesize * bits / 8);
-    if (!palette) {
+    PyBytesWriter *writer = PyBytesWriter_Create(palettesize * bits / 8);
+    if (writer == NULL) {
         return NULL;
     }
 
-    pack(
-        (UINT8 *)PyBytes_AsString(palette), self->image->palette->palette, palettesize
-    );
+    pack(PyBytesWriter_GetData(writer), self->image->palette->palette, palettesize);
 
-    return palette;
+    return PyBytesWriter_Finish(writer);
 }
 static PyObject *
 _getpalette(ImagingObject *self, PyObject *args) {
@@ -1451,6 +1461,7 @@ _getpixel_impl(ImagingObject *self, PyObject *args) {
 
 union hist_extrema {
     UINT8 u[2];
+    UINT16 i16[2];
     INT32 i[2];
     FLOAT32 f[2];
 };
@@ -1478,6 +1489,13 @@ parse_histogram_extremap(
                 }
                 ep->u[0] = CLIP8(i0);
                 ep->u[1] = CLIP8(i1);
+                break;
+            case IMAGING_TYPE_I16:
+                if (!PyArg_ParseTuple(extremap, "ii", &i0, &i1)) {
+                    return NULL;
+                }
+                ep->i16[0] = i0;
+                ep->i16[1] = i1;
                 break;
             case IMAGING_TYPE_INT32:
                 if (!PyArg_ParseTuple(extremap, "ii", &i0, &i1)) {
@@ -1517,8 +1535,12 @@ _histogram_impl(ImagingObject *self, PyObject *args) {
     }
 
     /* Using a var to avoid allocations. */
-    ep = parse_histogram_extremap(self, extremap, &extrema);
-    h = ImagingGetHistogram(self->image, (maskp) ? maskp->image : NULL, ep);
+    if (maskp) {
+        h = ImagingGetHistogram(self->image, maskp->image, NULL);
+    } else {
+        ep = parse_histogram_extremap(self, extremap, &extrema);
+        h = ImagingGetHistogram(self->image, NULL, ep);
+    }
 
     if (!h) {
         return NULL;
@@ -1571,8 +1593,12 @@ _entropy_impl(ImagingObject *self, PyObject *args) {
     }
 
     /* Using a local var to avoid allocations. */
-    ep = parse_histogram_extremap(self, extremap, &extrema);
-    h = ImagingGetHistogram(self->image, (maskp) ? maskp->image : NULL, ep);
+    if (maskp) {
+        h = ImagingGetHistogram(self->image, maskp->image, NULL);
+    } else {
+        ep = parse_histogram_extremap(self, extremap, &extrema);
+        h = ImagingGetHistogram(self->image, NULL, ep);
+    }
 
     if (!h) {
         return NULL;
@@ -1895,14 +1921,7 @@ _putdata_impl(ImagingObject *self, PyObject *args) {
             int bigendian = 0;
             if (image->type == IMAGING_TYPE_I16) {
                 // I;16*
-                if (
-                    image->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-                    || image->mode == IMAGING_MODE_I_16N
-#endif
-                ) {
-                    bigendian = 1;
-                }
+                bigendian = isImageI16BigEndian(image);
             }
             for (i = x = y = 0; i < n; i++) {
                 set_value_to_item(seq, i);
@@ -2721,9 +2740,7 @@ _getextrema_impl(ImagingObject *self, PyObject *args) {
             case IMAGING_TYPE_FLOAT32:
                 return Py_BuildValue("dd", extrema.f[0], extrema.f[1]);
             case IMAGING_TYPE_I16:
-                if (self->image->mode == IMAGING_MODE_I_16) {
-                    return Py_BuildValue("HH", extrema.s[0], extrema.s[1]);
-                }
+                return Py_BuildValue("HH", extrema.s[0], extrema.s[1]);
         }
     }
 

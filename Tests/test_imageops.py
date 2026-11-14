@@ -84,11 +84,15 @@ def test_sanity() -> None:
     ImageOps.posterize(hopper("L"), 4)
     ImageOps.posterize(hopper("RGB"), 4)
 
-    ImageOps.solarize(hopper("L"))
-    ImageOps.solarize(hopper("RGB"))
+    for mode in ("L", "RGB"):
+        im = hopper(mode)
+        ImageOps.solarize(im)
 
-    ImageOps.exif_transpose(hopper("L"))
-    ImageOps.exif_transpose(hopper("RGB"))
+        ImageOps.exif_transpose(im)
+
+        ImageOps.sepia(im)
+
+        ImageOps.neon(im)
 
 
 @pytest.mark.parametrize(
@@ -601,6 +605,13 @@ def test_autocontrast_invalid_ignore(ignore: int | list[int]) -> None:
         ValueError, match="ignore must be between or equal to 0 and 255"
     ):
         ImageOps.autocontrast(im, ignore=ignore)
+
+
+def test_autocontrast_lightest() -> None:
+    im = Image.new("L", (2, 1))
+    im.putpixel((1, 0), 25)
+
+    assert ImageOps.autocontrast(im).getpixel((1, 0)) == 255
 
 
 def test_autocontrast_mask_toy_input() -> None:

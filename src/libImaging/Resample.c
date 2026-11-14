@@ -552,15 +552,7 @@ _ImagingResampleHorizontal_16bpc(
     int xx, yy, x, xmin, xmax, ss_int;
     double *k;
 
-    int bigendian = 0;
-    if (
-        imIn->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-        || imIn->mode == IMAGING_MODE_I_16N
-#endif
-    ) {
-        bigendian = 1;
-    }
+    int bigendian = isImageI16BigEndian(imIn);
 
     MUTEX_LOCK(&imIn->mutex);
 
@@ -603,15 +595,7 @@ _ImagingResampleVertical_16bpc(
     int xx, yy, y, ymin, ymax, ss_int;
     double *k;
 
-    int bigendian = 0;
-    if (
-        imIn->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-        || imIn->mode == IMAGING_MODE_I_16N
-#endif
-    ) {
-        bigendian = 1;
-    }
+    int bigendian = isImageI16BigEndian(imIn);
 
     MUTEX_LOCK(&imIn->mutex);
 

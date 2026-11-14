@@ -24,7 +24,7 @@ High
 * :cve:`2026-96640`, :ghsa:`mrfp-p49p-3hf2`: PDF append resource exhaustion from repeated page tree references
 * :cve:`2026-112896`, :ghsa:`pchr-8j38-3x4p`: TIFF encoder accepted an incorrectly sized Colormap for non-8-bit images
 * :cve:`2026-112393`, :ghsa:`332p-7hrc-92wf`: TIFF encoder heap buffer overflow when saving to a file object
-* :ghsa:`xcvg-w56q-r89m`: TIFF encoder heap buffer overflow when tags override the image size
+* :cve:`2026-128067`, :ghsa:`xcvg-w56q-r89m`: TIFF encoder heap buffer overflow when tags override the image size
 * :cve:`2026-112902`, :ghsa:`xvh5-g6gv-559v`: TIFF encoder memory disclosure and crash from mismatched tag values
 * :cve:`2026-112897`, :ghsa:`q45j-58j2-45rg`: TIFF decoding returned uninitialized memory for short JPEG strips
 * :ghsa:`78g4-xqwv-q3g8`: Bundled OpenJPEG heap buffer overflow when reading tile-part data
@@ -39,7 +39,7 @@ Medium
 * :cve:`2026-96642`, :ghsa:`3j72-p6qg-6xp7`: TarIO negative size field causes infinite CPU-spin loop
 * :cve:`2026-96638`, :ghsa:`24rc-8hj2-v98c`: BMP RLE decoder memory-amplification denial of service
 * :cve:`2026-112892`, :ghsa:`gg2r-wvfm-q9rx`: MSP RLE decoder expands a tiny file into unbounded memory
-* :ghsa:`wqgw-9xfh-qf2g`: TIFF and Exif IFD parsing memory and CPU amplification from shared tag data
+* :cve:`2026-128066`, :ghsa:`wqgw-9xfh-qf2g`: TIFF and Exif IFD parsing memory and CPU amplification from shared tag data
 * :cve:`2026-112894`, :ghsa:`jg86-v3jv-hrpm`: Quadratic time when writing many objects to a PDF
 * :cve:`2026-112391`, :ghsa:`254f-3936-288h`: PdfParser unbounded recursion via deeply nested objects
 * :cve:`2026-112898`, :ghsa:`rfgq-q3w2-pmv2`: Image.quantize() crash from an empty target palette
