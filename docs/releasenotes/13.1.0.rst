@@ -122,6 +122,15 @@ WebP encoding errors now include a description
 When libwebp fails to encode an image, the raised :py:exc:`ValueError` now
 consistently describes the error rather than only reporting a numeric code.
 
+ImageCms.isIntentSupported intent range
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.ImageCms.isIntentSupported` now raises
+:py:exc:`~PIL.ImageCms.PyCMSError` if ``intent`` is not between 0 and 3, as
+:py:func:`~PIL.ImageCms.buildTransform` already does. Previously, when Pillow was
+built against Little CMS 2.14 or earlier, an out-of-range intent could read invalid
+memory and crash.
+
 zlib-ng in Linux wheels
 ^^^^^^^^^^^^^^^^^^^^^^^
 
