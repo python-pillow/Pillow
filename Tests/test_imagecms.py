@@ -166,6 +166,9 @@ def test_intent() -> None:
     )
     assert support == 1
 
+    for intent in (-1, 4):
+        assert ImageCms.isIntentSupported(SRGB, intent, ImageCms.Direction.INPUT) == -1  # type: ignore[arg-type]
+
 
 def test_profile_object() -> None:
     # same, using profile object
@@ -220,9 +223,6 @@ def test_exceptions() -> None:
         match="'NoneType' object cannot be interpreted as an integer",
     ):
         ImageCms.isIntentSupported(SRGB, None, None)  # type: ignore[arg-type]
-
-    for intent in (-1, 4):
-        assert ImageCms.isIntentSupported(SRGB, intent, ImageCms.Direction.INPUT) == -1  # type: ignore[arg-type]
 
 
 def test_apply_readonly() -> None:
