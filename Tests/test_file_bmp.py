@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-@pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
+@pytest.mark.parametrize("mode", ("1", "L", "P", "RGB", "RGBA"))
 def test_sanity(mode: str, tmp_path: Path) -> None:
     outfile = tmp_path / "temp.bmp"
 
@@ -33,6 +33,64 @@ def test_sanity(mode: str, tmp_path: Path) -> None:
         assert im.size == reloaded.size
         assert reloaded.format == "BMP"
         assert reloaded.get_format_mimetype() == "image/bmp"
+
+
+def test_save_rgba_preserves_alpha(tmp_path: Path) -> None:
+    # The alpha channel should survive a save/reload round trip
+    outfile = tmp_path / "temp.bmp"
+
+    im = hopper("RGBA")
+    im.save(outfile, "BMP")
+
+    with Image.open(outfile) as reloaded:
+        reloaded.load()
+        assert reloaded.mode == "RGBA"
+        assert_image_equal(im, reloaded)
+
+
+def test_save_rgba_v4_header(tmp_path: Path) -> None:
+    # RGBA images are saved with a BITMAPV4HEADER, bitfields compression
+    # and channel masks, so that readers can find the alpha channel
+    outfile = tmp_path / "temp.bmp"
+
+    hopper("RGBA").save(outfile, "BMP")
+
+    with open(outfile, "rb") as fp:
+        data = fp.read()
+
+    assert _binary.i32le(data, 14) == 108  # BITMAPV4HEADER
+    assert _binary.i32le(data, 14 + 16) == 3  # BI_BITFIELDS compression
+    assert _binary.i32le(data, 14 + 40) == 0x00FF0000  # red mask
+    assert _binary.i32le(data, 14 + 44) == 0x0000FF00  # green mask
+    assert _binary.i32le(data, 14 + 48) == 0x000000FF  # blue mask
+    assert _binary.i32le(data, 14 + 52) == 0xFF000000  # alpha mask
+
+
+def test_save_rgb_info_header(tmp_path: Path) -> None:
+    # Other modes keep the plain BITMAPINFOHEADER
+    outfile = tmp_path / "temp.bmp"
+
+    hopper("RGB").save(outfile, "BMP")
+
+    with open(outfile, "rb") as fp:
+        data = fp.read()
+
+    assert _binary.i32le(data, 14) == 40  # BITMAPINFOHEADER
+    assert _binary.i32le(data, 14 + 16) == 0  # BI_RGB compression
+
+
+def test_save_rgba_dib_info_header(tmp_path: Path) -> None:
+    # DIB data keeps the plain BITMAPINFOHEADER even for RGBA, since it may be
+    # embedded in other formats (e.g. icons) that expect it
+    outfile = tmp_path / "temp.dib"
+
+    hopper("RGBA").save(outfile, "DIB")
+
+    with open(outfile, "rb") as fp:
+        data = fp.read()
+
+    assert _binary.i32le(data, 0) == 40  # BITMAPINFOHEADER
+    assert _binary.i32le(data, 16) == 0  # BI_RGB compression
 
 
 def test_invalid_file() -> None:
