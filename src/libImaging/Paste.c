@@ -330,6 +330,14 @@ put_wide(Imaging im, UINT8 *p, double v) {
 
 static inline double
 blend_wide(double out, double in, UINT8 a, int premultiplied) {
+    /* return the side that is used as it is, so that a NaN or infinity on
+       the ignored side does not leak through a multiplication by zero */
+    if (a == 255) {
+        return in;
+    }
+    if (a == 0 && !premultiplied) {
+        return out;
+    }
     if (premultiplied) {
         return in + out * (255 - a) / 255.0;
     }
