@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import pytest
+
+from PIL import Image
+
 from .helper import hopper
 
 
@@ -34,6 +38,15 @@ def test_getcolors() -> None:
     assert getcolors("RGBA", 16384) == 10100
     assert getcolors("CMYK", 16384) == 10100
     assert getcolors("YCbCr", 16384) == 9329
+
+
+@pytest.mark.parametrize("mode", ("LA", "La", "PA"))
+def test_two_band(mode: str) -> None:
+    im = Image.new(mode, (2, 1), (1, 2))
+    bands = (Image.new("L", (1, 1), 1), Image.new("L", (1, 1), 2))
+    im.paste(Image.merge(mode, bands))
+
+    assert im.getcolors() == [(2, (1, 2))]
 
 
 def test_negative_maxcolors() -> None:
