@@ -451,7 +451,11 @@ def _save(
     ppm = tuple(int(x * 39.3701 + 0.5) for x in dpi)
 
     stride = ((im.size[0] * bits + 7) // 8 + 3) & (~3)
-    header = 40  # or 64 for OS/2 version 2
+    # Use a BITMAPV4HEADER for RGBA images so that the alpha channel mask is
+    # stored and the alpha channel is preserved. This is only done for BMP
+    # files: DIB data embedded in other formats (e.g. icons) may be read by
+    # software that expects a plain BITMAPINFOHEADER.
+    header = 108 if im.mode == "RGBA" and bitmap_header else 40
     image = stride * im.size[1]
 
     if im.mode == "1":
@@ -486,7 +490,8 @@ def _save(
         + o32(im.size[1])  # height
         + o16(1)  # planes
         + o16(bits)  # depth
-        + o32(0)  # compression (0=uncompressed)
+        # compression (0=uncompressed, 3=bitfields, used to store channel masks)
+        + o32(3 if header == 108 else 0)
         + o32(image)  # size of bitmap
         + o32(ppm[0])  # resolution
         + o32(ppm[1])  # resolution
@@ -494,7 +499,18 @@ def _save(
         + o32(colors)  # colors important
     )
 
-    fp.write(b"\0" * (header - 40))  # padding (for OS/2 format)
+    if header == 108:
+        # BITMAPV4HEADER: channel masks, LCS_sRGB color space, then padding
+        fp.write(
+            o32(0x00FF0000)  # red mask
+            + o32(0x0000FF00)  # green mask
+            + o32(0x000000FF)  # blue mask
+            + o32(0xFF000000)  # alpha mask
+            + o32(0x73524742)  # LCS_sRGB color space
+            + b"\0" * (header - 40 - 20)  # endpoints and gamma fields
+        )
+    else:
+        fp.write(b"\0" * (header - 40))  # padding (for OS/2 format)
 
     if palette:
         fp.write(palette)
