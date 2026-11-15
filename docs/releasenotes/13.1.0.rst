@@ -131,3 +131,10 @@ not bundled into the wheels, so the system zlib was used at runtime instead, and
 Pillow 13.0.0 also failed to import on systems where ``libz.so.1`` was not on the
 default library search path, such as NixOS. Linux wheels no longer require a
 system zlib, and gain the speed of zlib-ng as macOS and Windows wheels already did.
+
+BMP saving preserves alpha channel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+RGBA images saved as BMP are now written with a BITMAPV4HEADER, bitfields
+compression and channel masks, so the alpha channel is preserved when the file
+is reloaded instead of being silently dropped. Other modes are unchanged.
