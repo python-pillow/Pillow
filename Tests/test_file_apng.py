@@ -6,6 +6,8 @@ import pytest
 
 from PIL import Image, ImageSequence, PngImagePlugin
 
+from .helper import assert_image_equal
+
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from pathlib import Path
@@ -866,6 +868,17 @@ def test_seek_after_close() -> None:
 
     with pytest.raises(ValueError):
         im.seek(0)
+
+
+def test_seek_backwards_after_load() -> None:
+    with Image.open("Tests/images/apng/delay.png") as im:
+        im.seek(2)
+        im.load()
+        expected = im.copy()
+
+        im.seek(1)
+        im.seek(2)
+        assert_image_equal(im, expected)
 
 
 @pytest.mark.parametrize("mode", ("RGBA", "RGB", "P"))
