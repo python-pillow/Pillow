@@ -680,7 +680,6 @@ getink(PyObject *color, Imaging im, char *ink) {
                         } else if (!PyArg_ParseTuple(color, "L|i", &r, &a)) {
                             return NULL;
                         }
-                        g = b = r;
                     } else {
                         if (tupleSize != 3 && tupleSize != 4) {
                             PyErr_SetString(
