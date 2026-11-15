@@ -20,9 +20,12 @@ def test_getcolors() -> None:
 
     assert getcolors("1") == 2
     assert getcolors("L") == 255
+    assert getcolors("LA") == 255
+    assert getcolors("La") == 255
     assert getcolors("I") == 255
     assert getcolors("F") == 255
     assert getcolors("P") == 96  # fixed palette
+    assert getcolors("PA") == 96
     assert getcolors("RGB") is None
     assert getcolors("RGBA") is None
     assert getcolors("CMYK") is None
@@ -41,11 +44,13 @@ def test_getcolors() -> None:
 
 
 @pytest.mark.parametrize("mode", ("LA", "La", "PA"))
-def test_two_band(mode: str) -> None:
+def test_two_bands(mode: str) -> None:
     im = Image.new(mode, (2, 1), (1, 2))
-    bands = (Image.new("L", (1, 1), 1), Image.new("L", (1, 1), 2))
-    im.paste(Image.merge(mode, bands))
 
+    bands = [Image.new("L", (1, 1), color) for color in (1, 2)]
+    im_merged = Image.merge(mode, bands)
+
+    im.paste(im_merged)
     assert im.getcolors() == [(2, (1, 2))]
 
 
