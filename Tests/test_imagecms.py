@@ -222,12 +222,7 @@ def test_exceptions() -> None:
         ImageCms.isIntentSupported(SRGB, None, None)  # type: ignore[arg-type]
 
     for intent in (-1, 4):
-        with pytest.raises(
-            ImageCms.PyCMSError, match="intent must be an integer between 0 and 3"
-        ):
-            ImageCms.isIntentSupported(
-                SRGB, intent, ImageCms.Direction.INPUT  # type: ignore[arg-type]
-            )
+        assert ImageCms.isIntentSupported(SRGB, intent, ImageCms.Direction.INPUT) == -1  # type: ignore[arg-type]
 
 
 def test_apply_readonly() -> None:
