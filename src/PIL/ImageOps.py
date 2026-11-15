@@ -23,7 +23,7 @@ __lazy_modules__ = {"re"}
 import re
 from typing import Protocol, cast, overload
 
-from . import ExifTags, Image, ImageFilter, ImagePalette
+from . import ExifTags, Image, ImageChops, ImageFilter, ImagePalette
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -723,28 +723,21 @@ def _sobel(image: Image.Image) -> Image.Image:
     if image.mode != "L":
         image = image.convert("L")
 
-    Kx = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]
-    Ky = [[1, 2, 1], [0, 0, 0], [-1, -2, -1]]
+    Kx = [-1, 0, 1, -2, 0, 2, -1, 0, 1]
+    Ky = [1, 2, 1, 0, 0, 0, -1, -2, -1]
 
+    # Kernel clips to 0-255, so |g| is the sum of the positive and negative halves
+    gx, gx_neg, gy, gy_neg = (
+        image.filter(ImageFilter.Kernel((3, 3), [s * v for v in k], 1))
+        for k in (Kx, Ky)
+        for s in (1, -1)
+    )
+    mag = ImageChops.add(ImageChops.add(gx, gx_neg), ImageChops.add(gy, gy_neg))
+
+    # Edge pixels have no full neighbourhood and stay 0
     out = Image.new("L", image.size)
-
-    for x in range(1, image.width - 1):
-        for y in range(1, image.height - 1):
-
-            gx = gy = 0.0
-
-            for dy in (-1, 0, 1):
-                for dx in (-1, 0, 1):
-                    v = image.getpixel((x + dx, y + dy))
-                    assert isinstance(v, (int, float))
-
-                    gx += v * Kx[dy + 1][dx + 1]
-                    gy += v * Ky[dy + 1][dx + 1]
-
-            # Approximate gradient magnitude and clamp to [0, 255]
-            mag = int(min(255, abs(gx) + abs(gy)))
-            out.putpixel((x, y), mag)
-
+    if image.width > 2 and image.height > 2:
+        out.paste(mag.crop((1, 1, image.width - 1, image.height - 1)), (1, 1))
     return out
 
 
