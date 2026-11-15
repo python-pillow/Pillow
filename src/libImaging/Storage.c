@@ -36,6 +36,7 @@
 
 #include "Imaging.h"
 #include <string.h>
+#include <stdint.h>
 
 /* --------------------------------------------------------------------
  * Standard image object.
@@ -402,13 +403,12 @@ memory_return_block(ImagingMemoryArena arena, ImagingMemoryBlock block) {
 
 static void
 ImagingDestroyArray(Imaging im) {
-    int y = 0;
-
     if (im->blocks) {
         MUTEX_LOCK(&ImagingDefaultArena.mutex);
-        while (im->blocks[y].ptr) {
-            memory_return_block(&ImagingDefaultArena, im->blocks[y]);
-            y += 1;
+        for (int y = 0; y < im->blocks_count; y++) {
+            if (im->blocks[y].ptr) {
+                memory_return_block(&ImagingDefaultArena, im->blocks[y]);
+            }
         }
         MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
         free(im->blocks);
@@ -419,7 +419,7 @@ Imaging
 ImagingAllocateArray(Imaging im, ImagingMemoryArena arena, int dirty, int block_size) {
     int y, line_in_block, current_block;
     ImagingMemoryBlock block = {NULL, 0};
-    int aligned_linesize, lines_per_block, blocks_count;
+    int aligned_linesize, lines_per_block;
     char *aligned_ptr = NULL;
 
     /* 0-width or 0-height image. No need to do anything */
@@ -433,11 +433,17 @@ ImagingAllocateArray(Imaging im, ImagingMemoryArena arena, int dirty, int block_
         lines_per_block = 1;
     }
     im->lines_per_block = lines_per_block;
-    blocks_count = (im->ysize + lines_per_block - 1) / lines_per_block;
+
+    /* Compute in 64 bits to avoid signed overflow if ysize + lines_per_block - 1
+     * exceeds INT32_MAX. */
+    int64_t blocks_count = ((int64_t)im->ysize + lines_per_block - 1) / lines_per_block;
+    if (blocks_count > INT32_MAX) {
+        return (Imaging)ImagingError_MemoryError();
+    }
 
     /* One extra pointer is always NULL */
-    im->blocks_count = blocks_count;
-    im->blocks = calloc(sizeof(*im->blocks), blocks_count + 1);
+    im->blocks_count = (int)blocks_count;
+    im->blocks = calloc(sizeof(*im->blocks), (size_t)blocks_count + 1);
     if (!im->blocks) {
         return (Imaging)ImagingError_MemoryError();
     }
@@ -550,9 +556,17 @@ ImagingBorrowArrow(
     struct ArrowArray *arr = external_array;
 
     if (arr->n_children == 1) {
+        if (!arr->children || !arr->children[0]) {
+            ImagingError_ValueError("Arrow Array, missing child array");
+            return 0;
+        }
         arr = arr->children[0];
     }
-    if (arr->n_buffers == 2) {
+    if (arr->offset < 0) {
+        ImagingError_ValueError("Arrow Array, negative offset");
+        return 0;
+    }
+    if (arr->n_buffers == 2 && arr->buffers && arr->buffers[1]) {
         // buffer 0 is the null list
         // buffer 1 is the data
         borrowed_buffer = (char *)arr->buffers[1] + (offset_width * arr->offset);
@@ -695,6 +709,11 @@ ImagingNewArrow(
         return NULL;
     }
 
+    if (!schema->format) {
+        ImagingDelete(im);
+        return (Imaging)ImagingError_ValueError("Arrow Schema, missing format");
+    }
+
     int64_t pixels = (int64_t)xsize * (int64_t)ysize;
 
     // fmt:off   // don't reformat this
@@ -719,6 +738,8 @@ ImagingNewArrow(
         && im->pixelsize == 4                // storage as 32 bpc
         && schema->n_children > 0            // make sure schema is well formed.
         && schema->children                  // make sure schema is well formed
+        && schema->children[0]               // make sure schema is well formed
+        && schema->children[0]->format       // make sure schema is well formed
         && strcmp(schema->children[0]->format, "C") == 0  // Expected format
         && strcmp(im->arrow_band_format, "C") == 0        // Expected Format
         && pixels == external_array->length               // expected length

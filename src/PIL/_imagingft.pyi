@@ -24,36 +24,36 @@ class Font:
         self,
         string: str | bytes,
         fill: Callable[[int, int], _imaging.ImagingCore],
-        mode: str,
-        dir: str | None,
-        features: list[str] | None,
-        lang: str | None,
-        stroke_width: float,
-        stroke_filled: bool,
-        anchor: str | None,
-        foreground_ink_long: int,
-        start: tuple[float, float],
+        mode_name: str | None = None,
+        dir: str | None = None,
+        features: list[str] | None = None,
+        lang: str | None = None,
+        stroke_width: float = 0,
+        stroke_filled: bool = ...,
+        anchor: str | None = None,
+        foreground_ink_long: int = 0,
+        start: tuple[float, float] = ...,
         /,
     ) -> tuple[_imaging.ImagingCore, tuple[int, int]]: ...
     def getsize(
         self,
         string: str | bytes | bytearray,
-        mode: str,
-        dir: str | None,
-        features: list[str] | None,
-        lang: str | None,
-        anchor: str | None,
+        mode_name: str | None = None,
+        dir: str | None = None,
+        features: list[str] | None = None,
+        lang: str | None = None,
+        anchor: str | None = None,
         /,
     ) -> tuple[tuple[int, int], tuple[int, int]]: ...
     def getlength(
         self,
         string: str | bytes,
-        mode: str,
-        dir: str | None,
-        features: list[str] | None,
-        lang: str | None,
+        mode_name: str | None = None,
+        dir: str | None = None,
+        features: list[str] | None = None,
+        lang: str | None = None,
         /,
-    ) -> float: ...
+    ) -> int: ...
     def getvarnames(self) -> list[bytes]: ...
     def getvaraxes(self) -> list[ImageFont.Axis]: ...
     def setvarname(self, instance_index: int, /) -> None: ...
@@ -64,7 +64,7 @@ def getfont(
     size: float,
     index: int,
     encoding: str,
-    font_bytes: bytes,
     layout_engine: int,
+    font_bytes: bytes,
 ) -> Font: ...
 def __getattr__(name: str) -> Any: ...

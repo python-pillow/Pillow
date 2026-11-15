@@ -560,6 +560,11 @@ cms_transform_apply_impl(CmsTransformObject *self, PyObject *args) {
         return NULL;
     }
 
+    if (imOut->read_only) {
+        PyErr_SetString(PyExc_ValueError, "image is readonly");
+        return NULL;
+    }
+
     return Py_BuildValue("i", pyCMSdoTransform(im, imOut, self->transform));
 }
 

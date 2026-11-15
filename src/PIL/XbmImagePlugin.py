@@ -80,7 +80,10 @@ class XbmImageFile(ImageFile.ImageFile):
                 if line.endswith(b"_bits[] = {"):
                     offset = self.fp.tell()
                 break
-            value = int(line.split().pop())
+            try:
+                value = int(line.split().pop())
+            except ValueError:
+                break
             if b"width " in line:
                 width = value
             elif b"height " in line:
@@ -97,7 +100,7 @@ class XbmImageFile(ImageFile.ImageFile):
         self._mode = "1"
         self._size = width, height
 
-        self.tile = [ImageFile._Tile("xbm", (0, 0, *self.size), offset)]
+        self.tile = [ImageFile._Tile("xbm", None, offset)]
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
@@ -115,7 +118,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     fp.write(b"static char im_bits[] = {\n")
 
-    ImageFile._save(im, fp, [ImageFile._Tile("xbm", (0, 0, *im.size))])
+    ImageFile._save(im, fp, [ImageFile._Tile("xbm")])
 
     fp.write(b"};\n")
 

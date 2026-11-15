@@ -143,9 +143,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             msg = f"cannot write mode {im.mode} as Palm"
             raise OSError(msg)
 
-        # we ignore the palette here
-        im._mode = "P"
-        rawmode = f"P;{bpp}"
+        rawmode = f"L;{bpp}"
         version = 1
 
     elif im.mode == "1":
@@ -174,7 +172,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     flags = 0
     if im.mode == "P":
         flags |= _FLAGS["custom-colormap"]
-        colormap = im.im.getpalette()
+        colormap = im.im.getpalette("RGB")
         colors = len(colormap) // 3
         colormapsize = 4 * colors + 2
     else:
@@ -202,9 +200,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             fp.write(colormap[3 * i : 3 * i + 3])
 
     # now convert data to raw form
-    ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, (rawmode, rowbytes, 1))]
-    )
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", args=(rawmode, rowbytes, 1))])
 
     if hasattr(fp, "flush"):
         fp.flush()

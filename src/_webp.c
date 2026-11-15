@@ -74,6 +74,30 @@ HandleMuxError(WebPMuxError err, char *chunk) {
 }
 
 /* -------------------------------------------------------------------- */
+/* WebP Encoder Error Mapping                                           */
+/* -------------------------------------------------------------------- */
+
+#define WEBP_STR_HELPER(x) #x
+#define WEBP_STR(x) WEBP_STR_HELPER(x)
+
+static const char *const kEncoderErrorMessages[VP8_ENC_ERROR_LAST] = {
+    "ok",
+    "Out of memory allocating objects",
+    "Out of memory re-allocating byte buffer",
+    "NULL parameter passed to function",
+    "configuration is invalid",
+    "Image size exceeds WebP limit of " WEBP_STR(WEBP_MAX_DIMENSION) " pixels",
+    "Partition #0 is too big to fit 512k",
+    "Partition too big to fit 16M",
+    "Picture writer returned an I/O error",
+    "File would be too big to fit in 4G",
+    "encoding abort requested by user"
+};
+
+#undef WEBP_STR
+#undef WEBP_STR_HELPER
+
+/* -------------------------------------------------------------------- */
 /* Frame import                                                         */
 /* -------------------------------------------------------------------- */
 
@@ -647,17 +671,18 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     ret_size = writer.size;
 
     if (!ok) {
-        int error_code = (&pic)->error_code;
-        char message[50] = "";
-        if (error_code == VP8_ENC_ERROR_BAD_DIMENSION) {
-            sprintf(
-                message,
-                ": Image size exceeds WebP limit of %d pixels",
-                WEBP_MAX_DIMENSION
-            );
-        }
-        PyErr_Format(PyExc_ValueError, "encoding error %d%s", error_code, message);
         free(output);
+        WebPEncodingError error_code = pic.error_code;
+        if (error_code > VP8_ENC_OK && error_code < VP8_ENC_ERROR_LAST) {
+            PyErr_Format(
+                PyExc_ValueError,
+                "encoding error %d: %s",
+                error_code,
+                kEncoderErrorMessages[error_code]
+            );
+        } else {
+            PyErr_Format(PyExc_ValueError, "encoding error %d", error_code);
+        }
         return NULL;
     }
 

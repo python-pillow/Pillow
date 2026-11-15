@@ -10,14 +10,6 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-/* Check that we have an ANSI compliant compiler */
-#ifndef HAVE_PROTOTYPES
-#error Sorry, this library requires support for ANSI prototypes.
-#endif
-#ifndef STDC_HEADERS
-#error Sorry, this library requires ANSI header files.
-#endif
-
 #if defined(_WIN32) || defined(__CYGWIN__) /* WIN */
 
 #define WIN32_LEAN_AND_MEAN

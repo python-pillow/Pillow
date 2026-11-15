@@ -4,7 +4,7 @@ import pytest
 
 from PIL import Image, ImageMath, ImageMode
 
-from .helper import convert_to_comparable, skip_unless_feature
+from .helper import skip_unless_feature
 
 codecs = dir(Image.core)
 
@@ -85,6 +85,8 @@ def test_args_factor_error(
     (
         ((0, 0, 10, 10), (5, 5)),
         ((5, 5, 6, 6), (1, 1)),
+        ((0, 5, 10, 5), (5, 0)),
+        ((5, 0, 5, 10), (0, 5)),
     ),
 )
 def test_args_box(size: tuple[int, int, int, int], expected: tuple[int, int]) -> None:
@@ -100,8 +102,8 @@ def test_args_box(size: tuple[int, int, int, int], expected: tuple[int, int]) ->
         ((0, 0, 10, 11), ValueError),
         ((-1, 0, 10, 10), ValueError),
         ((0, -1, 10, 10), ValueError),
-        ((0, 5, 10, 5), ValueError),
-        ((5, 0, 5, 10), ValueError),
+        ((0, 5, 10, 4), ValueError),
+        ((5, 0, 4, 10), ValueError),
     ),
 )
 def test_args_box_error(
@@ -110,6 +112,19 @@ def test_args_box_error(
     im = Image.new("L", (10, 10))
     with pytest.raises(expected_error):
         im.reduce(2, size).size  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "size, expected",
+    (
+        ((0, 0), (0, 0)),
+        ((5, 0), (3, 0)),
+        ((0, 5), (0, 3)),
+    ),
+)
+def test_zero_dimension(size: tuple[int, int], expected: tuple[int, int]) -> None:
+    im = Image.new("L", size)
+    assert im.reduce(2).size == expected
 
 
 @pytest.mark.parametrize("mode", ("P", "1", "I;16"))
@@ -201,8 +216,6 @@ def assert_compare_images(
 ) -> None:
     assert a.mode == b.mode, f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
     assert a.size == b.size, f"got size {repr(a.size)}, expected {repr(b.size)}"
-
-    a, b = convert_to_comparable(a, b)
 
     bands = ImageMode.getmode(a.mode).bands
     for band, ach, bch in zip(bands, a.split(), b.split()):

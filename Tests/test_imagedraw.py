@@ -88,6 +88,28 @@ def test_new_color() -> None:
         assert (0, 0, 0) not in im.palette.colors
 
 
+@pytest.mark.parametrize(
+    "fill, expected",
+    (
+        ("#00f", (0, 0, 255, 255)),
+        ((0, 0, 255), (0, 0, 255, 255)),
+        ((0, 0, 255, 128), (0, 0, 255, 128)),
+    ),
+)
+def test_pa(fill: str | tuple[int, ...], expected: tuple[int, ...]) -> None:
+    im = Image.new("PA", (2, 1))
+    draw = ImageDraw.Draw(im)
+
+    draw.point((0, 0), fill)
+    assert im.convert("RGBA").getpixel((0, 0)) == expected
+
+    # A palette index and alpha value can still be used
+    px = im.getpixel((0, 0))
+    assert isinstance(px, tuple)
+    draw.point((1, 0), (px[0], 64))
+    assert im.convert("RGBA").getpixel((1, 0)) == (*expected[:3], 64)
+
+
 def test_mode_mismatch() -> None:
     im = hopper("RGB").copy()
 
@@ -1045,6 +1067,19 @@ def test_floodfill_not_negative() -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_floodfill_not_negative.png")
+
+
+def test_floodfill_rgb_on_rgba() -> None:
+    # Arrange
+    im = Image.new("RGBA", (W, H), "black")
+    xy = int(W / 2), int(H / 2)
+    rgb = (255, 0, 0)
+
+    # Act
+    ImageDraw.floodfill(im, xy, rgb)
+
+    # Assert
+    assert im.getpixel(xy) == rgb + (255,)
 
 
 def create_base_image_draw(

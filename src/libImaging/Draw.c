@@ -47,12 +47,7 @@
 // need to care about it.
 static inline INT32
 ink16(Imaging im, const void *ink_) {
-    if (
-        im->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-        || im->mode == IMAGING_MODE_I_16N
-#endif
-    ) {
+    if (isImageI16BigEndian(im)) {
         const UINT8 *in = ink_;
         UINT8 out[2];
         UINT16 ink;

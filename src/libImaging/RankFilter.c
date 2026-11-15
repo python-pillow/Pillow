@@ -61,6 +61,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
 
     Imaging ImagingRankFilter(Imaging im, int size, int rank) {
     Imaging imOut = NULL;
+    ImagingSectionCookie cookie;
     int x, y;
     int i, margin, size2;
 
@@ -97,6 +98,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
         if (!buf) {                                                               \
             goto nomemory;                                                        \
         }                                                                         \
+        ImagingSectionEnter(&cookie);                                             \
         for (y = 0; y < imOut->ysize; y++) {                                      \
             for (x = 0; x < imOut->xsize; x++) {                                  \
                 for (i = 0; i < size; i++) {                                      \
@@ -109,6 +111,7 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
                 IMAGING_PIXEL_##type(imOut, x, y) = Rank##type(buf, size2, rank); \
             }                                                                     \
         }                                                                         \
+        ImagingSectionLeave(&cookie);                                             \
         free(buf);                                                                \
     } while (0)
 

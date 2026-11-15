@@ -215,7 +215,8 @@ def test_rle8() -> None:
 
 def test_rle4() -> None:
     with Image.open("Tests/images/bmp/g/pal4rle.bmp") as im:
-        assert_image_similar_tofile(im, "Tests/images/bmp/g/pal4.bmp", 12)
+        with Image.open("Tests/images/bmp/g/pal4.bmp") as im2:
+            assert_image_equal(im.convert("RGB"), im2.convert("RGB"))
 
 
 def encode_rle4(width: int, palette: bytes, rle: bytes) -> io.BytesIO:

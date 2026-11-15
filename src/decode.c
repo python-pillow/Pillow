@@ -157,13 +157,13 @@ PyImaging_AsImaging(PyObject *op);
 
 static PyObject *
 _setimage(ImagingDecoderObject *decoder, PyObject *args) {
-    PyObject *op, *extents;
+    PyObject *op, *extents = Py_None;
     Imaging im;
     ImagingCodecState state;
     int x0, y0, x1, y1;
 
     /* FIXME: should publish the ImagingType descriptor */
-    if (!PyArg_ParseTuple(args, "OO", &op, &extents)) {
+    if (!PyArg_ParseTuple(args, "O|O", &op, &extents)) {
         return NULL;
     }
     im = PyImaging_AsImaging(op);
@@ -208,6 +208,11 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
 
     if (decoder->im != NULL) {
         PyErr_SetString(PyExc_ValueError, "decoder already has an image");
+        return NULL;
+    }
+
+    if (im->read_only) {
+        PyErr_SetString(PyExc_ValueError, "image is readonly");
         return NULL;
     }
     decoder->im = im;
@@ -934,7 +939,7 @@ PyImaging_Jpeg2KDecoderNew(PyObject *self, PyObject *args) {
     int reduce = 0;
     int layers = 0;
     int fd = -1;
-    PY_LONG_LONG length = -1;
+    long long length = -1;
 
     if (!PyArg_ParseTuple(
             args, "ss|iiiL", &mode, &format, &reduce, &layers, &fd, &length

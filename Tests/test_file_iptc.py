@@ -34,7 +34,7 @@ def test_open() -> None:
 
     f = create_iptc_image()
     with Image.open(f) as im:
-        assert im.tile == [("iptc", (0, 0, 1, 1), 25, ("raw", None))]
+        assert im.tile == [("iptc", None, 25, ("raw", None))]
         assert_image_equal(im, expected)
 
     with Image.open(f) as im:

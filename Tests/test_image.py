@@ -304,6 +304,13 @@ class TestImage:
         assert_image_equal(Cr, im.getchannel(2))
         assert_image_equal(Cr, im.getchannel("Cr"))
 
+    @pytest.mark.parametrize("mode", ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"))
+    def test_getchannel_single_band(self, mode: str) -> None:
+        im = hopper(mode)
+
+        for channel in (0, im.getbands()[0]):
+            assert_image_equal(im.getchannel(channel), im)
+
     def test_getbbox(self) -> None:
         # Arrange
         im = hopper()
@@ -532,9 +539,10 @@ class TestImage:
         assert im.size == (128, 128)
         assert_image_similar_tofile(im2, "Tests/images/effect_spread.png", 110)
 
-    def test_effect_spread_zero(self) -> None:
+    @pytest.mark.parametrize("mode", ("RGB", "I;16", "I;16L", "I;16B", "I;16N"))
+    def test_effect_spread_zero(self, mode: str) -> None:
         # Arrange
-        im = hopper()
+        im = hopper(mode)
         distance = 0
 
         # Act
@@ -542,6 +550,15 @@ class TestImage:
 
         # Assert
         assert_image_equal(im, im2)
+
+    @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+    def test_effect_spread_i16(self, mode: str) -> None:
+        im = Image.new(mode, (3, 3))
+        im.putdata(range(1000, 10000, 1000))
+
+        # Whole pixels are moved, so every value comes from the original image
+        im2 = im.effect_spread(2)
+        assert set(im2.get_flattened_data()) <= set(im.get_flattened_data())
 
     def test_check_size(self) -> None:
         # Checking that the _check_size function throws value errors when we want it to
@@ -745,6 +762,20 @@ class TestImage:
         im = Image.new("P", (100, 100), color)
         expected = Image.new(mode, (100, 100), color)
         assert_image_equal(im.convert(mode), expected)
+
+    @pytest.mark.parametrize(
+        "color, expected",
+        (
+            ("#DDEEFF", (221, 238, 255, 255)),
+            ((221, 238, 255), (221, 238, 255, 255)),
+            ((221, 238, 255, 128), (221, 238, 255, 128)),
+        ),
+    )
+    def test_pa_from_rgb_rgba(
+        self, color: str | tuple[int, ...], expected: tuple[int, ...]
+    ) -> None:
+        im = Image.new("PA", (100, 100), color)
+        assert_image_equal(im.convert("RGBA"), Image.new("RGBA", (100, 100), expected))
 
     def test_no_resource_warning_on_save(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/835
