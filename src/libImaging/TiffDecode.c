@@ -737,6 +737,19 @@ ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp) {
 }
 
 int
+ImagingLibTiffWriteSubIFDs(ImagingCodecState state, const char *data, tmsize_t size) {
+    TIFFSTATE *clientstate = (TIFFSTATE *)state->context;
+    TIFF *tiff = clientstate->tiff;
+    thandle_t handle = TIFFClientdata(tiff);
+    // The serialized directories start immediately after the ClassicTIFF header.
+    toff_t offset = sizeof(TIFFHeaderClassic);
+    if (TIFFGetSeekProc(tiff)(handle, offset, SEEK_SET) != offset) {
+        return 0;
+    }
+    return TIFFGetWriteProc(tiff)(handle, (void *)data, size) == size;
+}
+
+int
 ImagingLibTiffMergeFieldInfo(
     ImagingCodecState state, TIFFDataType field_type, int key, int is_var_length
 ) {
