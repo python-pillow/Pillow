@@ -388,7 +388,10 @@ getcolors32(Imaging im, int maxcolors, int *size) {
     }
 
     pixel_mask = 0xffffffff;
-    if (im->bands == 3) {
+    if (im->bands == 2) {
+        ((UINT8 *)&pixel_mask)[1] = 0;
+        ((UINT8 *)&pixel_mask)[2] = 0;
+    } else if (im->bands == 3) {
         ((UINT8 *)&pixel_mask)[3] = 0;
     }
 
