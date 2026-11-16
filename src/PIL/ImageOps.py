@@ -720,6 +720,10 @@ def sepia(image: Image.Image) -> Image.Image:
 
 
 def _sobel(image: Image.Image) -> Image.Image:
+    out = Image.new("L", image.size)
+    if min(image.size) <= 2:
+        return out
+
     if image.mode != "L":
         image = image.convert("L")
 
@@ -735,9 +739,7 @@ def _sobel(image: Image.Image) -> Image.Image:
     mag = ImageChops.add(ImageChops.add(gx, gx_neg), ImageChops.add(gy, gy_neg))
 
     # Edge pixels have no full neighbourhood and stay 0
-    out = Image.new("L", image.size)
-    if image.width > 2 and image.height > 2:
-        out.paste(mag.crop((1, 1, image.width - 1, image.height - 1)), (1, 1))
+    out.paste(mag.crop((1, 1, image.width - 1, image.height - 1)), (1, 1))
     return out
 
 
