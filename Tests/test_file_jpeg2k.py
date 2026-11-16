@@ -256,7 +256,6 @@ def test_oversized_box_length(tbox: bytes) -> None:
 
 
 def test_large_skipped_box() -> None:
-    # A box larger than the stream buffer reaches the skip callback
     xml = b" " * 2 * 1024 * 1024
     box = _binary.o32be(8 + len(xml)) + b"xml " + xml
     with open("Tests/images/test-card-lossless.jp2", "rb") as fp:
