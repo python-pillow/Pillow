@@ -1426,9 +1426,13 @@ class Image:
         import decimal
 
         x0, y0, x1, y1 = (
-            int(
-                decimal.Decimal(v).quantize(
-                    0, decimal.ROUND_HALF_UP if v < 0 else decimal.ROUND_HALF_DOWN
+            (
+                v
+                if isinstance(v, int)
+                else int(
+                    decimal.Decimal(v).quantize(
+                        0, decimal.ROUND_HALF_UP if v < 0 else decimal.ROUND_HALF_DOWN
+                    )
                 )
             )
             for v in box
