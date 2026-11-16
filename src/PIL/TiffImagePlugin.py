@@ -1953,16 +1953,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if PHOTOMETRIC_INTERPRETATION not in ifd:
         ifd[PHOTOMETRIC_INTERPRETATION] = photo
     elif im.mode in ("1", "L") and ifd[PHOTOMETRIC_INTERPRETATION] == 0:
-        if im.mode == "1":
-            inverted_im = im.copy()
-            px = inverted_im.load()
-            if px is not None:
-                for y in range(inverted_im.height):
-                    for x in range(inverted_im.width):
-                        px[x, y] = 0 if px[x, y] == 255 else 255
-                im = inverted_im
-        else:
-            im = ImageOps.invert(im)
+        im = ImageOps.invert(im)
 
     if im.mode in ["P", "PA"]:
         lut = im.im.getpalette("RGB;L")
