@@ -65,6 +65,16 @@ User code may set this to another number.
 """
 
 SAFEBLOCK = 1024 * 1024
+"""
+When a plugin reads a chunk of data whose size is given by the image file itself,
+Pillow does not trust that size.
+
+If it is greater than this number of bytes, the data is read in blocks of this size
+instead of all at once. This stops a malicious file from causing a large allocation
+by claiming more data than it contains.
+
+User code may set this to another number.
+"""
 
 LOAD_TRUNCATED_IMAGES = False
 """Whether or not to load truncated image files. User code may change this."""
@@ -308,6 +318,12 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
 
     def load(self) -> Image.core.PixelAccess | None:
         """Load image data based on tile list"""
+
+        if self.width == 0 or self.height == 0:
+            ImageFile.load_prepare(self)
+
+            self.tile = []
+            self.readonly = 0
 
         if not self.tile:
             if self._im is None:

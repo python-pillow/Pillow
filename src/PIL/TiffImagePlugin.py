@@ -1677,7 +1677,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 # fillorder==2 modes have a corresponding
                 # fillorder=1 mode
                 self._mode, rawmode = OPEN_INFO[key]
-            if photo == 6:
+            if photo == 6 and len(bps_tuple) == 3:
                 self._mode = "RGB"
                 if self._compression in "jpeg" and self._planar_configuration == 1:
                     # YCbCr images with new jpeg compression with pixels in one plane
@@ -1953,16 +1953,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if PHOTOMETRIC_INTERPRETATION not in ifd:
         ifd[PHOTOMETRIC_INTERPRETATION] = photo
     elif im.mode in ("1", "L") and ifd[PHOTOMETRIC_INTERPRETATION] == 0:
-        if im.mode == "1":
-            inverted_im = im.copy()
-            px = inverted_im.load()
-            if px is not None:
-                for y in range(inverted_im.height):
-                    for x in range(inverted_im.width):
-                        px[x, y] = 0 if px[x, y] == 255 else 255
-                im = inverted_im
-        else:
-            im = ImageOps.invert(im)
+        im = ImageOps.invert(im)
 
     if im.mode in ["P", "PA"]:
         lut = im.im.getpalette("RGB;L")
@@ -2270,6 +2261,7 @@ class AppendingTiffWriter(io.BytesIO):
         self.tagFormat = f"{self.endian}HH" + ("Q" if self._bigtiff else "L")
 
     def skipIFDs(self) -> None:
+        ifd_offsets = set()
         while True:
             ifd_offset = self._read(8 if self._bigtiff else 4)
             if ifd_offset == 0:
@@ -2277,6 +2269,11 @@ class AppendingTiffWriter(io.BytesIO):
                     8 if self._bigtiff else 4
                 )
                 break
+
+            if ifd_offset in ifd_offsets:
+                msg = "IFD loop found"
+                raise RuntimeError(msg)
+            ifd_offsets.add(ifd_offset)
 
             self.f.seek(ifd_offset)
             num_tags = self._read(8 if self._bigtiff else 2)

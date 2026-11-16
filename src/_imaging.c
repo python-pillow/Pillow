@@ -1737,7 +1737,10 @@ _point_impl(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    const ModeID mode = findModeID(mode_name);
+    ModeID mode = findModeID(mode_name);
+    if (mode == IMAGING_MODE_UNKNOWN) {
+        mode = self->image->mode;
+    }
 
     if (mode == IMAGING_MODE_F) {
         FLOAT32 *data;
@@ -1766,13 +1769,13 @@ _point_impl(ImagingObject *self, PyObject *args) {
         INT32 *data;
         UINT8 lut[1024];
 
-        if (mode) {
+        if (mode == self->image->mode) {
+            bands = self->image->bands;
+        } else {
             bands = getbands(mode);
             if (bands < 0) {
                 return NULL;
             }
-        } else {
-            bands = self->image->bands;
         }
 
         /* map to integer data */
@@ -1784,7 +1787,7 @@ _point_impl(ImagingObject *self, PyObject *args) {
 
         if (mode == IMAGING_MODE_I) {
             im = ImagingPoint(self->image, mode, (void *)data);
-        } else if (mode && bands > 1) {
+        } else if (mode != self->image->mode && bands > 1) {
             for (i = 0; i < 256; i++) {
                 lut[i * 4] = CLIP8(data[i]);
                 lut[i * 4 + 1] = CLIP8(data[i + 256]);
@@ -1858,7 +1861,7 @@ _putdata_impl(ImagingObject *self, PyObject *args) {
 
     image = self->image;
 
-    if (image->image8 && PyBytes_Check(data)) {
+    if (image->pixelsize == 1 && PyBytes_Check(data)) {
         n = PyBytes_GET_SIZE(data);
     } else {
         Py_ssize_t reported = PySequence_Size(data);
@@ -1895,7 +1898,7 @@ _putdata_impl(ImagingObject *self, PyObject *args) {
         }                                                               \
     }
     if (image->image8) {
-        if (PyBytes_Check(data)) {
+        if (image->pixelsize == 1 && PyBytes_Check(data)) {
             unsigned char *p;
             p = (unsigned char *)PyBytes_AS_STRING(data);
             if (scale == 1.0 && offset == 0.0) {
@@ -3768,7 +3771,8 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
     PyObject *data;
     int ink;
     int width;
-    if (!PyArg_ParseTuple(args, "Oii", &data, &ink, &width)) {
+    PyObject *dash = NULL;
+    if (!PyArg_ParseTuple(args, "Oii|O", &data, &ink, &width, &dash)) {
         return NULL;
     }
 
@@ -3780,6 +3784,7 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
     Py_BEGIN_CRITICAL_SECTION2(self, self->image);
     if (width == 1) {
         double *p = NULL;
+        int dash_offset = 0;
         for (i = 0; i < n - 1; i++) {
             p = &xy[i + i];
             if (ImagingDrawLine(
@@ -3789,7 +3794,9 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
                     (int)p[2],
                     (int)p[3],
                     &ink,
-                    self->blend
+                    self->blend,
+                    dash,
+                    &dash_offset
                 ) < 0) {
                 free(xy);
                 return NULL;
@@ -3962,8 +3969,9 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
     int fill = 0;
     int width = 0;
     ImagingObject *maskp = NULL;
+    PyObject *dash = NULL;
     if (!PyArg_ParseTuple(
-            args, "Oi|iiO!", &data, &ink, &fill, &width, &Imaging_Type, &maskp
+            args, "Oi|iiOO!", &data, &ink, &fill, &width, &dash, &Imaging_Type, &maskp
         )) {
         return NULL;
     }
@@ -4004,7 +4012,8 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
         fill,
         width,
         self->blend,
-        maskp ? maskp->image : NULL
+        maskp ? maskp->image : NULL,
+        dash != Py_None ? dash : NULL
     );
     Py_END_CRITICAL_SECTION2();
 
@@ -4027,7 +4036,8 @@ _draw_rectangle(ImagingDrawObject *self, PyObject *args) {
     int ink;
     int fill = 0;
     int width = 0;
-    if (!PyArg_ParseTuple(args, "Oi|ii", &data, &ink, &fill, &width)) {
+    PyObject *dash = NULL;
+    if (!PyArg_ParseTuple(args, "Oi|iiO", &data, &ink, &fill, &width, &dash)) {
         return NULL;
     }
 
