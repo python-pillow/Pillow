@@ -72,9 +72,10 @@ ImagingExpand(Imaging imIn, int margin) {
         return (Imaging)ImagingError_ValueError("filter size too large");
     }
 
-    int out_xsize = imIn->xsize + 2 * margin;
-    int out_ysize = imIn->ysize + 2 * margin;
-    if (imIn->xsize == 0 || imIn->ysize == 0) {
+    int xsize = imIn->xsize, ysize = imIn->ysize;
+    int out_xsize = xsize + 2 * margin;
+    int out_ysize = ysize + 2 * margin;
+    if (xsize == 0 || ysize == 0) {
         imOut = ImagingNew(imIn->mode, out_xsize, out_ysize);
         if (!imOut) {
             return NULL;
@@ -87,8 +88,6 @@ ImagingExpand(Imaging imIn, int margin) {
     if (!imOut) {
         return NULL;
     }
-
-    int xsize = imIn->xsize, ysize = imIn->ysize;
 
 #define EXPAND_LINE(type, yin, yout)                     \
     {                                                    \
