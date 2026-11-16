@@ -256,9 +256,17 @@ text_layout_raqm(
         }
         set_text = raqm_set_text(rq, text, size);
         PyMem_Free(text);
-    } else if (PyBytes_Check(string)) {
+    } else if (PyBytes_Check(string) || PyByteArray_Check(string)) {
         char *buffer;
-        PyBytes_AsStringAndSize(string, &buffer, &size);
+        if (PyBytes_Check(string)) {
+            PyBytes_AsStringAndSize(string, &buffer, &size);
+        } else {
+            size = PyByteArray_GET_SIZE(string);
+            if (!size) {
+                goto failed;
+            }
+            buffer = PyByteArray_AS_STRING(string);
+        }
         if (!buffer || !size) {
             /* return 0 and clean up, no glyphs==no size,
                and raqm fails with empty strings */
@@ -409,6 +417,9 @@ text_layout_fallback(
         count = PyUnicode_GET_LENGTH(string);
     } else if (PyBytes_Check(string)) {
         PyBytes_AsStringAndSize(string, &buffer, &count);
+    } else if (PyByteArray_Check(string)) {
+        buffer = PyByteArray_AS_STRING(string);
+        count = PyByteArray_GET_SIZE(string);
     } else {
         PyErr_SetString(PyExc_TypeError, "expected string or bytes");
         return 0;
