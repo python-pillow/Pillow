@@ -527,6 +527,9 @@ def _normalize_mode(im: Image.Image) -> Image.Image:
         im.load()
         return im
     if Image.getmodebase(im.mode) == "RGB":
+        if im.mode not in {"RGB", "RGBA"}:
+            # Of the RGB-based modes, quantization only supports RGB and RGBA
+            im = im.convert("RGBA" if im.has_transparency_data else "RGB")
         im = im.convert("P", palette=Image.Palette.ADAPTIVE)
         assert im.palette is not None
         if im.palette.mode == "RGBA":

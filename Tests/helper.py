@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
+import sysconfig
 import tempfile
 from functools import lru_cache
 from io import BytesIO
@@ -329,3 +330,7 @@ def is_ppc64le() -> bool:
 
 def is_win32() -> bool:
     return sys.platform.startswith("win32")
+
+
+def is_freethreaded() -> bool:
+    return bool(sysconfig.get_config_var("Py_GIL_DISABLED"))

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 import sys
 import warnings
@@ -116,6 +117,23 @@ class TestFilePng:
 
         with pytest.raises(SyntaxError):
             PngImagePlugin.PngImageFile(invalid_file)
+
+    def test_save_wide(self, tmp_path: Path) -> None:
+        test_file = tmp_path / "temp.png"
+        Image.new("L", (1 << 24, 1), 0x80).save(test_file)
+
+        with open(test_file, "rb") as fp:
+            fp.seek(len(MAGIC))
+            with PngImagePlugin.PngStream(fp) as png:
+                while True:
+                    cid, _, length = png.read()
+                    if cid == b"IDAT":
+                        compressed = fp.read(length)
+                        break
+                    if cid == b"IEND":
+                        break
+                    fp.seek(length + 4, os.SEEK_CUR)
+        assert zlib.decompress(compressed)[0] == 1
 
     def test_broken(self) -> None:
         # Check reading of totally broken files.  In this case, the test

@@ -114,10 +114,8 @@ class QoiDecoder(ImageFile.PyDecoder):
                 elif op == 3 and self._previous_pixel:  # QOI_OP_RUN
                     run_length = (byte & 0b00111111) + 1
                     value = self._previous_pixel
-                    if bands == 3:
-                        value = value[:3]
-                    data += value * run_length
-                    continue
+                    if run_length > 1:
+                        data += value[:bands] * (run_length - 1)
             self._add_to_previous_pixels(value)
 
             if bands == 3:

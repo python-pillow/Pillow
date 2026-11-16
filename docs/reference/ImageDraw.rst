@@ -47,10 +47,13 @@ Colors
 To specify colors, you can use numbers or tuples just as you would use with
 :py:meth:`PIL.Image.new`. See :ref:`colors` for more information.
 
-For palette images (mode “P”), use integers as color indexes. In 1.1.4 and
+For palette images (mode "P"), use integers as color indexes. In 1.1.4 and
 later, you can also use RGB 3-tuples or color names (see below). The drawing
 layer will automatically assign color indexes, as long as you don’t draw with
 more than 256 colors.
+
+For palette images with an alpha channel (mode "PA"), use a tuple of a color
+index and an alpha value, RGB 3-tuples, RGBA 4-tuples or color names.
 
 Color names
 ^^^^^^^^^^^
@@ -287,7 +290,7 @@ Methods
 
         .. versionadded:: 5.3.0
 
-.. py:method:: ImageDraw.line(xy, fill=None, width=1, joint=None)
+.. py:method:: ImageDraw.line(xy, fill=None, width=1, joint=None, dash=None)
 
     Draws a line between the coordinates in the ``xy`` list.
     The coordinate pixels are included in the drawn line.
@@ -303,6 +306,14 @@ Methods
     :param joint: Joint type between a sequence of lines. It can be ``"curve"``, for rounded edges, or :data:`None`.
 
         .. versionadded:: 5.3.0
+    :param dash: An optional dash pattern, given as a tuple of integers.
+        The dash pattern specifies the lengths of alternating drawn and blank segments
+        (e.g. ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd number of
+        values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
+        skips 2, draws 3, skips 1, draws 2, and so on). When ``dash`` is set, ``width``
+        and ``joint`` are ignored.
+
+        .. versionadded:: 13.1.0
 
 .. py:method:: ImageDraw.pieslice(xy, start, end, fill=None, outline=None, width=1)
 
@@ -329,7 +340,7 @@ Methods
                numeric values like ``[x, y, x, y, ...]``.
     :param fill: Color to use for the point.
 
-.. py:method:: ImageDraw.polygon(xy, fill=None, outline=None, width=1)
+.. py:method:: ImageDraw.polygon(xy, fill=None, outline=None, width=1, dash=None)
 
     Draws a polygon.
 
@@ -342,6 +353,14 @@ Methods
     :param fill: Color to use for the fill.
     :param outline: Color to use for the outline.
     :param width: The line width, in pixels.
+    :param dash: An optional dash pattern, given as a tuple of integers.
+        The dash pattern specifies the lengths of alternating drawn and blank segments
+        (e.g. ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd number of
+        values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
+        skips 2, draws 3, skips 1, draws 2, and so on). When ``dash`` is set, ``width``
+        is ignored.
+
+        .. versionadded:: 13.1.0
 
 
 .. py:method:: ImageDraw.regular_polygon(bounding_circle, n_sides, rotation=0, fill=None, outline=None, width=1)
@@ -362,7 +381,7 @@ Methods
     :param width: The line width, in pixels.
 
 
-.. py:method:: ImageDraw.rectangle(xy, fill=None, outline=None, width=1)
+.. py:method:: ImageDraw.rectangle(xy, fill=None, outline=None, width=1, dash=None)
 
     Draws a rectangle.
 
@@ -374,6 +393,14 @@ Methods
     :param width: The line width, in pixels.
 
         .. versionadded:: 5.3.0
+    :param dash: An optional dash pattern, given as a tuple of integers.
+        The dash pattern specifies the lengths of alternating drawn and blank segments
+        (e.g. ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd number of
+        values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
+        skips 2, draws 3, skips 1, draws 2, and so on). When ``dash`` is set, ``width``
+        is ignored.
+
+        .. versionadded:: 13.1.0
 
 .. py:method:: ImageDraw.rounded_rectangle(xy, radius=0, fill=None, outline=None, width=1, corners=None)
 

@@ -14,6 +14,7 @@ from .helper import (
     assert_image_similar,
     hopper,
     is_pypy,
+    skip_unless_feature,
 )
 
 TYPE_CHECKING = False
@@ -267,17 +268,49 @@ def test_roundtrip(tmp_path: Path) -> None:
     im = hopper()
     im.save(out)
     with Image.open(out) as reread:
-        assert_image_similar(reread.convert("RGB"), im, 50)
+        assert_image_similar(reread.convert("RGB"), im, 10)
 
 
 def test_roundtrip2(tmp_path: Path) -> None:
-    # see https://github.com/python-pillow/Pillow/issues/403
+    # See https://github.com/python-pillow/Pillow/issues/403
     out = tmp_path / "temp.gif"
     with Image.open(TEST_GIF) as im:
         im2 = im.copy()
         im2.save(out)
     with Image.open(out) as reread:
-        assert_image_similar(reread.convert("RGB"), hopper(), 50)
+        assert_image_similar(reread.convert("RGB"), hopper(), 12)
+
+
+@pytest.mark.parametrize(
+    "mode",
+    (
+        "CMYK",
+        "HSV",
+        "RGBX",
+        "YCbCr",
+        pytest.param("LAB", marks=skip_unless_feature("littlecms2")),
+    ),
+)
+def test_roundtrip_other_rgb_modes(tmp_path: Path, mode: str) -> None:
+    out = tmp_path / "temp.gif"
+    im = hopper(mode)
+    im.save(out)
+    with Image.open(out) as reread:
+        assert_image_similar(reread.convert("RGB"), hopper(), 11)
+
+
+@pytest.mark.parametrize("mode", ("RGBa", "PA"))
+def test_roundtrip_other_alpha_modes(tmp_path: Path, mode: str) -> None:
+    out = tmp_path / "temp.gif"
+    im = hopper("RGBA")
+    im.putpixel((0, 0), (255, 0, 0, 0))
+    im = im.convert(mode)
+    im.save(out)
+    with Image.open(out) as reread:
+        px = reread.convert("RGBA").getpixel((0, 0))
+        assert isinstance(px, tuple)
+        assert px[3] == 0
+        assert_image_similar(reread.convert("RGB"), hopper(), 15)
 
 
 def test_roundtrip_save_all(tmp_path: Path) -> None:
@@ -286,7 +319,7 @@ def test_roundtrip_save_all(tmp_path: Path) -> None:
     im = hopper()
     im.save(out, save_all=True)
     with Image.open(out) as reread:
-        assert_image_similar(reread.convert("RGB"), im, 50)
+        assert_image_similar(reread.convert("RGB"), im, 10)
 
     # Multiframe image
     with Image.open("Tests/images/dispose_bgnd.gif") as im:

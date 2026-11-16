@@ -209,11 +209,13 @@ def test_rankfilter_overflow() -> None:
             im.filter(rankfilter)
 
 
-def test_builtinfilter_p() -> None:
+@pytest.mark.parametrize("mode", ("P", "PA"))
+def test_builtinfilter_palette(mode: str) -> None:
     builtin_filter = ImageFilter.BuiltinFilter()
 
-    with pytest.raises(ValueError):
-        builtin_filter.filter(hopper("P").im)
+    im = hopper(mode)
+    with pytest.raises(ValueError, match="cannot filter palette images"):
+        builtin_filter.filter(im.im)
 
 
 def test_kernel_not_enough_coefficients() -> None:
@@ -251,7 +253,9 @@ def test_consistency_i16(size: int, mode: str) -> None:
     kernel = ImageFilter.Kernel((size, size), EMBOSS_MATRIX[size], 0.3)
     reference = hopper("I").filter(kernel)
     result = hopper(mode).filter(kernel)
-    assert_image_equal(result.convert("I"), reference)
+    # I;16* images cannot have negative values, but I images can
+    # Convert the reference image before comparing so that both are clipped
+    assert_image_equal(result, reference.convert(mode))
 
 
 @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
@@ -263,6 +267,12 @@ def test_consistency_i16_high_byte(mode: str) -> None:
     for _ in range(5):
         im = im.filter(ImageFilter.SMOOTH)
         assert im.getpixel((4, 4)) == 1000
+
+
+def test_i_negative_values() -> None:
+    # I mode is signed, so filtering must keep negative pixel values
+    im = Image.new("I", (8, 8), -1000)
+    assert im.filter(ImageFilter.SMOOTH).getpixel((4, 4)) == -1000
 
 
 @pytest.mark.parametrize(
