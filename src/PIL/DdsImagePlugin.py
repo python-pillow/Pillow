@@ -507,8 +507,8 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
         src_length = pixel_count * bytecount
         src = ImageFile._safe_read(self.fd, src_length)
 
-        nmasks = len(masks)
-        data = bytearray(pixel_count * nmasks)
+        mask_count = len(masks)
+        data = bytearray(pixel_count * mask_count)
         for i, mask in enumerate(masks):
             # A mask may be padded with zeros, e.g. R 0b11 G 0b1100
             # Calculate how many zeros the mask is padded with
@@ -523,13 +523,13 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
                 continue
 
             if total == 0xFF and offset % 8 == 0:  # Whole byte, fast path
-                data[i::nmasks] = src[offset // 8 :: bytecount]
+                data[i::mask_count] = src[offset // 8 :: bytecount]
                 continue
             values = (
                 int.from_bytes(src[p : p + bytecount], "little")
                 for p in range(0, src_length, bytecount)
             )
-            data[i::nmasks] = bytes(
+            data[i::mask_count] = bytes(
                 # Remove the zero padding, and scale it to 8 bits
                 int((((value & mask) >> offset) / total) * 255)
                 for value in values
