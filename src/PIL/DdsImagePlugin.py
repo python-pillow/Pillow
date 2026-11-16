@@ -502,19 +502,6 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
             msg = f"Unsupported bitcount {bitcount}"
             raise OSError(msg)
 
-        # Some masks will be padded with zeros, e.g. R 0b11 G 0b1100
-        # Calculate how many zeros each mask is padded with
-        mask_offsets = []
-        # And the maximum value of each channel without the padding
-        mask_totals = []
-        for mask in masks:
-            offset = 0
-            if mask != 0:
-                while mask >> (offset + 1) << (offset + 1) == mask:
-                    offset += 1
-            mask_offsets.append(offset)
-            mask_totals.append(mask >> offset)
-
         assert self.fd is not None
         pixel_count = self.state.xsize * self.state.ysize
         src_length = pixel_count * bytecount
@@ -522,11 +509,19 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
 
         nmasks = len(masks)
         data = bytearray(pixel_count * nmasks)
-        for i, (mask, offset, total) in enumerate(
-            zip(masks, mask_offsets, mask_totals)
-        ):
-            if not total:  # Nothing to do here
+        for i, mask in enumerate(masks):
+            # A mask may be padded with zeros, e.g. R 0b11 G 0b1100
+            # Calculate how many zeros the mask is padded with
+            offset = 0
+            if mask != 0:
+                while mask >> (offset + 1) << (offset + 1) == mask:
+                    offset += 1
+
+            # The maximum value of each channel without the padding
+            total = mask >> offset
+            if not total:
                 continue
+
             if total == 0xFF and offset % 8 == 0:  # Whole byte, fast path
                 data[i::nmasks] = src[offset // 8 :: bytecount]
                 continue
