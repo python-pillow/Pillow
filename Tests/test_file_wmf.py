@@ -35,9 +35,12 @@ def test_load_raw() -> None:
 def test_load() -> None:
     with Image.open("Tests/images/drawing.emf") as im:
         if hasattr(Image.core, "drawwmf"):
+            fp = im.fp
             px = im.load()
             assert px is not None
             assert px[0, 0] == (255, 255, 255)
+            assert fp is not None
+            assert fp.closed
 
 
 def test_zero_wmf() -> None:

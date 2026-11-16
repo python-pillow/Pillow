@@ -28,7 +28,7 @@ ImagingGetBand(Imaging imIn, int band) {
     int x, y;
 
     /* Check arguments */
-    if (!imIn || imIn->type != IMAGING_TYPE_UINT8) {
+    if (!imIn) {
         return (Imaging)ImagingError_ModeError();
     }
 
@@ -39,6 +39,10 @@ ImagingGetBand(Imaging imIn, int band) {
     /* Shortcuts */
     if (imIn->bands == 1) {
         return ImagingCopy(imIn);
+    }
+
+    if (imIn->type != IMAGING_TYPE_UINT8) {
+        return (Imaging)ImagingError_ModeError();
     }
 
     /* Special case for LXXA etc */

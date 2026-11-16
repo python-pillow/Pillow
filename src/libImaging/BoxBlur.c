@@ -262,15 +262,7 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
     ImagingSectionEnter(&cookie);
 
     if (imIn->type == IMAGING_TYPE_I16) {
-        int bigendian = 0;
-        if (
-            imIn->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-            || imIn->mode == IMAGING_MODE_I_16N
-#endif
-        ) {
-            bigendian = 1;
-        }
+        int bigendian = isImageI16BigEndian(imIn);
         for (y = 0; y < imIn->ysize; y++) {
             ImagingLineBoxBlur16(
                 (imIn == imOut ? (UINT8 *)lineOut : imOut->image8[y]),

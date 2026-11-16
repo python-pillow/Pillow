@@ -9,7 +9,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_image_equal, hopper, is_win32
+from .helper import assert_image_equal, hopper, is_freethreaded, is_win32
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -118,6 +118,11 @@ class TestImagePutPixel:
         assert px is not None
         assert numpy is not None
         assert px[numpy.int32(1), numpy.int32(2)] == (18, 20, 59)
+
+    def test_deprecation(self) -> None:
+        im = Image.new("PA", (1, 1))
+        with pytest.warns(DeprecationWarning, match="'value' lists"):
+            im.putpixel((0, 0), [0, 0, 0])  # type: ignore[arg-type]
 
 
 class TestImageGetPixel:
@@ -252,6 +257,14 @@ class TestImagePutPixelError:
             ):
                 im.putpixel((0, 0), v)  # type: ignore[arg-type]
 
+    def test_putpixel_type_error_float(self) -> None:
+        im = hopper("F")
+        for v in ("foo", None):
+            with pytest.raises(
+                TypeError, match="color must be int, float or single-element tuple"
+            ):
+                im.putpixel((0, 0), v)  # type: ignore[arg-type]
+
     @pytest.mark.parametrize("mode", IMAGE_MODES1 + IMAGE_MODES2)
     def test_putpixel_overflow_error(self, mode: str) -> None:
         im = hopper(mode)
@@ -283,6 +296,13 @@ class TestEmbeddable:
             compiler.initialize()
         except Exception:
             pytest.skip("Compiler could not be initialized")
+
+        # The official Windows free-threaded Python installer doesn't set
+        # Py_GIL_DISABLED because its pyconfig.h is shared with the default build,
+        # so define it here, like distutils does:
+        # https://github.com/pypa/distutils/pull/310
+        if is_freethreaded():
+            compiler.define_macro("Py_GIL_DISABLED", "1")
 
         with open("embed_pil.c", "w", encoding="utf-8") as fh:
             home = sys.base_prefix.replace("\\", "\\\\")

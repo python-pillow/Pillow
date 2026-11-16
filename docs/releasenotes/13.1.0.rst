@@ -25,10 +25,11 @@ TODO
 Deprecations
 ============
 
-TODO
-^^^^
+Image.putpixel 'value' lists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Passing lists to the ``value`` parameter of :py:meth:`~PIL.Image.Image.putpixel` has
+been deprecated. Use tuples instead.
 
 API changes
 ===========
@@ -41,13 +42,44 @@ TODO
 API additions
 =============
 
-TODO
-^^^^
+ImageDraw dash
+^^^^^^^^^^^^^^
 
-TODO
+:py:meth:`.ImageDraw.line`, :py:meth:`.ImageDraw.polygon` and
+:py:meth:`.ImageDraw.rectangle` now accept an optional ``dash`` argument.
+
+It is a tuple of integers, specifying the lengths of alternating drawn and blank
+segments. For example, ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd
+number of values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
+skips 2, draws 3, skips 1, draws 2, and so on.
+
+When ``dash`` is set, ``width`` is ignored.
+
+ImageOps sepia and neon
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Two new image processing operations are available in ImageOps.
+
+* :py:meth:`~PIL.ImageOps.sepia`: apply a sepia tone
+* :py:meth:`~PIL.ImageOps.neon`: apply a neon glow effect, with arguments for color and
+  alpha
 
 Other changes
 =============
+
+Rounding crop coordinates
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.crop` rounds float coordinates to the nearest integer.
+Coordinates ending in .5 were rounded to the nearest even integer, so a box of the same
+size could give an image one pixel larger or smaller depending on where it was. They
+are now always rounded up.
+
+Scaling empty text
+^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageText.Text.wrap` now raises :py:exc:`ValueError` for empty or
+whitespace-only text with ``scaling``, before adjusting the font size.
 
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -84,8 +116,46 @@ Blurring I;16 images
 :py:class:`~PIL.ImageFilter.GaussianBlur` and :py:class:`~PIL.ImageFilter.BoxBlur`
 now support I;16, I;16L, I;16B and I;16N images.
 
+Respect Python build-tree configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When building against a Python build tree, Pillow now skips the extra library and
+include directory lookups based on Python's installation prefix. This avoids
+adding unprefixed installation paths in cross-compilation environments. Builds
+against an installed Python retain the existing lookups.
+
+APNG frames with previous disposal
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In Pillow 13.0.0, loading an APNG frame before seeking to the next could cause
+frames using ``Disposal.OP_PREVIOUS`` and ``Blend.OP_OVER`` to be drawn over the
+wrong image. This has been fixed.
+
 Minimum C version
 ^^^^^^^^^^^^^^^^^
 
 C11 is now the minimum version of C required to compile Pillow from source.
 Pillow requires Python 3.11 or later, and CPython 3.11 and later require C11.
+
+WebP encoding errors now include a description
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When libwebp fails to encode an image, the raised :py:exc:`ValueError` now
+consistently describes the error rather than only reporting a numeric code.
+
+ImageCms.isIntentSupported intent range
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.ImageCms.isIntentSupported` now returns -1 if ``intent`` is not between
+0 and 3. Previously, when Pillow was built against Little CMS 2.14 or earlier, an
+out-of-range intent could read invalid memory and crash.
+
+zlib-ng in Linux wheels
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The Linux wheels now link zlib-ng statically. Previously, zlib-ng was built but
+not bundled into the wheels, so the system zlib was used at runtime instead, and
+``PIL.features.version_feature("zlib_ng")`` reported a version that was not in use.
+Pillow 13.0.0 also failed to import on systems where ``libz.so.1`` was not on the
+default library search path, such as NixOS. Linux wheels no longer require a
+system zlib, and gain the speed of zlib-ng as macOS and Windows wheels already did.

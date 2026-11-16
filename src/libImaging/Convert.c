@@ -475,6 +475,11 @@ rgbT2a(UINT8 *out, UINT8 *in, int xsize, int r, int g, int b, int premultiplied)
     for (int x = 0; x < xsize; x++, ref += sizeof(trns), out += sizeof(trns)) {
         UINT32 v;
         memcpy(&v, ref, sizeof(v));
+#ifdef WORDS_BIGENDIAN
+        v |= 0xff;
+#else
+        v = (0xffU << 24) | v;
+#endif
         if (v == trns) {
             memcpy(out, &repl, sizeof(repl));
         }
@@ -672,7 +677,8 @@ f2i(UINT8 *out_, const UINT8 *in_, int xsize) {
         FLOAT32 f;
         INT32 i;
         memcpy(&f, in_, sizeof(f));
-        i = f;
+        i = f >= (FLOAT32)INT32_MAX ? INT32_MAX
+                                    : (f >= INT32_MIN ? (INT32)f : INT32_MIN);
         memcpy(out_, &i, sizeof(i));
     }
 }
@@ -819,6 +825,22 @@ F_I16B(UINT8 *out, const UINT8 *in, int xsize) {
         }
         *out++ = (UINT8)(v >> 8);
         *out++ = (UINT8)v;
+    }
+}
+
+static void
+I16_I16(UINT8 *out, const UINT8 *in, int xsize) {
+    /* same byte order */
+    memcpy(out, in, xsize * 2);
+}
+
+static void
+I16_I16_swap(UINT8 *out, const UINT8 *in, int xsize) {
+    /* opposite byte order */
+    int x;
+    for (x = 0; x < xsize; x++, in += 2) {
+        *out++ = in[1];
+        *out++ = in[0];
     }
 }
 
@@ -1084,14 +1106,21 @@ pa2ycbcr(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     ImagingConvertRGB2YCbCr(out, out, xsize);
 }
 
+/**
+ * Map P or PA image to another mode.
+ *
+ * @param imOut The output image.
+ *              Must be NULL or have the same size as imIn and the same mode as `mode`.
+ * @param imIn The input palette image.
+ * @param mode The desired output mode.
+ * @return imOut, or NULL on error.
+ */
 static Imaging
 frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
     ImagingSectionCookie cookie;
     int alpha;
     int y;
     void (*convert)(UINT8 *, const UINT8 *, int, ImagingPalette);
-
-    /* Map palette image to L, RGB, RGBA, or CMYK */
 
     if (!imIn->palette) {
         return (Imaging)ImagingError_ValueError("no palette");
@@ -1167,9 +1196,9 @@ topalette(
     ImagingPalette palette = inpalette;
 
     /* Map L or RGB/RGBX/RGBA/RGBa to palette image */
-    if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_RGB &&
-        imIn->mode != IMAGING_MODE_RGBX && imIn->mode != IMAGING_MODE_RGBA &&
-        imIn->mode != IMAGING_MODE_RGBa) {
+    if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_LA &&
+        imIn->mode != IMAGING_MODE_RGB && imIn->mode != IMAGING_MODE_RGBX &&
+        imIn->mode != IMAGING_MODE_RGBA && imIn->mode != IMAGING_MODE_RGBa) {
         return (Imaging)ImagingError_ValueError("conversion not supported");
     }
 
@@ -1181,7 +1210,7 @@ topalette(
         }
     } else {
         /* FIXME: make user configurable */
-        if (imIn->bands == 1) {
+        if (imIn->bands < 3) {
             palette = ImagingPaletteNew(IMAGING_MODE_RGB);
 
             palette->size = 256;
@@ -1210,16 +1239,30 @@ topalette(
     ImagingPaletteDelete(imOut->palette);
     imOut->palette = ImagingPaletteDuplicate(palette);
 
-    if (imIn->bands == 1) {
+    if (imIn->bands < 3) {
         /* grayscale image */
 
         /* Grayscale palette: copy data as is */
         ImagingSectionEnter(&cookie);
         for (y = 0; y < imIn->ysize; y++) {
             if (alpha) {
-                l2rgb((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
+                if (imIn->mode == IMAGING_MODE_LA) {
+                    la2rgb(
+                        (UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize
+                    );
+                } else {
+                    l2rgb(
+                        (UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize
+                    );
+                }
             } else {
-                memcpy(imOut->image[y], imIn->image[y], imIn->linesize);
+                if (imIn->mode == IMAGING_MODE_LA) {
+                    la2l(
+                        (UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize
+                    );
+                } else {
+                    memcpy(imOut->image[y], imIn->image[y], imIn->linesize);
+                }
             }
         }
         ImagingSectionLeave(&cookie);
@@ -1362,13 +1405,15 @@ topalette(
     return imOut;
 }
 
+/**
+ * Map L or RGB to dithered 1 image
+ */
 static Imaging
 tobilevel(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y;
     int *errors;
 
-    /* Map L or RGB to dithered 1 image */
     if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_RGB) {
         return (Imaging)ImagingError_ValueError("conversion not supported");
     }
@@ -1563,6 +1608,28 @@ static struct {
     {IMAGING_MODE_YCbCr, IMAGING_MODE_RGB, ImagingConvertYCbCr2RGB},
 
     {IMAGING_MODE_HSV, IMAGING_MODE_RGB, hsv2rgb},
+
+    {IMAGING_MODE_I_16, IMAGING_MODE_I_16L, I16_I16},
+    {IMAGING_MODE_I_16L, IMAGING_MODE_I_16, I16_I16},
+    {IMAGING_MODE_I_16, IMAGING_MODE_I_16B, I16_I16_swap},
+    {IMAGING_MODE_I_16B, IMAGING_MODE_I_16, I16_I16_swap},
+    {IMAGING_MODE_I_16L, IMAGING_MODE_I_16B, I16_I16_swap},
+    {IMAGING_MODE_I_16B, IMAGING_MODE_I_16L, I16_I16_swap},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_I_16, IMAGING_MODE_I_16N, I16_I16_swap},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I_16, I16_I16_swap},
+    {IMAGING_MODE_I_16L, IMAGING_MODE_I_16N, I16_I16_swap},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I_16L, I16_I16_swap},
+    {IMAGING_MODE_I_16B, IMAGING_MODE_I_16N, I16_I16},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I_16B, I16_I16},
+#else
+    {IMAGING_MODE_I_16, IMAGING_MODE_I_16N, I16_I16},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I_16, I16_I16},
+    {IMAGING_MODE_I_16L, IMAGING_MODE_I_16N, I16_I16},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I_16L, I16_I16},
+    {IMAGING_MODE_I_16B, IMAGING_MODE_I_16N, I16_I16_swap},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_I_16B, I16_I16_swap},
+#endif
 
     {IMAGING_MODE_I, IMAGING_MODE_I_16, I_I16L},
     {IMAGING_MODE_I_16, IMAGING_MODE_I, I16L_I},

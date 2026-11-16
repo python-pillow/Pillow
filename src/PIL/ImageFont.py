@@ -66,6 +66,17 @@ class Layout(IntEnum):
 
 MAX_STRING_LENGTH = 1_000_000
 
+# From raqm.c's _raqm_is_paragraph_separator()
+_separators = (
+    "\r\n",  # Windows
+    "\n",  # 0x000A
+    "\r",  # 0x000D
+    "\u001c",
+    "\u001d",
+    "\u001e",
+    "\u0085",
+    "\u2029",
+)
 
 core: ModuleType | DeferredError
 try:
@@ -74,7 +85,7 @@ except ImportError as ex:
     core = DeferredError.new(ex)
 
 
-def _string_length_check(text: str | bytes | bytearray) -> None:
+def _string_length_check(text: str | bytes) -> None:
     if MAX_STRING_LENGTH is not None and len(text) > MAX_STRING_LENGTH:
         msg = "too many characters in string"
         raise ValueError(msg)
@@ -101,7 +112,7 @@ class BaseImageFont(abc.ABC):
 
     @abc.abstractmethod
     def getbbox(
-        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+        self, text: str | bytes, *args: Any, **kwargs: Any
     ) -> tuple[float, float, float, float]:
         pass
 
@@ -131,7 +142,7 @@ class ImageFont(BaseImageFont):
                     image.close()
                 try:
                     fullname = root + ext
-                    image = Image.open(fullname)
+                    image = Image.open(fullname, formats=["PNG", "GIF", "PPM"])
                 except Exception:
                     pass
                 else:
@@ -206,7 +217,7 @@ class ImageFont(BaseImageFont):
         return self.font.getmask(text, mode)
 
     def getbbox(
-        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+        self, text: str | bytes, *args: Any, **kwargs: Any
     ) -> tuple[int, int, int, int]:
         """
         Returns bounding box (in pixels) of given text.
@@ -221,9 +232,7 @@ class ImageFont(BaseImageFont):
         width, height = self.font.getsize(text)
         return 0, 0, width, height
 
-    def getlength(
-        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
-    ) -> int:
+    def getlength(self, text: str | bytes, *args: Any, **kwargs: Any) -> int:
         """
         Returns length (in pixels) of given text.
         This is the amount by which following text should be offset.
@@ -284,7 +293,7 @@ class FreeTypeFont(BaseImageFont):
         def load_from_bytes(f: IO[bytes]) -> None:
             self.font_bytes = f.read()
             self.font = core.getfont(
-                "", size, index, encoding, self.font_bytes, layout_engine
+                "", size, index, encoding, layout_engine, self.font_bytes
             )
 
         if is_path(font):
@@ -299,9 +308,7 @@ class FreeTypeFont(BaseImageFont):
                     with open(font, "rb") as f:
                         load_from_bytes(f)
                     return
-            self.font = core.getfont(
-                font, size, index, encoding, layout_engine=layout_engine
-            )
+            self.font = core.getfont(font, size, index, encoding, layout_engine)
         else:
             load_from_bytes(cast("IO[bytes]", font))
 
@@ -326,6 +333,13 @@ class FreeTypeFont(BaseImageFont):
             baseline to the lowest outline point, a negative value)
         """
         return self.font.ascent, self.font.descent
+
+    def _has_separator(self, text: str | bytes) -> bool:
+        if self.layout_engine != Layout.RAQM:
+            return False
+        if isinstance(text, str):
+            return any(separator in text for separator in _separators)
+        return any(separator.encode() in text for separator in _separators)
 
     def getlength(
         self,
@@ -372,7 +386,7 @@ class FreeTypeFont(BaseImageFont):
 
         .. versionadded:: 8.0.0
 
-        :param text: Text to measure.
+        :param text: Text to measure. Newlines raise an error with Raqm layout.
         :param mode: Used by some graphics drivers to indicate what mode the
                      driver prefers; if empty, the renderer may return either
                      mode. Note that the mode is always a string, to simplify
@@ -404,11 +418,14 @@ class FreeTypeFont(BaseImageFont):
         :return: Either width for horizontal text, or height for vertical text.
         """
         _string_length_check(text)
+        if self._has_separator(text):
+            msg = "can't measure length of multiline text with Raqm"
+            raise ValueError(msg)
         return self.font.getlength(text, mode, direction, features, language) / 64
 
     def getbbox(
         self,
-        text: str | bytes | bytearray,
+        text: str | bytes,
         mode: str = "",
         direction: str | None = None,
         features: list[str] | None = None,
@@ -426,7 +443,8 @@ class FreeTypeFont(BaseImageFont):
 
         .. versionadded:: 8.0.0
 
-        :param text: Text to render.
+        :param text: Text to render. Newlines will not cause a line break with
+                     Basic layout, and will raise an error with Raqm layout.
         :param mode: Used by some graphics drivers to indicate what mode the
                      driver prefers; if empty, the renderer may return either
                      mode. Note that the mode is always a string, to simplify
@@ -465,6 +483,9 @@ class FreeTypeFont(BaseImageFont):
         :return: ``(left, top, right, bottom)`` bounding box
         """
         _string_length_check(text)
+        if self._has_separator(text):
+            msg = "can't measure bounding box of multiline text with Raqm"
+            raise ValueError(msg)
         size, offset = self.font.getsize(
             text, mode, direction, features, language, anchor
         )
@@ -778,7 +799,7 @@ class TransposedFont(BaseImageFont):
         return im
 
     def getbbox(
-        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+        self, text: str | bytes, *args: Any, **kwargs: Any
     ) -> tuple[int, int, float, float]:
         # TransposedFont doesn't support getmask2, move top-left point to (0, 0)
         # this has no effect on ImageFont and simulates anchor="lt" for FreeTypeFont

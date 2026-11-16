@@ -84,11 +84,15 @@ def test_sanity() -> None:
     ImageOps.posterize(hopper("L"), 4)
     ImageOps.posterize(hopper("RGB"), 4)
 
-    ImageOps.solarize(hopper("L"))
-    ImageOps.solarize(hopper("RGB"))
+    for mode in ("L", "RGB"):
+        im = hopper(mode)
+        ImageOps.solarize(im)
 
-    ImageOps.exif_transpose(hopper("L"))
-    ImageOps.exif_transpose(hopper("RGB"))
+        ImageOps.exif_transpose(im)
+
+        ImageOps.sepia(im)
+
+        ImageOps.neon(im)
 
 
 @pytest.mark.parametrize(
@@ -250,6 +254,19 @@ def test_palette(mode: str) -> None:
     assert_image_equal(
         im.convert("RGB"), padded_im.convert("RGB").crop((0, 0, 128, 128))
     )
+
+
+@pytest.mark.parametrize("color", ("red", (255, 0, 0), (255, 0, 0, 255)))
+def test_pa_color(color: str | tuple[int, ...]) -> None:
+    im = hopper("PA")
+
+    # Expand
+    expanded_im = ImageOps.expand(im, 1, color)
+    assert expanded_im.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, 255)
+
+    # Pad
+    padded_im = ImageOps.pad(im, (256, 128), color=color)
+    assert padded_im.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, 255)
 
 
 def test_rgba_palette() -> None:
@@ -579,6 +596,22 @@ def test_autocontrast_cutoff() -> None:
 
         assert autocontrast(10) == autocontrast((10, 10))
         assert autocontrast(10) != autocontrast((1, 10))
+
+
+@pytest.mark.parametrize("ignore", (-1, 256, [0, -1], [0, 256]))
+def test_autocontrast_invalid_ignore(ignore: int | list[int]) -> None:
+    im = Image.new("L", (1, 1))
+    with pytest.raises(
+        ValueError, match="ignore must be between or equal to 0 and 255"
+    ):
+        ImageOps.autocontrast(im, ignore=ignore)
+
+
+def test_autocontrast_lightest() -> None:
+    im = Image.new("L", (2, 1))
+    im.putpixel((1, 0), 25)
+
+    assert ImageOps.autocontrast(im).getpixel((1, 0)) == 255
 
 
 def test_autocontrast_mask_toy_input() -> None:

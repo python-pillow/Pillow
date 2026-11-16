@@ -156,7 +156,7 @@ def test_prog_res_rt(card: ImageFile.ImageFile) -> None:
 def test_unknown_progression(tmp_path: Path) -> None:
     outfile = tmp_path / "temp.jp2"
 
-    im = Image.new("1", (1, 1))
+    im = Image.new("L", (1, 1))
     with pytest.raises(ValueError, match="unknown progression"):
         im.save(outfile, progression="invalid")
 
@@ -164,9 +164,18 @@ def test_unknown_progression(tmp_path: Path) -> None:
 def test_unknown_cinema_mode(tmp_path: Path) -> None:
     outfile = tmp_path / "temp.jp2"
 
-    im = Image.new("1", (1, 1))
+    im = Image.new("L", (1, 1))
     with pytest.raises(ValueError, match="unknown cinema mode"):
         im.save(outfile, cinema_mode="invalid")
+
+
+@pytest.mark.parametrize("mode", ("1", "P", "I", "F"))
+def test_unsupported_mode(mode: str, tmp_path: Path) -> None:
+    outfile = tmp_path / "temp.jp2"
+
+    im = Image.new(mode, (1, 1))
+    with pytest.raises(OSError, match=f"cannot write mode {mode} as JPEG2000"):
+        im.save(outfile)
 
 
 @pytest.mark.parametrize("num_resolutions", range(2, 6))
@@ -244,6 +253,28 @@ def test_oversized_box_length(tbox: bytes) -> None:
     )
     with pytest.raises(SyntaxError, match="Box length too large"):
         Jpeg2KImagePlugin.Jpeg2KImageFile(BytesIO(data))
+
+
+def test_large_skipped_box() -> None:
+    xml = b" " * 2 * 1024 * 1024
+    box = _binary.o32be(8 + len(xml)) + b"xml " + xml
+    with open("Tests/images/test-card-lossless.jp2", "rb") as fp:
+        data = fp.read()
+    data = data[:326] + box + data[326:]
+
+    with Image.open(BytesIO(data)) as im:
+        assert_image_equal_tofile(im, "Tests/images/test-card-lossless.jp2")
+
+    class FailingSeek(BytesIO):
+        def seek(self, offset: int, whence: int = os.SEEK_SET) -> int:
+            if whence == os.SEEK_CUR and offset > 512 * 1024:
+                msg = "seek refused"
+                raise OSError(msg)
+            return super().seek(offset, whence)
+
+    with Image.open(FailingSeek(data)) as im:
+        with pytest.raises(OSError, match="seek refused"):
+            im.load()
 
 
 def test_layers_type(card: ImageFile.ImageFile, tmp_path: Path) -> None:

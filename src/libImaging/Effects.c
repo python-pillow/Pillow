@@ -19,10 +19,20 @@
 
 #include <math.h>
 
+/**
+ * Generate a grayscale Mandelbrot set covering the given extent.
+ * Allocates a new image of the given size and returns it.
+ *
+ * @param xsize Width of the output image in pixels.
+ * @param ysize Height of the output image in pixels.
+ * @param extent Array of four doubles specifying the extent of the Mandelbrot set to
+ *               generate: [left, upper, right, lower].
+ * @param quality Each pixel iterates at most quality + 1 times. Must be >= 2.
+ * @return A new grayscale image containing the Mandelbrot set,
+ *         or NULL with a Python error set if an error occurred.
+ */
 Imaging
 ImagingEffectMandelbrot(int xsize, int ysize, double extent[4], int quality) {
-    /* Generate a Mandelbrot set covering the given extent */
-
     Imaging im;
     int x, y, k;
     double width, height;
@@ -71,10 +81,18 @@ ImagingEffectMandelbrot(int xsize, int ysize, double extent[4], int quality) {
     return im;
 }
 
+/**
+ * Generate Gaussian noise centered around 128 with the given standard deviation.
+ * Allocates a new grayscale image of the given size and returns it.
+ *
+ * @param xsize Width of the output image in pixels.
+ * @param ysize Height of the output image in pixels.
+ * @param sigma Standard deviation of the Gaussian noise.
+ * @return A new grayscale image containing the Gaussian noise,
+ *         or NULL with a Python error set if an error occurred.
+ */
 Imaging
 ImagingEffectNoise(int xsize, int ysize, float sigma) {
-    /* Generate Gaussian noise centered around 128 */
-
     Imaging imOut;
     int x, y;
     int nextok;
@@ -113,10 +131,17 @@ ImagingEffectNoise(int xsize, int ysize, float sigma) {
     return imOut;
 }
 
+/**
+ * Randomly spread pixels in an image into a new image,
+ * with a maximum distance of `distance` pixels.
+ *
+ * @param imIn Input image.
+ * @param distance Maximum distance to spread pixels.
+ * @return A new image with pixels randomly spread,
+ *         or NULL with a Python error set if an error occurred.
+ */
 Imaging
 ImagingEffectSpread(Imaging imIn, int distance) {
-    /* Randomly spread pixels in an image */
-
     Imaging imOut;
     int x, y;
 
@@ -126,32 +151,34 @@ ImagingEffectSpread(Imaging imIn, int distance) {
         return NULL;
     }
 
-#define SPREAD(type, image)                                                       \
+#define SPREAD(type)                                                              \
     if (distance == 0) {                                                          \
         for (y = 0; y < imOut->ysize; y++) {                                      \
-            for (x = 0; x < imOut->xsize; x++) {                                  \
-                imOut->image[y][x] = imIn->image[y][x];                           \
-            }                                                                     \
+            memcpy(imOut->image[y], imIn->image[y], imIn->linesize);              \
         }                                                                         \
     } else {                                                                      \
         for (y = 0; y < imOut->ysize; y++) {                                      \
+            type *out = (type *)imOut->image[y];                                  \
+            type *in = (type *)imIn->image[y];                                    \
             for (x = 0; x < imOut->xsize; x++) {                                  \
                 int xx = x + (rand() % distance) - distance / 2;                  \
                 int yy = y + (rand() % distance) - distance / 2;                  \
                 if (xx >= 0 && xx < imIn->xsize && yy >= 0 && yy < imIn->ysize) { \
-                    imOut->image[yy][xx] = imIn->image[y][x];                     \
-                    imOut->image[y][x] = imIn->image[yy][xx];                     \
+                    ((type *)imOut->image[yy])[xx] = in[x];                       \
+                    out[x] = ((type *)imIn->image[yy])[xx];                       \
                 } else {                                                          \
-                    imOut->image[y][x] = imIn->image[y][x];                       \
+                    out[x] = in[x];                                               \
                 }                                                                 \
             }                                                                     \
         }                                                                         \
     }
 
-    if (imIn->image8) {
-        SPREAD(UINT8, image8);
+    if (imIn->pixelsize == 1) {
+        SPREAD(UINT8);
+    } else if (imIn->pixelsize == 2) {
+        SPREAD(UINT16);
     } else {
-        SPREAD(INT32, image32);
+        SPREAD(INT32);
     }
 
     ImagingCopyPalette(imOut, imIn);

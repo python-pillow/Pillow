@@ -4,7 +4,11 @@ import pytest
 
 from PIL import Image, ImageDraw, ImageFont, ImageText, features
 
-from .helper import assert_image_similar_tofile, skip_unless_feature
+from .helper import (
+    assert_image_equal_tofile,
+    assert_image_similar_tofile,
+    skip_unless_feature,
+)
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 
@@ -46,9 +50,10 @@ def test_get_length(font: ImageFont.ImageFont | ImageFont.FreeTypeFont) -> None:
     assert ImageText.Text("y", font).get_length() == 6 * factor
     assert ImageText.Text("a", font).get_length() == 6 * factor
 
-    text = ImageText.Text("\n", font)
-    with pytest.raises(ValueError, match="can't measure length of multiline text"):
-        text.get_length()
+    for separator in ImageFont._separators:
+        text = ImageText.Text(separator, font)
+        with pytest.raises(ValueError, match="can't measure length of multiline text"):
+            text.get_length()
 
 
 @pytest.mark.parametrize(
@@ -89,6 +94,26 @@ def test_standard_embedded_color(layout_engine: ImageFont.Layout) -> None:
         ValueError, match="Embedded color supported only in RGB and RGBA modes"
     ):
         text.embed_color()
+
+
+@skip_unless_feature("freetype2")
+def test_cbdt(layout_engine: ImageFont.Layout) -> None:
+    try:
+        font = ImageFont.truetype(
+            "Tests/fonts/CBDTTestFont.ttf", size=64, layout_engine=layout_engine
+        )
+        text = ImageText.Text("AB", font)
+        text.embed_color()
+
+        im = Image.new("RGB", (128, 96), "white")
+        d = ImageDraw.Draw(im)
+
+        d.text((16, 16), text)
+
+        assert_image_equal_tofile(im, "Tests/images/cbdt.png")
+    except OSError as e:  # pragma: no cover
+        assert str(e) in ("unimplemented feature", "unknown file format")
+        pytest.skip("freetype compiled without libpng or CBDT support")
 
 
 @skip_unless_feature("freetype2")
@@ -184,6 +209,7 @@ def test_wrap_height() -> None:
     assert text.text == "Text does\nnot fit"
 
 
+@skip_unless_feature("freetype2")
 def test_wrap_height_blank_line(layout_engine: ImageFont.Layout) -> None:
     font = ImageFont.truetype(FONT_PATH, 10, layout_engine=layout_engine)
     text = ImageText.Text("A\n\nB", font)
@@ -192,6 +218,19 @@ def test_wrap_height_blank_line(layout_engine: ImageFont.Layout) -> None:
     assert wrapped is not None
     assert wrapped.text == "\nB"
     assert text.text == "A"
+
+
+@pytest.mark.parametrize("separator", ImageFont._separators)
+def test_wrap_other_newlines(
+    font: ImageFont.ImageFont | ImageFont.FreeTypeFont, separator: str
+) -> None:
+    factor = 1 if isinstance(font, ImageFont.ImageFont) else 2
+    text = ImageText.Text("Other newlines" + separator + "test", font)
+
+    text.wrap(50 * factor)
+    if separator not in {"\r\n", "\r", "\n"}:
+        separator = "\n"
+    assert text.text == "Other" + separator + "newlines" + separator + "test"
 
 
 def test_wrap_scaling_unsupported() -> None:
@@ -258,6 +297,18 @@ def test_wrap_grow() -> None:
     assert text.wrap(50, 50, ("grow", 18)) is None
     assert isinstance(text.font, ImageFont.FreeTypeFont)
     assert text.font.size == 16
+
+
+@skip_unless_feature("freetype2")
+@pytest.mark.parametrize("scaling", ("shrink", "grow"))
+def test_wrap_empty(scaling: str) -> None:
+    text = ImageText.Text("")
+    with pytest.raises(ValueError, match="Empty text cannot be scaled"):
+        text.wrap(1, 1, scaling)
+    for data in (" ", "\n"):
+        text = ImageText.Text(data)
+        with pytest.raises(ValueError, match="Blank text cannot be scaled"):
+            text.wrap(1, 1, scaling)
 
 
 @skip_unless_feature("freetype2")

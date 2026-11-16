@@ -1290,17 +1290,17 @@ ImagingReduceNxN_32bpc(
                         INT32 *line0 = (INT32 *)imIn->image32[yy];
                         INT32 *line1 = (INT32 *)imIn->image32[yy + 1];
                         for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
-                            ss += line0[xx + 0] + line0[xx + 1] + line1[xx + 0] +
-                                  line1[xx + 1];
+                            ss += (double)line0[xx + 0] + line0[xx + 1] +
+                                  line1[xx + 0] + line1[xx + 1];
                         }
                         if (xscale & 0x01) {
-                            ss += line0[xx + 0] + line1[xx + 0];
+                            ss += (double)line0[xx + 0] + line1[xx + 0];
                         }
                     }
                     if (yscale & 0x01) {
                         INT32 *line = (INT32 *)imIn->image32[yy];
                         for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
-                            ss += line[xx + 0] + line[xx + 1];
+                            ss += (double)line[xx + 0] + line[xx + 1];
                         }
                         if (xscale & 0x01) {
                             ss += line[xx + 0];
@@ -1458,10 +1458,12 @@ ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]) {
     }
 
     /* Round the size up. Dividing before adding avoids overflowing for a
-       large scale, and guarantees a size of at least 1x1.
+       large scale.
      */
     imOut = ImagingNewDirty(
-        imIn->mode, (box[2] - 1) / xscale + 1, (box[3] - 1) / yscale + 1
+        imIn->mode,
+        box[2] ? (box[2] - 1) / xscale + 1 : 0,
+        box[3] ? (box[3] - 1) / yscale + 1 : 0
     );
     if (!imOut) {
         return NULL;

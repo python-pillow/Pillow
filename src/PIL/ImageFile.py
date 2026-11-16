@@ -65,6 +65,16 @@ User code may set this to another number.
 """
 
 SAFEBLOCK = 1024 * 1024
+"""
+When a plugin reads a chunk of data whose size is given by the image file itself,
+Pillow does not trust that size.
+
+If it is greater than this number of bytes, the data is read in blocks of this size
+instead of all at once. This stops a malicious file from causing a large allocation
+by claiming more data than it contains.
+
+User code may set this to another number.
+"""
 
 LOAD_TRUNCATED_IMAGES = False
 """Whether or not to load truncated image files. User code may change this."""
@@ -309,6 +319,12 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
     def load(self) -> Image.core.PixelAccess | None:
         """Load image data based on tile list"""
 
+        if self.width == 0 or self.height == 0:
+            ImageFile.load_prepare(self)
+
+            self.tile = []
+            self.readonly = 0
+
         if not self.tile:
             if self._im is None:
                 msg = "cannot load this image"
@@ -346,6 +362,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                 args = (args, 0, 1)
             if (
                 decoder_name == "raw"
+                and extents in {None, (0, 0, *self.size)}
                 and isinstance(args, tuple)
                 and len(args) >= 3
                 and args[0] == self.mode
@@ -524,6 +541,12 @@ class StubImageFile(ImageFile):
             msg = f"cannot find loader for this {self.format} file"
             raise OSError(msg)
         image = self._handler.load(self)
+
+        assert self.fp is not None
+        if self._exclusive_fp and self._close_exclusive_fp_after_loading:
+            self.fp.close()
+        self.fp = None
+
         assert image is not None
         # become the other object (!)
         self.__class__ = image.__class__  # type: ignore[assignment]
@@ -567,7 +590,7 @@ class Parser:
         if self.data is None:
             self.data = data
         else:
-            self.data = self.data + data
+            self.data += data
 
         # parse what we have
         if self.decoder:
@@ -596,8 +619,8 @@ class Parser:
 
         elif self.image:
             # if we end up here with no decoder, this file cannot
-            # be incrementally parsed.  wait until we've gotten all
-            # available data
+            # be incrementally parsed, due to load_seek, load_read, or pulls_fd
+            # wait until we've gotten all available data
             pass
 
         else:
@@ -611,17 +634,24 @@ class Parser:
                 flag = hasattr(im, "load_seek") or hasattr(im, "load_read")
                 if not flag and len(im.tile) == 1:
                     # initialize decoder
-                    im.load_prepare()
-                    d, e, o, a = im.tile[0]
-                    im.tile = []
-                    self.decoder = Image._getdecoder(im.mode, d, a, im.decoderconfig)
-                    self.decoder.setimage(im.im, e)
+                    decoder_name, extents, offset, args = im.tile[0]
+                    decoder = Image._getdecoder(
+                        im.mode, decoder_name, args, im.decoderconfig
+                    )
+                    # a decoder that reads from the file itself
+                    # cannot be incrementally parsed.
+                    # wait until we've gotten all available data
+                    if not decoder.pulls_fd:
+                        im.load_prepare()
+                        im.tile = []
+                        self.decoder = decoder
+                        self.decoder.setimage(im.im, extents)
 
-                    # calculate decoder offset
-                    self.offset = o
-                    if self.offset <= len(self.data):
-                        self.data = self.data[self.offset :]
-                        self.offset = 0
+                        # calculate decoder offset
+                        self.offset = offset
+                        if self.offset <= len(self.data):
+                            self.data = self.data[self.offset :]
+                            self.offset = 0
 
                 self.image = im
 

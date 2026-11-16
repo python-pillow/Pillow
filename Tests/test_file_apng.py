@@ -6,6 +6,8 @@ import pytest
 
 from PIL import Image, ImageSequence, PngImagePlugin
 
+from .helper import assert_image_equal
+
 TYPE_CHECKING = False
 if TYPE_CHECKING:
     from pathlib import Path
@@ -152,6 +154,20 @@ def test_apng_dispose_op_previous_frame() -> None:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == (255, 0, 0, 255)
+
+
+@pytest.mark.parametrize(
+    "filename", ("dispose_op_previous.png", "dispose_op_previous_region.png")
+)
+def test_apng_dispose_op_previous_load_each_frame(filename: str) -> None:
+    # Loading each frame before seeking should not change the result
+    with Image.open("Tests/images/apng/" + filename) as im:
+        assert isinstance(im, PngImagePlugin.PngImageFile)
+        for i in range(im.n_frames):
+            im.seek(i)
+            im.load()
+        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
+        assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
 def test_apng_dispose_op_background_p_mode() -> None:
@@ -852,6 +868,16 @@ def test_seek_after_close() -> None:
 
     with pytest.raises(ValueError):
         im.seek(0)
+
+
+def test_rewind() -> None:
+    with Image.open("Tests/images/apng/delay.png") as im:
+        im.seek(1)
+        expected = im.copy()
+
+        im.seek(0)
+        im.seek(1)
+        assert_image_equal(im, expected)
 
 
 @pytest.mark.parametrize("mode", ("RGBA", "RGB", "P"))

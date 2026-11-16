@@ -83,7 +83,7 @@ class ImageDraw:
             else:
                 msg = "mode mismatch"
                 raise ValueError(msg)
-        if mode == "P":
+        if mode in {"P", "PA"}:
             self.palette = im.palette
         else:
             self.palette = None
@@ -147,8 +147,8 @@ class ImageDraw:
             if ink is not None:
                 if isinstance(ink, str):
                     ink = ImageColor.getcolor(ink, self.mode)
-                if self.palette and isinstance(ink, tuple):
-                    ink = self.palette.getcolor(ink, self._image)
+                if self.mode in {"P", "PA"} and isinstance(ink, tuple):
+                    ink = self._image._get_palette_color(ink)
                 if isinstance(ink, tuple) and len(ink) == 4 and ink[3] == 0:
                     # Do not use transparent ink
                     result_ink = None
@@ -157,8 +157,8 @@ class ImageDraw:
             if fill is not None:
                 if isinstance(fill, str):
                     fill = ImageColor.getcolor(fill, self.mode)
-                if self.palette and isinstance(fill, tuple):
-                    fill = self.palette.getcolor(fill, self._image)
+                if self.mode in {"P", "PA"} and isinstance(fill, tuple):
+                    fill = self._image._get_palette_color(fill)
                 result_fill = self.draw.draw_ink(fill)
         return result_ink, result_fill
 
@@ -244,10 +244,19 @@ class ImageDraw:
         fill: _Ink | None = None,
         width: int = 1,
         joint: str | None = None,
+        dash: tuple[int, ...] | None = None,
     ) -> None:
         """Draw a line, or a connected sequence of line segments."""
         ink = self._getink(fill)[0]
-        if ink is not None and width != 0:
+        if ink is None or width == 0:
+            return
+
+        if dash is not None:
+            if len(dash) == 0 or any(not isinstance(v, int) for v in dash):
+                msg = "dash must be a non-empty tuple of ints"
+                raise ValueError(msg)
+            self.draw.draw_lines(xy, ink, 1, dash)
+        else:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
                 points = self._normalize_coords(xy)
@@ -350,23 +359,31 @@ class ImageDraw:
         fill: _Ink | None = None,
         outline: _Ink | None = None,
         width: int = 1,
+        dash: tuple[int, ...] | None = None,
     ) -> None:
         """Draw a polygon."""
         ink, fill_ink = self._getink(outline, fill)
         if fill_ink is not None:
             self.draw.draw_polygon(xy, fill_ink, 1)
-        if ink is not None and ink != fill_ink and width != 0:
-            if width == 1:
-                self.draw.draw_polygon(xy, ink, 0, width)
-            elif self.im is not None:
-                # To avoid expanding the polygon outwards,
-                # use the fill as a mask
-                mask = Image.new("1", self.im.size)
-                mask_ink = self._getink(1)[0]
-                draw = Draw(mask)
-                draw.draw.draw_polygon(xy, mask_ink, 1)
+        if ink is None or ink == fill_ink or width == 0:
+            return
 
-                self.draw.draw_polygon(xy, ink, 0, width * 2 - 1, mask.im)
+        if dash is not None:
+            if len(dash) == 0 or any(not isinstance(v, int) for v in dash):
+                msg = "dash must be a non-empty tuple of ints"
+                raise ValueError(msg)
+            self.draw.draw_polygon(xy, ink, 0, 1, dash)
+        elif width == 1:
+            self.draw.draw_polygon(xy, ink, 0, width)
+        elif self.im is not None:
+            # To avoid expanding the polygon outwards,
+            # use the fill as a mask
+            mask = Image.new("1", self.im.size)
+            mask_ink = self._getink(1)[0]
+            draw = Draw(mask)
+            draw.draw.draw_polygon(xy, mask_ink, 1)
+
+            self.draw.draw_polygon(xy, ink, 0, width * 2 - 1, None, mask.im)
 
     def regular_polygon(
         self,
@@ -387,12 +404,32 @@ class ImageDraw:
         fill: _Ink | None = None,
         outline: _Ink | None = None,
         width: int = 1,
+        dash: tuple[int, ...] | None = None,
     ) -> None:
         """Draw a rectangle."""
         ink, fill_ink = self._getink(outline, fill)
         if fill_ink is not None:
             self.draw.draw_rectangle(xy, fill_ink, 1)
-        if ink is not None and ink != fill_ink and width != 0:
+        if ink is None or ink == fill_ink or width == 0:
+            return
+
+        if dash is not None:
+            if len(dash) == 0 or any(not isinstance(v, int) for v in dash):
+                msg = "dash must be a non-empty tuple of ints"
+                raise ValueError(msg)
+            self.draw.draw_lines(
+                [
+                    (xy[0], xy[1]),
+                    (xy[2], xy[1]),
+                    (xy[2], xy[3]),
+                    (xy[0], xy[3]),
+                    (xy[0], xy[1]),
+                ],
+                ink,
+                1,
+                dash,
+            )
+        else:
             self.draw.draw_rectangle(xy, ink, 0, width)
 
     def rounded_rectangle(
@@ -587,7 +624,7 @@ class ImageDraw:
 
             def draw_text(ink: int, stroke_width: float = 0) -> None:
                 mode = self.fontmode
-                if stroke_width == 0 and embedded_color:
+                if stroke_width == 0 and image_text.embedded_color:
                     mode = "RGBA"
                 x = int(line.x)
                 y = int(line.y)
@@ -832,11 +869,21 @@ def floodfill(
     x, y = xy
     try:
         background = pixel[x, y]
-        if _color_diff(value, background) <= thresh:
-            return  # seed point already has fill color
-        pixel[x, y] = value
-    except (ValueError, IndexError):
+    except IndexError:
         return  # seed point outside image
+
+    def _update_color(color: float | tuple[int, ...]) -> float | tuple[int, ...]:
+        if image.mode == "RGBA" and isinstance(color, tuple) and len(color) == 3:
+            color += (255,)
+        return color
+
+    value = _update_color(value)
+    if _color_diff(value, background) <= thresh:
+        return  # seed point already has fill color
+
+    if border is not None:
+        border = _update_color(border)
+    pixel[x, y] = value
     edge = {(x, y)}
     # use a set to keep record of current and previous edge pixels
     # to reduce memory consumption
