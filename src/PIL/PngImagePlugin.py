@@ -441,7 +441,6 @@ class PngStream(ChunkStream):
         self.im_info = self.rewind_state.info.copy()
         self.im_tile = self.rewind_state.tile
         self._seq_num = self.rewind_state.seq_num
-        # drop any chunk pushed back while reading a later frame
         self.queue = []
 
     def chunk_iCCP(self, pos: int, length: int) -> bytes:

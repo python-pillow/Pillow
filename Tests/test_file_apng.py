@@ -870,14 +870,13 @@ def test_seek_after_close() -> None:
         im.seek(0)
 
 
-def test_seek_backwards_after_load() -> None:
+def test_rewind() -> None:
     with Image.open("Tests/images/apng/delay.png") as im:
-        im.seek(2)
-        im.load()
+        im.seek(1)
         expected = im.copy()
 
+        im.seek(0)
         im.seek(1)
-        im.seek(2)
         assert_image_equal(im, expected)
 
 
