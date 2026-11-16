@@ -256,7 +256,7 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             memcpy(extrema, &fmin, sizeof(fmin));
             memcpy(((char *)extrema) + sizeof(fmin), &fmax, sizeof(fmax));
             break;
-        case IMAGING_TYPE_I16:
+        case IMAGING_TYPE_I16: {
             UINT16 v;
             UINT8 *pixel = *im->image8;
             int bigendian = isImageI16BigEndian(im);
@@ -279,7 +279,7 @@ ImagingGetExtrema(Imaging im, void *extrema) {
             memcpy(extrema, &v, sizeof(v));
             v = (UINT16)imax;
             memcpy(((char *)extrema) + sizeof(v), &v, sizeof(v));
-            break;
+        } break;
         default:
             (void)ImagingError_ModeError();
             return -1;
@@ -388,7 +388,10 @@ getcolors32(Imaging im, int maxcolors, int *size) {
     }
 
     pixel_mask = 0xffffffff;
-    if (im->bands == 3) {
+    if (im->bands == 2) {
+        ((UINT8 *)&pixel_mask)[1] = 0;
+        ((UINT8 *)&pixel_mask)[2] = 0;
+    } else if (im->bands == 3) {
         ((UINT8 *)&pixel_mask)[3] = 0;
     }
 

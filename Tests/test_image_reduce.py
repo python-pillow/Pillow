@@ -305,6 +305,13 @@ def test_mode_I(factor: int | tuple[int, int]) -> None:
     compare_reduce_with_box(im, factor)
 
 
+@pytest.mark.parametrize("value", (2**31 - 1, -(2**31)))
+def test_mode_I_extreme(value: int) -> None:
+    im = Image.new("I", (5, 5), value)
+    for factor in (2, 3):
+        assert im.reduce(factor).getpixel((0, 0)) == value
+
+
 @pytest.mark.parametrize("factor", remarkable_factors)
 def test_mode_F(factor: int | tuple[int, int]) -> None:
     im = get_image("F")

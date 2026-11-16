@@ -247,14 +247,14 @@ precompute_coeffs(
     /* determine support size (length of resampling filter) */
     support = filterp->support * filterscale;
 
-    /* maximum number of coeffs */
-    ksize = (int)ceil(support) * 2 + 1;
-
-    // check for overflow
-    if (outSize > INT_MAX / (ksize * (int)sizeof(double))) {
+    // check for overflow, before calculating ksize as an int
+    if (ceil(support) * 2 + 1 > (double)(INT_MAX / sizeof(double)) / outSize) {
         ImagingError_MemoryError();
         return 0;
     }
+
+    /* maximum number of coeffs */
+    ksize = (int)ceil(support) * 2 + 1;
 
     /* coefficient buffer */
     /* malloc check ok, overflow checked above */
@@ -841,7 +841,7 @@ ImagingResampleInner(
     Imaging imOut = NULL;
 
     int i, second_pass, need_horizontal, need_vertical, error = 0;
-    int ybox_first, ybox_last;
+    int ybox_first = 0, ybox_last = 0;
     int ksize_horiz = 0, ksize_vert = 0;
     int *bounds_horiz, *bounds_vert;
     double *kk_horiz, *kk_vert;

@@ -1423,11 +1423,22 @@ class Image:
         :returns: A core image object.
         """
 
-        x0, y0, x1, y1 = map(int, map(round, box))
+        import decimal
 
-        absolute_values = (abs(x1 - x0), abs(y1 - y0))
+        x0, y0, x1, y1 = (
+            (
+                v
+                if isinstance(v, int)
+                else int(
+                    decimal.Decimal(v).quantize(
+                        0, decimal.ROUND_HALF_UP if v < 0 else decimal.ROUND_HALF_DOWN
+                    )
+                )
+            )
+            for v in box
+        )
 
-        _decompression_bomb_check(absolute_values)
+        _decompression_bomb_check((x1 - x0, y1 - y0))
 
         return im.crop((x0, y0, x1, y1))
 
@@ -2060,7 +2071,7 @@ class Image:
 
         if callable(lut):
             # if it isn't a list, it should be a function
-            if self.mode in ("I", "I;16", "F"):
+            if self.mode in ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"):
                 # check if the function can be used with point_transform
                 # UNDONE wiredfool -- I think this prevents us from ever doing
                 # a gamma function point transform on > 8bit images.
@@ -2384,7 +2395,7 @@ class Image:
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
            :py:data:`Resampling.BICUBIC`, :py:data:`Resampling.LANCZOS`,
            :py:data:`Resampling.MKS2013`, or :py:data:`Resampling.MKS2021`.
-           If the image has mode "1" or "P", it is always set to
+           If the image has mode "1", "P" or "PA", it is always set to
            :py:data:`Resampling.NEAREST`. Otherwise, the default filter is
            :py:data:`Resampling.BICUBIC`. See: :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats providing
@@ -2447,10 +2458,10 @@ class Image:
         if self.size == size and box == (0, 0, *self.size):
             return self.copy()
 
-        if self.mode in ("1", "P"):
+        if self.mode in {"1", "P", "PA"}:
             resample = Resampling.NEAREST
 
-        if self.mode in ["LA", "RGBA"] and resample != Resampling.NEAREST:
+        if self.mode in {"LA", "RGBA"} and resample != Resampling.NEAREST:
             im = self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
             im = im.resize(size, resample, box, reducing_gap)
             return im.convert(self.mode)
@@ -2532,7 +2543,7 @@ class Image:
            :py:data:`Resampling.BILINEAR` (linear interpolation in a 2x2
            environment), or :py:data:`Resampling.BICUBIC` (cubic spline
            interpolation in a 4x4 environment). If omitted, or if the image has
-           mode "1" or "P", it is set to :py:data:`Resampling.NEAREST`.
+           mode "1", "P" or "PA", it is set to :py:data:`Resampling.NEAREST`.
            See :ref:`concept-filters`.
         :param expand: Optional expansion flag.  If true, expands the output
            image to make it large enough to hold the entire rotated image.
@@ -3019,7 +3030,7 @@ class Image:
            :py:data:`Resampling.BILINEAR` (linear interpolation in a 2x2
            environment), or :py:data:`Resampling.BICUBIC` (cubic spline
            interpolation in a 4x4 environment). If omitted, or if the image
-           has mode "1" or "P", it is set to :py:data:`Resampling.NEAREST`.
+           has mode "1", "P" or "PA", it is set to :py:data:`Resampling.NEAREST`.
            See: :ref:`concept-filters`.
         :param fill: If ``method`` is an
           :py:class:`~PIL.Image.ImageTransformHandler` object, this is one of
@@ -3165,7 +3176,7 @@ class Image:
 
         self.load()
 
-        if image.mode in ("1", "P"):
+        if image.mode in {"1", "P", "PA"}:
             resample = Resampling.NEAREST
 
         self.im.transform(box, image.im, method, data, resample, fill)
