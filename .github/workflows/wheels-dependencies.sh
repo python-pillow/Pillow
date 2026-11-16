@@ -489,7 +489,23 @@ fi
 popd > /dev/null
 
 # Append licenses
-for filename in wheels/dependency_licenses/*; do
-  echo -e "\n\n----\n\n$(basename $filename | cut -f 1 -d '.')\n" | cat >> LICENSE
-  cat $filename >> LICENSE
-done
+(
+    git show :LICENSE  # The colon means show staged content.
+    for filename in wheels/dependency_licenses/*; do
+        echo -e "\n\n----\n\n$(basename $filename | cut -f 1 -d '.')\n"
+        cat $filename
+    done
+) > LICENSE.tmp
+
+if git diff --exit-code LICENSE > /dev/null; then
+    # LICENSE is unmodified. Replace it with the appended copy.
+    mv LICENSE.tmp LICENSE
+elif diff LICENSE.tmp LICENSE > /dev/null; then
+    # Licenses have already been appended.
+    rm LICENSE.tmp
+else
+    rm LICENSE.tmp
+    echo "LICENSE contains unstaged changes. Either stage or restore this file," \
+         "then try again."
+    exit 1
+fi
