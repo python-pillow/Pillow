@@ -33,8 +33,7 @@ Safe
   the same file object at once.
 
 * **Fonts.**
-  A :py:class:`~PIL.ImageFont.FreeTypeFont` may be used by several threads at once
-  to measure and render text.
+  Fonts may be used by several threads at once to measure and render text.
 
 Not safe
 --------
@@ -45,13 +44,12 @@ Not safe
   :py:meth:`~PIL.Image.Image.putpalette`, :py:meth:`~PIL.Image.Image.putalpha`,
   drawing with :py:meth:`~PIL.ImageDraw.Draw`, and writing through the
   :py:class:`PixelAccess` class (as returned by :py:meth:`~PIL.Image.Image.load`).
-  The results are undefined: the reading thread may see partly updated pixels,
-  and some combinations could crash the interpreter.
+  The results are undefined: the reading thread may see partly updated pixels.
   This applies to the default build as well as to the free-threaded build.
 
 * **Changing the frame of a shared image.**
   :py:meth:`~PIL.Image.Image.seek` modifies the image,
-  so a multi-frame image must not be seeked while other threads use it.
+  so a multi-frame image must not seek while other threads use it.
   You can use either multiple copies of the same multi-frame image file,
   or load and :py:meth:`~PIL.Image.Image.copy` them in a single thread up-front.
 
@@ -78,7 +76,7 @@ Module-level settings are shared by all threads. These include:
 * :py:data:`PIL.ImageFile.LOAD_TRUNCATED_IMAGES`
 * :py:data:`PIL.ImageFile.MAXBLOCK`
 * :py:data:`PIL.ImageFile.SAFEBLOCK`
-* the plugin registries populated by functions such as :py:func:`PIL.Image.register_open`
+* the plugin registries populated by functions such as :py:func:`~PIL.Image.register_open`
 * the :ref:`block allocator <block_allocator>` settings
 
 You may wish to set these once, in a single thread, as they will affect others.
