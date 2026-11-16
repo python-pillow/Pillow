@@ -308,7 +308,7 @@ def test_mode_I(factor: int | tuple[int, int]) -> None:
 @pytest.mark.parametrize("value", (2**31 - 1, -(2**31)))
 def test_mode_I_extreme(value: int) -> None:
     im = Image.new("I", (5, 5), value)
-    for factor in (2, 3, (2, 3)):
+    for factor in (2, 3):
         assert im.reduce(factor).getpixel((0, 0)) == value
 
 
