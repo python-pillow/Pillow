@@ -522,9 +522,6 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
             if not total:
                 continue
 
-            if total == 0xFF and offset % 8 == 0:  # Whole byte, fast path
-                data[i::mask_count] = src[offset // 8 :: bytecount]
-                continue
             values = (
                 int.from_bytes(src[p : p + bytecount], "little")
                 for p in range(0, src_length, bytecount)
