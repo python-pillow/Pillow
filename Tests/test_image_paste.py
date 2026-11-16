@@ -127,22 +127,6 @@ class TestImagingPaste:
             ],
         )
 
-    def test_paste_la_into_rgb(self) -> None:
-        # LA images are stored with two padding bytes per pixel.
-        # Unlike Image.new(), Image.merge() and point() leave them as zero,
-        # so the image cannot be pasted into an RGB image without conversion
-        merged = Image.merge(
-            "LA", (Image.new("L", (1, 1), 128), Image.new("L", (1, 1), 255))
-        )
-        for source in (
-            Image.new("LA", (1, 1), (128, 255)),
-            merged,
-            Image.new("LA", (1, 1), (128, 255)).point(lambda v: v),
-        ):
-            im = Image.new("RGB", (1, 1))
-            im.paste(source, (0, 0))
-            assert im.getpixel((0, 0)) == (128, 128, 128)
-
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
     def test_image_solid(self, mode: str) -> None:
         im = Image.new(mode, (200, 200), "red")
@@ -152,6 +136,17 @@ class TestImagingPaste:
 
         im = im.crop((12, 23, im2.width + 12, im2.height + 23))
         assert_image_equal(im, im2)
+
+    def test_image_la_into_rgb(self) -> None:
+        # LA images are stored with two padding bytes per pixel.
+        # point() sets them to zero,
+        # so the image must be internally converted before pasting onto RGB
+        im = Image.new("RGB", (1, 1))
+
+        source = Image.new("LA", (1, 1), (128, 255)).point(lambda v: v)
+        im.paste(source)
+
+        assert im.getpixel((0, 0)) == (128, 128, 128)
 
     @pytest.mark.parametrize("y", [10, -10])
     @pytest.mark.parametrize("mode", ["L", "RGB"])

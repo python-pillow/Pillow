@@ -67,15 +67,6 @@ Two new image processing operations are available in ImageOps.
 Other changes
 =============
 
-Pasting LA images into RGB images
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-:py:meth:`~PIL.Image.Image.paste` now converts LA images when pasting them into
-RGB images, instead of copying the stored bytes directly. LA images created by
-:py:meth:`~PIL.Image.merge` or :py:meth:`~PIL.Image.Image.point` have zeroed
-padding bytes, and pasting them previously used those bytes as the green and
-blue channels, producing red pixels.
-
 Rounding crop coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
