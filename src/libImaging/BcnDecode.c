@@ -340,10 +340,11 @@ bc7_lerp(rgba *dst, const rgba *e, int s0, int s1) {
 static void
 decode_bc7_block(rgba *col, const UINT8 *src) {
     rgba endpoints[6];
-    int bit = 0, cibit, aibit;
+    int cibit, aibit;
     int mode = src[0];
     int i, j;
     int numep, cb, ab, ib, ib2, i0, i1, s;
+    int8_t bit = 0;
     UINT8 index_sel, partition, rotation, val;
     const char *cw, *aw;
     const bc7_mode_info *info;

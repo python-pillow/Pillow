@@ -2261,6 +2261,7 @@ class AppendingTiffWriter(io.BytesIO):
         self.tagFormat = f"{self.endian}HH" + ("Q" if self._bigtiff else "L")
 
     def skipIFDs(self) -> None:
+        ifd_offsets = set()
         while True:
             ifd_offset = self._read(8 if self._bigtiff else 4)
             if ifd_offset == 0:
@@ -2268,6 +2269,11 @@ class AppendingTiffWriter(io.BytesIO):
                     8 if self._bigtiff else 4
                 )
                 break
+
+            if ifd_offset in ifd_offsets:
+                msg = "IFD loop found"
+                raise RuntimeError(msg)
+            ifd_offsets.add(ifd_offset)
 
             self.f.seek(ifd_offset)
             num_tags = self._read(8 if self._bigtiff else 2)

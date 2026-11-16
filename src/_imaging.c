@@ -1737,7 +1737,10 @@ _point_impl(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    const ModeID mode = findModeID(mode_name);
+    ModeID mode = findModeID(mode_name);
+    if (mode == IMAGING_MODE_UNKNOWN) {
+        mode = self->image->mode;
+    }
 
     if (mode == IMAGING_MODE_F) {
         FLOAT32 *data;
@@ -1766,13 +1769,13 @@ _point_impl(ImagingObject *self, PyObject *args) {
         INT32 *data;
         UINT8 lut[1024];
 
-        if (mode) {
+        if (mode == self->image->mode) {
+            bands = self->image->bands;
+        } else {
             bands = getbands(mode);
             if (bands < 0) {
                 return NULL;
             }
-        } else {
-            bands = self->image->bands;
         }
 
         /* map to integer data */
@@ -1784,7 +1787,7 @@ _point_impl(ImagingObject *self, PyObject *args) {
 
         if (mode == IMAGING_MODE_I) {
             im = ImagingPoint(self->image, mode, (void *)data);
-        } else if (mode && bands > 1) {
+        } else if (mode != self->image->mode && bands > 1) {
             for (i = 0; i < 256; i++) {
                 lut[i * 4] = CLIP8(data[i]);
                 lut[i * 4 + 1] = CLIP8(data[i + 256]);
@@ -1858,7 +1861,7 @@ _putdata_impl(ImagingObject *self, PyObject *args) {
 
     image = self->image;
 
-    if (image->image8 && PyBytes_Check(data)) {
+    if (image->pixelsize == 1 && PyBytes_Check(data)) {
         n = PyBytes_GET_SIZE(data);
     } else {
         Py_ssize_t reported = PySequence_Size(data);
@@ -1895,7 +1898,7 @@ _putdata_impl(ImagingObject *self, PyObject *args) {
         }                                                               \
     }
     if (image->image8) {
-        if (PyBytes_Check(data)) {
+        if (image->pixelsize == 1 && PyBytes_Check(data)) {
             unsigned char *p;
             p = (unsigned char *)PyBytes_AS_STRING(data);
             if (scale == 1.0 && offset == 0.0) {
