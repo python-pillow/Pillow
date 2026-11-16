@@ -1858,7 +1858,7 @@ _putdata_impl(ImagingObject *self, PyObject *args) {
 
     image = self->image;
 
-    if (image->image8 && PyBytes_Check(data)) {
+    if (image->pixelsize == 1 && PyBytes_Check(data)) {
         n = PyBytes_GET_SIZE(data);
     } else {
         Py_ssize_t reported = PySequence_Size(data);
@@ -1895,7 +1895,7 @@ _putdata_impl(ImagingObject *self, PyObject *args) {
         }                                                               \
     }
     if (image->image8) {
-        if (PyBytes_Check(data)) {
+        if (image->pixelsize == 1 && PyBytes_Check(data)) {
             unsigned char *p;
             p = (unsigned char *)PyBytes_AS_STRING(data);
             if (scale == 1.0 && offset == 0.0) {

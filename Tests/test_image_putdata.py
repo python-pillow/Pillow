@@ -67,6 +67,16 @@ def test_mode_i(mode: str) -> None:
     assert im.get_flattened_data() == target
 
 
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B"))
+def test_mode_i16_bytes(mode: str) -> None:
+    im = Image.new(mode, (2, 2))
+    im.putdata(b"\x01\x02\x03\x04")
+    assert im.get_flattened_data() == (1, 2, 3, 4)
+
+    im.putdata(b"\x01\x02\x03\x04", 2)
+    assert im.get_flattened_data() == (2, 4, 6, 8)
+
+
 def test_mode_F() -> None:
     src = hopper("L")
     data = src.get_flattened_data()
