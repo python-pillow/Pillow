@@ -56,7 +56,7 @@ def test_mode_with_L_with_float() -> None:
     assert im.getpixel((0, 0)) == 2
 
 
-@pytest.mark.parametrize("mode", ("I", "I;16", "I;16L", "I;16B"))
+@pytest.mark.parametrize("mode", ("I", "I;16", "I;16L", "I;16B", "I;16N"))
 def test_mode_i(mode: str) -> None:
     src = hopper("L")
     data = src.get_flattened_data()
@@ -65,6 +65,13 @@ def test_mode_i(mode: str) -> None:
 
     target = tuple(2 * elt + 256 for elt in cast("tuple[int, ...]", data))
     assert im.get_flattened_data() == target
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_mode_i16_bytes(mode: str) -> None:
+    im = Image.new(mode, (2, 2))
+    im.putdata(b"\x01\x02\x03\x04")
+    assert im.get_flattened_data() == (1, 2, 3, 4)
 
 
 def test_mode_F() -> None:
