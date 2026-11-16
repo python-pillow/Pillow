@@ -309,6 +309,12 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
     def load(self) -> Image.core.PixelAccess | None:
         """Load image data based on tile list"""
 
+        if self.width == 0 or self.height == 0:
+            ImageFile.load_prepare(self)
+
+            self.tile = []
+            self.readonly = 0
+
         if not self.tile:
             if self._im is None:
                 msg = "cannot load this image"

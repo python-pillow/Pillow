@@ -142,7 +142,7 @@ class ImageFont(BaseImageFont):
                     image.close()
                 try:
                     fullname = root + ext
-                    image = Image.open(fullname)
+                    image = Image.open(fullname, formats=["PNG", "GIF", "PPM"])
                 except Exception:
                     pass
                 else:
