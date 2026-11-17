@@ -4543,17 +4543,17 @@ _compare_pixels(
     const int ysize,
     const int linesize,
     const char *const *pixels_a,
-    const char *const *pixels_b
+    const char *const *pixels_b,
+    const UINT32 mask
 ) {
     if (ysize <= 0 || linesize <= 0) {
-        // Pixel arrays without size are always equal.
-        // Since rows may not have been allocated at all,
-        // early-out now.
+        // Pixel arrays without size are always equal
         return 0;
     }
 
     if (mode == IMAGING_MODE_1) {
-        // Mode 1, special case: compare the truthiness of each value.
+        // 1 mode pixels are either empty (0) or not (1-255),
+        // so compare the truthiness of each value
         for (int y = 0; y < ysize; y++) {
             const UINT8 *line_a = (const UINT8 *)pixels_a[y];
             const UINT8 *line_b = (const UINT8 *)pixels_b[y];
@@ -4574,36 +4574,8 @@ _compare_pixels(
         return 0;
     }
 
-    // Fortunately, all of the modes that have extra bytes in their pixels
-    // use four bytes for their pixels.
-    UINT32 mask = 0xffffffff;
-    switch (mode) {
-        case IMAGING_MODE_RGB:
-        case IMAGING_MODE_RGBX:
-        case IMAGING_MODE_YCbCr:
-        case IMAGING_MODE_HSV:
-        case IMAGING_MODE_LAB:
-            // These modes have three channels in four bytes,
-            // so we have to ignore the last byte.
-#ifdef WORDS_BIGENDIAN
-            mask = 0xffffff00;
-#else
-            mask = 0x00ffffff;
-#endif
-            break;
-        case IMAGING_MODE_LA:
-        case IMAGING_MODE_La:
-        case IMAGING_MODE_PA:
-            // These modes have two channels in four bytes,
-            // so we have to ignore the middle two bytes.
-            mask = 0xff0000ff;
-            break;
-        default:
-            break;
-    }
-
     if (mask == 0xffffffff) {
-        // If we aren't masking anything we can use memcmp.
+        // We aren't masking anything
         for (int y = 0; y < ysize; y++) {
             if (memcmp(pixels_a[y], pixels_b[y], linesize)) {
                 return 1;
@@ -4623,11 +4595,10 @@ _compare_pixels(
             // Autovectorizable form: compute one row at a time,
             // and OR together all the differences in that row,
             // then see if we saw any differences at all.
-            // This loop will not bail out in the middle of a row
-            // (the common case of "entirely different images,
-            // same size and mode" will have been taken care of
-            // above in the first-pixel check), but it measures
-            // to be faster anyhow on modern CPUs.
+            // This loop will not bail out in the middle of a row (the common case of
+            // "entirely different images, same size and mode"
+            // will have been taken care of above in the first-pixel check),
+            // but regardless, it measures to be faster on modern CPUs.
             UINT32 diff = 0;
             for (int x = 0; x < xsize; x++) {
                 diff |= (line_a[x] ^ line_b[x]) & mask;
@@ -4643,30 +4614,22 @@ _compare_pixels(
 /**
  * Compare two palettes for equality.
  *
- * @param palette_a Pointer to the first palette. May be NULL.
- * @param palette_b Pointer to the second palette. May be NULL.
+ * @param a Pointer to the first palette. May be NULL.
+ * @param b Pointer to the second palette. May be NULL.
  * @return 0 if the palettes are equal, 1 if they are not equal.
  */
 static int
-_compare_palette(const ImagingPalette palette_a, const ImagingPalette palette_b) {
-    if (palette_a == NULL && palette_b == NULL) {
+_compare_palette(const ImagingPalette a, const ImagingPalette b) {
+    if (a == NULL && b == NULL) {
         return 0;
     }
-    if (palette_a == NULL || palette_b == NULL) {
-        return 1;
-    }
-    if (palette_a->size != palette_b->size || palette_a->mode != palette_b->mode) {
+    if (a == NULL || b == NULL || a->size != b->size || a->mode != b->mode) {
         return 1;
     }
 
-    const char *palette_a_data = (const char *)palette_a->palette;
-    const char *palette_b_data = (const char *)palette_b->palette;
-    // 1024 is the maximum size of a palette hard-coded in Imaging.h's
-    // ImagingPaletteInstance struct.
-    int linesize = MIN(palette_a->size * 4, 1024);
-    return _compare_pixels(
-        palette_a->mode, 1, linesize, &palette_a_data, &palette_b_data
-    );
+    const char *a_data = (const char *)a->palette;
+    const char *b_data = (const char *)b->palette;
+    return _compare_pixels(a->mode, 1, a->size * 4, &a_data, &b_data, 0xffffffff);
 }
 
 static PyObject *
@@ -4679,28 +4642,40 @@ image_richcompare(PyObject *self, PyObject *other, int op) {
         Py_RETURN_NOTIMPLEMENTED;
     }
 
-    const Imaging img_a = ((ImagingObject *)self)->image;
-    const Imaging img_b = ((ImagingObject *)other)->image;
+    const Imaging a = ((ImagingObject *)self)->image;
+    const Imaging b = ((ImagingObject *)other)->image;
 
-    if (img_a == NULL || img_b == NULL) {
+    if (a == NULL || b == NULL) {
         Py_RETURN_NOTIMPLEMENTED;
     }
 
-    const int equal =
-        // Mode and size comparison (cheap)
-        img_a->mode == img_b->mode && img_a->xsize == img_b->xsize &&
-        img_a->ysize == img_b->ysize &&
-        // Palette comparison
-        _compare_palette(img_a->palette, img_b->palette) == 0 &&
-        // Pixel comparison
-        _compare_pixels(
-            img_a->mode,
-            img_a->ysize,
-            img_a->linesize,
-            (const char *const *)img_a->image,
-            (const char *const *)img_b->image
-        ) == 0;
+    if (a->mode != b->mode || a->xsize != b->xsize || a->ysize != b->ysize ||
+        _compare_palette(a->palette, b->palette) != 0) {
+        return op == Py_EQ ? Py_False : Py_True;
+    }
 
+    // All of the modes with padding bytes use four bytes for their pixels
+    UINT32 mask = 0xffffffff;
+    if (a->bands == 3) {
+        // Three channels in four bytes, so ignore the last byte
+#ifdef WORDS_BIGENDIAN
+        mask = 0xffffff00;
+#else
+        mask = 0x00ffffff;
+#endif
+    } else if (a->bands == 2) {
+        // Two channels in four bytes, so ignore the middle two bytes
+        mask = 0xff0000ff;
+    }
+
+    const int equal = _compare_pixels(
+                          a->mode,
+                          a->ysize,
+                          a->linesize,
+                          (const char *const *)a->image,
+                          (const char *const *)b->image,
+                          mask
+                      ) == 0;
     return PyBool_FromLong(op == Py_EQ ? equal : !equal);
 }
 

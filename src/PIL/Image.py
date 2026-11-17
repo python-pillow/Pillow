@@ -748,8 +748,6 @@ class Image:
         assert isinstance(other, Image)
         if self is other:
             return True
-        # Early-out before loading.
-        # ImagingCore does check for mode and size.
         if (
             self.mode != other.mode
             or self.size != other.size
