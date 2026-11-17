@@ -853,12 +853,9 @@ def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
 
 
 def test_truetype_bytes() -> None:
-    """Ensure bytestrings with the high bit set do not cause sign extension."""
+    # Ensure bytestrings with the high bit set do not cause sign extension
     font = ImageFont.truetype(
-        "Tests/fonts/FreeMono.ttf",
-        20,
-        # Have to use BASIC as RAQM would parse `b"\xe9"` as invalid Unicode
-        layout_engine=ImageFont.Layout.BASIC,
+        "Tests/fonts/FreeMono.ttf", 20, layout_engine=ImageFont.Layout.BASIC
     )
     assert font.getbbox(b"\xe9") == font.getbbox("\u00e9")
 
