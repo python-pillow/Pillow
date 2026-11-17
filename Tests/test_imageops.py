@@ -195,6 +195,20 @@ def test_cover(image_name: str, expected_size: tuple[int, int]) -> None:
         assert new_im.size == expected_size
 
 
+def test_cover_decompression_bomb(monkeypatch: pytest.MonkeyPatch) -> None:
+    # An extreme aspect ratio should not lead to a very large image
+    for size in ((1, 100_000), (100_000, 1)):
+        im = Image.new("L", size)
+        with pytest.raises(Image.DecompressionBombError):
+            ImageOps.cover(im, (256, 256))
+
+    # But if the image has the same aspect ratio as the requested size,
+    # then this will be the size the user asked for, so allow it
+    im = hopper()
+    monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 10)
+    assert ImageOps.cover(im, (64, 64)).size == (64, 64)
+
+
 def test_pad() -> None:
     # Same ratio
     im = hopper()
