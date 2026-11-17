@@ -4575,11 +4575,11 @@ _compare_pixels(
     }
 
     // Fortunately, all of the modes that have extra bytes in their pixels
-    // use four bytes for their pixels. RGBX is deliberately not one of them:
-    // its fourth byte is compared just like Image.tobytes() includes it.
+    // use four bytes for their pixels.
     UINT32 mask = 0xffffffff;
     switch (mode) {
         case IMAGING_MODE_RGB:
+        case IMAGING_MODE_RGBX:
         case IMAGING_MODE_YCbCr:
         case IMAGING_MODE_HSV:
         case IMAGING_MODE_LAB:

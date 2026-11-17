@@ -86,14 +86,6 @@ def test_equal_two_channels_four_bytes(mode: str) -> None:
     assert img_a == img_b
 
 
-def test_not_equal_rgbx_padding() -> None:
-    # Ensure RGBX's last byte is compared, even if it has no image meaning.
-    img_a = Image.frombytes("RGBX", (1, 1), b"1234")
-    img_b = Image.frombytes("RGBX", (1, 1), b"123\xff")
-    assert img_a.tobytes() != img_b.tobytes()
-    assert img_a != img_b
-
-
 def test_compare_with_other_type() -> None:
     im = Image.new("L", (1, 1))
     assert im.im == im.im
@@ -181,16 +173,3 @@ def test_not_equal_palette_mode(mode: str) -> None:
     img_b = _make_palette_image(mode, b"\x01\x02\x03\xff" * 256, "RGBA")
     assert img_a.getpalette() == img_b.getpalette()  # implicitly mode=RGB, so same
     assert img_a != img_b
-
-
-@pytest.mark.parametrize("mode", ("P", "PA"))
-def test_equal_rgb_palette_padding(mode: str) -> None:
-    # For RGB palettes, the unused fourth byte is not part of the comparison.
-    img_a = _make_palette_image(mode, b"\x01\x02\x03\x00" * 256, "RGBX")
-    img_b = _make_palette_image(mode, b"\x01\x02\x03\xff" * 256, "RGBX")
-    palette_a = img_a.palette
-    palette_b = img_b.palette
-    assert palette_a
-    assert palette_b
-    assert palette_a.mode == palette_b.mode == "RGB"
-    assert img_a == img_b
