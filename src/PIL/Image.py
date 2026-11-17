@@ -171,6 +171,7 @@ class Dither(IntEnum):
     ORDERED = 1  # Not yet implemented
     RASTERIZE = 2  # Not yet implemented
     FLOYDSTEINBERG = 3  # default
+    ATKINSON = 4
 
 
 # palettes/quantizers
@@ -1058,7 +1059,8 @@ class Image:
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
-           (default). Note that this is not used when ``matrix`` is supplied.
+           (default). :data:`Dither.ATKINSON` is also available when converting to
+           "1". Note that this is not used when ``matrix`` is supplied.
         :param palette: Palette to use when converting from mode "RGB"
            to "P".  Available palettes are :data:`Palette.WEB` or
            :data:`Palette.ADAPTIVE`.
@@ -1111,6 +1113,10 @@ class Image:
                     )
                 new_im.info["transparency"] = transparency
             return new_im
+
+        if dither == Dither.ATKINSON and mode in {"P", "PA"}:
+            msg = "Atkinson dithering is only supported when converting to mode 1"
+            raise ValueError(msg)
 
         if self.mode == "RGBA":
             if mode == "P":
@@ -1247,6 +1253,9 @@ class Image:
         # colorspace conversion
         if dither is None:
             dither = Dither.FLOYDSTEINBERG
+
+        if dither == Dither.ATKINSON and mode == "1" and self.mode in {"P", "PA"}:
+            im = im.convert("L")
 
         try:
             im = im.convert(mode, dither)

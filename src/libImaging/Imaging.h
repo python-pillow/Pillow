@@ -314,6 +314,7 @@ typedef enum {
 typedef enum {
     IMAGING_DITHER_NONE = 0,
     IMAGING_DITHER_FLOYDSTEINBERG = 3,  // Default
+    IMAGING_DITHER_ATKINSON = 4,
 } ImagingDitherType;
 
 typedef int (*ImagingTransformMap)(double *X, double *Y, int x, int y, void *data);

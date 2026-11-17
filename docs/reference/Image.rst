@@ -462,6 +462,15 @@ Used to specify the dithering method to use for the
 
       Floyd-Steinberg dither
 
+    .. py:attribute:: ATKINSON
+
+      Atkinson dither, for conversion to mode "1". Each pixel's quantization error
+      is divided by eight and distributed to six neighboring pixels. Two eighths
+      of the error are discarded, preserving contrast at the expense of detail in
+      very light or dark areas.
+
+      .. versionadded:: 13.1.0
+
 Palettes
 ^^^^^^^^
 

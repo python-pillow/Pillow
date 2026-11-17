@@ -1500,6 +1500,56 @@ tobilevel(Imaging imOut, Imaging imIn) {
 #pragma optimize("", on)
 #endif
 
+static Imaging
+tobilevel_atkinson(Imaging imOut, Imaging imIn) {
+    static const int offsets[6][2] = {{1, 0}, {2, 0}, {-1, 1}, {0, 1}, {1, 1}, {0, 2}};
+    ImagingSectionCookie cookie;
+    int width = imIn->xsize;
+    int height = imIn->ysize;
+
+    if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_RGB) {
+        return (Imaging)ImagingError_ValueError("conversion not supported");
+    }
+
+    imOut = ImagingNew2Dirty(IMAGING_MODE_1, imOut, imIn);
+    if (!imOut || !width || !height) {
+        return imOut;
+    }
+
+    ImagingSectionEnter(&cookie);
+    MUTEX_LOCK(&imIn->mutex);
+    for (int y = 0; y < height; y++) {
+        if (imIn->mode == IMAGING_MODE_L) {
+            memcpy(imOut->image8[y], imIn->image8[y], width);
+        } else {
+            rgb2l(imOut->image8[y], (UINT8 *)imIn->image[y], width);
+        }
+    }
+    MUTEX_UNLOCK(&imIn->mutex);
+
+    /* The output's byte-per-pixel storage holds the unprocessed gray levels. */
+    for (int y = 0; y < height; y++) {
+        UINT8 *out = imOut->image8[y];
+        for (int x = 0; x < width; x++) {
+            int value = out[x];
+            out[x] = value >= 128 ? 255 : 0;
+            int error = value - out[x];
+            /* Divide by eight, rounding negative errors toward minus infinity. */
+            error = (error - (error < 0 ? 7 : 0)) / 8;
+            for (int i = 0; i < 6; i++) {
+                int dx = offsets[i][0];
+                int dy = offsets[i][1];
+                if ((dx < 0 ? x >= -dx : x < width - dx) && y < height - dy) {
+                    UINT8 *pixel = &imOut->image8[y + dy][x + dx];
+                    *pixel = CLIP8(*pixel + error);
+                }
+            }
+        }
+    }
+    ImagingSectionLeave(&cookie);
+    return imOut;
+}
+
 /* ------------------- */
 /* Conversion handlers */
 /* ------------------- */
@@ -1693,9 +1743,8 @@ static struct {
  * @param palette Target palette for conversions to "P" or "PA";
  *                NULL to use a default palette.
  * @param dither  Dither method when converting to "P", "PA" or "1".
- *                Currently, for historical PIL reasons,
- *                any value other than IMAGING_DITHER_NONE uses Floyd-Steinberg
- *                dithering.
+ *                IMAGING_DITHER_ATKINSON is supported for "1" only. For historical
+ *                PIL reasons, other nonzero values use Floyd-Steinberg dithering.
  * @return        The resulting Imaging object,
  *                or NULL with a Python exception set on failure.
  */
@@ -1729,11 +1778,20 @@ ImagingConvert(
 
     /* test for special conversions */
 
+    if (dither == IMAGING_DITHER_ATKINSON && mode == IMAGING_MODE_1) {
+        return tobilevel_atkinson(imOut, imIn);
+    }
+
     if (imIn->mode == IMAGING_MODE_P || imIn->mode == IMAGING_MODE_PA) {
         return frompalette(imOut, imIn, mode);
     }
 
     if (mode == IMAGING_MODE_P || mode == IMAGING_MODE_PA) {
+        if (dither == IMAGING_DITHER_ATKINSON) {
+            return (Imaging)ImagingError_ValueError(
+                "Atkinson dithering is only supported when converting to mode 1"
+            );
+        }
         return topalette(imOut, imIn, mode, palette, dither);
     }
 

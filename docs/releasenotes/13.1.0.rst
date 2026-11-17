@@ -42,6 +42,21 @@ TODO
 API additions
 =============
 
+Atkinson dithering
+^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.convert` now accepts :py:data:`~PIL.Image.Dither.ATKINSON`
+when converting to mode "1". This error diffusion method distributes six eighths
+of each pixel's quantization error to neighboring pixels, retaining more contrast
+than Floyd-Steinberg dithering.
+
+.. code-block:: python
+
+    from PIL import Image
+
+    with Image.open("input.png") as im:
+        im.convert("1", dither=Image.Dither.ATKINSON).save("output.png")
+
 ImageDraw dash
 ^^^^^^^^^^^^^^
 
