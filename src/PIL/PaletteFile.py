@@ -36,7 +36,7 @@ class PaletteFile:
 
             if not s:
                 break
-            if s.startswith(b"#"):
+            if s.startswith(b"#") or not s.strip():
                 continue
             if len(s) > 100:
                 msg = "bad palette file"

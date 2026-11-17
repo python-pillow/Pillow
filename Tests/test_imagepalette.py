@@ -283,6 +283,15 @@ def test_getpalette() -> None:
     assert rawmode == "RGB"
 
 
+def test_palette_file_empty_line() -> None:
+    b = io.BytesIO(b"# Comment\n\n0 1\n  \n1 2 3 4\n\n")
+    p = PaletteFile.PaletteFile(b)
+
+    palette, rawmode = p.getpalette()
+    assert palette[:6] == b"\x01\x01\x01\x02\x03\x04"
+    assert rawmode == "RGB"
+
+
 def test_invalid_palette() -> None:
     with pytest.raises(OSError):
         ImagePalette.load("Tests/images/hopper.jpg")
