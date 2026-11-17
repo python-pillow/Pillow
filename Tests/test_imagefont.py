@@ -870,9 +870,9 @@ def test_variation_set_by_fractional_axes() -> None:
 
     def mask(weight: float) -> bytes:
         font.set_variation_by_axes([weight, 0])
-        return bytes(font.getmask("Hg", mode="L"))
+        return bytes(font.getmask("test"))
 
-    # a fractional value must not be truncated or rounded
+    # A fractional value must not be truncated or rounded
     assert mask(600) != mask(600.5) != mask(601)
 
 
