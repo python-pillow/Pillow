@@ -223,6 +223,18 @@ def test_plain_data_with_comment(
         assert_image_equal_tofile(im, path2)
 
 
+@pytest.mark.parametrize("line_end, next_line_end", ((b"\n", b"\r"), (b"\r", b"\n")))
+def test_plain_comment_ends_at_block_start(
+    monkeypatch: pytest.MonkeyPatch, line_end: bytes, next_line_end: bytes
+) -> None:
+    monkeypatch.setattr(ImageFile, "SAFEBLOCK", 16)
+    comment = b"#" + b"x" * 15  # The line ending starts the next read.
+    raster = comment + line_end + b"17" + next_line_end + b"23\n"
+    with Image.open(BytesIO(b"P2\n2 1\n255\n" + raster)) as im:
+        assert im.getpixel((0, 0)) == 17
+        assert im.getpixel((1, 0)) == 23
+
+
 @pytest.mark.parametrize("data", (b"P1\n128 128\n", b"P3\n128 128\n255\n"))
 def test_plain_truncated_data(tmp_path: Path, data: bytes) -> None:
     path = tmp_path / "temp.ppm"
