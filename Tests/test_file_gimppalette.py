@@ -40,6 +40,15 @@ def test_get_palette(filename: str, size: int) -> None:
     assert len(palette) / 3 == size
 
 
+def test_empty_line() -> None:
+    with open("Tests/images/custom_gimp_palette.gpl", "rb") as fp:
+        data = fp.read()
+    data = data.replace(b"#\n", b"\n") + b"\n"
+
+    palette = GimpPaletteFile(BytesIO(data))
+    assert len(palette.palette) / 3 == 8
+
+
 def test_frombytes() -> None:
     # Test that __init__ stops reading after 260 lines
     with open("Tests/images/custom_gimp_palette.gpl", "rb") as fp:
