@@ -4546,7 +4546,7 @@ _compare_pixels(
     const char *const *pixels_b,
     const UINT32 mask
 ) {
-    if (ysize <= 0 || linesize <= 0) {
+    if (ysize == 0 || linesize <= 0) {
         // Pixel arrays without size are always equal
         return 0;
     }

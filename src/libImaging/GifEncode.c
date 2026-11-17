@@ -246,7 +246,7 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             return 0;
         }
         /* sanity check */
-        if (state->xsize <= 0 || state->ysize <= 0) {
+        if (state->xsize == 0 || state->ysize == 0) {
             /* Is this better than an error return? */
             /* This will handle any legal "LZW Minimum Code Size" */
             memset(buf, 0, 5);
