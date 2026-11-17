@@ -137,6 +137,12 @@ Minimum C version
 C11 is now the minimum version of C required to compile Pillow from source.
 Pillow requires Python 3.11 or later, and CPython 3.11 and later require C11.
 
+Reading PDF dates with UTC offsets
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow now converts PDF date offsets consistently across platforms. On
+Windows, converting dates before 1970 could fail or return the wrong weekday.
+
 WebP encoding errors now include a description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

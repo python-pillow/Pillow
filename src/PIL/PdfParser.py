@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-__lazy_modules__ = {"calendar", "mmap", "zlib"}
+__lazy_modules__ = {"datetime", "mmap", "zlib"}
 
-import calendar
 import codecs
 import collections
+import datetime
 import mmap
 import os
 import re
@@ -295,10 +295,13 @@ class PdfDict(_DictBase):
             format = "%Y%m%d%H%M%S"[: len(value) - 2]
             value = time.strptime(value[: len(format) + 2], format)
             if relationship in ["+", "-"]:
-                offset *= 60
                 if relationship == "+":
                     offset *= -1
-                value = time.gmtime(calendar.timegm(value) + offset)
+                year, month, day, hour, minute, second = value[:6]
+                local_date = datetime.datetime(year, month, day, hour, minute)
+                value = (
+                    local_date + datetime.timedelta(minutes=offset, seconds=second)
+                ).utctimetuple()
         return value
 
     def __bytes__(self) -> bytes:

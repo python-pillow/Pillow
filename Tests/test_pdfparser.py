@@ -107,6 +107,11 @@ def test_parsing() -> None:
             assert time.strftime("%Y%m%d%H%M%S", getattr(d, name)) == value
 
 
+def test_date_offset_before_unix_epoch() -> None:
+    info = PdfDict({b"CreationDate": b"D:19600102010000+02'30'"})
+    assert info.CreationDate == (1960, 1, 1, 22, 30, 0, 4, 1, 0)
+
+
 def test_max_nesting() -> None:
     data = b"<</Name" + b"[" * 1000 + b"]" * 1000 + b">>"
 
