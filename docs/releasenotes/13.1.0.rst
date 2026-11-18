@@ -168,6 +168,13 @@ away if ``dest_map`` has more than 256 entries. Such maps already raised
 :py:exc:`ValueError`, but only after processing every entry, which could take a long
 time for a very long list.
 
+BMP saving preserves alpha channel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+RGBA images saved as BMP are now written with a BITMAPV4HEADER, bitfields
+compression and channel masks, so the alpha channel is preserved when the file
+is reloaded instead of being silently dropped. Other modes are unchanged.
+
 Kerning in the basic layout engine
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -165,7 +165,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # stride should be even
     stride += stride % 2
     # Stride needs to be kept in sync with the PcxEncode.c version.
-    # Ideally it should be passed in in the state, but the bytes value
+    # Ideally it should be passed in the state, but the bytes value
     # gets overwritten.
 
     logger.debug(

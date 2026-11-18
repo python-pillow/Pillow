@@ -114,7 +114,7 @@ def APP(self: JpegImageFile, marker: int) -> None:
         if "exif" in self.info:
             self.info["exif"] += s[6:]
         else:
-            self.info["exif"] = s
+            self.info["exif"] = bytearray(s)
             self._exif_offset = self.fp.tell() - n + 6
     elif marker == 0xFFE1 and s.startswith(b"http://ns.adobe.com/xap/1.0/\x00"):
         self.info["xmp"] = s.split(b"\x00", 1)[1]
@@ -408,6 +408,8 @@ class JpegImageFile(ImageFile.ImageFile):
                 msg = "no marker found"
                 raise SyntaxError(msg)
 
+        if exif := self.info.get("exif"):
+            self.info["exif"] = bytes(exif)
         self._read_dpi_from_exif()
 
     def __getstate__(self) -> list[Any]:
