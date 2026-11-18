@@ -560,6 +560,22 @@ class TestImage:
         im2 = im.effect_spread(2)
         assert set(im2.get_flattened_data()) <= set(im.get_flattened_data())
 
+    @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+    def test_blend_16bit(self, mode: str) -> None:
+        im1 = Image.new(mode, (2, 2), 10000)
+        im2 = Image.new(mode, (2, 2), 20000)
+
+        # Shortcuts
+        assert Image.blend(im1, im2, 0.0).getpixel((0, 0)) == 10000
+        assert Image.blend(im1, im2, 1.0).getpixel((0, 0)) == 20000
+
+        # Interpolation
+        assert Image.blend(im1, im2, 0.5).getpixel((0, 0)) == 15000
+
+        # Extrapolation with clipping
+        assert Image.blend(im1, im2, -1.0).getpixel((0, 0)) == 0
+        assert Image.blend(im1, im2, 6.0).getpixel((0, 0)) == 65535
+
     def test_check_size(self) -> None:
         # Checking that the _check_size function throws value errors when we want it to
         with pytest.raises(ValueError):

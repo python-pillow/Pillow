@@ -29,14 +29,16 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
     int x, y;
 
     /* Check arguments */
-    if (!imIn1 || !imIn2 || imIn1->type != IMAGING_TYPE_UINT8 || imIn1->palette ||
-        imIn1->mode == IMAGING_MODE_1 || imIn2->palette ||
+    if (!imIn1 || !imIn2 ||
+        (imIn1->type != IMAGING_TYPE_UINT8 && imIn1->type != IMAGING_TYPE_I16) ||
+        imIn1->palette || imIn1->mode == IMAGING_MODE_1 || imIn2->palette ||
         imIn2->mode == IMAGING_MODE_1) {
         return ImagingError_ModeError();
     }
 
-    if (imIn1->type != imIn2->type || imIn1->bands != imIn2->bands ||
-        imIn1->xsize != imIn2->xsize || imIn1->ysize != imIn2->ysize) {
+    if (imIn1->mode != imIn2->mode || imIn1->type != imIn2->type ||
+        imIn1->bands != imIn2->bands || imIn1->xsize != imIn2->xsize ||
+        imIn1->ysize != imIn2->ysize) {
         return ImagingError_Mismatch();
     }
 
@@ -57,32 +59,82 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
     int ysize = imIn1->ysize;
     int linesize = imIn1->linesize;
 
-    if (alpha >= 0 && alpha <= 1.0) {
-        /* Interpolate between bands */
-        for (y = 0; y < ysize; y++) {
-            // restrict safe: imIn1 and imIn2 are read-only; imOut is a new allocation
-            UINT8 *restrict in1 = (UINT8 *)imIn1->image[y];
-            UINT8 *restrict in2 = (UINT8 *)imIn2->image[y];
-            UINT8 *restrict out = (UINT8 *)imOut->image[y];
-            for (x = 0; x < linesize; x++) {
-                out[x] = (UINT8)((int)in1[x] + alpha * ((int)in2[x] - (int)in1[x]));
+    if (imIn1->type == IMAGING_TYPE_UINT8) {
+        if (alpha >= 0 && alpha <= 1.0) {
+            /* Interpolate between bands */
+            for (y = 0; y < ysize; y++) {
+                // restrict safe: imIn1 and imIn2 are read-only; imOut is a new
+                // allocation
+                UINT8 *restrict in1 = (UINT8 *)imIn1->image[y];
+                UINT8 *restrict in2 = (UINT8 *)imIn2->image[y];
+                UINT8 *restrict out = (UINT8 *)imOut->image[y];
+                for (x = 0; x < linesize; x++) {
+                    out[x] = (UINT8)((int)in1[x] + alpha * ((int)in2[x] - (int)in1[x]));
+                }
+            }
+        } else {
+            /* Extrapolation; must make sure to clip resulting values */
+            for (y = 0; y < ysize; y++) {
+                // restrict safe: imIn1 and imIn2 are read-only; imOut is a new
+                // allocation
+                UINT8 *restrict in1 = (UINT8 *)imIn1->image[y];
+                UINT8 *restrict in2 = (UINT8 *)imIn2->image[y];
+                UINT8 *restrict out = (UINT8 *)imOut->image[y];
+                for (x = 0; x < linesize; x++) {
+                    float temp =
+                        (float)((int)in1[x] + alpha * ((int)in2[x] - (int)in1[x]));
+                    if (temp <= 0.0) {
+                        out[x] = 0;
+                    } else if (temp >= 255.0) {
+                        out[x] = 255;
+                    } else {
+                        out[x] = (UINT8)temp;
+                    }
+                }
             }
         }
-    } else {
-        /* Extrapolation; must make sure to clip resulting values */
-        for (y = 0; y < ysize; y++) {
-            // restrict safe: imIn1 and imIn2 are read-only; imOut is a new allocation
-            UINT8 *restrict in1 = (UINT8 *)imIn1->image[y];
-            UINT8 *restrict in2 = (UINT8 *)imIn2->image[y];
-            UINT8 *restrict out = (UINT8 *)imOut->image[y];
-            for (x = 0; x < linesize; x++) {
-                float temp = (float)((int)in1[x] + alpha * ((int)in2[x] - (int)in1[x]));
-                if (temp <= 0.0) {
-                    out[x] = 0;
-                } else if (temp >= 255.0) {
-                    out[x] = 255;
-                } else {
-                    out[x] = (UINT8)temp;
+    } else if (imIn1->type == IMAGING_TYPE_I16) {
+        int xsize = imIn1->xsize;
+        int bigendian = isImageI16BigEndian(imIn1);
+
+        if (alpha >= 0 && alpha <= 1.0) {
+            /* Interpolate */
+            for (y = 0; y < ysize; y++) {
+                UINT8 *restrict in1 = (UINT8 *)imIn1->image[y];
+                UINT8 *restrict in2 = (UINT8 *)imIn2->image[y];
+                UINT8 *restrict out = (UINT8 *)imOut->image[y];
+                for (x = 0; x < xsize; x++) {
+                    UINT16 v1 = bigendian ? ((UINT16)in1[x * 2] << 8) | in1[x * 2 + 1]
+                                          : in1[x * 2] | ((UINT16)in1[x * 2 + 1] << 8);
+                    UINT16 v2 = bigendian ? ((UINT16)in2[x * 2] << 8) | in2[x * 2 + 1]
+                                          : in2[x * 2] | ((UINT16)in2[x * 2 + 1] << 8);
+                    UINT16 v = (UINT16)((float)v1 + alpha * ((float)v2 - (float)v1));
+                    out[x * 2 + (bigendian ? 1 : 0)] = v & 0xFF;
+                    out[x * 2 + (bigendian ? 0 : 1)] = v >> 8;
+                }
+            }
+        } else {
+            /* Extrapolation; must make sure to clip resulting values */
+            for (y = 0; y < ysize; y++) {
+                UINT8 *restrict in1 = (UINT8 *)imIn1->image[y];
+                UINT8 *restrict in2 = (UINT8 *)imIn2->image[y];
+                UINT8 *restrict out = (UINT8 *)imOut->image[y];
+                for (x = 0; x < xsize; x++) {
+                    UINT16 v1 = bigendian ? ((UINT16)in1[x * 2] << 8) | in1[x * 2 + 1]
+                                          : in1[x * 2] | ((UINT16)in1[x * 2 + 1] << 8);
+                    UINT16 v2 = bigendian ? ((UINT16)in2[x * 2] << 8) | in2[x * 2 + 1]
+                                          : in2[x * 2] | ((UINT16)in2[x * 2 + 1] << 8);
+                    float temp = (float)v1 + alpha * ((float)v2 - (float)v1);
+                    UINT16 v;
+                    if (temp <= 0.0f) {
+                        v = 0;
+                    } else if (temp >= 65535.0f) {
+                        v = 65535;
+                    } else {
+                        v = (UINT16)temp;
+                    }
+                    out[x * 2 + (bigendian ? 1 : 0)] = v & 0xFF;
+                    out[x * 2 + (bigendian ? 0 : 1)] = v >> 8;
                 }
             }
         }
