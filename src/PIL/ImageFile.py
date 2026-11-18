@@ -518,6 +518,14 @@ class SeekableImageFile(ImageFile):
 
         self._seekTo(frame)
 
+        if self._im is not None and (
+            self.im.size != self.size
+            or self.im.mode != self.mode
+            # If there is an unloaded tile, then drop the current read-only core image
+            or (self.tile and self.readonly)
+        ):
+            self._im = None
+
     @abc.abstractmethod
     def _seekTo(self, frame: int) -> None:
         pass

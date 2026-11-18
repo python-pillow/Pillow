@@ -502,17 +502,17 @@ class TestPyEncoder(CodecsTest):
             Image.open("Tests/images/zero_height.j2k")
 
     def test_load_prepare(self) -> None:
-        class TestImageFile(ImageFile.ImageFile):
+        class TestImageFile(ImageFile.SeekableImageFile):
             def _open(self) -> None:
                 self._mode = "1"
                 self._size = (1, 1)
                 self._frame = 0
+                self.n_frames = 2
 
-            def seek(self, frame: int) -> None:
+            def _seekTo(self, frame: int) -> None:
                 self._mode = "L"
                 self._size = (2, 2)
                 self._frame = frame
-                super().seek(frame)
 
             def tell(self) -> int:
                 return self._frame
