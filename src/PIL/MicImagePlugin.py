@@ -79,7 +79,6 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         Image._decompression_bomb_check(self.size)
 
         self.frame = frame
-        Image.Image.seek(self, frame)
 
     def tell(self) -> int:
         return self.frame

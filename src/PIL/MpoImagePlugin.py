@@ -172,7 +172,6 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile, ImageFile.SeekableImageFile):
 
         self.tile = [ImageFile._Tile("jpeg", None, self.offset, self.tile[0][-1])]
         self.__frame = frame
-        Image.Image.seek(self, frame)
 
     def tell(self) -> int:
         return self.__frame

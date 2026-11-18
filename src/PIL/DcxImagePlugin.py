@@ -75,7 +75,6 @@ class DcxImageFile(PcxImageFile, ImageFile.SeekableImageFile):
         self.fp.seek(self._offset[frame])
         PcxImageFile._open(self)
         Image._decompression_bomb_check(self.size)
-        Image.Image.seek(self, frame)
 
     def tell(self) -> int:
         return self.frame

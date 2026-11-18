@@ -264,21 +264,21 @@ class TestImage:
             assert im._im is not None
 
     def test_seek_with_different_readonly(self, tmp_path: Path) -> None:
-        class MockSeekableImageFile(ImageFile.ImageFile):
+        class MockSeekableImageFile(ImageFile.SeekableImageFile):
             def _open(self) -> None:
                 self.__frame = 0
                 self._mode = "L"
                 self._size = (1, 1)
+                self.n_frames = 2
 
                 # A tile that can be memory mapped
                 self.tile = [ImageFile._Tile("raw", None, 0, self.mode)]
 
-            def seek(self, frame: int) -> None:
+            def _seekTo(self, frame: int) -> None:
                 self.__frame = frame
 
                 # A tile that cannot be memory mapped
                 self.tile = [ImageFile._Tile("mock")]
-                Image.Image.seek(self, frame)
 
             def tell(self) -> int:
                 return self.__frame
