@@ -3104,6 +3104,10 @@ class Image:
         resample: int = Resampling.NEAREST,
         fill: bool = True,
     ) -> None:
+        if any(math.isinf(v) or math.isnan(v) for v in (*box, *data)):
+            msg = "invalid data"
+            raise ValueError(msg)
+
         w = box[2] - box[0]
         h = box[3] - box[1]
 
