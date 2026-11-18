@@ -316,9 +316,6 @@ typedef enum {
     IMAGING_DITHER_FLOYDSTEINBERG = 3,  // Default
 } ImagingDitherType;
 
-typedef int (*ImagingTransformMap)(double *X, double *Y, int x, int y, void *data);
-typedef int (*ImagingTransformFilter)(void *out, Imaging im, double x, double y);
-
 /* Image Manipulation Methods */
 /* -------------------------- */
 
