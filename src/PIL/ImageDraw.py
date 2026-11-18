@@ -864,6 +864,7 @@ def floodfill(
     """
     # based on an implementation by Eric S. Raymond
     # amended by yo1995 @20180806
+    image._ensure_mutable()
     pixel = image.load()
     assert pixel is not None
     x, y = xy
