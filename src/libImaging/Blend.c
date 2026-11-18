@@ -52,12 +52,9 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
         return NULL;
     }
 
-    // We know these won't change in the loops below,
-    // so the compiler can optimize better if we pull them out.
     int ysize = imIn1->ysize;
-    int linesize = imIn1->linesize;
-
     if (imIn1->type == IMAGING_TYPE_UINT8) {
+        int linesize = imIn1->linesize;
         if (alpha >= 0 && alpha <= 1.0) {
             /* Interpolate between bands */
             for (y = 0; y < ysize; y++) {
@@ -81,15 +78,9 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
                 UINT8 *restrict in2 = (UINT8 *)imIn2->image[y];
                 UINT8 *restrict out = (UINT8 *)imOut->image[y];
                 for (x = 0; x < linesize; x++) {
-                    float temp = roundf((float)((int)in1[x] +
-                                                alpha * ((int)in2[x] - (int)in1[x])));
-                    if (temp <= 0.0) {
-                        out[x] = 0;
-                    } else if (temp >= 255.0) {
-                        out[x] = 255;
-                    } else {
-                        out[x] = (UINT8)temp;
-                    }
+                    out[x] = (UINT8)CLIP8(
+                        roundf((int)in1[x] + alpha * ((int)in2[x] - (int)in1[x]))
+                    );
                 }
             }
         }
@@ -98,7 +89,6 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
         int bigendian = isImageI16BigEndian(imIn1);
 
         if (alpha >= 0 && alpha <= 1.0) {
-            /* Interpolate */
             for (y = 0; y < ysize; y++) {
                 UINT8 *restrict in1 = (UINT8 *)imIn1->image[y];
                 UINT8 *restrict in2 = (UINT8 *)imIn2->image[y];
@@ -124,15 +114,7 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
                                ((int)in1[x * 2 + (bigendian ? 0 : 1)] << 8);
                     float v2 = (int)in2[x * 2 + (bigendian ? 1 : 0)] +
                                ((int)in2[x * 2 + (bigendian ? 0 : 1)] << 8);
-                    float temp = roundf(v1 + alpha * (v2 - v1));
-                    UINT16 v;
-                    if (temp <= 0.0f) {
-                        v = 0;
-                    } else if (temp >= 65535.0f) {
-                        v = 65535;
-                    } else {
-                        v = (UINT16)temp;
-                    }
+                    UINT16 v = CLIP16(roundf(v1 + alpha * (v2 - v1)));
                     out[x * 2 + (bigendian ? 1 : 0)] = (UINT8)(v & 0xff);
                     out[x * 2 + (bigendian ? 0 : 1)] = (UINT8)(v >> 8);
                 }
