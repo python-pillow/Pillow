@@ -340,11 +340,10 @@ xoff, yoff, xsize, ysize = 10, 20, 100, 100
 
 class MockImageFile(ImageFile.ImageFile):
     def _open(self) -> None:
-        self.rawmode = "RGBA"
         self._mode = "RGBA"
         self._size = (200, 200)
         self.tile = [
-            ImageFile._Tile("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize), 32, None)
+            ImageFile._Tile("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize), 32)
         ]
 
 
@@ -386,7 +385,7 @@ class TestPyDecoder(CodecsTest):
         buf = BytesIO(b"\x00" * 255)
 
         im = MockImageFile(buf)
-        im.tile = [ImageFile._Tile("MOCK", extents, 32, None)]
+        im.tile = [ImageFile._Tile("MOCK", extents, 32)]
 
         with pytest.raises(ValueError):
             im.load()
@@ -395,7 +394,7 @@ class TestPyDecoder(CodecsTest):
         buf = BytesIO(b"\x00" * 255)
 
         im = MockImageFile(buf)
-        im.tile = [ImageFile._Tile("MOCK", None, 32, None)]
+        im.tile = [ImageFile._Tile("MOCK", None, 32)]
 
         im.load()
 
@@ -464,7 +463,7 @@ class TestPyEncoder(CodecsTest):
         buf = BytesIO(b"\x00" * 255)
 
         im = MockImageFile(buf)
-        im.tile = [ImageFile._Tile("MOCK", None, 32, None)]
+        im.tile = [ImageFile._Tile("MOCK", None, 32)]
 
         fp = BytesIO()
         ImageFile._save(im, fp, [ImageFile._Tile("MOCK", None, 0, "RGB")])
