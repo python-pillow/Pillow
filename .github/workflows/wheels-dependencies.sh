@@ -167,7 +167,7 @@ function build_zlib_ng {
         CFLAGS="$CFLAGS -fPIC -fvisibility=hidden" build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --static --zlib-compat
         # The shared install used to run ldconfig, which later steps rely on
         # to find libraries in /usr/local/lib. musl has no cache.
-        if [[ -z "$IS_ALPINE" ]]; then
+        if [[ -n "$IS_LINUX" ]] && [[ -z "$IS_ALPINE" ]]; then
             ldconfig
         fi
     fi
