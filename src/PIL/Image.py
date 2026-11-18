@@ -2290,6 +2290,10 @@ class Image:
             msg = "illegal image mode"
             raise ValueError(msg)
 
+        if len(dest_map) > 256:
+            msg = "dest_map must not have more than 256 entries"
+            raise ValueError(msg)
+
         bands = 3
         palette_mode = "RGB"
         if source_palette is None:
@@ -2305,7 +2309,7 @@ class Image:
             bands = 4
             palette_mode = "RGBA"
 
-        palette_bytes = b""
+        palette_bytes = bytearray()
         new_positions = [0] * 256
 
         # pick only the used colors from the palette

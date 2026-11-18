@@ -687,6 +687,11 @@ class TestImage:
             with pytest.raises(ValueError):
                 im_hopper.remap_palette([])
 
+    def test_remap_palette_too_many_entries(self) -> None:
+        im = Image.new("P", (1, 1))
+        with pytest.raises(ValueError, match="more than 256 entries"):
+            im.remap_palette([0] * 257)
+
     @pytest.mark.parametrize("palette_mode", ("RGB", "RGBA"))
     def test_remap_palette_source_palette(self, palette_mode: str) -> None:
         # When source_palette is provided, mode is inferred from length.
