@@ -2,6 +2,16 @@
 
 set -e
 
+if [ -z "$CIBUILDWHEEL_BUILD_IDENTIFIER" ]; then
+    if [ -n "$LIB_FUZZING_ENGINE" ] && [ $(uname -s) = "Linux" ]; then
+        # https://github.com/google/oss-fuzz/blob/master/projects/pillow/build_depends.sh
+        CIBUILDWHEEL_BUILD_IDENTIFIER="manylinux_$(uname -m)"
+    else
+        echo "Unable to determine operating system and architecture"
+        exit 1
+    fi
+fi
+
 # CIBUILDWHEEL_BUILD_IDENTIFIER has the format {python_version}-{os}_{arch}
 CIBW_OS_ARCH=${CIBUILDWHEEL_BUILD_IDENTIFIER#*-}
 CIBW_OS=${CIBW_OS_ARCH%%_*}
@@ -27,7 +37,7 @@ if [ "$CIBW_OS" = "android" ]; then
         arm64_v8a) PLAT=aarch64 ;;
         x86_64) PLAT=x86_64 ;;
         *)
-            echo "ERROR: Unknown Android architecture '$CIBW_ARCH'"
+            echo "Unknown Android architecture '$CIBW_ARCH'"
             exit 1
     esac
     HOST_CONFIGURE_FLAGS="--host=$PLAT-linux-android"
@@ -95,7 +105,7 @@ elif [[ "$CIBW_OS" = *linux ]]; then
     MB_ML_VER=${AUDITWHEEL_POLICY:9}
 
 else
-    echo "ERROR: Unknown operating system '$CIBW_OS'"
+    echo "Unknown operating system '$CIBW_OS'"
     exit 1
 fi
 
