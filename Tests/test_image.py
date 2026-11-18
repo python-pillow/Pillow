@@ -252,6 +252,49 @@ class TestImage:
             im.save(temp_file)
             assert im.readonly
 
+    def test_seek_with_readonly(self) -> None:
+        with Image.open("Tests/images/hopper_8bit.pgm") as im:
+            im.load()
+            assert im.readonly
+            assert im._im is not None
+
+            # A no-op seek should not clear the core image
+            im.seek(im.tell())
+
+            assert im._im is not None
+
+    def test_seek_with_different_readonly(self, tmp_path: Path) -> None:
+        class MockSeekableImageFile(ImageFile.ImageFile):
+            def _open(self) -> None:
+                self.__frame = 0
+                self._mode = "L"
+                self._size = (1, 1)
+
+                # A tile that can be memory mapped
+                self.tile = [ImageFile._Tile("raw", None, 0, self.mode)]
+
+            def seek(self, frame: int) -> None:
+                self.__frame = frame
+
+                # A tile that cannot be memory mapped
+                self.tile = [ImageFile._Tile("mock")]
+                Image.Image.seek(self, frame)
+
+            def tell(self) -> int:
+                return self.__frame
+
+        f = tmp_path / "out.mock"
+        f.write_bytes(b"\x00" * 4)
+        im = MockSeekableImageFile(f)
+        im.load()
+
+        assert im.readonly
+        assert im._im is not None
+        im.seek(1)
+
+        # seek() has cleared the core image, because the original image was readonly
+        assert im._im is None
+
     def test_dump(self, tmp_path: Path) -> None:
         im = Image.new("L", (10, 10))
         im._dump(str(tmp_path / "temp_L.ppm"))
