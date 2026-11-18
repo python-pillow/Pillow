@@ -1846,3 +1846,79 @@ def test_dash_empty() -> None:
 
     with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
         draw.rectangle([10, 10, 90, 90], dash=())
+
+
+def test_draw_translation_invariant_negative_coords() -> None:
+    """Shapes extending past the left edge must match a shifted crop (#10228).
+
+    Float coordinates were truncated toward zero when converted to integers,
+    so e.g. -0.9 became 0 instead of -1 and geometry lying entirely left of
+    x = 0 leaked into column 0. An odd shift (63) also catches rounding
+    that is not translation-invariant.
+    """
+    shift = 63
+    width = height = 12
+
+    def draw(
+        kind: str,
+        pts: list[tuple[float, float]],
+        dx: int,
+        line_width: int = 0,
+    ) -> Image.Image:
+        im = Image.new("L", (width + shift, height), 0)
+        d = ImageDraw.Draw(im)
+        shifted = [(x + dx, y) for x, y in pts]
+        if kind == "polygon":
+            d.polygon(shifted, fill=255, outline=255)
+        else:
+            d.line(shifted, fill=255, width=line_width)
+        return im.crop((dx, 0, dx + width, height))
+
+    shapes: list[tuple[str, list[tuple[float, float]], int]] = [
+        ("polygon", [(-0.9, 2), (-0.2, 2), (-0.2, 8), (-0.9, 8)], 0),
+        ("polygon", [(-0.3, 2), (5.5, 2), (5.5, 8), (-0.3, 8)], 0),
+        ("line", [(-0.6, 2), (-0.6, 9)], 1),
+        ("line", [(-1.6, 2), (-1.6, 9)], 3),
+    ]
+    for kind, pts, line_width in shapes:
+        assert_image_equal(
+            draw(kind, pts, 0, line_width), draw(kind, pts, shift, line_width)
+        )
+
+
+def test_draw_translation_invariant_negative_coords_other_shapes() -> None:
+    """Other ImageDraw shapes share the same coordinate conversion (#10228)."""
+    shift = 63
+    width = height = 16
+
+    def draw(
+        draw_shape: Callable[[ImageDraw.ImageDraw, int], None], dx: int
+    ) -> Image.Image:
+        im = Image.new("L", (width + shift, height), 0)
+        draw_shape(ImageDraw.Draw(im), dx)
+        return im.crop((dx, 0, dx + width, height))
+
+    def draw_rectangle(d: ImageDraw.ImageDraw, dx: int) -> None:
+        d.rectangle([(-0.9 + dx, 2), (-0.2 + dx, 8)], fill=255)
+
+    def draw_ellipse(d: ImageDraw.ImageDraw, dx: int) -> None:
+        d.ellipse([(-0.9 + dx, 2), (5.5 + dx, 8)], fill=255)
+
+    def draw_point(d: ImageDraw.ImageDraw, dx: int) -> None:
+        d.point([(-0.9 + dx, 2), (-0.2 + dx, 8)], fill=255)
+
+    def draw_polygon_above(d: ImageDraw.ImageDraw, dx: int) -> None:
+        # Geometry lying entirely above y = 0 must not leak into row 0.
+        d.polygon(
+            [(2 + dx, -0.9), (8 + dx, -0.9), (8 + dx, -0.2), (2 + dx, -0.2)], fill=255
+        )
+
+    for draw_shape in (draw_rectangle, draw_ellipse, draw_point, draw_polygon_above):
+        assert_image_equal(draw(draw_shape, 0), draw(draw_shape, shift))
+
+
+def test_draw_rectangle_negative_coordinates() -> None:
+    """A rectangle ending at (0, 0) still covers the single pixel (#10228)."""
+    im = Image.new("RGB", (1, 1))
+    ImageDraw.Draw(im).rectangle((-1, -1, 0, 0), "#f00")
+    assert im.getpixel((0, 0)) == (255, 0, 0)
