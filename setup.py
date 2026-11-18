@@ -282,8 +282,9 @@ def _pkg_config(name: str) -> tuple[list[str], list[str]] | None:
     command = os.environ.get("PKG_CONFIG", "pkg-config")
     env = os.environ.copy()
     if sys.platform in ["android", "darwin", "ios"]:
-        env["PKG_CONFIG_PATH"] = os.path.abspath(
-            "build/deps/current/prefix/lib/pkgconfig"
+        env["PKG_CONFIG_PATH"] = ":".join(
+            os.path.abspath(f"build/deps/current/prefix/{subdir}/pkgconfig")
+            for subdir in ["lib", "share"]
         )
 
     for keep_system in (True, False):
