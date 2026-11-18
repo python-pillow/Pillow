@@ -340,7 +340,6 @@ xoff, yoff, xsize, ysize = 10, 20, 100, 100
 
 class MockImageFile(ImageFile.ImageFile):
     def _open(self) -> None:
-        self.rawmode = "RGBA"
         self._mode = "RGBA"
         self._size = (200, 200)
         self.tile = [
