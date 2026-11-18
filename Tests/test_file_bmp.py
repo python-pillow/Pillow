@@ -20,19 +20,17 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-@pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
+@pytest.mark.parametrize("mode", ("1", "L", "P", "RGB", "RGBA"))
 def test_sanity(mode: str, tmp_path: Path) -> None:
     outfile = tmp_path / "temp.bmp"
 
     im = hopper(mode)
-    im.save(outfile, "BMP")
+    im.save(outfile)
 
     with Image.open(outfile) as reloaded:
-        reloaded.load()
-        assert im.mode == reloaded.mode
-        assert im.size == reloaded.size
         assert reloaded.format == "BMP"
         assert reloaded.get_format_mimetype() == "image/bmp"
+        assert_image_equal(im, reloaded)
 
 
 def test_invalid_file() -> None:
