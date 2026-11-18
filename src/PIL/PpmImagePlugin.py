@@ -173,11 +173,10 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         return self.fd.read(ImageFile.SAFEBLOCK)
 
     def _find_comment_end(self, block: bytes, start: int = 0) -> int:
-        lf = block.find(b"\n", start)
-        cr = block.find(b"\r", start)
-        if lf == -1 or cr == -1:
-            return max(lf, cr)
-        return min(lf, cr)
+        a = block.find(b"\n", start)
+        b = block.find(b"\r", start)
+        # lowest nonnegative index (or -1)
+        return max(a, b) if -1 in {a, b} else min(a, b)
 
     def _ignore_comments(self, block: bytes) -> bytes:
         if self._comment_spans:

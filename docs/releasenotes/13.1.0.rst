@@ -166,10 +166,3 @@ Kerning in the basic layout engine
 When libraqm is not available, kerning was applied at 1/64th of its intended size,
 because a value in pixels was added to an advance in 26.6 fixed point precision.
 The full kerning value is now applied even when libraqm is not available.
-
-Plain Netpbm comments at read boundaries
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-When a comment in a plain Netpbm image ends at the start of a read block,
-Pillow now resumes decoding after that line ending. Previously, it could skip
-pixel values if it found a different line ending later in the same block.
