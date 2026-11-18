@@ -280,7 +280,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                     im, TiffImagePlugin.TiffImageFile
                 ):
                     im._frame_pos = [ifd_offset]
-                    im._seek(0)
+                    im._seekTo(0)
                 im.load()
                 child_images.append(im)
 
@@ -500,6 +500,8 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
 
 
 class SeekableImageFile(ImageFile):
+    _tile_size: tuple[int, int] | None = None
+
     def seek(self, frame: int) -> None:
         if (
             frame < 0
@@ -519,7 +521,7 @@ class SeekableImageFile(ImageFile):
         self._seekTo(frame)
 
         if self._im is not None and (
-            self.im.size != self.size
+            self.im.size != (self._tile_size or self.size)
             or self.im.mode != self.mode
             # If there is an unloaded tile, then drop the current read-only core image
             or (self.tile and self.readonly)

@@ -1278,31 +1278,21 @@ class TiffImageFile(ImageFile.SeekableImageFile):
         logger.debug("- ifh: %s", repr(ifh))  # Use repr to avoid str(bytes)
 
         # and load the first frame
-        self._seek(0)
+        TiffImageFile._seekTo(self, 0)
 
     @property
     def n_frames(self) -> int:
         current_n_frames = self._n_frames
         if current_n_frames is None:
             current = self.tell()
-            self._seek(len(self._frame_pos))
+            self._seekTo(len(self._frame_pos))
             while self._n_frames is None:
-                self._seek(self.tell() + 1)
+                self._seekTo(self.tell() + 1)
             self.seek(current)
         assert self._n_frames is not None
         return self._n_frames
 
     def _seekTo(self, frame: int) -> None:
-        """Select a given frame as current image"""
-        self._seek(frame)
-        if self._im is not None and (
-            self.im.size != self._tile_size
-            or self.im.mode != self.mode
-            or self.readonly
-        ):
-            self._im = None
-
-    def _seek(self, frame: int) -> None:
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
         self.fp = self._fp
@@ -1388,6 +1378,7 @@ class TiffImageFile(ImageFile.SeekableImageFile):
             return super().load()
 
         original_size = self._size
+        assert self._tile_size is not None
         self._size = self._tile_size
 
         try:
