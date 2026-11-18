@@ -67,7 +67,9 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
                 UINT8 *restrict in2 = (UINT8 *)imIn2->image[y];
                 UINT8 *restrict out = (UINT8 *)imOut->image[y];
                 for (x = 0; x < linesize; x++) {
-                    out[x] = (UINT8)((int)in1[x] + alpha * ((int)in2[x] - (int)in1[x]));
+                    out[x] = (UINT8)roundf(
+                        (int)in1[x] + alpha * ((int)in2[x] - (int)in1[x])
+                    );
                 }
             }
         } else {
@@ -79,8 +81,8 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
                 UINT8 *restrict in2 = (UINT8 *)imIn2->image[y];
                 UINT8 *restrict out = (UINT8 *)imOut->image[y];
                 for (x = 0; x < linesize; x++) {
-                    float temp =
-                        (float)((int)in1[x] + alpha * ((int)in2[x] - (int)in1[x]));
+                    float temp = roundf((float)((int)in1[x] +
+                                                alpha * ((int)in2[x] - (int)in1[x])));
                     if (temp <= 0.0) {
                         out[x] = 0;
                     } else if (temp >= 255.0) {
@@ -102,13 +104,13 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
                 UINT8 *restrict in2 = (UINT8 *)imIn2->image[y];
                 UINT8 *restrict out = (UINT8 *)imOut->image[y];
                 for (x = 0; x < xsize; x++) {
-                    UINT16 v1 = bigendian ? ((UINT16)in1[x * 2] << 8) | in1[x * 2 + 1]
-                                          : in1[x * 2] | ((UINT16)in1[x * 2 + 1] << 8);
-                    UINT16 v2 = bigendian ? ((UINT16)in2[x * 2] << 8) | in2[x * 2 + 1]
-                                          : in2[x * 2] | ((UINT16)in2[x * 2 + 1] << 8);
-                    UINT16 v = (UINT16)((float)v1 + alpha * ((float)v2 - (float)v1));
-                    out[x * 2 + (bigendian ? 1 : 0)] = v & 0xFF;
-                    out[x * 2 + (bigendian ? 0 : 1)] = v >> 8;
+                    float v1 = (int)in1[x * 2 + (bigendian ? 1 : 0)] +
+                               ((int)in1[x * 2 + (bigendian ? 0 : 1)] << 8);
+                    float v2 = (int)in2[x * 2 + (bigendian ? 1 : 0)] +
+                               ((int)in2[x * 2 + (bigendian ? 0 : 1)] << 8);
+                    UINT16 v = roundf(v1 + alpha * (v2 - v1));
+                    out[x * 2 + (bigendian ? 1 : 0)] = (UINT8)(v & 0xff);
+                    out[x * 2 + (bigendian ? 0 : 1)] = (UINT8)(v >> 8);
                 }
             }
         } else {
@@ -118,11 +120,11 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
                 UINT8 *restrict in2 = (UINT8 *)imIn2->image[y];
                 UINT8 *restrict out = (UINT8 *)imOut->image[y];
                 for (x = 0; x < xsize; x++) {
-                    UINT16 v1 = bigendian ? ((UINT16)in1[x * 2] << 8) | in1[x * 2 + 1]
-                                          : in1[x * 2] | ((UINT16)in1[x * 2 + 1] << 8);
-                    UINT16 v2 = bigendian ? ((UINT16)in2[x * 2] << 8) | in2[x * 2 + 1]
-                                          : in2[x * 2] | ((UINT16)in2[x * 2 + 1] << 8);
-                    float temp = (float)v1 + alpha * ((float)v2 - (float)v1);
+                    float v1 = (int)in1[x * 2 + (bigendian ? 1 : 0)] +
+                               ((int)in1[x * 2 + (bigendian ? 0 : 1)] << 8);
+                    float v2 = (int)in2[x * 2 + (bigendian ? 1 : 0)] +
+                               ((int)in2[x * 2 + (bigendian ? 0 : 1)] << 8);
+                    float temp = roundf(v1 + alpha * (v2 - v1));
                     UINT16 v;
                     if (temp <= 0.0f) {
                         v = 0;
@@ -131,8 +133,8 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
                     } else {
                         v = (UINT16)temp;
                     }
-                    out[x * 2 + (bigendian ? 1 : 0)] = v & 0xFF;
-                    out[x * 2 + (bigendian ? 0 : 1)] = v >> 8;
+                    out[x * 2 + (bigendian ? 1 : 0)] = (UINT8)(v & 0xff);
+                    out[x * 2 + (bigendian ? 0 : 1)] = (UINT8)(v >> 8);
                 }
             }
         }
