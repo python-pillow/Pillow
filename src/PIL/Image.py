@@ -746,13 +746,17 @@ class Image:
         if self.__class__ is not other.__class__:
             return False
         assert isinstance(other, Image)
-        return (
-            self.mode == other.mode
-            and self.size == other.size
-            and self.info == other.info
-            and self.getpalette() == other.getpalette()
-            and self.tobytes() == other.tobytes()
-        )
+        if self is other:
+            return True
+        if (
+            self.mode != other.mode
+            or self.size != other.size
+            or self.info != other.info
+        ):
+            return False
+        self.load()
+        other.load()
+        return self.im == other.im
 
     def __repr__(self) -> str:
         return (
@@ -1423,11 +1427,22 @@ class Image:
         :returns: A core image object.
         """
 
-        x0, y0, x1, y1 = map(int, map(round, box))
+        import decimal
 
-        absolute_values = (abs(x1 - x0), abs(y1 - y0))
+        x0, y0, x1, y1 = (
+            (
+                v
+                if isinstance(v, int)
+                else int(
+                    decimal.Decimal(v).quantize(
+                        0, decimal.ROUND_HALF_UP if v < 0 else decimal.ROUND_HALF_DOWN
+                    )
+                )
+            )
+            for v in box
+        )
 
-        _decompression_bomb_check(absolute_values)
+        _decompression_bomb_check((x1 - x0, y1 - y0))
 
         return im.crop((x0, y0, x1, y1))
 
@@ -1946,7 +1961,7 @@ class Image:
             source = ImageColor.getcolor(im, self.mode)
         elif isinstance(im, Image):
             if self.mode != im.mode and (
-                self.mode != "RGB" or im.mode not in {"LA", "RGBA", "RGBa"}
+                self.mode != "RGB" or im.mode not in {"RGBA", "RGBa"}
             ):
                 # should use an adapter for this!
                 im = im.convert(self.mode)

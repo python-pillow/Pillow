@@ -1737,7 +1737,10 @@ _point_impl(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    const ModeID mode = findModeID(mode_name);
+    ModeID mode = findModeID(mode_name);
+    if (mode == IMAGING_MODE_UNKNOWN) {
+        mode = self->image->mode;
+    }
 
     if (mode == IMAGING_MODE_F) {
         FLOAT32 *data;
@@ -1766,13 +1769,13 @@ _point_impl(ImagingObject *self, PyObject *args) {
         INT32 *data;
         UINT8 lut[1024];
 
-        if (mode) {
+        if (mode == self->image->mode) {
+            bands = self->image->bands;
+        } else {
             bands = getbands(mode);
             if (bands < 0) {
                 return NULL;
             }
-        } else {
-            bands = self->image->bands;
         }
 
         /* map to integer data */
@@ -1784,7 +1787,7 @@ _point_impl(ImagingObject *self, PyObject *args) {
 
         if (mode == IMAGING_MODE_I) {
             im = ImagingPoint(self->image, mode, (void *)data);
-        } else if (mode && bands > 1) {
+        } else if (mode != self->image->mode && bands > 1) {
             for (i = 0; i < 256; i++) {
                 lut[i * 4] = CLIP8(data[i]);
                 lut[i * 4 + 1] = CLIP8(data[i + 256]);
@@ -1858,7 +1861,7 @@ _putdata_impl(ImagingObject *self, PyObject *args) {
 
     image = self->image;
 
-    if (image->image8 && PyBytes_Check(data)) {
+    if (image->pixelsize == 1 && PyBytes_Check(data)) {
         n = PyBytes_GET_SIZE(data);
     } else {
         Py_ssize_t reported = PySequence_Size(data);
@@ -1895,7 +1898,7 @@ _putdata_impl(ImagingObject *self, PyObject *args) {
         }                                                               \
     }
     if (image->image8) {
-        if (PyBytes_Check(data)) {
+        if (image->pixelsize == 1 && PyBytes_Check(data)) {
             unsigned char *p;
             p = (unsigned char *)PyBytes_AS_STRING(data);
             if (scale == 1.0 && offset == 0.0) {
@@ -3768,7 +3771,8 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
     PyObject *data;
     int ink;
     int width;
-    if (!PyArg_ParseTuple(args, "Oii", &data, &ink, &width)) {
+    PyObject *dash = NULL;
+    if (!PyArg_ParseTuple(args, "Oii|O", &data, &ink, &width, &dash)) {
         return NULL;
     }
 
@@ -3780,6 +3784,7 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
     Py_BEGIN_CRITICAL_SECTION2(self, self->image);
     if (width == 1) {
         double *p = NULL;
+        int dash_offset = 0;
         for (i = 0; i < n - 1; i++) {
             p = &xy[i + i];
             if (ImagingDrawLine(
@@ -3789,7 +3794,9 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
                     (int)p[2],
                     (int)p[3],
                     &ink,
-                    self->blend
+                    self->blend,
+                    dash,
+                    &dash_offset
                 ) < 0) {
                 free(xy);
                 return NULL;
@@ -3962,8 +3969,9 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
     int fill = 0;
     int width = 0;
     ImagingObject *maskp = NULL;
+    PyObject *dash = NULL;
     if (!PyArg_ParseTuple(
-            args, "Oi|iiO!", &data, &ink, &fill, &width, &Imaging_Type, &maskp
+            args, "Oi|iiOO!", &data, &ink, &fill, &width, &dash, &Imaging_Type, &maskp
         )) {
         return NULL;
     }
@@ -4004,7 +4012,8 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
         fill,
         width,
         self->blend,
-        maskp ? maskp->image : NULL
+        maskp ? maskp->image : NULL,
+        dash != Py_None ? dash : NULL
     );
     Py_END_CRITICAL_SECTION2();
 
@@ -4027,7 +4036,8 @@ _draw_rectangle(ImagingDrawObject *self, PyObject *args) {
     int ink;
     int fill = 0;
     int width = 0;
-    if (!PyArg_ParseTuple(args, "Oi|ii", &data, &ink, &fill, &width)) {
+    PyObject *dash = NULL;
+    if (!PyArg_ParseTuple(args, "Oi|iiO", &data, &ink, &fill, &width, &dash)) {
         return NULL;
     }
 
@@ -4517,6 +4527,158 @@ static PySequenceMethods image_as_sequence = {
     (ssizessizeobjargproc)NULL, /*sq_ass_slice*/
 };
 
+/**
+ * Compare two pixel arrays in the given mode for equality.
+ *
+ * @param mode The mode of the pixel arrays.
+ * @param ysize The number of rows in the pixel arrays.
+ * @param linesize The number of bytes in each row of the pixel arrays.
+ * @param pixels_a Pointer to the first array of pixel row arrays.
+ * @param pixels_b Pointer to the second array of pixel row arrays.
+ * @return 0 if the pixel arrays are equal, 1 if they are not equal.
+ */
+static int
+_compare_pixels(
+    const ModeID mode,
+    const int ysize,
+    const int linesize,
+    const char *const *pixels_a,
+    const char *const *pixels_b,
+    const UINT32 mask
+) {
+    if (ysize <= 0 || linesize <= 0) {
+        // Pixel arrays without size are always equal
+        return 0;
+    }
+
+    if (mode == IMAGING_MODE_1) {
+        // 1 mode pixels are either empty (0) or not (1-255),
+        // so compare the truthiness of each value
+        for (int y = 0; y < ysize; y++) {
+            const UINT8 *line_a = (const UINT8 *)pixels_a[y];
+            const UINT8 *line_b = (const UINT8 *)pixels_b[y];
+            // Check the first pixel separately; if it's different,
+            // we don't need to enter the loop at all.
+            if ((line_a[0] == 0) != (line_b[0] == 0)) {
+                return 1;
+            }
+            // Autovectorizable (see the masked loop below)
+            UINT8 diff = 0;
+            for (int x = 0; x < linesize; x++) {
+                diff |= (line_a[x] == 0) ^ (line_b[x] == 0);
+            }
+            if (diff) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    if (mask == 0xffffffff) {
+        // We aren't masking anything
+        for (int y = 0; y < ysize; y++) {
+            if (memcmp(pixels_a[y], pixels_b[y], linesize)) {
+                return 1;
+            }
+        }
+    } else {
+        // All modes where we use a mask store four bytes per pixel.
+        const int xsize = linesize / 4;
+        for (int y = 0; y < ysize; y++) {
+            const UINT32 *line_a = (const UINT32 *)pixels_a[y];
+            const UINT32 *line_b = (const UINT32 *)pixels_b[y];
+            // Check the first pixel separately; if it's different,
+            // we don't need to enter the loop at all.
+            if ((line_a[0] ^ line_b[0]) & mask) {
+                return 1;
+            }
+            // Autovectorizable form: compute one row at a time,
+            // and OR together all the differences in that row,
+            // then see if we saw any differences at all.
+            // This loop will not bail out in the middle of a row (the common case of
+            // "entirely different images, same size and mode"
+            // will have been taken care of above in the first-pixel check),
+            // but regardless, it measures to be faster on modern CPUs.
+            UINT32 diff = 0;
+            for (int x = 0; x < xsize; x++) {
+                diff |= (line_a[x] ^ line_b[x]) & mask;
+            }
+            if (diff) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+/**
+ * Compare two palettes for equality.
+ *
+ * @param a Pointer to the first palette. May be NULL.
+ * @param b Pointer to the second palette. May be NULL.
+ * @return 0 if the palettes are equal, 1 if they are not equal.
+ */
+static int
+_compare_palette(const ImagingPalette a, const ImagingPalette b) {
+    if (a == NULL && b == NULL) {
+        return 0;
+    }
+    if (a == NULL || b == NULL || a->size != b->size || a->mode != b->mode) {
+        return 1;
+    }
+
+    const char *a_data = (const char *)a->palette;
+    const char *b_data = (const char *)b->palette;
+    return _compare_pixels(a->mode, 1, a->size * 4, &a_data, &b_data, 0xffffffff);
+}
+
+static PyObject *
+image_richcompare(PyObject *self, PyObject *other, int op) {
+    if (op != Py_EQ && op != Py_NE) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+
+    if (!PyImaging_Check(other)) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+
+    const Imaging a = ((ImagingObject *)self)->image;
+    const Imaging b = ((ImagingObject *)other)->image;
+
+    if (a == NULL || b == NULL) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+
+    if (a->mode != b->mode || a->xsize != b->xsize || a->ysize != b->ysize ||
+        _compare_palette(a->palette, b->palette) != 0) {
+        return op == Py_EQ ? Py_False : Py_True;
+    }
+
+    // All of the modes with padding bytes use four bytes for their pixels
+    UINT32 mask = 0xffffffff;
+    if (a->bands == 3) {
+        // Three channels in four bytes, so ignore the last byte
+#ifdef WORDS_BIGENDIAN
+        mask = 0xffffff00;
+#else
+        mask = 0x00ffffff;
+#endif
+    } else if (a->bands == 2) {
+        // Two channels in four bytes, so ignore the middle two bytes
+        mask = 0xff0000ff;
+    }
+
+    const int equal = _compare_pixels(
+                          a->mode,
+                          a->ysize,
+                          a->linesize,
+                          (const char *const *)a->image,
+                          (const char *const *)b->image,
+                          mask
+                      ) == 0;
+    return PyBool_FromLong(op == Py_EQ ? equal : !equal);
+}
+
 /* type description */
 
 static PyTypeObject Imaging_Type = {
@@ -4524,6 +4686,7 @@ static PyTypeObject Imaging_Type = {
     .tp_basicsize = sizeof(ImagingObject),
     .tp_dealloc = (destructor)_dealloc,
     .tp_as_sequence = &image_as_sequence,
+    .tp_richcompare = image_richcompare,
     .tp_methods = methods,
     .tp_getset = getsetters,
 };
