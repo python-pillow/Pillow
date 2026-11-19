@@ -59,3 +59,42 @@ def test_alpha(op: str) -> None:
             op,
             amount,
         )
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16B", "I;16L", "I;16N"))
+@pytest.mark.parametrize("op", ("Color", "Brightness", "Contrast", "Sharpness"))
+def test_16bit(mode: str, op: str) -> None:
+    im = Image.new(mode, (10, 10), 1000)
+    enhanced = getattr(ImageEnhance, op)(im).enhance(0.5)
+    assert enhanced.mode == mode
+    assert enhanced.size == im.size
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16B", "I;16L", "I;16N"))
+def test_16bit_values(mode: str) -> None:
+    # Brightness
+    im = Image.new(mode, (2, 2), 1000)
+    assert getattr(ImageEnhance, "Brightness")(im).enhance(0.0).getpixel((0, 0)) == 0
+    assert getattr(ImageEnhance, "Brightness")(im).enhance(0.5).getpixel((0, 0)) == 500
+    assert getattr(ImageEnhance, "Brightness")(im).enhance(1.0).getpixel((0, 0)) == 1000
+    assert getattr(ImageEnhance, "Brightness")(im).enhance(2.0).getpixel((0, 0)) == 2000
+
+    # Contrast
+    im2 = Image.new(mode, (2, 1))
+    im2.putpixel((0, 0), 1000)
+    im2.putpixel((1, 0), 3000)
+    c = ImageEnhance.Contrast(im2)
+    assert c.enhance(0.0).getpixel((0, 0)) == 2000
+    assert c.enhance(0.0).getpixel((1, 0)) == 2000
+    assert c.enhance(0.5).getpixel((0, 0)) == 1500
+    assert c.enhance(0.5).getpixel((1, 0)) == 2500
+    assert c.enhance(1.0).getpixel((0, 0)) == 1000
+    assert c.enhance(1.0).getpixel((1, 0)) == 3000
+    assert c.enhance(2.0).getpixel((0, 0)) == 0
+    assert c.enhance(2.0).getpixel((1, 0)) == 4000
+
+    # Color (grayscale is unchanged)
+    col = ImageEnhance.Color(im)
+    assert col.enhance(0.0).getpixel((0, 0)) == 1000
+    assert col.enhance(0.5).getpixel((0, 0)) == 1000
+    assert col.enhance(2.0).getpixel((0, 0)) == 1000

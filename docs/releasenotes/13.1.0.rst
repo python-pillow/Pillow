@@ -196,3 +196,10 @@ Memory leak when merging a single band with a mismatched mode
 requested mode, such as ``Image.merge("F", [l_image])``, raised
 :py:exc:`ValueError` but leaked the memory allocated for the output image. This
 has been fixed.
+
+Support 16-bit images in ImageEnhance
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageEnhance.Brightness`, :py:class:`~PIL.ImageEnhance.Contrast`,
+:py:class:`~PIL.ImageEnhance.Sharpness`, and :py:class:`~PIL.ImageEnhance.Color`
+now support 16-bit images (such as mode ``I;16``).
