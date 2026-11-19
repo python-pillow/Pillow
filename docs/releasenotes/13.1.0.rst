@@ -198,7 +198,7 @@ requested mode, such as ``Image.merge("F", [l_image])``, raised
 has been fixed.
 
 Compressed TIFF EXIF metadata
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Nested EXIF and GPS directories are now preserved when saving TIFF images with
 libtiff compression. Previously, passing these directories could raise
