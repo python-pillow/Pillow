@@ -27,7 +27,6 @@
 static void
 _copy(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
-    int y;
 
     ImagingCopyPalette(imOut, imIn);
 
@@ -40,7 +39,7 @@ _copy(Imaging imOut, Imaging imIn) {
     if (imIn->block != NULL && imOut->block != NULL) {
         memcpy(imOut->block, imIn->block, (size_t)imIn->ysize * imIn->linesize);
     } else {
-        for (y = 0; y < imIn->ysize; y++) {
+        for (int y = 0; y < imIn->ysize; y++) {
             memcpy(imOut->image[y], imIn->image[y], imIn->linesize);
         }
     }
@@ -58,10 +57,6 @@ _copy(Imaging imOut, Imaging imIn) {
  */
 Imaging
 ImagingCopy(Imaging imIn) {
-    if (!imIn) {
-        return (Imaging)ImagingError_ValueError(NULL);
-    }
-
     Imaging imOut = ImagingNewDirty(imIn->mode, imIn->xsize, imIn->ysize);
     if (!imOut) {
         return NULL;
@@ -80,10 +75,6 @@ ImagingCopy(Imaging imIn) {
  */
 Imaging
 ImagingCopyInto(Imaging imOut, Imaging imIn) {
-    if (!imIn || !imOut) {
-        return (Imaging)ImagingError_ValueError(NULL);
-    }
-
     if (imOut->mode != imIn->mode || imOut->xsize != imIn->xsize ||
         imOut->ysize != imIn->ysize) {
         return ImagingError_Mismatch();

@@ -1683,18 +1683,18 @@ static struct {
  * Convert imIn to `mode`, returning a new image.
  * If imIn is already in `mode`, this returns a copy.
  *
- * @param imIn    Source image to convert.
- * @param mode    Target mode.
- * @param palette Target palette for conversions to "P" or "PA";
- *                NULL to use a default palette.
- * @param dither  Dither method when converting to "P", "PA" or "1".
- *                Currently, for historical PIL reasons,
- *                any value other than IMAGING_DITHER_NONE uses Floyd-Steinberg
- *                dithering.
+ * @param imIn      Source image to convert.
+ * @param mode      Target mode.
+ * @param palette   Target palette for conversions to "P" or "PA";
+ *                  NULL to use a default palette.
+ * @param dither    Dither method when converting to "P", "PA" or "1".
+ *                  Currently, for historical PIL reasons,
+ *                  any value other than IMAGING_DITHER_NONE uses Floyd-Steinberg
+ *                  dithering.
  * @param new_image Allocator used to create the output image,
- *                e.g. ImagingNewDirty or ImagingNewBlock.
- * @return        A new image owned by the caller,
- *                or NULL with a Python exception set on failure.
+ *                  e.g. ImagingNewDirty or ImagingNewBlock.
+ * @return          A new image owned by the caller,
+ *                  or NULL with a Python exception set on failure.
  */
 Imaging
 ImagingConvertUsingAllocator(

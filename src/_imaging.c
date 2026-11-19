@@ -1089,9 +1089,14 @@ _convert_block(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
+    const ModeID mode = findModeID(mode_name);
+    if (mode == IMAGING_MODE_UNKNOWN) {
+        return ImagingError_ValueError("unrecognized image mode");
+    }
+
     Py_BEGIN_CRITICAL_SECTION(self);
     result = ImagingConvertUsingAllocator(
-        self->image, findModeID(mode_name), NULL, IMAGING_DITHER_NONE, ImagingNewBlock
+        self->image, mode, NULL, IMAGING_DITHER_NONE, ImagingNewBlock
     );
     Py_END_CRITICAL_SECTION();
 

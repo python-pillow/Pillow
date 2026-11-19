@@ -191,14 +191,14 @@ ImagingMemorySetBlockAllocator(ImagingMemoryArena arena, int use_block_allocator
 extern Imaging
 ImagingNew(ModeID mode, int xsize, int ysize);
 extern Imaging
-ImagingNewDirty(ModeID mode, int xsize, int ysize);
+ImagingNewDirty(const ModeID mode, int xsize, int ysize);
 extern void
 ImagingDelete(Imaging im);
 
 extern Imaging
-ImagingNewBlock(ModeID mode, int xsize, int ysize);
+ImagingNewBlock(const ModeID mode, int xsize, int ysize);
 
-typedef Imaging (*ImagingAllocator)(ModeID mode, int xsize, int ysize);
+typedef Imaging (*ImagingAllocator)(const ModeID mode, int xsize, int ysize);
 
 extern Imaging
 ImagingNewArrow(
