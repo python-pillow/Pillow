@@ -1939,10 +1939,11 @@ _putdata_impl(ImagingObject *self, PyObject *args) {
                     value = value * scale + offset;
                 }
                 if (image->type == IMAGING_TYPE_I16) {
+                    int value_int = CLIP16(round(value));
                     image->image8[y][x * 2 + (bigendian ? 1 : 0)] =
-                        CLIP8((int)value % 256);
+                        (UINT8)(value_int & 0xff);
                     image->image8[y][x * 2 + (bigendian ? 0 : 1)] =
-                        CLIP8((int)value >> 8);
+                        (UINT8)(value_int >> 8);
                 } else {
                     image->image8[y][x] = (UINT8)CLIP8(value);
                 }
