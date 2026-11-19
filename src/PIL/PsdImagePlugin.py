@@ -172,7 +172,8 @@ class PsdImageFile(ImageFile.ImageFile):
     def n_frames(self) -> int:
         if self._n_frames is None:
             self._n_frames = len(self.layers)
-        return self._n_frames
+        # A flattened PSD still has its composite image.
+        return max(1, self._n_frames)
 
     @property
     def is_animated(self) -> bool:

@@ -67,6 +67,12 @@ Two new image processing operations are available in ImageOps.
 Other changes
 =============
 
+Frame count for flattened PSD images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A PSD without layers now reports one frame. This allows
+:py:func:`~PIL.ImageSequence.all_frames` to return its composite image.
+
 Rounding crop coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 

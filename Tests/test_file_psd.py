@@ -5,7 +5,7 @@ import warnings
 
 import pytest
 
-from PIL import Image, PsdImagePlugin
+from PIL import Image, ImageSequence, PsdImagePlugin
 
 from .helper import (
     assert_image_equal,
@@ -58,6 +58,15 @@ def test_invalid_file() -> None:
 
     with pytest.raises(SyntaxError):
         PsdImagePlugin.PsdImageFile(invalid_file)
+
+
+def test_no_layers() -> None:
+    with Image.open("Tests/images/no_layers.psd") as im:
+        assert isinstance(im, PsdImagePlugin.PsdImageFile)
+        assert im.layers == []
+        assert im.n_frames == 1
+        (frame,) = ImageSequence.all_frames(im)
+        assert frame.tobytes() == bytes((32, 231))
 
 
 def test_n_frames() -> None:
