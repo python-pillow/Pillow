@@ -1788,12 +1788,19 @@ _point_impl(ImagingObject *self, PyObject *args) {
         if (mode == IMAGING_MODE_I) {
             im = ImagingPoint(self->image, mode, (void *)data);
         } else if (mode != self->image->mode && bands > 1) {
+            if (bands != 4) {
+                memset(lut, 0, sizeof(lut));
+            }
             for (i = 0; i < 256; i++) {
                 lut[i * 4] = CLIP8(data[i]);
-                lut[i * 4 + 1] = CLIP8(data[i + 256]);
-                lut[i * 4 + 2] = CLIP8(data[i + 512]);
-                if (n > 768) {
-                    lut[i * 4 + 3] = CLIP8(data[i + 768]);
+                if (bands == 2) {
+                    lut[i * 4 + 3] = CLIP8(data[i + 256]);
+                } else {
+                    lut[i * 4 + 1] = CLIP8(data[i + 256]);
+                    lut[i * 4 + 2] = CLIP8(data[i + 512]);
+                    if (bands == 4) {
+                        lut[i * 4 + 3] = CLIP8(data[i + 768]);
+                    }
                 }
             }
             im = ImagingPoint(self->image, mode, (void *)lut);
