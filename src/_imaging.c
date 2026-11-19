@@ -102,6 +102,10 @@
 #include <math.h>
 #include <stddef.h>
 
+/* ImageDraw coordinates are rounded toward -inf, so that drawing a shape
+   does not depend on where the origin sits relative to the shape. */
+#define IMAGING_FLOOR(v) ((int)floor(v))
+
 #define B16(p, i) ((((int)p[(i)]) << 8) + p[(i) + 1])
 #define L16(p, i) ((((int)p[(i) + 1]) << 8) + p[(i)])
 #define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
@@ -3783,10 +3787,10 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
             p = &xy[i + i];
             if (ImagingDrawLine(
                     self->image->image,
-                    (int)p[0],
-                    (int)p[1],
-                    (int)p[2],
-                    (int)p[3],
+                    IMAGING_FLOOR(p[0]),
+                    IMAGING_FLOOR(p[1]),
+                    IMAGING_FLOOR(p[2]),
+                    IMAGING_FLOOR(p[3]),
                     &ink,
                     self->blend,
                     dash,
@@ -3798,7 +3802,11 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
         }
         if (p) { /* draw last point */
             ImagingDrawPoint(
-                self->image->image, (int)p[2], (int)p[3], &ink, self->blend
+                self->image->image,
+                IMAGING_FLOOR(p[2]),
+                IMAGING_FLOOR(p[3]),
+                &ink,
+                self->blend
             );
         }
     } else {
@@ -3806,10 +3814,10 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
             double *p = &xy[i + i];
             if (ImagingDrawWideLine(
                     self->image->image,
-                    (int)p[0],
-                    (int)p[1],
-                    (int)p[2],
-                    (int)p[3],
+                    IMAGING_FLOOR(p[0]),
+                    IMAGING_FLOOR(p[1]),
+                    IMAGING_FLOOR(p[2]),
+                    IMAGING_FLOOR(p[3]),
                     &ink,
                     width,
                     self->blend,
@@ -3990,8 +3998,8 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
     }
 
     for (i = 0; i < n; i++) {
-        ixy[i + i] = (int)xy[i + i];
-        ixy[i + i + 1] = (int)xy[i + i + 1];
+        ixy[i + i] = IMAGING_FLOOR(xy[i + i]);
+        ixy[i + i + 1] = IMAGING_FLOOR(xy[i + i + 1]);
     }
 
     free(xy);

@@ -1846,3 +1846,36 @@ def test_dash_empty() -> None:
 
     with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
         draw.rectangle([10, 10, 90, 90], dash=())
+
+
+def test_negative_coordinates_translation_invariance() -> None:
+    # Drawing a shape must not depend on where the origin is: a shape drawn
+    # at a negative offset and the same shape drawn shifted by an integer
+    # offset, then cropped back, must produce identical pixels.
+    shift = 10
+    width = height = 12
+
+    def draw(
+        kind: str, pts: list[tuple[float, float]], dx: int, line_width: int = 0
+    ) -> Image.Image:
+        im = Image.new("L", (width + shift, height), 0)
+        d = ImageDraw.Draw(im)
+        shifted = [(x + dx, y) for x, y in pts]
+        if kind == "polygon":
+            d.polygon(shifted, fill=255, outline=255)
+        else:
+            d.line(shifted, fill=255, width=line_width)
+        return im.crop((dx, 0, dx + width, height))
+
+    shapes: list[tuple[str, list[tuple[float, float]], int]] = [
+        # A sliver lying entirely left of x = 0
+        ("polygon", [(-0.9, 2), (-0.2, 2), (-0.2, 8), (-0.9, 8)], 0),
+        # A box whose left edge is at x = -0.3
+        ("polygon", [(-0.3, 2), (5.5, 2), (5.5, 8), (-0.3, 8)], 0),
+        # A vertical line, 1 px wide, centred at x = -0.6
+        ("line", [(-0.6, 2), (-0.6, 9)], 1),
+        # A vertical line, 3 px wide, centred at x = -1.6
+        ("line", [(-1.6, 2), (-1.6, 9)], 3),
+    ]
+    for kind, pts, line_width in shapes:
+        assert_image_equal(draw(kind, pts, 0, line_width), draw(kind, pts, shift, line_width))
