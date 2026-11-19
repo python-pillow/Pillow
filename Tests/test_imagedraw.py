@@ -1878,4 +1878,6 @@ def test_negative_coordinates_translation_invariance() -> None:
         ("line", [(-1.6, 2), (-1.6, 9)], 3),
     ]
     for kind, pts, line_width in shapes:
-        assert_image_equal(draw(kind, pts, 0, line_width), draw(kind, pts, shift, line_width))
+        assert_image_equal(
+            draw(kind, pts, 0, line_width), draw(kind, pts, shift, line_width)
+        )
