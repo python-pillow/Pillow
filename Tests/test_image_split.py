@@ -70,12 +70,14 @@ def test_merge_single_band_mode_mismatch() -> None:
 
 
 class TestMergeLeak(PillowLeakTestCase):
-    mem_limit = 2 * 1024  # kb
-    iterations = 10
+    mem_limit = 4 * 1024  # kb
+    iterations = 100
 
     def test_merge_single_band_mode_mismatch(self) -> None:
-        # A tall image, so that the leaked row pointers count towards RSS
-        im = Image.new("L", (1, 1024 * 1024))
+        # A tall image, so that the leaked row pointers count towards RSS.
+        # Each set of row pointers is 1 MB, so the allocator holding on to one
+        # after it has been freed stays within mem_limit, but leaking them does not
+        im = Image.new("L", (1, 128 * 1024))
 
         def core() -> None:
             with pytest.raises(ValueError):
