@@ -196,3 +196,10 @@ Memory leak when merging a single band with a mismatched mode
 requested mode, such as ``Image.merge("F", [l_image])``, raised
 :py:exc:`ValueError` but leaked the memory allocated for the output image. This
 has been fixed.
+
+Saving identical GIF frames with per-frame disposal
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Saving a GIF with a list or tuple of disposal methods raised :py:exc:`TypeError`
+when only one frame was written, including when identical frames were combined.
+The writer now uses the disposal method of the retained frame.

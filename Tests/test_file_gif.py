@@ -1006,6 +1006,20 @@ def test_identical_frames_to_single_frame(
         assert reread.info["duration"] == 4500
 
 
+@pytest.mark.parametrize("disposal", ([2, 2], (2, 2)))
+def test_identical_frames_to_single_frame_disposal(
+    disposal: list[int] | tuple[int, ...], tmp_path: Path
+) -> None:
+    im = Image.new("L", (8, 8))
+    out = tmp_path / "temp.gif"
+    im.save(out, save_all=True, append_images=[im.copy()], disposal=disposal)
+
+    with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
+        assert reread.n_frames == 1
+        assert reread.disposal_method == 2
+
+
 @pytest.mark.parametrize("first_duration", (None, 0))
 def test_identical_frames_missing_duration(
     first_duration: int | None, tmp_path: Path

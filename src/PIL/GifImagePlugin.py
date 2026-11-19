@@ -754,6 +754,8 @@ def _write_multiple_frames(
         if "duration" in im_frames[0].encoderinfo:
             # Since multiple frames will not be written, use the combined duration
             im.encoderinfo["duration"] = im_frames[0].encoderinfo["duration"]
+        if isinstance(disposal, (list, tuple)):
+            im.encoderinfo["disposal"] = im_frames[0].encoderinfo["disposal"]
         return False
 
     for frame_data in im_frames:
