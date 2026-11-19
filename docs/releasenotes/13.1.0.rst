@@ -181,3 +181,11 @@ Kerning in the basic layout engine
 When libraqm is not available, kerning was applied at 1/64th of its intended size,
 because a value in pixels was added to an advance in 26.6 fixed point precision.
 The full kerning value is now applied even when libraqm is not available.
+
+Memory leak when merging a single band with a mismatched mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.Image.merge` with a single band whose mode does not match the
+requested mode, such as ``Image.merge("F", [l_image])``, raised
+:py:exc:`ValueError` but leaked the memory allocated for the output image. This
+has been fixed.
