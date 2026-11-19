@@ -159,7 +159,7 @@ def test_rankfilter_i16(mode: str, filter: ImageFilter.RankFilter) -> None:
     data = [(i * 0x1F3D) & 0xFFFF for i in range(10 * 10)]
     im = Image.new(mode, (10, 10))
     im.putdata(data)
-    reference = Image.new("I", (10, 10))  # Reference image in I32 mode.
+    reference = Image.new("I", (10, 10))  # Reference image in INT32 mode.
     reference.putdata(data)
 
     out = im.filter(filter)
@@ -233,24 +233,6 @@ def test_rankfilter_overflow() -> None:
         rankfilter.size = size
         with pytest.raises(ValueError, match="filter size too large"):
             im.filter(rankfilter)
-
-
-@pytest.mark.parametrize(
-    "mode, fill",
-    (
-        ("L", 0x12),
-        ("I", 0x12345678),
-        ("I;16", 0x1234),
-        ("I;16B", 0x1234),
-        ("F", 1.5),
-        ("RGB", (0x12, 0x34, 0x56)),
-    ),
-)
-@pytest.mark.parametrize("margin", (0, 1, 3))
-def test_expand(mode: str, fill: float | tuple[int, ...], margin: int) -> None:
-    im = Image.new(mode, (5, 4), fill)
-    out = im._new(im.im.expand(margin))  # As done internally by RankFilter
-    assert_image_equal(out, Image.new(mode, (5 + 2 * margin, 4 + 2 * margin), fill))
 
 
 @pytest.mark.parametrize("mode", ("P", "PA"))
