@@ -24,7 +24,7 @@ def test_path() -> None:
     assert list(p[:1]) == [(0.0, 1.0)]
     assert list(p[-1:]) == [(8.0, 9.0)]
     with pytest.raises(TypeError) as cm:
-        p["foo"]
+        p["foo"]  # type: ignore[call-overload]
     assert str(cm.value) == "Path indices must be integers, not str"
     assert list(p) == [(0.0, 1.0), (2.0, 3.0), (4.0, 5.0), (6.0, 7.0), (8.0, 9.0)]
 
@@ -65,7 +65,7 @@ def test_path() -> None:
     ),
 )
 def test_path_constructors(
-    coords: Sequence[float] | array.array[float] | ImagePath.Path,
+    coords: Sequence[float] | array.array[float] | Image.core._Path,
 ) -> None:
     # Arrange / Act
     p = ImagePath.Path(coords)

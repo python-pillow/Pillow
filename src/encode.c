@@ -140,17 +140,18 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
         return NULL;
     }
 
-    buf = PyBytes_FromStringAndSize(NULL, bufsize);
-    if (!buf) {
+    PyBytesWriter *writer = PyBytesWriter_Create(bufsize);
+    if (writer == NULL) {
         return NULL;
     }
 
     bytes_consumed = encoder->encode(
-        encoder->im, &encoder->state, (UINT8 *)PyBytes_AsString(buf), bufsize
+        encoder->im, &encoder->state, PyBytesWriter_GetData(writer), bufsize
     );
-
     /* adjust string length to avoid slicing in encoder */
-    if (_PyBytes_Resize(&buf, (bytes_consumed > 0) ? bytes_consumed : 0) < 0) {
+    buf =
+        PyBytesWriter_FinishWithSize(writer, (bytes_consumed > 0) ? bytes_consumed : 0);
+    if (buf == NULL) {
         return NULL;
     }
 
@@ -1631,7 +1632,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     }
 
     if (comment && comment_size > 0) {
-        /* Size is stored as as an uint16, subtract 4 bytes for the header */
+        /* Size is stored as an uint16, subtract 4 bytes for the header */
         if (comment_size >= 65532) {
             PyErr_SetString(PyExc_ValueError, "JPEG 2000 comment is too long");
             Py_DECREF(encoder);

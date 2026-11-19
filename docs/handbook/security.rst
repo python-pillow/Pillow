@@ -162,6 +162,26 @@ PNG (many text chunks) can exhaust CPU or memory before pixel data is decoded.
 *Mitigations:* restrict accepted formats to the minimum required; enforce a
 file-size limit before passing data to Pillow; use per-request timeouts.
 
+**D-4 — Memory use of image operations**
+
+:py:data:`PIL.Image.MAX_IMAGE_PIXELS` limits the size of a single decoded
+image. It is not a memory budget for a process. Most image operations, such as
+:py:meth:`~PIL.Image.Image.copy`, :py:meth:`~PIL.Image.Image.convert`,
+:py:meth:`~PIL.Image.Image.getchannel`, :py:meth:`~PIL.Image.Image.split` and
+:py:meth:`~PIL.Image.Image.resize`, return a new image and allocate memory
+proportional to its size, in addition to the source image. Peak memory therefore
+grows with the number of images held at once, the number of intermediate
+images in a processing pipeline, and the number of requests processed
+concurrently. Pillow does not track or limit memory across operations or
+threads. Reports of memory exhaustion that depend on holding many large images
+at once are not considered vulnerabilities in Pillow.
+
+*Mitigations:* bound the number of concurrent image processing tasks; set
+OS/container memory limits per worker; release images you no longer need, for
+example with :py:meth:`~PIL.Image.Image.close` or a ``with`` block; set a
+practical dimension ceiling below ``MAX_IMAGE_PIXELS`` that reflects your
+memory budget.
+
 Elevation of privilege
 ^^^^^^^^^^^^^^^^^^^^^^
 

@@ -26,7 +26,8 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
     int err;
     int compress_level, compress_type;
     UINT8 *ptr;
-    int i, bpp, s, sum;
+    int i, bpp;
+    uint64_t s, sum;
     ImagingSectionCookie cookie;
 
     if (!state->state) {

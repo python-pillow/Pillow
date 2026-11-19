@@ -132,10 +132,6 @@ struct ImagingMemoryInstance {
 #define IMAGING_PIXEL_CMYK(im, x, y) ((im)->image[(y)][(x) * 4])
 #define IMAGING_PIXEL_YCbCr(im, x, y) ((im)->image[(y)][(x) * 4])
 
-#define IMAGING_PIXEL_UINT8(im, x, y) ((im)->image8[(y)][(x)])
-#define IMAGING_PIXEL_INT32(im, x, y) ((im)->image32[(y)][(x)])
-#define IMAGING_PIXEL_FLOAT32(im, x, y) (((FLOAT32 *)(im)->image32[y])[x])
-
 struct ImagingAccessInstance {
     ModeID mode;
     void (*get_pixel)(Imaging im, int x, int y, void *pixel);
@@ -282,6 +278,12 @@ ImagingError_Mismatch(void); /* maps to ValueError by default */
 extern void *
 ImagingError_ValueError(const char *message);
 
+/* Helpers */
+/* ------- */
+
+int
+isImageI16BigEndian(Imaging im);
+
 /* Transform callbacks */
 /* ------------------- */
 
@@ -309,9 +311,6 @@ typedef enum {
     IMAGING_DITHER_NONE = 0,
     IMAGING_DITHER_FLOYDSTEINBERG = 3,  // Default
 } ImagingDitherType;
-
-typedef int (*ImagingTransformMap)(double *X, double *Y, int x, int y, void *data);
-typedef int (*ImagingTransformFilter)(void *out, Imaging im, double x, double y);
 
 /* Image Manipulation Methods */
 /* -------------------------- */
@@ -377,6 +376,8 @@ extern ImagingColorItem *
 ImagingGetColors(Imaging im, int maxcolors, int *colors);
 extern int
 ImagingGetExtrema(Imaging im, void *extrema);
+extern int
+ImagingGetExtremaMultiband(Imaging im, UINT8 extrema[8]);
 extern int
 ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj);
 extern ImagingHistogram
@@ -522,7 +523,17 @@ ImagingDrawEllipse(
     int op
 );
 extern int
-ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void *ink, int op);
+ImagingDrawLine(
+    Imaging im,
+    int x0,
+    int y0,
+    int x1,
+    int y1,
+    const void *ink,
+    int op,
+    PyObject *dash,
+    int *dash_offset
+);
 extern int
 ImagingDrawWideLine(
     Imaging im,
@@ -560,7 +571,8 @@ ImagingDrawPolygon(
     int fill,
     int width,
     int op,
-    Imaging mask
+    Imaging mask,
+    PyObject *dash
 );
 extern int
 ImagingDrawRectangle(

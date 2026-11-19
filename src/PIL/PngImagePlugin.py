@@ -441,6 +441,7 @@ class PngStream(ChunkStream):
         self.im_info = self.rewind_state.info.copy()
         self.im_tile = self.rewind_state.tile
         self._seq_num = self.rewind_state.seq_num
+        self.queue = []
 
     def chunk_iCCP(self, pos: int, length: int) -> bytes:
         # ICC profile
@@ -479,6 +480,9 @@ class PngStream(ChunkStream):
                 return s
             msg = "Truncated IHDR chunk"
             raise ValueError(msg)
+        if self.im_mode:
+            # Only use the first IHDR chunk
+            return s
         self.im_size = i32(s, 0), i32(s, 4)
         try:
             self.im_mode, self.im_rawmode = _MODES[(s[8], s[9])]

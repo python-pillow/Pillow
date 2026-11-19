@@ -151,32 +151,34 @@ ImagingEffectSpread(Imaging imIn, int distance) {
         return NULL;
     }
 
-#define SPREAD(type, image)                                                       \
+#define SPREAD(type)                                                              \
     if (distance == 0) {                                                          \
         for (y = 0; y < imOut->ysize; y++) {                                      \
-            for (x = 0; x < imOut->xsize; x++) {                                  \
-                imOut->image[y][x] = imIn->image[y][x];                           \
-            }                                                                     \
+            memcpy(imOut->image[y], imIn->image[y], imIn->linesize);              \
         }                                                                         \
     } else {                                                                      \
         for (y = 0; y < imOut->ysize; y++) {                                      \
+            type *out = (type *)imOut->image[y];                                  \
+            type *in = (type *)imIn->image[y];                                    \
             for (x = 0; x < imOut->xsize; x++) {                                  \
                 int xx = x + (rand() % distance) - distance / 2;                  \
                 int yy = y + (rand() % distance) - distance / 2;                  \
                 if (xx >= 0 && xx < imIn->xsize && yy >= 0 && yy < imIn->ysize) { \
-                    imOut->image[yy][xx] = imIn->image[y][x];                     \
-                    imOut->image[y][x] = imIn->image[yy][xx];                     \
+                    ((type *)imOut->image[yy])[xx] = in[x];                       \
+                    out[x] = ((type *)imIn->image[yy])[xx];                       \
                 } else {                                                          \
-                    imOut->image[y][x] = imIn->image[y][x];                       \
+                    out[x] = in[x];                                               \
                 }                                                                 \
             }                                                                     \
         }                                                                         \
     }
 
-    if (imIn->image8) {
-        SPREAD(UINT8, image8);
+    if (imIn->pixelsize == 1) {
+        SPREAD(UINT8);
+    } else if (imIn->pixelsize == 2) {
+        SPREAD(UINT16);
     } else {
-        SPREAD(INT32, image32);
+        SPREAD(INT32);
     }
 
     ImagingCopyPalette(imOut, imIn);
