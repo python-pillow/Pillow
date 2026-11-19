@@ -505,7 +505,7 @@ ImagingAllocateBlock(Imaging im) {
         return (Imaging)ImagingError_MemoryError();
     }
 
-    if (im->ysize * im->linesize <= 0) {
+    if (im->ysize == 0 || im->linesize == 0) {
         /* some platforms return NULL for malloc(0); this fix
            prevents MemoryError on zero-sized images on such
            platforms */
