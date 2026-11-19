@@ -85,6 +85,10 @@ class ContainerIO(IO[AnyStr]):
     def readable(self) -> bool:
         return True
 
+    def _read_length(self, n: int) -> int:
+        remaining_length = self.length - self.pos
+        return min(n, remaining_length) if n > 0 else remaining_length
+
     def read(self, n: int = -1) -> AnyStr:
         """
         Read data.
@@ -93,13 +97,10 @@ class ContainerIO(IO[AnyStr]):
             read until end of region.
         :returns: An 8-bit string.
         """
-        if n > 0:
-            n = min(n, self.length - self.pos)
-        else:
-            n = self.length - self.pos
+        n = self._read_length(n)
         if n <= 0:  # EOF
             return b"" if "b" in self.fh.mode else ""  # type: ignore[return-value]
-        self.pos = self.pos + n
+        self.pos += n
         return self.fh.read(n)
 
     def readline(self, n: int = -1) -> AnyStr:
@@ -110,15 +111,11 @@ class ContainerIO(IO[AnyStr]):
             read until end of line.
         :returns: An 8-bit string.
         """
-        s: AnyStr = b"" if "b" in self.fh.mode else ""  # type: ignore[assignment]
-        newline_character = b"\n" if "b" in self.fh.mode else "\n"
-        while True:
-            c = self.read(1)
-            if not c:
-                break
-            s = s + c
-            if c == newline_character or len(s) == n:
-                break
+        n = self._read_length(n)
+        if n <= 0:  # EOF
+            return b"" if "b" in self.fh.mode else ""  # type: ignore[return-value]
+        s = self.fh.readline(n)
+        self.pos += len(s)
         return s
 
     def readlines(self, n: int | None = -1) -> list[AnyStr]:
