@@ -56,6 +56,7 @@ import logging
 import math
 import os
 import struct
+import sys
 import warnings
 from collections.abc import Callable, MutableMapping
 from fractions import Fraction
@@ -1849,7 +1850,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             exif = Image.Exif()
             exif.load(info)
             info = exif
-        elif isinstance(info, Image.Exif) and not libtiff:
+        if isinstance(info, Image.Exif):
             subifds.extend(
                 key for key in TiffTags.TAGS_V2_GROUPS if info._ifds.get(key, {}) != {}
             )
@@ -1862,7 +1863,15 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         if libtiff and key in {IMAGEWIDTH, IMAGELENGTH}:
             continue
         if isinstance(info, Image.Exif) and key in TiffTags.TAGS_V2_GROUPS:
-            ifd[key] = info.get_ifd(key)
+            nested_ifd = info.get_ifd(key)
+            if (
+                key == ExifTags.IFD.Exif
+                and ExifTags.IFD.Interop in nested_ifd
+                and not isinstance(nested_ifd[ExifTags.IFD.Interop], dict)
+            ):
+                nested_ifd = nested_ifd.copy()
+                nested_ifd[ExifTags.IFD.Interop] = info.get_ifd(ExifTags.IFD.Interop)
+            ifd[key] = nested_ifd
         else:
             ifd[key] = info.get(key)
         try:
@@ -2024,6 +2033,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
         # optional types for non core tags
         types = {}
+        # libtiff writes native-endian classic TIFFs. Serialize nested metadata
+        # immediately after its eight-byte header, before any image strips.
+        ifd_data = bytearray()
         # STRIPOFFSETS and STRIPBYTECOUNTS are added by the library
         # based on the data in the strip.
         # OSUBFILETYPE is deprecated.
@@ -2050,6 +2062,15 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             if tag not in TiffTags.LIBTIFF_CORE:
                 if tag in TiffTags.TAGS_V2_GROUPS:
                     types[tag] = TiffTags.LONG8
+                    if isinstance(value, dict) and tag not in atts:
+                        subifd = ImageFileDirectory_v2(
+                            prefix=II if sys.byteorder == "little" else MM, group=tag
+                        )
+                        for key, item in value.items():
+                            subifd[key] = item
+                        offset = 8 + len(ifd_data)
+                        ifd_data.extend(subifd.tobytes(offset))
+                        value = offset
                 elif tag in ifd.tagtype:
                     types[tag] = ifd.tagtype[tag]
                 elif isinstance(value, (int, float, str, bytes)) or (
@@ -2085,7 +2106,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # pseudo tag requires that the COMPRESS tag was already set.
         tags = list(atts.items())
         tags.sort()
-        a = (rawmode, _fp, filename, tags, types)
+        a = (rawmode, _fp, filename, tags, types, bytes(ifd_data))
         encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
         try:
             encoder.setimage(im.im)
@@ -2344,7 +2365,12 @@ class AppendingTiffWriter(io.BytesIO):
         if self.close_fp:
             self.f.close()
 
-    def fixIFD(self) -> None:
+    def fixIFD(self, seen: set[int] | None = None) -> None:
+        if seen is None:
+            seen = set()
+        if self.f.tell() in seen:
+            return
+        seen.add(self.f.tell())
         num_tags = self._read(8 if self._bigtiff else 2)
 
         for i in range(num_tags):
@@ -2360,7 +2386,14 @@ class AppendingTiffWriter(io.BytesIO):
                 offset = self._read(fmt_size) + self.offsetOfNewPage
                 self._rewriteLast(offset, fmt_size)
 
-            if tag in self.Tags:
+            if tag in TiffTags.TAGS_V2_GROUPS and is_local and count == 1:
+                cur_pos = self.f.tell()
+                offset = self._read(fmt_size) + self.offsetOfNewPage
+                self._rewriteLast(offset, fmt_size)
+                self.f.seek(offset)
+                self.fixIFD(seen)
+                self.f.seek(cur_pos + fmt_size)
+            elif tag in self.Tags:
                 cur_pos = self.f.tell()
 
                 logger.debug(

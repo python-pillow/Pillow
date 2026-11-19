@@ -196,3 +196,10 @@ Memory leak when merging a single band with a mismatched mode
 requested mode, such as ``Image.merge("F", [l_image])``, raised
 :py:exc:`ValueError` but leaked the memory allocated for the output image. This
 has been fixed.
+
+Compressed TIFF EXIF metadata
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Nested EXIF and GPS directories are now preserved when saving TIFF images with
+libtiff compression. Previously, passing these directories could raise
+``RuntimeError: Error setting from dictionary`` or omit newly created metadata.
