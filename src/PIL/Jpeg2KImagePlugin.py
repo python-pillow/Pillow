@@ -41,6 +41,7 @@ class BoxReader:
         self.has_length = length >= 0
         self.length = length
         self.remaining_in_box = -1
+        self.last_box = False
 
     def _can_read(self, num_bytes: int) -> bool:
         if self.has_length and self.fp.tell() + num_bytes > self.length:
@@ -80,8 +81,14 @@ class BoxReader:
         return BoxReader(io.BytesIO(data), size)
 
     def has_next_box(self) -> bool:
+        if self.last_box:
+            return False
         if self.has_length:
-            return self.fp.tell() + self.remaining_in_box < self.length
+            return (
+                self.fp.tell()
+                + (self.remaining_in_box if self.remaining_in_box > 0 else 0)
+                < self.length
+            )
         else:
             return True
 
@@ -96,7 +103,14 @@ class BoxReader:
 
         # Read the length and type of the next box
         lbox, tbox = cast("tuple[int, bytes]", self.read_fields(">I4s"))
-        if lbox == 1:
+        if lbox == 0:
+            self.last_box = True
+            if self.has_length:
+                self.remaining_in_box = self.length - self.fp.tell()
+            else:
+                self.remaining_in_box = -1
+            return tbox
+        elif lbox == 1:
             lbox = cast("int", self.read_fields(">Q")[0])
             hlen = 16
         else:
@@ -290,9 +304,44 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 self._size, self._mode, self.custom_mimetype, dpi, self.palette = header
                 if dpi is not None:
                     self.info["dpi"] = dpi
-                if self.fp.read(12).endswith(b"jp2c\xff\x4f\xff\x51"):
-                    _parse_codestream(self.fp)
-                    self._parse_comment()
+                reader = BoxReader(self.fp)
+                while reader.has_next_box():
+                    tbox = reader.next_box_type()
+                    if tbox == b"xml ":
+                        self.info.setdefault("xml", []).append(
+                            reader._read_bytes(reader.remaining_in_box)
+                        )
+                    elif tbox == b"uuid":
+                        if reader.remaining_in_box >= 16:
+                            uuid = reader._read_bytes(16)
+                            if (
+                                uuid == b"\xbe\x7a\xcf\xcb\x97\xa9\x42\xe8"
+                                b"\x9c\x71\x99\x94\x91\xe3\xaf\xac"
+                            ):
+                                self.info["xmp"] = reader._read_bytes(
+                                    reader.remaining_in_box
+                                )
+                    elif tbox == b"jp2c":
+                        markers = reader._read_bytes(4)
+                        if markers == b"\xff\x4f\xff\x51":
+                            _parse_codestream(self.fp)
+                            self._parse_comment()
+                        break
+
+                if "xml" in self.info:
+                    if len(self.info["xml"]) == 1:
+                        self.info["xml"] = self.info["xml"][0]
+                    xml_bytes = (
+                        self.info["xml"]
+                        if isinstance(self.info["xml"], bytes)
+                        else self.info["xml"][0]
+                    )
+                    if "xmp" not in self.info and (
+                        b"<x:xmpmeta" in xml_bytes
+                        or b"<?xpacket" in xml_bytes
+                        or b"http://ns.adobe.com/xap/1.0/" in xml_bytes
+                    ):
+                        self.info["xmp"] = xml_bytes
             else:
                 msg = "not a JPEG 2000 file"
                 raise SyntaxError(msg)
@@ -446,7 +495,46 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         plt,
     )
 
-    ImageFile._save(im, fp, [ImageFile._Tile("jpeg2k", args=kind)])
+    xml = info.get("xml", info.get("xmp"))
+    if xml and kind == "jp2":
+        if isinstance(xml, (str, bytes)):
+            xml_list = [xml]
+        else:
+            xml_list = list(xml)
+        xml_boxes = []
+        for item in xml_list:
+            if isinstance(item, str):
+                item = item.encode("utf-8")
+            if len(item) + 8 < 2**32:
+                xml_boxes.append(struct.pack(">I4s", len(item) + 8, b"xml ") + item)
+            else:
+                xml_boxes.append(
+                    struct.pack(">I4sQ", 1, b"xml ", len(item) + 16) + item
+                )
+        xml_data = b"".join(xml_boxes)
+
+        buf = io.BytesIO()
+        ImageFile._save(im, buf, [ImageFile._Tile("jpeg2k", args=kind)])
+        data = buf.getvalue()
+
+        reader = BoxReader(io.BytesIO(data))
+        end_jp2h = 0
+        while reader.has_next_box():
+            tbox = reader.next_box_type()
+            if tbox == b"jp2h":
+                reader.read_boxes()
+                end_jp2h = reader.fp.tell()
+                break
+
+        if end_jp2h == 0:
+            jp2c_pos = data.find(b"jp2c")
+            end_jp2h = jp2c_pos - 4 if jp2c_pos > 4 else len(data)
+
+        fp.write(data[:end_jp2h])
+        fp.write(xml_data)
+        fp.write(data[end_jp2h:])
+    else:
+        ImageFile._save(im, fp, [ImageFile._Tile("jpeg2k", args=kind)])
 
 
 # ------------------------------------------------------------

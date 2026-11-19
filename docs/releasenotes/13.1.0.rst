@@ -196,3 +196,10 @@ Memory leak when merging a single band with a mismatched mode
 requested mode, such as ``Image.merge("F", [l_image])``, raised
 :py:exc:`ValueError` but leaked the memory allocated for the output image. This
 has been fixed.
+
+Added support for XML and XMP metadata in JPEG 2000
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added for reading and writing XML and XMP metadata in JPEG 2000
+images. When saving, XML metadata can be specified using the ``xml`` or ``xmp``
+argument.

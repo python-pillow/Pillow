@@ -613,3 +613,66 @@ def test_9bit() -> None:
     with Image.open("Tests/images/9bit.j2k") as im:
         assert im.mode == "I;16"
         assert im.size == (128, 128)
+
+
+def test_xml_metadata(card: ImageFile.ImageFile) -> None:
+    for xml in (b"<test>xml metadata</test>", "<test>string metadata</test>"):
+        out = BytesIO()
+        card.save(out, "JPEG2000", xml=xml)
+
+        with Image.open(out) as im:
+            expected = xml if isinstance(xml, bytes) else xml.encode("utf-8")
+            assert im.info["xml"] == expected
+
+    # Multiple XML boxes
+    out = BytesIO()
+    xml_boxes = [b"<box1>1</box1>", b"<box2>2</box2>"]
+    card.save(out, "JPEG2000", xml=xml_boxes)
+    with Image.open(out) as im:
+        assert im.info["xml"] == xml_boxes
+
+
+def test_xmp_metadata(card: ImageFile.ImageFile) -> None:
+    xmp_data = (
+        b"<x:xmpmeta xmlns:x='adobe:ns:meta/'>"
+        b"<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'/>"
+        b"</x:xmpmeta>"
+    )
+    out = BytesIO()
+    card.save(out, "JPEG2000", xmp=xmp_data)
+
+    with Image.open(out) as im:
+        assert im.info["xml"] == xmp_data
+        assert im.info["xmp"] == xmp_data
+
+
+def test_uuid_xmp() -> None:
+    # Test reading XMP from an Adobe UUID box
+    out = BytesIO()
+    with Image.new("RGB", (10, 10)) as im:
+        im.save(out, "JPEG2000")
+    data = out.getvalue()
+
+    r = Jpeg2KImagePlugin.BoxReader(BytesIO(data))
+    end_jp2h = 0
+    while r.has_next_box():
+        if r.next_box_type() == b"jp2h":
+            r.read_boxes()
+            end_jp2h = r.fp.tell()
+            break
+
+    xmp_data = b"<xmp>uuid test</xmp>"
+    uuid = b"\xbe\x7a\xcf\xcb\x97\xa9\x42\xe8\x9c\x71\x99\x94\x91\xe3\xaf\xac"
+    uuid_box = struct.pack(">I4s16s", len(xmp_data) + 24, b"uuid", uuid) + xmp_data
+    with_uuid = data[:end_jp2h] + uuid_box + data[end_jp2h:]
+
+    with Image.open(BytesIO(with_uuid)) as im:
+        assert im.info["xmp"] == xmp_data
+
+
+def test_save_xml_and_comment(card: ImageFile.ImageFile) -> None:
+    out = BytesIO()
+    card.save(out, "JPEG2000", xml=b"<test>data</test>", comment="test comment")
+    with Image.open(out) as im:
+        assert im.info["xml"] == b"<test>data</test>"
+        assert im.info["comment"] == b"test comment"
