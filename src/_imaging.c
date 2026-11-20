@@ -102,6 +102,11 @@
 #include <math.h>
 #include <stddef.h>
 
+/* Convert a float coordinate to an integer by rounding toward -inf, so that
+ * drawing is translation-invariant across the origin. A plain (int) cast
+ * truncates toward zero, turning e.g. -0.9 into 0 instead of -1. */
+#define IMAGING_FLOOR(v) ((v) >= 0.0 ? (int)(v) : (int)floor(v))
+
 #define B16(p, i) ((((int)p[(i)]) << 8) + p[(i) + 1])
 #define L16(p, i) ((((int)p[(i) + 1]) << 8) + p[(i)])
 #define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
@@ -3571,10 +3576,10 @@ _draw_arc(ImagingDrawObject *self, PyObject *args) {
     Py_BEGIN_CRITICAL_SECTION2(self, self->image);
     n = ImagingDrawArc(
         self->image->image,
-        (int)xy[0],
-        (int)xy[1],
-        (int)xy[2],
-        (int)xy[3],
+        IMAGING_FLOOR(xy[0]),
+        IMAGING_FLOOR(xy[1]),
+        IMAGING_FLOOR(xy[2]),
+        IMAGING_FLOOR(xy[3]),
         start,
         end,
         &ink,
@@ -3622,7 +3627,12 @@ _draw_bitmap_impl(ImagingDrawObject *self, PyObject *args) {
     // this unlocks self, so we've copied the critical bits to local.
     Py_BEGIN_CRITICAL_SECTION2(_image, bitmap);
     n = ImagingDrawBitmap(
-        _image->image, (int)xy[0], (int)xy[1], bitmap->image, &ink, blend
+        _image->image,
+        IMAGING_FLOOR(xy[0]),
+        IMAGING_FLOOR(xy[1]),
+        bitmap->image,
+        &ink,
+        blend
     );
     Py_END_CRITICAL_SECTION2();
 
@@ -3679,10 +3689,10 @@ _draw_chord(ImagingDrawObject *self, PyObject *args) {
     Py_BEGIN_CRITICAL_SECTION2(self, self->image);
     n = ImagingDrawChord(
         self->image->image,
-        (int)xy[0],
-        (int)xy[1],
-        (int)xy[2],
-        (int)xy[3],
+        IMAGING_FLOOR(xy[0]),
+        IMAGING_FLOOR(xy[1]),
+        IMAGING_FLOOR(xy[2]),
+        IMAGING_FLOOR(xy[3]),
         start,
         end,
         &ink,
@@ -3737,10 +3747,10 @@ _draw_ellipse(ImagingDrawObject *self, PyObject *args) {
     Py_BEGIN_CRITICAL_SECTION2(self, self->image);
     n = ImagingDrawEllipse(
         self->image->image,
-        (int)xy[0],
-        (int)xy[1],
-        (int)xy[2],
-        (int)xy[3],
+        IMAGING_FLOOR(xy[0]),
+        IMAGING_FLOOR(xy[1]),
+        IMAGING_FLOOR(xy[2]),
+        IMAGING_FLOOR(xy[3]),
         &ink,
         fill,
         width,
@@ -3783,10 +3793,10 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
             p = &xy[i + i];
             if (ImagingDrawLine(
                     self->image->image,
-                    (int)p[0],
-                    (int)p[1],
-                    (int)p[2],
-                    (int)p[3],
+                    IMAGING_FLOOR(p[0]),
+                    IMAGING_FLOOR(p[1]),
+                    IMAGING_FLOOR(p[2]),
+                    IMAGING_FLOOR(p[3]),
                     &ink,
                     self->blend,
                     dash,
@@ -3798,7 +3808,11 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
         }
         if (p) { /* draw last point */
             ImagingDrawPoint(
-                self->image->image, (int)p[2], (int)p[3], &ink, self->blend
+                self->image->image,
+                IMAGING_FLOOR(p[2]),
+                IMAGING_FLOOR(p[3]),
+                &ink,
+                self->blend
             );
         }
     } else {
@@ -3806,10 +3820,10 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
             double *p = &xy[i + i];
             if (ImagingDrawWideLine(
                     self->image->image,
-                    (int)p[0],
-                    (int)p[1],
-                    (int)p[2],
-                    (int)p[3],
+                    IMAGING_FLOOR(p[0]),
+                    IMAGING_FLOOR(p[1]),
+                    IMAGING_FLOOR(p[2]),
+                    IMAGING_FLOOR(p[3]),
                     &ink,
                     width,
                     self->blend,
@@ -3847,7 +3861,11 @@ _draw_points(ImagingDrawObject *self, PyObject *args) {
     for (i = 0; i < n; i++) {
         double *p = &xy[i + i];
         if (ImagingDrawPoint(
-                self->image->image, (int)p[0], (int)p[1], &ink, self->blend
+                self->image->image,
+                IMAGING_FLOOR(p[0]),
+                IMAGING_FLOOR(p[1]),
+                &ink,
+                self->blend
             ) < 0) {
             free(xy);
             return NULL;
@@ -3930,10 +3948,10 @@ _draw_pieslice(ImagingDrawObject *self, PyObject *args) {
     Py_BEGIN_CRITICAL_SECTION2(self, self->image);
     n = ImagingDrawPieslice(
         self->image->image,
-        (int)xy[0],
-        (int)xy[1],
-        (int)xy[2],
-        (int)xy[3],
+        IMAGING_FLOOR(xy[0]),
+        IMAGING_FLOOR(xy[1]),
+        IMAGING_FLOOR(xy[2]),
+        IMAGING_FLOOR(xy[3]),
         start,
         end,
         &ink,
@@ -3990,8 +4008,8 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
     }
 
     for (i = 0; i < n; i++) {
-        ixy[i + i] = (int)xy[i + i];
-        ixy[i + i + 1] = (int)xy[i + i + 1];
+        ixy[i + i] = IMAGING_FLOOR(xy[i + i]);
+        ixy[i + i + 1] = IMAGING_FLOOR(xy[i + i + 1]);
     }
 
     free(xy);
@@ -4058,10 +4076,10 @@ _draw_rectangle(ImagingDrawObject *self, PyObject *args) {
     Py_BEGIN_CRITICAL_SECTION2(self, self->image);
     n = ImagingDrawRectangle(
         self->image->image,
-        (int)xy[0],
-        (int)xy[1],
-        (int)xy[2],
-        (int)xy[3],
+        IMAGING_FLOOR(xy[0]),
+        IMAGING_FLOOR(xy[1]),
+        IMAGING_FLOOR(xy[2]),
+        IMAGING_FLOOR(xy[3]),
         &ink,
         fill,
         width,

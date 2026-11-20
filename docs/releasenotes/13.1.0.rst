@@ -75,6 +75,15 @@ Coordinates ending in .5 were rounded to the nearest even integer, so a box of t
 size could give an image one pixel larger or smaller depending on where it was. They
 are now always rounded up.
 
+Negative ImageDraw coordinates
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``ImageDraw`` now converts float coordinates with floor rounding instead of
+truncation toward zero, and wide-line / polygon edge rounding is
+translation-invariant across the origin. Drawing geometry that extends past
+the left or top edge of an image (for example when tiling) now matches a
+shifted-and-cropped render of the same geometry (:issue:`10228`).
+
 Scaling empty text
 ^^^^^^^^^^^^^^^^^^
 
