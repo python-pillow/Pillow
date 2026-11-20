@@ -235,6 +235,12 @@ def test_raw_valueerrors(tmp_path: Path) -> None:
         palette.save(f)
 
 
+@pytest.mark.parametrize("rawmode", Image._DEPRECATED_RAWMODES)
+def test_rawmode_deprecated(rawmode: str) -> None:
+    with pytest.warns(DeprecationWarning, match="rawmode"):
+        ImagePalette.raw(rawmode, b"")
+
+
 def test_getdata() -> None:
     # Arrange
     data_in = list(range(256)) * 3

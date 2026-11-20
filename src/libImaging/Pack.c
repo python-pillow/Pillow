@@ -254,6 +254,30 @@ packLAL(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
+static void
+ImagingPackXRGB1555(UINT8 *out, const UINT8 *in, int pixels) {
+    for (int i = 0; i < pixels; out += 2, in += 4, i++) {
+        /* XRGB, 1/5/5/5 bits per pixel, little-endian */
+        const UINT8 r = in[0] >> 3;
+        const UINT8 g = in[1] >> 3;
+        const UINT8 b = in[2] >> 3;
+        out[1] = 0x80 | (r << 2) | (g >> 3);
+        out[0] = (g << 5) | b;
+    }
+}
+
+static void
+ImagingPackRGB565(UINT8 *out, const UINT8 *in, int pixels) {
+    for (int i = 0; i < pixels; out += 2, in += 4, i++) {
+        /* RGB, 5/6/5 bits per pixel, little-endian */
+        const UINT8 r = in[0] >> 3;
+        const UINT8 g = in[1] >> 2;
+        const UINT8 b = in[2] >> 3;
+        out[1] = (r << 3) | (g >> 3);
+        out[0] = (g << 5) | b;
+    }
+}
+
 void
 ImagingPackRGB(UINT8 *out, const UINT8 *in, int pixels) {
     int i = 0;
@@ -281,6 +305,30 @@ ImagingPackXRGB(UINT8 *out, const UINT8 *in, int pixels) {
         out[3] = in[B];
         out += 4;
         in += 4;
+    }
+}
+
+static void
+ImagingPackXBGR1555(UINT8 *out, const UINT8 *in, int pixels) {
+    for (int i = 0; i < pixels; out += 2, in += 4, i++) {
+        /* XBGR, 1/5/5/5 bits per pixel, little-endian */
+        const UINT8 r = in[0] >> 3;
+        const UINT8 g = in[1] >> 3;
+        const UINT8 b = in[2] >> 3;
+        out[1] = 0x80 | (b << 2) | (g >> 3);
+        out[0] = (g << 5) | r;
+    }
+}
+
+static void
+ImagingPackBGR565(UINT8 *out, const UINT8 *in, int pixels) {
+    for (int i = 0; i < pixels; out += 2, in += 4, i++) {
+        /* BGR, 5/6/5 bits per pixel, little-endian */
+        const UINT8 r = in[0] >> 3;
+        const UINT8 g = in[1] >> 2;
+        const UINT8 b = in[2] >> 3;
+        out[1] = (b << 3) | (g >> 3);
+        out[0] = (g << 5) | r;
     }
 }
 
@@ -571,10 +619,14 @@ static struct {
     {IMAGING_MODE_PA, IMAGING_RAWMODE_PA_L, 16, packLAL},
 
     /* true colour */
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_XRGB_1555, 16, ImagingPackXRGB1555},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB_565, 16, ImagingPackRGB565},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB, 24, ImagingPackRGB},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGBX, 32, copy4},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGBA, 32, copy4},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_XRGB, 32, ImagingPackXRGB},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_XBGR_1555, 16, ImagingPackXBGR1555},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGR_565, 16, ImagingPackBGR565},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGR, 24, ImagingPackBGR},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGRA, 32, ImagingPackBGRX},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGRX, 32, ImagingPackBGRX},
