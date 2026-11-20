@@ -265,29 +265,21 @@ class BmpImageFile(ImageFile.ImageFile):
 
         # --------------- Once the header is processed, process the palette/LUT
         if self.mode == "P":  # Paletted for 1, 4 and 8 bit images
+            colors = file_info["colors"]
             # ---------------------------------------------------- 1-bit images
-            if not (0 < file_info["colors"] <= 65536):
-                msg = f"Unsupported BMP Palette size ({file_info['colors']})"
+            if not (0 < colors <= 65536):
+                msg = f"Unsupported BMP Palette size ({colors})"
                 raise OSError(msg)
             else:
                 padding = file_info["palette_padding"]
-                palette = read(padding * file_info["colors"])
-                grayscale = True
-                indices = (
-                    (0, 255)
-                    if file_info["colors"] == 2
-                    else list(range(file_info["colors"]))
-                )
+                palette = read(padding * colors)
 
                 # ----------------- Check if grayscale and ignore palette if so
-                for ind, val in enumerate(indices):
-                    rgb = palette[ind * padding : ind * padding + 3]
-                    if rgb != o8(val) * 3:
-                        grayscale = False
+                grayscale = Image.core.is_grayscale_palette(palette, colors, padding)
 
                 # ------- If all colors are gray, white or black, ditch palette
                 if grayscale:
-                    self._mode = "1" if file_info["colors"] <= 2 else "L"
+                    self._mode = "1" if colors <= 2 else "L"
                     raw_mode = self.mode
                 else:
                     self._mode = "P"

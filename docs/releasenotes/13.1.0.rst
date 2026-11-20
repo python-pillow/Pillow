@@ -67,6 +67,12 @@ Two new image processing operations are available in ImageOps.
 Other changes
 =============
 
+BMP grayscale palette detection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Grayscale BMP palettes are now checked in native code without temporary allocations,
+reducing the overhead of opening small images.
+
 Rounding crop coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
