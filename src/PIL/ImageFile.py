@@ -146,8 +146,6 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
     ) -> None:
         super().__init__()
 
-        self._min_frame = 0
-
         self.custom_mimetype: str | None = None
 
         self.tile: list[_Tile] = []
@@ -502,12 +500,12 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
 
     def _seek_check(self, frame: int) -> bool:
         if (
-            frame < self._min_frame
+            frame < 0
             # Only check upper limit on frames if additional seek operations
             # are not required to do so
             or (
                 not (hasattr(self, "_n_frames") and self._n_frames is None)
-                and frame >= getattr(self, "n_frames") + self._min_frame
+                and frame >= getattr(self, "n_frames")
             )
         ):
             msg = "attempt to seek outside sequence"

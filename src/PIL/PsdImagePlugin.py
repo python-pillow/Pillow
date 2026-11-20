@@ -151,11 +151,11 @@ class PsdImageFile(ImageFile.ImageFile):
         # image descriptor
 
         self.tile = _maketile(self.fp, mode, (0, 0, *self.size), channels)
+        self._initial_data = self.mode, self.tile
 
         # keep the file open
         self._fp = self.fp
-        self.frame = 1
-        self._min_frame = 1
+        self.frame = 0
 
     @cached_property
     def layers(self) -> list[_Layer]:
@@ -165,18 +165,18 @@ class PsdImageFile(ImageFile.ImageFile):
                 raise self._fp.ex
             self._fp.seek(self._layers_position)
             layers = _layerinfo(self._fp, self._layers_size)
-        self._n_frames = len(layers)
+        self._n_frames = len(layers) + 1
         return layers
 
     @property
     def n_frames(self) -> int:
         if self._n_frames is None:
-            self._n_frames = len(self.layers)
+            self._n_frames = len(self.layers) + 1
         return self._n_frames
 
     @property
     def is_animated(self) -> bool:
-        return len(self.layers) > 1
+        return len(self.layers) != 0
 
     def seek(self, layer: int) -> None:
         if not self._seek_check(layer):
@@ -184,11 +184,14 @@ class PsdImageFile(ImageFile.ImageFile):
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
 
+        if layer == 0:
+            self._mode, self.tile = self._initial_data
         # seek to given layer (1..max)
-        if layer > len(self.layers):
+        elif layer > len(self.layers):
             msg = "no more images in PSD file"
             raise EOFError(msg)
-        _, self._mode, _, self.tile = self.layers[layer - 1]
+        else:
+            _, self._mode, _, self.tile = self.layers[layer - 1]
         self.frame = layer
         self.fp = self._fp
         Image.Image.seek(self, layer)
