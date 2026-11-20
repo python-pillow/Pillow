@@ -22,11 +22,18 @@ class Deformer(ImageOps.SupportsGetMesh):
     ) -> list[
         tuple[tuple[int, int, int, int], tuple[int, int, int, int, int, int, int, int]]
     ]:
-        x, y = im.size
-        return [((0, 0, x, y), (0, 0, x, 0, x, y, y, 0))]
+        w, h = im.size
+        mid = w // 2
+        return [((mid, 0, w, h), (0, 0, 0, h, mid, h, mid, 0))]
 
 
-deformer = Deformer()
+@pytest.mark.parametrize("mode", ("L", "RGB"))
+def test_deform(mode: str) -> None:
+    im = Image.frombytes("L", (4, 2), bytes(range(1, 9))).convert(mode)
+    expected = Image.new(mode, im.size)
+    expected.paste(im.crop((0, 0, 2, 2)), (2, 0))
+
+    assert_image_equal(ImageOps.deform(im, Deformer()), expected)
 
 
 def test_sanity() -> None:
@@ -53,9 +60,6 @@ def test_sanity() -> None:
 
     ImageOps.crop(hopper("L"), 1)
     ImageOps.crop(hopper("RGB"), 1)
-
-    ImageOps.deform(hopper("L"), deformer)
-    ImageOps.deform(hopper("RGB"), deformer)
 
     ImageOps.equalize(hopper("L"))
     ImageOps.equalize(hopper("RGB"))
