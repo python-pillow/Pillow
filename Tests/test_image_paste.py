@@ -402,6 +402,74 @@ class TestImagingPaste:
             ],
         )
 
+    @staticmethod
+    def _alpha_mask(mask_mode: str) -> Image.Image:
+        mask = Image.new(mask_mode, (2, 1))
+        for x, alpha in enumerate((255, 51)):
+            mask.putpixel((x, 0), (0,) * (len(mask_mode) - 1) + (alpha,))
+        return mask
+
+    @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N", "I", "F"))
+    @pytest.mark.parametrize("mask_mode", ("L", "LA", "RGBA", "RGBa"))
+    def test_image_mask_wide_modes(self, mode: str, mask_mode: str) -> None:
+        im = Image.new(mode, (2, 1), 1000)
+        im.paste(Image.new(mode, (2, 1), 3000), (0, 0), self._alpha_mask(mask_mode))
+
+        # 51 / 255 = 20% of the source, RGBa expects a premultiplied source
+        expected = 3800 if mask_mode == "RGBa" else 1400
+        assert im.getpixel((0, 0)) == 3000
+        assert im.getpixel((1, 0)) == expected
+
+    @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N", "I", "F"))
+    @pytest.mark.parametrize("mask_mode", ("L", "RGBA", "RGBa"))
+    def test_color_mask_wide_modes(self, mode: str, mask_mode: str) -> None:
+        im = Image.new(mode, (2, 1), 1000)
+        im.paste(3000, (0, 0, 2, 1), self._alpha_mask(mask_mode))
+
+        expected = 3800 if mask_mode == "RGBa" else 1400
+        assert im.getpixel((0, 0)) == 3000
+        assert im.getpixel((1, 0)) == expected
+
+    @pytest.mark.parametrize("value", (float("nan"), float("inf"), float("-inf")))
+    @pytest.mark.parametrize("mask_mode", ("L", "LA", "RGBA", "RGBa"))
+    def test_mask_wide_non_finite_ignored(self, mask_mode: str, value: float) -> None:
+        # Pixel 0 is fully opaque, so the destination is ignored
+        im = Image.new("F", (2, 1), value)
+        im.paste(Image.new("F", (2, 1), 2.5), (0, 0), self._alpha_mask(mask_mode))
+        assert im.getpixel((0, 0)) == 2.5
+
+        if mask_mode != "LA":
+            im = Image.new("F", (2, 1), value)
+            im.paste(2.5, (0, 0, 2, 1), self._alpha_mask(mask_mode))
+            assert im.getpixel((0, 0)) == 2.5
+
+        if mask_mode == "RGBa":
+            # A premultiplied source is still added where it is fully transparent
+            return
+
+        # Fully transparent, so the source is ignored
+        mask = Image.new(mask_mode, (1, 1), (0,) * len(mask_mode))
+        im = Image.new("F", (1, 1), 1.5)
+        im.paste(Image.new("F", (1, 1), value), (0, 0), mask)
+        assert im.getpixel((0, 0)) == 1.5
+
+        if mask_mode != "LA":
+            im.paste(value, (0, 0, 1, 1), mask)
+            assert im.getpixel((0, 0)) == 1.5
+
+    @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+    def test_color_i16(self, mode: str) -> None:
+        im = Image.new(mode, (2, 1), 1000)
+        im.paste(3000, (0, 0, 1, 1))
+        assert im.getpixel((0, 0)) == 3000
+        assert im.getpixel((1, 0)) == 1000
+
+        mask = Image.new("1", (2, 1))
+        mask.putpixel((1, 0), 1)
+        im.paste(4660, (0, 0, 2, 1), mask)
+        assert im.getpixel((0, 0)) == 3000
+        assert im.getpixel((1, 0)) == 4660
+
     def test_different_sizes(self) -> None:
         im = Image.new("RGB", (100, 100))
         im2 = Image.new("RGB", (50, 50))
