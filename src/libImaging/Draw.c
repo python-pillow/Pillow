@@ -61,11 +61,12 @@ ink16(Imaging im, const void *ink_) {
 }
 
 /*
- * Rounds around zero (up=away from zero, down=towards zero)
- * This guarantees that ROUND_UP|DOWN(f) == -ROUND_UP|DOWN(-f)
+ * Rounds half away from -inf (up = floor(f + 0.5), down = ceil(f - 0.5)),
+ * so the result only depends on the fractional position of f, not on its
+ * sign. This keeps rasterisation translation-invariant across the origin.
  */
-#define ROUND_UP(f) ((int)((f) >= 0.0 ? floor((f) + 0.5F) : -floor(fabs(f) + 0.5F)))
-#define ROUND_DOWN(f) ((int)((f) >= 0.0 ? ceil((f) - 0.5F) : -ceil(fabs(f) - 0.5F)))
+#define ROUND_UP(f) ((int)floor((f) + 0.5F))
+#define ROUND_DOWN(f) ((int)ceil((f) - 0.5F))
 
 /* -------------------------------------------------------------------- */
 /* Primitives                                                           */

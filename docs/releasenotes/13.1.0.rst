@@ -67,6 +67,15 @@ Two new image processing operations are available in ImageOps.
 Other changes
 =============
 
+Negative ImageDraw coordinates
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``ImageDraw`` line and polygon coordinates are now rounded toward negative
+infinity instead of toward zero, and wide line edges are rounded in the same
+way at every position. Drawing a shape that extends past the left or top edge
+of an image now produces the same pixels as drawing it shifted into the image
+and cropping back.
+
 Rounding crop coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
