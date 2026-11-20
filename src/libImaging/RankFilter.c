@@ -134,7 +134,7 @@ ImagingRankFilter(Imaging im, int size, int rank) {
         return (Imaging)ImagingError_ValueError("bad filter size");
     }
 
-    /* malloc check ok, for overflow in the define below */
+    /* malloc check ok, for overflow in RANK_BODY */
     if (size > INT_MAX / (size * (int)sizeof(FLOAT32))) {
         return (Imaging)ImagingError_ValueError("filter size too large");
     }
