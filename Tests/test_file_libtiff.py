@@ -1611,3 +1611,17 @@ class TestFileLibTiff(LibTiffTestCase):
             w = sizes[i]
             expected = Image.new("RGB", (w, w), "#f00")
             assert_image_similar(im, expected, 1)
+
+    def test_get_child_images_duplicate_offsets(self) -> None:
+        # 1x1 image with three SubIFD offsets, each pointing to the first IFD
+        data = (
+            b"SUkqAAgAAAAKAAABAwABAAAAAQAAAAEBAwABAAAAAQAAAAIBAwABAAAACAAA"
+            b"AAMBAwABAAAAAQAAAAYBAwABAAAAAQAAABEBBAABAAAAkgAAABUBAwABAAAA"
+            b"AQAAABYBAwABAAAAAQAAABcBBAABAAAAAQAAAEoBBAADAAAAhgAAAAAAAAAI"
+            b"AAAACAAAAAgAAACA"
+        )
+        with Image.open(io.BytesIO(base64.b64decode(data))) as im:
+            assert im.tag_v2[SUBIFD] == (8, 8, 8)
+
+            ims = im.get_child_images()
+        assert len(ims) == 1
