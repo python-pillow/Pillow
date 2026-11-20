@@ -63,8 +63,12 @@ ImagingRankFilter(Imaging im, int size, int rank) {
     ImagingSectionCookie cookie;
     int margin, size2;
 
-    if (!im || im->bands != 1) {
-        return (Imaging)ImagingError_ModeError();
+    if (!im) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+
+    if (im->bands != 1) {
+        return (Imaging)ImagingError_ModeError("image must have exactly 1 band");
     }
 
     if (!(size & 1)) {
@@ -140,7 +144,7 @@ ImagingRankFilter(Imaging im, int size, int rank) {
     } else {
         /* safety net (we shouldn't end up here) */
         ImagingDelete(imOut);
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ModeError(NULL);
     }
 
     ImagingCopyPalette(imOut, im);

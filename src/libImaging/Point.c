@@ -173,7 +173,7 @@ ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
     im_point_context context;
 
     if (!imIn) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ValueError(NULL);
     }
 
     if (imIn->type == IMAGING_TYPE_UINT8) {
@@ -252,9 +252,14 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
     ImagingSectionCookie cookie;
     Imaging imOut;
 
-    if (!imIn || (imIn->mode != IMAGING_MODE_I && imIn->type != IMAGING_TYPE_I16 &&
-                  imIn->mode != IMAGING_MODE_F)) {
-        return (Imaging)ImagingError_ModeError();
+    if (!imIn) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+    if (imIn->mode != IMAGING_MODE_I && imIn->type != IMAGING_TYPE_I16 &&
+        imIn->mode != IMAGING_MODE_F) {
+        return (Imaging)ImagingError_NotSupportedError(
+            "only modes I, I;16 variants and F supported"
+        );
     }
 
     int xsize = imIn->xsize, ysize = imIn->ysize;
