@@ -124,7 +124,9 @@ _encode_cleanup(ImagingEncoderObject *encoder, PyObject *args) {
  *
  * Python arguments:
  * - bufsize (int, optional): The size of the buffer to use for encoding.
- *                            If -1, calculate the size for the raw encoder.
+ *                            If -1, allow the raw encoder to calculate
+ *                            the optimal buffer size to encode the image
+ *                            in one shot. This is used by `tobytes()`.
  *
  * @return A tuple containing the number of bytes written, an error code if any, and the
  *         encoded bytes object. NULL if an error occurred, with a Python exception set.
