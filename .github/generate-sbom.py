@@ -254,7 +254,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/freetype2",
             "type": "library",
             "name": "FreeType",
-            "version": versions["freetype"],
+            "version": versions["freetype"].replace("-", "."),
             "scope": "optional",
             "description": "Font rendering (optional, used by PIL._imagingft). "
             "Required for text/font support.",

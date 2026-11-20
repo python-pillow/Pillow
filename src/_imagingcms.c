@@ -560,6 +560,11 @@ cms_transform_apply_impl(CmsTransformObject *self, PyObject *args) {
         return NULL;
     }
 
+    if (imOut->read_only) {
+        PyErr_SetString(PyExc_ValueError, "image is readonly");
+        return NULL;
+    }
+
     return Py_BuildValue("i", pyCMSdoTransform(im, imOut, self->transform));
 }
 
@@ -629,6 +634,12 @@ cms_profile_is_intent_supported(CmsProfileObject *self, PyObject *args) {
     int direction;
     if (!PyArg_ParseTuple(args, "ii:is_intent_supported", &intent, &direction)) {
         return NULL;
+    }
+
+    /* Only valid for ICC Intents (otherwise lcms2 < 2.15 reads invalid memory in
+     * cmsio1.c). */
+    if (intent < INTENT_PERCEPTUAL || intent > INTENT_ABSOLUTE_COLORIMETRIC) {
+        return PyLong_FromLong(0);
     }
 
     result = cmsIsIntentSupported(self->profile, intent, direction);

@@ -20,7 +20,6 @@ from enum import IntEnum, IntFlag
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i32le as i32
-from ._binary import o8
 from ._binary import o32le as o32
 
 TYPE_CHECKING = False
@@ -370,8 +369,13 @@ class DdsImageFile(ImageFile.ImageFile):
                 mask_count = 3
 
             masks = struct.unpack(f"<{mask_count}I", header[84 : 84 + mask_count * 4])
-            self.tile = [ImageFile._Tile("dds_rgb", args=(bitcount, masks))]
-            return
+            if masks == (0xFF0000, 0x00FF00, 0x0000FF):
+                rawmode = "BGR"
+            elif masks == (0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000):
+                rawmode = "BGRA"
+            else:
+                self.tile = [ImageFile._Tile("dds_rgb", args=(bitcount, masks))]
+                return
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:
                 self._mode = "L"
@@ -493,40 +497,40 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
     def decode(self, buffer: Image.DecoderInput) -> tuple[int, int]:
         bitcount, masks = self.args
 
-        data = bytearray()
         bytecount = bitcount // 8
         if not bytecount:
-            self.set_as_raw(data)
-            return -1, 0
+            msg = f"Unsupported bitcount {bitcount}"
+            raise OSError(msg)
 
-        # Some masks will be padded with zeros, e.g. R 0b11 G 0b1100
-        # Calculate how many zeros each mask is padded with
-        mask_offsets = []
-        # And the maximum value of each channel without the padding
-        mask_totals = []
-        for mask in masks:
+        assert self.fd is not None
+        pixel_count = self.state.xsize * self.state.ysize
+        src_length = pixel_count * bytecount
+        src = ImageFile._safe_read(self.fd, src_length)
+
+        mask_count = len(masks)
+        data = bytearray(pixel_count * mask_count)
+        for i, mask in enumerate(masks):
+            # A mask may be padded with zeros, e.g. R 0b11 G 0b1100
+            # Calculate how many zeros the mask is padded with
             offset = 0
             if mask != 0:
                 while mask >> (offset + 1) << (offset + 1) == mask:
                     offset += 1
-            mask_offsets.append(offset)
-            mask_totals.append(mask >> offset)
 
-        assert self.fd is not None
-        dest_length = self.state.xsize * self.state.ysize * len(masks)
-        while len(data) < dest_length:
-            bytes_read = self.fd.read(bytecount)
-            if len(bytes_read) < bytecount:
-                break
-            value = int.from_bytes(bytes_read, "little")
-            for i, mask in enumerate(masks):
-                masked_value = value & mask
+            # The maximum value of each channel without the padding
+            total = mask >> offset
+            if not total:
+                continue
+
+            values = (
+                int.from_bytes(src[p : p + bytecount], "little")
+                for p in range(0, src_length, bytecount)
+            )
+            data[i::mask_count] = bytes(
                 # Remove the zero padding, and scale it to 8 bits
-                data += o8(
-                    int(((masked_value >> mask_offsets[i]) / mask_totals[i]) * 255)
-                    if mask_totals[i]
-                    else 0
-                )
+                int((((value & mask) >> offset) / total) * 255)
+                for value in values
+            )
         self.set_as_raw(data)
         return -1, 0
 

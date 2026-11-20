@@ -589,8 +589,7 @@ def test_draw_lines_blend(
         IMAGES_PATH / "hopper.webp",  # WebP, RGB mode. VP8 (lossy)
         IMAGES_PATH / "hopper_lossless.webp",  # WebP, RGB mode. VP8L (lossless)
         IMAGES_PATH / "transparent.webp",  # WebP, RGBA mode. VP8X with VP8 (lossy)
-        IMAGES_PATH
-        / "uncompressed_rgb.dds",  # DDS, RGBA mode. uncompressed (see #9943)
+        IMAGES_PATH / "uncompressed_rgb.dds",  # DDS, RGBA mode. uncompressed
     ],
     ids=_format_path,
 )

@@ -379,6 +379,10 @@ def _accept(prefix: bytes) -> bool:
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
+    if im.mode not in {"L", "I;16", "I;16B", "LA", "RGB", "YCbCr", "RGBA", "CMYK"}:
+        msg = f"cannot write mode {im.mode} as JPEG2000"
+        raise OSError(msg)
+
     # Get the keyword arguments
     info = im.encoderinfo
 

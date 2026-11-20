@@ -17,7 +17,6 @@ Please send a pull request to the `main` branch. Please include [documentation](
 - Separate code commits from reformatting commits.
 - Provide tests for any newly added code.
 - Follow PEP 8.
-- When committing only documentation changes please include `[ci skip]` in the commit message to avoid running extra tests.
 - Include [release notes](https://github.com/python-pillow/Pillow/tree/main/docs/releasenotes) as needed or appropriate with your bug fixes, feature additions and tests.
 
 ## Reporting Issues

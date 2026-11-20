@@ -777,7 +777,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 (dest[tag],) = values
             except ValueError:
                 # We've got a builtin tag with 1 expected entry
-                if tag != PHOTOMETRIC_INTERPRETATION:
+                if tag != PHOTOMETRIC_INTERPRETATION and self.group is None:
                     warnings.warn(
                         f"Metadata Warning, tag {tag} had too many entries: "
                         f"{len(values)}, expected 1"
@@ -919,13 +919,24 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 else self._unpack("H", self._ensure_read(fp, 2))
             )[0]
             total_size = 0
+            seen_tags = set()
             for i in range(tag_count):
                 tag, typ, count, data = (
                     self._unpack("HHQ8s", self._ensure_read(fp, 20))
                     if self._bigtiff
                     else self._unpack("HHL4s", self._ensure_read(fp, 12))
                 )
-                if tag in self._tagdata:
+                if tag in seen_tags:
+                    # Ignore duplicate tags, like libtiff
+                    # even if the first one was skipped
+                    continue
+                seen_tags.add(tag)
+                if (
+                    tag == PHOTOMETRIC_INTERPRETATION
+                    and count != 1
+                    and self.group is None
+                ):
+                    # Ignore a malformed PhotometricInterpretation tag, like libtiff
                     continue
 
                 # tagname = TiffTags.lookup(tag, self.group).name
@@ -1666,7 +1677,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 # fillorder==2 modes have a corresponding
                 # fillorder=1 mode
                 self._mode, rawmode = OPEN_INFO[key]
-            if photo == 6:
+            if photo == 6 and len(bps_tuple) == 3:
                 self._mode = "RGB"
                 if self._compression in "jpeg" and self._planar_configuration == 1:
                     # YCbCr images with new jpeg compression with pixels in one plane
@@ -1825,13 +1836,11 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     libtiff = WRITE_LIBTIFF or compression != "raw"
 
-    # required for color libtiff images
-    ifd[PLANAR_CONFIGURATION] = 1
-
     ifd[IMAGEWIDTH] = im.size[0]
     ifd[IMAGELENGTH] = im.size[1]
 
     # write any arbitrary tags passed in as an ImageFileDirectory
+    subifds: list[int] = []
     if "tiffinfo" in encoderinfo:
         info = encoderinfo["tiffinfo"]
     elif "exif" in encoderinfo:
@@ -1840,12 +1849,18 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             exif = Image.Exif()
             exif.load(info)
             info = exif
+        elif isinstance(info, Image.Exif) and not libtiff:
+            subifds.extend(
+                key for key in TiffTags.TAGS_V2_GROUPS if info._ifds.get(key, {}) != {}
+            )
     else:
         info = {}
     logger.debug("Tiffinfo Keys: %s", list(info))
     if isinstance(info, ImageFileDirectory_v1):
         info = info.to_v2()
-    for key in info:
+    for key in {*info, *subifds}:
+        if libtiff and key in {IMAGEWIDTH, IMAGELENGTH}:
+            continue
         if isinstance(info, Image.Exif) and key in TiffTags.TAGS_V2_GROUPS:
             ifd[key] = info.get_ifd(key)
         else:
@@ -1854,6 +1869,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             ifd.tagtype[key] = info.tagtype[key]
         except Exception:
             pass  # might not be an IFD. Might not have populated type
+
+    # required for color libtiff images
+    ifd[PLANAR_CONFIGURATION] = 1
 
     legacy_ifd = {}
     if hasattr(im, "tag"):
@@ -1926,8 +1944,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     if bits != (1,):
         ifd[BITSPERSAMPLE] = bits
-        if len(bits) != 1:
-            ifd[SAMPLESPERPIXEL] = len(bits)
+    ifd[SAMPLESPERPIXEL] = len(bits)
     if extra is not None:
         ifd[EXTRASAMPLES] = extra
     if format != 1:
@@ -1936,16 +1953,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if PHOTOMETRIC_INTERPRETATION not in ifd:
         ifd[PHOTOMETRIC_INTERPRETATION] = photo
     elif im.mode in ("1", "L") and ifd[PHOTOMETRIC_INTERPRETATION] == 0:
-        if im.mode == "1":
-            inverted_im = im.copy()
-            px = inverted_im.load()
-            if px is not None:
-                for y in range(inverted_im.height):
-                    for x in range(inverted_im.width):
-                        px[x, y] = 0 if px[x, y] == 255 else 255
-                im = inverted_im
-        else:
-            im = ImageOps.invert(im)
+        im = ImageOps.invert(im)
 
     if im.mode in ["P", "PA"]:
         lut = im.im.getpalette("RGB;L")
@@ -2253,6 +2261,7 @@ class AppendingTiffWriter(io.BytesIO):
         self.tagFormat = f"{self.endian}HH" + ("Q" if self._bigtiff else "L")
 
     def skipIFDs(self) -> None:
+        ifd_offsets = set()
         while True:
             ifd_offset = self._read(8 if self._bigtiff else 4)
             if ifd_offset == 0:
@@ -2260,6 +2269,11 @@ class AppendingTiffWriter(io.BytesIO):
                     8 if self._bigtiff else 4
                 )
                 break
+
+            if ifd_offset in ifd_offsets:
+                msg = "IFD loop found"
+                raise RuntimeError(msg)
+            ifd_offsets.add(ifd_offset)
 
             self.f.seek(ifd_offset)
             num_tags = self._read(8 if self._bigtiff else 2)

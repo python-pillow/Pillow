@@ -13,7 +13,7 @@ class TestImagingPaste:
     size = 128
 
     def assert_9points_image(
-        self, im: Image.Image, expected: list[tuple[int, int, int, int]]
+        self, im: Image.Image, expected: list[tuple[int, int, int, int]] | list[int]
     ) -> None:
         px = im.load()
         assert px is not None
@@ -28,16 +28,27 @@ class TestImagingPaste:
             px[self.size // 2, self.size - 1],
             px[self.size - 1, self.size - 1],
         ]
-        assert actual == [
-            point[0] if im.mode == "L" else point[: len(im.mode)] for point in expected
-        ]
+        if im.mode == "L":
+            points_l = []
+            for point in expected:
+                assert isinstance(point, tuple)
+                points_l.append(point[0])
+            assert actual == points_l
+        elif im.mode == "I;16":
+            assert actual == expected
+        else:
+            points = []
+            for point in expected:
+                assert isinstance(point, tuple)
+                points.append(point[: len(im.mode)])
+            assert actual == points
 
     def assert_9points_paste(
         self,
         im: Image.Image,
         im2: Image.Image | str | tuple[int, ...],
         mask: Image.Image,
-        expected: list[tuple[int, int, int, int]],
+        expected: list[tuple[int, int, int, int]] | list[int],
     ) -> None:
         im3 = im.copy()
         im3.paste(im2, (0, 0), mask)
@@ -126,6 +137,17 @@ class TestImagingPaste:
         im = im.crop((12, 23, im2.width + 12, im2.height + 23))
         assert_image_equal(im, im2)
 
+    def test_image_la_into_rgb(self) -> None:
+        # LA images are stored with two padding bytes per pixel.
+        # point() sets them to zero,
+        # so the image must be internally converted before pasting onto RGB
+        im = Image.new("RGB", (1, 1))
+
+        source = Image.new("LA", (1, 1), (128, 255)).point(lambda v: v)
+        im.paste(source)
+
+        assert im.getpixel((0, 0)) == (128, 128, 128)
+
     @pytest.mark.parametrize("y", [10, -10])
     @pytest.mark.parametrize("mode", ["L", "RGB"])
     @pytest.mark.parametrize("mask_mode", ["", "1", "L", "LA", "RGBa"])
@@ -182,6 +204,27 @@ class TestImagingPaste:
                 (128, 1, 128, 254),
                 (207, 113, 112, 207),
                 (255, 191, 128, 191),
+            ],
+        )
+
+    def test_image_mask_L_I16(self) -> None:
+        im = Image.new("I;16", (200, 200), "white")
+        im2 = self.gradient_L.convert("I;16")
+
+        self.assert_9points_paste(
+            im,
+            im2,
+            self.mask_L,
+            [
+                128,
+                208,
+                255,
+                112,
+                192,
+                239,
+                128,
+                207,
+                255,
             ],
         )
 
@@ -251,18 +294,14 @@ class TestImagingPaste:
             ],
         )
 
-    @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
+    @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L", "I;16"])
     def test_color_solid(self, mode: str) -> None:
         im = Image.new(mode, (200, 200), "black")
 
         rect = (12, 23, 128 + 12, 128 + 23)
         im.paste("white", rect)
 
-        hist = im.crop(rect).histogram()
-        while hist:
-            head, hist = hist[:256], hist[256:]
-            assert head[255] == 128 * 128
-            assert sum(head[:255]) == 0
+        assert_image_equal(im.crop(rect), Image.new(mode, (128, 128), "white"))
 
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
     def test_color_mask_1(self, mode: str) -> None:
@@ -284,6 +323,17 @@ class TestImagingPaste:
                 (10, 20, 30, 40),
                 (50, 60, 70, 80),
             ],
+        )
+
+    def test_color_mask_1_I16(self) -> None:
+        im = Image.new("I;16", (200, 200), 50)
+        color = 10
+
+        self.assert_9points_paste(
+            im,
+            (color,),
+            self.mask_1,
+            [50, 50, 10, 50, 50, 10, 10, 10, 50],
         )
 
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])

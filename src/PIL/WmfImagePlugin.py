@@ -97,9 +97,15 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
             size = x1 - x0, y1 - y0
 
+            frame_width = frame[2] - frame[0]
+            frame_height = frame[3] - frame[1]
+            if frame_width == 0 or frame_height == 0:
+                msg = "Invalid frame"
+                raise ValueError(msg)
+
             # calculate dots per inch from bbox and frame
-            xdpi = 2540.0 * (x1 - x0) / (frame[2] - frame[0])
-            ydpi = 2540.0 * (y1 - y0) / (frame[3] - frame[1])
+            xdpi = 2540.0 * (x1 - x0) / frame_width
+            ydpi = 2540.0 * (y1 - y0) / frame_height
 
             self.info["wmf_bbox"] = x0, y0, x1, y1
 
@@ -125,13 +131,14 @@ class WmfStubImageFile(ImageFile.StubImageFile):
                 msg = "DPI must be non-negative"
                 raise ValueError(msg)
 
-            self.info["dpi"] = dpi
             x0, y0, x1, y1 = self.info["wmf_bbox"]
-            self._size = (
+            size = (
                 int((x1 - x0) * xy_dpi[0] / self._inch[0]),
                 int((y1 - y0) * xy_dpi[1] / self._inch[1]),
             )
-            Image._decompression_bomb_check(self.size)
+            Image._decompression_bomb_check(size)
+            self._size = size
+            self.info["dpi"] = dpi
         return super().load()
 
 
