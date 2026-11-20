@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os.path
+import random
 
 import pytest
 
@@ -1846,3 +1847,126 @@ def test_dash_empty() -> None:
 
     with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
         draw.rectangle([10, 10, 90, 90], dash=())
+
+
+def _random_shapes(rng: random.Random, n: int) -> list[tuple[float, ...]]:
+    return [tuple(rng.uniform(-30, 70) for _ in range(8)) for _ in range(n)]
+
+
+def _draw_shape(
+    draw: ImageDraw.ImageDraw, kind: str, c: tuple[float, ...], dx: float
+) -> None:
+    pts = [(c[i] + dx, c[i + 1] + dx) for i in range(0, 8, 2)]
+    x0, y0 = min(pts[0][0], pts[1][0]), min(pts[0][1], pts[1][1])
+    x1, y1 = max(pts[0][0], pts[1][0]), max(pts[0][1], pts[1][1])
+    box = (x0, y0, x1, y1)
+    if kind == "line":
+        draw.line(pts[:2], 255)
+    elif kind == "wide line":
+        draw.line(pts[:3], 255, 5)
+    elif kind == "curve joint":
+        draw.line(pts[:3], 255, 9, "curve")
+    elif kind == "polygon":
+        draw.polygon(pts, 255)
+    elif kind == "polygon outline":
+        draw.polygon(pts, None, 255, 3)
+    elif kind == "regular_polygon":
+        draw.regular_polygon((x0 + 15, y0 + 15, 15), 5, 10, 255)
+    elif kind == "point":
+        draw.point(pts, 255)
+    elif kind == "rectangle":
+        draw.rectangle(box, 255)
+    elif kind == "rectangle outline":
+        draw.rectangle(box, None, 255, 3)
+    elif kind == "rounded_rectangle":
+        draw.rounded_rectangle(box, 4, 255)
+    elif kind == "ellipse":
+        draw.ellipse(box, 255)
+    elif kind == "ellipse outline":
+        draw.ellipse(box, None, 255, 3)
+    elif kind == "arc":
+        draw.arc(box, 20, 250, 255, 3)
+    elif kind == "chord":
+        draw.chord(box, 20, 250, 255)
+    elif kind == "pieslice":
+        draw.pieslice(box, 20, 250, 255)
+    elif kind == "pieslice outline":
+        draw.pieslice(box, 20, 250, None, 255, 3)
+    elif kind == "bitmap":
+        draw.bitmap((x0, y0), Image.new("1", (5, 5), 1), 255)  # type: ignore[arg-type]
+    elif kind == "dash line":
+        draw.line(pts[:3], 255, dash=(4, 2))
+    elif kind == "dash polygon outline":
+        draw.polygon(pts, None, 255, dash=(3, 1, 1, 1))
+    elif kind == "dash rectangle outline":
+        draw.rectangle(box, None, 255, dash=(5, 3))
+
+
+SHAPE_KINDS = (
+    "line",
+    "wide line",
+    "curve joint",
+    "polygon",
+    "polygon outline",
+    "regular_polygon",
+    "point",
+    "rectangle",
+    "rectangle outline",
+    "rounded_rectangle",
+    "ellipse",
+    "ellipse outline",
+    "arc",
+    "chord",
+    "pieslice",
+    "pieslice outline",
+    "bitmap",
+    "dash line",
+    "dash polygon outline",
+    "dash rectangle outline",
+)
+
+
+@pytest.mark.parametrize("kind", SHAPE_KINDS)
+@pytest.mark.parametrize("shift", (10, 63))
+@pytest.mark.parametrize("integer", (False, True))
+def test_translation_invariant(kind: str, shift: int, integer: bool) -> None:
+    # Drawing a shape and then moving it by a whole number of pixels
+    # should give the same pixels as drawing it where it is
+    rng = random.Random(1)
+    size = 64
+    for c in _random_shapes(rng, 60):
+        if integer:
+            c = tuple(float(round(v)) for v in c)
+
+        im = Image.new("L", (size, size))
+        _draw_shape(ImageDraw.Draw(im), kind, c, 0)
+
+        moved = Image.new("L", (size + shift, size + shift))
+        _draw_shape(ImageDraw.Draw(moved), kind, c, shift)
+        moved = moved.crop((shift, shift, shift + size, shift + size))
+
+        assert im.tobytes() == moved.tobytes(), (kind, c)
+
+
+def test_rectangle_negative_half_pixel() -> None:
+    # A shape at (-1, -1, 0, 0) covers the pixel (0, 0) only
+    im = Image.new("L", (1, 1))
+    ImageDraw.Draw(im).rectangle((-1, -1, 0, 0), 255)
+    assert im.getpixel((0, 0)) == 255
+
+
+def test_shape_curve_translation_invariant() -> None:
+    # Curves are flattened in double precision, so that moving one by a whole
+    # number of pixels moves the drawn pixels by the same amount
+    def draw(shift: int) -> Image.Image:
+        outline = ImageDraw.Outline()
+        outline.move(28 + shift, 16 + shift)
+        outline.curve(
+            35 + shift, -14 + shift, 9 + shift, 22 + shift, 33 + shift, 42 + shift
+        )
+        outline.close()
+        im = Image.new("L", (48 + shift, 48 + shift))
+        ImageDraw.Draw(im).shape(outline, 255)
+        return im.crop((shift, shift, shift + 48, shift + 48))
+
+    assert_image_equal(draw(0), draw(1000))

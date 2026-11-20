@@ -67,6 +67,16 @@ ink16(Imaging im, const void *ink_) {
 #define ROUND_UP(f) ((int)((f) >= 0.0 ? floor((f) + 0.5F) : -floor(fabs(f) + 0.5F)))
 #define ROUND_DOWN(f) ((int)((f) >= 0.0 ? ceil((f) - 0.5F) : -ceil(fabs(f) - 0.5F)))
 
+/*
+ * Rounds to the nearest integer, with halves going towards +inf (RIGHT) or
+ * -inf (LEFT). Unlike ROUND_UP|DOWN, these are not symmetric around zero, so
+ * that drawing a shape and then moving it by a whole number of pixels gives
+ * the same pixels. Used for coordinates, where only the position matters;
+ * ROUND_UP|DOWN remain for offsets that are differences of coordinates.
+ */
+#define ROUND_RIGHT(f) ((int)floor((f) + 0.5))
+#define ROUND_LEFT(f) ((int)ceil((f) - 0.5))
+
 /* -------------------------------------------------------------------- */
 /* Primitives                                                           */
 /* -------------------------------------------------------------------- */
@@ -77,7 +87,22 @@ typedef struct {
     int x0, y0;
     int xmin, ymin, xmax, ymax;
     float dx;
+    int dxn, dyn; /* x1 - x0, y1 - y0 of the original segment */
 } Edge;
+
+/*
+ * x of the edge on scanline y. The numerator is an exact integer product, so
+ * the only rounding is that of one correctly rounded division. A result that is
+ * exactly halfway between two pixels is therefore exactly representable, and
+ * whether a pixel is set no longer depends on float error in `dx * dy`.
+ */
+static inline double
+edge_x(const Edge *e, int y) {
+    if (e->dyn == 0) {
+        return e->x0;
+    }
+    return e->x0 + (double)((long long)(y - e->y0) * e->dxn) / e->dyn;
+}
 
 typedef void (*point_handler)(Imaging, int, int, int);
 
@@ -395,7 +420,7 @@ line(
 
 static int
 x_cmp(const void *x0, const void *x1) {
-    float diff = *((float *)x0) - *((float *)x1);
+    double diff = *((double *)x0) - *((double *)x1);
     if (diff < 0) {
         return -1;
     } else if (diff > 0) {
@@ -450,12 +475,12 @@ polygon_generic(
     Imaging im, int n, Edge *e, int ink, int eofill, hline_handler hline, Imaging mask
 ) {
     Edge **edge_table;
-    float *xx;
+    double *xx;
     int edge_count = 0;
     int ymin = im->ysize - 1;
     int ymax = 0;
     int i, j, k;
-    float adjacent_line_x, adjacent_line_x_other_edge;
+    double adjacent_line_x, adjacent_line_x_other_edge;
 
     if (n <= 0) {
         return 0;
@@ -493,7 +518,7 @@ polygon_generic(
 
     /* Process the edge table with a scan line searching for intersections */
     /* malloc check ok, using calloc */
-    xx = calloc(edge_count * 2, sizeof(float));
+    xx = calloc(edge_count * 2, sizeof(double));
     if (!xx) {
         free(edge_table);
         return -1;
@@ -503,7 +528,7 @@ polygon_generic(
         for (i = 0; i < edge_count; i++) {
             Edge *current = edge_table[i];
             if (ymin >= current->ymin && ymin <= current->ymax) {
-                xx[j++] = (ymin - current->y0) * current->dx + current->x0;
+                xx[j++] = edge_x(current, ymin);
 
                 if (ymin == current->ymax && ymin < ymax) {
                     // Needed to draw consistent polygons
@@ -520,26 +545,20 @@ polygon_generic(
                             continue;
                         }
                         // Check if the two edges join to make a corner
-                        if (roundf(xx[j - 1]) ==
-                            roundf(
-                                (ymin - other_edge->y0) * other_edge->dx +
-                                other_edge->x0
-                            )) {
+                        if (ROUND_RIGHT(xx[j - 1]) ==
+                            ROUND_RIGHT(edge_x(other_edge, ymin))) {
                             // Determine points from the edges on the next row
                             // Or if this is the last row, check the previous row
                             int offset = ymin == current->ymax ? -1 : 1;
-                            adjacent_line_x =
-                                (ymin + offset - current->y0) * current->dx +
-                                current->x0;
+                            adjacent_line_x = edge_x(current, ymin + offset);
                             if (ymin + offset >= other_edge->ymin &&
                                 ymin + offset <= other_edge->ymax) {
                                 adjacent_line_x_other_edge =
-                                    (ymin + offset - other_edge->y0) * other_edge->dx +
-                                    other_edge->x0;
+                                    edge_x(other_edge, ymin + offset);
                                 if (xx[j - 1] > adjacent_line_x + 1 &&
                                     xx[j - 1] > adjacent_line_x_other_edge + 1) {
                                     xx[j - 1] =
-                                        roundf(fmax(
+                                        ROUND_RIGHT(fmax(
                                             adjacent_line_x, adjacent_line_x_other_edge
                                         )) +
                                         1;
@@ -548,7 +567,7 @@ polygon_generic(
                                     xx[j - 1] < adjacent_line_x_other_edge - 1
                                 ) {
                                     xx[j - 1] =
-                                        roundf(fmin(
+                                        ROUND_RIGHT(fmin(
                                             adjacent_line_x, adjacent_line_x_other_edge
                                         )) -
                                         1;
@@ -560,11 +579,11 @@ polygon_generic(
                 }
             }
         }
-        qsort(xx, j, sizeof(float), x_cmp);
+        qsort(xx, j, sizeof(double), x_cmp);
         if (hasAlpha == 1) {
             int x_pos = j == 0 ? -1 : 0;
             for (i = 1; i < j; i += 2) {
-                int x_end = ROUND_DOWN(xx[i]);
+                int x_end = ROUND_LEFT(xx[i]);
                 if (x_end < x_pos) {
                     // Line would be before the current position
                     continue;
@@ -575,7 +594,7 @@ polygon_generic(
                     continue;
                 }
 
-                int x_start = ROUND_UP(xx[i - 1]);
+                int x_start = ROUND_RIGHT(xx[i - 1]);
                 if (x_pos > x_start) {
                     // Line would be partway through x_pos, so increase the starting
                     // point
@@ -591,7 +610,9 @@ polygon_generic(
             draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline, mask);
         } else {
             for (i = 1; i < j; i += 2) {
-                (*hline)(im, ROUND_UP(xx[i - 1]), ymin, ROUND_DOWN(xx[i]), ink, mask);
+                (*hline)(
+                    im, ROUND_RIGHT(xx[i - 1]), ymin, ROUND_LEFT(xx[i]), ink, mask
+                );
             }
         }
     }
@@ -629,6 +650,8 @@ add_edge(Edge *e, int x0, int y0, int x1, int y1) {
 
     e->x0 = x0;
     e->y0 = y0;
+    e->dxn = x1 - x0;
+    e->dyn = y1 - y0;
 }
 
 typedef struct {
@@ -1187,10 +1210,10 @@ clip_tree_do_clip(
             // X of intersection
             double ix = -(B * y + C) / A;
             if (A * x0 + B * y + C < eps) {
-                x0 = lround(fmax(x0, ix));
+                x0 = ROUND_RIGHT(fmax(x0, ix));
             }
             if (A * x1 + B * y + C < eps) {
-                x1 = lround(fmin(x1, ix));
+                x1 = ROUND_RIGHT(fmin(x1, ix));
             }
         }
         if (x0 <= x1) {
@@ -1798,7 +1821,8 @@ ImagingDrawPieslice(
         if (pieSideNew(im, x0, y0, x1, y1, end, ink, width, op)) {
             return -1;
         }
-        int xc = lround((x0 + x1 - width) / 2.0), yc = lround((y0 + y1 - width) / 2.0);
+        int xc = ROUND_RIGHT((x0 + x1 - width) / 2.0),
+            yc = ROUND_RIGHT((y0 + y1 - width) / 2.0);
         ellipseNew(im, xc, yc, xc + width - 1, yc + width - 1, ink, 1, 0, op);
         return pieNew(im, x0, y0, x1, y1, start, end, ink, width, op);
     }
@@ -1812,9 +1836,9 @@ ImagingDrawPieslice(
    itself */
 
 struct ImagingOutlineInstance {
-    float x0, y0;
+    double x0, y0;
 
-    float x, y;
+    double x, y;
 
     int count;
     Edge *edges;
@@ -1883,7 +1907,7 @@ allocate(ImagingOutline outline, int extra) {
 }
 
 int
-ImagingOutlineMove(ImagingOutline outline, float x0, float y0) {
+ImagingOutlineMove(ImagingOutline outline, double x0, double y0) {
     outline->x = outline->x0 = x0;
     outline->y = outline->y0 = y0;
 
@@ -1891,7 +1915,7 @@ ImagingOutlineMove(ImagingOutline outline, float x0, float y0) {
 }
 
 int
-ImagingOutlineLine(ImagingOutline outline, float x1, float y1) {
+ImagingOutlineLine(ImagingOutline outline, double x1, double y1) {
     Edge *e;
 
     e = allocate(outline, 1);
@@ -1899,7 +1923,7 @@ ImagingOutlineLine(ImagingOutline outline, float x1, float y1) {
         return -1; /* out of memory */
     }
 
-    add_edge(e, (int)outline->x, (int)outline->y, (int)x1, (int)y1);
+    add_edge(e, FLOOR(outline->x), FLOOR(outline->y), FLOOR(x1), FLOOR(y1));
 
     outline->x = x1;
     outline->y = y1;
@@ -1909,11 +1933,17 @@ ImagingOutlineLine(ImagingOutline outline, float x1, float y1) {
 
 int
 ImagingOutlineCurve(
-    ImagingOutline outline, float x1, float y1, float x2, float y2, float x3, float y3
+    ImagingOutline outline,
+    double x1,
+    double y1,
+    double x2,
+    double y2,
+    double x3,
+    double y3
 ) {
     Edge *e;
     int i;
-    float xo, yo;
+    double xo, yo;
 
 #define STEPS 32
 
@@ -1928,18 +1958,18 @@ ImagingOutlineCurve(
     /* flatten the bezier segment */
 
     for (i = 1; i <= STEPS; i++) {
-        float t = ((float)i) / STEPS;
-        float t2 = t * t;
-        float t3 = t2 * t;
+        double t = ((double)i) / STEPS;
+        double t2 = t * t;
+        double t3 = t2 * t;
 
-        float u = 1.0F - t;
-        float u2 = u * u;
-        float u3 = u2 * u;
+        double u = 1.0 - t;
+        double u2 = u * u;
+        double u3 = u2 * u;
 
-        float x = outline->x * u3 + 3 * (x1 * t * u2 + x2 * t2 * u) + x3 * t3 + 0.5;
-        float y = outline->y * u3 + 3 * (y1 * t * u2 + y2 * t2 * u) + y3 * t3 + 0.5;
+        double x = outline->x * u3 + 3 * (x1 * t * u2 + x2 * t2 * u) + x3 * t3 + 0.5;
+        double y = outline->y * u3 + 3 * (y1 * t * u2 + y2 * t2 * u) + y3 * t3 + 0.5;
 
-        add_edge(e++, xo, yo, (int)x, (int)y);
+        add_edge(e++, FLOOR(xo), FLOOR(yo), FLOOR(x), FLOOR(y));
 
         xo = x, yo = y;
     }
@@ -2002,10 +2032,10 @@ ImagingOutlineTransform(ImagingOutline outline, double a[6]) {
            upgrade your compiler (make sure you have the right service
            pack) */
 
-        X0 = (int)(a0 * x0 + a1 * y0 + a2);
-        Y0 = (int)(a3 * x0 + a4 * y0 + a5);
-        X1 = (int)(a0 * x1 + a1 * y1 + a2);
-        Y1 = (int)(a3 * x1 + a4 * y1 + a5);
+        X0 = FLOOR(a0 * x0 + a1 * y0 + a2);
+        Y0 = FLOOR(a3 * x0 + a4 * y0 + a5);
+        X1 = FLOOR(a0 * x1 + a1 * y1 + a2);
+        Y1 = FLOOR(a3 * x1 + a4 * y1 + a5);
 
         add_edge(eOut, X0, Y0, X1, Y1);
 

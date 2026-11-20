@@ -599,12 +599,18 @@ ImagingDrawOutline(
 );
 
 extern int
-ImagingOutlineMove(ImagingOutline outline, float x, float y);
+ImagingOutlineMove(ImagingOutline outline, double x, double y);
 extern int
-ImagingOutlineLine(ImagingOutline outline, float x, float y);
+ImagingOutlineLine(ImagingOutline outline, double x, double y);
 extern int
 ImagingOutlineCurve(
-    ImagingOutline outline, float x1, float y1, float x2, float y2, float x3, float y3
+    ImagingOutline outline,
+    double x1,
+    double y1,
+    double x2,
+    double y2,
+    double x3,
+    double y3
 );
 extern int
 ImagingOutlineTransform(ImagingOutline outline, double a[6]);
