@@ -710,6 +710,10 @@ class TestFileLibTiff(LibTiffTestCase):
         im.save(out, compression="jpeg", quality=0)
         im.save(out, compression="jpeg", quality=100)
 
+    def test_l_ycbcr(self) -> None:
+        with Image.open("Tests/images/l_ycbcr.tif") as im:
+            assert im.mode == "L"
+
     def test_cmyk_save(self, tmp_path: Path) -> None:
         im = hopper("CMYK")
         out = tmp_path / "temp.tif"

@@ -340,10 +340,11 @@ bc7_lerp(rgba *dst, const rgba *e, int s0, int s1) {
 static void
 decode_bc7_block(rgba *col, const UINT8 *src) {
     rgba endpoints[6];
-    int bit = 0, cibit, aibit;
+    int cibit, aibit;
     int mode = src[0];
     int i, j;
     int numep, cb, ab, ib, ib2, i0, i1, s;
+    uint8_t bit = 0;
     UINT8 index_sel, partition, rotation, val;
     const char *cw, *aw;
     const bc7_mode_info *info;
@@ -729,7 +730,6 @@ decode_bc6_block(rgba *col, const UINT8 *src, int sign) {
     }
     if (mode >= 14) {
         /* invalid block */
-        memset(col, 0, 16 * sizeof(col[0]));
         return;
     }
     info = &bc6_modes[mode];
@@ -879,6 +879,7 @@ decode_bcn(
             int sign = strcmp(pixel_format, "BC6HS") == 0 ? 1 : 0;
             while (bytes >= 16) {
                 rgba col[16];
+                memset(col, 0, 16 * sizeof(col[0]));
                 decode_bc6_block(col, ptr, sign);
                 put_block(im, state, (const char *)col, sizeof(col[0]), C);
                 ptr += 16;

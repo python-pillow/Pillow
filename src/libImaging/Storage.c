@@ -505,7 +505,7 @@ ImagingAllocateBlock(Imaging im) {
         return (Imaging)ImagingError_MemoryError();
     }
 
-    if (im->ysize * im->linesize <= 0) {
+    if (im->ysize == 0 || im->linesize == 0) {
         /* some platforms return NULL for malloc(0); this fix
            prevents MemoryError on zero-sized images on such
            platforms */
@@ -771,27 +771,6 @@ ImagingNewArrow(
     return (Imaging)ImagingError_ValueError(
         "Invalid Arrow array mode or size mismatch"
     );
-}
-
-Imaging
-ImagingNew2Dirty(const ModeID mode, Imaging imOut, Imaging imIn) {
-    /* allocate or validate output image */
-
-    if (imOut) {
-        /* make sure images match */
-        if (imOut->mode != mode || imOut->xsize != imIn->xsize ||
-            imOut->ysize != imIn->ysize) {
-            return ImagingError_Mismatch();
-        }
-    } else {
-        /* create new image */
-        imOut = ImagingNewDirty(mode, imIn->xsize, imIn->ysize);
-        if (!imOut) {
-            return NULL;
-        }
-    }
-
-    return imOut;
 }
 
 void

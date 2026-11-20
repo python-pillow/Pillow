@@ -132,10 +132,6 @@ struct ImagingMemoryInstance {
 #define IMAGING_PIXEL_CMYK(im, x, y) ((im)->image[(y)][(x) * 4])
 #define IMAGING_PIXEL_YCbCr(im, x, y) ((im)->image[(y)][(x) * 4])
 
-#define IMAGING_PIXEL_UINT8(im, x, y) ((im)->image8[(y)][(x)])
-#define IMAGING_PIXEL_INT32(im, x, y) ((im)->image32[(y)][(x)])
-#define IMAGING_PIXEL_FLOAT32(im, x, y) (((FLOAT32 *)(im)->image32[y])[x])
-
 struct ImagingAccessInstance {
     ModeID mode;
     void (*get_pixel)(Imaging im, int x, int y, void *pixel);
@@ -195,14 +191,14 @@ ImagingMemorySetBlockAllocator(ImagingMemoryArena arena, int use_block_allocator
 extern Imaging
 ImagingNew(ModeID mode, int xsize, int ysize);
 extern Imaging
-ImagingNewDirty(ModeID mode, int xsize, int ysize);
-extern Imaging
-ImagingNew2Dirty(ModeID mode, Imaging imOut, Imaging imIn);
+ImagingNewDirty(const ModeID mode, int xsize, int ysize);
 extern void
 ImagingDelete(Imaging im);
 
 extern Imaging
-ImagingNewBlock(ModeID mode, int xsize, int ysize);
+ImagingNewBlock(const ModeID mode, int xsize, int ysize);
+
+typedef Imaging (*ImagingAllocator)(const ModeID mode, int xsize, int ysize);
 
 extern Imaging
 ImagingNewArrow(
@@ -316,9 +312,6 @@ typedef enum {
     IMAGING_DITHER_FLOYDSTEINBERG = 3,  // Default
 } ImagingDitherType;
 
-typedef int (*ImagingTransformMap)(double *X, double *Y, int x, int y, void *data);
-typedef int (*ImagingTransformFilter)(void *out, Imaging im, double x, double y);
-
 /* Image Manipulation Methods */
 /* -------------------------- */
 
@@ -329,12 +322,12 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha);
 extern Imaging
 ImagingCopy(Imaging im);
 extern Imaging
-ImagingConvert(
-    Imaging imOut,
+ImagingConvertUsingAllocator(
     Imaging imIn,
     ModeID mode,
     ImagingPalette palette,
-    ImagingDitherType dither
+    ImagingDitherType dither,
+    ImagingAllocator new_image
 );
 extern Imaging
 ImagingConvertMatrix(Imaging im, ModeID mode, const float m[12]);
@@ -450,7 +443,7 @@ ImagingColorLUT3D_linear(
 );
 
 extern Imaging
-ImagingCopy2(Imaging imOut, Imaging imIn);
+ImagingCopyInto(Imaging imOut, Imaging imIn);
 
 /* Channel operations */
 /* any mode, except "F" */
@@ -530,7 +523,17 @@ ImagingDrawEllipse(
     int op
 );
 extern int
-ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void *ink, int op);
+ImagingDrawLine(
+    Imaging im,
+    int x0,
+    int y0,
+    int x1,
+    int y1,
+    const void *ink,
+    int op,
+    PyObject *dash,
+    int *dash_offset
+);
 extern int
 ImagingDrawWideLine(
     Imaging im,
@@ -568,7 +571,8 @@ ImagingDrawPolygon(
     int fill,
     int width,
     int op,
-    Imaging mask
+    Imaging mask,
+    PyObject *dash
 );
 extern int
 ImagingDrawRectangle(

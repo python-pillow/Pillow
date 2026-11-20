@@ -33,15 +33,16 @@ def test_rgb() -> None:
         assert_image_similar(im, hopper(), 16)
 
 
-def test_transparency() -> None:
+@pytest.mark.parametrize("none", (b"None", b"none"))
+def test_transparency(none: bytes) -> None:
     data = b"""/* XPM */
 static char *test[] = {
 "3 1 3 1",
-" \tc None",
+" \tc %s",
 "r\tc #FF0000",
 "b\tc #0000FF",
 " rb"};
-"""
+""" % none
     with Image.open(BytesIO(data)) as im:
         assert im.mode == "P"
         assert im.info["transparency"] == 0

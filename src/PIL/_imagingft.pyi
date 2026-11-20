@@ -37,7 +37,7 @@ class Font:
     ) -> tuple[_imaging.ImagingCore, tuple[int, int]]: ...
     def getsize(
         self,
-        string: str | bytes | bytearray,
+        string: str | bytes,
         mode_name: str | None = None,
         dir: str | None = None,
         features: list[str] | None = None,

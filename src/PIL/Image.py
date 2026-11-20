@@ -746,13 +746,17 @@ class Image:
         if self.__class__ is not other.__class__:
             return False
         assert isinstance(other, Image)
-        return (
-            self.mode == other.mode
-            and self.size == other.size
-            and self.info == other.info
-            and self.getpalette() == other.getpalette()
-            and self.tobytes() == other.tobytes()
-        )
+        if self is other:
+            return True
+        if (
+            self.mode != other.mode
+            or self.size != other.size
+            or self.info != other.info
+        ):
+            return False
+        self.load()
+        other.load()
+        return self.im == other.im
 
     def __repr__(self) -> str:
         return (
@@ -880,7 +884,13 @@ class Image:
 
             from . import ImageFile
 
-            bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
+            if encoder_name == "raw":
+                # Special case: allow the raw encoder to allocate
+                # a single buffer as large as it needs to encode
+                # the entire image in one shot.
+                bufsize = -1
+            else:
+                bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
 
             output = []
             while True:
@@ -1423,11 +1433,22 @@ class Image:
         :returns: A core image object.
         """
 
-        x0, y0, x1, y1 = map(int, map(round, box))
+        import decimal
 
-        absolute_values = (abs(x1 - x0), abs(y1 - y0))
+        x0, y0, x1, y1 = (
+            (
+                v
+                if isinstance(v, int)
+                else int(
+                    decimal.Decimal(v).quantize(
+                        0, decimal.ROUND_HALF_UP if v < 0 else decimal.ROUND_HALF_DOWN
+                    )
+                )
+            )
+            for v in box
+        )
 
-        _decompression_bomb_check(absolute_values)
+        _decompression_bomb_check((x1 - x0, y1 - y0))
 
         return im.crop((x0, y0, x1, y1))
 
@@ -1946,7 +1967,7 @@ class Image:
             source = ImageColor.getcolor(im, self.mode)
         elif isinstance(im, Image):
             if self.mode != im.mode and (
-                self.mode != "RGB" or im.mode not in {"LA", "RGBA", "RGBa"}
+                self.mode != "RGB" or im.mode not in {"RGBA", "RGBa"}
             ):
                 # should use an adapter for this!
                 im = im.convert(self.mode)
@@ -2275,6 +2296,10 @@ class Image:
             msg = "illegal image mode"
             raise ValueError(msg)
 
+        if len(dest_map) > 256:
+            msg = "dest_map must not have more than 256 entries"
+            raise ValueError(msg)
+
         bands = 3
         palette_mode = "RGB"
         if source_palette is None:
@@ -2290,7 +2315,7 @@ class Image:
             bands = 4
             palette_mode = "RGBA"
 
-        palette_bytes = b""
+        palette_bytes = bytearray()
         new_positions = [0] * 256
 
         # pick only the used colors from the palette
@@ -2794,7 +2819,10 @@ class Image:
             raise EOFError(msg)
 
         if self._im is not None and (
-            self.im.size != self.size or self.im.mode != self.mode
+            self.im.size != self.size
+            or self.im.mode != self.mode
+            # If there is an unloaded tile, then drop the current read-only core image
+            or (getattr(self, "tile", None) and self.readonly)
         ):
             self._im = None
 
@@ -3085,6 +3113,10 @@ class Image:
         resample: int = Resampling.NEAREST,
         fill: bool = True,
     ) -> None:
+        if any(math.isinf(v) or math.isnan(v) for v in (*box, *data)):
+            msg = "invalid data"
+            raise ValueError(msg)
+
         w = box[2] - box[0]
         h = box[3] - box[1]
 
