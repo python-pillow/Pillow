@@ -196,3 +196,10 @@ Memory leak when merging a single band with a mismatched mode
 requested mode, such as ``Image.merge("F", [l_image])``, raised
 :py:exc:`ValueError` but leaked the memory allocated for the output image. This
 has been fixed.
+
+BLP2 DXT images with a width of 1 or 2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+BLP2 images using DXT1, DXT3 or DXT5 compression with a width of 1 or 2 pixels were
+decoded incorrectly, and used up to four times more memory than needed while loading.
+This has been fixed.

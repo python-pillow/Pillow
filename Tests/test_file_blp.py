@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import struct
+from io import BytesIO
+
 import pytest
 
 from PIL import BlpImagePlugin, Image
 
 from .helper import (
+    assert_image_equal,
     assert_image_equal_tofile,
     assert_image_similar_tofile,
     hopper,
@@ -37,6 +41,46 @@ def test_load_blp2_dxt1() -> None:
 def test_load_blp2_dxt1a() -> None:
     with Image.open("Tests/images/blp/blp2_dxt1a.blp") as im:
         assert_image_equal_tofile(im, "Tests/images/blp/blp2_dxt1a.png")
+
+
+def _blp2_dxt(size: tuple[int, int], alpha_encoding: int, blocks: list[bytes]) -> bytes:
+    payload = b"".join(blocks)
+    return (
+        b"BLP2"
+        + struct.pack("<i", 1)
+        + bytes((BlpImagePlugin.Encoding.DXT, 1, alpha_encoding, 0))
+        + struct.pack("<II", *size)
+        + struct.pack("<16I", 1172, *[0] * 15)
+        + struct.pack("<16I", len(payload), *[0] * 15)
+        + bytes(1024)
+        + payload
+    )
+
+
+@pytest.mark.parametrize(
+    "alpha_encoding, blocksize",
+    (
+        (BlpImagePlugin.AlphaEncoding.DXT1, 8),
+        (BlpImagePlugin.AlphaEncoding.DXT3, 16),
+        (BlpImagePlugin.AlphaEncoding.DXT5, 16),
+    ),
+)
+@pytest.mark.parametrize("size", ((1, 8), (2, 8), (8, 1), (8, 2), (1, 1)))
+def test_load_blp2_dxt_narrow(
+    alpha_encoding: int, blocksize: int, size: tuple[int, int]
+) -> None:
+    # Give each 4x4 block a different color
+    colors = (0xF800, 0x001F)
+    blocks = [
+        bytes(blocksize - 8) + struct.pack("<HHI", color, 0, 0) for color in colors
+    ]
+    blocks = blocks[: ((size[0] + 3) // 4) * ((size[1] + 3) // 4)]
+    padded = ((size[0] + 3) // 4 * 4, (size[1] + 3) // 4 * 4)
+
+    with Image.open(BytesIO(_blp2_dxt(padded, alpha_encoding, blocks))) as expected:
+        expected.load()
+    with Image.open(BytesIO(_blp2_dxt(size, alpha_encoding, blocks))) as im:
+        assert_image_equal(im, expected.crop((0, 0) + size))
 
 
 def test_invalid_file() -> None:
