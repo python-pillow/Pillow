@@ -83,7 +83,7 @@ def _accept(prefix: bytes) -> bool:
 # GIF89 images.
 
 
-class GifImageFile(ImageFile.ImageFile):
+class GifImageFile(ImageFile.SeekableImageFile):
     format = "GIF"
     format_description = "Compuserve GIF"
     _close_exclusive_fp_after_loading = False
@@ -160,9 +160,7 @@ class GifImageFile(ImageFile.ImageFile):
         self.seek(current)
         return is_animated
 
-    def seek(self, frame: int) -> None:
-        if not self._seek_check(frame):
-            return
+    def _seekTo(self, frame: int) -> None:
         if frame < self.__frame:
             self._im = None
             self._seek(0)

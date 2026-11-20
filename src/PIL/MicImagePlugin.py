@@ -71,9 +71,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         self.__fp = self.fp
         self.seek(0)
 
-    def seek(self, frame: int) -> None:
-        if not self._seek_check(frame):
-            return
+    def _seekTo(self, frame: int) -> None:
         filename = self.images[frame]
         self.fp = self.ole.openstream(filename)
 
