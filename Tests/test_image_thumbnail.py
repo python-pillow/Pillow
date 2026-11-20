@@ -83,6 +83,16 @@ def test_zero_dimension() -> None:
     assert im.size == (0, 2)
 
 
+@pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+def test_i16(mode: str) -> None:
+    im = hopper(mode)
+    im.thumbnail((32, 32))
+
+    expected = hopper("I")
+    expected.thumbnail((32, 32))
+    assert_image_equal(im.convert("I"), expected)
+
+
 def test_float() -> None:
     im = Image.new("L", (128, 128))
     im.thumbnail((99.9, 99.9))
