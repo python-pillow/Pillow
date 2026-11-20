@@ -498,7 +498,9 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
             fp = self.fp
         return _get_fp_length(fp)
 
-    def _seek_check(self, frame: int) -> bool:
+
+class SeekableImageFile(ImageFile):
+    def seek(self, frame: int) -> None:
         if (
             frame < 0
             # Only check upper limit on frames if additional seek operations
@@ -511,7 +513,14 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
             msg = "attempt to seek outside sequence"
             raise EOFError(msg)
 
-        return self.tell() != frame
+        if self.tell() == frame:
+            return
+
+        self._seekTo(frame)
+
+    @abc.abstractmethod
+    def _seekTo(self, frame: int) -> None:
+        pass
 
 
 class StubHandler(abc.ABC):

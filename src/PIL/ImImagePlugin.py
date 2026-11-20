@@ -124,7 +124,7 @@ def number(s: Any) -> float:
 # Image plugin for the IFUNC IM file format.
 
 
-class ImImageFile(ImageFile.ImageFile):
+class ImImageFile(ImageFile.SeekableImageFile):
     format = "IM"
     format_description = "IFUNC Image Memory"
     _close_exclusive_fp_after_loading = False
@@ -293,9 +293,7 @@ class ImImageFile(ImageFile.ImageFile):
     def is_animated(self) -> bool:
         return self.info[FRAMES] > 1
 
-    def seek(self, frame: int) -> None:
-        if not self._seek_check(frame):
-            return
+    def _seekTo(self, frame: int) -> None:
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
 

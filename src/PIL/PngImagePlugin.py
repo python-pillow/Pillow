@@ -802,7 +802,7 @@ def _accept(prefix: bytes) -> bool:
 # Image plugin for PNG images.
 
 
-class PngImageFile(ImageFile.ImageFile):
+class PngImageFile(ImageFile.SeekableImageFile):
     format = "PNG"
     format_description = "Portable network graphics"
 
@@ -906,9 +906,7 @@ class PngImageFile(ImageFile.ImageFile):
 
         super().verify()
 
-    def seek(self, frame: int) -> None:
-        if not self._seek_check(frame):
-            return
+    def _seekTo(self, frame: int) -> None:
         if frame < self.__frame:
             self._seek(0, True)
 
