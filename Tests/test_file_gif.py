@@ -985,7 +985,7 @@ def test_identical_frames(tmp_path: Path) -> None:
         1500,
     ),
 )
-def test_identical_frames_to_single_frame(
+def test_identical_frames_to_single_frame_duration(
     duration: int | list[int], tmp_path: Path
 ) -> None:
     out = tmp_path / "temp.gif"
@@ -1010,7 +1010,7 @@ def test_identical_frames_to_single_frame(
 def test_identical_frames_to_single_frame_disposal(
     disposal: list[int] | tuple[int, ...], tmp_path: Path
 ) -> None:
-    im = Image.new("L", (8, 8))
+    im = Image.new("L", (1, 1))
     out = tmp_path / "temp.gif"
     im.save(out, save_all=True, append_images=[im.copy()], disposal=disposal)
 
