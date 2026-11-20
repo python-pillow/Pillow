@@ -620,11 +620,12 @@ class TestImage:
         assert Image.blend(im1, im2, -2.0).getpixel((0, 0)) == 0
         assert Image.blend(im1, im2, 6.0).getpixel((0, 0)) == 65535
 
-    def test_blend_nan(self) -> None:
+    def test_blend_invalid_alpha(self) -> None:
         im1 = Image.new("L", (2, 2), 10)
         im2 = Image.new("L", (2, 2), 20)
-        with pytest.raises(ValueError, match="invalid alpha"):
-            Image.blend(im1, im2, math.nan)
+        for alpha in (math.inf, math.nan):
+            with pytest.raises(ValueError, match="invalid alpha"):
+                Image.blend(im1, im2, alpha)
 
     def test_check_size(self) -> None:
         # Checking that the _check_size function throws value errors when we want it to
