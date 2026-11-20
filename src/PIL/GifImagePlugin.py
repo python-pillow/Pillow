@@ -751,9 +751,12 @@ def _write_multiple_frames(
             im_frames.append(_Frame(diff_frame or im_frame, bbox, encoderinfo))
 
     if len(im_frames) == 1:
-        if "duration" in im_frames[0].encoderinfo:
+        encoderinfo = im_frames[0].encoderinfo
+        if "duration" in encoderinfo:
             # Since multiple frames will not be written, use the combined duration
-            im.encoderinfo["duration"] = im_frames[0].encoderinfo["duration"]
+            im.encoderinfo["duration"] = encoderinfo["duration"]
+        if "disposal" in encoderinfo:
+            im.encoderinfo["disposal"] = encoderinfo["disposal"]
         return False
 
     for frame_data in im_frames:
