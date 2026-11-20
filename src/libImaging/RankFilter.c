@@ -55,12 +55,16 @@
 #define RANK_IDENTITY(v) (v)
 #define RANK_BSWAP16(v) ((UINT16)(((v) >> 8) | ((v) << 8)))
 
+// MINMAX_BODY and RANK_BODY are only meant to be expanded
+// inside ImagingRankFilter as they use its locals and labels.
+//
 // For both MINMAX_BODY and RANK_BODY,
 // `pixel` converts a stored value to one that compares correctly
 // in the native byte order, and converts it back.
 // They are `RANK_IDENTITY` except when dealing with 16bpc images
 // that are not in native byte order.
 
+// Minimum or maximum (per `op`) over each size x size window.
 #define MINMAX_BODY(type, op, pixel)                              \
     do {                                                          \
         ImagingSectionEnter(&cookie);                             \
@@ -84,6 +88,36 @@
             }                                                     \
         }                                                         \
         ImagingSectionLeave(&cookie);                             \
+    } while (0)
+
+// General rank: gather size x size windows into `buf`, then
+// select the rank-th smallest value with RANK_INNER_BODY.
+// malloc check ok: ImagingRankFilter rejects any size for which
+//                  size * size * sizeof(FLOAT32) would overflow.
+// restrict safe: buf is a private allocation, imOut is a fresh allocation.
+#define RANK_BODY(type, pixel)                                            \
+    do {                                                                  \
+        type *restrict buf = malloc(size2 * sizeof(type));                \
+        if (!buf) {                                                       \
+            goto nomemory;                                                \
+        }                                                                 \
+        ImagingSectionEnter(&cookie);                                     \
+        for (int y = 0; y < ysize; y++) {                                 \
+            type *restrict out = (type *)imOut->image[y];                 \
+            for (int x = 0; x < xsize; x++) {                             \
+                type *restrict p = buf;                                   \
+                for (int s = 0; s < size; s++) {                          \
+                    const type *row = (const type *)im->image[y + s] + x; \
+                    for (int s2 = 0; s2 < size; s2++) {                   \
+                        *p++ = pixel(row[s2]);                            \
+                    }                                                     \
+                }                                                         \
+                RANK_INNER_BODY(type, buf, size2, rank);                  \
+                out[x] = pixel(buf[rank]);                                \
+            }                                                             \
+        }                                                                 \
+        ImagingSectionLeave(&cookie);                                     \
+        free(buf);                                                        \
     } while (0)
 
 Imaging
@@ -119,33 +153,6 @@ ImagingRankFilter(Imaging im, int size, int rank) {
     if (!imOut) {
         return NULL;
     }
-
-    /* malloc check ok, checked above */
-    // restrict safe: buf is a private allocation, imOut is a fresh allocation.
-#define RANK_BODY(type, pixel)                                            \
-    do {                                                                  \
-        type *restrict buf = malloc(size2 * sizeof(type));                \
-        if (!buf) {                                                       \
-            goto nomemory;                                                \
-        }                                                                 \
-        ImagingSectionEnter(&cookie);                                     \
-        for (int y = 0; y < ysize; y++) {                                 \
-            type *restrict out = (type *)imOut->image[y];                 \
-            for (int x = 0; x < xsize; x++) {                             \
-                type *restrict p = buf;                                   \
-                for (int s = 0; s < size; s++) {                          \
-                    const type *row = (const type *)im->image[y + s] + x; \
-                    for (int s2 = 0; s2 < size; s2++) {                   \
-                        *p++ = pixel(row[s2]);                            \
-                    }                                                     \
-                }                                                         \
-                RANK_INNER_BODY(type, buf, size2, rank);                  \
-                out[x] = pixel(buf[rank]);                                \
-            }                                                             \
-        }                                                                 \
-        ImagingSectionLeave(&cookie);                                     \
-        free(buf);                                                        \
-    } while (0)
 
 #define RANK_DISPATCH(type, pixel)              \
     do {                                        \
