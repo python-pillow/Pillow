@@ -49,7 +49,7 @@ def _get_size(s: bytes) -> tuple[int, int] | None:
     return None
 
 
-class WebPImageFile(ImageFile.ImageFile):
+class WebPImageFile(ImageFile.SeekableImageFile):
     format = "WEBP"
     format_description = "WebP image"
     __loaded = 0
@@ -104,9 +104,7 @@ class WebPImageFile(ImageFile.ImageFile):
             return None
         return self.getexif()._get_merged_dict()
 
-    def seek(self, frame: int) -> None:
-        if not self._seek_check(frame):
-            return
+    def _seekTo(self, frame: int) -> None:
         self.info.pop("timestamp", None)
         self.info.pop("duration", None)
 

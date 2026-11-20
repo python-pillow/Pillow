@@ -280,7 +280,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                     im, TiffImagePlugin.TiffImageFile
                 ):
                     im._frame_pos = [ifd_offset]
-                    im._seek(0)
+                    im._seekTo(0)
                 im.load()
                 child_images.append(im)
 
@@ -498,7 +498,11 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
             fp = self.fp
         return _get_fp_length(fp)
 
-    def _seek_check(self, frame: int) -> bool:
+
+class SeekableImageFile(ImageFile):
+    _tile_size: tuple[int, int] | None = None
+
+    def seek(self, frame: int) -> None:
         if (
             frame < 0
             # Only check upper limit on frames if additional seek operations
@@ -511,7 +515,22 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
             msg = "attempt to seek outside sequence"
             raise EOFError(msg)
 
-        return self.tell() != frame
+        if self.tell() == frame:
+            return
+
+        self._seekTo(frame)
+
+        if self._im is not None and (
+            self.im.size != (self._tile_size or self.size)
+            or self.im.mode != self.mode
+            # If there is an unloaded tile, then drop the current read-only core image
+            or (self.tile and self.readonly)
+        ):
+            self._im = None
+
+    @abc.abstractmethod
+    def _seekTo(self, frame: int) -> None:
+        pass
 
 
 class StubHandler(abc.ABC):
