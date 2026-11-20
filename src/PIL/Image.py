@@ -884,7 +884,11 @@ class Image:
 
             from . import ImageFile
 
-            bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
+            bufsize = (
+                -1
+                if encoder_name == "raw"
+                else max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
+            )
 
             output = []
             while True:
