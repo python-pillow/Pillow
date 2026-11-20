@@ -220,7 +220,6 @@ def _layerinfo(fp: IO[bytes], ct_bytes: int) -> list[_Layer]:
         x1 = si32(read(4))
 
         # image info
-        bands = set()
         ct_types = i16(read(2))
         if ct_types > 4:
             fp.seek(ct_types * 6 + 12, io.SEEK_CUR)
@@ -228,12 +227,13 @@ def _layerinfo(fp: IO[bytes], ct_bytes: int) -> list[_Layer]:
             fp.seek(size, io.SEEK_CUR)
             continue
 
+        bands = set()
         for _ in range(ct_types):
-            channel_id = i16(read(2))
+            channel_id = si16(read(2))
 
-            if channel_id == 65535:
+            if channel_id == -1:
                 b = "A"
-            elif channel_id < 4:
+            elif 0 <= channel_id < 4:
                 b = "RGBA"[channel_id]
             else:
                 b = ""
@@ -277,7 +277,7 @@ def _layerinfo(fp: IO[bytes], ct_bytes: int) -> list[_Layer]:
 
     # get tiles
     layerinfo = []
-    for i, (name, mode, bbox) in enumerate(layers):
+    for name, mode, bbox in layers:
         tile = []
         for m in mode:
             t = _maketile(fp, m, bbox, 1)
