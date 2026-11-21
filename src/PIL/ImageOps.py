@@ -486,10 +486,11 @@ def scale(
 
 class SupportsGetMesh(Protocol):
     """
-    An object whose ``getmesh(image)`` method returns a list of
-    ``(bbox, quad)`` pairs. Each pair maps a quadrilateral in the input image
-    to a rectangle in the output image. See
-    :py:class:`~PIL.ImageTransform.MeshTransform` for the coordinate order.
+    An object that supports the ``getmesh`` method, taking an image as an
+    argument, and returning a list of tuples. Each tuple contains two tuples,
+    the final box as a tuple of 4 integers, and a tuple of 8 integers for the
+    source quadrilateral, in order of top left, bottom left, bottom right, top
+    right.
     """
 
     def getmesh(
