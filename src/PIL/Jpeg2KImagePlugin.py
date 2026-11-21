@@ -41,7 +41,7 @@ class BoxReader:
         self.has_length = length >= 0
         self.length = length
         self.remaining_in_box = -1
-        self.last_box = False
+        self._last_box = False
 
     def _can_read(self, num_bytes: int) -> bool:
         if self.has_length and self.fp.tell() + num_bytes > self.length:
@@ -81,7 +81,7 @@ class BoxReader:
         return BoxReader(io.BytesIO(data), size)
 
     def has_next_box(self) -> bool:
-        if self.last_box:
+        if self._last_box:
             return False
         if self.has_length:
             return (
@@ -104,7 +104,7 @@ class BoxReader:
         # Read the length and type of the next box
         lbox, tbox = cast("tuple[int, bytes]", self.read_fields(">I4s"))
         if lbox == 0:
-            self.last_box = True
+            self._last_box = True
             if self.has_length:
                 self.remaining_in_box = self.length - self.fp.tell()
             return tbox
@@ -165,9 +165,7 @@ def _res_to_dpi(num: int, denom: int, exp: int) -> float | None:
     return (254 * num * (10**exp)) / (10000 * denom)
 
 
-def _parse_jp2_header(
-    fp: IO[bytes],
-) -> tuple[
+def _parse_jp2_header(reader: BoxReader) -> tuple[
     tuple[int, int],
     str,
     str | None,
@@ -179,7 +177,6 @@ def _parse_jp2_header(
     returning a (size, mode, mimetype, dpi) tuple."""
 
     # Find the JP2 header box
-    reader = BoxReader(fp)
     header = None
     mimetype = None
     while reader.has_next_box():
@@ -298,27 +295,29 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
 
             if sig == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a":
                 self.codec = "jp2"
-                header = _parse_jp2_header(self.fp)
+
+                reader = BoxReader(self.fp)
+                header = _parse_jp2_header(reader)
                 self._size, self._mode, self.custom_mimetype, dpi, self.palette = header
                 if dpi is not None:
                     self.info["dpi"] = dpi
-                reader = BoxReader(self.fp)
+
                 while reader.has_next_box():
                     tbox = reader.next_box_type()
+
                     if tbox == b"xml ":
                         self.info.setdefault("xml", []).append(
                             reader._read_bytes(reader.remaining_in_box)
                         )
                     elif tbox == b"uuid":
-                        if reader.remaining_in_box >= 16:
-                            uuid = reader._read_bytes(16)
-                            if (
-                                uuid == b"\xbe\x7a\xcf\xcb\x97\xa9\x42\xe8"
-                                b"\x9c\x71\x99\x94\x91\xe3\xaf\xac"
-                            ):
-                                self.info["xmp"] = reader._read_bytes(
-                                    reader.remaining_in_box
-                                )
+                        uuid = reader._read_bytes(16)
+                        if (
+                            uuid == b"\xbe\x7a\xcf\xcb\x97\xa9\x42\xe8"
+                            b"\x9c\x71\x99\x94\x91\xe3\xaf\xac"
+                        ):
+                            self.info["xmp"] = reader._read_bytes(
+                                reader.remaining_in_box
+                            )
                     elif tbox == b"jp2c":
                         markers = reader._read_bytes(4)
                         if markers == b"\xff\x4f\xff\x51":
