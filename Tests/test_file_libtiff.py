@@ -11,6 +11,7 @@ from typing import NamedTuple
 import pytest
 
 from PIL import (
+    ExifTags,
     Image,
     ImageFile,
     ImageFilter,
@@ -1611,3 +1612,12 @@ class TestFileLibTiff(LibTiffTestCase):
             w = sizes[i]
             expected = Image.new("RGB", (w, w), "#f00")
             assert_image_similar(im, expected, 1)
+
+    def test_get_child_images_duplicate_offsets(self) -> None:
+        with Image.open("Tests/images/child_ifd.tiff") as im:
+            exif = im.getexif()
+            first_subifd_offset = exif[ExifTags.Base.SubIFDs][0]
+            exif[ExifTags.Base.SubIFDs] = (first_subifd_offset,) * 2
+
+            ims = im.get_child_images()
+        assert len(ims) == 1

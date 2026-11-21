@@ -247,7 +247,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                     subifd_offsets = (subifd_offsets,)
                 ifds = [
                     (exif._get_ifd_dict(subifd_offset), subifd_offset)
-                    for subifd_offset in subifd_offsets
+                    for subifd_offset in set(subifd_offsets)
                 ]
         ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
         if ifd1 and ifd1.get(ExifTags.Base.JpegIFOffset):
