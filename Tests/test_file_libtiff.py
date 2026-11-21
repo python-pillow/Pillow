@@ -1621,6 +1621,7 @@ class TestFileLibTiff(LibTiffTestCase):
             b"AAAACAAAAAgAAACA"
         )
         with Image.open(io.BytesIO(base64.b64decode(data))) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.tag_v2[SUBIFD] == (8, 8, 8)
 
             ims = im.get_child_images()
