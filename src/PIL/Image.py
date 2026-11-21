@@ -884,7 +884,13 @@ class Image:
 
             from . import ImageFile
 
-            bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
+            if encoder_name == "raw":
+                # Special case: allow the raw encoder to allocate
+                # a single buffer as large as it needs to encode
+                # the entire image in one shot.
+                bufsize = -1
+            else:
+                bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
 
             output = []
             while True:

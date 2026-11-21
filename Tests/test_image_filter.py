@@ -231,7 +231,7 @@ def test_rankfilter_overflow() -> None:
 
     for size in (2**31, 2**32 - 1):  # margins of 2**30 and INT_MAX
         rankfilter.size = size
-        with pytest.raises(ValueError, match="filter size too large"):
+        with pytest.raises(Image.DecompressionBombError):
             im.filter(rankfilter)
 
 
