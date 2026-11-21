@@ -983,6 +983,86 @@ class TestFileLibTiff(LibTiffTestCase):
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2[34665] == 125456
 
+    @pytest.mark.parametrize("compression", ["tiff_lzw", "tiff_adobe_deflate", "jpeg"])
+    @pytest.mark.parametrize("on_disk", [False, True])
+    @pytest.mark.parametrize("source", ["object", "bytes", "jpeg"])
+    def test_save_compressed_exif_ifds(
+        self, tmp_path: Path, compression: str, on_disk: bool, source: str
+    ) -> None:
+        exif = Image.Exif()
+        exif[ExifTags.Base.Make] = "Camera"
+        exif.get_ifd(ExifTags.IFD.Exif)[ExifTags.Base.ISOSpeedRatings] = 400
+        exif.get_ifd(ExifTags.IFD.Exif)[
+            ExifTags.Base.DateTimeOriginal
+        ] = "2026:11:18 12:34:56"
+        exif.get_ifd(ExifTags.IFD.GPSInfo)[ExifTags.GPS.GPSLatitudeRef] = "N"
+        exif.get_ifd(ExifTags.IFD.GPSInfo)[ExifTags.GPS.GPSLatitude] = (12, 34, 56)
+        exif.get_ifd(ExifTags.IFD.Exif)[ExifTags.IFD.Interop] = {1: "R98"}
+        out = tmp_path / "exif.tif" if on_disk else io.BytesIO()
+        im = Image.new("RGB", (8, 8), "red")
+        metadata = exif.tobytes() if source == "bytes" else exif
+        if source == "jpeg":
+            jpeg = io.BytesIO()
+            im.save(jpeg, "JPEG", exif=exif)
+            im = Image.open(jpeg)
+            metadata = im.getexif()
+        im.save(
+            out,
+            "TIFF",
+            compression=compression,
+            exif=metadata,
+        )
+        with Image.open(out) as reloaded:
+            assert reloaded.size == im.size
+            assert reloaded.getexif()[ExifTags.Base.Make] == "Camera"
+            actual = reloaded.getexif().get_ifd(ExifTags.IFD.Exif).copy()
+            actual.pop(ExifTags.IFD.Interop)
+            expected = exif.get_ifd(ExifTags.IFD.Exif).copy()
+            expected.pop(ExifTags.IFD.Interop)
+            assert actual == expected
+            assert reloaded.getexif().get_ifd(ExifTags.IFD.Interop) == {1: "R98"}
+            assert reloaded.getexif().get_ifd(ExifTags.IFD.GPSInfo) == (
+                exif.get_ifd(ExifTags.IFD.GPSInfo)
+            )
+            if compression != "jpeg":
+                assert_image_equal(im, reloaded)
+
+    def test_save_compressed_exif_multipage(self) -> None:
+        frames = []
+        for iso in (100, 200):
+            im = Image.new("RGB", (8, 8), "red")
+            exif = Image.Exif()
+            exif.get_ifd(ExifTags.IFD.Exif)[ExifTags.Base.ISOSpeedRatings] = iso
+            exif.get_ifd(ExifTags.IFD.Exif)[
+                ExifTags.Base.DateTimeOriginal
+            ] = "2026:11:18 12:34:56"
+            exif.get_ifd(ExifTags.IFD.Exif)[ExifTags.IFD.Interop] = {1: "R98"}
+            im.encoderinfo = {"exif": exif}
+            frames.append(im)
+        out = io.BytesIO()
+        frames[0].save(
+            out,
+            "TIFF",
+            compression="tiff_lzw",
+            save_all=True,
+            append_images=frames[1:],
+        )
+        with Image.open(out) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            assert reloaded.n_frames == 2
+            for frame, iso in enumerate((100, 200)):
+                reloaded.seek(frame)
+                exif = reloaded.getexif()
+                assert (
+                    exif.get_ifd(ExifTags.IFD.Exif)[ExifTags.Base.ISOSpeedRatings]
+                    == iso
+                )
+                assert exif.get_ifd(ExifTags.IFD.Exif)[
+                    ExifTags.Base.DateTimeOriginal
+                ] == ("2026:11:18 12:34:56")
+                assert exif.get_ifd(ExifTags.IFD.Interop) == {1: "R98"}
+                assert_image_equal(frames[frame], reloaded)
+
     def test_crashing_metadata(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:

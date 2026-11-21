@@ -840,6 +840,8 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     Py_ssize_t fp;
 
     PyObject *tags, *types;
+    const char *ifd_data = NULL;
+    Py_ssize_t ifd_size = 0;
     PyObject *key, *value;
     Py_ssize_t pos = 0;
     int key_int, status, is_core_tag, is_var_length, num_core_tags, i;
@@ -855,7 +857,16 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     PyObject *item;
 
     if (!PyArg_ParseTuple(
-            args, "ssnsOO", &mode_name, &rawmode_name, &fp, &filename, &tags, &types
+            args,
+            "ssnsOO|y#",
+            &mode_name,
+            &rawmode_name,
+            &fp,
+            &filename,
+            &tags,
+            &types,
+            &ifd_data,
+            &ifd_size
         )) {
         return NULL;
     }
@@ -904,6 +915,19 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     }
 
     encoder->cleanup = ImagingLibTiffEncodeCleanup;
+
+    if (ifd_size) {
+        TIFF *tiff = ((TIFFSTATE *)encoder->state.context)->tiff;
+        thandle_t handle = TIFFClientdata(tiff);
+        // Python serialized these directories with offsets relative to the
+        // native-endian classic TIFF header emitted by EncodeInit.
+        if (TIFFGetSeekProc(tiff)(handle, 8, SEEK_SET) != 8 ||
+            TIFFGetWriteProc(tiff)(handle, (void *)ifd_data, ifd_size) != ifd_size) {
+            Py_DECREF(encoder);
+            PyErr_SetString(PyExc_OSError, "Error writing TIFF metadata");
+            return NULL;
+        }
+    }
 
     num_core_tags = sizeof(core_tags) / sizeof(int);
     long bits_per_sample = 1;
