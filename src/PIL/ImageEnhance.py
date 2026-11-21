@@ -50,14 +50,13 @@ class Color(_Enhance):
 
     def __init__(self, image: Image.Image) -> None:
         self.image = image
-        self.intermediate_mode = "L"
-        if "A" in image.getbands():
-            self.intermediate_mode = "LA"
-        elif image.mode.startswith("I;16"):
+        if image.mode.startswith("I;16"):
             self.intermediate_mode = image.mode
+        else:
+            self.intermediate_mode = "LA" if "A" in image.getbands() else "L"
 
-        if self.intermediate_mode != image.mode:
-            image = image.convert(self.intermediate_mode).convert(image.mode)
+            if self.intermediate_mode != image.mode:
+                image = image.convert(self.intermediate_mode).convert(image.mode)
         self.degenerate = image
 
 
