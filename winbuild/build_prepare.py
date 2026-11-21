@@ -434,6 +434,12 @@ DEPS: dict[str, dict[str, Any]] = {
         "url": f"https://github.com/AOMediaCodec/libavif/archive/v{V['libavif']}.tar.gz",
         "filename": f"libavif-{V['libavif']}.tar.gz",
         "license": "LICENSE",
+        "patch": {
+            r"cmake\Modules\LocalDav1d.cmake": {
+                # dav1d 1.5.5 fixes building with MSVC 19.52 and later
+                'set(AVIF_DAV1D_TAG "1.5.3")': 'set(AVIF_DAV1D_TAG "1.5.5")',
+            },
+        },
         "build": [
             "rustup update",
             f"{sys.executable} -m pip install meson",

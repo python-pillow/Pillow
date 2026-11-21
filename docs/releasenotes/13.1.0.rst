@@ -197,6 +197,20 @@ requested mode, such as ``Image.merge("F", [l_image])``, raised
 :py:exc:`ValueError` but leaked the memory allocated for the output image. This
 has been fixed.
 
+ImageEnhance with I;16 images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageEnhance.Color`, :py:class:`~PIL.ImageEnhance.Contrast`,
+:py:class:`~PIL.ImageEnhance.Brightness` and :py:class:`~PIL.ImageEnhance.Sharpness`
+now support I;16, I;16L, I;16B and I;16N images.
+
+BLP2 DXT images with a width of 1 or 2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+BLP2 images using DXT1, DXT3 or DXT5 compression with a width of 1 or 2 pixels were
+decoded incorrectly, and used up to four times more memory than needed while loading.
+This has been fixed.
+
 Compressed TIFF EXIF metadata
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

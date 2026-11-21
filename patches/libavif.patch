@@ -1,0 +1,10 @@
+diff --git a/cmake/Modules/LocalDav1d.cmake b/cmake/Modules/LocalDav1d.cmake
+index b03bab8..8245750 100644
+--- a/cmake/Modules/LocalDav1d.cmake
++++ b/cmake/Modules/LocalDav1d.cmake
+@@ -1,4 +1,4 @@
+-set(AVIF_DAV1D_TAG "1.5.3")
++set(AVIF_DAV1D_TAG "1.5.5")
+
+ function(avif_build_local_dav1d)
+     set(download_step_args)

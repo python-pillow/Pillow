@@ -49,50 +49,52 @@
         }                              \
     }
 
-// For RANK_BODY,
-// `pixel` converts a stored value to one that compares correctly
-// in the native byte order, and converts it back.
-// It is `RANK_IDENTITY` except when dealing with 16bpc images
-// that are not in native byte order.
+#define RANK_MIN(a, b) ((a) < (b) ? (a) : (b))
+#define RANK_MAX(a, b) ((a) < (b) ? (b) : (a))
+
 #define RANK_IDENTITY(v) (v)
 #define RANK_BSWAP16(v) ((UINT16)(((v) >> 8) | ((v) << 8)))
 
-Imaging
-ImagingRankFilter(Imaging im, int size, int rank) {
-    Imaging imOut = NULL;
-    ImagingSectionCookie cookie;
-    int margin, size2;
+// MINMAX_BODY and RANK_BODY are only meant to be expanded
+// inside ImagingRankFilter as they use its locals and labels.
+//
+// For both MINMAX_BODY and RANK_BODY,
+// `pixel` converts a stored value to one that compares correctly
+// in the native byte order, and converts it back.
+// They are `RANK_IDENTITY` except when dealing with 16bpc images
+// that are not in native byte order.
 
-    if (!im || im->bands != 1) {
-        return (Imaging)ImagingError_ModeError();
-    }
+// Minimum or maximum (per `op`) over each size x size window.
+#define MINMAX_BODY(type, op, pixel)                              \
+    do {                                                          \
+        ImagingSectionEnter(&cookie);                             \
+        for (int y = 0; y < ysize; y++) {                         \
+            type *out = (type *)imOut->image[y];                  \
+            const type *in0 = (const type *)im->image[y];         \
+            for (int x = 0; x < xsize; x++) {                     \
+                out[x] = pixel(in0[x]);                           \
+            }                                                     \
+            for (int s = 0; s < size; s++) {                      \
+                const type *row = (const type *)im->image[y + s]; \
+                for (int s2 = (s == 0); s2 < size; s2++) {        \
+                    const type *in = row + s2;                    \
+                    for (int x = 0; x < xsize; x++) {             \
+                        out[x] = op(out[x], pixel(in[x]));        \
+                    }                                             \
+                }                                                 \
+            }                                                     \
+            for (int x = 0; x < xsize; x++) {                     \
+                out[x] = pixel(out[x]);                           \
+            }                                                     \
+        }                                                         \
+        ImagingSectionLeave(&cookie);                             \
+    } while (0)
 
-    if (!(size & 1)) {
-        return (Imaging)ImagingError_ValueError("bad filter size");
-    }
-
-    /* malloc check ok, for overflow in the define below */
-    if (size > INT_MAX / (size * (int)sizeof(FLOAT32))) {
-        return (Imaging)ImagingError_ValueError("filter size too large");
-    }
-
-    size2 = size * size;
-    margin = (size - 1) / 2;
-
-    if (rank < 0 || rank >= size2) {
-        return (Imaging)ImagingError_ValueError("bad rank value");
-    }
-
-    // Every output pixel is written by the rank loop below
-    int xsize = im->xsize - 2 * margin;
-    int ysize = im->ysize - 2 * margin;
-    imOut = ImagingNewDirty(im->mode, xsize, ysize);
-    if (!imOut) {
-        return NULL;
-    }
-
-    /* malloc check ok, checked above */
-    // restrict safe: buf is a private allocation, imOut is a fresh allocation.
+// General rank: gather size x size windows into `buf`, then
+// select the rank-th smallest value with RANK_INNER_BODY.
+// malloc check ok: ImagingRankFilter rejects any size for which
+//                  size * size * sizeof(FLOAT32) would overflow.
+// restrict safe: buf is a private allocation, imOut is a fresh allocation.
 #define RANK_BODY(type, pixel)                                            \
     do {                                                                  \
         type *restrict buf = malloc(size2 * sizeof(type));                \
@@ -118,6 +120,51 @@ ImagingRankFilter(Imaging im, int size, int rank) {
         free(buf);                                                        \
     } while (0)
 
+Imaging
+ImagingRankFilter(Imaging im, int size, int rank) {
+    Imaging imOut = NULL;
+    ImagingSectionCookie cookie;
+    int margin, size2;
+
+    if (!im || im->bands != 1) {
+        return (Imaging)ImagingError_ModeError();
+    }
+
+    if (!(size & 1)) {
+        return (Imaging)ImagingError_ValueError("bad filter size");
+    }
+
+    /* malloc check ok, for overflow in RANK_BODY */
+    if (size > INT_MAX / (size * (int)sizeof(FLOAT32))) {
+        return (Imaging)ImagingError_ValueError("filter size too large");
+    }
+
+    size2 = size * size;
+    margin = (size - 1) / 2;
+
+    if (rank < 0 || rank >= size2) {
+        return (Imaging)ImagingError_ValueError("bad rank value");
+    }
+
+    // Every output pixel is written by the rank loop below
+    int xsize = im->xsize - 2 * margin;
+    int ysize = im->ysize - 2 * margin;
+    imOut = ImagingNewDirty(im->mode, xsize, ysize);
+    if (!imOut) {
+        return NULL;
+    }
+
+#define RANK_DISPATCH(type, pixel)              \
+    do {                                        \
+        if (rank == 0) {                        \
+            MINMAX_BODY(type, RANK_MIN, pixel); \
+        } else if (rank == size2 - 1) {         \
+            MINMAX_BODY(type, RANK_MAX, pixel); \
+        } else {                                \
+            RANK_BODY(type, pixel);             \
+        }                                       \
+    } while (0)
+
     if (im->type == IMAGING_TYPE_I16) {
         // Compare in native byte order
         if (
@@ -127,16 +174,16 @@ ImagingRankFilter(Imaging im, int size, int rank) {
             im->mode == IMAGING_MODE_I_16B
 #endif
         ) {
-            RANK_BODY(UINT16, RANK_BSWAP16);
+            RANK_DISPATCH(UINT16, RANK_BSWAP16);
         } else {
-            RANK_BODY(UINT16, RANK_IDENTITY);
+            RANK_DISPATCH(UINT16, RANK_IDENTITY);
         }
     } else if (im->image8) {
-        RANK_BODY(UINT8, RANK_IDENTITY);
+        RANK_DISPATCH(UINT8, RANK_IDENTITY);
     } else if (im->type == IMAGING_TYPE_INT32) {
-        RANK_BODY(INT32, RANK_IDENTITY);
+        RANK_DISPATCH(INT32, RANK_IDENTITY);
     } else if (im->type == IMAGING_TYPE_FLOAT32) {
-        RANK_BODY(FLOAT32, RANK_IDENTITY);
+        RANK_DISPATCH(FLOAT32, RANK_IDENTITY);
     } else {
         /* safety net (we shouldn't end up here) */
         ImagingDelete(imOut);

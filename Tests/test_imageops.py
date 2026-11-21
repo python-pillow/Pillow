@@ -16,19 +16,6 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 
-class Deformer(ImageOps.SupportsGetMesh):
-    def getmesh(
-        self, im: Image.Image
-    ) -> list[
-        tuple[tuple[int, int, int, int], tuple[int, int, int, int, int, int, int, int]]
-    ]:
-        x, y = im.size
-        return [((0, 0, x, y), (0, 0, x, 0, x, y, y, 0))]
-
-
-deformer = Deformer()
-
-
 def test_sanity() -> None:
     ImageOps.autocontrast(hopper("L"))
     ImageOps.autocontrast(hopper("RGB"))
@@ -53,9 +40,6 @@ def test_sanity() -> None:
 
     ImageOps.crop(hopper("L"), 1)
     ImageOps.crop(hopper("RGB"), 1)
-
-    ImageOps.deform(hopper("L"), deformer)
-    ImageOps.deform(hopper("RGB"), deformer)
 
     ImageOps.equalize(hopper("L"))
     ImageOps.equalize(hopper("RGB"))
@@ -93,6 +77,25 @@ def test_sanity() -> None:
         ImageOps.sepia(im)
 
         ImageOps.neon(im)
+
+
+@pytest.mark.parametrize("mode", ("L", "RGB"))
+def test_deform(mode: str) -> None:
+    class Deformer(ImageOps.SupportsGetMesh):
+        def getmesh(
+            self, im: Image.Image
+        ) -> list[
+            tuple[
+                tuple[int, int, int, int], tuple[int, int, int, int, int, int, int, int]
+            ]
+        ]:
+            w, h = im.size
+            return [((0, 0, w, h), (0, 0, 0, h, w, h, w, 0))]
+
+    deformer = Deformer()
+
+    im = hopper(mode)
+    assert_image_equal(ImageOps.deform(im, deformer), im)
 
 
 @pytest.mark.parametrize(
