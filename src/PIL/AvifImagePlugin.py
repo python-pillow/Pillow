@@ -127,6 +127,8 @@ class AvifImageFile(ImageFile.ImageFile):
             data, timescale, pts_in_timescales, duration_in_timescales = (
                 self._decoder.get_frame(self.__frame)
             )
+            if not self.is_animated:
+                del self._decoder
             self.info["timestamp"] = round(1000 * (pts_in_timescales / timescale))
             self.info["duration"] = round(1000 * (duration_in_timescales / timescale))
 
