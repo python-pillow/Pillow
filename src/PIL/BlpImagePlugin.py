@@ -408,7 +408,12 @@ class BLP2Decoder(_BLPBaseDecoder):
                 ]
                 if _alpha_encoding == AlphaEncoding.DXT1:
                     blocksize = 8
-                    decode = lambda row: decode_dxt1(row, alpha)  # noqa: E731
+
+                    def decode(
+                        row: bytes,
+                    ) -> tuple[bytearray, bytearray, bytearray, bytearray]:
+                        return decode_dxt1(row, alpha)
+
                 elif _alpha_encoding == AlphaEncoding.DXT3:
                     blocksize = 16
                     decode = decode_dxt3
