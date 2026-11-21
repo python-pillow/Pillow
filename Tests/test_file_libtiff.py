@@ -1491,6 +1491,7 @@ class TestFileLibTiff(LibTiffTestCase):
             b"AAAAAQABAAAAAAAIAAgACAB42u3BMQEAAADCoOqLbg0PoAAAgHcDDP7cTA=="
         )
         with Image.open(io.BytesIO(base64.b64decode(data))) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.tag_v2[TiffImagePlugin.ROWSPERSTRIP] == 1_000_000
 
             # The decoding buffer is limited to the image height
