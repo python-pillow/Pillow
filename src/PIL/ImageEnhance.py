@@ -87,8 +87,8 @@ class Contrast(_Enhance):
             if self.degenerate.mode != self.image.mode:
                 self.degenerate = self.degenerate.convert(self.image.mode)
 
-        if "A" in self.image.getbands():
-            self.degenerate.putalpha(self.image.getchannel("A"))
+            if "A" in self.image.getbands():
+                self.degenerate.putalpha(self.image.getchannel("A"))
 
 
 class Brightness(_Enhance):
