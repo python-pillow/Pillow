@@ -86,8 +86,7 @@ def test_sobel() -> None:
 
     edges = ImageOps._sobel(im)
 
-    assert edges.getpixel((0, 1)) == 0
-    assert [edges.getpixel((x, 1)) for x in range(1, 5)] == [0, 120, 120, 255]
+    assert [edges.getpixel((x, 1)) for x in range(5)] == [0, 0, 120, 120, 255]
     assert edges.getpixel((1, 0)) == 0
 
     flipped = ImageOps._sobel(im.transpose(Image.Transpose.FLIP_LEFT_RIGHT))
