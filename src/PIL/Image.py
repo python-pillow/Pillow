@@ -3854,6 +3854,10 @@ def blend(im1: Image, im2: Image, alpha: float) -> Image:
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
+    if math.isinf(alpha) or math.isnan(alpha):
+        msg = "invalid alpha"
+        raise ValueError(msg)
+
     im1.load()
     im2.load()
     return im1._new(core.blend(im1.im, im2.im, alpha))
