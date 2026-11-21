@@ -302,8 +302,12 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 if dpi is not None:
                     self.info["dpi"] = dpi
 
+                contiguous_code_stream_read = False
                 while reader.has_next_box():
-                    tbox = reader.next_box_type()
+                    try:
+                        tbox = reader.next_box_type()
+                    except OSError:
+                        break
 
                     if tbox == b"xml ":
                         self.info.setdefault("xml", []).append(
@@ -318,12 +322,12 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                             self.info["xmp"] = reader._read_bytes(
                                 reader.remaining_in_box
                             )
-                    elif tbox == b"jp2c":
+                    elif tbox == b"jp2c" and not contiguous_code_stream_read:
+                        contiguous_code_stream_read = True
                         markers = reader._read_bytes(4)
                         if markers == b"\xff\x4f\xff\x51":
                             _parse_codestream(self.fp)
                             self._parse_comment()
-                        break
 
                 if "xml" in self.info:
                     if len(self.info["xml"]) == 1:
