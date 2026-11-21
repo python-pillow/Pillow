@@ -220,7 +220,7 @@ def _parse_jp2_header(reader: BoxReader) -> tuple[
         elif tbox == b"colr":
             meth, _, _, enumcs = header.read_fields(">BBBI")
             if meth == 1:
-                if enumcs in (0, 15):
+                if enumcs in {0, 15}:
                     colr = "1"
                 elif enumcs == 12:
                     colr = "CMYK"
@@ -228,7 +228,7 @@ def _parse_jp2_header(reader: BoxReader) -> tuple[
                         mode = "CMYK"
                 elif enumcs == 17:
                     colr = "L"
-        elif tbox == b"pclr" and mode in ("L", "LA") and colr not in ("1", "L"):
+        elif tbox == b"pclr" and mode in {"L", "LA"} and colr not in {"1", "L"}:
             ne, npc = header.read_fields(">HB")
             assert isinstance(ne, int)
             assert isinstance(npc, int)
@@ -357,7 +357,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             if not marker:
                 break
             typ = marker[1]
-            if typ in (0x90, 0xD9):
+            if typ in {0x90, 0xD9}:
                 # Start of tile or end of codestream
                 break
             hdr = self.fp.read(2)
@@ -486,24 +486,34 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     )
 
     xml = info.get("xml")
-    if xml and kind == "jp2":
-        xml_data = bytearray()
-        if isinstance(xml, (str, bytes)):
-            xml = [xml]
-        for item in xml:
-            if isinstance(item, str):
-                item = item.encode()
-            if len(item) + 8 < 2**32:
-                xml_data += struct.pack(">I4s", len(item) + 8, b"xml ")
-            else:
-                xml_data += struct.pack(">I4sQ", 1, b"xml ", len(item) + 16)
-            xml_data += item
+    xmp = info.get("xmp")
+    if kind == "jp2" and (xml or xmp):
+        metadata = bytearray()
+        if xml:
+            if isinstance(xml, (str, bytes)):
+                xml = [xml]
+            for item in xml:
+                if isinstance(item, str):
+                    item = item.encode()
+                metadata += struct.pack(">I", len(item) + 8) + b"xml " + item
+
+        if xmp:
+            if isinstance(xmp, str):
+                xmp = xmp.encode()
+            metadata += (
+                struct.pack(">I", len(xmp) + 8 + 16)
+                + b"uuid"
+                + b"\xbe\x7a\xcf\xcb\x97\xa9\x42\xe8"
+                + b"\x9c\x71\x99\x94\x91\xe3\xaf\xac"
+                + xmp
+            )
 
         buf = io.BytesIO()
         ImageFile._save(im, buf, tile)
         data = buf.getvalue()
 
-        reader = BoxReader(io.BytesIO(data))
+        buf.seek(0)
+        reader = BoxReader(buf)
         while reader.has_next_box():
             tbox = reader.next_box_type()
             if tbox == b"jp2h":
@@ -511,7 +521,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 break
 
         fp.write(data[:end_jp2h])
-        fp.write(xml_data)
+        fp.write(metadata)
         fp.write(data[end_jp2h:])
     else:
         ImageFile._save(im, fp, tile)

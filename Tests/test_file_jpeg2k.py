@@ -615,44 +615,35 @@ def test_9bit() -> None:
         assert im.size == (128, 128)
 
 
-def test_xml_metadata(card: ImageFile.ImageFile) -> None:
+def test_xml_metadata() -> None:
+    im = Image.new("L", (1, 1))
     xml_boxes = ["xml metadata1", b"xml metadata2"]
     for xml in xml_boxes:
         out = BytesIO()
-        card.save(out, "JPEG2000", xml=xml)
+        im.save(out, "JPEG2000", xml=xml)
 
-        with Image.open(out) as im:
-            expected = xml if isinstance(xml, bytes) else xml.encode("utf-8")
-            assert im.info["xml"] == expected
+        with Image.open(out) as reloaded:
+            expected = xml.encode() if isinstance(xml, str) else xml
+            assert reloaded.info["xml"] == expected
 
     # Multiple XML boxes
     out = BytesIO()
-    card.save(out, "JPEG2000", xml=xml_boxes, comment="comment")
+    im.save(out, "JPEG2000", xml=xml_boxes, comment="comment")
     with Image.open(out) as im:
-        xml_boxes[0] = xml_boxes[0].encode()
+        if isinstance(xml_boxes[0], str):
+            xml_boxes[0] = xml_boxes[0].encode()
         assert im.info["xml"] == xml_boxes
         assert im.info["comment"] == b"comment"
 
 
-def test_uuid_xmp() -> None:
-    # Test reading XMP from an Adobe UUID box
+@pytest.mark.parametrize("xmp", ("xmp", b"xmp"))
+def test_xmp_metadata(xmp: str | bytes) -> None:
+    im = Image.new("L", (1, 1))
+
     out = BytesIO()
-    with Image.new("L", (1, 1)) as im:
-        im.save(out, "JPEG2000")
-    data = out.getvalue()
+    im.save(out, "JPEG2000", xmp=xmp)
 
-    r = Jpeg2KImagePlugin.BoxReader(BytesIO(data))
-    end_jp2h = 0
-    while r.has_next_box():
-        if r.next_box_type() == b"jp2h":
-            r.read_boxes()
-            end_jp2h = r.fp.tell()
-            break
-
-    xmp_data = b"<xmp>uuid test</xmp>"
-    uuid = b"\xbe\x7a\xcf\xcb\x97\xa9\x42\xe8\x9c\x71\x99\x94\x91\xe3\xaf\xac"
-    uuid_box = struct.pack(">I4s16s", len(xmp_data) + 24, b"uuid", uuid) + xmp_data
-    with_uuid = data[:end_jp2h] + uuid_box + data[end_jp2h:]
-
-    with Image.open(BytesIO(with_uuid)) as im:
-        assert im.info["xmp"] == xmp_data
+    with Image.open(out) as im:
+        if isinstance(xmp, str):
+            xmp = xmp.encode()
+        assert im.info["xmp"] == xmp
