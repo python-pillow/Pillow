@@ -67,9 +67,10 @@ def unpack_565(i: int) -> tuple[int, int, int]:
     return ((i >> 11) & 0x1F) << 3, ((i >> 5) & 0x3F) << 2, (i & 0x1F) << 3
 
 
-def decode_dxt1(
-    data: bytes, alpha: bool = False
-) -> tuple[bytearray, bytearray, bytearray, bytearray]:
+DecodedBlock = tuple[bytearray, bytearray, bytearray, bytearray]
+
+
+def decode_dxt1(data: bytes, alpha: bool = False) -> DecodedBlock:
     """
     input: one "row" of data (i.e. will produce 4*width pixels)
     """
@@ -124,7 +125,7 @@ def decode_dxt1(
     return ret
 
 
-def decode_dxt3(data: bytes) -> tuple[bytearray, bytearray, bytearray, bytearray]:
+def decode_dxt3(data: bytes) -> DecodedBlock:
     """
     input: one "row" of data (i.e. will produce 4*width pixels)
     """
@@ -177,7 +178,7 @@ def decode_dxt3(data: bytes) -> tuple[bytearray, bytearray, bytearray, bytearray
     return ret
 
 
-def decode_dxt5(data: bytes) -> tuple[bytearray, bytearray, bytearray, bytearray]:
+def decode_dxt5(data: bytes) -> DecodedBlock:
     """
     input: one "row" of data (i.e. will produce 4 * width pixels)
     """
@@ -403,15 +404,11 @@ class BLP2Decoder(_BLPBaseDecoder):
                 data = self._read_bgra(palette, alpha)
 
             elif _encoding == Encoding.DXT:
-                decode: Callable[
-                    [bytes], tuple[bytearray, bytearray, bytearray, bytearray]
-                ]
+                decode: Callable[[bytes], DecodedBlock]
                 if _alpha_encoding == AlphaEncoding.DXT1:
                     blocksize = 8
 
-                    def decode(
-                        row: bytes,
-                    ) -> tuple[bytearray, bytearray, bytearray, bytearray]:
+                    def decode(row: bytes) -> DecodedBlock:
                         return decode_dxt1(row, alpha)
 
                 elif _alpha_encoding == AlphaEncoding.DXT3:
@@ -425,8 +422,7 @@ class BLP2Decoder(_BLPBaseDecoder):
                     raise BLPFormatError(msg)
 
                 # Each block decodes to 4x4 pixels, so trim the padding on the
-                # right and bottom edges for images with a width or height of
-                # 1 or 2
+                # right and bottom edges for images with a smaller width or height
                 linesize = (self.state.xsize + 3) // 4 * blocksize
                 rowsize = self.state.xsize * 4
                 data = bytearray()
