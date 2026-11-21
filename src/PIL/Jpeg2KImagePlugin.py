@@ -430,6 +430,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         kind = "j2k"
     else:
         kind = "jp2"
+    tile = [ImageFile._Tile("jpeg2k", args=kind)]
 
     offset = info.get("offset", None)
     tile_offset = info.get("tile_offset", None)
@@ -486,44 +487,34 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     xml = info.get("xml")
     if xml and kind == "jp2":
+        xml_data = bytearray()
         if isinstance(xml, (str, bytes)):
-            xml_list = [xml]
-        else:
-            xml_list = list(xml)
-        xml_boxes = []
-        for item in xml_list:
+            xml = [xml]
+        for item in xml:
             if isinstance(item, str):
-                item = item.encode("utf-8")
+                item = item.encode()
             if len(item) + 8 < 2**32:
-                xml_boxes.append(struct.pack(">I4s", len(item) + 8, b"xml ") + item)
+                xml_data += struct.pack(">I4s", len(item) + 8, b"xml ")
             else:
-                xml_boxes.append(
-                    struct.pack(">I4sQ", 1, b"xml ", len(item) + 16) + item
-                )
-        xml_data = b"".join(xml_boxes)
+                xml_data += struct.pack(">I4sQ", 1, b"xml ", len(item) + 16)
+            xml_data += item
 
         buf = io.BytesIO()
-        ImageFile._save(im, buf, [ImageFile._Tile("jpeg2k", args=kind)])
+        ImageFile._save(im, buf, tile)
         data = buf.getvalue()
 
         reader = BoxReader(io.BytesIO(data))
-        end_jp2h = 0
         while reader.has_next_box():
             tbox = reader.next_box_type()
             if tbox == b"jp2h":
-                reader.read_boxes()
-                end_jp2h = reader.fp.tell()
+                end_jp2h = reader.fp.tell() + reader.remaining_in_box
                 break
-
-        if end_jp2h == 0:
-            jp2c_pos = data.find(b"jp2c")
-            end_jp2h = jp2c_pos - 4 if jp2c_pos > 4 else len(data)
 
         fp.write(data[:end_jp2h])
         fp.write(xml_data)
         fp.write(data[end_jp2h:])
     else:
-        ImageFile._save(im, fp, [ImageFile._Tile("jpeg2k", args=kind)])
+        ImageFile._save(im, fp, tile)
 
 
 # ------------------------------------------------------------

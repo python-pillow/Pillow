@@ -616,7 +616,8 @@ def test_9bit() -> None:
 
 
 def test_xml_metadata(card: ImageFile.ImageFile) -> None:
-    for xml in (b"<test>xml metadata</test>", "<test>string metadata</test>"):
+    xml_boxes = ["xml metadata1", b"xml metadata2"]
+    for xml in xml_boxes:
         out = BytesIO()
         card.save(out, "JPEG2000", xml=xml)
 
@@ -626,16 +627,17 @@ def test_xml_metadata(card: ImageFile.ImageFile) -> None:
 
     # Multiple XML boxes
     out = BytesIO()
-    xml_boxes = [b"<box1>1</box1>", b"<box2>2</box2>"]
-    card.save(out, "JPEG2000", xml=xml_boxes)
+    card.save(out, "JPEG2000", xml=xml_boxes, comment="comment")
     with Image.open(out) as im:
+        xml_boxes[0] = xml_boxes[0].encode()
         assert im.info["xml"] == xml_boxes
+        assert im.info["comment"] == b"comment"
 
 
 def test_uuid_xmp() -> None:
     # Test reading XMP from an Adobe UUID box
     out = BytesIO()
-    with Image.new("RGB", (10, 10)) as im:
+    with Image.new("L", (1, 1)) as im:
         im.save(out, "JPEG2000")
     data = out.getvalue()
 
@@ -654,11 +656,3 @@ def test_uuid_xmp() -> None:
 
     with Image.open(BytesIO(with_uuid)) as im:
         assert im.info["xmp"] == xmp_data
-
-
-def test_save_xml_and_comment(card: ImageFile.ImageFile) -> None:
-    out = BytesIO()
-    card.save(out, "JPEG2000", xml=b"<test>data</test>", comment="test comment")
-    with Image.open(out) as im:
-        assert im.info["xml"] == b"<test>data</test>"
-        assert im.info["comment"] == b"test comment"
