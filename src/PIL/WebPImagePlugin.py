@@ -123,7 +123,6 @@ class WebPImageFile(ImageFile.ImageFile):
     def _get_next(self) -> tuple[bytes, int, int]:
         # Get next frame
         ret = self._decoder.get_next()
-        self.__physical_frame += 1
 
         # Check if an error occurred
         if ret is None:
@@ -131,6 +130,11 @@ class WebPImageFile(ImageFile.ImageFile):
             self.seek(0)
             msg = "failed to decode next frame in WebP file"
             raise EOFError(msg)
+
+        if not self.is_animated:
+            del self._decoder
+
+        self.__physical_frame += 1
 
         # Compute duration
         data, timestamp = ret
@@ -173,7 +177,7 @@ class WebPImageFile(ImageFile.ImageFile):
 
 def _convert_frame(im: Image.Image) -> Image.Image:
     # Make sure image mode is supported
-    if im.mode not in ("RGBX", "RGBA", "RGB"):
+    if im.mode not in {"RGBX", "RGBA", "RGB"}:
         im = im.convert("RGBA" if im.has_transparency_data else "RGB")
     return im
 

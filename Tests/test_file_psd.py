@@ -61,24 +61,21 @@ def test_invalid_file() -> None:
 
 
 def test_n_frames() -> None:
-    with Image.open("Tests/images/hopper_merged.psd") as im:
+    with Image.open("Tests/images/negative_layer_count.psd") as im:
         assert isinstance(im, PsdImagePlugin.PsdImageFile)
-        assert im.n_frames == 1
-        assert not im.is_animated
+        assert im.n_frames == 3
+        assert im.is_animated
 
-    for path in [test_file, "Tests/images/negative_layer_count.psd"]:
-        with Image.open(path) as im:
-            assert isinstance(im, PsdImagePlugin.PsdImageFile)
-            assert im.n_frames == 2
-            assert im.is_animated
+    with Image.open(test_file) as im:
+        assert isinstance(im, PsdImagePlugin.PsdImageFile)
+        assert im.n_frames == 3
+        assert im.is_animated
 
 
 def test_eoferror() -> None:
     with Image.open(test_file) as im:
         assert isinstance(im, PsdImagePlugin.PsdImageFile)
-
-        # PSD seek index starts at 1 rather than 0
-        n_frames = im.n_frames + 1
+        n_frames = im.n_frames
 
         # Test seeking past the last frame
         with pytest.raises(EOFError):
@@ -97,18 +94,15 @@ def test_eoferror() -> None:
 def test_seek_tell() -> None:
     with Image.open(test_file) as im:
         layer_number = im.tell()
-        assert layer_number == 1
+        assert layer_number == 0
 
-        with pytest.raises(EOFError):
-            im.seek(0)
+        im.seek(0)
+        layer_number = im.tell()
+        assert layer_number == 0
 
         im.seek(1)
         layer_number = im.tell()
-        assert layer_number == 1
-
-        im.seek(2)
-        layer_number = im.tell()
-    assert layer_number == 2
+    assert layer_number == 1
 
 
 def test_seek_back_to_initial_frame() -> None:
@@ -116,10 +110,24 @@ def test_seek_back_to_initial_frame() -> None:
     with Image.open(test_file) as im:
         initial_frame = im.copy()
 
-        im.seek(2)
         im.seek(1)
+        im.seek(0)
 
         assert_image_equal(im, initial_frame)
+
+
+def test_composite() -> None:
+    with Image.open("Tests/images/composite.psd") as im:
+        assert isinstance(im, PsdImagePlugin.PsdImageFile)
+        assert im.get_flattened_data() == ((0, 255, 0), (255, 0, 0))
+        assert len(im.layers) == 2
+        assert im.n_frames == 3
+
+        # The initial image is different from any single layer
+        im_composite = im.copy()
+        for i in range(im.n_frames):
+            im.seek(i)
+            assert im != im_composite
 
 
 def test_seek_mode_change() -> None:
@@ -160,7 +168,7 @@ def test_negative_top_left_layer() -> None:
 def test_layer_skip() -> None:
     with Image.open("Tests/images/five_channels.psd") as im:
         assert isinstance(im, PsdImagePlugin.PsdImageFile)
-        assert im.n_frames == 1
+        assert im.n_frames == 2
 
 
 def test_icc_profile() -> None:
@@ -254,7 +262,7 @@ def test_layer_crashes(test_file: str) -> None:
 def test_bounds_crash(test_file: str) -> None:
     with Image.open(test_file) as im:
         assert isinstance(im, PsdImagePlugin.PsdImageFile)
-        im.seek(im.n_frames)
+        im.seek(im.n_frames - 1)
 
         with pytest.raises(ValueError):
             im.load()
@@ -265,4 +273,4 @@ def test_bounds_crash_overflow() -> None:
         assert isinstance(im, PsdImagePlugin.PsdImageFile)
         im.load()
         with pytest.raises(ValueError, match="negative tile size"):
-            im.seek(im.n_frames)
+            im.seek(im.n_frames - 1)
