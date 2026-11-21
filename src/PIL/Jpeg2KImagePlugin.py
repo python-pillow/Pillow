@@ -107,8 +107,6 @@ class BoxReader:
             self.last_box = True
             if self.has_length:
                 self.remaining_in_box = self.length - self.fp.tell()
-            else:
-                self.remaining_in_box = -1
             return tbox
         elif lbox == 1:
             lbox = cast("int", self.read_fields(">Q")[0])
