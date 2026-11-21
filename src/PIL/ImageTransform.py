@@ -132,11 +132,7 @@ class MeshTransform(Transform):
 
     See :py:meth:`.Image.transform`
 
-    :param data: A list of ``(bbox, quad)`` pairs. Each ``bbox`` is a rectangle
-        ``(left, top, right, bottom)`` in the output image. Each ``quad`` is an
-        8-tuple ``(x0, y0, x1, y1, x2, y2, x3, y3)`` in the input image.
-        These points map to the upper left, lower left, lower right and
-        upper right corners of ``bbox``, respectively.
+    :param data: A list of (bbox, quad) tuples.
     """
 
     method = Image.Transform.MESH
