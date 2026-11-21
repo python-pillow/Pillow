@@ -252,8 +252,38 @@ def test_apng_blend() -> None:
     with Image.open("Tests/images/apng/blend_op_over_near_transparent.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         im.seek(im.n_frames - 1)
-        assert im.getpixel((0, 0)) == (0, 255, 0, 97)
+        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
+
+
+@pytest.mark.parametrize("mode", ("LA", "RGBA"))
+def test_apng_blend_over_alpha(mode: str, tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    data: list[tuple[int, ...]]
+    frame_data: list[tuple[int, ...]]
+    expected: list[tuple[int, ...]]
+    if mode == "LA":
+        data = [(200, 255), (0, 0)]
+        frame_data = [(100, 128), (100, 128)]
+        expected = [(150, 255), (100, 128)]
+    else:
+        data = [(255, 0, 0, 255), (0, 0, 0, 0)]
+        frame_data = [(0, 0, 255, 128), (0, 0, 255, 128)]
+        expected = [(127, 0, 128, 255), (0, 0, 255, 128)]
+    im = Image.new(mode, (2, 1))
+    im.putdata(data)
+    frame = Image.new(mode, (2, 1))
+    frame.putdata(frame_data)
+    im.save(
+        test_file,
+        save_all=True,
+        append_images=[frame],
+        blend=[PngImagePlugin.Blend.OP_SOURCE, PngImagePlugin.Blend.OP_OVER],
+    )
+
+    with Image.open(test_file) as reloaded:
+        reloaded.seek(1)
+        assert [reloaded.getpixel((x, 0)) for x in range(2)] == expected
 
 
 def test_apng_blend_transparency() -> None:
@@ -323,8 +353,8 @@ def test_apng_mode() -> None:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         assert im.mode == "RGBA"
         im.seek(im.n_frames - 1)
-        assert im.getpixel((0, 0)) == (0, 0, 128, 191)
-        assert im.getpixel((64, 32)) == (0, 0, 128, 191)
+        assert im.getpixel((0, 0)) == (0, 0, 128, 255)
+        assert im.getpixel((64, 32)) == (0, 0, 128, 255)
 
     with Image.open("Tests/images/apng/mode_grayscale.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
@@ -337,8 +367,8 @@ def test_apng_mode() -> None:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         assert im.mode == "LA"
         im.seek(im.n_frames - 1)
-        assert im.getpixel((0, 0)) == (128, 191)
-        assert im.getpixel((64, 32)) == (128, 191)
+        assert im.getpixel((0, 0)) == (128, 255)
+        assert im.getpixel((64, 32)) == (128, 255)
 
     with Image.open("Tests/images/apng/mode_palette.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
