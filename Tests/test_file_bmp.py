@@ -46,6 +46,16 @@ def test_fallback_if_mmap_errors() -> None:
         assert_image_equal_tofile(im, "Tests/images/bmp/g/pal8.bmp")
 
 
+def test_large_palette() -> None:
+    with open("Tests/images/hopper_rle8.bmp", "rb") as fp:
+        data = bytearray(fp.read())
+    data[46:50] = o32(257)
+
+    b = io.BytesIO(data)
+    with pytest.raises(OSError, match=r"Unsupported BMP Palette size \(257\)"):
+        Image.open(b)
+
+
 def test_save_to_bytes() -> None:
     output = io.BytesIO()
     im = hopper()
