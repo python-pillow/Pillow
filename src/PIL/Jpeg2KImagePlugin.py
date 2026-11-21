@@ -329,20 +329,8 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                             _parse_codestream(self.fp)
                             self._parse_comment()
 
-                if "xml" in self.info:
-                    if len(self.info["xml"]) == 1:
-                        self.info["xml"] = self.info["xml"][0]
-                    xml_bytes = (
-                        self.info["xml"]
-                        if isinstance(self.info["xml"], bytes)
-                        else self.info["xml"][0]
-                    )
-                    if "xmp" not in self.info and (
-                        b"<x:xmpmeta" in xml_bytes
-                        or b"<?xpacket" in xml_bytes
-                        or b"http://ns.adobe.com/xap/1.0/" in xml_bytes
-                    ):
-                        self.info["xmp"] = xml_bytes
+                if "xml" in self.info and len(self.info["xml"]) == 1:
+                    self.info["xml"] = self.info["xml"][0]
             else:
                 msg = "not a JPEG 2000 file"
                 raise SyntaxError(msg)
@@ -496,7 +484,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         plt,
     )
 
-    xml = info.get("xml", info.get("xmp"))
+    xml = info.get("xml")
     if xml and kind == "jp2":
         if isinstance(xml, (str, bytes)):
             xml_list = [xml]

@@ -632,20 +632,6 @@ def test_xml_metadata(card: ImageFile.ImageFile) -> None:
         assert im.info["xml"] == xml_boxes
 
 
-def test_xmp_metadata(card: ImageFile.ImageFile) -> None:
-    xmp_data = (
-        b"<x:xmpmeta xmlns:x='adobe:ns:meta/'>"
-        b"<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'/>"
-        b"</x:xmpmeta>"
-    )
-    out = BytesIO()
-    card.save(out, "JPEG2000", xmp=xmp_data)
-
-    with Image.open(out) as im:
-        assert im.info["xml"] == xmp_data
-        assert im.info["xmp"] == xmp_data
-
-
 def test_uuid_xmp() -> None:
     # Test reading XMP from an Adobe UUID box
     out = BytesIO()
