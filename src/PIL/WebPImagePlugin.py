@@ -132,6 +132,9 @@ class WebPImageFile(ImageFile.ImageFile):
             msg = "failed to decode next frame in WebP file"
             raise EOFError(msg)
 
+        if not self.is_animated:
+            del self._decoder
+
         # Compute duration
         data, timestamp = ret
         duration = timestamp - self.__timestamp
