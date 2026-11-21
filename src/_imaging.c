@@ -4259,6 +4259,49 @@ _effect_spread(ImagingObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 static PyObject *
+_is_grayscale_palette(PyObject *self, PyObject *const *args, Py_ssize_t nargs) {
+    Py_ssize_t colors, padding, i;
+    const UINT8 *palette;
+
+    if (nargs != 3) {
+        PyErr_SetString(PyExc_TypeError, "is_grayscale_palette requires 3 arguments");
+        return NULL;
+    }
+    if (!PyBytes_Check(args[0])) {
+        PyErr_SetString(PyExc_TypeError, "palette must be bytes");
+        return NULL;
+    }
+    colors = PyLong_AsSsize_t(args[1]);
+    if (colors == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
+    padding = PyLong_AsSsize_t(args[2]);
+    if (padding == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
+    if (colors < 1 || colors > 65536) {
+        PyErr_SetString(PyExc_ValueError, "palette size must be between 1 and 65536");
+        return NULL;
+    }
+    if (padding != 3 && padding != 4) {
+        PyErr_SetString(PyExc_ValueError, "palette entries must contain 3 or 4 bytes");
+        return NULL;
+    }
+    if (PyBytes_GET_SIZE(args[0]) < (colors - 1) * padding + 3) {
+        Py_RETURN_FALSE;
+    }
+    palette = (const UINT8 *)PyBytes_AS_STRING(args[0]);
+    for (i = 0; i < colors; i++, palette += padding) {
+        UINT8 expected = colors == 2 && i == 1 ? 255 : (UINT8)i;
+        if (palette[0] != expected || palette[1] != expected ||
+            palette[2] != expected) {
+            Py_RETURN_FALSE;
+        }
+    }
+    Py_RETURN_TRUE;
+}
+
+static PyObject *
 _getcodecstatus(PyObject *self, PyObject *args) {
     int status;
     char *msg;
@@ -5087,6 +5130,7 @@ static PyMethodDef functions[] = {
 
     /* Utilities */
     {"getcodecstatus", (PyCFunction)_getcodecstatus, METH_VARARGS},
+    {"is_grayscale_palette", (PyCFunction)_is_grayscale_palette, METH_FASTCALL},
 
     /* Special effects (experimental) */
     {"effect_mandelbrot", (PyCFunction)_effect_mandelbrot, METH_VARARGS},

@@ -39,6 +39,109 @@ def test_invalid_file() -> None:
             BmpImagePlugin.BmpImageFile(fp)
 
 
+def encode_palette_bmp(
+    header_size: int,
+    colors: int,
+    palette: bytes | bytearray,
+    pixels: bytes = b"\x00\x01\x7f\xff",
+) -> io.BytesIO:
+    if header_size == 12:
+        header = o32(12) + o16(4) + o16(1) + o16(1) + o16(8)
+    else:
+        header = (
+            o32(40)
+            + o32(4)
+            + o32(1)
+            + o16(1)
+            + o16(8)
+            + o32(0)
+            + o32(len(pixels))
+            + o32(0) * 2
+            + o32(colors)
+            + o32(0)
+        )
+    offset = 14 + len(header) + len(palette)
+    return io.BytesIO(
+        b"BM"
+        + o32(offset + len(pixels))
+        + o32(0)
+        + o32(offset)
+        + header
+        + palette
+        + pixels
+    )
+
+
+@pytest.mark.parametrize("header_size", (12, 40))
+@pytest.mark.parametrize("channel", (0, 1, 2))
+@pytest.mark.parametrize("entry", (None, 0, 1, 127, 255))
+def test_grayscale_palette_detection(
+    header_size: int, channel: int, entry: int | None
+) -> None:
+    padding = 3 if header_size == 12 else 4
+    palette = bytearray()
+    for value in range(256):
+        palette.extend(bytes((value, value, value)))
+        if padding == 4:
+            palette.append(127)
+    if entry is not None:
+        palette[entry * padding + channel] ^= 1
+
+    with Image.open(encode_palette_bmp(header_size, 256, palette)) as im:
+        if entry is None:
+            assert im.mode == "L"
+            assert im.tobytes() == b"\x00\x01\x7f\xff"
+        else:
+            assert im.mode == "P"
+            expected = bytearray()
+            for index in (0, 1, 127, 255):
+                expected.extend(palette[index * padding : index * padding + 3][::-1])
+            assert im.convert("RGB").tobytes() == expected
+
+
+@pytest.mark.parametrize("colors", (1, 2, 3, 16, 255, 257, 512))
+def test_grayscale_palette_sizes(colors: int) -> None:
+    values = (0, 255) if colors == 2 else range(colors)
+    palette = b"".join(bytes((value & 255,)) * 3 + b"\x7f" for value in values)
+    with Image.open(encode_palette_bmp(40, colors, palette, b"\x00" * 4)) as im:
+        assert im.mode == ("1" if colors <= 2 else "L")
+        assert im.tobytes() == (b"\x00" if colors <= 2 else b"\x00" * 4)
+
+
+def test_two_color_nonidentity_palette() -> None:
+    palette = b"\x00\x00\x00\x7f\x01\x01\x01\x7f"
+    with Image.open(encode_palette_bmp(40, 2, palette)) as im:
+        assert im.mode == "P"
+        assert im.getpalette() == [0, 0, 0, 1, 1, 1]
+
+
+@pytest.mark.parametrize("padding", (3, 4))
+@pytest.mark.parametrize("colors", (1, 2, 3, 16, 256, 257))
+def test_grayscale_palette_truncation(colors: int, padding: int) -> None:
+    values = (0, 255) if colors == 2 else range(colors)
+    palette = b"".join(
+        bytes((value & 255,)) * 3 + (b"\x7f" if padding == 4 else b"")
+        for value in values
+    )
+    assert Image.core.is_grayscale_palette(palette, colors, padding)
+    required = (colors - 1) * padding + 3
+    assert Image.core.is_grayscale_palette(palette[:required], colors, padding)
+    assert not Image.core.is_grayscale_palette(palette[: required - 1], colors, padding)
+    assert not Image.core.is_grayscale_palette(b"", colors, padding)
+
+
+@pytest.mark.parametrize("colors", (0, -1, 65537))
+def test_grayscale_palette_invalid_size(colors: int) -> None:
+    with pytest.raises(ValueError, match="palette size"):
+        Image.core.is_grayscale_palette(b"", colors, 4)
+
+
+@pytest.mark.parametrize("padding", (0, -1, 1, 2, 5))
+def test_grayscale_palette_invalid_padding(padding: int) -> None:
+    with pytest.raises(ValueError, match="3 or 4 bytes"):
+        Image.core.is_grayscale_palette(b"", 256, padding)
+
+
 def test_fallback_if_mmap_errors() -> None:
     # This image has been truncated,
     # so that the buffer is not large enough when using mmap
