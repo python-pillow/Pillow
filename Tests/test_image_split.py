@@ -4,7 +4,7 @@ import pytest
 
 from PIL import Image, features
 
-from .helper import assert_image_equal, hopper
+from .helper import PillowLeakTestCase, assert_image_equal, hopper
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -62,3 +62,25 @@ def test_split_open(tmp_path: Path) -> None:
     assert split_open("RGB") == 3
     if features.check("zlib"):
         assert split_open("RGBA") == 4
+
+
+def test_merge_single_band_mode_mismatch() -> None:
+    with pytest.raises(ValueError, match="images do not match"):
+        Image.merge("F", [Image.new("L", (1, 1))])
+
+
+class TestMergeLeak(PillowLeakTestCase):
+    mem_limit = 4 * 1024  # kb
+    iterations = 100
+
+    def test_merge_single_band_mode_mismatch(self) -> None:
+        # A tall image, so that the leaked row pointers count towards RSS.
+        # Each set of row pointers is 1 MB, so the allocator holding on to one
+        # after it has been freed stays within mem_limit, but leaking them does not
+        im = Image.new("L", (1, 128 * 1024))
+
+        def core() -> None:
+            with pytest.raises(ValueError):
+                Image.merge("F", [im])
+
+        self._test_leak(core)

@@ -852,6 +852,14 @@ def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
     _check_text(font, "Tests/images/variation_tiny_name.png", 40)
 
 
+def test_truetype_bytes() -> None:
+    # Ensure bytestrings with the high bit set do not cause sign extension
+    font = ImageFont.truetype(
+        "Tests/fonts/FreeMono.ttf", 20, layout_engine=ImageFont.Layout.BASIC
+    )
+    assert font.getbbox(b"\xe9") == font.getbbox("\u00e9")
+
+
 def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
     with pytest.raises(OSError):
         font.set_variation_by_axes([500, 50])
@@ -863,6 +871,17 @@ def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
     font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
     font.set_variation_by_axes([100])
     _check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
+
+
+def test_variation_set_by_fractional_axes() -> None:
+    font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 200)
+
+    def mask(weight: float) -> bytes:
+        font.set_variation_by_axes([weight, 0])
+        return bytes(font.getmask("test"))
+
+    # A fractional value must not be truncated or rounded
+    assert mask(600) != mask(600.5) != mask(601)
 
 
 @pytest.mark.parametrize(

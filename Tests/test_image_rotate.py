@@ -172,7 +172,6 @@ def test_alpha_rotate_with_fill() -> None:
 
 def test_invalid_angle() -> None:
     im = hopper()
-    with pytest.raises(ValueError, match="invalid angle"):
-        im.rotate(math.inf)
-    with pytest.raises(ValueError, match="invalid angle"):
-        im.rotate(math.nan)
+    for angle in (math.inf, math.nan):
+        with pytest.raises(ValueError, match="invalid angle"):
+            im.rotate(angle)

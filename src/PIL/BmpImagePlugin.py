@@ -266,7 +266,7 @@ class BmpImageFile(ImageFile.ImageFile):
         # --------------- Once the header is processed, process the palette/LUT
         if self.mode == "P":  # Paletted for 1, 4 and 8 bit images
             # ---------------------------------------------------- 1-bit images
-            if not (0 < file_info["colors"] <= 65536):
+            if not (0 < file_info["colors"] <= 256):
                 msg = f"Unsupported BMP Palette size ({file_info['colors']})"
                 raise OSError(msg)
             else:
@@ -451,7 +451,8 @@ def _save(
     ppm = tuple(int(x * 39.3701 + 0.5) for x in dpi)
 
     stride = ((im.size[0] * bits + 7) // 8 + 3) & (~3)
-    header = 40  # or 64 for OS/2 version 2
+    # Use a BITMAPV4HEADER for RGBA BMP images (not DIB)
+    header = 108 if im.mode == "RGBA" and bitmap_header else 40
     image = stride * im.size[1]
 
     if im.mode == "1":
@@ -486,7 +487,7 @@ def _save(
         + o32(im.size[1])  # height
         + o16(1)  # planes
         + o16(bits)  # depth
-        + o32(0)  # compression (0=uncompressed)
+        + o32(BmpImageFile.COMPRESSIONS["BITFIELDS" if header == 108 else "RAW"])
         + o32(image)  # size of bitmap
         + o32(ppm[0])  # resolution
         + o32(ppm[1])  # resolution
@@ -494,7 +495,16 @@ def _save(
         + o32(colors)  # colors important
     )
 
-    fp.write(b"\0" * (header - 40))  # padding (for OS/2 format)
+    if header == 108:
+        # BITMAPV4HEADER
+        fp.write(
+            o32(0x00FF0000)  # red mask
+            + o32(0x0000FF00)  # green mask
+            + o32(0x000000FF)  # blue mask
+            + o32(0xFF000000)  # alpha mask
+            + b"sRGB"[::-1]  # LCS_sRGB color space
+            + b"\0" * 48  # endpoints and gamma
+        )
 
     if palette:
         fp.write(palette)

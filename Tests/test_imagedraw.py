@@ -1069,6 +1069,18 @@ def test_floodfill_not_negative() -> None:
     assert_image_equal_tofile(im, "Tests/images/imagedraw_floodfill_not_negative.png")
 
 
+def test_floodfill_readonly() -> None:
+    # Arrange
+    im = Image.frombuffer("L", (2, 2), bytes(4), "raw", "L", 0, 1)
+    assert im.readonly
+
+    # Act
+    ImageDraw.floodfill(im, (0, 0), 255)
+
+    # Assert
+    assert im.tobytes() == b"\xff" * 4
+
+
 def test_floodfill_rgb_on_rgba() -> None:
     # Arrange
     im = Image.new("RGBA", (W, H), "black")

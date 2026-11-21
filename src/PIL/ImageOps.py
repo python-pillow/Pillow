@@ -365,10 +365,12 @@ def cover(
             new_height = round(image.height / image.width * size[0])
             if new_height != size[1]:
                 size = (size[0], new_height)
+                Image._decompression_bomb_check(size)
         else:
             new_width = round(image.width / image.height * size[1])
             if new_width != size[0]:
                 size = (new_width, size[1])
+                Image._decompression_bomb_check(size)
     return image.resize(size, resample=method)
 
 
@@ -486,8 +488,8 @@ class SupportsGetMesh(Protocol):
     """
     An object that supports the ``getmesh`` method, taking an image as an
     argument, and returning a list of tuples. Each tuple contains two tuples,
-    the source box as a tuple of 4 integers, and a tuple of 8 integers for the
-    final quadrilateral, in order of top left, bottom left, bottom right, top
+    the final box as a tuple of 4 integers, and a tuple of 8 integers for the
+    source quadrilateral, in order of top left, bottom left, bottom right, top
     right.
     """
 

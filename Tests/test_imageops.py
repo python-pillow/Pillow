@@ -16,19 +16,6 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 
-class Deformer(ImageOps.SupportsGetMesh):
-    def getmesh(
-        self, im: Image.Image
-    ) -> list[
-        tuple[tuple[int, int, int, int], tuple[int, int, int, int, int, int, int, int]]
-    ]:
-        x, y = im.size
-        return [((0, 0, x, y), (0, 0, x, 0, x, y, y, 0))]
-
-
-deformer = Deformer()
-
-
 def test_sanity() -> None:
     ImageOps.autocontrast(hopper("L"))
     ImageOps.autocontrast(hopper("RGB"))
@@ -53,9 +40,6 @@ def test_sanity() -> None:
 
     ImageOps.crop(hopper("L"), 1)
     ImageOps.crop(hopper("RGB"), 1)
-
-    ImageOps.deform(hopper("L"), deformer)
-    ImageOps.deform(hopper("RGB"), deformer)
 
     ImageOps.equalize(hopper("L"))
     ImageOps.equalize(hopper("RGB"))
@@ -108,6 +92,25 @@ def test_sobel() -> None:
 
     flipped = ImageOps._sobel(im.transpose(Image.Transpose.FLIP_LEFT_RIGHT))
     assert flipped.getpixel((2, 1)) == 120
+
+
+@pytest.mark.parametrize("mode", ("L", "RGB"))
+def test_deform(mode: str) -> None:
+    class Deformer(ImageOps.SupportsGetMesh):
+        def getmesh(
+            self, im: Image.Image
+        ) -> list[
+            tuple[
+                tuple[int, int, int, int], tuple[int, int, int, int, int, int, int, int]
+            ]
+        ]:
+            w, h = im.size
+            return [((0, 0, w, h), (0, 0, 0, h, w, h, w, 0))]
+
+    deformer = Deformer()
+
+    im = hopper(mode)
+    assert_image_equal(ImageOps.deform(im, deformer), im)
 
 
 @pytest.mark.parametrize(
@@ -208,6 +211,20 @@ def test_cover(image_name: str, expected_size: tuple[int, int]) -> None:
     with Image.open("Tests/images/" + image_name) as im:
         new_im = ImageOps.cover(im, (256, 256))
         assert new_im.size == expected_size
+
+
+def test_cover_decompression_bomb(monkeypatch: pytest.MonkeyPatch) -> None:
+    # An extreme aspect ratio should not lead to a very large image
+    for size in ((1, 100_000), (100_000, 1)):
+        im = Image.new("L", size)
+        with pytest.raises(Image.DecompressionBombError):
+            ImageOps.cover(im, (256, 256))
+
+    # But if the image has the same aspect ratio as the requested size,
+    # then this will be the size the user asked for, so allow it
+    im = hopper()
+    monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 10)
+    assert ImageOps.cover(im, (64, 64)).size == (64, 64)
 
 
 def test_pad() -> None:

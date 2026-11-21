@@ -185,7 +185,7 @@ Many of Pillow's features require external libraries:
 .. tab:: Windows using MSYS2/MinGW
 
     The following instructions are for the **MSYS2 UCRT64** system.
-    To build Pillow on one of the other MSYS2 systems, replace all occurences of
+    To build Pillow on one of the other MSYS2 systems, replace all occurrences of
     ``mingw-w64-ucrt-x86_64`` with the corresponding prefix:
 
     .. list-table::

@@ -176,10 +176,6 @@ ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (mode == IMAGING_MODE_UNKNOWN) {
-        mode = imIn->mode;
-    }
-
     if (imIn->type == IMAGING_TYPE_UINT8) {
         if (imIn->mode != mode && !imIn->image8) {
             goto mode_mismatch;
