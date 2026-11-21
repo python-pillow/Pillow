@@ -247,10 +247,9 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
             if subifd_offsets:
                 if not isinstance(subifd_offsets, tuple):
                     subifd_offsets = (subifd_offsets,)
-                # Remove duplicates, to avoid parsing the same IFD repeatedly
                 ifds = [
                     (exif._get_ifd_dict(subifd_offset), subifd_offset)
-                    for subifd_offset in dict.fromkeys(subifd_offsets)
+                    for subifd_offset in set(subifd_offsets)
                 ]
         ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
         if ifd1 and ifd1.get(ExifTags.Base.JpegIFOffset):
