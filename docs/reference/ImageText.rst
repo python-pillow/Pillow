@@ -21,11 +21,12 @@ Example
     text.stroke(2, "#0f0")
 
     print(text.get_length())  # 154.0
-    print(text.get_bbox())  # (-2, 3, 156, 22)
+    left, top, right, bottom = text.get_bbox()
+    print((left, top, right, bottom))  # (-2, 3, 156, 22)
 
-    im = Image.new("RGB", text.get_bbox()[2:])
+    im = Image.new("RGB", (right - left, bottom - top))
     d = ImageDraw.Draw(im)
-    d.text((0, 0), text, "#f00")
+    d.text((-left, -top), text, "#f00")
 
 Comparison
 ----------
