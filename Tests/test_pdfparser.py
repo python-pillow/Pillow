@@ -48,6 +48,7 @@ def test_indirect_refs() -> None:
 def test_parsing() -> None:
     assert PdfParser.interpret_name(b"Name#23Hash") == b"Name#Hash"
     assert PdfParser.interpret_name(b"Name#23Hash", as_text=True) == "Name#Hash"
+    assert PdfParser.interpret_name(b"#41" * 10000) == b"A" * 10000
     assert PdfParser.get_value(b"1 2 R ", 0) == (IndirectReference(1, 2), 5)
     assert PdfParser.get_value(b"true[", 0) == (True, 4)
     assert PdfParser.get_value(b"false%", 0) == (False, 5)
