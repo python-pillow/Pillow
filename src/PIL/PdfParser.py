@@ -779,7 +779,7 @@ class PdfParser:
 
     @classmethod
     def interpret_name(cls, raw: bytes, as_text: bool = False) -> str | bytes:
-        name = b""
+        name = bytearray()
         for m in cls.re_hashes_in_name.finditer(raw):
             if m.group(3):
                 name += m.group(1) + bytearray.fromhex(m.group(3).decode("us-ascii"))
