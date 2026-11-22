@@ -99,7 +99,7 @@ def test_grayscale_palette_detection(
             assert im.convert("RGB").tobytes() == expected
 
 
-@pytest.mark.parametrize("colors", (1, 2, 3, 16, 255, 257, 512))
+@pytest.mark.parametrize("colors", (1, 2, 3, 16, 255, 256))
 def test_grayscale_palette_sizes(colors: int) -> None:
     values = (0, 255) if colors == 2 else range(colors)
     palette = b"".join(bytes((value & 255,)) * 3 + b"\x7f" for value in values)
@@ -116,7 +116,7 @@ def test_two_color_nonidentity_palette() -> None:
 
 
 @pytest.mark.parametrize("padding", (3, 4))
-@pytest.mark.parametrize("colors", (1, 2, 3, 16, 256, 257))
+@pytest.mark.parametrize("colors", (1, 2, 3, 16, 256))
 def test_grayscale_palette_truncation(colors: int, padding: int) -> None:
     values = (0, 255) if colors == 2 else range(colors)
     palette = b"".join(
@@ -130,7 +130,7 @@ def test_grayscale_palette_truncation(colors: int, padding: int) -> None:
     assert not Image.core.is_grayscale_palette(b"", colors, padding)
 
 
-@pytest.mark.parametrize("colors", (0, -1, 65537))
+@pytest.mark.parametrize("colors", (0, -1, 257))
 def test_grayscale_palette_invalid_size(colors: int) -> None:
     with pytest.raises(ValueError, match="palette size"):
         Image.core.is_grayscale_palette(b"", colors, 4)

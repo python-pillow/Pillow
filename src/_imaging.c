@@ -4279,8 +4279,8 @@ _is_grayscale_palette(PyObject *self, PyObject *const *args, Py_ssize_t nargs) {
     if (padding == -1 && PyErr_Occurred()) {
         return NULL;
     }
-    if (colors < 1 || colors > 65536) {
-        PyErr_SetString(PyExc_ValueError, "palette size must be between 1 and 65536");
+    if (colors < 1 || colors > 256) {
+        PyErr_SetString(PyExc_ValueError, "palette size must be between 1 and 256");
         return NULL;
     }
     if (padding != 3 && padding != 4) {
