@@ -488,8 +488,8 @@ class SupportsGetMesh(Protocol):
     """
     An object that supports the ``getmesh`` method, taking an image as an
     argument, and returning a list of tuples. Each tuple contains two tuples,
-    the source box as a tuple of 4 integers, and a tuple of 8 integers for the
-    final quadrilateral, in order of top left, bottom left, bottom right, top
+    the final box as a tuple of 4 integers, and a tuple of 8 integers for the
+    source quadrilateral, in order of top left, bottom left, bottom right, top
     right.
     """
 

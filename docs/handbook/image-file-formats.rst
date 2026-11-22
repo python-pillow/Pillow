@@ -811,6 +811,16 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
     .. versionadded:: 9.5.0
 
+**xml**
+    Adds XML metadata to a JP2 file. May be a list.
+
+    .. versionadded:: 13.1.0
+
+**xmp**
+    Adds XMP metadata to a JP2 file.
+
+    .. versionadded:: 13.1.0
+
 .. note::
 
    To enable JPEG 2000 support, you need to build and install the OpenJPEG

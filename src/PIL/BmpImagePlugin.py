@@ -267,7 +267,7 @@ class BmpImageFile(ImageFile.ImageFile):
         if self.mode == "P":  # Paletted for 1, 4 and 8 bit images
             colors = file_info["colors"]
             # ---------------------------------------------------- 1-bit images
-            if not (0 < colors <= 65536):
+            if not (0 < colors <= 256):
                 msg = f"Unsupported BMP Palette size ({colors})"
                 raise OSError(msg)
             else:
