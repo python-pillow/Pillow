@@ -83,6 +83,13 @@ def test_zero_dimension() -> None:
     assert im.size == (0, 2)
 
 
+@pytest.mark.parametrize("size", ((0, 0), (5, 0), (100, 0)))
+def test_zero_target_height(size: tuple[int, int]) -> None:
+    im = Image.new("L", (10, 10))
+    im.thumbnail(size)
+    assert im.size == (0, 0)
+
+
 def test_float() -> None:
     im = Image.new("L", (128, 128))
     im.thumbnail((99.9, 99.9))

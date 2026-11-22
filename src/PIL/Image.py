@@ -2959,6 +2959,8 @@ class Image:
                 return None
             if self.height == 0:
                 return x, self.height
+            if y == 0:
+                return 0, 0
 
             aspect = self.width / self.height
             if x / y >= aspect:
