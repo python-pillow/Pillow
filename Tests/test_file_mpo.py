@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import struct
 import warnings
 from io import BytesIO
 from typing import Any
@@ -172,6 +173,38 @@ def test_truncated_makernote() -> None:
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         ifd[34665] = {37500: data}
         check(ifd)
+
+
+def test_makernote_overlapping_tag_data() -> None:
+    # Two LONG entries whose 64-byte values share the same range
+    value_offset = 12 + 2 + 2 * 12 + 4
+    entries = b"".join(
+        _binary.o16le(tag)
+        + _binary.o16le(4)
+        + _binary.o32le(16)
+        + _binary.o32le(value_offset)
+        for tag in (1, 2)
+    )
+    data = (
+        b"FUJIFILM"
+        + _binary.o32le(12)
+        + _binary.o16le(2)
+        + entries
+        + _binary.o32le(0)
+        + bytes(range(64))
+    )
+
+    ifd = TiffImagePlugin.ImageFileDirectory_v2()
+    ifd[34665] = {37500: data}
+    fp = BytesIO()
+    ifd.save(fp)
+
+    e = Image.Exif()
+    e.load(fp.getvalue())
+    with pytest.warns(UserWarning, match="Tag data larger than MakerNote"):
+        makernote = e.get_ifd(37500)
+    assert makernote[1] == struct.unpack("<16L", bytes(range(64)))
+    assert 2 not in makernote
 
 
 def test_reload_exif_after_seek() -> None:
