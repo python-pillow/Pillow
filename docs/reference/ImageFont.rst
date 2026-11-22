@@ -104,20 +104,29 @@ Constants
 
         A widespread pattern for Arabic, Persian and Urdu is to run the string
         through :pypi:`arabic-reshaper` and :pypi:`python-bidi` before drawing
-        it. That is correct **only** for :py:attr:`PIL.ImageFont.Layout.BASIC`,
-        which does no shaping of its own.
+        it. It is **only** correct to use reshaped text for
+        :py:attr:`PIL.ImageFont.Layout.BASIC`, which does no shaping of its
+        own::
+
+            from PIL import ImageFont
+            font = ImageFont.truetype(..., layout_engine=ImageFont.Layout.BASIC)
+            draw.text(xy, reshaped_bidi_text, font=font)
 
         Under :py:attr:`PIL.ImageFont.Layout.RAQM`, Pillow shapes and reorders
-        the text itself, so a pre-shaped string is shaped a second time. The
-        result still renders, it is simply wrong, which is what makes the
-        failure easy to miss.
+        the text itself, so unshaped text should be provided::
 
-        Which engine is used depends on how Pillow was built, so the same code
-        can be correct on one machine and wrong on another. Check at run time
-        rather than assuming::
+            from PIL import ImageFont
+            font = ImageFont.truetype(..., layout_engine=ImageFont.Layout.RAQM)
+            draw.text(xy, arabic_text, font=font)
+
+        If a pre-shaped string is provided for Raqm layout, then it is shaped a
+        second time. The result still renders — it is simply wrong, which is
+        what makes the failure easy to miss.
+
+        If you do not specify a ``layout_engine``, then Pillow's default will
+        depend on whether Raqm is available, and your code should consider this::
 
             from PIL import features
-
             if features.check_feature("raqm"):
                 draw.text(xy, arabic_text, font=font)
             else:
