@@ -79,6 +79,26 @@ def test_sanity() -> None:
         ImageOps.neon(im)
 
 
+def test_sobel() -> None:
+    im = Image.new("L", (6, 4))
+    im.paste(30, (3, 0, 6, 4))
+    im.paste(200, (5, 0, 6, 4))
+
+    edges = ImageOps._sobel(im)
+
+    # Next to a step, the result is the step times 4, the sum of one side of Kx.
+    # So 4 * 30 = 120 next to the step from 0 to 30, while next to the step from
+    # 30 to 200, 4 * (200 - 30) = 680 is clipped to 255. The border stays 0.
+    row = [0, 0, 120, 120, 255, 0]
+    assert edges.tobytes() == bytes([0] * 6 + row * 2 + [0] * 6)
+
+    # Mirrored and rotated edges go through the other three kernels
+    for method in Image.Transpose:
+        assert_image_equal(
+            ImageOps._sobel(im.transpose(method)), edges.transpose(method)
+        )
+
+
 @pytest.mark.parametrize("mode", ("L", "RGB"))
 def test_deform(mode: str) -> None:
     class Deformer(ImageOps.SupportsGetMesh):
