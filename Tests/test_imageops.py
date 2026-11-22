@@ -86,7 +86,9 @@ def test_sobel() -> None:
 
     edges = ImageOps._sobel(im)
 
-    # 4 * 30 = 120, 4 * 170 clips to 255, and the one-pixel border stays 0
+    # Next to a step, the result is the step times 4, the sum of one side of Kx.
+    # So 4 * 30 = 120 next to the step from 0 to 30, while next to the step from
+    # 30 to 200, 4 * (200 - 30) = 680 is clipped to 255. The border stays 0.
     row = [0, 0, 120, 120, 255, 0]
     assert edges.tobytes() == bytes([0] * 6 + row * 2 + [0] * 6)
 
