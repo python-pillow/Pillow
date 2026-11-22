@@ -252,7 +252,7 @@ def test_apng_blend() -> None:
     with Image.open("Tests/images/apng/blend_op_over_near_transparent.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         im.seek(im.n_frames - 1)
-        assert im.getpixel((0, 0)) == (0, 255, 0, 97)
+        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
@@ -323,8 +323,8 @@ def test_apng_mode() -> None:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         assert im.mode == "RGBA"
         im.seek(im.n_frames - 1)
-        assert im.getpixel((0, 0)) == (0, 0, 128, 191)
-        assert im.getpixel((64, 32)) == (0, 0, 128, 191)
+        assert im.getpixel((0, 0)) == (0, 0, 128, 255)
+        assert im.getpixel((64, 32)) == (0, 0, 128, 255)
 
     with Image.open("Tests/images/apng/mode_grayscale.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
@@ -337,8 +337,8 @@ def test_apng_mode() -> None:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         assert im.mode == "LA"
         im.seek(im.n_frames - 1)
-        assert im.getpixel((0, 0)) == (128, 191)
-        assert im.getpixel((64, 32)) == (128, 191)
+        assert im.getpixel((0, 0)) == (128, 255)
+        assert im.getpixel((64, 32)) == (128, 255)
 
     with Image.open("Tests/images/apng/mode_palette.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)

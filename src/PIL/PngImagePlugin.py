@@ -1113,7 +1113,12 @@ class PngImageFile(ImageFile.ImageFile):
         else:
             if self._prev_im and self.blend_op == Blend.OP_OVER:
                 updated = self._crop(self.im, self.dispose_extent)
-                if self.im.mode == "RGB" and "transparency" in self.info:
+                if self.im.mode in {"LA", "RGBA"}:
+                    updated = Image.core.alpha_composite(
+                        self._crop(self._prev_im, self.dispose_extent), updated
+                    )
+                    mask = None
+                elif self.im.mode == "RGB" and "transparency" in self.info:
                     mask = updated.convert_transparent(
                         "RGBA", self.info["transparency"]
                     )
@@ -1130,7 +1135,10 @@ class PngImageFile(ImageFile.ImageFile):
                     self.im = self._prev_im.copy()
                 else:
                     self.im = self._prev_im
-                self.im.paste(updated, self.dispose_extent, mask)
+                if mask is not None:
+                    self.im.paste(updated, self.dispose_extent, mask)
+                else:
+                    self.im.paste(updated, self.dispose_extent)
 
     def _getexif(self) -> dict[int, Any] | None:
         if "exif" not in self.info:
