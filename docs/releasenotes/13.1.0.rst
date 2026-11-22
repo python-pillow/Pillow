@@ -197,6 +197,13 @@ requested mode, such as ``Image.merge("F", [l_image])``, raised
 :py:exc:`ValueError` but leaked the memory allocated for the output image. This
 has been fixed.
 
+Added support for XML and XMP metadata in JPEG 2000
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+XML and XMP metadata will now be read into :py:attr:`~PIL.Image.Image.info` from JPEG
+2000 images. When saving, metadata can be specified using the ``xml`` or ``xmp``
+argument.
+
 ImageEnhance with I;16 images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

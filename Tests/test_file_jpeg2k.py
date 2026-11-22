@@ -613,3 +613,37 @@ def test_9bit() -> None:
     with Image.open("Tests/images/9bit.j2k") as im:
         assert im.mode == "I;16"
         assert im.size == (128, 128)
+
+
+def test_xml_metadata() -> None:
+    im = Image.new("L", (1, 1))
+    xml_boxes = ["xml metadata1", b"xml metadata2"]
+    for xml in xml_boxes:
+        out = BytesIO()
+        im.save(out, "JPEG2000", xml=xml)
+
+        with Image.open(out) as reloaded:
+            expected = xml.encode() if isinstance(xml, str) else xml
+            assert reloaded.info["xml"] == expected
+
+    # Multiple XML boxes
+    out = BytesIO()
+    im.save(out, "JPEG2000", xml=xml_boxes, comment="comment")
+    with Image.open(out) as im:
+        if isinstance(xml_boxes[0], str):
+            xml_boxes[0] = xml_boxes[0].encode()
+        assert im.info["xml"] == xml_boxes
+        assert im.info["comment"] == b"comment"
+
+
+@pytest.mark.parametrize("xmp", ("xmp", b"xmp"))
+def test_xmp_metadata(xmp: str | bytes) -> None:
+    im = Image.new("L", (1, 1))
+
+    out = BytesIO()
+    im.save(out, "JPEG2000", xmp=xmp)
+
+    with Image.open(out) as im:
+        if isinstance(xmp, str):
+            xmp = xmp.encode()
+        assert im.info["xmp"] == xmp
