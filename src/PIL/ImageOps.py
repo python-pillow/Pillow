@@ -760,6 +760,9 @@ def neon(
 
     .. versionadded:: 13.1.0
     """
+    if alpha == 0:
+        return image.copy()
+
     edges = _sobel(image).filter(ImageFilter.GaussianBlur(2))
 
     # Apply a glow-enhancing mask transformation

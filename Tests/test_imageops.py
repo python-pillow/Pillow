@@ -79,6 +79,15 @@ def test_sanity() -> None:
         ImageOps.neon(im)
 
 
+@pytest.mark.parametrize("mode", ("1", "L", "P", "RGB", "RGBA"))
+def test_neon_zero_alpha(mode: str) -> None:
+    im = hopper(mode)
+    result = ImageOps.neon(im, alpha=0)
+
+    assert result is not im
+    assert_image_equal(result, im)
+
+
 def test_sobel() -> None:
     im = Image.new("L", (6, 4))
     im.paste(30, (3, 0, 6, 4))
