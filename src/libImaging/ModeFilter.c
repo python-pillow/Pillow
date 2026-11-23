@@ -17,9 +17,11 @@
 
 Imaging
 ImagingModeFilter(Imaging im, int size) {
+    ImagingSectionCookie cookie;
     Imaging imOut;
     int x, y, i;
     int xx, yy;
+    int x0, x1, y0, y1;
     int maxcount;
     UINT8 maxpixel;
     int histogram[256];
@@ -35,9 +37,16 @@ ImagingModeFilter(Imaging im, int size) {
 
     size = size / 2;
 
+    ImagingSectionEnter(&cookie);
+
     for (y = 0; y < imOut->ysize; y++) {
         UINT8 *out = &IMAGING_PIXEL_L(imOut, 0, y);
+        y0 = (size > y) ? 0 : y - size;
+        y1 = (size >= imOut->ysize - 1 - y) ? imOut->ysize - 1 : y + size;
         for (x = 0; x < imOut->xsize; x++) {
+            x0 = (size > x) ? 0 : x - size;
+            x1 = (size >= imOut->xsize - 1 - x) ? imOut->xsize - 1 : x + size;
+
             /* calculate histogram over current area */
 
             /* FIXME: brute force! to improve, update the histogram
@@ -46,14 +55,10 @@ ImagingModeFilter(Imaging im, int size) {
                the added complexity... */
 
             memset(histogram, 0, sizeof(histogram));
-            for (yy = y - size; yy <= y + size; yy++) {
-                if (yy >= 0 && yy < imOut->ysize) {
-                    UINT8 *in = &IMAGING_PIXEL_L(im, 0, yy);
-                    for (xx = x - size; xx <= x + size; xx++) {
-                        if (xx >= 0 && xx < imOut->xsize) {
-                            histogram[in[xx]]++;
-                        }
-                    }
+            for (yy = y0; yy <= y1; yy++) {
+                UINT8 *in = &IMAGING_PIXEL_L(im, 0, yy);
+                for (xx = x0; xx <= x1; xx++) {
+                    histogram[in[xx]]++;
                 }
             }
 
@@ -74,6 +79,8 @@ ImagingModeFilter(Imaging im, int size) {
             }
         }
     }
+
+    ImagingSectionLeave(&cookie);
 
     ImagingCopyPalette(imOut, im);
 

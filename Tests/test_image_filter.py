@@ -112,6 +112,11 @@ def test_modefilter(
     assert (mod, mod2) == expected
 
 
+def test_modefilter_large_size() -> None:
+    im = Image.new("L", (3, 3), 128)
+    assert im.filter(ImageFilter.ModeFilter(2**31 - 1)).getpixel((1, 1)) == 128
+
+
 @pytest.mark.parametrize(
     "mode, expected",
     (
