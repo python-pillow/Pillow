@@ -256,6 +256,28 @@ def test_oversized_box_length(tbox: bytes) -> None:
         Jpeg2KImagePlugin.Jpeg2KImageFile(BytesIO(data))
 
 
+def test_large_skipped_box() -> None:
+    xml = b" " * 2 * 1024 * 1024
+    box = _binary.o32be(8 + len(xml)) + b"xml " + xml
+    with open("Tests/images/test-card-lossless.jp2", "rb") as fp:
+        data = fp.read()
+    data = data[:326] + box + data[326:]
+
+    with Image.open(BytesIO(data)) as im:
+        assert_image_equal_tofile(im, "Tests/images/test-card-lossless.jp2")
+
+    class FailingSeek(BytesIO):
+        def seek(self, offset: int, whence: int = os.SEEK_SET) -> int:
+            if whence == os.SEEK_CUR and offset > 512 * 1024:
+                msg = "seek refused"
+                raise OSError(msg)
+            return super().seek(offset, whence)
+
+    with Image.open(FailingSeek(data)) as im:
+        with pytest.raises(OSError, match="seek refused"):
+            im.load()
+
+
 def test_layers_type(card: ImageFile.ImageFile, tmp_path: Path) -> None:
     outfile = tmp_path / "temp_layers.jp2"
     for quality_layers in [[100, 50, 10], (100, 50, 10), None]:
@@ -761,3 +783,37 @@ def test_9bit() -> None:
     with Image.open("Tests/images/9bit.j2k") as im:
         assert im.mode == "I;16"
         assert im.size == (128, 128)
+
+
+def test_xml_metadata() -> None:
+    im = Image.new("L", (1, 1))
+    xml_boxes = ["xml metadata1", b"xml metadata2"]
+    for xml in xml_boxes:
+        out = BytesIO()
+        im.save(out, "JPEG2000", xml=xml)
+
+        with Image.open(out) as reloaded:
+            expected = xml.encode() if isinstance(xml, str) else xml
+            assert reloaded.info["xml"] == expected
+
+    # Multiple XML boxes
+    out = BytesIO()
+    im.save(out, "JPEG2000", xml=xml_boxes, comment="comment")
+    with Image.open(out) as im:
+        if isinstance(xml_boxes[0], str):
+            xml_boxes[0] = xml_boxes[0].encode()
+        assert im.info["xml"] == xml_boxes
+        assert im.info["comment"] == b"comment"
+
+
+@pytest.mark.parametrize("xmp", ("xmp", b"xmp"))
+def test_xmp_metadata(xmp: str | bytes) -> None:
+    im = Image.new("L", (1, 1))
+
+    out = BytesIO()
+    im.save(out, "JPEG2000", xmp=xmp)
+
+    with Image.open(out) as im:
+        if isinstance(xmp, str):
+            xmp = xmp.encode()
+        assert im.info["xmp"] == xmp

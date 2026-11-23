@@ -622,6 +622,18 @@ class TestFileTiff:
             exif = im.getexif()
             check_exif(exif)
 
+    def test_exif_manual_ifd(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+        im = Image.new("L", (1, 1))
+        exif = im.getexif()
+        gps = exif.get_ifd(0x8825)
+        gps[18] = "WGS-84"
+        im.save(outfile, exif=exif)
+
+        with Image.open(outfile) as reloaded:
+            exif = reloaded.getexif()
+            assert exif.get_ifd(0x8825) == {18: "WGS-84"}
+
     def test_modify_exif(self, tmp_path: Path) -> None:
         outfile = tmp_path / "temp.tif"
         with Image.open("Tests/images/ifd_tag_type.tiff") as im:
@@ -920,6 +932,20 @@ class TestFileTiff:
         with Image.open(mp) as reread:
             assert isinstance(reread, TiffImagePlugin.TiffImageFile)
             assert reread.n_frames == 3
+
+    @pytest.mark.parametrize(
+        "test_file",
+        (
+            "Tests/images/multipage_single_frame_loop.tiff",
+            "Tests/images/multipage_multiple_frame_loop.tiff",
+        ),
+    )
+    def test_append_ifd_loop(self, test_file: str) -> None:
+        with open(test_file, "rb") as fp:
+            b = BytesIO(fp.read())
+
+        with pytest.raises(RuntimeError, match="IFD loop found"):
+            TiffImagePlugin.AppendingTiffWriter(b)
 
     def test_fixoffsets(self) -> None:
         b = BytesIO(b"II\x2a\x00\x00\x00\x00\x00")

@@ -14,6 +14,7 @@ from .helper import (
     assert_image_similar,
     hopper,
     is_pypy,
+    skip_unless_feature,
 )
 
 TYPE_CHECKING = False
@@ -280,7 +281,16 @@ def test_roundtrip2(tmp_path: Path) -> None:
         assert_image_similar(reread.convert("RGB"), hopper(), 12)
 
 
-@pytest.mark.parametrize("mode", ("CMYK", "HSV", "LAB", "RGBX", "YCbCr"))
+@pytest.mark.parametrize(
+    "mode",
+    (
+        "CMYK",
+        "HSV",
+        "RGBX",
+        "YCbCr",
+        pytest.param("LAB", marks=skip_unless_feature("littlecms2")),
+    ),
+)
 def test_roundtrip_other_rgb_modes(tmp_path: Path, mode: str) -> None:
     out = tmp_path / "temp.gif"
     im = hopper(mode)
@@ -975,7 +985,7 @@ def test_identical_frames(tmp_path: Path) -> None:
         1500,
     ),
 )
-def test_identical_frames_to_single_frame(
+def test_identical_frames_to_single_frame_duration(
     duration: int | list[int], tmp_path: Path
 ) -> None:
     out = tmp_path / "temp.gif"
@@ -994,6 +1004,20 @@ def test_identical_frames_to_single_frame(
 
         # Assert that the new duration is the total of the identical frames
         assert reread.info["duration"] == 4500
+
+
+@pytest.mark.parametrize("disposal", ([2, 2], (2, 2)))
+def test_identical_frames_to_single_frame_disposal(
+    disposal: list[int] | tuple[int, ...], tmp_path: Path
+) -> None:
+    im = Image.new("L", (1, 1))
+    out = tmp_path / "temp.gif"
+    im.save(out, save_all=True, append_images=[im.copy()], disposal=disposal)
+
+    with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
+        assert reread.n_frames == 1
+        assert reread.disposal_method == 2
 
 
 @pytest.mark.parametrize("first_duration", (None, 0))
@@ -1501,8 +1525,6 @@ def test_extents(
 
         im.seek(1)
         assert im.size == (150, 150)
-
-        im.load()
         assert im.im.size == (150, 150)
 
 

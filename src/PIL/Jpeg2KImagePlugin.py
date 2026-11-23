@@ -41,6 +41,7 @@ class BoxReader:
         self.has_length = length >= 0
         self.length = length
         self.remaining_in_box = -1
+        self._last_box = False
 
     def _can_read(self, num_bytes: int) -> bool:
         if self.has_length and self.fp.tell() + num_bytes > self.length:
@@ -80,8 +81,14 @@ class BoxReader:
         return BoxReader(io.BytesIO(data), size)
 
     def has_next_box(self) -> bool:
+        if self._last_box:
+            return False
         if self.has_length:
-            return self.fp.tell() + self.remaining_in_box < self.length
+            return (
+                self.fp.tell()
+                + (self.remaining_in_box if self.remaining_in_box > 0 else 0)
+                < self.length
+            )
         else:
             return True
 
@@ -96,7 +103,12 @@ class BoxReader:
 
         # Read the length and type of the next box
         lbox, tbox = cast("tuple[int, bytes]", self.read_fields(">I4s"))
-        if lbox == 1:
+        if lbox == 0:
+            self._last_box = True
+            if self.has_length:
+                self.remaining_in_box = self.length - self.fp.tell()
+            return tbox
+        elif lbox == 1:
             lbox = cast("int", self.read_fields(">Q")[0])
             hlen = 16
         else:
@@ -166,7 +178,7 @@ def _channel_order(
         if typ == 0 and 1 <= asoc <= nc:
             # Color channel
             position = asoc - 1
-        elif typ in (1, 2) and asoc == 0:
+        elif typ in {1, 2} and asoc == 0:
             # Opacity or premultiplied opacity channel for the whole image
             position = nc - 1
         else:
@@ -180,9 +192,7 @@ def _channel_order(
     return order
 
 
-def _parse_jp2_header(
-    fp: IO[bytes],
-) -> tuple[
+def _parse_jp2_header(reader: BoxReader) -> tuple[
     tuple[int, int],
     str,
     str | None,
@@ -197,7 +207,6 @@ def _parse_jp2_header(
     tuple."""
 
     # Find the JP2 header box
-    reader = BoxReader(fp)
     header = None
     mimetype = None
     while reader.has_next_box():
@@ -243,7 +252,7 @@ def _parse_jp2_header(
         elif tbox == b"colr":
             meth, _, _, enumcs = header.read_fields(">BBBI")
             if meth == 1:
-                if enumcs in (0, 15):
+                if enumcs in {0, 15}:
                     colr = "1"
                 elif enumcs == 12:
                     colr = "CMYK"
@@ -253,7 +262,7 @@ def _parse_jp2_header(
                     colr = "L"
                 elif enumcs == 18:
                     colr = "YCbCr"
-        elif tbox == b"pclr" and mode in ("L", "LA") and colr not in ("1", "L"):
+        elif tbox == b"pclr" and mode in {"L", "LA"} and colr not in {"1", "L"}:
             ne, npc = header.read_fields(">HB")
             assert isinstance(ne, int)
             assert isinstance(npc, int)
@@ -345,7 +354,9 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
 
             if sig == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a":
                 self.codec = "jp2"
-                header = _parse_jp2_header(self.fp)
+
+                reader = BoxReader(self.fp)
+                header = _parse_jp2_header(reader)
                 (
                     self._size,
                     self._mode,
@@ -357,9 +368,36 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 ) = header
                 if dpi is not None:
                     self.info["dpi"] = dpi
-                if self.fp.read(12).endswith(b"jp2c\xff\x4f\xff\x51"):
-                    _parse_codestream(self.fp)
-                    self._parse_comment()
+
+                contiguous_code_stream_read = False
+                while reader.has_next_box():
+                    try:
+                        tbox = reader.next_box_type()
+                    except OSError:
+                        break
+
+                    if tbox == b"xml ":
+                        self.info.setdefault("xml", []).append(
+                            reader._read_bytes(reader.remaining_in_box)
+                        )
+                    elif tbox == b"uuid":
+                        uuid = reader._read_bytes(16)
+                        if (
+                            uuid == b"\xbe\x7a\xcf\xcb\x97\xa9\x42\xe8"
+                            b"\x9c\x71\x99\x94\x91\xe3\xaf\xac"
+                        ):
+                            self.info["xmp"] = reader._read_bytes(
+                                reader.remaining_in_box
+                            )
+                    elif tbox == b"jp2c" and not contiguous_code_stream_read:
+                        contiguous_code_stream_read = True
+                        markers = reader._read_bytes(4)
+                        if markers == b"\xff\x4f\xff\x51":
+                            _parse_codestream(self.fp)
+                            self._parse_comment()
+
+                if "xml" in self.info and len(self.info["xml"]) == 1:
+                    self.info["xml"] = self.info["xml"][0]
             else:
                 msg = "not a JPEG 2000 file"
                 raise SyntaxError(msg)
@@ -386,7 +424,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             if not marker:
                 break
             typ = marker[1]
-            if typ in (0x90, 0xD9):
+            if typ in {0x90, 0xD9}:
                 # Start of tile or end of codestream
                 break
             hdr = self.fp.read(2)
@@ -473,6 +511,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         kind = "j2k"
     else:
         kind = "jp2"
+    tile = [ImageFile._Tile("jpeg2k", args=kind)]
 
     offset = info.get("offset", None)
     tile_offset = info.get("tile_offset", None)
@@ -527,7 +566,46 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         plt,
     )
 
-    ImageFile._save(im, fp, [ImageFile._Tile("jpeg2k", args=kind)])
+    xml = info.get("xml")
+    xmp = info.get("xmp")
+    if kind == "jp2" and (xml or xmp):
+        metadata = bytearray()
+        if xml:
+            if isinstance(xml, (str, bytes)):
+                xml = [xml]
+            for item in xml:
+                if isinstance(item, str):
+                    item = item.encode()
+                metadata += struct.pack(">I", len(item) + 8) + b"xml " + item
+
+        if xmp:
+            if isinstance(xmp, str):
+                xmp = xmp.encode()
+            metadata += (
+                struct.pack(">I", len(xmp) + 8 + 16)
+                + b"uuid"
+                + b"\xbe\x7a\xcf\xcb\x97\xa9\x42\xe8"
+                + b"\x9c\x71\x99\x94\x91\xe3\xaf\xac"
+                + xmp
+            )
+
+        buf = io.BytesIO()
+        ImageFile._save(im, buf, tile)
+        data = buf.getvalue()
+
+        buf.seek(0)
+        reader = BoxReader(buf)
+        while reader.has_next_box():
+            tbox = reader.next_box_type()
+            if tbox == b"jp2h":
+                end_jp2h = reader.fp.tell() + reader.remaining_in_box
+                break
+
+        fp.write(data[:end_jp2h])
+        fp.write(metadata)
+        fp.write(data[end_jp2h:])
+    else:
+        ImageFile._save(im, fp, tile)
 
 
 # ------------------------------------------------------------

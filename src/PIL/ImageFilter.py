@@ -52,7 +52,7 @@ class BuiltinFilter(MultibandFilter):
     filterargs: _FilterArgs
 
     def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
-        if image.mode == "P":
+        if image.mode in {"P", "PA"}:
             msg = "cannot filter palette images"
             raise ValueError(msg)
         return image.filter(*self.filterargs)
@@ -120,7 +120,11 @@ class RankFilter(Filter):
         if image.mode == "P":
             msg = "cannot filter palette images"
             raise ValueError(msg)
-        image = image.expand(self.size // 2)
+        from . import Image
+
+        margin = self.size // 2
+        Image._decompression_bomb_check(tuple(d + 2 * margin for d in image.size))
+        image = image.expand(margin)
         return image.rankfilter(self.size, self.rank)
 
 

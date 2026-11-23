@@ -1069,6 +1069,31 @@ def test_floodfill_not_negative() -> None:
     assert_image_equal_tofile(im, "Tests/images/imagedraw_floodfill_not_negative.png")
 
 
+def test_floodfill_readonly() -> None:
+    # Arrange
+    im = Image.frombuffer("L", (2, 2), bytes(4), "raw", "L", 0, 1)
+    assert im.readonly
+
+    # Act
+    ImageDraw.floodfill(im, (0, 0), 255)
+
+    # Assert
+    assert im.tobytes() == b"\xff" * 4
+
+
+def test_floodfill_rgb_on_rgba() -> None:
+    # Arrange
+    im = Image.new("RGBA", (W, H), "black")
+    xy = int(W / 2), int(H / 2)
+    rgb = (255, 0, 0)
+
+    # Act
+    ImageDraw.floodfill(im, xy, rgb)
+
+    # Assert
+    assert im.getpixel(xy) == rgb + (255,)
+
+
 def create_base_image_draw(
     size: tuple[int, int],
     mode: str = DEFAULT_MODE,
@@ -1759,3 +1784,65 @@ def test_incorrectly_ordered_coordinates(xy: tuple[int, int, int, int]) -> None:
         draw.rectangle(xy)
     with pytest.raises(ValueError):
         draw.rounded_rectangle(xy)
+
+
+def test_dash_line() -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.line([(10, 90), (90, 90)], "green", dash=(10, 5))
+    draw.line([(10, 10), (50, 50), (90, 10)], "green", dash=(8, 4))
+
+    # Assert
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_dash_line.png")
+
+
+def test_dash_polygon() -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.polygon(
+        [(10, 10), (90, 10), (10, 90)],
+        outline="green",
+        dash=(10, 5),
+    )
+    draw.polygon(
+        [(20, 20), (60, 20), (20, 60)],
+        fill="red",
+        outline="green",
+        dash=(10, 5),
+    )
+
+    # Assert
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_dash_polygon.png")
+
+
+def test_dash_rectangle() -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.rectangle([10, 10, 90, 90], outline="green", dash=(10, 5))
+    draw.rectangle([30, 30, 70, 70], fill="red", outline="green", dash=(10, 5))
+
+    # Assert
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_dash_rectangle.png")
+
+
+def test_dash_empty() -> None:
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+
+    with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
+        draw.line([(10, 50), (90, 50)], dash=())
+
+    with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
+        draw.polygon([(10, 10), (90, 10), (90, 90)], dash=())
+
+    with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
+        draw.rectangle([10, 10, 90, 90], dash=())

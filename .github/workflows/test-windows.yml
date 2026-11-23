@@ -38,11 +38,12 @@ jobs:
           "3.14t",
           "3.14",
           "3.13",
-          "3.12",
         ]
         architecture: ["x64"]
         os: ["windows-latest"]
         include:
+            # Test the next oldest Python on ARM64
+            - { python-version: "3.12", architecture: "arm64", os: "windows-11-arm" }
             # Test the oldest Python on 32-bit
             - { python-version: "3.11", architecture: "x86", os: "windows-2022" }
 
@@ -102,10 +103,10 @@ jobs:
         choco install nasm --no-progress
         echo "C:\Program Files\NASM" >> $env:GITHUB_PATH
 
-        choco install ghostscript --no-progress
-        foreach ($dir in (Get-ChildItem -Path "C:\Program Files\gs\gs*\bin")) {
-          echo $dir.FullName >> $env:GITHUB_PATH
-        }
+        # "choco install ghostscript" hangs on ARM64, so extract instead
+        gh release download -R ArtifexSoftware/ghostpdl-downloads --pattern "gs*w64.exe" --output gs.exe
+        7z x -y gs.exe -oC:\gs > $null
+        echo "C:\gs\bin" >> $env:GITHUB_PATH
 
         # Install extra test images
         xcopy /S /Y Tests\test-images\* Tests\images
@@ -114,6 +115,8 @@ jobs:
         & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" `
           | find """catalog_buildVersion""" `
           | ForEach-Object { $a = $_.split(" ")[1]; echo "vs=$a" >> $env:GITHUB_OUTPUT }
+      env:
+        GH_TOKEN: ${{ github.token }}
       shell: pwsh
 
     - name: Cache build

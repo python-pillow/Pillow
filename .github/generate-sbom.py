@@ -326,6 +326,45 @@ def generate(version: str) -> dict:
             "scope": "optional",
             "description": "AVIF codec (optional, used by PIL._avif).",
             "licenses": [{"license": {"id": "BSD-2-Clause"}}],
+            "pedigree": {
+                "ancestors": [
+                    {
+                        "bom-ref": "pkg:github/aomediacodec/libavif@1.4.2#upstream",
+                        "type": "library",
+                        "name": "libavif",
+                        "version": "1.4.2",
+                        "purl": "pkg:github/aomediacodec/libavif@1.4.2",
+                        "externalReferences": [
+                            {
+                                "type": "distribution",
+                                "url": "https://github.com/AOMediaCodec/libavif/releases/tag/v1.4.2",
+                            }
+                        ],
+                    }
+                ],
+                "patches": [
+                    {
+                        "type": "unofficial",
+                        "diff": {
+                            "text": {
+                                # partially apply https://github.com/AOMediaCodec/libavif/pull/3460/changes/c81f7ecfa0f13786b15336961686300781144beb
+                                "content": base64.b64encode(
+                                    (
+                                        Path(__file__).parent.parent
+                                        / "patches"
+                                        / "libavif.patch"
+                                    ).read_bytes()
+                                ).decode(),
+                                "encoding": "base64",
+                            }
+                        },
+                    },
+                ],
+                "notes": (
+                    "Vendored from upstream libavif 1.4.2, "
+                    "patched to use dav1d 1.5.5 on Windows."
+                ),
+            },
             "externalReferences": [
                 {"type": "website", "url": "https://github.com/AOMediaCodec/libavif"},
                 {

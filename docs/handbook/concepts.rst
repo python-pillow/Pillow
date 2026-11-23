@@ -75,6 +75,12 @@ combinations that are not listed above, use a sequence of Image objects.
 You can read the mode of an image through the :py:attr:`~PIL.Image.Image.mode`
 attribute. This is a string containing one of the above values.
 
+If an operation does not support a particular mode, you can
+:py:meth:`~PIL.Image.Image.convert` it, but not all conversions are lossless.
+For example, converting a palette image (``P``) to a grayscale image (``L``)
+will lose all colour, and converting an image with floating point pixels
+(``F``) to an image with signed integer pixels (``I``) will lose precision.
+
 Size
 ----
 

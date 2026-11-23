@@ -42,13 +42,51 @@ TODO
 API additions
 =============
 
-TODO
-^^^^
+ImageDraw dash
+^^^^^^^^^^^^^^
 
-TODO
+:py:meth:`.ImageDraw.line`, :py:meth:`.ImageDraw.polygon` and
+:py:meth:`.ImageDraw.rectangle` now accept an optional ``dash`` argument.
+
+It is a tuple of integers, specifying the lengths of alternating drawn and blank
+segments. For example, ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd
+number of values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
+skips 2, draws 3, skips 1, draws 2, and so on.
+
+When ``dash`` is set, ``width`` is ignored.
+
+ImageOps sepia and neon
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Two new image processing operations are available in ImageOps.
+
+* :py:meth:`~PIL.ImageOps.sepia`: apply a sepia tone
+* :py:meth:`~PIL.ImageOps.neon`: apply a neon glow effect, with arguments for color and
+  alpha
 
 Other changes
 =============
+
+Empty JPEG APP and COM segments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Empty APP and COM segments in JPEG images are no longer added to
+``JpegImageFile.applist``, since they carry no data. This reduces the memory used when
+opening images that contain many of them.
+
+Rounding crop coordinates
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.crop` rounds float coordinates to the nearest integer.
+Coordinates ending in .5 were rounded to the nearest even integer, so a box of the same
+size could give an image one pixel larger or smaller depending on where it was. They
+are now always rounded up.
+
+Scaling empty text
+^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageText.Text.wrap` now raises :py:exc:`ValueError` for empty or
+whitespace-only text with ``scaling``, before adjusting the font size.
 
 Writing to read-only images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -85,6 +123,13 @@ Blurring I;16 images
 :py:class:`~PIL.ImageFilter.GaussianBlur` and :py:class:`~PIL.ImageFilter.BoxBlur`
 now support I;16, I;16L, I;16B and I;16N images.
 
+Rank filters for I;16 images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageFilter.RankFilter`, :py:class:`~PIL.ImageFilter.MedianFilter`,
+:py:class:`~PIL.ImageFilter.MinFilter` and :py:class:`~PIL.ImageFilter.MaxFilter`
+now support I;16, I;16L, I;16B and I;16N images.
+
 Respect Python build-tree configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -118,3 +163,71 @@ WebP encoding errors now include a description
 
 When libwebp fails to encode an image, the raised :py:exc:`ValueError` now
 consistently describes the error rather than only reporting a numeric code.
+
+ImageCms.isIntentSupported intent range
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.ImageCms.isIntentSupported` now returns -1 if ``intent`` is not between
+0 and 3. Previously, when Pillow was built against Little CMS 2.14 or earlier, an
+out-of-range intent could read invalid memory and crash.
+
+zlib-ng in Linux wheels
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The Linux wheels now link zlib-ng statically. Previously, zlib-ng was built but
+not bundled into the wheels, so the system zlib was used at runtime instead, and
+``PIL.features.version_feature("zlib_ng")`` reported a version that was not in use.
+Pillow 13.0.0 also failed to import on systems where ``libz.so.1`` was not on the
+default library search path, such as NixOS. Linux wheels no longer require a
+system zlib, and gain the speed of zlib-ng as macOS and Windows wheels already did.
+
+Remapping palettes with too many entries
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.remap_palette` now raises :py:exc:`ValueError` straight
+away if ``dest_map`` has more than 256 entries. Such maps already raised
+:py:exc:`ValueError`, but only after processing every entry, which could take a long
+time for a very long list.
+
+BMP saving preserves alpha channel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+RGBA images saved as BMP are now written with a BITMAPV4HEADER, bitfields
+compression and channel masks, so the alpha channel is preserved when the file
+is reloaded instead of being silently dropped. Other modes are unchanged.
+
+Kerning in the basic layout engine
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When libraqm is not available, kerning was applied at 1/64th of its intended size,
+because a value in pixels was added to an advance in 26.6 fixed point precision.
+The full kerning value is now applied even when libraqm is not available.
+
+Memory leak when merging a single band with a mismatched mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.Image.merge` with a single band whose mode does not match the
+requested mode, such as ``Image.merge("F", [l_image])``, raised
+:py:exc:`ValueError` but leaked the memory allocated for the output image. This
+has been fixed.
+
+Added support for XML and XMP metadata in JPEG 2000
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+XML and XMP metadata will now be read into :py:attr:`~PIL.Image.Image.info` from JPEG
+2000 images. When saving, metadata can be specified using the ``xml`` or ``xmp``
+argument.
+
+ImageEnhance with I;16 images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageEnhance.Color`, :py:class:`~PIL.ImageEnhance.Contrast`,
+:py:class:`~PIL.ImageEnhance.Brightness` and :py:class:`~PIL.ImageEnhance.Sharpness`
+now support I;16, I;16L, I;16B and I;16N images.
+
+BLP2 DXT images with a width of 1 or 2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+BLP2 images using DXT1, DXT3 or DXT5 compression with a width of 1 or 2 pixels were
+decoded incorrectly, and used up to four times more memory than needed while loading.
+This has been fixed.

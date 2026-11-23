@@ -50,7 +50,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pacman -S --noconfirm \
+          pacman -S --needed --noconfirm \
+              make \
               mingw-w64-ucrt-x86_64-freetype \
               mingw-w64-ucrt-x86_64-gcc \
               mingw-w64-ucrt-x86_64-ghostscript \
@@ -74,11 +75,10 @@ jobs:
           pushd depends && ./install_extra_test_images.sh && popd
 
       - name: Build Pillow
-        run: CFLAGS="-coverage" python3 -m pip install .[tests]
+        run: .ci/build.sh
 
       - name: Test Pillow
         run: |
-          python3 selftest.py --installed
           .ci/test.sh
 
       - name: Upload coverage

@@ -166,6 +166,9 @@ def test_intent() -> None:
     )
     assert support == 1
 
+    for intent in (-1, 4):
+        assert ImageCms.isIntentSupported(SRGB, intent, ImageCms.Direction.INPUT) == -1  # type: ignore[arg-type]
+
 
 def test_profile_object() -> None:
     # same, using profile object

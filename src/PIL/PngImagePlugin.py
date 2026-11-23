@@ -441,6 +441,7 @@ class PngStream(ChunkStream):
         self.im_info = self.rewind_state.info.copy()
         self.im_tile = self.rewind_state.tile
         self._seq_num = self.rewind_state.seq_num
+        self.queue = []
 
     def chunk_iCCP(self, pos: int, length: int) -> bytes:
         # ICC profile
@@ -479,6 +480,9 @@ class PngStream(ChunkStream):
                 return s
             msg = "Truncated IHDR chunk"
             raise ValueError(msg)
+        if self.im_mode:
+            # Only use the first IHDR chunk
+            return s
         self.im_size = i32(s, 0), i32(s, 4)
         try:
             self.im_mode, self.im_rawmode = _MODES[(s[8], s[9])]
@@ -1109,7 +1113,12 @@ class PngImageFile(ImageFile.ImageFile):
         else:
             if self._prev_im and self.blend_op == Blend.OP_OVER:
                 updated = self._crop(self.im, self.dispose_extent)
-                if self.im.mode == "RGB" and "transparency" in self.info:
+                if self.im.mode in {"LA", "RGBA"}:
+                    updated = Image.core.alpha_composite(
+                        self._crop(self._prev_im, self.dispose_extent), updated
+                    )
+                    mask = None
+                elif self.im.mode == "RGB" and "transparency" in self.info:
                     mask = updated.convert_transparent(
                         "RGBA", self.info["transparency"]
                     )
@@ -1126,7 +1135,10 @@ class PngImageFile(ImageFile.ImageFile):
                     self.im = self._prev_im.copy()
                 else:
                     self.im = self._prev_im
-                self.im.paste(updated, self.dispose_extent, mask)
+                if mask is not None:
+                    self.im.paste(updated, self.dispose_extent, mask)
+                else:
+                    self.im.paste(updated, self.dispose_extent)
 
     def _getexif(self) -> dict[int, Any] | None:
         if "exif" not in self.info:
