@@ -12,6 +12,7 @@ from .helper import (
     assert_image_similar_tofile,
     hopper,
     skip_unless_feature,
+    timeout_unless_slower_valgrind,
 )
 
 TYPE_CHECKING = False
@@ -399,6 +400,59 @@ def test_ellipse_width_large() -> None:
 
     # Assert
     assert_image_similar_tofile(im, "Tests/images/imagedraw_ellipse_width_large.png", 1)
+
+
+@timeout_unless_slower_valgrind(5)
+def test_ellipse_huge_radius() -> None:
+    # Arrange
+    im = Image.new("L", (1, 1))
+    draw = ImageDraw.Draw(im)
+
+    # Act / Assert
+    # A radius of 660996 previously overflowed the int64_t arithmetic used by
+    # the ellipse walk, which then looped without terminating.
+    draw.ellipse((-660996, -660996, 660996, 660996), fill=1)
+    draw.circle((0, 0), 660996, fill=1)
+    draw.arc((0, 0, 2**30, 65536), 0, 90, fill=1)
+
+
+@pytest.mark.parametrize("radius", (30000, 100000, 400000))
+def test_ellipse_large_radius(radius: int) -> None:
+    # Arrange
+    im = Image.new("L", (16, 16))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.circle((8 - radius, 8), radius, fill=255)
+
+    # Assert
+    # The right edge of the circle crosses the image
+    assert im.getbbox() == (0, 0, 9, 16)
+
+
+@timeout_unless_slower_valgrind(5)
+@pytest.mark.parametrize(
+    "bbox, expected",
+    (
+        ((0, 0, 2**28, 1), (0, 0, 16, 2)),
+        ((0, 0, 1, 2**28), (0, 0, 2, 16)),
+        ((0, -(2**28), 1, 2**28), (0, 0, 2, 16)),
+    ),
+)
+def test_ellipse_long_and_thin(bbox: Coords, expected: tuple[int, ...]) -> None:
+    # Arrange
+    im = Image.new("L", (16, 16))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    # Drawing used to take time proportional to the size of the ellipse,
+    # rather than the size of the image
+    draw.ellipse(bbox, fill=255)
+    draw.ellipse(bbox, outline=255, width=5)
+    draw.pieslice(bbox, 0, 300, fill=255)
+
+    # Assert
+    assert im.getbbox() == expected
 
 
 @pytest.mark.parametrize("bbox", BBOX)
