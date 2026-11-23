@@ -122,7 +122,9 @@ def autocontrast(
     :return: An image.
     """
     if isinstance(cutoff, tuple) and len(cutoff) != 2:
-        msg = "cutoff must be a tuple of two values"
+        msg = (  # type: ignore[unreachable]
+            "cutoff must be either a tuple of (low, high), or a single number for both"
+        )
         raise ValueError(msg)
 
     if ignore is not None:
