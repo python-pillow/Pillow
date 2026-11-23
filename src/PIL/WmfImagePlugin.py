@@ -168,7 +168,7 @@ if hasattr(Image.core, "drawwmf"):
             self.bbox = im.info["wmf_bbox"]
 
         def load(self, im: ImageFile.StubImageFile) -> Image.Image:
-            if min(im.size) == 0:
+            if 0 in im.size:
                 return Image.new("RGB", im.size)
             assert im.fp is not None
             im.fp.seek(0)  # rewind

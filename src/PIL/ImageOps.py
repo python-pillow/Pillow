@@ -330,7 +330,7 @@ def contain(
             new_width = round(image.width / image.height * size[1])
             if new_width != size[0]:
                 size = (new_width, size[1])
-    if min(size) == 0:
+    if 0 in size:
         return image.crop((0, 0, *size))
     return image.resize(size, resample=method)
 
@@ -479,7 +479,7 @@ def scale(
         raise ValueError(msg)
     else:
         size = (round(factor * image.width), round(factor * image.height))
-        if min(size) == 0:
+        if 0 in size:
             return image.crop((0, 0, *size))
         return image.resize(size, resample)
 
@@ -615,7 +615,7 @@ def fit(
     # kevin@cazabon.com
     # https://www.cazabon.com
 
-    if min(size) == 0:
+    if 0 in size:
         return image.crop((0, 0, *size))
     centering_x, centering_y = centering
 
