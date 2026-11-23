@@ -874,7 +874,7 @@ class Image:
 
         self.load()
 
-        if self.width == 0 or self.height == 0:
+        if 0 in self.size:
             return b""
 
         # unpack data
@@ -945,7 +945,7 @@ class Image:
         but loads data into this image instead of creating a new image object.
         """
 
-        if self.width == 0 or self.height == 0:
+        if 0 in self.size:
             return
 
         decoder_args: Any = args
@@ -1847,7 +1847,7 @@ class Image:
         :param extrema: An optional tuple of manually-specified extrema.
         :returns: A list containing pixel counts.
         """
-        if min(self.size) == 0:
+        if 0 in self.size:
             return [0] * 256 * getmodebands(self.mode)
 
         self.load()
@@ -1878,7 +1878,7 @@ class Image:
         :param extrema: An optional tuple of manually-specified extrema.
         :returns: A float value representing the image entropy
         """
-        if min(self.size) == 0:
+        if 0 in self.size:
             return 0.0
 
         self.load()
@@ -2983,7 +2983,7 @@ class Image:
                 box = res[1]
 
         if self.size != final_size:
-            if min(final_size) == 0:
+            if 0 in final_size:
                 im = self.crop((0, 0, *final_size))
             else:
                 im = self.resize(
@@ -3436,7 +3436,7 @@ def frombuffer(
     if len(args) == 1 and isinstance(args[0], tuple):
         args = args[0]
 
-    if decoder_name == "raw" and min(size) != 0:
+    if decoder_name == "raw" and 0 not in size:
         if args == ():
             args = mode, 0, 1
         if args[0] == mode and args[0] in _MAPMODES:
