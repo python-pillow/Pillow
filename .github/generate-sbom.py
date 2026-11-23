@@ -392,16 +392,15 @@ def generate(version: str) -> dict:
         {
             "bom-ref": "pkg:generic/libjpeg",
             "type": "library",
-            "name": "libjpeg / libjpeg-turbo",
+            "name": "libjpeg-turbo",
             "version": versions["jpegturbo"],
-            "description": "JPEG codec (required by default; disable with "
-            "-C jpeg=disable).",
+            "description": "JPEG codec, a libjpeg-compatible replacement for libjpeg "
+            "(required by default; disable with -C jpeg=disable).",
             "licenses": [
                 {"license": {"id": "IJG"}},
                 {"license": {"id": "BSD-3-Clause"}},
             ],
             "externalReferences": [
-                {"type": "website", "url": "https://ijg.org"},
                 {"type": "website", "url": "https://libjpeg-turbo.org"},
                 {
                     "type": "distribution",
@@ -550,14 +549,21 @@ def generate(version: str) -> dict:
         {
             "bom-ref": "pkg:generic/zlib",
             "type": "library",
-            "name": "zlib",
+            "name": "zlib-ng",
             "version": versions["zlib-ng"],
-            "description": "Deflate/PNG compression (required by default; "
+            "description": "Deflate/PNG compression, built in zlib-compatible mode "
+            "as a replacement for zlib (required by default; "
             "disable with -C zlib=disable).",
             "licenses": [{"license": {"id": "Zlib"}}],
             "externalReferences": [
-                {"type": "website", "url": "https://zlib.net"},
-                {"type": "distribution", "url": "https://zlib.net"},
+                {
+                    "type": "website",
+                    "url": "https://github.com/zlib-ng/zlib-ng",
+                },
+                {
+                    "type": "distribution",
+                    "url": "https://github.com/zlib-ng/zlib-ng/releases",
+                },
             ],
         },
     ]
