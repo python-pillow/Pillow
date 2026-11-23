@@ -61,6 +61,11 @@ pre-commit run --all-files
 All hooks must pass before a PR can be merged. Separate reformatting commits
 from functional commits.
 
+## Pull requests
+
+Pillow core developers (and their agents) should add the `🤖-assisted` label to pull
+requests created with AI assistance.
+
 ## Type checking
 
 ```bash
