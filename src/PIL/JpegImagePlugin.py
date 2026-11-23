@@ -446,30 +446,23 @@ class JpegImageFile(ImageFile.ImageFile):
         if self.decoderconfig:
             return None
 
-        d, e, o, a = self.tile[0]
         scale = 1
         original_size = self.size
 
-        assert isinstance(a, tuple)
-        if a[0] == "RGB" and mode in {"L", "YCbCr"}:
+        args = self.tile[0].args
+        assert isinstance(args, tuple)
+        if args[0] == "RGB" and mode in {"L", "YCbCr"}:
             self._mode = mode
-            a = mode, ""
+            self.tile = [self.tile[0]._replace(args=(mode, ""))]
 
         if size:
             scale = min(self.size[0] // size[0], self.size[1] // size[1])
             for s in [8, 4, 2, 1]:
                 if scale >= s:
                     break
-            e = (
-                0,
-                0,
-                (self.size[0] + s - 1) // s,
-                (self.size[1] + s - 1) // s,
-            )
             self._size = ((self.size[0] + s - 1) // s, (self.size[1] + s - 1) // s)
             scale = s
 
-        self.tile = [ImageFile._Tile(d, e, o, a)]
         self.decoderconfig = (scale, 0)
 
         box = (0, 0, original_size[0] / scale, original_size[1] / scale)

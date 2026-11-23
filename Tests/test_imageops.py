@@ -635,6 +635,13 @@ def test_autocontrast_cutoff() -> None:
         assert autocontrast(10) != autocontrast((1, 10))
 
 
+@pytest.mark.parametrize("cutoff", ((), (10,), (10, 10, 10)))
+def test_autocontrast_invalid_cutoff(cutoff: tuple[int, ...]) -> None:
+    im = Image.new("L", (1, 1))
+    with pytest.raises(ValueError, match="cutoff must be either a tuple"):
+        ImageOps.autocontrast(im, cutoff=cutoff)  # type: ignore[arg-type]
+
+
 @pytest.mark.parametrize("ignore", (-1, 256, [0, -1], [0, 256]))
 def test_autocontrast_invalid_ignore(ignore: int | list[int]) -> None:
     im = Image.new("L", (1, 1))
