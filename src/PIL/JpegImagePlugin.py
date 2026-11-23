@@ -460,12 +460,6 @@ class JpegImageFile(ImageFile.ImageFile):
             for s in [8, 4, 2, 1]:
                 if scale >= s:
                     break
-            e = (
-                0,
-                0,
-                (self.size[0] + s - 1) // s,
-                (self.size[1] + s - 1) // s,
-            )
             self._size = ((self.size[0] + s - 1) // s, (self.size[1] + s - 1) // s)
             scale = s
 
