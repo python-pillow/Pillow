@@ -67,6 +67,13 @@ Two new image processing operations are available in ImageOps.
 Other changes
 =============
 
+Empty JPEG APP and COM segments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Empty APP and COM segments in JPEG images are no longer added to
+``JpegImageFile.applist``, since they carry no data. This reduces the memory used when
+opening images that contain many of them.
+
 Rounding crop coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 

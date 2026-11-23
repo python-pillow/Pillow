@@ -70,6 +70,8 @@ if TYPE_CHECKING:
 #
 # Parser
 
+_APP_NAMES = tuple(f"APP{i}" for i in range(16))
+
 
 def Skip(self: JpegImageFile, marker: int) -> None:
     assert self.fp is not None
@@ -86,10 +88,12 @@ def APP(self: JpegImageFile, marker: int) -> None:
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
 
-    app = f"APP{marker & 15}"
+    app = _APP_NAMES[marker & 15]
 
     self.app[app] = s  # compatibility
-    self.applist.append((app, s))
+    if s:
+        # Empty segments carry no data, so they are not retained
+        self.applist.append((app, s))
 
     if marker == 0xFFE0 and s.startswith(b"JFIF"):
         # extract JFIF information
@@ -193,7 +197,8 @@ def COM(self: JpegImageFile, marker: int) -> None:
 
     self.info["comment"] = s
     self.app["COM"] = s  # compatibility
-    self.applist.append(("COM", s))
+    if s:
+        self.applist.append(("COM", s))
 
 
 def SOF(self: JpegImageFile, marker: int) -> None:

@@ -116,6 +116,16 @@ class TestFileJpeg:
             assert im.info["comment"] == b"File written by Adobe Photoshop\xa8 4.0\x00"
             assert im.app["COM"] == im.info["comment"]
 
+    def test_empty_app_segments(self) -> None:
+        with open(TEST_FILE, "rb") as fp:
+            data = fp.read()
+        empty_segments = b"\xff\xe0\x00\x02" * 10 + b"\xff\xfe\x00\x02" * 10
+        with Image.open(BytesIO(data[:2] + empty_segments + data[2:])) as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+            assert [name for name, _ in im.applist] == ["APP0", "COM"]
+            assert im.app["APP0"].startswith(b"JFIF")
+            im.load()
+
     def test_comment_write(self) -> None:
         with Image.open(TEST_FILE) as im:
             assert im.info["comment"] == b"File written by Adobe Photoshop\xa8 4.0\x00"
