@@ -550,14 +550,21 @@ def generate(version: str) -> dict:
         {
             "bom-ref": "pkg:generic/zlib",
             "type": "library",
-            "name": "zlib",
+            "name": "zlib-ng",
             "version": versions["zlib-ng"],
-            "description": "Deflate/PNG compression (required by default; "
+            "description": "Deflate/PNG compression, built in zlib-compatible mode "
+            "as a replacement for zlib (required by default; "
             "disable with -C zlib=disable).",
             "licenses": [{"license": {"id": "Zlib"}}],
             "externalReferences": [
-                {"type": "website", "url": "https://zlib.net"},
-                {"type": "distribution", "url": "https://zlib.net"},
+                {
+                    "type": "website",
+                    "url": "https://github.com/zlib-ng/zlib-ng",
+                },
+                {
+                    "type": "distribution",
+                    "url": "https://github.com/zlib-ng/zlib-ng/releases",
+                },
             ],
         },
     ]
