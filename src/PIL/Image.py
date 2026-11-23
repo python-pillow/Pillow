@@ -4346,6 +4346,7 @@ class Exif(_ExifBase):
                             ifd_data = tag_data[ifd_offset:]
 
                             makernote = {}
+                            total_size = 0
                             for i in range(struct.unpack("<H", ifd_data[:2])[0]):
                                 ifd_tag, typ, count, data = struct.unpack(
                                     "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
@@ -4359,6 +4360,15 @@ class Exif(_ExifBase):
                                     continue
                                 size = count * unit_size
                                 if size > 4:
+                                    # Values should fit within the MakerNote,
+                                    # even before accounting for overlaps
+                                    total_size += size
+                                    if total_size > len(ifd_data):
+                                        warnings.warn(
+                                            "Tag data larger than MakerNote. "
+                                            f"Skipping tag {ifd_tag}"
+                                        )
+                                        continue
                                     (offset,) = struct.unpack("<L", data)
                                     data = ifd_data[offset - 12 : offset + size - 12]
                                 else:
