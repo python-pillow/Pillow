@@ -12,6 +12,7 @@ from .helper import (
     assert_image_similar_tofile,
     hopper,
     skip_unless_feature,
+    timeout_unless_slower_valgrind,
 )
 
 TYPE_CHECKING = False
@@ -479,6 +480,31 @@ def test_line(points: Coords) -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_line.png")
+
+
+@pytest.mark.parametrize(
+    "far, near",
+    (
+        (((0, 0), (2**31 - 1, 2**31 - 1)), ((0, 0), (9, 9))),
+        (((-(2**31), -(2**31)), (2**31 - 1, 2**31 - 1)), ((0, 0), (9, 9))),
+        (((2**31 - 1, 2**31 - 1), (-(2**31), -(2**31))), ((9, 9), (0, 0))),
+        (((-(2**31), 5), (2**31 - 1, 5)), ((0, 5), (9, 5))),
+        (((5, 2**31 - 1), (5, -(2**31))), ((5, 9), (5, 0))),
+    ),
+)
+@timeout_unless_slower_valgrind(1)
+def test_line_far_outside_image(far: Coords, near: Coords) -> None:
+    # Arrange
+    expected = Image.new("RGB", (10, 10))
+    ImageDraw.Draw(expected).line(near, fill="yellow")
+    im = Image.new("RGB", (10, 10))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.line(far, fill="yellow")
+
+    # Assert
+    assert_image_equal(im, expected)
 
 
 def test_shape1() -> None:
@@ -1846,3 +1872,58 @@ def test_dash_empty() -> None:
 
     with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
         draw.rectangle([10, 10, 90, 90], dash=())
+
+
+@pytest.mark.parametrize(
+    "xy",
+    (
+        ((-37, 5), (50, 5)),
+        ((50, 5), (-37, 5)),
+        ((5, -37), (5, 50)),
+        ((-37, -40), (50, 47)),
+        ((-37, -20), (50, 9)),
+        ((-20, -37), (9, 50)),
+    ),
+)
+def test_dash_line_partly_outside_image(
+    xy: tuple[tuple[int, int], tuple[int, int]],
+) -> None:
+    # Draw the whole line on a larger image, then crop it to the same area
+    offset = 40
+    expected = Image.new("RGB", (100, 100))
+    ImageDraw.Draw(expected).line(
+        [(x + offset, y + offset) for x, y in xy], fill="yellow", dash=(3, 2)
+    )
+    expected = expected.crop((offset, offset, offset + 10, offset + 10))
+
+    im = Image.new("RGB", (10, 10))
+    ImageDraw.Draw(im).line(xy, fill="yellow", dash=(3, 2))
+
+    assert_image_equal(im, expected)
+
+
+@timeout_unless_slower_valgrind(1)
+def test_dash_line_far_outside_image() -> None:
+    im = Image.new("RGB", (10, 10))
+    draw = ImageDraw.Draw(im)
+
+    draw.line(((-(2**31), 5), (2**31 - 1, 5)), fill="yellow", dash=(3, 2))
+    draw.line(((5, -(2**31)), (5, 2**31 - 1)), fill="yellow", dash=(3, 2))
+
+    # The pattern is 3 pixels on and 2 off, from 2**31 pixels before the image
+    for i in range(10):
+        on = (2**31 + i) % 5 < 3
+        assert (im.getpixel((i, 5)) != (0, 0, 0)) == on or i == 5
+        assert (im.getpixel((5, i)) != (0, 0, 0)) == on or i == 5
+
+
+@timeout_unless_slower_valgrind(1)
+def test_dash_zero_length() -> None:
+    im = Image.new("RGB", (10, 10))
+    draw = ImageDraw.Draw(im)
+
+    draw.line(((0, 5), (9, 5)), fill="yellow", dash=(0,))
+    draw.line(((0, 5), (9, 5)), fill="yellow", dash=(0, -1))
+
+    # Only the last point is drawn
+    assert im.getbbox() == (9, 5, 10, 6)

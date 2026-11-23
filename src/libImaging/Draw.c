@@ -240,28 +240,90 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
     }
 }
 
-static inline int
-should_draw_dash(int i, int *dash_offset, PyObject *dash) {
-    i += *dash_offset;
-    int total = 0;
-    int tuple_index = -1;
-    int tuple_size = PyTuple_GET_SIZE(dash);
-    while (total <= i) {
-        tuple_index += 1;
-        if (tuple_index == tuple_size) {
-            tuple_index = 0;
-        }
-        PyObject *value = PyTuple_GetItem(dash, tuple_index);
+/*
+ * Limits a line to the part that can touch the image. The line functions
+ * below take da steps along the major axis a, advancing the minor axis b
+ * whenever the Bresenham error term e is non-negative. Only the steps for
+ * which a is inside the image can set a pixel, so skip the steps before
+ * that range and drop the ones after it; this bounds the work by the image
+ * size rather than by the magnitude of the coordinates. Returns the number
+ * of steps to draw, with a, b and e set to their state at the first one.
+ */
+static inline int64_t
+clip_line(
+    int size, int64_t da, int64_t db, int *a, int as, int *b, int bs, int64_t *e
+) {
+    int64_t skip, n, steps;
+
+    if (as > 0) {
+        skip = -(int64_t)*a;
+        n = size - (int64_t)*a;
+    } else {
+        skip = (int64_t)*a - (size - 1);
+        n = (int64_t)*a + 1;
+    }
+    if (skip < 0) {
+        skip = 0;
+    }
+    if (n > da) {
+        n = da;
+    }
+    if (skip >= n) {
+        return 0;
+    }
+
+    /* after skip steps, b has advanced once for each step where e was
+       non-negative, which is skip * db / da rounded half up. skip is at
+       most 2^31 and db <= da < 2^32, so the products fit in 64 bits. */
+    steps = (db * skip + da / 2) / da;
+    *a = (int)(*a + as * skip);
+    *b = (int)(*b + bs * steps);
+    *e = db + db - da + 2 * (db * skip - da * steps);
+    return n - skip;
+}
+
+/*
+ * Returns the length of one repeat of the dash pattern, treating negative
+ * values as 0, or 0 if nothing should be drawn. The length is capped at
+ * INT_MAX, so that a position within it fits in the int dash offset.
+ */
+static inline int64_t
+dash_period(PyObject *dash) {
+    int64_t total = 0;
+    Py_ssize_t i, size = PyTuple_GET_SIZE(dash);
+    for (i = 0; i < size; i++) {
+        PyObject *value = PyTuple_GetItem(dash, i);
         if (!PyLong_Check(value)) {
             return 0;
         }
-        int v = PyLong_AsLongLong(value);
+        long long v = PyLong_AsLongLong(value);
         if (v == -1 && PyErr_Occurred()) {
+            PyErr_Clear();
             return 0;
         }
-        total += v;
+        if (v > 0) {
+            if (v >= INT_MAX - total) {
+                return INT_MAX;
+            }
+            total += v;
+        }
     }
-    return tuple_index % 2 == 0;
+    return total;
+}
+
+/* Whether to draw at pos, where 0 <= pos < dash_period(dash) */
+static inline int
+should_draw_dash(int64_t pos, PyObject *dash) {
+    int64_t total = 0;
+    Py_ssize_t i = -1, size = PyTuple_GET_SIZE(dash);
+    while (total <= pos) {
+        i = (i + 1) % size;
+        long long v = PyLong_AsLongLong(PyTuple_GetItem(dash, i));
+        if (v > 0) {
+            total += v;
+        }
+    }
+    return i % 2 == 0;
 }
 
 static inline void
@@ -277,118 +339,87 @@ line(
     PyObject *dash,
     int *dash_offset
 ) {
-    int i, n, e, dx, dy, xs, ys;
+    int64_t i, n, e, dx, dy, period = 0, pos = 0;
+    int xs, ys;
 
     /* normalize coordinates */
-    dx = x1 - x0;
+    dx = (int64_t)x1 - x0;
     if (dx < 0) {
         dx = -dx, xs = -1;
     } else {
         xs = 1;
     }
-    dy = y1 - y0;
+    dy = (int64_t)y1 - y0;
     if (dy < 0) {
         dy = -dy, ys = -1;
+    } else {
+        ys = 1;
+    }
+
+    if (dash != NULL) {
+        /* the dash pattern continues from the previous line */
+        period = dash_period(dash);
+        if (period == 0) {
+            return;
+        }
+        pos = *dash_offset % period;
+        *dash_offset = (int)((pos + (dx > dy ? dx : dy)) % period);
     } else if (dy == 0) {
         /* horizontal */
-        if (dash != NULL) {
-            for (i = 0; i < dx; i++) {
-                if (should_draw_dash(i, dash_offset, dash)) {
-                    point(im, x0, y0, ink);
-                }
-                x0 += xs;
-            }
-            *dash_offset += dx;
-        } else if (x1 > x0) {
+        if (x1 > x0) {
             hline(im, x0, y0, x1 - 1, ink, NULL);
         } else if (x0 > x1) {
             hline(im, x1 + 1, y0, x0, ink, NULL);
         }
         return;
-    } else {
-        ys = 1;
     }
 
-    n = (dx > dy) ? dx : dy;
-
-    if (dx == 0) {
-        /* vertical */
+    if (dx > dy || dy == 0) {
+        /* horizontal slope */
+        n = clip_line(im->xsize, dx, dy, &x0, xs, &y0, ys, &e);
         if (dash != NULL) {
-            for (i = 0; i < dy; i++) {
-                if (should_draw_dash(i, dash_offset, dash)) {
-                    point(im, x0, y0, ink);
-                }
-                y0 += ys;
-            }
-            *dash_offset += dy;
-        } else {
-            for (i = 0; i < dy; i++) {
-                point(im, x0, y0, ink);
-                y0 += ys;
-            }
+            pos = (pos + (x0 - (int64_t)x1 + xs * dx) * xs) % period;
         }
-    } else if (dx > dy) {
-        /* bresenham, horizontal slope */
-        n = dx;
         dy += dy;
-        e = dy - dx;
         dx += dx;
 
-        if (dash != NULL) {
-            for (i = 0; i < n; i++) {
-                if (should_draw_dash(i, dash_offset, dash)) {
-                    point(im, x0, y0, ink);
-                }
-                if (e >= 0) {
-                    y0 += ys;
-                    e -= dx;
-                }
-                e += dy;
-                x0 += xs;
-            }
-            *dash_offset += n;
-        } else {
-            for (i = 0; i < n; i++) {
+        for (i = 0; i < n; i++) {
+            if (dash == NULL || should_draw_dash(pos, dash)) {
                 point(im, x0, y0, ink);
-                if (e >= 0) {
-                    y0 += ys;
-                    e -= dx;
-                }
-                e += dy;
-                x0 += xs;
             }
+            if (dash != NULL && ++pos == period) {
+                pos = 0;
+            }
+            if (e >= 0) {
+                y0 += ys;
+                e -= dx;
+            }
+            e += dy;
+            x0 += xs;
         }
 
     } else {
-        /* bresenham, vertical slope */
-        n = dy;
+        /* vertical slope */
+        n = clip_line(im->ysize, dy, dx, &y0, ys, &x0, xs, &e);
+        if (dash != NULL) {
+            pos = (pos + (y0 - (int64_t)y1 + ys * dy) * ys) % period;
+        }
         dx += dx;
-        e = dx - dy;
         dy += dy;
 
-        if (dash != NULL) {
-            for (i = 0; i < n; i++) {
-                if (should_draw_dash(i, dash_offset, dash)) {
-                    point(im, x0, y0, ink);
-                }
-                if (e >= 0) {
-                    x0 += xs;
-                    e -= dy;
-                }
-                e += dx;
-                y0 += ys;
-            }
-            *dash_offset += n;
-        } else {
-            for (i = 0; i < n; i++) {
+        for (i = 0; i < n; i++) {
+            if (dash == NULL || should_draw_dash(pos, dash)) {
                 point(im, x0, y0, ink);
-                if (e >= 0) {
-                    x0 += xs;
-                    e -= dy;
-                }
-                e += dx;
-                y0 += ys;
             }
+            if (dash != NULL && ++pos == period) {
+                pos = 0;
+            }
+            if (e >= 0) {
+                x0 += xs;
+                e -= dy;
+            }
+            e += dx;
+            y0 += ys;
         }
     }
 }
