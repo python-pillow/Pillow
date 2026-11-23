@@ -392,16 +392,15 @@ def generate(version: str) -> dict:
         {
             "bom-ref": "pkg:generic/libjpeg",
             "type": "library",
-            "name": "libjpeg / libjpeg-turbo",
+            "name": "libjpeg-turbo",
             "version": versions["jpegturbo"],
-            "description": "JPEG codec (required by default; disable with "
-            "-C jpeg=disable).",
+            "description": "JPEG codec, a libjpeg-compatible replacement for libjpeg "
+            "(required by default; disable with -C jpeg=disable).",
             "licenses": [
                 {"license": {"id": "IJG"}},
                 {"license": {"id": "BSD-3-Clause"}},
             ],
             "externalReferences": [
-                {"type": "website", "url": "https://ijg.org"},
                 {"type": "website", "url": "https://libjpeg-turbo.org"},
                 {
                     "type": "distribution",
