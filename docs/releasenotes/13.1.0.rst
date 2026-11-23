@@ -217,10 +217,3 @@ BLP2 DXT images with a width of 1 or 2
 BLP2 images using DXT1, DXT3 or DXT5 compression with a width of 1 or 2 pixels were
 decoded incorrectly, and used up to four times more memory than needed while loading.
 This has been fixed.
-
-Thumbnail with a target height of zero
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-:py:meth:`~PIL.Image.Image.thumbnail` raised :py:exc:`ZeroDivisionError` when the
-requested height was zero. It now produces a zero-size image, as it already did for a
-requested width of zero.
