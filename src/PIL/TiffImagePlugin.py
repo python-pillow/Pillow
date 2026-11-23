@@ -1265,7 +1265,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__first = self.__next = self.tag_v2.next
         self.__frame = -1
         self._fp = self.fp
-        self._frame_pos: list[int] = []
+        self._frame_pos: dict[int, None] = {}
 
         # Out-of-line tag data is budgeted across all frames, so that many
         # frames cannot each read the same data. Each frame's limit is fixed
@@ -1324,7 +1324,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 msg = "Unable to seek to frame"
                 raise ValueError(msg)
             self.fp.seek(self.__next)
-            self._frame_pos.append(self.__next)
+            self._frame_pos[self.__next] = None
             self._tag_data_limits.append(self._tag_data_remaining)
             logger.debug("Loading tags, location: %s", self.fp.tell())
             self.tag_v2._tag_data_limit = self._tag_data_remaining
@@ -1343,7 +1343,7 @@ class TiffImageFile(ImageFile.ImageFile):
             self.__frame += 1
         if not update_image:
             return
-        self.fp.seek(self._frame_pos[frame])
+        self.fp.seek(tuple(self._frame_pos.keys())[frame])
         self.tag_v2._tag_data_limit = self._tag_data_limits[frame]
         self.tag_v2.load(self.fp)
         if XMP in self.tag_v2:
