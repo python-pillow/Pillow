@@ -279,7 +279,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                 if thumbnail_offset is None and isinstance(
                     im, TiffImagePlugin.TiffImageFile
                 ):
-                    im._frame_pos = [ifd_offset]
+                    im._frame_pos = {ifd_offset: None}
                     im._seek(0)
                 im.load()
                 child_images.append(im)

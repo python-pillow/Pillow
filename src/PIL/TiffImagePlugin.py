@@ -1265,7 +1265,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__first = self.__next = self.tag_v2.next
         self.__frame = -1
         self._fp = self.fp
-        self._frame_pos: list[int] = []
+        self._frame_pos: dict[int, None] = {}
 
         # Out-of-line tag data is budgeted across all frames, so that many
         # frames cannot each read the same data. Each frame's limit is fixed
@@ -1285,9 +1285,9 @@ class TiffImageFile(ImageFile.ImageFile):
         current_n_frames = self._n_frames
         if current_n_frames is None:
             current = self.tell()
-            self._seek(len(self._frame_pos))
+            self._seek(len(self._frame_pos), False)
             while self._n_frames is None:
-                self._seek(self.tell() + 1)
+                self._seek(self.tell() + 1, False)
             self.seek(current)
         assert self._n_frames is not None
         return self._n_frames
@@ -1304,7 +1304,7 @@ class TiffImageFile(ImageFile.ImageFile):
         ):
             self._im = None
 
-    def _seek(self, frame: int) -> None:
+    def _seek(self, frame: int, update_image: bool = True) -> None:
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
         self.fp = self._fp
@@ -1324,7 +1324,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 msg = "Unable to seek to frame"
                 raise ValueError(msg)
             self.fp.seek(self.__next)
-            self._frame_pos.append(self.__next)
+            self._frame_pos[self.__next] = None
             self._tag_data_limits.append(self._tag_data_remaining)
             logger.debug("Loading tags, location: %s", self.fp.tell())
             self.tag_v2._tag_data_limit = self._tag_data_remaining
@@ -1341,7 +1341,9 @@ class TiffImageFile(ImageFile.ImageFile):
             if not hasattr(self, "is_animated"):
                 self.is_animated = self.__next != 0
             self.__frame += 1
-        self.fp.seek(self._frame_pos[frame])
+        if not update_image:
+            return
+        self.fp.seek(tuple(self._frame_pos.keys())[frame])
         self.tag_v2._tag_data_limit = self._tag_data_limits[frame]
         self.tag_v2.load(self.fp)
         if XMP in self.tag_v2:
