@@ -121,6 +121,10 @@ def autocontrast(
 
     :return: An image.
     """
+    if isinstance(cutoff, tuple) and len(cutoff) != 2:
+        msg = "cutoff must be a tuple of two values"
+        raise ValueError(msg)
+
     if ignore is not None:
         if isinstance(ignore, int):
             ignore = (ignore,)
