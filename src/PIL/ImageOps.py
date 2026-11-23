@@ -754,9 +754,9 @@ def neon(
 
     :param image: The image to be used for the effect
     :param color: RGB color to be used for the neon effect
-    :param alpha: The intensity of the neon effect. If alpha is 0.0, a copy of the
-        image is returned unaltered.
-    :return: An image.
+    :param alpha: The intensity of the neon effect. If alpha is 0.0, the image is
+        converted to RGB and returned without any further changes.
+    :return: An RGB image.
 
     .. versionadded:: 13.1.0
     """
