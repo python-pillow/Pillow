@@ -160,7 +160,7 @@
             "managerFilePatterns": ["/^\\.github/dependencies\\.json$/"],
             "matchStrings": ["\"zstd\":\\s*\"(?<currentValue>\\d+[^\"]*)\""],
             "depNameTemplate": "zstd",
-            "packageNameTemplate": "facebook/zstd",
+            "packageNameTemplate": "meta/zstd",
             "datasourceTemplate": "github-releases",
             "extractVersionTemplate": "^v(?<version>.+)$"
         }
