@@ -63,7 +63,9 @@ from functional commits.
 
 ## Pull requests
 
-Add the `🤖-assisted` label to pull requests created with AI assistance.
+Pillow core developers should add the `🤖-assisted` label to pull requests created
+with AI assistance. Applying labels requires triage access to the repository, so
+other contributors cannot do this.
 
 ## Type checking
 
