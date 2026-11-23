@@ -64,19 +64,18 @@ def upstream_diff_b64(
     return base64.b64encode(b"".join(diff_lines)).decode()
 
 
-def generate(version: str) -> dict:
+def generate(pillow_version: str, dep_versions: dict[str, str]) -> dict:
     serial = str(uuid.uuid4())
     now = dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-    purl = f"pkg:pypi/pillow@{version}"
+    purl = f"pkg:pypi/pillow@{pillow_version}"
     root = Path(__file__).parent.parent
     thirdparty = root / "src" / "thirdparty"
-    versions = load_dep_versions()
 
     metadata_component = {
         "bom-ref": purl,
         "type": "library",
         "name": "Pillow",
-        "version": version,
+        "version": pillow_version,
         "description": "Python Imaging Library (fork)",
         "licenses": [{"license": {"id": "MIT-CMU"}}],
         "purl": purl,
@@ -113,7 +112,7 @@ def generate(version: str) -> dict:
             "bom-ref": f"{purl}#c-ext/{name}",
             "type": "library",
             "name": name,
-            "version": version,
+            "version": pillow_version,
             "description": desc,
             "licenses": [{"license": {"id": "MIT-CMU"}}],
             "purl": f"{purl}#c-ext/{name}",
@@ -261,7 +260,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/freetype2",
             "type": "library",
             "name": "FreeType",
-            "version": versions["freetype"].replace("-", "."),
+            "version": dep_versions.pop("freetype").replace("-", "."),
             "scope": "optional",
             "description": "Font rendering (optional, used by PIL._imagingft). "
             "Required for text/font support.",
@@ -278,7 +277,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/brotli",
             "type": "library",
             "name": "Brotli",
-            "version": versions["brotli"],
+            "version": dep_versions.pop("brotli"),
             "scope": "optional",
             "description": "Lossless compression algorithm. "
             "Required for WOFF2 font support.",
@@ -295,7 +294,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/fribidi",
             "type": "library",
             "name": "FriBiDi",
-            "version": versions["fribidi"],
+            "version": dep_versions.pop("fribidi"),
             "scope": "optional",
             "description": "Unicode bidi algorithm library (optional, "
             "loaded at runtime by fribidi-shim).",
@@ -312,7 +311,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/harfbuzz",
             "type": "library",
             "name": "HarfBuzz",
-            "version": versions["harfbuzz"],
+            "version": dep_versions.pop("harfbuzz"),
             "scope": "optional",
             "description": "Text shaping (optional, required by libraqm "
             "for complex text layout).",
@@ -329,7 +328,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/libavif",
             "type": "library",
             "name": "libavif",
-            "version": versions["libavif"],
+            "version": dep_versions.pop("libavif"),
             "scope": "optional",
             "description": "AVIF codec (optional, used by PIL._avif).",
             "licenses": [{"license": {"id": "BSD-2-Clause"}}],
@@ -384,7 +383,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/libimagequant",
             "type": "library",
             "name": "libimagequant",
-            "version": versions["libimagequant"],
+            "version": dep_versions.pop("libimagequant"),
             "scope": "optional",
             "description": "Improved colour quantization (optional).",
             "licenses": [{"license": {"id": "GPL-3.0-or-later"}}],
@@ -400,7 +399,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/libjpeg",
             "type": "library",
             "name": "libjpeg / libjpeg-turbo",
-            "version": versions["jpegturbo"],
+            "version": dep_versions.pop("jpegturbo"),
             "description": "JPEG codec (required by default; disable with "
             "-C jpeg=disable).",
             "licenses": [
@@ -420,7 +419,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/libtiff",
             "type": "library",
             "name": "libtiff",
-            "version": versions["tiff"],
+            "version": dep_versions.pop("tiff"),
             "scope": "optional",
             "description": "TIFF codec (optional).",
             "licenses": [{"license": {"id": "libtiff"}}],
@@ -436,7 +435,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/libwebp",
             "type": "library",
             "name": "libwebp",
-            "version": versions["libwebp"],
+            "version": dep_versions.pop("libwebp"),
             "scope": "optional",
             "description": "WebP codec (optional, used by PIL._webp).",
             "licenses": [{"license": {"id": "BSD-3-Clause"}}],
@@ -455,7 +454,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/libxcb",
             "type": "library",
             "name": "libxcb",
-            "version": versions["libxcb"],
+            "version": dep_versions.pop("libxcb"),
             "scope": "optional",
             "description": "X11 screen-grab support (optional, "
             "used by PIL._imaging on macOS and Linux).",
@@ -472,7 +471,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/littlecms2",
             "type": "library",
             "name": "Little CMS 2",
-            "version": versions["lcms2"],
+            "version": dep_versions.pop("lcms2"),
             "scope": "optional",
             "description": "Colour management (optional, used by PIL._imagingcms).",
             "licenses": [{"license": {"id": "MIT"}}],
@@ -488,7 +487,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/openjpeg",
             "type": "library",
             "name": "OpenJPEG",
-            "version": versions["openjpeg"],
+            "version": dep_versions.pop("openjpeg"),
             "scope": "optional",
             "description": "JPEG 2000 codec (optional).",
             "licenses": [{"license": {"id": "BSD-2-Clause"}}],
@@ -558,7 +557,7 @@ def generate(version: str) -> dict:
             "bom-ref": "pkg:generic/zlib",
             "type": "library",
             "name": "zlib",
-            "version": versions["zlib-ng"],
+            "version": dep_versions.pop("zlib-ng"),
             "description": "Deflate/PNG compression (required by default; "
             "disable with -C zlib=disable).",
             "licenses": [{"license": {"id": "Zlib"}}],
@@ -642,22 +641,30 @@ def generate(version: str) -> dict:
 
 
 def main() -> None:
-    version = get_version()
+    pillow_version = get_version()
 
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=HelpFormatter)
     parser.add_argument(
         "output",
         nargs="?",
         type=Path,
-        default=Path(f"pillow-{version}.cdx.json"),
+        default=Path(f"pillow-{pillow_version}.cdx.json"),
         help="output file",
     )
     args = parser.parse_args()
 
-    sbom = generate(version)
+    dep_versions = load_dep_versions()
+    sbom = generate(pillow_version, dep_versions)
+    if dep_versions:
+        parser.error(
+            "In .github/dependencies.json but not in the SBOM: "
+            f"{', '.join(sorted(dep_versions))}. "
+            "Add to .github/generate-sbom.py"
+        )
     args.output.write_text(json.dumps(sbom, indent=2) + "\n", encoding="utf-8")
     print(
-        f"Wrote {args.output} (Pillow {version}, {len(sbom['components'])} components)"
+        f"Wrote {args.output} "
+        f"(Pillow {pillow_version}, {len(sbom['components'])} components)"
     )
 
 
