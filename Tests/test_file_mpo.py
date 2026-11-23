@@ -13,6 +13,7 @@ from PIL import (
     JpegImagePlugin,
     MpoImagePlugin,
     TiffImagePlugin,
+    TiffTags,
     _binary,
 )
 
@@ -175,23 +176,22 @@ def test_truncated_makernote() -> None:
         check(ifd)
 
 
-def test_makernote_overlapping_tag_data() -> None:
-    # Two LONG entries whose 64-byte values share the same range
-    value_offset = 12 + 2 + 2 * 12 + 4
-    entries = b"".join(
-        _binary.o16le(tag)
-        + _binary.o16le(4)
-        + _binary.o32le(16)
-        + _binary.o32le(value_offset)
-        for tag in (1, 2)
-    )
+def test_makernote_duplicate_offset() -> None:
+    # Two LONG tags that contain the same offset
+    tag_numbers = (1, 2)
+    offset = 8 + 4 + 2 + len(tag_numbers) * 12
     data = (
         b"FUJIFILM"
-        + _binary.o32le(12)
-        + _binary.o16le(2)
-        + entries
-        + _binary.o32le(0)
-        + bytes(range(64))
+        + _binary.o32le(12)  # offset
+        + _binary.o16le(len(tag_numbers))
+        + b"".join(
+            _binary.o16le(tag)
+            + _binary.o16le(TiffTags.LONG)
+            + _binary.o32le(16)  # count
+            + _binary.o32le(offset)
+            for tag in tag_numbers
+        )
+        + bytes(range(16 * 4))
     )
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
