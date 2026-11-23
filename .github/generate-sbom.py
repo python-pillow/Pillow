@@ -291,6 +291,26 @@ def generate(pillow_version: str, dep_versions: dict[str, str]) -> dict:
             ],
         },
         {
+            "bom-ref": "pkg:generic/bzip2",
+            "type": "library",
+            "name": "bzip2",
+            "version": dep_versions.pop("bzip2"),
+            "scope": "optional",
+            "description": "bzip2 compression (optional, used by FreeType for "
+            "compressed fonts; built for Linux wheels only).",
+            "licenses": [{"license": {"id": "bzip2-1.0.6"}}],
+            "externalReferences": [
+                {
+                    "type": "website",
+                    "url": "https://sourceware.org/bzip2/",
+                },
+                {
+                    "type": "distribution",
+                    "url": "https://sourceware.org/pub/bzip2/",
+                },
+            ],
+        },
+        {
             "bom-ref": "pkg:generic/fribidi",
             "type": "library",
             "name": "FriBiDi",
@@ -412,6 +432,26 @@ def generate(pillow_version: str, dep_versions: dict[str, str]) -> dict:
                 {
                     "type": "distribution",
                     "url": "https://github.com/libjpeg-turbo/libjpeg-turbo/releases",
+                },
+            ],
+        },
+        {
+            "bom-ref": "pkg:generic/libpng",
+            "type": "library",
+            "name": "libpng",
+            "version": dep_versions.pop("libpng"),
+            "scope": "optional",
+            "description": "PNG codec (optional, used by FreeType for "
+            "PNG-embedded bitmap fonts).",
+            "licenses": [{"license": {"id": "libpng-2.0"}}],
+            "externalReferences": [
+                {
+                    "type": "website",
+                    "url": "https://www.libpng.org/pub/png/libpng.html",
+                },
+                {
+                    "type": "distribution",
+                    "url": "https://sourceforge.net/projects/libpng/files/",
                 },
             ],
         },
@@ -554,6 +594,45 @@ def generate(pillow_version: str, dep_versions: dict[str, str]) -> dict:
             ],
         },
         {
+            "bom-ref": "pkg:generic/xz",
+            "type": "library",
+            "name": "XZ Utils (liblzma)",
+            "version": dep_versions.pop("xz"),
+            "scope": "optional",
+            "description": "LZMA compression (optional, used by libtiff).",
+            "licenses": [{"license": {"id": "0BSD"}}],
+            "externalReferences": [
+                {
+                    "type": "website",
+                    "url": "https://tukaani.org/xz/",
+                },
+                {
+                    "type": "distribution",
+                    "url": "https://github.com/tukaani-project/xz/releases",
+                },
+            ],
+        },
+        {
+            "bom-ref": "pkg:generic/zstd",
+            "type": "library",
+            "name": "Zstandard",
+            "version": dep_versions.pop("zstd"),
+            "scope": "optional",
+            "description": "Zstandard compression (optional, used by libtiff; "
+            "built for Linux wheels only).",
+            "licenses": [{"expression": "BSD-3-Clause OR GPL-2.0-only"}],
+            "externalReferences": [
+                {
+                    "type": "website",
+                    "url": "https://meta.github.io/zstd/",
+                },
+                {
+                    "type": "distribution",
+                    "url": "https://github.com/meta/zstd/releases",
+                },
+            ],
+        },
+        {
             "bom-ref": "pkg:generic/zlib",
             "type": "library",
             "name": "zlib",
@@ -611,6 +690,21 @@ def generate(pillow_version: str, dep_versions: dict[str, str]) -> dict:
             "dependsOn": [
                 "pkg:generic/harfbuzz",
                 f"{purl}#thirdparty/fribidi-shim",
+            ],
+        },
+        {
+            "ref": "pkg:generic/freetype2",
+            "dependsOn": [
+                "pkg:generic/brotli",
+                "pkg:generic/bzip2",
+                "pkg:generic/libpng",
+            ],
+        },
+        {
+            "ref": "pkg:generic/libtiff",
+            "dependsOn": [
+                "pkg:generic/xz",
+                "pkg:generic/zstd",
             ],
         },
     ]
