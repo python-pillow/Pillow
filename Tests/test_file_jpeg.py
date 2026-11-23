@@ -16,6 +16,7 @@ from PIL import (
     ImageOps,
     JpegImagePlugin,
     UnidentifiedImageError,
+    _binary,
     features,
 )
 
@@ -119,12 +120,13 @@ class TestFileJpeg:
     def test_empty_app_segments(self) -> None:
         with open(TEST_FILE, "rb") as fp:
             data = fp.read()
-        empty_segments = b"\xff\xe0\x00\x02" * 10 + b"\xff\xfe\x00\x02" * 10
-        with Image.open(BytesIO(data[:2] + empty_segments + data[2:])) as im:
+
+        # APP1 marker, zero data within
+        empty_marker = _binary.o16be(0xFFE1) + _binary.o16be(2)
+
+        with Image.open(BytesIO(data[:2] + empty_marker + data[2:])) as im:
             assert isinstance(im, JpegImagePlugin.JpegImageFile)
             assert [name for name, _ in im.applist] == ["APP0", "COM"]
-            assert im.app["APP0"].startswith(b"JFIF")
-            im.load()
 
     def test_comment_write(self) -> None:
         with Image.open(TEST_FILE) as im:

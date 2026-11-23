@@ -70,16 +70,14 @@ if TYPE_CHECKING:
 #
 # Parser
 
-_APP_NAMES = tuple(f"APP{i}" for i in range(16))
 
-
-def Skip(self: JpegImageFile, marker: int) -> None:
+def Skip(self: JpegImageFile, name: str, marker: int) -> None:
     assert self.fp is not None
     n = i16(self.fp.read(2)) - 2
     ImageFile._safe_read(self.fp, n)
 
 
-def APP(self: JpegImageFile, marker: int) -> None:
+def APP(self: JpegImageFile, name: str, marker: int) -> None:
     #
     # Application marker.  Store these in the APP dictionary.
     # Also look for well-known application markers.
@@ -88,12 +86,9 @@ def APP(self: JpegImageFile, marker: int) -> None:
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
 
-    app = _APP_NAMES[marker & 15]
-
-    self.app[app] = s  # compatibility
+    self.app[name] = s  # compatibility
     if s:
-        # Empty segments carry no data, so they are not retained
-        self.applist.append((app, s))
+        self.applist.append((name, s))
 
     if marker == 0xFFE0 and s.startswith(b"JFIF"):
         # extract JFIF information
@@ -188,7 +183,7 @@ def APP(self: JpegImageFile, marker: int) -> None:
         self.info["mpoffset"] = self.fp.tell() - n + 4
 
 
-def COM(self: JpegImageFile, marker: int) -> None:
+def COM(self: JpegImageFile, name: str, marker: int) -> None:
     #
     # Comment marker.  Store these in the APP dictionary.
     assert self.fp is not None
@@ -201,7 +196,7 @@ def COM(self: JpegImageFile, marker: int) -> None:
         self.applist.append(("COM", s))
 
 
-def SOF(self: JpegImageFile, marker: int) -> None:
+def SOF(self: JpegImageFile, name: str, marker: int) -> None:
     #
     # Start of frame marker.  Defines the size and mode of the
     # image.  JPEG is colour blind, so we use some simple
@@ -230,7 +225,7 @@ def SOF(self: JpegImageFile, marker: int) -> None:
         msg = f"cannot handle {self.layers}-layer images"
         raise SyntaxError(msg)
 
-    if marker in [0xFFC2, 0xFFC6, 0xFFCA, 0xFFCE]:
+    if marker in {0xFFC2, 0xFFC6, 0xFFCA, 0xFFCE}:
         self.info["progressive"] = self.info["progression"] = 1
 
     if self.icclist:
@@ -250,7 +245,7 @@ def SOF(self: JpegImageFile, marker: int) -> None:
         self.layer.append((t[0], t[1] // 16, t[1] & 15, t[2]))
 
 
-def DQT(self: JpegImageFile, marker: int) -> None:
+def DQT(self: JpegImageFile, name: str, marker: int) -> None:
     #
     # Define quantization table.  Note that there might be more
     # than one table in each marker.
@@ -395,7 +390,7 @@ class JpegImageFile(ImageFile.ImageFile):
             if i in MARKER:
                 name, description, handler = MARKER[i]
                 if handler is not None:
-                    handler(self, i)
+                    handler(self, name, i)
                 if i == 0xFFDA:  # start of scan
                     rawmode = self.mode
                     if self.mode == "CMYK":
@@ -456,7 +451,7 @@ class JpegImageFile(ImageFile.ImageFile):
         original_size = self.size
 
         assert isinstance(a, tuple)
-        if a[0] == "RGB" and mode in ["L", "YCbCr"]:
+        if a[0] == "RGB" and mode in {"L", "YCbCr"}:
             self._mode = mode
             a = mode, ""
 
