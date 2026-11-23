@@ -12,6 +12,7 @@ from .helper import (
     assert_image_similar_tofile,
     hopper,
     skip_unless_feature,
+    timeout_unless_slower_valgrind,
 )
 
 TYPE_CHECKING = False
@@ -788,6 +789,23 @@ def test_rectangle_zero_width(bbox: Coords) -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_zero_width.png")
+
+
+@pytest.mark.parametrize("bbox", BBOX)
+@pytest.mark.parametrize("width", (26, 1000, 2**31 - 1))
+@timeout_unless_slower_valgrind(10)
+def test_rectangle_width_larger_than_rectangle(bbox: Coords, width: int) -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+    expected = Image.new("RGB", (W, H))
+    ImageDraw.Draw(expected).rectangle(bbox, fill="green")
+
+    # Act
+    draw.rectangle(bbox, outline="green", width=width)
+
+    # Assert
+    assert_image_equal(im, expected)
 
 
 @pytest.mark.parametrize("bbox", BBOX)

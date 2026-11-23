@@ -760,7 +760,6 @@ ImagingDrawRectangle(
     int width,
     int op
 ) {
-    int i;
     int y;
     int tmp;
     DRAW *draw;
@@ -793,35 +792,20 @@ ImagingDrawRectangle(
         /* outline */
         if (width == 0) {
             width = 1;
+        } else if (width < 0) {
+            return 0;
         }
-        for (i = 0; i < width; i++) {
-            draw->hline(im, x0, y0 + i, x1, ink, NULL);
-            draw->hline(im, x0, y1 - i, x1, ink, NULL);
-            line(
-                im,
-                x1 - i,
-                y0 + width,
-                x1 - i,
-                y1 - width + 1,
-                ink,
-                draw->point,
-                draw->hline,
-                NULL,
-                NULL
-            );
-            line(
-                im,
-                x0 + i,
-                y0 + width,
-                x0 + i,
-                y1 - width + 1,
-                ink,
-                draw->point,
-                draw->hline,
-                NULL,
-                NULL
-            );
+        if (width > (y1 - y0) / 2 || width > (x1 - x0) / 2) {
+            return ImagingDrawRectangle(im, x0, y0, x1, y1, ink_, 1, 0, op);
         }
+        ImagingDrawRectangle(im, x0, y0, x1, y0 + width - 1, ink_, 1, 0, op);
+        ImagingDrawRectangle(im, x0, y1 - width + 1, x1, y1, ink_, 1, 0, op);
+        ImagingDrawRectangle(
+            im, x0, y0 + width, x0 + width - 1, y1 - width, ink_, 1, 0, op
+        );
+        ImagingDrawRectangle(
+            im, x1 - width + 1, y0 + width, x1, y1 - width, ink_, 1, 0, op
+        );
     }
 
     return 0;
