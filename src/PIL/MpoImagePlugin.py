@@ -89,7 +89,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     ifd[0xB000] = b"0100"
     ifd[0xB001] = len(offsets)
 
-    mpentries = b""
+    mpentries = bytearray()
     data_offset = 0
     for i, size in enumerate(offsets):
         if i == 0:
@@ -100,7 +100,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         if i == 0:
             data_offset -= mpf_offset
         data_offset += size
-    ifd[0xB002] = mpentries
+    ifd[0xB002] = bytes(mpentries)
 
     fp.seek(mpf_offset)
     fp.write(b"II\x2a\x00" + o32le(8) + ifd.tobytes(8))

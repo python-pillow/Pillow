@@ -372,7 +372,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode in ["P", "PA"]:
         im_palette = im.im.getpalette("RGB;L")
         colors = len(im_palette) // 3
-        palette = b""
+        palette = bytearray()
         for i in range(3):
             palette += im_palette[colors * i : colors * (i + 1)]
             palette += b"\x00" * (256 - colors)
