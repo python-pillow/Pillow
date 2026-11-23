@@ -3,9 +3,9 @@
 vendored/optional native library dependencies.
 
 Usage:
-    python3 .github/generate-sbom.py [output-file]
+    `python3 .github/generate-sbom.py [output-file]`
 
-Output defaults to pillow-{version}.cdx.json in the current directory.
+Output defaults to `pillow-{version}.cdx.json` in the current directory.
 """
 
 from __future__ import annotations
@@ -19,6 +19,13 @@ import json
 import urllib.request
 import uuid
 from pathlib import Path
+
+
+class HelpFormatter(
+    argparse.ArgumentDefaultsHelpFormatter,
+    argparse.RawDescriptionHelpFormatter,
+):
+    pass
 
 
 def get_version() -> str:
@@ -637,9 +644,7 @@ def generate(version: str) -> dict:
 def main() -> None:
     version = get_version()
 
-    parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=HelpFormatter)
     parser.add_argument(
         "output",
         nargs="?",
