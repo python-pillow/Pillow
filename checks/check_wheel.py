@@ -24,7 +24,7 @@ def test_wheel_modules() -> None:
         if platform.machine() == "ARM64":
             expected_modules.remove("avif")
 
-    elif sys.platform in ["android", "ios"]:
+    elif sys.platform in {"android", "ios"}:
         # tkinter is not available on mobile devices
         expected_modules.remove("tkinter")
 
@@ -59,7 +59,7 @@ def test_wheel_features() -> None:
     if sys.platform == "win32":
         expected_features.remove("xcb")
 
-    elif sys.platform in ["android", "ios"]:
+    elif sys.platform in {"android", "ios"}:
         # There's no X server on mobile devices.
         expected_features.remove("xcb")
 
