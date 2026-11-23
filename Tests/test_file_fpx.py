@@ -47,27 +47,31 @@ def test_invalid_file() -> None:
 
 def test_invalid_tile_size() -> None:
     with open("Tests/images/input_bw_one_band.fpx", "rb") as f:
-        data = f.read()
-    data = data[:4204] + b"\x00" * 8 + data[4212:]
+        data = bytearray(f.read())
+    data[4204:4212] = b"\x00" * 8
+    b = BytesIO(data)
     with pytest.raises(ValueError, match="Tile must be 64 pixels by 64 pixels"):
-        Image.open(BytesIO(data))
+        Image.open(b)
 
 
-def test_invalid_tile_descriptor_length() -> None:
+def test_invalid_tile_header_entry_length() -> None:
     with open("Tests/images/input_bw_one_band.fpx", "rb") as f:
-        data = f.read()
-    data = data[:4220] + b"\x01\x00\x00\x00" + data[4224:]
-    with pytest.raises(ValueError, match="Tile descriptor must be at least 16 bytes"):
-        Image.open(BytesIO(data))
+        data = bytearray(f.read())
+    data[4220:4224] = b"\x01\x00\x00\x00"
+    b = BytesIO(data)
+    with pytest.raises(
+        ValueError, match="Tile header entry length must be at least 16"
+    ):
+        Image.open(b)
 
 
 def test_decompression_bomb() -> None:
     with open("Tests/images/input_bw_one_band.fpx", "rb") as f:
-        data = f.read()
-    # Set the width to 2**30 in the Image Contents property set.
-    data = data[:3220] + b"\x00\x00\x00\x40" + data[3224:]
+        data = bytearray(f.read())
+    data[3220:3224] = b"\x00\x00\x00\x40"
+    b = BytesIO(data)
     with pytest.raises(Image.DecompressionBombError):
-        Image.open(BytesIO(data))
+        Image.open(b)
 
 
 def test_invalid_number_of_bands() -> None:

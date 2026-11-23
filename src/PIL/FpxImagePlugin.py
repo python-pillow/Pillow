@@ -87,7 +87,7 @@ class FpxImageFile(ImageFile.ImageFile):
         assert isinstance(prop[0x1000002], int)
         assert isinstance(prop[0x1000003], int)
         self._size = prop[0x1000002], prop[0x1000003]
-        # The size bounds the number of tile descriptors read in _open_subimage.
+        # The size bounds the number of tile descriptors read in _open_subimage()
         Image._decompression_bomb_check(self._size)
 
         size = max(self.size)
@@ -154,17 +154,18 @@ class FpxImageFile(ImageFile.ImageFile):
         offset = i32(s, 28)
         length = i32(s, 32)
         if length < 16:
-            # offset, size, compression type and compression subtype
-            msg = "Tile descriptor must be at least 16 bytes"
+            # 16 bytes are required
+            # for the tile offset, tile size, compression type and compression subtype
+            msg = "Tile header entry length must be at least 16"
             raise ValueError(msg)
 
         if size != self.size:
             msg = "subimage mismatch"
             raise OSError(msg)
 
-        # get tile descriptors, at most one per tile
-        xtiles, ytiles = (size[0] + xtile - 1) // xtile, (size[1] + ytile - 1) // ytile
+        # get tile header entries
         fp.seek(28 + offset)
+        xtiles, ytiles = (size[0] + xtile - 1) // xtile, (size[1] + ytile - 1) // ytile
         s = fp.read(min(tilecount, xtiles * ytiles) * length)
 
         x = y = 0
