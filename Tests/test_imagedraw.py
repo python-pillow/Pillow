@@ -12,6 +12,7 @@ from .helper import (
     assert_image_similar_tofile,
     hopper,
     skip_unless_feature,
+    timeout_unless_slower_valgrind,
 )
 
 TYPE_CHECKING = False
@@ -720,6 +721,26 @@ def test_polygon_translucent() -> None:
     # Assert
     expected = "Tests/images/imagedraw_polygon_translucent.png"
     assert_image_equal_tofile(im, expected)
+
+
+@timeout_unless_slower_valgrind(4)
+def test_polygon_fill_many_points() -> None:
+    im = Image.new("L", (100, 100))
+    draw = ImageDraw.Draw(im)
+
+    draw.polygon([(i, i % 2) for i in range(32_000)], fill=255)
+
+    assert im.getbbox() is not None
+
+
+@timeout_unless_slower_valgrind(4)
+def test_polygon_fill_many_points_translucent() -> None:
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im, "RGBA")
+
+    draw.polygon([(i, (i % 2) * 99) for i in range(10_000)], fill=(255, 0, 0, 127))
+
+    assert im.getbbox() is not None
 
 
 @pytest.mark.parametrize("bbox", BBOX)

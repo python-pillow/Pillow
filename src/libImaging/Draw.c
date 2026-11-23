@@ -409,37 +409,117 @@ static void
 draw_horizontal_lines(
     Imaging im,
     int n,
-    Edge *e,
+    Edge **e,
+    int *i,
     int ink,
     int *x_pos,
     int y,
     hline_handler hline,
     Imaging mask
 ) {
-    int i;
-    for (i = 0; i < n; i++) {
-        if (e[i].ymin == y && e[i].ymin == e[i].ymax) {
-            int xmax;
-            int xmin = e[i].xmin;
-            if (*x_pos != -1 && *x_pos < xmin) {
-                // Line would be after the current position
+    for (; *i < n && e[*i]->ymin <= y; (*i)++) {
+        int xmax;
+        int xmin = e[*i]->xmin;
+        if (e[*i]->ymin < y) {
+            // Line is on a previous row
+            continue;
+        }
+        if (*x_pos != -1 && *x_pos < xmin) {
+            // Line would be after the current position, and so would all
+            // following lines on this row
+            break;
+        }
+
+        xmax = e[*i]->xmax;
+        if (*x_pos > xmin) {
+            // Line would be partway through x_pos, so increase the starting point
+            xmin = *x_pos;
+            if (xmax < xmin) {
+                // Line would now end before it started
                 continue;
             }
+        }
 
-            xmax = e[i].xmax;
-            if (*x_pos > xmin) {
-                // Line would be partway through x_pos, so increase the starting point
-                xmin = *x_pos;
-                if (xmax < xmin) {
-                    // Line would now end before it started
-                    continue;
-                }
-            }
+        (*hline)(im, xmin, y, xmax, ink, mask);
+        *x_pos = xmax + 1;
+    }
+}
 
-            (*hline)(im, xmin, e[i].ymin, xmax, ink, mask);
-            *x_pos = xmax + 1;
+static int
+horizontal_edge_cmp(const void *e0, const void *e1) {
+    const Edge *a = *(const Edge *const *)e0;
+    const Edge *b = *(const Edge *const *)e1;
+    if (a->ymin != b->ymin) {
+        return a->ymin < b->ymin ? -1 : 1;
+    } else if (a->xmin != b->xmin) {
+        return a->xmin < b->xmin ? -1 : 1;
+    } else {
+        return 0;
+    }
+}
+
+typedef struct {
+    int y;
+    int end;
+    float x;
+    int index;
+} EdgeEnd;
+
+static int
+edge_end_cmp(const void *e0, const void *e1) {
+    const EdgeEnd *a = e0;
+    const EdgeEnd *b = e1;
+    if (a->y != b->y) {
+        return a->y < b->y ? -1 : 1;
+    } else if (a->end != b->end) {
+        return a->end - b->end;
+    } else if (a->x != b->x) {
+        return a->x < b->x ? -1 : 1;
+    } else {
+        return a->index - b->index;
+    }
+}
+
+static Edge **
+find_corners(Edge **edge_table, int edge_count) {
+    EdgeEnd *ends, *first = NULL;
+    Edge **corners;
+    int i, n = 0;
+
+    ends = calloc(edge_count * 2, sizeof(EdgeEnd));
+    if (!ends) {
+        return NULL;
+    }
+    corners = calloc(edge_count * 2, sizeof(Edge *));
+    if (!corners) {
+        free(ends);
+        return NULL;
+    }
+
+    for (i = 0; i < edge_count; i++) {
+        Edge *edge = edge_table[i];
+        float x;
+        if (edge->dx == 0) {
+            continue;
+        }
+        x = (edge->ymin - edge->y0) * edge->dx + edge->x0;
+        ends[n++] = (EdgeEnd){edge->ymin, 0, roundf(x), i};
+        x = (edge->ymax - edge->y0) * edge->dx + edge->x0;
+        ends[n++] = (EdgeEnd){edge->ymax, 1, roundf(x), i};
+    }
+    qsort(ends, n, sizeof(EdgeEnd), edge_end_cmp);
+
+    for (i = 0; i < n; i++) {
+        EdgeEnd *end = &ends[i];
+        if (i == 0 || first->y != end->y || first->end != end->end ||
+            first->x != end->x) {
+            first = end;
+        } else {
+            corners[end->index * 2 + end->end] = edge_table[first->index];
         }
     }
+    free(ends);
+    return corners;
 }
 
 /*
@@ -449,12 +529,14 @@ static inline int
 polygon_generic(
     Imaging im, int n, Edge *e, int ink, int eofill, hline_handler hline, Imaging mask
 ) {
-    Edge **edge_table;
+    Edge **edge_table, **horizontal_edges, **corners;
     float *xx;
     int edge_count = 0;
+    int horizontal_count = 0;
+    int horizontal_index = 0;
     int ymin = im->ysize - 1;
     int ymax = 0;
-    int i, j, k;
+    int i, j;
     float adjacent_line_x, adjacent_line_x_other_edge;
 
     if (n <= 0) {
@@ -465,6 +547,11 @@ polygon_generic(
     /* malloc check ok, using calloc */
     edge_table = calloc(n, sizeof(Edge *));
     if (!edge_table) {
+        return -1;
+    }
+    horizontal_edges = calloc(n, sizeof(Edge *));
+    if (!horizontal_edges) {
+        free(edge_table);
         return -1;
     }
 
@@ -479,6 +566,8 @@ polygon_generic(
         if (e[i].ymin == e[i].ymax) {
             if (hasAlpha != 1) {
                 (*hline)(im, e[i].xmin, e[i].ymin, e[i].xmax, ink, mask);
+            } else {
+                horizontal_edges[horizontal_count++] = (e + i);
             }
             continue;
         }
@@ -490,11 +579,21 @@ polygon_generic(
     if (ymax > im->ysize) {
         ymax = im->ysize;
     }
+    qsort(horizontal_edges, horizontal_count, sizeof(Edge *), horizontal_edge_cmp);
+
+    corners = find_corners(edge_table, edge_count);
+    if (!corners) {
+        free(horizontal_edges);
+        free(edge_table);
+        return -1;
+    }
 
     /* Process the edge table with a scan line searching for intersections */
     /* malloc check ok, using calloc */
     xx = calloc(edge_count * 2, sizeof(float));
     if (!xx) {
+        free(corners);
+        free(horizontal_edges);
         free(edge_table);
         return -1;
     }
@@ -513,48 +612,29 @@ polygon_generic(
                     (ymin == current->ymin || ymin == current->ymax) && current->dx != 0
                 ) {
                     // Connect discontiguous corners
-                    for (k = 0; k < i; k++) {
-                        Edge *other_edge = edge_table[k];
-                        if ((ymin != other_edge->ymin && ymin != other_edge->ymax) ||
-                            other_edge->dx == 0) {
-                            continue;
-                        }
-                        // Check if the two edges join to make a corner
-                        if (roundf(xx[j - 1]) ==
-                            roundf(
-                                (ymin - other_edge->y0) * other_edge->dx +
-                                other_edge->x0
-                            )) {
-                            // Determine points from the edges on the next row
-                            // Or if this is the last row, check the previous row
-                            int offset = ymin == current->ymax ? -1 : 1;
-                            adjacent_line_x =
-                                (ymin + offset - current->y0) * current->dx +
-                                current->x0;
-                            if (ymin + offset >= other_edge->ymin &&
-                                ymin + offset <= other_edge->ymax) {
-                                adjacent_line_x_other_edge =
-                                    (ymin + offset - other_edge->y0) * other_edge->dx +
-                                    other_edge->x0;
-                                if (xx[j - 1] > adjacent_line_x + 1 &&
-                                    xx[j - 1] > adjacent_line_x_other_edge + 1) {
-                                    xx[j - 1] =
-                                        roundf(fmax(
+                    int end = ymin == current->ymax;
+                    Edge *other_edge = corners[i * 2 + end];
+                    if (other_edge != NULL) {
+                        int offset = end ? -1 : 1;
+                        adjacent_line_x =
+                            (ymin + offset - current->y0) * current->dx + current->x0;
+                        adjacent_line_x_other_edge =
+                            (ymin + offset - other_edge->y0) * other_edge->dx +
+                            other_edge->x0;
+                        if (xx[j - 1] > adjacent_line_x + 1 &&
+                            xx[j - 1] > adjacent_line_x_other_edge + 1) {
+                            xx[j - 1] = roundf(fmax(
                                             adjacent_line_x, adjacent_line_x_other_edge
                                         )) +
                                         1;
-                                } else if (
-                                    xx[j - 1] < adjacent_line_x - 1 &&
-                                    xx[j - 1] < adjacent_line_x_other_edge - 1
-                                ) {
-                                    xx[j - 1] =
-                                        roundf(fmin(
+                        } else if (
+                            xx[j - 1] < adjacent_line_x - 1 &&
+                            xx[j - 1] < adjacent_line_x_other_edge - 1
+                        ) {
+                            xx[j - 1] = roundf(fmin(
                                             adjacent_line_x, adjacent_line_x_other_edge
                                         )) -
                                         1;
-                                }
-                                break;
-                            }
                         }
                     }
                 }
@@ -569,7 +649,17 @@ polygon_generic(
                     // Line would be before the current position
                     continue;
                 }
-                draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline, mask);
+                draw_horizontal_lines(
+                    im,
+                    horizontal_count,
+                    horizontal_edges,
+                    &horizontal_index,
+                    ink,
+                    &x_pos,
+                    ymin,
+                    hline,
+                    mask
+                );
                 if (x_end < x_pos) {
                     // Line would be before the current position
                     continue;
@@ -588,7 +678,17 @@ polygon_generic(
                 (*hline)(im, x_start, ymin, x_end, ink, mask);
                 x_pos = x_end + 1;
             }
-            draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline, mask);
+            draw_horizontal_lines(
+                im,
+                horizontal_count,
+                horizontal_edges,
+                &horizontal_index,
+                ink,
+                &x_pos,
+                ymin,
+                hline,
+                mask
+            );
         } else {
             for (i = 1; i < j; i += 2) {
                 (*hline)(im, ROUND_UP(xx[i - 1]), ymin, ROUND_DOWN(xx[i]), ink, mask);
@@ -597,6 +697,8 @@ polygon_generic(
     }
 
     free(xx);
+    free(corners);
+    free(horizontal_edges);
     free(edge_table);
     return 0;
 }
