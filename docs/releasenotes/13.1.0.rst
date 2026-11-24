@@ -74,6 +74,13 @@ Empty APP and COM segments in JPEG images are no longer added to
 ``JpegImageFile.applist``, since they carry no data. This reduces the memory used when
 opening images that contain many of them.
 
+Multiple PNG ICC profiles
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The PNG specification allows at most one iCCP chunk. If an image contains more than
+one, only the first is now used, and later iCCP chunks are skipped without being
+decompressed.
+
 Rounding crop coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
