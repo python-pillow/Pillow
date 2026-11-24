@@ -52,6 +52,7 @@ if [ "$CIBW_OS" = "android" ]; then
     HOST_CMAKE_FLAGS+=" -DANDROID_NDK=$android_ndk"
 
 elif [ "$CIBW_OS" = "ios" ]; then
+    IS_IOS=1
     # IS_MACOS will be set by common_utils.sh.
     # On iOS, CIBW_ARCH is actually a multi-arch - arm64_iphoneos,
     # arm64_iphonesimulator or x86_64_iphonesimulator. Split into the CPU
@@ -122,7 +123,7 @@ source wheels/multibuild/library_builders.sh
 if [ -n "$IS_LINUX" ]; then
     source wheels/multibuild/manylinux_utils.sh
 fi
-if [ -n "$IS_ANDROID" ] || [ -n "$IOS_SDK" ]; then
+if [ -n "$IS_ANDROID" ] || [ -n "$IS_IOS" ]; then
     # LIBRARY_PATH may cause pkg-config to omit -L options, which isn't correct when
     # cross-compiling.
     unset LIBRARY_PATH
@@ -201,7 +202,7 @@ function build_libavif {
 
     # nasm has to be compiled for the build machine, but Android and iOS will have
     # environment variables set for cross-compilation.
-    if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IS_ANDROID" ]] && [[ -z "$IOS_SDK" ]]) \
+    if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IS_ANDROID" ]] && [[ -z "$IS_IOS" ]]) \
         || [ -n "$SANITIZER" ]
     then
         build_simple nasm 3.02 https://www.nasm.us/pub/nasm/releasebuilds/3.02
@@ -220,7 +221,7 @@ function build_libavif {
             -DCMAKE_CXX_FLAGS_MINSIZEREL="-Oz -DNDEBUG -flto" \
             -DCMAKE_SHARED_LINKER_FLAGS_INIT="-Wl,-S,-x,-dead_strip_dylibs" \
         )
-        if [[ -n "$IOS_SDK" ]]; then
+        if [[ -n "$IS_IOS" ]]; then
             build_shared=OFF
         fi
     else
@@ -269,7 +270,7 @@ function build_libavif {
             "${libavif_cmake_flags[@]}" \
             $HOST_CMAKE_FLAGS . )
 
-    if [[ -n "$IOS_SDK" ]]; then
+    if [[ -n "$IS_IOS" ]]; then
         # libavif's CMake configuration generates a meson cross file... but it
         # doesn't work for iOS cross-compilation. Copy in Pillow-generated
         # meson-cross config to replace the cmake-generated version.
@@ -305,7 +306,7 @@ function build {
     fi
 
     # There's no X server on mobile devices.
-    if [ -z "$IS_ANDROID" ] && [ -z "$IOS_SDK" ]; then
+    if [ -z "$IS_ANDROID" ] && [ -z "$IS_IOS" ]; then
         build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
         if [[ -n "$IS_MACOS" ]]; then
             build_simple xorgproto 2025.1 https://www.x.org/pub/individual/proto
@@ -338,7 +339,7 @@ function build {
             --with-jpeg-include-dir=$BUILD_PREFIX/include
             --with-jpeg-lib-dir=$BUILD_PREFIX/lib
         )
-        if [[ -z "$IOS_SDK" ]]; then
+        if [[ -z "$IS_IOS" ]]; then
             # iOS links libtiff statically, but otherwise we need the dylib.
             tiff_configure_args+=(--disable-static)
         fi
@@ -359,7 +360,7 @@ function build {
         webp_cflags="$webp_cflags -Wl,-headerpad_max_install_names"
     fi
     webp_ldflags=""
-    if [[ -n "$IOS_SDK" ]]; then
+    if [[ -n "$IS_IOS" ]]; then
         webp_ldflags="$webp_ldflags -llzma -lz"
     fi
     CFLAGS="$CFLAGS $webp_cflags" LDFLAGS="$LDFLAGS $webp_ldflags" build_simple libwebp $LIBWEBP_VERSION \
@@ -373,7 +374,7 @@ function build {
     # Break the cycle by building FreeType twice, so that the FreeType we ship is linked against the HarfBuzz we ship.
     build_freetype
 
-    if [[ -z "$IS_ANDROID" ]] && [[ -z "$IOS_SDK" ]]; then
+    if [[ -z "$IS_ANDROID" ]] && [[ -z "$IS_IOS" ]]; then
         # On some platforms there's no vendor-provided raqm, and we can't ship it due to
         # licensing, so there's no point building harfbuzz.
         build_harfbuzz
@@ -462,7 +463,7 @@ if [[ -n "$IS_MACOS" ]]; then
     # Ensure that the default prefix used by CMake is the build prefix
     export CMAKE_PREFIX_PATH=$BUILD_PREFIX
 
-    if [[ -n "$IOS_SDK" ]]; then
+    if [[ -n "$IS_IOS" ]]; then
         export AR="$(xcrun --find --sdk $IOS_SDK ar)"
         export CPP="$(xcrun --find --sdk $IOS_SDK clang) -E"
         export CC=$(xcrun --find --sdk $IOS_SDK clang)
@@ -491,7 +492,7 @@ wrap_wheel_builder build
 # prevent this is to not have dynamic libraries available in the first place.
 # The build process *shouldn't* generate any dylibs... but just in case, purge
 # any dylibs that *have* been installed into the build prefix directory.
-if [[ -n "$IOS_SDK" ]]; then
+if [[ -n "$IS_IOS" ]]; then
     find "$BUILD_PREFIX" -name "*.dylib" -exec rm -rf {} \;
 fi
 
