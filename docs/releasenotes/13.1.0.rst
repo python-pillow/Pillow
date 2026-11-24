@@ -229,7 +229,7 @@ Rectangle outline width
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 :py:meth:`.ImageDraw.rectangle` draws its outline inwards from the edges of the
-rectangle. Previously, if ``width`` was more than half the size of the rectangle, the
+rectangle. Previously, if ``width`` was more than the size of the rectangle, the
 outline could extend outside it, drawing a larger rectangle than requested. The
 rectangle is now filled with the outline color instead. Wide outlines are also drawn
 faster.
