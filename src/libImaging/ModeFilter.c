@@ -41,11 +41,11 @@ ImagingModeFilter(Imaging im, int size) {
 
     for (y = 0; y < imOut->ysize; y++) {
         UINT8 *out = &IMAGING_PIXEL_L(imOut, 0, y);
-        y0 = (size > y) ? 0 : y - size;
-        y1 = (size >= imOut->ysize - 1 - y) ? imOut->ysize - 1 : y + size;
+        y0 = size > y ? 0 : y - size;
+        y1 = size >= imOut->ysize - 1 - y ? imOut->ysize - 1 : y + size;
         for (x = 0; x < imOut->xsize; x++) {
-            x0 = (size > x) ? 0 : x - size;
-            x1 = (size >= imOut->xsize - 1 - x) ? imOut->xsize - 1 : x + size;
+            x0 = size > x ? 0 : x - size;
+            x1 = size >= imOut->xsize - 1 - x ? imOut->xsize - 1 : x + size;
 
             /* calculate histogram over current area */
 
