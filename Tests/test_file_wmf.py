@@ -161,6 +161,7 @@ def test_load_set_dpi() -> None:
         assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
         with pytest.raises(Image.DecompressionBombError):
             im.load(20000)
+        assert im.size == (1625, 1625)
 
     if not hasattr(Image.core, "drawwmf"):
         return

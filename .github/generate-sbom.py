@@ -326,6 +326,45 @@ def generate(version: str) -> dict:
             "scope": "optional",
             "description": "AVIF codec (optional, used by PIL._avif).",
             "licenses": [{"license": {"id": "BSD-2-Clause"}}],
+            "pedigree": {
+                "ancestors": [
+                    {
+                        "bom-ref": "pkg:github/aomediacodec/libavif@1.4.2#upstream",
+                        "type": "library",
+                        "name": "libavif",
+                        "version": "1.4.2",
+                        "purl": "pkg:github/aomediacodec/libavif@1.4.2",
+                        "externalReferences": [
+                            {
+                                "type": "distribution",
+                                "url": "https://github.com/AOMediaCodec/libavif/releases/tag/v1.4.2",
+                            }
+                        ],
+                    }
+                ],
+                "patches": [
+                    {
+                        "type": "unofficial",
+                        "diff": {
+                            "text": {
+                                # partially apply https://github.com/AOMediaCodec/libavif/pull/3460/changes/c81f7ecfa0f13786b15336961686300781144beb
+                                "content": base64.b64encode(
+                                    (
+                                        Path(__file__).parent.parent
+                                        / "patches"
+                                        / "libavif.patch"
+                                    ).read_bytes()
+                                ).decode(),
+                                "encoding": "base64",
+                            }
+                        },
+                    },
+                ],
+                "notes": (
+                    "Vendored from upstream libavif 1.4.2, "
+                    "patched to use dav1d 1.5.5 on Windows."
+                ),
+            },
             "externalReferences": [
                 {"type": "website", "url": "https://github.com/AOMediaCodec/libavif"},
                 {
@@ -353,16 +392,15 @@ def generate(version: str) -> dict:
         {
             "bom-ref": "pkg:generic/libjpeg",
             "type": "library",
-            "name": "libjpeg / libjpeg-turbo",
+            "name": "libjpeg-turbo",
             "version": versions["jpegturbo"],
-            "description": "JPEG codec (required by default; disable with "
-            "-C jpeg=disable).",
+            "description": "JPEG codec, a libjpeg-compatible replacement for libjpeg "
+            "(required by default; disable with -C jpeg=disable).",
             "licenses": [
                 {"license": {"id": "IJG"}},
                 {"license": {"id": "BSD-3-Clause"}},
             ],
             "externalReferences": [
-                {"type": "website", "url": "https://ijg.org"},
                 {"type": "website", "url": "https://libjpeg-turbo.org"},
                 {
                     "type": "distribution",
@@ -511,14 +549,21 @@ def generate(version: str) -> dict:
         {
             "bom-ref": "pkg:generic/zlib",
             "type": "library",
-            "name": "zlib",
+            "name": "zlib-ng",
             "version": versions["zlib-ng"],
-            "description": "Deflate/PNG compression (required by default; "
+            "description": "Deflate/PNG compression, built in zlib-compatible mode "
+            "as a replacement for zlib (required by default; "
             "disable with -C zlib=disable).",
             "licenses": [{"license": {"id": "Zlib"}}],
             "externalReferences": [
-                {"type": "website", "url": "https://zlib.net"},
-                {"type": "distribution", "url": "https://zlib.net"},
+                {
+                    "type": "website",
+                    "url": "https://github.com/zlib-ng/zlib-ng",
+                },
+                {
+                    "type": "distribution",
+                    "url": "https://github.com/zlib-ng/zlib-ng/releases",
+                },
             ],
         },
     ]

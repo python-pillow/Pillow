@@ -248,7 +248,8 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
         ret = TIFFGetFieldDefaulted(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_block);
     }
 
-    if (ret != 1 || rows_per_block == (UINT32)(-1)) {
+    if (ret != 1 || rows_per_block > (UINT32)state->ysize) {
+        // No more than the image height is needed for the buffer
         rows_per_block = state->ysize;
     }
 

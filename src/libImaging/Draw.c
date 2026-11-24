@@ -194,11 +194,17 @@ hline32(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
             x1 = im->xsize - 1;
         }
         p = im->image32[y0];
-        while (x0 <= x1) {
-            if (mask == NULL || mask->image8[y0][x0]) {
+        if (mask == NULL) {
+            for (; x0 <= x1; x0++) {
                 p[x0] = ink;
             }
-            x0++;
+        } else {
+            UINT8 *mask_row = mask->image8[y0];
+            for (; x0 <= x1; x0++) {
+                if (mask_row[x0]) {
+                    p[x0] = ink;
+                }
+            }
         }
     }
 }
@@ -754,9 +760,7 @@ ImagingDrawRectangle(
     int width,
     int op
 ) {
-    int i;
-    int y;
-    int tmp;
+    int y, tmp;
     DRAW *draw;
     INT32 ink;
 
@@ -766,6 +770,10 @@ ImagingDrawRectangle(
         tmp = y0, y0 = y1, y1 = tmp;
     }
 
+    if (width > (y1 - y0) / 2 || width > (x1 - x0) / 2) {
+        // Border is wide enough to fill the image
+        fill = 1;
+    }
     if (fill) {
         if (y0 < 0) {
             y0 = 0;
@@ -783,38 +791,20 @@ ImagingDrawRectangle(
             draw->hline(im, x0, y, x1, ink, NULL);
         }
 
-    } else {
-        /* outline */
-        if (width == 0) {
-            width = 1;
-        }
-        for (i = 0; i < width; i++) {
+    } else if (width > 0) {
+        for (int i = 0; i < width; i++) {
+            // Starting from the top, moving down one pixel at a time
             draw->hline(im, x0, y0 + i, x1, ink, NULL);
+            // Starting from the bottom, moving up one pixel at a time
             draw->hline(im, x0, y1 - i, x1, ink, NULL);
-            line(
-                im,
-                x1 - i,
-                y0 + width,
-                x1 - i,
-                y1 - width + 1,
-                ink,
-                draw->point,
-                draw->hline,
-                NULL,
-                NULL
-            );
-            line(
-                im,
-                x0 + i,
-                y0 + width,
-                x0 + i,
-                y1 - width + 1,
-                ink,
-                draw->point,
-                draw->hline,
-                NULL,
-                NULL
-            );
+        }
+
+        // Excluding the pixels already drawn by the top and bottom borders
+        for (y = y0 + width; y <= y1 - width; y++) {
+            // The width of the left border, moving down one pixel at a time
+            draw->hline(im, x0, y, x0 + width - 1, ink, NULL);
+            // The width of the right border, moving down one pixel at a time
+            draw->hline(im, x1 - width + 1, y, x1, ink, NULL);
         }
     }
 

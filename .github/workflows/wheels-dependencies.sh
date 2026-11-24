@@ -283,7 +283,7 @@ function build_libavif {
 
 function build_zstd {
     if [ -e zstd-stamp ]; then return; fi
-    local out_dir=$(fetch_unpack https://github.com/facebook/zstd/releases/download/v$ZSTD_VERSION/zstd-$ZSTD_VERSION.tar.gz)
+    local out_dir=$(fetch_unpack https://github.com/meta/zstd/releases/download/v$ZSTD_VERSION/zstd-$ZSTD_VERSION.tar.gz)
     local zstd_args="PREFIX=$BUILD_PREFIX"
     if [ -n "$IS_ANDROID" ]; then
         zstd_args+=" UNAME_TARGET_SYSTEM=Linux"

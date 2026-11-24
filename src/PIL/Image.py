@@ -746,13 +746,17 @@ class Image:
         if self.__class__ is not other.__class__:
             return False
         assert isinstance(other, Image)
-        return (
-            self.mode == other.mode
-            and self.size == other.size
-            and self.info == other.info
-            and self.getpalette() == other.getpalette()
-            and self.tobytes() == other.tobytes()
-        )
+        if self is other:
+            return True
+        if (
+            self.mode != other.mode
+            or self.size != other.size
+            or self.info != other.info
+        ):
+            return False
+        self.load()
+        other.load()
+        return self.im == other.im
 
     def __repr__(self) -> str:
         return (
@@ -870,7 +874,7 @@ class Image:
 
         self.load()
 
-        if self.width == 0 or self.height == 0:
+        if 0 in self.size:
             return b""
 
         # unpack data
@@ -880,7 +884,13 @@ class Image:
 
             from . import ImageFile
 
-            bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
+            if encoder_name == "raw":
+                # Special case: allow the raw encoder to allocate
+                # a single buffer as large as it needs to encode
+                # the entire image in one shot.
+                bufsize = -1
+            else:
+                bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
 
             output = []
             while True:
@@ -935,7 +945,7 @@ class Image:
         but loads data into this image instead of creating a new image object.
         """
 
-        if self.width == 0 or self.height == 0:
+        if 0 in self.size:
             return
 
         decoder_args: Any = args
@@ -1837,7 +1847,7 @@ class Image:
         :param extrema: An optional tuple of manually-specified extrema.
         :returns: A list containing pixel counts.
         """
-        if min(self.size) == 0:
+        if 0 in self.size:
             return [0] * 256 * getmodebands(self.mode)
 
         self.load()
@@ -1868,7 +1878,7 @@ class Image:
         :param extrema: An optional tuple of manually-specified extrema.
         :returns: A float value representing the image entropy
         """
-        if min(self.size) == 0:
+        if 0 in self.size:
             return 0.0
 
         self.load()
@@ -1957,7 +1967,7 @@ class Image:
             source = ImageColor.getcolor(im, self.mode)
         elif isinstance(im, Image):
             if self.mode != im.mode and (
-                self.mode != "RGB" or im.mode not in {"LA", "RGBA", "RGBa"}
+                self.mode != "RGB" or im.mode not in {"RGBA", "RGBa"}
             ):
                 # should use an adapter for this!
                 im = im.convert(self.mode)
@@ -2286,6 +2296,10 @@ class Image:
             msg = "illegal image mode"
             raise ValueError(msg)
 
+        if len(dest_map) > 256:
+            msg = "dest_map must not have more than 256 entries"
+            raise ValueError(msg)
+
         bands = 3
         palette_mode = "RGB"
         if source_palette is None:
@@ -2301,7 +2315,7 @@ class Image:
             bands = 4
             palette_mode = "RGBA"
 
-        palette_bytes = b""
+        palette_bytes = bytearray()
         new_positions = [0] * 256
 
         # pick only the used colors from the palette
@@ -2805,7 +2819,10 @@ class Image:
             raise EOFError(msg)
 
         if self._im is not None and (
-            self.im.size != self.size or self.im.mode != self.mode
+            self.im.size != self.size
+            or self.im.mode != self.mode
+            # If there is an unloaded tile, then drop the current read-only core image
+            or (getattr(self, "tile", None) and self.readonly)
         ):
             self._im = None
 
@@ -2942,6 +2959,8 @@ class Image:
                 return None
             if self.height == 0:
                 return x, self.height
+            if y == 0:
+                return x, 0
 
             aspect = self.width / self.height
             if x / y >= aspect:
@@ -2966,7 +2985,7 @@ class Image:
                 box = res[1]
 
         if self.size != final_size:
-            if min(final_size) == 0:
+            if 0 in final_size:
                 im = self.crop((0, 0, *final_size))
             else:
                 im = self.resize(
@@ -3096,6 +3115,10 @@ class Image:
         resample: int = Resampling.NEAREST,
         fill: bool = True,
     ) -> None:
+        if any(math.isinf(v) or math.isnan(v) for v in (*box, *data)):
+            msg = "invalid data"
+            raise ValueError(msg)
+
         w = box[2] - box[0]
         h = box[3] - box[1]
 
@@ -3415,7 +3438,7 @@ def frombuffer(
     if len(args) == 1 and isinstance(args[0], tuple):
         args = args[0]
 
-    if decoder_name == "raw" and min(size) != 0:
+    if decoder_name == "raw" and 0 not in size:
         if args == ():
             args = mode, 0, 1
         if args[0] == mode and args[0] in _MAPMODES:
@@ -4323,6 +4346,7 @@ class Exif(_ExifBase):
                             ifd_data = tag_data[ifd_offset:]
 
                             makernote = {}
+                            total_size = 0
                             for i in range(struct.unpack("<H", ifd_data[:2])[0]):
                                 ifd_tag, typ, count, data = struct.unpack(
                                     "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
@@ -4336,6 +4360,15 @@ class Exif(_ExifBase):
                                     continue
                                 size = count * unit_size
                                 if size > 4:
+                                    # Values should fit within the MakerNote,
+                                    # even before accounting for overlaps
+                                    total_size += size
+                                    if total_size > len(ifd_data):
+                                        warnings.warn(
+                                            "Tag data larger than MakerNote. "
+                                            f"Skipping tag {ifd_tag}"
+                                        )
+                                        continue
                                     (offset,) = struct.unpack("<L", data)
                                     data = ifd_data[offset - 12 : offset + size - 12]
                                 else:

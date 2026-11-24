@@ -12,6 +12,7 @@ from .helper import (
     assert_image_similar_tofile,
     hopper,
     skip_unless_feature,
+    timeout_unless_slower_valgrind,
 )
 
 TYPE_CHECKING = False
@@ -791,6 +792,22 @@ def test_rectangle_zero_width(bbox: Coords) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
+@timeout_unless_slower_valgrind(1)
+def test_rectangle_width_larger_than_rectangle(bbox: Coords) -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.rectangle(bbox, outline="green", width=2**31 - 1)
+
+    # Assert
+    expected = Image.new("RGB", (W, H))
+    ImageDraw.Draw(expected).rectangle(bbox, fill="green")
+    assert_image_equal(im, expected)
+
+
+@pytest.mark.parametrize("bbox", BBOX)
 def test_rectangle_translucent_outline(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -1067,6 +1084,18 @@ def test_floodfill_not_negative() -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_floodfill_not_negative.png")
+
+
+def test_floodfill_readonly() -> None:
+    # Arrange
+    im = Image.frombuffer("L", (2, 2), bytes(4), "raw", "L", 0, 1)
+    assert im.readonly
+
+    # Act
+    ImageDraw.floodfill(im, (0, 0), 255)
+
+    # Assert
+    assert im.tobytes() == b"\xff" * 4
 
 
 def test_floodfill_rgb_on_rgba() -> None:

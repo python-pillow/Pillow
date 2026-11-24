@@ -23,7 +23,7 @@ __lazy_modules__ = {"re"}
 import re
 from typing import Protocol, cast, overload
 
-from . import ExifTags, Image, ImageFilter, ImagePalette
+from . import ExifTags, Image, ImageChops, ImageFilter, ImagePalette
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -121,6 +121,12 @@ def autocontrast(
 
     :return: An image.
     """
+    if isinstance(cutoff, tuple) and len(cutoff) != 2:
+        msg = (  # type: ignore[unreachable]
+            "cutoff must be either a tuple of (low, high), or a single number for both"
+        )
+        raise ValueError(msg)
+
     if ignore is not None:
         if isinstance(ignore, int):
             ignore = (ignore,)
@@ -330,7 +336,7 @@ def contain(
             new_width = round(image.width / image.height * size[1])
             if new_width != size[0]:
                 size = (new_width, size[1])
-    if min(size) == 0:
+    if 0 in size:
         return image.crop((0, 0, *size))
     return image.resize(size, resample=method)
 
@@ -365,10 +371,12 @@ def cover(
             new_height = round(image.height / image.width * size[0])
             if new_height != size[1]:
                 size = (size[0], new_height)
+                Image._decompression_bomb_check(size)
         else:
             new_width = round(image.width / image.height * size[1])
             if new_width != size[0]:
                 size = (new_width, size[1])
+                Image._decompression_bomb_check(size)
     return image.resize(size, resample=method)
 
 
@@ -477,7 +485,7 @@ def scale(
         raise ValueError(msg)
     else:
         size = (round(factor * image.width), round(factor * image.height))
-        if min(size) == 0:
+        if 0 in size:
             return image.crop((0, 0, *size))
         return image.resize(size, resample)
 
@@ -486,8 +494,8 @@ class SupportsGetMesh(Protocol):
     """
     An object that supports the ``getmesh`` method, taking an image as an
     argument, and returning a list of tuples. Each tuple contains two tuples,
-    the source box as a tuple of 4 integers, and a tuple of 8 integers for the
-    final quadrilateral, in order of top left, bottom left, bottom right, top
+    the final box as a tuple of 4 integers, and a tuple of 8 integers for the
+    source quadrilateral, in order of top left, bottom left, bottom right, top
     right.
     """
 
@@ -613,7 +621,7 @@ def fit(
     # kevin@cazabon.com
     # https://www.cazabon.com
 
-    if min(size) == 0:
+    if 0 in size:
         return image.crop((0, 0, *size))
     centering_x, centering_y = centering
 
@@ -720,31 +728,26 @@ def sepia(image: Image.Image) -> Image.Image:
 
 
 def _sobel(image: Image.Image) -> Image.Image:
+    out = Image.new("L", image.size)
+    if min(image.size) <= 2:
+        return out
+
     if image.mode != "L":
         image = image.convert("L")
 
-    Kx = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]
-    Ky = [[1, 2, 1], [0, 0, 0], [-1, -2, -1]]
+    Kx = [-1, 0, 1, -2, 0, 2, -1, 0, 1]
+    Ky = [1, 2, 1, 0, 0, 0, -1, -2, -1]
 
-    out = Image.new("L", image.size)
+    # Kernel clips to 0-255, so |g| is the sum of the positive and negative halves
+    gx, gx_neg, gy, gy_neg = (
+        image.filter(ImageFilter.Kernel((3, 3), [s * v for v in k], 1))
+        for k in (Kx, Ky)
+        for s in (1, -1)
+    )
+    mag = ImageChops.add(ImageChops.add(gx, gx_neg), ImageChops.add(gy, gy_neg))
 
-    for x in range(1, image.width - 1):
-        for y in range(1, image.height - 1):
-
-            gx = gy = 0.0
-
-            for dy in (-1, 0, 1):
-                for dx in (-1, 0, 1):
-                    v = image.getpixel((x + dx, y + dy))
-                    assert isinstance(v, (int, float))
-
-                    gx += v * Kx[dy + 1][dx + 1]
-                    gy += v * Ky[dy + 1][dx + 1]
-
-            # Approximate gradient magnitude and clamp to [0, 255]
-            mag = int(min(255, abs(gx) + abs(gy)))
-            out.putpixel((x, y), mag)
-
+    # Edge pixels have no full neighbourhood and stay 0
+    out.paste(mag.crop((1, 1, image.width - 1, image.height - 1)), (1, 1))
     return out
 
 
@@ -757,9 +760,9 @@ def neon(
 
     :param image: The image to be used for the effect
     :param color: RGB color to be used for the neon effect
-    :param alpha: The intensity of the neon effect. If alpha is 0.0, a copy of the
-        image is returned unaltered.
-    :return: An image.
+    :param alpha: The intensity of the neon effect. If alpha is 0.0, the image is
+        converted to RGB and returned without any further changes.
+    :return: An RGB image.
 
     .. versionadded:: 13.1.0
     """

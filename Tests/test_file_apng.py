@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import zlib
 from io import BytesIO
 
 import pytest
 
 from PIL import Image, ImageSequence, PngImagePlugin
+from PIL.PngImagePlugin import o16, o32
 
 from .helper import assert_image_equal
 
@@ -177,13 +179,12 @@ def test_apng_dispose_op_background_p_mode() -> None:
         assert im.size == (128, 64)
 
 
-def test_apng_dispose_op_background_decompression_bomb() -> None:
-    o16 = PngImagePlugin.o16
-    o32 = PngImagePlugin.o32
-
+def _create_apng(size: tuple[int, int]) -> BytesIO:
     b = BytesIO()
     b.write(PngImagePlugin._MAGIC)
-    PngImagePlugin.putchunk(b, b"IHDR", o32(2**31 - 1), o32(1), b"\x08\x06\x00\x00\x00")
+    PngImagePlugin.putchunk(
+        b, b"IHDR", o32(size[0]), o32(size[1]), b"\x08\x06\x00\x00\x00"
+    )
     PngImagePlugin.putchunk(b, b"acTL", o32(2), o32(0))
     PngImagePlugin.putchunk(
         b,
@@ -197,11 +198,30 @@ def test_apng_dispose_op_background_decompression_bomb() -> None:
         o16(10),
         bytes([PngImagePlugin.Disposal.OP_BACKGROUND, PngImagePlugin.Blend.OP_SOURCE]),
     )
+    return b
+
+
+def test_apng_dispose_op_background_decompression_bomb() -> None:
+    b = _create_apng((2**31 - 1, 1))
     PngImagePlugin.putchunk(b, b"IDAT")
-    PngImagePlugin.putchunk(b, b"IEND")
 
     with pytest.raises(Image.DecompressionBombError):
         Image.open(b)
+
+
+def test_apng_duplicate_ihdr() -> None:
+    b = _create_apng((2, 2))
+    PngImagePlugin.putchunk(b, b"IDAT", zlib.compress(b"\x00" * 5))
+
+    # A later IHDR chunk should not change the image size
+    PngImagePlugin.putchunk(b, b"IHDR", o32(4), o32(2), b"\x08\x06\x00\x00\x00")
+    # Frame width larger than original image width, but smaller than second IHDR width
+    PngImagePlugin.putchunk(b, b"fcTL", o32(1), o32(3), b"\x00" * 18)
+
+    with Image.open(b) as im:
+        assert im.size == (2, 2)
+        with pytest.raises(SyntaxError, match="APNG contains invalid frames"):
+            im.seek(1)
 
 
 def test_apng_blend() -> None:
@@ -232,7 +252,7 @@ def test_apng_blend() -> None:
     with Image.open("Tests/images/apng/blend_op_over_near_transparent.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         im.seek(im.n_frames - 1)
-        assert im.getpixel((0, 0)) == (0, 255, 0, 97)
+        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
@@ -303,8 +323,8 @@ def test_apng_mode() -> None:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         assert im.mode == "RGBA"
         im.seek(im.n_frames - 1)
-        assert im.getpixel((0, 0)) == (0, 0, 128, 191)
-        assert im.getpixel((64, 32)) == (0, 0, 128, 191)
+        assert im.getpixel((0, 0)) == (0, 0, 128, 255)
+        assert im.getpixel((64, 32)) == (0, 0, 128, 255)
 
     with Image.open("Tests/images/apng/mode_grayscale.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
@@ -317,8 +337,8 @@ def test_apng_mode() -> None:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         assert im.mode == "LA"
         im.seek(im.n_frames - 1)
-        assert im.getpixel((0, 0)) == (128, 191)
-        assert im.getpixel((64, 32)) == (128, 191)
+        assert im.getpixel((0, 0)) == (128, 255)
+        assert im.getpixel((64, 32)) == (128, 255)
 
     with Image.open("Tests/images/apng/mode_palette.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
