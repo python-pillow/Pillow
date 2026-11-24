@@ -812,6 +812,7 @@ def test_apng_save_delta_after_disposal(
         duration=100,
     )
     with Image.open(test_file) as reread:
+        assert isinstance(reread, PngImagePlugin.PngImageFile)
         assert reread.n_frames == 3
         for i, frame in enumerate(frames):
             reread.seek(i)
@@ -842,6 +843,7 @@ def test_apng_save_delta_after_disposal_previous_chain(
         duration=100,
     )
     with Image.open(test_file) as reread:
+        assert isinstance(reread, PngImagePlugin.PngImageFile)
         assert reread.n_frames == 4
         for i, frame in enumerate(frames):
             reread.seek(i)
