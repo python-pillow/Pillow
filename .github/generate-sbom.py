@@ -300,10 +300,7 @@ def generate(pillow_version: str, dep_versions: dict[str, str]) -> dict:
             "compressed fonts; built for Linux wheels only).",
             "licenses": [{"license": {"id": "bzip2-1.0.6"}}],
             "externalReferences": [
-                {
-                    "type": "website",
-                    "url": "https://sourceware.org/bzip2/",
-                },
+                {"type": "website", "url": "https://sourceware.org/bzip2/"},
                 {
                     "type": "distribution",
                     "url": "https://sourceware.org/pub/bzip2/",
