@@ -1845,7 +1845,7 @@ def test_dash_rectangle() -> None:
 
     # Act
     draw.rectangle([10, 10, 90, 90], outline="green", dash=(10, 5))
-    draw.rectangle([30, 30, 70, 70], fill="red", outline="green", dash=(10, 5))
+    draw.rectangle([(30, 30), (70, 70)], fill="red", outline="green", dash=(10, 5))
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_dash_rectangle.png")
