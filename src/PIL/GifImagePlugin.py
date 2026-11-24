@@ -669,6 +669,8 @@ def _write_multiple_frames(
 
     im_frames: list[_Frame] = []
     previous_im: Image.Image | None = None
+    # The canvas as it was before the previous frame was drawn
+    restore_im: Image.Image | None = None
     frame_count = 0
     background_im = None
     for imSequence in itertools.chain([im], im.encoderinfo.get("append_images", [])):
@@ -722,6 +724,13 @@ def _write_multiple_frames(
                         bbox = _getbbox(background_im, im_frame)[1]
                     else:
                         bbox = (0, 0, *im_frame.size)
+                elif im_frames[-1].encoderinfo.get("disposal") == 3:
+                    # The viewer restores the canvas to what it was before the
+                    # previous frame, so the delta has to be taken against that
+                    if restore_im is not None:
+                        bbox = _getbbox(restore_im, im_frame)[1] or (0, 0, 1, 1)
+                    else:
+                        bbox = (0, 0, *im_frame.size)
                 elif encoderinfo.get("optimize") and im_frame.mode != "1":
                     if "transparency" not in encoderinfo:
                         assert im_frame.palette is not None
@@ -747,6 +756,12 @@ def _write_multiple_frames(
                         diff_frame.paste(encoderinfo["transparency"], mask=unchanged)
             else:
                 bbox = None
+            if im_frames:
+                previous_disposal = im_frames[-1].encoderinfo.get("disposal")
+                if previous_disposal == 2:
+                    restore_im = None
+                elif previous_disposal != 3:
+                    restore_im = previous_im
             previous_im = im_frame
             im_frames.append(_Frame(diff_frame or im_frame, bbox, encoderinfo))
 
