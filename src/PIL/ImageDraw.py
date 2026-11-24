@@ -238,6 +238,11 @@ class ImageDraw:
                 for i in range(0, len(xy), 2)
             ]
 
+    def _validate_dash(self, dash: tuple[int, ...]) -> None:
+        if len(dash) == 0 or not all(isinstance(v, int) and v > 0 for v in dash):
+            msg = "dash must be a non-empty tuple of positive ints"
+            raise ValueError(msg)
+
     def line(
         self,
         xy: Coords,
@@ -252,9 +257,7 @@ class ImageDraw:
             return
 
         if dash is not None:
-            if len(dash) == 0 or any(not isinstance(v, int) for v in dash):
-                msg = "dash must be a non-empty tuple of ints"
-                raise ValueError(msg)
+            self._validate_dash(dash)
             self.draw.draw_lines(xy, ink, 1, dash)
         else:
             self.draw.draw_lines(xy, ink, width)
@@ -369,9 +372,7 @@ class ImageDraw:
             return
 
         if dash is not None:
-            if len(dash) == 0 or any(not isinstance(v, int) for v in dash):
-                msg = "dash must be a non-empty tuple of ints"
-                raise ValueError(msg)
+            self._validate_dash(dash)
             self.draw.draw_polygon(xy, ink, 0, 1, dash)
         elif width == 1:
             self.draw.draw_polygon(xy, ink, 0, width)
@@ -414,9 +415,7 @@ class ImageDraw:
             return
 
         if dash is not None:
-            if len(dash) == 0 or any(not isinstance(v, int) for v in dash):
-                msg = "dash must be a non-empty tuple of ints"
-                raise ValueError(msg)
+            self._validate_dash(dash)
             (x0, y0), (x1, y1) = self._normalize_coords(xy)
             self.draw.draw_lines(
                 [(x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)], ink, 1, dash

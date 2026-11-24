@@ -1876,18 +1876,25 @@ def test_dash_rectangle() -> None:
     assert_image_equal_tofile(im, "Tests/images/imagedraw_dash_rectangle.png")
 
 
-def test_dash_empty() -> None:
+@pytest.mark.parametrize("dash", ((), (0,), (0, -1)))
+def test_dash_empty(dash: tuple[int, ...]) -> None:
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
 
-    with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
-        draw.line([(10, 50), (90, 50)], dash=())
+    with pytest.raises(
+        ValueError, match="dash must be a non-empty tuple of positive ints"
+    ):
+        draw.line([(10, 50), (90, 50)], dash=dash)
 
-    with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
-        draw.polygon([(10, 10), (90, 10), (90, 90)], dash=())
+    with pytest.raises(
+        ValueError, match="dash must be a non-empty tuple of positive ints"
+    ):
+        draw.polygon([(10, 10), (90, 10), (90, 90)], dash=dash)
 
-    with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
-        draw.rectangle([10, 10, 90, 90], dash=())
+    with pytest.raises(
+        ValueError, match="dash must be a non-empty tuple of positive ints"
+    ):
+        draw.rectangle([10, 10, 90, 90], dash=dash)
 
 
 @pytest.mark.parametrize(
@@ -1931,15 +1938,3 @@ def test_dash_line_far_outside_image() -> None:
         on = (2**31 + i) % 5 < 3
         assert (im.getpixel((i, 5)) != (0, 0, 0)) == on or i == 5
         assert (im.getpixel((5, i)) != (0, 0, 0)) == on or i == 5
-
-
-@timeout_unless_slower_valgrind(1)
-def test_dash_zero_length() -> None:
-    im = Image.new("RGB", (10, 10))
-    draw = ImageDraw.Draw(im)
-
-    draw.line(((0, 5), (9, 5)), fill="yellow", dash=(0,))
-    draw.line(((0, 5), (9, 5)), fill="yellow", dash=(0, -1))
-
-    # Only the last point is drawn
-    assert im.getbbox() == (9, 5, 10, 6)
