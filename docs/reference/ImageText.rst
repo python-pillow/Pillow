@@ -21,9 +21,17 @@ Example
     text.stroke(2, "#0f0")
 
     print(text.get_length())  # 154.0
-    left, top, right, bottom = text.get_bbox()
-    print((left, top, right, bottom))  # (-2, 3, 156, 22)
+    print(text.get_bbox())  # (-2, 3, 156, 22)
 
+    # Create an image to fit the right and lower edges of text drawn at (0, 0)
+    im = Image.new("RGB", text.get_bbox()[2:])
+    d = ImageDraw.Draw(im)
+    d.text((0, 0), text, "#f00")
+
+    # Create an image to fit the left and upper edges of text,
+    # moving right to include pixels cutoff on the left when drawing text at (0, 0),
+    # and removing the vertical gap before text drawn at (0, 0)
+    left, top, right, bottom = text.get_bbox()
     im = Image.new("RGB", (right - left, bottom - top))
     d = ImageDraw.Draw(im)
     d.text((-left, -top), text, "#f00")
