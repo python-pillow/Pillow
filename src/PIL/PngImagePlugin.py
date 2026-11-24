@@ -1246,6 +1246,8 @@ def _write_multiple_frames(
         chain = itertools.chain([im], append_images)
 
     im_frames: list[_Frame] = []
+    # The canvas after the disposal of the last frame, if it differs from that frame
+    disposed: Image.Image | None = None
     frame_count = 0
     for im_seq in chain:
         for im_frame in ImageSequence.Iterator(im_seq):
@@ -1282,9 +1284,35 @@ def _write_multiple_frames(
                     if delay.numerator <= 65535:
                         previous.encoderinfo["duration"] = new_duration
                         continue
+                if disposed is not None:
+                    if mode.startswith("I;16"):
+                        delta = ImageChops.subtract_modulo(
+                            Image.frombytes("LA", im.size, im_frame.tobytes()),
+                            Image.frombytes("LA", im.size, disposed.tobytes()),
+                        )
+                    else:
+                        delta = ImageChops.subtract_modulo(
+                            im_frame.convert(disposed.mode), disposed
+                        )
+                    bbox = delta.getbbox(alpha_only=False)
             else:
                 bbox = None
             im_frames.append(_Frame(im_frame, bbox, encoderinfo))
+
+            frame_disposal = encoderinfo.get("disposal")
+            if frame_disposal == Disposal.OP_PREVIOUS and len(im_frames) == 1:
+                frame_disposal = Disposal.OP_BACKGROUND
+            if frame_disposal == Disposal.OP_BACKGROUND:
+                disposed = (
+                    im_frame.copy()
+                    if mode.startswith("I;16")
+                    else im_frame.convert("RGBA")
+                )
+                disposed.paste(0, bbox or (0, 0, *im.size))
+            elif frame_disposal != Disposal.OP_PREVIOUS:
+                disposed = None
+            elif disposed is None:
+                disposed = previous.im if len(im_frames) > 1 else None
 
     if len(im_frames) == 1 and not default_image:
         return im_frames[0].im
