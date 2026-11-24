@@ -706,7 +706,9 @@ def generate(pillow_version: str, dep_versions: dict[str, str]) -> dict:
         {
             "ref": "pkg:generic/libtiff",
             "dependsOn": [
+                "pkg:generic/libjpeg",
                 "pkg:generic/xz",
+                "pkg:generic/zlib",
                 "pkg:generic/zstd",
             ],
         },
