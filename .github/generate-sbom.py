@@ -612,26 +612,6 @@ def generate(pillow_version: str, dep_versions: dict[str, str]) -> dict:
             ],
         },
         {
-            "bom-ref": "pkg:generic/zstd",
-            "type": "library",
-            "name": "Zstandard",
-            "version": dep_versions.pop("zstd"),
-            "scope": "optional",
-            "description": "Zstandard compression (optional, used by libtiff; "
-            "built for Linux wheels only).",
-            "licenses": [{"expression": "BSD-3-Clause OR GPL-2.0-only"}],
-            "externalReferences": [
-                {
-                    "type": "website",
-                    "url": "https://meta.github.io/zstd/",
-                },
-                {
-                    "type": "distribution",
-                    "url": "https://github.com/meta/zstd/releases",
-                },
-            ],
-        },
-        {
             "bom-ref": "pkg:generic/zlib",
             "type": "library",
             "name": "zlib-ng",
@@ -648,6 +628,26 @@ def generate(pillow_version: str, dep_versions: dict[str, str]) -> dict:
                 {
                     "type": "distribution",
                     "url": "https://github.com/zlib-ng/zlib-ng/releases",
+                },
+            ],
+        },
+        {
+            "bom-ref": "pkg:generic/zstd",
+            "type": "library",
+            "name": "Zstandard",
+            "version": dep_versions.pop("zstd"),
+            "scope": "optional",
+            "description": "Zstandard compression (optional, used by libtiff; "
+            "built for Linux wheels only).",
+            "licenses": [{"expression": "BSD-3-Clause OR GPL-2.0-only"}],
+            "externalReferences": [
+                {
+                    "type": "website",
+                    "url": "https://meta.github.io/zstd/",
+                },
+                {
+                    "type": "distribution",
+                    "url": "https://github.com/meta/zstd/releases",
                 },
             ],
         },
