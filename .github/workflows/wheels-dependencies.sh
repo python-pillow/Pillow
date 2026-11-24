@@ -4,7 +4,7 @@ set -e
 
 if [ -z "$CIBUILDWHEEL_BUILD_IDENTIFIER" ]; then
     if [ -n "$LIB_FUZZING_ENGINE" ] && [ $(uname -s) = "Linux" ]; then
-        # https://github.com/google/oss-fuzz/blob/master/projects/pillow/build_depends.sh
+        # CIFuzz
         CIBUILDWHEEL_BUILD_IDENTIFIER="manylinux_$(uname -m)"
     else
         echo "Unable to determine operating system and architecture"

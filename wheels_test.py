@@ -12,7 +12,7 @@ def run_module(mod_name, *args):
     try:
         runpy.run_module(mod_name, run_name="__main__", alter_sys=True)
     except SystemExit as e:
-        if e.code not in [0, None]:
+        if e.code not in {0, None}:
             raise
     finally:
         sys.argv[1:] = old_args

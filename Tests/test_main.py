@@ -8,7 +8,7 @@ import pytest
 
 
 @pytest.mark.skipif(
-    sys.platform in ["android", "ios"],
+    sys.platform in {"android", "ios"},
     reason="Subprocesses not supported on this platform",
 )
 @pytest.mark.parametrize(
