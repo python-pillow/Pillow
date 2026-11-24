@@ -33,6 +33,7 @@ ln -sfn $CIBW_OS_ARCH $deps_dir/current
 
 if [ "$CIBW_OS" = "android" ]; then
     IS_ANDROID=1
+    IS_MOBILE=1
     case "$CIBW_ARCH" in
         arm64_v8a) PLAT=aarch64 ;;
         x86_64) PLAT=x86_64 ;;
@@ -53,6 +54,7 @@ if [ "$CIBW_OS" = "android" ]; then
 
 elif [ "$CIBW_OS" = "ios" ]; then
     IS_IOS=1
+    IS_MOBILE=1
     # IS_MACOS will be set by common_utils.sh.
     # On iOS, CIBW_ARCH is actually a multi-arch - arm64_iphoneos,
     # arm64_iphonesimulator or x86_64_iphonesimulator. Split into the CPU
@@ -123,7 +125,7 @@ source wheels/multibuild/library_builders.sh
 if [ -n "$IS_LINUX" ]; then
     source wheels/multibuild/manylinux_utils.sh
 fi
-if [ -n "$IS_ANDROID" ] || [ -n "$IS_IOS" ]; then
+if [ -n "$IS_MOBILE" ]; then
     # LIBRARY_PATH may cause pkg-config to omit -L options, which isn't correct when
     # cross-compiling.
     unset LIBRARY_PATH
@@ -202,7 +204,7 @@ function build_libavif {
 
     # nasm has to be compiled for the build machine, but Android and iOS will have
     # environment variables set for cross-compilation.
-    if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IS_ANDROID" ]] && [[ -z "$IS_IOS" ]]) \
+    if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IS_MOBILE" ]]) \
         || [ -n "$SANITIZER" ]
     then
         build_simple nasm 3.02 https://www.nasm.us/pub/nasm/releasebuilds/3.02
@@ -306,7 +308,7 @@ function build {
     fi
 
     # There's no X server on mobile devices.
-    if [ -z "$IS_ANDROID" ] && [ -z "$IS_IOS" ]; then
+    if [ -z "$IS_MOBILE" ]; then
         build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
         if [[ -n "$IS_MACOS" ]]; then
             build_simple xorgproto 2025.1 https://www.x.org/pub/individual/proto
@@ -321,7 +323,7 @@ function build {
     # -DCMAKE_POSITION_INDEPENDENT_CODE=1 is a workaround from https://github.com/libjpeg-turbo/libjpeg-turbo/issues/898
     HOST_CMAKE_FLAGS="-DCMAKE_POSITION_INDEPENDENT_CODE=1 $HOST_CMAKE_FLAGS" build_libjpeg_turbo
 
-    if [[ -n "$IS_MACOS" ]] || [[ -n "$IS_ANDROID" ]]; then
+    if [[ -n "$IS_MOBILE" ]]; then
         # Custom tiff build to include jpeg; by default, configure won't include
         # headers/libs in the BUILD_PREFIX. Explicitly disable webp,
         # libdeflate and zstd, because on x86_64 macs, it will pick up the
@@ -374,7 +376,7 @@ function build {
     # Break the cycle by building FreeType twice, so that the FreeType we ship is linked against the HarfBuzz we ship.
     build_freetype
 
-    if [[ -z "$IS_ANDROID" ]] && [[ -z "$IS_IOS" ]]; then
+    if [[ -z "$IS_MOBILE" ]]; then
         # On some platforms there's no vendor-provided raqm, and we can't ship it due to
         # licensing, so there's no point building harfbuzz.
         build_harfbuzz
