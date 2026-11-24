@@ -23,10 +23,11 @@ Example
     print(text.get_length())  # 154.0
     print(text.get_bbox())  # (-2, 3, 156, 22)
 
-    # Create an image to fit the right and lower edges of text drawn at (0, 0)
-    im = Image.new("RGB", text.get_bbox()[2:])
+    # Create an image to fit the right and lower edges of text drawn at (10, 10)
+    right, bottom = text.get_bbox()[2:]
+    im = Image.new("RGB", (10 + right, 10 + bottom))
     d = ImageDraw.Draw(im)
-    d.text((0, 0), text, "#f00")
+    d.text((10, 10), text, "#f00")
 
     # Create an image to fit the left and upper edges of text,
     # moving right to include pixels cutoff on the left when drawing text at (0, 0),
