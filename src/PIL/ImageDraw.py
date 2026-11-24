@@ -417,17 +417,9 @@ class ImageDraw:
             if len(dash) == 0 or any(not isinstance(v, int) for v in dash):
                 msg = "dash must be a non-empty tuple of ints"
                 raise ValueError(msg)
+            (x0, y0), (x1, y1) = self._normalize_coords(xy)
             self.draw.draw_lines(
-                [
-                    (xy[0], xy[1]),
-                    (xy[2], xy[1]),
-                    (xy[2], xy[3]),
-                    (xy[0], xy[3]),
-                    (xy[0], xy[1]),
-                ],
-                ink,
-                1,
-                dash,
+                [(x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)], ink, 1, dash
             )
         else:
             self.draw.draw_rectangle(xy, ink, 0, width)

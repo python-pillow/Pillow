@@ -224,3 +224,12 @@ BLP2 DXT images with a width of 1 or 2
 BLP2 images using DXT1, DXT3 or DXT5 compression with a width of 1 or 2 pixels were
 decoded incorrectly, and used up to four times more memory than needed while loading.
 This has been fixed.
+
+Rectangle outline width
+^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`.ImageDraw.rectangle` draws its outline inwards from the edges of the
+rectangle. Previously, if ``width`` was more than the size of the rectangle, the
+outline could extend outside it, drawing a larger rectangle than requested. The
+rectangle is now filled with the outline color instead. Wide outlines are also drawn
+faster.

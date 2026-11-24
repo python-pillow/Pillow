@@ -817,6 +817,22 @@ def test_rectangle_zero_width(bbox: Coords) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
+@timeout_unless_slower_valgrind(1)
+def test_rectangle_width_larger_than_rectangle(bbox: Coords) -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.rectangle(bbox, outline="green", width=2**31 - 1)
+
+    # Assert
+    expected = Image.new("RGB", (W, H))
+    ImageDraw.Draw(expected).rectangle(bbox, fill="green")
+    assert_image_equal(im, expected)
+
+
+@pytest.mark.parametrize("bbox", BBOX)
 def test_rectangle_translucent_outline(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -1854,7 +1870,7 @@ def test_dash_rectangle() -> None:
 
     # Act
     draw.rectangle([10, 10, 90, 90], outline="green", dash=(10, 5))
-    draw.rectangle([30, 30, 70, 70], fill="red", outline="green", dash=(10, 5))
+    draw.rectangle([(30, 30), (70, 70)], fill="red", outline="green", dash=(10, 5))
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_dash_rectangle.png")
