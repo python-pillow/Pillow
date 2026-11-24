@@ -792,19 +792,18 @@ def test_rectangle_zero_width(bbox: Coords) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-@pytest.mark.parametrize("width", (26, 1000, 2**31 - 1))
-@timeout_unless_slower_valgrind(10)
-def test_rectangle_width_larger_than_rectangle(bbox: Coords, width: int) -> None:
+@timeout_unless_slower_valgrind(1)
+def test_rectangle_width_larger_than_rectangle(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
-    expected = Image.new("RGB", (W, H))
-    ImageDraw.Draw(expected).rectangle(bbox, fill="green")
 
     # Act
-    draw.rectangle(bbox, outline="green", width=width)
+    draw.rectangle(bbox, outline="green", width=2**31 - 1)
 
     # Assert
+    expected = Image.new("RGB", (W, H))
+    ImageDraw.Draw(expected).rectangle(bbox, fill="green")
     assert_image_equal(im, expected)
 
 

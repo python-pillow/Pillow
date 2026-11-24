@@ -788,13 +788,8 @@ ImagingDrawRectangle(
             draw->hline(im, x0, y, x1, ink, NULL);
         }
 
-    } else {
+    } else if (width > 0) {
         /* outline */
-        if (width == 0) {
-            width = 1;
-        } else if (width < 0) {
-            return 0;
-        }
         if (width > (y1 - y0) / 2 || width > (x1 - x0) / 2) {
             return ImagingDrawRectangle(im, x0, y0, x1, y1, ink_, 1, 0, op);
         }
