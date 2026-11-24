@@ -696,6 +696,7 @@ def test_save_dispose3_restores_previous_frame(
     )
 
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.n_frames == len(frames)
         for i, frame in enumerate(frames):
             reread.seek(i)
