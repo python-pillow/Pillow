@@ -2,18 +2,17 @@
 
 set -e
 
-if [ -z "$CIBUILDWHEEL_BUILD_IDENTIFIER" ]; then
-    if [ -n "$LIB_FUZZING_ENGINE" ] && [ $(uname -s) = "Linux" ]; then
-        # CIFuzz
-        CIBUILDWHEEL_BUILD_IDENTIFIER="manylinux_$(uname -m)"
-    else
-        echo "Unable to determine operating system and architecture"
-        exit 1
-    fi
+if [ -n "$CIBUILDWHEEL_BUILD_IDENTIFIER" ]; then
+    # CIBUILDWHEEL_BUILD_IDENTIFIER has the format {python_version}-{os}_{arch}
+    CIBW_OS_ARCH=${CIBUILDWHEEL_BUILD_IDENTIFIER#*-}
+elif [ -n "$LIB_FUZZING_ENGINE" ] && [ $(uname -s) = "Linux" ]; then
+    # CIFuzz runs this script outside of cibuildwheel.
+    CIBW_OS_ARCH="manylinux_$(uname -m)"
+else
+    echo "Unable to determine operating system and architecture"
+    exit 1
 fi
 
-# CIBUILDWHEEL_BUILD_IDENTIFIER has the format {python_version}-{os}_{arch}
-CIBW_OS_ARCH=${CIBUILDWHEEL_BUILD_IDENTIFIER#*-}
 CIBW_OS=${CIBW_OS_ARCH%%_*}
 CIBW_ARCH=${CIBW_OS_ARCH#*_}
 
@@ -204,9 +203,7 @@ function build_libavif {
 
     # nasm has to be compiled for the build machine, but Android and iOS will have
     # environment variables set for cross-compilation.
-    if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IS_MOBILE" ]]) \
-        || [ -n "$SANITIZER" ]
-    then
+    if ([[ "$PLAT" == "x86_64" ]] && [[ -z "$IS_MOBILE" ]]) || [ -n "$SANITIZER" ]; then
         build_simple nasm 3.02 https://www.nasm.us/pub/nasm/releasebuilds/3.02
         local have_nasm=1
     fi
@@ -323,7 +320,7 @@ function build {
     # -DCMAKE_POSITION_INDEPENDENT_CODE=1 is a workaround from https://github.com/libjpeg-turbo/libjpeg-turbo/issues/898
     HOST_CMAKE_FLAGS="-DCMAKE_POSITION_INDEPENDENT_CODE=1 $HOST_CMAKE_FLAGS" build_libjpeg_turbo
 
-    if [[ -n "$IS_MOBILE" ]]; then
+    if [[ -n "$IS_MACOS" ]] || [[ -n "$IS_MOBILE" ]]; then
         # Custom tiff build to include jpeg; by default, configure won't include
         # headers/libs in the BUILD_PREFIX. Explicitly disable webp,
         # libdeflate and zstd, because on x86_64 macs, it will pick up the
