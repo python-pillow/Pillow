@@ -760,8 +760,7 @@ ImagingDrawRectangle(
     int width,
     int op
 ) {
-    int y;
-    int tmp;
+    int y, tmp;
     DRAW *draw;
     INT32 ink;
 
@@ -771,6 +770,10 @@ ImagingDrawRectangle(
         tmp = y0, y0 = y1, y1 = tmp;
     }
 
+    if (width > (y1 - y0) / 2 || width > (x1 - x0) / 2) {
+        // Border is wide enough to fill the image
+        fill = 1;
+    }
     if (fill) {
         if (y0 < 0) {
             y0 = 0;
@@ -789,18 +792,20 @@ ImagingDrawRectangle(
         }
 
     } else if (width > 0) {
-        /* outline */
-        if (width > (y1 - y0) / 2 || width > (x1 - x0) / 2) {
-            return ImagingDrawRectangle(im, x0, y0, x1, y1, ink_, 1, 0, op);
+        for (int i = 0; i < width; i++) {
+            // Starting from the top, moving down one pixel at a time
+            draw->hline(im, x0, y0 + i, x1, ink, NULL);
+            // Starting from the bottom, moving up one pixel at a time
+            draw->hline(im, x0, y1 - i, x1, ink, NULL);
         }
-        ImagingDrawRectangle(im, x0, y0, x1, y0 + width - 1, ink_, 1, 0, op);
-        ImagingDrawRectangle(im, x0, y1 - width + 1, x1, y1, ink_, 1, 0, op);
-        ImagingDrawRectangle(
-            im, x0, y0 + width, x0 + width - 1, y1 - width, ink_, 1, 0, op
-        );
-        ImagingDrawRectangle(
-            im, x1 - width + 1, y0 + width, x1, y1 - width, ink_, 1, 0, op
-        );
+
+        // Excluding the pixels already drawn by the top and bottom borders
+        for (y = y0 + width; y <= y1 - width; y++) {
+            // The width of the left border, moving down one pixel at a time
+            draw->hline(im, x0, y, x0 + width - 1, ink, NULL);
+            // The width of the right border, moving down one pixel at a time
+            draw->hline(im, x1 - width + 1, y, x1, ink, NULL);
+        }
     }
 
     return 0;
