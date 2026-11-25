@@ -44,6 +44,7 @@ __lazy_modules__ = {
 
 import itertools
 import logging
+import os
 import re
 import struct
 import warnings
@@ -1073,7 +1074,7 @@ class PngImageFile(ImageFile.ImageFile):
         assert self.png is not None
         assert self.fp is not None
         if self.__idat != 0:
-            self.fp.read(self.__idat)
+            self.fp.seek(self.__idat, os.SEEK_CUR)
         while True:
             self.fp.read(4)  # CRC
 
