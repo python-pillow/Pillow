@@ -1566,12 +1566,12 @@ class Image:
         that values for line one follow directly after the values of
         line zero, and so on.
 
-        .. deprecated:: 12.1.0
-           Use :py:meth:`~PIL.Image.Image.get_flattened_data` instead.
-
         Note that the sequence object returned by this method is an
         internal PIL data type, which only supports certain sequence
         operations.
+
+        .. deprecated:: 12.1.0
+           Use :py:meth:`~PIL.Image.Image.get_flattened_data` instead.
 
         :param band: What band to return.  The default is to return
            all bands.  To return a single band, pass in the index
