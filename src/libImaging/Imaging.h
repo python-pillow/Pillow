@@ -310,6 +310,7 @@ typedef enum {
 typedef enum {
     IMAGING_DITHER_NONE = 0,
     IMAGING_DITHER_FLOYDSTEINBERG = 3,  // Default
+    IMAGING_DITHER_JARVIS_JUDICE_NINKE = 4,
 } ImagingDitherType;
 
 /* Image Manipulation Methods */
