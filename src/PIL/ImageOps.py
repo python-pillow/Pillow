@@ -414,7 +414,7 @@ def pad(
     Returns a resized and padded version of the image, expanded to fill the
     requested aspect ratio and size.
 
-    :param image: The image to resize and crop.
+    :param image: The image to resize and pad.
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
     :param method: Resampling method to use. Default is
@@ -424,10 +424,9 @@ def pad(
     :param centering: Control the position of the original image within the
                       padded version.
 
-                          (0.5, 0.5) will keep the image centered
-                          (0, 0) will keep the image aligned to the top left
-                          (1, 1) will keep the image aligned to the bottom
-                          right
+                      * (0.5, 0.5) will keep the image centered
+                      * (0, 0) will keep the image aligned to the top left
+                      * (1, 1) will keep the image aligned to the bottom right
     :return: An image.
     """
 
@@ -603,7 +602,8 @@ def fit(
     :param bleed: Remove a border around the outside of the image from all
                   four edges. The value is a decimal percentage (use 0.01 for
                   one percent). The default value is 0 (no border).
-                  Cannot be greater than or equal to 0.5.
+                  Values less than 0, or greater than or equal to 0.5, are
+                  treated as 0.
     :param centering: Control the cropping position.  Use (0.5, 0.5) for
                       center cropping (e.g. if cropping the width, take 50% off
                       of the left side, and therefore 50% off the right side).
@@ -819,10 +819,10 @@ def posterize(image: Image.Image, bits: int) -> Image.Image:
 
 def solarize(image: Image.Image, threshold: int = 128) -> Image.Image:
     """
-    Invert all pixel values above a threshold.
+    Invert all pixel values at or above a threshold.
 
     :param image: The image to solarize.
-    :param threshold: All pixels above this grayscale level are inverted.
+    :param threshold: All pixels at or above this grayscale level are inverted.
     :return: An image.
     """
     lut = []

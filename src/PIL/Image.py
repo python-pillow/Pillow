@@ -913,7 +913,7 @@ class Image:
         .. note:: This method only works for mode "1" images.
 
         :param name: The name prefix to use for the bitmap variables.
-        :returns: A string containing an X11 bitmap.
+        :returns: A bytes object containing an X11 bitmap.
         :raises ValueError: If the mode is not "1"
         """
 
@@ -1046,8 +1046,8 @@ class Image:
         The default method of converting a grayscale ("L") or "RGB"
         image into a bilevel (mode "1") image uses Floyd-Steinberg
         dither to approximate the original image luminosity levels. If
-        dither is ``None``, all values larger than 127 are set to 255 (white),
-        all other values to 0 (black). To use other thresholds, use the
+        dither is :data:`Dither.NONE`, all values larger than 127 are set to 255
+        (white), all other values to 0 (black). To use other thresholds, use the
         :py:meth:`~PIL.Image.Image.point` method.
 
         When converting from "RGBA" to "P" without a ``matrix`` argument,
@@ -1323,8 +1323,7 @@ class Image:
         :param kmeans: Integer greater than or equal to zero.
         :param palette: Quantize to the palette of given
                         :py:class:`PIL.Image.Image`.
-        :param dither: Dithering method, used when converting from
-           mode "RGB" to "P" or from "RGB" or "L" to "1".
+        :param dither: Dithering method, used when ``palette`` is given.
            Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
            (default).
         :returns: A new image
@@ -1566,10 +1565,12 @@ class Image:
         that values for line one follow directly after the values of
         line zero, and so on.
 
+        .. deprecated:: 12.1.0
+           Use :py:meth:`~PIL.Image.Image.get_flattened_data` instead.
+
         Note that the sequence object returned by this method is an
         internal PIL data type, which only supports certain sequence
-        operations.  To convert it to an ordinary sequence (e.g. for
-        printing), use ``list(im.getdata())``.
+        operations.
 
         :param band: What band to return.  The default is to return
            all bands.  To return a single band, pass in the index
@@ -2698,6 +2699,7 @@ class Image:
         :returns: None
         :exception ValueError: If the output format could not be determined
            from the file name.  Use the format option to solve this.
+        :exception KeyError: If the format is not supported for saving.
         :exception OSError: If the file could not be written.  The file
            may have been created, and may contain partial data.
         """
@@ -3028,7 +3030,7 @@ class Image:
           object::
 
             class Example(Image.ImageTransformHandler):
-                def transform(self, size, data, resample, fill=1):
+                def transform(self, size, image, **options):
                     # Return result
 
           Implementations of :py:class:`~PIL.Image.ImageTransformHandler`
@@ -3411,19 +3413,14 @@ def frombuffer(
     If you have an entire image file in a string, wrap it in a
     :py:class:`~io.BytesIO` object, and use :py:func:`~PIL.Image.open` to load it.
 
-    The default parameters used for the "raw" decoder differs from that used for
-    :py:func:`~PIL.Image.frombytes`. This is a bug, and will probably be fixed in a
-    future release. The current release issues a warning if you do this; to disable
-    the warning, you should provide the full set of parameters. See below for details.
-
     :param mode: The image mode. See: :ref:`concept-modes`.
     :param size: The image size.
     :param data: A bytes or other buffer object containing raw
         data for the given mode.
     :param decoder_name: What decoder to use.
     :param args: Additional parameters for the given decoder.  For the
-        default encoder ("raw"), it's recommended that you provide the
-        full set of parameters::
+        default decoder ("raw"), if no parameters are given, the following
+        are used::
 
             frombuffer(mode, size, data, "raw", mode, 0, 1)
 
@@ -3492,7 +3489,8 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
 
     In the case of NumPy, be aware that Pillow modes do not always correspond
     to NumPy dtypes. Pillow modes only offer 1-bit pixels, 8-bit pixels,
-    32-bit signed integer pixels, and 32-bit floating point pixels.
+    16-bit unsigned integer pixels, 32-bit signed integer pixels, and 32-bit
+    floating point pixels.
 
     Pillow images can also be converted to arrays::
 

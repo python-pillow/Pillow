@@ -934,7 +934,7 @@ class PyDecoder(PyCodec):
 class PyEncoder(PyCodec):
     """
     Python implementation of a format encoder. Override this class and
-    add the decoding logic in the :meth:`encode` method.
+    add the encoding logic in the :meth:`encode` method.
 
     See :ref:`Writing Your Own File Codec in Python<file-codecs-py>`
     """
@@ -978,8 +978,8 @@ class PyEncoder(PyCodec):
         :param fh: File handle.
         :param bufsize: Buffer size.
 
-        :returns: If finished successfully, return 0.
-            Otherwise, return an error code. Err codes are from
+        :returns: If finished successfully, return 1.
+            Otherwise, return a negative error code. Err codes are from
             :data:`.ImageFile.ERRORS`.
         """
         errcode = 0
