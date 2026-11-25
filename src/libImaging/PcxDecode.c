@@ -20,11 +20,11 @@ ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
     UINT8 n;
     UINT8 *ptr;
 
-    /* Check that the buffer holds one line of input. Planar raw modes
-       (P;2L/P;4L) store each line as state->planes padded bit planes,
-       not as packed pixels (#10186). The row size is computed in 64-bit
-       arithmetic so that a very wide image cannot overflow it. */
+    // Check that the buffer holds one line of input.
+    // Row size is computed in 64-bit arithmetic to prevent overflow for wide images
     if (state->planes) {
+        // Planar raw modes (P;2L/P;4L) store each line
+        // as state->planes padded bit planes, not as packed pixels
         if ((int64_t)state->planes * (((int64_t)state->xsize + 7) / 8) > state->bytes) {
             state->errcode = IMAGING_CODEC_OVERRUN;
             return -1;

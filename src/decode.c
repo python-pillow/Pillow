@@ -832,6 +832,13 @@ PyImaging_ZipDecoderNew(PyObject *self, PyObject *args) {
 
     const ModeID mode = findModeID(mode_name);
     const RawModeID rawmode = findRawModeID(rawmode_name);
+    if (interlaced &&
+        (rawmode == IMAGING_RAWMODE_P_2L || rawmode == IMAGING_RAWMODE_P_4L)) {
+        // The interlaced path feeds the unpacker one pixel at a time through a
+        // single byte staging slot, which is incompatible with planar raw modes
+        PyErr_SetString(PyExc_ValueError, "invalid raw mode for interlaced");
+        return NULL;
+    }
 
     decoder = PyImaging_DecoderNew(sizeof(ZIPSTATE));
     if (decoder == NULL) {
@@ -839,16 +846,6 @@ PyImaging_ZipDecoderNew(PyObject *self, PyObject *args) {
     }
 
     if (get_unpacker(decoder, mode, rawmode) < 0) {
-        return NULL;
-    }
-
-    // The interlaced path feeds the unpacker one pixel at a time through a
-    // single byte staging slot, which is incompatible with planar raw modes,
-    // so reject this combination now.
-    if (interlaced &&
-        (rawmode == IMAGING_RAWMODE_P_2L || rawmode == IMAGING_RAWMODE_P_4L)) {
-        Py_DECREF(decoder);
-        PyErr_SetString(PyExc_ValueError, "unrecognized raw mode");
         return NULL;
     }
 
