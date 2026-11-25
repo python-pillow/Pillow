@@ -104,7 +104,7 @@ class WebPImageFile(ImageFile.SeekableImageFile):
             return None
         return self.getexif()._get_merged_dict()
 
-    def _seekTo(self, frame: int) -> None:
+    def _seek_to(self, frame: int) -> None:
         self.info.pop("timestamp", None)
         self.info.pop("duration", None)
 

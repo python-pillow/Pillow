@@ -509,7 +509,7 @@ class TestPyEncoder(CodecsTest):
                 self._frame = 0
                 self.n_frames = 2
 
-            def _seekTo(self, frame: int) -> None:
+            def _seek_to(self, frame: int) -> None:
                 self._mode = "L"
                 self._size = (2, 2)
                 self._frame = frame

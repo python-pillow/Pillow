@@ -1278,7 +1278,7 @@ class TiffImageFile(ImageFile.SeekableImageFile):
         logger.debug("- ifh: %s", repr(ifh))  # Use repr to avoid str(bytes)
 
         # and load the first frame
-        TiffImageFile._seekTo(self, 0)
+        TiffImageFile._seek_to(self, 0)
 
     @property
     def n_frames(self) -> int:
@@ -1292,7 +1292,7 @@ class TiffImageFile(ImageFile.SeekableImageFile):
         assert self._n_frames is not None
         return self._n_frames
 
-    def _seekTo(self, frame: int) -> None:
+    def _seek_to(self, frame: int) -> None:
         self._seek(frame)
 
     def _seek(self, frame: int, update_image: bool = True) -> None:

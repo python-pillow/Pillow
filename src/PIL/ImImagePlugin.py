@@ -293,7 +293,7 @@ class ImImageFile(ImageFile.SeekableImageFile):
     def is_animated(self) -> bool:
         return self.info[FRAMES] > 1
 
-    def _seekTo(self, frame: int) -> None:
+    def _seek_to(self, frame: int) -> None:
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
 

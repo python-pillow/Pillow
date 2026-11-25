@@ -150,7 +150,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile, ImageFile.SeekableImageFile):
             raise self._fp.ex
         self._fp.seek(pos)
 
-    def _seekTo(self, frame: int) -> None:
+    def _seek_to(self, frame: int) -> None:
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
         self.fp = self._fp

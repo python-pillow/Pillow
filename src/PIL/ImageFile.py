@@ -280,7 +280,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                     im, TiffImagePlugin.TiffImageFile
                 ):
                     im._frame_pos = {ifd_offset: None}
-                    im._seekTo(0)
+                    im._seek_to(0)
                 im.load()
                 child_images.append(im)
 
@@ -518,7 +518,7 @@ class SeekableImageFile(ImageFile):
         if self.tell() == frame:
             return
 
-        self._seekTo(frame)
+        self._seek_to(frame)
 
         if self._im is not None and (
             self.im.size != (self._tile_size or self.size)
@@ -529,7 +529,7 @@ class SeekableImageFile(ImageFile):
             self._im = None
 
     @abc.abstractmethod
-    def _seekTo(self, frame: int) -> None:
+    def _seek_to(self, frame: int) -> None:
         pass
 
 

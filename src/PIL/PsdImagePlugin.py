@@ -178,7 +178,7 @@ class PsdImageFile(ImageFile.SeekableImageFile):
     def is_animated(self) -> bool:
         return len(self.layers) != 0
 
-    def _seekTo(self, layer: int) -> None:
+    def _seek_to(self, layer: int) -> None:
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
 

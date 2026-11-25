@@ -135,7 +135,7 @@ class FliImageFile(ImageFile.SeekableImageFile):
                 palette[i] = (r, g, b)
                 i += 1
 
-    def _seekTo(self, frame: int) -> None:
+    def _seek_to(self, frame: int) -> None:
         if frame < self.__frame:
             self._seek(0)
 

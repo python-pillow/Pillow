@@ -160,7 +160,7 @@ class GifImageFile(ImageFile.SeekableImageFile):
         self.seek(current)
         return is_animated
 
-    def _seekTo(self, frame: int) -> None:
+    def _seek_to(self, frame: int) -> None:
         if frame < self.__frame:
             self._im = None
             self._seek(0)

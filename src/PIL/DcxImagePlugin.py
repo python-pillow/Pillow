@@ -67,7 +67,7 @@ class DcxImageFile(PcxImageFile, ImageFile.SeekableImageFile):
         self.is_animated = self.n_frames > 1
         self.seek(0)
 
-    def _seekTo(self, frame: int) -> None:
+    def _seek_to(self, frame: int) -> None:
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
         self.frame = frame

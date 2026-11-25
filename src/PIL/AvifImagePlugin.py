@@ -111,7 +111,7 @@ class AvifImageFile(ImageFile.SeekableImageFile):
             self.info["exif"] = exif
         self.seek(0)
 
-    def _seekTo(self, frame: int) -> None:
+    def _seek_to(self, frame: int) -> None:
         self.info.pop("timestamp", None)
         self.info.pop("duration", None)
 

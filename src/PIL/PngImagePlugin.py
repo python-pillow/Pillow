@@ -909,7 +909,7 @@ class PngImageFile(ImageFile.SeekableImageFile):
 
         super().verify()
 
-    def _seekTo(self, frame: int) -> None:
+    def _seek_to(self, frame: int) -> None:
         if frame < self.__frame:
             self._seek(0, True)
 

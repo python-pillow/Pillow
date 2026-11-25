@@ -174,7 +174,7 @@ class SpiderImageFile(ImageFile.SeekableImageFile):
         else:
             return self.imgnumber - 1
 
-    def _seekTo(self, frame: int) -> None:
+    def _seek_to(self, frame: int) -> None:
         if self.istack == 0:
             msg = "attempt to seek in a non-stack file"
             raise EOFError(msg)

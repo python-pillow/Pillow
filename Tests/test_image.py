@@ -274,7 +274,7 @@ class TestImage:
                 # A tile that can be memory mapped
                 self.tile = [ImageFile._Tile("raw", None, 0, self.mode)]
 
-            def _seekTo(self, frame: int) -> None:
+            def _seek_to(self, frame: int) -> None:
                 self.__frame = frame
 
                 # A tile that cannot be memory mapped
